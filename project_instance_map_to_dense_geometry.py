@@ -61,7 +61,7 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     dataset = ReplicaRoom0Dataset(args.dataset_root)
-    stable_instances = read_binary_vertex_ply(analysis_dir / "instance_map.ply")
+    instance_records = read_binary_vertex_ply(analysis_dir / "instance_map.ply")
 
     dense_points, dense_colors = fuse_dense_geometry(
         dataset=dataset,
@@ -71,7 +71,7 @@ def main() -> None:
     )
     labels, state_ids, supports = project_instances_to_dense_points(
         dense_points=dense_points,
-        stable_instances=stable_instances,
+        instance_records=instance_records,
         instance_voxel_size=float(args.instance_voxel_size),
         neighbor_radius=max(0, int(args.projection_neighbor_radius)),
     )
@@ -130,7 +130,7 @@ def main() -> None:
         },
         "counts": {
             "dense_geometry_point_count": int(len(dense_points)),
-            "stable_instance_point_count": int(len(stable_instances)),
+            "instance_map_point_count": int(len(instance_records)),
             "labeled_dense_point_count": int(np.count_nonzero(labeled_mask)),
             "unlabeled_dense_point_count": int(np.count_nonzero(~labeled_mask)),
             "label_coverage_ratio": float(np.count_nonzero(labeled_mask) / max(len(dense_points), 1)),
@@ -212,15 +212,15 @@ def fuse_dense_geometry(
 
 def project_instances_to_dense_points(
     dense_points: np.ndarray,
-    stable_instances: np.ndarray,
+    instance_records: np.ndarray,
     instance_voxel_size: float,
     neighbor_radius: int,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     owner_map: dict[tuple[int, int, int], tuple[int, int, float]] = {}
-    stable_points = np.stack([stable_instances["x"], stable_instances["y"], stable_instances["z"]], axis=1)
-    stable_indices = np.floor((stable_points / instance_voxel_size)).astype(np.int32)
+    instance_points = np.stack([instance_records["x"], instance_records["y"], instance_records["z"]], axis=1)
+    instance_indices = np.floor((instance_points / instance_voxel_size)).astype(np.int32)
 
-    for voxel, row in zip(stable_indices, stable_instances):
+    for voxel, row in zip(instance_indices, instance_records):
         owner_map[(int(voxel[0]), int(voxel[1]), int(voxel[2]))] = (
             int(row["object_id"]),
             int(row["state_id"]),

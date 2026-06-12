@@ -1,0 +1,28 @@
+anchor_frontend:
+  enabled: true
+  use_boxes_as_primary_proposals: true
+  use_sam_intersection_proposals: true
+
+semantic_map_v2:
+  geometry_sample_stride: 8
+  geometry_voxel_size: 0.03
+  coarse_voxel_size: 0.05
+  pool_voxel_size: 0.02
+  max_points_per_object: 20000
+  match_threshold: 0.45
+  match_distance_scale: 2.0
+  nearby_match_radius: 1.2
+  coarse_weight: 0.5
+  centroid_weight: 0.25
+  bbox_weight: 0.15
+  overlap_weight: 0.10
+  provisional_match_distance: 0.45
+  provisional_promotion_hits: 2
+  provisional_max_idle_frames: 60
+  freeze_confidence_threshold: 0.6
+  freeze_hits: 2
+  coarse_support_increment: 1.0
+  coarse_support_decay: 0.95
+  archive_after_frames: 60
+  projection_neighbor_radius: 1
+  export_pool_downsample_voxel: 0.0

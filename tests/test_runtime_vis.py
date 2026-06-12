@@ -162,6 +162,289 @@ def test_runtime_vis_merges_compatible_object_fragments() -> None:
     assert output.merge_decisions[0].accepted is True
 
 
+def test_runtime_vis_does_not_merge_when_required_anchor_vote_labels_are_missing() -> None:
+    depth = np.full((20, 20), 2.0, dtype=np.float32)
+    frame = make_frame(depth)
+    proposals = [
+        rect_proposal(0, 2, 2, 6, 6, depth.shape),
+        rect_proposal(1, 6, 2, 10, 6, depth.shape),
+    ]
+    config = runtime_vis_config()
+    config["require_same_anchor_label_for_merge"] = True
+
+    module = RuntimeVisModule(config)
+    output = module.process(frame, proposals, SystemState())
+
+    assert len(output.groups) == 2
+    decision = output.merge_decisions[0]
+    assert decision.accepted is False
+    assert decision.accepted_reason == "missing_anchor_label"
+    assert decision.reason_breakdown["missing_required_anchor_label"] is True
+
+
+def test_runtime_vis_does_not_merge_mismatched_required_anchor_labels_without_semantic_gate() -> None:
+    depth = np.full((20, 20), 2.0, dtype=np.float32)
+    frame = make_frame(depth)
+    proposals = [
+        rect_proposal(0, 2, 2, 6, 6, depth.shape),
+        rect_proposal(1, 6, 2, 10, 6, depth.shape),
+    ]
+    proposals[0].metadata["anchor_class_name"] = "chair"
+    proposals[0].metadata["anchor_confidence"] = 0.9
+    proposals[1].metadata["anchor_class_name"] = "table"
+    proposals[1].metadata["anchor_confidence"] = 0.9
+    config = runtime_vis_config()
+    config["require_same_anchor_label_for_merge"] = True
+    config["semantic_class_merge_gate_enabled"] = False
+
+    module = RuntimeVisModule(config)
+    output = module.process(frame, proposals, SystemState())
+
+    assert len(output.groups) == 2
+    decision = output.merge_decisions[0]
+    assert decision.accepted is False
+    assert decision.accepted_reason == "anchor_label_mismatch"
+    assert decision.reason_breakdown["missing_required_anchor_label"] is False
+    assert decision.reason_breakdown["required_anchor_labels_mismatch"] is True
+
+
+def test_runtime_vis_merges_same_anchor_label_fragments() -> None:
+    depth = np.full((20, 20), 2.0, dtype=np.float32)
+    frame = make_frame(depth)
+    proposals = [
+        rect_proposal(0, 2, 2, 6, 6, depth.shape),
+        rect_proposal(1, 6, 2, 10, 6, depth.shape),
+    ]
+    for proposal in proposals:
+        proposal.metadata["anchor_class_name"] = "chair"
+        proposal.metadata["anchor_confidence"] = 0.9
+    config = runtime_vis_config()
+    config["require_same_anchor_label_for_merge"] = True
+
+    module = RuntimeVisModule(config)
+    output = module.process(frame, proposals, SystemState())
+
+    assert len(output.groups) == 1
+    assert output.raw_to_group[0] == output.raw_to_group[1]
+    assert output.merge_decisions[0].accepted is True
+
+
+def test_runtime_vis_does_not_merge_same_label_different_anchor_ids() -> None:
+    depth = np.full((20, 20), 2.0, dtype=np.float32)
+    frame = make_frame(depth)
+    proposals = [
+        rect_proposal(0, 2, 2, 6, 6, depth.shape),
+        rect_proposal(1, 6, 2, 10, 6, depth.shape),
+    ]
+    proposals[0].metadata["anchor_id"] = 10
+    proposals[0].metadata["anchor_class_name"] = "chair"
+    proposals[0].metadata["anchor_confidence"] = 0.9
+    proposals[1].metadata["anchor_id"] = 11
+    proposals[1].metadata["anchor_class_name"] = "chair"
+    proposals[1].metadata["anchor_confidence"] = 0.9
+    config = runtime_vis_config()
+    config["require_same_anchor_label_for_merge"] = True
+
+    module = RuntimeVisModule(config)
+    output = module.process(frame, proposals, SystemState())
+
+    assert len(output.groups) == 2
+    decision = output.merge_decisions[0]
+    assert decision.accepted is False
+    assert decision.accepted_reason == "anchor_identity_mismatch"
+    assert decision.reason_breakdown["required_anchor_identity_mismatch"] is True
+    assert output.group_stats["anchor_identity_mismatch_edge_count"] == 1
+
+
+def test_runtime_vis_does_not_merge_semantic_blocked_residual_with_anchored_proposal() -> None:
+    depth = np.full((20, 20), 2.0, dtype=np.float32)
+    frame = make_frame(depth)
+    proposals = [
+        rect_proposal(0, 2, 2, 6, 6, depth.shape),
+        rect_proposal(1, 6, 2, 10, 6, depth.shape),
+    ]
+    proposals[0].metadata.update(
+        {
+            "anchor_id": 4,
+            "anchor_class_name": "sofa",
+            "anchor_confidence": 0.9,
+            "anchor_label_strength": "strong",
+            "semantic_commit_allowed": True,
+        }
+    )
+    proposals[1].metadata.update(
+        {
+            "anchor_id": -1,
+            "anchor_class_name": "",
+            "anchor_confidence": 0.0,
+            "anchor_label_strength": "none",
+            "semantic_commit_allowed": False,
+            "residual_semantic_policy": "unknown",
+            "nearby_anchor_id": 4,
+            "nearby_anchor_class_name": "sofa",
+        }
+    )
+    config = runtime_vis_config()
+    config["require_same_anchor_label_for_merge"] = False
+    config["semantic_class_merge_gate_enabled"] = False
+
+    module = RuntimeVisModule(config)
+    output = module.process(frame, proposals, SystemState())
+
+    assert len(output.groups) == 2
+    decision = output.merge_decisions[0]
+    assert decision.accepted is False
+    assert decision.accepted_reason == "semantic_blocked_residual"
+    assert decision.reason_breakdown["semantic_blocked_residual_merge"] is True
+
+
+def test_runtime_vis_allows_semantic_blocked_residuals_to_merge_without_anchor_label() -> None:
+    depth = np.full((20, 20), 2.0, dtype=np.float32)
+    frame = make_frame(depth)
+    proposals = [
+        rect_proposal(0, 2, 2, 6, 6, depth.shape),
+        rect_proposal(1, 6, 2, 10, 6, depth.shape),
+    ]
+    for proposal in proposals:
+        proposal.metadata.update(
+            {
+                "anchor_id": -1,
+                "anchor_class_name": "",
+                "anchor_confidence": 0.0,
+                "anchor_label_strength": "none",
+                "semantic_commit_allowed": False,
+                "residual_semantic_policy": "unknown",
+                "mask_anchor_relation": "contained_residual",
+            }
+        )
+    config = runtime_vis_config()
+    config["require_same_anchor_label_for_merge"] = False
+    config["semantic_class_merge_gate_enabled"] = False
+
+    module = RuntimeVisModule(config)
+    output = module.process(frame, proposals, SystemState())
+
+    assert len(output.groups) == 1
+    assert output.raw_to_group[0] == output.raw_to_group[1]
+    assert output.merge_decisions[0].accepted is True
+    merged = output.merged_proposals[0]
+    assert merged.metadata["anchor_class_name"] == ""
+    assert merged.metadata["anchor_id"] == -1
+    assert merged.metadata["anchor_label_strength"] == "none"
+    assert merged.metadata["semantic_commit_allowed"] is False
+    assert merged.metadata["residual_semantic_policy"] == "unknown"
+
+
+def test_runtime_vis_allows_semantic_blocked_residuals_with_required_anchor_labels() -> None:
+    depth = np.full((20, 20), 2.0, dtype=np.float32)
+    frame = make_frame(depth)
+    proposals = [
+        rect_proposal(0, 2, 2, 6, 6, depth.shape),
+        rect_proposal(1, 6, 2, 10, 6, depth.shape),
+    ]
+    for proposal in proposals:
+        proposal.metadata.update(
+            {
+                "anchor_id": -1,
+                "anchor_class_name": "",
+                "anchor_confidence": 0.0,
+                "anchor_label_strength": "none",
+                "semantic_commit_allowed": False,
+                "residual_semantic_policy": "unknown",
+                "mask_anchor_relation": "contained_residual",
+            }
+        )
+    config = runtime_vis_config()
+    config["require_same_anchor_label_for_merge"] = True
+    config["semantic_class_merge_gate_enabled"] = False
+
+    module = RuntimeVisModule(config)
+    output = module.process(frame, proposals, SystemState())
+
+    assert len(output.groups) == 1
+    assert output.raw_to_group[0] == output.raw_to_group[1]
+    assert output.merge_decisions[0].accepted is True
+    assert output.merge_decisions[0].reason_breakdown["missing_required_anchor_label"] is False
+    merged = output.merged_proposals[0]
+    assert merged.metadata["anchor_class_name"] == ""
+    assert merged.metadata["semantic_commit_allowed"] is False
+
+
+def test_runtime_vis_single_stale_semantic_blocked_residual_stays_unknown_after_process() -> None:
+    depth = np.full((20, 20), 2.0, dtype=np.float32)
+    frame = make_frame(depth)
+    proposal = rect_proposal(0, 2, 2, 6, 6, depth.shape)
+    proposal.metadata.update(
+        {
+            "anchor_id": 4,
+            "anchor_class_name": "sofa",
+            "anchor_confidence": 0.9,
+            "anchor_label_strength": "none",
+            "semantic_commit_allowed": False,
+            "residual_semantic_policy": "unknown",
+            "mask_anchor_relation": "contained_residual",
+        }
+    )
+
+    module = RuntimeVisModule(runtime_vis_config())
+    output = module.process(frame, [proposal], SystemState())
+
+    assert len(output.merged_proposals) == 1
+    merged = output.merged_proposals[0]
+    assert merged.metadata["anchor_class_name"] == ""
+    assert merged.metadata["anchor_id"] == -1
+    assert merged.metadata["anchor_label_strength"] == "none"
+    assert merged.metadata["semantic_commit_allowed"] is False
+    assert merged.metadata["residual_semantic_policy"] == "unknown"
+
+
+def test_runtime_vis_anchor_group_metadata_keeps_semantic_blocked_residual_unknown() -> None:
+    anchored = rect_proposal(0, 2, 2, 6, 6, (20, 20))
+    residual = rect_proposal(1, 6, 2, 10, 6, (20, 20))
+    anchored.metadata.update(
+        {
+            "anchor_id": 4,
+            "anchor_class_name": "sofa",
+            "anchor_confidence": 0.9,
+            "anchor_label_strength": "strong",
+            "semantic_commit_allowed": True,
+            "force_object_candidate": True,
+        }
+    )
+    residual.metadata.update(
+        {
+            "anchor_id": -1,
+            "anchor_class_name": "",
+            "anchor_confidence": 0.0,
+            "anchor_label_strength": "none",
+            "semantic_commit_allowed": False,
+            "residual_semantic_policy": "unknown",
+            "mask_anchor_relation": "contained_residual",
+        }
+    )
+    members = [
+        RuntimeVisModule(runtime_vis_config())._compute_mask_features(
+            np.full((20, 20), 2.0, dtype=np.float32),
+            np.zeros((20, 20), dtype=bool),
+            anchored,
+        ),
+        RuntimeVisModule(runtime_vis_config())._compute_mask_features(
+            np.full((20, 20), 2.0, dtype=np.float32),
+            np.zeros((20, 20), dtype=bool),
+            residual,
+        ),
+    ]
+
+    metadata = RuntimeVisModule._anchor_group_metadata(members, [])
+
+    assert metadata["anchor_class_name"] == ""
+    assert metadata["anchor_id"] == -1
+    assert metadata["anchor_label_strength"] == "none"
+    assert metadata["semantic_commit_allowed"] is False
+    assert metadata["residual_semantic_policy"] == "unknown"
+    assert metadata["anchor_label_votes"] == {}
+
+
 def test_runtime_vis_small_standalone_object_remains_separate() -> None:
     depth = np.full((20, 20), 2.0, dtype=np.float32)
     depth[2:5, 10:13] = 2.5

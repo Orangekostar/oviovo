@@ -44,12 +44,13 @@ class Frame:
     """A single RGB-D frame with camera pose.
 
     Attributes:
-        frame_id: Sequential frame index.
+        frame_id: Sequential processed-frame index used internally by the pipeline.
         rgb: (H, W, 3) uint8 color image.
         depth: (H, W) float32 depth in meters.
         pose: (4, 4) camera-to-world transform.
         intrinsics: Camera intrinsic parameters.
         timestamp: Optional timestamp in seconds.
+        source_frame_id: Optional source/dataset frame index used for external cache lookups.
     """
     frame_id: int
     rgb: np.ndarray
@@ -57,6 +58,7 @@ class Frame:
     pose: np.ndarray
     intrinsics: CameraIntrinsics
     timestamp: float = 0.0
+    source_frame_id: int | None = None
 
 
 # ============================================================
@@ -83,6 +85,28 @@ class Proposal2D:
     confidence: float = 1.0
     backend_name: str = "unknown"
     metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class Anchor2D:
+    """Object-level 2D anchor box from a detector prior."""
+    anchor_id: int
+    bbox_xyxy: np.ndarray
+    class_name: str
+    confidence: float
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class AnchorAssignment:
+    """Assignment from a raw proposal to a detector anchor."""
+    proposal_id: int
+    anchor_id: int = -1
+    class_name: str = ""
+    confidence: float = 0.0
+    bbox_iou: float = 0.0
+    center_inside: bool = False
+    keepalive: bool = False
 
 
 @dataclass
@@ -270,6 +294,13 @@ class ObjectState(Enum):
     DORMANT = "dormant"             # Stable but not recently seen, awaiting re-id
 
 
+class SurfaceTier(Enum):
+    """Residency tier for dense semantic surface storage."""
+    ACTIVE = "active"
+    WARM = "warm"
+    COLD = "cold"
+
+
 @dataclass
 class SemanticMemory:
     """Object-level semantic memory (Layer 7).
@@ -302,11 +333,23 @@ class ObservationRecord:
         patch: The 3D patch observed.
         crop_bbox: 2D bounding box of the crop used for semantic encoding.
         timestamp: Observation time.
+        source_frame_id: Source frame that produced the underlying proposal.
+        source_proposal_id: Source proposal identifier from the proposal backend.
+        anchor_id: Anchor identifier used to connect coarse/fine observations.
+        observation_layer: Observation layer name, such as coarse or refined.
+        refinement_key: Stable key for matching refinement observations.
+        replaced_by_refinement: Whether a later refinement superseded this observation.
     """
     frame_id: int
     patch: Patch3D
     crop_bbox: Optional[np.ndarray] = None
     timestamp: float = 0.0
+    source_frame_id: int = 0
+    source_proposal_id: int = -1
+    anchor_id: int = -1
+    observation_layer: str = ""
+    refinement_key: str = ""
+    replaced_by_refinement: bool = False
 
 
 @dataclass
@@ -316,9 +359,13 @@ class ObjectMap:
     Attributes:
         object_id: Unique object identifier.
         state: Current lifecycle state.
-        local_pcd: (N, 3) object-local maintenance memory (point cloud).
-            This is ONLY a per-instance local geometry memory (Layer 5).
-            It must NOT replace the global TSDF instance substrate.
+        local_pcd: (N, 3) v1 object pool geometry (point cloud).
+            This is the object-level export source used to assemble the
+            pool-based semantic instance map in v1.
+            It must NOT replace the global TSDF instance substrate for
+            owner decisions or support/stability bookkeeping.
+        association_pcd: (M, 3) bounded representative geometry used only
+            for association nearest-neighbor matching.
         centroid: (3,) current centroid.
         bbox_min: (3,) AABB min.
         bbox_max: (3,) AABB max.
@@ -333,6 +380,7 @@ class ObjectMap:
     object_id: int
     state: ObjectState = ObjectState.ACTIVE
     local_pcd: np.ndarray = field(default_factory=lambda: np.empty((0, 3), dtype=np.float32))
+    association_pcd: np.ndarray = field(default_factory=lambda: np.empty((0, 3), dtype=np.float32))
     centroid: np.ndarray = field(default_factory=lambda: np.zeros(3, dtype=np.float32))
     bbox_min: np.ndarray = field(default_factory=lambda: np.zeros(3, dtype=np.float32))
     bbox_max: np.ndarray = field(default_factory=lambda: np.zeros(3, dtype=np.float32))
@@ -343,6 +391,9 @@ class ObjectMap:
     last_seen_frame: int = 0
     creation_frame: int = 0
     update_count: int = 0
+    surface_tier: SurfaceTier = SurfaceTier.ACTIVE
+    last_dense_refresh_frame: int = 0
+    dense_surface_resident: bool = False
     debug: Dict[str, Any] = field(default_factory=dict)
 
     @property
@@ -380,6 +431,83 @@ class BackgroundMap:
 
 
 # ============================================================
+# Dense Surface Map
+# ============================================================
+
+@dataclass
+class DenseSurfaceEntry:
+    """Per-object resident dense semantic surface."""
+    points: np.ndarray = field(default_factory=lambda: np.empty((0, 3), dtype=np.float32))
+    object_id: int = -1
+    semantic_label: str = ""
+    last_refresh_frame: int = 0
+    resident: bool = True
+
+
+@dataclass
+class DenseSurfaceMap:
+    """Online dense semantic surface storage for active and warm objects."""
+    entries: Dict[int, DenseSurfaceEntry] = field(default_factory=dict)
+
+
+@dataclass
+class StructuralOverlayVoxel:
+    """Voxel-level semantic votes for stuff-like structural classes."""
+    label_votes: Dict[str, float] = field(default_factory=dict)
+    observation_count: int = 0
+    last_seen_frame: int = -1
+
+    def add_vote(self, label: str, weight: float, frame_id: int) -> None:
+        normalized = str(label).strip().lower()
+        if not normalized:
+            return
+        self.label_votes[normalized] = float(self.label_votes.get(normalized, 0.0) + float(weight))
+        self.observation_count += 1
+        self.last_seen_frame = max(int(self.last_seen_frame), int(frame_id))
+
+    @property
+    def top_label(self) -> str:
+        if not self.label_votes:
+            return ""
+        return max(self.label_votes, key=self.label_votes.get)
+
+    @property
+    def top_support(self) -> float:
+        if not self.label_votes:
+            return 0.0
+        return float(max(self.label_votes.values()))
+
+
+@dataclass
+class StructuralOverlayMap:
+    """Sparse dense overlay for planar or stuff-like structure labels."""
+    voxel_size: float = 0.05
+    voxels: Dict[Tuple[int, int, int], StructuralOverlayVoxel] = field(default_factory=dict)
+    update_count: int = 0
+
+
+# ============================================================
+# Provisional Local Object Pool
+# ============================================================
+
+@dataclass
+class ProvisionalObject:
+    """Local-only provisional object accumulated before global promotion."""
+    provisional_id: int
+    anchor_class_name: str = ""
+    anchor_confidence: float = 0.0
+    local_pcd: np.ndarray = field(default_factory=lambda: np.empty((0, 3), dtype=np.float32))
+    centroid: np.ndarray = field(default_factory=lambda: np.zeros(3, dtype=np.float32))
+    bbox_min: np.ndarray = field(default_factory=lambda: np.zeros(3, dtype=np.float32))
+    bbox_max: np.ndarray = field(default_factory=lambda: np.zeros(3, dtype=np.float32))
+    observations: List[ObservationRecord] = field(default_factory=list)
+    first_seen_frame: int = 0
+    last_seen_frame: int = 0
+    hit_count: int = 0
+    debug: Dict[str, Any] = field(default_factory=dict)
+
+
+# ============================================================
 # Association
 # ============================================================
 
@@ -406,17 +534,38 @@ class AssociationScore:
 
 
 @dataclass
+class ContestedAssociation:
+    """A confident frontend observation blocked from updating a cross-label object.
+
+    The spatial candidate is useful context, but it is not an update target.
+    ObjectUpdateModule should route the patch into a residual/provisional identity path.
+    """
+    patch_id: int
+    blocked_object_id: int
+    patch_label: str = ""
+    object_label: str = ""
+    reason: str = "cross_label_observation_identity"
+    score: Optional[AssociationScore] = None
+    debug: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
 class AssociationResult:
     """Result of associating object patches to existing objects.
 
     Attributes:
-        matched: List of (patch_id, object_id, score) for successful matches.
-        new_object_patches: Patch IDs that should create new objects.
+        matched: List of (patch_id, object_id, score) for successful same-identity matches.
+        new_object_patches: Patch IDs that should create normal new objects.
+        contested_object_patches: Patch IDs that were observed as a different confident label
+            from their best spatial candidate and must enter residual/provisional tracking.
+        contested_matches: Detailed records for blocked cross-label spatial candidates.
         scores: Full scoring details per candidate pair.
     """
-    matched: List[tuple] = field(default_factory=list)       # [(patch_id, object_id, AssociationScore)]
+    matched: List[tuple] = field(default_factory=list)
     new_object_patches: List[int] = field(default_factory=list)
-    scores: Dict[tuple, AssociationScore] = field(default_factory=dict)  # (patch_id, object_id) -> score
+    contested_object_patches: List[int] = field(default_factory=list)
+    contested_matches: List[ContestedAssociation] = field(default_factory=list)
+    scores: Dict[tuple, AssociationScore] = field(default_factory=dict)
     debug: Dict[str, Any] = field(default_factory=dict)
 
 
@@ -432,13 +581,20 @@ class SystemState:
         objects: Dict mapping object_id to ObjectMap.
         background: The global background map.
         tsdf_volume: Global TSDF instance substrate (Layer 4 backbone).
+        dense_surface_map: Resident dense semantic surface storage.
+        provisional_objects: Local-only provisional object pool.
         active_set: Current-frame restricted active set (Layer 6, local only).
         next_object_id: Counter for new object IDs.
+        next_provisional_id: Counter for provisional object IDs.
         frame_count: Total frames processed.
     """
     objects: Dict[int, ObjectMap] = field(default_factory=dict)
     background: BackgroundMap = field(default_factory=BackgroundMap)
     tsdf_volume: TSDFInstanceVolume = field(default_factory=TSDFInstanceVolume)
+    dense_surface_map: DenseSurfaceMap = field(default_factory=DenseSurfaceMap)
+    structural_overlay_map: StructuralOverlayMap = field(default_factory=StructuralOverlayMap)
+    provisional_objects: Dict[int, ProvisionalObject] = field(default_factory=dict)
     active_set: ActiveSet = field(default_factory=ActiveSet)
     next_object_id: int = 0
+    next_provisional_id: int = 0
     frame_count: int = 0

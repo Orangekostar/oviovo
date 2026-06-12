@@ -12,7 +12,7 @@ from typing import Any, Dict, List
 
 import numpy as np
 
-from src.core.data_structures import Frame, Proposal2D
+from src.core.data_structures import Anchor2D, Frame, Proposal2D
 from src.models.proposal_backend import PlaceholderProposalBackend, ProposalBackend
 
 logger = logging.getLogger("oviovo.modules.proposal")
@@ -54,10 +54,18 @@ class ProposalModule:
             from src.models.entitysam_proposal_backend import EntitySAMProposalBackend
 
             return EntitySAMProposalBackend()
+        elif backend_name == "sam3_concept":
+            from src.models.sam3_concept_backend import SAM3ConceptProposalBackend
+
+            return SAM3ConceptProposalBackend()
         elif backend_name == "cropformer":
             from src.models.cropformer_proposal_backend import CropFormerProposalBackend
 
             return CropFormerProposalBackend()
+        elif backend_name == "precomputed":
+            from src.models.precomputed_proposal_backend import PrecomputedProposalBackend
+
+            return PrecomputedProposalBackend()
         # TODO: elif backend_name == "fastsam": return FastSAMBackend()
         else:
             logger.warning(f"Unknown backend '{backend_name}', falling back to placeholder.")
@@ -80,7 +88,7 @@ class ProposalModule:
             self.backend_init_error = None
             return backend
         except Exception as exc:
-            if self.requested_backend_name == "placeholder":
+            if self.requested_backend_name in {"placeholder", "precomputed", "sam3_concept"}:
                 raise
             logger.warning(
                 "Proposal backend '%s' unavailable, falling back to placeholder: %s",
@@ -111,6 +119,25 @@ class ProposalModule:
             List of Proposal2D.
         """
         proposals = self.backend.generate_proposals(rgb, depth, frame=frame)
+        return self._finalize_proposals(proposals)
+
+    def process_for_anchors(
+        self,
+        rgb: np.ndarray,
+        depth: np.ndarray,
+        anchors: List[Anchor2D],
+        frame: Frame | None = None,
+    ) -> List[Proposal2D]:
+        """Generate proposals from an RGB-D pair and optional anchor prompts."""
+        generate_for_anchors = getattr(self.backend, "generate_proposals_for_anchors", None)
+        if callable(generate_for_anchors):
+            proposals = generate_for_anchors(rgb, depth, anchors, frame=frame)
+        else:
+            proposals = self.backend.generate_proposals(rgb, depth, frame=frame)
+        return self._finalize_proposals(proposals)
+
+    def _finalize_proposals(self, proposals: List[Proposal2D]) -> List[Proposal2D]:
+        """Apply common proposal filtering and backend metadata stamping."""
         # Filter by minimum area
         min_area = self.config.get("min_mask_area", 100)
         proposals = [p for p in proposals if p.area >= min_area]

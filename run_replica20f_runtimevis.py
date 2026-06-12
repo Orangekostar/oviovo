@@ -128,7 +128,14 @@ def main() -> None:
     print(f"cuda_visible: {os.environ.get('CUDA_VISIBLE_DEVICES', '<unset>')}")
 
     for frame in dataset.iter_frames(limit=args.num_frames):
-        state = pipeline.process_frame(frame.rgb, frame.depth, frame.pose, frame.intrinsics, timestamp=frame.timestamp)
+        state = pipeline.process_frame(
+            frame.rgb,
+            frame.depth,
+            frame.pose,
+            frame.intrinsics,
+            timestamp=frame.timestamp,
+            source_frame_id=frame.frame_id,
+        )
         raw_proposals = pipeline.last_raw_proposals
         raw_precompute_proposals = (
             getattr(pipeline.proposal.backend, "last_generation_info", {}).get("raw_proposals")

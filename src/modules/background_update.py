@@ -44,12 +44,28 @@ class BackgroundUpdateModule:
         if not bg_patches:
             return background
 
-        # Collect all background points
-        new_points = np.concatenate([p.points for p in bg_patches], axis=0)
+        structural_reject_patches = [
+            patch for patch in bg_patches
+            if bool(patch.metadata.get("surface_gate_structural_reject", False))
+        ]
+        regular_bg_patches = [
+            patch for patch in bg_patches
+            if not bool(patch.metadata.get("surface_gate_structural_reject", False))
+        ]
 
-        # TODO: Filter out points that overlap with object bounding boxes
-        # to avoid foreground contamination.
-        new_points = self._filter_object_occupied(new_points, objects)
+        point_chunks: list[np.ndarray] = []
+        if regular_bg_patches:
+            regular_points = np.concatenate([p.points for p in regular_bg_patches], axis=0)
+            # Filter regular background points that overlap known object boxes.
+            point_chunks.append(self._filter_object_occupied(regular_points, objects))
+        if structural_reject_patches:
+            # These points were explicitly rejected by object surface-owner
+            # arbitration, so feeding them back strengthens structural support.
+            point_chunks.append(np.concatenate([p.points for p in structural_reject_patches], axis=0))
+        if not point_chunks:
+            return background
+
+        new_points = np.concatenate(point_chunks, axis=0)
 
         # Merge into background point cloud
         if len(background.point_cloud) > 0:

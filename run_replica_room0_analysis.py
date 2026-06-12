@@ -44,6 +44,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--run-tag", type=str, default="replica_room0_200f_analysis")
     parser.add_argument("--proposal-backend", type=str, default="sam2")
     parser.add_argument("--proposal-device", type=str, default="cuda")
+    parser.add_argument("--proposal-cache-dir", type=Path, default=None)
+    parser.add_argument("--proposal-cache-manifest", type=Path, default=None)
     parser.add_argument("--sam-version", type=str, default="2.1")
     parser.add_argument("--sam-encoder", type=str, default="hiera_l")
     parser.add_argument("--sam-repo-root", type=Path, default=None)
@@ -52,6 +54,11 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=project_root / "data" / "input" / "sam_ckpts",
     )
+    parser.add_argument("--sam3-worker-python", type=Path, default=None)
+    parser.add_argument("--sam3-worker-script", type=Path, default=None)
+    parser.add_argument("--sam3-mode", type=str, default=None)
+    parser.add_argument("--sam3-repo-root", type=Path, default=None)
+    parser.add_argument("--sam3-checkpoint-path", type=Path, default=None)
     parser.add_argument("--points-per-side", type=int, default=16)
     parser.add_argument("--max-proposals", type=int, default=64)
     parser.add_argument("--confidence-threshold", type=float, default=0.0)
@@ -99,6 +106,7 @@ def main() -> None:
                 frame.pose,
                 frame.intrinsics,
                 timestamp=frame.timestamp,
+                source_frame_id=frame.frame_id,
             )
 
             raw_proposals = pipeline.last_raw_proposals
@@ -325,6 +333,30 @@ def build_proposal_module(base_config: dict[str, Any], args: argparse.Namespace)
                 "min_mask_region_area": args.min_mask_region_area,
             }
         )
+        config.update(nested)
+    elif args.proposal_backend == "precomputed":
+        if getattr(args, "proposal_cache_dir", None) is not None:
+            nested["cache_dir"] = str(args.proposal_cache_dir)
+        if getattr(args, "proposal_cache_manifest", None) is not None:
+            nested["manifest_path"] = str(args.proposal_cache_manifest)
+        config.update(nested)
+    elif args.proposal_backend == "sam3_concept":
+        if getattr(args, "sam3_mode", None):
+            nested["mode"] = str(args.sam3_mode)
+        if getattr(args, "sam3_worker_python", None) is not None:
+            nested["worker_python"] = str(args.sam3_worker_python)
+        if getattr(args, "sam3_worker_script", None) is not None:
+            nested["worker_script"] = str(args.sam3_worker_script)
+        if getattr(args, "proposal_device", None):
+            nested["device"] = str(args.proposal_device)
+        if getattr(args, "sam3_repo_root", None) is not None:
+            nested["sam3_repo_root"] = str(args.sam3_repo_root)
+        if getattr(args, "sam3_checkpoint_path", None) is not None:
+            nested["checkpoint_path"] = str(args.sam3_checkpoint_path)
+        if int(args.max_proposals) != 64 or "max_proposals" not in nested:
+            nested["max_proposals"] = args.max_proposals
+        if float(args.confidence_threshold) != 0.0 or "confidence_threshold" not in nested:
+            nested["confidence_threshold"] = args.confidence_threshold
         config.update(nested)
     return ProposalModule(config)
 

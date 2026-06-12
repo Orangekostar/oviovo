@@ -1,0 +1,1046 @@
+canonical_eval_vocab:
+- backpack
+- bag
+- base-cabinet
+- basket
+- bathtub
+- beam
+- beanbag
+- bed
+- bench
+- bike
+- bin
+- blanket
+- blinds
+- book
+- bottle
+- bowl
+- box
+- cabinet
+- camera
+- candle
+- ceiling
+- chair
+- chopping-board
+- clock
+- cloth
+- clothing
+- coaster
+- comforter
+- computer-keyboard
+- cooktop
+- countertop
+- cup
+- curtain
+- cushion
+- desk
+- desk-organizer
+- desktop-computer
+- door
+- exercise-ball
+- faucet
+- floor
+- hair-dryer
+- handbag
+- handrail
+- indoor-plant
+- kitchen-utensil
+- knife-block
+- lamp
+- laptop
+- logo
+- major-appliance
+- mat
+- microwave
+- monitor
+- mouse
+- nightstand
+- pan
+- panel
+- paper-towel
+- phone
+- picture
+- pillar
+- pillow
+- pipe
+- plant-stand
+- plate
+- pot
+- rack
+- refrigerator
+- remote-control
+- rug
+- scarf
+- sculpture
+- set-of-clothing
+- shelf
+- shoe
+- shower-stall
+- sink
+- small-appliance
+- sofa
+- stair
+- stool
+- switch
+- table
+- table-runner
+- tablet
+- tissue-paper
+- toilet
+- toothbrush
+- towel
+- tv-screen
+- tv-stand
+- umbrella
+- utensil-holder
+- vase
+- vent
+- wall
+- wall-cabinet
+- wall-plug
+- wardrobe
+- window
+prompt_aliases:
+  blinds:
+  - blinds
+  - window blinds
+  cabinet:
+  - cabinet
+  - cupboard
+  indoor-plant:
+  - indoor plant
+  - plant
+  picture:
+  - picture
+  - painting
+  - wall art
+  rug:
+  - rug
+  - carpet
+  sofa:
+  - sofa
+  - couch
+  wall-plug:
+  - wall plug
+  - outlet
+  - electrical outlet
+structural_labels:
+- blinds
+- ceiling
+- door
+- floor
+- pillar
+- rug
+- vent
+- wall
+- window
+object_labels:
+- backpack
+- bag
+- base-cabinet
+- basket
+- bathtub
+- beam
+- beanbag
+- bed
+- bench
+- bike
+- bin
+- blanket
+- book
+- bottle
+- bowl
+- box
+- cabinet
+- camera
+- candle
+- chair
+- chopping-board
+- clock
+- cloth
+- clothing
+- coaster
+- comforter
+- computer-keyboard
+- cooktop
+- countertop
+- cup
+- curtain
+- cushion
+- desk
+- desk-organizer
+- desktop-computer
+- exercise-ball
+- faucet
+- hair-dryer
+- handbag
+- handrail
+- indoor-plant
+- kitchen-utensil
+- knife-block
+- lamp
+- laptop
+- logo
+- major-appliance
+- mat
+- microwave
+- monitor
+- mouse
+- nightstand
+- pan
+- panel
+- paper-towel
+- phone
+- picture
+- pillow
+- pipe
+- plant-stand
+- plate
+- pot
+- rack
+- refrigerator
+- remote-control
+- scarf
+- sculpture
+- set-of-clothing
+- shelf
+- shoe
+- shower-stall
+- sink
+- small-appliance
+- sofa
+- stair
+- stool
+- switch
+- table
+- table-runner
+- tablet
+- tissue-paper
+- toilet
+- toothbrush
+- towel
+- tv-screen
+- tv-stand
+- umbrella
+- utensil-holder
+- vase
+- wall-cabinet
+- wall-plug
+- wardrobe
+scene_class_coverage:
+  office0:
+  - backpack
+  - bag
+  - base-cabinet
+  - basket
+  - bathtub
+  - beam
+  - beanbag
+  - bed
+  - bench
+  - bike
+  - bin
+  - blanket
+  - blinds
+  - book
+  - bottle
+  - bowl
+  - box
+  - cabinet
+  - camera
+  - candle
+  - ceiling
+  - chair
+  - chopping-board
+  - clock
+  - cloth
+  - clothing
+  - coaster
+  - comforter
+  - computer-keyboard
+  - cooktop
+  - countertop
+  - cup
+  - curtain
+  - cushion
+  - desk
+  - desk-organizer
+  - desktop-computer
+  - door
+  - exercise-ball
+  - faucet
+  - floor
+  - hair-dryer
+  - handbag
+  - handrail
+  - indoor-plant
+  - kitchen-utensil
+  - knife-block
+  - lamp
+  - laptop
+  - logo
+  - major-appliance
+  - mat
+  - microwave
+  - monitor
+  - mouse
+  - nightstand
+  - pan
+  - panel
+  - paper-towel
+  - phone
+  - picture
+  - pillar
+  - pillow
+  - pipe
+  - plant-stand
+  - plate
+  - pot
+  - rack
+  - refrigerator
+  - remote-control
+  - rug
+  - scarf
+  - sculpture
+  - set-of-clothing
+  - shelf
+  - shoe
+  - shower-stall
+  - sink
+  - small-appliance
+  - sofa
+  - stair
+  - stool
+  - switch
+  - table
+  - table-runner
+  - tablet
+  - tissue-paper
+  - toilet
+  - toothbrush
+  - towel
+  - tv-screen
+  - tv-stand
+  - umbrella
+  - utensil-holder
+  - vase
+  - vent
+  - wall
+  - wall-cabinet
+  - wall-plug
+  - wardrobe
+  - window
+  office1:
+  - backpack
+  - bag
+  - base-cabinet
+  - basket
+  - bathtub
+  - beam
+  - beanbag
+  - bed
+  - bench
+  - bike
+  - bin
+  - blanket
+  - blinds
+  - book
+  - bottle
+  - bowl
+  - box
+  - cabinet
+  - camera
+  - candle
+  - ceiling
+  - chair
+  - chopping-board
+  - clock
+  - cloth
+  - clothing
+  - coaster
+  - comforter
+  - computer-keyboard
+  - cooktop
+  - countertop
+  - cup
+  - curtain
+  - cushion
+  - desk
+  - desk-organizer
+  - desktop-computer
+  - door
+  - exercise-ball
+  - faucet
+  - floor
+  - hair-dryer
+  - handbag
+  - handrail
+  - indoor-plant
+  - kitchen-utensil
+  - knife-block
+  - lamp
+  - laptop
+  - logo
+  - major-appliance
+  - mat
+  - microwave
+  - monitor
+  - mouse
+  - nightstand
+  - pan
+  - panel
+  - paper-towel
+  - phone
+  - picture
+  - pillar
+  - pillow
+  - pipe
+  - plant-stand
+  - plate
+  - pot
+  - rack
+  - refrigerator
+  - remote-control
+  - rug
+  - scarf
+  - sculpture
+  - set-of-clothing
+  - shelf
+  - shoe
+  - shower-stall
+  - sink
+  - small-appliance
+  - sofa
+  - stair
+  - stool
+  - switch
+  - table
+  - table-runner
+  - tablet
+  - tissue-paper
+  - toilet
+  - toothbrush
+  - towel
+  - tv-screen
+  - tv-stand
+  - umbrella
+  - utensil-holder
+  - vase
+  - vent
+  - wall
+  - wall-cabinet
+  - wall-plug
+  - wardrobe
+  - window
+  office2:
+  - backpack
+  - bag
+  - base-cabinet
+  - basket
+  - bathtub
+  - beam
+  - beanbag
+  - bed
+  - bench
+  - bike
+  - bin
+  - blanket
+  - blinds
+  - book
+  - bottle
+  - bowl
+  - box
+  - cabinet
+  - camera
+  - candle
+  - ceiling
+  - chair
+  - chopping-board
+  - clock
+  - cloth
+  - clothing
+  - coaster
+  - comforter
+  - computer-keyboard
+  - cooktop
+  - countertop
+  - cup
+  - curtain
+  - cushion
+  - desk
+  - desk-organizer
+  - desktop-computer
+  - door
+  - exercise-ball
+  - faucet
+  - floor
+  - hair-dryer
+  - handbag
+  - handrail
+  - indoor-plant
+  - kitchen-utensil
+  - knife-block
+  - lamp
+  - laptop
+  - logo
+  - major-appliance
+  - mat
+  - microwave
+  - monitor
+  - mouse
+  - nightstand
+  - pan
+  - panel
+  - paper-towel
+  - phone
+  - picture
+  - pillar
+  - pillow
+  - pipe
+  - plant-stand
+  - plate
+  - pot
+  - rack
+  - refrigerator
+  - remote-control
+  - rug
+  - scarf
+  - sculpture
+  - set-of-clothing
+  - shelf
+  - shoe
+  - shower-stall
+  - sink
+  - small-appliance
+  - sofa
+  - stair
+  - stool
+  - switch
+  - table
+  - table-runner
+  - tablet
+  - tissue-paper
+  - toilet
+  - toothbrush
+  - towel
+  - tv-screen
+  - tv-stand
+  - umbrella
+  - utensil-holder
+  - vase
+  - vent
+  - wall
+  - wall-cabinet
+  - wall-plug
+  - wardrobe
+  - window
+  office3:
+  - backpack
+  - bag
+  - base-cabinet
+  - basket
+  - bathtub
+  - beam
+  - beanbag
+  - bed
+  - bench
+  - bike
+  - bin
+  - blanket
+  - blinds
+  - book
+  - bottle
+  - bowl
+  - box
+  - cabinet
+  - camera
+  - candle
+  - ceiling
+  - chair
+  - chopping-board
+  - clock
+  - cloth
+  - clothing
+  - coaster
+  - comforter
+  - computer-keyboard
+  - cooktop
+  - countertop
+  - cup
+  - curtain
+  - cushion
+  - desk
+  - desk-organizer
+  - desktop-computer
+  - door
+  - exercise-ball
+  - faucet
+  - floor
+  - hair-dryer
+  - handbag
+  - handrail
+  - indoor-plant
+  - kitchen-utensil
+  - knife-block
+  - lamp
+  - laptop
+  - logo
+  - major-appliance
+  - mat
+  - microwave
+  - monitor
+  - mouse
+  - nightstand
+  - pan
+  - panel
+  - paper-towel
+  - phone
+  - picture
+  - pillar
+  - pillow
+  - pipe
+  - plant-stand
+  - plate
+  - pot
+  - rack
+  - refrigerator
+  - remote-control
+  - rug
+  - scarf
+  - sculpture
+  - set-of-clothing
+  - shelf
+  - shoe
+  - shower-stall
+  - sink
+  - small-appliance
+  - sofa
+  - stair
+  - stool
+  - switch
+  - table
+  - table-runner
+  - tablet
+  - tissue-paper
+  - toilet
+  - toothbrush
+  - towel
+  - tv-screen
+  - tv-stand
+  - umbrella
+  - utensil-holder
+  - vase
+  - vent
+  - wall
+  - wall-cabinet
+  - wall-plug
+  - wardrobe
+  - window
+  office4:
+  - backpack
+  - bag
+  - base-cabinet
+  - basket
+  - bathtub
+  - beam
+  - beanbag
+  - bed
+  - bench
+  - bike
+  - bin
+  - blanket
+  - blinds
+  - book
+  - bottle
+  - bowl
+  - box
+  - cabinet
+  - camera
+  - candle
+  - ceiling
+  - chair
+  - chopping-board
+  - clock
+  - cloth
+  - clothing
+  - coaster
+  - comforter
+  - computer-keyboard
+  - cooktop
+  - countertop
+  - cup
+  - curtain
+  - cushion
+  - desk
+  - desk-organizer
+  - desktop-computer
+  - door
+  - exercise-ball
+  - faucet
+  - floor
+  - hair-dryer
+  - handbag
+  - handrail
+  - indoor-plant
+  - kitchen-utensil
+  - knife-block
+  - lamp
+  - laptop
+  - logo
+  - major-appliance
+  - mat
+  - microwave
+  - monitor
+  - mouse
+  - nightstand
+  - pan
+  - panel
+  - paper-towel
+  - phone
+  - picture
+  - pillar
+  - pillow
+  - pipe
+  - plant-stand
+  - plate
+  - pot
+  - rack
+  - refrigerator
+  - remote-control
+  - rug
+  - scarf
+  - sculpture
+  - set-of-clothing
+  - shelf
+  - shoe
+  - shower-stall
+  - sink
+  - small-appliance
+  - sofa
+  - stair
+  - stool
+  - switch
+  - table
+  - table-runner
+  - tablet
+  - tissue-paper
+  - toilet
+  - toothbrush
+  - towel
+  - tv-screen
+  - tv-stand
+  - umbrella
+  - utensil-holder
+  - vase
+  - vent
+  - wall
+  - wall-cabinet
+  - wall-plug
+  - wardrobe
+  - window
+  room0:
+  - backpack
+  - bag
+  - base-cabinet
+  - basket
+  - bathtub
+  - beam
+  - beanbag
+  - bed
+  - bench
+  - bike
+  - bin
+  - blanket
+  - blinds
+  - book
+  - bottle
+  - bowl
+  - box
+  - cabinet
+  - camera
+  - candle
+  - ceiling
+  - chair
+  - chopping-board
+  - clock
+  - cloth
+  - clothing
+  - coaster
+  - comforter
+  - computer-keyboard
+  - cooktop
+  - countertop
+  - cup
+  - curtain
+  - cushion
+  - desk
+  - desk-organizer
+  - desktop-computer
+  - door
+  - exercise-ball
+  - faucet
+  - floor
+  - hair-dryer
+  - handbag
+  - handrail
+  - indoor-plant
+  - kitchen-utensil
+  - knife-block
+  - lamp
+  - laptop
+  - logo
+  - major-appliance
+  - mat
+  - microwave
+  - monitor
+  - mouse
+  - nightstand
+  - pan
+  - panel
+  - paper-towel
+  - phone
+  - picture
+  - pillar
+  - pillow
+  - pipe
+  - plant-stand
+  - plate
+  - pot
+  - rack
+  - refrigerator
+  - remote-control
+  - rug
+  - scarf
+  - sculpture
+  - set-of-clothing
+  - shelf
+  - shoe
+  - shower-stall
+  - sink
+  - small-appliance
+  - sofa
+  - stair
+  - stool
+  - switch
+  - table
+  - table-runner
+  - tablet
+  - tissue-paper
+  - toilet
+  - toothbrush
+  - towel
+  - tv-screen
+  - tv-stand
+  - umbrella
+  - utensil-holder
+  - vase
+  - vent
+  - wall
+  - wall-cabinet
+  - wall-plug
+  - wardrobe
+  - window
+  room1:
+  - backpack
+  - bag
+  - base-cabinet
+  - basket
+  - bathtub
+  - beam
+  - beanbag
+  - bed
+  - bench
+  - bike
+  - bin
+  - blanket
+  - blinds
+  - book
+  - bottle
+  - bowl
+  - box
+  - cabinet
+  - camera
+  - candle
+  - ceiling
+  - chair
+  - chopping-board
+  - clock
+  - cloth
+  - clothing
+  - coaster
+  - comforter
+  - computer-keyboard
+  - cooktop
+  - countertop
+  - cup
+  - curtain
+  - cushion
+  - desk
+  - desk-organizer
+  - desktop-computer
+  - door
+  - exercise-ball
+  - faucet
+  - floor
+  - hair-dryer
+  - handbag
+  - handrail
+  - indoor-plant
+  - kitchen-utensil
+  - knife-block
+  - lamp
+  - laptop
+  - logo
+  - major-appliance
+  - mat
+  - microwave
+  - monitor
+  - mouse
+  - nightstand
+  - pan
+  - panel
+  - paper-towel
+  - phone
+  - picture
+  - pillar
+  - pillow
+  - pipe
+  - plant-stand
+  - plate
+  - pot
+  - rack
+  - refrigerator
+  - remote-control
+  - rug
+  - scarf
+  - sculpture
+  - set-of-clothing
+  - shelf
+  - shoe
+  - shower-stall
+  - sink
+  - small-appliance
+  - sofa
+  - stair
+  - stool
+  - switch
+  - table
+  - table-runner
+  - tablet
+  - tissue-paper
+  - toilet
+  - toothbrush
+  - towel
+  - tv-screen
+  - tv-stand
+  - umbrella
+  - utensil-holder
+  - vase
+  - vent
+  - wall
+  - wall-cabinet
+  - wall-plug
+  - wardrobe
+  - window
+  room2:
+  - backpack
+  - bag
+  - base-cabinet
+  - basket
+  - bathtub
+  - beam
+  - beanbag
+  - bed
+  - bench
+  - bike
+  - bin
+  - blanket
+  - blinds
+  - book
+  - bottle
+  - bowl
+  - box
+  - cabinet
+  - camera
+  - candle
+  - ceiling
+  - chair
+  - chopping-board
+  - clock
+  - cloth
+  - clothing
+  - coaster
+  - comforter
+  - computer-keyboard
+  - cooktop
+  - countertop
+  - cup
+  - curtain
+  - cushion
+  - desk
+  - desk-organizer
+  - desktop-computer
+  - door
+  - exercise-ball
+  - faucet
+  - floor
+  - hair-dryer
+  - handbag
+  - handrail
+  - indoor-plant
+  - kitchen-utensil
+  - knife-block
+  - lamp
+  - laptop
+  - logo
+  - major-appliance
+  - mat
+  - microwave
+  - monitor
+  - mouse
+  - nightstand
+  - pan
+  - panel
+  - paper-towel
+  - phone
+  - picture
+  - pillar
+  - pillow
+  - pipe
+  - plant-stand
+  - plate
+  - pot
+  - rack
+  - refrigerator
+  - remote-control
+  - rug
+  - scarf
+  - sculpture
+  - set-of-clothing
+  - shelf
+  - shoe
+  - shower-stall
+  - sink
+  - small-appliance
+  - sofa
+  - stair
+  - stool
+  - switch
+  - table
+  - table-runner
+  - tablet
+  - tissue-paper
+  - toilet
+  - toothbrush
+  - towel
+  - tv-screen
+  - tv-stand
+  - umbrella
+  - utensil-holder
+  - vase
+  - vent
+  - wall
+  - wall-cabinet
+  - wall-plug
+  - wardrobe
+  - window

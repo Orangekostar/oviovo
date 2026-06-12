@@ -6,19 +6,25 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-
 # Virtual environments
 .venv/
 venv/
-
 # Local runtime state
 .omx/
-
 # Generated outputs and logs
 outputs/
 *.log
-
 # Large local assets and datasets
 data/input/sam_ckpts/
 data/input/Datasets/
 data/input/Replica/
+# Local/generated artifacts
+data/
+*.pt
+*.pth
+*.bin
+*.ckpt
+*.onnx
+*.npz
+*.npy
+*.ply
