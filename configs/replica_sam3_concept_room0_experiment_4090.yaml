@@ -1,0 +1,203 @@
+frame_input:
+  image_height: 480
+  image_width: 640
+proposal:
+  backend: sam3_concept
+  min_mask_area: 100
+  max_proposals: 24
+  confidence_threshold: 0.35
+  sam3_concept:
+    mode: mock
+    worker_python: /home/ww/miniconda3/envs/sam3/bin/python
+    worker_script: scripts/sam3_concept_worker.py
+    device: cuda
+    request_timeout_sec: 300
+    # Treat SAM3 text prompts as a sparse open-vocabulary query budget, not as
+    # a dense per-frame proposal generator over the full Replica vocabulary.
+    candidate_strategy: round_robin
+    max_prompts_per_frame: 6
+    always_include_classes:
+    - wall
+    - floor
+    - ceiling
+    max_proposals: 24
+    confidence_threshold: 0.35
+    classes:
+    - basket
+    - blanket
+    - blinds
+    - book
+    - cabinet
+    - candle
+    - chair
+    - cushion
+    - ceiling
+    - door
+    - floor
+    - indoor-plant
+    - lamp
+    - picture
+    - pillar
+    - plant-stand
+    - plate
+    - pot
+    - sofa
+    - stool
+    - switch
+    - table
+    - vase
+    - vent
+    - wall
+    - wall-plug
+    - window
+    - rug
+anchor_frontend:
+  enabled: false
+  backend: placeholder
+runtime_vis:
+  enabled: false
+anchor_guided_sam:
+  enabled: false
+depth_refinement:
+  enabled: true
+  depth_edge_threshold: 0.05
+  min_mask_area_after_refine: 50
+  proposal_parallel_enabled: true
+  proposal_parallel_workers: 4
+  proposal_parallel_min_tasks: 16
+  protected_anchor_keepalive_enabled: true
+  keepalive_objectness_floor: 0.58
+patch_lifting:
+  min_points: 10
+  voxel_size: 0.02
+  point_sample_ratio: 1.0
+  max_points_per_patch: 0
+  foreground_depth_filter:
+    enabled: true
+    front_quantile: 0.05
+    depth_band: 0.08
+    min_component_points: 10
+    min_depth_gap: 0.15
+    max_removed_ratio: 0.5
+bg_obj_split:
+  height_threshold: 0.1
+  size_threshold: 5000
+  ambiguity_overlap: 0.3
+association:
+  centroid_distance_weight: 0.4
+  bbox_overlap_weight: 0.3
+  geometry_overlap_weight: 0.2
+  pose_proximity_weight: 0.1
+  match_threshold: 0.5
+  max_geometry_candidates: 12
+  geometry_candidate_min_cheap_score: 0.02
+  geometry_vote_owner_priority: true
+  geometry_nn_patch_sample: 96
+  geometry_nn_object_sample: 96
+  score_parallel_enabled: true
+  score_parallel_workers: 4
+  score_parallel_min_candidates: 16
+  observation_identity_gate_enabled: true
+  observation_identity_min_patch_confidence: 0.35
+  semantic_conflict_gate_enabled: true
+  semantic_conflict_min_patch_confidence: 0.35
+  semantic_conflict_min_object_confidence: 0.35
+  semantic_conflict_subregion_point_ratio: 0.35
+  semantic_conflict_subregion_volume_ratio: 0.35
+object_update:
+  contested_residual_pool:
+    enabled: true
+  downsample_voxel_size: 0.01
+  downsample_interval: 20
+  max_points_per_object: 40000
+  association_geometry:
+    enabled: true
+    voxel_size: 0.03
+    max_points_per_object: 2048
+  surface_owner_gate:
+    enabled: true
+    representative_voxel_mode: false
+    background_enabled: true
+    min_accept_points: 20
+    min_update_accept_ratio: 0.3
+    min_new_object_accept_ratio: 0.55
+    max_foreign_owner_ratio: 0.25
+    max_background_owner_ratio: 0.35
+    attached_surface_classes:
+    - switch
+    - wall-plug
+    - vent
+    attached_max_voxels: 40
+    self_background_min_score: 0.65
+    self_background_margin: 0.15
+  current_frame_visibility_gate:
+    enabled: true
+    distance_threshold: 0.05
+    min_accept_points: 20
+    min_accept_ratio: 0.3
+  provisional_pool:
+    enabled: true
+    match_distance: 0.35
+    promotion_hits: 3
+    max_idle_frames: 30
+    downsample_voxel_size: 0.02
+    max_points_per_object: 6000
+    unanchored_objectness_min: 0.75
+    unanchored_min_points: 128
+dual_map:
+  enabled: false
+  active_radius: 3.0
+  warm_ttl_frames: 60
+  cold_ttl_frames: 180
+  dense_surface_voxel: 0.02
+  dense_surface_cap_per_object: 4000
+semantic_memory:
+  backend: placeholder
+  feature_dim: 512
+  top_k_labels: 5
+  confidence_decay: 0.95
+  min_observations_for_label: 3
+  anchor_commit:
+    min_frame_hits: 2
+    min_high_quality_hits: 1
+    min_weighted_score: 1.0
+    min_score_margin: 0.15
+    provisional_export_fallback: false
+  anchor_export:
+    enabled: true
+    min_frame_hits: 1
+    min_high_quality_hits: 1
+    min_weighted_score: 0.75
+    min_score_margin: 0.05
+    min_confidence: 0.75
+    min_view_quality: 0.25
+    allow_single_frame_high_confidence: true
+    single_frame_min_confidence: 0.9
+    single_frame_min_view_quality: 0.5
+    repeated_evidence_enabled: true
+    repeated_min_frame_hits: 3
+    repeated_min_weighted_score: 1.0
+    repeated_min_score_margin: 0.25
+    repeated_min_view_quality: 0.5
+    repeated_min_confidence: 0.25
+background_update:
+  voxel_size: 0.05
+  truncation_distance: 0.1
+  min_weight: 1.0
+dynamic_maintenance:
+  ghost_max_inactive_frames: 30
+  ghost_min_observations: 3
+  boundary_repair_enabled: true
+  reclaim_overlap_threshold: 0.8
+  lifecycle_check_interval: 10
+pipeline:
+  log_interval: 1
+  verbose: false
+  collect_stage_timings: true
+  proposal_prefetch_enabled: false
+  proposal_prefetch_wait_timeout_sec: -1.0
+  yoloworld_sam_parallel_frontend_enabled: false
+  yoloworld_sam_balanced_frontend_enabled: false
+logging:
+  level: INFO
+  log_file: ''
