@@ -781,42 +781,93 @@ class RuntimeVisModule:
         evidences: List[WholeObjectEvidence],
         depth: np.ndarray,
     ) -> List[RuntimeMergeDecision]:
-        pair_indices = [
-            (i, j)
-            for i in range(len(features))
-            for j in range(i + 1, len(features))
-        ]
-        if not pair_indices:
+        n = len(features)
+        if n < 2:
             return []
 
-        if (
-            not self.pairwise_parallel_enabled
-            or len(pair_indices) < self.pairwise_parallel_min_pairs
-        ):
-            return [
-                self._score_pair(features[i], features[j], evidences, depth)
-                for i, j in pair_indices
-            ]
+        # --- Fast path: pre-filter pairs via vectorized label checks ---
+        # Extract per-proposal labels into arrays (avoids repeated metadata reads)
+        labels = [self._proposal_anchor_label(f.proposal) for f in features]
+        semantic_blocked = [self._proposal_is_semantic_blocked_residual(f.proposal) for f in features]
+        anchor_ids = [self._proposal_anchor_id(f.proposal) for f in features]
+        require_label = self.require_same_anchor_label_for_merge
 
-        worker_count = self._resolve_worker_count(self.pairwise_parallel_workers, len(pair_indices))
-        if worker_count <= 1:
-            return [
-                self._score_pair(features[i], features[j], evidences, depth)
-                for i, j in pair_indices
-            ]
+        # Build surviving pair list: only pairs that pass ALL label checks
+        pair_indices = []
+        for i in range(n):
+            li = labels[i]; sbi = semantic_blocked[i]; ai = anchor_ids[i]
+            for j in range(i + 1, n):
+                # Semantic blocked check
+                if sbi != semantic_blocked[j]:
+                    continue
+                # Missing label check
+                if require_label and not sbi and (not li or not labels[j]):
+                    continue
+                # Label mismatch check
+                if require_label and li and labels[j] and li != labels[j]:
+                    continue
+                # Identity mismatch check
+                if require_label and li and labels[j] and li == labels[j] and ai >= 0 and anchor_ids[j] >= 0 and ai != anchor_ids[j]:
+                    continue
+                pair_indices.append((i, j))
 
-        with ThreadPoolExecutor(max_workers=worker_count) as executor:
-            return list(
-                executor.map(
-                    lambda pair: self._score_pair(
-                        features[pair[0]],
-                        features[pair[1]],
-                        evidences,
-                        depth,
-                    ),
-                    pair_indices,
-                )
-            )
+        # Build decisions: zero-score for rejected pairs, full score for survivors
+        rejected_reasons: dict[tuple, str] = {}
+        for i in range(n):
+            li = labels[i]; sbi = semantic_blocked[i]; ai = anchor_ids[i]
+            for j in range(i + 1, n):
+                key = (i, j)
+                if sbi != semantic_blocked[j]:
+                    rejected_reasons[key] = "semantic_blocked_residual"
+                elif require_label and not sbi and (not li or not labels[j]):
+                    rejected_reasons[key] = "missing_anchor_label"
+                elif require_label and li and labels[j] and li != labels[j]:
+                    rejected_reasons[key] = "anchor_label_mismatch"
+                elif require_label and li and labels[j] and li == labels[j] and ai >= 0 and anchor_ids[j] >= 0 and ai != anchor_ids[j]:
+                    rejected_reasons[key] = "anchor_identity_mismatch"
+
+        # Only compute geometry for surviving pairs
+        if pair_indices:
+            if self.pairwise_parallel_enabled and len(pair_indices) >= self.pairwise_parallel_min_pairs:
+                worker_count = self._resolve_worker_count(self.pairwise_parallel_workers, len(pair_indices))
+            else:
+                worker_count = 1
+
+            if worker_count > 1:
+                with ThreadPoolExecutor(max_workers=worker_count) as executor:
+                    scored = list(executor.map(
+                        lambda pair: self._score_pair(
+                            features[pair[0]], features[pair[1]], evidences, depth
+                        ),
+                        pair_indices,
+                    ))
+            else:
+                scored = [self._score_pair(features[i], features[j], evidences, depth) for i, j in pair_indices]
+            scored_by_pair = {pair: decision for pair, decision in zip(pair_indices, scored)}
+        else:
+            scored_by_pair = {}
+
+        # Assemble full result in pair order
+        all_pairs = [(i, j) for i in range(n) for j in range(i + 1, n)]
+        decisions = []
+        for pair in all_pairs:
+            if pair in scored_by_pair:
+                decisions.append(scored_by_pair[pair])
+            else:
+                reason = rejected_reasons.get(pair, "semantic_blocked_residual")
+                fi, fj = pair
+                decisions.append(RuntimeMergeDecision(
+                    mask_id_a=features[fi].proposal_id, mask_id_b=features[fj].proposal_id,
+                    adjacency_score=0.0, depth_continuity_score=0.0, plane_similarity_score=0.0,
+                    bbox_plausibility_score=0.0, containment_score=0.0, median_depth_gap=0.0,
+                    boundary_depth_continuity=0.0, plane_compatibility=0.0,
+                    merged_bbox_compactness=0.0, base_score=0.0,
+                    whole_prior_score=0.0, background_conflict_penalty=0.0, final_score=0.0,
+                    accepted=False, accepted_reason=reason,
+                    boosted_by_whole_prior=False, linked_object_id=None,
+                    rejected_due_to_background_conflict=False,
+                ))
+        return decisions
 
     @staticmethod
     def _resolve_worker_count(configured_workers: int, task_count: int) -> int:
