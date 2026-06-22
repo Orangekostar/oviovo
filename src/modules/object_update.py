@@ -111,6 +111,7 @@ class ObjectUpdateModule:
         gate_cfg = config.get("surface_owner_gate", {})
         self.surface_owner_gate_enabled = bool(gate_cfg.get("enabled", False))
         self.surface_gate_representative_voxel_mode = bool(gate_cfg.get("representative_voxel_mode", False))
+        self.surface_gate_max_decision_voxels = max(0, int(gate_cfg.get("max_decision_voxels", 0)))
         self.surface_gate_inverse_policy = str(gate_cfg.get("inverse_policy", "lazy")).strip().lower()
         if self.surface_gate_inverse_policy not in {"lazy", "eager", "auto"}:
             logger.warning(
@@ -785,6 +786,13 @@ class ObjectUpdateModule:
             if self.surface_gate_representative_voxel_mode
             else np.arange(point_count, dtype=np.int64)
         )
+        # Subsample representative voxels if max_decision_voxels is set
+        rep_mode = bool(self.surface_gate_representative_voxel_mode)
+        max_dv = self.surface_gate_max_decision_voxels
+        if max_dv > 0 and len(representative_indices) > max_dv:
+            idx = np.linspace(0, len(representative_indices) - 1, num=max_dv, dtype=np.int64)
+            representative_indices = representative_indices[idx]
+            rep_mode = False  # fall back to point-level decision to avoid inverse/bincount mismatch
         decision_voxels = voxels[representative_indices]
         unique_voxel_count = int(len(unique_voxels))
         anchor_label = str(patch.metadata.get("anchor_class_name", "")).strip()
@@ -815,23 +823,52 @@ class ObjectUpdateModule:
         evidence_threshold = self.candidate_evidence_threshold
 
         owner_lookup_start = time.perf_counter()
-        for decision_idx, voxel in enumerate(decision_voxels):
-            key = (int(voxel[0]), int(voxel[1]), int(voxel[2]))
 
-            bypass = False
-            if candidate_claim is not None and anchor_label:
+        n_decisions = len(decision_voxels)
+        decision_keys_1d = self._pack_voxel(decision_voxels)
+
+        # Use cached sorted 1D owner arrays (maintained by TSDF module)
+        owner_keys_sorted, owner_vals_sorted, _sorter = self.tsdf_module._get_cached_owner_arrays(state.tsdf_volume)
+        if len(owner_keys_sorted) > 0:
+            raw_pos = np.searchsorted(owner_keys_sorted, decision_keys_1d, side="left")
+            raw_pos = np.clip(raw_pos, 0, len(owner_keys_sorted) - 1)
+            matched = owner_keys_sorted[raw_pos] == decision_keys_1d
+            owner_ids = np.full(n_decisions, -1, dtype=np.int32)
+            owner_ids[matched] = owner_vals_sorted[raw_pos[matched]]
+        else:
+            owner_ids = np.full(n_decisions, -1, dtype=np.int32)
+
+        # Candidate evidence bypass
+        bypass_mask = np.zeros(n_decisions, dtype=bool)
+        if candidate_claim is not None and anchor_label:
+            for i in range(n_decisions):
+                key = (int(decision_voxels[i, 0]), int(decision_voxels[i, 1]), int(decision_voxels[i, 2]))
                 claims = candidate_claim.get(key, {})
                 evidence = int(claims.get(anchor_label, 0))
-                bypass = evidence >= evidence_threshold
+                bypass_mask[i] = evidence >= evidence_threshold
 
-            owner_id = int(voxel_owner_id.get(key, -1))
-            if allowed_owner_id is not None and owner_id == int(allowed_owner_id):
-                decision_same_owner_mask[decision_idx] = True
-            elif owner_id >= 0 and not bypass:
-                decision_foreign_owner_mask[decision_idx] = True
+        # Owner classification (vectorized)
+        if allowed_owner_id is not None:
+            decision_same_owner_mask = (owner_ids == int(allowed_owner_id))
+            decision_foreign_owner_mask = (~decision_same_owner_mask) & (owner_ids >= 0) & (~bypass_mask)
+        else:
+            decision_same_owner_mask = np.zeros(n_decisions, dtype=bool)
+            decision_foreign_owner_mask = (owner_ids >= 0) & (~bypass_mask)
 
-            if self.surface_gate_background_enabled and not bypass:
-                decision_background_owner_mask[decision_idx] = self_structural_background or key in background_support
+        # Background classification
+        if self.surface_gate_background_enabled:
+            if self_structural_background:
+                decision_background_owner_mask = np.ones(n_decisions, dtype=bool) & (~bypass_mask)
+            elif background_support:
+                bg_keys_1d = self._pack_voxel(
+                    np.array(list(background_support), dtype=np.int64)
+                )
+                decision_background_owner_mask = np.isin(decision_keys_1d, bg_keys_1d) & (~bypass_mask)
+            else:
+                decision_background_owner_mask = np.zeros(n_decisions, dtype=bool)
+        else:
+            decision_background_owner_mask = np.zeros(n_decisions, dtype=bool)
+
         owner_lookup_sec = float(time.perf_counter() - owner_lookup_start)
 
         if self.candidate_evidence_enabled and new_object and anchor_label:
@@ -853,7 +890,7 @@ class ObjectUpdateModule:
         decision_foreign_count = int(decision_foreign_owner_mask.sum())
         decision_background_count = int(decision_background_reject_mask.sum())
         decision_same_owner_count = int(decision_same_owner_mask.sum())
-        denominator = max(representative_count, 1) if self.surface_gate_representative_voxel_mode else max(point_count, 1)
+        denominator = max(representative_count, 1) if rep_mode else max(point_count, 1)
         accepted_ratio = float(decision_accepted_count / denominator)
         foreign_ratio = float(decision_foreign_count / denominator)
         background_ratio = float(decision_background_count / denominator)
@@ -865,12 +902,12 @@ class ObjectUpdateModule:
         min_accept_points = 1 if attached_override else self.surface_gate_min_accept_points
         min_accept_count = (
             decision_accepted_count
-            if self.surface_gate_representative_voxel_mode
+            if rep_mode
             else decision_accepted_count
         )
         min_accept_count_unit = (
             "decision_voxel"
-            if self.surface_gate_representative_voxel_mode
+            if rep_mode
             else "point"
         )
 
@@ -885,7 +922,7 @@ class ObjectUpdateModule:
             rejection_reasons.append("low_accept_ratio")
 
         clean_fast_path = bool(
-            self.surface_gate_representative_voxel_mode
+            rep_mode
             and decision_foreign_count == 0
             and decision_background_count == 0
             and not rejection_reasons
@@ -944,7 +981,7 @@ class ObjectUpdateModule:
 
         inverse_requested_count = 0
         inverse_build_sec = 0.0
-        if self.surface_gate_representative_voxel_mode:
+        if rep_mode:
             inverse_requested_count = 1
             inverse_start = time.perf_counter()
             inverse = voxel_view.inverse
@@ -985,7 +1022,7 @@ class ObjectUpdateModule:
             "unique_voxel_count": unique_voxel_count,
             "cached_voxel_indices_used": bool(cache_used),
             "decision_voxel_size": float(state.tsdf_volume.voxel_size),
-            "representative_voxel_mode": bool(self.surface_gate_representative_voxel_mode),
+            "representative_voxel_mode": bool(rep_mode),
             "decision_voxel_count": representative_count,
             "accepted_decision_voxel_count": decision_accepted_count,
             "foreign_owner_decision_voxel_count": decision_foreign_count,
@@ -1446,11 +1483,7 @@ class ObjectUpdateModule:
         unique_voxels: np.ndarray,
         anchor_label: str,
     ) -> None:
-        """Increment candidate claim count for each unique voxel + anchor class.
-
-        Called for ALL new_object patches regardless of gate outcome.
-        One claim per unique voxel per frame.
-        """
+        """Increment candidate claim count for each unique voxel + anchor class."""
         if not anchor_label or len(unique_voxels) == 0:
             return
         candidate_claim = volume.candidate_claim

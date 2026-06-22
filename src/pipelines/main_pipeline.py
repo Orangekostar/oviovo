@@ -135,6 +135,7 @@ class Pipeline:
         self.verbose = self.config.get("pipeline", {}).get("verbose", True)
         pipeline_cfg = self.config.get("pipeline", {})
         self.collect_stage_timings = bool(pipeline_cfg.get("collect_stage_timings", False))
+        self.tsdf_feedback_enabled = bool(pipeline_cfg.get("tsdf_feedback_enabled", False))
         self.yoloworld_sam_parallel_frontend_enabled = bool(
             pipeline_cfg.get("yoloworld_sam_parallel_frontend_enabled", False)
         )
@@ -290,6 +291,158 @@ class Pipeline:
             return True
         return int(frame.frame_id) % int(self.yoloworld_sam_full_frame_interval) == 0
 
+    def _build_depth_structure_proposals(
+        self, frame: Frame, existing_proposals: list[Any], anchors: list[Any],
+    ) -> list[Any]:
+        """Generate depth-based masks for structure classes (wall/floor/ceiling).
+
+        Creates clean planar masks from depth surface normals for classes
+        where SAM2 oversegmentation is counterproductive.
+        """
+        from src.core.data_structures import Proposal2D
+
+        # Only generate for structure classes that have YOLO detections
+        depth_classes = self.object_anchor.depth_structure_classes
+        assigned_classes = {str(a.class_name) for a in anchors if a.class_name in depth_classes}
+        # Also check existing proposals — don't duplicate if that class already has proposals
+        for p in existing_proposals:
+            meta = getattr(p, "metadata", {}) or {}
+            cls = str(meta.get("anchor_class_name", ""))
+            if cls in assigned_classes:
+                assigned_classes.discard(cls)
+
+        if not assigned_classes:
+            return []
+
+        intrinsics = (frame.intrinsics.fx, frame.intrinsics.fy,
+                       frame.intrinsics.cx, frame.intrinsics.cy)
+        h, w = frame.depth.shape
+
+        depth_proposals = []
+        for anchor in anchors:
+            cls = str(anchor.class_name)
+            if cls not in assigned_classes:
+                continue
+            normal_dir = self.object_anchor.depth_structure_normal.get(cls, "horizontal")
+            mask = self.object_anchor._generate_depth_mask(
+                frame.depth,
+                np.asarray(anchor.bbox_xyxy, dtype=np.float32),
+                intrinsics, normal_dir,
+            )
+            if mask is None:
+                continue
+            area = int(mask.sum())
+            if area < self.object_anchor.proposal_min_area:
+                continue
+            bbox = self.object_anchor._mask_bbox(mask)
+            proposal = Proposal2D(
+                proposal_id=-(1000000 + len(depth_proposals)),  # negative id = synthetic
+                mask=mask, bbox_xyxy=bbox, area=area,
+                confidence=float(anchor.confidence),
+                backend_name="depth_structure",
+                metadata={
+                    "source": "depth_structure",
+                    "mask_source": "depth_structure",
+                    "anchor_id": int(anchor.anchor_id),
+                    "anchor_class_name": cls,
+                    "anchor_confidence": float(anchor.confidence),
+                    "anchor_label_votes": {cls: float(anchor.confidence)},
+                    "anchor_label_strength": "strong",
+                    "anchor_keepalive": True,
+                    "observation_layer": "coarse",
+                    "force_object_candidate": True,
+                },
+            )
+            depth_proposals.append(proposal)
+
+        return depth_proposals
+
+    def _build_tsdf_feedback_proposals(self, frame: Frame) -> list[Any]:
+        """Path B: project high-confidence TSDF objects into current frame as proposals.
+
+        Well-established objects (high whole_evidence_score) have their 3D
+        geometry projected back into 2D, creating recycled proposals that
+        don't require SAM2 re-segmentation.
+        """
+        from src.core.data_structures import Proposal2D
+        proposals: list[Any] = []
+        cam_pos = frame.pose[:3, 3]
+        fx, fy = frame.intrinsics.fx, frame.intrinsics.fy
+        cx, cy = frame.intrinsics.cx, frame.intrinsics.cy
+        h, w = frame.depth.shape
+        R = frame.pose[:3, :3].T  # world→cam rotation
+        t = -R @ cam_pos          # world→cam translation
+
+        for obj in self.state.objects.values():
+            if obj.state.value in ("removed", "inactive"):
+                continue
+            we = obj.whole_evidence.whole_evidence_score
+            if we < 0.3:
+                continue
+            # Skip if already well-represented this frame
+            if len(obj.local_pcd) < 50:
+                continue
+
+            # Check if object is in front of camera
+            centroid_cam = R @ obj.centroid + t
+            if centroid_cam[2] <= 0.1:  # behind camera or too close
+                continue
+
+            # Project downsampled points to 2D
+            pts = np.asarray(obj.local_pcd, dtype=np.float32)
+            stride = max(1, len(pts) // 300)
+            pts_sample = pts[::stride]
+            pts_cam = (R @ pts_sample.T).T + t
+            z = pts_cam[:, 2]
+            valid = z > 0.01
+            if valid.sum() < 5:
+                continue
+            z = z[valid]
+            u = (fx * pts_cam[valid, 0] / z + cx).astype(np.int32)
+            v = (fy * pts_cam[valid, 1] / z + cy).astype(np.int32)
+            in_bounds = (u >= 0) & (u < w) & (v >= 0) & (v < h)
+            if in_bounds.sum() < 20:
+                continue
+            u, v = u[in_bounds], v[in_bounds]
+
+            # Create mask from projected points (dilate to fill gaps)
+            mask = np.zeros((h, w), dtype=bool)
+            mask[v, u] = True
+            # Simple dilation: 3x3 cross
+            from scipy import ndimage as _ndi
+            mask = _ndi.binary_dilation(mask, iterations=3)
+
+            area = int(mask.sum())
+            if area < 100:
+                continue
+
+            bbox_ys, bbox_xs = np.where(mask)
+            bbox = np.array([bbox_xs.min(), bbox_ys.min(),
+                             bbox_xs.max() + 1, bbox_ys.max() + 1], dtype=np.float32)
+
+            label = str(obj.debug.get("export_semantic_label", ""))
+            proposals.append(Proposal2D(
+                proposal_id=-(2000000 + int(obj.object_id)),
+                mask=mask, bbox_xyxy=bbox, area=area,
+                confidence=float(we),
+                backend_name="tsdf_feedback",
+                metadata={
+                    "source": "tsdf_feedback",
+                    "mask_source": "tsdf_feedback",
+                    "anchor_id": int(obj.object_id),
+                    "anchor_class_name": label,
+                    "anchor_confidence": float(we),
+                    "anchor_label_votes": {label: float(we)} if label else {},
+                    "anchor_label_strength": "strong",
+                    "anchor_keepalive": True,
+                    "observation_layer": "coarse",
+                    "force_object_candidate": True,
+                    "feedback_object_id": int(obj.object_id),
+                },
+            ))
+
+        return proposals
+
     def _build_proposal_bundle(self, frame: Frame) -> FrameProposalBundle:
         if self._should_use_parallel_yoloworld_sam_frontend():
             with self._timed_stage("proposal_generation"):
@@ -318,7 +471,10 @@ class Pipeline:
         proposal_generation_timing_before = float(self._stage_timings.get("proposal_generation", 0.0) or 0.0)
         with self._timed_stage("proposal_generation"):
             if self.object_anchor.enabled and getattr(self.object_anchor, "anchor_primary_mode", False):
-                anchors, anchor_box_proposals, anchor_assignments = self.object_anchor.generate_anchor_box_proposals(frame.rgb)
+                anchors, anchor_box_proposals, anchor_assignments = self.object_anchor.generate_anchor_box_proposals(
+                    frame.rgb, depth=frame.depth,
+                    intrinsics=(frame.intrinsics.fx, frame.intrinsics.fy, frame.intrinsics.cx, frame.intrinsics.cy)
+                )
                 if getattr(self.anchor_guided_sam, "enabled", False):
                     sam_proposals = self.proposal.process_for_anchors(
                         frame.rgb,
@@ -502,6 +658,24 @@ class Pipeline:
             logger.info("  Proposals (%s): %d", proposal_source, len(proposals))
             if self.object_anchor.enabled:
                 logger.info(f"  Anchors: {len(anchors)}")
+
+        # Depth-based structure proposals (wall/floor/ceiling from depth, bypass SAM2)
+        depth_structure_summary: dict[str, Any] = {"enabled": False, "count": 0}
+        if self.object_anchor.depth_structure_enabled:
+            with self._timed_stage("depth_structure"):
+                depth_proposals = self._build_depth_structure_proposals(frame, proposals, anchors)
+                if depth_proposals:
+                    proposals = list(proposals) + list(depth_proposals)
+                    depth_structure_summary = {"enabled": True, "count": len(depth_proposals)}
+
+        # Path B: TSDF feedback — project established objects back as proposals
+        tsdf_feedback_summary: dict[str, Any] = {"enabled": False, "count": 0}
+        if self.tsdf_feedback_enabled:
+            with self._timed_stage("tsdf_feedback"):
+                feedback_proposals = self._build_tsdf_feedback_proposals(frame)
+                if feedback_proposals:
+                    proposals = list(proposals) + list(feedback_proposals)
+                    tsdf_feedback_summary = {"enabled": True, "count": len(feedback_proposals)}
 
         structural_overlay_summary: dict[str, Any] = {"enabled": bool(self.structural_overlay.enabled)}
         with self._timed_stage("structural_overlay"):
