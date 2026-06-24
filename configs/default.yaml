@@ -10,7 +10,7 @@ frame_input:
 
 # --- Proposal Module ---
 proposal:
-  backend: "placeholder"        # "placeholder" | "sam2" | "esam" | "entitysam" | "cropformer"
+  backend: "placeholder"        # "placeholder" | "sam2" | "esam" | "entitysam" | "cropformer" | "precomputed"
   min_mask_area: 100            # 原始 proposal 的最小像素面积；低于该值的小碎片会被直接丢弃
   max_proposals: 50             # 每帧最多保留的 proposal 数；用于限制前端输出规模和后续计算量
   confidence_threshold: 0.5     # proposal 置信度下限；低于该分数的掩码不进入后续流程
@@ -64,6 +64,57 @@ proposal:
     input_format: "BGR"         # 输入给 detectron2 predictor 的颜色顺序
     score_threshold: 0.5        # CropFormer 自身输出阈值
     max_detections: 100         # CropFormer 每帧最多检测数
+  precomputed:
+    cache_dir: ""               # frontend proposal cache 根目录；包含 manifest.json 和 frames/
+    manifest_path: ""           # 可选：显式指定 manifest.json；为空时默认使用 cache_dir/manifest.json
+    strict: true                # 若 manifest 缺失或 frame 不在 manifest 内，是否直接报错
+
+# --- Detector Anchors ---
+anchor_frontend:
+  enabled: false
+  use_boxes_as_primary_proposals: true
+  use_sam_intersection_proposals: true
+  prefer_largest_covering_box: true
+  # semantic_vote keeps SAM masks unchanged and uses anchors only as semantic votes.
+  # largest_covering and preserve_nested_classes are compatibility modes that may union masks.
+  assignment_policy: "largest_covering"
+  preserve_nested_classes: false
+  clip_sam_masks_to_anchor_box: false
+  preserve_cross_class_nested: false
+  subtract_cross_class_child_mask_from_parent: false
+  min_anchor_mask_coverage: 0.20
+  min_protected_anchor_confidence: 0.25
+  backend: "yoloworld"
+  device: "cuda:0"
+  model_path: "/home/phl/vv/yolov8s-world.pt"
+  python_executable: "/home/phl/anaconda3/envs/dualmap/bin/python"
+  confidence_threshold: 0.2
+  max_detections: 128
+  iou_assign_threshold: 0.2
+  keepalive_iou_threshold: 0.1
+  center_assign_enabled: true
+  keepalive_center_inside: true
+  unanchored_fallback_enabled: false
+  proposal_min_area: 25
+  covering_min_proposal_coverage: 0.85
+  # Prevent small SAM masks fully inside a much larger YOLO box from inheriting the parent label.
+  contained_subproposal_gate_enabled: true
+  contained_max_anchor_coverage: 0.20
+  contained_min_proposal_coverage: 0.85
+  scale_compatible_min_anchor_coverage: 0.20
+  scale_compatible_min_bbox_iou: 0.10
+  classes:
+    - chair
+    - table
+    - cabinet
+    - sofa
+    - bed
+    - plant
+    - monitor
+    - lamp
+    - shelf
+    - stool
+    - nightstand
 
 # --- Runtime Visual Consolidation ---
 runtime_vis:
@@ -88,6 +139,7 @@ runtime_vis:
   small_object_bbox_plausibility_margin: 0.08  # 若合并后 bbox 合理性比独立解释差超过该裕量，就认为吞并风险偏高
   small_object_protection_threshold: 0.60      # 小物体保护分超过该值时，优先拒绝仅靠弱几何证据的吞并
   small_object_protection_penalty: 0.25        # 小物体保护对最终合并门槛的额外惩罚；越大越不容易吞并小目标
+  semantic_class_merge_gate_enabled: false     # true 时不同 anchor class 的 proposal 不在 RuntimeVis 内合并
 
   mu_background_conflict: 1.35   # 背景冲突项的放大系数；越大越容易因为“更像背景”而压制 object merge
   depth_edge_threshold: 0.05     # runtime_vis 内部若使用深度边界辅助判别时的边缘阈值（米）
@@ -111,11 +163,20 @@ depth_refinement:
   enabled: true
   depth_edge_threshold: 0.05    # 深度边缘阈值（米）；边缘越强越会把 mask 边缘裁掉
   min_mask_area_after_refine: 50  # refinement 后允许保留的最小 mask 面积；过小的残片直接丢弃
+  protected_anchor_keepalive_enabled: true
+  keepalive_objectness_floor: 0.58
 
 # --- Patch Lifting ---
 patch_lifting:
   min_points: 10                # 2D mask 回投后最少需要的 3D 点数；低于该值不值得当作有效 patch
   voxel_size: 0.02              # 3D 点云下采样体素尺寸（米）；越大越稀疏
+  foreground_depth_filter:
+    enabled: true
+    front_quantile: 0.05
+    depth_band: 0.08
+    min_component_points: 10
+    min_depth_gap: 0.15
+    max_removed_ratio: 0.50
 
 # --- Background / Object Split ---
 bg_obj_split:
@@ -130,12 +191,56 @@ association:
   geometry_overlap_weight: 0.2   # 关联总分里“几何点云重叠”项的权重
   pose_proximity_weight: 0.1     # 关联总分里“位姿接近”项的权重
   match_threshold: 0.5          # minimum score to accept association
+  observation_identity_gate_enabled: true
+  observation_identity_min_patch_confidence: 0.35
+  semantic_conflict_gate_enabled: false
+  semantic_conflict_min_patch_confidence: 0.35
+  semantic_conflict_min_object_confidence: 0.35
+  semantic_conflict_subregion_point_ratio: 0.35
+  semantic_conflict_subregion_volume_ratio: 0.35
 
 # --- Object Update ---
 object_update:
+  contested_residual_pool:
+    enabled: true
   downsample_voxel_size: 0.02    # object 局部点云重采样体素尺寸（米）；控制对象几何密度
   downsample_interval: 5        # re-downsample every N updates
   max_points_per_object: 10000   # 单个 object 最多保留的点数；防止局部几何无限膨胀
+  surface_owner_gate:
+    enabled: true
+    background_enabled: true
+    min_accept_points: 20
+    min_update_accept_ratio: 0.30
+    min_new_object_accept_ratio: 0.55
+    max_foreign_owner_ratio: 0.25
+    max_background_owner_ratio: 0.35
+    attached_surface_classes: [switch, wall-plug, vent]
+    attached_max_voxels: 40
+    self_background_min_score: 0.65
+    self_background_margin: 0.15
+  current_frame_visibility_gate:
+    enabled: true
+    distance_threshold: 0.05
+    min_accept_points: 20
+    min_accept_ratio: 0.30
+  provisional_pool:
+    enabled: false
+    match_distance: 0.35
+    promotion_hits: 3
+    max_idle_frames: 30
+    downsample_voxel_size: 0.02
+    max_points_per_object: 6000
+    unanchored_objectness_min: 0.75
+    unanchored_min_points: 128
+
+# --- Dual Map ---
+dual_map:
+  enabled: false
+  active_radius: 3.0
+  warm_ttl_frames: 60
+  cold_ttl_frames: 180
+  dense_surface_voxel: 0.02
+  dense_surface_cap_per_object: 4000
 
 # --- Semantic Memory ---
 semantic_memory:
@@ -144,6 +249,23 @@ semantic_memory:
   top_k_labels: 5                # 每个对象最多保留的标签候选数量
   confidence_decay: 0.95         # 历史语义置信度的衰减系数；越小越强调新观测
   min_observations_for_label: 3  # 某标签至少观测多少次后才适合作为稳定标签
+  anchor_commit:
+    min_frame_hits: 2
+    min_high_quality_hits: 1
+    min_weighted_score: 1.0
+    min_score_margin: 0.15
+    provisional_export_fallback: false
+  anchor_export:
+    enabled: true
+    min_frame_hits: 1
+    min_high_quality_hits: 1
+    min_weighted_score: 0.75
+    min_score_margin: 0.05
+    min_confidence: 0.75
+    min_view_quality: 0.25
+    allow_single_frame_high_confidence: true
+    single_frame_min_confidence: 0.90
+    single_frame_min_view_quality: 0.50
 
 # --- Background Update ---
 background_update:
@@ -153,11 +275,24 @@ background_update:
 
 # --- Dynamic Maintenance ---
 dynamic_maintenance:
-  ghost_max_inactive_frames: 30  # 一个 object 连续多少帧未被看到后，可进入 ghost 相关处理
-  ghost_min_observations: 3      # 至少被观测多少次的 object 才值得进入 ghost/生命周期判断
-  boundary_repair_enabled: true
-  reclaim_overlap_threshold: 0.8 # 回收/重归属时要求的重叠阈值；越高越保守
-  lifecycle_check_interval: 10   # run maintenance every N frames
+  # Check frequency
+  lifecycle_check_interval: 10
+
+  # TSDF-driven disappearance
+  disappear_threshold: 0.2           # ownership_ratio below this triggers DISAPPEARED
+
+  # Grace period for new objects
+  creation_grace_frames: 5           # skip judgment for objects younger than this
+
+  # MOVED detection
+  moved_centroid_threshold: 0.3      # minimum centroid shift to consider MOVED (m)
+  moved_search_steps: 10             # direction sampling steps along shift vector
+  moved_ownership_skew: 0.6          # new_half / total > this confirms MOVED
+
+  # CandidateEvidenceGrid
+  candidate_cluster_radius: 0.3      # voxel cluster radius for candidate aggregation (m)
+  candidate_promotion_threshold: 3.0 # cumulative confidence to trigger promotion
+  candidate_max_idle_frames: 60      # expire entries unseen for this many frames
 
 # --- Pipeline ---
 pipeline:
