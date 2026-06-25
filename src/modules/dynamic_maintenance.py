@@ -34,6 +34,8 @@ class DynamicMaintenanceModule:
         self.config = config
         self.check_interval = config.get("lifecycle_check_interval", 10)
         self.tsdf_module = TSDFInstanceMapModule(config.get("tsdf", {}))
+        self.last_moved_object_ids: List[int] = []
+        self.last_new_candidate_ids: List[int] = []
         logger.info("DynamicMaintenanceModule initialized (TSDF-driven).")
 
     def process(self, state: SystemState) -> SystemState:
@@ -52,6 +54,9 @@ class DynamicMaintenanceModule:
 
         volume = state.tsdf_volume
         config = self.config
+
+        self.last_moved_object_ids.clear()
+        self.last_new_candidate_ids.clear()
 
         # Track objects to remove after iteration
         to_ghost: List[int] = []
@@ -83,6 +88,7 @@ class DynamicMaintenanceModule:
                     self.tsdf_module.remove_patch_support(
                         volume, obj, obj.object_id
                     )
+                self.last_moved_object_ids.append(int(obj.object_id))
                 obj.state = ObjectState.GHOST
                 to_ghost.append(obj_id)
                 logger.info(
@@ -125,6 +131,7 @@ class DynamicMaintenanceModule:
                 last_seen_frame=state.frame_count,
                 hit_count=1,
             )
+            self.last_new_candidate_ids.append(int(provisional.provisional_id))
             state.provisional_objects[provisional.provisional_id] = provisional
             state.next_provisional_id += 1
             logger.info(
