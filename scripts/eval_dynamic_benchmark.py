@@ -25,12 +25,12 @@ def load_frame_metrics(path: Path) -> list[dict]:
 
 def evaluate(event_log: list[dict], metrics: list[dict]) -> dict:
     results = []
-    ghost_baseline = 0
     hits = 0
     total = len(event_log)
     total_delay = 0
 
     for event in event_log:
+        ghost_baseline = 0
         event_frame = int(event["frame"])
         expected = event.get("expected_judgment", "")
         window = event.get("detection_window", [event_frame + 50, event_frame + 200])
