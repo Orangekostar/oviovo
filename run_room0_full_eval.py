@@ -230,6 +230,15 @@ def main() -> None:
                         )
                     ),
                     "actual_backend": pipeline.proposal.active_backend_name,
+                    "ghost_object_count": int(
+                        pipeline.last_frame_debug.get("ghost_object_count", 0)
+                    ),
+                    "moved_this_frame": list(
+                        pipeline.last_frame_debug.get("moved_this_frame", [])
+                    ),
+                    "new_candidate_this_frame": list(
+                        pipeline.last_frame_debug.get("new_candidate_this_frame", [])
+                    ),
                 }
                 frame_metrics.append(record)
                 metrics_handle.write(json.dumps(record) + "\n")
