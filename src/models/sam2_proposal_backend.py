@@ -224,13 +224,14 @@ class SAM2ProposalBackend(ProposalBackend):
         fallback_roots = []
         if preferred_root is not None and preferred_root.exists():
             fallback_roots.append(preferred_root.resolve())
-        fallback_roots.extend(
-            candidate.resolve()
-            for candidate in [
-                Path("/home/phl/vv/paper2/OVO/thirdParty/segment-anything-2"),
-            ]
-            if candidate.exists()
-        )
+        for candidate in [
+            Path("/home/phl/vv/paper2/OVO/thirdParty/segment-anything-2"),
+        ]:
+            try:
+                if candidate.exists():
+                    fallback_roots.append(candidate.resolve())
+            except OSError:
+                continue
 
         for fallback_root in fallback_roots:
             fallback_root_str = str(fallback_root)

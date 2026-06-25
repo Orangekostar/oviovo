@@ -41,6 +41,8 @@ class DepthRefinementModule:
         self.depth_edge_threshold = config.get("depth_edge_threshold", 0.05)
         self.min_area = config.get("min_mask_area_after_refine", 50)
         self.max_plane_fit_points = config.get("max_plane_fit_points", 256)
+        self.connected_components_backend = str(config.get("connected_components_backend", "auto")).strip().lower()
+        self.use_bbox_crop = bool(config.get("use_bbox_crop", True))
         # Configurable weights for soft scores
         self.w_obj_compact = config.get("w_obj_compact", 0.25)
         self.w_obj_small_extent = config.get("w_obj_small_extent", 0.20)
@@ -56,6 +58,10 @@ class DepthRefinementModule:
         self.proposal_parallel_enabled = bool(config.get("proposal_parallel_enabled", False))
         self.proposal_parallel_workers = int(config.get("proposal_parallel_workers", 0))
         self.proposal_parallel_min_tasks = int(config.get("proposal_parallel_min_tasks", 8))
+        self.last_parallel_used = False
+        self.last_parallel_worker_count = 1
+        self.protected_anchor_keepalive_enabled = bool(config.get("protected_anchor_keepalive_enabled", True))
+        self.keepalive_objectness_floor = float(config.get("keepalive_objectness_floor", 0.58))
         logger.info("DepthRefinementModule initialized.")
 
     def process(self, depth: np.ndarray, proposals: List[Proposal2D]) -> List[RefinedProposal2D]:
@@ -69,6 +75,8 @@ class DepthRefinementModule:
             List of RefinedProposal2D with geometric features and soft scores.
         """
         depth_edges = self._compute_depth_edges(depth)
+        self.last_parallel_used = False
+        self.last_parallel_worker_count = 1
         if (
             self.proposal_parallel_enabled
             and len(proposals) >= self.proposal_parallel_min_tasks
@@ -78,6 +86,8 @@ class DepthRefinementModule:
                 len(proposals),
             )
             if worker_count > 1:
+                self.last_parallel_used = True
+                self.last_parallel_worker_count = int(worker_count)
                 with ThreadPoolExecutor(max_workers=worker_count) as executor:
                     refined_by_proposal = list(
                         executor.map(
@@ -107,6 +117,8 @@ class DepthRefinementModule:
                 geo = component["geometric_features"]
                 scores = component["soft_scores"]
                 bbox_xyxy = component["bbox_xyxy"]
+                depth_keepalive_reason = str(component.get("depth_keepalive_reason", ""))
+                force_object_candidate = bool(component.get("force_object_candidate", False))
 
                 proposal_id = proposal.proposal_id if component_index == 0 else next_generated_id
                 if component_index > 0:
@@ -125,6 +137,8 @@ class DepthRefinementModule:
                         source_raw_proposal_id=proposal.proposal_id,
                         component_index=component_index,
                         split_component_count=component_count,
+                        depth_keepalive_reason=depth_keepalive_reason,
+                        force_object_candidate=force_object_candidate,
                         geometric_features={
                             "depth_valid_ratio": geo.depth_valid_ratio,
                             "depth_variance": geo.depth_variance,
@@ -149,8 +163,18 @@ class DepthRefinementModule:
         depth_edges: np.ndarray,
         proposal: Proposal2D,
     ) -> List[Dict[str, Any]]:
-        new_mask = proposal.mask & (~depth_edges)
-        component_masks = self._split_connected_components(new_mask)
+        if self.use_bbox_crop:
+            crop_y, crop_x = self._mask_crop_slices(proposal.mask)
+            cropped_mask = proposal.mask[crop_y, crop_x]
+            cropped_depth_edges = depth_edges[crop_y, crop_x]
+            cropped_new_mask = cropped_mask & (~cropped_depth_edges)
+            component_masks = [
+                self._restore_cropped_component(component_mask, proposal.mask.shape, crop_y, crop_x)
+                for component_mask in self._split_connected_components(cropped_new_mask)
+            ]
+        else:
+            new_mask = proposal.mask & (~depth_edges)
+            component_masks = self._split_connected_components(new_mask)
         component_count = len(component_masks)
         refined_components: List[Dict[str, Any]] = []
 
@@ -173,7 +197,43 @@ class DepthRefinementModule:
                     "bbox_xyxy": bbox_xyxy,
                 }
             )
+        if not refined_components and self._should_keepalive_proposal(proposal):
+            geo = self._compute_geometric_features(depth, proposal.mask)
+            scores = self._compute_soft_scores(depth, proposal.mask, geo)
+            scores.objectness_score = max(float(scores.objectness_score), self.keepalive_objectness_floor)
+            if scores.backgroundness_score >= scores.objectness_score:
+                scores.backgroundness_score = max(0.0, scores.objectness_score - 0.01)
+            refined_components.append(
+                {
+                    "component_index": 0,
+                    "component_count": 1,
+                    "mask": np.asarray(proposal.mask, dtype=bool),
+                    "area": int(np.asarray(proposal.mask, dtype=bool).sum()),
+                    "geometric_features": geo,
+                    "soft_scores": scores,
+                    "bbox_xyxy": self._mask_bbox(np.asarray(proposal.mask, dtype=bool)),
+                    "depth_keepalive_reason": self._keepalive_reason(proposal),
+                    "force_object_candidate": True,
+                }
+            )
         return refined_components
+
+    def _should_keepalive_proposal(self, proposal: Proposal2D) -> bool:
+        if not self.protected_anchor_keepalive_enabled:
+            return bool(proposal.metadata.get("anchor_keepalive", False))
+        return bool(
+            proposal.metadata.get("anchor_keepalive", False)
+            or proposal.metadata.get("force_object_candidate", False)
+            or proposal.metadata.get("protected_small_anchor", False)
+        )
+
+    @staticmethod
+    def _keepalive_reason(proposal: Proposal2D) -> str:
+        if bool(proposal.metadata.get("protected_small_anchor", False)):
+            return "small_anchor_protected"
+        if bool(proposal.metadata.get("force_object_candidate", False)):
+            return "forced_object_candidate"
+        return "anchor_keepalive"
 
     @staticmethod
     def _resolve_worker_count(configured_workers: int, task_count: int) -> int:
@@ -313,7 +373,61 @@ class DepthRefinementModule:
             return float("inf")
         return float(np.sqrt(np.mean((A @ coeffs - zs) ** 2)))
 
+    def _mask_crop_slices(self, mask: np.ndarray) -> tuple[slice, slice]:
+        """Return tight row/column slices around nonzero mask pixels."""
+        ys, xs = np.nonzero(mask)
+        if xs.size == 0 or ys.size == 0:
+            return slice(0, 0), slice(0, 0)
+        return slice(int(ys.min()), int(ys.max()) + 1), slice(int(xs.min()), int(xs.max()) + 1)
+
+    def _restore_cropped_component(
+        self,
+        component_mask: np.ndarray,
+        full_shape: tuple[int, ...],
+        crop_y: slice,
+        crop_x: slice,
+    ) -> np.ndarray:
+        """Place a cropped component mask back into full image coordinates."""
+        restored = np.zeros(full_shape, dtype=bool)
+        restored[crop_y, crop_x] = component_mask
+        return restored
+
     def _split_connected_components(self, mask: np.ndarray) -> List[np.ndarray]:
+        backend = self.connected_components_backend
+        if backend == "python":
+            return self._split_connected_components_python(mask)
+        if backend == "auto":
+            try:
+                return self._split_connected_components_opencv(mask)
+            except ImportError:
+                return self._split_connected_components_python(mask)
+        if backend in {"opencv", "cv2"}:
+            return self._split_connected_components_opencv(mask)
+        raise ValueError(f"Unknown connected_components_backend: {backend!r}")
+
+    def _split_connected_components_opencv(self, mask: np.ndarray) -> List[np.ndarray]:
+        """Split a binary mask into 4-connected components with OpenCV."""
+        try:
+            import cv2
+        except ImportError as exc:
+            raise ImportError("OpenCV is required for connected_components_backend='opencv'") from exc
+
+        if not np.any(mask):
+            return []
+
+        mask_uint8 = np.asarray(mask, dtype=np.uint8)
+        label_count, labels, stats, _centroids = cv2.connectedComponentsWithStats(
+            mask_uint8,
+            connectivity=4,
+        )
+        components = [
+            (int(stats[label, cv2.CC_STAT_AREA]), labels == label)
+            for label in range(1, label_count)
+        ]
+        components.sort(key=lambda item: item[0], reverse=True)
+        return [component.astype(bool, copy=False) for _area, component in components]
+
+    def _split_connected_components_python(self, mask: np.ndarray) -> List[np.ndarray]:
         """Split a binary mask into 4-connected components."""
         if not np.any(mask):
             return []

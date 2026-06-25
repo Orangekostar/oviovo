@@ -49,14 +49,14 @@ class DynamicMaintenanceModule:
         Returns:
             Updated system state.
         """
+        self.last_moved_object_ids.clear()
+        self.last_new_candidate_ids.clear()
+
         if state.frame_count % self.check_interval != 0:
             return state
 
         volume = state.tsdf_volume
         config = self.config
-
-        self.last_moved_object_ids.clear()
-        self.last_new_candidate_ids.clear()
 
         # Track objects to remove after iteration
         to_ghost: List[int] = []

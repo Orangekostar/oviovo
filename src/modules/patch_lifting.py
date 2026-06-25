@@ -38,6 +38,17 @@ class PatchLiftingModule:
         self.proposal_parallel_enabled = bool(config.get("proposal_parallel_enabled", True))
         self.proposal_parallel_workers = int(config.get("proposal_parallel_workers", 0))
         self.proposal_parallel_min_tasks = int(config.get("proposal_parallel_min_tasks", 8))
+        fg_cfg = config.get("foreground_depth_filter", {})
+        self.foreground_depth_filter_enabled = bool(fg_cfg.get("enabled", False))
+        self.foreground_front_quantile = float(fg_cfg.get("front_quantile", 0.05))
+        self.foreground_depth_band = float(fg_cfg.get("depth_band", 0.08))
+        self.foreground_min_component_points = int(fg_cfg.get("min_component_points", self.min_points))
+        self.foreground_min_depth_gap = float(fg_cfg.get("min_depth_gap", 0.15))
+        self.foreground_max_removed_ratio = float(
+            fg_cfg.get("max_removed_ratio", fg_cfg.get("max_foreground_ratio", 0.50))
+        )
+        self.point_sample_ratio = float(config.get("point_sample_ratio", 1.0))
+        self.max_points_per_patch = int(config.get("max_points_per_patch", 0))
         self._pixel_grid_cache: Dict[tuple[int, int], tuple[np.ndarray, np.ndarray]] = {}
         logger.info("PatchLiftingModule initialized.")
 
@@ -152,6 +163,21 @@ class PatchLiftingModule:
         if z.size < self.min_points:
             return None
 
+        foreground_mask, foreground_debug = self._foreground_depth_mask(z)
+        if not np.all(foreground_mask):
+            u = u[foreground_mask]
+            v = v[foreground_mask]
+            z = z[foreground_mask]
+        else:
+            foreground_debug["kept_point_count"] = int(z.size)
+            foreground_debug["removed_point_count"] = int(foreground_debug.get("input_point_count", z.size) - z.size)
+        if z.size < self.min_points:
+            return None
+
+        u, v, z, sampling_debug = self._sample_pixel_vectors(u, v, z)
+        if z.size < self.min_points:
+            return None
+
         x = (u - intrinsics.cx) * z / intrinsics.fx
         y = (v - intrinsics.cy) * z / intrinsics.fy
         points_cam = np.stack([x, y, z], axis=-1)
@@ -178,10 +204,125 @@ class PatchLiftingModule:
                 "source_backend_name": proposal.backend_name,
                 "geometric_features": asdict(proposal.geometric_features),
                 "soft_scores": asdict(proposal.soft_scores),
+                "observation_layer": str(proposal.metadata.get("observation_layer", "")),
+                "refinement_key": str(proposal.metadata.get("refinement_key", "")),
+                "mask_source": str(proposal.metadata.get("mask_source", "")),
+                "source_raw_proposal_ids": list(proposal.metadata.get("source_raw_proposal_ids", []) or []),
+                "anchor_id": int(proposal.metadata.get("anchor_id", -1)),
+                "anchor_class_name": str(proposal.metadata.get("anchor_class_name", "")),
+                "anchor_confidence": float(proposal.metadata.get("anchor_confidence", 0.0)),
+                "anchor_bbox_iou": float(proposal.metadata.get("anchor_bbox_iou", 0.0)),
+                "anchor_center_inside": bool(proposal.metadata.get("anchor_center_inside", False)),
+                "anchor_keepalive": bool(proposal.metadata.get("anchor_keepalive", False)),
+                "anchor_label_strength": str(proposal.metadata.get("anchor_label_strength", "strong")),
+                "anchor_label_votes": dict(proposal.metadata.get("anchor_label_votes", {}) or {}),
+                "anchor_blocked_candidates": list(proposal.metadata.get("anchor_blocked_candidates", []) or []),
+                "semantic_commit_allowed": bool(proposal.metadata.get("semantic_commit_allowed", True)),
+                "residual_semantic_policy": str(proposal.metadata.get("residual_semantic_policy", "")),
+                "mask_anchor_relation": str(proposal.metadata.get("mask_anchor_relation", "")),
+                "anchor_hit_count": int(proposal.metadata.get("anchor_hit_count", 0)),
+                "anchor_ids": list(proposal.metadata.get("anchor_ids", []) or []),
+                "force_object_candidate": bool(proposal.metadata.get("force_object_candidate", False)),
+                "depth_keepalive_reason": str(proposal.metadata.get("depth_keepalive_reason", "")),
+                "protected_small_anchor": bool(proposal.metadata.get("protected_small_anchor", False)),
+                "anchor_is_nested_child": bool(proposal.metadata.get("anchor_is_nested_child", False)),
+                "nested_parent_anchor_ids": list(proposal.metadata.get("nested_parent_anchor_ids", []) or []),
+                "protected_child_anchor_ids": list(proposal.metadata.get("protected_child_anchor_ids", []) or []),
+                "protected_child_classes": list(proposal.metadata.get("protected_child_classes", []) or []),
                 "lifted_point_count": int(len(points)),
+                "foreground_depth_filter": foreground_debug,
+                "point_sampling": sampling_debug,
                 "lifting_mode": "rgbd_world_frame_precomputed_grid",
             },
         )
+
+    def _sample_pixel_vectors(
+        self,
+        u: np.ndarray,
+        v: np.ndarray,
+        z: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[str, Any]]:
+        input_count = int(z.size)
+        ratio = float(np.clip(self.point_sample_ratio, 0.0, 1.0))
+        ratio_limit = input_count if ratio <= 0.0 or ratio >= 1.0 else max(self.min_points, int(np.ceil(input_count * ratio)))
+        cap_limit = input_count if self.max_points_per_patch <= 0 else max(self.min_points, int(self.max_points_per_patch))
+        target = min(input_count, ratio_limit, cap_limit)
+        diagnostics = {
+            "enabled": bool(target < input_count),
+            "input_point_count": input_count,
+            "sampled_point_count": int(target),
+            "point_sample_ratio": float(self.point_sample_ratio),
+            "max_points_per_patch": int(self.max_points_per_patch),
+        }
+        if target >= input_count:
+            return u, v, z, diagnostics
+        indices = np.linspace(0, input_count - 1, num=target, dtype=np.int64)
+        return u[indices], v[indices], z[indices], diagnostics
+
+    def _foreground_depth_mask(self, z: np.ndarray) -> tuple[np.ndarray, dict[str, Any]]:
+        z = np.asarray(z, dtype=np.float64)
+        diagnostics = {
+            "enabled": bool(self.foreground_depth_filter_enabled),
+            "input_point_count": int(z.size),
+            "kept_point_count": int(z.size),
+            "removed_point_count": 0,
+            "front_depth": 0.0,
+            "depth_band": float(self.foreground_depth_band),
+            "min_depth_gap": float(self.foreground_min_depth_gap),
+            "max_removed_ratio": float(self.foreground_max_removed_ratio),
+            "split_depth": 0.0,
+            "depth_gap": 0.0,
+            "foreground_ratio": 1.0,
+            "removed_ratio": 0.0,
+            "fallback_reason": "",
+        }
+        if not self.foreground_depth_filter_enabled or z.size == 0:
+            return np.ones(z.shape, dtype=bool), diagnostics
+
+        sorted_z = np.sort(z[np.isfinite(z)])
+        if sorted_z.size < 2:
+            diagnostics["fallback_reason"] = "no_depth_gap"
+            return np.ones(z.shape, dtype=bool), diagnostics
+
+        gaps = np.diff(sorted_z)
+        max_gap_index = int(np.argmax(gaps))
+        max_gap = float(gaps[max_gap_index])
+        split_depth = float(sorted_z[max_gap_index])
+        foreground_count = max_gap_index + 1
+        foreground_ratio = float(foreground_count / sorted_z.size)
+        diagnostics["front_depth"] = float(sorted_z[0])
+        diagnostics["split_depth"] = split_depth
+        diagnostics["depth_gap"] = max_gap
+        diagnostics["foreground_ratio"] = foreground_ratio
+
+        min_depth_gap = max(0.0, float(self.foreground_min_depth_gap))
+        if max_gap < min_depth_gap:
+            diagnostics["fallback_reason"] = "no_depth_gap"
+            return np.ones(z.shape, dtype=bool), diagnostics
+
+        keep = z <= split_depth + float(self.foreground_depth_band)
+        kept_count = int(keep.sum())
+        removed_count = int(z.size - kept_count)
+        removed_ratio = float(removed_count / z.size) if z.size else 0.0
+        diagnostics["kept_point_count"] = kept_count
+        diagnostics["removed_point_count"] = removed_count
+        diagnostics["removed_ratio"] = removed_ratio
+
+        min_points = max(int(self.min_points), int(self.foreground_min_component_points))
+        if kept_count < min_points:
+            diagnostics["kept_point_count"] = int(z.size)
+            diagnostics["removed_point_count"] = 0
+            diagnostics["fallback_reason"] = "insufficient_foreground_points"
+            return np.ones(z.shape, dtype=bool), diagnostics
+
+        max_removed_ratio = float(np.clip(self.foreground_max_removed_ratio, 0.0, 1.0))
+        if removed_ratio > max_removed_ratio:
+            diagnostics["kept_point_count"] = int(z.size)
+            diagnostics["removed_point_count"] = 0
+            diagnostics["fallback_reason"] = "removed_ratio_too_large"
+            return np.ones(z.shape, dtype=bool), diagnostics
+
+        return keep, diagnostics
 
     def _get_pixel_grid(self, depth_shape: tuple[int, int]) -> tuple[np.ndarray, np.ndarray]:
         cached = self._pixel_grid_cache.get(depth_shape)

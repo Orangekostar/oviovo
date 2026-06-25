@@ -44,6 +44,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--run-tag", type=str, default="replica_room0_200f_analysis")
     parser.add_argument("--proposal-backend", type=str, default="sam2")
     parser.add_argument("--proposal-device", type=str, default="cuda")
+    parser.add_argument("--proposal-cache-dir", type=Path, default=None)
+    parser.add_argument("--proposal-cache-manifest", type=Path, default=None)
     parser.add_argument("--sam-version", type=str, default="2.1")
     parser.add_argument("--sam-encoder", type=str, default="hiera_l")
     parser.add_argument("--sam-repo-root", type=Path, default=None)
@@ -99,6 +101,7 @@ def main() -> None:
                 frame.pose,
                 frame.intrinsics,
                 timestamp=frame.timestamp,
+                source_frame_id=frame.frame_id,
             )
 
             raw_proposals = pipeline.last_raw_proposals
@@ -325,6 +328,12 @@ def build_proposal_module(base_config: dict[str, Any], args: argparse.Namespace)
                 "min_mask_region_area": args.min_mask_region_area,
             }
         )
+        config.update(nested)
+    elif args.proposal_backend == "precomputed":
+        if getattr(args, "proposal_cache_dir", None) is not None:
+            nested["cache_dir"] = str(args.proposal_cache_dir)
+        if getattr(args, "proposal_cache_manifest", None) is not None:
+            nested["manifest_path"] = str(args.proposal_cache_manifest)
         config.update(nested)
     return ProposalModule(config)
 

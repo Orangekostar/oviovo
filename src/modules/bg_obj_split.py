@@ -58,6 +58,7 @@ class BgObjSplitModule:
 
         for patch in patches:
             category = self._classify_patch(patch, background, objects)
+            patch.metadata["split_origin"] = category
             if category == "background":
                 bg_patches.append(patch)
             elif category == "object":
@@ -84,6 +85,9 @@ class BgObjSplitModule:
         obj_score = patch.soft_scores.objectness_score
         bg_score = patch.soft_scores.backgroundness_score
         attach_score = patch.soft_scores.attachedness_score
+
+        if bool(patch.metadata.get("force_object_candidate", False)):
+            return "object"
 
         # If soft scores are populated, use them
         if obj_score > 0 or bg_score > 0:
