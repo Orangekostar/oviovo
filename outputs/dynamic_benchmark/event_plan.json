@@ -3,17 +3,45 @@
   "total_frames": 2400,
   "initial_objects": [],
   "events": [
-    {"frame": 150,  "type": "remove", "handle_keyword": "lamp"},
-    {"frame": 300,  "type": "remove", "handle_keyword": "lamp"},
-    {"frame": 450,  "type": "remove", "handle_keyword": "chair"},
-    {"frame": 600,  "type": "remove", "handle_keyword": "chair"},
-    {"frame": 750,  "type": "move",   "handle_keyword": "chair", "delta": [4.0, 0.6, -4.5]},
-    {"frame": 900,  "type": "move",   "handle_keyword": "table", "delta": [1.0, 0.0, -2.5]},
-    {"frame": 1050, "type": "move",   "handle_keyword": "chair", "delta": [4.6, -0.2, 3.0]},
-    {"frame": 1200, "type": "move",   "handle_keyword": "table", "delta": [-5.8, 0.0, -5.2]},
-    {"frame": 1350, "type": "add",    "handle_keyword": "bowl"},
-    {"frame": 1500, "type": "add",    "handle_keyword": "bowl"},
-    {"frame": 1650, "type": "add",    "handle_keyword": "cup"},
-    {"frame": 1800, "type": "add",    "handle_keyword": "cup"}
+    {
+      "frame": 200,
+      "type": "remove",
+      "handle_keyword": "can"
+    },
+    {
+      "frame": 400,
+      "type": "remove",
+      "handle_keyword": "mug"
+    },
+    {
+      "frame": 600,
+      "type": "move",
+      "handle_keyword": "cup",
+      "delta": [
+        1.0,
+        0.0,
+        -1.0
+      ]
+    },
+    {
+      "frame": 800,
+      "type": "move",
+      "handle_keyword": "box",
+      "delta": [
+        -1.0,
+        0.0,
+        -0.5
+      ]
+    },
+    {
+      "frame": 1000,
+      "type": "add",
+      "handle_keyword": "bowl"
+    },
+    {
+      "frame": 1150,
+      "type": "add",
+      "handle_keyword": "can"
+    }
   ]
 }

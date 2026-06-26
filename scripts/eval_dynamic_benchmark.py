@@ -10,7 +10,9 @@ from pathlib import Path
 def load_event_log(path: Path) -> list[dict]:
     with open(path) as f:
         data = json.load(f)
-    return data.get("events", [])
+    events = data.get("events", [])
+    # Filter to benchmark events (those with detection_window)
+    return [e for e in events if "detection_window" in e]
 
 
 def load_frame_metrics(path: Path) -> list[dict]:
