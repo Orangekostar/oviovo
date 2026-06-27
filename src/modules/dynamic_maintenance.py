@@ -36,12 +36,42 @@ class DynamicMaintenanceModule:
         self.tsdf_module = TSDFInstanceMapModule(config.get("tsdf", {}))
         self.last_moved_object_ids: List[int] = []
         self.last_new_candidate_ids: List[int] = []
+        self.mode = config.get("mode", "tsdf")
+        if self.mode == "time":
+            self.ghost_max_inactive = config.get("ghost_max_inactive_frames", 30)
         logger.info("DynamicMaintenanceModule initialized (TSDF-driven).")
 
     def process(self, state: SystemState) -> SystemState:
+        self.last_moved_object_ids.clear()
+        self.last_new_candidate_ids.clear()
+        if state.frame_count % self.check_interval != 0:
+            return state
+        if self.mode == "time":
+            return self._process_time_based(state)
+        return self._process_tsdf(state)
+
+    def _process_time_based(self, state: SystemState) -> SystemState:
+        """Original time-signal based lifecycle management."""
+        max_inactive = self.ghost_max_inactive
+        to_remove = []
+        for obj_id, obj in state.objects.items():
+            if obj.state in (ObjectState.REMOVED, ObjectState.GHOST):
+                to_remove.append(obj_id)
+                continue
+            if obj.state != ObjectState.ACTIVE:
+                continue
+            frames_since = state.frame_count - obj.last_seen_frame
+            if frames_since > max_inactive:
+                obj.state = ObjectState.GHOST
+        for obj_id in to_remove:
+            if obj_id in state.objects:
+                del state.objects[obj_id]
+        return state
+
+    def _process_tsdf(self, state: SystemState) -> SystemState:
         """Run TSDF-driven maintenance: MOVED, DISAPPEARED, NEW OBJECT.
 
-        Only runs at check_interval frequency.
+        Only runs when dispatched by self.process().
 
         Args:
             state: Current system state.
@@ -49,12 +79,6 @@ class DynamicMaintenanceModule:
         Returns:
             Updated system state.
         """
-        self.last_moved_object_ids.clear()
-        self.last_new_candidate_ids.clear()
-
-        if state.frame_count % self.check_interval != 0:
-            return state
-
         volume = state.tsdf_volume
         config = self.config
 

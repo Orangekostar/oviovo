@@ -467,3 +467,23 @@ class TestProcessIntegration:
         support = state.tsdf_volume.owner_support.get(vk)
         if support is not None:
             assert support.owner_id != 1
+
+
+class TestTimeMode:
+    def test_time_mode_ghost_after_max_inactive(self):
+        import src.core.data_structures as d
+        state = d.SystemState(); state.frame_count = 100
+        obj = d.ObjectMap(object_id=1, state=d.ObjectState.ACTIVE, last_seen_frame=50)
+        state.objects[1] = obj
+        m = DynamicMaintenanceModule({"mode":"time","ghost_max_inactive_frames":30,"lifecycle_check_interval":1})
+        result = m.process(state)
+        assert result.objects[1].state == d.ObjectState.GHOST  # 50 frames since last seen > 30
+
+    def test_time_mode_active_when_recently_seen(self):
+        import src.core.data_structures as d
+        state = d.SystemState(); state.frame_count = 100
+        obj = d.ObjectMap(object_id=1, state=d.ObjectState.ACTIVE, last_seen_frame=80)
+        state.objects[1] = obj
+        m = DynamicMaintenanceModule({"mode":"time","ghost_max_inactive_frames":30,"lifecycle_check_interval":1})
+        result = m.process(state)
+        assert result.objects[1].state == d.ObjectState.ACTIVE  # 20 frames < 30
