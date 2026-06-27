@@ -61,7 +61,7 @@ proposal:
     manifest_path: ''
     strict: true
 anchor_frontend:
-  enabled: false
+  enabled: true
   use_boxes_as_primary_proposals: true
   use_sam_intersection_proposals: true
   prefer_largest_covering_box: true
@@ -77,17 +77,48 @@ anchor_frontend:
   model_path: /home/ww/vv/paper2/yolov8s-world.pt
   python_executable: /home/ww/miniconda3/envs/habitat/bin/python
   classes:
+  - bowl
+  - cup
+  - bottle
+  - box
+  - lamp
+  - cushion
+  - indoor-plant
   - chair
   - table
-  - cabinet
   - sofa
-  - bed
-  - plant
-  - monitor
-  - lamp
-  - shelf
   - stool
-  - nightstand
+  - book
+  - vase
+  - plate
+  - tv-screen
+  - remote-control
+  - clock
+  - towel
+  - basket
+  - beanbag
+  - rug
+  - mat
+  - picture
+  - plant-stand
+  - rack
+  - shelf
+  - cabinet
+  - wall-cabinet
+  - bin
+  - bag
+  - backpack
+  - bike
+  - monitor
+  - laptop
+  - keyboard
+  - mouse
+  - phone
+  - utensil-holder
+  - pan
+  - knife-block
+  - kitchen-utensil
+  - small-appliance
   confidence_threshold: 0.2
   max_detections: 128
   iou_assign_threshold: 0.2
@@ -252,6 +283,8 @@ dynamic_maintenance:
   candidate_cluster_radius: 0.3
   candidate_promotion_threshold: 3.0
   candidate_max_idle_frames: 60
+  mode: tsdf
+  ghost_max_inactive_frames: 30
 pipeline:
   log_interval: 1
   verbose: true
