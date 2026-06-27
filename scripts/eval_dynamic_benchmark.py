@@ -7,6 +7,18 @@ import json
 from pathlib import Path
 
 
+DELETE_LABELS = {"lamp", "indoor-plant", "cushion"}
+MOVE_LABELS = {"bowl", "box"}
+ADD_LABELS = {"cup", "bleach", "tennis-ball", "tennis"}
+
+
+def _has_label(items, target_labels):
+    for oid, label in items:
+        if any(t in label.lower() for t in target_labels):
+            return True
+    return False
+
+
 def load_event_log(path: Path) -> list[dict]:
     with open(path) as f:
         data = json.load(f)
@@ -44,29 +56,50 @@ def evaluate(event_log: list[dict], metrics: list[dict]) -> dict:
         for m in metrics:
             f = int(m.get("frame_id", 0))
             if f < window[0]:
-                ghost_baseline = m.get("ghost_object_count", 0)
+                ghost_baseline = m.get("ghost_object_count", ghost_baseline)
                 continue
             if f > window[1]:
                 break
 
             if ev_type == "remove":
-                ghost_now = m.get("ghost_object_count", 0)
-                if ghost_now > ghost_baseline:
-                    detected = True
-                    detect_frame = f
-                    break
+                ghost_objs = m.get("ghost_objects")
+                if ghost_objs is not None:
+                    if _has_label(ghost_objs, DELETE_LABELS):
+                        detected = True
+                        detect_frame = f
+                        break
+                else:
+                    ghost_now = m.get("ghost_object_count", 0)
+                    if ghost_now > ghost_baseline:
+                        detected = True
+                        detect_frame = f
+                        break
             elif ev_type == "move":
-                moved_ids = m.get("moved_this_frame", [])
-                if len(moved_ids) > 0:
-                    detected = True
-                    detect_frame = f
-                    break
+                moved_objs = m.get("moved_objects")
+                if moved_objs is not None:
+                    if _has_label(moved_objs, MOVE_LABELS):
+                        detected = True
+                        detect_frame = f
+                        break
+                else:
+                    moved_ids = m.get("moved_this_frame", [])
+                    if len(moved_ids) > 0:
+                        detected = True
+                        detect_frame = f
+                        break
             elif ev_type == "add":
-                new_ids = m.get("new_candidate_this_frame", [])
-                if len(new_ids) > 0:
-                    detected = True
-                    detect_frame = f
-                    break
+                new_objs = m.get("new_candidate_objects")
+                if new_objs is not None:
+                    if _has_label(new_objs, ADD_LABELS):
+                        detected = True
+                        detect_frame = f
+                        break
+                else:
+                    new_ids = m.get("new_candidate_this_frame", [])
+                    if len(new_ids) > 0:
+                        detected = True
+                        detect_frame = f
+                        break
 
         delay = (detect_frame - event_frame) if detected else None
         if detected:

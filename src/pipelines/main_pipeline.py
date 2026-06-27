@@ -788,13 +788,22 @@ class Pipeline:
                 "cold": int(sum(obj.surface_tier.value == "cold" for obj in self.state.objects.values())),
             },
             "stage_timings": dict(self._stage_timings),
+            "ghost_objects": [
+                list(item) for item in getattr(self.dynamic_maintenance, "last_ghost_object_ids", [])
+            ],
+            "moved_objects": [
+                list(item) for item in getattr(self.dynamic_maintenance, "last_moved_object_ids", [])
+            ],
+            "new_candidate_objects": [
+                list(item) for item in getattr(self.dynamic_maintenance, "last_new_candidate_ids", [])
+            ],
             "ghost_object_count": int(
                 sum(1 for o in self.state.objects.values()
                     if o.state == ObjectState.GHOST)
             ),
-            "moved_this_frame": list(
-                getattr(self.dynamic_maintenance, "last_moved_object_ids", [])
-            ),
+            "moved_this_frame": [
+                oid for oid, _ in getattr(self.dynamic_maintenance, "last_moved_object_ids", [])
+            ],
             "new_candidate_this_frame": list(
                 getattr(self.dynamic_maintenance, "last_new_candidate_ids", [])
             ),

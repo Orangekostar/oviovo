@@ -34,15 +34,28 @@ class DynamicMaintenanceModule:
         self.config = config
         self.check_interval = config.get("lifecycle_check_interval", 10)
         self.tsdf_module = TSDFInstanceMapModule(config.get("tsdf", {}))
-        self.last_moved_object_ids: List[int] = []
+        self.last_moved_object_ids: List[Tuple[int, str]] = []
+        self.last_ghost_object_ids: List[Tuple[int, str]] = []
         self.last_new_candidate_ids: List[int] = []
         self.mode = config.get("mode", "tsdf")
         if self.mode == "time":
             self.ghost_max_inactive = config.get("ghost_max_inactive_frames", 30)
         logger.info("DynamicMaintenanceModule initialized (TSDF-driven).")
 
+    def _get_object_label(self, obj: ObjectMap) -> str:
+        """Extract canonical label from an object's semantic memory."""
+        if obj.semantic_memory.label_hypotheses:
+            return str(obj.semantic_memory.label_hypotheses[0][0]).strip().lower()
+        anchor = obj.debug.get("anchor_semantics", {})
+        if isinstance(anchor, dict):
+            label = anchor.get("canonical_label", "")
+            if label:
+                return str(label).strip().lower()
+        return ""
+
     def process(self, state: SystemState) -> SystemState:
         self.last_moved_object_ids.clear()
+        self.last_ghost_object_ids.clear()
         self.last_new_candidate_ids.clear()
         if state.frame_count % self.check_interval != 0:
             return state
@@ -112,7 +125,7 @@ class DynamicMaintenanceModule:
                     self.tsdf_module.remove_patch_support(
                         volume, obj, obj.object_id
                     )
-                self.last_moved_object_ids.append(int(obj.object_id))
+                self.last_moved_object_ids.append((int(obj.object_id), self._get_object_label(obj)))
                 obj.state = ObjectState.GHOST
                 to_ghost.append(obj_id)
                 logger.info(
@@ -132,6 +145,7 @@ class DynamicMaintenanceModule:
                     )
                 obj.state = ObjectState.GHOST
                 to_ghost.append(obj_id)
+                self.last_ghost_object_ids.append((int(obj.object_id), self._get_object_label(obj)))
                 # Log ownership ratio for debugging
                 footprint = self._compute_spatial_footprint(obj, volume)
                 ratio = footprint["current_voxels"] / max(obj.peak_voxel_count, 1)
