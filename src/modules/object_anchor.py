@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import math
+from scipy import ndimage as _ndimage
 import time
 from typing import Any, Dict, List, Tuple
 
@@ -94,6 +95,20 @@ class ObjectAnchorModule:
         self.weak_structure_min_anchor_coverage = float(
             np.clip(config.get("weak_structure_min_anchor_coverage", 0.20), 0.0, 1.0)
         )
+        self.depth_structure_enabled = bool(config.get("depth_structure_enabled", False))
+        self.depth_structure_classes = {
+            str(item).strip()
+            for item in config.get("depth_structure_classes", ["wall", "floor", "ceiling", "door"])
+            if str(item).strip()
+        }
+        self.depth_structure_normal: dict[str, str] = {
+            "wall": "horizontal",
+            "door": "horizontal",
+            "window": "horizontal",
+            "blinds": "horizontal",
+            "floor": "up",
+            "ceiling": "down",
+        }
         self.supplemental_enabled = bool(config.get("supplemental_enabled", False))
         self.supplemental_iou_threshold = float(config.get("supplemental_iou_threshold", 0.5))
         self.supplemental_overlap_threshold = float(config.get("supplemental_overlap_threshold", 0.6))
@@ -254,9 +269,95 @@ class ObjectAnchorModule:
         self._apply_assignments(grouped_proposals, grouped_assignments)
         return self.last_anchors, grouped_proposals, grouped_assignments
 
+    @staticmethod
+    def _generate_depth_mask(
+        depth: np.ndarray,
+        bbox_xyxy: np.ndarray,
+        intrinsics: tuple[float, float, float, float],
+        normal_dir: str,
+    ) -> np.ndarray | None:
+        """Generate a binary mask from depth-based planar segmentation within a bbox.
+
+        normal_dir: 'horizontal' (wall/door/blinds), 'up' (floor), 'down' (ceiling)
+        Returns: (H, W) bool mask or None if region too small
+        """
+        x1, y1, x2, y2 = [max(0, int(v)) for v in bbox_xyxy]
+        h, w = depth.shape
+        x2 = min(x2, w); y2 = min(y2, h)
+        if x2 <= x1 + 10 or y2 <= y1 + 10:
+            return None
+
+        depth_patch = depth[y1:y2, x1:x2].astype(np.float32)
+        valid = np.isfinite(depth_patch) & (depth_patch > 0)
+        if valid.sum() < 100:
+            return None
+
+        # Compute 3D points from depth
+        u = np.arange(x1, x2, dtype=np.float32)
+        v = np.arange(y1, y2, dtype=np.float32)
+        uu, vv = np.meshgrid(u, v)
+        fx, fy, cx, cy = intrinsics
+        Z = depth_patch
+        X = (uu - cx) * Z / fx
+        Y = (vv - cy) * Z / fy
+
+        # Surface normals via gradient cross product
+        dZ_du = np.zeros_like(Z)
+        dZ_dv = np.zeros_like(Z)
+        dZ_du[:, 1:-1] = (Z[:, 2:] - Z[:, :-2]) * 0.5
+        dZ_dv[1:-1, :] = (Z[2:, :] - Z[:-2, :]) * 0.5
+        # Fill edges
+        dZ_du[:, 0] = Z[:, 1] - Z[:, 0]
+        dZ_du[:, -1] = Z[:, -1] - Z[:, -2]
+        dZ_dv[0, :] = Z[1, :] - Z[0, :]
+        dZ_dv[-1, :] = Z[-1, :] - Z[-2, :]
+
+        dX_du = (Z + (uu - cx) * dZ_du / fx) / fx
+        dX_dv = (uu - cx) * dZ_dv / fx / fx  # approximate
+        dY_du = (vv - cy) * dZ_du / fy / fy
+        dY_dv = (Z + (vv - cy) * dZ_dv / fy) / fy
+
+        nx = dY_du * dZ_dv - dZ_du * dY_dv
+        ny = dZ_du * dX_dv - dX_du * dZ_dv
+        nz = dX_du * dY_dv - dY_du * dX_dv
+        norm_len = np.sqrt(nx*nx + ny*ny + nz*nz) + 1e-9
+        nx /= norm_len; ny /= norm_len; nz /= norm_len
+
+        # Classify by normal direction
+        if normal_dir == 'horizontal':
+            score = np.abs(nz)  # wall normal points horizontally (high |nz| = faces viewer)
+        elif normal_dir == 'up':
+            score = ny  # floor normal points up (positive y in image coords)
+        else:  # down
+            score = -ny  # ceiling normal points down
+
+        # Threshold: pixels matching expected normal + valid depth
+        if normal_dir == 'horizontal':
+            good = np.abs(nz) > 0.5
+        else:
+            good = valid & (score > 0.3)
+
+        if good.sum() < 50:
+            return None
+
+        # Connected component: keep largest depth-continuous region
+        labels, n_labels = _ndimage.label(good)
+        if n_labels == 0:
+            return None
+        sizes = np.bincount(labels.ravel())[1:]
+        best_label = np.argmax(sizes) + 1
+        best_mask_patch = labels == best_label
+
+        # Build full-frame mask
+        full_mask = np.zeros((h, w), dtype=bool)
+        full_mask[y1:y2, x1:x2] = best_mask_patch
+        return full_mask
+
     def generate_anchor_box_proposals(
         self,
         rgb: np.ndarray,
+        depth: np.ndarray | None = None,
+        intrinsics: tuple[float, float, float, float] | None = None,
     ) -> Tuple[List[Anchor2D], List[Proposal2D], List[AnchorAssignment]]:
         """Generate DualMap-style detector-box primary proposals.
 
@@ -268,8 +369,28 @@ class ObjectAnchorModule:
         proposals: list[Proposal2D] = []
         assignments: list[AnchorAssignment] = []
         height, width = rgb.shape[:2]
+
+        use_depth = bool(self.depth_structure_enabled and depth is not None and intrinsics is not None)
+
         for anchor in self.last_anchors:
-            mask = self._bbox_mask((height, width), np.asarray(anchor.bbox_xyxy, dtype=np.float32))
+            class_name = str(anchor.class_name)
+            mask_source = "anchor_box"
+            is_depth_structure = use_depth and class_name in self.depth_structure_classes
+
+            if is_depth_structure:
+                normal_dir = self.depth_structure_normal.get(class_name, "horizontal")
+                depth_mask = self._generate_depth_mask(
+                    depth, np.asarray(anchor.bbox_xyxy, dtype=np.float32), intrinsics, normal_dir
+                )
+                if depth_mask is not None:
+                    mask = depth_mask
+                    mask_source = "depth_structure"
+                else:
+                    # Fallback to bbox mask if depth segmentation fails
+                    mask = self._bbox_mask((height, width), np.asarray(anchor.bbox_xyxy, dtype=np.float32))
+            else:
+                mask = self._bbox_mask((height, width), np.asarray(anchor.bbox_xyxy, dtype=np.float32))
+
             area = int(mask.sum())
             if area < self.proposal_min_area:
                 continue
@@ -297,7 +418,7 @@ class ObjectAnchorModule:
                     "anchor_source_bbox_xyxy": np.asarray(anchor.bbox_xyxy, dtype=np.float32).copy(),
                     "anchor_source_class_name": str(anchor.class_name),
                     "anchor_source_confidence": float(anchor.confidence),
-                    "mask_source": "anchor_box",
+                    "mask_source": mask_source,
                     "anchor_assignment_strategy": "anchor_box_primary",
                     "source_raw_proposal_ids": [],
                 },

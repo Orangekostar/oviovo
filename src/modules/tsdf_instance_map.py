@@ -473,6 +473,34 @@ class TSDFInstanceMapModule:
             self._rebuild_support_indexes(volume)
 
     @staticmethod
+    def _get_cached_owner_arrays(volume: TSDFInstanceVolume) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Return (keys_1d_sorted, vals_sorted, sorter) for fast vectorized owner lookup.
+
+        Cache is rebuilt when owner_index_revision changes."""
+        current_rev = int(getattr(volume, "owner_index_revision", 0))
+        cached_rev = int(getattr(volume, "_owner_cache_revision", -1))
+        if cached_rev == current_rev and hasattr(volume, "_owner_keys_sorted"):
+            return volume._owner_keys_sorted, volume._owner_vals_sorted, volume._owner_sorter
+
+        d = getattr(volume, "voxel_owner_id", {})
+        if not d:
+            volume._owner_keys_sorted = np.array([], dtype=np.int64)
+            volume._owner_vals_sorted = np.array([], dtype=np.int32)
+            volume._owner_sorter = np.array([], dtype=np.int64)
+        else:
+            items = list(d.items())
+            voxels = np.array([k for k, _ in items], dtype=np.int64)
+            mask = (1 << 21) - 1
+            k1d = ((voxels[:, 0] & mask) << 42) | ((voxels[:, 1] & mask) << 21) | (voxels[:, 2] & mask)
+            vals = np.array([int(v) for _, v in items], dtype=np.int32)
+            sorter = np.argsort(k1d)
+            volume._owner_keys_sorted = k1d[sorter]
+            volume._owner_vals_sorted = vals[sorter]
+            volume._owner_sorter = sorter
+        volume._owner_cache_revision = int(current_rev)
+        return volume._owner_keys_sorted, volume._owner_vals_sorted, volume._owner_sorter
+
+    @staticmethod
     def _support_index_missing(volume: TSDFInstanceVolume) -> bool:
         if not bool(getattr(volume, "support_index_valid", False)):
             return True

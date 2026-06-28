@@ -143,7 +143,7 @@ def build_yoloworld_sam_bundle(
         }
 
     if not run_sam:
-        anchors, anchor_box_proposals, anchor_assignments = object_anchor.generate_anchor_box_proposals(frame.rgb)
+        anchors, anchor_box_proposals, anchor_assignments = object_anchor.generate_anchor_box_proposals(frame.rgb, depth=frame.depth, intrinsics=(frame.intrinsics.fx, frame.intrinsics.fy, frame.intrinsics.cx, frame.intrinsics.cy))
         _stamp_anchor_primary_coarse_metadata(frame, anchor_box_proposals, anchor_assignments)
         generation_timings = frontend_timings()
         if collect_stage_timings:
@@ -176,7 +176,7 @@ def build_yoloworld_sam_bundle(
         )
 
     def run_yolo():
-        return object_anchor.generate_anchor_box_proposals(frame.rgb)
+        return object_anchor.generate_anchor_box_proposals(frame.rgb, depth=frame.depth, intrinsics=(frame.intrinsics.fx, frame.intrinsics.fy, frame.intrinsics.cx, frame.intrinsics.cy))
 
     def run_sam_after_yolo(yolo_future):
         anchors, _anchor_box_proposals, _anchor_assignments = yolo_future.result()
@@ -249,7 +249,7 @@ def build_anchor_first_sam_bundle(
             for key, value in dict(getattr(object_anchor, "last_generation_timings", {}) or {}).items()
         }
 
-    anchors, anchor_box_proposals, anchor_box_assignments = object_anchor.generate_anchor_box_proposals(frame.rgb)
+    anchors, anchor_box_proposals, anchor_box_assignments = object_anchor.generate_anchor_box_proposals(frame.rgb, depth=frame.depth, intrinsics=(frame.intrinsics.fx, frame.intrinsics.fy, frame.intrinsics.cx, frame.intrinsics.cy))
 
     sam_start = time.perf_counter()
     sam_proposals = list(

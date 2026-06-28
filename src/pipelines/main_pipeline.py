@@ -136,6 +136,7 @@ class Pipeline:
         pipeline_cfg = self.config.get("pipeline", {})
         self.collect_stage_timings = bool(pipeline_cfg.get("collect_stage_timings", False))
         self.tsdf_feedback_enabled = bool(pipeline_cfg.get("tsdf_feedback_enabled", False))
+        self.fullframe_depth_structure_enabled = bool(pipeline_cfg.get("fullframe_depth_structure_enabled", False))
         self.yoloworld_sam_parallel_frontend_enabled = bool(
             pipeline_cfg.get("yoloworld_sam_parallel_frontend_enabled", False)
         )
@@ -291,6 +292,114 @@ class Pipeline:
             return True
         return int(frame.frame_id) % int(self.yoloworld_sam_full_frame_interval) == 0
 
+    def _build_fullframe_depth_structure_proposals(
+        self, frame: Frame, existing_proposals: list[Any] | None = None
+    ) -> list[Any]:
+        """Generate wall/floor/ceiling proposals from full-frame depth normals.
+
+        No YOLO anchors needed — pure geometry extraction from depth map.
+        Complements SAM2 (which handles objects) for large planar surfaces.
+        Excludes regions already covered by SAM2 door/window/blinds proposals.
+        """
+        from src.core.data_structures import Proposal2D
+        from scipy import ndimage
+
+        depth = frame.depth.astype(np.float32)
+        h, w = depth.shape
+        fx, fy = frame.intrinsics.fx, frame.intrinsics.fy
+        cx, cy = frame.intrinsics.cx, frame.intrinsics.cy
+
+        # Build exclusion mask from existing SAM2 proposals for wall-like objects
+        # (door/window/blinds are on walls — don't let depth wall override them)
+        exclusion_mask = np.zeros((h, w), dtype=bool)
+        if existing_proposals:
+            wall_mounted = {'door', 'window', 'blinds', 'picture', 'switch', 'wall-plug', 'vent'}
+            for p in existing_proposals:
+                meta = getattr(p, 'metadata', {}) or {}
+                cls = str(meta.get('anchor_class_name', '')).lower()
+                if cls in wall_mounted:
+                    exclusion_mask |= np.asarray(getattr(p, 'mask', np.zeros((h,w), dtype=bool)), dtype=bool)
+
+        # Back-project to 3D, then compute normals via gradient cross product
+        u = np.arange(w, dtype=np.float32)
+        v = np.arange(h, dtype=np.float32)
+        uu, vv = np.meshgrid(u, v)
+        Z = depth
+        valid = np.isfinite(Z) & (Z > 0.01)
+        if valid.sum() < 10000:
+            return []
+
+        X = (uu - cx) * Z / fx
+        Y = (vv - cy) * Z / fy
+
+        # Sobel gradients in 3D
+        dX_du = np.zeros_like(Z); dX_dv = np.zeros_like(Z)
+        dY_du = np.zeros_like(Z); dY_dv = np.zeros_like(Z)
+        dZ_du = np.zeros_like(Z); dZ_dv = np.zeros_like(Z)
+
+        # Simple 3x3 Sobel on center differences
+        for arr, du, dv in [(X, dX_du, dX_dv), (Y, dY_du, dY_dv), (Z, dZ_du, dZ_dv)]:
+            du[:, 1:-1] = (arr[:, 2:] - arr[:, :-2]) * 0.5
+            dv[1:-1, :] = (arr[2:, :] - arr[:-2, :]) * 0.5
+            du[:, 0] = arr[:, 1] - arr[:, 0]; du[:, -1] = arr[:, -1] - arr[:, -2]
+            dv[0, :] = arr[1, :] - arr[0, :]; dv[-1, :] = arr[-1, :] - arr[-2, :]
+
+        # Cross product for normals: n = du × dv
+        nx = dY_du * dZ_dv - dZ_du * dY_dv
+        ny = dZ_du * dX_dv - dX_du * dZ_dv
+        nz = dX_du * dY_dv - dY_du * dX_dv
+        length = np.sqrt(nx*nx + ny*ny + nz*nz) + 1e-9
+        nx /= length; ny /= length; nz /= length
+
+        # Classify: floor (normal up, ny>0.5), ceiling (normal down, ny<-0.5), wall (faces camera, |nz|>0.4)
+        floor_mask = (ny > 0.5) & valid
+        ceil_mask = (ny < -0.5) & valid
+        wall_mask = (np.abs(nz) > 0.4) & valid & (~floor_mask) & (~ceil_mask)
+        # Exclude wall regions already covered by SAM2 door/window/blinds
+        wall_mask = wall_mask & (~exclusion_mask)
+
+        proposals = []
+        for mask, cls, conf in [
+            (floor_mask, 'floor', 0.85),
+            (ceil_mask, 'ceiling', 0.80),
+            (wall_mask, 'wall', 0.75),
+        ]:
+            if mask.sum() < 500:
+                continue
+            # Connected components: take largest regions
+            labels, n_labels = ndimage.label(mask)
+            if n_labels == 0:
+                continue
+            sizes = np.bincount(labels.ravel())[1:]
+            # Take components covering >2% of total valid area
+            min_area = int(valid.sum() * 0.02)
+            for label_id in np.argsort(-sizes)[:5]:  # top 5 components
+                area = sizes[label_id]
+                if area < min_area:
+                    break
+                comp_mask = labels == (label_id + 1)
+                ys, xs = np.where(comp_mask)
+                bbox = np.array([xs.min(), ys.min(), xs.max()+1, ys.max()+1], dtype=np.float32)
+                proposals.append(Proposal2D(
+                    proposal_id=-(1000000 + len(proposals)),
+                    mask=comp_mask, bbox_xyxy=bbox, area=int(area),
+                    confidence=conf,
+                    backend_name="depth_structure",
+                    metadata={
+                        "source": "depth_structure",
+                        "mask_source": "fullframe_depth_structure",
+                        "anchor_id": -1,
+                        "anchor_class_name": cls,
+                        "anchor_confidence": conf,
+                        "anchor_label_votes": {cls: conf},
+                        "anchor_label_strength": "strong",
+                        "anchor_keepalive": True,
+                        "observation_layer": "coarse",
+                        "force_object_candidate": True,
+                    },
+                ))
+        return proposals
+
     def _build_depth_structure_proposals(
         self, frame: Frame, existing_proposals: list[Any], anchors: list[Any],
     ) -> list[Any]:
@@ -316,7 +425,6 @@ class Pipeline:
 
         intrinsics = (frame.intrinsics.fx, frame.intrinsics.fy,
                        frame.intrinsics.cx, frame.intrinsics.cy)
-        h, w = frame.depth.shape
 
         depth_proposals = []
         for anchor in anchors:
@@ -659,9 +767,15 @@ class Pipeline:
             if self.object_anchor.enabled:
                 logger.info(f"  Anchors: {len(anchors)}")
 
-        # Depth-based structure proposals (wall/floor/ceiling from depth, bypass SAM2)
+        # Full-frame depth structure proposals (wall/floor/ceiling from depth normals)
         depth_structure_summary: dict[str, Any] = {"enabled": False, "count": 0}
-        if self.object_anchor.depth_structure_enabled:
+        if getattr(self, "fullframe_depth_structure_enabled", False):
+            with self._timed_stage("depth_structure"):
+                depth_proposals = self._build_fullframe_depth_structure_proposals(frame, proposals)
+                if depth_proposals:
+                    proposals = list(proposals) + list(depth_proposals)
+                    depth_structure_summary = {"enabled": True, "count": len(depth_proposals)}
+        elif self.object_anchor.depth_structure_enabled:
             with self._timed_stage("depth_structure"):
                 depth_proposals = self._build_depth_structure_proposals(frame, proposals, anchors)
                 if depth_proposals:
