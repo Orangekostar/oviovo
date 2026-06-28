@@ -695,20 +695,16 @@ class ObjectUpdateModule:
             if allowed_owner_id is not None and owner_id == int(allowed_owner_id):
                 decision_same_owner_mask[decision_idx] = True
             elif owner_id >= 0:
-                # Conflict-aware: check if old owner's support is declining
-                old_support = self.tsdf_module.summarize_instance_support(
-                    state.tsdf_volume, owner_id
-                )
-                old_owned = old_support["owned_voxel_count"]
-                old_peak = max(old_owned, 1)
-                support_declining = old_owned < old_peak * 0.5
+                # Conflict-aware: check per-voxel support (O(1) vs O(N) summarize)
+                old_owner_support_val = support.support.get(owner_id, 0.0)
+                support_weak = old_owner_support_val < 2.0
 
-                if support_declining:
+                if support_weak:
                     new_id = int(allowed_owner_id) if allowed_owner_id is not None else -1
                     conflict_key = (key, new_id)
                     conflict_hits[conflict_key] = conflict_hits.get(conflict_key, 0) + 1
                     if conflict_hits[conflict_key] >= 2:
-                        continue  # ACCEPT: old owner fading, new evidence persistent
+                        continue  # ACCEPT: old owner weak, new evidence persistent
 
                 decision_foreign_owner_mask[decision_idx] = True
 
