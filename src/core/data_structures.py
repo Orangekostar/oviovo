@@ -192,6 +192,7 @@ class VoxelOwnerSupport:
     No hard overwrites — support is accumulated and decayed.
     """
     support: Dict[int, float] = field(default_factory=dict)
+    label_votes: Dict[str, float] = field(default_factory=dict)
 
     @property
     def owner_id(self) -> int:
@@ -205,6 +206,13 @@ class VoxelOwnerSupport:
         if not self.support:
             return 0.0
         return max(self.support.values())
+
+    @property
+    def dominant_label(self) -> str:
+        """Dominant semantic label is argmax of label_votes. Empty if no votes."""
+        if not self.label_votes:
+            return ""
+        return max(self.label_votes, key=self.label_votes.get)
 
 
 @dataclass

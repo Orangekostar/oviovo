@@ -81,6 +81,13 @@ class TSDFInstanceMapModule:
                 support.support.get(instance_id, 0.0) + volume.support_increment
             )
 
+            # Accumulate label votes from patch metadata
+            patch_label = patch.metadata.get("anchor_class_name", "")
+            if patch_label:
+                support.label_votes[patch_label] = (
+                    support.label_votes.get(patch_label, 0.0) + volume.support_increment
+                )
+
             # Decay support for competing instances
             for oid in list(support.support.keys()):
                 if oid != instance_id:

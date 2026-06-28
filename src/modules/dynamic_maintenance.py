@@ -180,7 +180,10 @@ class DynamicMaintenanceModule:
         # 4. Prune expired candidate evidence entries
         self._prune_expired_candidates(state, config)
 
-        # 5. Remove REMOVED objects from dict
+        # 5. Label-consistent merge of same-label objects
+        self._merge_same_label_objects(state)
+
+        # 6. Remove REMOVED objects from dict
         for obj_id in removed_ids:
             if obj_id in state.objects:
                 del state.objects[obj_id]
@@ -548,6 +551,113 @@ class DynamicMaintenanceModule:
             return False
 
         return (new_half_count / total_owned) >= ownership_skew
+
+    # ------------------------------------------------------------------
+    # Label-consistent voxel merge (cross-frame fragmentation resolution)
+    # ------------------------------------------------------------------
+
+    def _object_voxel_keys(
+        self, obj: ObjectMap, volume: TSDFInstanceVolume
+    ) -> Set[Tuple[int, int, int]]:
+        """Return set of unique voxel keys covered by an object's local point cloud."""
+        if len(obj.local_pcd) == 0:
+            return set()
+        points = np.asarray(obj.local_pcd, dtype=np.float32)
+        voxel_indices = np.floor(points / volume.voxel_size).astype(np.int64)
+        return set((int(v[0]), int(v[1]), int(v[2])) for v in voxel_indices)
+
+    def _compute_dominant_labels(self, state: SystemState) -> Dict[int, str]:
+        """For each ACTIVE object, scan its voxels and return the dominant label.
+
+        Counts dominant_label across all voxels touched by the object.
+        Returns mapping from object_id to the most common dominant_label.
+        """
+        result: Dict[int, str] = {}
+        for obj_id, obj in state.objects.items():
+            if obj.state != ObjectState.ACTIVE:
+                continue
+            voxel_keys = self._object_voxel_keys(obj, state.tsdf_volume)
+            label_counts: Dict[str, int] = {}
+            for vk in voxel_keys:
+                support = state.tsdf_volume.owner_support.get(vk)
+                if support is not None:
+                    dl = support.dominant_label
+                    if dl:
+                        label_counts[dl] = label_counts.get(dl, 0) + 1
+            if label_counts:
+                result[obj_id] = max(label_counts, key=label_counts.get)
+        return result
+
+    def _should_merge(self, a: ObjectMap, b: ObjectMap, current_frame: int) -> bool:
+        """Check if two objects should be merged based on label and spatial proximity.
+
+        Conditions: centroid distance < 2.0m and at least one object observed this frame.
+        """
+        dist = float(np.linalg.norm(np.array(a.centroid) - np.array(b.centroid)))
+        if dist >= 2.0:
+            return False
+        if a.last_seen_frame != current_frame and b.last_seen_frame != current_frame:
+            return False
+        return True
+
+    def _merge_into(self, state: SystemState, victim_id: int, keeper_id: int) -> None:
+        """Merge victim object into keeper object.
+
+        Transfers observations, copies local point cloud, and marks victim as GHOST.
+        """
+        victim = state.objects[victim_id]
+        keeper = state.objects[keeper_id]
+
+        # Transfer observations
+        keeper.observations.extend(victim.observations)
+
+        # Copy victim's local point cloud into keeper
+        if len(victim.local_pcd) > 0:
+            if len(keeper.local_pcd) > 0:
+                keeper.local_pcd = np.vstack([keeper.local_pcd, victim.local_pcd])
+            else:
+                keeper.local_pcd = victim.local_pcd.copy()
+
+        # Mark victim as GHOST
+        victim.state = ObjectState.GHOST
+        logger.info(
+            f"Merged object {victim_id} into {keeper_id} "
+            f"(same dominant label)"
+        )
+
+    def _merge_same_label_objects(self, state: SystemState) -> None:
+        """Orchestrate merging of ACTIVE objects sharing the same dominant label.
+
+        Compute labels, group by label, merge spatially-close pairs.
+        """
+        labels = self._compute_dominant_labels(state)
+
+        # Group by label
+        groups: Dict[str, List[int]] = {}
+        for obj_id, label in labels.items():
+            if label:
+                groups.setdefault(label, []).append(obj_id)
+
+        # For each group, merge spatially-close pairs
+        for label, obj_ids in groups.items():
+            if len(obj_ids) < 2:
+                continue
+            merged: Set[int] = set()
+            for i in range(len(obj_ids)):
+                if obj_ids[i] in merged:
+                    continue
+                for j in range(i + 1, len(obj_ids)):
+                    if obj_ids[j] in merged:
+                        continue
+                    a = state.objects.get(obj_ids[i])
+                    b = state.objects.get(obj_ids[j])
+                    if a is None or b is None:
+                        continue
+                    if self._should_merge(a, b, state.frame_count):
+                        keeper_id = obj_ids[i]
+                        victim_id = obj_ids[j]
+                        self._merge_into(state, victim_id, keeper_id)
+                        merged.add(victim_id)
 
     # ------------------------------------------------------------------
     # Placeholder hooks for future implementation
