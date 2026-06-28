@@ -695,6 +695,15 @@ class ObjectUpdateModule:
             if allowed_owner_id is not None and owner_id == int(allowed_owner_id):
                 decision_same_owner_mask[decision_idx] = True
             elif owner_id >= 0:
+                # Same label → same object at different view → ACCEPT
+                patch_label = str(patch.metadata.get("anchor_class_name", "")).strip().lower()
+                if patch_label and allowed_owner_id is not None:
+                    owner_obj = state.objects.get(int(owner_id))
+                    if owner_obj is not None:
+                        owner_label = self._get_object_label_from_state(owner_obj)
+                        if owner_label and patch_label == owner_label:
+                            continue  # ACCEPT: same semantic identity
+
                 # Conflict-aware: check per-voxel support (O(1) vs O(N) summarize)
                 old_owner_support_val = support.support.get(owner_id, 0.0)
                 support_weak = old_owner_support_val < 2.0
@@ -1533,6 +1542,18 @@ class ObjectUpdateModule:
     @staticmethod
     def _is_background_patch(patch: Patch3D) -> bool:
         return str(patch.metadata.get("split_origin", "")) == "background"
+
+    @staticmethod
+    def _get_object_label_from_state(obj: ObjectMap) -> str:
+        """Extract canonical label from object for gate label matching."""
+        if obj.semantic_memory.label_hypotheses:
+            return str(obj.semantic_memory.label_hypotheses[0][0]).strip().lower()
+        anchor = obj.debug.get("anchor_semantics", {})
+        if isinstance(anchor, dict):
+            label = anchor.get("canonical_label", "")
+            if label:
+                return str(label).strip().lower()
+        return ""
 
     @staticmethod
     def _deterministic_spatial_cap(points: np.ndarray, max_points: int) -> np.ndarray:
