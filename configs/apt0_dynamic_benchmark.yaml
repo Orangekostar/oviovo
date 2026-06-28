@@ -75,7 +75,7 @@ anchor_frontend:
   backend: yoloworld
   device: cuda:0
   model_path: /home/ww/vv/paper2/yolov8s-world.pt
-  python_executable: /home/ww/miniconda3/envs/habitat/bin/python
+  python_executable: /home/ww/miniconda3/bin/python3
   classes:
   - bowl
   - cup
@@ -133,6 +133,7 @@ anchor_frontend:
   contained_min_proposal_coverage: 0.85
   scale_compatible_min_anchor_coverage: 0.2
   scale_compatible_min_bbox_iou: 0.1
+  helper_script: /home/ww/tmp/oviovo-pr/frontend/yoloworld_anchor_helper.py
 runtime_vis:
   enabled: true
   merge_score_threshold: 0.65

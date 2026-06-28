@@ -61,7 +61,7 @@ proposal:
     manifest_path: ''
     strict: true
 anchor_frontend:
-  enabled: true
+  enabled: false
   use_boxes_as_primary_proposals: true
   use_sam_intersection_proposals: true
   prefer_largest_covering_box: true
@@ -75,7 +75,50 @@ anchor_frontend:
   backend: yoloworld
   device: cuda:0
   model_path: /home/ww/vv/paper2/yolov8s-world.pt
-  python_executable: /home/ww/miniconda3/bin/python3
+  python_executable: /home/ww/miniconda3/envs/habitat/bin/python
+  classes:
+  - bowl
+  - cup
+  - bottle
+  - box
+  - lamp
+  - cushion
+  - indoor-plant
+  - chair
+  - table
+  - sofa
+  - stool
+  - book
+  - vase
+  - plate
+  - tv-screen
+  - remote-control
+  - clock
+  - towel
+  - basket
+  - beanbag
+  - rug
+  - mat
+  - picture
+  - plant-stand
+  - rack
+  - shelf
+  - cabinet
+  - wall-cabinet
+  - bin
+  - bag
+  - backpack
+  - bike
+  - monitor
+  - laptop
+  - keyboard
+  - mouse
+  - phone
+  - utensil-holder
+  - pan
+  - knife-block
+  - kitchen-utensil
+  - small-appliance
   confidence_threshold: 0.2
   max_detections: 128
   iou_assign_threshold: 0.2
@@ -90,19 +133,6 @@ anchor_frontend:
   contained_min_proposal_coverage: 0.85
   scale_compatible_min_anchor_coverage: 0.2
   scale_compatible_min_bbox_iou: 0.1
-  classes:
-  - chair
-  - table
-  - cabinet
-  - sofa
-  - bed
-  - plant
-  - monitor
-  - lamp
-  - shelf
-  - stool
-  - nightstand
-  helper_script: /home/ww/tmp/oviovo-pr/frontend/yoloworld_anchor_helper.py
 runtime_vis:
   enabled: true
   merge_score_threshold: 0.65
@@ -253,7 +283,7 @@ dynamic_maintenance:
   candidate_cluster_radius: 0.3
   candidate_promotion_threshold: 3.0
   candidate_max_idle_frames: 60
-  mode: tsdf
+  mode: time
   ghost_max_inactive_frames: 30
 pipeline:
   log_interval: 1
