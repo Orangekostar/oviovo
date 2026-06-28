@@ -51,6 +51,7 @@ class AssociationModule:
         self.w_centroid = config.get("centroid_distance_weight", 0.2)
         self.w_bbox = config.get("bbox_overlap_weight", 0.2)
         self.w_geometry = config.get("geometry_overlap_weight", 0.1)
+        self.label_match_weight = config.get("label_match_weight", 0.0)
         self.match_threshold = config.get("match_threshold", 0.3)
         self.max_scored_candidates = int(config.get("max_scored_candidates", 0))
         self.max_geometry_candidates = int(config.get("max_geometry_candidates", 0))
@@ -414,6 +415,21 @@ class AssociationModule:
         with ThreadPoolExecutor(max_workers=worker_count) as executor:
             return list(executor.map(score_one, valid_ids)), True
 
+    @staticmethod
+    def _get_patch_label(patch: Patch3D) -> str:
+        return str(patch.metadata.get("anchor_class_name", "")).strip().lower()
+
+    @staticmethod
+    def _get_object_label(obj: ObjectMap) -> str:
+        if obj.semantic_memory.label_hypotheses:
+            return str(obj.semantic_memory.label_hypotheses[0][0]).strip().lower()
+        anchor = obj.debug.get("anchor_semantics", {})
+        if isinstance(anchor, dict):
+            l = anchor.get("canonical_label", "")
+            if l:
+                return str(l).strip().lower()
+        return ""
+
     def _compute_score(
         self,
         patch: Patch3D,
@@ -434,11 +450,21 @@ class AssociationModule:
 
         geometry_score = self._geometry_consistency(patch, obj) if compute_geometry else 0.0
 
+        # Label match bonus (same-label patch-object matching)
+        label_bonus = 0.0
+        if self.label_match_weight > 0:
+            patch_label = self._get_patch_label(patch)
+            if patch_label:
+                obj_label = self._get_object_label(obj)
+                if obj_label and patch_label == obj_label:
+                    label_bonus = self.label_match_weight
+
         total = (
             self.w_voxel_vote * voxel_score
             + self.w_centroid * centroid_score
             + self.w_bbox * bbox_score
             + self.w_geometry * geometry_score
+            + label_bonus
         )
 
         return AssociationScore(

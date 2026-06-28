@@ -162,6 +162,7 @@ bg_obj_split:
   size_threshold: 5000
   ambiguity_overlap: 0.3
 association:
+  label_match_weight: 0.15
   centroid_distance_weight: 0.4
   bbox_overlap_weight: 0.3
   geometry_overlap_weight: 0.2
