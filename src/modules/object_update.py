@@ -820,7 +820,10 @@ class ObjectUpdateModule:
         )
 
         rejection_reasons: list[str] = []
-        if foreign_ratio > self.surface_gate_max_foreign_owner_ratio:
+        # Labeled patches get relaxed foreign_owner threshold (same-label = same object)
+        max_foreign = (self.surface_gate_max_foreign_owner_ratio * 2.0
+                       if anchor_label else self.surface_gate_max_foreign_owner_ratio)
+        if foreign_ratio > max_foreign:
             rejection_reasons.append("foreign_owner_ratio")
         if background_ratio > self.surface_gate_max_background_owner_ratio:
             rejection_reasons.append("background_owner_ratio")
