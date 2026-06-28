@@ -687,6 +687,7 @@ class ObjectUpdateModule:
         decision_same_owner_mask = np.zeros(len(decision_voxels), dtype=bool)
         decision_foreign_owner_mask = np.zeros(len(decision_voxels), dtype=bool)
         decision_background_owner_mask = np.zeros(len(decision_voxels), dtype=bool)
+        conflict_hits: Dict[Tuple[Tuple[int, int, int], int], int] = {}
         for decision_idx, voxel in enumerate(decision_voxels):
             key = (int(voxel[0]), int(voxel[1]), int(voxel[2]))
             support = state.tsdf_volume.owner_support.get(key)
@@ -694,6 +695,21 @@ class ObjectUpdateModule:
             if allowed_owner_id is not None and owner_id == int(allowed_owner_id):
                 decision_same_owner_mask[decision_idx] = True
             elif owner_id >= 0:
+                # Conflict-aware: check if old owner's support is declining
+                if allowed_owner_id is not None:
+                    old_support = self.tsdf_module.summarize_instance_support(
+                        state.tsdf_volume, owner_id
+                    )
+                    old_owned = old_support["owned_voxel_count"]
+                    old_peak = max(old_owned, 1)
+                    support_declining = old_owned < old_peak * 0.5
+
+                    if support_declining:
+                        conflict_key = (key, int(allowed_owner_id))
+                        conflict_hits[conflict_key] = conflict_hits.get(conflict_key, 0) + 1
+                        if conflict_hits[conflict_key] >= 2:
+                            continue  # ACCEPT: old owner fading, new evidence persistent
+
                 decision_foreign_owner_mask[decision_idx] = True
 
             if self.surface_gate_background_enabled:
