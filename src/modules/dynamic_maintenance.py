@@ -128,6 +128,7 @@ class DynamicMaintenanceModule:
                         volume, obj, obj.object_id
                     )
                 self.last_moved_object_ids.append((int(obj.object_id), self._get_object_label(obj)))
+                self.last_ghost_object_ids.append((int(obj.object_id), self._get_object_label(obj)))
                 obj.state = ObjectState.GHOST
                 to_ghost.append(obj_id)
                 logger.info(
