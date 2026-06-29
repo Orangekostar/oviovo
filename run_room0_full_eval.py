@@ -233,6 +233,9 @@ def main() -> None:
                     "ghost_object_count": int(
                         pipeline.last_frame_debug.get("ghost_object_count", 0)
                     ),
+                    "ghosted_this_frame": [
+                        list(item) for item in pipeline.last_frame_debug.get("last_ghost_object_ids", [])
+                    ],
                     "moved_this_frame": list(
                         pipeline.last_frame_debug.get("moved_this_frame", [])
                     ),

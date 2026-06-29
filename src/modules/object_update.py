@@ -695,14 +695,22 @@ class ObjectUpdateModule:
             if allowed_owner_id is not None and owner_id == int(allowed_owner_id):
                 decision_same_owner_mask[decision_idx] = True
             elif owner_id >= 0:
-                # Same label → same object at different view → ACCEPT
                 patch_label = str(patch.metadata.get("anchor_class_name", "")).strip().lower()
+                # For updates: same label → same object at different view → ACCEPT
                 if patch_label and allowed_owner_id is not None:
                     owner_obj = state.objects.get(int(owner_id))
                     if owner_obj is not None:
                         owner_label = self._get_object_label_from_state(owner_obj)
                         if owner_label and patch_label == owner_label:
                             continue  # ACCEPT: same semantic identity
+                # For new objects: same label → already tracked → REJECT
+                elif patch_label and allowed_owner_id is None:
+                    owner_obj = state.objects.get(int(owner_id))
+                    if owner_obj is not None:
+                        owner_label = self._get_object_label_from_state(owner_obj)
+                        if owner_label and patch_label == owner_label:
+                            decision_foreign_owner_mask[decision_idx] = True
+                            continue  # REJECT: conflict with same-label existing object
 
                 # Conflict-aware: check per-voxel support (O(1) vs O(N) summarize)
                 old_owner_support_val = support.support.get(owner_id, 0.0)

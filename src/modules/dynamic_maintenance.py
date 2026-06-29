@@ -37,6 +37,7 @@ class DynamicMaintenanceModule:
         self.last_moved_object_ids: List[Tuple[int, str]] = []
         self.last_ghost_object_ids: List[Tuple[int, str]] = []
         self.last_new_candidate_ids: List[int] = []
+        self.last_ghost_object_ids: List[Tuple[int, str]] = []
         self.mode = config.get("mode", "tsdf")
         if self.mode == "time":
             self.ghost_max_inactive = config.get("ghost_max_inactive_frames", 30)
@@ -57,6 +58,7 @@ class DynamicMaintenanceModule:
         self.last_moved_object_ids.clear()
         self.last_ghost_object_ids.clear()
         self.last_new_candidate_ids.clear()
+        self.last_ghost_object_ids.clear()
         if state.frame_count % self.check_interval != 0:
             return state
         if self.mode == "time":

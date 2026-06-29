@@ -82,7 +82,7 @@ anchor_frontend:
   keepalive_iou_threshold: 0.1
   center_assign_enabled: true
   keepalive_center_inside: true
-  unanchored_fallback_enabled: false
+  unanchored_fallback_enabled: true
   proposal_min_area: 25
   covering_min_proposal_coverage: 0.85
   contained_subproposal_gate_enabled: true
@@ -125,7 +125,7 @@ runtime_vis:
   small_object_bbox_plausibility_margin: 0.08
   small_object_protection_threshold: 0.6
   small_object_protection_penalty: 0.25
-  semantic_class_merge_gate_enabled: false
+  semantic_class_merge_gate_enabled: true
   mu_background_conflict: 1.35
   depth_edge_threshold: 0.05
   object_like_threshold: 0.55
@@ -162,7 +162,7 @@ bg_obj_split:
   size_threshold: 5000
   ambiguity_overlap: 0.3
 association:
-  label_match_weight: 0.15
+  label_match_weight: 0.4
   centroid_distance_weight: 0.4
   bbox_overlap_weight: 0.3
   geometry_overlap_weight: 0.2
@@ -170,7 +170,7 @@ association:
   match_threshold: 0.5
   observation_identity_gate_enabled: true
   observation_identity_min_patch_confidence: 0.35
-  semantic_conflict_gate_enabled: false
+  semantic_conflict_gate_enabled: true
   semantic_conflict_min_patch_confidence: 0.35
   semantic_conflict_min_object_confidence: 0.35
   semantic_conflict_subregion_point_ratio: 0.35
@@ -186,8 +186,8 @@ object_update:
     background_enabled: true
     min_accept_points: 20
     min_update_accept_ratio: 0.3
-    min_new_object_accept_ratio: 0.55
-    max_foreign_owner_ratio: 0.25
+    min_new_object_accept_ratio: 0.30
+    max_foreign_owner_ratio: 0.10
     max_background_owner_ratio: 0.35
     attached_surface_classes:
     - switch
@@ -202,7 +202,7 @@ object_update:
     min_accept_points: 20
     min_accept_ratio: 0.3
   provisional_pool:
-    enabled: false
+    enabled: true
     match_distance: 0.35
     promotion_hits: 3
     max_idle_frames: 30
@@ -211,7 +211,7 @@ object_update:
     unanchored_objectness_min: 0.75
     unanchored_min_points: 128
 dual_map:
-  enabled: false
+  enabled: true
   active_radius: 3.0
   warm_ttl_frames: 60
   cold_ttl_frames: 180
@@ -247,7 +247,7 @@ background_update:
 dynamic_maintenance:
   lifecycle_check_interval: 10
   disappear_threshold: 0.2
-  creation_grace_frames: 5
+  creation_grace_frames: 20
   moved_centroid_threshold: 0.3
   moved_search_steps: 10
   moved_ownership_skew: 0.6
