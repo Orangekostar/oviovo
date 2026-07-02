@@ -23,6 +23,7 @@ from src.core.data_structures import (
     TSDFInstanceVolume,
 )
 from src.modules.tsdf_instance_map import TSDFInstanceMapModule
+from src.modules.dynamic_geometry import DynamicGeometryModule
 
 logger = logging.getLogger("oviovo.modules.dynamic_maintenance")
 
@@ -34,6 +35,7 @@ class DynamicMaintenanceModule:
         self.config = config
         self.check_interval = config.get("lifecycle_check_interval", 10)
         self.tsdf_module = TSDFInstanceMapModule(config.get("tsdf", {}))
+        self.dynamic_geometry = DynamicGeometryModule(config.get("dynamic_geometry", {}))
         self.last_moved_object_ids: List[Tuple[int, str]] = []
         self.last_ghost_object_ids: List[Tuple[int, str]] = []
         self.last_new_candidate_ids: List[int] = []
@@ -120,16 +122,14 @@ class DynamicMaintenanceModule:
 
             # 1. MOVED check (runs first — mutex with DISAPPEARED)
             if self._check_moved(obj, volume, config):
-                if len(obj.local_pcd) > 0:
-                    # ObjectMap satisfies remove_patch_support's duck-type
-                    # requirement for Patch3D via its .points property
-                    # (backward-compatible alias for local_pcd).
-                    self.tsdf_module.remove_patch_support(
-                        volume, obj, obj.object_id
-                    )
+                self.dynamic_geometry.purge_object_geometry(
+                    state,
+                    obj,
+                    frame_id=state.frame_count,
+                    reason="moved",
+                )
                 self.last_moved_object_ids.append((int(obj.object_id), self._get_object_label(obj)))
                 self.last_ghost_object_ids.append((int(obj.object_id), self._get_object_label(obj)))
-                obj.state = ObjectState.GHOST
                 to_ghost.append(obj_id)
                 logger.info(
                     f"Object {obj_id}: MOVED detected, marking GHOST "
@@ -139,14 +139,12 @@ class DynamicMaintenanceModule:
 
             # 2. DISAPPEARED check
             if self._check_disappeared(obj, volume, state, config):
-                if len(obj.local_pcd) > 0:
-                    # ObjectMap satisfies remove_patch_support's duck-type
-                    # requirement for Patch3D via its .points property
-                    # (backward-compatible alias for local_pcd).
-                    self.tsdf_module.remove_patch_support(
-                        volume, obj, obj.object_id
-                    )
-                obj.state = ObjectState.GHOST
+                self.dynamic_geometry.purge_object_geometry(
+                    state,
+                    obj,
+                    frame_id=state.frame_count,
+                    reason="disappeared",
+                )
                 to_ghost.append(obj_id)
                 self.last_ghost_object_ids.append((int(obj.object_id), self._get_object_label(obj)))
                 # Log ownership ratio for debugging

@@ -469,6 +469,41 @@ class TestProcessIntegration:
             assert support.owner_id != 1
 
 
+def test_process_disappeared_object_purges_export_geometry():
+    from src.core.data_structures import SystemState, DenseSurfaceEntry
+
+    state = SystemState()
+    state.frame_count = 30
+    obj = ObjectMap(
+        object_id=9,
+        state=ObjectState.ACTIVE,
+        creation_frame=0,
+        peak_voxel_count=50,
+        local_pcd=np.array([[0.0, 0.0, 0.0], [0.05, 0.0, 0.0]], dtype=np.float32),
+    )
+    state.objects[9] = obj
+    state.dense_surface_map.entries[9] = DenseSurfaceEntry(
+        points=obj.local_pcd.copy(),
+        object_id=9,
+        semantic_label="lamp",
+        resident=True,
+    )
+
+    module = DynamicMaintenanceModule(
+        {
+            "lifecycle_check_interval": 1,
+            "disappear_threshold": 0.2,
+            "creation_grace_frames": 0,
+        }
+    )
+    module.process(state)
+
+    assert state.objects[9].state == ObjectState.GHOST
+    assert state.objects[9].local_pcd.shape == (0, 3)
+    assert state.dense_surface_map.entries[9].resident is False
+    assert state.objects[9].dynamic_state_reason == "disappeared"
+
+
 class TestTimeMode:
     def test_time_mode_ghost_after_max_inactive(self):
         import src.core.data_structures as d
