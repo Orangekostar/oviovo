@@ -27,6 +27,10 @@ from src.core.data_structures import ObjectState, SystemState
 from src.datasets import ReplicaRoom0Dataset
 from src.modules.semantic_memory import preferred_object_semantic_label
 from src.pipelines.main_pipeline import Pipeline
+from src.modules.current_state_geometry import (
+    CurrentStateGeometryAccumulator,
+    finalize_current_state_geometry,
+)
 from src.utils.geometry import voxel_downsample
 from src.utils.visualization import (
     add_panel_title,
@@ -113,6 +117,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-mask-region-area", type=int, default=100)
     parser.add_argument("--geometry-sample-stride", type=int, default=8)
     parser.add_argument("--geometry-voxel-size", type=float, default=0.03)
+    parser.add_argument("--geometry-free-space-threshold", type=float, default=0.08)
     parser.add_argument("--instance-voxel-size", type=float, default=0.05)
     parser.add_argument("--projection-neighbor-radius", type=int, default=1)
     parser.add_argument(
@@ -160,7 +165,10 @@ def main() -> None:
     audit_jsonl_path = audit_dir / "local_memory_audit.jsonl"
     audit_log_path = audit_dir / "local_memory_audit.log"
     audit_summary_path = audit_dir / "local_memory_audit_summary.json"
-    geometry_accum: dict[tuple[int, int, int], list[np.ndarray | int]] = {}
+    geometry_accum = CurrentStateGeometryAccumulator(
+        voxel_size=float(args.geometry_voxel_size),
+        free_space_threshold=float(getattr(args, "geometry_free_space_threshold", 0.08)),
+    )
     frame_metrics: list[dict[str, Any]] = []
     frame_audits: list[dict[str, Any]] = []
 
@@ -194,11 +202,9 @@ def main() -> None:
                     timestamp=frame.timestamp,
                     source_frame_id=frame.frame_id,
                 )
-                accumulate_geometry(
-                    geometry_accum,
-                    frame=frame,
+                geometry_accum.integrate_frame(
+                    frame,
                     sample_stride=max(1, int(args.geometry_sample_stride)),
-                    voxel_size=float(args.geometry_voxel_size),
                 )
 
                 association = pipeline.last_association
@@ -297,7 +303,7 @@ def main() -> None:
     write_binary_ply(instance_backbone_path, tsdf_records)
     write_binary_ply(local_memory_path, pool_debug_records)
 
-    dense_points, dense_rgb = finalize_geometry_accum(geometry_accum)
+    dense_points, dense_rgb = finalize_current_state_geometry(geometry_accum)
     labels, state_ids, supports = project_instances_to_dense_points(
         dense_points=dense_points,
         instance_records=pool_semantic_records,
