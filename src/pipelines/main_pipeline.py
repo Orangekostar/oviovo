@@ -44,6 +44,7 @@ from src.modules.object_anchor import ObjectAnchorModule
 from src.modules.anchor_guided_sam import AnchorGuidedSAMModule
 from src.modules.runtime_vis import RuntimeVisModule, RuntimeVisOutput
 from src.modules.depth_refinement import DepthRefinementModule
+from src.modules.proposal_cleanup import ProposalCleanupModule
 from src.modules.patch_lifting import PatchLiftingModule
 from src.modules.active_set import ActiveSetModule
 from src.modules.bg_obj_split import BgObjSplitModule
@@ -117,6 +118,7 @@ class Pipeline:
         self.anchor_guided_sam = AnchorGuidedSAMModule(self.config.get("anchor_guided_sam", {}))
         self.runtime_vis = RuntimeVisModule(self.config.get("runtime_vis", {}))
         self.depth_refinement = DepthRefinementModule(self.config.get("depth_refinement", {}))
+        self.proposal_cleanup = ProposalCleanupModule(self.config.get("proposal_cleanup", {}))
         self.patch_lifting = PatchLiftingModule(self.config.get("patch_lifting", {}))
         self.active_set = ActiveSetModule(self.config.get("active_set", {}))
         self.bg_obj_split = BgObjSplitModule(self.config.get("bg_obj_split", {}))
@@ -557,6 +559,7 @@ class Pipeline:
                     source = merged_by_id.get(source_id)
                     if source is not None and bool(source.metadata.get("force_object_candidate", False)):
                         refined_proposal.metadata["force_object_candidate"] = True
+            refined = self.proposal_cleanup.process(refined)
             self.last_refined_proposals = refined
             if self.verbose:
                 logger.info(f"  Refined proposals: {len(refined)}")
