@@ -350,7 +350,7 @@ class TestRoadmapRefactor:
 
         assert obj.debug["global_instance_substrate"]["role"] == "true_low_level_backbone"
         assert obj.debug["global_instance_substrate"]["stability_score"] > 0.0
-        assert obj.debug["local_geometry_memory"]["role"] == "maintenance_only"
+        assert obj.debug["local_geometry_memory"]["role"] == "object_pool_geometry"
         assert obj.observations[-1].crop_bbox.tolist() == [1.0, 1.0, 4.0, 4.0]
 
     def test_semantic_memory_waits_for_stabilized_instances_then_updates_explicit_matches(self):
@@ -396,3 +396,31 @@ class TestRoadmapRefactor:
         assert mem.debug["stability_gate"]["passed"] is True
         assert len(mem.debug["similarity_scores"]) == 3
         assert mem.debug["selected_bbox_xyxy"] == [4, 4, 20, 20]
+
+    def test_association_does_not_match_ghost_objects(self):
+        module = AssociationModule({"match_threshold": 0.1})
+        points = np.array(
+            [[0.0, 0.0, 1.0], [0.05, 0.0, 1.0], [0.0, 0.05, 1.0]],
+            dtype=np.float32,
+        )
+        patch = Patch3D(
+            patch_id=8,
+            points=points,
+            centroid=points.mean(axis=0),
+            bbox_min=points.min(axis=0),
+            bbox_max=points.max(axis=0),
+        )
+        ghost = ObjectMap(
+            object_id=2,
+            state=ObjectState.GHOST,
+            centroid=points.mean(axis=0),
+            bbox_min=points.min(axis=0),
+            bbox_max=points.max(axis=0),
+            local_pcd=points.copy(),
+        )
+
+        result = module.process([patch], {2: ghost}, SystemState().tsdf_volume)
+
+        assert result.matched == []
+        assert result.new_object_patches == [8]
+        assert result.debug["per_patch"][8]["candidate_object_ids"] == []

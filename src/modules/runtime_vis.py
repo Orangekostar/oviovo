@@ -196,6 +196,10 @@ class RuntimeVisModule:
         self.object_edge_density_ref = float(config.get("object_edge_density_ref", 0.45))
         self.small_swallow_area_ratio = float(config.get("small_swallow_area_ratio", 0.22))
         self.min_boundary_depth_points = int(config.get("min_boundary_depth_points", 6))
+        self.semantic_class_merge_gate_enabled = bool(config.get("semantic_class_merge_gate_enabled", False))
+        self.require_same_anchor_label_for_merge = bool(
+            config.get("require_same_anchor_label_for_merge", False)
+        )
         self.pairwise_parallel_enabled = bool(config.get("pairwise_parallel_enabled", True))
         self.pairwise_parallel_workers = int(config.get("pairwise_parallel_workers", 0))
         self.pairwise_parallel_min_pairs = int(config.get("pairwise_parallel_min_pairs", 64))
@@ -231,6 +235,7 @@ class RuntimeVisModule:
 
         decisions = self._compute_pairwise_decisions(features, evidences, frame.depth)
         groups, raw_to_group, group_to_linked_object = self._build_groups(features, decisions)
+        feature_lookup = {feature.proposal_id: feature for feature in features}
         merged_proposals = [
             Proposal2D(
                 proposal_id=group.group_id,
@@ -238,11 +243,20 @@ class RuntimeVisModule:
                 bbox_xyxy=group.merged_bbox_xyxy.copy(),
                 area=group.area,
                 confidence=group.confidence,
-                backend_name=self._group_backend_name(group, feature_lookup={feature.proposal_id: feature for feature in features}),
+                backend_name=self._group_backend_name(group, feature_lookup=feature_lookup),
                 metadata={
                     "source": "runtime_vis",
                     "member_mask_ids": list(group.member_mask_ids),
                     "linked_object_id": group.linked_object_id,
+                    **self._anchor_group_metadata(
+                        [feature_lookup[mask_id] for mask_id in group.member_mask_ids if mask_id in feature_lookup],
+                        [
+                            decision
+                            for decision in decisions
+                            if decision.mask_id_a in group.member_mask_ids
+                            and decision.mask_id_b in group.member_mask_ids
+                        ],
+                    ),
                 },
             )
             for group in groups
@@ -257,6 +271,18 @@ class RuntimeVisModule:
             for decision in decisions
             if decision.rejected_due_to_background_conflict
             or decision.accepted_reason == "background_mask_excluded"
+        )
+        anchor_label_missing_edge_count = sum(
+            1 for decision in decisions if decision.accepted_reason == "missing_anchor_label"
+        )
+        anchor_label_mismatch_edge_count = sum(
+            1 for decision in decisions if decision.accepted_reason == "anchor_label_mismatch"
+        )
+        anchor_identity_mismatch_edge_count = sum(
+            1 for decision in decisions if decision.accepted_reason == "anchor_identity_mismatch"
+        )
+        semantic_blocked_residual_edge_count = sum(
+            1 for decision in decisions if decision.accepted_reason == "semantic_blocked_residual"
         )
 
         object_like_count = sum(1 for feature in features if feature.is_object_like)
@@ -280,6 +306,10 @@ class RuntimeVisModule:
                 "accepted_edge_count": accepted_edge_count,
                 "rejected_edge_count": rejected_edge_count,
                 "background_blocked_edge_count": background_blocked_edge_count,
+                "anchor_label_missing_edge_count": anchor_label_missing_edge_count,
+                "anchor_label_mismatch_edge_count": anchor_label_mismatch_edge_count,
+                "anchor_identity_mismatch_edge_count": anchor_identity_mismatch_edge_count,
+                "semantic_blocked_residual_edge_count": semantic_blocked_residual_edge_count,
                 "whole_prior_boosted_edge_count": whole_prior_boosted,
                 "whole_prior_group_count": sum(1 for group in groups if group.whole_prior_used),
             },
@@ -373,6 +403,10 @@ class RuntimeVisModule:
                 "accepted_edge_count": 0,
                 "rejected_edge_count": 0,
                 "background_blocked_edge_count": 0,
+                "anchor_label_missing_edge_count": 0,
+                "anchor_label_mismatch_edge_count": 0,
+                "anchor_identity_mismatch_edge_count": 0,
+                "semantic_blocked_residual_edge_count": 0,
                 "whole_prior_boosted_edge_count": 0,
                 "whole_prior_group_count": 0,
             },
@@ -840,6 +874,23 @@ class RuntimeVisModule:
             if feature_a.proposal.area <= feature_b.proposal.area
             else (feature_b, feature_a)
         )
+        cross_class_anchor_conflict = self._anchor_labels_conflict(feature_a.proposal, feature_b.proposal)
+        missing_required_anchor_label = self._missing_required_anchor_label(
+            feature_a.proposal,
+            feature_b.proposal,
+        )
+        required_anchor_labels_mismatch = self._required_anchor_labels_mismatch(
+            feature_a.proposal,
+            feature_b.proposal,
+        )
+        required_anchor_identity_mismatch = self._required_anchor_identity_mismatch(
+            feature_a.proposal,
+            feature_b.proposal,
+        )
+        semantic_blocked_residual_merge = self._semantic_blocked_residual_merge(
+            feature_a.proposal,
+            feature_b.proposal,
+        )
         small_object_protection = self._small_object_protection_score(
             smaller_feature,
             larger_feature,
@@ -855,7 +906,22 @@ class RuntimeVisModule:
         accepted = True
         accepted_reason = "accepted"
         rejected_due_to_background_conflict = False
-        if background_conflict_penalty >= self.background_conflict_reject_threshold:
+        if semantic_blocked_residual_merge:
+            accepted = False
+            accepted_reason = "semantic_blocked_residual"
+        elif missing_required_anchor_label:
+            accepted = False
+            accepted_reason = "missing_anchor_label"
+        elif required_anchor_labels_mismatch:
+            accepted = False
+            accepted_reason = "anchor_label_mismatch"
+        elif required_anchor_identity_mismatch:
+            accepted = False
+            accepted_reason = "anchor_identity_mismatch"
+        elif cross_class_anchor_conflict:
+            accepted = False
+            accepted_reason = "cross_class_anchor_conflict"
+        elif background_conflict_penalty >= self.background_conflict_reject_threshold:
             # Rule 2: severe background conflict hard-rejects the edge.
             accepted = False
             accepted_reason = "rejected_due_to_background_conflict"
@@ -894,6 +960,15 @@ class RuntimeVisModule:
             "raw_whole_prior_score": round(whole_prior_raw, 4),
             "small_object_protection_score": round(small_object_protection, 4),
             "small_object_candidate": smaller_feature.proposal.area <= self.small_object_area_threshold,
+            "missing_required_anchor_label": missing_required_anchor_label,
+            "required_anchor_labels_mismatch": required_anchor_labels_mismatch,
+            "required_anchor_identity_mismatch": required_anchor_identity_mismatch,
+            "semantic_blocked_residual_merge": semantic_blocked_residual_merge,
+            "cross_class_anchor_conflict": cross_class_anchor_conflict,
+            "anchor_class_a": self._proposal_anchor_label(feature_a.proposal),
+            "anchor_class_b": self._proposal_anchor_label(feature_b.proposal),
+            "anchor_id_a": self._proposal_anchor_id(feature_a.proposal),
+            "anchor_id_b": self._proposal_anchor_id(feature_b.proposal),
             "same_best_prior_object": (
                 feature_a.best_prior_object_id is not None
                 and feature_a.best_prior_object_id == feature_b.best_prior_object_id
@@ -1234,6 +1309,17 @@ class RuntimeVisModule:
                         "whole_prior_edge_count": sum(
                             1 for decision in relevant_decisions if decision.boosted_by_whole_prior
                         ),
+                        "cross_class_conflict_blocked_edges": sum(
+                            1
+                            for decision in decisions
+                            if (
+                                decision.accepted_reason == "cross_class_anchor_conflict"
+                                and (
+                                    decision.mask_id_a in member_ids
+                                    or decision.mask_id_b in member_ids
+                                )
+                            )
+                        ),
                         "background_conflict_blocked_edges": sum(
                             1
                             for decision in decisions
@@ -1252,6 +1338,135 @@ class RuntimeVisModule:
             for member in members:
                 raw_to_group[member.proposal_id] = group_id
         return groups, raw_to_group, group_to_linked_object
+
+    def _anchor_labels_conflict(self, proposal_a: Proposal2D, proposal_b: Proposal2D) -> bool:
+        if not self.semantic_class_merge_gate_enabled:
+            return False
+        label_a = self._proposal_anchor_label(proposal_a)
+        label_b = self._proposal_anchor_label(proposal_b)
+        return bool(label_a and label_b and label_a != label_b)
+
+    def _missing_required_anchor_label(self, proposal_a: Proposal2D, proposal_b: Proposal2D) -> bool:
+        if not self.require_same_anchor_label_for_merge:
+            return False
+        if self._both_semantic_blocked_residuals(proposal_a, proposal_b):
+            return False
+        label_a = self._proposal_anchor_label(proposal_a)
+        label_b = self._proposal_anchor_label(proposal_b)
+        return bool(not label_a or not label_b)
+
+    def _required_anchor_labels_mismatch(self, proposal_a: Proposal2D, proposal_b: Proposal2D) -> bool:
+        if not self.require_same_anchor_label_for_merge:
+            return False
+        label_a = self._proposal_anchor_label(proposal_a)
+        label_b = self._proposal_anchor_label(proposal_b)
+        return bool(label_a and label_b and label_a != label_b)
+
+    def _required_anchor_identity_mismatch(self, proposal_a: Proposal2D, proposal_b: Proposal2D) -> bool:
+        if not self.require_same_anchor_label_for_merge:
+            return False
+        label_a = self._proposal_anchor_label(proposal_a)
+        label_b = self._proposal_anchor_label(proposal_b)
+        anchor_id_a = self._proposal_anchor_id(proposal_a)
+        anchor_id_b = self._proposal_anchor_id(proposal_b)
+        return bool(label_a and label_b and label_a == label_b and anchor_id_a >= 0 and anchor_id_b >= 0 and anchor_id_a != anchor_id_b)
+
+    def _semantic_blocked_residual_merge(self, proposal_a: Proposal2D, proposal_b: Proposal2D) -> bool:
+        blocked_a = self._proposal_is_semantic_blocked_residual(proposal_a)
+        blocked_b = self._proposal_is_semantic_blocked_residual(proposal_b)
+        return bool(blocked_a != blocked_b)
+
+    def _both_semantic_blocked_residuals(self, proposal_a: Proposal2D, proposal_b: Proposal2D) -> bool:
+        return bool(
+            self._proposal_is_semantic_blocked_residual(proposal_a)
+            and self._proposal_is_semantic_blocked_residual(proposal_b)
+        )
+
+    @staticmethod
+    def _proposal_is_semantic_blocked_residual(proposal: Proposal2D) -> bool:
+        metadata = proposal.metadata
+        label_strength = str(metadata.get("anchor_label_strength", "")).strip().lower()
+        residual_policy = str(metadata.get("residual_semantic_policy", "")).strip().lower()
+        relation = str(metadata.get("mask_anchor_relation", "")).strip().lower()
+        return bool(
+            metadata.get("semantic_commit_allowed") is False
+            or residual_policy == "unknown"
+            or (label_strength == "none" and relation == "contained_residual")
+        )
+
+    @staticmethod
+    def _proposal_anchor_label(proposal: Proposal2D) -> str:
+        return str(proposal.metadata.get("anchor_class_name", "")).strip()
+
+    @staticmethod
+    def _proposal_anchor_id(proposal: Proposal2D) -> int:
+        try:
+            return int(proposal.metadata.get("anchor_id", -1))
+        except (TypeError, ValueError):
+            return -1
+
+    @staticmethod
+    def _anchor_group_metadata(
+        members: list[_MaskFeatures],
+        decisions: list[RuntimeMergeDecision],
+    ) -> dict[str, Any]:
+        label_votes: dict[str, float] = {}
+        anchor_ids: list[int] = []
+        anchor_hit_count = 0
+        best_label = ""
+        best_confidence = 0.0
+        best_anchor_id = -1
+        force_object_candidate = False
+        has_semantic_blocked_residual = False
+        for member in members:
+            metadata = member.proposal.metadata
+            has_semantic_blocked_residual = (
+                has_semantic_blocked_residual
+                or RuntimeVisModule._proposal_is_semantic_blocked_residual(member.proposal)
+            )
+            label = str(metadata.get("anchor_class_name", "")).strip()
+            confidence = float(metadata.get("anchor_confidence", 0.0))
+            anchor_id = int(metadata.get("anchor_id", -1))
+            if label:
+                anchor_hit_count += 1
+                label_votes[label] = float(label_votes.get(label, 0.0) + (confidence if confidence > 0.0 else 1.0))
+                if confidence > best_confidence:
+                    best_label = label
+                    best_confidence = confidence
+                    best_anchor_id = anchor_id
+            if anchor_id >= 0:
+                anchor_ids.append(anchor_id)
+            force_object_candidate = force_object_candidate or bool(metadata.get("force_object_candidate", False))
+
+        anchor_conflict_blocked_edges = int(
+            sum(1 for decision in decisions if decision.accepted_reason == "cross_class_anchor_conflict")
+        )
+        if has_semantic_blocked_residual:
+            return {
+                "anchor_class_name": "",
+                "anchor_confidence": 0.0,
+                "anchor_id": -1,
+                "anchor_label_votes": {},
+                "anchor_hit_count": 0,
+                "anchor_ids": [],
+                "anchor_conflict_blocked_edges": anchor_conflict_blocked_edges,
+                "force_object_candidate": bool(force_object_candidate),
+                "anchor_label_strength": "none",
+                "anchor_keepalive": False,
+                "semantic_commit_allowed": False,
+                "residual_semantic_policy": "unknown",
+            }
+
+        return {
+            "anchor_class_name": best_label,
+            "anchor_confidence": float(best_confidence),
+            "anchor_id": int(best_anchor_id),
+            "anchor_label_votes": dict(sorted(label_votes.items())),
+            "anchor_hit_count": int(anchor_hit_count),
+            "anchor_ids": sorted(set(anchor_ids)),
+            "anchor_conflict_blocked_edges": anchor_conflict_blocked_edges,
+            "force_object_candidate": bool(force_object_candidate),
+        }
 
     @staticmethod
     def _group_backend_name(

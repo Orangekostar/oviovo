@@ -1,0 +1,47 @@
+{
+  "scene": "apt_0",
+  "total_frames": 2400,
+  "initial_objects": [],
+  "events": [
+    {
+      "frame": 200,
+      "type": "remove",
+      "handle_keyword": "can"
+    },
+    {
+      "frame": 400,
+      "type": "remove",
+      "handle_keyword": "mug"
+    },
+    {
+      "frame": 600,
+      "type": "move",
+      "handle_keyword": "cup",
+      "delta": [
+        1.0,
+        0.0,
+        -1.0
+      ]
+    },
+    {
+      "frame": 800,
+      "type": "move",
+      "handle_keyword": "box",
+      "delta": [
+        -1.0,
+        0.0,
+        -0.5
+      ]
+    },
+    {
+      "frame": 1000,
+      "type": "add",
+      "handle_keyword": "bowl"
+    },
+    {
+      "frame": 1150,
+      "type": "add",
+      "handle_keyword": "can"
+    }
+  ]
+}

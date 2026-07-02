@@ -15,7 +15,14 @@ project_root = Path(__file__).resolve().parent
 sys.path.insert(0, str(project_root))
 
 from run_replica_room0_analysis import build_proposal_module
-from src.core.data_structures import ObjectMap, ObjectState, SystemState
+from run_room0_full_eval import (
+    build_dense_surface_records,
+    build_pool_debug_records,
+    build_pool_semantic_records,
+    build_tsdf_backbone_records,
+    write_binary_ply,
+)
+from src.core.data_structures import ObjectState
 from src.datasets import ReplicaRoom0Dataset
 from src.pipelines.main_pipeline import Pipeline
 
@@ -41,6 +48,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--proposal-backend", type=str, default="sam2")
     parser.add_argument("--proposal-device", type=str, default="cuda")
+    parser.add_argument("--proposal-cache-dir", type=Path, default=None)
+    parser.add_argument("--proposal-cache-manifest", type=Path, default=None)
     parser.add_argument("--sam-version", type=str, default="2")
     parser.add_argument("--sam-encoder", type=str, default="hiera_l")
     parser.add_argument("--sam-repo-root", type=Path, default=None)
@@ -93,6 +102,7 @@ def main() -> None:
             frame.pose,
             frame.intrinsics,
             timestamp=frame.timestamp,
+            source_frame_id=frame.frame_id,
         )
         processed += 1
         if processed == 1 or processed % 10 == 0 or processed == args.num_frames:
@@ -105,18 +115,22 @@ def main() -> None:
     state = pipeline.state
 
     tsdf_records = build_tsdf_backbone_records(state)
-    local_memory_records = build_local_memory_records(
+    pool_semantic_records = build_pool_semantic_records(state)
+    dense_surface_records = build_dense_surface_records(state)
+    pool_debug_records = build_pool_debug_records(
         state,
         downsample_voxel=float(args.local_memory_downsample_voxel),
     )
 
     instance_map_path = output_dir / "instance_map.ply"
+    dense_surface_path = output_dir / "instance_map_dense_surface.ply"
     tsdf_backbone_path = output_dir / "instance_map_tsdf_backbone.ply"
     local_memory_path = output_dir / "instance_map_local_memory.ply"
 
-    write_binary_ply(instance_map_path, tsdf_records)
+    write_binary_ply(instance_map_path, pool_semantic_records)
+    write_binary_ply(dense_surface_path, dense_surface_records)
     write_binary_ply(tsdf_backbone_path, tsdf_records)
-    write_binary_ply(local_memory_path, local_memory_records)
+    write_binary_ply(local_memory_path, pool_debug_records)
 
     summary = {
         "dataset_summary": dataset.summary(),
@@ -133,13 +147,16 @@ def main() -> None:
         },
         "files": {
             "instance_map_ply": str(instance_map_path),
+            "instance_map_dense_surface_ply": str(dense_surface_path),
             "instance_map_tsdf_backbone_ply": str(tsdf_backbone_path),
             "instance_map_local_memory_ply": str(local_memory_path),
         },
         "counts": {
             "final_object_count": int(len(state.objects)),
             "tsdf_backbone_vertex_count": int(len(tsdf_records)),
-            "local_memory_vertex_count": int(len(local_memory_records)),
+            "pool_semantic_vertex_count": int(len(pool_semantic_records)),
+            "dense_surface_vertex_count": int(len(dense_surface_records)),
+            "local_memory_vertex_count": int(len(pool_debug_records)),
             "active_state_count": int(sum(obj.state == ObjectState.ACTIVE for obj in state.objects.values())),
             "dormant_state_count": int(sum(obj.state == ObjectState.DORMANT for obj in state.objects.values())),
             "inactive_state_count": int(sum(obj.state == ObjectState.INACTIVE for obj in state.objects.values())),
@@ -150,139 +167,10 @@ def main() -> None:
 
     print("\nSaved files:")
     print(f"- {instance_map_path}")
+    print(f"- {dense_surface_path}")
     print(f"- {tsdf_backbone_path}")
     print(f"- {local_memory_path}")
     print(f"- {summary_path}")
-
-
-def build_tsdf_backbone_records(state: SystemState) -> np.ndarray:
-    rows = []
-    voxel_size = state.tsdf_volume.voxel_size
-    for voxel_key, owner_support in state.tsdf_volume.owner_support.items():
-        object_id = int(owner_support.owner_id)
-        if object_id < 0 or object_id not in state.objects:
-            continue
-        obj = state.objects[object_id]
-        point = (np.asarray(voxel_key, dtype=np.float32) + 0.5) * float(voxel_size)
-        color = instance_color(object_id)
-        rows.append(
-            (
-                float(point[0]),
-                float(point[1]),
-                float(point[2]),
-                color[0],
-                color[1],
-                color[2],
-                object_id,
-                int(state_id(obj.state)),
-                float(owner_support.owner_support_value),
-            )
-        )
-    return to_vertex_array(rows)
-
-
-def build_local_memory_records(state: SystemState, downsample_voxel: float = 0.0) -> np.ndarray:
-    rows = []
-    for object_id, obj in sorted(state.objects.items()):
-        points = np.asarray(obj.local_pcd, dtype=np.float32)
-        if points.size == 0:
-            continue
-        if downsample_voxel > 0.0:
-            points = voxel_downsample_points(points, downsample_voxel)
-        color = instance_color(object_id)
-        stability = float(obj.debug.get("global_instance_substrate", {}).get("stability_score", 0.0))
-        for point in points:
-            rows.append(
-                (
-                    float(point[0]),
-                    float(point[1]),
-                    float(point[2]),
-                    color[0],
-                    color[1],
-                    color[2],
-                    int(object_id),
-                    int(state_id(obj.state)),
-                    stability,
-                )
-            )
-    return to_vertex_array(rows)
-
-
-def to_vertex_array(rows: list[tuple[Any, ...]]) -> np.ndarray:
-    dtype = np.dtype(
-        [
-            ("x", "<f4"),
-            ("y", "<f4"),
-            ("z", "<f4"),
-            ("red", "u1"),
-            ("green", "u1"),
-            ("blue", "u1"),
-            ("object_id", "<i4"),
-            ("state_id", "u1"),
-            ("support", "<f4"),
-        ]
-    )
-    return np.asarray(rows, dtype=dtype)
-
-
-def write_binary_ply(path: Path, vertex_array: np.ndarray) -> None:
-    header = "\n".join(
-        [
-            "ply",
-            "format binary_little_endian 1.0",
-            f"element vertex {len(vertex_array)}",
-            "property float x",
-            "property float y",
-            "property float z",
-            "property uchar red",
-            "property uchar green",
-            "property uchar blue",
-            "property int object_id",
-            "property uchar state_id",
-            "property float support",
-            "end_header",
-            "",
-        ]
-    )
-    with path.open("wb") as handle:
-        handle.write(header.encode("ascii"))
-        handle.write(vertex_array.tobytes())
-
-
-def state_id(state: ObjectState) -> int:
-    mapping = {
-        ObjectState.ACTIVE: 1,
-        ObjectState.INACTIVE: 2,
-        ObjectState.GHOST: 3,
-        ObjectState.REMOVED: 4,
-        ObjectState.DORMANT: 5,
-    }
-    return mapping.get(state, 0)
-
-
-def instance_color(object_id: int) -> tuple[int, int, int]:
-    palette = [
-        (255, 99, 71),
-        (0, 191, 255),
-        (60, 179, 113),
-        (255, 215, 0),
-        (186, 85, 211),
-        (255, 140, 0),
-        (64, 224, 208),
-        (220, 20, 60),
-        (123, 104, 238),
-        (46, 139, 87),
-        (70, 130, 180),
-        (244, 162, 97),
-    ]
-    return palette[object_id % len(palette)]
-
-
-def voxel_downsample_points(points: np.ndarray, voxel_size: float) -> np.ndarray:
-    voxel_indices = np.floor(points / voxel_size).astype(np.int64)
-    _, unique_indices = np.unique(voxel_indices, axis=0, return_index=True)
-    unique_indices.sort()
-    return points[unique_indices]
 
 
 def sanitize(value: Any) -> Any:

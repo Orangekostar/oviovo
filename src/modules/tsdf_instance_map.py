@@ -81,12 +81,41 @@ class TSDFInstanceMapModule:
                 support.support.get(instance_id, 0.0) + volume.support_increment
             )
 
+            # Accumulate label votes from patch metadata
+            patch_label = patch.metadata.get("anchor_class_name", "")
+            if patch_label:
+                support.label_votes[patch_label] = (
+                    support.label_votes.get(patch_label, 0.0) + volume.support_increment
+                )
+
             # Decay support for competing instances
             for oid in list(support.support.keys()):
                 if oid != instance_id:
                     support.support[oid] *= volume.support_decay
                     if support.support[oid] < 0.01:
                         del support.support[oid]
+
+    def remove_patch_support(
+        self,
+        volume: TSDFInstanceVolume,
+        patch: Patch3D,
+        instance_id: int,
+    ) -> None:
+        """Remove one patch's owner support while preserving occupancy and weight."""
+        voxel_indices = _world_to_voxel(patch.points, volume.voxel_size)
+        unique_voxels = set(map(tuple, voxel_indices.tolist()))
+
+        for vk in unique_voxels:
+            support = volume.owner_support.get(vk)
+            if support is None or instance_id not in support.support:
+                continue
+            support.support[instance_id] = (
+                support.support.get(instance_id, 0.0) - volume.support_increment
+            )
+            if support.support[instance_id] <= 0.01:
+                del support.support[instance_id]
+            if not support.support:
+                del volume.owner_support[vk]
 
     def vote_patch_to_instance(
         self,

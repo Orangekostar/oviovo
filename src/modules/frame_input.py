@@ -31,6 +31,7 @@ class FrameInputModule:
         pose: np.ndarray,
         intrinsics: CameraIntrinsics,
         timestamp: float = 0.0,
+        source_frame_id: int | None = None,
     ) -> Frame:
         """Package inputs into a Frame.
 
@@ -40,6 +41,7 @@ class FrameInputModule:
             pose: (4, 4) camera-to-world transform.
             intrinsics: Camera intrinsic parameters.
             timestamp: Frame timestamp.
+            source_frame_id: Optional source/dataset frame index for external alignment.
 
         Returns:
             A Frame dataclass instance.
@@ -51,6 +53,11 @@ class FrameInputModule:
             pose=pose,
             intrinsics=intrinsics,
             timestamp=timestamp,
+            source_frame_id=(
+                int(source_frame_id)
+                if source_frame_id is not None
+                else int(self.frame_counter)
+            ),
         )
         self.frame_counter += 1
         logger.debug(f"Frame {frame.frame_id} created: rgb={rgb.shape}, depth={depth.shape}")

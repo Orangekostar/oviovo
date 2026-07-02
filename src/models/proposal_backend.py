@@ -11,7 +11,7 @@ from typing import List
 
 import numpy as np
 
-from src.core.data_structures import Frame, Proposal2D
+from src.core.data_structures import Anchor2D, Frame, Proposal2D
 
 
 class ProposalBackend(ABC):
@@ -40,6 +40,20 @@ class ProposalBackend(ABC):
             List of Proposal2D instances.
         """
         ...
+
+    def generate_proposals_for_anchors(
+        self,
+        rgb: np.ndarray,
+        depth: np.ndarray,
+        anchors: List[Anchor2D],
+        frame: Frame | None = None,
+    ) -> List[Proposal2D]:
+        """Produce proposals using optional anchor prompts when supported.
+
+        Backends without promptable anchor support delegate to normal proposal
+        generation.
+        """
+        return self.generate_proposals(rgb, depth, frame=frame)
 
 
 class PlaceholderProposalBackend(ProposalBackend):
