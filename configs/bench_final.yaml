@@ -213,6 +213,10 @@ object_update:
     max_points_per_object: 6000
     unanchored_objectness_min: 0.75
     unanchored_min_points: 128
+  relocation_split_gate:
+    enabled: true
+    centroid_distance: 0.75
+    max_voxel_vote_score: 0.15
 dual_map:
   enabled: true
   active_radius: 3.0
@@ -248,7 +252,7 @@ background_update:
   truncation_distance: 0.1
   min_weight: 1.0
 dynamic_maintenance:
-  lifecycle_check_interval: 10
+  lifecycle_check_interval: 5
   disappear_threshold: 0.2
   creation_grace_frames: 20
   moved_centroid_threshold: 0.3

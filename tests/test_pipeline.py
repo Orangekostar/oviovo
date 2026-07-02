@@ -350,7 +350,7 @@ class TestRoadmapRefactor:
 
         assert obj.debug["global_instance_substrate"]["role"] == "true_low_level_backbone"
         assert obj.debug["global_instance_substrate"]["stability_score"] > 0.0
-        assert obj.debug["local_geometry_memory"]["role"] == "maintenance_only"
+        assert obj.debug["local_geometry_memory"]["role"] == "object_pool_geometry"
         assert obj.observations[-1].crop_bbox.tolist() == [1.0, 1.0, 4.0, 4.0]
 
     def test_semantic_memory_waits_for_stabilized_instances_then_updates_explicit_matches(self):
