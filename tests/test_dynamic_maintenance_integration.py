@@ -2,13 +2,17 @@
 
 import numpy as np
 from src.core.data_structures import (
+    AssociationResult,
+    AssociationScore,
     ObjectMap,
     ObjectState,
+    Patch3D,
     SystemState,
     TSDFInstanceVolume,
     VoxelOwnerSupport,
 )
 from src.modules.dynamic_maintenance import DynamicMaintenanceModule
+from src.modules.object_update import ObjectUpdateModule
 
 
 def _create_static_object(obj_id: int, voxel_count: int = 20) -> ObjectMap:
@@ -128,3 +132,50 @@ class TestStaticSceneNoFalseGhost:
         assert ghost_count == 0, (
             f"Static objects incorrectly ghosted at frame {state.frame_count}"
         )
+
+
+def test_relocated_patch_creates_new_object_instead_of_appending_old_geometry():
+    state = SystemState()
+    old_points = np.array([[0.0, 0.0, 0.0], [0.05, 0.0, 0.0], [0.1, 0.0, 0.0]], dtype=np.float32)
+    obj = ObjectMap(
+        object_id=1,
+        state=ObjectState.ACTIVE,
+        local_pcd=old_points.copy(),
+        centroid=old_points.mean(axis=0),
+        bbox_min=old_points.min(axis=0),
+        bbox_max=old_points.max(axis=0),
+        creation_centroid=old_points.mean(axis=0),
+    )
+    state.objects[1] = obj
+    state.next_object_id = 2
+    new_points = np.array([[2.0, 0.0, 0.0], [2.05, 0.0, 0.0], [2.1, 0.0, 0.0]], dtype=np.float32)
+    patch = Patch3D(
+        patch_id=11,
+        points=new_points,
+        centroid=new_points.mean(axis=0),
+        bbox_min=new_points.min(axis=0),
+        bbox_max=new_points.max(axis=0),
+        source_frame_id=100,
+        metadata={"anchor_class_name": "box", "anchor_confidence": 0.9},
+    )
+    association = AssociationResult(
+        matched=[(11, 1, AssociationScore(total_score=0.9, voxel_vote_score=0.0))]
+    )
+    updater = ObjectUpdateModule(
+        {
+            "relocation_split_gate": {
+                "enabled": True,
+                "centroid_distance": 0.75,
+                "max_voxel_vote_score": 0.15,
+            },
+            "surface_owner_gate": {"enabled": False},
+            "current_frame_visibility_gate": {"enabled": False},
+            "provisional_pool": {"enabled": False},
+        }
+    )
+
+    updater.process(association, [patch], state)
+
+    assert len(state.objects) == 2
+    assert np.allclose(state.objects[1].local_pcd, old_points)
+    assert np.allclose(state.objects[2].local_pcd, new_points)

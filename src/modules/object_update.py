@@ -111,6 +111,10 @@ class ObjectUpdateModule:
         self.current_frame_visibility_distance_threshold = float(visibility_cfg.get("distance_threshold", 0.05))
         self.current_frame_visibility_min_accept_points = int(visibility_cfg.get("min_accept_points", 20))
         self.current_frame_visibility_min_accept_ratio = float(visibility_cfg.get("min_accept_ratio", 0.30))
+        relocation_cfg = config.get("relocation_split_gate", {})
+        self.relocation_split_gate_enabled = bool(relocation_cfg.get("enabled", False))
+        self.relocation_split_centroid_distance = float(relocation_cfg.get("centroid_distance", 0.75))
+        self.relocation_split_max_voxel_vote_score = float(relocation_cfg.get("max_voxel_vote_score", 0.15))
         refinement_cfg = config.get("async_refinement", {})
         if "replace_coarse_observations" in refinement_cfg:
             refinement_replace_enabled = refinement_cfg["replace_coarse_observations"]
@@ -207,6 +211,21 @@ class ObjectUpdateModule:
                 self.last_structural_reject_patches.append(structural_reject)
             if patch is None:
                 obj.debug["last_surface_owner_gate"] = gate_debug
+                continue
+            if self._should_split_relocated_update(obj, patch, score):
+                new_obj = self._create_object(patch, state.next_object_id)
+                new_obj.debug["created_by_relocation_split"] = {
+                    "source_object_id": int(obj_id),
+                    "source_patch_id": int(patch_id),
+                    "centroid_distance": float(np.linalg.norm(np.asarray(patch.centroid) - np.asarray(obj.centroid))),
+                    "voxel_vote_score": float(getattr(score, "voxel_vote_score", 0.0) or 0.0),
+                }
+                state.objects[new_obj.object_id] = new_obj
+                self.tsdf_module.integrate_patch(state.tsdf_volume, patch, new_obj.object_id)
+                self._refresh_object_debug(new_obj, state.tsdf_volume)
+                self.last_created_object_ids.append(int(new_obj.object_id))
+                self.last_updated_object_ids.append(int(new_obj.object_id))
+                state.next_object_id += 1
                 continue
             # Step 1: Integrate into global TSDF
             self.tsdf_module.integrate_patch(state.tsdf_volume, patch, obj_id)
@@ -1305,6 +1324,21 @@ class ObjectUpdateModule:
             observation_layer=str(patch.metadata.get("observation_layer", "")),
             refinement_key=str(patch.metadata.get("refinement_key", "")),
             replaced_by_refinement=False,
+        )
+
+    def _should_split_relocated_update(
+        self,
+        obj: ObjectMap,
+        patch: Patch3D,
+        score: AssociationScore,
+    ) -> bool:
+        if not self.relocation_split_gate_enabled:
+            return False
+        centroid_distance = float(np.linalg.norm(np.asarray(patch.centroid) - np.asarray(obj.centroid)))
+        voxel_vote_score = float(getattr(score, "voxel_vote_score", 0.0) or 0.0)
+        return bool(
+            centroid_distance >= self.relocation_split_centroid_distance
+            and voxel_vote_score <= self.relocation_split_max_voxel_vote_score
         )
 
     def _update_object(self, obj: ObjectMap, patch: Patch3D) -> None:
