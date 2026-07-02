@@ -403,6 +403,9 @@ class ObjectMap:
     creation_centroid: np.ndarray = field(
         default_factory=lambda: np.zeros(3, dtype=np.float32)
     )
+    removed_frame: int = -1
+    purged_frame: int = -1
+    dynamic_state_reason: str = ""
     surface_tier: SurfaceTier = SurfaceTier.ACTIVE
     last_dense_refresh_frame: int = 0
     dense_surface_resident: bool = False

@@ -79,6 +79,19 @@ class DenseSurfaceModule:
             sum(len(entry.points) for entry in dense_surface_map.entries.values() if entry.resident)
         )
 
+    def remove_object(self, dense_surface_map: DenseSurfaceMap, object_id: int) -> None:
+        entry = dense_surface_map.entries.get(int(object_id))
+        if entry is None:
+            dense_surface_map.entries[int(object_id)] = DenseSurfaceEntry(
+                points=np.empty((0, 3), dtype=np.float32),
+                object_id=int(object_id),
+                semantic_label="",
+                resident=False,
+            )
+            return
+        entry.points = np.empty((0, 3), dtype=np.float32)
+        entry.resident = False
+
     def _refresh_semantic_label(self, dense_surface_map: DenseSurfaceMap, obj: ObjectMap) -> None:
         entry = dense_surface_map.entries.get(int(obj.object_id))
         if entry is None:
