@@ -75,3 +75,57 @@ def test_active_object_with_points_is_exportable():
     )
 
     assert is_exportable_object(obj) is True
+
+
+from run_room0_full_eval import build_pool_semantic_records, project_instances_to_dense_points
+
+
+def test_pool_export_skips_ghost_objects():
+    state = SystemState()
+    state.objects[1] = ObjectMap(
+        object_id=1,
+        state=ObjectState.ACTIVE,
+        local_pcd=np.array([[0.0, 0.0, 0.0]], dtype=np.float32),
+    )
+    state.objects[2] = ObjectMap(
+        object_id=2,
+        state=ObjectState.GHOST,
+        local_pcd=np.array([[1.0, 0.0, 0.0]], dtype=np.float32),
+    )
+
+    records = build_pool_semantic_records(state)
+
+    assert set(records["object_id"].tolist()) == {1}
+
+
+def test_projection_requires_voxel_majority():
+    dtype = np.dtype(
+        [
+            ("x", "<f4"),
+            ("y", "<f4"),
+            ("z", "<f4"),
+            ("red", "u1"),
+            ("green", "u1"),
+            ("blue", "u1"),
+            ("object_id", "<i4"),
+            ("state_id", "u1"),
+            ("support", "<f4"),
+        ]
+    )
+    records = np.zeros(3, dtype=dtype)
+    records["x"] = [0.01, 0.02, 0.03]
+    records["object_id"] = [1, 2, 2]
+    records["state_id"] = [1, 1, 1]
+    records["support"] = [0.5, 0.5, 0.5]
+    dense = np.array([[0.02, 0.0, 0.0]], dtype=np.float32)
+
+    labels, _, _ = project_instances_to_dense_points(
+        dense,
+        records,
+        instance_voxel_size=0.1,
+        neighbor_radius=0,
+        min_voxel_votes=2,
+        min_vote_ratio=0.6,
+    )
+
+    assert labels.tolist() == [2]

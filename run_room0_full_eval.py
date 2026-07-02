@@ -31,6 +31,7 @@ from src.modules.current_state_geometry import (
     CurrentStateGeometryAccumulator,
     finalize_current_state_geometry,
 )
+from src.modules.dynamic_geometry import is_exportable_object
 from src.utils.geometry import voxel_downsample
 from src.utils.visualization import (
     add_panel_title,
@@ -120,6 +121,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--geometry-free-space-threshold", type=float, default=0.08)
     parser.add_argument("--instance-voxel-size", type=float, default=0.05)
     parser.add_argument("--projection-neighbor-radius", type=int, default=1)
+    parser.add_argument("--projection-min-voxel-votes", type=int, default=1)
+    parser.add_argument("--projection-min-vote-ratio", type=float, default=0.0)
     parser.add_argument(
         "--lightweight-benchmark",
         action="store_true",
@@ -309,6 +312,8 @@ def main() -> None:
         instance_records=pool_semantic_records,
         instance_voxel_size=float(args.instance_voxel_size),
         neighbor_radius=max(0, int(args.projection_neighbor_radius)),
+        min_voxel_votes=max(1, int(args.projection_min_voxel_votes)),
+        min_vote_ratio=float(args.projection_min_vote_ratio),
     )
     projected_colors = np.asarray(
         [instance_color(int(object_id)) if object_id >= 0 else (180, 180, 180) for object_id in labels],
@@ -1092,6 +1097,8 @@ def build_tsdf_backbone_records(state: SystemState) -> np.ndarray:
         if object_id < 0 or object_id not in state.objects:
             continue
         obj = state.objects[object_id]
+        if not is_exportable_object(obj):
+            continue
         point = (np.asarray(voxel_key, dtype=np.float32) + 0.5) * float(voxel_size)
         color = instance_color(object_id)
         rows.append(
@@ -1121,6 +1128,8 @@ def object_semantic_label(obj) -> str:
 def build_pool_semantic_records(state: SystemState) -> np.ndarray:
     rows = []
     for object_id, obj in sorted(state.objects.items()):
+        if not is_exportable_object(obj):
+            continue
         points = np.asarray(obj.local_pcd, dtype=np.float32)
         if points.size == 0:
             continue
@@ -1151,6 +1160,8 @@ def build_dense_surface_records(state: SystemState) -> np.ndarray:
         obj = state.objects.get(int(object_id))
         if obj is None:
             continue
+        if not is_exportable_object(obj):
+            continue
         color = semantic_surface_color(entry.semantic_label, int(object_id))
         stability = object_stability_score(obj)
         for point in np.asarray(entry.points, dtype=np.float32):
@@ -1173,6 +1184,8 @@ def build_dense_surface_records(state: SystemState) -> np.ndarray:
 def build_pool_debug_records(state: SystemState, downsample_voxel: float = 0.0) -> np.ndarray:
     rows = []
     for object_id, obj in sorted(state.objects.items()):
+        if not is_exportable_object(obj):
+            continue
         points = np.asarray(obj.local_pcd, dtype=np.float32)
         if points.size == 0:
             continue
@@ -1207,6 +1220,9 @@ def project_instances_to_dense_points(
     instance_records: np.ndarray,
     instance_voxel_size: float,
     neighbor_radius: int,
+    *,
+    min_voxel_votes: int = 1,
+    min_vote_ratio: float = 0.0,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     labels = np.full(len(dense_points), -1, dtype=np.int32)
     state_ids = np.zeros(len(dense_points), dtype=np.uint8)
@@ -1214,16 +1230,28 @@ def project_instances_to_dense_points(
     if len(instance_records) == 0:
         return labels, state_ids, supports
 
-    owner_map: dict[tuple[int, int, int], tuple[int, int, float]] = {}
+    owner_votes: dict[tuple[int, int, int], dict[int, list[float]]] = {}
     instance_points = np.stack([instance_records["x"], instance_records["y"], instance_records["z"]], axis=1)
     instance_indices = np.floor(instance_points / instance_voxel_size).astype(np.int32)
 
     for voxel, row in zip(instance_indices, instance_records):
-        owner_map[(int(voxel[0]), int(voxel[1]), int(voxel[2]))] = (
-            int(row["object_id"]),
-            int(row["state_id"]),
-            float(row["support"]),
-        )
+        key = (int(voxel[0]), int(voxel[1]), int(voxel[2]))
+        object_id = int(row["object_id"])
+        if object_id < 0 or int(row["state_id"]) != 1:
+            continue
+        owner_votes.setdefault(key, {}).setdefault(object_id, []).append(float(row["support"]))
+
+    owner_map: dict[tuple[int, int, int], tuple[int, int, float]] = {}
+    for key, votes_by_object in owner_votes.items():
+        total_votes = sum(len(values) for values in votes_by_object.values())
+        best_object_id, best_values = max(votes_by_object.items(), key=lambda item: len(item[1]))
+        best_count = len(best_values)
+        best_ratio = best_count / max(total_votes, 1)
+        if best_count < int(min_voxel_votes):
+            continue
+        if best_ratio < float(min_vote_ratio):
+            continue
+        owner_map[key] = (int(best_object_id), 1, float(np.mean(best_values)))
 
     dense_indices = np.floor(dense_points / instance_voxel_size).astype(np.int32)
 
