@@ -105,9 +105,11 @@ class AssociationModule:
             AssociationResult with matches and new-object requests.
         """
         result = AssociationResult()
+        exportable_update_states = {"active", "dormant"}
         all_candidate_ids = [
-            obj_id for obj_id, obj in objects.items()
-            if obj.state.value != "removed"
+            obj_id
+            for obj_id, obj in objects.items()
+            if obj.state.value in exportable_update_states
         ]
         active_candidate_ids = self._resolve_candidate_ids(objects, active_set)
         use_active_set = active_set is not None
@@ -288,10 +290,11 @@ class AssociationModule:
         if active_set is None or not active_set.all_candidate_ids:
             return []
 
+        exportable_update_states = {"active", "dormant"}
         return sorted(
-            obj_id
+            int(obj_id)
             for obj_id in active_set.all_candidate_ids
-            if obj_id in objects and objects[obj_id].state.value != "removed"
+            if obj_id in objects and objects[obj_id].state.value in exportable_update_states
         )
 
     def _voxel_score_for_object(self, obj_id: int, vote: VoxelVoteResult) -> float:
