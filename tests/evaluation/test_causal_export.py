@@ -3,7 +3,11 @@ from __future__ import annotations
 import numpy as np
 
 from src.core.data_structures import DenseSurfaceEntry, ObjectMap, ObjectState, SystemState
-from src.evaluation.exporters.oviovo import export_map_snapshot
+from src.evaluation.exporters.oviovo import (
+    export_map_snapshot,
+    read_map_snapshot,
+    write_map_snapshot,
+)
 
 
 def _object(object_id: int, state: ObjectState, x: float, label: str) -> ObjectMap:
@@ -82,3 +86,31 @@ def test_dense_export_cache_does_not_change_authoritative_snapshot() -> None:
 
     assert np.array_equal(with_dense.entities[0].points_xyz, without_dense.entities[0].points_xyz)
     assert with_dense.entities[0].semantic_label == without_dense.entities[0].semantic_label
+
+
+def test_snapshot_file_round_trip_uses_npz_for_arrays_and_jsonl_for_metadata(tmp_path) -> None:
+    snapshot = export_map_snapshot(
+        _state(),
+        method="OVIOVO",
+        scene_id="scene-a",
+        timestamp=6.0,
+        scope="history",
+        runtime={"total_s": 0.25},
+    )
+    paths = write_map_snapshot(snapshot, tmp_path / "OVIOVO" / "scene-a")
+
+    assert paths["snapshot"].suffix == ".npz"
+    assert paths["entities"].suffix == ".jsonl"
+    assert paths["snapshot"].parent.name == "snapshots"
+    assert paths["entities"].parent.name == "entities"
+
+    loaded = read_map_snapshot(paths["snapshot"], paths["entities"])
+    assert loaded.method == snapshot.method
+    assert loaded.scene_id == snapshot.scene_id
+    assert loaded.scope == "history"
+    assert loaded.runtime == {"total_s": 0.25}
+    assert [entity.entity_id for entity in loaded.entities] == ["1", "2", "3"]
+    for expected, actual in zip(snapshot.entities, loaded.entities, strict=True):
+        assert np.array_equal(actual.points_xyz, expected.points_xyz)
+        assert np.array_equal(actual.semantic_embedding, expected.semantic_embedding)
+        assert actual.metadata == expected.metadata
