@@ -166,7 +166,7 @@ Token format is `{{<TABLE>_<METHOD>_<DATASET_OR_SPLIT>_<METRIC>}}`, uppercase AS
 - `{{T2_OVIOVO_OFFICE_CHANGE_F1}}`
 - `{{S1_OVIOVO_TEST_NOT_FOUND_F1}}`
 
-Every token appears exactly once in the TSV and at least once in both Markdown and LaTeX. Method and dataset names are normalized in the TSV; display names may contain punctuation only in the rendered tables.
+Every token appears exactly once in the TSV. Every token whose state is not `N/A` appears at least once in both Markdown and LaTeX; `N/A` tokens render as `--`. Method and dataset names are normalized in the TSV; display names may contain punctuation only in the rendered tables.
 
 Formatting rules:
 
@@ -189,7 +189,7 @@ The table package verifier must enforce:
 
 1. Exactly four main and three supplementary table labels.
 2. Unique tokens and valid TSV states.
-3. Markdown/LaTeX token sets equal the TSV token set.
+3. Markdown/LaTeX token sets equal the TSV token set after excluding TSV rows whose state is `N/A`.
 4. Every `VERIFIED` token has a non-empty JSON path and pointer.
 5. Every `N/A` token has an explanatory note.
 6. No unfinished-marker strings or manually entered numeric result cells.
