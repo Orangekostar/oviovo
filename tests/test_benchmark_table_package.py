@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import csv
 import re
+import shutil
 import subprocess
 import sys
+from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,6 +24,67 @@ FIELDS = [
     "direction", "precision", "source_json", "json_pointer", "status", "note",
 ]
 TOKEN_RE = re.compile(r"\{\{([A-Z0-9_]+)\}\}")
+EXPECTED_METHODS = {
+    "T1": ("OPENFUSION", "OVIMAP", "CONCEPTGRAPHS", "DUALMAP", "OVIOVO"),
+    "T2": (
+        "OVIMAP_FROZEN", "CONCEPTGRAPHS_FROZEN", "DUALMAP",
+        "PANOPTIC_SHARED", "KHRONOS_OPEN", "KHRONOS_ORACLE", "OVIOVO",
+    ),
+    "T3": ("BASE", "VIS", "OWNER", "RECLAIM", "REID", "FULL"),
+    "T4": ("OVIMAP", "CONCEPTGRAPHS", "DUALMAP", "KHRONOS", "OVIOVO_STATIC", "OVIOVO"),
+    "S1": ("OVIMAP_FROZEN", "CONCEPTGRAPHS_FROZEN", "DUALMAP", "KHRONOS_SHARED", "OVIOVO"),
+    "S2": ("ESAM_VISIT", "KHRONOS_ADAPTED", "RESCENE4D", "OVIOVO_NO_REID", "OVIOVO"),
+    "S3": ("DUALMAP_CAL", "CONCEPTGRAPHS_CAL", "KHRONOS_SHARED_CAL", "OVIOVO_UNCAL", "OVIOVO"),
+}
+EXPECTED_METRICS = {
+    "T1": (
+        "REPLICA8_MIOU", "REPLICA8_MACC", "REPLICA8_FMIOU", "REPLICA7_MIOU",
+        "SCANNET5_MIOU", "REPLICA8_AP25", "REPLICA8_AP50", "REPLICA8_F5",
+        "REPLICA7_AP50", "SCANNET5_AP25", "SCANNET5_AP50", "SCANNET5_F5",
+    ),
+    "T2": (
+        "APARTMENT_OBJECT_F1", "APARTMENT_DYNAMIC_F1", "APARTMENT_CHANGE_F1",
+        "OFFICE_OBJECT_F1", "OFFICE_DYNAMIC_F1", "OFFICE_CHANGE_F1",
+        "CURRENT_MIOU", "GHOST_RATE", "BG_F5", "RECOVERY_FRAMES",
+    ),
+    "T3": (
+        "STATIC_MIOU", "CHANGE_F1", "STALE_FP", "GHOST_RATE", "BG_F5",
+        "IDSW", "REACT_R1", "NOT_FOUND_F1",
+    ),
+    "T4": (
+        "FRONTEND_SPF", "BACKEND_SPF", "MAINT_SPF", "TOTAL_SPF", "HZ", "FINAL_S",
+        "QUERY_P50_MS", "QUERY_P95_MS", "GPU_GB", "RAM_GB", "MAP_MB", "EVAL_IO_S",
+    ),
+    "S1": tuple(
+        f"{split}_{metric}"
+        for split in ("VALIDATION", "TEST")
+        for metric in (
+            "PRESENT_R1", "MOVED_R1", "NEW_R1", "NOT_FOUND_F1",
+            "STALE_FP", "LOC_ERROR_M", "RECOVERY_FRAMES",
+        )
+    ),
+    "S2": ("STAGE_AP50", "T_AP", "T_REC", "IDSW", "REACT_R1", "FALSE_REID"),
+    "S3": (
+        "PRESENCE_AUROC", "NOT_FOUND_PREC", "NOT_FOUND_REC", "NOT_FOUND_F1",
+        "BINARY_ECE", "RISK_COVERAGE_AUC",
+    ),
+}
+NA_TOKENS = {
+    f"T1_OPENFUSION_{metric}"
+    for metric in (
+        "REPLICA8_AP25", "REPLICA8_AP50", "REPLICA7_AP50",
+        "SCANNET5_AP25", "SCANNET5_AP50",
+    )
+}
+LOWER_METRICS = {
+    ("T2", "GHOST_RATE"), ("T2", "RECOVERY_FRAMES"),
+    ("T3", "STALE_FP"), ("T3", "GHOST_RATE"), ("T3", "IDSW"),
+    ("S1", "VALIDATION_STALE_FP"), ("S1", "VALIDATION_LOC_ERROR_M"),
+    ("S1", "VALIDATION_RECOVERY_FRAMES"), ("S1", "TEST_STALE_FP"),
+    ("S1", "TEST_LOC_ERROR_M"), ("S1", "TEST_RECOVERY_FRAMES"),
+    ("S2", "IDSW"), ("S2", "FALSE_REID"),
+    ("S3", "BINARY_ECE"), ("S3", "RISK_COVERAGE_AUC"),
+}
 
 
 def rows():
@@ -31,8 +94,59 @@ def rows():
         return list(reader)
 
 
-def tokens(path):
-    return set(TOKEN_RE.findall(path.read_text(encoding="utf-8")))
+def token_counts(path):
+    return Counter(TOKEN_RE.findall(path.read_text(encoding="utf-8")))
+
+
+def metric_location(table, metric):
+    if table == "T1":
+        if metric.startswith("REPLICA8_"):
+            return "Replica", "replica_8_compat"
+        if metric.startswith("REPLICA7_"):
+            return "Replica", "replica_7_heldout"
+        return "ScanNet200", "scannet200_5_heldout"
+    if table == "T2":
+        if metric.startswith("APARTMENT_"):
+            return "TESSE-CD", "apartment_test"
+        if metric.startswith("OFFICE_"):
+            return "TESSE-CD", "office_test"
+        return "TESSE-CD", "macro_test"
+    if table == "T3":
+        if metric == "STATIC_MIOU":
+            return "Replica", "replica_7_heldout"
+        if metric in {"CHANGE_F1", "STALE_FP", "GHOST_RATE", "BG_F5"}:
+            return "TESSE-CD", "macro_test"
+        if metric in {"IDSW", "REACT_R1"}:
+            return "3RScan", "test"
+        return "current_state_queries", "test"
+    if table == "T4":
+        return "local_same_hardware", "test"
+    if table == "S1":
+        return "current_state_queries", "validation" if metric.startswith("VALIDATION_") else "test"
+    if table == "S2":
+        return "3RScan", "test"
+    return "current_state_queries", "test"
+
+
+def expected_registry():
+    expected = {}
+    for table, methods in EXPECTED_METHODS.items():
+        for method in methods:
+            for metric in EXPECTED_METRICS[table]:
+                token = f"{table}_{method}_{metric}"
+                dataset, split = metric_location(table, metric)
+                expected[token] = {
+                    "table": table,
+                    "method": method,
+                    "dataset": dataset,
+                    "split": split,
+                    "metric": metric,
+                    "direction": "lower" if table == "T4" or (table, metric) in LOWER_METRICS else "higher",
+                    "precision": "2" if table == "T4" or metric.endswith("LOC_ERROR_M") else "3",
+                }
+    for method in EXPECTED_METHODS["T4"]:
+        expected[f"T4_{method}_HZ"]["direction"] = "higher"
+    return expected
 
 
 def test_files_exist():
@@ -45,22 +159,29 @@ def test_four_main_and_three_supplementary_tables():
     assert len(re.findall(r"^## Table [1-4]:", md, re.MULTILINE)) == 4
     assert len(re.findall(r"^## Table S[1-3]:", md, re.MULTILINE)) == 3
     assert set(re.findall(r"\\label\{([^}]+)\}", tex)) == LABELS
+    environments = re.findall(r"\\begin\{table\*\}.*?\\end\{table\*\}", tex, re.DOTALL)
+    assert len(environments) == 7
+    for environment in environments:
+        assert all(command in environment for command in ("\\toprule", "\\midrule", "\\bottomrule"))
 
 
 def test_registry_schema_states_and_unique_tokens():
     registry = rows()
+    expected = expected_registry()
     names = [row["token"] for row in registry]
+    assert len(registry) == 380
     assert len(names) == len(set(names))
-    assert all(re.fullmatch(r"[A-Z0-9_]+", name) for name in names)
+    assert set(names) == set(expected)
     assert {row["status"] for row in registry} <= {"UNFILLED", "VERIFIED", "N/A"}
-    assert {row["direction"] for row in registry} <= {"higher", "lower"}
-    assert {row["precision"] for row in registry} <= {"2", "3"}
+    for row in registry:
+        assert {key: row[key] for key in expected[row["token"]]} == expected[row["token"]]
+    assert {row["token"] for row in registry if row["status"] == "N/A"} == NA_TOKENS
 
 
 def test_non_na_tokens_match_both_outputs():
-    expected = {row["token"] for row in rows() if row["status"] != "N/A"}
-    assert tokens(MARKDOWN) == expected
-    assert tokens(LATEX) == expected
+    expected = Counter({row["token"]: 1 for row in rows() if row["status"] != "N/A"})
+    assert token_counts(MARKDOWN) == expected
+    assert token_counts(LATEX) == expected
 
 
 def test_provenance_requirements():
@@ -102,3 +223,48 @@ def test_generator_check_mode():
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert "benchmark table package: PASS" in result.stdout
+
+
+def test_generator_check_detects_tampering(tmp_path):
+    output_dir = tmp_path / "paper"
+    shutil.copytree(PAPER_DIR, output_dir)
+    (output_dir / MARKDOWN.name).write_text("tampered\n", encoding="utf-8")
+    result = subprocess.run(
+        [sys.executable, str(GENERATOR), "check", "--output-dir", str(output_dir)],
+        cwd=ROOT, text=True, capture_output=True,
+    )
+    assert result.returncode != 0
+    assert "benchmark table package: FAIL" in result.stderr
+
+
+def test_write_refuses_to_overwrite_verified_registry(tmp_path):
+    output_dir = tmp_path / "paper"
+    shutil.copytree(PAPER_DIR, output_dir)
+    registry_path = output_dir / REGISTRY.name
+    with registry_path.open(newline="", encoding="utf-8") as handle:
+        registry = list(csv.DictReader(handle, delimiter="\t"))
+    verified = next(row for row in registry if row["status"] == "UNFILLED")
+    verified.update(status="VERIFIED", source_json="result.json", json_pointer="/metrics/value")
+    with registry_path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=FIELDS, delimiter="\t", lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(registry)
+    protected = registry_path.read_bytes()
+    result = subprocess.run(
+        [sys.executable, str(GENERATOR), "write", "--output-dir", str(output_dir)],
+        cwd=ROOT, text=True, capture_output=True,
+    )
+    assert result.returncode != 0
+    assert registry_path.read_bytes() == protected
+    assert "--force" in result.stderr
+    forced = subprocess.run(
+        [
+            sys.executable, str(GENERATOR), "write", "--output-dir", str(output_dir),
+            "--force",
+        ],
+        cwd=ROOT, text=True, capture_output=True,
+    )
+    assert forced.returncode == 0, forced.stdout + forced.stderr
+    with registry_path.open(newline="", encoding="utf-8") as handle:
+        reset = list(csv.DictReader(handle, delimiter="\t"))
+    assert all(row["status"] != "VERIFIED" for row in reset)
