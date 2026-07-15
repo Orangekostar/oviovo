@@ -101,6 +101,36 @@ def test_conceptgraphs_adapter_uses_runtime_labels_and_declares_local_ids() -> N
     assert artifact.metadata.entity_id_stability == "artifact-local"
 
 
+def test_conceptgraphs_adapter_accepts_runtime_clip_classification() -> None:
+    payload = {
+        "objects": [
+            {
+                "pcd_np": np.array([[0.0, 0.0, 1.0]], dtype=np.float32),
+                "clip_ft": np.array([0.1, 0.2], dtype=np.float32),
+                "class_name": ["chair"],
+                "conf": [0.9],
+                "image_idx": [0],
+            }
+        ]
+    }
+    artifact = adapt_conceptgraphs(
+        payload,
+        scene_id="room0",
+        timestamp=0.0,
+        upstream_commit="93277a0",
+        runtime=_runtime(),
+        semantic_labels=("table",),
+        semantic_scores=(0.75,),
+        semantic_label_source="method_output.clip_ft ViT-H-14 zero-shot",
+    )
+
+    entity = artifact.snapshot.entities[0]
+    assert entity.semantic_label == "table"
+    assert entity.semantic_score == pytest.approx(0.75)
+    assert entity.metadata["semantic_label_source"] == "method_output.clip_ft ViT-H-14 zero-shot"
+    assert artifact.metadata.semantic_label_source == "method_output.clip_ft ViT-H-14 zero-shot"
+
+
 def test_dualmap_adapter_uses_uid_and_runtime_class_map_not_gt() -> None:
     obj = SimpleNamespace(
         uid="stable-uuid",
@@ -113,6 +143,7 @@ def test_dualmap_adapter_uses_uid_and_runtime_class_map_not_gt() -> None:
     artifact = adapt_dualmap(
         [obj],
         class_id_names={7: "chair"},
+        background_xyz=np.array([[0.0, 0.0, 0.0]], dtype=np.float32),
         scene_id="room0",
         timestamp=20.0,
         upstream_commit="157235e",
@@ -124,6 +155,7 @@ def test_dualmap_adapter_uses_uid_and_runtime_class_map_not_gt() -> None:
     assert entity.semantic_label == "chair"
     assert entity.metadata["semantic_label_source"] == "method_output.class_id"
     assert artifact.metadata.entity_id_stability == "persistent-within-run"
+    np.testing.assert_allclose(artifact.snapshot.background_xyz, [[0.0, 0.0, 0.0]])
 
 
 def test_ovimap_adapter_uses_runtime_embedding_and_color_instance_id() -> None:
@@ -195,6 +227,6 @@ def test_artifact_writer_emits_snapshot_runtime_and_metadata_json(tmp_path) -> N
     runtime = json.loads(paths["runtime"].read_text(encoding="utf-8"))
     metadata = json.loads(paths["metadata"].read_text(encoding="utf-8"))
     assert runtime["units"]["peak_gpu_gb"] == "GB"
-    assert metadata["semantic_label_source"] == "method_output"
+    assert metadata["semantic_label_source"] == "method_output.class_name"
     assert metadata["snapshot_scope"] == "current"
     assert BaselineArtifact.from_json_files(paths["snapshot"], paths["entities"], paths["runtime"], paths["metadata"])

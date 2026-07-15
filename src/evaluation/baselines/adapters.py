@@ -30,13 +30,23 @@ def adapt_conceptgraphs(
     timestamp: float,
     upstream_commit: str,
     runtime: RuntimeBreakdown,
+    semantic_labels: Sequence[str | None] | None = None,
+    semantic_scores: Sequence[float] | None = None,
+    semantic_label_source: str = "method_output.class_name",
 ) -> BaselineArtifact:
+    objects = tuple(payload.get("objects", ()))
+    if semantic_labels is not None and len(semantic_labels) != len(objects):
+        raise ValueError("ConceptGraphs semantic labels must match object count")
+    if semantic_scores is not None and len(semantic_scores) != len(objects):
+        raise ValueError("ConceptGraphs semantic scores must match object count")
     entities: list[EntityPrediction] = []
-    for index, obj in enumerate(payload.get("objects", ())):
+    for index, obj in enumerate(objects):
         labels = [str(label) for label in obj.get("class_name", ()) if str(label).strip()]
-        label = Counter(labels).most_common(1)[0][0] if labels else None
+        native_label = Counter(labels).most_common(1)[0][0] if labels else None
+        label = native_label if semantic_labels is None else semantic_labels[index]
         confidences = [float(value) for value in obj.get("conf", ())]
-        score = sum(confidences) / len(confidences) if confidences else 0.0
+        native_score = sum(confidences) / len(confidences) if confidences else 0.0
+        score = native_score if semantic_scores is None else float(semantic_scores[index])
         image_indices = [float(value) for value in obj.get("image_idx", ())]
         first_seen = min(image_indices) if image_indices else float(timestamp)
         last_seen = max(image_indices) if image_indices else float(timestamp)
@@ -51,7 +61,7 @@ def adapt_conceptgraphs(
                 first_seen=first_seen,
                 last_seen=last_seen,
                 metadata={
-                    "semantic_label_source": "method_output.class_name",
+                    "semantic_label_source": semantic_label_source,
                     "observation_count": len(image_indices),
                 },
             )
@@ -62,6 +72,7 @@ def adapt_conceptgraphs(
         "native",
         upstream_commit,
         "artifact-local",
+        semantic_label_source=semantic_label_source,
     )
     snapshot = MapSnapshot(
         method=metadata.display_label,
@@ -83,6 +94,8 @@ def adapt_dualmap(
     timestamp: float,
     upstream_commit: str,
     runtime: RuntimeBreakdown,
+    background_xyz: np.ndarray | None = None,
+    semantic_label_source: str = "method_output.class_id",
 ) -> BaselineArtifact:
     entities: list[EntityPrediction] = []
     for obj in objects:
@@ -99,7 +112,7 @@ def adapt_dualmap(
                 first_seen=0.0,
                 last_seen=float(timestamp),
                 metadata={
-                    "semantic_label_source": "method_output.class_id",
+                    "semantic_label_source": semantic_label_source,
                     "class_id": class_id,
                     "observation_count": int(getattr(obj, "observed_num", 0)),
                 },
@@ -111,13 +124,14 @@ def adapt_dualmap(
         "native",
         upstream_commit,
         "persistent-within-run",
+        semantic_label_source=semantic_label_source,
     )
     snapshot = MapSnapshot(
         method=metadata.display_label,
         scene_id=scene_id,
         timestamp=timestamp,
         entities=entities,
-        background_xyz=None,
+        background_xyz=background_xyz,
         scope="current",
         runtime=runtime.to_snapshot_runtime(),
     )
