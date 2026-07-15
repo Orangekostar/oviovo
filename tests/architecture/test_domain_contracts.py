@@ -108,3 +108,46 @@ def test_visibility_batch_keeps_occlusion_separate_from_absence() -> None:
     batch = VisibilityEvidenceBatch(frame_id=7, evidence=(occluded,))
     assert batch.by_entity("entity-1").kind is VisibilityKind.OCCLUDED
     assert batch.by_entity("missing") is None
+
+
+from src.domain.entities import (
+    EntityLifecycleState,
+    LifecycleDelta,
+    LifecycleInterval,
+    LifecycleTransition,
+    PersistentEntity,
+)
+
+
+def test_persistent_entity_keeps_closed_lifecycle_intervals() -> None:
+    entity = PersistentEntity(
+        entity_id="entity-1",
+        state=EntityLifecycleState.DORMANT,
+        first_seen=1.0,
+        last_seen=4.0,
+        semantic_label="book",
+        semantic_confidence=0.9,
+        semantic_embedding=np.array([1.0, 0.0], dtype=np.float32),
+        identity_embedding=np.array([0.0, 1.0], dtype=np.float32),
+        geometry_handle="geometry/entity-1",
+        ownership_revision=5,
+        lifecycle_intervals=(
+            LifecycleInterval(EntityLifecycleState.ACTIVE, 1.0, 4.0),
+            LifecycleInterval(EntityLifecycleState.DORMANT, 4.0, None),
+        ),
+    )
+    assert entity.lifecycle_intervals[-1].end_timestamp is None
+    assert entity.semantic_embedding.flags.writeable is False
+
+
+def test_lifecycle_delta_contains_commands_not_mutable_entities() -> None:
+    transition = LifecycleTransition(
+        entity_id="entity-1",
+        from_state=EntityLifecycleState.ACTIVE,
+        to_state=EntityLifecycleState.DORMANT,
+        timestamp=4.0,
+        reason="signed_absence",
+        release_ownership=True,
+    )
+    delta = LifecycleDelta(base_revision=3, transitions=(transition,))
+    assert delta.transitions == (transition,)
