@@ -1,0 +1,179 @@
+{
+  "adapter_commit": "70bf9aa7fb8dbd9e84f50453c7eecd519216c2c5",
+  "aggregate_source": {
+    "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/t4/runtime_summary.json",
+    "sha256": "607f3b0f3ee2b02d3b82bb2e436b00eb186affe0cc9228a9b740c2c2874738f2"
+  },
+  "command": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/run_gate3_room0_200f.sh; run_post_filter_merge.py; run_t4_query.sh; run_t4_summarize.sh",
+  "config": {
+    "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/run_gate3_room0_200f.sh",
+    "sha256": "c74200f7535d273bbd786d2a801c6b1fb8d1532dae4206ae25f5b1e6a3d4fe6e"
+  },
+  "dataset": {
+    "manifest": {
+      "path": "configs/evaluation/manifests/replica8.json",
+      "sha256": "8547aa8b7dbf7ef7a97f4b516f6557a1d163107404fbfc7ccbd56747c5dc95a4"
+    },
+    "name": "local_same_hardware",
+    "pose_source": "Replica NICE-SLAM traj.txt; room0 frames 0:2000:10",
+    "splits": [
+      "test"
+    ]
+  },
+  "environment": {
+    "name": "oviovo-conceptgraphs",
+    "path": "/home/ww/miniconda3/envs/oviovo-conceptgraphs"
+  },
+  "hardware": {
+    "cpu": "2 x Intel Xeon Silver 4314; 64 logical CPUs",
+    "driver": "595.71.05",
+    "gpu": "NVIDIA A40 46 GB, GPU 1",
+    "os": "Ubuntu 24.04.4 LTS"
+  },
+  "method": {
+    "display_label": "ConceptGraphs",
+    "key": "CONCEPTGRAPHS",
+    "mode": "native"
+  },
+  "metrics": {
+    "backend_spf": 0.4978,
+    "evaluation_io_s": 32.01,
+    "final_map_mb": 5.804456,
+    "finalization_s": 22.98,
+    "frontend_spf": 3.51735,
+    "hz": 0.24905669775724443,
+    "initialization_s": 23.0,
+    "maintenance_spf": 0.0,
+    "peak_gpu_gb": 24.011,
+    "peak_ram_gb": 9.090104,
+    "query_p50_ms": 8.774325717240572,
+    "query_p95_ms": 8.807907346636057,
+    "total_spf": 4.01515
+  },
+  "protocol_deviations": [
+    "Official streamlined frontend uses YOLO-World plus MobileSAM rather than the paper CropFormer frontend.",
+    "Initialization is separated at the detector's final upstream initialization timestamp.",
+    "Finalization replays the upstream post-filter/merge entry point with its published thresholds.",
+    "The first mapping attempt exposed a missing PyTorch3D dependency; the reported backend uses the successful fixed-environment retry."
+  ],
+  "raw_outputs": [
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/t4/run_status.json",
+      "sha256": "326964fc19d912ed1e4ff09dfae0ff62ff59b9958c879019a7017f133a93da9f"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/gate3_room0_200f/detection.log",
+      "sha256": "7aea46b5d00fb89bbd40716cc5845afa0df9aec0c7353bd16c601a5fde430509"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/gate3_room0_200f/mapping_retry.log",
+      "sha256": "a0eff9850b20359842ea0529bc309c6ec14f2d35489979eefb5c5f295291cd0d"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/gate3_room0_200f/gpu_dmon.csv",
+      "sha256": "b37b2c7f277ed8b0f9aebfb3138e0de9a362405917192c48308989b2cec9f885"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/t4/finalization.log",
+      "sha256": "69ae892472258cc928a2f8da3e105b27258d197b290cd8999cfd5278e8fc51d8"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/common_eval/room0/evaluation.log",
+      "sha256": "b803a5d80b3fd46c9823796e431797a2e98051e314f97a2b3951c6d2efdc3f95"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/t4/query.json",
+      "sha256": "a2778bbd83d7b0af0d3d948464e28f0e4e908dba3a5f5a4d3c585d1ea756b601"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/t4/runtime_summary.json",
+      "sha256": "607f3b0f3ee2b02d3b82bb2e436b00eb186affe0cc9228a9b740c2c2874738f2"
+    }
+  ],
+  "run_id": "20260715-conceptgraphs-room0-s10-200f-t4",
+  "seed": 0,
+  "status": "VERIFIED",
+  "token_bindings": [
+    {
+      "json_pointer": "/metrics/frontend_spf",
+      "precision": 2,
+      "token": "T4_CONCEPTGRAPHS_FRONTEND_SPF"
+    },
+    {
+      "json_pointer": "/metrics/backend_spf",
+      "precision": 2,
+      "token": "T4_CONCEPTGRAPHS_BACKEND_SPF"
+    },
+    {
+      "json_pointer": "/metrics/maintenance_spf",
+      "precision": 2,
+      "token": "T4_CONCEPTGRAPHS_MAINT_SPF"
+    },
+    {
+      "json_pointer": "/metrics/total_spf",
+      "precision": 2,
+      "token": "T4_CONCEPTGRAPHS_TOTAL_SPF"
+    },
+    {
+      "json_pointer": "/metrics/hz",
+      "precision": 2,
+      "token": "T4_CONCEPTGRAPHS_HZ"
+    },
+    {
+      "json_pointer": "/metrics/finalization_s",
+      "precision": 2,
+      "token": "T4_CONCEPTGRAPHS_FINAL_S"
+    },
+    {
+      "json_pointer": "/metrics/query_p50_ms",
+      "precision": 2,
+      "token": "T4_CONCEPTGRAPHS_QUERY_P50_MS"
+    },
+    {
+      "json_pointer": "/metrics/query_p95_ms",
+      "precision": 2,
+      "token": "T4_CONCEPTGRAPHS_QUERY_P95_MS"
+    },
+    {
+      "json_pointer": "/metrics/peak_gpu_gb",
+      "precision": 2,
+      "token": "T4_CONCEPTGRAPHS_GPU_GB"
+    },
+    {
+      "json_pointer": "/metrics/peak_ram_gb",
+      "precision": 2,
+      "token": "T4_CONCEPTGRAPHS_RAM_GB"
+    },
+    {
+      "json_pointer": "/metrics/final_map_mb",
+      "precision": 2,
+      "token": "T4_CONCEPTGRAPHS_MAP_MB"
+    },
+    {
+      "json_pointer": "/metrics/evaluation_io_s",
+      "precision": 2,
+      "token": "T4_CONCEPTGRAPHS_EVAL_IO_S"
+    }
+  ],
+  "upstream_commit": "93277a02bd89171f8121e84203121cf7af9ebb5d",
+  "weights": [
+    {
+      "name": "yolov8l-world",
+      "path": "/home/ww/oviovo_baseline_builds/conceptgraphs-93277a02bd89/yolov8l-world.pt",
+      "sha256": "8bdfaef999116760247d6fb0b0f8fca064b43e94598b3d4a807ebae9bcf0cdd5",
+      "source": "pre-existing local upstream asset"
+    },
+    {
+      "name": "MobileSAM",
+      "path": "/home/ww/oviovo_baseline_builds/conceptgraphs-93277a02bd89/mobile_sam.pt",
+      "sha256": "6dbb90523a35330fedd7f1d3dfc66f995213d81b29a5ca8108dbcdd4e37d6c2f",
+      "source": "pre-existing local upstream asset"
+    },
+    {
+      "name": "CLIP ViT-H-14 laion2B-s32B-b79K",
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/hf_cache/models--laion--CLIP-ViT-H-14-laion2B-s32B-b79K/snapshots/1c2b8495b28150b8a4922ee1c8edee224c284c0c/open_clip_pytorch_model.bin",
+      "sha256": "9a78ef8e8c73fd0df621682e7a8e8eb36c6916cb3c16b291a082ecd52ab79cc4",
+      "source": "hf-hub:laion/CLIP-ViT-H-14-laion2B-s32B-b79K"
+    }
+  ]
+}
