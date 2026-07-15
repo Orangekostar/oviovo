@@ -151,3 +151,28 @@ def test_lifecycle_delta_contains_commands_not_mutable_entities() -> None:
     )
     delta = LifecycleDelta(base_revision=3, transitions=(transition,))
     assert delta.transitions == (transition,)
+
+
+from src.domain.association import (
+    AssociationDecision,
+    AssociationDecisionBatch,
+    AssociationKind,
+    EntityBinding,
+    EntityResolutionBatch,
+)
+
+
+def test_dormant_reid_is_distinct_from_active_match() -> None:
+    match = AssociationDecision("track-1", AssociationKind.ACTIVE_MATCH, "entity-1", 0.8)
+    reid = AssociationDecision("track-2", AssociationKind.DORMANT_REID, "entity-2", 0.9)
+    batch = AssociationDecisionBatch(frame_id=7, decisions=(match, reid))
+    assert batch.decisions[0].kind is AssociationKind.ACTIVE_MATCH
+    assert batch.decisions[1].kind is AssociationKind.DORMANT_REID
+
+
+def test_new_entity_id_appears_only_after_registry_resolution() -> None:
+    decision = AssociationDecision("track-3", AssociationKind.CREATE, None, 0.7)
+    assert decision.entity_id is None
+    binding = EntityBinding("track-3", "entity-3", ("7:11",), AssociationKind.CREATE)
+    resolution = EntityResolutionBatch(frame_id=7, bindings=(binding,))
+    assert resolution.bindings[0].entity_id == "entity-3"
