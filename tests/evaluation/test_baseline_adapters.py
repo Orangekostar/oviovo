@@ -39,7 +39,9 @@ def test_runtime_breakdown_uses_explicit_units_and_rejects_gt_sources() -> None:
     payload = runtime.to_json()
 
     assert payload["units"]["frontend_s"] == "seconds"
+    assert payload["units"]["query_p50_ms"] == "milliseconds"
     assert payload["units"]["query_p95_ms"] == "milliseconds"
+    assert payload["metrics"]["query_p50_ms"] == pytest.approx(3.0)
     assert payload["metrics"]["total_s_per_frame"] == pytest.approx(0.3)
     assert payload["metrics"]["processed_hz"] == pytest.approx(10.0 / 3.0)
 
