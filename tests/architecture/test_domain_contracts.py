@@ -237,3 +237,26 @@ def test_map_snapshot_is_versioned_and_immutable() -> None:
     )
     assert snapshot.schema_version == 2
     assert snapshot.ownership.revision == 3
+
+
+def test_domain_package_exports_six_core_architecture_objects() -> None:
+    from src.domain import (
+        FrameObservation,
+        LocalTrack,
+        MapSnapshot,
+        OwnershipLayer,
+        PersistentEntity,
+        VoxelEvidence,
+    )
+
+    assert all(
+        value is not None
+        for value in (
+            FrameObservation,
+            LocalTrack,
+            PersistentEntity,
+            VoxelEvidence,
+            OwnershipLayer,
+            MapSnapshot,
+        )
+    )
