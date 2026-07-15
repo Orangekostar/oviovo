@@ -23,6 +23,13 @@ def _query_model_name(baseline: str) -> str:
     }[baseline]
 
 
+def _query_protocol(baseline: str) -> str:
+    protocol = "frozen Replica-41 category queries; full tokenization, text encoding, and entity ranking"
+    if baseline == "ovimap":
+        protocol += "; OVI-MAP excludes instances observed in fewer than two frames"
+    return protocol
+
+
 def _entity_embeddings(entities: list[object], baseline: str) -> np.ndarray:
     eligible = [
         entity.semantic_embedding
@@ -143,10 +150,7 @@ def main() -> int:
         "latencies_ms": latencies_ms,
         "query_p50_ms": _percentile(latencies_ms, 50.0),
         "query_p95_ms": _percentile(latencies_ms, 95.0),
-        "protocol": (
-            "frozen Replica-41 category queries; full tokenization, text encoding, and entity ranking; "
-            "OVI-MAP excludes instances observed in fewer than two frames"
-        ),
+        "protocol": _query_protocol(args.baseline),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")

@@ -2,7 +2,11 @@ from types import SimpleNamespace
 
 import numpy as np
 
-from scripts.evaluation.measure_baseline_queries import _entity_embeddings, _query_model_name
+from scripts.evaluation.measure_baseline_queries import (
+    _entity_embeddings,
+    _query_model_name,
+    _query_protocol,
+)
 
 
 def test_ovimap_query_uses_siglip_and_skips_single_observation_entities() -> None:
@@ -21,6 +25,7 @@ def test_ovimap_query_uses_siglip_and_skips_single_observation_entities() -> Non
     embeddings = _entity_embeddings(entities, "ovimap")
 
     assert _query_model_name("ovimap") == "SigLIP-L/16-384"
+    assert "fewer than two frames" in _query_protocol("ovimap")
     np.testing.assert_array_equal(embeddings, [[0.0, 1.0]])
 
 
@@ -39,4 +44,5 @@ def test_non_ovimap_queries_keep_all_embedded_entities() -> None:
     embeddings = _entity_embeddings(entities, "conceptgraphs")
 
     assert _query_model_name("conceptgraphs") == "ViT-H-14"
+    assert "OVI-MAP" not in _query_protocol("conceptgraphs")
     np.testing.assert_array_equal(embeddings, [[1.0, 0.0], [0.0, 1.0]])
