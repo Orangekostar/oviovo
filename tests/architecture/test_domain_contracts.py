@@ -176,3 +176,64 @@ def test_new_entity_id_appears_only_after_registry_resolution() -> None:
     binding = EntityBinding("track-3", "entity-3", ("7:11",), AssociationKind.CREATE)
     resolution = EntityResolutionBatch(frame_id=7, bindings=(binding,))
     assert resolution.bindings[0].entity_id == "entity-3"
+
+
+from src.domain.mapping import (
+    EntityVoxelEvidence,
+    FusionDelta,
+    GeometryDelta,
+    OwnershipDelta,
+    OwnershipLayer,
+    OwnershipTransition,
+    VoxelEvidence,
+    VoxelEvidenceDelta,
+    VoxelEvidenceUpdate,
+    VoxelOwnership,
+)
+from src.domain.snapshots import MapSnapshot, SnapshotScope
+
+
+def test_voxel_evidence_retains_competing_entities_independently_of_owner() -> None:
+    evidence = VoxelEvidence(
+        voxel_key=(1, 2, 3),
+        entity_evidence=(
+            EntityVoxelEvidence("entity-1", 3.0, 0.0, 1.0),
+            EntityVoxelEvidence("entity-2", 1.0, 0.5, 1.0),
+        ),
+        background_support=0.25,
+        source_observation_ids=("7:11",),
+        revision=4,
+    )
+    owner = VoxelOwnership((1, 2, 3), "entity-1", 0.75, epoch=2, evidence_revision=4)
+    assert len(evidence.entity_evidence) == 2
+    assert owner.owner_entity_id == "entity-1"
+
+
+def test_ownership_release_does_not_delete_voxel_evidence() -> None:
+    transition = OwnershipTransition(
+        voxel_key=(1, 2, 3),
+        previous_owner_entity_id="entity-1",
+        new_owner_entity_id=None,
+        confidence=0.0,
+        evidence_revision=4,
+        reason="entity_dormant",
+    )
+    delta = OwnershipDelta(base_revision=2, transitions=(transition,))
+    assert delta.transitions[0].new_owner_entity_id is None
+
+
+def test_map_snapshot_is_versioned_and_immutable() -> None:
+    ownership = OwnershipLayer(revision=3, assignments=())
+    snapshot = MapSnapshot(
+        scene_id="room0",
+        timestamp=2.0,
+        revision=8,
+        scope=SnapshotScope.CURRENT,
+        entities=(),
+        geometry_revision=5,
+        voxel_evidence_revision=6,
+        ownership=ownership,
+        lifecycle_revision=7,
+    )
+    assert snapshot.schema_version == 2
+    assert snapshot.ownership.revision == 3
