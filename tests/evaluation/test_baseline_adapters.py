@@ -176,6 +176,7 @@ def test_ovimap_adapter_uses_runtime_embedding_and_color_instance_id() -> None:
         timestamp=10.0,
         upstream_commit="58a804e",
         runtime=_runtime(),
+        background_xyz=np.array([[2.0, 0.0, 1.0]], dtype=np.float32),
     )
 
     entity = artifact.snapshot.entities[0]
@@ -184,6 +185,34 @@ def test_ovimap_adapter_uses_runtime_embedding_and_color_instance_id() -> None:
     assert entity.semantic_embedding == pytest.approx([0.25, 0.75])
     assert entity.metadata["semantic_label_source"] == "method_output.feat"
     assert artifact.metadata.entity_id_stability == "persistent-within-run"
+    np.testing.assert_allclose(artifact.snapshot.background_xyz, [[2.0, 0.0, 1.0]])
+
+
+def test_ovimap_adapter_accepts_official_runtime_semantic_classification() -> None:
+    artifact = adapt_ovimap(
+        {
+            7: {
+                "feat": np.array([[1.0, 0.0]], dtype=np.float32),
+                "vis_area": np.array([2.0], dtype=np.float32),
+                "frame_id": [0],
+                "color": np.array([10, 20, 30], dtype=np.uint8),
+            }
+        },
+        points_by_color={(10, 20, 30): np.array([[0.0, 0.0, 1.0]], dtype=np.float32)},
+        scene_id="room0",
+        timestamp=10.0,
+        upstream_commit="58a804e",
+        runtime=_runtime(),
+        semantic_labels=("chair",),
+        semantic_scores=(0.75,),
+        semantic_label_source="method_output.feat SigLIP-L/16-384 official canonical zero-shot",
+    )
+
+    entity = artifact.snapshot.entities[0]
+    assert entity.semantic_label == "chair"
+    assert entity.semantic_score == pytest.approx(0.75)
+    assert entity.metadata["semantic_label_source"].startswith("method_output.feat SigLIP")
+    assert artifact.metadata.semantic_label_source.startswith("method_output.feat SigLIP")
 
 
 def test_frozen_update_audit_rejects_updates_after_intervention() -> None:

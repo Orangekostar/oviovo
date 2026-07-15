@@ -146,10 +146,19 @@ def adapt_ovimap(
     timestamp: float,
     upstream_commit: str,
     runtime: RuntimeBreakdown,
+    background_xyz: np.ndarray | None = None,
     protocol_notes: Sequence[str] = (),
+    semantic_labels: Sequence[str | None] | None = None,
+    semantic_scores: Sequence[float] | None = None,
+    semantic_label_source: str = "method_output.feat",
 ) -> BaselineArtifact:
+    ordered_instances = tuple(sorted(instances.items()))
+    if semantic_labels is not None and len(semantic_labels) != len(ordered_instances):
+        raise ValueError("OVI-MAP semantic labels must match instance count")
+    if semantic_scores is not None and len(semantic_scores) != len(ordered_instances):
+        raise ValueError("OVI-MAP semantic scores must match instance count")
     entities: list[EntityPrediction] = []
-    for instance_id, instance in sorted(instances.items()):
+    for index, (instance_id, instance) in enumerate(ordered_instances):
         color_array = np.asarray(instance["color"], dtype=np.uint8).reshape(-1)
         if color_array.shape != (3,):
             raise ValueError("OVI-MAP instance color must have three channels")
@@ -166,18 +175,20 @@ def adapt_ovimap(
         else:
             embedding = features.mean(axis=0)
         frames = [float(value) for value in instance.get("frame_id", ())]
+        label = None if semantic_labels is None else semantic_labels[index]
+        score = 1.0 if semantic_scores is None else float(semantic_scores[index])
         entities.append(
             EntityPrediction(
                 entity_id=f"ovimap:{int(instance_id)}",
                 points_xyz=np.asarray(points_by_color.get(color, np.empty((0, 3))), dtype=np.float32),
                 semantic_embedding=embedding,
-                semantic_label=None,
-                semantic_score=1.0,
+                semantic_label=label,
+                semantic_score=score,
                 lifecycle_state="active",
                 first_seen=min(frames) if frames else float(timestamp),
                 last_seen=max(frames) if frames else float(timestamp),
                 metadata={
-                    "semantic_label_source": "method_output.feat",
+                    "semantic_label_source": semantic_label_source,
                     "instance_color_rgb": list(color),
                     "observation_count": len(frames),
                 },
@@ -189,6 +200,7 @@ def adapt_ovimap(
         "native",
         upstream_commit,
         "persistent-within-run",
+        semantic_label_source=semantic_label_source,
         protocol_notes=tuple(protocol_notes),
     )
     snapshot = MapSnapshot(
@@ -196,7 +208,7 @@ def adapt_ovimap(
         scene_id=scene_id,
         timestamp=timestamp,
         entities=entities,
-        background_xyz=None,
+        background_xyz=background_xyz,
         scope="current",
         runtime=runtime.to_snapshot_runtime(),
     )
