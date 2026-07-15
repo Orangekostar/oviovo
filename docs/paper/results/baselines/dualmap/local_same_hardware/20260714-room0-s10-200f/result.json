@@ -1,0 +1,176 @@
+{
+  "adapter_commit": "02376fe26666f71c6e0cbaac46708df8e1837a35",
+  "aggregate_source": {
+    "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/t4/runtime_summary.json",
+    "sha256": "d09f79b5b0b0bbc23dd8244cfe0c1789d16c57fbea318e38b70917af7a336df4"
+  },
+  "command": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/run_gate3_room0_200f.sh; scripts/evaluation/measure_baseline_queries.py; scripts/evaluation/summarize_baseline_runtime.py",
+  "config": {
+    "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/run_gate3_room0_200f.sh",
+    "sha256": "24c8bae11f406a68707acfcd9902c657442db546467d216e1b08bc30b9991554"
+  },
+  "dataset": {
+    "manifest": {
+      "path": "configs/evaluation/manifests/replica8.json",
+      "sha256": "8547aa8b7dbf7ef7a97f4b516f6557a1d163107404fbfc7ccbd56747c5dc95a4"
+    },
+    "name": "local_same_hardware",
+    "pose_source": "Replica NICE-SLAM traj.txt; room0 frames 0:2000:10",
+    "splits": [
+      "test"
+    ]
+  },
+  "environment": {
+    "name": "oviovo-dualmap",
+    "path": "/home/ww/miniconda3/envs/oviovo-dualmap"
+  },
+  "hardware": {
+    "cpu": "2 x Intel Xeon Silver 4314; 64 logical CPUs",
+    "driver": "595.71.05",
+    "gpu": "NVIDIA A40 46 GB, GPU 0",
+    "os": "Ubuntu 24.04.4 LTS"
+  },
+  "method": {
+    "display_label": "DualMap",
+    "key": "DUALMAP",
+    "mode": "native"
+  },
+  "metrics": {
+    "backend_spf": 0.07020000000000004,
+    "evaluation_io_s": 37.52,
+    "final_map_mb": 17.971541,
+    "finalization_s": 12.515999999999975,
+    "frontend_spf": 1.6569999999999998,
+    "hz": 0.5789717461787864,
+    "initialization_s": 124.694,
+    "maintenance_spf": 0.0,
+    "peak_gpu_gb": 23.801,
+    "peak_ram_gb": 6.731172,
+    "query_p50_ms": 6.365055218338966,
+    "query_p95_ms": 6.452974397689104,
+    "total_spf": 1.7272
+  },
+  "protocol_deviations": [
+    "DualMap has no maintenance phase; maintenance seconds/frame is zero by native design.",
+    "Initialization is separated at the final upstream initialization log timestamp; finalization is the residual process wall time after initialization and online stages.",
+    "GPU peak is exclusive-device framebuffer usage sampled by nvidia-smi dmon at one-second intervals."
+  ],
+  "raw_outputs": [
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/gate3_room0_200f/status.json",
+      "sha256": "0dd946d7e3aa956f06e0ff0f31fa99f7dee1fca7cca73e69351c0d83046bc3a4"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/gate3_room0_200f/run.log",
+      "sha256": "ffdc17410cdd8157f89a8c92e928f89beea42e57c7ce2017b813eaf65dc3b4ff"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/gate3_room0_200f/gpu_dmon.csv",
+      "sha256": "2728b6056dfa3e0aac17402aac876bc223a892e6337d46a353c91d65aac50162"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/common_eval_room0_clip.log",
+      "sha256": "172e3d1b56b51f47965010d8f83a270f111c2523dbac3895bedac32f42c2792f"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/t4/query.json",
+      "sha256": "302c8981fb246f2c08611fc3993013c7fb08375974ffb5215db5d7384f1fde2d"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/t4/runtime_summary.json",
+      "sha256": "d09f79b5b0b0bbc23dd8244cfe0c1789d16c57fbea318e38b70917af7a336df4"
+    }
+  ],
+  "run_id": "20260714-dualmap-room0-s10-200f-t4",
+  "seed": 0,
+  "status": "VERIFIED",
+  "token_bindings": [
+    {
+      "json_pointer": "/metrics/frontend_spf",
+      "precision": 2,
+      "token": "T4_DUALMAP_FRONTEND_SPF"
+    },
+    {
+      "json_pointer": "/metrics/backend_spf",
+      "precision": 2,
+      "token": "T4_DUALMAP_BACKEND_SPF"
+    },
+    {
+      "json_pointer": "/metrics/maintenance_spf",
+      "precision": 2,
+      "token": "T4_DUALMAP_MAINT_SPF"
+    },
+    {
+      "json_pointer": "/metrics/total_spf",
+      "precision": 2,
+      "token": "T4_DUALMAP_TOTAL_SPF"
+    },
+    {
+      "json_pointer": "/metrics/hz",
+      "precision": 2,
+      "token": "T4_DUALMAP_HZ"
+    },
+    {
+      "json_pointer": "/metrics/finalization_s",
+      "precision": 2,
+      "token": "T4_DUALMAP_FINAL_S"
+    },
+    {
+      "json_pointer": "/metrics/query_p50_ms",
+      "precision": 2,
+      "token": "T4_DUALMAP_QUERY_P50_MS"
+    },
+    {
+      "json_pointer": "/metrics/query_p95_ms",
+      "precision": 2,
+      "token": "T4_DUALMAP_QUERY_P95_MS"
+    },
+    {
+      "json_pointer": "/metrics/peak_gpu_gb",
+      "precision": 2,
+      "token": "T4_DUALMAP_GPU_GB"
+    },
+    {
+      "json_pointer": "/metrics/peak_ram_gb",
+      "precision": 2,
+      "token": "T4_DUALMAP_RAM_GB"
+    },
+    {
+      "json_pointer": "/metrics/final_map_mb",
+      "precision": 2,
+      "token": "T4_DUALMAP_MAP_MB"
+    },
+    {
+      "json_pointer": "/metrics/evaluation_io_s",
+      "precision": 2,
+      "token": "T4_DUALMAP_EVAL_IO_S"
+    }
+  ],
+  "upstream_commit": "157235ec49e6a1f439babbc571c4c02ad1f06aa9",
+  "weights": [
+    {
+      "name": "yolov8l-world",
+      "path": "/home/ww/vv/paper2/DualMap/model/yolov8l-world.pt",
+      "sha256": "8bdfaef999116760247d6fb0b0f8fca064b43e94598b3d4a807ebae9bcf0cdd5",
+      "source": "pre-existing local upstream asset"
+    },
+    {
+      "name": "MobileSAM",
+      "path": "/home/ww/vv/paper2/DualMap/model/mobile_sam.pt",
+      "sha256": "6dbb90523a35330fedd7f1d3dfc66f995213d81b29a5ca8108dbcdd4e37d6c2f",
+      "source": "pre-existing local upstream asset"
+    },
+    {
+      "name": "FastSAM-s",
+      "path": "/home/ww/vv/paper2/DualMap/model/FastSAM-s.pt",
+      "sha256": "c9f78716a81c7aff0d608ccc73e1b82ab3aaad86005049f6a92106a0be6d0844",
+      "source": "pre-existing local upstream asset"
+    },
+    {
+      "name": "MobileCLIP-S2 OpenCLIP",
+      "path": "/home/ww/oviovo_benchmark_assets/weights/mobileclip_s2_openclip/open_clip_pytorch_model.bin",
+      "sha256": "64553a972ead2f84f6f59ee0c854751db0fdd2203efbd6e7e0c258ecbf24d8d8",
+      "source": "hf-hub:apple/MobileCLIP-S2-OpenCLIP/datacompdr"
+    }
+  ]
+}

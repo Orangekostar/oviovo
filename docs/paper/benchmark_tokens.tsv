@@ -201,18 +201,18 @@ T4_CONCEPTGRAPHS_GPU_GB	T4	CONCEPTGRAPHS	local_same_hardware	test	GPU_GB	lower	2
 T4_CONCEPTGRAPHS_RAM_GB	T4	CONCEPTGRAPHS	local_same_hardware	test	RAM_GB	lower	2			UNFILLED	Pending benchmark run.
 T4_CONCEPTGRAPHS_MAP_MB	T4	CONCEPTGRAPHS	local_same_hardware	test	MAP_MB	lower	2			UNFILLED	Pending benchmark run.
 T4_CONCEPTGRAPHS_EVAL_IO_S	T4	CONCEPTGRAPHS	local_same_hardware	test	EVAL_IO_S	lower	2			UNFILLED	Pending benchmark run.
-T4_DUALMAP_FRONTEND_SPF	T4	DUALMAP	local_same_hardware	test	FRONTEND_SPF	lower	2			UNFILLED	Pending benchmark run.
-T4_DUALMAP_BACKEND_SPF	T4	DUALMAP	local_same_hardware	test	BACKEND_SPF	lower	2			UNFILLED	Pending benchmark run.
-T4_DUALMAP_MAINT_SPF	T4	DUALMAP	local_same_hardware	test	MAINT_SPF	lower	2			UNFILLED	Pending benchmark run.
-T4_DUALMAP_TOTAL_SPF	T4	DUALMAP	local_same_hardware	test	TOTAL_SPF	lower	2			UNFILLED	Pending benchmark run.
-T4_DUALMAP_HZ	T4	DUALMAP	local_same_hardware	test	HZ	higher	2			UNFILLED	Pending benchmark run.
-T4_DUALMAP_FINAL_S	T4	DUALMAP	local_same_hardware	test	FINAL_S	lower	2			UNFILLED	Pending benchmark run.
-T4_DUALMAP_QUERY_P50_MS	T4	DUALMAP	local_same_hardware	test	QUERY_P50_MS	lower	2			UNFILLED	Pending benchmark run.
-T4_DUALMAP_QUERY_P95_MS	T4	DUALMAP	local_same_hardware	test	QUERY_P95_MS	lower	2			UNFILLED	Pending benchmark run.
-T4_DUALMAP_GPU_GB	T4	DUALMAP	local_same_hardware	test	GPU_GB	lower	2			UNFILLED	Pending benchmark run.
-T4_DUALMAP_RAM_GB	T4	DUALMAP	local_same_hardware	test	RAM_GB	lower	2			UNFILLED	Pending benchmark run.
-T4_DUALMAP_MAP_MB	T4	DUALMAP	local_same_hardware	test	MAP_MB	lower	2			UNFILLED	Pending benchmark run.
-T4_DUALMAP_EVAL_IO_S	T4	DUALMAP	local_same_hardware	test	EVAL_IO_S	lower	2			UNFILLED	Pending benchmark run.
+T4_DUALMAP_FRONTEND_SPF	T4	DUALMAP	local_same_hardware	test	FRONTEND_SPF	lower	2	results/baselines/dualmap/local_same_hardware/20260714-room0-s10-200f/result.json	/metrics/frontend_spf	VERIFIED	Imported from verified run 20260714-dualmap-room0-s10-200f-t4.
+T4_DUALMAP_BACKEND_SPF	T4	DUALMAP	local_same_hardware	test	BACKEND_SPF	lower	2	results/baselines/dualmap/local_same_hardware/20260714-room0-s10-200f/result.json	/metrics/backend_spf	VERIFIED	Imported from verified run 20260714-dualmap-room0-s10-200f-t4.
+T4_DUALMAP_MAINT_SPF	T4	DUALMAP	local_same_hardware	test	MAINT_SPF	lower	2	results/baselines/dualmap/local_same_hardware/20260714-room0-s10-200f/result.json	/metrics/maintenance_spf	VERIFIED	Imported from verified run 20260714-dualmap-room0-s10-200f-t4.
+T4_DUALMAP_TOTAL_SPF	T4	DUALMAP	local_same_hardware	test	TOTAL_SPF	lower	2	results/baselines/dualmap/local_same_hardware/20260714-room0-s10-200f/result.json	/metrics/total_spf	VERIFIED	Imported from verified run 20260714-dualmap-room0-s10-200f-t4.
+T4_DUALMAP_HZ	T4	DUALMAP	local_same_hardware	test	HZ	higher	2	results/baselines/dualmap/local_same_hardware/20260714-room0-s10-200f/result.json	/metrics/hz	VERIFIED	Imported from verified run 20260714-dualmap-room0-s10-200f-t4.
+T4_DUALMAP_FINAL_S	T4	DUALMAP	local_same_hardware	test	FINAL_S	lower	2	results/baselines/dualmap/local_same_hardware/20260714-room0-s10-200f/result.json	/metrics/finalization_s	VERIFIED	Imported from verified run 20260714-dualmap-room0-s10-200f-t4.
+T4_DUALMAP_QUERY_P50_MS	T4	DUALMAP	local_same_hardware	test	QUERY_P50_MS	lower	2	results/baselines/dualmap/local_same_hardware/20260714-room0-s10-200f/result.json	/metrics/query_p50_ms	VERIFIED	Imported from verified run 20260714-dualmap-room0-s10-200f-t4.
+T4_DUALMAP_QUERY_P95_MS	T4	DUALMAP	local_same_hardware	test	QUERY_P95_MS	lower	2	results/baselines/dualmap/local_same_hardware/20260714-room0-s10-200f/result.json	/metrics/query_p95_ms	VERIFIED	Imported from verified run 20260714-dualmap-room0-s10-200f-t4.
+T4_DUALMAP_GPU_GB	T4	DUALMAP	local_same_hardware	test	GPU_GB	lower	2	results/baselines/dualmap/local_same_hardware/20260714-room0-s10-200f/result.json	/metrics/peak_gpu_gb	VERIFIED	Imported from verified run 20260714-dualmap-room0-s10-200f-t4.
+T4_DUALMAP_RAM_GB	T4	DUALMAP	local_same_hardware	test	RAM_GB	lower	2	results/baselines/dualmap/local_same_hardware/20260714-room0-s10-200f/result.json	/metrics/peak_ram_gb	VERIFIED	Imported from verified run 20260714-dualmap-room0-s10-200f-t4.
+T4_DUALMAP_MAP_MB	T4	DUALMAP	local_same_hardware	test	MAP_MB	lower	2	results/baselines/dualmap/local_same_hardware/20260714-room0-s10-200f/result.json	/metrics/final_map_mb	VERIFIED	Imported from verified run 20260714-dualmap-room0-s10-200f-t4.
+T4_DUALMAP_EVAL_IO_S	T4	DUALMAP	local_same_hardware	test	EVAL_IO_S	lower	2	results/baselines/dualmap/local_same_hardware/20260714-room0-s10-200f/result.json	/metrics/evaluation_io_s	VERIFIED	Imported from verified run 20260714-dualmap-room0-s10-200f-t4.
 T4_KHRONOS_FRONTEND_SPF	T4	KHRONOS	local_same_hardware	test	FRONTEND_SPF	lower	2			UNFILLED	Pending benchmark run.
 T4_KHRONOS_BACKEND_SPF	T4	KHRONOS	local_same_hardware	test	BACKEND_SPF	lower	2			UNFILLED	Pending benchmark run.
 T4_KHRONOS_MAINT_SPF	T4	KHRONOS	local_same_hardware	test	MAINT_SPF	lower	2			UNFILLED	Pending benchmark run.

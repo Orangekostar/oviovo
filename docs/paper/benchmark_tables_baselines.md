@@ -87,7 +87,7 @@ Numerical cells are provenance tokens. `--` denotes a protocol-level N/A.
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | OVI-MAP | native | {{T4_OVIMAP_FRONTEND_SPF}} | {{T4_OVIMAP_BACKEND_SPF}} | {{T4_OVIMAP_MAINT_SPF}} | {{T4_OVIMAP_TOTAL_SPF}} | {{T4_OVIMAP_HZ}} | {{T4_OVIMAP_FINAL_S}} | {{T4_OVIMAP_QUERY_P50_MS}} | {{T4_OVIMAP_QUERY_P95_MS}} |
 | ConceptGraphs | native | {{T4_CONCEPTGRAPHS_FRONTEND_SPF}} | {{T4_CONCEPTGRAPHS_BACKEND_SPF}} | {{T4_CONCEPTGRAPHS_MAINT_SPF}} | {{T4_CONCEPTGRAPHS_TOTAL_SPF}} | {{T4_CONCEPTGRAPHS_HZ}} | {{T4_CONCEPTGRAPHS_FINAL_S}} | {{T4_CONCEPTGRAPHS_QUERY_P50_MS}} | {{T4_CONCEPTGRAPHS_QUERY_P95_MS}} |
-| DualMap | native | {{T4_DUALMAP_FRONTEND_SPF}} | {{T4_DUALMAP_BACKEND_SPF}} | {{T4_DUALMAP_MAINT_SPF}} | {{T4_DUALMAP_TOTAL_SPF}} | {{T4_DUALMAP_HZ}} | {{T4_DUALMAP_FINAL_S}} | {{T4_DUALMAP_QUERY_P50_MS}} | {{T4_DUALMAP_QUERY_P95_MS}} |
+| DualMap | native | 1.66 | 0.07 | 0.00 | 1.73 | 0.58 | 12.52 | 6.37 | 6.45 |
 | Khronos | online | {{T4_KHRONOS_FRONTEND_SPF}} | {{T4_KHRONOS_BACKEND_SPF}} | {{T4_KHRONOS_MAINT_SPF}} | {{T4_KHRONOS_TOTAL_SPF}} | {{T4_KHRONOS_HZ}} | {{T4_KHRONOS_FINAL_S}} | {{T4_KHRONOS_QUERY_P50_MS}} | {{T4_KHRONOS_QUERY_P95_MS}} |
 | OVIOVO (maintenance off) | maintenance-off | {{T4_OVIOVO_STATIC_FRONTEND_SPF}} | {{T4_OVIOVO_STATIC_BACKEND_SPF}} | {{T4_OVIOVO_STATIC_MAINT_SPF}} | {{T4_OVIOVO_STATIC_TOTAL_SPF}} | {{T4_OVIOVO_STATIC_HZ}} | {{T4_OVIOVO_STATIC_FINAL_S}} | {{T4_OVIOVO_STATIC_QUERY_P50_MS}} | {{T4_OVIOVO_STATIC_QUERY_P95_MS}} |
 | OVIOVO | online | {{T4_OVIOVO_FRONTEND_SPF}} | {{T4_OVIOVO_BACKEND_SPF}} | {{T4_OVIOVO_MAINT_SPF}} | {{T4_OVIOVO_TOTAL_SPF}} | {{T4_OVIOVO_HZ}} | {{T4_OVIOVO_FINAL_S}} | {{T4_OVIOVO_QUERY_P50_MS}} | {{T4_OVIOVO_QUERY_P95_MS}} |
@@ -98,7 +98,7 @@ Numerical cells are provenance tokens. `--` denotes a protocol-level N/A.
 | --- | --- | ---: | ---: | ---: | ---: |
 | OVI-MAP | native | {{T4_OVIMAP_GPU_GB}} | {{T4_OVIMAP_RAM_GB}} | {{T4_OVIMAP_MAP_MB}} | {{T4_OVIMAP_EVAL_IO_S}} |
 | ConceptGraphs | native | {{T4_CONCEPTGRAPHS_GPU_GB}} | {{T4_CONCEPTGRAPHS_RAM_GB}} | {{T4_CONCEPTGRAPHS_MAP_MB}} | {{T4_CONCEPTGRAPHS_EVAL_IO_S}} |
-| DualMap | native | {{T4_DUALMAP_GPU_GB}} | {{T4_DUALMAP_RAM_GB}} | {{T4_DUALMAP_MAP_MB}} | {{T4_DUALMAP_EVAL_IO_S}} |
+| DualMap | native | 23.80 | 6.73 | 17.97 | 37.52 |
 | Khronos | online | {{T4_KHRONOS_GPU_GB}} | {{T4_KHRONOS_RAM_GB}} | {{T4_KHRONOS_MAP_MB}} | {{T4_KHRONOS_EVAL_IO_S}} |
 | OVIOVO (maintenance off) | maintenance-off | {{T4_OVIOVO_STATIC_GPU_GB}} | {{T4_OVIOVO_STATIC_RAM_GB}} | {{T4_OVIOVO_STATIC_MAP_MB}} | {{T4_OVIOVO_STATIC_EVAL_IO_S}} |
 | OVIOVO | online | {{T4_OVIOVO_GPU_GB}} | {{T4_OVIOVO_RAM_GB}} | {{T4_OVIOVO_MAP_MB}} | {{T4_OVIOVO_EVAL_IO_S}} |
