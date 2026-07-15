@@ -1,0 +1,208 @@
+{
+  "adapter_commit": "41a07a3f88d2a776406babf0f12b19e7911b1dd6",
+  "aggregate_source": {
+    "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/common_eval/aggregate.json",
+    "sha256": "a3ea2017a1b80d8eb4528b9657b0c79f75b407f8fe94ec6a33314db3976909f1"
+  },
+  "command": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/run_gate3_room0_200f.sh && /home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/run_formal_replica7_remaining.sh && /home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/run_common_eval_replica7.sh",
+  "config": {
+    "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/run_formal_replica7_remaining.sh",
+    "sha256": "9e0b2334e0afa6db39f2af40fa00ef98e09f0b81dec7814fa7419fe9028db5ac"
+  },
+  "dataset": {
+    "manifest": {
+      "path": "configs/evaluation/manifests/replica8.json",
+      "sha256": "8547aa8b7dbf7ef7a97f4b516f6557a1d163107404fbfc7ccbd56747c5dc95a4"
+    },
+    "name": "Replica",
+    "pose_source": "Replica NICE-SLAM traj.txt",
+    "splits": [
+      "replica_8_compat",
+      "replica_7_heldout"
+    ]
+  },
+  "environment": {
+    "name": "oviovo-dualmap",
+    "path": "/home/ww/miniconda3/envs/oviovo-dualmap"
+  },
+  "hardware": {
+    "cpu": "2 x Intel Xeon Silver 4314; 64 logical CPUs",
+    "driver": "595.71.05",
+    "gpu": "NVIDIA A40 46 GB, GPU 0",
+    "os": "Ubuntu 24.04.4 LTS"
+  },
+  "method": {
+    "display_label": "DualMap",
+    "key": "DUALMAP",
+    "mode": "native"
+  },
+  "metrics": {
+    "replica_7_heldout": {
+      "geometry": {
+        "f5": 0.8839322840226808
+      },
+      "instance": {
+        "ap25": 0.3665506760014273,
+        "ap50": 0.14686061789605995
+      },
+      "scene_count": 7,
+      "scene_ids": [
+        "room1",
+        "room2",
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4"
+      ],
+      "semantic": {
+        "f_miou": 0.12082216019362364,
+        "macc": 0.19848685691235549,
+        "miou": 0.15497222624717213
+      }
+    },
+    "replica_8_compat": {
+      "geometry": {
+        "f5": 0.8868945982523018
+      },
+      "instance": {
+        "ap25": 0.3843340007847507,
+        "ap50": 0.1638187735660069
+      },
+      "scene_count": 8,
+      "scene_ids": [
+        "room0",
+        "room1",
+        "room2",
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4"
+      ],
+      "semantic": {
+        "f_miou": 0.12876994945312842,
+        "macc": 0.20352122573663417,
+        "miou": 0.15619636094465897
+      }
+    }
+  },
+  "protocol_deviations": [
+    "Serialized DualMap entities do not expose calibrated instance confidence; class-agnostic AP uses equal score with stable entity-ID tie breaking.",
+    "Common semantic evaluation uses frozen 41-class zero-shot MobileCLIP-S2 labels and does not suppress classes using test annotations."
+  ],
+  "raw_outputs": [
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/environment/conda-explicit.txt",
+      "sha256": "fd4f23f0b1ba2f398188cfab42619187491774a7cdbe040b81791f23357bbf27"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/common_eval/status.tsv",
+      "sha256": "ab2a8df1ee6cf9f8fd5a06a61e0b8e579dc11e3b1377180bfa69e7d1ce726c82"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/common_eval/room0/metrics.json",
+      "sha256": "9b373f80e3c72143c602bdc5f6b2b7d79843ca26c06a0beedc84e43fafd5aab6"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/common_eval/room1/metrics.json",
+      "sha256": "1011cb60b6dcf5b84abd20742a7b63cfb3cf2e6834b3448789eaaaf8777695ab"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/common_eval/room2/metrics.json",
+      "sha256": "851f9ba41a8aa9d05c7fb31b09e8d6ca5cadac3426507e3187758ef253ed90ac"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/common_eval/office0/metrics.json",
+      "sha256": "98c9693588730758c9e3cbfeccdc625e90d4ab39bb65baaad4b701700e4a3fe5"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/common_eval/office1/metrics.json",
+      "sha256": "bb1ae878db7aa825c355eca472ba54b6f103124f52562816c6a972b8124ae368"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/common_eval/office2/metrics.json",
+      "sha256": "e0520f507b2684030cfc7b6bdabcbe648f3b18a88d7f1a356c2c5c12340735a9"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/common_eval/office3/metrics.json",
+      "sha256": "9ed2c9831ca2b257715285be66bab00446ed332a26dfacca8517e30e4f05f685"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/common_eval/office4/metrics.json",
+      "sha256": "2f11509950e5da74040e29785ee25998c70e02033793a55c4b16a9f2a4c43bab"
+    }
+  ],
+  "run_id": "20260714-dualmap-replica8-s10-200f",
+  "seed": 0,
+  "status": "VERIFIED",
+  "token_bindings": [
+    {
+      "json_pointer": "/metrics/replica_8_compat/semantic/miou",
+      "precision": 3,
+      "token": "T1_DUALMAP_REPLICA8_MIOU"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/semantic/macc",
+      "precision": 3,
+      "token": "T1_DUALMAP_REPLICA8_MACC"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/semantic/f_miou",
+      "precision": 3,
+      "token": "T1_DUALMAP_REPLICA8_FMIOU"
+    },
+    {
+      "json_pointer": "/metrics/replica_7_heldout/semantic/miou",
+      "precision": 3,
+      "token": "T1_DUALMAP_REPLICA7_MIOU"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/instance/ap25",
+      "precision": 3,
+      "token": "T1_DUALMAP_REPLICA8_AP25"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/instance/ap50",
+      "precision": 3,
+      "token": "T1_DUALMAP_REPLICA8_AP50"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/geometry/f5",
+      "precision": 3,
+      "token": "T1_DUALMAP_REPLICA8_F5"
+    },
+    {
+      "json_pointer": "/metrics/replica_7_heldout/instance/ap50",
+      "precision": 3,
+      "token": "T1_DUALMAP_REPLICA7_AP50"
+    }
+  ],
+  "upstream_commit": "157235ec49e6a1f439babbc571c4c02ad1f06aa9",
+  "weights": [
+    {
+      "name": "yolov8l-world",
+      "path": "/home/ww/vv/paper2/DualMap/model/yolov8l-world.pt",
+      "sha256": "8bdfaef999116760247d6fb0b0f8fca064b43e94598b3d4a807ebae9bcf0cdd5",
+      "source": "pre-existing local upstream asset"
+    },
+    {
+      "name": "MobileSAM",
+      "path": "/home/ww/vv/paper2/DualMap/model/mobile_sam.pt",
+      "sha256": "6dbb90523a35330fedd7f1d3dfc66f995213d81b29a5ca8108dbcdd4e37d6c2f",
+      "source": "pre-existing local upstream asset"
+    },
+    {
+      "name": "FastSAM-s",
+      "path": "/home/ww/vv/paper2/DualMap/model/FastSAM-s.pt",
+      "sha256": "c9f78716a81c7aff0d608ccc73e1b82ab3aaad86005049f6a92106a0be6d0844",
+      "source": "pre-existing local upstream asset"
+    },
+    {
+      "name": "MobileCLIP-S2 OpenCLIP",
+      "path": "/home/ww/oviovo_benchmark_assets/weights/mobileclip_s2_openclip/open_clip_pytorch_model.bin",
+      "sha256": "64553a972ead2f84f6f59ee0c854751db0fdd2203efbd6e7e0c258ecbf24d8d8",
+      "source": "hf-hub:apple/MobileCLIP-S2-OpenCLIP/datacompdr"
+    }
+  ]
+}

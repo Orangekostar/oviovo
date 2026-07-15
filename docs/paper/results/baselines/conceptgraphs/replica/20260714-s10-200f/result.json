@@ -1,0 +1,203 @@
+{
+  "adapter_commit": "41a07a3f88d2a776406babf0f12b19e7911b1dd6",
+  "aggregate_source": {
+    "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/common_eval/aggregate.json",
+    "sha256": "9ebdb7eb4c00e59f558d1fc5824057a407b4c8d54a8d10398c46b6749f7044c5"
+  },
+  "command": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/run_gate3_room0_200f.sh && /home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/run_formal_replica7_remaining.sh && /home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/run_retry_replica8_failed.sh && /home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/run_common_eval_replica8.sh",
+  "config": {
+    "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/run_formal_replica7_remaining.sh",
+    "sha256": "53c41e41adbbe3a874ef5e9f9036f619b02bd1b612b2eec0fa4e00392c14ee60"
+  },
+  "dataset": {
+    "manifest": {
+      "path": "configs/evaluation/manifests/replica8.json",
+      "sha256": "8547aa8b7dbf7ef7a97f4b516f6557a1d163107404fbfc7ccbd56747c5dc95a4"
+    },
+    "name": "Replica",
+    "pose_source": "Replica NICE-SLAM traj.txt",
+    "splits": [
+      "replica_8_compat",
+      "replica_7_heldout"
+    ]
+  },
+  "environment": {
+    "name": "oviovo-conceptgraphs",
+    "path": "/home/ww/miniconda3/envs/oviovo-conceptgraphs"
+  },
+  "hardware": {
+    "cpu": "2 x Intel Xeon Silver 4314; 64 logical CPUs",
+    "driver": "595.71.05",
+    "gpu": "NVIDIA A40 46 GB, GPU 1",
+    "os": "Ubuntu 24.04.4 LTS"
+  },
+  "method": {
+    "display_label": "ConceptGraphs",
+    "key": "CONCEPTGRAPHS",
+    "mode": "native"
+  },
+  "metrics": {
+    "replica_7_heldout": {
+      "geometry": {
+        "f5": 0.37355607929348544
+      },
+      "instance": {
+        "ap25": 0.39986308191333625,
+        "ap50": 0.21331154942079575
+      },
+      "scene_count": 7,
+      "scene_ids": [
+        "room1",
+        "room2",
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4"
+      ],
+      "semantic": {
+        "f_miou": 0.053702720297145574,
+        "macc": 0.09796820196527044,
+        "miou": 0.0701686173439613
+      }
+    },
+    "replica_8_compat": {
+      "geometry": {
+        "f5": 0.37628056255547393
+      },
+      "instance": {
+        "ap25": 0.3985717992343109,
+        "ap50": 0.21365788595822346
+      },
+      "scene_count": 8,
+      "scene_ids": [
+        "room0",
+        "room1",
+        "room2",
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4"
+      ],
+      "semantic": {
+        "f_miou": 0.052943749399510805,
+        "macc": 0.10115972563502464,
+        "miou": 0.07027584630037213
+      }
+    }
+  },
+  "protocol_deviations": [
+    "Official streamlined frontend uses YOLO-World plus MobileSAM rather than the paper CropFormer frontend.",
+    "A build-copy compatibility patch serializes native empty detections when YOLO-World returns zero boxes; reference checkout remains unchanged.",
+    "Common semantic evaluation uses the frozen 41-class vocabulary and does not apply the upstream evaluator's test-GT-only class suppression."
+  ],
+  "raw_outputs": [
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/environment/conda-explicit.txt",
+      "sha256": "fd4f23f0b1ba2f398188cfab42619187491774a7cdbe040b81791f23357bbf27"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/common_eval/status.tsv",
+      "sha256": "08a15fda7c4abe26dc7e184554f3c6922f7d1ccb9fca7cb3117e604c72bb1b95"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/common_eval/room0/metrics.json",
+      "sha256": "e9a8a859141491389370b95857ccb8b0654612e34d6e4202496d6c1900247add"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/common_eval/room1/metrics.json",
+      "sha256": "1d941fabc3cfae8a5f605df6be55f77866d4382c145705d2d19f7fe460537618"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/common_eval/room2/metrics.json",
+      "sha256": "d604cbf90d3aa3cc492e8c14c981664128972c8a1d61cec2d7d2678c2caf5180"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/common_eval/office0/metrics.json",
+      "sha256": "13af36804d48acbbaa6d88807c2727459fc6df61fbf33415cc7a90ee2e73b3d3"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/common_eval/office1/metrics.json",
+      "sha256": "f994a4e5623e698a09e9c93add2039863f1cc35308ccb2724c2887d0e2ad3226"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/common_eval/office2/metrics.json",
+      "sha256": "5ff16321868c5cfa5044ca31d966e375b12fa0d4b2af9125b09322b177cc3774"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/common_eval/office3/metrics.json",
+      "sha256": "cda494318940f81543e5464f76299080cca88568278847927dc72c8e96a7dd75"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/common_eval/office4/metrics.json",
+      "sha256": "a5682516539799079ecc47de4e8b55da7f0a0baac2a7f567f92886f6e667010f"
+    }
+  ],
+  "run_id": "20260714-conceptgraphs-replica8-s10-200f",
+  "seed": 0,
+  "status": "VERIFIED",
+  "token_bindings": [
+    {
+      "json_pointer": "/metrics/replica_8_compat/semantic/miou",
+      "precision": 3,
+      "token": "T1_CONCEPTGRAPHS_REPLICA8_MIOU"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/semantic/macc",
+      "precision": 3,
+      "token": "T1_CONCEPTGRAPHS_REPLICA8_MACC"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/semantic/f_miou",
+      "precision": 3,
+      "token": "T1_CONCEPTGRAPHS_REPLICA8_FMIOU"
+    },
+    {
+      "json_pointer": "/metrics/replica_7_heldout/semantic/miou",
+      "precision": 3,
+      "token": "T1_CONCEPTGRAPHS_REPLICA7_MIOU"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/instance/ap25",
+      "precision": 3,
+      "token": "T1_CONCEPTGRAPHS_REPLICA8_AP25"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/instance/ap50",
+      "precision": 3,
+      "token": "T1_CONCEPTGRAPHS_REPLICA8_AP50"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/geometry/f5",
+      "precision": 3,
+      "token": "T1_CONCEPTGRAPHS_REPLICA8_F5"
+    },
+    {
+      "json_pointer": "/metrics/replica_7_heldout/instance/ap50",
+      "precision": 3,
+      "token": "T1_CONCEPTGRAPHS_REPLICA7_AP50"
+    }
+  ],
+  "upstream_commit": "93277a02bd89171f8121e84203121cf7af9ebb5d",
+  "weights": [
+    {
+      "name": "yolov8l-world",
+      "path": "/home/ww/oviovo_baseline_builds/conceptgraphs-93277a02bd89/yolov8l-world.pt",
+      "sha256": "8bdfaef999116760247d6fb0b0f8fca064b43e94598b3d4a807ebae9bcf0cdd5",
+      "source": "pre-existing local upstream asset"
+    },
+    {
+      "name": "MobileSAM",
+      "path": "/home/ww/oviovo_baseline_builds/conceptgraphs-93277a02bd89/mobile_sam.pt",
+      "sha256": "6dbb90523a35330fedd7f1d3dfc66f995213d81b29a5ca8108dbcdd4e37d6c2f",
+      "source": "pre-existing local upstream asset"
+    },
+    {
+      "name": "CLIP ViT-H-14 laion2B-s32B-b79K",
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/hf_cache/models--laion--CLIP-ViT-H-14-laion2B-s32B-b79K/snapshots/1c2b8495b28150b8a4922ee1c8edee224c284c0c/open_clip_pytorch_model.bin",
+      "sha256": "9a78ef8e8c73fd0df621682e7a8e8eb36c6916cb3c16b291a082ecd52ab79cc4",
+      "source": "hf-hub:laion/CLIP-ViT-H-14-laion2B-s32B-b79K"
+    }
+  ]
+}

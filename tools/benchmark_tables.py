@@ -706,6 +706,38 @@ def write_package(output_dir: Path, force: bool = False) -> int:
     return 0
 
 
+def _registry_matches_template(target: Path, expected_text: str) -> bool:
+    if not target.is_file():
+        return False
+    expected_reader = csv.DictReader(io.StringIO(expected_text), delimiter="\t")
+    with target.open(newline="", encoding="utf-8") as handle:
+        actual_reader = csv.DictReader(handle, delimiter="\t")
+        if tuple(actual_reader.fieldnames or ()) != FIELDS:
+            return False
+        expected_rows = list(expected_reader)
+        actual_rows = list(actual_reader)
+    if len(actual_rows) != len(expected_rows):
+        return False
+    frozen_fields = FIELDS[:8]
+    for expected, actual in zip(expected_rows, actual_rows, strict=True):
+        if any(actual[field] != expected[field] for field in frozen_fields):
+            return False
+        if expected["status"] == "N/A":
+            if actual != expected:
+                return False
+        elif actual["status"] == "UNFILLED":
+            if actual["source_json"] or actual["json_pointer"]:
+                return False
+        elif actual["status"] == "VERIFIED":
+            if not actual["source_json"] or not actual["json_pointer"]:
+                return False
+            if "OVIOVO" in actual["token"]:
+                return False
+        else:
+            return False
+    return True
+
+
 def check_package(output_dir: Path) -> int:
     artifacts = render_artifacts()
     mismatches: list[str] = []
@@ -714,7 +746,11 @@ def check_package(output_dir: Path) -> int:
         for name in ARTIFACT_NAMES:
             (expected_dir / name).write_text(artifacts[name], encoding="utf-8", newline="")
             target = output_dir / name
-            if not target.is_file() or target.read_bytes() != (expected_dir / name).read_bytes():
+            if name == "benchmark_tokens.tsv":
+                matches = _registry_matches_template(target, artifacts[name])
+            else:
+                matches = target.is_file() and target.read_bytes() == (expected_dir / name).read_bytes()
+            if not matches:
                 mismatches.append(name)
     if mismatches:
         print(

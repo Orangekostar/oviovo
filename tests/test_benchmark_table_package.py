@@ -237,6 +237,24 @@ def test_generator_check_detects_tampering(tmp_path):
     assert "benchmark table package: FAIL" in result.stderr
 
 
+def test_generator_check_detects_frozen_registry_field_tampering(tmp_path):
+    output_dir = tmp_path / "paper"
+    shutil.copytree(PAPER_DIR, output_dir)
+    registry_path = output_dir / REGISTRY.name
+    text = registry_path.read_text(encoding="utf-8")
+    registry_path.write_text(text.replace("\tOPENFUSION\t", "\tWRONG_METHOD\t", 1), encoding="utf-8")
+
+    result = subprocess.run(
+        [sys.executable, str(GENERATOR), "check", "--output-dir", str(output_dir)],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+    )
+
+    assert result.returncode != 0
+    assert "benchmark_tokens.tsv" in result.stderr
+
+
 def test_write_refuses_to_overwrite_verified_registry(tmp_path):
     output_dir = tmp_path / "paper"
     shutil.copytree(PAPER_DIR, output_dir)

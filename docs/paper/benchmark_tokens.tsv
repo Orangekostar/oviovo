@@ -23,27 +23,27 @@ T1_OVIMAP_REPLICA7_AP50	T1	OVIMAP	Replica	replica_7_heldout	REPLICA7_AP50	higher
 T1_OVIMAP_SCANNET5_AP25	T1	OVIMAP	ScanNet200	scannet200_5_heldout	SCANNET5_AP25	higher	3			UNFILLED	Pending benchmark run.
 T1_OVIMAP_SCANNET5_AP50	T1	OVIMAP	ScanNet200	scannet200_5_heldout	SCANNET5_AP50	higher	3			UNFILLED	Pending benchmark run.
 T1_OVIMAP_SCANNET5_F5	T1	OVIMAP	ScanNet200	scannet200_5_heldout	SCANNET5_F5	higher	3			UNFILLED	Pending benchmark run.
-T1_CONCEPTGRAPHS_REPLICA8_MIOU	T1	CONCEPTGRAPHS	Replica	replica_8_compat	REPLICA8_MIOU	higher	3			UNFILLED	Pending benchmark run.
-T1_CONCEPTGRAPHS_REPLICA8_MACC	T1	CONCEPTGRAPHS	Replica	replica_8_compat	REPLICA8_MACC	higher	3			UNFILLED	Pending benchmark run.
-T1_CONCEPTGRAPHS_REPLICA8_FMIOU	T1	CONCEPTGRAPHS	Replica	replica_8_compat	REPLICA8_FMIOU	higher	3			UNFILLED	Pending benchmark run.
-T1_CONCEPTGRAPHS_REPLICA7_MIOU	T1	CONCEPTGRAPHS	Replica	replica_7_heldout	REPLICA7_MIOU	higher	3			UNFILLED	Pending benchmark run.
+T1_CONCEPTGRAPHS_REPLICA8_MIOU	T1	CONCEPTGRAPHS	Replica	replica_8_compat	REPLICA8_MIOU	higher	3	results/baselines/conceptgraphs/replica/20260714-s10-200f/result.json	/metrics/replica_8_compat/semantic/miou	VERIFIED	Imported from verified run 20260714-conceptgraphs-replica8-s10-200f.
+T1_CONCEPTGRAPHS_REPLICA8_MACC	T1	CONCEPTGRAPHS	Replica	replica_8_compat	REPLICA8_MACC	higher	3	results/baselines/conceptgraphs/replica/20260714-s10-200f/result.json	/metrics/replica_8_compat/semantic/macc	VERIFIED	Imported from verified run 20260714-conceptgraphs-replica8-s10-200f.
+T1_CONCEPTGRAPHS_REPLICA8_FMIOU	T1	CONCEPTGRAPHS	Replica	replica_8_compat	REPLICA8_FMIOU	higher	3	results/baselines/conceptgraphs/replica/20260714-s10-200f/result.json	/metrics/replica_8_compat/semantic/f_miou	VERIFIED	Imported from verified run 20260714-conceptgraphs-replica8-s10-200f.
+T1_CONCEPTGRAPHS_REPLICA7_MIOU	T1	CONCEPTGRAPHS	Replica	replica_7_heldout	REPLICA7_MIOU	higher	3	results/baselines/conceptgraphs/replica/20260714-s10-200f/result.json	/metrics/replica_7_heldout/semantic/miou	VERIFIED	Imported from verified run 20260714-conceptgraphs-replica8-s10-200f.
 T1_CONCEPTGRAPHS_SCANNET5_MIOU	T1	CONCEPTGRAPHS	ScanNet200	scannet200_5_heldout	SCANNET5_MIOU	higher	3			UNFILLED	Pending benchmark run.
-T1_CONCEPTGRAPHS_REPLICA8_AP25	T1	CONCEPTGRAPHS	Replica	replica_8_compat	REPLICA8_AP25	higher	3			UNFILLED	Pending benchmark run.
-T1_CONCEPTGRAPHS_REPLICA8_AP50	T1	CONCEPTGRAPHS	Replica	replica_8_compat	REPLICA8_AP50	higher	3			UNFILLED	Pending benchmark run.
-T1_CONCEPTGRAPHS_REPLICA8_F5	T1	CONCEPTGRAPHS	Replica	replica_8_compat	REPLICA8_F5	higher	3			UNFILLED	Pending benchmark run.
-T1_CONCEPTGRAPHS_REPLICA7_AP50	T1	CONCEPTGRAPHS	Replica	replica_7_heldout	REPLICA7_AP50	higher	3			UNFILLED	Pending benchmark run.
+T1_CONCEPTGRAPHS_REPLICA8_AP25	T1	CONCEPTGRAPHS	Replica	replica_8_compat	REPLICA8_AP25	higher	3	results/baselines/conceptgraphs/replica/20260714-s10-200f/result.json	/metrics/replica_8_compat/instance/ap25	VERIFIED	Imported from verified run 20260714-conceptgraphs-replica8-s10-200f.
+T1_CONCEPTGRAPHS_REPLICA8_AP50	T1	CONCEPTGRAPHS	Replica	replica_8_compat	REPLICA8_AP50	higher	3	results/baselines/conceptgraphs/replica/20260714-s10-200f/result.json	/metrics/replica_8_compat/instance/ap50	VERIFIED	Imported from verified run 20260714-conceptgraphs-replica8-s10-200f.
+T1_CONCEPTGRAPHS_REPLICA8_F5	T1	CONCEPTGRAPHS	Replica	replica_8_compat	REPLICA8_F5	higher	3	results/baselines/conceptgraphs/replica/20260714-s10-200f/result.json	/metrics/replica_8_compat/geometry/f5	VERIFIED	Imported from verified run 20260714-conceptgraphs-replica8-s10-200f.
+T1_CONCEPTGRAPHS_REPLICA7_AP50	T1	CONCEPTGRAPHS	Replica	replica_7_heldout	REPLICA7_AP50	higher	3	results/baselines/conceptgraphs/replica/20260714-s10-200f/result.json	/metrics/replica_7_heldout/instance/ap50	VERIFIED	Imported from verified run 20260714-conceptgraphs-replica8-s10-200f.
 T1_CONCEPTGRAPHS_SCANNET5_AP25	T1	CONCEPTGRAPHS	ScanNet200	scannet200_5_heldout	SCANNET5_AP25	higher	3			UNFILLED	Pending benchmark run.
 T1_CONCEPTGRAPHS_SCANNET5_AP50	T1	CONCEPTGRAPHS	ScanNet200	scannet200_5_heldout	SCANNET5_AP50	higher	3			UNFILLED	Pending benchmark run.
 T1_CONCEPTGRAPHS_SCANNET5_F5	T1	CONCEPTGRAPHS	ScanNet200	scannet200_5_heldout	SCANNET5_F5	higher	3			UNFILLED	Pending benchmark run.
-T1_DUALMAP_REPLICA8_MIOU	T1	DUALMAP	Replica	replica_8_compat	REPLICA8_MIOU	higher	3			UNFILLED	Pending benchmark run.
-T1_DUALMAP_REPLICA8_MACC	T1	DUALMAP	Replica	replica_8_compat	REPLICA8_MACC	higher	3			UNFILLED	Pending benchmark run.
-T1_DUALMAP_REPLICA8_FMIOU	T1	DUALMAP	Replica	replica_8_compat	REPLICA8_FMIOU	higher	3			UNFILLED	Pending benchmark run.
-T1_DUALMAP_REPLICA7_MIOU	T1	DUALMAP	Replica	replica_7_heldout	REPLICA7_MIOU	higher	3			UNFILLED	Pending benchmark run.
+T1_DUALMAP_REPLICA8_MIOU	T1	DUALMAP	Replica	replica_8_compat	REPLICA8_MIOU	higher	3	results/baselines/dualmap/replica/20260714-s10-200f/result.json	/metrics/replica_8_compat/semantic/miou	VERIFIED	Imported from verified run 20260714-dualmap-replica8-s10-200f.
+T1_DUALMAP_REPLICA8_MACC	T1	DUALMAP	Replica	replica_8_compat	REPLICA8_MACC	higher	3	results/baselines/dualmap/replica/20260714-s10-200f/result.json	/metrics/replica_8_compat/semantic/macc	VERIFIED	Imported from verified run 20260714-dualmap-replica8-s10-200f.
+T1_DUALMAP_REPLICA8_FMIOU	T1	DUALMAP	Replica	replica_8_compat	REPLICA8_FMIOU	higher	3	results/baselines/dualmap/replica/20260714-s10-200f/result.json	/metrics/replica_8_compat/semantic/f_miou	VERIFIED	Imported from verified run 20260714-dualmap-replica8-s10-200f.
+T1_DUALMAP_REPLICA7_MIOU	T1	DUALMAP	Replica	replica_7_heldout	REPLICA7_MIOU	higher	3	results/baselines/dualmap/replica/20260714-s10-200f/result.json	/metrics/replica_7_heldout/semantic/miou	VERIFIED	Imported from verified run 20260714-dualmap-replica8-s10-200f.
 T1_DUALMAP_SCANNET5_MIOU	T1	DUALMAP	ScanNet200	scannet200_5_heldout	SCANNET5_MIOU	higher	3			UNFILLED	Pending benchmark run.
-T1_DUALMAP_REPLICA8_AP25	T1	DUALMAP	Replica	replica_8_compat	REPLICA8_AP25	higher	3			UNFILLED	Pending benchmark run.
-T1_DUALMAP_REPLICA8_AP50	T1	DUALMAP	Replica	replica_8_compat	REPLICA8_AP50	higher	3			UNFILLED	Pending benchmark run.
-T1_DUALMAP_REPLICA8_F5	T1	DUALMAP	Replica	replica_8_compat	REPLICA8_F5	higher	3			UNFILLED	Pending benchmark run.
-T1_DUALMAP_REPLICA7_AP50	T1	DUALMAP	Replica	replica_7_heldout	REPLICA7_AP50	higher	3			UNFILLED	Pending benchmark run.
+T1_DUALMAP_REPLICA8_AP25	T1	DUALMAP	Replica	replica_8_compat	REPLICA8_AP25	higher	3	results/baselines/dualmap/replica/20260714-s10-200f/result.json	/metrics/replica_8_compat/instance/ap25	VERIFIED	Imported from verified run 20260714-dualmap-replica8-s10-200f.
+T1_DUALMAP_REPLICA8_AP50	T1	DUALMAP	Replica	replica_8_compat	REPLICA8_AP50	higher	3	results/baselines/dualmap/replica/20260714-s10-200f/result.json	/metrics/replica_8_compat/instance/ap50	VERIFIED	Imported from verified run 20260714-dualmap-replica8-s10-200f.
+T1_DUALMAP_REPLICA8_F5	T1	DUALMAP	Replica	replica_8_compat	REPLICA8_F5	higher	3	results/baselines/dualmap/replica/20260714-s10-200f/result.json	/metrics/replica_8_compat/geometry/f5	VERIFIED	Imported from verified run 20260714-dualmap-replica8-s10-200f.
+T1_DUALMAP_REPLICA7_AP50	T1	DUALMAP	Replica	replica_7_heldout	REPLICA7_AP50	higher	3	results/baselines/dualmap/replica/20260714-s10-200f/result.json	/metrics/replica_7_heldout/instance/ap50	VERIFIED	Imported from verified run 20260714-dualmap-replica8-s10-200f.
 T1_DUALMAP_SCANNET5_AP25	T1	DUALMAP	ScanNet200	scannet200_5_heldout	SCANNET5_AP25	higher	3			UNFILLED	Pending benchmark run.
 T1_DUALMAP_SCANNET5_AP50	T1	DUALMAP	ScanNet200	scannet200_5_heldout	SCANNET5_AP50	higher	3			UNFILLED	Pending benchmark run.
 T1_DUALMAP_SCANNET5_F5	T1	DUALMAP	ScanNet200	scannet200_5_heldout	SCANNET5_F5	higher	3			UNFILLED	Pending benchmark run.
