@@ -68,3 +68,43 @@ def test_observation_batch_rejects_mixed_frames_and_duplicate_ids() -> None:
 def test_observation_quality_is_bounded() -> None:
     with pytest.raises(ValueError, match="view_quality"):
         ObservationQuality(view_quality=1.1)
+
+
+from src.domain.tracking import LocalTrack, LocalTrackBatch, LocalTrackState
+from src.domain.visibility import VisibilityEvidence, VisibilityEvidenceBatch, VisibilityKind
+
+
+def test_local_track_has_no_persistent_entity_id() -> None:
+    track = LocalTrack(
+        local_track_id="track-1",
+        state=LocalTrackState.STABLE,
+        observation_ids=("7:11",),
+        first_frame_id=7,
+        last_frame_id=7,
+        first_timestamp=1.25,
+        last_timestamp=1.25,
+        hit_count=1,
+        miss_count=0,
+        centroid=np.array([0.0, 0.0, 1.0], dtype=np.float32),
+        bbox_min=np.array([-0.1, -0.1, 0.9], dtype=np.float32),
+        bbox_max=np.array([0.1, 0.1, 1.1], dtype=np.float32),
+    )
+    assert not hasattr(track, "entity_id")
+    assert LocalTrackBatch(frame_id=7, tracks=(track,)).stable_tracks == (track,)
+
+
+def test_visibility_batch_keeps_occlusion_separate_from_absence() -> None:
+    occluded = VisibilityEvidence(
+        entity_id="entity-1",
+        frame_id=7,
+        kind=VisibilityKind.OCCLUDED,
+        projected_count=20,
+        valid_depth_count=20,
+        present_count=0,
+        absent_count=0,
+        occluded_count=18,
+        unobserved_count=2,
+    )
+    batch = VisibilityEvidenceBatch(frame_id=7, evidence=(occluded,))
+    assert batch.by_entity("entity-1").kind is VisibilityKind.OCCLUDED
+    assert batch.by_entity("missing") is None
