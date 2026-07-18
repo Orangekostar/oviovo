@@ -14,7 +14,12 @@ from typing import Any
 
 import numpy as np
 
-from src.evaluation.baselines.adapters import adapt_conceptgraphs, adapt_dualmap, adapt_ovimap
+from src.evaluation.baselines.adapters import (
+    adapt_conceptgraphs,
+    adapt_dualmap,
+    adapt_openfusion,
+    adapt_ovimap,
+)
 from src.evaluation.baselines.artifacts import write_baseline_artifact
 from src.evaluation.baselines.contracts import RuntimeBreakdown
 from src.evaluation.baselines.ovimap import (
@@ -165,6 +170,49 @@ def _ovimap_runtime(args: argparse.Namespace) -> RuntimeBreakdown:
             "peak_ram_gb": "GNU time process peak RSS",
             "final_map_mb": "OVI-MAP instance feature pickle and instance mesh",
         },
+    )
+
+
+def _load_openfusion(args: argparse.Namespace):
+    runtime_payload = json.loads(args.openfusion_runtime.read_text(encoding="utf-8"))
+    gpu_dmon = args.gpu_dmon or ()
+    runtime = RuntimeBreakdown(
+        frame_count=int(runtime_payload["frame_count"]),
+        initialization_s=float(runtime_payload.get("initialization_s", 0.0)),
+        backend_s=float(runtime_payload["mapping_s"]),
+        finalization_s=float(runtime_payload.get("semantic_query_s", 0.0)),
+        peak_gpu_gb=_peak_gpu_gb(*gpu_dmon) if gpu_dmon else 0.0,
+        final_map_mb=args.openfusion_state.stat().st_size / 1e6,
+        source_labels={
+            "initialization_s": "OpenFusion external wrapper initialization wall clock",
+            "backend_s": "OpenFusion official VLFusion mapping-loop wall clock",
+            "finalization_s": "OpenFusion official semantic-query wall clock",
+            "peak_gpu_gb": (
+                "exclusive-device nvidia-smi dmon fb samples"
+                if gpu_dmon
+                else "not sampled"
+            ),
+            "final_map_mb": "OpenFusion official serialized VLFusion state",
+        },
+    )
+    with np.load(args.openfusion_prediction, allow_pickle=False) as payload:
+        points = np.asarray(payload["points"], dtype=np.float32)
+        class_ids = np.asarray(payload["class_ids"], dtype=np.int64)
+        vocabulary = tuple(str(label) for label in payload["vocabulary"])
+    world_from_relative = np.loadtxt(
+        args.openfusion_trajectory,
+        dtype=np.float64,
+        max_rows=1,
+    ).reshape(4, 4)
+    return adapt_openfusion(
+        points,
+        class_ids,
+        vocabulary,
+        scene_id=args.scene_id,
+        timestamp=args.timestamp,
+        upstream_commit=args.upstream_commit,
+        runtime=runtime,
+        world_from_relative=world_from_relative,
     )
 
 
@@ -374,7 +422,11 @@ def _load_ovimap(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--baseline", choices=("conceptgraphs", "dualmap", "ovimap"), required=True)
+    parser.add_argument(
+        "--baseline",
+        choices=("conceptgraphs", "dualmap", "openfusion", "ovimap"),
+        required=True,
+    )
     parser.add_argument("--scene-id", required=True)
     parser.add_argument("--timestamp", type=float, default=1990.0)
     parser.add_argument("--frame-count", type=int, default=200)
@@ -398,6 +450,10 @@ def main() -> int:
     parser.add_argument("--instance-mesh", type=Path)
     parser.add_argument("--instance-color-log", type=Path)
     parser.add_argument("--siglip-model", type=Path)
+    parser.add_argument("--openfusion-prediction", type=Path)
+    parser.add_argument("--openfusion-runtime", type=Path)
+    parser.add_argument("--openfusion-state", type=Path)
+    parser.add_argument("--openfusion-trajectory", type=Path)
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--artifact-output", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
@@ -429,6 +485,12 @@ def main() -> int:
             "gpu_dmon",
             "clip_weight",
         ),
+        "openfusion": (
+            "openfusion_prediction",
+            "openfusion_runtime",
+            "openfusion_state",
+            "openfusion_trajectory",
+        ),
         "ovimap": (
             "instances_file",
             "instance_mesh",
@@ -445,12 +507,14 @@ def main() -> int:
         args.upstream_commit = {
             "dualmap": "157235ec49e6a1f439babbc571c4c02ad1f06aa9",
             "conceptgraphs": "93277a02bd89171f8121e84203121cf7af9ebb5d",
+            "openfusion": "86bdc1ab173a203e7157ab055ff1fc96c786d86a",
             "ovimap": "58a804e2d7c8cfac6040639701abeb9d45b86537",
         }[args.baseline]
 
     artifact_loaders = {
         "dualmap": lambda: _load_dualmap(args, manifest),
         "conceptgraphs": lambda: _load_conceptgraphs(args, semantic_vocabulary),
+        "openfusion": lambda: _load_openfusion(args),
         "ovimap": lambda: _load_ovimap(args, semantic_vocabulary),
     }
     artifact = artifact_loaders[args.baseline]()
@@ -467,7 +531,7 @@ def main() -> int:
         artifact.snapshot,
         ground_truth,
         semantic_vocabulary=semantic_vocabulary,
-        instance_vocabulary=instance_vocabulary,
+        instance_vocabulary=None if args.baseline == "openfusion" else instance_vocabulary,
         distance_threshold_m=0.05,
         min_instance_points=100,
     )

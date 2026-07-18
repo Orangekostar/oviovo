@@ -28,6 +28,24 @@ def test_aggregate_replica_static_computes_frozen_split_macros() -> None:
     assert aggregate["replica_8_compat"]["geometry"]["f5"] == pytest.approx(4.0)
 
 
+def test_aggregate_replica_static_preserves_unavailable_metric_family() -> None:
+    scene_ids = ("room0", "room1", "room2", "office0", "office1", "office2", "office3", "office4")
+    scenes = {scene_id: _scene(float(index)) for index, scene_id in enumerate(scene_ids)}
+    for scene in scenes.values():
+        scene["metrics"]["instance"] = {
+            "status": "N/A",
+            "reason": "OpenFusion has no native entity instances.",
+        }
+
+    aggregate = aggregate_replica_static(scenes)
+
+    assert aggregate["replica_8_compat"]["instance"] == {
+        "status": "N/A",
+        "reason": "OpenFusion has no native entity instances.",
+    }
+    assert aggregate["replica_7_heldout"]["semantic"]["miou"] == pytest.approx(4.0)
+
+
 def test_aggregate_replica_static_rejects_missing_or_mismatched_scene() -> None:
     scenes = {"room0": _scene(0.0)}
     with pytest.raises(ValueError, match="scene set"):

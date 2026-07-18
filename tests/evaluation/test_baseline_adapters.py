@@ -6,7 +6,12 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from src.evaluation.baselines.adapters import adapt_conceptgraphs, adapt_dualmap, adapt_ovimap
+from src.evaluation.baselines.adapters import (
+    adapt_conceptgraphs,
+    adapt_dualmap,
+    adapt_openfusion,
+    adapt_ovimap,
+)
 from src.evaluation.baselines.artifacts import write_baseline_artifact
 from src.evaluation.baselines.contracts import (
     BaselineArtifact,
@@ -213,6 +218,45 @@ def test_ovimap_adapter_accepts_official_runtime_semantic_classification() -> No
     assert entity.semantic_score == pytest.approx(0.75)
     assert entity.metadata["semantic_label_source"].startswith("method_output.feat SigLIP")
     assert artifact.metadata.semantic_label_source.startswith("method_output.feat SigLIP")
+
+
+def test_openfusion_adapter_groups_official_semantic_query_points() -> None:
+    artifact = adapt_openfusion(
+        np.array(
+            [[0.0, 0.0, 1.0], [0.1, 0.0, 1.0], [1.0, 0.0, 1.0]],
+            dtype=np.float32,
+        ),
+        np.array([1, 1, 0], dtype=np.int16),
+        ("wall", "chair"),
+        scene_id="room0",
+        timestamp=1990.0,
+        upstream_commit="86bdc1a",
+        runtime=_runtime(),
+        world_from_relative=np.array(
+            [[1.0, 0.0, 0.0, 2.0], [0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 1.0]],
+            dtype=np.float64,
+        ),
+    )
+
+    assert artifact.metadata.method_key == "OPENFUSION"
+    assert artifact.metadata.entity_id_stability == "artifact-local"
+    assert artifact.metadata.semantic_label_source == "method_output.semantic_query"
+    assert [entity.semantic_label for entity in artifact.snapshot.entities] == ["wall", "chair"]
+    assert [len(entity.points_xyz) for entity in artifact.snapshot.entities] == [1, 2]
+    assert all(entity.metadata["native_instance"] is False for entity in artifact.snapshot.entities)
+    np.testing.assert_allclose(artifact.snapshot.entities[0].points_xyz, [[3.0, 0.0, 1.0]])
+
+    with pytest.raises(ValueError, match="point and class-ID counts"):
+        adapt_openfusion(
+            np.zeros((2, 3), dtype=np.float32),
+            np.zeros(1, dtype=np.int16),
+            ("wall",),
+            scene_id="room0",
+            timestamp=1990.0,
+            upstream_commit="86bdc1a",
+            runtime=_runtime(),
+            world_from_relative=np.eye(4),
+        )
 
 
 def test_frozen_update_audit_rejects_updates_after_intervention() -> None:

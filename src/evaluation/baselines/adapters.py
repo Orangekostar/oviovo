@@ -138,6 +138,78 @@ def adapt_dualmap(
     return BaselineArtifact(snapshot=snapshot, runtime=runtime, metadata=metadata)
 
 
+def adapt_openfusion(
+    points_xyz: np.ndarray,
+    class_ids: np.ndarray,
+    vocabulary: Sequence[str],
+    *,
+    scene_id: str,
+    timestamp: float,
+    upstream_commit: str,
+    runtime: RuntimeBreakdown,
+    world_from_relative: np.ndarray,
+) -> BaselineArtifact:
+    points = np.asarray(points_xyz, dtype=np.float32).reshape(-1, 3)
+    labels = np.asarray(class_ids, dtype=np.int64).reshape(-1)
+    if len(points) != len(labels):
+        raise ValueError("OpenFusion point and class-ID counts must match")
+    vocabulary = tuple(str(label) for label in vocabulary)
+    if len(labels) and (int(labels.min()) < 0 or int(labels.max()) >= len(vocabulary)):
+        raise ValueError("OpenFusion class IDs must index the exported vocabulary")
+    transform = np.asarray(world_from_relative, dtype=np.float64)
+    if transform.shape != (4, 4) or not np.all(np.isfinite(transform)):
+        raise ValueError("OpenFusion world transform must be a finite 4x4 matrix")
+    if not np.allclose(transform[3], [0.0, 0.0, 0.0, 1.0], atol=1e-6):
+        raise ValueError("OpenFusion world transform must be homogeneous")
+    points = np.asarray(
+        points @ transform[:3, :3].T + transform[:3, 3],
+        dtype=np.float32,
+    )
+
+    entities = [
+        EntityPrediction(
+            entity_id=f"openfusion:semantic:{class_id:03d}",
+            points_xyz=points[labels == class_id],
+            semantic_embedding=None,
+            semantic_label=label,
+            semantic_score=1.0,
+            lifecycle_state="active",
+            first_seen=0.0,
+            last_seen=float(timestamp),
+            metadata={
+                "semantic_label_source": "method_output.semantic_query",
+                "native_instance": False,
+                "class_id": class_id,
+            },
+        )
+        for class_id, label in enumerate(vocabulary)
+        if np.any(labels == class_id)
+    ]
+    metadata = BaselineMetadata(
+        "OPENFUSION",
+        "OpenFusion",
+        "native",
+        upstream_commit,
+        "artifact-local",
+        semantic_label_source="method_output.semantic_query",
+        protocol_notes=(
+            "official first-frame trajectory restores absolute Replica world coordinates",
+            "semantic regions group official semantic-query points only for neutral evaluation",
+            "OpenFusion provides no native entity instances; instance metrics are unavailable",
+        ),
+    )
+    snapshot = MapSnapshot(
+        method=metadata.display_label,
+        scene_id=scene_id,
+        timestamp=timestamp,
+        entities=entities,
+        background_xyz=None,
+        scope="current",
+        runtime=runtime.to_snapshot_runtime(),
+    )
+    return BaselineArtifact(snapshot=snapshot, runtime=runtime, metadata=metadata)
+
+
 def adapt_ovimap(
     instances: Mapping[int, Mapping[str, Any]],
     *,

@@ -110,3 +110,20 @@ def test_class_agnostic_instance_metric_filters_gt_domain_not_predictions() -> N
 
     assert metrics["instance"]["ground_truth_instance_count"] == 1
     assert metrics["instance"]["predicted_instance_count"] == 2
+
+
+def test_static_metrics_marks_non_native_instance_output_unavailable() -> None:
+    metrics = evaluate_static_snapshot(
+        _snapshot(),
+        _ground_truth(),
+        semantic_vocabulary=("chair", "table"),
+        instance_vocabulary=None,
+        min_instance_points=1,
+    )
+
+    assert metrics["semantic"]["miou"] == pytest.approx(1.0)
+    assert metrics["instance"] == {
+        "status": "N/A",
+        "reason": "Method provides no native entity instances.",
+    }
+    assert metrics["protocol"]["instance_metrics_available"] is False

@@ -30,10 +30,19 @@ def _macro(
 ) -> dict[str, Any]:
     result: dict[str, Any] = {"scene_ids": list(scene_ids), "scene_count": len(scene_ids)}
     for family, names in STATIC_METRICS.items():
-        result[family] = {
-            name: fmean(float(scene_results[scene_id]["metrics"][family][name]) for scene_id in scene_ids)
-            for name in names
-        }
+        values = [scene_results[scene_id]["metrics"][family] for scene_id in scene_ids]
+        if all(value.get("status") == "N/A" for value in values):
+            reasons = {str(value.get("reason", "")) for value in values}
+            if len(reasons) != 1:
+                raise ValueError(f"{family} N/A reasons must match across scenes")
+            result[family] = {"status": "N/A", "reason": reasons.pop()}
+        elif any("status" in value for value in values):
+            raise ValueError(f"{family} availability must match across scenes")
+        else:
+            result[family] = {
+                name: fmean(float(value[name]) for value in values)
+                for name in names
+            }
     return result
 
 

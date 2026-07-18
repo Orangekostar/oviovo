@@ -233,7 +233,7 @@ def evaluate_static_snapshot(
     ground_truth: GroundTruthSnapshot,
     *,
     semantic_vocabulary: Sequence[str],
-    instance_vocabulary: Sequence[str],
+    instance_vocabulary: Sequence[str] | None,
     distance_threshold_m: float = 0.05,
     min_instance_points: int = 100,
 ) -> dict[str, Any]:
@@ -245,7 +245,11 @@ def evaluate_static_snapshot(
     if min_instance_points <= 0:
         raise ValueError("min_instance_points must be positive")
     semantic_labels = {str(label) for label in semantic_vocabulary}
-    instance_labels = {str(label) for label in instance_vocabulary}
+    instance_labels = (
+        None
+        if instance_vocabulary is None
+        else {str(label) for label in instance_vocabulary}
+    )
     return {
         "semantic": _semantic_metrics(
             prediction,
@@ -253,12 +257,19 @@ def evaluate_static_snapshot(
             semantic_labels,
             float(distance_threshold_m),
         ),
-        "instance": _instance_metrics(
-            prediction,
-            ground_truth,
-            instance_labels,
-            float(distance_threshold_m),
-            int(min_instance_points),
+        "instance": (
+            {
+                "status": "N/A",
+                "reason": "Method provides no native entity instances.",
+            }
+            if instance_labels is None
+            else _instance_metrics(
+                prediction,
+                ground_truth,
+                instance_labels,
+                float(distance_threshold_m),
+                int(min_instance_points),
+            )
         ),
         "geometry": _geometry_metrics(
             prediction,
@@ -269,6 +280,7 @@ def evaluate_static_snapshot(
             "distance_threshold_m": float(distance_threshold_m),
             "min_instance_points": int(min_instance_points),
             "semantic_vocabulary_size": len(semantic_labels),
-            "instance_vocabulary_size": len(instance_labels),
+            "instance_metrics_available": instance_labels is not None,
+            "instance_vocabulary_size": 0 if instance_labels is None else len(instance_labels),
         },
     }
