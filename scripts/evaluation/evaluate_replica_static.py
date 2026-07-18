@@ -17,7 +17,12 @@ import numpy as np
 from src.evaluation.baselines.adapters import adapt_conceptgraphs, adapt_dualmap, adapt_ovimap
 from src.evaluation.baselines.artifacts import write_baseline_artifact
 from src.evaluation.baselines.contracts import RuntimeBreakdown
-from src.evaluation.baselines.ovimap import load_instance_mesh, relative_similarity_labels
+from src.evaluation.baselines.ovimap import (
+    load_instance_mesh,
+    parse_instance_color_log,
+    relative_similarity_labels,
+    remap_instance_colors,
+)
 from src.evaluation.baselines.static_metrics import evaluate_static_snapshot
 from src.evaluation.contracts import GroundTruthSnapshot
 
@@ -297,6 +302,10 @@ def _load_ovimap(
         instances = pickle.load(handle)
     if not instances:
         raise ValueError("OVI-MAP instance feature file contains no instances")
+    instance_color_source = "method_output.instance.color"
+    if args.instance_color_log is not None:
+        instances = remap_instance_colors(instances, parse_instance_color_log(args.instance_color_log))
+        instance_color_source = "method_output.LogInstanceColor mapping"
     colors = {
         tuple(int(value) for value in np.asarray(instance["color"]).reshape(-1))
         for instance in instances.values()
@@ -315,6 +324,7 @@ def _load_ovimap(
         protocol_notes=(
             "semantic classification uses the frozen Replica-41 vocabulary instead of upstream Replica-51",
             "class-agnostic AP uses equal confidence with deterministic entity-ID tie ordering",
+            f"instance mesh colors use {instance_color_source}",
         ),
     )
 
@@ -386,6 +396,7 @@ def main() -> int:
     parser.add_argument("--clip-weight", type=Path)
     parser.add_argument("--instances-file", type=Path)
     parser.add_argument("--instance-mesh", type=Path)
+    parser.add_argument("--instance-color-log", type=Path)
     parser.add_argument("--siglip-model", type=Path)
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--artifact-output", type=Path, required=True)

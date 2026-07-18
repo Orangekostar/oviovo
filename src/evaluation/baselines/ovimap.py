@@ -4,8 +4,42 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
 from pathlib import Path
+import re
 
 import numpy as np
+
+
+_INSTANCE_COLOR_RE = re.compile(
+    r"Instance:\s*(?P<instance_id>\d+)\s+Color:\s*\((?P<red>\d+),(?P<green>\d+),(?P<blue>\d+)\)"
+)
+
+
+def parse_instance_color_log(path: str | Path) -> dict[int, tuple[int, int, int]]:
+    """Read OVI-MAP's authoritative global instance-to-PLY-color log."""
+    colors: dict[int, tuple[int, int, int]] = {}
+    for line in Path(path).read_text(encoding="utf-8", errors="replace").splitlines():
+        match = _INSTANCE_COLOR_RE.search(line)
+        if match is not None:
+            colors[int(match.group("instance_id"))] = tuple(
+                int(match.group(channel)) for channel in ("red", "green", "blue")
+            )
+    if not colors:
+        raise ValueError(f"OVI-MAP instance color log contains no Instance: ... Color entries: {path}")
+    return colors
+
+
+def remap_instance_colors(
+    instances: dict[int, dict],
+    colors_by_instance: dict[int, tuple[int, int, int]],
+) -> dict[int, dict]:
+    """Copy method records while replacing input-mask colors with PLY colors."""
+    remapped: dict[int, dict] = {}
+    for instance_id, instance in instances.items():
+        record = dict(instance)
+        if int(instance_id) in colors_by_instance:
+            record["color"] = colors_by_instance[int(instance_id)]
+        remapped[int(instance_id)] = record
+    return remapped
 
 
 def _color_codes(colors: np.ndarray) -> np.ndarray:

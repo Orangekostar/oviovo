@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import numpy as np
 
-from src.evaluation.baselines.ovimap import group_points_by_color, relative_similarity_labels
+from src.evaluation.baselines.ovimap import (
+    group_points_by_color,
+    parse_instance_color_log,
+    relative_similarity_labels,
+    remap_instance_colors,
+)
 
 
 def test_group_points_by_color_keeps_only_requested_instance_colors() -> None:
@@ -32,3 +37,19 @@ def test_relative_similarity_labels_matches_ovimap_canonical_rule() -> None:
 
     assert labels == ("chair", "table")
     assert all(0.5 < score < 1.0 for score in scores)
+
+
+def test_instance_color_log_remaps_mask_colors_to_mesh_colors(tmp_path) -> None:
+    log = tmp_path / "mapping.log"
+    log.write_text(
+        "I global_segment_map_py.cpp:642 Instance: 7 Color: (214,36,176)\n",
+        encoding="utf-8",
+    )
+    instances = {7: {"color": [214, 214, 214], "feat": [[1.0, 0.0]]}}
+
+    colors = parse_instance_color_log(log)
+    remapped = remap_instance_colors(instances, colors)
+
+    assert colors == {7: (214, 36, 176)}
+    assert remapped[7]["color"] == (214, 36, 176)
+    assert instances[7]["color"] == [214, 214, 214]
