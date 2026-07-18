@@ -1,25 +1,25 @@
 token	table	method	dataset	split	metric	direction	precision	source_json	json_pointer	status	note
-T1_OPENFUSION_REPLICA8_MIOU	T1	OPENFUSION	Replica	replica_8_compat	REPLICA8_MIOU	higher	3			UNFILLED	Pending benchmark run.
-T1_OPENFUSION_REPLICA8_MACC	T1	OPENFUSION	Replica	replica_8_compat	REPLICA8_MACC	higher	3			UNFILLED	Pending benchmark run.
-T1_OPENFUSION_REPLICA8_FMIOU	T1	OPENFUSION	Replica	replica_8_compat	REPLICA8_FMIOU	higher	3			UNFILLED	Pending benchmark run.
-T1_OPENFUSION_REPLICA7_MIOU	T1	OPENFUSION	Replica	replica_7_heldout	REPLICA7_MIOU	higher	3			UNFILLED	Pending benchmark run.
+T1_OPENFUSION_REPLICA8_MIOU	T1	OPENFUSION	Replica	replica_8_compat	REPLICA8_MIOU	higher	3	results/baselines/openfusion/replica/20260718-s10-200f/result.json	/metrics/replica_8_compat/semantic/miou	VERIFIED	Imported from verified run 20260718-openfusion-replica8-s10-200f.
+T1_OPENFUSION_REPLICA8_MACC	T1	OPENFUSION	Replica	replica_8_compat	REPLICA8_MACC	higher	3	results/baselines/openfusion/replica/20260718-s10-200f/result.json	/metrics/replica_8_compat/semantic/macc	VERIFIED	Imported from verified run 20260718-openfusion-replica8-s10-200f.
+T1_OPENFUSION_REPLICA8_FMIOU	T1	OPENFUSION	Replica	replica_8_compat	REPLICA8_FMIOU	higher	3	results/baselines/openfusion/replica/20260718-s10-200f/result.json	/metrics/replica_8_compat/semantic/f_miou	VERIFIED	Imported from verified run 20260718-openfusion-replica8-s10-200f.
+T1_OPENFUSION_REPLICA7_MIOU	T1	OPENFUSION	Replica	replica_7_heldout	REPLICA7_MIOU	higher	3	results/baselines/openfusion/replica/20260718-s10-200f/result.json	/metrics/replica_7_heldout/semantic/miou	VERIFIED	Imported from verified run 20260718-openfusion-replica8-s10-200f.
 T1_OPENFUSION_SCANNET5_MIOU	T1	OPENFUSION	ScanNet200	scannet200_5_heldout	SCANNET5_MIOU	higher	3			UNFILLED	Pending benchmark run.
 T1_OPENFUSION_REPLICA8_AP25	T1	OPENFUSION	Replica	replica_8_compat	REPLICA8_AP25	higher	3			N/A	No native entity AP output.
 T1_OPENFUSION_REPLICA8_AP50	T1	OPENFUSION	Replica	replica_8_compat	REPLICA8_AP50	higher	3			N/A	No native entity AP output.
-T1_OPENFUSION_REPLICA8_F5	T1	OPENFUSION	Replica	replica_8_compat	REPLICA8_F5	higher	3			UNFILLED	Pending benchmark run.
+T1_OPENFUSION_REPLICA8_F5	T1	OPENFUSION	Replica	replica_8_compat	REPLICA8_F5	higher	3	results/baselines/openfusion/replica/20260718-s10-200f/result.json	/metrics/replica_8_compat/geometry/f5	VERIFIED	Imported from verified run 20260718-openfusion-replica8-s10-200f.
 T1_OPENFUSION_REPLICA7_AP50	T1	OPENFUSION	Replica	replica_7_heldout	REPLICA7_AP50	higher	3			N/A	No native entity AP output.
 T1_OPENFUSION_SCANNET5_AP25	T1	OPENFUSION	ScanNet200	scannet200_5_heldout	SCANNET5_AP25	higher	3			N/A	No native entity AP output.
 T1_OPENFUSION_SCANNET5_AP50	T1	OPENFUSION	ScanNet200	scannet200_5_heldout	SCANNET5_AP50	higher	3			N/A	No native entity AP output.
 T1_OPENFUSION_SCANNET5_F5	T1	OPENFUSION	ScanNet200	scannet200_5_heldout	SCANNET5_F5	higher	3			UNFILLED	Pending benchmark run.
-T1_OVIMAP_REPLICA8_MIOU	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_MIOU	higher	3			UNFILLED	Pending benchmark run.
-T1_OVIMAP_REPLICA8_MACC	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_MACC	higher	3			UNFILLED	Pending benchmark run.
-T1_OVIMAP_REPLICA8_FMIOU	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_FMIOU	higher	3			UNFILLED	Pending benchmark run.
-T1_OVIMAP_REPLICA7_MIOU	T1	OVIMAP	Replica	replica_7_heldout	REPLICA7_MIOU	higher	3			UNFILLED	Pending benchmark run.
+T1_OVIMAP_REPLICA8_MIOU	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_MIOU	higher	3	results/baselines/ovimap/replica/20260718-s10-200f-repaired/result.json	/metrics/replica_8_compat/semantic/miou	VERIFIED	Imported from verified run 20260718-ovimap-replica8-s10-200f-repaired.
+T1_OVIMAP_REPLICA8_MACC	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_MACC	higher	3	results/baselines/ovimap/replica/20260718-s10-200f-repaired/result.json	/metrics/replica_8_compat/semantic/macc	VERIFIED	Imported from verified run 20260718-ovimap-replica8-s10-200f-repaired.
+T1_OVIMAP_REPLICA8_FMIOU	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_FMIOU	higher	3	results/baselines/ovimap/replica/20260718-s10-200f-repaired/result.json	/metrics/replica_8_compat/semantic/f_miou	VERIFIED	Imported from verified run 20260718-ovimap-replica8-s10-200f-repaired.
+T1_OVIMAP_REPLICA7_MIOU	T1	OVIMAP	Replica	replica_7_heldout	REPLICA7_MIOU	higher	3	results/baselines/ovimap/replica/20260718-s10-200f-repaired/result.json	/metrics/replica_7_heldout/semantic/miou	VERIFIED	Imported from verified run 20260718-ovimap-replica8-s10-200f-repaired.
 T1_OVIMAP_SCANNET5_MIOU	T1	OVIMAP	ScanNet200	scannet200_5_heldout	SCANNET5_MIOU	higher	3			UNFILLED	Pending benchmark run.
-T1_OVIMAP_REPLICA8_AP25	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_AP25	higher	3			UNFILLED	Pending benchmark run.
-T1_OVIMAP_REPLICA8_AP50	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_AP50	higher	3			UNFILLED	Pending benchmark run.
-T1_OVIMAP_REPLICA8_F5	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_F5	higher	3			UNFILLED	Pending benchmark run.
-T1_OVIMAP_REPLICA7_AP50	T1	OVIMAP	Replica	replica_7_heldout	REPLICA7_AP50	higher	3			UNFILLED	Pending benchmark run.
+T1_OVIMAP_REPLICA8_AP25	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_AP25	higher	3	results/baselines/ovimap/replica/20260718-s10-200f-repaired/result.json	/metrics/replica_8_compat/instance/ap25	VERIFIED	Imported from verified run 20260718-ovimap-replica8-s10-200f-repaired.
+T1_OVIMAP_REPLICA8_AP50	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_AP50	higher	3	results/baselines/ovimap/replica/20260718-s10-200f-repaired/result.json	/metrics/replica_8_compat/instance/ap50	VERIFIED	Imported from verified run 20260718-ovimap-replica8-s10-200f-repaired.
+T1_OVIMAP_REPLICA8_F5	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_F5	higher	3	results/baselines/ovimap/replica/20260718-s10-200f-repaired/result.json	/metrics/replica_8_compat/geometry/f5	VERIFIED	Imported from verified run 20260718-ovimap-replica8-s10-200f-repaired.
+T1_OVIMAP_REPLICA7_AP50	T1	OVIMAP	Replica	replica_7_heldout	REPLICA7_AP50	higher	3	results/baselines/ovimap/replica/20260718-s10-200f-repaired/result.json	/metrics/replica_7_heldout/instance/ap50	VERIFIED	Imported from verified run 20260718-ovimap-replica8-s10-200f-repaired.
 T1_OVIMAP_SCANNET5_AP25	T1	OVIMAP	ScanNet200	scannet200_5_heldout	SCANNET5_AP25	higher	3			UNFILLED	Pending benchmark run.
 T1_OVIMAP_SCANNET5_AP50	T1	OVIMAP	ScanNet200	scannet200_5_heldout	SCANNET5_AP50	higher	3			UNFILLED	Pending benchmark run.
 T1_OVIMAP_SCANNET5_F5	T1	OVIMAP	ScanNet200	scannet200_5_heldout	SCANNET5_F5	higher	3			UNFILLED	Pending benchmark run.
@@ -177,18 +177,18 @@ T3_FULL_BG_F5	T3	FULL	TESSE-CD	macro_test	BG_F5	higher	3			UNFILLED	Pending benc
 T3_FULL_IDSW	T3	FULL	3RScan	test	IDSW	lower	3			UNFILLED	Pending benchmark run.
 T3_FULL_REACT_R1	T3	FULL	3RScan	test	REACT_R1	higher	3			UNFILLED	Pending benchmark run.
 T3_FULL_NOT_FOUND_F1	T3	FULL	current_state_queries	test	NOT_FOUND_F1	higher	3			UNFILLED	Pending benchmark run.
-T4_OVIMAP_FRONTEND_SPF	T4	OVIMAP	local_same_hardware	test	FRONTEND_SPF	lower	2			UNFILLED	Pending benchmark run.
-T4_OVIMAP_BACKEND_SPF	T4	OVIMAP	local_same_hardware	test	BACKEND_SPF	lower	2			UNFILLED	Pending benchmark run.
-T4_OVIMAP_MAINT_SPF	T4	OVIMAP	local_same_hardware	test	MAINT_SPF	lower	2			UNFILLED	Pending benchmark run.
-T4_OVIMAP_TOTAL_SPF	T4	OVIMAP	local_same_hardware	test	TOTAL_SPF	lower	2			UNFILLED	Pending benchmark run.
-T4_OVIMAP_HZ	T4	OVIMAP	local_same_hardware	test	HZ	higher	2			UNFILLED	Pending benchmark run.
-T4_OVIMAP_FINAL_S	T4	OVIMAP	local_same_hardware	test	FINAL_S	lower	2			UNFILLED	Pending benchmark run.
-T4_OVIMAP_QUERY_P50_MS	T4	OVIMAP	local_same_hardware	test	QUERY_P50_MS	lower	2			UNFILLED	Pending benchmark run.
-T4_OVIMAP_QUERY_P95_MS	T4	OVIMAP	local_same_hardware	test	QUERY_P95_MS	lower	2			UNFILLED	Pending benchmark run.
-T4_OVIMAP_GPU_GB	T4	OVIMAP	local_same_hardware	test	GPU_GB	lower	2			UNFILLED	Pending benchmark run.
-T4_OVIMAP_RAM_GB	T4	OVIMAP	local_same_hardware	test	RAM_GB	lower	2			UNFILLED	Pending benchmark run.
-T4_OVIMAP_MAP_MB	T4	OVIMAP	local_same_hardware	test	MAP_MB	lower	2			UNFILLED	Pending benchmark run.
-T4_OVIMAP_EVAL_IO_S	T4	OVIMAP	local_same_hardware	test	EVAL_IO_S	lower	2			UNFILLED	Pending benchmark run.
+T4_OVIMAP_FRONTEND_SPF	T4	OVIMAP	local_same_hardware	test	FRONTEND_SPF	lower	2	results/baselines/ovimap/local_same_hardware/20260718-room0-s10-200f/result.json	/metrics/frontend_spf	VERIFIED	Imported from verified run 20260718-ovimap-room0-s10-200f-t4.
+T4_OVIMAP_BACKEND_SPF	T4	OVIMAP	local_same_hardware	test	BACKEND_SPF	lower	2	results/baselines/ovimap/local_same_hardware/20260718-room0-s10-200f/result.json	/metrics/backend_spf	VERIFIED	Imported from verified run 20260718-ovimap-room0-s10-200f-t4.
+T4_OVIMAP_MAINT_SPF	T4	OVIMAP	local_same_hardware	test	MAINT_SPF	lower	2	results/baselines/ovimap/local_same_hardware/20260718-room0-s10-200f/result.json	/metrics/maintenance_spf	VERIFIED	Imported from verified run 20260718-ovimap-room0-s10-200f-t4.
+T4_OVIMAP_TOTAL_SPF	T4	OVIMAP	local_same_hardware	test	TOTAL_SPF	lower	2	results/baselines/ovimap/local_same_hardware/20260718-room0-s10-200f/result.json	/metrics/total_spf	VERIFIED	Imported from verified run 20260718-ovimap-room0-s10-200f-t4.
+T4_OVIMAP_HZ	T4	OVIMAP	local_same_hardware	test	HZ	higher	2	results/baselines/ovimap/local_same_hardware/20260718-room0-s10-200f/result.json	/metrics/hz	VERIFIED	Imported from verified run 20260718-ovimap-room0-s10-200f-t4.
+T4_OVIMAP_FINAL_S	T4	OVIMAP	local_same_hardware	test	FINAL_S	lower	2	results/baselines/ovimap/local_same_hardware/20260718-room0-s10-200f/result.json	/metrics/finalization_s	VERIFIED	Imported from verified run 20260718-ovimap-room0-s10-200f-t4.
+T4_OVIMAP_QUERY_P50_MS	T4	OVIMAP	local_same_hardware	test	QUERY_P50_MS	lower	2	results/baselines/ovimap/local_same_hardware/20260718-room0-s10-200f/result.json	/metrics/query_p50_ms	VERIFIED	Imported from verified run 20260718-ovimap-room0-s10-200f-t4.
+T4_OVIMAP_QUERY_P95_MS	T4	OVIMAP	local_same_hardware	test	QUERY_P95_MS	lower	2	results/baselines/ovimap/local_same_hardware/20260718-room0-s10-200f/result.json	/metrics/query_p95_ms	VERIFIED	Imported from verified run 20260718-ovimap-room0-s10-200f-t4.
+T4_OVIMAP_GPU_GB	T4	OVIMAP	local_same_hardware	test	GPU_GB	lower	2	results/baselines/ovimap/local_same_hardware/20260718-room0-s10-200f/result.json	/metrics/peak_gpu_gb	VERIFIED	Imported from verified run 20260718-ovimap-room0-s10-200f-t4.
+T4_OVIMAP_RAM_GB	T4	OVIMAP	local_same_hardware	test	RAM_GB	lower	2	results/baselines/ovimap/local_same_hardware/20260718-room0-s10-200f/result.json	/metrics/peak_ram_gb	VERIFIED	Imported from verified run 20260718-ovimap-room0-s10-200f-t4.
+T4_OVIMAP_MAP_MB	T4	OVIMAP	local_same_hardware	test	MAP_MB	lower	2	results/baselines/ovimap/local_same_hardware/20260718-room0-s10-200f/result.json	/metrics/final_map_mb	VERIFIED	Imported from verified run 20260718-ovimap-room0-s10-200f-t4.
+T4_OVIMAP_EVAL_IO_S	T4	OVIMAP	local_same_hardware	test	EVAL_IO_S	lower	2	results/baselines/ovimap/local_same_hardware/20260718-room0-s10-200f/result.json	/metrics/evaluation_io_s	VERIFIED	Imported from verified run 20260718-ovimap-room0-s10-200f-t4.
 T4_CONCEPTGRAPHS_FRONTEND_SPF	T4	CONCEPTGRAPHS	local_same_hardware	test	FRONTEND_SPF	lower	2	results/baselines/conceptgraphs/local_same_hardware/20260715-room0-s10-200f/result.json	/metrics/frontend_spf	VERIFIED	Imported from verified run 20260715-conceptgraphs-room0-s10-200f-t4.
 T4_CONCEPTGRAPHS_BACKEND_SPF	T4	CONCEPTGRAPHS	local_same_hardware	test	BACKEND_SPF	lower	2	results/baselines/conceptgraphs/local_same_hardware/20260715-room0-s10-200f/result.json	/metrics/backend_spf	VERIFIED	Imported from verified run 20260715-conceptgraphs-room0-s10-200f-t4.
 T4_CONCEPTGRAPHS_MAINT_SPF	T4	CONCEPTGRAPHS	local_same_hardware	test	MAINT_SPF	lower	2	results/baselines/conceptgraphs/local_same_hardware/20260715-room0-s10-200f/result.json	/metrics/maintenance_spf	VERIFIED	Imported from verified run 20260715-conceptgraphs-room0-s10-200f-t4.

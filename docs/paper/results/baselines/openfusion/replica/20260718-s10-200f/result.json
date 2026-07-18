@@ -1,0 +1,382 @@
+{
+  "adapter_commit": "9bbc79383b5dd0a5e164056ad0afd3d6ba01b1ed",
+  "aggregate_source": {
+    "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/common_eval/aggregate.json",
+    "sha256": "df9ba8d64bcd8b7565b7cdbb311083e23d8c5ec72f786eed673f863c64e1cbeb"
+  },
+  "command": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/run_formal_replica_subset.sh on node6 for Replica-8; /home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/run_common_eval_replica8.sh on node107; scripts/evaluation/aggregate_replica_static.py",
+  "config": {
+    "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/run_formal_replica_subset.sh",
+    "sha256": "e43c93b6e4fd0597be64c20b7475685ad1dafaa47d513934cd63fd2712b4ff88"
+  },
+  "dataset": {
+    "manifest": {
+      "path": "configs/evaluation/manifests/replica8.json",
+      "sha256": "8547aa8b7dbf7ef7a97f4b516f6557a1d163107404fbfc7ccbd56747c5dc95a4"
+    },
+    "name": "Replica",
+    "pose_source": "Replica NICE-SLAM traj.txt; OpenFusion official first-frame normalization is reversed with the same trajectory T0 during neutral evaluation",
+    "splits": [
+      "replica_8_compat",
+      "replica_7_heldout"
+    ]
+  },
+  "environment": {
+    "container": "baseline-openfusion-86bdc1:typing-fix",
+    "image_id": "sha256:b66bf7c9a894f866b824b1766a1fa5e41501ca70cd344997d8c2959c5a491c21",
+    "inspect_path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/environment/container_inspect_20260718.json",
+    "pip_freeze_path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/environment/pip_freeze_20260718.txt"
+  },
+  "hardware": {
+    "cpu": "2 x Intel Xeon Silver 4314; 64 logical CPUs",
+    "driver": "595.71.05",
+    "gpu": "NVIDIA A40 46 GB, node6 GPU 0/1",
+    "os": "Ubuntu 24.04.4 LTS host; official PyTorch CUDA 11.7 container"
+  },
+  "method": {
+    "display_label": "OpenFusion",
+    "key": "OPENFUSION",
+    "mode": "native"
+  },
+  "metrics": {
+    "replica_7_heldout": {
+      "geometry": {
+        "f5": 0.890223437147698
+      },
+      "instance": {
+        "reason": "Method provides no native entity instances.",
+        "status": "N/A"
+      },
+      "scene_count": 7,
+      "scene_ids": [
+        "room1",
+        "room2",
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4"
+      ],
+      "semantic": {
+        "f_miou": 0.471518885351006,
+        "macc": 0.34298302787325025,
+        "miou": 0.2704144034329905
+      }
+    },
+    "replica_8_compat": {
+      "geometry": {
+        "f5": 0.8952347751275557
+      },
+      "instance": {
+        "reason": "Method provides no native entity instances.",
+        "status": "N/A"
+      },
+      "scene_count": 8,
+      "scene_ids": [
+        "room0",
+        "room1",
+        "room2",
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4"
+      ],
+      "semantic": {
+        "f_miou": 0.47926618492461665,
+        "macc": 0.34496273616106565,
+        "miou": 0.2709095849005042
+      }
+    }
+  },
+  "protocol_deviations": [
+    "The official Docker Hub base timed out; the byte-identical registry digest was pulled through the DaoCloud mirror and tagged with the official image name before building the unmodified official Dockerfile.",
+    "The official Dockerfile dependency set required the legacy pip resolver to terminate; typing_extensions 4.15.0 was added in the resulting image to resolve the pydantic import conflict.",
+    "An external stride-10 dataset view uses the repaired Replica source copy; 31 corrupted selected RGB-D files were replaced from the voviktyl/Replica-SLAM Hugging Face mirror with hashes recorded.",
+    "The external wrapper disables interactive visualization and exports the official VLFusion state plus official frozen-vocabulary semantic query without modifying the reference checkout.",
+    "The neutral adapter reverses OpenFusion's official first-frame coordinate normalization with trajectory T0 before evaluating against absolute Replica ground truth.",
+    "OpenFusion provides semantic point labels but no native entity instances; all instance AP cells remain N/A."
+  ],
+  "raw_outputs": [
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/common_eval/aggregate.json",
+      "sha256": "df9ba8d64bcd8b7565b7cdbb311083e23d8c5ec72f786eed673f863c64e1cbeb"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/environment/container_inspect_20260718.json",
+      "sha256": "d53a0478b009f818d13c705c38dfb998433c5f3aa269829ffa5bb3d346123f4f"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/environment/pip_freeze_20260718.txt",
+      "sha256": "a89e9ee628eb85db536bdd243ad574e4e8264816403e2ebaee1ff7d69d06b7a0"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/environment/versions_20260718.json",
+      "sha256": "d421caad08465671f2048f3ab52c52c9bc2ed6bfe2ac9d4563a769444e0af65b"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/base_image.provenance.json",
+      "sha256": "814b09cb43ba4fe8cff3f87c04c5518beef871175c6adcaed8dc4042d3228b5b"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/seem_focall_v1.provenance.json",
+      "sha256": "7459580c3bc2a56fd77c18e735bb5523a301b6151522ba924718d4d5d64aa4c2"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/clip_tokenizer.provenance.json",
+      "sha256": "b23107a50cc08d929d8f16826d7b875e933df2bb93980743c36e48ba2f4a6454"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/logs/openfusion_docker_build_node6_legacy_resolver.log",
+      "sha256": "45a1faaa6e001eb51d1690c822b24033aef9193d8a40f8299bdf48c81e38794f"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/logs/openfusion_gate1_import_node6.log",
+      "sha256": "ee819ee1cc8ff5f61eb5780d4d2d3005462eadb187938d8a0815b8cb971b00ee"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/logs/openfusion_gate2_room0_10f_node6.log",
+      "sha256": "566c02dd3e646b3bdc0c27ee4441f4ea01a5f82e713e3f4416a8f3c8ff4248ff"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/gate3_room0_200f/room0/status.json",
+      "sha256": "a2233a2c0a728cf1a4630a7a876299ec079a1d44e5d78c2c984cf5360f39707b"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/gate3_room0_200f/room0/runtime.json",
+      "sha256": "c710c9736157b19e29e9c305a6ba1cbad2eb20b611bfb28ce1ae15f3e0002200"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/gate3_room0_200f/room0/semantic_prediction.npz",
+      "sha256": "c02d4580c6847a5beabc1701c11fe7832becdbf142608f178413163311685d4a"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/formal_replica8/room1/status.json",
+      "sha256": "25663cfce33bf905be922fbd1c94340b2daa076d8f54a06c4ecc85a09a303d3b"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/formal_replica8/room1/runtime.json",
+      "sha256": "133375b88aafab64db150f04f80afa5c6f2dea0a4939f6fe0c4affbe0c74abc4"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/formal_replica8/room1/semantic_prediction.npz",
+      "sha256": "f1b756e57e0086a7dbaff0716623ca509d24c5c8aa3a7dad9c5a5342d9e14183"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/formal_replica8/room2/status.json",
+      "sha256": "dd15b7bcd0462198c086cd057ed597481a9c1caae2e50343975eac69217eeb29"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/formal_replica8/room2/runtime.json",
+      "sha256": "2eda4f52d57353fcd16f98e6330923a9c3657f7d42edf7b38598f3b261d6f432"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/formal_replica8/room2/semantic_prediction.npz",
+      "sha256": "303b68ee193c3bf932770425c2bd1fed73c29c4affbce5368520b76acae66226"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/formal_replica8/office0/status.json",
+      "sha256": "22ec10975fa9cf9fb292d750943b3647db5c7e0156ae5d968ccba3d45f9b85f1"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/formal_replica8/office0/runtime.json",
+      "sha256": "f4a0fa7e2945be3d4dd2596543a04b2300d47769afaefac656f82914ea8d8aea"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/formal_replica8/office0/semantic_prediction.npz",
+      "sha256": "0c27c01ee30f83b5c06819a77902890698536c6a04580a6ec701099dea57ac8b"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/formal_replica8/office1/status.json",
+      "sha256": "d8a72b1bcaf43a229cc382ff33b2eca1db33dd2d6a178da86854f9e9f3ec63ab"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/formal_replica8/office1/runtime.json",
+      "sha256": "d9eefd2b273033e3f9d970c5be0efc0a6c2200f7e41f25af9be891e05efa2179"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/formal_replica8/office1/semantic_prediction.npz",
+      "sha256": "7925a6c5688e56f6b3d63aed70b9ace62b665bb21005ca37165ccae22c18dc83"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/formal_replica8/office2/status.json",
+      "sha256": "9335483a207d42482b35cbd6184766bfa61c7f2949247c55c2ad6cb22ba38fd4"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/formal_replica8/office2/runtime.json",
+      "sha256": "9965df9b123ea00d7306cc4b35c5c7d95973c49bc04152907ee802beef0abb7c"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/formal_replica8/office2/semantic_prediction.npz",
+      "sha256": "2be005d56b92ce7bd7848e55a439f9e63c52fa66bf712a7cd4617cf012fa5c8e"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/formal_replica8/office3/status.json",
+      "sha256": "08518ffc5cc1e4509e4270d805d15df0b8befec288680830505aec77eb197562"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/formal_replica8/office3/runtime.json",
+      "sha256": "a73945b5c29e5ea8faba86b3b864f19ce7792e7a772c509c5f9a66e90392a955"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/formal_replica8/office3/semantic_prediction.npz",
+      "sha256": "2443e639b83b9b53571e97e995e4f1629e5ddc80fd6e7cf035201dc37b1a5dc3"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/formal_replica8/office4/status.json",
+      "sha256": "198887e6511e84fa9bc12ce3064eab13067b2d9310bca3697d6c2720f2565fa3"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/formal_replica8/office4/runtime.json",
+      "sha256": "d209e14c3bef216845e28cd83409b0240b07848cef3600ea517a0030e817a7ad"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/formal_replica8/office4/semantic_prediction.npz",
+      "sha256": "2b857a76f209d842241a16b863ca96d4a659134715c2f5bfc9317366f1182bbf"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/alignment_poses/room0_traj.txt",
+      "sha256": "9c4f092e9fe1126379e590f2dfa7ab5d42bff530bbef796be982207bc90d4a92"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/alignment_poses/room1_traj.txt",
+      "sha256": "eaf9f5321a09ae035cb83e3ff0cf42f9547afd3d77682d61119a6d936d601505"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/alignment_poses/room2_traj.txt",
+      "sha256": "338d414e8334e2122cf70573427cf074c217e71296a92fdad1777df76d9ca456"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/alignment_poses/office0_traj.txt",
+      "sha256": "3ac1f4c990509ce9085098eb2c6bd45be2ed39487017aa4c456c2906f4a55636"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/alignment_poses/office1_traj.txt",
+      "sha256": "cc1445dc6789cf8ff04573650de356909b84b119cf41915534d5658e28578070"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/alignment_poses/office2_traj.txt",
+      "sha256": "46941ad099f1da560a8af23a77132b9bf24662d998881b2b01f19ceefb1c11e7"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/alignment_poses/office3_traj.txt",
+      "sha256": "a3c163e7a86d345587c3dae34d5b09c541c390dac0bc821bc2f2fcaef840beb9"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/alignment_poses/office4_traj.txt",
+      "sha256": "da8f18d85f261de4fc043762a9e472d665ba8f58d74021d23049341497e4fb32"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/common_eval/room0/metrics.json",
+      "sha256": "b22cb02d00799b2d9117dd693319d1d412b7726ffc02d5abf6632cda0285c8c0"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/common_eval/room1/metrics.json",
+      "sha256": "c1825e818a2e9c01759c314578076a582d5800c4476b76b0c3390756e3deee11"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/common_eval/room2/metrics.json",
+      "sha256": "ed6cca467cbd1b3bf6f4bcc694af0c1c7bfdb13529e53df7ad0f9af3a5cb5fd9"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/common_eval/office0/metrics.json",
+      "sha256": "3b24d922b75f7fe2a176bc7ea0e62ee8942e8dbc79cdee45e05b23627a3381cc"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/common_eval/office1/metrics.json",
+      "sha256": "d668ffcac91b2240e2055586e155706244a0a57443ebfdd5c45266ffa5687be6"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/common_eval/office2/metrics.json",
+      "sha256": "6b515ce9f2f8d0d365d6226f79c1b7d4856a68315a56db6ff424727fbecc9b83"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/common_eval/office3/metrics.json",
+      "sha256": "985dab94aeb3b4ff0e5c4b637c9adbeb4dfa59b5204e70d41869b91fe5535a85"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/common_eval/office4/metrics.json",
+      "sha256": "4586c8ce2e8670af3eaa9377ee935a5e4abd1b648385ff1dfa7c5557b3ef5801"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/environment/replica_repair_download_manifest.json",
+      "sha256": "324e622b064ae032c35be4c826b6783c22fbc8b9fc04ea6bddfbf61968b032ea"
+    }
+  ],
+  "run_id": "20260718-openfusion-replica8-s10-200f",
+  "runtime": {
+    "breakdown": "initialization_s, backend_s, finalization_s, peak_gpu_gb, and final_map_mb are recorded per scene",
+    "scene_sources": [
+      "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/common_eval/room0/metrics.json",
+      "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/common_eval/room1/metrics.json",
+      "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/common_eval/room2/metrics.json",
+      "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/common_eval/office0/metrics.json",
+      "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/common_eval/office1/metrics.json",
+      "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/common_eval/office2/metrics.json",
+      "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/common_eval/office3/metrics.json",
+      "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/openfusion/common_eval/office4/metrics.json"
+    ]
+  },
+  "seed": 0,
+  "status": "VERIFIED",
+  "token_bindings": [
+    {
+      "json_pointer": "/metrics/replica_8_compat/semantic/miou",
+      "precision": 3,
+      "token": "T1_OPENFUSION_REPLICA8_MIOU"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/semantic/macc",
+      "precision": 3,
+      "token": "T1_OPENFUSION_REPLICA8_MACC"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/semantic/f_miou",
+      "precision": 3,
+      "token": "T1_OPENFUSION_REPLICA8_FMIOU"
+    },
+    {
+      "json_pointer": "/metrics/replica_7_heldout/semantic/miou",
+      "precision": 3,
+      "token": "T1_OPENFUSION_REPLICA7_MIOU"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/geometry/f5",
+      "precision": 3,
+      "token": "T1_OPENFUSION_REPLICA8_F5"
+    }
+  ],
+  "upstream_commit": "86bdc1ab173a203e7157ab055ff1fc96c786d86a",
+  "weights": [
+    {
+      "name": "SEEM Focal-L v1",
+      "path": "/home/ww/oviovo_benchmark_assets/weights/openfusion/seem_focall_v1.pt",
+      "sha256": "06cad58bde442ce4f2b3ce00e3a218791dfb060a2d7f2d709ff509669c28a705",
+      "source": "hf-mirror:xdecoder/SEEM@25e2cc7d8398236bd7ea519f92ca2efed835739c"
+    },
+    {
+      "name": "CLIP ViT-B/32 tokenizer merges",
+      "path": "/home/ww/oviovo_benchmark_assets/weights/openfusion/clip-vit-base-patch32-tokenizer/merges.txt",
+      "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85",
+      "source": "hf-mirror:openai/clip-vit-base-patch32@3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268"
+    },
+    {
+      "name": "CLIP ViT-B/32 tokenizer vocabulary",
+      "path": "/home/ww/oviovo_benchmark_assets/weights/openfusion/clip-vit-base-patch32-tokenizer/vocab.json",
+      "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363",
+      "source": "hf-mirror:openai/clip-vit-base-patch32@3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268"
+    },
+    {
+      "name": "CLIP ViT-B/32 tokenizer config",
+      "path": "/home/ww/oviovo_benchmark_assets/weights/openfusion/clip-vit-base-patch32-tokenizer/tokenizer_config.json",
+      "sha256": "34b7336e4bee12e0a9730eaf5189f582ef3c3eea5027f65730e5717256755aad",
+      "source": "hf-mirror:openai/clip-vit-base-patch32@3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268"
+    },
+    {
+      "name": "CLIP ViT-B/32 tokenizer special tokens",
+      "path": "/home/ww/oviovo_benchmark_assets/weights/openfusion/clip-vit-base-patch32-tokenizer/special_tokens_map.json",
+      "sha256": "f8c0d6c39aee3f8431078ef6646567b0aba7f2246e9c54b8b99d55c22b707cbf",
+      "source": "hf-mirror:openai/clip-vit-base-patch32@3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268"
+    }
+  ]
+}

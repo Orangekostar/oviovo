@@ -12,8 +12,8 @@ Numerical cells are provenance tokens. `--` denotes a protocol-level N/A.
 
 | Method | Mode | Replica-8 mIoU $\uparrow$ | Replica-8 mAcc $\uparrow$ | Replica-8 f-mIoU $\uparrow$ | Replica-7 mIoU $\uparrow$ | ScanNet200-5 mIoU $\uparrow$ |
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
-| OpenFusion | native | {{T1_OPENFUSION_REPLICA8_MIOU}} | {{T1_OPENFUSION_REPLICA8_MACC}} | {{T1_OPENFUSION_REPLICA8_FMIOU}} | {{T1_OPENFUSION_REPLICA7_MIOU}} | {{T1_OPENFUSION_SCANNET5_MIOU}} |
-| OVI-MAP | native | {{T1_OVIMAP_REPLICA8_MIOU}} | {{T1_OVIMAP_REPLICA8_MACC}} | {{T1_OVIMAP_REPLICA8_FMIOU}} | {{T1_OVIMAP_REPLICA7_MIOU}} | {{T1_OVIMAP_SCANNET5_MIOU}} |
+| OpenFusion | native | 0.271 | 0.345 | 0.479 | 0.270 | {{T1_OPENFUSION_SCANNET5_MIOU}} |
+| OVI-MAP | native | 0.031 | 0.050 | 0.104 | 0.032 | {{T1_OVIMAP_SCANNET5_MIOU}} |
 | ConceptGraphs | native | 0.070 | 0.101 | 0.053 | 0.070 | {{T1_CONCEPTGRAPHS_SCANNET5_MIOU}} |
 | DualMap | native | 0.156 | 0.204 | 0.129 | 0.155 | {{T1_DUALMAP_SCANNET5_MIOU}} |
 | OVIOVO | online | {{T1_OVIOVO_REPLICA8_MIOU}} | {{T1_OVIOVO_REPLICA8_MACC}} | {{T1_OVIOVO_REPLICA8_FMIOU}} | {{T1_OVIOVO_REPLICA7_MIOU}} | {{T1_OVIOVO_SCANNET5_MIOU}} |
@@ -22,8 +22,8 @@ Numerical cells are provenance tokens. `--` denotes a protocol-level N/A.
 
 | Method | Mode | Replica-8 AP25 $\uparrow$ | Replica-8 AP50 $\uparrow$ | Replica-8 F@5cm $\uparrow$ | Replica-7 AP50 $\uparrow$ | ScanNet200-5 AP25 $\uparrow$ | ScanNet200-5 AP50 $\uparrow$ | ScanNet200-5 F@5cm $\uparrow$ |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| OpenFusion | native | -- | -- | {{T1_OPENFUSION_REPLICA8_F5}} | -- | -- | -- | {{T1_OPENFUSION_SCANNET5_F5}} |
-| OVI-MAP | native | {{T1_OVIMAP_REPLICA8_AP25}} | {{T1_OVIMAP_REPLICA8_AP50}} | {{T1_OVIMAP_REPLICA8_F5}} | {{T1_OVIMAP_REPLICA7_AP50}} | {{T1_OVIMAP_SCANNET5_AP25}} | {{T1_OVIMAP_SCANNET5_AP50}} | {{T1_OVIMAP_SCANNET5_F5}} |
+| OpenFusion | native | -- | -- | 0.895 | -- | -- | -- | {{T1_OPENFUSION_SCANNET5_F5}} |
+| OVI-MAP | native | 0.120 | 0.069 | 0.915 | 0.071 | {{T1_OVIMAP_SCANNET5_AP25}} | {{T1_OVIMAP_SCANNET5_AP50}} | {{T1_OVIMAP_SCANNET5_F5}} |
 | ConceptGraphs | native | 0.399 | 0.214 | 0.376 | 0.213 | {{T1_CONCEPTGRAPHS_SCANNET5_AP25}} | {{T1_CONCEPTGRAPHS_SCANNET5_AP50}} | {{T1_CONCEPTGRAPHS_SCANNET5_F5}} |
 | DualMap | native | 0.384 | 0.164 | 0.887 | 0.147 | {{T1_DUALMAP_SCANNET5_AP25}} | {{T1_DUALMAP_SCANNET5_AP50}} | {{T1_DUALMAP_SCANNET5_F5}} |
 | OVIOVO | online | {{T1_OVIOVO_REPLICA8_AP25}} | {{T1_OVIOVO_REPLICA8_AP50}} | {{T1_OVIOVO_REPLICA8_F5}} | {{T1_OVIOVO_REPLICA7_AP50}} | {{T1_OVIOVO_SCANNET5_AP25}} | {{T1_OVIOVO_SCANNET5_AP50}} | {{T1_OVIOVO_SCANNET5_F5}} |
@@ -85,7 +85,7 @@ Numerical cells are provenance tokens. `--` denotes a protocol-level N/A.
 
 | Method | Mode | Frontend s/frame $\downarrow$ | Backend s/frame $\downarrow$ | Maintenance s/frame $\downarrow$ | Total s/frame $\downarrow$ | Processed Hz $\uparrow$ | Finalization s $\downarrow$ | Query p50 ms $\downarrow$ | Query p95 ms $\downarrow$ |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| OVI-MAP | native | {{T4_OVIMAP_FRONTEND_SPF}} | {{T4_OVIMAP_BACKEND_SPF}} | {{T4_OVIMAP_MAINT_SPF}} | {{T4_OVIMAP_TOTAL_SPF}} | {{T4_OVIMAP_HZ}} | {{T4_OVIMAP_FINAL_S}} | {{T4_OVIMAP_QUERY_P50_MS}} | {{T4_OVIMAP_QUERY_P95_MS}} |
+| OVI-MAP | native | 1.63 | 6.23 | 0.00 | 7.86 | 0.13 | 0.00 | 7.70 | 7.74 |
 | ConceptGraphs | native | 3.52 | 0.50 | 0.00 | 4.02 | 0.25 | 22.98 | 8.77 | 8.81 |
 | DualMap | native | 1.66 | 0.07 | 0.00 | 1.73 | 0.58 | 12.52 | 6.37 | 6.45 |
 | Khronos | online | {{T4_KHRONOS_FRONTEND_SPF}} | {{T4_KHRONOS_BACKEND_SPF}} | {{T4_KHRONOS_MAINT_SPF}} | {{T4_KHRONOS_TOTAL_SPF}} | {{T4_KHRONOS_HZ}} | {{T4_KHRONOS_FINAL_S}} | {{T4_KHRONOS_QUERY_P50_MS}} | {{T4_KHRONOS_QUERY_P95_MS}} |
@@ -96,7 +96,7 @@ Numerical cells are provenance tokens. `--` denotes a protocol-level N/A.
 
 | Method | Mode | Peak GPU GB $\downarrow$ | Peak RAM GB $\downarrow$ | Final map MB $\downarrow$ | Evaluation/I/O s $\downarrow$ |
 | --- | --- | ---: | ---: | ---: | ---: |
-| OVI-MAP | native | {{T4_OVIMAP_GPU_GB}} | {{T4_OVIMAP_RAM_GB}} | {{T4_OVIMAP_MAP_MB}} | {{T4_OVIMAP_EVAL_IO_S}} |
+| OVI-MAP | native | 26.14 | 20.71 | 699.43 | 194.89 |
 | ConceptGraphs | native | 24.01 | 9.09 | 5.80 | 32.01 |
 | DualMap | native | 23.80 | 6.73 | 17.97 | 37.52 |
 | Khronos | online | {{T4_KHRONOS_GPU_GB}} | {{T4_KHRONOS_RAM_GB}} | {{T4_KHRONOS_MAP_MB}} | {{T4_KHRONOS_EVAL_IO_S}} |

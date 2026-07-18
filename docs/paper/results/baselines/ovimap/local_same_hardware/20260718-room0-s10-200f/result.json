@@ -1,0 +1,182 @@
+{
+  "adapter_commit": "4075d89badaeeb36f76a7ea3df15a484097013bd",
+  "aggregate_source": {
+    "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/t4/runtime_summary.json",
+    "sha256": "9d30da46bb9e1ba655be57180277caf39ff88c82e6b7f53ede39ecf5fa889444"
+  },
+  "command": "GPU_ID=1 SCENES_CSV=room0 run_formal_replica8_subset.sh; run_common_eval_replica8.sh room0; measure_baseline_queries.py --baseline ovimap; summarize_baseline_runtime.py",
+  "config": {
+    "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/run_formal_replica8_subset.sh",
+    "sha256": "8d44cfaf40264e3e7f81d1a8b89732a35b080ff6dbb8089c263ddc8fc066cbd6"
+  },
+  "dataset": {
+    "manifest": {
+      "path": "configs/evaluation/manifests/replica8.json",
+      "sha256": "8547aa8b7dbf7ef7a97f4b516f6557a1d163107404fbfc7ccbd56747c5dc95a4"
+    },
+    "name": "local_same_hardware",
+    "pose_source": "Replica NICE-SLAM traj.txt; room0 frames 0:2000:10",
+    "splits": [
+      "test"
+    ]
+  },
+  "environment": {
+    "container": "baseline-ovimap-58a804e",
+    "name": "baseline-ovimap-58a804e-cird",
+    "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/environment/ovimap_cird_freeze_20260718.txt"
+  },
+  "hardware": {
+    "cpu": "Intel Xeon Gold 5320; 104 logical CPUs",
+    "driver": "595.71.05",
+    "gpu": "NVIDIA A40 46 GB, node6 GPU 1 for mapping and GPU 0 for query",
+    "os": "Ubuntu 22.04.4 LTS"
+  },
+  "method": {
+    "display_label": "OVI-MAP",
+    "key": "OVIMAP",
+    "mode": "native"
+  },
+  "metrics": {
+    "backend_spf": 6.234249999999999,
+    "evaluation_io_s": 194.89,
+    "final_map_mb": 699.426212,
+    "finalization_s": 0.0,
+    "frontend_spf": 1.6291499999999999,
+    "hz": 0.12717145255233106,
+    "initialization_s": 0.0,
+    "maintenance_spf": 0.0,
+    "peak_gpu_gb": 26.137,
+    "peak_ram_gb": 20.707324,
+    "query_p50_ms": 7.699908048380166,
+    "query_p95_ms": 7.739527034573257,
+    "total_spf": 7.8633999999999995
+  },
+  "protocol_deviations": [
+    "container initialization completed before the measured run and is reported as zero online initialization seconds",
+    "finalization is included in the upstream mapping process and no separate finalization command is exposed",
+    "query timing uses the frozen Replica-41 vocabulary with full SigLIP tokenization, encoding, and entity ranking",
+    "the public-mirror repair copy is used, although room0 itself contains no repaired stride-10 file"
+  ],
+  "raw_outputs": [
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/formal_replica8_repaired/room_0/status.json",
+      "sha256": "3d18a5ba32969294f97fabaed29023eee131c9a6bdfb460001132c9df94817ed"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/formal_replica8_repaired/room_0/frontend.log",
+      "sha256": "3d312a8c5bfe08901ccabe5a5f9c4dfc6fd251d72d7b75acce43002d99056e61"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/formal_replica8_repaired/room_0/backend.log",
+      "sha256": "08a052652612f4d8d808f62cf0d2859533ee79d5440ab9c84e00bd4bf64b821a"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/formal_replica8_repaired/room_0/gpu_dmon.csv",
+      "sha256": "e5f7a9b623a6394639212b02ae9bc74031061d4a66c7dd73e235793632085a82"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval/room0/metrics.json",
+      "sha256": "8c19af9d03db34db9a9beb6550a9701559f5c587880d2b3d9f542a72a5794a17"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval/room0/evaluation.log",
+      "sha256": "11027a8e7f7fb938964866d85f351cf7d0a785fbd8b54585da936484cdef9529"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/t4/room0/query.json",
+      "sha256": "4942dda0997221eb53a8c3ef9197ba81464815403a4550819b1e541ea08fd73f"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/t4/room0/query.log",
+      "sha256": "00fcec5db60133e53530132a4a59bcfb26ec627c354f803b0c6fb403dbef2de0"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/t4/runtime_summary.json",
+      "sha256": "9d30da46bb9e1ba655be57180277caf39ff88c82e6b7f53ede39ecf5fa889444"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/environment/container_inspect_20260718.json",
+      "sha256": "4e8da38de7418737278737536a738377fb16887526e3bc2ca42c623f44f0db2b"
+    }
+  ],
+  "run_id": "20260718-ovimap-room0-s10-200f-t4",
+  "seed": 0,
+  "status": "VERIFIED",
+  "token_bindings": [
+    {
+      "json_pointer": "/metrics/frontend_spf",
+      "precision": 2,
+      "token": "T4_OVIMAP_FRONTEND_SPF"
+    },
+    {
+      "json_pointer": "/metrics/backend_spf",
+      "precision": 2,
+      "token": "T4_OVIMAP_BACKEND_SPF"
+    },
+    {
+      "json_pointer": "/metrics/maintenance_spf",
+      "precision": 2,
+      "token": "T4_OVIMAP_MAINT_SPF"
+    },
+    {
+      "json_pointer": "/metrics/total_spf",
+      "precision": 2,
+      "token": "T4_OVIMAP_TOTAL_SPF"
+    },
+    {
+      "json_pointer": "/metrics/hz",
+      "precision": 2,
+      "token": "T4_OVIMAP_HZ"
+    },
+    {
+      "json_pointer": "/metrics/finalization_s",
+      "precision": 2,
+      "token": "T4_OVIMAP_FINAL_S"
+    },
+    {
+      "json_pointer": "/metrics/query_p50_ms",
+      "precision": 2,
+      "token": "T4_OVIMAP_QUERY_P50_MS"
+    },
+    {
+      "json_pointer": "/metrics/query_p95_ms",
+      "precision": 2,
+      "token": "T4_OVIMAP_QUERY_P95_MS"
+    },
+    {
+      "json_pointer": "/metrics/peak_gpu_gb",
+      "precision": 2,
+      "token": "T4_OVIMAP_GPU_GB"
+    },
+    {
+      "json_pointer": "/metrics/peak_ram_gb",
+      "precision": 2,
+      "token": "T4_OVIMAP_RAM_GB"
+    },
+    {
+      "json_pointer": "/metrics/final_map_mb",
+      "precision": 2,
+      "token": "T4_OVIMAP_MAP_MB"
+    },
+    {
+      "json_pointer": "/metrics/evaluation_io_s",
+      "precision": 2,
+      "token": "T4_OVIMAP_EVAL_IO_S"
+    }
+  ],
+  "upstream_commit": "58a804e2d7c8cfac6040639701abeb9d45b86537",
+  "weights": [
+    {
+      "name": "CropFormer_hornet_3x",
+      "path": "/home/ww/vv/paper2/Entity/checkpoints/CropFormer_hornet_3x_03823a.pth",
+      "sha256": "71915b7e9dc63fc662b32c59dff513530a06221c3b22f6de7ff4d6ef82df1128",
+      "source": "pre-existing local upstream asset"
+    },
+    {
+      "name": "SigLIP-L/16-384 model.safetensors",
+      "path": "/home/ww/oviovo_benchmark_assets/weights/siglip-large-patch16-384/model.safetensors",
+      "sha256": "ab804d2c2c631159f65afa1de27787c5dba90cbfa189f26404de1944d50a18a2",
+      "source": "pre-existing local benchmark asset"
+    }
+  ]
+}
