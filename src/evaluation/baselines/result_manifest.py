@@ -25,6 +25,7 @@ REQUIRED_FIELDS = (
     "dataset",
     "hardware",
     "seed",
+    "runtime",
     "raw_outputs",
     "protocol_deviations",
     "token_bindings",
@@ -61,6 +62,8 @@ def finalize_static_result(
     missing = [field for field in REQUIRED_FIELDS if field not in provenance]
     if missing:
         raise ResultManifestError(f"result provenance missing fields: {', '.join(missing)}")
+    if not isinstance(provenance["runtime"], Mapping) or not provenance["runtime"]:
+        raise ResultManifestError("result provenance runtime must be a non-empty object")
 
     result = dict(provenance)
     method_key = str(result.get("method", {}).get("key", ""))

@@ -214,9 +214,372 @@
     {
       "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval/office4/metrics.json",
       "sha256": "b6c5a3a8a08e83423c51b4859929fd82a2cff43ad2dce3b27b1779a418fac880"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval/runtime_summary.json",
+      "sha256": "38daa1f941c8fd1cd81fc7164bfa8ff25758d11ba828290debe013e976ffd988"
     }
   ],
   "run_id": "20260718-ovimap-replica8-s10-200f-repaired",
+  "runtime": {
+    "per_scene": {
+      "office0": {
+        "metrics": {
+          "backend_s": 977.3,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 394.715302,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 324.57,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 26.137,
+          "peak_ram_gb": 11.198312,
+          "processed_hz": 0.15362516994784425,
+          "query_mean_ms": 0.0,
+          "query_p50_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 6.5093499999999995
+        },
+        "source_labels": {
+          "backend_s": "OVI-MAP mapping process wall clock",
+          "final_map_mb": "OVI-MAP instance feature pickle and instance mesh",
+          "frontend_s": "OVI-MAP official CropFormer process wall clock",
+          "peak_gpu_gb": "exclusive-device nvidia-smi dmon fb samples",
+          "peak_ram_gb": "GNU time process peak RSS"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p50_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      },
+      "office1": {
+        "metrics": {
+          "backend_s": 994.37,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 280.847916,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 325.12,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 26.137,
+          "peak_ram_gb": 18.063536,
+          "processed_hz": 0.1515737140865031,
+          "query_mean_ms": 0.0,
+          "query_p50_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 6.59745
+        },
+        "source_labels": {
+          "backend_s": "OVI-MAP mapping process wall clock",
+          "final_map_mb": "OVI-MAP instance feature pickle and instance mesh",
+          "frontend_s": "OVI-MAP official CropFormer process wall clock",
+          "peak_gpu_gb": "exclusive-device nvidia-smi dmon fb samples",
+          "peak_ram_gb": "GNU time process peak RSS"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p50_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      },
+      "office2": {
+        "metrics": {
+          "backend_s": 1339.85,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 607.022507,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 711.64,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 44.394,
+          "peak_ram_gb": 15.284756,
+          "processed_hz": 0.09749011693939529,
+          "query_mean_ms": 0.0,
+          "query_p50_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 10.257449999999999
+        },
+        "source_labels": {
+          "backend_s": "OVI-MAP mapping process wall clock",
+          "final_map_mb": "OVI-MAP instance feature pickle and instance mesh",
+          "frontend_s": "OVI-MAP official CropFormer process wall clock",
+          "peak_gpu_gb": "exclusive-device nvidia-smi dmon fb samples",
+          "peak_ram_gb": "GNU time process peak RSS"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p50_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      },
+      "office3": {
+        "metrics": {
+          "backend_s": 1429.52,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 875.677905,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 325.98,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 26.137,
+          "peak_ram_gb": 17.78502,
+          "processed_hz": 0.11392765593847906,
+          "query_mean_ms": 0.0,
+          "query_p50_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 8.7775
+        },
+        "source_labels": {
+          "backend_s": "OVI-MAP mapping process wall clock",
+          "final_map_mb": "OVI-MAP instance feature pickle and instance mesh",
+          "frontend_s": "OVI-MAP official CropFormer process wall clock",
+          "peak_gpu_gb": "exclusive-device nvidia-smi dmon fb samples",
+          "peak_ram_gb": "GNU time process peak RSS"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p50_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      },
+      "office4": {
+        "metrics": {
+          "backend_s": 1062.77,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 704.854595,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 325.79,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 26.137,
+          "peak_ram_gb": 14.5882,
+          "processed_hz": 0.1440341072766031,
+          "query_mean_ms": 0.0,
+          "query_p50_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 6.9428
+        },
+        "source_labels": {
+          "backend_s": "OVI-MAP mapping process wall clock",
+          "final_map_mb": "OVI-MAP instance feature pickle and instance mesh",
+          "frontend_s": "OVI-MAP official CropFormer process wall clock",
+          "peak_gpu_gb": "exclusive-device nvidia-smi dmon fb samples",
+          "peak_ram_gb": "GNU time process peak RSS"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p50_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      },
+      "room0": {
+        "metrics": {
+          "backend_s": 1246.85,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 699.426212,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 325.83,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 26.137,
+          "peak_ram_gb": 20.707324,
+          "processed_hz": 0.12717145255233106,
+          "query_mean_ms": 0.0,
+          "query_p50_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 7.8633999999999995
+        },
+        "source_labels": {
+          "backend_s": "OVI-MAP mapping process wall clock",
+          "final_map_mb": "OVI-MAP instance feature pickle and instance mesh",
+          "frontend_s": "OVI-MAP official CropFormer process wall clock",
+          "peak_gpu_gb": "exclusive-device nvidia-smi dmon fb samples",
+          "peak_ram_gb": "GNU time process peak RSS"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p50_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      },
+      "room1": {
+        "metrics": {
+          "backend_s": 1006.8,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 493.426702,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 324.69,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 26.137,
+          "peak_ram_gb": 17.853148,
+          "processed_hz": 0.15020766209284336,
+          "query_mean_ms": 0.0,
+          "query_p50_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 6.65745
+        },
+        "source_labels": {
+          "backend_s": "OVI-MAP mapping process wall clock",
+          "final_map_mb": "OVI-MAP instance feature pickle and instance mesh",
+          "frontend_s": "OVI-MAP official CropFormer process wall clock",
+          "peak_gpu_gb": "exclusive-device nvidia-smi dmon fb samples",
+          "peak_ram_gb": "GNU time process peak RSS"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p50_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      },
+      "room2": {
+        "metrics": {
+          "backend_s": 1102.43,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 519.844059,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 325.21,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 26.137,
+          "peak_ram_gb": 22.581648,
+          "processed_hz": 0.14009133955338882,
+          "query_mean_ms": 0.0,
+          "query_p50_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 7.1382
+        },
+        "source_labels": {
+          "backend_s": "OVI-MAP mapping process wall clock",
+          "final_map_mb": "OVI-MAP instance feature pickle and instance mesh",
+          "frontend_s": "OVI-MAP official CropFormer process wall clock",
+          "peak_gpu_gb": "exclusive-device nvidia-smi dmon fb samples",
+          "peak_ram_gb": "GNU time process peak RSS"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p50_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      }
+    },
+    "scene_ids": [
+      "room0",
+      "room1",
+      "room2",
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4"
+    ],
+    "scope": "replica_8_compat_and_replica_7_heldout"
+  },
   "seed": 0,
   "status": "VERIFIED",
   "token_bindings": [

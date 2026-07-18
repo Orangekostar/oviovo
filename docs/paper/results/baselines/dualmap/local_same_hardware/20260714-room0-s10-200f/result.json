@@ -82,6 +82,54 @@
     }
   ],
   "run_id": "20260714-dualmap-room0-s10-200f-t4",
+  "runtime": {
+    "breakdown": {
+      "method": "DUALMAP",
+      "metrics": {
+        "backend_spf": 0.07020000000000004,
+        "evaluation_io_s": 37.52,
+        "final_map_mb": 17.971541,
+        "finalization_s": 12.515999999999975,
+        "frontend_spf": 1.6569999999999998,
+        "hz": 0.5789717461787864,
+        "initialization_s": 124.694,
+        "maintenance_spf": 0.0,
+        "peak_gpu_gb": 23.801,
+        "peak_ram_gb": 6.731172,
+        "query_p50_ms": 6.365055218338966,
+        "query_p95_ms": 6.452974397689104,
+        "total_spf": 1.7272
+      },
+      "scene_id": "room0",
+      "sources": {
+        "evaluation_log": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/common_eval_room0_clip.log",
+        "gpu_dmon": [
+          "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/gate3_room0_200f/gpu_dmon.csv"
+        ],
+        "process_log": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/gate3_room0_200f/run.log",
+        "query": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/t4/query.json",
+        "run_status": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/gate3_room0_200f/status.json",
+        "scene_metrics": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/common_eval/room0/metrics.json"
+      },
+      "status": "VERIFIED",
+      "units": {
+        "backend_spf": "seconds/frame",
+        "evaluation_io_s": "seconds",
+        "final_map_mb": "MB",
+        "finalization_s": "seconds",
+        "frontend_spf": "seconds/frame",
+        "hz": "Hz",
+        "initialization_s": "seconds",
+        "maintenance_spf": "seconds/frame",
+        "peak_gpu_gb": "GB",
+        "peak_ram_gb": "GB",
+        "query_p50_ms": "milliseconds",
+        "query_p95_ms": "milliseconds",
+        "total_spf": "seconds/frame"
+      }
+    },
+    "scope": "room0_same_hardware"
+  },
   "seed": 0,
   "status": "VERIFIED",
   "token_bindings": [

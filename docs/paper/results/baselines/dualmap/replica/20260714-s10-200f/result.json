@@ -131,9 +131,340 @@
     {
       "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/common_eval/office4/metrics.json",
       "sha256": "2f11509950e5da74040e29785ee25998c70e02033793a55c4b16a9f2a4c43bab"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/dualmap/common_eval/runtime_summary.json",
+      "sha256": "5e647322aa5d4de19bd987ff7fbb797d6d24f0e6d487109ef5fbc627d4773998"
     }
   ],
   "run_id": "20260714-dualmap-replica8-s10-200f",
+  "runtime": {
+    "per_scene": {
+      "office0": {
+        "metrics": {
+          "backend_s": 12.519999999999998,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 11.081067,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 215.7,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 0.0,
+          "peak_ram_gb": 0.0,
+          "processed_hz": 0.8763473841030585,
+          "query_mean_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 1.1411
+        },
+        "source_labels": {
+          "backend_s": "DualMap system_time.csv Time Per Frame residual",
+          "final_map_mb": "DualMap serialized map files",
+          "frontend_s": "DualMap system_time.csv Process Detection"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      },
+      "office1": {
+        "metrics": {
+          "backend_s": 12.9,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 10.603603,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 197.9,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 0.0,
+          "peak_ram_gb": 0.0,
+          "processed_hz": 0.9487666034155597,
+          "query_mean_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 1.054
+        },
+        "source_labels": {
+          "backend_s": "DualMap system_time.csv Time Per Frame residual",
+          "final_map_mb": "DualMap serialized map files",
+          "frontend_s": "DualMap system_time.csv Process Detection"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      },
+      "office2": {
+        "metrics": {
+          "backend_s": 16.080000000000005,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 15.858546,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 257.64,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 0.0,
+          "peak_ram_gb": 0.0,
+          "processed_hz": 0.7306736811340057,
+          "query_mean_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 1.3685999999999998
+        },
+        "source_labels": {
+          "backend_s": "DualMap system_time.csv Time Per Frame residual",
+          "final_map_mb": "DualMap serialized map files",
+          "frontend_s": "DualMap system_time.csv Process Detection"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      },
+      "office3": {
+        "metrics": {
+          "backend_s": 15.479999999999983,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 26.136785,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 300.24,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 0.0,
+          "peak_ram_gb": 0.0,
+          "processed_hz": 0.6334726973267453,
+          "query_mean_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 1.5785999999999998
+        },
+        "source_labels": {
+          "backend_s": "DualMap system_time.csv Time Per Frame residual",
+          "final_map_mb": "DualMap serialized map files",
+          "frontend_s": "DualMap system_time.csv Process Detection"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      },
+      "office4": {
+        "metrics": {
+          "backend_s": 11.799999999999988,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 16.121242,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 236.32,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 0.0,
+          "peak_ram_gb": 0.0,
+          "processed_hz": 0.8060615831049492,
+          "query_mean_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 1.2406
+        },
+        "source_labels": {
+          "backend_s": "DualMap system_time.csv Time Per Frame residual",
+          "final_map_mb": "DualMap serialized map files",
+          "frontend_s": "DualMap system_time.csv Process Detection"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      },
+      "room0": {
+        "metrics": {
+          "backend_s": 14.040000000000008,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 17.971541,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 331.4,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 0.0,
+          "peak_ram_gb": 0.0,
+          "processed_hz": 0.5789717461787864,
+          "query_mean_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 1.7272
+        },
+        "source_labels": {
+          "backend_s": "DualMap system_time.csv Time Per Frame residual",
+          "final_map_mb": "DualMap serialized map files",
+          "frontend_s": "DualMap system_time.csv Process Detection"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      },
+      "room1": {
+        "metrics": {
+          "backend_s": 11.059999999999981,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 13.766772,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 237.08,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 0.0,
+          "peak_ram_gb": 0.0,
+          "processed_hz": 0.8059966148142178,
+          "query_mean_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 1.2407
+        },
+        "source_labels": {
+          "backend_s": "DualMap system_time.csv Time Per Frame residual",
+          "final_map_mb": "DualMap serialized map files",
+          "frontend_s": "DualMap system_time.csv Process Detection"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      },
+      "room2": {
+        "metrics": {
+          "backend_s": 12.480000000000002,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 11.306659,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 249.56,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 0.0,
+          "peak_ram_gb": 0.0,
+          "processed_hz": 0.7632422530911311,
+          "query_mean_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 1.3102
+        },
+        "source_labels": {
+          "backend_s": "DualMap system_time.csv Time Per Frame residual",
+          "final_map_mb": "DualMap serialized map files",
+          "frontend_s": "DualMap system_time.csv Process Detection"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      }
+    },
+    "scene_ids": [
+      "room0",
+      "room1",
+      "room2",
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4"
+    ],
+    "scope": "replica_8_compat_and_replica_7_heldout"
+  },
   "seed": 0,
   "status": "VERIFIED",
   "token_bindings": [

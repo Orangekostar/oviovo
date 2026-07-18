@@ -33,6 +33,7 @@ def _provenance(tmp_path) -> dict:
         },
         "hardware": {"gpu": "test"},
         "seed": 0,
+        "runtime": {"scope": "test", "breakdown": {"frame_count": 1}},
         "raw_outputs": [{"path": str(raw_log)}],
         "protocol_deviations": [],
         "token_bindings": [
@@ -59,6 +60,22 @@ def test_finalize_static_result_injects_metrics_and_hashes_files(tmp_path) -> No
     assert result["weights"][0]["sha256"] == hashlib.sha256(b"weight").hexdigest()
     assert result["dataset"]["manifest"]["sha256"]
     assert result["raw_outputs"][0]["sha256"]
+    assert result["runtime"]["breakdown"]["frame_count"] == 1
+
+
+def test_finalize_static_result_requires_runtime_breakdown(tmp_path) -> None:
+    aggregate = tmp_path / "aggregate.json"
+    aggregate.write_text('{"metrics": {}}\n', encoding="utf-8")
+    provenance = _provenance(tmp_path)
+    del provenance["runtime"]
+
+    with pytest.raises(ResultManifestError, match="runtime"):
+        finalize_static_result(aggregate, provenance)
+
+    provenance = _provenance(tmp_path)
+    provenance["runtime"] = {}
+    with pytest.raises(ResultManifestError, match="runtime"):
+        finalize_static_result(aggregate, provenance)
 
 
 def test_finalize_static_result_rejects_unverified_oviovo_and_missing_files(tmp_path) -> None:

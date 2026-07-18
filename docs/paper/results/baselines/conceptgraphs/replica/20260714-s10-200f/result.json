@@ -132,9 +132,356 @@
     {
       "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/common_eval/office4/metrics.json",
       "sha256": "a5682516539799079ecc47de4e8b55da7f0a0baac2a7f567f92886f6e667010f"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/common_eval/runtime_summary.json",
+      "sha256": "e397f8299b3c90d1ccbda15408f041ef6385190fa6e1c18657d07b518517d4c9"
     }
   ],
   "run_id": "20260714-conceptgraphs-replica8-s10-200f",
+  "runtime": {
+    "per_scene": {
+      "office0": {
+        "metrics": {
+          "backend_s": 52.19,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 4.09575,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 194.37,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 9.584,
+          "peak_ram_gb": 9.09218,
+          "processed_hz": 0.8111615833874107,
+          "query_mean_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 1.2328000000000001
+        },
+        "source_labels": {
+          "backend_s": "ConceptGraphs mapping process wall clock",
+          "final_map_mb": "ConceptGraphs serialized final map",
+          "frontend_s": "ConceptGraphs detector process wall clock",
+          "peak_gpu_gb": "exclusive-device nvidia-smi dmon fb samples",
+          "peak_ram_gb": "GNU time process peak RSS"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      },
+      "office1": {
+        "metrics": {
+          "backend_s": 56.13,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 2.677152,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 321.71,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 9.804,
+          "peak_ram_gb": 9.092684,
+          "processed_hz": 0.5293245818335804,
+          "query_mean_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 1.8891999999999998
+        },
+        "source_labels": {
+          "backend_s": "ConceptGraphs mapping process wall clock",
+          "final_map_mb": "ConceptGraphs serialized final map",
+          "frontend_s": "ConceptGraphs detector process wall clock",
+          "peak_gpu_gb": "exclusive-device nvidia-smi dmon fb samples",
+          "peak_ram_gb": "GNU time process peak RSS"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      },
+      "office2": {
+        "metrics": {
+          "backend_s": 78.78,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 3.383058,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 368.97,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 12.592,
+          "peak_ram_gb": 9.089168,
+          "processed_hz": 0.44667783361250696,
+          "query_mean_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 2.23875
+        },
+        "source_labels": {
+          "backend_s": "ConceptGraphs mapping process wall clock",
+          "final_map_mb": "ConceptGraphs serialized final map",
+          "frontend_s": "ConceptGraphs detector process wall clock",
+          "peak_gpu_gb": "exclusive-device nvidia-smi dmon fb samples",
+          "peak_ram_gb": "GNU time process peak RSS"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      },
+      "office3": {
+        "metrics": {
+          "backend_s": 83.62,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 4.831618,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 416.04,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 13.244,
+          "peak_ram_gb": 9.08928,
+          "processed_hz": 0.4002721850858584,
+          "query_mean_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 2.4983
+        },
+        "source_labels": {
+          "backend_s": "ConceptGraphs mapping process wall clock",
+          "final_map_mb": "ConceptGraphs serialized final map",
+          "frontend_s": "ConceptGraphs detector process wall clock",
+          "peak_gpu_gb": "exclusive-device nvidia-smi dmon fb samples",
+          "peak_ram_gb": "GNU time process peak RSS"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      },
+      "office4": {
+        "metrics": {
+          "backend_s": 56.41,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 2.831883,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 186.44,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 11.252,
+          "peak_ram_gb": 9.0897,
+          "processed_hz": 0.8235536339304097,
+          "query_mean_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 1.21425
+        },
+        "source_labels": {
+          "backend_s": "ConceptGraphs mapping process wall clock",
+          "final_map_mb": "ConceptGraphs serialized final map",
+          "frontend_s": "ConceptGraphs detector process wall clock",
+          "peak_gpu_gb": "exclusive-device nvidia-smi dmon fb samples",
+          "peak_ram_gb": "GNU time process peak RSS"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      },
+      "room0": {
+        "metrics": {
+          "backend_s": 99.56,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 5.804456,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 726.47,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 24.011,
+          "peak_ram_gb": 9.090104,
+          "processed_hz": 0.24212195682965512,
+          "query_mean_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 4.1301499999999995
+        },
+        "source_labels": {
+          "backend_s": "ConceptGraphs mapping process wall clock",
+          "final_map_mb": "ConceptGraphs serialized final map",
+          "frontend_s": "ConceptGraphs detector process wall clock",
+          "peak_gpu_gb": "exclusive-device nvidia-smi dmon fb samples",
+          "peak_ram_gb": "GNU time process peak RSS"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      },
+      "room1": {
+        "metrics": {
+          "backend_s": 60.09,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 3.146416,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 278.74,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 9.676,
+          "peak_ram_gb": 9.09056,
+          "processed_hz": 0.5902665053271551,
+          "query_mean_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 1.6941500000000003
+        },
+        "source_labels": {
+          "backend_s": "ConceptGraphs mapping process wall clock",
+          "final_map_mb": "ConceptGraphs serialized final map",
+          "frontend_s": "ConceptGraphs detector process wall clock",
+          "peak_gpu_gb": "exclusive-device nvidia-smi dmon fb samples",
+          "peak_ram_gb": "GNU time process peak RSS"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      },
+      "room2": {
+        "metrics": {
+          "backend_s": 66.03,
+          "evaluation_io_s": 0.0,
+          "final_map_mb": 2.882068,
+          "finalization_s": 0.0,
+          "frame_count": 200,
+          "frontend_s": 205.61,
+          "initialization_s": 0.0,
+          "maintenance_s": 0.0,
+          "peak_gpu_gb": 10.272,
+          "peak_ram_gb": 9.088224,
+          "processed_hz": 0.7362685907819173,
+          "query_mean_ms": 0.0,
+          "query_p95_ms": 0.0,
+          "total_s_per_frame": 1.3581999999999999
+        },
+        "source_labels": {
+          "backend_s": "ConceptGraphs mapping process wall clock",
+          "final_map_mb": "ConceptGraphs serialized final map",
+          "frontend_s": "ConceptGraphs detector process wall clock",
+          "peak_gpu_gb": "exclusive-device nvidia-smi dmon fb samples",
+          "peak_ram_gb": "GNU time process peak RSS"
+        },
+        "units": {
+          "backend_s": "seconds",
+          "evaluation_io_s": "seconds",
+          "final_map_mb": "MB",
+          "finalization_s": "seconds",
+          "frame_count": "frames",
+          "frontend_s": "seconds",
+          "initialization_s": "seconds",
+          "maintenance_s": "seconds",
+          "peak_gpu_gb": "GB",
+          "peak_ram_gb": "GB",
+          "processed_hz": "Hz",
+          "query_mean_ms": "milliseconds",
+          "query_p95_ms": "milliseconds",
+          "total_s_per_frame": "seconds/frame"
+        }
+      }
+    },
+    "scene_ids": [
+      "room0",
+      "room1",
+      "room2",
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4"
+    ],
+    "scope": "replica_8_compat_and_replica_7_heldout"
+  },
   "seed": 0,
   "status": "VERIFIED",
   "token_bindings": [

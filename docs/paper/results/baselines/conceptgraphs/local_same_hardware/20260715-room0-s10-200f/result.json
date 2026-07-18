@@ -91,6 +91,54 @@
     }
   ],
   "run_id": "20260715-conceptgraphs-room0-s10-200f-t4",
+  "runtime": {
+    "breakdown": {
+      "method": "conceptgraphs",
+      "metrics": {
+        "backend_spf": 0.4978,
+        "evaluation_io_s": 32.01,
+        "final_map_mb": 5.804456,
+        "finalization_s": 22.98,
+        "frontend_spf": 3.51735,
+        "hz": 0.24905669775724443,
+        "initialization_s": 23.0,
+        "maintenance_spf": 0.0,
+        "peak_gpu_gb": 24.011,
+        "peak_ram_gb": 9.090104,
+        "query_p50_ms": 8.774325717240572,
+        "query_p95_ms": 8.807907346636057,
+        "total_spf": 4.01515
+      },
+      "scene_id": "room0",
+      "sources": {
+        "evaluation_log": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/common_eval/room0/evaluation.log",
+        "gpu_dmon": [
+          "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/gate3_room0_200f/gpu_dmon.csv"
+        ],
+        "process_log": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/gate3_room0_200f/detection.log",
+        "query": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/t4/query.json",
+        "run_status": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/t4/run_status.json",
+        "scene_metrics": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/common_eval/room0/metrics.json"
+      },
+      "status": "VERIFIED",
+      "units": {
+        "backend_spf": "seconds/frame",
+        "evaluation_io_s": "seconds",
+        "final_map_mb": "MB",
+        "finalization_s": "seconds",
+        "frontend_spf": "seconds/frame",
+        "hz": "Hz",
+        "initialization_s": "seconds",
+        "maintenance_spf": "seconds/frame",
+        "peak_gpu_gb": "GB",
+        "peak_ram_gb": "GB",
+        "query_p50_ms": "milliseconds",
+        "query_p95_ms": "milliseconds",
+        "total_spf": "seconds/frame"
+      }
+    },
+    "scope": "room0_same_hardware"
+  },
   "seed": 0,
   "status": "VERIFIED",
   "token_bindings": [
