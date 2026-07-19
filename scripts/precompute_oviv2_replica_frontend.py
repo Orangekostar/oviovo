@@ -214,6 +214,21 @@ def validate_frontend_cache(
     return manifest
 
 
+def build_environment(
+    gpu_id: int,
+    conceptgraphs_root: Path,
+    *,
+    base: dict[str, str] | None = None,
+) -> dict[str, str]:
+    environment = dict(os.environ if base is None else base)
+    environment["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
+    existing = environment.get("PYTHONPATH")
+    environment["PYTHONPATH"] = (
+        f"{conceptgraphs_root}{os.pathsep}{existing}" if existing else str(conceptgraphs_root)
+    )
+    return environment
+
+
 def _run_queue(
     commands: list[FrontendCommand],
     config: dict[str, Any],
@@ -227,8 +242,7 @@ def _run_queue(
         except (FileNotFoundError, ValueError, EOFError, OSError, pickle.UnpicklingError):
             pass
         command.log_dir.mkdir(parents=True, exist_ok=True)
-        environment = os.environ.copy()
-        environment["CUDA_VISIBLE_DEVICES"] = str(command.gpu_id)
+        environment = build_environment(command.gpu_id, cwd)
         with (command.log_dir / "frontend.log").open("w", encoding="utf-8") as log:
             subprocess.run(
                 command.argv,

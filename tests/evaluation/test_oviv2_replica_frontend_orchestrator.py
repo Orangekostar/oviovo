@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from scripts.materialize_replica_stride_view import materialize
-from scripts.precompute_oviv2_replica_frontend import build_commands
+from scripts.precompute_oviv2_replica_frontend import build_commands, build_environment
 
 
 SCENES = ("room0", "room1", "room2", "office0", "office1", "office2", "office3", "office4")
@@ -94,3 +94,12 @@ def test_frontend_commands_share_one_frozen_algorithm_hash(tmp_path: Path) -> No
     assert [command.gpu_id for command in commands] == [0, 1, 0, 1, 0, 1, 0, 1]
     assert [command.scene for command in commands] == list(SCENES)
     assert all(f"scene_id={command.scene}_s10_200f" in command.argv for command in commands)
+
+
+def test_frontend_environment_exposes_conceptgraphs_package_and_selected_gpu(tmp_path: Path) -> None:
+    root = tmp_path / "concept-graphs"
+
+    environment = build_environment(2, root, base={"PYTHONPATH": "/existing"})
+
+    assert environment["CUDA_VISIBLE_DEVICES"] == "2"
+    assert environment["PYTHONPATH"].split(":") == [str(root), "/existing"]
