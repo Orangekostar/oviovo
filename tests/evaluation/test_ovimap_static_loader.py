@@ -95,10 +95,11 @@ def test_bind_mesh_instances_keeps_logged_instances_without_features() -> None:
     assert bound[8] == {"color": (40, 50, 60)}
 
 
-def test_bind_mesh_instances_rejects_feature_id_missing_from_log() -> None:
-    with pytest.raises(ValueError, match="missing from instance color log"):
-        bind_mesh_instances(
-            {9: {"feat": [[1.0]]}},
-            {7: (10, 20, 30)},
-            {(10, 20, 30): np.zeros((1, 3), dtype=np.float32)},
-        )
+def test_bind_mesh_instances_ignores_stale_features_missing_from_final_mesh() -> None:
+    bound = bind_mesh_instances(
+        {9: {"feat": [[1.0]]}},
+        {7: (10, 20, 30)},
+        {(10, 20, 30): np.zeros((1, 3), dtype=np.float32)},
+    )
+
+    assert bound == {7: {"color": (10, 20, 30)}}

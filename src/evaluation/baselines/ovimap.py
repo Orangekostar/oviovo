@@ -65,14 +65,6 @@ def bind_mesh_instances(
     points_by_color: Mapping[tuple[int, int, int], np.ndarray],
 ) -> dict[int, dict[str, Any]]:
     """Bind every mesh-backed global instance to optional semantic features."""
-    feature_ids = {int(value) for value in semantic_instances}
-    color_ids = {int(value) for value in colors_by_instance}
-    missing = sorted(feature_ids - color_ids)
-    if missing:
-        raise ValueError(
-            f"OVI-MAP feature instance IDs missing from instance color log: {missing}"
-        )
-
     bound: dict[int, dict[str, Any]] = {}
     for instance_id, color in sorted(colors_by_instance.items()):
         normalized_color = tuple(int(value) for value in color)
