@@ -9,13 +9,17 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import sys
 import tempfile
 from typing import Any, Callable
 
-from scripts.run_oviv2_replica import algorithm_hash, run as run_scene
-
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.run_oviv2_replica import algorithm_hash, run as run_scene  # noqa: E402
+
+
 REPLICA8_SCENES = (
     "room0",
     "room1",

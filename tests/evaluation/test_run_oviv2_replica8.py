@@ -2,10 +2,24 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
 from scripts.run_oviv2_replica8 import REPLICA8_SCENES, build_scene_specs, run_replica8
+
+
+def test_replica8_cli_direct_execution_resolves_repository_imports() -> None:
+    result = subprocess.run(
+        [sys.executable, "scripts/run_oviv2_replica8.py", "--help"],
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
 
 
 def _write_json(path: Path, payload: dict) -> None:
