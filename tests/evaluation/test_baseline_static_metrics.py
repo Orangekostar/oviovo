@@ -112,6 +112,25 @@ def test_class_agnostic_instance_metric_filters_gt_domain_not_predictions() -> N
     assert metrics["instance"]["predicted_instance_count"] == 2
 
 
+def test_featureless_entity_still_participates_in_class_agnostic_ap() -> None:
+    snapshot = _snapshot()
+    snapshot.entities[1].semantic_label = None
+
+    metrics = evaluate_static_snapshot(
+        snapshot,
+        _ground_truth(),
+        semantic_vocabulary=("chair", "table"),
+        instance_vocabulary=("chair", "table"),
+        distance_threshold_m=0.05,
+        min_instance_points=1,
+    )
+
+    assert metrics["instance"]["predicted_instance_count"] == 2
+    assert metrics["instance"]["ap25"] == pytest.approx(1.0)
+    assert metrics["instance"]["ap50"] == pytest.approx(1.0)
+    assert metrics["semantic"]["matched_point_ratio"] == pytest.approx(0.5)
+
+
 def test_static_metrics_marks_non_native_instance_output_unavailable() -> None:
     metrics = evaluate_static_snapshot(
         _snapshot(),
