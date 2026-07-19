@@ -16,7 +16,7 @@ Date of final continuation audit: 2026-07-19.
 
 ## Blocked
 
-- ScanNet200-5 data was unavailable and publisher access still requires an institutional-email Terms of Use agreement. The four Table 1 rows are therefore conservatively `BLOCKED` overall, while their Replica-8/7 result manifests remain independently `VERIFIED`; ScanNet tokens remain unfilled. Evidence: `oviovo_baseline_runs/20260714_non_oviovo_baselines/scannet200/blocked_status_20260719.json`.
+- ScanNet200-5 data was unavailable and publisher access still requires an approved Terms of Use agreement. The executable five-scene validator reports all 30 required files missing, while method preflight verifies all four baseline asset sets as `READY`; ScanNet tokens remain unfilled. Evidence: `oviovo_baseline_runs/20260714_non_oviovo_baselines/scannet200/blocked_status_20260719.json`.
 - Official TESSE-CD Apartment/Office bags remain unavailable. Fresh 2026-07-18 probes fixed the current file IDs and sizes and obtained valid first ranges, but complete/continued transfers on node107 and node6 returned the official quota page; no traceable public mirror was found. T2 methods and Khronos T4 remain blocked by `oviovo_baseline_runs/20260714_non_oviovo_baselines/tesse_cd/blocked_status_20260718.json`.
 
 ## Compatibility Notes
