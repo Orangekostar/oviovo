@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import asdict
 import gzip
 import hashlib
 import json
@@ -11,11 +12,33 @@ from PIL import Image
 import pytest
 
 import scripts.run_oviv2_replica as runner_module
-from scripts.run_oviv2_replica import parse_args, run
+from scripts.run_oviv2_replica import _runtime_config, parse_args, run
 from src.oviv2.snapshot import VoxelMapSnapshot
 
 
 _ABSENT = object()
+_PRECISION_CONFIG = Path("configs/oviv2_replica_room0_precision_stage1.json")
+_STAGE1_CONFIG_FIELDS = (
+    "semantic_mode",
+    "feature_mode",
+    "association_min_directed_overlap",
+    "association_bounds_expansion_m",
+    "association_max_centroid_distance_m",
+    "association_minimum_score",
+    "association_geometry_weight",
+    "association_overlap_weight",
+    "association_visual_weight",
+    "association_semantic_weight",
+    "association_temporal_weight",
+    "semantic_conflict_confidence",
+    "semantic_conflict_visual_override",
+    "ambiguous_edge_score",
+    "third_view_min_score",
+    "prototype_top_k",
+    "prototype_merge_cosine",
+    "view_top_k",
+    "view_minimum_novelty_cosine",
+)
 
 
 def _write_fixture(
@@ -138,6 +161,55 @@ def _args(config: Path, output: Path, *extra: str, num_frames: int = 2):
             *extra,
         ]
     )
+
+
+def _enable_stage1(config_path: Path) -> dict[str, object]:
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    precision = json.loads(_PRECISION_CONFIG.read_text(encoding="utf-8"))
+    config.update({name: precision[name] for name in _STAGE1_CONFIG_FIELDS})
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    return config
+
+
+def test_precision_config_enables_feature_aware_owner_semantics() -> None:
+    base = json.loads(Path("configs/oviv2_replica_room0.json").read_text())
+    config = json.loads(_PRECISION_CONFIG.read_text())
+    runtime = _runtime_config(config)
+
+    assert all(config[name] == value for name, value in base.items())
+    assert config["semantic_mode"] == "owner_authoritative"
+    assert config["feature_mode"] == "cached_image"
+    assert runtime.tracker.association is runtime.registry.association
+    assert runtime.tracker.association.visual_weight > 0.0
+    assert runtime.registry.association.semantic_weight > 0.0
+    assert runtime.tracker.ambiguous_edge_score == pytest.approx(0.60)
+    assert runtime.tracker.third_view_min_score == pytest.approx(0.70)
+    assert runtime.registry.prototype_top_k == 3
+    assert runtime.registry.prototype_merge_cosine == pytest.approx(0.90)
+    assert runtime.registry.view_top_k == 10
+    assert runtime.registry.view_minimum_novelty_cosine == pytest.approx(0.10)
+
+
+def test_runtime_config_without_stage1_fields_keeps_legacy_association() -> None:
+    runtime = _runtime_config(
+        json.loads(Path("configs/oviv2_replica_room0.json").read_text())
+    )
+
+    assert runtime.tracker.association.max_centroid_distance_m == pytest.approx(0.5)
+    assert runtime.registry.association.max_centroid_distance_m == pytest.approx(0.6)
+    assert runtime.tracker.association is not runtime.registry.association
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [("semantic_mode", "evidence"), ("feature_mode", "uncached")],
+)
+def test_runtime_config_rejects_unsupported_stage1_modes(
+    field: str,
+    value: str,
+) -> None:
+    with pytest.raises(ValueError, match=field):
+        _runtime_config({field: value})
 
 
 def test_preflight_fails_before_creating_output_for_missing_cache(tmp_path: Path) -> None:
@@ -312,3 +384,55 @@ def test_manifest_artifact_checksums_recompute_and_resume_is_idempotent(tmp_path
         path = output / relative
         assert path.is_file()
         assert hashlib.sha256(path.read_bytes()).hexdigest() == expected
+
+
+def test_stage1_runner_records_precision_backend_and_frame_counters(
+    tmp_path: Path,
+) -> None:
+    clip_hash = "a" * 64
+    config_path = _write_fixture(
+        tmp_path,
+        frontend_manifest_frames=2,
+        cache_features=True,
+        frontend_clip_model_sha256=clip_hash,
+    )
+    config = _enable_stage1(config_path)
+    runtime = _runtime_config(config)
+    output = tmp_path / "run"
+
+    manifest = run(_args(config_path, output))
+
+    timing = json.loads((output / "timing.json").read_text(encoding="utf-8"))
+    snapshot = VoxelMapSnapshot.load(
+        output / "final" / "oviv2_voxel_snapshot.npz"
+    )
+    assert all(
+        isinstance(frame[name], int)
+        for frame in timing["frames"]
+        for name in (
+            "matched_entity_count",
+            "new_entity_count",
+            "association_conflict_count",
+            "revoked_edge_count",
+        )
+    )
+    assert manifest["semantic_mode"] == "owner_authoritative"
+    assert manifest["feature_mode"] == "cached_image"
+    assert manifest["frontend_feature_model_id"] == f"clip-sha256:{clip_hash}"
+    assert manifest["precision_backend"] == {
+        "association": asdict(runtime.tracker.association),
+        "tracker": {
+            "ambiguous_edge_score": runtime.tracker.ambiguous_edge_score,
+            "third_view_min_score": runtime.tracker.third_view_min_score,
+        },
+        "memory": {
+            "prototype_top_k": runtime.registry.prototype_top_k,
+            "prototype_merge_cosine": runtime.registry.prototype_merge_cosine,
+            "view_top_k": runtime.registry.view_top_k,
+            "view_minimum_novelty_cosine": (
+                runtime.registry.view_minimum_novelty_cosine
+            ),
+        },
+    }
+    assert snapshot.metadata.schema_version == 2
+    assert snapshot.registry is not None

@@ -26,6 +26,7 @@ if str(REPO_ROOT) not in sys.path:
 from scripts.evaluation.evaluate_oviv2_replica import evaluate as evaluate_snapshot  # noqa: E402
 from src.core.data_structures import Frame  # noqa: E402
 from src.datasets.replica import ReplicaRoom0Dataset  # noqa: E402
+from src.oviv2.association import AssociationConfig  # noqa: E402
 from src.oviv2.entities import EntityRegistryConfig  # noqa: E402
 from src.oviv2.evidence import EvidenceConfig  # noqa: E402
 from src.oviv2.geometry import TsdfConfig  # noqa: E402
@@ -266,9 +267,35 @@ def _preflight(
 
 
 def _runtime_config(config: dict[str, Any]) -> Oviv2RuntimeConfig:
+    if "semantic_mode" in config and config["semantic_mode"] != "owner_authoritative":
+        raise ValueError("semantic_mode must be owner_authoritative")
+    if "feature_mode" in config and config["feature_mode"] != "cached_image":
+        raise ValueError("feature_mode must be cached_image")
     voxel_size = float(config.get("voxel_size_m", 0.05))
     block_resolution = int(config.get("block_resolution", 8))
     source_stride = int(config.get("source_stride", 10))
+    association_keys = {
+        "min_directed_overlap": "association_min_directed_overlap",
+        "bounds_expansion_m": "association_bounds_expansion_m",
+        "max_centroid_distance_m": "association_max_centroid_distance_m",
+        "minimum_score": "association_minimum_score",
+        "geometry_weight": "association_geometry_weight",
+        "overlap_weight": "association_overlap_weight",
+        "visual_weight": "association_visual_weight",
+        "semantic_weight": "association_semantic_weight",
+        "temporal_weight": "association_temporal_weight",
+        "semantic_conflict_confidence": "semantic_conflict_confidence",
+        "semantic_conflict_visual_override": "semantic_conflict_visual_override",
+    }
+    association = None
+    if any(name in config for name in association_keys.values()):
+        defaults = asdict(AssociationConfig())
+        association = AssociationConfig(
+            **{
+                field: config.get(config_name, defaults[field])
+                for field, config_name in association_keys.items()
+            }
+        )
     return Oviv2RuntimeConfig(
         tsdf=TsdfConfig(
             voxel_size_m=voxel_size,
@@ -288,10 +315,20 @@ def _runtime_config(config: dict[str, Any]) -> Oviv2RuntimeConfig:
             max_age_frames=int(config.get("max_age_frames", 3)) * source_stride,
             min_voxel_overlap=float(config.get("track_min_voxel_overlap", 0.1)),
             max_centroid_distance_m=float(config.get("track_max_centroid_distance_m", 0.5)),
+            association=association,
+            ambiguous_edge_score=float(config.get("ambiguous_edge_score", 0.70)),
+            third_view_min_score=float(config.get("third_view_min_score", 0.75)),
         ),
         registry=EntityRegistryConfig(
             min_voxel_overlap=float(config.get("entity_min_voxel_overlap", 0.1)),
             max_centroid_distance_m=float(config.get("entity_max_centroid_distance_m", 0.6)),
+            association=association,
+            prototype_top_k=int(config.get("prototype_top_k", 3)),
+            prototype_merge_cosine=float(config.get("prototype_merge_cosine", 0.90)),
+            view_top_k=int(config.get("view_top_k", 10)),
+            view_minimum_novelty_cosine=float(
+                config.get("view_minimum_novelty_cosine", 0.10)
+            ),
         ),
         visibility_depth_tolerance_m=float(
             config.get("visibility_depth_tolerance_m", 0.1)
@@ -399,6 +436,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "object_observation_count": len(object_observations),
                 "structure_observation_count": len(structure_observations),
                 "accepted_entity_count": len(result.accepted_entity_ids),
+                "matched_entity_count": result.matched_entity_count,
+                "new_entity_count": result.new_entity_count,
+                "association_conflict_count": result.association_conflict_count,
+                "revoked_edge_count": result.revoked_edge_count,
                 "elapsed_sec": time.perf_counter() - frame_started,
             }
         )
@@ -465,6 +506,23 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             frontend_manifest.get("algorithm_hash") if frontend_manifest is not None else None
         ),
         "frontend_feature_model_id": frontend_feature_model_id,
+        "semantic_mode": config.get("semantic_mode"),
+        "feature_mode": config.get("feature_mode"),
+        "precision_backend": {
+            "association": asdict(runtime_config.tracker.association),
+            "tracker": {
+                "ambiguous_edge_score": runtime_config.tracker.ambiguous_edge_score,
+                "third_view_min_score": runtime_config.tracker.third_view_min_score,
+            },
+            "memory": {
+                "prototype_top_k": runtime_config.registry.prototype_top_k,
+                "prototype_merge_cosine": runtime_config.registry.prototype_merge_cosine,
+                "view_top_k": runtime_config.registry.view_top_k,
+                "view_minimum_novelty_cosine": (
+                    runtime_config.registry.view_minimum_novelty_cosine
+                ),
+            },
+        },
         "hardware": {
             "hostname": platform.node(),
             "platform": platform.platform(),
