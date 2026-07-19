@@ -1,0 +1,311 @@
+{
+  "adapter_commit": "5bf8824f4fbe72fb1cdb581be96d678c2db4b05b",
+  "aggregate_source": {
+    "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/aggregate.json",
+    "sha256": "9c547c87f16f3b4769658c7d417314a62360d1dfd0047e3f3caf3c6f37f4df54"
+  },
+  "command": "/home/ww/oviovo_baseline_runs/run_conceptgraphs_canonical_room0.sh; /home/ww/oviovo_baseline_runs/run_conceptgraphs_canonical_room0_gate.sh; /home/ww/oviovo_baseline_runs/run_conceptgraphs_canonical_scene.sh SCENE GPU; /home/ww/oviovo_baseline_runs/resume_conceptgraphs_canonical_gate.sh for the three preserved first-wave maps",
+  "config": {
+    "path": "configs/evaluation/baselines/conceptgraphs_canonical_replica.json",
+    "sha256": "dec89b69228102c89f7468959697592cd760682fab4ba5bfe6fe0505c5fb3a14"
+  },
+  "dataset": {
+    "manifest": {
+      "path": "configs/evaluation/manifests/replica8.json",
+      "sha256": "8547aa8b7dbf7ef7a97f4b516f6557a1d163107404fbfc7ccbd56747c5dc95a4"
+    },
+    "name": "Replica",
+    "pose_source": "Replica NICE-SLAM traj.txt",
+    "splits": [
+      "replica_8_compat",
+      "replica_7_heldout"
+    ]
+  },
+  "environment": {
+    "freeze": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/environment/conda-explicit.txt",
+    "name": "oviovo-conceptgraphs",
+    "path": "/home/ww/miniconda3/envs/oviovo-conceptgraphs"
+  },
+  "hardware": {
+    "cpu": "node107 x86_64 CPU host",
+    "gpu": "3 x NVIDIA A40 46 GB, GPU 0/1/2",
+    "os": "Linux"
+  },
+  "method": {
+    "display_label": "ConceptGraphs",
+    "key": "CONCEPTGRAPHS",
+    "mode": "native"
+  },
+  "metrics": {
+    "replica_7_heldout": {
+      "geometry": {
+        "f5": 0.8929413401252226
+      },
+      "instance": {
+        "ap25": 0.3865159437271505,
+        "ap50": 0.22041909582197702
+      },
+      "scene_count": 7,
+      "scene_ids": [
+        "room1",
+        "room2",
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4"
+      ],
+      "semantic": {
+        "f_miou": 0.11117899377839094,
+        "macc": 0.20479864771263154,
+        "miou": 0.1183918261502148
+      }
+    },
+    "replica_8_compat": {
+      "geometry": {
+        "f5": 0.8966791962533098
+      },
+      "instance": {
+        "ap25": 0.40089734287502754,
+        "ap50": 0.2383635275316971
+      },
+      "scene_count": 8,
+      "scene_ids": [
+        "room0",
+        "room1",
+        "room2",
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4"
+      ],
+      "semantic": {
+        "f_miou": 0.1063971291432326,
+        "macc": 0.21202395901124715,
+        "miou": 0.11761823161936552
+      }
+    }
+  },
+  "protocol_deviations": [
+    "The canonical frontend uses released SAM ViT-H segment-all with class_set=none, not the earlier YOLO-World plus MobileSAM streamlined frontend.",
+    "The released frontend initializes GroundingDINO and BERT even when class_set=none; headline masks remain SAM segment-all outputs.",
+    "Common semantic evaluation uses the frozen Replica 41-class vocabulary and disables GT-only class suppression.",
+    "Runtime-only source copies localize dependency and weight paths; the clean ConceptGraphs and Grounded-Segment-Anything reference checkouts remain unchanged.",
+    "Per-scene status mapped_object_count records the raw serialized map count; neutral evaluation and gate hash the released post-process map.",
+    "The first-wave room1, room2, and office0 status files were reconstructed from preserved exit-0 logs and maps after a wrapper HASH-object JSON serialization error; mapping and neutral metrics were not rerun and the recovery records mapping_rerun=false."
+  ],
+  "raw_outputs": [
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/aggregate.json",
+      "sha256": "9c547c87f16f3b4769658c7d417314a62360d1dfd0047e3f3caf3c6f37f4df54"
+    },
+    {
+      "path": "/home/ww/oviovo_benchmark_assets/weights/segment_anything/canonical_conceptgraphs_assets_20260719.json",
+      "sha256": "901c1360b6f40c741a8eaf4d2de45a3f589f96d2fd2b906e2fb4d017ea51c01b"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/run_conceptgraphs_canonical_room0.sh",
+      "sha256": "5a350f452adf60a4851d045029fb2bd7c2a23ffebf92b965c85e6e854de51b8f"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/run_conceptgraphs_canonical_room0_gate.sh",
+      "sha256": "45ad7dd39c8b31f7fdd6ac3a1354f8fbcc9f8d15c20c0a1778b7b7335b350539"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/run_conceptgraphs_canonical_scene.sh",
+      "sha256": "9eed0c5be1073d4884787e38d6756f3289cbc0ed1e21b581c56ae974f4904737"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/resume_conceptgraphs_canonical_gate.sh",
+      "sha256": "2e708dfee1614082e4a28a3d2cb13376082237aa2ddbb70385f2847718c46998"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/room0/status.json",
+      "sha256": "19894c2d1a22326beb5b80105994643716e5d158f31b45a0ab15f794a2af1614"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/room0/gate.json",
+      "sha256": "3cc109d7f529011f400a3f2ac3baf8eec088ff6d479f63b46b28f65c363adabb"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/room0/common_eval/metrics.json",
+      "sha256": "a85d91a3c421a4b38a98a97ab0a8de61cff3022bca7b0b21a85733cf2ca7fe6f"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/room1/status.json",
+      "sha256": "47f15223656b1087df8f3854715eb3d957b8882634208c22d10c9f01b42ced09"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/room1/gate.json",
+      "sha256": "564f7b049803b6be9611d639f8a988d79b798b1547dc7931f69fa3b448e1aab3"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/room1/common_eval/metrics.json",
+      "sha256": "b709f333b5693cee97fb68d1258fdf1ce7ca027c31e54173d95467a548b393ab"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/room2/status.json",
+      "sha256": "2a12c6a0be7835defb227a0676302b90bed3176697a0e26168dbfa86df0945b4"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/room2/gate.json",
+      "sha256": "3c11ec6f1fe04db0024dcc4b23df136c53ee2191c1900f60e29a3d13585c40e8"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/room2/common_eval/metrics.json",
+      "sha256": "eed3bfe84fd4499c8bc0ee7ec957e09b22240e3e00e8941529f70556c5996bf0"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/office0/status.json",
+      "sha256": "799c4d62f8cfb62d070e8db4c0a021d2e47c49cbaf0097398c599d2815dcc62d"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/office0/gate.json",
+      "sha256": "d93242dfd3e54a6ff5bbdcdf5ee648b8257b39101aa5f9799e0bb65a7010cae7"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/office0/common_eval/metrics.json",
+      "sha256": "5e277baf1d73ed711ce75fbada7bde9d6b21939bfb7bbb86d5f09c8361d9a6ab"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/office1/status.json",
+      "sha256": "4313d440b8feec1cbafa60f5ee63386cae0b3e390dd0e518f5d21174504515aa"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/office1/gate.json",
+      "sha256": "281d2e3015a7ab1b0add1884333d0577c06090d5c10bfe9deb7657d10a3d9c48"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/office1/common_eval/metrics.json",
+      "sha256": "69db4486d140128624d97b13bc6798fdfea4b6a4b08a6e02c11ca2df6bea76f3"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/office2/status.json",
+      "sha256": "3788062c12fad665d6bf24d2ffdaab5cda40e32571761e6c2bf922c1a82997ed"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/office2/gate.json",
+      "sha256": "2f778d46b16eb47dd61f08eb2dc8aa228dcb801d648941a0d1641424c6a5054f"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/office2/common_eval/metrics.json",
+      "sha256": "2465838f371bf90731b6952d1acec2575c126ffb237b8d229505b5b9156a8203"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/office3/status.json",
+      "sha256": "9c786b695b52920c9b908439d3814e2c512eec621a2d26ab0377c6c5720b3ee5"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/office3/gate.json",
+      "sha256": "1252c3b4510e286f2908d3df5fbf1eaf5ebe8bfd814871eaff367011892bc087"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/office3/common_eval/metrics.json",
+      "sha256": "264f89a78743129cceb0801f1ad6e19c90bdc2604881604656be876df30eb42a"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/office4/status.json",
+      "sha256": "2d10d0506360bab6b100909b4340bc5ac4b97d452d91f2c555dd0951365a4b1d"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/office4/gate.json",
+      "sha256": "42691e02f9f4f7e488f0d01b8563ffbbc75548e586ce2d7999d221ba1cfa104d"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/office4/common_eval/metrics.json",
+      "sha256": "5b6f0bf3c59f988c3dd507461b41984b4bebf74eb4104fe34a85ed9453190edf"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/room0/frontend.log",
+      "sha256": "d7559a6765e2000ef1d6106e56f5f27eb7e1c528fa370bfd2eb7f232d2153a1a"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/room0/mapper.log",
+      "sha256": "53ddf2ee3e944c9904144139a5091d1016ecaccc7fae06c605cab3ba9d8cb1a4"
+    }
+  ],
+  "run_id": "20260719-conceptgraphs-replica8-s10-200f-sam-segment-all-canonical",
+  "runtime": {
+    "scene_count": 8,
+    "scope": "replica_8_compat_and_replica_7_heldout",
+    "source": "Each raw scene metrics.json contains the measured frontend, mapping, memory, and map-size runtime record."
+  },
+  "seed": 0,
+  "status": "VERIFIED",
+  "token_bindings": [
+    {
+      "json_pointer": "/metrics/replica_8_compat/semantic/miou",
+      "precision": 3,
+      "token": "T1_CONCEPTGRAPHS_REPLICA8_MIOU"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/semantic/macc",
+      "precision": 3,
+      "token": "T1_CONCEPTGRAPHS_REPLICA8_MACC"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/semantic/f_miou",
+      "precision": 3,
+      "token": "T1_CONCEPTGRAPHS_REPLICA8_FMIOU"
+    },
+    {
+      "json_pointer": "/metrics/replica_7_heldout/semantic/miou",
+      "precision": 3,
+      "token": "T1_CONCEPTGRAPHS_REPLICA7_MIOU"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/instance/ap25",
+      "precision": 3,
+      "token": "T1_CONCEPTGRAPHS_REPLICA8_AP25"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/instance/ap50",
+      "precision": 3,
+      "token": "T1_CONCEPTGRAPHS_REPLICA8_AP50"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/geometry/f5",
+      "precision": 3,
+      "token": "T1_CONCEPTGRAPHS_REPLICA8_F5"
+    },
+    {
+      "json_pointer": "/metrics/replica_7_heldout/instance/ap50",
+      "precision": 3,
+      "token": "T1_CONCEPTGRAPHS_REPLICA7_AP50"
+    }
+  ],
+  "upstream_commit": "93277a02bd89171f8121e84203121cf7af9ebb5d",
+  "weights": [
+    {
+      "name": "SAM ViT-H 4b8939",
+      "path": "/home/ww/oviovo_benchmark_assets/weights/segment_anything/sam_vit_h_4b8939.pth",
+      "sha256": "a7bf3b02f3ebf1267aba913ff637d9a2d5c33d3173bb679e46d9f338c26f262e",
+      "source": "official Segment Anything checkpoint"
+    },
+    {
+      "name": "GroundingDINO Swin-T OGC",
+      "path": "/home/ww/vv/paper2/DovSG/checkpoints/GroundingDINO/groundingdino_swint_ogc.pth",
+      "sha256": "3b3ca2563c77c69f651d7bd133e97139c186df06231157a64c507099c52bc799",
+      "source": "pre-existing local upstream asset"
+    },
+    {
+      "name": "RAM Swin-Large 14M",
+      "path": "/home/ww/vv/paper2/DovSG/checkpoints/recognize_anything/ram_swin_large_14m.pth",
+      "sha256": "15c729c793af28b9d107c69f85836a1356d76ea830d4714699fb62e55fcc08ed",
+      "source": "pre-existing local upstream asset"
+    },
+    {
+      "name": "BERT base uncased model.safetensors",
+      "path": "/home/ww/oviovo_benchmark_assets/huggingface/hub/models--bert-base-uncased/snapshots/86b5e0934494bd15c9632b12f734a8a67f723594/model.safetensors",
+      "sha256": "68d45e234eb4a928074dfd868cead0219ab85354cc53d20e772753c6bb9169d3",
+      "source": "hf-hub:bert-base-uncased@86b5e0934494bd15c9632b12f734a8a67f723594"
+    },
+    {
+      "name": "CLIP ViT-H-14 laion2B-s32B-b79K",
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/conceptgraphs/hf_cache/models--laion--CLIP-ViT-H-14-laion2B-s32B-b79K/snapshots/1c2b8495b28150b8a4922ee1c8edee224c284c0c/open_clip_pytorch_model.bin",
+      "sha256": "9a78ef8e8c73fd0df621682e7a8e8eb36c6916cb3c16b291a082ecd52ab79cc4",
+      "source": "hf-hub:laion/CLIP-ViT-H-14-laion2B-s32B-b79K"
+    }
+  ]
+}

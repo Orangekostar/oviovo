@@ -14,7 +14,7 @@ Numerical cells are provenance tokens. `--` denotes a protocol-level N/A.
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
 | OpenFusion | native | 0.271 | 0.345 | 0.479 | 0.270 | {{T1_OPENFUSION_SCANNET5_MIOU}} |
 | OVI-MAP | native | 0.031 | 0.050 | 0.104 | 0.032 | {{T1_OVIMAP_SCANNET5_MIOU}} |
-| ConceptGraphs | native | 0.070 | 0.101 | 0.053 | 0.070 | {{T1_CONCEPTGRAPHS_SCANNET5_MIOU}} |
+| ConceptGraphs | native | 0.118 | 0.212 | 0.106 | 0.118 | {{T1_CONCEPTGRAPHS_SCANNET5_MIOU}} |
 | DualMap | native | 0.156 | 0.204 | 0.129 | 0.155 | {{T1_DUALMAP_SCANNET5_MIOU}} |
 | OVIV2 | online | 0.173 | 0.223 | 0.441 | 0.178 | {{T1_OVIV2_SCANNET5_MIOU}} |
 
@@ -24,7 +24,7 @@ Numerical cells are provenance tokens. `--` denotes a protocol-level N/A.
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | OpenFusion | native | -- | -- | 0.895 | -- | -- | -- | {{T1_OPENFUSION_SCANNET5_F5}} |
 | OVI-MAP | native | 0.326 | 0.184 | 0.915 | 0.179 | {{T1_OVIMAP_SCANNET5_AP25}} | {{T1_OVIMAP_SCANNET5_AP50}} | {{T1_OVIMAP_SCANNET5_F5}} |
-| ConceptGraphs | native | 0.399 | 0.214 | 0.376 | 0.213 | {{T1_CONCEPTGRAPHS_SCANNET5_AP25}} | {{T1_CONCEPTGRAPHS_SCANNET5_AP50}} | {{T1_CONCEPTGRAPHS_SCANNET5_F5}} |
+| ConceptGraphs | native | 0.401 | 0.238 | 0.897 | 0.220 | {{T1_CONCEPTGRAPHS_SCANNET5_AP25}} | {{T1_CONCEPTGRAPHS_SCANNET5_AP50}} | {{T1_CONCEPTGRAPHS_SCANNET5_F5}} |
 | DualMap | native | 0.384 | 0.164 | 0.887 | 0.147 | {{T1_DUALMAP_SCANNET5_AP25}} | {{T1_DUALMAP_SCANNET5_AP50}} | {{T1_DUALMAP_SCANNET5_F5}} |
 | OVIV2 | online | 0.119 | 0.025 | 0.882 | 0.025 | {{T1_OVIV2_SCANNET5_AP25}} | {{T1_OVIV2_SCANNET5_AP50}} | {{T1_OVIV2_SCANNET5_F5}} |
 
