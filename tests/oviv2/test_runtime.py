@@ -28,6 +28,13 @@ def observation(
     kind: ObservationKind,
     semantic_id: int,
     keys: set[tuple[int, int, int]],
+    *,
+    image_feature: np.ndarray | None = None,
+    text_feature: np.ndarray | None = None,
+    feature_model_id: str | None = None,
+    view_direction_xyz: tuple[float, float, float] | None = None,
+    visible_pixel_count: int = 0,
+    border_contact_fraction: float = 0.0,
 ) -> FrameObservation:
     points = np.asarray(sorted(keys), dtype=np.float64) * 0.05
     return FrameObservation(
@@ -44,6 +51,12 @@ def observation(
         centroid_xyz=tuple(points.mean(axis=0)),
         bounds_min_xyz=tuple(points.min(axis=0)),
         bounds_max_xyz=tuple(points.max(axis=0)),
+        image_feature=image_feature,
+        text_feature=text_feature,
+        feature_model_id=feature_model_id,
+        view_direction_xyz=view_direction_xyz,
+        visible_pixel_count=visible_pixel_count,
+        border_contact_fraction=border_contact_fraction,
     )
 
 
