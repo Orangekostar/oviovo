@@ -159,7 +159,8 @@ def test_cli_writes_complete_deterministic_synthetic_evaluation(tmp_path: Path) 
     assert {path.name for path in first.iterdir()} == {
         "metrics.json",
         "per_class_semantic.json",
-        "per_class_instance_ap.json",
+        "class_agnostic_instance_ap.json",
+        "semantic_class_instance_ap.json",
         "gt_aligned_semantic_ids.npy",
         "gt_aligned_instance_ids.npy",
         "oviv2_instance_mesh.ply",
@@ -170,6 +171,17 @@ def test_cli_writes_complete_deterministic_synthetic_evaluation(tmp_path: Path) 
     for name in ("miou", "macc", "f_miou", "ap25", "ap50", "f5"):
         assert metrics[name] == pytest.approx(1.0)
         assert np.isfinite(metrics[name])
+    class_agnostic = json.loads(
+        (first / "class_agnostic_instance_ap.json").read_text(encoding="utf-8")
+    )
+    semantic_diagnostic = json.loads(
+        (first / "semantic_class_instance_ap.json").read_text(encoding="utf-8")
+    )
+    assert metrics["ap25"] == class_agnostic["ap25"]
+    assert metrics["ap50"] == class_agnostic["ap50"]
+    assert semantic_diagnostic == metrics["instance"]["semantic_class_constrained"]
+    assert metrics["protocol"]["headline_instance_protocol"] == "class_agnostic"
+    assert metrics["protocol"]["semantic_instance_protocol"] == "diagnostic_only"
     assert metrics["protocol"]["projection_comparator"] == "strict_less_than"
     assert metrics["protocol"]["snapshot_revision"] == 1
     assert metrics["protocol"]["vocabulary_hash"]

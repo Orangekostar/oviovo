@@ -331,7 +331,14 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
     def write_output(directory: Path) -> None:
         _write_json(directory / "metrics.json", metrics)
         _write_json(directory / "per_class_semantic.json", metrics["semantic"]["per_class"])
-        _write_json(directory / "per_class_instance_ap.json", metrics["instance"]["per_class"])
+        _write_json(
+            directory / "class_agnostic_instance_ap.json",
+            metrics["instance"]["class_agnostic"],
+        )
+        _write_json(
+            directory / "semantic_class_instance_ap.json",
+            metrics["instance"]["semantic_class_constrained"],
+        )
         np.save(directory / "gt_aligned_semantic_ids.npy", projected.semantic_ids)
         np.save(directory / "gt_aligned_instance_ids.npy", projected.entity_ids)
         write_labeled_mesh(directory / "oviv2_instance_mesh.ply", mesh)
