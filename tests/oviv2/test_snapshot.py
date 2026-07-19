@@ -12,6 +12,7 @@ import time
 import numpy as np
 import pytest
 
+import src.oviv2.snapshot as snapshot_module
 from src.oviv2.evidence import EvidenceConfig, SparseEvidenceStore
 from src.oviv2.entities import EntityRegistry
 from src.oviv2.geometry import SparseTsdfVolume, TsdfConfig
@@ -482,3 +483,48 @@ def test_snapshot_old_directory_cleanup_failure_does_not_fail_commit(
 
     assert restored.metadata == updated
     assert VoxelMapSnapshot.load(target).metadata == updated
+
+
+def test_snapshot_reports_publication_and_rollback_failures(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+    VoxelMapSnapshot.commit(target, metadata, geometry, evidence, ownership)
+    updated = replace(metadata, frame_id=20, revision=2)
+    original_load = VoxelMapSnapshot.load
+    original_exchange = VoxelMapSnapshot._exchange_directories
+    exchange_calls = 0
+    publication_error = RuntimeError("injected publication failure")
+    rollback_error = OSError("injected rollback failure")
+
+    def fail_target_load(_cls, snapshot_dir: str | Path) -> VoxelMapSnapshot:
+        if Path(snapshot_dir) == target:
+            raise publication_error
+        return original_load(snapshot_dir)
+
+    def fail_rollback_exchange(_cls, left: Path, right: Path) -> None:
+        nonlocal exchange_calls
+        exchange_calls += 1
+        if exchange_calls == 2:
+            raise rollback_error
+        original_exchange(left, right)
+
+    monkeypatch.setattr(VoxelMapSnapshot, "load", classmethod(fail_target_load))
+    monkeypatch.setattr(
+        VoxelMapSnapshot,
+        "_exchange_directories",
+        classmethod(fail_rollback_exchange),
+    )
+
+    with pytest.raises(Exception) as raised:
+        VoxelMapSnapshot.commit(target, updated, geometry, evidence, ownership)
+
+    assert not isinstance(raised.value, NameError)
+    assert isinstance(raised.value, snapshot_module._SnapshotRollbackError)
+    assert raised.value.publication_error is publication_error
+    assert raised.value.rollback_error is rollback_error
+    assert "publication failure" in str(raised.value)
+    assert "rollback failure" in str(raised.value)
+    assert raised.value.__cause__ is publication_error

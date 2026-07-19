@@ -23,6 +23,21 @@ class _ConcurrentSnapshotChange(RuntimeError):
     pass
 
 
+class _SnapshotRollbackError(RuntimeError):
+    def __init__(
+        self,
+        publication_error: Exception,
+        rollback_error: Exception,
+    ) -> None:
+        self.publication_error = publication_error
+        self.rollback_error = rollback_error
+        super().__init__(
+            "snapshot publication failed "
+            f"({publication_error}); rollback failed ({rollback_error}); "
+            "target state is uncertain"
+        )
+
+
 @dataclass(frozen=True)
 class VoxelSnapshotMetadata:
     scene_id: str
@@ -242,22 +257,20 @@ class VoxelMapSnapshot:
                         exchanged = False
                         cls._fsync_directory(target.parent)
                     except Exception as rollback_error:
-                        raise ExceptionGroup(
-                            "snapshot publication and rollback failed; "
-                            "target state is uncertain",
-                            [publication_error, rollback_error],
-                        )
+                        raise _SnapshotRollbackError(
+                            publication_error,
+                            rollback_error,
+                        ) from publication_error
                 else:
                     try:
                         if target.exists():
                             shutil.rmtree(target)
                         cls._fsync_directory(target.parent)
                     except Exception as cleanup_error:
-                        raise ExceptionGroup(
-                            "new snapshot publication and cleanup failed; "
-                            "target state is uncertain",
-                            [publication_error, cleanup_error],
-                        )
+                        raise _SnapshotRollbackError(
+                            publication_error,
+                            cleanup_error,
+                        ) from publication_error
                 raise
             published = True
             if temporary.exists():
