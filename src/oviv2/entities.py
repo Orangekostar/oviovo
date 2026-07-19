@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, fields, replace
+from itertools import chain
 import json
 import math
 from numbers import Integral, Real
 import os
 from pathlib import Path
 import tempfile
-from typing import Any
+from typing import Any, Iterable, Iterator, TextIO
 
 import numpy as np
 
@@ -174,6 +175,10 @@ class PersistentEntity:
         semantic_id = _integer(self.semantic_id, "semantic_id", minimum=0)
         if not isinstance(self.label, str):
             raise TypeError("label must be a string")
+        if semantic_id > 0 and not self.label.strip():
+            raise ValueError("label must be non-empty for a positive semantic winner")
+        if semantic_id == 0 and self.label != "":
+            raise ValueError("label must be empty without a semantic winner")
         if not isinstance(self.semantic_posterior, SparseClassPosterior):
             raise TypeError("semantic_posterior must be a SparseClassPosterior")
         if not isinstance(self.feature_bank, FeaturePrototypeBank):
@@ -278,6 +283,14 @@ class EntityRegistry:
         revision: int,
     ) -> tuple[PersistentEntity, ...]:
         normalized_revision = _integer(revision, "revision", minimum=0)
+        minimum_revision = max(
+            (entity.last_revision for entity in self.entities.values()),
+            default=0,
+        )
+        if normalized_revision < minimum_revision:
+            raise ValueError(
+                f"revision must be at least the current registry revision {minimum_revision}"
+            )
         if not isinstance(tracks, tuple):
             raise TypeError("tracks must be a tuple")
         if any(not isinstance(track, LocalTrack) for track in tracks):
@@ -294,6 +307,13 @@ class EntityRegistry:
             raise ValueError("track IDs must be non-negative integers")
         if len(set(track_ids)) != len(track_ids):
             raise ValueError("track IDs must be unique")
+        observation_ids = [
+            observation.observation_id
+            for track in tracks
+            for observation in track.observations
+        ]
+        if len(set(observation_ids)) != len(observation_ids):
+            raise ValueError("observation IDs must be unique within a resolve batch")
 
         sorted_tracks = tuple(sorted(tracks, key=lambda track: track.track_id))
         track_targets = tuple(self._track_target(track) for track in sorted_tracks)
@@ -457,16 +477,24 @@ class EntityRegistry:
 
         winner = posterior.best_semantic_id
         label = previous.label
-        if winner != previous.semantic_id:
-            winner_observations = [
-                observation for observation in unseen if observation.semantic_id == winner
-            ]
-            if not winner_observations:
-                raise ValueError("posterior winner change requires new evidence for the winner")
+        winner_observations = [
+            observation
+            for observation in unseen
+            if winner > 0
+            and observation.semantic_id == winner
+            and qualities[observation.observation_id] > 0.0
+        ]
+        if winner_observations:
             label = min(
                 winner_observations,
-                key=lambda item: (-qualities[item.observation_id], item.observation_id),
+                key=lambda item: (
+                    -qualities[item.observation_id],
+                    item.frame_id,
+                    item.observation_id,
+                ),
             ).label
+        elif winner != previous.semantic_id:
+            raise ValueError("posterior winner change requires new evidence for the winner")
 
         accepted_frame_ids = previous.accepted_frame_ids | frozenset(
             observation.frame_id for observation in unseen
@@ -476,7 +504,10 @@ class EntityRegistry:
         bounds_min = np.asarray(previous.bounds_min_xyz, dtype=np.float64)
         bounds_max = np.asarray(previous.bounds_max_xyz, dtype=np.float64)
         centroid = np.asarray(previous.centroid_xyz, dtype=np.float64)
-        observation_count = len(previous.accepted_observation_ids)
+        observation_count = max(
+            len(previous.accepted_observation_ids),
+            previous.accepted_view_count,
+        )
         for observation in unseen:
             voxel_keys |= observation.voxel_keys
             bounds_min = np.minimum(bounds_min, observation.bounds_min_xyz)
@@ -571,26 +602,32 @@ class EntityRegistry:
         source = Path(path)
         if not source.is_file():
             raise FileNotFoundError(source)
-        records: list[tuple[int, Any]] = []
-        for line_number, line in enumerate(source.read_text(encoding="utf-8").splitlines(), start=1):
+        with source.open("r", encoding="utf-8") as stream:
+            records = cls._stream_records(stream)
+            first = next(records, None)
+            if first is None:
+                return cls._load_v1((), config)
+            if first[1].get("record_type") == "registry":
+                return cls._load_v2(first, records, config)
+            return cls._load_v1(chain((first,), records), config)
+
+    @staticmethod
+    def _stream_records(stream: TextIO) -> Iterator[tuple[int, dict[str, Any]]]:
+        for line_number, line in enumerate(stream, start=1):
             if not line.strip():
                 continue
             try:
                 payload = json.loads(line)
                 if not isinstance(payload, dict):
                     raise TypeError("records must be JSON objects")
-                records.append((line_number, payload))
+                yield line_number, payload
             except (TypeError, ValueError, json.JSONDecodeError) as exc:
                 raise ValueError(f"invalid entity registry line {line_number}: {exc}") from exc
-
-        if records and records[0][1].get("record_type") == "registry":
-            return cls._load_v2(records, config)
-        return cls._load_v1(records, config)
 
     @classmethod
     def _load_v1(
         cls,
-        records: list[tuple[int, dict[str, Any]]],
+        records: Iterable[tuple[int, dict[str, Any]]],
         config: EntityRegistryConfig | None,
     ) -> "EntityRegistry":
         registry = cls(EntityRegistryConfig() if config is None else config)
@@ -610,10 +647,11 @@ class EntityRegistry:
     @classmethod
     def _load_v2(
         cls,
-        records: list[tuple[int, dict[str, Any]]],
+        metadata_record: tuple[int, dict[str, Any]],
+        records: Iterable[tuple[int, dict[str, Any]]],
         explicit_config: EntityRegistryConfig | None,
     ) -> "EntityRegistry":
-        metadata_line, metadata = records[0]
+        metadata_line, metadata = metadata_record
         expected_metadata_keys = {
             "record_type",
             "schema_version",
@@ -642,7 +680,7 @@ class EntityRegistry:
             raise ValueError("explicit config does not match v2 registry metadata")
 
         registry = cls(stored_config)
-        for line_number, payload in records[1:]:
+        for line_number, payload in records:
             try:
                 if payload.get("record_type") != "entity":
                     raise ValueError("v2 records after metadata must have record_type entity")

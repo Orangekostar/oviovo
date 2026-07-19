@@ -104,6 +104,167 @@ def test_loads_v1_entity_as_seeded_posterior_without_inventing_memory(
     assert entity.accepted_observation_ids == frozenset()
 
 
+def test_v1_geometry_uses_historical_frame_count_until_observation_audit_catches_up(
+    tmp_path: Path,
+) -> None:
+    payload = {
+        "entity_id": 4,
+        "semantic_id": 2,
+        "label": "chair",
+        "semantic_support": 0.9,
+        "accepted_view_count": 3,
+        "accepted_frame_ids": [0, 1, 2],
+        "first_frame_id": 0,
+        "last_frame_id": 2,
+        "last_revision": 7,
+        "lifecycle_state": "active",
+        "voxel_keys": [[0, 0, 20]],
+        "centroid_xyz": [0.0, 0.0, 1.0],
+        "bounds_min_xyz": [0.0, 0.0, 1.0],
+        "bounds_max_xyz": [0.0, 0.0, 1.0],
+    }
+    path = tmp_path / "v1.jsonl"
+    path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    registry = EntityRegistry.load(path)
+
+    def incoming(frame_id: int, centroid_x: float, observation_id: int):
+        previous = registry.entities[4]
+        track = _track(
+            frame_id,
+            {(0, 0, 20)},
+            observation_id=observation_id,
+        )
+        item = replace(
+            track.observations[0],
+            centroid_xyz=(centroid_x, 0.0, 1.0),
+            bounds_min_xyz=(centroid_x, 0.0, 1.0),
+            bounds_max_xyz=(centroid_x, 0.0, 1.0),
+        )
+        return replace(
+            track,
+            observations=(item,),
+            voxel_keys=previous.voxel_keys,
+            centroid_xyz=previous.centroid_xyz,
+            bounds_min_xyz=previous.bounds_min_xyz,
+            bounds_max_xyz=previous.bounds_max_xyz,
+        )
+
+    first = registry.resolve(incoming(3, 4.0, 7), revision=8)
+    second = registry.resolve(incoming(4, 6.0, 8), revision=9)
+
+    assert first.centroid_xyz == pytest.approx((1.0, 0.0, 1.0))
+    assert second.centroid_xyz == pytest.approx((2.0, 0.0, 1.0))
+    assert second.accepted_view_count == 5
+
+
+def test_same_semantic_winner_updates_to_new_canonical_label() -> None:
+    registry = EntityRegistry()
+    keys = {(0, 0, 20)}
+    registry.resolve(_track(0, keys, label="old-chair"), revision=1)
+
+    entity = registry.resolve(_track(1, keys, label="chair"), revision=2)
+
+    assert entity.semantic_id == 2
+    assert entity.label == "chair"
+
+
+def test_persistent_entity_requires_canonical_label_for_semantic_winner() -> None:
+    positive = EntityRegistry().resolve(_track(0, {(0, 0, 20)}), revision=1)
+    unknown = EntityRegistry().resolve(
+        _track(0, {(0, 0, 20)}, label="unknown", semantic_id=0),
+        revision=1,
+    )
+
+    with pytest.raises(ValueError, match="label"):
+        replace(positive, label=" ")
+    with pytest.raises(ValueError, match="label"):
+        replace(unknown, label="unknown")
+
+
+def test_v2_load_rejects_empty_label_for_positive_winner(tmp_path: Path) -> None:
+    registry = EntityRegistry()
+    registry.resolve(_track(0, {(0, 0, 20)}), revision=1)
+    path = tmp_path / "entities.jsonl"
+    registry.save(path)
+    records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    records[1]["label"] = ""
+    path.write_text(
+        "".join(json.dumps(record) + "\n" for record in records),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="label"):
+        EntityRegistry.load(path)
+
+
+@pytest.mark.parametrize("empty_batch", [False, True])
+def test_resolve_batch_rejects_revision_rollback_atomically(empty_batch: bool) -> None:
+    registry = EntityRegistry()
+    registry.resolve(_track(0, {(0, 0, 20)}), revision=10)
+    before_entities = dict(registry.entities)
+    before_next_id = registry._next_entity_id
+    tracks = () if empty_batch else (_track(1, {(0, 0, 20)}),)
+
+    with pytest.raises(ValueError, match="revision"):
+        registry.resolve_batch(tracks, revision=1)
+
+    assert registry.entities == before_entities
+    assert registry._next_entity_id == before_next_id
+
+
+@pytest.mark.parametrize("across_tracks", [False, True])
+def test_resolve_batch_rejects_duplicate_observation_ids_atomically(
+    across_tracks: bool,
+) -> None:
+    first = replace(
+        _track(0, {(0, 0, 20)}, observation_id=1),
+        track_id=10,
+    )
+    if across_tracks:
+        second = replace(
+            _track(0, {(100, 0, 20)}, observation_id=1),
+            track_id=11,
+        )
+        tracks = (first, second)
+    else:
+        duplicate = replace(
+            first.observations[0],
+            frame_id=1,
+            timestamp=1.0,
+        )
+        tracks = (
+            replace(
+                first,
+                observations=first.observations + (duplicate,),
+                last_frame_id=1,
+            ),
+        )
+    registry = EntityRegistry()
+
+    with pytest.raises(ValueError, match="observation IDs"):
+        registry.resolve_batch(tracks, revision=1)
+
+    assert registry.entities == {}
+    assert registry._next_entity_id == 1
+
+
+def test_load_streams_jsonl_without_path_read_text(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    registry = EntityRegistry()
+    registry.resolve(_track(0, {(0, 0, 20)}), revision=1)
+    path = tmp_path / "entities.jsonl"
+    registry.save(path)
+
+    def fail_read_text(*args: object, **kwargs: object) -> str:
+        raise AssertionError("load must stream JSONL")
+
+    monkeypatch.setattr(Path, "read_text", fail_read_text)
+
+    assert EntityRegistry.load(path).entities == registry.entities
+
+
 def test_v2_jsonl_round_trip_preserves_exact_registry_and_nested_memory(
     tmp_path: Path,
 ) -> None:
