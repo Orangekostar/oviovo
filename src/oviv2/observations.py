@@ -91,15 +91,23 @@ def _validated_feature_model_id(value: str | None) -> str | None:
 
 
 def _normalized_feature(value: np.ndarray, field_name: str) -> np.ndarray:
-    feature = np.array(value, dtype=np.float32, copy=True, order="C")
+    feature = np.array(value, dtype=np.float64, copy=True, order="C")
     if feature.ndim != 1:
         raise ValueError(f"{field_name} must be one dimensional")
     if not np.all(np.isfinite(feature)):
         raise ValueError(f"{field_name} must contain only finite values")
-    norm = float(np.linalg.norm(feature.astype(np.float64)))
-    if norm == 0.0:
+    scale = float(np.max(np.abs(feature), initial=0.0))
+    if scale == 0.0:
         raise ValueError(f"{field_name} must be nonzero")
-    feature = np.ascontiguousarray(feature / norm, dtype=np.float32)
+    scaled = feature / scale
+    feature = np.ascontiguousarray(scaled / np.linalg.norm(scaled), dtype=np.float32)
+    if not np.all(np.isfinite(feature)):
+        raise ValueError(f"normalized {field_name} must contain only finite values")
+    output_norm = float(np.linalg.norm(feature.astype(np.float64)))
+    if output_norm == 0.0:
+        raise ValueError(f"normalized {field_name} must be nonzero")
+    if not np.isclose(output_norm, 1.0, rtol=1e-6, atol=1e-7):
+        raise ValueError(f"normalized {field_name} must have unit norm")
     feature.setflags(write=False)
     return feature
 
@@ -284,12 +292,12 @@ class CachedFrontendAdapter:
             image_features = (
                 None
                 if "image_feats" not in payload
-                else np.asarray(payload["image_feats"], dtype=np.float32)
+                else np.asarray(payload["image_feats"], dtype=np.float64)
             )
             text_features = (
                 None
                 if "text_feats" not in payload
-                else np.asarray(payload["text_feats"], dtype=np.float32)
+                else np.asarray(payload["text_feats"], dtype=np.float64)
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise ValueError(f"invalid frontend cache payload: {exc}") from exc

@@ -234,6 +234,47 @@ def test_frame_observation_normalizes_optional_fields() -> None:
     assert type(observation.border_contact_fraction) is float
 
 
+@pytest.mark.parametrize("magnitude", [1e-300, 1e300], ids=("tiny", "large"))
+def test_frame_observation_normalizes_extreme_finite_features(magnitude: float) -> None:
+    observation = _observation(
+        image_feature=np.asarray([magnitude, 0.0], dtype=np.float64),
+        text_feature=np.asarray([0.0, magnitude], dtype=np.float64),
+        feature_model_id="clip-sha256:test",
+    )
+
+    for feature in (observation.image_feature, observation.text_feature):
+        assert feature.dtype == np.float32
+        assert feature.flags.c_contiguous
+        assert feature.flags.writeable is False
+        assert np.all(np.isfinite(feature))
+        assert np.any(feature)
+        assert np.linalg.norm(feature) == pytest.approx(1.0)
+
+
+@pytest.mark.parametrize("magnitude", [1e-300, 1e300], ids=("tiny", "large"))
+def test_adapter_normalizes_extreme_finite_cached_features(
+    tmp_path: Path,
+    vocabulary: ReplicaVocabulary,
+    magnitude: float,
+) -> None:
+    _write_cache(
+        tmp_path / "frame000000.pkl.gz",
+        masks=np.ones((1, 4, 5), dtype=bool),
+        labels=["chair"],
+        image_feats=np.asarray([[magnitude, 0.0]], dtype=np.float64),
+        text_feats=np.asarray([[0.0, magnitude]], dtype=np.float64),
+    )
+    observation = CachedFrontendAdapter(
+        tmp_path,
+        vocabulary,
+        min_valid_points=1,
+        feature_model_id="clip-sha256:test",
+    ).observe(_frame(), 0)[0]
+
+    assert np.array_equal(observation.image_feature, np.asarray([1.0, 0.0]))
+    assert np.array_equal(observation.text_feature, np.asarray([0.0, 1.0]))
+
+
 @pytest.mark.parametrize(
     ("changes", "error", "message"),
     [
