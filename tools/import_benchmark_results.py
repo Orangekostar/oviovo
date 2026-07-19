@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 import os
@@ -34,6 +35,29 @@ ALLOWED_METHODS = {
 def _require_file(path: Path) -> None:
     if not path.is_file():
         raise ImportFailure(f"required file does not exist: {path}")
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _require_ovimap_paper_audit(result: Mapping[str, Any]) -> None:
+    audit = result.get("protocol_audit", {})
+    if not isinstance(audit, Mapping):
+        audit = {}
+    if (
+        audit.get("status") != "PASS"
+        or audit.get("protocol_name") != "ovimap_cvpr2026_replica"
+    ):
+        raise ImportFailure("OVI-MAP T1 result requires a passing paper-parity audit")
+    audit_path = Path(str(audit.get("path", "")))
+    _require_file(audit_path)
+    if _sha256(audit_path) != str(audit.get("sha256", "")):
+        raise ImportFailure("OVI-MAP paper-parity audit hash mismatch")
 
 
 def _read_registry(path: Path) -> tuple[list[str], list[dict[str, str]]]:
@@ -141,6 +165,13 @@ def import_results(
         bindings = result.get("token_bindings")
         if not isinstance(bindings, list) or not bindings:
             raise ImportFailure("VERIFIED result must provide token_bindings")
+        if result_method == "OVIMAP" and any(
+            (row := by_token.get(str(binding.get("token", "")))) is not None
+            and row.get("table") == "T1"
+            and row.get("method") == "OVIMAP"
+            for binding in bindings
+        ):
+            _require_ovimap_paper_audit(result)
 
         for binding in bindings:
             token = str(binding.get("token", ""))

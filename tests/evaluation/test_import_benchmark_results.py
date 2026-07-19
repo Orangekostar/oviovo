@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 from pathlib import Path
 
@@ -58,6 +59,20 @@ def _write_registry(path: Path) -> None:
             "token": "T1_OVIOVO_REPLICA8_MIOU",
             "table": "T1",
             "method": "OVIOVO",
+            "dataset": "Replica",
+            "split": "replica_8_compat",
+            "metric": "REPLICA8_MIOU",
+            "direction": "higher",
+            "precision": "3",
+            "source_json": "",
+            "json_pointer": "",
+            "status": "UNFILLED",
+            "note": "Pending benchmark run.",
+        },
+        {
+            "token": "T1_OVIMAP_REPLICA8_MIOU",
+            "table": "T1",
+            "method": "OVIMAP",
             "dataset": "Replica",
             "split": "replica_8_compat",
             "metric": "REPLICA8_MIOU",
@@ -215,6 +230,56 @@ def test_import_accepts_verified_oviv2_table1_result(tmp_path: Path) -> None:
     )
 
     assert "v2=0.276" in outputs["markdown"].read_text(encoding="utf-8")
+
+
+def test_import_rejects_ovimap_table1_without_passing_paper_audit(tmp_path: Path) -> None:
+    registry = tmp_path / "benchmark_tokens.tsv"
+    markdown, latex = _templates(tmp_path)
+    _write_registry(registry)
+    result = tmp_path / "ovimap.json"
+    _write_result(result, token="T1_OVIMAP_REPLICA8_MIOU", method="OVIMAP")
+
+    with pytest.raises(ImportFailure, match="paper-parity audit"):
+        import_results(
+            registry,
+            [result],
+            markdown,
+            latex,
+            tmp_path / "out.md",
+            tmp_path / "out.tex",
+        )
+
+
+def test_import_accepts_ovimap_table1_with_hash_verified_paper_audit(tmp_path: Path) -> None:
+    registry = tmp_path / "benchmark_tokens.tsv"
+    markdown, latex = _templates(tmp_path)
+    _write_registry(registry)
+    audit = tmp_path / "paper_parity_audit.json"
+    audit.write_text('{"status":"PASS"}\n', encoding="utf-8")
+    result = tmp_path / "ovimap.json"
+    _write_result(result, token="T1_OVIMAP_REPLICA8_MIOU", method="OVIMAP")
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["protocol_audit"] = {
+        "status": "PASS",
+        "protocol_name": "ovimap_cvpr2026_replica",
+        "path": str(audit),
+        "sha256": hashlib.sha256(audit.read_bytes()).hexdigest(),
+    }
+    result.write_text(json.dumps(payload), encoding="utf-8")
+
+    import_results(
+        registry,
+        [result],
+        markdown,
+        latex,
+        tmp_path / "out.md",
+        tmp_path / "out.tex",
+    )
+
+    with registry.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle, delimiter="\t"))
+    ovimap = next(row for row in rows if row["token"] == "T1_OVIMAP_REPLICA8_MIOU")
+    assert ovimap["status"] == "VERIFIED"
 
 
 def test_import_rejects_registry_token_outside_main_table_scope(tmp_path) -> None:
