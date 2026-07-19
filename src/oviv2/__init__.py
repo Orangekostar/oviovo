@@ -8,16 +8,22 @@ from src.oviv2.evidence import (
     SparseEvidenceStore,
 )
 from src.oviv2.geometry import SparseTsdfVolume, TsdfConfig
+from src.oviv2.ownership import OwnershipRecord, ReversibleOwnershipStore
+from src.oviv2.snapshot import VoxelMapSnapshot, VoxelSnapshotMetadata
 
 __all__ = [
     "BlockKey",
     "EntityCandidate",
     "EvidenceConfig",
+    "OwnershipRecord",
+    "ReversibleOwnershipStore",
     "SemanticCandidate",
     "SparseEvidenceStore",
     "SparseTsdfVolume",
     "TsdfConfig",
     "VoxelKey",
+    "VoxelMapSnapshot",
+    "VoxelSnapshotMetadata",
     "join_voxel_key",
     "point_to_voxel",
     "split_voxel_key",
