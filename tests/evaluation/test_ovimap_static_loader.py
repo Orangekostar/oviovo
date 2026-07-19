@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from src.evaluation.baselines.ovimap import (
+    bind_mesh_instances,
     group_points_by_color,
     parse_instance_color_log,
     relative_similarity_labels,
@@ -53,3 +55,50 @@ def test_instance_color_log_remaps_mask_colors_to_mesh_colors(tmp_path) -> None:
     assert colors == {7: (214, 36, 176)}
     assert remapped[7]["color"] == (214, 36, 176)
     assert instances[7]["color"] == [214, 214, 214]
+
+
+@pytest.mark.parametrize(
+    "contents",
+    [
+        (
+            "Instance: 7 Color: (10,20,30)\n"
+            "Instance: 7 Color: (40,50,60)\n"
+        ),
+        (
+            "Instance: 7 Color: (10,20,30)\n"
+            "Instance: 8 Color: (10,20,30)\n"
+        ),
+    ],
+)
+def test_instance_color_log_rejects_conflicting_identity(contents, tmp_path) -> None:
+    log = tmp_path / "mapping.log"
+    log.write_text(contents, encoding="utf-8")
+
+    with pytest.raises(ValueError, match="conflicting|reused"):
+        parse_instance_color_log(log)
+
+
+def test_bind_mesh_instances_keeps_logged_instances_without_features() -> None:
+    features = {
+        7: {"feat": [[1.0, 0.0]], "frame_id": [0], "color": [7, 7, 7]}
+    }
+    colors = {7: (10, 20, 30), 8: (40, 50, 60)}
+    points = {
+        (10, 20, 30): np.array([[0.0, 0.0, 0.0]], dtype=np.float32),
+        (40, 50, 60): np.array([[1.0, 0.0, 0.0]], dtype=np.float32),
+    }
+
+    bound = bind_mesh_instances(features, colors, points)
+
+    assert set(bound) == {7, 8}
+    assert bound[7]["color"] == (10, 20, 30)
+    assert bound[8] == {"color": (40, 50, 60)}
+
+
+def test_bind_mesh_instances_rejects_feature_id_missing_from_log() -> None:
+    with pytest.raises(ValueError, match="missing from instance color log"):
+        bind_mesh_instances(
+            {9: {"feat": [[1.0]]}},
+            {7: (10, 20, 30)},
+            {(10, 20, 30): np.zeros((1, 3), dtype=np.float32)},
+        )

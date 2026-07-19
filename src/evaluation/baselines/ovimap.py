@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
 import re
+from typing import Any
 
 import numpy as np
 
@@ -17,12 +18,28 @@ _INSTANCE_COLOR_RE = re.compile(
 def parse_instance_color_log(path: str | Path) -> dict[int, tuple[int, int, int]]:
     """Read OVI-MAP's authoritative global instance-to-PLY-color log."""
     colors: dict[int, tuple[int, int, int]] = {}
+    instances_by_color: dict[tuple[int, int, int], int] = {}
     for line in Path(path).read_text(encoding="utf-8", errors="replace").splitlines():
         match = _INSTANCE_COLOR_RE.search(line)
         if match is not None:
-            colors[int(match.group("instance_id"))] = tuple(
+            instance_id = int(match.group("instance_id"))
+            color = tuple(
                 int(match.group(channel)) for channel in ("red", "green", "blue")
             )
+            existing_color = colors.get(instance_id)
+            if existing_color is not None and existing_color != color:
+                raise ValueError(
+                    f"OVI-MAP instance {instance_id} has conflicting colors: "
+                    f"{existing_color} and {color}"
+                )
+            existing_instance = instances_by_color.get(color)
+            if existing_instance is not None and existing_instance != instance_id:
+                raise ValueError(
+                    f"OVI-MAP mesh color {color} is reused by instances "
+                    f"{existing_instance} and {instance_id}"
+                )
+            colors[instance_id] = color
+            instances_by_color[color] = instance_id
     if not colors:
         raise ValueError(f"OVI-MAP instance color log contains no Instance: ... Color entries: {path}")
     return colors
@@ -40,6 +57,31 @@ def remap_instance_colors(
             record["color"] = colors_by_instance[int(instance_id)]
         remapped[int(instance_id)] = record
     return remapped
+
+
+def bind_mesh_instances(
+    semantic_instances: Mapping[int, Mapping[str, Any]],
+    colors_by_instance: Mapping[int, tuple[int, int, int]],
+    points_by_color: Mapping[tuple[int, int, int], np.ndarray],
+) -> dict[int, dict[str, Any]]:
+    """Bind every mesh-backed global instance to optional semantic features."""
+    feature_ids = {int(value) for value in semantic_instances}
+    color_ids = {int(value) for value in colors_by_instance}
+    missing = sorted(feature_ids - color_ids)
+    if missing:
+        raise ValueError(
+            f"OVI-MAP feature instance IDs missing from instance color log: {missing}"
+        )
+
+    bound: dict[int, dict[str, Any]] = {}
+    for instance_id, color in sorted(colors_by_instance.items()):
+        normalized_color = tuple(int(value) for value in color)
+        if normalized_color not in points_by_color:
+            continue
+        record = dict(semantic_instances.get(int(instance_id), {}))
+        record["color"] = normalized_color
+        bound[int(instance_id)] = record
+    return bound
 
 
 def _color_codes(colors: np.ndarray) -> np.ndarray:

@@ -23,10 +23,10 @@ from src.evaluation.baselines.adapters import (
 from src.evaluation.baselines.artifacts import write_baseline_artifact
 from src.evaluation.baselines.contracts import RuntimeBreakdown
 from src.evaluation.baselines.ovimap import (
+    bind_mesh_instances,
     load_instance_mesh,
     parse_instance_color_log,
     relative_similarity_labels,
-    remap_instance_colors,
 )
 from src.evaluation.baselines.static_metrics import evaluate_static_snapshot
 from src.evaluation.contracts import GroundTruthSnapshot
@@ -347,18 +347,23 @@ def _load_ovimap(
     from transformers import AutoModel, AutoTokenizer
 
     with args.instances_file.open("rb") as handle:
-        instances = pickle.load(handle)
-    if not instances:
+        semantic_instances = pickle.load(handle)
+    if not semantic_instances:
         raise ValueError("OVI-MAP instance feature file contains no instances")
-    instance_color_source = "method_output.instance.color"
-    if args.instance_color_log is not None:
-        instances = remap_instance_colors(instances, parse_instance_color_log(args.instance_color_log))
-        instance_color_source = "method_output.LogInstanceColor mapping"
-    colors = {
-        tuple(int(value) for value in np.asarray(instance["color"]).reshape(-1))
-        for instance in instances.values()
-    }
-    points_by_color, background_xyz = load_instance_mesh(args.instance_mesh, colors)
+    if args.instance_color_log is None:
+        raise ValueError("OVI-MAP formal evaluation requires --instance-color-log")
+    colors_by_instance = parse_instance_color_log(args.instance_color_log)
+    points_by_color, background_xyz = load_instance_mesh(
+        args.instance_mesh,
+        colors_by_instance.values(),
+    )
+    instances = bind_mesh_instances(
+        semantic_instances,
+        colors_by_instance,
+        points_by_color,
+    )
+    if not instances:
+        raise ValueError("OVI-MAP instance mesh contains no logged global instances")
     semantic_source = "method_output.feat SigLIP-L/16-384 official canonical zero-shot"
     artifact = adapt_ovimap(
         instances,
@@ -372,7 +377,7 @@ def _load_ovimap(
         protocol_notes=(
             "semantic classification uses the frozen Replica-41 vocabulary instead of upstream Replica-51",
             "class-agnostic AP uses equal confidence with deterministic entity-ID tie ordering",
-            f"instance mesh colors use {instance_color_source}",
+            "instance mesh colors use method_output.LogInstanceColor mapping",
         ),
     )
 
