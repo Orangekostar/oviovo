@@ -6,6 +6,9 @@ from typing import Iterable
 import numpy as np
 
 
+_MINIMUM_PROTOTYPE_RESULTANT_RATIO = float(np.sqrt(np.finfo(np.float64).eps))
+
+
 def _integer(value: object, field_name: str, *, minimum: int) -> int:
     if isinstance(value, (bool, np.bool_)) or not isinstance(value, (int, np.integer)):
         raise TypeError(f"{field_name} must be an integer")
@@ -114,13 +117,14 @@ class SparseClassPosterior:
         semantic_id = _integer(semantic_id, "semantic_id", minimum=1)
         confidence = _bounded_number(confidence, "confidence", 0.0, 1.0)
         quality = _bounded_number(quality, "quality", 0.0, 1.0)
-        mass = confidence * quality
-        if mass == 0.0:
+        if confidence == 0.0 or quality == 0.0:
             return self
         values = dict(self.log_evidence)
+        incoming_log = float(np.log(confidence) + np.log(quality))
         values[semantic_id] = float(
-            np.logaddexp(values.get(semantic_id, -np.inf), np.log(mass))
+            np.logaddexp(values.get(semantic_id, -np.inf), incoming_log)
         )
+        mass = confidence * quality
         return SparseClassPosterior(
             tuple(values.items()),
             self.effective_support + mass,
@@ -266,12 +270,10 @@ class FeaturePrototypeBank:
                 np.asarray(previous.vector, dtype=np.float64) * previous_weight
                 + np.asarray(vector, dtype=np.float64) * incoming_weight
             )
-            cancellation_tolerance = (
-                np.finfo(np.float64).eps
-                * np.sqrt(len(vector))
-                * (previous_weight + incoming_weight)
+            resultant_ratio = float(np.linalg.norm(merged)) / (
+                previous_weight + incoming_weight
             )
-            should_merge = float(np.linalg.norm(merged)) > cancellation_tolerance
+            should_merge = resultant_ratio > _MINIMUM_PROTOTYPE_RESULTANT_RATIO
             if should_merge:
                 support = previous.support + quality
                 if not np.isfinite(support):

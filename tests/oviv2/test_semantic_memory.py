@@ -36,6 +36,18 @@ def test_zero_mass_posterior_update_is_a_no_op() -> None:
     assert posterior.update_label(1, confidence=1.0, quality=0.0) is posterior
 
 
+def test_posterior_preserves_relative_probability_of_underflowing_evidence() -> None:
+    posterior = SparseClassPosterior.empty()
+    posterior = posterior.update_label(1, confidence=1e-200, quality=1e-200)
+    posterior = posterior.update_label(2, confidence=2e-200, quality=1e-200)
+
+    assert posterior.probabilities == (
+        (1, pytest.approx(1.0 / 3.0)),
+        (2, pytest.approx(2.0 / 3.0)),
+    )
+    assert posterior.effective_support == 0.0
+
+
 @pytest.mark.parametrize("semantic_id", [0, -1, True, 1.5, "1"])
 def test_posterior_rejects_invalid_semantic_id(semantic_id: object) -> None:
     with pytest.raises((TypeError, ValueError), match="semantic_id"):
@@ -160,6 +172,20 @@ def test_cancelling_prototype_merge_respects_single_slot_replacement_rule() -> N
     assert updated is bank
     assert len(updated.prototypes) == 1
     assert updated.prototypes[0].vector == pytest.approx((1.0, 0.0))
+
+
+@pytest.mark.parametrize("quality_scale", [1e-100, 1.0, 1e100], ids=("small", "unit", "large"))
+def test_near_cancellation_decision_is_invariant_to_support_scale(
+    quality_scale: float,
+) -> None:
+    bank = FeaturePrototypeBank(max_prototypes=2, merge_cosine=-1.0)
+    bank = bank.update((1.0, 0.0), "clip:a", quality=quality_scale)
+
+    updated = bank.update((-1.0, 1e-15), "clip:a", quality=quality_scale)
+
+    assert len(updated.prototypes) == 2
+    assert all(item.observation_count == 1 for item in updated.prototypes)
+    assert abs(updated.maximum_cosine((0.0, 1.0), "clip:a")) < 1e-12
 
 
 def test_prototype_bank_keeps_model_and_dimension_compatibility_domains_separate() -> None:
