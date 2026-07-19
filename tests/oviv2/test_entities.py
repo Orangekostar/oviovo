@@ -95,13 +95,15 @@ def test_loads_v1_entity_as_seeded_posterior_without_inventing_memory(
     path = tmp_path / "v1.jsonl"
     path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
 
-    entity = EntityRegistry.load(path).entities[4]
+    registry = EntityRegistry.load(path)
+    entity = registry.entities[4]
 
     assert entity.semantic_posterior.best_semantic_id == entity.semantic_id == 2
     assert entity.semantic_posterior.effective_support == pytest.approx(0.9)
     assert entity.feature_bank.prototypes == ()
     assert entity.view_bank.views == ()
     assert entity.accepted_observation_ids == frozenset()
+    assert registry._last_revision == 7
 
 
 def test_v1_geometry_uses_historical_frame_count_until_observation_audit_catches_up(
@@ -212,6 +214,23 @@ def test_resolve_batch_rejects_revision_rollback_atomically(empty_batch: bool) -
     assert registry._next_entity_id == before_next_id
 
 
+def test_empty_batch_advances_global_revision_watermark_atomically() -> None:
+    registry = EntityRegistry()
+
+    assert registry.resolve_batch((), revision=10) == ()
+    assert registry._last_revision == 10
+    assert registry.resolve_batch((), revision=10) == ()
+
+    before_entities = dict(registry.entities)
+    before_next_id = registry._next_entity_id
+    with pytest.raises(ValueError, match="revision"):
+        registry.resolve_batch((_track(0, {(0, 0, 20)}),), revision=1)
+
+    assert registry.entities == before_entities
+    assert registry._next_entity_id == before_next_id
+    assert registry._last_revision == 10
+
+
 @pytest.mark.parametrize("across_tracks", [False, True])
 def test_resolve_batch_rejects_duplicate_observation_ids_atomically(
     across_tracks: bool,
@@ -287,6 +306,7 @@ def test_v2_jsonl_round_trip_preserves_exact_registry_and_nested_memory(
         "schema_version": 2,
         "config": asdict(config),
         "next_entity_id": 2,
+        "last_revision": 7,
     }
     assert records[1]["record_type"] == "entity"
     assert set(records[1]) >= {
@@ -297,6 +317,7 @@ def test_v2_jsonl_round_trip_preserves_exact_registry_and_nested_memory(
     }
     assert EntityRegistry.load(path).config == config
     assert EntityRegistry.load(path).entities == registry.entities
+    assert EntityRegistry.load(path)._last_revision == 7
     assert "points" not in path.read_text(encoding="utf-8")
     assert "point_cloud" not in path.read_text(encoding="utf-8")
 
@@ -520,6 +541,8 @@ def test_persistent_entity_rejects_views_outside_accepted_ids() -> None:
         "config",
         "posterior",
         "mixed_v1_v2",
+        "last_revision_type",
+        "last_revision_before_entity",
     ],
 )
 def test_v2_load_rejects_corrupt_or_duplicate_records(
@@ -548,6 +571,10 @@ def test_v2_load_rejects_corrupt_or_duplicate_records(
         records[1]["semantic_posterior"]["effective_support"] = -1.0
     elif corruption == "mixed_v1_v2":
         del records[1]["record_type"]
+    elif corruption == "last_revision_type":
+        records[0]["last_revision"] = 1.0
+    elif corruption == "last_revision_before_entity":
+        records[0]["last_revision"] = 0
     path = tmp_path / f"{corruption}.jsonl"
     path.write_text(
         "".join(json.dumps(record) + "\n" for record in records),

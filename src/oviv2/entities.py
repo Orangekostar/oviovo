@@ -273,6 +273,7 @@ class EntityRegistry:
         self.config = config
         self.entities: dict[int, PersistentEntity] = {}
         self._next_entity_id = 1
+        self._last_revision = -1
 
     def resolve(self, track: LocalTrack, revision: int) -> PersistentEntity:
         return self.resolve_batch((track,), revision)[0]
@@ -283,13 +284,10 @@ class EntityRegistry:
         revision: int,
     ) -> tuple[PersistentEntity, ...]:
         normalized_revision = _integer(revision, "revision", minimum=0)
-        minimum_revision = max(
-            (entity.last_revision for entity in self.entities.values()),
-            default=0,
-        )
-        if normalized_revision < minimum_revision:
+        if normalized_revision < self._last_revision:
             raise ValueError(
-                f"revision must be at least the current registry revision {minimum_revision}"
+                "revision must be at least the current registry revision "
+                f"{self._last_revision}"
             )
         if not isinstance(tracks, tuple):
             raise TypeError("tracks must be a tuple")
@@ -350,6 +348,7 @@ class EntityRegistry:
 
         self.entities = updated_entities
         self._next_entity_id = next_entity_id
+        self._last_revision = normalized_revision
         return tuple(resolved)
 
     @staticmethod
@@ -575,6 +574,7 @@ class EntityRegistry:
                     "schema_version": 2,
                     "config": asdict(self.config),
                     "next_entity_id": self._next_entity_id,
+                    "last_revision": self._last_revision,
                 }
                 stream.write(json.dumps(metadata, sort_keys=True, allow_nan=False) + "\n")
                 for entity_id in sorted(self.entities):
@@ -642,6 +642,10 @@ class EntityRegistry:
                 raise ValueError("entity IDs must be unique and positive")
             registry.entities[entity.entity_id] = entity
         registry._next_entity_id = max(registry.entities, default=0) + 1
+        registry._last_revision = max(
+            (entity.last_revision for entity in registry.entities.values()),
+            default=-1,
+        )
         return registry
 
     @classmethod
@@ -657,6 +661,7 @@ class EntityRegistry:
             "schema_version",
             "config",
             "next_entity_id",
+            "last_revision",
         }
         try:
             if set(metadata) != expected_metadata_keys:
@@ -673,6 +678,11 @@ class EntityRegistry:
                 metadata["next_entity_id"],
                 "next_entity_id",
                 minimum=1,
+            )
+            last_revision = _integer(
+                metadata["last_revision"],
+                "last_revision",
+                minimum=-1,
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise ValueError(f"invalid entity registry line {metadata_line}: {exc}") from exc
@@ -692,7 +702,14 @@ class EntityRegistry:
             registry.entities[entity.entity_id] = entity
         if registry.entities and next_entity_id <= max(registry.entities):
             raise ValueError("next_entity_id must exceed all entity IDs")
+        entity_last_revision = max(
+            (entity.last_revision for entity in registry.entities.values()),
+            default=-1,
+        )
+        if last_revision < entity_last_revision:
+            raise ValueError("last_revision must cover all entity revisions")
         registry._next_entity_id = next_entity_id
+        registry._last_revision = last_revision
         return registry
 
     @staticmethod
