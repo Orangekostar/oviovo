@@ -17,7 +17,7 @@ Date of final continuation audit: 2026-07-18.
 
 - ScanNet200-5 data was unavailable before the frozen test manifest could be used; ScanNet tokens remain unfilled.
 - Official TESSE-CD Apartment/Office bags remain unavailable. Fresh 2026-07-18 probes fixed the current file IDs and sizes and obtained valid first ranges, but complete/continued transfers on node107 and node6 returned the official quota page; no traceable public mirror was found. T2 methods and Khronos T4 remain blocked by `oviovo_baseline_runs/20260714_non_oviovo_baselines/tesse_cd/blocked_status_20260718.json`.
-- The final workspace verifier covered 19/19 repositories but returned FAIL because a pre-existing generated OpenYOLO3D `sampling_gpu.o` file is dirty. Evidence: `oviovo_baseline_runs/20260714_non_oviovo_baselines/logs/workspace_verify_node107_final.txt`; it was not reverted.
+- After explicit user authorization, the generated OpenYOLO3D `sampling_gpu.o` file was restored to its recorded HEAD blob. The final workspace verifier passed with 19/19 reference repositories clean. Evidence: `oviovo_baseline_runs/20260714_non_oviovo_baselines/logs/workspace_verify_node107_final.txt`.
 
 ## Compatibility Notes
 
