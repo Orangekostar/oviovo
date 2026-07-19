@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Import verified non-OVIOVO result JSON into the benchmark registry and tables."""
+"""Import verified result JSON into the benchmark registry and tables."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ class ImportFailure(RuntimeError):
 
 
 ALLOWED_METHODS = {
-    "T1": {"OPENFUSION", "OVIMAP", "CONCEPTGRAPHS", "DUALMAP"},
+    "T1": {"OPENFUSION", "OVIMAP", "CONCEPTGRAPHS", "DUALMAP", "OVIV2"},
     "T2": {
         "OVIMAP_FROZEN",
         "CONCEPTGRAPHS_FROZEN",

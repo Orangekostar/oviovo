@@ -168,7 +168,7 @@ def _build_tables() -> tuple[Table, ...]:
         Method("OVIMAP", "OVI-MAP", "native"),
         Method("CONCEPTGRAPHS", "ConceptGraphs", "native"),
         Method("DUALMAP", "DualMap", "native"),
-        Method("OVIOVO", "OVIOVO", "online"),
+        Method("OVIV2", "OVIV2", "online"),
     )
     tables = (
         Table(

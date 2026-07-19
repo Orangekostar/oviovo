@@ -41,6 +41,20 @@ def _write_registry(path: Path) -> None:
             "note": "Pending benchmark run.",
         },
         {
+            "token": "T1_OVIV2_REPLICA8_MIOU",
+            "table": "T1",
+            "method": "OVIV2",
+            "dataset": "Replica",
+            "split": "replica_8_compat",
+            "metric": "REPLICA8_MIOU",
+            "direction": "higher",
+            "precision": "3",
+            "source_json": "",
+            "json_pointer": "",
+            "status": "UNFILLED",
+            "note": "Pending benchmark run.",
+        },
+        {
             "token": "T1_OVIOVO_REPLICA8_MIOU",
             "table": "T1",
             "method": "OVIOVO",
@@ -61,14 +75,19 @@ def _write_registry(path: Path) -> None:
         writer.writerows(rows)
 
 
-def _write_result(path: Path, *, token: str = "T1_DUALMAP_REPLICA8_MIOU") -> None:
+def _write_result(
+    path: Path,
+    *,
+    token: str = "T1_DUALMAP_REPLICA8_MIOU",
+    method: str = "DUALMAP",
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps(
             {
                 "status": "VERIFIED",
                 "run_id": "dualmap-replica8-test",
-                "method": {"key": "DUALMAP", "display_label": "DualMap", "mode": "native"},
+                "method": {"key": method, "display_label": method, "mode": "native"},
                 "dataset": {"name": "Replica", "splits": ["replica_8_compat"]},
                 "metrics": {"semantic": {"miou": 0.2764}},
                 "token_bindings": [
@@ -84,8 +103,15 @@ def _write_result(path: Path, *, token: str = "T1_DUALMAP_REPLICA8_MIOU") -> Non
 def _templates(tmp_path: Path) -> tuple[Path, Path]:
     markdown = tmp_path / "benchmark_tables.md"
     latex = tmp_path / "benchmark_tables.tex"
-    markdown.write_text("value={{T1_DUALMAP_REPLICA8_MIOU}} ours={{T1_OVIOVO_REPLICA8_MIOU}}\n")
-    latex.write_text(r"value=\verb|{{T1_DUALMAP_REPLICA8_MIOU}}| ours=\verb|{{T1_OVIOVO_REPLICA8_MIOU}}|" + "\n")
+    markdown.write_text(
+        "value={{T1_DUALMAP_REPLICA8_MIOU}} v2={{T1_OVIV2_REPLICA8_MIOU}} "
+        "legacy={{T1_OVIOVO_REPLICA8_MIOU}}\n"
+    )
+    latex.write_text(
+        r"value=\verb|{{T1_DUALMAP_REPLICA8_MIOU}}| "
+        r"v2=\verb|{{T1_OVIV2_REPLICA8_MIOU}}| legacy=\verb|{{T1_OVIOVO_REPLICA8_MIOU}}|"
+        + "\n"
+    )
     return markdown, latex
 
 
@@ -110,6 +136,7 @@ def test_import_reads_json_pointer_updates_registry_and_derives_tables(tmp_path)
     assert rows[0]["status"] == "VERIFIED"
     assert rows[0]["json_pointer"] == "/metrics/semantic/miou"
     assert rows[1]["status"] == "UNFILLED"
+    assert rows[2]["status"] == "UNFILLED"
     assert "0.276" in outputs["markdown"].read_text(encoding="utf-8")
     assert "{{T1_OVIOVO_REPLICA8_MIOU}}" in outputs["markdown"].read_text(encoding="utf-8")
     assert r"\verb|{{T1_DUALMAP_REPLICA8_MIOU}}|" not in outputs["latex"].read_text(encoding="utf-8")
@@ -169,6 +196,25 @@ def test_import_rejects_oviovo_duplicate_and_missing_files(tmp_path) -> None:
             tmp_path / "out.md",
             tmp_path / "out.tex",
         )
+
+
+def test_import_accepts_verified_oviv2_table1_result(tmp_path: Path) -> None:
+    registry = tmp_path / "benchmark_tokens.tsv"
+    markdown, latex = _templates(tmp_path)
+    _write_registry(registry)
+    result = tmp_path / "oviv2.json"
+    _write_result(result, token="T1_OVIV2_REPLICA8_MIOU", method="OVIV2")
+
+    outputs = import_results(
+        registry,
+        [result],
+        markdown,
+        latex,
+        tmp_path / "out.md",
+        tmp_path / "out.tex",
+    )
+
+    assert "v2=0.276" in outputs["markdown"].read_text(encoding="utf-8")
 
 
 def test_import_rejects_registry_token_outside_main_table_scope(tmp_path) -> None:

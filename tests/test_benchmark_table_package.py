@@ -25,7 +25,7 @@ FIELDS = [
 ]
 TOKEN_RE = re.compile(r"\{\{([A-Z0-9_]+)\}\}")
 EXPECTED_METHODS = {
-    "T1": ("OPENFUSION", "OVIMAP", "CONCEPTGRAPHS", "DUALMAP", "OVIOVO"),
+    "T1": ("OPENFUSION", "OVIMAP", "CONCEPTGRAPHS", "DUALMAP", "OVIV2"),
     "T2": (
         "OVIMAP_FROZEN", "CONCEPTGRAPHS_FROZEN", "DUALMAP",
         "PANOPTIC_SHARED", "KHRONOS_OPEN", "KHRONOS_ORACLE", "OVIOVO",
@@ -182,6 +182,14 @@ def test_non_na_tokens_match_both_outputs():
     expected = Counter({row["token"]: 1 for row in rows() if row["status"] != "N/A"})
     assert token_counts(MARKDOWN) == expected
     assert token_counts(LATEX) == expected
+
+
+def test_table1_uses_only_oviv2_tokens_for_our_static_method():
+    registry_tokens = {row["token"] for row in rows() if row["table"] == "T1"}
+    assert len({token for token in registry_tokens if token.startswith("T1_OVIV2_")}) == 12
+    assert not any(token.startswith("T1_OVIOVO_") for token in registry_tokens)
+    assert "| OVIV2 | online |" in MARKDOWN.read_text(encoding="utf-8")
+    assert "OVIV2 & online &" in LATEX.read_text(encoding="utf-8")
 
 
 def test_provenance_requirements():
