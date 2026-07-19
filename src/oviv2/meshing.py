@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, fields
+from numbers import Integral, Real
 import os
 from pathlib import Path
 import tempfile
@@ -124,17 +126,54 @@ def canonicalize_labeled_mesh(mesh: LabeledMesh) -> LabeledMesh:
     )
 
 
+def _validated_entity_semantics(
+    value: Mapping[int, tuple[int, float]] | None,
+) -> dict[int, tuple[int, float]] | None:
+    if value is None:
+        return None
+    if not isinstance(value, Mapping):
+        raise TypeError("entity_semantics must be a mapping or None")
+    normalized: dict[int, tuple[int, float]] = {}
+    for entity_id, semantics in value.items():
+        if (
+            isinstance(entity_id, (bool, np.bool_))
+            or not isinstance(entity_id, Integral)
+            or int(entity_id) <= 0
+        ):
+            raise ValueError("entity_semantics keys must be positive integers")
+        if not isinstance(semantics, tuple):
+            raise TypeError("entity_semantics values must be 2-tuples")
+        if len(semantics) != 2:
+            raise ValueError("entity_semantics values must be 2-tuples")
+        semantic_id, confidence = semantics
+        if (
+            isinstance(semantic_id, (bool, np.bool_))
+            or not isinstance(semantic_id, Integral)
+            or int(semantic_id) < 0
+        ):
+            raise ValueError("entity semantic IDs must be non-negative integers")
+        if isinstance(confidence, (bool, np.bool_)) or not isinstance(confidence, Real):
+            raise ValueError("entity semantic confidence must be finite and lie in [0, 1]")
+        normalized_confidence = float(confidence)
+        if not np.isfinite(normalized_confidence) or not 0.0 <= normalized_confidence <= 1.0:
+            raise ValueError("entity semantic confidence must be finite and lie in [0, 1]")
+        normalized[int(entity_id)] = (int(semantic_id), normalized_confidence)
+    return normalized
+
+
 def derive_labeled_mesh(
     geometry: SparseTsdfVolume,
     evidence: SparseEvidenceStore,
     ownership: ReversibleOwnershipStore,
     *,
     weight_threshold: float = 1.0,
+    entity_semantics: Mapping[int, tuple[int, float]] | None = None,
 ) -> LabeledMesh:
     if evidence.config.block_resolution != geometry.config.block_resolution:
         raise ValueError("evidence block_resolution does not match geometry")
     if ownership.block_resolution != geometry.config.block_resolution:
         raise ValueError("ownership block_resolution does not match geometry")
+    normalized_entity_semantics = _validated_entity_semantics(entity_semantics)
     raw_mesh = geometry.extract_mesh(weight_threshold=weight_threshold)
     vertices = raw_mesh.vertex.positions.numpy()
     triangles = raw_mesh.triangle.indices.numpy()
@@ -164,6 +203,11 @@ def derive_labeled_mesh(
         if owner is not None:
             entity_ids[index] = owner.entity_id
             ownership_confidence[index] = owner.confidence
+            if normalized_entity_semantics is not None:
+                current_semantics = normalized_entity_semantics.get(owner.entity_id)
+                if current_semantics is not None and current_semantics[0] > 0:
+                    semantic_ids[index] = current_semantics[0]
+                    semantic_confidence[index] = current_semantics[1]
 
     return canonicalize_labeled_mesh(
         LabeledMesh(

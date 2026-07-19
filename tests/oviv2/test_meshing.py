@@ -70,6 +70,104 @@ def test_vertices_take_strongest_semantic_candidate_and_current_owner() -> None:
     assert np.all(mesh.entity_ids[~labeled] == 0)
 
 
+def test_current_owner_semantics_override_independent_voxel_evidence() -> None:
+    geometry = _geometry()
+    raw_vertices = geometry.extract_mesh().vertex.positions.numpy()
+    target_key = point_to_voxel(raw_vertices[0], geometry.config.voxel_size_m)
+    evidence = SparseEvidenceStore()
+    evidence.update_semantic(target_key, 1, 2.0, 1)
+    ownership = ReversibleOwnershipStore()
+    ownership.assign(target_key, 4, 0.8, 1)
+
+    mesh = derive_labeled_mesh(
+        geometry,
+        evidence,
+        ownership,
+        entity_semantics={4: (3, 0.75)},
+    )
+    keys = np.asarray(
+        [point_to_voxel(vertex, geometry.config.voxel_size_m) for vertex in mesh.vertices_xyz]
+    )
+    owned = np.all(keys == np.asarray(target_key), axis=1)
+
+    assert owned.any()
+    assert np.all(mesh.entity_ids[owned] == 4)
+    assert np.all(mesh.semantic_ids[owned] == 3)
+    assert np.all(mesh.semantic_confidence[owned] == pytest.approx(0.75))
+    assert evidence.semantic_candidates(target_key)[0].label_id == 1
+
+
+def test_owner_release_removes_object_semantics_but_preserves_structure_evidence() -> None:
+    geometry = _geometry()
+    raw_vertices = geometry.extract_mesh().vertex.positions.numpy()
+    target_key = point_to_voxel(raw_vertices[0], geometry.config.voxel_size_m)
+    evidence = SparseEvidenceStore()
+    ownership = ReversibleOwnershipStore()
+    ownership.assign(target_key, 4, 0.8, 1)
+    entity_semantics = {4: (2, 0.9)}
+
+    owned_mesh = derive_labeled_mesh(
+        geometry,
+        evidence,
+        ownership,
+        entity_semantics=entity_semantics,
+    )
+    ownership.release(target_key, 4, 2)
+    released_mesh = derive_labeled_mesh(
+        geometry,
+        evidence,
+        ownership,
+        entity_semantics=entity_semantics,
+    )
+    evidence.update_semantic(target_key, 1, 1.0, 3)
+    structured_mesh = derive_labeled_mesh(
+        geometry,
+        evidence,
+        ownership,
+        entity_semantics=entity_semantics,
+    )
+    keys = np.asarray(
+        [point_to_voxel(vertex, geometry.config.voxel_size_m) for vertex in owned_mesh.vertices_xyz]
+    )
+    selected = np.all(keys == np.asarray(target_key), axis=1)
+
+    assert selected.any()
+    assert np.all(owned_mesh.semantic_ids[selected] == 2)
+    assert np.all(owned_mesh.entity_ids[selected] == 4)
+    assert np.all(released_mesh.semantic_ids[selected] == 0)
+    assert np.all(released_mesh.entity_ids[selected] == 0)
+    assert np.all(structured_mesh.semantic_ids[selected] == 1)
+    assert np.all(structured_mesh.entity_ids[selected] == 0)
+
+
+@pytest.mark.parametrize(
+    ("entity_semantics", "error"),
+    [
+        ([], TypeError),
+        ({0: (1, 0.5)}, ValueError),
+        ({True: (1, 0.5)}, ValueError),
+        ({1: [1, 0.5]}, TypeError),
+        ({1: (1,)}, ValueError),
+        ({1: (-1, 0.5)}, ValueError),
+        ({1: (True, 0.5)}, ValueError),
+        ({1: (1, np.nan)}, ValueError),
+        ({1: (1, 1.01)}, ValueError),
+        ({1: (1, False)}, ValueError),
+    ],
+)
+def test_entity_semantics_mapping_is_strictly_validated(
+    entity_semantics: object,
+    error: type[Exception],
+) -> None:
+    with pytest.raises(error, match="entity_semantics|entity|semantic|confidence"):
+        derive_labeled_mesh(
+            _geometry(),
+            SparseEvidenceStore(),
+            ReversibleOwnershipStore(),
+            entity_semantics=entity_semantics,  # type: ignore[arg-type]
+        )
+
+
 def test_derivation_and_write_do_not_mutate_voxel_state(tmp_path: Path) -> None:
     geometry = _geometry()
     key = point_to_voxel(

@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from src.core.data_structures import CameraIntrinsics, Frame
+from src.oviv2.meshing import derive_labeled_mesh
 from src.oviv2.observations import FrameObservation, ObservationKind
 from src.oviv2.runtime import Oviv2Runtime, Oviv2RuntimeConfig
 from src.oviv2.snapshot import VoxelMapSnapshot
@@ -60,6 +63,31 @@ def observation(
     )
 
 
+def precision_runtime(*, confirm_hits: int) -> Oviv2Runtime:
+    return Oviv2Runtime(
+        "room0",
+        Oviv2RuntimeConfig(tracker=LocalTrackerConfig(confirm_hits=confirm_hits)),
+    )
+
+
+def object_observation(
+    frame_id: int,
+    key: tuple[int, int, int],
+    semantic_id: int,
+    label: str,
+) -> FrameObservation:
+    value = observation(
+        frame_id,
+        ObservationKind.OBJECT,
+        semantic_id,
+        {key},
+        image_feature=np.asarray((1.0, 0.0)),
+        feature_model_id="clip",
+        visible_pixel_count=4096,
+    )
+    return replace(value, label=label)
+
+
 def test_geometry_integrates_even_when_observation_batch_is_empty() -> None:
     runtime = Oviv2Runtime("room0")
 
@@ -94,7 +122,7 @@ def test_tentative_object_cannot_write_entity_evidence() -> None:
     assert runtime.registry.entities == {}
 
 
-def test_confirmed_object_writes_evidence_and_reversible_owner() -> None:
+def test_confirmed_object_writes_entity_evidence_and_reversible_owner() -> None:
     runtime = Oviv2Runtime(
         "room0",
         Oviv2RuntimeConfig(tracker=LocalTrackerConfig(confirm_hits=2)),
@@ -105,9 +133,137 @@ def test_confirmed_object_writes_evidence_and_reversible_owner() -> None:
     result = runtime.process_frame(frame(1), (observation(1, ObservationKind.OBJECT, 2, {key}),))
 
     assert result.accepted_entity_ids == (1,)
-    assert runtime.evidence.semantic_candidates(key)[0].label_id == 2
+    assert runtime.evidence.semantic_candidates(key) == ()
     assert runtime.evidence.entity_candidates(key)[0].entity_id == 1
     assert runtime.ownership.owner_of(key).entity_id == 1
+    assert (result.matched_entity_count, result.new_entity_count) == (0, 1)
+    mesh = derive_labeled_mesh(
+        runtime.geometry,
+        runtime.evidence,
+        runtime.ownership,
+        entity_semantics=runtime.registry.semantic_labels(),
+    )
+    owned = mesh.entity_ids == 1
+    assert owned.any()
+    assert np.all(mesh.semantic_ids[owned] == 2)
+
+
+def test_owned_voxels_follow_current_entity_label_without_stale_votes() -> None:
+    runtime = precision_runtime(confirm_hits=1)
+    key = (0, 0, 20)
+    first = runtime.process_frame(
+        frame(0),
+        (object_observation(0, key, 2, "chair"),),
+    )
+    second = runtime.process_frame(
+        frame(1),
+        (object_observation(1, key, 3, "stool"),),
+    )
+    runtime.process_frame(frame(2), (object_observation(2, key, 3, "stool"),))
+    runtime.process_frame(frame(3), (object_observation(3, key, 3, "stool"),))
+
+    mesh = derive_labeled_mesh(
+        runtime.geometry,
+        runtime.evidence,
+        runtime.ownership,
+        entity_semantics=runtime.registry.semantic_labels(),
+    )
+    owned = mesh.entity_ids == 1
+
+    assert owned.any()
+    assert np.all(mesh.semantic_ids[owned] == 3)
+    assert runtime.evidence.semantic_candidates(key) == ()
+    assert (first.matched_entity_count, first.new_entity_count) == (0, 1)
+    assert (second.matched_entity_count, second.new_entity_count) == (1, 0)
+    assert (second.association_conflict_count, second.revoked_edge_count) == (0, 0)
+
+
+def test_structure_semantics_remain_voxel_evidence_without_owner() -> None:
+    runtime = precision_runtime(confirm_hits=1)
+    key = (0, 0, 20)
+    runtime.process_frame(
+        frame(0),
+        (observation(0, ObservationKind.STRUCTURE, 1, {key}),),
+    )
+    runtime.process_frame(frame(1), ())
+
+    mesh = derive_labeled_mesh(
+        runtime.geometry,
+        runtime.evidence,
+        runtime.ownership,
+        entity_semantics=runtime.registry.semantic_labels(),
+    )
+
+    assert np.any(mesh.semantic_ids == 1)
+    assert np.all(mesh.entity_ids[mesh.semantic_ids == 1] == 0)
+
+
+def test_runtime_resolves_entities_once_per_frame_even_for_empty_batch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runtime = precision_runtime(confirm_hits=1)
+    calls: list[tuple[tuple[int, ...], int]] = []
+    original = runtime.registry.resolve_batch
+
+    def record_batch(tracks, revision):
+        calls.append((tuple(track.track_id for track in tracks), revision))
+        return original(tracks, revision)
+
+    monkeypatch.setattr(runtime.registry, "resolve_batch", record_batch)
+    runtime.process_frame(frame(0), ())
+    left = replace(object_observation(1, (0, 0, 20), 2, "chair"), observation_id=101)
+    right = replace(object_observation(1, (20, 0, 20), 2, "chair"), observation_id=102)
+    runtime.process_frame(frame(1), (right, left))
+
+    assert calls == [((), 1), ((1, 2), 2)]
+
+
+def test_runtime_reports_tracker_conflict_and_revocation_counters() -> None:
+    key = (0, 0, 20)
+    conflict_runtime = precision_runtime(confirm_hits=1)
+    chair = replace(
+        observation(0, ObservationKind.OBJECT, 2, {key}),
+        label="chair",
+    )
+    stool = replace(
+        observation(1, ObservationKind.OBJECT, 3, {key}),
+        label="stool",
+    )
+    conflict_runtime.process_frame(frame(0), (chair,))
+    conflict = conflict_runtime.process_frame(frame(1), (stool,))
+
+    assert conflict.association_conflict_count == 1
+    assert conflict.revoked_edge_count == 0
+    assert (conflict.matched_entity_count, conflict.new_entity_count) == (0, 1)
+
+    revoked_runtime = Oviv2Runtime(
+        "room0",
+        Oviv2RuntimeConfig(
+            tracker=LocalTrackerConfig(confirm_hits=1, ambiguous_edge_score=0.8)
+        ),
+    )
+    first = observation(
+        0,
+        ObservationKind.OBJECT,
+        2,
+        {key},
+        image_feature=np.asarray((1.0, 0.0)),
+        feature_model_id="clip",
+    )
+    weak = observation(
+        1,
+        ObservationKind.OBJECT,
+        2,
+        {key},
+        image_feature=np.asarray((0.0, 1.0)),
+        feature_model_id="clip",
+    )
+    revoked_runtime.process_frame(frame(0), (first,))
+    revoked = revoked_runtime.process_frame(frame(1), (weak,))
+
+    assert revoked.association_conflict_count == 0
+    assert revoked.revoked_edge_count == 1
+    assert (revoked.matched_entity_count, revoked.new_entity_count) == (1, 0)
 
 
 def test_recomputing_owner_retains_competing_entity_evidence() -> None:

@@ -55,6 +55,10 @@ class RuntimeFrameResult:
     observation_count: int
     updated_track_count: int
     accepted_entity_ids: tuple[int, ...]
+    matched_entity_count: int = 0
+    new_entity_count: int = 0
+    association_conflict_count: int = 0
+    revoked_edge_count: int = 0
 
 
 class Oviv2Runtime:
@@ -127,28 +131,24 @@ class Oviv2Runtime:
                     )
 
         track_batch = self.tracker.update(observations, frame.frame_id)
-        accepted_entity_ids: list[int] = []
+        accepted_tracks = tuple(
+            sorted(track_batch.accepted, key=lambda track: track.track_id)
+        )
+        entity_ids_before = set(self.registry.entities)
+        resolved_entities = self.registry.resolve_batch(accepted_tracks, next_revision)
+        accepted_entity_ids = tuple(entity.entity_id for entity in resolved_entities)
+        matched_entity_count = sum(
+            entity.entity_id in entity_ids_before for entity in resolved_entities
+        )
+        new_entity_count = len(resolved_entities) - matched_entity_count
         ownership_keys: set[VoxelKey] = set()
-        for track in track_batch.accepted:
-            entity = self.registry.resolve(track, next_revision)
-            accepted_entity_ids.append(entity.entity_id)
+        for track, entity in zip(accepted_tracks, resolved_entities):
             current_observation = track.observations[-1]
-            semantic_support = max(
-                current_observation.confidence * self.config.semantic_support_scale,
-                1e-9,
-            )
             entity_support = max(
                 current_observation.confidence * self.config.entity_support_scale,
                 1e-9,
             )
             for voxel_key in current_observation.voxel_keys:
-                if entity.semantic_id > 0:
-                    self.evidence.update_semantic(
-                        voxel_key,
-                        entity.semantic_id,
-                        semantic_support,
-                        next_revision,
-                    )
                 self.evidence.update_entity(
                     voxel_key,
                     entity.entity_id,
@@ -169,7 +169,11 @@ class Oviv2Runtime:
             geometry_blocks_touched=int(blocks_touched),
             observation_count=len(observations),
             updated_track_count=len(track_batch.updated),
-            accepted_entity_ids=tuple(accepted_entity_ids),
+            accepted_entity_ids=accepted_entity_ids,
+            matched_entity_count=matched_entity_count,
+            new_entity_count=new_entity_count,
+            association_conflict_count=track_batch.conflict_count,
+            revoked_edge_count=track_batch.revoked_edge_count,
         )
 
     def apply_visibility(
