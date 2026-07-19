@@ -178,6 +178,13 @@ def _load_entity_info(path: Path) -> list[EntityEvaluationInfo]:
             continue
         try:
             payload = json.loads(line)
+            if not isinstance(payload, dict):
+                raise TypeError("entity info records must be JSON objects")
+            record_type = payload.get("record_type")
+            if record_type == "registry":
+                continue
+            if record_type not in {None, "entity"}:
+                raise ValueError(f"unknown record_type {record_type!r}")
             records.append(
                 EntityEvaluationInfo(
                     entity_id=payload["entity_id"],

@@ -33,7 +33,7 @@ def observation(
     text_feature: np.ndarray | None = None,
     feature_model_id: str | None = None,
     view_direction_xyz: tuple[float, float, float] | None = None,
-    visible_pixel_count: int = 0,
+    visible_pixel_count: int = 4096,
     border_contact_fraction: float = 0.0,
 ) -> FrameObservation:
     points = np.asarray(sorted(keys), dtype=np.float64) * 0.05

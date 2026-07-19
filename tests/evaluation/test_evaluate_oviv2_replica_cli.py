@@ -9,7 +9,10 @@ import numpy as np
 from plyfile import PlyData, PlyElement
 import pytest
 
-from scripts.evaluation.evaluate_oviv2_replica import _majority_object_per_vertex
+from scripts.evaluation.evaluate_oviv2_replica import (
+    _load_entity_info,
+    _majority_object_per_vertex,
+)
 from src.oviv2.addressing import point_to_voxel
 from src.oviv2.evidence import SparseEvidenceStore
 from src.oviv2.geometry import SparseTsdfVolume
@@ -20,6 +23,41 @@ from tests.oviv2.test_geometry import _integrate_twice, _plane_frame
 
 
 SCRIPT = Path("scripts/evaluation/evaluate_oviv2_replica.py")
+
+
+def test_entity_info_loader_skips_v2_registry_metadata(tmp_path: Path) -> None:
+    path = tmp_path / "entities.jsonl"
+    path.write_text(
+        "\n".join(
+            (
+                json.dumps(
+                    {
+                        "record_type": "registry",
+                        "schema_version": 2,
+                        "config": {},
+                        "next_entity_id": 12,
+                    }
+                ),
+                json.dumps(
+                    {
+                        "record_type": "entity",
+                        "entity_id": 11,
+                        "semantic_id": 2,
+                        "accepted_view_count": 3,
+                    }
+                ),
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    loaded = _load_entity_info(path)
+
+    assert [
+        (item.entity_id, item.semantic_id, item.accepted_view_count)
+        for item in loaded
+    ] == [(11, 2, 3)]
 
 
 def test_majority_object_assignment_accepts_replica_quad_faces() -> None:

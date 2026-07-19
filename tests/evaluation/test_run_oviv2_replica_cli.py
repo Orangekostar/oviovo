@@ -260,7 +260,13 @@ def test_runner_fuses_structure_without_allocating_structure_entities(tmp_path: 
     entity_lines = (
         output / "final" / "oviv2_entities.jsonl"
     ).read_text(encoding="utf-8").splitlines()
-    entities = [json.loads(line) for line in entity_lines if line.strip()]
+    entities = [
+        payload
+        for line in entity_lines
+        if line.strip()
+        for payload in (json.loads(line),)
+        if payload.get("record_type") == "entity"
+    ]
     timing = json.loads((output / "timing.json").read_text(encoding="utf-8"))
 
     assert semantic_ids & {1, 2, 3}
