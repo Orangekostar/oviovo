@@ -136,6 +136,18 @@ class SparseTsdfVolume:
         threshold = float(weight_threshold)
         if not np.isfinite(threshold) or threshold < 0.0:
             raise ValueError("weight_threshold must be finite and non-negative")
+        if self.active_block_count == 0:
+            mesh = o3d.t.geometry.TriangleMesh(o3d.core.Device("CPU:0"))
+            mesh.vertex["positions"] = o3d.core.Tensor(
+                np.empty((0, 3), dtype=np.float32)
+            )
+            mesh.vertex["colors"] = o3d.core.Tensor(
+                np.empty((0, 3), dtype=np.float32)
+            )
+            mesh.triangle["indices"] = o3d.core.Tensor(
+                np.empty((0, 3), dtype=np.int64)
+            )
+            return mesh
         return self._grid.extract_triangle_mesh(weight_threshold=threshold)
 
     def save(self, path: str | Path) -> None:
@@ -168,11 +180,14 @@ class SparseTsdfVolume:
         with np.load(source, allow_pickle=False) as payload:
             stored_voxel_size = float(np.asarray(payload["voxel_size"]).reshape(-1)[0])
             stored_resolution = int(np.asarray(payload["block_resolution"]).reshape(-1)[0])
+            stored_block_count = int(np.asarray(payload["key"]).shape[0])
         if not np.isclose(stored_voxel_size, config.voxel_size_m, rtol=0.0, atol=1e-7):
             raise ValueError("stored voxel_size_m does not match config")
         if stored_resolution != config.block_resolution:
             raise ValueError("stored block_resolution does not match config")
 
+        if stored_block_count == 0:
+            return cls(config)
         instance = cls.__new__(cls)
         instance._config = config
         instance._grid = o3d.t.geometry.VoxelBlockGrid.load(str(source))

@@ -112,6 +112,17 @@ def test_save_load_preserves_blocks_and_mesh(tmp_path: Path) -> None:
         SparseTsdfVolume.load(path, TsdfConfig(voxel_size_m=0.1))
 
 
+def test_save_load_preserves_empty_sparse_volume(tmp_path: Path) -> None:
+    config = TsdfConfig()
+    path = tmp_path / "empty_geometry.npz"
+
+    SparseTsdfVolume(config).save(path)
+    restored = SparseTsdfVolume.load(path, config)
+
+    assert restored.active_block_count == 0
+    assert restored.extract_mesh().vertex.positions.shape[0] == 0
+
+
 def test_volume_exposes_no_dense_point_state() -> None:
     volume = SparseTsdfVolume()
 
