@@ -36,6 +36,11 @@ from src.oviv2.structure import DepthStructureConfig, DepthStructureFrontend  # 
 from src.oviv2.tracking import LocalTrackerConfig  # noqa: E402
 
 
+SCENE_CONFIG_FIELDS = frozenset(
+    {"scene", "dataset_root", "frontend_cache_dir", "gt_mesh", "gt_info", "algorithm_hash"}
+)
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -47,6 +52,14 @@ def _sha256(path: Path) -> str:
 def _json_hash(value: Any) -> str:
     encoded = json.dumps(value, separators=(",", ":"), sort_keys=True).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+def algorithm_config(config: dict[str, Any]) -> dict[str, Any]:
+    return {key: config[key] for key in sorted(config) if key not in SCENE_CONFIG_FIELDS}
+
+
+def algorithm_hash(config: dict[str, Any]) -> str:
+    return _json_hash(algorithm_config(config))
 
 
 def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
@@ -141,7 +154,7 @@ def _preflight(
     config: dict[str, Any],
     num_frames: int,
     skip_evaluation: bool,
-) -> tuple[ReplicaRoom0Dataset, dict[str, Any], list[int], str]:
+) -> tuple[ReplicaRoom0Dataset, dict[str, Any], list[int], str, dict[str, Any] | None]:
     required = ("scene", "dataset_root", "frontend_cache_dir", "manifest")
     missing = [name for name in required if not config.get(name)]
     if missing:
@@ -170,19 +183,35 @@ def _preflight(
         raise ValueError("requested source frame selection exceeds benchmark manifest")
 
     cache_dir = Path(config["frontend_cache_dir"])
+    frontend_manifest_path = cache_dir / "frontend_manifest.json"
+    frontend_manifest = (
+        _load_json(frontend_manifest_path) if frontend_manifest_path.is_file() else None
+    )
+    if frontend_manifest is not None:
+        if frontend_manifest.get("method") != "OVIV2":
+            raise ValueError("frontend manifest method must be OVIV2")
+        if frontend_manifest.get("scene") != config["scene"]:
+            raise ValueError("frontend manifest scene does not match runner config")
+        if frontend_manifest.get("frame_count") != num_frames:
+            raise ValueError("frontend manifest frame count does not match requested run")
     frontend_digest = hashlib.sha256()
     for cache_index in range(num_frames):
         cache_path = cache_dir / f"frame{cache_index:06d}.pkl.gz"
         if not cache_path.is_file():
             raise FileNotFoundError(cache_path)
+        cache_hash = _sha256(cache_path)
+        if frontend_manifest is not None:
+            expected_hash = frontend_manifest.get("cache_files_sha256", {}).get(cache_path.name)
+            if cache_hash != expected_hash:
+                raise ValueError(f"frontend manifest checksum mismatch: {cache_path.name}")
         frontend_digest.update(cache_index.to_bytes(8, "little"))
-        frontend_digest.update(bytes.fromhex(_sha256(cache_path)))
+        frontend_digest.update(bytes.fromhex(cache_hash))
     if not skip_evaluation:
         for name in ("gt_mesh", "gt_info"):
             path = Path(config.get(name, ""))
             if not path.is_file():
                 raise FileNotFoundError(path)
-    return dataset, benchmark, source_ids, frontend_digest.hexdigest()
+    return dataset, benchmark, source_ids, frontend_digest.hexdigest(), frontend_manifest
 
 
 def _runtime_config(config: dict[str, Any]) -> Oviv2RuntimeConfig:
@@ -244,6 +273,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     config_path = args.config.resolve()
     raw_config = _load_json(config_path)
     config_hash = _json_hash(raw_config)
+    frozen_algorithm_hash = algorithm_hash(raw_config)
+    if raw_config.get("algorithm_hash") not in (None, frozen_algorithm_hash):
+        raise ValueError("configured algorithm_hash does not match mapping parameters")
     config = _resolve_config_paths(raw_config)
     requested_frames = int(args.num_frames or config.get("num_frames", 200))
     output = args.output.resolve()
@@ -253,7 +285,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise FileExistsError(f"output already exists: {output}")
 
     starting_dirty_digest = _dirty_digest()
-    dataset, benchmark, source_ids, frontend_hash = _preflight(
+    dataset, benchmark, source_ids, frontend_hash, frontend_manifest = _preflight(
         config,
         requested_frames,
         args.skip_evaluation,
@@ -361,10 +393,19 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "command": [str(value) for value in sys.argv],
         "config_path": str(config_path),
         "config_hash": config_hash,
+        "algorithm_hash": frozen_algorithm_hash,
         "benchmark_manifest_path": str(Path(config["manifest"]).resolve()),
         "benchmark_manifest_hash": _sha256(Path(config["manifest"])),
         "vocabulary_hash": _json_hash(vocabulary_payload),
         "model_weights": {"frozen_frontend_cache_sha256": frontend_hash},
+        "frontend_manifest_hash": (
+            _sha256(Path(config["frontend_cache_dir"]) / "frontend_manifest.json")
+            if frontend_manifest is not None
+            else None
+        ),
+        "frontend_algorithm_hash": (
+            frontend_manifest.get("algorithm_hash") if frontend_manifest is not None else None
+        ),
         "hardware": {
             "hostname": platform.node(),
             "platform": platform.platform(),
