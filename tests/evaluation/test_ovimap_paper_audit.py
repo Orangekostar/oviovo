@@ -25,6 +25,28 @@ def _write_manifest(path: Path, payload: dict) -> dict[str, str]:
 
 def _paper_result(tmp_path: Path) -> dict:
     scenes = list(PAPER_PROTOCOL["scene_ids"])
+    released_stdout = tmp_path / "released_semantic_evaluation.stdout.txt"
+    released_stdout.write_text("mIoU\tmAcc\n0.265\t0.322\n", encoding="utf-8")
+    released_stdout_source = {
+        "path": str(released_stdout.resolve()),
+        "sha256": hashlib.sha256(released_stdout.read_bytes()).hexdigest(),
+    }
+    released_instance_json = tmp_path / "results_replica.json"
+    released_instance_json.write_text(
+        json.dumps({"all_ap": 0.085, "all_ap_50%": 0.212, "all_ap_25%": 0.345}),
+        encoding="utf-8",
+    )
+    released_instance_source = {
+        "path": str(released_instance_json.resolve()),
+        "sha256": hashlib.sha256(released_instance_json.read_bytes()).hexdigest(),
+    }
+    paper_ap_metrics = {"miou": 0.363, "ap25": 0.767, "ap50": 0.508, "ap75": 0.22}
+    paper_ap_metrics_file = tmp_path / "paper_ap_metrics.json"
+    paper_ap_metrics_file.write_text(json.dumps(paper_ap_metrics), encoding="utf-8")
+    paper_ap_metrics_source = {
+        "path": str(paper_ap_metrics_file.resolve()),
+        "sha256": hashlib.sha256(paper_ap_metrics_file.read_bytes()).hexdigest(),
+    }
     native = _write_manifest(
         tmp_path / "native_mapping_manifest.json",
         {
@@ -49,6 +71,14 @@ def _paper_result(tmp_path: Path) -> dict:
             "frame_count_per_scene": 200,
             "semantic_vocabulary": "Replica-51",
             "paper_metric_availability": {"table_3_semantic": True},
+            "output_artifacts": {
+                "semantic_vertex_metrics": {"miou": 0.265, "macc": 0.322},
+                "semantic_instance_metrics": {"apall": 0.085, "ap50": 0.212, "ap25": 0.345},
+                "files": {
+                    "semantic_stdout": released_stdout_source,
+                    "results_replica_json": released_instance_source,
+                },
+            },
         },
     )
     paper_ap = _write_manifest(
@@ -59,6 +89,8 @@ def _paper_result(tmp_path: Path) -> dict:
             "scene_ids": scenes,
             "metric_contract": PAPER_PROTOCOL["instance_metrics"],
             "metrics_present": ["miou", "ap25", "ap50", "ap75"],
+            "metrics": paper_ap_metrics,
+            "output_artifacts": {"metrics_json": paper_ap_metrics_source},
         },
     )
     return {
@@ -101,6 +133,8 @@ def test_paper_parity_passes_only_for_exact_protocol_and_replica8(tmp_path: Path
     assert audit["failures"] == []
     assert audit["aggregate_artifacts"]["feature_instance_count"] == 16
     assert audit["aggregate_artifacts"]["eligible_feature_instance_count"] == 8
+    assert audit["validated_evidence_metrics"]["semantic_miou"] == 0.265
+    assert audit["validated_evidence_metrics"]["class_agnostic_ap25"] == 0.767
 
 
 def test_paper_parity_rejects_current_mixed_protocol(tmp_path: Path) -> None:
@@ -140,6 +174,41 @@ def test_paper_parity_rejects_tampered_or_incomplete_evidence(tmp_path: Path) ->
 
     assert audit["status"] == "FAIL"
     assert any("SHA-256 mismatch" in failure for failure in audit["failures"])
+
+
+def test_paper_parity_rejects_manifest_without_validated_metric_outputs(tmp_path: Path) -> None:
+    result = _paper_result(tmp_path)
+    released_record = result["protocol_evidence"]["released_evaluation_manifest"]
+    released_path = Path(released_record["path"])
+    released = json.loads(released_path.read_text(encoding="utf-8"))
+    released.pop("output_artifacts")
+    released_path.write_text(json.dumps(released), encoding="utf-8")
+    released_record["sha256"] = hashlib.sha256(released_path.read_bytes()).hexdigest()
+
+    audit = audit_paper_parity(result, _scene_summaries())
+
+    assert audit["status"] == "FAIL"
+    assert any("validated output artifacts" in failure for failure in audit["failures"])
+
+
+def test_paper_parity_rejects_semantic_metrics_not_matching_hashed_outputs(
+    tmp_path: Path,
+) -> None:
+    result = _paper_result(tmp_path)
+    released_record = result["protocol_evidence"]["released_evaluation_manifest"]
+    released_path = Path(released_record["path"])
+    released = json.loads(released_path.read_text(encoding="utf-8"))
+    stdout_record = released["output_artifacts"]["files"]["semantic_stdout"]
+    stdout_path = Path(stdout_record["path"])
+    stdout_path.write_text("mIoU\tmAcc\n0.999\t0.999\n", encoding="utf-8")
+    stdout_record["sha256"] = hashlib.sha256(stdout_path.read_bytes()).hexdigest()
+    released_path.write_text(json.dumps(released), encoding="utf-8")
+    released_record["sha256"] = hashlib.sha256(released_path.read_bytes()).hexdigest()
+
+    audit = audit_paper_parity(result, _scene_summaries())
+
+    assert audit["status"] == "FAIL"
+    assert any("semantic stdout metrics do not match" in failure for failure in audit["failures"])
 
 
 def test_feature_summary_records_semantic_coverage_and_full_frame_boxes(tmp_path: Path) -> None:

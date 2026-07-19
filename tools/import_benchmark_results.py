@@ -9,9 +9,14 @@ import hashlib
 import json
 import math
 import os
+import sys
 import tempfile
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from src.evaluation.baselines.ovimap_paper_audit import (
     PAPER_PROTOCOL,
@@ -38,6 +43,13 @@ ALLOWED_METHODS = {
     "T4": {"OVIMAP", "CONCEPTGRAPHS", "DUALMAP", "KHRONOS"},
 }
 
+OVIMAP_REPLICA8_PAPER_METRICS = {
+    "REPLICA8_MIOU": "semantic_miou",
+    "REPLICA8_MACC": "semantic_macc",
+    "REPLICA8_AP25": "class_agnostic_ap25",
+    "REPLICA8_AP50": "class_agnostic_ap50",
+}
+
 
 def _require_file(path: Path) -> None:
     if not path.is_file():
@@ -52,7 +64,9 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _require_ovimap_paper_audit(result: Mapping[str, Any], result_path: Path) -> None:
+def _require_ovimap_paper_audit(
+    result: Mapping[str, Any], result_path: Path
+) -> Mapping[str, float]:
     audit = result.get("protocol_audit", {})
     if not isinstance(audit, Mapping):
         audit = {}
@@ -109,6 +123,7 @@ def _require_ovimap_paper_audit(result: Mapping[str, Any], result_path: Path) ->
     recomputed = audit_paper_parity(result, recomputed_summaries)
     if recomputed["status"] != "PASS":
         raise ImportFailure("OVI-MAP result does not satisfy the paper protocol audit")
+    return recomputed["validated_evidence_metrics"]
 
 
 def _read_registry(path: Path) -> tuple[list[str], list[dict[str, str]]]:
@@ -216,13 +231,36 @@ def import_results(
         bindings = result.get("token_bindings")
         if not isinstance(bindings, list) or not bindings:
             raise ImportFailure("VERIFIED result must provide token_bindings")
-        if result_method == "OVIMAP" and any(
-            (row := by_token.get(str(binding.get("token", "")))) is not None
-            and row.get("table") == "T1"
-            and row.get("method") == "OVIMAP"
+        ovimap_replica8_bindings = [
+            binding
             for binding in bindings
-        ):
-            _require_ovimap_paper_audit(result, result_path)
+            if (
+                (row := by_token.get(str(binding.get("token", "")))) is not None
+                and row.get("table") == "T1"
+                and row.get("method") == "OVIMAP"
+                and row.get("dataset") == "Replica"
+                and row.get("split") == "replica_8_compat"
+            )
+        ]
+        if result_method == "OVIMAP" and ovimap_replica8_bindings:
+            evidence_metrics = _require_ovimap_paper_audit(result, result_path)
+            for binding in ovimap_replica8_bindings:
+                row = by_token[str(binding.get("token", ""))]
+                evidence_name = OVIMAP_REPLICA8_PAPER_METRICS.get(row.get("metric", ""))
+                if evidence_name is None:
+                    raise ImportFailure(
+                        f"OVI-MAP {row.get('metric')} is not defined by the paper evaluators"
+                    )
+                observed = _resolve_json_pointer(result, str(binding.get("json_pointer", "")))
+                expected = evidence_metrics[evidence_name]
+                if (
+                    isinstance(observed, bool)
+                    or not isinstance(observed, (int, float))
+                    or not math.isclose(float(observed), expected, rel_tol=1e-12, abs_tol=1e-12)
+                ):
+                    raise ImportFailure(
+                        f"OVI-MAP paper evaluator metric mismatch for {row.get('metric')}"
+                    )
 
         for binding in bindings:
             token = str(binding.get("token", ""))

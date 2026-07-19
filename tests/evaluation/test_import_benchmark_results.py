@@ -4,6 +4,8 @@ import csv
 import hashlib
 import json
 import pickle
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -78,6 +80,34 @@ def _write_registry(path: Path) -> None:
             "dataset": "Replica",
             "split": "replica_8_compat",
             "metric": "REPLICA8_MIOU",
+            "direction": "higher",
+            "precision": "3",
+            "source_json": "",
+            "json_pointer": "",
+            "status": "UNFILLED",
+            "note": "Pending benchmark run.",
+        },
+        {
+            "token": "T1_OVIMAP_SCANNET5_MIOU",
+            "table": "T1",
+            "method": "OVIMAP",
+            "dataset": "ScanNet200",
+            "split": "scannet200_5_heldout",
+            "metric": "SCANNET5_MIOU",
+            "direction": "higher",
+            "precision": "3",
+            "source_json": "",
+            "json_pointer": "",
+            "status": "UNFILLED",
+            "note": "Pending benchmark run.",
+        },
+        {
+            "token": "T1_OVIMAP_REPLICA8_FMIOU",
+            "table": "T1",
+            "method": "OVIMAP",
+            "dataset": "Replica",
+            "split": "replica_8_compat",
+            "metric": "REPLICA8_FMIOU",
             "direction": "higher",
             "precision": "3",
             "source_json": "",
@@ -261,6 +291,28 @@ def _attach_ovimap_audit(
 ) -> None:
     payload = json.loads(result.read_text(encoding="utf-8"))
     scenes = list(PAPER_PROTOCOL["scene_ids"])
+    released_stdout = audit.parent / "released_semantic_evaluation.stdout.txt"
+    released_stdout.write_text("mIoU\tmAcc\n0.2764\t0.322\n", encoding="utf-8")
+    released_stdout_source = {
+        "path": str(released_stdout.resolve()),
+        "sha256": hashlib.sha256(released_stdout.read_bytes()).hexdigest(),
+    }
+    released_instance_json = audit.parent / "results_replica.json"
+    released_instance_json.write_text(
+        json.dumps({"all_ap": 0.085, "all_ap_50%": 0.212, "all_ap_25%": 0.345}),
+        encoding="utf-8",
+    )
+    released_instance_source = {
+        "path": str(released_instance_json.resolve()),
+        "sha256": hashlib.sha256(released_instance_json.read_bytes()).hexdigest(),
+    }
+    paper_ap_metrics = {"miou": 0.363, "ap25": 0.767, "ap50": 0.508, "ap75": 0.22}
+    paper_ap_output = audit.parent / "paper_ap_metrics.json"
+    paper_ap_output.write_text(json.dumps(paper_ap_metrics), encoding="utf-8")
+    paper_ap_output_source = {
+        "path": str(paper_ap_output.resolve()),
+        "sha256": hashlib.sha256(paper_ap_output.read_bytes()).hexdigest(),
+    }
     evidence_payloads = {
         "native_mapping_manifest": {
             "status": "COMPLETE_NATIVE_MAPPING",
@@ -281,6 +333,14 @@ def _attach_ovimap_audit(
             "frame_count_per_scene": 200,
             "semantic_vocabulary": "Replica-51",
             "paper_metric_availability": {"table_3_semantic": True},
+            "output_artifacts": {
+                "semantic_vertex_metrics": {"miou": 0.2764, "macc": 0.322},
+                "semantic_instance_metrics": {"apall": 0.085, "ap50": 0.212, "ap25": 0.345},
+                "files": {
+                    "semantic_stdout": released_stdout_source,
+                    "results_replica_json": released_instance_source,
+                },
+            },
         },
         "class_agnostic_ap_manifest": {
             "status": "COMPLETE_PAPER_AP_EVALUATION",
@@ -288,6 +348,8 @@ def _attach_ovimap_audit(
             "scene_ids": scenes,
             "metric_contract": PAPER_PROTOCOL["instance_metrics"],
             "metrics_present": ["miou", "ap25", "ap50", "ap75"],
+            "metrics": paper_ap_metrics,
+            "output_artifacts": {"metrics_json": paper_ap_output_source},
         },
     }
     protocol_evidence = {}
@@ -427,6 +489,81 @@ def test_import_recomputes_ovimap_protocol_instead_of_trusting_sidecar_pass(
         )
 
 
+def test_import_rejects_ovimap_metric_that_differs_from_evaluator_manifest(
+    tmp_path: Path,
+) -> None:
+    registry = tmp_path / "benchmark_tokens.tsv"
+    markdown, latex = _templates(tmp_path)
+    _write_registry(registry)
+    audit = tmp_path / "paper_parity_audit.json"
+    result = tmp_path / "ovimap.json"
+    _write_result(result, token="T1_OVIMAP_REPLICA8_MIOU", method="OVIMAP")
+    _attach_ovimap_audit(result, audit)
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["metrics"]["semantic"]["miou"] = 0.9
+    result.write_text(json.dumps(payload), encoding="utf-8")
+    audit_payload = json.loads(audit.read_text(encoding="utf-8"))
+    audit_payload["result_source"]["sha256"] = hashlib.sha256(result.read_bytes()).hexdigest()
+    audit.write_text(json.dumps(audit_payload), encoding="utf-8")
+
+    with pytest.raises(ImportFailure, match="metric mismatch"):
+        import_results(
+            registry,
+            [result],
+            markdown,
+            latex,
+            tmp_path / "out.md",
+            tmp_path / "out.tex",
+        )
+
+
+def test_import_rejects_replica8_metrics_not_defined_by_paper_evaluators(
+    tmp_path: Path,
+) -> None:
+    registry = tmp_path / "benchmark_tokens.tsv"
+    markdown, latex = _templates(tmp_path)
+    _write_registry(registry)
+    audit = tmp_path / "paper_parity_audit.json"
+    result = tmp_path / "ovimap.json"
+    _write_result(result, token="T1_OVIMAP_REPLICA8_FMIOU", method="OVIMAP")
+    _attach_ovimap_audit(result, audit)
+
+    with pytest.raises(ImportFailure, match="not defined by the paper evaluators"):
+        import_results(
+            registry,
+            [result],
+            markdown,
+            latex,
+            tmp_path / "out.md",
+            tmp_path / "out.tex",
+        )
+
+
+def test_import_does_not_apply_replica8_paper_gate_to_scannet(tmp_path: Path) -> None:
+    registry = tmp_path / "benchmark_tokens.tsv"
+    markdown, latex = _templates(tmp_path)
+    _write_registry(registry)
+    result = tmp_path / "ovimap_scannet.json"
+    _write_result(result, token="T1_OVIMAP_SCANNET5_MIOU", method="OVIMAP")
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    payload["dataset"] = {"name": "ScanNet200", "splits": ["scannet200_5_heldout"]}
+    result.write_text(json.dumps(payload), encoding="utf-8")
+
+    import_results(
+        registry,
+        [result],
+        markdown,
+        latex,
+        tmp_path / "out.md",
+        tmp_path / "out.tex",
+    )
+
+    with registry.open(newline="", encoding="utf-8") as handle:
+        registry_rows = list(csv.DictReader(handle, delimiter="\t"))
+    scannet = next(row for row in registry_rows if row["token"] == "T1_OVIMAP_SCANNET5_MIOU")
+    assert scannet["status"] == "VERIFIED"
+
+
 def test_import_rejects_registry_token_outside_main_table_scope(tmp_path) -> None:
     registry = tmp_path / "benchmark_tokens.tsv"
     markdown, latex = _templates(tmp_path)
@@ -441,3 +578,17 @@ def test_import_rejects_registry_token_outside_main_table_scope(tmp_path) -> Non
 
     with pytest.raises(ImportFailure, match="outside"):
         import_results(registry, [result], markdown, latex, tmp_path / "out.md", tmp_path / "out.tex")
+
+
+def test_importer_cli_starts_outside_repository(tmp_path: Path) -> None:
+    importer = Path(__file__).resolve().parents[2] / "tools" / "import_benchmark_results.py"
+
+    completed = subprocess.run(
+        [sys.executable, str(importer), "--help"],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr

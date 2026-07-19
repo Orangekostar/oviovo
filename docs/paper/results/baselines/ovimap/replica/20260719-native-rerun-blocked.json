@@ -34,7 +34,9 @@
     "released_replica51_run": {
       "path": "/home/ww/oviovo_baseline_runs/20260719_ovimap_paper_parity/released_eval_v3/run_manifest.json",
       "sha256": "b5dde0f87e984be9811d864f4a58dd276bceed6e6c2803738c32930ccfcd5bf5",
-      "status": "COMPLETE_RELEASED_EVALUATION"
+      "status": "COMPLETE_RELEASED_EVALUATION",
+      "paper_parity_eligible": false,
+      "reason": "This run predates the hash-bound output_artifacts manifest and has no class-agnostic AP evaluator output."
     },
     "released_instance_stdout": {
       "path": "/home/ww/oviovo_baseline_runs/20260719_ovimap_paper_parity/released_eval_v3/logs/released_instance_diagnostics.stdout.txt",

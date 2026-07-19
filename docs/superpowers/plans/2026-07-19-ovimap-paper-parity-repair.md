@@ -4,7 +4,7 @@
 
 **Goal:** Prevent the current non-paper-equivalent OVI-MAP run from populating Table 1, add an executable CVPR 2026 protocol audit, and publish new OVI-MAP metrics only after the Replica-8 artifacts pass the paper protocol.
 
-**Architecture:** Keep the existing neutral evaluator and the OVI-MAP paper evaluator as separate named contracts. A paper-parity audit reads the result metadata plus the eight native semantic-feature files, records coverage diagnostics, and emits a machine-readable PASS/FAIL report. PASS additionally requires hash-bound native-mapping, released-semantic, and class-agnostic-AP manifests; the released precision/recall evaluator alone cannot satisfy the AP requirement. The benchmark importer re-runs the audit against the exact result hash before accepting OVI-MAP Table 1 bindings; failed historical runs remain immutable evidence and their registry rows are quarantined.
+**Architecture:** Keep the existing neutral evaluator and the OVI-MAP paper evaluator as separate named contracts. A paper-parity audit reads the result metadata plus the eight native semantic-feature files, records coverage diagnostics, and emits a machine-readable PASS/FAIL report. PASS additionally requires hash-bound native-mapping, released-semantic, and class-agnostic-AP manifests with validated finite outputs; the released precision/recall evaluator alone cannot satisfy the AP requirement. The benchmark importer re-runs the audit against the exact result hash and compares each Replica-8 paper metric to its evaluator output. Replica-7 and ScanNet use separate protocol gates, while f-mIoU/F5 remain unfilled because the paper evaluators do not define them. Failed historical runs remain immutable evidence and their registry rows are quarantined.
 
 **Tech Stack:** Python 3.10, NumPy, pickle, JSON, pytest, existing benchmark result importer, released OVI-MAP evaluator, Replica-8.
 
@@ -157,9 +157,11 @@ if audit_document.get("result_source", {}).get("sha256") != _sha256(result_path)
 recomputed = audit_paper_parity(result, audit_document.get("scene_artifacts", {}))
 if recomputed["status"] != "PASS":
     raise ImportFailure("OVI-MAP result does not satisfy the paper protocol audit")
+# Compare Replica-8 mIoU/mAcc/AP25/AP50 token values to the validated
+# released-semantic and class-agnostic-AP manifest metrics.
 ```
 
-Keep T4 hardware-only OVI-MAP results outside this metric gate.
+Keep T4 hardware-only, Replica-7, and ScanNet OVI-MAP results outside this Replica-8 metric gate. Reject Replica-8 f-mIoU/F5 until a separately named neutral-evaluation gate is implemented.
 
 - [ ] **Step 4: Run importer tests and verify GREEN**
 
@@ -311,7 +313,7 @@ Run all eight scenes, execute Task 4's evaluator, and generate a new parity audi
 
 - [ ] **Step 5: Restore registry bindings only on PASS**
 
-Finalize a new result that points to a `protocol_audit.status=PASS` sidecar. Generate the audit after adding that pointer so `result_source.sha256` binds the exact imported JSON. PASS requires a native manifest with exact frame provenance and Replica-51/SigLIP/GT hashes, a validated released semantic manifest, and a separate evaluator manifest with the paper's class-agnostic mIoU/AP25/AP50/AP75 contract. Import it through the guarded importer, regenerate tables, and run the full benchmark package tests. If parity remains unresolved, keep OVI-MAP T1 cells unfilled and report the exact failing invariant.
+Finalize a new result that points to a `protocol_audit.status=PASS` sidecar. Generate the audit after adding that pointer so `result_source.sha256` binds the exact imported JSON. PASS requires a native manifest with exact frame provenance and Replica-51/SigLIP/GT hashes, a validated released semantic manifest, and a separate evaluator manifest with the paper's class-agnostic mIoU/AP25/AP50/AP75 contract. The importer must match mIoU/mAcc/AP25/AP50 values to those manifests exactly; paper-undefined f-mIoU/F5 remain unfilled. Import it through the guarded importer, regenerate tables, and run the full benchmark package tests. If parity remains unresolved, keep OVI-MAP T1 cells unfilled and report the exact failing invariant.
 
 ## Self-Review
 
