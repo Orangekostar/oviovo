@@ -163,6 +163,8 @@ def test_cli_writes_complete_deterministic_synthetic_evaluation(tmp_path: Path) 
         "gt_aligned_semantic_ids.npy",
         "gt_aligned_instance_ids.npy",
         "oviv2_instance_mesh.ply",
+        "semantic_map_gt.ply",
+        "instance_map_gt.ply",
     }
     metrics = json.loads((first / "metrics.json").read_text())
     for name in ("miou", "macc", "f_miou", "ap25", "ap50", "f5"):
@@ -175,6 +177,17 @@ def test_cli_writes_complete_deterministic_synthetic_evaluation(tmp_path: Path) 
         np.load(first / "gt_aligned_semantic_ids.npy"),
         np.load(second / "gt_aligned_semantic_ids.npy"),
     )
+    semantic_audit = PlyData.read(first / "semantic_map_gt.ply")
+    instance_audit = PlyData.read(first / "instance_map_gt.ply")
+    np.testing.assert_array_equal(
+        semantic_audit["vertex"]["semantic_id"],
+        np.load(first / "gt_aligned_semantic_ids.npy"),
+    )
+    np.testing.assert_array_equal(
+        instance_audit["vertex"]["entity_id"],
+        np.load(first / "gt_aligned_instance_ids.npy"),
+    )
+    assert len(semantic_audit["face"]) == len(PlyData.read(paths["gt_mesh"])["face"])
     assert (first / "metrics.json").read_bytes() == (second / "metrics.json").read_bytes()
 
 

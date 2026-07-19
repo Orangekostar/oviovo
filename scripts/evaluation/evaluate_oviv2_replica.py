@@ -15,7 +15,7 @@ import uuid
 from typing import Any
 
 import numpy as np
-from plyfile import PlyData
+from plyfile import PlyData, PlyElement
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
@@ -196,6 +196,50 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
         stream.write("\n")
 
 
+def _write_gt_aligned_audit_ply(
+    path: Path,
+    source_mesh_path: Path,
+    ids: np.ndarray,
+    *,
+    field_name: str,
+) -> None:
+    source = PlyData.read(source_mesh_path)
+    vertices = source["vertex"]
+    values = np.asarray(ids, dtype=np.int64)
+    if values.shape != (len(vertices),):
+        raise ValueError("GT-aligned audit IDs must match GT vertex count")
+    vertex_data = np.empty(
+        len(vertices),
+        dtype=[
+            ("x", "f4"),
+            ("y", "f4"),
+            ("z", "f4"),
+            ("red", "u1"),
+            ("green", "u1"),
+            ("blue", "u1"),
+            (field_name, "i4"),
+        ],
+    )
+    for coordinate in ("x", "y", "z"):
+        vertex_data[coordinate] = vertices[coordinate]
+    colors = np.column_stack(
+        (
+            (values * 53 + 31) % 256,
+            (values * 97 + 67) % 256,
+            (values * 193 + 101) % 256,
+        )
+    ).astype(np.uint8)
+    colors[values == 0] = 64
+    vertex_data["red"] = colors[:, 0]
+    vertex_data["green"] = colors[:, 1]
+    vertex_data["blue"] = colors[:, 2]
+    vertex_data[field_name] = values.astype(np.int32)
+    elements = [PlyElement.describe(vertex_data, "vertex")]
+    if "face" in source:
+        elements.append(PlyElement.describe(source["face"].data.copy(), "face"))
+    PlyData(elements, text=False).write(path)
+
+
 def _publish_output(target: Path, writer) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
     if target.exists() and not target.is_dir():
@@ -291,6 +335,18 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         np.save(directory / "gt_aligned_semantic_ids.npy", projected.semantic_ids)
         np.save(directory / "gt_aligned_instance_ids.npy", projected.entity_ids)
         write_labeled_mesh(directory / "oviv2_instance_mesh.ply", mesh)
+        _write_gt_aligned_audit_ply(
+            directory / "semantic_map_gt.ply",
+            args.gt_mesh,
+            projected.semantic_ids,
+            field_name="semantic_id",
+        )
+        _write_gt_aligned_audit_ply(
+            directory / "instance_map_gt.ply",
+            args.gt_mesh,
+            projected.entity_ids,
+            field_name="entity_id",
+        )
 
     _publish_output(args.output, write_output)
     return metrics
