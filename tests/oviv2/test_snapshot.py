@@ -3,7 +3,10 @@ from __future__ import annotations
 from dataclasses import replace
 import hashlib
 import json
+import os
 from pathlib import Path
+import threading
+import time
 
 import numpy as np
 import pytest
@@ -275,3 +278,118 @@ def test_snapshot_overwrite_is_complete_and_leaves_no_temporary_directory(tmp_pa
 
     assert VoxelMapSnapshot.load(target).metadata == updated
     assert not list(tmp_path.glob(".snapshot.*"))
+
+
+def test_snapshot_exchange_failure_preserves_valid_old_target(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+    VoxelMapSnapshot.commit(target, metadata, geometry, evidence, ownership)
+    updated = replace(metadata, frame_id=20, revision=2)
+
+    def fail_exchange(_cls, _left: Path, _right: Path) -> None:
+        raise OSError("injected exchange failure")
+
+    monkeypatch.setattr(
+        VoxelMapSnapshot,
+        "_exchange_directories",
+        classmethod(fail_exchange),
+        raising=False,
+    )
+
+    with pytest.raises(OSError, match="injected"):
+        VoxelMapSnapshot.commit(target, updated, geometry, evidence, ownership)
+
+    assert target.is_dir()
+    assert VoxelMapSnapshot.load(target).metadata == metadata
+
+
+def test_snapshot_overwrite_never_exposes_missing_or_mixed_target(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+    VoxelMapSnapshot.commit(target, metadata, geometry, evidence, ownership)
+    updated = replace(metadata, frame_id=20, revision=2)
+    original_replace = os.replace
+
+    def widen_legacy_gap(source, destination) -> None:
+        original_replace(source, destination)
+        if Path(source) == target:
+            time.sleep(0.05)
+
+    monkeypatch.setattr(os, "replace", widen_legacy_gap)
+    stop = threading.Event()
+    started = threading.Event()
+    failures: list[BaseException | str] = []
+    revisions: list[int] = []
+
+    def read_repeatedly() -> None:
+        started.set()
+        while not stop.is_set():
+            if not target.is_dir():
+                failures.append("target missing")
+                continue
+            try:
+                revisions.append(VoxelMapSnapshot.load(target).metadata.revision)
+            except BaseException as exc:
+                failures.append(exc)
+
+    reader = threading.Thread(target=read_repeatedly, daemon=True)
+    reader.start()
+    assert started.wait(timeout=1.0)
+    try:
+        VoxelMapSnapshot.commit(target, updated, geometry, evidence, ownership)
+    finally:
+        stop.set()
+        reader.join(timeout=5.0)
+
+    assert not reader.is_alive()
+    assert failures == []
+    assert revisions
+    assert set(revisions).issubset({1, 2})
+    assert VoxelMapSnapshot.load(target).metadata == updated
+
+
+def test_snapshot_load_retries_after_concurrent_directory_exchange(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+    alternate = tmp_path / "alternate"
+    holding = tmp_path / "holding"
+    VoxelMapSnapshot.commit(target, metadata, geometry, evidence, ownership)
+    VoxelMapSnapshot.commit(
+        alternate,
+        replace(metadata, frame_id=20, revision=2),
+        geometry,
+        evidence,
+        ownership,
+    )
+    original_sha256 = VoxelMapSnapshot._sha256
+    calls = 0
+
+    def exchange_after_first_hash(path: Path) -> str:
+        nonlocal calls
+        digest = original_sha256(path)
+        calls += 1
+        if calls == 1:
+            os.replace(target, holding)
+            os.replace(alternate, target)
+            os.replace(holding, alternate)
+        return digest
+
+    monkeypatch.setattr(
+        VoxelMapSnapshot,
+        "_sha256",
+        staticmethod(exchange_after_first_hash),
+    )
+
+    restored = VoxelMapSnapshot.load(target)
+
+    assert restored.metadata.revision in {1, 2}
+    assert restored.path == target

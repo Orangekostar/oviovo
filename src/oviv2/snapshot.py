@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+import ctypes
 from dataclasses import asdict, dataclass
+import errno
 import hashlib
 import json
 import os
 from pathlib import Path
 import shutil
+import stat
 import tempfile
-import uuid
 
 import numpy as np
 
@@ -15,6 +17,10 @@ from src.oviv2.evidence import EvidenceConfig, SparseEvidenceStore
 from src.oviv2.entities import EntityRegistry
 from src.oviv2.geometry import SparseTsdfVolume, TsdfConfig
 from src.oviv2.ownership import ReversibleOwnershipStore
+
+
+class _ConcurrentSnapshotChange(RuntimeError):
+    pass
 
 
 @dataclass(frozen=True)
@@ -140,6 +146,48 @@ class VoxelMapSnapshot:
         return cls._DATA_FILES_V1 if schema_version == 1 else cls._DATA_FILES_V2
 
     @classmethod
+    def _exchange_directories(cls, left: Path, right: Path) -> None:
+        libc = ctypes.CDLL(None, use_errno=True)
+        try:
+            renameat2 = libc.renameat2
+        except AttributeError as exc:
+            raise OSError(
+                errno.ENOSYS,
+                "renameat2 is unavailable; atomic snapshot overwrite is unsupported",
+            ) from exc
+        renameat2.argtypes = (
+            ctypes.c_int,
+            ctypes.c_char_p,
+            ctypes.c_int,
+            ctypes.c_char_p,
+            ctypes.c_uint,
+        )
+        renameat2.restype = ctypes.c_int
+        ctypes.set_errno(0)
+        result = renameat2(
+            -100,
+            os.fsencode(left),
+            -100,
+            os.fsencode(right),
+            2,
+        )
+        if result != 0:
+            error_number = ctypes.get_errno()
+            raise OSError(
+                error_number,
+                f"atomic directory exchange failed: {os.strerror(error_number)}",
+                f"{left} <-> {right}",
+            )
+
+    @staticmethod
+    def _fsync_directory(path: Path) -> None:
+        directory_fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(directory_fd)
+        finally:
+            os.close(directory_fd)
+
+    @classmethod
     def commit(
         cls,
         target_dir: str | Path,
@@ -161,7 +209,6 @@ class VoxelMapSnapshot:
         temporary = Path(
             tempfile.mkdtemp(prefix=f".{target.name}.tmp-", dir=target.parent)
         )
-        backup: Path | None = None
         try:
             cls._write_json(temporary / "metadata.json", asdict(metadata))
             geometry.save(temporary / "geometry.npz")
@@ -175,49 +222,87 @@ class VoxelMapSnapshot:
                 for name in data_files
             }
             cls._write_json(temporary / "checksums.json", checksums)
-            directory_fd = os.open(temporary, os.O_RDONLY | os.O_DIRECTORY)
-            try:
-                os.fsync(directory_fd)
-            finally:
-                os.close(directory_fd)
+            cls._fsync_directory(temporary)
             cls.load(temporary)
 
             if target.exists():
-                backup = target.parent / f".{target.name}.backup-{uuid.uuid4().hex}"
-                os.replace(target, backup)
-            try:
+                cls._exchange_directories(target, temporary)
+            else:
                 os.replace(temporary, target)
-            except BaseException:
-                if backup is not None and backup.exists() and not target.exists():
-                    os.replace(backup, target)
-                raise
-            if backup is not None:
-                shutil.rmtree(backup)
-                backup = None
-            parent_fd = os.open(target.parent, os.O_RDONLY | os.O_DIRECTORY)
-            try:
-                os.fsync(parent_fd)
-            finally:
-                os.close(parent_fd)
+            cls._fsync_directory(target.parent)
             return cls.load(target)
         finally:
             if temporary.exists():
                 shutil.rmtree(temporary)
-            if backup is not None and backup.exists():
-                shutil.rmtree(backup)
 
     @classmethod
     def load(cls, snapshot_dir: str | Path) -> "VoxelMapSnapshot":
         source = Path(snapshot_dir)
         if not source.is_dir():
             raise FileNotFoundError(source)
+        last_concurrent_change: _ConcurrentSnapshotChange | None = None
+        for _ in range(3):
+            try:
+                return cls._load_once(source)
+            except _ConcurrentSnapshotChange as exc:
+                last_concurrent_change = exc
+        raise ValueError("snapshot changed concurrently during load") from last_concurrent_change
+
+    @staticmethod
+    def _directory_identity(source: Path) -> tuple[int, int]:
+        source_stat = source.stat()
+        if not stat.S_ISDIR(source_stat.st_mode):
+            raise FileNotFoundError(source)
+        return source_stat.st_dev, source_stat.st_ino
+
+    @classmethod
+    def _source_changed(
+        cls,
+        source: Path,
+        identity: tuple[int, int],
+        manifest_bytes: bytes | None,
+    ) -> bool:
+        try:
+            if cls._directory_identity(source) != identity:
+                return True
+            if manifest_bytes is not None:
+                return (source / "checksums.json").read_bytes() != manifest_bytes
+        except OSError:
+            return True
+        return False
+
+    @classmethod
+    def _checksums_match(cls, source: Path, checksums: dict[str, str]) -> bool:
+        try:
+            return all(
+                (source / name).is_file()
+                and cls._sha256(source / name) == expected
+                for name, expected in sorted(checksums.items())
+            )
+        except OSError:
+            return False
+
+    @classmethod
+    def _load_once(cls, source: Path) -> "VoxelMapSnapshot":
+        try:
+            identity = cls._directory_identity(source)
+        except OSError as exc:
+            raise _ConcurrentSnapshotChange("snapshot directory changed") from exc
         checksums_path = source / "checksums.json"
         if not checksums_path.is_file():
+            if cls._source_changed(source, identity, None):
+                raise _ConcurrentSnapshotChange("snapshot directory changed")
             raise ValueError("snapshot is missing checksums.json")
         try:
-            with checksums_path.open("r", encoding="utf-8") as stream:
-                checksums = json.load(stream)
+            manifest_bytes = checksums_path.read_bytes()
+            checksums = json.loads(manifest_bytes.decode("utf-8"))
+        except OSError as exc:
+            raise _ConcurrentSnapshotChange("snapshot checksum manifest changed") from exc
         except (TypeError, ValueError, json.JSONDecodeError) as exc:
+            if cls._source_changed(source, identity, None):
+                raise _ConcurrentSnapshotChange(
+                    "snapshot checksum manifest changed"
+                ) from exc
             raise ValueError(f"invalid snapshot checksum manifest: {exc}") from exc
         if not isinstance(checksums, dict):
             raise ValueError("snapshot checksum manifest must be an object")
@@ -229,7 +314,16 @@ class VoxelMapSnapshot:
             raise ValueError("snapshot checksum manifest has unexpected files")
         for name in sorted(checksum_files):
             data_path = source / name
-            if not data_path.is_file() or cls._sha256(data_path) != checksums[name]:
+            try:
+                checksum_matches = (
+                    data_path.is_file()
+                    and cls._sha256(data_path) == checksums[name]
+                )
+            except OSError:
+                checksum_matches = False
+            if not checksum_matches:
+                if cls._source_changed(source, identity, manifest_bytes):
+                    raise _ConcurrentSnapshotChange("snapshot directory changed")
                 raise ValueError(f"snapshot checksum mismatch for {name}")
 
         try:
@@ -237,37 +331,59 @@ class VoxelMapSnapshot:
                 metadata_payload = json.load(stream)
             metadata = VoxelSnapshotMetadata(**metadata_payload)
         except (TypeError, ValueError, json.JSONDecodeError) as exc:
+            if cls._source_changed(source, identity, manifest_bytes) or not cls._checksums_match(
+                source, checksums
+            ):
+                raise _ConcurrentSnapshotChange(
+                    "snapshot data changed during load"
+                ) from exc
             raise ValueError(f"invalid snapshot metadata: {exc}") from exc
         data_files = cls._data_files(metadata.schema_version)
         if checksum_files != set(data_files):
             raise ValueError("snapshot schema and checksum files do not match")
-        physical_files = {path.name for path in source.iterdir()}
+        try:
+            physical_files = {path.name for path in source.iterdir()}
+        except OSError as exc:
+            raise _ConcurrentSnapshotChange("snapshot directory changed") from exc
         if physical_files != {*data_files, "checksums.json"}:
             raise ValueError("snapshot physical files do not match schema")
 
-        tsdf_config = TsdfConfig(
-            voxel_size_m=metadata.voxel_size_m,
-            block_resolution=metadata.block_resolution,
-        )
-        geometry = SparseTsdfVolume.load(source / "geometry.npz", tsdf_config)
-        with np.load(source / "evidence.npz", allow_pickle=False) as payload:
-            evidence_config = EvidenceConfig(
-                block_resolution=int(payload["block_resolution"][0]),
-                semantic_top_k=int(payload["semantic_top_k"][0]),
-                entity_top_k=int(payload["entity_top_k"][0]),
+        try:
+            tsdf_config = TsdfConfig(
+                voxel_size_m=metadata.voxel_size_m,
+                block_resolution=metadata.block_resolution,
             )
-        evidence = SparseEvidenceStore.load(source / "evidence.npz", evidence_config)
-        ownership = ReversibleOwnershipStore.load(
-            source / "ownership.npz",
-            block_resolution=metadata.block_resolution,
-        )
-        registry = (
-            EntityRegistry.load(source / "entities.jsonl")
-            if metadata.schema_version == 2
-            else None
-        )
-        cls._validate_components(metadata, geometry, evidence, ownership, registry)
-        return cls(
+            geometry = SparseTsdfVolume.load(source / "geometry.npz", tsdf_config)
+            with np.load(source / "evidence.npz", allow_pickle=False) as payload:
+                evidence_config = EvidenceConfig(
+                    block_resolution=int(payload["block_resolution"][0]),
+                    semantic_top_k=int(payload["semantic_top_k"][0]),
+                    entity_top_k=int(payload["entity_top_k"][0]),
+                )
+            evidence = SparseEvidenceStore.load(
+                source / "evidence.npz", evidence_config
+            )
+            ownership = ReversibleOwnershipStore.load(
+                source / "ownership.npz",
+                block_resolution=metadata.block_resolution,
+            )
+            registry = (
+                EntityRegistry.load(source / "entities.jsonl")
+                if metadata.schema_version == 2
+                else None
+            )
+            cls._validate_components(
+                metadata, geometry, evidence, ownership, registry
+            )
+        except Exception as exc:
+            if cls._source_changed(source, identity, manifest_bytes) or not cls._checksums_match(
+                source, checksums
+            ):
+                raise _ConcurrentSnapshotChange(
+                    "snapshot data changed during load"
+                ) from exc
+            raise
+        result = cls(
             source,
             metadata,
             geometry,
@@ -276,3 +392,8 @@ class VoxelMapSnapshot:
             dict(checksums),
             registry,
         )
+        if not cls._checksums_match(source, checksums):
+            raise _ConcurrentSnapshotChange("snapshot data changed during load")
+        if cls._source_changed(source, identity, manifest_bytes):
+            raise _ConcurrentSnapshotChange("snapshot directory changed during load")
+        return result
