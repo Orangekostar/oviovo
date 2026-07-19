@@ -35,7 +35,8 @@ PROVENANCE_HASH_FIELDS = (
 EVALUATION_FILES = (
     "metrics.json",
     "per_class_semantic.json",
-    "per_class_instance_ap.json",
+    "class_agnostic_instance_ap.json",
+    "semantic_class_instance_ap.json",
     "gt_aligned_semantic_ids.npy",
     "gt_aligned_instance_ids.npy",
     "oviv2_instance_mesh.ply",

@@ -94,7 +94,8 @@ def test_repeat_evaluation_requires_all_files_to_be_byte_identical(tmp_path: Pat
     names = (
         "metrics.json",
         "per_class_semantic.json",
-        "per_class_instance_ap.json",
+        "class_agnostic_instance_ap.json",
+        "semantic_class_instance_ap.json",
         "gt_aligned_semantic_ids.npy",
         "gt_aligned_instance_ids.npy",
         "oviv2_instance_mesh.ply",
