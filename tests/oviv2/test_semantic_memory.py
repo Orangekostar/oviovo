@@ -140,6 +140,28 @@ def test_prototype_bank_keeps_distinct_hypotheses_and_merges_similar_views() -> 
     assert np.linalg.norm(bank.prototypes[0].vector) == pytest.approx(1.0)
 
 
+@pytest.mark.parametrize("residual", [0.0, 1e-16], ids=("exact", "near-zero"))
+def test_cancelling_prototype_merge_keeps_independent_hypotheses(residual: float) -> None:
+    bank = FeaturePrototypeBank(max_prototypes=2, merge_cosine=-1.0)
+    bank = bank.update((1.0, 0.0), "clip:a", quality=1.0)
+
+    updated = bank.update((-1.0, residual), "clip:a", quality=1.0)
+
+    assert len(updated.prototypes) == 2
+    assert [item.support for item in updated.prototypes] == pytest.approx([1.0, 1.0])
+
+
+def test_cancelling_prototype_merge_respects_single_slot_replacement_rule() -> None:
+    bank = FeaturePrototypeBank(max_prototypes=1, merge_cosine=-1.0)
+    bank = bank.update((1.0, 0.0), "clip:a", quality=1.0)
+
+    updated = bank.update((-1.0, 0.0), "clip:a", quality=1.0)
+
+    assert updated is bank
+    assert len(updated.prototypes) == 1
+    assert updated.prototypes[0].vector == pytest.approx((1.0, 0.0))
+
+
 def test_prototype_bank_keeps_model_and_dimension_compatibility_domains_separate() -> None:
     bank = FeaturePrototypeBank(max_prototypes=3)
     bank = bank.update((1.0, 0.0), "clip:a", 1.0)

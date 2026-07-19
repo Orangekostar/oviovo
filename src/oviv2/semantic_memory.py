@@ -256,23 +256,33 @@ class FeaturePrototypeBank:
         else:
             best_cosine, best_index = -np.inf, -1
 
-        if best_cosine >= self.merge_cosine:
+        should_merge = best_cosine >= self.merge_cosine
+        if should_merge:
             previous = values[best_index]
-            support = previous.support + quality
-            if not np.isfinite(support):
-                raise ValueError("merged prototype support must be finite")
             scale = max(previous.support, quality)
+            previous_weight = previous.support / scale
+            incoming_weight = quality / scale
             merged = (
-                np.asarray(previous.vector, dtype=np.float64) * (previous.support / scale)
-                + np.asarray(vector, dtype=np.float64) * (quality / scale)
+                np.asarray(previous.vector, dtype=np.float64) * previous_weight
+                + np.asarray(vector, dtype=np.float64) * incoming_weight
             )
-            values[best_index] = FeaturePrototype(
-                vector=_unit_tuple(merged),
-                model_id=model_id,
-                support=support,
-                observation_count=previous.observation_count + 1,
+            cancellation_tolerance = (
+                np.finfo(np.float64).eps
+                * np.sqrt(len(vector))
+                * (previous_weight + incoming_weight)
             )
-        else:
+            should_merge = float(np.linalg.norm(merged)) > cancellation_tolerance
+            if should_merge:
+                support = previous.support + quality
+                if not np.isfinite(support):
+                    raise ValueError("merged prototype support must be finite")
+                values[best_index] = FeaturePrototype(
+                    vector=_unit_tuple(merged),
+                    model_id=model_id,
+                    support=support,
+                    observation_count=previous.observation_count + 1,
+                )
+        if not should_merge:
             incoming = FeaturePrototype(vector, model_id, quality, 1)
             if len(values) < self.max_prototypes:
                 values.append(incoming)
