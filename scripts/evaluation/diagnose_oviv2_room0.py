@@ -36,9 +36,23 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
+def _fsync_directory(path: Path) -> None:
+    descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def _atomic_json(
+    path: Path,
+    payload: dict[str, Any],
+    *,
+    overwrite: bool,
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary: Path | None = None
+    published = False
     try:
         with tempfile.NamedTemporaryFile(
             mode="w",
@@ -53,10 +67,28 @@ def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
             stream.write("\n")
             stream.flush()
             os.fsync(stream.fileno())
-        os.replace(temporary, path)
+        if overwrite:
+            os.replace(temporary, path)
+        else:
+            os.link(temporary, path)
+        published = True
     finally:
-        if temporary is not None and temporary.exists():
-            temporary.unlink()
+        try:
+            if temporary is not None and temporary.exists():
+                temporary.unlink()
+        finally:
+            if published:
+                _fsync_directory(path.parent)
+
+
+def _input_sha256(args: argparse.Namespace) -> dict[str, str]:
+    return {
+        "pred_semantic": _sha256(args.pred_semantic),
+        "pred_entity": _sha256(args.pred_entity),
+        "gt_mesh": _sha256(args.gt_mesh),
+        "gt_info": _sha256(args.gt_info),
+        "manifest": _sha256(args.manifest),
+    }
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -75,9 +107,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
-    if args.output.exists() and not args.overwrite:
-        raise FileExistsError(args.output)
-
+    hashes_before = _input_sha256(args)
     manifest, scene = _load_manifest(args.manifest, args.scene)
     _verify_scene_inputs(scene, args.gt_mesh, args.gt_info)
     aliases = _normalized_aliases(manifest.get("aliases", {}))
@@ -103,6 +133,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         minimum_overlap_vertices=args.minimum_overlap_vertices,
         minimum_overlap_fraction=args.minimum_overlap_fraction,
     )
+    hashes_after = _input_sha256(args)
+    if hashes_before != hashes_after:
+        raise RuntimeError("diagnostic inputs changed during computation")
     report.update(
         {
             "scene": args.scene,
@@ -111,18 +144,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "minimum_overlap_vertices": args.minimum_overlap_vertices,
                 "minimum_overlap_fraction": args.minimum_overlap_fraction,
             },
-            "input_sha256": {
-                "pred_semantic": _sha256(args.pred_semantic),
-                "pred_entity": _sha256(args.pred_entity),
-                "gt_mesh": _sha256(args.gt_mesh),
-                "gt_info": _sha256(args.gt_info),
-                "manifest": _sha256(args.manifest),
-            },
+            "input_sha256": hashes_before,
         }
     )
-    if args.output.exists() and not args.overwrite:
-        raise FileExistsError(args.output)
-    _atomic_json(args.output, report)
+    _atomic_json(args.output, report, overwrite=args.overwrite)
     return report
 
 
