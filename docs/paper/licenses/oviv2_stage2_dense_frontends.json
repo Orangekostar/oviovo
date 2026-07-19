@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "sources": {
+    "RADSeg": {
+      "commit": "3fe8789a3c1b11e41688f7deadc8b8db088ef1a7",
+      "license": "MIT",
+      "upstream": "https://github.com/RADSeg-OVSS/RADSeg.git"
+    },
+    "RayFronts": {
+      "commit": "031262a9ed4d0ea456a1d5605df835ba9e53b027",
+      "license": "MIT",
+      "upstream": "https://github.com/RayFronts/RayFronts.git"
+    },
+    "RADIO": {
+      "commit": "c0f37017930e9dda53f93424cf4bf39fc51f287e",
+      "code_license": "NVIDIA Source Code License-NC",
+      "c_radio_v3_model_license": "NVIDIA Open Model License",
+      "radio_v2_5_model_license": "NVIDIA Source Code License-NC",
+      "upstream": "https://github.com/NVlabs/RADIO.git"
+    },
+    "SAM": {
+      "path": "/home/ww/oviovo_benchmark_assets/weights/segment_anything/sam_vit_h_4b8939.pth",
+      "sha256": "a7bf3b02f3ebf1267aba913ff637d9a2d5c33d3173bb679e46d9f338c26f262e",
+      "license": "Apache-2.0"
+    }
+  }
+}

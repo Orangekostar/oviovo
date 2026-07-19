@@ -1,0 +1,22 @@
+name: oviovo-radseg
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.11
+  - pytorch=2.4.0
+  - torchvision=0.19.0
+  - pytorch-cuda=12.1
+  - pip
+  - pip:
+      - timm==1.0.19
+      - segment-anything
+      - pillow
+      - numpy
+      - scipy
+      - scikit-image
+      - transformers
+      - typing_extensions
+      - einops
