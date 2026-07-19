@@ -9,7 +9,7 @@ import pytest
 from src.oviv2.addressing import point_to_voxel
 from src.oviv2.evidence import SparseEvidenceStore
 from src.oviv2.geometry import SparseTsdfVolume
-from src.oviv2.meshing import derive_labeled_mesh, write_labeled_mesh
+from src.oviv2.meshing import LabeledMesh, canonicalize_labeled_mesh, derive_labeled_mesh, write_labeled_mesh
 from src.oviv2.ownership import ReversibleOwnershipStore
 
 from tests.oviv2.test_geometry import _integrate_twice, _plane_frame
@@ -110,3 +110,37 @@ def test_written_ply_is_readable_and_contains_label_properties(tmp_path: Path) -
     assert restored.vertex.positions.shape[0] == mesh.vertices_xyz.shape[0]
     assert b"semantic_id" in header
     assert b"entity_id" in header
+
+
+def test_canonicalization_removes_vertex_face_and_cyclic_order_variation(tmp_path: Path) -> None:
+    vertices = np.asarray(
+        [[1.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 1.0, 0.0]],
+        dtype=np.float32,
+    )
+    triangles = np.asarray([[0, 1, 2], [0, 2, 3]], dtype=np.int64)
+
+    def mesh(order: np.ndarray, faces: np.ndarray) -> LabeledMesh:
+        inverse = np.empty(len(order), dtype=np.int64)
+        inverse[order] = np.arange(len(order))
+        return LabeledMesh(
+            vertices_xyz=vertices[order],
+            triangles=inverse[faces],
+            colors_rgb=np.tile(np.asarray([[0.1, 0.2, 0.3]], np.float32), (4, 1)),
+            semantic_ids=np.asarray([1, 2, 3, 4], dtype=np.int64)[order],
+            entity_ids=np.asarray([4, 3, 2, 1], dtype=np.int64)[order],
+            semantic_confidence=np.asarray([0.1, 0.2, 0.3, 0.4], np.float32)[order],
+            ownership_confidence=np.asarray([0.4, 0.3, 0.2, 0.1], np.float32)[order],
+        )
+
+    first = canonicalize_labeled_mesh(mesh(np.asarray([0, 1, 2, 3]), triangles))
+    second = canonicalize_labeled_mesh(
+        mesh(np.asarray([3, 1, 0, 2]), np.asarray([[2, 3, 0], [1, 2, 0]]))
+    )
+    first_path = tmp_path / "first.ply"
+    second_path = tmp_path / "second.ply"
+    write_labeled_mesh(first_path, first)
+    write_labeled_mesh(second_path, second)
+
+    assert np.array_equal(first.vertices_xyz, second.vertices_xyz)
+    assert np.array_equal(first.triangles, second.triangles)
+    assert first_path.read_bytes() == second_path.read_bytes()

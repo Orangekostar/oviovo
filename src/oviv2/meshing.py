@@ -75,6 +75,55 @@ class LabeledMesh:
                 raise ValueError("triangle indices lie outside the vertex array")
 
 
+def canonicalize_labeled_mesh(mesh: LabeledMesh) -> LabeledMesh:
+    if not isinstance(mesh, LabeledMesh):
+        raise TypeError("mesh must be a LabeledMesh")
+    vertex_count = mesh.vertices_xyz.shape[0]
+    if vertex_count == 0:
+        return mesh
+    order = np.lexsort(
+        (
+            mesh.ownership_confidence,
+            mesh.semantic_confidence,
+            mesh.entity_ids,
+            mesh.semantic_ids,
+            mesh.colors_rgb[:, 2],
+            mesh.colors_rgb[:, 1],
+            mesh.colors_rgb[:, 0],
+            mesh.vertices_xyz[:, 2],
+            mesh.vertices_xyz[:, 1],
+            mesh.vertices_xyz[:, 0],
+        )
+    )
+    inverse = np.empty(vertex_count, dtype=np.int64)
+    inverse[order] = np.arange(vertex_count, dtype=np.int64)
+    triangles = inverse[mesh.triangles]
+    if len(triangles):
+        minimum_slots = triangles.argmin(axis=1)
+        canonical_triangles = triangles.copy()
+        canonical_triangles[minimum_slots == 1] = triangles[minimum_slots == 1][:, [1, 2, 0]]
+        canonical_triangles[minimum_slots == 2] = triangles[minimum_slots == 2][:, [2, 0, 1]]
+        triangle_order = np.lexsort(
+            (
+                canonical_triangles[:, 2],
+                canonical_triangles[:, 1],
+                canonical_triangles[:, 0],
+            )
+        )
+        canonical_triangles = canonical_triangles[triangle_order]
+    else:
+        canonical_triangles = triangles
+    return LabeledMesh(
+        vertices_xyz=mesh.vertices_xyz[order],
+        triangles=canonical_triangles,
+        colors_rgb=mesh.colors_rgb[order],
+        semantic_ids=mesh.semantic_ids[order],
+        entity_ids=mesh.entity_ids[order],
+        semantic_confidence=mesh.semantic_confidence[order],
+        ownership_confidence=mesh.ownership_confidence[order],
+    )
+
+
 def derive_labeled_mesh(
     geometry: SparseTsdfVolume,
     evidence: SparseEvidenceStore,
@@ -116,14 +165,16 @@ def derive_labeled_mesh(
             entity_ids[index] = owner.entity_id
             ownership_confidence[index] = owner.confidence
 
-    return LabeledMesh(
-        vertices_xyz=vertices,
-        triangles=triangles,
-        colors_rgb=colors,
-        semantic_ids=semantic_ids,
-        entity_ids=entity_ids,
-        semantic_confidence=semantic_confidence,
-        ownership_confidence=ownership_confidence,
+    return canonicalize_labeled_mesh(
+        LabeledMesh(
+            vertices_xyz=vertices,
+            triangles=triangles,
+            colors_rgb=colors,
+            semantic_ids=semantic_ids,
+            entity_ids=entity_ids,
+            semantic_confidence=semantic_confidence,
+            ownership_confidence=ownership_confidence,
+        )
     )
 
 

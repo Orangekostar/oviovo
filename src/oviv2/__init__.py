@@ -13,7 +13,12 @@ from src.oviv2.entities import (
     PersistentEntity,
 )
 from src.oviv2.geometry import SparseTsdfVolume, TsdfConfig
-from src.oviv2.meshing import LabeledMesh, derive_labeled_mesh, write_labeled_mesh
+from src.oviv2.meshing import (
+    LabeledMesh,
+    canonicalize_labeled_mesh,
+    derive_labeled_mesh,
+    write_labeled_mesh,
+)
 from src.oviv2.observations import (
     CachedFrontendAdapter,
     FrameObservation,
@@ -61,6 +66,7 @@ __all__ = [
     "VisibilityStatus",
     "VoxelVisibilityProjector",
     "VoxelSnapshotMetadata",
+    "canonicalize_labeled_mesh",
     "derive_labeled_mesh",
     "join_voxel_key",
     "lift_mask_to_voxels",
