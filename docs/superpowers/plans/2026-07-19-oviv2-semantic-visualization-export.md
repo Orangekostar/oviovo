@@ -264,7 +264,7 @@ git commit -m "feat: freeze OVIV2 semantic visualization palette"
 - [ ] **Step 1: Add failing synthetic PLY tests**
 
 Extend the test file with a helper that writes vertices containing `semantic_id`, extra
-custom fields, and one face. Add tests that call
+custom fields, and one polygon face. Add tests that call
 `export_semantic_ply(source, destination, palette)` and assert:
 
 ```python
@@ -279,8 +279,10 @@ np.testing.assert_array_equal(output["face"]["vertex_indices"][0], [0, 1, 2])
 assert "semantic_id" not in output["vertex"].data.dtype.names
 ```
 
-Add validation cases for a missing `semantic_id`, semantic ID `42`, NaN positions, and an
-out-of-range face index. Add a repeated-export assertion that compares output SHA256.
+Add validation cases for a missing `semantic_id`, semantic ID `42`, NaN positions, a face
+with fewer than three vertices, and an out-of-range face index. Add a quad-face case that
+proves Replica GT geometry is preserved, plus a repeated-export assertion that compares
+output SHA256.
 
 - [ ] **Step 2: Run the focused tests and verify RED**
 
@@ -352,8 +354,9 @@ def export_semantic_ply(
     )
 ```
 
-`_validate_faces` must flatten every list-valued `vertex_indices`, reject non-triangles,
-negative indices, and indices greater than or equal to `vertex_count`.
+`_validate_faces` must preserve every list-valued `vertex_indices`, accept polygons with
+three or more vertices, and reject shorter polygons, negative indices, and indices greater
+than or equal to `vertex_count`.
 
 - [ ] **Step 4: Run tests and commit**
 
