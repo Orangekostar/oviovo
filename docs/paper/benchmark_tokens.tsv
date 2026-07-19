@@ -11,15 +11,15 @@ T1_OPENFUSION_REPLICA7_AP50	T1	OPENFUSION	Replica	replica_7_heldout	REPLICA7_AP5
 T1_OPENFUSION_SCANNET5_AP25	T1	OPENFUSION	ScanNet200	scannet200_5_heldout	SCANNET5_AP25	higher	3			N/A	No native entity AP output.
 T1_OPENFUSION_SCANNET5_AP50	T1	OPENFUSION	ScanNet200	scannet200_5_heldout	SCANNET5_AP50	higher	3			N/A	No native entity AP output.
 T1_OPENFUSION_SCANNET5_F5	T1	OPENFUSION	ScanNet200	scannet200_5_heldout	SCANNET5_F5	higher	3			UNFILLED	Pending benchmark run.
-T1_OVIMAP_REPLICA8_MIOU	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_MIOU	higher	3	results/baselines/ovimap/replica/20260719-s10-200f-full-instances-v2/result.json	/metrics/replica_8_compat/semantic/miou	VERIFIED	Imported from verified run 20260719-ovimap-replica8-s10-200f-full-instances-v2.
-T1_OVIMAP_REPLICA8_MACC	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_MACC	higher	3	results/baselines/ovimap/replica/20260719-s10-200f-full-instances-v2/result.json	/metrics/replica_8_compat/semantic/macc	VERIFIED	Imported from verified run 20260719-ovimap-replica8-s10-200f-full-instances-v2.
-T1_OVIMAP_REPLICA8_FMIOU	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_FMIOU	higher	3	results/baselines/ovimap/replica/20260719-s10-200f-full-instances-v2/result.json	/metrics/replica_8_compat/semantic/f_miou	VERIFIED	Imported from verified run 20260719-ovimap-replica8-s10-200f-full-instances-v2.
-T1_OVIMAP_REPLICA7_MIOU	T1	OVIMAP	Replica	replica_7_heldout	REPLICA7_MIOU	higher	3	results/baselines/ovimap/replica/20260719-s10-200f-full-instances-v2/result.json	/metrics/replica_7_heldout/semantic/miou	VERIFIED	Imported from verified run 20260719-ovimap-replica8-s10-200f-full-instances-v2.
+T1_OVIMAP_REPLICA8_MIOU	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_MIOU	higher	3			UNFILLED	Quarantined: 20260719 native run fails OVI-MAP CVPR 2026 paper-protocol parity audit.
+T1_OVIMAP_REPLICA8_MACC	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_MACC	higher	3			UNFILLED	Quarantined: 20260719 native run fails OVI-MAP CVPR 2026 paper-protocol parity audit.
+T1_OVIMAP_REPLICA8_FMIOU	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_FMIOU	higher	3			UNFILLED	Quarantined: 20260719 native run fails OVI-MAP CVPR 2026 paper-protocol parity audit.
+T1_OVIMAP_REPLICA7_MIOU	T1	OVIMAP	Replica	replica_7_heldout	REPLICA7_MIOU	higher	3			UNFILLED	Quarantined: 20260719 native run fails OVI-MAP CVPR 2026 paper-protocol parity audit.
 T1_OVIMAP_SCANNET5_MIOU	T1	OVIMAP	ScanNet200	scannet200_5_heldout	SCANNET5_MIOU	higher	3			UNFILLED	Pending benchmark run.
-T1_OVIMAP_REPLICA8_AP25	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_AP25	higher	3	results/baselines/ovimap/replica/20260719-s10-200f-full-instances-v2/result.json	/metrics/replica_8_compat/instance/ap25	VERIFIED	Imported from verified run 20260719-ovimap-replica8-s10-200f-full-instances-v2.
-T1_OVIMAP_REPLICA8_AP50	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_AP50	higher	3	results/baselines/ovimap/replica/20260719-s10-200f-full-instances-v2/result.json	/metrics/replica_8_compat/instance/ap50	VERIFIED	Imported from verified run 20260719-ovimap-replica8-s10-200f-full-instances-v2.
-T1_OVIMAP_REPLICA8_F5	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_F5	higher	3	results/baselines/ovimap/replica/20260719-s10-200f-full-instances-v2/result.json	/metrics/replica_8_compat/geometry/f5	VERIFIED	Imported from verified run 20260719-ovimap-replica8-s10-200f-full-instances-v2.
-T1_OVIMAP_REPLICA7_AP50	T1	OVIMAP	Replica	replica_7_heldout	REPLICA7_AP50	higher	3	results/baselines/ovimap/replica/20260719-s10-200f-full-instances-v2/result.json	/metrics/replica_7_heldout/instance/ap50	VERIFIED	Imported from verified run 20260719-ovimap-replica8-s10-200f-full-instances-v2.
+T1_OVIMAP_REPLICA8_AP25	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_AP25	higher	3			UNFILLED	Quarantined: 20260719 native run fails OVI-MAP CVPR 2026 paper-protocol parity audit.
+T1_OVIMAP_REPLICA8_AP50	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_AP50	higher	3			UNFILLED	Quarantined: 20260719 native run fails OVI-MAP CVPR 2026 paper-protocol parity audit.
+T1_OVIMAP_REPLICA8_F5	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_F5	higher	3			UNFILLED	Quarantined: 20260719 native run fails OVI-MAP CVPR 2026 paper-protocol parity audit.
+T1_OVIMAP_REPLICA7_AP50	T1	OVIMAP	Replica	replica_7_heldout	REPLICA7_AP50	higher	3			UNFILLED	Quarantined: 20260719 native run fails OVI-MAP CVPR 2026 paper-protocol parity audit.
 T1_OVIMAP_SCANNET5_AP25	T1	OVIMAP	ScanNet200	scannet200_5_heldout	SCANNET5_AP25	higher	3			UNFILLED	Pending benchmark run.
 T1_OVIMAP_SCANNET5_AP50	T1	OVIMAP	ScanNet200	scannet200_5_heldout	SCANNET5_AP50	higher	3			UNFILLED	Pending benchmark run.
 T1_OVIMAP_SCANNET5_F5	T1	OVIMAP	ScanNet200	scannet200_5_heldout	SCANNET5_F5	higher	3			UNFILLED	Pending benchmark run.

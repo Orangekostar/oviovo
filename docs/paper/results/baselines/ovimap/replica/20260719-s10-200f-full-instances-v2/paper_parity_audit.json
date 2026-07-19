@@ -1,0 +1,163 @@
+{
+  "aggregate_artifacts": {
+    "average_queries_per_feature_instance": 3.0675675675675675,
+    "eligible_feature_instance_count": 40,
+    "feature_instance_count": 74,
+    "full_frame_bbox_count": 227,
+    "full_frame_bbox_ratio": 1.0,
+    "query_count": 227
+  },
+  "expected_protocol": {
+    "frame_count_per_scene": 200,
+    "frame_step": 10,
+    "instance_metrics": "class_agnostic_mask_miou_ap25_ap50_ap75",
+    "name": "ovimap_cvpr2026_replica",
+    "scene_ids": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "semantic_metrics": "per_vertex_miou_macc_and_class_aware_mask_ap",
+    "semantic_vocabulary": "Replica-51",
+    "vlm": "siglip-large-patch16-384"
+  },
+  "failures": [
+    "protocol.name expected 'ovimap_cvpr2026_replica', observed None",
+    "protocol.scene_ids expected ('office0', 'office1', 'office2', 'office3', 'office4', 'room0', 'room1', 'room2'), observed ()",
+    "protocol.frame_count_per_scene expected 200, observed None",
+    "protocol.frame_step expected 10, observed None",
+    "protocol.semantic_vocabulary expected 'Replica-51', observed None",
+    "protocol.semantic_metrics expected 'per_vertex_miou_macc_and_class_aware_mask_ap', observed None",
+    "protocol.instance_metrics expected 'class_agnostic_mask_miou_ap25_ap50_ap75', observed None",
+    "protocol.vlm expected 'siglip-large-patch16-384', observed None"
+  ],
+  "feature_sources": {
+    "office0": {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/formal_replica8_repaired/office_0/output/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "fb204e94c964057b09aaac0cdbc8446dce6653ae6fe34a5189698328fe218bce"
+    },
+    "office1": {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/formal_replica8_repaired/office_1/output/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "0d847da4eac49944f074612a1d64cdd46e40a415d10557c9bf22bb09a32ee998"
+    },
+    "office2": {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/formal_replica8_repaired/office_2/output/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "dc099a6372a80b76b4d84a5d8db2e5ebed436db63cfb885c7f01057f919b7bb1"
+    },
+    "office3": {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/formal_replica8_repaired/office_3/output/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "b242fe3ef428ecb01aca47aa6aeca0169c2cf961808eb9b370c3754f99617563"
+    },
+    "office4": {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/formal_replica8_repaired/office_4/output/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "00f91d9d0614a04c32281f185782bae58853b2ee05d20c88adb6d5916ae3142b"
+    },
+    "room0": {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/formal_replica8_repaired/room_0/output/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "c0f922932e7915af09a116f99d8cb18d0b3d9b2f7530764072904f6a85b14b8c"
+    },
+    "room1": {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/formal_replica8/room_1/output/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "38cdff0fa0155d1f63fed57754dddfbc559597c7f086642381bb10b131c937f2"
+    },
+    "room2": {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/formal_replica8_repaired/room_2/output/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "30793b5ceb3dd34c804daaec7c40bec1c4b2360d79703406de8521f9cdef8e4a"
+    }
+  },
+  "observed_protocol": {},
+  "paper_reported_reference": {
+    "instance_table_2_percent": {
+      "ap25": 76.7,
+      "ap50": 50.8,
+      "ap75": 22.0,
+      "miou": 36.3
+    },
+    "semantic_table_3_percent": {
+      "ap25": 34.5,
+      "ap50": 21.2,
+      "apall": 8.5,
+      "macc": 32.2,
+      "miou": 26.5
+    }
+  },
+  "paper_values_are_reference_only": true,
+  "protocol_name": "ovimap_cvpr2026_replica",
+  "result_source": {
+    "path": "/home/ww/.config/superpowers/worktrees/oviovo/tsdf-contamination-visibility-gates/docs/paper/results/baselines/ovimap/replica/20260719-s10-200f-full-instances-v2/result.json",
+    "sha256": "62c81361b206f6e80c28a4ab58e70c3c634663c6b7f61e065498dae88cec8bb2"
+  },
+  "scene_artifacts": {
+    "office0": {
+      "average_queries_per_feature_instance": 2.2,
+      "eligible_feature_instance_count": 8,
+      "feature_instance_count": 15,
+      "full_frame_bbox_count": 33,
+      "full_frame_bbox_ratio": 1.0,
+      "query_count": 33
+    },
+    "office1": {
+      "average_queries_per_feature_instance": 4.25,
+      "eligible_feature_instance_count": 4,
+      "feature_instance_count": 4,
+      "full_frame_bbox_count": 17,
+      "full_frame_bbox_ratio": 1.0,
+      "query_count": 17
+    },
+    "office2": {
+      "average_queries_per_feature_instance": 2.6,
+      "eligible_feature_instance_count": 4,
+      "feature_instance_count": 10,
+      "full_frame_bbox_count": 26,
+      "full_frame_bbox_ratio": 1.0,
+      "query_count": 26
+    },
+    "office3": {
+      "average_queries_per_feature_instance": 3.0,
+      "eligible_feature_instance_count": 4,
+      "feature_instance_count": 9,
+      "full_frame_bbox_count": 27,
+      "full_frame_bbox_ratio": 1.0,
+      "query_count": 27
+    },
+    "office4": {
+      "average_queries_per_feature_instance": 4.571428571428571,
+      "eligible_feature_instance_count": 5,
+      "feature_instance_count": 7,
+      "full_frame_bbox_count": 32,
+      "full_frame_bbox_ratio": 1.0,
+      "query_count": 32
+    },
+    "room0": {
+      "average_queries_per_feature_instance": 3.1,
+      "eligible_feature_instance_count": 4,
+      "feature_instance_count": 10,
+      "full_frame_bbox_count": 31,
+      "full_frame_bbox_ratio": 1.0,
+      "query_count": 31
+    },
+    "room1": {
+      "average_queries_per_feature_instance": 3.3333333333333335,
+      "eligible_feature_instance_count": 5,
+      "feature_instance_count": 9,
+      "full_frame_bbox_count": 30,
+      "full_frame_bbox_ratio": 1.0,
+      "query_count": 30
+    },
+    "room2": {
+      "average_queries_per_feature_instance": 3.1,
+      "eligible_feature_instance_count": 6,
+      "feature_instance_count": 10,
+      "full_frame_bbox_count": 31,
+      "full_frame_bbox_ratio": 1.0,
+      "query_count": 31
+    }
+  },
+  "schema_version": 1,
+  "status": "FAIL"
+}

@@ -183,7 +183,7 @@ git commit -m "fix: gate OVI-MAP metrics on paper parity"
 
 Use the existing repaired outputs, with `room1` from `formal_replica8/room_1`, and write the audit beside the historical result.
 
-Expected audit status: `FAIL`, including missing paper protocol metadata and coverage diagnostics showing only 39 instances with at least two views across Replica-8 and a full-frame query-box ratio of 1.0.
+Expected audit status: `FAIL`, including missing paper protocol metadata and coverage diagnostics showing only 40 instances with at least two views across Replica-8 and a full-frame query-box ratio of 1.0.
 
 - [ ] **Step 2: Verify the historical result is rejected**
 
@@ -193,7 +193,7 @@ Expected: failure containing `paper-parity audit`.
 
 - [ ] **Step 3: Quarantine OVI-MAP T1 registry rows**
 
-For every `T1_OVIMAP_*` row, clear `source_json` and `json_pointer`, set `status=BLOCKED`, and set the note to:
+For every `T1_OVIMAP_*` row, clear `source_json` and `json_pointer`, set `status=UNFILLED`, and set the note to:
 
 ```text
 Quarantined: 20260719 native run fails OVI-MAP CVPR 2026 paper-protocol parity audit.
