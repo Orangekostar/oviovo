@@ -21,6 +21,7 @@ from src.oviv2.observations import (
     ReplicaVocabulary,
 )
 from src.oviv2.ownership import OwnershipRecord, ReversibleOwnershipStore
+from src.oviv2.runtime import Oviv2Runtime, Oviv2RuntimeConfig, RuntimeFrameResult
 from src.oviv2.snapshot import VoxelMapSnapshot, VoxelSnapshotMetadata
 from src.oviv2.tracking import LocalTrack, LocalTrackBatch, LocalTracker, LocalTrackerConfig
 
@@ -39,7 +40,10 @@ __all__ = [
     "LocalTrackerConfig",
     "OwnershipRecord",
     "ObservationKind",
+    "Oviv2Runtime",
+    "Oviv2RuntimeConfig",
     "ReplicaVocabulary",
+    "RuntimeFrameResult",
     "PersistentEntity",
     "ReversibleOwnershipStore",
     "SemanticCandidate",
