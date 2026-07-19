@@ -4,11 +4,13 @@ import json
 from pathlib import Path
 
 import numpy as np
+from PIL import Image
 from plyfile import PlyData, PlyElement
 import pytest
 
 from src.evaluation.semantic_visualization import (
     export_semantic_ply,
+    export_semantic_visualizations,
     load_semantic_palette,
 )
 
@@ -31,6 +33,29 @@ def _manifest(tmp_path: Path) -> Path:
         },
     )
     return path
+
+
+def _batch_manifest(tmp_path: Path, scenes: tuple[str, ...] = ("room0", "room1")) -> Path:
+    frozen = json.loads(
+        Path("configs/evaluation/manifests/replica8.json").read_text(encoding="utf-8")
+    )
+    path = tmp_path / "batch-replica8.json"
+    _write_json(
+        path,
+        {
+            "vocabulary": frozen["vocabulary"],
+            "scenes": [{"scene": scene} for scene in scenes],
+        },
+    )
+    return path
+
+
+def _batch_tree(tmp_path: Path, scenes: tuple[str, ...] = ("room0", "room1")) -> Path:
+    root = tmp_path / "batch"
+    for scene in scenes:
+        _write_labeled_ply(root / scene / "final" / "oviv2_instance_mesh.ply")
+        _write_labeled_ply(root / scene / "evaluation" / "semantic_map_gt.ply")
+    return root
 
 
 def _palette():
@@ -224,3 +249,85 @@ def test_export_semantic_ply_is_deterministic(tmp_path: Path) -> None:
 
     assert first.output_sha256 == second.output_sha256
     assert (tmp_path / "first.ply").read_bytes() == (tmp_path / "second.ply").read_bytes()
+
+
+def test_batch_export_publishes_both_meshes_legend_and_provenance(tmp_path: Path) -> None:
+    batch_root = _batch_tree(tmp_path)
+    manifest_path = _batch_manifest(tmp_path)
+    output = tmp_path / "paper_visualizations"
+
+    result = export_semantic_visualizations(
+        batch_root,
+        manifest_path,
+        Path("configs/evaluation/replica41_semantic_palette.json"),
+        output,
+    )
+
+    assert result == {
+        "output": str(output.resolve()),
+        "scene_count": 2,
+        "scenes": ["room0", "room1"],
+    }
+    assert (output / "semantic_palette.json").is_file()
+    legend = Image.open(output / "semantic_legend.png")
+    assert legend.width > 0 and legend.height > 0
+    for scene in ("room0", "room1"):
+        native = output / scene / "oviv2_semantic_native.ply"
+        aligned = output / scene / "oviv2_semantic_gt_aligned.ply"
+        assert native.is_file()
+        assert aligned.is_file()
+        manifest = json.loads(
+            (output / scene / "export_manifest.json").read_text(encoding="utf-8")
+        )
+        assert manifest["scene"] == scene
+        assert manifest["native"]["vertex_count"] == 3
+        assert manifest["gt_aligned"]["semantic_counts"] == {"0": 1, "1": 1, "2": 1}
+        assert ".tmp" not in json.dumps(manifest)
+
+
+def test_batch_export_is_atomic_when_later_scene_is_invalid(tmp_path: Path) -> None:
+    batch_root = _batch_tree(tmp_path)
+    manifest_path = _batch_manifest(tmp_path)
+    output = tmp_path / "paper_visualizations"
+    _write_labeled_ply(
+        batch_root / "room1" / "evaluation" / "semantic_map_gt.ply",
+        include_semantic_id=False,
+    )
+
+    with pytest.raises(ValueError, match="semantic_id"):
+        export_semantic_visualizations(
+            batch_root,
+            manifest_path,
+            Path("configs/evaluation/replica41_semantic_palette.json"),
+            output,
+        )
+
+    assert not output.exists()
+
+
+def test_batch_export_selects_requested_manifest_scene(tmp_path: Path) -> None:
+    batch_root = _batch_tree(tmp_path)
+    output = tmp_path / "selected"
+
+    result = export_semantic_visualizations(
+        batch_root,
+        _batch_manifest(tmp_path),
+        Path("configs/evaluation/replica41_semantic_palette.json"),
+        output,
+        scenes=["room1"],
+    )
+
+    assert result["scenes"] == ["room1"]
+    assert (output / "room1").is_dir()
+    assert not (output / "room0").exists()
+
+
+def test_batch_export_rejects_scene_outside_manifest(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="outside frozen manifest"):
+        export_semantic_visualizations(
+            _batch_tree(tmp_path),
+            _batch_manifest(tmp_path),
+            Path("configs/evaluation/replica41_semantic_palette.json"),
+            tmp_path / "output",
+            scenes=["office4"],
+        )
