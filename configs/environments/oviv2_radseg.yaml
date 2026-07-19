@@ -2,21 +2,29 @@ name: oviovo-radseg
 channels:
   - pytorch
   - nvidia
+  - pyg
   - conda-forge
   - nodefaults
 dependencies:
-  - python=3.11
+  - python=3.11.15
   - pytorch=2.4.0
   - torchvision=0.19.0
   - pytorch-cuda=12.1
-  - pip
+  - pyg::pytorch-scatter=2.1.2=py311_torch_2.4.0_cu121
+  - pip=26.1.2
   - pip:
       - timm==1.0.19
-      - segment-anything
-      - pillow
-      - numpy
-      - scipy
-      - scikit-image
-      - transformers
-      - typing_extensions
-      - einops
+      - segment-anything==1.0
+      - pillow==12.3.0
+      - numpy==2.4.6
+      - scipy==1.17.1
+      - scikit-image==0.26.0
+      - transformers==4.57.1
+      - typing_extensions==4.16.0
+      - einops==0.8.2
+      - rerun-sdk==0.34.1
+      - pandas==3.0.3
+      - opencv-python-headless==5.0.0.93
+      - ftfy==6.3.1
+      - regex==2026.7.19
+      - tqdm==4.69.0
