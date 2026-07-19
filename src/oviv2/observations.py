@@ -14,6 +14,61 @@ from src.core.data_structures import Frame
 from src.oviv2.addressing import VoxelKey
 
 
+LiftedMask = tuple[
+    frozenset[VoxelKey],
+    tuple[float, float, float],
+    tuple[float, float, float],
+    tuple[float, float, float],
+]
+
+
+def lift_mask_to_voxels(
+    frame: Frame,
+    mask: np.ndarray,
+    *,
+    voxel_size_m: float,
+    pixel_stride: int,
+    min_valid_points: int,
+) -> LiftedMask | None:
+    mask = np.asarray(mask, dtype=bool)
+    if mask.shape != frame.depth.shape:
+        raise ValueError(f"mask shape {mask.shape} does not match frame depth {frame.depth.shape}")
+    if not np.isfinite(voxel_size_m) or voxel_size_m <= 0.0:
+        raise ValueError("voxel_size_m must be finite and positive")
+    if pixel_stride <= 0 or min_valid_points <= 0:
+        raise ValueError("pixel_stride and min_valid_points must be positive")
+
+    sampled = np.zeros(mask.shape, dtype=bool)
+    sampled[::pixel_stride, ::pixel_stride] = True
+    valid = mask & sampled & np.isfinite(frame.depth) & (frame.depth > 0.0)
+    rows, columns = np.nonzero(valid)
+    if len(rows) < min_valid_points:
+        return None
+    depth = frame.depth[rows, columns].astype(np.float64)
+    intrinsics = frame.intrinsics
+    camera = np.column_stack(
+        (
+            (columns - intrinsics.cx) * depth / intrinsics.fx,
+            (rows - intrinsics.cy) * depth / intrinsics.fy,
+            depth,
+        )
+    )
+    world = (
+        (np.asarray(frame.pose[:3, :3], dtype=np.float64) @ camera.T).T
+        + np.asarray(frame.pose[:3, 3], dtype=np.float64)
+    )
+    integer_keys = np.floor(world / voxel_size_m).astype(np.int64)
+    voxel_keys = frozenset(tuple(int(value) for value in row) for row in integer_keys)
+    if not voxel_keys:
+        return None
+    return (
+        voxel_keys,
+        tuple(float(value) for value in world.mean(axis=0)),
+        tuple(float(value) for value in world.min(axis=0)),
+        tuple(float(value) for value in world.max(axis=0)),
+    )
+
+
 class ObservationKind(str, Enum):
     OBJECT = "object"
     STRUCTURE = "structure"
@@ -178,38 +233,11 @@ class CachedFrontendAdapter:
         self,
         frame: Frame,
         mask: np.ndarray,
-    ) -> tuple[
-        frozenset[VoxelKey],
-        tuple[float, float, float],
-        tuple[float, float, float],
-        tuple[float, float, float],
-    ] | None:
-        sampled = np.zeros(mask.shape, dtype=bool)
-        sampled[:: self.pixel_stride, :: self.pixel_stride] = True
-        valid = mask & sampled & np.isfinite(frame.depth) & (frame.depth > 0.0)
-        rows, columns = np.nonzero(valid)
-        if len(rows) < self.min_valid_points:
-            return None
-        depth = frame.depth[rows, columns].astype(np.float64)
-        intrinsics = frame.intrinsics
-        camera = np.column_stack(
-            (
-                (columns - intrinsics.cx) * depth / intrinsics.fx,
-                (rows - intrinsics.cy) * depth / intrinsics.fy,
-                depth,
-            )
-        )
-        world = (
-            (np.asarray(frame.pose[:3, :3], dtype=np.float64) @ camera.T).T
-            + np.asarray(frame.pose[:3, 3], dtype=np.float64)
-        )
-        integer_keys = np.floor(world / self.voxel_size_m).astype(np.int64)
-        voxel_keys = frozenset(tuple(int(value) for value in row) for row in integer_keys)
-        if not voxel_keys:
-            return None
-        return (
-            voxel_keys,
-            tuple(float(value) for value in world.mean(axis=0)),
-            tuple(float(value) for value in world.min(axis=0)),
-            tuple(float(value) for value in world.max(axis=0)),
+    ) -> LiftedMask | None:
+        return lift_mask_to_voxels(
+            frame,
+            mask,
+            voxel_size_m=self.voxel_size_m,
+            pixel_stride=self.pixel_stride,
+            min_valid_points=self.min_valid_points,
         )

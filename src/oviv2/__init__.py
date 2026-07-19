@@ -19,16 +19,20 @@ from src.oviv2.observations import (
     FrameObservation,
     ObservationKind,
     ReplicaVocabulary,
+    lift_mask_to_voxels,
 )
 from src.oviv2.ownership import OwnershipRecord, ReversibleOwnershipStore
 from src.oviv2.runtime import Oviv2Runtime, Oviv2RuntimeConfig, RuntimeFrameResult
 from src.oviv2.snapshot import VoxelMapSnapshot, VoxelSnapshotMetadata
+from src.oviv2.structure import DepthStructureConfig, DepthStructureFrontend
 from src.oviv2.tracking import LocalTrack, LocalTrackBatch, LocalTracker, LocalTrackerConfig
 from src.oviv2.visibility import VisibilityConfig, VisibilityStatus, VoxelVisibilityProjector
 
 __all__ = [
     "BlockKey",
     "CachedFrontendAdapter",
+    "DepthStructureConfig",
+    "DepthStructureFrontend",
     "EntityCandidate",
     "EntityRegistry",
     "EntityRegistryConfig",
@@ -59,6 +63,7 @@ __all__ = [
     "VoxelSnapshotMetadata",
     "derive_labeled_mesh",
     "join_voxel_key",
+    "lift_mask_to_voxels",
     "point_to_voxel",
     "split_voxel_key",
     "write_labeled_mesh",
