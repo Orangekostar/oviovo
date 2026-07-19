@@ -160,10 +160,13 @@ class CausalObservationGraph:
         right_observation_id: int,
         *,
         ambiguous_below: float,
-        third_min: float,
+        third_view_min_score: float,
     ) -> bool:
         ambiguous_below = _unit_interval(ambiguous_below, "ambiguous_below")
-        third_min = _unit_interval(third_min, "third_min")
+        third_view_min_score = _unit_interval(
+            third_view_min_score,
+            "third_view_min_score",
+        )
         left_observation_id = _non_negative_integer(
             left_observation_id,
             "left_observation_id",
@@ -194,8 +197,8 @@ class CausalObservationGraph:
             if (
                 left_support is not None
                 and right_support is not None
-                and left_support.score >= third_min
-                and right_support.score >= third_min
+                and left_support.score >= third_view_min_score
+                and right_support.score >= third_view_min_score
             ):
                 return True
         return False

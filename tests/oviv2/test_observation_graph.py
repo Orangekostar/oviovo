@@ -55,7 +55,12 @@ def test_ambiguous_edge_is_supported_by_an_independent_third_view() -> None:
     graph.add_edge(_edge(1, 3, 0, 2, 0.80))
     graph.add_edge(_edge(2, 3, 1, 2, 0.78))
 
-    assert graph.edge_is_supported(1, 2, ambiguous_below=0.70, third_min=0.75)
+    assert graph.edge_is_supported(
+        1,
+        2,
+        ambiguous_below=0.70,
+        third_view_min_score=0.75,
+    )
 
 
 def test_strong_edge_needs_no_third_view_and_removal_revokes_support() -> None:
@@ -64,9 +69,19 @@ def test_strong_edge_needs_no_third_view_and_removal_revokes_support() -> None:
     graph.add_frame(1, [_node(2, 1)])
     graph.add_edge(_edge(1, 2, 0, 1, 0.70))
 
-    assert graph.edge_is_supported(1, 2, ambiguous_below=0.70, third_min=0.75)
+    assert graph.edge_is_supported(
+        1,
+        2,
+        ambiguous_below=0.70,
+        third_view_min_score=0.75,
+    )
     assert graph.remove_edge(2, 1) is True
-    assert graph.edge_is_supported(1, 2, ambiguous_below=0.70, third_min=0.75) is False
+    assert graph.edge_is_supported(
+        1,
+        2,
+        ambiguous_below=0.70,
+        third_view_min_score=0.75,
+    ) is False
     assert graph.remove_edge(1, 2) is False
 
 
@@ -78,14 +93,24 @@ def test_expired_supporting_node_removes_incident_edges_and_weakens_edge() -> No
     graph.add_edge(_edge(1, 2, 1, 2, 0.62))
     graph.add_edge(_edge(3, 1, 0, 1, 0.80))
     graph.add_edge(_edge(3, 2, 0, 2, 0.78))
-    assert graph.edge_is_supported(1, 2, ambiguous_below=0.70, third_min=0.75)
+    assert graph.edge_is_supported(
+        1,
+        2,
+        ambiguous_below=0.70,
+        third_view_min_score=0.75,
+    )
     assert graph.edge_count == 3
 
     graph.add_frame(3, [])
 
     assert graph.observation_ids == (1, 2)
     assert graph.edge_count == 1
-    assert graph.edge_is_supported(1, 2, ambiguous_below=0.70, third_min=0.75) is False
+    assert graph.edge_is_supported(
+        1,
+        2,
+        ambiguous_below=0.70,
+        third_view_min_score=0.75,
+    ) is False
 
 
 def test_third_node_from_an_endpoint_frame_is_not_an_independent_view() -> None:
@@ -96,7 +121,12 @@ def test_third_node_from_an_endpoint_frame_is_not_an_independent_view() -> None:
     graph.add_edge(_edge(1, 3, 0, 1, 0.80))
     graph.add_edge(_edge(2, 3, 1, 1, 0.80))
 
-    assert graph.edge_is_supported(1, 2, ambiguous_below=0.70, third_min=0.75) is False
+    assert graph.edge_is_supported(
+        1,
+        2,
+        ambiguous_below=0.70,
+        third_view_min_score=0.75,
+    ) is False
 
 
 @pytest.mark.parametrize(
@@ -291,10 +321,20 @@ def test_only_a_strictly_higher_score_replaces_an_undirected_edge() -> None:
     graph.add_edge(_edge(1, 2, 0, 1, 0.80))
 
     graph.add_edge(_edge(1, 2, 0, 1, 0.70))
-    assert graph.edge_is_supported(2, 1, ambiguous_below=0.75, third_min=1.0)
+    assert graph.edge_is_supported(
+        2,
+        1,
+        ambiguous_below=0.75,
+        third_view_min_score=1.0,
+    )
 
     graph.add_edge(_edge(1, 2, 0, 1, 0.90))
-    assert graph.edge_is_supported(1, 2, ambiguous_below=0.85, third_min=1.0)
+    assert graph.edge_is_supported(
+        1,
+        2,
+        ambiguous_below=0.85,
+        third_view_min_score=1.0,
+    )
     assert graph.edge_count == 1
 
 
@@ -307,7 +347,12 @@ def test_third_view_threshold_is_inclusive() -> None:
     graph.add_edge(_edge(1, 3, 0, 2, 0.75))
     graph.add_edge(_edge(2, 3, 1, 2, 0.75))
 
-    assert graph.edge_is_supported(1, 2, ambiguous_below=0.70, third_min=0.75)
+    assert graph.edge_is_supported(
+        1,
+        2,
+        ambiguous_below=0.70,
+        third_view_min_score=0.75,
+    )
 
 
 @pytest.mark.parametrize(
@@ -317,15 +362,15 @@ def test_third_view_threshold_is_inclusive() -> None:
         ("ambiguous_below", float("nan")),
         ("ambiguous_below", -0.01),
         ("ambiguous_below", 1.01),
-        ("third_min", False),
-        ("third_min", float("inf")),
-        ("third_min", -0.01),
-        ("third_min", 1.01),
+        ("third_view_min_score", False),
+        ("third_view_min_score", float("inf")),
+        ("third_view_min_score", -0.01),
+        ("third_view_min_score", 1.01),
     ],
 )
 def test_edge_support_validates_thresholds(field: str, value: object) -> None:
     graph = CausalObservationGraph(window_size=1)
-    values = {"ambiguous_below": 0.70, "third_min": 0.75}
+    values = {"ambiguous_below": 0.70, "third_view_min_score": 0.75}
     values[field] = value
 
     with pytest.raises((TypeError, ValueError), match=field):
