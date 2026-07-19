@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "dataset": "ScanNet200",
+  "methods": {
+    "OPENFUSION": {
+      "upstream_commit": "86bdc1ab173a203e7157ab055ff1fc96c786d86a",
+      "mode": "native",
+      "runner_kind": "openfusion_scannet200",
+      "environment": "openfusion-container",
+      "required_assets": [
+        {
+          "name": "seem_focall_v1",
+          "path": "/home/ww/oviovo_benchmark_assets/weights/openfusion/seem_focall_v1.pt",
+          "sha256": "06cad58bde442ce4f2b3ce00e3a218791dfb060a2d7f2d709ff509669c28a705"
+        },
+        {
+          "name": "clip_tokenizer_merges",
+          "path": "/home/ww/oviovo_benchmark_assets/weights/openfusion/clip-vit-base-patch32-tokenizer/merges.txt",
+          "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+        },
+        {
+          "name": "clip_tokenizer_vocabulary",
+          "path": "/home/ww/oviovo_benchmark_assets/weights/openfusion/clip-vit-base-patch32-tokenizer/vocab.json",
+          "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+        }
+      ],
+      "supported_metrics": ["semantic.miou", "semantic.macc", "semantic.f_miou", "geometry.f5"],
+      "unsupported_metrics": [
+        {"metric": "instance.ap25", "value": "N/A", "reason": "OpenFusion exports a semantic field without object instances."},
+        {"metric": "instance.ap50", "value": "N/A", "reason": "OpenFusion exports a semantic field without object instances."}
+      ],
+      "gpu_hint": 0,
+      "argv_template": ["python", "scripts/evaluation/run_scannet200_baseline.py", "--method", "OPENFUSION", "--manifest", "{manifest}", "--output", "{output}"]
+    },
+    "OVIMAP": {
+      "upstream_commit": "58a804e2d7c8cfac6040639701abeb9d45b86537",
+      "mode": "native",
+      "runner_kind": "ovimap_scannet200",
+      "environment": "baseline-ovimap-58a804e-cird",
+      "required_assets": [
+        {
+          "name": "cropformer_hornet_3x",
+          "path": "/home/ww/vv/paper2/Entity/checkpoints/CropFormer_hornet_3x_03823a.pth",
+          "sha256": "71915b7e9dc63fc662b32c59dff513530a06221c3b22f6de7ff4d6ef82df1128"
+        },
+        {
+          "name": "siglip_l_16_384",
+          "path": "/home/ww/oviovo_benchmark_assets/weights/siglip-large-patch16-384/model.safetensors",
+          "sha256": "ab804d2c2c631159f65afa1de27787c5dba90cbfa189f26404de1944d50a18a2"
+        }
+      ],
+      "supported_metrics": ["semantic.miou", "semantic.macc", "semantic.f_miou", "instance.ap25", "instance.ap50", "geometry.f5"],
+      "unsupported_metrics": [],
+      "gpu_hint": 0,
+      "argv_template": ["python", "scripts/evaluation/run_scannet200_baseline.py", "--method", "OVIMAP", "--manifest", "{manifest}", "--output", "{output}"]
+    },
+    "CONCEPTGRAPHS": {
+      "upstream_commit": "93277a02bd89171f8121e84203121cf7af9ebb5d",
+      "mode": "native",
+      "runner_kind": "conceptgraphs_canonical_scannet200",
+      "environment": "/home/ww/miniconda3/envs/oviovo-conceptgraphs",
+      "required_assets": [
+        {
+          "name": "sam_vit_h_checkpoint",
+          "path": "/home/ww/oviovo_benchmark_assets/weights/segment_anything/sam_vit_h_4b8939.pth",
+          "sha256": "a7bf3b02f3ebf1267aba913ff637d9a2d5c33d3173bb679e46d9f338c26f262e"
+        },
+        {
+          "name": "groundingdino_checkpoint",
+          "path": "/home/ww/vv/paper2/DovSG/checkpoints/GroundingDINO/groundingdino_swint_ogc.pth",
+          "sha256": "3b3ca2563c77c69f651d7bd133e97139c186df06231157a64c507099c52bc799"
+        },
+        {
+          "name": "ram_checkpoint",
+          "path": "/home/ww/vv/paper2/DovSG/checkpoints/recognize_anything/ram_swin_large_14m.pth",
+          "sha256": "15c729c793af28b9d107c69f85836a1356d76ea830d4714699fb62e55fcc08ed"
+        },
+        {
+          "name": "open_clip_vit_h_14",
+          "path": "/home/ww/vv/paper2/DovSG/checkpoints/CLIP-ViT-H-14-laion2B-s32B-b79K/open_clip_pytorch_model.bin",
+          "sha256": "9a78ef8e8c73fd0df621682e7a8e8eb36c6916cb3c16b291a082ecd52ab79cc4"
+        },
+        {
+          "name": "canonical_config",
+          "path": "configs/evaluation/baselines/conceptgraphs_canonical_replica.json",
+          "sha256": "dec89b69228102c89f7468959697592cd760682fab4ba5bfe6fe0505c5fb3a14"
+        }
+      ],
+      "supported_metrics": ["semantic.miou", "semantic.macc", "semantic.f_miou", "instance.ap25", "instance.ap50", "geometry.f5"],
+      "unsupported_metrics": [],
+      "gpu_hint": 1,
+      "argv_template": ["python", "scripts/evaluation/run_scannet200_baseline.py", "--method", "CONCEPTGRAPHS", "--manifest", "{manifest}", "--output", "{output}"]
+    },
+    "DUALMAP": {
+      "upstream_commit": "157235ec49e6a1f439babbc571c4c02ad1f06aa9",
+      "mode": "native",
+      "runner_kind": "dualmap_scannet200",
+      "environment": "/home/ww/miniconda3/envs/oviovo-dualmap",
+      "required_assets": [
+        {
+          "name": "yolov8l_world",
+          "path": "/home/ww/vv/paper2/DualMap/model/yolov8l-world.pt",
+          "sha256": "8bdfaef999116760247d6fb0b0f8fca064b43e94598b3d4a807ebae9bcf0cdd5"
+        },
+        {
+          "name": "mobile_sam",
+          "path": "/home/ww/vv/paper2/DualMap/model/mobile_sam.pt",
+          "sha256": "6dbb90523a35330fedd7f1d3dfc66f995213d81b29a5ca8108dbcdd4e37d6c2f"
+        },
+        {
+          "name": "fastsam_s",
+          "path": "/home/ww/vv/paper2/DualMap/model/FastSAM-s.pt",
+          "sha256": "c9f78716a81c7aff0d608ccc73e1b82ab3aaad86005049f6a92106a0be6d0844"
+        },
+        {
+          "name": "mobileclip_s2",
+          "path": "/home/ww/oviovo_benchmark_assets/weights/mobileclip_s2_openclip/open_clip_pytorch_model.bin",
+          "sha256": "64553a972ead2f84f6f59ee0c854751db0fdd2203efbd6e7e0c258ecbf24d8d8"
+        }
+      ],
+      "supported_metrics": ["semantic.miou", "semantic.macc", "semantic.f_miou", "instance.ap25", "instance.ap50", "geometry.f5"],
+      "unsupported_metrics": [],
+      "gpu_hint": 2,
+      "argv_template": ["python", "scripts/evaluation/run_scannet200_baseline.py", "--method", "DUALMAP", "--manifest", "{manifest}", "--output", "{output}"]
+    }
+  }
+}
