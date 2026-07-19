@@ -235,17 +235,22 @@ def adapt_ovimap(
         if color_array.shape != (3,):
             raise ValueError("OVI-MAP instance color must have three channels")
         color = tuple(int(value) for value in color_array)
-        features = np.asarray(instance["feat"], dtype=np.float32)
-        if features.ndim == 1:
-            features = features.reshape(1, -1)
-        visibility = np.asarray(instance.get("vis_area", ()), dtype=np.float32).reshape(-1)
-        if len(visibility) == len(features) and len(visibility):
-            features = features[-8:]
-            weights = visibility[-8:]
-            weights = weights / (float(weights.sum()) + 1e-6)
-            embedding = (features * weights[:, None]).sum(axis=0)
-        else:
-            embedding = features.mean(axis=0)
+        raw_features = instance.get("feat")
+        embedding = None
+        if raw_features is not None:
+            features = np.asarray(raw_features, dtype=np.float32)
+            if features.ndim == 1:
+                features = features.reshape(1, -1)
+            if features.ndim != 2 or not len(features):
+                raise ValueError("OVI-MAP semantic features must be a non-empty 2D array")
+            visibility = np.asarray(instance.get("vis_area", ()), dtype=np.float32).reshape(-1)
+            if len(visibility) == len(features) and len(visibility):
+                features = features[-8:]
+                weights = visibility[-8:]
+                weights = weights / (float(weights.sum()) + 1e-6)
+                embedding = (features * weights[:, None]).sum(axis=0)
+            else:
+                embedding = features.mean(axis=0)
         frames = [float(value) for value in instance.get("frame_id", ())]
         label = None if semantic_labels is None else semantic_labels[index]
         score = 1.0 if semantic_scores is None else float(semantic_scores[index])

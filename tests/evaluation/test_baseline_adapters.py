@@ -220,6 +220,26 @@ def test_ovimap_adapter_accepts_official_runtime_semantic_classification() -> No
     assert artifact.metadata.semantic_label_source.startswith("method_output.feat SigLIP")
 
 
+def test_ovimap_adapter_keeps_featureless_mesh_instance() -> None:
+    artifact = adapt_ovimap(
+        {7: {"color": np.array([10, 20, 30], dtype=np.uint8)}},
+        points_by_color={
+            (10, 20, 30): np.array([[0.0, 0.0, 1.0]], dtype=np.float32)
+        },
+        scene_id="room0",
+        timestamp=10.0,
+        upstream_commit="58a804e",
+        runtime=_runtime(),
+    )
+
+    entity = artifact.snapshot.entities[0]
+    assert entity.entity_id == "ovimap:7"
+    assert entity.semantic_embedding is None
+    assert entity.semantic_label is None
+    assert entity.metadata["observation_count"] == 0
+    np.testing.assert_allclose(entity.points_xyz, [[0.0, 0.0, 1.0]])
+
+
 def test_openfusion_adapter_groups_official_semantic_query_points() -> None:
     artifact = adapt_openfusion(
         np.array(
