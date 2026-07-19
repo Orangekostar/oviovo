@@ -194,6 +194,7 @@ def validate_frontend_cache(
         "dataset_config": Path(frontend["dataset_config"]),
         "classes_file": classes_file,
         "yolo_model": Path(frontend["yolo_model_path"]),
+        "yolo_clip_model": Path(frontend["yolo_clip_model_path"]),
         "mobile_sam_model": Path(frontend["mobile_sam_model_path"]),
         "clip_model": Path(frontend["clip_pretrained_path"]),
     }
@@ -227,6 +228,22 @@ def build_environment(
         f"{conceptgraphs_root}{os.pathsep}{existing}" if existing else str(conceptgraphs_root)
     )
     return environment
+
+
+def warm_shared_clip_cache(frontend: dict[str, Any]) -> str:
+    model_path = Path(frontend["yolo_clip_model_path"]).expanduser().resolve()
+    expected = str(frontend["yolo_clip_model_sha256"])
+    if model_path.is_file() and _sha256(model_path) == expected:
+        return expected
+    code = (
+        "from clip.clip import _MODELS, _download; "
+        "_download(_MODELS['ViT-B/32'], download_root=r'{}')"
+    ).format(model_path.parent)
+    model_path.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.run([str(frontend["python"]), "-c", code], check=True)
+    if not model_path.is_file() or _sha256(model_path) != expected:
+        raise ValueError("shared YOLO-World CLIP model checksum mismatch after warmup")
+    return expected
 
 
 def _run_queue(
@@ -280,6 +297,7 @@ def main(argv: list[str] | None = None) -> int:
         for command in commands:
             print(json.dumps({"scene": command.scene, "gpu": command.gpu_id, "argv": command.argv}))
         return 0
+    warm_shared_clip_cache(config["frontend"])
     frame_count = int(manifest["frame_selection"]["sampled_frames_per_scene"])
     queues = [[command for command in commands if command.gpu_id == gpu_id] for gpu_id in gpu_ids]
     with ThreadPoolExecutor(max_workers=len(queues)) as executor:

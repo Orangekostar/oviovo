@@ -12,6 +12,8 @@ import shutil
 import tempfile
 from typing import Any
 
+from PIL import Image
+
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -71,6 +73,13 @@ def _build_summary(
         depth = results / f"depth{source_id:06d}.png"
         if not rgb.is_file() or not depth.is_file():
             raise FileNotFoundError(f"missing Replica source frame {source_id}: {source}")
+        try:
+            with Image.open(rgb) as image:
+                image.verify()
+            with Image.open(depth) as image:
+                image.verify()
+        except (OSError, SyntaxError, ValueError) as exc:
+            raise ValueError(f"cannot decode Replica source frame {source_id}: {exc}") from exc
         frames.append(
             {
                 "sampled_frame_id": sampled_id,

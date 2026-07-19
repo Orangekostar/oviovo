@@ -3,8 +3,16 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import numpy as np
+from PIL import Image
+import pytest
+
 from scripts.materialize_replica_stride_view import materialize
-from scripts.precompute_oviv2_replica_frontend import build_commands, build_environment
+from scripts.precompute_oviv2_replica_frontend import (
+    build_commands,
+    build_environment,
+    warm_shared_clip_cache,
+)
 
 
 SCENES = ("room0", "room1", "room2", "office0", "office1", "office2", "office3", "office4")
@@ -16,8 +24,12 @@ def _source_scene(root: Path, scene: str = "room0", frame_count: int = 30) -> Pa
     results.mkdir(parents=True)
     poses: list[str] = []
     for frame_id in range(frame_count):
-        (results / f"frame{frame_id:06d}.jpg").write_bytes(f"rgb-{frame_id}".encode())
-        (results / f"depth{frame_id:06d}.png").write_bytes(f"depth-{frame_id}".encode())
+        Image.fromarray(np.full((4, 5, 3), frame_id, dtype=np.uint8)).save(
+            results / f"frame{frame_id:06d}.jpg"
+        )
+        Image.fromarray(np.full((4, 5), frame_id, dtype=np.uint16)).save(
+            results / f"depth{frame_id:06d}.png"
+        )
         poses.append(" ".join([str(frame_id)] * 16))
     (source / "traj.txt").write_text("\n".join(poses) + "\n", encoding="utf-8")
     return source
@@ -54,6 +66,26 @@ def test_stride_view_revalidates_existing_view_without_replacing_it(tmp_path: Pa
 
     assert second == first
     assert marker.read_text(encoding="utf-8") == "keep"
+
+
+def test_stride_view_rejects_existing_but_undecodable_source_frame(tmp_path: Path) -> None:
+    source = _source_scene(tmp_path / "source")
+    (source / "results" / "frame000010.jpg").write_bytes(b"\x00" * 16)
+
+    with pytest.raises(ValueError, match="cannot decode Replica source frame 10"):
+        materialize(source, tmp_path / "view", start=0, stop=30, stride=10)
+
+
+def test_stride_view_wraps_png_crc_errors_with_source_frame_id(tmp_path: Path) -> None:
+    source = _source_scene(tmp_path / "source")
+    depth = source / "results" / "depth000020.png"
+    payload = bytearray(depth.read_bytes())
+    idat = payload.index(b"IDAT")
+    payload[idat + 4] ^= 0xFF
+    depth.write_bytes(payload)
+
+    with pytest.raises(ValueError, match="cannot decode Replica source frame 20"):
+        materialize(source, tmp_path / "view", start=0, stop=30, stride=10)
 
 
 def test_frontend_commands_share_one_frozen_algorithm_hash(tmp_path: Path) -> None:
@@ -103,3 +135,15 @@ def test_frontend_environment_exposes_conceptgraphs_package_and_selected_gpu(tmp
 
     assert environment["CUDA_VISIBLE_DEVICES"] == "2"
     assert environment["PYTHONPATH"].split(":") == [str(root), "/existing"]
+
+
+def test_shared_clip_warmup_accepts_preverified_weight_without_download(tmp_path: Path) -> None:
+    model = tmp_path / "ViT-B-32.pt"
+    model.write_bytes(b"frozen-clip")
+    import hashlib
+
+    expected = hashlib.sha256(model.read_bytes()).hexdigest()
+
+    assert warm_shared_clip_cache(
+        {"python": "/missing/python", "yolo_clip_model_path": str(model), "yolo_clip_model_sha256": expected}
+    ) == expected
