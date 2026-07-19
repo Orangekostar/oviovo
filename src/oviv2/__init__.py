@@ -8,6 +8,7 @@ from src.oviv2.evidence import (
     SparseEvidenceStore,
 )
 from src.oviv2.geometry import SparseTsdfVolume, TsdfConfig
+from src.oviv2.meshing import LabeledMesh, derive_labeled_mesh, write_labeled_mesh
 from src.oviv2.ownership import OwnershipRecord, ReversibleOwnershipStore
 from src.oviv2.snapshot import VoxelMapSnapshot, VoxelSnapshotMetadata
 
@@ -15,6 +16,7 @@ __all__ = [
     "BlockKey",
     "EntityCandidate",
     "EvidenceConfig",
+    "LabeledMesh",
     "OwnershipRecord",
     "ReversibleOwnershipStore",
     "SemanticCandidate",
@@ -24,7 +26,9 @@ __all__ = [
     "VoxelKey",
     "VoxelMapSnapshot",
     "VoxelSnapshotMetadata",
+    "derive_labeled_mesh",
     "join_voxel_key",
     "point_to_voxel",
     "split_voxel_key",
+    "write_labeled_mesh",
 ]
