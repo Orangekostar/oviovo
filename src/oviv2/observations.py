@@ -37,6 +37,18 @@ def lift_mask_to_voxels(
         raise ValueError("voxel_size_m must be finite and positive")
     if pixel_stride <= 0 or min_valid_points <= 0:
         raise ValueError("pixel_stride and min_valid_points must be positive")
+    pose = np.asarray(frame.pose, dtype=np.float64)
+    if pose.shape != (4, 4):
+        raise ValueError("frame pose must have shape (4, 4)")
+    if not np.all(np.isfinite(pose)):
+        raise ValueError("frame pose must contain only finite values")
+    intrinsics = frame.intrinsics
+    intrinsic_values = np.asarray(
+        [intrinsics.fx, intrinsics.fy, intrinsics.cx, intrinsics.cy],
+        dtype=np.float64,
+    )
+    if not np.all(np.isfinite(intrinsic_values)) or intrinsics.fx == 0.0 or intrinsics.fy == 0.0:
+        raise ValueError("frame intrinsics must be finite with nonzero focal lengths")
 
     sampled = np.zeros(mask.shape, dtype=bool)
     sampled[::pixel_stride, ::pixel_stride] = True
@@ -45,7 +57,6 @@ def lift_mask_to_voxels(
     if len(rows) < min_valid_points:
         return None
     depth = frame.depth[rows, columns].astype(np.float64)
-    intrinsics = frame.intrinsics
     camera = np.column_stack(
         (
             (columns - intrinsics.cx) * depth / intrinsics.fx,
@@ -53,10 +64,14 @@ def lift_mask_to_voxels(
             depth,
         )
     )
+    if not np.all(np.isfinite(camera)):
+        raise ValueError("lifted camera geometry must contain only finite values")
     world = (
-        (np.asarray(frame.pose[:3, :3], dtype=np.float64) @ camera.T).T
-        + np.asarray(frame.pose[:3, 3], dtype=np.float64)
+        (pose[:3, :3] @ camera.T).T
+        + pose[:3, 3]
     )
+    if not np.all(np.isfinite(world)):
+        raise ValueError("lifted world geometry must contain only finite values")
     integer_keys = np.floor(world / voxel_size_m).astype(np.int64)
     voxel_keys = frozenset(tuple(int(value) for value in row) for row in integer_keys)
     if not voxel_keys:
@@ -90,6 +105,11 @@ def _validated_feature_model_id(value: str | None) -> str | None:
     return normalized
 
 
+def _immutable_array(value: np.ndarray) -> np.ndarray:
+    contiguous = np.ascontiguousarray(value)
+    return np.frombuffer(contiguous.tobytes(), dtype=contiguous.dtype).reshape(contiguous.shape)
+
+
 def _normalized_feature(value: np.ndarray, field_name: str) -> np.ndarray:
     feature = np.array(value, dtype=np.float64, copy=True, order="C")
     if feature.ndim != 1:
@@ -108,8 +128,7 @@ def _normalized_feature(value: np.ndarray, field_name: str) -> np.ndarray:
         raise ValueError(f"normalized {field_name} must be nonzero")
     if not np.isclose(output_norm, 1.0, rtol=1e-6, atol=1e-7):
         raise ValueError(f"normalized {field_name} must have unit norm")
-    feature.setflags(write=False)
-    return feature
+    return _immutable_array(feature)
 
 
 def _normalized_direction(value: tuple[float, float, float]) -> tuple[float, float, float]:
@@ -193,8 +212,7 @@ class FrameObservation:
         mask = np.ascontiguousarray(self.mask, dtype=bool)
         if mask.ndim != 2:
             raise ValueError("mask must be two dimensional")
-        mask.setflags(write=False)
-        object.__setattr__(self, "mask", mask)
+        object.__setattr__(self, "mask", _immutable_array(mask))
         if not self.voxel_keys:
             raise ValueError("voxel_keys cannot be empty")
         for field_name in ("image_feature", "text_feature"):
@@ -324,6 +342,14 @@ class CachedFrontendAdapter:
             and image_features.shape[1] != text_features.shape[1]
         ):
             raise ValueError("frontend image and text feature dimensions must match")
+        for field_name, features in (
+            ("image_feats", image_features),
+            ("text_feats", text_features),
+        ):
+            if features is None:
+                continue
+            for index, feature in enumerate(features):
+                _normalized_feature(feature, f"frontend {field_name} row {index}")
         if (image_features is not None or text_features is not None) and self.feature_model_id is None:
             raise ValueError("feature_model_id is required when cached features are present")
         return (

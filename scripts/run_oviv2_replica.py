@@ -105,6 +105,52 @@ def _resolve_config_paths(config: dict[str, Any]) -> dict[str, Any]:
     return resolved
 
 
+def _nonempty_feature_model_id(value: Any, source: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{source} feature_model_id must be a non-empty string")
+    return value.strip()
+
+
+def _resolve_frontend_feature_model_id(
+    config: dict[str, Any],
+    frontend_manifest: dict[str, Any] | None,
+) -> str | None:
+    config_model_id = (
+        _nonempty_feature_model_id(config["feature_model_id"], "config")
+        if "feature_model_id" in config
+        else None
+    )
+    manifest_model_id: str | None = None
+    if frontend_manifest is not None:
+        if "feature_model_id" in frontend_manifest:
+            manifest_model_id = _nonempty_feature_model_id(
+                frontend_manifest["feature_model_id"],
+                "frontend manifest",
+            )
+        else:
+            provenance = frontend_manifest.get("provenance_sha256")
+            if provenance is not None and not isinstance(provenance, dict):
+                raise ValueError("frontend manifest provenance_sha256 must be an object")
+            if isinstance(provenance, dict) and "clip_model" in provenance:
+                clip_hash = provenance["clip_model"]
+                if (
+                    not isinstance(clip_hash, str)
+                    or len(clip_hash) != 64
+                    or any(value not in "0123456789abcdefABCDEF" for value in clip_hash)
+                ):
+                    raise ValueError(
+                        "frontend manifest provenance_sha256.clip_model must be a 64-digit hex hash"
+                    )
+                manifest_model_id = f"clip-sha256:{clip_hash.lower()}"
+    if (
+        config_model_id is not None
+        and manifest_model_id is not None
+        and config_model_id != manifest_model_id
+    ):
+        raise ValueError("config and frontend manifest feature_model_id conflict")
+    return manifest_model_id if manifest_model_id is not None else config_model_id
+
+
 def _git_value(*arguments: str) -> str:
     result = subprocess.run(
         ["git", *arguments],
@@ -295,6 +341,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         requested_frames,
         args.skip_evaluation,
     )
+    frontend_feature_model_id = _resolve_frontend_feature_model_id(config, frontend_manifest)
     vocabulary = ReplicaVocabulary(
         classes=tuple(benchmark["vocabulary"]["classes"]),
         aliases=benchmark.get("aliases", {}),
@@ -306,6 +353,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         voxel_size_m=runtime_config.tsdf.voxel_size_m,
         pixel_stride=int(config.get("pixel_stride", 4)),
         min_valid_points=int(config.get("min_valid_points", 10)),
+        feature_model_id=frontend_feature_model_id,
     )
     structure_config = _structure_config(
         config,
@@ -411,6 +459,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "frontend_algorithm_hash": (
             frontend_manifest.get("algorithm_hash") if frontend_manifest is not None else None
         ),
+        "frontend_feature_model_id": frontend_feature_model_id,
         "hardware": {
             "hostname": platform.node(),
             "platform": platform.platform(),

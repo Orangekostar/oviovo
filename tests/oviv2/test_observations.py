@@ -234,6 +234,19 @@ def test_frame_observation_normalizes_optional_fields() -> None:
     assert type(observation.border_contact_fraction) is float
 
 
+def test_frame_observation_arrays_have_immutable_backing() -> None:
+    observation = _observation(
+        image_feature=np.asarray([3.0, 4.0]),
+        text_feature=np.asarray([0.0, 5.0]),
+        feature_model_id="clip-sha256:test",
+    )
+
+    for value in (observation.mask, observation.image_feature, observation.text_feature):
+        with pytest.raises(ValueError, match="WRITEABLE"):
+            value.flags.writeable = True
+        assert value.flags.writeable is False
+
+
 @pytest.mark.parametrize("magnitude", [1e-300, 1e300], ids=("tiny", "large"))
 def test_frame_observation_normalizes_extreme_finite_features(magnitude: float) -> None:
     observation = _observation(
@@ -350,6 +363,55 @@ def test_adapter_uses_none_for_degenerate_view_direction(
     assert observation.view_direction_xyz is None
 
 
+@pytest.mark.parametrize("invalid_value", [np.nan, np.inf], ids=("nan", "inf"))
+def test_adapter_rejects_nonfinite_pose_before_voxel_conversion(
+    tmp_path: Path,
+    vocabulary: ReplicaVocabulary,
+    invalid_value: float,
+) -> None:
+    _write_cache(
+        tmp_path / "frame000000.pkl.gz",
+        masks=np.ones((1, 4, 5), dtype=bool),
+        labels=["chair"],
+    )
+    frame = _frame()
+    frame.pose[0, 3] = invalid_value
+
+    with pytest.raises(ValueError, match="pose.*finite"):
+        CachedFrontendAdapter(
+            tmp_path,
+            vocabulary,
+            min_valid_points=1,
+        ).observe(frame, 0)
+
+
+@pytest.mark.parametrize(
+    ("field_name", "invalid_value"),
+    [("fx", 0.0), ("cx", np.nan)],
+    ids=("zero-focal-length", "nonfinite-principal-point"),
+)
+def test_adapter_rejects_intrinsics_that_produce_nonfinite_geometry(
+    tmp_path: Path,
+    vocabulary: ReplicaVocabulary,
+    field_name: str,
+    invalid_value: float,
+) -> None:
+    _write_cache(
+        tmp_path / "frame000000.pkl.gz",
+        masks=np.ones((1, 4, 5), dtype=bool),
+        labels=["chair"],
+    )
+    frame = _frame()
+    setattr(frame.intrinsics, field_name, invalid_value)
+
+    with pytest.raises(ValueError, match="intrinsics.*finite"):
+        CachedFrontendAdapter(
+            tmp_path,
+            vocabulary,
+            min_valid_points=1,
+        ).observe(frame, 0)
+
+
 def test_adapter_returns_empty_batch_for_empty_cache(
     tmp_path: Path,
     vocabulary: ReplicaVocabulary,
@@ -382,3 +444,35 @@ def test_adapter_drops_observation_without_enough_valid_depth(
     frame.depth[:] = 0.0
 
     assert CachedFrontendAdapter(tmp_path, vocabulary, min_valid_points=1).observe(frame, 0) == ()
+
+
+@pytest.mark.parametrize(
+    ("image_feats", "message"),
+    [
+        (np.asarray([[np.nan, 1.0]]), "finite"),
+        (np.zeros((1, 2)), "nonzero"),
+    ],
+    ids=("non-finite", "zero"),
+)
+def test_adapter_rejects_bad_feature_before_filtering_invalid_depth(
+    tmp_path: Path,
+    vocabulary: ReplicaVocabulary,
+    image_feats: np.ndarray,
+    message: str,
+) -> None:
+    _write_cache(
+        tmp_path / "frame000000.pkl.gz",
+        masks=np.ones((1, 4, 5), dtype=bool),
+        labels=["chair"],
+        image_feats=image_feats,
+    )
+    frame = _frame()
+    frame.depth[:] = 0.0
+
+    with pytest.raises(ValueError, match=message):
+        CachedFrontendAdapter(
+            tmp_path,
+            vocabulary,
+            min_valid_points=1,
+            feature_model_id="clip-sha256:test",
+        ).observe(frame, 0)
