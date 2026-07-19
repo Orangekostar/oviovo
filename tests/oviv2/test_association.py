@@ -105,6 +105,35 @@ def test_expanded_bounds_create_spatial_support() -> None:
     ) is not None
 
 
+@pytest.mark.parametrize(
+    ("left_bounds", "right_bounds", "expected"),
+    [
+        (
+            ((0.0, 0.0, 0.0), (1e308, 1e308, 1e308)),
+            ((5e307, 5e307, 5e307), (1e308, 1e308, 1e308)),
+            0.125,
+        ),
+        (
+            ((-1e308, -1e308, -1e308), (-5e307, -5e307, -5e307)),
+            ((5e307, 5e307, 5e307), (1e308, 1e308, 1e308)),
+            0.0,
+        ),
+    ],
+)
+def test_expanded_bounds_iou_is_stable_for_extreme_finite_coordinates(
+    left_bounds: tuple[tuple[float, float, float], tuple[float, float, float]],
+    right_bounds: tuple[tuple[float, float, float], tuple[float, float, float]],
+    expected: float,
+) -> None:
+    left = target(1, {(0, 0, 0)}, bounds=left_bounds)
+    right = target(2, {(1, 0, 0)}, bounds=right_bounds)
+
+    with np.errstate(over="raise", invalid="raise"):
+        result = expanded_bounds_iou(left, right, 0.0)
+
+    assert result == pytest.approx(expected)
+
+
 def test_distance_gate_rejects_bounds_only_candidate_beyond_limit() -> None:
     shared_bounds = ((0.0, 0.0, 0.0), (0.1, 0.1, 0.1))
     left = target(1, {(0, 0, 0)}, bounds=shared_bounds, centroid=(0.0, 0.0, 0.0))
@@ -129,6 +158,32 @@ def test_overlap_candidate_survives_distance_gate_with_zero_geometry() -> None:
 
     assert result is not None
     assert result.accepted is True
+
+
+def test_extreme_centroid_distance_is_infinite_without_overflow() -> None:
+    shared_bounds = ((0.0, 0.0, 0.0), (0.05, 0.05, 0.05))
+    overlap_left = target(1, {(0, 0, 0)}, centroid=(1e308, 0.0, 0.0))
+    overlap_right = target(2, {(0, 0, 0)}, centroid=(-1e308, 0.0, 0.0))
+    bounds_left = target(
+        3,
+        {(0, 0, 0)},
+        bounds=shared_bounds,
+        centroid=(1e308, 0.0, 0.0),
+    )
+    bounds_right = target(
+        4,
+        {(1, 0, 0)},
+        bounds=shared_bounds,
+        centroid=(-1e308, 0.0, 0.0),
+    )
+
+    with np.errstate(over="raise", invalid="raise"):
+        overlap_result = score_candidate(overlap_left, overlap_right, AssociationConfig())
+        bounds_result = score_candidate(bounds_left, bounds_right, AssociationConfig())
+
+    assert overlap_result is not None
+    assert overlap_result.accepted is True
+    assert bounds_result is None
 
 
 @pytest.mark.parametrize(
@@ -238,6 +293,43 @@ def test_visual_feature_below_override_does_not_clear_semantic_conflict() -> Non
     assert result.accepted is False
 
 
+def test_semantic_conflict_threshold_is_inclusive() -> None:
+    config = AssociationConfig(semantic_conflict_confidence=0.75)
+    left = target(1, {(0, 0, 0)}, semantic_id=2, semantic_confidence=0.75)
+    right = target(2, {(0, 0, 0)}, semantic_id=3, semantic_confidence=0.75)
+
+    result = score_candidate(left, right, config)
+
+    assert result is not None
+    assert result.conflict is True
+    assert result.accepted is False
+
+
+def test_visual_override_threshold_is_inclusive() -> None:
+    config = AssociationConfig(semantic_conflict_visual_override=0.8)
+    left = target(
+        1,
+        {(0, 0, 0)},
+        semantic_id=2,
+        visual_feature=(1.0, 0.0),
+        feature_model_id="clip",
+    )
+    right = target(
+        2,
+        {(0, 0, 0)},
+        semantic_id=3,
+        visual_feature=(0.8, 0.6),
+        feature_model_id="clip",
+    )
+
+    result = score_candidate(left, right, config)
+
+    assert result is not None
+    assert result.visual_cosine == pytest.approx(0.8)
+    assert result.conflict is False
+    assert result.accepted is True
+
+
 def test_free_space_conflict_is_always_rejected() -> None:
     result = score_candidate(
         target(1, {(0, 0, 0)}, free_space_conflict=True),
@@ -264,6 +356,24 @@ def test_minimum_score_rejects_weak_candidate() -> None:
     assert solve_assignment((left,), (right,), config) == ()
 
 
+def test_extreme_component_weights_produce_finite_renormalized_score() -> None:
+    config = AssociationConfig(
+        geometry_weight=1e308,
+        overlap_weight=1e308,
+        visual_weight=1e308,
+        semantic_weight=1e308,
+        temporal_weight=1e308,
+    )
+    left = target(1, {(0, 0, 0)}, semantic_id=2, semantic_confidence=0.1)
+    right = target(2, {(0, 0, 0)}, semantic_id=3, semantic_confidence=0.1)
+
+    result = score_candidate(left, right, config)
+
+    assert result is not None
+    assert np.isfinite(result.score)
+    assert result.score == pytest.approx(0.75)
+
+
 def test_assignment_handles_empty_inputs() -> None:
     item = target(1, {(0, 0, 0)})
 
@@ -279,6 +389,68 @@ def test_invalid_hungarian_pairs_are_not_returned() -> None:
     )
 
     assert [(item.left_id, item.right_id) for item in assignments] == [(10, 20)]
+
+
+def test_assignment_preserves_tiny_real_score_advantage_for_all_permutations() -> None:
+    angle = 8.0e-7
+    axis = (1.0, 0.0)
+    rotated = (float(np.cos(angle)), float(np.sin(angle)))
+    left = (
+        target(11, {(0, 0, 0)}, visual_feature=rotated, feature_model_id="clip"),
+        target(10, {(0, 0, 0)}, visual_feature=axis, feature_model_id="clip"),
+    )
+    right = (
+        target(20, {(0, 0, 0)}, visual_feature=rotated, feature_model_id="clip"),
+        target(21, {(0, 0, 0)}, visual_feature=axis, feature_model_id="clip"),
+    )
+    expected = [(10, 21), (11, 20)]
+
+    for left_values in permutations(left):
+        for right_values in permutations(right):
+            assignments = solve_assignment(
+                left_values,
+                right_values,
+                AssociationConfig(),
+            )
+            assert [(item.left_id, item.right_id) for item in assignments] == expected
+
+
+def test_local_equal_score_tie_uses_sorted_ids() -> None:
+    assignments = solve_assignment(
+        (target(11, {(10, 0, 0)}), target(10, {(0, 0, 0)})),
+        (
+            target(21, {(0, 0, 0)}),
+            target(22, {(10, 0, 0)}),
+            target(20, {(0, 0, 0)}),
+        ),
+        AssociationConfig(bounds_expansion_m=0.0),
+    )
+
+    assert [(item.left_id, item.right_id) for item in assignments] == [
+        (10, 20),
+        (11, 22),
+    ]
+
+
+def test_fully_tied_rectangular_assignments_prefer_nearby_sorted_ranks() -> None:
+    left = tuple(target(target_id, {(0, 0, 0)}) for target_id in (12, 10, 11))
+    right = tuple(target(target_id, {(0, 0, 0)}) for target_id in (21, 22, 20))
+
+    wide = solve_assignment(left[:2], right, AssociationConfig())
+    tall = solve_assignment(left, right[:2], AssociationConfig())
+
+    assert [(item.left_id, item.right_id) for item in wide] == [(10, 20), (12, 21)]
+    assert [(item.left_id, item.right_id) for item in tall] == [(10, 21), (11, 22)]
+
+
+def test_fully_invalid_assignment_returns_empty() -> None:
+    assignments = solve_assignment(
+        (target(10, {(0, 0, 0)}), target(11, {(1, 0, 0)})),
+        (target(20, {(10, 0, 0)}), target(21, {(11, 0, 0)})),
+        AssociationConfig(bounds_expansion_m=0.0),
+    )
+
+    assert assignments == ()
 
 
 def test_equal_score_assignment_is_stable_for_all_input_permutations() -> None:

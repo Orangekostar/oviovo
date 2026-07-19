@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from fractions import Fraction
 
 import numpy as np
 from scipy.optimize import linear_sum_assignment
@@ -177,12 +178,14 @@ class AssociationConfig:
             if weight < 0.0:
                 raise ValueError(f"{name} must be non-negative")
             object.__setattr__(self, name, weight)
-        if (
-            self.geometry_weight
-            + self.overlap_weight
-            + self.semantic_weight
-            + self.temporal_weight
-            <= 0.0
+        if not any(
+            weight > 0.0
+            for weight in (
+                self.geometry_weight,
+                self.overlap_weight,
+                self.semantic_weight,
+                self.temporal_weight,
+            )
         ):
             raise ValueError("at least one non-visual component weight must be positive")
 
@@ -242,6 +245,23 @@ def directed_voxel_overlap(
     return float(len(left & right) / len(left)) if left else 0.0
 
 
+def _centroid_distance(left: AssociationTarget, right: AssociationTarget) -> float:
+    coordinates = left.centroid_xyz + right.centroid_xyz
+    scale = max((abs(value) for value in coordinates), default=0.0)
+    if scale == 0.0:
+        return 0.0
+    difference = (
+        np.asarray(left.centroid_xyz) / scale
+        - np.asarray(right.centroid_xyz) / scale
+    )
+    scaled_distance = float(np.linalg.norm(difference))
+    if scaled_distance == 0.0:
+        return 0.0
+    if scale > float(np.finfo(np.float64).max) / scaled_distance:
+        return float("inf")
+    return scale * scaled_distance
+
+
 def expanded_bounds_iou(
     left: AssociationTarget,
     right: AssociationTarget,
@@ -252,10 +272,21 @@ def expanded_bounds_iou(
     expansion = _finite_float(expansion_m, "expansion_m")
     if expansion < 0.0:
         raise ValueError("expansion_m must be non-negative")
-    left_min = np.asarray(left.bounds_min_xyz) - expansion
-    left_max = np.asarray(left.bounds_max_xyz) + expansion
-    right_min = np.asarray(right.bounds_min_xyz) - expansion
-    right_max = np.asarray(right.bounds_max_xyz) + expansion
+    raw_bounds = (
+        left.bounds_min_xyz
+        + left.bounds_max_xyz
+        + right.bounds_min_xyz
+        + right.bounds_max_xyz
+    )
+    scale = max((abs(value) for value in raw_bounds), default=0.0)
+    scale = max(scale, expansion)
+    if scale == 0.0:
+        scale = 1.0
+    scaled_expansion = expansion / scale
+    left_min = np.asarray(left.bounds_min_xyz) / scale - scaled_expansion
+    left_max = np.asarray(left.bounds_max_xyz) / scale + scaled_expansion
+    right_min = np.asarray(right.bounds_min_xyz) / scale - scaled_expansion
+    right_max = np.asarray(right.bounds_max_xyz) / scale + scaled_expansion
     intersection = np.maximum(
         0.0,
         np.minimum(left_max, right_max) - np.maximum(left_min, right_min),
@@ -278,17 +309,15 @@ def score_candidate(
         raise TypeError("left and right must be AssociationTarget values")
     if not isinstance(config, AssociationConfig):
         raise TypeError("config must be an AssociationConfig")
-    overlap = max(
-        directed_voxel_overlap(left.voxel_keys, right.voxel_keys),
-        directed_voxel_overlap(right.voxel_keys, left.voxel_keys),
-    )
+    intersection_count = len(left.voxel_keys & right.voxel_keys)
+    left_overlap = intersection_count / len(left.voxel_keys) if left.voxel_keys else 0.0
+    right_overlap = intersection_count / len(right.voxel_keys) if right.voxel_keys else 0.0
+    overlap = float(max(left_overlap, right_overlap))
     bounds_iou = expanded_bounds_iou(left, right, config.bounds_expansion_m)
     if overlap < config.min_directed_overlap and bounds_iou <= 0.0:
         return None
 
-    distance = float(
-        np.linalg.norm(np.asarray(left.centroid_xyz) - np.asarray(right.centroid_xyz))
-    )
+    distance = _centroid_distance(left, right)
     if distance > config.max_centroid_distance_m and overlap < config.min_directed_overlap:
         return None
     geometry = max(0.0, 1.0 - distance / config.max_centroid_distance_m)
@@ -334,8 +363,13 @@ def score_candidate(
     ]
     if visual is not None:
         components.append((config.visual_weight, max(0.0, visual)))
-    denominator = sum(weight for weight, _ in components)
-    score = sum(weight * value for weight, value in components) / denominator
+    weight_scale = max(weight for weight, _ in components)
+    scaled_components = [
+        (weight / weight_scale, value)
+        for weight, value in components
+    ]
+    denominator = sum(weight for weight, _ in scaled_components)
+    score = sum(weight * value for weight, value in scaled_components) / denominator
     score = float(np.clip(score, 0.0, 1.0))
     return CandidateScore(
         left.target_id,
@@ -373,17 +407,37 @@ def solve_assignment(
     column_count = len(right_values)
     costs = np.full((row_count, column_count), 1e6, dtype=np.float64)
     scores: dict[tuple[int, int], CandidateScore] = {}
-    tie_epsilon = 1e-12 / max(1, row_count, column_count) ** 2
     for row, left_item in enumerate(left_values):
         for column, right_item in enumerate(right_values):
             candidate = score_candidate(left_item, right_item, config)
             if candidate is None or not candidate.accepted:
                 continue
             scores[(row, column)] = candidate
-            rank_penalty = abs(row - column) * tie_epsilon
-            costs[row, column] = 1.0 - candidate.score + rank_penalty
+            costs[row, column] = 1.0 - candidate.score
 
-    rows, columns = linear_sum_assignment(costs)
+    primary_rows, primary_columns = linear_sum_assignment(costs)
+    perturbed_costs = costs.copy()
+    tie_epsilon = 1e-12 / max(1, row_count, column_count) ** 2
+    for row, column in scores:
+        perturbed_costs[row, column] += abs(row - column) * tie_epsilon
+    tie_rows, tie_columns = linear_sum_assignment(perturbed_costs)
+
+    def exact_original_cost(rows: np.ndarray, columns: np.ndarray) -> Fraction:
+        return sum(
+            (
+                Fraction.from_float(float(costs[row, column]))
+                for row, column in zip(rows, columns)
+            ),
+            start=Fraction(),
+        )
+
+    if exact_original_cost(tie_rows, tie_columns) == exact_original_cost(
+        primary_rows,
+        primary_columns,
+    ):
+        rows, columns = tie_rows, tie_columns
+    else:
+        rows, columns = primary_rows, primary_columns
     result = [
         Assignment(
             scores[(row, column)].left_id,
