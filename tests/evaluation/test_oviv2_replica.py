@@ -109,7 +109,63 @@ def test_instance_matching_is_class_constrained_when_gt_ids_repeat() -> None:
 
     assert metrics["ap25"] == pytest.approx(1.0)
     assert metrics["ap50"] == pytest.approx(1.0)
-    assert metrics["instance"]["ground_truth_instance_count"] == 2
+    assert metrics["instance"]["class_agnostic"]["ground_truth_instance_count"] == 2
+
+
+def test_headline_instance_ap_is_class_agnostic_and_needs_no_entity_info() -> None:
+    vertices = np.column_stack((np.arange(100, dtype=np.float32), np.zeros((100, 2))))
+    mesh = _mesh(
+        vertices,
+        np.zeros(100, dtype=np.int64),
+        np.full(100, 10, dtype=np.int64),
+    )
+    gt = _ground_truth(
+        vertices,
+        np.ones(100, dtype=np.int64),
+        np.ones(100, dtype=np.int64),
+    )
+
+    metrics = evaluate_replica_voxel_map(
+        mesh,
+        gt,
+        [],
+        valid_semantic_ids={1},
+        instance_semantic_ids={1},
+        min_instance_vertices=100,
+    )
+
+    assert metrics["ap25"] == pytest.approx(1.0)
+    assert metrics["ap50"] == pytest.approx(1.0)
+    assert metrics["instance"]["class_agnostic"]["predicted_instance_count"] == 1
+    assert metrics["instance"]["semantic_class_constrained"]["ap25"] == 0.0
+
+
+def test_class_agnostic_gt_identity_includes_semantic_class() -> None:
+    vertices = np.column_stack((np.arange(200, dtype=np.float32), np.zeros((200, 2))))
+    mesh = _mesh(
+        vertices,
+        np.repeat([2, 1], 100),
+        np.repeat([10, 20], 100),
+    )
+    gt = _ground_truth(
+        vertices,
+        np.repeat([1, 2], 100),
+        np.ones(200, dtype=np.int64),
+    )
+
+    metrics = evaluate_replica_voxel_map(
+        mesh,
+        gt,
+        [],
+        valid_semantic_ids={1, 2},
+        instance_semantic_ids={1, 2},
+        min_instance_vertices=100,
+    )
+
+    assert metrics["ap25"] == pytest.approx(1.0)
+    assert metrics["ap50"] == pytest.approx(1.0)
+    assert metrics["instance"]["class_agnostic"]["ground_truth_instance_count"] == 2
+    assert metrics["instance"]["class_agnostic"]["prediction_entity_ids"] == [10, 20]
 
 
 def test_area_confidence_and_filters_produce_hand_computed_ap() -> None:
@@ -142,8 +198,9 @@ def test_area_confidence_and_filters_produce_hand_computed_ap() -> None:
         min_instance_vertices=100,
     )
 
-    assert metrics["instance"]["predicted_instance_count"] == 2
-    assert metrics["instance"]["per_class"]["1"]["prediction_confidences"] == [
+    diagnostic = metrics["instance"]["semantic_class_constrained"]
+    assert diagnostic["predicted_instance_count"] == 2
+    assert diagnostic["per_class"]["1"]["prediction_confidences"] == [
         1.0,
         pytest.approx(100.0 / 120.0),
     ]

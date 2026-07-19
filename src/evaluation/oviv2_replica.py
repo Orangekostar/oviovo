@@ -202,7 +202,7 @@ def _average_precision(tp: np.ndarray, fp: np.ndarray, gt_count: int) -> float:
 
 def _instance_threshold(
     predictions: Sequence[tuple[float, int, np.ndarray]],
-    ground_truth_masks: Sequence[tuple[int, np.ndarray]],
+    ground_truth_masks: Sequence[tuple[object, np.ndarray]],
     threshold: float,
 ) -> tuple[float, float]:
     matched_gt: set[int] = set()
@@ -232,7 +232,76 @@ def _instance_threshold(
     )
 
 
-def _instance_metrics(
+def _ground_truth_instance_masks(
+    ground_truth: ReplicaGroundTruth,
+    instance_semantic_ids: set[int],
+    min_instance_vertices: int,
+) -> list[tuple[tuple[int, int], np.ndarray]]:
+    masks: list[tuple[tuple[int, int], np.ndarray]] = []
+    for semantic_id in sorted(instance_semantic_ids):
+        class_domain = ground_truth.semantic_ids == semantic_id
+        for instance_id in sorted(
+            int(value) for value in np.unique(ground_truth.instance_ids[class_domain])
+        ):
+            if instance_id <= 0:
+                continue
+            mask = class_domain & (ground_truth.instance_ids == instance_id)
+            if int(np.sum(mask)) >= min_instance_vertices:
+                masks.append(((semantic_id, instance_id), mask))
+    return masks
+
+
+def _predicted_entity_masks(
+    projected: ProjectedLabels,
+    min_instance_vertices: int,
+) -> list[tuple[float, int, np.ndarray]]:
+    unscaled: list[tuple[int, int, np.ndarray]] = []
+    for entity_id in sorted(int(value) for value in np.unique(projected.entity_ids)):
+        if entity_id <= 0:
+            continue
+        mask = projected.entity_ids == entity_id
+        size = int(np.sum(mask))
+        if size >= min_instance_vertices:
+            unscaled.append((entity_id, size, mask))
+    if not unscaled:
+        return []
+    maximum_size = max(size for _, size, _ in unscaled)
+    return sorted(
+        [
+            (float(size / maximum_size), entity_id, mask)
+            for entity_id, size, mask in unscaled
+        ],
+        key=lambda item: (-item[0], item[1]),
+    )
+
+
+def _class_agnostic_instance_metrics(
+    projected: ProjectedLabels,
+    ground_truth: ReplicaGroundTruth,
+    instance_semantic_ids: set[int],
+    min_instance_vertices: int,
+) -> dict[str, Any]:
+    ground_truth_masks = _ground_truth_instance_masks(
+        ground_truth,
+        instance_semantic_ids,
+        min_instance_vertices,
+    )
+    predictions = _predicted_entity_masks(projected, min_instance_vertices)
+    ap25, recall25 = _instance_threshold(predictions, ground_truth_masks, 0.25)
+    ap50, recall50 = _instance_threshold(predictions, ground_truth_masks, 0.50)
+    return {
+        "ap25": ap25,
+        "ap50": ap50,
+        "recall25": recall25,
+        "recall50": recall50,
+        "predicted_instance_count": len(predictions),
+        "ground_truth_instance_count": len(ground_truth_masks),
+        "prediction_entity_ids": [entity_id for _, entity_id, _ in predictions],
+        "prediction_confidences": [confidence for confidence, _, _ in predictions],
+    }
+
+
+def _semantic_class_constrained_instance_metrics(
     projected: ProjectedLabels,
     ground_truth: ReplicaGroundTruth,
     entity_info: Sequence[EntityEvaluationInfo],
@@ -364,7 +433,13 @@ def evaluate_replica_voxel_map(
     threshold = _positive_float(distance_threshold_m, "distance_threshold_m")
     projected = project_mesh_to_gt(mesh, ground_truth.vertices_xyz, threshold)
     semantic = _semantic_metrics(projected, ground_truth, semantic_ids)
-    instance = _instance_metrics(
+    class_agnostic = _class_agnostic_instance_metrics(
+        projected,
+        ground_truth,
+        instance_ids,
+        minimum_vertices,
+    )
+    semantic_constrained = _semantic_class_constrained_instance_metrics(
         projected,
         ground_truth,
         entity_info,
@@ -376,11 +451,14 @@ def evaluate_replica_voxel_map(
         "miou": semantic["miou"],
         "macc": semantic["macc"],
         "f_miou": semantic["f_miou"],
-        "ap25": instance["ap25"],
-        "ap50": instance["ap50"],
+        "ap25": class_agnostic["ap25"],
+        "ap50": class_agnostic["ap50"],
         "f5": geometry["f5"],
         "semantic": semantic,
-        "instance": instance,
+        "instance": {
+            "class_agnostic": class_agnostic,
+            "semantic_class_constrained": semantic_constrained,
+        },
         "geometry": geometry,
         "projection": {
             "matched_vertex_count": int(np.sum(projected.matched)),
@@ -392,5 +470,7 @@ def evaluate_replica_voxel_map(
             "min_instance_vertices": minimum_vertices,
             "valid_semantic_ids": sorted(semantic_ids),
             "instance_semantic_ids": sorted(instance_ids),
+            "headline_instance_protocol": "class_agnostic",
+            "semantic_instance_protocol": "diagnostic_only",
         },
     }
