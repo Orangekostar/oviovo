@@ -28,6 +28,13 @@ from src.oviv2.observations import (
 )
 from src.oviv2.ownership import OwnershipRecord, ReversibleOwnershipStore
 from src.oviv2.runtime import Oviv2Runtime, Oviv2RuntimeConfig, RuntimeFrameResult
+from src.oviv2.semantic_memory import (
+    FeaturePrototype,
+    FeaturePrototypeBank,
+    InformativeView,
+    InformativeViewBank,
+    SparseClassPosterior,
+)
 from src.oviv2.snapshot import VoxelMapSnapshot, VoxelSnapshotMetadata
 from src.oviv2.structure import DepthStructureConfig, DepthStructureFrontend
 from src.oviv2.tracking import LocalTrack, LocalTrackBatch, LocalTracker, LocalTrackerConfig
@@ -43,6 +50,10 @@ __all__ = [
     "EntityRegistryConfig",
     "EvidenceConfig",
     "FrameObservation",
+    "FeaturePrototype",
+    "FeaturePrototypeBank",
+    "InformativeView",
+    "InformativeViewBank",
     "LabeledMesh",
     "LocalTrack",
     "LocalTrackBatch",
@@ -58,6 +69,7 @@ __all__ = [
     "ReversibleOwnershipStore",
     "SemanticCandidate",
     "SparseEvidenceStore",
+    "SparseClassPosterior",
     "SparseTsdfVolume",
     "TsdfConfig",
     "VoxelKey",
