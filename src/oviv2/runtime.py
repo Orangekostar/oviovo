@@ -14,6 +14,7 @@ from src.oviv2.observations import FrameObservation, ObservationKind
 from src.oviv2.ownership import ReversibleOwnershipStore
 from src.oviv2.snapshot import VoxelMapSnapshot, VoxelSnapshotMetadata
 from src.oviv2.tracking import LocalTracker, LocalTrackerConfig
+from src.oviv2.visibility import VisibilityConfig, VisibilityStatus, VoxelVisibilityProjector
 
 
 @dataclass(frozen=True)
@@ -22,6 +23,8 @@ class Oviv2RuntimeConfig:
     evidence: EvidenceConfig = EvidenceConfig()
     tracker: LocalTrackerConfig = LocalTrackerConfig()
     registry: EntityRegistryConfig = EntityRegistryConfig()
+    visibility_depth_tolerance_m: float = 0.1
+    absence_negative_support: float = 1.0
     semantic_support_scale: float = 1.0
     entity_support_scale: float = 1.0
     ownership_min_net_support: float = 1e-6
@@ -38,6 +41,10 @@ class Oviv2RuntimeConfig:
             or self.ownership_min_net_support < 0.0
         ):
             raise ValueError("ownership_min_net_support must be finite and non-negative")
+        for name in ("visibility_depth_tolerance_m", "absence_negative_support"):
+            value = float(getattr(self, name))
+            if not np.isfinite(value) or value <= 0.0:
+                raise ValueError(f"{name} must be finite and positive")
 
 
 @dataclass(frozen=True)
@@ -69,6 +76,12 @@ class Oviv2Runtime:
         self.ownership = ReversibleOwnershipStore(config.tsdf.block_resolution)
         self.tracker = LocalTracker(config.tracker)
         self.registry = EntityRegistry(config.registry)
+        self.visibility = VoxelVisibilityProjector(
+            VisibilityConfig(
+                voxel_size_m=config.tsdf.voxel_size_m,
+                depth_tolerance_m=config.visibility_depth_tolerance_m,
+            )
+        )
         self.revision = 0
         self.last_frame_id = -1
         self.last_timestamp = 0.0
@@ -91,6 +104,15 @@ class Oviv2Runtime:
             frame.rgb,
             frame.intrinsics.to_matrix(),
             frame.pose,
+        )
+
+        self.apply_visibility(
+            frame,
+            revision=next_revision,
+            entity_voxels={
+                entity_id: entity.voxel_keys
+                for entity_id, entity in self.registry.entities.items()
+            },
         )
 
         for item in observations:
@@ -149,6 +171,36 @@ class Oviv2Runtime:
             updated_track_count=len(track_batch.updated),
             accepted_entity_ids=tuple(accepted_entity_ids),
         )
+
+    def apply_visibility(
+        self,
+        frame: Frame,
+        *,
+        revision: int,
+        entity_voxels: dict[int, frozenset[VoxelKey]],
+    ) -> None:
+        changed: set[VoxelKey] = set()
+        for entity_id in sorted(entity_voxels):
+            grouped = self.visibility.classify_many(
+                tuple(entity_voxels[entity_id]),
+                frame,
+            )
+            for voxel_key in grouped[VisibilityStatus.ABSENT]:
+                candidates = {
+                    item.entity_id for item in self.evidence.entity_candidates(voxel_key)
+                }
+                if entity_id not in candidates:
+                    continue
+                self.evidence.update_entity(
+                    voxel_key,
+                    entity_id,
+                    positive_delta=0.0,
+                    negative_delta=self.config.absence_negative_support,
+                    timestamp=frame.timestamp,
+                    revision=revision,
+                )
+                changed.add(voxel_key)
+        self.recompute_ownership(tuple(sorted(changed)), revision=revision)
 
     def recompute_ownership(
         self,

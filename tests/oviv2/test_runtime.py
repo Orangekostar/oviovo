@@ -112,6 +112,23 @@ def test_recomputing_owner_retains_competing_entity_evidence() -> None:
     assert {item.entity_id for item in runtime.evidence.entity_candidates(key)} == {1, 2}
 
 
+def test_only_absent_visibility_adds_negative_entity_evidence() -> None:
+    runtime = Oviv2Runtime("room0")
+    key = (0, 0, 20)
+    runtime.evidence.update_entity(key, 1, 2.0, 0.0, 0.0, 1)
+    runtime.ownership.assign(key, 1, 1.0, 1)
+
+    runtime.apply_visibility(frame(), revision=2, entity_voxels={1: frozenset({key})})
+    present = runtime.evidence.entity_candidates(key)[0]
+    assert present.negative_support == 0.0
+
+    absent_frame = frame(1)
+    absent_frame.depth[:] = 2.0
+    runtime.apply_visibility(absent_frame, revision=3, entity_voxels={1: frozenset({key})})
+    absent = runtime.evidence.entity_candidates(key)[0]
+    assert absent.negative_support > 0.0
+
+
 def test_runtime_commit_round_trip_contains_only_voxel_layers(tmp_path: Path) -> None:
     runtime = Oviv2Runtime("room0")
     runtime.process_frame(frame(), ())

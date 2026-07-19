@@ -24,6 +24,7 @@ from src.oviv2.ownership import OwnershipRecord, ReversibleOwnershipStore
 from src.oviv2.runtime import Oviv2Runtime, Oviv2RuntimeConfig, RuntimeFrameResult
 from src.oviv2.snapshot import VoxelMapSnapshot, VoxelSnapshotMetadata
 from src.oviv2.tracking import LocalTrack, LocalTrackBatch, LocalTracker, LocalTrackerConfig
+from src.oviv2.visibility import VisibilityConfig, VisibilityStatus, VoxelVisibilityProjector
 
 __all__ = [
     "BlockKey",
@@ -52,6 +53,9 @@ __all__ = [
     "TsdfConfig",
     "VoxelKey",
     "VoxelMapSnapshot",
+    "VisibilityConfig",
+    "VisibilityStatus",
+    "VoxelVisibilityProjector",
     "VoxelSnapshotMetadata",
     "derive_labeled_mesh",
     "join_voxel_key",

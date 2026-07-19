@@ -211,6 +211,10 @@ def _runtime_config(config: dict[str, Any]) -> Oviv2RuntimeConfig:
             min_voxel_overlap=float(config.get("entity_min_voxel_overlap", 0.1)),
             max_centroid_distance_m=float(config.get("entity_max_centroid_distance_m", 0.6)),
         ),
+        visibility_depth_tolerance_m=float(
+            config.get("visibility_depth_tolerance_m", 0.1)
+        ),
+        absence_negative_support=float(config.get("absence_negative_support", 1.0)),
     )
 
 
