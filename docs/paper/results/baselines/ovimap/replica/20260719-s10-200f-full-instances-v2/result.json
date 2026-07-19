@@ -1,0 +1,257 @@
+{
+  "adapter_commit": "44070df680c0f699e074882f59fa4672c4d5f8f6",
+  "aggregate_source": {
+    "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/aggregate.json",
+    "sha256": "5a05fd71a7d5b1d85e9f012dc96934f0f4a33768067e917f61f27a7114060c8c"
+  },
+  "command": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/run_common_eval_replica8_full_instances.sh; python scripts/evaluation/aggregate_replica_static.py",
+  "config": {
+    "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/run_common_eval_replica8_full_instances.sh",
+    "sha256": "371514a3de36f03c5bd29f4c8b0cff93992c9857011efdf95512472e51a0dd4f"
+  },
+  "dataset": {
+    "manifest": {
+      "path": "configs/evaluation/manifests/replica8.json",
+      "sha256": "8547aa8b7dbf7ef7a97f4b516f6557a1d163107404fbfc7ccbd56747c5dc95a4"
+    },
+    "name": "Replica",
+    "pose_source": "Replica NICE-SLAM traj.txt; repaired external copy replaces 31 corrupted stride-10 RGB-D files from voviktyl/Replica-SLAM mirror",
+    "splits": [
+      "replica_8_compat",
+      "replica_7_heldout"
+    ]
+  },
+  "environment": {
+    "container": "baseline-ovimap-58a804e",
+    "name": "baseline-ovimap-58a804e-cird",
+    "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/environment/ovimap_cird_freeze_20260718.txt"
+  },
+  "hardware": {
+    "evaluation": "node107 CPU; Open3D 0.19.0; Python 3.10.20",
+    "mapping": "NVIDIA A40 46 GB, node6 GPU 0/1; Intel Xeon Gold 5320",
+    "os": "Ubuntu Linux"
+  },
+  "method": {
+    "display_label": "OVI-MAP",
+    "key": "OVIMAP",
+    "mode": "native"
+  },
+  "metrics": {
+    "replica_7_heldout": {
+      "geometry": {
+        "f5": 0.9119603759654716
+      },
+      "instance": {
+        "ap25": 0.31858536437282897,
+        "ap50": 0.17888930507139422
+      },
+      "scene_count": 7,
+      "scene_ids": [
+        "room1",
+        "room2",
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4"
+      ],
+      "semantic": {
+        "f_miou": 0.10843028886256988,
+        "macc": 0.051665170809201515,
+        "miou": 0.031525796076614564
+      }
+    },
+    "replica_8_compat": {
+      "geometry": {
+        "f5": 0.9148812207816095
+      },
+      "instance": {
+        "ap25": 0.32589401493297876,
+        "ap50": 0.18371066944784295
+      },
+      "scene_count": 8,
+      "scene_ids": [
+        "room0",
+        "room1",
+        "room2",
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4"
+      ],
+      "semantic": {
+        "f_miou": 0.10366051012753912,
+        "macc": 0.04969479718475848,
+        "miou": 0.03096836944412382
+      }
+    }
+  },
+  "protocol_deviations": [
+    "external repaired Replica copy replaces 31 corrupted stride-10 RGB-D files from a public mirror; original source files and repair hashes are preserved",
+    "build-copy-only compatibility patches select local SigLIP assets and allow the missing MSDA extension; the reference checkout remains read-only",
+    "CropFormer demo build copy writes raw instance-ID PNG masks",
+    "headline instance AP evaluates every final mesh-backed logged OVI-MAP entity; semantic feature availability is optional and only affects semantic prediction",
+    "released OVI-MAP room0 instance mP/mR and semantic IoU are retained as diagnostics only because the released instance evaluator does not compute AP",
+    "the adapter commit is the last OVI-MAP evaluation change; later scene completion commits are verified not to change the OVI-MAP adapter or evaluator files"
+  ],
+  "raw_outputs": [
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/aggregate.json",
+      "sha256": "5a05fd71a7d5b1d85e9f012dc96934f0f4a33768067e917f61f27a7114060c8c"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/status.tsv",
+      "sha256": "96b5bf4ce8e40dbad883ec7e9e99d24175c9d8a1370bb42b852ff97ba574fdd6"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/room0/metrics.json",
+      "sha256": "005b92099384263534131ee5f872861392d3a8445efcdf81cf45c800489e5aa6"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/room1/metrics.json",
+      "sha256": "aa8f9547c787f19e5234b0c12a5943569b1d6c890c02b06d98acc00041f87773"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/room2/metrics.json",
+      "sha256": "06b32d17bbdcf6332f51ffb2f301338be1df9333fd379fe4ab15ca17a74667c7"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/office0/metrics.json",
+      "sha256": "8fd4569814f4dd9e3125b047e7461d2070209ef832cf09c44346106cbae5e356"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/office1/metrics.json",
+      "sha256": "10ae2fd021616a5bd37341d754b347063634d0c6f269770035745a4a84dd2d83"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/office2/metrics.json",
+      "sha256": "23c9f27134a38116bea2975dd033e06fd1405f8219544b31e975c2441f17323b"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/office3/metrics.json",
+      "sha256": "831c9eaf173ed9d075ae58892d939d0e3ff4a6ca10c7ab68017d256422beedb8"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/office4/metrics.json",
+      "sha256": "b640203e7ebdddb52f3122b0fd5ca75edb92771f1981cacd962d3c4e83f744a8"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/room0/status.json",
+      "sha256": "cc0605901c9c216416497c080dac389f1b5e3179c5875607688ad8c81967fb59"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/room1/status.json",
+      "sha256": "ffe2e565c5cd74d14326585c78517b030e7cff15bb893ac0ce049a6202b6691a"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/room2/status.json",
+      "sha256": "97ab1c8381bda54dd0fde3070e6f9f581f7378583f36e59a618b2bbacd61bd6b"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/office0/status.json",
+      "sha256": "a784ae4de6a6638f9ecd2e9ac955e1e03ae4cec3a4e272679b359d3f4b8ca013"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/office1/status.json",
+      "sha256": "fa2df35606d4fb8ad45ede7f42aea2392dc230d4a4987fe47e694f06d6345704"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/office2/status.json",
+      "sha256": "758ee45043ead8ac600f241c1fdcb075454bc07bfb0e4129a3f70eb07e64dbe1"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/office3/status.json",
+      "sha256": "ccb5e0de0fbbfdf939a1479dd20ea78b38c60801ea479371aa52db74d5957065"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/office4/status.json",
+      "sha256": "c2aaf4b0dfb108aaf92ad869fab5778e4cfb09b96cd2396743ee66305b278d96"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/room0/official_diagnostics/official_style_diagnostics.json",
+      "sha256": "a73e7bbc868d04493e9083f10fcf3d9bd054a211b31969baed6c3589c75c01a1"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/room0/official_diagnostics/instance_stdout.txt",
+      "sha256": "8e17618b7910b1c58745bb8588c51bf14287dbb4e691d47e25d463d38e6be19a"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/common_eval_full_instances/room0/official_diagnostics/semantic_stdout.txt",
+      "sha256": "4f164e103c96f34e21c5f459d4f4eed867c3e6a8067d0396ac22f497f2b2a6b8"
+    },
+    {
+      "path": "/home/ww/.config/superpowers/worktrees/oviovo/tsdf-contamination-visibility-gates/docs/paper/results/baselines/ovimap/replica/20260718-s10-200f-repaired/result.json",
+      "sha256": "bb3c8252196cc087c1f9c1de5e516b93d70e98ea8825e7a35a5fafd5a4081cbe"
+    },
+    {
+      "path": "/home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/ovimap/environment/ovimap_cird_freeze_20260718.txt",
+      "sha256": "e9699c57eb03d862a46e0179543cfafe5f94dca339690cb857bf5d38400adc5e"
+    }
+  ],
+  "run_id": "20260719-ovimap-replica8-s10-200f-full-instances-v2",
+  "runtime": {
+    "mapping_runtime_source": "/home/ww/.config/superpowers/worktrees/oviovo/tsdf-contamination-visibility-gates/docs/paper/results/baselines/ovimap/replica/20260718-s10-200f-repaired/result.json",
+    "scene_count": 8,
+    "scope": "evaluation-only repair over the unchanged released OVI-MAP Replica8 mapping outputs"
+  },
+  "seed": 0,
+  "status": "VERIFIED",
+  "token_bindings": [
+    {
+      "json_pointer": "/metrics/replica_8_compat/semantic/miou",
+      "precision": 3,
+      "token": "T1_OVIMAP_REPLICA8_MIOU"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/semantic/macc",
+      "precision": 3,
+      "token": "T1_OVIMAP_REPLICA8_MACC"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/semantic/f_miou",
+      "precision": 3,
+      "token": "T1_OVIMAP_REPLICA8_FMIOU"
+    },
+    {
+      "json_pointer": "/metrics/replica_7_heldout/semantic/miou",
+      "precision": 3,
+      "token": "T1_OVIMAP_REPLICA7_MIOU"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/instance/ap25",
+      "precision": 3,
+      "token": "T1_OVIMAP_REPLICA8_AP25"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/instance/ap50",
+      "precision": 3,
+      "token": "T1_OVIMAP_REPLICA8_AP50"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/geometry/f5",
+      "precision": 3,
+      "token": "T1_OVIMAP_REPLICA8_F5"
+    },
+    {
+      "json_pointer": "/metrics/replica_7_heldout/instance/ap50",
+      "precision": 3,
+      "token": "T1_OVIMAP_REPLICA7_AP50"
+    }
+  ],
+  "upstream_commit": "58a804e2d7c8cfac6040639701abeb9d45b86537",
+  "weights": [
+    {
+      "name": "CropFormer_hornet_3x",
+      "path": "/home/ww/vv/paper2/Entity/checkpoints/CropFormer_hornet_3x_03823a.pth",
+      "sha256": "71915b7e9dc63fc662b32c59dff513530a06221c3b22f6de7ff4d6ef82df1128",
+      "source": "pre-existing local upstream asset"
+    },
+    {
+      "name": "SigLIP-L/16-384 model.safetensors",
+      "path": "/home/ww/oviovo_benchmark_assets/weights/siglip-large-patch16-384/model.safetensors",
+      "sha256": "ab804d2c2c631159f65afa1de27787c5dba90cbfa189f26404de1944d50a18a2",
+      "source": "pre-existing local benchmark asset"
+    }
+  ]
+}
