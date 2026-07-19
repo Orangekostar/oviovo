@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import pickle
 import subprocess
+import hashlib
 from pathlib import Path
 
 import pytest
@@ -14,7 +15,52 @@ from src.evaluation.baselines.ovimap_paper_audit import (
 )
 
 
-def _paper_result() -> dict:
+def _write_manifest(path: Path, payload: dict) -> dict[str, str]:
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return {
+        "path": str(path.resolve()),
+        "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+    }
+
+
+def _paper_result(tmp_path: Path) -> dict:
+    scenes = list(PAPER_PROTOCOL["scene_ids"])
+    native = _write_manifest(
+        tmp_path / "native_mapping_manifest.json",
+        {
+            "status": "COMPLETE_NATIVE_MAPPING",
+            "protocol_name": PAPER_PROTOCOL["name"],
+            "scene_ids": scenes,
+            "frame_ids_by_scene": {scene: list(range(0, 2000, 10)) for scene in scenes},
+            "input_hashes": {
+                "replica51_vocabulary": "1" * 64,
+                "siglip_model": "2" * 64,
+                "replica_semantic_gt": "3" * 64,
+                "replica_instance_gt": "4" * 64,
+            },
+        },
+    )
+    released = _write_manifest(
+        tmp_path / "released_evaluation_manifest.json",
+        {
+            "status": "COMPLETE_RELEASED_EVALUATION",
+            "source_protocol": "released_ovimap_replica51",
+            "scene_ids": scenes,
+            "frame_count_per_scene": 200,
+            "semantic_vocabulary": "Replica-51",
+            "paper_metric_availability": {"table_3_semantic": True},
+        },
+    )
+    paper_ap = _write_manifest(
+        tmp_path / "paper_ap_manifest.json",
+        {
+            "status": "COMPLETE_PAPER_AP_EVALUATION",
+            "protocol_name": PAPER_PROTOCOL["name"],
+            "scene_ids": scenes,
+            "metric_contract": PAPER_PROTOCOL["instance_metrics"],
+            "metrics_present": ["miou", "ap25", "ap50", "ap75"],
+        },
+    )
     return {
         "status": "VERIFIED",
         "method": {"key": "OVIMAP"},
@@ -24,6 +70,11 @@ def _paper_result() -> dict:
                 "scene_ids": list(PAPER_PROTOCOL["scene_ids"]),
                 "scene_count": len(PAPER_PROTOCOL["scene_ids"]),
             }
+        },
+        "protocol_evidence": {
+            "native_mapping_manifest": native,
+            "released_evaluation_manifest": released,
+            "class_agnostic_ap_manifest": paper_ap,
         },
     }
 
@@ -42,8 +93,8 @@ def _scene_summaries() -> dict[str, dict]:
     }
 
 
-def test_paper_parity_passes_only_for_exact_protocol_and_replica8() -> None:
-    audit = audit_paper_parity(_paper_result(), _scene_summaries())
+def test_paper_parity_passes_only_for_exact_protocol_and_replica8(tmp_path: Path) -> None:
+    audit = audit_paper_parity(_paper_result(tmp_path), _scene_summaries())
 
     assert audit["status"] == "PASS"
     assert audit["protocol_name"] == "ovimap_cvpr2026_replica"
@@ -52,8 +103,8 @@ def test_paper_parity_passes_only_for_exact_protocol_and_replica8() -> None:
     assert audit["aggregate_artifacts"]["eligible_feature_instance_count"] == 8
 
 
-def test_paper_parity_rejects_current_mixed_protocol() -> None:
-    result = _paper_result()
+def test_paper_parity_rejects_current_mixed_protocol(tmp_path: Path) -> None:
+    result = _paper_result(tmp_path)
     result["protocol"] = {
         **PAPER_PROTOCOL,
         "semantic_vocabulary": "Replica-41",
@@ -68,6 +119,27 @@ def test_paper_parity_rejects_current_mixed_protocol() -> None:
     assert any("semantic_vocabulary" in failure for failure in audit["failures"])
     assert any("instance_metrics" in failure for failure in audit["failures"])
     assert any("scene feature summaries" in failure for failure in audit["failures"])
+
+
+def test_paper_parity_rejects_missing_class_agnostic_ap_evaluator(tmp_path: Path) -> None:
+    result = _paper_result(tmp_path)
+    result["protocol_evidence"].pop("class_agnostic_ap_manifest")
+
+    audit = audit_paper_parity(result, _scene_summaries())
+
+    assert audit["status"] == "FAIL"
+    assert any("class_agnostic_ap_manifest" in failure for failure in audit["failures"])
+
+
+def test_paper_parity_rejects_tampered_or_incomplete_evidence(tmp_path: Path) -> None:
+    result = _paper_result(tmp_path)
+    native_path = Path(result["protocol_evidence"]["native_mapping_manifest"]["path"])
+    native_path.write_text('{"status":"COMPLETE_NATIVE_MAPPING"}', encoding="utf-8")
+
+    audit = audit_paper_parity(result, _scene_summaries())
+
+    assert audit["status"] == "FAIL"
+    assert any("SHA-256 mismatch" in failure for failure in audit["failures"])
 
 
 def test_feature_summary_records_semantic_coverage_and_full_frame_boxes(tmp_path: Path) -> None:
@@ -99,7 +171,7 @@ def test_feature_summary_records_semantic_coverage_and_full_frame_boxes(tmp_path
 
 def test_audit_cli_hashes_inputs_and_writes_failure_report(tmp_path: Path) -> None:
     result_path = tmp_path / "result.json"
-    result = _paper_result()
+    result = _paper_result(tmp_path)
     result["protocol"]["semantic_vocabulary"] = "Replica-41"
     result_path.write_text(json.dumps(result), encoding="utf-8")
     arguments = []

@@ -13,6 +13,13 @@ import tempfile
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
+from src.evaluation.baselines.ovimap_paper_audit import (
+    PAPER_PROTOCOL,
+    SUMMARY_FIELDS,
+    audit_paper_parity,
+    summarize_feature_file,
+)
+
 
 class ImportFailure(RuntimeError):
     """A result cannot be bound to the benchmark registry without ambiguity."""
@@ -45,7 +52,7 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _require_ovimap_paper_audit(result: Mapping[str, Any]) -> None:
+def _require_ovimap_paper_audit(result: Mapping[str, Any], result_path: Path) -> None:
     audit = result.get("protocol_audit", {})
     if not isinstance(audit, Mapping):
         audit = {}
@@ -56,8 +63,52 @@ def _require_ovimap_paper_audit(result: Mapping[str, Any]) -> None:
         raise ImportFailure("OVI-MAP T1 result requires a passing paper-parity audit")
     audit_path = Path(str(audit.get("path", "")))
     _require_file(audit_path)
-    if _sha256(audit_path) != str(audit.get("sha256", "")):
-        raise ImportFailure("OVI-MAP paper-parity audit hash mismatch")
+    try:
+        audit_document = json.loads(audit_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as error:
+        raise ImportFailure("cannot read OVI-MAP paper-parity audit file") from error
+    if not isinstance(audit_document, Mapping):
+        raise ImportFailure("OVI-MAP paper-parity audit file must contain an object")
+    if audit_document.get("schema_version") != 1:
+        raise ImportFailure("unsupported OVI-MAP paper-parity audit schema")
+    if audit_document.get("status") != "PASS" or audit_document.get("failures") != []:
+        raise ImportFailure("OVI-MAP paper-parity audit file must PASS without failures")
+    if audit_document.get("protocol_name") != "ovimap_cvpr2026_replica":
+        raise ImportFailure("OVI-MAP paper-parity audit protocol name mismatch")
+    result_source = audit_document.get("result_source", {})
+    if not isinstance(result_source, Mapping) or result_source.get("sha256") != _sha256(
+        result_path
+    ):
+        raise ImportFailure("OVI-MAP paper-parity audit result hash mismatch")
+    scene_artifacts = audit_document.get("scene_artifacts", {})
+    feature_sources = audit_document.get("feature_sources", {})
+    expected_scenes = set(PAPER_PROTOCOL["scene_ids"])
+    if not isinstance(feature_sources, Mapping) or set(feature_sources) != expected_scenes:
+        raise ImportFailure("OVI-MAP paper-parity audit feature sources must match Replica-8")
+    if not isinstance(scene_artifacts, Mapping) or set(scene_artifacts) != expected_scenes:
+        raise ImportFailure("OVI-MAP paper-parity audit scene artifacts must be an object")
+    recomputed_summaries: dict[str, Mapping[str, Any]] = {}
+    for scene in PAPER_PROTOCOL["scene_ids"]:
+        source = feature_sources[scene]
+        if not isinstance(source, Mapping):
+            raise ImportFailure(f"OVI-MAP paper-parity feature source is invalid: {scene}")
+        feature_path = Path(str(source.get("path", "")))
+        _require_file(feature_path)
+        if source.get("sha256") != _sha256(feature_path):
+            raise ImportFailure(f"OVI-MAP paper-parity feature hash mismatch: {scene}")
+        try:
+            observed_summary = summarize_feature_file(feature_path)
+        except (OSError, ValueError) as error:
+            raise ImportFailure(f"cannot audit OVI-MAP feature source: {scene}") from error
+        expected_summary = scene_artifacts[scene]
+        if not isinstance(expected_summary, Mapping) or any(
+            expected_summary.get(field) != observed_summary[field] for field in SUMMARY_FIELDS
+        ):
+            raise ImportFailure(f"OVI-MAP paper-parity feature summary mismatch: {scene}")
+        recomputed_summaries[scene] = observed_summary
+    recomputed = audit_paper_parity(result, recomputed_summaries)
+    if recomputed["status"] != "PASS":
+        raise ImportFailure("OVI-MAP result does not satisfy the paper protocol audit")
 
 
 def _read_registry(path: Path) -> tuple[list[str], list[dict[str, str]]]:
@@ -171,7 +222,7 @@ def import_results(
             and row.get("method") == "OVIMAP"
             for binding in bindings
         ):
-            _require_ovimap_paper_audit(result)
+            _require_ovimap_paper_audit(result, result_path)
 
         for binding in bindings:
             token = str(binding.get("token", ""))

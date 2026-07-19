@@ -34,7 +34,10 @@
     "protocol.semantic_vocabulary expected 'Replica-51', observed None",
     "protocol.semantic_metrics expected 'per_vertex_miou_macc_and_class_aware_mask_ap', observed None",
     "protocol.instance_metrics expected 'class_agnostic_mask_miou_ap25_ap50_ap75', observed None",
-    "protocol.vlm expected 'siglip-large-patch16-384', observed None"
+    "protocol.vlm expected 'siglip-large-patch16-384', observed None",
+    "protocol_evidence.native_mapping_manifest file is missing: .",
+    "protocol_evidence.released_evaluation_manifest file is missing: .",
+    "protocol_evidence.class_agnostic_ap_manifest file is missing: ."
   ],
   "feature_sources": {
     "office0": {
@@ -159,5 +162,6 @@
     }
   },
   "schema_version": 1,
-  "status": "FAIL"
+  "status": "FAIL",
+  "validated_evidence_manifests": {}
 }

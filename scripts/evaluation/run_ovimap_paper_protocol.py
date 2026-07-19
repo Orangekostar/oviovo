@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import pickle
 import subprocess
@@ -256,6 +257,105 @@ def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
         temporary_path.unlink(missing_ok=True)
 
 
+def _metric_rows(path: Path, header: str, expected_rows: int) -> list[list[float]]:
+    if not path.is_file():
+        raise ValueError(f"evaluation log missing: {path}")
+    lines = path.read_text(encoding="utf-8").splitlines()
+    try:
+        header_index = lines.index(header)
+    except ValueError as error:
+        raise ValueError(f"metric header missing from {path}: {header}") from error
+    rows: list[list[float]] = []
+    width = len(header.split("\t"))
+    for line in lines[header_index + 1 :]:
+        if not line.strip():
+            continue
+        fields = line.split("\t")
+        if len(fields) != width:
+            break
+        try:
+            values = [float(field) for field in fields]
+        except ValueError:
+            break
+        if not all(math.isfinite(value) for value in values):
+            raise ValueError(f"non-finite metric in {path}")
+        rows.append(values)
+        if len(rows) == expected_rows:
+            break
+    if len(rows) != expected_rows:
+        raise ValueError(f"expected {expected_rows} metric rows in {path}, observed {len(rows)}")
+    return rows
+
+
+def _artifact(path: Path) -> dict[str, str]:
+    if not path.is_file():
+        raise ValueError(f"released evaluation artifact missing: {path}")
+    return {"path": str(path.resolve()), "sha256": _sha256(path)}
+
+
+def validate_outputs(output: Path) -> dict[str, Any]:
+    """Validate and hash released outputs before declaring evaluation complete."""
+    layout = output / "layout"
+    files: dict[str, dict[str, str]] = {}
+    for scene in REPLICA8_SCENES:
+        scene_root = layout / scene
+        for name, relative in (
+            ("gt_instance_mesh", "gt_instance_mesh.ply"),
+            ("gt_semantic_mesh", "gt_semantic_mesh.ply"),
+            ("instance_map", "cropformer_inst/instance_map_gt_200.ply"),
+            ("semantic_map", "cropformer_inst/semantic_map_gt_200.ply"),
+            ("gt_sem_inst_id", "cropformer_inst/eval/gt_sem_inst_id.npy"),
+            ("prediction_mapping", "cropformer_inst/eval/pred_inst_sem_mapping.txt"),
+        ):
+            files[f"{scene}.{name}"] = _artifact(scene_root / relative)
+
+    results_path = layout / "results_replica.json"
+    files["results_replica_json"] = _artifact(results_path)
+    try:
+        results = json.loads(results_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise ValueError(f"invalid released semantic-instance results: {results_path}") from error
+    if not isinstance(results, dict) or not isinstance(results.get("classes"), dict):
+        raise ValueError("released semantic-instance results must contain a classes object")
+    semantic_instance: dict[str, float] = {}
+    for output_name, source_name in (
+        ("apall", "all_ap"),
+        ("ap50", "all_ap_50%"),
+        ("ap25", "all_ap_25%"),
+    ):
+        value = results.get(source_name)
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+            raise ValueError(f"released semantic-instance metric is invalid: {source_name}")
+        semantic_instance[output_name] = float(value)
+    for class_name, metrics in results["classes"].items():
+        if not isinstance(metrics, dict):
+            raise ValueError(f"released class metrics must be an object: {class_name}")
+        if any(
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(value)
+            for value in metrics.values()
+        ):
+            raise ValueError(f"released class metric is invalid: {class_name}")
+
+    semantic_log = output / "logs" / "released_semantic_evaluation.stdout.txt"
+    instance_log = output / "logs" / "released_instance_diagnostics.stdout.txt"
+    files["semantic_stdout"] = _artifact(semantic_log)
+    files["instance_stdout"] = _artifact(instance_log)
+    semantic_row = _metric_rows(semantic_log, "mIoU\tmAcc", 1)[0]
+    instance_rows = _metric_rows(
+        instance_log,
+        "mIoU\twIoU\tmP@75\tmR@75\tmP@50\tmR@50\tmP@25\tmR@25",
+        len(REPLICA8_SCENES),
+    )
+    return {
+        "files": files,
+        "semantic_vertex_metrics": {"miou": semantic_row[0], "macc": semantic_row[1]},
+        "semantic_instance_metrics": semantic_instance,
+        "instance_diagnostics": instance_rows,
+    }
+
+
 def run(config: RunnerConfig, *, dry_run: bool = False) -> dict[str, Any]:
     preflight(config)
     if config.output.exists():
@@ -281,7 +381,8 @@ def run(config: RunnerConfig, *, dry_run: bool = False) -> dict[str, Any]:
                 "mP@25",
                 "mR@25",
             ],
-            "semantic": ["mIoU", "mAcc"],
+            "semantic_vertex": ["mIoU", "mAcc"],
+            "semantic_instance": ["APall", "AP50", "AP25"],
         },
         "paper_metric_availability": {
             "table_2_class_agnostic_ap": False,
@@ -351,8 +452,15 @@ def run(config: RunnerConfig, *, dry_run: bool = False) -> dict[str, Any]:
             _atomic_json(manifest_path, manifest)
             return manifest
         _atomic_json(manifest_path, manifest)
-    manifest["status"] = "COMPLETE_RELEASED_EVALUATION"
     manifest["commands"] = records
+    try:
+        manifest["output_artifacts"] = validate_outputs(config.output)
+    except (OSError, ValueError) as error:
+        manifest["status"] = "FAILED_OUTPUT_VALIDATION"
+        manifest["output_validation_error"] = str(error)
+        _atomic_json(manifest_path, manifest)
+        return manifest
+    manifest["status"] = "COMPLETE_RELEASED_EVALUATION"
     _atomic_json(manifest_path, manifest)
     return manifest
 

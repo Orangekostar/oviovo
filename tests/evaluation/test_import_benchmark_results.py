@@ -3,10 +3,12 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
+import pickle
 from pathlib import Path
 
 import pytest
 
+from src.evaluation.baselines.ovimap_paper_audit import PAPER_PROTOCOL
 from tools.import_benchmark_results import ImportFailure, import_results
 
 FIELDS = [
@@ -250,22 +252,110 @@ def test_import_rejects_ovimap_table1_without_passing_paper_audit(tmp_path: Path
         )
 
 
-def test_import_accepts_ovimap_table1_with_hash_verified_paper_audit(tmp_path: Path) -> None:
-    registry = tmp_path / "benchmark_tokens.tsv"
-    markdown, latex = _templates(tmp_path)
-    _write_registry(registry)
-    audit = tmp_path / "paper_parity_audit.json"
-    audit.write_text('{"status":"PASS"}\n', encoding="utf-8")
-    result = tmp_path / "ovimap.json"
-    _write_result(result, token="T1_OVIMAP_REPLICA8_MIOU", method="OVIMAP")
+def _attach_ovimap_audit(
+    result: Path,
+    audit: Path,
+    *,
+    result_protocol: dict | None = None,
+    **audit_overrides,
+) -> None:
     payload = json.loads(result.read_text(encoding="utf-8"))
+    scenes = list(PAPER_PROTOCOL["scene_ids"])
+    evidence_payloads = {
+        "native_mapping_manifest": {
+            "status": "COMPLETE_NATIVE_MAPPING",
+            "protocol_name": PAPER_PROTOCOL["name"],
+            "scene_ids": scenes,
+            "frame_ids_by_scene": {scene: list(range(0, 2000, 10)) for scene in scenes},
+            "input_hashes": {
+                "replica51_vocabulary": "1" * 64,
+                "siglip_model": "2" * 64,
+                "replica_semantic_gt": "3" * 64,
+                "replica_instance_gt": "4" * 64,
+            },
+        },
+        "released_evaluation_manifest": {
+            "status": "COMPLETE_RELEASED_EVALUATION",
+            "source_protocol": "released_ovimap_replica51",
+            "scene_ids": scenes,
+            "frame_count_per_scene": 200,
+            "semantic_vocabulary": "Replica-51",
+            "paper_metric_availability": {"table_3_semantic": True},
+        },
+        "class_agnostic_ap_manifest": {
+            "status": "COMPLETE_PAPER_AP_EVALUATION",
+            "protocol_name": PAPER_PROTOCOL["name"],
+            "scene_ids": scenes,
+            "metric_contract": PAPER_PROTOCOL["instance_metrics"],
+            "metrics_present": ["miou", "ap25", "ap50", "ap75"],
+        },
+    }
+    protocol_evidence = {}
+    for name, document in evidence_payloads.items():
+        path = audit.parent / f"{name}.json"
+        path.write_text(json.dumps(document), encoding="utf-8")
+        protocol_evidence[name] = {
+            "path": str(path.resolve()),
+            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        }
+    payload["protocol"] = {
+        **PAPER_PROTOCOL,
+        "scene_ids": list(PAPER_PROTOCOL["scene_ids"]),
+    } if result_protocol is None else result_protocol
+    payload["metrics"]["replica_8_compat"] = {
+        "scene_ids": list(PAPER_PROTOCOL["scene_ids"]),
+        "scene_count": len(PAPER_PROTOCOL["scene_ids"]),
+    }
+    payload["protocol_evidence"] = protocol_evidence
     payload["protocol_audit"] = {
         "status": "PASS",
         "protocol_name": "ovimap_cvpr2026_replica",
         "path": str(audit),
-        "sha256": hashlib.sha256(audit.read_bytes()).hexdigest(),
     }
     result.write_text(json.dumps(payload), encoding="utf-8")
+    audit_payload = {
+        "schema_version": 1,
+        "status": "PASS",
+        "protocol_name": "ovimap_cvpr2026_replica",
+        "failures": [],
+        "scene_artifacts": {},
+        "feature_sources": {},
+        "result_source": {
+            "path": str(result.resolve()),
+            "sha256": hashlib.sha256(result.read_bytes()).hexdigest(),
+        },
+    }
+    for scene in PAPER_PROTOCOL["scene_ids"]:
+        feature_path = audit.parent / f"{scene}.pkl"
+        with feature_path.open("wb") as handle:
+            pickle.dump(
+                {1: {"frame_id": [0, 10], "box_2d": [(1, 1, 2, 2), (1, 1, 2, 2)]}},
+                handle,
+            )
+        audit_payload["feature_sources"][scene] = {
+            "path": str(feature_path.resolve()),
+            "sha256": hashlib.sha256(feature_path.read_bytes()).hexdigest(),
+        }
+        audit_payload["scene_artifacts"][scene] = {
+            "feature_instance_count": 1,
+            "eligible_feature_instance_count": 1,
+            "query_count": 2,
+            "average_queries_per_feature_instance": 2.0,
+            "full_frame_bbox_count": 0,
+            "full_frame_bbox_ratio": 0.0,
+        }
+    audit_payload.update(audit_overrides)
+    audit.write_text(json.dumps(audit_payload), encoding="utf-8")
+
+
+def test_import_accepts_ovimap_table1_with_result_bound_paper_audit(tmp_path: Path) -> None:
+    registry = tmp_path / "benchmark_tokens.tsv"
+    markdown, latex = _templates(tmp_path)
+    _write_registry(registry)
+    audit = tmp_path / "paper_parity_audit.json"
+    result = tmp_path / "ovimap.json"
+    _write_result(result, token="T1_OVIMAP_REPLICA8_MIOU", method="OVIMAP")
+    _attach_ovimap_audit(result, audit)
 
     import_results(
         registry,
@@ -280,6 +370,61 @@ def test_import_accepts_ovimap_table1_with_hash_verified_paper_audit(tmp_path: P
         rows = list(csv.DictReader(handle, delimiter="\t"))
     ovimap = next(row for row in rows if row["token"] == "T1_OVIMAP_REPLICA8_MIOU")
     assert ovimap["status"] == "VERIFIED"
+
+
+@pytest.mark.parametrize(
+    ("audit_overrides", "message"),
+    [
+        ({"status": "FAIL", "failures": ["protocol mismatch"]}, "audit file must PASS"),
+        ({"protocol_name": "different_protocol"}, "protocol name"),
+        ({"result_source": {"sha256": "0" * 64}}, "result hash"),
+        ({"feature_sources": {}}, "feature sources"),
+    ],
+)
+def test_import_rejects_ovimap_self_reported_pass_when_audit_file_is_invalid(
+    tmp_path: Path,
+    audit_overrides: dict,
+    message: str,
+) -> None:
+    registry = tmp_path / "benchmark_tokens.tsv"
+    markdown, latex = _templates(tmp_path)
+    _write_registry(registry)
+    audit = tmp_path / "paper_parity_audit.json"
+    result = tmp_path / "ovimap.json"
+    _write_result(result, token="T1_OVIMAP_REPLICA8_MIOU", method="OVIMAP")
+    _attach_ovimap_audit(result, audit, **audit_overrides)
+
+    with pytest.raises(ImportFailure, match=message):
+        import_results(
+            registry,
+            [result],
+            markdown,
+            latex,
+            tmp_path / "out.md",
+            tmp_path / "out.tex",
+        )
+
+
+def test_import_recomputes_ovimap_protocol_instead_of_trusting_sidecar_pass(
+    tmp_path: Path,
+) -> None:
+    registry = tmp_path / "benchmark_tokens.tsv"
+    markdown, latex = _templates(tmp_path)
+    _write_registry(registry)
+    audit = tmp_path / "paper_parity_audit.json"
+    result = tmp_path / "ovimap.json"
+    _write_result(result, token="T1_OVIMAP_REPLICA8_MIOU", method="OVIMAP")
+    _attach_ovimap_audit(result, audit, result_protocol={})
+
+    with pytest.raises(ImportFailure, match="does not satisfy"):
+        import_results(
+            registry,
+            [result],
+            markdown,
+            latex,
+            tmp_path / "out.md",
+            tmp_path / "out.tex",
+        )
 
 
 def test_import_rejects_registry_token_outside_main_table_scope(tmp_path) -> None:

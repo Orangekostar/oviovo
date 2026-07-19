@@ -192,6 +192,20 @@ def test_table1_uses_only_oviv2_tokens_for_our_static_method():
     assert "OVIV2 & online &" in LATEX.read_text(encoding="utf-8")
 
 
+def test_ovimap_table1_stays_unfilled_until_paper_parity_passes():
+    ovimap = [
+        row for row in rows() if row["table"] == "T1" and row["method"] == "OVIMAP"
+    ]
+    assert len(ovimap) == 12
+    assert {row["status"] for row in ovimap} == {"UNFILLED"}
+    assert all(not row["source_json"] and not row["json_pointer"] for row in ovimap)
+    rendered = (
+        (PAPER_DIR / "benchmark_tables_baselines.md").read_text(encoding="utf-8")
+        + (PAPER_DIR / "benchmark_tables_baselines.tex").read_text(encoding="utf-8")
+    )
+    assert all("{{" + row["token"] + "}}" in rendered for row in ovimap)
+
+
 def test_provenance_requirements():
     for row in rows():
         if row["status"] == "VERIFIED":

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import pickle
 from collections.abc import Mapping
 from pathlib import Path
@@ -52,6 +54,125 @@ SUMMARY_FIELDS = (
     "full_frame_bbox_count",
     "full_frame_bbox_ratio",
 )
+
+EVIDENCE_MANIFESTS = (
+    "native_mapping_manifest",
+    "released_evaluation_manifest",
+    "class_agnostic_ap_manifest",
+)
+
+NATIVE_INPUT_HASHES = (
+    "replica51_vocabulary",
+    "siglip_model",
+    "replica_semantic_gt",
+    "replica_instance_gt",
+)
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _is_sha256(value: Any) -> bool:
+    return isinstance(value, str) and len(value) == 64 and all(
+        character in "0123456789abcdef" for character in value.lower()
+    )
+
+
+def _load_evidence_manifests(
+    result: Mapping[str, Any], failures: list[str]
+) -> dict[str, dict[str, Any]]:
+    evidence = result.get("protocol_evidence", {})
+    if not isinstance(evidence, Mapping):
+        failures.append("protocol_evidence must be an object")
+        evidence = {}
+    loaded: dict[str, dict[str, Any]] = {}
+    for name in EVIDENCE_MANIFESTS:
+        record = evidence.get(name, {})
+        if not isinstance(record, Mapping):
+            record = {}
+        path = Path(str(record.get("path", "")))
+        expected_hash = record.get("sha256")
+        if not path.is_file():
+            failures.append(f"protocol_evidence.{name} file is missing: {path}")
+            continue
+        if not _is_sha256(expected_hash) or _sha256(path) != expected_hash:
+            failures.append(f"protocol_evidence.{name} SHA-256 mismatch")
+            continue
+        try:
+            document = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            failures.append(f"protocol_evidence.{name} is not valid JSON")
+            continue
+        if not isinstance(document, dict):
+            failures.append(f"protocol_evidence.{name} must contain an object")
+            continue
+        loaded[name] = document
+    return loaded
+
+
+def _validate_evidence_manifests(
+    manifests: Mapping[str, Mapping[str, Any]], failures: list[str]
+) -> None:
+    scenes = list(PAPER_PROTOCOL["scene_ids"])
+    native = manifests.get("native_mapping_manifest")
+    if native is not None:
+        if native.get("status") != "COMPLETE_NATIVE_MAPPING":
+            failures.append("native mapping manifest is not complete")
+        if native.get("protocol_name") != PAPER_PROTOCOL["name"]:
+            failures.append("native mapping manifest protocol name mismatch")
+        if native.get("scene_ids") != scenes:
+            failures.append("native mapping manifest scene IDs mismatch")
+        expected_frames = list(
+            range(
+                0,
+                PAPER_PROTOCOL["frame_count_per_scene"] * PAPER_PROTOCOL["frame_step"],
+                PAPER_PROTOCOL["frame_step"],
+            )
+        )
+        frame_ids = native.get("frame_ids_by_scene", {})
+        if not isinstance(frame_ids, Mapping) or any(
+            frame_ids.get(scene) != expected_frames for scene in scenes
+        ):
+            failures.append("native mapping manifest frame provenance mismatch")
+        input_hashes = native.get("input_hashes", {})
+        if not isinstance(input_hashes, Mapping) or any(
+            not _is_sha256(input_hashes.get(name)) for name in NATIVE_INPUT_HASHES
+        ):
+            failures.append("native mapping manifest input hashes are incomplete")
+
+    released = manifests.get("released_evaluation_manifest")
+    if released is not None:
+        if released.get("status") != "COMPLETE_RELEASED_EVALUATION":
+            failures.append("released evaluation manifest is not complete")
+        if released.get("source_protocol") != "released_ovimap_replica51":
+            failures.append("released evaluation manifest protocol mismatch")
+        if released.get("scene_ids") != scenes:
+            failures.append("released evaluation manifest scene IDs mismatch")
+        if released.get("frame_count_per_scene") != PAPER_PROTOCOL["frame_count_per_scene"]:
+            failures.append("released evaluation manifest frame count mismatch")
+        if released.get("semantic_vocabulary") != PAPER_PROTOCOL["semantic_vocabulary"]:
+            failures.append("released evaluation manifest vocabulary mismatch")
+        availability = released.get("paper_metric_availability", {})
+        if not isinstance(availability, Mapping) or availability.get("table_3_semantic") is not True:
+            failures.append("released evaluation manifest lacks Table 3 semantic metrics")
+
+    paper_ap = manifests.get("class_agnostic_ap_manifest")
+    if paper_ap is not None:
+        if paper_ap.get("status") != "COMPLETE_PAPER_AP_EVALUATION":
+            failures.append("class-agnostic AP manifest is not complete")
+        if paper_ap.get("protocol_name") != PAPER_PROTOCOL["name"]:
+            failures.append("class-agnostic AP manifest protocol name mismatch")
+        if paper_ap.get("scene_ids") != scenes:
+            failures.append("class-agnostic AP manifest scene IDs mismatch")
+        if paper_ap.get("metric_contract") != PAPER_PROTOCOL["instance_metrics"]:
+            failures.append("class-agnostic AP manifest metric contract mismatch")
+        if paper_ap.get("metrics_present") != ["miou", "ap25", "ap50", "ap75"]:
+            failures.append("class-agnostic AP manifest metrics are incomplete")
 
 
 def summarize_feature_file(
@@ -129,6 +250,9 @@ def audit_paper_parity(
     if int(replica_metrics.get("scene_count", -1)) != len(PAPER_PROTOCOL["scene_ids"]):
         failures.append("metrics.replica_8_compat.scene_count must equal 8")
 
+    evidence_manifests = _load_evidence_manifests(result, failures)
+    _validate_evidence_manifests(evidence_manifests, failures)
+
     expected_scene_set = set(PAPER_PROTOCOL["scene_ids"])
     observed_summary_set = {str(value) for value in scene_summaries}
     if observed_summary_set != expected_scene_set:
@@ -193,6 +317,13 @@ def audit_paper_parity(
         "paper_reported_reference": PAPER_REPORTED_REFERENCE,
         "paper_values_are_reference_only": True,
         "failures": failures,
+        "validated_evidence_manifests": {
+            name: {
+                "status": manifest.get("status"),
+                "scene_ids": manifest.get("scene_ids"),
+            }
+            for name, manifest in evidence_manifests.items()
+        },
         "scene_artifacts": normalized_summaries,
         "aggregate_artifacts": aggregate,
     }

@@ -4,7 +4,7 @@
 
 **Goal:** Prevent the current non-paper-equivalent OVI-MAP run from populating Table 1, add an executable CVPR 2026 protocol audit, and publish new OVI-MAP metrics only after the Replica-8 artifacts pass the paper protocol.
 
-**Architecture:** Keep the existing neutral evaluator and the OVI-MAP paper evaluator as separate named contracts. A paper-parity audit reads the result metadata plus the eight native semantic-feature files, records coverage diagnostics, and emits a machine-readable PASS/FAIL report. The benchmark importer requires a passing audit before accepting OVI-MAP Table 1 bindings; failed historical runs remain immutable evidence and their registry rows are quarantined.
+**Architecture:** Keep the existing neutral evaluator and the OVI-MAP paper evaluator as separate named contracts. A paper-parity audit reads the result metadata plus the eight native semantic-feature files, records coverage diagnostics, and emits a machine-readable PASS/FAIL report. PASS additionally requires hash-bound native-mapping, released-semantic, and class-agnostic-AP manifests; the released precision/recall evaluator alone cannot satisfy the AP requirement. The benchmark importer re-runs the audit against the exact result hash before accepting OVI-MAP Table 1 bindings; failed historical runs remain immutable evidence and their registry rows are quarantined.
 
 **Tech Stack:** Python 3.10, NumPy, pickle, JSON, pytest, existing benchmark result importer, released OVI-MAP evaluator, Replica-8.
 
@@ -15,7 +15,7 @@
 - Create `src/evaluation/baselines/ovimap_paper_audit.py`: paper protocol constants, native artifact summaries, and strict parity checks.
 - Create `scripts/evaluation/audit_ovimap_paper_parity.py`: CLI that hashes inputs and writes the audit JSON.
 - Create `tests/evaluation/test_ovimap_paper_audit.py`: unit coverage for protocol and artifact failures.
-- Modify `tools/import_benchmark_results.py`: reject OVI-MAP T1 bindings without a passing, hash-verified audit.
+- Modify `tools/import_benchmark_results.py`: reject OVI-MAP T1 bindings without a passing audit whose embedded result SHA-256 matches the imported JSON.
 - Modify `tests/evaluation/test_import_benchmark_results.py`: importer regression coverage.
 - Create `docs/paper/results/baselines/ovimap/replica/20260719-s10-200f-full-instances-v2/paper_parity_audit.json`: immutable failure evidence for the current run.
 - Modify `docs/paper/benchmark_tokens.tsv`: quarantine current OVI-MAP T1 bindings.
@@ -23,6 +23,7 @@
 - Modify `docs/paper/BASELINE_RUN_REPORT.md`: record the exact paper values, reproduced values, protocol mismatch, and rerun gate.
 - Create `scripts/evaluation/run_ovimap_paper_protocol.py`: run released Replica-51 post-processing and evaluation without relabeling its metrics.
 - Create `tests/evaluation/test_run_ovimap_paper_protocol.py`: command and layout validation.
+- Modify `tests/test_benchmark_table_package.py`: assert all OVI-MAP T1 tokens remain unfilled until parity passes.
 
 ### Task 1: Encode the OVI-MAP Paper Protocol and Artifact Audit
 
@@ -127,7 +128,7 @@ with pytest.raises(ImportFailure, match="paper-parity audit"):
     import_results(...)
 ```
 
-Add a passing case whose audit record contains `status="PASS"`, `protocol_name="ovimap_cvpr2026_replica"`, a real audit path, and the correct SHA-256.
+Add a passing case whose result audit record contains `status="PASS"`, `protocol_name="ovimap_cvpr2026_replica"`, and a real audit path. The audit file itself must report PASS without failures and its `result_source.sha256` must match the imported result JSON.
 
 - [ ] **Step 2: Run the test and verify RED**
 
@@ -148,8 +149,14 @@ if audit.get("status") != "PASS" or audit.get("protocol_name") != "ovimap_cvpr20
     raise ImportFailure("OVI-MAP T1 result requires a passing paper-parity audit")
 audit_path = Path(str(audit.get("path", "")))
 _require_file(audit_path)
-if _sha256(audit_path) != str(audit.get("sha256", "")):
-    raise ImportFailure("OVI-MAP paper-parity audit hash mismatch")
+audit_document = json.loads(audit_path.read_text(encoding="utf-8"))
+if audit_document.get("status") != "PASS" or audit_document.get("failures") != []:
+    raise ImportFailure("OVI-MAP paper-parity audit file must PASS without failures")
+if audit_document.get("result_source", {}).get("sha256") != _sha256(result_path):
+    raise ImportFailure("OVI-MAP paper-parity audit result hash mismatch")
+recomputed = audit_paper_parity(result, audit_document.get("scene_artifacts", {}))
+if recomputed["status"] != "PASS":
+    raise ImportFailure("OVI-MAP result does not satisfy the paper protocol audit")
 ```
 
 Keep T4 hardware-only OVI-MAP results outside this metric gate.
@@ -258,7 +265,7 @@ Expected: FAIL because the runner does not exist.
 
 - [ ] **Step 3: Implement preflight and command execution**
 
-The runner must verify all eight `instance_mesh_200.ply`, `inst_sem_siglip-l-16-384_200_incre_combine.pkl`, and backend color-log files, the Replica GT meshes, the local SigLIP model, and the released evaluator checkout. Before released post-processing it deterministically replaces malformed pkl colors from authoritative `LogInstanceColor` records and records both hashes plus dropped stale IDs. It writes per-command stdout, stderr, exit status, source hash, and elapsed time. Any missing input or nonzero command marks the run `BLOCKED` or `FAILED`, never `VERIFIED`.
+The runner must verify all eight `instance_mesh_200.ply`, `inst_sem_siglip-l-16-384_200_incre_combine.pkl`, and backend color-log files, the Replica GT meshes, the local SigLIP model, and the released evaluator checkout. Before released post-processing it deterministically replaces malformed pkl colors from authoritative `LogInstanceColor` records and records both hashes plus dropped stale IDs. It writes per-command stdout, stderr, exit status, source hash, and elapsed time. Completion additionally requires 51 expected output files, eight finite instance-diagnostic rows, finite semantic mIoU/mAcc, and a parseable finite `results_replica.json`; empty successful scripts must fail output validation. Any missing input, nonzero command, or invalid output marks the run `BLOCKED` or `FAILED`, never `VERIFIED`.
 
 - [ ] **Step 4: Run tests and verify GREEN**
 
@@ -304,11 +311,11 @@ Run all eight scenes, execute Task 4's evaluator, and generate a new parity audi
 
 - [ ] **Step 5: Restore registry bindings only on PASS**
 
-Finalize a new result with a hash-verified `protocol_audit.status=PASS`. Import it through the guarded importer, regenerate tables, and run the full benchmark package tests. If parity remains unresolved, keep OVI-MAP T1 cells BLOCKED and report the exact failing invariant.
+Finalize a new result that points to a `protocol_audit.status=PASS` sidecar. Generate the audit after adding that pointer so `result_source.sha256` binds the exact imported JSON. PASS requires a native manifest with exact frame provenance and Replica-51/SigLIP/GT hashes, a validated released semantic manifest, and a separate evaluator manifest with the paper's class-agnostic mIoU/AP25/AP50/AP75 contract. Import it through the guarded importer, regenerate tables, and run the full benchmark package tests. If parity remains unresolved, keep OVI-MAP T1 cells unfilled and report the exact failing invariant.
 
 ## Self-Review
 
-- Spec coverage: separates paper Table 2 and Table 3, blocks current mixed metrics, preserves failed evidence, and defines the native rerun gate.
+- Spec coverage: separates paper Table 2 and Table 3, blocks current mixed metrics, binds PASS to evaluator manifests and outputs, preserves failed evidence, and defines the native rerun gate.
 - Placeholder scan: no implementation `TODO`/`TBD` placeholders are present; unresolved native execution is an explicit external-access gate in Task 5.
-- Type consistency: the audit record uses `status`, `protocol_name`, `path`, and `sha256` consistently in the producer and importer.
+- Type consistency: the result audit record uses `status`, `protocol_name`, and `path`; the audit sidecar uses `result_source.sha256` to bind the exact result JSON.
 - Safety: no paper number is copied into a measured token, no historical result is overwritten, and no reference checkout is modified.

@@ -19,11 +19,16 @@
     {
       "check": "/opt/conda/envs/cird/bin/python",
       "result": "The container-only OVI-MAP Python environment is not present on the host."
+    },
+    {
+      "check": "released scripts/eval_inst_seg.py metric contract",
+      "result": "The released evaluator reports mIoU/wIoU and mP/mR at thresholds, not the class-agnostic AP25/AP50/AP75 reported in paper Table 2."
     }
   ],
   "required_external_action": [
     "Grant user ww access to /var/run/docker.sock, for example with: sudo setfacl -m u:ww:rw /var/run/docker.sock",
-    "Keep the existing baseline-ovimap-58a804e container and its cird environment available."
+    "Keep the existing baseline-ovimap-58a804e container and its cird environment available.",
+    "Obtain the authors' Table 2 class-agnostic AP evaluator or validate an equivalent evaluator against author-provided outputs before restoring T1."
   ],
   "completed_evidence": {
     "released_replica51_run": {
@@ -50,6 +55,12 @@
     "semantic_instance_ap25": 0.016203703703703703,
     "semantic_instance_ap50": 0.0023148148148148147,
     "semantic_instance_apall": 0.0013503086419753086
+  },
+  "released_output_validation": {
+    "status": "PASS",
+    "validated_file_count": 51,
+    "instance_diagnostic_scene_count": 8,
+    "finite_metric_check": true
   },
   "token_bindings": []
 }

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sys
 import pickle
 from pathlib import Path
@@ -11,6 +12,7 @@ from scripts.evaluation.run_ovimap_paper_protocol import (
     RunnerConfig,
     build_command_plan,
     run,
+    validate_outputs,
 )
 
 
@@ -102,6 +104,12 @@ def test_dry_run_stages_replica8_and_preserves_released_metric_names(tmp_path: P
         "mP@25",
         "mR@25",
     ]
+    assert manifest["released_metric_contract"]["semantic_vertex"] == ["mIoU", "mAcc"]
+    assert manifest["released_metric_contract"]["semantic_instance"] == [
+        "APall",
+        "AP50",
+        "AP25",
+    ]
     assert manifest["paper_metric_availability"]["table_2_class_agnostic_ap"] is False
     assert manifest["paper_metric_availability"]["table_3_semantic"] is True
     for scene in REPLICA8_SCENES:
@@ -131,3 +139,66 @@ def test_preflight_fails_before_output_creation_for_missing_native_artifact(
         run(config, dry_run=True)
 
     assert not config.output.exists()
+
+
+def _write_released_outputs(output: Path) -> None:
+    layout = output / "layout"
+    for scene in REPLICA8_SCENES:
+        scene_root = layout / scene
+        eval_root = scene_root / "cropformer_inst" / "eval"
+        eval_root.mkdir(parents=True, exist_ok=True)
+        for relative in (
+            "gt_instance_mesh.ply",
+            "gt_semantic_mesh.ply",
+            "cropformer_inst/instance_map_gt_200.ply",
+            "cropformer_inst/semantic_map_gt_200.ply",
+            "cropformer_inst/eval/gt_sem_inst_id.npy",
+            "cropformer_inst/eval/pred_inst_sem_mapping.txt",
+        ):
+            path = scene_root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b"artifact")
+    (layout / "results_replica.json").write_text(
+        json.dumps(
+            {
+                "all_ap": 0.01,
+                "all_ap_50%": 0.02,
+                "all_ap_25%": 0.03,
+                "classes": {},
+            }
+        ),
+        encoding="utf-8",
+    )
+    logs = output / "logs"
+    logs.mkdir(parents=True, exist_ok=True)
+    (logs / "released_semantic_evaluation.stdout.txt").write_text(
+        "mIoU\tmAcc\n0.10\t0.20\n",
+        encoding="utf-8",
+    )
+    (logs / "released_instance_diagnostics.stdout.txt").write_text(
+        "mIoU\twIoU\tmP@75\tmR@75\tmP@50\tmR@50\tmP@25\tmR@25\n"
+        + "\n".join(["0.1\t0.2\t0.3\t0.4\t0.5\t0.6\t0.7\t0.8"] * 8)
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def test_output_validation_requires_all_scenes_and_finite_metrics(tmp_path: Path) -> None:
+    output = tmp_path / "run"
+    _write_released_outputs(output)
+
+    artifacts = validate_outputs(output)
+
+    assert artifacts["semantic_vertex_metrics"] == {"miou": 0.1, "macc": 0.2}
+    assert artifacts["semantic_instance_metrics"]["ap25"] == 0.03
+    assert len(artifacts["instance_diagnostics"]) == 8
+    assert artifacts["files"]["results_replica_json"]["sha256"]
+
+
+def test_empty_released_scripts_cannot_mark_run_complete(tmp_path: Path) -> None:
+    config = _fixture(tmp_path)
+
+    manifest = run(config)
+
+    assert manifest["status"] == "FAILED_OUTPUT_VALIDATION"
+    assert manifest["output_validation_error"]
