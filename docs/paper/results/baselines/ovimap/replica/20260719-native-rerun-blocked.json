@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "status": "BLOCKED",
+  "method": {
+    "key": "OVIMAP",
+    "display_label": "OVI-MAP"
+  },
+  "task": "Produce a new native Replica-8 mapping artifact set under the CVPR 2026 configuration.",
+  "checked_at": "2026-07-19T12:35:33+00:00",
+  "blockers": [
+    {
+      "check": "docker ps",
+      "result": "permission denied while trying to connect to the Docker API at unix:///var/run/docker.sock"
+    },
+    {
+      "check": "sudo -n docker ps",
+      "result": "sudo: a password is required"
+    },
+    {
+      "check": "/opt/conda/envs/cird/bin/python",
+      "result": "The container-only OVI-MAP Python environment is not present on the host."
+    }
+  ],
+  "required_external_action": [
+    "Grant user ww access to /var/run/docker.sock, for example with: sudo setfacl -m u:ww:rw /var/run/docker.sock",
+    "Keep the existing baseline-ovimap-58a804e container and its cird environment available."
+  ],
+  "completed_evidence": {
+    "released_replica51_run": {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_ovimap_paper_parity/released_eval_v3/run_manifest.json",
+      "sha256": "b5dde0f87e984be9811d864f4a58dd276bceed6e6c2803738c32930ccfcd5bf5",
+      "status": "COMPLETE_RELEASED_EVALUATION"
+    },
+    "released_instance_stdout": {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_ovimap_paper_parity/released_eval_v3/logs/released_instance_diagnostics.stdout.txt",
+      "sha256": "e5672b0d4dcfe405cb579a6de0be7e4d8cf6238b0f41b2ba6887bffbef92ed7a"
+    },
+    "released_semantic_stdout": {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_ovimap_paper_parity/released_eval_v3/logs/released_semantic_evaluation.stdout.txt",
+      "sha256": "7de65f7b8fedf56e6233db519b05ddfb2f5edcc5f93091dcd518f139024164fc"
+    },
+    "released_semantic_instance_json": {
+      "path": "/home/ww/oviovo_baseline_runs/20260719_ovimap_paper_parity/released_eval_v3/layout/results_replica.json",
+      "sha256": "f5b33ddaf8b9620f1b920e0921dce31530c53a917c6730157634848bd7a898c3"
+    }
+  },
+  "measured_released_replica8": {
+    "semantic_miou": 0.0141,
+    "semantic_macc": 0.0313,
+    "semantic_instance_ap25": 0.016203703703703703,
+    "semantic_instance_ap50": 0.0023148148148148147,
+    "semantic_instance_apall": 0.0013503086419753086
+  },
+  "token_bindings": []
+}
