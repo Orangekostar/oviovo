@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -103,6 +104,20 @@ class Oviv2Runtime:
             raise ValueError("all observations must belong to the current frame")
 
         next_revision = self.revision + 1
+        trial_tracker = copy.deepcopy(self.tracker)
+        track_batch = trial_tracker.update(observations, frame.frame_id)
+        accepted_tracks = tuple(
+            sorted(track_batch.accepted, key=lambda track: track.track_id)
+        )
+        trial_registry = copy.deepcopy(self.registry)
+        entity_ids_before = set(trial_registry.entities)
+        resolved_entities = trial_registry.resolve_batch(accepted_tracks, next_revision)
+        accepted_entity_ids = tuple(entity.entity_id for entity in resolved_entities)
+        matched_entity_count = sum(
+            entity.entity_id in entity_ids_before for entity in resolved_entities
+        )
+        new_entity_count = len(resolved_entities) - matched_entity_count
+
         blocks_touched = self.geometry.integrate(
             frame.depth,
             frame.rgb,
@@ -130,17 +145,6 @@ class Oviv2Runtime:
                         next_revision,
                     )
 
-        track_batch = self.tracker.update(observations, frame.frame_id)
-        accepted_tracks = tuple(
-            sorted(track_batch.accepted, key=lambda track: track.track_id)
-        )
-        entity_ids_before = set(self.registry.entities)
-        resolved_entities = self.registry.resolve_batch(accepted_tracks, next_revision)
-        accepted_entity_ids = tuple(entity.entity_id for entity in resolved_entities)
-        matched_entity_count = sum(
-            entity.entity_id in entity_ids_before for entity in resolved_entities
-        )
-        new_entity_count = len(resolved_entities) - matched_entity_count
         ownership_keys: set[VoxelKey] = set()
         for track, entity in zip(accepted_tracks, resolved_entities):
             current_observation = track.observations[-1]
@@ -160,6 +164,8 @@ class Oviv2Runtime:
                 ownership_keys.add(voxel_key)
         self.recompute_ownership(tuple(sorted(ownership_keys)), revision=next_revision)
 
+        self.tracker = trial_tracker
+        self.registry = trial_registry
         self.revision = next_revision
         self.last_frame_id = int(frame.frame_id)
         self.last_timestamp = float(frame.timestamp)

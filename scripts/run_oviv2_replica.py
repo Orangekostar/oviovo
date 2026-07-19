@@ -408,7 +408,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     snapshot = runtime.commit(final / "oviv2_voxel_snapshot.npz")
     runtime.registry.save(final / "oviv2_entities.jsonl")
-    mesh = derive_labeled_mesh(snapshot.geometry, snapshot.evidence, snapshot.ownership)
+    mesh = derive_labeled_mesh(
+        snapshot.geometry,
+        snapshot.evidence,
+        snapshot.ownership,
+        entity_semantics=runtime.registry.semantic_labels(),
+    )
     write_labeled_mesh(final / "oviv2_instance_mesh.ply", mesh)
     mapping_elapsed = time.perf_counter() - started
 

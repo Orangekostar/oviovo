@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 from src.core.data_structures import CameraIntrinsics, Frame
+from src.oviv2.entities import EntityRegistry
 from src.oviv2.meshing import derive_labeled_mesh
 from src.oviv2.observations import FrameObservation, ObservationKind
 from src.oviv2.runtime import Oviv2Runtime, Oviv2RuntimeConfig
@@ -203,13 +204,13 @@ def test_runtime_resolves_entities_once_per_frame_even_for_empty_batch(
 ) -> None:
     runtime = precision_runtime(confirm_hits=1)
     calls: list[tuple[tuple[int, ...], int]] = []
-    original = runtime.registry.resolve_batch
+    original = EntityRegistry.resolve_batch
 
-    def record_batch(tracks, revision):
+    def record_batch(registry, tracks, revision):
         calls.append((tuple(track.track_id for track in tracks), revision))
-        return original(tracks, revision)
+        return original(registry, tracks, revision)
 
-    monkeypatch.setattr(runtime.registry, "resolve_batch", record_batch)
+    monkeypatch.setattr(EntityRegistry, "resolve_batch", record_batch)
     runtime.process_frame(frame(0), ())
     left = replace(object_observation(1, (0, 0, 20), 2, "chair"), observation_id=101)
     right = replace(object_observation(1, (20, 0, 20), 2, "chair"), observation_id=102)
@@ -264,6 +265,33 @@ def test_runtime_reports_tracker_conflict_and_revocation_counters() -> None:
     assert revoked.association_conflict_count == 0
     assert revoked.revoked_edge_count == 1
     assert (revoked.matched_entity_count, revoked.new_entity_count) == (1, 0)
+
+
+def test_registry_validation_failure_leaves_runtime_state_unchanged() -> None:
+    runtime = precision_runtime(confirm_hits=1)
+    tracker = runtime.tracker
+    registry = runtime.registry
+    invalid = replace(
+        observation(0, ObservationKind.OBJECT, 2, {(0, 0, 20)}),
+        label="",
+    )
+
+    with pytest.raises(ValueError, match="label"):
+        runtime.process_frame(frame(0), (invalid,))
+
+    assert (runtime.revision, runtime.last_frame_id, runtime.last_timestamp) == (0, -1, 0.0)
+    assert runtime.geometry.active_block_count == 0
+    assert runtime.evidence.allocated_block_count == 0
+    assert runtime.ownership.allocated_block_count == 0
+    assert runtime.tracker is tracker
+    assert tracker.tracks == {}
+    assert tracker.graph.frame_ids == ()
+    assert tracker._next_track_id == 1
+    assert tracker._last_frame_id is None
+    assert runtime.registry is registry
+    assert registry.entities == {}
+    assert registry._next_entity_id == 1
+    assert registry._last_revision == -1
 
 
 def test_recomputing_owner_retains_competing_entity_evidence() -> None:

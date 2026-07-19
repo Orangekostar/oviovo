@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, fields
+from numbers import Real
 from typing import Any
 
 import numpy as np
@@ -42,6 +43,7 @@ class EntityEvaluationInfo:
     entity_id: int
     semantic_id: int
     accepted_view_count: int
+    semantic_confidence: float = 1.0
 
     def __post_init__(self) -> None:
         for name in ("entity_id", "semantic_id"):
@@ -54,6 +56,15 @@ class EntityEvaluationInfo:
             or self.accepted_view_count < 0
         ):
             raise ValueError("accepted_view_count must be a non-negative integer")
+        if isinstance(self.semantic_confidence, (bool, np.bool_)) or not isinstance(
+            self.semantic_confidence,
+            Real,
+        ):
+            raise TypeError("semantic_confidence must be a real number")
+        semantic_confidence = float(self.semantic_confidence)
+        if not np.isfinite(semantic_confidence) or not 0.0 <= semantic_confidence <= 1.0:
+            raise ValueError("semantic_confidence must be finite and lie in [0, 1]")
+        object.__setattr__(self, "semantic_confidence", semantic_confidence)
 
 
 @dataclass(frozen=True)

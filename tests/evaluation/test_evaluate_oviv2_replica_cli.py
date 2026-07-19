@@ -13,6 +13,7 @@ from scripts.evaluation.evaluate_oviv2_replica import (
     _load_entity_info,
     _majority_object_per_vertex,
 )
+from src.evaluation.oviv2_replica import EntityEvaluationInfo
 from src.oviv2.addressing import point_to_voxel
 from src.oviv2.evidence import SparseEvidenceStore
 from src.oviv2.geometry import SparseTsdfVolume
@@ -55,9 +56,46 @@ def test_entity_info_loader_skips_v2_registry_metadata(tmp_path: Path) -> None:
     loaded = _load_entity_info(path)
 
     assert [
-        (item.entity_id, item.semantic_id, item.accepted_view_count)
+        (
+            item.entity_id,
+            item.semantic_id,
+            item.accepted_view_count,
+            item.semantic_confidence,
+        )
         for item in loaded
-    ] == [(11, 2, 3)]
+    ] == [(11, 2, 3, 1.0)]
+
+
+def test_entity_info_loader_derives_stable_v2_posterior_confidence(tmp_path: Path) -> None:
+    path = tmp_path / "entities.jsonl"
+    path.write_text(
+        json.dumps(
+            {
+                "record_type": "entity",
+                "entity_id": 11,
+                "semantic_id": 2,
+                "accepted_view_count": 3,
+                "semantic_posterior": {
+                    "log_evidence": [[1, 1000.0], [2, 1000.0 + np.log(4.0)]],
+                    "effective_support": 5.0,
+                },
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    loaded = _load_entity_info(path)
+
+    assert loaded[0].semantic_confidence == pytest.approx(0.8)
+
+
+@pytest.mark.parametrize("confidence", [False, np.nan, -0.01, 1.01])
+def test_entity_evaluation_info_rejects_invalid_semantic_confidence(
+    confidence: object,
+) -> None:
+    with pytest.raises((TypeError, ValueError), match="semantic_confidence"):
+        EntityEvaluationInfo(1, 2, 1, semantic_confidence=confidence)
 
 
 def test_majority_object_assignment_accepts_replica_quad_faces() -> None:
@@ -91,7 +129,7 @@ def _write_gt_mesh(path: Path, vertices: np.ndarray, triangles: np.ndarray) -> N
     ).write(path)
 
 
-def _fixture(tmp_path: Path) -> dict[str, Path]:
+def _fixture(tmp_path: Path, *, semantic_evidence: bool = True) -> dict[str, Path]:
     geometry = SparseTsdfVolume()
     depth, rgb, intrinsics = _plane_frame()
     _integrate_twice(geometry, depth, rgb, intrinsics, np.eye(4))
@@ -105,7 +143,8 @@ def _fixture(tmp_path: Path) -> dict[str, Path]:
         for vertex in vertices
     }
     for key in sorted(keys):
-        evidence.update_semantic(key, label_id=2, support_delta=1.0, revision=1)
+        if semantic_evidence:
+            evidence.update_semantic(key, label_id=2, support_delta=1.0, revision=1)
         evidence.update_entity(key, entity_id=11, positive_delta=1.0, negative_delta=0.0, timestamp=1.0, revision=1)
         ownership.assign(key, entity_id=11, confidence=1.0, evidence_revision=1)
 
@@ -239,6 +278,20 @@ def test_cli_writes_complete_deterministic_synthetic_evaluation(tmp_path: Path) 
     )
     assert len(semantic_audit["face"]) == len(PlyData.read(paths["gt_mesh"])["face"])
     assert (first / "metrics.json").read_bytes() == (second / "metrics.json").read_bytes()
+
+
+def test_evaluator_exports_owner_label_without_semantic_voxel_evidence(
+    tmp_path: Path,
+) -> None:
+    paths = _fixture(tmp_path, semantic_evidence=False)
+    output = tmp_path / "evaluation"
+
+    result = _run(paths, output)
+
+    assert result.returncode == 0, result.stderr
+    metrics = json.loads((output / "metrics.json").read_text(encoding="utf-8"))
+    assert metrics["miou"] == pytest.approx(1.0)
+    assert metrics["macc"] == pytest.approx(1.0)
 
 
 @pytest.mark.parametrize("failure", ["scene", "vocabulary", "missing_gt"])

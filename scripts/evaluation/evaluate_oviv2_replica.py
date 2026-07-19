@@ -169,6 +169,37 @@ def load_replica_ground_truth(
     return ReplicaGroundTruth(vertices, semantic_ids, instance_ids)
 
 
+def _entity_semantic_confidence(payload: dict[str, Any], semantic_id: int) -> float:
+    if "semantic_posterior" not in payload:
+        return 1.0
+    posterior = payload["semantic_posterior"]
+    if not isinstance(posterior, dict):
+        raise TypeError("semantic_posterior must be an object")
+    entries = posterior.get("log_evidence")
+    if not isinstance(entries, (list, tuple)):
+        raise TypeError("semantic_posterior.log_evidence must be a sequence")
+    log_values: dict[int, float] = {}
+    for entry in entries:
+        if not isinstance(entry, (list, tuple)) or len(entry) != 2:
+            raise ValueError("semantic_posterior.log_evidence entries must be pairs")
+        entry_id, log_value = entry
+        if not isinstance(entry_id, int) or isinstance(entry_id, bool) or entry_id <= 0:
+            raise ValueError("semantic_posterior semantic IDs must be positive integers")
+        if entry_id in log_values:
+            raise ValueError("semantic_posterior semantic IDs must be unique")
+        if isinstance(log_value, bool):
+            raise TypeError("semantic_posterior log evidence must be numeric")
+        normalized_log = float(log_value)
+        if not np.isfinite(normalized_log):
+            raise ValueError("semantic_posterior log evidence must be finite")
+        log_values[entry_id] = normalized_log
+    if not log_values or semantic_id not in log_values:
+        return 0.0
+    maximum = max(log_values.values())
+    denominator = sum(np.exp(value - maximum) for value in log_values.values())
+    return float(np.exp(log_values[semantic_id] - maximum) / denominator)
+
+
 def _load_entity_info(path: Path) -> list[EntityEvaluationInfo]:
     if not path.is_file():
         raise FileNotFoundError(path)
@@ -185,11 +216,14 @@ def _load_entity_info(path: Path) -> list[EntityEvaluationInfo]:
                 continue
             if record_type not in {None, "entity"}:
                 raise ValueError(f"unknown record_type {record_type!r}")
+            semantic_id = payload["semantic_id"]
+            semantic_confidence = _entity_semantic_confidence(payload, semantic_id)
             records.append(
                 EntityEvaluationInfo(
                     entity_id=payload["entity_id"],
-                    semantic_id=payload["semantic_id"],
+                    semantic_id=semantic_id,
                     accepted_view_count=payload["accepted_view_count"],
+                    semantic_confidence=semantic_confidence,
                 )
             )
         except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
@@ -295,7 +329,15 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         if info.semantic_id not in valid_semantic_ids:
             raise ValueError(f"entity {info.entity_id} semantic ID is outside frozen vocabulary")
 
-    mesh = derive_labeled_mesh(snapshot.geometry, snapshot.evidence, snapshot.ownership)
+    mesh = derive_labeled_mesh(
+        snapshot.geometry,
+        snapshot.evidence,
+        snapshot.ownership,
+        entity_semantics={
+            info.entity_id: (info.semantic_id, info.semantic_confidence)
+            for info in entity_info
+        },
+    )
     mesh_semantic_ids = {int(value) for value in np.unique(mesh.semantic_ids) if value > 0}
     if not mesh_semantic_ids.issubset(valid_semantic_ids):
         raise ValueError("snapshot semantic evidence is outside frozen vocabulary")

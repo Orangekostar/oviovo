@@ -10,6 +10,7 @@ import numpy as np
 from PIL import Image
 import pytest
 
+import scripts.run_oviv2_replica as runner_module
 from scripts.run_oviv2_replica import parse_args, run
 from src.oviv2.snapshot import VoxelMapSnapshot
 
@@ -244,6 +245,28 @@ def test_runner_writes_restoreable_voxel_contract_and_exact_frame_selection(tmp_
     assert (output / "timing.json").is_file()
     assert manifest["authoritative_state"] == "sparse_voxel_layers"
     assert manifest["dense_point_cloud_state"] is False
+
+
+def test_runner_passes_current_registry_semantics_to_final_mesh(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = _write_fixture(tmp_path)
+    captured: list[object] = []
+    original = runner_module.derive_labeled_mesh
+
+    def record_semantics(*args, **kwargs):
+        captured.append(kwargs.get("entity_semantics"))
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(runner_module, "derive_labeled_mesh", record_semantics)
+
+    run(_args(config, tmp_path / "run"))
+
+    assert len(captured) == 1
+    assert isinstance(captured[0], dict)
+    assert captured[0]
+    assert all(semantic_id == 4 for semantic_id, _ in captured[0].values())
 
 
 def test_runner_fuses_structure_without_allocating_structure_entities(tmp_path: Path) -> None:

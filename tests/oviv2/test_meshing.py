@@ -7,10 +7,10 @@ import open3d as o3d
 import pytest
 
 from src.oviv2.addressing import point_to_voxel
-from src.oviv2.evidence import SparseEvidenceStore
+from src.oviv2.evidence import SemanticCandidate, SparseEvidenceStore
 from src.oviv2.geometry import SparseTsdfVolume
 from src.oviv2.meshing import LabeledMesh, canonicalize_labeled_mesh, derive_labeled_mesh, write_labeled_mesh
-from src.oviv2.ownership import ReversibleOwnershipStore
+from src.oviv2.ownership import OwnershipRecord, ReversibleOwnershipStore
 
 from tests.oviv2.test_geometry import _integrate_twice, _plane_frame
 
@@ -166,6 +166,51 @@ def test_entity_semantics_mapping_is_strictly_validated(
             ReversibleOwnershipStore(),
             entity_semantics=entity_semantics,  # type: ignore[arg-type]
         )
+
+
+@pytest.mark.parametrize(
+    "entity_semantics",
+    [
+        {np.iinfo(np.int64).max + 1: (1, 0.5)},
+        {1: (np.iinfo(np.int64).max + 1, 0.5)},
+    ],
+)
+def test_entity_semantics_rejects_ids_outside_int64(
+    entity_semantics: dict[int, tuple[int, float]],
+) -> None:
+    with pytest.raises(ValueError, match="int64"):
+        derive_labeled_mesh(
+            _geometry(),
+            SparseEvidenceStore(),
+            ReversibleOwnershipStore(),
+            entity_semantics=entity_semantics,
+        )
+
+
+@pytest.mark.parametrize("source", ["evidence", "owner"])
+def test_derivation_rejects_source_ids_outside_int64(
+    source: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    geometry = _geometry()
+    evidence = SparseEvidenceStore()
+    ownership = ReversibleOwnershipStore()
+    too_large = int(np.iinfo(np.int64).max) + 1
+    if source == "evidence":
+        monkeypatch.setattr(
+            evidence,
+            "semantic_candidates",
+            lambda _key: (SemanticCandidate(too_large, 1.0, 1),),
+        )
+    else:
+        monkeypatch.setattr(
+            ownership,
+            "owner_of",
+            lambda _key: OwnershipRecord(too_large, 1.0, 1, 1),
+        )
+
+    with pytest.raises(ValueError, match="int64"):
+        derive_labeled_mesh(geometry, evidence, ownership)
 
 
 def test_derivation_and_write_do_not_mutate_voxel_state(tmp_path: Path) -> None:

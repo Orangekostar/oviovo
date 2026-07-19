@@ -16,6 +16,20 @@ from src.oviv2.geometry import SparseTsdfVolume
 from src.oviv2.ownership import ReversibleOwnershipStore
 
 
+_INT64_MAX = int(np.iinfo(np.int64).max)
+
+
+def _int64_identifier(value: object, name: str, *, minimum: int) -> int:
+    if isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral):
+        raise ValueError(f"{name} must be an integer")
+    normalized = int(value)
+    if normalized < minimum:
+        raise ValueError(f"{name} must be at least {minimum}")
+    if normalized > _INT64_MAX:
+        raise ValueError(f"{name} must fit signed int64")
+    return normalized
+
+
 def _read_only_array(value: np.ndarray, *, dtype) -> np.ndarray:
     array = np.ascontiguousarray(value, dtype=dtype)
     array.setflags(write=False)
@@ -141,6 +155,11 @@ def _validated_entity_semantics(
             or int(entity_id) <= 0
         ):
             raise ValueError("entity_semantics keys must be positive integers")
+        normalized_entity_id = _int64_identifier(
+            entity_id,
+            "entity_semantics entity ID",
+            minimum=1,
+        )
         if not isinstance(semantics, tuple):
             raise TypeError("entity_semantics values must be 2-tuples")
         if len(semantics) != 2:
@@ -152,12 +171,17 @@ def _validated_entity_semantics(
             or int(semantic_id) < 0
         ):
             raise ValueError("entity semantic IDs must be non-negative integers")
+        normalized_semantic_id = _int64_identifier(
+            semantic_id,
+            "entity semantic ID",
+            minimum=0,
+        )
         if isinstance(confidence, (bool, np.bool_)) or not isinstance(confidence, Real):
             raise ValueError("entity semantic confidence must be finite and lie in [0, 1]")
         normalized_confidence = float(confidence)
         if not np.isfinite(normalized_confidence) or not 0.0 <= normalized_confidence <= 1.0:
             raise ValueError("entity semantic confidence must be finite and lie in [0, 1]")
-        normalized[int(entity_id)] = (int(semantic_id), normalized_confidence)
+        normalized[normalized_entity_id] = (normalized_semantic_id, normalized_confidence)
     return normalized
 
 
@@ -196,15 +220,24 @@ def derive_labeled_mesh(
                 key=lambda candidate: (candidate.support, -candidate.label_id),
             )
             total_support = sum(candidate.support for candidate in semantic_candidates)
-            semantic_ids[index] = strongest.label_id
+            semantic_ids[index] = _int64_identifier(
+                strongest.label_id,
+                "semantic evidence label ID",
+                minimum=0,
+            )
             if total_support > 0.0:
                 semantic_confidence[index] = strongest.support / total_support
         owner = ownership.owner_of(voxel_key)
         if owner is not None:
-            entity_ids[index] = owner.entity_id
+            owner_entity_id = _int64_identifier(
+                owner.entity_id,
+                "owner entity ID",
+                minimum=1,
+            )
+            entity_ids[index] = owner_entity_id
             ownership_confidence[index] = owner.confidence
             if normalized_entity_semantics is not None:
-                current_semantics = normalized_entity_semantics.get(owner.entity_id)
+                current_semantics = normalized_entity_semantics.get(owner_entity_id)
                 if current_semantics is not None and current_semantics[0] > 0:
                     semantic_ids[index] = current_semantics[0]
                     semantic_confidence[index] = current_semantics[1]
