@@ -192,8 +192,13 @@ def _preflight(
             raise ValueError("frontend manifest method must be OVIV2")
         if frontend_manifest.get("scene") != config["scene"]:
             raise ValueError("frontend manifest scene does not match runner config")
-        if frontend_manifest.get("frame_count") != num_frames:
-            raise ValueError("frontend manifest frame count does not match requested run")
+        available_frames = frontend_manifest.get("frame_count")
+        if (
+            not isinstance(available_frames, int)
+            or isinstance(available_frames, bool)
+            or available_frames < num_frames
+        ):
+            raise ValueError("frontend manifest does not cover the requested run prefix")
     frontend_digest = hashlib.sha256()
     for cache_index in range(num_frames):
         cache_path = cache_dir / f"frame{cache_index:06d}.pkl.gz"

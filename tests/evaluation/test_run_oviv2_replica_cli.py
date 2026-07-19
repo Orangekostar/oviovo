@@ -14,7 +14,12 @@ from scripts.run_oviv2_replica import parse_args, run
 from src.oviv2.snapshot import VoxelMapSnapshot
 
 
-def _write_fixture(tmp_path: Path, *, cache_frames: int = 2) -> Path:
+def _write_fixture(
+    tmp_path: Path,
+    *,
+    cache_frames: int = 2,
+    frontend_manifest_frames: int | None = None,
+) -> Path:
     dataset = tmp_path / "dataset"
     results = dataset / "results"
     cache = tmp_path / "cache"
@@ -44,6 +49,23 @@ def _write_fixture(tmp_path: Path, *, cache_frames: int = 2) -> Path:
         }
         with gzip.open(cache / f"frame{cache_id:06d}.pkl.gz", "wb") as stream:
             pickle.dump(payload, stream)
+    if frontend_manifest_frames is not None:
+        cache_hashes = {
+            path.name: hashlib.sha256(path.read_bytes()).hexdigest()
+            for path in sorted(cache.glob("frame*.pkl.gz"))
+        }
+        (cache / "frontend_manifest.json").write_text(
+            json.dumps(
+                {
+                    "method": "OVIV2",
+                    "scene": "room0",
+                    "frame_count": frontend_manifest_frames,
+                    "algorithm_hash": "fixture-frontend",
+                    "cache_files_sha256": cache_hashes,
+                }
+            ),
+            encoding="utf-8",
+        )
     manifest = tmp_path / "manifest.json"
     manifest.write_text(
         json.dumps(
@@ -89,7 +111,7 @@ def _write_fixture(tmp_path: Path, *, cache_frames: int = 2) -> Path:
     return config
 
 
-def _args(config: Path, output: Path, *extra: str):
+def _args(config: Path, output: Path, *extra: str, num_frames: int = 2):
     return parse_args(
         [
             "--config",
@@ -97,7 +119,7 @@ def _args(config: Path, output: Path, *extra: str):
             "--output",
             str(output),
             "--num-frames",
-            "2",
+            str(num_frames),
             "--skip-evaluation",
             *extra,
         ]
@@ -112,6 +134,16 @@ def test_preflight_fails_before_creating_output_for_missing_cache(tmp_path: Path
         run(_args(config, output))
 
     assert not output.exists()
+
+
+def test_preflight_accepts_prefix_of_verified_frontend_manifest(tmp_path: Path) -> None:
+    config = _write_fixture(tmp_path, frontend_manifest_frames=2)
+    output = tmp_path / "run"
+
+    manifest = run(_args(config, output, num_frames=1))
+
+    assert manifest["final_revision"] == 1
+    assert manifest["frontend_algorithm_hash"] == "fixture-frontend"
 
 
 def test_runner_writes_restoreable_voxel_contract_and_exact_frame_selection(tmp_path: Path) -> None:
