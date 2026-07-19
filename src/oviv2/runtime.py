@@ -252,8 +252,10 @@ class Oviv2Runtime:
                 revision=self.revision,
                 voxel_size_m=self.config.tsdf.voxel_size_m,
                 block_resolution=self.config.tsdf.block_resolution,
+                schema_version=2,
             ),
             self.geometry,
             self.evidence,
             self.ownership,
+            registry=self.registry,
         )

@@ -334,11 +334,17 @@ def test_runtime_commit_round_trip_contains_only_voxel_layers(tmp_path: Path) ->
     restored = VoxelMapSnapshot.load(tmp_path / "snapshot")
 
     assert committed.metadata.revision == 1
+    assert committed.metadata.schema_version == 2
+    assert committed.registry is not None
+    assert committed.registry.entities == runtime.registry.entities
     assert restored.metadata.scene_id == "room0"
+    assert restored.registry is not None
+    assert restored.registry.entities == runtime.registry.entities
     assert {path.name for path in (tmp_path / "snapshot").iterdir()} == {
         "metadata.json",
         "geometry.npz",
         "evidence.npz",
         "ownership.npz",
+        "entities.jsonl",
         "checksums.json",
     }

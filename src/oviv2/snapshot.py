@@ -12,6 +12,7 @@ import uuid
 import numpy as np
 
 from src.oviv2.evidence import EvidenceConfig, SparseEvidenceStore
+from src.oviv2.entities import EntityRegistry
 from src.oviv2.geometry import SparseTsdfVolume, TsdfConfig
 from src.oviv2.ownership import ReversibleOwnershipStore
 
@@ -43,7 +44,11 @@ class VoxelSnapshotMetadata:
             or self.block_resolution <= 0
         ):
             raise ValueError("block_resolution must be a positive integer")
-        if self.schema_version != 1:
+        if (
+            not isinstance(self.schema_version, int)
+            or isinstance(self.schema_version, bool)
+            or self.schema_version not in {1, 2}
+        ):
             raise ValueError("unsupported schema_version")
 
 
@@ -55,8 +60,10 @@ class VoxelMapSnapshot:
     evidence: SparseEvidenceStore
     ownership: ReversibleOwnershipStore
     checksums: dict[str, str]
+    registry: EntityRegistry | None = None
 
-    _DATA_FILES = ("metadata.json", "geometry.npz", "evidence.npz", "ownership.npz")
+    _DATA_FILES_V1 = ("metadata.json", "geometry.npz", "evidence.npz", "ownership.npz")
+    _DATA_FILES_V2 = (*_DATA_FILES_V1, "entities.jsonl")
 
     @staticmethod
     def _sha256(path: Path) -> str:
@@ -81,6 +88,7 @@ class VoxelMapSnapshot:
         geometry: SparseTsdfVolume,
         evidence: SparseEvidenceStore,
         ownership: ReversibleOwnershipStore,
+        registry: EntityRegistry | None,
     ) -> None:
         if not np.isclose(
             geometry.config.voxel_size_m,
@@ -101,6 +109,35 @@ class VoxelMapSnapshot:
             candidate_ids = {item.entity_id for item in evidence.entity_candidates(voxel_key)}
             if owner.entity_id not in candidate_ids:
                 raise ValueError("ownership record has no matching entity evidence")
+        if metadata.schema_version == 1:
+            if registry is not None:
+                raise ValueError("schema v1 snapshot forbids a registry")
+            return
+        if not isinstance(registry, EntityRegistry):
+            raise ValueError("schema v2 snapshot requires a registry")
+        referenced_entity_ids = {
+            int(entity_id)
+            for block in evidence._blocks.values()
+            for entity_id in np.unique(block.entity_ids)
+            if entity_id > 0
+        }
+        referenced_entity_ids.update(
+            owner.entity_id for _, owner in ownership.records()
+        )
+        missing = referenced_entity_ids.difference(registry.entities)
+        if missing:
+            raise ValueError(f"registry is missing referenced entity IDs {sorted(missing)}")
+        if registry._last_revision > metadata.revision:
+            raise ValueError("registry watermark revision exceeds snapshot metadata revision")
+        if any(
+            entity.last_revision > metadata.revision
+            for entity in registry.entities.values()
+        ):
+            raise ValueError("registry entity revision exceeds snapshot metadata revision")
+
+    @classmethod
+    def _data_files(cls, schema_version: int) -> tuple[str, ...]:
+        return cls._DATA_FILES_V1 if schema_version == 1 else cls._DATA_FILES_V2
 
     @classmethod
     def commit(
@@ -110,10 +147,12 @@ class VoxelMapSnapshot:
         geometry: SparseTsdfVolume,
         evidence: SparseEvidenceStore,
         ownership: ReversibleOwnershipStore,
+        *,
+        registry: EntityRegistry | None = None,
     ) -> "VoxelMapSnapshot":
         if not isinstance(metadata, VoxelSnapshotMetadata):
             raise TypeError("metadata must be VoxelSnapshotMetadata")
-        cls._validate_components(metadata, geometry, evidence, ownership)
+        cls._validate_components(metadata, geometry, evidence, ownership, registry)
         target = Path(target_dir)
         target.parent.mkdir(parents=True, exist_ok=True)
         if target.exists() and not target.is_dir():
@@ -128,9 +167,12 @@ class VoxelMapSnapshot:
             geometry.save(temporary / "geometry.npz")
             evidence.save(temporary / "evidence.npz")
             ownership.save(temporary / "ownership.npz")
+            if registry is not None:
+                registry.save(temporary / "entities.jsonl")
+            data_files = cls._data_files(metadata.schema_version)
             checksums = {
                 name: cls._sha256(temporary / name)
-                for name in cls._DATA_FILES
+                for name in data_files
             }
             cls._write_json(temporary / "checksums.json", checksums)
             directory_fd = os.open(temporary, os.O_RDONLY | os.O_DIRECTORY)
@@ -172,21 +214,36 @@ class VoxelMapSnapshot:
         checksums_path = source / "checksums.json"
         if not checksums_path.is_file():
             raise ValueError("snapshot is missing checksums.json")
-        with checksums_path.open("r", encoding="utf-8") as stream:
-            checksums = json.load(stream)
-        if set(checksums) != set(cls._DATA_FILES):
+        try:
+            with checksums_path.open("r", encoding="utf-8") as stream:
+                checksums = json.load(stream)
+        except (TypeError, ValueError, json.JSONDecodeError) as exc:
+            raise ValueError(f"invalid snapshot checksum manifest: {exc}") from exc
+        if not isinstance(checksums, dict):
+            raise ValueError("snapshot checksum manifest must be an object")
+        checksum_files = set(checksums)
+        if (
+            checksum_files != set(cls._DATA_FILES_V1)
+            and checksum_files != set(cls._DATA_FILES_V2)
+        ):
             raise ValueError("snapshot checksum manifest has unexpected files")
-        for name in cls._DATA_FILES:
+        for name in sorted(checksum_files):
             data_path = source / name
             if not data_path.is_file() or cls._sha256(data_path) != checksums[name]:
                 raise ValueError(f"snapshot checksum mismatch for {name}")
 
-        with (source / "metadata.json").open("r", encoding="utf-8") as stream:
-            metadata_payload = json.load(stream)
         try:
+            with (source / "metadata.json").open("r", encoding="utf-8") as stream:
+                metadata_payload = json.load(stream)
             metadata = VoxelSnapshotMetadata(**metadata_payload)
-        except (TypeError, ValueError) as exc:
+        except (TypeError, ValueError, json.JSONDecodeError) as exc:
             raise ValueError(f"invalid snapshot metadata: {exc}") from exc
+        data_files = cls._data_files(metadata.schema_version)
+        if checksum_files != set(data_files):
+            raise ValueError("snapshot schema and checksum files do not match")
+        physical_files = {path.name for path in source.iterdir()}
+        if physical_files != {*data_files, "checksums.json"}:
+            raise ValueError("snapshot physical files do not match schema")
 
         tsdf_config = TsdfConfig(
             voxel_size_m=metadata.voxel_size_m,
@@ -204,5 +261,18 @@ class VoxelMapSnapshot:
             source / "ownership.npz",
             block_resolution=metadata.block_resolution,
         )
-        cls._validate_components(metadata, geometry, evidence, ownership)
-        return cls(source, metadata, geometry, evidence, ownership, dict(checksums))
+        registry = (
+            EntityRegistry.load(source / "entities.jsonl")
+            if metadata.schema_version == 2
+            else None
+        )
+        cls._validate_components(metadata, geometry, evidence, ownership, registry)
+        return cls(
+            source,
+            metadata,
+            geometry,
+            evidence,
+            ownership,
+            dict(checksums),
+            registry,
+        )

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 import json
 from pathlib import Path
 import subprocess
@@ -16,11 +17,13 @@ from scripts.evaluation.evaluate_oviv2_replica import (
 from src.evaluation.oviv2_replica import EntityEvaluationInfo
 from src.oviv2.addressing import point_to_voxel
 from src.oviv2.evidence import SparseEvidenceStore
+from src.oviv2.entities import EntityRegistry
 from src.oviv2.geometry import SparseTsdfVolume
 from src.oviv2.ownership import ReversibleOwnershipStore
 from src.oviv2.snapshot import VoxelMapSnapshot, VoxelSnapshotMetadata
 
 from tests.oviv2.test_geometry import _integrate_twice, _plane_frame
+from tests.oviv2.test_entities import _track
 
 
 SCRIPT = Path("scripts/evaluation/evaluate_oviv2_replica.py")
@@ -129,7 +132,12 @@ def _write_gt_mesh(path: Path, vertices: np.ndarray, triangles: np.ndarray) -> N
     ).write(path)
 
 
-def _fixture(tmp_path: Path, *, semantic_evidence: bool = True) -> dict[str, Path]:
+def _fixture(
+    tmp_path: Path,
+    *,
+    semantic_evidence: bool = True,
+    schema_version: int = 1,
+) -> dict[str, Path]:
     geometry = SparseTsdfVolume()
     depth, rgb, intrinsics = _plane_frame()
     _integrate_twice(geometry, depth, rgb, intrinsics, np.eye(4))
@@ -149,12 +157,19 @@ def _fixture(tmp_path: Path, *, semantic_evidence: bool = True) -> dict[str, Pat
         ownership.assign(key, entity_id=11, confidence=1.0, evidence_revision=1)
 
     snapshot = tmp_path / "snapshot"
+    registry = None
+    if schema_version == 2:
+        registry = EntityRegistry()
+        entity = registry.resolve(_track(0, {(0, 0, 20)}), revision=1)
+        registry.entities = {11: replace(entity, entity_id=11)}
+        registry._next_entity_id = 12
     VoxelMapSnapshot.commit(
         snapshot,
-        VoxelSnapshotMetadata("fixture", 1, 1.0, 1, 0.05, 8),
+        VoxelSnapshotMetadata("fixture", 1, 1.0, 1, 0.05, 8, schema_version),
         geometry,
         evidence,
         ownership,
+        registry=registry,
     )
     entities = tmp_path / "entities.jsonl"
     entities.write_text(
@@ -197,15 +212,23 @@ def _fixture(tmp_path: Path, *, semantic_evidence: bool = True) -> dict[str, Pat
     }
 
 
-def _run(paths: dict[str, Path], output: Path, *, scene: str = "fixture") -> subprocess.CompletedProcess:
-    return subprocess.run(
+def _run(
+    paths: dict[str, Path],
+    output: Path,
+    *,
+    scene: str = "fixture",
+    include_entity_info: bool = True,
+) -> subprocess.CompletedProcess:
+    command = [
+        sys.executable,
+        str(SCRIPT),
+        "--snapshot",
+        str(paths["snapshot"]),
+    ]
+    if include_entity_info:
+        command.extend(("--entity-info", str(paths["entities"])))
+    command.extend(
         [
-            sys.executable,
-            str(SCRIPT),
-            "--snapshot",
-            str(paths["snapshot"]),
-            "--entity-info",
-            str(paths["entities"]),
             "--gt-mesh",
             str(paths["gt_mesh"]),
             "--gt-info",
@@ -216,7 +239,10 @@ def _run(paths: dict[str, Path], output: Path, *, scene: str = "fixture") -> sub
             scene,
             "--output",
             str(output),
-        ],
+        ]
+    )
+    return subprocess.run(
+        command,
         text=True,
         capture_output=True,
         check=False,
@@ -292,6 +318,41 @@ def test_evaluator_exports_owner_label_without_semantic_voxel_evidence(
     metrics = json.loads((output / "metrics.json").read_text(encoding="utf-8"))
     assert metrics["miou"] == pytest.approx(1.0)
     assert metrics["macc"] == pytest.approx(1.0)
+
+
+def test_v2_evaluator_uses_embedded_registry_without_external_entity_info(
+    tmp_path: Path,
+) -> None:
+    paths = _fixture(tmp_path, semantic_evidence=False, schema_version=2)
+    output = tmp_path / "evaluation"
+
+    result = _run(paths, output, include_entity_info=False)
+
+    assert result.returncode == 0, result.stderr
+    metrics = json.loads((output / "metrics.json").read_text(encoding="utf-8"))
+    assert metrics["miou"] == pytest.approx(1.0)
+
+
+def test_v2_evaluator_ignores_invalid_external_entity_info(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path, semantic_evidence=False, schema_version=2)
+    paths["entities"].write_text("not-json\n", encoding="utf-8")
+    output = tmp_path / "evaluation"
+
+    result = _run(paths, output)
+
+    assert result.returncode == 0, result.stderr
+    assert json.loads((output / "metrics.json").read_text())["miou"] == pytest.approx(1.0)
+
+
+def test_v1_evaluator_requires_external_entity_info(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    output = tmp_path / "evaluation"
+
+    result = _run(paths, output, include_entity_info=False)
+
+    assert result.returncode != 0
+    assert "schema v1 requires --entity-info" in result.stderr
+    assert not output.exists()
 
 
 @pytest.mark.parametrize("failure", ["scene", "vocabulary", "missing_gt"])

@@ -324,7 +324,34 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         for label, semantic_id in class_to_id.items()
         if label not in NON_INSTANCE_CLASSES
     }
-    entity_info = _load_entity_info(args.entity_info)
+    if snapshot.metadata.schema_version == 2:
+        if snapshot.registry is None:
+            raise ValueError("schema v2 snapshot is missing its entity registry")
+        entity_info = [
+            EntityEvaluationInfo(
+                entity_id=entity.entity_id,
+                semantic_id=entity.semantic_id,
+                accepted_view_count=entity.accepted_view_count,
+                semantic_confidence=dict(entity.semantic_posterior.probabilities)[
+                    entity.semantic_id
+                ],
+            )
+            for entity in sorted(
+                snapshot.registry.entities.values(),
+                key=lambda value: value.entity_id,
+            )
+            if entity.lifecycle_state in {"active", "dormant"} and entity.semantic_id > 0
+        ]
+        entity_semantics = snapshot.registry.semantic_labels()
+    else:
+        entity_info_path = getattr(args, "entity_info", None)
+        if entity_info_path is None:
+            raise ValueError("schema v1 requires --entity-info")
+        entity_info = _load_entity_info(entity_info_path)
+        entity_semantics = {
+            info.entity_id: (info.semantic_id, info.semantic_confidence)
+            for info in entity_info
+        }
     for info in entity_info:
         if info.semantic_id not in valid_semantic_ids:
             raise ValueError(f"entity {info.entity_id} semantic ID is outside frozen vocabulary")
@@ -333,10 +360,7 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         snapshot.geometry,
         snapshot.evidence,
         snapshot.ownership,
-        entity_semantics={
-            info.entity_id: (info.semantic_id, info.semantic_confidence)
-            for info in entity_info
-        },
+        entity_semantics=entity_semantics,
     )
     mesh_semantic_ids = {int(value) for value in np.unique(mesh.semantic_ids) if value > 0}
     if not mesh_semantic_ids.issubset(valid_semantic_ids):
@@ -411,7 +435,7 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--snapshot", type=Path, required=True)
-    parser.add_argument("--entity-info", type=Path, required=True)
+    parser.add_argument("--entity-info", type=Path)
     parser.add_argument("--gt-mesh", type=Path, required=True)
     parser.add_argument("--gt-info", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
