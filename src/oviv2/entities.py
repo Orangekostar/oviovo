@@ -31,6 +31,7 @@ class PersistentEntity:
     label: str
     semantic_support: float
     accepted_view_count: int
+    accepted_frame_ids: frozenset[int]
     first_frame_id: int
     last_frame_id: int
     last_revision: int
@@ -59,13 +60,15 @@ class EntityRegistry:
         if entity_id is None:
             entity_id = self._next_entity_id
             self._next_entity_id += 1
+            accepted_frames = frozenset(item.frame_id for item in track.observations)
             entity = PersistentEntity(
                 entity_id=entity_id,
                 semantic_id=track.semantic_id,
                 label=track.label,
                 semantic_support=track.semantic_confidence,
-                accepted_view_count=1,
-                first_frame_id=track.last_frame_id,
+                accepted_view_count=len(accepted_frames),
+                accepted_frame_ids=accepted_frames,
+                first_frame_id=min(accepted_frames),
                 last_frame_id=track.last_frame_id,
                 last_revision=normalized_revision,
                 lifecycle_state="active",
@@ -82,17 +85,25 @@ class EntityRegistry:
                 semantic_id, label = previous.semantic_id, previous.label
             else:
                 semantic_id, label = track.semantic_id, track.label
-            count = previous.accepted_view_count + 1
-            centroid = (
-                np.asarray(previous.centroid_xyz) * previous.accepted_view_count
-                + np.asarray(track.centroid_xyz)
-            ) / count
+            track_frames = frozenset(item.frame_id for item in track.observations)
+            accepted_frames = previous.accepted_frame_ids | track_frames
+            new_frame_count = len(accepted_frames - previous.accepted_frame_ids)
+            current_centroid = np.asarray(track.observations[-1].centroid_xyz)
+            if new_frame_count:
+                centroid = (
+                    np.asarray(previous.centroid_xyz) * previous.accepted_view_count
+                    + current_centroid * new_frame_count
+                ) / len(accepted_frames)
+            else:
+                centroid = (np.asarray(previous.centroid_xyz) + current_centroid) / 2.0
             entity = replace(
                 previous,
                 semantic_id=semantic_id,
                 label=label,
                 semantic_support=previous_weight + current_weight,
-                accepted_view_count=count,
+                accepted_view_count=len(accepted_frames),
+                accepted_frame_ids=accepted_frames,
+                first_frame_id=min(accepted_frames),
                 last_frame_id=track.last_frame_id,
                 last_revision=normalized_revision,
                 lifecycle_state="active",
@@ -145,6 +156,9 @@ class EntityRegistry:
                 for entity_id in sorted(self.entities):
                     payload = asdict(self.entities[entity_id])
                     payload["voxel_keys"] = [list(key) for key in sorted(self.entities[entity_id].voxel_keys)]
+                    payload["accepted_frame_ids"] = sorted(
+                        self.entities[entity_id].accepted_frame_ids
+                    )
                     stream.write(json.dumps(payload, sort_keys=True, allow_nan=False) + "\n")
                 stream.flush()
                 os.fsync(stream.fileno())
@@ -171,6 +185,11 @@ class EntityRegistry:
                 payload["voxel_keys"] = frozenset(
                     tuple(int(value) for value in key) for key in payload["voxel_keys"]
                 )
+                payload["accepted_frame_ids"] = frozenset(
+                    int(value)
+                    for value in payload.get("accepted_frame_ids", [payload["last_frame_id"]])
+                )
+                payload["accepted_view_count"] = len(payload["accepted_frame_ids"])
                 for name in ("centroid_xyz", "bounds_min_xyz", "bounds_max_xyz"):
                     payload[name] = tuple(float(value) for value in payload[name])
                 entity = PersistentEntity(**payload)

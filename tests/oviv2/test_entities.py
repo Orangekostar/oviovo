@@ -33,6 +33,16 @@ def test_registry_rejects_geometry_mismatch_even_when_semantics_agree() -> None:
     assert second.entity_id == 2
 
 
+def test_registry_counts_distinct_supporting_frames_not_tracks() -> None:
+    registry = EntityRegistry()
+    first = registry.resolve(_track(0, {(0, 0, 20)}), revision=1)
+    second = registry.resolve(_track(0, {(0, 0, 20), (1, 0, 20)}), revision=2)
+
+    assert first.entity_id == second.entity_id
+    assert second.accepted_view_count == 1
+    assert second.accepted_frame_ids == frozenset({0})
+
+
 def test_registry_uses_semantics_only_to_break_equal_geometry_ties() -> None:
     registry = EntityRegistry(EntityRegistryConfig(min_voxel_overlap=0.1, max_centroid_distance_m=0.2))
     chair = registry.resolve(_track(0, {(0, 0, 20), (1, 0, 20)}, label="chair", semantic_id=2), 1)
