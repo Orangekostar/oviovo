@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import threading
 import time
 
@@ -393,3 +394,91 @@ def test_snapshot_load_retries_after_concurrent_directory_exchange(
 
     assert restored.metadata.revision in {1, 2}
     assert restored.path == target
+
+
+def test_snapshot_post_exchange_load_failure_restores_old_target(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+    VoxelMapSnapshot.commit(target, metadata, geometry, evidence, ownership)
+    updated = replace(metadata, frame_id=20, revision=2)
+    original_load = VoxelMapSnapshot.load
+
+    def fail_target_load(_cls, snapshot_dir: str | Path) -> VoxelMapSnapshot:
+        if Path(snapshot_dir) == target:
+            raise RuntimeError("injected post-exchange load failure")
+        return original_load(snapshot_dir)
+
+    monkeypatch.setattr(
+        VoxelMapSnapshot,
+        "load",
+        classmethod(fail_target_load),
+    )
+
+    with pytest.raises(RuntimeError, match="post-exchange load failure"):
+        VoxelMapSnapshot.commit(target, updated, geometry, evidence, ownership)
+
+    assert original_load(target).metadata == metadata
+
+
+def test_snapshot_parent_fsync_failure_restores_old_target(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+    VoxelMapSnapshot.commit(target, metadata, geometry, evidence, ownership)
+    updated = replace(metadata, frame_id=20, revision=2)
+    original_fsync_directory = VoxelMapSnapshot._fsync_directory
+    parent_fsync_calls = 0
+
+    def fail_first_parent_fsync(path: Path) -> None:
+        nonlocal parent_fsync_calls
+        if path == target.parent:
+            parent_fsync_calls += 1
+            if parent_fsync_calls == 1:
+                raise OSError("injected parent fsync failure")
+        original_fsync_directory(path)
+
+    monkeypatch.setattr(
+        VoxelMapSnapshot,
+        "_fsync_directory",
+        staticmethod(fail_first_parent_fsync),
+    )
+
+    with pytest.raises(OSError, match="parent fsync failure"):
+        VoxelMapSnapshot.commit(target, updated, geometry, evidence, ownership)
+
+    assert parent_fsync_calls == 2
+    assert VoxelMapSnapshot.load(target).metadata == metadata
+
+
+def test_snapshot_old_directory_cleanup_failure_does_not_fail_commit(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+    VoxelMapSnapshot.commit(target, metadata, geometry, evidence, ownership)
+    updated = replace(metadata, frame_id=20, revision=2)
+    original_rmtree = shutil.rmtree
+
+    def fail_old_snapshot_cleanup(path: str | Path, *args, **kwargs) -> None:
+        if Path(path).name.startswith(".snapshot.tmp-"):
+            raise OSError("injected old snapshot cleanup failure")
+        original_rmtree(path, *args, **kwargs)
+
+    monkeypatch.setattr(shutil, "rmtree", fail_old_snapshot_cleanup)
+
+    restored = VoxelMapSnapshot.commit(
+        target,
+        updated,
+        geometry,
+        evidence,
+        ownership,
+    )
+
+    assert restored.metadata == updated
+    assert VoxelMapSnapshot.load(target).metadata == updated

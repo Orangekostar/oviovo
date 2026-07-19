@@ -209,6 +209,8 @@ class VoxelMapSnapshot:
         temporary = Path(
             tempfile.mkdtemp(prefix=f".{target.name}.tmp-", dir=target.parent)
         )
+        exchanged = False
+        published = False
         try:
             cls._write_json(temporary / "metadata.json", asdict(metadata))
             geometry.save(temporary / "geometry.npz")
@@ -227,13 +229,49 @@ class VoxelMapSnapshot:
 
             if target.exists():
                 cls._exchange_directories(target, temporary)
+                exchanged = True
             else:
                 os.replace(temporary, target)
-            cls._fsync_directory(target.parent)
-            return cls.load(target)
-        finally:
+            try:
+                cls._fsync_directory(target.parent)
+                restored = cls.load(target)
+            except Exception as publication_error:
+                if exchanged:
+                    try:
+                        cls._exchange_directories(target, temporary)
+                        exchanged = False
+                        cls._fsync_directory(target.parent)
+                    except Exception as rollback_error:
+                        raise ExceptionGroup(
+                            "snapshot publication and rollback failed; "
+                            "target state is uncertain",
+                            [publication_error, rollback_error],
+                        )
+                else:
+                    try:
+                        if target.exists():
+                            shutil.rmtree(target)
+                        cls._fsync_directory(target.parent)
+                    except Exception as cleanup_error:
+                        raise ExceptionGroup(
+                            "new snapshot publication and cleanup failed; "
+                            "target state is uncertain",
+                            [publication_error, cleanup_error],
+                        )
+                raise
+            published = True
             if temporary.exists():
-                shutil.rmtree(temporary)
+                try:
+                    shutil.rmtree(temporary)
+                except OSError:
+                    pass
+            return restored
+        finally:
+            if not published and not exchanged and temporary.exists():
+                try:
+                    shutil.rmtree(temporary)
+                except OSError:
+                    pass
 
     @classmethod
     def load(cls, snapshot_dir: str | Path) -> "VoxelMapSnapshot":
