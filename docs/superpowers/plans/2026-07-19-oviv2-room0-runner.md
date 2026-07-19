@@ -17,9 +17,9 @@
 - Create: `tests/oviv2/test_observations.py`
 - Modify: `src/oviv2/__init__.py`
 
-- [ ] Add failing tests for gzip-pickle cache validation, Replica-41 label normalization, explicit `OBJECT`/`STRUCTURE`/`UNKNOWN` kinds, deterministic mask lifting, and empty frames.
-- [ ] Implement immutable observation records and a one-way cache adapter that reads only the requested frame.
-- [ ] Verify: `pytest -q tests/oviv2/test_observations.py`.
+- [x] Add failing tests for gzip-pickle cache validation, Replica-41 label normalization, explicit `OBJECT`/`STRUCTURE`/`UNKNOWN` kinds, deterministic mask lifting, and empty frames.
+- [x] Implement immutable observation records and a one-way cache adapter that reads only the requested frame.
+- [x] Verify: `pytest -q tests/oviv2/test_observations.py`.
 
 ### Task 2: Bounded local tracking and persistent entity registry
 
@@ -30,9 +30,9 @@
 - Create: `tests/oviv2/test_entities.py`
 - Modify: `src/oviv2/__init__.py`
 
-- [ ] Add failing tests for 3-5 frame windows, two-hit promotion, expiry, geometry-first matching, semantic tie breaking, stable entity IDs, and entity JSONL round trips.
-- [ ] Implement local tracks without persistent IDs and an entity registry without point-cloud storage.
-- [ ] Verify: `pytest -q tests/oviv2/test_tracking.py tests/oviv2/test_entities.py`.
+- [x] Add failing tests for 3-5 frame windows, two-hit promotion, expiry, geometry-first matching, semantic tie breaking, stable entity IDs, and entity JSONL round trips.
+- [x] Implement local tracks without persistent IDs and an entity registry without point-cloud storage.
+- [x] Verify: `pytest -q tests/oviv2/test_tracking.py tests/oviv2/test_entities.py`.
 
 ### Task 3: OVIV2 runtime fusion and ownership
 
@@ -41,9 +41,9 @@
 - Create: `tests/oviv2/test_runtime.py`
 - Modify: `src/oviv2/__init__.py`
 
-- [ ] Add failing tests proving full-frame geometry integration is independent of observations, structure labels never create entities, tentative objects cannot write entity evidence, and competing evidence survives ownership changes.
-- [ ] Implement the fixed runtime order: geometry, observation normalization, tracking, association, evidence fusion, ownership recomputation, lifecycle update, commit metadata.
-- [ ] Verify: `pytest -q tests/oviv2/test_runtime.py tests/architecture/test_oviv2_voxel_first.py`.
+- [x] Add failing tests proving full-frame geometry integration is independent of observations, structure labels never create entities, tentative objects cannot write entity evidence, and competing evidence survives ownership changes.
+- [x] Implement the fixed runtime order: geometry, visibility, observation normalization, tracking, association, evidence fusion, ownership recomputation, lifecycle update, commit metadata.
+- [x] Verify: `pytest -q tests/oviv2/test_runtime.py tests/architecture/test_oviv2_voxel_first.py`.
 
 ### Task 4: Atomic room0 runner and provenance artifacts
 
@@ -52,9 +52,9 @@
 - Create: `configs/oviv2_replica_room0.json`
 - Create: `tests/evaluation/test_run_oviv2_replica_cli.py`
 
-- [ ] Add failing CLI tests for preflight failures, exact frame selection, atomic snapshots, resume compatibility, entity JSONL, timing, run manifest, hashes, and absence of dense point-cloud state.
-- [ ] Implement 2/20/200-frame execution, periodic checkpoints, restore, final mesh derivation, evaluator invocation, and artifact checksums.
-- [ ] Verify: `pytest -q tests/evaluation/test_run_oviv2_replica_cli.py`.
+- [x] Add failing CLI tests for preflight failures, exact frame selection, atomic snapshots, completed-run resume compatibility, entity JSONL, timing, run manifest, hashes, and absence of dense point-cloud state.
+- [x] Implement 2/20/200-frame execution, periodic checkpoints, restore, final mesh derivation, evaluator invocation, and artifact checksums.
+- [x] Verify: `pytest -q tests/evaluation/test_run_oviv2_replica_cli.py`.
 
 ### Task 5: Real Replica room0 gates
 
@@ -63,17 +63,17 @@
 - Generate: `outputs/oviv2_room0_smoke20/`
 - Generate: `outputs/oviv2_room0_200f/`
 
-- [ ] Run the real two-frame contract smoke and validate restore/evaluation.
-- [ ] Run the real twenty-frame system smoke and require multiple accepted entities, a nonempty mesh, and finite metrics.
-- [ ] Run all 200 sampled frames at stride 10 and publish the complete output contract.
-- [ ] Re-evaluate the final immutable snapshot and compare aligned arrays plus metrics byte-for-byte.
+- [x] Run the real two-frame contract smoke and validate restore/evaluation.
+- [x] Run the real twenty-frame system smoke and require multiple accepted entities, a nonempty mesh, and finite metrics.
+- [x] Run all 200 sampled frames at stride 10 and publish the complete output contract.
+- [x] Re-evaluate the final immutable snapshot and compare aligned arrays plus metrics byte-for-byte.
 
 ### Task 6: Final verification
 
 **Files:**
 - Modify only if a verification failure exposes an OVIV2 defect.
 
-- [ ] Run `pytest -q tests/oviv2 tests/architecture tests/evaluation`.
-- [ ] Validate the final manifest hashes and artifact checksums.
-- [ ] Confirm the snapshot contains sparse geometry/evidence/ownership plus entities and no dense point cloud.
-- [ ] Record the six finite room0 metrics from `evaluation/metrics.json`.
+- [x] Run `pytest -q tests/oviv2 tests/architecture tests/evaluation`.
+- [x] Validate the final manifest hashes and artifact checksums.
+- [x] Confirm the snapshot contains sparse geometry/evidence/ownership plus entities and no dense point cloud.
+- [x] Record the six finite room0 metrics from `evaluation/metrics.json`.
