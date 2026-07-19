@@ -75,9 +75,9 @@ def _build_summary(
             raise FileNotFoundError(f"missing Replica source frame {source_id}: {source}")
         try:
             with Image.open(rgb) as image:
-                image.verify()
+                image.load()
             with Image.open(depth) as image:
-                image.verify()
+                image.load()
         except (OSError, SyntaxError, ValueError) as exc:
             raise ValueError(f"cannot decode Replica source frame {source_id}: {exc}") from exc
         frames.append(

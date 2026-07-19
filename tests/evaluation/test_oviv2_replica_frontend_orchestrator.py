@@ -88,6 +88,15 @@ def test_stride_view_wraps_png_crc_errors_with_source_frame_id(tmp_path: Path) -
         materialize(source, tmp_path / "view", start=0, stop=30, stride=10)
 
 
+def test_stride_view_fully_decodes_truncated_jpeg(tmp_path: Path) -> None:
+    source = _source_scene(tmp_path / "source")
+    rgb = source / "results" / "frame000010.jpg"
+    rgb.write_bytes(rgb.read_bytes()[:-8])
+
+    with pytest.raises(ValueError, match="cannot decode Replica source frame 10"):
+        materialize(source, tmp_path / "view", start=0, stop=30, stride=10)
+
+
 def test_frontend_commands_share_one_frozen_algorithm_hash(tmp_path: Path) -> None:
     manifest = {
         "schema_version": 1,
