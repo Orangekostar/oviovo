@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from fractions import Fraction
+import math
 
 import numpy as np
 from scipy.optimize import linear_sum_assignment
@@ -246,20 +247,11 @@ def directed_voxel_overlap(
 
 
 def _centroid_distance(left: AssociationTarget, right: AssociationTarget) -> float:
-    coordinates = left.centroid_xyz + right.centroid_xyz
-    scale = max((abs(value) for value in coordinates), default=0.0)
-    if scale == 0.0:
-        return 0.0
-    difference = (
-        np.asarray(left.centroid_xyz) / scale
-        - np.asarray(right.centroid_xyz) / scale
+    differences = tuple(
+        left_value - right_value
+        for left_value, right_value in zip(left.centroid_xyz, right.centroid_xyz)
     )
-    scaled_distance = float(np.linalg.norm(difference))
-    if scaled_distance == 0.0:
-        return 0.0
-    if scale > float(np.finfo(np.float64).max) / scaled_distance:
-        return float("inf")
-    return scale * scaled_distance
+    return float(math.hypot(*differences))
 
 
 def expanded_bounds_iou(
@@ -272,21 +264,25 @@ def expanded_bounds_iou(
     expansion = _finite_float(expansion_m, "expansion_m")
     if expansion < 0.0:
         raise ValueError("expansion_m must be non-negative")
-    raw_bounds = (
-        left.bounds_min_xyz
-        + left.bounds_max_xyz
-        + right.bounds_min_xyz
-        + right.bounds_max_xyz
+    axis_scales = np.asarray(
+        [
+            max(
+                abs(left.bounds_min_xyz[axis]),
+                abs(left.bounds_max_xyz[axis]),
+                abs(right.bounds_min_xyz[axis]),
+                abs(right.bounds_max_xyz[axis]),
+                expansion,
+            )
+            or 1.0
+            for axis in range(3)
+        ],
+        dtype=np.float64,
     )
-    scale = max((abs(value) for value in raw_bounds), default=0.0)
-    scale = max(scale, expansion)
-    if scale == 0.0:
-        scale = 1.0
-    scaled_expansion = expansion / scale
-    left_min = np.asarray(left.bounds_min_xyz) / scale - scaled_expansion
-    left_max = np.asarray(left.bounds_max_xyz) / scale + scaled_expansion
-    right_min = np.asarray(right.bounds_min_xyz) / scale - scaled_expansion
-    right_max = np.asarray(right.bounds_max_xyz) / scale + scaled_expansion
+    scaled_expansion = expansion / axis_scales
+    left_min = np.asarray(left.bounds_min_xyz) / axis_scales - scaled_expansion
+    left_max = np.asarray(left.bounds_max_xyz) / axis_scales + scaled_expansion
+    right_min = np.asarray(right.bounds_min_xyz) / axis_scales - scaled_expansion
+    right_max = np.asarray(right.bounds_max_xyz) / axis_scales + scaled_expansion
     intersection = np.maximum(
         0.0,
         np.minimum(left_max, right_max) - np.maximum(left_min, right_min),

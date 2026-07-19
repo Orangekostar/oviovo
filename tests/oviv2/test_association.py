@@ -134,6 +134,40 @@ def test_expanded_bounds_iou_is_stable_for_extreme_finite_coordinates(
     assert result == pytest.approx(expected)
 
 
+@pytest.mark.parametrize(
+    ("left_bounds", "right_bounds", "expected"),
+    [
+        (
+            ((0.0, 0.0, 0.0), (1e308, 1.0, 1.0)),
+            ((0.0, 0.0, 0.0), (1e308, 1.0, 1.0)),
+            1.0,
+        ),
+        (
+            ((0.0, 0.0, 0.0), (1e308, 2.0, 2.0)),
+            ((0.0, 1.0, 1.0), (1e308, 3.0, 3.0)),
+            1.0 / 7.0,
+        ),
+        (
+            ((0.0, 0.0, 0.0), (1e308, 1.0, 1.0)),
+            ((0.0, 2.0, 0.0), (1e308, 3.0, 1.0)),
+            0.0,
+        ),
+    ],
+)
+def test_expanded_bounds_iou_preserves_anisotropic_thin_axes(
+    left_bounds: tuple[tuple[float, float, float], tuple[float, float, float]],
+    right_bounds: tuple[tuple[float, float, float], tuple[float, float, float]],
+    expected: float,
+) -> None:
+    left = target(1, {(0, 0, 0)}, bounds=left_bounds)
+    right = target(2, {(1, 0, 0)}, bounds=right_bounds)
+
+    with np.errstate(over="raise", invalid="raise", under="raise"):
+        result = expanded_bounds_iou(left, right, 0.0)
+
+    assert result == pytest.approx(expected)
+
+
 def test_distance_gate_rejects_bounds_only_candidate_beyond_limit() -> None:
     shared_bounds = ((0.0, 0.0, 0.0), (0.1, 0.1, 0.1))
     left = target(1, {(0, 0, 0)}, bounds=shared_bounds, centroid=(0.0, 0.0, 0.0))
@@ -144,6 +178,51 @@ def test_distance_gate_rejects_bounds_only_candidate_beyond_limit() -> None:
         right,
         AssociationConfig(max_centroid_distance_m=0.5),
     ) is None
+
+
+def test_large_shared_axis_preserves_unit_centroid_distance() -> None:
+    config = AssociationConfig(
+        max_centroid_distance_m=2.0,
+        minimum_score=0.0,
+        geometry_weight=1.0,
+        overlap_weight=0.0,
+        visual_weight=0.0,
+        semantic_weight=0.0,
+        temporal_weight=0.0,
+    )
+    left = target(1, {(0, 0, 0)}, centroid=(1e308, 0.0, 0.0))
+    right = target(2, {(0, 0, 0)}, centroid=(1e308, 1.0, 0.0))
+
+    with np.errstate(over="raise", invalid="raise", under="raise"):
+        result = score_candidate(left, right, config)
+
+    assert result is not None
+    assert result.score == pytest.approx(0.5)
+
+
+def test_large_shared_axis_distance_applies_bounds_only_gate() -> None:
+    shared_bounds = ((0.0, 0.0, 0.0), (0.05, 0.05, 0.05))
+    left = target(
+        1,
+        {(0, 0, 0)},
+        bounds=shared_bounds,
+        centroid=(1e308, 0.0, 0.0),
+    )
+    right = target(
+        2,
+        {(1, 0, 0)},
+        bounds=shared_bounds,
+        centroid=(1e308, 1.0, 0.0),
+    )
+
+    with np.errstate(over="raise", invalid="raise", under="raise"):
+        result = score_candidate(
+            left,
+            right,
+            AssociationConfig(max_centroid_distance_m=0.5),
+        )
+
+    assert result is None
 
 
 def test_overlap_candidate_survives_distance_gate_with_zero_geometry() -> None:
