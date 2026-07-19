@@ -5,10 +5,12 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import asdict
+import gzip
 import hashlib
 import json
 import os
 from pathlib import Path
+import pickle
 import platform
 import subprocess
 import sys
@@ -150,6 +152,52 @@ def _resolve_frontend_feature_model_id(
     ):
         raise ValueError("config and frontend manifest feature_model_id conflict")
     return manifest_model_id if manifest_model_id is not None else config_model_id
+
+
+def _verify_cached_image_features(cache_dir: Path, num_frames: int) -> None:
+    for cache_index in range(num_frames):
+        cache_path = cache_dir / f"frame{cache_index:06d}.pkl.gz"
+        try:
+            with gzip.open(cache_path, "rb") as stream:
+                payload = pickle.load(stream)
+        except Exception as exc:
+            raise ValueError(f"{cache_path.name} payload is invalid: {exc}") from exc
+        if not isinstance(payload, dict):
+            raise ValueError(f"{cache_path.name} payload must be a dict")
+        if "mask" not in payload:
+            raise ValueError(f"{cache_path.name} mask is missing")
+        masks = np.asarray(payload["mask"])
+        if masks.ndim < 1:
+            raise ValueError(f"{cache_path.name} mask must define N observations")
+        observation_count = int(masks.shape[0])
+        if "image_feats" not in payload:
+            raise ValueError(f"{cache_path.name} image_feats is missing")
+        try:
+            image_features = np.asarray(payload["image_feats"], dtype=np.float64)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise ValueError(
+                f"{cache_path.name} image_feats must be a numeric (N, D) array"
+            ) from exc
+        if (
+            image_features.ndim != 2
+            or image_features.shape[0] != observation_count
+            or image_features.shape[1] <= 0
+        ):
+            raise ValueError(
+                f"{cache_path.name} image_feats must have shape (N, D) with D > 0"
+            )
+        if not np.isfinite(image_features).all():
+            raise ValueError(f"{cache_path.name} image_feats must be finite")
+        max_abs = np.max(np.abs(image_features), axis=1)
+        if np.any(max_abs == 0.0):
+            raise ValueError(
+                f"{cache_path.name} image_feats rows must be non-zero"
+            )
+        scaled = image_features / max_abs[:, None]
+        if not np.isfinite(np.linalg.norm(scaled, axis=1)).all():
+            raise ValueError(
+                f"{cache_path.name} image_feats rows must have stable non-zero norms"
+            )
 
 
 def _git_value(*arguments: str) -> str:
@@ -379,6 +427,15 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         args.skip_evaluation,
     )
     frontend_feature_model_id = _resolve_frontend_feature_model_id(config, frontend_manifest)
+    if config.get("feature_mode") == "cached_image":
+        if frontend_manifest is None:
+            raise ValueError("cached_image feature_mode requires a frontend manifest")
+        if frontend_feature_model_id is None:
+            raise ValueError("cached_image feature_mode requires a feature_model_id")
+        _verify_cached_image_features(
+            Path(config["frontend_cache_dir"]),
+            requested_frames,
+        )
     vocabulary = ReplicaVocabulary(
         classes=tuple(benchmark["vocabulary"]["classes"]),
         aliases=benchmark.get("aliases", {}),
@@ -506,8 +563,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             frontend_manifest.get("algorithm_hash") if frontend_manifest is not None else None
         ),
         "frontend_feature_model_id": frontend_feature_model_id,
-        "semantic_mode": config.get("semantic_mode"),
-        "feature_mode": config.get("feature_mode"),
+        "semantic_mode": config.get("semantic_mode", "owner_authoritative"),
+        "feature_mode": config.get("feature_mode", "cached_optional"),
         "precision_backend": {
             "association": asdict(runtime_config.tracker.association),
             "tracker": {

@@ -171,6 +171,23 @@ def _enable_stage1(config_path: Path) -> dict[str, object]:
     return config
 
 
+def _remove_cached_field(config_path: Path, cache_index: int, field: str) -> None:
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    cache_dir = Path(config["frontend_cache_dir"])
+    cache_path = cache_dir / f"frame{cache_index:06d}.pkl.gz"
+    with gzip.open(cache_path, "rb") as stream:
+        payload = pickle.load(stream)
+    payload.pop(field)
+    with gzip.open(cache_path, "wb") as stream:
+        pickle.dump(payload, stream)
+    manifest_path = cache_dir / "frontend_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["cache_files_sha256"][cache_path.name] = hashlib.sha256(
+        cache_path.read_bytes()
+    ).hexdigest()
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+
 def test_precision_config_enables_feature_aware_owner_semantics() -> None:
     base = json.loads(Path("configs/oviv2_replica_room0.json").read_text())
     config = json.loads(_PRECISION_CONFIG.read_text())
@@ -210,6 +227,76 @@ def test_runtime_config_rejects_unsupported_stage1_modes(
 ) -> None:
     with pytest.raises(ValueError, match=field):
         _runtime_config({field: value})
+
+
+def test_stage1_preflight_rejects_cache_without_image_features(tmp_path: Path) -> None:
+    config_path = _write_fixture(
+        tmp_path,
+        frontend_manifest_frames=2,
+        cache_features=False,
+        frontend_clip_model_sha256="a" * 64,
+    )
+    _enable_stage1(config_path)
+    output = tmp_path / "run"
+
+    with pytest.raises(ValueError, match=r"frame000000\.pkl\.gz.*image_feats"):
+        run(_args(config_path, output))
+
+    assert not output.exists()
+
+
+def test_stage1_preflight_checks_image_features_in_every_frame(tmp_path: Path) -> None:
+    config_path = _write_fixture(
+        tmp_path,
+        frontend_manifest_frames=2,
+        cache_features=True,
+        frontend_clip_model_sha256="a" * 64,
+    )
+    _enable_stage1(config_path)
+    _remove_cached_field(config_path, 1, "image_feats")
+    output = tmp_path / "run"
+
+    with pytest.raises(ValueError, match=r"frame000001\.pkl\.gz.*image_feats"):
+        run(_args(config_path, output))
+
+    assert not output.exists()
+
+
+def test_stage1_preflight_requires_feature_model_provenance(tmp_path: Path) -> None:
+    config_path = _write_fixture(
+        tmp_path,
+        frontend_manifest_frames=2,
+        cache_features=True,
+    )
+    _enable_stage1(config_path)
+    output = tmp_path / "run"
+
+    with pytest.raises(ValueError, match="feature_model_id"):
+        run(_args(config_path, output))
+
+    assert not output.exists()
+
+
+def test_stage1_fields_change_algorithm_hash() -> None:
+    config = json.loads(_PRECISION_CONFIG.read_text(encoding="utf-8"))
+    changed = dict(config)
+    changed["association_visual_weight"] = 0.31
+
+    assert runner_module.algorithm_hash(changed) != runner_module.algorithm_hash(config)
+
+
+def test_runner_rejects_stale_algorithm_hash_before_output(tmp_path: Path) -> None:
+    config_path = _write_fixture(tmp_path)
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config["association_visual_weight"] = 0.31
+    config["algorithm_hash"] = "stale"
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    output = tmp_path / "run"
+
+    with pytest.raises(ValueError, match="algorithm_hash"):
+        run(_args(config_path, output))
+
+    assert not output.exists()
 
 
 def test_preflight_fails_before_creating_output_for_missing_cache(tmp_path: Path) -> None:
@@ -317,6 +404,8 @@ def test_runner_writes_restoreable_voxel_contract_and_exact_frame_selection(tmp_
     assert (output / "timing.json").is_file()
     assert manifest["authoritative_state"] == "sparse_voxel_layers"
     assert manifest["dense_point_cloud_state"] is False
+    assert manifest["semantic_mode"] == "owner_authoritative"
+    assert manifest["feature_mode"] == "cached_optional"
 
 
 def test_runner_passes_current_registry_semantics_to_final_mesh(
