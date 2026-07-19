@@ -258,7 +258,7 @@ Expected: FAIL because the runner does not exist.
 
 - [ ] **Step 3: Implement preflight and command execution**
 
-The runner must verify all eight `instance_mesh_200.ply` and `inst_sem_siglip-l-16-384_200_incre_combine.pkl` files, the Replica GT meshes, the local SigLIP model, and the released evaluator checkout. It writes per-command stdout, stderr, exit status, source hash, and elapsed time. Any missing input or nonzero command marks the run `BLOCKED` or `FAILED`, never `VERIFIED`.
+The runner must verify all eight `instance_mesh_200.ply`, `inst_sem_siglip-l-16-384_200_incre_combine.pkl`, and backend color-log files, the Replica GT meshes, the local SigLIP model, and the released evaluator checkout. Before released post-processing it deterministically replaces malformed pkl colors from authoritative `LogInstanceColor` records and records both hashes plus dropped stale IDs. It writes per-command stdout, stderr, exit status, source hash, and elapsed time. Any missing input or nonzero command marks the run `BLOCKED` or `FAILED`, never `VERIFIED`.
 
 - [ ] **Step 4: Run tests and verify GREEN**
 
