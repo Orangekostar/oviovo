@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 from src.oviv2.association import AssociationConfig
+from src.oviv2.observation_graph import CausalObservationGraph
 from src.oviv2.observations import FrameObservation, ObservationKind
 from src.oviv2.tracking import LocalTracker, LocalTrackerConfig
 
@@ -222,6 +223,23 @@ def test_tracker_assigns_at_most_one_observation_to_each_track_per_frame() -> No
     assert len(tracker.tracks) == 2
 
 
+def test_tracker_rectangular_assignment_keeps_unmatched_active_track() -> None:
+    tracker = LocalTracker(LocalTrackerConfig(confirm_hits=1))
+    left = observation(0, {(0, 0, 20)}, observation_id=1)
+    right = observation(0, {(20, 0, 20)}, observation_id=2)
+    first = tracker.update((left, right), 0)
+
+    result = tracker.update(
+        (replace(left, frame_id=1, timestamp=1.0, observation_id=101),),
+        1,
+    )
+
+    assert (result.match_count, result.new_track_count) == (1, 0)
+    assert [track.track_id for track in result.updated] == [first.updated[0].track_id]
+    assert set(tracker.tracks) == {track.track_id for track in first.updated}
+    assert tracker.tracks[first.updated[1].track_id].last_frame_id == 0
+
+
 def test_tracker_revokes_weak_edge_without_independent_support() -> None:
     tracker = LocalTracker(
         LocalTrackerConfig(
@@ -417,19 +435,22 @@ def test_tracker_visual_group_selection_and_cancellation_are_deterministic() -> 
     assert cancelled.visual_feature == pytest.approx((1.0, 0.0, 0.0))
 
 
-def test_tracker_does_not_reuse_track_after_latest_observation_expires_from_graph() -> None:
+def test_tracker_removes_causally_expired_track_before_reused_observation_id() -> None:
     tracker = LocalTracker(
         LocalTrackerConfig(confirm_hits=1, window_size=3, max_age_frames=10)
     )
     keys = {(0, 0, 20)}
-    first = tracker.update((observation(0, keys),), 0).accepted[0]
+    first = tracker.update((observation(0, keys, observation_id=1),), 0).accepted[0]
     tracker.update((), 1)
     tracker.update((), 2)
     tracker.update((), 3)
 
-    next_track = tracker.update((observation(4, keys),), 4).accepted[0]
+    reused_id = replace(observation(4, keys), observation_id=1)
+    result = tracker.update((reused_id,), 4)
 
-    assert next_track.track_id != first.track_id
+    assert result.accepted[0].track_id == first.track_id + 1
+    assert (result.match_count, result.new_track_count) == (0, 1)
+    assert set(tracker.tracks) == {result.accepted[0].track_id}
 
 
 def test_tracker_invalid_updates_are_atomic() -> None:
@@ -460,6 +481,34 @@ def test_tracker_invalid_updates_are_atomic() -> None:
     assert_rejected_without_mutation((observation(0, keys),), 0, ValueError)
     assert_rejected_without_mutation([incoming], 1, TypeError)
     assert_rejected_without_mutation((incoming,), True, TypeError)
+
+
+def test_tracker_post_add_frame_failure_is_atomic(monkeypatch: pytest.MonkeyPatch) -> None:
+    tracker = LocalTracker(LocalTrackerConfig(confirm_hits=1))
+    keys = {(0, 0, 20)}
+    tracker.update((observation(0, keys),), 0)
+    tracks = tracker.tracks
+    graph = tracker.graph
+    graph_state = (graph.frame_ids, graph.observation_ids, graph.edge_count)
+    next_track_id = tracker._next_track_id
+    last_frame_id = tracker._last_frame_id
+
+    def fail_after_add_frame(
+        _graph: CausalObservationGraph,
+        _edge: object,
+    ) -> None:
+        raise RuntimeError("injected add_edge failure")
+
+    monkeypatch.setattr(CausalObservationGraph, "add_edge", fail_after_add_frame)
+
+    with pytest.raises(RuntimeError, match="injected"):
+        tracker.update((observation(1, keys),), 1)
+
+    assert tracker.tracks is tracks
+    assert tracker.graph is graph
+    assert (graph.frame_ids, graph.observation_ids, graph.edge_count) == graph_state
+    assert tracker._next_track_id == next_track_id
+    assert tracker._last_frame_id == last_frame_id
 
 
 def test_tracker_config_unifies_legacy_and_explicit_association() -> None:

@@ -316,11 +316,16 @@ class LocalTracker:
         }
         next_track_id = self._next_track_id
         trial_graph.add_frame(current_frame, nodes)
+        active_frame_ids = set(trial_graph.frame_ids)
         active_observation_ids = set(trial_graph.observation_ids)
+        trial_tracks = {
+            track_id: track
+            for track_id, track in trial_tracks.items()
+            if track.observations[-1].frame_id in active_frame_ids
+            and track.observations[-1].observation_id in active_observation_ids
+        }
         candidate_tracks = tuple(
-            track
-            for track in sorted(trial_tracks.values(), key=lambda item: item.track_id)
-            if track.observations[-1].observation_id in active_observation_ids
+            sorted(trial_tracks.values(), key=lambda item: item.track_id)
         )
         track_targets = tuple(_track_target(track) for track in candidate_tracks)
 
@@ -350,7 +355,8 @@ class LocalTracker:
             history_edges: list[tuple[int, int]] = []
             for historical in track.observations[:-1]:
                 if (
-                    historical.observation_id not in active_observation_ids
+                    historical.frame_id not in active_frame_ids
+                    or historical.observation_id not in active_observation_ids
                     or historical.frame_id >= current_frame
                 ):
                     continue
