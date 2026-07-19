@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import asdict
 import hashlib
 import json
 import os
@@ -31,6 +32,7 @@ from src.oviv2.geometry import TsdfConfig  # noqa: E402
 from src.oviv2.meshing import derive_labeled_mesh, write_labeled_mesh  # noqa: E402
 from src.oviv2.observations import CachedFrontendAdapter, ReplicaVocabulary  # noqa: E402
 from src.oviv2.runtime import Oviv2Runtime, Oviv2RuntimeConfig  # noqa: E402
+from src.oviv2.structure import DepthStructureConfig, DepthStructureFrontend  # noqa: E402
 from src.oviv2.tracking import LocalTrackerConfig  # noqa: E402
 
 
@@ -218,6 +220,26 @@ def _runtime_config(config: dict[str, Any]) -> Oviv2RuntimeConfig:
     )
 
 
+def _structure_config(config: dict[str, Any], *, voxel_size_m: float) -> DepthStructureConfig:
+    return DepthStructureConfig(
+        enabled=bool(config.get("structure_enabled", True)),
+        voxel_size_m=voxel_size_m,
+        pixel_stride=int(config.get("structure_pixel_stride", config.get("pixel_stride", 4))),
+        min_valid_points=int(
+            config.get("structure_min_valid_points", config.get("min_valid_points", 10))
+        ),
+        horizontal_threshold=float(config.get("structure_horizontal_threshold", 0.6)),
+        wall_vertical_threshold=float(config.get("structure_wall_vertical_threshold", 0.5)),
+        min_component_pixels=int(config.get("structure_min_component_pixels", 500)),
+        min_component_fraction=float(config.get("structure_min_component_fraction", 0.01)),
+        max_components_per_class=int(config.get("structure_max_components_per_class", 5)),
+        object_exclusion_dilation=int(config.get("structure_object_exclusion_dilation", 3)),
+        wall_confidence=float(config.get("structure_wall_confidence", 0.75)),
+        floor_confidence=float(config.get("structure_floor_confidence", 0.85)),
+        ceiling_confidence=float(config.get("structure_ceiling_confidence", 0.80)),
+    )
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     config_path = args.config.resolve()
     raw_config = _load_json(config_path)
@@ -248,6 +270,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         pixel_stride=int(config.get("pixel_stride", 4)),
         min_valid_points=int(config.get("min_valid_points", 10)),
     )
+    structure_config = _structure_config(
+        config,
+        voxel_size_m=runtime_config.tsdf.voxel_size_m,
+    )
+    structure_frontend = DepthStructureFrontend(vocabulary, structure_config)
     runtime = Oviv2Runtime(str(config["scene"]), runtime_config)
     output.mkdir(parents=True)
     checkpoints = output / "checkpoints"
@@ -271,7 +298,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             intrinsics=dataset_frame.intrinsics,
             timestamp=float(source_frame_id),
         )
-        observations = frontend.observe(frame, cache_index)
+        object_observations = frontend.observe(frame, cache_index)
+        structure_observations = structure_frontend.observe(
+            frame,
+            object_observations=object_observations,
+        )
+        observations = (*object_observations, *structure_observations)
         result = runtime.process_frame(frame, observations)
         frame_records.append(
             {
@@ -279,6 +311,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "source_frame_id": source_frame_id,
                 "revision": result.revision,
                 "observation_count": result.observation_count,
+                "object_observation_count": len(object_observations),
+                "structure_observation_count": len(structure_observations),
                 "accepted_entity_count": len(result.accepted_entity_ids),
                 "elapsed_sec": time.perf_counter() - frame_started,
             }
@@ -350,6 +384,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "semantic_top_k": runtime_config.evidence.semantic_top_k,
             "entity_top_k": runtime_config.evidence.entity_top_k,
         },
+        "structure_frontend": asdict(structure_config),
         "authoritative_state": "sparse_voxel_layers",
         "dense_point_cloud_state": False,
         "final_revision": runtime.revision,

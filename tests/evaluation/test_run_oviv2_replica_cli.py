@@ -78,6 +78,10 @@ def _write_fixture(tmp_path: Path, *, cache_frames: int = 2) -> Path:
                 "min_valid_points": 1,
                 "confirm_hits": 2,
                 "checkpoint_interval": 1,
+                "structure_enabled": True,
+                "structure_min_component_pixels": 4,
+                "structure_min_component_fraction": 0.0,
+                "structure_object_exclusion_dilation": 1,
             }
         ),
         encoding="utf-8",
@@ -126,6 +130,29 @@ def test_runner_writes_restoreable_voxel_contract_and_exact_frame_selection(tmp_
     assert (output / "timing.json").is_file()
     assert manifest["authoritative_state"] == "sparse_voxel_layers"
     assert manifest["dense_point_cloud_state"] is False
+
+
+def test_runner_fuses_structure_without_allocating_structure_entities(tmp_path: Path) -> None:
+    config = _write_fixture(tmp_path)
+    output = tmp_path / "run"
+
+    manifest = run(_args(config, output))
+
+    with np.load(
+        output / "final" / "oviv2_voxel_snapshot.npz" / "evidence.npz",
+        allow_pickle=False,
+    ) as evidence:
+        semantic_ids = set(int(value) for value in evidence["semantic_ids"].reshape(-1))
+    entity_lines = (
+        output / "final" / "oviv2_entities.jsonl"
+    ).read_text(encoding="utf-8").splitlines()
+    entities = [json.loads(line) for line in entity_lines if line.strip()]
+    timing = json.loads((output / "timing.json").read_text(encoding="utf-8"))
+
+    assert semantic_ids & {1, 2, 3}
+    assert all(entity["semantic_id"] not in {1, 2, 3} for entity in entities)
+    assert all(record["structure_observation_count"] > 0 for record in timing["frames"])
+    assert manifest["structure_frontend"]["enabled"] is True
 
 
 def test_manifest_artifact_checksums_recompute_and_resume_is_idempotent(tmp_path: Path) -> None:
