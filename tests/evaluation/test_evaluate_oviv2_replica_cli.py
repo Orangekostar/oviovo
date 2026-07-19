@@ -9,6 +9,7 @@ import numpy as np
 from plyfile import PlyData, PlyElement
 import pytest
 
+from scripts.evaluation.evaluate_oviv2_replica import _majority_object_per_vertex
 from src.oviv2.addressing import point_to_voxel
 from src.oviv2.evidence import SparseEvidenceStore
 from src.oviv2.geometry import SparseTsdfVolume
@@ -19,6 +20,20 @@ from tests.oviv2.test_geometry import _integrate_twice, _plane_frame
 
 
 SCRIPT = Path("scripts/evaluation/evaluate_oviv2_replica.py")
+
+
+def test_majority_object_assignment_accepts_replica_quad_faces() -> None:
+    faces = np.empty(2, dtype=object)
+    faces[0] = np.asarray([0, 1, 2, 3], dtype=np.int64)
+    faces[1] = np.asarray([1, 2, 4, 5], dtype=np.int64)
+
+    assigned = _majority_object_per_vertex(
+        6,
+        faces,
+        np.asarray([9, 4], dtype=np.int64),
+    )
+
+    np.testing.assert_array_equal(assigned, np.asarray([9, 4, 4, 9, 4, 4]))
 
 
 def _write_gt_mesh(path: Path, vertices: np.ndarray, triangles: np.ndarray) -> None:

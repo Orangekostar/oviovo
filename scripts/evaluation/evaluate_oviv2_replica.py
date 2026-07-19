@@ -97,17 +97,27 @@ def _verify_scene_inputs(scene: dict[str, Any], mesh_path: Path, info_path: Path
 
 def _majority_object_per_vertex(
     vertex_count: int,
-    triangles: np.ndarray,
+    face_vertex_indices: Any,
     face_object_ids: np.ndarray,
 ) -> np.ndarray:
-    if triangles.shape != (len(face_object_ids), 3):
-        raise ValueError("Replica GT faces must be triangles with one object_id each")
-    if triangles.size and (triangles.min() < 0 or triangles.max() >= vertex_count):
-        raise ValueError("Replica GT face contains an out-of-range vertex index")
+    if len(face_vertex_indices) != len(face_object_ids):
+        raise ValueError("Replica GT faces must have one object_id each")
     assigned = np.full(vertex_count, -1, dtype=np.int64)
-    if not len(triangles):
+    if not len(face_vertex_indices):
         return assigned
-    pairs = np.column_stack((triangles.reshape(-1), np.repeat(face_object_ids, 3)))
+    faces = [np.asarray(value, dtype=np.int64).reshape(-1) for value in face_vertex_indices]
+    if any(len(face) < 3 for face in faces):
+        raise ValueError("Replica GT faces must contain at least three vertices")
+    flat_vertices = np.concatenate(faces)
+    if flat_vertices.size and (
+        flat_vertices.min() < 0 or flat_vertices.max() >= vertex_count
+    ):
+        raise ValueError("Replica GT face contains an out-of-range vertex index")
+    repeated_object_ids = np.repeat(
+        np.asarray(face_object_ids, dtype=np.int64),
+        [len(face) for face in faces],
+    )
+    pairs = np.column_stack((flat_vertices, repeated_object_ids))
     unique_pairs, counts = np.unique(pairs, axis=0, return_counts=True)
     order = np.lexsort((unique_pairs[:, 1], -counts, unique_pairs[:, 0]))
     ranked = unique_pairs[order]
@@ -134,11 +144,13 @@ def load_replica_ground_truth(
     faces = ply["face"]
     if "object_id" not in faces.data.dtype.names:
         raise ValueError("Replica GT PLY faces must contain object_id")
-    triangles = np.asarray([np.asarray(value, dtype=np.int64) for value in faces["vertex_indices"]])
-    if len(triangles) == 0:
-        triangles = np.empty((0, 3), dtype=np.int64)
+    face_vertex_indices = [
+        np.asarray(value, dtype=np.int64) for value in faces["vertex_indices"]
+    ]
     face_object_ids = np.asarray(faces["object_id"], dtype=np.int64)
-    vertex_objects = _majority_object_per_vertex(len(vertices), triangles, face_object_ids)
+    vertex_objects = _majority_object_per_vertex(
+        len(vertices), face_vertex_indices, face_object_ids
+    )
 
     info = json.loads(info_path.read_text(encoding="utf-8"))
     object_labels = {
