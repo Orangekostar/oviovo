@@ -1,0 +1,425 @@
+{
+  "adapter_commit": "5f272a86305f2270c62b18bbe935a042a761cd1a",
+  "command": [
+    "python",
+    "scripts/run_oviv2_replica8.py",
+    "--config",
+    "/home/ww/.config/superpowers/worktrees/oviovo/oviv2-stage3-final-batch/configs/oviv2_replica8_stage3.json",
+    "--output",
+    "/home/ww/oviovo_final_outputs/oviv2_replica8_stage3_s049_200f_5f272a8"
+  ],
+  "config": {
+    "path": "/home/ww/.config/superpowers/worktrees/oviovo/oviv2-stage3-final-batch/configs/oviv2_replica8_stage3.json",
+    "sha256": "ab5303c86ff84a18c1d2ab594d0a1afd4c0797ededf5ca6f5b24e1870a4e1fc9"
+  },
+  "dataset": {
+    "manifest": {
+      "path": "/home/ww/.config/superpowers/worktrees/oviovo/oviv2-stage3-final-batch/configs/evaluation/manifests/replica8.json",
+      "sha256": "8547aa8b7dbf7ef7a97f4b516f6557a1d163107404fbfc7ccbd56747c5dc95a4"
+    },
+    "name": "Replica",
+    "splits": [
+      "replica_8_compat",
+      "replica_7_heldout"
+    ]
+  },
+  "environment": {
+    "hostname": "node107",
+    "machine": "x86_64",
+    "open3d": "0.19.0",
+    "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+    "python": "3.10.20"
+  },
+  "hardware": {
+    "office0": {
+      "hostname": "node107",
+      "machine": "x86_64",
+      "open3d": "0.19.0",
+      "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+      "python": "3.10.20"
+    },
+    "office1": {
+      "hostname": "node107",
+      "machine": "x86_64",
+      "open3d": "0.19.0",
+      "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+      "python": "3.10.20"
+    },
+    "office2": {
+      "hostname": "node107",
+      "machine": "x86_64",
+      "open3d": "0.19.0",
+      "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+      "python": "3.10.20"
+    },
+    "office3": {
+      "hostname": "node107",
+      "machine": "x86_64",
+      "open3d": "0.19.0",
+      "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+      "python": "3.10.20"
+    },
+    "office4": {
+      "hostname": "node107",
+      "machine": "x86_64",
+      "open3d": "0.19.0",
+      "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+      "python": "3.10.20"
+    },
+    "room0": {
+      "hostname": "node107",
+      "machine": "x86_64",
+      "open3d": "0.19.0",
+      "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+      "python": "3.10.20"
+    },
+    "room1": {
+      "hostname": "node107",
+      "machine": "x86_64",
+      "open3d": "0.19.0",
+      "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+      "python": "3.10.20"
+    },
+    "room2": {
+      "hostname": "node107",
+      "machine": "x86_64",
+      "open3d": "0.19.0",
+      "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+      "python": "3.10.20"
+    }
+  },
+  "method": {
+    "display_label": "OVIV2",
+    "key": "OVIV2",
+    "mode": "online"
+  },
+  "metrics": {
+    "replica_7_heldout": {
+      "geometry": {
+        "f5": 0.877529806727032
+      },
+      "instance": {
+        "ap25": 0.24565545930824548,
+        "ap50": 0.055278892261341674
+      },
+      "scene_count": 7,
+      "scene_ids": [
+        "room1",
+        "room2",
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4"
+      ],
+      "semantic": {
+        "f_miou": 0.5634466691487772,
+        "macc": 0.40889190291528316,
+        "miou": 0.33080615954129483
+      }
+    },
+    "replica_8_compat": {
+      "geometry": {
+        "f5": 0.8823510800998262
+      },
+      "instance": {
+        "ap25": 0.24999352823022047,
+        "ap50": 0.05459057647227853
+      },
+      "scene_count": 8,
+      "scene_ids": [
+        "room0",
+        "room1",
+        "room2",
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4"
+      ],
+      "semantic": {
+        "f_miou": 0.5760990806988411,
+        "macc": 0.4119967648498053,
+        "miou": 0.33730965872197777
+      }
+    }
+  },
+  "protocol_deviations": [],
+  "provenance_contract": {
+    "algorithm_hash": "3b756469bca8d2efc9fbb6317f318e080740ffa2b7e935f2215b742d1db9feae",
+    "benchmark_manifest_hash": "8547aa8b7dbf7ef7a97f4b516f6557a1d163107404fbfc7ccbd56747c5dc95a4",
+    "dense_provenance_hash": "985a7b0ddc610ec75d183a97c3e8ecd30318d3d7b1d368f8fe44cc2b35f87895",
+    "frontend_algorithm_hash": "717d75834192e366340e53650d183ccf0711d99bc52eb3b299c83167000b8ca3",
+    "vocabulary_hash": "aa81724ae495477e533b3b8c795444e95c259ec22db7c327bf3841b93ccb9e52"
+  },
+  "raw_outputs": [
+    {
+      "kind": "run_manifest",
+      "path": "/home/ww/oviovo_final_outputs/oviv2_replica8_stage3_s049_200f_5f272a8/room0/run_manifest.json",
+      "scene": "room0",
+      "sha256": "c557dd407d215f89e43b661f3d818ce305c2e7f274d8ad8ac0d0e2a65114597b"
+    },
+    {
+      "kind": "metrics",
+      "path": "/home/ww/oviovo_final_outputs/oviv2_replica8_stage3_s049_200f_5f272a8/room0/evaluation_fused/metrics.json",
+      "scene": "room0",
+      "sha256": "66f88ca0885259620607851588ff99079e7fe1967b0c98d512749572d75a9fd7"
+    },
+    {
+      "kind": "run_manifest",
+      "path": "/home/ww/oviovo_final_outputs/oviv2_replica8_stage3_s049_200f_5f272a8/room1/run_manifest.json",
+      "scene": "room1",
+      "sha256": "6d98e013be5a69266910172cece46f783c65771c28d3f4b730e4f4462ca8c3d2"
+    },
+    {
+      "kind": "metrics",
+      "path": "/home/ww/oviovo_final_outputs/oviv2_replica8_stage3_s049_200f_5f272a8/room1/evaluation_fused/metrics.json",
+      "scene": "room1",
+      "sha256": "2196b9214ae7e6f5be9c1cdf899a9fa8a8d79970d013d31c9eb6e1af2e7382ee"
+    },
+    {
+      "kind": "run_manifest",
+      "path": "/home/ww/oviovo_final_outputs/oviv2_replica8_stage3_s049_200f_5f272a8/room2/run_manifest.json",
+      "scene": "room2",
+      "sha256": "bddb5af4cb024fe665a12b5fd8c0a04b7a05196d74ca88dffc5dbe13b2750dbf"
+    },
+    {
+      "kind": "metrics",
+      "path": "/home/ww/oviovo_final_outputs/oviv2_replica8_stage3_s049_200f_5f272a8/room2/evaluation_fused/metrics.json",
+      "scene": "room2",
+      "sha256": "d737165c1629b0f66f256b3a6946da3bd3d56dcf7f0c376eb7fe1f18d09709a0"
+    },
+    {
+      "kind": "run_manifest",
+      "path": "/home/ww/oviovo_final_outputs/oviv2_replica8_stage3_s049_200f_5f272a8/office0/run_manifest.json",
+      "scene": "office0",
+      "sha256": "828faef10ffb2c44383e5b61d57f23420fd62eb994e336cd69f42641ae23f975"
+    },
+    {
+      "kind": "metrics",
+      "path": "/home/ww/oviovo_final_outputs/oviv2_replica8_stage3_s049_200f_5f272a8/office0/evaluation_fused/metrics.json",
+      "scene": "office0",
+      "sha256": "a4bc1f69cc60150dd9c892bab0fd86ca1f88aca537de97330dbf237d23fbde25"
+    },
+    {
+      "kind": "run_manifest",
+      "path": "/home/ww/oviovo_final_outputs/oviv2_replica8_stage3_s049_200f_5f272a8/office1/run_manifest.json",
+      "scene": "office1",
+      "sha256": "37f7668de250fd0de6de05df623b74f06372d12463be946ddd67c33eb61a644e"
+    },
+    {
+      "kind": "metrics",
+      "path": "/home/ww/oviovo_final_outputs/oviv2_replica8_stage3_s049_200f_5f272a8/office1/evaluation_fused/metrics.json",
+      "scene": "office1",
+      "sha256": "899ade475003c4f09b598022aaa448bfa2d33488238cfd66313dee40b40cbf1f"
+    },
+    {
+      "kind": "run_manifest",
+      "path": "/home/ww/oviovo_final_outputs/oviv2_replica8_stage3_s049_200f_5f272a8/office2/run_manifest.json",
+      "scene": "office2",
+      "sha256": "e7e33e73aaba93d1004b2ac0a7ec9d586bc3da3ecf1340360f0f10c4c46336e5"
+    },
+    {
+      "kind": "metrics",
+      "path": "/home/ww/oviovo_final_outputs/oviv2_replica8_stage3_s049_200f_5f272a8/office2/evaluation_fused/metrics.json",
+      "scene": "office2",
+      "sha256": "438c9f39825a3884a49cbd2bf5453a0e8b1d59b0228eb1939e96c8f182f14c3d"
+    },
+    {
+      "kind": "run_manifest",
+      "path": "/home/ww/oviovo_final_outputs/oviv2_replica8_stage3_s049_200f_5f272a8/office3/run_manifest.json",
+      "scene": "office3",
+      "sha256": "a22032d6ec13e440b1ceac36360c9b719a349f0000b3bd36b617a9409c50baf0"
+    },
+    {
+      "kind": "metrics",
+      "path": "/home/ww/oviovo_final_outputs/oviv2_replica8_stage3_s049_200f_5f272a8/office3/evaluation_fused/metrics.json",
+      "scene": "office3",
+      "sha256": "d043ef996f8a35262bf57ed154833380b1d58831a178641c6dce8c6820c5edc8"
+    },
+    {
+      "kind": "run_manifest",
+      "path": "/home/ww/oviovo_final_outputs/oviv2_replica8_stage3_s049_200f_5f272a8/office4/run_manifest.json",
+      "scene": "office4",
+      "sha256": "c5e856f399d49e713e38ccc47a42bc4c4c5e9e123e3eb175c1866594bffb0be5"
+    },
+    {
+      "kind": "metrics",
+      "path": "/home/ww/oviovo_final_outputs/oviv2_replica8_stage3_s049_200f_5f272a8/office4/evaluation_fused/metrics.json",
+      "scene": "office4",
+      "sha256": "3b0d0deb4cfbd21fefdb0a8ee553187fc76f4d112151bd279a3eeba94c0c529a"
+    }
+  ],
+  "repeated_evaluation_sha256": {
+    "office0": {
+      "class_agnostic_instance_ap.json": "17667ba7ef06d1161068e77923cb1c5f14b9780c7bf9da5ca96b94d34d7b7f31",
+      "gt_aligned_instance_ids.npy": "4df61fe3bb94e614bec2120bf3276501e382e94dbbad91d255fedfb19080c7f1",
+      "gt_aligned_semantic_ids.npy": "4e1c2a49cff017b8d1de48a886bb8e9797b76de63914017a22512c36cafc6f56",
+      "instance_map_gt.ply": "afd27f3603f065c21d5c873a9fada4631d843453c7df93b9a9973a15676e96c4",
+      "metrics.json": "a4bc1f69cc60150dd9c892bab0fd86ca1f88aca537de97330dbf237d23fbde25",
+      "oviv2_instance_mesh.ply": "54028bcaaa0e4f09ce6c7da4fe8cf5f83a16a11c09b30578100e51e82e7ff890",
+      "per_class_semantic.json": "16cadeb72740e82e0ce48762dae759a989fd6748c7f97b36c6d99a42afd19934",
+      "semantic_class_instance_ap.json": "1689c97c6d6b4941be07514fbf9951bdf13bf3b8c7686035079e6b21a1941e88",
+      "semantic_map_gt.ply": "6de30d01286ec7ef27fd32042adebcdb63ef423234e59dbe55c165448d4adc61"
+    },
+    "office1": {
+      "class_agnostic_instance_ap.json": "85c37faa68efe9de49f0d9ad3b6670054e3de823eda15e7163e2127fd1c5402a",
+      "gt_aligned_instance_ids.npy": "b4abb888512548db2ce4fef1d73454c0ff72d333b21b0b7d0aac49f7e457dec7",
+      "gt_aligned_semantic_ids.npy": "b894020fc6418eb58f9ef3f1d9d6fcc2116432d2dcb1f6a0825084211fb365c8",
+      "instance_map_gt.ply": "f6d3bfd4dcb618ac0ca4dddd63834712d03efeb55b98f83b232aca0882ab6f0a",
+      "metrics.json": "899ade475003c4f09b598022aaa448bfa2d33488238cfd66313dee40b40cbf1f",
+      "oviv2_instance_mesh.ply": "8e5f30afef3a01f47b188b86065523826ec1e2cb8bed36bf6491f74e13d6f7ed",
+      "per_class_semantic.json": "5d16bf5e97dfc24fd673f6b4465df17a95476ccc602910f6bcb0e212b5fef1fe",
+      "semantic_class_instance_ap.json": "d5a4be002d09b4f627a6118f1ed6195e2d35893ed9a04d2e563ab0f067b9f177",
+      "semantic_map_gt.ply": "1c3d0b68f21733461435272c145a49787c5db1230e70582dd1a0dad3b1a351fe"
+    },
+    "office2": {
+      "class_agnostic_instance_ap.json": "c757ba4e866357d50f05711aa902e1c31b2c22112799aad61e3e9dcb8662aaa2",
+      "gt_aligned_instance_ids.npy": "88d7183c7958f31d8c7a92d47fae5d0a930652098a20ddf5cdddd66b33d7d040",
+      "gt_aligned_semantic_ids.npy": "e99180f50217109880a616059c780f1c275afcfd0bca18700f6f052393817e9c",
+      "instance_map_gt.ply": "6cbe49b03cb12d2940d31e71b704e7fb394ca24b282de99df10f837e34f2b6e7",
+      "metrics.json": "438c9f39825a3884a49cbd2bf5453a0e8b1d59b0228eb1939e96c8f182f14c3d",
+      "oviv2_instance_mesh.ply": "abd69778d59364a00666112f11fa09b5c737284897e015bde5d163034405b94b",
+      "per_class_semantic.json": "d220a1934082c3852e9d81be4fa576980eaa0de1a5d7c5f43c6e32992d029c42",
+      "semantic_class_instance_ap.json": "f7516aad9bef670a9ff8805e54b25e9b1d7ba45f9b48191292d6c30a45e15333",
+      "semantic_map_gt.ply": "35955b0d5217a63fb07838db1bea1412de6536d31bd181a9419a7c21a311e8a8"
+    },
+    "office3": {
+      "class_agnostic_instance_ap.json": "25aaebddf88dfb5a0c1186d87bfb7161121f02e00269872188ed34f5b01db2e8",
+      "gt_aligned_instance_ids.npy": "ed8bd4a88fd4cb1eabc1bd5d4c8a8f7666d441c72502c0d3b5a52c500b132085",
+      "gt_aligned_semantic_ids.npy": "03b8dd854e3ff53291e597646370640622bfb48a11430b7d9c8fd89d513bd12d",
+      "instance_map_gt.ply": "7c623807897fb7e71cce6838c0ba92a73f1ec018f089bff2be8f88bc0be12aec",
+      "metrics.json": "d043ef996f8a35262bf57ed154833380b1d58831a178641c6dce8c6820c5edc8",
+      "oviv2_instance_mesh.ply": "81df1d64b20fd65504d0c28eb407086c0f7ba23ceedc2867265e3ccc4c30ad26",
+      "per_class_semantic.json": "e1484b502592100d97c5dc27fa7033933e0f64374ff4e16e9cc23d0da51805ea",
+      "semantic_class_instance_ap.json": "1ab42b1566763a0e15438b89d51256424ffcaed50c869491cae628f7e425000b",
+      "semantic_map_gt.ply": "1f80b0c3c6b256e3075e3d7f1931bf958a73b96c71976f1620f6f3b398d13558"
+    },
+    "office4": {
+      "class_agnostic_instance_ap.json": "7d79ff750f1b9c4519ed3ccca765e5f15609e0c577fab962e17bcbafd8531d34",
+      "gt_aligned_instance_ids.npy": "9a2f35d850c09a0e7935667794f66910a3596377cd0fe4bdf141a22712a07428",
+      "gt_aligned_semantic_ids.npy": "84e3e123357d072b1b860b7191a272ac04f99d1ba7035095250ffaf096e4b4e0",
+      "instance_map_gt.ply": "44c83c2dacee8bc08dd333dec2460b8e6c86d3c050e8966d486966c0dfcc0c0e",
+      "metrics.json": "3b0d0deb4cfbd21fefdb0a8ee553187fc76f4d112151bd279a3eeba94c0c529a",
+      "oviv2_instance_mesh.ply": "15ee6b3ddeb1cebb54e4659f178b762cbef4fc583980f2fec6cfaa712c08d93c",
+      "per_class_semantic.json": "f34b80ded13e82f0c8cafd5d1508ca1589d5b0323cefbb53ab39658ae416a079",
+      "semantic_class_instance_ap.json": "30694fbb01bc76bb04e4ecff691dc5c992e9e24c2d1d07f69754f24fb7bba4b4",
+      "semantic_map_gt.ply": "3560b4a6e2f0e9c5a112b9eafcf6c186e78ad5ba5a451d66a73586f3182739ad"
+    },
+    "room0": {
+      "class_agnostic_instance_ap.json": "2e94ff8bf70ac4e1049970f61ca5981bb5bdfedda7b7785f3cf402a0a766b82a",
+      "gt_aligned_instance_ids.npy": "310c40a295780249d543465c19b40ccb75667a02abf337277cb9c38ba7fbe3af",
+      "gt_aligned_semantic_ids.npy": "26f58b6615d8daad410715de3d857a385e9de629177c9a0140afeb148b01b9bc",
+      "instance_map_gt.ply": "5c4b330c3e35b936d8d42162af50c96fc335123e83dfb21c28f3ea45a05870f6",
+      "metrics.json": "66f88ca0885259620607851588ff99079e7fe1967b0c98d512749572d75a9fd7",
+      "oviv2_instance_mesh.ply": "01af8b103b396ac379deea9ade1343b40da9ddb4fef15f28082db4b0d2773c92",
+      "per_class_semantic.json": "cd543a3e14a5cac181583d0ce5301604d718f0d818ae8009f50bc56f1717ef13",
+      "semantic_class_instance_ap.json": "4532ed4d2014398134cb086102e5525d80699ad1d3d6cef8f2ab4ac1ccd05942",
+      "semantic_map_gt.ply": "59a3017bf01c337e102ef25757ce657e4525b10c30f724e54ffb2633a6bbf82d"
+    },
+    "room1": {
+      "class_agnostic_instance_ap.json": "6e226285126790874a0b48ba511ac97771721f5e965b268f0e28db68e52302f2",
+      "gt_aligned_instance_ids.npy": "420922fb1f531a3484a0a867af0eb1a98a240779f0b7cd922bad080a078f797d",
+      "gt_aligned_semantic_ids.npy": "6f3ef57682d93e67837adf0d1f39dddfaa6076f21ccbcceb70960f8a25712a9a",
+      "instance_map_gt.ply": "1278e87156b50583f86afbb54d6c7be570cf376db04a3d02bdbe4fce47439dd0",
+      "metrics.json": "2196b9214ae7e6f5be9c1cdf899a9fa8a8d79970d013d31c9eb6e1af2e7382ee",
+      "oviv2_instance_mesh.ply": "9c408b97b0389d327db9143c8b279333347bc396a2edb611eb3065791c88a1ed",
+      "per_class_semantic.json": "b461530aa91359d3513c8e0f315b90c4d22bc4fed5a2107bf3622b3b0b3557d8",
+      "semantic_class_instance_ap.json": "6baf44c3cc9e467c82dda819cccf4801193b7c260b2f0ef654ce546ebbb9b379",
+      "semantic_map_gt.ply": "09349a1e896eb7dadb0e8538ca926087b2ffd2f811ffdd1681a704f1bd9eb4ce"
+    },
+    "room2": {
+      "class_agnostic_instance_ap.json": "9a7aa629d3099e58403f04d20e677b0e174c4a11cfd14d71459e77e2264a4d75",
+      "gt_aligned_instance_ids.npy": "bf0bf1bf40e0ed8ea12eeafebc9ad583ee5b62f0ecd298a9f74906775a253a92",
+      "gt_aligned_semantic_ids.npy": "37a96da88eb4e6f136e94acfb6293deee53e0ba444f08be8a1ae36d67afbb708",
+      "instance_map_gt.ply": "767f9b7d6c79e4697d399f9389b3ecdc587def842a6cb7d64b38cf40413e520f",
+      "metrics.json": "d737165c1629b0f66f256b3a6946da3bd3d56dcf7f0c376eb7fe1f18d09709a0",
+      "oviv2_instance_mesh.ply": "65b28f4f4036ea8be7f862f6ec4f23c9959ef267bb52448065ce77aa81a65fad",
+      "per_class_semantic.json": "5c1421fe25930a4ea3b0d014af880b2b7f1cd7135493a3d255b8d3ed35c9f01e",
+      "semantic_class_instance_ap.json": "fe0c284bcbe49977ec1f2f4be3480e2bb0b4889c2a4fc7f36d65bbd8b3df0865",
+      "semantic_map_gt.ply": "cc2ba33e619392d0b4e0bb8ca2b533f6c7b3b4b4ee51069b877ca3fc9d15b20b"
+    }
+  },
+  "run_id": "oviv2-replica8-20260720-stage3-s10-200f",
+  "runtime": {
+    "per_scene": {
+      "office0": 685.403512963996,
+      "office1": 559.3860713909962,
+      "office2": 718.0771120520076,
+      "office3": 913.8444420779997,
+      "office4": 639.4895321189833,
+      "room0": 743.3637513199938,
+      "room1": 616.6089563069982,
+      "room2": 667.6803281090106
+    },
+    "total_elapsed_sec": 5543.853706339985
+  },
+  "seed": "deterministic-no-rng",
+  "semantic_head": "fused_uncertainty",
+  "status": "VERIFIED",
+  "token_bindings": [
+    {
+      "json_pointer": "/metrics/replica_8_compat/semantic/miou",
+      "precision": 3,
+      "token": "T1_OVIV2_REPLICA8_MIOU"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/semantic/macc",
+      "precision": 3,
+      "token": "T1_OVIV2_REPLICA8_MACC"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/semantic/f_miou",
+      "precision": 3,
+      "token": "T1_OVIV2_REPLICA8_FMIOU"
+    },
+    {
+      "json_pointer": "/metrics/replica_7_heldout/semantic/miou",
+      "precision": 3,
+      "token": "T1_OVIV2_REPLICA7_MIOU"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/instance/ap25",
+      "precision": 3,
+      "token": "T1_OVIV2_REPLICA8_AP25"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/instance/ap50",
+      "precision": 3,
+      "token": "T1_OVIV2_REPLICA8_AP50"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/geometry/f5",
+      "precision": 3,
+      "token": "T1_OVIV2_REPLICA8_F5"
+    },
+    {
+      "json_pointer": "/metrics/replica_7_heldout/instance/ap50",
+      "precision": 3,
+      "token": "T1_OVIV2_REPLICA7_AP50"
+    }
+  ],
+  "upstream_commit": "5f272a86305f2270c62b18bbe935a042a761cd1a",
+  "weights": [
+    {
+      "name": "yolo_world",
+      "path": "/home/ww/vv/paper2/DualMap/model/yolov8l-world.pt",
+      "sha256": "8bdfaef999116760247d6fb0b0f8fca064b43e94598b3d4a807ebae9bcf0cdd5"
+    },
+    {
+      "name": "yolo_clip",
+      "path": "/home/ww/.cache/clip/ViT-B-32.pt",
+      "sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af"
+    },
+    {
+      "name": "mobile_sam",
+      "path": "/home/ww/vv/paper2/DualMap/model/mobile_sam.pt",
+      "sha256": "6dbb90523a35330fedd7f1d3dfc66f995213d81b29a5ca8108dbcdd4e37d6c2f"
+    },
+    {
+      "name": "open_clip",
+      "path": "/home/ww/vv/paper2/DovSG/checkpoints/CLIP-ViT-H-14-laion2B-s32B-b79K/open_clip_pytorch_model.bin",
+      "sha256": "9a78ef8e8c73fd0df621682e7a8e8eb36c6916cb3c16b291a082ecd52ab79cc4"
+    }
+  ]
+}

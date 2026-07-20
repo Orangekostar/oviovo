@@ -16,7 +16,7 @@ Numerical cells are provenance tokens. `--` denotes a protocol-level N/A.
 | OVI-MAP | native | {{T1_OVIMAP_REPLICA8_MIOU}} | {{T1_OVIMAP_REPLICA8_MACC}} | {{T1_OVIMAP_REPLICA8_FMIOU}} | {{T1_OVIMAP_REPLICA7_MIOU}} | {{T1_OVIMAP_SCANNET5_MIOU}} |
 | ConceptGraphs | native | 0.118 | 0.212 | 0.106 | 0.118 | {{T1_CONCEPTGRAPHS_SCANNET5_MIOU}} |
 | DualMap | native | 0.156 | 0.204 | 0.129 | 0.155 | {{T1_DUALMAP_SCANNET5_MIOU}} |
-| OVIV2 | online | 0.173 | 0.223 | 0.441 | 0.178 | {{T1_OVIV2_SCANNET5_MIOU}} |
+| OVIV2 | online | 0.337 | 0.412 | 0.576 | 0.331 | {{T1_OVIV2_SCANNET5_MIOU}} |
 
 ### Instance and geometry quality
 
@@ -26,7 +26,7 @@ Numerical cells are provenance tokens. `--` denotes a protocol-level N/A.
 | OVI-MAP | native | {{T1_OVIMAP_REPLICA8_AP25}} | {{T1_OVIMAP_REPLICA8_AP50}} | {{T1_OVIMAP_REPLICA8_F5}} | {{T1_OVIMAP_REPLICA7_AP50}} | {{T1_OVIMAP_SCANNET5_AP25}} | {{T1_OVIMAP_SCANNET5_AP50}} | {{T1_OVIMAP_SCANNET5_F5}} |
 | ConceptGraphs | native | 0.401 | 0.238 | 0.897 | 0.220 | {{T1_CONCEPTGRAPHS_SCANNET5_AP25}} | {{T1_CONCEPTGRAPHS_SCANNET5_AP50}} | {{T1_CONCEPTGRAPHS_SCANNET5_F5}} |
 | DualMap | native | 0.384 | 0.164 | 0.887 | 0.147 | {{T1_DUALMAP_SCANNET5_AP25}} | {{T1_DUALMAP_SCANNET5_AP50}} | {{T1_DUALMAP_SCANNET5_F5}} |
-| OVIV2 | online | 0.119 | 0.025 | 0.882 | 0.025 | {{T1_OVIV2_SCANNET5_AP25}} | {{T1_OVIV2_SCANNET5_AP50}} | {{T1_OVIV2_SCANNET5_F5}} |
+| OVIV2 | online | 0.250 | 0.055 | 0.882 | 0.055 | {{T1_OVIV2_SCANNET5_AP25}} | {{T1_OVIV2_SCANNET5_AP50}} | {{T1_OVIV2_SCANNET5_F5}} |
 
 ## Table 2: Dynamic Current-Map Quality
 
