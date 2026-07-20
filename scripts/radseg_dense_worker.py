@@ -30,6 +30,9 @@ RADIO_COMMIT = "c0f37017930e9dda53f93424cf4bf39fc51f287e"
 
 MAX_RGB_BYTES = 128 * 1024 * 1024
 MAX_CLASSES_JSON_BYTES = 1024 * 1024
+MAX_JSONL_LINE_CHARS = 16 * 1024 * 1024
+MAX_JSONL_RESPONSE_CHARS = 16 * 1024 * 1024
+MAX_PROBABILITY_TENSOR_BYTES = 256 * 1024 * 1024
 CLASS_COUNT = 41
 _SHA256_PATTERN = re.compile(r"[0-9a-fA-F]{64}")
 _OFFLINE_ENVIRONMENT = (
@@ -77,6 +80,13 @@ class LanguageModelAssets:
     model_id: str
     revision: str
     sha256: str
+
+
+@dataclass(frozen=True)
+class InferenceBudget:
+    probability_tensor_bytes: int
+    sampled_shape: tuple[int, int]
+    encoded_response_chars: int
 
 
 LANGUAGE_MODEL_SPECS = {
@@ -433,6 +443,15 @@ def pinned_language_model_load(
     call_counts: dict[str, int] = {}
     expected_counts: dict[str, int]
 
+    def restore_setup() -> None:
+        for patch in reversed(patches):
+            _restore_attribute(patch)
+        for name, previous in saved_environment.items():
+            if previous is _MISSING:
+                environment.pop(name, None)
+            else:
+                environment[name] = previous
+
     if assets.backend == "radseg":
         assert transformers_module is not None
 
@@ -470,13 +489,21 @@ def pinned_language_model_load(
 
             return load
 
-        for owner, kind in (
-            (transformers_module.AutoModel, "AutoModel"),
-            (transformers_module.AutoProcessor, "AutoProcessor"),
-        ):
-            patches.append(
-                _patch_attribute(owner, "from_pretrained", transformer_wrapper(owner, kind))
-            )
+        try:
+            for owner, kind in (
+                (transformers_module.AutoModel, "AutoModel"),
+                (transformers_module.AutoProcessor, "AutoProcessor"),
+            ):
+                patches.append(
+                    _patch_attribute(
+                        owner,
+                        "from_pretrained",
+                        transformer_wrapper(owner, kind),
+                    )
+                )
+        except BaseException:
+            restore_setup()
+            raise
         expected_counts = {"AutoModel": 1, "AutoProcessor": 1}
     else:
         assert open_clip_module is not None
@@ -525,16 +552,20 @@ def pinned_language_model_load(
             call_counts["get_tokenizer"] = 1
             return original_tokenizer(*local_args, **local_kwargs)
 
-        patches.extend(
-            (
+        try:
+            patches.append(
                 _patch_attribute(
                     open_clip_module,
                     "create_model_from_pretrained",
                     create_model,
-                ),
-                _patch_attribute(open_clip_module, "get_tokenizer", get_tokenizer),
+                )
             )
-        )
+            patches.append(
+                _patch_attribute(open_clip_module, "get_tokenizer", get_tokenizer)
+            )
+        except BaseException:
+            restore_setup()
+            raise
         expected_counts = {"create_model_from_pretrained": 1, "get_tokenizer": 1}
 
     failure: tuple[Any, Any, Any] | None = None
@@ -543,13 +574,7 @@ def pinned_language_model_load(
     except BaseException:
         failure = sys.exc_info()
     finally:
-        for patch in reversed(patches):
-            _restore_attribute(patch)
-        for name, previous in saved_environment.items():
-            if previous is _MISSING:
-                environment.pop(name, None)
-            else:
-                environment[name] = previous
+        restore_setup()
 
     try:
         after_hash = language_model_tree_sha256(assets.root)
@@ -681,6 +706,51 @@ def encode_array(array: np.ndarray) -> dict[str, Any]:
     }
 
 
+def _base64_character_count(byte_count: int) -> int:
+    return 4 * ((byte_count + 2) // 3)
+
+
+def validate_inference_budget(
+    *,
+    height: int,
+    width: int,
+    sample_stride: int,
+    top_k: int,
+) -> InferenceBudget:
+    normalized_height = _require_positive_integer(height, "height")
+    normalized_width = _require_positive_integer(width, "width")
+    stride = _require_positive_integer(sample_stride, "sample_stride")
+    candidates = _require_positive_integer(top_k, "top_k")
+    if candidates > CLASS_COUNT:
+        raise ValueError("top_k cannot exceed the class count")
+
+    pixels = normalized_height * normalized_width
+    probability_bytes = pixels * CLASS_COUNT * np.dtype(np.float32).itemsize
+    if probability_bytes > MAX_PROBABILITY_TENSOR_BYTES:
+        raise ValueError(
+            "dense probability tensor exceeds the inference memory budget"
+        )
+    sampled_height = (normalized_height + stride - 1) // stride
+    sampled_width = (normalized_width + stride - 1) // stride
+    sampled_pixels = sampled_height * sampled_width
+    array_byte_counts = (
+        sampled_pixels * candidates * np.dtype(np.int64).itemsize,
+        sampled_pixels * candidates * np.dtype(np.float32).itemsize,
+        sampled_pixels * np.dtype(np.float32).itemsize,
+        sampled_pixels * np.dtype(np.float32).itemsize,
+    )
+    encoded_response_chars = sum(
+        _base64_character_count(byte_count) for byte_count in array_byte_counts
+    ) + 8192
+    if encoded_response_chars > MAX_JSONL_RESPONSE_CHARS:
+        raise ValueError("dense inference response exceeds the JSONL response budget")
+    return InferenceBudget(
+        probability_tensor_bytes=probability_bytes,
+        sampled_shape=(sampled_height, sampled_width),
+        encoded_response_chars=encoded_response_chars,
+    )
+
+
 def _require_positive_integer(value: object, name: str) -> int:
     if type(value) is not int or value <= 0:
         raise ValueError(f"{name} must be a positive integer")
@@ -711,7 +781,7 @@ def reduce_probabilities(
     mass = sampled.sum(axis=-1, keepdims=True, dtype=np.float64)
     if np.any(mass <= 0.0):
         raise ValueError("probabilities must have positive probability mass per pixel")
-    if np.any(sampled > 1.0) or np.any(mass > 1.0 + 1e-5):
+    if np.any(sampled > 1.0) or np.any(mass > 1.0 + 1e-6):
         raise ValueError("probabilities must represent a distribution with mass at most one")
     normalized = np.divide(
         sampled.astype(np.float64),
@@ -757,6 +827,57 @@ def local_radio_hub(torch_module: ModuleType | Any, radio_root: str | Path) -> I
         torch_module.hub.load = original_load
 
 
+@dataclass(frozen=True)
+class FileFingerprint:
+    path: Path
+    sha256: str
+    device: int
+    inode: int
+    size: int
+    mtime_ns: int
+    ctime_ns: int
+
+
+def _fingerprint_file(
+    path: str | Path,
+    *,
+    require_read_only: bool,
+) -> FileFingerprint:
+    requested = Path(path).expanduser()
+    if requested.is_symlink():
+        raise RuntimeError(f"model file must not be a symlink: {requested}")
+    resolved = requested.resolve()
+    try:
+        before = resolved.lstat()
+    except OSError as exc:
+        raise RuntimeError(f"model file is missing: {resolved}") from exc
+    if not stat.S_ISREG(before.st_mode):
+        raise RuntimeError(f"model file must be regular: {resolved}")
+    if require_read_only and stat.S_IMODE(before.st_mode) & 0o222:
+        raise RuntimeError(f"explicit model file must be read-only: {resolved}")
+    digest = hashlib.sha256()
+    bytes_read = 0
+    with resolved.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            bytes_read += len(chunk)
+            digest.update(chunk)
+    after = resolved.lstat()
+    stable_fields = ("st_dev", "st_ino", "st_size", "st_mtime_ns", "st_ctime_ns")
+    if bytes_read != before.st_size or any(
+        getattr(before, field) != getattr(after, field) for field in stable_fields
+    ):
+        raise RuntimeError(f"model file changed while hashing: {resolved}")
+    return FileFingerprint(
+        path=resolved,
+        sha256=digest.hexdigest(),
+        device=after.st_dev,
+        inode=after.st_ino,
+        size=after.st_size,
+        mtime_ns=after.st_mtime_ns,
+        ctime_ns=after.st_ctime_ns,
+    )
+
+
 class CheckpointTracker:
     """Capture checkpoint paths requested by one model construction."""
 
@@ -765,10 +886,15 @@ class CheckpointTracker:
         self._expected_url = expected_url
         self._original: Any | None = None
         self._paths: list[Path] = []
+        self._fingerprints: dict[Path, FileFingerprint] = {}
 
     @property
     def paths(self) -> tuple[Path, ...]:
         return tuple(dict.fromkeys(self._paths))
+
+    @property
+    def fingerprints(self) -> Mapping[Path, FileFingerprint]:
+        return dict(self._fingerprints)
 
     def __enter__(self) -> "CheckpointTracker":
         self._original = self._hub.load_state_dict_from_url
@@ -779,7 +905,6 @@ class CheckpointTracker:
                 raise RuntimeError(
                     "model construction requested an unexpected RADIO checkpoint URL"
                 )
-            result = self._original(url, *args, **kwargs)
             filename = kwargs.get("file_name")
             if filename is None:
                 filename = Path(unquote(urlparse(str(url)).path)).name
@@ -791,7 +916,18 @@ class CheckpointTracker:
                 if model_dir is not None
                 else Path(self._hub.get_dir()) / "checkpoints"
             )
-            self._paths.append((directory / filename).resolve())
+            checkpoint_path = (directory / filename).resolve()
+            before = (
+                _fingerprint_file(checkpoint_path, require_read_only=False)
+                if checkpoint_path.is_file()
+                else None
+            )
+            result = self._original(url, *args, **kwargs)
+            after = _fingerprint_file(checkpoint_path, require_read_only=False)
+            if before is not None and before != after:
+                raise RuntimeError("cached RADIO weight changed during checkpoint loading")
+            self._paths.append(checkpoint_path)
+            self._fingerprints[checkpoint_path] = after
             return result
 
         self._hub.load_state_dict_from_url = tracked
@@ -963,7 +1099,7 @@ class RadsegRuntime:
         mass = values.sum(axis=1, keepdims=True, dtype=np.float64)
         if np.any(mass <= 0.0):
             raise RuntimeError("RADSeg returned zero probability mass")
-        if np.any(values > 1.0) or np.any(mass > 1.0 + 1e-5):
+        if np.any(values > 1.0) or np.any(mass > 1.0 + 1e-6):
             raise RuntimeError("RADSeg returned probability mass above one")
         return np.ascontiguousarray(values, dtype=np.float32)
 
@@ -1109,6 +1245,20 @@ def _prompt_descriptor(encoder: Any, classes: Sequence[str]) -> dict[str, Any]:
     return {"mode": "labels", "classes": list(classes), "prompts": prompts}
 
 
+def _detach_text_embeddings(value: Any, name: str) -> Any:
+    if not hasattr(value, "detach") or not hasattr(value, "shape"):
+        raise RuntimeError(f"{name} text embeddings must be tensor-like")
+    shape = tuple(value.shape)
+    if len(shape) != 2 or shape[0] != CLASS_COUNT or shape[1] <= 0:
+        raise RuntimeError(f"{name} text embeddings must have shape [41,D]")
+    detached = value.detach()
+    if bool(getattr(detached, "requires_grad", True)):
+        raise RuntimeError(f"{name} text embeddings still require gradients")
+    if getattr(detached, "grad_fn", None) is not None:
+        raise RuntimeError(f"{name} text embeddings retain an autograd graph")
+    return detached
+
+
 @dataclass(frozen=True)
 class DenseWorker:
     runtime: Any
@@ -1138,26 +1288,65 @@ def build_worker(args: argparse.Namespace) -> DenseWorker:
     source_commit = validate_source_checkout(source_root, source_spec)
     radio_commit = validate_source_checkout(radio_root, RADIO_SOURCE)
     expected_radio_url = _expected_radio_checkpoint_url(radio_root, args.model_version)
+    explicit_checkpoint_before = (
+        _fingerprint_file(args.model_version, require_read_only=True)
+        if Path(args.model_version).expanduser().is_file()
+        else None
+    )
+    sam_before = (
+        _fingerprint_file(args.sam_checkpoint, require_read_only=True)
+        if args.sam_checkpoint is not None
+        else None
+    )
 
     import torch
 
+    text_embeddings: Any | None = None
     with CheckpointTracker(torch.hub, expected_url=expected_radio_url) as tracker:
         with local_radio_hub(torch, radio_root):
             with pinned_language_model_load(language_assets):
-                if args.backend == "radseg":
-                    module = _import_pinned_module(source_root, "radseg.radseg")
-                    encoder = _instantiate_radseg(module.RADSegEncoder, args, classes)
-                else:
-                    module = _import_pinned_module(
-                        source_root, "rayfronts.image_encoders.naradio"
-                    )
-                    encoder = _instantiate_naradio(module.NARadioEncoder, args)
+                with torch.inference_mode():
+                    if args.backend == "radseg":
+                        module = _import_pinned_module(source_root, "radseg.radseg")
+                        encoder = _instantiate_radseg(module.RADSegEncoder, args, classes)
+                        encoder.text_embeds = _detach_text_embeddings(
+                            getattr(encoder, "text_embeds", None),
+                            "RADSeg",
+                        )
+                    else:
+                        module = _import_pinned_module(
+                            source_root, "rayfronts.image_encoders.naradio"
+                        )
+                        encoder = _instantiate_naradio(module.NARadioEncoder, args)
+                        text_embeddings = _detach_text_embeddings(
+                            encoder.encode_labels(classes),
+                            "NARADIO",
+                        )
+    source_commit_after = validate_source_checkout(source_root, source_spec)
+    radio_commit_after = validate_source_checkout(radio_root, RADIO_SOURCE)
+    if source_commit_after != source_commit or radio_commit_after != radio_commit:
+        raise RuntimeError("pinned source checkout changed during model loading")
     model_checkpoint = resolve_model_checkpoint(tracker.paths, args.model_version)
-    model_sha256 = sha256_file(model_checkpoint)
+    model_after = _fingerprint_file(
+        model_checkpoint,
+        require_read_only=explicit_checkpoint_before is not None,
+    )
+    expected_model_fingerprint = (
+        explicit_checkpoint_before
+        if explicit_checkpoint_before is not None
+        else tracker.fingerprints.get(model_checkpoint)
+    )
+    if expected_model_fingerprint is None or model_after != expected_model_fingerprint:
+        raise RuntimeError("RADIO checkpoint changed during model construction")
+    model_sha256 = model_after.sha256
 
     if args.sam_refinement:
         assert args.sam_checkpoint is not None
-        auxiliary_model_sha256 = sha256_file(args.sam_checkpoint.expanduser().resolve())
+        assert sam_before is not None
+        sam_after = _fingerprint_file(args.sam_checkpoint, require_read_only=True)
+        if sam_after != sam_before:
+            raise RuntimeError("SAM checkpoint changed during model construction")
+        auxiliary_model_sha256 = sam_after.sha256
     else:
         auxiliary_model_sha256 = ""
 
@@ -1178,8 +1367,7 @@ def build_worker(args: argparse.Namespace) -> DenseWorker:
             "sam_refinement": args.sam_refinement,
         }
     else:
-        with torch.inference_mode():
-            text_embeddings = encoder.encode_labels(classes)
+        assert text_embeddings is not None
         runtime = NARadioRuntime(
             encoder=encoder,
             text_embeddings=text_embeddings,
@@ -1257,6 +1445,12 @@ def run_request(worker: DenseWorker, request: Mapping[str, Any]) -> dict[str, An
     if operation != "infer":
         raise ValueError("operation must be 'metadata' or 'infer'")
     rgb = decode_rgb(request.get("rgb"))
+    validate_inference_budget(
+        height=int(rgb.shape[0]),
+        width=int(rgb.shape[1]),
+        sample_stride=worker.sample_stride,
+        top_k=worker.top_k,
+    )
     probabilities = worker.runtime.infer_probabilities(rgb)
     reduced = reduce_probabilities(
         probabilities,
@@ -1281,28 +1475,53 @@ def _error_message(exc: BaseException) -> str:
     return message or exc.__class__.__name__
 
 
+def _bounded_jsonl_lines(input_stream: TextIO) -> Iterator[str | None]:
+    while True:
+        line = input_stream.readline(MAX_JSONL_LINE_CHARS + 1)
+        if line == "":
+            return
+        if len(line) <= MAX_JSONL_LINE_CHARS:
+            yield line
+            continue
+        complete = line.endswith("\n")
+        while not complete:
+            remainder = input_stream.readline(MAX_JSONL_LINE_CHARS + 1)
+            if remainder == "":
+                complete = True
+            elif remainder.endswith("\n"):
+                complete = True
+        yield None
+
+
 def serve_jsonl(
     worker: DenseWorker,
     input_stream: TextIO,
     output_stream: TextIO,
     error_stream: TextIO,
 ) -> None:
-    for line in input_stream:
+    for line in _bounded_jsonl_lines(input_stream):
         request_id: Any = None
-        try:
-            request = json.loads(
-                line,
-                parse_constant=lambda value: (_ for _ in ()).throw(
-                    ValueError(f"invalid JSON constant: {value}")
-                ),
-            )
-            if not isinstance(request, dict):
-                raise ValueError("request must be a JSON object")
-            request_id = request.get("id")
-            with redirect_stdout(error_stream):
-                response = run_request(worker, request)
-        except Exception as exc:
-            response = {"id": request_id, "ok": False, "error": _error_message(exc)}
+        if line is None:
+            response = {
+                "id": None,
+                "ok": False,
+                "error": "request line exceeds the JSONL size limit",
+            }
+        else:
+            try:
+                request = json.loads(
+                    line,
+                    parse_constant=lambda value: (_ for _ in ()).throw(
+                        ValueError(f"invalid JSON constant: {value}")
+                    ),
+                )
+                if not isinstance(request, dict):
+                    raise ValueError("request must be a JSON object")
+                request_id = request.get("id")
+                with redirect_stdout(error_stream):
+                    response = run_request(worker, request)
+            except Exception as exc:
+                response = {"id": request_id, "ok": False, "error": _error_message(exc)}
         encoded = json.dumps(
             response,
             sort_keys=True,
@@ -1310,6 +1529,16 @@ def serve_jsonl(
             ensure_ascii=True,
             allow_nan=False,
         )
+        if len(encoded) > MAX_JSONL_RESPONSE_CHARS:
+            encoded = json.dumps(
+                {
+                    "id": None,
+                    "ok": False,
+                    "error": "response exceeds the JSONL size limit",
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            )
         output_stream.write(encoded + "\n")
         output_stream.flush()
 

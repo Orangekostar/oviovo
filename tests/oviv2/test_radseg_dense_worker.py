@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+from contextlib import nullcontext
 from dataclasses import replace
 import hashlib
 import io
@@ -27,6 +28,7 @@ if str(SCRIPTS_ROOT) not in sys.path:
 
 from radseg_dense_worker import (  # noqa: E402
     LANGUAGE_MODEL_SPECS,
+    MAX_JSONL_LINE_CHARS,
     RADIO_COMMIT,
     RADSEG_COMMIT,
     RAYFRONTS_COMMIT,
@@ -38,6 +40,7 @@ from radseg_dense_worker import (  # noqa: E402
     SourceSpec,
     _instantiate_naradio,
     _instantiate_radseg,
+    _fingerprint_file,
     build_worker,
     canonical_sha256,
     decode_rgb,
@@ -54,6 +57,7 @@ from radseg_dense_worker import (  # noqa: E402
     sha256_file,
     validate_cli_args,
     validate_language_model_assets,
+    validate_inference_budget,
     validate_source_checkout,
 )
 
@@ -124,6 +128,12 @@ def test_reduce_probabilities_preserves_topk_and_normalizes_only_for_entropy() -
     np.testing.assert_allclose(reduced["probabilities"], [[[0.4, 0.2]]])
     np.testing.assert_allclose(reduced["margin"], [[0.2]])
     np.testing.assert_allclose(reduced["entropy"], [[1.0397208]], rtol=1e-6)
+
+
+def test_reduce_probabilities_rejects_mass_outside_dense_frame_tolerance() -> None:
+    probabilities = np.asarray([[[[0.500003]], [[0.500002]]]], dtype=np.float32)
+    with pytest.raises(ValueError, match="mass"):
+        reduce_probabilities(probabilities, sample_stride=1, top_k=2)
 
 
 def test_reduce_probabilities_uses_stable_class_id_tie_break() -> None:
@@ -221,6 +231,38 @@ def test_encode_array_copies_noncontiguous_input_with_explicit_contract() -> Non
     assert block["dtype"] == "float32"
     assert block["shape"] == [4, 3]
     np.testing.assert_array_equal(_decode_array(block), source)
+
+
+def test_inference_budget_accepts_replica_stride4_top4() -> None:
+    budget = validate_inference_budget(
+        height=680,
+        width=1200,
+        sample_stride=4,
+        top_k=4,
+    )
+    assert budget.probability_tensor_bytes == 680 * 1200 * 41 * 4
+    assert budget.sampled_shape == (170, 300)
+    assert budget.encoded_response_chars < MAX_JSONL_LINE_CHARS
+
+
+def test_inference_budget_rejects_stride1_top41_before_inference() -> None:
+    with pytest.raises(ValueError, match="response|budget"):
+        validate_inference_budget(
+            height=680,
+            width=1200,
+            sample_stride=1,
+            top_k=41,
+        )
+
+
+def test_inference_budget_rejects_giant_probability_tensor() -> None:
+    with pytest.raises(ValueError, match="probability tensor|budget"):
+        validate_inference_budget(
+            height=20_000,
+            width=20_000,
+            sample_stride=100,
+            top_k=1,
+        )
 
 
 def test_canonical_sha256_is_key_order_independent_and_value_sensitive() -> None:
@@ -371,6 +413,38 @@ def test_checkpoint_tracker_for_explicit_model_rejects_every_url(tmp_path: Path)
         with CheckpointTracker(hub, expected_url=None):
             hub.load_state_dict_from_url("https://example.com/unexpected.pt")
     assert hub.calls == []
+
+
+def test_checkpoint_tracker_rejects_cached_weight_changed_during_load(tmp_path: Path) -> None:
+    url = "https://huggingface.co/nvidia/RADIO/resolve/main/weights.pt"
+    checkpoints = tmp_path / "checkpoints"
+    checkpoints.mkdir()
+    cached = checkpoints / "weights.pt"
+    cached.write_bytes(b"before")
+
+    class MutatingHub(_FakeHub):
+        def load_state_dict_from_url(
+            self, requested_url: str, *args: Any, **kwargs: Any
+        ) -> object:
+            self.calls.append(((requested_url, *args), kwargs))
+            cached.write_bytes(b"after")
+            return object()
+
+    hub = MutatingHub(tmp_path)
+    with pytest.raises(RuntimeError, match="changed during checkpoint loading"):
+        with CheckpointTracker(hub, expected_url=url):
+            hub.load_state_dict_from_url(url)
+
+
+def test_explicit_checkpoint_fingerprint_requires_read_only_file(tmp_path: Path) -> None:
+    checkpoint = tmp_path / "model.pt"
+    checkpoint.write_bytes(b"weights")
+    with pytest.raises(RuntimeError, match="read-only"):
+        _fingerprint_file(checkpoint, require_read_only=True)
+    checkpoint.chmod(stat.S_IMODE(checkpoint.stat().st_mode) & ~0o222)
+    assert _fingerprint_file(checkpoint, require_read_only=True).sha256 == hashlib.sha256(
+        b"weights"
+    ).hexdigest()
 
 
 def test_checkpoint_tracker_restores_after_loader_failure(tmp_path: Path) -> None:
@@ -870,6 +944,45 @@ def test_language_patch_restores_partial_setup_failure(tmp_path: Path) -> None:
         _chmod_tree(assets.root, writable=True)
 
 
+def test_language_patch_restores_when_second_patch_install_fails(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import radseg_dense_worker as worker_module
+
+    assets = _language_assets(tmp_path)
+    model_loader = lambda *args, **kwargs: object()
+    processor_loader = lambda *args, **kwargs: object()
+    auto_model = SimpleNamespace(from_pretrained=model_loader)
+    auto_processor = SimpleNamespace(from_pretrained=processor_loader)
+    module = SimpleNamespace(AutoModel=auto_model, AutoProcessor=auto_processor)
+    environ = {"HF_HUB_OFFLINE": "previous"}
+    real_patch = worker_module._patch_attribute
+    calls = 0
+
+    def fail_second(owner: Any, name: str, replacement: Any) -> Any:
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise RuntimeError("second patch failed")
+        return real_patch(owner, name, replacement)
+
+    monkeypatch.setattr(worker_module, "_patch_attribute", fail_second)
+    try:
+        with pytest.raises(RuntimeError, match="second patch failed"):
+            with pinned_language_model_load(
+                assets,
+                transformers_module=module,
+                environ=environ,
+            ):
+                pass
+        assert auto_model.from_pretrained is model_loader
+        assert auto_processor.from_pretrained is processor_loader
+        assert environ == {"HF_HUB_OFFLINE": "previous"}
+    finally:
+        _chmod_tree(assets.root, writable=True)
+
+
 def test_transformers_language_patch_rejects_extra_model_request(tmp_path: Path) -> None:
     assets = _language_assets(tmp_path)
     auto_model = SimpleNamespace(from_pretrained=lambda *args, **kwargs: object())
@@ -1253,6 +1366,7 @@ def test_build_worker_pins_language_assets_and_restores_global_state(
     classes_path.write_text(json.dumps({"classes": _classes()}), encoding="utf-8")
     checkpoint = tmp_path / "radio.pt"
     checkpoint.write_bytes(b"radio-checkpoint")
+    checkpoint.chmod(stat.S_IMODE(checkpoint.stat().st_mode) & ~0o222)
     args = parse_args(_base_cli(tmp_path))
     args.model_version = str(checkpoint)
     args.classes_json = classes_path
@@ -1282,12 +1396,16 @@ def test_build_worker_pins_language_assets_and_restores_global_state(
         staticmethod(processor_loader),
     )
 
+    graph_text_embeddings = torch.ones((41, 3), requires_grad=True) * 2.0
+
     class Encoder:
         def __init__(self, **kwargs: Any) -> None:
+            assert torch.is_grad_enabled() is False
             transformers.AutoModel.from_pretrained(
                 args.language_model_id,
                 trust_remote_code=True,
             )
+            self.text_embeds = graph_text_embeddings
             transformers.AutoProcessor.from_pretrained(
                 args.language_model_id,
                 trust_remote_code=True,
@@ -1301,11 +1419,13 @@ def test_build_worker_pins_language_assets_and_restores_global_state(
         "_import_pinned_module",
         lambda root, module_name: SimpleNamespace(RADSegEncoder=Encoder),
     )
-    monkeypatch.setattr(
-        worker_module,
-        "validate_source_checkout",
-        lambda root, spec: spec.commit,
-    )
+    source_validation_calls: list[str] = []
+
+    def validate_source(root: Path, spec: Any) -> str:
+        source_validation_calls.append(spec.name)
+        return spec.commit
+
+    monkeypatch.setattr(worker_module, "validate_source_checkout", validate_source)
     hash_payloads: list[Any] = []
     original_canonical_sha256 = worker_module.canonical_sha256
 
@@ -1331,6 +1451,9 @@ def test_build_worker_pins_language_assets_and_restores_global_state(
         assert worker.provenance["language_model_id"] == args.language_model_id
         assert worker.provenance["language_model_revision"] == args.language_model_revision
         assert worker.provenance["language_model_sha256"] == language_hash
+        assert worker.runtime.encoder.text_embeds.requires_grad is False
+        assert worker.runtime.encoder.text_embeds.grad_fn is None
+        assert source_validation_calls == ["RADSeg", "RADIO", "RADSeg", "RADIO"]
         config_payload = next(
             payload
             for payload in hash_payloads
@@ -1341,6 +1464,156 @@ def test_build_worker_pins_language_assets_and_restores_global_state(
         assert config_payload["language_model_sha256"] == language_hash
     finally:
         _chmod_tree(language_root, writable=True)
+
+
+def test_build_worker_constructs_naradio_and_text_embeddings_without_gradients(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import open_clip
+    import radseg_dense_worker as worker_module
+
+    language_root, language_hash = _make_language_model_root(tmp_path)
+    classes_path = tmp_path / "classes.json"
+    classes_path.write_text(json.dumps({"classes": _classes()}), encoding="utf-8")
+    checkpoint = tmp_path / "radio.pt"
+    checkpoint.write_bytes(b"radio-checkpoint")
+    checkpoint.chmod(stat.S_IMODE(checkpoint.stat().st_mode) & ~0o222)
+    args = parse_args(_base_cli(tmp_path, backend="naradio"))
+    args.model_version = str(checkpoint)
+    args.classes_json = classes_path
+    args.language_model_root = language_root
+    args.language_model_sha256 = language_hash
+    graph_text_embeddings = torch.ones((41, 3), requires_grad=True) * 3.0
+    loader_calls: list[str] = []
+
+    def create_loader(*loader_args: Any, **loader_kwargs: Any) -> object:
+        model_name = loader_args[0] if loader_args else loader_kwargs["model_name"]
+        assert model_name == f"local-dir:{language_root.resolve()}"
+        loader_calls.append("model")
+        return object()
+
+    def tokenizer_loader(*loader_args: Any, **loader_kwargs: Any) -> object:
+        assert loader_args[0] == f"local-dir:{language_root.resolve()}"
+        loader_calls.append("tokenizer")
+        return object()
+
+    monkeypatch.setattr(open_clip, "create_model_from_pretrained", create_loader)
+    monkeypatch.setattr(open_clip, "get_tokenizer", tokenizer_loader)
+
+    class Encoder:
+        def __init__(self, **kwargs: Any) -> None:
+            assert torch.is_grad_enabled() is False
+            open_clip.create_model_from_pretrained(
+                model_name="ViT-SO400M-14-SigLIP-384",
+                pretrained="webli",
+                return_transform=False,
+            )
+            open_clip.get_tokenizer("ViT-SO400M-14-SigLIP-384")
+
+        def encode_labels(self, labels: list[str]) -> torch.Tensor:
+            assert torch.is_grad_enabled() is False
+            return graph_text_embeddings
+
+        def insert_labels_into_templates(self, labels: list[str]) -> list[list[str]]:
+            return [[f"a photo of {label}"] for label in labels]
+
+    monkeypatch.setattr(
+        worker_module,
+        "_import_pinned_module",
+        lambda root, module_name: SimpleNamespace(NARadioEncoder=Encoder),
+    )
+    validation_calls: list[str] = []
+
+    def validate_source(root: Path, spec: Any) -> str:
+        validation_calls.append(spec.name)
+        return spec.commit
+
+    monkeypatch.setattr(worker_module, "validate_source_checkout", validate_source)
+    try:
+        worker = build_worker(args)
+        assert loader_calls == ["model", "tokenizer"]
+        assert worker.runtime.text_embeddings.requires_grad is False
+        assert worker.runtime.text_embeddings.grad_fn is None
+        assert validation_calls == ["RayFronts", "RADIO", "RayFronts", "RADIO"]
+    finally:
+        _chmod_tree(language_root, writable=True)
+
+
+@pytest.mark.parametrize("mutated_asset", ["radio", "sam"])
+def test_build_worker_rejects_model_asset_changed_before_provenance(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    mutated_asset: str,
+) -> None:
+    import radseg_dense_worker as worker_module
+
+    language_assets = _language_assets(tmp_path)
+    classes_path = tmp_path / "classes.json"
+    classes_path.write_text(json.dumps({"classes": _classes()}), encoding="utf-8")
+    radio_checkpoint = tmp_path / "radio.pt"
+    radio_checkpoint.write_bytes(b"radio-before")
+    sam_checkpoint = tmp_path / "sam.pt"
+    sam_checkpoint.write_bytes(b"sam-before")
+    for path in (radio_checkpoint, sam_checkpoint):
+        path.chmod(stat.S_IMODE(path.stat().st_mode) & ~0o222)
+
+    args = parse_args(_base_cli(tmp_path))
+    args.model_version = str(radio_checkpoint)
+    args.classes_json = classes_path
+    args.language_model_root = language_assets.root
+    args.language_model_sha256 = language_assets.sha256
+    if mutated_asset == "sam":
+        args.sam_refinement = True
+        args.sam_checkpoint = sam_checkpoint
+
+    class Encoder:
+        text_embeds = torch.ones((41, 3), dtype=torch.float32)
+
+        def insert_labels_into_templates(self, labels: list[str]) -> list[list[str]]:
+            return [[label] for label in labels]
+
+    target = radio_checkpoint if mutated_asset == "radio" else sam_checkpoint
+
+    def instantiate(*unused: Any, **unused_kwargs: Any) -> Encoder:
+        target.chmod(stat.S_IMODE(target.stat().st_mode) | stat.S_IWUSR)
+        target.write_bytes(f"{mutated_asset}-after".encode("ascii"))
+        target.chmod(stat.S_IMODE(target.stat().st_mode) & ~0o222)
+        return Encoder()
+
+    monkeypatch.setattr(
+        worker_module,
+        "validate_language_model_assets",
+        lambda unused_args: language_assets,
+    )
+    monkeypatch.setattr(
+        worker_module,
+        "pinned_language_model_load",
+        lambda unused_assets: nullcontext(),
+    )
+    monkeypatch.setattr(
+        worker_module,
+        "validate_source_checkout",
+        lambda root, spec: spec.commit,
+    )
+    monkeypatch.setattr(
+        worker_module,
+        "_import_pinned_module",
+        lambda root, module_name: SimpleNamespace(RADSegEncoder=Encoder),
+    )
+    monkeypatch.setattr(worker_module, "_instantiate_radseg", instantiate)
+    provenance_hash_calls: list[Any] = []
+    monkeypatch.setattr(
+        worker_module,
+        "canonical_sha256",
+        lambda payload: provenance_hash_calls.append(payload) or "0" * 64,
+    )
+    try:
+        with pytest.raises(RuntimeError, match=f"{mutated_asset.upper()}|checkpoint"):
+            build_worker(args)
+        assert provenance_hash_calls == []
+    finally:
+        _chmod_tree(language_assets.root, writable=True)
 
 
 class _FakeRuntime:
@@ -1429,6 +1702,33 @@ def test_infer_response_arrays_construct_the_frozen_dense_frame_contract() -> No
     assert frame.class_count == 41
 
 
+def test_infer_budget_rejects_before_runtime_allocation() -> None:
+    class CountingRuntime(_FakeRuntime):
+        def __init__(self) -> None:
+            super().__init__()
+            self.calls = 0
+
+        def infer_probabilities(self, rgb: np.ndarray) -> np.ndarray:
+            self.calls += 1
+            return super().infer_probabilities(rgb)
+
+    runtime = CountingRuntime()
+    worker = DenseWorker(
+        runtime=runtime,
+        classes=tuple(_classes()),
+        sample_stride=1,
+        top_k=41,
+        provenance=_provenance(),
+    )
+    rgb = np.zeros((680, 1200, 3), dtype=np.uint8)
+    with pytest.raises(ValueError, match="response|budget"):
+        run_request(
+            worker,
+            {"id": 1, "operation": "infer", "rgb": _array_block(rgb)},
+        )
+    assert runtime.calls == 0
+
+
 def test_run_request_rejects_unknown_operation() -> None:
     with pytest.raises(ValueError, match="operation"):
         run_request(_fake_worker(), {"id": 1, "operation": "future"})
@@ -1458,6 +1758,36 @@ def test_serve_jsonl_returns_one_line_per_request_and_continues_after_error() ->
     assert responses[1]["id"] == 1 and responses[1]["ok"] is False
     assert responses[2]["id"] == 2 and responses[2]["ok"] is True
     assert "model diagnostic" not in output_stream.getvalue()
+
+
+def test_serve_jsonl_bounded_read_drains_oversized_line_and_continues(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import radseg_dense_worker as worker_module
+
+    limit = 80
+    monkeypatch.setattr(worker_module, "MAX_JSONL_LINE_CHARS", limit)
+    valid = json.dumps({"id": 2, "operation": "metadata"}) + "\n"
+
+    class ReadlineOnly(io.StringIO):
+        def __iter__(self) -> Any:
+            raise AssertionError("serve_jsonl must not use unbounded iteration")
+
+        def readline(self, size: int = -1) -> str:
+            assert 0 < size <= limit + 1
+            return super().readline(size)
+
+    input_stream = ReadlineOnly("x" * (limit * 3) + "\n" + valid)
+    output_stream = io.StringIO()
+    serve_jsonl(_fake_worker(), input_stream, output_stream, io.StringIO())
+
+    responses = [json.loads(line) for line in output_stream.getvalue().splitlines()]
+    assert len(responses) == 2
+    assert responses[0]["id"] is None
+    assert responses[0]["ok"] is False
+    assert "line" in responses[0]["error"]
+    assert responses[1]["id"] == 2
+    assert responses[1]["ok"] is True
 
 
 def test_serve_jsonl_redirects_model_stdout_to_stderr() -> None:
