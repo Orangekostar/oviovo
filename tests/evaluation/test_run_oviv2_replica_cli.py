@@ -13,11 +13,35 @@ import pytest
 
 import scripts.run_oviv2_replica as runner_module
 from scripts.run_oviv2_replica import _runtime_config, parse_args, run
+from src.oviv2.dense_semantics import (
+    DenseSemanticFrame,
+    DenseSemanticProvenance,
+    load_dense_frame,
+    sha256_file,
+    write_dense_frame,
+)
+from src.oviv2.dense_projection import DenseSemanticConfig
 from src.oviv2.snapshot import VoxelMapSnapshot
 
 
 _ABSENT = object()
 _PRECISION_CONFIG = Path("configs/oviv2_replica_room0_precision_stage1.json")
+_STAGE2_CONFIG = Path("configs/oviv2_replica_room0_precision_stage2_radseg.json")
+_MODEL_HASH = "c" * 64
+_DENSE_MANIFEST_KEYS = {
+    "schema_version",
+    "method",
+    "scene",
+    "frame_count",
+    "source_frame_ids",
+    "image_shape",
+    "sample_stride",
+    "top_k",
+    "class_count",
+    "vocabulary_sha256",
+    "provenance",
+    "cache_files_sha256",
+}
 _STAGE1_CONFIG_FIELDS = (
     "semantic_mode",
     "feature_mode",
@@ -163,12 +187,146 @@ def _args(config: Path, output: Path, *extra: str, num_frames: int = 2):
     )
 
 
+def _args_with_evaluation(config: Path, output: Path, *, num_frames: int = 2):
+    return parse_args(
+        [
+            "--config",
+            str(config),
+            "--output",
+            str(output),
+            "--num-frames",
+            str(num_frames),
+        ]
+    )
+
+
 def _enable_stage1(config_path: Path) -> dict[str, object]:
     config = json.loads(config_path.read_text(encoding="utf-8"))
     precision = json.loads(_PRECISION_CONFIG.read_text(encoding="utf-8"))
     config.update({name: precision[name] for name in _STAGE1_CONFIG_FIELDS})
     config_path.write_text(json.dumps(config), encoding="utf-8")
     return config
+
+
+def _write_dense_cache(config_path: Path, *, frame_count: int = 2) -> Path:
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    manifest_path = Path(config["manifest"])
+    benchmark = json.loads(manifest_path.read_text(encoding="utf-8"))
+    classes_json = manifest_path.parent / "classes.json"
+    classes_json.write_text(
+        json.dumps(
+            {"classes": benchmark["vocabulary"]["classes"], "aliases": {}},
+            separators=(",", ":"),
+        ),
+        encoding="utf-8",
+    )
+    benchmark["vocabulary"]["source_path"] = str(classes_json)
+    benchmark["vocabulary"]["source_sha256"] = hashlib.sha256(
+        classes_json.read_bytes()
+    ).hexdigest()
+    manifest_path.write_text(json.dumps(benchmark), encoding="utf-8")
+    vocabulary_sha256 = hashlib.sha256(classes_json.read_bytes()).hexdigest()
+
+    dense_dir = config_path.parent / "dense-cache"
+    dense_dir.mkdir()
+    cache_hashes: dict[str, str] = {}
+    source_ids = [index * 10 for index in range(frame_count)]
+    for cache_index, source_id in enumerate(source_ids):
+        sampled_shape = (16, 16)
+        class_ids = np.empty((*sampled_shape, 2), dtype=np.int64)
+        class_ids[..., 0] = 4
+        class_ids[..., 1] = 1
+        probabilities = np.empty((*sampled_shape, 2), dtype=np.float32)
+        probabilities[..., 0] = 0.7
+        probabilities[..., 1] = 0.2
+        frame = DenseSemanticFrame(
+            cache_frame_id=cache_index,
+            source_frame_id=source_id,
+            image_shape=(32, 32),
+            sample_stride=2,
+            class_count=4,
+            class_ids=class_ids,
+            probabilities=probabilities,
+            entropy=np.full(sampled_shape, 0.5, dtype=np.float32),
+            margin=np.full(sampled_shape, 0.5, dtype=np.float32),
+        )
+        name = f"frame{cache_index:06d}.npz"
+        write_dense_frame(dense_dir / name, frame)
+        cache_hashes[name] = sha256_file(dense_dir / name)
+    prefix = hashlib.sha256()
+    for cache_index, name in enumerate(cache_hashes):
+        prefix.update(cache_index.to_bytes(8, "little", signed=False))
+        prefix.update(bytes.fromhex(cache_hashes[name]))
+    provenance = DenseSemanticProvenance(
+        backend="radseg",
+        source_commit="a" * 40,
+        radio_commit="b" * 40,
+        model_id="radseg:fixture",
+        model_sha256=_MODEL_HASH,
+        auxiliary_model_sha256="d" * 64,
+        vocabulary_sha256=vocabulary_sha256,
+        prompt_sha256="e" * 64,
+        inference_config_sha256="f" * 64,
+        cache_prefix_sha256=prefix.hexdigest(),
+        language_model_id="fixture/language-model",
+        language_model_revision="1" * 40,
+        language_model_sha256="2" * 64,
+    )
+    dense_manifest = {
+        "schema_version": 1,
+        "method": "OVIV2-dense-semantic-cache",
+        "scene": "room0",
+        "frame_count": frame_count,
+        "source_frame_ids": source_ids,
+        "image_shape": [32, 32],
+        "sample_stride": 2,
+        "top_k": 2,
+        "class_count": 4,
+        "vocabulary_sha256": vocabulary_sha256,
+        "provenance": asdict(provenance),
+        "cache_files_sha256": cache_hashes,
+    }
+    assert set(dense_manifest) == _DENSE_MANIFEST_KEYS
+    (dense_dir / "dense_manifest.json").write_text(
+        json.dumps(dense_manifest),
+        encoding="utf-8",
+    )
+    config.update(
+        {
+            "dense_semantic_mode": "cached_probabilities",
+            "dense_cache_dir": str(dense_dir),
+            "dense_integration_radius_m": 6.0,
+            "dense_minimum_probability": 0.01,
+            "dense_minimum_quality": 0.01,
+            "dense_entropy_power": 1.0,
+            "dense_view_angle_power": 1.0,
+        }
+    )
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    return dense_dir
+
+
+def _rewrite_dense_manifest(dense_dir: Path, mutate) -> None:
+    path = dense_dir / "dense_manifest.json"
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    mutate(payload)
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+
+def _rehash_dense_manifest(dense_dir: Path) -> None:
+    path = dense_dir / "dense_manifest.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    cache_hashes = {
+        name: sha256_file(dense_dir / name)
+        for name in manifest["cache_files_sha256"]
+    }
+    prefix = hashlib.sha256()
+    for cache_index, name in enumerate(cache_hashes):
+        prefix.update(cache_index.to_bytes(8, "little", signed=False))
+        prefix.update(bytes.fromhex(cache_hashes[name]))
+    manifest["cache_files_sha256"] = cache_hashes
+    manifest["provenance"]["cache_prefix_sha256"] = prefix.hexdigest()
+    path.write_text(json.dumps(manifest), encoding="utf-8")
 
 
 def _remove_cached_field(config_path: Path, cache_index: int, field: str) -> None:
@@ -205,6 +363,24 @@ def test_precision_config_enables_feature_aware_owner_semantics() -> None:
     assert runtime.registry.prototype_merge_cosine == pytest.approx(0.90)
     assert runtime.registry.view_top_k == 10
     assert runtime.registry.view_minimum_novelty_cosine == pytest.approx(0.10)
+
+
+def test_stage2_config_is_stage1_plus_only_frozen_dense_settings() -> None:
+    stage1 = json.loads(_PRECISION_CONFIG.read_text(encoding="utf-8"))
+    stage2 = json.loads(_STAGE2_CONFIG.read_text(encoding="utf-8"))
+
+    assert stage2 == {
+        **stage1,
+        "dense_semantic_mode": "cached_probabilities",
+        "dense_cache_dir": (
+            "/home/ww/oviovo_dense_cache/room0_radseg_l_sam_s4_k4"
+        ),
+        "dense_integration_radius_m": 6.0,
+        "dense_minimum_probability": 0.01,
+        "dense_minimum_quality": 0.01,
+        "dense_entropy_power": 1.0,
+        "dense_view_angle_power": 1.0,
+    }
 
 
 def test_runtime_config_without_stage1_fields_keeps_legacy_association() -> None:
@@ -307,6 +483,408 @@ def test_preflight_fails_before_creating_output_for_missing_cache(tmp_path: Path
         run(_args(config, output))
 
     assert not output.exists()
+
+
+def test_disabled_dense_mode_never_reads_dense_cache(tmp_path: Path) -> None:
+    config_path = _write_fixture(tmp_path)
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config["dense_cache_dir"] = str(tmp_path / "hostile-dense-cache")
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    output = tmp_path / "run"
+
+    manifest = run(_args(config_path, output, num_frames=1))
+
+    assert "dense_semantics" not in manifest
+    assert (output / "final" / "oviv2_instance_mesh.ply").is_file()
+    assert not (output / "final" / "oviv2_owner_mesh.ply").exists()
+    timing = json.loads((output / "timing.json").read_text(encoding="utf-8"))
+    assert not {
+        "dense_sampled_pixel_count",
+        "dense_valid_pixel_count",
+        "dense_updated_voxel_count",
+    } & timing["frames"][0].keys()
+
+
+def test_cached_dense_mode_requires_cache_dir_before_output(tmp_path: Path) -> None:
+    config_path = _write_fixture(tmp_path)
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config["dense_semantic_mode"] = "cached_probabilities"
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    output = tmp_path / "run"
+
+    with pytest.raises(ValueError, match="dense_cache_dir"):
+        run(_args(config_path, output, num_frames=1))
+
+    assert not output.exists()
+
+
+def test_cached_dense_mode_requires_completed_manifest_before_output(
+    tmp_path: Path,
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    dense_dir = tmp_path / "empty-dense-cache"
+    dense_dir.mkdir()
+    config.update(
+        {
+            "dense_semantic_mode": "cached_probabilities",
+            "dense_cache_dir": str(dense_dir),
+        }
+    )
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    output = tmp_path / "run"
+
+    with pytest.raises(FileNotFoundError, match="dense_manifest"):
+        run(_args(config_path, output, num_frames=1))
+
+    assert not output.exists()
+
+
+@pytest.mark.parametrize(
+    ("mutate", "message"),
+    [
+        (lambda manifest: manifest.__setitem__("unexpected", True), "keys"),
+        (lambda manifest: manifest.__setitem__("method", "wrong"), "method"),
+        (lambda manifest: manifest.__setitem__("source_frame_ids", [1, 10]), "source"),
+        (lambda manifest: manifest.__setitem__("image_shape", [31, 32]), "image_shape"),
+        (lambda manifest: manifest.__setitem__("class_count", 3), "class_count"),
+        (lambda manifest: manifest.__setitem__("sample_stride", 0), "sample_stride"),
+        (
+            lambda manifest: manifest.__setitem__("vocabulary_sha256", "0" * 64),
+            "vocabulary",
+        ),
+        (
+            lambda manifest: manifest["provenance"].__setitem__("unexpected", True),
+            "provenance",
+        ),
+        (
+            lambda manifest: manifest["cache_files_sha256"].__setitem__(
+                "not-canonical.npz",
+                "0" * 64,
+            ),
+            "canonical|keys",
+        ),
+    ],
+)
+def test_dense_preflight_rejects_manifest_mismatch_before_output(
+    tmp_path: Path,
+    mutate,
+    message: str,
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    dense_dir = _write_dense_cache(config_path)
+    _rewrite_dense_manifest(dense_dir, mutate)
+    output = tmp_path / "run"
+
+    with pytest.raises(ValueError, match=message):
+        run(_args(config_path, output, num_frames=1))
+
+    assert not output.exists()
+
+
+def test_dense_preflight_rejects_tampered_requested_frame(tmp_path: Path) -> None:
+    config_path = _write_fixture(tmp_path)
+    dense_dir = _write_dense_cache(config_path)
+    frame = dense_dir / "frame000000.npz"
+    frame.write_bytes(frame.read_bytes() + b"tampered")
+    output = tmp_path / "run"
+
+    with pytest.raises(ValueError, match="checksum"):
+        run(_args(config_path, output, num_frames=1))
+
+    assert not output.exists()
+
+
+def test_dense_preflight_binds_benchmark_vocabulary_source_hash(
+    tmp_path: Path,
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    _write_dense_cache(config_path)
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    manifest_path = Path(config["manifest"])
+    benchmark = json.loads(manifest_path.read_text(encoding="utf-8"))
+    benchmark["vocabulary"]["source_sha256"] = "0" * 64
+    manifest_path.write_text(json.dumps(benchmark), encoding="utf-8")
+    output = tmp_path / "run"
+
+    with pytest.raises(ValueError, match="source_sha256"):
+        run(_args(config_path, output, num_frames=1))
+
+    assert not output.exists()
+
+
+def test_dense_preflight_rejects_mismatched_unrequested_source_id(
+    tmp_path: Path,
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    dense_dir = _write_dense_cache(config_path)
+    _rewrite_dense_manifest(
+        dense_dir,
+        lambda manifest: manifest.__setitem__("source_frame_ids", [0, 11]),
+    )
+    output = tmp_path / "run"
+
+    with pytest.raises(ValueError, match="source frame"):
+        run(_args(config_path, output, num_frames=1))
+
+    assert not output.exists()
+
+
+def test_dense_preflight_rejects_symlink_requested_frame(tmp_path: Path) -> None:
+    config_path = _write_fixture(tmp_path)
+    dense_dir = _write_dense_cache(config_path)
+    frame = dense_dir / "frame000000.npz"
+    target = tmp_path / "dense-copy.npz"
+    target.write_bytes(frame.read_bytes())
+    frame.unlink()
+    frame.symlink_to(target)
+    output = tmp_path / "run"
+
+    with pytest.raises(ValueError, match="symlink|regular"):
+        run(_args(config_path, output, num_frames=1))
+
+    assert not output.exists()
+
+
+def test_runtime_config_builds_exact_dense_semantic_config(tmp_path: Path) -> None:
+    config_path = _write_fixture(tmp_path)
+    _write_dense_cache(config_path)
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config.update(
+        {
+            "dense_integration_radius_m": 5.5,
+            "dense_minimum_probability": 0.12,
+            "dense_minimum_quality": 0.23,
+            "dense_entropy_power": 1.5,
+            "dense_view_angle_power": 2.5,
+        }
+    )
+
+    runtime = _runtime_config(config)
+
+    assert runtime.dense_semantics == DenseSemanticConfig(
+        voxel_size_m=runtime.tsdf.voxel_size_m,
+        integration_radius_m=5.5,
+        minimum_probability=0.12,
+        minimum_quality=0.23,
+        entropy_power=1.5,
+        view_angle_power=2.5,
+    )
+
+
+def test_stage2_wires_dense_frames_counters_and_schema3(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    _write_dense_cache(config_path)
+    observed_dense: list[DenseSemanticFrame | None] = []
+    original = runner_module.Oviv2Runtime.process_frame
+
+    def record_dense(self, frame, observations, dense_semantics=None):
+        observed_dense.append(dense_semantics)
+        return original(self, frame, observations, dense_semantics)
+
+    monkeypatch.setattr(runner_module.Oviv2Runtime, "process_frame", record_dense)
+    output = tmp_path / "run"
+
+    run(_args(config_path, output))
+
+    assert [frame.cache_frame_id for frame in observed_dense if frame is not None] == [0, 1]
+    assert [frame.source_frame_id for frame in observed_dense if frame is not None] == [0, 10]
+    timing = json.loads((output / "timing.json").read_text(encoding="utf-8"))
+    assert all(
+        type(record[name]) is int and record[name] >= 0
+        for record in timing["frames"]
+        for name in (
+            "dense_sampled_pixel_count",
+            "dense_valid_pixel_count",
+            "dense_updated_voxel_count",
+        )
+    )
+    assert all(record["dense_sampled_pixel_count"] > 0 for record in timing["frames"])
+    final_snapshot = VoxelMapSnapshot.load(
+        output / "final" / "oviv2_voxel_snapshot.npz"
+    )
+    checkpoint = VoxelMapSnapshot.load(
+        output / "checkpoints" / "latest_voxel_snapshot.npz"
+    )
+    assert final_snapshot.metadata.schema_version == 3
+    assert checkpoint.metadata.schema_version == 3
+    assert final_snapshot.metadata.dense_semantic_provenance is not None
+    assert final_snapshot.metadata.dense_semantic_provenance.model_sha256 == _MODEL_HASH
+
+
+@pytest.mark.parametrize(
+    ("field", "invalid"),
+    [("cache_frame_id", 1), ("source_frame_id", 1)],
+)
+def test_stage2_rejects_dense_frame_internal_id_mismatch(
+    tmp_path: Path,
+    field: str,
+    invalid: int,
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    dense_dir = _write_dense_cache(config_path)
+    path = dense_dir / "frame000000.npz"
+    original = load_dense_frame(path)
+    values = {
+        "cache_frame_id": original.cache_frame_id,
+        "source_frame_id": original.source_frame_id,
+    }
+    values[field] = invalid
+    write_dense_frame(
+        path,
+        DenseSemanticFrame(
+            cache_frame_id=values["cache_frame_id"],
+            source_frame_id=values["source_frame_id"],
+            image_shape=original.image_shape,
+            sample_stride=original.sample_stride,
+            class_count=original.class_count,
+            class_ids=original.class_ids,
+            probabilities=original.probabilities,
+            entropy=original.entropy,
+            margin=original.margin,
+        ),
+    )
+    _rehash_dense_manifest(dense_dir)
+    output = tmp_path / "run"
+
+    with pytest.raises(ValueError, match=field):
+        run(_args(config_path, output, num_frames=1))
+
+
+def test_stage2_skip_evaluation_writes_dual_mesh_and_auditable_manifest(
+    tmp_path: Path,
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    dense_dir = _write_dense_cache(config_path)
+    output = tmp_path / "run"
+
+    manifest = run(_args(config_path, output))
+
+    assert (output / "final" / "oviv2_owner_mesh.ply").is_file()
+    assert (output / "final" / "oviv2_dense_mesh.ply").is_file()
+    assert not (output / "final" / "oviv2_instance_mesh.ply").exists()
+    assert not (output / "evaluation").exists()
+    assert not (output / "evaluation_owner").exists()
+    assert not (output / "evaluation_dense").exists()
+    dense_audit = manifest["dense_semantics"]
+    assert dense_audit["mode"] == "cached_probabilities"
+    assert dense_audit["cache_dir"] == str(dense_dir)
+    assert dense_audit["cache_prefix_sha256"] == dense_audit["provenance"][
+        "cache_prefix_sha256"
+    ]
+    assert dense_audit["provenance"]["model_sha256"] == _MODEL_HASH
+    assert dense_audit["config"] == asdict(_runtime_config(
+        json.loads(config_path.read_text(encoding="utf-8"))
+    ).dense_semantics)
+    timing = json.loads((output / "timing.json").read_text(encoding="utf-8"))
+    assert dense_audit["counters"] == {
+        name: sum(record[name] for record in timing["frames"])
+        for name in (
+            "dense_sampled_pixel_count",
+            "dense_valid_pixel_count",
+            "dense_updated_voxel_count",
+        )
+    }
+    assert manifest["model_weights"]["dense_model_sha256"] == _MODEL_HASH
+    assert manifest["model_weights"]["dense_language_model_sha256"] == "2" * 64
+    assert "final/oviv2_owner_mesh.ply" in manifest["artifact_checksums"]
+    assert "final/oviv2_dense_mesh.ply" in manifest["artifact_checksums"]
+
+
+def test_stage2_evaluates_owner_and_dense_heads_only(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    _write_dense_cache(config_path)
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    Path(config["gt_mesh"]).write_bytes(b"fixture")
+    Path(config["gt_info"]).write_text("{}", encoding="utf-8")
+    calls: list[tuple[str, Path]] = []
+    mesh_semantics: list[object] = []
+    original_derive = runner_module.derive_labeled_mesh
+
+    def record_mesh_head(*args, **kwargs):
+        mesh_semantics.append(kwargs.get("entity_semantics"))
+        return original_derive(*args, **kwargs)
+
+    def fake_evaluate(args):
+        calls.append((args.semantic_head, args.output))
+        args.output.mkdir(parents=True)
+        (args.output / "metrics.json").write_text(
+            json.dumps({"protocol": {"semantic_head": args.semantic_head}}),
+            encoding="utf-8",
+        )
+        return {"protocol": {"semantic_head": args.semantic_head}}
+
+    monkeypatch.setattr(runner_module, "evaluate_snapshot", fake_evaluate)
+    monkeypatch.setattr(runner_module, "derive_labeled_mesh", record_mesh_head)
+    output = tmp_path / "run"
+
+    manifest = run(_args_with_evaluation(config_path, output))
+
+    assert calls == [
+        ("owner_authoritative", output / "evaluation_owner"),
+        ("dense_only", output / "evaluation_dense"),
+    ]
+    assert len(mesh_semantics) == 2
+    assert isinstance(mesh_semantics[0], dict) and mesh_semantics[0]
+    assert mesh_semantics[1] is None
+    assert (output / "evaluation_owner" / "metrics.json").is_file()
+    assert (output / "evaluation_dense" / "metrics.json").is_file()
+    assert not (output / "evaluation").exists()
+    assert "evaluation_owner/metrics.json" in manifest["artifact_checksums"]
+    assert "evaluation_dense/metrics.json" in manifest["artifact_checksums"]
+
+
+def test_stage2_resume_is_byte_and_mtime_idempotent(tmp_path: Path) -> None:
+    config_path = _write_fixture(tmp_path)
+    _write_dense_cache(config_path)
+    output = tmp_path / "run"
+    original = run(_args(config_path, output))
+    before = {
+        path.relative_to(output): (path.read_bytes(), path.stat().st_mtime_ns)
+        for path in output.rglob("*")
+        if path.is_file()
+    }
+
+    resumed = run(_args(config_path, output, "--resume"))
+
+    after = {
+        path.relative_to(output): (path.read_bytes(), path.stat().st_mtime_ns)
+        for path in output.rglob("*")
+        if path.is_file()
+    }
+    assert resumed == original
+    assert after == before
+
+
+def test_stage2_two_frame_final_replay_is_deterministic(tmp_path: Path) -> None:
+    config_path = _write_fixture(tmp_path)
+    _write_dense_cache(config_path)
+    first_output = tmp_path / "first"
+    second_output = tmp_path / "second"
+
+    first = run(_args(config_path, first_output))
+    second = run(_args(config_path, second_output))
+
+    assert first["dense_semantics"] == second["dense_semantics"]
+    semantic_files = (
+        "oviv2_entities.jsonl",
+        "oviv2_owner_mesh.ply",
+        "oviv2_dense_mesh.ply",
+        "oviv2_voxel_snapshot.npz/metadata.json",
+        "oviv2_voxel_snapshot.npz/evidence.npz",
+        "oviv2_voxel_snapshot.npz/ownership.npz",
+        "oviv2_voxel_snapshot.npz/entities.jsonl",
+    )
+    for relative_path in semantic_files:
+        assert (first_output / "final" / relative_path).read_bytes() == (
+            second_output / "final" / relative_path
+        ).read_bytes()
 
 
 def test_preflight_accepts_prefix_of_verified_frontend_manifest(tmp_path: Path) -> None:

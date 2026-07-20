@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 import gzip
 import hashlib
 import json
@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import pickle
 import platform
+import re
 import subprocess
 import sys
 import tempfile
@@ -29,6 +30,12 @@ from scripts.evaluation.evaluate_oviv2_replica import evaluate as evaluate_snaps
 from src.core.data_structures import Frame  # noqa: E402
 from src.datasets.replica import ReplicaRoom0Dataset  # noqa: E402
 from src.oviv2.association import AssociationConfig  # noqa: E402
+from src.oviv2.dense_projection import DenseSemanticConfig  # noqa: E402
+from src.oviv2.dense_semantics import (  # noqa: E402
+    DenseSemanticFrame,
+    DenseSemanticProvenance,
+    load_dense_frame,
+)
 from src.oviv2.entities import EntityRegistryConfig  # noqa: E402
 from src.oviv2.evidence import EvidenceConfig  # noqa: E402
 from src.oviv2.geometry import TsdfConfig  # noqa: E402
@@ -42,6 +49,56 @@ from src.oviv2.tracking import LocalTrackerConfig  # noqa: E402
 SCENE_CONFIG_FIELDS = frozenset(
     {"scene", "dataset_root", "frontend_cache_dir", "gt_mesh", "gt_info", "algorithm_hash"}
 )
+_DENSE_METHOD = "OVIV2-dense-semantic-cache"
+_DENSE_MANIFEST_NAME = "dense_manifest.json"
+_SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
+_DENSE_MANIFEST_KEYS = frozenset(
+    {
+        "schema_version",
+        "method",
+        "scene",
+        "frame_count",
+        "source_frame_ids",
+        "image_shape",
+        "sample_stride",
+        "top_k",
+        "class_count",
+        "vocabulary_sha256",
+        "provenance",
+        "cache_files_sha256",
+    }
+)
+_DENSE_PROVENANCE_KEYS = frozenset(
+    {
+        "backend",
+        "source_commit",
+        "radio_commit",
+        "model_id",
+        "model_sha256",
+        "auxiliary_model_sha256",
+        "language_model_id",
+        "language_model_revision",
+        "language_model_sha256",
+        "vocabulary_sha256",
+        "prompt_sha256",
+        "inference_config_sha256",
+        "cache_prefix_sha256",
+    }
+)
+
+
+@dataclass(frozen=True)
+class _DenseCachePreflight:
+    cache_dir: Path
+    frame_count: int
+    source_frame_ids: tuple[int, ...]
+    image_shape: tuple[int, int]
+    sample_stride: int
+    top_k: int
+    class_count: int
+    vocabulary_sha256: str
+    provenance: DenseSemanticProvenance
+    cache_files_sha256: dict[str, str]
 
 
 def _sha256(path: Path) -> str:
@@ -245,11 +302,227 @@ def _verify_resume(output: Path, config_hash: str, requested_frames: int) -> dic
     return manifest
 
 
+def _strict_integer(value: object, name: str, *, positive: bool) -> int:
+    if type(value) is not int:
+        qualifier = "positive" if positive else "non-negative"
+        raise ValueError(f"{name} must be a {qualifier} integer")
+    normalized = int(value)
+    if (positive and normalized <= 0) or (not positive and normalized < 0):
+        qualifier = "positive" if positive else "non-negative"
+        raise ValueError(f"{name} must be a {qualifier} integer")
+    if normalized > int(np.iinfo(np.int64).max):
+        raise ValueError(f"{name} must fit in signed int64")
+    return normalized
+
+
+def _dense_cache_path(value: object, name: str) -> Path:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{name} must be a non-empty path string")
+    path = Path(value).expanduser()
+    return path.absolute() if path.is_absolute() else (REPO_ROOT / path).absolute()
+
+
+def _dense_cache_prefix(cache_hashes: dict[str, str]) -> str:
+    digest = hashlib.sha256()
+    expected_names = [f"frame{index:06d}.npz" for index in range(len(cache_hashes))]
+    if list(cache_hashes) != expected_names:
+        raise ValueError("dense cache checksum keys are not canonical")
+    for cache_index, name in enumerate(expected_names):
+        checksum = cache_hashes[name]
+        if not isinstance(checksum, str) or _SHA256_PATTERN.fullmatch(checksum) is None:
+            raise ValueError(f"dense cache checksum is invalid: {name}")
+        digest.update(cache_index.to_bytes(8, "little", signed=False))
+        digest.update(bytes.fromhex(checksum))
+    return digest.hexdigest()
+
+
+def _preflight_dense_cache(
+    config: dict[str, Any],
+    benchmark: dict[str, Any],
+    dataset: ReplicaRoom0Dataset,
+    source_ids: list[int],
+    num_frames: int,
+) -> _DenseCachePreflight | None:
+    mode = config.get("dense_semantic_mode", "disabled")
+    if mode == "disabled":
+        return None
+    if mode != "cached_probabilities":
+        raise ValueError(
+            "dense_semantic_mode must be disabled or cached_probabilities"
+        )
+    if "dense_cache_dir" not in config:
+        raise ValueError("dense_cache_dir is required for cached_probabilities")
+    cache_dir = _dense_cache_path(config["dense_cache_dir"], "dense_cache_dir")
+    if cache_dir.is_symlink() or not cache_dir.is_dir():
+        raise ValueError("dense_cache_dir must be a regular non-symlink directory")
+    manifest_path = cache_dir / _DENSE_MANIFEST_NAME
+    if not manifest_path.exists():
+        raise FileNotFoundError(manifest_path)
+    if manifest_path.is_symlink() or not manifest_path.is_file():
+        raise ValueError("dense_manifest must be a regular non-symlink file")
+    manifest = _load_json(manifest_path)
+    if set(manifest) != _DENSE_MANIFEST_KEYS:
+        raise ValueError("dense manifest keys contain unsupported or missing entries")
+    if type(manifest.get("schema_version")) is not int or manifest["schema_version"] != 1:
+        raise ValueError("dense manifest schema_version must be 1")
+    if manifest.get("method") != _DENSE_METHOD:
+        raise ValueError("dense manifest method mismatch")
+    if manifest.get("scene") != config["scene"]:
+        raise ValueError("dense manifest scene mismatch")
+    frame_count = _strict_integer(
+        manifest.get("frame_count"),
+        "dense manifest frame_count",
+        positive=True,
+    )
+    if frame_count < num_frames:
+        raise ValueError("dense manifest does not cover the requested frame prefix")
+    if frame_count > len(dataset):
+        raise ValueError("dense manifest frame_count exceeds the Replica dataset")
+    recorded_source_ids = manifest.get("source_frame_ids")
+    if (
+        not isinstance(recorded_source_ids, list)
+        or len(recorded_source_ids) != frame_count
+    ):
+        raise ValueError("dense manifest source_frame_ids length mismatch")
+    normalized_source_ids = tuple(
+        _strict_integer(value, "dense manifest source_frame_id", positive=False)
+        for value in recorded_source_ids
+    )
+    expected_source_ids = tuple(
+        int(config.get("source_start", 0))
+        + cache_index * int(config.get("source_stride", 10))
+        for cache_index in range(frame_count)
+    )
+    if normalized_source_ids != expected_source_ids:
+        raise ValueError("dense manifest source frame IDs mismatch")
+    if normalized_source_ids[:num_frames] != tuple(source_ids):
+        raise ValueError("dense manifest requested source frame prefix mismatch")
+    raw_shape = manifest.get("image_shape")
+    if not isinstance(raw_shape, list) or len(raw_shape) != 2:
+        raise ValueError("dense manifest image_shape must be [height, width]")
+    image_shape = tuple(
+        _strict_integer(value, "dense manifest image_shape", positive=True)
+        for value in raw_shape
+    )
+    expected_shape = (dataset.intrinsics.height, dataset.intrinsics.width)
+    if image_shape != expected_shape:
+        raise ValueError("dense manifest image_shape does not match Replica dataset")
+    vocabulary = benchmark["vocabulary"]
+    classes = vocabulary["classes"]
+    class_count = _strict_integer(
+        manifest.get("class_count"),
+        "dense manifest class_count",
+        positive=True,
+    )
+    if class_count != len(classes):
+        raise ValueError("dense manifest class_count does not match benchmark vocabulary")
+    sample_stride = _strict_integer(
+        manifest.get("sample_stride"),
+        "dense manifest sample_stride",
+        positive=True,
+    )
+    top_k = _strict_integer(manifest.get("top_k"), "dense manifest top_k", positive=True)
+    if top_k > class_count:
+        raise ValueError("dense manifest top_k exceeds class_count")
+
+    source_path = vocabulary.get("source_path")
+    vocabulary_path = _dense_cache_path(
+        source_path,
+        "benchmark vocabulary.source_path",
+    )
+    if vocabulary_path.is_symlink() or not vocabulary_path.is_file():
+        raise ValueError("benchmark vocabulary source must be a regular non-symlink file")
+    raw_vocabulary_sha256 = _sha256(vocabulary_path)
+    benchmark_vocabulary_sha256 = vocabulary.get("source_sha256")
+    if (
+        not isinstance(benchmark_vocabulary_sha256, str)
+        or _SHA256_PATTERN.fullmatch(benchmark_vocabulary_sha256) is None
+        or benchmark_vocabulary_sha256 != raw_vocabulary_sha256
+    ):
+        raise ValueError("benchmark vocabulary source_sha256 mismatch")
+    vocabulary_sha256 = manifest.get("vocabulary_sha256")
+    if (
+        not isinstance(vocabulary_sha256, str)
+        or _SHA256_PATTERN.fullmatch(vocabulary_sha256) is None
+        or vocabulary_sha256 != benchmark_vocabulary_sha256
+    ):
+        raise ValueError("dense manifest vocabulary_sha256 mismatch")
+    provenance_payload = manifest.get("provenance")
+    if (
+        not isinstance(provenance_payload, dict)
+        or set(provenance_payload) != _DENSE_PROVENANCE_KEYS
+    ):
+        raise ValueError("dense manifest provenance keys mismatch")
+    provenance = DenseSemanticProvenance(**provenance_payload)
+    if provenance.vocabulary_sha256 != vocabulary_sha256:
+        raise ValueError("dense manifest provenance vocabulary mismatch")
+    cache_hashes = manifest.get("cache_files_sha256")
+    if not isinstance(cache_hashes, dict) or len(cache_hashes) != frame_count:
+        raise ValueError("dense cache checksum keys are missing or extra")
+    prefix_sha256 = _dense_cache_prefix(cache_hashes)
+    if provenance.cache_prefix_sha256 != prefix_sha256:
+        raise ValueError("dense manifest provenance cache prefix mismatch")
+    for cache_index in range(num_frames):
+        name = f"frame{cache_index:06d}.npz"
+        path = cache_dir / name
+        if path.is_symlink() or not path.is_file():
+            raise ValueError(f"dense cache {name} must be a regular non-symlink file")
+        if _sha256(path) != cache_hashes[name]:
+            raise ValueError(f"dense cache checksum mismatch: {name}")
+    return _DenseCachePreflight(
+        cache_dir=cache_dir,
+        frame_count=frame_count,
+        source_frame_ids=normalized_source_ids,
+        image_shape=image_shape,
+        sample_stride=sample_stride,
+        top_k=top_k,
+        class_count=class_count,
+        vocabulary_sha256=vocabulary_sha256,
+        provenance=provenance,
+        cache_files_sha256=dict(cache_hashes),
+    )
+
+
+def _load_dense_cache_frame(
+    dense_cache: _DenseCachePreflight,
+    cache_index: int,
+    source_frame_id: int,
+) -> DenseSemanticFrame:
+    name = f"frame{cache_index:06d}.npz"
+    path = dense_cache.cache_dir / name
+    if path.is_symlink() or not path.is_file():
+        raise ValueError(f"dense cache {name} must remain a regular non-symlink file")
+    dense = load_dense_frame(
+        path,
+        expected_sha256=dense_cache.cache_files_sha256[name],
+    )
+    if dense.cache_frame_id != cache_index:
+        raise ValueError(f"dense cache_frame_id mismatch: {name}")
+    if dense.source_frame_id != source_frame_id:
+        raise ValueError(f"dense source_frame_id mismatch: {name}")
+    if dense.image_shape != dense_cache.image_shape:
+        raise ValueError(f"dense image_shape mismatch: {name}")
+    if dense.sample_stride != dense_cache.sample_stride:
+        raise ValueError(f"dense sample_stride mismatch: {name}")
+    if dense.class_count != dense_cache.class_count:
+        raise ValueError(f"dense class_count mismatch: {name}")
+    if dense.class_ids.shape[2] != dense_cache.top_k:
+        raise ValueError(f"dense top_k mismatch: {name}")
+    return dense
+
+
 def _preflight(
     config: dict[str, Any],
     num_frames: int,
     skip_evaluation: bool,
-) -> tuple[ReplicaRoom0Dataset, dict[str, Any], list[int], str, dict[str, Any] | None]:
+) -> tuple[
+    ReplicaRoom0Dataset,
+    dict[str, Any],
+    list[int],
+    str,
+    dict[str, Any] | None,
+    _DenseCachePreflight | None,
+]:
     required = ("scene", "dataset_root", "frontend_cache_dir", "manifest")
     missing = [name for name in required if not config.get(name)]
     if missing:
@@ -311,7 +584,21 @@ def _preflight(
             path = Path(config.get(name, ""))
             if not path.is_file():
                 raise FileNotFoundError(path)
-    return dataset, benchmark, source_ids, frontend_digest.hexdigest(), frontend_manifest
+    dense_cache = _preflight_dense_cache(
+        config,
+        benchmark,
+        dataset,
+        source_ids,
+        num_frames,
+    )
+    return (
+        dataset,
+        benchmark,
+        source_ids,
+        frontend_digest.hexdigest(),
+        frontend_manifest,
+        dense_cache,
+    )
 
 
 def _runtime_config(config: dict[str, Any]) -> Oviv2RuntimeConfig:
@@ -322,6 +609,22 @@ def _runtime_config(config: dict[str, Any]) -> Oviv2RuntimeConfig:
     voxel_size = float(config.get("voxel_size_m", 0.05))
     block_resolution = int(config.get("block_resolution", 8))
     source_stride = int(config.get("source_stride", 10))
+    dense_mode = config.get("dense_semantic_mode", "disabled")
+    if dense_mode == "disabled":
+        dense_semantics = None
+    elif dense_mode == "cached_probabilities":
+        dense_semantics = DenseSemanticConfig(
+            voxel_size_m=voxel_size,
+            integration_radius_m=float(config.get("dense_integration_radius_m", 6.0)),
+            minimum_probability=float(config.get("dense_minimum_probability", 0.01)),
+            minimum_quality=float(config.get("dense_minimum_quality", 0.01)),
+            entropy_power=float(config.get("dense_entropy_power", 1.0)),
+            view_angle_power=float(config.get("dense_view_angle_power", 1.0)),
+        )
+    else:
+        raise ValueError(
+            "dense_semantic_mode must be disabled or cached_probabilities"
+        )
     association_keys = {
         "min_directed_overlap": "association_min_directed_overlap",
         "bounds_expansion_m": "association_bounds_expansion_m",
@@ -382,6 +685,7 @@ def _runtime_config(config: dict[str, Any]) -> Oviv2RuntimeConfig:
             config.get("visibility_depth_tolerance_m", 0.1)
         ),
         absence_negative_support=float(config.get("absence_negative_support", 1.0)),
+        dense_semantics=dense_semantics,
     )
 
 
@@ -421,7 +725,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise FileExistsError(f"output already exists: {output}")
 
     starting_dirty_digest = _dirty_digest()
-    dataset, benchmark, source_ids, frontend_hash, frontend_manifest = _preflight(
+    (
+        dataset,
+        benchmark,
+        source_ids,
+        frontend_hash,
+        frontend_manifest,
+        dense_cache,
+    ) = _preflight(
         config,
         requested_frames,
         args.skip_evaluation,
@@ -454,7 +765,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         voxel_size_m=runtime_config.tsdf.voxel_size_m,
     )
     structure_frontend = DepthStructureFrontend(vocabulary, structure_config)
-    runtime = Oviv2Runtime(str(config["scene"]), runtime_config)
+    runtime = Oviv2Runtime(
+        str(config["scene"]),
+        runtime_config,
+        dense_semantic_provenance=(
+            dense_cache.provenance if dense_cache is not None else None
+        ),
+    )
     output.mkdir(parents=True)
     checkpoints = output / "checkpoints"
     final = output / "final"
@@ -483,50 +800,88 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             object_observations=object_observations,
         )
         observations = (*object_observations, *structure_observations)
-        result = runtime.process_frame(frame, observations)
-        frame_records.append(
-            {
-                "cache_frame_id": cache_index,
-                "source_frame_id": source_frame_id,
-                "revision": result.revision,
-                "observation_count": result.observation_count,
-                "object_observation_count": len(object_observations),
-                "structure_observation_count": len(structure_observations),
-                "accepted_entity_count": len(result.accepted_entity_ids),
-                "matched_entity_count": result.matched_entity_count,
-                "new_entity_count": result.new_entity_count,
-                "association_conflict_count": result.association_conflict_count,
-                "revoked_edge_count": result.revoked_edge_count,
-                "elapsed_sec": time.perf_counter() - frame_started,
-            }
+        dense_frame = (
+            _load_dense_cache_frame(dense_cache, cache_index, source_frame_id)
+            if dense_cache is not None
+            else None
         )
+        result = runtime.process_frame(frame, observations, dense_frame)
+        frame_record = {
+            "cache_frame_id": cache_index,
+            "source_frame_id": source_frame_id,
+            "revision": result.revision,
+            "observation_count": result.observation_count,
+            "object_observation_count": len(object_observations),
+            "structure_observation_count": len(structure_observations),
+            "accepted_entity_count": len(result.accepted_entity_ids),
+            "matched_entity_count": result.matched_entity_count,
+            "new_entity_count": result.new_entity_count,
+            "association_conflict_count": result.association_conflict_count,
+            "revoked_edge_count": result.revoked_edge_count,
+            "elapsed_sec": time.perf_counter() - frame_started,
+        }
+        if dense_cache is not None:
+            frame_record.update(
+                {
+                    "dense_sampled_pixel_count": result.dense_sampled_pixel_count,
+                    "dense_valid_pixel_count": result.dense_valid_pixel_count,
+                    "dense_updated_voxel_count": result.dense_updated_voxel_count,
+                }
+            )
+        frame_records.append(frame_record)
         if (cache_index + 1) % checkpoint_interval == 0 or cache_index + 1 == requested_frames:
             runtime.commit(checkpoints / "latest_voxel_snapshot.npz")
             runtime.registry.save(checkpoints / "latest_entities.jsonl")
 
     snapshot = runtime.commit(final / "oviv2_voxel_snapshot.npz")
     runtime.registry.save(final / "oviv2_entities.jsonl")
-    mesh = derive_labeled_mesh(
-        snapshot.geometry,
-        snapshot.evidence,
-        snapshot.ownership,
-        entity_semantics=runtime.registry.semantic_labels(),
-    )
-    write_labeled_mesh(final / "oviv2_instance_mesh.ply", mesh)
+    if dense_cache is None:
+        mesh = derive_labeled_mesh(
+            snapshot.geometry,
+            snapshot.evidence,
+            snapshot.ownership,
+            entity_semantics=runtime.registry.semantic_labels(),
+        )
+        write_labeled_mesh(final / "oviv2_instance_mesh.ply", mesh)
+    else:
+        owner_mesh = derive_labeled_mesh(
+            snapshot.geometry,
+            snapshot.evidence,
+            snapshot.ownership,
+            entity_semantics=runtime.registry.semantic_labels(),
+        )
+        dense_mesh = derive_labeled_mesh(
+            snapshot.geometry,
+            snapshot.evidence,
+            snapshot.ownership,
+            entity_semantics=None,
+        )
+        write_labeled_mesh(final / "oviv2_owner_mesh.ply", owner_mesh)
+        write_labeled_mesh(final / "oviv2_dense_mesh.ply", dense_mesh)
     mapping_elapsed = time.perf_counter() - started
 
     if not args.skip_evaluation:
-        evaluation_args = argparse.Namespace(
-            snapshot=final / "oviv2_voxel_snapshot.npz",
-            entity_info=final / "oviv2_entities.jsonl",
-            gt_mesh=Path(config["gt_mesh"]),
-            gt_info=Path(config["gt_info"]),
-            manifest=Path(config["manifest"]),
-            scene=str(config["scene"]),
-            output=output / "evaluation",
-            min_instance_vertices=int(config.get("min_instance_vertices", 100)),
+        evaluation_targets = (
+            (("owner_authoritative", output / "evaluation"),)
+            if dense_cache is None
+            else (
+                ("owner_authoritative", output / "evaluation_owner"),
+                ("dense_only", output / "evaluation_dense"),
+            )
         )
-        evaluate_snapshot(evaluation_args)
+        for semantic_head, evaluation_output in evaluation_targets:
+            evaluation_args = argparse.Namespace(
+                snapshot=final / "oviv2_voxel_snapshot.npz",
+                entity_info=final / "oviv2_entities.jsonl",
+                gt_mesh=Path(config["gt_mesh"]),
+                gt_info=Path(config["gt_info"]),
+                manifest=Path(config["manifest"]),
+                scene=str(config["scene"]),
+                output=evaluation_output,
+                min_instance_vertices=int(config.get("min_instance_vertices", 100)),
+                semantic_head=semantic_head,
+            )
+            evaluate_snapshot(evaluation_args)
 
     timing = {
         "started_unix_sec": started_wall,
@@ -540,6 +895,45 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "classes": list(vocabulary.classes),
         "aliases": dict(sorted(vocabulary.aliases.items())),
     }
+    model_weights = {"frozen_frontend_cache_sha256": frontend_hash}
+    dense_semantics_audit: dict[str, Any] | None = None
+    if dense_cache is not None:
+        model_weights.update(
+            {
+                "dense_model_sha256": dense_cache.provenance.model_sha256,
+                "dense_auxiliary_model_sha256": (
+                    dense_cache.provenance.auxiliary_model_sha256
+                ),
+                "dense_language_model_sha256": (
+                    dense_cache.provenance.language_model_sha256
+                ),
+            }
+        )
+        counter_names = (
+            "dense_sampled_pixel_count",
+            "dense_valid_pixel_count",
+            "dense_updated_voxel_count",
+        )
+        dense_semantics_audit = {
+            "mode": "cached_probabilities",
+            "cache_dir": str(dense_cache.cache_dir),
+            "manifest_sha256": _sha256(
+                dense_cache.cache_dir / _DENSE_MANIFEST_NAME
+            ),
+            "cache_prefix_sha256": dense_cache.provenance.cache_prefix_sha256,
+            "cache_files_sha256": {
+                f"frame{cache_index:06d}.npz": dense_cache.cache_files_sha256[
+                    f"frame{cache_index:06d}.npz"
+                ]
+                for cache_index in range(requested_frames)
+            },
+            "provenance": asdict(dense_cache.provenance),
+            "config": asdict(runtime_config.dense_semantics),
+            "counters": {
+                name: sum(record[name] for record in frame_records)
+                for name in counter_names
+            },
+        }
     run_manifest = {
         "schema_version": 1,
         "method": "OVIV2",
@@ -553,7 +947,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "benchmark_manifest_path": str(Path(config["manifest"]).resolve()),
         "benchmark_manifest_hash": _sha256(Path(config["manifest"])),
         "vocabulary_hash": _json_hash(vocabulary_payload),
-        "model_weights": {"frozen_frontend_cache_sha256": frontend_hash},
+        "model_weights": model_weights,
         "frontend_manifest_hash": (
             _sha256(Path(config["frontend_cache_dir"]) / "frontend_manifest.json")
             if frontend_manifest is not None
@@ -607,6 +1001,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "geometry_block_count": runtime.geometry.active_block_count,
         "artifact_checksums": _artifact_checksums(output),
     }
+    if dense_semantics_audit is not None:
+        run_manifest["dense_semantics"] = dense_semantics_audit
     _atomic_json(output / "run_manifest.json", run_manifest)
     return run_manifest
 
