@@ -28,6 +28,9 @@ from src.oviv2.snapshot import VoxelMapSnapshot
 _ABSENT = object()
 _PRECISION_CONFIG = Path("configs/oviv2_replica_room0_precision_stage1.json")
 _STAGE2_CONFIG = Path("configs/oviv2_replica_room0_precision_stage2_radseg.json")
+_SELECTED_STAGE2_CONFIG = Path(
+    "configs/oviv2_replica_room0_precision_stage2_selected.json"
+)
 _MODEL_HASH = "c" * 64
 _DENSE_MANIFEST_KEYS = {
     "schema_version",
@@ -398,6 +401,24 @@ def test_stage2_config_is_stage1_plus_only_frozen_dense_settings() -> None:
         "dense_minimum_quality": 0.01,
         "dense_entropy_power": 1.0,
         "dense_view_angle_power": 1.0,
+    }
+
+
+def test_selected_stage2_config_is_stage1_plus_frozen_winning_dense_settings() -> None:
+    stage1 = json.loads(_PRECISION_CONFIG.read_text(encoding="utf-8"))
+    selected = json.loads(_SELECTED_STAGE2_CONFIG.read_text(encoding="utf-8"))
+
+    assert selected == {
+        **stage1,
+        "dense_semantic_mode": "cached_probabilities",
+        "dense_cache_dir": (
+            "/home/ww/oviovo_dense_cache/room0_radseg_b_sam_s4_k4_200f"
+        ),
+        "dense_integration_radius_m": 6.0,
+        "dense_minimum_probability": 0.01,
+        "dense_minimum_quality": 0.01,
+        "dense_entropy_power": 16.0,
+        "dense_view_angle_power": 0.0,
     }
 
 
