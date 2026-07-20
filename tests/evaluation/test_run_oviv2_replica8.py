@@ -7,7 +7,12 @@ import sys
 
 import pytest
 
-from scripts.run_oviv2_replica8 import REPLICA8_SCENES, build_scene_specs, run_replica8
+from scripts.run_oviv2_replica8 import (
+    REPLICA8_SCENES,
+    build_scene_specs,
+    materialize_scene_configs,
+    run_replica8,
+)
 
 
 def test_replica8_cli_direct_execution_resolves_repository_imports() -> None:
@@ -90,6 +95,42 @@ def test_replica8_specs_vary_only_scene_paths_and_share_algorithm_hash(tmp_path:
     assert specs[-1].config["gt_mesh"].endswith("office_4/habitat/mesh_semantic.ply")
 
 
+def test_replica8_stage3_specs_expand_scene_specific_dense_cache_paths(
+    tmp_path: Path,
+) -> None:
+    config_path = _fixture(tmp_path)
+    batch_config = json.loads(config_path.read_text(encoding="utf-8"))
+    base_path = Path(batch_config["base_runner_config"])
+    base = json.loads(base_path.read_text(encoding="utf-8"))
+    base.update(
+        {
+            "dense_semantic_mode": "cached_probabilities",
+            "dense_cache_dir": "/old/dense-cache",
+            "fusion_semantic_mode": "uncertainty_linear",
+            "fusion_entity_weight_scale": 0.5,
+        }
+    )
+    _write_json(base_path, base)
+    batch_config.update(
+        {
+            "dense_cache_root": str(tmp_path / "dense"),
+            "dense_cache_template": "{scene}_radseg_b_sam_s4_k4_200f",
+            "semantic_head": "fused_uncertainty",
+        }
+    )
+    _write_json(config_path, batch_config)
+
+    specs = build_scene_specs(config_path)
+
+    assert len({spec.algorithm_hash for spec in specs}) == 1
+    assert specs[0].config["dense_cache_dir"].endswith(
+        "room0_radseg_b_sam_s4_k4_200f"
+    )
+    assert specs[-1].config["dense_cache_dir"].endswith(
+        "office4_radseg_b_sam_s4_k4_200f"
+    )
+
+
 def test_replica8_runner_records_all_scene_manifests(tmp_path: Path) -> None:
     config_path = _fixture(tmp_path)
     output = tmp_path / "output"
@@ -114,4 +155,20 @@ def test_replica8_runner_records_all_scene_manifests(tmp_path: Path) -> None:
     assert [call["scene"] for call in calls] == list(REPLICA8_SCENES)
     assert len({call["algorithm_hash"] for call in calls}) == 1
     assert [item["scene"] for item in batch["scenes"]] == list(REPLICA8_SCENES)
+    assert batch["semantic_head"] == "owner_authoritative"
     assert (output / "batch_manifest.json").is_file()
+
+
+def test_materialize_only_writes_exact_scene_configs_without_running_maps(
+    tmp_path: Path,
+) -> None:
+    config_path = _fixture(tmp_path)
+    output = tmp_path / "output"
+
+    specs = materialize_scene_configs(config_path, output)
+
+    assert tuple(spec.scene for spec in specs) == REPLICA8_SCENES
+    assert sorted(path.stem for path in (output / "scene_configs").glob("*.json")) == sorted(
+        REPLICA8_SCENES
+    )
+    assert not (output / "batch_manifest.json").exists()

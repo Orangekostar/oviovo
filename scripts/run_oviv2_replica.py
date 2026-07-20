@@ -48,7 +48,15 @@ from src.oviv2.tracking import LocalTrackerConfig  # noqa: E402
 
 
 SCENE_CONFIG_FIELDS = frozenset(
-    {"scene", "dataset_root", "frontend_cache_dir", "gt_mesh", "gt_info", "algorithm_hash"}
+    {
+        "scene",
+        "dataset_root",
+        "frontend_cache_dir",
+        "gt_mesh",
+        "gt_info",
+        "dense_cache_dir",
+        "algorithm_hash",
+    }
 )
 _DENSE_METHOD = "OVIV2-dense-semantic-cache"
 _DENSE_MANIFEST_NAME = "dense_manifest.json"

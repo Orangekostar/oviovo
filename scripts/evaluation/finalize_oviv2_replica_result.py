@@ -17,6 +17,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.evaluation.evaluate_oviv2_replica import evaluate
+from src.oviv2.semantic_fusion import SemanticFusionConfig
 from src.evaluation.oviv2_result import (
     REPLICA8_SCENES,
     aggregate_oviv2_replica,
@@ -79,6 +80,8 @@ def _repeat_scene_evaluation(
     scene_root: Path,
     scene_config: dict[str, Any],
     repeat_root: Path,
+    semantic_head: str,
+    fusion_entity_weight_scale: float,
 ) -> dict[str, str]:
     if not repeat_root.exists():
         evaluate(
@@ -91,9 +94,42 @@ def _repeat_scene_evaluation(
                 scene=scene,
                 output=repeat_root,
                 min_instance_vertices=int(scene_config.get("min_instance_vertices", 100)),
+                semantic_head=semantic_head,
+                fusion_entity_weight_scale=fusion_entity_weight_scale,
             )
         )
-    return verify_byte_identical_evaluation_dirs(scene_root / "evaluation", repeat_root)
+    _, evaluation_dir, _ = _evaluation_contract(
+        {"semantic_head": semantic_head},
+        scene_config,
+    )
+    return verify_byte_identical_evaluation_dirs(scene_root / evaluation_dir, repeat_root)
+
+
+def _evaluation_contract(
+    batch_config: dict[str, Any],
+    scene_config: dict[str, Any],
+) -> tuple[str, str, float]:
+    semantic_head = batch_config.get("semantic_head", "owner_authoritative")
+    dense_enabled = (
+        scene_config.get("dense_semantic_mode", "disabled")
+        == "cached_probabilities"
+    )
+    if semantic_head == "owner_authoritative":
+        return semantic_head, "evaluation_owner" if dense_enabled else "evaluation", 0.5
+    if semantic_head == "dense_only":
+        if not dense_enabled:
+            raise ValueError("dense_only semantic_head requires cached dense semantics")
+        return semantic_head, "evaluation_dense", 0.5
+    if semantic_head == "fused_uncertainty":
+        if not dense_enabled:
+            raise ValueError("fused semantic_head requires cached dense semantics")
+        if scene_config.get("fusion_semantic_mode") != "uncertainty_linear":
+            raise ValueError("fused semantic_head requires uncertainty_linear fusion")
+        fusion = SemanticFusionConfig(
+            entity_weight_scale=scene_config.get("fusion_entity_weight_scale", 0.5)
+        )
+        return semantic_head, "evaluation_fused", fusion.entity_weight_scale
+    raise ValueError("semantic_head is unsupported")
 
 
 def _token_bindings() -> list[dict[str, Any]]:
@@ -118,6 +154,12 @@ def finalize(batch_root: str | Path, output: str | Path) -> dict[str, Any]:
     batch = _load_json(batch_root / "batch_manifest.json")
     if batch.get("method") != "OVIV2" or tuple(batch.get("scene_ids", ())) != REPLICA8_SCENES:
         raise ValueError("batch manifest is not the exact OVIV2 Replica-8 contract")
+    batch_config = _load_json(Path(batch["config_path"]))
+    if batch.get("semantic_head", "owner_authoritative") != batch_config.get(
+        "semantic_head",
+        "owner_authoritative",
+    ):
+        raise ValueError("batch semantic_head does not match its frozen config")
 
     scene_runs: dict[str, dict[str, Any]] = {}
     scene_metrics: dict[str, dict[str, Any]] = {}
@@ -143,12 +185,16 @@ def finalize(batch_root: str | Path, output: str | Path) -> dict[str, Any]:
         scene_runs[scene] = run
         repository_commits.add(str(run.get("repository_commit", "")))
         hardware[scene] = dict(run.get("hardware", {}))
-        metrics_path = scene_root / "evaluation" / "metrics.json"
-        scene_metrics[scene] = _load_json(metrics_path)
         timing_path = scene_root / "timing.json"
         runtimes[scene] = _load_json(timing_path)
         scene_config = _load_json(batch_root / "scene_configs" / f"{scene}.json")
         scene_configs[scene] = scene_config
+        semantic_head, evaluation_dir, fusion_scale = _evaluation_contract(
+            batch_config,
+            scene_config,
+        )
+        metrics_path = scene_root / evaluation_dir / "metrics.json"
+        scene_metrics[scene] = _load_json(metrics_path)
         frontend_manifest_path = Path(scene_config["frontend_cache_dir"]) / "frontend_manifest.json"
         if _sha256(frontend_manifest_path) != run.get("frontend_manifest_hash"):
             raise ValueError(f"frontend manifest hash mismatch: {scene}")
@@ -160,6 +206,8 @@ def finalize(batch_root: str | Path, output: str | Path) -> dict[str, Any]:
             scene_root,
             scene_config,
             repeat_root,
+            semantic_head,
+            fusion_scale,
         )
         raw_outputs.extend(
             (
@@ -181,7 +229,7 @@ def finalize(batch_root: str | Path, output: str | Path) -> dict[str, Any]:
     metrics = aggregate_oviv2_replica(scene_metrics)
     config_path = Path(batch["config_path"])
     benchmark_path = _resolve_repo_path(scene_configs["room0"]["manifest"])
-    frontend_config = _load_json(config_path)["frontend"]
+    frontend_config = batch_config["frontend"]
     provenance = frontend_provenance["room0"]
     weight_fields = (
         ("yolo_world", "yolo_model_path", "yolo_model"),
@@ -198,7 +246,11 @@ def finalize(batch_root: str | Path, output: str | Path) -> dict[str, Any]:
 
     result = {
         "status": "VERIFIED",
-        "run_id": "oviv2-replica8-20260719-s10-200f",
+        "run_id": (
+            "oviv2-replica8-20260720-stage3-s10-200f"
+            if batch_config.get("semantic_head") == "fused_uncertainty"
+            else "oviv2-replica8-20260719-s10-200f"
+        ),
         "method": {"key": "OVIV2", "display_label": "OVIV2", "mode": "online"},
         "upstream_commit": repository_commits.pop(),
         "adapter_commit": scene_runs["room0"]["repository_commit"],
@@ -220,6 +272,7 @@ def finalize(batch_root: str | Path, output: str | Path) -> dict[str, Any]:
         "raw_outputs": raw_outputs,
         "repeated_evaluation_sha256": repeat_hashes,
         "protocol_deviations": [],
+        "semantic_head": batch_config.get("semantic_head", "owner_authoritative"),
         "provenance_contract": contract,
         "metrics": metrics,
         "token_bindings": _token_bindings(),

@@ -97,6 +97,20 @@ def build_scene_specs(config_path: str | Path) -> tuple[SceneSpec, ...]:
     if not str(gt_root):
         raise ValueError("ground_truth_root is required")
     variant_template = str(config["frontend"]["gsa_variant_template"])
+    dense_cache_root_value = config.get("dense_cache_root")
+    dense_cache_template_value = config.get("dense_cache_template")
+    if (dense_cache_root_value is None) != (dense_cache_template_value is None):
+        raise ValueError("dense_cache_root and dense_cache_template must be specified together")
+    dense_cache_root = (
+        Path(str(dense_cache_root_value)).expanduser().resolve()
+        if dense_cache_root_value is not None
+        else None
+    )
+    dense_cache_template = (
+        str(dense_cache_template_value)
+        if dense_cache_template_value is not None
+        else None
+    )
 
     specs: list[SceneSpec] = []
     for item in scene_items:
@@ -116,12 +130,32 @@ def build_scene_specs(config_path: str | Path) -> tuple[SceneSpec, ...]:
                 "gt_info": str(gt_root / gt_scene / "habitat" / "info_semantic.json"),
             }
         )
+        if dense_cache_root is not None:
+            assert dense_cache_template is not None
+            cache_relative = Path(dense_cache_template.format(scene=scene))
+            if cache_relative.is_absolute() or ".." in cache_relative.parts:
+                raise ValueError("dense_cache_template must produce a relative child path")
+            scene_config["dense_cache_dir"] = str(dense_cache_root / cache_relative)
         frozen_hash = algorithm_hash(scene_config)
         scene_config["algorithm_hash"] = frozen_hash
         specs.append(SceneSpec(scene, scene_config, frozen_hash))
     if len({spec.algorithm_hash for spec in specs}) != 1:
         raise ValueError("scene expansion changed the frozen OVIV2 algorithm hash")
     return tuple(specs)
+
+
+def materialize_scene_configs(
+    config_path: str | Path,
+    output: str | Path,
+) -> tuple[SceneSpec, ...]:
+    specs = build_scene_specs(config_path)
+    output = Path(output).resolve()
+    output.mkdir(parents=True, exist_ok=True)
+    config_dir = output / "scene_configs"
+    config_dir.mkdir(exist_ok=True)
+    for spec in specs:
+        _atomic_json(config_dir / f"{spec.scene}.json", spec.config)
+    return specs
 
 
 def run_replica8(
@@ -133,14 +167,19 @@ def run_replica8(
 ) -> dict[str, Any]:
     config_path = Path(config_path).resolve()
     output = Path(output).resolve()
-    specs = build_scene_specs(config_path)
-    output.mkdir(parents=True, exist_ok=True)
+    specs = materialize_scene_configs(config_path, output)
+    batch_config = _load_json(config_path)
+    semantic_head = batch_config.get("semantic_head", "owner_authoritative")
+    if semantic_head not in {
+        "owner_authoritative",
+        "dense_only",
+        "fused_uncertainty",
+    }:
+        raise ValueError("semantic_head is unsupported")
     config_dir = output / "scene_configs"
-    config_dir.mkdir(exist_ok=True)
     scene_records: list[dict[str, Any]] = []
     for spec in specs:
         scene_config_path = config_dir / f"{spec.scene}.json"
-        _atomic_json(scene_config_path, spec.config)
         scene_output = output / spec.scene
         manifest = scene_runner(
             argparse.Namespace(
@@ -183,6 +222,7 @@ def run_replica8(
         "frame_count_per_scene": 200,
         "algorithm_hash": specs[0].algorithm_hash,
         "frontend_algorithm_hash": next(iter(frontend_hashes), None),
+        "semantic_head": semantic_head,
         "config_path": str(config_path),
         "config_sha256": _sha256(config_path),
         "scenes": scene_records,
@@ -196,7 +236,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--config", type=Path, default=REPO_ROOT / "configs/oviv2_replica8.json")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--skip-evaluation", action="store_true")
+    parser.add_argument("--materialize-only", action="store_true")
     args = parser.parse_args(argv)
+    if args.materialize_only:
+        specs = materialize_scene_configs(args.config, args.output)
+        print(json.dumps({"output": str(args.output), "scene_configs": len(specs)}))
+        return 0
     result = run_replica8(
         args.config,
         args.output,
