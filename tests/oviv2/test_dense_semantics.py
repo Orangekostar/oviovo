@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import FrozenInstanceError, fields
+import io
 import math
 from pathlib import Path
+import struct
 import zipfile
 
 import numpy as np
@@ -88,6 +90,57 @@ def _serialized_payload(frame: DenseSemanticFrame) -> dict[str, np.ndarray]:
         "entropy": frame.entropy,
         "margin": frame.margin,
     }
+
+
+def _patch_zip_central_uint32(
+    path: Path,
+    member_name: str,
+    field_offset: int,
+    value: int,
+) -> None:
+    content = bytearray(path.read_bytes())
+    cursor = 0
+    while True:
+        header_offset = content.find(b"PK\x01\x02", cursor)
+        if header_offset < 0:
+            raise AssertionError(f"missing central directory entry {member_name}")
+        name_length = struct.unpack_from("<H", content, header_offset + 28)[0]
+        extra_length = struct.unpack_from("<H", content, header_offset + 30)[0]
+        comment_length = struct.unpack_from("<H", content, header_offset + 32)[0]
+        name_start = header_offset + 46
+        name = bytes(content[name_start : name_start + name_length]).decode()
+        if name == member_name:
+            struct.pack_into("<I", content, header_offset + field_offset, value)
+            path.write_bytes(content)
+            return
+        cursor = name_start + name_length + extra_length + comment_length
+
+
+def _replace_zip_member(path: Path, member_name: str, replacement: bytes) -> None:
+    with zipfile.ZipFile(path) as archive:
+        members = {
+            info.filename: archive.read(info)
+            for info in archive.infolist()
+        }
+    members[member_name] = replacement
+    with zipfile.ZipFile(path, mode="w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for name, content in members.items():
+            archive.writestr(name, content)
+
+
+def _forbid_array_loading(monkeypatch: pytest.MonkeyPatch) -> None:
+    def forbidden_load(*_args: object, **_kwargs: object) -> object:
+        raise AssertionError("np.load must not run before archive preflight")
+
+    def forbidden_array(*_args: object, **_kwargs: object) -> object:
+        raise AssertionError("np.array must not run before archive preflight")
+
+    def forbidden_read_array(*_args: object, **_kwargs: object) -> object:
+        raise AssertionError("NPY payloads must not load before archive preflight")
+
+    monkeypatch.setattr(dense_semantics.np, "load", forbidden_load)
+    monkeypatch.setattr(dense_semantics.np, "array", forbidden_array)
+    monkeypatch.setattr(dense_semantics.npy_format, "read_array", forbidden_read_array)
 
 
 def test_provenance_normalizes_text_commits_and_hashes() -> None:
@@ -520,6 +573,31 @@ def test_dense_frame_copies_callers_arrays() -> None:
     assert np.allclose(frame.margin, 0.5)
 
 
+def test_dense_frame_validates_private_copy_during_caller_mutation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    inputs = _frame_inputs()
+    caller_probabilities = np.asarray(inputs["probabilities"])
+    original_isfinite = dense_semantics.np.isfinite
+    mutated = False
+
+    def mutate_caller_after_check(value: object) -> np.ndarray:
+        nonlocal mutated
+        result = original_isfinite(value)
+        if not mutated and isinstance(value, np.ndarray) and value.ndim == 3:
+            caller_probabilities.fill(0.0)
+            mutated = True
+        return result
+
+    monkeypatch.setattr(dense_semantics.np, "isfinite", mutate_caller_after_check)
+
+    frame = DenseSemanticFrame(**inputs)
+
+    assert mutated
+    assert not caller_probabilities.any()
+    assert frame.probabilities[0, 0].tolist() == pytest.approx([0.7, 0.2])
+
+
 @pytest.mark.parametrize("field_name", ["class_ids", "probabilities", "entropy", "margin"])
 def test_dense_frame_arrays_have_irrecoverable_read_only_backing(field_name: str) -> None:
     array = getattr(_frame(), field_name)
@@ -581,6 +659,63 @@ def test_dense_frame_atomic_roundtrip_and_storage_dtypes(tmp_path: Path) -> None
     assert not list(path.parent.glob(f".{path.name}.*"))
 
 
+def test_load_dense_frame_uses_public_numpy_header_api(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    path = tmp_path / "frame.npz"
+    write_dense_frame(path, _frame())
+    original_reader = dense_semantics.npy_format._read_array_header
+    original_payload_reader = dense_semantics.npy_format.read_array
+
+    def forbidden_private_reader(*_args: object, **_kwargs: object) -> object:
+        raise AssertionError("production code must not call private NumPy header APIs")
+
+    def public_reader_v1(stream: object, max_header_size: int) -> object:
+        return original_reader(stream, (1, 0), max_header_size=max_header_size)
+
+    def public_reader_v2(stream: object, max_header_size: int) -> object:
+        return original_reader(stream, (2, 0), max_header_size=max_header_size)
+
+    def public_payload_reader(*args: object, **kwargs: object) -> object:
+        monkeypatch.setattr(
+            dense_semantics.npy_format,
+            "_read_array_header",
+            original_reader,
+        )
+        try:
+            return original_payload_reader(*args, **kwargs)
+        finally:
+            monkeypatch.setattr(
+                dense_semantics.npy_format,
+                "_read_array_header",
+                forbidden_private_reader,
+            )
+
+    monkeypatch.setattr(
+        dense_semantics.npy_format,
+        "_read_array_header",
+        forbidden_private_reader,
+    )
+    monkeypatch.setattr(
+        dense_semantics.npy_format,
+        "read_array_header_1_0",
+        public_reader_v1,
+    )
+    monkeypatch.setattr(
+        dense_semantics.npy_format,
+        "read_array_header_2_0",
+        public_reader_v2,
+    )
+    monkeypatch.setattr(
+        dense_semantics.npy_format,
+        "read_array",
+        public_payload_reader,
+    )
+
+    assert load_dense_frame(path).source_frame_id == 9
+
+
 def test_load_dense_frame_checks_checksum_before_opening_npz(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -603,7 +738,7 @@ def test_load_dense_frame_checks_checksum_before_opening_npz(
     assert not called
 
 
-def test_load_dense_frame_hashes_and_loads_the_same_open_file(
+def test_load_dense_frame_hashes_and_loads_an_immutable_content_snapshot(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -612,17 +747,49 @@ def test_load_dense_frame_hashes_and_loads_the_same_open_file(
     write_dense_frame(path, _frame(source_frame_id=9))
     write_dense_frame(replacement, _frame(source_frame_id=99))
     expected = sha256_file(path)
-    original_sha256_stream = dense_semantics._sha256_stream
+    replacement_content = replacement.read_bytes()
+    assert len(replacement_content) == path.stat().st_size
+    original_open = Path.open
+    mutated = False
 
-    def replace_after_hash(stream: object) -> str:
-        checksum = original_sha256_stream(stream)  # type: ignore[arg-type]
-        dense_semantics.os.replace(replacement, path)
-        return checksum
+    class MutatingStream:
+        def __init__(self, stream: object) -> None:
+            self._stream = stream
 
-    monkeypatch.setattr(dense_semantics, "_sha256_stream", replace_after_hash)
+        def read(self, size: int = -1) -> bytes:
+            nonlocal mutated
+            data = self._stream.read(size)  # type: ignore[attr-defined]
+            if data and not mutated:
+                mutated = True
+                with original_open(path, "wb") as replacement_stream:
+                    replacement_stream.write(replacement_content)
+            return data
+
+        def __enter__(self) -> "MutatingStream":
+            return self
+
+        def __exit__(self, *args: object) -> object:
+            return self._stream.__exit__(*args)  # type: ignore[attr-defined]
+
+        def __getattr__(self, name: str) -> object:
+            return getattr(self._stream, name)
+
+    def open_with_mutation(
+        candidate: Path,
+        mode: str = "r",
+        *args: object,
+        **kwargs: object,
+    ) -> object:
+        stream = original_open(candidate, mode, *args, **kwargs)
+        if candidate == path and mode == "rb":
+            return MutatingStream(stream)
+        return stream
+
+    monkeypatch.setattr(Path, "open", open_with_mutation)
 
     restored = load_dense_frame(path, expected_sha256=expected)
 
+    assert mutated
     assert restored.source_frame_id == 9
 
 
@@ -663,6 +830,110 @@ def test_load_dense_frame_rejects_duplicate_zip_members(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="keys"):
         load_dense_frame(path)
+
+
+def test_load_dense_frame_rejects_many_duplicate_members_before_np_load(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    path = tmp_path / "frame.npz"
+    write_dense_frame(path, _frame())
+    with zipfile.ZipFile(path) as archive:
+        duplicate_payload = archive.read("schema_version.npy")
+    with pytest.warns(UserWarning, match="Duplicate name"):
+        with zipfile.ZipFile(path, mode="a") as archive:
+            for _ in range(64):
+                archive.writestr("schema_version.npy", duplicate_payload)
+    _forbid_array_loading(monkeypatch)
+
+    def forbidden_zipfile(*_args: object, **_kwargs: object) -> object:
+        raise AssertionError("ZipFile must not parse an unbounded central directory")
+
+    monkeypatch.setattr(dense_semantics.zipfile, "ZipFile", forbidden_zipfile)
+
+    with pytest.raises(ValueError, match="keys|duplicate"):
+        load_dense_frame(path)
+
+
+def test_load_dense_frame_rejects_forged_high_compression_ratio_before_np_load(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    path = tmp_path / "frame.npz"
+    write_dense_frame(path, _frame())
+    _patch_zip_central_uint32(path, "class_ids.npy", 20, 0)
+    _forbid_array_loading(monkeypatch)
+
+    with pytest.raises(ValueError, match="compression|ratio|resource"):
+        load_dense_frame(path)
+
+
+def test_load_dense_frame_rejects_oversized_member_before_np_load(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    path = tmp_path / "frame.npz"
+    write_dense_frame(path, _frame())
+    _patch_zip_central_uint32(
+        path,
+        "class_ids.npy",
+        24,
+        512 * 1024 * 1024 + 1,
+    )
+    _forbid_array_loading(monkeypatch)
+
+    with pytest.raises(ValueError, match="class_ids|member|size|resource"):
+        load_dense_frame(path)
+
+
+def test_load_dense_frame_rejects_forged_npy_shape_before_np_load(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    path = tmp_path / "frame.npz"
+    write_dense_frame(path, _frame())
+    forged_header = io.BytesIO()
+    np.lib.format.write_array_header_1_0(
+        forged_header,
+        {
+            "descr": np.dtype(np.int64).str,
+            "fortran_order": False,
+            "shape": (500_000_000, 500_000_000, 1),
+        },
+    )
+    _replace_zip_member(path, "class_ids.npy", forged_header.getvalue())
+    _forbid_array_loading(monkeypatch)
+
+    with pytest.raises(ValueError, match="class_ids|shape|size|resource"):
+        load_dense_frame(path)
+
+
+def test_load_dense_frame_rejects_archive_over_byte_limit_before_np_load(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    path = tmp_path / "frame.npz"
+    write_dense_frame(path, _frame())
+    monkeypatch.setattr(dense_semantics, "_MAX_ARCHIVE_BYTES", path.stat().st_size - 1)
+    _forbid_array_loading(monkeypatch)
+
+    with pytest.raises(ValueError, match="archive|size|limit"):
+        load_dense_frame(path)
+
+
+def test_dense_frame_roundtrip_allows_small_zero_filled_arrays(tmp_path: Path) -> None:
+    inputs = _frame_inputs(class_count=1, k=1)
+    inputs["class_ids"] = np.zeros((2, 3, 1), dtype=np.int64)
+    inputs["probabilities"] = np.zeros((2, 3, 1), dtype=np.float32)
+    inputs["entropy"] = np.zeros((2, 3), dtype=np.float32)
+    inputs["margin"] = np.zeros((2, 3), dtype=np.float32)
+    path = tmp_path / "zeros.npz"
+
+    write_dense_frame(path, DenseSemanticFrame(**inputs))
+    restored = load_dense_frame(path)
+
+    assert not restored.class_ids.any()
+    assert not restored.probabilities.any()
 
 
 @pytest.mark.parametrize(
@@ -763,6 +1034,29 @@ def test_write_dense_frame_requires_frame_instance(tmp_path: Path) -> None:
         write_dense_frame(tmp_path / "frame.npz", object())  # type: ignore[arg-type]
 
 
+@pytest.mark.parametrize(
+    "limit_name",
+    [
+        "_MAX_ARCHIVE_BYTES",
+        "_MAX_MEMBER_UNCOMPRESSED_BYTES",
+        "_MAX_TOTAL_UNCOMPRESSED_BYTES",
+    ],
+)
+def test_write_dense_frame_never_publishes_archive_exceeding_loader_limits(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    limit_name: str,
+) -> None:
+    path = tmp_path / "frame.npz"
+    monkeypatch.setattr(dense_semantics, limit_name, 1)
+
+    with pytest.raises(ValueError, match="size|resource|limit"):
+        write_dense_frame(path, _frame())
+
+    assert not path.exists()
+    assert not list(tmp_path.iterdir())
+
+
 def test_atomic_replace_failure_preserves_target_and_cleans_temp_file(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -780,4 +1074,56 @@ def test_atomic_replace_failure_preserves_target_and_cleans_temp_file(
         write_dense_frame(path, _frame())
 
     assert path.read_bytes() == old_content
+    assert [candidate.name for candidate in tmp_path.iterdir()] == ["frame.npz"]
+
+
+def test_write_dense_frame_fsyncs_parent_directory_after_replace(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    path = tmp_path / "frame.npz"
+    events: list[object] = []
+    original_replace = dense_semantics.os.replace
+
+    def tracked_replace(source: object, destination: object) -> None:
+        events.append("replace")
+        original_replace(source, destination)
+
+    def tracked_directory_fsync(directory: Path) -> None:
+        events.append(("directory_fsync", directory))
+
+    monkeypatch.setattr(dense_semantics.os, "replace", tracked_replace)
+    monkeypatch.setattr(
+        dense_semantics,
+        "_fsync_directory",
+        tracked_directory_fsync,
+        raising=False,
+    )
+
+    write_dense_frame(path, _frame())
+
+    assert events == ["replace", ("directory_fsync", tmp_path)]
+
+
+def test_parent_fsync_failure_reports_potentially_visible_publication(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    path = tmp_path / "frame.npz"
+    write_dense_frame(path, _frame(source_frame_id=9))
+
+    def fail_directory_fsync(_directory: Path) -> None:
+        raise OSError("injected parent fsync failure")
+
+    monkeypatch.setattr(
+        dense_semantics,
+        "_fsync_directory",
+        fail_directory_fsync,
+        raising=False,
+    )
+
+    with pytest.raises(RuntimeError, match="publication.*may already be visible"):
+        write_dense_frame(path, _frame(source_frame_id=99))
+
+    assert load_dense_frame(path).source_frame_id == 99
     assert [candidate.name for candidate in tmp_path.iterdir()] == ["frame.npz"]
