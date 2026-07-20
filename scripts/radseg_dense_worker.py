@@ -33,7 +33,7 @@ MAX_CLASSES_JSON_BYTES = 1024 * 1024
 MAX_JSONL_LINE_CHARS = 16 * 1024 * 1024
 MAX_JSONL_RESPONSE_CHARS = 16 * 1024 * 1024
 MAX_PROBABILITY_TENSOR_BYTES = 256 * 1024 * 1024
-CLASS_COUNT = 41
+DEFAULT_CLASS_COUNT = 41
 RADSEG_PROBABILITY_MASS_DRIFT_TOLERANCE = 1e-3
 _SHA256_PATTERN = re.compile(r"[0-9a-fA-F]{64}")
 _OFFLINE_ENVIRONMENT = (
@@ -634,8 +634,8 @@ def load_frozen_classes(path: str | Path) -> tuple[list[str], str]:
     classes = payload.get("classes")
     if not isinstance(classes, list):
         raise ValueError("classes must be a list")
-    if len(classes) != CLASS_COUNT:
-        raise ValueError(f"classes must contain exactly {CLASS_COUNT} entries")
+    if not classes:
+        raise ValueError("classes must contain at least one non-empty entry")
     normalized: list[str] = []
     for value in classes:
         if not isinstance(value, str) or not value:
@@ -717,16 +717,18 @@ def validate_inference_budget(
     width: int,
     sample_stride: int,
     top_k: int,
+    class_count: int = DEFAULT_CLASS_COUNT,
 ) -> InferenceBudget:
     normalized_height = _require_positive_integer(height, "height")
     normalized_width = _require_positive_integer(width, "width")
     stride = _require_positive_integer(sample_stride, "sample_stride")
     candidates = _require_positive_integer(top_k, "top_k")
-    if candidates > CLASS_COUNT:
+    classes = _require_positive_integer(class_count, "class_count")
+    if candidates > classes:
         raise ValueError("top_k cannot exceed the class count")
 
     pixels = normalized_height * normalized_width
-    probability_bytes = pixels * CLASS_COUNT * np.dtype(np.float32).itemsize
+    probability_bytes = pixels * classes * np.dtype(np.float32).itemsize
     if probability_bytes > MAX_PROBABILITY_TENSOR_BYTES:
         raise ValueError(
             "dense probability tensor exceeds the inference memory budget"
@@ -1067,6 +1069,10 @@ class RadsegRuntime:
     encoder: Any
     device: str
     amp: bool
+    class_count: int = DEFAULT_CLASS_COUNT
+
+    def __post_init__(self) -> None:
+        _require_positive_integer(self.class_count, "class_count")
 
     def infer_probabilities(self, rgb: np.ndarray) -> np.ndarray:
         import torch
@@ -1089,9 +1095,10 @@ class RadsegRuntime:
                 ignore_label=False,
             )
         values = np.asarray(_to_numpy(probabilities), dtype=np.float32)
-        if values.shape != (1, CLASS_COUNT, height, width):
+        if values.shape != (1, self.class_count, height, width):
             raise RuntimeError(
-                "RADSeg must return probabilities for exactly 41 classes at original size"
+                "RADSeg must return probabilities for exactly "
+                f"{self.class_count} classes at original size"
             )
         if not np.all(np.isfinite(values)) or np.any(values < 0.0):
             raise RuntimeError("RADSeg returned invalid probabilities")
@@ -1120,8 +1127,8 @@ class NARadioRuntime:
 
     def __post_init__(self) -> None:
         shape = tuple(self.text_embeddings.shape)
-        if len(shape) != 2 or shape[0] != CLASS_COUNT or shape[1] <= 0:
-            raise RuntimeError("NARADIO text embeddings must have shape [41,D]")
+        if len(shape) != 2 or shape[0] <= 0 or shape[1] <= 0:
+            raise RuntimeError("NARADIO text embeddings must have shape [C,D]")
 
     def infer_probabilities(self, rgb: np.ndarray) -> np.ndarray:
         import torch
@@ -1174,8 +1181,11 @@ class NARadioRuntime:
                 raise RuntimeError("NARADIO produced invalid probability mass")
             probabilities = probabilities / mass
         values = np.asarray(_to_numpy(probabilities), dtype=np.float32)
-        if values.shape != (1, CLASS_COUNT, height, width):
-            raise RuntimeError("NARADIO must return 41-class probabilities at original size")
+        class_count = int(self.text_embeddings.shape[0])
+        if values.shape != (1, class_count, height, width):
+            raise RuntimeError(
+                "NARADIO must return probabilities for its text vocabulary at original size"
+            )
         return np.ascontiguousarray(values)
 
 
@@ -1252,12 +1262,15 @@ def _prompt_descriptor(encoder: Any, classes: Sequence[str]) -> dict[str, Any]:
     return {"mode": "labels", "classes": list(classes), "prompts": prompts}
 
 
-def _detach_text_embeddings(value: Any, name: str) -> Any:
+def _detach_text_embeddings(value: Any, name: str, *, class_count: int) -> Any:
+    expected_class_count = _require_positive_integer(class_count, "class_count")
     if not hasattr(value, "detach") or not hasattr(value, "shape"):
         raise RuntimeError(f"{name} text embeddings must be tensor-like")
     shape = tuple(value.shape)
-    if len(shape) != 2 or shape[0] != CLASS_COUNT or shape[1] <= 0:
-        raise RuntimeError(f"{name} text embeddings must have shape [41,D]")
+    if len(shape) != 2 or shape[0] != expected_class_count or shape[1] <= 0:
+        raise RuntimeError(
+            f"{name} text embeddings must have shape [{expected_class_count},D]"
+        )
     detached = value.detach()
     if bool(getattr(detached, "requires_grad", True)):
         raise RuntimeError(f"{name} text embeddings still require gradients")
@@ -1275,8 +1288,8 @@ class DenseWorker:
     provenance: Mapping[str, str]
 
     def __post_init__(self) -> None:
-        if len(self.classes) != CLASS_COUNT:
-            raise ValueError("DenseWorker requires exactly 41 frozen classes")
+        if not self.classes:
+            raise ValueError("DenseWorker requires at least one frozen class")
         _require_positive_integer(self.sample_stride, "sample_stride")
         _require_positive_integer(self.top_k, "top_k")
         if self.top_k > len(self.classes):
@@ -1319,6 +1332,7 @@ def build_worker(args: argparse.Namespace) -> DenseWorker:
                         encoder.text_embeds = _detach_text_embeddings(
                             getattr(encoder, "text_embeds", None),
                             "RADSeg",
+                            class_count=len(classes),
                         )
                     else:
                         module = _import_pinned_module(
@@ -1328,6 +1342,7 @@ def build_worker(args: argparse.Namespace) -> DenseWorker:
                         text_embeddings = _detach_text_embeddings(
                             encoder.encode_labels(classes),
                             "NARADIO",
+                            class_count=len(classes),
                         )
     source_commit_after = validate_source_checkout(source_root, source_spec)
     radio_commit_after = validate_source_checkout(radio_root, RADIO_SOURCE)
@@ -1358,14 +1373,19 @@ def build_worker(args: argparse.Namespace) -> DenseWorker:
         auxiliary_model_sha256 = ""
 
     if args.backend == "radseg":
-        runtime: Any = RadsegRuntime(encoder=encoder, device=args.device, amp=args.amp)
+        runtime: Any = RadsegRuntime(
+            encoder=encoder,
+            device=args.device,
+            amp=args.amp,
+            class_count=len(classes),
+        )
         model_id = (
             f"radseg:{args.model_version}:{args.lang_model}:"
             f"sam={int(args.sam_refinement)}:sha256={model_sha256}"
         )
         model_config = {
             "predict": True,
-            "class_count": CLASS_COUNT,
+            "class_count": len(classes),
             "scra_scaling": 10.0,
             "scga_scaling": 10.0,
             "slide_crop": 336,
@@ -1395,7 +1415,7 @@ def build_worker(args: argparse.Namespace) -> DenseWorker:
             f"naradio:{args.model_version}:{args.lang_model}:sha256={model_sha256}"
         )
         model_config = {
-            "class_count": CLASS_COUNT,
+            "class_count": len(classes),
             "return_radio_features": True,
             "compile": False,
             "cosine_temperature": 100.0,
@@ -1468,6 +1488,7 @@ def run_request(worker: DenseWorker, request: Mapping[str, Any]) -> dict[str, An
         width=int(rgb.shape[1]),
         sample_stride=worker.sample_stride,
         top_k=worker.top_k,
+        class_count=len(worker.classes),
     )
     probabilities = worker.runtime.infer_probabilities(rgb)
     reduced = reduce_probabilities(

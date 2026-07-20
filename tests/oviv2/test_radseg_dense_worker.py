@@ -38,6 +38,7 @@ from radseg_dense_worker import (  # noqa: E402
     NARadioRuntime,
     RadsegRuntime,
     SourceSpec,
+    _detach_text_embeddings,
     _instantiate_naradio,
     _instantiate_radseg,
     _fingerprint_file,
@@ -77,8 +78,8 @@ def _decode_array(block: dict[str, Any]) -> np.ndarray:
     return np.frombuffer(data, dtype=np.dtype(block["dtype"])).reshape(block["shape"])
 
 
-def _classes() -> list[str]:
-    return [f"class-{index:02d}" for index in range(41)]
+def _classes(count: int = 41) -> list[str]:
+    return [f"class-{index:02d}" for index in range(count)]
 
 
 def _provenance() -> dict[str, str]:
@@ -249,6 +250,18 @@ def test_inference_budget_accepts_replica_stride4_top4() -> None:
     assert budget.encoded_response_chars < MAX_JSONL_LINE_CHARS
 
 
+def test_inference_budget_accounts_for_scannet200_class_count() -> None:
+    budget = validate_inference_budget(
+        height=480,
+        width=640,
+        sample_stride=4,
+        top_k=4,
+        class_count=200,
+    )
+
+    assert budget.probability_tensor_bytes == 480 * 640 * 200 * 4
+
+
 def test_inference_budget_rejects_stride1_top41_before_inference() -> None:
     with pytest.raises(ValueError, match="response|budget"):
         validate_inference_budget(
@@ -290,10 +303,19 @@ def test_load_frozen_classes_accepts_replica_contract_and_hashes_raw_file(tmp_pa
     assert digest == hashlib.sha256(raw).hexdigest()
 
 
+def test_load_frozen_classes_accepts_scannet200_contract(tmp_path: Path) -> None:
+    path = tmp_path / "classes.json"
+    path.write_text(json.dumps({"classes": _classes(200)}), encoding="utf-8")
+
+    classes, _ = load_frozen_classes(path)
+
+    assert classes == _classes(200)
+
+
 @pytest.mark.parametrize(
     ("payload", "message"),
     [
-        ({"classes": _classes()[:-1]}, "exactly 41"),
+        ({"classes": []}, "non-empty"),
         ({"classes": _classes()[:-1] + [""]}, "non-empty"),
         ({"classes": _classes()[:-1] + [" padded "]}, "whitespace"),
         ({"classes": _classes()[:-1] + ["CLASS-00"]}, "unique"),
@@ -1167,6 +1189,24 @@ def test_radseg_runtime_requests_exactly_41_non_ignore_probabilities() -> None:
     assert encoder.calls == [((7, 11), False, False)]
 
 
+def test_radseg_runtime_accepts_scannet200_probability_channels() -> None:
+    class ScanNetEncoder(_RadsegEncoder):
+        def encode_image_to_feat_map(self, image: torch.Tensor, **kwargs: Any) -> torch.Tensor:
+            height, width = kwargs["orig_img_size"]
+            return torch.ones((1, 200, height, width), dtype=torch.float32) / 200.0
+
+    runtime = RadsegRuntime(
+        encoder=ScanNetEncoder(),
+        device="cpu",
+        amp=False,
+        class_count=200,
+    )
+
+    probabilities = runtime.infer_probabilities(np.zeros((3, 5, 3), dtype=np.uint8))
+
+    assert probabilities.shape == (1, 200, 3, 5)
+
+
 def test_radseg_runtime_output_reduces_into_frozen_dense_frame() -> None:
     runtime = RadsegRuntime(encoder=_RadsegEncoder(), device="cpu", amp=False)
     reduced = reduce_probabilities(
@@ -1328,6 +1368,31 @@ def test_naradio_runtime_updates_gaussian_resolution_and_returns_original_size()
     assert encoder.encoded_shape == (1, 3, 32, 48)
     assert probabilities.shape == (1, 41, 17, 29)
     np.testing.assert_allclose(probabilities.sum(axis=1), 1.0, atol=1e-5)
+
+
+def test_naradio_runtime_accepts_scannet200_text_embeddings() -> None:
+    text = torch.zeros((200, 3), dtype=torch.float32)
+    text[:, 0] = 1.0
+    runtime = NARadioRuntime(
+        encoder=_NARadioEncoder(),
+        text_embeddings=text,
+        device="cpu",
+        amp=False,
+    )
+
+    probabilities = runtime.infer_probabilities(np.zeros((17, 29, 3), dtype=np.uint8))
+
+    assert probabilities.shape == (1, 200, 17, 29)
+
+
+def test_detach_text_embeddings_accepts_frozen_scannet200_shape() -> None:
+    embeddings = torch.ones((200, 3), requires_grad=True) * 2.0
+
+    detached = _detach_text_embeddings(embeddings, "RADSeg", class_count=200)
+
+    assert detached.shape == (200, 3)
+    assert detached.requires_grad is False
+    assert detached.grad_fn is None
 
 
 def test_naradio_runtime_fails_closed_on_invalid_nearest_resolution() -> None:
@@ -1730,6 +1795,23 @@ def test_metadata_response_contains_complete_provenance_and_contract() -> None:
         "prompt_sha256",
         "inference_config_sha256",
     }
+
+
+def test_metadata_response_supports_scannet200_class_count() -> None:
+    worker = DenseWorker(
+        runtime=_FakeRuntime(
+            np.ones((1, 200, 2, 2), dtype=np.float32) / 200.0
+        ),
+        classes=tuple(_classes(200)),
+        sample_stride=1,
+        top_k=4,
+        provenance=_provenance(),
+    )
+
+    response = run_request(worker, {"id": 1, "operation": "metadata"})
+
+    assert response["class_count"] == 200
+    assert response["classes"] == _classes(200)
 
 
 def test_infer_response_encodes_all_sampled_arrays() -> None:
