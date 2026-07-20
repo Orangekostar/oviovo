@@ -59,7 +59,7 @@ Run the dataset test command again. Expected: PASS.
 
 - [ ] **Step 5: Write failing manifest-freezer tests**
 
-Require exact scene order, explicit source IDs, per-frame color/depth/pose hashes, intrinsic hashes, official GT hashes, official numeric class IDs, and byte-identical output:
+Require exact scene order, explicit source IDs, per-frame color/depth/pose hashes, intrinsic hashes, official GT hashes, official numeric class IDs, and byte-identical output. A small synthetic fixture verifies selection and invalid-pose omission; after the real freezer command, validate the real counts separately:
 
 ```python
 assert [len(scene["source_frame_ids"]) for scene in manifest["scenes"]] == [238, 465, 444, 190, 147]
@@ -77,7 +77,7 @@ Expected: FAIL because the freezer script is missing.
 
 CLI: `--raw-manifest PATH --exported-root PATH --official-gt-root PATH --official-constants PATH --classes-json PATH --output PATH --replace`.
 
-Use official `VALID_CLASS_IDS_200` and `CLASS_LABELS_200`, require exact agreement with tracked JSON/TXT assets, select `range(0, frame_count, 10)`, discard only invalid poses, hash every execution input, and atomically publish sorted JSON.
+Use official `VALID_CLASS_IDS_200` and `CLASS_LABELS_200` to generate the tracked JSON/TXT assets in official order. Do not reuse the alphabetically ordered ConceptGraphs class file. Require exact JSON/TXT agreement, select `range(0, frame_count, 10)`, discard only invalid poses, hash every execution input, and atomically publish sorted JSON.
 
 Run: `/home/ww/miniconda3/envs/oviovo-conceptgraphs/bin/python scripts/evaluation/freeze_oviv2_scannet200_manifest.py --raw-manifest /home/ww/oviovo_baseline_runs/20260714_non_oviovo_baselines/scannet200/scannet200_5.json --exported-root /home/ww/oviovo_benchmark_assets/scannet200_release/exported --official-gt-root /home/ww/oviovo_benchmark_assets/scannet200_release/scannet200_official/val --official-constants /home/ww/oviovo_baseline_builds/scannet-official/BenchmarkScripts/ScanNet200/scannet200_constants.py --classes-json data/input/scannet200_classes.json --output configs/evaluation/manifests/oviv2_scannet200_5.json`
 
@@ -337,4 +337,3 @@ Run: `/home/ww/miniconda3/envs/oviovo-conceptgraphs/bin/python -m pytest -q -p n
 - [ ] **Step 4: Commit result and table**
 
 Commit only the result plus importer-generated registry/Markdown/LaTeX files with message `docs: fill OVIV2 ScanNet200 Table 1 results`.
-
