@@ -28,11 +28,12 @@ from src.evaluation.oviv2_replica import (  # noqa: E402
     project_mesh_to_gt,
 )
 from src.oviv2.meshing import derive_labeled_mesh, write_labeled_mesh  # noqa: E402
+from src.oviv2.semantic_fusion import SemanticFusionConfig  # noqa: E402
 from src.oviv2.snapshot import VoxelMapSnapshot  # noqa: E402
 
 
 NON_INSTANCE_CLASSES = {"ceiling", "floor", "wall"}
-SEMANTIC_HEADS = ("owner_authoritative", "dense_only")
+SEMANTIC_HEADS = ("owner_authoritative", "dense_only", "fused_uncertainty")
 
 
 def _sha256(path: Path) -> str:
@@ -320,6 +321,11 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
     snapshot = VoxelMapSnapshot.load(args.snapshot)
     if snapshot.metadata.scene_id != args.scene:
         raise ValueError("snapshot scene does not match requested manifest scene")
+    if semantic_head == "fused_uncertainty" and snapshot.registry is None:
+        raise ValueError("fused_uncertainty requires an embedded registry")
+    fusion_config = SemanticFusionConfig(
+        entity_weight_scale=getattr(args, "fusion_entity_weight_scale", 0.5)
+    )
 
     aliases = _normalized_aliases(manifest.get("aliases", {}))
     classes = [_normalize_label(value, aliases) for value in manifest["vocabulary"]["classes"]]
@@ -352,6 +358,15 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
             if entity.lifecycle_state in {"active", "dormant"} and entity.semantic_id > 0
         ]
         entity_semantics = snapshot.registry.semantic_labels()
+        entity_posteriors = {
+            entity.entity_id: entity.semantic_posterior.probabilities
+            for entity in sorted(
+                snapshot.registry.entities.values(),
+                key=lambda value: value.entity_id,
+            )
+            if entity.lifecycle_state in {"active", "dormant"}
+            and entity.semantic_id > 0
+        }
     else:
         entity_info_path = getattr(args, "entity_info", None)
         if entity_info_path is None:
@@ -361,6 +376,7 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
             info.entity_id: (info.semantic_id, info.semantic_confidence)
             for info in entity_info
         }
+        entity_posteriors = None
     for info in entity_info:
         if info.semantic_id not in valid_semantic_ids:
             raise ValueError(f"entity {info.entity_id} semantic ID is outside frozen vocabulary")
@@ -371,6 +387,12 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         snapshot.ownership,
         entity_semantics=(
             entity_semantics if semantic_head == "owner_authoritative" else None
+        ),
+        entity_posteriors=(
+            entity_posteriors if semantic_head == "fused_uncertainty" else None
+        ),
+        semantic_fusion=(
+            fusion_config if semantic_head == "fused_uncertainty" else None
         ),
     )
     mesh_semantic_ids = {int(value) for value in np.unique(mesh.semantic_ids) if value > 0}
@@ -412,6 +434,11 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
             "snapshot_checksums": dict(sorted(snapshot.checksums.items())),
         }
     )
+    if semantic_head == "fused_uncertainty":
+        metrics["protocol"]["semantic_fusion"] = {
+            "mode": "uncertainty_linear",
+            "entity_weight_scale": fusion_config.entity_weight_scale,
+        }
 
     def write_output(directory: Path) -> None:
         _write_json(directory / "metrics.json", metrics)
@@ -458,6 +485,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--semantic-head",
         choices=SEMANTIC_HEADS,
         default="owner_authoritative",
+    )
+    parser.add_argument(
+        "--fusion-entity-weight-scale",
+        type=float,
+        default=0.5,
     )
     return parser.parse_args(argv)
 

@@ -158,6 +158,7 @@ def _fixture(
     *,
     semantic_evidence: bool = True,
     semantic_label_id: int = 2,
+    semantic_supports: tuple[tuple[int, float], ...] | None = None,
     schema_version: int = 1,
 ) -> dict[str, Path]:
     geometry = SparseTsdfVolume()
@@ -174,12 +175,14 @@ def _fixture(
     }
     for key in sorted(keys):
         if semantic_evidence:
-            evidence.update_semantic(
-                key,
-                label_id=semantic_label_id,
-                support_delta=1.0,
-                revision=1,
-            )
+            supports = semantic_supports or ((semantic_label_id, 1.0),)
+            for label_id, support in supports:
+                evidence.update_semantic(
+                    key,
+                    label_id=label_id,
+                    support_delta=support,
+                    revision=1,
+                )
         evidence.update_entity(key, entity_id=11, positive_delta=1.0, negative_delta=0.0, timestamp=1.0, revision=1)
         ownership.assign(key, entity_id=11, confidence=1.0, evidence_revision=1)
 
@@ -427,6 +430,60 @@ def test_schema3_dense_only_uses_voxel_labels_and_preserves_instance_ids(
     assert np.any(dense_instances > 0)
     np.testing.assert_array_equal(dense_instances, owner_instances)
     assert dense_metrics["ap25"] == owner_metrics["ap25"] == pytest.approx(1.0)
+
+
+def test_schema3_fused_head_uses_full_entity_posterior_and_records_policy(
+    tmp_path: Path,
+) -> None:
+    paths = _fixture(
+        tmp_path,
+        semantic_supports=((1, 0.51), (2, 0.49)),
+        schema_version=3,
+    )
+    dense_output = tmp_path / "dense-evaluation"
+    fused_output = tmp_path / "fused-evaluation"
+
+    dense = _run(
+        paths,
+        dense_output,
+        include_entity_info=False,
+        semantic_head="dense_only",
+    )
+    fused = _run(
+        paths,
+        fused_output,
+        include_entity_info=False,
+        semantic_head="fused_uncertainty",
+    )
+
+    assert dense.returncode == 0, dense.stderr
+    assert fused.returncode == 0, fused.stderr
+    dense_semantics = np.load(dense_output / "gt_aligned_semantic_ids.npy")
+    fused_semantics = np.load(fused_output / "gt_aligned_semantic_ids.npy")
+    assert np.any(dense_semantics == 1)
+    assert np.any(fused_semantics == 2)
+    np.testing.assert_array_equal(
+        np.load(fused_output / "gt_aligned_instance_ids.npy"),
+        np.load(dense_output / "gt_aligned_instance_ids.npy"),
+    )
+    metrics = json.loads((fused_output / "metrics.json").read_text())
+    assert metrics["miou"] == pytest.approx(1.0)
+    assert metrics["protocol"]["semantic_head"] == "fused_uncertainty"
+    assert metrics["protocol"]["semantic_fusion"] == {
+        "entity_weight_scale": 0.5,
+        "mode": "uncertainty_linear",
+    }
+
+
+def test_fused_head_rejects_snapshot_without_embedded_registry(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path, schema_version=1)
+    output = tmp_path / "evaluation"
+
+    result = _run(paths, output, semantic_head="fused_uncertainty")
+
+    assert result.returncode != 0
+    assert "embedded registry" in result.stderr
+    assert not output.exists()
 
 
 def test_unknown_semantic_head_is_rejected_before_output_creation(
