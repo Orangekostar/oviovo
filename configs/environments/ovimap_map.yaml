@@ -1,0 +1,36 @@
+name: ovimap-map
+channels:
+  - robostack-noetic
+  - pytorch
+  - nvidia
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.11
+  - numpy=1.26
+  - pytorch=2.1.1
+  - torchvision=0.16.1
+  - pytorch-cuda=12.1
+  - ros-noetic-ros-base=1.5.0
+  - ros-noetic-pcl-ros=1.7.4
+  - catkin_tools
+  - cmake
+  - make
+  - pybind11
+  - protobuf
+  - glog
+  - gflags
+  - empy=3.3.4
+  - pip
+  - pip:
+      - numpy==1.26.4
+      - transformers==4.49.0
+      - accelerate==0.26.*
+      - opencv-contrib-python==4.11.*
+      - open3d
+      - scipy
+      - plyfile==1.1.3
+      - h5py
+      - sentencepiece
+      - ftfy
+      - regex

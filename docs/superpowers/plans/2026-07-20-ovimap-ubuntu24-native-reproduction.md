@@ -246,16 +246,18 @@ dependencies:
   - ninja
   - pip
   - pip:
-      - transformers==4.49.0
       - opencv-contrib-python==4.11.*
 ```
 
 ```yaml
 # configs/environments/ovimap_map.yaml
-channels: [robostack-noetic, conda-forge]
+channels: [robostack-noetic, pytorch, nvidia, conda-forge]
 dependencies:
   - python=3.11
   - numpy=1.26
+  - pytorch=2.1.1
+  - torchvision=0.16.1
+  - pytorch-cuda=12.1
   - ros-noetic-ros-base=1.5.0
   - ros-noetic-pcl-ros=1.7.4
   - catkin_tools
@@ -266,6 +268,11 @@ dependencies:
   - glog
   - gflags
   - pip
+  - pip:
+      - numpy==1.26.4
+      - transformers==4.49.0
+      - opencv-contrib-python==4.11.*
+      - plyfile==1.1.3
 ```
 
 - [ ] **Step 4: Implement and execute bootstrap**

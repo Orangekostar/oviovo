@@ -1,0 +1,23 @@
+name: ovimap-cropformer
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.8.10
+  - pytorch=2.1.1
+  - torchvision=0.16.1
+  - pytorch-cuda=12.1
+  - cuda-nvcc=12.1.105
+  - ninja
+  - pip
+  - pip:
+      - opencv-contrib-python==4.11.*
+      - cython
+      - scipy
+      - shapely
+      - timm
+      - h5py
+      - submitit
+      - scikit-image
