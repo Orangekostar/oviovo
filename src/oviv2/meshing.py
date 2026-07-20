@@ -188,6 +188,7 @@ def _validated_entity_semantics(
 
 def _validated_entity_posteriors(
     value: Mapping[int, tuple[tuple[int, float], ...]] | None,
+    valid_semantic_ids: frozenset[int] | None,
 ) -> dict[int, tuple[tuple[int, float], ...]] | None:
     if value is None:
         return None
@@ -204,7 +205,26 @@ def _validated_entity_posteriors(
             raise TypeError("entity_posteriors values must be tuples")
         normalized_probabilities = tuple(probabilities)
         fuse_semantics((), normalized_probabilities, 1.0)
+        if valid_semantic_ids is not None and any(
+            semantic_id not in valid_semantic_ids
+            for semantic_id, _ in normalized_probabilities
+        ):
+            raise ValueError("entity posterior class is outside frozen vocabulary")
         normalized[normalized_entity_id] = normalized_probabilities
+    return normalized
+
+
+def _validated_semantic_id_set(value: object) -> frozenset[int] | None:
+    if value is None:
+        return None
+    if not isinstance(value, (set, frozenset)):
+        raise TypeError("valid_semantic_ids must be a set or frozenset")
+    normalized = frozenset(
+        _int64_identifier(item, "valid semantic ID", minimum=1)
+        for item in value
+    )
+    if not normalized:
+        raise ValueError("valid_semantic_ids must be non-empty")
     return normalized
 
 
@@ -217,6 +237,7 @@ def derive_labeled_mesh(
     entity_semantics: Mapping[int, tuple[int, float]] | None = None,
     entity_posteriors: Mapping[int, tuple[tuple[int, float], ...]] | None = None,
     semantic_fusion: SemanticFusionConfig | None = None,
+    valid_semantic_ids: set[int] | frozenset[int] | None = None,
 ) -> LabeledMesh:
     if evidence.config.block_resolution != geometry.config.block_resolution:
         raise ValueError("evidence block_resolution does not match geometry")
@@ -231,8 +252,12 @@ def derive_labeled_mesh(
         SemanticFusionConfig,
     ):
         raise TypeError("semantic_fusion must be SemanticFusionConfig or None")
+    normalized_valid_semantic_ids = _validated_semantic_id_set(valid_semantic_ids)
     normalized_entity_semantics = _validated_entity_semantics(entity_semantics)
-    normalized_entity_posteriors = _validated_entity_posteriors(entity_posteriors)
+    normalized_entity_posteriors = _validated_entity_posteriors(
+        entity_posteriors,
+        normalized_valid_semantic_ids,
+    )
     raw_mesh = geometry.extract_mesh(weight_threshold=weight_threshold)
     vertices = raw_mesh.vertex.positions.numpy()
     triangles = raw_mesh.triangle.indices.numpy()
@@ -249,6 +274,11 @@ def derive_labeled_mesh(
     for index, vertex in enumerate(vertices):
         voxel_key = point_to_voxel(vertex, geometry.config.voxel_size_m)
         semantic_candidates = evidence.semantic_candidates(voxel_key)
+        if normalized_valid_semantic_ids is not None and any(
+            candidate.label_id not in normalized_valid_semantic_ids
+            for candidate in semantic_candidates
+        ):
+            raise ValueError("semantic evidence class is outside frozen vocabulary")
         if semantic_candidates:
             strongest = max(
                 semantic_candidates,

@@ -23,6 +23,7 @@ from src.oviv2.evidence import SparseEvidenceStore
 from src.oviv2.entities import EntityRegistry
 from src.oviv2.geometry import SparseTsdfVolume
 from src.oviv2.ownership import ReversibleOwnershipStore
+from src.oviv2.semantic_memory import SparseClassPosterior
 from src.oviv2.snapshot import VoxelMapSnapshot, VoxelSnapshotMetadata
 
 from tests.oviv2.test_geometry import _integrate_twice, _plane_frame
@@ -159,6 +160,7 @@ def _fixture(
     semantic_evidence: bool = True,
     semantic_label_id: int = 2,
     semantic_supports: tuple[tuple[int, float], ...] | None = None,
+    entity_probabilities: tuple[tuple[int, float], ...] | None = None,
     schema_version: int = 1,
 ) -> dict[str, Path]:
     geometry = SparseTsdfVolume()
@@ -191,6 +193,21 @@ def _fixture(
     if schema_version in {2, 3}:
         registry = EntityRegistry()
         entity = registry.resolve(_track(0, {(0, 0, 20)}), revision=1)
+        if entity_probabilities is not None:
+            posterior = SparseClassPosterior(
+                tuple(
+                    (semantic_id, float(np.log(probability)))
+                    for semantic_id, probability in entity_probabilities
+                ),
+                effective_support=1.0,
+            )
+            entity = replace(
+                entity,
+                semantic_id=posterior.best_semantic_id,
+                semantic_posterior=posterior,
+                semantic_entropy=posterior.entropy,
+                semantic_margin=posterior.margin,
+            )
         registry.entities = {11: replace(entity, entity_id=11)}
         registry._next_entity_id = 12
     metadata = VoxelSnapshotMetadata(
@@ -483,6 +500,39 @@ def test_fused_head_rejects_snapshot_without_embedded_registry(tmp_path: Path) -
 
     assert result.returncode != 0
     assert "embedded registry" in result.stderr
+    assert not output.exists()
+
+
+@pytest.mark.parametrize("oov_source", ["dense", "entity"])
+def test_fused_head_rejects_any_distribution_class_outside_frozen_vocabulary(
+    tmp_path: Path,
+    oov_source: str,
+) -> None:
+    paths = _fixture(
+        tmp_path,
+        semantic_supports=(
+            ((1, 0.55), (999, 0.45))
+            if oov_source == "dense"
+            else ((1, 0.55), (2, 0.45))
+        ),
+        entity_probabilities=(
+            ((2, 0.6), (999, 0.4))
+            if oov_source == "entity"
+            else ((2, 1.0),)
+        ),
+        schema_version=3,
+    )
+    output = tmp_path / "evaluation"
+
+    result = _run(
+        paths,
+        output,
+        include_entity_info=False,
+        semantic_head="fused_uncertainty",
+    )
+
+    assert result.returncode != 0
+    assert "outside frozen vocabulary" in result.stderr
     assert not output.exists()
 
 

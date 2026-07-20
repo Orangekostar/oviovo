@@ -1231,6 +1231,44 @@ def test_stage3_adds_fused_evaluator_with_exact_frozen_weight(
     assert "evaluation_fused/metrics.json" in manifest["artifact_checksums"]
 
 
+@pytest.mark.parametrize(
+    ("updates", "message"),
+    [
+        ({"fusion_semantic_mode": "unknown"}, "fusion_semantic_mode"),
+        (
+            {
+                "fusion_semantic_mode": "uncertainty_linear",
+                "dense_semantic_mode": "disabled",
+            },
+            "requires cached dense semantics",
+        ),
+        (
+            {
+                "fusion_semantic_mode": "uncertainty_linear",
+                "fusion_entity_weight_scale": 1.01,
+            },
+            "entity_weight_scale",
+        ),
+    ],
+)
+def test_stage3_rejects_invalid_fusion_config_before_output(
+    tmp_path: Path,
+    updates: dict[str, object],
+    message: str,
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    _write_dense_cache(config_path)
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config.update(updates)
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    output = tmp_path / "run"
+
+    with pytest.raises((TypeError, ValueError), match=message):
+        run(_args(config_path, output))
+
+    assert not output.exists()
+
+
 def test_stage2_cli_stdout_remains_one_json_document(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

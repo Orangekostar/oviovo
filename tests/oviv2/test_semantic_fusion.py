@@ -46,6 +46,18 @@ def test_confident_dense_distribution_resists_disagreeing_entity() -> None:
     assert fused.entity_weight == pytest.approx(0.1)
 
 
+def test_agreeing_distributions_increase_winner_support() -> None:
+    fused = fuse_semantics(
+        ((2, 0.6), (1, 0.4)),
+        ((2, 0.9), (3, 0.1)),
+        1.0,
+    )
+
+    assert fused.semantic_id == 2
+    assert fused.confidence == pytest.approx(0.654)
+    assert fused.entity_weight == pytest.approx(0.18)
+
+
 def test_empty_distributions_remain_unknown() -> None:
     fused = fuse_semantics((), (), 1.0)
 
@@ -68,6 +80,7 @@ def test_config_rejects_invalid_entity_weight_scale(scale: object) -> None:
         (((1, -1.0),), (), 0.0, "support"),
         ((), ((1, 0.6), (2, 0.3)), 1.0, "sum to one"),
         ((), ((1, np.nan),), 1.0, "probability"),
+        ((), ((1, 0.6), (np.iinfo(np.int64).max + 1, 0.4)), 1.0, "int64"),
         ((), ((1, 1.0),), 1.01, "ownership_confidence"),
     ],
 )

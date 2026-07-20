@@ -6,6 +6,9 @@ import math
 from numbers import Integral, Real
 
 
+_INT64_MAX = (1 << 63) - 1
+
+
 @dataclass(frozen=True)
 class SemanticFusionConfig:
     entity_weight_scale: float = 0.5
@@ -48,6 +51,8 @@ def _distribution(
         normalized_id = int(semantic_id)
         if normalized_id <= 0:
             raise ValueError("semantic ID must be a positive integer")
+        if normalized_id > _INT64_MAX:
+            raise ValueError("semantic ID must fit signed int64")
         if normalized_id in result:
             raise ValueError("semantic IDs must be unique")
         if isinstance(raw_value, bool) or not isinstance(raw_value, Real):

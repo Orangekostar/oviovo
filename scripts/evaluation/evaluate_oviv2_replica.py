@@ -394,6 +394,7 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         semantic_fusion=(
             fusion_config if semantic_head == "fused_uncertainty" else None
         ),
+        valid_semantic_ids=valid_semantic_ids,
     )
     mesh_semantic_ids = {int(value) for value in np.unique(mesh.semantic_ids) if value > 0}
     if not mesh_semantic_ids.issubset(valid_semantic_ids):
