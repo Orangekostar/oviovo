@@ -1374,7 +1374,14 @@ def build_worker(args: argparse.Namespace) -> DenseWorker:
             "slide_stride": 112,
             "prompt_denoising_thresh": 0.5,
             "sam_refinement": args.sam_refinement,
+            "probability_mass_policy": (
+                "preserve-denoised-mass-normalize-numerical-overshoot"
+            ),
+            "probability_mass_drift_tolerance": (
+                RADSEG_PROBABILITY_MASS_DRIFT_TOLERANCE
+            ),
         }
+        inference_config_version = 3
     else:
         assert text_embeddings is not None
         runtime = NARadioRuntime(
@@ -1393,11 +1400,12 @@ def build_worker(args: argparse.Namespace) -> DenseWorker:
             "cosine_temperature": 100.0,
             "resolution_policy": "nearest-supported-then-resize-probabilities",
         }
+        inference_config_version = 2
 
     prompt_sha256 = canonical_sha256(_prompt_descriptor(encoder, classes))
     inference_config_sha256 = canonical_sha256(
         {
-            "inference_config_version": 2,
+            "inference_config_version": inference_config_version,
             "backend": args.backend,
             "model_version": args.model_version,
             "lang_model": args.lang_model,

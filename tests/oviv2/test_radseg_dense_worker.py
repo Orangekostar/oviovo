@@ -1489,9 +1489,14 @@ def test_build_worker_pins_language_assets_and_restores_global_state(
             for payload in hash_payloads
             if isinstance(payload, dict) and "inference_config_version" in payload
         )
+        assert config_payload["inference_config_version"] == 3
         assert config_payload["language_model_id"] == args.language_model_id
         assert config_payload["language_model_revision"] == args.language_model_revision
         assert config_payload["language_model_sha256"] == language_hash
+        assert config_payload["model"]["probability_mass_policy"] == (
+            "preserve-denoised-mass-normalize-numerical-overshoot"
+        )
+        assert config_payload["model"]["probability_mass_drift_tolerance"] == 1e-3
     finally:
         _chmod_tree(language_root, writable=True)
 
