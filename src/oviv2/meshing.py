@@ -14,6 +14,7 @@ from src.oviv2.addressing import point_to_voxel
 from src.oviv2.evidence import SparseEvidenceStore
 from src.oviv2.geometry import SparseTsdfVolume
 from src.oviv2.ownership import ReversibleOwnershipStore
+from src.oviv2.semantic_fusion import SemanticFusionConfig, fuse_semantics
 
 
 _INT64_MAX = int(np.iinfo(np.int64).max)
@@ -185,6 +186,28 @@ def _validated_entity_semantics(
     return normalized
 
 
+def _validated_entity_posteriors(
+    value: Mapping[int, tuple[tuple[int, float], ...]] | None,
+) -> dict[int, tuple[tuple[int, float], ...]] | None:
+    if value is None:
+        return None
+    if not isinstance(value, Mapping):
+        raise TypeError("entity_posteriors must be a mapping or None")
+    normalized: dict[int, tuple[tuple[int, float], ...]] = {}
+    for entity_id, probabilities in value.items():
+        normalized_entity_id = _int64_identifier(
+            entity_id,
+            "entity_posteriors entity ID",
+            minimum=1,
+        )
+        if not isinstance(probabilities, tuple):
+            raise TypeError("entity_posteriors values must be tuples")
+        normalized_probabilities = tuple(probabilities)
+        fuse_semantics((), normalized_probabilities, 1.0)
+        normalized[normalized_entity_id] = normalized_probabilities
+    return normalized
+
+
 def derive_labeled_mesh(
     geometry: SparseTsdfVolume,
     evidence: SparseEvidenceStore,
@@ -192,12 +215,24 @@ def derive_labeled_mesh(
     *,
     weight_threshold: float = 1.0,
     entity_semantics: Mapping[int, tuple[int, float]] | None = None,
+    entity_posteriors: Mapping[int, tuple[tuple[int, float], ...]] | None = None,
+    semantic_fusion: SemanticFusionConfig | None = None,
 ) -> LabeledMesh:
     if evidence.config.block_resolution != geometry.config.block_resolution:
         raise ValueError("evidence block_resolution does not match geometry")
     if ownership.block_resolution != geometry.config.block_resolution:
         raise ValueError("ownership block_resolution does not match geometry")
+    if (entity_posteriors is None) != (semantic_fusion is None):
+        raise ValueError("entity_posteriors and semantic_fusion must be supplied together")
+    if entity_semantics is not None and semantic_fusion is not None:
+        raise ValueError("entity_semantics and semantic_fusion are mutually exclusive")
+    if semantic_fusion is not None and not isinstance(
+        semantic_fusion,
+        SemanticFusionConfig,
+    ):
+        raise TypeError("semantic_fusion must be SemanticFusionConfig or None")
     normalized_entity_semantics = _validated_entity_semantics(entity_semantics)
+    normalized_entity_posteriors = _validated_entity_posteriors(entity_posteriors)
     raw_mesh = geometry.extract_mesh(weight_threshold=weight_threshold)
     vertices = raw_mesh.vertex.positions.numpy()
     triangles = raw_mesh.triangle.indices.numpy()
@@ -241,6 +276,25 @@ def derive_labeled_mesh(
                 if current_semantics is not None and current_semantics[0] > 0:
                     semantic_ids[index] = current_semantics[0]
                     semantic_confidence[index] = current_semantics[1]
+            elif normalized_entity_posteriors is not None:
+                current_posterior = normalized_entity_posteriors.get(owner_entity_id)
+                if current_posterior:
+                    assert semantic_fusion is not None
+                    fused = fuse_semantics(
+                        tuple(
+                            (candidate.label_id, candidate.support)
+                            for candidate in semantic_candidates
+                        ),
+                        current_posterior,
+                        owner.confidence,
+                        semantic_fusion,
+                    )
+                    semantic_ids[index] = _int64_identifier(
+                        fused.semantic_id,
+                        "fused semantic ID",
+                        minimum=0,
+                    )
+                    semantic_confidence[index] = fused.confidence
 
     return canonicalize_labeled_mesh(
         LabeledMesh(

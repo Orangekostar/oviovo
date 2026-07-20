@@ -11,6 +11,7 @@ from src.oviv2.evidence import SemanticCandidate, SparseEvidenceStore
 from src.oviv2.geometry import SparseTsdfVolume
 from src.oviv2.meshing import LabeledMesh, canonicalize_labeled_mesh, derive_labeled_mesh, write_labeled_mesh
 from src.oviv2.ownership import OwnershipRecord, ReversibleOwnershipStore
+from src.oviv2.semantic_fusion import SemanticFusionConfig
 
 from tests.oviv2.test_geometry import _integrate_twice, _plane_frame
 
@@ -95,6 +96,68 @@ def test_current_owner_semantics_override_independent_voxel_evidence() -> None:
     assert np.all(mesh.semantic_ids[owned] == 3)
     assert np.all(mesh.semantic_confidence[owned] == pytest.approx(0.75))
     assert evidence.semantic_candidates(target_key)[0].label_id == 1
+
+
+def test_uncertainty_fusion_changes_semantics_without_changing_ownership() -> None:
+    geometry = _geometry()
+    raw_vertices = geometry.extract_mesh().vertex.positions.numpy()
+    target_key = point_to_voxel(raw_vertices[0], geometry.config.voxel_size_m)
+    evidence = SparseEvidenceStore()
+    evidence.update_semantic(target_key, 1, 0.51, 1)
+    evidence.update_semantic(target_key, 2, 0.49, 1)
+    ownership = ReversibleOwnershipStore()
+    ownership.assign(target_key, 4, 1.0, 1)
+
+    mesh = derive_labeled_mesh(
+        geometry,
+        evidence,
+        ownership,
+        entity_posteriors={4: ((2, 1.0),)},
+        semantic_fusion=SemanticFusionConfig(entity_weight_scale=0.5),
+    )
+    keys = np.asarray(
+        [point_to_voxel(vertex, geometry.config.voxel_size_m) for vertex in mesh.vertices_xyz]
+    )
+    owned = np.all(keys == np.asarray(target_key), axis=1)
+
+    assert owned.any()
+    assert np.all(mesh.semantic_ids[owned] == 2)
+    assert np.all(mesh.semantic_confidence[owned] == pytest.approx(0.61495))
+    assert np.all(mesh.entity_ids[owned] == 4)
+    assert np.all(mesh.ownership_confidence[owned] == pytest.approx(1.0))
+
+
+def test_owner_override_and_uncertainty_fusion_are_mutually_exclusive() -> None:
+    with pytest.raises(ValueError, match="mutually exclusive"):
+        derive_labeled_mesh(
+            _geometry(),
+            SparseEvidenceStore(),
+            ReversibleOwnershipStore(),
+            entity_semantics={4: (2, 1.0)},
+            entity_posteriors={4: ((2, 1.0),)},
+            semantic_fusion=SemanticFusionConfig(),
+        )
+
+
+@pytest.mark.parametrize(
+    ("entity_posteriors", "semantic_fusion"),
+    [
+        ({4: ((2, 1.0),)}, None),
+        (None, SemanticFusionConfig()),
+    ],
+)
+def test_fusion_mapping_and_config_must_be_supplied_together(
+    entity_posteriors: object,
+    semantic_fusion: object,
+) -> None:
+    with pytest.raises(ValueError, match="must be supplied together"):
+        derive_labeled_mesh(
+            _geometry(),
+            SparseEvidenceStore(),
+            ReversibleOwnershipStore(),
+            entity_posteriors=entity_posteriors,  # type: ignore[arg-type]
+            semantic_fusion=semantic_fusion,  # type: ignore[arg-type]
+        )
 
 
 def test_owner_release_removes_object_semantics_but_preserves_structure_evidence() -> None:
