@@ -13,6 +13,7 @@ import tempfile
 
 import numpy as np
 
+from src.oviv2.dense_semantics import DenseSemanticProvenance
 from src.oviv2.evidence import EvidenceConfig, SparseEvidenceStore
 from src.oviv2.entities import EntityRegistry
 from src.oviv2.geometry import SparseTsdfVolume, TsdfConfig
@@ -47,6 +48,7 @@ class VoxelSnapshotMetadata:
     voxel_size_m: float
     block_resolution: int
     schema_version: int = 1
+    dense_semantic_provenance: DenseSemanticProvenance | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.scene_id, str) or not self.scene_id.strip():
@@ -68,9 +70,27 @@ class VoxelSnapshotMetadata:
         if (
             not isinstance(self.schema_version, int)
             or isinstance(self.schema_version, bool)
-            or self.schema_version not in {1, 2}
+            or self.schema_version not in {1, 2, 3}
         ):
             raise ValueError("unsupported schema_version")
+
+        provenance = self.dense_semantic_provenance
+        if isinstance(provenance, dict):
+            provenance = DenseSemanticProvenance(**provenance)
+            object.__setattr__(self, "dense_semantic_provenance", provenance)
+        if provenance is not None and not isinstance(
+            provenance,
+            DenseSemanticProvenance,
+        ):
+            raise TypeError(
+                "dense_semantic_provenance must be DenseSemanticProvenance or None"
+            )
+        if self.schema_version in {1, 2} and provenance is not None:
+            raise ValueError(
+                "schema v1/v2 metadata forbids dense semantic provenance"
+            )
+        if self.schema_version == 3 and provenance is None:
+            raise ValueError("schema v3 metadata requires dense semantic provenance")
 
 
 @dataclass(frozen=True)
@@ -135,7 +155,9 @@ class VoxelMapSnapshot:
                 raise ValueError("schema v1 snapshot forbids a registry")
             return
         if not isinstance(registry, EntityRegistry):
-            raise ValueError("schema v2 snapshot requires a registry")
+            raise ValueError(
+                f"schema v{metadata.schema_version} snapshot requires a registry"
+            )
         referenced_entity_ids = {
             int(entity_id)
             for block in evidence._blocks.values()
@@ -227,7 +249,10 @@ class VoxelMapSnapshot:
         exchanged = False
         published = False
         try:
-            cls._write_json(temporary / "metadata.json", asdict(metadata))
+            metadata_payload = asdict(metadata)
+            if metadata.schema_version in {1, 2}:
+                metadata_payload.pop("dense_semantic_provenance")
+            cls._write_json(temporary / "metadata.json", metadata_payload)
             geometry.save(temporary / "geometry.npz")
             evidence.save(temporary / "evidence.npz")
             ownership.save(temporary / "ownership.npz")
@@ -420,7 +445,7 @@ class VoxelMapSnapshot:
             )
             registry = (
                 EntityRegistry.load(source / "entities.jsonl")
-                if metadata.schema_version == 2
+                if metadata.schema_version in {2, 3}
                 else None
             )
             cls._validate_components(

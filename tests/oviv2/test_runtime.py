@@ -2,17 +2,23 @@ from __future__ import annotations
 
 from dataclasses import replace
 from pathlib import Path
+import pickle
 
 import numpy as np
 import pytest
 
 from src.core.data_structures import CameraIntrinsics, Frame
+from src.oviv2.dense_projection import DenseSemanticConfig, DenseSemanticIntegrator
+from src.oviv2.dense_semantics import DenseSemanticFrame, DenseSemanticProvenance
 from src.oviv2.entities import EntityRegistry
 from src.oviv2.meshing import derive_labeled_mesh
 from src.oviv2.observations import FrameObservation, ObservationKind
-from src.oviv2.runtime import Oviv2Runtime, Oviv2RuntimeConfig
+from src.oviv2.ownership import ReversibleOwnershipStore
+from src.oviv2.runtime import Oviv2Runtime, Oviv2RuntimeConfig, RuntimeFrameResult
 from src.oviv2.snapshot import VoxelMapSnapshot
 from src.oviv2.tracking import LocalTrackerConfig
+
+from tests.oviv2.test_dense_projection import make_dense_frame
 
 
 def frame(frame_id: int = 0) -> Frame:
@@ -89,14 +95,292 @@ def object_observation(
     return replace(value, label=label)
 
 
+def dense_provenance() -> DenseSemanticProvenance:
+    return DenseSemanticProvenance(
+        backend="radseg",
+        source_commit="a" * 40,
+        radio_commit="b" * 40,
+        model_id="nvidia/C-RADIOv3-H",
+        model_sha256="c" * 64,
+        auxiliary_model_sha256="d" * 64,
+        vocabulary_sha256="e" * 64,
+        prompt_sha256="f" * 64,
+        inference_config_sha256="1" * 64,
+        cache_prefix_sha256="2" * 64,
+        language_model_id="google/siglip2-giant-opt-patch16-384",
+        language_model_revision="3" * 40,
+        language_model_sha256="4" * 64,
+    )
+
+
+def dense_frame(frame_id: int) -> DenseSemanticFrame:
+    return make_dense_frame(
+        image_shape=(32, 32),
+        stride=32,
+        source_frame_id=frame_id,
+        class_count=3,
+        class_ids=[[[2]]],
+        probabilities=[[[1.0]]],
+    )
+
+
+def dense_runtime() -> Oviv2Runtime:
+    return Oviv2Runtime(
+        "room0",
+        Oviv2RuntimeConfig(
+            tracker=LocalTrackerConfig(confirm_hits=1),
+            dense_semantics=DenseSemanticConfig(voxel_size_m=0.05),
+        ),
+        dense_semantic_provenance=dense_provenance(),
+    )
+
+
+def _array_block_fingerprint(blocks: dict[object, object]) -> tuple[object, ...]:
+    return tuple(
+        (
+            key,
+            tuple(
+                (name, value.dtype.str, value.shape, value.tobytes())
+                for name, value in sorted(vars(block).items())
+            ),
+        )
+        for key, block in sorted(blocks.items())
+    )
+
+
+def _geometry_fingerprint(runtime: Oviv2Runtime) -> tuple[object, ...]:
+    grid = runtime.geometry._grid
+    active = grid.hashmap().active_buf_indices()
+    return (
+        grid.hashmap().key_tensor()[active].numpy().tobytes(),
+        *(
+            grid.attribute(name)[active].numpy().tobytes()
+            for name in runtime.geometry._ATTRIBUTE_NAMES
+        ),
+    )
+
+
+def _runtime_state(runtime: Oviv2Runtime, registry_path: Path) -> dict[str, object]:
+    runtime.registry.save(registry_path)
+    return {
+        "revision": (runtime.revision, runtime.last_frame_id, runtime.last_timestamp),
+        "object_ids": tuple(
+            id(value)
+            for value in (
+                runtime.geometry,
+                runtime.evidence,
+                runtime.ownership,
+                runtime.tracker,
+                runtime.registry,
+            )
+        ),
+        "geometry": _geometry_fingerprint(runtime),
+        "evidence_blocks": _array_block_fingerprint(runtime.evidence._blocks),
+        "evidence_candidates": tuple(
+            (
+                key,
+                runtime.evidence.semantic_candidates(key),
+                runtime.evidence.entity_candidates(key),
+            )
+            for key in ((-11, -11, 20), (0, 0, 20))
+        ),
+        "tracker_snapshot": pickle.dumps(runtime.tracker, protocol=5),
+        "registry_json": registry_path.read_bytes(),
+        "ownership_blocks": _array_block_fingerprint(runtime.ownership._blocks),
+        "ownership_records": runtime.ownership.records(),
+        "ownership_entities": tuple(
+            (entity_id, tuple(sorted(voxel_keys)))
+            for entity_id, voxel_keys in sorted(
+                runtime.ownership._entity_voxels.items()
+            )
+        ),
+    }
+
+
 def test_geometry_integrates_even_when_observation_batch_is_empty() -> None:
     runtime = Oviv2Runtime("room0")
 
     result = runtime.process_frame(frame(), ())
 
     assert result.geometry_blocks_touched > 0
+    assert (
+        result.dense_sampled_pixel_count,
+        result.dense_valid_pixel_count,
+        result.dense_updated_voxel_count,
+    ) == (0, 0, 0)
     assert runtime.geometry.active_block_count > 0
     assert runtime.registry.entities == {}
+
+
+def test_runtime_config_and_constructor_require_paired_dense_contracts() -> None:
+    with pytest.raises(TypeError, match="dense_semantics"):
+        Oviv2RuntimeConfig(dense_semantics=object())  # type: ignore[arg-type]
+
+    dense_config = Oviv2RuntimeConfig(
+        dense_semantics=DenseSemanticConfig(voxel_size_m=0.05)
+    )
+    with pytest.raises(ValueError, match="dense.*provenance|provenance.*dense"):
+        Oviv2Runtime("room0", dense_config)
+    with pytest.raises(ValueError, match="dense.*provenance|provenance.*dense"):
+        Oviv2Runtime(
+            "room0",
+            dense_semantic_provenance=dense_provenance(),
+        )
+    with pytest.raises(TypeError, match="dense_semantic_provenance"):
+        Oviv2Runtime(
+            "room0",
+            dense_config,
+            dense_semantic_provenance=object(),  # type: ignore[arg-type]
+        )
+
+
+def test_runtime_requires_exactly_one_dense_frame_when_enabled() -> None:
+    disabled = Oviv2Runtime("room0")
+    with pytest.raises(ValueError, match="dense.*disabled|disabled.*dense"):
+        disabled.process_frame(frame(0), (), dense_semantics=dense_frame(0))
+    assert disabled.revision == 0
+
+    enabled = dense_runtime()
+    with pytest.raises(ValueError, match="dense.*required|required.*dense"):
+        enabled.process_frame(frame(0), ())
+    assert enabled.revision == 0
+
+
+def test_runtime_integrates_dense_frame_at_current_revision() -> None:
+    runtime = dense_runtime()
+
+    result = runtime.process_frame(
+        frame(0),
+        (),
+        dense_semantics=dense_frame(0),
+    )
+
+    assert (
+        result.dense_sampled_pixel_count,
+        result.dense_valid_pixel_count,
+        result.dense_updated_voxel_count,
+    ) == (1, 1, 1)
+    candidates = runtime.evidence.semantic_candidates((-11, -11, 20))
+    assert [candidate.label_id for candidate in candidates] == [2]
+    assert candidates[0].revision == result.revision == runtime.revision == 1
+
+
+@pytest.mark.parametrize(
+    ("field_name", "invalid"),
+    [
+        ("dense_sampled_pixel_count", -1),
+        ("dense_valid_pixel_count", True),
+        ("dense_updated_voxel_count", 1.5),
+    ],
+)
+def test_runtime_frame_result_rejects_invalid_dense_counts(
+    field_name: str,
+    invalid: object,
+) -> None:
+    result = RuntimeFrameResult(0, 0, 0, 0, 0, ())
+    assert (
+        result.dense_sampled_pixel_count,
+        result.dense_valid_pixel_count,
+        result.dense_updated_voxel_count,
+    ) == (0, 0, 0)
+
+    with pytest.raises(ValueError, match=field_name):
+        replace(result, **{field_name: invalid})
+
+
+def test_dense_failure_rolls_back_all_runtime_state(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runtime = dense_runtime()
+    key = (0, 0, 20)
+    runtime.process_frame(
+        frame(0),
+        (object_observation(0, key, 2, "chair"),),
+        dense_semantics=dense_frame(0),
+    )
+    before = _runtime_state(runtime, tmp_path / "registry-before.jsonl")
+    original = DenseSemanticIntegrator.integrate
+
+    def fail_after_dense_update(integrator, current, dense, store, revision):
+        original(integrator, current, dense, store, revision)
+        assert store is not runtime.evidence
+        raise RuntimeError("injected dense failure")
+
+    monkeypatch.setattr(DenseSemanticIntegrator, "integrate", fail_after_dense_update)
+
+    with pytest.raises(RuntimeError, match="dense failure"):
+        runtime.process_frame(
+            frame(1),
+            (object_observation(1, key, 2, "chair"),),
+            dense_semantics=dense_frame(1),
+        )
+
+    after = _runtime_state(runtime, tmp_path / "registry-after.jsonl")
+    assert after == before
+
+
+def test_failure_after_dense_update_rolls_back_all_runtime_state(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runtime = dense_runtime()
+    key = (0, 0, 20)
+    runtime.process_frame(
+        frame(0),
+        (object_observation(0, key, 2, "chair"),),
+        dense_semantics=dense_frame(0),
+    )
+    before = _runtime_state(runtime, tmp_path / "registry-before.jsonl")
+    original = ReversibleOwnershipStore.assign
+
+    def fail_after_ownership_update(store, *args, **kwargs):
+        original(store, *args, **kwargs)
+        assert store is not runtime.ownership
+        raise RuntimeError("injected downstream failure")
+
+    monkeypatch.setattr(
+        ReversibleOwnershipStore,
+        "assign",
+        fail_after_ownership_update,
+    )
+
+    with pytest.raises(RuntimeError, match="downstream failure"):
+        runtime.process_frame(
+            frame(1),
+            (object_observation(1, key, 2, "chair"),),
+            dense_semantics=dense_frame(1),
+        )
+
+    after = _runtime_state(runtime, tmp_path / "registry-after.jsonl")
+    assert after == before
+
+
+@pytest.mark.parametrize("invalid_timestamp", [object(), np.nan])
+def test_invalid_frame_timestamp_is_rejected_before_trial_publication(
+    tmp_path: Path,
+    invalid_timestamp: object,
+) -> None:
+    runtime = dense_runtime()
+    key = (0, 0, 20)
+    runtime.process_frame(
+        frame(0),
+        (object_observation(0, key, 2, "chair"),),
+        dense_semantics=dense_frame(0),
+    )
+    before = _runtime_state(runtime, tmp_path / "registry-before.jsonl")
+    invalid = frame(1)
+    invalid.timestamp = invalid_timestamp  # type: ignore[assignment]
+
+    with pytest.raises(ValueError, match="timestamp"):
+        runtime.process_frame(
+            invalid,
+            (),
+            dense_semantics=dense_frame(1),
+        )
+
+    after = _runtime_state(runtime, tmp_path / "registry-after.jsonl")
+    assert after == before
 
 
 def test_structure_updates_semantics_but_never_creates_entity() -> None:
@@ -340,6 +624,7 @@ def test_runtime_commit_round_trip_contains_only_voxel_layers(tmp_path: Path) ->
     assert restored.metadata.scene_id == "room0"
     assert restored.registry is not None
     assert restored.registry.entities == runtime.registry.entities
+    assert restored.metadata.dense_semantic_provenance is None
     assert {path.name for path in (tmp_path / "snapshot").iterdir()} == {
         "metadata.json",
         "geometry.npz",
@@ -348,3 +633,29 @@ def test_runtime_commit_round_trip_contains_only_voxel_layers(tmp_path: Path) ->
         "entities.jsonl",
         "checksums.json",
     }
+
+
+def test_dense_runtime_commit_round_trip_uses_schema3_typed_provenance(
+    tmp_path: Path,
+) -> None:
+    runtime = dense_runtime()
+    runtime.process_frame(
+        frame(0),
+        (),
+        dense_semantics=dense_frame(0),
+    )
+
+    committed = runtime.commit(tmp_path / "snapshot")
+    restored = VoxelMapSnapshot.load(committed.path)
+
+    assert committed.metadata.schema_version == 3
+    assert committed.metadata.dense_semantic_provenance == dense_provenance()
+    assert isinstance(
+        restored.metadata.dense_semantic_provenance,
+        DenseSemanticProvenance,
+    )
+    assert restored.metadata.dense_semantic_provenance == dense_provenance()
+    assert restored.metadata.dense_semantic_provenance.language_model_id == (
+        "google/siglip2-giant-opt-patch16-384"
+    )
+    assert set(restored.checksums) == set(VoxelMapSnapshot._DATA_FILES_V2)

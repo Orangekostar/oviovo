@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import replace
+from dataclasses import asdict, replace
 import hashlib
 import json
 import os
@@ -13,6 +13,7 @@ import numpy as np
 import pytest
 
 import src.oviv2.snapshot as snapshot_module
+from src.oviv2.dense_semantics import DenseSemanticProvenance
 from src.oviv2.evidence import EvidenceConfig, SparseEvidenceStore
 from src.oviv2.entities import EntityRegistry
 from src.oviv2.geometry import SparseTsdfVolume, TsdfConfig
@@ -51,6 +52,36 @@ def _registry() -> EntityRegistry:
     registry.entities = {11: replace(original, entity_id=11)}
     registry._next_entity_id = 12
     return registry
+
+
+def _dense_provenance() -> DenseSemanticProvenance:
+    return DenseSemanticProvenance(
+        backend="radseg",
+        source_commit="a" * 40,
+        radio_commit="b" * 40,
+        model_id="nvidia/C-RADIOv3-H",
+        model_sha256="c" * 64,
+        auxiliary_model_sha256="d" * 64,
+        vocabulary_sha256="e" * 64,
+        prompt_sha256="f" * 64,
+        inference_config_sha256="1" * 64,
+        cache_prefix_sha256="2" * 64,
+        language_model_id="google/siglip2-giant-opt-patch16-384",
+        language_model_revision="3" * 40,
+        language_model_sha256="4" * 64,
+    )
+
+
+def _rewrite_metadata_with_valid_checksum(
+    target: Path,
+    payload: dict[str, object],
+) -> None:
+    metadata_path = target / "metadata.json"
+    metadata_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+    checksums_path = target / "checksums.json"
+    checksums = json.loads(checksums_path.read_text())
+    checksums["metadata.json"] = hashlib.sha256(metadata_path.read_bytes()).hexdigest()
+    checksums_path.write_text(json.dumps(checksums, indent=2, sort_keys=True) + "\n")
 
 
 def test_snapshot_commit_writes_and_loads_complete_contract(tmp_path: Path) -> None:
@@ -105,8 +136,160 @@ def test_v2_snapshot_embeds_registry_and_hashes_entities(tmp_path: Path) -> None
     }
 
 
-@pytest.mark.parametrize("schema_version", [True, 0, 3, 2.0])
-def test_snapshot_metadata_requires_integer_schema_one_or_two(
+def test_schema3_round_trip_preserves_typed_dense_provenance_and_v2_file_set(
+    tmp_path: Path,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    provenance = _dense_provenance()
+    metadata = replace(
+        metadata,
+        schema_version=3,
+        dense_semantic_provenance=provenance,
+    )
+
+    snapshot = VoxelMapSnapshot.commit(
+        tmp_path / "snapshot",
+        metadata,
+        geometry,
+        evidence,
+        ownership,
+        registry=_registry(),
+    )
+    restored = VoxelMapSnapshot.load(snapshot.path)
+    payload = json.loads((snapshot.path / "metadata.json").read_text())
+
+    assert restored.metadata.dense_semantic_provenance == provenance
+    assert isinstance(
+        restored.metadata.dense_semantic_provenance,
+        DenseSemanticProvenance,
+    )
+    assert payload["dense_semantic_provenance"] == asdict(provenance)
+    assert set(restored.checksums) == set(VoxelMapSnapshot._DATA_FILES_V2)
+    assert {path.name for path in restored.path.iterdir()} == {
+        *VoxelMapSnapshot._DATA_FILES_V2,
+        "checksums.json",
+    }
+    assert restored.checksums["metadata.json"] == hashlib.sha256(
+        (restored.path / "metadata.json").read_bytes()
+    ).hexdigest()
+
+
+@pytest.mark.parametrize("schema_version", [1, 2])
+def test_old_schema_metadata_rejects_dense_provenance(schema_version: int) -> None:
+    metadata, _, _, _ = _components()
+
+    with pytest.raises(ValueError, match="dense semantic provenance"):
+        replace(
+            metadata,
+            schema_version=schema_version,
+            dense_semantic_provenance=_dense_provenance(),
+        )
+
+
+def test_schema3_requires_dense_provenance_and_registry(tmp_path: Path) -> None:
+    metadata, geometry, evidence, ownership = _components()
+
+    with pytest.raises(ValueError, match="dense semantic provenance"):
+        replace(metadata, schema_version=3)
+
+    metadata = replace(
+        metadata,
+        schema_version=3,
+        dense_semantic_provenance=_dense_provenance(),
+    )
+    with pytest.raises(ValueError, match="schema v3.*registry|registry.*schema v3"):
+        VoxelMapSnapshot.commit(
+            tmp_path / "snapshot",
+            metadata,
+            geometry,
+            evidence,
+            ownership,
+        )
+
+
+@pytest.mark.parametrize("schema_version", [1, 2])
+def test_old_schema_metadata_json_omits_dense_field_and_loads_none(
+    tmp_path: Path,
+    schema_version: int,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    metadata = replace(metadata, schema_version=schema_version)
+    registry = _registry() if schema_version == 2 else None
+
+    snapshot = VoxelMapSnapshot.commit(
+        tmp_path / f"snapshot-{schema_version}",
+        metadata,
+        geometry,
+        evidence,
+        ownership,
+        registry=registry,
+    )
+    payload = json.loads((snapshot.path / "metadata.json").read_text())
+
+    assert "dense_semantic_provenance" not in payload
+    assert VoxelSnapshotMetadata(**payload).dense_semantic_provenance is None
+    assert snapshot.metadata.dense_semantic_provenance is None
+
+
+@pytest.mark.parametrize("malformation", ["unknown", "partial_language"])
+def test_schema3_load_rejects_invalid_dense_provenance_dictionary(
+    tmp_path: Path,
+    malformation: str,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+    VoxelMapSnapshot.commit(
+        target,
+        replace(
+            metadata,
+            schema_version=3,
+            dense_semantic_provenance=_dense_provenance(),
+        ),
+        geometry,
+        evidence,
+        ownership,
+        registry=_registry(),
+    )
+    payload = json.loads((target / "metadata.json").read_text())
+    provenance_payload = payload["dense_semantic_provenance"]
+    if malformation == "unknown":
+        provenance_payload["unknown_field"] = "unexpected"
+    else:
+        provenance_payload.pop("language_model_sha256")
+    _rewrite_metadata_with_valid_checksum(target, payload)
+
+    with pytest.raises(ValueError, match="metadata|provenance|language"):
+        VoxelMapSnapshot.load(target)
+
+
+def test_schema3_metadata_provenance_tamper_is_checksum_protected(
+    tmp_path: Path,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+    VoxelMapSnapshot.commit(
+        target,
+        replace(
+            metadata,
+            schema_version=3,
+            dense_semantic_provenance=_dense_provenance(),
+        ),
+        geometry,
+        evidence,
+        ownership,
+        registry=_registry(),
+    )
+    metadata_path = target / "metadata.json"
+    payload = json.loads(metadata_path.read_text())
+    payload["dense_semantic_provenance"]["model_id"] = "tampered/model"
+    metadata_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+
+    with pytest.raises(ValueError, match="checksum.*metadata"):
+        VoxelMapSnapshot.load(target)
+
+
+@pytest.mark.parametrize("schema_version", [True, 0, 4, 2.0])
+def test_snapshot_metadata_requires_integer_schema_one_two_or_three(
     schema_version: object,
 ) -> None:
     metadata, _, _, _ = _components()
