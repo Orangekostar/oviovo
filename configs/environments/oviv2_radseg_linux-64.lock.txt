@@ -1,6 +1,7 @@
-# Pip packages are exact-pinned in configs/environments/oviv2_radseg.yaml; this explicit lock contains conda packages only.
-# This file may be used to create an environment using:
-# $ conda create --name <env> --file <this file>
+# Conda layer only. Full reconstruction from the repository root:
+# $ conda create --name oviovo-radseg --file configs/environments/oviv2_radseg_linux-64.lock.txt
+# $ conda run --name oviovo-radseg python -m pip install --no-deps --require-hashes -r configs/environments/oviv2_radseg_pip.lock.txt
+# The pip lock contains the exact direct and transitive PyPI package closure.
 # platform: linux-64
 # created-by: conda 26.3.2
 @EXPLICIT

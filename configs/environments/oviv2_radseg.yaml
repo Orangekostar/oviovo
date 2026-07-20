@@ -12,19 +12,7 @@ dependencies:
   - pytorch-cuda=12.1
   - pyg::pytorch-scatter=2.1.2=py311_torch_2.4.0_cu121
   - pip=26.1.2
+  # Conda writes its temporary pip requirements beside this YAML, so this
+  # nested requirements path is relative to configs/environments/.
   - pip:
-      - timm==1.0.19
-      - segment-anything==1.0
-      - pillow==12.3.0
-      - numpy==2.4.6
-      - scipy==1.17.1
-      - scikit-image==0.26.0
-      - transformers==4.57.1
-      - typing_extensions==4.16.0
-      - einops==0.8.2
-      - rerun-sdk==0.34.1
-      - pandas==3.0.3
-      - opencv-python-headless==5.0.0.93
-      - ftfy==6.3.1
-      - regex==2026.7.19
-      - tqdm==4.69.0
+      - -r oviv2_radseg_pip.lock.txt
