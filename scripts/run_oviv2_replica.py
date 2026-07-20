@@ -29,6 +29,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from src.core.data_structures import Frame  # noqa: E402
 from src.datasets.replica import ReplicaRoom0Dataset  # noqa: E402
+from src.datasets.scannet200 import ScanNet200Dataset  # noqa: E402
 from src.oviv2.association import AssociationConfig  # noqa: E402
 from src.oviv2.dense_projection import DenseSemanticConfig  # noqa: E402
 from src.oviv2.dense_semantics import (  # noqa: E402
@@ -55,6 +56,7 @@ SCENE_CONFIG_FIELDS = frozenset(
         "gt_mesh",
         "gt_info",
         "dense_cache_dir",
+        "num_frames",
         "algorithm_hash",
     }
 )
@@ -477,7 +479,7 @@ def _load_and_validate_dense_frame(
 def _preflight_dense_cache(
     config: dict[str, Any],
     benchmark: dict[str, Any],
-    dataset: ReplicaRoom0Dataset,
+    dataset: ReplicaRoom0Dataset | ScanNet200Dataset,
     source_ids: list[int],
     num_frames: int,
 ) -> _DenseCachePreflight | None:
@@ -511,7 +513,7 @@ def _preflight_dense_cache(
     if frame_count < num_frames:
         raise ValueError("dense manifest does not cover the requested frame prefix")
     if frame_count > len(dataset):
-        raise ValueError("dense manifest frame_count exceeds the Replica dataset")
+        raise ValueError("dense manifest frame_count exceeds the dataset")
     recorded_source_ids = manifest.get("source_frame_ids")
     if (
         not isinstance(recorded_source_ids, list)
@@ -522,11 +524,14 @@ def _preflight_dense_cache(
         _strict_integer(value, "dense manifest source_frame_id", positive=False)
         for value in recorded_source_ids
     )
-    expected_source_ids = tuple(
-        int(config.get("source_start", 0))
-        + cache_index * int(config.get("source_stride", 10))
-        for cache_index in range(frame_count)
-    )
+    if benchmark.get("dataset") == "ScanNet200":
+        expected_source_ids = tuple(dataset.frame_indices[:frame_count])
+    else:
+        expected_source_ids = tuple(
+            int(config.get("source_start", 0))
+            + cache_index * int(config.get("source_stride", 10))
+            for cache_index in range(frame_count)
+        )
     if normalized_source_ids != expected_source_ids:
         raise ValueError("dense manifest source frame IDs mismatch")
     if normalized_source_ids[:num_frames] != tuple(source_ids):
@@ -540,7 +545,7 @@ def _preflight_dense_cache(
     )
     expected_shape = (dataset.intrinsics.height, dataset.intrinsics.width)
     if image_shape != expected_shape:
-        raise ValueError("dense manifest image_shape does not match Replica dataset")
+        raise ValueError("dense manifest image_shape does not match dataset")
     vocabulary = benchmark["vocabulary"]
     classes = vocabulary["classes"]
     class_count = _strict_integer(
@@ -654,7 +659,7 @@ def _preflight(
     num_frames: int,
     skip_evaluation: bool,
 ) -> tuple[
-    ReplicaRoom0Dataset,
+    ReplicaRoom0Dataset | ScanNet200Dataset,
     dict[str, Any],
     list[int],
     str,
@@ -667,26 +672,86 @@ def _preflight(
         raise ValueError(f"config is missing required fields: {', '.join(missing)}")
     manifest_path = Path(config["manifest"])
     benchmark = _load_json(manifest_path)
-    if benchmark.get("schema_version") != 1 or benchmark.get("dataset") != "Replica":
-        raise ValueError("benchmark manifest must be Replica schema_version 1")
-    if config["scene"] not in {item.get("scene") for item in benchmark.get("scenes", ())}:
+    dataset_name = benchmark.get("dataset")
+    if benchmark.get("schema_version") != 1 or dataset_name not in {
+        "Replica",
+        "ScanNet200",
+    }:
+        raise ValueError(
+            "benchmark manifest must use schema_version 1 for Replica or ScanNet200"
+        )
+    matching_scenes = [
+        item
+        for item in benchmark.get("scenes", ())
+        if isinstance(item, dict) and item.get("scene") == config["scene"]
+    ]
+    if len(matching_scenes) != 1:
         raise ValueError("configured scene is absent from benchmark manifest")
+    scene_record = matching_scenes[0]
     classes = benchmark.get("vocabulary", {}).get("classes")
     if not isinstance(classes, list) or not classes:
         raise ValueError("benchmark manifest has no frozen vocabulary")
 
-    dataset = ReplicaRoom0Dataset(Path(config["dataset_root"]))
+    if dataset_name == "Replica":
+        dataset: ReplicaRoom0Dataset | ScanNet200Dataset = ReplicaRoom0Dataset(
+            Path(config["dataset_root"])
+        )
+        source_start = int(config.get("source_start", 0))
+        source_stride = int(config.get("source_stride", 10))
+        if source_start < 0 or source_stride <= 0:
+            raise ValueError("source_start must be non-negative and source_stride positive")
+        all_source_ids = [
+            source_start + index * source_stride for index in range(len(dataset))
+        ]
+        selection = benchmark.get("frame_selection", {})
+        stop = int(selection.get("stop_exclusive", all_source_ids[-1] + 1))
+        if all_source_ids[-1] >= stop:
+            raise ValueError("requested source frame selection exceeds benchmark manifest")
+    else:
+        raw_source_ids = scene_record.get("source_frame_ids")
+        if not isinstance(raw_source_ids, list):
+            raise ValueError("ScanNet scene source_frame_ids must be a list")
+        all_source_ids = [
+            _strict_integer(value, "ScanNet source_frame_id", positive=False)
+            for value in raw_source_ids
+        ]
+        recorded_count = _strict_integer(
+            scene_record.get("frame_count"), "ScanNet scene frame_count", positive=True
+        )
+        if len(all_source_ids) != recorded_count or len(set(all_source_ids)) != len(
+            all_source_ids
+        ):
+            raise ValueError("ScanNet scene source frame contract is invalid")
+        configured_count = config.get("num_frames", recorded_count)
+        if type(configured_count) is not int or configured_count != recorded_count:
+            raise ValueError("config num_frames must match ScanNet scene frame_count")
+        frame_inputs = scene_record.get("frame_inputs")
+        if not isinstance(frame_inputs, dict):
+            raise ValueError("ScanNet scene frame_inputs must be an object")
+        input_hashes = {
+            source_id: {
+                role: frame_inputs[str(source_id)][f"{role}_sha256"]
+                for role in ("color", "depth", "pose")
+            }
+            for source_id in all_source_ids
+        }
+        raw_shape = scene_record.get("image_shape")
+        if not isinstance(raw_shape, list) or len(raw_shape) != 2:
+            raise ValueError("ScanNet scene image_shape must be [height, width]")
+        image_shape = tuple(
+            _strict_integer(value, "ScanNet image_shape", positive=True)
+            for value in raw_shape
+        )
+        dataset = ScanNet200Dataset(
+            Path(config["dataset_root"]),
+            source_frame_ids=all_source_ids,
+            input_hashes=input_hashes,
+            expected_image_shape=image_shape,
+            depth_scale=float(scene_record.get("depth_scale", 1000.0)),
+        )
     if num_frames <= 0 or num_frames > len(dataset):
         raise ValueError(f"num_frames must lie in [1, {len(dataset)}]")
-    source_start = int(config.get("source_start", 0))
-    source_stride = int(config.get("source_stride", 10))
-    if source_start < 0 or source_stride <= 0:
-        raise ValueError("source_start must be non-negative and source_stride positive")
-    source_ids = [source_start + index * source_stride for index in range(num_frames)]
-    selection = benchmark.get("frame_selection", {})
-    stop = int(selection.get("stop_exclusive", source_ids[-1] + 1))
-    if source_ids[-1] >= stop:
-        raise ValueError("requested source frame selection exceeds benchmark manifest")
+    source_ids = all_source_ids[:num_frames]
 
     cache_dir = Path(config["frontend_cache_dir"])
     frontend_manifest_path = cache_dir / "frontend_manifest.json"
@@ -698,6 +763,13 @@ def _preflight(
             raise ValueError("frontend manifest method must be OVIV2")
         if frontend_manifest.get("scene") != config["scene"]:
             raise ValueError("frontend manifest scene does not match runner config")
+        if dataset_name == "ScanNet200":
+            recorded_ids = frontend_manifest.get("source_frame_ids")
+            if (
+                not isinstance(recorded_ids, list)
+                or recorded_ids[:num_frames] != source_ids
+            ):
+                raise ValueError("frontend manifest source frame IDs do not match ScanNet")
         available_frames = frontend_manifest.get("frame_count")
         if (
             not isinstance(available_frames, int)
@@ -1167,6 +1239,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     run_manifest = {
         "schema_version": 1,
         "method": "OVIV2",
+        "dataset_name": benchmark["dataset"],
         "scene": config["scene"],
         "repository_commit": _git_value("rev-parse", "HEAD"),
         "dirty_state_digest": starting_dirty_digest,
@@ -1176,6 +1249,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "algorithm_hash": frozen_algorithm_hash,
         "benchmark_manifest_path": str(Path(config["manifest"]).resolve()),
         "benchmark_manifest_hash": _sha256(Path(config["manifest"])),
+        "source_frame_ids_hash": _json_hash(source_ids),
         "vocabulary_hash": _json_hash(vocabulary_payload),
         "model_weights": model_weights,
         "frontend_manifest_hash": (
