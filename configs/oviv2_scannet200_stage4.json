@@ -1,0 +1,29 @@
+{
+  "manifest": "configs/evaluation/manifests/oviv2_scannet200_5.json",
+  "view_root": "/home/ww/oviovo_scannet_stage4_views",
+  "frontend_logs_root": "/home/ww/oviovo_scannet_stage4_logs/frontend",
+  "base_runner_config": "configs/oviv2_scannet200_stage4_base.json",
+  "scene_config_root": "/home/ww/oviovo_scannet_stage4_configs",
+  "dense_cache_root": "/home/ww/oviovo_dense_cache/scannet200_stage4",
+  "semantic_head": "fused_uncertainty",
+  "fusion_entity_weight_scale": 0.49,
+  "frontend": {
+    "python": "/home/ww/miniconda3/envs/oviovo-conceptgraphs/bin/python",
+    "script": "/home/ww/vv/lifelongmap_benchmack/concept-graphs/conceptgraph/scripts/streamlined_detections.py",
+    "hydra_config_name": "benchmark_room0_s10_detections_full",
+    "hydra_config_path": "/home/ww/vv/lifelongmap_benchmack/concept-graphs/conceptgraph/hydra_configs/benchmark_room0_s10_detections_full.yaml",
+    "dataset_config": "/home/ww/vv/lifelongmap_benchmack/concept-graphs/conceptgraph/dataset/dataconfigs/replica/replica.yaml",
+    "classes_file": "/home/ww/.config/superpowers/worktrees/oviovo/oviv2-stage3-final-batch/data/input/scannet200_classes.txt",
+    "yolo_model_path": "/home/ww/vv/paper2/DualMap/model/yolov8l-world.pt",
+    "yolo_clip_model_path": "/home/ww/.cache/clip/ViT-B-32.pt",
+    "yolo_clip_model_sha256": "40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af",
+    "mobile_sam_model_path": "/home/ww/vv/paper2/DualMap/model/mobile_sam.pt",
+    "clip_model_card": "ViT-H-14",
+    "clip_pretrained_path": "/home/ww/vv/paper2/DovSG/checkpoints/CLIP-ViT-H-14-laion2B-s32B-b79K/open_clip_pytorch_model.bin",
+    "device": "cuda",
+    "desired_height": 480,
+    "desired_width": 640,
+    "gsa_variant_template": "oviv2_scannet200_{scene}_s10",
+    "exp_suffix_template": "oviv2_scannet200_{scene}_s10"
+  }
+}
