@@ -228,17 +228,24 @@ def _geometry_metrics(
     return {"precision": precision, "recall": recall, "f5": f_score}
 
 
-def evaluate_static_snapshot(
-    prediction: MapSnapshot,
-    ground_truth: GroundTruthSnapshot,
+def evaluate_static_predictions(
     *,
+    semantic_prediction: MapSnapshot,
+    instance_prediction: MapSnapshot,
+    geometry_prediction: MapSnapshot,
+    ground_truth: GroundTruthSnapshot,
     semantic_vocabulary: Sequence[str],
     instance_vocabulary: Sequence[str] | None,
     distance_threshold_m: float = 0.05,
     min_instance_points: int = 100,
 ) -> dict[str, Any]:
-    """Evaluate one baseline snapshot using frozen Replica static settings."""
-    if prediction.scene_id != ground_truth.scene_id:
+    """Evaluate independent semantic, instance, and geometry prediction heads."""
+    prediction_scene_ids = {
+        semantic_prediction.scene_id,
+        instance_prediction.scene_id,
+        geometry_prediction.scene_id,
+    }
+    if prediction_scene_ids != {ground_truth.scene_id}:
         raise ValueError("prediction and ground truth scene mismatch")
     if distance_threshold_m <= 0.0:
         raise ValueError("distance_threshold_m must be positive")
@@ -252,7 +259,7 @@ def evaluate_static_snapshot(
     )
     return {
         "semantic": _semantic_metrics(
-            prediction,
+            semantic_prediction,
             ground_truth,
             semantic_labels,
             float(distance_threshold_m),
@@ -264,7 +271,7 @@ def evaluate_static_snapshot(
             }
             if instance_labels is None
             else _instance_metrics(
-                prediction,
+                instance_prediction,
                 ground_truth,
                 instance_labels,
                 float(distance_threshold_m),
@@ -272,7 +279,7 @@ def evaluate_static_snapshot(
             )
         ),
         "geometry": _geometry_metrics(
-            prediction,
+            geometry_prediction,
             ground_truth,
             float(distance_threshold_m),
         ),
@@ -284,3 +291,25 @@ def evaluate_static_snapshot(
             "instance_vocabulary_size": 0 if instance_labels is None else len(instance_labels),
         },
     }
+
+
+def evaluate_static_snapshot(
+    prediction: MapSnapshot,
+    ground_truth: GroundTruthSnapshot,
+    *,
+    semantic_vocabulary: Sequence[str],
+    instance_vocabulary: Sequence[str] | None,
+    distance_threshold_m: float = 0.05,
+    min_instance_points: int = 100,
+) -> dict[str, Any]:
+    """Evaluate methods whose semantic, instance, and geometry heads coincide."""
+    return evaluate_static_predictions(
+        semantic_prediction=prediction,
+        instance_prediction=prediction,
+        geometry_prediction=prediction,
+        ground_truth=ground_truth,
+        semantic_vocabulary=semantic_vocabulary,
+        instance_vocabulary=instance_vocabulary,
+        distance_threshold_m=distance_threshold_m,
+        min_instance_points=min_instance_points,
+    )

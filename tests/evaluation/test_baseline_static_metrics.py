@@ -3,7 +3,10 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from src.evaluation.baselines.static_metrics import evaluate_static_snapshot
+from src.evaluation.baselines.static_metrics import (
+    evaluate_static_predictions,
+    evaluate_static_snapshot,
+)
 from src.evaluation.contracts import EntityPrediction, GroundTruthSnapshot, MapSnapshot
 
 
@@ -146,3 +149,45 @@ def test_static_metrics_marks_non_native_instance_output_unavailable() -> None:
         "reason": "Method provides no native entity instances.",
     }
     assert metrics["protocol"]["instance_metrics_available"] is False
+
+
+def test_static_metrics_accepts_separate_semantic_instance_and_geometry_heads() -> None:
+    semantic = _snapshot()
+    instance = MapSnapshot(
+        method="baseline",
+        scene_id="room0",
+        timestamp=1.0,
+        entities=[
+            _entity(
+                "one-owner",
+                [[0.00, 0.0, 0.0], [0.02, 0.0, 0.0], [1.00, 0.0, 0.0], [1.02, 0.0, 0.0]],
+                "chair",
+                0.9,
+            )
+        ],
+        background_xyz=None,
+        scope="current",
+    )
+    geometry = MapSnapshot(
+        method="baseline",
+        scene_id="room0",
+        timestamp=1.0,
+        entities=[],
+        background_xyz=_ground_truth().points_xyz,
+        scope="current",
+    )
+
+    metrics = evaluate_static_predictions(
+        semantic_prediction=semantic,
+        instance_prediction=instance,
+        geometry_prediction=geometry,
+        ground_truth=_ground_truth(),
+        semantic_vocabulary=("chair", "table"),
+        instance_vocabulary=("chair", "table"),
+        distance_threshold_m=0.05,
+        min_instance_points=1,
+    )
+
+    assert metrics["semantic"]["miou"] == pytest.approx(1.0)
+    assert metrics["instance"]["predicted_instance_count"] == 1
+    assert metrics["geometry"]["f5"] == pytest.approx(1.0)

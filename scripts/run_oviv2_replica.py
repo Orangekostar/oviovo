@@ -63,7 +63,8 @@ SCENE_CONFIG_FIELDS = frozenset(
 _DENSE_METHOD = "OVIV2-dense-semantic-cache"
 _DENSE_MANIFEST_NAME = "dense_manifest.json"
 _MAX_DENSE_MANIFEST_BYTES = 8 * 1024 * 1024
-_EVALUATOR_SCRIPT = REPO_ROOT / "scripts/evaluation/evaluate_oviv2_replica.py"
+_REPLICA_EVALUATOR_SCRIPT = REPO_ROOT / "scripts/evaluation/evaluate_oviv2_replica.py"
+_SCANNET_EVALUATOR_SCRIPT = REPO_ROOT / "scripts/evaluation/evaluate_oviv2_scannet200.py"
 _SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
 _DENSE_MANIFEST_KEYS = frozenset(
     {
@@ -947,28 +948,53 @@ def _run_evaluation(
     output: Path,
     semantic_head: str,
 ) -> None:
-    command = [
-        sys.executable,
-        str(_EVALUATOR_SCRIPT),
-        "--snapshot",
-        str(snapshot),
-        "--entity-info",
-        str(entity_info),
-        "--gt-mesh",
-        str(config["gt_mesh"]),
-        "--gt-info",
-        str(config["gt_info"]),
-        "--manifest",
-        str(config["manifest"]),
-        "--scene",
-        str(config["scene"]),
-        "--output",
-        str(output),
-        "--min-instance-vertices",
-        str(int(config.get("min_instance_vertices", 100))),
-        "--semantic-head",
-        semantic_head,
-    ]
+    benchmark = _load_json(Path(config["manifest"]))
+    if benchmark.get("dataset") == "ScanNet200":
+        command = [
+            sys.executable,
+            str(_SCANNET_EVALUATOR_SCRIPT),
+            "--snapshot",
+            str(snapshot),
+            "--entity-info",
+            str(entity_info),
+            "--gt-ply",
+            str(config["gt_mesh"]),
+            "--metadata",
+            str(config["gt_info"]),
+            "--manifest",
+            str(config["manifest"]),
+            "--scene",
+            str(config["scene"]),
+            "--output",
+            str(output),
+            "--min-instance-points",
+            str(int(config.get("min_instance_vertices", 100))),
+            "--semantic-head",
+            semantic_head,
+        ]
+    else:
+        command = [
+            sys.executable,
+            str(_REPLICA_EVALUATOR_SCRIPT),
+            "--snapshot",
+            str(snapshot),
+            "--entity-info",
+            str(entity_info),
+            "--gt-mesh",
+            str(config["gt_mesh"]),
+            "--gt-info",
+            str(config["gt_info"]),
+            "--manifest",
+            str(config["manifest"]),
+            "--scene",
+            str(config["scene"]),
+            "--output",
+            str(output),
+            "--min-instance-vertices",
+            str(int(config.get("min_instance_vertices", 100))),
+            "--semantic-head",
+            semantic_head,
+        ]
     if semantic_head == "fused_uncertainty":
         fusion_config = _semantic_fusion_config(config)
         assert fusion_config is not None

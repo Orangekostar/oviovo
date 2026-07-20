@@ -8,7 +8,12 @@ import pickle
 
 import numpy as np
 from PIL import Image
+from plyfile import PlyData, PlyElement
 
+from scripts.evaluation.evaluate_oviv2_scannet200 import (
+    evaluate as evaluate_scannet,
+    parse_args as parse_evaluator_args,
+)
 from scripts.run_oviv2_replica import _preflight, algorithm_hash, parse_args, run
 from src.datasets.scannet200 import ScanNet200Dataset
 
@@ -82,7 +87,10 @@ def _fixture(tmp_path: Path) -> tuple[Path, dict]:
         "manifest_id": "oviv2_scannet_fixture",
         "dataset": "ScanNet200",
         "frame_selection": {"start": 0, "stride": 10},
-        "vocabulary": {"classes": ["wall", "floor", "ceiling", "chair"]},
+        "vocabulary": {
+            "class_ids": [1, 2, 3, 4],
+            "classes": ["wall", "floor", "ceiling", "chair"],
+        },
         "aliases": {},
         "scenes": [
             {
@@ -194,3 +202,151 @@ def test_stage4_base_preserves_selected_stage3_mapping_parameters() -> None:
     } == {key: value for key, value in scannet.items() if key not in dataset_fields}
     changed_count = dict(scannet, num_frames=465)
     assert algorithm_hash(scannet) == algorithm_hash(changed_count)
+
+
+def test_scannet_evaluator_reads_gt_only_after_mapping(tmp_path: Path) -> None:
+    manifest_path, config = _fixture(tmp_path)
+    config_path = tmp_path / "config.json"
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    mapping_output = tmp_path / "mapping"
+    run(
+        parse_args(
+            [
+                "--config",
+                str(config_path),
+                "--output",
+                str(mapping_output),
+                "--num-frames",
+                "2",
+                "--skip-evaluation",
+            ]
+        )
+    )
+    predicted = PlyData.read(mapping_output / "final" / "oviv2_instance_mesh.ply")
+    source = predicted["vertex"]
+    names = set(source.data.dtype.names or ())
+    assert {"x", "y", "z", "semantic_id", "entity_id"} <= names
+    vertices = np.empty(
+        len(source),
+        dtype=[
+            ("x", "f4"),
+            ("y", "f4"),
+            ("z", "f4"),
+            ("label", "i4"),
+            ("instance_id", "i4"),
+        ],
+    )
+    for name in ("x", "y", "z"):
+        vertices[name] = source[name]
+    vertices["label"] = source["semantic_id"]
+    vertices["instance_id"] = source["entity_id"]
+    gt_path = tmp_path / "official_gt.ply"
+    PlyData([PlyElement.describe(vertices, "vertex")], text=False).write(gt_path)
+    metadata_path = tmp_path / "metadata.txt"
+    metadata_path.write_text(
+        "axisAlignment = "
+        + " ".join(str(value) for value in np.eye(4).reshape(-1))
+        + "\n",
+        encoding="utf-8",
+    )
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["scenes"][0].update(
+        {
+            "official_gt_path": str(gt_path),
+            "official_gt_sha256": _sha256(gt_path),
+            "metadata_path": str(metadata_path),
+            "metadata_sha256": _sha256(metadata_path),
+        }
+    )
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    evaluation_output = tmp_path / "evaluation"
+
+    metrics = evaluate_scannet(
+        parse_evaluator_args(
+            [
+                "--snapshot",
+                str(mapping_output / "final" / "oviv2_voxel_snapshot.npz"),
+                "--entity-info",
+                str(mapping_output / "final" / "oviv2_entities.jsonl"),
+                "--gt-ply",
+                str(gt_path),
+                "--metadata",
+                str(metadata_path),
+                "--manifest",
+                str(manifest_path),
+                "--scene",
+                "scene0011_00",
+                "--output",
+                str(evaluation_output),
+                "--min-instance-points",
+                "1",
+                "--semantic-head",
+                "owner_authoritative",
+            ]
+        )
+    )
+
+    assert all(
+        np.isfinite(metrics[name])
+        for name in ("miou", "macc", "f_miou", "ap25", "ap50", "f5")
+    )
+    assert (evaluation_output / "metrics.json").is_file()
+    assert (evaluation_output / "oviv2_instance_mesh_aligned.ply").is_file()
+    assert (evaluation_output / "gt_aligned_semantic_ids.npy").is_file()
+    assert (evaluation_output / "gt_aligned_instance_ids.npy").is_file()
+    expected_files = {
+        "class_agnostic_instance_ap.json",
+        "gt_aligned_instance_ids.npy",
+        "gt_aligned_semantic_ids.npy",
+        "metrics.json",
+        "oviv2_instance_mesh_aligned.ply",
+        "per_class_semantic.json",
+    }
+    assert {path.name for path in evaluation_output.iterdir()} == expected_files
+    repeated_output = tmp_path / "evaluation_repeat"
+    evaluate_scannet(
+        parse_evaluator_args(
+            [
+                "--snapshot",
+                str(mapping_output / "final" / "oviv2_voxel_snapshot.npz"),
+                "--entity-info",
+                str(mapping_output / "final" / "oviv2_entities.jsonl"),
+                "--gt-ply",
+                str(gt_path),
+                "--metadata",
+                str(metadata_path),
+                "--manifest",
+                str(manifest_path),
+                "--scene",
+                "scene0011_00",
+                "--output",
+                str(repeated_output),
+                "--min-instance-points",
+                "1",
+                "--semantic-head",
+                "owner_authoritative",
+            ]
+        )
+    )
+    assert {path.name for path in repeated_output.iterdir()} == expected_files
+    assert {
+        path.name: path.read_bytes() for path in evaluation_output.iterdir()
+    } == {path.name: path.read_bytes() for path in repeated_output.iterdir()}
+
+    config["gt_mesh"] = str(gt_path)
+    config["gt_info"] = str(metadata_path)
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    dispatched_output = tmp_path / "dispatched"
+    run(
+        parse_args(
+            [
+                "--config",
+                str(config_path),
+                "--output",
+                str(dispatched_output),
+                "--num-frames",
+                "2",
+            ]
+        )
+    )
+    assert (dispatched_output / "evaluation" / "metrics.json").is_file()
