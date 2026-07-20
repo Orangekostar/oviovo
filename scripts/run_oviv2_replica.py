@@ -42,6 +42,7 @@ from src.oviv2.geometry import TsdfConfig  # noqa: E402
 from src.oviv2.meshing import derive_labeled_mesh, write_labeled_mesh  # noqa: E402
 from src.oviv2.observations import CachedFrontendAdapter, ReplicaVocabulary  # noqa: E402
 from src.oviv2.runtime import Oviv2Runtime, Oviv2RuntimeConfig  # noqa: E402
+from src.oviv2.semantic_fusion import SemanticFusionConfig  # noqa: E402
 from src.oviv2.structure import DepthStructureConfig, DepthStructureFrontend  # noqa: E402
 from src.oviv2.tracking import LocalTrackerConfig  # noqa: E402
 
@@ -818,6 +819,27 @@ def _runtime_config(config: dict[str, Any]) -> Oviv2RuntimeConfig:
     )
 
 
+def _semantic_fusion_config(
+    config: dict[str, Any],
+) -> SemanticFusionConfig | None:
+    mode = config.get("fusion_semantic_mode", "disabled")
+    if mode == "disabled":
+        if "fusion_entity_weight_scale" in config:
+            raise ValueError(
+                "fusion_entity_weight_scale requires fusion_semantic_mode"
+            )
+        return None
+    if mode != "uncertainty_linear":
+        raise ValueError(
+            "fusion_semantic_mode must be disabled or uncertainty_linear"
+        )
+    if config.get("dense_semantic_mode", "disabled") != "cached_probabilities":
+        raise ValueError("uncertainty_linear fusion requires cached dense semantics")
+    return SemanticFusionConfig(
+        entity_weight_scale=config.get("fusion_entity_weight_scale", 0.5)
+    )
+
+
 def _structure_config(config: dict[str, Any], *, voxel_size_m: float) -> DepthStructureConfig:
     return DepthStructureConfig(
         enabled=bool(config.get("structure_enabled", True)),
@@ -867,6 +889,15 @@ def _run_evaluation(
         "--semantic-head",
         semantic_head,
     ]
+    if semantic_head == "fused_uncertainty":
+        fusion_config = _semantic_fusion_config(config)
+        assert fusion_config is not None
+        command.extend(
+            (
+                "--fusion-entity-weight-scale",
+                str(fusion_config.entity_weight_scale),
+            )
+        )
     subprocess.run(
         command,
         cwd=REPO_ROOT,
@@ -884,6 +915,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if raw_config.get("algorithm_hash") not in (None, frozen_algorithm_hash):
         raise ValueError("configured algorithm_hash does not match mapping parameters")
     config = _resolve_config_paths(raw_config)
+    semantic_fusion = _semantic_fusion_config(config)
     requested_frames = int(args.num_frames or config.get("num_frames", 200))
     output = args.output.resolve()
     if output.exists():
@@ -1025,6 +1057,24 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
         write_labeled_mesh(final / "oviv2_owner_mesh.ply", owner_mesh)
         write_labeled_mesh(final / "oviv2_dense_mesh.ply", dense_mesh)
+        if semantic_fusion is not None:
+            entity_posteriors = {
+                entity.entity_id: entity.semantic_posterior.probabilities
+                for entity in sorted(
+                    runtime.registry.entities.values(),
+                    key=lambda value: value.entity_id,
+                )
+                if entity.lifecycle_state in {"active", "dormant"}
+                and entity.semantic_id > 0
+            }
+            fused_mesh = derive_labeled_mesh(
+                snapshot.geometry,
+                snapshot.evidence,
+                snapshot.ownership,
+                entity_posteriors=entity_posteriors,
+                semantic_fusion=semantic_fusion,
+            )
+            write_labeled_mesh(final / "oviv2_fused_mesh.ply", fused_mesh)
     mapping_elapsed = time.perf_counter() - started
 
     if not args.skip_evaluation:
@@ -1034,6 +1084,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             else (
                 ("owner_authoritative", output / "evaluation_owner"),
                 ("dense_only", output / "evaluation_dense"),
+                *(
+                    (("fused_uncertainty", output / "evaluation_fused"),)
+                    if semantic_fusion is not None
+                    else ()
+                ),
             )
         )
         for semantic_head, evaluation_output in evaluation_targets:
@@ -1170,6 +1225,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     }
     if dense_semantics_audit is not None:
         run_manifest["dense_semantics"] = dense_semantics_audit
+    if semantic_fusion is not None:
+        run_manifest["semantic_fusion"] = {
+            "mode": "uncertainty_linear",
+            **asdict(semantic_fusion),
+        }
     _atomic_json(output / "run_manifest.json", run_manifest)
     return run_manifest
 

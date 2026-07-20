@@ -31,6 +31,7 @@ _STAGE2_CONFIG = Path("configs/oviv2_replica_room0_precision_stage2_radseg.json"
 _SELECTED_STAGE2_CONFIG = Path(
     "configs/oviv2_replica_room0_precision_stage2_selected.json"
 )
+_STAGE3_CONFIG = Path("configs/oviv2_replica_room0_precision_stage3_fused.json")
 _MODEL_HASH = "c" * 64
 _DENSE_MANIFEST_KEYS = {
     "schema_version",
@@ -419,6 +420,17 @@ def test_selected_stage2_config_is_stage1_plus_frozen_winning_dense_settings() -
         "dense_minimum_quality": 0.01,
         "dense_entropy_power": 16.0,
         "dense_view_angle_power": 0.0,
+    }
+
+
+def test_stage3_config_is_selected_stage2_plus_only_frozen_fusion_settings() -> None:
+    stage2 = json.loads(_SELECTED_STAGE2_CONFIG.read_text(encoding="utf-8"))
+    stage3 = json.loads(_STAGE3_CONFIG.read_text(encoding="utf-8"))
+
+    assert stage3 == {
+        **stage2,
+        "fusion_semantic_mode": "uncertainty_linear",
+        "fusion_entity_weight_scale": 0.5,
     }
 
 
@@ -1029,6 +1041,33 @@ def test_stage2_skip_evaluation_writes_dual_mesh_and_auditable_manifest(
     assert "final/oviv2_dense_mesh.ply" in manifest["artifact_checksums"]
 
 
+def test_stage3_skip_evaluation_writes_fused_mesh_and_policy_manifest(
+    tmp_path: Path,
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    _write_dense_cache(config_path)
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config.update(
+        {
+            "fusion_semantic_mode": "uncertainty_linear",
+            "fusion_entity_weight_scale": 0.5,
+        }
+    )
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    output = tmp_path / "run"
+
+    manifest = run(_args(config_path, output))
+
+    assert (output / "final" / "oviv2_owner_mesh.ply").is_file()
+    assert (output / "final" / "oviv2_dense_mesh.ply").is_file()
+    assert (output / "final" / "oviv2_fused_mesh.ply").is_file()
+    assert manifest["semantic_fusion"] == {
+        "entity_weight_scale": 0.5,
+        "mode": "uncertainty_linear",
+    }
+    assert "final/oviv2_fused_mesh.ply" in manifest["artifact_checksums"]
+
+
 def test_stage2_partial_run_separates_producer_and_consumed_prefixes(
     tmp_path: Path,
 ) -> None:
@@ -1140,6 +1179,56 @@ def test_stage2_evaluates_owner_and_dense_heads_only(
     assert not (output / "evaluation").exists()
     assert "evaluation_owner/metrics.json" in manifest["artifact_checksums"]
     assert "evaluation_dense/metrics.json" in manifest["artifact_checksums"]
+
+
+def test_stage3_adds_fused_evaluator_with_exact_frozen_weight(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    _write_dense_cache(config_path)
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config.update(
+        {
+            "fusion_semantic_mode": "uncertainty_linear",
+            "fusion_entity_weight_scale": 0.5,
+        }
+    )
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    Path(config["gt_mesh"]).write_bytes(b"runner must not parse GT mesh content")
+    Path(config["gt_info"]).write_bytes(b"runner must not parse GT info content")
+    calls: list[list[str]] = []
+    original_run = runner_module.subprocess.run
+    evaluator = runner_module.REPO_ROOT / "scripts/evaluation/evaluate_oviv2_replica.py"
+
+    def fake_subprocess_run(command, *args, **kwargs):
+        normalized = [str(value) for value in command]
+        if len(normalized) > 1 and normalized[1] == str(evaluator):
+            calls.append(normalized)
+            output_arg = Path(normalized[normalized.index("--output") + 1])
+            semantic_head = normalized[normalized.index("--semantic-head") + 1]
+            output_arg.mkdir(parents=True)
+            (output_arg / "metrics.json").write_text(
+                json.dumps({"protocol": {"semantic_head": semantic_head}}),
+                encoding="utf-8",
+            )
+            return runner_module.subprocess.CompletedProcess(normalized, 0)
+        return original_run(command, *args, **kwargs)
+
+    monkeypatch.setattr(runner_module.subprocess, "run", fake_subprocess_run)
+    output = tmp_path / "run"
+
+    manifest = run(_args_with_evaluation(config_path, output))
+
+    assert [call[call.index("--semantic-head") + 1] for call in calls] == [
+        "owner_authoritative",
+        "dense_only",
+        "fused_uncertainty",
+    ]
+    fused = calls[-1]
+    assert fused[fused.index("--fusion-entity-weight-scale") + 1] == "0.5"
+    assert (output / "evaluation_fused" / "metrics.json").is_file()
+    assert "evaluation_fused/metrics.json" in manifest["artifact_checksums"]
 
 
 def test_stage2_cli_stdout_remains_one_json_document(
