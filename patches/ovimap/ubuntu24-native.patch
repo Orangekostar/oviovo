@@ -1,0 +1,1399 @@
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/CMakeLists.txt b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/CMakeLists.txt
+index 40d197a..c20df9e 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/CMakeLists.txt
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/CMakeLists.txt
+@@ -1,7 +1,8 @@
+ cmake_minimum_required(VERSION 3.6)
+ project(consistent_gsm)
+ 
+-add_definitions(-std=c++14)
++set(CMAKE_CXX_STANDARD 17)
++set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ 
+ set(CATKIN_ENABLE_TESTING OFF)
+ 
+@@ -9,7 +10,6 @@ find_package(catkin_simple REQUIRED)
+ catkin_simple()
+ find_package(catkin REQUIRED COMPONENTS
+ global_segment_map
+-gsm_node
+ opencv3_catkin
+ # pybind11_catkin
+ )
+@@ -21,10 +21,8 @@ catkin_package(
+   ${PROJECT_NAME}
+   CATKIN_DEPENDS
+     global_segment_map
+-    gsm_node
+     opencv3_catkin
+     voxblox
+-    voxblox_ros
+     # pybind11_catkin
+ )
+ 
+@@ -32,12 +30,30 @@ catkin_package(
+ # Pybind #
+ ##########
+ include_directories(cvnp)
+-find_package(pybind11 REQUIRED)
++find_package(Python3 REQUIRED COMPONENTS Interpreter Development NumPy)
++find_package(pybind11 CONFIG REQUIRED
++  PATHS "$ENV{CONDA_PREFIX}/share/cmake/pybind11"
++  NO_DEFAULT_PATH
++)
++find_package(OpenGL REQUIRED COMPONENTS OpenGL GLX)
++if(NOT TARGET OpenGL::OpenGL)
++  find_file(OPENGL_OPENGL_LIBRARY libOpenGL.so.0
++    PATHS "$ENV{CONDA_PREFIX}/lib" NO_DEFAULT_PATH REQUIRED)
++  add_library(OpenGL::OpenGL UNKNOWN IMPORTED)
++  set_target_properties(OpenGL::OpenGL PROPERTIES IMPORTED_LOCATION ${OPENGL_OPENGL_LIBRARY})
++endif()
++if(NOT TARGET OpenGL::GLX)
++  find_library(OPENGL_GLX_LIBRARY GLX
++    PATHS "$ENV{CONDA_PREFIX}/lib" NO_DEFAULT_PATH REQUIRED)
++  add_library(OpenGL::GLX UNKNOWN IMPORTED)
++  set_target_properties(OpenGL::GLX PROPERTIES IMPORTED_LOCATION ${OPENGL_GLX_LIBRARY})
++endif()
++find_package(PCL REQUIRED COMPONENTS common io features filters)
+ 
+ ##########
+ # this project   #
+ ##########
+-include_directories(include)
++include_directories(include ${PCL_INCLUDE_DIRS})
+ pybind11_add_module(${PROJECT_NAME} src/global_segment_map_py.cpp)
+ 
+ ##########
+@@ -83,7 +99,7 @@ cs_add_library(${PROJECT_NAME}_LIB
+   src/consistent_gsm_mapper.cpp
+   src/utils/pcl_semantic_visualizers.cpp
+ )
+-target_link_libraries(${PROJECT_NAME}_LIB ${OpenMP_LIBS})
++target_link_libraries(${PROJECT_NAME}_LIB ${OpenMP_LIBS} ${PCL_LIBRARIES} OpenGL::OpenGL OpenGL::GLX)
+ target_compile_options(${PROJECT_NAME}_LIB PRIVATE ${OpenMP_FLAGS})
+ 
+ target_link_libraries(${PROJECT_NAME} PRIVATE cvnp ${catkin_LIBRARIES} ${PROJECT_NAME}_LIB)
+@@ -103,4 +119,3 @@ MESSAGE(STATUS "CATKIN_PACKAGE_LIB_DESTINATION: ${CATKIN_PACKAGE_LIB_DESTINATION
+ 
+ cs_install()
+ cs_export()
+-
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/cvnp/CMakeLists.txt b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/cvnp/CMakeLists.txt
+index 763d0f2..272dffb 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/cvnp/CMakeLists.txt
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/cvnp/CMakeLists.txt
+@@ -1,16 +1,20 @@
+ cmake_minimum_required(VERSION 3.6)
+ project(cvnp LANGUAGES CXX)
+ 
+-set(CMAKE_CXX_STANDARD 14)
++set(CMAKE_CXX_STANDARD 17)
+ # solve the 
+ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -luuid")
+ 
+ if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+     # For conan, add binary dir to module search path
+     list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR})
+-    find_package(pybind11 REQUIRED)
++    find_package(pybind11 CONFIG REQUIRED
++        PATHS "$ENV{CONDA_PREFIX}/share/cmake/pybind11"
++        NO_DEFAULT_PATH)
+ 
+-    find_package(OpenCV REQUIRED)
++    find_package(OpenCV 4.11 CONFIG REQUIRED
++        PATHS "$ENV{CONDA_PREFIX}/lib/cmake/opencv4"
++        NO_DEFAULT_PATH)
+ 
+     file(GLOB sources cvnp/*.h cvnp/*.cpp)
+     pybind11_add_module(cvnp ${sources} main/cvnp_main.cpp)
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/common.h b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/common.h
+index 8868e9e..28401b2 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/common.h
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/common.h
+@@ -7,8 +7,6 @@
+ #include <pybind11/stl.h>
+ #include "cvnp/cvnp.h"
+ 
+-#include <global_segment_map_node/controller.h>
+-#include <global_segment_map_node/conversions.h>
+ #include <global_segment_map/segment.h>
+ #include <geometry_msgs/TransformStamped.h>
+ #include <global_segment_map/label_voxel.h>
+@@ -24,17 +22,14 @@
+ #include <vector>
+ 
+ #include <glog/logging.h>
+-#include <minkindr_conversions/kindr_tf.h>
+ #include <voxblox/alignment/icp.h>
+ #include <voxblox/core/common.h>
+ #include <voxblox/io/sdf_ply.h>
+-#include <voxblox_ros/mesh_vis.h>
+ #include <Eigen/Core>
+ #include <opencv2/core/eigen.hpp>
+ #include<opencv2/opencv.hpp>
+ 
+ using namespace voxblox;
+-using namespace voxblox::voxblox_gsm;
+ 
+ 
+ 
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/consistent_gsm_mapper.h b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/consistent_gsm_mapper.h
+index f3d1f05..3c3127a 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/consistent_gsm_mapper.h
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/consistent_gsm_mapper.h
+@@ -18,8 +18,6 @@
+ #include "consistent_mapping/SettingsSemantic.h"
+ 
+ #include "utils/pcl_semantic_visualizers.h"
+-#include <global_segment_map_node/controller.h>
+-#include <global_segment_map_node/conversions.h>
+ #include <global_segment_map/common.h>
+ #include <global_segment_map/label_tsdf_integrator.h>
+ #include <global_segment_map/label_tsdf_map.h>
+@@ -30,15 +28,11 @@
+ #include <global_segment_map/label_voxel.h>
+ #include <global_segment_map/utils/file_utils.h>
+ #include <global_segment_map/utils/map_utils.h>
+-#include <global_segment_map/utils/visualizer.h>
+ 
+-#include <voxblox_ros/conversions.h>
+ #include <voxblox/alignment/icp.h>
+ #include <voxblox/core/common.h>
+ #include <voxblox/io/sdf_ply.h>
+ #include <voxblox/io/mesh_ply.h>
+-#include <voxblox_ros/mesh_vis.h>
+-#include <minkindr_conversions/kindr_tf.h>
+ 
+ #include <Eigen/Core>
+ #include <opencv2/core/eigen.hpp>
+@@ -46,7 +40,6 @@
+ #include <pcl/point_types.h>
+ 
+ using namespace voxblox;
+-using namespace voxblox::voxblox_gsm;
+ 
+ class ConsistentGSMMapper{
+ public:
+@@ -108,4 +101,4 @@ private:
+ };
+ 
+ 
+-#endif  // GLOBAL_SEGMENT_MAP_PY_H_
+\ No newline at end of file
++#endif  // GLOBAL_SEGMENT_MAP_PY_H_
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/global_segment_map_py.h b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/global_segment_map_py.h
+index 4206311..44be2d7 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/global_segment_map_py.h
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/global_segment_map_py.h
+@@ -22,8 +22,6 @@
+ #include <consistent_mapping/segment_confidence.h>
+ #include <consistent_mapping/virtual_memory_log.h>
+ #include "utils/pcl_semantic_visualizers.h"
+-#include <global_segment_map_node/controller.h>
+-#include <global_segment_map_node/conversions.h>
+ #include <global_segment_map/common.h>
+ #include <global_segment_map/label_tsdf_integrator.h>
+ #include <global_segment_map/label_tsdf_map.h>
+@@ -34,17 +32,13 @@
+ #include <global_segment_map/label_voxel.h>
+ #include <global_segment_map/utils/file_utils.h>
+ #include <global_segment_map/utils/map_utils.h>
+-#include <global_segment_map/utils/visualizer.h>
+ 
+ #include <utils/camera_ray_generator.h>
+ 
+-#include <voxblox_ros/conversions.h>
+ #include <voxblox/alignment/icp.h>
+ #include <voxblox/core/common.h>
+ #include <voxblox/io/sdf_ply.h>
+ #include <voxblox/io/mesh_ply.h>
+-#include <voxblox_ros/mesh_vis.h>
+-#include <minkindr_conversions/kindr_tf.h>
+ 
+ #include <Eigen/Core>
+ #include <opencv2/core/eigen.hpp>
+@@ -53,7 +47,6 @@
+ 
+ 
+ using namespace voxblox;
+-using namespace voxblox::voxblox_gsm;
+ 
+ 
+ class GlobalSegmentMap_py{
+@@ -76,7 +69,6 @@ GlobalSegmentMap_py(
+ {
+     if(debug_)
+     {
+-        viz_mesh_thread_.join(); 
+         // viz_pcl_thread_.join();
+     }    
+     if(cam_ray_generator_)
+@@ -257,9 +249,7 @@ private:
+     /* visualiz*/
+     PCLSemVisualizerConfig visualizer_config_;
+     std::shared_ptr<PCLSemVisualizer> visualizer_pcl_;
+-    std::shared_ptr<Visualizer> visualizer_mesh_;
+     std::thread viz_pcl_thread_;
+-    std::thread viz_mesh_thread_;
+     bool debug_=false;
+ 
+ 
+@@ -280,4 +270,4 @@ private:
+ 
+ };
+ 
+-#endif  // GLOBAL_SEGMENT_MAP_PY_H_
+\ No newline at end of file
++#endif  // GLOBAL_SEGMENT_MAP_PY_H_
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/label_tsdf_confidence_integrator.h b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/label_tsdf_confidence_integrator.h
+index 3da0711..6416e18 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/label_tsdf_confidence_integrator.h
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/consistent_mapping/label_tsdf_confidence_integrator.h
+@@ -15,11 +15,9 @@
+ #include <pcl/impl/point_types.hpp>
+ #include <pcl/features/moment_of_inertia_estimation.h>
+ #include <pcl/io/pcd_io.h>
+-#include <pcl/visualization/cloud_viewer.h>
+ #include <pcl/filters/voxel_grid.h>
+ #include <pcl/filters/statistical_outlier_removal.h>
+ #include <pcl/common/transforms.h>
+-#include <pcl/visualization/cloud_viewer.h>
+ #include <thread>
+ 
+ namespace voxblox {
+@@ -205,4 +203,3 @@ public:
+ 
+ #endif  // LABEL_TSDF_CONFIDENCE_INTEGRATOR_H_
+ 
+-
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/utils/pcl_semantic_visualizers.h b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/utils/pcl_semantic_visualizers.h
+index f88354b..00fef08 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/utils/pcl_semantic_visualizers.h
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/include/utils/pcl_semantic_visualizers.h
+@@ -20,7 +20,6 @@
+ #include <voxblox/core/voxel.h>
+ #include <pcl/point_types.h>
+ #include <pcl_ros/point_cloud.h>
+-#include <pcl/visualization/pcl_visualizer.h>
+ 
+ namespace voxblox {
+ 
+@@ -65,4 +64,4 @@ public:
+ 
+ }
+ 
+-#endif
+\ No newline at end of file
++#endif
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/package.xml b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/package.xml
+index 3e9cd58..7895935 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/package.xml
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/package.xml
+@@ -12,17 +12,13 @@
+   <buildtool_depend>catkin_simple</buildtool_depend>
+ 
+   <depend>global_segment_map</depend>
+-  <depend>gsm_node</depend>
+   <depend>opencv3_catkin</depend>
+   <depend>gflags_catkin</depend>
+   <depend>glog_catkin</depend>
+-  <depend>minkindr_conversions</depend>
+   <depend>pcl_catkin</depend>
+-  <depend>pcl_conversions</depend>
+   <depend>sensor_msgs</depend>
+   <depend>std_msgs</depend>
+   <depend>voxblox</depend>
+-  <depend>voxblox_ros</depend>
+   <depend>eigen_catkin</depend>
+   <depend>eigen_checks</depend>
+ 
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/consistent_gsm_mapper.cpp b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/consistent_gsm_mapper.cpp
+index 4488402..62c3b4e 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/consistent_gsm_mapper.cpp
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/consistent_gsm_mapper.cpp
+@@ -5,7 +5,6 @@
+ #include <Eigen/Core>
+ 
+ using namespace voxblox;
+-using namespace voxblox::voxblox_gsm;
+ 
+ ConsistentGSMMapper::ConsistentGSMMapper(const std::string &configFile)
+ {
+@@ -275,4 +274,4 @@ Label ConsistentGSMMapper::quarySuperpointID(Point query_point)
+     }
+     else
+         return BackgroundLabel;
+-}
+\ No newline at end of file
++}
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/global_segment_map_py.cpp b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/global_segment_map_py.cpp
+index 1a2174c..ae08c23 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/global_segment_map_py.cpp
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/global_segment_map_py.cpp
+@@ -13,7 +13,6 @@
+ #include <fstream>
+ 
+ using namespace voxblox;
+-using namespace voxblox::voxblox_gsm;
+ 
+ GlobalSegmentMap_py::GlobalSegmentMap_py(
+     std::string log_file, 
+@@ -194,16 +193,6 @@ GlobalSegmentMap_py::GlobalSegmentMap_py(
+     // std::vector<double> clip_distances = {1.79126, 8.86051}; // TODO yaml
+     double update_mesh_every_n_sec = 0.0;
+ 
+-    bool save_visualizer_frames = true;
+-    visualizer_mesh_ = std::make_shared<Visualizer>(
+-        mesh_layers, 
+-        &mesh_layer_updated_, 
+-        &mesh_layer_mutex_,
+-        camera_position, 
+-        clip_distances, 
+-        save_visualizer_frames, 
+-        log_file_
+-    );
+     visualizer_pcl_ = std::make_shared<PCLSemVisualizer>(
+         visualizer_config_, 
+         map_.get(), 
+@@ -212,7 +201,6 @@ GlobalSegmentMap_py::GlobalSegmentMap_py(
+     );
+     
+     if (debug_) {
+-        viz_mesh_thread_ = std::thread(&Visualizer::visualizeMesh, visualizer_mesh_);
+         // viz_pcl_thread_ = std::thread(&PCLSemVisualizer::visualizePointClouds, visualizer_pcl_);
+     }
+     int curMem = getValue()-systemMem_;
+@@ -633,6 +621,12 @@ void GlobalSegmentMap_py::LogMeshColors(std::string log_path)
+             sem_label_set.insert(sem_label);
+     }
+ 
++    std::ofstream color_file;
++    if (!log_path.empty()) {
++        color_file.open(log_path + "/instance_colors_cpp.tsv");
++        color_file << "instance_id\tr\tg\tb\n";
++    }
++
+     LOG(INFO) << "LogInstanceColor: ";
+     for (auto inst_it = inst_label_set.begin(); 
+         inst_it != inst_label_set.end(); inst_it++)
+@@ -641,6 +635,10 @@ void GlobalSegmentMap_py::LogMeshColors(std::string log_path)
+         mesh_instance_integrator_->instance_color_map_.getColor(*inst_it, &inst_color);
+         LOG(INFO) << "  Instance: " << int(*inst_it) << " Color: ("
+             << int(inst_color.r) << "," << int(inst_color.g) << "," << int(inst_color.b) << ")";
++        if (color_file.is_open()) {
++            color_file << int(*inst_it) << '\t' << int(inst_color.r) << '\t'
++                       << int(inst_color.g) << '\t' << int(inst_color.b) << '\n';
++        }
+     }
+ 
+     LOG(INFO) << "LogSemanticColor: ";
+@@ -848,4 +846,4 @@ PYBIND11_MODULE(consistent_gsm, m)
+         .def("initializeCameraRayCaster", &GlobalSegmentMap_py::initializeCameraRayCaster)
+         .def("raycastInstancePredictions", &GlobalSegmentMap_py::raycastInstancePredictions)
+         .def("raycastPanopticPredictions", &GlobalSegmentMap_py::raycastPanopticPredictions);
+-}
+\ No newline at end of file
++}
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/utils/pcl_semantic_visualizers.cpp b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/utils/pcl_semantic_visualizers.cpp
+index ba00745..6c843c8 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/utils/pcl_semantic_visualizers.cpp
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/consistent_gsm/src/utils/pcl_semantic_visualizers.cpp
+@@ -112,62 +112,7 @@ void PCLSemVisualizer::updatePointClouds()
+ 
+ void PCLSemVisualizer::visualizePointClouds()
+ {
+-	std::vector<std::string> visual_names = {"instance", "label", "semantic"};
+-	// initialize PCL visualizers
+-	uint8_t n_visualizers = num_pcl_visual_;
+-	std::vector<std::shared_ptr<pcl::visualization::PCLVisualizer>> pcl_visualizers;
+-	pcl_visualizers.reserve(n_visualizers);
+-	for (int index = 0; index < n_visualizers; ++index)
+-	{
+-		// PCLVisualizer class can NOT be used across multiple threads, thus need to
+-    	// create instances of it in the same thread they will be used in.
+-		std::shared_ptr<pcl::visualization::PCLVisualizer> visualizer =
+-        	std::make_shared<pcl::visualization::PCLVisualizer>();
+-		std::string name = "PointClouds_" + visual_names[index];
+-		visualizer->setWindowName(name.c_str());
+-		visualizer->setBackgroundColor(255, 255, 255);
+-		visualizer->initCameraParameters();
+-
+-		if (camera_position_.size()) {
+-      		visualizer->setCameraPosition(
+-				camera_position_[0], camera_position_[1], camera_position_[2],
+-				camera_position_[3], camera_position_[4], camera_position_[5],
+-				camera_position_[6], camera_position_[7], camera_position_[8]);
+-    	}
+-		if (clip_distances_.size())
+-		{
+-			visualizer->setCameraClipDistances(clip_distances_[0], clip_distances_[1]);
+-		}
+-		pcl_visualizers.push_back(visualizer);
+-	}
+-	while(true)
+-	{
+-		for (int index = 0; index < n_visualizers; ++index) 
+-		{
+-			pcl_visualizers[index]->spinOnce(update_interval_ms_);
+-		}
+-		if(pcls_updated_.load())
+-		{
+-			std::lock_guard<std::mutex> lock(pcls_mutex_);
+-			for (int index = 0; index < n_visualizers; ++index) 
+-			{
+-				pcl_visualizers[index]->removePointCloud("pointclouds");
+-				if (!pcl_visualizers[index]->updatePointCloud(pointclouds_[index],"pointclouds"))
+-				{
+-					pcl_visualizers[index]->addPointCloud(pointclouds_[index],"pointclouds");
+-					pcl_visualizers[index]->setPointCloudRenderingProperties
+-						(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "pointclouds");
+-				}
+-          			
+-           
+-			}
+-			pcls_updated_.store(false);
+-		}
+-		// else
+-		// {
+-		// 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
+-		// }
+-	}
++	LOG(WARNING) << "PCL visualizer is disabled in the native headless build.";
+ }
+ 
+-} // namespace voxblox
+\ No newline at end of file
++} // namespace voxblox
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/depth_segmentation/depth_segmentation/CMakeLists.txt b/mapping_ros_ws/src/consistent_panoptic_mapping/depth_segmentation/depth_segmentation/CMakeLists.txt
+index 2105b82..f866d7a 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/depth_segmentation/depth_segmentation/CMakeLists.txt
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/depth_segmentation/depth_segmentation/CMakeLists.txt
+@@ -1,7 +1,8 @@
+ cmake_minimum_required(VERSION 3.6)
+ project(depth_segmentation)
+ 
+-add_definitions(-std=c++14)
++set(CMAKE_CXX_STANDARD 17)
++set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ 
+ find_package(catkin_simple REQUIRED)
+ 
+@@ -68,11 +69,6 @@ target_compile_options(${PROJECT_NAME} PRIVATE ${OpenMP_FLAGS})
+ 
+ 
+ # add_definitions(-DWRITE_IMAGES)
+-cs_add_executable(${PROJECT_NAME}_node
+-  src/depth_segmentation_node.cpp
+-)
+-target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME})
+-
+ # COPY TEST DATA
+ # TODO(ff): We should move the test data to an external repo or a cloud at some point.
+ # add_custom_target(test_data)
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/depth_segmentation/depth_segmentation/include/depth_segmentation/common.h b/mapping_ros_ws/src/consistent_panoptic_mapping/depth_segmentation/depth_segmentation/include/depth_segmentation/common.h
+index 809db0c..2247f2b 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/depth_segmentation/depth_segmentation/include/depth_segmentation/common.h
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/depth_segmentation/depth_segmentation/include/depth_segmentation/common.h
+@@ -11,7 +11,6 @@
+ #include <glog/logging.h>
+ #include <opencv2/highgui.hpp>
+ #include <opencv2/rgbd.hpp>
+-#include <opencv2/viz/vizcore.hpp>
+ 
+ namespace depth_segmentation {
+ struct Segment {
+@@ -145,36 +144,6 @@ struct Params {
+   bool visualize_segmented_scene = false;
+ };
+ 
+-void visualizeDepthMap(const cv::Mat& depth_map, cv::viz::Viz3d* viz_3d) {
+-  CHECK(!depth_map.empty());
+-  CHECK_EQ(depth_map.type(), CV_32FC3);
+-  CHECK_NOTNULL(viz_3d);
+-  viz_3d->setBackgroundColor(cv::viz::Color::gray());
+-  viz_3d->showWidget("cloud",
+-                     cv::viz::WCloud(depth_map, cv::viz::Color::red()));
+-  viz_3d->showWidget("coo", cv::viz::WCoordinateSystem(1.5));
+-  viz_3d->spinOnce(0, true);
+-}
+-
+-void visualizeDepthMapWithNormals(const cv::Mat& depth_map,
+-                                  const cv::Mat& normals,
+-                                  cv::viz::Viz3d* viz_3d) {
+-  CHECK(!depth_map.empty());
+-  CHECK_EQ(depth_map.type(), CV_32FC3);
+-  CHECK(!normals.empty());
+-  CHECK_EQ(normals.type(), CV_32FC3);
+-  CHECK_EQ(depth_map.size(), normals.size());
+-  CHECK_NOTNULL(viz_3d);
+-  viz_3d->setBackgroundColor(cv::viz::Color::gray());
+-  viz_3d->showWidget("cloud",
+-                     cv::viz::WCloud(depth_map, cv::viz::Color::red()));
+-  viz_3d->showWidget("normals",
+-                     cv::viz::WCloudNormals(depth_map, normals, 50, 0.02f,
+-                                            cv::viz::Color::green()));
+-  viz_3d->showWidget("coo", cv::viz::WCoordinateSystem(1.5));
+-  viz_3d->spinOnce(0, true);
+-}
+-
+ void computeCovariance(const cv::Mat& neighborhood, const cv::Vec3f& mean,
+                        const size_t neighborhood_size, cv::Mat* covariance) {
+   CHECK(!neighborhood.empty());
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/depth_segmentation/depth_segmentation/package.xml b/mapping_ros_ws/src/consistent_panoptic_mapping/depth_segmentation/depth_segmentation/package.xml
+index 932d43a..1291d53 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/depth_segmentation/depth_segmentation/package.xml
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/depth_segmentation/depth_segmentation/package.xml
+@@ -18,16 +18,9 @@
+   <buildtool_depend>catkin</buildtool_depend>
+   <buildtool_depend>catkin_simple</buildtool_depend>
+ 
+-  <depend>cv_bridge</depend>
+   <depend>dynamic_reconfigure</depend>
+   <depend>eigen_catkin</depend>
+   <depend>gflags_catkin</depend>
+   <depend>glog_catkin</depend>
+-  <depend>image_transport</depend>
+   <depend>opencv3_catkin</depend>
+-  <depend>pcl_catkin</depend>
+-  <depend>pcl_conversions</depend>
+-  <depend>pcl_ros</depend>
+-  <depend>roscpp</depend>
+-  <depend>tf</depend>
+ </package>
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/depth_segmentation_py/CMakeLists.txt b/mapping_ros_ws/src/consistent_panoptic_mapping/depth_segmentation_py/CMakeLists.txt
+index 725c746..1e04715 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/depth_segmentation_py/CMakeLists.txt
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/depth_segmentation_py/CMakeLists.txt
+@@ -1,7 +1,8 @@
+ cmake_minimum_required(VERSION 2.8.3)
+ project(depth_segmentation_py)
+ 
+-add_definitions(-std=c++14)
++set(CMAKE_CXX_STANDARD 17)
++set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ 
+ find_package(catkin_simple REQUIRED)
+ catkin_simple()
+@@ -37,7 +38,11 @@ add_subdirectory(cvnp)
+ # Pybind #
+ ##########
+ include_directories(cvnp)
+-find_package(pybind11 REQUIRED)
++find_package(Python3 REQUIRED COMPONENTS Interpreter Development NumPy)
++find_package(pybind11 CONFIG REQUIRED
++  PATHS "$ENV{CONDA_PREFIX}/share/cmake/pybind11"
++  NO_DEFAULT_PATH
++)
+ 
+ pybind11_add_module(${PROJECT_NAME} src/depth_segmentation_py.cpp)
+ target_link_libraries(${PROJECT_NAME} PRIVATE cvnp ${catkin_LIBRARIES})
+@@ -58,4 +63,4 @@ set(ENV{PYTHONPATH} ENV{PYTHONPATH} "${CATKIN_PACKAGE_LIB_DESTINATION}")
+ # list(APPEND PYTHONPATH "${CATKIN_PACKAGE_LIB_DESTINATION}") 
+ MESSAGE(STATUS "PYTHONPATH: ${PYTHONPATH}")
+ MESSAGE(STATUS "CATKIN_PACKAGE_LIB_DESTINATION: ${CATKIN_PACKAGE_LIB_DESTINATION}")
+-# catkin_python_setup(PROGRAMS ${PROJECT_NAME})
+\ No newline at end of file
++# catkin_python_setup(PROGRAMS ${PROJECT_NAME})
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/depth_segmentation_py/cvnp/CMakeLists.txt b/mapping_ros_ws/src/consistent_panoptic_mapping/depth_segmentation_py/cvnp/CMakeLists.txt
+index a924389..593f021 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/depth_segmentation_py/cvnp/CMakeLists.txt
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/depth_segmentation_py/cvnp/CMakeLists.txt
+@@ -1,16 +1,20 @@
+ cmake_minimum_required(VERSION 3.4)
+ project(cvnp LANGUAGES CXX)
+ 
+-set(CMAKE_CXX_STANDARD 14)
++set(CMAKE_CXX_STANDARD 17)
+ # solve the 
+ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -luuid")
+ 
+ if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+     # For conan, add binary dir to module search path
+     list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR})
+-    find_package(pybind11 REQUIRED)
++    find_package(pybind11 CONFIG REQUIRED
++        PATHS "$ENV{CONDA_PREFIX}/share/cmake/pybind11"
++        NO_DEFAULT_PATH)
+ 
+-    find_package(OpenCV REQUIRED)
++    find_package(OpenCV 4.11 CONFIG REQUIRED
++        PATHS "$ENV{CONDA_PREFIX}/lib/cmake/opencv4"
++        NO_DEFAULT_PATH)
+ 
+     file(GLOB sources cvnp/*.h cvnp/*.cpp)
+     pybind11_add_module(cvnp ${sources} main/cvnp_main.cpp)
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/global_segment_map/CMakeLists.txt b/mapping_ros_ws/src/consistent_panoptic_mapping/global_segment_map/CMakeLists.txt
+index aaac954..c83b8b6 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/global_segment_map/CMakeLists.txt
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/global_segment_map/CMakeLists.txt
+@@ -1,17 +1,32 @@
+ cmake_minimum_required(VERSION 3.6)
+ project(global_segment_map)
+ 
+-add_definitions(-std=c++14)
++set(CMAKE_CXX_STANDARD 17)
++set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+   add_definitions(-fext-numeric-literals)
+ endif()
+ find_package(catkin_simple REQUIRED)
+ catkin_simple(ALL_DEPS_REQUIRED)
+ find_package(opencv3_catkin REQUIRED)
++find_package(OpenGL REQUIRED COMPONENTS OpenGL GLX)
++if(NOT TARGET OpenGL::OpenGL)
++  find_file(OPENGL_OPENGL_LIBRARY libOpenGL.so.0
++    PATHS "$ENV{CONDA_PREFIX}/lib" NO_DEFAULT_PATH REQUIRED)
++  add_library(OpenGL::OpenGL UNKNOWN IMPORTED)
++  set_target_properties(OpenGL::OpenGL PROPERTIES IMPORTED_LOCATION ${OPENGL_OPENGL_LIBRARY})
++endif()
++if(NOT TARGET OpenGL::GLX)
++  find_library(OPENGL_GLX_LIBRARY GLX
++    PATHS "$ENV{CONDA_PREFIX}/lib" NO_DEFAULT_PATH REQUIRED)
++  add_library(OpenGL::GLX UNKNOWN IMPORTED)
++  set_target_properties(OpenGL::GLX PROPERTIES IMPORTED_LOCATION ${OPENGL_GLX_LIBRARY})
++endif()
++find_package(PCL REQUIRED COMPONENTS common io)
+ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lstdc++fs")
+ 
+ 
+-include_directories(include ${catkin_INCLUDE_DIRS} )
++include_directories(include ${catkin_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
+ message(STATUS "OPENCV3_CATKIN_INCLUDE: ${OPENCV3_CATKIN_INCLUDE}")
+ message(STATUS "catkin_INCLUDE_DIRS: ${catkin_INCLUDE_DIRS}")
+ cs_add_library(${PROJECT_NAME}
+@@ -28,8 +43,8 @@ cs_add_library(${PROJECT_NAME}
+   src/meshing/semantic_color_map.cc
+   src/meshing/open_sem_color_map.cc
+   src/segment.cc
+-  src/utils/visualizer.cc
+ )
++target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES} OpenGL::OpenGL OpenGL::GLX)
+ 
+ cs_install()
+ cs_export()
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/global_segment_map_node/CATKIN_IGNORE b/mapping_ros_ws/src/consistent_panoptic_mapping/global_segment_map_node/CATKIN_IGNORE
+new file mode 100644
+index 0000000..e658f41
+--- /dev/null
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/global_segment_map_node/CATKIN_IGNORE
+@@ -0,0 +1 @@
++Disabled in the native headless OVI-MAP build; the Python mapper does not use gsm_node.
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/opencv3_catkin/CMakeLists.txt b/mapping_ros_ws/src/consistent_panoptic_mapping/opencv3_catkin/CMakeLists.txt
+index b4f8dd8..ff42353 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/opencv3_catkin/CMakeLists.txt
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/opencv3_catkin/CMakeLists.txt
+@@ -1,148 +1,12 @@
+-cmake_minimum_required(VERSION 2.8.3)
++cmake_minimum_required(VERSION 3.16)
+ project(opencv3_catkin)
+ 
+ find_package(catkin_simple REQUIRED)
+-
+ catkin_simple()
+-
+-include(ExternalProject)
+-set(OPENCV3_CATKIN_INCLUDE ${CATKIN_DEVEL_PREFIX}/include/opencv4)
+-file(MAKE_DIRECTORY ${OPENCV3_CATKIN_INCLUDE})
+-
+-SET(CONTRIB_NAME "opencv3_contrib")
+-ExternalProject_Add(${CONTRIB_NAME}
+-  URL https://github.com/opencv/opencv_contrib/archive/4.2.0.zip
+-  SOURCE_DIR ${CONTRIB_NAME}_src
+-  UPDATE_COMMAND ""
+-  CONFIGURE_COMMAND ""
+-  BUILD_COMMAND ""
+-  INSTALL_COMMAND ""
+-)
+-
+-SET(OPENCV_SRC_PATH "opencv3_src")
+-SET(OPENCV_BUILD_PATH "opencv3_build")
+-ExternalProject_Add(opencv3_src
+-  DEPENDS ${CONTRIB_NAME}
+-  URL https://github.com/opencv/opencv/archive/4.2.0.zip
+-  UPDATE_COMMAND ""
+-  SOURCE_DIR ${OPENCV_SRC_PATH}
+-  BINARY_DIR ${OPENCV_BUILD_PATH}
+-  PATCH_COMMAND patch -p0 < ${CMAKE_SOURCE_DIR}/fix_python_discovery.patch &&
+-                patch -p1 < ${CMAKE_CURRENT_SOURCE_DIR}/rename_unordered_map_definition.patch
+-  CONFIGURE_COMMAND cd ../${OPENCV_BUILD_PATH} && cmake
+-    -DOPENCV_EXTRA_MODULES_PATH=../${CONTRIB_NAME}_src/modules .
+-    -DWITH_TBB=ON
+-    -DBUILD_opencv_python2=ON
+-    -DBUILD_opencv_python3=ON
+-    -DWITH_GTK_2_X=OFF  # Can't use GTK3 as it links against system protobuf.
+-    -DWITH_PROTOBUF=OFF # Disable custom build of protobuf, since starting with OpenCV 3.4.2 a custom version of
+-                        # protobuf is always pulled and compiled, even if no enabled modules use it.
+-    -DWITH_V4L=ON
+-    -DINSTALL_C_EXAMPLES=OFF
+-    -DINSTALL_PYTHON_EXAMPLES=OFF
+-    -DBUILD_EXAMPLES=OFF
+-    -DWITH_QT=OFF # Needed by clang under Ubuntu 14.04 and GTK_WIDGET(cvGetWindowHandle(...)) with gcc (image_view)
+-    -DWITH_OPENGL=ON
+-    -DWITH_VTK=ON
+-    -DENABLE_PRECOMPILED_HEADERS=OFF
+-    -DCMAKE_INSTALL_PREFIX=${CATKIN_DEVEL_PREFIX}
+-    -DBUILD_SHARED_LIBS=ON
+-    -DWITH_CUDA=OFF
+-    -DWITH_OPENCL=OFF
+-    -DBUILD_TESTS=OFF
+-    -DBUILD_opencv_ts=OFF
+-    -DBUILD_TESTS=OFF
+-    # opencv_contrib packages
+-    -DBUILD_opencv_dnn=OFF # Pulls in the system protobuf as a dependency!
+-    -DBUILD_opencv_dnns_easily_fooled=OFF
+-    -DBUILD_opencv_cnn_3dobj=OFF
+-    -DBUILD_opencv_aruco=ON
+-    -DBUILD_opencv_bgsegm=OFF
+-    -DBUILD_opencv_bioinspired=OFF
+-    -DBUILD_opencv_ccalib=OFF
+-    -DBUILD_opencv_contrib_world=OFF
+-    -DBUILD_opencv_datasets=OFF
+-    -DBUILD_opencv_dpm=OFF
+-    -DBUILD_opencv_face=OFF
+-    -DBUILD_opencv_fuzzy=OFF
+-    -DBUILD_opencv_freetype=OFF
+-    -DBUILD_opencv_hdf=OFF
+-    -DBUILD_opencv_line_descriptor=ON
+-    -DBUILD_opencv_matlab=OFF
+-    -DBUILD_opencv_optflow=OFF
+-    -DBUILD_opencv_plot=OFF
+-    -DBUILD_opencv_reg=OFF
+-    -DBUILD_opencv_rgbd=ON
+-    -DBUILD_opencv_saliency=ON
+-    -DBUILD_opencv_sfm=OFF
+-    -DBUILD_opencv_stereo=OFF
+-    -DBUILD_opencv_structured_light=OFF
+-    -DBUILD_opencv_surface_matching=OFF
+-    -DBUILD_opencv_text=OFF
+-    -DBUILD_opencv_tracking=OFF
+-    -DBUILD_opencv_xfeatures2d=ON
+-    -DBUILD_opencv_ximgproc=ON
+-    -DBUILD_opencv_xobjdetect=OFF
+-    -DBUILD_opencv_nonfree=OFF
+-    -DBUILD_opencv_xphoto=OFF ../${OPENCV_SRC_PATH}
+-  BUILD_COMMAND cd ../${OPENCV_BUILD_PATH} && make -j8
+-  INSTALL_COMMAND cd ../${OPENCV_BUILD_PATH} && make install -j8
++find_package(OpenCV 4.11 CONFIG REQUIRED
++  PATHS "$ENV{CONDA_PREFIX}/lib/cmake/opencv4"
++  NO_DEFAULT_PATH
+ )
+ 
+-install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/include/opencv
+-        DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+-        FILES_MATCHING PATTERN "*.h"
+-                       PATTERN "*.hpp")
+-install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/include
+-        DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+-        FILES_MATCHING PATTERN "*.h"
+-                       PATTERN "*.hpp")
+-install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/lib/
+-        DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+-        FILES_MATCHING PATTERN "libopencv*")
+-install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/share/OpenCV
+-        DESTINATION ${CATKIN_GLOBAL_SHARE_DESTINATION})
+-set(OPENCV_INSTALLED_EXECUTABLES
+-    opencv_annotation
+-    opencv_createsamples
+-    opencv_traincascade
+-    opencv_version
+-    opencv_visualisation
+-)
+-
+-foreach(installed_file ${OPENCV_INSTALLED_EXECUTABLES})
+-  # Need to rename binaries as they will conflict with the binaries from
+-  # the ROS OpenCV package otherwise.
+-  string(REPLACE opencv opencv3_catkin new_file_name ${installed_file} )
+-  install(FILES ${CATKIN_DEVEL_PREFIX}/bin/${installed_file}
+-          RENAME ${new_file_name}
+-          PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+-          DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
+-endforeach()
+-
+-cs_export(INCLUDE_DIRS ${CATKIN_DEVEL_PREFIX}/include/opencv4
+-          LIBRARIES opencv_aruco
+-                    opencv_calib3d
+-                    opencv_core
+-                    opencv_features2d
+-                    opencv_flann
+-                    opencv_highgui
+-                    opencv_imgcodecs
+-                    opencv_imgproc
+-                    opencv_line_descriptor
+-                    opencv_ml
+-                    opencv_objdetect
+-                    opencv_phase_unwrapping
+-                    opencv_photo
+-                    opencv_rgbd
+-                    opencv_saliency
+-                    opencv_shape
+-                    opencv_stitching
+-                    opencv_superres
+-                    opencv_video
+-                    opencv_videoio
+-                    opencv_videostab
+-                    opencv_viz
+-                    opencv_xfeatures2d
+-                    opencv_ximgproc
+-)
++cs_install()
++cs_export(INCLUDE_DIRS ${OpenCV_INCLUDE_DIRS} LIBRARIES ${OpenCV_LIBRARIES})
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/pcl_catkin/geometry2/CATKIN_IGNORE b/mapping_ros_ws/src/consistent_panoptic_mapping/pcl_catkin/geometry2/CATKIN_IGNORE
+new file mode 100644
+index 0000000..ed07623
+--- /dev/null
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/pcl_catkin/geometry2/CATKIN_IGNORE
+@@ -0,0 +1 @@
++Use the pinned RoboStack tf2 packages.
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/pcl_catkin/pcl_catkin/CMakeLists.txt b/mapping_ros_ws/src/consistent_panoptic_mapping/pcl_catkin/pcl_catkin/CMakeLists.txt
+index 8733423..ec34a73 100644
+--- a/mapping_ros_ws/src/consistent_panoptic_mapping/pcl_catkin/pcl_catkin/CMakeLists.txt
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/pcl_catkin/pcl_catkin/CMakeLists.txt
+@@ -1,45 +1,9 @@
+-cmake_minimum_required(VERSION 3.6)
++cmake_minimum_required(VERSION 3.16)
+ project(pcl_catkin)
+-add_compile_options(-std=c++14)
+-find_package(catkin_simple REQUIRED)
+-# find_package(Boost REQUIRED COMPONENTS system filesystem thread)
+-
+-catkin_simple(ALL_DEPS_REQUIRED)
+-
+-include(ExternalProject)
+-
+-set(PCL_CATKIN_INCLUDE ${CATKIN_DEVEL_PREFIX}/include/pcl-1.10)
+-file(MAKE_DIRECTORY ${PCL_CATKIN_INCLUDE})
+-
+-if(NOT CMAKE_BUILD_TYPE)
+-  MESSAGE(FATAL_ERROR "CMAKE_BUILD_TYPE must not be empty!")
+-endif()
+-string(TOUPPER ${CMAKE_BUILD_TYPE} UC_BUILD_TYPE)
+ 
+-# PCL uses -march=native which can be dangerous to use together with Eigen 3.3
+-# as this can introduce different vectorization settings in different parts
+-# of the code. So we manually set the compiler flags here to avoid this issue.
+-include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/pcl_find_sse.cmake")
+-PCL_CHECK_FOR_SSE()
+-
+-# Flags that PCL defines by default, see https://github.com/PointCloudLibrary/pcl/blob/master/CMakeLists.txt#L112
+-SET(PCL_CXX_FLAGS "-Wall -Wextra -Wno-unknown-pragmas -fno-strict-aliasing -Wno-format-extra-args -Wno-sign-compare -Wno-invalid-offsetof -Wno-conversion -DBOOST_UUID_RANDOM_GENERATOR_COMPAT ${SSE_FLAGS} -Wabi")
+-SET(PCL_CXX_FLAGS "${PCL_CXX_FLAGS} -std=c++14")
+-
+-ExternalProject_Add(pcl_src
+-  GIT_REPOSITORY  https://github.com/PointCloudLibrary/pcl
+-  GIT_TAG pcl-1.10.1
+-  UPDATE_COMMAND ""
+-  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${CATKIN_DEVEL_PREFIX}
+-             -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+-             -DCMAKE_CXX_FLAGS:STRING=${PCL_CXX_FLAGS}
+-             -DPCL_SHARED_LIBS=TRUE
+-             "-DCMAKE_CXX_FLAGS_${UC_BUILD_TYPE}=${CMAKE_CXX_FLAGS_${UC_BUILD_TYPE}} ${PCL_CXX_FLAGS}"
+-)
+-
+-cs_add_library(${PROJECT_NAME} src/dependency_tracker.cc)
+-add_dependencies(${PROJECT_NAME} pcl_src)
++find_package(catkin_simple REQUIRED)
++catkin_simple()
++find_package(PCL REQUIRED COMPONENTS common io features filters)
+ 
+ cs_install()
+-
+-cs_export(CFG_EXTRAS pcl-extras.cmake)
++cs_export(INCLUDE_DIRS ${PCL_INCLUDE_DIRS} LIBRARIES ${PCL_LIBRARIES})
+diff --git a/mapping_ros_ws/src/consistent_panoptic_mapping/pcl_catkin/perception_pcl/CATKIN_IGNORE b/mapping_ros_ws/src/consistent_panoptic_mapping/pcl_catkin/perception_pcl/CATKIN_IGNORE
+new file mode 100644
+index 0000000..9cff09b
+--- /dev/null
++++ b/mapping_ros_ws/src/consistent_panoptic_mapping/pcl_catkin/perception_pcl/CATKIN_IGNORE
+@@ -0,0 +1 @@
++Use the pinned RoboStack pcl_ros and pcl_conversions packages.
+diff --git a/mapping_ros_ws/src/voxblox/voxblox/CMakeLists.txt b/mapping_ros_ws/src/voxblox/voxblox/CMakeLists.txt
+index 07dc791..5c80f01 100644
+--- a/mapping_ros_ws/src/voxblox/voxblox/CMakeLists.txt
++++ b/mapping_ros_ws/src/voxblox/voxblox/CMakeLists.txt
+@@ -5,7 +5,9 @@ find_package(catkin_simple REQUIRED)
+ catkin_simple()
+ 
+ set(CMAKE_MACOSX_RPATH 0)
+-add_definitions(-std=c++11 -Wall -Wextra)
++set(CMAKE_CXX_STANDARD 17)
++set(CMAKE_CXX_STANDARD_REQUIRED ON)
++add_definitions(-Wall -Wextra)
+ 
+ ############
+ # PROTOBUF #
+@@ -15,7 +17,7 @@ add_definitions(-std=c++11 -Wall -Wextra)
+ set(PROTO_DEFNS proto/voxblox/Block.proto
+                 proto/voxblox/Layer.proto)
+ set(PROTO_LIBRARIES "")
+-find_package(protobuf_catkin QUIET)
++set(protobuf_catkin_FOUND FALSE)
+ if (protobuf_catkin_FOUND)
+   message(STATUS "Using protobuf_catkin")
+   PROTOBUF_CATKIN_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${PROTO_DEFNS})
+diff --git a/mapping_ros_ws/src/voxblox/voxblox/package.xml b/mapping_ros_ws/src/voxblox/voxblox/package.xml
+index aa69cf6..9738b64 100644
+--- a/mapping_ros_ws/src/voxblox/voxblox/package.xml
++++ b/mapping_ros_ws/src/voxblox/voxblox/package.xml
+@@ -20,7 +20,4 @@
+   <depend>gflags_catkin</depend>
+   <depend>glog_catkin</depend>
+   <depend>minkindr</depend>
+-  <!-- This is an OPTIONAL dep! Will use system library if not present. -->
+-  <depend>protobuf_catkin</depend>
+-
+ </package>
+diff --git a/mapping_ros_ws/src/voxblox/voxblox_ros/CMakeLists.txt b/mapping_ros_ws/src/voxblox/voxblox_ros/CMakeLists.txt
+index e325856..c017d51 100644
+--- a/mapping_ros_ws/src/voxblox/voxblox_ros/CMakeLists.txt
++++ b/mapping_ros_ws/src/voxblox/voxblox_ros/CMakeLists.txt
+@@ -4,7 +4,9 @@ project(voxblox_ros)
+ find_package(catkin_simple REQUIRED)
+ catkin_simple(ALL_DEPS_REQUIRED)
+ 
+-add_definitions(-std=c++14 -Wall -Wextra)
++set(CMAKE_CXX_STANDARD 17)
++set(CMAKE_CXX_STANDARD_REQUIRED ON)
++add_definitions(-Wall -Wextra)
+ 
+ #############
+ # LIBRARIES #
+@@ -22,11 +24,6 @@ cs_add_library(${PROJECT_NAME}
+ # BINARIES #
+ ############
+ 
+-cs_add_executable(voxblox_eval
+-  src/voxblox_eval.cc
+-)
+-target_link_libraries(voxblox_eval ${PROJECT_NAME})
+-
+ cs_add_executable(tsdf_server
+   src/tsdf_server_node.cc
+ )
+@@ -47,11 +44,6 @@ cs_add_executable(simulation_eval
+ )
+ target_link_libraries(simulation_eval ${PROJECT_NAME})
+ 
+-cs_add_executable(visualize_tsdf
+-  src/visualize_tsdf.cc
+-)
+-target_link_libraries(visualize_tsdf ${PROJECT_NAME})
+-
+ ##########
+ # EXPORT #
+ ##########
+diff --git a/mapping_ros_ws/src/voxblox/voxblox_ros/package.xml b/mapping_ros_ws/src/voxblox/voxblox_ros/package.xml
+index ef82bea..97e62c0 100644
+--- a/mapping_ros_ws/src/voxblox/voxblox_ros/package.xml
++++ b/mapping_ros_ws/src/voxblox/voxblox_ros/package.xml
+@@ -25,5 +25,4 @@
+   <depend>tf</depend>
+   <depend>voxblox</depend>
+   <depend>voxblox_msgs</depend>
+-  <depend>voxblox_rviz_plugin</depend>
+ </package>
+diff --git a/mapping_ros_ws/src/voxblox/voxblox_rviz_plugin/CATKIN_IGNORE b/mapping_ros_ws/src/voxblox/voxblox_rviz_plugin/CATKIN_IGNORE
+new file mode 100644
+index 0000000..3c98a34
+--- /dev/null
++++ b/mapping_ros_ws/src/voxblox/voxblox_rviz_plugin/CATKIN_IGNORE
+@@ -0,0 +1 @@
++Disabled in the native headless OVI-MAP build.
+diff --git a/scripts/panoptic_mapping_.py b/scripts/panoptic_mapping_.py
+index 5ed2adf..38940c1 100644
+--- a/scripts/panoptic_mapping_.py
++++ b/scripts/panoptic_mapping_.py
+@@ -1,4 +1,4 @@
+-import os, sys, time, argparse, pickle, logging, copy
++import os, sys, time, argparse, pickle, logging, copy, json
+ from os.path import join as pjoin
+ from tqdm import tqdm
+ import warnings
+@@ -43,6 +43,9 @@ def parse_args():
+     # log
+     parse.add_argument("--log", type=str, default='', 
+         help="log info ")
++    parse.add_argument("--siglip_model_path", type=str,
++        default=os.environ.get("OVIMAP_SIGLIP_MODEL", ""))
++    parse.add_argument("--native_audit_dir", type=str, default="")
+     # mapping configuration
+     parse.add_argument("--start", type=int,default=0, 
+         help="start of the sequence, 0 means starting from the beginning")
+@@ -199,6 +202,27 @@ def update_view_cov_map(
+     # logging.info(f"Add inst {glo_inst_id} with view overlap ratio {view_overlap_ratio:.2f}")
+     view_map[sph_coords[:, 0], sph_coords[:, 1]] = 1
+     return True, view_map
++
++
++def _native_boxes(instance_map):
++    boxes = {}
++    for instance_id in np.unique(instance_map):
++        instance_id = int(instance_id)
++        if instance_id == 0:
++            continue
++        ys, xs = np.nonzero(instance_map == instance_id)
++        boxes[str(instance_id)] = [
++            int(xs.min()), int(ys.min()), int(xs.max()), int(ys.max())
++        ]
++    return boxes
++
++
++def _write_native_json(path, payload):
++    temporary = path + ".tmp"
++    with open(temporary, "w", encoding="utf-8") as output:
++        json.dump(payload, output, indent=2, sort_keys=True)
++        output.write("\n")
++    os.replace(temporary, path)
+     
+ 
+ def main(args):
+@@ -242,6 +266,9 @@ def main(args):
+     scene_folder = pjoin(data_path, scene_num)
+ 
+     result_dirs = make_res_dirs(args)
++    native_audit_dir = os.path.abspath(args.native_audit_dir) if args.native_audit_dir else ""
++    if native_audit_dir:
++        os.makedirs(native_audit_dir, exist_ok=True)
+ 
+     temp_segs_folder = result_dirs['temp_segs']
+     temp_pano_folder = result_dirs['temp_panoptics']
+@@ -351,7 +378,12 @@ def main(args):
+     )
+ 
+     # Create the VL model for language-aligned image feature extraction
+-    vl_model = VLModel(model_name=VLM_name, img_size=(H_depth, W_depth), device=DEVICE)
++    vl_model = VLModel(
++        model_name=VLM_name,
++        img_size=(H_depth, W_depth),
++        device=DEVICE,
++        model_path=args.siglip_model_path or None,
++    )
+     logging.info(f"VL model {VLM_name} initialized!")
+ 
+ 
+@@ -425,6 +457,27 @@ def main(args):
+             pose, inst_seg, depth_scaled
+         )
+ 
++        if native_audit_dir:
++            raycast_path = pjoin(native_audit_dir, f"frame{f_i:06d}.raycast.npy")
++            np.save(raycast_path, np.asarray(glo_inst_map, dtype=np.uint16), allow_pickle=False)
++            mapper_colors = {}
++            for instance_id in np.unique(glo_inst_map):
++                instance_id = int(instance_id)
++                if instance_id == 0:
++                    continue
++                mapper_colors[str(instance_id)] = [
++                    int(channel) for channel in gsm_node.getInstanceColor(instance_id)
++                ]
++            _write_native_json(
++                pjoin(native_audit_dir, f"frame{f_i:06d}.json"),
++                {
++                    "frame_id": int(f_i),
++                    "shape": list(glo_inst_map.shape),
++                    "box_2d": _native_boxes(glo_inst_map),
++                    "mapper_rgb": mapper_colors,
++                },
++            )
++
+         if not select_by_vis:
+             depth_scaled[~valid_d_mask] = 0.0
+             points_map = cv2.rgbd.depthTo3d(depth_scaled, K_depth)
+@@ -565,7 +618,24 @@ def main(args):
+ 
+     # generate log and mesh
+     gsm_node.LogLabelInformation()
+-    gsm_node.LogMeshColors(exp_results)
++    gsm_node.LogMeshColors(native_audit_dir)
++    if native_audit_dir:
++        color_pairs = []
++        color_path = pjoin(native_audit_dir, "instance_colors_cpp.tsv")
++        with open(color_path, "r", encoding="utf-8") as color_file:
++            next(color_file)
++            for line in color_file:
++                instance_id, red, green, blue = (int(value) for value in line.split())
++                color_pairs.append({
++                    "instance_id": instance_id,
++                    "mapper_rgb": [
++                        int(channel) for channel in gsm_node.getInstanceColor(instance_id)
++                    ],
++                    "logged_rgb": [red, green, blue],
++                })
++        _write_native_json(
++            pjoin(native_audit_dir, "color_pairs.json"), color_pairs
++        )
+ 
+     logging.info("Start mesh generation!")
+     # flags: label_mesh, sem_mesh, inst_mesh
+@@ -633,4 +703,4 @@ def main(args):
+ if __name__=="__main__":
+     # set files path
+     args = parse_args()
+-    main(args)
+\ No newline at end of file
++    main(args)
+diff --git a/scripts/utils/text_embedding.py b/scripts/utils/text_embedding.py
+index b3b066b..b9f83e5 100644
+--- a/scripts/utils/text_embedding.py
++++ b/scripts/utils/text_embedding.py
+@@ -3,7 +3,6 @@ import numpy as np
+ import torch
+ import matplotlib.pyplot as plt
+ 
+-import clip
+ from transformers import AutoModel, AutoTokenizer
+ 
+ FORMAT = '%(asctime)s.%(msecs)06d %(levelname)-8s: [%(filename)s] %(message)s'
+@@ -47,12 +46,19 @@ class TextEmbedder:
+ 
+     def load_model(self, model_name, device):
+         if model_name in clip_model_list.keys():
++            import clip
+             self.model_type = 'clip'
+             self.clip_model, _ = clip.load(clip_model_list[model_name], device=device)
+         elif model_name in siglip_model_list.keys():
+             self.model_type = 'siglip'
+-            self.siglip_model = AutoModel.from_pretrained(siglip_model_list[model_name]).eval().to(device)
+-            self.tokenizer = AutoTokenizer.from_pretrained(siglip_model_list[model_name])
++            model_path = os.environ.get('OVIMAP_SIGLIP_MODEL')
++            model_source = model_path or siglip_model_list[model_name]
++            self.siglip_model = AutoModel.from_pretrained(
++                model_source, local_files_only=bool(model_path)
++            ).eval().to(device)
++            self.tokenizer = AutoTokenizer.from_pretrained(
++                model_source, local_files_only=bool(model_path)
++            )
+         else:
+             raise NotImplementedError(f'Unknown model name: {model_name}')
+    
+@@ -64,6 +70,7 @@ class TextEmbedder:
+             return text_embed.to(self.device)
+ 
+         if self.model_type == 'clip':
++            import clip
+             text_inputs = clip.tokenize(text_cands).to(self.device)
+             text_feats = self.clip_model.encode_text(text_inputs)
+         elif self.model_type == 'siglip':
+@@ -112,4 +119,4 @@ def main():
+     # print(f'Max VMem {torch.cuda.max_memory_allocated() / 1024**3:.6f} GB')
+ 
+ if __name__ == '__main__':
+-    main()
+\ No newline at end of file
++    main()
+diff --git a/scripts/vl_models.py b/scripts/vl_models.py
+index c8cbf72..468c805 100644
+--- a/scripts/vl_models.py
++++ b/scripts/vl_models.py
+@@ -9,7 +9,6 @@ import numpy as np
+ import torch
+ 
+ # image embedding
+-import clip
+ from transformers import AutoProcessor, AutoModel
+ 
+ 
+@@ -39,19 +38,27 @@ siglip_model_list = {
+ 
+ 
+ class VLModel:
+-    def __init__(self, model_name, img_size, device):
++    def __init__(self, model_name, img_size, device, model_path=None):
+         self.device = device
+ 
+         # NOTE CLIP and SigLip use PIL.Image in RGB format as input
+         if model_name in clip_model_list.keys():
++            import clip
+             self.model_type = 'clip'
+             self.clip_model, self.prep_clip = clip.load(clip_model_list[model_name], device=device)
+         elif model_name in siglip_model_list.keys():
+             self.model_type = 'siglip'
++            model_source = model_path or siglip_model_list[model_name]
+             self.siglip_model = AutoModel.from_pretrained(
+-                siglip_model_list[model_name], device_map="cuda"
++                model_source,
++                device_map="cuda",
++                local_files_only=bool(model_path),
+             ).eval().to(device)
+-            self.processor = AutoProcessor.from_pretrained(siglip_model_list[model_name], use_fast=True)
++            self.processor = AutoProcessor.from_pretrained(
++                model_source,
++                use_fast=True,
++                local_files_only=bool(model_path),
++            )
+         else:
+             raise NotImplementedError
+ 
+@@ -97,4 +104,4 @@ class VLModel:
+         roi_feat = roi_feat / roi_feat.norm(dim=-1, keepdim=True)
+         roi_feat = roi_feat.mean(dim=0).detach().cpu().numpy()
+ 
+-        return roi_feat
+\ No newline at end of file
++        return roi_feat
+diff --git a/mapping_ros_ws/src/gflags_catkin/CMakeLists.txt b/mapping_ros_ws/src/gflags_catkin/CMakeLists.txt
+index eba6143..f73a085 100644
+--- a/mapping_ros_ws/src/gflags_catkin/CMakeLists.txt
++++ b/mapping_ros_ws/src/gflags_catkin/CMakeLists.txt
+@@ -1,37 +1,15 @@
+-cmake_minimum_required(VERSION 2.8.3)
++cmake_minimum_required(VERSION 3.16)
+ project(gflags_catkin)
+ 
+ find_package(catkin_simple REQUIRED)
+ catkin_simple()
+-
+-include(ExternalProject)
+-
+-file(MAKE_DIRECTORY ${CATKIN_DEVEL_PREFIX}/include)
+-
+-ExternalProject_Add(
+-  gflags_src
+-  URL https://github.com/gflags/gflags/archive/v2.2.1.zip
+-  URL_MD5 2d988ef0b50939fb50ada965dafce96b
+-  UPDATE_COMMAND ""
+-  CONFIGURE_COMMAND cd ../gflags_src &&
+-     cmake .
+-       -DCMAKE_INSTALL_PREFIX:PATH=${CATKIN_DEVEL_PREFIX}
+-       -DBUILD_SHARED_LIBS:BOOL=true
+-       -DGFLAGS_NAMESPACE:STRING=google
+-       -DCMAKE_BUILD_TYPE:STRING=Release
+-       -DCMAKE_TOOLCHAIN_FILE:STRING=${CMAKE_TOOLCHAIN_FILE}
+-  BUILD_COMMAND cd ../gflags_src && make -j 8
+-  INSTALL_COMMAND cd ../gflags_src && make install -j 8
++find_package(gflags CONFIG REQUIRED
++  PATHS "$ENV{CONDA_PREFIX}/lib/cmake/gflags"
++  NO_DEFAULT_PATH
++)
++cs_install()
++cs_export(
++  INCLUDE_DIRS "$ENV{CONDA_PREFIX}/include"
++  LIBRARIES gflags
++  CFG_EXTRAS gflags-catkin-extras.cmake
+ )
+-
+-install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/include/gflags
+-        DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+-        FILES_MATCHING PATTERN "*.h")
+-install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/lib/
+-        DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+-        FILES_MATCHING PATTERN "libgflags*")
+-install(FILES ${CATKIN_DEVEL_PREFIX}/bin/gflags_completions.sh
+-        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+-        DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
+-cs_export(INCLUDE_DIRS ${CATKIN_DEVEL_PREFIX}/include
+-          LIBRARIES gflags)
+diff --git a/mapping_ros_ws/src/gflags_catkin/cmake/gflags-catkin-extras.cmake b/mapping_ros_ws/src/gflags_catkin/cmake/gflags-catkin-extras.cmake
+new file mode 100644
+index 0000000..4697066
+--- /dev/null
++++ b/mapping_ros_ws/src/gflags_catkin/cmake/gflags-catkin-extras.cmake
+@@ -0,0 +1,6 @@
++set(GFLAGS_USE_TARGET_NAMESPACE FALSE)
++find_package(gflags CONFIG REQUIRED
++  PATHS "$ENV{CONDA_PREFIX}/lib/cmake/gflags"
++  NO_DEFAULT_PATH
++)
++set(gflags_catkin_LIBRARIES gflags)
+diff --git a/mapping_ros_ws/src/glog_catkin/CMakeLists.txt b/mapping_ros_ws/src/glog_catkin/CMakeLists.txt
+index d916f08..f31c4d6 100644
+--- a/mapping_ros_ws/src/glog_catkin/CMakeLists.txt
++++ b/mapping_ros_ws/src/glog_catkin/CMakeLists.txt
+@@ -1,63 +1,15 @@
+-cmake_minimum_required(VERSION 2.8.3)
++cmake_minimum_required(VERSION 3.16)
+ project(glog_catkin)
+ 
+ find_package(catkin_simple REQUIRED)
+ catkin_simple()
+-
+-include(ExternalProject)
+-
+-cmake_policy(SET CMP0053 OLD)
+-include(cmake/glog-catkin-extras.cmake.in)
+-
+-# We can't check version numbers easily as the GLOG script doesn't export them.
+-
+-# If set to OFF, will compile the given version of Glog.
+-# If set to ON, will use the system version of Glog.
+-# If set to AUTO, will try to use the syste version if there is one, and build otherwise.
+-set(USE_SYSTEM_GLOG "AUTO" CACHE INTERNAL "Whether to use the system version of Glog.")
+-
+-# Check if the version is suitable, otherwise force downloading the newer one.
+-if(USE_SYSTEM_GLOG STREQUAL "AUTO" OR USE_SYSTEM_GLOG STREQUAL "ON")
+-  find_package(Glog QUIET)
+-  if(GLOG_FOUND)
+-    set(USE_SYSTEM_GLOG "ON")
+-    message(STATUS "Suitable Glog version found.")
+-  else()
+-    set(USE_SYSTEM_GLOG "OFF")
+-    message(STATUS "No suitable Glog version found.")
+-  endif()
+-endif()
+-
+-
+-if(USE_SYSTEM_GLOG STREQUAL "OFF")
+-  message(STATUS "Installing Glog from source!")
+-
+-  file(MAKE_DIRECTORY ${CATKIN_DEVEL_PREFIX}/include)
+-
+-  set(VERSION 0.3.5)
+-  ExternalProject_Add(glog_src
+-    URL https://github.com/google/glog/archive/v${VERSION}.zip
+-    UPDATE_COMMAND ""
+-    PATCH_COMMAND patch -p0 < ${CMAKE_CURRENT_SOURCE_DIR}/fix-unused-typedef-warning.patch
+-    CONFIGURE_COMMAND cd ../glog_src/ && autoreconf -fi && ./configure --with-pic
+-      --with-gflags=${gflags_catkin_PREFIX}
+-      --prefix=${CATKIN_DEVEL_PREFIX}
+-    BUILD_COMMAND cd ../glog_src/ && make -j 8
+-    INSTALL_COMMAND cd ../glog_src/ && make install -j 8
+-  )
+-
+-  install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/include/glog
+-          DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+-          FILES_MATCHING PATTERN "*.h")
+-  install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/lib/
+-          DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+-          FILES_MATCHING PATTERN "libglog*")
+-  cs_export(INCLUDE_DIRS ${CATKIN_DEVEL_PREFIX}/include
+-            LIBRARIES glog)
+-else()
+-  message(STATUS "Using system Glog.")
+-  find_package(Glog REQUIRED)
+-  cs_install()
+-  cs_export(INCLUDE_DIRS  ${GLOG_INCLUDE_DIRS}
+-            LIBRARIES     ${GLOG_LIBRARIES})
+-endif()
++find_package(glog CONFIG REQUIRED
++  PATHS "$ENV{CONDA_PREFIX}/lib/cmake/glog"
++  NO_DEFAULT_PATH
++)
++cs_install()
++cs_export(
++  INCLUDE_DIRS "$ENV{CONDA_PREFIX}/include"
++  LIBRARIES glog::glog
++  CFG_EXTRAS glog-catkin-extras.cmake
++)
+diff --git a/mapping_ros_ws/src/glog_catkin/cmake/glog-catkin-extras.cmake.in b/mapping_ros_ws/src/glog_catkin/cmake/glog-catkin-extras.cmake.in
+index c35be0e..2c6dc67 100644
+--- a/mapping_ros_ws/src/glog_catkin/cmake/glog-catkin-extras.cmake.in
++++ b/mapping_ros_ws/src/glog_catkin/cmake/glog-catkin-extras.cmake.in
+@@ -1,2 +1,10 @@
+-# Append cmake modules from source directory to the cmake module path
+-list(APPEND CMAKE_MODULE_PATH @CMAKE_CURRENT_SOURCE_DIR@/cmake/Modules)
++set(GFLAGS_USE_TARGET_NAMESPACE FALSE)
++find_package(gflags CONFIG REQUIRED
++  PATHS "$ENV{CONDA_PREFIX}/lib/cmake/gflags"
++  NO_DEFAULT_PATH
++)
++find_package(glog CONFIG REQUIRED
++  PATHS "$ENV{CONDA_PREFIX}/lib/cmake/glog"
++  NO_DEFAULT_PATH
++)
++set(glog_catkin_LIBRARIES glog::glog)
+diff --git a/mapping_ros_ws/src/protobuf_catkin/CATKIN_IGNORE b/mapping_ros_ws/src/protobuf_catkin/CATKIN_IGNORE
+new file mode 100644
+index 0000000..dea60cd
+--- /dev/null
++++ b/mapping_ros_ws/src/protobuf_catkin/CATKIN_IGNORE
+@@ -0,0 +1 @@
++Use the pinned Conda protobuf package.

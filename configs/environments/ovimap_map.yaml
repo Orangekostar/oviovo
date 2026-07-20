@@ -13,6 +13,8 @@ dependencies:
   - pytorch-cuda=12.1
   - ros-noetic-ros-base=1.5.0
   - ros-noetic-pcl-ros=1.7.4
+  - ros-noetic-eigen-conversions=1.13.2
+  - ros-noetic-tf-conversions=1.13.2
   - catkin_tools
   - cmake
   - make
@@ -20,13 +22,13 @@ dependencies:
   - protobuf
   - glog
   - gflags
+  - opencv=4.11
   - empy=3.3.4
   - pip
   - pip:
       - numpy==1.26.4
       - transformers==4.49.0
       - accelerate==0.26.*
-      - opencv-contrib-python==4.11.*
       - open3d
       - scipy
       - plyfile==1.1.3

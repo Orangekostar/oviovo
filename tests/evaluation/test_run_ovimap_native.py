@@ -14,6 +14,8 @@ BOOTSTRAP = REPO_ROOT / "scripts/reproduction/ovimap/bootstrap_native_envs.sh"
 GXX_WRAPPER = REPO_ROOT / "scripts/reproduction/ovimap/conda_gxx12_wrapper.sh"
 CROPFORMER_PATCH = REPO_ROOT / "patches/cropformer/ubuntu24-torch21.patch"
 ENTITY_ROOT = Path("/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/Entity")
+OVIMAP_PATCH = REPO_ROOT / "patches/ovimap/ubuntu24-native.patch"
+OVIMAP_ROOT = Path("/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/OVI-MAP")
 
 
 def _dependencies(path: Path) -> tuple[dict, set[str]]:
@@ -80,6 +82,8 @@ def test_mapping_environment_pins_robostack_abi() -> None:
         "pytorch-cuda=12.1",
         "ros-noetic-ros-base=1.5.0",
         "ros-noetic-pcl-ros=1.7.4",
+        "ros-noetic-eigen-conversions=1.13.2",
+        "ros-noetic-tf-conversions=1.13.2",
         "catkin_tools",
         "cmake",
         "make",
@@ -87,6 +91,7 @@ def test_mapping_environment_pins_robostack_abi() -> None:
         "protobuf",
         "glog",
         "gflags",
+        "opencv=4.11",
         "pip",
     } <= dependencies
     pip_section = next(
@@ -98,11 +103,11 @@ def test_mapping_environment_pins_robostack_abi() -> None:
         "numpy==1.26.4",
         "transformers==4.49.0",
         "accelerate==0.26.*",
-        "opencv-contrib-python==4.11.*",
         "open3d",
         "plyfile==1.1.3",
         "sentencepiece",
     } <= set(pip_section)
+    assert not any(value.startswith("opencv-") for value in pip_section)
 
 
 def test_bootstrap_freezes_sources_and_environment_provenance() -> None:
@@ -114,6 +119,21 @@ def test_bootstrap_freezes_sources_and_environment_provenance() -> None:
     assert "https://github.com/OVI-MAP/OVI-MAP.git" in script
     assert "https://github.com/qqlu/Entity.git" in script
     assert "https://github.com/facebookresearch/detectron2.git" in script
+    for commit in (
+        "b2e87786e77b8c9ce71e56ce2a1146bd32b7c68c",
+        "c8ea6e25bc5d98772d57b2ffd7619973952a6839",
+        "0e62848b12da76c8cc58a1add42b4f894d1ac21e",
+        "3323b388540fa95ec9da6f9cd887f70ead055edb",
+        "22a6247a3df11bc285d43d1a030f4e874a413997",
+        "fc38fc525f7d48881aebb27a7b9978453556bbd4",
+        "40a9edadd15c59f8b57dc947d0135b0a007ea10b",
+        "564f12639a8447d4d3e5e7707851424302941056",
+        "5528b042124fe056a7cf53f96c8b39e1e32ec2b9",
+        "f63b1dfe3b0a1ee21138caa1dcedd32c7f0411d9",
+        "721a6cc17e7e937e7accfb88a9967b26134db6f9",
+        "6aff4c33a0d79536dd769d176ee5cd1285004c88",
+    ):
+        assert commit in script
     for filename in (
         "conda-explicit.txt",
         "pip-freeze.txt",
@@ -215,3 +235,68 @@ def test_cropformer_patch_exports_auditable_instance_id_png() -> None:
     assert "largest_instance_ratio" in patch
     assert "config_sha256" in patch
     assert "weights_sha256" in patch
+
+
+def test_ovimap_patch_applies_to_frozen_source() -> None:
+    completed = subprocess.run(
+        ["git", "-C", str(OVIMAP_ROOT), "apply", "--check", str(OVIMAP_PATCH)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode == 0:
+        return
+    reverse = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(OVIMAP_ROOT),
+            "apply",
+            "--reverse",
+            "--check",
+            str(OVIMAP_PATCH),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert reverse.returncode == 0, completed.stderr + reverse.stderr
+
+
+def test_ovimap_patch_is_build_only_plus_native_diagnostics() -> None:
+    patch = OVIMAP_PATCH.read_text(encoding="utf-8")
+    added = "\n".join(
+        line[1:]
+        for line in patch.splitlines()
+        if line.startswith("+") and not line.startswith("+++")
+    )
+
+    for forbidden in (
+        "connection_ratio_th_",
+        "merging_min_overlap_ratio",
+        "vis_area_thres =",
+        "ray_cast_max_depth =",
+    ):
+        assert forbidden not in added
+    assert "scripts/eval_inst_seg.py" not in patch
+    assert "scripts/eval_sem_seg.py" not in patch
+    assert "CMAKE_CXX_STANDARD 17" in patch
+    assert "find_package(PCL" in patch
+    assert "find_package(OpenGL" in patch
+    assert "voxblox_rviz_plugin" in patch
+    assert "gsm_node" in patch
+    assert "$ENV{CONDA_PREFIX}" in patch
+
+
+def test_ovimap_patch_adds_local_siglip_and_audit_outputs() -> None:
+    patch = OVIMAP_PATCH.read_text(encoding="utf-8")
+
+    assert "siglip_model_path" in patch
+    assert "local_files_only" in patch
+    assert "/home/ww/vv/paper2" not in patch
+    assert "native_audit_dir" in patch
+    assert "raycast.npy" in patch
+    assert "mapper_rgb" in patch
+    assert "logged_rgb" in patch
+    assert "instance_colors_cpp.tsv" in patch
+    assert "box_2d" in patch
