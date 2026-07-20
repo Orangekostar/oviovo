@@ -32,6 +32,7 @@ from src.oviv2.snapshot import VoxelMapSnapshot  # noqa: E402
 
 
 NON_INSTANCE_CLASSES = {"ceiling", "floor", "wall"}
+SEMANTIC_HEADS = ("owner_authoritative", "dense_only")
 
 
 def _sha256(path: Path) -> str:
@@ -309,6 +310,11 @@ def _publish_output(target: Path, writer) -> None:
 
 
 def evaluate(args: argparse.Namespace) -> dict[str, Any]:
+    semantic_head = getattr(args, "semantic_head", "owner_authoritative")
+    if semantic_head not in SEMANTIC_HEADS:
+        raise ValueError(
+            "semantic_head must be one of " + ", ".join(SEMANTIC_HEADS)
+        )
     manifest, scene = _load_manifest(args.manifest, args.scene)
     _verify_scene_inputs(scene, args.gt_mesh, args.gt_info)
     snapshot = VoxelMapSnapshot.load(args.snapshot)
@@ -324,9 +330,12 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         for label, semantic_id in class_to_id.items()
         if label not in NON_INSTANCE_CLASSES
     }
-    if snapshot.metadata.schema_version == 2:
+    if snapshot.metadata.schema_version in {2, 3}:
         if snapshot.registry is None:
-            raise ValueError("schema v2 snapshot is missing its entity registry")
+            raise ValueError(
+                f"schema v{snapshot.metadata.schema_version} snapshot is missing "
+                "its entity registry"
+            )
         entity_info = [
             EntityEvaluationInfo(
                 entity_id=entity.entity_id,
@@ -360,7 +369,9 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         snapshot.geometry,
         snapshot.evidence,
         snapshot.ownership,
-        entity_semantics=entity_semantics,
+        entity_semantics=(
+            entity_semantics if semantic_head == "owner_authoritative" else None
+        ),
     )
     mesh_semantic_ids = {int(value) for value in np.unique(mesh.semantic_ids) if value > 0}
     if not mesh_semantic_ids.issubset(valid_semantic_ids):
@@ -395,6 +406,7 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         {
             "manifest_id": manifest.get("manifest_id"),
             "scene_id": args.scene,
+            "semantic_head": semantic_head,
             "vocabulary_hash": vocabulary_hash,
             "snapshot_revision": snapshot.metadata.revision,
             "snapshot_checksums": dict(sorted(snapshot.checksums.items())),
@@ -442,6 +454,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--scene", required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--min-instance-vertices", type=int, default=100)
+    parser.add_argument(
+        "--semantic-head",
+        choices=SEMANTIC_HEADS,
+        default="owner_authoritative",
+    )
     return parser.parse_args(argv)
 
 

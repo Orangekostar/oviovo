@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 from dataclasses import replace
 import json
 from pathlib import Path
@@ -13,9 +14,11 @@ import pytest
 from scripts.evaluation.evaluate_oviv2_replica import (
     _load_entity_info,
     _majority_object_per_vertex,
+    evaluate,
 )
 from src.evaluation.oviv2_replica import EntityEvaluationInfo
 from src.oviv2.addressing import point_to_voxel
+from src.oviv2.dense_semantics import DenseSemanticProvenance
 from src.oviv2.evidence import SparseEvidenceStore
 from src.oviv2.entities import EntityRegistry
 from src.oviv2.geometry import SparseTsdfVolume
@@ -27,6 +30,24 @@ from tests.oviv2.test_entities import _track
 
 
 SCRIPT = Path("scripts/evaluation/evaluate_oviv2_replica.py")
+
+
+def _dense_provenance() -> DenseSemanticProvenance:
+    return DenseSemanticProvenance(
+        backend="radseg",
+        source_commit="a" * 40,
+        radio_commit="b" * 40,
+        model_id="nvidia/C-RADIOv3-B",
+        model_sha256="c" * 64,
+        auxiliary_model_sha256="",
+        vocabulary_sha256="d" * 64,
+        prompt_sha256="e" * 64,
+        inference_config_sha256="f" * 64,
+        cache_prefix_sha256="1" * 64,
+        language_model_id="google/siglip2-so400m-patch16-naflex",
+        language_model_revision="2" * 40,
+        language_model_sha256="3" * 64,
+    )
 
 
 def test_entity_info_loader_skips_v2_registry_metadata(tmp_path: Path) -> None:
@@ -136,6 +157,7 @@ def _fixture(
     tmp_path: Path,
     *,
     semantic_evidence: bool = True,
+    semantic_label_id: int = 2,
     schema_version: int = 1,
 ) -> dict[str, Path]:
     geometry = SparseTsdfVolume()
@@ -152,20 +174,37 @@ def _fixture(
     }
     for key in sorted(keys):
         if semantic_evidence:
-            evidence.update_semantic(key, label_id=2, support_delta=1.0, revision=1)
+            evidence.update_semantic(
+                key,
+                label_id=semantic_label_id,
+                support_delta=1.0,
+                revision=1,
+            )
         evidence.update_entity(key, entity_id=11, positive_delta=1.0, negative_delta=0.0, timestamp=1.0, revision=1)
         ownership.assign(key, entity_id=11, confidence=1.0, evidence_revision=1)
 
     snapshot = tmp_path / "snapshot"
     registry = None
-    if schema_version == 2:
+    if schema_version in {2, 3}:
         registry = EntityRegistry()
         entity = registry.resolve(_track(0, {(0, 0, 20)}), revision=1)
         registry.entities = {11: replace(entity, entity_id=11)}
         registry._next_entity_id = 12
+    metadata = VoxelSnapshotMetadata(
+        scene_id="fixture",
+        frame_id=1,
+        timestamp=1.0,
+        revision=1,
+        voxel_size_m=0.05,
+        block_resolution=8,
+        schema_version=schema_version,
+        dense_semantic_provenance=(
+            _dense_provenance() if schema_version == 3 else None
+        ),
+    )
     VoxelMapSnapshot.commit(
         snapshot,
-        VoxelSnapshotMetadata("fixture", 1, 1.0, 1, 0.05, 8, schema_version),
+        metadata,
         geometry,
         evidence,
         ownership,
@@ -218,6 +257,7 @@ def _run(
     *,
     scene: str = "fixture",
     include_entity_info: bool = True,
+    semantic_head: str | None = None,
 ) -> subprocess.CompletedProcess:
     command = [
         sys.executable,
@@ -227,6 +267,8 @@ def _run(
     ]
     if include_entity_info:
         command.extend(("--entity-info", str(paths["entities"])))
+    if semantic_head is not None:
+        command.extend(("--semantic-head", semantic_head))
     command.extend(
         [
             "--gt-mesh",
@@ -286,6 +328,7 @@ def test_cli_writes_complete_deterministic_synthetic_evaluation(tmp_path: Path) 
     assert metrics["protocol"]["headline_instance_protocol"] == "class_agnostic"
     assert metrics["protocol"]["semantic_instance_protocol"] == "diagnostic_only"
     assert metrics["protocol"]["projection_comparator"] == "strict_less_than"
+    assert metrics["protocol"]["semantic_head"] == "owner_authoritative"
     assert metrics["protocol"]["snapshot_revision"] == 1
     assert metrics["protocol"]["vocabulary_hash"]
     np.testing.assert_array_equal(
@@ -342,6 +385,84 @@ def test_v2_evaluator_ignores_invalid_external_entity_info(tmp_path: Path) -> No
 
     assert result.returncode == 0, result.stderr
     assert json.loads((output / "metrics.json").read_text())["miou"] == pytest.approx(1.0)
+
+
+def test_schema3_dense_only_uses_voxel_labels_and_preserves_instance_ids(
+    tmp_path: Path,
+) -> None:
+    paths = _fixture(
+        tmp_path,
+        semantic_label_id=1,
+        schema_version=3,
+    )
+    owner_output = tmp_path / "owner-evaluation"
+    dense_output = tmp_path / "dense-evaluation"
+
+    owner = _run(
+        paths,
+        owner_output,
+        include_entity_info=False,
+        semantic_head="owner_authoritative",
+    )
+    dense = _run(
+        paths,
+        dense_output,
+        include_entity_info=False,
+        semantic_head="dense_only",
+    )
+
+    assert owner.returncode == 0, owner.stderr
+    assert dense.returncode == 0, dense.stderr
+    owner_metrics = json.loads((owner_output / "metrics.json").read_text())
+    dense_metrics = json.loads((dense_output / "metrics.json").read_text())
+    assert owner_metrics["protocol"]["semantic_head"] == "owner_authoritative"
+    assert dense_metrics["protocol"]["semantic_head"] == "dense_only"
+    owner_semantics = np.load(owner_output / "gt_aligned_semantic_ids.npy")
+    dense_semantics = np.load(dense_output / "gt_aligned_semantic_ids.npy")
+    owner_instances = np.load(owner_output / "gt_aligned_instance_ids.npy")
+    dense_instances = np.load(dense_output / "gt_aligned_instance_ids.npy")
+    assert np.any(owner_semantics == 2)
+    assert np.any(dense_semantics == 1)
+    assert not np.array_equal(owner_semantics, dense_semantics)
+    assert np.any(dense_instances > 0)
+    np.testing.assert_array_equal(dense_instances, owner_instances)
+    assert dense_metrics["ap25"] == owner_metrics["ap25"] == pytest.approx(1.0)
+
+
+def test_unknown_semantic_head_is_rejected_before_output_creation(
+    tmp_path: Path,
+) -> None:
+    paths = _fixture(tmp_path)
+    output = tmp_path / "evaluation"
+    args = argparse.Namespace(
+        snapshot=paths["snapshot"],
+        entity_info=paths["entities"],
+        gt_mesh=paths["gt_mesh"],
+        gt_info=paths["gt_info"],
+        manifest=paths["manifest"],
+        scene="fixture",
+        output=output,
+        min_instance_vertices=100,
+        semantic_head="fused",
+    )
+
+    with pytest.raises(ValueError, match="semantic_head"):
+        evaluate(args)
+
+    assert not output.exists()
+
+
+def test_cli_rejects_unknown_semantic_head_before_output_creation(
+    tmp_path: Path,
+) -> None:
+    paths = _fixture(tmp_path)
+    output = tmp_path / "evaluation"
+
+    result = _run(paths, output, semantic_head="fused")
+
+    assert result.returncode != 0
+    assert "--semantic-head" in result.stderr
+    assert not output.exists()
 
 
 def test_v1_evaluator_requires_external_entity_info(tmp_path: Path) -> None:
