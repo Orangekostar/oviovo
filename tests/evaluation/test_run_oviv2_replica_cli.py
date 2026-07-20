@@ -6,6 +6,7 @@ import hashlib
 import json
 import pickle
 from pathlib import Path
+import zipfile
 
 import numpy as np
 from PIL import Image
@@ -329,6 +330,23 @@ def _rehash_dense_manifest(dense_dir: Path) -> None:
     path.write_text(json.dumps(manifest), encoding="utf-8")
 
 
+def _replace_dense_cache_hash(
+    dense_dir: Path,
+    cache_index: int,
+    checksum: str,
+) -> None:
+    path = dense_dir / "dense_manifest.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    name = f"frame{cache_index:06d}.npz"
+    manifest["cache_files_sha256"][name] = checksum
+    prefix = hashlib.sha256()
+    for index, cache_name in enumerate(manifest["cache_files_sha256"]):
+        prefix.update(index.to_bytes(8, "little", signed=False))
+        prefix.update(bytes.fromhex(manifest["cache_files_sha256"][cache_name]))
+    manifest["provenance"]["cache_prefix_sha256"] = prefix.hexdigest()
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+
+
 def _remove_cached_field(config_path: Path, cache_index: int, field: str) -> None:
     config = json.loads(config_path.read_text(encoding="utf-8"))
     cache_dir = Path(config["frontend_cache_dir"])
@@ -540,6 +558,102 @@ def test_cached_dense_mode_requires_completed_manifest_before_output(
     assert not output.exists()
 
 
+def test_dense_preflight_rejects_oversized_manifest_before_output(
+    tmp_path: Path,
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    dense_dir = _write_dense_cache(config_path)
+    manifest_path = dense_dir / "dense_manifest.json"
+    manifest_path.write_bytes(
+        manifest_path.read_bytes() + b" " * (8 * 1024 * 1024)
+    )
+    output = tmp_path / "run"
+
+    with pytest.raises(ValueError, match="size limit"):
+        run(_args(config_path, output, num_frames=1))
+
+    assert not output.exists()
+
+
+def test_dense_preflight_rejects_duplicate_manifest_key_before_output(
+    tmp_path: Path,
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    dense_dir = _write_dense_cache(config_path)
+    manifest_path = dense_dir / "dense_manifest.json"
+    raw = manifest_path.read_text(encoding="utf-8")
+    manifest_path.write_text(
+        raw.replace(
+            '"method": "OVIV2-dense-semantic-cache"',
+            '"method": "wrong", "method": "OVIV2-dense-semantic-cache"',
+            1,
+        ),
+        encoding="utf-8",
+    )
+    output = tmp_path / "run"
+
+    with pytest.raises(ValueError, match="duplicate key.*method"):
+        run(_args(config_path, output, num_frames=1))
+
+    assert not output.exists()
+
+
+def test_dense_preflight_rejects_nonfinite_manifest_constant_before_output(
+    tmp_path: Path,
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    dense_dir = _write_dense_cache(config_path)
+    manifest_path = dense_dir / "dense_manifest.json"
+    raw = manifest_path.read_text(encoding="utf-8")
+    manifest_path.write_text(
+        raw.replace('"top_k": 2', '"top_k": NaN', 1),
+        encoding="utf-8",
+    )
+    output = tmp_path / "run"
+
+    with pytest.raises(ValueError, match="invalid JSON constant NaN"):
+        run(_args(config_path, output, num_frames=1))
+
+    assert not output.exists()
+
+
+def test_stage2_audits_exact_validated_manifest_bytes_after_path_replacement(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    dense_dir = _write_dense_cache(config_path)
+    manifest_path = dense_dir / "dense_manifest.json"
+    validated_bytes = manifest_path.read_bytes()
+    original_process = runner_module.Oviv2Runtime.process_frame
+    replaced = False
+
+    def replace_manifest_after_preflight(self, frame, observations, dense_semantics=None):
+        nonlocal replaced
+        if not replaced:
+            replacement = dense_dir / "replacement.json"
+            replacement.write_bytes(validated_bytes + b"\n")
+            replacement.replace(manifest_path)
+            replaced = True
+        return original_process(self, frame, observations, dense_semantics)
+
+    monkeypatch.setattr(
+        runner_module.Oviv2Runtime,
+        "process_frame",
+        replace_manifest_after_preflight,
+    )
+    output = tmp_path / "run"
+
+    manifest = run(_args(config_path, output, num_frames=1))
+
+    assert manifest["dense_semantics"]["manifest_sha256"] == hashlib.sha256(
+        validated_bytes
+    ).hexdigest()
+    assert hashlib.sha256(manifest_path.read_bytes()).hexdigest() != manifest[
+        "dense_semantics"
+    ]["manifest_sha256"]
+
+
 @pytest.mark.parametrize(
     ("mutate", "message"),
     [
@@ -593,6 +707,106 @@ def test_dense_preflight_rejects_tampered_requested_frame(tmp_path: Path) -> Non
         run(_args(config_path, output, num_frames=1))
 
     assert not output.exists()
+
+
+def test_dense_preflight_rejects_tampered_unrequested_frame(tmp_path: Path) -> None:
+    config_path = _write_fixture(tmp_path)
+    dense_dir = _write_dense_cache(config_path)
+    frame = dense_dir / "frame000001.npz"
+    frame.write_bytes(frame.read_bytes() + b"tampered")
+    output = tmp_path / "run"
+
+    with pytest.raises(ValueError, match="checksum"):
+        run(_args(config_path, output, num_frames=1))
+
+    assert not output.exists()
+
+
+def test_dense_preflight_rejects_duplicate_member_in_unrequested_frame(
+    tmp_path: Path,
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    dense_dir = _write_dense_cache(config_path)
+    frame = dense_dir / "frame000001.npz"
+    with zipfile.ZipFile(frame, mode="a") as archive:
+        duplicate = archive.read("schema_version.npy")
+        with pytest.warns(UserWarning, match="Duplicate name"):
+            archive.writestr("schema_version.npy", duplicate)
+    _rehash_dense_manifest(dense_dir)
+    output = tmp_path / "run"
+
+    with pytest.raises(ValueError, match="member count|duplicates=.*schema_version"):
+        run(_args(config_path, output, num_frames=1))
+
+    assert not output.exists()
+
+
+def test_dense_preflight_bounds_unrequested_archive_before_checksum(
+    tmp_path: Path,
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    dense_dir = _write_dense_cache(config_path)
+    frame = dense_dir / "frame000001.npz"
+    with frame.open("wb") as stream:
+        stream.truncate(512 * 1024 * 1024 + 1)
+    _replace_dense_cache_hash(dense_dir, 1, "0" * 64)
+    output = tmp_path / "run"
+
+    with pytest.raises(ValueError, match="archive exceeds.*size limit"):
+        run(_args(config_path, output, num_frames=1))
+
+    assert not output.exists()
+
+
+def test_dense_preflight_never_hashes_cache_before_bounded_load(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    dense_dir = _write_dense_cache(config_path)
+    original_sha256 = runner_module._sha256
+
+    def reject_dense_cache_hash(path: Path) -> str:
+        if path.parent == dense_dir and path.suffix == ".npz":
+            raise AssertionError("dense cache was hashed before bounded load")
+        return original_sha256(path)
+
+    monkeypatch.setattr(runner_module, "_sha256", reject_dense_cache_hash)
+
+    run(_args(config_path, tmp_path / "run", num_frames=1))
+
+
+@pytest.mark.parametrize("replace_on_load", [1, 2])
+def test_dense_cache_rejects_symlink_replacement_during_each_load(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    replace_on_load: int,
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    dense_dir = _write_dense_cache(config_path)
+    frame = dense_dir / "frame000000.npz"
+    target = tmp_path / "frame-copy.npz"
+    target.write_bytes(frame.read_bytes())
+    original_load = runner_module.load_dense_frame
+    frame_load_count = 0
+
+    def replace_before_loader_open(path, *args, **kwargs):
+        nonlocal frame_load_count
+        cache_path = Path(path)
+        if cache_path.name == frame.name:
+            frame_load_count += 1
+            if frame_load_count == replace_on_load:
+                cache_path.unlink()
+                cache_path.symlink_to(target)
+        return original_load(path, *args, **kwargs)
+
+    monkeypatch.setattr(runner_module, "load_dense_frame", replace_before_loader_open)
+    output = tmp_path / "run"
+
+    with pytest.raises(ValueError, match="changed|symlink|regular"):
+        run(_args(config_path, output, num_frames=1))
+
+    assert not (output / "run_manifest.json").exists()
 
 
 def test_dense_preflight_binds_benchmark_vocabulary_source_hash(
@@ -794,6 +1008,40 @@ def test_stage2_skip_evaluation_writes_dual_mesh_and_auditable_manifest(
     assert "final/oviv2_dense_mesh.ply" in manifest["artifact_checksums"]
 
 
+def test_stage2_partial_run_separates_producer_and_consumed_prefixes(
+    tmp_path: Path,
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    dense_dir = _write_dense_cache(config_path)
+    producer_manifest = json.loads(
+        (dense_dir / "dense_manifest.json").read_text(encoding="utf-8")
+    )
+    first_checksum = producer_manifest["cache_files_sha256"]["frame000000.npz"]
+    consumed_digest = hashlib.sha256()
+    consumed_digest.update((0).to_bytes(8, "little", signed=False))
+    consumed_digest.update(bytes.fromhex(first_checksum))
+    consumed_prefix = consumed_digest.hexdigest()
+    producer_prefix = producer_manifest["provenance"]["cache_prefix_sha256"]
+    output = tmp_path / "run"
+
+    manifest = run(_args(config_path, output, num_frames=1))
+    snapshot = VoxelMapSnapshot.load(output / "final" / "oviv2_voxel_snapshot.npz")
+    audit = manifest["dense_semantics"]
+
+    assert consumed_prefix != producer_prefix
+    assert snapshot.metadata.dense_semantic_provenance is not None
+    assert snapshot.metadata.dense_semantic_provenance.cache_prefix_sha256 == consumed_prefix
+    assert audit["cache_prefix_sha256"] == consumed_prefix
+    assert audit["provenance"]["cache_prefix_sha256"] == consumed_prefix
+    assert audit["producer_cache_prefix_sha256"] == producer_prefix
+    assert audit["producer_provenance"]["cache_prefix_sha256"] == producer_prefix
+    assert list(audit["cache_files_sha256"]) == ["frame000000.npz"]
+    assert list(audit["producer_cache_files_sha256"]) == [
+        "frame000000.npz",
+        "frame000001.npz",
+    ]
+
+
 def test_stage2_evaluates_owner_and_dense_heads_only(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -801,43 +1049,153 @@ def test_stage2_evaluates_owner_and_dense_heads_only(
     config_path = _write_fixture(tmp_path)
     _write_dense_cache(config_path)
     config = json.loads(config_path.read_text(encoding="utf-8"))
-    Path(config["gt_mesh"]).write_bytes(b"fixture")
-    Path(config["gt_info"]).write_text("{}", encoding="utf-8")
-    calls: list[tuple[str, Path]] = []
-    mesh_semantics: list[object] = []
-    original_derive = runner_module.derive_labeled_mesh
+    Path(config["gt_mesh"]).write_bytes(b"runner must not parse GT mesh content")
+    Path(config["gt_info"]).write_bytes(b"runner must not parse GT info content")
+    calls: list[tuple[list[str], dict[str, object]]] = []
+    original_run = runner_module.subprocess.run
+    evaluator = runner_module.REPO_ROOT / "scripts/evaluation/evaluate_oviv2_replica.py"
 
-    def record_mesh_head(*args, **kwargs):
-        mesh_semantics.append(kwargs.get("entity_semantics"))
-        return original_derive(*args, **kwargs)
+    def fake_subprocess_run(command, *args, **kwargs):
+        normalized = [str(value) for value in command]
+        if len(normalized) > 1 and normalized[1] == str(evaluator):
+            calls.append((normalized, dict(kwargs)))
+            output_arg = Path(normalized[normalized.index("--output") + 1])
+            semantic_head = normalized[normalized.index("--semantic-head") + 1]
+            output_arg.mkdir(parents=True)
+            (output_arg / "metrics.json").write_text(
+                json.dumps({"protocol": {"semantic_head": semantic_head}}),
+                encoding="utf-8",
+            )
+            return runner_module.subprocess.CompletedProcess(normalized, 0)
+        return original_run(command, *args, **kwargs)
 
-    def fake_evaluate(args):
-        calls.append((args.semantic_head, args.output))
-        args.output.mkdir(parents=True)
-        (args.output / "metrics.json").write_text(
-            json.dumps({"protocol": {"semantic_head": args.semantic_head}}),
-            encoding="utf-8",
-        )
-        return {"protocol": {"semantic_head": args.semantic_head}}
-
-    monkeypatch.setattr(runner_module, "evaluate_snapshot", fake_evaluate)
-    monkeypatch.setattr(runner_module, "derive_labeled_mesh", record_mesh_head)
+    monkeypatch.setattr(runner_module.subprocess, "run", fake_subprocess_run)
     output = tmp_path / "run"
 
     manifest = run(_args_with_evaluation(config_path, output))
 
-    assert calls == [
-        ("owner_authoritative", output / "evaluation_owner"),
-        ("dense_only", output / "evaluation_dense"),
-    ]
-    assert len(mesh_semantics) == 2
-    assert isinstance(mesh_semantics[0], dict) and mesh_semantics[0]
-    assert mesh_semantics[1] is None
+    assert not hasattr(runner_module, "evaluate_snapshot")
+    assert len(calls) == 2
+    for (command, kwargs), semantic_head, evaluation_output in zip(
+        calls,
+        ("owner_authoritative", "dense_only"),
+        (output / "evaluation_owner", output / "evaluation_dense"),
+    ):
+        assert command == [
+            runner_module.sys.executable,
+            str(evaluator),
+            "--snapshot",
+            str(output / "final" / "oviv2_voxel_snapshot.npz"),
+            "--entity-info",
+            str(output / "final" / "oviv2_entities.jsonl"),
+            "--gt-mesh",
+            config["gt_mesh"],
+            "--gt-info",
+            config["gt_info"],
+            "--manifest",
+            config["manifest"],
+            "--scene",
+            "room0",
+            "--output",
+            str(evaluation_output),
+            "--min-instance-vertices",
+            "100",
+            "--semantic-head",
+            semantic_head,
+        ]
+        assert kwargs == {
+            "cwd": runner_module.REPO_ROOT,
+            "check": True,
+            "stdout": runner_module.subprocess.PIPE,
+            "text": True,
+        }
+        assert json.loads(
+            (evaluation_output / "metrics.json").read_text(encoding="utf-8")
+        ) == {
+            "protocol": {"semantic_head": semantic_head}
+        }
     assert (output / "evaluation_owner" / "metrics.json").is_file()
     assert (output / "evaluation_dense" / "metrics.json").is_file()
     assert not (output / "evaluation").exists()
     assert "evaluation_owner/metrics.json" in manifest["artifact_checksums"]
     assert "evaluation_dense/metrics.json" in manifest["artifact_checksums"]
+
+
+def test_stage2_cli_stdout_remains_one_json_document(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    _write_dense_cache(config_path)
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    Path(config["gt_mesh"]).write_bytes(b"runner must not parse GT mesh content")
+    Path(config["gt_info"]).write_bytes(b"runner must not parse GT info content")
+    original_run = runner_module.subprocess.run
+    evaluator = runner_module.REPO_ROOT / "scripts/evaluation/evaluate_oviv2_replica.py"
+
+    def noisy_evaluator(command, *args, **kwargs):
+        normalized = [str(value) for value in command]
+        if len(normalized) > 1 and normalized[1] == str(evaluator):
+            if kwargs.get("stdout") is None:
+                print(json.dumps({"evaluator": "leaked"}))
+            output_arg = Path(normalized[normalized.index("--output") + 1])
+            output_arg.mkdir(parents=True)
+            (output_arg / "metrics.json").write_text("{}", encoding="utf-8")
+            return runner_module.subprocess.CompletedProcess(normalized, 0)
+        return original_run(command, *args, **kwargs)
+
+    monkeypatch.setattr(runner_module.subprocess, "run", noisy_evaluator)
+    output = tmp_path / "run"
+
+    exit_code = runner_module.main(
+        [
+            "--config",
+            str(config_path),
+            "--output",
+            str(output),
+            "--num-frames",
+            "1",
+        ]
+    )
+
+    stdout_lines = capsys.readouterr().out.splitlines()
+    assert exit_code == 0
+    assert len(stdout_lines) == 1
+    payload = json.loads(stdout_lines[0])
+    assert payload["frames"] == 1
+    assert payload["output"] == str(output)
+    assert payload["revision"] == 1
+    assert type(payload["entities"]) is int and payload["entities"] >= 0
+
+
+def test_stage2_propagates_evaluator_subprocess_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config_path = _write_fixture(tmp_path)
+    _write_dense_cache(config_path)
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    Path(config["gt_mesh"]).write_bytes(b"runner must not parse GT mesh content")
+    Path(config["gt_info"]).write_bytes(b"runner must not parse GT info content")
+    original_run = runner_module.subprocess.run
+    evaluator = runner_module.REPO_ROOT / "scripts/evaluation/evaluate_oviv2_replica.py"
+
+    def fail_evaluator(command, *args, **kwargs):
+        normalized = [str(value) for value in command]
+        if len(normalized) > 1 and normalized[1] == str(evaluator):
+            raise runner_module.subprocess.CalledProcessError(7, normalized)
+        return original_run(command, *args, **kwargs)
+
+    monkeypatch.setattr(runner_module.subprocess, "run", fail_evaluator)
+    output = tmp_path / "run"
+
+    with pytest.raises(runner_module.subprocess.CalledProcessError) as error:
+        run(_args_with_evaluation(config_path, output))
+
+    assert error.value.returncode == 7
+    assert not (output / "timing.json").exists()
+    assert not (output / "run_manifest.json").exists()
 
 
 def test_stage2_resume_is_byte_and_mtime_idempotent(tmp_path: Path) -> None:

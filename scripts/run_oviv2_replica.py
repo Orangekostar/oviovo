@@ -13,6 +13,7 @@ from pathlib import Path
 import pickle
 import platform
 import re
+import stat
 import subprocess
 import sys
 import tempfile
@@ -26,7 +27,6 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.evaluation.evaluate_oviv2_replica import evaluate as evaluate_snapshot  # noqa: E402
 from src.core.data_structures import Frame  # noqa: E402
 from src.datasets.replica import ReplicaRoom0Dataset  # noqa: E402
 from src.oviv2.association import AssociationConfig  # noqa: E402
@@ -51,6 +51,8 @@ SCENE_CONFIG_FIELDS = frozenset(
 )
 _DENSE_METHOD = "OVIV2-dense-semantic-cache"
 _DENSE_MANIFEST_NAME = "dense_manifest.json"
+_MAX_DENSE_MANIFEST_BYTES = 8 * 1024 * 1024
+_EVALUATOR_SCRIPT = REPO_ROOT / "scripts/evaluation/evaluate_oviv2_replica.py"
 _SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
 _DENSE_MANIFEST_KEYS = frozenset(
     {
@@ -90,6 +92,7 @@ _DENSE_PROVENANCE_KEYS = frozenset(
 @dataclass(frozen=True)
 class _DenseCachePreflight:
     cache_dir: Path
+    manifest_sha256: str
     frame_count: int
     source_frame_ids: tuple[int, ...]
     image_shape: tuple[int, int]
@@ -97,7 +100,8 @@ class _DenseCachePreflight:
     top_k: int
     class_count: int
     vocabulary_sha256: str
-    provenance: DenseSemanticProvenance
+    producer_provenance: DenseSemanticProvenance
+    consumed_provenance: DenseSemanticProvenance
     cache_files_sha256: dict[str, str]
 
 
@@ -336,6 +340,131 @@ def _dense_cache_prefix(cache_hashes: dict[str, str]) -> str:
     return digest.hexdigest()
 
 
+def _load_dense_manifest(path: Path) -> tuple[dict[str, Any], str]:
+    try:
+        initial = os.stat(path, follow_symlinks=False)
+    except FileNotFoundError:
+        raise
+    except OSError as exc:
+        raise ValueError(f"dense manifest must be a regular file: {path}") from exc
+    if not stat.S_ISREG(initial.st_mode):
+        raise ValueError(f"dense manifest must be a regular non-symlink file: {path}")
+    if initial.st_size > _MAX_DENSE_MANIFEST_BYTES:
+        raise ValueError("dense manifest exceeds the JSON size limit")
+
+    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        descriptor = os.open(path, flags)
+    except OSError as exc:
+        raise ValueError(f"dense manifest could not be opened safely: {path}") from exc
+    try:
+        opened = os.fstat(descriptor)
+        initial_identity = (initial.st_dev, initial.st_ino)
+        opened_identity = (opened.st_dev, opened.st_ino)
+        initial_version = (initial.st_size, initial.st_mtime_ns, initial.st_ctime_ns)
+        opened_version = (opened.st_size, opened.st_mtime_ns, opened.st_ctime_ns)
+        if (
+            not stat.S_ISREG(opened.st_mode)
+            or opened_identity != initial_identity
+            or opened_version != initial_version
+        ):
+            raise ValueError("dense manifest changed before it could be opened safely")
+        if opened.st_size > _MAX_DENSE_MANIFEST_BYTES:
+            raise ValueError("dense manifest exceeds the JSON size limit")
+        with os.fdopen(os.dup(descriptor), "rb") as stream:
+            raw = stream.read(_MAX_DENSE_MANIFEST_BYTES + 1)
+        after = os.fstat(descriptor)
+        after_identity = (after.st_dev, after.st_ino)
+        after_version = (after.st_size, after.st_mtime_ns, after.st_ctime_ns)
+        if len(raw) > _MAX_DENSE_MANIFEST_BYTES or after.st_size > _MAX_DENSE_MANIFEST_BYTES:
+            raise ValueError("dense manifest exceeds the JSON size limit")
+        if (
+            after_identity != opened_identity
+            or after_version != opened_version
+            or len(raw) != after.st_size
+        ):
+            raise ValueError("dense manifest changed while it was being read")
+    finally:
+        os.close(descriptor)
+
+    def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError(f"dense manifest contains duplicate key {key!r}")
+            result[key] = value
+        return result
+
+    def reject_constant(value: str) -> None:
+        raise ValueError(f"dense manifest contains invalid JSON constant {value}")
+
+    try:
+        payload = json.loads(
+            raw.decode("utf-8"),
+            object_pairs_hook=unique_object,
+            parse_constant=reject_constant,
+        )
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError("dense manifest must be valid UTF-8 JSON") from exc
+    if not isinstance(payload, dict):
+        raise ValueError("dense manifest root must be an object")
+    return payload, hashlib.sha256(raw).hexdigest()
+
+
+def _load_and_validate_dense_frame(
+    path: Path,
+    expected_sha256: str,
+    cache_index: int,
+    source_frame_id: int,
+    image_shape: tuple[int, int],
+    sample_stride: int,
+    class_count: int,
+    top_k: int,
+) -> DenseSemanticFrame:
+    try:
+        before = os.stat(path, follow_symlinks=False)
+    except OSError as exc:
+        raise ValueError(
+            f"dense cache {path.name} must be a regular non-symlink file"
+        ) from exc
+    if not stat.S_ISREG(before.st_mode):
+        raise ValueError(f"dense cache {path.name} must be a regular non-symlink file")
+    before_identity = (
+        before.st_dev,
+        before.st_ino,
+        before.st_size,
+        before.st_mtime_ns,
+        before.st_ctime_ns,
+    )
+    dense = load_dense_frame(path, expected_sha256=expected_sha256)
+    try:
+        after = os.stat(path, follow_symlinks=False)
+    except OSError as exc:
+        raise ValueError(f"dense cache {path.name} changed while it was loaded") from exc
+    after_identity = (
+        after.st_dev,
+        after.st_ino,
+        after.st_size,
+        after.st_mtime_ns,
+        after.st_ctime_ns,
+    )
+    if not stat.S_ISREG(after.st_mode) or after_identity != before_identity:
+        raise ValueError(f"dense cache {path.name} changed while it was loaded")
+    if dense.cache_frame_id != cache_index:
+        raise ValueError(f"dense cache_frame_id mismatch: {path.name}")
+    if dense.source_frame_id != source_frame_id:
+        raise ValueError(f"dense source_frame_id mismatch: {path.name}")
+    if dense.image_shape != image_shape:
+        raise ValueError(f"dense image_shape mismatch: {path.name}")
+    if dense.sample_stride != sample_stride:
+        raise ValueError(f"dense sample_stride mismatch: {path.name}")
+    if dense.class_count != class_count:
+        raise ValueError(f"dense class_count mismatch: {path.name}")
+    if dense.class_ids.shape[2] != top_k:
+        raise ValueError(f"dense top_k mismatch: {path.name}")
+    return dense
+
+
 def _preflight_dense_cache(
     config: dict[str, Any],
     benchmark: dict[str, Any],
@@ -356,11 +485,7 @@ def _preflight_dense_cache(
     if cache_dir.is_symlink() or not cache_dir.is_dir():
         raise ValueError("dense_cache_dir must be a regular non-symlink directory")
     manifest_path = cache_dir / _DENSE_MANIFEST_NAME
-    if not manifest_path.exists():
-        raise FileNotFoundError(manifest_path)
-    if manifest_path.is_symlink() or not manifest_path.is_file():
-        raise ValueError("dense_manifest must be a regular non-symlink file")
-    manifest = _load_json(manifest_path)
+    manifest, manifest_sha256 = _load_dense_manifest(manifest_path)
     if set(manifest) != _DENSE_MANIFEST_KEYS:
         raise ValueError("dense manifest keys contain unsupported or missing entries")
     if type(manifest.get("schema_version")) is not int or manifest["schema_version"] != 1:
@@ -453,24 +578,37 @@ def _preflight_dense_cache(
         or set(provenance_payload) != _DENSE_PROVENANCE_KEYS
     ):
         raise ValueError("dense manifest provenance keys mismatch")
-    provenance = DenseSemanticProvenance(**provenance_payload)
-    if provenance.vocabulary_sha256 != vocabulary_sha256:
+    producer_provenance = DenseSemanticProvenance(**provenance_payload)
+    if producer_provenance.vocabulary_sha256 != vocabulary_sha256:
         raise ValueError("dense manifest provenance vocabulary mismatch")
     cache_hashes = manifest.get("cache_files_sha256")
     if not isinstance(cache_hashes, dict) or len(cache_hashes) != frame_count:
         raise ValueError("dense cache checksum keys are missing or extra")
     prefix_sha256 = _dense_cache_prefix(cache_hashes)
-    if provenance.cache_prefix_sha256 != prefix_sha256:
+    if producer_provenance.cache_prefix_sha256 != prefix_sha256:
         raise ValueError("dense manifest provenance cache prefix mismatch")
-    for cache_index in range(num_frames):
+    for cache_index in range(frame_count):
         name = f"frame{cache_index:06d}.npz"
-        path = cache_dir / name
-        if path.is_symlink() or not path.is_file():
-            raise ValueError(f"dense cache {name} must be a regular non-symlink file")
-        if _sha256(path) != cache_hashes[name]:
-            raise ValueError(f"dense cache checksum mismatch: {name}")
+        _load_and_validate_dense_frame(
+            cache_dir / name,
+            cache_hashes[name],
+            cache_index,
+            normalized_source_ids[cache_index],
+            image_shape,
+            sample_stride,
+            class_count,
+            top_k,
+        )
+    consumed_hashes = {
+        f"frame{cache_index:06d}.npz": cache_hashes[f"frame{cache_index:06d}.npz"]
+        for cache_index in range(num_frames)
+    }
+    consumed_payload = asdict(producer_provenance)
+    consumed_payload["cache_prefix_sha256"] = _dense_cache_prefix(consumed_hashes)
+    consumed_provenance = DenseSemanticProvenance(**consumed_payload)
     return _DenseCachePreflight(
         cache_dir=cache_dir,
+        manifest_sha256=manifest_sha256,
         frame_count=frame_count,
         source_frame_ids=normalized_source_ids,
         image_shape=image_shape,
@@ -478,7 +616,8 @@ def _preflight_dense_cache(
         top_k=top_k,
         class_count=class_count,
         vocabulary_sha256=vocabulary_sha256,
-        provenance=provenance,
+        producer_provenance=producer_provenance,
+        consumed_provenance=consumed_provenance,
         cache_files_sha256=dict(cache_hashes),
     )
 
@@ -489,26 +628,16 @@ def _load_dense_cache_frame(
     source_frame_id: int,
 ) -> DenseSemanticFrame:
     name = f"frame{cache_index:06d}.npz"
-    path = dense_cache.cache_dir / name
-    if path.is_symlink() or not path.is_file():
-        raise ValueError(f"dense cache {name} must remain a regular non-symlink file")
-    dense = load_dense_frame(
-        path,
-        expected_sha256=dense_cache.cache_files_sha256[name],
+    return _load_and_validate_dense_frame(
+        dense_cache.cache_dir / name,
+        dense_cache.cache_files_sha256[name],
+        cache_index,
+        source_frame_id,
+        dense_cache.image_shape,
+        dense_cache.sample_stride,
+        dense_cache.class_count,
+        dense_cache.top_k,
     )
-    if dense.cache_frame_id != cache_index:
-        raise ValueError(f"dense cache_frame_id mismatch: {name}")
-    if dense.source_frame_id != source_frame_id:
-        raise ValueError(f"dense source_frame_id mismatch: {name}")
-    if dense.image_shape != dense_cache.image_shape:
-        raise ValueError(f"dense image_shape mismatch: {name}")
-    if dense.sample_stride != dense_cache.sample_stride:
-        raise ValueError(f"dense sample_stride mismatch: {name}")
-    if dense.class_count != dense_cache.class_count:
-        raise ValueError(f"dense class_count mismatch: {name}")
-    if dense.class_ids.shape[2] != dense_cache.top_k:
-        raise ValueError(f"dense top_k mismatch: {name}")
-    return dense
 
 
 def _preflight(
@@ -709,6 +838,44 @@ def _structure_config(config: dict[str, Any], *, voxel_size_m: float) -> DepthSt
     )
 
 
+def _run_evaluation(
+    config: dict[str, Any],
+    snapshot: Path,
+    entity_info: Path,
+    output: Path,
+    semantic_head: str,
+) -> None:
+    command = [
+        sys.executable,
+        str(_EVALUATOR_SCRIPT),
+        "--snapshot",
+        str(snapshot),
+        "--entity-info",
+        str(entity_info),
+        "--gt-mesh",
+        str(config["gt_mesh"]),
+        "--gt-info",
+        str(config["gt_info"]),
+        "--manifest",
+        str(config["manifest"]),
+        "--scene",
+        str(config["scene"]),
+        "--output",
+        str(output),
+        "--min-instance-vertices",
+        str(int(config.get("min_instance_vertices", 100))),
+        "--semantic-head",
+        semantic_head,
+    ]
+    subprocess.run(
+        command,
+        cwd=REPO_ROOT,
+        check=True,
+        stdout=subprocess.PIPE,
+        text=True,
+    )
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     config_path = args.config.resolve()
     raw_config = _load_json(config_path)
@@ -769,7 +936,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         str(config["scene"]),
         runtime_config,
         dense_semantic_provenance=(
-            dense_cache.provenance if dense_cache is not None else None
+            dense_cache.consumed_provenance if dense_cache is not None else None
         ),
     )
     output.mkdir(parents=True)
@@ -870,18 +1037,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             )
         )
         for semantic_head, evaluation_output in evaluation_targets:
-            evaluation_args = argparse.Namespace(
-                snapshot=final / "oviv2_voxel_snapshot.npz",
-                entity_info=final / "oviv2_entities.jsonl",
-                gt_mesh=Path(config["gt_mesh"]),
-                gt_info=Path(config["gt_info"]),
-                manifest=Path(config["manifest"]),
-                scene=str(config["scene"]),
-                output=evaluation_output,
-                min_instance_vertices=int(config.get("min_instance_vertices", 100)),
-                semantic_head=semantic_head,
+            _run_evaluation(
+                config,
+                final / "oviv2_voxel_snapshot.npz",
+                final / "oviv2_entities.jsonl",
+                evaluation_output,
+                semantic_head,
             )
-            evaluate_snapshot(evaluation_args)
 
     timing = {
         "started_unix_sec": started_wall,
@@ -900,12 +1062,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if dense_cache is not None:
         model_weights.update(
             {
-                "dense_model_sha256": dense_cache.provenance.model_sha256,
+                "dense_model_sha256": dense_cache.producer_provenance.model_sha256,
                 "dense_auxiliary_model_sha256": (
-                    dense_cache.provenance.auxiliary_model_sha256
+                    dense_cache.producer_provenance.auxiliary_model_sha256
                 ),
                 "dense_language_model_sha256": (
-                    dense_cache.provenance.language_model_sha256
+                    dense_cache.producer_provenance.language_model_sha256
                 ),
             }
         )
@@ -917,17 +1079,22 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         dense_semantics_audit = {
             "mode": "cached_probabilities",
             "cache_dir": str(dense_cache.cache_dir),
-            "manifest_sha256": _sha256(
-                dense_cache.cache_dir / _DENSE_MANIFEST_NAME
+            "manifest_sha256": dense_cache.manifest_sha256,
+            "cache_prefix_sha256": (
+                dense_cache.consumed_provenance.cache_prefix_sha256
             ),
-            "cache_prefix_sha256": dense_cache.provenance.cache_prefix_sha256,
+            "producer_cache_prefix_sha256": (
+                dense_cache.producer_provenance.cache_prefix_sha256
+            ),
             "cache_files_sha256": {
                 f"frame{cache_index:06d}.npz": dense_cache.cache_files_sha256[
                     f"frame{cache_index:06d}.npz"
                 ]
                 for cache_index in range(requested_frames)
             },
-            "provenance": asdict(dense_cache.provenance),
+            "producer_cache_files_sha256": dict(dense_cache.cache_files_sha256),
+            "provenance": asdict(dense_cache.consumed_provenance),
+            "producer_provenance": asdict(dense_cache.producer_provenance),
             "config": asdict(runtime_config.dense_semantics),
             "counters": {
                 name: sum(record[name] for record in frame_records)
