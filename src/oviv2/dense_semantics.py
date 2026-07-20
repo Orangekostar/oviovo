@@ -26,25 +26,37 @@ _MAX_TOTAL_UNCOMPRESSED_BYTES = 1024 * 1024 * 1024
 _MAX_METADATA_MEMBER_BYTES = 64 * 1024
 _MAX_NPY_HEADER_BYTES = 16 * 1024
 _MAX_CENTRAL_DIRECTORY_BYTES = 1024 * 1024
-_MAX_COMPRESSION_RATIO = 4096.0
 _SHA256_PATTERN = re.compile(r"[0-9a-fA-F]{64}")
 _COMMIT_PATTERN = re.compile(r"[0-9a-fA-F]{40}")
-_ARCHIVE_KEYS = frozenset(
-    {
-        "schema_version",
-        "cache_frame_id",
-        "source_frame_id",
-        "image_shape",
-        "sample_stride",
-        "class_count",
-        "class_ids",
-        "probabilities",
-        "entropy",
-        "margin",
-    }
+_ARCHIVE_KEY_ORDER = (
+    "schema_version",
+    "cache_frame_id",
+    "source_frame_id",
+    "image_shape",
+    "sample_stride",
+    "class_count",
+    "class_ids",
+    "probabilities",
+    "entropy",
+    "margin",
 )
+_ARCHIVE_KEYS = frozenset(_ARCHIVE_KEY_ORDER)
 _ARCHIVE_MEMBERS = frozenset(f"{name}.npy" for name in _ARCHIVE_KEYS)
 _ZIP_EOCD_SIGNATURE = b"PK\x05\x06"
+_ARRAY_FIELD_NAMES = ("class_ids", "probabilities", "entropy", "margin")
+_FIXED_PAYLOAD_NBYTES = {
+    "schema_version": 8,
+    "cache_frame_id": 8,
+    "source_frame_id": 8,
+    "image_shape": 16,
+    "sample_stride": 8,
+    "class_count": 8,
+}
+_NPY_MEMBER_OVERHEAD_BOUND = _MAX_NPY_HEADER_BYTES + 16
+_ZIP64_LOCAL_EXTRA_BOUND = 20
+_ZIP64_CENTRAL_EXTRA_BOUND = 28
+_ZIP_DATA_DESCRIPTOR_BOUND = 24
+_ZIP_END_RECORDS_BOUND = 22 + 56 + 20
 
 
 @dataclass(frozen=True)
@@ -52,6 +64,84 @@ class _NpyHeader:
     shape: tuple[int, ...]
     dtype: np.dtype
     header_bytes: int
+
+
+@dataclass(frozen=True)
+class _ArchiveBudget:
+    member_bytes: tuple[tuple[str, int], ...]
+    max_member_bytes: int
+    total_uncompressed_bytes: int
+    central_directory_bytes: int
+    archive_bytes: int
+
+
+def _zlib_compress_bound(source_bytes: int) -> int:
+    return (
+        source_bytes
+        + (source_bytes >> 12)
+        + (source_bytes >> 14)
+        + (source_bytes >> 25)
+        + 13
+    )
+
+
+def _array_nbytes_from_shape(array: np.ndarray) -> int:
+    element_count = 1
+    for dimension in array.shape:
+        element_count *= int(dimension)
+    calculated = element_count * int(array.dtype.itemsize)
+    if calculated != int(array.nbytes):
+        raise ValueError("array shape/dtype nbytes metadata is inconsistent")
+    return calculated
+
+
+def _estimate_archive_budget(arrays: dict[str, np.ndarray]) -> _ArchiveBudget:
+    if set(arrays) != set(_ARRAY_FIELD_NAMES):
+        raise ValueError("archive budget requires all dense array fields")
+    payload_nbytes = dict(_FIXED_PAYLOAD_NBYTES)
+    payload_nbytes.update(
+        (name, _array_nbytes_from_shape(arrays[name]))
+        for name in _ARRAY_FIELD_NAMES
+    )
+    member_bytes = tuple(
+        (name, payload_nbytes[name] + _NPY_MEMBER_OVERHEAD_BOUND)
+        for name in _ARCHIVE_KEY_ORDER
+    )
+    total_uncompressed = sum(size for _, size in member_bytes)
+    central_directory_bytes = sum(
+        46
+        + len(f"{name}.npy".encode("utf-8"))
+        + _ZIP64_CENTRAL_EXTRA_BOUND
+        for name, _ in member_bytes
+    )
+    archive_bytes = _ZIP_END_RECORDS_BOUND + central_directory_bytes
+    for name, uncompressed_bytes in member_bytes:
+        filename_bytes = len(f"{name}.npy".encode("utf-8"))
+        archive_bytes += (
+            30
+            + filename_bytes
+            + _ZIP64_LOCAL_EXTRA_BOUND
+            + _zlib_compress_bound(uncompressed_bytes)
+            + _ZIP_DATA_DESCRIPTOR_BOUND
+        )
+    return _ArchiveBudget(
+        member_bytes=member_bytes,
+        max_member_bytes=max(size for _, size in member_bytes),
+        total_uncompressed_bytes=total_uncompressed,
+        central_directory_bytes=central_directory_bytes,
+        archive_bytes=archive_bytes,
+    )
+
+
+def _validate_archive_budget(budget: _ArchiveBudget) -> None:
+    if budget.max_member_bytes > _MAX_MEMBER_UNCOMPRESSED_BYTES:
+        raise ValueError("dense frame member resource budget exceeds size limit")
+    if budget.total_uncompressed_bytes > _MAX_TOTAL_UNCOMPRESSED_BYTES:
+        raise ValueError("dense frame total uncompressed resource budget exceeds limit")
+    if budget.central_directory_bytes > _MAX_CENTRAL_DIRECTORY_BYTES:
+        raise ValueError("dense frame central directory resource budget exceeds limit")
+    if budget.archive_bytes > _MAX_ARCHIVE_BYTES:
+        raise ValueError("dense frame compressed archive resource budget exceeds size limit")
 
 
 def _sha256_stream(stream: BinaryIO) -> str:
@@ -166,7 +256,7 @@ class DenseSemanticFrame:
             "entropy": (np.dtype(np.float32), 2),
             "margin": (np.dtype(np.float32), 2),
         }
-        arrays: dict[str, np.ndarray] = {}
+        raw_arrays: dict[str, np.ndarray] = {}
         for name, (required_dtype, required_ndim) in array_contracts.items():
             raw_array = getattr(self, name)
             if not isinstance(raw_array, np.ndarray):
@@ -175,16 +265,7 @@ class DenseSemanticFrame:
                 raise ValueError(f"{name} must have dtype {required_dtype}")
             if raw_array.ndim != required_ndim:
                 raise ValueError(f"{name} must have {required_ndim} dimensions")
-            arrays[name] = np.array(
-                raw_array,
-                dtype=required_dtype,
-                copy=True,
-                order="C",
-            )
-        class_ids = arrays["class_ids"]
-        probabilities = arrays["probabilities"]
-        entropy = arrays["entropy"]
-        margin = arrays["margin"]
+            raw_arrays[name] = raw_array
 
         cache_frame_id = _normalize_integer(
             self.cache_frame_id,
@@ -217,19 +298,38 @@ class DenseSemanticFrame:
             (image_shape[0] + sample_stride - 1) // sample_stride,
             (image_shape[1] + sample_stride - 1) // sample_stride,
         )
-        if class_ids.shape[:2] != sampled_shape:
+        raw_class_ids = raw_arrays["class_ids"]
+        raw_probabilities = raw_arrays["probabilities"]
+        raw_entropy = raw_arrays["entropy"]
+        raw_margin = raw_arrays["margin"]
+        if raw_class_ids.shape[:2] != sampled_shape:
             raise ValueError(
                 f"class_ids shape must start with sampled shape {sampled_shape}"
             )
-        top_k = class_ids.shape[2]
+        top_k = raw_class_ids.shape[2]
         if not 1 <= top_k <= class_count:
             raise ValueError("class_ids top-k must be between 1 and class_count")
-        if probabilities.shape != class_ids.shape:
+        if raw_probabilities.shape != raw_class_ids.shape:
             raise ValueError("probabilities shape must match class_ids")
-        if entropy.shape != sampled_shape:
+        if raw_entropy.shape != sampled_shape:
             raise ValueError(f"entropy shape must be sampled shape {sampled_shape}")
-        if margin.shape != sampled_shape:
+        if raw_margin.shape != sampled_shape:
             raise ValueError(f"margin shape must be sampled shape {sampled_shape}")
+
+        _validate_archive_budget(_estimate_archive_budget(raw_arrays))
+        arrays = {
+            name: np.array(
+                raw_arrays[name],
+                dtype=required_dtype,
+                copy=True,
+                order="C",
+            )
+            for name, (required_dtype, _required_ndim) in array_contracts.items()
+        }
+        class_ids = arrays["class_ids"]
+        probabilities = arrays["probabilities"]
+        entropy = arrays["entropy"]
+        margin = arrays["margin"]
 
         if np.any(class_ids < 0) or np.any(class_ids > class_count):
             raise ValueError("class_ids values must be in [0, class_count]")
@@ -502,11 +602,8 @@ def _preflight_archive(snapshot: bytes) -> dict[str, object]:
             total_uncompressed += info.file_size
             if total_uncompressed > _MAX_TOTAL_UNCOMPRESSED_BYTES:
                 raise ValueError("dense frame total uncompressed size exceeds resource limit")
-            if info.file_size > 0 and (
-                info.compress_size <= 0
-                or info.file_size / info.compress_size > _MAX_COMPRESSION_RATIO
-            ):
-                raise ValueError(f"{field_name} compression ratio exceeds resource limit")
+            if info.file_size > 0 and info.compress_size <= 0:
+                raise ValueError(f"{field_name} has invalid compression size metadata")
             info_by_field[field_name] = info
 
         headers = {

@@ -598,6 +598,148 @@ def test_dense_frame_validates_private_copy_during_caller_mutation(
     assert frame.probabilities[0, 0].tolist() == pytest.approx([0.7, 0.2])
 
 
+def test_dense_frame_rejects_resource_budget_before_private_array_copy(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    inputs = _frame_inputs()
+    copied = False
+
+    def forbidden_copy(*_args: object, **_kwargs: object) -> object:
+        nonlocal copied
+        copied = True
+        raise AssertionError("resource budget must run before np.array copy")
+
+    monkeypatch.setattr(dense_semantics, "_MAX_MEMBER_UNCOMPRESSED_BYTES", 1)
+    monkeypatch.setattr(dense_semantics.np, "array", forbidden_copy)
+
+    with pytest.raises(ValueError, match="resource|budget|size|limit"):
+        DenseSemanticFrame(**inputs)
+
+    assert not copied
+
+
+@pytest.mark.parametrize(
+    ("limit_name", "budget_field"),
+    [
+        ("_MAX_MEMBER_UNCOMPRESSED_BYTES", "max_member_bytes"),
+        ("_MAX_TOTAL_UNCOMPRESSED_BYTES", "total_uncompressed_bytes"),
+        ("_MAX_ARCHIVE_BYTES", "archive_bytes"),
+    ],
+)
+def test_dense_frame_rejects_one_byte_over_each_resource_budget(
+    monkeypatch: pytest.MonkeyPatch,
+    limit_name: str,
+    budget_field: str,
+) -> None:
+    inputs = _frame_inputs()
+    raw_arrays = {
+        name: np.asarray(inputs[name])
+        for name in ("class_ids", "probabilities", "entropy", "margin")
+    }
+    budget = dense_semantics._estimate_archive_budget(raw_arrays)
+    monkeypatch.setattr(
+        dense_semantics,
+        limit_name,
+        getattr(budget, budget_field) - 1,
+    )
+
+    with pytest.raises(ValueError, match="resource|budget|size|limit"):
+        DenseSemanticFrame(**inputs)
+
+
+def test_frame_at_conservative_resource_bound_roundtrips(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    inputs = _frame_inputs()
+    raw_arrays = {
+        name: np.asarray(inputs[name])
+        for name in ("class_ids", "probabilities", "entropy", "margin")
+    }
+    budget = dense_semantics._estimate_archive_budget(raw_arrays)
+    monkeypatch.setattr(
+        dense_semantics,
+        "_MAX_MEMBER_UNCOMPRESSED_BYTES",
+        budget.max_member_bytes,
+    )
+    monkeypatch.setattr(
+        dense_semantics,
+        "_MAX_TOTAL_UNCOMPRESSED_BYTES",
+        budget.total_uncompressed_bytes,
+    )
+    monkeypatch.setattr(
+        dense_semantics,
+        "_MAX_ARCHIVE_BYTES",
+        budget.archive_bytes,
+    )
+    path = tmp_path / "bounded.npz"
+
+    frame = DenseSemanticFrame(**inputs)
+    write_dense_frame(path, frame)
+    restored = load_dense_frame(path)
+
+    assert restored.source_frame_id == frame.source_frame_id
+
+
+@pytest.mark.parametrize(
+    "frame_inputs",
+    [
+        _frame_inputs(),
+        _frame_inputs(image_shape=(1, 1), sample_stride=1, class_count=1, k=1),
+        _frame_inputs(image_shape=(8, 9), sample_stride=4, class_count=4, k=3),
+    ],
+)
+def test_archive_budget_conservatively_covers_all_payload_members(
+    frame_inputs: dict[str, object],
+) -> None:
+    if frame_inputs["class_count"] == 1:
+        frame_inputs["entropy"] = np.zeros((1, 1), dtype=np.float32)
+    frame = DenseSemanticFrame(**frame_inputs)
+    payload = dense_semantics._archive_payload(frame)
+    budget = dense_semantics._estimate_archive_budget(
+        {
+            name: payload[name]
+            for name in ("class_ids", "probabilities", "entropy", "margin")
+        }
+    )
+    member_bounds = dict(budget.member_bytes)
+    actual_member_sizes: dict[str, int] = {}
+    for name, array in payload.items():
+        stream = io.BytesIO()
+        np.lib.format.write_array(stream, array, allow_pickle=False)
+        actual_member_sizes[name] = len(stream.getvalue())
+        assert actual_member_sizes[name] <= member_bounds[name]
+    archive_stream = io.BytesIO()
+    np.savez_compressed(archive_stream, **payload)
+
+    assert max(actual_member_sizes.values()) <= budget.max_member_bytes
+    assert sum(actual_member_sizes.values()) <= budget.total_uncompressed_bytes
+    assert len(archive_stream.getvalue()) <= budget.archive_bytes
+
+
+def test_generated_zero_archive_is_not_rejected_by_ratio_heuristic(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    inputs = _frame_inputs(class_count=1, k=1)
+    inputs["class_ids"] = np.zeros((2, 3, 1), dtype=np.int64)
+    inputs["probabilities"] = np.zeros((2, 3, 1), dtype=np.float32)
+    inputs["entropy"] = np.zeros((2, 3), dtype=np.float32)
+    inputs["margin"] = np.zeros((2, 3), dtype=np.float32)
+    frame = DenseSemanticFrame(**inputs)
+    path = tmp_path / "zeros.npz"
+    monkeypatch.setattr(
+        dense_semantics,
+        "_MAX_COMPRESSION_RATIO",
+        0.5,
+        raising=False,
+    )
+
+    write_dense_frame(path, frame)
+
+    assert load_dense_frame(path).class_ids.shape == frame.class_ids.shape
+
+
 @pytest.mark.parametrize("field_name", ["class_ids", "probabilities", "entropy", "margin"])
 def test_dense_frame_arrays_have_irrecoverable_read_only_backing(field_name: str) -> None:
     array = getattr(_frame(), field_name)
