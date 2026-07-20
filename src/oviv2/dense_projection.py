@@ -21,7 +21,10 @@ def _finite_number(value: object, field_name: str) -> float:
         (int, float, np.integer, np.floating),
     ):
         raise ValueError(f"{field_name} must be a finite number")
-    normalized = float(value)
+    try:
+        normalized = float(value)
+    except (OverflowError, TypeError, ValueError) as exc:
+        raise ValueError(f"{field_name} must be a finite number") from exc
     if not math.isfinite(normalized):
         raise ValueError(f"{field_name} must be a finite number")
     return normalized
@@ -382,17 +385,19 @@ class DenseSemanticIntegrator:
                 axis=-1,
             )
             camera_distance = np.linalg.norm(camera_points, axis=-1)
-        valid = (
+        geometry_valid = (
             np.isfinite(sampled_depth)
             & (sampled_depth > 0.0)
             & np.all(np.isfinite(camera_points), axis=-1)
             & np.isfinite(camera_distance)
-            & (camera_distance <= self.config.integration_radius_m)
+        )
+        integration_valid = geometry_valid & (
+            camera_distance <= self.config.integration_radius_m
         )
         sampled_pixel_count = int(sampled_depth.size)
-        valid_pixel_count = int(np.count_nonzero(valid))
+        valid_pixel_count = int(np.count_nonzero(integration_valid))
 
-        view_cosine = _view_cosine(camera_points, valid)
+        view_cosine = _view_cosine(camera_points, geometry_valid)
         if dense.class_count == 1:
             entropy_base = np.ones(dense.entropy.shape, dtype=np.float64)
         else:
@@ -409,7 +414,7 @@ class DenseSemanticIntegrator:
             raise ValueError("dense projection quality must be finite")
 
         camera_flat = camera_points.reshape(-1, 3)
-        valid_flat = valid.reshape(-1)
+        valid_flat = integration_valid.reshape(-1)
         world = np.zeros_like(camera_flat)
         if np.any(valid_flat):
             world[valid_flat] = (

@@ -141,6 +141,25 @@ def test_config_rejects_invalid_values(field_name: str, invalid: object) -> None
         DenseSemanticConfig(**values)  # type: ignore[arg-type]
 
 
+@pytest.mark.parametrize(
+    "field_name",
+    [
+        "voxel_size_m",
+        "integration_radius_m",
+        "minimum_probability",
+        "minimum_quality",
+        "entropy_power",
+        "view_angle_power",
+    ],
+)
+def test_config_wraps_huge_integer_conversion_overflow(field_name: str) -> None:
+    values: dict[str, object] = {"voxel_size_m": 0.5}
+    values[field_name] = 10**400
+
+    with pytest.raises(ValueError, match=field_name):
+        DenseSemanticConfig(**values)  # type: ignore[arg-type]
+
+
 def test_integrator_projects_topk_probabilities_to_expected_voxel() -> None:
     frame = make_frame(depth=np.full((4, 4), 2.0, dtype=np.float32))
     dense = make_dense_frame(
@@ -470,6 +489,30 @@ def test_slanted_normal_uses_surface_to_camera_viewing_ray() -> None:
         revision=1,
     )
 
+    assert store.semantic_candidates((0, 0, 2))[0].support == pytest.approx(
+        2.0 / math.sqrt(5.0)
+    )
+
+
+def test_radius_filter_does_not_remove_finite_normal_neighbors() -> None:
+    depth = np.tile(np.asarray([1.0, 2.0, 3.0], dtype=np.float32), (3, 1))
+    frame = make_frame(depth=depth, cx=1.0, cy=1.0)
+    ids = np.zeros((3, 3, 1), dtype=np.int64)
+    probs = np.zeros((3, 3, 1), dtype=np.float32)
+    ids[1, 1, 0] = 1
+    probs[1, 1, 0] = 1.0
+    dense = make_dense_frame(
+        class_count=1,
+        class_ids=ids,
+        probabilities=probs,
+    )
+    store = SparseEvidenceStore()
+
+    result = DenseSemanticIntegrator(
+        DenseSemanticConfig(1.0, integration_radius_m=2.1)
+    ).integrate(frame, dense, store, revision=1)
+
+    assert result.valid_pixel_count == 4
     assert store.semantic_candidates((0, 0, 2))[0].support == pytest.approx(
         2.0 / math.sqrt(5.0)
     )
