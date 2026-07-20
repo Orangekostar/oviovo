@@ -13,11 +13,13 @@ import math
 import os
 from pathlib import Path
 import re
+import secrets
+import stat
 import sys
-import tempfile
 from typing import Any, Mapping, Sequence
 
 import numpy as np
+from PIL import Image
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -38,9 +40,9 @@ from src.oviv2.dense_semantics import (  # noqa: E402
 CLASS_COUNT = 41
 _METHOD = "OVIV2-dense-semantic-cache"
 _MANIFEST_NAME = "dense_manifest.json"
-_CACHE_PREFIX_DOMAIN = b"OVIV2-dense-semantic-cache-prefix-v1\0"
 _MAX_JSON_BYTES = 8 * 1024 * 1024
 _MAX_ARRAY_BYTES = 512 * 1024 * 1024
+_MAX_WORKER_RESPONSE_CHARS = 16 * 1024 * 1024 + 1
 _SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
 _ARRAY_BLOCK_KEYS = frozenset({"encoding", "dtype", "shape", "data"})
 _METADATA_KEYS = frozenset(
@@ -105,7 +107,7 @@ class _WorkerConfig:
 @dataclass(frozen=True)
 class _Preflight:
     scene: str
-    dataset: ReplicaRoom0Dataset
+    rgb_frames: tuple[np.ndarray, ...]
     source_frame_ids: tuple[int, ...]
     image_shape: tuple[int, int]
     classes: tuple[str, ...]
@@ -155,11 +157,37 @@ def _strict_image_shape(value: object, name: str) -> tuple[int, int]:
 
 
 def _load_json(path: Path, name: str) -> dict[str, Any]:
-    if path.is_symlink() or not path.is_file():
+    try:
+        initial = os.stat(path, follow_symlinks=False)
+    except OSError as exc:
+        raise ValueError(f"{name} must be a regular file: {path}") from exc
+    if not stat.S_ISREG(initial.st_mode):
         raise ValueError(f"{name} must be a regular file: {path}")
-    raw = path.read_bytes()
-    if len(raw) > _MAX_JSON_BYTES:
+    if initial.st_size > _MAX_JSON_BYTES:
         raise ValueError(f"{name} exceeds the JSON size limit")
+    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        descriptor = os.open(path, flags)
+    except OSError as exc:
+        raise ValueError(f"{name} could not be opened as a regular file: {path}") from exc
+    try:
+        opened = os.fstat(descriptor)
+        if (
+            not stat.S_ISREG(opened.st_mode)
+            or (opened.st_dev, opened.st_ino) != (initial.st_dev, initial.st_ino)
+        ):
+            raise ValueError(f"{name} changed before it could be opened safely")
+        if opened.st_size > _MAX_JSON_BYTES:
+            raise ValueError(f"{name} exceeds the JSON size limit")
+        with os.fdopen(os.dup(descriptor), "rb") as stream:
+            raw = stream.read(_MAX_JSON_BYTES + 1)
+        after = os.fstat(descriptor)
+        if len(raw) > _MAX_JSON_BYTES or after.st_size > _MAX_JSON_BYTES:
+            raise ValueError(f"{name} exceeds the JSON size limit")
+        if len(raw) != after.st_size or opened.st_size != after.st_size:
+            raise ValueError(f"{name} changed while it was being read")
+    finally:
+        os.close(descriptor)
 
     def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
         result: dict[str, Any] = {}
@@ -204,18 +232,64 @@ def _fsync_directory(path: Path) -> None:
 
 
 def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
-    temporary: Path | None = None
-    published = False
+    parent = path.parent
     try:
-        with tempfile.NamedTemporaryFile(
-            mode="w",
-            encoding="utf-8",
-            dir=path.parent,
-            prefix=f".{path.name}.",
-            suffix=".tmp",
-            delete=False,
-        ) as stream:
-            temporary = Path(stream.name)
+        expected_parent = os.stat(parent, follow_symlinks=False)
+    except OSError as exc:
+        raise ValueError(f"manifest parent directory is unavailable: {parent}") from exc
+    if not stat.S_ISDIR(expected_parent.st_mode):
+        raise ValueError(f"manifest parent must be a directory: {parent}")
+    parent_flags = (
+        os.O_RDONLY
+        | getattr(os, "O_CLOEXEC", 0)
+        | getattr(os, "O_DIRECTORY", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+    )
+    parent_descriptor = os.open(parent, parent_flags)
+    temporary_name: str | None = None
+    temporary_descriptor: int | None = None
+    destination_linked = False
+    directory_changed = False
+
+    def require_parent_identity() -> None:
+        opened = os.fstat(parent_descriptor)
+        try:
+            current = os.stat(parent, follow_symlinks=False)
+        except OSError as exc:
+            raise RuntimeError("manifest parent directory changed during publication") from exc
+        identity = (opened.st_dev, opened.st_ino)
+        if (
+            not stat.S_ISDIR(opened.st_mode)
+            or identity != (expected_parent.st_dev, expected_parent.st_ino)
+            or identity != (current.st_dev, current.st_ino)
+        ):
+            raise RuntimeError("manifest parent directory changed during publication")
+
+    try:
+        require_parent_identity()
+        for _ in range(128):
+            candidate = f".{path.name}.{secrets.token_hex(16)}.tmp"
+            try:
+                temporary_descriptor = os.open(
+                    candidate,
+                    os.O_WRONLY
+                    | os.O_CREAT
+                    | os.O_EXCL
+                    | getattr(os, "O_CLOEXEC", 0)
+                    | getattr(os, "O_NOFOLLOW", 0),
+                    0o600,
+                    dir_fd=parent_descriptor,
+                )
+            except FileExistsError:
+                continue
+            temporary_name = candidate
+            directory_changed = True
+            break
+        if temporary_descriptor is None or temporary_name is None:
+            raise FileExistsError("could not allocate a unique manifest temporary file")
+        owned_descriptor = temporary_descriptor
+        temporary_descriptor = None
+        with os.fdopen(owned_descriptor, "w", encoding="utf-8") as stream:
             json.dump(
                 payload,
                 stream,
@@ -227,16 +301,34 @@ def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
             stream.write("\n")
             stream.flush()
             os.fsync(stream.fileno())
-        if _lexists(path):
-            raise FileExistsError(path)
-        os.replace(temporary, path)
-        temporary = None
-        published = True
+        require_parent_identity()
+        os.link(
+            temporary_name,
+            path.name,
+            src_dir_fd=parent_descriptor,
+            dst_dir_fd=parent_descriptor,
+            follow_symlinks=False,
+        )
+        destination_linked = True
+        try:
+            require_parent_identity()
+        except RuntimeError:
+            os.unlink(path.name, dir_fd=parent_descriptor)
+            destination_linked = False
+            raise
+        os.unlink(temporary_name, dir_fd=parent_descriptor)
+        temporary_name = None
     finally:
-        if temporary is not None:
-            temporary.unlink(missing_ok=True)
-        if published:
-            _fsync_directory(path.parent)
+        if temporary_descriptor is not None:
+            os.close(temporary_descriptor)
+        if temporary_name is not None:
+            try:
+                os.unlink(temporary_name, dir_fd=parent_descriptor)
+            except FileNotFoundError:
+                pass
+        if directory_changed or destination_linked:
+            os.fsync(parent_descriptor)
+        os.close(parent_descriptor)
 
 
 def _classes_argument(command: Sequence[str]) -> str | None:
@@ -253,10 +345,149 @@ def _classes_argument(command: Sequence[str]) -> str | None:
     return found[0] if found else None
 
 
-def _worker_config(config: Mapping[str, Any]) -> _WorkerConfig:
+def _replace_classes_argument(command: Sequence[str], classes_json: Path) -> tuple[str, ...]:
+    updated: list[str] = []
+    replaced = False
+    index = 0
+    while index < len(command):
+        argument = command[index]
+        if argument == "--classes-json":
+            if index + 1 >= len(command):
+                raise ValueError("worker_command --classes-json requires a value")
+            updated.extend((argument, str(classes_json)))
+            replaced = True
+            index += 2
+            continue
+        if argument.startswith("--classes-json="):
+            updated.append(f"--classes-json={classes_json}")
+            replaced = True
+        else:
+            updated.append(argument)
+        index += 1
+    if not replaced:
+        updated.extend(("--classes-json", str(classes_json)))
+    return tuple(updated)
+
+
+def _explicit_worker_requested(args: argparse.Namespace) -> bool:
+    names = (
+        "worker_python",
+        "worker_script",
+        "backend",
+        "source_root",
+        "radio_root",
+        "model_version",
+        "lang_model",
+        "language_model_root",
+        "language_model_id",
+        "language_model_revision",
+        "language_model_sha256",
+        "device",
+        "sample_stride",
+        "top_k",
+        "amp",
+        "sam_refinement",
+        "sam_checkpoint",
+    )
+    return any(getattr(args, name, None) is not None for name in names)
+
+
+def _explicit_worker_config(
+    args: argparse.Namespace,
+    classes_json: Path,
+) -> _WorkerConfig:
+    required = (
+        "backend",
+        "source_root",
+        "radio_root",
+        "model_version",
+        "lang_model",
+        "language_model_root",
+        "language_model_id",
+        "language_model_revision",
+        "language_model_sha256",
+    )
+    missing = [name.replace("_", "-") for name in required if getattr(args, name) is None]
+    if missing:
+        raise ValueError(
+            "explicit worker arguments require: "
+            + ", ".join(f"--{name}" for name in missing)
+        )
+    worker_python = args.worker_python or Path(sys.executable)
+    worker_script = args.worker_script or REPO_ROOT / "scripts/radseg_dense_worker.py"
+    command = [
+        str(worker_python),
+        str(worker_script),
+        "--backend",
+        args.backend,
+        "--source-root",
+        str(args.source_root),
+        "--radio-root",
+        str(args.radio_root),
+        "--model-version",
+        args.model_version,
+        "--lang-model",
+        args.lang_model,
+        "--language-model-root",
+        str(args.language_model_root),
+        "--language-model-id",
+        args.language_model_id,
+        "--language-model-revision",
+        args.language_model_revision,
+        "--language-model-sha256",
+        args.language_model_sha256,
+        "--classes-json",
+        str(classes_json),
+        "--device",
+        args.device or "cuda",
+        "--sample-stride",
+        str(args.sample_stride or 4),
+        "--top-k",
+        str(args.top_k or 4),
+    ]
+    if args.amp:
+        command.append("--amp")
+    if args.sam_refinement:
+        command.append("--sam-refinement")
+    if args.sam_checkpoint is not None:
+        command.extend(("--sam-checkpoint", str(args.sam_checkpoint)))
+    return _WorkerConfig(
+        command=tuple(command),
+        env=os.environ.copy(),
+        cwd=REPO_ROOT,
+        request_timeout_sec=300.0,
+        classes_json=classes_json,
+    )
+
+
+def _worker_config(
+    config: Mapping[str, Any],
+    args: argparse.Namespace,
+    manifest_classes_json: Path | None,
+) -> _WorkerConfig:
+    cli_classes = getattr(args, "classes_json", None)
+    cli_classes_path = (
+        _absolute_without_resolving(Path(cli_classes))
+        if cli_classes is not None
+        else None
+    )
+    if _explicit_worker_requested(args):
+        selected_classes = cli_classes_path or manifest_classes_json
+        if selected_classes is None:
+            raise ValueError(
+                "--classes-json or benchmark vocabulary.source_path is required "
+                "with explicit worker arguments"
+            )
+        return _explicit_worker_config(
+            args,
+            selected_classes,
+        )
+
     dense = config.get("dense_semantics")
     if not isinstance(dense, dict):
-        raise ValueError("dense_semantics must be an object")
+        raise ValueError(
+            "dense_semantics must be an object when explicit worker arguments are absent"
+        )
     raw_command = dense.get("worker_command")
     if (
         not isinstance(raw_command, list)
@@ -301,10 +532,6 @@ def _worker_config(config: Mapping[str, Any]) -> _WorkerConfig:
 
     explicit_classes = dense.get("classes_json")
     command_classes = _classes_argument(command)
-    if explicit_classes is None and command_classes is None:
-        raise ValueError(
-            "dense_semantics.classes_json or worker_command --classes-json is required"
-        )
     explicit_path = (
         _config_path(explicit_classes, "dense_semantics.classes_json")
         if explicit_classes is not None
@@ -315,11 +542,18 @@ def _worker_config(config: Mapping[str, Any]) -> _WorkerConfig:
         if command_classes is not None
         else None
     )
-    if explicit_path is not None and command_path is not None:
+    if cli_classes_path is None and explicit_path is not None and command_path is not None:
         if explicit_path.resolve(strict=False) != command_path.resolve(strict=False):
             raise ValueError("config and worker_command classes JSON paths do not match")
-    classes_json = explicit_path if explicit_path is not None else command_path
-    assert classes_json is not None
+    classes_json = cli_classes_path or explicit_path or command_path or manifest_classes_json
+    if classes_json is None:
+        raise ValueError(
+            "classes JSON is required from CLI, config, worker command, or benchmark vocabulary"
+        )
+    if cli_classes_path is not None:
+        command = _replace_classes_argument(command, classes_json)
+    elif explicit_path is None and command_path is None:
+        command = _replace_classes_argument(command, classes_json)
     return _WorkerConfig(
         command=command,
         env=environment,
@@ -346,7 +580,53 @@ def _load_classes(path: Path, benchmark_classes: Sequence[str]) -> tuple[tuple[s
     return tuple(classes), sha256_file(path)
 
 
-def _preflight(config_path: Path, requested_frames: int) -> _Preflight:
+def _indexed_replica_paths(directory: Path, pattern: str) -> dict[int, Path]:
+    indexed: dict[int, Path] = {}
+    for path in sorted(directory.glob(pattern)):
+        match = re.search(r"(\d+)", path.stem)
+        if match is None:
+            raise ValueError(f"Replica frame path has no numeric index: {path.name}")
+        frame_index = int(match.group(1))
+        if frame_index in indexed:
+            raise ValueError(f"Replica frame index is duplicated: {frame_index}")
+        indexed[frame_index] = path
+    return indexed
+
+
+def _load_requested_rgb_frames(
+    dataset: ReplicaRoom0Dataset,
+    requested_frames: int,
+    image_shape: tuple[int, int],
+) -> tuple[np.ndarray, ...]:
+    rgb_paths = _indexed_replica_paths(dataset.rgb_dir, "frame*.jpg")
+    depth_paths = _indexed_replica_paths(dataset.depth_dir, "depth*.png")
+    frames: list[np.ndarray] = []
+    expected_size = (image_shape[1], image_shape[0])
+    for cache_index, frame_index in enumerate(dataset.frame_indices[:requested_frames]):
+        rgb_path = rgb_paths.get(frame_index)
+        depth_path = depth_paths.get(frame_index)
+        if rgb_path is None or depth_path is None:
+            raise ValueError(f"Replica frame {frame_index} is missing RGB or depth data")
+        with Image.open(rgb_path) as image:
+            if image.size != expected_size:
+                raise ValueError(f"dataset frame {cache_index} RGB image shape is inconsistent")
+            rgb = np.asarray(image.convert("RGB"), dtype=np.uint8)
+        with Image.open(depth_path) as image:
+            if image.size != expected_size:
+                raise ValueError(f"dataset frame {cache_index} depth image shape is inconsistent")
+        if rgb.shape != (*image_shape, 3) or rgb.dtype != np.dtype(np.uint8):
+            raise ValueError(f"dataset frame {cache_index} has an invalid RGB image")
+        frames.append(np.ascontiguousarray(rgb))
+    if len(frames) != requested_frames:
+        raise ValueError("Replica dataset does not cover the requested frame prefix")
+    return tuple(frames)
+
+
+def _preflight(
+    config_path: Path,
+    requested_frames: int,
+    args: argparse.Namespace,
+) -> _Preflight:
     config = _load_json(config_path, "config")
     scene = config.get("scene")
     if not isinstance(scene, str) or not scene.strip():
@@ -389,6 +669,12 @@ def _preflight(config_path: Path, requested_frames: int) -> _Preflight:
         or len(set(benchmark_classes)) != CLASS_COUNT
     ):
         raise ValueError(f"benchmark vocabulary must contain exactly {CLASS_COUNT} classes")
+    source_path = vocabulary.get("source_path")
+    manifest_classes_json = (
+        _config_path(source_path, "benchmark vocabulary.source_path")
+        if source_path is not None
+        else None
+    )
     selection = benchmark.get("frame_selection")
     if not isinstance(selection, dict):
         raise ValueError("benchmark frame_selection must be an object")
@@ -422,38 +708,28 @@ def _preflight(config_path: Path, requested_frames: int) -> _Preflight:
     ):
         raise ValueError("config num_frames must match frozen manifest frame_selection")
 
-    worker = _worker_config(config)
+    worker = _worker_config(config, args, manifest_classes_json)
     classes, vocabulary_sha256 = _load_classes(worker.classes_json, benchmark_classes)
     dataset = ReplicaRoom0Dataset(dataset_root)
     if len(dataset) != config_frames:
         raise ValueError(
             f"Replica dataset length {len(dataset)} does not match config num_frames {config_frames}"
         )
-    image_shape: tuple[int, int] | None = None
-    for cache_index in range(config_frames):
-        frame = dataset[cache_index]
-        if (
-            not isinstance(frame.rgb, np.ndarray)
-            or frame.rgb.dtype != np.dtype(np.uint8)
-            or frame.rgb.ndim != 3
-            or frame.rgb.shape[2] != 3
-            or not isinstance(frame.depth, np.ndarray)
-            or frame.depth.ndim != 2
-            or frame.depth.shape != frame.rgb.shape[:2]
-        ):
-            raise ValueError(f"dataset frame {cache_index} has invalid RGB/depth image shapes")
-        current_shape = (int(frame.rgb.shape[0]), int(frame.rgb.shape[1]))
-        if image_shape is None:
-            image_shape = current_shape
-        elif image_shape != current_shape:
-            raise ValueError("dataset RGB image shapes are inconsistent")
-    assert image_shape is not None
+    image_shape = (
+        _strict_int(dataset.intrinsics.height, "dataset image height", positive=True),
+        _strict_int(dataset.intrinsics.width, "dataset image width", positive=True),
+    )
+    rgb_frames = (
+        ()
+        if args.resume
+        else _load_requested_rgb_frames(dataset, requested_frames, image_shape)
+    )
     source_ids = tuple(source_start + index * source_stride for index in range(config_frames))
     if source_ids[-1] >= selection_stop:
         raise ValueError("source frame IDs exceed manifest frame_selection")
     return _Preflight(
         scene=scene,
-        dataset=dataset,
+        rgb_frames=rgb_frames,
         source_frame_ids=source_ids,
         image_shape=image_shape,
         classes=classes,
@@ -652,25 +928,17 @@ def _verify_frame(
 
 
 def _cache_prefix_sha256(
-    source_frame_ids: Sequence[int],
     cache_files_sha256: Mapping[str, str],
 ) -> str:
-    if len(source_frame_ids) != len(cache_files_sha256):
-        raise ValueError("cache prefix source IDs and checksums have different lengths")
     digest = hashlib.sha256()
-    digest.update(_CACHE_PREFIX_DOMAIN)
-    expected_names = [f"frame{index:06d}.npz" for index in range(len(source_frame_ids))]
+    expected_names = [f"frame{index:06d}.npz" for index in range(len(cache_files_sha256))]
     if list(cache_files_sha256) != expected_names:
         raise ValueError("cache checksum keys are not the canonical frame prefix")
-    for cache_index, (source_id, name) in enumerate(
-        zip(source_frame_ids, expected_names)
-    ):
-        normalized_source = _strict_int(source_id, "source_frame_id", positive=False)
+    for cache_index, name in enumerate(expected_names):
         checksum = cache_files_sha256[name]
         if not isinstance(checksum, str) or _SHA256_PATTERN.fullmatch(checksum) is None:
             raise ValueError(f"cache checksum is invalid: {name}")
         digest.update(cache_index.to_bytes(8, "little", signed=False))
-        digest.update(normalized_source.to_bytes(8, "little", signed=False))
         digest.update(bytes.fromhex(checksum))
     return digest.hexdigest()
 
@@ -682,7 +950,7 @@ def _completed_manifest(
     cache_hashes: Mapping[str, str],
 ) -> dict[str, Any]:
     source_ids = list(preflight.source_frame_ids[:frame_count])
-    prefix_hash = _cache_prefix_sha256(source_ids, cache_hashes)
+    prefix_hash = _cache_prefix_sha256(cache_hashes)
     provenance = DenseSemanticProvenance(
         **metadata.provenance,
         cache_prefix_sha256=prefix_hash,
@@ -802,7 +1070,7 @@ def _verify_resume(
             preflight.image_shape,
             metadata,
         )
-    prefix_hash = _cache_prefix_sha256(source_ids, cache_hashes)
+    prefix_hash = _cache_prefix_sha256(cache_hashes)
     if typed_provenance.cache_prefix_sha256 != prefix_hash:
         raise ValueError("dense manifest cache_prefix_sha256 mismatch")
     return manifest
@@ -818,6 +1086,24 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--num-frames", type=_positive_int, required=True)
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--worker-python", type=Path)
+    parser.add_argument("--worker-script", type=Path)
+    parser.add_argument("--backend", choices=("radseg", "naradio"))
+    parser.add_argument("--source-root", type=Path)
+    parser.add_argument("--radio-root", type=Path)
+    parser.add_argument("--model-version")
+    parser.add_argument("--lang-model")
+    parser.add_argument("--language-model-root", type=Path)
+    parser.add_argument("--language-model-id")
+    parser.add_argument("--language-model-revision")
+    parser.add_argument("--language-model-sha256")
+    parser.add_argument("--classes-json", type=Path)
+    parser.add_argument("--device")
+    parser.add_argument("--sample-stride", type=_positive_int)
+    parser.add_argument("--top-k", type=_positive_int)
+    parser.add_argument("--amp", action="store_true", default=None)
+    parser.add_argument("--sam-refinement", action="store_true", default=None)
+    parser.add_argument("--sam-checkpoint", type=Path)
     return parser.parse_args(argv)
 
 
@@ -825,7 +1111,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     requested_frames = _strict_int(args.num_frames, "num_frames", positive=True)
     config_path = _absolute_without_resolving(Path(args.config))
     output = _absolute_without_resolving(Path(args.output))
-    preflight = _preflight(config_path, requested_frames)
+    preflight = _preflight(config_path, requested_frames, args)
 
     if _lexists(output) and not args.resume:
         raise FileExistsError(output)
@@ -845,6 +1131,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         env=dict(preflight.worker.env),
         cwd=str(preflight.worker.cwd),
         request_timeout_sec=preflight.worker.request_timeout_sec,
+        max_response_chars=_MAX_WORKER_RESPONSE_CHARS,
     )
     try:
         metadata = _metadata(
@@ -863,11 +1150,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         if output.parent.is_symlink():
             raise ValueError("output parent cannot be a symlink")
         output.mkdir(exist_ok=False)
+        _fsync_directory(output.parent)
         cache_hashes: dict[str, str] = {}
         for cache_index in range(requested_frames):
             source_id = preflight.source_frame_ids[cache_index]
-            frame = preflight.dataset[cache_index]
-            if tuple(frame.rgb.shape[:2]) != preflight.image_shape:
+            rgb = preflight.rgb_frames[cache_index]
+            if tuple(rgb.shape[:2]) != preflight.image_shape:
                 raise ValueError(f"dataset frame {cache_index} image shape changed after preflight")
             response = _request(
                 client,
@@ -875,7 +1163,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                     "operation": "infer",
                     "cache_frame_id": cache_index,
                     "source_frame_id": source_id,
-                    "rgb": _encode_rgb(frame.rgb),
+                    "rgb": _encode_rgb(rgb),
                 },
                 f"frame {cache_index}",
             )

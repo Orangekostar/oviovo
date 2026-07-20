@@ -1186,6 +1186,74 @@ def test_json_line_worker_client_rejects_non_exact_response_id(monkeypatch) -> N
     assert fake_process.terminated or fake_process.killed
 
 
+def test_json_line_worker_client_rejects_bounded_response_without_newline(
+    monkeypatch,
+) -> None:
+    from src.models.json_line_worker_client import JsonLineWorkerClient
+
+    requested_sizes = []
+
+    class _FakeStdin:
+        def write(self, value):
+            return None
+
+        def flush(self):
+            return None
+
+        def close(self):
+            return None
+
+    class _FakeStdout:
+        def fileno(self):
+            return 123
+
+        def readline(self, size=-1):
+            requested_sizes.append(size)
+            if size < 0:
+                raise AssertionError("worker response read must be bounded")
+            return "x" * size
+
+    class _FakeProcess:
+        def __init__(self):
+            self.stdin = _FakeStdin()
+            self.stdout = _FakeStdout()
+            self.stopped = False
+            self.terminated = False
+
+        def poll(self):
+            return 0 if self.stopped else None
+
+        def terminate(self):
+            self.terminated = True
+            self.stopped = True
+
+        def wait(self, timeout=None):
+            if not self.stopped:
+                raise subprocess.TimeoutExpired(["python", "worker.py"], timeout)
+            return 0
+
+    fake_process = _FakeProcess()
+    monkeypatch.setattr(subprocess, "Popen", lambda *args, **kwargs: fake_process)
+    monkeypatch.setattr(
+        "select.select",
+        lambda readable, writable, exceptional, timeout: (readable, [], []),
+    )
+    client = JsonLineWorkerClient(
+        command=["python", "worker.py"],
+        env={},
+        cwd="/tmp",
+        request_timeout_sec=1.0,
+        max_response_chars=64,
+    )
+
+    with pytest.raises(RuntimeError, match="response.*64.*characters"):
+        client.request({"operation": "infer"})
+
+    assert requested_sizes == [65]
+    assert client._process is None
+    assert fake_process.terminated
+
+
 def test_json_line_worker_client_close_suppresses_poll_error() -> None:
     from src.models.json_line_worker_client import JsonLineWorkerClient
 
