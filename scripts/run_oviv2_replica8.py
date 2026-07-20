@@ -54,6 +54,26 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _json_hash(payload: dict[str, Any]) -> str:
+    encoded = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode(
+        "utf-8"
+    )
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _verify_frozen_config_files(
+    config_path: Path,
+    config_sha256: str,
+    base_path: Path,
+    base_sha256: str,
+) -> None:
+    if (
+        _sha256(config_path) != config_sha256
+        or _sha256(base_path) != base_sha256
+    ):
+        raise ValueError("frozen config changed during batch")
+
+
 def _resolve_repo_path(value: str | Path) -> Path:
     path = Path(value).expanduser()
     return path.resolve() if path.is_absolute() else (REPO_ROOT / path).resolve()
@@ -90,6 +110,20 @@ def build_scene_specs(config_path: str | Path) -> tuple[SceneSpec, ...]:
     if tuple(item.get("scene") for item in scene_items) != REPLICA8_SCENES:
         raise ValueError("Replica manifest must contain the frozen eight scenes in order")
     base = _load_json(_resolve_repo_path(config["base_runner_config"]))
+    if config.get("semantic_head") == "fused_uncertainty":
+        frozen_scale = config.get("fusion_entity_weight_scale")
+        if (
+            isinstance(frozen_scale, bool)
+            or not isinstance(frozen_scale, (int, float))
+            or not 0.0 <= float(frozen_scale) <= 1.0
+        ):
+            raise ValueError(
+                "fused batch requires fusion_entity_weight_scale in [0, 1]"
+            )
+        if base.get("fusion_entity_weight_scale") != float(frozen_scale):
+            raise ValueError(
+                "base runner config does not use frozen fusion_entity_weight_scale"
+            )
     view_root = Path(config["view_root"]).expanduser().resolve()
     gt_root = Path(
         config.get("ground_truth_root", benchmark.get("ground_truth_root", ""))
@@ -167,8 +201,17 @@ def run_replica8(
 ) -> dict[str, Any]:
     config_path = Path(config_path).resolve()
     output = Path(output).resolve()
-    specs = materialize_scene_configs(config_path, output)
+    config_sha256 = _sha256(config_path)
     batch_config = _load_json(config_path)
+    base_path = _resolve_repo_path(batch_config["base_runner_config"])
+    base_sha256 = _sha256(base_path)
+    specs = materialize_scene_configs(config_path, output)
+    _verify_frozen_config_files(
+        config_path,
+        config_sha256,
+        base_path,
+        base_sha256,
+    )
     semantic_head = batch_config.get("semantic_head", "owner_authoritative")
     if semantic_head not in {
         "owner_authoritative",
@@ -194,6 +237,10 @@ def run_replica8(
             raise ValueError(f"invalid OVIV2 scene manifest: {spec.scene}")
         if manifest.get("algorithm_hash") != spec.algorithm_hash:
             raise ValueError(f"algorithm hash mismatch after scene run: {spec.scene}")
+        scene_config = _load_json(scene_config_path)
+        canonical_config_hash = _json_hash(scene_config)
+        if manifest.get("config_hash") != canonical_config_hash:
+            raise ValueError(f"config hash mismatch after scene run: {spec.scene}")
         if manifest.get("frame_selection", {}).get("sampled_frame_count") != 200:
             raise ValueError(f"scene run did not process 200 frames: {spec.scene}")
         if manifest.get("final_revision") != 200:
@@ -204,8 +251,16 @@ def run_replica8(
                 "scene": spec.scene,
                 "run_manifest": str(run_manifest_path),
                 "run_manifest_sha256": _sha256(run_manifest_path),
+                "scene_config_sha256": _sha256(scene_config_path),
+                "config_hash": canonical_config_hash,
                 "frontend_algorithm_hash": manifest.get("frontend_algorithm_hash"),
             }
+        )
+        _verify_frozen_config_files(
+            config_path,
+            config_sha256,
+            base_path,
+            base_sha256,
         )
     frontend_hashes = {
         item["frontend_algorithm_hash"]
@@ -224,7 +279,9 @@ def run_replica8(
         "frontend_algorithm_hash": next(iter(frontend_hashes), None),
         "semantic_head": semantic_head,
         "config_path": str(config_path),
-        "config_sha256": _sha256(config_path),
+        "config_sha256": config_sha256,
+        "base_runner_config_path": str(base_path),
+        "base_runner_config_sha256": base_sha256,
         "scenes": scene_records,
     }
     _atomic_json(output / "batch_manifest.json", batch)

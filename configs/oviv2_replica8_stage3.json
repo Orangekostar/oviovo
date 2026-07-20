@@ -9,6 +9,21 @@
   "dense_cache_root": "/home/ww/oviovo_dense_cache/replica8_radseg_b_sam_s4_k4_200f",
   "dense_cache_template": "{scene}_radseg_b_sam_s4_k4_200f",
   "semantic_head": "fused_uncertainty",
+  "fusion_entity_weight_scale": 0.49,
+  "dense_provenance": {
+    "backend": "radseg",
+    "source_commit": "3fe8789a3c1b11e41688f7deadc8b8db088ef1a7",
+    "radio_commit": "c0f37017930e9dda53f93424cf4bf39fc51f287e",
+    "model_id": "radseg:/home/ww/oviovo_benchmark_assets/weights/radio/c-radio_v3-b_half-44653a.pth.tar:siglip2:sam=1:sha256=530b0e827b1d409ca3b175466e11062885baedd823ec5dae3a88348e76d4c398",
+    "model_sha256": "530b0e827b1d409ca3b175466e11062885baedd823ec5dae3a88348e76d4c398",
+    "auxiliary_model_sha256": "a7bf3b02f3ebf1267aba913ff637d9a2d5c33d3173bb679e46d9f338c26f262e",
+    "vocabulary_sha256": "65d0cfb3d14415784075f6f6ab56b1e5351d014e343139fd2fa9468ce0fab575",
+    "prompt_sha256": "2f11fb7eb11cf7bb8b76d310cf5a0f15953565b202ad8b059fd9204851d47307",
+    "inference_config_sha256": "1610c91ca819f0e75ea8040cafee6dd1b746645a7a98a02846acb6cf58e4f3d9",
+    "language_model_id": "google/siglip2-so400m-patch16-naflex",
+    "language_model_revision": "cc24074f717b612951c2dead130904ab9b65a81e",
+    "language_model_sha256": "0e5dbd4cd9511c4335ae4a144ac5187841a2f7fed2a07df9c36668516e02cafe"
+  },
   "frontend": {
     "python": "/home/ww/miniconda3/envs/oviovo-conceptgraphs/bin/python",
     "script": "/home/ww/vv/lifelongmap_benchmack/concept-graphs/conceptgraph/scripts/streamlined_detections.py",

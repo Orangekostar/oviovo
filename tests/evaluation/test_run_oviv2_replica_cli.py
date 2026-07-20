@@ -430,7 +430,7 @@ def test_stage3_config_is_selected_stage2_plus_only_frozen_fusion_settings() -> 
     assert stage3 == {
         **stage2,
         "fusion_semantic_mode": "uncertainty_linear",
-        "fusion_entity_weight_scale": 0.5,
+        "fusion_entity_weight_scale": 0.49,
     }
 
 

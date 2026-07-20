@@ -25,6 +25,22 @@ from src.evaluation.oviv2_result import (
     verify_byte_identical_evaluation_dirs,
 )
 
+
+DENSE_PROVENANCE_FIELDS = (
+    "backend",
+    "source_commit",
+    "radio_commit",
+    "model_id",
+    "model_sha256",
+    "auxiliary_model_sha256",
+    "vocabulary_sha256",
+    "prompt_sha256",
+    "inference_config_sha256",
+    "language_model_id",
+    "language_model_revision",
+    "language_model_sha256",
+)
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -40,9 +56,118 @@ def _load_json(path: Path) -> dict[str, Any]:
     return payload
 
 
+def _json_hash(payload: dict[str, Any]) -> str:
+    encoded = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode(
+        "utf-8"
+    )
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _dense_cache_prefix(cache_hashes: dict[str, str]) -> str:
+    if not isinstance(cache_hashes, dict) or not cache_hashes:
+        raise ValueError("dense cache hashes must be a non-empty object")
+    expected_names = [
+        f"frame{index:06d}.npz" for index in range(len(cache_hashes))
+    ]
+    if list(cache_hashes) != expected_names:
+        raise ValueError("dense cache checksum keys are not canonical")
+    digest = hashlib.sha256()
+    for index, name in enumerate(expected_names):
+        checksum = cache_hashes[name]
+        if (
+            not isinstance(checksum, str)
+            or len(checksum) != 64
+            or any(character not in "0123456789abcdef" for character in checksum)
+        ):
+            raise ValueError(f"dense cache checksum is invalid: {name}")
+        digest.update(index.to_bytes(8, "little", signed=False))
+        digest.update(bytes.fromhex(checksum))
+    return digest.hexdigest()
+
+
 def _resolve_repo_path(value: str | Path) -> Path:
     path = Path(value).expanduser()
     return path.resolve() if path.is_absolute() else (REPO_ROOT / path).resolve()
+
+
+def _load_verified_batch_config(batch: dict[str, Any]) -> dict[str, Any]:
+    config_path = _resolve_repo_path(batch.get("config_path", ""))
+    if not config_path.is_file() or _sha256(config_path) != batch.get("config_sha256"):
+        raise ValueError("batch config hash mismatch")
+    config = _load_json(config_path)
+    base_path = _resolve_repo_path(config.get("base_runner_config", ""))
+    if (
+        str(base_path) != batch.get("base_runner_config_path")
+        or not base_path.is_file()
+        or _sha256(base_path) != batch.get("base_runner_config_sha256")
+    ):
+        raise ValueError("base runner config hash mismatch")
+    return config
+
+
+def _verify_scene_config_binding(
+    config_path: Path,
+    record: dict[str, Any],
+    run: dict[str, Any],
+) -> dict[str, Any]:
+    if not config_path.is_file() or _sha256(config_path) != record.get(
+        "scene_config_sha256"
+    ):
+        raise ValueError(f"scene config byte hash mismatch: {config_path.stem}")
+    scene_config = _load_json(config_path)
+    canonical_hash = _json_hash(scene_config)
+    if (
+        record.get("config_hash") != canonical_hash
+        or run.get("config_hash") != canonical_hash
+    ):
+        raise ValueError(f"canonical config hash mismatch: {config_path.stem}")
+    return scene_config
+
+
+def _validate_dense_provenance(
+    scene_runs: dict[str, dict[str, Any]],
+    expected: dict[str, Any],
+) -> str:
+    if not isinstance(expected, dict) or set(expected) != set(DENSE_PROVENANCE_FIELDS):
+        raise ValueError("batch dense_provenance does not match the frozen field contract")
+    by_scene: dict[str, dict[str, Any]] = {}
+    for scene in REPLICA8_SCENES:
+        dense = scene_runs[scene].get("dense_semantics", {})
+        producer = dense.get("producer_provenance", {})
+        consumed = dense.get("provenance", {})
+        if dense.get("mode") != "cached_probabilities" or not isinstance(
+            producer, dict
+        ) or not isinstance(consumed, dict):
+            raise ValueError(f"missing dense producer provenance: {scene}")
+        if any(
+            field not in producer or consumed.get(field) != producer[field]
+            for field in DENSE_PROVENANCE_FIELDS
+        ):
+            raise ValueError(f"incomplete dense producer provenance: {scene}")
+        consumed_prefix = _dense_cache_prefix(dense.get("cache_files_sha256", {}))
+        producer_prefix = _dense_cache_prefix(
+            dense.get("producer_cache_files_sha256", {})
+        )
+        if (
+            dense.get("cache_prefix_sha256") != consumed_prefix
+            or consumed.get("cache_prefix_sha256") != consumed_prefix
+            or dense.get("producer_cache_prefix_sha256") != producer_prefix
+            or producer.get("cache_prefix_sha256") != producer_prefix
+        ):
+            raise ValueError(f"dense cache prefix mismatch: {scene}")
+        by_scene[scene] = {
+            field: producer[field] for field in DENSE_PROVENANCE_FIELDS
+        }
+    encoded = {
+        json.dumps(value, separators=(",", ":"), sort_keys=True)
+        for value in by_scene.values()
+    }
+    if len(encoded) != 1:
+        raise ValueError("dense producer provenance differs across scenes")
+    common = by_scene[REPLICA8_SCENES[0]]
+    if common != expected:
+        raise ValueError("dense producer provenance does not match frozen batch config")
+    return _json_hash(common)
 
 
 def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
@@ -69,7 +194,17 @@ def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
 
 
 def _verify_run_artifacts(scene_root: Path, run: dict[str, Any]) -> None:
-    for relative, expected in run.get("artifact_checksums", {}).items():
+    recorded = run.get("artifact_checksums")
+    if not isinstance(recorded, dict):
+        raise ValueError(f"artifact file contract mismatch: {scene_root.name}")
+    actual = {
+        str(path.relative_to(scene_root))
+        for path in scene_root.rglob("*")
+        if path.is_file() and path.name != "run_manifest.json"
+    }
+    if not recorded or set(recorded) != actual:
+        raise ValueError(f"artifact file contract mismatch: {scene_root.name}")
+    for relative, expected in recorded.items():
         path = scene_root / relative
         if not path.is_file() or _sha256(path) != expected:
             raise ValueError(f"run artifact checksum mismatch: {scene_root.name}/{relative}")
@@ -83,7 +218,12 @@ def _repeat_scene_evaluation(
     semantic_head: str,
     fusion_entity_weight_scale: float,
 ) -> dict[str, str]:
-    if not repeat_root.exists():
+    repeat_root.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(
+        prefix=f".{scene}-fresh-",
+        dir=repeat_root.parent,
+    ) as temporary:
+        repeated = Path(temporary) / "evaluation"
         evaluate(
             argparse.Namespace(
                 snapshot=scene_root / "final" / "oviv2_voxel_snapshot.npz",
@@ -92,17 +232,25 @@ def _repeat_scene_evaluation(
                 gt_info=_resolve_repo_path(scene_config["gt_info"]),
                 manifest=_resolve_repo_path(scene_config["manifest"]),
                 scene=scene,
-                output=repeat_root,
+                output=repeated,
                 min_instance_vertices=int(scene_config.get("min_instance_vertices", 100)),
                 semantic_head=semantic_head,
                 fusion_entity_weight_scale=fusion_entity_weight_scale,
             )
         )
-    _, evaluation_dir, _ = _evaluation_contract(
-        {"semantic_head": semantic_head},
-        scene_config,
-    )
-    return verify_byte_identical_evaluation_dirs(scene_root / evaluation_dir, repeat_root)
+        evaluation_dir = {
+            "owner_authoritative": (
+                "evaluation_owner"
+                if scene_config.get("dense_semantic_mode") == "cached_probabilities"
+                else "evaluation"
+            ),
+            "dense_only": "evaluation_dense",
+            "fused_uncertainty": "evaluation_fused",
+        }[semantic_head]
+        return verify_byte_identical_evaluation_dirs(
+            scene_root / evaluation_dir,
+            repeated,
+        )
 
 
 def _evaluation_contract(
@@ -125,9 +273,15 @@ def _evaluation_contract(
             raise ValueError("fused semantic_head requires cached dense semantics")
         if scene_config.get("fusion_semantic_mode") != "uncertainty_linear":
             raise ValueError("fused semantic_head requires uncertainty_linear fusion")
+        if "fusion_entity_weight_scale" not in batch_config:
+            raise ValueError(
+                "fused semantic_head requires frozen fusion_entity_weight_scale"
+            )
         fusion = SemanticFusionConfig(
-            entity_weight_scale=scene_config.get("fusion_entity_weight_scale", 0.5)
+            entity_weight_scale=batch_config["fusion_entity_weight_scale"]
         )
+        if scene_config.get("fusion_entity_weight_scale") != fusion.entity_weight_scale:
+            raise ValueError("scene config does not use frozen fusion_entity_weight_scale")
         return semantic_head, "evaluation_fused", fusion.entity_weight_scale
     raise ValueError("semantic_head is unsupported")
 
@@ -154,7 +308,7 @@ def finalize(batch_root: str | Path, output: str | Path) -> dict[str, Any]:
     batch = _load_json(batch_root / "batch_manifest.json")
     if batch.get("method") != "OVIV2" or tuple(batch.get("scene_ids", ())) != REPLICA8_SCENES:
         raise ValueError("batch manifest is not the exact OVIV2 Replica-8 contract")
-    batch_config = _load_json(Path(batch["config_path"]))
+    batch_config = _load_verified_batch_config(batch)
     if batch.get("semantic_head", "owner_authoritative") != batch_config.get(
         "semantic_head",
         "owner_authoritative",
@@ -187,7 +341,11 @@ def finalize(batch_root: str | Path, output: str | Path) -> dict[str, Any]:
         hardware[scene] = dict(run.get("hardware", {}))
         timing_path = scene_root / "timing.json"
         runtimes[scene] = _load_json(timing_path)
-        scene_config = _load_json(batch_root / "scene_configs" / f"{scene}.json")
+        scene_config = _verify_scene_config_binding(
+            batch_root / "scene_configs" / f"{scene}.json",
+            record,
+            run,
+        )
         scene_configs[scene] = scene_config
         semantic_head, evaluation_dir, fusion_scale = _evaluation_contract(
             batch_config,
@@ -225,9 +383,14 @@ def finalize(batch_root: str | Path, output: str | Path) -> dict[str, Any]:
         raise ValueError("all OVIV2 scene runs must use one repository commit")
     if len({json.dumps(value, sort_keys=True) for value in frontend_provenance.values()}) != 1:
         raise ValueError("frontend model provenance differs across scenes")
+    if batch_config.get("semantic_head") in {"dense_only", "fused_uncertainty"}:
+        contract["dense_provenance_hash"] = _validate_dense_provenance(
+            scene_runs,
+            batch_config.get("dense_provenance", {}),
+        )
 
     metrics = aggregate_oviv2_replica(scene_metrics)
-    config_path = Path(batch["config_path"])
+    config_path = _resolve_repo_path(batch["config_path"])
     benchmark_path = _resolve_repo_path(scene_configs["room0"]["manifest"])
     frontend_config = batch_config["frontend"]
     provenance = frontend_provenance["room0"]
