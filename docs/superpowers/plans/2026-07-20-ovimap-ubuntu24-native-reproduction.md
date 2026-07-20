@@ -15,6 +15,7 @@
 - Create `configs/environments/ovimap_cropformer.yaml`: direct frontend dependencies.
 - Create `configs/environments/ovimap_map.yaml`: direct RoboStack mapping dependencies.
 - Create `scripts/reproduction/ovimap/bootstrap_native_envs.sh`: environments, fresh sources, and provenance.
+- Create `scripts/reproduction/ovimap/conda_gxx12_wrapper.sh`: remove the broken Conda Python linker sysroot override while preserving the GCC 12 wrapper sysroot.
 - Create `patches/cropformer/ubuntu24-torch21.patch`: strict CUDA dispatch and instance-ID exporter.
 - Create `patches/ovimap/ubuntu24-native.patch`: build-only changes derived from `paper2`.
 - Create `src/evaluation/baselines/ovimap_native.py`: pure interface and gate validation.
@@ -309,6 +310,8 @@ git commit -m "build: define native OVI-MAP environments"
 
 **Files:**
 - Create: `patches/cropformer/ubuntu24-torch21.patch`
+- Create: `scripts/reproduction/ovimap/conda_gxx12_wrapper.sh`
+- Modify: `configs/environments/ovimap_cropformer.yaml`
 - Modify: `tests/evaluation/test_run_ovimap_native.py`
 
 - [ ] **Step 1: Write failing patch-content tests**
@@ -336,7 +339,7 @@ git -C /home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/Entity \
   apply "$PWD/patches/cropformer/ubuntu24-torch21.patch"
 ```
 
-Install Detectron2 `v0.6` at commit `d1e04565d3bec8719335b88be9e9b961bf3ec464`, then build CropFormer's `MultiScaleDeformableAttention` with the new environment's `nvcc`.
+Install Detectron2 `v0.6` at commit `d1e04565d3bec8719335b88be9e9b961bf3ec464`, then build CropFormer's `MultiScaleDeformableAttention` with the environment's CUDA 12.1 development headers, NVCC, GCC 12, and the tested linker wrapper.
 
 - [ ] **Step 3: Prove the CUDA operator executes**
 
@@ -371,6 +374,8 @@ Expected: `680 x 1200` integer mask, background 0, contiguous positive IDs, nonz
 /home/ww/miniconda3/envs/oviovo-conceptgraphs/bin/python -m pytest \
   tests/evaluation/test_run_ovimap_native.py -q
 git add patches/cropformer/ubuntu24-torch21.patch \
+  scripts/reproduction/ovimap/conda_gxx12_wrapper.sh \
+  configs/environments/ovimap_cropformer.yaml \
   tests/evaluation/test_run_ovimap_native.py
 git commit -m "fix: build strict CropFormer CUDA frontend"
 ```

@@ -23,7 +23,7 @@ The reproduction runs directly on Ubuntu 24.04. It does not use an Ubuntu 20.04 
 
 Two isolated environments separate the incompatible frontend and mapping requirements:
 
-1. `ovimap-cropformer`: Python 3.8, PyTorch 2.1.1, torchvision 0.16.1, CUDA 12.1, and the official CropFormer HoRNet configuration and checkpoint.
+1. `ovimap-cropformer`: Python 3.8, PyTorch 2.1.1, torchvision 0.16.1, CUDA 12.1 development libraries, GCC/G++ 12, and the official CropFormer HoRNet configuration and checkpoint. CUDA 12.1 rejects Ubuntu 24.04's host GCC 13, while the Conda Python linker flags require a narrow wrapper that removes only the incorrect `-Wl,--sysroot=/` override and retains the compiler wrapper's own sysroot.
 2. `ovimap-map`: Python 3.11, the current RoboStack Noetic ABI, PyTorch 2.1.1, transformers 4.49, and the smallest Python/catkin dependency set that can rebuild and import the released OVI-MAP targets on Ubuntu 24.04. Transformers 4.49 requires Python 3.9 or newer, so it belongs to this SigLIP mapping environment rather than the Python 3.8 CropFormer environment. Its exact package set is frozen after the import smoke test passes.
 
 CUDA compiler and runtime packages are installed inside the frontend environment. The host CUDA toolkit is not assumed. CropFormer must import and execute the compiled CUDA `MSDeformAttn` operator; the pure-PyTorch deformable-attention fallback is forbidden.

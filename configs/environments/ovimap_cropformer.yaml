@@ -9,7 +9,13 @@ dependencies:
   - pytorch=2.1.1
   - torchvision=0.16.1
   - pytorch-cuda=12.1
+  - cuda-version=12.1
   - cuda-nvcc=12.1.105
+  - cuda-cudart-dev=12.1.105
+  - cuda-cccl=12.1.109
+  - cuda-libraries-dev=12.1.0
+  - gcc_linux-64=12
+  - gxx_linux-64=12
   - ninja
   - pip
   - pip:

@@ -1,0 +1,215 @@
+diff --git a/Entityv2/CropFormer/demo_cropformer/demo_from_dirs.py b/Entityv2/CropFormer/demo_cropformer/demo_from_dirs.py
+index dd65c79..95c1b09 100644
+--- a/Entityv2/CropFormer/demo_cropformer/demo_from_dirs.py
++++ b/Entityv2/CropFormer/demo_cropformer/demo_from_dirs.py
+@@ -2,6 +2,8 @@
+ # Modified by Bowen Cheng from: https://github.com/facebookresearch/detectron2/blob/master/demo/demo.py
+ import argparse
+ import glob
++import hashlib
++import json
+ import multiprocessing as mp
+ import os
+ 
+@@ -38,6 +40,44 @@ def make_colors():
+ # constants
+ WINDOW_NAME = "cropformer demo"
+ 
++
++def file_sha256(path):
++    digest = hashlib.sha256()
++    with open(path, "rb") as handle:
++        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
++            digest.update(chunk)
++    return digest.hexdigest()
++
++
++def compose_instance_id_mask(pred_masks, pred_scores, confidence_threshold):
++    selected = pred_scores >= confidence_threshold
++    selected_scores = pred_scores[selected].detach().cpu().numpy()
++    selected_masks = pred_masks[selected].detach().cpu().numpy().astype(bool)
++    if selected_masks.shape[0] > np.iinfo(np.uint8).max:
++        raise ValueError("CropFormer returned more than 255 selected masks")
++    mask_id = np.zeros(pred_masks.shape[-2:], dtype=np.uint8)
++    for index in np.argsort(selected_scores, kind="stable"):
++        mask_id[selected_masks[index]] = int(index) + 1
++    return mask_id
++
++
++def mask_diagnostics(mask_id):
++    ids, counts = np.unique(mask_id, return_counts=True)
++    positive_counts = counts[ids > 0]
++    return {
++        "dtype": str(mask_id.dtype),
++        "shape": list(mask_id.shape),
++        "instance_ids": ids[ids > 0].astype(int).tolist(),
++        "instance_count": int(np.count_nonzero(ids > 0)),
++        "foreground_ratio": float(positive_counts.sum() / mask_id.size),
++        "largest_instance_ratio": (
++            float(positive_counts.max() / mask_id.size)
++            if positive_counts.size
++            else 0.0
++        ),
++    }
++
++
+ def setup_cfg(args):
+     # load config from file and command-line arguments
+     cfg = get_cfg()
+@@ -79,7 +119,7 @@ def get_parser():
+         "--out-type",
+         type=int,
+         default=0,
+-        help="0: only mask, 1: img+mask",
++        help="0: save instance-ID PNG, 1: save image and color-mask visualization",
+     )
+     parser.add_argument(
+         "--opts",
+@@ -96,12 +136,14 @@ if __name__ == "__main__":
+     logger = setup_logger()
+     logger.info("Arguments: " + str(args))
+     cfg = setup_cfg(args)
++    config_sha256 = file_sha256(args.config_file)
++    weights_sha256 = file_sha256(cfg.MODEL.WEIGHTS)
+ 
+     colors = make_colors()
+     demo = VisualizationDemo(cfg)
+ 
+     if len(args.input) == 1:
+-        args.input = glob.glob(os.path.expanduser(args.input[0]))
++        args.input = sorted(glob.glob(os.path.expanduser(args.input[0])))
+         assert args.input, "The input path(s) was not found"
+     for path in tqdm.tqdm(args.input, disable=not args.output):
+         # use PIL, to be consistent with evaluation
+@@ -118,42 +160,58 @@ if __name__ == "__main__":
+             )
+         )
+ 
+-        ##### color_mask
+         pred_masks = predictions["instances"].pred_masks
+         pred_scores = predictions["instances"].scores
+-        
+-        # select by confidence threshold
+-        selected_indexes = (pred_scores >= args.confidence_threshold)
+-        selected_scores = pred_scores[selected_indexes]
+-        selected_masks  = pred_masks[selected_indexes]
+-        _, m_H, m_W = selected_masks.shape
+-        mask_id = np.zeros((m_H, m_W), dtype=np.uint8)
+-
+-        # rank
+-        selected_scores, ranks = torch.sort(selected_scores)
+-        ranks = ranks + 1
+-        for index in ranks:
+-            mask_id[(selected_masks[index-1]==1).cpu().numpy()] = int(index)
++        mask_id = compose_instance_id_mask(
++            pred_masks, pred_scores, args.confidence_threshold
++        )
+         unique_mask_id = np.unique(mask_id)
+ 
+-        color_mask = np.zeros(img.shape, dtype=np.uint8)
+-        for count in unique_mask_id:
+-            if count == 0:
+-                continue
+-            color_mask[mask_id==count] = colors[count]
+-        
+-        vis_mask = np.concatenate((img, color_mask), axis=0)
++        if args.out_type == 1:
++            color_mask = np.zeros(img.shape, dtype=np.uint8)
++            for count in unique_mask_id:
++                if count == 0:
++                    continue
++                color_mask[mask_id == count] = colors[int(count) % len(colors)]
++            output_image = np.concatenate((img, color_mask), axis=0)
++        else:
++            output_image = mask_id
+ 
+         if args.output:
+             if os.path.isdir(args.output):
+                 assert os.path.isdir(args.output), args.output
+-                out_filename = os.path.join(args.output, os.path.basename(path))
++                basename = os.path.basename(path)
++                if args.out_type == 0:
++                    basename = os.path.splitext(basename)[0] + ".png"
++                out_filename = os.path.join(args.output, basename)
++                diagnostic_root = os.path.join(args.output, "frame_diagnostics")
+             else:
+                 assert len(args.input) == 1, "Please specify a directory with args.output"
+                 out_filename = args.output
+-            cv2.imwrite(out_filename, vis_mask)
++                diagnostic_root = os.path.join(
++                    os.path.dirname(os.path.abspath(args.output)), "frame_diagnostics"
++                )
++            if not cv2.imwrite(out_filename, output_image):
++                raise OSError("failed to write CropFormer output: {}".format(out_filename))
++            os.makedirs(diagnostic_root, exist_ok=True)
++            diagnostic = mask_diagnostics(mask_id)
++            diagnostic.update(
++                {
++                    "confidence_threshold": args.confidence_threshold,
++                    "config_sha256": config_sha256,
++                    "input": os.path.abspath(path),
++                    "output": os.path.abspath(out_filename),
++                    "weights_sha256": weights_sha256,
++                }
++            )
++            diagnostic_path = os.path.join(
++                diagnostic_root, os.path.splitext(os.path.basename(path))[0] + ".json"
++            )
++            with open(diagnostic_path, "w", encoding="utf-8") as handle:
++                json.dump(diagnostic, handle, indent=2, sort_keys=True)
++                handle.write("\n")
+         else:
+             cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_NORMAL)
+-            cv2.imshow(WINDOW_NAME, vis_mask)
++            cv2.imshow(WINDOW_NAME, output_image)
+             if cv2.waitKey(0) == 27:
+                 break  # esc to quit
+diff --git a/Entityv2/CropFormer/mask2former/data/datasets/__init__.py b/Entityv2/CropFormer/mask2former/data/datasets/__init__.py
+index 8c8ebd4..684cc17 100644
+--- a/Entityv2/CropFormer/mask2former/data/datasets/__init__.py
++++ b/Entityv2/CropFormer/mask2former/data/datasets/__init__.py
+@@ -1,14 +1,2 @@
+ # Copyright (c) Facebook, Inc. and its affiliates.
+-from . import (
+-    register_ade20k_full,
+-    register_ade20k_panoptic,
+-    register_coco_stuff_10k,
+-    register_mapillary_vistas,
+-    register_coco_panoptic_annos_semseg,
+-    register_ade20k_instance,
+-    register_mapillary_vistas_panoptic,
+-    register_entityv2_entity,
+-    register_entityv2_instances,
+-    register_entityv2_panoptic_350,
+-    register_entityv2_semseg_150,
+-)
++"""Dataset auto-registration is disabled for OVI-MAP inference."""
+diff --git a/Entityv2/CropFormer/mask2former/modeling/pixel_decoder/ops/src/cuda/ms_deform_attn_cuda.cu b/Entityv2/CropFormer/mask2former/modeling/pixel_decoder/ops/src/cuda/ms_deform_attn_cuda.cu
+index 0c465da..4f82c9a 100644
+--- a/Entityv2/CropFormer/mask2former/modeling/pixel_decoder/ops/src/cuda/ms_deform_attn_cuda.cu
++++ b/Entityv2/CropFormer/mask2former/modeling/pixel_decoder/ops/src/cuda/ms_deform_attn_cuda.cu
+@@ -66,7 +66,7 @@ at::Tensor ms_deform_attn_cuda_forward(
+     for (int n = 0; n < batch/im2col_step_; ++n)
+     {
+         auto columns = output_n.select(0, n);
+-        AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_forward_cuda", ([&] {
++        AT_DISPATCH_FLOATING_TYPES(value.scalar_type(), "ms_deform_attn_forward_cuda", ([&] {
+             ms_deformable_im2col_cuda(at::cuda::getCurrentCUDAStream(),
+                 value.data<scalar_t>() + n * im2col_step_ * per_value_size,
+                 spatial_shapes.data<int64_t>(),
+@@ -136,7 +136,7 @@ std::vector<at::Tensor> ms_deform_attn_cuda_backward(
+     for (int n = 0; n < batch/im2col_step_; ++n)
+     {
+         auto grad_output_g = grad_output_n.select(0, n);
+-        AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_backward_cuda", ([&] {
++        AT_DISPATCH_FLOATING_TYPES(value.scalar_type(), "ms_deform_attn_backward_cuda", ([&] {
+             ms_deformable_col2im_cuda(at::cuda::getCurrentCUDAStream(),
+                                     grad_output_g.data<scalar_t>(),
+                                     value.data<scalar_t>() + n * im2col_step_ * per_value_size,
+@@ -155,4 +155,4 @@ std::vector<at::Tensor> ms_deform_attn_cuda_backward(
+     return {
+         grad_value, grad_sampling_loc, grad_attn_weight
+     };
+-}
+\ No newline at end of file
++}
