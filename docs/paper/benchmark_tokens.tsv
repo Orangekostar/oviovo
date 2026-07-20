@@ -11,15 +11,15 @@ T1_OPENFUSION_REPLICA7_AP50	T1	OPENFUSION	Replica	replica_7_heldout	REPLICA7_AP5
 T1_OPENFUSION_SCANNET5_AP25	T1	OPENFUSION	ScanNet200	scannet200_5_heldout	SCANNET5_AP25	higher	3			N/A	No native entity AP output.
 T1_OPENFUSION_SCANNET5_AP50	T1	OPENFUSION	ScanNet200	scannet200_5_heldout	SCANNET5_AP50	higher	3			N/A	No native entity AP output.
 T1_OPENFUSION_SCANNET5_F5	T1	OPENFUSION	ScanNet200	scannet200_5_heldout	SCANNET5_F5	higher	3			UNFILLED	Pending benchmark run.
-T1_OVIMAP_REPLICA8_MIOU	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_MIOU	higher	3			UNFILLED	Quarantined: 20260719 native run fails OVI-MAP CVPR 2026 paper-protocol parity audit.
-T1_OVIMAP_REPLICA8_MACC	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_MACC	higher	3			UNFILLED	Quarantined: 20260719 native run fails OVI-MAP CVPR 2026 paper-protocol parity audit.
-T1_OVIMAP_REPLICA8_FMIOU	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_FMIOU	higher	3			UNFILLED	Quarantined: 20260719 native run fails OVI-MAP CVPR 2026 paper-protocol parity audit.
-T1_OVIMAP_REPLICA7_MIOU	T1	OVIMAP	Replica	replica_7_heldout	REPLICA7_MIOU	higher	3			UNFILLED	Quarantined: 20260719 native run fails OVI-MAP CVPR 2026 paper-protocol parity audit.
+T1_OVIMAP_REPLICA8_MIOU	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_MIOU	higher	3			UNFILLED	20260720 released semantic mIoU 0.2727 is verified diagnostic; token waits for complete paper audit.
+T1_OVIMAP_REPLICA8_MACC	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_MACC	higher	3			UNFILLED	20260720 released semantic mAcc 0.3268 is verified diagnostic; token waits for complete paper audit.
+T1_OVIMAP_REPLICA8_FMIOU	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_FMIOU	higher	3			UNFILLED	Not defined by the released OVI-MAP Replica protocol.
+T1_OVIMAP_REPLICA7_MIOU	T1	OVIMAP	Replica	replica_7_heldout	REPLICA7_MIOU	higher	3			UNFILLED	Not evaluated by the paper's fixed Replica-8 protocol.
 T1_OVIMAP_SCANNET5_MIOU	T1	OVIMAP	ScanNet200	scannet200_5_heldout	SCANNET5_MIOU	higher	3			UNFILLED	Pending benchmark run.
-T1_OVIMAP_REPLICA8_AP25	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_AP25	higher	3			UNFILLED	Quarantined: 20260719 native run fails OVI-MAP CVPR 2026 paper-protocol parity audit.
-T1_OVIMAP_REPLICA8_AP50	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_AP50	higher	3			UNFILLED	Quarantined: 20260719 native run fails OVI-MAP CVPR 2026 paper-protocol parity audit.
-T1_OVIMAP_REPLICA8_F5	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_F5	higher	3			UNFILLED	Quarantined: 20260719 native run fails OVI-MAP CVPR 2026 paper-protocol parity audit.
-T1_OVIMAP_REPLICA7_AP50	T1	OVIMAP	Replica	replica_7_heldout	REPLICA7_AP50	higher	3			UNFILLED	Quarantined: 20260719 native run fails OVI-MAP CVPR 2026 paper-protocol parity audit.
+T1_OVIMAP_REPLICA8_AP25	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_AP25	higher	3			UNFILLED	Released mP@25 is 0.7672 and matches the paper AP25 numerically, but metric equivalence is unconfirmed.
+T1_OVIMAP_REPLICA8_AP50	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_AP50	higher	3			UNFILLED	Released mP@50 is 0.5150 and matches the paper AP50 closely, but metric equivalence is unconfirmed.
+T1_OVIMAP_REPLICA8_F5	T1	OVIMAP	Replica	replica_8_compat	REPLICA8_F5	higher	3			UNFILLED	Not defined by the released OVI-MAP Replica protocol.
+T1_OVIMAP_REPLICA7_AP50	T1	OVIMAP	Replica	replica_7_heldout	REPLICA7_AP50	higher	3			UNFILLED	Not evaluated by the paper's fixed Replica-8 protocol.
 T1_OVIMAP_SCANNET5_AP25	T1	OVIMAP	ScanNet200	scannet200_5_heldout	SCANNET5_AP25	higher	3			UNFILLED	Pending benchmark run.
 T1_OVIMAP_SCANNET5_AP50	T1	OVIMAP	ScanNet200	scannet200_5_heldout	SCANNET5_AP50	higher	3			UNFILLED	Pending benchmark run.
 T1_OVIMAP_SCANNET5_F5	T1	OVIMAP	ScanNet200	scannet200_5_heldout	SCANNET5_F5	higher	3			UNFILLED	Pending benchmark run.

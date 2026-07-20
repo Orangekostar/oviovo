@@ -1,0 +1,206 @@
+{
+  "aggregate_artifacts": {
+    "average_queries_per_feature_instance": 7.20421052631579,
+    "eligible_feature_instance_count": 427,
+    "feature_instance_count": 475,
+    "full_frame_bbox_count": 53,
+    "full_frame_bbox_ratio": 0.015488018702513151,
+    "query_count": 3422
+  },
+  "expected_protocol": {
+    "frame_count_per_scene": 200,
+    "frame_step": 10,
+    "instance_metrics": "class_agnostic_mask_miou_ap25_ap50_ap75",
+    "name": "ovimap_cvpr2026_replica",
+    "scene_ids": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "semantic_metrics": "per_vertex_miou_macc_and_class_aware_mask_ap",
+    "semantic_vocabulary": "Replica-51",
+    "vlm": "siglip-large-patch16-384"
+  },
+  "failures": [
+    "protocol_evidence.class_agnostic_ap_manifest file is missing: ."
+  ],
+  "feature_sources": {
+    "office0": {
+      "path": "/home/ww/oviovo_baseline_runs/20260720_ovimap_ubuntu24_native/scenes/office0/attempt-20260720T052541.377629Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "0a4cc1ab1358e8fd8286b45136ed6a6444315dd41cb9d694e1fb926743047e28"
+    },
+    "office1": {
+      "path": "/home/ww/oviovo_baseline_runs/20260720_ovimap_ubuntu24_native/scenes/office1/attempt-20260720T052541.233301Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "b0fbe46cd6534f7fd4ee0c6b324348fe7c59013d0dbcf06332300e81d3837598"
+    },
+    "office2": {
+      "path": "/home/ww/oviovo_baseline_runs/20260720_ovimap_ubuntu24_native/scenes/office2/attempt-20260720T052541.223512Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "c7291d5c6b800325d4f09c697bd408e4e2ebd5ed2e02573e49c0c09853d2b00b"
+    },
+    "office3": {
+      "path": "/home/ww/oviovo_baseline_runs/20260720_ovimap_ubuntu24_native/scenes/office3/attempt-20260720T055823.305505Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "16c27eb8cdceced59b1f030d15a2c5d6772d5eb076e211e776fdafd2c70c2d56"
+    },
+    "office4": {
+      "path": "/home/ww/oviovo_baseline_runs/20260720_ovimap_ubuntu24_native/scenes/office4/attempt-20260720T055823.420532Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "1b1c38b2b965a1fe9750e70c459ee6c3fcb8b751a3d2b9694b7a7b0eff7204b0"
+    },
+    "room0": {
+      "path": "/home/ww/oviovo_baseline_runs/20260720_ovimap_ubuntu24_native/scenes/room0/attempt-20260720T044358.936029Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "f59f142b116e6fcf0a24f4f16cda41ca28f166b7e44c94fe7818d6e9a47d7059"
+    },
+    "room1": {
+      "path": "/home/ww/oviovo_baseline_runs/20260720_ovimap_ubuntu24_native/scenes/room1/attempt-20260720T060503.112095Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "bcb4d7ac93bb1e3ca5a98814e18010d05f3afe84b95597d0dfb6dd75baccbcc9"
+    },
+    "room2": {
+      "path": "/home/ww/oviovo_baseline_runs/20260720_ovimap_ubuntu24_native/scenes/room2/attempt-20260720T063436.848212Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+      "sha256": "bff1188f4aeebe280cb78d4c0bc21069fb7bf20f7c4cdbc534da252357552b09"
+    }
+  },
+  "observed_protocol": {
+    "frame_count_per_scene": 200,
+    "frame_step": 10,
+    "instance_metrics": "class_agnostic_mask_miou_ap25_ap50_ap75",
+    "name": "ovimap_cvpr2026_replica",
+    "scene_ids": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "semantic_metrics": "per_vertex_miou_macc_and_class_aware_mask_ap",
+    "semantic_vocabulary": "Replica-51",
+    "vlm": "siglip-large-patch16-384"
+  },
+  "paper_reported_reference": {
+    "instance_table_2_percent": {
+      "ap25": 76.7,
+      "ap50": 50.8,
+      "ap75": 22.0,
+      "miou": 36.3
+    },
+    "semantic_table_3_percent": {
+      "ap25": 34.5,
+      "ap50": 21.2,
+      "apall": 8.5,
+      "macc": 32.2,
+      "miou": 26.5
+    }
+  },
+  "paper_values_are_reference_only": true,
+  "protocol_name": "ovimap_cvpr2026_replica",
+  "result_source": {
+    "path": "/home/ww/.config/superpowers/worktrees/oviovo/tsdf-contamination-visibility-gates/docs/paper/results/baselines/ovimap/replica/20260720-ubuntu24-native/result.json",
+    "sha256": "aaecba85666a1ed0aca49e9a8aacd3fa01c868db3c948067e109220bc624d709"
+  },
+  "scene_artifacts": {
+    "office0": {
+      "average_queries_per_feature_instance": 6.705882352941177,
+      "eligible_feature_instance_count": 58,
+      "feature_instance_count": 68,
+      "full_frame_bbox_count": 4,
+      "full_frame_bbox_ratio": 0.008771929824561403,
+      "query_count": 456
+    },
+    "office1": {
+      "average_queries_per_feature_instance": 6.882352941176471,
+      "eligible_feature_instance_count": 45,
+      "feature_instance_count": 51,
+      "full_frame_bbox_count": 9,
+      "full_frame_bbox_ratio": 0.02564102564102564,
+      "query_count": 351
+    },
+    "office2": {
+      "average_queries_per_feature_instance": 6.90625,
+      "eligible_feature_instance_count": 54,
+      "feature_instance_count": 64,
+      "full_frame_bbox_count": 9,
+      "full_frame_bbox_ratio": 0.020361990950226245,
+      "query_count": 442
+    },
+    "office3": {
+      "average_queries_per_feature_instance": 7.625,
+      "eligible_feature_instance_count": 59,
+      "feature_instance_count": 64,
+      "full_frame_bbox_count": 6,
+      "full_frame_bbox_ratio": 0.012295081967213115,
+      "query_count": 488
+    },
+    "office4": {
+      "average_queries_per_feature_instance": 7.938775510204081,
+      "eligible_feature_instance_count": 47,
+      "feature_instance_count": 49,
+      "full_frame_bbox_count": 6,
+      "full_frame_bbox_ratio": 0.015424164524421594,
+      "query_count": 389
+    },
+    "room0": {
+      "average_queries_per_feature_instance": 6.871428571428571,
+      "eligible_feature_instance_count": 61,
+      "feature_instance_count": 70,
+      "full_frame_bbox_count": 2,
+      "full_frame_bbox_ratio": 0.004158004158004158,
+      "query_count": 481
+    },
+    "room1": {
+      "average_queries_per_feature_instance": 7.5576923076923075,
+      "eligible_feature_instance_count": 49,
+      "feature_instance_count": 52,
+      "full_frame_bbox_count": 9,
+      "full_frame_bbox_ratio": 0.022900763358778626,
+      "query_count": 393
+    },
+    "room2": {
+      "average_queries_per_feature_instance": 7.4035087719298245,
+      "eligible_feature_instance_count": 54,
+      "feature_instance_count": 57,
+      "full_frame_bbox_count": 8,
+      "full_frame_bbox_ratio": 0.018957345971563982,
+      "query_count": 422
+    }
+  },
+  "schema_version": 1,
+  "status": "FAIL",
+  "validated_evidence_manifests": {
+    "native_mapping_manifest": {
+      "scene_ids": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "status": "COMPLETE_NATIVE_MAPPING"
+    },
+    "released_evaluation_manifest": {
+      "scene_ids": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "status": "COMPLETE_RELEASED_EVALUATION"
+    }
+  },
+  "validated_evidence_metrics": {
+    "semantic_macc": 0.3268,
+    "semantic_miou": 0.2727
+  }
+}

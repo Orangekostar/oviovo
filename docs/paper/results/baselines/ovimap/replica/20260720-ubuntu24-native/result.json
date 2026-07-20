@@ -1,0 +1,77 @@
+{
+  "availability": {
+    "class_agnostic_ap25": "UNFILLED_NO_RELEASED_EVALUATOR",
+    "class_agnostic_ap50": "UNFILLED_NO_RELEASED_EVALUATOR",
+    "f5": "UNFILLED_NOT_DEFINED_BY_RELEASED_PROTOCOL",
+    "fmiou": "UNFILLED_NOT_DEFINED_BY_RELEASED_PROTOCOL",
+    "released_semantic_macc": "VERIFIED_DIAGNOSTIC",
+    "released_semantic_miou": "VERIFIED_DIAGNOSTIC",
+    "t1_replica8_macc": "UNFILLED_PAPER_AUDIT_INCOMPLETE",
+    "t1_replica8_miou": "UNFILLED_PAPER_AUDIT_INCOMPLETE"
+  },
+  "method": {
+    "display_label": "OVI-MAP",
+    "key": "OVIMAP",
+    "mode": "native"
+  },
+  "metrics": {
+    "released_replica51": {
+      "semantic_instance_ap25": 0.345853789368729,
+      "semantic_instance_ap50": 0.2147686335604373,
+      "semantic_instance_apall": 0.08512732195686326,
+      "semantic_macc": 0.3268,
+      "semantic_miou": 0.2727
+    },
+    "replica_8_compat": {
+      "scene_count": 8,
+      "scene_ids": [
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4",
+        "room0",
+        "room1",
+        "room2"
+      ],
+      "semantic": {
+        "macc": 0.3268,
+        "miou": 0.2727
+      }
+    }
+  },
+  "protocol": {
+    "frame_count_per_scene": 200,
+    "frame_step": 10,
+    "instance_metrics": "class_agnostic_mask_miou_ap25_ap50_ap75",
+    "name": "ovimap_cvpr2026_replica",
+    "scene_ids": [
+      "office0",
+      "office1",
+      "office2",
+      "office3",
+      "office4",
+      "room0",
+      "room1",
+      "room2"
+    ],
+    "semantic_metrics": "per_vertex_miou_macc_and_class_aware_mask_ap",
+    "semantic_vocabulary": "Replica-51",
+    "vlm": "siglip-large-patch16-384"
+  },
+  "protocol_evidence": {
+    "native_mapping_manifest": {
+      "path": "/home/ww/oviovo_baseline_runs/20260720_ovimap_ubuntu24_native/native_mapping_manifest.json",
+      "sha256": "b1198e59da20e8f0b376f6db84f0f4b880ea5c95c84783ab066e8c20012e0a35",
+      "size_bytes": 28637
+    },
+    "released_evaluation_manifest": {
+      "path": "/home/ww/oviovo_baseline_runs/20260720_ovimap_ubuntu24_native/released_eval/run_manifest.json",
+      "sha256": "e798c4f641e649efb985fc046589a6569b60842d7e46cbc4d67ae480a4f9e31a",
+      "size_bytes": 44938
+    }
+  },
+  "schema_version": 1,
+  "status": "VERIFIED",
+  "token_bindings": []
+}
