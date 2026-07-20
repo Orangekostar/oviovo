@@ -5,6 +5,14 @@ import subprocess
 from pathlib import Path
 
 import yaml
+import pytest
+
+from scripts.evaluation.run_ovimap_native import (
+    GateFailure,
+    NativeConfig,
+    advance_state,
+    build_scene_commands,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -16,6 +24,21 @@ CROPFORMER_PATCH = REPO_ROOT / "patches/cropformer/ubuntu24-torch21.patch"
 ENTITY_ROOT = Path("/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/Entity")
 OVIMAP_PATCH = REPO_ROOT / "patches/ovimap/ubuntu24-native.patch"
 OVIMAP_ROOT = Path("/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/OVI-MAP")
+
+
+@pytest.fixture
+def native_config(tmp_path: Path) -> NativeConfig:
+    return NativeConfig(
+        build_root=tmp_path / "build",
+        run_root=tmp_path / "run",
+        data_root=tmp_path / "Replica",
+        frontend_python=tmp_path / "ovimap-cropformer" / "bin" / "python",
+        mapping_python=tmp_path / "ovimap-map" / "bin" / "python",
+        entity_root=tmp_path / "Entity",
+        ovimap_root=tmp_path / "OVI-MAP",
+        cropformer_weights=tmp_path / "CropFormer_hornet.pth",
+        siglip_model=tmp_path / "siglip-large-patch16-384",
+    )
 
 
 def _dependencies(path: Path) -> tuple[dict, set[str]]:
@@ -300,3 +323,59 @@ def test_ovimap_patch_adds_local_siglip_and_audit_outputs() -> None:
     assert "logged_rgb" in patch
     assert "instance_colors_cpp.tsv" in patch
     assert "box_2d" in patch
+
+
+def test_runner_freezes_official_frame_protocol(native_config: NativeConfig) -> None:
+    commands = build_scene_commands(native_config, scene="room0")
+
+    assert commands.frame_ids == list(range(0, 2000, 10))
+    assert commands.frontend[0] == str(native_config.frontend_python)
+    assert commands.mapping[0] == str(native_config.mapping_python)
+    combined = " ".join(word for command in commands.commands for word in command)
+    for fragment in (
+        "--dataset replica",
+        "--task Nyu40",
+        "--data_association 2",
+        "--inst_association 4",
+        "--seg_graph_confidence 3",
+        "--num_threads 10",
+    ):
+        assert fragment in combined
+    assert "docker" not in combined.lower()
+    assert "fallback" not in combined.lower()
+
+
+def test_runner_uses_only_declared_gate_transitions() -> None:
+    state = "ENV_PASS"
+    for expected in (
+        "FRONTEND_PASS",
+        "MAPPING_PASS",
+        "ROOM0_PASS",
+        "REPLICA8_PASS",
+        "EVAL_PASS",
+    ):
+        state = advance_state(
+            state,
+            event={"status": "PASS", "next_state": expected, "gate": expected},
+        )
+    assert state == "EVAL_PASS"
+
+
+def test_failed_audit_cannot_advance_mapping_gate() -> None:
+    with pytest.raises(GateFailure, match="native frame audit"):
+        advance_state(
+            "FRONTEND_PASS",
+            event={
+                "status": "FAIL",
+                "next_state": "MAPPING_PASS",
+                "gate": "native frame audit",
+            },
+        )
+
+
+def test_runner_rejects_skipped_or_out_of_order_gates() -> None:
+    with pytest.raises(GateFailure, match="invalid transition"):
+        advance_state(
+            "ENV_PASS",
+            event={"status": "PASS", "next_state": "MAPPING_PASS"},
+        )
