@@ -11,10 +11,16 @@ from src.core.data_structures import CameraIntrinsics, Frame
 from src.oviv2.dense_projection import DenseSemanticConfig, DenseSemanticIntegrator
 from src.oviv2.dense_semantics import DenseSemanticFrame, DenseSemanticProvenance
 from src.oviv2.entities import EntityRegistry
+from src.oviv2.geometry import SparseTsdfVolume, TsdfConfig
 from src.oviv2.meshing import derive_labeled_mesh
 from src.oviv2.observations import FrameObservation, ObservationKind
 from src.oviv2.ownership import ReversibleOwnershipStore
-from src.oviv2.runtime import Oviv2Runtime, Oviv2RuntimeConfig, RuntimeFrameResult
+from src.oviv2.runtime import (
+    Oviv2Runtime,
+    Oviv2RuntimeConfig,
+    RuntimeFrameResult,
+    _clone_geometry_for_frame,
+)
 from src.oviv2.snapshot import VoxelMapSnapshot
 from src.oviv2.tracking import LocalTrackerConfig
 
@@ -160,6 +166,22 @@ def _geometry_fingerprint(runtime: Oviv2Runtime) -> tuple[object, ...]:
     )
 
 
+def _canonical_geometry_fingerprint(
+    geometry: SparseTsdfVolume,
+) -> tuple[bytes, ...]:
+    grid = geometry._grid
+    active = grid.hashmap().active_buf_indices()
+    keys = grid.hashmap().key_tensor()[active].numpy()
+    order = np.lexsort((keys[:, 2], keys[:, 1], keys[:, 0]))
+    return (
+        keys[order].tobytes(),
+        *(
+            grid.attribute(name)[active].numpy()[order].tobytes()
+            for name in geometry._ATTRIBUTE_NAMES
+        ),
+    )
+
+
 def _runtime_state(runtime: Oviv2Runtime, registry_path: Path) -> dict[str, object]:
     runtime.registry.save(registry_path)
     return {
@@ -231,6 +253,54 @@ def test_runtime_config_and_constructor_require_paired_dense_contracts() -> None
             "room0",
             dense_config,
             dense_semantic_provenance=object(),  # type: ignore[arg-type]
+        )
+
+
+def test_runtime_config_requires_dense_and_tsdf_voxel_sizes_to_match() -> None:
+    with pytest.raises(ValueError, match="dense.*voxel_size_m|voxel_size_m.*TSDF"):
+        Oviv2RuntimeConfig(
+            tsdf=TsdfConfig(voxel_size_m=0.05),
+            dense_semantics=DenseSemanticConfig(voxel_size_m=0.1),
+        )
+
+    config = Oviv2RuntimeConfig(
+        tsdf=TsdfConfig(voxel_size_m=0.05),
+        dense_semantics=DenseSemanticConfig(
+            voxel_size_m=float(np.float32(0.05)),
+        ),
+    )
+    assert config.dense_semantics is not None
+
+
+def test_tsdf_trial_clone_matches_three_frame_direct_integration_with_active_capacity() -> None:
+    config = TsdfConfig(block_count=100_000)
+    direct = SparseTsdfVolume(config)
+    transactional = SparseTsdfVolume(config)
+
+    for frame_id, translation_x in enumerate((0.0, 0.35, 0.7)):
+        current = frame(frame_id)
+        current.pose[0, 3] = translation_x
+        direct.integrate(
+            current.depth,
+            current.rgb,
+            current.intrinsics.to_matrix(),
+            current.pose,
+        )
+
+        trial = _clone_geometry_for_frame(transactional, current)
+        trial_capacity = int(trial._grid.hashmap().capacity())
+        assert trial_capacity >= max(1, transactional.active_block_count)
+        assert trial_capacity < config.block_count
+        trial.integrate(
+            current.depth,
+            current.rgb,
+            current.intrinsics.to_matrix(),
+            current.pose,
+        )
+        transactional = trial
+
+        assert _canonical_geometry_fingerprint(transactional) == (
+            _canonical_geometry_fingerprint(direct)
         )
 
 

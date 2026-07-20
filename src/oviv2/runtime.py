@@ -44,6 +44,13 @@ class Oviv2RuntimeConfig:
             DenseSemanticConfig,
         ):
             raise TypeError("dense_semantics must be DenseSemanticConfig or None")
+        if self.dense_semantics is not None and not np.isclose(
+            self.dense_semantics.voxel_size_m,
+            self.tsdf.voxel_size_m,
+            rtol=0.0,
+            atol=1e-7,
+        ):
+            raise ValueError("dense voxel_size_m must match TSDF voxel_size_m")
         if self.evidence.block_resolution != self.tsdf.block_resolution:
             raise ValueError("evidence and TSDF block resolutions must match")
         for name in ("semantic_support_scale", "entity_support_scale"):
