@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -16,6 +18,20 @@ from src.evaluation.baselines.ovimap_paper_audit import PAPER_PROTOCOL
 
 SCENES = tuple(PAPER_PROTOCOL["scene_ids"])
 FRAMES = list(range(0, 2000, 10))
+
+
+def test_finalize_cli_imports_repo_modules_outside_repo(tmp_path: Path) -> None:
+    script = Path(__file__).resolve().parents[2] / "scripts/evaluation/finalize_ovimap_native.py"
+
+    completed = subprocess.run(
+        [sys.executable, str(script), "--help"],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
 
 
 def _sha256(path: Path) -> str:
