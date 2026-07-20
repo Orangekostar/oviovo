@@ -27,6 +27,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.datasets.replica import ReplicaRoom0Dataset  # noqa: E402
+from src.datasets.scannet200 import ScanNet200Dataset  # noqa: E402
 from src.models.json_line_worker_client import JsonLineWorkerClient  # noqa: E402
 from src.oviv2.dense_semantics import (  # noqa: E402
     DenseSemanticFrame,
@@ -37,7 +38,6 @@ from src.oviv2.dense_semantics import (  # noqa: E402
 )
 
 
-CLASS_COUNT = 41
 _METHOD = "OVIV2-dense-semantic-cache"
 _MANIFEST_NAME = "dense_manifest.json"
 _MAX_JSON_BYTES = 8 * 1024 * 1024
@@ -570,11 +570,13 @@ def _load_classes(path: Path, benchmark_classes: Sequence[str]) -> tuple[tuple[s
     classes = payload.get("classes")
     if (
         not isinstance(classes, list)
-        or len(classes) != CLASS_COUNT
+        or len(classes) != len(benchmark_classes)
         or any(not isinstance(value, str) or not value for value in classes)
         or len(set(classes)) != len(classes)
     ):
-        raise ValueError(f"classes JSON must contain {CLASS_COUNT} unique classes")
+        raise ValueError(
+            "classes JSON must contain the benchmark vocabulary as unique classes"
+        )
     if classes != list(benchmark_classes):
         raise ValueError("classes JSON order does not match benchmark vocabulary")
     return tuple(classes), sha256_file(path)
@@ -594,10 +596,18 @@ def _indexed_replica_paths(directory: Path, pattern: str) -> dict[int, Path]:
 
 
 def _load_requested_rgb_frames(
-    dataset: ReplicaRoom0Dataset,
+    dataset: ReplicaRoom0Dataset | ScanNet200Dataset,
     requested_frames: int,
     image_shape: tuple[int, int],
 ) -> tuple[np.ndarray, ...]:
+    if isinstance(dataset, ScanNet200Dataset):
+        frames = []
+        for cache_index in range(requested_frames):
+            rgb = dataset[cache_index].rgb
+            if rgb.shape != (*image_shape, 3) or rgb.dtype != np.dtype(np.uint8):
+                raise ValueError(f"dataset frame {cache_index} has an invalid RGB image")
+            frames.append(np.ascontiguousarray(rgb))
+        return tuple(frames)
     rgb_paths = _indexed_replica_paths(dataset.rgb_dir, "frame*.jpg")
     depth_paths = _indexed_replica_paths(dataset.depth_dir, "depth*.png")
     frames: list[np.ndarray] = []
@@ -635,85 +645,135 @@ def _preflight(
     dataset_root = _config_path(config.get("dataset_root"), "dataset_root")
     manifest_path = _config_path(config.get("manifest"), "manifest")
     config_frames = _strict_int(config.get("num_frames"), "config num_frames", positive=True)
-    source_start = _strict_int(
-        config.get("source_start"),
-        "source_start",
-        positive=False,
-    )
-    source_stride = _strict_int(
-        config.get("source_stride"),
-        "source_stride",
-        positive=True,
-    )
     if requested_frames > config_frames:
         raise ValueError("requested num_frames exceeds config num_frames")
 
     benchmark = _load_json(manifest_path, "benchmark manifest")
     if type(benchmark.get("schema_version")) is not int or benchmark["schema_version"] != 1:
         raise ValueError("benchmark manifest must use schema_version 1")
-    if benchmark.get("dataset") != "Replica":
-        raise ValueError("benchmark manifest dataset must be Replica")
+    dataset_name = benchmark.get("dataset")
+    if dataset_name not in {"Replica", "ScanNet200"}:
+        raise ValueError("benchmark manifest dataset must be Replica or ScanNet200")
     scenes = benchmark.get("scenes")
-    if not isinstance(scenes, list) or scene not in {
-        item.get("scene") for item in scenes if isinstance(item, dict)
-    }:
+    matching_scenes = (
+        [item for item in scenes if isinstance(item, dict) and item.get("scene") == scene]
+        if isinstance(scenes, list)
+        else []
+    )
+    if len(matching_scenes) != 1:
         raise ValueError("configured scene is absent from benchmark manifest")
+    scene_record = matching_scenes[0]
     vocabulary = benchmark.get("vocabulary")
     if not isinstance(vocabulary, dict):
         raise ValueError("benchmark vocabulary must be an object")
     benchmark_classes = vocabulary.get("classes")
     if (
         not isinstance(benchmark_classes, list)
-        or len(benchmark_classes) != CLASS_COUNT
+        or not benchmark_classes
         or any(not isinstance(value, str) or not value for value in benchmark_classes)
-        or len(set(benchmark_classes)) != CLASS_COUNT
+        or len(set(benchmark_classes)) != len(benchmark_classes)
     ):
-        raise ValueError(f"benchmark vocabulary must contain exactly {CLASS_COUNT} classes")
+        raise ValueError("benchmark vocabulary must contain unique non-empty classes")
     source_path = vocabulary.get("source_path")
     manifest_classes_json = (
         _config_path(source_path, "benchmark vocabulary.source_path")
         if source_path is not None
         else None
     )
-    selection = benchmark.get("frame_selection")
-    if not isinstance(selection, dict):
-        raise ValueError("benchmark frame_selection must be an object")
-    selection_start = _strict_int(
-        selection.get("start"),
-        "manifest frame_selection.start",
-        positive=False,
-    )
-    selection_stride = _strict_int(
-        selection.get("stride"),
-        "manifest frame_selection.stride",
-        positive=True,
-    )
-    selection_stop = _strict_int(
-        selection.get("stop_exclusive"),
-        "manifest frame_selection.stop_exclusive",
-        positive=True,
-    )
-    if source_start != selection_start or source_stride != selection_stride:
-        raise ValueError("source_start/source_stride must match manifest frame_selection")
-    expected_frames = (selection_stop - selection_start + selection_stride - 1) // selection_stride
-    recorded_frames = _strict_int(
-        selection.get("sampled_frames_per_scene"),
-        "manifest frame_selection.sampled_frames_per_scene",
-        positive=True,
-    )
-    if (
-        selection_stop <= selection_start
-        or config_frames != expected_frames
-        or recorded_frames != expected_frames
-    ):
-        raise ValueError("config num_frames must match frozen manifest frame_selection")
+    if dataset_name == "Replica":
+        source_start = _strict_int(
+            config.get("source_start"),
+            "source_start",
+            positive=False,
+        )
+        source_stride = _strict_int(
+            config.get("source_stride"),
+            "source_stride",
+            positive=True,
+        )
+        selection = benchmark.get("frame_selection")
+        if not isinstance(selection, dict):
+            raise ValueError("benchmark frame_selection must be an object")
+        selection_start = _strict_int(
+            selection.get("start"), "manifest frame_selection.start", positive=False
+        )
+        selection_stride = _strict_int(
+            selection.get("stride"), "manifest frame_selection.stride", positive=True
+        )
+        selection_stop = _strict_int(
+            selection.get("stop_exclusive"),
+            "manifest frame_selection.stop_exclusive",
+            positive=True,
+        )
+        if source_start != selection_start or source_stride != selection_stride:
+            raise ValueError("source_start/source_stride must match manifest frame_selection")
+        expected_frames = (
+            selection_stop - selection_start + selection_stride - 1
+        ) // selection_stride
+        recorded_frames = _strict_int(
+            selection.get("sampled_frames_per_scene"),
+            "manifest frame_selection.sampled_frames_per_scene",
+            positive=True,
+        )
+        if (
+            selection_stop <= selection_start
+            or config_frames != expected_frames
+            or recorded_frames != expected_frames
+        ):
+            raise ValueError("config num_frames must match frozen manifest frame_selection")
+        source_ids = tuple(
+            source_start + index * source_stride for index in range(config_frames)
+        )
+    else:
+        recorded_frames = _strict_int(
+            scene_record.get("frame_count"), "manifest scene frame_count", positive=True
+        )
+        raw_source_ids = scene_record.get("source_frame_ids")
+        if not isinstance(raw_source_ids, list):
+            raise ValueError("ScanNet scene source_frame_ids must be a list")
+        source_ids = tuple(
+            _strict_int(value, "ScanNet source_frame_id", positive=False)
+            for value in raw_source_ids
+        )
+        if (
+            len(source_ids) != recorded_frames
+            or len(set(source_ids)) != len(source_ids)
+            or config_frames != recorded_frames
+        ):
+            raise ValueError("config num_frames must match ScanNet source_frame_ids")
 
     worker = _worker_config(config, args, manifest_classes_json)
     classes, vocabulary_sha256 = _load_classes(worker.classes_json, benchmark_classes)
-    dataset = ReplicaRoom0Dataset(dataset_root)
+    if dataset_name == "Replica":
+        dataset: ReplicaRoom0Dataset | ScanNet200Dataset = ReplicaRoom0Dataset(dataset_root)
+    else:
+        frame_inputs = scene_record.get("frame_inputs")
+        if not isinstance(frame_inputs, dict):
+            raise ValueError("ScanNet scene frame_inputs must be an object")
+        input_hashes = {
+            source_id: {
+                role: frame_inputs[str(source_id)][f"{role}_sha256"]
+                for role in ("color", "depth", "pose")
+            }
+            for source_id in source_ids
+        }
+        raw_image_shape = scene_record.get("image_shape")
+        if not isinstance(raw_image_shape, list) or len(raw_image_shape) != 2:
+            raise ValueError("ScanNet scene image_shape must be [height, width]")
+        image_shape = tuple(
+            _strict_int(value, "ScanNet image_shape", positive=True)
+            for value in raw_image_shape
+        )
+        dataset = ScanNet200Dataset(
+            dataset_root,
+            source_frame_ids=source_ids,
+            input_hashes=input_hashes,
+            expected_image_shape=image_shape,
+            depth_scale=float(scene_record.get("depth_scale", 1000.0)),
+        )
     if len(dataset) != config_frames:
         raise ValueError(
-            f"Replica dataset length {len(dataset)} does not match config num_frames {config_frames}"
+            f"dataset length {len(dataset)} does not match config num_frames {config_frames}"
         )
     image_shape = (
         _strict_int(dataset.intrinsics.height, "dataset image height", positive=True),
@@ -724,8 +784,7 @@ def _preflight(
         if args.resume
         else _load_requested_rgb_frames(dataset, requested_frames, image_shape)
     )
-    source_ids = tuple(source_start + index * source_stride for index in range(config_frames))
-    if source_ids[-1] >= selection_stop:
+    if dataset_name == "Replica" and source_ids[-1] >= selection_stop:
         raise ValueError("source frame IDs exceed manifest frame_selection")
     return _Preflight(
         scene=scene,
@@ -756,8 +815,8 @@ def _metadata(response: dict[str, Any], preflight: _Preflight) -> _WorkerMetadat
         raise ValueError("worker metadata response keys do not match the contract")
     class_count = _strict_int(response.get("class_count"), "metadata class_count", positive=True)
     classes = response.get("classes")
-    if class_count != CLASS_COUNT or classes != list(preflight.classes):
-        raise ValueError("worker metadata classes do not match the frozen 41-class vocabulary")
+    if class_count != len(preflight.classes) or classes != list(preflight.classes):
+        raise ValueError("worker metadata classes do not match the frozen vocabulary")
     sample_stride = _strict_int(
         response.get("sample_stride"),
         "metadata sample_stride",

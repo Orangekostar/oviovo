@@ -267,6 +267,84 @@ def _write_fixture(tmp_path: Path, *, mode: str = "ok") -> tuple[Path, Path, Pat
     return config, classes_json, log_path
 
 
+def _write_scannet_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
+    dataset_root = tmp_path / "scannet" / "scene0011_00"
+    for name in ("color", "depth", "pose", "intrinsic"):
+        (dataset_root / name).mkdir(parents=True)
+    intrinsic = np.eye(4)
+    intrinsic[0, 0] = 4.0
+    intrinsic[1, 1] = 4.0
+    intrinsic[0, 2] = 2.0
+    intrinsic[1, 2] = 1.5
+    np.savetxt(dataset_root / "intrinsic" / "intrinsic_depth.txt", intrinsic)
+    frame_inputs: dict[str, dict[str, str]] = {}
+    for cache_index, source_id in enumerate((0, 20)):
+        color = dataset_root / "color" / f"{source_id}.jpg"
+        depth = dataset_root / "depth" / f"{source_id}.png"
+        pose = dataset_root / "pose" / f"{source_id}.txt"
+        Image.fromarray(
+            np.full((4, 5, 3), 30 + cache_index, dtype=np.uint8)
+        ).save(color)
+        Image.fromarray(np.full((4, 5), 1000, dtype=np.uint16)).save(depth)
+        np.savetxt(pose, np.eye(4))
+        frame_inputs[str(source_id)] = {
+            "color_sha256": hashlib.sha256(color.read_bytes()).hexdigest(),
+            "depth_sha256": hashlib.sha256(depth.read_bytes()).hexdigest(),
+            "pose_sha256": hashlib.sha256(pose.read_bytes()).hexdigest(),
+        }
+    classes = [f"scannet-class-{index:03d}" for index in range(200)]
+    classes_json = tmp_path / "scannet_classes.json"
+    classes_json.write_text(
+        json.dumps({"classes": classes, "aliases": {}}, separators=(",", ":")),
+        encoding="utf-8",
+    )
+    benchmark = tmp_path / "scannet_manifest.json"
+    _write_json(
+        benchmark,
+        {
+            "schema_version": 1,
+            "manifest_id": "oviv2_scannet200_fixture",
+            "dataset": "ScanNet200",
+            "frame_selection": {"start": 0, "stride": 10},
+            "vocabulary": {"classes": classes, "source_path": str(classes_json)},
+            "scenes": [
+                {
+                    "scene": "scene0011_00",
+                    "frame_count": 2,
+                    "source_frame_ids": [0, 20],
+                    "frame_inputs": frame_inputs,
+                    "image_shape": [4, 5],
+                    "depth_scale": 1000.0,
+                }
+            ],
+        },
+    )
+    worker = tmp_path / "fake_scannet_worker.py"
+    worker.write_text(FAKE_WORKER, encoding="utf-8")
+    log_path = tmp_path / "scannet_worker.jsonl"
+    config = tmp_path / "scannet_config.json"
+    _write_json(
+        config,
+        {
+            "scene": "scene0011_00",
+            "dataset_root": str(dataset_root),
+            "manifest": str(benchmark),
+            "num_frames": 2,
+            "dense_semantics": {
+                "classes_json": str(classes_json),
+                "worker_command": [sys.executable, str(worker)],
+                "worker_cwd": str(tmp_path),
+                "request_timeout_sec": 5.0,
+                "worker_env": {
+                    "FAKE_CLASSES_JSON": str(classes_json),
+                    "FAKE_LOG": str(log_path),
+                },
+            },
+        },
+    )
+    return config, classes_json, log_path
+
+
 def _args(config: Path, output: Path, *, num_frames: int = 2, resume: bool = False):
     values = [
         "--config",
@@ -389,6 +467,21 @@ def test_precompute_writes_two_frame_manifest_hashes_and_causal_ids(tmp_path: Pa
         "infer",
         "closed",
     ]
+
+
+def test_precompute_supports_scannet200_explicit_source_frames(tmp_path: Path) -> None:
+    config, classes_json, _ = _write_scannet_fixture(tmp_path)
+
+    manifest = run(_args(config, tmp_path / "dense_scannet"))
+
+    assert manifest["scene"] == "scene0011_00"
+    assert manifest["frame_count"] == 2
+    assert manifest["source_frame_ids"] == [0, 20]
+    assert manifest["image_shape"] == [4, 5]
+    assert manifest["class_count"] == 200
+    assert manifest["vocabulary_sha256"] == hashlib.sha256(
+        classes_json.read_bytes()
+    ).hexdigest()
 
 
 def test_cli_entrypoint_uses_configured_real_worker(tmp_path: Path) -> None:
