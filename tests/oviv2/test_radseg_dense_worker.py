@@ -26,28 +26,34 @@ if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
 from radseg_dense_worker import (  # noqa: E402
+    LANGUAGE_MODEL_SPECS,
     RADIO_COMMIT,
     RADSEG_COMMIT,
     RAYFRONTS_COMMIT,
     CheckpointTracker,
     DenseWorker,
+    LanguageModelAssets,
     NARadioRuntime,
     RadsegRuntime,
     SourceSpec,
     _instantiate_naradio,
     _instantiate_radseg,
+    build_worker,
     canonical_sha256,
     decode_rgb,
     encode_array,
     load_frozen_classes,
     local_radio_hub,
+    language_model_tree_sha256,
     parse_args,
+    pinned_language_model_load,
     reduce_probabilities,
     resolve_model_checkpoint,
     run_request,
     serve_jsonl,
     sha256_file,
     validate_cli_args,
+    validate_language_model_assets,
     validate_source_checkout,
 )
 
@@ -79,6 +85,9 @@ def _provenance() -> dict[str, str]:
         "model_id": f"radseg:test:test:sam=0:sha256={'a' * 64}",
         "model_sha256": "a" * 64,
         "auxiliary_model_sha256": "",
+        "language_model_id": "google/siglip2-giant-opt-patch16-384",
+        "language_model_revision": "a713301b217d38485fb2204c808367d10bc3cc40",
+        "language_model_sha256": "e" * 64,
         "vocabulary_sha256": "b" * 64,
         "prompt_sha256": "c" * 64,
         "inference_config_sha256": "d" * 64,
@@ -347,6 +356,23 @@ def test_checkpoint_tracker_captures_the_exact_url_cache_path(tmp_path: Path) ->
     assert tracker.paths == (expected.resolve(),)
 
 
+def test_checkpoint_tracker_rejects_non_radio_url_before_loader_call(tmp_path: Path) -> None:
+    hub = _FakeHub(tmp_path)
+    expected_url = "https://huggingface.co/nvidia/RADIO/resolve/main/radio.pt"
+    with pytest.raises(RuntimeError, match="RADIO checkpoint URL"):
+        with CheckpointTracker(hub, expected_url=expected_url):
+            hub.load_state_dict_from_url("https://example.com/unexpected.pt")
+    assert hub.calls == []
+
+
+def test_checkpoint_tracker_for_explicit_model_rejects_every_url(tmp_path: Path) -> None:
+    hub = _FakeHub(tmp_path)
+    with pytest.raises(RuntimeError, match="RADIO checkpoint URL"):
+        with CheckpointTracker(hub, expected_url=None):
+            hub.load_state_dict_from_url("https://example.com/unexpected.pt")
+    assert hub.calls == []
+
+
 def test_checkpoint_tracker_restores_after_loader_failure(tmp_path: Path) -> None:
     hub = _FakeHub(tmp_path)
     original = hub.load_state_dict_from_url
@@ -412,6 +438,108 @@ def _chmod_tree(root: Path, writable: bool) -> None:
             path.chmod(mode & ~0o222)
 
 
+def _make_language_model_root(tmp_path: Path) -> tuple[Path, str]:
+    root = tmp_path / "language-model"
+    (root / "tokenizer").mkdir(parents=True)
+    (root / "config.json").write_text('{"model_type":"siglip"}\n', encoding="utf-8")
+    (root / "tokenizer" / "tokenizer.json").write_bytes(b"frozen-tokenizer")
+    _chmod_tree(root, writable=False)
+    return root, language_model_tree_sha256(root)
+
+
+def _language_assets(tmp_path: Path, backend: str = "radseg") -> LanguageModelAssets:
+    root, digest = _make_language_model_root(tmp_path)
+    if backend == "radseg":
+        model_id = "google/siglip2-giant-opt-patch16-384"
+        revision = "a713301b217d38485fb2204c808367d10bc3cc40"
+    else:
+        model_id = "timm/ViT-SO400M-14-SigLIP-384"
+        revision = "ac16108d567c4389e6cd2b11c9b8585f7474435b"
+    return LanguageModelAssets(
+        backend=backend,
+        root=root,
+        model_id=model_id,
+        revision=revision,
+        sha256=digest,
+    )
+
+
+def test_language_model_tree_hash_is_deterministic_and_content_sensitive(
+    tmp_path: Path,
+) -> None:
+    root, digest = _make_language_model_root(tmp_path)
+    assert language_model_tree_sha256(root) == digest
+    try:
+        _chmod_tree(root, writable=True)
+        (root / "config.json").write_text('{"model_type":"changed"}\n', encoding="utf-8")
+        _chmod_tree(root, writable=False)
+        assert language_model_tree_sha256(root) != digest
+    finally:
+        _chmod_tree(root, writable=True)
+
+
+def test_language_model_tree_hash_covers_empty_directories(tmp_path: Path) -> None:
+    root, digest = _make_language_model_root(tmp_path)
+    try:
+        _chmod_tree(root, writable=True)
+        (root / "empty").mkdir()
+        _chmod_tree(root, writable=False)
+        assert language_model_tree_sha256(root) != digest
+    finally:
+        _chmod_tree(root, writable=True)
+
+
+def test_language_model_tree_rejects_writable_symlink_and_nonregular_content(
+    tmp_path: Path,
+) -> None:
+    root, _ = _make_language_model_root(tmp_path)
+    outside = tmp_path / "outside.bin"
+    outside.write_bytes(b"outside")
+    try:
+        _chmod_tree(root, writable=True)
+        (root / "external-link").symlink_to(outside)
+        _chmod_tree(root, writable=False)
+        with pytest.raises(RuntimeError, match="symlink"):
+            language_model_tree_sha256(root)
+        _chmod_tree(root, writable=True)
+        (root / "external-link").unlink()
+
+        writable = root / "config.json"
+        writable.chmod(stat.S_IMODE(writable.stat().st_mode) | stat.S_IWUSR)
+        with pytest.raises(RuntimeError, match="read-only"):
+            language_model_tree_sha256(root)
+        writable.chmod(stat.S_IMODE(writable.stat().st_mode) & ~0o222)
+
+        _chmod_tree(root, writable=True)
+        fifo = root / "named-pipe"
+        os.mkfifo(fifo)
+        _chmod_tree(root, writable=False)
+        with pytest.raises(RuntimeError, match="regular files|non-regular"):
+            language_model_tree_sha256(root)
+    finally:
+        _chmod_tree(root, writable=True)
+
+
+def test_language_model_specs_are_exactly_the_reviewed_revisions() -> None:
+    assert {
+        model_id: (spec.revision, spec.backends)
+        for model_id, spec in LANGUAGE_MODEL_SPECS.items()
+    } == {
+        "google/siglip2-giant-opt-patch16-384": (
+            "a713301b217d38485fb2204c808367d10bc3cc40",
+            frozenset({"radseg"}),
+        ),
+        "google/siglip2-so400m-patch16-naflex": (
+            "cc24074f717b612951c2dead130904ab9b65a81e",
+            frozenset({"radseg"}),
+        ),
+        "timm/ViT-SO400M-14-SigLIP-384": (
+            "ac16108d567c4389e6cd2b11c9b8585f7474435b",
+            frozenset({"naradio"}),
+        ),
+    }
+
+
 def test_validate_source_checkout_checks_commit_detached_clean_read_only_and_origin(
     tmp_path: Path,
 ) -> None:
@@ -459,6 +587,16 @@ def test_pinned_source_constants_are_exact() -> None:
 
 
 def _base_cli(tmp_path: Path, backend: str = "radseg") -> list[str]:
+    language_model_id = (
+        "google/siglip2-giant-opt-patch16-384"
+        if backend == "radseg"
+        else "timm/ViT-SO400M-14-SigLIP-384"
+    )
+    language_model_revision = (
+        "a713301b217d38485fb2204c808367d10bc3cc40"
+        if backend == "radseg"
+        else "ac16108d567c4389e6cd2b11c9b8585f7474435b"
+    )
     return [
         "--backend",
         backend,
@@ -469,7 +607,15 @@ def _base_cli(tmp_path: Path, backend: str = "radseg") -> list[str]:
         "--model-version",
         "model-v1",
         "--lang-model",
-        "language-v1",
+        "siglip2" if backend == "radseg" else "siglip",
+        "--language-model-root",
+        str(tmp_path / "language-model"),
+        "--language-model-id",
+        language_model_id,
+        "--language-model-revision",
+        language_model_revision,
+        "--language-model-sha256",
+        "e" * 64,
         "--classes-json",
         str(tmp_path / "classes.json"),
         "--device",
@@ -493,6 +639,9 @@ def test_parse_args_exposes_the_frozen_worker_controls(tmp_path: Path) -> None:
     assert args.top_k == 5
     assert args.amp is True
     assert args.sam_refinement is False
+    assert args.language_model_id == "google/siglip2-giant-opt-patch16-384"
+    assert args.language_model_revision == "a713301b217d38485fb2204c808367d10bc3cc40"
+    assert args.language_model_sha256 == "e" * 64
 
 
 @pytest.mark.parametrize(
@@ -506,10 +655,353 @@ def test_parse_args_rejects_nonpositive_integer_controls(
         parse_args(_base_cli(tmp_path) + extra)
 
 
+def test_parse_args_requires_language_asset_provenance(tmp_path: Path) -> None:
+    argv = _base_cli(tmp_path)
+    flag_index = argv.index("--language-model-root")
+    del argv[flag_index : flag_index + 2]
+    with pytest.raises(SystemExit):
+        parse_args(argv)
+
+
+def test_parse_args_rejects_invalid_language_model_sha256(tmp_path: Path) -> None:
+    argv = _base_cli(tmp_path)
+    argv[argv.index("--language-model-sha256") + 1] = "not-a-sha256"
+    with pytest.raises(SystemExit):
+        parse_args(argv)
+
+
 def test_validate_cli_args_rejects_topk_above_vocabulary(tmp_path: Path) -> None:
     args = parse_args(_base_cli(tmp_path) + ["--top-k", "42"])
     with pytest.raises(ValueError, match="top-k"):
         validate_cli_args(args, _classes())
+
+
+def test_validate_cli_args_accepts_both_pinned_radseg_language_models(tmp_path: Path) -> None:
+    args = parse_args(_base_cli(tmp_path))
+    validate_cli_args(args, _classes())
+
+    args.language_model_id = "google/siglip2-so400m-patch16-naflex"
+    args.language_model_revision = "cc24074f717b612951c2dead130904ab9b65a81e"
+    validate_cli_args(args, _classes())
+
+
+@pytest.mark.parametrize(
+    ("backend", "lang_model", "model_id", "revision", "message"),
+    [
+        (
+            "naradio",
+            "siglip",
+            "google/siglip2-giant-opt-patch16-384",
+            "a713301b217d38485fb2204c808367d10bc3cc40",
+            "backend",
+        ),
+        (
+            "radseg",
+            "siglip2",
+            "google/siglip2-giant-opt-patch16-384",
+            "0" * 40,
+            "revision",
+        ),
+        (
+            "radseg",
+            "siglip",
+            "google/siglip2-giant-opt-patch16-384",
+            "a713301b217d38485fb2204c808367d10bc3cc40",
+            "lang-model",
+        ),
+    ],
+)
+def test_validate_cli_args_rejects_unpinned_language_combinations(
+    tmp_path: Path,
+    backend: str,
+    lang_model: str,
+    model_id: str,
+    revision: str,
+    message: str,
+) -> None:
+    args = parse_args(_base_cli(tmp_path, backend=backend))
+    args.lang_model = lang_model
+    args.language_model_id = model_id
+    args.language_model_revision = revision
+    with pytest.raises(ValueError, match=message):
+        validate_cli_args(args, _classes())
+
+
+def test_validate_language_model_assets_checks_local_tree_hash(tmp_path: Path) -> None:
+    root, digest = _make_language_model_root(tmp_path)
+    args = parse_args(_base_cli(tmp_path))
+    args.language_model_root = root
+    args.language_model_sha256 = digest
+    assets = validate_language_model_assets(args)
+    assert assets.root == root.resolve()
+    assert assets.sha256 == digest
+
+    args.language_model_sha256 = "0" * 64
+    with pytest.raises(RuntimeError, match="SHA-256|hash"):
+        validate_language_model_assets(args)
+    _chmod_tree(root, writable=True)
+
+
+def test_transformers_language_patch_forces_local_no_remote_code_and_restores(
+    tmp_path: Path,
+) -> None:
+    assets = _language_assets(tmp_path)
+    calls: list[tuple[str, tuple[Any, ...], dict[str, Any]]] = []
+    environ = {"HF_HUB_OFFLINE": "previous"}
+
+    def model_loader(*args: Any, **kwargs: Any) -> object:
+        calls.append(("model", args, kwargs))
+        return object()
+
+    def processor_loader(*args: Any, **kwargs: Any) -> object:
+        calls.append(("processor", args, kwargs))
+        return object()
+
+    auto_model = SimpleNamespace(from_pretrained=model_loader)
+    auto_processor = SimpleNamespace(from_pretrained=processor_loader)
+    transformers_module = SimpleNamespace(
+        AutoModel=auto_model,
+        AutoProcessor=auto_processor,
+    )
+    try:
+        with pinned_language_model_load(
+            assets,
+            transformers_module=transformers_module,
+            environ=environ,
+        ):
+            auto_model.from_pretrained(
+                assets.model_id,
+                trust_remote_code=True,
+                torch_dtype="auto",
+            )
+            auto_processor.from_pretrained(
+                pretrained_model_name_or_path=assets.model_id,
+                trust_remote_code=True,
+            )
+            assert environ["HF_HUB_OFFLINE"] == "1"
+            assert environ["TRANSFORMERS_OFFLINE"] == "1"
+
+        expected_root = str(assets.root)
+        assert calls == [
+            (
+                "model",
+                (expected_root,),
+                {
+                    "trust_remote_code": False,
+                    "torch_dtype": "auto",
+                    "local_files_only": True,
+                },
+            ),
+            (
+                "processor",
+                (),
+                {
+                    "pretrained_model_name_or_path": expected_root,
+                    "trust_remote_code": False,
+                    "local_files_only": True,
+                },
+            ),
+        ]
+        assert auto_model.from_pretrained is model_loader
+        assert auto_processor.from_pretrained is processor_loader
+        assert environ == {"HF_HUB_OFFLINE": "previous"}
+    finally:
+        _chmod_tree(assets.root, writable=True)
+
+
+def test_transformers_language_patch_rejects_wrong_id_and_restores_after_error(
+    tmp_path: Path,
+) -> None:
+    assets = _language_assets(tmp_path)
+
+    def network_sentinel(*args: Any, **kwargs: Any) -> object:
+        raise AssertionError("network loader must receive only the pinned local root")
+
+    auto_model = SimpleNamespace(from_pretrained=network_sentinel)
+    auto_processor = SimpleNamespace(from_pretrained=network_sentinel)
+    module = SimpleNamespace(AutoModel=auto_model, AutoProcessor=auto_processor)
+    try:
+        with pytest.raises(RuntimeError, match="language model ID"):
+            with pinned_language_model_load(assets, transformers_module=module):
+                auto_model.from_pretrained("google/unpinned")
+        assert auto_model.from_pretrained is network_sentinel
+        assert auto_processor.from_pretrained is network_sentinel
+    finally:
+        _chmod_tree(assets.root, writable=True)
+
+
+def test_transformers_language_patch_restores_when_local_loader_raises(
+    tmp_path: Path,
+) -> None:
+    assets = _language_assets(tmp_path)
+
+    def fail(*args: Any, **kwargs: Any) -> object:
+        raise RuntimeError("local load failed")
+
+    auto_model = SimpleNamespace(from_pretrained=fail)
+    auto_processor = SimpleNamespace(from_pretrained=lambda *args, **kwargs: object())
+    module = SimpleNamespace(AutoModel=auto_model, AutoProcessor=auto_processor)
+    try:
+        with pytest.raises(RuntimeError, match="local load failed"):
+            with pinned_language_model_load(assets, transformers_module=module):
+                auto_model.from_pretrained(assets.model_id)
+        assert auto_model.from_pretrained is fail
+    finally:
+        _chmod_tree(assets.root, writable=True)
+
+
+def test_language_patch_restores_partial_setup_failure(tmp_path: Path) -> None:
+    assets = _language_assets(tmp_path)
+    original = lambda *args, **kwargs: object()
+    auto_model = SimpleNamespace(from_pretrained=original)
+    incomplete_module = SimpleNamespace(AutoModel=auto_model)
+    environ = {"TRANSFORMERS_OFFLINE": "previous"}
+    try:
+        with pytest.raises(AttributeError, match="AutoProcessor"):
+            with pinned_language_model_load(
+                assets,
+                transformers_module=incomplete_module,
+                environ=environ,
+            ):
+                pass
+        assert auto_model.from_pretrained is original
+        assert environ == {"TRANSFORMERS_OFFLINE": "previous"}
+    finally:
+        _chmod_tree(assets.root, writable=True)
+
+
+def test_transformers_language_patch_rejects_extra_model_request(tmp_path: Path) -> None:
+    assets = _language_assets(tmp_path)
+    auto_model = SimpleNamespace(from_pretrained=lambda *args, **kwargs: object())
+    auto_processor = SimpleNamespace(from_pretrained=lambda *args, **kwargs: object())
+    module = SimpleNamespace(AutoModel=auto_model, AutoProcessor=auto_processor)
+    try:
+        with pytest.raises(RuntimeError, match="extra AutoModel"):
+            with pinned_language_model_load(assets, transformers_module=module):
+                auto_model.from_pretrained(assets.model_id)
+                auto_model.from_pretrained(assets.model_id)
+    finally:
+        _chmod_tree(assets.root, writable=True)
+
+
+def test_language_patch_rejects_tree_change_during_model_load(tmp_path: Path) -> None:
+    assets = _language_assets(tmp_path)
+    auto_model = SimpleNamespace(from_pretrained=lambda *args, **kwargs: object())
+    auto_processor = SimpleNamespace(from_pretrained=lambda *args, **kwargs: object())
+    module = SimpleNamespace(AutoModel=auto_model, AutoProcessor=auto_processor)
+    try:
+        with pytest.raises(RuntimeError, match="changed during model loading"):
+            with pinned_language_model_load(assets, transformers_module=module):
+                auto_model.from_pretrained(assets.model_id)
+                auto_processor.from_pretrained(assets.model_id)
+                _chmod_tree(assets.root, writable=True)
+                (assets.root / "config.json").write_text("changed\n", encoding="utf-8")
+                _chmod_tree(assets.root, writable=False)
+        assert auto_model.from_pretrained.__name__ == "<lambda>"
+        assert auto_processor.from_pretrained.__name__ == "<lambda>"
+    finally:
+        _chmod_tree(assets.root, writable=True)
+
+
+def test_open_clip_language_patch_forces_local_dir_and_restores(tmp_path: Path) -> None:
+    assets = _language_assets(tmp_path, backend="naradio")
+    calls: list[tuple[str, tuple[Any, ...], dict[str, Any]]] = []
+    environ: dict[str, str] = {}
+
+    def create(*args: Any, **kwargs: Any) -> object:
+        calls.append(("create", args, kwargs))
+        return object()
+
+    def tokenizer(*args: Any, **kwargs: Any) -> object:
+        calls.append(("tokenizer", args, kwargs))
+        return object()
+
+    module = SimpleNamespace(
+        create_model_from_pretrained=create,
+        get_tokenizer=tokenizer,
+    )
+    try:
+        with pinned_language_model_load(
+            assets,
+            open_clip_module=module,
+            environ=environ,
+        ):
+            module.create_model_from_pretrained(
+                model_name="ViT-SO400M-14-SigLIP-384",
+                pretrained="webli",
+                return_transform=False,
+            )
+            module.get_tokenizer("ViT-SO400M-14-SigLIP-384")
+            assert environ["HF_HUB_OFFLINE"] == "1"
+
+        local_name = f"local-dir:{assets.root}"
+        assert calls == [
+            (
+                "create",
+                (),
+                {
+                    "model_name": local_name,
+                    "pretrained": "webli",
+                    "return_transform": False,
+                },
+            ),
+            ("tokenizer", (local_name,), {}),
+        ]
+        assert module.create_model_from_pretrained is create
+        assert module.get_tokenizer is tokenizer
+        assert environ == {}
+    finally:
+        _chmod_tree(assets.root, writable=True)
+
+
+@pytest.mark.parametrize(
+    ("model_name", "pretrained", "message"),
+    [
+        ("ViT-B-32", "webli", "model_name"),
+        ("ViT-SO400M-14-SigLIP-384", "openai", "pretrained"),
+    ],
+)
+def test_open_clip_language_patch_rejects_unpinned_requests(
+    tmp_path: Path,
+    model_name: str,
+    pretrained: str,
+    message: str,
+) -> None:
+    assets = _language_assets(tmp_path, backend="naradio")
+    create = lambda *args, **kwargs: object()
+    tokenizer = lambda *args, **kwargs: object()
+    module = SimpleNamespace(
+        create_model_from_pretrained=create,
+        get_tokenizer=tokenizer,
+    )
+    try:
+        with pytest.raises(RuntimeError, match=message):
+            with pinned_language_model_load(assets, open_clip_module=module):
+                module.create_model_from_pretrained(model_name, pretrained=pretrained)
+        assert module.create_model_from_pretrained is create
+        assert module.get_tokenizer is tokenizer
+    finally:
+        _chmod_tree(assets.root, writable=True)
+
+
+def test_open_clip_language_patch_rejects_unpinned_tokenizer_request(
+    tmp_path: Path,
+) -> None:
+    assets = _language_assets(tmp_path, backend="naradio")
+    module = SimpleNamespace(
+        create_model_from_pretrained=lambda *args, **kwargs: object(),
+        get_tokenizer=lambda *args, **kwargs: object(),
+    )
+    try:
+        with pytest.raises(RuntimeError, match="tokenizer model_name"):
+            with pinned_language_model_load(assets, open_clip_module=module):
+                module.create_model_from_pretrained(
+                    "ViT-SO400M-14-SigLIP-384",
+                    pretrained="webli",
+                )
+                module.get_tokenizer("ViT-B-32")
+    finally:
+        _chmod_tree(assets.root, writable=True)
 
 
 def test_validate_cli_args_requires_radseg_and_checkpoint_for_sam(tmp_path: Path) -> None:
@@ -694,7 +1186,7 @@ def test_instantiate_radseg_uses_the_pinned_paper_configuration(tmp_path: Path) 
         {
             "device": "cpu",
             "model_version": "model-v1",
-            "lang_model": "language-v1",
+            "lang_model": "siglip2",
             "predict": True,
             "classes": _classes(),
             "amp": False,
@@ -740,13 +1232,115 @@ def test_instantiate_naradio_uses_language_aligned_public_encoder_api(tmp_path: 
         {
             "device": "cpu",
             "model_version": "model-v1",
-            "lang_model": "language-v1",
+            "lang_model": "siglip",
             "input_resolution": (224, 224),
             "return_radio_features": True,
             "compile": False,
             "amp": False,
         }
     ]
+
+
+def test_build_worker_pins_language_assets_and_restores_global_state(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import radseg_dense_worker as worker_module
+    import transformers
+
+    language_root, language_hash = _make_language_model_root(tmp_path)
+    classes_path = tmp_path / "classes.json"
+    classes_path.write_text(json.dumps({"classes": _classes()}), encoding="utf-8")
+    checkpoint = tmp_path / "radio.pt"
+    checkpoint.write_bytes(b"radio-checkpoint")
+    args = parse_args(_base_cli(tmp_path))
+    args.model_version = str(checkpoint)
+    args.classes_json = classes_path
+    args.language_model_root = language_root
+    args.language_model_sha256 = language_hash
+
+    loader_calls: list[tuple[str, tuple[Any, ...], dict[str, Any]]] = []
+
+    def model_loader(*loader_args: Any, **loader_kwargs: Any) -> object:
+        assert loader_args == (str(language_root.resolve()),)
+        assert loader_kwargs["local_files_only"] is True
+        assert loader_kwargs["trust_remote_code"] is False
+        loader_calls.append(("model", loader_args, loader_kwargs))
+        return object()
+
+    def processor_loader(*loader_args: Any, **loader_kwargs: Any) -> object:
+        assert loader_args == (str(language_root.resolve()),)
+        assert loader_kwargs["local_files_only"] is True
+        assert loader_kwargs["trust_remote_code"] is False
+        loader_calls.append(("processor", loader_args, loader_kwargs))
+        return object()
+
+    monkeypatch.setattr(transformers.AutoModel, "from_pretrained", staticmethod(model_loader))
+    monkeypatch.setattr(
+        transformers.AutoProcessor,
+        "from_pretrained",
+        staticmethod(processor_loader),
+    )
+
+    class Encoder:
+        def __init__(self, **kwargs: Any) -> None:
+            transformers.AutoModel.from_pretrained(
+                args.language_model_id,
+                trust_remote_code=True,
+            )
+            transformers.AutoProcessor.from_pretrained(
+                args.language_model_id,
+                trust_remote_code=True,
+            )
+
+        def insert_labels_into_templates(self, labels: list[str]) -> list[list[str]]:
+            return [[f"a photo of {label}"] for label in labels]
+
+    monkeypatch.setattr(
+        worker_module,
+        "_import_pinned_module",
+        lambda root, module_name: SimpleNamespace(RADSegEncoder=Encoder),
+    )
+    monkeypatch.setattr(
+        worker_module,
+        "validate_source_checkout",
+        lambda root, spec: spec.commit,
+    )
+    hash_payloads: list[Any] = []
+    original_canonical_sha256 = worker_module.canonical_sha256
+
+    def record_hash(payload: Any) -> str:
+        hash_payloads.append(payload)
+        return original_canonical_sha256(payload)
+
+    monkeypatch.setattr(worker_module, "canonical_sha256", record_hash)
+    offline_keys = (
+        "HF_HUB_OFFLINE",
+        "TRANSFORMERS_OFFLINE",
+        "HF_DATASETS_OFFLINE",
+        "HF_HUB_DISABLE_TELEMETRY",
+    )
+    environment_before = {key: os.environ.get(key) for key in offline_keys}
+    try:
+        worker = build_worker(args)
+
+        assert [name for name, _args, _kwargs in loader_calls] == ["model", "processor"]
+        assert transformers.AutoModel.from_pretrained is model_loader
+        assert transformers.AutoProcessor.from_pretrained is processor_loader
+        assert {key: os.environ.get(key) for key in offline_keys} == environment_before
+        assert worker.provenance["language_model_id"] == args.language_model_id
+        assert worker.provenance["language_model_revision"] == args.language_model_revision
+        assert worker.provenance["language_model_sha256"] == language_hash
+        config_payload = next(
+            payload
+            for payload in hash_payloads
+            if isinstance(payload, dict) and "inference_config_version" in payload
+        )
+        assert config_payload["language_model_id"] == args.language_model_id
+        assert config_payload["language_model_revision"] == args.language_model_revision
+        assert config_payload["language_model_sha256"] == language_hash
+    finally:
+        _chmod_tree(language_root, writable=True)
 
 
 class _FakeRuntime:
@@ -789,6 +1383,9 @@ def test_metadata_response_contains_complete_provenance_and_contract() -> None:
         "model_id",
         "model_sha256",
         "auxiliary_model_sha256",
+        "language_model_id",
+        "language_model_revision",
+        "language_model_sha256",
         "vocabulary_sha256",
         "prompt_sha256",
         "inference_config_sha256",

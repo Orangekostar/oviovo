@@ -4,18 +4,21 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import base64
 from contextlib import contextmanager, redirect_stdout
 from dataclasses import dataclass
 import hashlib
 import importlib
 import json
+import os
 from pathlib import Path
+import re
 import stat
 import subprocess
 import sys
 from types import ModuleType
-from typing import Any, Iterable, Iterator, Mapping, Sequence, TextIO
+from typing import Any, Iterable, Iterator, Mapping, MutableMapping, Sequence, TextIO
 from urllib.parse import unquote, urlparse
 
 import numpy as np
@@ -28,6 +31,13 @@ RADIO_COMMIT = "c0f37017930e9dda53f93424cf4bf39fc51f287e"
 MAX_RGB_BYTES = 128 * 1024 * 1024
 MAX_CLASSES_JSON_BYTES = 1024 * 1024
 CLASS_COUNT = 41
+_SHA256_PATTERN = re.compile(r"[0-9a-fA-F]{64}")
+_OFFLINE_ENVIRONMENT = (
+    "HF_HUB_OFFLINE",
+    "TRANSFORMERS_OFFLINE",
+    "HF_DATASETS_OFFLINE",
+    "HF_HUB_DISABLE_TELEMETRY",
+)
 _ARRAY_KEYS = frozenset({"encoding", "dtype", "shape", "data"})
 _PROVENANCE_KEYS = frozenset(
     {
@@ -37,6 +47,9 @@ _PROVENANCE_KEYS = frozenset(
         "model_id",
         "model_sha256",
         "auxiliary_model_sha256",
+        "language_model_id",
+        "language_model_revision",
+        "language_model_sha256",
         "vocabulary_sha256",
         "prompt_sha256",
         "inference_config_sha256",
@@ -49,6 +62,37 @@ class SourceSpec:
     name: str
     commit: str
     official_origins: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class LanguageModelSpec:
+    revision: str
+    backends: frozenset[str]
+
+
+@dataclass(frozen=True)
+class LanguageModelAssets:
+    backend: str
+    root: Path
+    model_id: str
+    revision: str
+    sha256: str
+
+
+LANGUAGE_MODEL_SPECS = {
+    "google/siglip2-giant-opt-patch16-384": LanguageModelSpec(
+        revision="a713301b217d38485fb2204c808367d10bc3cc40",
+        backends=frozenset({"radseg"}),
+    ),
+    "google/siglip2-so400m-patch16-naflex": LanguageModelSpec(
+        revision="cc24074f717b612951c2dead130904ab9b65a81e",
+        backends=frozenset({"radseg"}),
+    ),
+    "timm/ViT-SO400M-14-SigLIP-384": LanguageModelSpec(
+        revision="ac16108d567c4389e6cd2b11c9b8585f7474435b",
+        backends=frozenset({"naradio"}),
+    ),
+}
 
 
 RADSEG_SOURCE = SourceSpec(
@@ -87,6 +131,12 @@ def _positive_int(value: str) -> int:
     return parsed
 
 
+def _sha256_argument(value: str) -> str:
+    if _SHA256_PATTERN.fullmatch(value) is None:
+        raise argparse.ArgumentTypeError("must be a 64-character hexadecimal SHA-256")
+    return value.lower()
+
+
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--backend", choices=("radseg", "naradio"), required=True)
@@ -94,6 +144,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--radio-root", type=Path, required=True)
     parser.add_argument("--model-version", required=True)
     parser.add_argument("--lang-model", required=True)
+    parser.add_argument("--language-model-root", type=Path, required=True)
+    parser.add_argument("--language-model-id", required=True)
+    parser.add_argument("--language-model-revision", required=True)
+    parser.add_argument(
+        "--language-model-sha256",
+        type=_sha256_argument,
+        required=True,
+    )
     parser.add_argument("--classes-json", type=Path, required=True)
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--sample-stride", type=_positive_int, default=4)
@@ -117,6 +175,25 @@ def validate_cli_args(args: argparse.Namespace, classes: Sequence[str]) -> None:
         checkpoint = args.sam_checkpoint.expanduser().resolve()
         if not checkpoint.is_file():
             raise ValueError(f"SAM checkpoint is missing: {checkpoint}")
+    _validate_language_model_binding(args)
+
+
+def _validate_language_model_binding(args: argparse.Namespace) -> LanguageModelSpec:
+    spec = LANGUAGE_MODEL_SPECS.get(args.language_model_id)
+    if spec is None:
+        raise ValueError("--language-model-id is not in the pinned official mapping")
+    if args.backend not in spec.backends:
+        raise ValueError("language model ID is not valid for the selected backend")
+    if args.language_model_revision != spec.revision:
+        raise ValueError("language model revision does not match the pinned mapping")
+    expected_adaptor = "siglip2" if args.backend == "radseg" else "siglip"
+    if args.lang_model != expected_adaptor:
+        raise ValueError(
+            f"--lang-model must be {expected_adaptor!r} for backend {args.backend!r}"
+        )
+    if _SHA256_PATTERN.fullmatch(args.language_model_sha256) is None:
+        raise ValueError("language model SHA-256 must be 64 hexadecimal characters")
+    return spec
 
 
 def sha256_file(path: str | Path) -> str:
@@ -136,6 +213,365 @@ def canonical_sha256(value: Any) -> str:
         allow_nan=False,
     ).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+def _tree_record(digest: Any, kind: bytes, relative_path: str, size: int) -> None:
+    encoded_path = relative_path.encode("utf-8")
+    digest.update(kind)
+    digest.update(len(encoded_path).to_bytes(8, byteorder="big", signed=False))
+    digest.update(encoded_path)
+    digest.update(size.to_bytes(8, byteorder="big", signed=False))
+
+
+def language_model_tree_sha256(path: str | Path) -> str:
+    """Hash every directory and regular file; no path is excluded from v1."""
+
+    requested_root = Path(path).expanduser()
+    if requested_root.is_symlink():
+        raise RuntimeError("language model root must not be a symlink")
+    root = requested_root.resolve()
+    if not root.is_dir():
+        raise RuntimeError(f"language model root is missing: {root}")
+
+    entries: list[tuple[str, Path, os.stat_result]] = []
+    directories: dict[Path, os.stat_result] = {}
+    pending = [root]
+    while pending:
+        directory = pending.pop()
+        directory_stat = directory.lstat()
+        if not stat.S_ISDIR(directory_stat.st_mode):
+            raise RuntimeError(f"language model tree contains a non-directory: {directory}")
+        if stat.S_IMODE(directory_stat.st_mode) & 0o222:
+            raise RuntimeError(f"language model tree must be recursively read-only: {directory}")
+        directories[directory] = directory_stat
+        try:
+            children = sorted(directory.iterdir(), key=lambda child: child.name)
+        except OSError as exc:
+            raise RuntimeError(f"cannot enumerate language model directory: {directory}") from exc
+        for child in children:
+            child_stat = child.lstat()
+            relative = child.relative_to(root).as_posix()
+            if stat.S_ISLNK(child_stat.st_mode):
+                raise RuntimeError(f"language model tree must not contain symlinks: {relative}")
+            if stat.S_IMODE(child_stat.st_mode) & 0o222:
+                raise RuntimeError(
+                    f"language model tree must be recursively read-only: {relative}"
+                )
+            if stat.S_ISDIR(child_stat.st_mode):
+                entries.append((relative, child, child_stat))
+                pending.append(child)
+            elif stat.S_ISREG(child_stat.st_mode):
+                entries.append((relative, child, child_stat))
+            else:
+                raise RuntimeError(
+                    "language model tree may contain only directories and regular files; "
+                    f"found non-regular entry: {relative}"
+                )
+
+    digest = hashlib.sha256()
+    digest.update(b"OVIV2-language-model-tree-v1\0")
+    for relative, entry, before in sorted(entries, key=lambda item: item[0]):
+        if stat.S_ISDIR(before.st_mode):
+            _tree_record(digest, b"D", relative, 0)
+            continue
+        _tree_record(digest, b"F", relative, before.st_size)
+        bytes_read = 0
+        with entry.open("rb") as stream:
+            for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                bytes_read += len(chunk)
+                digest.update(chunk)
+        after = entry.lstat()
+        stable_fields = ("st_dev", "st_ino", "st_size", "st_mtime_ns", "st_ctime_ns")
+        if bytes_read != before.st_size or any(
+            getattr(before, field) != getattr(after, field) for field in stable_fields
+        ):
+            raise RuntimeError(f"language model file changed while hashing: {relative}")
+
+    for directory, before in directories.items():
+        after = directory.lstat()
+        if (
+            before.st_dev,
+            before.st_ino,
+            before.st_mtime_ns,
+            before.st_ctime_ns,
+        ) != (
+            after.st_dev,
+            after.st_ino,
+            after.st_mtime_ns,
+            after.st_ctime_ns,
+        ):
+            raise RuntimeError(f"language model directory changed while hashing: {directory}")
+    return digest.hexdigest()
+
+
+def validate_language_model_assets(args: argparse.Namespace) -> LanguageModelAssets:
+    _validate_language_model_binding(args)
+    root = args.language_model_root.expanduser().resolve()
+    actual_hash = language_model_tree_sha256(args.language_model_root)
+    expected_hash = args.language_model_sha256.lower()
+    if actual_hash != expected_hash:
+        raise RuntimeError(
+            "language model tree SHA-256 mismatch: "
+            f"expected {expected_hash}, received {actual_hash}"
+        )
+    return LanguageModelAssets(
+        backend=args.backend,
+        root=root,
+        model_id=args.language_model_id,
+        revision=args.language_model_revision,
+        sha256=actual_hash,
+    )
+
+
+_MISSING = object()
+
+
+@dataclass(frozen=True)
+class _AttributePatch:
+    owner: Any
+    name: str
+    previous: Any
+
+
+def _patch_attribute(owner: Any, name: str, replacement: Any) -> _AttributePatch:
+    namespace = vars(owner)
+    previous = namespace[name] if name in namespace else _MISSING
+    setattr(owner, name, replacement)
+    return _AttributePatch(owner=owner, name=name, previous=previous)
+
+
+def _restore_attribute(patch: _AttributePatch) -> None:
+    if patch.previous is _MISSING:
+        delattr(patch.owner, patch.name)
+    else:
+        setattr(patch.owner, patch.name, patch.previous)
+
+
+def _read_call_argument(
+    args: tuple[Any, ...],
+    kwargs: dict[str, Any],
+    index: int,
+    name: str,
+    *,
+    default: Any = _MISSING,
+) -> Any:
+    positional = len(args) > index
+    keyword = name in kwargs
+    if positional and keyword:
+        raise RuntimeError(f"language loader received duplicate argument {name}")
+    if positional:
+        return args[index]
+    if keyword:
+        return kwargs[name]
+    if default is _MISSING:
+        raise RuntimeError(f"language loader omitted required argument {name}")
+    return default
+
+
+def _replace_call_argument(
+    args: tuple[Any, ...],
+    kwargs: dict[str, Any],
+    index: int,
+    name: str,
+    value: Any,
+) -> tuple[tuple[Any, ...], dict[str, Any]]:
+    updated_args = list(args)
+    updated_kwargs = dict(kwargs)
+    if len(updated_args) > index:
+        if name in updated_kwargs:
+            raise RuntimeError(f"language loader received duplicate argument {name}")
+        updated_args[index] = value
+    else:
+        updated_kwargs[name] = value
+    return tuple(updated_args), updated_kwargs
+
+
+@contextmanager
+def pinned_language_model_load(
+    assets: LanguageModelAssets,
+    *,
+    transformers_module: Any | None = None,
+    open_clip_module: Any | None = None,
+    environ: MutableMapping[str, str] | None = None,
+) -> Iterator[None]:
+    spec = LANGUAGE_MODEL_SPECS.get(assets.model_id)
+    if (
+        spec is None
+        or assets.backend not in spec.backends
+        or assets.revision != spec.revision
+    ):
+        raise RuntimeError("language model assets do not match the pinned mapping")
+    before_hash = language_model_tree_sha256(assets.root)
+    if before_hash != assets.sha256:
+        raise RuntimeError("language model tree hash changed before model loading")
+
+    if assets.backend == "radseg":
+        if transformers_module is None:
+            transformers_module = importlib.import_module("transformers")
+    elif assets.backend == "naradio":
+        if open_clip_module is None:
+            open_clip_module = importlib.import_module("open_clip")
+    else:
+        raise RuntimeError(f"unsupported language-model backend: {assets.backend}")
+
+    if assets.backend == "radseg":
+        getattr(transformers_module.AutoModel, "from_pretrained")
+        getattr(transformers_module.AutoProcessor, "from_pretrained")
+    else:
+        getattr(open_clip_module, "create_model_from_pretrained")
+        getattr(open_clip_module, "get_tokenizer")
+
+    environment = os.environ if environ is None else environ
+    saved_environment = {
+        name: environment[name] if name in environment else _MISSING
+        for name in _OFFLINE_ENVIRONMENT
+    }
+    for name in _OFFLINE_ENVIRONMENT:
+        environment[name] = "1"
+
+    patches: list[_AttributePatch] = []
+    call_counts: dict[str, int] = {}
+    expected_counts: dict[str, int]
+
+    if assets.backend == "radseg":
+        assert transformers_module is not None
+
+        def transformer_wrapper(owner: Any, kind: str) -> Any:
+            original = getattr(owner, "from_pretrained")
+
+            def load(*args: Any, **kwargs: Any) -> Any:
+                if call_counts.get(kind, 0) != 0:
+                    raise RuntimeError(f"unexpected extra {kind} from_pretrained request")
+                requested_id = _read_call_argument(
+                    args,
+                    kwargs,
+                    0,
+                    "pretrained_model_name_or_path",
+                )
+                if requested_id != assets.model_id:
+                    raise RuntimeError(
+                        f"{kind} language model ID does not match the pinned CLI ID"
+                    )
+                requested_revision = kwargs.get("revision")
+                if requested_revision is not None and requested_revision != assets.revision:
+                    raise RuntimeError(f"{kind} language model revision is not pinned")
+                local_args, local_kwargs = _replace_call_argument(
+                    args,
+                    kwargs,
+                    0,
+                    "pretrained_model_name_or_path",
+                    str(assets.root),
+                )
+                local_kwargs.pop("revision", None)
+                local_kwargs["local_files_only"] = True
+                local_kwargs["trust_remote_code"] = False
+                call_counts[kind] = 1
+                return original(*local_args, **local_kwargs)
+
+            return load
+
+        for owner, kind in (
+            (transformers_module.AutoModel, "AutoModel"),
+            (transformers_module.AutoProcessor, "AutoProcessor"),
+        ):
+            patches.append(
+                _patch_attribute(owner, "from_pretrained", transformer_wrapper(owner, kind))
+            )
+        expected_counts = {"AutoModel": 1, "AutoProcessor": 1}
+    else:
+        assert open_clip_module is not None
+        original_create = open_clip_module.create_model_from_pretrained
+        original_tokenizer = open_clip_module.get_tokenizer
+        expected_open_clip_name = "ViT-SO400M-14-SigLIP-384"
+
+        def create_model(*args: Any, **kwargs: Any) -> Any:
+            if call_counts.get("create_model_from_pretrained", 0) != 0:
+                raise RuntimeError("unexpected extra OpenCLIP model request")
+            requested_name = _read_call_argument(args, kwargs, 0, "model_name")
+            requested_pretrained = _read_call_argument(
+                args,
+                kwargs,
+                1,
+                "pretrained",
+                default=None,
+            )
+            if requested_name != expected_open_clip_name:
+                raise RuntimeError("OpenCLIP model_name does not match the pinned request")
+            if requested_pretrained != "webli":
+                raise RuntimeError("OpenCLIP pretrained tag does not match pinned webli")
+            local_args, local_kwargs = _replace_call_argument(
+                args,
+                kwargs,
+                0,
+                "model_name",
+                f"local-dir:{assets.root}",
+            )
+            call_counts["create_model_from_pretrained"] = 1
+            return original_create(*local_args, **local_kwargs)
+
+        def get_tokenizer(*args: Any, **kwargs: Any) -> Any:
+            if call_counts.get("get_tokenizer", 0) != 0:
+                raise RuntimeError("unexpected extra OpenCLIP tokenizer request")
+            requested_name = _read_call_argument(args, kwargs, 0, "model_name")
+            if requested_name != expected_open_clip_name:
+                raise RuntimeError("OpenCLIP tokenizer model_name is not pinned")
+            local_args, local_kwargs = _replace_call_argument(
+                args,
+                kwargs,
+                0,
+                "model_name",
+                f"local-dir:{assets.root}",
+            )
+            call_counts["get_tokenizer"] = 1
+            return original_tokenizer(*local_args, **local_kwargs)
+
+        patches.extend(
+            (
+                _patch_attribute(
+                    open_clip_module,
+                    "create_model_from_pretrained",
+                    create_model,
+                ),
+                _patch_attribute(open_clip_module, "get_tokenizer", get_tokenizer),
+            )
+        )
+        expected_counts = {"create_model_from_pretrained": 1, "get_tokenizer": 1}
+
+    failure: tuple[Any, Any, Any] | None = None
+    try:
+        yield
+    except BaseException:
+        failure = sys.exc_info()
+    finally:
+        for patch in reversed(patches):
+            _restore_attribute(patch)
+        for name, previous in saved_environment.items():
+            if previous is _MISSING:
+                environment.pop(name, None)
+            else:
+                environment[name] = previous
+
+    try:
+        after_hash = language_model_tree_sha256(assets.root)
+    except Exception as exc:
+        if failure is not None:
+            raise RuntimeError(
+                f"language model tree changed during model loading: {exc}"
+            ) from failure[1]
+        raise RuntimeError(
+            f"language model tree changed during model loading: {exc}"
+        ) from exc
+    if after_hash != before_hash:
+        error = RuntimeError("language model tree changed during model loading")
+        if failure is not None:
+            raise error from failure[1]
+        raise error
+    if failure is not None:
+        raise failure[1].with_traceback(failure[2])
+    if call_counts != expected_counts:
+        raise RuntimeError(
+            "language adaptor did not make exactly the pinned model and tokenizer requests"
+        )
 
 
 def _unique_json_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -324,8 +760,9 @@ def local_radio_hub(torch_module: ModuleType | Any, radio_root: str | Path) -> I
 class CheckpointTracker:
     """Capture checkpoint paths requested by one model construction."""
 
-    def __init__(self, hub: Any) -> None:
+    def __init__(self, hub: Any, *, expected_url: Any = _MISSING) -> None:
         self._hub = hub
+        self._expected_url = expected_url
         self._original: Any | None = None
         self._paths: list[Path] = []
 
@@ -338,6 +775,10 @@ class CheckpointTracker:
 
         def tracked(url: str, *args: Any, **kwargs: Any) -> Any:
             assert self._original is not None
+            if self._expected_url is not _MISSING and url != self._expected_url:
+                raise RuntimeError(
+                    "model construction requested an unexpected RADIO checkpoint URL"
+                )
             result = self._original(url, *args, **kwargs)
             filename = kwargs.get("file_name")
             if filename is None:
@@ -359,6 +800,49 @@ class CheckpointTracker:
     def __exit__(self, exc_type: Any, exc: Any, traceback: Any) -> None:
         if self._original is not None:
             self._hub.load_state_dict_from_url = self._original
+
+
+def _expected_radio_checkpoint_url(
+    radio_root: str | Path,
+    model_version: str,
+) -> str | None:
+    if Path(model_version).expanduser().is_file():
+        return None
+    common_path = Path(radio_root).expanduser().resolve() / "radio" / "common.py"
+    try:
+        source = common_path.read_text(encoding="utf-8")
+        module = ast.parse(source, filename=str(common_path))
+    except (OSError, UnicodeDecodeError, SyntaxError) as exc:
+        raise RuntimeError("cannot parse pinned RADIO resource map") from exc
+    resource_dict: ast.Dict | None = None
+    for node in module.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        if any(isinstance(target, ast.Name) and target.id == "RESOURCE_MAP" for target in node.targets):
+            if not isinstance(node.value, ast.Dict):
+                raise RuntimeError("pinned RADIO RESOURCE_MAP is not a literal mapping")
+            resource_dict = node.value
+            break
+    if resource_dict is None:
+        raise RuntimeError("pinned RADIO source does not define RESOURCE_MAP")
+    urls: dict[str, str] = {}
+    for key_node, value_node in zip(resource_dict.keys, resource_dict.values):
+        if (
+            not isinstance(key_node, ast.Constant)
+            or not isinstance(key_node.value, str)
+            or not isinstance(value_node, ast.Call)
+            or not value_node.args
+            or not isinstance(value_node.args[0], ast.Constant)
+            or not isinstance(value_node.args[0].value, str)
+        ):
+            raise RuntimeError("pinned RADIO RESOURCE_MAP contains a dynamic entry")
+        if key_node.value in urls:
+            raise RuntimeError("pinned RADIO RESOURCE_MAP contains a duplicate version")
+        urls[key_node.value] = value_node.args[0].value
+    try:
+        return urls[model_version]
+    except KeyError as exc:
+        raise RuntimeError(f"model version is absent from pinned RADIO source: {model_version}") from exc
 
 
 def resolve_model_checkpoint(
@@ -647,24 +1131,27 @@ class DenseWorker:
 def build_worker(args: argparse.Namespace) -> DenseWorker:
     classes, vocabulary_sha256 = load_frozen_classes(args.classes_json)
     validate_cli_args(args, classes)
+    language_assets = validate_language_model_assets(args)
     source_root = args.source_root.expanduser().resolve()
     radio_root = args.radio_root.expanduser().resolve()
     source_spec = RADSEG_SOURCE if args.backend == "radseg" else RAYFRONTS_SOURCE
     source_commit = validate_source_checkout(source_root, source_spec)
     radio_commit = validate_source_checkout(radio_root, RADIO_SOURCE)
+    expected_radio_url = _expected_radio_checkpoint_url(radio_root, args.model_version)
 
     import torch
 
-    with CheckpointTracker(torch.hub) as tracker:
+    with CheckpointTracker(torch.hub, expected_url=expected_radio_url) as tracker:
         with local_radio_hub(torch, radio_root):
-            if args.backend == "radseg":
-                module = _import_pinned_module(source_root, "radseg.radseg")
-                encoder = _instantiate_radseg(module.RADSegEncoder, args, classes)
-            else:
-                module = _import_pinned_module(
-                    source_root, "rayfronts.image_encoders.naradio"
-                )
-                encoder = _instantiate_naradio(module.NARadioEncoder, args)
+            with pinned_language_model_load(language_assets):
+                if args.backend == "radseg":
+                    module = _import_pinned_module(source_root, "radseg.radseg")
+                    encoder = _instantiate_radseg(module.RADSegEncoder, args, classes)
+                else:
+                    module = _import_pinned_module(
+                        source_root, "rayfronts.image_encoders.naradio"
+                    )
+                    encoder = _instantiate_naradio(module.NARadioEncoder, args)
     model_checkpoint = resolve_model_checkpoint(tracker.paths, args.model_version)
     model_sha256 = sha256_file(model_checkpoint)
 
@@ -713,6 +1200,7 @@ def build_worker(args: argparse.Namespace) -> DenseWorker:
     prompt_sha256 = canonical_sha256(_prompt_descriptor(encoder, classes))
     inference_config_sha256 = canonical_sha256(
         {
+            "inference_config_version": 2,
             "backend": args.backend,
             "model_version": args.model_version,
             "lang_model": args.lang_model,
@@ -723,6 +1211,9 @@ def build_worker(args: argparse.Namespace) -> DenseWorker:
             "model": model_config,
             "model_sha256": model_sha256,
             "auxiliary_model_sha256": auxiliary_model_sha256,
+            "language_model_id": language_assets.model_id,
+            "language_model_revision": language_assets.revision,
+            "language_model_sha256": language_assets.sha256,
         }
     )
     provenance = {
@@ -732,6 +1223,9 @@ def build_worker(args: argparse.Namespace) -> DenseWorker:
         "model_id": model_id,
         "model_sha256": model_sha256,
         "auxiliary_model_sha256": auxiliary_model_sha256,
+        "language_model_id": language_assets.model_id,
+        "language_model_revision": language_assets.revision,
+        "language_model_sha256": language_assets.sha256,
         "vocabulary_sha256": vocabulary_sha256,
         "prompt_sha256": prompt_sha256,
         "inference_config_sha256": inference_config_sha256,
