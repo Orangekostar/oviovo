@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import FrozenInstanceError, fields
+from dataclasses import asdict, FrozenInstanceError, fields
 import io
+import json
 import math
 from pathlib import Path
 import struct
@@ -155,6 +156,9 @@ def test_provenance_normalizes_text_commits_and_hashes() -> None:
     assert provenance.prompt_sha256 == "e" * 64
     assert provenance.inference_config_sha256 == "f" * 64
     assert provenance.auxiliary_model_sha256 == ""
+    assert provenance.language_model_id == ""
+    assert provenance.language_model_revision == ""
+    assert provenance.language_model_sha256 == ""
     assert all(field.type == "str" for field in fields(provenance))
     with pytest.raises(FrozenInstanceError):
         provenance.backend = "changed"  # type: ignore[misc]
@@ -222,6 +226,99 @@ def test_provenance_normalizes_present_optional_hash() -> None:
     values["auxiliary_model_sha256"] = "A" * 64
 
     assert DenseSemanticProvenance(**values).auxiliary_model_sha256 == "a" * 64
+
+
+def test_provenance_accepts_and_normalizes_pinned_language_assets() -> None:
+    values = _provenance_kwargs()
+    values.update(
+        {
+            "language_model_id": "  google/siglip2-giant-opt-patch16-384  ",
+            "language_model_revision": "A" * 40,
+            "language_model_sha256": "B" * 64,
+        }
+    )
+
+    provenance = DenseSemanticProvenance(**values)
+
+    assert provenance.language_model_id == "google/siglip2-giant-opt-patch16-384"
+    assert provenance.language_model_revision == "a" * 40
+    assert provenance.language_model_sha256 == "b" * 64
+
+
+@pytest.mark.parametrize(
+    "present_fields",
+    [
+        ("language_model_id",),
+        ("language_model_revision",),
+        ("language_model_sha256",),
+        ("language_model_id", "language_model_revision"),
+        ("language_model_id", "language_model_sha256"),
+        ("language_model_revision", "language_model_sha256"),
+    ],
+)
+def test_provenance_rejects_partial_language_asset_set(
+    present_fields: tuple[str, ...],
+) -> None:
+    values = _provenance_kwargs()
+    valid = {
+        "language_model_id": "google/siglip2-giant-opt-patch16-384",
+        "language_model_revision": "a" * 40,
+        "language_model_sha256": "b" * 64,
+    }
+    values.update({name: valid[name] for name in present_fields})
+
+    with pytest.raises(ValueError, match="language model|language_model"):
+        DenseSemanticProvenance(**values)
+
+
+@pytest.mark.parametrize(
+    ("field_name", "invalid"),
+    [
+        ("language_model_id", "   "),
+        ("language_model_id", None),
+        ("language_model_revision", "a" * 39),
+        ("language_model_revision", "g" * 40),
+        ("language_model_revision", None),
+        ("language_model_sha256", "b" * 63),
+        ("language_model_sha256", "z" * 64),
+        ("language_model_sha256", None),
+    ],
+)
+def test_provenance_rejects_invalid_complete_language_assets(
+    field_name: str,
+    invalid: object,
+) -> None:
+    values: dict[str, object] = _provenance_kwargs()
+    values.update(
+        {
+            "language_model_id": "google/siglip2-giant-opt-patch16-384",
+            "language_model_revision": "a" * 40,
+            "language_model_sha256": "b" * 64,
+        }
+    )
+    values[field_name] = invalid
+
+    with pytest.raises(ValueError, match=field_name):
+        DenseSemanticProvenance(**values)  # type: ignore[arg-type]
+
+
+def test_provenance_language_fields_roundtrip_through_json_dict() -> None:
+    values = _provenance_kwargs()
+    values.update(
+        {
+            "language_model_id": "google/siglip2-giant-opt-patch16-384",
+            "language_model_revision": "a" * 40,
+            "language_model_sha256": "b" * 64,
+        }
+    )
+    provenance = DenseSemanticProvenance(**values)
+
+    payload = json.loads(json.dumps(asdict(provenance), sort_keys=True))
+
+    assert payload["language_model_id"] == provenance.language_model_id
+    assert payload["language_model_revision"] == provenance.language_model_revision
+    assert payload["language_model_sha256"] == provenance.language_model_sha256
+    assert DenseSemanticProvenance(**payload) == provenance
 
 
 def test_dense_frame_accepts_valid_sampled_top_k_contract() -> None:

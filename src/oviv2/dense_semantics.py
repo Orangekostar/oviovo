@@ -220,6 +220,9 @@ class DenseSemanticProvenance:
     prompt_sha256: str
     inference_config_sha256: str
     cache_prefix_sha256: str
+    language_model_id: str = ""
+    language_model_revision: str = ""
+    language_model_sha256: str = ""
 
     def __post_init__(self) -> None:
         for name in ("backend", "model_id"):
@@ -255,6 +258,51 @@ class DenseSemanticProvenance:
                 "hexadecimal SHA-256"
             )
         object.__setattr__(self, "auxiliary_model_sha256", auxiliary.lower())
+
+        language_assets = {
+            "language_model_id": self.language_model_id,
+            "language_model_revision": self.language_model_revision,
+            "language_model_sha256": self.language_model_sha256,
+        }
+        empty_language_assets = {
+            name for name, value in language_assets.items() if value == ""
+        }
+        if empty_language_assets:
+            if len(empty_language_assets) != len(language_assets):
+                raise ValueError(
+                    "language model provenance fields must be all empty or all non-empty"
+                )
+            return
+
+        language_model_id = self.language_model_id
+        if not isinstance(language_model_id, str) or not language_model_id.strip():
+            raise ValueError("language_model_id must be a non-empty string")
+
+        language_model_revision = self.language_model_revision
+        if (
+            not isinstance(language_model_revision, str)
+            or _COMMIT_PATTERN.fullmatch(language_model_revision) is None
+        ):
+            raise ValueError(
+                "language_model_revision must be a 40-character hexadecimal revision"
+            )
+
+        language_model_sha256 = self.language_model_sha256
+        if (
+            not isinstance(language_model_sha256, str)
+            or _SHA256_PATTERN.fullmatch(language_model_sha256) is None
+        ):
+            raise ValueError(
+                "language_model_sha256 must be a 64-character hexadecimal SHA-256"
+            )
+
+        object.__setattr__(self, "language_model_id", language_model_id.strip())
+        object.__setattr__(
+            self, "language_model_revision", language_model_revision.lower()
+        )
+        object.__setattr__(
+            self, "language_model_sha256", language_model_sha256.lower()
+        )
 
 
 def _normalize_integer(value: object, name: str, *, positive: bool) -> int:
