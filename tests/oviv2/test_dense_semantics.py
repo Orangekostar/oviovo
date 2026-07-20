@@ -807,6 +807,47 @@ def test_generated_zero_archive_is_not_rejected_by_ratio_heuristic(
     assert load_dense_frame(path).class_ids.shape == frame.class_ids.shape
 
 
+def test_load_preflights_conservative_contract_budget_before_large_arrays(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    inputs = _frame_inputs(class_count=1, k=1)
+    inputs["class_ids"] = np.zeros((2, 3, 1), dtype=np.int64)
+    inputs["probabilities"] = np.zeros((2, 3, 1), dtype=np.float32)
+    inputs["entropy"] = np.zeros((2, 3), dtype=np.float32)
+    inputs["margin"] = np.zeros((2, 3), dtype=np.float32)
+    frame = DenseSemanticFrame(**inputs)
+    path = tmp_path / "compressed.npz"
+    write_dense_frame(path, frame)
+    budget = dense_semantics._estimate_archive_budget(
+        {
+            name: getattr(frame, name)
+            for name in ("class_ids", "probabilities", "entropy", "margin")
+        }
+    )
+    archive_size = path.stat().st_size
+    constrained_limit = (archive_size + budget.archive_bytes) // 2
+    assert archive_size < constrained_limit < budget.archive_bytes
+    monkeypatch.setattr(
+        dense_semantics,
+        "_MAX_ARCHIVE_BYTES",
+        constrained_limit,
+    )
+    called = False
+
+    def forbidden_load(*_args: object, **_kwargs: object) -> object:
+        nonlocal called
+        called = True
+        raise AssertionError("large payload arrays must not load before budget preflight")
+
+    monkeypatch.setattr(dense_semantics.np, "load", forbidden_load)
+
+    with pytest.raises(ValueError, match="archive|budget|resource|limit"):
+        load_dense_frame(path)
+
+    assert not called
+
+
 @pytest.mark.parametrize("field_name", ["class_ids", "probabilities", "entropy", "margin"])
 def test_dense_frame_arrays_have_irrecoverable_read_only_backing(field_name: str) -> None:
     array = getattr(_frame(), field_name)

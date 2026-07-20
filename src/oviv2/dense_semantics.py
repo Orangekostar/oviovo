@@ -91,22 +91,28 @@ def _zlib_compress_bound(source_bytes: int) -> int:
     )
 
 
-def _array_nbytes_from_shape(array: np.ndarray) -> int:
+def _shape_dtype_nbytes(shape: tuple[int, ...], dtype: np.dtype) -> int:
     element_count = 1
-    for dimension in array.shape:
+    for dimension in shape:
         element_count *= int(dimension)
-    calculated = element_count * int(array.dtype.itemsize)
-    if calculated != int(array.nbytes):
+    return element_count * int(dtype.itemsize)
+
+
+def _array_spec_nbytes(array: np.ndarray | _NpyHeader) -> int:
+    calculated = _shape_dtype_nbytes(array.shape, array.dtype)
+    if isinstance(array, np.ndarray) and calculated != int(array.nbytes):
         raise ValueError("array shape/dtype nbytes metadata is inconsistent")
     return calculated
 
 
-def _estimate_archive_budget(arrays: dict[str, np.ndarray]) -> _ArchiveBudget:
+def _estimate_archive_budget(
+    arrays: dict[str, np.ndarray | _NpyHeader],
+) -> _ArchiveBudget:
     if set(arrays) != set(_ARRAY_FIELD_NAMES):
         raise ValueError("archive budget requires all dense array fields")
     payload_nbytes = dict(_FIXED_PAYLOAD_NBYTES)
     payload_nbytes.update(
-        (name, _array_nbytes_from_shape(arrays[name]))
+        (name, _array_spec_nbytes(arrays[name]))
         for name in _ARRAY_FIELD_NAMES
     )
     member_bytes = tuple(
@@ -705,6 +711,11 @@ def _preflight_archive(snapshot: bytes) -> dict[str, object]:
                 sampled_shape,
                 np.dtype(np.float32),
             )
+        _validate_archive_budget(
+            _estimate_archive_budget(
+                {name: headers[name] for name in _ARRAY_FIELD_NAMES}
+            )
+        )
 
     return {
         "cache_frame_id": cache_frame_id,
