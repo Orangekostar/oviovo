@@ -44,6 +44,12 @@ _ARCHIVE_KEYS = frozenset(_ARCHIVE_KEY_ORDER)
 _ARCHIVE_MEMBERS = frozenset(f"{name}.npy" for name in _ARCHIVE_KEYS)
 _ZIP_EOCD_SIGNATURE = b"PK\x05\x06"
 _ARRAY_FIELD_NAMES = ("class_ids", "probabilities", "entropy", "margin")
+_ARRAY_CONTRACTS = {
+    "class_ids": (np.dtype(np.int64), 3),
+    "probabilities": (np.dtype(np.float32), 3),
+    "entropy": (np.dtype(np.float32), 2),
+    "margin": (np.dtype(np.float32), 2),
+}
 _FIXED_PAYLOAD_NBYTES = {
     "schema_version": 8,
     "cache_frame_id": 8,
@@ -142,6 +148,32 @@ def _validate_archive_budget(budget: _ArchiveBudget) -> None:
         raise ValueError("dense frame central directory resource budget exceeds limit")
     if budget.archive_bytes > _MAX_ARCHIVE_BYTES:
         raise ValueError("dense frame compressed archive resource budget exceeds size limit")
+
+
+def _validate_array_structure(
+    arrays: dict[str, np.ndarray],
+    sampled_shape: tuple[int, int],
+    class_count: int,
+) -> int:
+    for name, (required_dtype, required_ndim) in _ARRAY_CONTRACTS.items():
+        array = arrays[name]
+        if array.dtype != required_dtype:
+            raise ValueError(f"{name} must have dtype {required_dtype}")
+        if array.ndim != required_ndim:
+            raise ValueError(f"{name} must have {required_ndim} dimensions")
+    class_ids = arrays["class_ids"]
+    probabilities = arrays["probabilities"]
+    if class_ids.shape[:2] != sampled_shape:
+        raise ValueError(f"class_ids shape must start with sampled shape {sampled_shape}")
+    top_k = class_ids.shape[2]
+    if not 1 <= top_k <= class_count:
+        raise ValueError("class_ids top-k must be between 1 and class_count")
+    if probabilities.shape != class_ids.shape:
+        raise ValueError("probabilities shape must match class_ids")
+    for name in ("entropy", "margin"):
+        if arrays[name].shape != sampled_shape:
+            raise ValueError(f"{name} shape must be sampled shape {sampled_shape}")
+    return top_k
 
 
 def _sha256_stream(stream: BinaryIO) -> str:
@@ -250,21 +282,11 @@ class DenseSemanticFrame:
     margin: np.ndarray
 
     def __post_init__(self) -> None:
-        array_contracts = {
-            "class_ids": (np.dtype(np.int64), 3),
-            "probabilities": (np.dtype(np.float32), 3),
-            "entropy": (np.dtype(np.float32), 2),
-            "margin": (np.dtype(np.float32), 2),
-        }
         raw_arrays: dict[str, np.ndarray] = {}
-        for name, (required_dtype, required_ndim) in array_contracts.items():
+        for name in _ARRAY_FIELD_NAMES:
             raw_array = getattr(self, name)
             if not isinstance(raw_array, np.ndarray):
                 raise ValueError(f"{name} must be a numpy ndarray")
-            if raw_array.dtype != required_dtype:
-                raise ValueError(f"{name} must have dtype {required_dtype}")
-            if raw_array.ndim != required_ndim:
-                raise ValueError(f"{name} must have {required_ndim} dimensions")
             raw_arrays[name] = raw_array
 
         cache_frame_id = _normalize_integer(
@@ -298,34 +320,28 @@ class DenseSemanticFrame:
             (image_shape[0] + sample_stride - 1) // sample_stride,
             (image_shape[1] + sample_stride - 1) // sample_stride,
         )
-        raw_class_ids = raw_arrays["class_ids"]
-        raw_probabilities = raw_arrays["probabilities"]
-        raw_entropy = raw_arrays["entropy"]
-        raw_margin = raw_arrays["margin"]
-        if raw_class_ids.shape[:2] != sampled_shape:
-            raise ValueError(
-                f"class_ids shape must start with sampled shape {sampled_shape}"
-            )
-        top_k = raw_class_ids.shape[2]
-        if not 1 <= top_k <= class_count:
-            raise ValueError("class_ids top-k must be between 1 and class_count")
-        if raw_probabilities.shape != raw_class_ids.shape:
-            raise ValueError("probabilities shape must match class_ids")
-        if raw_entropy.shape != sampled_shape:
-            raise ValueError(f"entropy shape must be sampled shape {sampled_shape}")
-        if raw_margin.shape != sampled_shape:
-            raise ValueError(f"margin shape must be sampled shape {sampled_shape}")
-
+        _validate_array_structure(raw_arrays, sampled_shape, class_count)
         _validate_archive_budget(_estimate_archive_budget(raw_arrays))
-        arrays = {
-            name: np.array(
-                raw_arrays[name],
-                dtype=required_dtype,
-                copy=True,
-                order="C",
-            )
-            for name, (required_dtype, _required_ndim) in array_contracts.items()
-        }
+        arrays: dict[str, np.ndarray] = {}
+        for name in _ARRAY_FIELD_NAMES:
+            try:
+                arrays[name] = np.array(
+                    raw_arrays[name],
+                    copy=True,
+                    order="C",
+                )
+            except (
+                TypeError,
+                ValueError,
+                RuntimeError,
+                OverflowError,
+                MemoryError,
+            ) as exc:
+                raise ValueError(
+                    f"{name} private snapshot copy failed during concurrent mutation"
+                ) from exc
+        top_k = _validate_array_structure(arrays, sampled_shape, class_count)
+        _validate_archive_budget(_estimate_archive_budget(arrays))
         class_ids = arrays["class_ids"]
         probabilities = arrays["probabilities"]
         entropy = arrays["entropy"]

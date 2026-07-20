@@ -618,6 +618,73 @@ def test_dense_frame_rejects_resource_budget_before_private_array_copy(
     assert not copied
 
 
+def test_dense_frame_revalidates_private_shapes_after_budget_race(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    inputs = _frame_inputs()
+    original_estimator = dense_semantics._estimate_archive_budget
+    reshaped = False
+
+    def reshape_after_budget(arrays: dict[str, np.ndarray]) -> object:
+        nonlocal reshaped
+        budget = original_estimator(arrays)
+        arrays["class_ids"].shape = (6, 2)
+        arrays["probabilities"].shape = (6, 2)
+        arrays["entropy"].shape = (6,)
+        arrays["margin"].shape = (6,)
+        reshaped = True
+        return budget
+
+    monkeypatch.setattr(
+        dense_semantics,
+        "_estimate_archive_budget",
+        reshape_after_budget,
+    )
+
+    with pytest.raises(ValueError, match="class_ids|shape|dimension|snapshot"):
+        DenseSemanticFrame(**inputs)
+
+    assert reshaped
+
+
+def test_dense_frame_rejects_dtype_change_during_budget_race(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    inputs = _frame_inputs()
+    original_estimator = dense_semantics._estimate_archive_budget
+
+    def change_dtype_after_budget(arrays: dict[str, np.ndarray]) -> object:
+        budget = original_estimator(arrays)
+        arrays["class_ids"].dtype = np.float64
+        arrays["class_ids"][...] = (1.0, 2.0)
+        return budget
+
+    monkeypatch.setattr(
+        dense_semantics,
+        "_estimate_archive_budget",
+        change_dtype_after_budget,
+    )
+
+    with pytest.raises(ValueError, match="class_ids|dtype|snapshot"):
+        DenseSemanticFrame(**inputs)
+
+
+@pytest.mark.parametrize("error_type", [RuntimeError, MemoryError])
+def test_dense_frame_wraps_private_copy_race_errors(
+    monkeypatch: pytest.MonkeyPatch,
+    error_type: type[Exception],
+) -> None:
+    inputs = _frame_inputs()
+
+    def fail_copy(*_args: object, **_kwargs: object) -> object:
+        raise error_type("injected concurrent resize")
+
+    monkeypatch.setattr(dense_semantics.np, "array", fail_copy)
+
+    with pytest.raises(ValueError, match="class_ids|snapshot|copy"):
+        DenseSemanticFrame(**inputs)
+
+
 @pytest.mark.parametrize(
     ("limit_name", "budget_field"),
     [
