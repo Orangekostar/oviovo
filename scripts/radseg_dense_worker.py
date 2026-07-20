@@ -34,6 +34,7 @@ MAX_JSONL_LINE_CHARS = 16 * 1024 * 1024
 MAX_JSONL_RESPONSE_CHARS = 16 * 1024 * 1024
 MAX_PROBABILITY_TENSOR_BYTES = 256 * 1024 * 1024
 CLASS_COUNT = 41
+RADSEG_PROBABILITY_MASS_DRIFT_TOLERANCE = 1e-3
 _SHA256_PATTERN = re.compile(r"[0-9a-fA-F]{64}")
 _OFFLINE_ENVIRONMENT = (
     "HF_HUB_OFFLINE",
@@ -1099,8 +1100,16 @@ class RadsegRuntime:
         mass = values.sum(axis=1, keepdims=True, dtype=np.float64)
         if np.any(mass <= 0.0):
             raise RuntimeError("RADSeg returned zero probability mass")
-        if np.any(values > 1.0) or np.any(mass > 1.0 + 1e-6):
+        tolerance = RADSEG_PROBABILITY_MASS_DRIFT_TOLERANCE
+        if np.any(values > 1.0 + tolerance) or np.any(mass > 1.0 + tolerance):
             raise RuntimeError("RADSeg returned probability mass above one")
+        # AMP softmax followed by bilinear resize can drift slightly above unit
+        # mass. Scale only overshooting pixels so prompt-denoised missing mass is
+        # preserved as unknown probability.
+        values = np.asarray(
+            values.astype(np.float64) / np.maximum(mass, 1.0),
+            dtype=np.float32,
+        )
         return np.ascontiguousarray(values, dtype=np.float32)
 
 

@@ -1225,6 +1225,36 @@ def test_radseg_runtime_preserves_prompt_denoised_probability_mass() -> None:
     np.testing.assert_allclose(probabilities.sum(axis=1), 0.8)
 
 
+def test_radseg_runtime_renormalizes_float16_probability_mass_drift() -> None:
+    class DriftedEncoder(_RadsegEncoder):
+        def encode_image_to_feat_map(self, image: torch.Tensor, **kwargs: Any) -> torch.Tensor:
+            output = torch.zeros((1, 41, 1, 1), dtype=torch.float32)
+            output[:, 0] = 0.5002
+            output[:, 1] = 0.5002
+            return output
+
+    runtime = RadsegRuntime(encoder=DriftedEncoder(), device="cpu", amp=True)
+    probabilities = runtime.infer_probabilities(np.zeros((1, 1, 3), dtype=np.uint8))
+
+    np.testing.assert_allclose(probabilities[0, :2, 0, 0], [0.5, 0.5], atol=1e-6)
+    np.testing.assert_allclose(probabilities.sum(axis=1), 1.0, atol=1e-6)
+    reduce_probabilities(probabilities, sample_stride=1, top_k=2)
+
+
+def test_radseg_runtime_rejects_non_numerical_probability_mass_error() -> None:
+    class InvalidEncoder(_RadsegEncoder):
+        def encode_image_to_feat_map(self, image: torch.Tensor, **kwargs: Any) -> torch.Tensor:
+            output = torch.zeros((1, 41, 1, 1), dtype=torch.float32)
+            output[:, 0] = 0.51
+            output[:, 1] = 0.51
+            return output
+
+    runtime = RadsegRuntime(encoder=InvalidEncoder(), device="cpu", amp=True)
+
+    with pytest.raises(RuntimeError, match="probability mass above one"):
+        runtime.infer_probabilities(np.zeros((1, 1, 3), dtype=np.uint8))
+
+
 class _NARadioEncoder:
     def __init__(self) -> None:
         self.updated_resolution: tuple[int, int] | None = None
