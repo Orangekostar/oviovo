@@ -1,16 +1,21 @@
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 from pathlib import Path
 
-import yaml
+import cv2
+import numpy as np
 import pytest
+import yaml
 
 from scripts.evaluation.run_ovimap_native import (
     GateFailure,
     NativeConfig,
+    SceneCommands,
     advance_state,
+    audit_scene,
     build_scene_commands,
 )
 
@@ -379,3 +384,49 @@ def test_runner_rejects_skipped_or_out_of_order_gates() -> None:
             "ENV_PASS",
             event={"status": "PASS", "next_state": "MAPPING_PASS"},
         )
+
+
+def test_audit_records_raycast_ids_merged_before_final_color_log(
+    tmp_path: Path,
+) -> None:
+    frontend = tmp_path / "frontend"
+    native = tmp_path / "native_audit"
+    frontend.mkdir()
+    native.mkdir()
+    mask = np.zeros((4, 5), dtype=np.uint8)
+    mask[1:3, 1:4] = 1
+    assert cv2.imwrite(str(frontend / "frame000000.png"), mask)
+    raycast = np.zeros((4, 5), dtype=np.uint16)
+    raycast[1, 1:3] = 1
+    raycast[2, 3:5] = 2
+    np.save(native / "frame000000.raycast.npy", raycast, allow_pickle=False)
+    (native / "color_pairs.json").write_text(
+        json.dumps(
+            [{"instance_id": 1, "mapper_rgb": [10, 20, 30], "logged_rgb": [10, 20, 30]}]
+        ),
+        encoding="utf-8",
+    )
+    (native / "frame000000.json").write_text(
+        json.dumps(
+            {
+                "frame_id": 0,
+                "shape": [4, 5],
+                "box_2d": {"1": [1, 1, 2, 1], "2": [3, 2, 4, 2]},
+                "mapper_rgb": {"1": [10, 20, 30], "2": [40, 50, 60]},
+            }
+        ),
+        encoding="utf-8",
+    )
+    commands = SceneCommands(
+        frame_ids=[0],
+        geometry=("geometry",),
+        frontend=("frontend",),
+        mapping=("mapping",),
+        attempt_root=tmp_path,
+    )
+
+    summary = audit_scene(commands)
+
+    assert summary["status"] == "PASS"
+    assert summary["active_color_ids"] == [1]
+    assert summary["stale_raycast_ids"] == [2]

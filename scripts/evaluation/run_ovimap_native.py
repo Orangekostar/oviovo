@@ -22,7 +22,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from src.evaluation.baselines.ovimap_native import audit_native_frame
+from src.evaluation.baselines.ovimap_native import (
+    audit_native_frame,
+    validate_color_round_trip,
+)
 
 
 REPLICA8_SCENES = (
@@ -425,6 +428,8 @@ def audit_scene(commands: SceneCommands) -> dict[str, Any]:
     frame_records: list[dict[str, Any]] = []
     total_boxes = 0
     total_full_frame = 0
+    stale_raycast_ids: set[int] = set()
+    observed_mapper_colors: dict[int, tuple[int, int, int]] = {}
     for frame_id in commands.frame_ids:
         mask_path = frontend / f"frame{frame_id:06d}.png"
         raycast_path = native / f"frame{frame_id:06d}.raycast.npy"
@@ -441,13 +446,12 @@ def audit_scene(commands: SceneCommands) -> dict[str, Any]:
         raycast = np.load(raycast_path, allow_pickle=False)
         mapper = json.loads(mapper_path.read_text(encoding="utf-8"))
         raycast_ids = {int(value) for value in np.unique(raycast) if value > 0}
-        if not raycast_ids <= set(colors):
-            raise GateFailure("native frame audit failed: raycast color IDs are incomplete")
+        stale_raycast_ids.update(raycast_ids - set(colors))
         try:
             audit = audit_native_frame(
                 mask,
                 raycast,
-                [colors[value] for value in sorted(raycast_ids)],
+                color_pairs,
             )
         except ValueError as error:
             raise GateFailure(f"native frame audit failed: {error}") from error
@@ -458,9 +462,18 @@ def audit_scene(commands: SceneCommands) -> dict[str, Any]:
         if mapper.get("box_2d") != expected_boxes:
             raise GateFailure("native frame audit failed: mapper bbox serialization mismatch")
         for instance_id in raycast_ids:
-            if mapper.get("mapper_rgb", {}).get(str(instance_id)) != colors[instance_id][
-                "mapper_rgb"
-            ]:
+            serialized = mapper.get("mapper_rgb", {}).get(str(instance_id))
+            if serialized is None:
+                raise GateFailure("native frame audit failed: mapper RGB ID is missing")
+            mapper_rgb = tuple(serialized)
+            try:
+                validate_color_round_trip(mapper_rgb, mapper_rgb)
+            except ValueError as error:
+                raise GateFailure(f"native frame audit failed: {error}") from error
+            previous = observed_mapper_colors.setdefault(instance_id, mapper_rgb)
+            if previous != mapper_rgb:
+                raise GateFailure("native frame audit failed: mapper RGB changed across frames")
+            if instance_id in colors and serialized != colors[instance_id]["mapper_rgb"]:
                 raise GateFailure("native frame audit failed: mapper RGB serialization mismatch")
         total_boxes += int(audit["raycast_instance_count"])
         total_full_frame += int(audit["full_frame_bbox_count"])
@@ -486,6 +499,8 @@ def audit_scene(commands: SceneCommands) -> dict[str, Any]:
         "raycast_bbox_count": total_boxes,
         "full_frame_bbox_count": total_full_frame,
         "full_frame_bbox_ratio": total_full_frame / total_boxes,
+        "active_color_ids": sorted(colors),
+        "stale_raycast_ids": sorted(stale_raycast_ids),
         "color_pairs": _artifact(colors_path),
     }
     _atomic_json(native / "scene_audit.json", summary)
