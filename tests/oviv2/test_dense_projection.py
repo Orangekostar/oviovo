@@ -292,6 +292,28 @@ def test_integrator_rejects_invalid_camera_geometry_before_updating(broken: str)
     assert store.allocated_block_count == 0
 
 
+@pytest.mark.parametrize("broken", ["intrinsics", "pose"])
+def test_integrator_wraps_camera_numeric_conversion_overflow(broken: str) -> None:
+    frame = make_frame()
+    if broken == "intrinsics":
+        frame.intrinsics.fx = 10**400
+    else:
+        pose = np.asarray(frame.pose, dtype=object)
+        pose[0, 0] = 10**400
+        frame.pose = pose
+    store = SparseEvidenceStore()
+
+    with pytest.raises(ValueError, match="intrinsics|pose"):
+        DenseSemanticIntegrator(DenseSemanticConfig(0.5)).integrate(
+            frame,
+            make_dense_frame(),
+            store,
+            revision=1,
+        )
+
+    assert store.allocated_block_count == 0
+
+
 def test_integrator_drops_invalid_depth_high_entropy_and_out_of_radius() -> None:
     frame = make_frame(depth=np.asarray([[np.nan, 1.0, 9.0]], dtype=np.float32))
     dense = make_dense_frame(
@@ -632,6 +654,88 @@ def test_revision_rollback_is_preflighted_without_partial_updates() -> None:
     existing = store.semantic_candidates((1, 0, 1))[0]
     assert existing.support == pytest.approx(2.0)
     assert existing.revision == 5
+
+
+def test_integrator_documents_external_store_serialization_contract() -> None:
+    docstring = DenseSemanticIntegrator.integrate.__doc__ or ""
+
+    assert "not thread-safe" in docstring
+    assert "externally serialized" in docstring
+
+
+def test_existing_label_accumulates_before_capacity_one_admission() -> None:
+    frame = make_frame(depth=np.asarray([[1.0]], dtype=np.float32))
+    dense = make_dense_frame(
+        image_shape=(1, 1),
+        class_count=2,
+        class_ids=[[[1, 2]]],
+        probabilities=[[[0.6, 0.4]]],
+    )
+    store = SparseEvidenceStore(EvidenceConfig(semantic_top_k=1))
+    store.update_semantic((0, 0, 1), 2, 0.3, revision=0)
+
+    DenseSemanticIntegrator(DenseSemanticConfig(1.0)).integrate(
+        frame,
+        dense,
+        store,
+        revision=1,
+    )
+
+    candidates = store.semantic_candidates((0, 0, 1))
+    assert [(item.label_id, item.support) for item in candidates] == [
+        (2, pytest.approx(0.7))
+    ]
+
+
+def test_existing_labels_accumulate_before_capacity_two_admission() -> None:
+    frame = make_frame(depth=np.asarray([[1.0]], dtype=np.float32))
+    dense = make_dense_frame(
+        image_shape=(1, 1),
+        class_count=4,
+        class_ids=[[[1, 2, 3]]],
+        probabilities=[[[0.3, 0.25, 0.2]]],
+    )
+    store = SparseEvidenceStore(EvidenceConfig(semantic_top_k=2))
+    store.update_semantic((0, 0, 1), 2, 0.25, revision=0)
+    store.update_semantic((0, 0, 1), 4, 0.6, revision=0)
+
+    DenseSemanticIntegrator(DenseSemanticConfig(1.0)).integrate(
+        frame,
+        dense,
+        store,
+        revision=1,
+    )
+
+    candidates = store.semantic_candidates((0, 0, 1))
+    assert [(item.label_id, item.support) for item in candidates] == [
+        (4, pytest.approx(0.6)),
+        (2, pytest.approx(0.5)),
+    ]
+
+
+def test_new_label_ties_use_stable_id_after_existing_candidates() -> None:
+    frame = make_frame(depth=np.asarray([[1.0]], dtype=np.float32))
+    dense = make_dense_frame(
+        image_shape=(1, 1),
+        class_count=4,
+        class_ids=[[[1, 2, 3]]],
+        probabilities=[[[0.3, 0.3, 0.3]]],
+    )
+    store = SparseEvidenceStore(EvidenceConfig(semantic_top_k=2))
+    store.update_semantic((0, 0, 1), 4, 0.6, revision=0)
+
+    DenseSemanticIntegrator(DenseSemanticConfig(1.0)).integrate(
+        frame,
+        dense,
+        store,
+        revision=1,
+    )
+
+    candidates = store.semantic_candidates((0, 0, 1))
+    assert [(item.label_id, item.support) for item in candidates] == [
+        (4, pytest.approx(0.6)),
+        (1, pytest.approx(0.3)),
+    ]
 
 
 def test_malformed_class_id_is_rejected_without_partial_updates() -> None:

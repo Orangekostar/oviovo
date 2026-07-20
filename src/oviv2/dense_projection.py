@@ -203,7 +203,7 @@ def _validate_frame(
             [intrinsics.fx, intrinsics.fy, intrinsics.cx, intrinsics.cy],
             dtype=np.float64,
         )
-    except (TypeError, ValueError) as exc:
+    except (OverflowError, TypeError, ValueError) as exc:
         raise ValueError("frame intrinsics must contain numeric values") from exc
     if (
         not np.all(np.isfinite(intrinsic_values))
@@ -214,7 +214,7 @@ def _validate_frame(
 
     try:
         pose = np.asarray(frame.pose, dtype=np.float64)
-    except (TypeError, ValueError) as exc:
+    except (OverflowError, TypeError, ValueError) as exc:
         raise ValueError("frame pose must contain numeric values") from exc
     if pose.shape != (4, 4) or not np.all(np.isfinite(pose)):
         raise ValueError("frame pose must be a finite (4, 4) matrix")
@@ -355,6 +355,11 @@ class DenseSemanticIntegrator:
         store: SparseEvidenceStore,
         revision: int,
     ) -> DenseProjectionResult:
+        """Integrate one frame into a store using externally serialized access.
+
+        SparseEvidenceStore is not thread-safe. Calls that share a store must be
+        externally serialized by the caller.
+        """
         if not isinstance(frame, Frame):
             raise TypeError("frame must be a Frame")
         if not isinstance(dense, DenseSemanticFrame):
@@ -459,30 +464,61 @@ class DenseSemanticIntegrator:
                 0,
             )
 
-        unique_voxels = np.unique(updates[:, :3], axis=0)
+        voxel_starts = np.concatenate(
+            (
+                np.asarray([0], dtype=np.int64),
+                np.flatnonzero(np.any(updates[1:, :3] != updates[:-1, :3], axis=1))
+                + 1,
+            )
+        )
+        voxel_ends = np.concatenate(
+            (voxel_starts[1:], np.asarray([updates.shape[0]], dtype=np.int64))
+        )
         result = DenseProjectionResult(
             sampled_pixel_count,
             valid_pixel_count,
-            int(unique_voxels.shape[0]),
+            int(voxel_starts.size),
         )
-        update_lookup = {
-            (int(row[0]), int(row[1]), int(row[2]), int(row[3])): float(delta)
-            for row, delta in zip(updates, support_deltas)
-        }
-        for voxel_array in unique_voxels:
-            voxel_key = tuple(int(value) for value in voxel_array)
-            for candidate in store.semantic_candidates(voxel_key):
+        ordered_updates: list[tuple[tuple[int, int, int], int, float]] = []
+        for start, end in zip(voxel_starts, voxel_ends):
+            voxel_key = tuple(int(value) for value in updates[start, :3])
+            voxel_labels = updates[start:end, 3]
+            voxel_deltas = support_deltas[start:end]
+            delta_by_label = {
+                int(label_id): float(delta)
+                for label_id, delta in zip(voxel_labels, voxel_deltas)
+            }
+            existing_candidates = store.semantic_candidates(voxel_key)
+            existing_label_ids = {
+                candidate.label_id for candidate in existing_candidates
+            }
+            for candidate in existing_candidates:
                 if normalized_revision < candidate.revision:
                     raise ValueError("revision cannot move backwards")
-                delta = update_lookup.get((*voxel_key, candidate.label_id))
+                delta = delta_by_label.get(candidate.label_id)
                 if delta is not None and not math.isfinite(candidate.support + delta):
                     raise ValueError("semantic support accumulation must remain finite")
 
-        for row, delta in zip(updates, support_deltas):
+            for label_id in sorted(existing_label_ids & delta_by_label.keys()):
+                ordered_updates.append(
+                    (voxel_key, label_id, delta_by_label[label_id])
+                )
+            new_updates = (
+                (label_id, delta)
+                for label_id, delta in delta_by_label.items()
+                if label_id not in existing_label_ids
+            )
+            for label_id, delta in sorted(
+                new_updates,
+                key=lambda item: (-item[1], item[0]),
+            ):
+                ordered_updates.append((voxel_key, label_id, delta))
+
+        for voxel_key, label_id, delta in ordered_updates:
             store.update_semantic(
-                (int(row[0]), int(row[1]), int(row[2])),
-                label_id=int(row[3]),
-                support_delta=float(delta),
+                voxel_key,
+                label_id=label_id,
+                support_delta=delta,
                 revision=normalized_revision,
             )
         return result
