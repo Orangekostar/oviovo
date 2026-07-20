@@ -780,8 +780,6 @@ def reduce_probabilities(
 
     sampled = values[0, :, ::stride, ::stride].transpose(1, 2, 0)
     mass = sampled.sum(axis=-1, keepdims=True, dtype=np.float64)
-    if np.any(mass <= 0.0):
-        raise ValueError("probabilities must have positive probability mass per pixel")
     if np.any(sampled > 1.0) or np.any(mass > 1.0 + 1e-6):
         raise ValueError("probabilities must represent a distribution with mass at most one")
     normalized = np.divide(
@@ -1098,7 +1096,7 @@ class RadsegRuntime:
         if not np.all(np.isfinite(values)) or np.any(values < 0.0):
             raise RuntimeError("RADSeg returned invalid probabilities")
         mass = values.sum(axis=1, keepdims=True, dtype=np.float64)
-        if np.any(mass <= 0.0):
+        if not np.any(mass > 0.0):
             raise RuntimeError("RADSeg returned zero probability mass")
         tolerance = RADSEG_PROBABILITY_MASS_DRIFT_TOLERANCE
         if np.any(values > 1.0 + tolerance) or np.any(mass > 1.0 + tolerance):
@@ -1380,8 +1378,11 @@ def build_worker(args: argparse.Namespace) -> DenseWorker:
             "probability_mass_drift_tolerance": (
                 RADSEG_PROBABILITY_MASS_DRIFT_TOLERANCE
             ),
+            "zero_mass_policy": (
+                "encode-local-zero-mass-as-unknown-reject-all-zero-image"
+            ),
         }
-        inference_config_version = 3
+        inference_config_version = 4
     else:
         assert text_embeddings is not None
         runtime = NARadioRuntime(

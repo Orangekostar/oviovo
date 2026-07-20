@@ -150,14 +150,18 @@ def test_reduce_probabilities_samples_from_origin() -> None:
     assert reduced["entropy"].shape == (2, 3)
 
 
-def test_reduce_probabilities_rejects_zero_mass_without_log_warning() -> None:
+def test_reduce_probabilities_encodes_zero_mass_as_unknown_without_log_warning() -> None:
     with np.errstate(all="raise"):
-        with pytest.raises(ValueError, match="probability mass"):
-            reduce_probabilities(
-                np.zeros((1, 3, 2, 2), dtype=np.float32),
-                sample_stride=1,
-                top_k=2,
-            )
+        reduced = reduce_probabilities(
+            np.zeros((1, 3, 2, 2), dtype=np.float32),
+            sample_stride=1,
+            top_k=2,
+        )
+
+    np.testing.assert_array_equal(reduced["class_ids"], 0)
+    np.testing.assert_array_equal(reduced["probabilities"], 0.0)
+    np.testing.assert_array_equal(reduced["entropy"], 0.0)
+    np.testing.assert_array_equal(reduced["margin"], 0.0)
 
 
 @pytest.mark.parametrize(
@@ -1255,6 +1259,31 @@ def test_radseg_runtime_rejects_non_numerical_probability_mass_error() -> None:
         runtime.infer_probabilities(np.zeros((1, 1, 3), dtype=np.uint8))
 
 
+def test_radseg_runtime_allows_local_unknown_pixels_but_rejects_all_unknown() -> None:
+    class PartiallyUnknownEncoder(_RadsegEncoder):
+        def encode_image_to_feat_map(self, image: torch.Tensor, **kwargs: Any) -> torch.Tensor:
+            output = torch.zeros((1, 41, 1, 2), dtype=torch.float32)
+            output[:, 0, 0, 0] = 0.6
+            return output
+
+    runtime = RadsegRuntime(encoder=PartiallyUnknownEncoder(), device="cpu", amp=True)
+    probabilities = runtime.infer_probabilities(np.zeros((1, 2, 3), dtype=np.uint8))
+    reduced = reduce_probabilities(probabilities, sample_stride=1, top_k=2)
+
+    assert probabilities.sum(axis=1).tolist() == [[[pytest.approx(0.6), 0.0]]]
+    assert reduced["class_ids"][0, 1].tolist() == [0, 0]
+    assert reduced["probabilities"][0, 1].tolist() == [0.0, 0.0]
+
+    class AllUnknownEncoder(_RadsegEncoder):
+        def encode_image_to_feat_map(self, image: torch.Tensor, **kwargs: Any) -> torch.Tensor:
+            return torch.zeros((1, 41, 1, 2), dtype=torch.float32)
+
+    with pytest.raises(RuntimeError, match="zero probability mass"):
+        RadsegRuntime(encoder=AllUnknownEncoder(), device="cpu", amp=True).infer_probabilities(
+            np.zeros((1, 2, 3), dtype=np.uint8)
+        )
+
+
 class _NARadioEncoder:
     def __init__(self) -> None:
         self.updated_resolution: tuple[int, int] | None = None
@@ -1489,7 +1518,7 @@ def test_build_worker_pins_language_assets_and_restores_global_state(
             for payload in hash_payloads
             if isinstance(payload, dict) and "inference_config_version" in payload
         )
-        assert config_payload["inference_config_version"] == 3
+        assert config_payload["inference_config_version"] == 4
         assert config_payload["language_model_id"] == args.language_model_id
         assert config_payload["language_model_revision"] == args.language_model_revision
         assert config_payload["language_model_sha256"] == language_hash
@@ -1497,6 +1526,9 @@ def test_build_worker_pins_language_assets_and_restores_global_state(
             "preserve-denoised-mass-normalize-numerical-overshoot"
         )
         assert config_payload["model"]["probability_mass_drift_tolerance"] == 1e-3
+        assert config_payload["model"]["zero_mass_policy"] == (
+            "encode-local-zero-mass-as-unknown-reject-all-zero-image"
+        )
     finally:
         _chmod_tree(language_root, writable=True)
 
