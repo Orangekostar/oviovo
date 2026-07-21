@@ -90,7 +90,11 @@ def _read_metric(payload: Mapping[str, Any], name: str, label: str) -> float:
 
 
 def _protocol_context(
-    payload: Mapping[str, Any], label: str, exclusions: frozenset[str]
+    payload: Mapping[str, Any],
+    label: str,
+    exclusions: frozenset[str],
+    *,
+    normalize_geometry_orchestrator: bool = False,
 ) -> tuple[str, dict[str, Any], str]:
     protocol = _object(payload.get("protocol"), f"{label} protocol")
     scene = protocol.get("scene_id")
@@ -108,6 +112,19 @@ def _protocol_context(
         for key, value in full_protocol.items()
         if key not in exclusions
     }
+    if normalize_geometry_orchestrator:
+        geometry = comparison_protocol.get("geometry_semantic_stabilization")
+        if isinstance(geometry, Mapping):
+            normalized_geometry = copy.deepcopy(dict(geometry))
+            normalized_geometry.pop("algorithm_hash", None)
+            source_hashes = normalized_geometry.get("source_hashes")
+            if isinstance(source_hashes, Mapping):
+                normalized_sources = dict(source_hashes)
+                normalized_sources.pop("cli", None)
+                normalized_geometry["source_hashes"] = normalized_sources
+            comparison_protocol["geometry_semantic_stabilization"] = (
+                normalized_geometry
+            )
     try:
         canonical = json.dumps(
             comparison_protocol,
@@ -194,10 +211,16 @@ def compare_metrics(
         GEOMETRY_PROTOCOL_EXCLUSIONS if mode == "composed" else frozenset()
     )
     baseline_scene, baseline_protocol, baseline_contract = _protocol_context(
-        baseline_object, "baseline", protocol_exclusions
+        baseline_object,
+        "baseline",
+        protocol_exclusions,
+        normalize_geometry_orchestrator=mode == "instance",
     )
     candidate_scene, candidate_protocol, candidate_contract = _protocol_context(
-        candidate_object, "candidate", protocol_exclusions
+        candidate_object,
+        "candidate",
+        protocol_exclusions,
+        normalize_geometry_orchestrator=mode == "instance",
     )
     if mode in {"composed", "instance"}:
         _validate_auxiliary_provenance(candidate_protocol)
@@ -248,6 +271,14 @@ def compare_metrics(
             "baseline": baseline_protocol,
             "candidate": candidate_protocol,
             "comparison_excludes": sorted(protocol_exclusions),
+            "comparison_ignores": (
+                [
+                    "geometry_semantic_stabilization.algorithm_hash",
+                    "geometry_semantic_stabilization.source_hashes.cli",
+                ]
+                if mode == "instance"
+                else []
+            ),
             "matched": True,
         },
     }

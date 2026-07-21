@@ -168,6 +168,34 @@ def test_instance_gate_validates_optional_auxiliary_ensemble_provenance() -> Non
         compare_metrics(metrics(), candidate, mode="instance")
 
 
+def test_instance_gate_ignores_only_geometry_orchestrator_hash_churn() -> None:
+    baseline = metrics()
+    candidate = metrics(ap25=0.49, ap50=0.26)
+    for payload, cli_hash, algorithm_hash in (
+        (baseline, "a" * 64, "c" * 64),
+        (candidate, "b" * 64, "d" * 64),
+    ):
+        payload["protocol"]["geometry_semantic_stabilization"] = {
+            "algorithm_hash": algorithm_hash,
+            "config": {
+                "maximum_transfer_distance_m": 0.075,
+                "reference_weight_threshold": 1.0,
+            },
+            "source_hashes": {
+                "cli": cli_hash,
+                "geometry_head": "e" * 64,
+            },
+            "transferred_vertex_count": 10,
+        }
+
+    assert compare_metrics(baseline, candidate, mode="instance")["status"] == "PASS"
+    candidate["protocol"]["geometry_semantic_stabilization"]["source_hashes"][
+        "geometry_head"
+    ] = "f" * 64
+    with pytest.raises(ValueError, match="protocol mismatch"):
+        compare_metrics(baseline, candidate, mode="instance")
+
+
 def test_semantic_gate_requires_three_gains_and_identical_ap_geometry() -> None:
     baseline = metrics()
     candidate = metrics(miou=0.39, macc=0.44, f_miou=0.67)
