@@ -282,6 +282,39 @@ def _remove_published_destination(
     _fsync_directory(parent)
 
 
+def _clean_failed_publication(
+    destination: Path,
+    temporary: Path,
+    parent: Path,
+    *,
+    published: bool,
+    field_name: str,
+) -> None:
+    rollback_error: OSError | None = None
+    cleanup_error: OSError | None = None
+    if published:
+        try:
+            _remove_published_destination(destination, temporary, parent)
+        except OSError as exc:
+            rollback_error = exc
+    try:
+        temporary.unlink()
+    except FileNotFoundError:
+        pass
+    except OSError as exc:
+        cleanup_error = exc
+
+    if rollback_error is not None:
+        message = f"failed to roll back published {field_name} file"
+        if cleanup_error is not None:
+            message += f"; temporary {field_name} cleanup also failed"
+        raise OSError(message) from rollback_error
+    if cleanup_error is not None:
+        raise OSError(
+            f"failed to clean temporary {field_name} file"
+        ) from cleanup_error
+
+
 def _publish_bytes(
     path: Path,
     data_writer: Callable[[BinaryIO], None],
@@ -304,25 +337,14 @@ def _publish_bytes(
         published = True
         _fsync_directory(parent)
     except BaseException:
-        rollback_error: OSError | None = None
-        if published and temporary_path is not None:
-            try:
-                _remove_published_destination(path, temporary_path, parent)
-            except OSError as exc:
-                rollback_error = exc
         if temporary_path is not None:
-            try:
-                temporary_path.unlink()
-            except FileNotFoundError:
-                pass
-            except OSError as cleanup_error:
-                raise OSError(
-                    f"failed to clean temporary {field_name} file"
-                ) from cleanup_error
-        if rollback_error is not None:
-            raise OSError(
-                f"failed to roll back published {field_name} file"
-            ) from rollback_error
+            _clean_failed_publication(
+                path,
+                temporary_path,
+                parent,
+                published=published,
+                field_name=field_name,
+            )
         raise
     else:
         if temporary_path is None:
@@ -332,6 +354,13 @@ def _publish_bytes(
         except FileNotFoundError:
             pass
         except OSError as cleanup_error:
+            _clean_failed_publication(
+                path,
+                temporary_path,
+                parent,
+                published=True,
+                field_name=field_name,
+            )
             raise OSError(
                 f"failed to clean temporary {field_name} file"
             ) from cleanup_error

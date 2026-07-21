@@ -301,6 +301,123 @@ def test_writer_rolls_back_hard_link_when_parent_fsync_fails(
     assert _temporary_files(tmp_path) == []
 
 
+def test_writer_rolls_back_when_published_temp_cleanup_fails(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "frame000000.pkl.gz"
+    original_unlink = Path.unlink
+    original_fsync = hybrid_cache._fsync_directory
+    temporary_path: Path | None = None
+    temporary_unlink_calls = 0
+    rollback_inodes: list[tuple[int, int]] = []
+    fsync_calls = 0
+
+    def fail_first_temporary_unlink(
+        path: Path,
+        missing_ok: bool = False,
+    ) -> None:
+        nonlocal temporary_path, temporary_unlink_calls
+        if path.name.startswith(f".{output.name}."):
+            temporary_path = path
+            temporary_unlink_calls += 1
+            if temporary_unlink_calls == 1:
+                raise OSError("temporary unlink failed")
+        elif path == output:
+            assert temporary_path is not None
+            rollback_inodes.append(
+                (os.lstat(path).st_ino, os.lstat(temporary_path).st_ino)
+            )
+        original_unlink(path, missing_ok=missing_ok)
+
+    def record_fsync(directory: Path) -> None:
+        nonlocal fsync_calls
+        fsync_calls += 1
+        original_fsync(directory)
+
+    monkeypatch.setattr(Path, "unlink", fail_first_temporary_unlink)
+    monkeypatch.setattr(hybrid_cache, "_fsync_directory", record_fsync)
+    with pytest.raises(OSError, match="failed to clean temporary frontend cache output"):
+        write_hybrid_frame(output, _batch_fixture(), classes=("chair", "table"))
+
+    assert rollback_inodes and rollback_inodes[0][0] == rollback_inodes[0][1]
+    assert temporary_unlink_calls == 2
+    assert fsync_calls == 2
+    assert not output.exists()
+    assert _temporary_files(tmp_path) == []
+
+
+def test_writer_does_not_remove_competing_destination_during_cleanup_rollback(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "frame000000.pkl.gz"
+    original_unlink = Path.unlink
+    temporary_unlink_calls = 0
+    competing_data = b"competing cache publication"
+
+    def replace_destination_before_cleanup_failure(
+        path: Path,
+        missing_ok: bool = False,
+    ) -> None:
+        nonlocal temporary_unlink_calls
+        if path.name.startswith(f".{output.name}."):
+            temporary_unlink_calls += 1
+            if temporary_unlink_calls == 1:
+                original_unlink(output)
+                output.write_bytes(competing_data)
+                raise OSError("temporary unlink failed")
+        original_unlink(path, missing_ok=missing_ok)
+
+    monkeypatch.setattr(Path, "unlink", replace_destination_before_cleanup_failure)
+    with pytest.raises(
+        OSError,
+        match="failed to roll back published frontend cache output",
+    ):
+        write_hybrid_frame(output, _batch_fixture(), classes=("chair", "table"))
+
+    assert output.read_bytes() == competing_data
+    assert temporary_unlink_calls == 2
+    assert _temporary_files(tmp_path) == []
+
+
+def test_writer_prioritizes_rollback_error_when_cleanup_retry_also_fails(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "frame000000.pkl.gz"
+    original_unlink = Path.unlink
+    temporary_unlink_calls = 0
+    competing_data = b"competing cache publication"
+
+    def fail_cleanup_and_replace_destination(
+        path: Path,
+        missing_ok: bool = False,
+    ) -> None:
+        nonlocal temporary_unlink_calls
+        if path.name.startswith(f".{output.name}."):
+            temporary_unlink_calls += 1
+            if temporary_unlink_calls == 1:
+                original_unlink(output)
+                output.write_bytes(competing_data)
+            raise OSError("temporary unlink failed")
+        original_unlink(path, missing_ok=missing_ok)
+
+    monkeypatch.setattr(Path, "unlink", fail_cleanup_and_replace_destination)
+    with pytest.raises(
+        OSError,
+        match=(
+            "failed to roll back published frontend cache output file; "
+            "temporary frontend cache output cleanup also failed"
+        ),
+    ):
+        write_hybrid_frame(output, _batch_fixture(), classes=("chair", "table"))
+
+    assert output.read_bytes() == competing_data
+    assert temporary_unlink_calls == 2
+    assert len(_temporary_files(tmp_path)) == 1
+
+
 def test_manifest_is_deterministic_and_exactly_matches_published_json(
     tmp_path: Path,
 ) -> None:
