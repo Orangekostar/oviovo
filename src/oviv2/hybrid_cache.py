@@ -22,6 +22,7 @@ _PAYLOAD_KEYS = frozenset(
 )
 _SHA256_LENGTH = 64
 _MANIFEST_NAME = "frontend_manifest.json"
+_SNAPSHOT_MEMORY_LIMIT_BYTES = 8 * 1024 * 1024
 
 
 class _RestrictedUnpickler(pickle.Unpickler):
@@ -213,15 +214,26 @@ def load_frontend_batch(
     """Load one validated cache frame into the immutable frontend contract."""
 
     target = Path(path)
-    _assert_regular_input(target, field_name="frontend cache input")
-    if expected_sha256 is not None:
-        expected = _require_sha256(expected_sha256, "expected_sha256")
-        if sha256(target) != expected:
-            raise ValueError("frontend cache checksum mismatch")
+    expected = (
+        None
+        if expected_sha256 is None
+        else _require_sha256(expected_sha256, "expected_sha256")
+    )
+    source = _open_regular_input(target, field_name="frontend cache input")
 
     try:
-        with _open_regular_input(target, field_name="frontend cache input") as stream:
-            with gzip.GzipFile(fileobj=stream, mode="rb") as compressed:
+        with source, tempfile.SpooledTemporaryFile(
+            max_size=_SNAPSHOT_MEMORY_LIMIT_BYTES,
+            mode="w+b",
+        ) as snapshot:
+            digest = hashlib.sha256()
+            while block := source.read(1024 * 1024):
+                digest.update(block)
+                snapshot.write(block)
+            if expected is not None and digest.hexdigest() != expected:
+                raise ValueError("frontend cache checksum mismatch")
+            snapshot.seek(0)
+            with gzip.GzipFile(fileobj=snapshot, mode="rb") as compressed:
                 payload = _RestrictedUnpickler(compressed).load()
                 if compressed.read(1):
                     raise ValueError("frontend cache payload has trailing data")

@@ -4,7 +4,9 @@ import gzip
 import json
 import os
 import pickle
+from dataclasses import replace
 from pathlib import Path
+from typing import BinaryIO
 
 import numpy as np
 import pytest
@@ -253,6 +255,43 @@ def test_loader_rejects_corrupt_pickle_checksum_mismatch_and_symlink(
         load_frontend_batch(link)
     with pytest.raises(ValueError, match="sha256"):
         load_frontend_batch(valid, expected_sha256="A" * 64)
+
+
+def test_loader_hashes_and_parses_the_same_open_file_snapshot(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    trusted = tmp_path / "trusted.pkl.gz"
+    replacement = tmp_path / "replacement.pkl.gz"
+    trusted_batch = _batch_fixture()
+    replacement_batch = replace(trusted_batch, labels=("table", "chair"))
+    expected_sha256 = write_hybrid_frame(
+        trusted,
+        trusted_batch,
+        classes=("chair", "table"),
+    )
+    write_hybrid_frame(
+        replacement,
+        replacement_batch,
+        classes=("chair", "table"),
+    )
+    original_open = hybrid_cache._open_regular_input
+    open_count = 0
+
+    def replace_path_after_open(path: Path, *, field_name: str) -> BinaryIO:
+        nonlocal open_count
+        stream = original_open(path, field_name=field_name)
+        open_count += 1
+        if open_count == 1:
+            replacement.replace(trusted)
+        return stream
+
+    monkeypatch.setattr(hybrid_cache, "_open_regular_input", replace_path_after_open)
+
+    restored = load_frontend_batch(trusted, expected_sha256=expected_sha256)
+
+    assert restored.labels == trusted_batch.labels
+    assert open_count == 1
 
 
 def test_writer_removes_same_directory_temp_file_after_publish_failure(
