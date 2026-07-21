@@ -278,6 +278,9 @@ def _run(
     scene: str = "fixture",
     include_entity_info: bool = True,
     semantic_head: str | None = None,
+    mesh_weight_threshold: float | None = None,
+    semantic_reference_weight_threshold: float | None = None,
+    semantic_transfer_distance_m: float | None = None,
 ) -> subprocess.CompletedProcess:
     command = [
         sys.executable,
@@ -289,6 +292,19 @@ def _run(
         command.extend(("--entity-info", str(paths["entities"])))
     if semantic_head is not None:
         command.extend(("--semantic-head", semantic_head))
+    if mesh_weight_threshold is not None:
+        command.extend(("--mesh-weight-threshold", str(mesh_weight_threshold)))
+    if semantic_reference_weight_threshold is not None:
+        command.extend(
+            (
+                "--semantic-reference-weight-threshold",
+                str(semantic_reference_weight_threshold),
+            )
+        )
+    if semantic_transfer_distance_m is not None:
+        command.extend(
+            ("--semantic-transfer-distance-m", str(semantic_transfer_distance_m))
+        )
     command.extend(
         [
             "--gt-mesh",
@@ -309,6 +325,51 @@ def _run(
         capture_output=True,
         check=False,
     )
+
+
+def test_cli_applies_and_records_mesh_weight_threshold(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    baseline_output = tmp_path / "baseline"
+    filtered_output = tmp_path / "filtered"
+
+    baseline = _run(paths, baseline_output)
+    filtered = _run(
+        paths,
+        filtered_output,
+        mesh_weight_threshold=100.0,
+    )
+
+    assert baseline.returncode == 0, baseline.stderr
+    assert filtered.returncode == 0, filtered.stderr
+    baseline_metrics = json.loads((baseline_output / "metrics.json").read_text())
+    filtered_metrics = json.loads((filtered_output / "metrics.json").read_text())
+    assert filtered_metrics["f5"] < baseline_metrics["f5"]
+    assert filtered_metrics["protocol"]["mesh_weight_threshold"] == 100.0
+    assert len(PlyData.read(filtered_output / "oviv2_instance_mesh.ply")["vertex"]) == 0
+
+
+def test_cli_records_geometry_semantic_stabilization(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    output = tmp_path / "stabilized"
+
+    completed = _run(
+        paths,
+        output,
+        mesh_weight_threshold=0.5,
+        semantic_reference_weight_threshold=1.0,
+        semantic_transfer_distance_m=0.075,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    protocol = json.loads((output / "metrics.json").read_text())["protocol"]
+    stabilization = protocol["geometry_semantic_stabilization"]
+    assert stabilization["config"] == {
+        "maximum_transfer_distance_m": 0.075,
+        "novelty_tolerance_m": 1e-7,
+        "reference_weight_threshold": 1.0,
+    }
+    assert stabilization["transferred_vertex_count"] == 0
+    assert all(len(value) == 64 for value in stabilization["source_hashes"].values())
 
 
 def test_cli_writes_complete_deterministic_synthetic_evaluation(tmp_path: Path) -> None:

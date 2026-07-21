@@ -6,15 +6,20 @@ import hashlib
 import json
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 from scripts.evaluation.evaluate_oviv2_replica import (
     SEMANTIC_REPLAY_SOURCE_PATHS,
     evaluate,
 )
+from scripts.evaluation.evaluate_oviv2_instance_head import (
+    evaluate as evaluate_instance_head,
+)
 from scripts.run_oviv2_replica import _DenseCachePreflight
 from src.evaluation.oviv2_semantic_replay import semantic_replay_algorithm_hash
 from src.oviv2.snapshot import VoxelMapSnapshot
+from src.oviv2.evidence import SparseEvidenceStore
 from tests.evaluation.test_evaluate_oviv2_replica_cli import (
     _dense_provenance,
     _fixture,
@@ -242,6 +247,65 @@ def test_semantic_overlay_requires_paired_manifest_and_valid_hash(
                 semantic_evidence=overlay,
             )
         )
+
+
+def test_instance_head_consumes_semantic_overlay_and_mesh_threshold(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    paths = _fixture(
+        tmp_path,
+        schema_version=3,
+        entity_probabilities=((2, 1.0),),
+    )
+    overlay, replay_manifest = _replay_artifacts(paths, tmp_path)
+    snapshot = VoxelMapSnapshot.load(paths["snapshot"])
+    evidence = SparseEvidenceStore.load(overlay, snapshot.evidence.config)
+    for block in evidence._blocks.values():
+        active = np.any(block.semantic_ids > 0, axis=-1)
+        block.semantic_ids[active] = 0
+        block.semantic_support[active] = 0.0
+        block.semantic_revisions[active] = 0
+        block.semantic_ids[..., 0][active] = 1
+        block.semantic_support[..., 0][active] = 100.0
+        block.semantic_revisions[..., 0][active] = 1
+    evidence.save(overlay)
+    replay_payload = json.loads(replay_manifest.read_text(encoding="utf-8"))
+    replay_payload["overlay_sha256"] = hashlib.sha256(overlay.read_bytes()).hexdigest()
+    replay_manifest.write_text(json.dumps(replay_payload), encoding="utf-8")
+    _stub_preflight(monkeypatch, replay_manifest)
+
+    metrics = evaluate_instance_head(
+        argparse.Namespace(
+            snapshot=paths["snapshot"],
+            gt_mesh=paths["gt_mesh"],
+            gt_info=paths["gt_info"],
+            manifest=paths["manifest"],
+            scene="fixture",
+            output=tmp_path / "instance-head",
+            min_instance_vertices=1,
+            minimum_component_vertices=1,
+            child_score_multiplier=2.0,
+            deduplication_iou_threshold=0.95,
+            view_count_exponent=1.0,
+            semantic_evidence_exponent=1.0,
+            fusion_entity_weight_scale=0.49,
+            semantic_evidence=overlay,
+            semantic_replay_manifest=replay_manifest,
+            mesh_weight_threshold=0.5,
+            semantic_reference_weight_threshold=1.0,
+            semantic_transfer_distance_m=0.075,
+        )
+    )
+
+    assert metrics["miou"] < 1.0
+    assert metrics["protocol"]["mesh_weight_threshold"] == 0.5
+    assert metrics["protocol"]["semantic_replay"]["overlay_sha256"] == hashlib.sha256(
+        overlay.read_bytes()
+    ).hexdigest()
+    stabilization = metrics["protocol"]["geometry_semantic_stabilization"]
+    assert stabilization["config"]["reference_weight_threshold"] == 1.0
+    assert stabilization["config"]["maximum_transfer_distance_m"] == 0.075
 
 
 def test_semantic_overlay_rejects_unbound_source_and_benchmark(tmp_path: Path) -> None:

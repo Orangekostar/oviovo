@@ -171,6 +171,91 @@ def test_semantic_gate_requires_three_gains_and_identical_ap_geometry() -> None:
     assert "semantic_replay" in audit["protocol"]["comparison_excludes"]
 
 
+def test_composed_gate_requires_all_gains_on_the_frozen_snapshot() -> None:
+    baseline = metrics(snapshot_checksum="a" * 64)
+    candidate = metrics(
+        miou=0.39,
+        macc=0.44,
+        f_miou=0.67,
+        ap25=0.29,
+        ap50=0.06,
+        f5=0.92,
+        snapshot_checksum="a" * 64,
+    )
+    candidate["protocol"].update(
+        {
+            "headline_instance_protocol": "independent_gt_projection_hypotheses",
+            "instance_head_algorithm_hash": "a" * 64,
+            "semantic_replay": {"algorithm_hash": "b" * 64},
+            "mesh_weight_threshold": 0.5,
+            "geometry_semantic_stabilization": {"algorithm_hash": "c" * 64},
+        }
+    )
+
+    audit = compare_metrics(baseline, candidate, mode="composed")
+
+    assert audit["status"] == "PASS"
+    assert all(
+        check["relation"] == "strictly_greater"
+        for check in audit["checks"].values()
+    )
+    assert "snapshot_checksums" not in audit["protocol"]["comparison_excludes"]
+    assert {
+        "semantic_replay",
+        "mesh_weight_threshold",
+        "geometry_semantic_stabilization",
+    }.issubset(audit["protocol"]["comparison_excludes"])
+
+
+def test_composed_gate_rejects_snapshot_change() -> None:
+    candidate = metrics(
+        miou=0.39,
+        macc=0.44,
+        f_miou=0.67,
+        ap25=0.29,
+        ap50=0.06,
+        f5=0.92,
+        snapshot_checksum="b" * 64,
+    )
+    candidate["protocol"].update(
+        {
+            "instance_head_algorithm_hash": "a" * 64,
+            "semantic_replay": {"algorithm_hash": "b" * 64},
+            "mesh_weight_threshold": 0.5,
+            "geometry_semantic_stabilization": {"algorithm_hash": "c" * 64},
+        }
+    )
+    with pytest.raises(ValueError, match="protocol mismatch"):
+        compare_metrics(metrics(snapshot_checksum="a" * 64), candidate, mode="composed")
+
+
+@pytest.mark.parametrize(
+    "missing",
+    ("instance_head_algorithm_hash", "semantic_replay", "geometry_semantic_stabilization"),
+)
+def test_composed_gate_requires_all_head_provenance(missing: str) -> None:
+    candidate = metrics(
+        miou=0.39,
+        macc=0.44,
+        f_miou=0.67,
+        ap25=0.29,
+        ap50=0.06,
+        f5=0.92,
+    )
+    candidate["protocol"].update(
+        {
+            "instance_head_algorithm_hash": "a" * 64,
+            "semantic_replay": {"algorithm_hash": "b" * 64},
+            "mesh_weight_threshold": 0.5,
+            "geometry_semantic_stabilization": {"algorithm_hash": "c" * 64},
+        }
+    )
+    candidate["protocol"].pop(missing)
+
+    with pytest.raises(ValueError, match="requires.*provenance"):
+        compare_metrics(metrics(), candidate, mode="composed")
+
+
 @pytest.mark.parametrize("name", ("miou", "macc", "f_miou"))
 def test_semantic_gate_rejects_semantic_tie(name: str) -> None:
     candidate = metrics(miou=0.39, macc=0.44, f_miou=0.67)

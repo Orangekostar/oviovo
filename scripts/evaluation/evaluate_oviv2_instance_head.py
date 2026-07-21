@@ -14,6 +14,8 @@ import sys
 import tempfile
 from typing import Any
 
+import numpy as np
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
@@ -23,6 +25,7 @@ from scripts.evaluation.evaluate_oviv2_replica import (  # noqa: E402
     _load_manifest,
     _normalize_label,
     _normalized_aliases,
+    _load_semantic_replay,
     _verify_scene_inputs,
     _write_json,
     load_replica_ground_truth,
@@ -31,6 +34,10 @@ from src.evaluation.oviv2_instance_head import (  # noqa: E402
     InstanceHeadConfig,
     build_instance_hypotheses,
     evaluate_instance_hypotheses,
+)
+from src.evaluation.oviv2_geometry_head import (  # noqa: E402
+    GeometrySemanticStabilizationConfig,
+    stabilize_low_support_semantics,
 )
 from src.evaluation.oviv2_replica import (  # noqa: E402
     EntityEvaluationInfo,
@@ -106,6 +113,29 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
     ]
     class_to_id = {label: index + 1 for index, label in enumerate(classes)}
     valid_semantic_ids = set(class_to_id.values())
+    vocabulary_payload = {
+        "classes": classes,
+        "aliases": dict(sorted(aliases.items())),
+    }
+    vocabulary_hash = _json_hash(vocabulary_payload)
+    semantic_evidence_path = getattr(args, "semantic_evidence", None)
+    semantic_replay_manifest_path = getattr(args, "semantic_replay_manifest", None)
+    if (semantic_evidence_path is None) != (semantic_replay_manifest_path is None):
+        raise ValueError(
+            "--semantic-evidence and --semantic-replay-manifest must be supplied together"
+        )
+    if semantic_evidence_path is None:
+        evaluation_evidence = snapshot.evidence
+        semantic_replay_protocol = None
+    else:
+        evaluation_evidence, semantic_replay_protocol = _load_semantic_replay(
+            snapshot=snapshot,
+            evidence_path=semantic_evidence_path,
+            manifest_path=semantic_replay_manifest_path,
+            scene_id=args.scene,
+            benchmark_manifest_path=args.manifest,
+            vocabulary_hash=vocabulary_hash,
+        )
     structural_semantic_ids = frozenset(
         semantic_id
         for label, semantic_id in class_to_id.items()
@@ -145,14 +175,77 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         entity.entity_id: entity.semantic_posterior.probabilities for entity in entities
     }
     fusion_scale = float(args.fusion_entity_weight_scale)
+    mesh_weight_threshold = float(getattr(args, "mesh_weight_threshold", 1.0))
+    if not np.isfinite(mesh_weight_threshold) or mesh_weight_threshold < 0.0:
+        raise ValueError("mesh_weight_threshold must be finite and non-negative")
+    semantic_reference_threshold = getattr(
+        args,
+        "semantic_reference_weight_threshold",
+        None,
+    )
+    semantic_transfer_distance = getattr(args, "semantic_transfer_distance_m", None)
+    if (semantic_reference_threshold is None) != (semantic_transfer_distance is None):
+        raise ValueError(
+            "semantic reference threshold and transfer distance must be supplied together"
+        )
     mesh = derive_labeled_mesh(
         snapshot.geometry,
-        snapshot.evidence,
+        evaluation_evidence,
         snapshot.ownership,
+        weight_threshold=mesh_weight_threshold,
         entity_posteriors=entity_posteriors,
         semantic_fusion=SemanticFusionConfig(entity_weight_scale=fusion_scale),
         valid_semantic_ids=valid_semantic_ids,
     )
+    geometry_stabilization_protocol = None
+    if semantic_reference_threshold is not None:
+        reference_threshold = float(semantic_reference_threshold)
+        if (
+            not np.isfinite(reference_threshold)
+            or reference_threshold <= mesh_weight_threshold
+        ):
+            raise ValueError(
+                "semantic reference weight threshold must be finite and above the mesh threshold"
+            )
+        stabilization_config = GeometrySemanticStabilizationConfig(
+            maximum_transfer_distance_m=semantic_transfer_distance,
+        )
+        reference_mesh = derive_labeled_mesh(
+            snapshot.geometry,
+            evaluation_evidence,
+            snapshot.ownership,
+            weight_threshold=reference_threshold,
+            entity_posteriors=entity_posteriors,
+            semantic_fusion=SemanticFusionConfig(entity_weight_scale=fusion_scale),
+            valid_semantic_ids=valid_semantic_ids,
+        )
+        stabilization = stabilize_low_support_semantics(
+            mesh,
+            reference_mesh,
+            stabilization_config,
+        )
+        mesh = stabilization.mesh
+        stabilization_payload = {
+            **asdict(stabilization_config),
+            "reference_weight_threshold": reference_threshold,
+        }
+        stabilization_sources = {
+            "cli": _sha256_file(Path(__file__)),
+            "geometry_head": _sha256_file(
+                REPO_ROOT / "src/evaluation/oviv2_geometry_head.py"
+            ),
+        }
+        geometry_stabilization_protocol = {
+            "config": stabilization_payload,
+            "transferred_vertex_count": stabilization.transferred_vertex_count,
+            "source_hashes": stabilization_sources,
+            "algorithm_hash": _json_hash(
+                {
+                    "config": stabilization_payload,
+                    "source_hashes": stabilization_sources,
+                }
+            ),
+        }
     ground_truth = load_replica_ground_truth(
         args.gt_mesh,
         args.gt_info,
@@ -196,14 +289,16 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
     metrics["instance"]["class_agnostic"] = instance_head
 
     config_payload = _normalized_config(config)
-    vocabulary_payload = {
-        "classes": classes,
-        "aliases": dict(sorted(aliases.items())),
-    }
     source_hashes = {
         "cli": _sha256_file(Path(__file__)),
+        "geometry_head": _sha256_file(
+            REPO_ROOT / "src/evaluation/oviv2_geometry_head.py"
+        ),
         "instance_head": _sha256_file(
             REPO_ROOT / "src" / "evaluation" / "oviv2_instance_head.py"
+        ),
+        "replica_evaluator": _sha256_file(
+            REPO_ROOT / "scripts/evaluation/evaluate_oviv2_replica.py"
         ),
     }
     algorithm_hash = _json_hash(
@@ -218,9 +313,10 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
                 "mode": "uncertainty_linear",
                 "entity_weight_scale": fusion_scale,
             },
-            "vocabulary_hash": _json_hash(vocabulary_payload),
+            "vocabulary_hash": vocabulary_hash,
             "snapshot_revision": snapshot.metadata.revision,
             "snapshot_checksums": dict(sorted(snapshot.checksums.items())),
+            "mesh_weight_threshold": mesh_weight_threshold,
             "headline_instance_protocol": "independent_gt_projection_hypotheses",
             "instance_head_config": config_payload,
             "instance_head_config_hash": _json_hash(config_payload),
@@ -228,6 +324,12 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
             "instance_head_algorithm_hash": algorithm_hash,
         }
     )
+    if semantic_replay_protocol is not None:
+        metrics["protocol"]["semantic_replay"] = semantic_replay_protocol
+    if geometry_stabilization_protocol is not None:
+        metrics["protocol"]["geometry_semantic_stabilization"] = (
+            geometry_stabilization_protocol
+        )
     audit = {
         "config": config_payload,
         "config_hash": metrics["protocol"]["instance_head_config_hash"],
@@ -254,6 +356,8 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--snapshot", type=Path, required=True)
+    parser.add_argument("--semantic-evidence", type=Path)
+    parser.add_argument("--semantic-replay-manifest", type=Path)
     parser.add_argument("--gt-mesh", type=Path, required=True)
     parser.add_argument("--gt-info", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
@@ -266,6 +370,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--view-count-exponent", type=float, default=1.0)
     parser.add_argument("--semantic-evidence-exponent", type=float, default=1.0)
     parser.add_argument("--fusion-entity-weight-scale", type=float, default=0.49)
+    parser.add_argument("--mesh-weight-threshold", type=float, default=1.0)
+    parser.add_argument("--semantic-reference-weight-threshold", type=float)
+    parser.add_argument("--semantic-transfer-distance-m", type=float)
     return parser.parse_args(argv)
 
 

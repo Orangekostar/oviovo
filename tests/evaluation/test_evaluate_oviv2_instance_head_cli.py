@@ -58,7 +58,12 @@ def test_instance_head_cli_preserves_other_heads_and_writes_audit(tmp_path: Path
     assert metrics["instance"]["legacy_class_agnostic"] == audit["legacy"]
     assert audit["config"]["minimum_component_vertices"] == 1
     assert audit["snapshot_checksums"]
-    assert set(audit["source_hashes"]) == {"cli", "instance_head"}
+    assert set(audit["source_hashes"]) == {
+        "cli",
+        "geometry_head",
+        "instance_head",
+        "replica_evaluator",
+    }
     assert all(len(value) == 64 for value in audit["source_hashes"].values())
 
     original_metrics = (output / "metrics.json").read_bytes()

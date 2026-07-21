@@ -30,7 +30,7 @@ METRIC_PATHS: dict[str, tuple[str, ...]] = {
 ROUTE2_IMPROVEMENT_METRICS = frozenset(METRIC_PATHS) - {"f5"}
 INSTANCE_IMPROVEMENT_METRICS = frozenset({"ap25", "ap50"})
 SEMANTIC_IMPROVEMENT_METRICS = frozenset({"miou", "macc", "f_miou"})
-VALID_MODES = frozenset({"instance", "semantic", "route2", "final"})
+VALID_MODES = frozenset({"composed", "instance", "semantic", "route2", "final"})
 PROTOCOL_COMPARISON_EXCLUSIONS = frozenset({"snapshot_checksums"})
 INSTANCE_PROTOCOL_EXCLUSIONS = frozenset(
     {
@@ -42,6 +42,9 @@ INSTANCE_PROTOCOL_EXCLUSIONS = frozenset(
     }
 )
 SEMANTIC_PROTOCOL_EXCLUSIONS = frozenset({"semantic_replay"})
+GEOMETRY_PROTOCOL_EXCLUSIONS = frozenset(
+    {"mesh_weight_threshold", "geometry_semantic_stabilization"}
+)
 
 
 def _object(value: object, label: str) -> Mapping[str, Any]:
@@ -124,6 +127,33 @@ def _reject_ambiguous_wrapper(payload: Mapping[str, Any], label: str) -> None:
         raise ValueError(f"{label} has ambiguous metrics wrapper")
 
 
+def _valid_sha256(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
+def _validate_composed_provenance(protocol: Mapping[str, Any]) -> None:
+    instance_hash = protocol.get("instance_head_algorithm_hash")
+    semantic_replay = protocol.get("semantic_replay")
+    geometry = protocol.get("geometry_semantic_stabilization")
+    mesh_threshold = protocol.get("mesh_weight_threshold")
+    if (
+        not _valid_sha256(instance_hash)
+        or not isinstance(semantic_replay, Mapping)
+        or not _valid_sha256(semantic_replay.get("algorithm_hash"))
+        or not isinstance(geometry, Mapping)
+        or not _valid_sha256(geometry.get("algorithm_hash"))
+        or isinstance(mesh_threshold, bool)
+        or not isinstance(mesh_threshold, (int, float))
+        or not math.isfinite(float(mesh_threshold))
+        or float(mesh_threshold) < 0.0
+    ):
+        raise ValueError("composed mode requires complete head provenance")
+
+
 def compare_metrics(
     baseline: Mapping[str, Any],
     candidate: Mapping[str, Any],
@@ -140,12 +170,18 @@ def compare_metrics(
 
     protocol_exclusions = (
         frozenset()
-        if mode in {"instance", "semantic"}
+        if mode in {"composed", "instance", "semantic"}
         else PROTOCOL_COMPARISON_EXCLUSIONS
     ) | (
-        INSTANCE_PROTOCOL_EXCLUSIONS if mode == "instance" else frozenset()
+        INSTANCE_PROTOCOL_EXCLUSIONS
+        if mode in {"composed", "instance"}
+        else frozenset()
     ) | (
-        SEMANTIC_PROTOCOL_EXCLUSIONS if mode == "semantic" else frozenset()
+        SEMANTIC_PROTOCOL_EXCLUSIONS
+        if mode in {"composed", "semantic"}
+        else frozenset()
+    ) | (
+        GEOMETRY_PROTOCOL_EXCLUSIONS if mode == "composed" else frozenset()
     )
     baseline_scene, baseline_protocol, baseline_contract = _protocol_context(
         baseline_object, "baseline", protocol_exclusions
@@ -153,6 +189,8 @@ def compare_metrics(
     candidate_scene, candidate_protocol, candidate_contract = _protocol_context(
         candidate_object, "candidate", protocol_exclusions
     )
+    if mode == "composed":
+        _validate_composed_provenance(candidate_protocol)
     if baseline_scene != candidate_scene:
         raise ValueError(
             f"scene mismatch: baseline={baseline_scene!r}, candidate={candidate_scene!r}"
@@ -165,7 +203,7 @@ def compare_metrics(
         baseline_value = _read_metric(baseline_object, name, "baseline")
         candidate_value = _read_metric(candidate_object, name, "candidate")
         requires_improvement = (
-            mode == "final"
+            mode in {"composed", "final"}
             or (mode == "route2" and name in ROUTE2_IMPROVEMENT_METRICS)
             or (mode == "instance" and name in INSTANCE_IMPROVEMENT_METRICS)
             or (mode == "semantic" and name in SEMANTIC_IMPROVEMENT_METRICS)

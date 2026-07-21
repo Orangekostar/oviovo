@@ -33,6 +33,10 @@ from src.evaluation.oviv2_semantic_replay import (  # noqa: E402
     SEMANTIC_REPLAY_SOURCE_RELATIVE_PATHS,
     semantic_replay_algorithm_hash,
 )
+from src.evaluation.oviv2_geometry_head import (  # noqa: E402
+    GeometrySemanticStabilizationConfig,
+    stabilize_low_support_semantics,
+)
 from src.oviv2.meshing import derive_labeled_mesh, write_labeled_mesh  # noqa: E402
 from src.oviv2.evidence import SparseEvidenceStore  # noqa: E402
 from src.oviv2.semantic_fusion import SemanticFusionConfig  # noqa: E402
@@ -45,6 +49,7 @@ SEMANTIC_REPLAY_SOURCE_PATHS = {
     name: REPO_ROOT / relative
     for name, relative in SEMANTIC_REPLAY_SOURCE_RELATIVE_PATHS.items()
 }
+GEOMETRY_HEAD_SOURCE_PATH = REPO_ROOT / "src/evaluation/oviv2_geometry_head.py"
 
 
 def _regular_file_bytes(path: Path, label: str, max_bytes: int) -> bytes:
@@ -658,6 +663,19 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
     fusion_config = SemanticFusionConfig(
         entity_weight_scale=getattr(args, "fusion_entity_weight_scale", 0.5)
     )
+    mesh_weight_threshold = float(getattr(args, "mesh_weight_threshold", 1.0))
+    if not np.isfinite(mesh_weight_threshold) or mesh_weight_threshold < 0.0:
+        raise ValueError("mesh_weight_threshold must be finite and non-negative")
+    semantic_reference_threshold = getattr(
+        args,
+        "semantic_reference_weight_threshold",
+        None,
+    )
+    semantic_transfer_distance = getattr(args, "semantic_transfer_distance_m", None)
+    if (semantic_reference_threshold is None) != (semantic_transfer_distance is None):
+        raise ValueError(
+            "semantic reference threshold and transfer distance must be supplied together"
+        )
 
     class_to_id = {label: index + 1 for index, label in enumerate(classes)}
     valid_semantic_ids = set(class_to_id.values())
@@ -715,6 +733,7 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         snapshot.geometry,
         evaluation_evidence,
         snapshot.ownership,
+        weight_threshold=mesh_weight_threshold,
         entity_semantics=(
             entity_semantics if semantic_head == "owner_authoritative" else None
         ),
@@ -726,6 +745,64 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         ),
         valid_semantic_ids=valid_semantic_ids,
     )
+    geometry_stabilization_protocol = None
+    if semantic_reference_threshold is not None:
+        reference_threshold = float(semantic_reference_threshold)
+        if (
+            not np.isfinite(reference_threshold)
+            or reference_threshold <= mesh_weight_threshold
+        ):
+            raise ValueError(
+                "semantic reference weight threshold must be finite and above the mesh threshold"
+            )
+        stabilization_config = GeometrySemanticStabilizationConfig(
+            maximum_transfer_distance_m=semantic_transfer_distance,
+        )
+        reference_mesh = derive_labeled_mesh(
+            snapshot.geometry,
+            evaluation_evidence,
+            snapshot.ownership,
+            weight_threshold=reference_threshold,
+            entity_semantics=(
+                entity_semantics if semantic_head == "owner_authoritative" else None
+            ),
+            entity_posteriors=(
+                entity_posteriors if semantic_head == "fused_uncertainty" else None
+            ),
+            semantic_fusion=(
+                fusion_config if semantic_head == "fused_uncertainty" else None
+            ),
+            valid_semantic_ids=valid_semantic_ids,
+        )
+        stabilization = stabilize_low_support_semantics(
+            mesh,
+            reference_mesh,
+            stabilization_config,
+        )
+        mesh = stabilization.mesh
+        stabilization_payload = {
+            **asdict(stabilization_config),
+            "reference_weight_threshold": reference_threshold,
+        }
+        stabilization_sources = {
+            "evaluator": _sha256(Path(__file__)),
+            "geometry_head": _sha256(GEOMETRY_HEAD_SOURCE_PATH),
+        }
+        geometry_stabilization_protocol = {
+            "config": stabilization_payload,
+            "transferred_vertex_count": stabilization.transferred_vertex_count,
+            "source_hashes": stabilization_sources,
+            "algorithm_hash": hashlib.sha256(
+                json.dumps(
+                    {
+                        "config": stabilization_payload,
+                        "source_hashes": stabilization_sources,
+                    },
+                    separators=(",", ":"),
+                    sort_keys=True,
+                ).encode("utf-8")
+            ).hexdigest(),
+        }
     mesh_semantic_ids = {int(value) for value in np.unique(mesh.semantic_ids) if value > 0}
     if not mesh_semantic_ids.issubset(valid_semantic_ids):
         raise ValueError("snapshot semantic evidence is outside frozen vocabulary")
@@ -756,6 +833,7 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
             "vocabulary_hash": vocabulary_hash,
             "snapshot_revision": snapshot.metadata.revision,
             "snapshot_checksums": dict(sorted(snapshot.checksums.items())),
+            "mesh_weight_threshold": mesh_weight_threshold,
         }
     )
     if semantic_head == "fused_uncertainty":
@@ -765,6 +843,10 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         }
     if semantic_replay_protocol is not None:
         metrics["protocol"]["semantic_replay"] = semantic_replay_protocol
+    if geometry_stabilization_protocol is not None:
+        metrics["protocol"]["geometry_semantic_stabilization"] = (
+            geometry_stabilization_protocol
+        )
 
     def write_output(directory: Path) -> None:
         _write_json(directory / "metrics.json", metrics)
@@ -822,6 +904,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         type=float,
         default=0.5,
     )
+    parser.add_argument("--mesh-weight-threshold", type=float, default=1.0)
+    parser.add_argument("--semantic-reference-weight-threshold", type=float)
+    parser.add_argument("--semantic-transfer-distance-m", type=float)
     return parser.parse_args(argv)
 
 
