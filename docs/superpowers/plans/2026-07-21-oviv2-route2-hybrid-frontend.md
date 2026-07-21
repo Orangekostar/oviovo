@@ -267,7 +267,7 @@ Add complete synthetic YOLO, SAM, dense, and valid-depth fixtures. Require:
         assert result.diagnostics["accepted_novel_sam"] == 1
         assert result.diagnostics["rejected_duplicate"] == 1
 
-Also test YOLO inheritance, RADSeg fallback, area rejection, structure rejection, depth rejection, SAM NMS, stable confidence ordering, class caps, global caps, and repeated-call equality.
+Also test YOLO inheritance, RADSeg fallback, area rejection, structure rejection, depth rejection, SAM NMS, stable confidence ordering, class caps, global caps, and repeated-call equality. For `quota_nms_ensemble`, retain YOLO anchors under the final per-class and global caps before NMS; preserve their confidence/index ordering without YOLO-vs-YOLO suppression, initialize occupancy only with those retained YOLO masks, then reject a SAM candidate at IoU >= `duplicate_iou` against a retained YOLO or higher-priority SAM. A YOLO removed by a quota must not suppress a SAM candidate.
 
 - [ ] **Step 2: Run and verify failure**
 
@@ -281,6 +281,8 @@ Add HybridFrameResult and select_hybrid_proposals(). Use this priority:
 2. SAM proposals with reliable YOLO inheritance.
 3. Novel SAM proposals with RADSeg fallback.
 4. Within one class, descending confidence, descending area, then source index.
+
+Freeze compact rescue to `quota_nms_ensemble` only. Add `compact_rescue_minimum_area_fraction=0.00002`, `compact_rescue_minimum_confidence=0.60`, and `maximum_compact_rescues=4`; validate both thresholds as finite values in [0, 1] and the cap as a positive non-bool integer. For `quota_nms_ensemble`, require the rescue area minimum to be strictly below `minimum_area_fraction`; non-quota variants do not apply that relationship constraint. A rescue candidate must be a SAM mask with area fraction in [`compact_rescue_minimum_area_fraction`, `minimum_area_fraction`), pass the normal maximum-area, depth, and structure filters, and obtain either normal reliable-YOLO inheritance or normal RADSeg fallback. Reject a rescue below the final confidence threshold as `rejected_area`. Rank regular inherited SAM first, compact rescues second, and regular RADSeg fallback third, using confidence descending, area descending, and source index ascending within each tier. Apply the same cross-source NMS, per-class cap, and global cap; accept at most `maximum_compact_rescues`, report final `accepted_compact_rescue` and deterministic `rejected_compact_rescue_cap`, and retain the original `accepted_inherited_sam` or `accepted_novel_sam` source count.
 
 Accept YOLO inheritance at IoU >= 0.50 or either directed coverage >= 0.60. Require maximum YOLO IoU < 0.80 for novelty. Compute inherited confidence as yolo_confidence times the square root of the maximum overlap measure, clipped to [0, 1]. Use dense probability for fallback confidence.
 

@@ -459,6 +459,8 @@ def test_hybrid_config_rejects_unsupported_variants(variant: object) -> None:
         "novel_iou",
         "duplicate_iou",
         "minimum_area_fraction",
+        "compact_rescue_minimum_area_fraction",
+        "compact_rescue_minimum_confidence",
         "maximum_area_fraction",
         "minimum_valid_depth_fraction",
         "minimum_dense_probability",
@@ -509,7 +511,10 @@ def test_hybrid_config_rejects_inverted_area_fraction_bounds() -> None:
         )
 
 
-@pytest.mark.parametrize("field_name", ["maximum_proposals", "maximum_per_class"])
+@pytest.mark.parametrize(
+    "field_name",
+    ["maximum_proposals", "maximum_per_class", "maximum_compact_rescues"],
+)
 @pytest.mark.parametrize("value", [True, False, 0, -1, 1.5, "2"])
 def test_hybrid_config_requires_positive_non_bool_integer_limits(
     field_name: str,
@@ -524,11 +529,43 @@ def test_hybrid_config_normalizes_numpy_scalar_values() -> None:
         variant="quota_nms_ensemble",
         novel_iou=np.float32(0.75),
         maximum_proposals=np.int64(32),
+        maximum_compact_rescues=np.int64(3),
     )
 
     assert type(config.novel_iou) is float
     assert type(config.maximum_proposals) is int
+    assert type(config.maximum_compact_rescues) is int
     assert replace(config, maximum_per_class=4).maximum_per_class == 4
+
+
+@pytest.mark.parametrize(
+    ("compact_minimum", "normal_minimum"),
+    [(0.1, 0.1), (0.2, 0.1)],
+    ids=("equal", "above"),
+)
+def test_hybrid_config_requires_compact_rescue_area_below_normal_minimum(
+    compact_minimum: float,
+    normal_minimum: float,
+) -> None:
+    with pytest.raises(
+        ValueError,
+        match="compact_rescue_minimum_area_fraction.*minimum_area_fraction",
+    ):
+        HybridFrontendConfig(
+            variant="quota_nms_ensemble",
+            compact_rescue_minimum_area_fraction=compact_minimum,
+            minimum_area_fraction=normal_minimum,
+        )
+
+
+@pytest.mark.parametrize("variant", ["sam_labeled", "yolo_novel_sam"])
+def test_non_quota_config_allows_zero_minimum_area_fraction(variant: str) -> None:
+    config = HybridFrontendConfig(
+        variant=variant,
+        minimum_area_fraction=0.0,
+    )
+
+    assert config.minimum_area_fraction == 0.0
 
 
 def test_dense_mask_aggregation_returns_stride_two_nonstructural_label() -> None:
@@ -1279,6 +1316,397 @@ def test_quota_ensemble_stably_sorts_yolo_inherited_and_fallback_groups() -> Non
         "table",
     )
     np.testing.assert_array_equal(result.batch.masks[3:], sam_masks[[1, 0, 3, 2]])
+
+
+def test_quota_nms_rejects_exact_sam_duplicate_against_retained_yolo() -> None:
+    shape = (2, 4)
+    mask = np.zeros((1, *shape), dtype=bool)
+    mask[0, 0, :2] = True
+
+    result = _select(
+        yolo=_proposal_batch(mask, (0.9,), labels=("chair",)),
+        sam=_proposal_batch(mask, (0.1,)),
+        dense=_selector_dense(np.full(shape, 2)),
+        config=HybridFrontendConfig(variant="quota_nms_ensemble"),
+    )
+
+    assert result.batch.labels == ("chair",)
+    assert result.diagnostics["accepted_yolo"] == 1
+    assert result.diagnostics["accepted_inherited_sam"] == 0
+    assert result.diagnostics["rejected_duplicate"] == 1
+
+
+def test_quota_nms_does_not_deduplicate_yolo_anchors() -> None:
+    shape = (2, 4)
+    mask = np.zeros((2, *shape), dtype=bool)
+    mask[:, 0, :2] = True
+
+    result = _select(
+        yolo=_proposal_batch(mask, (0.9, 0.8), labels=("chair", "table")),
+        sam=_empty_proposal_batch(shape),
+        dense=_selector_dense(np.full(shape, 2)),
+        config=HybridFrontendConfig(variant="quota_nms_ensemble"),
+    )
+
+    assert result.batch.labels == ("chair", "table")
+    assert result.diagnostics["accepted_yolo"] == 2
+    assert result.diagnostics["rejected_duplicate"] == 0
+
+
+def test_quota_nms_ignores_yolo_dropped_by_class_cap() -> None:
+    shape = (10, 10)
+    yolo_masks = np.zeros((2, *shape), dtype=bool)
+    yolo_masks[0, 0, :20] = True
+    yolo_masks[1, 2, :10] = True
+    yolo_masks[1, 3, :10] = True
+    sam_mask = np.zeros((1, *shape), dtype=bool)
+    sam_mask[0, 2, :10] = True
+    sam_mask[0, 3, :9] = True
+    sam_mask[0, 4, 0] = True
+
+    result = _select(
+        yolo=_proposal_batch(yolo_masks, (0.9, 0.8), labels=("chair", "chair")),
+        sam=_proposal_batch(sam_mask, (0.1,)),
+        dense=_selector_dense(np.full(shape, 3), 0.8),
+        config=HybridFrontendConfig(
+            variant="quota_nms_ensemble",
+            yolo_match_iou=0.95,
+            yolo_match_coverage=0.96,
+            duplicate_iou=0.85,
+            maximum_per_class=1,
+        ),
+    )
+
+    assert result.batch.labels == ("chair", "table")
+    assert result.diagnostics["accepted_yolo"] == 1
+    assert result.diagnostics["accepted_novel_sam"] == 1
+    assert result.diagnostics["rejected_class_cap"] == 1
+    assert result.diagnostics["rejected_duplicate"] == 0
+
+
+def test_sam_labeled_does_not_nms_against_unretained_yolo() -> None:
+    shape = (2, 4)
+    mask = np.zeros((1, *shape), dtype=bool)
+    mask[0, 0, :2] = True
+
+    result = _select(
+        yolo=_proposal_batch(mask, (0.9,), labels=("chair",)),
+        sam=_proposal_batch(mask, (0.1,)),
+        dense=_selector_dense(np.full(shape, 2)),
+        config=HybridFrontendConfig(variant="sam_labeled"),
+    )
+
+    assert result.batch.labels == ("chair",)
+    assert result.diagnostics["accepted_inherited_sam"] == 1
+    assert result.diagnostics["rejected_duplicate"] == 0
+
+
+def test_quota_rescues_tiny_sam_with_reliable_yolo_inheritance() -> None:
+    shape = (4, 5)
+    yolo_mask = np.zeros((1, *shape), dtype=bool)
+    yolo_mask[0, 0, :2] = True
+    sam_mask = np.zeros((1, *shape), dtype=bool)
+    sam_mask[0, 0, 0] = True
+
+    result = _select(
+        yolo=_proposal_batch(yolo_mask, (0.9,), labels=("chair",)),
+        sam=_proposal_batch(sam_mask, (0.1,)),
+        dense=_selector_dense(np.full(shape, 3)),
+        config=HybridFrontendConfig(
+            variant="quota_nms_ensemble",
+            minimum_area_fraction=0.1,
+            compact_rescue_minimum_area_fraction=0.02,
+        ),
+    )
+
+    assert result.batch.labels == ("chair", "chair")
+    assert result.diagnostics["accepted_inherited_sam"] == 1
+    assert result.diagnostics["accepted_compact_rescue"] == 1
+
+
+def test_quota_rescues_tiny_sam_with_dense_fallback() -> None:
+    shape = (4, 5)
+    sam_mask = np.zeros((1, *shape), dtype=bool)
+    sam_mask[0, 0, 0] = True
+
+    result = _select(
+        yolo=_empty_proposal_batch(shape),
+        sam=_proposal_batch(sam_mask, (0.1,)),
+        dense=_selector_dense(np.full(shape, 2), 0.8),
+        config=HybridFrontendConfig(
+            variant="quota_nms_ensemble",
+            minimum_area_fraction=0.1,
+            compact_rescue_minimum_area_fraction=0.02,
+        ),
+    )
+
+    assert result.batch.labels == ("chair",)
+    assert result.batch.confidences == pytest.approx((0.8,))
+    assert result.diagnostics["accepted_novel_sam"] == 1
+    assert result.diagnostics["accepted_compact_rescue"] == 1
+
+
+def test_quota_orders_compact_rescue_between_regular_inherited_and_fallback() -> None:
+    shape = (10, 10)
+    yolo_mask = np.zeros((1, *shape), dtype=bool)
+    yolo_mask[0, 0, :] = True
+    yolo_mask[0, 1, :2] = True
+    sam_masks = np.zeros((3, *shape), dtype=bool)
+    sam_masks[0, 0, :] = True
+    sam_masks[1, 8, :] = True
+    sam_masks[2, 5, 0] = True
+    dense_probabilities = np.full(shape, 0.8, dtype=np.float32)
+    dense_probabilities[8, :] = 0.95
+
+    result = _select(
+        yolo=_proposal_batch(yolo_mask, (0.9,), labels=("chair",)),
+        sam=_proposal_batch(sam_masks, (0.1, 0.1, 0.1)),
+        dense=_selector_dense(np.full(shape, 2), dense_probabilities),
+        config=HybridFrontendConfig(
+            variant="quota_nms_ensemble",
+            minimum_area_fraction=0.1,
+            compact_rescue_minimum_area_fraction=0.005,
+        ),
+    )
+
+    np.testing.assert_array_equal(result.batch.masks[1:], sam_masks[[0, 2, 1]])
+    assert result.diagnostics["accepted_compact_rescue"] == 1
+
+
+@pytest.mark.parametrize(
+    ("dense_id", "valid_depth_value", "rejection_key"),
+    [(2, False, "rejected_depth"), (1, True, "rejected_structure")],
+    ids=("depth", "structure"),
+)
+def test_compact_rescue_still_requires_depth_and_nonstructure_filters(
+    dense_id: int,
+    valid_depth_value: bool,
+    rejection_key: str,
+) -> None:
+    shape = (4, 5)
+    sam_mask = np.zeros((1, *shape), dtype=bool)
+    sam_mask[0, 0, 0] = True
+    valid_depth = np.ones(shape, dtype=bool)
+    valid_depth[0, 0] = valid_depth_value
+
+    result = _select(
+        yolo=_empty_proposal_batch(shape),
+        sam=_proposal_batch(sam_mask, (0.1,)),
+        dense=_selector_dense(np.full(shape, dense_id), 0.8),
+        valid_depth=valid_depth,
+        config=HybridFrontendConfig(
+            variant="quota_nms_ensemble",
+            minimum_area_fraction=0.1,
+            compact_rescue_minimum_area_fraction=0.02,
+        ),
+    )
+
+    assert result.batch.labels == ()
+    assert result.diagnostics[rejection_key] == 1
+    assert result.diagnostics["accepted_compact_rescue"] == 0
+
+
+def test_quota_rejects_low_confidence_tiny_sam_as_area() -> None:
+    shape = (4, 5)
+    sam_mask = np.zeros((1, *shape), dtype=bool)
+    sam_mask[0, 0, 0] = True
+
+    result = _select(
+        yolo=_empty_proposal_batch(shape),
+        sam=_proposal_batch(sam_mask, (0.1,)),
+        dense=_selector_dense(np.full(shape, 2), 0.59),
+        config=HybridFrontendConfig(
+            variant="quota_nms_ensemble",
+            minimum_area_fraction=0.1,
+            compact_rescue_minimum_area_fraction=0.02,
+        ),
+    )
+
+    assert result.batch.labels == ()
+    assert result.diagnostics["rejected_area"] == 1
+    assert result.diagnostics["accepted_compact_rescue"] == 0
+
+
+def test_quota_rejects_sam_below_compact_rescue_area_minimum() -> None:
+    shape = (4, 5)
+    sam_mask = np.zeros((1, *shape), dtype=bool)
+    sam_mask[0, 0, 0] = True
+
+    result = _select(
+        yolo=_empty_proposal_batch(shape),
+        sam=_proposal_batch(sam_mask, (0.1,)),
+        dense=_selector_dense(np.full(shape, 2), 0.8),
+        config=HybridFrontendConfig(
+            variant="quota_nms_ensemble",
+            minimum_area_fraction=0.1,
+            compact_rescue_minimum_area_fraction=0.06,
+        ),
+    )
+
+    assert result.batch.labels == ()
+    assert result.diagnostics["rejected_area"] == 1
+
+
+def test_compact_rescue_is_disabled_for_non_quota_variants() -> None:
+    shape = (4, 5)
+    sam_mask = np.zeros((1, *shape), dtype=bool)
+    sam_mask[0, 0, 0] = True
+
+    result = _select(
+        yolo=_empty_proposal_batch(shape),
+        sam=_proposal_batch(sam_mask, (0.1,)),
+        dense=_selector_dense(np.full(shape, 2), 0.8),
+        config=HybridFrontendConfig(
+            variant="sam_labeled",
+            minimum_area_fraction=0.1,
+            compact_rescue_minimum_area_fraction=0.02,
+        ),
+    )
+
+    assert result.batch.labels == ()
+    assert result.diagnostics["rejected_area"] == 1
+
+
+def test_quota_compact_rescue_cap_is_stable_and_post_selection_consistent() -> None:
+    shape = (4, 10)
+    sam_masks = np.zeros((3, *shape), dtype=bool)
+    sam_masks[0, 0, 0] = True
+    sam_masks[1, 0, 1] = True
+    sam_masks[2, 0, 2] = True
+    dense_probabilities = np.full(shape, 0.8, dtype=np.float32)
+    dense_probabilities[0, 0] = 0.7
+    kwargs = {
+        "yolo": _empty_proposal_batch(shape),
+        "sam": _proposal_batch(sam_masks, (0.1, 0.1, 0.1)),
+        "dense": _selector_dense(np.full(shape, 2), dense_probabilities),
+        "config": HybridFrontendConfig(
+            variant="quota_nms_ensemble",
+            minimum_area_fraction=0.05,
+            compact_rescue_minimum_area_fraction=0.02,
+            maximum_compact_rescues=2,
+        ),
+    }
+
+    first = _select(**kwargs)
+    second = _select(**kwargs)
+
+    np.testing.assert_array_equal(first.batch.masks, sam_masks[[1, 2]])
+    np.testing.assert_array_equal(first.batch.masks, second.batch.masks)
+    assert dict(first.diagnostics) == dict(second.diagnostics)
+    assert first.diagnostics["accepted_compact_rescue"] == 2
+    assert first.diagnostics["accepted_novel_sam"] == 2
+    assert first.diagnostics["rejected_compact_rescue_cap"] == 1
+
+
+def test_compact_rescue_rejected_by_cap_does_not_suppress_regular_fallback() -> None:
+    shape = (10, 20)
+    sam_masks = np.zeros((3, *shape), dtype=bool)
+    sam_masks[0, 0, :8] = True
+    sam_masks[1, 2, :9] = True
+    sam_masks[2, 2, :10] = True
+    dense_probabilities = np.full(shape, 0.8, dtype=np.float32)
+    dense_probabilities[0, :8] = 0.9
+
+    result = _select(
+        yolo=_empty_proposal_batch(shape),
+        sam=_proposal_batch(sam_masks, (0.1, 0.1, 0.1)),
+        dense=_selector_dense(np.full(shape, 2), dense_probabilities),
+        config=HybridFrontendConfig(
+            variant="quota_nms_ensemble",
+            duplicate_iou=0.85,
+            minimum_area_fraction=0.05,
+            compact_rescue_minimum_area_fraction=0.005,
+            maximum_compact_rescues=1,
+        ),
+    )
+
+    np.testing.assert_array_equal(result.batch.masks, sam_masks[[0, 2]])
+    assert result.diagnostics["accepted_compact_rescue"] == 1
+    assert result.diagnostics["accepted_novel_sam"] == 2
+    assert result.diagnostics["rejected_compact_rescue_cap"] == 1
+    assert result.diagnostics["rejected_duplicate"] == 0
+
+
+def test_inherited_sam_rejected_by_class_cap_does_not_suppress_fallback() -> None:
+    shape = (5, 10)
+    yolo_mask = np.zeros((1, *shape), dtype=bool)
+    yolo_mask[0, 0, :2] = True
+    sam_masks = np.zeros((2, *shape), dtype=bool)
+    sam_masks[0, 0, :2] = True
+    sam_masks[0, 2, :] = True
+    sam_masks[1, 2, :] = True
+    dense_ids = np.full(shape, 2)
+    dense_ids[2, :] = 3
+
+    result = _select(
+        yolo=_proposal_batch(yolo_mask, (0.9,), labels=("chair",)),
+        sam=_proposal_batch(sam_masks, (0.1, 0.1)),
+        dense=_selector_dense(dense_ids, 0.8),
+        config=HybridFrontendConfig(
+            variant="quota_nms_ensemble",
+            duplicate_iou=0.8,
+            maximum_per_class=1,
+        ),
+    )
+
+    assert result.batch.labels == ("chair", "table")
+    np.testing.assert_array_equal(result.batch.masks[1], sam_masks[1])
+    assert result.diagnostics["rejected_class_cap"] == 1
+    assert result.diagnostics["rejected_duplicate"] == 0
+
+
+def test_global_cap_rejection_precedes_duplicate_check() -> None:
+    shape = (2, 4)
+    mask = np.zeros((1, *shape), dtype=bool)
+    mask[0, 0, :2] = True
+
+    result = _select(
+        yolo=_proposal_batch(mask, (0.9,), labels=("chair",)),
+        sam=_proposal_batch(mask, (0.1,)),
+        dense=_selector_dense(np.full(shape, 2)),
+        config=HybridFrontendConfig(
+            variant="quota_nms_ensemble",
+            maximum_proposals=1,
+        ),
+    )
+
+    assert result.batch.labels == ("chair",)
+    assert result.diagnostics["rejected_global_cap"] == 1
+    assert result.diagnostics["rejected_duplicate"] == 0
+
+
+@pytest.mark.parametrize(
+    ("limits", "rejection_key"),
+    [
+        ({"maximum_per_class": 1}, "rejected_class_cap"),
+        ({"maximum_proposals": 1}, "rejected_global_cap"),
+    ],
+    ids=("per-class", "global"),
+)
+def test_compact_rescues_obey_quota_bounds(
+    limits: dict[str, int],
+    rejection_key: str,
+) -> None:
+    shape = (4, 10)
+    sam_masks = np.zeros((2, *shape), dtype=bool)
+    sam_masks[0, 0, 0] = True
+    sam_masks[1, 0, 1] = True
+
+    result = _select(
+        yolo=_empty_proposal_batch(shape),
+        sam=_proposal_batch(sam_masks, (0.1, 0.1)),
+        dense=_selector_dense(np.full(shape, 2), 0.8),
+        config=HybridFrontendConfig(
+            variant="quota_nms_ensemble",
+            minimum_area_fraction=0.05,
+            compact_rescue_minimum_area_fraction=0.02,
+            **limits,
+        ),
+    )
+
+    assert result.batch.labels == ("chair",)
+    assert result.diagnostics["accepted_compact_rescue"] == 1
+    assert result.diagnostics[rejection_key] == 1
 
 
 def test_quota_class_cap_precedes_global_cap() -> None:

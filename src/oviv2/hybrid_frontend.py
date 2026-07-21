@@ -17,6 +17,8 @@ _THRESHOLD_FIELDS = (
     "novel_iou",
     "duplicate_iou",
     "minimum_area_fraction",
+    "compact_rescue_minimum_area_fraction",
+    "compact_rescue_minimum_confidence",
     "maximum_area_fraction",
     "minimum_valid_depth_fraction",
     "minimum_dense_probability",
@@ -27,6 +29,7 @@ _DIAGNOSTIC_KEYS = (
     "accepted_yolo",
     "accepted_inherited_sam",
     "accepted_novel_sam",
+    "accepted_compact_rescue",
     "rejected_area",
     "rejected_depth",
     "rejected_structure",
@@ -35,6 +38,7 @@ _DIAGNOSTIC_KEYS = (
     "rejected_unlabeled",
     "rejected_class_cap",
     "rejected_global_cap",
+    "rejected_compact_rescue_cap",
 )
 
 
@@ -142,6 +146,8 @@ class HybridFrontendConfig:
     novel_iou: float = 0.80
     duplicate_iou: float = 0.85
     minimum_area_fraction: float = 0.0001
+    compact_rescue_minimum_area_fraction: float = 0.00002
+    compact_rescue_minimum_confidence: float = 0.60
     maximum_area_fraction: float = 0.50
     minimum_valid_depth_fraction: float = 0.50
     minimum_dense_probability: float = 0.25
@@ -149,6 +155,7 @@ class HybridFrontendConfig:
     maximum_structure_probability: float = 0.50
     maximum_proposals: int = 64
     maximum_per_class: int = 12
+    maximum_compact_rescues: int = 4
 
     def __post_init__(self) -> None:
         if not isinstance(self.variant, str) or self.variant not in _VARIANTS:
@@ -163,7 +170,20 @@ class HybridFrontendConfig:
             raise ValueError(
                 "minimum_area_fraction must not exceed maximum_area_fraction"
             )
-        for field_name in ("maximum_proposals", "maximum_per_class"):
+        if (
+            self.variant == "quota_nms_ensemble"
+            and self.compact_rescue_minimum_area_fraction
+            >= self.minimum_area_fraction
+        ):
+            raise ValueError(
+                "compact_rescue_minimum_area_fraction must be less than "
+                "minimum_area_fraction"
+            )
+        for field_name in (
+            "maximum_proposals",
+            "maximum_per_class",
+            "maximum_compact_rescues",
+        ):
             object.__setattr__(
                 self,
                 field_name,
@@ -426,6 +446,7 @@ class _SelectedProposal:
     confidence: float
     area: int
     kind: str
+    compact_rescue: bool = False
 
 
 def _validated_class_names(
@@ -490,8 +511,14 @@ def _overlap_strength(overlap: MaskOverlap) -> float:
 
 
 def _sam_candidate_sort_key(proposal: _SelectedProposal) -> tuple[int, float, int, int]:
+    if proposal.kind == "inherited" and not proposal.compact_rescue:
+        tier = 0
+    elif proposal.compact_rescue:
+        tier = 1
+    else:
+        tier = 2
     return (
-        0 if proposal.kind == "inherited" else 1,
+        tier,
         -proposal.confidence,
         -proposal.area,
         proposal.source_index,
@@ -557,6 +584,23 @@ def select_hybrid_proposals(
                 )
             )
 
+    yolo_candidates.sort(key=lambda proposal: (-proposal.confidence, proposal.source_index))
+    selected: list[_SelectedProposal] = []
+    class_counts: dict[str, int] = {}
+    if config.variant == "quota_nms_ensemble":
+        for proposal in yolo_candidates:
+            count = class_counts.get(proposal.label, 0)
+            if count >= config.maximum_per_class:
+                diagnostics["rejected_class_cap"] += 1
+                continue
+            if len(selected) >= config.maximum_proposals:
+                diagnostics["rejected_global_cap"] += 1
+                continue
+            selected.append(proposal)
+            class_counts[proposal.label] = count + 1
+    else:
+        selected.extend(yolo_candidates)
+
     sam_candidates: list[_SelectedProposal] = []
     image_area = image_shape[0] * image_shape[1]
 
@@ -571,7 +615,16 @@ def select_hybrid_proposals(
         )
         overlaps = [mask_overlap(sam_mask, yolo_mask) for yolo_mask in yolo.masks]
 
-        if not config.minimum_area_fraction <= area_fraction <= config.maximum_area_fraction:
+        compact_rescue = (
+            config.variant == "quota_nms_ensemble"
+            and config.compact_rescue_minimum_area_fraction
+            <= area_fraction
+            < config.minimum_area_fraction
+        )
+        if (
+            area_fraction > config.maximum_area_fraction
+            or (area_fraction < config.minimum_area_fraction and not compact_rescue)
+        ):
             diagnostics["rejected_area"] += 1
             continue
         if dense_label.valid_depth_fraction < config.minimum_valid_depth_fraction:
@@ -611,21 +664,30 @@ def select_hybrid_proposals(
                 ),
             )
             best_overlap = overlaps[best_yolo_index]
+            inherited_confidence = float(
+                np.clip(
+                    float(yolo.confidences[best_yolo_index])
+                    * np.sqrt(_overlap_strength(best_overlap)),
+                    0.0,
+                    1.0,
+                )
+            )
+            if (
+                compact_rescue
+                and inherited_confidence
+                < config.compact_rescue_minimum_confidence
+            ):
+                diagnostics["rejected_area"] += 1
+                continue
             sam_candidates.append(
                 _SelectedProposal(
                     source=sam,
                     source_index=sam_index,
                     label=yolo.labels[best_yolo_index],
-                    confidence=float(
-                        np.clip(
-                            float(yolo.confidences[best_yolo_index])
-                            * np.sqrt(_overlap_strength(best_overlap)),
-                            0.0,
-                            1.0,
-                        )
-                    ),
+                    confidence=inherited_confidence,
                     area=area,
                     kind="inherited",
+                    compact_rescue=compact_rescue,
                 )
             )
             continue
@@ -644,6 +706,13 @@ def select_hybrid_proposals(
             diagnostics["rejected_unlabeled"] += 1
             continue
         assert fallback_label is not None
+        if (
+            compact_rescue
+            and dense_label.probability
+            < config.compact_rescue_minimum_confidence
+        ):
+            diagnostics["rejected_area"] += 1
+            continue
         sam_candidates.append(
             _SelectedProposal(
                 source=sam,
@@ -652,13 +721,33 @@ def select_hybrid_proposals(
                 confidence=dense_label.probability,
                 area=area,
                 kind="fallback",
+                compact_rescue=compact_rescue,
             )
         )
 
     sam_candidates.sort(key=_sam_candidate_sort_key)
-    accepted_sam_masks: list[np.ndarray] = []
+    accepted_sam_masks: list[np.ndarray] = (
+        [proposal.source.masks[proposal.source_index] for proposal in selected]
+        if config.variant == "quota_nms_ensemble"
+        else []
+    )
     accepted_sam_candidates: list[_SelectedProposal] = []
+    compact_rescue_count = 0
     for proposal in sam_candidates:
+        if config.variant == "quota_nms_ensemble":
+            count = class_counts.get(proposal.label, 0)
+            if count >= config.maximum_per_class:
+                diagnostics["rejected_class_cap"] += 1
+                continue
+            if len(selected) >= config.maximum_proposals:
+                diagnostics["rejected_global_cap"] += 1
+                continue
+            if (
+                proposal.compact_rescue
+                and compact_rescue_count >= config.maximum_compact_rescues
+            ):
+                diagnostics["rejected_compact_rescue_cap"] += 1
+                continue
         proposal_mask = proposal.source.masks[proposal.source_index]
         if any(
             mask_overlap(proposal_mask, accepted_mask).iou >= config.duplicate_iou
@@ -668,34 +757,15 @@ def select_hybrid_proposals(
             continue
         accepted_sam_masks.append(proposal_mask)
         accepted_sam_candidates.append(proposal)
-
-    inherited_candidates = [
-        proposal
-        for proposal in accepted_sam_candidates
-        if proposal.kind == "inherited"
-    ]
-    fallback_candidates = [
-        proposal
-        for proposal in accepted_sam_candidates
-        if proposal.kind == "fallback"
-    ]
-
-    yolo_candidates.sort(key=lambda proposal: (-proposal.confidence, proposal.source_index))
-    selected = yolo_candidates + inherited_candidates + fallback_candidates
-
-    if config.variant == "quota_nms_ensemble":
-        class_counts: dict[str, int] = {}
-        within_class_cap: list[_SelectedProposal] = []
-        for proposal in selected:
-            count = class_counts.get(proposal.label, 0)
-            if count >= config.maximum_per_class:
-                diagnostics["rejected_class_cap"] += 1
-                continue
+        if config.variant == "quota_nms_ensemble":
+            selected.append(proposal)
             class_counts[proposal.label] = count + 1
-            within_class_cap.append(proposal)
-        selected = within_class_cap
+            if proposal.compact_rescue:
+                compact_rescue_count += 1
 
-    if len(selected) > config.maximum_proposals:
+    if config.variant != "quota_nms_ensemble":
+        selected.extend(accepted_sam_candidates)
+    if config.variant != "quota_nms_ensemble" and len(selected) > config.maximum_proposals:
         diagnostics["rejected_global_cap"] = len(selected) - config.maximum_proposals
         selected = selected[: config.maximum_proposals]
 
@@ -707,6 +777,9 @@ def select_hybrid_proposals(
     )
     diagnostics["accepted_novel_sam"] = sum(
         proposal.kind == "fallback" for proposal in selected
+    )
+    diagnostics["accepted_compact_rescue"] = sum(
+        proposal.compact_rescue for proposal in selected
     )
     return HybridFrameResult(
         batch=_build_selected_batch(selected, image_shape, feature_dimension),
