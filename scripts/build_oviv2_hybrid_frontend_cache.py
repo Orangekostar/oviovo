@@ -12,10 +12,15 @@ from pathlib import Path
 import pickle
 import shutil
 import stat
+import sys
 from typing import Any
 
 import numpy as np
 from PIL import Image
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from src.oviv2.dense_semantics import DenseSemanticFrame, load_dense_frame
 from src.oviv2.hybrid_cache import publish_frontend_manifest, write_hybrid_frame

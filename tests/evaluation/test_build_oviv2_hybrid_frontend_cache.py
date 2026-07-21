@@ -8,6 +8,8 @@ import json
 import os
 import pickle
 from pathlib import Path
+import subprocess
+import sys
 
 import numpy as np
 from PIL import Image
@@ -627,3 +629,16 @@ def test_legacy_loader_rejects_confidence_outside_canonical_tolerance() -> None:
 
     with pytest.raises(ValueError, match="confidence"):
         builder._load_legacy_snapshot(_legacy_snapshot(payload), field="SAM frame")
+
+
+def test_builder_script_starts_outside_repository_cwd(tmp_path: Path) -> None:
+    completed = subprocess.run(
+        [sys.executable, str(Path(builder.__file__).resolve()), "--help"],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert "--config" in completed.stdout
