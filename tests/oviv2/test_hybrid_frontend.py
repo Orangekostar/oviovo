@@ -10,10 +10,12 @@ from src.oviv2.dense_semantics import DenseSemanticFrame
 from src.oviv2.hybrid_frontend import (
     DenseMaskLabel,
     FrontendBatch,
+    HybridFrameResult,
     HybridFrontendConfig,
     MaskOverlap,
     aggregate_dense_mask,
     mask_overlap,
+    select_hybrid_proposals,
 )
 
 
@@ -864,3 +866,621 @@ def test_dense_mask_label_rejects_invalid_ratios(
 def test_dense_mask_label_rejects_margin_above_probability() -> None:
     with pytest.raises(ValueError, match="margin.*probability"):
         DenseMaskLabel(2, 0.4, 0.5, 0.1, 1.0)
+
+
+def _proposal_batch(
+    masks: np.ndarray,
+    confidences: tuple[float, ...],
+    *,
+    labels: tuple[str, ...] | None = None,
+    feature_dimension: int = 3,
+) -> FrontendBatch:
+    masks = np.asarray(masks, dtype=bool)
+    proposal_count = masks.shape[0]
+    boxes = np.zeros((proposal_count, 4), dtype=np.float64)
+    for index, mask in enumerate(masks):
+        rows, columns = np.nonzero(mask)
+        if rows.size:
+            boxes[index] = (
+                float(columns.min()),
+                float(rows.min()),
+                float(columns.max() + 1),
+                float(rows.max() + 1),
+            )
+    features = np.ones((proposal_count, feature_dimension), dtype=np.float64)
+    if proposal_count:
+        features[:, 0] = np.arange(1, proposal_count + 1, dtype=np.float64)
+    return FrontendBatch(
+        masks=masks,
+        boxes_xyxy=boxes,
+        confidences=np.asarray(confidences, dtype=np.float64),
+        labels=labels or tuple(f"source-{index}" for index in range(proposal_count)),
+        image_features=features,
+    )
+
+
+def _empty_proposal_batch(
+    shape: tuple[int, int], *, feature_dimension: int = 3
+) -> FrontendBatch:
+    return _proposal_batch(
+        np.empty((0, *shape), dtype=bool),
+        (),
+        feature_dimension=feature_dimension,
+    )
+
+
+def _selector_dense(
+    primary_ids: np.ndarray,
+    primary_probabilities: float | np.ndarray = 0.8,
+    *,
+    runner_ids: np.ndarray | None = None,
+    runner_probabilities: float | np.ndarray | None = None,
+    class_count: int = 3,
+) -> DenseSemanticFrame:
+    primary_ids = np.asarray(primary_ids, dtype=np.int64)
+    primary = np.broadcast_to(
+        np.asarray(primary_probabilities, dtype=np.float32), primary_ids.shape
+    )
+    class_ids = primary_ids[..., None]
+    probabilities = primary[..., None]
+    if runner_ids is not None:
+        if runner_probabilities is None:
+            raise AssertionError("runner probabilities are required")
+        runner_ids = np.asarray(runner_ids, dtype=np.int64)
+        runner = np.broadcast_to(
+            np.asarray(runner_probabilities, dtype=np.float32), primary_ids.shape
+        )
+        class_ids = np.stack((primary_ids, runner_ids), axis=-1)
+        probabilities = np.stack((primary, runner), axis=-1)
+    return _dense_frame(
+        class_ids,
+        probabilities,
+        image_shape=primary_ids.shape,
+        sample_stride=1,
+        class_count=class_count,
+    )
+
+
+def _select(
+    *,
+    yolo: FrontendBatch,
+    sam: FrontendBatch,
+    dense: DenseSemanticFrame,
+    config: HybridFrontendConfig,
+    valid_depth: np.ndarray | None = None,
+    class_names: tuple[str, ...] = ("wall", "chair", "table"),
+    structure_ids: set[int] | frozenset[int] = frozenset({1}),
+) -> HybridFrameResult:
+    return select_hybrid_proposals(
+        yolo=yolo,
+        sam=sam,
+        dense=dense,
+        valid_depth=(
+            np.ones(dense.image_shape, dtype=bool)
+            if valid_depth is None
+            else valid_depth
+        ),
+        class_names=class_names,
+        structure_ids=structure_ids,
+        config=config,
+    )
+
+
+def test_yolo_novel_sam_keeps_yolo_and_adds_only_novel_sam() -> None:
+    shape = (4, 5)
+    yolo_masks = np.zeros((2, *shape), dtype=bool)
+    yolo_masks[0, :2, :2] = True
+    yolo_masks[1, 2:, 3:] = True
+    sam_masks = np.zeros((2, *shape), dtype=bool)
+    sam_masks[0] = yolo_masks[0]
+    sam_masks[1, 2:, :2] = True
+
+    result = _select(
+        yolo=_proposal_batch(yolo_masks, (0.9, 0.8), labels=("chair", "table")),
+        sam=_proposal_batch(sam_masks, (0.2, 0.2)),
+        dense=_selector_dense(np.full(shape, 2)),
+        config=HybridFrontendConfig(variant="yolo_novel_sam"),
+    )
+
+    assert result.batch.labels == ("chair", "table", "chair")
+    assert result.diagnostics["accepted_yolo"] == 2
+    assert result.diagnostics["accepted_novel_sam"] == 1
+    assert result.diagnostics["rejected_duplicate"] == 1
+
+
+def test_yolo_novel_sam_rejects_reliable_yolo_matches_below_novel_iou() -> None:
+    shape = (2, 8)
+    yolo_mask = np.zeros((1, *shape), dtype=bool)
+    yolo_mask[0, 0, :4] = True
+    sam_mask = np.zeros((1, *shape), dtype=bool)
+    sam_mask[0, 0, :2] = True
+
+    result = _select(
+        yolo=_proposal_batch(yolo_mask, (0.8,), labels=("chair",)),
+        sam=_proposal_batch(sam_mask, (0.1,)),
+        dense=_selector_dense(np.full(shape, 2)),
+        config=HybridFrontendConfig(variant="yolo_novel_sam"),
+    )
+
+    assert result.batch.labels == ("chair",)
+    assert result.diagnostics["accepted_inherited_sam"] == 0
+    assert result.diagnostics["accepted_novel_sam"] == 0
+    assert result.diagnostics["rejected_not_novel"] == 1
+
+
+def test_sam_labeled_omits_yolo_and_orders_inherited_before_dense_fallback() -> None:
+    shape = (3, 5)
+    yolo_mask = np.zeros((1, *shape), dtype=bool)
+    yolo_mask[0, 0, :4] = True
+    sam_masks = np.zeros((2, *shape), dtype=bool)
+    sam_masks[0, 0, :2] = True
+    sam_masks[1, 2, 2:] = True
+    dense_ids = np.full(shape, 2)
+    dense_ids[2, 2:] = 3
+
+    result = _select(
+        yolo=_proposal_batch(yolo_mask, (0.4,), labels=("chair",)),
+        sam=_proposal_batch(sam_masks, (0.1, 0.1)),
+        dense=_selector_dense(dense_ids, 0.95),
+        config=HybridFrontendConfig(variant="sam_labeled"),
+    )
+
+    assert result.batch.labels == ("chair", "table")
+    assert result.batch.confidences == pytest.approx((0.4, 0.95))
+    assert result.diagnostics["accepted_yolo"] == 0
+    assert result.diagnostics["accepted_inherited_sam"] == 1
+    assert result.diagnostics["accepted_novel_sam"] == 1
+
+
+def test_yolo_inheritance_accepts_iou_threshold_and_uses_confidence_formula() -> None:
+    shape = (3, 4)
+    yolo_mask = np.zeros((1, *shape), dtype=bool)
+    sam_mask = np.zeros((1, *shape), dtype=bool)
+    yolo_mask[0, 0, :3] = True
+    sam_mask[0, 0, 1:4] = True
+
+    result = _select(
+        yolo=_proposal_batch(yolo_mask, (0.81,), labels=("chair",)),
+        sam=_proposal_batch(sam_mask, (0.1,)),
+        dense=_selector_dense(np.full(shape, 3)),
+        config=HybridFrontendConfig(
+            variant="sam_labeled",
+            yolo_match_iou=0.5,
+            yolo_match_coverage=0.75,
+        ),
+    )
+
+    assert result.batch.labels == ("chair",)
+    assert result.batch.confidences[0] == pytest.approx(0.81 * math.sqrt(2 / 3))
+
+
+def test_yolo_inheritance_accepts_directed_coverage_and_breaks_best_tie_by_index() -> None:
+    shape = (3, 5)
+    yolo_masks = np.zeros((2, *shape), dtype=bool)
+    yolo_masks[:, 0, :4] = True
+    sam_mask = np.zeros((1, *shape), dtype=bool)
+    sam_mask[0, 0, :2] = True
+
+    result = _select(
+        yolo=_proposal_batch(
+            yolo_masks,
+            (0.7, 0.7),
+            labels=("lower-index", "higher-index"),
+        ),
+        sam=_proposal_batch(sam_mask, (0.1,)),
+        dense=_selector_dense(np.full(shape, 3)),
+        config=HybridFrontendConfig(
+            variant="sam_labeled",
+            yolo_match_iou=0.75,
+            yolo_match_coverage=1.0,
+        ),
+    )
+
+    assert result.batch.labels == ("lower-index",)
+    assert result.batch.confidences[0] == pytest.approx(0.7)
+
+
+@pytest.mark.parametrize(
+    ("primary_probability", "runner_probability", "accepted"),
+    [(0.6, 0.4, True), (0.59, 0.2, False), (0.59, 0.4, False)],
+    ids=("equal-boundaries", "probability-below", "margin-below"),
+)
+def test_dense_fallback_probability_and_margin_boundaries(
+    primary_probability: float,
+    runner_probability: float,
+    accepted: bool,
+) -> None:
+    shape = (2, 3)
+    sam_mask = np.ones((1, *shape), dtype=bool)
+    dense = _selector_dense(
+        np.full(shape, 2),
+        primary_probability,
+        runner_ids=np.full(shape, 3),
+        runner_probabilities=runner_probability,
+    )
+
+    result = _select(
+        yolo=_empty_proposal_batch(shape),
+        sam=_proposal_batch(sam_mask, (0.1,)),
+        dense=dense,
+        config=HybridFrontendConfig(
+            variant="sam_labeled",
+            minimum_dense_probability=0.6,
+            minimum_dense_margin=0.2,
+            maximum_area_fraction=1.0,
+        ),
+    )
+
+    assert len(result.batch.labels) == int(accepted)
+    assert result.diagnostics["rejected_unlabeled"] == int(not accepted)
+
+
+def test_sam_filters_report_area_depth_and_structure_rejections() -> None:
+    shape = (4, 5)
+    sam_masks = np.zeros((3, *shape), dtype=bool)
+    sam_masks[0, 0, 0] = True
+    sam_masks[1, 1, :2] = True
+    sam_masks[2, 3, :2] = True
+    valid_depth = np.ones(shape, dtype=bool)
+    valid_depth[1, :2] = False
+    dense_ids = np.full(shape, 2)
+    dense_ids[3, :2] = 1
+
+    result = _select(
+        yolo=_empty_proposal_batch(shape),
+        sam=_proposal_batch(sam_masks, (0.1, 0.1, 0.1)),
+        dense=_selector_dense(dense_ids),
+        valid_depth=valid_depth,
+        config=HybridFrontendConfig(
+            variant="sam_labeled",
+            minimum_area_fraction=0.1,
+        ),
+    )
+
+    assert result.batch.labels == ()
+    assert result.diagnostics["rejected_area"] == 1
+    assert result.diagnostics["rejected_depth"] == 1
+    assert result.diagnostics["rejected_structure"] == 1
+
+
+def test_sam_duplicate_nms_rejects_at_equality() -> None:
+    shape = (2, 4)
+    sam_masks = np.ones((2, *shape), dtype=bool)
+
+    result = _select(
+        yolo=_empty_proposal_batch(shape),
+        sam=_proposal_batch(sam_masks, (0.1, 0.1)),
+        dense=_selector_dense(np.full(shape, 2)),
+        config=HybridFrontendConfig(
+            variant="sam_labeled",
+            duplicate_iou=1.0,
+            maximum_area_fraction=1.0,
+        ),
+    )
+
+    assert result.batch.labels == ("chair",)
+    assert result.diagnostics["rejected_duplicate"] == 1
+
+
+def test_novel_iou_equality_is_not_novel() -> None:
+    shape = (2, 4)
+    yolo_mask = np.zeros((1, *shape), dtype=bool)
+    sam_mask = np.zeros((1, *shape), dtype=bool)
+    yolo_mask[0, 0, :3] = True
+    sam_mask[0, 0, 1:4] = True
+
+    result = _select(
+        yolo=_proposal_batch(yolo_mask, (0.8,), labels=("chair",)),
+        sam=_proposal_batch(sam_mask, (0.1,)),
+        dense=_selector_dense(np.full(shape, 2)),
+        config=HybridFrontendConfig(variant="yolo_novel_sam", novel_iou=0.5),
+    )
+
+    assert result.batch.labels == ("chair",)
+    assert result.diagnostics["rejected_not_novel"] == 1
+
+
+def test_quota_ensemble_stably_sorts_yolo_inherited_and_fallback_groups() -> None:
+    shape = (5, 8)
+    yolo_masks = np.zeros((3, *shape), dtype=bool)
+    yolo_masks[0, 0, :4] = True
+    yolo_masks[1, 1, :4] = True
+    yolo_masks[2, 2, :4] = True
+    sam_masks = np.zeros((4, *shape), dtype=bool)
+    sam_masks[0, 0, :2] = True
+    sam_masks[1, 1, :3] = True
+    sam_masks[2, 4, :2] = True
+    sam_masks[3, 4, 4:8] = True
+    dense_ids = np.full(shape, 2)
+    dense_ids[4, :] = 3
+
+    result = _select(
+        yolo=_proposal_batch(
+            yolo_masks,
+            (0.6, 0.9, 0.9),
+            labels=("yolo-0", "yolo-1", "yolo-2"),
+        ),
+        sam=_proposal_batch(sam_masks, (0.1, 0.1, 0.1, 0.1)),
+        dense=_selector_dense(dense_ids, 0.8),
+        config=HybridFrontendConfig(
+            variant="quota_nms_ensemble",
+            novel_iou=0.8,
+            yolo_match_iou=0.9,
+            yolo_match_coverage=1.0,
+        ),
+    )
+
+    assert result.batch.labels == (
+        "yolo-1",
+        "yolo-2",
+        "yolo-0",
+        "yolo-1",
+        "yolo-0",
+        "table",
+        "table",
+    )
+    np.testing.assert_array_equal(result.batch.masks[3:], sam_masks[[1, 0, 3, 2]])
+
+
+def test_quota_class_cap_precedes_global_cap() -> None:
+    shape = (3, 5)
+    yolo_masks = np.zeros((3, *shape), dtype=bool)
+    yolo_masks[0, 0, :2] = True
+    yolo_masks[1, 1, :2] = True
+    yolo_masks[2, 2, :2] = True
+
+    result = _select(
+        yolo=_proposal_batch(
+            yolo_masks,
+            (0.9, 0.8, 0.7),
+            labels=("chair", "chair", "table"),
+        ),
+        sam=_empty_proposal_batch(shape),
+        dense=_selector_dense(np.full(shape, 2)),
+        config=HybridFrontendConfig(
+            variant="quota_nms_ensemble",
+            maximum_per_class=1,
+            maximum_proposals=1,
+        ),
+    )
+
+    assert result.batch.labels == ("chair",)
+    assert result.diagnostics["accepted_yolo"] == 1
+    assert result.diagnostics["rejected_class_cap"] == 1
+    assert result.diagnostics["rejected_global_cap"] == 1
+
+
+def test_yolo_group_is_truncated_by_global_cap() -> None:
+    shape = (3, 4)
+    yolo_masks = np.zeros((3, *shape), dtype=bool)
+    yolo_masks[:, :, 0] = True
+
+    result = _select(
+        yolo=_proposal_batch(
+            yolo_masks,
+            (0.5, 0.9, 0.7),
+            labels=("low", "high", "middle"),
+        ),
+        sam=_empty_proposal_batch(shape),
+        dense=_selector_dense(np.full(shape, 2)),
+        config=HybridFrontendConfig(
+            variant="yolo_novel_sam",
+            maximum_proposals=2,
+        ),
+    )
+
+    assert result.batch.labels == ("high", "middle")
+    assert result.diagnostics["rejected_global_cap"] == 1
+
+
+@pytest.mark.parametrize(
+    ("change", "message"),
+    [
+        ({"yolo": object()}, "yolo"),
+        ({"sam": object()}, "sam"),
+        ({"dense": object()}, "dense"),
+        ({"config": object()}, "config"),
+    ],
+)
+def test_selection_validates_input_types(change: dict[str, object], message: str) -> None:
+    shape = (2, 3)
+    values = {
+        "yolo": _empty_proposal_batch(shape),
+        "sam": _empty_proposal_batch(shape),
+        "dense": _selector_dense(np.full(shape, 2)),
+        "valid_depth": np.ones(shape, dtype=bool),
+        "class_names": ("wall", "chair", "table"),
+        "structure_ids": {1},
+        "config": HybridFrontendConfig(variant="sam_labeled"),
+    }
+    values.update(change)
+
+    with pytest.raises(ValueError, match=message):
+        select_hybrid_proposals(**values)
+
+
+def test_selection_requires_matching_image_shapes_and_feature_dimensions() -> None:
+    shape = (2, 3)
+    dense = _selector_dense(np.full(shape, 2))
+    config = HybridFrontendConfig(variant="sam_labeled")
+
+    with pytest.raises(ValueError, match="image shape"):
+        _select(
+            yolo=_empty_proposal_batch(shape),
+            sam=_empty_proposal_batch((3, 3)),
+            dense=dense,
+            config=config,
+        )
+    with pytest.raises(ValueError, match="feature dimension"):
+        _select(
+            yolo=_empty_proposal_batch(shape, feature_dimension=2),
+            sam=_empty_proposal_batch(shape, feature_dimension=3),
+            dense=dense,
+            config=config,
+        )
+    with pytest.raises(ValueError, match="valid_depth"):
+        _select(
+            yolo=_empty_proposal_batch(shape),
+            sam=_empty_proposal_batch(shape),
+            dense=dense,
+            valid_depth=np.ones((1, 3), dtype=bool),
+            config=config,
+        )
+
+
+@pytest.mark.parametrize(
+    "class_names",
+    [
+        ["wall", "chair", "table"],
+        ("wall", "chair"),
+        ("wall", "", "table"),
+        ("wall", "chair", " chair "),
+    ],
+)
+def test_selection_validates_dense_class_names(class_names: object) -> None:
+    shape = (2, 3)
+    with pytest.raises(ValueError, match="class_names"):
+        _select(
+            yolo=_empty_proposal_batch(shape),
+            sam=_empty_proposal_batch(shape),
+            dense=_selector_dense(np.full(shape, 2)),
+            config=HybridFrontendConfig(variant="sam_labeled"),
+            class_names=class_names,
+        )
+
+
+def test_structure_class_name_cannot_be_emitted_by_dense_fallback() -> None:
+    shape = (2, 3)
+    result = _select(
+        yolo=_empty_proposal_batch(shape),
+        sam=_proposal_batch(np.ones((1, *shape), dtype=bool), (0.1,)),
+        dense=_selector_dense(np.full(shape, 1)),
+        config=HybridFrontendConfig(
+            variant="sam_labeled",
+            maximum_area_fraction=1.0,
+            maximum_structure_probability=1.0,
+        ),
+    )
+
+    assert result.batch.labels == ()
+    assert result.diagnostics["rejected_unlabeled"] == 1
+
+
+@pytest.mark.parametrize(
+    "invalid_depth",
+    [
+        np.full((2, 3), np.nan),
+        np.full((2, 3), 2, dtype=np.int64),
+        np.zeros((2, 3), dtype=object),
+    ],
+)
+def test_selection_rejects_unsafe_valid_depth(invalid_depth: np.ndarray) -> None:
+    shape = (2, 3)
+    with pytest.raises(ValueError, match="valid_depth"):
+        _select(
+            yolo=_empty_proposal_batch(shape),
+            sam=_empty_proposal_batch(shape),
+            dense=_selector_dense(np.full(shape, 2)),
+            valid_depth=invalid_depth,
+            config=HybridFrontendConfig(variant="sam_labeled"),
+        )
+
+
+def test_selection_is_repeatable_immutable_and_does_not_modify_inputs() -> None:
+    shape = (2, 4)
+    yolo_mask = np.zeros((1, *shape), dtype=bool)
+    yolo_mask[0, 0, :2] = True
+    sam_mask = np.zeros((1, *shape), dtype=bool)
+    sam_mask[0, 1, :2] = True
+    yolo = _proposal_batch(yolo_mask, (0.8,), labels=("chair",))
+    sam = _proposal_batch(sam_mask, (0.1,))
+    dense = _selector_dense(np.full(shape, 2))
+    valid_depth = np.ones(shape, dtype=np.uint8)
+    snapshots = (
+        yolo.masks.copy(),
+        sam.masks.copy(),
+        dense.class_ids.copy(),
+        valid_depth.copy(),
+    )
+    kwargs = {
+        "yolo": yolo,
+        "sam": sam,
+        "dense": dense,
+        "valid_depth": valid_depth,
+        "class_names": ("wall", "chair", "table"),
+        "structure_ids": {1},
+        "config": HybridFrontendConfig(variant="yolo_novel_sam"),
+    }
+
+    first = select_hybrid_proposals(**kwargs)
+    second = select_hybrid_proposals(**kwargs)
+
+    for first_array, second_array in zip(
+        (
+            first.batch.masks,
+            first.batch.boxes_xyxy,
+            first.batch.confidences,
+            first.batch.image_features,
+        ),
+        (
+            second.batch.masks,
+            second.batch.boxes_xyxy,
+            second.batch.confidences,
+            second.batch.image_features,
+        ),
+    ):
+        np.testing.assert_array_equal(first_array, second_array)
+        assert first_array.flags.writeable is False
+    assert first.batch.labels == second.batch.labels
+    assert dict(first.diagnostics) == dict(second.diagnostics)
+    with pytest.raises(TypeError):
+        first.diagnostics["accepted_yolo"] = 99
+    for current, snapshot in zip(
+        (yolo.masks, sam.masks, dense.class_ids, valid_depth), snapshots
+    ):
+        np.testing.assert_array_equal(current, snapshot)
+
+
+@pytest.mark.parametrize(
+    ("yolo_count", "sam_count", "expected_count"),
+    [(0, 0, 0), (1, 0, 1), (0, 1, 1)],
+)
+def test_selection_supports_empty_source_batches(
+    yolo_count: int, sam_count: int, expected_count: int
+) -> None:
+    shape = (2, 3)
+    mask = np.ones((1, *shape), dtype=bool)
+    yolo = (
+        _proposal_batch(mask, (0.8,), labels=("chair",))
+        if yolo_count
+        else _empty_proposal_batch(shape)
+    )
+    sam = _proposal_batch(mask, (0.1,)) if sam_count else _empty_proposal_batch(shape)
+
+    result = _select(
+        yolo=yolo,
+        sam=sam,
+        dense=_selector_dense(np.full(shape, 2)),
+        config=HybridFrontendConfig(
+            variant="yolo_novel_sam",
+            maximum_area_fraction=1.0,
+        ),
+    )
+
+    assert result.batch.masks.shape == (expected_count, *shape)
+    assert result.batch.image_features.shape == (expected_count, 3)
+
+
+def test_hybrid_frame_result_copies_validates_and_locks_diagnostics() -> None:
+    batch = _empty_proposal_batch((2, 3))
+    diagnostics = {"accepted_yolo": np.int64(1)}
+    result = HybridFrameResult(batch=batch, diagnostics=diagnostics)
+    diagnostics["accepted_yolo"] = 2
+
+    assert result.diagnostics["accepted_yolo"] == 1
+    with pytest.raises(TypeError):
+        result.diagnostics["accepted_yolo"] = 3
+
+    for invalid in ({"": 0}, {"ok": True}, {"ok": -1}, {"ok": 1.5}):
+        with pytest.raises(ValueError, match="diagnostics"):
+            HybridFrameResult(batch=batch, diagnostics=invalid)

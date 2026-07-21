@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from numbers import Integral, Real
+from types import MappingProxyType
 
 import numpy as np
 
@@ -20,6 +22,19 @@ _THRESHOLD_FIELDS = (
     "minimum_dense_probability",
     "minimum_dense_margin",
     "maximum_structure_probability",
+)
+_DIAGNOSTIC_KEYS = (
+    "accepted_yolo",
+    "accepted_inherited_sam",
+    "accepted_novel_sam",
+    "rejected_area",
+    "rejected_depth",
+    "rejected_structure",
+    "rejected_duplicate",
+    "rejected_not_novel",
+    "rejected_unlabeled",
+    "rejected_class_cap",
+    "rejected_global_cap",
 )
 
 
@@ -224,6 +239,25 @@ class FrontendBatch:
         object.__setattr__(self, "image_features", _normalized_features(features))
 
 
+@dataclass(frozen=True, eq=False)
+class HybridFrameResult:
+    batch: FrontendBatch
+    diagnostics: Mapping[str, int]
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.batch, FrontendBatch):
+            raise ValueError("batch must be a FrontendBatch")
+        if not isinstance(self.diagnostics, Mapping):
+            raise ValueError("diagnostics must be a mapping")
+
+        diagnostics: dict[str, int] = {}
+        for key, value in self.diagnostics.items():
+            if not isinstance(key, str) or not key.strip():
+                raise ValueError("diagnostics keys must be non-empty strings")
+            diagnostics[key] = _non_negative_integer(value, f"diagnostics[{key!r}]")
+        object.__setattr__(self, "diagnostics", MappingProxyType(diagnostics))
+
+
 @dataclass(frozen=True)
 class MaskOverlap:
     intersection: int
@@ -381,4 +415,301 @@ def aggregate_dense_mask(
         margin=margin,
         structure_probability=structure_probability,
         valid_depth_fraction=valid_selected_count / selected_count,
+    )
+
+
+@dataclass(frozen=True)
+class _SelectedProposal:
+    source: FrontendBatch
+    source_index: int
+    label: str
+    confidence: float
+    area: int
+    kind: str
+
+
+def _validated_class_names(
+    class_names: tuple[str, ...], class_count: int
+) -> tuple[str, ...]:
+    if not isinstance(class_names, tuple) or len(class_names) != class_count:
+        raise ValueError("class_names must be a tuple matching dense class_count")
+    normalized: list[str] = []
+    for name in class_names:
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError("class_names must contain non-empty strings")
+        normalized.append(name.strip())
+    if len(set(normalized)) != len(normalized):
+        raise ValueError("class_names must be unique after trimming")
+    return tuple(normalized)
+
+
+def _empty_frontend_batch(
+    image_shape: tuple[int, int], feature_dimension: int
+) -> FrontendBatch:
+    return FrontendBatch(
+        masks=np.empty((0, *image_shape), dtype=bool),
+        boxes_xyxy=np.empty((0, 4), dtype=np.float32),
+        confidences=np.empty((0,), dtype=np.float32),
+        labels=(),
+        image_features=np.empty((0, feature_dimension), dtype=np.float32),
+    )
+
+
+def _build_selected_batch(
+    proposals: list[_SelectedProposal],
+    image_shape: tuple[int, int],
+    feature_dimension: int,
+) -> FrontendBatch:
+    if not proposals:
+        return _empty_frontend_batch(image_shape, feature_dimension)
+    return FrontendBatch(
+        masks=np.stack(
+            [proposal.source.masks[proposal.source_index] for proposal in proposals]
+        ),
+        boxes_xyxy=np.stack(
+            [
+                proposal.source.boxes_xyxy[proposal.source_index]
+                for proposal in proposals
+            ]
+        ),
+        confidences=np.asarray(
+            [proposal.confidence for proposal in proposals], dtype=np.float32
+        ),
+        labels=tuple(proposal.label for proposal in proposals),
+        image_features=np.stack(
+            [
+                proposal.source.image_features[proposal.source_index]
+                for proposal in proposals
+            ]
+        ),
+    )
+
+
+def select_hybrid_proposals(
+    *,
+    yolo: FrontendBatch,
+    sam: FrontendBatch,
+    dense: DenseSemanticFrame,
+    valid_depth: np.ndarray,
+    class_names: tuple[str, ...],
+    structure_ids: set[int] | frozenset[int],
+    config: HybridFrontendConfig,
+) -> HybridFrameResult:
+    if not isinstance(yolo, FrontendBatch):
+        raise ValueError("yolo must be a FrontendBatch")
+    if not isinstance(sam, FrontendBatch):
+        raise ValueError("sam must be a FrontendBatch")
+    if not isinstance(dense, DenseSemanticFrame):
+        raise ValueError("dense must be a DenseSemanticFrame")
+    if not isinstance(config, HybridFrontendConfig):
+        raise ValueError("config must be a HybridFrontendConfig")
+
+    image_shape = dense.image_shape
+    if yolo.masks.shape[1:] != image_shape or sam.masks.shape[1:] != image_shape:
+        raise ValueError("yolo, sam, and dense image shapes must agree")
+    feature_dimension = yolo.image_features.shape[1]
+    if sam.image_features.shape[1] != feature_dimension:
+        raise ValueError("yolo and sam feature dimensions must agree")
+
+    valid_depth_array = _binary_mask_array(valid_depth, "valid_depth")
+    if valid_depth_array.shape != image_shape:
+        raise ValueError("valid_depth must match dense image_shape")
+    normalized_class_names = _validated_class_names(class_names, dense.class_count)
+
+    # This zero-mask call centralizes structure_ids validation in the dense aggregator.
+    aggregate_dense_mask(
+        np.zeros(image_shape, dtype=bool),
+        valid_depth_array,
+        dense,
+        structure_ids=structure_ids,
+    )
+    normalized_structure_ids = {int(value) for value in structure_ids}
+    structure_names = {
+        normalized_class_names[class_id - 1]
+        for class_id in normalized_structure_ids
+    }
+
+    diagnostics = {key: 0 for key in _DIAGNOSTIC_KEYS}
+    yolo_candidates: list[_SelectedProposal] = []
+    if config.variant != "sam_labeled":
+        for index in range(yolo.masks.shape[0]):
+            yolo_candidates.append(
+                _SelectedProposal(
+                    source=yolo,
+                    source_index=index,
+                    label=yolo.labels[index],
+                    confidence=float(yolo.confidences[index]),
+                    area=int(np.count_nonzero(yolo.masks[index])),
+                    kind="yolo",
+                )
+            )
+
+    inherited_candidates: list[_SelectedProposal] = []
+    fallback_candidates: list[_SelectedProposal] = []
+    accepted_sam_masks: list[np.ndarray] = []
+    image_area = image_shape[0] * image_shape[1]
+
+    for sam_index, sam_mask in enumerate(sam.masks):
+        area = int(np.count_nonzero(sam_mask))
+        area_fraction = area / image_area
+        dense_label = aggregate_dense_mask(
+            sam_mask,
+            valid_depth_array,
+            dense,
+            structure_ids=structure_ids,
+        )
+        overlaps = [mask_overlap(sam_mask, yolo_mask) for yolo_mask in yolo.masks]
+
+        if not config.minimum_area_fraction <= area_fraction <= config.maximum_area_fraction:
+            diagnostics["rejected_area"] += 1
+            continue
+        if dense_label.valid_depth_fraction < config.minimum_valid_depth_fraction:
+            diagnostics["rejected_depth"] += 1
+            continue
+        if dense_label.structure_probability > config.maximum_structure_probability:
+            diagnostics["rejected_structure"] += 1
+            continue
+        if any(
+            mask_overlap(sam_mask, accepted_mask).iou >= config.duplicate_iou
+            for accepted_mask in accepted_sam_masks
+        ):
+            diagnostics["rejected_duplicate"] += 1
+            continue
+
+        maximum_yolo_iou = max((overlap.iou for overlap in overlaps), default=0.0)
+        best_yolo_index: int | None = None
+        best_overlap: MaskOverlap | None = None
+        if overlaps:
+            best_yolo_index = max(
+                range(len(overlaps)),
+                key=lambda index: (
+                    overlaps[index].iou,
+                    max(
+                        overlaps[index].left_coverage,
+                        overlaps[index].right_coverage,
+                    ),
+                    float(yolo.confidences[index]),
+                    -index,
+                ),
+            )
+            best_overlap = overlaps[best_yolo_index]
+
+        reliable_yolo = (
+            best_yolo_index is not None
+            and best_overlap is not None
+            and (
+                best_overlap.iou >= config.yolo_match_iou
+                or best_overlap.left_coverage >= config.yolo_match_coverage
+                or best_overlap.right_coverage >= config.yolo_match_coverage
+            )
+        )
+        if config.variant == "yolo_novel_sam" and (
+            reliable_yolo or maximum_yolo_iou >= config.novel_iou
+        ):
+            rejection_key = (
+                "rejected_duplicate"
+                if maximum_yolo_iou >= config.duplicate_iou
+                else "rejected_not_novel"
+            )
+            diagnostics[rejection_key] += 1
+            continue
+        if reliable_yolo:
+            assert best_yolo_index is not None
+            assert best_overlap is not None
+            overlap_strength = max(
+                best_overlap.iou,
+                best_overlap.left_coverage,
+                best_overlap.right_coverage,
+            )
+            inherited_candidates.append(
+                _SelectedProposal(
+                    source=sam,
+                    source_index=sam_index,
+                    label=yolo.labels[best_yolo_index],
+                    confidence=float(
+                        np.clip(
+                            float(yolo.confidences[best_yolo_index])
+                            * np.sqrt(overlap_strength),
+                            0.0,
+                            1.0,
+                        )
+                    ),
+                    area=area,
+                    kind="inherited",
+                )
+            )
+            accepted_sam_masks.append(sam_mask)
+            continue
+
+        semantic_id = dense_label.semantic_id
+        fallback_label = (
+            normalized_class_names[semantic_id - 1] if semantic_id > 0 else None
+        )
+        if (
+            semantic_id <= 0
+            or semantic_id in normalized_structure_ids
+            or fallback_label in structure_names
+            or dense_label.probability < config.minimum_dense_probability
+            or dense_label.margin < config.minimum_dense_margin
+        ):
+            diagnostics["rejected_unlabeled"] += 1
+            continue
+        assert fallback_label is not None
+        fallback_candidates.append(
+            _SelectedProposal(
+                source=sam,
+                source_index=sam_index,
+                label=fallback_label,
+                confidence=dense_label.probability,
+                area=area,
+                kind="fallback",
+            )
+        )
+        accepted_sam_masks.append(sam_mask)
+
+    yolo_candidates.sort(key=lambda proposal: (-proposal.confidence, proposal.source_index))
+    inherited_candidates.sort(
+        key=lambda proposal: (
+            -proposal.confidence,
+            -proposal.area,
+            proposal.source_index,
+        )
+    )
+    fallback_candidates.sort(
+        key=lambda proposal: (
+            -proposal.confidence,
+            -proposal.area,
+            proposal.source_index,
+        )
+    )
+    selected = yolo_candidates + inherited_candidates + fallback_candidates
+
+    if config.variant == "quota_nms_ensemble":
+        class_counts: dict[str, int] = {}
+        within_class_cap: list[_SelectedProposal] = []
+        for proposal in selected:
+            count = class_counts.get(proposal.label, 0)
+            if count >= config.maximum_per_class:
+                diagnostics["rejected_class_cap"] += 1
+                continue
+            class_counts[proposal.label] = count + 1
+            within_class_cap.append(proposal)
+        selected = within_class_cap
+
+    if len(selected) > config.maximum_proposals:
+        diagnostics["rejected_global_cap"] = len(selected) - config.maximum_proposals
+        selected = selected[: config.maximum_proposals]
+
+    diagnostics["accepted_yolo"] = sum(
+        proposal.kind == "yolo" for proposal in selected
+    )
+    diagnostics["accepted_inherited_sam"] = sum(
+        proposal.kind == "inherited" for proposal in selected
+    )
+    diagnostics["accepted_novel_sam"] = sum(
+        proposal.kind == "fallback" for proposal in selected
+    )
+    return HybridFrameResult(
+        batch=_build_selected_batch(selected, image_shape, feature_dimension),
+        diagnostics=diagnostics,
     )
