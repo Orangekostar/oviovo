@@ -22,11 +22,15 @@ _THRESHOLD_FIELDS = (
 
 
 def _unit_interval(value: float, field_name: str) -> float:
+    message = f"{field_name} must be a finite real number in [0, 1]"
     if isinstance(value, (bool, np.bool_)) or not isinstance(value, Real):
-        raise ValueError(f"{field_name} must be a finite real number in [0, 1]")
-    normalized = float(value)
+        raise ValueError(message)
+    try:
+        normalized = float(value)
+    except (OverflowError, TypeError, ValueError) as exc:
+        raise ValueError(message) from exc
     if not np.isfinite(normalized) or not 0.0 <= normalized <= 1.0:
-        raise ValueError(f"{field_name} must be a finite real number in [0, 1]")
+        raise ValueError(message)
     return normalized
 
 
@@ -40,16 +44,44 @@ def _positive_integer(value: int, field_name: str) -> int:
     return int(value)
 
 
+def _non_negative_integer(value: int, field_name: str) -> int:
+    if isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral):
+        raise ValueError(f"{field_name} must be a non-negative non-bool integer")
+    try:
+        normalized = int(value)
+    except (OverflowError, TypeError, ValueError) as exc:
+        raise ValueError(f"{field_name} must be a non-negative non-bool integer") from exc
+    if normalized < 0:
+        raise ValueError(f"{field_name} must be a non-negative non-bool integer")
+    return normalized
+
+
 def _numeric_array(value: np.ndarray, field_name: str) -> np.ndarray:
     try:
         array = np.asarray(value)
-    except (TypeError, ValueError) as exc:
+    except (TypeError, ValueError, OverflowError) as exc:
         raise ValueError(f"{field_name} must be a numeric array") from exc
-    if not np.issubdtype(array.dtype, np.number) or np.issubdtype(
-        array.dtype, np.complexfloating
-    ):
-        raise ValueError(f"{field_name} must be a numeric array")
+    if array.dtype.kind not in "iuf":
+        raise ValueError(f"{field_name} must have an integer, unsigned, or float dtype")
     return array
+
+
+def _binary_mask_array(value: np.ndarray, field_name: str) -> np.ndarray:
+    try:
+        mask = np.asarray(value)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise ValueError(f"{field_name} must be a boolean or binary numeric array") from exc
+    if mask.dtype.kind == "b":
+        return mask
+    if mask.dtype.kind not in "iuf":
+        raise ValueError(f"{field_name} must be a boolean or binary numeric array")
+    try:
+        valid = np.isfinite(mask) & ((mask == 0) | (mask == 1))
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise ValueError(f"{field_name} must contain only finite binary values") from exc
+    if not np.all(valid):
+        raise ValueError(f"{field_name} must contain only finite binary values")
+    return mask
 
 
 def _immutable_array(value: np.ndarray, dtype: np.dtype) -> np.ndarray:
@@ -59,7 +91,7 @@ def _immutable_array(value: np.ndarray, dtype: np.dtype) -> np.ndarray:
 
 def _normalized_features(value: np.ndarray) -> np.ndarray:
     try:
-        features = np.array(value, dtype=np.float64, copy=True, order="C")
+        features = np.array(value, dtype=np.longdouble, copy=True, order="C")
     except (TypeError, ValueError, OverflowError) as exc:
         raise ValueError("image_features must be a finite numeric array") from exc
     if not np.all(np.isfinite(features)):
@@ -69,7 +101,8 @@ def _normalized_features(value: np.ndarray) -> np.ndarray:
     if np.any(scales == 0.0):
         raise ValueError("image_features rows must be nonzero")
     scaled = features / scales[:, None]
-    norms = np.linalg.norm(scaled, axis=1)
+    squared_norms = np.sum(scaled * scaled, axis=1, dtype=np.longdouble)
+    norms = np.sqrt(squared_norms)
     if not np.all(np.isfinite(norms)) or np.any(norms == 0.0):
         raise ValueError("image_features rows must be finite and nonzero")
 
@@ -121,7 +154,7 @@ class HybridFrontendConfig:
             )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class FrontendBatch:
     masks: np.ndarray
     boxes_xyxy: np.ndarray
@@ -130,10 +163,7 @@ class FrontendBatch:
     image_features: np.ndarray
 
     def __post_init__(self) -> None:
-        try:
-            masks = np.asarray(self.masks)
-        except (TypeError, ValueError) as exc:
-            raise ValueError("masks must have shape (N, H, W)") from exc
+        masks = _binary_mask_array(self.masks, "masks")
         boxes = _numeric_array(self.boxes_xyxy, "boxes_xyxy")
         confidences = _numeric_array(self.confidences, "confidences")
         features = _numeric_array(self.image_features, "image_features")
@@ -199,12 +229,28 @@ class MaskOverlap:
     left_coverage: float
     right_coverage: float
 
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "intersection",
+            _non_negative_integer(self.intersection, "intersection"),
+        )
+        for field_name in ("iou", "left_coverage", "right_coverage"):
+            object.__setattr__(
+                self,
+                field_name,
+                _unit_interval(getattr(self, field_name), field_name),
+            )
+
 
 def mask_overlap(left: np.ndarray, right: np.ndarray) -> MaskOverlap:
-    left_mask = np.asarray(left, dtype=bool)
-    right_mask = np.asarray(right, dtype=bool)
+    left_mask = _binary_mask_array(left, "left mask")
+    right_mask = _binary_mask_array(right, "right mask")
     if left_mask.ndim != 2 or left_mask.shape != right_mask.shape:
         raise ValueError("masks must be two dimensional with equal shape")
+
+    left_mask = np.asarray(left_mask, dtype=bool)
+    right_mask = np.asarray(right_mask, dtype=bool)
 
     intersection = int(np.count_nonzero(left_mask & right_mask))
     left_size = int(np.count_nonzero(left_mask))

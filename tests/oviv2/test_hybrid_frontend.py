@@ -8,6 +8,7 @@ import pytest
 from src.oviv2.hybrid_frontend import (
     FrontendBatch,
     HybridFrontendConfig,
+    MaskOverlap,
     mask_overlap,
 )
 
@@ -68,6 +69,32 @@ def test_mask_overlap_requires_equal_two_dimensional_shapes(
         mask_overlap(left, right)
 
 
+@pytest.mark.parametrize("side", ["left", "right"])
+@pytest.mark.parametrize(
+    "invalid_mask",
+    [
+        np.asarray([[np.nan, 0.0], [0.0, 1.0]]),
+        np.asarray([[np.inf, 0.0], [0.0, 1.0]]),
+        np.asarray([[1j, 0j], [0j, 1 + 0j]]),
+        np.asarray([[0, 1], [1, 0]], dtype=object),
+        np.asarray([[0, 2], [1, 0]], dtype=np.int64),
+    ],
+    ids=("nan", "infinite", "complex", "object", "non-binary"),
+)
+def test_mask_overlap_rejects_unsafe_mask_values(
+    side: str,
+    invalid_mask: np.ndarray,
+) -> None:
+    masks = {
+        "left": np.zeros((2, 2), dtype=bool),
+        "right": np.ones((2, 2), dtype=bool),
+    }
+    masks[side] = invalid_mask
+
+    with pytest.raises(ValueError, match="mask"):
+        mask_overlap(masks["left"], masks["right"])
+
+
 @pytest.mark.parametrize(
     ("field_name", "value"),
     [
@@ -115,6 +142,36 @@ def test_frontend_batch_requires_numeric_arrays(field_name: str, value: np.ndarr
 
 
 @pytest.mark.parametrize(
+    ("field_name", "shape"),
+    [
+        ("boxes_xyxy", (2, 4)),
+        ("confidences", (2,)),
+        ("image_features", (2, 2)),
+    ],
+)
+@pytest.mark.parametrize(
+    "dtype",
+    [
+        np.dtype(np.bool_),
+        np.dtype(np.complex64),
+        np.dtype(object),
+        np.dtype("datetime64[D]"),
+        np.dtype("timedelta64[D]"),
+    ],
+    ids=("bool", "complex", "object", "datetime64", "timedelta64"),
+)
+def test_frontend_batch_allows_only_integer_unsigned_or_float_arrays(
+    field_name: str,
+    shape: tuple[int, ...],
+    dtype: np.dtype,
+) -> None:
+    value = np.zeros(shape, dtype=dtype)
+
+    with pytest.raises(ValueError, match=field_name):
+        _batch(**{field_name: value})
+
+
+@pytest.mark.parametrize(
     ("field_name", "value"),
     [
         ("boxes_xyxy", np.asarray([[np.nan, 0, 1, 1], [0, 0, 1, 1]])),
@@ -125,6 +182,22 @@ def test_frontend_batch_requires_numeric_arrays(field_name: str, value: np.ndarr
 def test_frontend_batch_requires_finite_arrays(field_name: str, value: np.ndarray) -> None:
     with pytest.raises(ValueError, match=field_name):
         _batch(**{field_name: value})
+
+
+@pytest.mark.parametrize(
+    "masks",
+    [
+        np.asarray([[[np.nan]], [[1.0]]]),
+        np.asarray([[[np.inf]], [[1.0]]]),
+        np.asarray([[[1j]], [[1 + 0j]]]),
+        np.asarray([[[0]], [[1]]], dtype=object),
+        np.asarray([[[2]], [[1]]], dtype=np.int64),
+    ],
+    ids=("nan", "infinite", "complex", "object", "non-binary"),
+)
+def test_frontend_batch_rejects_unsafe_mask_values(masks: np.ndarray) -> None:
+    with pytest.raises(ValueError, match="masks"):
+        _batch(masks=masks)
 
 
 @pytest.mark.parametrize("confidence", [-0.01, 1.01])
@@ -178,6 +251,40 @@ def test_frontend_batch_copies_normalizes_and_locks_arrays() -> None:
             value.flags.writeable = True
 
 
+def test_frontend_batch_uses_identity_equality_and_hashing() -> None:
+    first = _batch()
+    second = _batch()
+
+    assert first == first
+    assert first != second
+    assert isinstance(hash(first), int)
+    assert isinstance(hash(second), int)
+
+
+def test_frontend_batch_accepts_an_empty_batch() -> None:
+    batch = FrontendBatch(
+        masks=np.empty((0, 4, 5), dtype=bool),
+        boxes_xyxy=np.empty((0, 4), dtype=np.float64),
+        confidences=np.empty((0,), dtype=np.float64),
+        labels=(),
+        image_features=np.empty((0, 3), dtype=np.float64),
+    )
+
+    assert batch.masks.shape == (0, 4, 5)
+    assert batch.boxes_xyxy.shape == (0, 4)
+    assert batch.confidences.shape == (0,)
+    assert batch.labels == ()
+    assert batch.image_features.shape == (0, 3)
+    for value in (
+        batch.masks,
+        batch.boxes_xyxy,
+        batch.confidences,
+        batch.image_features,
+    ):
+        assert value.flags.c_contiguous
+        assert value.flags.writeable is False
+
+
 @pytest.mark.parametrize("magnitude", [1e-300, 1e300], ids=("tiny", "large"))
 def test_frontend_batch_normalizes_extreme_finite_feature_rows(magnitude: float) -> None:
     batch = _batch(
@@ -189,9 +296,72 @@ def test_frontend_batch_normalizes_extreme_finite_feature_rows(magnitude: float)
     assert np.linalg.norm(batch.image_features, axis=1) == pytest.approx([1.0, 1.0])
 
 
+@pytest.mark.parametrize(
+    "magnitude",
+    [
+        np.finfo(np.longdouble).max,
+        np.nextafter(np.longdouble(0), np.longdouble(1)),
+    ],
+    ids=("longdouble-maximum", "longdouble-smallest-positive"),
+)
+def test_frontend_batch_normalizes_longdouble_extreme_feature_rows(
+    magnitude: np.longdouble,
+) -> None:
+    features = np.asarray([[magnitude, 0], [0, magnitude]], dtype=np.longdouble)
+
+    batch = _batch(image_features=features)
+
+    assert np.all(np.isfinite(batch.image_features))
+    assert np.all(np.any(batch.image_features != 0.0, axis=1))
+    assert np.linalg.norm(batch.image_features, axis=1) == pytest.approx([1.0, 1.0])
+
+
 def test_frontend_batch_rejects_zero_feature_rows() -> None:
     with pytest.raises(ValueError, match="image_features.*nonzero"):
         _batch(image_features=np.asarray([[1.0, 0.0], [0.0, 0.0]]))
+
+
+def test_mask_overlap_contract_normalizes_numpy_scalars() -> None:
+    overlap = MaskOverlap(
+        intersection=np.int64(2),
+        iou=np.float32(0.5),
+        left_coverage=np.float32(0.75),
+        right_coverage=np.float64(1.0),
+    )
+
+    assert type(overlap.intersection) is int
+    assert type(overlap.iou) is float
+    assert type(overlap.left_coverage) is float
+    assert type(overlap.right_coverage) is float
+
+
+@pytest.mark.parametrize("intersection", [True, -1, 1.5, "1"])
+def test_mask_overlap_contract_rejects_invalid_intersection(intersection: object) -> None:
+    with pytest.raises(ValueError, match="intersection"):
+        MaskOverlap(
+            intersection=intersection,
+            iou=0.5,
+            left_coverage=0.5,
+            right_coverage=0.5,
+        )
+
+
+@pytest.mark.parametrize("field_name", ["iou", "left_coverage", "right_coverage"])
+@pytest.mark.parametrize("value", [True, np.nan, np.inf, -0.01, 1.01, "0.5"])
+def test_mask_overlap_contract_rejects_invalid_ratios(
+    field_name: str,
+    value: object,
+) -> None:
+    values = {
+        "intersection": 1,
+        "iou": 0.5,
+        "left_coverage": 0.5,
+        "right_coverage": 0.5,
+    }
+    values[field_name] = value
+
+    with pytest.raises(ValueError, match=field_name):
+        MaskOverlap(**values)
 
 
 @pytest.mark.parametrize(
@@ -230,6 +400,26 @@ def test_hybrid_config_requires_finite_real_unit_interval_thresholds(
 ) -> None:
     with pytest.raises(ValueError, match=field_name):
         HybridFrontendConfig(variant="yolo_novel_sam", **{field_name: value})
+
+
+class _TypeErrorFloat(float):
+    def __float__(self) -> float:
+        raise TypeError("cannot convert")
+
+
+class _ValueErrorFloat(float):
+    def __float__(self) -> float:
+        raise ValueError("cannot convert")
+
+
+@pytest.mark.parametrize(
+    "value",
+    [10**10000, _TypeErrorFloat(0.5), _ValueErrorFloat(0.5)],
+    ids=("overflow", "type-error", "value-error"),
+)
+def test_hybrid_config_wraps_float_conversion_errors(value: object) -> None:
+    with pytest.raises(ValueError, match="novel_iou"):
+        HybridFrontendConfig(variant="yolo_novel_sam", novel_iou=value)
 
 
 def test_hybrid_config_rejects_novel_iou_above_one() -> None:
