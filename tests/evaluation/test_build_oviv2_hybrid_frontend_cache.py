@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 import gzip
 import hashlib
 import io
@@ -17,12 +17,99 @@ import pytest
 
 import scripts.build_oviv2_hybrid_frontend_cache as builder
 from scripts.build_oviv2_hybrid_frontend_cache import parse_args, run
+from scripts.run_oviv2_replica import algorithm_hash
 from src.oviv2.dense_semantics import (
     DenseSemanticFrame,
     sha256_file,
     write_dense_frame,
 )
 from src.oviv2.hybrid_cache import load_frontend_batch
+from src.oviv2.hybrid_frontend import HybridFrontendConfig
+
+
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_ROUTE2_SHARED_SOURCES = {
+    "yolo_cache_dir": "/home/ww/vv/dataset/Replica/room0_s10_200f/gsa_detections_yolo_room0_s10_200f",
+    "sam_cache_dir": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/room0/input/room0/gsa_detections_none_canonical_room0_s10_200f",
+    "sam_gate": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/room0/gate.json",
+    "sam_generator_script": "/home/ww/oviovo_baseline_builds/conceptgraphs-canonical-runtime/conceptgraph/scripts/generate_gsa_results.py",
+    "sam_runtime_patch": "/home/ww/oviovo_baseline_runs/20260719_conceptgraphs_canonical/room0/runtime_path_localization.patch",
+    "clip_checkpoint": "/home/ww/vv/paper2/DovSG/checkpoints/CLIP-ViT-H-14-laion2B-s32B-b79K/open_clip_pytorch_model.bin",
+}
+_ROUTE2_CONFIGS = {
+    "sam_labeled": (
+        "oviv2_replica_room0_route2_sam_labeled.json",
+        "/home/ww/oviovo_experiments/20260721_route2_frontend/sam_labeled/cache",
+    ),
+    "yolo_novel_sam": (
+        "oviv2_replica_room0_route2_yolo_novel_sam.json",
+        "/home/ww/oviovo_experiments/20260721_route2_frontend/yolo_novel_sam/cache",
+    ),
+    "quota_nms_ensemble": (
+        "oviv2_replica_room0_route2_quota_nms.json",
+        "/home/ww/oviovo_experiments/20260721_route2_frontend/quota_nms_ensemble/cache",
+    ),
+}
+
+
+def _load_repo_json(relative_path: str) -> dict[str, object]:
+    payload = json.loads((_REPO_ROOT / relative_path).read_text(encoding="utf-8"))
+    assert isinstance(payload, dict)
+    return payload
+
+
+@pytest.mark.parametrize(("variant", "config_record"), _ROUTE2_CONFIGS.items())
+def test_route2_config_only_changes_permitted_base_fields(
+    variant: str, config_record: tuple[str, str]
+) -> None:
+    filename, output = config_record
+    baseline = _load_repo_json(
+        "configs/oviv2_replica_room0_precision_stage3_fused.json"
+    )
+    config = _load_repo_json(f"configs/{filename}")
+
+    excluded = {"frontend_cache_dir", "algorithm_hash", "hybrid_frontend"}
+    assert {key: value for key, value in config.items() if key not in excluded} == {
+        key: value for key, value in baseline.items() if key not in excluded
+    }
+    assert set(config) == set(baseline) | {"algorithm_hash", "hybrid_frontend"}
+    assert config["frontend_cache_dir"] == output
+    assert config["hybrid_frontend"]["variant"] == variant
+
+
+@pytest.mark.parametrize(("variant", "config_record"), _ROUTE2_CONFIGS.items())
+def test_route2_config_freezes_shared_sources_and_every_policy_default(
+    variant: str, config_record: tuple[str, str]
+) -> None:
+    filename, _ = config_record
+    hybrid = _load_repo_json(f"configs/{filename}")["hybrid_frontend"]
+
+    assert set(hybrid) == {
+        "variant",
+        *_ROUTE2_SHARED_SOURCES,
+        *_ROUTE2_CONFIGS,
+    }
+    assert {name: hybrid[name] for name in _ROUTE2_SHARED_SOURCES} == (
+        _ROUTE2_SHARED_SOURCES
+    )
+    for policy_variant in _ROUTE2_CONFIGS:
+        assert hybrid[policy_variant] == asdict(
+            HybridFrontendConfig(variant=policy_variant)
+        )
+    assert hybrid["quota_nms_ensemble"]["maximum_proposals"] == 64
+    assert hybrid["quota_nms_ensemble"]["maximum_per_class"] == 12
+    assert hybrid["quota_nms_ensemble"]["maximum_compact_rescues"] == 4
+
+
+@pytest.mark.parametrize(("variant", "config_record"), _ROUTE2_CONFIGS.items())
+def test_route2_config_has_runner_derived_algorithm_hash(
+    variant: str, config_record: tuple[str, str]
+) -> None:
+    filename, _ = config_record
+    config = _load_repo_json(f"configs/{filename}")
+
+    assert config["hybrid_frontend"]["variant"] == variant
+    assert config["algorithm_hash"] == algorithm_hash(config)
 
 
 @dataclass(frozen=True)
