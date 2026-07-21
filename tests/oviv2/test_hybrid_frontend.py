@@ -988,7 +988,7 @@ def test_yolo_novel_sam_keeps_yolo_and_adds_only_novel_sam() -> None:
     assert result.diagnostics["rejected_duplicate"] == 1
 
 
-def test_yolo_novel_sam_rejects_reliable_yolo_matches_below_novel_iou() -> None:
+def test_yolo_novel_sam_keeps_coverage_reliable_match_below_novel_iou() -> None:
     shape = (2, 8)
     yolo_mask = np.zeros((1, *shape), dtype=bool)
     yolo_mask[0, 0, :4] = True
@@ -1002,10 +1002,10 @@ def test_yolo_novel_sam_rejects_reliable_yolo_matches_below_novel_iou() -> None:
         config=HybridFrontendConfig(variant="yolo_novel_sam"),
     )
 
-    assert result.batch.labels == ("chair",)
-    assert result.diagnostics["accepted_inherited_sam"] == 0
+    assert result.batch.labels == ("chair", "chair")
+    assert result.diagnostics["accepted_inherited_sam"] == 1
     assert result.diagnostics["accepted_novel_sam"] == 0
-    assert result.diagnostics["rejected_not_novel"] == 1
+    assert result.diagnostics["rejected_not_novel"] == 0
 
 
 def test_sam_labeled_omits_yolo_and_orders_inherited_before_dense_fallback() -> None:
@@ -1077,6 +1077,34 @@ def test_yolo_inheritance_accepts_directed_coverage_and_breaks_best_tie_by_index
     )
 
     assert result.batch.labels == ("lower-index",)
+    assert result.batch.confidences[0] == pytest.approx(0.7)
+
+
+def test_yolo_inheritance_considers_all_reliable_matches_before_selecting_one() -> None:
+    shape = (5, 12)
+    sam_mask = np.zeros((1, *shape), dtype=bool)
+    sam_mask[0, 0, :] = True
+    yolo_masks = np.zeros((2, *shape), dtype=bool)
+    yolo_masks[0, 0, :6] = True
+    yolo_masks[0, 1, :6] = True
+    yolo_masks[1, :4, :] = True
+
+    result = _select(
+        yolo=_proposal_batch(
+            yolo_masks,
+            (0.9, 0.7),
+            labels=("higher-iou-but-unreliable", "coverage-reliable"),
+        ),
+        sam=_proposal_batch(sam_mask, (0.1,)),
+        dense=_selector_dense(np.full(shape, 3)),
+        config=HybridFrontendConfig(
+            variant="sam_labeled",
+            yolo_match_iou=0.5,
+            yolo_match_coverage=0.6,
+        ),
+    )
+
+    assert result.batch.labels == ("coverage-reliable",)
     assert result.batch.confidences[0] == pytest.approx(0.7)
 
 
@@ -1159,6 +1187,37 @@ def test_sam_duplicate_nms_rejects_at_equality() -> None:
     )
 
     assert result.batch.labels == ("chair",)
+    assert result.diagnostics["rejected_duplicate"] == 1
+
+
+def test_sam_nms_prioritizes_later_inherited_candidate_over_earlier_fallback() -> None:
+    shape = (2, 4)
+    yolo_mask = np.zeros((1, *shape), dtype=bool)
+    yolo_mask[0, 1, :2] = True
+    sam_masks = np.zeros((2, *shape), dtype=bool)
+    sam_masks[0, 0, :] = True
+    sam_masks[0, 1, 2:] = True
+    sam_masks[1, 0, :] = True
+    sam_masks[1, 1, :2] = True
+
+    result = _select(
+        yolo=_proposal_batch(yolo_mask, (0.8,), labels=("table",)),
+        sam=_proposal_batch(sam_masks, (0.1, 0.1)),
+        dense=_selector_dense(np.full(shape, 2)),
+        config=HybridFrontendConfig(
+            variant="yolo_novel_sam",
+            yolo_match_iou=0.5,
+            yolo_match_coverage=0.8,
+            novel_iou=0.8,
+            duplicate_iou=0.5,
+            maximum_area_fraction=1.0,
+        ),
+    )
+
+    assert result.batch.labels == ("table", "table")
+    np.testing.assert_array_equal(result.batch.masks[1], sam_masks[1])
+    assert result.diagnostics["accepted_inherited_sam"] == 1
+    assert result.diagnostics["accepted_novel_sam"] == 0
     assert result.diagnostics["rejected_duplicate"] == 1
 
 

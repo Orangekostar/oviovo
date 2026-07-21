@@ -485,6 +485,19 @@ def _build_selected_batch(
     )
 
 
+def _overlap_strength(overlap: MaskOverlap) -> float:
+    return max(overlap.iou, overlap.left_coverage, overlap.right_coverage)
+
+
+def _sam_candidate_sort_key(proposal: _SelectedProposal) -> tuple[int, float, int, int]:
+    return (
+        0 if proposal.kind == "inherited" else 1,
+        -proposal.confidence,
+        -proposal.area,
+        proposal.source_index,
+    )
+
+
 def select_hybrid_proposals(
     *,
     yolo: FrontendBatch,
@@ -544,9 +557,7 @@ def select_hybrid_proposals(
                 )
             )
 
-    inherited_candidates: list[_SelectedProposal] = []
-    fallback_candidates: list[_SelectedProposal] = []
-    accepted_sam_masks: list[np.ndarray] = []
+    sam_candidates: list[_SelectedProposal] = []
     image_area = image_shape[0] * image_shape[1]
 
     for sam_index, sam_mask in enumerate(sam.masks):
@@ -569,43 +580,18 @@ def select_hybrid_proposals(
         if dense_label.structure_probability > config.maximum_structure_probability:
             diagnostics["rejected_structure"] += 1
             continue
-        if any(
-            mask_overlap(sam_mask, accepted_mask).iou >= config.duplicate_iou
-            for accepted_mask in accepted_sam_masks
-        ):
-            diagnostics["rejected_duplicate"] += 1
-            continue
-
         maximum_yolo_iou = max((overlap.iou for overlap in overlaps), default=0.0)
-        best_yolo_index: int | None = None
-        best_overlap: MaskOverlap | None = None
-        if overlaps:
-            best_yolo_index = max(
-                range(len(overlaps)),
-                key=lambda index: (
-                    overlaps[index].iou,
-                    max(
-                        overlaps[index].left_coverage,
-                        overlaps[index].right_coverage,
-                    ),
-                    float(yolo.confidences[index]),
-                    -index,
-                ),
+        reliable_yolo_indices = [
+            index
+            for index, overlap in enumerate(overlaps)
+            if (
+                overlap.iou >= config.yolo_match_iou
+                or overlap.left_coverage >= config.yolo_match_coverage
+                or overlap.right_coverage >= config.yolo_match_coverage
             )
-            best_overlap = overlaps[best_yolo_index]
+        ]
 
-        reliable_yolo = (
-            best_yolo_index is not None
-            and best_overlap is not None
-            and (
-                best_overlap.iou >= config.yolo_match_iou
-                or best_overlap.left_coverage >= config.yolo_match_coverage
-                or best_overlap.right_coverage >= config.yolo_match_coverage
-            )
-        )
-        if config.variant == "yolo_novel_sam" and (
-            reliable_yolo or maximum_yolo_iou >= config.novel_iou
-        ):
+        if config.variant == "yolo_novel_sam" and maximum_yolo_iou >= config.novel_iou:
             rejection_key = (
                 "rejected_duplicate"
                 if maximum_yolo_iou >= config.duplicate_iou
@@ -613,15 +599,19 @@ def select_hybrid_proposals(
             )
             diagnostics[rejection_key] += 1
             continue
-        if reliable_yolo:
-            assert best_yolo_index is not None
-            assert best_overlap is not None
-            overlap_strength = max(
-                best_overlap.iou,
-                best_overlap.left_coverage,
-                best_overlap.right_coverage,
+
+        if reliable_yolo_indices:
+            best_yolo_index = max(
+                reliable_yolo_indices,
+                key=lambda index: (
+                    _overlap_strength(overlaps[index]),
+                    overlaps[index].iou,
+                    float(yolo.confidences[index]),
+                    -index,
+                ),
             )
-            inherited_candidates.append(
+            best_overlap = overlaps[best_yolo_index]
+            sam_candidates.append(
                 _SelectedProposal(
                     source=sam,
                     source_index=sam_index,
@@ -629,7 +619,7 @@ def select_hybrid_proposals(
                     confidence=float(
                         np.clip(
                             float(yolo.confidences[best_yolo_index])
-                            * np.sqrt(overlap_strength),
+                            * np.sqrt(_overlap_strength(best_overlap)),
                             0.0,
                             1.0,
                         )
@@ -638,7 +628,6 @@ def select_hybrid_proposals(
                     kind="inherited",
                 )
             )
-            accepted_sam_masks.append(sam_mask)
             continue
 
         semantic_id = dense_label.semantic_id
@@ -655,7 +644,7 @@ def select_hybrid_proposals(
             diagnostics["rejected_unlabeled"] += 1
             continue
         assert fallback_label is not None
-        fallback_candidates.append(
+        sam_candidates.append(
             _SelectedProposal(
                 source=sam,
                 source_index=sam_index,
@@ -665,23 +654,33 @@ def select_hybrid_proposals(
                 kind="fallback",
             )
         )
-        accepted_sam_masks.append(sam_mask)
+
+    sam_candidates.sort(key=_sam_candidate_sort_key)
+    accepted_sam_masks: list[np.ndarray] = []
+    accepted_sam_candidates: list[_SelectedProposal] = []
+    for proposal in sam_candidates:
+        proposal_mask = proposal.source.masks[proposal.source_index]
+        if any(
+            mask_overlap(proposal_mask, accepted_mask).iou >= config.duplicate_iou
+            for accepted_mask in accepted_sam_masks
+        ):
+            diagnostics["rejected_duplicate"] += 1
+            continue
+        accepted_sam_masks.append(proposal_mask)
+        accepted_sam_candidates.append(proposal)
+
+    inherited_candidates = [
+        proposal
+        for proposal in accepted_sam_candidates
+        if proposal.kind == "inherited"
+    ]
+    fallback_candidates = [
+        proposal
+        for proposal in accepted_sam_candidates
+        if proposal.kind == "fallback"
+    ]
 
     yolo_candidates.sort(key=lambda proposal: (-proposal.confidence, proposal.source_index))
-    inherited_candidates.sort(
-        key=lambda proposal: (
-            -proposal.confidence,
-            -proposal.area,
-            proposal.source_index,
-        )
-    )
-    fallback_candidates.sort(
-        key=lambda proposal: (
-            -proposal.confidence,
-            -proposal.area,
-            proposal.source_index,
-        )
-    )
     selected = yolo_candidates + inherited_candidates + fallback_candidates
 
     if config.variant == "quota_nms_ensemble":
