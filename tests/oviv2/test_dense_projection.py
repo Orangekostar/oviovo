@@ -184,6 +184,48 @@ def test_integrator_projects_topk_probabilities_to_expected_voxel() -> None:
     assert candidates[1].support == pytest.approx(0.2)
 
 
+def test_integrator_supports_validated_class_specific_entropy_powers() -> None:
+    frame = make_frame(depth=np.full((4, 4), 2.0, dtype=np.float32))
+    dense = make_dense_frame(
+        image_shape=(4, 4),
+        stride=4,
+        class_count=4,
+        class_ids=[[[1, 4]]],
+        probabilities=[[[0.6, 0.3]]],
+        entropy=np.log(4.0) * 0.5,
+    )
+    store = SparseEvidenceStore(EvidenceConfig(block_resolution=8, semantic_top_k=4))
+
+    DenseSemanticIntegrator(
+        DenseSemanticConfig(voxel_size_m=0.5, entropy_power=1.0)
+    ).integrate(
+        frame,
+        dense,
+        store,
+        revision=1,
+        entropy_power_by_class={1: 2.0},
+    )
+
+    candidates = {item.label_id: item.support for item in store.semantic_candidates((0, 0, 4))}
+    assert candidates[1] == pytest.approx(0.6 * 0.5**2)
+    assert candidates[4] == pytest.approx(0.3 * 0.5)
+
+
+@pytest.mark.parametrize(
+    "mapping",
+    ({0: 2.0}, {4: -1.0}, {4: np.inf}, {True: 2.0}, {4: True}),
+)
+def test_integrator_rejects_invalid_class_entropy_mapping(mapping: dict) -> None:
+    with pytest.raises((TypeError, ValueError), match="entropy|class"):
+        DenseSemanticIntegrator(DenseSemanticConfig(voxel_size_m=0.5)).integrate(
+            make_frame(),
+            make_dense_frame(),
+            SparseEvidenceStore(),
+            revision=1,
+            entropy_power_by_class=mapping,
+        )
+
+
 def test_projection_result_is_frozen() -> None:
     result = DenseProjectionResult(3, 2, 1)
 

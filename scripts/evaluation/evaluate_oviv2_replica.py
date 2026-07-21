@@ -4,11 +4,13 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import asdict
 import hashlib
 import json
 import os
 from pathlib import Path
 import shutil
+import stat
 import sys
 import tempfile
 import uuid
@@ -27,13 +29,278 @@ from src.evaluation.oviv2_replica import (  # noqa: E402
     evaluate_replica_voxel_map,
     project_mesh_to_gt,
 )
+from src.evaluation.oviv2_semantic_replay import (  # noqa: E402
+    SEMANTIC_REPLAY_SOURCE_RELATIVE_PATHS,
+    semantic_replay_algorithm_hash,
+)
 from src.oviv2.meshing import derive_labeled_mesh, write_labeled_mesh  # noqa: E402
+from src.oviv2.evidence import SparseEvidenceStore  # noqa: E402
 from src.oviv2.semantic_fusion import SemanticFusionConfig  # noqa: E402
 from src.oviv2.snapshot import VoxelMapSnapshot  # noqa: E402
 
 
 NON_INSTANCE_CLASSES = {"ceiling", "floor", "wall"}
 SEMANTIC_HEADS = ("owner_authoritative", "dense_only", "fused_uncertainty")
+SEMANTIC_REPLAY_SOURCE_PATHS = {
+    name: REPO_ROOT / relative
+    for name, relative in SEMANTIC_REPLAY_SOURCE_RELATIVE_PATHS.items()
+}
+
+
+def _regular_file_bytes(path: Path, label: str, max_bytes: int) -> bytes:
+    try:
+        initial = os.stat(path, follow_symlinks=False)
+    except OSError as error:
+        raise ValueError(f"{label} must be a readable regular file") from error
+    if not stat.S_ISREG(initial.st_mode) or initial.st_size > max_bytes:
+        raise ValueError(f"{label} must be a bounded regular non-symlink file")
+    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        descriptor = os.open(path, flags)
+    except OSError as error:
+        raise ValueError(f"{label} could not be opened safely") from error
+    try:
+        opened = os.fstat(descriptor)
+        identity = (opened.st_dev, opened.st_ino, opened.st_size, opened.st_mtime_ns)
+        if not stat.S_ISREG(opened.st_mode) or identity[:2] != (
+            initial.st_dev,
+            initial.st_ino,
+        ):
+            raise ValueError(f"{label} changed before it was opened")
+        with os.fdopen(os.dup(descriptor), "rb") as stream:
+            raw = stream.read(max_bytes + 1)
+        after = os.fstat(descriptor)
+        if (
+            len(raw) > max_bytes
+            or len(raw) != opened.st_size
+            or (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns)
+            != identity
+        ):
+            raise ValueError(f"{label} changed while it was read")
+        return raw
+    finally:
+        os.close(descriptor)
+
+
+def _unique_json(raw: bytes, label: str) -> dict[str, Any]:
+    def unique(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError(f"{label} contains duplicate key {key!r}")
+            result[key] = value
+        return result
+
+    try:
+        payload = json.loads(raw.decode("utf-8"), object_pairs_hook=unique)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError(f"{label} must be valid UTF-8 JSON") from error
+    if not isinstance(payload, dict):
+        raise ValueError(f"{label} root must be an object")
+    return payload
+
+
+def _lower_sha256(value: object, label: str) -> str:
+    if (
+        not isinstance(value, str)
+        or len(value) != 64
+        or any(character not in "0123456789abcdef" for character in value)
+    ):
+        raise ValueError(f"{label} must be lowercase SHA-256")
+    return value
+
+
+def _load_semantic_replay(
+    *,
+    snapshot: VoxelMapSnapshot,
+    evidence_path: Path,
+    manifest_path: Path,
+    scene_id: str,
+    benchmark_manifest_path: Path,
+    vocabulary_hash: str,
+) -> tuple[SparseEvidenceStore, dict[str, Any]]:
+    raw_manifest = _regular_file_bytes(
+        manifest_path,
+        "semantic replay manifest",
+        16 * 1024 * 1024,
+    )
+    manifest = _unique_json(raw_manifest, "semantic replay manifest")
+    if (
+        manifest.get("schema_version") != 1
+        or manifest.get("method") != "OVIV2-semantic-evidence-replay"
+    ):
+        raise ValueError("unsupported semantic replay manifest")
+    if manifest.get("scene") != scene_id:
+        raise ValueError("semantic replay scene mismatch")
+    if manifest.get("structure_replayed") is not True:
+        raise ValueError("semantic replay must include structure evidence")
+    if manifest.get("base_snapshot_checksums") != snapshot.checksums:
+        raise ValueError("semantic replay base snapshot checksum mismatch")
+    if manifest.get("base_snapshot_revision") != snapshot.metadata.revision:
+        raise ValueError("semantic replay base snapshot revision mismatch")
+    if manifest.get("benchmark_manifest_sha256") != _sha256(benchmark_manifest_path):
+        raise ValueError("semantic replay benchmark manifest hash mismatch")
+    if manifest.get("vocabulary_hash") != vocabulary_hash:
+        raise ValueError("semantic replay vocabulary hash mismatch")
+
+    overlay_bytes = _regular_file_bytes(
+        evidence_path,
+        "semantic replay overlay",
+        512 * 1024 * 1024,
+    )
+    overlay_sha256 = hashlib.sha256(overlay_bytes).hexdigest()
+    if manifest.get("overlay_sha256") != overlay_sha256:
+        raise ValueError("semantic replay overlay hash mismatch")
+    algorithm_hash = _lower_sha256(
+        manifest.get("algorithm_hash"),
+        "semantic replay algorithm_hash",
+    )
+    dense_config = manifest.get("dense_config")
+    class_powers = manifest.get("entropy_power_by_class")
+    source_hashes = manifest.get("source_hashes")
+    structure_config = manifest.get("structure_config")
+    semantic_support_scale = manifest.get("semantic_support_scale")
+    if not all(
+        isinstance(value, dict)
+        for value in (dense_config, class_powers, source_hashes, structure_config)
+    ):
+        raise ValueError("semantic replay manifest is missing config/source hashes")
+    if set(source_hashes) != set(SEMANTIC_REPLAY_SOURCE_PATHS):
+        raise ValueError("semantic replay source hash set is incomplete")
+    for name, source_path in SEMANTIC_REPLAY_SOURCE_PATHS.items():
+        expected = _lower_sha256(
+            source_hashes[name],
+            f"semantic replay source hash {name}",
+        )
+        if _sha256(source_path) != expected:
+            raise ValueError(f"semantic replay source hash mismatch for {name}")
+    recomputed_algorithm_hash = semantic_replay_algorithm_hash(
+        dense_config=dense_config,
+        entropy_power_by_class=class_powers,
+        semantic_support_scale=semantic_support_scale,
+        source_hashes=source_hashes,
+        structure_config=structure_config,
+    )
+    if algorithm_hash != recomputed_algorithm_hash:
+        raise ValueError("semantic replay algorithm hash mismatch")
+
+    frame_count = manifest.get("frame_count")
+    source_frame_ids = manifest.get("source_frame_ids")
+    if (
+        not isinstance(frame_count, int)
+        or isinstance(frame_count, bool)
+        or frame_count <= 0
+        or frame_count != snapshot.metadata.revision
+        or not isinstance(source_frame_ids, list)
+        or len(source_frame_ids) != frame_count
+    ):
+        raise ValueError("semantic replay frame contract mismatch")
+    encoded_source_ids = json.dumps(
+        source_frame_ids,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    if manifest.get("source_frame_ids_hash") != hashlib.sha256(
+        encoded_source_ids
+    ).hexdigest():
+        raise ValueError("semantic replay source frame hash mismatch")
+
+    dense_cache = manifest.get("dense_cache")
+    if not isinstance(dense_cache, dict):
+        raise ValueError("semantic replay dense cache provenance is missing")
+    dense_cache_path = Path(str(dense_cache.get("path", "")))
+    dense_manifest_path = dense_cache_path / "dense_manifest.json"
+    raw_dense_manifest = _regular_file_bytes(
+        dense_manifest_path,
+        "dense cache manifest",
+        16 * 1024 * 1024,
+    )
+    if dense_cache.get("manifest_sha256") != hashlib.sha256(raw_dense_manifest).hexdigest():
+        raise ValueError("semantic replay dense manifest hash mismatch")
+    dense_manifest = _unique_json(raw_dense_manifest, "dense cache manifest")
+    recorded_cache_hashes = dense_cache.get("cache_files_sha256")
+    if (
+        dense_manifest.get("source_frame_ids") != source_frame_ids
+        or dense_manifest.get("cache_files_sha256") != recorded_cache_hashes
+        or not isinstance(recorded_cache_hashes, dict)
+        or len(recorded_cache_hashes) != frame_count
+    ):
+        raise ValueError("semantic replay dense cache frame provenance mismatch")
+    for cache_index in range(frame_count):
+        name = f"frame{cache_index:06d}.npz"
+        expected = _lower_sha256(
+            recorded_cache_hashes.get(name),
+            f"dense cache hash {name}",
+        )
+        if _sha256(dense_cache_path / name) != expected:
+            raise ValueError(f"semantic replay dense cache hash mismatch for {name}")
+
+    replay_config_path = Path(str(manifest.get("config_path", "")))
+    replay_config_raw = _regular_file_bytes(
+        replay_config_path,
+        "semantic replay config",
+        16 * 1024 * 1024,
+    )
+    replay_config_payload = _unique_json(replay_config_raw, "semantic replay config")
+    replay_config_hash = hashlib.sha256(
+        json.dumps(
+            replay_config_payload,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("utf-8")
+    ).hexdigest()
+    if replay_config_hash != manifest.get("config_hash"):
+        raise ValueError("semantic replay config hash mismatch")
+    from scripts.evaluation.replay_oviv2_semantic_evidence import (
+        _replica_dataset_binding,
+    )
+    from scripts.run_oviv2_replica import _preflight, _resolve_config_paths
+
+    verified_config = _resolve_config_paths(replay_config_payload)
+    (
+        verified_dataset,
+        _verified_benchmark,
+        verified_source_ids,
+        verified_frontend_hash,
+        verified_frontend_manifest,
+        verified_dense_cache,
+    ) = _preflight(verified_config, frame_count, True)
+    if (
+        verified_source_ids != source_frame_ids
+        or verified_frontend_hash != manifest.get("frontend_cache_hash")
+        or verified_frontend_manifest != manifest.get("frontend_manifest")
+        or verified_dense_cache is None
+        or str(verified_dense_cache.cache_dir) != str(dense_cache_path)
+        or verified_dense_cache.manifest_sha256 != dense_cache.get("manifest_sha256")
+        or verified_dense_cache.cache_files_sha256 != recorded_cache_hashes
+        or asdict(verified_dense_cache.producer_provenance)
+        != dense_cache.get("producer_provenance")
+        or asdict(verified_dense_cache.consumed_provenance)
+        != dense_cache.get("consumed_provenance")
+        or _replica_dataset_binding(verified_dataset, verified_source_ids)
+        != manifest.get("dataset")
+    ):
+        raise ValueError("semantic replay frontend/dataset provenance mismatch")
+    base_run_manifest_path = Path(str(manifest.get("base_run_manifest", "")))
+    if _sha256(base_run_manifest_path) != manifest.get("base_run_manifest_sha256"):
+        raise ValueError("semantic replay base run manifest hash mismatch")
+
+    with tempfile.NamedTemporaryFile(suffix=".npz") as snapshot_file:
+        snapshot_file.write(overlay_bytes)
+        snapshot_file.flush()
+        evidence = SparseEvidenceStore.load(
+            Path(snapshot_file.name),
+            snapshot.evidence.config,
+        )
+    return evidence, {
+        "algorithm_hash": algorithm_hash,
+        "entropy_power_by_class": class_powers,
+        "dense_config": dense_config,
+        "manifest_sha256": hashlib.sha256(raw_manifest).hexdigest(),
+        "overlay_sha256": overlay_sha256,
+        "source_hashes": dict(sorted(source_hashes.items())),
+        "structure_replayed": True,
+    }
 
 
 def _sha256(path: Path) -> str:
@@ -310,6 +577,38 @@ def _publish_output(target: Path, writer) -> None:
             shutil.rmtree(backup)
 
 
+def _publish_fresh_output(target: Path, writer) -> None:
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if target.exists():
+        raise FileExistsError(f"evaluation output already exists: {target}")
+    lock = target.parent / f".{target.name}.publish.lock"
+    try:
+        descriptor = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    except FileExistsError as error:
+        raise FileExistsError(
+            f"evaluation output publication already in progress: {target}"
+        ) from error
+    os.close(descriptor)
+    temporary: Path | None = None
+    try:
+        temporary = Path(
+            tempfile.mkdtemp(prefix=f".{target.name}.tmp-", dir=target.parent)
+        )
+        writer(temporary)
+        if target.exists():
+            raise FileExistsError(f"evaluation output already exists: {target}")
+        os.rename(temporary, target)
+        directory_fd = os.open(target.parent, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(directory_fd)
+        finally:
+            os.close(directory_fd)
+    finally:
+        if temporary is not None and temporary.exists():
+            shutil.rmtree(temporary)
+        lock.unlink(missing_ok=True)
+
+
 def evaluate(args: argparse.Namespace) -> dict[str, Any]:
     semantic_head = getattr(args, "semantic_head", "owner_authoritative")
     if semantic_head not in SEMANTIC_HEADS:
@@ -318,17 +617,48 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         )
     manifest, scene = _load_manifest(args.manifest, args.scene)
     _verify_scene_inputs(scene, args.gt_mesh, args.gt_info)
+    aliases = _normalized_aliases(manifest.get("aliases", {}))
+    classes = [
+        _normalize_label(value, aliases) for value in manifest["vocabulary"]["classes"]
+    ]
+    vocabulary_payload = {
+        "classes": classes,
+        "aliases": dict(sorted(aliases.items())),
+    }
+    vocabulary_hash = hashlib.sha256(
+        json.dumps(vocabulary_payload, separators=(",", ":"), sort_keys=True).encode(
+            "utf-8"
+        )
+    ).hexdigest()
+    semantic_evidence_path = getattr(args, "semantic_evidence", None)
+    semantic_replay_manifest_path = getattr(args, "semantic_replay_manifest", None)
+    if (semantic_evidence_path is None) != (semantic_replay_manifest_path is None):
+        raise ValueError(
+            "--semantic-evidence and --semantic-replay-manifest must be supplied together"
+        )
+    if semantic_evidence_path is not None and args.output.exists():
+        raise FileExistsError(f"semantic replay evaluation output already exists: {args.output}")
     snapshot = VoxelMapSnapshot.load(args.snapshot)
     if snapshot.metadata.scene_id != args.scene:
         raise ValueError("snapshot scene does not match requested manifest scene")
     if semantic_head == "fused_uncertainty" and snapshot.registry is None:
         raise ValueError("fused_uncertainty requires an embedded registry")
+    if semantic_evidence_path is None:
+        evaluation_evidence = snapshot.evidence
+        semantic_replay_protocol = None
+    else:
+        evaluation_evidence, semantic_replay_protocol = _load_semantic_replay(
+            snapshot=snapshot,
+            evidence_path=semantic_evidence_path,
+            manifest_path=semantic_replay_manifest_path,
+            scene_id=args.scene,
+            benchmark_manifest_path=args.manifest,
+            vocabulary_hash=vocabulary_hash,
+        )
     fusion_config = SemanticFusionConfig(
         entity_weight_scale=getattr(args, "fusion_entity_weight_scale", 0.5)
     )
 
-    aliases = _normalized_aliases(manifest.get("aliases", {}))
-    classes = [_normalize_label(value, aliases) for value in manifest["vocabulary"]["classes"]]
     class_to_id = {label: index + 1 for index, label in enumerate(classes)}
     valid_semantic_ids = set(class_to_id.values())
     instance_semantic_ids = {
@@ -383,7 +713,7 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
 
     mesh = derive_labeled_mesh(
         snapshot.geometry,
-        snapshot.evidence,
+        evaluation_evidence,
         snapshot.ownership,
         entity_semantics=(
             entity_semantics if semantic_head == "owner_authoritative" else None
@@ -418,13 +748,6 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         min_instance_vertices=args.min_instance_vertices,
         distance_threshold_m=threshold,
     )
-    vocabulary_payload = {
-        "classes": classes,
-        "aliases": dict(sorted(aliases.items())),
-    }
-    vocabulary_hash = hashlib.sha256(
-        json.dumps(vocabulary_payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
-    ).hexdigest()
     metrics["protocol"].update(
         {
             "manifest_id": manifest.get("manifest_id"),
@@ -440,6 +763,8 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
             "mode": "uncertainty_linear",
             "entity_weight_scale": fusion_config.entity_weight_scale,
         }
+    if semantic_replay_protocol is not None:
+        metrics["protocol"]["semantic_replay"] = semantic_replay_protocol
 
     def write_output(directory: Path) -> None:
         _write_json(directory / "metrics.json", metrics)
@@ -468,7 +793,10 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
             field_name="entity_id",
         )
 
-    _publish_output(args.output, write_output)
+    if semantic_replay_protocol is None:
+        _publish_output(args.output, write_output)
+    else:
+        _publish_fresh_output(args.output, write_output)
     return metrics
 
 
@@ -476,6 +804,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--snapshot", type=Path, required=True)
     parser.add_argument("--entity-info", type=Path)
+    parser.add_argument("--semantic-evidence", type=Path)
+    parser.add_argument("--semantic-replay-manifest", type=Path)
     parser.add_argument("--gt-mesh", type=Path, required=True)
     parser.add_argument("--gt-info", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)

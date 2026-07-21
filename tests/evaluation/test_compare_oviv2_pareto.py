@@ -151,8 +151,54 @@ def test_instance_gate_requires_ap_gain_and_identical_other_heads() -> None:
         "instance_head_config_hash",
         "instance_head_source_hashes",
         "instance_head_algorithm_hash",
-        "snapshot_checksums",
     }
+
+
+def test_semantic_gate_requires_three_gains_and_identical_ap_geometry() -> None:
+    baseline = metrics()
+    candidate = metrics(miou=0.39, macc=0.44, f_miou=0.67)
+    candidate["protocol"]["semantic_replay"] = {
+        "algorithm_hash": "e" * 64,
+    }
+
+    audit = compare_metrics(baseline, candidate, mode="semantic")
+
+    assert audit["status"] == "PASS"
+    for name in ("miou", "macc", "f_miou"):
+        assert audit["checks"][name]["relation"] == "strictly_greater"
+    for name in ("ap25", "ap50", "f5"):
+        assert audit["checks"][name]["relation"] == "byte_identical"
+    assert "semantic_replay" in audit["protocol"]["comparison_excludes"]
+
+
+@pytest.mark.parametrize("name", ("miou", "macc", "f_miou"))
+def test_semantic_gate_rejects_semantic_tie(name: str) -> None:
+    candidate = metrics(miou=0.39, macc=0.44, f_miou=0.67)
+    _set_metric(candidate, name, metrics()[name])
+    assert compare_metrics(metrics(), candidate, mode="semantic")["status"] == "FAIL"
+
+
+@pytest.mark.parametrize("name", ("ap25", "ap50", "f5"))
+def test_semantic_gate_rejects_other_head_change(name: str) -> None:
+    candidate = metrics(miou=0.39, macc=0.44, f_miou=0.67)
+    _set_metric(candidate, name, metrics()[name] + 0.001)
+    assert compare_metrics(metrics(), candidate, mode="semantic")["status"] == "FAIL"
+
+
+@pytest.mark.parametrize("mode", ("instance", "semantic"))
+def test_frozen_snapshot_stage_rejects_snapshot_change(mode: str) -> None:
+    baseline = metrics(snapshot_checksum="a" * 64)
+    if mode == "instance":
+        candidate = metrics(ap25=0.29, ap50=0.06, snapshot_checksum="b" * 64)
+    else:
+        candidate = metrics(
+            miou=0.39,
+            macc=0.44,
+            f_miou=0.67,
+            snapshot_checksum="b" * 64,
+        )
+    with pytest.raises(ValueError, match="protocol mismatch"):
+        compare_metrics(baseline, candidate, mode=mode)
 
 
 @pytest.mark.parametrize("name", ("ap25", "ap50"))

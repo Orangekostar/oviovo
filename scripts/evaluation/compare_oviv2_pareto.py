@@ -29,7 +29,8 @@ METRIC_PATHS: dict[str, tuple[str, ...]] = {
 }
 ROUTE2_IMPROVEMENT_METRICS = frozenset(METRIC_PATHS) - {"f5"}
 INSTANCE_IMPROVEMENT_METRICS = frozenset({"ap25", "ap50"})
-VALID_MODES = frozenset({"instance", "route2", "final"})
+SEMANTIC_IMPROVEMENT_METRICS = frozenset({"miou", "macc", "f_miou"})
+VALID_MODES = frozenset({"instance", "semantic", "route2", "final"})
 PROTOCOL_COMPARISON_EXCLUSIONS = frozenset({"snapshot_checksums"})
 INSTANCE_PROTOCOL_EXCLUSIONS = frozenset(
     {
@@ -40,6 +41,7 @@ INSTANCE_PROTOCOL_EXCLUSIONS = frozenset(
         "instance_head_algorithm_hash",
     }
 )
+SEMANTIC_PROTOCOL_EXCLUSIONS = frozenset({"semantic_replay"})
 
 
 def _object(value: object, label: str) -> Mapping[str, Any]:
@@ -136,8 +138,14 @@ def compare_metrics(
     _reject_ambiguous_wrapper(baseline_object, "baseline")
     _reject_ambiguous_wrapper(candidate_object, "candidate")
 
-    protocol_exclusions = PROTOCOL_COMPARISON_EXCLUSIONS | (
+    protocol_exclusions = (
+        frozenset()
+        if mode in {"instance", "semantic"}
+        else PROTOCOL_COMPARISON_EXCLUSIONS
+    ) | (
         INSTANCE_PROTOCOL_EXCLUSIONS if mode == "instance" else frozenset()
+    ) | (
+        SEMANTIC_PROTOCOL_EXCLUSIONS if mode == "semantic" else frozenset()
     )
     baseline_scene, baseline_protocol, baseline_contract = _protocol_context(
         baseline_object, "baseline", protocol_exclusions
@@ -160,6 +168,7 @@ def compare_metrics(
             mode == "final"
             or (mode == "route2" and name in ROUTE2_IMPROVEMENT_METRICS)
             or (mode == "instance" and name in INSTANCE_IMPROVEMENT_METRICS)
+            or (mode == "semantic" and name in SEMANTIC_IMPROVEMENT_METRICS)
         )
         relation = "strictly_greater" if requires_improvement else "byte_identical"
         passed = (

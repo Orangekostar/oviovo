@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 import math
 
@@ -354,6 +355,8 @@ class DenseSemanticIntegrator:
         dense: DenseSemanticFrame,
         store: SparseEvidenceStore,
         revision: int,
+        *,
+        entropy_power_by_class: Mapping[int, float] | None = None,
     ) -> DenseProjectionResult:
         """Integrate one frame into a store using externally serialized access.
 
@@ -369,6 +372,25 @@ class DenseSemanticIntegrator:
         normalized_revision = _non_negative_integer(revision, "revision")
         height, width, stride = _validate_dense_arrays(dense)
         depth, pose, intrinsics = _validate_frame(frame, dense, (height, width))
+        if entropy_power_by_class is None:
+            normalized_class_powers: dict[int, float] = {}
+        else:
+            if not isinstance(entropy_power_by_class, Mapping):
+                raise TypeError("entropy_power_by_class must be a mapping or None")
+            normalized_class_powers = {}
+            for class_id, power in entropy_power_by_class.items():
+                normalized_id = _non_negative_integer(
+                    class_id,
+                    "entropy power class ID",
+                )
+                if normalized_id == 0 or normalized_id > dense.class_count:
+                    raise ValueError(
+                        "entropy power class ID must lie in [1, class_count]"
+                    )
+                normalized_power = _finite_number(power, "class entropy power")
+                if normalized_power < 0.0:
+                    raise ValueError("class entropy power must be non-negative")
+                normalized_class_powers[normalized_id] = normalized_power
 
         sampled_rows = np.arange(dense.entropy.shape[0], dtype=np.int64) * stride
         sampled_columns = np.arange(dense.entropy.shape[1], dtype=np.int64) * stride
@@ -411,11 +433,11 @@ class DenseSemanticIntegrator:
                 0.0,
                 1.0,
             )
-        quality = np.power(entropy_base, self.config.entropy_power) * np.power(
+        default_quality = np.power(entropy_base, self.config.entropy_power) * np.power(
             np.clip(view_cosine, 0.0, 1.0),
             self.config.view_angle_power,
         )
-        if not np.all(np.isfinite(quality)):
+        if not np.all(np.isfinite(default_quality)):
             raise ValueError("dense projection quality must be finite")
 
         camera_flat = camera_points.reshape(-1, 3)
@@ -441,11 +463,30 @@ class DenseSemanticIntegrator:
             sampled_pixel_count,
             -1,
         )
-        quality_flat = quality.reshape(sampled_pixel_count)
-        support = quality_flat[:, None] * probabilities
+        quality_flat = default_quality.reshape(sampled_pixel_count)
+        if normalized_class_powers:
+            powers = np.full(
+                class_ids.shape,
+                self.config.entropy_power,
+                dtype=np.float64,
+            )
+            for class_id, power in normalized_class_powers.items():
+                powers[class_ids == class_id] = power
+            candidate_quality = np.power(
+                entropy_base.reshape(sampled_pixel_count, 1),
+                powers,
+            ) * np.power(
+                np.clip(view_cosine, 0.0, 1.0).reshape(sampled_pixel_count, 1),
+                self.config.view_angle_power,
+            )
+        else:
+            candidate_quality = quality_flat[:, None]
+        if not np.all(np.isfinite(candidate_quality)):
+            raise ValueError("class-specific dense projection quality must be finite")
+        support = candidate_quality * probabilities
         candidate_mask = (
             valid_flat[:, None]
-            & (quality_flat[:, None] >= self.config.minimum_quality)
+            & (candidate_quality >= self.config.minimum_quality)
             & (class_ids > 0)
             & (probabilities >= self.config.minimum_probability)
             & np.isfinite(support)
