@@ -104,3 +104,45 @@ nearest weight-1.0 reference vertex within 0.075 m. The transformation is GT-fre
 
 The frozen `composed` Pareto audit is `PASS`; the base snapshot checksums are exact.
 Metrics SHA-256: `da3e091c61731fc84c63468f11b11bedb41d31030bf60dda78b87a674fba7715`.
+
+## Route 3 Stage D: Auxiliary Instance Ensemble
+
+Implementation commits: `045ec10`, `59c6089`, and provenance fix `24a8b5e`.
+
+The auxiliary stream uses the independently mapped, frozen Route 2 `sam_labeled`
+snapshot only to generate instance proposals. The primary Route 1 snapshot remains the
+sole source for semantic and geometry metrics. Auxiliary parents are scored from their
+own mesh support with weight 6, support exponent 1.5, and bias 0.05. The primary head
+uses child multiplier 12, view exponent 2.5, semantic exponent 1.5, and final
+cross-source deduplication IoU 0.9. No score or proposal reads GT geometry, labels, or
+matches.
+
+| Metric | Route 1 composed | Route 3 Stage D | Delta | Gate |
+| --- | ---: | ---: | ---: | --- |
+| mIoU | 0.3837512496 | 0.3837512496 | 0 | IEEE-identical |
+| mAcc | 0.4354314683 | 0.4354314683 | 0 | IEEE-identical |
+| f-mIoU | 0.6660187076 | 0.6660187076 | 0 | IEEE-identical |
+| AP25 | 0.3889825273 | **0.5039730208** | **+0.1149904935** | strict pass |
+| AP50 | 0.1305074808 | **0.2688231250** | **+0.1383156442** | strict pass |
+| F@5cm | 0.9178952033 | 0.9178952033 | 0 | IEEE-identical |
+
+The ensemble contains 136 primary and 125 auxiliary raw hypotheses. Of 261 total,
+253 pass the projection-support floor and 243 remain after deduplication. Recall rises
+to 0.676471 at IoU 0.25 and 0.441176 at IoU 0.50. The `instance` Pareto audit is
+`PASS`.
+
+The evaluator was repeated into a fresh directory; `metrics.json` and
+`instance_head_audit.json` are byte-identical. Frozen hashes:
+
+- metrics: `088b7ca9bb53584b52c603b2b2b60b402253d2959263c41c390443e39fd9887b`
+- instance audit: `45880578846d18b83bfed88d910816ea0564d6079fe1090ecd0a9e3c9b4a88ad`
+- Pareto audit: `3e71e632b368fe542df0a068699cc0dcff6c184ba1aa0f47c790706af67e2e28`
+- auxiliary algorithm: `9b9369cede2f46cd8821733253e8e75a6c69819aa7dc9ce73624f5d5486b50b5`
+
+Artifact root:
+`/home/ww/oviovo_experiments/20260721_route3/room0_aux_ensemble_frozen_59c6089`.
+
+This is an accepted room0 instance-stage result, not a replacement for the current
+Replica benchmark row. Promotion requires strict six-metric improvement over the
+current Route 1 result and one identically configured auxiliary stream for every
+Replica scene.
