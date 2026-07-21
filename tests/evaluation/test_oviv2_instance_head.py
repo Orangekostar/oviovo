@@ -24,6 +24,7 @@ def _api():
         build_instance_hypotheses,
         deduplicate_projected_hypotheses,
         evaluate_instance_hypotheses,
+        evaluate_projected_instance_hypotheses,
         project_instance_hypotheses,
     )
 
@@ -34,6 +35,7 @@ def _api():
         "build": build_instance_hypotheses,
         "deduplicate": deduplicate_projected_hypotheses,
         "evaluate": evaluate_instance_hypotheses,
+        "evaluate_projected": evaluate_projected_instance_hypotheses,
         "project": project_instance_hypotheses,
     }
 
@@ -293,6 +295,41 @@ def test_projected_mask_deduplication_is_greedy_by_score_then_id() -> None:
     kept = api["deduplicate"](values, 0.95)
 
     assert [item.hypothesis_id for item in kept] == ["a", "q"]
+
+
+def test_preprojected_evaluation_filters_support_and_deduplicates_sources() -> None:
+    from src.evaluation.oviv2_replica import ReplicaGroundTruth
+
+    api = _api()
+    vertices = np.column_stack((np.arange(6, dtype=np.float32), np.zeros((6, 2))))
+    ground_truth = ReplicaGroundTruth(
+        vertices_xyz=vertices,
+        semantic_ids=np.full(6, 4, dtype=np.int64),
+        instance_ids=np.repeat([1, 2], 3),
+    )
+    projected = (
+        _projected("unsupported", [1, 0, 0, 0, 0, 0], score=1.0),
+        _projected("base:e1", [1, 1, 1, 0, 0, 0], score=0.9),
+        _projected("aux:e1", [1, 1, 1, 0, 0, 0], score=0.8),
+        _projected("aux:e2", [0, 0, 0, 1, 1, 1], score=0.7),
+    )
+
+    result = api["evaluate_projected"](
+        projected,
+        ground_truth,
+        instance_semantic_ids={4},
+        min_instance_vertices=2,
+        deduplication_iou_threshold=0.9,
+    )
+
+    assert result["ap25"] == pytest.approx(1.0)
+    assert result["ap50"] == pytest.approx(1.0)
+    assert result["recall25"] == pytest.approx(1.0)
+    assert result["recall50"] == pytest.approx(1.0)
+    assert result["raw_hypothesis_count"] == 4
+    assert result["supported_hypothesis_count"] == 3
+    assert result["predicted_instance_count"] == 2
+    assert result["prediction_hypothesis_ids"] == ["base:e1", "aux:e2"]
 
 
 def test_instance_ap_reuses_semantic_instance_gt_identity_but_ignores_prediction_semantics() -> None:

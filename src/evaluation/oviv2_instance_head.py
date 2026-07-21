@@ -379,28 +379,28 @@ def deduplicate_projected_hypotheses(
     return tuple(kept)
 
 
-def evaluate_instance_hypotheses(
-    mesh: LabeledMesh,
-    hypotheses: Sequence[InstanceHypothesis],
+def evaluate_projected_instance_hypotheses(
+    projected: Sequence[ProjectedInstanceHypothesis],
     ground_truth: ReplicaGroundTruth,
     *,
     instance_semantic_ids: set[int],
     min_instance_vertices: int,
-    config: InstanceHeadConfig = InstanceHeadConfig(),
+    deduplication_iou_threshold: float,
 ) -> dict[str, object]:
     if not isinstance(ground_truth, ReplicaGroundTruth):
         raise TypeError("ground_truth must be ReplicaGroundTruth")
     minimum = _positive_integer(min_instance_vertices, "min_instance_vertices")
-    projected = project_instance_hypotheses(
-        mesh,
-        hypotheses,
-        ground_truth.vertices_xyz,
-        config.maximum_projection_distance_m,
-    )
+    for item in projected:
+        if not isinstance(item, ProjectedInstanceHypothesis):
+            raise TypeError(
+                "projected must contain ProjectedInstanceHypothesis values"
+            )
+        if len(item.mask) != len(ground_truth.vertices_xyz):
+            raise ValueError("projected mask size must match ground-truth vertices")
     supported = tuple(item for item in projected if int(np.sum(item.mask)) >= minimum)
     deduplicated = deduplicate_projected_hypotheses(
         supported,
-        config.deduplication_iou_threshold,
+        deduplication_iou_threshold,
     )
     gt_masks = _ground_truth_instance_masks(
         ground_truth,
@@ -451,7 +451,7 @@ def evaluate_instance_hypotheses(
         "ap50": ap50,
         "recall25": recall25,
         "recall50": recall50,
-        "raw_hypothesis_count": len(hypotheses),
+        "raw_hypothesis_count": len(projected),
         "supported_hypothesis_count": len(supported),
         "predicted_instance_count": len(deduplicated),
         "ground_truth_instance_count": len(gt_masks),
@@ -460,3 +460,29 @@ def evaluate_instance_hypotheses(
         ],
         "prediction_confidences": [item.score for item in deduplicated],
     }
+
+
+def evaluate_instance_hypotheses(
+    mesh: LabeledMesh,
+    hypotheses: Sequence[InstanceHypothesis],
+    ground_truth: ReplicaGroundTruth,
+    *,
+    instance_semantic_ids: set[int],
+    min_instance_vertices: int,
+    config: InstanceHeadConfig = InstanceHeadConfig(),
+) -> dict[str, object]:
+    if not isinstance(ground_truth, ReplicaGroundTruth):
+        raise TypeError("ground_truth must be ReplicaGroundTruth")
+    projected = project_instance_hypotheses(
+        mesh,
+        hypotheses,
+        ground_truth.vertices_xyz,
+        config.maximum_projection_distance_m,
+    )
+    return evaluate_projected_instance_hypotheses(
+        projected,
+        ground_truth,
+        instance_semantic_ids=instance_semantic_ids,
+        min_instance_vertices=min_instance_vertices,
+        deduplication_iou_threshold=config.deduplication_iou_threshold,
+    )
