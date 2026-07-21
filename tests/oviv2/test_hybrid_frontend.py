@@ -1,14 +1,18 @@
 from __future__ import annotations
 
-from dataclasses import replace
+from dataclasses import FrozenInstanceError, replace
+import math
 
 import numpy as np
 import pytest
 
+from src.oviv2.dense_semantics import DenseSemanticFrame
 from src.oviv2.hybrid_frontend import (
+    DenseMaskLabel,
     FrontendBatch,
     HybridFrontendConfig,
     MaskOverlap,
+    aggregate_dense_mask,
     mask_overlap,
 )
 
@@ -29,6 +33,73 @@ def _batch(**changes: object) -> FrontendBatch:
     }
     values.update(changes)
     return FrontendBatch(**values)
+
+
+def _dense_frame(
+    class_ids: np.ndarray,
+    probabilities: np.ndarray,
+    *,
+    image_shape: tuple[int, int] = (4, 4),
+    sample_stride: int = 2,
+    class_count: int | None = None,
+) -> DenseSemanticFrame:
+    class_ids = np.asarray(class_ids, dtype=np.int64)
+    probabilities = np.asarray(probabilities, dtype=np.float32)
+    sampled_shape = (
+        math.ceil(image_shape[0] / sample_stride),
+        math.ceil(image_shape[1] / sample_stride),
+    )
+    if class_count is None:
+        class_count = max(1, int(np.max(class_ids, initial=0)))
+    if class_ids.shape[:2] != sampled_shape:
+        raise AssertionError("test fixture does not match sampled image shape")
+    second = (
+        probabilities[..., 1]
+        if probabilities.shape[2] > 1
+        else np.zeros(sampled_shape, dtype=np.float32)
+    )
+    return DenseSemanticFrame(
+        cache_frame_id=4,
+        source_frame_id=9,
+        image_shape=image_shape,
+        sample_stride=sample_stride,
+        class_count=class_count,
+        class_ids=class_ids,
+        probabilities=probabilities,
+        entropy=np.zeros(sampled_shape, dtype=np.float32),
+        margin=np.asarray(probabilities[..., 0] - second, dtype=np.float32),
+    )
+
+
+def _dense_aggregation_fixture() -> DenseSemanticFrame:
+    return _dense_frame(
+        class_ids=np.asarray(
+            [
+                [[1, 2, 3], [2, 1, 3]],
+                [[3, 2, 1], [2, 4, 1]],
+            ]
+        ),
+        probabilities=np.asarray(
+            [
+                [[0.6, 0.3, 0.1], [0.8, 0.1, 0.05]],
+                [[0.5, 0.4, 0.1], [0.7, 0.2, 0.1]],
+            ]
+        ),
+        class_count=4,
+    )
+
+
+def _sampled_mask(
+    selected: tuple[tuple[int, int], ...],
+    *,
+    image_shape: tuple[int, int] = (4, 4),
+    sample_stride: int = 2,
+    dtype: np.dtype = np.dtype(np.bool_),
+) -> np.ndarray:
+    mask = np.zeros(image_shape, dtype=dtype)
+    for row, column in selected:
+        mask[row * sample_stride, column * sample_stride] = 1
+    return mask
 
 
 def test_mask_overlap_reports_iou_and_directed_coverages() -> None:
@@ -456,3 +527,340 @@ def test_hybrid_config_normalizes_numpy_scalar_values() -> None:
     assert type(config.novel_iou) is float
     assert type(config.maximum_proposals) is int
     assert replace(config, maximum_per_class=4).maximum_per_class == 4
+
+
+def test_dense_mask_aggregation_returns_stride_two_nonstructural_label() -> None:
+    dense = _dense_aggregation_fixture()
+    mask = _sampled_mask(((0, 0), (0, 1), (1, 1)), dtype=np.dtype(np.uint8))
+
+    result = aggregate_dense_mask(
+        mask,
+        np.ones((4, 4), dtype=np.float32),
+        dense,
+        structure_ids={1},
+    )
+
+    assert result.semantic_id == 2
+    assert result.probability == pytest.approx(0.6)
+    assert result.margin == pytest.approx(0.6 - (0.2 / 3.0))
+    assert result.structure_probability == pytest.approx(0.8 / 3.0)
+    assert result.valid_depth_fraction == 1.0
+
+
+def test_dense_mask_aggregation_returns_zero_label_for_empty_mask() -> None:
+    result = aggregate_dense_mask(
+        np.zeros((4, 4), dtype=bool),
+        np.ones((4, 4), dtype=bool),
+        _dense_aggregation_fixture(),
+        structure_ids={1},
+    )
+
+    assert result == DenseMaskLabel(0, 0.0, 0.0, 0.0, 0.0)
+
+
+def test_dense_mask_aggregation_ignores_pixels_outside_sampling_phase() -> None:
+    mask = np.ones((4, 4), dtype=bool)
+    mask[::2, ::2] = False
+
+    result = aggregate_dense_mask(
+        mask,
+        np.ones((4, 4), dtype=bool),
+        _dense_aggregation_fixture(),
+        structure_ids={1},
+    )
+
+    assert result == DenseMaskLabel(0, 0.0, 0.0, 0.0, 0.0)
+
+
+def test_dense_mask_aggregation_returns_zero_label_without_valid_depth() -> None:
+    result = aggregate_dense_mask(
+        _sampled_mask(((0, 0), (0, 1))),
+        np.zeros((4, 4), dtype=bool),
+        _dense_aggregation_fixture(),
+        structure_ids={1},
+    )
+
+    assert result == DenseMaskLabel(0, 0.0, 0.0, 0.0, 0.0)
+
+
+def test_dense_mask_aggregation_uses_only_valid_selected_samples() -> None:
+    valid_depth = _sampled_mask(((0, 0), (1, 0)))
+
+    result = aggregate_dense_mask(
+        _sampled_mask(((0, 0), (0, 1), (1, 0), (1, 1))),
+        valid_depth,
+        _dense_aggregation_fixture(),
+        structure_ids={1},
+    )
+
+    assert result.semantic_id == 2
+    assert result.probability == pytest.approx(0.35)
+    assert result.margin == pytest.approx(0.05)
+    assert result.structure_probability == pytest.approx(0.35)
+    assert result.valid_depth_fraction == 0.5
+
+
+def test_dense_mask_aggregation_can_label_object_under_structure_dominance() -> None:
+    dense = _dense_frame(
+        class_ids=np.asarray([[[1, 2, 3]]]),
+        probabilities=np.asarray([[[0.7, 0.2, 0.1]]]),
+        image_shape=(1, 1),
+        sample_stride=1,
+        class_count=3,
+    )
+
+    result = aggregate_dense_mask(
+        np.ones((1, 1), dtype=bool),
+        np.ones((1, 1), dtype=bool),
+        dense,
+        structure_ids={1},
+    )
+
+    assert result.semantic_id == 2
+    assert result.probability == pytest.approx(0.2)
+    assert result.margin == pytest.approx(0.1)
+    assert result.structure_probability == pytest.approx(0.7)
+
+
+def test_dense_mask_aggregation_returns_no_object_for_all_structure_support() -> None:
+    dense = _dense_frame(
+        class_ids=np.asarray([[[1, 2]]]),
+        probabilities=np.asarray([[[0.8, 0.2000005]]]),
+        image_shape=(1, 1),
+        sample_stride=1,
+        class_count=2,
+    )
+
+    result = aggregate_dense_mask(
+        np.ones((1, 1), dtype=bool),
+        np.ones((1, 1), dtype=bool),
+        dense,
+        structure_ids={1, 2},
+    )
+
+    assert result.semantic_id == 0
+    assert result.probability == 0.0
+    assert result.margin == 0.0
+    assert result.structure_probability == 1.0
+    assert result.valid_depth_fraction == 1.0
+
+
+def test_dense_mask_aggregation_accumulates_all_top_k_slots() -> None:
+    dense = _dense_frame(
+        class_ids=np.asarray([[[2, 5, 1], [3, 5, 1], [4, 5, 1]]]),
+        probabilities=np.asarray(
+            [[[0.4, 0.35, 0.1], [0.4, 0.35, 0.1], [0.4, 0.35, 0.1]]]
+        ),
+        image_shape=(1, 3),
+        sample_stride=1,
+        class_count=5,
+    )
+
+    result = aggregate_dense_mask(
+        np.ones((1, 3), dtype=bool),
+        np.ones((1, 3), dtype=bool),
+        dense,
+        structure_ids={1},
+    )
+
+    assert result.semantic_id == 5
+    assert result.probability == pytest.approx(0.35)
+    assert result.margin == pytest.approx(0.35 - (0.4 / 3.0))
+    assert result.structure_probability == pytest.approx(0.1)
+
+
+def test_dense_mask_aggregation_breaks_support_ties_by_smaller_class_id() -> None:
+    dense = _dense_frame(
+        class_ids=np.asarray([[[3, 2]]]),
+        probabilities=np.asarray([[[0.4, 0.4]]]),
+        image_shape=(1, 1),
+        sample_stride=1,
+        class_count=3,
+    )
+
+    result = aggregate_dense_mask(
+        np.ones((1, 1), dtype=bool),
+        np.ones((1, 1), dtype=bool),
+        dense,
+        structure_ids=frozenset(),
+    )
+
+    assert result.semantic_id == 2
+    assert result.probability == pytest.approx(0.4)
+    assert result.margin == 0.0
+
+
+def test_dense_mask_aggregation_supports_ceiling_divided_sample_shape() -> None:
+    class_ids = np.zeros((3, 4, 2), dtype=np.int64)
+    class_ids[..., 0] = 1
+    class_ids[..., 1] = 2
+    probabilities = np.zeros((3, 4, 2), dtype=np.float32)
+    probabilities[..., 0] = 0.6
+    probabilities[..., 1] = 0.2
+    dense = _dense_frame(
+        class_ids,
+        probabilities,
+        image_shape=(5, 7),
+        sample_stride=2,
+        class_count=2,
+    )
+
+    result = aggregate_dense_mask(
+        _sampled_mask(((2, 3),), image_shape=(5, 7)),
+        np.ones((5, 7), dtype=bool),
+        dense,
+        structure_ids={1},
+    )
+
+    assert result.semantic_id == 2
+    assert result.probability == pytest.approx(0.2)
+    assert result.margin == pytest.approx(0.2)
+    assert result.structure_probability == pytest.approx(0.6)
+    assert result.valid_depth_fraction == 1.0
+
+
+@pytest.mark.parametrize("field_name", ["mask", "valid_depth"])
+def test_dense_mask_aggregation_requires_dense_image_shape(field_name: str) -> None:
+    values = {
+        "mask": np.ones((4, 4), dtype=bool),
+        "valid_depth": np.ones((4, 4), dtype=bool),
+    }
+    values[field_name] = np.ones((2, 2), dtype=bool)
+
+    with pytest.raises(ValueError, match="image_shape"):
+        aggregate_dense_mask(
+            values["mask"],
+            values["valid_depth"],
+            _dense_aggregation_fixture(),
+            structure_ids={1},
+        )
+
+
+@pytest.mark.parametrize("field_name", ["mask", "valid_depth"])
+@pytest.mark.parametrize(
+    "invalid",
+    [
+        np.full((4, 4), np.nan),
+        np.full((4, 4), np.inf),
+        np.zeros((4, 4), dtype=np.complex64),
+        np.zeros((4, 4), dtype=object),
+        np.zeros((4, 4), dtype="datetime64[D]"),
+        np.zeros((4, 4), dtype="timedelta64[D]"),
+        np.full((4, 4), 2, dtype=np.int64),
+    ],
+    ids=("nan", "infinite", "complex", "object", "datetime", "timedelta", "nonbinary"),
+)
+def test_dense_mask_aggregation_rejects_unsafe_binary_arrays(
+    field_name: str,
+    invalid: np.ndarray,
+) -> None:
+    values = {
+        "mask": np.ones((4, 4), dtype=bool),
+        "valid_depth": np.ones((4, 4), dtype=bool),
+    }
+    values[field_name] = invalid
+
+    with pytest.raises(ValueError, match=field_name):
+        aggregate_dense_mask(
+            values["mask"],
+            values["valid_depth"],
+            _dense_aggregation_fixture(),
+            structure_ids={1},
+        )
+
+
+@pytest.mark.parametrize("structure_ids", [[1], (1,), {1: "wall"}])
+def test_dense_mask_aggregation_requires_set_structure_ids(
+    structure_ids: object,
+) -> None:
+    with pytest.raises(ValueError, match="structure_ids"):
+        aggregate_dense_mask(
+            np.ones((4, 4), dtype=bool),
+            np.ones((4, 4), dtype=bool),
+            _dense_aggregation_fixture(),
+            structure_ids=structure_ids,
+        )
+
+
+@pytest.mark.parametrize(
+    "structure_id",
+    [True, np.bool_(False), 0, -1, 1.0, "1", 5],
+    ids=("bool", "numpy-bool", "zero", "negative", "float", "string", "out-of-range"),
+)
+def test_dense_mask_aggregation_validates_structure_id_elements(
+    structure_id: object,
+) -> None:
+    with pytest.raises(ValueError, match="structure_ids"):
+        aggregate_dense_mask(
+            np.ones((4, 4), dtype=bool),
+            np.ones((4, 4), dtype=bool),
+            _dense_aggregation_fixture(),
+            structure_ids={structure_id},
+        )
+
+
+def test_dense_mask_aggregation_does_not_modify_input_arrays() -> None:
+    dense = _dense_aggregation_fixture()
+    mask = _sampled_mask(((0, 0), (1, 1)), dtype=np.dtype(np.uint8))
+    valid_depth = np.ones((4, 4), dtype=np.float32)
+    inputs = (mask, valid_depth, dense.class_ids, dense.probabilities)
+    snapshots = tuple(value.copy() for value in inputs)
+
+    aggregate_dense_mask(mask, valid_depth, dense, structure_ids={np.int64(1)})
+
+    for value, snapshot in zip(inputs, snapshots):
+        np.testing.assert_array_equal(value, snapshot)
+
+
+def test_dense_mask_label_normalizes_numpy_scalars_and_is_frozen() -> None:
+    label = DenseMaskLabel(
+        semantic_id=np.int64(2),
+        probability=np.float32(0.75),
+        margin=np.float64(0.25),
+        structure_probability=np.float32(0.1),
+        valid_depth_fraction=np.float64(0.5),
+    )
+
+    assert type(label.semantic_id) is int
+    for field_name in (
+        "probability",
+        "margin",
+        "structure_probability",
+        "valid_depth_fraction",
+    ):
+        assert type(getattr(label, field_name)) is float
+    with pytest.raises(FrozenInstanceError):
+        label.semantic_id = 3
+
+
+@pytest.mark.parametrize("semantic_id", [True, np.bool_(False), -1, 1.5, "1"])
+def test_dense_mask_label_rejects_invalid_semantic_id(semantic_id: object) -> None:
+    with pytest.raises(ValueError, match="semantic_id"):
+        DenseMaskLabel(semantic_id, 0.5, 0.25, 0.1, 1.0)
+
+
+@pytest.mark.parametrize(
+    "field_name",
+    ["probability", "margin", "structure_probability", "valid_depth_fraction"],
+)
+@pytest.mark.parametrize("value", [True, np.nan, np.inf, -0.01, 1.01, "0.5"])
+def test_dense_mask_label_rejects_invalid_ratios(
+    field_name: str,
+    value: object,
+) -> None:
+    values = {
+        "semantic_id": 2,
+        "probability": 0.5,
+        "margin": 0.25,
+        "structure_probability": 0.1,
+        "valid_depth_fraction": 1.0,
+    }
+    values[field_name] = value
+
+    with pytest.raises(ValueError, match=field_name):
+        DenseMaskLabel(**values)
+
+
+def test_dense_mask_label_rejects_margin_above_probability() -> None:
+    with pytest.raises(ValueError, match="margin.*probability"):
+        DenseMaskLabel(2, 0.4, 0.5, 0.1, 1.0)

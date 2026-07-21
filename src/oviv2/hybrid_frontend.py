@@ -5,6 +5,8 @@ from numbers import Integral, Real
 
 import numpy as np
 
+from .dense_semantics import DenseSemanticFrame
+
 
 _VARIANTS = frozenset({"sam_labeled", "yolo_novel_sam", "quota_nms_ensemble"})
 _THRESHOLD_FIELDS = (
@@ -243,6 +245,35 @@ class MaskOverlap:
             )
 
 
+@dataclass(frozen=True)
+class DenseMaskLabel:
+    semantic_id: int
+    probability: float
+    margin: float
+    structure_probability: float
+    valid_depth_fraction: float
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "semantic_id",
+            _non_negative_integer(self.semantic_id, "semantic_id"),
+        )
+        for field_name in (
+            "probability",
+            "margin",
+            "structure_probability",
+            "valid_depth_fraction",
+        ):
+            object.__setattr__(
+                self,
+                field_name,
+                _unit_interval(getattr(self, field_name), field_name),
+            )
+        if self.margin > self.probability:
+            raise ValueError("margin must not exceed probability")
+
+
 def mask_overlap(left: np.ndarray, right: np.ndarray) -> MaskOverlap:
     left_mask = _binary_mask_array(left, "left mask")
     right_mask = _binary_mask_array(right, "right mask")
@@ -261,4 +292,93 @@ def mask_overlap(left: np.ndarray, right: np.ndarray) -> MaskOverlap:
         iou=float(intersection / union) if union else 0.0,
         left_coverage=float(intersection / left_size) if left_size else 0.0,
         right_coverage=float(intersection / right_size) if right_size else 0.0,
+    )
+
+
+def aggregate_dense_mask(
+    mask: np.ndarray,
+    valid_depth: np.ndarray,
+    dense: DenseSemanticFrame,
+    *,
+    structure_ids: set[int] | frozenset[int],
+) -> DenseMaskLabel:
+    mask_array = _binary_mask_array(mask, "mask")
+    valid_depth_array = _binary_mask_array(valid_depth, "valid_depth")
+    if (
+        mask_array.shape != dense.image_shape
+        or valid_depth_array.shape != dense.image_shape
+    ):
+        raise ValueError("mask and valid_depth must match dense image_shape")
+
+    if not isinstance(structure_ids, (set, frozenset)):
+        raise ValueError("structure_ids must be a set or frozenset")
+    normalized_structure_ids: set[int] = set()
+    for value in structure_ids:
+        normalized = _positive_integer(value, "structure_ids element")
+        if normalized > dense.class_count:
+            raise ValueError("structure_ids elements must not exceed dense class_count")
+        normalized_structure_ids.add(normalized)
+
+    stride = dense.sample_stride
+    sampled_mask = np.asarray(mask_array[::stride, ::stride], dtype=bool)
+    sampled_depth = np.asarray(valid_depth_array[::stride, ::stride], dtype=bool)
+    sampled_shape = dense.class_ids.shape[:2]
+    if sampled_mask.shape != sampled_shape or sampled_depth.shape != sampled_shape:
+        raise ValueError("sampled mask and valid_depth must match dense class_ids shape")
+
+    selected_count = int(np.count_nonzero(sampled_mask))
+    if selected_count == 0:
+        return DenseMaskLabel(0, 0.0, 0.0, 0.0, 0.0)
+
+    valid_selected = sampled_mask & sampled_depth
+    valid_selected_count = int(np.count_nonzero(valid_selected))
+    if valid_selected_count == 0:
+        return DenseMaskLabel(0, 0.0, 0.0, 0.0, 0.0)
+
+    support = np.zeros(dense.class_count + 1, dtype=np.float64)
+    for slot in range(dense.class_ids.shape[2]):
+        slot_ids = dense.class_ids[..., slot][valid_selected]
+        positive = slot_ids > 0
+        if np.any(positive):
+            slot_probabilities = dense.probabilities[..., slot][valid_selected]
+            np.add.at(support, slot_ids[positive], slot_probabilities[positive])
+    support /= valid_selected_count
+
+    structure_probability = float(
+        np.clip(
+            sum(support[class_id] for class_id in normalized_structure_ids),
+            0.0,
+            1.0,
+        )
+    )
+    winning_id = 0
+    winning_support = 0.0
+    runner_up_support = 0.0
+    for class_id in range(1, dense.class_count + 1):
+        if class_id in normalized_structure_ids:
+            continue
+        class_support = float(support[class_id])
+        if class_support > winning_support:
+            runner_up_support = winning_support
+            winning_id = class_id
+            winning_support = class_support
+        elif class_support > runner_up_support:
+            runner_up_support = class_support
+
+    if winning_support <= 0.0:
+        return DenseMaskLabel(
+            semantic_id=0,
+            probability=0.0,
+            margin=0.0,
+            structure_probability=structure_probability,
+            valid_depth_fraction=valid_selected_count / selected_count,
+        )
+    probability = float(np.clip(winning_support, 0.0, 1.0))
+    margin = float(np.clip(winning_support - runner_up_support, 0.0, 1.0))
+    return DenseMaskLabel(
+        semantic_id=winning_id,
+        probability=probability,
+        margin=margin,
+        structure_probability=structure_probability,
+        valid_depth_fraction=valid_selected_count / selected_count,
     )
