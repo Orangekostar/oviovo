@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare OVIV2 metrics against the Route 2 or final Pareto gate."""
+"""Compare OVIV2 metrics against a staged or final Pareto gate."""
 
 from __future__ import annotations
 
@@ -28,8 +28,18 @@ METRIC_PATHS: dict[str, tuple[str, ...]] = {
     "f5": ("geometry", "f5"),
 }
 ROUTE2_IMPROVEMENT_METRICS = frozenset(METRIC_PATHS) - {"f5"}
-VALID_MODES = frozenset({"route2", "final"})
+INSTANCE_IMPROVEMENT_METRICS = frozenset({"ap25", "ap50"})
+VALID_MODES = frozenset({"instance", "route2", "final"})
 PROTOCOL_COMPARISON_EXCLUSIONS = frozenset({"snapshot_checksums"})
+INSTANCE_PROTOCOL_EXCLUSIONS = frozenset(
+    {
+        "headline_instance_protocol",
+        "instance_head_config",
+        "instance_head_config_hash",
+        "instance_head_source_hashes",
+        "instance_head_algorithm_hash",
+    }
+)
 
 
 def _object(value: object, label: str) -> Mapping[str, Any]:
@@ -74,7 +84,7 @@ def _read_metric(payload: Mapping[str, Any], name: str, label: str) -> float:
 
 
 def _protocol_context(
-    payload: Mapping[str, Any], label: str
+    payload: Mapping[str, Any], label: str, exclusions: frozenset[str]
 ) -> tuple[str, dict[str, Any], str]:
     protocol = _object(payload.get("protocol"), f"{label} protocol")
     scene = protocol.get("scene_id")
@@ -90,7 +100,7 @@ def _protocol_context(
     comparison_protocol = {
         key: value
         for key, value in full_protocol.items()
-        if key not in PROTOCOL_COMPARISON_EXCLUSIONS
+        if key not in exclusions
     }
     try:
         canonical = json.dumps(
@@ -126,11 +136,14 @@ def compare_metrics(
     _reject_ambiguous_wrapper(baseline_object, "baseline")
     _reject_ambiguous_wrapper(candidate_object, "candidate")
 
+    protocol_exclusions = PROTOCOL_COMPARISON_EXCLUSIONS | (
+        INSTANCE_PROTOCOL_EXCLUSIONS if mode == "instance" else frozenset()
+    )
     baseline_scene, baseline_protocol, baseline_contract = _protocol_context(
-        baseline_object, "baseline"
+        baseline_object, "baseline", protocol_exclusions
     )
     candidate_scene, candidate_protocol, candidate_contract = _protocol_context(
-        candidate_object, "candidate"
+        candidate_object, "candidate", protocol_exclusions
     )
     if baseline_scene != candidate_scene:
         raise ValueError(
@@ -143,7 +156,11 @@ def compare_metrics(
     for name in METRIC_PATHS:
         baseline_value = _read_metric(baseline_object, name, "baseline")
         candidate_value = _read_metric(candidate_object, name, "candidate")
-        requires_improvement = mode == "final" or name in ROUTE2_IMPROVEMENT_METRICS
+        requires_improvement = (
+            mode == "final"
+            or (mode == "route2" and name in ROUTE2_IMPROVEMENT_METRICS)
+            or (mode == "instance" and name in INSTANCE_IMPROVEMENT_METRICS)
+        )
         relation = "strictly_greater" if requires_improvement else "byte_identical"
         passed = (
             candidate_value > baseline_value
@@ -171,7 +188,7 @@ def compare_metrics(
         "protocol": {
             "baseline": baseline_protocol,
             "candidate": candidate_protocol,
-            "comparison_excludes": sorted(PROTOCOL_COMPARISON_EXCLUSIONS),
+            "comparison_excludes": sorted(protocol_exclusions),
             "matched": True,
         },
     }

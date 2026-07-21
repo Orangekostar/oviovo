@@ -125,6 +125,50 @@ def test_route2_gate_requires_semantic_ap_gain_and_identical_f5() -> None:
     assert audit["checks"]["f5"]["passed"] is True
 
 
+def test_instance_gate_requires_ap_gain_and_identical_other_heads() -> None:
+    baseline = metrics()
+    candidate = metrics(ap25=0.38, ap50=0.13)
+    candidate["protocol"].update(
+        {
+            "headline_instance_protocol": "independent_gt_projection_hypotheses",
+            "instance_head_config": {"minimum_component_vertices": 20},
+            "instance_head_config_hash": "b" * 64,
+            "instance_head_source_hashes": {"instance_head": "c" * 64},
+            "instance_head_algorithm_hash": "d" * 64,
+        }
+    )
+
+    audit = compare_metrics(baseline, candidate, mode="instance")
+
+    assert audit["status"] == "PASS"
+    assert audit["checks"]["ap25"]["relation"] == "strictly_greater"
+    assert audit["checks"]["ap50"]["relation"] == "strictly_greater"
+    for name in ("miou", "macc", "f_miou", "f5"):
+        assert audit["checks"][name]["relation"] == "byte_identical"
+    assert set(audit["protocol"]["comparison_excludes"]) == {
+        "headline_instance_protocol",
+        "instance_head_config",
+        "instance_head_config_hash",
+        "instance_head_source_hashes",
+        "instance_head_algorithm_hash",
+        "snapshot_checksums",
+    }
+
+
+@pytest.mark.parametrize("name", ("ap25", "ap50"))
+def test_instance_gate_rejects_ap_tie(name: str) -> None:
+    candidate = metrics(ap25=0.29, ap50=0.06)
+    _set_metric(candidate, name, metrics()[name])
+    assert compare_metrics(metrics(), candidate, mode="instance")["status"] == "FAIL"
+
+
+@pytest.mark.parametrize("name", ("miou", "macc", "f_miou", "f5"))
+def test_instance_gate_rejects_any_other_head_change(name: str) -> None:
+    candidate = metrics(ap25=0.29, ap50=0.06)
+    _set_metric(candidate, name, metrics()[name] + 0.001)
+    assert compare_metrics(metrics(), candidate, mode="instance")["status"] == "FAIL"
+
+
 @pytest.mark.parametrize("name", tuple(METRIC_PATHS))
 def test_route2_gate_fails_each_individual_regression(name: str) -> None:
     baseline = metrics()
