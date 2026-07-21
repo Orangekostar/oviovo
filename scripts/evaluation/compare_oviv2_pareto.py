@@ -39,6 +39,7 @@ INSTANCE_PROTOCOL_EXCLUSIONS = frozenset(
         "instance_head_config_hash",
         "instance_head_source_hashes",
         "instance_head_algorithm_hash",
+        "auxiliary_instance_ensemble",
     }
 )
 SEMANTIC_PROTOCOL_EXCLUSIONS = frozenset({"semantic_replay"})
@@ -154,6 +155,15 @@ def _validate_composed_provenance(protocol: Mapping[str, Any]) -> None:
         raise ValueError("composed mode requires complete head provenance")
 
 
+def _validate_auxiliary_provenance(protocol: Mapping[str, Any]) -> None:
+    auxiliary = protocol.get("auxiliary_instance_ensemble")
+    if auxiliary is not None and (
+        not isinstance(auxiliary, Mapping)
+        or not _valid_sha256(auxiliary.get("algorithm_hash"))
+    ):
+        raise ValueError("instance ensemble requires complete head provenance")
+
+
 def compare_metrics(
     baseline: Mapping[str, Any],
     candidate: Mapping[str, Any],
@@ -189,6 +199,8 @@ def compare_metrics(
     candidate_scene, candidate_protocol, candidate_contract = _protocol_context(
         candidate_object, "candidate", protocol_exclusions
     )
+    if mode in {"composed", "instance"}:
+        _validate_auxiliary_provenance(candidate_protocol)
     if mode == "composed":
         _validate_composed_provenance(candidate_protocol)
     if baseline_scene != candidate_scene:

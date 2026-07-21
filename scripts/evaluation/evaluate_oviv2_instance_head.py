@@ -34,6 +34,12 @@ from src.evaluation.oviv2_instance_head import (  # noqa: E402
     InstanceHeadConfig,
     build_instance_hypotheses,
     evaluate_instance_hypotheses,
+    evaluate_projected_instance_hypotheses,
+    project_instance_hypotheses,
+)
+from src.evaluation.oviv2_instance_ensemble import (  # noqa: E402
+    AuxiliaryInstanceConfig,
+    build_auxiliary_entity_hypotheses,
 )
 from src.evaluation.oviv2_geometry_head import (  # noqa: E402
     GeometrySemanticStabilizationConfig,
@@ -63,6 +69,48 @@ def _sha256_file(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _valid_sha256(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
+def _load_auxiliary_run_manifest(
+    path: Path,
+    *,
+    snapshot: VoxelMapSnapshot,
+    scene_id: str,
+    benchmark_manifest_hash: str,
+    vocabulary_hash: str,
+) -> dict[str, Any]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise ValueError("auxiliary instance run manifest must be valid JSON") from error
+    if not isinstance(payload, dict):
+        raise ValueError("auxiliary instance run manifest must be an object")
+    if payload.get("method") != "OVIV2" or payload.get("scene") != scene_id:
+        raise ValueError("auxiliary instance run manifest method/scene mismatch")
+    if payload.get("final_revision") != snapshot.metadata.revision:
+        raise ValueError("auxiliary instance run manifest revision mismatch")
+    if payload.get("benchmark_manifest_hash") != benchmark_manifest_hash:
+        raise ValueError("auxiliary instance benchmark manifest hash mismatch")
+    if payload.get("vocabulary_hash") != vocabulary_hash:
+        raise ValueError("auxiliary instance vocabulary hash mismatch")
+    if not _valid_sha256(payload.get("algorithm_hash")):
+        raise ValueError("auxiliary instance algorithm hash must be SHA-256")
+    artifact_checksums = payload.get("artifact_checksums")
+    if not isinstance(artifact_checksums, dict):
+        raise ValueError("auxiliary instance artifact checksums are missing")
+    for name, digest in snapshot.checksums.items():
+        key = f"final/oviv2_voxel_snapshot.npz/{name}"
+        if artifact_checksums.get(key) != digest:
+            raise ValueError(f"auxiliary instance snapshot checksum mismatch: {name}")
+    return payload
 
 
 def _publish_fresh_output(target: Path, writer) -> None:
@@ -98,6 +146,16 @@ def _publish_fresh_output(target: Path, writer) -> None:
 def evaluate(args: argparse.Namespace) -> dict[str, Any]:
     if args.output.exists():
         raise FileExistsError(f"output already exists: {args.output}")
+    auxiliary_snapshot_path = getattr(args, "auxiliary_instance_snapshot", None)
+    auxiliary_run_manifest_path = getattr(
+        args,
+        "auxiliary_instance_run_manifest",
+        None,
+    )
+    if (auxiliary_snapshot_path is None) != (auxiliary_run_manifest_path is None):
+        raise ValueError(
+            "auxiliary instance snapshot and run manifest must be supplied together"
+        )
     manifest, scene = _load_manifest(args.manifest, args.scene)
     _verify_scene_inputs(scene, args.gt_mesh, args.gt_info)
     snapshot = VoxelMapSnapshot.load(args.snapshot)
@@ -142,6 +200,30 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         if label in NON_INSTANCE_CLASSES
     )
     instance_semantic_ids = valid_semantic_ids - set(structural_semantic_ids)
+
+    auxiliary_snapshot = None
+    auxiliary_run_manifest = None
+    if auxiliary_snapshot_path is not None:
+        auxiliary_snapshot = VoxelMapSnapshot.load(auxiliary_snapshot_path)
+        if (
+            auxiliary_snapshot.metadata.scene_id != args.scene
+            or auxiliary_snapshot.metadata.revision != snapshot.metadata.revision
+        ):
+            raise ValueError("auxiliary instance snapshot scene/revision mismatch")
+        if (
+            auxiliary_snapshot.metadata.schema_version not in {2, 3}
+            or auxiliary_snapshot.registry is None
+        ):
+            raise ValueError(
+                "auxiliary instance snapshot requires a schema v2/v3 registry"
+            )
+        auxiliary_run_manifest = _load_auxiliary_run_manifest(
+            auxiliary_run_manifest_path,
+            snapshot=auxiliary_snapshot,
+            scene_id=args.scene,
+            benchmark_manifest_hash=_sha256_file(args.manifest),
+            vocabulary_hash=vocabulary_hash,
+        )
 
     entities = [
         entity
@@ -275,14 +357,73 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         semantic_evidence_exponent=args.semantic_evidence_exponent,
     )
     hypotheses = build_instance_hypotheses(mesh, head_entity_info, config)
-    instance_head = evaluate_instance_hypotheses(
-        mesh,
-        hypotheses,
-        ground_truth,
-        instance_semantic_ids=instance_semantic_ids,
-        min_instance_vertices=args.min_instance_vertices,
-        config=config,
-    )
+    auxiliary_config = None
+    auxiliary_hypotheses = ()
+    if auxiliary_snapshot is None:
+        instance_head = evaluate_instance_hypotheses(
+            mesh,
+            hypotheses,
+            ground_truth,
+            instance_semantic_ids=instance_semantic_ids,
+            min_instance_vertices=args.min_instance_vertices,
+            config=config,
+        )
+    else:
+        auxiliary_entities = [
+            entity
+            for entity in sorted(
+                auxiliary_snapshot.registry.entities.values(),
+                key=lambda value: value.entity_id,
+            )
+            if entity.lifecycle_state in {"active", "dormant"}
+            and entity.semantic_id > 0
+        ]
+        auxiliary_posteriors = {
+            entity.entity_id: entity.semantic_posterior.probabilities
+            for entity in auxiliary_entities
+        }
+        auxiliary_mesh = derive_labeled_mesh(
+            auxiliary_snapshot.geometry,
+            auxiliary_snapshot.evidence,
+            auxiliary_snapshot.ownership,
+            weight_threshold=mesh_weight_threshold,
+            entity_posteriors=auxiliary_posteriors,
+            semantic_fusion=SemanticFusionConfig(entity_weight_scale=fusion_scale),
+            valid_semantic_ids=valid_semantic_ids,
+        )
+        auxiliary_config = AuxiliaryInstanceConfig(
+            score_weight=float(getattr(args, "auxiliary_score_weight", 1.0)),
+            support_exponent=float(
+                getattr(args, "auxiliary_support_exponent", 1.0)
+            ),
+            score_bias=float(getattr(args, "auxiliary_score_bias", 0.0)),
+        )
+        auxiliary_hypotheses = build_auxiliary_entity_hypotheses(
+            auxiliary_mesh,
+            {
+                entity.entity_id: entity.semantic_id
+                for entity in auxiliary_entities
+            },
+            auxiliary_config,
+        )
+        projected = project_instance_hypotheses(
+            mesh,
+            hypotheses,
+            ground_truth.vertices_xyz,
+            threshold,
+        ) + project_instance_hypotheses(
+            auxiliary_mesh,
+            auxiliary_hypotheses,
+            ground_truth.vertices_xyz,
+            threshold,
+        )
+        instance_head = evaluate_projected_instance_hypotheses(
+            projected,
+            ground_truth,
+            instance_semantic_ids=instance_semantic_ids,
+            min_instance_vertices=args.min_instance_vertices,
+            deduplication_iou_threshold=config.deduplication_iou_threshold,
+        )
     metrics["ap25"] = instance_head["ap25"]
     metrics["ap50"] = instance_head["ap50"]
     metrics["instance"]["legacy_class_agnostic"] = legacy_instance
@@ -301,9 +442,33 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
             REPO_ROOT / "scripts/evaluation/evaluate_oviv2_replica.py"
         ),
     }
-    algorithm_hash = _json_hash(
-        {"config": config_payload, "source_hashes": source_hashes}
-    )
+    auxiliary_protocol = None
+    algorithm_payload: dict[str, Any] = {
+        "config": config_payload,
+        "source_hashes": source_hashes,
+    }
+    if auxiliary_snapshot is not None:
+        auxiliary_source_hashes = {
+            "cli": source_hashes["cli"],
+            "instance_ensemble": _sha256_file(
+                REPO_ROOT / "src/evaluation/oviv2_instance_ensemble.py"
+            ),
+        }
+        auxiliary_payload = {
+            "config": asdict(auxiliary_config),
+            "run_manifest_sha256": _sha256_file(auxiliary_run_manifest_path),
+            "snapshot_checksums": dict(sorted(auxiliary_snapshot.checksums.items())),
+            "source_hashes": auxiliary_source_hashes,
+            "upstream_algorithm_hash": auxiliary_run_manifest["algorithm_hash"],
+        }
+        auxiliary_protocol = {
+            **auxiliary_payload,
+            "algorithm_hash": _json_hash(auxiliary_payload),
+        }
+        algorithm_payload["auxiliary_instance_ensemble_algorithm_hash"] = (
+            auxiliary_protocol["algorithm_hash"]
+        )
+    algorithm_hash = _json_hash(algorithm_payload)
     metrics["protocol"].update(
         {
             "manifest_id": manifest.get("manifest_id"),
@@ -330,6 +495,8 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         metrics["protocol"]["geometry_semantic_stabilization"] = (
             geometry_stabilization_protocol
         )
+    if auxiliary_protocol is not None:
+        metrics["protocol"]["auxiliary_instance_ensemble"] = auxiliary_protocol
     audit = {
         "config": config_payload,
         "config_hash": metrics["protocol"]["instance_head_config_hash"],
@@ -344,6 +511,9 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         "legacy": legacy_instance,
         "instance_head": instance_head,
     }
+    if auxiliary_protocol is not None:
+        audit["auxiliary_hypothesis_count"] = len(auxiliary_hypotheses)
+        audit["auxiliary_instance_ensemble"] = auxiliary_protocol
 
     def write_output(directory: Path) -> None:
         _write_json(directory / "metrics.json", metrics)
@@ -356,6 +526,11 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--snapshot", type=Path, required=True)
+    parser.add_argument("--auxiliary-instance-snapshot", type=Path)
+    parser.add_argument("--auxiliary-instance-run-manifest", type=Path)
+    parser.add_argument("--auxiliary-score-weight", type=float, default=1.0)
+    parser.add_argument("--auxiliary-support-exponent", type=float, default=1.0)
+    parser.add_argument("--auxiliary-score-bias", type=float, default=0.0)
     parser.add_argument("--semantic-evidence", type=Path)
     parser.add_argument("--semantic-replay-manifest", type=Path)
     parser.add_argument("--gt-mesh", type=Path, required=True)

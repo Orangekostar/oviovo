@@ -151,7 +151,21 @@ def test_instance_gate_requires_ap_gain_and_identical_other_heads() -> None:
         "instance_head_config_hash",
         "instance_head_source_hashes",
         "instance_head_algorithm_hash",
+        "auxiliary_instance_ensemble",
     }
+
+
+def test_instance_gate_validates_optional_auxiliary_ensemble_provenance() -> None:
+    candidate = metrics(ap25=0.49, ap50=0.26)
+    candidate["protocol"].update(
+        {
+            "instance_head_algorithm_hash": "a" * 64,
+            "auxiliary_instance_ensemble": {"algorithm_hash": "bad"},
+        }
+    )
+
+    with pytest.raises(ValueError, match="requires.*provenance"):
+        compare_metrics(metrics(), candidate, mode="instance")
 
 
 def test_semantic_gate_requires_three_gains_and_identical_ap_geometry() -> None:
@@ -205,6 +219,36 @@ def test_composed_gate_requires_all_gains_on_the_frozen_snapshot() -> None:
         "mesh_weight_threshold",
         "geometry_semantic_stabilization",
     }.issubset(audit["protocol"]["comparison_excludes"])
+
+
+def test_composed_gate_validates_optional_auxiliary_ensemble_provenance() -> None:
+    baseline = metrics(snapshot_checksum="a" * 64)
+    candidate = metrics(
+        miou=0.39,
+        macc=0.44,
+        f_miou=0.67,
+        ap25=0.49,
+        ap50=0.26,
+        f5=0.92,
+        snapshot_checksum="a" * 64,
+    )
+    candidate["protocol"].update(
+        {
+            "instance_head_algorithm_hash": "a" * 64,
+            "semantic_replay": {"algorithm_hash": "b" * 64},
+            "mesh_weight_threshold": 0.5,
+            "geometry_semantic_stabilization": {"algorithm_hash": "c" * 64},
+            "auxiliary_instance_ensemble": {"algorithm_hash": "d" * 64},
+        }
+    )
+
+    audit = compare_metrics(baseline, candidate, mode="composed")
+
+    assert audit["status"] == "PASS"
+    assert "auxiliary_instance_ensemble" in audit["protocol"]["comparison_excludes"]
+    candidate["protocol"]["auxiliary_instance_ensemble"]["algorithm_hash"] = "bad"
+    with pytest.raises(ValueError, match="requires.*provenance"):
+        compare_metrics(baseline, candidate, mode="composed")
 
 
 def test_composed_gate_rejects_snapshot_change() -> None:
