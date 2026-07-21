@@ -66,3 +66,41 @@ The frozen-snapshot scalar sweep cannot improve all three semantic metrics toget
 AP25, AP50, and F@5cm remain byte-identical across the scalar sweep. Route 1 therefore
 stops scalar tuning and proceeds to dense-evidence semantic replay over the immutable
 geometry, ownership, and entity registry.
+
+## Stage B: Auditable Semantic Replay
+
+Frozen replay implementation commit: `d1ff610`
+
+The accepted candidate keeps global entropy power 16 and uses entropy power 32 for
+wall, floor, ceiling, and table. The replay binds all 200 RGB/depth/pose inputs, dense
+cache files, frontend manifest, source files, base snapshot checksums, and structure
+replay configuration. The semantic Pareto audit is `PASS`.
+
+| Metric | Stage 3 baseline | Stage B | Delta |
+| --- | ---: | ---: | ---: |
+| mIoU | 0.3828341530 | **0.3831077036** | **+0.0002735506** |
+| mAcc | 0.4337307984 | **0.4343641210** | **+0.0006333226** |
+| f-mIoU | 0.6646659615 | **0.6648088665** | **+0.0001429050** |
+| AP25 | 0.2803600107 | 0.2803600107 | 0 |
+| AP50 | 0.0497723659 | 0.0497723659 | 0 |
+| F@5cm | 0.9160999937 | 0.9160999937 | 0 |
+
+## Stage C and Composed Winner
+
+Frozen composition implementation commit: `6c9c104`
+
+The geometry head lowers mesh extraction weight from 1.0 to 0.5. Newly recovered
+low-support vertices retain geometry, while their semantic label is stabilized from the
+nearest weight-1.0 reference vertex within 0.075 m. The transformation is GT-free.
+
+| Metric | Stage 3 baseline | Composed winner | Delta |
+| --- | ---: | ---: | ---: |
+| mIoU | 0.3828341530 | **0.3837512496** | **+0.0009170966** |
+| mAcc | 0.4337307984 | **0.4354314683** | **+0.0017006699** |
+| f-mIoU | 0.6646659615 | **0.6660187076** | **+0.0013527460** |
+| AP25 | 0.2803600107 | **0.3889825273** | **+0.1086225166** |
+| AP50 | 0.0497723659 | **0.1305074808** | **+0.0807351149** |
+| F@5cm | 0.9160999937 | **0.9178952033** | **+0.0017952096** |
+
+The frozen `composed` Pareto audit is `PASS`; the base snapshot checksums are exact.
+Metrics SHA-256: `da3e091c61731fc84c63468f11b11bedb41d31030bf60dda78b87a674fba7715`.

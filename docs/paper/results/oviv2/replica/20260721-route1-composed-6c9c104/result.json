@@ -1,0 +1,183 @@
+{
+  "status": "VERIFIED",
+  "run_id": "oviv2-replica8-20260721-route1-composed-6c9c104",
+  "method": {
+    "display_label": "OVIV2",
+    "key": "OVIV2",
+    "mode": "online"
+  },
+  "upstream_commit": "5f272a86305f2270c62b18bbe935a042a761cd1a",
+  "adapter_commit": "6c9c104c420d6a92759553e5d0507c5855999ef5",
+  "dataset": {
+    "manifest": {
+      "path": "/home/ww/.config/superpowers/worktrees/oviovo/oviv2-stage3-final-batch/configs/evaluation/manifests/replica8.json",
+      "sha256": "8547aa8b7dbf7ef7a97f4b516f6557a1d163107404fbfc7ccbd56747c5dc95a4"
+    },
+    "name": "Replica",
+    "splits": [
+      "replica_8_compat",
+      "replica_7_heldout"
+    ]
+  },
+  "semantic_head": "fused_uncertainty_replay",
+  "metrics": {
+    "replica_7_heldout": {
+      "geometry": {
+        "f5": 0.8812509102354003
+      },
+      "instance": {
+        "ap25": 0.3686489125784136,
+        "ap50": 0.12387092430561038
+      },
+      "scene_count": 7,
+      "scene_ids": [
+        "room1",
+        "room2",
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4"
+      ],
+      "semantic": {
+        "f_miou": 0.5675970430218765,
+        "macc": 0.41095055566644484,
+        "miou": 0.33181086470574855
+      }
+    },
+    "replica_8_compat": {
+      "geometry": {
+        "f5": 0.8858314468714656
+      },
+      "instance": {
+        "ap25": 0.3711906144157103,
+        "ap50": 0.12470049387174609
+      },
+      "scene_count": 8,
+      "scene_ids": [
+        "room0",
+        "room1",
+        "room2",
+        "office0",
+        "office1",
+        "office2",
+        "office3",
+        "office4"
+      ],
+      "semantic": {
+        "f_miou": 0.5798997510916603,
+        "macc": 0.41401066974877904,
+        "miou": 0.33830341281682935
+      }
+    }
+  },
+  "protocol_deviations": [],
+  "provenance_contract": {
+    "base_mapping_algorithm_hash": "3b756469bca8d2efc9fbb6317f318e080740ffa2b7e935f2215b742d1db9feae",
+    "benchmark_manifest_hash": "8547aa8b7dbf7ef7a97f4b516f6557a1d163107404fbfc7ccbd56747c5dc95a4",
+    "geometry_head_algorithm_hash": "210d7451a2261da4bcea41ac82b4ac0cadf67d5ccb14659f5bb286541ca44433",
+    "instance_head_algorithm_hash": "008ffe01b8e6628201499dbd6b1811498c562c2c8bfbbdc92e829f0303375dae",
+    "semantic_replay_algorithm_hash": "88803366a12e9d0fb74156cb7ff341cffef151c11e31eb4f06d55e8c28143ee2",
+    "vocabulary_hash": "aa81724ae495477e533b3b8c795444e95c259ec22db7c327bf3841b93ccb9e52"
+  },
+  "scene_results": {
+    "room0": {
+      "metrics_path": "/home/ww/oviovo_experiments/20260721_route1/composed_frozen_6c9c104/metrics.json",
+      "metrics_sha256": "da3e091c61731fc84c63468f11b11bedb41d31030bf60dda78b87a674fba7715",
+      "pareto_audit_path": "/home/ww/oviovo_experiments/20260721_route1/composed_frozen_6c9c104/pareto_audit.json",
+      "pareto_audit_sha256": "241fb17cf723518298aa899053499365bacd46df881cc8aa1d02be330d3f0bb2",
+      "status": "PASS"
+    },
+    "room1": {
+      "metrics_path": "/home/ww/oviovo_experiments/20260721_route1/replica8_frozen_6c9c104/room1/composed/metrics.json",
+      "metrics_sha256": "b261ad25c6ae51143677d4eb05bebe99fad66b67fa519a9a0496f6ca68894248",
+      "pareto_audit_path": "/home/ww/oviovo_experiments/20260721_route1/replica8_frozen_6c9c104/room1/composed/pareto_audit.json",
+      "pareto_audit_sha256": "3fe1bb57b40d7fbaba47ddcb97ef824588e0ac8c8028fc30aab93afa76c13f7a",
+      "status": "PASS"
+    },
+    "room2": {
+      "metrics_path": "/home/ww/oviovo_experiments/20260721_route1/replica8_frozen_6c9c104/room2/composed/metrics.json",
+      "metrics_sha256": "2ae4c883d3c79a4381348336917153c4a7c4454edc043640d6626a3a21f9e2d4",
+      "pareto_audit_path": "/home/ww/oviovo_experiments/20260721_route1/replica8_frozen_6c9c104/room2/composed/pareto_audit.json",
+      "pareto_audit_sha256": "2f0240d8b9a2dd8fd7872ecc879879308beb4549e072ff4f409ea14d78bf7574",
+      "status": "PASS"
+    },
+    "office0": {
+      "metrics_path": "/home/ww/oviovo_experiments/20260721_route1/replica8_frozen_6c9c104/office0/composed/metrics.json",
+      "metrics_sha256": "06c94fab8460b41e2f0268311ff83a15d1782b1d4172964ddb0aa7fc637e28c0",
+      "pareto_audit_path": "/home/ww/oviovo_experiments/20260721_route1/replica8_frozen_6c9c104/office0/composed/pareto_audit.json",
+      "pareto_audit_sha256": "7058a13c69d9bc03c80221059e8ab1eca968ccf9736c19b982730a9463afff02",
+      "status": "PASS"
+    },
+    "office1": {
+      "metrics_path": "/home/ww/oviovo_experiments/20260721_route1/replica8_frozen_6c9c104/office1/composed/metrics.json",
+      "metrics_sha256": "744fe7025b8d0f57204377b4cfb589397f28e52854ba8f943fd55385dc08876c",
+      "pareto_audit_path": "/home/ww/oviovo_experiments/20260721_route1/replica8_frozen_6c9c104/office1/composed/pareto_audit.json",
+      "pareto_audit_sha256": "7987c92ac72015aa3753dc39513e19495f337f68865a285bb17a4f7c9426f126",
+      "status": "PASS"
+    },
+    "office2": {
+      "metrics_path": "/home/ww/oviovo_experiments/20260721_route1/replica8_frozen_6c9c104/office2/composed/metrics.json",
+      "metrics_sha256": "062695537d7b027242e16c6aa060582a85a4cca7525218d27c3aa1ec6419e8b0",
+      "pareto_audit_path": "/home/ww/oviovo_experiments/20260721_route1/replica8_frozen_6c9c104/office2/composed/pareto_audit.json",
+      "pareto_audit_sha256": "997891292364b666c1cea50f9f1e12334235fcb8937664533732a0701e1590f5",
+      "status": "PASS"
+    },
+    "office3": {
+      "metrics_path": "/home/ww/oviovo_experiments/20260721_route1/replica8_frozen_6c9c104/office3/composed/metrics.json",
+      "metrics_sha256": "309806921df9a2d18409a3a91c33e2273b337d50686f9bf862cceb115286e463",
+      "pareto_audit_path": "/home/ww/oviovo_experiments/20260721_route1/replica8_frozen_6c9c104/office3/composed/pareto_audit.json",
+      "pareto_audit_sha256": "6ac48c74fde00b90a9e51526bfa3dae57b490cd94bd5909d065125432241a0d6",
+      "status": "PASS"
+    },
+    "office4": {
+      "metrics_path": "/home/ww/oviovo_experiments/20260721_route1/replica8_frozen_6c9c104/office4/composed/metrics.json",
+      "metrics_sha256": "993582db8c3442cedd27aaf3f0a48f7db47ea5f58f3fc3a658f6830e4e192bc0",
+      "pareto_audit_path": "/home/ww/oviovo_experiments/20260721_route1/replica8_frozen_6c9c104/office4/composed/pareto_audit.json",
+      "pareto_audit_sha256": "31ed3127eee09b9a36fb512aff22136c58533513bd518d440f096e90c7232ec6",
+      "status": "PASS"
+    }
+  },
+  "token_bindings": [
+    {
+      "json_pointer": "/metrics/replica_8_compat/semantic/miou",
+      "precision": 3,
+      "token": "T1_OVIV2_REPLICA8_MIOU"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/semantic/macc",
+      "precision": 3,
+      "token": "T1_OVIV2_REPLICA8_MACC"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/semantic/f_miou",
+      "precision": 3,
+      "token": "T1_OVIV2_REPLICA8_FMIOU"
+    },
+    {
+      "json_pointer": "/metrics/replica_7_heldout/semantic/miou",
+      "precision": 3,
+      "token": "T1_OVIV2_REPLICA7_MIOU"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/instance/ap25",
+      "precision": 3,
+      "token": "T1_OVIV2_REPLICA8_AP25"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/instance/ap50",
+      "precision": 3,
+      "token": "T1_OVIV2_REPLICA8_AP50"
+    },
+    {
+      "json_pointer": "/metrics/replica_8_compat/geometry/f5",
+      "precision": 3,
+      "token": "T1_OVIV2_REPLICA8_F5"
+    },
+    {
+      "json_pointer": "/metrics/replica_7_heldout/instance/ap50",
+      "precision": 3,
+      "token": "T1_OVIV2_REPLICA7_AP50"
+    }
+  ]
+}
