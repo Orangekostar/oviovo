@@ -4,7 +4,7 @@
 
 **Goal:** Rewrite the OVIV2 AAAI manuscript so dynamic current-map correctness is the single central claim and the main benchmark tables form its evidence ladder.
 
-**Architecture:** Preserve the existing LaTeX project, method equations, citations, and verified static numbers. Rebuild the narrative around accumulated-state failure, signed visibility, reversible ownership, and background recovery. Organize experiments as static capability calibration, TESSE-CD dynamic evaluation, causal ablation, and online efficiency; exclude supplementary query, temporal-identity, and calibration protocols from the main-paper story.
+**Architecture:** Preserve the existing LaTeX project, method equations, citations, and verified static numbers. Rebuild the narrative around accumulated-state failure, signed visibility, reversible ownership, dense semantic recovery, and explicit geometric diagnostics. Organize experiments as static capability calibration, TESSE-CD dynamic evaluation, causal ablation, and online efficiency; exclude supplementary query, temporal-identity, and calibration protocols from the main-paper story.
 
 **Tech Stack:** AAAI 2026 LaTeX, `natbib`, existing `references.bib`, local CCFA paper-writing guidance, source-level shell checks.
 
@@ -90,7 +90,7 @@ Preserve equations, frozen parameter values, and citation keys. Revise their ope
 
 - [ ] **Step 3: Strengthen signed visibility and reversible ownership**
 
-Make this the conceptual center of the method. State the conditions for present, visible absence, occluded, and unobserved states; explain why only visible absence creates negative evidence; connect ownership release to stale-surface suppression and background reclaim.
+Make this the conceptual center of the method. State the conditions for present, visible absence, occluded, and unobserved states; explain why only visible absence creates negative evidence; connect ownership release to stale semantic-state suppression and dense recovery. State explicitly that the verified runtime has no semantic-triggered TSDF de-integration.
 
 - [ ] **Step 4: Reframe cross-layer fusion**
 
@@ -105,7 +105,7 @@ Describe room0 as the development split used to freeze globally reused parameter
 Run:
 
 ```bash
-rg -n 'present|visible absence|occluded|unobserved|negative evidence|reversible|background reclaim' docs/paper/oviv2_aaai/main.tex
+rg -n 'present|visible absence|occluded|unobserved|negative evidence|reversible|background recovery' docs/paper/oviv2_aaai/main.tex
 ```
 
 Expected: every central mechanism appears in both formulation/method and later dynamic evaluation.
@@ -117,7 +117,7 @@ Expected: every central mechanism appears in both formulation/method and later d
 
 - [ ] **Step 1: Replace Datasets and Protocol with Evaluation Questions and Protocols**
 
-Introduce five questions: static foundation, official dynamic change quality, stale-surface/background recovery, causal mechanism attribution, and online cost. Describe Replica/ScanNet first but explicitly label them static capability calibration. Describe TESSE-CD Apartment as the development sequence and Office as held out. State common causal inputs, frozen validation-only thresholds, official GT usage only during evaluation, and macro/per-sequence reporting.
+Introduce five questions: static foundation, official dynamic change quality, stale semantic-state release and geometric recovery, causal mechanism attribution, and online cost. Describe Replica/ScanNet first but explicitly label them static capability calibration. Describe TESSE-CD Apartment as the development sequence and Office as held out. State common causal inputs, frozen validation-only thresholds, official GT usage only during evaluation, and macro/per-sequence reporting.
 
 - [ ] **Step 2: Compress static evidence**
 
@@ -134,11 +134,11 @@ Use rows for frozen OVI-MAP, frozen ConceptGraphs, DualMap, Panoptic Mapping wit
 
 - [ ] **Step 4: Add dynamic interpretation**
 
-Explain what each metric establishes: official F1 measures dynamic/change recognition; ghost rate tests stale-surface removal; background F@5cm tests revealed-space recovery; recovery frames tests delay. Do not infer any dynamic success from Replica.
+Explain what each metric establishes: official F1 measures dynamic/change recognition; ghost rate diagnoses stale geometry; background F@5cm tests revealed-space recovery; recovery frames tests delay. Do not infer geometric removal from ownership release or any dynamic success from Replica.
 
 - [ ] **Step 5: Replace the static ablation with a causal dynamic ablation**
 
-Use rows `Positive-only base`, `+ Signed visibility`, `+ Reversible ownership`, and `+ Background reclaim`. Use columns static mIoU, change F1, ghost rate, background F@5cm, and recovery frames. State the predicted failure addressed by each row, while leaving all unavailable cells explicitly marked.
+Use rows `Positive-only base`, `+ Signed visibility`, `+ Reversible ownership`, and `+ Dense background recovery`. Use columns static mIoU, change F1, ghost rate, background F@5cm, and recovery frames. State the predicted failure addressed by each row, while leaving all unavailable cells explicitly marked. Add a separate geometry-reclaim row only if that mechanism is implemented.
 
 - [ ] **Step 6: Add compact efficiency evidence**
 
