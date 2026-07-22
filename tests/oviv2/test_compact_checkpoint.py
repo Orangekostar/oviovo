@@ -9,6 +9,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+import src.oviv2.compact_checkpoint as compact_module
 from src.oviv2.compact_checkpoint import (
     COMPACT_OWNERSHIP_FORMAT,
     CompactOwnershipCheckpoint,
@@ -90,6 +91,23 @@ def test_compact_checkpoint_round_trip_is_exact_and_byte_deterministic(
     first.revalidate_source()
 
 
+def test_compact_checkpoint_canonicalizes_cross_block_record_order(
+    tmp_path: Path,
+) -> None:
+    ownership = ReversibleOwnershipStore(block_resolution=8)
+    ownership.assign((-16, -2, 0), 11, 0.75, 1)
+    ownership.assign((-16, -1, -2), 12, 0.75, 1)
+    assert [key for key, _ in ownership.records()] != sorted(
+        key for key, _ in ownership.records()
+    )
+
+    checkpoint = CompactOwnershipCheckpoint.commit_new(
+        tmp_path / "checkpoint", _metadata(), ownership
+    )
+
+    assert set(checkpoint.ownership.records()) == set(ownership.records())
+
+
 def test_compact_checkpoint_is_no_clobber(tmp_path: Path) -> None:
     target = tmp_path / "checkpoint"
     CompactOwnershipCheckpoint.commit_new(target, _metadata(), _ownership())
@@ -163,6 +181,35 @@ def test_compact_checkpoint_revalidation_detects_replacement(tmp_path: Path) -> 
     original = tmp_path / "original"
     target.rename(original)
     replacement.rename(target)
+
+    with pytest.raises(ValueError, match="changed|identity"):
+        loaded.revalidate_source()
+
+
+def test_compact_checkpoint_revalidation_rejects_hardlink_swap_race(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    target = tmp_path / "checkpoint"
+    CompactOwnershipCheckpoint.commit_new(target, _metadata(), _ownership())
+    replacement = tmp_path / "replacement"
+    replacement.mkdir()
+    for source in target.iterdir():
+        os.link(source, replacement / source.name)
+    loaded = CompactOwnershipCheckpoint.load(target)
+    original_lstat = compact_module.os.lstat
+    swapped = False
+
+    def swap_after_identity_read(path: str | Path, *args: object, **kwargs: object):
+        nonlocal swapped
+        status = original_lstat(path, *args, **kwargs)
+        if Path(path) == target and not swapped:
+            target.rename(tmp_path / "original")
+            replacement.rename(target)
+            swapped = True
+        return status
+
+    monkeypatch.setattr(compact_module.os, "lstat", swap_after_identity_read)
 
     with pytest.raises(ValueError, match="changed|identity"):
         loaded.revalidate_source()

@@ -452,6 +452,34 @@ def test_mixed_checkpoint_run_is_byte_identical_and_compact_is_bounded(
         )
 
 
+def test_official_only_checkpoints_keep_full_snapshot_and_neutral_inventory(
+    tmp_path: Path,
+) -> None:
+    config_path = _write_config(tmp_path)
+
+    run(config_path, tmp_path / "run", dependencies=_dependencies([]))
+
+    for frame_index, timestamp_ns in ((1, 110), (3, 130)):
+        root = (
+            tmp_path
+            / "run/checkpoints"
+            / f"{frame_index:08d}-{timestamp_ns}"
+        )
+        assert {path.name for path in root.iterdir()} == {
+            "voxel_snapshot",
+            "artifact",
+            "checkpoint_status.json",
+        }
+        assert (root / "voxel_snapshot/checksums.json").is_file()
+        assert not (root / "ownership_checkpoint").exists()
+    index = json.loads(
+        (tmp_path / "run/occlusion_checkpoint_index.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert index["snapshots"] == []
+
+
 def test_frozen_visibility_policy_overrides_runtime_parser_default() -> None:
     @dataclass(frozen=True)
     class RuntimeConfig:

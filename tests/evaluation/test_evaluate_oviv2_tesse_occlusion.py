@@ -22,6 +22,12 @@ from scripts.evaluation.evaluate_oviv2_tesse_occlusion import (
     main,
 )
 from src.oviv2.evidence import SparseEvidenceStore
+from src.oviv2.compact_checkpoint import (
+    COMPACT_OWNERSHIP_FORMAT,
+    CompactOwnershipCheckpoint,
+    CompactOwnershipMetadata,
+)
+from src.oviv2.dense_semantics import DenseSemanticProvenance
 from src.oviv2.geometry import SparseTsdfVolume
 from src.oviv2.ownership import ReversibleOwnershipStore
 from src.oviv2.snapshot import VoxelMapSnapshot, VoxelSnapshotMetadata
@@ -176,6 +182,67 @@ def _write_snapshot(
         evidence,
         ownership,
     )
+
+
+def _compact_provenance() -> DenseSemanticProvenance:
+    return DenseSemanticProvenance(
+        backend="radseg",
+        source_commit="1" * 40,
+        radio_commit="2" * 40,
+        model_id="radseg:test",
+        model_sha256="3" * 64,
+        auxiliary_model_sha256="4" * 64,
+        vocabulary_sha256="5" * 64,
+        prompt_sha256="6" * 64,
+        inference_config_sha256="7" * 64,
+        cache_prefix_sha256="8" * 64,
+        language_model_id="clip:test",
+        language_model_revision="9" * 40,
+        language_model_sha256="a" * 64,
+    )
+
+
+def _convert_index_to_mixed(
+    checkpoint_index: Path,
+    *,
+    compact_keys: set[tuple[str, int]],
+) -> Path:
+    payload = json.loads(checkpoint_index.read_text(encoding="utf-8"))
+    payload["schema_version"] = 2
+    for record in payload["snapshots"]:
+        key = (record["scene"], record["frame_index"])
+        if key not in compact_keys:
+            record["format"] = "oviv2_voxel_map_snapshot"
+            continue
+        full = VoxelMapSnapshot.load(checkpoint_index.parent / record["path"])
+        compact_path = (
+            checkpoint_index.parent
+            / "compact"
+            / key[0]
+            / f"frame_{key[1]:06d}"
+        )
+        compact_path.parent.mkdir(parents=True, exist_ok=True)
+        CompactOwnershipCheckpoint.commit_new(
+            compact_path,
+            CompactOwnershipMetadata(
+                scene_id=full.metadata.scene_id,
+                frame_id=full.metadata.frame_id,
+                timestamp=full.metadata.timestamp,
+                revision=full.metadata.revision,
+                voxel_size_m=full.metadata.voxel_size_m,
+                block_resolution=full.metadata.block_resolution,
+                dense_semantic_provenance=_compact_provenance(),
+            ),
+            full.ownership,
+        )
+        record["format"] = COMPACT_OWNERSHIP_FORMAT
+        record["path"] = compact_path.relative_to(checkpoint_index.parent).as_posix()
+        record["checksums_sha256"] = _sha256(compact_path / "checksums.json")
+    checkpoint_index.write_text(
+        json.dumps(payload, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
+    return checkpoint_index
 
 
 def _write_checkpoint_index(
@@ -501,6 +568,95 @@ def test_package_evaluation_is_byte_identical_and_passes_headline_gate(
     }
     assert first.read_bytes() == second.read_bytes()
     assert b"NaN" not in first.read_bytes()
+
+
+def test_mixed_full_and_compact_checkpoints_share_one_evaluator_interface(
+    tmp_path: Path,
+) -> None:
+    targets, _ = _write_targets(tmp_path / "fixture")
+    checkpoints = _convert_index_to_mixed(
+        _write_checkpoint_index(tmp_path / "fixture", targets),
+        compact_keys={("apartment", 1), ("office", 0)},
+    )
+
+    result = evaluate_occlusion_package(
+        target_dir=targets,
+        checkpoint_index=checkpoints,
+        dataset_root=targets.parent / "sources",
+    )
+
+    assert result["headline_gate"]["passed"] is True
+    assert result["checkpoint_count"] == 4
+
+
+@pytest.mark.parametrize(
+    "declared_format, compact",
+    [
+        (COMPACT_OWNERSHIP_FORMAT, False),
+        ("oviv2_voxel_map_snapshot", True),
+    ],
+)
+def test_rejects_checkpoint_format_disguise(
+    tmp_path: Path,
+    declared_format: str,
+    compact: bool,
+) -> None:
+    targets, _ = _write_targets(tmp_path / "fixture")
+    checkpoints = _convert_index_to_mixed(
+        _write_checkpoint_index(tmp_path / "fixture", targets),
+        compact_keys={("apartment", 0)} if compact else set(),
+    )
+    payload = json.loads(checkpoints.read_text(encoding="utf-8"))
+    payload["snapshots"][0]["format"] = declared_format
+    checkpoints.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="format|inventory|checksum"):
+        evaluate_occlusion_package(
+            target_dir=targets,
+            checkpoint_index=checkpoints,
+            dataset_root=targets.parent / "sources",
+        )
+
+
+def test_compact_checkpoint_final_barrier_rejects_replacement(
+    tmp_path: Path,
+) -> None:
+    targets, _ = _write_targets(tmp_path / "fixture")
+    checkpoints = _convert_index_to_mixed(
+        _write_checkpoint_index(tmp_path / "fixture", targets),
+        compact_keys={("apartment", 0)},
+    )
+    arrays, metadata, manifest_witness, _, source_frame_times = _load_target_package(
+        targets,
+        dataset_root=targets.parent / "sources",
+    )
+    plan = build_evaluation_checkpoint_plan(arrays=arrays, metadata=metadata)
+    snapshots, _, _, _, _ = _load_checkpoint_snapshots(
+        checkpoints,
+        metadata=metadata,
+        target_manifest_witness=manifest_witness,
+        checkpoint_plan=plan,
+        source_frame_times=source_frame_times,
+    )
+    payload = json.loads(checkpoints.read_text(encoding="utf-8"))
+    record = next(
+        item
+        for item in payload["snapshots"]
+        if item["scene"] == "apartment" and item["frame_index"] == 0
+    )
+    original = checkpoints.parent / record["path"]
+    replacement = original.with_name("replacement")
+    loaded = CompactOwnershipCheckpoint.load(original)
+    CompactOwnershipCheckpoint.commit_new(
+        replacement,
+        loaded.metadata,
+        loaded.ownership,
+    )
+    original.rename(original.with_name("original"))
+    replacement.rename(original)
+
+    with pytest.raises(ValueError, match="snapshot.*changed|identity"):
+        snapshots.revalidate_all()  # type: ignore[attr-defined]
 
 
 def test_headline_rejects_ablation_policy_from_bound_run_config(

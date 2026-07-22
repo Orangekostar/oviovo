@@ -24,10 +24,16 @@ from scripts.evaluation.derive_tesse_cd_occlusion_v1 import (
     validate_generated_target,
 )
 from src.oviv2.snapshot import VoxelMapSnapshot
+from src.oviv2.compact_checkpoint import (
+    COMPACT_OWNERSHIP_FORMAT,
+    CompactOwnershipCheckpoint,
+    CompactOwnershipMetadata,
+)
 
 
 SnapshotKey = tuple[str, int]
 SourceFrameTime = tuple[int, int]
+FULL_SNAPSHOT_FORMAT = "oviv2_voxel_map_snapshot"
 _REPOSITORY_SOURCE_ROLES = frozenset(
     {"source_manifest", "schedule", "rgbd_lock"}
 )
@@ -40,7 +46,7 @@ _SCENE_SOURCE_SUFFIXES = (
 )
 
 
-class _LazyCheckpointSnapshots(Mapping[SnapshotKey, VoxelMapSnapshot]):
+class _LazyCheckpointSnapshots(Mapping[SnapshotKey, Any]):
     def __init__(
         self,
         bindings: Mapping[SnapshotKey, "_SnapshotBinding"],
@@ -49,7 +55,7 @@ class _LazyCheckpointSnapshots(Mapping[SnapshotKey, VoxelMapSnapshot]):
     ) -> None:
         self._bindings = dict(bindings)
         self._cache_size = cache_size
-        self._cache: OrderedDict[SnapshotKey, VoxelMapSnapshot] = OrderedDict()
+        self._cache: OrderedDict[SnapshotKey, Any] = OrderedDict()
 
     def __len__(self) -> int:
         return len(self._bindings)
@@ -57,18 +63,25 @@ class _LazyCheckpointSnapshots(Mapping[SnapshotKey, VoxelMapSnapshot]):
     def __iter__(self) -> Iterator[SnapshotKey]:
         return iter(self._bindings)
 
-    def __getitem__(self, key: SnapshotKey) -> VoxelMapSnapshot:
+    def __getitem__(self, key: SnapshotKey) -> Any:
         if key not in self._bindings:
             raise KeyError(key)
         cached = self._cache.pop(key, None)
         if cached is None:
             binding = self._bindings[key]
             _revalidate_snapshot_binding(binding)
-            cached = VoxelMapSnapshot.load(binding.path)
+            cached = (
+                CompactOwnershipCheckpoint.load(binding.path)
+                if binding.format == COMPACT_OWNERSHIP_FORMAT
+                else VoxelMapSnapshot.load(binding.path)
+            )
             if cached.checksums != binding.checksums:
                 raise ValueError(f"snapshot checksums changed after index check: {key}")
             loaded_metadata = asdict(cached.metadata)
-            if cached.metadata.schema_version in {1, 2}:
+            if (
+                binding.format == FULL_SNAPSHOT_FORMAT
+                and cached.metadata.schema_version in {1, 2}
+            ):
                 loaded_metadata.pop("dense_semantic_provenance")
             if loaded_metadata != binding.metadata:
                 raise ValueError(f"snapshot metadata changed after index check: {key}")
@@ -105,6 +118,7 @@ class _SnapshotBinding:
     checksums: dict[str, str]
     metadata: dict[str, Any]
     timestamp_ns: int
+    format: str
 
 
 def _reject_duplicate_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -244,11 +258,19 @@ def _validate_snapshot_metadata_types(metadata: Mapping[str, Any]) -> None:
             raise ValueError(f"snapshot {name} must be finite numeric")
 
 
+def _validate_compact_metadata(metadata: Mapping[str, Any]) -> None:
+    try:
+        CompactOwnershipMetadata(**dict(metadata))
+    except (TypeError, ValueError) as error:
+        raise ValueError(f"compact snapshot metadata is invalid: {error}") from error
+
+
 def _capture_snapshot_binding(
     path: Path,
     *,
     timestamp_ns: int,
     expected_checksums_sha256: str,
+    checkpoint_format: str,
 ) -> _SnapshotBinding:
     try:
         directory_status = os.lstat(path)
@@ -273,10 +295,18 @@ def _capture_snapshot_binding(
         "ownership.npz",
     }
     allowed_files_v2 = {*allowed_files_v1, "entities.jsonl"}
-    if frozenset(checksums_payload) not in {
-        frozenset(allowed_files_v1),
-        frozenset(allowed_files_v2),
-    }:
+    if checkpoint_format == FULL_SNAPSHOT_FORMAT:
+        allowed_checksum_sets = {
+            frozenset(allowed_files_v1),
+            frozenset(allowed_files_v2),
+        }
+    elif checkpoint_format == COMPACT_OWNERSHIP_FORMAT:
+        allowed_checksum_sets = {
+            frozenset({"metadata.json", "ownership.npz"})
+        }
+    else:
+        raise ValueError("checkpoint format is invalid")
+    if frozenset(checksums_payload) not in allowed_checksum_sets:
         raise ValueError("snapshot checksum manifest has unexpected files")
     if any(
         not isinstance(value, str)
@@ -314,7 +344,10 @@ def _capture_snapshot_binding(
             raise ValueError(f"snapshot checksum mismatch for {name}")
         if name == "metadata.json":
             metadata_payload = _load_json_bytes(content, label="snapshot metadata")
-            _validate_snapshot_metadata_types(metadata_payload)
+            if checkpoint_format == COMPACT_OWNERSHIP_FORMAT:
+                _validate_compact_metadata(metadata_payload)
+            else:
+                _validate_snapshot_metadata_types(metadata_payload)
         else:
             _strict_jsonl(content, label="snapshot entities")
     if metadata_payload is None:
@@ -326,6 +359,7 @@ def _capture_snapshot_binding(
         checksums={str(key): str(value) for key, value in checksums_payload.items()},
         metadata=metadata_payload,
         timestamp_ns=timestamp_ns,
+        format=checkpoint_format,
     )
     _revalidate_snapshot_binding(binding)
     return binding
@@ -677,7 +711,7 @@ def _load_checkpoint_snapshots(
     checkpoint_plan: Mapping[str, Any],
     source_frame_times: Mapping[SnapshotKey, SourceFrameTime],
 ) -> tuple[
-    Mapping[SnapshotKey, VoxelMapSnapshot],
+    Mapping[SnapshotKey, Any],
     dict[str, Any],
     _FileWitness,
     _FileWitness,
@@ -687,6 +721,7 @@ def _load_checkpoint_snapshots(
         checkpoint_index, label="checkpoint index"
     )
     payload = _load_json_bytes(content, label="checkpoint index")
+    index_schema_version = payload.get("schema_version")
     if set(payload) != {
         "schema_version",
         "manifest_id",
@@ -697,8 +732,8 @@ def _load_checkpoint_snapshots(
         "evaluation_checkpoint_frames_sha256",
         "snapshots",
     } or not (
-        type(payload["schema_version"]) is int
-        and payload["schema_version"] == 1
+        type(index_schema_version) is int
+        and index_schema_version in {1, 2}
         and payload["manifest_id"] == "oviv2_tesse_cd_occlusion_checkpoints_v1"
         and payload["dataset"] == "TESSE-CD"
         and payload["method_id"] == "OVIV2"
@@ -727,17 +762,20 @@ def _load_checkpoint_snapshots(
         raise ValueError("checkpoint snapshot inventory must be a list")
     required = _required_checkpoint_times(metadata)
     snapshot_bindings: dict[SnapshotKey, _SnapshotBinding] = {}
+    record_fields = {
+        "scene",
+        "frame_index",
+        "timestamp_ns",
+        "relative_timestamp_ns",
+        "consumed_through_frame",
+        "consumed_through_frame_exclusive",
+        "path",
+        "checksums_sha256",
+    }
+    if index_schema_version == 2:
+        record_fields.add("format")
     for record in records:
-        if not isinstance(record, Mapping) or set(record) != {
-            "scene",
-            "frame_index",
-            "timestamp_ns",
-            "relative_timestamp_ns",
-            "consumed_through_frame",
-            "consumed_through_frame_exclusive",
-            "path",
-            "checksums_sha256",
-        }:
+        if not isinstance(record, Mapping) or set(record) != record_fields:
             raise ValueError("checkpoint record fields are not exact")
         scene = record["scene"]
         frame_index = record["frame_index"]
@@ -779,10 +817,21 @@ def _load_checkpoint_snapshots(
                 raise ValueError(f"snapshot path contains a symlink: {relative}")
         if not isinstance(record["checksums_sha256"], str):
             raise ValueError(f"snapshot checksum binding mismatch: {key}")
+        checkpoint_format = (
+            FULL_SNAPSHOT_FORMAT
+            if index_schema_version == 1
+            else record["format"]
+        )
+        if not isinstance(checkpoint_format, str) or checkpoint_format not in {
+            FULL_SNAPSHOT_FORMAT,
+            COMPACT_OWNERSHIP_FORMAT,
+        }:
+            raise ValueError(f"checkpoint format is invalid: {key}")
         snapshot_bindings[key] = _capture_snapshot_binding(
             snapshot_path,
             timestamp_ns=record["timestamp_ns"],
             expected_checksums_sha256=record["checksums_sha256"],
+            checkpoint_format=checkpoint_format,
         )
     missing = sorted(set(required).difference(snapshot_bindings))
     if missing:

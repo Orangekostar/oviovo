@@ -152,32 +152,62 @@ class _SourceWitness:
 
     def revalidate(self) -> None:
         try:
-            directory = os.lstat(self.path)
+            path_before = os.lstat(self.path)
         except OSError as error:
             raise ValueError("compact checkpoint source changed") from error
-        if not stat.S_ISDIR(directory.st_mode) or (
-            _fingerprint(directory) != self.directory_fingerprint
+        if not stat.S_ISDIR(path_before.st_mode) or (
+            _fingerprint(path_before) != self.directory_fingerprint
         ):
             raise ValueError("compact checkpoint source identity changed")
+        flags = (
+            os.O_RDONLY
+            | getattr(os, "O_DIRECTORY", 0)
+            | getattr(os, "O_CLOEXEC", 0)
+            | getattr(os, "O_NOFOLLOW", 0)
+        )
         try:
-            inventory = {entry.name for entry in os.scandir(self.path)}
+            directory_fd = os.open(self.path, flags)
         except OSError as error:
             raise ValueError("compact checkpoint source changed") from error
-        if inventory != set(self.file_fingerprints):
-            raise ValueError("compact checkpoint inventory changed")
-        for name, expected in self.file_fingerprints.items():
+        try:
+            directory = os.fstat(directory_fd)
+            if _fingerprint(directory) != self.directory_fingerprint:
+                raise ValueError("compact checkpoint source identity changed")
             try:
-                current = os.lstat(self.path / name)
+                inventory = set(os.listdir(directory_fd))
             except OSError as error:
-                raise ValueError("compact checkpoint file changed") from error
-            if not stat.S_ISREG(current.st_mode) or _fingerprint(current) != expected:
-                raise ValueError("compact checkpoint file identity changed")
+                raise ValueError("compact checkpoint source changed") from error
+            if inventory != set(self.file_fingerprints):
+                raise ValueError("compact checkpoint inventory changed")
+            for name, expected in self.file_fingerprints.items():
+                try:
+                    current = os.stat(
+                        name,
+                        dir_fd=directory_fd,
+                        follow_symlinks=False,
+                    )
+                except OSError as error:
+                    raise ValueError("compact checkpoint file changed") from error
+                if not stat.S_ISREG(current.st_mode) or (
+                    _fingerprint(current) != expected
+                ):
+                    raise ValueError("compact checkpoint file identity changed")
+            if _fingerprint(os.fstat(directory_fd)) != self.directory_fingerprint:
+                raise ValueError("compact checkpoint source identity changed")
+        finally:
+            os.close(directory_fd)
+        try:
+            path_after = os.lstat(self.path)
+        except OSError as error:
+            raise ValueError("compact checkpoint source changed") from error
+        if _fingerprint(path_after) != self.directory_fingerprint:
+            raise ValueError("compact checkpoint source identity changed")
 
 
 def _ownership_arrays(
     ownership: ReversibleOwnershipStore,
 ) -> dict[str, np.ndarray]:
-    records = ownership.records()
+    records = tuple(sorted(ownership.records(), key=lambda item: item[0]))
     return {
         "schema_version": np.asarray([1], dtype=np.int64),
         "block_resolution": np.asarray(
