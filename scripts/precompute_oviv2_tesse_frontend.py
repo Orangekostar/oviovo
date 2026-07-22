@@ -5,7 +5,9 @@ from __future__ import annotations
 
 import argparse
 from concurrent.futures import ThreadPoolExecutor
+import ctypes
 from dataclasses import dataclass
+import errno
 import gzip
 import hashlib
 import json
@@ -13,6 +15,7 @@ import os
 from pathlib import Path
 import pickle
 import re
+import secrets
 import shutil
 import stat
 import subprocess
@@ -148,7 +151,7 @@ class _OutputLayout:
     parent: _DirectoryBinding
     root: _DirectoryBinding
     scenes: Mapping[str, _DirectoryBinding]
-    results: Mapping[str, _DirectoryBinding]
+    results: Mapping[str, _DirectoryContentBinding]
     input_copies: Mapping[Path, _FileBinding]
 
 
@@ -1226,14 +1229,6 @@ def _require_absent_lstat(path: Path, *, role: str) -> None:
     raise ValueError(f"{role} must not preexist: {path}")
 
 
-def _bind_directory(path: Path, *, role: str) -> _DirectoryBinding:
-    hybrid_cache._assert_no_symlink(path, field_name=role)
-    metadata = os.lstat(path)
-    if not stat.S_ISDIR(metadata.st_mode):
-        raise ValueError(f"{role} must be a real directory: {path}")
-    return _DirectoryBinding(path=path, device=metadata.st_dev, inode=metadata.st_ino)
-
-
 def _bind_directory_content(path: Path, *, role: str) -> _DirectoryContentBinding:
     hybrid_cache._assert_no_symlink(path, field_name=role)
     metadata = os.lstat(path)
@@ -1287,23 +1282,171 @@ def _verify_directory(binding: _DirectoryBinding, *, role: str) -> None:
         raise ValueError(f"{role} changed after creation: {binding.path}")
 
 
-def _open_bound_directory(binding: _DirectoryBinding, *, role: str) -> int:
-    flags = (
+def _directory_open_flags() -> int:
+    return (
         os.O_RDONLY
         | getattr(os, "O_DIRECTORY", 0)
         | getattr(os, "O_CLOEXEC", 0)
         | getattr(os, "O_NOFOLLOW", 0)
     )
-    descriptor = os.open(binding.path, flags)
+
+
+def _directory_binding_from_fd(
+    descriptor: int,
+    path: Path,
+    *,
+    role: str,
+) -> _DirectoryBinding:
     metadata = os.fstat(descriptor)
-    if (
-        not stat.S_ISDIR(metadata.st_mode)
-        or metadata.st_dev != binding.device
-        or metadata.st_ino != binding.inode
-    ):
+    if not stat.S_ISDIR(metadata.st_mode):
+        raise ValueError(f"{role} descriptor is not a directory")
+    return _DirectoryBinding(path=path, device=metadata.st_dev, inode=metadata.st_ino)
+
+
+def _directory_content_binding_from_fd(
+    descriptor: int,
+    path: Path,
+    *,
+    role: str,
+) -> _DirectoryContentBinding:
+    metadata = os.fstat(descriptor)
+    if not stat.S_ISDIR(metadata.st_mode):
+        raise ValueError(f"{role} descriptor is not a directory")
+    return _DirectoryContentBinding(
+        path=path,
+        device=metadata.st_dev,
+        inode=metadata.st_ino,
+        mode=metadata.st_mode,
+        size=metadata.st_size,
+        modified_ns=metadata.st_mtime_ns,
+        changed_ns=metadata.st_ctime_ns,
+    )
+
+
+def _open_directory_at(
+    parent_descriptor: int,
+    name: str,
+    path: Path,
+    *,
+    role: str,
+) -> tuple[int, _DirectoryBinding]:
+    if not name or Path(name).name != name:
+        raise ValueError(f"{role} name is not a safe path component")
+    descriptor = os.open(
+        name,
+        _directory_open_flags(),
+        dir_fd=parent_descriptor,
+    )
+    try:
+        binding = _directory_binding_from_fd(descriptor, path, role=role)
+    except BaseException:
         os.close(descriptor)
-        raise ValueError(f"{role} changed before directory open")
-    return descriptor
+        raise
+    return descriptor, binding
+
+
+def _open_or_create_absolute_directory(path: Path) -> tuple[int, _DirectoryBinding]:
+    absolute = Path(os.path.abspath(path))
+    descriptor = os.open("/", _directory_open_flags())
+    try:
+        for name in absolute.parts[1:]:
+            try:
+                child = os.open(
+                    name,
+                    _directory_open_flags(),
+                    dir_fd=descriptor,
+                )
+            except FileNotFoundError:
+                staging_name = _private_staging_name(name)
+                _require_absent_at(
+                    descriptor,
+                    staging_name,
+                    role="private parent staging",
+                )
+                os.mkdir(staging_name, dir_fd=descriptor)
+                child = os.open(
+                    staging_name,
+                    _directory_open_flags(),
+                    dir_fd=descriptor,
+                )
+                try:
+                    _rename_directory_no_replace_at(
+                        descriptor,
+                        staging_name,
+                        name,
+                    )
+                    os.fsync(descriptor)
+                except BaseException:
+                    os.close(child)
+                    raise
+            os.close(descriptor)
+            descriptor = child
+        binding = _directory_binding_from_fd(
+            descriptor,
+            absolute,
+            role="frontend cache parent",
+        )
+        return descriptor, binding
+    except BaseException:
+        os.close(descriptor)
+        raise
+
+
+def _require_absent_at(directory_descriptor: int, name: str, *, role: str) -> None:
+    try:
+        os.stat(name, dir_fd=directory_descriptor, follow_symlinks=False)
+    except FileNotFoundError:
+        return
+    raise ValueError(f"{role} must not preexist: {name}")
+
+
+def _rename_directory_no_replace_at(
+    directory_descriptor: int,
+    source_name: str,
+    target_name: str,
+) -> None:
+    for value in (source_name, target_name):
+        if not value or Path(value).name != value:
+            raise ValueError("directory publication name is not a safe path component")
+    libc = ctypes.CDLL(None, use_errno=True)
+    try:
+        renameat2 = libc.renameat2
+    except AttributeError as exc:
+        raise RuntimeError("renameat2 is required for secure staging publication") from exc
+    renameat2.argtypes = (
+        ctypes.c_int,
+        ctypes.c_char_p,
+        ctypes.c_int,
+        ctypes.c_char_p,
+        ctypes.c_uint,
+    )
+    renameat2.restype = ctypes.c_int
+    ctypes.set_errno(0)
+    result = renameat2(
+        directory_descriptor,
+        os.fsencode(source_name),
+        directory_descriptor,
+        os.fsencode(target_name),
+        1,
+    )
+    if result == 0:
+        return
+    error_number = ctypes.get_errno()
+    if error_number in {errno.EEXIST, errno.ENOTEMPTY}:
+        raise FileExistsError(
+            errno.EEXIST,
+            "frontend staging target already exists",
+            target_name,
+        )
+    raise OSError(
+        error_number,
+        f"secure staging publication failed: {os.strerror(error_number)}",
+        f"{source_name} -> {target_name}",
+    )
+
+
+def _private_staging_name(target_name: str) -> str:
+    return f".{target_name}.{secrets.token_hex(16)}.staging"
 
 
 def _copy_bound_file(
@@ -1439,61 +1582,78 @@ def _prepare_output_layout(
         raise ValueError("frontend commands must share one cache root")
     root = roots.pop()
     hybrid_cache._assert_no_symlink(root, field_name="frontend cache root")
-    _require_absent_lstat(root, role="frontend cache root")
-    hybrid_cache._assert_no_symlink(root.parent, field_name="frontend cache parent")
-    root.parent.mkdir(parents=True, exist_ok=True)
-    hybrid_cache._assert_no_symlink(root.parent, field_name="frontend cache parent")
-    parent_binding = _bind_directory(root.parent, role="frontend cache parent")
-
     scenes: dict[str, _DirectoryBinding] = {}
-    results: dict[str, _DirectoryBinding] = {}
+    results: dict[str, _DirectoryContentBinding] = {}
     input_copies: dict[Path, _FileBinding] = {}
+    parent_descriptor, parent_binding = _open_or_create_absolute_directory(root.parent)
     try:
-        parent_descriptor = _open_bound_directory(
-            parent_binding,
-            role="frontend cache parent",
+        _require_absent_at(
+            parent_descriptor,
+            root.name,
+            role="frontend cache root",
         )
-        try:
-            os.mkdir(root.name, dir_fd=parent_descriptor)
-        finally:
-            os.close(parent_descriptor)
-        _verify_directory(parent_binding, role="frontend cache parent")
-        root_binding = _bind_directory(root, role="frontend cache root")
-        root_descriptor = _open_bound_directory(
-            root_binding,
+        root_staging_name = _private_staging_name(root.name)
+        _require_absent_at(
+            parent_descriptor,
+            root_staging_name,
+            role="private frontend root staging",
+        )
+        os.mkdir(root_staging_name, dir_fd=parent_descriptor)
+        root_descriptor, root_binding = _open_directory_at(
+            parent_descriptor,
+            root_staging_name,
+            root,
             role="frontend cache root",
         )
         try:
             for command in selected:
                 scene_root = command.cache_dir.parent
-                _require_absent_lstat(scene_root, role="frontend scene root")
-                os.mkdir(scene_root.name, dir_fd=root_descriptor)
-                scene_binding = _bind_directory(
+                _require_absent_at(
+                    root_descriptor,
+                    scene_root.name,
+                    role="frontend scene root",
+                )
+                scene_staging_name = _private_staging_name(scene_root.name)
+                _require_absent_at(
+                    root_descriptor,
+                    scene_staging_name,
+                    role="private frontend scene staging",
+                )
+                os.mkdir(scene_staging_name, dir_fd=root_descriptor)
+                scene_descriptor, scene_binding = _open_directory_at(
+                    root_descriptor,
+                    scene_staging_name,
                     scene_root,
                     role="frontend scene root",
                 )
-                scenes[command.scene] = scene_binding
-                for output_path in _command_output_paths(command):
-                    _require_absent_lstat(output_path, role="frontend output path")
-
-                result_sources, trajectory_source = _staging_source_bindings(
-                    command,
-                    run_snapshot,
-                )
-                scene_descriptor = _open_bound_directory(
-                    scene_binding,
-                    role="frontend scene root",
-                )
                 try:
-                    os.mkdir("results", dir_fd=scene_descriptor)
-                    staged_results = scene_root / "results"
-                    result_binding = _bind_directory(
-                        staged_results,
+                    for output_path in _command_output_paths(command):
+                        _require_absent_at(
+                            scene_descriptor,
+                            output_path.name,
+                            role="frontend output path",
+                        )
+                    _require_absent_at(
+                        scene_descriptor,
+                        "results",
                         role="staged RGB-D results",
                     )
-                    results[command.scene] = result_binding
-                    results_descriptor = _open_bound_directory(
-                        result_binding,
+                    _require_absent_at(
+                        scene_descriptor,
+                        "traj.txt",
+                        role="staged trajectory",
+                    )
+                    result_sources, trajectory_source = _staging_source_bindings(
+                        command,
+                        run_snapshot,
+                    )
+                    results_staging_name = _private_staging_name("results")
+                    os.mkdir(results_staging_name, dir_fd=scene_descriptor)
+                    staged_results = scene_root / "results"
+                    results_descriptor, _ = _open_directory_at(
+                        scene_descriptor,
+                        results_staging_name,
+                        staged_results,
                         role="staged RGB-D results",
                     )
                     try:
@@ -1506,6 +1666,16 @@ def _prepare_output_layout(
                             )
                         os.fchmod(results_descriptor, 0o555)
                         os.fsync(results_descriptor)
+                        _rename_directory_no_replace_at(
+                            scene_descriptor,
+                            results_staging_name,
+                            "results",
+                        )
+                        results[command.scene] = _directory_content_binding_from_fd(
+                            results_descriptor,
+                            staged_results,
+                            role="staged RGB-D results",
+                        )
                     finally:
                         os.close(results_descriptor)
                     trajectory_destination = scene_root / "traj.txt"
@@ -1515,19 +1685,49 @@ def _prepare_output_layout(
                         destination_directory_fd=scene_descriptor,
                     )
                     os.fsync(scene_descriptor)
+                    _rename_directory_no_replace_at(
+                        root_descriptor,
+                        scene_staging_name,
+                        scene_root.name,
+                    )
+                    scenes[command.scene] = _directory_binding_from_fd(
+                        scene_descriptor,
+                        scene_root,
+                        role="frontend scene root",
+                    )
                 finally:
                     os.close(scene_descriptor)
+            os.fsync(root_descriptor)
+            _rename_directory_no_replace_at(
+                parent_descriptor,
+                root_staging_name,
+                root.name,
+            )
+            root_binding = _directory_binding_from_fd(
+                root_descriptor,
+                root,
+                role="frontend cache root",
+            )
         finally:
             os.close(root_descriptor)
-        return _OutputLayout(
+        os.fsync(parent_descriptor)
+        layout = _OutputLayout(
             parent=parent_binding,
             root=root_binding,
             scenes=scenes,
             results=results,
             input_copies=input_copies,
         )
-    except BaseException:
-        raise
+        _verify_directory(layout.parent, role="frontend cache parent")
+        _verify_directory(layout.root, role="frontend cache root")
+        for binding in layout.scenes.values():
+            _verify_directory(binding, role="frontend scene root")
+        for binding in layout.results.values():
+            _verify_directory_content(binding, role="staged RGB-D results")
+        _assert_bindings_unchanged(layout.input_copies.values())
+        return layout
+    finally:
+        os.close(parent_descriptor)
 
 
 def _verify_output_layout(command: FrontendCommand, layout: _OutputLayout) -> None:
@@ -1564,7 +1764,7 @@ def _verify_source_links(
     results_binding = layout.results.get(scene)
     if results_binding is None:
         raise ValueError("staged RGB-D results are not bound by this run")
-    _verify_directory(results_binding, role="staged RGB-D results")
+    _verify_directory_content(results_binding, role="staged RGB-D results")
     copies = tuple(
         binding
         for path, binding in layout.input_copies.items()

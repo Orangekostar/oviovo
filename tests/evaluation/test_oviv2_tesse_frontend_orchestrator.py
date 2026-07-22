@@ -1069,6 +1069,61 @@ def test_inference_aba_on_official_input_is_detected_and_staging_is_unchanged(
     assert not (command.cache_dir / "frontend_manifest.json").exists()
 
 
+def test_inference_aba_on_staged_results_rejects_valid_cache_publication(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config, command = _small_command(tmp_path)
+    source_results = command.source_root / "results"
+    source_results.mkdir()
+    (source_results / "frame000000.jpg").write_bytes(b"trusted")
+    manifest, input_binding = frontend_module._load_frozen_input_manifest(config)
+    snapshot = frontend_module._capture_run_snapshot(
+        config,
+        (command,),
+        input_binding,
+        manifest,
+        dataset_factory=_StubTesseCdRgbdDataset,
+    )
+    layout = frontend_module._prepare_output_layout((command,), snapshot)
+    staged_results = command.cache_dir.parent / "results"
+    classes = _classes(command)
+
+    def replace_stage_and_emit_valid_cache(*_args, **_kwargs):
+        trusted_results = staged_results.with_name("results.trusted")
+        staged_results.rename(trusted_results)
+        staged_results.mkdir()
+        (staged_results / "frame000000.jpg").write_bytes(b"attacker")
+        assert (staged_results / "frame000000.jpg").read_bytes() == b"attacker"
+        _write_cache(
+            command,
+            [_cache_payload(classes), _cache_payload(classes, count=0)],
+        )
+        (staged_results / "frame000000.jpg").unlink()
+        staged_results.rmdir()
+        trusted_results.rename(staged_results)
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr(
+        frontend_module.subprocess,
+        "run",
+        replace_stage_and_emit_valid_cache,
+    )
+
+    with pytest.raises(ValueError, match="staged RGB-D results changed after snapshot"):
+        frontend_module._run_queue(
+            [command],
+            config,
+            config["manifest_sha256"],
+            snapshot,
+            manifest,
+            _StubTesseCdRgbdDataset,
+            layout,
+        )
+
+    assert not (command.cache_dir / "frontend_manifest.json").exists()
+
+
 def test_real_dataset_preflight_rejects_empty_scene_directories(
     tmp_path: Path,
 ) -> None:
@@ -1279,23 +1334,91 @@ def test_output_layout_detects_parent_replacement_during_atomic_creation(
     moved_parent = parent.with_name("frontend-parent-moved")
     attacker = tmp_path / "attacker-parent"
     attacker.mkdir()
-    original_mkdir = frontend_module.os.mkdir
+    original_publish = frontend_module._rename_directory_no_replace_at
     replaced = False
 
-    def replace_parent_before_root(path, mode=0o777, *, dir_fd=None):
+    def replace_parent_after_root(directory_fd, source_name, target_name):
         nonlocal replaced
-        if dir_fd is not None and str(path) == output_root.name and not replaced:
+        original_publish(directory_fd, source_name, target_name)
+        if target_name == output_root.name and not replaced:
             replaced = True
             parent.rename(moved_parent)
             parent.symlink_to(attacker, target_is_directory=True)
-        return original_mkdir(path, mode, dir_fd=dir_fd)
 
-    monkeypatch.setattr(frontend_module.os, "mkdir", replace_parent_before_root)
+    monkeypatch.setattr(
+        frontend_module,
+        "_rename_directory_no_replace_at",
+        replace_parent_after_root,
+    )
 
     with pytest.raises(ValueError, match="cache parent changed"):
         frontend_module._prepare_output_layout((command,))
     assert replaced
     assert not (attacker / output_root.name).exists()
+
+
+@pytest.mark.parametrize("replaced_level", ["root", "scene"])
+def test_output_layout_fd_chain_never_copies_into_replacement_directory(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    replaced_level: str,
+) -> None:
+    config, manifest = _fixture(tmp_path)
+    config["frontend_cache_root"] = str(tmp_path / "output-parent/frontend-cache")
+    source = Path(manifest["scenes"]["apartment"]["root"])
+    results = source / "results"
+    results.mkdir()
+    (results / "frame000000.jpg").write_bytes(b"trusted")
+    command = build_commands(config, manifest, scenes=("apartment",))[0]
+    output_root = Path(config["frontend_cache_root"])
+    scene_root = output_root / "apartment"
+    moved = (
+        output_root.parent / "moved-root"
+        if replaced_level == "root"
+        else output_root / "moved-scene"
+    )
+    original_publish = frontend_module._rename_directory_no_replace_at
+    replaced = False
+
+    def replace_after_publication(directory_fd, source_name, target_name):
+        nonlocal replaced
+        original_publish(directory_fd, source_name, target_name)
+        if replaced:
+            return
+        if replaced_level == "root" and target_name == output_root.name:
+            replaced = True
+            os.rename(
+                target_name,
+                moved.name,
+                src_dir_fd=directory_fd,
+                dst_dir_fd=directory_fd,
+            )
+            os.mkdir(target_name, dir_fd=directory_fd)
+        elif replaced_level == "scene" and target_name == command.scene:
+            replaced = True
+            os.rename(
+                target_name,
+                moved.name,
+                src_dir_fd=directory_fd,
+                dst_dir_fd=directory_fd,
+            )
+            os.mkdir(target_name, dir_fd=directory_fd)
+
+    monkeypatch.setattr(
+        frontend_module,
+        "_rename_directory_no_replace_at",
+        replace_after_publication,
+    )
+
+    with pytest.raises(ValueError, match=f"frontend .*{replaced_level}.*changed"):
+        frontend_module._prepare_output_layout((command,))
+
+    assert replaced
+    assert not (scene_root / "results/frame000000.jpg").exists()
+    if replaced_level == "root":
+        assert (moved / "apartment/results/frame000000.jpg").read_bytes() == b"trusted"
+    else:
+        assert (moved / "results/frame000000.jpg").read_bytes() == b"trusted"
 
 
 def test_formal_modes_cannot_skip_scene_or_change_execution_gpus(
