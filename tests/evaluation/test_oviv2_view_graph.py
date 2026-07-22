@@ -160,6 +160,23 @@ def test_building_is_input_order_independent_and_rejects_duplicate_ids() -> None
         build_sparse_observation_edges((observations[0], observations[0]), ViewGraphConfig(2))
 
 
+def test_preserves_all_three_cross_frame_pairs_before_selection() -> None:
+    observations = (
+        _observation(10, 1, {(0, 0, 0), (1, 0, 0), (2, 0, 0), (3, 0, 0)}),
+        _observation(21, 2, {(0, 0, 0), (1, 0, 0), (4, 0, 0), (5, 0, 0)}),
+        _observation(33, 3, {(2, 0, 0), (3, 0, 0), (4, 0, 0), (5, 0, 0)}),
+    )
+
+    evidence = build_sparse_observation_edges(observations, ViewGraphConfig(2))
+
+    assert [(edge.left_id, edge.right_id) for edge in evidence] == [
+        (10, 21),
+        (10, 33),
+        (21, 33),
+    ]
+    assert [edge.shared_voxels for edge in evidence] == [2, 2, 2]
+
+
 def test_building_validates_observation_sequence_and_config_types() -> None:
     with pytest.raises(TypeError, match="observations"):
         build_sparse_observation_edges(object(), ViewGraphConfig(2))  # type: ignore[arg-type]
@@ -241,6 +258,30 @@ def test_selection_rejects_invalid_geometry_thresholds(value: object) -> None:
         select_observation_edges((), minimum_voxel_iou=value, minimum_directed_coverage=0.0, minimum_feature_cosine=0.0)  # type: ignore[arg-type]
 
 
+@pytest.mark.parametrize(
+    ("value", "error"),
+    [
+        (True, TypeError),
+        (math.nan, ValueError),
+        (math.inf, ValueError),
+        (-math.inf, ValueError),
+        (-0.1, ValueError),
+        (1.1, ValueError),
+    ],
+)
+def test_selection_rejects_invalid_directed_coverage_threshold(
+    value: object,
+    error: type[Exception],
+) -> None:
+    with pytest.raises(error):
+        select_observation_edges(
+            (),
+            minimum_voxel_iou=0.0,
+            minimum_directed_coverage=value,  # type: ignore[arg-type]
+            minimum_feature_cosine=0.0,
+        )
+
+
 @pytest.mark.parametrize("value", [True, math.nan, math.inf, -1.1, 1.1])
 def test_selection_rejects_invalid_feature_threshold(value: object) -> None:
     with pytest.raises((TypeError, ValueError)):
@@ -296,3 +337,10 @@ def test_records_are_frozen_and_functions_return_immutable_tuples() -> None:
         config,
     )
     assert isinstance(result, tuple)
+    selected = select_observation_edges(
+        (_edge(10, 21),),
+        minimum_voxel_iou=0.0,
+        minimum_directed_coverage=0.0,
+        minimum_feature_cosine=0.0,
+    )
+    assert isinstance(selected, tuple)
