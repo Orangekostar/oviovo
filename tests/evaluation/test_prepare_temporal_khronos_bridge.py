@@ -17,6 +17,26 @@ from src.evaluation.contracts import EntityPrediction, MapSnapshot
 from src.evaluation.exporters.oviovo import write_map_snapshot
 
 
+@pytest.fixture(autouse=True)
+def _bind_fixture_label_space(monkeypatch: pytest.MonkeyPatch) -> None:
+    fixture_contents = (
+        "label_names:\n  - {label: 0, name: Unknown}\n  - {label: 5, name: Chair}\n",
+        "label_names: [{label: 0, name: Unknown}, {label: 5, name: Chair}]\n",
+    )
+    monkeypatch.setattr(
+        bridge_module,
+        "OFFICIAL_LABEL_SPACE_SHA256",
+        {
+            "apartment": frozenset(
+                hashlib.sha256(content.encode("utf-8")).hexdigest()
+                for content in fixture_contents
+            ),
+            "office": frozenset(),
+        },
+        raising=False,
+    )
+
+
 def _record(path: Path, *, relative_to: Path | None = None) -> dict[str, Any]:
     return {
         "path": str(path.relative_to(relative_to) if relative_to else path.resolve()),
@@ -303,6 +323,17 @@ def test_rejects_checkpoint_schedule_mismatch(tmp_path: Path) -> None:
     )
 
     with pytest.raises(ValueError, match="schedule"):
+        prepare_temporal_bridge(temporal, labels, tmp_path / "bridge")
+
+
+def test_rejects_nonofficial_scene_label_space(tmp_path: Path) -> None:
+    temporal = _write_temporal_fixture(tmp_path / "temporal")
+    labels = tmp_path / "labels.yaml"
+    labels.write_text(
+        "label_names: [{label: 0, name: Unknown}]\n", encoding="utf-8"
+    )
+
+    with pytest.raises(ValueError, match="official apartment label space"):
         prepare_temporal_bridge(temporal, labels, tmp_path / "bridge")
 
 

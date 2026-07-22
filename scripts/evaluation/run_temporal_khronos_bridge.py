@@ -7,6 +7,7 @@ import argparse
 from datetime import datetime, timezone
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -52,6 +53,8 @@ def _sha256(path: Path) -> str:
 
 
 def _entry(path: Path) -> dict[str, Any]:
+    if path.is_symlink():
+        raise ValueError(f"build artifact must not be a symlink: {path}")
     return {
         "path": str(path.resolve()),
         "sha256": _sha256(path),
@@ -61,6 +64,9 @@ def _entry(path: Path) -> dict[str, Any]:
 
 def _validate_entry(entry: Mapping[str, Any], *, label: str) -> Path:
     path = Path(str(entry.get("path", ""))).resolve()
+    raw_path = Path(str(entry.get("path", "")))
+    if raw_path.is_symlink():
+        raise ValueError(f"{label} must not be a symlink")
     if not path.is_file():
         raise ValueError(f"{label} is not a file: {path}")
     if path.stat().st_size != int(entry.get("byte_count", -1)):
@@ -168,7 +174,7 @@ def build_bridge_command(
 def write_build_manifest(
     source: Path, cmake: Path, executable: Path, destination: Path
 ) -> Path:
-    if destination.exists():
+    if os.path.lexists(destination):
         raise FileExistsError(f"build manifest already exists: {destination}")
     for path in (source, cmake, executable):
         if not path.is_file():
@@ -212,7 +218,7 @@ def validate_build_manifest(
 
 
 def run(args: argparse.Namespace) -> Path:
-    if args.output.exists():
+    if os.path.lexists(args.output):
         raise ValueError(f"output already exists: {args.output}")
     bridge = validate_temporal_bridge_manifest(args.manifest)
     if (

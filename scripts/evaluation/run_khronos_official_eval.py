@@ -44,6 +44,8 @@ def _sha256(path: Path) -> str:
 
 
 def validate_tesse_manifest(path: Path, *, scene: str) -> dict[str, Any]:
+    if path.is_symlink():
+        raise ValueError("canonical TESSE manifest must not be a symlink")
     if not path.is_file() or _sha256(path) != CANONICAL_TESSE_MANIFEST_SHA256:
         raise ValueError("TESSE manifest does not match the canonical checked bytes")
     payload = loads_strict(path.read_text(encoding="utf-8"), label="TESSE manifest")
@@ -62,6 +64,8 @@ def _validate_source_entry(entry: Mapping[str, Any], *, label: str) -> Path:
     if set(entry) != {"path", "sha256", "byte_count"}:
         raise ValueError(f"{label} source record fields are invalid")
     path = Path(str(entry.get("path", "")))
+    if path.is_symlink():
+        raise ValueError(f"{label} source must not be a symlink")
     byte_count = entry.get("byte_count")
     if (
         type(byte_count) is not int
@@ -72,6 +76,30 @@ def _validate_source_entry(entry: Mapping[str, Any], *, label: str) -> Path:
     ):
         raise ValueError(f"{label} source provenance mismatch")
     return path
+
+
+def validate_ground_truth_files(
+    files: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Mapping[str, Any]]:
+    selected: dict[str, Mapping[str, Any]] = {}
+    for name in ("dsg", "background_mesh", "changes"):
+        entry = files.get(name)
+        if not isinstance(entry, Mapping):
+            raise ValueError(f"canonical TESSE manifest lacks ground truth {name}")
+        path = Path(str(entry.get("path", "")))
+        size = entry.get("size_bytes")
+        if path.is_symlink():
+            raise ValueError(f"ground-truth provenance rejects symlink: {path}")
+        if (
+            type(size) is not int
+            or size < 0
+            or not path.is_file()
+            or path.stat().st_size != size
+            or _sha256(path) != entry.get("sha256")
+        ):
+            raise ValueError(f"ground-truth provenance mismatch: {path}")
+        selected[name] = entry
+    return selected
 
 
 def validate_khronos_run_status(path: Path, *, scene: str) -> dict[str, Any]:
@@ -219,7 +247,7 @@ def write_repeated_metrics(
     if method != "OVIV2" or mode != "causal_checkpoints":
         raise ValueError("official metrics require OVIV2 causal identity")
     for output in (metrics_path, repeat_path):
-        if output.exists():
+        if os.path.lexists(output):
             raise FileExistsError(f"official metric output already exists: {output}")
     errors: list[str] = []
     for output in (metrics_path, repeat_path):
@@ -294,11 +322,7 @@ def run(args: argparse.Namespace) -> Path:
 
     manifest = validate_tesse_manifest(args.manifest, scene=args.scene)
     sequence = manifest["sequences"][args.scene]
-    files = sequence["ground_truth"]["files"]
-    for entry in files.values():
-        path = Path(entry["path"])
-        if not path.is_file() or _sha256(path) != entry["sha256"]:
-            raise ValueError(f"ground-truth provenance mismatch: {path}")
+    files = validate_ground_truth_files(sequence["ground_truth"]["files"])
 
     base_path = (
         args.workspace
@@ -366,6 +390,9 @@ def run(args: argparse.Namespace) -> Path:
             encoding="utf-8",
         )
         raise RuntimeError(f"official Khronos evaluator failed: {completed.returncode}")
+
+    validate_tesse_manifest(args.manifest, scene=args.scene)
+    validate_ground_truth_files(sequence["ground_truth"]["files"])
 
     metrics_path = evaluation_dir / "official_metrics.json"
     repeat_path = evaluation_dir / "official_metrics.repeat.json"

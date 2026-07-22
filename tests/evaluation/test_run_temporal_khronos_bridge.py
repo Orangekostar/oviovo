@@ -10,6 +10,7 @@ from scripts.evaluation.run_temporal_khronos_bridge import (
     build_bridge_command,
     build_package_command,
     parse_args,
+    run,
     stage_importer_source,
     validate_build_manifest,
     write_build_manifest,
@@ -177,6 +178,24 @@ def test_build_manifest_rejects_duplicate_json_keys(tmp_path: Path) -> None:
         validate_build_manifest(manifest, expected_source=CPP)
 
 
+def test_build_manifest_rejects_symlinked_build_artifact(tmp_path: Path) -> None:
+    source = tmp_path / "source.cpp"
+    cmake = tmp_path / "CMakeLists.txt"
+    real_executable = tmp_path / "real_importer"
+    executable = tmp_path / "import_temporal_baseline"
+    for path in (source, cmake, real_executable):
+        path.write_text(path.name, encoding="utf-8")
+    executable.symlink_to(real_executable.name)
+
+    with pytest.raises(ValueError, match="symlink"):
+        write_build_manifest(
+            source,
+            cmake,
+            executable,
+            tmp_path / "build_manifest.json",
+        )
+
+
 def test_parser_fixes_oviv2_causal_identity() -> None:
     args = parse_args(
         [
@@ -197,3 +216,23 @@ def test_parser_fixes_oviv2_causal_identity() -> None:
                 "--method", "DUALMAP",
             ]
         )
+
+
+def test_run_refuses_dangling_output_symlink_before_external_work(
+    tmp_path: Path,
+) -> None:
+    victim = tmp_path / "victim"
+    output = tmp_path / "run"
+    output.symlink_to(victim.name)
+    args = parse_args(
+        [
+            "--manifest", str(tmp_path / "missing.json"),
+            "--scene", "apartment",
+            "--output", str(output),
+        ]
+    )
+
+    with pytest.raises(ValueError, match="output already exists"):
+        run(args)
+
+    assert not victim.exists()

@@ -13,6 +13,7 @@ from scripts.evaluation.run_khronos_official_eval import (
     parse_args,
     patch_evaluation_config,
     run,
+    validate_ground_truth_files,
     validate_khronos_run_status,
     validate_tesse_manifest,
     write_repeated_metrics,
@@ -39,6 +40,30 @@ def test_patch_evaluation_config_binds_local_gt_paths() -> None:
     assert patched["gt_changes_file"] == "/local/changes.csv"
     assert patched["evaluation"]["object_evaluation"]["changes_file"] == "/local/changes.csv"
     assert config["ground_truth_dsg_file"] == "/upstream/dsg.json"
+
+
+def test_ground_truth_validation_uses_only_patched_files(tmp_path: Path) -> None:
+    files = {}
+    for name in ("dsg", "background_mesh", "changes"):
+        path = tmp_path / name
+        path.write_text(name, encoding="utf-8")
+        files[name] = {
+            "path": str(path),
+            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "size_bytes": path.stat().st_size,
+        }
+    files["dsg_with_mesh"] = {
+        "path": str(tmp_path / "unused-missing.json"),
+        "sha256": "0" * 64,
+        "size_bytes": 1,
+    }
+
+    selected = validate_ground_truth_files(files)
+
+    assert set(selected) == {"dsg", "background_mesh", "changes"}
+    files["dsg"]["sha256"] = "0" * 64
+    with pytest.raises(ValueError, match="ground-truth provenance"):
+        validate_ground_truth_files(files)
 
 
 def test_build_evaluation_command_uses_full_state_sequence() -> None:
@@ -151,6 +176,28 @@ def test_repeated_metrics_refuses_existing_outputs(tmp_path: Path) -> None:
     assert metrics.read_text(encoding="utf-8") == "preserve\n"
 
 
+def test_repeated_metrics_refuses_dangling_symlink_output(tmp_path: Path) -> None:
+    results = tmp_path / "results"
+    results.mkdir()
+    for name in ("static_objects.csv", "dynamic_objects.csv", "background_mesh.csv"):
+        (results / name).write_text(f"{name}\n", encoding="utf-8")
+    victim = tmp_path / "victim.json"
+    metrics = tmp_path / "official_metrics.json"
+    metrics.symlink_to(victim.name)
+
+    with pytest.raises(FileExistsError, match="already exists"):
+        write_repeated_metrics(
+            results_dir=results,
+            scene="apartment",
+            method="OVIV2",
+            mode="causal_checkpoints",
+            metrics_path=metrics,
+            repeat_path=tmp_path / "official_metrics.repeat.json",
+        )
+
+    assert not victim.exists()
+
+
 def test_canonical_tesse_manifest_is_hash_bound(tmp_path: Path) -> None:
     copied = tmp_path / "tesse_cd.json"
     copied.write_bytes(CANONICAL_TESSE_MANIFEST.read_bytes())
@@ -163,6 +210,14 @@ def test_canonical_tesse_manifest_is_hash_bound(tmp_path: Path) -> None:
     copied.write_text(json.dumps(payload) + "\n", encoding="utf-8")
     with pytest.raises(ValueError, match="canonical"):
         validate_tesse_manifest(copied, scene="apartment")
+
+
+def test_canonical_tesse_manifest_rejects_symlink(tmp_path: Path) -> None:
+    linked = tmp_path / "tesse_cd.json"
+    linked.symlink_to(CANONICAL_TESSE_MANIFEST)
+
+    with pytest.raises(ValueError, match="symlink"):
+        validate_tesse_manifest(linked, scene="apartment")
 
 
 def test_khronos_run_status_revalidates_hashed_sources(tmp_path: Path) -> None:
@@ -196,6 +251,40 @@ def test_khronos_run_status_revalidates_hashed_sources(tmp_path: Path) -> None:
     validate_khronos_run_status(status, scene="apartment")
     source.write_bytes(b"changed")
     with pytest.raises(ValueError, match="source"):
+        validate_khronos_run_status(status, scene="apartment")
+
+
+def test_khronos_run_status_rejects_symlinked_source(tmp_path: Path) -> None:
+    target = tmp_path / "target.4dmap"
+    target.write_bytes(b"map")
+    source = tmp_path / "final.4dmap"
+    source.symlink_to(target.name)
+    status = tmp_path / "run_status.json"
+    status.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "status": "PASS",
+                "dataset": "TESSE-CD",
+                "scene": "apartment",
+                "method": "OVIV2",
+                "mode": "causal_checkpoints",
+                "bridge_mode": "temporal_checkpoints",
+                "sources": [
+                    {
+                        "path": str(source),
+                        "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+                        "byte_count": source.stat().st_size,
+                    }
+                ],
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="symlink"):
         validate_khronos_run_status(status, scene="apartment")
 
 

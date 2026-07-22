@@ -29,6 +29,16 @@ from src.evaluation.exporters.oviovo import read_map_snapshot
 from src.evaluation.json_contracts import loads_strict
 
 
+OFFICIAL_LABEL_SPACE_SHA256 = {
+    "apartment": frozenset(
+        {"f7bacfb3c7bafc674bd3a34540e3f9b5d98b0ae11389f91768c70ecc65a79f0f"}
+    ),
+    "office": frozenset(
+        {"91a7b359ee678dd67871653959a50c477ba7f371473b9c2bf1b4f41f63691765"}
+    ),
+}
+
+
 @dataclass(frozen=True)
 class _VerifiedSource:
     path: Path
@@ -256,7 +266,10 @@ def _load_trajectories(
     return trajectories
 
 
-def _label_space(path: Path) -> dict[str, int]:
+def _label_space(path: Path, *, scene: str) -> dict[str, int]:
+    expected = OFFICIAL_LABEL_SPACE_SHA256.get(scene)
+    if not expected or _sha256(path) not in expected:
+        raise ValueError(f"official bridge requires the official {scene} label space")
     payload = yaml.safe_load(path.read_text(encoding="utf-8"))
     labels = {
         _normalize_label(entry["name"]): int(entry["label"])
@@ -567,7 +580,7 @@ def prepare_temporal_bridge(
     source_paths.append(trajectory_source)
     trajectories = _load_trajectories(trajectory_source.path, checkpoints)
     _assert_unchanged(trajectory_source, label="trajectories")
-    labels = _label_space(label_source.path)
+    labels = _label_space(label_source.path, scene=scene)
     _assert_unchanged(label_source, label="label space")
 
     ordered_ids = sorted(
