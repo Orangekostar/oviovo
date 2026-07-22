@@ -364,10 +364,10 @@ def build_proposal_pyramid(
         semantic_id = by_id[component[0]].semantic_id
         if any(by_id[observation_id].semantic_id != semantic_id for observation_id in component):
             continue
+        component_records.append((semantic_id, component))
         if not _component_is_eligible(component, by_id, config):
             continue
         component_edges = _strong_edges_for(component, strong_edges)
-        component_records.append((semantic_id, component))
         consensus = frozenset().union(*(by_id[observation_id].voxel_keys for observation_id in component))
         candidates.append(_candidate(semantic_id, "consensus", consensus, component, component_edges))
         by_frame: dict[int, set[VoxelKey]] = defaultdict(set)
@@ -391,6 +391,8 @@ def build_proposal_pyramid(
             for observation_id in sorted(candidate_ids)
             if _core_overlap_fraction(core, by_id[observation_id]) >= config.inclusive_coverage
         )
+        if not selected_ids:
+            continue
         union_voxels = frozenset().union(*(by_id[observation_id].voxel_keys for observation_id in selected_ids))
         union_edges = _strong_edges_for(selected_ids, strong_edges)
         candidates.append(_candidate(semantic_id, "union", union_voxels, selected_ids, union_edges))

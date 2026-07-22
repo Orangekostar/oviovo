@@ -186,6 +186,43 @@ def test_minimum_view_and_voxel_gates_and_empty_cases() -> None:
     assert build_proposal_pyramid(pair, (_edge(10, 21),), _config(minimum_voxels=4)) == ()
 
 
+def test_skips_empty_inclusive_union_when_no_observation_covers_the_core() -> None:
+    observations = (
+        _observation(10, 1, _voxels(0)),
+        _observation(11, 1, _voxels(1)),
+        _observation(21, 2, _voxels(0)),
+        _observation(22, 2, _voxels(1)),
+    )
+    proposals = build_proposal_pyramid(
+        observations,
+        (_edge(10, 11), _edge(10, 21), _edge(11, 22)),
+        _config(core_vote_fraction=1.0, inclusive_coverage=1.0, minimum_voxels=2),
+    )
+
+    assert {proposal.kind for proposal in proposals} == {"core"}
+
+
+def test_hierarchical_can_make_ineligible_strong_components_eligible_after_weak_merge() -> None:
+    observations = (
+        _observation(10, 1, _voxels(0, 1, 2)),
+        _observation(21, 2, _voxels(3, 4, 5)),
+    )
+    proposals = build_proposal_pyramid(
+        observations,
+        (_edge(10, 21, iou=0.2, left_coverage=0.2, right_coverage=0.2),),
+        _config(
+            strong_voxel_iou=0.5,
+            strong_directed_coverage=0.5,
+            weak_merge_iou=0.1,
+            minimum_voxels=4,
+        ),
+    )
+
+    assert len(proposals) == 1
+    assert proposals[0].kind == "hierarchical"
+    assert proposals[0].observation_ids == (10, 21)
+
+
 def test_score_uses_exact_gt_free_components() -> None:
     proposal = VoxelProposal(
         proposal_id="x",
@@ -215,6 +252,28 @@ def test_deduplicates_by_kind_priority_and_assigns_stable_ids() -> None:
     assert build_proposal_pyramid(tuple(reversed(observations)), (_edge(10, 21),), _config(core_vote_fraction=1.0)) == proposals
 
 
+def test_exact_tie_ordering_is_stable_when_observations_and_evidence_are_shuffled() -> None:
+    observations = (
+        _observation(10, 1, _voxels(0, 1, 2)),
+        _observation(21, 2, _voxels(0, 1, 2)),
+        _observation(33, 3, _voxels(0, 3, 4)),
+        _observation(44, 4, _voxels(0, 3, 4)),
+    )
+    evidence = (_edge(10, 21), _edge(33, 44))
+    config = _config(core_vote_fraction=1.0, inclusive_coverage=0.5)
+
+    expected = build_proposal_pyramid(observations, evidence, config)
+    shuffled = build_proposal_pyramid(
+        (observations[3], observations[1], observations[2], observations[0]),
+        tuple(reversed(evidence)),
+        config,
+    )
+
+    assert expected == shuffled
+    assert [proposal.observation_ids for proposal in expected] == [(10, 21), (33, 44)]
+    assert [proposal.proposal_id for proposal in expected] == ["vc:002:core:0000", "vc:002:core:0001"]
+
+
 def test_rejects_over_limit_instead_of_truncating() -> None:
     observations = (
         _observation(10, 1, _voxels(0, 1, 2)), _observation(21, 2, _voxels(0, 1, 2)),
@@ -237,6 +296,12 @@ def test_config_rejects_invalid_unit_fields(field: str, value: object) -> None:
 def test_config_rejects_invalid_positive_integer_fields(field: str, value: object) -> None:
     with pytest.raises((TypeError, ValueError)):
         _config(**{field: value})
+
+
+@pytest.mark.parametrize("value", [True, math.nan, math.inf, -math.inf, -1.1, 1.1])
+def test_config_rejects_invalid_minimum_feature_cosine(value: object) -> None:
+    with pytest.raises((TypeError, ValueError)):
+        _config(minimum_feature_cosine=value)
 
 
 def test_records_freeze_and_validate_values() -> None:
