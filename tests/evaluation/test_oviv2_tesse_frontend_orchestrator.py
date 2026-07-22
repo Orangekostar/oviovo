@@ -1165,6 +1165,132 @@ def test_layout_build_failure_cleans_private_staging_and_is_retryable(
     _assert_frontend_layout_absent(command)
 
 
+def test_root_prebinding_open_failure_cleans_staging_and_is_retryable(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config, manifest = _fixture(tmp_path)
+    source_results = Path(manifest["scenes"]["apartment"]["root"]) / "results"
+    source_results.mkdir()
+    command = build_commands(config, manifest, scenes=("apartment",))[0]
+    command.cache_dir.parent.parent.parent.mkdir(exist_ok=True)
+    original_open = frontend_module._open_directory_at
+    failed = False
+
+    def fail_first_root_open(parent_descriptor, name, path, *, role):
+        nonlocal failed
+        if role == "frontend cache root" and not failed:
+            failed = True
+            raise OSError("root staging open failed")
+        return original_open(parent_descriptor, name, path, role=role)
+
+    monkeypatch.setattr(frontend_module, "_open_directory_at", fail_first_root_open)
+
+    with pytest.raises(OSError, match="root staging open failed"):
+        frontend_module._prepare_output_layout((command,))
+
+    _assert_frontend_layout_absent(command)
+    retry = frontend_module._prepare_output_layout((command,))
+    frontend_module._cleanup_output_layout(retry)
+    _assert_frontend_layout_absent(command)
+
+
+def test_root_prebinding_unbindable_staging_reports_cleanup_uncertain(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config, manifest = _fixture(tmp_path)
+    command = build_commands(config, manifest, scenes=("apartment",))[0]
+    root = command.cache_dir.parent.parent
+    root.parent.mkdir(exist_ok=True)
+    original_open = frontend_module.os.open
+
+    def reject_root_staging(path, flags, *args, dir_fd=None, **kwargs):
+        if (
+            dir_fd is not None
+            and isinstance(path, str)
+            and path.startswith(f".{root.name}.")
+            and path.endswith(".staging")
+        ):
+            raise OSError("root staging cannot be bound")
+        return original_open(path, flags, *args, dir_fd=dir_fd, **kwargs)
+
+    monkeypatch.setattr(frontend_module.os, "open", reject_root_staging)
+
+    with pytest.raises(
+        frontend_module.FrontendLayoutCleanupUncertainError,
+        match="cleanup is uncertain",
+    ):
+        frontend_module._prepare_output_layout((command,))
+
+    assert not root.exists()
+    assert len(list(root.parent.glob(f".{root.name}.*.staging"))) == 1
+
+
+@pytest.mark.parametrize("failure_stage", ["open", "rename", "fsync"])
+def test_parent_component_creation_failure_cleans_staging_and_is_retryable(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    failure_stage: str,
+) -> None:
+    config, manifest = _fixture(tmp_path)
+    parent = tmp_path / "output-parent"
+    config["frontend_cache_root"] = str(parent / "frontend-cache")
+    (Path(manifest["scenes"]["apartment"]["root"]) / "results").mkdir()
+    command = build_commands(config, manifest, scenes=("apartment",))[0]
+    original_open = frontend_module.os.open
+    original_rename = frontend_module._rename_directory_no_replace_at
+    original_fsync = frontend_module.os.fsync
+    failed = False
+
+    def fail_parent_open(path, flags, *args, dir_fd=None, **kwargs):
+        nonlocal failed
+        if (
+            failure_stage == "open"
+            and not failed
+            and dir_fd is not None
+            and isinstance(path, str)
+            and path.startswith(f".{parent.name}.")
+            and path.endswith(".staging")
+        ):
+            failed = True
+            raise OSError("parent staging open failed")
+        return original_open(path, flags, *args, dir_fd=dir_fd, **kwargs)
+
+    def fail_parent_rename(directory_fd, source_name, target_name):
+        nonlocal failed
+        if failure_stage == "rename" and target_name == parent.name and not failed:
+            failed = True
+            raise OSError("parent staging rename failed")
+        return original_rename(directory_fd, source_name, target_name)
+
+    def fail_parent_fsync(descriptor):
+        nonlocal failed
+        if failure_stage == "fsync" and not failed:
+            failed = True
+            raise OSError("parent publication fsync failed")
+        return original_fsync(descriptor)
+
+    monkeypatch.setattr(frontend_module.os, "open", fail_parent_open)
+    monkeypatch.setattr(
+        frontend_module,
+        "_rename_directory_no_replace_at",
+        fail_parent_rename,
+    )
+    monkeypatch.setattr(frontend_module.os, "fsync", fail_parent_fsync)
+
+    with pytest.raises(OSError, match=f"parent .*{failure_stage} failed"):
+        frontend_module._prepare_output_layout((command,))
+
+    assert failed
+    assert not parent.exists()
+    assert not list(tmp_path.glob(f".{parent.name}.*.staging"))
+    assert not list(tmp_path.glob(f".{parent.name}.*.cleanup"))
+    retry = frontend_module._prepare_output_layout((command,))
+    frontend_module._cleanup_output_layout(retry)
+    _assert_frontend_layout_absent(command)
+
+
 @pytest.mark.parametrize("failure_mode", ["subprocess", "validator"])
 def test_runtime_failure_cleans_published_root_and_is_retryable(
     tmp_path: Path,

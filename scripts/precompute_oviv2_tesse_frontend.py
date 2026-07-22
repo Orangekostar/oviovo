@@ -1356,8 +1356,10 @@ def _open_directory_at(
 def _open_or_create_absolute_directory(path: Path) -> tuple[int, _DirectoryBinding]:
     absolute = Path(os.path.abspath(path))
     descriptor = os.open("/", _directory_open_flags())
+    current_path = Path("/")
     try:
         for name in absolute.parts[1:]:
+            current_path /= name
             try:
                 child = os.open(
                     name,
@@ -1372,11 +1374,23 @@ def _open_or_create_absolute_directory(path: Path) -> tuple[int, _DirectoryBindi
                     role="private parent staging",
                 )
                 os.mkdir(staging_name, dir_fd=descriptor)
-                child = os.open(
-                    staging_name,
-                    _directory_open_flags(),
-                    dir_fd=descriptor,
-                )
+                try:
+                    child, child_binding = _open_directory_at(
+                        descriptor,
+                        staging_name,
+                        current_path,
+                        role="new frontend cache parent component",
+                    )
+                except BaseException as open_error:
+                    try:
+                        _bind_quarantine_and_remove_created_directory(
+                            descriptor,
+                            staging_name,
+                            current_path,
+                        )
+                    except FrontendLayoutCleanupUncertainError as cleanup_error:
+                        raise cleanup_error from open_error
+                    raise
                 try:
                     _rename_directory_no_replace_at(
                         descriptor,
@@ -1384,8 +1398,16 @@ def _open_or_create_absolute_directory(path: Path) -> tuple[int, _DirectoryBindi
                         name,
                     )
                     os.fsync(descriptor)
-                except BaseException:
+                except BaseException as publication_error:
                     os.close(child)
+                    try:
+                        _quarantine_and_remove_bound_directory(
+                            descriptor,
+                            (name, staging_name),
+                            child_binding,
+                        )
+                    except FrontendLayoutCleanupUncertainError as cleanup_error:
+                        raise cleanup_error from publication_error
                     raise
             os.close(descriptor)
             descriptor = child
@@ -1549,6 +1571,35 @@ def _quarantine_and_remove_bound_directory(
         raise
     except BaseException as exc:
         raise FrontendLayoutCleanupUncertainError(binding.path) from exc
+
+
+def _bind_quarantine_and_remove_created_directory(
+    parent_descriptor: int,
+    name: str,
+    path: Path,
+) -> None:
+    try:
+        metadata = os.stat(name, dir_fd=parent_descriptor, follow_symlinks=False)
+        if not stat.S_ISDIR(metadata.st_mode):
+            raise ValueError("created frontend directory is no longer a directory")
+        descriptor, binding = _open_directory_at(
+            parent_descriptor,
+            name,
+            path,
+            role="created frontend directory cleanup",
+        )
+        try:
+            if not _binding_matches(metadata, binding):
+                raise ValueError("created frontend directory changed before cleanup")
+        finally:
+            os.close(descriptor)
+    except BaseException as exc:
+        raise FrontendLayoutCleanupUncertainError(path) from exc
+    _quarantine_and_remove_bound_directory(
+        parent_descriptor,
+        (name,),
+        binding,
+    )
 
 
 def _open_existing_absolute_directory(path: Path) -> tuple[int, _DirectoryBinding]:
@@ -1744,12 +1795,23 @@ def _prepare_output_layout(
             role="private frontend root staging",
         )
         os.mkdir(root_staging_name, dir_fd=parent_descriptor)
-        root_descriptor, root_binding = _open_directory_at(
-            parent_descriptor,
-            root_staging_name,
-            root,
-            role="frontend cache root",
-        )
+        try:
+            root_descriptor, root_binding = _open_directory_at(
+                parent_descriptor,
+                root_staging_name,
+                root,
+                role="frontend cache root",
+            )
+        except BaseException as open_error:
+            try:
+                _bind_quarantine_and_remove_created_directory(
+                    parent_descriptor,
+                    root_staging_name,
+                    root,
+                )
+            except FrontendLayoutCleanupUncertainError as cleanup_error:
+                raise cleanup_error from open_error
+            raise
         try:
             for command in selected:
                 scene_root = command.cache_dir.parent
