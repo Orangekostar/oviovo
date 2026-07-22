@@ -548,9 +548,9 @@ def finalize_occlusion_ablation(
         checkpoint_index=missing_paths,
         dataset_root=Path(dataset_root),
     )
-    if fresh_signed != signed:
+    if _result_bytes(fresh_signed) != signed_raw:
         raise ValueError("signed-depth result does not match fresh evaluator output")
-    if fresh_missing != missing:
+    if _result_bytes(fresh_missing) != missing_raw:
         raise ValueError("missing-as-absence result does not match fresh evaluator output")
 
     signed_headline = signed["headline_gate"]

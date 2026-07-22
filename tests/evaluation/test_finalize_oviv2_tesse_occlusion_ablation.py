@@ -430,6 +430,30 @@ def test_rejects_ablation_manifest_not_bound_to_same_parent(tmp_path: Path) -> N
         _finalize(fixture, tmp_path)
 
 
+def test_rejects_result_numeric_type_drift_from_fresh_evaluator(tmp_path: Path) -> None:
+    fixture = _fixture(tmp_path)
+    fresh_ablation = json.loads(json.dumps(fixture["ablation_result"]))
+    fixture["ablation_result"]["stress_layers"]["0.90"][
+        "false_release_count"
+    ] = 2.0
+    _write(
+        fixture["ablation_result_path"],
+        fixture["ablation_result"],
+        result=True,
+    )
+
+    def reevaluate(**kwargs: Any) -> dict[str, Any]:
+        indexes = tuple(Path(path) for path in kwargs["checkpoint_index"])
+        return (
+            fixture["signed_result"]
+            if indexes == fixture["signed_indexes"]
+            else fresh_ablation
+        )
+
+    with pytest.raises(ValueError, match="fresh evaluator output"):
+        _finalize(fixture, tmp_path, reevaluate=reevaluate)
+
+
 def test_direct_cli_help_loads_repository_package() -> None:
     result = subprocess.run(
         [
