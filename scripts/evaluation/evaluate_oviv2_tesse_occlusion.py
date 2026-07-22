@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 from collections import Counter, OrderedDict
 from collections.abc import Iterator, Mapping
+import csv
 from dataclasses import asdict, dataclass
 import hashlib
 import io
@@ -26,6 +27,7 @@ from src.oviv2.snapshot import VoxelMapSnapshot
 
 
 SnapshotKey = tuple[str, int]
+SourceFrameTime = tuple[int, int]
 _REPOSITORY_SOURCE_ROLES = frozenset(
     {"source_manifest", "schedule", "rgbd_lock"}
 )
@@ -368,6 +370,48 @@ def _expected_source_roles(metadata: Mapping[str, Any]) -> set[str]:
     return expected
 
 
+def _parse_source_frame_times(
+    content: bytes,
+    *,
+    scene: str,
+) -> dict[SnapshotKey, SourceFrameTime]:
+    try:
+        rows = list(csv.reader(io.StringIO(content.decode("utf-8")), strict=True))
+    except (UnicodeDecodeError, csv.Error) as error:
+        raise ValueError(f"{scene} source timestamps are invalid") from error
+    if not rows or rows[0] != [
+        "frame_index",
+        "sensor_timestamp_ns",
+        "relative_timestamp_ns",
+    ]:
+        raise ValueError(f"{scene} source timestamp header is invalid")
+    result: dict[SnapshotKey, SourceFrameTime] = {}
+    previous_sensor = -1
+    previous_relative = -1
+    for expected_frame, row in enumerate(rows[1:]):
+        if len(row) != 3 or any(
+            not value or any(character not in "0123456789" for character in value)
+            for value in row
+        ):
+            raise ValueError(f"{scene} source timestamp row is invalid")
+        frame_index, sensor_timestamp_ns, relative_timestamp_ns = map(int, row)
+        if (
+            frame_index != expected_frame
+            or sensor_timestamp_ns <= previous_sensor
+            or relative_timestamp_ns <= previous_relative
+        ):
+            raise ValueError(f"{scene} source timestamps are not strictly ordered")
+        result[(scene, frame_index)] = (
+            sensor_timestamp_ns,
+            relative_timestamp_ns,
+        )
+        previous_sensor = sensor_timestamp_ns
+        previous_relative = relative_timestamp_ns
+    if not result:
+        raise ValueError(f"{scene} source timestamps are empty")
+    return result
+
+
 def _source_path(
     raw_path: object,
     *,
@@ -394,7 +438,13 @@ def _load_target_package(
     target_dir: Path,
     *,
     dataset_root: Path,
-) -> tuple[dict[str, np.ndarray], dict[str, Any], _FileWitness, list[_FileWitness]]:
+) -> tuple[
+    dict[str, np.ndarray],
+    dict[str, Any],
+    _FileWitness,
+    list[_FileWitness],
+    dict[SnapshotKey, SourceFrameTime],
+]:
     dataset_root = Path(dataset_root)
     if not dataset_root.is_dir() or dataset_root.is_symlink():
         raise ValueError(f"dataset_root is not a real directory: {dataset_root}")
@@ -414,7 +464,11 @@ def _load_target_package(
         raise ValueError("target manifest identity mismatch")
 
     array_record = manifest.get("target_arrays")
-    if not isinstance(array_record, Mapping) or array_record.get("path") != "targets.npz":
+    if (
+        not isinstance(array_record, Mapping)
+        or set(array_record) != {"path", "sha256", "byte_count", "count", "arrays"}
+        or array_record.get("path") != "targets.npz"
+    ):
         raise ValueError("target array binding is invalid")
     target_content, target_witness = _read_bound_file(
         target_dir / "targets.npz", label="target arrays"
@@ -439,11 +493,22 @@ def _load_target_package(
         raise ValueError("target array count mismatch")
     for name, values in arrays.items():
         declaration = declared_arrays[name]
-        if not isinstance(declaration, Mapping) or declaration != {
-            "shape": list(values.shape),
-            "dtype": str(values.dtype),
-            "element_count": int(values.size),
+        if not isinstance(declaration, Mapping) or set(declaration) != {
+            "shape",
+            "dtype",
+            "element_count",
         }:
+            raise ValueError(f"target array declaration mismatch: {name}")
+        shape = declaration["shape"]
+        if (
+            not isinstance(shape, list)
+            or any(type(dimension) is not int or dimension < 0 for dimension in shape)
+            or shape != list(values.shape)
+            or not isinstance(declaration["dtype"], str)
+            or declaration["dtype"] != str(values.dtype)
+            or type(declaration["element_count"]) is not int
+            or declaration["element_count"] != values.size
+        ):
             raise ValueError(f"target array declaration mismatch: {name}")
 
     metadata = manifest.get("metadata")
@@ -452,6 +517,7 @@ def _load_target_package(
     validate_generated_target(arrays, metadata)
 
     source_witnesses: list[_FileWitness] = []
+    source_frame_times: dict[SnapshotKey, SourceFrameTime] = {}
     sources = manifest.get("sources")
     if not isinstance(sources, Mapping) or not sources:
         raise ValueError("target source bindings are missing")
@@ -466,7 +532,8 @@ def _load_target_package(
             "byte_count",
         }:
             raise ValueError(f"target source binding is invalid: {role}")
-        _, witness = _read_bound_file(
+        timestamp_role = role.endswith(".timestamps")
+        source_content, witness = _read_bound_file(
             _source_path(
                 raw_record["path"],
                 role=role,
@@ -474,7 +541,7 @@ def _load_target_package(
                 formal=formal,
             ),
             label=f"target source {role}",
-            capture_content=False,
+            capture_content=timestamp_role,
         )
         if not (
             isinstance(raw_record["sha256"], str)
@@ -483,8 +550,26 @@ def _load_target_package(
             and raw_record["byte_count"] == witness.byte_count
         ):
             raise ValueError(f"target source hash mismatch: {role}")
+        if timestamp_role:
+            scene = role.removesuffix(".timestamps")
+            source_frame_times.update(
+                _parse_source_frame_times(source_content, scene=scene)
+            )
         source_witnesses.append(witness)
-    return arrays, dict(metadata), manifest_witness, [target_witness, *source_witnesses]
+    expected_frame_keys = {
+        (scene, frame_index)
+        for scene in ("apartment", "office")
+        for frame_index in metadata["scene_frame_indices"][scene]
+    }
+    if set(source_frame_times) != expected_frame_keys:
+        raise ValueError("source timestamp frames do not match the frozen target")
+    return (
+        arrays,
+        dict(metadata),
+        manifest_witness,
+        [target_witness, *source_witnesses],
+        source_frame_times,
+    )
 
 
 def _canonical_relative_path(raw_path: object) -> Path:
@@ -590,6 +675,7 @@ def _load_checkpoint_snapshots(
     metadata: Mapping[str, Any],
     target_manifest_witness: _FileWitness,
     checkpoint_plan: Mapping[str, Any],
+    source_frame_times: Mapping[SnapshotKey, SourceFrameTime],
 ) -> tuple[
     Mapping[SnapshotKey, VoxelMapSnapshot],
     dict[str, Any],
@@ -672,12 +758,18 @@ def _load_checkpoint_snapshots(
             record["consumed_through_frame"],
             record["consumed_through_frame_exclusive"],
         )
+        source_time = source_frame_times.get(key)
         if not all(_plain_nonnegative_int(value) for value in causal_values) or not (
-            record["relative_timestamp_ns"] == required[key]
+            source_time is not None
+            and record["timestamp_ns"] == source_time[0]
+            and record["relative_timestamp_ns"] == source_time[1]
+            and record["relative_timestamp_ns"] == required[key]
             and record["consumed_through_frame"] == frame_index
             and record["consumed_through_frame_exclusive"] == frame_index + 1
         ):
-            raise ValueError(f"future or invalid causal boundary for checkpoint {key}")
+            raise ValueError(
+                f"future, source timestamp, or invalid causal boundary for checkpoint {key}"
+            )
         relative = _canonical_relative_path(record["path"])
         snapshot_path = checkpoint_index.parent / relative
         current = checkpoint_index.parent
@@ -997,7 +1089,13 @@ def evaluate_occlusion_package(
     output = Path(output_path) if output_path is not None else None
     if output is not None and os.path.lexists(output):
         raise ValueError(f"output already exists: {output}")
-    arrays, metadata, target_manifest_witness, target_witnesses = (
+    (
+        arrays,
+        metadata,
+        target_manifest_witness,
+        target_witnesses,
+        source_frame_times,
+    ) = (
         _load_target_package(
             Path(target_dir),
             dataset_root=Path(dataset_root),
@@ -1018,6 +1116,7 @@ def evaluate_occlusion_package(
         metadata=metadata,
         target_manifest_witness=target_manifest_witness,
         checkpoint_plan=checkpoint_plan,
+        source_frame_times=source_frame_times,
     )
     metrics = evaluate_fixed_anchor_ownership(
         arrays=arrays,

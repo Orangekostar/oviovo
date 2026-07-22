@@ -47,7 +47,15 @@ def _target_sources(root: Path) -> dict[str, Path]:
             "trajectory",
         ):
             path = root / f"{scene}.{role}.bin"
-            path.write_bytes(f"{scene}.{role}".encode("ascii"))
+            if role == "timestamps":
+                path.write_text(
+                    "frame_index,sensor_timestamp_ns,relative_timestamp_ns\n"
+                    "0,0,0\n"
+                    "1,1,1\n",
+                    encoding="utf-8",
+                )
+            else:
+                path.write_bytes(f"{scene}.{role}".encode("ascii"))
             paths[f"{scene}.{role}"] = path
         for frame_index in range(2):
             role = f"{scene}.depth.{frame_index:06d}"
@@ -318,7 +326,7 @@ def test_checkpoint_snapshots_are_loaded_lazily(
 ) -> None:
     targets, _ = _write_targets(tmp_path / "fixture")
     checkpoints = _write_checkpoint_index(tmp_path / "fixture", targets)
-    arrays, metadata, manifest_witness, _ = _load_target_package(
+    arrays, metadata, manifest_witness, _, source_frame_times = _load_target_package(
         targets,
         dataset_root=targets.parent / "sources",
     )
@@ -336,6 +344,7 @@ def test_checkpoint_snapshots_are_loaded_lazily(
         metadata=metadata,
         target_manifest_witness=manifest_witness,
         checkpoint_plan=plan,
+        source_frame_times=source_frame_times,
     )
 
     assert loaded == []
@@ -348,7 +357,7 @@ def test_rejects_internally_consistent_snapshot_replacement_after_index_check(
 ) -> None:
     targets, _ = _write_targets(tmp_path / "fixture")
     checkpoints = _write_checkpoint_index(tmp_path / "fixture", targets)
-    arrays, metadata, manifest_witness, _ = _load_target_package(
+    arrays, metadata, manifest_witness, _, source_frame_times = _load_target_package(
         targets,
         dataset_root=targets.parent / "sources",
     )
@@ -358,6 +367,7 @@ def test_rejects_internally_consistent_snapshot_replacement_after_index_check(
         metadata=metadata,
         target_manifest_witness=manifest_witness,
         checkpoint_plan=plan,
+        source_frame_times=source_frame_times,
     )
     index = json.loads(checkpoints.read_text(encoding="utf-8"))
     record = next(
@@ -631,6 +641,56 @@ def test_rejects_boolean_target_and_snapshot_schema_versions(
     index["snapshots"][0]["checksums_sha256"] = _sha256(checksums_path)
     checkpoints.write_text(json.dumps(index), encoding="utf-8")
     with pytest.raises(ValueError, match="schema_version must be an integer"):
+        evaluate_occlusion_package(
+            target_dir=targets,
+            checkpoint_index=checkpoints,
+            dataset_root=targets.parent / "sources",
+        )
+
+
+@pytest.mark.parametrize("field", ["shape", "element_count"])
+def test_rejects_noninteger_target_array_declarations(
+    tmp_path: Path,
+    field: str,
+) -> None:
+    targets, _ = _write_targets(tmp_path / field)
+    manifest_path = targets / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    declaration = next(iter(manifest["target_arrays"]["arrays"].values()))
+    if field == "shape":
+        declaration["shape"][0] = float(declaration["shape"][0])
+    else:
+        declaration["element_count"] = float(declaration["element_count"])
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="target array declaration"):
+        _load_target_package(
+            targets,
+            dataset_root=targets.parent / "sources",
+        )
+
+
+def test_rejects_snapshot_and_index_timestamp_relabel_against_frozen_source(
+    tmp_path: Path,
+) -> None:
+    targets, _ = _write_targets(tmp_path / "fixture")
+    checkpoints = _write_checkpoint_index(tmp_path / "fixture", targets)
+    index = json.loads(checkpoints.read_text(encoding="utf-8"))
+    record = index["snapshots"][0]
+    snapshot = checkpoints.parent / record["path"]
+    metadata_path = snapshot / "metadata.json"
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    metadata["timestamp"] = 999.0
+    metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
+    checksums_path = snapshot / "checksums.json"
+    checksums = json.loads(checksums_path.read_text(encoding="utf-8"))
+    checksums["metadata.json"] = _sha256(metadata_path)
+    checksums_path.write_text(json.dumps(checksums), encoding="utf-8")
+    record["checksums_sha256"] = _sha256(checksums_path)
+    record["timestamp_ns"] = 999_000_000_000
+    checkpoints.write_text(json.dumps(index), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="source timestamp"):
         evaluate_occlusion_package(
             target_dir=targets,
             checkpoint_index=checkpoints,
