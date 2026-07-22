@@ -12,11 +12,13 @@ import sys
 from typing import Any
 
 import pytest
+import numpy as np
 
 from scripts.evaluation.freeze_oviv2_tesse_cd import (
     ALGORITHM_EXCLUDED_FIELDS,
     STAGE3_LINEAGE_COMMIT,
     _canonical_json_bytes,
+    _validate_target_manifest,
     freeze,
 )
 
@@ -439,27 +441,46 @@ class Fixture:
                 self.repo / f"configs/{scene}.json", config
             )
 
-        self.targets = _write_bytes(
-            self.repo / "targets/common-v2/targets.npz", b"target fixture\n"
-        )
+        self.targets = self.repo / "targets/common-v2/targets.npz"
+        self.targets.parent.mkdir(parents=True, exist_ok=True)
+        target_arrays = {
+            "apartment.current_semantic.000000": np.asarray(
+                [[0, 0, 0, 1]], dtype=np.int64
+            ),
+            "office.current_semantic.000000": np.asarray(
+                [[0, 0, 0, 1]], dtype=np.int64
+            ),
+        }
+        np.savez_compressed(self.targets, **target_arrays)
         self.target_manifest = _write_json(
             self.targets.parent / "manifest.json",
             {
                 "schema_version": 1,
-                "manifest_id": "tesse_cd_common_v2_targets_v1",
+                "manifest_id": "tesse_cd_common_v2_targets",
                 "dataset": "TESSE-CD",
                 "status": "GENERATED",
                 "targets_generated": True,
                 "prediction_inputs_used": False,
                 "metadata": {
                     "protocol_complete": True,
+                    "scenes": ["apartment", "office"],
+                    "window_frames": 450,
+                    "voxel_size_m": 0.05,
                     "schedule": _record(self.schedule),
                 },
                 "target_arrays": {
                     "path": self.targets.name,
                     "sha256": _sha256(self.targets),
                     "byte_count": self.targets.stat().st_size,
-                    "count": 4,
+                    "count": len(target_arrays),
+                    "arrays": {
+                        name: {
+                            "shape": list(array.shape),
+                            "dtype": str(array.dtype),
+                            "element_count": int(array.size),
+                        }
+                        for name, array in sorted(target_arrays.items())
+                    },
                 },
             },
         )
@@ -484,9 +505,20 @@ class Fixture:
     ) -> None:
         candidates = []
         for index, values in enumerate(itertools.product(*GRID.values())):
+            candidate_id = f"candidate-{index:02d}"
             parameters = dict(zip(GRID, values, strict=True))
             candidate_config = _candidate_config(self.configs["apartment"], parameters)
             config_sha256 = _json_hash(candidate_config)
+            config_bytes = json.dumps(
+                candidate_config,
+                allow_nan=False,
+                separators=(",", ":"),
+                sort_keys=True,
+            ).encode()
+            config_path = _write_bytes(
+                self.selection_path.parent / f"configs/{candidate_id}.json",
+                config_bytes,
+            )
             metrics = (
                 {
                     "current_miou": 0.5,
@@ -502,17 +534,70 @@ class Fixture:
                     "recovery_frames": float(20 - index),
                 }
             )
+            run_manifest = {
+                "schema_version": 1,
+                "dataset": "TESSE-CD",
+                "method_id": "OVIV2",
+                "mode": "causal_checkpoints",
+                "scene": "apartment",
+                "algorithm_hash": candidate_config["algorithm_hash"],
+                "config": {
+                    "sha256": config_sha256,
+                    "byte_count": len(config_bytes),
+                },
+                "maintenance_parameters": {
+                    field: parameters[field] for field in sorted(GRID)
+                },
+            }
+            run_path = _write_json(
+                self.selection_path.parent
+                / f"candidates/{candidate_id}/run/run_manifest.json",
+                run_manifest,
+            )
+            evaluator_summary = {
+                "schema_version": 1,
+                "manifest_id": "tesse_cd_common_v2_scene_summary",
+                "dataset": "TESSE-CD",
+                "protocol": "tesse_cd_common_v2",
+                "status": "PASS",
+                "method": "OVIV2",
+                "mode": "causal_checkpoints",
+                "scene": "apartment",
+                "metrics": {
+                    "current_miou": metrics["current_miou"],
+                    "ghost_rate": metrics["ghost_rate"],
+                    "background_f5": metrics["background_f5_cm"],
+                    "recovery_frames": metrics["recovery_frames"],
+                },
+                "sources": {"target_manifest": _record(self.target_manifest)},
+            }
+            evaluator_path = _write_json(
+                self.selection_path.parent
+                / f"candidates/{candidate_id}/evaluation/summary.json",
+                evaluator_summary,
+            )
+
+            def relative_record(path: Path) -> dict[str, Any]:
+                record = _record(path)
+                record["path"] = path.relative_to(self.selection_path.parent).as_posix()
+                return record
+
             summary_payload = {
                 "schema_version": 1,
                 "status": "PASS",
                 "scene": "apartment",
+                "candidate_id": candidate_id,
                 "parameters": parameters,
                 "config_sha256": config_sha256,
                 "common_target_manifest_sha256": _sha256(self.target_manifest),
                 "metrics": metrics,
+                "config": relative_record(config_path),
+                "run_identity": relative_record(run_path),
+                "evaluator_summary": relative_record(evaluator_path),
             }
             summary_path = _write_json(
-                self.repo / f"tuning/apartment/candidate-{index:02d}.json",
+                self.selection_path.parent
+                / f"candidates/{candidate_id}/candidate_summary.json",
                 summary_payload,
             )
             candidates.append({**summary_payload, "summary": _record(summary_path)})
@@ -528,10 +613,25 @@ class Fixture:
         )
         selection = {
             "schema_version": 1,
+            "manifest_id": "oviv2_tesse_cd_apartment_selection_v1",
+            "dataset": "TESSE-CD",
             "method": "OVIV2",
+            "method_id": "OVIV2",
+            "status": "PASS",
             "scene": "apartment",
+            "base_config_sha256": _sha256(self.config_paths["apartment"]),
+            "grid": GRID,
             "parameter_grid": GRID,
+            "candidate_count": len(candidates),
+            "selection_rule": [
+                "maximize current_miou",
+                "minimize ghost_rate",
+                "maximize background_f5_cm",
+                "minimize recovery_frames",
+                "minimize config_sha256",
+            ],
             "common_target_manifest": _record(self.target_manifest),
+            "common_v2_target_manifest_sha256": _sha256(self.target_manifest),
             "freeze_bindings": {
                 "shared": {
                     "input_manifest": _record(self.input_manifest),
@@ -552,8 +652,12 @@ class Fixture:
                     for scene in SCENES
                 },
             },
+            "selected_candidate_id": winner["candidate_id"],
+            "selected_config": winner["config"],
             "candidates": candidates,
             "selected_config_sha256": selected_override or winner["config_sha256"],
+            "selected_maintenance_parameters": winner["parameters"],
+            "selected_metrics": winner["metrics"],
         }
         _write_json(self.selection_path, selection)
 
@@ -598,6 +702,22 @@ def fixture(tmp_path: Path) -> Fixture:
     return Fixture(tmp_path)
 
 
+def _rewrite_candidate_summary(
+    fixture: Fixture, index: int, mutate: Any
+) -> dict[str, Any]:
+    selection = json.loads(fixture.selection_path.read_text())
+    candidate = selection["candidates"][index]
+    mutate(candidate)
+    summary_path = Path(candidate["summary"]["path"])
+    _write_json(
+        summary_path,
+        {key: value for key, value in candidate.items() if key != "summary"},
+    )
+    candidate["summary"] = _record(summary_path)
+    _write_json(fixture.selection_path, selection)
+    return candidate
+
+
 def test_cli_direct_execution_resolves_repository_imports() -> None:
     result = subprocess.run(
         [sys.executable, "scripts/evaluation/freeze_oviv2_tesse_cd.py", "--help"],
@@ -608,6 +728,126 @@ def test_cli_direct_execution_resolves_repository_imports() -> None:
     )
 
     assert result.returncode == 0, result.stderr
+
+
+def test_freeze_requires_complete_formal_selection_schema(fixture: Fixture) -> None:
+    selection = json.loads(fixture.selection_path.read_text())
+    del selection["manifest_id"]
+    _write_json(fixture.selection_path, selection)
+
+    with pytest.raises(ValueError, match="selection identity"):
+        fixture.run()
+
+
+def test_freeze_rejects_candidate_metrics_not_backed_by_evaluator(
+    fixture: Fixture,
+) -> None:
+    def mutate(candidate: dict[str, Any]) -> None:
+        candidate["metrics"]["current_miou"] += 0.001
+
+    _rewrite_candidate_summary(fixture, 0, mutate)
+
+    with pytest.raises(ValueError, match="evaluator.*metric|metric.*evaluator"):
+        fixture.run()
+
+
+def test_freeze_rejects_incomplete_candidate_artifact_record(fixture: Fixture) -> None:
+    def mutate(candidate: dict[str, Any]) -> None:
+        del candidate["evaluator_summary"]["byte_count"]
+
+    _rewrite_candidate_summary(fixture, 0, mutate)
+
+    with pytest.raises(ValueError, match="artifact binding"):
+        fixture.run()
+
+
+def test_freeze_rejects_boolean_candidate_schema_version(fixture: Fixture) -> None:
+    _rewrite_candidate_summary(
+        fixture, 0, lambda candidate: candidate.__setitem__("schema_version", True)
+    )
+
+    with pytest.raises(ValueError, match="summary identity"):
+        fixture.run()
+
+
+@pytest.mark.parametrize(
+    ("metric", "invalid"),
+    [
+        ("current_miou", -0.1),
+        ("ghost_rate", 1.1),
+        ("background_f5_cm", 1.1),
+        ("recovery_frames", -1.0),
+    ],
+)
+def test_freeze_rejects_candidate_metric_outside_evaluator_domain(
+    fixture: Fixture, metric: str, invalid: float
+) -> None:
+    def mutate(candidate: dict[str, Any]) -> None:
+        candidate["metrics"][metric] = invalid
+        evaluator_path = fixture.selection_path.parent / candidate["evaluator_summary"]["path"]
+        evaluator = json.loads(evaluator_path.read_text())
+        evaluator_name = "background_f5" if metric == "background_f5_cm" else metric
+        evaluator["metrics"][evaluator_name] = invalid
+        _write_json(evaluator_path, evaluator)
+        candidate["evaluator_summary"] = {
+            **_record(evaluator_path),
+            "path": evaluator_path.relative_to(fixture.selection_path.parent).as_posix(),
+        }
+
+    _rewrite_candidate_summary(fixture, 0, mutate)
+
+    with pytest.raises(ValueError, match="metric domain"):
+        fixture.run()
+
+
+@pytest.mark.parametrize("artifact", ["config", "run_identity"])
+def test_freeze_rejects_self_consistent_candidate_artifact_identity_change(
+    fixture: Fixture, artifact: str
+) -> None:
+    def mutate(candidate: dict[str, Any]) -> None:
+        path = fixture.selection_path.parent / candidate[artifact]["path"]
+        payload = json.loads(path.read_text())
+        if artifact == "config":
+            payload["association_minimum_score"] = 0.99
+        else:
+            payload["algorithm_hash"] = "0" * 64
+        _write_json(path, payload)
+        candidate[artifact] = {
+            **_record(path),
+            "path": path.relative_to(fixture.selection_path.parent).as_posix(),
+        }
+
+    _rewrite_candidate_summary(fixture, 0, mutate)
+
+    with pytest.raises(ValueError, match="candidate.*identity|candidate.*config"):
+        fixture.run()
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        lambda value: value.__setitem__("manifest_id", "wrong"),
+        lambda value: value["metadata"].__setitem__("window_frames", 449),
+        lambda value: value["metadata"].__setitem__("voxel_size_m", 0.1),
+        lambda value: value["metadata"].__setitem__("scenes", ["apartment"]),
+        lambda value: value["target_arrays"]["arrays"][
+            "apartment.current_semantic.000000"
+        ].__setitem__("dtype", "int32"),
+    ],
+)
+def test_target_validation_matches_formal_common_v2_contract(
+    fixture: Fixture, mutation: Any
+) -> None:
+    target = json.loads(fixture.target_manifest.read_text())
+    mutation(target)
+    _write_json(fixture.target_manifest, target)
+
+    with pytest.raises(ValueError, match="common target|target array"):
+        _validate_target_manifest(
+            _record(fixture.target_manifest),
+            fixture.repo,
+            _record(fixture.schedule),
+        )
 
 
 def test_freeze_writes_selected_configs_and_complete_manifest(fixture: Fixture) -> None:
@@ -773,6 +1013,40 @@ def test_freeze_rejects_symlinked_declared_artifact(fixture: Fixture) -> None:
 
     with pytest.raises(ValueError, match="non-symlink"):
         fixture.run()
+
+
+def test_freeze_rejects_top_level_input_symlink_before_resolution(
+    fixture: Fixture,
+) -> None:
+    link = fixture.repo / "apartment-config-link.json"
+    link.symlink_to(fixture.config_paths["apartment"])
+    fixture.config_paths["apartment"] = link
+
+    with pytest.raises(ValueError, match="non-symlink"):
+        fixture.run()
+
+
+def test_freeze_rejects_dangling_output_symlink_before_resolution(
+    fixture: Fixture,
+) -> None:
+    fixture.output_apartment.symlink_to(fixture.repo / "dangling-output.json")
+
+    with pytest.raises((FileExistsError, ValueError), match="symlink|already exists"):
+        fixture.run()
+    assert not (fixture.repo / "dangling-output.json").exists()
+
+
+def test_freeze_rejects_symlinked_output_parent_before_resolution(
+    fixture: Fixture,
+) -> None:
+    real_output = fixture.repo / "real-output"
+    real_output.mkdir()
+    fixture.outputs.parent.mkdir()
+    fixture.outputs.symlink_to(real_output, target_is_directory=True)
+
+    with pytest.raises(ValueError, match="symlink"):
+        fixture.run()
+    assert list(real_output.iterdir()) == []
 
 
 def test_freeze_rejects_source_config_replaced_during_validation(
@@ -1038,12 +1312,24 @@ def test_freeze_rolls_back_its_publications_on_atomic_link_failure(
     calls = 0
     real_link = os.link
 
-    def fail_second(source: Path, destination: Path) -> None:
+    def fail_second(
+        source: str,
+        destination: str,
+        *,
+        source_dir_fd: int,
+        destination_dir_fd: int,
+    ) -> None:
         nonlocal calls
         calls += 1
         if calls == 2:
             raise OSError("injected publication failure")
-        real_link(source, destination)
+        real_link(
+            source,
+            destination,
+            src_dir_fd=source_dir_fd,
+            dst_dir_fd=destination_dir_fd,
+            follow_symlinks=False,
+        )
 
     monkeypatch.setattr(
         "scripts.evaluation.freeze_oviv2_tesse_cd._link_no_replace", fail_second
@@ -1065,12 +1351,24 @@ def test_freeze_rolls_back_if_prior_run_appears_during_publication(
     calls = 0
     real_link = os.link
 
-    def inject_prior_run(source: Path, destination: Path) -> None:
+    def inject_prior_run(
+        source: str,
+        destination: str,
+        *,
+        source_dir_fd: int,
+        destination_dir_fd: int,
+    ) -> None:
         nonlocal calls
         calls += 1
         if calls == 1:
             _write_bytes(fixture.outputs / "office/run1/metrics.json", b"raced\n")
-        real_link(source, destination)
+        real_link(
+            source,
+            destination,
+            src_dir_fd=source_dir_fd,
+            dst_dir_fd=destination_dir_fd,
+            follow_symlinks=False,
+        )
 
     monkeypatch.setattr(
         "scripts.evaluation.freeze_oviv2_tesse_cd._link_no_replace",
@@ -1084,6 +1382,45 @@ def test_freeze_rolls_back_if_prior_run_appears_during_publication(
     assert not fixture.output_office.exists()
     assert not fixture.output_manifest.exists()
     assert not fixture.prepared_manifest.exists()
+
+
+def test_freeze_rejects_output_parent_inode_swap_during_publication(
+    fixture: Fixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls = 0
+    real_link = os.link
+    swapped = fixture.repo / "outputs-swapped"
+
+    def swap_after_manifest_link(
+        source: str,
+        destination: str,
+        *,
+        source_dir_fd: int,
+        destination_dir_fd: int,
+    ) -> None:
+        nonlocal calls
+        calls += 1
+        real_link(
+            source,
+            destination,
+            src_dir_fd=source_dir_fd,
+            dst_dir_fd=destination_dir_fd,
+            follow_symlinks=False,
+        )
+        if calls == 3:
+            fixture.outputs.rename(swapped)
+            fixture.outputs.mkdir()
+
+    monkeypatch.setattr(
+        "scripts.evaluation.freeze_oviv2_tesse_cd._link_no_replace",
+        swap_after_manifest_link,
+    )
+
+    with pytest.raises(ValueError, match="parent directory changed"):
+        fixture.run()
+
+    assert not fixture.prepared_manifest.exists()
+    assert not (swapped / fixture.prepared_manifest.name).exists()
 
 
 @pytest.mark.parametrize(

@@ -14,12 +14,14 @@ import math
 import os
 from pathlib import Path
 import platform
+import secrets
 import shlex
 import stat
 import subprocess
 import sys
-import tempfile
 from typing import Any, Mapping, Sequence
+
+import numpy as np
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -109,15 +111,23 @@ def _load_json(
     return value
 
 
-def _require_regular_file(path: Path, role: str) -> None:
-    absolute = Path(os.path.abspath(path))
+def _absolute_path(path: Path) -> Path:
+    return Path(os.path.abspath(path))
+
+
+def _reject_symlink_components(path: Path, role: str) -> None:
+    absolute = _absolute_path(path)
     for component in (absolute, *absolute.parents):
         try:
             component_status = os.lstat(component)
         except FileNotFoundError:
             continue
         if stat.S_ISLNK(component_status.st_mode):
-            raise ValueError(f"{role} must be a regular non-symlink file: {path}")
+            raise ValueError(f"{role} must not contain symlink components: {path}")
+
+
+def _require_regular_file(path: Path, role: str) -> None:
+    _reject_symlink_components(path, f"{role} regular non-symlink file")
     try:
         status = os.lstat(path)
     except OSError as exc:
@@ -252,7 +262,7 @@ def _resolve_path(value: object, repo_root: Path, role: str) -> Path:
         raise ValueError(f"{role} path must be a non-empty string")
     path = Path(value).expanduser()
     candidate = repo_root / path if not path.is_absolute() else path
-    return Path(os.path.abspath(candidate))
+    return _absolute_path(candidate)
 
 
 def _verify_binding(
@@ -278,6 +288,18 @@ def _verify_binding(
     ):
         raise ValueError(f"{role} byte_count binding mismatch")
     return {"path": str(path), "sha256": actual_hash, "byte_count": byte_count}
+
+
+def _require_complete_file_binding(value: object, role: str) -> None:
+    if (
+        not isinstance(value, dict)
+        or set(value) != {"path", "sha256", "byte_count"}
+        or not isinstance(value.get("path"), str)
+        or not _is_sha256(value.get("sha256"))
+        or type(value.get("byte_count")) is not int
+        or value["byte_count"] < 0
+    ):
+        raise ValueError(f"{role} artifact binding is incomplete")
 
 
 def _git(repo_root: Path, *arguments: str, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -466,8 +488,9 @@ def _candidate_from_config(
 
 
 def _validate_target_manifest(
-    binding: object, repo_root: Path, schedule_sha256: str
+    binding: object, repo_root: Path, schedule_binding: Mapping[str, Any]
 ) -> tuple[dict[str, Any], dict[str, Any]]:
+    _require_complete_file_binding(binding, "common target manifest")
     target_binding = _verify_binding(
         binding, repo_root=repo_root, role="common target manifest"
     )
@@ -480,35 +503,85 @@ def _validate_target_manifest(
     metadata = target.get("metadata")
     arrays = target.get("target_arrays")
     if (
-        target.get("dataset") != "TESSE-CD"
+        type(target.get("schema_version")) is not int
+        or target.get("schema_version") != 1
+        or target.get("manifest_id") != "tesse_cd_common_v2_targets"
+        or target.get("dataset") != "TESSE-CD"
         or target.get("status") != "GENERATED"
         or target.get("targets_generated") is not True
         or target.get("prediction_inputs_used") is not False
         or not isinstance(metadata, dict)
         or metadata.get("protocol_complete") is not True
+        or type(metadata.get("window_frames")) is not int
+        or metadata.get("window_frames") != 450
+        or type(metadata.get("voxel_size_m")) not in (int, float)
+        or float(metadata.get("voxel_size_m")) != 0.05
+        or not isinstance(metadata.get("scenes"), list)
+        or set(metadata["scenes"]) != set(SCENES)
         or not isinstance(metadata.get("schedule"), dict)
-        or metadata["schedule"].get("sha256") != schedule_sha256
         or not isinstance(arrays, dict)
+        or set(arrays) != {"path", "sha256", "byte_count", "count", "arrays"}
         or not _is_sha256(arrays.get("sha256"))
         or type(arrays.get("byte_count")) is not int
         or type(arrays.get("count")) is not int
         or arrays["count"] <= 0
+        or not isinstance(arrays.get("arrays"), dict)
     ):
         raise ValueError("common target manifest is incomplete or unbound")
+    _require_complete_file_binding(metadata["schedule"], "common target schedule")
+    target_schedule = _verify_binding(
+        metadata["schedule"],
+        repo_root=target_path.parent,
+        role="common target schedule",
+        expected_path=Path(str(schedule_binding["path"])),
+    )
+    if (
+        target_schedule["sha256"] != schedule_binding.get("sha256")
+        or target_schedule["byte_count"] != schedule_binding.get("byte_count")
+    ):
+        raise ValueError("common target schedule binding mismatch")
     arrays_path = _resolve_path(
         arrays.get("path"), target_path.parent, "common target arrays"
     )
-    _require_regular_file(arrays_path, "common target arrays")
+    arrays_raw, arrays_sha256, arrays_byte_count = _read_snapshot(
+        arrays_path, "common target arrays", collect=True
+    )
+    assert arrays_raw is not None
     if (
-        _sha256(arrays_path) != arrays["sha256"]
-        or arrays_path.stat().st_size != arrays["byte_count"]
+        arrays_sha256 != arrays["sha256"]
+        or arrays_byte_count != arrays["byte_count"]
     ):
         raise ValueError("common target arrays checksum binding mismatch")
+    declarations = arrays["arrays"]
+    try:
+        with np.load(io.BytesIO(arrays_raw), allow_pickle=False) as bundle:
+            if set(bundle.files) != set(declarations):
+                raise ValueError("common target array names disagree with manifest")
+            for name in sorted(bundle.files):
+                value = np.asarray(bundle[name])
+                declaration = declarations.get(name)
+                if (
+                    not isinstance(declaration, dict)
+                    or set(declaration) != {"shape", "dtype", "element_count"}
+                    or list(value.shape) != declaration.get("shape")
+                    or str(value.dtype) != declaration.get("dtype")
+                    or int(value.size) != declaration.get("element_count")
+                    or not np.issubdtype(value.dtype, np.integer)
+                    or (value.size and not np.all(np.isfinite(value)))
+                ):
+                    raise ValueError(f"common target array declaration mismatch: {name}")
+    except (OSError, ValueError) as exc:
+        if isinstance(exc, ValueError) and str(exc).startswith("common target array"):
+            raise
+        raise ValueError("common target arrays are not a valid NPZ package") from exc
+    if len(declarations) != arrays["count"]:
+        raise ValueError("common target array count disagrees with manifest")
     arrays_binding = {
         "path": str(arrays_path),
         "sha256": arrays["sha256"],
         "byte_count": arrays["byte_count"],
         "count": arrays["count"],
+        "arrays": {name: declarations[name] for name in sorted(declarations)},
     }
     return target_binding, arrays_binding
 
@@ -518,14 +591,57 @@ def _validate_selection(
     selection: dict[str, Any],
     *,
     apartment_config: dict[str, Any],
+    apartment_config_sha256: str,
     repo_root: Path,
-    schedule_sha256: str,
+    schedule_binding: Mapping[str, Any],
 ) -> tuple[dict[str, Any], list[dict[str, Any]], dict[str, Any], dict[str, Any]]:
     expected_grid = {key: list(values) for key, values in TUNED_PARAMETERS.items()}
+    selection_keys = {
+        "schema_version",
+        "manifest_id",
+        "dataset",
+        "method",
+        "method_id",
+        "status",
+        "scene",
+        "base_config_sha256",
+        "grid",
+        "parameter_grid",
+        "candidate_count",
+        "selection_rule",
+        "common_target_manifest",
+        "common_v2_target_manifest_sha256",
+        "freeze_bindings",
+        "selected_candidate_id",
+        "selected_config",
+        "selected_config_sha256",
+        "selected_maintenance_parameters",
+        "selected_metrics",
+        "candidates",
+    }
+    expected_rule = [
+        "maximize current_miou",
+        "minimize ghost_rate",
+        "maximize background_f5_cm",
+        "minimize recovery_frames",
+        "minimize config_sha256",
+    ]
     if (
-        selection.get("schema_version") != 1
+        set(selection) != selection_keys
+        or type(selection.get("schema_version")) is not int
+        or selection.get("schema_version") != 1
+        or selection.get("manifest_id")
+        != "oviv2_tesse_cd_apartment_selection_v1"
+        or selection.get("dataset") != "TESSE-CD"
         or selection.get("method") != "OVIV2"
+        or selection.get("method_id") != "OVIV2"
+        or selection.get("status") != "PASS"
         or selection.get("scene") != "apartment"
+        or selection.get("base_config_sha256") != apartment_config_sha256
+        or selection.get("grid") != expected_grid
+        or type(selection.get("candidate_count")) is not int
+        or selection.get("candidate_count") != 18
+        or selection.get("selection_rule") != expected_rule
     ):
         raise ValueError("Apartment selection identity mismatch")
     raw_grid = selection.get("parameter_grid")
@@ -545,8 +661,13 @@ def _validate_selection(
     if not isinstance(candidates, list) or len(candidates) != 18:
         raise ValueError("Apartment selection must contain exactly 18 candidates")
     target_binding, arrays_binding = _validate_target_manifest(
-        selection.get("common_target_manifest"), repo_root, schedule_sha256
+        selection.get("common_target_manifest"), repo_root, schedule_binding
     )
+    if (
+        selection.get("common_v2_target_manifest_sha256")
+        != target_binding["sha256"]
+    ):
+        raise ValueError("Apartment selection target identity mismatch")
 
     expected_combinations = {
         tuple((name, value) for name, value in zip(TUNED_PARAMETERS, values, strict=True))
@@ -554,9 +675,36 @@ def _validate_selection(
     }
     observed_combinations: set[tuple[tuple[str, Any], ...]] = set()
     validated: list[dict[str, Any]] = []
+    candidate_keys = {
+        "schema_version",
+        "status",
+        "scene",
+        "candidate_id",
+        "parameters",
+        "config_sha256",
+        "common_target_manifest_sha256",
+        "metrics",
+        "config",
+        "run_identity",
+        "evaluator_summary",
+        "summary",
+    }
     for index, candidate in enumerate(candidates):
-        if not isinstance(candidate, dict):
+        if not isinstance(candidate, dict) or set(candidate) != candidate_keys:
             raise ValueError(f"candidate {index} must be an object")
+        candidate_id = f"candidate-{index:02d}"
+        if candidate.get("candidate_id") != candidate_id:
+            raise ValueError(f"candidate {index} identity mismatch")
+        for artifact_role in (
+            "config",
+            "run_identity",
+            "evaluator_summary",
+            "summary",
+        ):
+            _require_complete_file_binding(
+                candidate.get(artifact_role),
+                f"candidate {index} {artifact_role}",
+            )
         parameters = candidate.get("parameters")
         if not isinstance(parameters, dict) or set(parameters) != set(TUNED_PARAMETERS):
             raise ValueError(f"candidate {index} parameter grid is invalid")
@@ -570,6 +718,21 @@ def _validate_selection(
         config_sha256 = _json_hash(candidate_config)
         if candidate.get("config_sha256") != config_sha256:
             raise ValueError(f"candidate {index} config hash mismatch")
+        config_binding = _verify_binding(
+            candidate.get("config"),
+            repo_root=selection_path.parent,
+            role=f"candidate config {index}",
+        )
+        bound_config = _load_json(
+            Path(config_binding["path"]),
+            f"candidate config {index}",
+            expected_sha256=config_binding["sha256"],
+        )
+        if (
+            config_binding["sha256"] != config_sha256
+            or bound_config != candidate_config
+        ):
+            raise ValueError(f"candidate {index} config identity mismatch")
         metrics = candidate.get("metrics")
         if not isinstance(metrics, dict) or set(metrics) != {
             "current_miou",
@@ -582,13 +745,103 @@ def _validate_selection(
             key: _finite_metric(value, f"candidate {index} {key}")
             for key, value in metrics.items()
         }
+        if any(
+            not 0.0 <= normalized_metrics[name] <= 1.0
+            for name in ("current_miou", "ghost_rate", "background_f5_cm")
+        ) or not 0.0 <= normalized_metrics["recovery_frames"] <= 450.0:
+            raise ValueError(f"candidate {index} metric domain is invalid")
         if (
-            candidate.get("schema_version") != 1
+            type(candidate.get("schema_version")) is not int
+            or candidate.get("schema_version") != 1
             or candidate.get("status") != "PASS"
             or candidate.get("scene") != "apartment"
             or candidate.get("common_target_manifest_sha256") != target_binding["sha256"]
         ):
             raise ValueError(f"candidate {index} summary identity mismatch")
+        run_binding = _verify_binding(
+            candidate.get("run_identity"),
+            repo_root=selection_path.parent,
+            role=f"candidate run identity {index}",
+        )
+        run_identity = _load_json(
+            Path(run_binding["path"]),
+            f"candidate run identity {index}",
+            expected_sha256=run_binding["sha256"],
+        )
+        if (
+            type(run_identity.get("schema_version")) is not int
+            or run_identity.get("schema_version") != 1
+            or run_identity.get("dataset") != "TESSE-CD"
+            or run_identity.get("method_id") != "OVIV2"
+            or run_identity.get("mode") != "causal_checkpoints"
+            or run_identity.get("scene") != "apartment"
+            or run_identity.get("algorithm_hash")
+            != candidate_config["algorithm_hash"]
+            or run_identity.get("config")
+            != {
+                "sha256": config_sha256,
+                "byte_count": config_binding["byte_count"],
+            }
+            or run_identity.get("maintenance_parameters")
+            != {name: parameters[name] for name in sorted(TUNED_PARAMETERS)}
+        ):
+            raise ValueError(f"candidate {index} run identity mismatch")
+        evaluator_binding = _verify_binding(
+            candidate.get("evaluator_summary"),
+            repo_root=selection_path.parent,
+            role=f"candidate evaluator summary {index}",
+        )
+        evaluator = _load_json(
+            Path(evaluator_binding["path"]),
+            f"candidate evaluator summary {index}",
+            expected_sha256=evaluator_binding["sha256"],
+        )
+        evaluator_metrics = evaluator.get("metrics")
+        evaluator_sources = evaluator.get("sources")
+        if (
+            type(evaluator.get("schema_version")) is not int
+            or evaluator.get("schema_version") != 1
+            or evaluator.get("manifest_id")
+            != "tesse_cd_common_v2_scene_summary"
+            or evaluator.get("dataset") != "TESSE-CD"
+            or evaluator.get("protocol") != "tesse_cd_common_v2"
+            or evaluator.get("status") != "PASS"
+            or evaluator.get("method") != "OVIV2"
+            or evaluator.get("mode") != "causal_checkpoints"
+            or evaluator.get("scene") != "apartment"
+            or not isinstance(evaluator_metrics, dict)
+            or not isinstance(evaluator_sources, dict)
+        ):
+            raise ValueError(f"candidate {index} evaluator identity mismatch")
+        _require_complete_file_binding(
+            evaluator_sources.get("target_manifest"),
+            f"candidate {index} evaluator target",
+        )
+        evaluator_target = _verify_binding(
+            evaluator_sources.get("target_manifest"),
+            repo_root=selection_path.parent,
+            role=f"candidate evaluator target {index}",
+            expected_path=Path(target_binding["path"]),
+        )
+        if (
+            evaluator_target["sha256"] != target_binding["sha256"]
+            or evaluator_target["byte_count"] != target_binding["byte_count"]
+        ):
+            raise ValueError(f"candidate {index} evaluator target mismatch")
+        expected_evaluator_metrics = {
+            "current_miou": normalized_metrics["current_miou"],
+            "ghost_rate": normalized_metrics["ghost_rate"],
+            "background_f5": normalized_metrics["background_f5_cm"],
+            "recovery_frames": normalized_metrics["recovery_frames"],
+        }
+        if any(
+            _finite_metric(
+                evaluator_metrics.get(name), f"candidate {index} evaluator {name}"
+            )
+            != value
+            for name, value in expected_evaluator_metrics.items()
+        ):
+            raise ValueError(f"candidate {index} evaluator metric mismatch")
         summary_binding = _verify_binding(
             candidate.get("summary"),
             repo_root=repo_root,
@@ -604,9 +857,17 @@ def _validate_selection(
             raise ValueError(f"candidate summary {index} content mismatch")
         validated.append(
             {
+                "schema_version": 1,
+                "status": "PASS",
+                "scene": "apartment",
+                "candidate_id": candidate_id,
                 "parameters": dict(parameters),
                 "metrics": normalized_metrics,
                 "config_sha256": config_sha256,
+                "common_target_manifest_sha256": target_binding["sha256"],
+                "config": config_binding,
+                "run_identity": run_binding,
+                "evaluator_summary": evaluator_binding,
                 "summary": summary_binding,
             }
         )
@@ -624,6 +885,15 @@ def _validate_selection(
     )
     if selection.get("selected_config_sha256") != winner["config_sha256"]:
         raise ValueError("selected configuration is not the predeclared lexicographic winner")
+    selected_raw = candidates[int(winner["candidate_id"].rsplit("-", 1)[1])]
+    if (
+        selection.get("selected_candidate_id") != winner["candidate_id"]
+        or selection.get("selected_config") != selected_raw["config"]
+        or selection.get("selected_maintenance_parameters")
+        != winner["parameters"]
+        or selection.get("selected_metrics") != selected_raw["metrics"]
+    ):
+        raise ValueError("selected configuration evidence is inconsistent")
     return winner, validated, target_binding, arrays_binding
 
 
@@ -1314,13 +1584,15 @@ def _prepared_manifest_path(output_manifest: Path) -> Path:
 
 
 def _preflight_outputs(args: argparse.Namespace) -> tuple[str, Path]:
-    apartment = args.output_apartment_config.resolve()
-    office = args.output_office_config.resolve()
-    final_manifest = args.output_manifest.resolve()
+    apartment = _absolute_path(args.output_apartment_config)
+    office = _absolute_path(args.output_office_config)
+    final_manifest = _absolute_path(args.output_manifest)
     prepared_manifest = _prepared_manifest_path(final_manifest)
     destinations = (apartment, office, prepared_manifest, final_manifest)
     if len(set(destinations)) != 4:
         raise ValueError("freeze output paths must be distinct")
+    for destination in destinations:
+        _reject_symlink_components(destination, "freeze output path")
     if os.path.lexists(final_manifest):
         raise FileExistsError(f"freeze output already exists: {final_manifest}")
     config_exists = (os.path.lexists(apartment), os.path.lexists(office))
@@ -1405,7 +1677,7 @@ def _office_metric_sources(
         found.extend(
             str(path)
             for path in sorted(output_root.rglob("*"))
-            if path.is_file() and path.resolve() not in allowed_files
+            if path.is_file() and _absolute_path(path) not in allowed_files
         )
     return sorted(set(found))
 
@@ -1415,10 +1687,10 @@ def _mapping_commands(
 ) -> tuple[list[str], dict[str, str]]:
     commands: list[str] = []
     roots: dict[str, str] = {}
-    root = args.output_manifest.resolve().parent
+    root = _absolute_path(args.output_manifest).parent
     config_paths = {
-        "apartment": args.output_apartment_config.resolve(),
-        "office": args.output_office_config.resolve(),
+        "apartment": _absolute_path(args.output_apartment_config),
+        "office": _absolute_path(args.output_office_config),
     }
     for scene in SCENES:
         for repeat in (1, 2):
@@ -1439,8 +1711,20 @@ def _mapping_commands(
     return commands, roots
 
 
-def _link_no_replace(source: Path, destination: Path) -> None:
-    os.link(source, destination)
+def _link_no_replace(
+    source: str,
+    destination: str,
+    *,
+    source_dir_fd: int,
+    destination_dir_fd: int,
+) -> None:
+    os.link(
+        source,
+        destination,
+        src_dir_fd=source_dir_fd,
+        dst_dir_fd=destination_dir_fd,
+        follow_symlinks=False,
+    )
 
 
 def _revalidate_file_records(
@@ -1489,69 +1773,137 @@ def _publish_json_transaction(
     empty_root_guard: Path,
     allowed_root_entries: frozenset[Path] = frozenset(),
 ) -> None:
-    temporary: list[Path] = []
-    published: list[tuple[Path, int, int]] = []
+    guard = _absolute_path(empty_root_guard)
+    normalized = tuple((_absolute_path(path), content) for path, content in publications)
+    parents = {path.parent for path, _ in normalized} | {guard}
+    bound: dict[Path, tuple[int, int, int]] = {}
+    temporary: list[tuple[Path, str]] = []
+    published: list[tuple[Path, str, int, int]] = []
+
+    def assert_bound(parent: Path) -> None:
+        descriptor, device, inode = bound[parent]
+        try:
+            current = os.lstat(parent)
+        except OSError as exc:
+            raise ValueError(f"publication parent directory changed: {parent}") from exc
+        if (
+            not stat.S_ISDIR(current.st_mode)
+            or current.st_dev != device
+            or current.st_ino != inode
+            or os.fstat(descriptor).st_dev != device
+            or os.fstat(descriptor).st_ino != inode
+        ):
+            raise ValueError(f"publication parent directory changed: {parent}")
+
+    def assert_all_bound() -> None:
+        for parent in bound:
+            assert_bound(parent)
+
+    def guard_names() -> set[str]:
+        return set(os.listdir(bound[guard][0]))
+
+    allowed_names: set[str] = set()
+    for path in allowed_root_entries:
+        absolute = _absolute_path(path)
+        if absolute.parent != guard:
+            raise ValueError("allowed output entry must be inside the guarded root")
+        allowed_names.add(absolute.name)
+
+    def expected_guard_names() -> set[str]:
+        return (
+            allowed_names
+            | {name for parent, name in temporary if parent == guard}
+            | {name for parent, name, _, _ in published if parent == guard}
+        )
+
+    def assert_guard_clean() -> None:
+        if guard_names() != expected_guard_names():
+            raise FileExistsError(f"prior run output appeared under {guard}")
+
     try:
-        for destination, content in publications:
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            descriptor, raw_path = tempfile.mkstemp(
-                dir=destination.parent,
-                prefix=f".{destination.name}.",
-                suffix=".freeze-tmp",
+        for parent in sorted(parents):
+            parent.mkdir(parents=True, exist_ok=True)
+            _reject_symlink_components(parent, "publication parent")
+            descriptor = os.open(
+                parent,
+                os.O_RDONLY
+                | getattr(os, "O_DIRECTORY", 0)
+                | getattr(os, "O_CLOEXEC", 0)
+                | getattr(os, "O_NOFOLLOW", 0),
             )
-            temp_path = Path(raw_path)
-            temporary.append(temp_path)
+            status = os.fstat(descriptor)
+            bound[parent] = (descriptor, status.st_dev, status.st_ino)
+            assert_bound(parent)
+        assert_guard_clean()
+        for destination, content in normalized:
+            parent_fd = bound[destination.parent][0]
+            while True:
+                temp_name = (
+                    f".{destination.name}.{secrets.token_hex(8)}.freeze-tmp"
+                )
+                try:
+                    descriptor = os.open(
+                        temp_name,
+                        os.O_WRONLY
+                        | os.O_CREAT
+                        | os.O_EXCL
+                        | getattr(os, "O_CLOEXEC", 0)
+                        | getattr(os, "O_NOFOLLOW", 0),
+                        0o600,
+                        dir_fd=parent_fd,
+                    )
+                    break
+                except FileExistsError:
+                    continue
+            temporary.append((destination.parent, temp_name))
             with os.fdopen(descriptor, "wb") as stream:
                 stream.write(content)
                 stream.flush()
                 os.fsync(stream.fileno())
-        for (destination, _), temp_path in zip(publications, temporary, strict=True):
-            expected_root_entries = set(allowed_root_entries) | {
-                path.resolve()
-                for path in temporary
-                if path.exists() and path.parent.resolve() == empty_root_guard.resolve()
-            }
-            observed_root_entries = {
-                path.resolve() for path in empty_root_guard.iterdir()
-            }
-            if observed_root_entries != expected_root_entries:
-                raise FileExistsError(
-                    f"prior run output appeared under {empty_root_guard}"
-                )
-            _link_no_replace(temp_path, destination)
-            status = destination.stat(follow_symlinks=False)
-            published.append((destination, status.st_dev, status.st_ino))
-            temp_path.unlink()
-        expected_root_entries = set(allowed_root_entries) | {
-            destination.resolve()
-            for destination, _ in publications
-            if destination.parent.resolve() == empty_root_guard.resolve()
-        }
-        if {path.resolve() for path in empty_root_guard.iterdir()} != expected_root_entries:
-            raise FileExistsError(
-                f"prior run output appeared under {empty_root_guard}"
+        assert_guard_clean()
+        for (destination, _), (temp_parent, temp_name) in zip(
+            normalized, tuple(temporary), strict=True
+        ):
+            assert_all_bound()
+            assert_guard_clean()
+            parent_fd = bound[destination.parent][0]
+            _link_no_replace(
+                temp_name,
+                destination.name,
+                source_dir_fd=bound[temp_parent][0],
+                destination_dir_fd=parent_fd,
             )
-        for parent in {destination.parent for destination, _ in publications}:
-            descriptor = os.open(parent, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
-            try:
-                os.fsync(descriptor)
-            finally:
-                os.close(descriptor)
+            status = os.stat(destination.name, dir_fd=parent_fd, follow_symlinks=False)
+            published.append(
+                (destination.parent, destination.name, status.st_dev, status.st_ino)
+            )
+            assert_all_bound()
+            os.unlink(temp_name, dir_fd=bound[temp_parent][0])
+            temporary.remove((temp_parent, temp_name))
+            assert_guard_clean()
+        assert_all_bound()
+        assert_guard_clean()
+        for descriptor, _, _ in bound.values():
+            os.fsync(descriptor)
     except BaseException:
-        for destination, device, inode in reversed(published):
+        for parent, name, device, inode in reversed(published):
             try:
-                status = destination.stat(follow_symlinks=False)
+                status = os.stat(
+                    name, dir_fd=bound[parent][0], follow_symlinks=False
+                )
                 if status.st_dev == device and status.st_ino == inode:
-                    destination.unlink()
+                    os.unlink(name, dir_fd=bound[parent][0])
             except FileNotFoundError:
                 pass
         raise
     finally:
-        for path in temporary:
+        for parent, name in temporary:
             try:
-                path.unlink()
+                os.unlink(name, dir_fd=bound[parent][0])
             except FileNotFoundError:
                 pass
+        for descriptor, _, _ in bound.values():
+            os.close(descriptor)
 
 
 def _freeze_impl(
@@ -1561,14 +1913,15 @@ def _freeze_impl(
     repository_state: Mapping[str, Any] | None = None,
     environment: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    root = (repo_root or REPO_ROOT).resolve()
+    root = _absolute_path(repo_root or REPO_ROOT)
+    _reject_symlink_components(root, "repository root")
     phase, prepared_manifest_path = _preflight_outputs(args)
     repository = _validate_repository(
         repository_state if repository_state is not None else _inspect_repository(root)
     )
-    apartment_path = args.apartment_config.resolve()
-    office_path = args.office_config.resolve()
-    selection_path = args.apartment_selection.resolve()
+    apartment_path = _absolute_path(args.apartment_config)
+    office_path = _absolute_path(args.office_config)
+    selection_path = _absolute_path(args.apartment_selection)
     apartment, apartment_record = _load_json_record(apartment_path, "Apartment config")
     office, office_record = _load_json_record(office_path, "Office config")
     selection, selection_record = _load_json_record(
@@ -1576,9 +1929,9 @@ def _freeze_impl(
     )
     office_metrics = _office_metric_sources(
         office,
-        args.output_manifest.resolve().parent,
+        _absolute_path(args.output_manifest).parent,
         allowed_files=(
-            frozenset({prepared_manifest_path.resolve()})
+            frozenset({_absolute_path(prepared_manifest_path)})
             if phase == "finalize"
             else frozenset()
         ),
@@ -1594,8 +1947,9 @@ def _freeze_impl(
         selection_path,
         selection,
         apartment_config=apartment,
+        apartment_config_sha256=apartment_record["sha256"],
         repo_root=root,
-        schedule_sha256=shared["schedule"]["sha256"],
+        schedule_binding=shared["schedule"],
     )
     frozen_configs: dict[str, dict[str, Any]] = {}
     for scene, source in (("apartment", apartment), ("office", office)):
@@ -1689,7 +2043,7 @@ def _freeze_impl(
                     **apartment_record,
                 },
                 "frozen_config": {
-                    "path": str(args.output_apartment_config.resolve()),
+                    "path": str(_absolute_path(args.output_apartment_config)),
                     "sha256": _sha256_bytes(apartment_bytes),
                     "byte_count": len(apartment_bytes),
                 },
@@ -1700,7 +2054,7 @@ def _freeze_impl(
                     **office_record,
                 },
                 "frozen_config": {
-                    "path": str(args.output_office_config.resolve()),
+                    "path": str(_absolute_path(args.output_office_config)),
                     "sha256": _sha256_bytes(office_bytes),
                     "byte_count": len(office_bytes),
                 },
@@ -1721,15 +2075,15 @@ def _freeze_impl(
             "output_root_had_only_preparation": phase == "finalize",
             "scope": {
                 "office_config_recursive": True,
-                "output_root": str(args.output_manifest.resolve().parent),
+                "output_root": str(_absolute_path(args.output_manifest).parent),
                 "selection_scene": "apartment",
             },
         },
     }
     if phase == "finalize":
         expected_configs = {
-            args.output_apartment_config.resolve(): apartment_bytes,
-            args.output_office_config.resolve(): office_bytes,
+            _absolute_path(args.output_apartment_config): apartment_bytes,
+            _absolute_path(args.output_office_config): office_bytes,
         }
         for path, expected_bytes in expected_configs.items():
             if path.read_bytes() != expected_bytes:
@@ -1759,8 +2113,8 @@ def _freeze_impl(
     excluded_records = (
         frozenset(
             {
-                args.output_apartment_config.resolve(),
-                args.output_office_config.resolve(),
+                _absolute_path(args.output_apartment_config),
+                _absolute_path(args.output_office_config),
             }
         )
         if phase == "prepare"
@@ -1775,17 +2129,17 @@ def _freeze_impl(
     manifest_bytes = _canonical_json_bytes(manifest)
     if phase == "prepare":
         publications = (
-            (args.output_apartment_config.resolve(), apartment_bytes),
-            (args.output_office_config.resolve(), office_bytes),
+            (_absolute_path(args.output_apartment_config), apartment_bytes),
+            (_absolute_path(args.output_office_config), office_bytes),
             (prepared_manifest_path, manifest_bytes),
         )
         allowed_root_entries: frozenset[Path] = frozenset()
     else:
-        publications = ((args.output_manifest.resolve(), manifest_bytes),)
-        allowed_root_entries = frozenset({prepared_manifest_path.resolve()})
+        publications = ((_absolute_path(args.output_manifest), manifest_bytes),)
+        allowed_root_entries = frozenset({_absolute_path(prepared_manifest_path)})
     _publish_json_transaction(
         publications,
-        empty_root_guard=args.output_manifest.resolve().parent,
+        empty_root_guard=_absolute_path(args.output_manifest).parent,
         allowed_root_entries=allowed_root_entries,
     )
     return manifest
