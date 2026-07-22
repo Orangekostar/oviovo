@@ -172,14 +172,61 @@ def _resolve_beneath(raw_path: str, root: Path, *, label: str) -> Path:
     relative = _canonical_relative_path(raw_path, label=label)
     try:
         resolved_root = Path(root).resolve(strict=True)
-        candidate = (resolved_root / relative).resolve(strict=True)
+        if not resolved_root.is_dir():
+            raise ValueError(f"{label} root is not a directory")
     except OSError as error:
         raise ValueError(f"{label} does not exist beneath its root") from error
+    directory_flags = (
+        os.O_RDONLY
+        | getattr(os, "O_DIRECTORY", 0)
+        | getattr(os, "O_CLOEXEC", 0)
+    )
+    no_follow = os.O_NOFOLLOW
+    descriptors: list[int] = []
     try:
-        candidate.relative_to(resolved_root)
-    except ValueError as error:
-        raise ValueError(f"{label} escapes its root") from error
-    return candidate
+        current = os.open(resolved_root, directory_flags)
+        descriptors.append(current)
+        for index, component in enumerate(relative.parts):
+            observed = os.lstat(component, dir_fd=current)
+            if stat.S_ISLNK(observed.st_mode):
+                raise ValueError(
+                    f"{label} contains a symbolic link component: {component}"
+                )
+            terminal = index == len(relative.parts) - 1
+            if not terminal and not stat.S_ISDIR(observed.st_mode):
+                raise ValueError(f"{label} has a non-directory path component")
+            if terminal and not (
+                stat.S_ISREG(observed.st_mode) or stat.S_ISDIR(observed.st_mode)
+            ):
+                raise ValueError(f"{label} is not an ordinary file or directory")
+            flags = os.O_RDONLY | no_follow | getattr(os, "O_CLOEXEC", 0)
+            if stat.S_ISDIR(observed.st_mode):
+                flags |= getattr(os, "O_DIRECTORY", 0)
+            opened = os.open(component, flags, dir_fd=current)
+            try:
+                confirmed = os.fstat(opened)
+                if not (
+                    observed.st_dev == confirmed.st_dev
+                    and observed.st_ino == confirmed.st_ino
+                    and stat.S_IFMT(observed.st_mode)
+                    == stat.S_IFMT(confirmed.st_mode)
+                ):
+                    raise ValueError(f"{label} changed while resolving")
+                if not terminal:
+                    descriptors.append(opened)
+                    current = opened
+                    opened = -1
+            finally:
+                if opened >= 0:
+                    os.close(opened)
+    except ValueError:
+        raise
+    except OSError as error:
+        raise ValueError(f"{label} does not exist beneath its root") from error
+    finally:
+        for descriptor in reversed(descriptors):
+            os.close(descriptor)
+    return resolved_root / relative
 
 
 def resolve_dataset_source(relative_path: str, dataset_root: Path) -> Path:

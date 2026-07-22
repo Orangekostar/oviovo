@@ -1009,6 +1009,71 @@ def test_dataset_source_resolution_rejects_absolute_parent_and_symlink_escape(
             resolve_dataset_source(unsafe, dataset_root)
 
 
+@pytest.mark.parametrize("symlink_position", ["intermediate", "terminal"])
+def test_dataset_source_resolution_rejects_every_relative_symlink_component(
+    tmp_path: Path, symlink_position: str
+) -> None:
+    dataset_root = tmp_path / "dataset"
+    actual = dataset_root / "actual"
+    actual.mkdir(parents=True)
+    source = actual / "camera.json"
+    source.write_text("{}\n", encoding="utf-8")
+    if symlink_position == "intermediate":
+        (dataset_root / "logical").symlink_to(actual, target_is_directory=True)
+        relative = "logical/camera.json"
+    else:
+        (dataset_root / "camera.json").symlink_to(source)
+        relative = "camera.json"
+
+    with pytest.raises(ValueError, match="symbolic link"):
+        resolve_dataset_source(relative, dataset_root)
+
+
+def test_dataset_source_rejects_retargetable_symlink_before_initial_read(
+    tmp_path: Path,
+) -> None:
+    dataset_root = tmp_path / "dataset"
+    first = dataset_root / "first"
+    second = dataset_root / "second"
+    first.mkdir(parents=True)
+    second.mkdir()
+    (first / "camera.json").write_text('{"source": 1}\n', encoding="utf-8")
+    (second / "camera.json").write_text('{"source": 2}\n', encoding="utf-8")
+    logical = dataset_root / "logical"
+    logical.symlink_to(first, target_is_directory=True)
+
+    with pytest.raises(ValueError, match="symbolic link"):
+        path = resolve_dataset_source("logical/camera.json", dataset_root)
+        _, witness = occlusion_deriver._read_source_bytes(
+            path, serialized_path="logical/camera.json"
+        )
+        logical.unlink()
+        logical.symlink_to(second, target_is_directory=True)
+        occlusion_deriver._revalidate_source_witness(witness)
+
+
+def test_dataset_source_witness_rejects_intermediate_redirect_after_read(
+    tmp_path: Path,
+) -> None:
+    dataset_root = tmp_path / "dataset"
+    logical = dataset_root / "logical"
+    alternate = dataset_root / "alternate"
+    logical.mkdir(parents=True)
+    alternate.mkdir()
+    (logical / "camera.json").write_text('{"source": 1}\n', encoding="utf-8")
+    (alternate / "camera.json").write_text('{"source": 2}\n', encoding="utf-8")
+    path = resolve_dataset_source("logical/camera.json", dataset_root)
+    _, witness = occlusion_deriver._read_source_bytes(
+        path, serialized_path="logical/camera.json"
+    )
+
+    logical.rename(dataset_root / "original")
+    logical.symlink_to(alternate, target_is_directory=True)
+
+    with pytest.raises(ValueError, match="source changed before publication"):
+        occlusion_deriver._revalidate_source_witness(witness)
+
+
 def test_deriver_cli_can_run_directly_from_repository_root() -> None:
     completed = subprocess.run(
         [
