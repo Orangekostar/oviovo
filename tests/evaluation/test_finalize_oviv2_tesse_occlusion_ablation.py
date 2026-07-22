@@ -17,6 +17,14 @@ from scripts.evaluation.build_oviv2_tesse_occlusion_ablation import (
 from scripts.evaluation.finalize_oviv2_tesse_occlusion_ablation import (
     finalize_occlusion_ablation,
 )
+from scripts.evaluation.evaluate_oviv2_tesse_occlusion import (
+    evaluate_occlusion_package,
+)
+from tests.evaluation.test_evaluate_oviv2_tesse_occlusion import (
+    _split_schema2_indexes_by_scene as _split_real_indexes,
+    _write_checkpoint_index as _write_real_checkpoint_index,
+    _write_targets as _write_real_targets,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -70,39 +78,98 @@ def _config(scene: str) -> dict[str, Any]:
     return config
 
 
-def _parent_freeze(root: Path) -> tuple[Path, dict[str, dict[str, Any]]]:
-    configs = {scene: _config(scene) for scene in ("apartment", "office")}
+def _parent_freeze(
+    root: Path,
+    configs: dict[str, dict[str, Any]] | None = None,
+) -> tuple[Path, dict[str, dict[str, Any]]]:
+    configs = configs or {
+        scene: _config(scene) for scene in ("apartment", "office")
+    }
     scenes: dict[str, Any] = {}
     for scene, config in configs.items():
         path = root / f"{scene}.json"
         _write(path, config)
         raw = path.read_bytes()
         scenes[scene] = {
+            "rgbd": {"root": f"/data/{scene}", "frame_count": config["frame_count"]},
+            "vocabulary": {"json": {"sha256": "4" * 64}},
+            "cache": {
+                "frontend_manifest": {"sha256": "5" * 64},
+                "dense_manifest": {"sha256": "6" * 64},
+            },
+            "source_config": {
+                "path": str(path),
+                "sha256": _sha256_bytes(raw),
+                "byte_count": len(raw),
+            },
             "frozen_config": {
                 "path": str(path),
                 "sha256": _sha256_bytes(raw),
                 "byte_count": len(raw),
             }
         }
+    repository = {
+        "commit": "a" * 40,
+        "parents": ["b" * 40],
+        "tree": "c" * 40,
+        "commit_time_utc": "2026-07-22T00:00:00+00:00",
+        "clean": True,
+        "stage3_lineage_commit": "47962fbd9f363c0696cc5016f8ab42f83a3bf7e5",
+        "stage3_is_ancestor": True,
+    }
+    binding = lambda digit: {
+        "path": f"/evidence/{digit}.json",
+        "sha256": digit * 64,
+        "byte_count": 1,
+    }
     manifest = {
         "schema_version": 1,
         "freeze_id": "oviv2-tessecd-v1",
         "status": "FROZEN",
         "method": "OVIV2",
         "dataset": "TESSE-CD",
-        "repository": {
-            "commit": "a" * 40,
-            "stage3_is_ancestor": True,
-            "clean": True,
-        },
+        "repository": repository,
         "algorithm": {
             "sha256": configs["apartment"]["algorithm_hash"],
             "normalized_config": canonical_algorithm_config(configs["apartment"]),
         },
-        "selection": {"selected_parameters": {"absence_negative_support": 1.0}},
-        "shared_bindings": {"schedule": {"sha256": "3" * 64}},
-        "models": {"frontend": {}, "dense": {}},
+        "selection": {
+            **binding("7"),
+            "candidate_count": 18,
+            "selected_config_sha256": "8" * 64,
+            "selected_parameters": {"absence_negative_support": 1.0},
+            "selection_rule": ["maximize_current_miou"],
+            "candidates": [{} for _ in range(18)],
+        },
+        "shared_bindings": {
+            "input_manifest": binding("1"),
+            "source_manifest": binding("2"),
+            "schedule": binding("3"),
+            "camera": binding("4"),
+            "common_target_manifest": binding("5"),
+            "common_target_arrays": binding("6"),
+            "alias_map": binding("7"),
+            "evaluator": binding("8"),
+            "finalizers": {
+                "common_v2": binding("9"),
+                "official_t2": binding("a"),
+            },
+        },
+        "models": {
+            "frontend": {scene: {"model_sha256": "b" * 64} for scene in configs},
+            "dense": {scene: {"model_sha256": "c" * 64} for scene in configs},
+        },
         "scenes": scenes,
+        "environment": {"python": "3.12"},
+        "commands": {"mapping": []},
+        "output_roots": {"apartment": "/runs/apartment", "office": "/runs/office"},
+        "office_pre_freeze_audit": {
+            "metric_sources_found": [],
+            "output_root_was_empty": False,
+            "output_root_had_only_preparation": True,
+            "scope": {"selection_scene": "apartment"},
+        },
+        "preparation": {"manifest": binding("d"), "repository": repository},
     }
     path = root / "freeze.json"
     _write(path, manifest)
@@ -139,6 +206,26 @@ def _bundle(
         _write(index_path, payload)
         paths.append(index_path)
     return paths[0], paths[1]
+
+
+def _bind_real_indexes(
+    indexes: tuple[Path, Path],
+    configs: dict[str, dict[str, Any]],
+) -> tuple[Path, Path]:
+    for path in indexes:
+        index = json.loads(path.read_text(encoding="utf-8"))
+        scene = index["scene"]
+        config_path = path.parent / index["run_config"]["path"]
+        _write(config_path, configs[scene])
+        config_raw = config_path.read_bytes()
+        index["algorithm_hash"] = configs[scene]["algorithm_hash"]
+        index["run_config"] = {
+            "path": config_path.name,
+            "sha256": _sha256_bytes(config_raw),
+            "byte_count": len(config_raw),
+        }
+        _write(path, index)
+    return indexes
 
 
 def _headline(
@@ -383,6 +470,50 @@ def test_withholds_claim_when_gate_or_directional_comparison_fails(
 
 
 @pytest.mark.parametrize(
+    "false_releases, recall, supported_outcome",
+    [
+        (2, 1.0, "false_release_count"),
+        (0, 0.5, "retained_ownership_recall"),
+    ],
+)
+def test_each_directional_difference_independently_enables_bounded_claim(
+    tmp_path: Path,
+    false_releases: int,
+    recall: float,
+    supported_outcome: str,
+) -> None:
+    fixture = _fixture(tmp_path)
+    fixture["ablation_result"] = _result(
+        fixture["ablation_indexes"],
+        policy="missing_as_absence",
+        passed=False,
+        false_releases=false_releases,
+        recall=recall,
+    )
+    _write(
+        fixture["ablation_result_path"],
+        fixture["ablation_result"],
+        result=True,
+    )
+
+    final = _finalize(fixture, tmp_path)
+
+    eligibility = final["claim_eligibility"]
+    assert eligibility["eligible"] is True
+    assert eligibility["allowed_claims"][0]["supported_outcomes"] == [
+        supported_outcome
+    ]
+
+
+def test_rejects_reuse_of_signed_bundle_as_ablation_bundle(tmp_path: Path) -> None:
+    fixture = _fixture(tmp_path)
+    fixture["ablation_indexes"] = fixture["signed_indexes"]
+
+    with pytest.raises(ValueError, match="does not match its frozen config"):
+        _finalize(fixture, tmp_path)
+
+
+@pytest.mark.parametrize(
     "field, value, message",
     [
         ("target_manifest", {"sha256": "9" * 64, "byte_count": 123}, "target"),
@@ -454,6 +585,45 @@ def test_rejects_result_numeric_type_drift_from_fresh_evaluator(tmp_path: Path) 
         _finalize(fixture, tmp_path, reevaluate=reevaluate)
 
 
+@pytest.mark.parametrize("binding", ["ablation_config", "bundle_run_config"])
+def test_rejects_intermediate_symlink_in_relative_binding(
+    tmp_path: Path,
+    binding: str,
+) -> None:
+    fixture = _fixture(tmp_path)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    if binding == "ablation_config":
+        source = fixture["ablation_manifest"].parent / "apartment.json"
+        (outside / source.name).write_bytes(source.read_bytes())
+        (source.parent / "linked").symlink_to(outside, target_is_directory=True)
+        manifest = json.loads(fixture["ablation_manifest"].read_text())
+        manifest["scenes"]["apartment"]["ablation_config"]["path"] = (
+            "linked/apartment.json"
+        )
+        _write(fixture["ablation_manifest"], manifest)
+    else:
+        index_path = fixture["signed_indexes"][0]
+        index = json.loads(index_path.read_text())
+        config_path = index_path.parent / index["run_config"]["path"]
+        (outside / config_path.name).write_bytes(config_path.read_bytes())
+        (index_path.parent / "linked").symlink_to(outside, target_is_directory=True)
+        index["run_config"]["path"] = f"linked/{config_path.name}"
+        _write(index_path, index)
+        fixture["signed_result"]["checkpoint_index"][0] = {
+            "sha256": _sha256_bytes(index_path.read_bytes()),
+            "byte_count": index_path.stat().st_size,
+        }
+        _write(
+            fixture["signed_result_path"],
+            fixture["signed_result"],
+            result=True,
+        )
+
+    with pytest.raises(ValueError, match="symlink component"):
+        _finalize(fixture, tmp_path)
+
+
 def test_direct_cli_help_loads_repository_package() -> None:
     result = subprocess.run(
         [
@@ -471,3 +641,67 @@ def test_direct_cli_help_loads_repository_package() -> None:
     )
 
     assert result.returncode == 0, result.stderr
+
+
+def test_default_finalizer_consumes_real_evaluator_artifacts(tmp_path: Path) -> None:
+    targets, _ = _write_real_targets(tmp_path / "real-target")
+    signed_indexes = _split_real_indexes(
+        _write_real_checkpoint_index(tmp_path / "real-signed", targets)
+    )
+    index = json.loads(signed_indexes[0].read_text(encoding="utf-8"))
+    target_hash = index["target_manifest"]["sha256"]
+    plan_hash = index["evaluation_checkpoint_frames_sha256"]
+    signed_configs: dict[str, dict[str, Any]] = {}
+    for scene in ("apartment", "office"):
+        config = _config(scene)
+        config.update(
+            frame_count=2,
+            occlusion_target_manifest=str(targets / "manifest.json"),
+            occlusion_target_manifest_sha256=target_hash,
+            evaluation_checkpoint_frames=[0, 1],
+            evaluation_checkpoint_frames_sha256=plan_hash,
+        )
+        config["algorithm_hash"] = canonical_algorithm_hash(config)
+        signed_configs[scene] = config
+    _bind_real_indexes(signed_indexes, signed_configs)
+    parent, _ = _parent_freeze(tmp_path / "real-parent", signed_configs)
+    ablation_root = tmp_path / "real-ablation-config"
+    build_ablation(parent_freeze=parent, output_dir=ablation_root)
+    ablation_configs = {
+        scene: json.loads((ablation_root / f"{scene}.json").read_text())
+        for scene in ("apartment", "office")
+    }
+    ablation_indexes = _split_real_indexes(
+        _write_real_checkpoint_index(tmp_path / "real-ablation", targets)
+    )
+    _bind_real_indexes(ablation_indexes, ablation_configs)
+    signed_result = tmp_path / "real-signed-result.json"
+    ablation_result = tmp_path / "real-ablation-result.json"
+    evaluate_occlusion_package(
+        target_dir=targets,
+        checkpoint_index=signed_indexes,
+        dataset_root=targets.parent / "sources",
+        output_path=signed_result,
+    )
+    evaluate_occlusion_package(
+        target_dir=targets,
+        checkpoint_index=ablation_indexes,
+        dataset_root=targets.parent / "sources",
+        output_path=ablation_result,
+    )
+
+    final = finalize_occlusion_ablation(
+        parent_freeze=parent,
+        ablation_manifest=ablation_root / "manifest.json",
+        targets=targets,
+        dataset_root=targets.parent / "sources",
+        signed_result=signed_result,
+        signed_checkpoints=signed_indexes,
+        ablation_result=ablation_result,
+        ablation_checkpoints=ablation_indexes,
+        output_path=tmp_path / "real-final.json",
+    )
+
+    assert final["status"] == "PASS"
+    assert final["claim_eligibility"]["eligible"] is False
+    assert final["claim_eligibility"]["allowed_claims"] == []

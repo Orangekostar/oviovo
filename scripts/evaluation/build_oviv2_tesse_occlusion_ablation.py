@@ -34,6 +34,7 @@ SCENE_CONFIG_FIELDS = frozenset(
 MUTATED_FIELDS = frozenset({"algorithm_hash", "missing_observation_policy"})
 _FORBIDDEN_MARKERS = ("route3", "surface-observation", "stage4", "scannet200")
 _SHA256_HEX = frozenset("0123456789abcdef")
+_GIT_HEX = _SHA256_HEX
 
 
 def _strict_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -64,6 +65,59 @@ def _is_sha256(value: object) -> bool:
     )
 
 
+def _is_git_oid(value: object) -> bool:
+    return isinstance(value, str) and len(value) == 40 and set(value) <= _GIT_HEX
+
+
+def _complete_binding(value: object) -> bool:
+    return bool(
+        isinstance(value, Mapping)
+        and set(value) == {"path", "sha256", "byte_count"}
+        and isinstance(value.get("path"), str)
+        and value["path"]
+        and _is_sha256(value.get("sha256"))
+        and type(value.get("byte_count")) is int
+        and value["byte_count"] >= 0
+    )
+
+
+def _contains_complete_binding(value: object) -> bool:
+    return bool(
+        isinstance(value, Mapping)
+        and {"path", "sha256", "byte_count"} <= set(value)
+        and isinstance(value.get("path"), str)
+        and value["path"]
+        and _is_sha256(value.get("sha256"))
+        and type(value.get("byte_count")) is int
+        and value["byte_count"] >= 0
+    )
+
+
+def _valid_repository(value: object) -> bool:
+    if not isinstance(value, Mapping) or set(value) != {
+        "commit",
+        "parents",
+        "tree",
+        "commit_time_utc",
+        "clean",
+        "stage3_lineage_commit",
+        "stage3_is_ancestor",
+    }:
+        return False
+    parents = value.get("parents")
+    return bool(
+        _is_git_oid(value.get("commit"))
+        and isinstance(parents, list)
+        and all(_is_git_oid(parent) for parent in parents)
+        and _is_git_oid(value.get("tree"))
+        and isinstance(value.get("commit_time_utc"), str)
+        and value["commit_time_utc"]
+        and value.get("clean") is True
+        and value.get("stage3_lineage_commit") == STAGE3_LINEAGE_COMMIT
+        and value.get("stage3_is_ancestor") is True
+    )
+
+
 def _fingerprint(value: os.stat_result) -> tuple[int, int, int, int, int]:
     return (
         value.st_dev,
@@ -74,7 +128,19 @@ def _fingerprint(value: os.stat_result) -> tuple[int, int, int, int, int]:
     )
 
 
+def _reject_symlink_components(path: Path, role: str) -> None:
+    absolute = Path(os.path.abspath(path))
+    for component in (absolute, *absolute.parents):
+        try:
+            status = os.lstat(component)
+        except FileNotFoundError:
+            continue
+        if stat.S_ISLNK(status.st_mode):
+            raise ValueError(f"{role} must not contain a symlink component: {path}")
+
+
 def _read_regular_file(path: Path, role: str) -> bytes:
+    _reject_symlink_components(path, role)
     flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
     try:
         descriptor = os.open(path, flags)
@@ -203,6 +269,26 @@ def _validate_parent(
     *,
     manifest_path: Path,
 ) -> dict[str, dict[str, Any]]:
+    expected_fields = {
+        "schema_version",
+        "freeze_id",
+        "status",
+        "method",
+        "dataset",
+        "repository",
+        "algorithm",
+        "selection",
+        "scenes",
+        "shared_bindings",
+        "models",
+        "environment",
+        "commands",
+        "output_roots",
+        "office_pre_freeze_audit",
+        "preparation",
+    }
+    if set(manifest) != expected_fields:
+        raise ValueError("parent freeze fields do not match the FROZEN v1 contract")
     if not (
         manifest.get("schema_version") == 1
         and manifest.get("freeze_id") == "oviv2-tessecd-v1"
@@ -212,12 +298,87 @@ def _validate_parent(
     ):
         raise ValueError("parent freeze must be the FROZEN oviv2-tessecd-v1 manifest")
     repository = manifest.get("repository")
-    if not isinstance(repository, Mapping) or not (
-        isinstance(repository.get("commit"), str)
-        and len(repository["commit"]) == 40
-        and repository.get("stage3_is_ancestor") is True
-    ):
+    if not _valid_repository(repository):
         raise ValueError("parent freeze repository identity is invalid")
+    selection = manifest.get("selection")
+    if not isinstance(selection, Mapping) or set(selection) != {
+        "path",
+        "sha256",
+        "byte_count",
+        "candidate_count",
+        "selected_config_sha256",
+        "selected_parameters",
+        "selection_rule",
+        "candidates",
+    } or not (
+        _complete_binding(
+            {key: selection.get(key) for key in ("path", "sha256", "byte_count")}
+        )
+        and selection.get("candidate_count") == 18
+        and _is_sha256(selection.get("selected_config_sha256"))
+        and isinstance(selection.get("selected_parameters"), Mapping)
+        and bool(selection["selected_parameters"])
+        and isinstance(selection.get("selection_rule"), list)
+        and bool(selection["selection_rule"])
+        and isinstance(selection.get("candidates"), list)
+        and len(selection["candidates"]) == 18
+    ):
+        raise ValueError("parent freeze selection identity is invalid")
+    shared = manifest.get("shared_bindings")
+    shared_fields = {
+        "input_manifest",
+        "source_manifest",
+        "schedule",
+        "camera",
+        "common_target_manifest",
+        "common_target_arrays",
+        "alias_map",
+        "evaluator",
+        "finalizers",
+    }
+    if not isinstance(shared, Mapping) or set(shared) != shared_fields:
+        raise ValueError("parent freeze shared bindings are invalid")
+    if any(
+        not _contains_complete_binding(shared[field])
+        for field in shared_fields - {"finalizers"}
+    ):
+        raise ValueError("parent freeze shared bindings are incomplete")
+    finalizers = shared.get("finalizers")
+    if not isinstance(finalizers, Mapping) or set(finalizers) != {
+        "common_v2",
+        "official_t2",
+    } or any(not _complete_binding(binding) for binding in finalizers.values()):
+        raise ValueError("parent freeze finalizer bindings are invalid")
+    models = manifest.get("models")
+    if not isinstance(models, Mapping) or set(models) != {"frontend", "dense"}:
+        raise ValueError("parent freeze model identity is invalid")
+    if any(
+        not isinstance(models[role], Mapping)
+        or set(models[role]) != set(SCENES)
+        or any(
+            not isinstance(models[role][scene], Mapping) or not models[role][scene]
+            for scene in SCENES
+        )
+        for role in ("frontend", "dense")
+    ):
+        raise ValueError("parent freeze model identity is incomplete")
+    preparation = manifest.get("preparation")
+    if not isinstance(preparation, Mapping) or set(preparation) != {
+        "manifest",
+        "repository",
+    } or not (
+        _complete_binding(preparation.get("manifest"))
+        and _valid_repository(preparation.get("repository"))
+    ):
+        raise ValueError("parent freeze preparation identity is invalid")
+    for field in (
+        "environment",
+        "commands",
+        "output_roots",
+        "office_pre_freeze_audit",
+    ):
+        if not isinstance(manifest.get(field), Mapping) or not manifest[field]:
+            raise ValueError(f"parent freeze {field} is invalid")
     scenes = manifest.get("scenes")
     if not isinstance(scenes, Mapping) or set(scenes) != set(SCENES):
         raise ValueError("parent freeze must contain Apartment and Office exactly")
@@ -225,8 +386,24 @@ def _validate_parent(
     configs: dict[str, dict[str, Any]] = {}
     for scene in SCENES:
         scene_record = scenes[scene]
-        if not isinstance(scene_record, Mapping):
+        if not isinstance(scene_record, Mapping) or set(scene_record) != {
+            "rgbd",
+            "vocabulary",
+            "cache",
+            "source_config",
+            "frozen_config",
+        }:
             raise ValueError(f"parent {scene} scene record is invalid")
+        if any(
+            not isinstance(scene_record[field], Mapping) or not scene_record[field]
+            for field in ("rgbd", "vocabulary", "cache")
+        ) or not (
+            _complete_binding(scene_record.get("source_config"))
+            and _complete_binding(scene_record.get("frozen_config"))
+            and {"frontend_manifest", "dense_manifest"}
+            <= set(scene_record["cache"])
+        ):
+            raise ValueError(f"parent {scene} scene record is incomplete")
         config, _, _ = _load_bound_config(
             scene_record.get("frozen_config"),
             manifest_path=manifest_path,

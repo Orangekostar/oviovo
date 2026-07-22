@@ -68,32 +68,85 @@ def _write_parent_freeze(root: Path) -> tuple[Path, dict[str, dict[str, Any]]]:
         _write_json(path, config)
         raw = path.read_bytes()
         scene_records[scene] = {
+            "rgbd": {"root": f"/data/{scene}", "frame_count": config["frame_count"]},
+            "vocabulary": {"json": {"sha256": "4" * 64}},
+            "cache": {
+                "frontend_manifest": {"sha256": "5" * 64},
+                "dense_manifest": {"sha256": "6" * 64},
+            },
+            "source_config": {
+                "path": str(path),
+                "sha256": _sha256_bytes(raw),
+                "byte_count": len(raw),
+            },
             "frozen_config": {
                 "path": str(path),
                 "sha256": _sha256_bytes(raw),
                 "byte_count": len(raw),
             }
         }
+    repository = {
+        "commit": "a" * 40,
+        "parents": ["b" * 40],
+        "tree": "c" * 40,
+        "commit_time_utc": "2026-07-22T00:00:00+00:00",
+        "clean": True,
+        "stage3_lineage_commit": "47962fbd9f363c0696cc5016f8ab42f83a3bf7e5",
+        "stage3_is_ancestor": True,
+    }
+    binding = lambda digit: {
+        "path": f"/evidence/{digit}.json",
+        "sha256": digit * 64,
+        "byte_count": 1,
+    }
     manifest = {
         "schema_version": 1,
         "freeze_id": "oviv2-tessecd-v1",
         "status": "FROZEN",
         "method": "OVIV2",
         "dataset": "TESSE-CD",
-        "repository": {
-            "commit": "a" * 40,
-            "stage3_lineage_commit": "47962fbd9f363c0696cc5016f8ab42f83a3bf7e5",
-            "stage3_is_ancestor": True,
-            "clean": True,
-        },
+        "repository": repository,
         "algorithm": {
             "sha256": configs["apartment"]["algorithm_hash"],
             "normalized_config": canonical_algorithm_config(configs["apartment"]),
         },
-        "selection": {"selected_parameters": {"absence_negative_support": 1.0}},
-        "shared_bindings": {"schedule": {"sha256": "3" * 64}},
-        "models": {"frontend": {}, "dense": {}},
+        "selection": {
+            **binding("7"),
+            "candidate_count": 18,
+            "selected_config_sha256": "8" * 64,
+            "selected_parameters": {"absence_negative_support": 1.0},
+            "selection_rule": ["maximize_current_miou"],
+            "candidates": [{} for _ in range(18)],
+        },
+        "shared_bindings": {
+            "input_manifest": binding("1"),
+            "source_manifest": binding("2"),
+            "schedule": binding("3"),
+            "camera": binding("4"),
+            "common_target_manifest": binding("5"),
+            "common_target_arrays": binding("6"),
+            "alias_map": binding("7"),
+            "evaluator": binding("8"),
+            "finalizers": {
+                "common_v2": binding("9"),
+                "official_t2": binding("a"),
+            },
+        },
+        "models": {
+            "frontend": {scene: {"model_sha256": "b" * 64} for scene in configs},
+            "dense": {scene: {"model_sha256": "c" * 64} for scene in configs},
+        },
         "scenes": scene_records,
+        "environment": {"python": "3.12"},
+        "commands": {"mapping": []},
+        "output_roots": {"apartment": "/runs/apartment", "office": "/runs/office"},
+        "office_pre_freeze_audit": {
+            "metric_sources_found": [],
+            "output_root_was_empty": False,
+            "output_root_had_only_preparation": True,
+            "scope": {"selection_scene": "apartment"},
+        },
+        "preparation": {"manifest": binding("d"), "repository": repository},
     }
     path = root / "freeze.json"
     _write_json(path, manifest)
@@ -169,6 +222,38 @@ def test_builds_parent_bound_ablation_and_changes_only_policy_and_hash(
                 "algorithm_hash", "0" * 64
             ),
             "algorithm_hash",
+        ),
+        (
+            lambda manifest, configs: manifest["repository"].__setitem__(
+                "clean", False
+            ),
+            "repository",
+        ),
+        (
+            lambda manifest, configs: manifest["repository"].__setitem__(
+                "commit", "g" * 40
+            ),
+            "repository",
+        ),
+        (
+            lambda manifest, configs: manifest.pop("selection"),
+            "parent freeze fields",
+        ),
+        (
+            lambda manifest, configs: manifest.pop("shared_bindings"),
+            "parent freeze fields",
+        ),
+        (
+            lambda manifest, configs: manifest.pop("models"),
+            "parent freeze fields",
+        ),
+        (
+            lambda manifest, configs: manifest.pop("preparation"),
+            "parent freeze fields",
+        ),
+        (
+            lambda manifest, configs: manifest["scenes"]["office"].pop("cache"),
+            "scene record",
         ),
     ],
 )
