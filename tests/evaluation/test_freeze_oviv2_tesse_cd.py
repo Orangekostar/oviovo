@@ -19,9 +19,14 @@ from scripts.evaluation.freeze_oviv2_tesse_cd import (
     ALGORITHM_EXCLUDED_FIELDS,
     PublicationUncertainError,
     STAGE3_LINEAGE_COMMIT,
+    _algorithm_hash as _freeze_algorithm_hash,
     _canonical_json_bytes,
+    _validate_source_configs,
     _validate_target_manifest,
     freeze,
+)
+from scripts.evaluation.evaluate_oviv2_tesse_occlusion import (
+    canonical_algorithm_hash as _runner_algorithm_hash,
 )
 
 
@@ -87,6 +92,34 @@ def _candidate_config(base: dict[str, Any], parameters: dict[str, float]) -> dic
     result.update(parameters)
     result["algorithm_hash"] = _algorithm_hash(result)
     return result
+
+
+def test_freeze_uses_runner_hash_contract_for_occlusion_target_path() -> None:
+    configs: dict[str, dict[str, Any]] = {}
+    for scene in SCENES:
+        config: dict[str, Any] = {
+            "schema_version": 1,
+            "dataset": "TESSE-CD",
+            "method_id": "OVIV2",
+            "scene": scene,
+            "stage3_lineage_commit": STAGE3_LINEAGE_COMMIT,
+            "missing_observation_policy": "signed_depth",
+            "occlusion_target_manifest": f"/replica/{scene}/manifest.json",
+            "occlusion_target_manifest_sha256": "1" * 64,
+            "evaluation_checkpoint_frames": [0, 1],
+            "evaluation_checkpoint_frames_sha256": "2" * 64,
+            "frame_count": 2,
+        }
+        config["algorithm_hash"] = _runner_algorithm_hash(config)
+        configs[scene] = config
+
+    assert _freeze_algorithm_hash(configs["apartment"]) == configs["apartment"][
+        "algorithm_hash"
+    ]
+    assert _freeze_algorithm_hash(configs["office"]) == configs["office"][
+        "algorithm_hash"
+    ]
+    _validate_source_configs(configs["apartment"], configs["office"])
 
 
 class Fixture:

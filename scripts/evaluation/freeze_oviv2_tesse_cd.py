@@ -45,6 +45,7 @@ ALGORITHM_EXCLUDED_FIELDS = frozenset(
         "dense_cache_dir",
         "dense_manifest",
         "evaluation_checkpoint_frames",
+        "occlusion_target_manifest",
         "vocabulary_json",
         "vocabulary_txt",
     }
