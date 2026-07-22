@@ -49,6 +49,7 @@ SCENE_CONFIG_FIELDS = frozenset(
         "dense_cache_dir",
         "dense_manifest",
         "evaluation_checkpoint_frames",
+        "occlusion_target_manifest",
         "vocabulary_json",
         "vocabulary_txt",
     }
@@ -394,6 +395,53 @@ def _checkpoint_record(
     }
 
 
+def _compact_checkpoint_record(
+    checkpoint: TesseCausalCheckpoint,
+    *,
+    scene: str,
+    run_root: Path,
+    checkpoint_root: Path,
+) -> dict[str, Any]:
+    return {
+        "scene": scene,
+        "frame_index": checkpoint.frame_index,
+        "timestamp_ns": checkpoint.timestamp_ns,
+        "relative_timestamp_ns": checkpoint.relative_timestamp_ns,
+        "consumed_through_frame": checkpoint.frame_index,
+        "consumed_through_frame_exclusive": checkpoint.frame_index + 1,
+        "event_ids": list(checkpoint.event_ids),
+        "roles": list(checkpoint.roles),
+        "format": "oviv2_compact_ownership_checkpoint",
+        "ownership_checkpoint": _tree_record(
+            checkpoint_root / "ownership_checkpoint",
+            relative_to=run_root,
+        ),
+    }
+
+
+def _occlusion_index_record(
+    checkpoint: TesseCausalCheckpoint,
+    *,
+    scene: str,
+    run_root: Path,
+    snapshot_root: Path,
+    checkpoint_format: str,
+) -> dict[str, Any]:
+    checksums = snapshot_root / "checksums.json"
+    _require_regular_file(checksums, "checkpoint checksum manifest")
+    return {
+        "scene": scene,
+        "frame_index": checkpoint.frame_index,
+        "timestamp_ns": checkpoint.timestamp_ns,
+        "relative_timestamp_ns": checkpoint.relative_timestamp_ns,
+        "consumed_through_frame": checkpoint.frame_index,
+        "consumed_through_frame_exclusive": checkpoint.frame_index + 1,
+        "format": checkpoint_format,
+        "path": snapshot_root.relative_to(run_root).as_posix(),
+        "checksums_sha256": _sha256(checksums),
+    }
+
+
 def _export_paths(
     value: Mapping[str, Any] | None,
     *,
@@ -535,6 +583,17 @@ def run(
             frame_count=frame_count,
         )
     )
+    target_manifest_path = _resolve_path(config.get("occlusion_target_manifest", ""))
+    target_manifest_sha256 = config.get("occlusion_target_manifest_sha256")
+    checkpoint_plan_sha256 = config.get("evaluation_checkpoint_frames_sha256")
+    if not _is_sha256(target_manifest_sha256):
+        raise ValueError("occlusion_target_manifest_sha256 is invalid")
+    if not _is_sha256(checkpoint_plan_sha256):
+        raise ValueError("evaluation_checkpoint_frames_sha256 is invalid")
+    _require_regular_file(target_manifest_path, "occlusion target manifest")
+    source_target_manifest_bytes = target_manifest_path.read_bytes()
+    if _sha256_bytes(source_target_manifest_bytes) != target_manifest_sha256:
+        raise ValueError("occlusion target manifest checksum binding mismatch")
     destination = Path(output).absolute()
     if destination.exists() or destination.is_symlink():
         raise FileExistsError(destination)
@@ -574,6 +633,7 @@ def run(
         caches = dependencies.cache_loader_factory(config, dataset)
         runtime = dependencies.runtime_factory(config, caches)
         checkpoint_records: list[dict[str, Any]] = []
+        occlusion_records: list[dict[str, Any]] = []
         exported_sources: dict[int, dict[str, Any]] = {}
         trajectory_rows: list[Mapping[str, Any]] = []
         captured: list[int] = []
@@ -599,7 +659,23 @@ def run(
                 / f"{frame_index:08d}-{checkpoint.timestamp_ns}"
             )
             checkpoint_root.mkdir(parents=True)
-            snapshot = runtime.commit_new(checkpoint_root / "voxel_snapshot")
+            if frame_index in official_frame_set:
+                snapshot = runtime.commit_new(checkpoint_root / "voxel_snapshot")
+                checkpoint_format = "oviv2_voxel_map_snapshot"
+                snapshot_root = checkpoint_root / "voxel_snapshot"
+            else:
+                commit_compact = getattr(
+                    runtime, "commit_compact_ownership_new", None
+                )
+                if not callable(commit_compact):
+                    raise ValueError(
+                        "runtime does not support compact ownership checkpoints"
+                    )
+                snapshot = commit_compact(
+                    checkpoint_root / "ownership_checkpoint"
+                )
+                checkpoint_format = "oviv2_compact_ownership_checkpoint"
+                snapshot_root = checkpoint_root / "ownership_checkpoint"
             if int(snapshot.metadata.frame_id) != frame_index:
                 raise ValueError("committed snapshot frame does not match checkpoint")
             snapshot_timestamp = float(snapshot.metadata.timestamp)
@@ -610,28 +686,35 @@ def run(
                 atol=1e-9,
             ):
                 raise ValueError("committed snapshot timestamp does not match checkpoint")
-            export_result = dependencies.checkpoint_exporter(
-                snapshot,
-                checkpoint,
-                checkpoint_root,
-                {
-                    "config": config,
-                    "dataset": dataset,
-                    "caches": caches,
-                },
-            )
-            neutral_snapshot, neutral_entities, rows = _export_paths(
-                export_result,
-                checkpoint_root=checkpoint_root,
-            )
             if frame_index in official_frame_set:
+                export_result = dependencies.checkpoint_exporter(
+                    snapshot,
+                    checkpoint,
+                    checkpoint_root,
+                    {
+                        "config": config,
+                        "dataset": dataset,
+                        "caches": caches,
+                    },
+                )
+                neutral_snapshot, neutral_entities, rows = _export_paths(
+                    export_result,
+                    checkpoint_root=checkpoint_root,
+                )
                 trajectory_rows.extend(rows)
-            record = _checkpoint_record(
-                checkpoint,
-                scene=scene,
-                run_root=staging,
-                checkpoint_root=checkpoint_root,
-            )
+                record = _checkpoint_record(
+                    checkpoint,
+                    scene=scene,
+                    run_root=staging,
+                    checkpoint_root=checkpoint_root,
+                )
+            else:
+                record = _compact_checkpoint_record(
+                    checkpoint,
+                    scene=scene,
+                    run_root=staging,
+                    checkpoint_root=checkpoint_root,
+                )
             status_path = checkpoint_root / "checkpoint_status.json"
             _write_json(
                 status_path,
@@ -646,32 +729,44 @@ def run(
                     "consumed_through_frame_exclusive": checkpoint.frame_index + 1,
                 },
             )
-            record.update(
-                {
-                    "checkpoint_status": _file_record(
-                        status_path,
-                        relative_to=staging,
-                    ),
-                    "neutral_snapshot": _file_record(
-                        neutral_snapshot,
-                        relative_to=staging,
-                    ),
-                    "neutral_entities": _file_record(
-                        neutral_entities,
-                        relative_to=staging,
-                    ),
-                }
+            record["checkpoint_status"] = _file_record(
+                status_path,
+                relative_to=staging,
             )
+            if frame_index in official_frame_set:
+                record.update(
+                    {
+                        "neutral_snapshot": _file_record(
+                            neutral_snapshot,
+                            relative_to=staging,
+                        ),
+                        "neutral_entities": _file_record(
+                            neutral_entities,
+                            relative_to=staging,
+                        ),
+                    }
+                )
             checkpoint_records.append(record)
-            exported_sources[frame_index] = {
-                "frame_index": checkpoint.frame_index,
-                "timestamp_ns": checkpoint.timestamp_ns,
-                "consumed_through_frame": checkpoint.frame_index,
-                "consumed_through_frame_exclusive": checkpoint.frame_index + 1,
-                "checkpoint_status": record["checkpoint_status"],
-                "snapshot": record["neutral_snapshot"],
-                "entities": record["neutral_entities"],
-            }
+            if frame_index in official_frame_set:
+                exported_sources[frame_index] = {
+                    "frame_index": checkpoint.frame_index,
+                    "timestamp_ns": checkpoint.timestamp_ns,
+                    "consumed_through_frame": checkpoint.frame_index,
+                    "consumed_through_frame_exclusive": checkpoint.frame_index + 1,
+                    "checkpoint_status": record["checkpoint_status"],
+                    "snapshot": record["neutral_snapshot"],
+                    "entities": record["neutral_entities"],
+                }
+            if frame_index in set(evaluation_frames):
+                occlusion_records.append(
+                    _occlusion_index_record(
+                        checkpoint,
+                        scene=scene,
+                        run_root=staging,
+                        snapshot_root=snapshot_root,
+                        checkpoint_format=checkpoint_format,
+                    )
+                )
             captured.append(frame_index)
         scheduled = [item.frame_index for item in checkpoints]
         if captured != scheduled:
@@ -752,6 +847,9 @@ def run(
         _require_regular_file(schedule_path, "causal schedule")
         if schedule_path.read_bytes() != source_schedule_bytes:
             raise ValueError("causal schedule changed during run")
+        _require_regular_file(target_manifest_path, "occlusion target manifest")
+        if target_manifest_path.read_bytes() != source_target_manifest_bytes:
+            raise ValueError("occlusion target manifest changed during run")
         config_record = _byte_record(source_config_bytes)
         schedule_record = _byte_record(source_schedule_bytes)
         cache_bindings = getattr(caches, "bindings", {})
@@ -760,6 +858,33 @@ def run(
         assert_inputs_unchanged = getattr(caches, "assert_inputs_unchanged", None)
         if assert_inputs_unchanged is not None:
             assert_inputs_unchanged()
+        normalized_config_path = staging / "normalized_run_config.json"
+        _write_json(normalized_config_path, config)
+        normalized_config_record = _file_record(
+            normalized_config_path,
+            relative_to=staging,
+        )
+        occlusion_index_path = staging / "occlusion_checkpoint_index.json"
+        _write_json(
+            occlusion_index_path,
+            {
+                "schema_version": 2,
+                "manifest_id": "oviv2_tesse_cd_occlusion_checkpoints_v1",
+                "dataset": "TESSE-CD",
+                "method_id": "OVIV2",
+                "run_config": normalized_config_record,
+                "target_manifest": {
+                    "sha256": target_manifest_sha256,
+                    "byte_count": len(source_target_manifest_bytes),
+                },
+                "evaluation_checkpoint_frames_sha256": checkpoint_plan_sha256,
+                "snapshots": occlusion_records,
+            },
+        )
+        occlusion_index_record = _file_record(
+            occlusion_index_path,
+            relative_to=staging,
+        )
         manifest: dict[str, Any] = {
             "schema_version": 1,
             "dataset": "TESSE-CD",
@@ -797,6 +922,7 @@ def run(
                 "byte_count": schedule_record["byte_count"],
             },
             "source_bindings": dict(cache_bindings),
+            "occlusion_checkpoint_index": occlusion_index_record,
             "checkpoints": checkpoint_records,
         }
         _write_json(staging / "run_manifest.json", manifest)
@@ -817,6 +943,7 @@ def run(
                         "frontend_manifest",
                         "dense_cache_dir",
                         "dense_manifest",
+                        "occlusion_target_manifest",
                         "vocabulary_json",
                         "vocabulary_txt",
                     )

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 from dataclasses import dataclass
+import hashlib
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -23,6 +24,13 @@ from scripts.evaluation.run_oviv2_tesse_cd import (
 )
 from src.evaluation.contracts import EntityPrediction, MapSnapshot
 from src.evaluation.exporters.oviovo import write_map_snapshot
+from src.oviv2.compact_checkpoint import (
+    COMPACT_OWNERSHIP_FORMAT,
+    CompactOwnershipCheckpoint,
+    CompactOwnershipMetadata,
+)
+from src.oviv2.dense_semantics import DenseSemanticProvenance
+from src.oviv2.ownership import ReversibleOwnershipStore
 
 
 def _write_json(path: Path, payload: object) -> None:
@@ -77,11 +85,16 @@ def _write_schedule(
 def _write_config(tmp_path: Path) -> Path:
     schedule = tmp_path / "schedule.json"
     _write_schedule(schedule)
+    target_manifest = tmp_path / "occlusion-target-manifest.json"
+    _write_json(target_manifest, {"manifest_id": "test-occlusion-target"})
     config = {
         "dataset": "TESSE-CD",
         "frame_count": 5,
         "method_id": "OVIV2",
         "missing_observation_policy": "signed_depth",
+        "occlusion_target_manifest": str(target_manifest),
+        "occlusion_target_manifest_sha256": runner_module._sha256(target_manifest),
+        "evaluation_checkpoint_frames_sha256": "f" * 64,
         "scene": "apartment",
         "schedule_manifest": str(schedule),
         "schema_version": 1,
@@ -126,6 +139,7 @@ class _Runtime:
         self.revision = 0
         self.last_frame = -1
         self.last_timestamp = 0.0
+        self.ownership = ReversibleOwnershipStore(block_resolution=8)
 
     def process_frame(
         self,
@@ -146,13 +160,51 @@ class _Runtime:
         frame_index = self.last_frame
         self.calls.append(f"commit:{frame_index}")
         target.mkdir()
-        (target / "state.bin").write_bytes(f"state:{frame_index}\n".encode())
+        state = f"state:{frame_index}\n".encode()
+        (target / "state.bin").write_bytes(state)
+        _write_json(
+            target / "checksums.json",
+            {"state.bin": hashlib.sha256(state).hexdigest()},
+        )
         return SimpleNamespace(
             path=target,
             metadata=SimpleNamespace(
                 frame_id=frame_index,
                 timestamp=self.last_timestamp,
             ),
+        )
+
+    def commit_compact_ownership_new(
+        self, target: Path
+    ) -> CompactOwnershipCheckpoint:
+        frame_index = self.last_frame
+        self.calls.append(f"compact:{frame_index}")
+        return CompactOwnershipCheckpoint.commit_new(
+            target,
+            CompactOwnershipMetadata(
+                scene_id="apartment",
+                frame_id=frame_index,
+                timestamp=self.last_timestamp,
+                revision=self.revision,
+                voxel_size_m=0.05,
+                block_resolution=8,
+                dense_semantic_provenance=DenseSemanticProvenance(
+                    backend="radseg",
+                    source_commit="1" * 40,
+                    radio_commit="2" * 40,
+                    model_id="radseg:test",
+                    model_sha256="3" * 64,
+                    auxiliary_model_sha256="4" * 64,
+                    vocabulary_sha256="5" * 64,
+                    prompt_sha256="6" * 64,
+                    inference_config_sha256="7" * 64,
+                    cache_prefix_sha256="8" * 64,
+                    language_model_id="clip:test",
+                    language_model_revision="9" * 40,
+                    language_model_sha256="a" * 64,
+                ),
+            ),
+            self.ownership,
         )
 
 
@@ -249,14 +301,14 @@ def test_five_frame_end_to_end_is_byte_identical(tmp_path: Path) -> None:
         "roles": ["official", "common_v2"],
         "scene": "apartment",
         "timestamp_ns": 110,
-        "voxel_snapshot": {
-            "byte_count": len(b"state:1\n"),
-            "path": "checkpoints/00000001-110/voxel_snapshot",
-            "sha256": "0d64d4feda9ec21ed69bb5d4c08b68c605b56264567ecd9ea0865bdf9b723438",
-        },
     }
     for key, value in expected_checkpoint.items():
         assert first["checkpoints"][0][key] == value
+    assert first["checkpoints"][0]["voxel_snapshot"]["path"] == (
+        "checkpoints/00000001-110/voxel_snapshot"
+    )
+    assert first["checkpoints"][0]["voxel_snapshot"]["byte_count"] > 0
+    assert len(first["checkpoints"][0]["voxel_snapshot"]["sha256"]) == 64
     assert first["checkpoints"][0]["artifact"]["path"] == (
         "checkpoints/00000001-110/artifact"
     )
@@ -328,10 +380,76 @@ def test_frozen_evaluation_checkpoints_are_union_with_official_schedule(
     assert calls == [
         "load:0", "process:0",
         "load:1", "process:1", "commit:1", "export:1",
-        "load:2", "process:2", "commit:2", "export:2",
+        "load:2", "process:2", "compact:2",
         "load:3", "process:3", "commit:3", "export:3",
         "load:4", "process:4",
     ]
+
+    evaluation_root = tmp_path / "run/checkpoints/00000002-120"
+    assert {path.name for path in evaluation_root.rglob("*")} == {
+        "ownership_checkpoint",
+        "metadata.json",
+        "ownership.npz",
+        "checksums.json",
+        "checkpoint_status.json",
+    }
+    assert not any(
+        path.name in {"geometry.npz", "evidence.npz", "entities.jsonl", "artifact"}
+        for path in evaluation_root.rglob("*")
+    )
+    index_path = tmp_path / "run/occlusion_checkpoint_index.json"
+    index = json.loads(index_path.read_text(encoding="utf-8"))
+    assert index["schema_version"] == 2
+    assert index["evaluation_checkpoint_frames_sha256"] == "f" * 64
+    assert index["target_manifest"] == {
+        "byte_count": Path(config["occlusion_target_manifest"]).stat().st_size,
+        "sha256": config["occlusion_target_manifest_sha256"],
+    }
+    assert [record["frame_index"] for record in index["snapshots"]] == [2, 3]
+    assert index["snapshots"][0]["format"] == COMPACT_OWNERSHIP_FORMAT
+    assert index["snapshots"][0]["path"].endswith("/ownership_checkpoint")
+    assert index["snapshots"][1]["format"] == "oviv2_voxel_map_snapshot"
+    assert index["snapshots"][1]["path"].endswith("/voxel_snapshot")
+    normalized = tmp_path / "run/normalized_run_config.json"
+    assert index["run_config"] == {
+        "path": "normalized_run_config.json",
+        "sha256": runner_module._sha256(normalized),
+        "byte_count": normalized.stat().st_size,
+    }
+
+
+def test_mixed_checkpoint_run_is_byte_identical_and_compact_is_bounded(
+    tmp_path: Path,
+) -> None:
+    config_path = _write_config(tmp_path)
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config["evaluation_checkpoint_frames"] = [0, 2, 3, 4]
+    _write_json(config_path, config)
+
+    run(config_path, tmp_path / "first", dependencies=_dependencies([]))
+    run(config_path, tmp_path / "second", dependencies=_dependencies([]))
+
+    assert _deterministic_files(tmp_path / "first") == _deterministic_files(
+        tmp_path / "second"
+    )
+    for frame_index, timestamp_ns in ((0, 100), (2, 120), (4, 140)):
+        root = (
+            tmp_path
+            / "first/checkpoints"
+            / f"{frame_index:08d}-{timestamp_ns}"
+        )
+        assert sum(
+            path.stat().st_size for path in root.rglob("*") if path.is_file()
+        ) < 64 * 1024
+        assert not any(
+            path.name in {
+                "geometry.npz",
+                "evidence.npz",
+                "entities.jsonl",
+                "artifact",
+            }
+            for path in root.rglob("*")
+        )
 
 
 def test_frozen_visibility_policy_overrides_runtime_parser_default() -> None:
@@ -621,12 +739,27 @@ def test_checked_scene_configs_are_same_frozen_stage3_algorithm() -> None:
     assert {algorithm_hash(config) for config in configs.values()} == {
         configs["apartment"]["algorithm_hash"]
     }
+    expected_checkpoint_counts = {"apartment": 1652, "office": 4257}
     for scene, config in configs.items():
         assert config["method_id"] == "OVIV2"
         assert config["dataset"] == "TESSE-CD"
         assert config["source_stride"] == 1
         assert config["missing_observation_policy"] == "signed_depth"
-        assert config["evaluation_checkpoint_frames"] == []
+        assert len(config["evaluation_checkpoint_frames"]) == (
+            expected_checkpoint_counts[scene]
+        )
+        assert config["evaluation_checkpoint_frames"] == sorted(
+            set(config["evaluation_checkpoint_frames"])
+        )
+        assert config["evaluation_checkpoint_frames_sha256"] == (
+            "03dd2f35becf5bd5fcc4a9fdceb2e459d28e1eb2729eb1622090337dba02d9fa"
+        )
+        assert config["occlusion_target_manifest_sha256"] == (
+            "0ce990a32af971be52f4b2a1d1bf8e8862cf18bb9d22362091411b4210b35361"
+        )
+        assert config["occlusion_target_manifest"].endswith(
+            "/occlusion_v1_targets/20260722-stage3-fb97-a/manifest.json"
+        )
         assert config["stage3_lineage_commit"] == (
             "47962fbd9f363c0696cc5016f8ab42f83a3bf7e5"
         )
