@@ -271,6 +271,22 @@ def _rewrite_checkpoint_entities(
     _rewrite_index(index_path, payload)
 
 
+def _rewrite_schedule(
+    index_path: Path,
+    payload: dict[str, Any],
+    schedule: dict[str, Any],
+) -> None:
+    schedule_path = Path(payload["schedule"]["path"])
+    _write_json(schedule_path, schedule)
+    payload["schedule"] = _record(schedule_path)
+    capture_path = Path(payload["capture_status"]["path"])
+    capture = json.loads(capture_path.read_text(encoding="utf-8"))
+    capture["schedule"] = payload["schedule"]
+    _write_json(capture_path, capture)
+    payload["capture_status"] = _record(capture_path)
+    _rewrite_index(index_path, payload)
+
+
 def test_cli_help_runs_from_outside_repository(tmp_path: Path) -> None:
     completed = subprocess.run(
         [
@@ -558,6 +574,114 @@ def test_rejects_unknown_source_index_path_field(tmp_path: Path) -> None:
     _rewrite_index(index_path, payload)
 
     with pytest.raises(ValueError, match="source index fields"):
+        export_temporal_artifact(index_path, tmp_path / "output")
+
+
+def test_rejects_unregistered_index_method(tmp_path: Path) -> None:
+    index_path, payload = _build_fixture(tmp_path / "source")
+    payload["method"] = "OVIOVO"
+    _rewrite_index(index_path, payload)
+
+    with pytest.raises(ValueError, match="unsupported.*method"):
+        export_temporal_artifact(index_path, tmp_path / "output")
+
+
+def test_rejects_index_method_that_does_not_match_snapshot(tmp_path: Path) -> None:
+    index_path, payload = _build_fixture(tmp_path / "source")
+    payload["method"] = "OVIV2"
+    _rewrite_index(index_path, payload)
+
+    with pytest.raises(ValueError, match="method.*match"):
+        export_temporal_artifact(index_path, tmp_path / "output")
+
+
+def test_rejects_wrong_schedule_schema_version(tmp_path: Path) -> None:
+    index_path, payload = _build_fixture(tmp_path / "source")
+    schedule_path = Path(payload["schedule"]["path"])
+    schedule = json.loads(schedule_path.read_text(encoding="utf-8"))
+    schedule["schema_version"] = 3
+    _rewrite_schedule(index_path, payload, schedule)
+
+    with pytest.raises(ValueError, match="schedule identity"):
+        export_temporal_artifact(index_path, tmp_path / "output")
+
+
+def test_rejects_wrong_capture_schema_version(tmp_path: Path) -> None:
+    index_path, payload = _build_fixture(tmp_path / "source")
+    capture_path = Path(payload["capture_status"]["path"])
+    capture = json.loads(capture_path.read_text(encoding="utf-8"))
+    capture["schema_version"] = 2
+    _write_json(capture_path, capture)
+    payload["capture_status"] = _record(capture_path)
+    _rewrite_index(index_path, payload)
+
+    with pytest.raises(ValueError, match="capture status"):
+        export_temporal_artifact(index_path, tmp_path / "output")
+
+
+def test_rejects_duplicate_capture_json_keys(tmp_path: Path) -> None:
+    index_path, payload = _build_fixture(tmp_path / "source")
+    capture_path = Path(payload["capture_status"]["path"])
+    capture = json.loads(capture_path.read_text(encoding="utf-8"))
+    capture.pop("schema_version")
+    capture_path.write_text(
+        '{"schema_version":1,"schema_version":1,'
+        + json.dumps(capture, sort_keys=True)[1:],
+        encoding="utf-8",
+    )
+    payload["capture_status"] = _record(capture_path)
+    _rewrite_index(index_path, payload)
+
+    with pytest.raises(ValueError, match="duplicate JSON key"):
+        export_temporal_artifact(index_path, tmp_path / "output")
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("frame_index", -1, "non-negative"),
+        ("timestamp_ns", 0, "positive"),
+        ("centroid_xyz", [True, 0.0, 1.0], "numeric"),
+        ("centroid_xyz", ["0.0", 0.0, 1.0], "numeric"),
+        ("centroid_xyz", [10**400, 0.0, 1.0], "numeric"),
+    ],
+)
+def test_rejects_invalid_trajectory_scalar_types_and_domains(
+    tmp_path: Path,
+    field: str,
+    value: object,
+    message: str,
+) -> None:
+    index_path, payload = _build_fixture(tmp_path / "source")
+    trajectory_path = Path(payload["trajectories"]["path"])
+    row = json.loads(trajectory_path.read_text(encoding="utf-8").splitlines()[0])
+    row[field] = value
+    _rewrite_trajectories(index_path, payload, json.dumps(row) + "\n")
+
+    with pytest.raises(ValueError, match=message):
+        export_temporal_artifact(index_path, tmp_path / "output")
+
+
+def test_rejects_invalid_trajectory_entity_after_last_checkpoint(
+    tmp_path: Path,
+) -> None:
+    index_path, payload = _build_fixture(tmp_path / "source")
+    trajectory_path = Path(payload["trajectories"]["path"])
+    content = trajectory_path.read_text(encoding="utf-8")
+    trailing = {
+        "frame_index": 6,
+        "timestamp_ns": 600,
+        "entity_id": "entity-a",
+        "centroid_xyz": [False, 0.0, 1.0],
+        "observation_count": 1,
+    }
+    _rewrite_trajectories(
+        index_path,
+        payload,
+        content + json.dumps(trailing) + "\n",
+    )
+
+    with pytest.raises(ValueError, match="numeric"):
         export_temporal_artifact(index_path, tmp_path / "output")
 
 

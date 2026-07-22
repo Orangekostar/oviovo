@@ -33,25 +33,16 @@ from src.evaluation.baselines.tesse_semantics import (  # noqa: E402
     load_tesse_semantic_crosswalk,
 )
 from src.evaluation.exporters.oviovo import read_map_snapshot  # noqa: E402
+from src.evaluation.json_contracts import loads_strict  # noqa: E402
+from src.evaluation.tesse_methods import (  # noqa: E402
+    CAUSAL_SNAPSHOT_METHOD_LABELS,
+    snapshot_method_matches as _snapshot_method_matches,
+)
 
 
 KHRONOS_CLIP_WEIGHT_SHA256 = (
     "b8cca3fd41ae0c99ba7e8951adf17d267cdb84cd88be6f7c2e0eca1737a03836"
 )
-CAUSAL_SNAPSHOT_METHOD_LABELS = {
-    "DUALMAP": frozenset({"DUALMAP", "DualMap"}),
-    "DualMap": frozenset({"DUALMAP", "DualMap"}),
-    "KHRONOS_OPEN": frozenset({"KHRONOS_OPEN", "KHRONOS", "Khronos"}),
-    "KHRONOS_ORACLE": frozenset(
-        {"KHRONOS_ORACLE", "KHRONOS", "Khronos"}
-    ),
-    "OVIV2": frozenset({"OVIV2"}),
-    "PANOPTIC_SHARED": frozenset(
-        {"PANOPTIC_SHARED", "Panoptic Mapping + shared masks"}
-    ),
-}
-
-
 @dataclass(frozen=True)
 class KhronosTextHead:
     semantic_ids: np.ndarray
@@ -59,12 +50,6 @@ class KhronosTextHead:
     embeddings: np.ndarray
     manifest_record: Mapping[str, object]
     arrays_record: Mapping[str, object]
-
-
-def _snapshot_method_matches(method: str, snapshot_method: str) -> bool:
-    return snapshot_method in CAUSAL_SNAPSHOT_METHOD_LABELS.get(
-        method, frozenset()
-    )
 
 
 def classify_khronos_open_embedding(
@@ -114,8 +99,12 @@ def _mapping(value: object, label: str) -> Mapping[str, Any]:
 
 def _load_json(path: Path, label: str) -> dict[str, Any]:
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        content = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as error:
+        raise ValueError(f"cannot read {label}: {path}") from error
+    try:
+        payload = loads_strict(content, label=label)
+    except json.JSONDecodeError as error:
         raise ValueError(f"cannot read {label}: {path}") from error
     return dict(_mapping(payload, label))
 
@@ -165,7 +154,8 @@ def _load_schedule(
 ) -> tuple[list[Mapping[str, Any]], dict[int, Mapping[str, Any]]]:
     payload = _load_json(path, "schedule")
     if not (
-        payload.get("schema_version") == 2
+        type(payload.get("schema_version")) is int
+        and payload.get("schema_version") == 2
         and payload.get("manifest_id") == "tesse_cd_causal_schedule_v2"
         and payload.get("dataset") == "TESSE-CD"
         and payload.get("method_predictions_used") is False

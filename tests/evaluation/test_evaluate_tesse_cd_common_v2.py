@@ -511,6 +511,36 @@ def test_load_targets_rejects_checked_schedule_content_drift(tmp_path: Path) -> 
         )
 
 
+def test_load_targets_rejects_duplicate_manifest_json_keys(tmp_path: Path) -> None:
+    _, targets = _fixture(tmp_path / "source")
+    payload = json.loads(targets.read_text(encoding="utf-8"))
+    schedule_record = payload["metadata"]["schedule"]
+    payload.pop("schema_version")
+    targets.write_text(
+        '{"schema_version":1,"schema_version":1,'
+        + json.dumps(payload, sort_keys=True)[1:],
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="duplicate JSON key"):
+        evaluator_module._load_targets(
+            targets,
+            schedule_record=schedule_record,
+        )
+
+
+def test_schedule_loader_requires_integer_schema_version(tmp_path: Path) -> None:
+    index, _ = _fixture(tmp_path / "source")
+    payload = json.loads(index.read_text(encoding="utf-8"))
+    schedule = Path(payload["sources"]["schedule"]["path"])
+    schedule_payload = json.loads(schedule.read_text(encoding="utf-8"))
+    schedule_payload["schema_version"] = 2.0
+    _write_json(schedule, schedule_payload)
+
+    with pytest.raises(ValueError, match="schedule identity"):
+        evaluator_module._load_schedule(schedule, scene="apartment")
+
+
 def test_causal_evaluator_accepts_equal_schedule_bytes_at_distinct_paths(
     tmp_path: Path,
 ) -> None:

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import replace
 from pathlib import Path
+import tracemalloc
 from types import SimpleNamespace
 
 import numpy as np
@@ -72,6 +73,44 @@ def test_loads_sorted_frozen_causal_checkpoints(tmp_path: Path) -> None:
     assert isinstance(checkpoints[0].event_ids, tuple)
     with pytest.raises((AttributeError, TypeError)):
         checkpoints[0].event_ids[0] = "changed"  # type: ignore[index]
+
+
+def test_schedule_loader_rejects_duplicate_json_keys(tmp_path: Path) -> None:
+    schedule = tmp_path / "schedule.json"
+    _write_schedule(schedule, [_entry(0, 100)])
+    content = schedule.read_text(encoding="utf-8")
+    schedule.write_text(
+        content.replace(
+            '"schema_version": 2',
+            '"schema_version": 2, "schema_version": 2',
+            1,
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="duplicate JSON key"):
+        load_causal_checkpoints(schedule, scene="apartment", frame_count=5)
+
+
+def test_schedule_loader_rejects_nonstring_event_id(tmp_path: Path) -> None:
+    schedule = tmp_path / "schedule.json"
+    entry = _entry(0, 100)
+    entry["event_ids"] = [7]
+    _write_schedule(schedule, [entry])
+
+    with pytest.raises(TypeError, match="event_ids.*strings"):
+        load_causal_checkpoints(schedule, scene="apartment", frame_count=5)
+
+
+def test_schedule_loader_requires_integer_schema_version(tmp_path: Path) -> None:
+    schedule = tmp_path / "schedule.json"
+    _write_schedule(schedule, [_entry(0, 100)])
+    payload = json.loads(schedule.read_text(encoding="utf-8"))
+    payload["schema_version"] = 2.0
+    schedule.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="schedule identity"):
+        load_causal_checkpoints(schedule, scene="apartment", frame_count=5)
 
 
 @pytest.mark.parametrize(
@@ -222,6 +261,45 @@ def test_builds_current_neutral_map_from_owned_object_vertices(
         8: ((2, 1.0),),
         99: ((1, 1.0),),
     }
+
+
+def test_neutral_snapshot_large_mesh_uses_bounded_python_memory(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    vertex_count = 120_000
+    vertices = np.zeros((vertex_count, 3), dtype=np.float32)
+    vertices[:, 0] = np.arange(vertex_count, dtype=np.float32) * 0.001
+    mesh = LabeledMesh(
+        vertices_xyz=vertices,
+        triangles=np.empty((0, 3), dtype=np.int64),
+        colors_rgb=np.zeros((vertex_count, 3), dtype=np.float32),
+        semantic_ids=np.ones(vertex_count, dtype=np.int64),
+        entity_ids=np.full(vertex_count, 7, dtype=np.int64),
+        semantic_confidence=np.ones(vertex_count, dtype=np.float64),
+        ownership_confidence=np.ones(vertex_count, dtype=np.float64),
+    )
+    monkeypatch.setattr(
+        "src.evaluation.oviv2_tesse.derive_labeled_mesh",
+        lambda *args, **kwargs: mesh,
+    )
+    snapshot = _snapshot()
+
+    tracemalloc.start()
+    try:
+        neutral = build_neutral_current_snapshot(
+            snapshot,
+            timestamp_ns=123,
+            class_names=("unknown", "chair", "wall"),
+            object_semantic_ids=frozenset({1}),
+            fusion=SemanticFusionConfig(),
+            timestamp_ns_by_frame=(100, 123),
+        )
+        _, peak_bytes = tracemalloc.get_traced_memory()
+    finally:
+        tracemalloc.stop()
+
+    assert len(neutral.entities[0].points_xyz) == vertex_count
+    assert peak_bytes < vertex_count * 200
 
 
 def test_neutral_snapshot_rejects_timestamp_mismatch() -> None:

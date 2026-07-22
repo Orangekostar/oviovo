@@ -23,6 +23,11 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.evaluation.exporters.oviovo import read_map_snapshot
+from src.evaluation.json_contracts import loads_strict
+from src.evaluation.tesse_methods import (
+    CAUSAL_SNAPSHOT_METHOD_LABELS,
+    snapshot_method_matches,
+)
 
 
 _SOURCE_RECORD_FIELDS = frozenset({"path", "sha256", "byte_count"})
@@ -219,36 +224,8 @@ def _direct_source(path: Path, *, label: str) -> _VerifiedSource:
     return source
 
 
-def _reject_nonfinite_values(value: Any, *, label: str) -> None:
-    if type(value) is float and not math.isfinite(value):
-        raise ValueError(f"{label} contains non-finite JSON number")
-    if isinstance(value, Mapping):
-        for item in value.values():
-            _reject_nonfinite_values(item, label=label)
-    elif isinstance(value, list):
-        for item in value:
-            _reject_nonfinite_values(item, label=label)
-
-
 def _loads_json(content: str, *, label: str) -> Any:
-    def reject_constant(value: str) -> None:
-        raise ValueError(f"{label} contains non-finite JSON constant {value}")
-
-    def reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
-        payload: dict[str, Any] = {}
-        for key, value in pairs:
-            if key in payload:
-                raise ValueError(f"{label} contains duplicate JSON key {key}")
-            payload[key] = value
-        return payload
-
-    payload = json.loads(
-        content,
-        parse_constant=reject_constant,
-        object_pairs_hook=reject_duplicate_keys,
-    )
-    _reject_nonfinite_values(payload, label=label)
-    return payload
+    return loads_strict(content, label=label)
 
 
 def _read_json(source: _VerifiedSource, *, label: str) -> dict[str, Any]:
@@ -276,7 +253,9 @@ def _load_schedule(
 ) -> tuple[dict[str, Any], dict[str, Any], list[dict[str, int]]]:
     payload = _read_json(source, label="schedule")
     if (
-        payload.get("dataset") != "TESSE-CD"
+        type(payload.get("schema_version")) is not int
+        or payload.get("schema_version") != 2
+        or payload.get("dataset") != "TESSE-CD"
         or payload.get("manifest_id") != "tesse_cd_causal_schedule_v2"
         or payload.get("method_predictions_used") is not False
     ):
@@ -432,9 +411,15 @@ def _reject_absolute_path_strings(value: Any, *, label: str) -> None:
 
 
 def _json_number(value: Any, *, label: str) -> float:
-    if type(value) not in {int, float} or not math.isfinite(float(value)):
+    if type(value) not in {int, float}:
         raise ValueError(f"{label} must be a finite number")
-    return float(value)
+    try:
+        result = float(value)
+    except (OverflowError, ValueError) as error:
+        raise ValueError(f"{label} must be a finite number") from error
+    if not math.isfinite(result):
+        raise ValueError(f"{label} must be a finite number")
+    return result
 
 
 def _load_entity_records(
@@ -563,6 +548,10 @@ def _normalize_trajectories(
         timestamp = raw.get(timestamp_field)
         if type(frame) is not int or type(timestamp) is not int:
             raise ValueError("trajectory frame and timestamp must be integers")
+        if frame < 0:
+            raise ValueError("trajectory frame_index must be non-negative")
+        if timestamp <= 0:
+            raise ValueError("trajectory timestamp_ns must be positive")
         if frame < previous_frame or timestamp < previous_timestamp:
             raise ValueError("trajectory frames and timestamps must be monotonic")
         if frame == previous_frame and previous_frame >= 0 and timestamp != previous_timestamp:
@@ -573,10 +562,8 @@ def _normalize_trajectories(
         previous_timestamp = timestamp
 
         position = bisect_left(checkpoint_frames, frame)
-        if position == len(schedule):
-            continue
-        checkpoint = schedule[position]
-        if timestamp > int(checkpoint["timestamp_ns"]):
+        included = position < len(schedule)
+        if included and timestamp > int(schedule[position]["timestamp_ns"]):
             raise ValueError("trajectory timestamp is later than checkpoint")
 
         raw_entities = raw.get("entities")
@@ -600,28 +587,44 @@ def _normalize_trajectories(
                 if type(native_id) is not int or native_id < 0:
                     raise ValueError("trajectory native_submap_id must be non-negative")
                 identifier = f"panoptic:{native_id}"
-            if not isinstance(identifier, str) or not identifier.strip():
+            if (
+                not isinstance(identifier, str)
+                or not identifier
+                or identifier != identifier.strip()
+            ):
                 raise ValueError("trajectory entity ID must be non-empty")
-            entity_id = identifier.strip()
+            entity_id = identifier
             key = (frame, entity_id)
             if key in seen:
                 raise ValueError("duplicate entity trajectory sample within one frame")
             seen.add(key)
-            centroid = np.asarray(raw_entity.get("centroid_xyz"), dtype=np.float64)
-            if centroid.shape != (3,) or not np.all(np.isfinite(centroid)):
-                raise ValueError("trajectory centroid must be a finite xyz vector")
+            raw_centroid = raw_entity.get("centroid_xyz")
+            if not isinstance(raw_centroid, list) or len(raw_centroid) != 3:
+                raise ValueError(
+                    "trajectory centroid must contain three finite numeric values"
+                )
+            try:
+                centroid = [
+                    _json_number(value, label="trajectory centroid")
+                    for value in raw_centroid
+                ]
+            except ValueError as error:
+                raise ValueError(
+                    "trajectory centroid must contain three finite numeric values"
+                ) from error
             normalized = {
                 "frame_index": frame,
                 "timestamp_ns": timestamp,
                 "entity_id": entity_id,
-                "centroid_xyz": centroid.tolist(),
+                "centroid_xyz": centroid,
             }
             if "observation_count" in raw_entity:
                 count = raw_entity["observation_count"]
                 if type(count) is not int or count < 0:
                     raise ValueError("trajectory observation count must be non-negative")
                 normalized["observation_count"] = count
-            records.append(normalized)
+            if included:
+                records.append(normalized)
     _assert_unchanged(source, label="trajectories")
     return records
 
@@ -998,15 +1001,27 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
     if set(index) != _SOURCE_INDEX_FIELDS:
         raise ValueError("source index fields are invalid")
     if (
-        index.get("schema_version") != 1
+        type(index.get("schema_version")) is not int
+        or index.get("schema_version") != 1
         or index.get("dataset") != "TESSE-CD"
         or index.get("mode") != "causal_checkpoint_exports"
     ):
         raise ValueError("temporal source index identity mismatch")
-    scene = str(index.get("scene", "")).strip()
-    method = str(index.get("method", "")).strip()
-    if not scene or not method:
+    raw_scene = index.get("scene")
+    raw_method = index.get("method")
+    if (
+        not isinstance(raw_scene, str)
+        or not raw_scene
+        or raw_scene != raw_scene.strip()
+        or not isinstance(raw_method, str)
+        or not raw_method
+        or raw_method != raw_method.strip()
+    ):
         raise ValueError("temporal source index requires method and scene")
+    scene = raw_scene
+    method = raw_method
+    if method not in CAUSAL_SNAPSHOT_METHOD_LABELS:
+        raise ValueError(f"unsupported causal snapshot method: {method}")
     base = index_source.path.parent
 
     schedule_source = _declared_source(
@@ -1027,7 +1042,9 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
         raise ValueError("capture status fields are invalid")
     expected_frames = [frame for frame, _ in expected]
     if (
-        capture.get("status") != "PASS"
+        type(capture.get("schema_version")) is not int
+        or capture.get("schema_version") != 1
+        or capture.get("status") != "PASS"
         or capture.get("scene") != scene
         or capture.get("mode") != "causal_checkpoints"
         or capture.get("scheduled_frame_indices") != expected_frames
@@ -1060,7 +1077,6 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
     ]
     checkpoint_inputs: list[dict[str, Any]] = []
     states: dict[str, dict[str, Any]] = {}
-    snapshot_method: str | None = None
     checkpoint_status_sources: list[_VerifiedSource] = []
     for position, (raw_checkpoint, expected_identity) in enumerate(
         zip(raw_checkpoints, expected)
@@ -1111,10 +1127,10 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
             raise ValueError("neutral checkpoint snapshot identity mismatch")
         if not _timestamp_matches(float(snapshot.timestamp), timestamp):
             raise ValueError("neutral checkpoint snapshot timestamp mismatch")
-        if snapshot_method is None:
-            snapshot_method = snapshot.method
-        elif snapshot.method != snapshot_method:
-            raise ValueError("neutral checkpoint method conflict")
+        if not snapshot_method_matches(method, snapshot.method):
+            raise ValueError(
+                "neutral checkpoint method does not match source index method"
+            )
         entity_jsonl = _canonical_entity_jsonl(snapshot, entity_records)
 
         entity_ids = [entity.entity_id for entity in snapshot.entities]

@@ -4,14 +4,13 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
-import json
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 
 from src.evaluation.contracts import EntityPrediction, MapSnapshot
-from src.oviv2.addressing import point_to_voxel
+from src.evaluation.json_contracts import loads_strict
 from src.oviv2.entities import EntityRegistry
 from src.oviv2.meshing import derive_labeled_mesh
 from src.oviv2.semantic_fusion import SemanticFusionConfig
@@ -36,7 +35,9 @@ def _integer(value: object, name: str, *, minimum: int) -> int:
 def _strings(value: object, name: str) -> tuple[str, ...]:
     if isinstance(value, (str, bytes)) or not isinstance(value, Sequence):
         raise TypeError(f"{name} must be a sequence of strings")
-    result = tuple(str(item).strip() for item in value)
+    if any(not isinstance(item, str) for item in value):
+        raise TypeError(f"{name} must be a sequence of strings")
+    result = tuple(item.strip() for item in value)
     if any(not item for item in result):
         raise ValueError(f"{name} must contain non-empty strings")
     if len(result) != len(set(result)):
@@ -102,11 +103,12 @@ def load_causal_checkpoints(
     if not source.is_file():
         raise FileNotFoundError(source)
     payload = _mapping(
-        json.loads(source.read_text(encoding="utf-8")),
+        loads_strict(source.read_text(encoding="utf-8"), label="schedule"),
         "schedule",
     )
     if (
-        payload.get("schema_version") != 2
+        type(payload.get("schema_version")) is not int
+        or payload.get("schema_version") != 2
         or payload.get("manifest_id") != "tesse_cd_causal_schedule_v2"
         or payload.get("dataset") != "TESSE-CD"
         or payload.get("method_predictions_used") is not False
@@ -249,33 +251,57 @@ def build_neutral_current_snapshot(
         valid_semantic_ids=frozenset(range(1, len(names))),
     )
 
-    voxel_keys = tuple(
-        point_to_voxel(vertex, snapshot.metadata.voxel_size_m)
-        for vertex in mesh.vertices_xyz
+    vertices = np.asarray(mesh.vertices_xyz)
+    entity_ids = np.asarray(mesh.entity_ids, dtype=np.int64)
+    semantic_ids = np.asarray(mesh.semantic_ids, dtype=np.int64)
+    voxel_keys = np.floor(
+        vertices.astype(np.float64, copy=False) / snapshot.metadata.voxel_size_m
+    ).astype(np.int64)
+    order = np.lexsort(
+        (
+            vertices[:, 2],
+            vertices[:, 1],
+            vertices[:, 0],
+            voxel_keys[:, 2],
+            voxel_keys[:, 1],
+            voxel_keys[:, 0],
+            semantic_ids,
+            entity_ids,
+        )
     )
-    order = sorted(
-        range(len(mesh.vertices_xyz)),
-        key=lambda index: (
-            int(mesh.entity_ids[index]),
-            int(mesh.semantic_ids[index]),
-            voxel_keys[index],
-            tuple(float(value) for value in mesh.vertices_xyz[index]),
-        ),
+    object_mask = (entity_ids > 0) & np.isin(
+        semantic_ids,
+        np.fromiter(sorted(object_ids), dtype=np.int64),
     )
-    groups: dict[tuple[int, int], list[int]] = {}
-    background_indices: list[int] = []
-    for index in order:
-        owner_id = int(mesh.entity_ids[index])
-        semantic_id = int(mesh.semantic_ids[index])
-        if owner_id > 0 and semantic_id in object_ids:
-            if owner_id not in registry.entities:
-                raise ValueError("current mesh owner is missing from the registry")
-            groups.setdefault((owner_id, semantic_id), []).append(index)
-        else:
-            background_indices.append(index)
+    object_order = order[object_mask[order]]
+    background_indices = order[~object_mask[order]]
+    current_owners = {
+        int(value) for value in np.unique(entity_ids[object_mask])
+    }
+    missing_owners = current_owners - set(registry.entities)
+    if missing_owners:
+        raise ValueError("current mesh owner is missing from the registry")
+
+    ordered_owners = entity_ids[object_order]
+    ordered_semantics = semantic_ids[object_order]
+    group_starts = np.empty(0, dtype=np.int64)
+    group_stops = np.empty(0, dtype=np.int64)
+    if len(object_order):
+        group_changes = np.empty(len(object_order), dtype=bool)
+        group_changes[0] = True
+        group_changes[1:] = (ordered_owners[1:] != ordered_owners[:-1]) | (
+            ordered_semantics[1:] != ordered_semantics[:-1]
+        )
+        group_starts = np.flatnonzero(group_changes)
+        group_stops = np.concatenate(
+            (group_starts[1:], np.asarray([len(object_order)], dtype=np.int64))
+        )
 
     entities: list[EntityPrediction] = []
-    for (owner_id, semantic_id), indices in sorted(groups.items()):
+    for start, stop in zip(group_starts, group_stops, strict=True):
+        indices = object_order[start:stop]
+        owner_id = int(ordered_owners[start])
+        semantic_id = int(ordered_semantics[start])
         owner = registry.entities[owner_id]
         first_frame = _integer(owner.first_frame_id, "entity first_frame_id", minimum=0)
         last_frame = _integer(owner.last_frame_id, "entity last_frame_id", minimum=0)
