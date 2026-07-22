@@ -586,6 +586,14 @@ class VoxelMapSnapshot:
                         publication_error,
                         published=True,
                     ) from publication_error
+                try:
+                    os.fsync(parent_fd)
+                except OSError as error:
+                    raise SnapshotPublicationUncertainError(
+                        target,
+                        error,
+                        published=True,
+                    ) from error
         finally:
             _close_best_effort(parent_fd)
         if result == 0:
@@ -625,14 +633,6 @@ class VoxelMapSnapshot:
             expected_source_identity=expected_source_identity,
             expected_parent_identity=expected_parent_identity,
         )
-        try:
-            cls._fsync_directory(target.parent)
-        except OSError as publication_error:
-            raise SnapshotPublicationUncertainError(
-                target,
-                publication_error,
-                published=True,
-            ) from publication_error
 
     @staticmethod
     def _fsync_directory(path: Path) -> None:
@@ -830,6 +830,23 @@ class VoxelMapSnapshot:
             try:
                 source_witness = staged_witness.bind_published()
             except Exception as publication_error:
+                raise SnapshotPublicationUncertainError(
+                    target,
+                    publication_error,
+                    published=True,
+                ) from publication_error
+            try:
+                published_parent = os.lstat(target.parent)
+            except OSError as publication_error:
+                raise SnapshotPublicationUncertainError(
+                    target,
+                    publication_error,
+                    published=True,
+                ) from publication_error
+            if (published_parent.st_dev, published_parent.st_ino) != parent_identity:
+                publication_error = ValueError(
+                    "snapshot parent identity changed after publication binding"
+                )
                 raise SnapshotPublicationUncertainError(
                     target,
                     publication_error,

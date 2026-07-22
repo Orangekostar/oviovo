@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import stat
 import threading
 import time
 import weakref
@@ -711,6 +712,47 @@ def test_commit_new_parent_rebind_cannot_redirect_publication(
     assert VoxelMapSnapshot.load(displaced_parent / "snapshot").metadata == metadata
 
 
+def test_commit_new_parent_rebind_after_binding_is_reported_uncertain(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from src.oviv2.snapshot import SnapshotPublicationUncertainError
+
+    metadata, geometry, evidence, ownership = _components()
+    parent = tmp_path / "parent"
+    parent.mkdir()
+    target = parent / "snapshot"
+    displaced_parent = tmp_path / "displaced-parent"
+    original_bind = snapshot_module.SnapshotSourceWitness.bind_published
+
+    def rebind_parent_after_binding(
+        witness: snapshot_module.SnapshotSourceWitness,
+    ) -> snapshot_module.SnapshotSourceWitness:
+        bound = original_bind(witness)
+        parent.rename(displaced_parent)
+        parent.mkdir()
+        (displaced_parent / "snapshot").rename(target)
+        return bound
+
+    monkeypatch.setattr(
+        snapshot_module.SnapshotSourceWitness,
+        "bind_published",
+        rebind_parent_after_binding,
+    )
+
+    with pytest.raises(SnapshotPublicationUncertainError) as raised:
+        VoxelMapSnapshot.commit_new(
+            target,
+            metadata,
+            geometry,
+            evidence,
+            ownership,
+        )
+
+    assert raised.value.published is True
+    assert VoxelMapSnapshot.load(target).metadata == metadata
+
+
 def test_commit_new_publication_uses_one_parent_fd_and_closes_it(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -751,6 +793,34 @@ def test_commit_new_publication_uses_one_parent_fd_and_closes_it(
     assert opened_parent_fd is not None
     with pytest.raises(OSError, match="Bad file descriptor"):
         os.fstat(opened_parent_fd)
+
+
+def test_commit_new_publication_does_not_reopen_parent_for_fsync(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+
+    def reject_path_fsync(_path: Path) -> None:
+        raise AssertionError("publication must fsync its anchored parent fd")
+
+    monkeypatch.setattr(
+        VoxelMapSnapshot,
+        "_fsync_directory",
+        staticmethod(reject_path_fsync),
+    )
+
+    committed = VoxelMapSnapshot.commit_new(
+        target,
+        metadata,
+        geometry,
+        evidence,
+        ownership,
+    )
+
+    assert committed.path == target
+    assert VoxelMapSnapshot.load(target).metadata == metadata
 
 
 def test_snapshot_commit_new_staging_failure_preserves_partial_snapshot(
@@ -881,21 +951,22 @@ def test_snapshot_commit_new_parent_fsync_failure_reports_published_uncertain_ta
 
     metadata, geometry, evidence, ownership = _components()
     target = tmp_path / "snapshot"
-    original_fsync_directory = VoxelMapSnapshot._fsync_directory
+    original_fsync = snapshot_module.os.fsync
     parent_fsync_calls = 0
 
-    def fail_first_parent_fsync(path: Path) -> None:
+    def fail_first_parent_fsync(descriptor: int) -> None:
         nonlocal parent_fsync_calls
-        if path == target.parent:
+        status = os.fstat(descriptor)
+        if stat.S_ISDIR(status.st_mode) and target.exists():
             parent_fsync_calls += 1
             if parent_fsync_calls == 1:
                 raise OSError("injected immutable parent fsync failure")
-        original_fsync_directory(path)
+        original_fsync(descriptor)
 
     monkeypatch.setattr(
-        VoxelMapSnapshot,
-        "_fsync_directory",
-        staticmethod(fail_first_parent_fsync),
+        snapshot_module.os,
+        "fsync",
+        fail_first_parent_fsync,
     )
 
     with pytest.raises(SnapshotPublicationUncertainError) as raised:
@@ -933,34 +1004,19 @@ def test_snapshot_commit_new_never_deletes_concurrently_replaced_target(
         evidence,
         ownership,
     )
-    original_identity = VoxelMapSnapshot._directory_identity
-    original_fsync_directory = VoxelMapSnapshot._fsync_directory
-    parent_fsync_calls = 0
+    original_bind = snapshot_module.SnapshotSourceWitness.bind_published
 
-    def replace_target_after_stat(path: Path) -> tuple[int, int]:
-        identity = original_identity(path)
-        if path == target:
-            os.replace(target, displaced)
-            os.replace(winner, target)
-        return identity
-
-    def fail_first_parent_fsync(path: Path) -> None:
-        nonlocal parent_fsync_calls
-        if path == target.parent:
-            parent_fsync_calls += 1
-            if parent_fsync_calls == 1:
-                raise OSError("injected immutable parent fsync failure")
-        original_fsync_directory(path)
+    def replace_target_before_binding(
+        witness: snapshot_module.SnapshotSourceWitness,
+    ) -> snapshot_module.SnapshotSourceWitness:
+        os.replace(target, displaced)
+        os.replace(winner, target)
+        return original_bind(witness)
 
     monkeypatch.setattr(
-        VoxelMapSnapshot,
-        "_directory_identity",
-        staticmethod(replace_target_after_stat),
-    )
-    monkeypatch.setattr(
-        VoxelMapSnapshot,
-        "_fsync_directory",
-        staticmethod(fail_first_parent_fsync),
+        snapshot_module.SnapshotSourceWitness,
+        "bind_published",
+        replace_target_before_binding,
     )
 
     with pytest.raises(SnapshotPublicationUncertainError):
@@ -972,13 +1028,9 @@ def test_snapshot_commit_new_never_deletes_concurrently_replaced_target(
             ownership,
         )
 
-    monkeypatch.setattr(
-        VoxelMapSnapshot,
-        "_directory_identity",
-        staticmethod(original_identity),
-    )
-    assert VoxelMapSnapshot.load(winner).metadata == winner_metadata
-    assert VoxelMapSnapshot.load(target).metadata == metadata
+    assert not winner.exists()
+    assert VoxelMapSnapshot.load(target).metadata == winner_metadata
+    assert VoxelMapSnapshot.load(displaced).metadata == metadata
     assert _snapshot_staging_candidates(target) == []
 
 
