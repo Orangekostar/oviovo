@@ -129,70 +129,6 @@ def _bind_owned_member_at(
         os.close(member_fd)
 
 
-def _cleanup_bound_snapshot_members(
-    directory_fd: int,
-    directory_identity: tuple[int, int],
-    member_bindings: dict[str, tuple[int, int, int, int, int]],
-    *,
-    protected_path: Path,
-) -> None:
-    try:
-        directory = os.fstat(directory_fd)
-    except OSError:
-        return
-    if (
-        not stat.S_ISDIR(directory.st_mode)
-        or (directory.st_dev, directory.st_ino) != directory_identity
-    ):
-        return
-
-    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
-    for name, expected in member_bindings.items():
-        member_fd: int | None = None
-        try:
-            member_fd = os.open(name, flags, dir_fd=directory_fd)
-            opened_before = os.fstat(member_fd)
-            named_before = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
-            directory_before = os.fstat(directory_fd)
-            if not (
-                stat.S_ISREG(opened_before.st_mode)
-                and _source_fingerprint(opened_before) == expected
-                and _source_fingerprint(named_before) == expected
-                and (directory_before.st_dev, directory_before.st_ino)
-                == directory_identity
-            ):
-                continue
-
-            opened_after = os.fstat(member_fd)
-            named_after = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
-            directory_after = os.fstat(directory_fd)
-            try:
-                protected = os.lstat(protected_path)
-            except FileNotFoundError:
-                protected = None
-            if protected is not None and (
-                stat.S_ISDIR(protected.st_mode)
-                and (protected.st_dev, protected.st_ino) == directory_identity
-            ):
-                return
-            if not (
-                _source_fingerprint(opened_after) == expected
-                and _source_fingerprint(named_after) == expected
-                and (directory_after.st_dev, directory_after.st_ino)
-                == directory_identity
-            ):
-                continue
-            os.unlink(name, dir_fd=directory_fd)
-        except OSError:
-            continue
-        finally:
-            if member_fd is not None:
-                try:
-                    os.close(member_fd)
-                except OSError:
-                    pass
-
-
 def _read_source_member_at(
     directory_fd: int,
     name: str,
@@ -801,8 +737,6 @@ class VoxelMapSnapshot:
         )
         temporary_fd: int | None = None
         temporary_identity: tuple[int, int] | None = None
-        member_bindings: dict[str, tuple[int, int, int, int, int]] = {}
-        cleanup_before_publication = True
         try:
             temporary_fd, temporary_identity = _open_owned_directory(temporary)
             data_files = cls._write_snapshot_files(
@@ -814,7 +748,7 @@ class VoxelMapSnapshot:
                 registry,
             )
             for name in (*data_files, "checksums.json"):
-                member_bindings[name] = _bind_owned_member_at(temporary_fd, name)
+                _bind_owned_member_at(temporary_fd, name)
             os.fsync(temporary_fd)
             staged_witness = SnapshotSourceWitness.capture_staged(
                 temporary,
@@ -833,7 +767,6 @@ class VoxelMapSnapshot:
                 raise ValueError("snapshot source content changed during staged load")
             staged_witness = replace(staged_witness, path=target)
 
-            cleanup_before_publication = False
             cls._publish_directory_no_replace(temporary, target)
             try:
                 source_witness = staged_witness.bind_published()
@@ -849,17 +782,6 @@ class VoxelMapSnapshot:
                 source_witness=source_witness,
             )
         finally:
-            if (
-                cleanup_before_publication
-                and temporary_fd is not None
-                and temporary_identity is not None
-            ):
-                _cleanup_bound_snapshot_members(
-                    temporary_fd,
-                    temporary_identity,
-                    member_bindings,
-                    protected_path=target,
-                )
             if temporary_fd is not None:
                 try:
                     os.close(temporary_fd)
