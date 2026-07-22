@@ -754,7 +754,11 @@ def test_schema2_rejects_synchronized_declared_algorithm_hash_tamper(
         )
 
 
-def test_formal_schema2_index_requires_signed_depth_run_config(tmp_path: Path) -> None:
+@pytest.mark.parametrize("drift", ["policy", "config_binding"])
+def test_formal_schema2_index_rejects_policy_or_config_binding_drift(
+    tmp_path: Path,
+    drift: str,
+) -> None:
     targets, _ = _write_targets(tmp_path / "fixture")
     apartment, office = _split_schema2_indexes_by_scene(
         _write_checkpoint_index(tmp_path / "fixture", targets)
@@ -762,7 +766,8 @@ def test_formal_schema2_index_requires_signed_depth_run_config(tmp_path: Path) -
     payload = json.loads(apartment.read_text(encoding="utf-8"))
     config_path = apartment.parent / payload["run_config"]["path"]
     config = json.loads(config_path.read_text(encoding="utf-8"))
-    config["missing_observation_policy"] = "missing_as_absence"
+    if drift == "policy":
+        config["missing_observation_policy"] = "missing_as_absence"
     config["algorithm_hash"] = occlusion_evaluator.canonical_algorithm_hash(config)
     config_path.write_text(
         json.dumps(config, sort_keys=True, separators=(",", ":")) + "\n",
@@ -798,7 +803,14 @@ def test_formal_schema2_index_requires_signed_depth_run_config(tmp_path: Path) -
         "scene": "apartment",
         "freeze_manifest": {"sha256": "1" * 64, "byte_count": 1},
         "repository": {"commit": "2" * 40, "tree": "3" * 40},
-        "config": {"sha256": "4" * 64, "byte_count": 1},
+        "config": {
+            "sha256": (
+                "4" * 64 if drift == "config_binding" else _sha256(config_path)
+            ),
+            "byte_count": (
+                1 if drift == "config_binding" else config_path.stat().st_size
+            ),
+        },
         "algorithm_hash": config["algorithm_hash"],
         "missing_observation_policy": "signed_depth",
         "input_bindings_sha256": "5" * 64,

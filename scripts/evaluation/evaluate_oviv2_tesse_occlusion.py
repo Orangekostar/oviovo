@@ -901,6 +901,8 @@ def _load_single_checkpoint_index(
                     and binding["byte_count"] >= 0
                     for binding in content_bindings
                 )
+                and config_binding["sha256"] == run_config_witness.sha256
+                and config_binding["byte_count"] == run_config_witness.byte_count
                 and isinstance(repository_binding, Mapping)
                 and set(repository_binding) == {"commit", "tree"}
                 and all(
