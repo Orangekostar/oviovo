@@ -39,14 +39,28 @@ class _SnapshotRollbackError(RuntimeError):
         )
 
 
-class _SnapshotPublicationUncertainError(RuntimeError):
-    def __init__(self, target: Path, publication_error: OSError) -> None:
+class SnapshotPublicationUncertainError(RuntimeError):
+    def __init__(
+        self,
+        target: Path,
+        publication_error: OSError,
+        *,
+        published: bool | None,
+    ) -> None:
         self.target = target
         self.publication_error = publication_error
-        super().__init__(
-            f"snapshot target was published at {target}, but parent directory fsync failed; "
-            "durability is uncertain"
-        )
+        self.published = published
+        if published:
+            message = (
+                f"snapshot target was published at {target}, but parent directory fsync failed; "
+                "durability is uncertain"
+            )
+        else:
+            message = (
+                f"snapshot publication state at {target} is uncertain; "
+                "a fallback reservation or published target may remain"
+            )
+        super().__init__(message)
 
 
 @dataclass(frozen=True)
@@ -274,6 +288,43 @@ class VoxelMapSnapshot:
             f"{source} -> {target}",
         )
 
+    @classmethod
+    def _publish_directory_with_reservation(cls, source: Path, target: Path) -> None:
+        target.mkdir()
+        try:
+            cls._fsync_directory(target.parent)
+            os.replace(source, target)
+        except OSError as publication_error:
+            raise SnapshotPublicationUncertainError(
+                target,
+                publication_error,
+                published=None,
+            ) from publication_error
+        try:
+            cls._fsync_directory(target.parent)
+        except OSError as publication_error:
+            raise SnapshotPublicationUncertainError(
+                target,
+                publication_error,
+                published=True,
+            ) from publication_error
+
+    @classmethod
+    def _publish_directory_no_replace(cls, source: Path, target: Path) -> None:
+        try:
+            cls._rename_directory_no_replace(source, target)
+        except NotImplementedError:
+            cls._publish_directory_with_reservation(source, target)
+            return
+        try:
+            cls._fsync_directory(target.parent)
+        except OSError as publication_error:
+            raise SnapshotPublicationUncertainError(
+                target,
+                publication_error,
+                published=True,
+            ) from publication_error
+
     @staticmethod
     def _fsync_directory(path: Path) -> None:
         directory_fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY)
@@ -404,7 +455,12 @@ class VoxelMapSnapshot:
             raise TypeError("metadata must be VoxelSnapshotMetadata")
         cls._validate_components(metadata, geometry, evidence, ownership, registry)
         target = Path(target_dir)
-        target.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            parent_mode = target.parent.stat().st_mode
+        except FileNotFoundError as exc:
+            raise FileNotFoundError(target.parent) from exc
+        if not stat.S_ISDIR(parent_mode):
+            raise NotADirectoryError(target.parent)
         temporary = Path(
             tempfile.mkdtemp(prefix=f".{target.name}.tmp-", dir=target.parent)
         )
@@ -427,15 +483,8 @@ class VoxelMapSnapshot:
             cls._fsync_directory(temporary)
             restored = replace(cls.load(temporary), path=target)
 
-            cls._rename_directory_no_replace(temporary, target)
+            cls._publish_directory_no_replace(temporary, target)
             published = True
-            try:
-                cls._fsync_directory(target.parent)
-            except OSError as publication_error:
-                raise _SnapshotPublicationUncertainError(
-                    target,
-                    publication_error,
-                ) from publication_error
             return restored
         finally:
             if not published and temporary.exists():

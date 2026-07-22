@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, replace
+import errno
 import hashlib
 import json
 import os
@@ -141,6 +142,29 @@ def test_snapshot_commit_new_publishes_complete_contract(tmp_path: Path) -> None
     assert list(tmp_path.glob(".snapshot.tmp-*")) == []
 
 
+def test_snapshot_publication_uncertain_error_is_publicly_exported() -> None:
+    from src.oviv2 import SnapshotPublicationUncertainError as exported_error
+    from src.oviv2.snapshot import SnapshotPublicationUncertainError
+
+    assert exported_error is SnapshotPublicationUncertainError
+
+
+def test_snapshot_commit_new_rejects_missing_parent_directory(tmp_path: Path) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    parent = tmp_path / "missing"
+
+    with pytest.raises(FileNotFoundError, match="missing"):
+        VoxelMapSnapshot.commit_new(
+            parent / "snapshot",
+            metadata,
+            geometry,
+            evidence,
+            ownership,
+        )
+
+    assert not parent.exists()
+
+
 def test_snapshot_commit_new_existing_target_is_byte_for_byte_unchanged(
     tmp_path: Path,
 ) -> None:
@@ -224,16 +248,120 @@ def test_snapshot_commit_new_staging_failure_leaves_no_target_or_temp(
     assert list(tmp_path.glob(".snapshot.tmp-*")) == []
 
 
-def test_snapshot_commit_new_fails_closed_without_renameat2(
+def test_snapshot_commit_new_falls_back_without_renameat2(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     metadata, geometry, evidence, ownership = _components()
     target = tmp_path / "snapshot"
+    original_fsync_directory = VoxelMapSnapshot._fsync_directory
+    parent_fsync_calls = 0
 
     monkeypatch.setattr(snapshot_module.ctypes, "CDLL", lambda *_args, **_kwargs: object())
 
-    with pytest.raises(NotImplementedError, match="renameat2"):
+    def record_parent_fsync(path: Path) -> None:
+        nonlocal parent_fsync_calls
+        if path == target.parent:
+            parent_fsync_calls += 1
+        original_fsync_directory(path)
+
+    monkeypatch.setattr(
+        VoxelMapSnapshot,
+        "_fsync_directory",
+        staticmethod(record_parent_fsync),
+    )
+
+    committed = VoxelMapSnapshot.commit_new(
+        target,
+        metadata,
+        geometry,
+        evidence,
+        ownership,
+    )
+
+    assert committed.path == target
+    assert VoxelMapSnapshot.load(target).metadata == metadata
+    assert parent_fsync_calls == 2
+    assert list(tmp_path.glob(".snapshot.tmp-*")) == []
+
+
+@pytest.mark.parametrize(
+    "error_number",
+    [errno.ENOSYS, errno.EINVAL, getattr(errno, "EOPNOTSUPP", errno.ENOSYS)],
+)
+def test_snapshot_commit_new_falls_back_for_unsupported_renameat2_errno(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    error_number: int,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+
+    class UnsupportedRenameAt2:
+        def __call__(self, *_args) -> int:
+            snapshot_module.ctypes.set_errno(error_number)
+            return -1
+
+    class Libc:
+        renameat2 = UnsupportedRenameAt2()
+
+    monkeypatch.setattr(snapshot_module.ctypes, "CDLL", lambda *_args, **_kwargs: Libc())
+
+    committed = VoxelMapSnapshot.commit_new(
+        target,
+        metadata,
+        geometry,
+        evidence,
+        ownership,
+    )
+
+    assert committed.path == target
+    assert VoxelMapSnapshot.load(target).metadata == metadata
+
+
+def test_snapshot_commit_new_fallback_preserves_existing_nonempty_target(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+    VoxelMapSnapshot.commit(target, metadata, geometry, evidence, ownership)
+    before = _snapshot_state(target)
+    monkeypatch.setattr(snapshot_module.ctypes, "CDLL", lambda *_args, **_kwargs: object())
+
+    with pytest.raises(FileExistsError):
+        VoxelMapSnapshot.commit_new(
+            target,
+            replace(metadata, frame_id=20, revision=2),
+            geometry,
+            evidence,
+            ownership,
+        )
+
+    assert _snapshot_state(target) == before
+    assert VoxelMapSnapshot.load(target).metadata == metadata
+    assert list(tmp_path.glob(".snapshot.tmp-*")) == []
+
+
+def test_snapshot_commit_new_fallback_intermediate_failure_preserves_reservation(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from src.oviv2.snapshot import SnapshotPublicationUncertainError
+
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+    original_replace = os.replace
+    monkeypatch.setattr(snapshot_module.ctypes, "CDLL", lambda *_args, **_kwargs: object())
+
+    def fail_fallback_replace(source: str | Path, destination: str | Path) -> None:
+        if Path(destination) == target:
+            raise OSError("injected fallback replace failure")
+        original_replace(source, destination)
+
+    monkeypatch.setattr(os, "replace", fail_fallback_replace)
+
+    with pytest.raises(SnapshotPublicationUncertainError) as raised:
         VoxelMapSnapshot.commit_new(
             target,
             metadata,
@@ -242,7 +370,11 @@ def test_snapshot_commit_new_fails_closed_without_renameat2(
             ownership,
         )
 
-    assert not target.exists()
+    assert isinstance(raised.value.__cause__, OSError)
+    assert "fallback replace failure" in str(raised.value.__cause__)
+    assert raised.value.published is None
+    assert target.is_dir()
+    assert list(target.iterdir()) == []
     assert list(tmp_path.glob(".snapshot.tmp-*")) == []
 
 
@@ -250,6 +382,8 @@ def test_snapshot_commit_new_parent_fsync_failure_reports_published_uncertain_ta
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    from src.oviv2.snapshot import SnapshotPublicationUncertainError
+
     metadata, geometry, evidence, ownership = _components()
     target = tmp_path / "snapshot"
     original_fsync_directory = VoxelMapSnapshot._fsync_directory
@@ -269,10 +403,7 @@ def test_snapshot_commit_new_parent_fsync_failure_reports_published_uncertain_ta
         staticmethod(fail_first_parent_fsync),
     )
 
-    with pytest.raises(
-        RuntimeError,
-        match="published.*durability is uncertain",
-    ) as raised:
+    with pytest.raises(SnapshotPublicationUncertainError) as raised:
         VoxelMapSnapshot.commit_new(
             target,
             metadata,
@@ -281,9 +412,9 @@ def test_snapshot_commit_new_parent_fsync_failure_reports_published_uncertain_ta
             ownership,
         )
 
-    assert type(raised.value).__name__ == "_SnapshotPublicationUncertainError"
     assert isinstance(raised.value.__cause__, OSError)
     assert "immutable parent fsync failure" in str(raised.value.__cause__)
+    assert raised.value.published is True
     assert VoxelMapSnapshot.load(target).metadata == metadata
     assert list(tmp_path.glob(".snapshot.tmp-*")) == []
     assert parent_fsync_calls == 1
@@ -293,6 +424,8 @@ def test_snapshot_commit_new_never_deletes_concurrently_replaced_target(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    from src.oviv2.snapshot import SnapshotPublicationUncertainError
+
     metadata, geometry, evidence, ownership = _components()
     target = tmp_path / "snapshot"
     winner = tmp_path / "concurrent-winner"
@@ -335,7 +468,7 @@ def test_snapshot_commit_new_never_deletes_concurrently_replaced_target(
         staticmethod(fail_first_parent_fsync),
     )
 
-    with pytest.raises(RuntimeError, match="published.*durability is uncertain"):
+    with pytest.raises(SnapshotPublicationUncertainError):
         VoxelMapSnapshot.commit_new(
             target,
             metadata,
@@ -439,6 +572,46 @@ def test_snapshot_commit_new_race_has_exactly_one_winner(
         "_rename_directory_no_replace",
         classmethod(publish_together),
     )
+    threads = [threading.Thread(target=commit, args=(revision,)) for revision in (1, 2)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=10.0)
+
+    assert all(not thread.is_alive() for thread in threads)
+    assert len(successes) == 1
+    assert len(failures) == 1
+    assert isinstance(failures[0], FileExistsError)
+    assert VoxelMapSnapshot.load(target).metadata == successes[0].metadata
+    assert list(tmp_path.glob(".snapshot.tmp-*")) == []
+
+
+def test_snapshot_commit_new_fallback_race_has_exactly_one_winner(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+    barrier = threading.Barrier(2)
+    successes: list[VoxelMapSnapshot] = []
+    failures: list[BaseException] = []
+    monkeypatch.setattr(snapshot_module.ctypes, "CDLL", lambda *_args, **_kwargs: object())
+
+    def commit(revision: int) -> None:
+        barrier.wait()
+        try:
+            successes.append(
+                VoxelMapSnapshot.commit_new(
+                    target,
+                    replace(metadata, frame_id=revision * 10, revision=revision),
+                    geometry,
+                    evidence,
+                    ownership,
+                )
+            )
+        except BaseException as exc:
+            failures.append(exc)
+
     threads = [threading.Thread(target=commit, args=(revision,)) for revision in (1, 2)]
     for thread in threads:
         thread.start()

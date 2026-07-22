@@ -35,7 +35,11 @@ from src.oviv2.semantic_memory import (
     InformativeViewBank,
     SparseClassPosterior,
 )
-from src.oviv2.snapshot import VoxelMapSnapshot, VoxelSnapshotMetadata
+from src.oviv2.snapshot import (
+    SnapshotPublicationUncertainError,
+    VoxelMapSnapshot,
+    VoxelSnapshotMetadata,
+)
 from src.oviv2.structure import DepthStructureConfig, DepthStructureFrontend
 from src.oviv2.tracking import LocalTrack, LocalTrackBatch, LocalTracker, LocalTrackerConfig
 from src.oviv2.visibility import VisibilityConfig, VisibilityStatus, VoxelVisibilityProjector
@@ -71,6 +75,7 @@ __all__ = [
     "SparseEvidenceStore",
     "SparseClassPosterior",
     "SparseTsdfVolume",
+    "SnapshotPublicationUncertainError",
     "TsdfConfig",
     "VoxelKey",
     "VoxelMapSnapshot",
