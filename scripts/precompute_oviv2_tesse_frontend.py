@@ -18,7 +18,7 @@ import stat
 import subprocess
 import sys
 import tempfile
-from typing import Any, Iterable, Mapping
+from typing import Any, Callable, Iterable, Mapping
 
 import numpy as np
 
@@ -26,6 +26,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from src.datasets.tesse_cd import TesseCdRgbdDataset
 from src.oviv2 import hybrid_cache
 
 
@@ -33,6 +34,7 @@ SCENES = ("apartment", "office")
 SCENE_GPUS = {"apartment": 0, "office": 1}
 SCENE_FRAME_COUNTS = {"apartment": 1745, "office": 4346}
 IMAGE_SHAPE = (480, 720)
+REQUIRED_FREE_BYTES = 300 * 1024**3
 SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
 REQUIRED_CACHE_FIELDS = {
     "mask",
@@ -97,18 +99,60 @@ class _FileBinding:
 
 
 @dataclass(frozen=True)
+class _DatasetCapture:
+    witness: Mapping[str, Any]
+    bindings: tuple[_FileBinding, ...]
+    directories: tuple[_DirectoryContentBinding, ...]
+    fixture_only: bool
+
+
+@dataclass(frozen=True)
 class _RunSnapshot:
     input_manifest: _FileBinding
     provenance: Mapping[str, _FileBinding]
     vocabularies: Mapping[str, _FileBinding]
     classes: Mapping[str, tuple[str, ...]]
+    datasets: Mapping[str, _DatasetCapture]
 
     @property
     def bindings(self) -> tuple[_FileBinding, ...]:
         unique: dict[Path, _FileBinding] = {self.input_manifest.path: self.input_manifest}
         for binding in (*self.provenance.values(), *self.vocabularies.values()):
             unique.setdefault(binding.path, binding)
+        for capture in self.datasets.values():
+            for binding in capture.bindings:
+                unique.setdefault(binding.path, binding)
         return tuple(unique.values())
+
+
+@dataclass(frozen=True)
+class _DirectoryBinding:
+    path: Path
+    device: int
+    inode: int
+
+
+@dataclass(frozen=True)
+class _DirectoryContentBinding:
+    path: Path
+    device: int
+    inode: int
+    mode: int
+    size: int
+    modified_ns: int
+    changed_ns: int
+
+
+@dataclass(frozen=True)
+class _OutputLayout:
+    parent: _DirectoryBinding
+    root: _DirectoryBinding
+    scenes: Mapping[str, _DirectoryBinding]
+    results: Mapping[str, _DirectoryBinding]
+    input_copies: Mapping[Path, _FileBinding]
+
+
+DatasetFactory = Callable[[Path, str, Path, Path], Any]
 
 
 class _IgnoredImageCrop:
@@ -225,11 +269,283 @@ def _load_frozen_input_manifest(
     return payload, binding
 
 
+def _manifest_file_snapshot(
+    value: object,
+    *,
+    role: str,
+    retain_bytes: bool = False,
+) -> tuple[_FileBinding, bytes | None]:
+    if not isinstance(value, Mapping):
+        raise ValueError(f"{role} binding must be an object")
+    path = _resolve_path(value.get("path"))
+    expected = value.get("sha256")
+    binding, data = _snapshot_regular_file(
+        path,
+        field_name=role,
+        retain_bytes=retain_bytes,
+    )
+    if (
+        not isinstance(expected, str)
+        or SHA256_PATTERN.fullmatch(expected) is None
+        or binding.sha256 != expected
+    ):
+        raise ValueError(f"{role} hash mismatch")
+    return binding, data
+
+
+def _record_witness(record: object, *, role: str) -> dict[str, Any]:
+    try:
+        pose = np.asarray(record.camera_to_world, dtype=np.float64)
+        values = {
+            "frame_index": int(record.frame_index),
+            "timestamp_ns": int(record.timestamp_ns),
+            "relative_timestamp_ns": int(record.relative_timestamp_ns),
+            "rgb_path": str(Path(record.rgb_path).absolute()),
+            "depth_path": str(Path(record.depth_path).absolute()),
+        }
+    except (AttributeError, TypeError, ValueError) as exc:
+        raise ValueError(f"{role} is invalid") from exc
+    if pose.shape != (4, 4) or not np.all(np.isfinite(pose)):
+        raise ValueError(f"{role} pose is invalid")
+    values["camera_to_world_sha256"] = _json_hash(pose.tolist())
+    return values
+
+
+def _capture_dataset_witness(
+    manifest: Mapping[str, Any],
+    command: FrontendCommand,
+    *,
+    dataset_factory: DatasetFactory,
+) -> _DatasetCapture:
+    records = _scene_records(manifest)
+    record = records.get(command.scene)
+    if not isinstance(record, Mapping):
+        raise ValueError(f"scene {command.scene} record must be an object")
+    schedule_record = manifest.get("schedule_manifest")
+    source_record = manifest.get("source_manifest")
+    camera_record = manifest.get("camera")
+    export_record = record.get("export_manifest")
+    timestamps_record = record.get("timestamps")
+    trajectory_record = record.get("trajectory")
+    for value, role in (
+        (schedule_record, "schedule manifest"),
+        (source_record, "source manifest"),
+        (camera_record, "camera manifest"),
+        (export_record, f"{command.scene} export manifest"),
+        (timestamps_record, f"{command.scene} timestamps"),
+        (trajectory_record, f"{command.scene} trajectory"),
+    ):
+        if not isinstance(value, Mapping):
+            raise ValueError(f"{role} binding must be an object")
+
+    export_path = _resolve_path(export_record.get("path"))
+    schedule_path = _resolve_path(schedule_record.get("path"))
+    dataset = dataset_factory(
+        command.source_root,
+        command.scene,
+        export_path,
+        schedule_path,
+    )
+    expected_count = record.get("frame_count")
+    if type(expected_count) is not int or len(dataset) != expected_count:
+        raise ValueError(f"scene {command.scene} validated dataset frame count mismatch")
+    if expected_count <= 0:
+        raise ValueError(f"scene {command.scene} validated dataset is empty")
+
+    expected_paths = {
+        "root": command.source_root,
+        "export_manifest_path": export_path,
+        "schedule_manifest_path": schedule_path,
+        "camera_path": _resolve_path(camera_record.get("path")),
+        "timestamps_path": _resolve_path(timestamps_record.get("path")),
+        "trajectory_path": _resolve_path(trajectory_record.get("path")),
+    }
+    for attribute, expected_path in expected_paths.items():
+        actual_path = Path(os.path.abspath(Path(getattr(dataset, attribute))))
+        if actual_path != expected_path:
+            raise ValueError(
+                f"scene {command.scene} dataset {attribute} does not match manifest"
+            )
+
+    schedule_binding, _ = _manifest_file_snapshot(
+        schedule_record,
+        role="schedule manifest",
+    )
+    source_binding, _ = _manifest_file_snapshot(
+        source_record,
+        role="source manifest",
+    )
+    camera_binding, _ = _manifest_file_snapshot(
+        camera_record,
+        role="camera manifest",
+    )
+    export_binding, export_bytes = _manifest_file_snapshot(
+        export_record,
+        role=f"{command.scene} export manifest",
+        retain_bytes=True,
+    )
+    timestamps_binding, _ = _manifest_file_snapshot(
+        timestamps_record,
+        role=f"{command.scene} timestamps",
+    )
+    trajectory_binding, _ = _manifest_file_snapshot(
+        trajectory_record,
+        role=f"{command.scene} trajectory",
+    )
+    assert export_bytes is not None
+    try:
+        export_payload = json.loads(export_bytes.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError(f"{command.scene} export manifest is invalid") from exc
+    if not isinstance(export_payload, Mapping):
+        raise ValueError(f"{command.scene} export manifest must be an object")
+    combined = export_record.get("combined_output_sha256")
+    file_hash_count = export_record.get("file_hash_count")
+    if (
+        not isinstance(combined, str)
+        or SHA256_PATTERN.fullmatch(combined) is None
+        or export_payload.get("combined_output_sha256") != combined
+        or type(file_hash_count) is not int
+        or export_payload.get("file_hash_count") != file_hash_count
+    ):
+        raise ValueError(f"{command.scene} export manifest content binding mismatch")
+
+    output_bindings = [camera_binding, timestamps_binding, trajectory_binding]
+    extra_fixture_bindings: list[_FileBinding] = []
+    fixture_only = bool(getattr(dataset, "_fixture_only", False))
+    if fixture_only:
+        computed_combined = combined
+        computed_file_count = file_hash_count
+        fixture_results = command.source_root / "results"
+        if fixture_results.is_dir():
+            for path in sorted(fixture_results.iterdir()):
+                binding, _ = _snapshot_regular_file(
+                    path,
+                    field_name=f"{command.scene} fixture RGB-D input",
+                )
+                extra_fixture_bindings.append(binding)
+    else:
+        for dataset_record in dataset.records:
+            for kind in ("rgb_path", "depth_path"):
+                path = Path(getattr(dataset_record, kind))
+                binding, _ = _snapshot_regular_file(
+                    path,
+                    field_name=f"{command.scene} validated RGB-D input",
+                )
+                output_bindings.append(binding)
+        output_root = camera_binding.path.parent
+        output_hashes: list[tuple[str, str]] = []
+        for binding in output_bindings:
+            try:
+                relative = str(binding.path.relative_to(output_root))
+            except ValueError as exc:
+                raise ValueError("validated RGB-D input escapes the export root") from exc
+            output_hashes.append((relative, binding.sha256))
+        digest = hashlib.sha256()
+        for relative, checksum in sorted(output_hashes):
+            digest.update(
+                relative.encode("utf-8")
+                + b"\0"
+                + checksum.encode("ascii")
+                + b"\n"
+            )
+        computed_combined = digest.hexdigest()
+        computed_file_count = len(output_bindings)
+        if (
+            computed_combined != combined
+            or computed_file_count != file_hash_count
+        ):
+            raise ValueError(f"{command.scene} exported RGB-D binding mismatch")
+
+    try:
+        intrinsics = dataset.intrinsics
+        intrinsics_values = {
+            name: float(getattr(intrinsics, name))
+            for name in ("fx", "fy", "cx", "cy")
+        }
+        intrinsics_values.update(
+            width=int(intrinsics.width),
+            height=int(intrinsics.height),
+        )
+        first = _record_witness(dataset.records[0], role="first dataset record")
+        last = _record_witness(dataset.records[-1], role="last dataset record")
+    except (AttributeError, IndexError, TypeError, ValueError) as exc:
+        raise ValueError(f"scene {command.scene} validated dataset metadata is invalid") from exc
+    if not all(
+        np.isfinite(intrinsics_values[name]) for name in ("fx", "fy", "cx", "cy")
+    ):
+        raise ValueError(f"scene {command.scene} dataset intrinsics are invalid")
+
+    witness = {
+        "schema_version": 1,
+        "scene": command.scene,
+        "root": str(command.source_root),
+        "validated_frame_count": expected_count,
+        "intrinsics": intrinsics_values,
+        "first_record": first,
+        "last_record": last,
+        "schedule_manifest": {
+            "path": str(schedule_binding.path),
+            "sha256": schedule_binding.sha256,
+        },
+        "source_manifest": {
+            "path": str(source_binding.path),
+            "sha256": source_binding.sha256,
+        },
+        "camera_manifest": {
+            "path": str(camera_binding.path),
+            "sha256": camera_binding.sha256,
+        },
+        "export_manifest": {
+            "path": str(export_binding.path),
+            "sha256": export_binding.sha256,
+            "combined_output_sha256": combined,
+            "file_hash_count": file_hash_count,
+            "validated_combined_output_sha256": computed_combined,
+            "validated_file_hash_count": computed_file_count,
+        },
+        "timestamps": {
+            "path": str(timestamps_binding.path),
+            "sha256": timestamps_binding.sha256,
+        },
+        "trajectory": {
+            "path": str(trajectory_binding.path),
+            "sha256": trajectory_binding.sha256,
+        },
+    }
+    return _DatasetCapture(
+        witness=witness,
+        bindings=(
+            schedule_binding,
+            source_binding,
+            export_binding,
+            *output_bindings,
+            *extra_fixture_bindings,
+        ),
+        directories=(
+            _bind_directory_content(command.source_root, role="TESSE-CD scene root"),
+            _bind_directory_content(
+                command.source_root / "results",
+                role="TESSE-CD RGB-D results",
+            ),
+        )
+        if (command.source_root / "results").is_dir()
+        else (
+            _bind_directory_content(command.source_root, role="TESSE-CD scene root"),
+        ),
+        fixture_only=fixture_only,
+    )
+
+
 def _capture_run_snapshot(
     config: Mapping[str, Any],
     commands: Iterable[FrontendCommand],
     input_manifest: _FileBinding,
+    manifest: Mapping[str, Any],
+    *,
+    dataset_factory: DatasetFactory,
 ) -> _RunSnapshot:
+    commands = tuple(commands)
     expected_input = config.get("manifest_sha256")
     if input_manifest.sha256 != expected_input:
         raise ValueError("input manifest hash mismatch")
@@ -285,6 +601,14 @@ def _capture_run_snapshot(
         provenance=provenance,
         vocabularies=vocabularies,
         classes=classes,
+        datasets={
+            command.scene: _capture_dataset_witness(
+                manifest,
+                command,
+                dataset_factory=dataset_factory,
+            )
+            for command in commands
+        },
     )
     return snapshot
 
@@ -512,7 +836,12 @@ def _fsync_directory(directory: Path) -> None:
         os.close(descriptor)
 
 
-def _publish_json_new(path: Path, payload: Mapping[str, Any]) -> None:
+def _publish_json_new(
+    path: Path,
+    payload: Mapping[str, Any],
+    *,
+    before_link: Callable[[], None] | None = None,
+) -> None:
     temporary: Path | None = None
     published = False
     try:
@@ -529,6 +858,8 @@ def _publish_json_new(path: Path, payload: Mapping[str, Any]) -> None:
             stream.write("\n")
             stream.flush()
             os.fsync(stream.fileno())
+        if before_link is not None:
+            before_link()
         os.link(temporary, path, follow_symlinks=False)
         published = True
         try:
@@ -652,17 +983,21 @@ def _load_json_object(path: Path) -> dict[str, Any]:
     return value
 
 
-def _visible_gpu_ids() -> set[int]:
+def _gpu_inventory() -> dict[int, str]:
     result = subprocess.run(
-        ["nvidia-smi", "--query-gpu=index", "--format=csv,noheader"],
+        ["nvidia-smi", "--query-gpu=index,name", "--format=csv,noheader"],
         text=True,
         capture_output=True,
         check=True,
     )
     try:
-        return {int(value.strip()) for value in result.stdout.splitlines() if value.strip()}
-    except ValueError as exc:
-        raise ValueError("nvidia-smi returned an invalid GPU index") from exc
+        rows = [line.split(",", 1) for line in result.stdout.splitlines() if line.strip()]
+        inventory = {int(index.strip()): name.strip() for index, name in rows}
+    except (TypeError, ValueError) as exc:
+        raise ValueError("nvidia-smi returned an invalid GPU inventory") from exc
+    if len(inventory) != len(rows):
+        raise ValueError("nvidia-smi returned duplicate GPU indices")
+    return inventory
 
 
 def _validate_output_disk(config: Mapping[str, Any]) -> dict[str, Any]:
@@ -678,10 +1013,26 @@ def _validate_output_disk(config: Mapping[str, Any]) -> dict[str, Any]:
     if not os.access(current, os.W_OK | os.X_OK):
         raise ValueError("frontend cache root ancestor is not writable")
     usage = shutil.disk_usage(current)
-    minimum = _strict_int(config.get("minimum_free_bytes"), name="minimum_free_bytes")
-    if minimum <= 0 or usage.free < minimum:
+    required = _strict_int(
+        config.get("required_free_bytes"),
+        name="required_free_bytes",
+    )
+    if required != REQUIRED_FREE_BYTES:
+        raise ValueError("required_free_bytes must be exactly 300 GiB")
+    if usage.free < required:
         raise ValueError("frontend cache disk has insufficient free space")
-    return {"output_root": str(output_root), "free_bytes": usage.free}
+    return {
+        "output_root": str(output_root),
+        "free_bytes": usage.free,
+        "required_free_bytes": required,
+    }
+
+
+def _assert_run_snapshot_unchanged(run_snapshot: _RunSnapshot) -> None:
+    _assert_bindings_unchanged(run_snapshot.bindings)
+    for capture in run_snapshot.datasets.values():
+        for binding in capture.directories:
+            _verify_directory_content(binding, role="TESSE-CD input directory")
 
 
 def _preflight(
@@ -690,14 +1041,20 @@ def _preflight(
     run_snapshot: _RunSnapshot,
 ) -> dict[str, Any]:
     requested = {command.gpu_id for command in commands}
-    missing = requested - _visible_gpu_ids()
+    inventory = _gpu_inventory()
+    if len(inventory) < 3:
+        raise ValueError("TESSE-CD frontend requires at least three visible GPUs")
+    if any(inventory.get(index) != "NVIDIA A40" for index in (0, 1, 2)):
+        raise ValueError("GPUs 0, 1, and 2 must all be NVIDIA A40")
+    missing = requested - set(inventory)
     if missing:
         raise ValueError(f"requested GPU is not visible: {', '.join(map(str, sorted(missing)))}")
     disk = _validate_output_disk(config)
-    _assert_bindings_unchanged(run_snapshot.bindings)
+    _assert_run_snapshot_unchanged(run_snapshot)
     return {
         "status": "ready",
         "gpu_ids": [command.gpu_id for command in commands],
+        "gpu_inventory": {str(index): name for index, name in sorted(inventory.items())},
         **disk,
     }
 
@@ -708,6 +1065,8 @@ def validate_frontend_cache(
     *,
     input_manifest_sha256: str,
     run_snapshot: _RunSnapshot | None = None,
+    manifest: Mapping[str, Any] | None = None,
+    dataset_factory: DatasetFactory = TesseCdRgbdDataset,
 ) -> dict[str, Any]:
     if command.scene not in SCENES:
         raise ValueError("unknown TESSE-CD scene in frontend command")
@@ -722,13 +1081,28 @@ def validate_frontend_cache(
         or input_manifest_sha256 != recorded_manifest_sha256
     ):
         raise ValueError("input manifest hash mismatch")
+    if manifest is None:
+        manifest, loaded_input_binding = _load_frozen_input_manifest(config)
+    else:
+        loaded_input_binding = None
     if run_snapshot is None:
-        _, input_binding = _load_frozen_input_manifest(config)
-        run_snapshot = _capture_run_snapshot(config, (command,), input_binding)
+        if loaded_input_binding is None:
+            loaded_manifest, loaded_input_binding = _load_frozen_input_manifest(config)
+            if loaded_manifest != manifest:
+                raise ValueError("input manifest changed before snapshot")
+        run_snapshot = _capture_run_snapshot(
+            config,
+            (command,),
+            loaded_input_binding,
+            manifest,
+            dataset_factory=dataset_factory,
+        )
     if run_snapshot.input_manifest.sha256 != input_manifest_sha256:
         raise ValueError("input manifest snapshot hash mismatch")
     if command.scene not in run_snapshot.classes:
         raise ValueError("run snapshot does not bind the requested scene vocabulary")
+    if command.scene not in run_snapshot.datasets:
+        raise ValueError("run snapshot does not bind the requested dataset input")
     vocabulary_binding = run_snapshot.vocabularies[command.scene]
     if (
         vocabulary_binding.path != command.classes_file
@@ -765,6 +1139,14 @@ def validate_frontend_cache(
     provenance = {
         name: binding.sha256 for name, binding in run_snapshot.provenance.items()
     }
+    dataset_capture = _capture_dataset_witness(
+        manifest,
+        command,
+        dataset_factory=dataset_factory,
+    )
+    input_witness = dataset_capture.witness
+    if input_witness != run_snapshot.datasets[command.scene].witness:
+        raise ValueError("dataset input witness changed after frontend inference")
 
     result = {
         "schema_version": 1,
@@ -781,11 +1163,20 @@ def validate_frontend_cache(
         "algorithm_hash": command.algorithm_hash,
         "feature_model_id": f"clip-sha256:{provenance['clip_model']}",
         "input_manifest_sha256": input_manifest_sha256,
+        "input_witness": input_witness,
         "provenance_sha256": provenance,
         "cache_files_sha256": cache_hashes,
         "cache_prefix_sha256": _cache_prefix_sha256(cache_hashes),
     }
-    _assert_bindings_unchanged((*run_snapshot.bindings, *cache_bindings))
+    final_bindings = (*run_snapshot.bindings, *dataset_capture.bindings, *cache_bindings)
+
+    def assert_final_inputs() -> None:
+        _assert_bindings_unchanged(final_bindings)
+        _assert_run_snapshot_unchanged(run_snapshot)
+        for directory in dataset_capture.directories:
+            _verify_directory_content(directory, role="TESSE-CD input directory")
+
+    assert_final_inputs()
     manifest_path = command.cache_dir / "frontend_manifest.json"
     if manifest_path.exists() or manifest_path.is_symlink():
         binding, data = _snapshot_regular_file(
@@ -801,9 +1192,14 @@ def validate_frontend_cache(
         _assert_binding_unchanged(binding)
         if existing != result:
             raise ValueError("existing frontend manifest does not match validated cache")
+        assert_final_inputs()
         return result
     try:
-        _publish_json_new(manifest_path, result)
+        _publish_json_new(
+            manifest_path,
+            result,
+            before_link=assert_final_inputs,
+        )
     except FileExistsError:
         binding, data = _snapshot_regular_file(
             manifest_path,
@@ -818,41 +1214,377 @@ def validate_frontend_cache(
         _assert_binding_unchanged(binding)
         if existing != result:
             raise ValueError("existing frontend manifest does not match validated cache")
+        assert_final_inputs()
     return result
 
 
-def _prepare_input_view(command: FrontendCommand) -> None:
-    source_results = command.source_root / "results"
-    source_trajectory = command.source_root / "traj.txt"
-    hybrid_cache._assert_no_symlink(source_results, field_name="source RGB-D results")
-    hybrid_cache._assert_no_symlink(source_trajectory, field_name="source trajectory")
-    if not source_results.is_dir():
-        raise ValueError("source RGB-D results must be a directory")
-    _regular_file(source_trajectory, name="source trajectory")
+def _require_absent_lstat(path: Path, *, role: str) -> None:
+    try:
+        os.lstat(path)
+    except FileNotFoundError:
+        return
+    raise ValueError(f"{role} must not preexist: {path}")
 
-    output_scene = command.cache_dir.parent
-    hybrid_cache._assert_no_symlink(output_scene, field_name="frontend output scene")
-    output_scene.mkdir(parents=True, exist_ok=True)
-    hybrid_cache._assert_no_symlink(output_scene, field_name="frontend output scene")
-    for source, name, is_directory in (
-        (source_results, "results", True),
-        (source_trajectory, "traj.txt", False),
+
+def _bind_directory(path: Path, *, role: str) -> _DirectoryBinding:
+    hybrid_cache._assert_no_symlink(path, field_name=role)
+    metadata = os.lstat(path)
+    if not stat.S_ISDIR(metadata.st_mode):
+        raise ValueError(f"{role} must be a real directory: {path}")
+    return _DirectoryBinding(path=path, device=metadata.st_dev, inode=metadata.st_ino)
+
+
+def _bind_directory_content(path: Path, *, role: str) -> _DirectoryContentBinding:
+    hybrid_cache._assert_no_symlink(path, field_name=role)
+    metadata = os.lstat(path)
+    if not stat.S_ISDIR(metadata.st_mode):
+        raise ValueError(f"{role} must be a real directory: {path}")
+    return _DirectoryContentBinding(
+        path=path,
+        device=metadata.st_dev,
+        inode=metadata.st_ino,
+        mode=metadata.st_mode,
+        size=metadata.st_size,
+        modified_ns=metadata.st_mtime_ns,
+        changed_ns=metadata.st_ctime_ns,
+    )
+
+
+def _verify_directory_content(binding: _DirectoryContentBinding, *, role: str) -> None:
+    hybrid_cache._assert_no_symlink(binding.path, field_name=role)
+    metadata = os.lstat(binding.path)
+    current = (
+        metadata.st_dev,
+        metadata.st_ino,
+        metadata.st_mode,
+        metadata.st_size,
+        metadata.st_mtime_ns,
+        metadata.st_ctime_ns,
+    )
+    expected = (
+        binding.device,
+        binding.inode,
+        binding.mode,
+        binding.size,
+        binding.modified_ns,
+        binding.changed_ns,
+    )
+    if current != expected:
+        raise ValueError(f"{role} changed after snapshot: {binding.path}")
+
+
+def _verify_directory(binding: _DirectoryBinding, *, role: str) -> None:
+    try:
+        hybrid_cache._assert_no_symlink(binding.path, field_name=role)
+        metadata = os.lstat(binding.path)
+    except (FileNotFoundError, ValueError) as exc:
+        raise ValueError(f"{role} changed after creation: {binding.path}") from exc
+    if (
+        not stat.S_ISDIR(metadata.st_mode)
+        or metadata.st_dev != binding.device
+        or metadata.st_ino != binding.inode
     ):
-        destination = output_scene / name
+        raise ValueError(f"{role} changed after creation: {binding.path}")
+
+
+def _open_bound_directory(binding: _DirectoryBinding, *, role: str) -> int:
+    flags = (
+        os.O_RDONLY
+        | getattr(os, "O_DIRECTORY", 0)
+        | getattr(os, "O_CLOEXEC", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+    )
+    descriptor = os.open(binding.path, flags)
+    metadata = os.fstat(descriptor)
+    if (
+        not stat.S_ISDIR(metadata.st_mode)
+        or metadata.st_dev != binding.device
+        or metadata.st_ino != binding.inode
+    ):
+        os.close(descriptor)
+        raise ValueError(f"{role} changed before directory open")
+    return descriptor
+
+
+def _copy_bound_file(
+    source_binding: _FileBinding,
+    destination: Path,
+    *,
+    destination_directory_fd: int,
+) -> _FileBinding:
+    source = hybrid_cache._open_regular_input(
+        source_binding.path,
+        field_name="frozen TESSE-CD staging input",
+    )
+    flags = (
+        os.O_WRONLY
+        | os.O_CREAT
+        | os.O_EXCL
+        | getattr(os, "O_CLOEXEC", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+    )
+    destination_fd: int | None = None
+    try:
+        before = _file_identity(os.fstat(source.fileno()))
+        if before != source_binding.identity:
+            raise ValueError(f"TESSE-CD input changed before staging: {source_binding.path}")
+        destination_fd = os.open(
+            destination.name,
+            flags,
+            0o400,
+            dir_fd=destination_directory_fd,
+        )
+        digest = hashlib.sha256()
+        while block := source.read(1024 * 1024):
+            digest.update(block)
+            view = memoryview(block)
+            while view:
+                written = os.write(destination_fd, view)
+                view = view[written:]
+        after = _file_identity(os.fstat(source.fileno()))
+        if after != before or digest.hexdigest() != source_binding.sha256:
+            raise ValueError(f"TESSE-CD input changed during staging: {source_binding.path}")
+        os.fchmod(destination_fd, 0o444)
+        os.fsync(destination_fd)
+        destination_identity = _file_identity(os.fstat(destination_fd))
+        if (
+            destination_identity.device == source_binding.identity.device
+            and destination_identity.inode == source_binding.identity.inode
+        ):
+            raise ValueError("TESSE-CD staging input must not be a hard link")
+        return _FileBinding(
+            path=destination,
+            sha256=source_binding.sha256,
+            identity=destination_identity,
+        )
+    finally:
+        source.close()
+        if destination_fd is not None:
+            os.close(destination_fd)
+
+
+def _staging_source_bindings(
+    command: FrontendCommand,
+    run_snapshot: _RunSnapshot | None,
+) -> tuple[tuple[_FileBinding, ...], _FileBinding]:
+    results_source = command.source_root / "results"
+    trajectory_source = command.source_root / "traj.txt"
+    if run_snapshot is None:
+        result_bindings = tuple(
+            _snapshot_regular_file(
+                path,
+                field_name="fixture RGB-D staging input",
+            )[0]
+            for path in sorted(results_source.iterdir())
+        )
+        trajectory_binding = _snapshot_regular_file(
+            trajectory_source,
+            field_name="fixture trajectory staging input",
+        )[0]
+    else:
+        capture = run_snapshot.datasets.get(command.scene)
+        if capture is None:
+            raise ValueError("run snapshot does not bind staging inputs")
+        result_bindings = tuple(
+            binding
+            for binding in capture.bindings
+            if binding.path.parent == results_source
+        )
+        trajectory_matches = tuple(
+            binding
+            for binding in capture.bindings
+            if binding.path == trajectory_source
+        )
+        if not capture.fixture_only and len(result_bindings) != command.frame_count * 2:
+            raise ValueError("run snapshot does not bind every RGB-D staging input")
+        if len(trajectory_matches) != 1:
+            raise ValueError("run snapshot does not bind the trajectory staging input")
+        trajectory_binding = trajectory_matches[0]
+    names = [binding.path.name for binding in result_bindings]
+    if len(set(names)) != len(names) or any(Path(name).name != name for name in names):
+        raise ValueError("RGB-D staging input names are not unique safe components")
+    return tuple(sorted(result_bindings, key=lambda value: value.path.name)), trajectory_binding
+
+
+def _command_output_paths(command: FrontendCommand) -> tuple[Path, ...]:
+    variant_prefix = "gsa_detections_"
+    if not command.cache_dir.name.startswith(variant_prefix):
+        raise ValueError("frontend cache directory does not encode a GSA variant")
+    variant = command.cache_dir.name.removeprefix(variant_prefix)
+    suffix_values = [
+        value.removeprefix("exp_suffix=")
+        for value in command.argv
+        if value.startswith("exp_suffix=")
+    ]
+    if len(suffix_values) != 1:
+        raise ValueError("frontend command must encode exactly one experiment suffix")
+    scene_root = command.cache_dir.parent
+    return (
+        command.cache_dir,
+        scene_root / f"exp_{suffix_values[0]}",
+        scene_root / f"gsa_vis_{variant}",
+        scene_root / f"gsa_classes_{variant}.json",
+    )
+
+
+def _prepare_output_layout(
+    commands: Iterable[FrontendCommand],
+    run_snapshot: _RunSnapshot | None = None,
+) -> _OutputLayout:
+    selected = tuple(commands)
+    if not selected:
+        raise ValueError("at least one frontend command is required")
+    roots = {command.cache_dir.parent.parent for command in selected}
+    if len(roots) != 1:
+        raise ValueError("frontend commands must share one cache root")
+    root = roots.pop()
+    hybrid_cache._assert_no_symlink(root, field_name="frontend cache root")
+    _require_absent_lstat(root, role="frontend cache root")
+    hybrid_cache._assert_no_symlink(root.parent, field_name="frontend cache parent")
+    root.parent.mkdir(parents=True, exist_ok=True)
+    hybrid_cache._assert_no_symlink(root.parent, field_name="frontend cache parent")
+    parent_binding = _bind_directory(root.parent, role="frontend cache parent")
+
+    scenes: dict[str, _DirectoryBinding] = {}
+    results: dict[str, _DirectoryBinding] = {}
+    input_copies: dict[Path, _FileBinding] = {}
+    try:
+        parent_descriptor = _open_bound_directory(
+            parent_binding,
+            role="frontend cache parent",
+        )
         try:
-            destination.symlink_to(source, target_is_directory=is_directory)
-        except FileExistsError:
-            if not destination.is_symlink() or destination.resolve() != source.resolve():
-                raise ValueError(f"frontend input view binding mismatch: {destination}")
+            os.mkdir(root.name, dir_fd=parent_descriptor)
+        finally:
+            os.close(parent_descriptor)
+        _verify_directory(parent_binding, role="frontend cache parent")
+        root_binding = _bind_directory(root, role="frontend cache root")
+        root_descriptor = _open_bound_directory(
+            root_binding,
+            role="frontend cache root",
+        )
+        try:
+            for command in selected:
+                scene_root = command.cache_dir.parent
+                _require_absent_lstat(scene_root, role="frontend scene root")
+                os.mkdir(scene_root.name, dir_fd=root_descriptor)
+                scene_binding = _bind_directory(
+                    scene_root,
+                    role="frontend scene root",
+                )
+                scenes[command.scene] = scene_binding
+                for output_path in _command_output_paths(command):
+                    _require_absent_lstat(output_path, role="frontend output path")
+
+                result_sources, trajectory_source = _staging_source_bindings(
+                    command,
+                    run_snapshot,
+                )
+                scene_descriptor = _open_bound_directory(
+                    scene_binding,
+                    role="frontend scene root",
+                )
+                try:
+                    os.mkdir("results", dir_fd=scene_descriptor)
+                    staged_results = scene_root / "results"
+                    result_binding = _bind_directory(
+                        staged_results,
+                        role="staged RGB-D results",
+                    )
+                    results[command.scene] = result_binding
+                    results_descriptor = _open_bound_directory(
+                        result_binding,
+                        role="staged RGB-D results",
+                    )
+                    try:
+                        for source_binding in result_sources:
+                            destination = staged_results / source_binding.path.name
+                            input_copies[destination] = _copy_bound_file(
+                                source_binding,
+                                destination,
+                                destination_directory_fd=results_descriptor,
+                            )
+                        os.fchmod(results_descriptor, 0o555)
+                        os.fsync(results_descriptor)
+                    finally:
+                        os.close(results_descriptor)
+                    trajectory_destination = scene_root / "traj.txt"
+                    input_copies[trajectory_destination] = _copy_bound_file(
+                        trajectory_source,
+                        trajectory_destination,
+                        destination_directory_fd=scene_descriptor,
+                    )
+                    os.fsync(scene_descriptor)
+                finally:
+                    os.close(scene_descriptor)
+        finally:
+            os.close(root_descriptor)
+        return _OutputLayout(
+            parent=parent_binding,
+            root=root_binding,
+            scenes=scenes,
+            results=results,
+            input_copies=input_copies,
+        )
+    except BaseException:
+        raise
 
 
-def _cache_file_set_is_complete(command: FrontendCommand) -> bool:
-    expected = {
-        f"frame{cache_index:06d}.pkl.gz"
-        for cache_index in range(command.frame_count)
+def _verify_output_layout(command: FrontendCommand, layout: _OutputLayout) -> None:
+    _verify_directory(layout.parent, role="frontend cache parent")
+    _verify_directory(layout.root, role="frontend cache root")
+    expected_scene_names = {binding.path.name for binding in layout.scenes.values()}
+    if {path.name for path in layout.root.path.iterdir()} != expected_scene_names:
+        raise ValueError("frontend cache root contains an unexpected path")
+    scene_binding = layout.scenes.get(command.scene)
+    if scene_binding is None:
+        raise ValueError("frontend output layout does not bind the requested scene")
+    _verify_directory(scene_binding, role="frontend scene root")
+    for output_path in _command_output_paths(command):
+        _require_absent_lstat(output_path, role="frontend output path")
+    expected_names = {"results", "traj.txt"}
+    if {path.name for path in scene_binding.path.iterdir()} != expected_names:
+        raise ValueError("frontend scene root contains an unexpected path")
+    _verify_source_links(scene_binding, layout)
+
+
+def _verify_source_links(
+    scene_binding: _DirectoryBinding,
+    layout: _OutputLayout,
+) -> None:
+    _verify_directory(layout.parent, role="frontend cache parent")
+    _verify_directory(layout.root, role="frontend cache root")
+    _verify_directory(scene_binding, role="frontend scene root")
+    scene_matches = [
+        scene for scene, binding in layout.scenes.items() if binding == scene_binding
+    ]
+    if len(scene_matches) != 1:
+        raise ValueError("staged frontend scene binding is ambiguous")
+    scene = scene_matches[0]
+    results_binding = layout.results.get(scene)
+    if results_binding is None:
+        raise ValueError("staged RGB-D results are not bound by this run")
+    _verify_directory(results_binding, role="staged RGB-D results")
+    copies = tuple(
+        binding
+        for path, binding in layout.input_copies.items()
+        if path == scene_binding.path / "traj.txt"
+        or path.parent == results_binding.path
+    )
+    expected_result_names = {
+        binding.path.name
+        for binding in copies
+        if binding.path.parent == results_binding.path
     }
-    actual = {path.name for path in command.cache_dir.glob("*.pkl.gz")}
-    return actual == expected
+    if {path.name for path in results_binding.path.iterdir()} != expected_result_names:
+        raise ValueError("staged RGB-D results contain an unexpected path")
+    if sum(binding.path == scene_binding.path / "traj.txt" for binding in copies) != 1:
+        raise ValueError("staged trajectory is not uniquely bound")
+    _assert_bindings_unchanged(copies)
+    for binding in copies:
+        metadata = os.lstat(binding.path)
+        if metadata.st_nlink != 1 or metadata.st_mode & 0o222:
+            raise ValueError(f"staged input is not an immutable private copy: {binding.path}")
 
 
 def _run_queue(
@@ -860,24 +1592,15 @@ def _run_queue(
     config: Mapping[str, Any],
     input_manifest_sha256: str,
     run_snapshot: _RunSnapshot,
+    manifest: Mapping[str, Any],
+    dataset_factory: DatasetFactory,
+    output_layout: _OutputLayout,
 ) -> None:
     frontend = config["frontend"]
     cwd = _resolve_path(frontend["script"]).parents[2]
     for command in commands:
-        manifest_path = command.cache_dir / "frontend_manifest.json"
-        if (
-            manifest_path.exists()
-            or manifest_path.is_symlink()
-            or _cache_file_set_is_complete(command)
-        ):
-            validate_frontend_cache(
-                command,
-                config,
-                input_manifest_sha256=input_manifest_sha256,
-                run_snapshot=run_snapshot,
-            )
-            continue
-        _prepare_input_view(command)
+        _assert_run_snapshot_unchanged(run_snapshot)
+        _verify_output_layout(command, output_layout)
         command.log_dir.mkdir(parents=True, exist_ok=True)
         environment = build_environment(command.gpu_id, cwd)
         with (command.log_dir / "frontend.log").open("w", encoding="utf-8") as log:
@@ -889,15 +1612,24 @@ def _run_queue(
                 stderr=subprocess.STDOUT,
                 check=True,
             )
+        scene_binding = output_layout.scenes[command.scene]
+        _verify_source_links(scene_binding, output_layout)
+        _assert_run_snapshot_unchanged(run_snapshot)
         validate_frontend_cache(
             command,
             config,
             input_manifest_sha256=input_manifest_sha256,
             run_snapshot=run_snapshot,
+            manifest=manifest,
+            dataset_factory=dataset_factory,
         )
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(
+    argv: list[str] | None = None,
+    *,
+    dataset_factory: DatasetFactory = TesseCdRgbdDataset,
+) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--config",
@@ -936,12 +1668,24 @@ def main(argv: list[str] | None = None) -> int:
             )
         return 0
 
-    run_snapshot = _capture_run_snapshot(config, commands, input_binding)
+    if tuple(command.scene for command in commands) != SCENES:
+        raise ValueError("formal frontend preflight must include both TESSE-CD scenes")
+    if tuple(command.gpu_id for command in commands) != (0, 1):
+        raise ValueError("formal frontend execution must use GPUs 0 and 1")
+
+    run_snapshot = _capture_run_snapshot(
+        config,
+        commands,
+        input_binding,
+        manifest,
+        dataset_factory=dataset_factory,
+    )
     if args.preflight_only:
         print(json.dumps(_preflight(commands, config, run_snapshot), sort_keys=True))
         return 0
 
     _preflight(commands, config, run_snapshot)
+    output_layout = _prepare_output_layout(commands, run_snapshot)
     gpu_ids = tuple(dict.fromkeys(command.gpu_id for command in commands))
     queues = [
         [command for command in commands if command.gpu_id == gpu_id]
@@ -956,6 +1700,9 @@ def main(argv: list[str] | None = None) -> int:
                 config,
                 input_manifest_sha256,
                 run_snapshot,
+                manifest,
+                dataset_factory,
+                output_layout,
             )
             for queue in queues
         ]

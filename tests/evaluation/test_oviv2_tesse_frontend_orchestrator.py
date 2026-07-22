@@ -10,6 +10,7 @@ from pathlib import Path
 import pickle
 import subprocess
 import sys
+from types import SimpleNamespace
 
 import numpy as np
 from PIL import Image
@@ -28,6 +29,53 @@ from scripts.precompute_oviv2_tesse_frontend import (
 
 SCENES = ("apartment", "office")
 FRAME_COUNTS = {"apartment": 1745, "office": 4346}
+
+
+class _StubTesseCdRgbdDataset:
+    """Small structural stand-in explicitly injected by unit tests only."""
+
+    _fixture_only = True
+    generation = 0
+
+    def __init__(self, root, scene, export_manifest, schedule_manifest) -> None:
+        self.root = Path(root)
+        self.scene = scene
+        self.export_manifest_path = Path(export_manifest)
+        self.schedule_manifest_path = Path(schedule_manifest)
+        self.camera_path = self.root.parent / "cam_params.json"
+        self.timestamps_path = self.root / "timestamps.csv"
+        self.trajectory_path = self.root / "traj.txt"
+        self._length = FRAME_COUNTS[scene]
+        self.intrinsics = SimpleNamespace(
+            fx=415.0,
+            fy=415.0,
+            cx=360.0,
+            cy=240.0,
+            width=720,
+            height=480,
+        )
+        generation = type(self).generation
+        self.records = (
+            SimpleNamespace(
+                frame_index=0,
+                timestamp_ns=generation,
+                relative_timestamp_ns=0,
+                rgb_path=self.root / "results/frame000000.jpg",
+                depth_path=self.root / "results/depth000000.png",
+                camera_to_world=np.eye(4, dtype=np.float64),
+            ),
+            SimpleNamespace(
+                frame_index=self._length - 1,
+                timestamp_ns=self._length - 1,
+                relative_timestamp_ns=self._length - 1,
+                rgb_path=self.root / f"results/frame{self._length - 1:06d}.jpg",
+                depth_path=self.root / f"results/depth{self._length - 1:06d}.png",
+                camera_to_world=np.eye(4, dtype=np.float64),
+            ),
+        )
+
+    def __len__(self) -> int:
+        return self._length
 
 
 def _sha256(path: Path) -> str:
@@ -58,10 +106,35 @@ def _fixture(tmp_path: Path) -> tuple[dict, dict]:
         "apartment": ["Fridge", "Books", "Chair"],
         "office": ["Small office objects", "Chairs", "Signs"],
     }
+    rgbd_root = tmp_path / "rgbd"
+    camera = rgbd_root / "cam_params.json"
+    camera.parent.mkdir(parents=True)
+    camera.write_text('{"width":720,"height":480}\n', encoding="utf-8")
+    schedule = tmp_path / "schedule.json"
+    schedule.write_text('{"dataset":"TESSE-CD"}\n', encoding="utf-8")
+    source_manifest = tmp_path / "source.json"
+    source_manifest.write_text('{"dataset":"TESSE-CD"}\n', encoding="utf-8")
     scenes: dict[str, dict] = {}
     for scene in SCENES:
-        root = tmp_path / "rgbd" / scene
+        root = rgbd_root / scene
         root.mkdir(parents=True)
+        export = root / "export_manifest.json"
+        export.write_text(
+            json.dumps(
+                {
+                    "dataset": "TESSE-CD",
+                    "scene": scene,
+                    "frame_count": FRAME_COUNTS[scene],
+                    "combined_output_sha256": "a" * 64,
+                    "file_hash_count": FRAME_COUNTS[scene] * 2 + 3,
+                }
+            ),
+            encoding="utf-8",
+        )
+        timestamps = root / "timestamps.csv"
+        timestamps.write_text("frame_index,timestamp_ns\n", encoding="utf-8")
+        trajectory = root / "traj.txt"
+        trajectory.write_text("pose\n", encoding="utf-8")
         vocabulary = tmp_path / f"{scene}.txt"
         vocabulary.write_text("\n".join(vocabularies[scene]) + "\n", encoding="utf-8")
         count = FRAME_COUNTS[scene]
@@ -74,6 +147,20 @@ def _fixture(tmp_path: Path) -> tuple[dict, dict]:
                 "stop_exclusive": count,
                 "stride": 1,
             },
+            "export_manifest": {
+                "path": str(export),
+                "sha256": _sha256(export),
+                "combined_output_sha256": "a" * 64,
+                "file_hash_count": FRAME_COUNTS[scene] * 2 + 3,
+            },
+            "timestamps": {
+                "path": str(timestamps),
+                "sha256": _sha256(timestamps),
+            },
+            "trajectory": {
+                "path": str(trajectory),
+                "sha256": _sha256(trajectory),
+            },
             "vocabulary": {
                 "txt_path": str(vocabulary),
                 "txt_sha256": _sha256(vocabulary),
@@ -82,14 +169,27 @@ def _fixture(tmp_path: Path) -> tuple[dict, dict]:
     manifest = {
         "schema_version": 1,
         "dataset": "TESSE-CD",
-        "camera": {"height": 480, "width": 720},
+        "camera": {
+            "height": 480,
+            "width": 720,
+            "path": str(camera),
+            "sha256": _sha256(camera),
+        },
+        "schedule_manifest": {
+            "path": str(schedule),
+            "sha256": _sha256(schedule),
+        },
+        "source_manifest": {
+            "path": str(source_manifest),
+            "sha256": _sha256(source_manifest),
+        },
         "scenes": scenes,
     }
     config = {
         "manifest": str(tmp_path / "manifest.json"),
         "manifest_sha256": "0" * 64,
         "frontend_cache_root": str(tmp_path / "frontend-cache"),
-        "minimum_free_bytes": 1,
+        "required_free_bytes": 300 * 1024**3,
         "frontend_logs_root": str(tmp_path / "logs"),
         "frontend": {
             "python": str(tmp_path / "python"),
@@ -181,12 +281,14 @@ def test_commands_reject_missing_source_root_and_symlinked_vocabulary(
     tmp_path: Path,
 ) -> None:
     config, manifest = _fixture(tmp_path)
-    Path(manifest["scenes"]["office"]["root"]).rmdir()
+    office_root = Path(manifest["scenes"]["office"]["root"])
+    hidden_root = office_root.with_name("office-hidden")
+    office_root.rename(hidden_root)
 
     with pytest.raises(ValueError, match="root path"):
         build_commands(config, manifest)
 
-    Path(manifest["scenes"]["office"]["root"]).mkdir()
+    hidden_root.rename(office_root)
     vocabulary = Path(manifest["scenes"]["apartment"]["vocabulary"]["txt_path"])
     real_vocabulary = vocabulary.with_suffix(".real.txt")
     vocabulary.rename(real_vocabulary)
@@ -323,6 +425,11 @@ def _classes(command) -> list[str]:
     ]
 
 
+def _validate_frontend_cache(*args, **kwargs):
+    kwargs.setdefault("dataset_factory", _StubTesseCdRgbdDataset)
+    return validate_frontend_cache(*args, **kwargs)
+
+
 def test_validator_binds_complete_cache_provenance_and_prefix_digest(
     tmp_path: Path,
 ) -> None:
@@ -330,7 +437,7 @@ def test_validator_binds_complete_cache_provenance_and_prefix_digest(
     classes = _classes(command)
     _write_cache(command, [_cache_payload(classes), _cache_payload(classes, count=0)])
 
-    result = validate_frontend_cache(
+    result = _validate_frontend_cache(
         command,
         config,
         input_manifest_sha256=config["manifest_sha256"],
@@ -348,6 +455,8 @@ def test_validator_binds_complete_cache_provenance_and_prefix_digest(
         f"clip-sha256:{config['frontend']['provenance_sha256']['clip_model']}"
     )
     assert result["input_manifest_sha256"] == config["manifest_sha256"]
+    assert result["input_witness"]["scene"] == "apartment"
+    assert result["input_witness"]["validated_frame_count"] == 1745
     assert list(result["cache_files_sha256"]) == [
         "frame000000.pkl.gz",
         "frame000001.pkl.gz",
@@ -361,7 +470,7 @@ def test_validator_binds_complete_cache_provenance_and_prefix_digest(
     before = manifest_path.read_bytes()
     assert json.loads(before) == result
 
-    assert validate_frontend_cache(
+    assert _validate_frontend_cache(
         command,
         config,
         input_manifest_sha256=config["manifest_sha256"],
@@ -386,7 +495,7 @@ def test_validator_rejects_executable_pickle_without_running_it(tmp_path: Path) 
     _write_cache(command, [malicious, _cache_payload(classes, count=0)])
 
     with pytest.raises(ValueError, match="unsafe pickle"):
-        validate_frontend_cache(
+        _validate_frontend_cache(
             command,
             config,
             input_manifest_sha256=config["manifest_sha256"],
@@ -405,7 +514,7 @@ def test_validator_safely_discards_streamlined_pil_image_crops(tmp_path: Path) -
     payload["image_crops"] = [Image.new("RGB", (3, 2), color=(1, 2, 3))]
     _write_cache(command, [payload, _cache_payload(classes, count=0)])
 
-    result = validate_frontend_cache(
+    result = _validate_frontend_cache(
         command,
         config,
         input_manifest_sha256=config["manifest_sha256"],
@@ -439,7 +548,7 @@ def test_validator_hashes_and_parses_each_cache_from_one_stable_snapshot(
         count_cache_open,
     )
 
-    validate_frontend_cache(
+    _validate_frontend_cache(
         command,
         config,
         input_manifest_sha256=config["manifest_sha256"],
@@ -477,7 +586,7 @@ def test_validator_rejects_cache_path_replacement_after_safe_open(
     )
 
     with pytest.raises(ValueError, match="changed.*snapshot"):
-        validate_frontend_cache(
+        _validate_frontend_cache(
             command,
             config,
             input_manifest_sha256=config["manifest_sha256"],
@@ -515,7 +624,7 @@ def test_validator_rechecks_all_snapshots_immediately_before_publication(
     )
 
     with pytest.raises(ValueError, match="changed.*snapshot"):
-        validate_frontend_cache(
+        _validate_frontend_cache(
             command,
             config,
             input_manifest_sha256=config["manifest_sha256"],
@@ -535,7 +644,11 @@ def test_preflight_hashes_each_unique_upstream_file_once_per_process(
     config["manifest_sha256"] = _sha256(manifest_path)
     config_path = tmp_path / "config.json"
     config_path.write_text(json.dumps(config), encoding="utf-8")
-    monkeypatch.setattr(frontend_module, "_visible_gpu_ids", lambda: {0, 1})
+    monkeypatch.setattr(
+        frontend_module,
+        "_gpu_inventory",
+        lambda: {0: "NVIDIA A40", 1: "NVIDIA A40", 2: "NVIDIA A40"},
+    )
     provenance_paths = {
         Path(config["frontend"][path_key])
         for path_key in (
@@ -571,7 +684,8 @@ def test_preflight_hashes_each_unique_upstream_file_once_per_process(
             "0",
             "--gpu",
             "1",
-        ]
+        ],
+        dataset_factory=_StubTesseCdRgbdDataset,
     ) == 0
 
     assert open_count == {path: 1 for path in provenance_paths}
@@ -591,7 +705,7 @@ def test_manifest_parent_fsync_failure_is_explicitly_uncertain_and_preserved(
     monkeypatch.setattr(frontend_module, "_fsync_directory", fail_parent_fsync)
 
     with pytest.raises(FrontendManifestPublicationUncertainError) as error:
-        validate_frontend_cache(
+        _validate_frontend_cache(
             command,
             config,
             input_manifest_sha256=config["manifest_sha256"],
@@ -622,7 +736,7 @@ def test_manifest_prelink_failure_leaves_no_target_and_is_retryable(
 
     monkeypatch.setattr(frontend_module.os, "link", fail_first_link)
     with pytest.raises(OSError, match="manifest link failed"):
-        validate_frontend_cache(
+        _validate_frontend_cache(
             command,
             config,
             input_manifest_sha256=config["manifest_sha256"],
@@ -631,7 +745,7 @@ def test_manifest_prelink_failure_leaves_no_target_and_is_retryable(
     assert not manifest_path.exists()
     assert not list(command.cache_dir.glob(".frontend_manifest.json.*.tmp"))
 
-    result = validate_frontend_cache(
+    result = _validate_frontend_cache(
         command,
         config,
         input_manifest_sha256=config["manifest_sha256"],
@@ -678,7 +792,7 @@ def test_validator_rejects_invalid_cache_payload_without_manifest(
     _write_cache(command, [payload, _cache_payload(_classes(command), count=0)])
 
     with pytest.raises(ValueError, match=message):
-        validate_frontend_cache(
+        _validate_frontend_cache(
             command,
             config,
             input_manifest_sha256=config["manifest_sha256"],
@@ -702,7 +816,7 @@ def test_validator_rejects_missing_or_unexpected_frame_without_manifest(
     _write_cache(command, payloads)
 
     with pytest.raises(ValueError, match="missing or unexpected cache file"):
-        validate_frontend_cache(
+        _validate_frontend_cache(
             command,
             config,
             input_manifest_sha256=config["manifest_sha256"],
@@ -719,7 +833,7 @@ def test_validator_rejects_noncontiguous_source_ids_and_provenance_drift(
     _write_cache(command, [_cache_payload(classes), _cache_payload(classes, count=0)])
 
     with pytest.raises(ValueError, match="source frame IDs"):
-        validate_frontend_cache(
+        _validate_frontend_cache(
             replace(command, source_frame_ids=(0, 2)),
             config,
             input_manifest_sha256=config["manifest_sha256"],
@@ -727,7 +841,7 @@ def test_validator_rejects_noncontiguous_source_ids_and_provenance_drift(
 
     Path(config["frontend"]["script"]).write_bytes(b"drifted-script")
     with pytest.raises(ValueError, match="script hash mismatch"):
-        validate_frontend_cache(
+        _validate_frontend_cache(
             command,
             config,
             input_manifest_sha256=config["manifest_sha256"],
@@ -744,7 +858,7 @@ def test_validator_never_clobbers_an_existing_manifest(tmp_path: Path) -> None:
     manifest_path.write_bytes(sentinel)
 
     with pytest.raises(ValueError, match="existing frontend manifest"):
-        validate_frontend_cache(
+        _validate_frontend_cache(
             command,
             config,
             input_manifest_sha256=config["manifest_sha256"],
@@ -845,7 +959,11 @@ def test_preflight_only_validates_selected_gpus_without_creating_outputs(
     config["manifest_sha256"] = _sha256(manifest_path)
     config_path = tmp_path / "config.json"
     config_path.write_text(json.dumps(config), encoding="utf-8")
-    monkeypatch.setattr(frontend_module, "_visible_gpu_ids", lambda: {0, 1, 2})
+    monkeypatch.setattr(
+        frontend_module,
+        "_gpu_inventory",
+        lambda: {0: "NVIDIA A40", 1: "NVIDIA A40", 2: "NVIDIA A40"},
+    )
 
     assert main(
         [
@@ -856,34 +974,366 @@ def test_preflight_only_validates_selected_gpus_without_creating_outputs(
             "0",
             "--gpu",
             "1",
-        ]
+        ],
+        dataset_factory=_StubTesseCdRgbdDataset,
     ) == 0
 
     result = json.loads(capsys.readouterr().out)
     assert result["status"] == "ready"
     assert result["gpu_ids"] == [0, 1]
+    assert result["gpu_inventory"] == {
+        "0": "NVIDIA A40",
+        "1": "NVIDIA A40",
+        "2": "NVIDIA A40",
+    }
     assert result["output_root"] == str(Path(config["frontend_cache_root"]))
     assert not Path(config["frontend_cache_root"]).exists()
     assert not Path(config["frontend_logs_root"]).exists()
 
 
-def test_runtime_view_links_inputs_only_inside_independent_cache_root(
+def test_runtime_stages_private_read_only_input_copies(
     tmp_path: Path,
 ) -> None:
     config, manifest = _fixture(tmp_path)
     source = Path(manifest["scenes"]["apartment"]["root"])
     (source / "results").mkdir()
-    (source / "traj.txt").write_text("pose\n", encoding="utf-8")
+    source_rgb = source / "results/frame000000.jpg"
+    source_rgb.write_bytes(b"rgb")
     command = build_commands(config, manifest, scenes=("apartment",))[0]
 
-    frontend_module._prepare_input_view(command)
+    layout = frontend_module._prepare_output_layout((command,))
+    frontend_module._verify_output_layout(command, layout)
 
     output_scene = Path(config["frontend_cache_root"]) / "apartment"
-    assert (output_scene / "results").is_symlink()
-    assert (output_scene / "results").resolve() == (source / "results").resolve()
-    assert (output_scene / "traj.txt").is_symlink()
-    assert (output_scene / "traj.txt").resolve() == (source / "traj.txt").resolve()
+    staged_rgb = output_scene / "results/frame000000.jpg"
+    staged_trajectory = output_scene / "traj.txt"
+    assert staged_rgb.is_file() and not staged_rgb.is_symlink()
+    assert staged_rgb.read_bytes() == source_rgb.read_bytes()
+    assert os.lstat(staged_rgb).st_ino != os.lstat(source_rgb).st_ino
+    assert os.lstat(staged_rgb).st_nlink == 1
+    assert os.lstat(staged_rgb).st_mode & 0o222 == 0
+    assert staged_trajectory.is_file() and not staged_trajectory.is_symlink()
+    assert staged_trajectory.read_bytes() == (source / "traj.txt").read_bytes()
+    assert os.lstat(staged_trajectory).st_mode & 0o222 == 0
     assert not any(source.glob("gsa_detections_oviv2_*"))
+
+
+def test_inference_aba_on_official_input_is_detected_and_staging_is_unchanged(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config, manifest = _fixture(tmp_path)
+    source = Path(manifest["scenes"]["apartment"]["root"])
+    results = source / "results"
+    results.mkdir()
+    official = results / "frame000000.jpg"
+    official.write_bytes(b"trusted")
+    manifest_path = Path(config["manifest"])
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    config["manifest_sha256"] = _sha256(manifest_path)
+    command = build_commands(config, manifest, scenes=("apartment",))[0]
+    _, input_binding = frontend_module._load_frozen_input_manifest(config)
+    snapshot = frontend_module._capture_run_snapshot(
+        config,
+        (command,),
+        input_binding,
+        manifest,
+        dataset_factory=_StubTesseCdRgbdDataset,
+    )
+    layout = frontend_module._prepare_output_layout((command,), snapshot)
+
+    def aba_during_inference(*_args, **_kwargs):
+        trusted = results / "trusted.backup"
+        official.rename(trusted)
+        official.write_bytes(b"attacker")
+        official.unlink()
+        trusted.rename(official)
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr(frontend_module.subprocess, "run", aba_during_inference)
+
+    with pytest.raises(ValueError, match="changed after snapshot"):
+        frontend_module._run_queue(
+            [command],
+            config,
+            config["manifest_sha256"],
+            snapshot,
+            manifest,
+            _StubTesseCdRgbdDataset,
+            layout,
+        )
+
+    staged = command.cache_dir.parent / "results/frame000000.jpg"
+    assert staged.read_bytes() == b"trusted"
+    assert official.read_bytes() == b"trusted"
+    assert not (command.cache_dir / "frontend_manifest.json").exists()
+
+
+def test_real_dataset_preflight_rejects_empty_scene_directories(
+    tmp_path: Path,
+) -> None:
+    config, manifest = _fixture(tmp_path)
+    manifest_path = Path(config["manifest"])
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    config["manifest_sha256"] = _sha256(manifest_path)
+    config_path = tmp_path / "config.json"
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+
+    with pytest.raises(FileNotFoundError, match="results directory"):
+        main(["--config", str(config_path), "--preflight-only"])
+
+
+@pytest.mark.parametrize(
+    ("inventory", "message"),
+    [
+        ({0: "NVIDIA A40", 1: "NVIDIA A40"}, "at least three"),
+        (
+            {0: "NVIDIA A40", 1: "NVIDIA RTX 4090", 2: "NVIDIA A40"},
+            "0, 1, and 2 must all be NVIDIA A40",
+        ),
+    ],
+)
+def test_preflight_rejects_wrong_gpu_inventory(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    inventory: dict[int, str],
+    message: str,
+) -> None:
+    config, manifest = _fixture(tmp_path)
+    manifest_path = Path(config["manifest"])
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    config["manifest_sha256"] = _sha256(manifest_path)
+    config_path = tmp_path / "config.json"
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    monkeypatch.setattr(frontend_module, "_gpu_inventory", lambda: inventory)
+
+    with pytest.raises(ValueError, match=message):
+        main(
+            ["--config", str(config_path), "--preflight-only"],
+            dataset_factory=_StubTesseCdRgbdDataset,
+        )
+
+
+def test_preflight_rejects_less_than_required_disk_space(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config, _ = _fixture(tmp_path)
+    config["required_free_bytes"] = 300 * 1024**3
+    monkeypatch.setattr(
+        frontend_module.shutil,
+        "disk_usage",
+        lambda _path: SimpleNamespace(free=config["required_free_bytes"] - 1),
+    )
+
+    with pytest.raises(ValueError, match="insufficient free space"):
+        frontend_module._validate_output_disk(config)
+
+
+def test_validator_rejects_dataset_witness_drift_before_manifest(
+    tmp_path: Path,
+) -> None:
+    config, command = _small_command(tmp_path)
+    manifest, input_binding = frontend_module._load_frozen_input_manifest(config)
+
+    class DriftingDataset(_StubTesseCdRgbdDataset):
+        calls = 0
+
+        def __init__(self, *args, **kwargs) -> None:
+            type(self).calls += 1
+            type(self).generation = type(self).calls
+            super().__init__(*args, **kwargs)
+
+    snapshot = frontend_module._capture_run_snapshot(
+        config,
+        (command,),
+        input_binding,
+        manifest,
+        dataset_factory=DriftingDataset,
+    )
+    classes = _classes(command)
+    _write_cache(command, [_cache_payload(classes), _cache_payload(classes, count=0)])
+
+    with pytest.raises(ValueError, match="dataset input witness changed"):
+        validate_frontend_cache(
+            command,
+            config,
+            input_manifest_sha256=config["manifest_sha256"],
+            run_snapshot=snapshot,
+            manifest=manifest,
+            dataset_factory=DriftingDataset,
+        )
+
+    assert not (command.cache_dir / "frontend_manifest.json").exists()
+
+
+def test_validator_rechecks_dataset_bindings_inside_atomic_publication(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config, command = _small_command(tmp_path)
+    classes = _classes(command)
+    _write_cache(command, [_cache_payload(classes), _cache_payload(classes, count=0)])
+    timestamps = command.source_root / "timestamps.csv"
+    original_publish = frontend_module._publish_json_new
+
+    def drift_before_publish(path, payload, **kwargs) -> None:
+        timestamps.write_text("drifted\n", encoding="utf-8")
+        original_publish(path, payload, **kwargs)
+
+    monkeypatch.setattr(frontend_module, "_publish_json_new", drift_before_publish)
+
+    with pytest.raises(ValueError, match="changed after snapshot"):
+        _validate_frontend_cache(
+            command,
+            config,
+            input_manifest_sha256=config["manifest_sha256"],
+        )
+
+    assert not (command.cache_dir / "frontend_manifest.json").exists()
+
+
+def test_preexisting_output_root_is_rejected_before_subprocess(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config, manifest = _fixture(tmp_path)
+    for scene in SCENES:
+        (Path(manifest["scenes"][scene]["root"]) / "results").mkdir()
+    manifest_path = Path(config["manifest"])
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    config["manifest_sha256"] = _sha256(manifest_path)
+    config_path = tmp_path / "config.json"
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    attacker = tmp_path / "attacker"
+    attacker.mkdir()
+    Path(config["frontend_cache_root"]).symlink_to(attacker, target_is_directory=True)
+    monkeypatch.setattr(
+        frontend_module,
+        "_gpu_inventory",
+        lambda: {0: "NVIDIA A40", 1: "NVIDIA A40", 2: "NVIDIA A40"},
+    )
+    called = False
+
+    def forbidden_subprocess(*_args, **_kwargs):
+        nonlocal called
+        called = True
+        raise AssertionError("external inference must not run")
+
+    monkeypatch.setattr(frontend_module.subprocess, "run", forbidden_subprocess)
+
+    with pytest.raises(ValueError, match="frontend cache root"):
+        main(
+            ["--config", str(config_path)],
+            dataset_factory=_StubTesseCdRgbdDataset,
+        )
+    assert not called
+
+
+@pytest.mark.parametrize("unexpected", ["cache", "experiment", "visualization"])
+def test_output_layout_rejects_unexpected_paths_before_inference(
+    tmp_path: Path,
+    unexpected: str,
+) -> None:
+    config, manifest = _fixture(tmp_path)
+    source = Path(manifest["scenes"]["apartment"]["root"])
+    (source / "results").mkdir()
+    command = build_commands(config, manifest, scenes=("apartment",))[0]
+    layout = frontend_module._prepare_output_layout((command,))
+    output_scene = command.cache_dir.parent
+    paths = {
+        "cache": command.cache_dir,
+        "experiment": output_scene / "exp_oviv2_tesse_apartment_stage3_v1",
+        "visualization": output_scene / "gsa_vis_oviv2_tesse_apartment_stage3_v1",
+    }
+    paths[unexpected].mkdir()
+
+    with pytest.raises(ValueError, match="must not preexist"):
+        frontend_module._verify_output_layout(command, layout)
+
+
+def test_output_layout_rejects_unexpected_cache_root_member(tmp_path: Path) -> None:
+    config, manifest = _fixture(tmp_path)
+    source = Path(manifest["scenes"]["apartment"]["root"])
+    (source / "results").mkdir()
+    command = build_commands(config, manifest, scenes=("apartment",))[0]
+    layout = frontend_module._prepare_output_layout((command,))
+    (layout.root.path / "unexpected").mkdir()
+
+    with pytest.raises(ValueError, match="cache root contains an unexpected path"):
+        frontend_module._verify_output_layout(command, layout)
+
+
+def test_output_layout_detects_parent_replacement_during_atomic_creation(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config, manifest = _fixture(tmp_path)
+    config["frontend_cache_root"] = str(tmp_path / "output-parent/frontend-cache")
+    source = Path(manifest["scenes"]["apartment"]["root"])
+    (source / "results").mkdir()
+    command = build_commands(config, manifest, scenes=("apartment",))[0]
+    output_root = Path(config["frontend_cache_root"])
+    parent = output_root.parent
+    parent.mkdir(parents=True)
+    moved_parent = parent.with_name("frontend-parent-moved")
+    attacker = tmp_path / "attacker-parent"
+    attacker.mkdir()
+    original_mkdir = frontend_module.os.mkdir
+    replaced = False
+
+    def replace_parent_before_root(path, mode=0o777, *, dir_fd=None):
+        nonlocal replaced
+        if dir_fd is not None and str(path) == output_root.name and not replaced:
+            replaced = True
+            parent.rename(moved_parent)
+            parent.symlink_to(attacker, target_is_directory=True)
+        return original_mkdir(path, mode, dir_fd=dir_fd)
+
+    monkeypatch.setattr(frontend_module.os, "mkdir", replace_parent_before_root)
+
+    with pytest.raises(ValueError, match="cache parent changed"):
+        frontend_module._prepare_output_layout((command,))
+    assert replaced
+    assert not (attacker / output_root.name).exists()
+
+
+def test_formal_modes_cannot_skip_scene_or_change_execution_gpus(
+    tmp_path: Path,
+) -> None:
+    config, manifest = _fixture(tmp_path)
+    manifest_path = Path(config["manifest"])
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    config["manifest_sha256"] = _sha256(manifest_path)
+    config_path = tmp_path / "config.json"
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="must include both"):
+        main(
+            ["--config", str(config_path), "--preflight-only", "--scene", "office"],
+            dataset_factory=_StubTesseCdRgbdDataset,
+        )
+    with pytest.raises(ValueError, match="must use GPUs 0 and 1"):
+        main(
+            [
+                "--config",
+                str(config_path),
+                "--preflight-only",
+                "--gpu",
+                "0",
+                "--gpu",
+                "2",
+            ],
+            dataset_factory=_StubTesseCdRgbdDataset,
+        )
+
+
+def test_disk_requirement_cannot_be_lowered_by_custom_config(tmp_path: Path) -> None:
+    config, _ = _fixture(tmp_path)
+    config["required_free_bytes"] = 1
+
+    with pytest.raises(ValueError, match="exactly 300 GiB"):
+        frontend_module._validate_output_disk(config)
 
 
 def test_formal_config_binds_real_inputs_and_contains_no_evaluation_paths() -> None:
@@ -896,6 +1346,7 @@ def test_formal_config_binds_real_inputs_and_contains_no_evaluation_paths() -> N
     assert config["frontend_cache_root"] == (
         "/home/ww/oviovo_frontend_cache/tesse_cd_native_v1"
     )
+    assert config["required_free_bytes"] == 300 * 1024**3
     assert config["frontend"]["yolo_model_path"] == (
         "/home/ww/vv/paper2/DualMap/model/yolov8l-world.pt"
     )
