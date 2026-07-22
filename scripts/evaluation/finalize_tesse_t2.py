@@ -9,7 +9,9 @@ import json
 import math
 import os
 from pathlib import Path
+import re
 import stat
+import tempfile
 from typing import Any, Mapping
 
 
@@ -34,6 +36,40 @@ METRIC_SOURCE_FILES = {
     "dynamic_f1": "dynamic_objects.csv",
     "change_f1": "static_objects.csv",
 }
+RUN_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
+
+
+def _is_lower_sha256(value: object) -> bool:
+    return type(value) is str and len(value) == 64 and all(
+        char in "0123456789abcdef" for char in value
+    )
+
+
+def _run_identity(
+    payload: Mapping[str, Any], *, label: str
+) -> dict[str, Any]:
+    raw = payload.get("run_identity")
+    if not isinstance(raw, Mapping):
+        raise ValueError(f"{label} run identity is required")
+    run_id = raw.get("run_id")
+    if type(run_id) is not str or RUN_ID_PATTERN.fullmatch(run_id) is None:
+        raise ValueError(f"{label} run identity run_id is not canonical")
+    if not _is_lower_sha256(raw.get("config_sha256")):
+        raise ValueError(f"{label} run identity config_sha256 is invalid")
+    return dict(raw)
+
+
+def _paired_run_identity(
+    metrics: Mapping[str, Any],
+    status: Mapping[str, Any],
+    *,
+    scene: str,
+) -> dict[str, Any]:
+    metrics_identity = _run_identity(metrics, label=f"{scene} metrics")
+    status_identity = _run_identity(status, label=f"{scene} status")
+    if metrics_identity != status_identity:
+        raise ValueError(f"{scene} metrics/status run identity mismatch")
+    return metrics_identity
 
 
 def _scene_metrics(
@@ -70,6 +106,8 @@ def _scene_metrics(
             metrics[name] = None
             unavailable[name] = reason
             continue
+        if type(value) not in {int, float}:
+            raise ValueError(f"{scene}.{name} must be an int or float")
         number = float(value)
         if not math.isfinite(number) or not 0.0 <= number <= 1.0:
             raise ValueError(f"{scene}.{name} must be finite and within [0, 1]")
@@ -272,6 +310,9 @@ def build_scene_evidence(
         method_key=method_key,
         mode=mode,
     )
+    run_identity = _paired_run_identity(
+        metrics_payload, status_payload, scene=scene
+    )
     unavailable_evidence = _source_bound_unavailable(
         metrics_payload, unavailable, scene=scene
     )
@@ -283,6 +324,7 @@ def build_scene_evidence(
         "scene": scene,
         "method_key": method_key,
         "mode": mode,
+        "run_identity": run_identity,
         "metrics": metrics,
         "unavailable": unavailable,
         "unavailable_evidence": unavailable_evidence,
@@ -329,6 +371,12 @@ def _build_result_payload(
         method_key=method_key,
         mode=mode,
     )
+    run_identity = {
+        "apartment": _paired_run_identity(
+            apartment, apartment_status, scene="apartment"
+        ),
+        "office": _paired_run_identity(office, office_status, scene="office"),
+    }
     dirty_digest = str(provenance.get("dirty_state_digest", ""))
     if len(dirty_digest) != 64 or any(
         char not in "0123456789abcdef" for char in dirty_digest
@@ -337,9 +385,23 @@ def _build_result_payload(
     commands = provenance.get("commands")
     if not isinstance(commands, list) or not commands or not all(commands):
         raise ValueError("provenance commands must be a non-empty list")
+    provenance_run_id = provenance.get("run_id")
+    if (
+        type(provenance_run_id) is not str
+        or RUN_ID_PATTERN.fullmatch(provenance_run_id) is None
+    ):
+        raise ValueError("provenance run_id must be canonical")
+    configs = _hashed_entries(provenance["configs"], "configs")
+    config_sha256 = {record["sha256"] for record in configs}
+    for scene, identity in run_identity.items():
+        if identity["run_id"] != provenance_run_id:
+            raise ValueError(f"{scene} run identity disagrees with provenance run_id")
+        if identity["config_sha256"] not in config_sha256:
+            raise ValueError(f"{scene} run identity has no provenance config binding")
 
     return {
-        "run_id": str(provenance["run_id"]),
+        "run_id": provenance_run_id,
+        "run_identity": run_identity,
         "method": {
             "key": method_key,
             "display_label": METHOD_DISPLAY_LABELS.get(
@@ -372,7 +434,7 @@ def _build_result_payload(
         "environment": dict(provenance["environment"]),
         "hardware": dict(provenance["hardware"]),
         "seed": int(provenance.get("seed", 0)),
-        "configs": _hashed_entries(provenance["configs"], "configs"),
+        "configs": configs,
         "weights": _hashed_entries(
             provenance.get("weights", []), "weights", allow_empty=True
         ),
@@ -488,6 +550,30 @@ def build_result(
     return result
 
 
+def _atomic_json_no_replace(path: Path, payload: Mapping[str, Any]) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{path.name}.", suffix=".tmp", dir=path.parent
+    )
+    temporary = Path(temporary_name)
+    directory_descriptor: int | None = None
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            json.dump(payload, handle, indent=2, sort_keys=True, allow_nan=False)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.link(temporary, path)
+        directory_flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+        directory_descriptor = os.open(path.parent, directory_flags)
+        os.fsync(directory_descriptor)
+    finally:
+        if directory_descriptor is not None:
+            os.close(directory_descriptor)
+        temporary.unlink(missing_ok=True)
+    return path
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--apartment-metrics", type=Path)
@@ -514,11 +600,7 @@ def main() -> int:
             method_key=args.method,
             mode=METHOD_MODES[args.method],
         )
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        with args.output.open("x", encoding="utf-8") as handle:
-            handle.write(
-                json.dumps(result, indent=2, sort_keys=True, allow_nan=False) + "\n"
-            )
+        _atomic_json_no_replace(args.output, result)
         return 0
 
     required = {
@@ -549,11 +631,7 @@ def main() -> int:
         method_key=args.method,
         mode=METHOD_MODES[args.method],
     )
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(
-        json.dumps(result, indent=2, sort_keys=True, allow_nan=False) + "\n",
-        encoding="utf-8",
-    )
+    _atomic_json_no_replace(args.output, result)
     return 0
 
 

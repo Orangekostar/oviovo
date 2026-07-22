@@ -9,9 +9,11 @@ from dataclasses import dataclass
 import hashlib
 import json
 import math
+import os
 from pathlib import Path
 import shutil
 import sys
+import tempfile
 from typing import Any, Mapping, Sequence
 
 import numpy as np
@@ -324,6 +326,25 @@ def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
     )
 
 
+def _fsync_tree(root: Path) -> None:
+    directories = [root]
+    for path in root.rglob("*"):
+        if path.is_file():
+            with path.open("rb") as handle:
+                os.fsync(handle.fileno())
+        elif path.is_dir():
+            directories.append(path)
+    directory_flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+    for directory in sorted(
+        directories, key=lambda path: len(path.parts), reverse=True
+    ):
+        descriptor = os.open(directory, directory_flags)
+        try:
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
+
+
 def export_temporal_artifact(source_index: Path, output: Path) -> Path:
     index_source = _direct_source(source_index, label="source index")
     index = _read_json(index_source, label="source index")
@@ -496,69 +517,104 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
     for source, label in verified:
         _assert_unchanged(source, label=label)
 
-    if output.exists():
-        raise ValueError(f"output already exists: {output}")
-    output.mkdir(parents=True)
-    output_checkpoints: list[dict[str, Any]] = []
-    for checkpoint in checkpoint_inputs:
-        frame = int(checkpoint["frame_index"])
-        directory = output / "checkpoints" / f"{frame:08d}"
-        directory.mkdir(parents=True)
-        snapshot_path = directory / "snapshot.npz"
-        entities_path = directory / "entities.jsonl"
-        shutil.copyfile(checkpoint["snapshot"].path, snapshot_path)
-        shutil.copyfile(checkpoint["entities"].path, entities_path)
-        _assert_unchanged(checkpoint["snapshot"], label=f"checkpoint {frame} snapshot")
-        _assert_unchanged(checkpoint["entities"], label=f"checkpoint {frame} entities")
-        output_checkpoints.append(
-            {
-                "frame_index": frame,
-                "timestamp_ns": int(checkpoint["timestamp_ns"]),
-                "consumed_through_frame": int(
-                    checkpoint["consumed_through_frame"]
-                ),
-                "consumed_through_frame_exclusive": int(
-                    checkpoint["consumed_through_frame_exclusive"]
-                ),
-                "snapshot": _output_record(snapshot_path, output=output),
-                "entities": _output_record(entities_path, output=output),
-            }
-        )
-
-    trajectories_path = output / "trajectories.jsonl"
-    trajectories_path.write_text(
-        "".join(
-            json.dumps(record, sort_keys=True, separators=(",", ":"), allow_nan=False)
-            + "\n"
-            for record in trajectory_records
-        ),
-        encoding="utf-8",
+    output.parent.mkdir(parents=True, exist_ok=True)
+    if os.path.lexists(output):
+        raise FileExistsError(f"output already exists: {output}")
+    staging = Path(
+        tempfile.mkdtemp(prefix=f".{output.name}.", dir=output.parent)
     )
-    for source, label in verified:
-        _assert_unchanged(source, label=label)
+    reserved = False
+    try:
+        output_checkpoints: list[dict[str, Any]] = []
+        for checkpoint in checkpoint_inputs:
+            frame = int(checkpoint["frame_index"])
+            directory = staging / "checkpoints" / f"{frame:08d}"
+            directory.mkdir(parents=True)
+            snapshot_path = directory / "snapshot.npz"
+            entities_path = directory / "entities.jsonl"
+            shutil.copyfile(checkpoint["snapshot"].path, snapshot_path)
+            shutil.copyfile(checkpoint["entities"].path, entities_path)
+            _assert_unchanged(
+                checkpoint["snapshot"], label=f"checkpoint {frame} snapshot"
+            )
+            _assert_unchanged(
+                checkpoint["entities"], label=f"checkpoint {frame} entities"
+            )
+            output_checkpoints.append(
+                {
+                    "frame_index": frame,
+                    "timestamp_ns": int(checkpoint["timestamp_ns"]),
+                    "consumed_through_frame": int(
+                        checkpoint["consumed_through_frame"]
+                    ),
+                    "consumed_through_frame_exclusive": int(
+                        checkpoint["consumed_through_frame_exclusive"]
+                    ),
+                    "snapshot": _output_record(snapshot_path, output=staging),
+                    "entities": _output_record(entities_path, output=staging),
+                }
+            )
 
-    manifest = {
-        "schema_version": 1,
-        "dataset": "TESSE-CD",
-        "mode": "causal_checkpoints",
-        "method": method,
-        "scene": scene,
-        "sources": {
-            "source_index": index_source.record(),
-            "schedule": schedule_source.record(),
-            "capture_status": capture_source.record(),
-            "trajectories": trajectory_source.record(),
-            "checkpoint_statuses": [
-                source.record() for source in checkpoint_status_sources
-            ],
-        },
-        "checkpoints": output_checkpoints,
-        "entity_lifecycles": lifecycles,
-        "trajectories": _output_record(trajectories_path, output=output),
-    }
-    manifest_path = output / "temporal_manifest.json"
-    _write_json(manifest_path, manifest)
-    return manifest_path
+        trajectories_path = staging / "trajectories.jsonl"
+        trajectories_path.write_text(
+            "".join(
+                json.dumps(
+                    record,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    allow_nan=False,
+                )
+                + "\n"
+                for record in trajectory_records
+            ),
+            encoding="utf-8",
+        )
+        for source, label in verified:
+            _assert_unchanged(source, label=label)
+
+        manifest = {
+            "schema_version": 1,
+            "dataset": "TESSE-CD",
+            "mode": "causal_checkpoints",
+            "method": method,
+            "scene": scene,
+            "sources": {
+                "source_index": index_source.record(),
+                "schedule": schedule_source.record(),
+                "capture_status": capture_source.record(),
+                "trajectories": trajectory_source.record(),
+                "checkpoint_statuses": [
+                    source.record() for source in checkpoint_status_sources
+                ],
+            },
+            "checkpoints": output_checkpoints,
+            "entity_lifecycles": lifecycles,
+            "trajectories": _output_record(
+                trajectories_path, output=staging
+            ),
+        }
+        _write_json(staging / "temporal_manifest.json", manifest)
+        _fsync_tree(staging)
+
+        output.mkdir()
+        reserved = True
+        try:
+            os.rename(staging, output)
+            directory_flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+            descriptor = os.open(output.parent, directory_flags)
+            try:
+                os.fsync(descriptor)
+            finally:
+                os.close(descriptor)
+        except Exception as error:
+            raise RuntimeError(
+                "temporal artifact publication-uncertain"
+            ) from error
+    except Exception:
+        if not reserved:
+            shutil.rmtree(staging, ignore_errors=True)
+        raise
+    return output / "temporal_manifest.json"
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:

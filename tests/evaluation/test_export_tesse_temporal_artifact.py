@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -10,6 +11,7 @@ from typing import Any
 import numpy as np
 import pytest
 
+from scripts.evaluation import export_tesse_temporal_artifact as exporter_module
 from scripts.evaluation.export_tesse_temporal_artifact import (
     export_temporal_artifact,
 )
@@ -478,3 +480,60 @@ def test_rejects_exact_source_hash_mismatch(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="SHA256 mismatch"):
         export_temporal_artifact(index_path, tmp_path / "output")
+
+
+def test_copy_failure_cleans_staging_and_allows_retry(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    index_path, _ = _build_fixture(tmp_path / "source")
+    output = tmp_path / "output"
+    original_copyfile = exporter_module.shutil.copyfile
+    copy_count = 0
+
+    def fail_second_copy(source: object, target: object) -> object:
+        nonlocal copy_count
+        copy_count += 1
+        if copy_count == 2:
+            raise OSError("injected copy failure")
+        return original_copyfile(source, target)
+
+    monkeypatch.setattr(exporter_module.shutil, "copyfile", fail_second_copy)
+    with pytest.raises(OSError, match="injected copy failure"):
+        export_temporal_artifact(index_path, output)
+
+    assert not output.exists()
+    assert not list(tmp_path.glob(f".{output.name}.*"))
+
+    monkeypatch.setattr(exporter_module.shutil, "copyfile", original_copyfile)
+    manifest = export_temporal_artifact(index_path, output)
+    assert manifest.is_file()
+
+
+def test_temporal_output_is_atomic_no_clobber(tmp_path: Path) -> None:
+    index_path, _ = _build_fixture(tmp_path / "source")
+    output = tmp_path / "output"
+    output.mkdir()
+    marker = output / "marker"
+    marker.write_bytes(b"sentinel")
+
+    with pytest.raises(FileExistsError):
+        export_temporal_artifact(index_path, output)
+
+    assert marker.read_bytes() == b"sentinel"
+    assert set(output.iterdir()) == {marker}
+
+
+def test_temporal_publish_failure_after_reservation_is_uncertain(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    index_path, _ = _build_fixture(tmp_path / "source")
+    output = tmp_path / "output"
+
+    def fail_rename(source: object, target: object) -> None:
+        raise OSError("injected rename failure")
+
+    monkeypatch.setattr(os, "rename", fail_rename)
+    with pytest.raises(RuntimeError, match="publication-uncertain"):
+        export_temporal_artifact(index_path, output)
+
+    assert output.is_dir()

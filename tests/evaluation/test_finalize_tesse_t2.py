@@ -13,6 +13,13 @@ import pytest
 from scripts.evaluation import finalize_tesse_t2
 
 
+CONFIG_SHA256 = hashlib.sha256(b"config.yaml").hexdigest()
+
+
+def _run_identity(run_id: str = "dualmap-temporal-test") -> dict[str, str]:
+    return {"run_id": run_id, "config_sha256": CONFIG_SHA256}
+
+
 def test_finalize_tesse_t2_module_exists() -> None:
     assert importlib.util.find_spec("scripts.evaluation.finalize_tesse_t2") is not None
 
@@ -23,6 +30,7 @@ def _scene(
     mode: str,
     *,
     source_root: Path | None = None,
+    run_id: str = "dualmap-temporal-test",
 ) -> dict[str, object]:
     payload: dict[str, object] = {
         "status": "PARTIAL",
@@ -31,6 +39,7 @@ def _scene(
         "split": f"{scene}_test",
         "method": method,
         "mode": mode,
+        "run_identity": _run_identity(run_id),
         "metrics": {
             "object_f1": 0.1,
             "dynamic_f1": 0.2,
@@ -96,6 +105,22 @@ def test_partial_official_metrics_reject_null_without_reason() -> None:
         )
 
 
+@pytest.mark.parametrize("value", [True, "0.5", {"value": 0.5}])
+def test_partial_official_metrics_rejects_non_numeric_f1_type(
+    value: object,
+) -> None:
+    apartment = _scene("apartment", "OVIMAP_FROZEN", "frozen")
+    apartment["metrics"]["object_f1"] = value
+
+    with pytest.raises(ValueError, match="int or float"):
+        finalize_tesse_t2.build_partial_official_metrics(
+            apartment,
+            _scene("office", "OVIMAP_FROZEN", "frozen"),
+            method_key="OVIMAP_FROZEN",
+            mode="frozen",
+        )
+
+
 def test_partial_official_metrics_accept_khronos_source_for_open_method() -> None:
     apartment = _scene("apartment", "KHRONOS", "open-set")
     apartment["status"] = "PASS"
@@ -132,12 +157,15 @@ def test_partial_official_metrics_accept_legacy_strict_source_without_status() -
     assert metrics["apartment"]["change_f1"] == pytest.approx(0.3)
 
 
-def _status(scene: str) -> dict[str, object]:
+def _status(
+    scene: str, *, run_id: str = "dualmap-temporal-test"
+) -> dict[str, object]:
     return {
         "status": "PASS",
         "scene": scene,
         "method": "OVIMAP_FROZEN",
         "mode": "frozen",
+        "run_identity": _run_identity(run_id),
         "updates_after_freeze": 0,
     }
 
@@ -171,15 +199,17 @@ def test_build_result_hashes_sources_and_omits_unavailable_bindings(tmp_path) ->
             "OVIMAP_FROZEN",
             "frozen",
             source_root=tmp_path / "apartment_sources",
+            run_id="ovimap-frozen-test",
         ),
         _scene(
             "office",
             "OVIMAP_FROZEN",
             "frozen",
             source_root=tmp_path / "office_sources",
+            run_id="ovimap-frozen-test",
         ),
-        _status("apartment"),
-        _status("office"),
+        _status("apartment", run_id="ovimap-frozen-test"),
+        _status("office", run_id="ovimap-frozen-test"),
         provenance,
         method_key="OVIMAP_FROZEN",
         mode="frozen",
@@ -202,10 +232,14 @@ def test_build_result_hashes_sources_and_omits_unavailable_bindings(tmp_path) ->
     ]
     assert result["dataset"]["manifest"]["sha256"]
     assert result["configs"][0]["byte_count"] == len("config.yaml")
+    assert result["run_identity"] == {
+        "apartment": _run_identity("ovimap-frozen-test"),
+        "office": _run_identity("ovimap-frozen-test"),
+    }
 
 
 def test_build_result_rejects_frozen_updates_after_freeze(tmp_path) -> None:
-    office_status = _status("office")
+    office_status = _status("office", run_id="ovimap-frozen-test")
     office_status["updates_after_freeze"] = 1
     provenance = {
         "run_id": "ovimap-frozen-test",
@@ -228,14 +262,16 @@ def test_build_result_rejects_frozen_updates_after_freeze(tmp_path) -> None:
                 "OVIMAP_FROZEN",
                 "frozen",
                 source_root=tmp_path / "apartment_sources",
+                run_id="ovimap-frozen-test",
             ),
             _scene(
                 "office",
                 "OVIMAP_FROZEN",
                 "frozen",
                 source_root=tmp_path / "office_sources",
+                run_id="ovimap-frozen-test",
             ),
-            _status("apartment"),
+            _status("apartment", run_id="ovimap-frozen-test"),
             office_status,
             provenance,
             method_key="OVIMAP_FROZEN",
@@ -263,6 +299,7 @@ def test_build_result_separates_khronos_execution_and_table_modes(tmp_path) -> N
             "scene": scene,
             "method": "KHRONOS",
             "mode": "open-set",
+            "run_identity": _run_identity("khronos-open-test"),
         }
         for scene in ("apartment", "office")
     }
@@ -273,12 +310,14 @@ def test_build_result_separates_khronos_execution_and_table_modes(tmp_path) -> N
             "KHRONOS",
             "open-set",
             source_root=tmp_path / "apartment_sources",
+            run_id="khronos-open-test",
         ),
         _scene(
             "office",
             "KHRONOS",
             "open-set",
             source_root=tmp_path / "office_sources",
+            run_id="khronos-open-test",
         ),
         statuses["apartment"],
         statuses["office"],
@@ -310,6 +349,7 @@ def test_oviv2_official_finalizer_uses_causal_execution_and_online_table_mode(
             "scene": scene,
             "method": "OVIV2",
             "mode": "causal_checkpoints",
+            "run_identity": _run_identity(),
         }
         for scene in ("apartment", "office")
     }
@@ -385,6 +425,7 @@ def _dualmap_status(scene: str) -> dict[str, object]:
         "scene": scene,
         "method": "DUALMAP",
         "mode": "native",
+        "run_identity": _run_identity(),
     }
 
 
@@ -401,6 +442,7 @@ def _panoptic_status(scene: str) -> dict[str, object]:
         "scene": scene,
         "method": "PANOPTIC_SHARED",
         "mode": "composed",
+        "run_identity": _run_identity(),
     }
 
 
@@ -522,6 +564,7 @@ def test_dualmap_scene_evidence_is_hash_bound_and_mergeable(tmp_path) -> None:
     assert evidence["scene"] == "apartment"
     assert evidence["official_metrics"] == apartment
     assert evidence["run_status"] == status
+    assert evidence["run_identity"] == _run_identity()
     assert evidence["metrics"]["dynamic_f1"] is None
     assert evidence["official_metrics_source"]["sha256"] == hashlib.sha256(
         metrics_path.read_bytes()
@@ -529,6 +572,95 @@ def test_dualmap_scene_evidence_is_hash_bound_and_mergeable(tmp_path) -> None:
     assert Path(
         evidence["unavailable_evidence"]["dynamic_f1"]["source"]["path"]
     ).name == "dynamic_objects.csv"
+
+
+def test_scene_evidence_rejects_metrics_status_run_identity_mismatch(
+    tmp_path: Path,
+) -> None:
+    metrics = _dualmap_scene("apartment", tmp_path / "apartment_sources")
+    status = _dualmap_status("apartment")
+    status["run_identity"] = _run_identity("run-b")
+    metrics_path = tmp_path / "official_metrics.json"
+    metrics_path.write_text(json.dumps(metrics) + "\n", encoding="utf-8")
+    status_path = tmp_path / "run_status.json"
+    status_path.write_text(json.dumps(status) + "\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="run identity mismatch"):
+        finalize_tesse_t2.build_scene_evidence(
+            metrics_path,
+            status_path,
+            method_key="DUALMAP",
+            mode="native",
+        )
+
+
+@pytest.mark.parametrize("missing_from", ["metrics", "status"])
+def test_scene_evidence_rejects_missing_run_identity(
+    tmp_path: Path, missing_from: str
+) -> None:
+    metrics = _dualmap_scene("apartment", tmp_path / "apartment_sources")
+    status = _dualmap_status("apartment")
+    (metrics if missing_from == "metrics" else status).pop("run_identity")
+    metrics_path = tmp_path / "official_metrics.json"
+    metrics_path.write_text(json.dumps(metrics) + "\n", encoding="utf-8")
+    status_path = tmp_path / "run_status.json"
+    status_path.write_text(json.dumps(status) + "\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="run identity.*required"):
+        finalize_tesse_t2.build_scene_evidence(
+            metrics_path,
+            status_path,
+            method_key="DUALMAP",
+            mode="native",
+        )
+
+
+def test_full_result_rejects_run_identity_not_bound_to_provenance(
+    tmp_path: Path,
+) -> None:
+    apartment = _dualmap_scene("apartment", tmp_path / "apartment_sources")
+    office = _dualmap_scene("office", tmp_path / "office_sources")
+    apartment_status = _dualmap_status("apartment")
+    office_status = _dualmap_status("office")
+    for payload in (apartment, office, apartment_status, office_status):
+        payload["run_identity"] = _run_identity("different-run")
+
+    with pytest.raises(ValueError, match="provenance run_id"):
+        finalize_tesse_t2._build_result_payload(
+            apartment,
+            office,
+            apartment_status,
+            office_status,
+            _provenance(tmp_path),
+            method_key="DUALMAP",
+            mode="native",
+        )
+
+
+def test_full_result_rejects_config_identity_not_bound_to_provenance(
+    tmp_path: Path,
+) -> None:
+    apartment = _dualmap_scene("apartment", tmp_path / "apartment_sources")
+    office = _dualmap_scene("office", tmp_path / "office_sources")
+    apartment_status = _dualmap_status("apartment")
+    office_status = _dualmap_status("office")
+    wrong_identity = {
+        "run_id": "dualmap-temporal-test",
+        "config_sha256": "f" * 64,
+    }
+    apartment["run_identity"] = wrong_identity
+    apartment_status["run_identity"] = wrong_identity
+
+    with pytest.raises(ValueError, match="provenance config"):
+        finalize_tesse_t2._build_result_payload(
+            apartment,
+            office,
+            apartment_status,
+            office_status,
+            _provenance(tmp_path),
+            method_key="DUALMAP",
+            mode="native",
+        )
 
 
 def test_scene_evidence_cli_writes_mergeable_packet(tmp_path) -> None:
@@ -561,6 +693,82 @@ def test_scene_evidence_cli_writes_mergeable_packet(tmp_path) -> None:
 
     assert completed.returncode == 0, completed.stderr
     assert json.loads(output.read_text(encoding="utf-8"))["scene"] == "apartment"
+
+
+@pytest.mark.parametrize("cli_mode", ["scene", "full"])
+def test_cli_output_is_atomic_no_clobber(
+    tmp_path: Path, cli_mode: str
+) -> None:
+    output = tmp_path / "result.json"
+    output.write_bytes(b"sentinel")
+    if cli_mode == "full":
+        command = _full_cli_command(_full_cli_inputs(tmp_path), output)
+    else:
+        metrics = _dualmap_scene("apartment", tmp_path / "apartment_sources")
+        metrics_path = tmp_path / "official_metrics.json"
+        metrics_path.write_text(json.dumps(metrics) + "\n", encoding="utf-8")
+        status_path = tmp_path / "run_status.json"
+        status_path.write_text(
+            json.dumps(_dualmap_status("apartment")) + "\n",
+            encoding="utf-8",
+        )
+        command = [
+            sys.executable,
+            str(Path(finalize_tesse_t2.__file__)),
+            "--method",
+            "DUALMAP",
+            "--scene-metrics",
+            str(metrics_path),
+            "--scene-status",
+            str(status_path),
+            "--output",
+            str(output),
+        ]
+
+    completed = subprocess.run(command, capture_output=True, text=True, check=False)
+
+    assert completed.returncode != 0
+    assert "FileExistsError" in completed.stderr
+    assert output.read_bytes() == b"sentinel"
+
+
+def test_scene_cli_publication_failure_leaves_no_partial_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    metrics = _dualmap_scene("apartment", tmp_path / "apartment_sources")
+    metrics_path = tmp_path / "official_metrics.json"
+    metrics_path.write_text(json.dumps(metrics) + "\n", encoding="utf-8")
+    status_path = tmp_path / "run_status.json"
+    status_path.write_text(
+        json.dumps(_dualmap_status("apartment")) + "\n", encoding="utf-8"
+    )
+    output = tmp_path / "result.json"
+
+    def fail_link(source: object, target: object) -> None:
+        raise OSError("injected publication failure")
+
+    monkeypatch.setattr(finalize_tesse_t2.os, "link", fail_link)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            str(Path(finalize_tesse_t2.__file__)),
+            "--method",
+            "DUALMAP",
+            "--scene-metrics",
+            str(metrics_path),
+            "--scene-status",
+            str(status_path),
+            "--output",
+            str(output),
+        ],
+    )
+
+    with pytest.raises(OSError, match="injected publication failure"):
+        finalize_tesse_t2.main()
+
+    assert not output.exists()
+    assert not list(tmp_path.glob(f".{output.name}.*"))
 
 
 def _write_json_pair(
