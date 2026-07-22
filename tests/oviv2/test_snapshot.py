@@ -661,6 +661,98 @@ def test_snapshot_commit_new_publication_failure_preserves_staged_snapshot(
     assert VoxelMapSnapshot.load(staged).metadata == metadata
 
 
+def test_commit_new_parent_rebind_cannot_redirect_publication(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from src.oviv2.snapshot import SnapshotPublicationUncertainError
+
+    metadata, geometry, evidence, ownership = _components()
+    parent = tmp_path / "parent"
+    parent.mkdir()
+    target = parent / "snapshot"
+    displaced_parent = tmp_path / "displaced-parent"
+    original_open_owned = snapshot_module._open_owned_directory
+    parent_open_calls = 0
+
+    def rebind_after_first_parent_open(path: Path) -> tuple[int, tuple[int, int]]:
+        nonlocal parent_open_calls
+        result = original_open_owned(path)
+        if path == parent:
+            parent_open_calls += 1
+            if parent_open_calls == 1:
+                parent.rename(displaced_parent)
+                parent.mkdir()
+                (parent / "foreign-sentinel.txt").write_text(
+                    "must survive",
+                    encoding="utf-8",
+                )
+        return result
+
+    monkeypatch.setattr(
+        snapshot_module,
+        "_open_owned_directory",
+        rebind_after_first_parent_open,
+    )
+
+    with pytest.raises(SnapshotPublicationUncertainError) as raised:
+        VoxelMapSnapshot.commit_new(
+            target,
+            metadata,
+            geometry,
+            evidence,
+            ownership,
+        )
+
+    assert raised.value.published is True
+    assert parent_open_calls == 1
+    assert not target.exists()
+    assert {path.name for path in parent.iterdir()} == {"foreign-sentinel.txt"}
+    assert VoxelMapSnapshot.load(displaced_parent / "snapshot").metadata == metadata
+
+
+def test_commit_new_publication_uses_one_parent_fd_and_closes_it(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+    original_open_owned = snapshot_module._open_owned_directory
+    parent_open_calls = 0
+    opened_parent_fd: int | None = None
+
+    def reject_second_parent_open(path: Path) -> tuple[int, tuple[int, int]]:
+        nonlocal parent_open_calls, opened_parent_fd
+        if path == target.parent:
+            parent_open_calls += 1
+            if parent_open_calls == 2:
+                raise OSError("injected second parent open failure")
+        result = original_open_owned(path)
+        if path == target.parent:
+            opened_parent_fd = result[0]
+        return result
+
+    monkeypatch.setattr(
+        snapshot_module,
+        "_open_owned_directory",
+        reject_second_parent_open,
+    )
+
+    committed = VoxelMapSnapshot.commit_new(
+        target,
+        metadata,
+        geometry,
+        evidence,
+        ownership,
+    )
+
+    assert committed.path == target
+    assert parent_open_calls == 1
+    assert opened_parent_fd is not None
+    with pytest.raises(OSError, match="Bad file descriptor"):
+        os.fstat(opened_parent_fd)
+
+
 def test_snapshot_commit_new_staging_failure_preserves_partial_snapshot(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

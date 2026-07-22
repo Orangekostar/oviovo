@@ -522,7 +522,10 @@ class VoxelMapSnapshot:
         target: Path,
         *,
         expected_source_identity: tuple[int, int] | None = None,
+        expected_parent_identity: tuple[int, int] | None = None,
     ) -> None:
+        if source.parent != target.parent:
+            raise ValueError("immutable snapshot publication requires one parent directory")
         libc = ctypes.CDLL(None, use_errno=True)
         try:
             renameat2 = libc.renameat2
@@ -538,12 +541,16 @@ class VoxelMapSnapshot:
             ctypes.c_uint,
         )
         renameat2.restype = ctypes.c_int
-        source_parent_fd, _ = _open_owned_directory(source.parent)
-        target_parent_fd, _ = _open_owned_directory(target.parent)
+        parent_fd, parent_identity = _open_owned_directory(source.parent)
         try:
+            if (
+                expected_parent_identity is not None
+                and parent_identity != expected_parent_identity
+            ):
+                raise ValueError("snapshot parent identity changed before publication")
             source_status = os.stat(
                 source.name,
-                dir_fd=source_parent_fd,
+                dir_fd=parent_fd,
                 follow_symlinks=False,
             )
             if not stat.S_ISDIR(source_status.st_mode) or (
@@ -554,18 +561,35 @@ class VoxelMapSnapshot:
                 raise ValueError("snapshot staging identity changed before publication")
             ctypes.set_errno(0)
             result = renameat2(
-                source_parent_fd,
+                parent_fd,
                 os.fsencode(source.name),
-                target_parent_fd,
+                parent_fd,
                 os.fsencode(target.name),
                 1,
             )
+            error_number = ctypes.get_errno() if result != 0 else 0
+            if result == 0:
+                try:
+                    named_parent = os.lstat(source.parent)
+                except OSError as error:
+                    raise SnapshotPublicationUncertainError(
+                        target,
+                        error,
+                        published=True,
+                    ) from error
+                if (named_parent.st_dev, named_parent.st_ino) != parent_identity:
+                    publication_error = ValueError(
+                        "snapshot parent identity changed during publication"
+                    )
+                    raise SnapshotPublicationUncertainError(
+                        target,
+                        publication_error,
+                        published=True,
+                    ) from publication_error
         finally:
-            _close_best_effort(target_parent_fd)
-            _close_best_effort(source_parent_fd)
+            _close_best_effort(parent_fd)
         if result == 0:
             return
-        error_number = ctypes.get_errno()
         if error_number in {errno.EEXIST, errno.ENOTEMPTY}:
             raise FileExistsError(
                 errno.EEXIST,
@@ -593,11 +617,13 @@ class VoxelMapSnapshot:
         target: Path,
         *,
         expected_source_identity: tuple[int, int] | None = None,
+        expected_parent_identity: tuple[int, int] | None = None,
     ) -> None:
         cls._rename_directory_no_replace(
             source,
             target,
             expected_source_identity=expected_source_identity,
+            expected_parent_identity=expected_parent_identity,
         )
         try:
             cls._fsync_directory(target.parent)
@@ -744,6 +770,7 @@ class VoxelMapSnapshot:
             raise FileNotFoundError(target.parent) from exc
         if not stat.S_ISDIR(parent_status.st_mode):
             raise NotADirectoryError(target.parent)
+        parent_identity = (parent_status.st_dev, parent_status.st_ino)
         try:
             os.lstat(target)
         except FileNotFoundError:
@@ -798,6 +825,7 @@ class VoxelMapSnapshot:
                 staging,
                 target,
                 expected_source_identity=staging_identity,
+                expected_parent_identity=parent_identity,
             )
             try:
                 source_witness = staged_witness.bind_published()
