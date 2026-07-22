@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, replace
 import errno
+import gc
 import hashlib
 import json
 import os
@@ -9,6 +10,7 @@ from pathlib import Path
 import shutil
 import threading
 import time
+import weakref
 
 import numpy as np
 import pytest
@@ -140,6 +142,124 @@ def test_snapshot_commit_new_publishes_complete_contract(tmp_path: Path) -> None
         "checksums.json",
     }
     assert list(tmp_path.glob(".snapshot.tmp-*")) == []
+
+
+def test_commit_new_returns_independent_revalidatable_source_witness(
+    tmp_path: Path,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    committed = VoxelMapSnapshot.commit_new(
+        tmp_path / "snapshot", metadata, geometry, evidence, ownership
+    )
+    snapshot_ref = weakref.ref(committed)
+    restored_geometry_ref = weakref.ref(committed.geometry)
+    witness = committed.source_witness
+
+    del committed
+    gc.collect()
+
+    assert witness is not None
+    assert snapshot_ref() is None
+    assert restored_geometry_ref() is None
+    witness.revalidate()
+
+
+def test_commit_new_rejects_equal_content_replacement_before_return(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+    original_publish = VoxelMapSnapshot._publish_directory_no_replace
+
+    def replace_after_publish(_cls, source: Path, destination: Path) -> None:
+        original_publish(source, destination)
+        displaced = destination.with_name("snapshot.displaced")
+        destination.rename(displaced)
+        shutil.copytree(displaced, destination)
+
+    monkeypatch.setattr(
+        VoxelMapSnapshot,
+        "_publish_directory_no_replace",
+        classmethod(replace_after_publish),
+    )
+
+    with pytest.raises(snapshot_module.SnapshotPublicationUncertainError) as raised:
+        VoxelMapSnapshot.commit_new(
+            target, metadata, geometry, evidence, ownership
+        )
+    assert raised.value.published is True
+    assert raised.value.target == target
+    assert target.is_dir()
+    assert (tmp_path / "snapshot.displaced").is_dir()
+
+
+def test_source_witness_rejects_equal_content_new_inode_after_return(
+    tmp_path: Path,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+    committed = VoxelMapSnapshot.commit_new(
+        target, metadata, geometry, evidence, ownership
+    )
+    replacement = tmp_path / "replacement"
+    shutil.copytree(target, replacement)
+    target.rename(tmp_path / "original")
+    replacement.rename(target)
+
+    with pytest.raises(ValueError, match="snapshot source.*identity|changed"):
+        committed.revalidate_source()
+
+
+def test_source_witness_rejects_hardlink_directory_swap_during_revalidation(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    replacement: Path | None = None
+    original_write = VoxelMapSnapshot._write_snapshot_files
+
+    def write_with_hardlink_replacement(
+        _cls,
+        destination: Path,
+        *args: object,
+        **kwargs: object,
+    ) -> tuple[str, ...]:
+        nonlocal replacement
+        data_files = original_write(destination, *args, **kwargs)
+        replacement = destination.with_name("hardlink-replacement")
+        replacement.mkdir()
+        for member in destination.iterdir():
+            os.link(member, replacement / member.name)
+        return data_files
+
+    monkeypatch.setattr(
+        VoxelMapSnapshot,
+        "_write_snapshot_files",
+        classmethod(write_with_hardlink_replacement),
+    )
+    target = tmp_path / "snapshot"
+    committed = VoxelMapSnapshot.commit_new(
+        target, metadata, geometry, evidence, ownership
+    )
+    assert replacement is not None
+    original_lstat = snapshot_module.os.lstat
+    swapped = False
+
+    def swap_after_lstat(path: object, *args: object, **kwargs: object):
+        nonlocal swapped
+        status = original_lstat(path, *args, **kwargs)
+        if not swapped and Path(path) == target:
+            target.rename(tmp_path / "original")
+            replacement.rename(target)
+            swapped = True
+        return status
+
+    monkeypatch.setattr(snapshot_module.os, "lstat", swap_after_lstat)
+
+    with pytest.raises(ValueError, match="snapshot source.*identity|changed"):
+        committed.revalidate_source()
+    assert swapped is True
 
 
 def test_snapshot_publication_uncertain_error_is_publicly_exported() -> None:

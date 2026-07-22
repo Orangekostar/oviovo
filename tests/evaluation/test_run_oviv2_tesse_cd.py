@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import ast
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+import gc
 import hashlib
 import json
 import os
 from pathlib import Path
 import shutil
 from types import SimpleNamespace
+import weakref
 
 import numpy as np
 import pytest
@@ -31,6 +33,7 @@ from src.oviv2.compact_checkpoint import (
     COMPACT_OWNERSHIP_FORMAT,
     CompactOwnershipCheckpoint,
     CompactOwnershipMetadata,
+    CompactOwnershipSourceWitness,
 )
 from src.oviv2.dense_semantics import DenseSemanticProvenance
 from src.oviv2.ownership import ReversibleOwnershipStore
@@ -195,6 +198,54 @@ class _Caches:
         return (), f"dense:{frame_index}"
 
 
+def _test_fingerprint(status: os.stat_result) -> tuple[int, int, int, int, int]:
+    return (
+        status.st_dev,
+        status.st_ino,
+        status.st_size,
+        status.st_mtime_ns,
+        status.st_ctime_ns,
+    )
+
+
+@dataclass
+class _TestSourceWitness:
+    path: Path
+    revalidation_count: int = 0
+    directory_fingerprint: tuple[int, int, int, int, int] = field(init=False)
+    member_fingerprints: tuple[
+        tuple[str, tuple[int, int, int, int, int]], ...
+    ] = field(init=False)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "directory_fingerprint",
+            _test_fingerprint(self.path.stat()),
+        )
+        object.__setattr__(
+            self,
+            "member_fingerprints",
+            tuple(
+                (member.name, _test_fingerprint(member.stat()))
+                for member in sorted(self.path.iterdir())
+            ),
+        )
+
+    def revalidate(self) -> None:
+        self.revalidation_count += 1
+        current_members = tuple(
+            (member.name, _test_fingerprint(member.stat()))
+            for member in sorted(self.path.iterdir())
+        )
+        if not (
+            _test_fingerprint(self.path.stat())
+            == self.directory_fingerprint
+            and current_members == self.member_fingerprints
+        ):
+            raise ValueError("checkpoint source identity changed")
+
+
 class _Runtime:
     def __init__(self, calls: list[str]) -> None:
         self.calls = calls
@@ -234,14 +285,15 @@ class _Runtime:
                 frame_id=frame_index,
                 timestamp=self.last_timestamp,
             ),
+            source_witness=_TestSourceWitness(target),
         )
 
     def commit_compact_ownership_new(
         self, target: Path
-    ) -> CompactOwnershipCheckpoint:
+    ) -> object:
         frame_index = self.last_frame
         self.calls.append(f"compact:{frame_index}")
-        return CompactOwnershipCheckpoint.commit_new(
+        return CompactOwnershipCheckpoint.commit_receipt_new(
             target,
             CompactOwnershipMetadata(
                 scene_id="apartment",
@@ -547,6 +599,91 @@ def test_official_only_checkpoints_keep_full_snapshot_and_neutral_inventory(
     assert index["snapshots"] == []
 
 
+def test_large_checkpoint_plan_retains_only_witnesses_not_snapshot_objects(
+    tmp_path: Path,
+) -> None:
+    config_path = _write_config(tmp_path)
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    schedule_path = Path(config["schedule_manifest"])
+    _write_schedule(
+        schedule_path,
+        entries=[
+            {
+                "event_ids": [f"event-{frame_index}"],
+                "frame_index": frame_index,
+                "relative_timestamp_ns": frame_index * 10,
+                "roles": ["official"],
+                "timestamp_ns": 100 + frame_index * 10,
+            }
+            for frame_index in range(5)
+        ],
+    )
+    snapshot_refs: list[weakref.ReferenceType[object]] = []
+    maximum_prior_live = 0
+
+    @dataclass
+    class TrackedSnapshot:
+        path: Path
+        metadata: object
+        source_witness: _TestSourceWitness
+
+    class TrackingRuntime(_Runtime):
+        def commit_new(self, target: Path) -> TrackedSnapshot:
+            nonlocal maximum_prior_live
+            gc.collect()
+            maximum_prior_live = max(
+                maximum_prior_live,
+                sum(reference() is not None for reference in snapshot_refs),
+            )
+            committed = super().commit_new(target)
+            tracked = TrackedSnapshot(
+                path=committed.path,
+                metadata=committed.metadata,
+                source_witness=committed.source_witness,
+            )
+            snapshot_refs.append(weakref.ref(tracked))
+            return tracked
+
+    dependencies = _dependencies([])
+    runtime = TrackingRuntime([])
+    dependencies = RunnerDependencies(
+        dataset_factory=dependencies.dataset_factory,
+        cache_loader_factory=dependencies.cache_loader_factory,
+        runtime_factory=lambda _config, _caches: runtime,
+        checkpoint_exporter=dependencies.checkpoint_exporter,
+        provenance_factory=dependencies.provenance_factory,
+    )
+
+    run(config_path, tmp_path / "run", dependencies=dependencies)
+    gc.collect()
+
+    assert len(snapshot_refs) == 5
+    assert maximum_prior_live == 0
+    assert all(reference() is None for reference in snapshot_refs)
+
+
+def test_runner_rejects_checkpoint_without_source_witness(tmp_path: Path) -> None:
+    config_path = _write_config(tmp_path)
+    dependencies = _dependencies([])
+
+    class MissingWitnessRuntime(_Runtime):
+        def commit_new(self, target: Path) -> SimpleNamespace:
+            committed = super().commit_new(target)
+            del committed.source_witness
+            return committed
+
+    dependencies = RunnerDependencies(
+        dataset_factory=dependencies.dataset_factory,
+        cache_loader_factory=dependencies.cache_loader_factory,
+        runtime_factory=lambda _config, _caches: MissingWitnessRuntime([]),
+        checkpoint_exporter=dependencies.checkpoint_exporter,
+        provenance_factory=dependencies.provenance_factory,
+    )
+
+    with pytest.raises(ValueError, match="no source witness"):
+        run(config_path, tmp_path / "run", dependencies=dependencies)
+
+
 def test_rejects_plan_hash_when_other_target_scene_changes(tmp_path: Path) -> None:
     config_path = _write_config(
         tmp_path,
@@ -606,18 +743,18 @@ def test_compact_checkpoint_is_revalidated_before_index_publication(
         tmp_path,
         evaluation_frames={"apartment": [2], "office": []},
     )
-    original = CompactOwnershipCheckpoint.revalidate_source
+    original = CompactOwnershipSourceWitness.revalidate
     revalidated: list[Path] = []
 
-    def tracked(checkpoint: CompactOwnershipCheckpoint) -> None:
-        revalidated.append(checkpoint.path)
-        original(checkpoint)
+    def tracked(witness: CompactOwnershipSourceWitness) -> None:
+        revalidated.append(witness.path)
+        original(witness)
 
-    monkeypatch.setattr(CompactOwnershipCheckpoint, "revalidate_source", tracked)
+    monkeypatch.setattr(CompactOwnershipSourceWitness, "revalidate", tracked)
 
     run(config_path, tmp_path / "run", dependencies=_dependencies([]))
 
-    assert sum(path.name == "ownership_checkpoint" for path in revalidated) == 1
+    assert sum(path.name == "ownership_checkpoint" for path in revalidated) >= 3
 
 
 def test_full_checkpoint_identity_barrier_rejects_equal_directory_replacement(
@@ -690,68 +827,6 @@ def test_full_checkpoint_identity_barrier_rejects_equal_member_rewrite(
 
     with pytest.raises(ValueError, match="checkpoint.*identity|changed"):
         run(config_path, tmp_path / "run", dependencies=dependencies)
-
-
-def test_full_checkpoint_identity_barrier_rejects_hardlink_directory_swap(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    config_path = _write_config(tmp_path)
-    dependencies = _dependencies([])
-    original_lstat = runner_module.os.lstat
-    original_revalidate = runner_module._revalidate_checkpoint_identity
-    target: Path | None = None
-    replacement: Path | None = None
-    armed = False
-    swapped = False
-
-    class SwapRuntime(_Runtime):
-        def commit_new(self, checkpoint_path: Path) -> SimpleNamespace:
-            nonlocal target, replacement
-            snapshot = super().commit_new(checkpoint_path)
-            if target is None:
-                target = checkpoint_path
-                replacement = checkpoint_path.with_name(
-                    "voxel_snapshot.replacement"
-                )
-                assert replacement is not None
-                replacement.mkdir()
-                for member in target.iterdir():
-                    os.link(member, replacement / member.name)
-            return snapshot
-
-    def swapping_lstat(path: object, *args: object, **kwargs: object):
-        nonlocal swapped
-        status = original_lstat(path, *args, **kwargs)
-        if armed and not swapped and target is not None and Path(path) == target:
-            assert replacement is not None
-            target.rename(target.with_name("voxel_snapshot.original"))
-            replacement.rename(target)
-            swapped = True
-        return status
-
-    def attack_during_revalidation(identity: object) -> None:
-        nonlocal armed
-        armed = True
-        original_revalidate(identity)
-
-    monkeypatch.setattr(runner_module.os, "lstat", swapping_lstat)
-    monkeypatch.setattr(
-        runner_module,
-        "_revalidate_checkpoint_identity",
-        attack_during_revalidation,
-    )
-    dependencies = RunnerDependencies(
-        dataset_factory=dependencies.dataset_factory,
-        cache_loader_factory=dependencies.cache_loader_factory,
-        runtime_factory=lambda _config, _caches: SwapRuntime([]),
-        checkpoint_exporter=dependencies.checkpoint_exporter,
-        provenance_factory=dependencies.provenance_factory,
-    )
-
-    with pytest.raises(ValueError, match="checkpoint.*identity|changed"):
-        run(config_path, tmp_path / "run", dependencies=dependencies)
-    assert swapped is True
 
 
 def test_frozen_visibility_policy_overrides_runtime_parser_default() -> None:

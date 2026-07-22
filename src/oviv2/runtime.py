@@ -23,6 +23,7 @@ from src.oviv2.observations import FrameObservation, ObservationKind
 from src.oviv2.ownership import ReversibleOwnershipStore
 from src.oviv2.snapshot import VoxelMapSnapshot, VoxelSnapshotMetadata
 from src.oviv2.compact_checkpoint import (
+    CompactOwnershipCommitReceipt,
     CompactOwnershipCheckpoint,
     CompactOwnershipMetadata,
 )
@@ -522,13 +523,13 @@ class Oviv2Runtime:
     def commit_compact_ownership_new(
         self,
         target_dir: str | Path,
-    ) -> CompactOwnershipCheckpoint:
+    ) -> CompactOwnershipCommitReceipt:
         metadata = self._snapshot_metadata()
         if metadata.dense_semantic_provenance is None:
             raise ValueError(
                 "compact ownership checkpoints require dense semantic provenance"
             )
-        return CompactOwnershipCheckpoint.commit_new(
+        return CompactOwnershipCheckpoint.commit_receipt_new(
             target_dir,
             CompactOwnershipMetadata(
                 scene_id=metadata.scene_id,

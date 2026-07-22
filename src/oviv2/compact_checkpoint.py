@@ -95,6 +95,17 @@ class _OwnershipArchiveBudget:
     archive_bytes: int
 
 
+@dataclass(frozen=True)
+class _ValidatedOwnershipArrays:
+    arrays: dict[str, np.ndarray]
+    block_keys: np.ndarray
+    local_keys: np.ndarray
+    by_block: np.ndarray
+    sorted_block_keys: np.ndarray
+    starts: np.ndarray
+    ends: np.ndarray
+
+
 def _zlib_compress_bound(source_bytes: int) -> int:
     return (
         source_bytes
@@ -267,53 +278,46 @@ def _create_temporary_directory_at(
     prefix = f".{_require_basename(target_name, label='target name')}.tmp-"
     for _ in range(128):
         temporary_name = prefix + secrets.token_hex(12)
+        temporary_fd: int | None = None
         try:
             os.mkdir(temporary_name, mode=0o700, dir_fd=parent_fd)
         except FileExistsError:
             continue
-        created = os.stat(
-            temporary_name,
-            dir_fd=parent_fd,
-            follow_symlinks=False,
-        )
-        created_identity = _identity(created)
         try:
+            created = os.stat(
+                temporary_name,
+                dir_fd=parent_fd,
+                follow_symlinks=False,
+            )
+            created_identity = _identity(created)
             temporary_fd = os.open(
                 temporary_name,
                 _DIRECTORY_OPEN_FLAGS,
                 dir_fd=parent_fd,
             )
-        except BaseException:
-            try:
-                current = os.stat(
-                    temporary_name,
-                    dir_fd=parent_fd,
-                    follow_symlinks=False,
+            opened = os.fstat(temporary_fd)
+            named = os.stat(
+                temporary_name,
+                dir_fd=parent_fd,
+                follow_symlinks=False,
+            )
+            if (
+                not stat.S_ISDIR(named.st_mode)
+                or _identity(opened) != created_identity
+                or _identity(named) != created_identity
+            ):
+                raise ValueError(
+                    "compact checkpoint temporary directory identity changed"
                 )
-                if _identity(current) == created_identity:
-                    os.rmdir(temporary_name, dir_fd=parent_fd)
+            return temporary_name, temporary_fd, _identity(opened)
+        except BaseException:
+            if temporary_fd is not None:
+                os.close(temporary_fd)
+            try:
+                os.rmdir(temporary_name, dir_fd=parent_fd)
             except OSError:
                 pass
             raise
-        opened = os.fstat(temporary_fd)
-        named = os.stat(
-            temporary_name,
-            dir_fd=parent_fd,
-            follow_symlinks=False,
-        )
-        if (
-            not stat.S_ISDIR(named.st_mode)
-            or _identity(opened) != created_identity
-            or _identity(named) != created_identity
-        ):
-            os.close(temporary_fd)
-            if stat.S_ISDIR(named.st_mode) and _identity(named) == created_identity:
-                try:
-                    os.rmdir(temporary_name, dir_fd=parent_fd)
-                except OSError:
-                    pass
-            raise ValueError("compact checkpoint temporary directory identity changed")
-        return temporary_name, temporary_fd, _identity(opened)
     raise FileExistsError("could not reserve a unique compact checkpoint temp name")
 
 
@@ -507,7 +511,7 @@ class CompactOwnershipMetadata:
 
 
 @dataclass(frozen=True)
-class _SourceWitness:
+class CompactOwnershipSourceWitness:
     path: Path
     directory_fingerprint: tuple[int, int, int, int, int]
     file_fingerprints: dict[str, tuple[int, int, int, int, int]]
@@ -520,7 +524,7 @@ class _SourceWitness:
         expected_file_fingerprints: dict[
             str, tuple[int, int, int, int, int]
         ],
-    ) -> "_SourceWitness":
+    ) -> "CompactOwnershipSourceWitness":
         _reject_symlink_components(path, label="compact checkpoint source")
         try:
             path_before = os.lstat(path)
@@ -628,6 +632,17 @@ class _SourceWitness:
             raise ValueError("compact checkpoint source changed") from error
         if _fingerprint(path_after) != self.directory_fingerprint:
             raise ValueError("compact checkpoint source identity changed")
+
+
+@dataclass(frozen=True)
+class CompactOwnershipCommitReceipt:
+    path: Path
+    metadata: CompactOwnershipMetadata
+    checksums: dict[str, str]
+    source_witness: CompactOwnershipSourceWitness
+
+    def revalidate_source(self) -> None:
+        self.source_witness.revalidate()
 
 
 def _ownership_arrays(
@@ -896,12 +911,12 @@ def _preflight_ownership_archive(content: bytes) -> None:
             _require_npy_contract(headers, name, (count,), dtype)
 
 
-def _validated_ownership(
+def _validated_ownership_arrays(
     content: bytes,
     *,
     block_resolution: int,
     revision: int,
-) -> ReversibleOwnershipStore:
+) -> _ValidatedOwnershipArrays:
     try:
         _preflight_ownership_archive(content)
         with np.load(io.BytesIO(content), allow_pickle=False) as payload:
@@ -957,7 +972,6 @@ def _validated_ownership(
         )
         if not np.all(strictly_greater):
             raise ValueError("ownership voxel_keys must be sorted and unique")
-    keys = [tuple(int(value) for value in row) for row in voxel_keys]
     if np.any(arrays["entity_ids"] <= 0):
         raise ValueError("ownership entity_ids must be positive")
     confidence = arrays["confidence"]
@@ -974,7 +988,6 @@ def _validated_ownership(
             "ownership evidence_revisions cannot exceed checkpoint revision"
         )
 
-    store = ReversibleOwnershipStore(block_resolution=block_resolution)
     if count:
         dense_block_bytes = block_resolution**3 * 4 * 8
         if dense_block_bytes > _MAX_DENSE_OWNERSHIP_BYTES:
@@ -1004,22 +1017,68 @@ def _validated_ownership(
             raise ValueError(
                 "ownership dense block storage exceeds resource limit"
             )
-        for start, end in zip(starts, ends, strict=True):
-            indices = by_block[int(start) : int(end)]
-            block_key = tuple(int(value) for value in sorted_block_keys[int(start)])
-            block = store._new_block()
-            local = local_keys[indices]
-            positions = (local[:, 0], local[:, 1], local[:, 2])
-            block.entity_ids[positions] = arrays["entity_ids"][indices]
-            block.confidence[positions] = confidence[indices]
-            block.epochs[positions] = arrays["epochs"][indices]
-            block.evidence_revisions[positions] = arrays[
-                "evidence_revisions"
-            ][indices]
-            store._blocks[block_key] = block
-        for key, entity_id in zip(keys, arrays["entity_ids"], strict=True):
-            store._entity_voxels.setdefault(int(entity_id), set()).add(key)
+    else:
+        block_keys = np.empty((0, 3), dtype=np.int64)
+        local_keys = np.empty((0, 3), dtype=np.int64)
+        by_block = np.empty((0,), dtype=np.int64)
+        sorted_block_keys = np.empty((0, 3), dtype=np.int64)
+        starts = np.empty((0,), dtype=np.int64)
+        ends = np.empty((0,), dtype=np.int64)
+    return _ValidatedOwnershipArrays(
+        arrays=arrays,
+        block_keys=block_keys,
+        local_keys=local_keys,
+        by_block=by_block,
+        sorted_block_keys=sorted_block_keys,
+        starts=starts,
+        ends=ends,
+    )
+
+
+def _materialize_ownership(
+    validated: _ValidatedOwnershipArrays,
+    *,
+    block_resolution: int,
+) -> ReversibleOwnershipStore:
+    arrays = validated.arrays
+    voxel_keys = arrays["voxel_keys"]
+    confidence = arrays["confidence"]
+    store = ReversibleOwnershipStore(block_resolution=block_resolution)
+    for start, end in zip(validated.starts, validated.ends, strict=True):
+        indices = validated.by_block[int(start) : int(end)]
+        block_key = tuple(
+            int(value) for value in validated.sorted_block_keys[int(start)]
+        )
+        block = store._new_block()
+        local = validated.local_keys[indices]
+        positions = (local[:, 0], local[:, 1], local[:, 2])
+        block.entity_ids[positions] = arrays["entity_ids"][indices]
+        block.confidence[positions] = confidence[indices]
+        block.epochs[positions] = arrays["epochs"][indices]
+        block.evidence_revisions[positions] = arrays[
+            "evidence_revisions"
+        ][indices]
+        store._blocks[block_key] = block
+    for row, entity_id in zip(voxel_keys, arrays["entity_ids"], strict=True):
+        key = tuple(int(value) for value in row)
+        store._entity_voxels.setdefault(int(entity_id), set()).add(key)
     return store
+
+
+def _validated_ownership(
+    content: bytes,
+    *,
+    block_resolution: int,
+    revision: int,
+) -> ReversibleOwnershipStore:
+    return _materialize_ownership(
+        _validated_ownership_arrays(
+            content,
+            block_resolution=block_resolution,
+            revision=revision,
+        ),
+        block_resolution=block_resolution,
+    )
 
 
 def _read_regular_at(
@@ -1108,7 +1167,7 @@ class CompactOwnershipCheckpoint:
     metadata: CompactOwnershipMetadata
     ownership: ReversibleOwnershipStore
     checksums: dict[str, str]
-    _source_witness: _SourceWitness
+    _source_witness: CompactOwnershipSourceWitness
 
     def revalidate_source(self) -> None:
         self._source_witness.revalidate()
@@ -1120,6 +1179,40 @@ class CompactOwnershipCheckpoint:
         metadata: CompactOwnershipMetadata,
         ownership: ReversibleOwnershipStore,
     ) -> "CompactOwnershipCheckpoint":
+        committed = cls._commit_new(
+            target_dir,
+            metadata,
+            ownership,
+            materialize=True,
+        )
+        assert isinstance(committed, cls)
+        return committed
+
+    @classmethod
+    def commit_receipt_new(
+        cls,
+        target_dir: str | Path,
+        metadata: CompactOwnershipMetadata,
+        ownership: ReversibleOwnershipStore,
+    ) -> CompactOwnershipCommitReceipt:
+        committed = cls._commit_new(
+            target_dir,
+            metadata,
+            ownership,
+            materialize=False,
+        )
+        assert isinstance(committed, CompactOwnershipCommitReceipt)
+        return committed
+
+    @classmethod
+    def _commit_new(
+        cls,
+        target_dir: str | Path,
+        metadata: CompactOwnershipMetadata,
+        ownership: ReversibleOwnershipStore,
+        *,
+        materialize: bool,
+    ) -> "CompactOwnershipCheckpoint | CompactOwnershipCommitReceipt":
         if not isinstance(metadata, CompactOwnershipMetadata):
             raise TypeError("metadata must be CompactOwnershipMetadata")
         if not isinstance(ownership, ReversibleOwnershipStore):
@@ -1175,10 +1268,18 @@ class CompactOwnershipCheckpoint:
                 "ownership.npz": ownership_bytes,
                 "checksums.json": _canonical_json(checksums),
             }
-            validated_ownership = _validated_ownership(
+            validated_arrays = _validated_ownership_arrays(
                 ownership_bytes,
                 block_resolution=metadata.block_resolution,
                 revision=metadata.revision,
+            )
+            validated_ownership = (
+                _materialize_ownership(
+                    validated_arrays,
+                    block_resolution=metadata.block_resolution,
+                )
+                if materialize
+                else None
             )
             for name, content in files.items():
                 owned_files[name] = _write_regular_at(
@@ -1241,19 +1342,27 @@ class CompactOwnershipCheckpoint:
                 target_name,
                 file_fingerprints,
             )
-            witness = _SourceWitness.capture_published(
+            witness = CompactOwnershipSourceWitness.capture_published(
                 target,
                 expected_file_fingerprints=file_fingerprints,
             )
             if witness.directory_fingerprint != anchored_directory_fingerprint:
                 raise ValueError("published compact checkpoint path identity changed")
             _assert_parent_path_identity(target.parent, parent_identity)
-            return cls(
-                target,
-                metadata,
-                validated_ownership,
-                dict(checksums),
-                witness,
+            if materialize:
+                assert validated_ownership is not None
+                return cls(
+                    target,
+                    metadata,
+                    validated_ownership,
+                    dict(checksums),
+                    witness,
+                )
+            return CompactOwnershipCommitReceipt(
+                path=target,
+                metadata=metadata,
+                checksums=dict(checksums),
+                source_witness=witness,
             )
         except CompactCheckpointPublicationUncertainError:
             raise
@@ -1351,7 +1460,7 @@ class CompactOwnershipCheckpoint:
             block_resolution=metadata.block_resolution,
             revision=metadata.revision,
         )
-        witness = _SourceWitness(
+        witness = CompactOwnershipSourceWitness(
             path=source,
             directory_fingerprint=_fingerprint(directory_after),
             file_fingerprints=fingerprints,

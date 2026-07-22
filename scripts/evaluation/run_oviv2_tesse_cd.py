@@ -58,17 +58,6 @@ class RunnerDependencies:
     provenance_factory: Callable[[], Mapping[str, Any]]
 
 
-@dataclass(frozen=True)
-class _CheckpointIdentity:
-    path: Path
-    directory_fingerprint: tuple[int, int, int, int, int]
-    checksums_fingerprint: tuple[int, int, int, int, int]
-    checksums_sha256: str
-    member_fingerprints: tuple[
-        tuple[str, tuple[int, int, int, int, int]], ...
-    ]
-
-
 def _strict_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     result: dict[str, Any] = {}
     for key, value in pairs:
@@ -93,142 +82,6 @@ def _load_json_bytes(data: bytes, path: Path) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError(f"JSON root must be an object: {path}")
     return payload
-
-
-def _stat_fingerprint(status: os.stat_result) -> tuple[int, int, int, int, int]:
-    return (
-        status.st_dev,
-        status.st_ino,
-        status.st_size,
-        status.st_mtime_ns,
-        status.st_ctime_ns,
-    )
-
-
-def _read_regular_at(
-    directory_fd: int,
-    name: str,
-) -> tuple[bytes, tuple[int, int, int, int, int]]:
-    descriptor = os.open(
-        name,
-        os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0),
-        dir_fd=directory_fd,
-    )
-    try:
-        before = os.fstat(descriptor)
-        if not stat.S_ISREG(before.st_mode):
-            raise ValueError("checkpoint member is not a regular file")
-        content = b"".join(iter(lambda: os.read(descriptor, 1024 * 1024), b""))
-        after = os.fstat(descriptor)
-        if _stat_fingerprint(before) != _stat_fingerprint(after):
-            raise ValueError("checkpoint member changed while reading")
-        return content, _stat_fingerprint(after)
-    finally:
-        os.close(descriptor)
-
-
-def _member_fingerprint_at(
-    directory_fd: int,
-    name: str,
-) -> tuple[int, int, int, int, int]:
-    descriptor = os.open(
-        name,
-        os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0),
-        dir_fd=directory_fd,
-    )
-    try:
-        status = os.fstat(descriptor)
-        if not stat.S_ISREG(status.st_mode):
-            raise ValueError("checkpoint member is not a regular file")
-        return _stat_fingerprint(status)
-    finally:
-        os.close(descriptor)
-
-
-def _open_checkpoint_directory(path: Path) -> int:
-    return os.open(
-        path,
-        os.O_RDONLY | getattr(os, "O_CLOEXEC", 0)
-        | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0),
-    )
-
-
-def _capture_checkpoint_identity(path: Path) -> _CheckpointIdentity:
-    try:
-        directory_fd = _open_checkpoint_directory(path)
-        try:
-            directory_status = os.fstat(directory_fd)
-            checksums_content, checksums_fingerprint = _read_regular_at(
-                directory_fd, "checksums.json"
-            )
-            checksums = _load_json_bytes(checksums_content, path / "checksums.json")
-            if not checksums:
-                raise ValueError("checkpoint checksum inventory must not be empty")
-            expected_names = set(checksums) | {"checksums.json"}
-            if set(os.listdir(directory_fd)) != expected_names:
-                raise ValueError("checkpoint physical inventory does not match checksums")
-            member_fingerprints = []
-            for name in sorted(checksums):
-                if not (
-                    isinstance(name, str)
-                    and name not in {".", ".."}
-                    and Path(name).parts == (name,)
-                    and isinstance(checksums[name], str)
-                    and _is_sha256(checksums[name])
-                ):
-                    raise ValueError("checkpoint checksum inventory is invalid")
-                member_fingerprints.append(
-                    (name, _member_fingerprint_at(directory_fd, name))
-                )
-            if _stat_fingerprint(os.lstat(path)) != _stat_fingerprint(
-                directory_status
-            ):
-                raise ValueError("checkpoint identity changed while capturing")
-            return _CheckpointIdentity(
-                path=path,
-                directory_fingerprint=_stat_fingerprint(directory_status),
-                checksums_fingerprint=checksums_fingerprint,
-                checksums_sha256=_sha256_bytes(checksums_content),
-                member_fingerprints=tuple(member_fingerprints),
-            )
-        finally:
-            os.close(directory_fd)
-    except OSError as error:
-        raise ValueError("checkpoint identity could not be captured") from error
-
-
-def _revalidate_checkpoint_identity(identity: _CheckpointIdentity) -> None:
-    try:
-        before = os.lstat(identity.path)
-        directory_fd = _open_checkpoint_directory(identity.path)
-        try:
-            directory_status = os.fstat(directory_fd)
-            checksums_content, checksums_fingerprint = _read_regular_at(
-                directory_fd, "checksums.json"
-            )
-            actual_names = set(os.listdir(directory_fd))
-            member_fingerprints = tuple(
-                (name, _member_fingerprint_at(directory_fd, name))
-                for name, _ in identity.member_fingerprints
-            )
-            after = os.lstat(identity.path)
-        finally:
-            os.close(directory_fd)
-    except (OSError, ValueError) as error:
-        raise ValueError("checkpoint identity changed before index publication") from error
-    expected_names = {name for name, _ in identity.member_fingerprints} | {
-        "checksums.json"
-    }
-    if not (
-        _stat_fingerprint(before) == identity.directory_fingerprint
-        and _stat_fingerprint(directory_status) == identity.directory_fingerprint
-        and _stat_fingerprint(after) == identity.directory_fingerprint
-        and checksums_fingerprint == identity.checksums_fingerprint
-        and _sha256_bytes(checksums_content) == identity.checksums_sha256
-        and actual_names == expected_names
-        and member_fingerprints == identity.member_fingerprints
-    ):
-        raise ValueError("checkpoint identity changed before index publication")
 
 
 def _string_tuple(value: object, name: str) -> tuple[str, ...]:
@@ -808,7 +661,7 @@ def run(
         exported_sources: dict[int, dict[str, Any]] = {}
         trajectory_rows: list[Mapping[str, Any]] = []
         captured: list[int] = []
-        checkpoint_identities: list[tuple[Any, _CheckpointIdentity]] = []
+        checkpoint_witnesses: list[Any] = []
         for frame_index in range(frame_count):
             frame = dataset[frame_index]
             if int(frame.frame_id) != frame_index:
@@ -848,9 +701,6 @@ def run(
                 )
                 checkpoint_format = "oviv2_compact_ownership_checkpoint"
                 snapshot_root = checkpoint_root / "ownership_checkpoint"
-            checkpoint_identities.append(
-                (snapshot, _capture_checkpoint_identity(snapshot_root))
-            )
             if int(snapshot.metadata.frame_id) != frame_index:
                 raise ValueError("committed snapshot frame does not match checkpoint")
             snapshot_timestamp = float(snapshot.metadata.timestamp)
@@ -861,6 +711,12 @@ def run(
                 atol=1e-9,
             ):
                 raise ValueError("committed snapshot timestamp does not match checkpoint")
+            source_witness = getattr(snapshot, "source_witness", None)
+            revalidate_witness = getattr(source_witness, "revalidate", None)
+            if source_witness is None or not callable(revalidate_witness):
+                raise ValueError("committed checkpoint has no source witness")
+            revalidate_witness()
+            checkpoint_witnesses.append(source_witness)
             if frame_index in official_frame_set:
                 export_result = dependencies.checkpoint_exporter(
                     snapshot,
@@ -933,6 +789,7 @@ def run(
                     "entities": record["neutral_entities"],
                 }
             if frame_index in set(evaluation_frames):
+                source_witness.revalidate()
                 occlusion_records.append(
                     _occlusion_index_record(
                         checkpoint,
@@ -943,6 +800,7 @@ def run(
                     )
                 )
             captured.append(frame_index)
+            del snapshot
         scheduled = [item.frame_index for item in checkpoints]
         if captured != scheduled:
             raise ValueError("captured checkpoints do not exactly match the schedule")
@@ -1033,11 +891,8 @@ def run(
         assert_inputs_unchanged = getattr(caches, "assert_inputs_unchanged", None)
         if assert_inputs_unchanged is not None:
             assert_inputs_unchanged()
-        for committed_snapshot, identity in checkpoint_identities:
-            revalidate_source = getattr(committed_snapshot, "revalidate_source", None)
-            if callable(revalidate_source):
-                revalidate_source()
-            _revalidate_checkpoint_identity(identity)
+        for source_witness in checkpoint_witnesses:
+            source_witness.revalidate()
         normalized_config_path = staging / "normalized_run_config.json"
         _write_json(normalized_config_path, config)
         normalized_config_record = _file_record(

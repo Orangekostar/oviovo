@@ -43,7 +43,7 @@ class SnapshotPublicationUncertainError(RuntimeError):
     def __init__(
         self,
         target: Path,
-        publication_error: OSError,
+        publication_error: Exception,
         *,
         published: bool | None,
     ) -> None:
@@ -61,6 +61,218 @@ class SnapshotPublicationUncertainError(RuntimeError):
                 "a fallback reservation or published target may remain"
             )
         super().__init__(message)
+
+
+def _source_fingerprint(
+    status: os.stat_result,
+) -> tuple[int, int, int, int, int]:
+    return (
+        status.st_dev,
+        status.st_ino,
+        status.st_size,
+        status.st_mtime_ns,
+        status.st_ctime_ns,
+    )
+
+
+def _read_source_member_at(
+    directory_fd: int,
+    name: str,
+) -> tuple[bytes, tuple[int, int, int, int, int]]:
+    descriptor = os.open(
+        name,
+        os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0),
+        dir_fd=directory_fd,
+    )
+    try:
+        before = os.fstat(descriptor)
+        if not stat.S_ISREG(before.st_mode):
+            raise ValueError("snapshot source member is not a regular file")
+        content = b"".join(iter(lambda: os.read(descriptor, 1024 * 1024), b""))
+        after = os.fstat(descriptor)
+        if _source_fingerprint(before) != _source_fingerprint(after):
+            raise ValueError("snapshot source member changed while reading")
+        return content, _source_fingerprint(after)
+    finally:
+        os.close(descriptor)
+
+
+def _hash_source_member_at(
+    directory_fd: int,
+    name: str,
+) -> tuple[str, tuple[int, int, int, int, int]]:
+    descriptor = os.open(
+        name,
+        os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0),
+        dir_fd=directory_fd,
+    )
+    try:
+        before = os.fstat(descriptor)
+        if not stat.S_ISREG(before.st_mode):
+            raise ValueError("snapshot source member is not a regular file")
+        digest = hashlib.sha256()
+        for chunk in iter(lambda: os.read(descriptor, 1024 * 1024), b""):
+            digest.update(chunk)
+        after = os.fstat(descriptor)
+        if _source_fingerprint(before) != _source_fingerprint(after):
+            raise ValueError("snapshot source member changed while reading")
+        return digest.hexdigest(), _source_fingerprint(after)
+    finally:
+        os.close(descriptor)
+
+
+@dataclass(frozen=True)
+class SnapshotSourceWitness:
+    path: Path
+    directory_fingerprint: tuple[int, int, int, int, int]
+    member_bindings: tuple[
+        tuple[str, tuple[int, int, int, int, int], str], ...
+    ]
+
+    @classmethod
+    def capture_staged(
+        cls,
+        staged: Path,
+        *,
+        published_path: Path,
+        data_files: tuple[str, ...],
+    ) -> "SnapshotSourceWitness":
+        directory_fd = os.open(
+            staged,
+            os.O_RDONLY
+            | getattr(os, "O_CLOEXEC", 0)
+            | getattr(os, "O_DIRECTORY", 0)
+            | getattr(os, "O_NOFOLLOW", 0),
+        )
+        try:
+            directory_before = os.fstat(directory_fd)
+            inventory = set(os.listdir(directory_fd))
+            expected_inventory = {*data_files, "checksums.json"}
+            if inventory != expected_inventory:
+                raise ValueError("snapshot source physical inventory is invalid")
+            checksums_content, checksums_fingerprint = _read_source_member_at(
+                directory_fd,
+                "checksums.json",
+            )
+            checksums = json.loads(checksums_content.decode("utf-8"))
+            if not isinstance(checksums, dict) or set(checksums) != set(data_files):
+                raise ValueError("snapshot source checksum inventory is invalid")
+            bindings = []
+            for name in sorted(data_files):
+                digest, fingerprint = _hash_source_member_at(directory_fd, name)
+                if checksums.get(name) != digest:
+                    raise ValueError("snapshot source member checksum mismatch")
+                bindings.append((name, fingerprint, digest))
+            bindings.append(
+                (
+                    "checksums.json",
+                    checksums_fingerprint,
+                    hashlib.sha256(checksums_content).hexdigest(),
+                )
+            )
+            directory_after = os.fstat(directory_fd)
+            if _source_fingerprint(directory_before) != _source_fingerprint(
+                directory_after
+            ):
+                raise ValueError("snapshot source identity changed while capturing")
+            return cls(
+                path=published_path,
+                directory_fingerprint=_source_fingerprint(directory_after),
+                member_bindings=tuple(bindings),
+            )
+        finally:
+            os.close(directory_fd)
+
+    def revalidate(self) -> None:
+        try:
+            path_before = os.lstat(self.path)
+            directory_fd = os.open(
+                self.path,
+                os.O_RDONLY
+                | getattr(os, "O_CLOEXEC", 0)
+                | getattr(os, "O_DIRECTORY", 0)
+                | getattr(os, "O_NOFOLLOW", 0),
+            )
+            try:
+                directory = os.fstat(directory_fd)
+                inventory = set(os.listdir(directory_fd))
+                current_bindings = []
+                for name, _fingerprint, digest in self.member_bindings:
+                    current = os.stat(
+                        name,
+                        dir_fd=directory_fd,
+                        follow_symlinks=False,
+                    )
+                    if not stat.S_ISREG(current.st_mode):
+                        raise ValueError("snapshot source member identity changed")
+                    current_bindings.append(
+                        (name, _source_fingerprint(current), digest)
+                    )
+                directory_after = os.fstat(directory_fd)
+                path_after = os.lstat(self.path)
+            finally:
+                os.close(directory_fd)
+        except (OSError, ValueError) as error:
+            raise ValueError("snapshot source identity changed") from error
+        expected_inventory = {name for name, _, _ in self.member_bindings}
+        if not (
+            stat.S_ISDIR(path_before.st_mode)
+            and _source_fingerprint(path_before) == self.directory_fingerprint
+            and _source_fingerprint(directory) == self.directory_fingerprint
+            and _source_fingerprint(directory_after) == self.directory_fingerprint
+            and _source_fingerprint(path_after) == self.directory_fingerprint
+            and inventory == expected_inventory
+            and tuple(current_bindings) == self.member_bindings
+        ):
+            raise ValueError("snapshot source identity changed")
+
+    def bind_published(self) -> "SnapshotSourceWitness":
+        try:
+            path_before = os.lstat(self.path)
+            directory_fd = os.open(
+                self.path,
+                os.O_RDONLY
+                | getattr(os, "O_CLOEXEC", 0)
+                | getattr(os, "O_DIRECTORY", 0)
+                | getattr(os, "O_NOFOLLOW", 0),
+            )
+            try:
+                directory = os.fstat(directory_fd)
+                inventory = set(os.listdir(directory_fd))
+                current_bindings = tuple(
+                    (
+                        name,
+                        _source_fingerprint(
+                            os.stat(
+                                name,
+                                dir_fd=directory_fd,
+                                follow_symlinks=False,
+                            )
+                        ),
+                        digest,
+                    )
+                    for name, _fingerprint, digest in self.member_bindings
+                )
+                directory_after = os.fstat(directory_fd)
+                path_after = os.lstat(self.path)
+            finally:
+                os.close(directory_fd)
+        except OSError as error:
+            raise ValueError("snapshot source identity changed during publication") from error
+        staged_identity = self.directory_fingerprint[:2]
+        published_fingerprint = _source_fingerprint(directory_after)
+        if not (
+            _source_fingerprint(path_before)[:2] == staged_identity
+            and _source_fingerprint(directory)[:2] == staged_identity
+            and _source_fingerprint(directory_after)[:2] == staged_identity
+            and _source_fingerprint(path_after) == published_fingerprint
+            and inventory == {name for name, _, _ in self.member_bindings}
+            and current_bindings == self.member_bindings
+        ):
+            raise ValueError("snapshot source identity changed during publication")
+        bound = replace(self, directory_fingerprint=published_fingerprint)
+        bound.revalidate()
+        return bound
 
 
 @dataclass(frozen=True)
@@ -126,6 +338,12 @@ class VoxelMapSnapshot:
     ownership: ReversibleOwnershipStore
     checksums: dict[str, str]
     registry: EntityRegistry | None = None
+    source_witness: SnapshotSourceWitness | None = None
+
+    def revalidate_source(self) -> None:
+        if self.source_witness is None:
+            raise ValueError("snapshot has no source witness")
+        self.source_witness.revalidate()
 
     _DATA_FILES_V1 = ("metadata.json", "geometry.npz", "evidence.npz", "ownership.npz")
     _DATA_FILES_V2 = (*_DATA_FILES_V1, "entities.jsonl")
@@ -481,11 +699,28 @@ class VoxelMapSnapshot:
                 finally:
                     os.close(file_descriptor)
             cls._fsync_directory(temporary)
-            restored = replace(cls.load(temporary), path=target)
+            restored = cls.load(temporary)
+            staged_witness = SnapshotSourceWitness.capture_staged(
+                temporary,
+                published_path=target,
+                data_files=data_files,
+            )
 
             cls._publish_directory_no_replace(temporary, target)
             published = True
-            return restored
+            try:
+                source_witness = staged_witness.bind_published()
+            except Exception as publication_error:
+                raise SnapshotPublicationUncertainError(
+                    target,
+                    publication_error,
+                    published=True,
+                ) from publication_error
+            return replace(
+                restored,
+                path=target,
+                source_witness=source_witness,
+            )
         finally:
             if not published and temporary.exists():
                 try:

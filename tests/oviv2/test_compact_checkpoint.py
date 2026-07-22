@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import asdict
+from dataclasses import asdict, replace
+import gc
 import hashlib
 import io
 import json
 import os
 from pathlib import Path
+import weakref
 import zipfile
 
 import numpy as np
@@ -535,7 +537,7 @@ def test_compact_checkpoint_writer_materializes_ownership_once(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    original = compact_module._validated_ownership
+    original = compact_module._materialize_ownership
     calls = 0
 
     def counted(*args: object, **kwargs: object) -> ReversibleOwnershipStore:
@@ -543,13 +545,112 @@ def test_compact_checkpoint_writer_materializes_ownership_once(
         calls += 1
         return original(*args, **kwargs)
 
-    monkeypatch.setattr(compact_module, "_validated_ownership", counted)
+    monkeypatch.setattr(compact_module, "_materialize_ownership", counted)
 
-    CompactOwnershipCheckpoint.commit_new(
+    checkpoint = CompactOwnershipCheckpoint.commit_new(
         tmp_path / "checkpoint", _metadata(), _ownership()
     )
 
     assert calls == 1
+    assert isinstance(checkpoint.ownership, ReversibleOwnershipStore)
+
+
+def test_compact_checkpoint_receipt_validates_without_materializing(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original_materializer = compact_module._materialize_ownership
+
+    def forbidden_materializer(*_args: object, **_kwargs: object) -> object:
+        raise AssertionError("receipt commit must not materialize ownership")
+
+    monkeypatch.setattr(
+        compact_module,
+        "_materialize_ownership",
+        forbidden_materializer,
+    )
+
+    receipt = CompactOwnershipCheckpoint.commit_receipt_new(
+        tmp_path / "checkpoint", _metadata(), _ownership()
+    )
+
+    assert isinstance(receipt, compact_module.CompactOwnershipCommitReceipt)
+    assert not hasattr(receipt, "ownership")
+    assert receipt.source_witness.path == receipt.path
+    assert all(
+        value is not receipt
+        for value in vars(receipt.source_witness).values()
+    )
+    receipt.revalidate_source()
+    monkeypatch.setattr(
+        compact_module,
+        "_materialize_ownership",
+        original_materializer,
+    )
+    assert CompactOwnershipCheckpoint.load(receipt.path).ownership.records() == (
+        _ownership().records()
+    )
+
+
+def test_compact_checkpoint_receipt_does_not_retain_runtime_ownership(
+    tmp_path: Path,
+) -> None:
+    runtime = Oviv2Runtime(
+        "apartment",
+        Oviv2RuntimeConfig(
+            dense_semantics=DenseSemanticConfig(voxel_size_m=0.05)
+        ),
+        dense_semantic_provenance=_provenance(),
+    )
+    runtime.last_frame_id = 4
+    runtime.last_timestamp = 1.5
+    runtime.revision = 6
+    runtime.ownership.assign((1, 2, 3), 11, 0.8, 6)
+    ownership_reference = weakref.ref(runtime.ownership)
+
+    receipt = runtime.commit_compact_ownership_new(tmp_path / "compact")
+    del runtime
+    gc.collect()
+
+    assert ownership_reference() is None
+    assert not hasattr(receipt, "ownership")
+    receipt.source_witness.revalidate()
+
+
+def test_compact_checkpoint_five_100k_receipts_are_deterministic_and_loadable(
+    tmp_path: Path,
+) -> None:
+    ownership = ReversibleOwnershipStore(block_resolution=8)
+    record_count = 100_000
+    for index in range(record_count):
+        ownership.assign(
+            (
+                index % 50 - 25,
+                (index // 50) % 40 - 20,
+                index // 2_000 - 25,
+            ),
+            index % 127 + 1,
+            (index % 101) / 100.0,
+            index % (_metadata().revision + 1),
+        )
+
+    receipts = [
+        CompactOwnershipCheckpoint.commit_receipt_new(
+            tmp_path / f"checkpoint-{frame_id}",
+            replace(_metadata(), frame_id=frame_id),
+            ownership,
+        )
+        for frame_id in range(5)
+    ]
+
+    archives = [
+        (receipt.path / "ownership.npz").read_bytes()
+        for receipt in receipts
+    ]
+    assert all(archive == archives[0] for archive in archives[1:])
+    assert len(
+        CompactOwnershipCheckpoint.load(receipts[-1].path).ownership.records()
+    ) == record_count
 
 
 def test_compact_checkpoint_writer_rejects_symlinked_parent(tmp_path: Path) -> None:
@@ -709,7 +810,70 @@ def test_compact_checkpoint_rename_helper_rechecks_parent_before_syscall(
     assert not list(old_parent.glob(".checkpoint.tmp-*"))
 
 
-def test_runtime_commits_compact_ownership_without_full_snapshot(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    "failure_point",
+    ["open", "stat_before_open", "fstat", "stat_after_open"],
+)
+def test_compact_checkpoint_temp_creation_failure_leaks_nothing(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    failure_point: str,
+) -> None:
+    parent = tmp_path / "parent"
+    parent.mkdir()
+    original_open = compact_module.os.open
+    original_stat = compact_module.os.stat
+    original_fstat = compact_module.os.fstat
+    temporary_fds: list[int] = []
+    temporary_stat_calls = 0
+
+    def is_temporary_name(path: object) -> bool:
+        return isinstance(path, (str, bytes)) and os.fsdecode(path).startswith(
+            ".checkpoint.tmp-"
+        )
+
+    def controlled_open(path: object, *args: object, **kwargs: object) -> int:
+        if failure_point == "open" and is_temporary_name(path):
+            raise OSError("injected temp open failure")
+        descriptor = original_open(path, *args, **kwargs)
+        if is_temporary_name(path):
+            temporary_fds.append(descriptor)
+        return descriptor
+
+    def controlled_stat(path: object, *args: object, **kwargs: object):
+        nonlocal temporary_stat_calls
+        if is_temporary_name(path):
+            temporary_stat_calls += 1
+            if failure_point == "stat_before_open" and temporary_stat_calls == 1:
+                raise OSError("injected temp stat failure")
+            if failure_point == "stat_after_open" and temporary_stat_calls == 2:
+                raise OSError("injected temp stat failure")
+        return original_stat(path, *args, **kwargs)
+
+    def controlled_fstat(descriptor: int):
+        if failure_point == "fstat" and descriptor in temporary_fds:
+            raise OSError("injected temp fstat failure")
+        return original_fstat(descriptor)
+
+    monkeypatch.setattr(compact_module.os, "open", controlled_open)
+    monkeypatch.setattr(compact_module.os, "stat", controlled_stat)
+    monkeypatch.setattr(compact_module.os, "fstat", controlled_fstat)
+
+    with pytest.raises(OSError, match="injected temp"):
+        CompactOwnershipCheckpoint.commit_new(
+            parent / "checkpoint", _metadata(), _ownership()
+        )
+
+    assert not list(parent.glob(".checkpoint.tmp-*"))
+    for descriptor in temporary_fds:
+        with pytest.raises(OSError):
+            original_fstat(descriptor)
+
+
+def test_runtime_commits_compact_receipt_without_materializing(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     runtime = Oviv2Runtime(
         "apartment",
         Oviv2RuntimeConfig(
@@ -721,12 +885,30 @@ def test_runtime_commits_compact_ownership_without_full_snapshot(tmp_path: Path)
     runtime.last_timestamp = 1.5
     runtime.revision = 6
     runtime.ownership.assign((1, 2, 3), 11, 0.8, 6)
+    original_materializer = compact_module._materialize_ownership
 
-    checkpoint = runtime.commit_compact_ownership_new(tmp_path / "compact")
+    def forbidden_materializer(*_args: object, **_kwargs: object) -> object:
+        raise AssertionError("runtime receipt must not materialize ownership")
 
-    assert checkpoint.metadata.frame_id == 4
-    assert checkpoint.metadata.revision == 6
-    assert checkpoint.ownership.records() == runtime.ownership.records()
+    monkeypatch.setattr(
+        compact_module,
+        "_materialize_ownership",
+        forbidden_materializer,
+    )
+
+    receipt = runtime.commit_compact_ownership_new(tmp_path / "compact")
+
+    assert isinstance(receipt, compact_module.CompactOwnershipCommitReceipt)
+    assert receipt.metadata.frame_id == 4
+    assert receipt.metadata.revision == 6
+    assert not hasattr(receipt, "ownership")
+    monkeypatch.setattr(
+        compact_module,
+        "_materialize_ownership",
+        original_materializer,
+    )
+    loaded = CompactOwnershipCheckpoint.load(receipt.path)
+    assert loaded.ownership.records() == runtime.ownership.records()
     assert not (tmp_path / "compact/geometry.npz").exists()
     assert not (tmp_path / "compact/evidence.npz").exists()
     assert not (tmp_path / "compact/entities.jsonl").exists()
