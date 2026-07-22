@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Mapping, Sequence
+import copy
 import hashlib
 import json
 import os
@@ -26,6 +27,9 @@ from scripts.evaluation.finalize_tesse_t2 import (  # noqa: E402
     _stable_regular_file,
     _strict_json_object,
     build_scene_evidence,
+)
+from scripts.evaluation.canonicalize_tesse_common_v2_summary import (  # noqa: E402
+    _temporal_identity_projection,
 )
 from scripts.evaluation.prepare_temporal_khronos_bridge import (  # noqa: E402
     validate_temporal_bridge_manifest,
@@ -203,6 +207,154 @@ def _canonical_json(value: object) -> bytes:
     return json.dumps(
         value, sort_keys=True, separators=(",", ":"), allow_nan=False
     ).encode("utf-8")
+
+
+_FROZEN_RUN_IDENTITY_FIELDS = frozenset(
+    {
+        "schema_version",
+        "freeze_id",
+        "dataset",
+        "method_id",
+        "scene",
+        "freeze_manifest",
+        "repository",
+        "config",
+        "algorithm_hash",
+        "missing_observation_policy",
+        "input_bindings_sha256",
+    }
+)
+_RUN_EXECUTION_FIELDS = frozenset(
+    {
+        "schema_version",
+        "run_slot",
+        "execution_id",
+        "output_root",
+        "root_device",
+        "root_inode",
+    }
+)
+
+
+def _content_only(record: Mapping[str, Any], *, label: str) -> dict[str, Any]:
+    if not (
+        _is_sha256(record.get("sha256"))
+        and type(record.get("byte_count")) is int
+        and record["byte_count"] >= 0
+    ):
+        raise ValueError(f"{label} content binding is invalid")
+    return {"sha256": record["sha256"], "byte_count": record["byte_count"]}
+
+
+def _expected_frozen_run_identity(
+    *,
+    freeze: Mapping[str, Any],
+    freeze_record: Mapping[str, Any],
+    scene: str,
+    config: Mapping[str, Any],
+    config_record: Mapping[str, Any],
+) -> dict[str, Any]:
+    repository = _repository_binding(freeze.get("repository"), label="frozen")
+    scenes = freeze.get("scenes")
+    shared = freeze.get("shared_bindings")
+    if not isinstance(scenes, Mapping) or not isinstance(shared, Mapping):
+        raise ValueError("freeze input bindings are incomplete")
+    scene_binding = scenes.get(scene)
+    if not isinstance(scene_binding, Mapping):
+        raise ValueError(f"frozen {scene} source binding is missing")
+    identity_inputs = {
+        "shared_bindings": dict(shared),
+        "scene": dict(scene_binding),
+    }
+    algorithm = freeze.get("algorithm")
+    if not isinstance(algorithm, Mapping) or not _is_sha256(
+        algorithm.get("sha256")
+    ):
+        raise ValueError("frozen algorithm identity is invalid")
+    policy = config.get("missing_observation_policy")
+    if policy != "signed_depth":
+        raise ValueError("frozen main run policy must be signed_depth")
+    return {
+        "schema_version": 1,
+        "freeze_id": "oviv2-tessecd-v1",
+        "dataset": "TESSE-CD",
+        "method_id": "OVIV2",
+        "scene": scene,
+        "freeze_manifest": _content_only(
+            freeze_record, label="freeze manifest"
+        ),
+        "repository": {
+            "commit": repository["commit"],
+            "tree": repository["tree"],
+        },
+        "config": _content_only(config_record, label=f"frozen {scene} config"),
+        "algorithm_hash": algorithm["sha256"],
+        "missing_observation_policy": policy,
+        "input_bindings_sha256": hashlib.sha256(
+            _canonical_json(identity_inputs)
+        ).hexdigest(),
+    }
+
+
+def _validate_formal_run_fields(
+    payload: Mapping[str, Any],
+    *,
+    expected_frozen: Mapping[str, Any],
+    key: str,
+    root: Path,
+    label: str,
+) -> dict[str, Any]:
+    frozen = payload.get("frozen_run_identity")
+    execution = payload.get("run_execution")
+    if (
+        not isinstance(frozen, Mapping)
+        or set(frozen) != _FROZEN_RUN_IDENTITY_FIELDS
+        or dict(frozen) != dict(expected_frozen)
+    ):
+        raise ValueError(f"{label} frozen run identity mismatch")
+    if not isinstance(execution, Mapping) or set(execution) != _RUN_EXECUTION_FIELDS:
+        raise ValueError(f"{label} run execution fields are invalid")
+    status = root.stat()
+    expected_base = {
+        "schema_version": 1,
+        "run_slot": key,
+        "output_root": str(root),
+        "root_device": status.st_dev,
+        "root_inode": status.st_ino,
+    }
+    expected_execution = {
+        **expected_base,
+        "execution_id": hashlib.sha256(_canonical_json(expected_base)).hexdigest(),
+    }
+    if dict(execution) != expected_execution:
+        raise ValueError(f"{label} run execution mismatch")
+    return expected_execution
+
+
+def _mapping_identity_projection(
+    manifest: Mapping[str, Any],
+    source_index: Mapping[str, Any],
+    occlusion: Mapping[str, Any],
+) -> tuple[str, str]:
+    projected_occlusion = copy.deepcopy(dict(occlusion))
+    projected_occlusion.pop("run_execution")
+    occlusion_bytes = _canonical_json(projected_occlusion)
+    projected_manifest = copy.deepcopy(dict(manifest))
+    projected_manifest.pop("run_execution")
+    declaration = projected_manifest.get("occlusion_checkpoint_index")
+    if not isinstance(declaration, Mapping) or type(declaration.get("path")) is not str:
+        raise ValueError("mapping occlusion index declaration is invalid")
+    projected_manifest["occlusion_checkpoint_index"] = {
+        "path": declaration["path"],
+        "sha256": hashlib.sha256(occlusion_bytes).hexdigest(),
+        "byte_count": len(occlusion_bytes),
+    }
+    projected_source_index = copy.deepcopy(dict(source_index))
+    projected_source_index.pop("run_execution")
+    return (
+        hashlib.sha256(_canonical_json(projected_manifest)).hexdigest(),
+        hashlib.sha256(_canonical_json(projected_source_index)).hexdigest(),
+    )
 
 
 def _revalidate_records(value: object) -> None:
@@ -674,6 +826,8 @@ def _mapping_run(
     adapter_commit: str,
     source_bindings: Mapping[str, Any],
     schedule_binding: Mapping[str, Any],
+    frozen_run_identity: Mapping[str, Any],
+    repository_tree: str,
 ) -> dict[str, Any]:
     root = _assert_directory(root, label=f"{key} mapping root")
     manifest_path = root / "run_manifest.json"
@@ -711,8 +865,34 @@ def _mapping_run(
         label=f"{key} mapping occlusion index",
         expected_path=occlusion_path,
     )
+    occlusion, _ = _json(
+        occlusion_path, label=f"{key} mapping occlusion index"
+    )
+    execution = _validate_formal_run_fields(
+        manifest,
+        expected_frozen=frozen_run_identity,
+        key=key,
+        root=root,
+        label=f"{key} mapping manifest",
+    )
+    _validate_formal_run_fields(
+        source_index,
+        expected_frozen=frozen_run_identity,
+        key=key,
+        root=root,
+        label=f"{key} source index",
+    )
+    _validate_formal_run_fields(
+        occlusion,
+        expected_frozen=frozen_run_identity,
+        key=key,
+        root=root,
+        label=f"{key} occlusion index",
+    )
     if provenance.get("repository_commit") != adapter_commit:
         raise ValueError(f"{key} mapping adapter commit mismatch")
+    if provenance.get("repository_tree") != repository_tree:
+        raise ValueError(f"{key} mapping repository tree mismatch")
     if provenance.get("dirty_state_digest") != CLEAN_DIRTY_STATE_DIGEST:
         raise ValueError(f"{key} mapping run was dirty")
     if _absolute(str(provenance.get("config_path", ""))) != config_path:
@@ -767,11 +947,20 @@ def _mapping_run(
         ("mapping_capture_status", root / "capture_status.json"),
         ("mapping_occlusion_index", occlusion_path),
     )
+    manifest_projection, source_index_projection = _mapping_identity_projection(
+        manifest,
+        source_index,
+        occlusion,
+    )
     return {
         "root": root,
         "checkpoints": checkpoints,
         "manifest_sha256": manifest_record["sha256"],
         "source_index_sha256": source_index_record["sha256"],
+        "manifest_identity_sha256": manifest_projection,
+        "source_index_identity_sha256": source_index_projection,
+        "frozen_run_identity": dict(frozen_run_identity),
+        "run_execution": execution,
         "command": command,
         "environment": {
             field: provenance[field]
@@ -845,6 +1034,9 @@ def _official_run(
     config_path: Path,
     config_record: Mapping[str, Any],
     mapping_checkpoints: Sequence[tuple[int, int, int, int, str, int, str, int]],
+    mapping_root: Path,
+    frozen_run_identity: Mapping[str, Any],
+    run_execution: Mapping[str, Any],
 ) -> dict[str, Any]:
     root = _assert_directory(root, label=f"{key} official root")
     status_path = root / "run_status.json"
@@ -898,6 +1090,25 @@ def _official_run(
     temporal, temporal_path, temporal_record = _temporal_manifest_from_bridge(
         bridge, bridge_path=bridge_path, scene=scene
     )
+    observed_execution = _validate_formal_run_fields(
+        temporal,
+        expected_frozen=frozen_run_identity,
+        key=key,
+        root=mapping_root,
+        label=f"{key} temporal manifest",
+    )
+    if observed_execution != dict(run_execution):
+        raise ValueError(f"{key} temporal run execution mismatch")
+    temporal_content, _ = _file(
+        temporal_path, label=f"{key} temporal manifest", capture=True
+    )
+    assert temporal_content is not None
+    temporal_projection = _temporal_identity_projection(
+        temporal_content,
+        temporal_path=temporal_path,
+    )
+    if temporal_projection is None:
+        raise ValueError(f"{key} temporal manifest has no frozen run identity")
     temporal_checkpoints = _temporal_checkpoint_identity(
         temporal, base=temporal_path.parent, scene=scene
     )
@@ -1029,6 +1240,7 @@ def _official_run(
         "root": root,
         "metrics_bytes": metrics_bytes,
         "temporal_sha256": temporal_record["sha256"],
+        "temporal_identity_sha256": temporal_projection[0],
         "commands": [
             _command(status.get("build_command"), label=f"{key} build command"),
             _command(status.get("command"), label=f"{key} bridge command"),
@@ -1057,6 +1269,14 @@ def build_provenance(
         or freeze.get("dataset") != "TESSE-CD"
     ):
         raise ValueError("provenance requires the FROZEN oviv2-tessecd-v1 manifest")
+    frozen_commands = freeze.get("commands")
+    mapping_commands = (
+        frozen_commands.get("mapping") if isinstance(frozen_commands, Mapping) else None
+    )
+    if not isinstance(mapping_commands, list) or len(mapping_commands) != 4:
+        raise ValueError("frozen mapping commands are incomplete")
+    if any(type(value) is not str or not value for value in mapping_commands):
+        raise ValueError("frozen mapping command must be a non-empty string")
     source_bindings, schedule_binding = _freeze_source_bindings(
         freeze, freeze_path=freeze_path
     )
@@ -1085,6 +1305,7 @@ def build_provenance(
         raise ValueError("frozen algorithm hash is invalid")
     config_paths: dict[str, Path] = {}
     config_records: dict[str, dict[str, Any]] = {}
+    configs: dict[str, dict[str, Any]] = {}
     for scene in SCENES:
         scene_binding = scenes[scene]
         if not isinstance(scene_binding, Mapping):
@@ -1112,6 +1333,7 @@ def build_provenance(
             raise ValueError(f"frozen {scene} config identity mismatch")
         config_paths[scene] = config_path
         config_records[scene] = config_record
+        configs[scene] = config
     selection = freeze["selection"]
     assert isinstance(selection, Mapping)
     if selection.get("selected_config_sha256") != config_records["apartment"]["sha256"]:
@@ -1159,6 +1381,16 @@ def build_provenance(
     if len(set(official_identities.values())) != len(RUN_KEYS):
         raise ValueError("official run directories must be distinct")
     mapping: dict[str, dict[str, Any]] = {}
+    frozen_run_identities = {
+        scene: _expected_frozen_run_identity(
+            freeze=freeze,
+            freeze_record=freeze_record,
+            scene=scene,
+            config=configs[scene],
+            config_record=config_records[scene],
+        )
+        for scene in SCENES
+    }
     for key in RUN_KEYS:
         scene = key.rsplit("_run", 1)[0]
         mapping[key] = _mapping_run(
@@ -1171,6 +1403,8 @@ def build_provenance(
             adapter_commit=adapter_commit,
             source_bindings=source_bindings[scene],
             schedule_binding=schedule_binding,
+            frozen_run_identity=frozen_run_identities[scene],
+            repository_tree=repository["tree"],
         )
 
     official: dict[str, dict[str, Any]] = {}
@@ -1184,23 +1418,30 @@ def build_provenance(
             config_path=config_paths[scene],
             config_record=config_records[scene],
             mapping_checkpoints=mapping[key]["checkpoints"],
+            mapping_root=mapping[key]["root"],
+            frozen_run_identity=mapping[key]["frozen_run_identity"],
+            run_execution=mapping[key]["run_execution"],
         )
     for scene in SCENES:
         first_mapping = mapping[f"{scene}_run1"]
         second_mapping = mapping[f"{scene}_run2"]
         if (
-            first_mapping["manifest_sha256"]
-            != second_mapping["manifest_sha256"]
-            or first_mapping["source_index_sha256"]
-            != second_mapping["source_index_sha256"]
+            first_mapping["manifest_identity_sha256"]
+            != second_mapping["manifest_identity_sha256"]
+            or first_mapping["source_index_identity_sha256"]
+            != second_mapping["source_index_identity_sha256"]
             or first_mapping["checkpoints"] != second_mapping["checkpoints"]
         ):
-            raise ValueError(f"{scene} mapping run manifests are not byte-identical")
+            raise ValueError(
+                f"{scene} mapping run manifests identity projections are not byte-identical"
+            )
         if (
-            official[f"{scene}_run1"]["temporal_sha256"]
-            != official[f"{scene}_run2"]["temporal_sha256"]
+            official[f"{scene}_run1"]["temporal_identity_sha256"]
+            != official[f"{scene}_run2"]["temporal_identity_sha256"]
         ):
-            raise ValueError(f"{scene} temporal manifests are not byte-identical")
+            raise ValueError(
+                f"{scene} temporal manifests identity projections are not byte-identical"
+            )
         if (
             official[f"{scene}_run1"]["metrics_bytes"]
             != official[f"{scene}_run2"]["metrics_bytes"]
@@ -1221,14 +1462,6 @@ def build_provenance(
             raise ValueError(f"weight hash does not match the freeze: {role}")
         weight_records.append(record)
 
-    frozen_commands = freeze.get("commands")
-    mapping_commands = (
-        frozen_commands.get("mapping") if isinstance(frozen_commands, Mapping) else None
-    )
-    if not isinstance(mapping_commands, list) or len(mapping_commands) != 4:
-        raise ValueError("frozen mapping commands are incomplete")
-    if any(type(value) is not str or not value for value in mapping_commands):
-        raise ValueError("frozen mapping command must be a non-empty string")
     command_values = list(mapping_commands)
     command_values.extend(mapping[key]["command"] for key in RUN_KEYS)
     for key in RUN_KEYS:
@@ -1249,6 +1482,10 @@ def build_provenance(
         "upstream_commit": upstream_commit,
         "adapter_commit": adapter_commit,
         "dirty_state_digest": CLEAN_DIRTY_STATE_DIGEST,
+        "frozen_run_identities": frozen_run_identities,
+        "run_executions": {
+            key: mapping[key]["run_execution"] for key in RUN_KEYS
+        },
         "dataset_manifest": dataset_manifest,
         "commands": _commands(command_values),
         "environment": {

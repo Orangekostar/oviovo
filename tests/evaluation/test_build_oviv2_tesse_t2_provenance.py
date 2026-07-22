@@ -357,6 +357,7 @@ class Fixture:
         _write_json(prepared_manifest, prepared_payload)
         frozen_payload["preparation"]["manifest"] = _record(prepared_manifest)
         _write_json(self.freeze_manifest, frozen_payload)
+        self._bind_formal_identities()
 
         monkeypatch.setattr(
             builder,
@@ -376,6 +377,105 @@ class Fixture:
             "validate_temporal_bridge_manifest",
             lambda path: json.loads(path.read_text(encoding="utf-8")),
         )
+
+    def _bind_formal_identities(self) -> None:
+        freeze = json.loads(self.freeze_manifest.read_text(encoding="utf-8"))
+        freeze_raw = self.freeze_manifest.read_bytes()
+        for key, root in self.mapping_roots.items():
+            scene = key.rsplit("_run", 1)[0]
+            identity_inputs = {
+                "shared_bindings": freeze["shared_bindings"],
+                "scene": freeze["scenes"][scene],
+            }
+            frozen_identity = {
+                "schema_version": 1,
+                "freeze_id": RUN_ID,
+                "dataset": "TESSE-CD",
+                "method_id": "OVIV2",
+                "scene": scene,
+                "freeze_manifest": {
+                    "sha256": hashlib.sha256(freeze_raw).hexdigest(),
+                    "byte_count": len(freeze_raw),
+                },
+                "repository": {
+                    "commit": freeze["repository"]["commit"],
+                    "tree": freeze["repository"]["tree"],
+                },
+                "config": self._content_record(self.configs[scene]),
+                "algorithm_hash": freeze["algorithm"]["sha256"],
+                "missing_observation_policy": "signed_depth",
+                "input_bindings_sha256": hashlib.sha256(
+                    json.dumps(
+                        identity_inputs,
+                        sort_keys=True,
+                        separators=(",", ":"),
+                        allow_nan=False,
+                    ).encode("utf-8")
+                ).hexdigest(),
+            }
+            root_status = root.stat()
+            execution_base = {
+                "schema_version": 1,
+                "run_slot": key,
+                "output_root": str(root.resolve()),
+                "root_device": root_status.st_dev,
+                "root_inode": root_status.st_ino,
+            }
+            execution = {
+                **execution_base,
+                "execution_id": hashlib.sha256(
+                    json.dumps(
+                        execution_base,
+                        sort_keys=True,
+                        separators=(",", ":"),
+                        allow_nan=False,
+                    ).encode("utf-8")
+                ).hexdigest(),
+            }
+            for name in ("source_index.json", "occlusion_checkpoint_index.json"):
+                path = root / name
+                payload = json.loads(path.read_text(encoding="utf-8"))
+                payload["frozen_run_identity"] = frozen_identity
+                payload["run_execution"] = execution
+                _write_json(path, payload)
+            manifest_path = root / "run_manifest.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest["frozen_run_identity"] = frozen_identity
+            manifest["run_execution"] = execution
+            manifest["occlusion_checkpoint_index"] = {
+                **_record(root / "occlusion_checkpoint_index.json"),
+                "path": "occlusion_checkpoint_index.json",
+            }
+            _write_json(manifest_path, manifest)
+            provenance_path = root / "run_provenance.json"
+            provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+            provenance["repository_tree"] = freeze["repository"]["tree"]
+            _write_json(provenance_path, provenance)
+
+            official = self.official_roots[key]
+            temporal_path = official / "temporal/temporal_manifest.json"
+            sidecar_path = official / "temporal/sidecars/source_index.json"
+            _write_json(
+                sidecar_path,
+                json.loads((root / "source_index.json").read_text(encoding="utf-8")),
+            )
+            temporal = json.loads(temporal_path.read_text(encoding="utf-8"))
+            temporal["frozen_run_identity"] = frozen_identity
+            temporal["run_execution"] = execution
+            temporal["sources"] = {
+                "source_index": _relative_record(sidecar_path, temporal_path.parent)
+            }
+            _write_json(temporal_path, temporal)
+            bridge_path = official / "bridge_input/bridge_manifest.json"
+            bridge = json.loads(bridge_path.read_text(encoding="utf-8"))
+            bridge["hashed_inputs"] = [_record(temporal_path)]
+            _write_json(bridge_path, bridge)
+            status_path = official / "run_status.json"
+            status = json.loads(status_path.read_text(encoding="utf-8"))
+            for source in status["sources"]:
+                if Path(source["path"]) == bridge_path.resolve():
+                    source.update(_record(bridge_path))
+            _write_json(status_path, status)
 
     def _write_mapping_run(self, key: str, scene: str, root: Path) -> None:
         snapshot = _write(root / "checkpoints/snapshot.npz", f"{scene}-snapshot\n".encode())
@@ -716,6 +816,11 @@ def test_builds_finalizer_ready_provenance_deterministically(package: Fixture) -
     ] == ["official_temporal_manifest"] * 4
     assert set(first["environment"]["mapping_runs"]) == set(package.mapping_roots)
     assert set(first["hardware"]["mapping_runs"]) == set(package.mapping_roots)
+    assert set(first["run_executions"]) == set(package.mapping_roots)
+    assert set(first["frozen_run_identities"]) == {"apartment", "office"}
+    assert first["run_executions"]["apartment_run1"] != first[
+        "run_executions"
+    ]["apartment_run2"]
 
     scene_payloads = {
         scene: json.loads(
@@ -812,6 +917,27 @@ def test_rejects_non_identical_mapping_source_indexes(package: Fixture) -> None:
     source_index = package.mapping_roots["office_run2"] / "source_index.json"
     package.mutate_json(source_index, lambda payload: payload.__setitem__("nonce", 1))
     with pytest.raises(ValueError, match="mapping run manifests"):
+        package.build()
+
+
+def test_rejects_mapping_identity_or_execution_drift(package: Fixture) -> None:
+    source_index = package.mapping_roots["apartment_run1"] / "source_index.json"
+    package.mutate_json(
+        source_index,
+        lambda payload: payload["frozen_run_identity"].__setitem__(
+            "algorithm_hash", "f" * 64
+        ),
+    )
+    with pytest.raises(ValueError, match="frozen run identity"):
+        package.build()
+
+    package._bind_formal_identities()
+    manifest = package.mapping_roots["apartment_run1"] / "run_manifest.json"
+    package.mutate_json(
+        manifest,
+        lambda payload: payload["run_execution"].__setitem__("root_inode", 1),
+    )
+    with pytest.raises(ValueError, match="run execution"):
         package.build()
 
 
