@@ -15,6 +15,9 @@ from PIL import Image, PngImagePlugin
 import pytest
 
 import scripts.precompute_oviv2_dense_semantics as precompute_module
+from scripts.evaluation.export_tesse_cd_rgbd import (
+    compute_export_output_binding as compute_tesse_export_output_binding,
+)
 from scripts.precompute_oviv2_dense_semantics import (
     _atomic_json,
     _load_rgb_frame,
@@ -744,6 +747,58 @@ def test_tesse_preflight_uses_checked_scene_contract_without_materializing_rgb(
         classes_json.read_bytes()
     ).hexdigest()
     assert preflight.worker_vocabulary_sha256 != preflight.vocabulary_sha256
+    assert all(binding.expected_sha256 is not None for binding in preflight.rgb_bindings)
+
+
+def test_tesse_preflight_rejects_rgb_changed_after_dataset_validation(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config, _, _ = _write_tesse_fixture(tmp_path, monkeypatch)
+
+    class MutatingDataset(TesseCdRgbdDataset):
+        def __init__(self, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+            path = self.records[0].rgb_path
+            payload = bytearray(path.read_bytes())
+            payload[-1] ^= 1
+            with path.open("r+b") as stream:
+                stream.write(payload)
+                stream.flush()
+                os.fsync(stream.fileno())
+
+    monkeypatch.setattr(precompute_module, "TesseCdRgbdDataset", MutatingDataset)
+
+    with pytest.raises(ValueError, match="export output binding"):
+        _preflight(config, 2, _args(config, tmp_path / "dense"))
+
+
+def test_tesse_preflight_rejects_rgb_changed_after_export_binding(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config, _, _ = _write_tesse_fixture(tmp_path, monkeypatch)
+
+    def bind_then_mutate(*args, **kwargs):
+        binding = compute_tesse_export_output_binding(*args, **kwargs)
+        path = tmp_path / "rgbd_v1" / "apartment" / "results" / "frame000000.jpg"
+        payload = bytearray(path.read_bytes())
+        payload[-1] ^= 1
+        with path.open("r+b") as stream:
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
+        return binding
+
+    monkeypatch.setattr(
+        precompute_module,
+        "compute_export_output_binding",
+        bind_then_mutate,
+        raising=False,
+    )
+
+    with pytest.raises(ValueError, match="RGB frame hash mismatch"):
+        _preflight(config, 2, _args(config, tmp_path / "dense"))
 
 
 def test_tesse_load_rgb_frame_streams_only_requested_rgb_without_depth_decode(

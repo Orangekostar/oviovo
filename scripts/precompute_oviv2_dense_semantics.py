@@ -32,6 +32,9 @@ if str(REPO_ROOT) not in sys.path:
 from src.datasets.replica import ReplicaRoom0Dataset  # noqa: E402
 from src.datasets.scannet200 import ScanNet200Dataset  # noqa: E402
 from src.datasets.tesse_cd import TesseCdRgbdDataset  # noqa: E402
+from scripts.evaluation.export_tesse_cd_rgbd import (  # noqa: E402
+    compute_export_output_binding,
+)
 from src.models.json_line_worker_client import JsonLineWorkerClient  # noqa: E402
 from src.oviv2.dense_semantics import (  # noqa: E402
     DenseSemanticFrame,
@@ -888,8 +891,15 @@ def _bind_rgb_frames(
     if len(dataset) != len(source_frame_ids):
         raise ValueError("dataset length must match the frozen source frame IDs")
     if isinstance(dataset, TesseCdRgbdDataset):
+        if expected_sha256 is None or set(expected_sha256) != set(source_frame_ids):
+            raise ValueError("TESSE RGB hashes must cover every frozen source frame")
         return tuple(
-            _capture_rgb_binding(source_id, record.frame_index, record.rgb_path)
+            _capture_rgb_binding(
+                source_id,
+                record.frame_index,
+                record.rgb_path,
+                expected_sha256[source_id],
+            )
             for source_id, record in zip(source_frame_ids, dataset.records)
         )
     if isinstance(dataset, ScanNet200Dataset):
@@ -909,6 +919,64 @@ def _bind_rgb_frames(
         _capture_rgb_binding(source_id, record.frame_index, record.rgb_path)
         for source_id, record in zip(source_frame_ids, dataset._records)
     )
+
+
+def _tesse_rgb_hashes_from_export_binding(
+    dataset: TesseCdRgbdDataset,
+    scene_record: Mapping[str, Any],
+    scene: str,
+    frame_count: int,
+) -> dict[int, str]:
+    observed = compute_export_output_binding(dataset.root.parent, scene, frame_count)
+    locked = scene_record.get("export_manifest")
+    if not isinstance(locked, dict):
+        raise ValueError("TESSE export manifest binding must be an object")
+    combined = observed.get("combined_output_sha256")
+    file_count = observed.get("file_hash_count")
+    if (
+        combined != locked.get("combined_output_sha256")
+        or file_count != locked.get("file_hash_count")
+    ):
+        raise ValueError("TESSE export output binding changed after dataset validation")
+
+    file_hashes = observed.get("file_sha256")
+    expected_paths = {
+        relative
+        for index in range(frame_count)
+        for relative in (
+            f"{scene}/results/frame{index:06d}.jpg",
+            f"{scene}/results/depth{index:06d}.png",
+        )
+    } | {
+        f"{scene}/traj.txt",
+        f"{scene}/timestamps.csv",
+        "cam_params.json",
+    }
+    if (
+        not isinstance(file_hashes, dict)
+        or type(file_count) is not int
+        or file_count != len(file_hashes)
+        or set(file_hashes) != expected_paths
+        or any(
+            not isinstance(value, str) or _SHA256_PATTERN.fullmatch(value) is None
+            for value in file_hashes.values()
+        )
+    ):
+        raise ValueError("TESSE export output file hashes are invalid")
+    digest = hashlib.sha256()
+    for relative, file_hash in sorted(file_hashes.items()):
+        digest.update(
+            relative.encode("utf-8")
+            + b"\0"
+            + file_hash.encode("ascii")
+            + b"\n"
+        )
+    if digest.hexdigest() != combined:
+        raise ValueError("TESSE export output file hashes do not match combined binding")
+    return {
+        index: file_hashes[f"{scene}/results/frame{index:06d}.jpg"]
+        for index in range(frame_count)
+    }
 
 
 def _validate_replica_frame_headers(
@@ -1248,6 +1316,12 @@ def _preflight(
             scene,
             export_path,
             schedule_path,
+        )
+        rgb_expected_sha256 = _tesse_rgb_hashes_from_export_binding(
+            dataset,
+            scene_record,
+            scene,
+            config_frames,
         )
     if len(dataset) != config_frames:
         raise ValueError(
