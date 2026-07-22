@@ -187,20 +187,170 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _absolute_lexical(path: Path) -> Path:
+    return Path(os.path.abspath(os.fspath(path)))
+
+
+def _open_regular_no_symlinks(
+    path: Path, *, label: str
+) -> tuple[int, tuple[tuple[int, int, int], ...]]:
+    absolute = _absolute_lexical(path)
+    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0)
+    no_follow = getattr(os, "O_NOFOLLOW", 0)
+    directory_flags = flags | getattr(os, "O_DIRECTORY", 0) | no_follow
+    descriptors: list[int] = []
+    identities: list[tuple[int, int, int]] = []
+    try:
+        current = os.open(absolute.anchor, directory_flags)
+        descriptors.append(current)
+        root_status = os.fstat(current)
+        identities.append(
+            (root_status.st_dev, root_status.st_ino, stat.S_IFMT(root_status.st_mode))
+        )
+        for index, component in enumerate(absolute.parts[1:]):
+            observed = os.stat(component, dir_fd=current, follow_symlinks=False)
+            if stat.S_ISLNK(observed.st_mode):
+                raise ValueError(
+                    f"{label} regular file path contains a symbolic link component"
+                )
+            terminal = index == len(absolute.parts[1:]) - 1
+            expected = stat.S_ISREG if terminal else stat.S_ISDIR
+            if not expected(observed.st_mode):
+                kind = "regular file" if terminal else "directory"
+                raise ValueError(f"{label} path component is not a {kind}")
+            opened = os.open(
+                component,
+                flags | no_follow | (0 if terminal else getattr(os, "O_DIRECTORY", 0)),
+                dir_fd=current,
+            )
+            confirmed = os.fstat(opened)
+            identity = (
+                confirmed.st_dev,
+                confirmed.st_ino,
+                stat.S_IFMT(confirmed.st_mode),
+            )
+            if identity != (
+                observed.st_dev,
+                observed.st_ino,
+                stat.S_IFMT(observed.st_mode),
+            ):
+                os.close(opened)
+                raise ValueError(f"{label} changed while resolving")
+            descriptors.append(opened)
+            identities.append(identity)
+            current = opened
+        terminal_fd = descriptors.pop()
+        return terminal_fd, tuple(identities)
+    except ValueError:
+        raise
+    except OSError as error:
+        raise ValueError(f"{label} is missing or cannot be opened safely") from error
+    finally:
+        for descriptor in reversed(descriptors):
+            os.close(descriptor)
+
+
+def _stable_regular_file(
+    path: Path, *, label: str, capture: bool
+) -> tuple[str, int, bytes | None]:
+    descriptor, identities = _open_regular_no_symlinks(path, label=label)
+    chunks: list[bytes] | None = [] if capture else None
+    digest = hashlib.sha256()
+    byte_count = 0
+    try:
+        before = os.fstat(descriptor)
+        snapshot = (
+            before.st_dev,
+            before.st_ino,
+            before.st_size,
+            before.st_mtime_ns,
+            before.st_ctime_ns,
+        )
+        while True:
+            chunk = os.read(descriptor, 1024 * 1024)
+            if not chunk:
+                break
+            digest.update(chunk)
+            byte_count += len(chunk)
+            if chunks is not None:
+                chunks.append(chunk)
+        after = os.fstat(descriptor)
+        if (
+            byte_count != before.st_size
+            or (
+                after.st_dev,
+                after.st_ino,
+                after.st_size,
+                after.st_mtime_ns,
+                after.st_ctime_ns,
+            )
+            != snapshot
+        ):
+            raise ValueError(f"{label} changed while it was read")
+    finally:
+        os.close(descriptor)
+
+    reopened, reopened_identities = _open_regular_no_symlinks(path, label=label)
+    try:
+        current = os.fstat(reopened)
+        if reopened_identities != identities or (
+            current.st_dev,
+            current.st_ino,
+            current.st_size,
+            current.st_mtime_ns,
+            current.st_ctime_ns,
+        ) != snapshot:
+            raise ValueError(f"{label} changed while it was read")
+    finally:
+        os.close(reopened)
+    return digest.hexdigest(), byte_count, None if chunks is None else b"".join(chunks)
+
+
+def _canonical_relative_source(raw: str, *, label: str) -> Path:
+    path = Path(raw)
+    if (
+        not raw
+        or "\\" in raw
+        or path.is_absolute()
+        or "." in path.parts
+        or ".." in path.parts
+        or path.as_posix() != raw
+    ):
+        raise ValueError(f"{label} must be a canonical artifact-relative path")
+    return path
+
+
 def _validated_declared_source(
-    entry: Mapping[str, Any], *, label: str
+    entry: Mapping[str, Any], *, label: str, artifact_base: Path | None = None
 ) -> dict[str, Any]:
-    path = Path(str(entry.get("path", ""))).resolve()
-    if not path.is_file():
-        raise ValueError(f"{label} source is missing: {path}")
+    raw_path = entry.get("path")
+    if type(raw_path) is not str or not raw_path:
+        raise ValueError(f"{label} source path must be a non-empty string")
+    declared = Path(raw_path)
+    if declared.is_absolute():
+        path = _absolute_lexical(declared)
+        output_path = str(path)
+    else:
+        relative = _canonical_relative_source(raw_path, label=f"{label} source path")
+        if artifact_base is None:
+            raise ValueError(f"{label} relative source requires an artifact base")
+        path = _absolute_lexical(artifact_base) / relative
+        output_path = relative.as_posix()
     byte_count = entry.get("byte_count")
-    if type(byte_count) is not int or byte_count != path.stat().st_size:
+    if type(byte_count) is not int or byte_count < 0:
         raise ValueError(f"{label} source byte count mismatch")
-    observed = _sha256(path)
-    if entry.get("sha256") != observed:
+    declared_sha256 = entry.get("sha256")
+    if not _is_lower_sha256(declared_sha256):
+        raise ValueError(f"{label} source SHA256 is invalid")
+    observed, observed_bytes, _ = _stable_regular_file(
+        path, label=f"{label} source", capture=False
+    )
+    if byte_count != observed_bytes:
+        raise ValueError(f"{label} source byte count mismatch")
+    if declared_sha256 != observed:
         raise ValueError(f"{label} source SHA256 mismatch")
     return {
-        "path": str(path),
+        "path": output_path,
         "sha256": observed,
         "byte_count": byte_count,
     }
@@ -211,6 +361,7 @@ def _source_bound_unavailable(
     unavailable: Mapping[str, str],
     *,
     scene: str,
+    artifact_base: Path | None = None,
 ) -> dict[str, dict[str, Any]]:
     if not unavailable:
         return {}
@@ -221,7 +372,10 @@ def _source_bound_unavailable(
     for raw in sources:
         if not isinstance(raw, Mapping):
             raise ValueError(f"{scene} metric source record must be a mapping")
-        name = Path(str(raw.get("path", ""))).name
+        raw_path = raw.get("path")
+        if type(raw_path) is not str:
+            raise ValueError(f"{scene} metric source path must be a string")
+        name = Path(raw_path).name
         if not name or name in by_name:
             raise ValueError(f"{scene} metric source names must be unique")
         by_name[name] = raw
@@ -234,7 +388,9 @@ def _source_bound_unavailable(
         evidence[metric] = {
             "reason": reason,
             "source": _validated_declared_source(
-                by_name[filename], label=f"{scene}.{metric}"
+                by_name[filename],
+                label=f"{scene}.{metric}",
+                artifact_base=artifact_base,
             ),
         }
     return evidence
@@ -292,12 +448,12 @@ def build_scene_evidence(
 ) -> dict[str, Any]:
     if METHOD_MODES.get(method_key) != mode:
         raise ValueError("unsupported TESSE-CD method or mode")
-    metrics_payload = json.loads(metrics_path.read_text(encoding="utf-8"))
-    status_payload = json.loads(status_path.read_text(encoding="utf-8"))
-    if not isinstance(metrics_payload, Mapping) or not isinstance(
-        status_payload, Mapping
-    ):
-        raise ValueError("scene evidence inputs must contain JSON objects")
+    metrics_payload, metrics_source, _ = _json_source(
+        metrics_path, label="scene metrics"
+    )
+    status_payload, status_source, _ = _json_source(
+        status_path, label="scene status"
+    )
     scene = str(metrics_payload.get("scene", ""))
     if scene not in {"apartment", "office"}:
         raise ValueError("scene evidence requires apartment or office metrics")
@@ -317,7 +473,10 @@ def build_scene_evidence(
         metrics_payload, status_payload, scene=scene
     )
     unavailable_evidence = _source_bound_unavailable(
-        metrics_payload, unavailable, scene=scene
+        metrics_payload,
+        unavailable,
+        scene=scene,
+        artifact_base=Path(metrics_source["path"]).parent,
     )
     return {
         "schema_version": 1,
@@ -331,8 +490,8 @@ def build_scene_evidence(
         "metrics": metrics,
         "unavailable": unavailable,
         "unavailable_evidence": unavailable_evidence,
-        "official_metrics_source": _hashed_entry({"path": str(metrics_path)}),
-        "run_status_source": _hashed_entry({"path": str(status_path)}),
+        "official_metrics_source": metrics_source,
+        "run_status_source": status_source,
         "official_metrics": dict(metrics_payload),
         "run_status": dict(status_payload),
     }
@@ -347,6 +506,7 @@ def _build_result_payload(
     *,
     method_key: str,
     mode: str,
+    source_bases: Mapping[str, Path] | None = None,
 ) -> dict[str, Any]:
     metrics, unavailable = build_partial_official_metrics(
         apartment,
@@ -356,10 +516,16 @@ def _build_result_payload(
     )
     unavailable_evidence = {
         "apartment": _source_bound_unavailable(
-            apartment, unavailable["apartment"], scene="apartment"
+            apartment,
+            unavailable["apartment"],
+            scene="apartment",
+            artifact_base=None if source_bases is None else source_bases.get("apartment"),
         ),
         "office": _source_bound_unavailable(
-            office, unavailable["office"], scene="office"
+            office,
+            unavailable["office"],
+            scene="office",
+            artifact_base=None if source_bases is None else source_bases.get("office"),
         ),
     }
     _validate_run_status(
@@ -452,30 +618,49 @@ def _build_result_payload(
     }
 
 
+def _strict_json_object(content: bytes, *, label: str) -> dict[str, Any]:
+    def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError(f"{label} contains duplicate JSON key: {key}")
+            result[key] = value
+        return result
+
+    def reject_constant(value: str) -> None:
+        raise ValueError(f"{label} contains non-finite JSON constant: {value}")
+
+    try:
+        payload = json.loads(
+            content.decode("utf-8"),
+            object_pairs_hook=unique_object,
+            parse_constant=reject_constant,
+        )
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError(f"{label} must be valid UTF-8 JSON") from error
+    if not isinstance(payload, dict):
+        raise ValueError(f"{label} must contain a JSON object")
+    return payload
+
+
 def _json_source(
     path: Path, *, label: str
 ) -> tuple[dict[str, Any], dict[str, Any], bytes]:
-    try:
-        file_stat = path.stat(follow_symlinks=False)
-        if path.is_symlink() or not stat.S_ISREG(file_stat.st_mode):
-            raise ValueError(f"{label} must be a regular file")
-        resolved = path.absolute()
-        content = path.read_bytes()
-        payload = json.loads(content.decode("utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
-        raise ValueError(
-            f"{label} must be a readable JSON object: {path}"
-        ) from error
-    if not isinstance(payload, Mapping):
-        raise ValueError(f"{label} must contain a JSON object")
+    resolved = _absolute_lexical(path)
+    observed, byte_count, captured = _stable_regular_file(
+        resolved, label=label, capture=True
+    )
+    if captured is None:
+        raise AssertionError("captured JSON bytes are required")
+    payload = _strict_json_object(captured, label=label)
     return (
-        dict(payload),
+        payload,
         {
             "path": str(resolved),
-            "sha256": hashlib.sha256(content).hexdigest(),
-            "byte_count": len(content),
+            "sha256": observed,
+            "byte_count": byte_count,
         },
-        content,
+        captured,
     )
 
 
@@ -536,6 +721,10 @@ def build_result(
         provenance_payload,
         method_key=method_key,
         mode=mode,
+        source_bases={
+            "apartment": Path(apartment_metrics_sources["primary"]["path"]).parent,
+            "office": Path(office_metrics_sources["primary"]["path"]).parent,
+        },
     )
     result["status"] = "VERIFIED"
     result["protocol"]["deterministic_repeat"] = "byte-identical"

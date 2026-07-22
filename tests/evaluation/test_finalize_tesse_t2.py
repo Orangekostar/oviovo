@@ -429,6 +429,177 @@ def _dualmap_status(scene: str) -> dict[str, object]:
     }
 
 
+def _write_relative_scene_inputs(
+    root: Path, *, scene: str = "apartment"
+) -> tuple[Path, Path]:
+    source_root = root / "bridge"
+    metrics = _dualmap_scene(scene, source_root)
+    for source in metrics["sources"]:
+        source["path"] = Path(source["path"]).relative_to(root).as_posix()
+    metrics_path = root / "official_metrics.json"
+    metrics_path.write_text(
+        json.dumps(metrics, sort_keys=True, allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
+    status_path = root / "run_status.json"
+    status_path.write_text(
+        json.dumps(_dualmap_status(scene), sort_keys=True, allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
+    return metrics_path, status_path
+
+
+def test_scene_evidence_resolves_relative_sources_from_metrics_parent(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    metrics_path, status_path = _write_relative_scene_inputs(tmp_path / "run")
+    unrelated = tmp_path / "unrelated-cwd"
+    unrelated.mkdir()
+    monkeypatch.chdir(unrelated)
+
+    evidence = finalize_tesse_t2.build_scene_evidence(
+        metrics_path,
+        status_path,
+        method_key="DUALMAP",
+        mode="native",
+    )
+
+    sources = evidence["unavailable_evidence"]
+    assert sources["dynamic_f1"]["source"]["path"] == "bridge/dynamic_objects.csv"
+    assert sources["change_f1"]["source"]["path"] == "bridge/static_objects.csv"
+
+
+def test_relative_source_bindings_are_identical_across_run_roots(tmp_path: Path) -> None:
+    first_paths = _write_relative_scene_inputs(tmp_path / "run-a")
+    second_paths = _write_relative_scene_inputs(tmp_path / "run-b")
+
+    evidence = [
+        finalize_tesse_t2.build_scene_evidence(
+            metrics_path,
+            status_path,
+            method_key="DUALMAP",
+            mode="native",
+        )["unavailable_evidence"]
+        for metrics_path, status_path in (first_paths, second_paths)
+    ]
+
+    assert json.dumps(evidence[0], sort_keys=True) == json.dumps(
+        evidence[1], sort_keys=True
+    )
+
+
+def test_scene_evidence_rejects_relative_source_parent_escape(
+    tmp_path: Path,
+) -> None:
+    run = tmp_path / "run"
+    metrics_path, status_path = _write_relative_scene_inputs(run)
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    escaped = outside / "dynamic_objects.csv"
+    escaped.write_text("escaped", encoding="utf-8")
+    for source in payload["sources"]:
+        if Path(source["path"]).name == escaped.name:
+            source.update(
+                path="../outside/dynamic_objects.csv",
+                sha256=hashlib.sha256(escaped.read_bytes()).hexdigest(),
+                byte_count=escaped.stat().st_size,
+            )
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="canonical|escape|relative"):
+        finalize_tesse_t2.build_scene_evidence(
+            metrics_path,
+            status_path,
+            method_key="DUALMAP",
+            mode="native",
+        )
+
+
+@pytest.mark.parametrize("link_kind", ["intermediate", "terminal"])
+def test_scene_evidence_rejects_symlinked_relative_source(
+    tmp_path: Path, link_kind: str
+) -> None:
+    run = tmp_path / "run"
+    metrics_path, status_path = _write_relative_scene_inputs(run)
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    dynamic = run / "bridge" / "dynamic_objects.csv"
+    if link_kind == "intermediate":
+        actual = run / "actual"
+        (run / "bridge").rename(actual)
+        (run / "bridge").symlink_to(actual, target_is_directory=True)
+    else:
+        target = run / "bridge" / "dynamic-target.csv"
+        dynamic.rename(target)
+        dynamic.symlink_to(target)
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="symbolic link|symlink"):
+        finalize_tesse_t2.build_scene_evidence(
+            metrics_path,
+            status_path,
+            method_key="DUALMAP",
+            mode="native",
+        )
+
+
+def test_declared_source_rejects_path_replacement_while_reading(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = tmp_path / "source.csv"
+    source.write_bytes(b"original")
+    replacement = tmp_path / "replacement.csv"
+    replacement.write_bytes(b"replaced")
+    entry = {
+        "path": source.name,
+        "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+        "byte_count": source.stat().st_size,
+    }
+    original_read = os.read
+    replaced = False
+
+    def replace_path(descriptor: int, size: int) -> bytes:
+        nonlocal replaced
+        if not replaced:
+            replaced = True
+            replacement.replace(source)
+        return original_read(descriptor, size)
+
+    monkeypatch.setattr(finalize_tesse_t2.os, "read", replace_path)
+
+    with pytest.raises(ValueError, match="changed"):
+        finalize_tesse_t2._validated_declared_source(
+            entry,
+            label="test",
+            artifact_base=tmp_path,
+        )
+    assert replaced
+
+
+@pytest.mark.parametrize(
+    ("corruption", "message"),
+    [
+        ('{"scene":"apartment","scene":"apartment"}', "duplicate JSON key"),
+        ('{"metric":NaN}', "non-finite JSON constant"),
+    ],
+)
+def test_scene_evidence_rejects_noncanonical_metrics_json(
+    tmp_path: Path, corruption: str, message: str
+) -> None:
+    metrics_path = tmp_path / "official_metrics.json"
+    metrics_path.write_text(corruption, encoding="utf-8")
+    status_path = tmp_path / "run_status.json"
+    status_path.write_text("{}\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match=message):
+        finalize_tesse_t2.build_scene_evidence(
+            metrics_path,
+            status_path,
+            method_key="DUALMAP",
+            mode="native",
+        )
+
+
 def _panoptic_scene(scene: str, source_root: Path) -> dict[str, object]:
     payload = _dualmap_scene(scene, source_root)
     payload["method"] = "PANOPTIC_SHARED"
@@ -878,6 +1049,36 @@ def _full_cli_command(inputs: dict[str, Path], output: Path) -> list[str]:
         "--output",
         str(output),
     ]
+
+
+def test_full_result_resolves_each_relative_source_from_its_metrics_parent(
+    tmp_path: Path,
+) -> None:
+    inputs = _full_cli_inputs(tmp_path / "bundle")
+    for scene in ("apartment", "office"):
+        primary = inputs[f"{scene}_metrics"]
+        repeat = inputs[f"{scene}_metrics_repeat"]
+        payload = json.loads(primary.read_text(encoding="utf-8"))
+        for source in payload["sources"]:
+            source["path"] = Path(source["path"]).relative_to(primary.parent).as_posix()
+        encoded = (
+            json.dumps(payload, indent=2, sort_keys=True, allow_nan=False) + "\n"
+        ).encode("utf-8")
+        primary.write_bytes(encoded)
+        repeat.write_bytes(encoded)
+
+    result = finalize_tesse_t2.build_result(
+        **inputs,
+        method_key="OVIMAP_FROZEN",
+        mode="frozen",
+    )
+
+    assert result["unavailable_evidence"]["apartment"]["change_f1"]["source"][
+        "path"
+    ] == "apartment_sources/static_objects.csv"
+    assert result["unavailable_evidence"]["office"]["change_f1"]["source"][
+        "path"
+    ] == "office_sources/static_objects.csv"
 
 
 def test_full_cli_requires_repeat_inputs(tmp_path: Path) -> None:
