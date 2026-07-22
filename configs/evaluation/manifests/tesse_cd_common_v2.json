@@ -1,0 +1,74 @@
+{
+  "dataset": "TESSE-CD",
+  "expected_event_object_count": 14,
+  "fixture_tested": true,
+  "ground_truth_sources": {
+    "apartment.background_mesh": {
+      "byte_count": 10266457,
+      "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/apartment/gt_background.ply",
+      "sha256": "a08902664767068a312bc685d77b8ab7b87f4d3476b1a12e7d055afc87442e30"
+    },
+    "apartment.changes": {
+      "byte_count": 185,
+      "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/apartment/gt_changes.csv",
+      "sha256": "fe15533332a6f2f672598a255e3099bdf28370ff69524a48de8e3ee22d09a4a7"
+    },
+    "apartment.dsg": {
+      "byte_count": 554978384,
+      "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/apartment/gt_dsg_consolidated.json",
+      "sha256": "ba89680aff50ab5825197060cafab0a84c950b7f2b1f88ecc0b2ada6aabda63c"
+    },
+    "apartment.dsg_with_mesh": {
+      "byte_count": 722433158,
+      "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/apartment/gt_dsg_with_mesh_consolidated.json",
+      "sha256": "ed6fd750748f2681602800f477505888e3a1ba7f1b7ba9eec7706886e05e2201"
+    },
+    "office.background_mesh": {
+      "byte_count": 48324042,
+      "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/office/gt_background.ply",
+      "sha256": "4751ca1b2ec9c0bc5896cee425f9953249ca8dacec85e37680e76c120dccd7d4"
+    },
+    "office.changes": {
+      "byte_count": 214,
+      "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/office/gt_changes.csv",
+      "sha256": "748818a20724fce95e136c434a74a27f8649e400bbbc69a5f27beb3237624c44"
+    },
+    "office.dsg": {
+      "byte_count": 376315665,
+      "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/office/gt_dsg_consolidated.json",
+      "sha256": "30fa4dc0e657052b442acd1cc83986337d9551c53f403dad27e6f4c846d26b08"
+    },
+    "office.dsg_with_mesh": {
+      "byte_count": 918443018,
+      "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/office/gt_dsg_with_mesh_consolidated.json",
+      "sha256": "90a69a068174f9c9cbfa278d57380b46306f31bbe272ab50ed2a19b430beabc7"
+    }
+  },
+  "input_binding_sha256": "c610afd734fe39463887c82627f399749ac358e00e78779d156e8d9c85bf0a94",
+  "manifest_id": "tesse_cd_common_v2",
+  "parameters": {
+    "active_interval": "first <= timestamp < last",
+    "dilation_voxels": 1,
+    "post_event_frames": 450,
+    "pre_event_frames": 450,
+    "ray_endpoint_margin_m": 0.05,
+    "semantic_voxel_label_rule": "point_majority_then_lowest_label_id",
+    "unobservable_background_rule": "exclude_from_background_f5_and_recovery",
+    "voxel_size_m": 0.05,
+    "z_buffer": "nearest_positive_depth_per_pixel"
+  },
+  "prediction_inputs_used": false,
+  "schedule": {
+    "byte_count": 28302,
+    "path": "configs/evaluation/manifests/tesse_cd_causal_schedule_v2.json",
+    "sha256": "fb97bacee377f9fd67ee9dae8064dc6f33ac32d129ee633629fec4164d5003e0"
+  },
+  "schema_version": 1,
+  "source_manifest": {
+    "byte_count": 8875,
+    "path": "configs/evaluation/manifests/tesse_cd.json",
+    "sha256": "be63826267109a67fe4109c1419eb02dbad99a9e3856d44ac8f848e32e00b907"
+  },
+  "status": "CONTRACT_ONLY",
+  "targets_generated": false
+}

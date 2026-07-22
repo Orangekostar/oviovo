@@ -1,0 +1,1123 @@
+{
+  "dataset": "TESSE-CD",
+  "manifest_id": "tesse_cd_causal_schedule_v2",
+  "method_predictions_used": false,
+  "parameters": {
+    "common_checkpoints_per_event": 10,
+    "common_event_horizon_frames": 450,
+    "common_event_step_frames": 50,
+    "event_frame_rule": "first relative_timestamp_ns >= event timestamp",
+    "frame_indexing": "zero_based",
+    "official_stride_frames": 450
+  },
+  "scenes": {
+    "apartment": {
+      "entries": [
+        {
+          "event_ids": [
+            "apartment_event_01"
+          ],
+          "frame_index": 263,
+          "relative_timestamp_ns": 13150002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 17354109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_01"
+          ],
+          "frame_index": 313,
+          "relative_timestamp_ns": 15650002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 19854109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_01"
+          ],
+          "frame_index": 363,
+          "relative_timestamp_ns": 18150002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 22354109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_01"
+          ],
+          "frame_index": 413,
+          "relative_timestamp_ns": 20650002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 24854109999
+        },
+        {
+          "event_ids": [],
+          "frame_index": 450,
+          "relative_timestamp_ns": 22500002001,
+          "roles": [
+            "official"
+          ],
+          "timestamp_ns": 26704110000
+        },
+        {
+          "event_ids": [
+            "apartment_event_01"
+          ],
+          "frame_index": 463,
+          "relative_timestamp_ns": 23150002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 27354109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_01"
+          ],
+          "frame_index": 513,
+          "relative_timestamp_ns": 25650002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 29854109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_01"
+          ],
+          "frame_index": 563,
+          "relative_timestamp_ns": 28150002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 32354109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_01"
+          ],
+          "frame_index": 613,
+          "relative_timestamp_ns": 30650002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 34854109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_01"
+          ],
+          "frame_index": 663,
+          "relative_timestamp_ns": 33150002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 37354109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_02"
+          ],
+          "frame_index": 711,
+          "relative_timestamp_ns": 35550002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 39754109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_01"
+          ],
+          "frame_index": 713,
+          "relative_timestamp_ns": 35650002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 39854109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_02"
+          ],
+          "frame_index": 761,
+          "relative_timestamp_ns": 38050002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 42254109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_02"
+          ],
+          "frame_index": 811,
+          "relative_timestamp_ns": 40550002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 44754109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_03"
+          ],
+          "frame_index": 858,
+          "relative_timestamp_ns": 42900002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 47104109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_02"
+          ],
+          "frame_index": 861,
+          "relative_timestamp_ns": 43050002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 47254109999
+        },
+        {
+          "event_ids": [],
+          "frame_index": 900,
+          "relative_timestamp_ns": 45000002001,
+          "roles": [
+            "official"
+          ],
+          "timestamp_ns": 49204110000
+        },
+        {
+          "event_ids": [
+            "apartment_event_03"
+          ],
+          "frame_index": 908,
+          "relative_timestamp_ns": 45400002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 49604109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_02"
+          ],
+          "frame_index": 911,
+          "relative_timestamp_ns": 45550002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 49754109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_03"
+          ],
+          "frame_index": 958,
+          "relative_timestamp_ns": 47900002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 52104109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_02"
+          ],
+          "frame_index": 961,
+          "relative_timestamp_ns": 48050002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 52254109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_03"
+          ],
+          "frame_index": 1008,
+          "relative_timestamp_ns": 50400002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 54604109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_02"
+          ],
+          "frame_index": 1011,
+          "relative_timestamp_ns": 50550002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 54754109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_04"
+          ],
+          "frame_index": 1022,
+          "relative_timestamp_ns": 51100002001,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 55304110000
+        },
+        {
+          "event_ids": [
+            "apartment_event_03"
+          ],
+          "frame_index": 1058,
+          "relative_timestamp_ns": 52900002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 57104109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_02"
+          ],
+          "frame_index": 1061,
+          "relative_timestamp_ns": 53050002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 57254109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_04"
+          ],
+          "frame_index": 1072,
+          "relative_timestamp_ns": 53600002001,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 57804110000
+        },
+        {
+          "event_ids": [
+            "apartment_event_03"
+          ],
+          "frame_index": 1108,
+          "relative_timestamp_ns": 55400002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 59604109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_02"
+          ],
+          "frame_index": 1111,
+          "relative_timestamp_ns": 55550002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 59754109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_04"
+          ],
+          "frame_index": 1122,
+          "relative_timestamp_ns": 56100002001,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 60304110000
+        },
+        {
+          "event_ids": [
+            "apartment_event_03"
+          ],
+          "frame_index": 1158,
+          "relative_timestamp_ns": 57900002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 62104109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_02"
+          ],
+          "frame_index": 1161,
+          "relative_timestamp_ns": 58049992001,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 62254100000
+        },
+        {
+          "event_ids": [
+            "apartment_event_04"
+          ],
+          "frame_index": 1172,
+          "relative_timestamp_ns": 58600002001,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 62804110000
+        },
+        {
+          "event_ids": [
+            "apartment_event_03"
+          ],
+          "frame_index": 1208,
+          "relative_timestamp_ns": 60399992001,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 64604100000
+        },
+        {
+          "event_ids": [
+            "apartment_event_04"
+          ],
+          "frame_index": 1222,
+          "relative_timestamp_ns": 61100002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 65304109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_03"
+          ],
+          "frame_index": 1258,
+          "relative_timestamp_ns": 62899992001,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 67104100000
+        },
+        {
+          "event_ids": [
+            "apartment_event_04"
+          ],
+          "frame_index": 1272,
+          "relative_timestamp_ns": 63600002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 67804109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_03"
+          ],
+          "frame_index": 1308,
+          "relative_timestamp_ns": 65399992001,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 69604100000
+        },
+        {
+          "event_ids": [
+            "apartment_event_04"
+          ],
+          "frame_index": 1322,
+          "relative_timestamp_ns": 66100002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 70304109999
+        },
+        {
+          "event_ids": [],
+          "frame_index": 1350,
+          "relative_timestamp_ns": 67500002001,
+          "roles": [
+            "official"
+          ],
+          "timestamp_ns": 71704110000
+        },
+        {
+          "event_ids": [
+            "apartment_event_04"
+          ],
+          "frame_index": 1372,
+          "relative_timestamp_ns": 68600002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 72804109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_04"
+          ],
+          "frame_index": 1422,
+          "relative_timestamp_ns": 71100002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 75304109999
+        },
+        {
+          "event_ids": [
+            "apartment_event_04"
+          ],
+          "frame_index": 1472,
+          "relative_timestamp_ns": 73600002000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 77804109999
+        }
+      ],
+      "events": [
+        {
+          "common_checkpoint_frame_indices": [
+            263,
+            313,
+            363,
+            413,
+            463,
+            513,
+            563,
+            613,
+            663,
+            713
+          ],
+          "event_id": "apartment_event_01",
+          "event_relative_timestamp_ns": 13142347000,
+          "intervention_frame_index": 263,
+          "intervention_relative_timestamp_ns": 13150002000,
+          "intervention_timestamp_ns": 17354109999
+        },
+        {
+          "common_checkpoint_frame_indices": [
+            711,
+            761,
+            811,
+            861,
+            911,
+            961,
+            1011,
+            1061,
+            1111,
+            1161
+          ],
+          "event_id": "apartment_event_02",
+          "event_relative_timestamp_ns": 35531340000,
+          "intervention_frame_index": 711,
+          "intervention_relative_timestamp_ns": 35550002000,
+          "intervention_timestamp_ns": 39754109999
+        },
+        {
+          "common_checkpoint_frame_indices": [
+            858,
+            908,
+            958,
+            1008,
+            1058,
+            1108,
+            1158,
+            1208,
+            1258,
+            1308
+          ],
+          "event_id": "apartment_event_03",
+          "event_relative_timestamp_ns": 42863690000,
+          "intervention_frame_index": 858,
+          "intervention_relative_timestamp_ns": 42900002000,
+          "intervention_timestamp_ns": 47104109999
+        },
+        {
+          "common_checkpoint_frame_indices": [
+            1022,
+            1072,
+            1122,
+            1172,
+            1222,
+            1272,
+            1322,
+            1372,
+            1422,
+            1472
+          ],
+          "event_id": "apartment_event_04",
+          "event_relative_timestamp_ns": 51061359000,
+          "intervention_frame_index": 1022,
+          "intervention_relative_timestamp_ns": 51100002001,
+          "intervention_timestamp_ns": 55304110000
+        }
+      ],
+      "first_depth_timestamp_ns": 4204107999,
+      "frame_count": 1745,
+      "last_depth_timestamp_ns": 91404110000,
+      "sources": {
+        "database": {
+          "byte_count": 10301698048,
+          "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/inputs/ros2/tesse_cd_apartment/tesse_cd_apartment.db3",
+          "sha256": "43a30e694b8deabf4861b2b20a8f32a5c18c6288f37a886289783af0f26dab07"
+        },
+        "gt_changes": {
+          "byte_count": 185,
+          "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/apartment/gt_changes.csv",
+          "sha256": "fe15533332a6f2f672598a255e3099bdf28370ff69524a48de8e3ee22d09a4a7"
+        }
+      }
+    },
+    "office": {
+      "entries": [
+        {
+          "event_ids": [],
+          "frame_index": 450,
+          "relative_timestamp_ns": 22500002000,
+          "roles": [
+            "official"
+          ],
+          "timestamp_ns": 29743020000
+        },
+        {
+          "event_ids": [],
+          "frame_index": 900,
+          "relative_timestamp_ns": 45000002000,
+          "roles": [
+            "official"
+          ],
+          "timestamp_ns": 52243020000
+        },
+        {
+          "event_ids": [],
+          "frame_index": 1350,
+          "relative_timestamp_ns": 67500002000,
+          "roles": [
+            "official"
+          ],
+          "timestamp_ns": 74743020000
+        },
+        {
+          "event_ids": [],
+          "frame_index": 1800,
+          "relative_timestamp_ns": 90000002000,
+          "roles": [
+            "official"
+          ],
+          "timestamp_ns": 97243020000
+        },
+        {
+          "event_ids": [
+            "office_event_01"
+          ],
+          "frame_index": 2001,
+          "relative_timestamp_ns": 100049982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 107293000000
+        },
+        {
+          "event_ids": [
+            "office_event_01"
+          ],
+          "frame_index": 2051,
+          "relative_timestamp_ns": 102549982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 109793000000
+        },
+        {
+          "event_ids": [
+            "office_event_01"
+          ],
+          "frame_index": 2101,
+          "relative_timestamp_ns": 105049982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 112293000000
+        },
+        {
+          "event_ids": [
+            "office_event_01"
+          ],
+          "frame_index": 2151,
+          "relative_timestamp_ns": 107549982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 114793000000
+        },
+        {
+          "event_ids": [
+            "office_event_01"
+          ],
+          "frame_index": 2201,
+          "relative_timestamp_ns": 110049982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 117293000000
+        },
+        {
+          "event_ids": [],
+          "frame_index": 2250,
+          "relative_timestamp_ns": 112499981999,
+          "roles": [
+            "official"
+          ],
+          "timestamp_ns": 119742999999
+        },
+        {
+          "event_ids": [
+            "office_event_01"
+          ],
+          "frame_index": 2251,
+          "relative_timestamp_ns": 112549982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 119793000000
+        },
+        {
+          "event_ids": [
+            "office_event_01"
+          ],
+          "frame_index": 2301,
+          "relative_timestamp_ns": 115049982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 122293000000
+        },
+        {
+          "event_ids": [
+            "office_event_01"
+          ],
+          "frame_index": 2351,
+          "relative_timestamp_ns": 117549982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 124793000000
+        },
+        {
+          "event_ids": [
+            "office_event_01",
+            "office_event_02"
+          ],
+          "frame_index": 2401,
+          "relative_timestamp_ns": 120049982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 127293000000
+        },
+        {
+          "event_ids": [
+            "office_event_01",
+            "office_event_02"
+          ],
+          "frame_index": 2451,
+          "relative_timestamp_ns": 122549982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 129793000000
+        },
+        {
+          "event_ids": [
+            "office_event_02"
+          ],
+          "frame_index": 2501,
+          "relative_timestamp_ns": 125049982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 132293000000
+        },
+        {
+          "event_ids": [
+            "office_event_02"
+          ],
+          "frame_index": 2551,
+          "relative_timestamp_ns": 127549982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 134793000000
+        },
+        {
+          "event_ids": [
+            "office_event_02",
+            "office_event_03"
+          ],
+          "frame_index": 2601,
+          "relative_timestamp_ns": 130049982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 137293000000
+        },
+        {
+          "event_ids": [
+            "office_event_02",
+            "office_event_03"
+          ],
+          "frame_index": 2651,
+          "relative_timestamp_ns": 132549982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 139793000000
+        },
+        {
+          "event_ids": [],
+          "frame_index": 2700,
+          "relative_timestamp_ns": 134999981999,
+          "roles": [
+            "official"
+          ],
+          "timestamp_ns": 142242999999
+        },
+        {
+          "event_ids": [
+            "office_event_02",
+            "office_event_03"
+          ],
+          "frame_index": 2701,
+          "relative_timestamp_ns": 135049982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 142293000000
+        },
+        {
+          "event_ids": [
+            "office_event_02",
+            "office_event_03"
+          ],
+          "frame_index": 2751,
+          "relative_timestamp_ns": 137549982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 144793000000
+        },
+        {
+          "event_ids": [
+            "office_event_02",
+            "office_event_03"
+          ],
+          "frame_index": 2801,
+          "relative_timestamp_ns": 140049982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 147293000000
+        },
+        {
+          "event_ids": [
+            "office_event_02",
+            "office_event_03"
+          ],
+          "frame_index": 2851,
+          "relative_timestamp_ns": 142549982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 149793000000
+        },
+        {
+          "event_ids": [
+            "office_event_03"
+          ],
+          "frame_index": 2901,
+          "relative_timestamp_ns": 145049982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 152293000000
+        },
+        {
+          "event_ids": [
+            "office_event_03"
+          ],
+          "frame_index": 2951,
+          "relative_timestamp_ns": 147549982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 154793000000
+        },
+        {
+          "event_ids": [
+            "office_event_03"
+          ],
+          "frame_index": 3001,
+          "relative_timestamp_ns": 150049982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 157293000000
+        },
+        {
+          "event_ids": [
+            "office_event_03"
+          ],
+          "frame_index": 3051,
+          "relative_timestamp_ns": 152549982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 159793000000
+        },
+        {
+          "event_ids": [],
+          "frame_index": 3150,
+          "relative_timestamp_ns": 157499981999,
+          "roles": [
+            "official"
+          ],
+          "timestamp_ns": 164742999999
+        },
+        {
+          "event_ids": [],
+          "frame_index": 3600,
+          "relative_timestamp_ns": 179999981999,
+          "roles": [
+            "official"
+          ],
+          "timestamp_ns": 187242999999
+        },
+        {
+          "event_ids": [
+            "office_event_04"
+          ],
+          "frame_index": 3601,
+          "relative_timestamp_ns": 180049982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 187293000000
+        },
+        {
+          "event_ids": [
+            "office_event_04"
+          ],
+          "frame_index": 3651,
+          "relative_timestamp_ns": 182549982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 189793000000
+        },
+        {
+          "event_ids": [
+            "office_event_04"
+          ],
+          "frame_index": 3701,
+          "relative_timestamp_ns": 185049982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 192293000000
+        },
+        {
+          "event_ids": [
+            "office_event_04"
+          ],
+          "frame_index": 3751,
+          "relative_timestamp_ns": 187549982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 194793000000
+        },
+        {
+          "event_ids": [
+            "office_event_04"
+          ],
+          "frame_index": 3801,
+          "relative_timestamp_ns": 190049982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 197293000000
+        },
+        {
+          "event_ids": [
+            "office_event_04"
+          ],
+          "frame_index": 3851,
+          "relative_timestamp_ns": 192549982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 199793000000
+        },
+        {
+          "event_ids": [
+            "office_event_04"
+          ],
+          "frame_index": 3901,
+          "relative_timestamp_ns": 195049982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 202293000000
+        },
+        {
+          "event_ids": [
+            "office_event_04"
+          ],
+          "frame_index": 3951,
+          "relative_timestamp_ns": 197549982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 204793000000
+        },
+        {
+          "event_ids": [
+            "office_event_04"
+          ],
+          "frame_index": 4001,
+          "relative_timestamp_ns": 200049982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 207293000000
+        },
+        {
+          "event_ids": [],
+          "frame_index": 4050,
+          "relative_timestamp_ns": 202499981999,
+          "roles": [
+            "official"
+          ],
+          "timestamp_ns": 209742999999
+        },
+        {
+          "event_ids": [
+            "office_event_04"
+          ],
+          "frame_index": 4051,
+          "relative_timestamp_ns": 202549982000,
+          "roles": [
+            "common_v2"
+          ],
+          "timestamp_ns": 209793000000
+        }
+      ],
+      "events": [
+        {
+          "common_checkpoint_frame_indices": [
+            2001,
+            2051,
+            2101,
+            2151,
+            2201,
+            2251,
+            2301,
+            2351,
+            2401,
+            2451
+          ],
+          "event_id": "office_event_01",
+          "event_relative_timestamp_ns": 100000000000,
+          "intervention_frame_index": 2001,
+          "intervention_relative_timestamp_ns": 100049982000,
+          "intervention_timestamp_ns": 107293000000
+        },
+        {
+          "common_checkpoint_frame_indices": [
+            2401,
+            2451,
+            2501,
+            2551,
+            2601,
+            2651,
+            2701,
+            2751,
+            2801,
+            2851
+          ],
+          "event_id": "office_event_02",
+          "event_relative_timestamp_ns": 120000000000,
+          "intervention_frame_index": 2401,
+          "intervention_relative_timestamp_ns": 120049982000,
+          "intervention_timestamp_ns": 127293000000
+        },
+        {
+          "common_checkpoint_frame_indices": [
+            2601,
+            2651,
+            2701,
+            2751,
+            2801,
+            2851,
+            2901,
+            2951,
+            3001,
+            3051
+          ],
+          "event_id": "office_event_03",
+          "event_relative_timestamp_ns": 130000000000,
+          "intervention_frame_index": 2601,
+          "intervention_relative_timestamp_ns": 130049982000,
+          "intervention_timestamp_ns": 137293000000
+        },
+        {
+          "common_checkpoint_frame_indices": [
+            3601,
+            3651,
+            3701,
+            3751,
+            3801,
+            3851,
+            3901,
+            3951,
+            4001,
+            4051
+          ],
+          "event_id": "office_event_04",
+          "event_relative_timestamp_ns": 180000000000,
+          "intervention_frame_index": 3601,
+          "intervention_relative_timestamp_ns": 180049982000,
+          "intervention_timestamp_ns": 187293000000
+        }
+      ],
+      "first_depth_timestamp_ns": 7243018000,
+      "frame_count": 4346,
+      "last_depth_timestamp_ns": 224492999999,
+      "sources": {
+        "database": {
+          "byte_count": 24143859712,
+          "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/inputs/ros2/tesse_cd_office/tesse_cd_office_ros2.db3",
+          "sha256": "4305b56149378799bfa468da2ac0acd84716bef59aba004f8e4feb34ec0d3b51"
+        },
+        "gt_changes": {
+          "byte_count": 214,
+          "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/office/gt_changes.csv",
+          "sha256": "748818a20724fce95e136c434a74a27f8649e400bbbc69a5f27beb3237624c44"
+        }
+      }
+    }
+  },
+  "schema_version": 2,
+  "source_manifest": {
+    "byte_count": 8875,
+    "path": "configs/evaluation/manifests/tesse_cd.json",
+    "sha256": "be63826267109a67fe4109c1419eb02dbad99a9e3856d44ac8f848e32e00b907"
+  }
+}

@@ -1,0 +1,210 @@
+{
+  "schema_version": 1,
+  "manifest_id": "tesse_cd_dynamic_v1",
+  "dataset": "TESSE-CD",
+  "frozen_at": "2026-07-20",
+  "source": {
+    "owner": "MIT-SPARK Khronos official release",
+    "dataset_folder_url": "https://drive.google.com/drive/folders/1KOcX-jP2bTip_Sm48dvEd9KjxJZjJ6po",
+    "ground_truth_folder_url": "https://drive.google.com/drive/folders/1lKbbpb1gWwrGBcQLikoaavXIO41fHOJ9",
+    "license": "not stated in the upstream Khronos README or public Drive folders",
+    "mofang_search": "UNAVAILABLE: no Mofang CLI or MCP resource is exposed in the current Codex environment"
+  },
+  "ros2_root": "/home/ww/oviovo_benchmark_assets/tesse_cd/inputs/ros2",
+  "ground_truth_root": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth",
+  "frame_selection": {
+    "start": 0,
+    "stride": 1,
+    "ordering": "ascending sensor timestamp",
+    "synchronization": "official bag timestamps"
+  },
+  "camera": {
+    "width": 720,
+    "height": 480,
+    "fx": 415.69219381653056,
+    "fy": 415.69219381653056,
+    "cx": 360.0,
+    "cy": 240.0,
+    "distortion_model": "radial-tangential",
+    "distortion": [0.0, 0.0, 0.0, 0.0]
+  },
+  "topics": {
+    "rgb": "/tesse/left_cam/rgb/image_raw",
+    "depth": "/tesse/depth_cam/mono/image_raw",
+    "camera_info": "/tesse/left_cam/camera_info",
+    "pose": "/tesse/odom",
+    "oracle_semantics": "/tesse/seg_cam/converted/image_raw"
+  },
+  "sensor_formats": {
+    "rgb": "rgb8",
+    "depth": "32FC1 meters",
+    "apartment_oracle_semantics": "16UC1",
+    "office_oracle_semantics": "8UC1"
+  },
+  "sequences": {
+    "apartment": {
+      "registry_split": "apartment_test",
+      "protocol_role": "validation_threshold_selection_and_per_sequence_reporting",
+      "archive": {
+        "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/inputs/ros2/tesse_cd_apartment.zip",
+        "resource_id": "1hh2IfZRqA47tX5pOOhR9dg6A9cVduvcw",
+        "size_bytes": 3409703407,
+        "sha256": "6a6bae7d6baec526349127713c817b1872f63b3b68ec99b3728adeacbca0c3d0"
+      },
+      "bag": {
+        "directory": "/home/ww/oviovo_benchmark_assets/tesse_cd/inputs/ros2/tesse_cd_apartment",
+        "storage_identifier": "sqlite3",
+        "ros_distro": "rosbags",
+        "message_count": 99069,
+        "duration_ns": 87229992001,
+        "database": {
+          "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/inputs/ros2/tesse_cd_apartment/tesse_cd_apartment.db3",
+          "size_bytes": 10301698048,
+          "sha256": "43a30e694b8deabf4861b2b20a8f32a5c18c6288f37a886289783af0f26dab07"
+        },
+        "metadata": {
+          "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/inputs/ros2/tesse_cd_apartment/metadata.yaml",
+          "size_bytes": 5567,
+          "sha256": "b3618181680b2a1f708e451aaa5cf9a90ae8ceabdbd3cf98a506481e8086382f"
+        }
+      },
+      "timeline": {
+        "depth_frame_count": 1745,
+        "first_depth_timestamp_ns": 4204107999,
+        "last_depth_timestamp_ns": 91404110000,
+        "first_change_relative_ns": 13142347000,
+        "change_times_relative_ns": [13142347000, 35531340000, 42863690000, 51061359000]
+      },
+      "frozen_prechange_frames": {
+        "start": 0,
+        "stop_exclusive": 263,
+        "frame_count": 263,
+        "last_prechange_relative_ns": 13100002001,
+        "first_postchange_frame": 263,
+        "first_postchange_relative_ns": 13150002000,
+        "updates_after_freeze": 0
+      },
+      "ground_truth": {
+        "runtime_access_allowed": false,
+        "files": {
+          "background_mesh": {
+            "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/apartment/gt_background.ply",
+            "resource_id": "1HVeH3fO4iAiqaGnQJEqhv44F4Q-Udzf_",
+            "size_bytes": 10266457,
+            "sha256": "a08902664767068a312bc685d77b8ab7b87f4d3476b1a12e7d055afc87442e30"
+          },
+          "changes": {
+            "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/apartment/gt_changes.csv",
+            "resource_id": "1xny4GLNDP_XQG9pUPPvEZntrz-Li8Xup",
+            "size_bytes": 185,
+            "sha256": "fe15533332a6f2f672598a255e3099bdf28370ff69524a48de8e3ee22d09a4a7"
+          },
+          "dsg": {
+            "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/apartment/gt_dsg_consolidated.json",
+            "resource_id": "1pwSl9A3GR3tsEJBTSGg3HlwyxFB7WF9t",
+            "size_bytes": 554978384,
+            "sha256": "ba89680aff50ab5825197060cafab0a84c950b7f2b1f88ecc0b2ada6aabda63c"
+          },
+          "dsg_with_mesh": {
+            "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/apartment/gt_dsg_with_mesh_consolidated.json",
+            "resource_id": "1e0VIDXCflfl5DAUSjY531bREee3HbqJq",
+            "size_bytes": 722433158,
+            "sha256": "ed6fd750748f2681602800f477505888e3a1ba7f1b7ba9eec7706886e05e2201"
+          }
+        }
+      }
+    },
+    "office": {
+      "registry_split": "office_test",
+      "protocol_role": "heldout_test_and_per_sequence_reporting",
+      "archive": {
+        "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/inputs/ros2/tesse_cd_office.zip",
+        "resource_id": "1pivthvuBlZkth9Y-px1wlwycJI2kITcU",
+        "size_bytes": 9438080315,
+        "sha256": "c89d4b9f008bb3bf707e293563391531a3c7087f4c049b4a2b40535d2461faa0"
+      },
+      "bag": {
+        "directory": "/home/ww/oviovo_benchmark_assets/tesse_cd/inputs/ros2/tesse_cd_office",
+        "storage_identifier": "sqlite3",
+        "ros_distro": "rosbags",
+        "message_count": 255566,
+        "duration_ns": 217269982000,
+        "database": {
+          "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/inputs/ros2/tesse_cd_office/tesse_cd_office_ros2.db3",
+          "size_bytes": 24143859712,
+          "sha256": "4305b56149378799bfa468da2ac0acd84716bef59aba004f8e4feb34ec0d3b51"
+        },
+        "metadata": {
+          "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/inputs/ros2/tesse_cd_office/metadata.yaml",
+          "size_bytes": 5583,
+          "sha256": "15d0ecec758ee6b098c83993f644278dc0dceeda70d133b4059560a52c656056"
+        }
+      },
+      "timeline": {
+        "depth_frame_count": 4346,
+        "first_depth_timestamp_ns": 7243018000,
+        "last_depth_timestamp_ns": 224492999999,
+        "first_change_relative_ns": 100000000000,
+        "change_times_relative_ns": [100000000000, 120000000000, 130000000000, 180000000000]
+      },
+      "frozen_prechange_frames": {
+        "start": 0,
+        "stop_exclusive": 2001,
+        "frame_count": 2001,
+        "last_prechange_relative_ns": 99999981999,
+        "first_postchange_frame": 2001,
+        "first_postchange_relative_ns": 100049982000,
+        "updates_after_freeze": 0
+      },
+      "ground_truth": {
+        "runtime_access_allowed": false,
+        "files": {
+          "background_mesh": {
+            "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/office/gt_background.ply",
+            "resource_id": "1Z85AlLTXsZHlUY2Rzkt9SYwiiP-Yfpuf",
+            "size_bytes": 48324042,
+            "sha256": "4751ca1b2ec9c0bc5896cee425f9953249ca8dacec85e37680e76c120dccd7d4"
+          },
+          "changes": {
+            "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/office/gt_changes.csv",
+            "resource_id": "1wKA7duf-dcdsygaWMlfInBntSjqrjciC",
+            "size_bytes": 214,
+            "sha256": "748818a20724fce95e136c434a74a27f8649e400bbbc69a5f27beb3237624c44"
+          },
+          "dsg": {
+            "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/office/gt_dsg_consolidated.json",
+            "resource_id": "1FVwEvru4u3yf75uvCFcneeqJLjD_vyYl",
+            "size_bytes": 376315665,
+            "sha256": "30fa4dc0e657052b442acd1cc83986337d9551c53f403dad27e6f4c846d26b08"
+          },
+          "dsg_with_mesh": {
+            "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/office/gt_dsg_with_mesh_consolidated.json",
+            "resource_id": "1slkBlSkvZxHwijXwn-RJCvpUMlz8836V",
+            "size_bytes": 918443018,
+            "sha256": "90a69a068174f9c9cbfa278d57380b46306f31bbe272ab50ed2a19b430beabc7"
+          }
+        }
+      }
+    }
+  },
+  "protocol": {
+    "runtime_ground_truth_access": false,
+    "ground_truth_evaluator_only": true,
+    "future_frames_allowed": false,
+    "frozen_methods_stop_updates_before_first_change": true,
+    "oracle_exception": {
+      "method": "KHRONOS_ORACLE",
+      "allowed_topic": "/tesse/seg_cam/converted/image_raw",
+      "eligible_for_ranking": false
+    },
+    "apartment_threshold_selection_only": true,
+    "office_threshold_retuning_allowed": false,
+    "geometry_primary_threshold_m": 0.05,
+    "recovery_sustained_checkpoints": 3,
+    "common_aggregation": "macro_average_over_apartment_and_office",
+    "official_evaluator": {
+      "repository": "MIT-SPARK/Khronos",
+      "commit": "63faadde6ed92220e78fb2f6ca86dcc54bb5cf9e"
+    }
+  }
+}

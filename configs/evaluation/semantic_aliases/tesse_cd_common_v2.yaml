@@ -1,0 +1,31 @@
+schema_version: 1
+protocol: tesse_cd_common_v2
+unknown_name: Unknown
+scenes:
+  apartment:
+    label_space:
+      filename: tesse_cd_apartment_label_space.yaml
+      sha256: f7bacfb3c7bafc674bd3a34540e3f9b5d98b0ae11389f91768c70ecc65a79f0f
+    aliases:
+      Fridge: [fridge, refrigerator]
+      Books: [book, books]
+      Chair: [chair, chairs]
+      Vase: [vase, vases]
+      Couch: [couch, couches, sofa, sofas]
+      Drawer: [drawer, drawers]
+      Objects: [object, objects]
+      Table: [table, tables, dining table]
+      Bin: [bin, bins, trash can]
+      Humans: [human, humans, person, people]
+  office:
+    label_space:
+      filename: tesse_cd_office_label_space.yaml
+      sha256: 91a7b359ee678dd67871653959a50c477ba7f371473b9c2bf1b4f41f63691765
+    aliases:
+      Small office objects: [small office object, small office objects]
+      Large static wall furniture: [large static wall furniture]
+      Large office objects: [large office object, large office objects]
+      Bathroom: [bathroom, bathrooms]
+      Bedroom: [bedroom, bedrooms]
+      Chairs: [chair, chairs]
+      Signs: [sign, signs]

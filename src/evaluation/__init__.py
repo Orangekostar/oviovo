@@ -1,5 +1,8 @@
 """Neutral evaluation contracts and metrics for OVIOVO and external baselines."""
 
+from importlib import import_module
+from typing import Any
+
 from src.evaluation.contracts import (
     BaselineRunner,
     DatasetAdapter,
@@ -14,13 +17,22 @@ from src.evaluation.contracts import (
     RunMetadata,
     UnifiedEvaluator,
 )
-from src.evaluation.oviv2_replica import (
-    EntityEvaluationInfo,
-    ProjectedLabels,
-    ReplicaGroundTruth,
-    evaluate_replica_voxel_map,
-    project_mesh_to_gt,
-)
+
+_OVIV2_REPLICA_EXPORTS = {
+    "EntityEvaluationInfo",
+    "ProjectedLabels",
+    "ReplicaGroundTruth",
+    "evaluate_replica_voxel_map",
+    "project_mesh_to_gt",
+}
+
+
+def __getattr__(name: str) -> Any:
+    if name not in _OVIV2_REPLICA_EXPORTS:
+        raise AttributeError(name)
+    value = getattr(import_module("src.evaluation.oviv2_replica"), name)
+    globals()[name] = value
+    return value
 
 __all__ = [
     "BaselineRunner",
