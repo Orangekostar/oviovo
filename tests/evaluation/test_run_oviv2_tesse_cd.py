@@ -47,12 +47,6 @@ def _write_json(path: Path, payload: object) -> None:
     )
 
 
-def _single_preserved_run_staging(parent: Path) -> Path:
-    staged = list(parent.glob(".run.staging-*"))
-    assert len(staged) == 1
-    return staged[0]
-
-
 def _entries() -> list[dict[str, object]]:
     return [
         {
@@ -896,7 +890,7 @@ def test_rejects_missing_duplicate_or_extra_checkpoint(
     assert not (tmp_path / "run").exists()
 
 
-def test_rejects_extra_checkpoint_directory_and_preserves_staging(tmp_path: Path) -> None:
+def test_rejects_extra_checkpoint_directory_and_cleans_staging(tmp_path: Path) -> None:
     config = _write_config(tmp_path)
     calls: list[str] = []
     dependencies = _dependencies(calls)
@@ -926,8 +920,7 @@ def test_rejects_extra_checkpoint_directory_and_preserves_staging(tmp_path: Path
         run(config, tmp_path / "run", dependencies=corrupted)
 
     assert not (tmp_path / "run").exists()
-    staging = _single_preserved_run_staging(tmp_path)
-    assert (staging / "checkpoints" / "99999999-999").is_dir()
+    assert list(tmp_path.glob(".run.staging-*")) == []
 
 
 def test_output_reuse_is_rejected_without_touching_existing_data(tmp_path: Path) -> None:
@@ -945,7 +938,7 @@ def test_output_reuse_is_rejected_without_touching_existing_data(tmp_path: Path)
     assert calls == []
 
 
-def test_frame_failure_preserves_partial_staging(tmp_path: Path) -> None:
+def test_frame_failure_removes_all_partial_output(tmp_path: Path) -> None:
     config = _write_config(tmp_path)
     calls: list[str] = []
     dependencies = _dependencies(calls)
@@ -968,47 +961,10 @@ def test_frame_failure_preserves_partial_staging(tmp_path: Path) -> None:
         run(config, tmp_path / "run", dependencies=failed)
 
     assert not (tmp_path / "run").exists()
-    staging = _single_preserved_run_staging(tmp_path)
-    assert staging.is_dir()
+    assert list(tmp_path.glob(".run.staging-*")) == []
 
 
-def test_failure_preserves_replaced_staging_and_displaced_original(
-    tmp_path: Path,
-) -> None:
-    config = _write_config(tmp_path)
-    calls: list[str] = []
-    dependencies = _dependencies(calls)
-    displaced = tmp_path / "displaced-run-staging"
-
-    def replace_staging_then_fail(_config: Mapping[str, object]) -> object:
-        staging = _single_preserved_run_staging(tmp_path)
-        staging.rename(displaced)
-        staging.mkdir()
-        (staging / "foreign-sentinel.txt").write_text(
-            "must survive",
-            encoding="utf-8",
-        )
-        raise RuntimeError("dataset failed after staging replacement")
-
-    failed = RunnerDependencies(
-        dataset_factory=replace_staging_then_fail,
-        cache_loader_factory=dependencies.cache_loader_factory,
-        runtime_factory=dependencies.runtime_factory,
-        checkpoint_exporter=dependencies.checkpoint_exporter,
-        provenance_factory=dependencies.provenance_factory,
-    )
-
-    with pytest.raises(RuntimeError, match="staging replacement"):
-        run(config, tmp_path / "run", dependencies=failed)
-
-    assert displaced.is_dir()
-    staging = _single_preserved_run_staging(tmp_path)
-    assert (staging / "foreign-sentinel.txt").read_text(encoding="utf-8") == (
-        "must survive"
-    )
-
-
-def test_config_change_during_run_fails_closed_and_preserves_staging(
+def test_config_change_during_run_fails_closed_and_cleans_output(
     tmp_path: Path,
 ) -> None:
     config_path = _write_config(tmp_path)
@@ -1046,8 +1002,7 @@ def test_config_change_during_run_fails_closed_and_preserves_staging(
         run(config_path, tmp_path / "run", dependencies=mutated)
 
     assert not (tmp_path / "run").exists()
-    staging = _single_preserved_run_staging(tmp_path)
-    assert (staging / "checkpoints").is_dir()
+    assert list(tmp_path.glob(".run.staging-*")) == []
 
 
 def test_schedule_swap_back_cannot_change_executed_checkpoints(

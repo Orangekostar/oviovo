@@ -14,6 +14,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import shutil
 import stat
 import subprocess
 import sys
@@ -997,8 +998,8 @@ def run(
         _publish_run(staging, destination)
         return manifest
     except BaseException:
-        # Failed runs remain staged for forensic inspection. Recursive cleanup
-        # cannot safely distinguish this directory from a concurrent replacement.
+        if staging.exists():
+            shutil.rmtree(staging)
         raise
 
 
