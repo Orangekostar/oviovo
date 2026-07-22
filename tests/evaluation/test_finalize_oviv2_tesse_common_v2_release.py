@@ -40,6 +40,16 @@ def _record(path: Path) -> dict[str, object]:
     }
 
 
+def _compact_hash(payload: object) -> str:
+    encoded = json.dumps(
+        payload,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
 def _target_package(root: Path) -> tuple[Path, Path, Path]:
     root.mkdir()
     arrays = root / "targets.npz"
@@ -193,6 +203,114 @@ def _summary(
     return path
 
 
+def _add_formal_run_artifacts(
+    root: Path,
+    *,
+    scene: str,
+    repeat: int,
+    frozen_identity: dict[str, object],
+) -> None:
+    root_status = root.stat()
+    execution_base = {
+        "schema_version": 1,
+        "run_slot": f"{scene}_run{repeat}",
+        "output_root": str(root.resolve()),
+        "root_device": root_status.st_dev,
+        "root_inode": root_status.st_ino,
+    }
+    run_execution = {
+        **execution_base,
+        "execution_id": _compact_hash(execution_base),
+    }
+    for name in (
+        "run_manifest.json",
+        "source_index.json",
+        "occlusion_checkpoint_index.json",
+    ):
+        _write_json(
+            root / name,
+            {
+                "schema_version": 1,
+                "dataset": "TESSE-CD",
+                "method": "OVIV2",
+                "scene": scene,
+                "frozen_run_identity": frozen_identity,
+                "run_execution": run_execution,
+            },
+        )
+    temporal_sidecar = root / "temporal/sidecars/source_index.json"
+    _write_json(
+        temporal_sidecar,
+        {
+            "schema_version": 1,
+            "dataset": "TESSE-CD",
+            "method": "OVIV2",
+            "scene": scene,
+            "frozen_run_identity": frozen_identity,
+            "run_execution": run_execution,
+        },
+    )
+    temporal = root / "temporal/temporal_manifest.json"
+    _write_json(
+        temporal,
+        {
+            "schema_version": 1,
+            "dataset": "TESSE-CD",
+            "mode": "causal_checkpoints",
+            "method": "OVIV2",
+            "scene": scene,
+            "frozen_run_identity": frozen_identity,
+            "run_execution": run_execution,
+            "sources": {
+                "source_index": {
+                    "path": "sidecars/source_index.json",
+                    "sha256": _record(temporal_sidecar)["sha256"],
+                    "byte_count": temporal_sidecar.stat().st_size,
+                }
+            },
+        },
+    )
+    summary = root / "evaluation/summary.json"
+    summary_payload = json.loads(summary.read_text(encoding="utf-8"))
+    summary_payload["sources"]["temporal_index"] = _record(temporal)
+    _write_json(summary, summary_payload)
+
+
+def _rewrite_formal_identity(
+    root: Path,
+    *,
+    frozen_identity: dict[str, object] | None = None,
+    run_execution: dict[str, object] | None = None,
+) -> None:
+    artifact_paths = [
+        root / "run_manifest.json",
+        root / "source_index.json",
+        root / "occlusion_checkpoint_index.json",
+        root / "temporal/sidecars/source_index.json",
+        root / "temporal/temporal_manifest.json",
+    ]
+    for path in artifact_paths:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if frozen_identity is not None:
+            payload["frozen_run_identity"] = frozen_identity
+        if run_execution is not None:
+            payload["run_execution"] = run_execution
+        _write_json(path, payload)
+    temporal = root / "temporal/temporal_manifest.json"
+    temporal_payload = json.loads(temporal.read_text(encoding="utf-8"))
+    sidecar = root / "temporal/sidecars/source_index.json"
+    temporal_payload["sources"]["source_index"] = {
+        "path": "sidecars/source_index.json",
+        "sha256": _record(sidecar)["sha256"],
+        "byte_count": sidecar.stat().st_size,
+    }
+    _write_json(temporal, temporal_payload)
+    summary = root / "evaluation/summary.json"
+    summary_payload = json.loads(summary.read_text(encoding="utf-8"))
+    summary_payload["sources"]["temporal_index"] = _record(temporal)
+    _write_json(summary, summary_payload)
+
+
 def _fixture(tmp_path: Path, *, repeat_entity_content: str = '{"entity_id":"one"}\n') -> Path:
     target_manifest, target_arrays, schedule = _target_package(tmp_path / "targets")
     aliases = tmp_path / "aliases.yaml"
@@ -214,10 +332,17 @@ def _fixture(tmp_path: Path, *, repeat_entity_content: str = '{"entity_id":"one"
                     repeat_entity_content if repeat == 2 else '{"entity_id":"one"}\n'
                 ),
             )
+    config_payload = {"missing_observation_policy": "signed_depth"}
+    algorithm_hash = _compact_hash(config_payload)
+    configs: dict[str, Path] = {}
+    for scene in ("apartment", "office"):
+        configs[scene] = tmp_path / f"{scene}-frozen-config.json"
+        _write_json(
+            configs[scene],
+            {**config_payload, "algorithm_hash": algorithm_hash},
+        )
     freeze = tmp_path / "freeze.json"
-    _write_json(
-        freeze,
-        {
+    freeze_payload = {
             "schema_version": 1,
             "freeze_id": "oviv2-tessecd-v1",
             "status": "FROZEN",
@@ -232,7 +357,10 @@ def _fixture(tmp_path: Path, *, repeat_entity_content: str = '{"entity_id":"one"
                 "stage3_is_ancestor": True,
                 "clean": True,
             },
-            "algorithm": {"sha256": "b" * 64, "normalized_config": {}},
+            "algorithm": {
+                "sha256": algorithm_hash,
+                "normalized_config": config_payload,
+            },
             "shared_bindings": {
                 "common_target_manifest": _record(target_manifest),
                 "common_target_arrays": _record(target_arrays),
@@ -251,6 +379,10 @@ def _fixture(tmp_path: Path, *, repeat_entity_content: str = '{"entity_id":"one"
                     scene: _record(path) for scene, path in labels.items()
                 },
             },
+            "scenes": {
+                scene: {"frozen_config": _record(configs[scene])}
+                for scene in ("apartment", "office")
+            },
             "output_roots": {
                 f"{scene}_run{repeat}": str(
                     (tmp_path / scene / f"run{repeat}").resolve()
@@ -258,8 +390,43 @@ def _fixture(tmp_path: Path, *, repeat_entity_content: str = '{"entity_id":"one"
                 for scene in ("apartment", "office")
                 for repeat in (1, 2)
             },
-        },
-    )
+        }
+    _write_json(freeze, freeze_payload)
+    freeze_record = _record(freeze)
+    for scene in ("apartment", "office"):
+        selected = freeze_payload["scenes"][scene]
+        frozen_config = selected["frozen_config"]
+        frozen_identity = {
+            "schema_version": 1,
+            "freeze_id": "oviv2-tessecd-v1",
+            "dataset": "TESSE-CD",
+            "method_id": "OVIV2",
+            "scene": scene,
+            "freeze_manifest": {
+                "sha256": freeze_record["sha256"],
+                "byte_count": freeze_record["byte_count"],
+            },
+            "repository": {"commit": "a" * 40, "tree": "d" * 40},
+            "config": {
+                "sha256": frozen_config["sha256"],
+                "byte_count": frozen_config["byte_count"],
+            },
+            "algorithm_hash": algorithm_hash,
+            "missing_observation_policy": "signed_depth",
+            "input_bindings_sha256": _compact_hash(
+                {
+                    "shared_bindings": freeze_payload["shared_bindings"],
+                    "scene": selected,
+                }
+            ),
+        }
+        for repeat in (1, 2):
+            _add_formal_run_artifacts(
+                tmp_path / scene / f"run{repeat}",
+                scene=scene,
+                repeat=repeat,
+                frozen_identity=frozen_identity,
+            )
     return freeze
 
 
@@ -291,6 +458,19 @@ def test_release_finalizer_accepts_canonical_repeats_from_independent_roots(
         "T2_OVIV2_BG_F5",
         "T2_OVIV2_RECOVERY_FRAMES",
     }
+    assert set(payload["formal_run_artifacts"]) == {"apartment", "office"}
+    assert set(
+        payload["formal_run_artifacts"]["apartment"]["primary"]
+    ) == {
+        "run_manifest",
+        "source_index",
+        "occlusion_checkpoint_index",
+        "temporal_manifest",
+        "temporal_source_index",
+    }
+    assert payload["frozen_identity"]["scene_run_identities"]["office"][
+        "algorithm_hash"
+    ] == payload["frozen_identity"]["algorithm_sha256"]
 
 
 def test_release_finalizer_rejects_real_repeat_content_drift(tmp_path: Path) -> None:
@@ -370,8 +550,9 @@ def test_release_uses_one_summary_snapshot_for_validation_and_metrics(
         dict[str, object],
         dict[str, object],
         dict[str, tuple[int, int]],
+        dict[str, object],
     ]:
-        raw, canonical, raw_record, identities = original(
+        raw, canonical, raw_record, identities, artifacts = original(
             path,
             artifact_root=artifact_root,
             external_sources=external_sources,
@@ -384,7 +565,7 @@ def test_release_uses_one_summary_snapshot_for_validation_and_metrics(
         changed = json.loads(path.read_text(encoding="utf-8"))
         changed["metrics"]["current_miou"] = 0.1
         _write_json(path, changed)
-        return raw, canonical, raw_record, identities
+        return raw, canonical, raw_record, identities, artifacts
 
     monkeypatch.setattr(
         release_module,
@@ -441,6 +622,7 @@ def test_release_rejects_captured_run_local_inode_reuse_after_path_split(
         dict[str, object],
         dict[str, object],
         dict[str, tuple[int, int]],
+        dict[str, object],
     ]:
         captured = original(
             path,
@@ -502,3 +684,59 @@ def test_release_does_not_reopen_target_manifest_after_stable_capture(
     assert payload["target_package"]["manifest"]["sha256"] == (
         hashlib.sha256(target_manifest.read_bytes()).hexdigest()
     )
+
+
+def test_release_rejects_run_identity_algorithm_drift(tmp_path: Path) -> None:
+    freeze = _fixture(tmp_path)
+    for scene in ("apartment", "office"):
+        primary = tmp_path / scene / "run1/run_manifest.json"
+        wrong_identity = json.loads(primary.read_text(encoding="utf-8"))[
+            "frozen_run_identity"
+        ]
+        wrong_identity["algorithm_hash"] = "0" * 64
+        for repeat in (1, 2):
+            _rewrite_formal_identity(
+                tmp_path / scene / f"run{repeat}",
+                frozen_identity=wrong_identity,
+            )
+
+    with pytest.raises(ValueError, match="frozen run identity mismatch"):
+        finalize_oviv2_common_v2_release(
+            freeze,
+            run_id="algorithm-identity-drift",
+            output=tmp_path / "result.json",
+        )
+
+
+def test_release_rejects_reused_execution_identity(tmp_path: Path) -> None:
+    freeze = _fixture(tmp_path)
+    primary = tmp_path / "apartment/run1/run_manifest.json"
+    reused_execution = json.loads(primary.read_text(encoding="utf-8"))[
+        "run_execution"
+    ]
+    _rewrite_formal_identity(
+        tmp_path / "apartment/run2",
+        run_execution=reused_execution,
+    )
+
+    with pytest.raises(ValueError, match="execution identity mismatch"):
+        finalize_oviv2_common_v2_release(
+            freeze,
+            run_id="reused-execution",
+            output=tmp_path / "result.json",
+        )
+
+
+def test_release_rejects_identity_disagreement_within_one_run(tmp_path: Path) -> None:
+    freeze = _fixture(tmp_path)
+    run_manifest = tmp_path / "office/run1/run_manifest.json"
+    payload = json.loads(run_manifest.read_text(encoding="utf-8"))
+    payload["frozen_run_identity"]["input_bindings_sha256"] = "0" * 64
+    _write_json(run_manifest, payload)
+
+    with pytest.raises(ValueError, match="frozen run identity mismatch"):
+        finalize_oviv2_common_v2_release(
+            freeze,
+            run_id="artifact-identity-disagreement",
+            output=tmp_path / "result.json",
+        )

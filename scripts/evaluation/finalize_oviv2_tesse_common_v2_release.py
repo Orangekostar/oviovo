@@ -20,10 +20,12 @@ if str(ROOT) not in sys.path:
 
 from scripts.evaluation import finalize_tesse_common_v2 as pinned_common
 from scripts.evaluation.canonicalize_tesse_common_v2_summary import (
+    CapturedArtifact,
     EXTERNAL_SOURCE_ROLES,
     FileIdentity,
     canonical_summary_bytes,
     capture_and_canonicalize_summary,
+    _stable_regular_file_with_identity,
 )
 from scripts.evaluation.finalize_tesse_t2 import (
     _absolute_lexical,
@@ -33,6 +35,8 @@ from scripts.evaluation.finalize_tesse_t2 import (
 )
 from scripts.evaluation.freeze_oviv2_tesse_cd import (
     STAGE3_LINEAGE_COMMIT,
+    _algorithm_config,
+    _algorithm_hash,
     _validate_repository,
 )
 from src.evaluation.json_contracts import loads_strict
@@ -130,11 +134,15 @@ def _verified_binding_data(
     )
 
 
-def _direct_root(path: Path, *, label: str) -> Path:
+def _direct_root(path: Path, *, label: str) -> tuple[Path, FileIdentity]:
     absolute = _absolute_lexical(path)
     descriptor, _ = _open_directory_no_symlinks(absolute, label=label)
-    os.close(descriptor)
-    return absolute
+    try:
+        status = os.fstat(descriptor)
+        identity = (status.st_dev, status.st_ino)
+    finally:
+        os.close(descriptor)
+    return absolute, identity
 
 
 def _canonical_record(payload: Mapping[str, Any], *, role: str) -> dict[str, object]:
@@ -144,6 +152,57 @@ def _canonical_record(payload: Mapping[str, Any], *, role: str) -> dict[str, obj
         "sha256": hashlib.sha256(data).hexdigest(),
         "byte_count": len(data),
     }
+
+
+def _compact_json_hash(payload: Mapping[str, Any]) -> str:
+    content = json.dumps(
+        payload,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    ).encode("utf-8")
+    return hashlib.sha256(content).hexdigest()
+
+
+def _captured_json_artifact(
+    path: Path, *, label: str
+) -> tuple[dict[str, Any], dict[str, object], FileIdentity]:
+    digest, byte_count, content, identity = _stable_regular_file_with_identity(
+        path, label=label, capture=True
+    )
+    assert content is not None
+    try:
+        text = content.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ValueError(f"{label} is not UTF-8") from error
+    payload = loads_strict(text, label=label)
+    return (
+        dict(_mapping(payload, label=label)),
+        {"sha256": digest, "byte_count": byte_count},
+        identity,
+    )
+
+
+def _validate_run_execution(
+    value: object,
+    *,
+    scene: str,
+    repeat: int,
+    root: Path,
+    root_identity: FileIdentity,
+) -> dict[str, Any]:
+    execution = dict(_mapping(value, label=f"{scene}.run{repeat} execution"))
+    base = {
+        "schema_version": 1,
+        "run_slot": f"{scene}_run{repeat}",
+        "output_root": os.fspath(root),
+        "root_device": root_identity[0],
+        "root_inode": root_identity[1],
+    }
+    expected = {**base, "execution_id": _compact_json_hash(base)}
+    if execution != expected:
+        raise ValueError(f"{scene}.run{repeat} execution identity mismatch")
+    return execution
 
 
 def _validate_captured_summary(
@@ -449,6 +508,64 @@ def finalize_oviv2_common_v2_release(
             label_bindings[scene], label=f"{scene}_label_space"
         )
 
+    scene_bindings = _mapping(freeze.get("scenes"), label="freeze scenes")
+    if set(scene_bindings) != set(SCENES):
+        raise ValueError("freeze scenes must cover Apartment and Office")
+    frozen_config_records: dict[str, dict[str, object]] = {}
+    expected_run_identities: dict[str, dict[str, Any]] = {}
+    for scene in SCENES:
+        selected = _mapping(
+            scene_bindings[scene], label=f"{scene} freeze scene binding"
+        )
+        _, config_record, config_content = _verified_binding_data(
+            selected.get("frozen_config"),
+            label=f"{scene}_frozen_config",
+            capture=True,
+        )
+        assert config_content is not None
+        try:
+            config_text = config_content.decode("utf-8")
+        except UnicodeDecodeError as error:
+            raise ValueError(f"{scene} frozen config is not UTF-8") from error
+        config = _mapping(
+            loads_strict(config_text, label=f"{scene} frozen config"),
+            label=f"{scene} frozen config",
+        )
+        if not (
+            config.get("missing_observation_policy") == "signed_depth"
+            and config.get("algorithm_hash") == algorithm["sha256"]
+            and _algorithm_hash(config) == algorithm["sha256"]
+            and _algorithm_config(config) == algorithm.get("normalized_config")
+        ):
+            raise ValueError(f"{scene} frozen config differs from frozen algorithm")
+        frozen_config_records[scene] = config_record
+        input_bindings = {
+            "shared_bindings": dict(shared),
+            "scene": dict(selected),
+        }
+        expected_run_identities[scene] = {
+            "schema_version": 1,
+            "freeze_id": "oviv2-tessecd-v1",
+            "dataset": "TESSE-CD",
+            "method_id": "OVIV2",
+            "scene": scene,
+            "freeze_manifest": {
+                "sha256": freeze_record["sha256"],
+                "byte_count": freeze_record["byte_count"],
+            },
+            "repository": {
+                "commit": repository["commit"],
+                "tree": repository["tree"],
+            },
+            "config": {
+                "sha256": config_record["sha256"],
+                "byte_count": config_record["byte_count"],
+            },
+            "algorithm_hash": algorithm["sha256"],
+            "missing_observation_policy": "signed_depth",
+            "input_bindings_sha256": _compact_json_hash(input_bindings),
+        }
+
     raw_roots = _mapping(freeze.get("output_roots"), label="output roots")
     expected_root_roles = {
         f"{scene}_run{repeat}" for scene in SCENES for repeat in REPEATS
@@ -456,6 +573,7 @@ def finalize_oviv2_common_v2_release(
     if set(raw_roots) != expected_root_roles:
         raise ValueError("freeze output roots do not cover exact independent runs")
     roots: dict[tuple[str, int], Path] = {}
+    root_identities: dict[tuple[str, int], FileIdentity] = {}
     for scene in SCENES:
         for repeat in REPEATS:
             role = f"{scene}_run{repeat}"
@@ -464,13 +582,12 @@ def finalize_oviv2_common_v2_release(
                 raise ValueError(f"{role} root must be absolute")
             if raw != os.fspath(_absolute_lexical(Path(raw))):
                 raise ValueError(f"{role} root must be canonical")
-            roots[(scene, repeat)] = _direct_root(Path(raw), label=f"{role} root")
-    root_values = list(roots.values())
-    if len(set(root_values)) != len(root_values) or any(
-        os.path.samefile(first, second)
-        for index, first in enumerate(root_values)
-        for second in root_values[index + 1 :]
-    ):
+            roots[(scene, repeat)], root_identities[(scene, repeat)] = _direct_root(
+                Path(raw), label=f"{role} root"
+            )
+    if len(set(roots.values())) != len(roots) or len(
+        set(root_identities.values())
+    ) != len(root_identities):
         raise ValueError("release runs must use physically independent artifact roots")
 
     external_common = {
@@ -485,19 +602,26 @@ def finalize_oviv2_common_v2_release(
     captured_identities: dict[
         tuple[str, int], dict[str, FileIdentity]
     ] = {}
+    formal_temporal_artifacts: dict[
+        tuple[str, int], dict[str, CapturedArtifact]
+    ] = {}
     for scene in SCENES:
         for repeat in REPEATS:
             key = (scene, repeat)
             summary_path = roots[key] / "evaluation/summary.json"
-            raw_payload, canonical_payload, raw_content_record, identities = (
-                capture_and_canonicalize_summary(
-                    summary_path,
-                    artifact_root=roots[key],
-                    external_sources={
-                        **external_common,
-                        "label_space": label_spaces[scene],
-                    },
-                )
+            (
+                raw_payload,
+                canonical_payload,
+                raw_content_record,
+                identities,
+                temporal_artifacts,
+            ) = capture_and_canonicalize_summary(
+                summary_path,
+                artifact_root=roots[key],
+                external_sources={
+                    **external_common,
+                    "label_space": label_spaces[scene],
+                },
             )
             _validate_captured_summary(raw_payload, scene=scene)
             raw_summaries[key] = raw_payload
@@ -507,6 +631,72 @@ def finalize_oviv2_common_v2_release(
                 **raw_content_record,
             }
             captured_identities[key] = identities
+            formal_temporal_artifacts[key] = temporal_artifacts
+
+    formal_run_records: dict[
+        tuple[str, int], dict[str, dict[str, object]]
+    ] = {}
+    run_executions: dict[tuple[str, int], dict[str, Any]] = {}
+    root_artifact_paths = {
+        "run_manifest": Path("run_manifest.json"),
+        "source_index": Path("source_index.json"),
+        "occlusion_checkpoint_index": Path("occlusion_checkpoint_index.json"),
+    }
+    for scene in SCENES:
+        for repeat in REPEATS:
+            key = (scene, repeat)
+            temporal_artifacts = formal_temporal_artifacts[key]
+            if set(temporal_artifacts) != {
+                "temporal_manifest",
+                "temporal_source_index",
+            }:
+                raise ValueError(
+                    f"{scene}.run{repeat} formal temporal identity is missing"
+                )
+            payloads: dict[str, dict[str, Any]] = {}
+            records: dict[str, dict[str, object]] = {}
+            for role, relative in root_artifact_paths.items():
+                payload, record, identity = _captured_json_artifact(
+                    roots[key] / relative,
+                    label=f"{scene}.run{repeat} {role}",
+                )
+                payloads[role] = payload
+                records[role] = {
+                    "role": f"{scene}.run{repeat}.{role}",
+                    **record,
+                }
+                captured_identities[key][f"formal_{role}"] = identity
+            for role, (payload, record) in temporal_artifacts.items():
+                payloads[role] = payload
+                records[role] = {
+                    "role": f"{scene}.run{repeat}.{role}",
+                    **record,
+                }
+            expected_identity = expected_run_identities[scene]
+            if any(
+                payload.get("frozen_run_identity") != expected_identity
+                for payload in payloads.values()
+            ):
+                raise ValueError(f"{scene}.run{repeat} frozen run identity mismatch")
+            execution = _validate_run_execution(
+                payloads["run_manifest"].get("run_execution"),
+                scene=scene,
+                repeat=repeat,
+                root=roots[key],
+                root_identity=root_identities[key],
+            )
+            if any(
+                payload.get("run_execution") != execution
+                for payload in payloads.values()
+            ):
+                raise ValueError(f"{scene}.run{repeat} execution identity mismatch")
+            formal_run_records[key] = records
+            run_executions[key] = execution
+
+    if len(
+        {execution["execution_id"] for execution in run_executions.values()}
+    ) != len(run_executions):
+        raise ValueError("release runs must have distinct execution identities")
 
     observed_run_local_identities: dict[FileIdentity, tuple[str, int, str]] = {}
     for (scene, repeat), identities in captured_identities.items():
@@ -630,6 +820,13 @@ def finalize_oviv2_common_v2_release(
         "scene_sources": {
             scene: dict(canonical[(scene, 1)]["sources"]) for scene in SCENES
         },
+        "formal_run_artifacts": {
+            scene: {
+                "primary": formal_run_records[(scene, 1)],
+                "repeat": formal_run_records[(scene, 2)],
+            }
+            for scene in SCENES
+        },
         "target_package": {
             "manifest": target_manifest_record,
             "target_arrays": target_arrays_record,
@@ -642,6 +839,7 @@ def finalize_oviv2_common_v2_release(
             "freeze_id": "oviv2-tessecd-v1",
             "repository_commit": repository["commit"],
             "algorithm_sha256": algorithm["sha256"],
+            "scene_run_identities": expected_run_identities,
         },
         "validation_tools": {
             "evaluator": evaluator_record,
@@ -651,6 +849,7 @@ def finalize_oviv2_common_v2_release(
             "release_finalizer": release_finalizer_record,
             "aliases": aliases_record,
             "label_spaces": label_records,
+            "frozen_configs": frozen_config_records,
         },
         "token_bindings": token_bindings,
         "unavailable_bindings": [],

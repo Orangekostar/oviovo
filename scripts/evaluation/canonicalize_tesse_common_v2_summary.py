@@ -32,6 +32,7 @@ EXTERNAL_SOURCE_ROLES = frozenset(
 )
 _CHECKPOINT_ROLE = re.compile(r"^(snapshot|entities)\.(\d{6})$")
 FileIdentity = tuple[int, int]
+CapturedArtifact = tuple[dict[str, Any], dict[str, object]]
 
 
 def _mapping(value: object, *, label: str) -> Mapping[str, Any]:
@@ -135,7 +136,13 @@ def _compact_canonical_json(payload: Mapping[str, Any]) -> bytes:
 
 def _temporal_identity_projection(
     content: bytes, *, temporal_path: Path
-) -> tuple[str, int, FileIdentity] | None:
+) -> tuple[
+    str,
+    int,
+    FileIdentity,
+    dict[str, Any],
+    dict[str, object],
+] | None:
     try:
         text = content.decode("utf-8")
     except UnicodeDecodeError as error:
@@ -214,6 +221,8 @@ def _temporal_identity_projection(
         hashlib.sha256(projected_temporal_bytes).hexdigest(),
         len(projected_temporal_bytes),
         sidecar_identity,
+        dict(sidecar),
+        {"sha256": sidecar_digest, "byte_count": sidecar_bytes},
     )
 
 
@@ -222,7 +231,12 @@ def _canonical_source(
     declaration: object,
     *,
     expected_path: Path,
-) -> tuple[dict[str, object], str, dict[str, FileIdentity]]:
+) -> tuple[
+    dict[str, object],
+    str,
+    dict[str, FileIdentity],
+    dict[str, CapturedArtifact],
+]:
     if not isinstance(declaration, Mapping) or set(declaration) != {
         "path",
         "sha256",
@@ -257,14 +271,31 @@ def _canonical_source(
     canonical_digest = digest
     canonical_byte_count = byte_count
     identities = {role: identity}
+    formal_artifacts: dict[str, CapturedArtifact] = {}
     if role == "temporal_index":
         assert content is not None
         projection = _temporal_identity_projection(
             content, temporal_path=observed_path
         )
         if projection is not None:
-            canonical_digest, canonical_byte_count, sidecar_identity = projection
+            (
+                canonical_digest,
+                canonical_byte_count,
+                sidecar_identity,
+                sidecar_payload,
+                sidecar_record,
+            ) = projection
             identities["temporal_source_index"] = sidecar_identity
+            temporal_payload = loads_strict(
+                content.decode("utf-8"), label="temporal_index source"
+            )
+            formal_artifacts = {
+                "temporal_manifest": (
+                    dict(_mapping(temporal_payload, label="temporal_index source")),
+                    {"sha256": digest, "byte_count": byte_count},
+                ),
+                "temporal_source_index": (sidecar_payload, sidecar_record),
+            }
     return (
         {
             "role": role,
@@ -273,6 +304,7 @@ def _canonical_source(
         },
         raw_path,
         identities,
+        formal_artifacts,
     )
 
 
@@ -282,7 +314,7 @@ def canonicalize_summary(
     artifact_root: Path,
     external_sources: Mapping[str, Path],
 ) -> dict[str, Any]:
-    _, canonical, _, _ = capture_and_canonicalize_summary(
+    _, canonical, _, _, _ = capture_and_canonicalize_summary(
         summary,
         artifact_root=artifact_root,
         external_sources=external_sources,
@@ -300,6 +332,7 @@ def capture_and_canonicalize_summary(
     dict[str, Any],
     dict[str, object],
     dict[str, FileIdentity],
+    dict[str, CapturedArtifact],
 ]:
     root = _direct_directory(artifact_root, label="artifact root")
     expected_summary = root / "evaluation/summary.json"
@@ -307,7 +340,7 @@ def capture_and_canonicalize_summary(
         raise ValueError("summary path must be artifact_root/evaluation/summary.json")
     raw_digest, raw_byte_count, raw_bytes, raw_identity = (
         _stable_regular_file_with_identity(
-        expected_summary, label="raw common-v2 summary", capture=True
+            expected_summary, label="raw common-v2 summary", capture=True
         )
     )
     assert raw_bytes is not None
@@ -363,6 +396,7 @@ def capture_and_canonicalize_summary(
 
     canonical_sources: dict[str, dict[str, object]] = {}
     source_identities: dict[str, FileIdentity] = {}
+    formal_artifacts: dict[str, CapturedArtifact] = {}
     physical_paths: list[str] = []
     for raw_role, declaration in sources.items():
         role = str(raw_role)
@@ -371,11 +405,12 @@ def capture_and_canonicalize_summary(
             if role in EXTERNAL_SOURCE_ROLES
             else _expected_internal_path(role, artifact_root=root)
         )
-        canonical, physical_path, identities = _canonical_source(
+        canonical, physical_path, identities, artifacts = _canonical_source(
             role, declaration, expected_path=expected_path
         )
         canonical_sources[role] = canonical
         source_identities.update(identities)
+        formal_artifacts.update(artifacts)
         physical_paths.append(physical_path)
 
     canonical_payload = copy.deepcopy(dict(payload))
@@ -398,6 +433,7 @@ def capture_and_canonicalize_summary(
         canonical_payload,
         {"sha256": raw_digest, "byte_count": raw_byte_count},
         {"raw_summary": raw_identity, **source_identities},
+        formal_artifacts,
     )
 
 
