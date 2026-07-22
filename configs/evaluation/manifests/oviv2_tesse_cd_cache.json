@@ -1,0 +1,105 @@
+{
+  "camera": {
+    "cx": 360.0,
+    "cy": 240.0,
+    "depth_scale": 1000.0,
+    "fx": 415.69219381653056,
+    "fy": 415.69219381653056,
+    "height": 480,
+    "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/cam_params.json",
+    "sha256": "73fe7357e25e4708bc6554bb2a0fc925de00e8368d06a18f9eb3eadd9cb808eb",
+    "width": 720
+  },
+  "dataset": "TESSE-CD",
+  "frame_indexing": {
+    "cache_index_equals_source_frame_id": true,
+    "ordering": "strictly_increasing_sensor_timestamp",
+    "stride": 1
+  },
+  "input_policy": "rgbd_pose_timestamp_only",
+  "manifest_id": "oviv2_tesse_cd_cache_v1",
+  "scenes": {
+    "apartment": {
+      "depth_unit": "millimeter",
+      "export_manifest": {
+        "combined_output_sha256": "7d596a014333a8e62873cb540c90b5dc23038e6c9b4df45bacc47e0007bef6f3",
+        "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/apartment/export_manifest.json",
+        "sha256": "ee35d1843540fc88ae20b5dae5ad34caf192d50f0cab7c5564c47c454d4d5b81"
+      },
+      "frame_count": 1745,
+      "image_shape": [
+        480,
+        720
+      ],
+      "pose_convention": "camera_to_world",
+      "root": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/apartment",
+      "source_database_sha256": "43a30e694b8deabf4861b2b20a8f32a5c18c6288f37a886289783af0f26dab07",
+      "source_depth_dtype": "uint16",
+      "source_frame_ids": {
+        "start": 0,
+        "stop_exclusive": 1745,
+        "stride": 1
+      },
+      "timestamps": {
+        "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/apartment/timestamps.csv",
+        "sha256": "bc369c8c5b4bca30b87c5617bc8c17076c90e5efc00167490cf5c9361af5e83d"
+      },
+      "trajectory": {
+        "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/apartment/traj.txt",
+        "sha256": "5553fdfc32e0289965d19f4735316445fc07c2eee0ffe57b3f637a3e6e53bc45"
+      },
+      "vocabulary": {
+        "json_path": "configs/evaluation/vocabularies/tesse_cd_apartment.json",
+        "json_sha256": "dea3a2e0508c887c6c701ee5250374e2a06c63eefbf2e185110462b81f4ccbcf",
+        "txt_path": "configs/evaluation/vocabularies/tesse_cd_apartment.txt",
+        "txt_sha256": "835bab80f29d9edd4603938b8d523b98a87f411c16e94317c6a7ed9a50abbeea"
+      }
+    },
+    "office": {
+      "depth_unit": "millimeter",
+      "export_manifest": {
+        "combined_output_sha256": "494a7e35cf29524616f482bd99859b24547465c15a9de208cde3e8374faa8662",
+        "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/office/export_manifest.json",
+        "sha256": "16068d00033c8f8407d143d9e50f2008a5f4feb22c134abd0059fc551637f1f6"
+      },
+      "frame_count": 4346,
+      "image_shape": [
+        480,
+        720
+      ],
+      "pose_convention": "camera_to_world",
+      "root": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/office",
+      "source_database_sha256": "4305b56149378799bfa468da2ac0acd84716bef59aba004f8e4feb34ec0d3b51",
+      "source_depth_dtype": "uint16",
+      "source_frame_ids": {
+        "start": 0,
+        "stop_exclusive": 4346,
+        "stride": 1
+      },
+      "timestamps": {
+        "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/office/timestamps.csv",
+        "sha256": "a73591a0703d94c6228de1e34f0d93e9ec2892ec72f88ebc35c5e5a945514491"
+      },
+      "trajectory": {
+        "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/office/traj.txt",
+        "sha256": "06a31ee46540b4e67f42e373592c746bad097b1024ffdc94196642787d0d968e"
+      },
+      "vocabulary": {
+        "json_path": "configs/evaluation/vocabularies/tesse_cd_office.json",
+        "json_sha256": "bd122f130b525ddda687d007e62bcaf3370988464baf99014ab9cc4f4f12235c",
+        "txt_path": "configs/evaluation/vocabularies/tesse_cd_office.txt",
+        "txt_sha256": "9336dfedee3f45eb82aacd9aa214011e338924cbb3207d778a4580b5795895af"
+      }
+    }
+  },
+  "schedule_manifest": {
+    "path": "configs/evaluation/manifests/tesse_cd_causal_schedule_v2.json",
+    "sha256": "f4223fc4ec136f312b658b3fe3d9b090dc89ed14be7744a13ca4dd45cb127367"
+  },
+  "schema_version": 1,
+  "source_manifest": {
+    "path": "configs/evaluation/manifests/tesse_cd.json",
+    "sha256": "be63826267109a67fe4109c1419eb02dbad99a9e3856d44ac8f848e32e00b907"
+  },
+  "stage3_lineage_commit": "47962fbd9f363c0696cc5016f8ab42f83a3bf7e5"
+}
