@@ -41,31 +41,6 @@ CANONICAL_TESSE_MANIFEST_SHA256 = (
 RUN_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 
 
-class _ValidatedKhronosRunStatus(dict[str, Any]):
-    def __init__(
-        self, payload: Mapping[str, Any], run_identity: Mapping[str, str]
-    ) -> None:
-        super().__init__(payload)
-        self["run_identity"] = dict(run_identity)
-        self._metric_identity = (
-            run_identity["run_id"],
-            run_identity["config_sha256"],
-        )
-        self._scene = str(payload["scene"])
-        self._method = str(payload["method"])
-        self._mode = str(payload["mode"])
-
-    def metric_identity(
-        self, *, scene: str, method: str, mode: str
-    ) -> dict[str, str]:
-        if (scene, method, mode) != (self._scene, self._method, self._mode):
-            raise ValueError("official metrics do not match validated run status")
-        return {
-            "run_id": self._metric_identity[0],
-            "config_sha256": self._metric_identity[1],
-        }
-
-
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -152,7 +127,7 @@ def validate_ground_truth_files(
 
 def validate_khronos_run_status(
     path: Path, *, scene: str
-) -> _ValidatedKhronosRunStatus:
+) -> dict[str, Any]:
     payload = loads_strict(path.read_text(encoding="utf-8"), label="Khronos run status")
     if (
         not isinstance(payload, dict)
@@ -204,7 +179,9 @@ def validate_khronos_run_status(
         )
     validate_temporal_bridge_manifest(run_root / "bridge_input/bridge_manifest.json")
     validate_build_manifest(run_root / "build_manifest.json")
-    return _ValidatedKhronosRunStatus(payload, identity)
+    normalized = dict(payload)
+    normalized["run_identity"] = identity
+    return normalized
 
 
 def patch_evaluation_config(
@@ -346,17 +323,17 @@ def write_repeated_metrics(
     mode: str,
     metrics_path: Path,
     repeat_path: Path,
-    run_status: Mapping[str, Any],
+    run_status_path: Path,
 ) -> dict[str, Any]:
     if method != "OVIV2" or mode != "causal_checkpoints":
         raise ValueError("official metrics require OVIV2 causal identity")
-    if type(run_status) is not _ValidatedKhronosRunStatus:
-        raise ValueError("official metrics require a validated run status")
-    run_identity = run_status.metric_identity(
-        scene=scene,
-        method=method,
-        mode=mode,
-    )
+    run_status = validate_khronos_run_status(run_status_path, scene=scene)
+    run_identity = dict(run_status["run_identity"])
+    if (
+        run_status.get("method") != method
+        or run_status.get("mode") != mode
+    ):
+        raise ValueError("official metrics do not match validated run status")
     for output in (metrics_path, repeat_path):
         if os.path.lexists(output):
             raise FileExistsError(f"official metric output already exists: {output}")
@@ -436,7 +413,7 @@ def run(args: argparse.Namespace) -> Path:
     if args.method != "OVIV2" or args.mode != "causal_checkpoints":
         raise ValueError("official evaluation requires OVIV2 causal identity")
     status_path = args.run_root / "run_status.json"
-    run_status = validate_khronos_run_status(status_path, scene=args.scene)
+    validate_khronos_run_status(status_path, scene=args.scene)
 
     manifest = validate_tesse_manifest(args.manifest, scene=args.scene)
     sequence = manifest["sequences"][args.scene]
@@ -522,7 +499,7 @@ def run(args: argparse.Namespace) -> Path:
         mode=args.mode,
         metrics_path=metrics_path,
         repeat_path=repeat_path,
-        run_status=run_status,
+        run_status_path=status_path,
     )
     if metric_summary["status"] == "PASS":
         evaluation_status.update(

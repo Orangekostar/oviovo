@@ -515,8 +515,22 @@ def test_run_revalidates_build_before_and_after_using_resolved_elf(
 
 
 def test_verified_descriptor_cannot_be_redirected_by_path_swap(tmp_path: Path) -> None:
-    resolved = _write_elf(tmp_path / "import_temporal_baseline")
-    expected = bridge_runner._resolved_elf_record(resolved)
+    workspace = _fake_workspace(tmp_path / "workspace")
+    stage_importer_source(CPP, workspace)
+    resolved = _write_elf(workspace / "build/khronos_eval/import_temporal_baseline")
+    declared = _install_symlink(workspace, resolved)
+    manifest = write_build_manifest(
+        CPP,
+        workspace / "src/khronos/khronos_eval/app/import_temporal_baseline.cpp",
+        workspace / "src/khronos/khronos_eval/CMakeLists.txt",
+        declared,
+        tmp_path / "build_manifest.json",
+        trusted_workspace=workspace,
+    )
+    payload = validate_build_manifest(
+        manifest, expected_source=CPP, expected_workspace=workspace
+    )
+    expected = payload["executable"]["resolved"]
     descriptor = bridge_runner._open_verified_executable(resolved, expected)
     held = resolved.with_name("held-approved-importer")
     try:
@@ -524,9 +538,10 @@ def test_verified_descriptor_cannot_be_redirected_by_path_swap(tmp_path: Path) -
         _write_elf(resolved, payload=b"tampered")
         os.lseek(descriptor, 0, os.SEEK_SET)
         assert os.read(descriptor, 64) == b"\x7fELFapproved"
-        assert bridge_runner._revalidate_open_executable(
-            descriptor, resolved, expected
-        ) == expected
+        with pytest.raises(ValueError, match="provenance mismatch"):
+            validate_build_manifest(
+                manifest, expected_source=CPP, expected_workspace=workspace
+            )
     finally:
         os.close(descriptor)
 

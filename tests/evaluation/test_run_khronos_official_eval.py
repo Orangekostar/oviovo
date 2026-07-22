@@ -104,9 +104,9 @@ def _write_required_run_status(
 
 def _validated_run_status(
     root: Path, monkeypatch: pytest.MonkeyPatch
-) -> dict[str, object]:
+) -> tuple[Path, dict[str, object]]:
     status, _ = _write_required_run_status(root, monkeypatch)
-    return validate_khronos_run_status(status, scene="apartment")
+    return status, validate_khronos_run_status(status, scene="apartment")
 
 
 def test_patch_evaluation_config_binds_local_gt_paths() -> None:
@@ -231,7 +231,7 @@ def test_repeated_metrics_records_consistent_unavailable_summary(
             },
         },
     )
-    validated = _validated_run_status(tmp_path / "run", monkeypatch)
+    status_path, _ = _validated_run_status(tmp_path / "run", monkeypatch)
     summary = write_repeated_metrics(
         results_dir=results,
         scene="apartment",
@@ -239,7 +239,7 @@ def test_repeated_metrics_records_consistent_unavailable_summary(
         mode="causal_checkpoints",
         metrics_path=tmp_path / "official_metrics.json",
         repeat_path=tmp_path / "official_metrics.repeat.json",
-        run_status=validated,
+        run_status_path=status_path,
     )
 
     assert summary["status"] == "UNAVAILABLE"
@@ -265,7 +265,7 @@ def test_repeated_metrics_refuses_existing_outputs(
         (results / name).write_text(f"{name}\n", encoding="utf-8")
     metrics = tmp_path / "official_metrics.json"
     metrics.write_text("preserve\n", encoding="utf-8")
-    validated = _validated_run_status(tmp_path / "run", monkeypatch)
+    status_path, _ = _validated_run_status(tmp_path / "run", monkeypatch)
 
     with pytest.raises(FileExistsError, match="already exists"):
         write_repeated_metrics(
@@ -275,7 +275,7 @@ def test_repeated_metrics_refuses_existing_outputs(
             mode="causal_checkpoints",
             metrics_path=metrics,
             repeat_path=tmp_path / "official_metrics.repeat.json",
-            run_status=validated,
+            run_status_path=status_path,
         )
 
     assert metrics.read_text(encoding="utf-8") == "preserve\n"
@@ -291,7 +291,7 @@ def test_repeated_metrics_refuses_dangling_symlink_output(
     victim = tmp_path / "victim.json"
     metrics = tmp_path / "official_metrics.json"
     metrics.symlink_to(victim.name)
-    validated = _validated_run_status(tmp_path / "run", monkeypatch)
+    status_path, _ = _validated_run_status(tmp_path / "run", monkeypatch)
 
     with pytest.raises(FileExistsError, match="already exists"):
         write_repeated_metrics(
@@ -301,7 +301,7 @@ def test_repeated_metrics_refuses_dangling_symlink_output(
             mode="causal_checkpoints",
             metrics_path=metrics,
             repeat_path=tmp_path / "official_metrics.repeat.json",
-            run_status=validated,
+            run_status_path=status_path,
         )
 
     assert not victim.exists()
@@ -461,8 +461,21 @@ def test_run_refuses_existing_evaluation_directory_before_external_work(
 
 def test_repeated_metrics_rejects_unvalidated_status(tmp_path: Path) -> None:
     results = _write_valid_results(tmp_path / "map/results")
+    forged_status = tmp_path / "run_status.json"
+    forged_status.write_text(
+        json.dumps(
+            {
+                "run_identity": {
+                    "run_id": "caller-controlled",
+                    "config_sha256": "f" * 64,
+                }
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
-    with pytest.raises(ValueError, match="validated run status"):
+    with pytest.raises(ValueError, match="invalid OVIV2 Khronos run identity"):
         write_repeated_metrics(
             results_dir=results,
             scene="apartment",
@@ -470,16 +483,15 @@ def test_repeated_metrics_rejects_unvalidated_status(tmp_path: Path) -> None:
             mode="causal_checkpoints",
             metrics_path=tmp_path / "official_metrics.json",
             repeat_path=tmp_path / "official_metrics.repeat.json",
-            run_status={
-                "run_identity": {
-                    "run_id": "caller-controlled",
-                    "config_sha256": "f" * 64,
-                }
-            },
+            run_status_path=forged_status,
         )
 
 
-def test_run_passes_exact_validated_status_to_metric_writer(
+def test_official_eval_exposes_no_constructible_validation_token() -> None:
+    assert not hasattr(official_eval, "_ValidatedKhronosRunStatus")
+
+
+def test_run_passes_status_path_to_revalidating_metric_writer(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     workspace = tmp_path / "workspace"
@@ -554,7 +566,7 @@ def test_run_passes_exact_validated_status_to_metric_writer(
 
     run(args)
 
-    assert captured["run_status"] is validated
+    assert captured["run_status_path"] == run_root / "run_status.json"
 
 
 def test_partial_metric_record_uses_online_display_mode_and_hashed_sources(
@@ -578,7 +590,7 @@ def test_partial_metric_record_uses_online_display_mode_and_hashed_sources(
     )
     output = tmp_path / "partial.json"
     repeat = tmp_path / "partial.repeat.json"
-    validated = _validated_run_status(tmp_path / "run", monkeypatch)
+    status_path, validated = _validated_run_status(tmp_path / "run", monkeypatch)
 
     def unavailable(_: Path) -> None:
         raise ValueError("Khronos change F1 has no finite states")
@@ -594,7 +606,7 @@ def test_partial_metric_record_uses_online_display_mode_and_hashed_sources(
         mode="causal_checkpoints",
         metrics_path=output,
         repeat_path=repeat,
-        run_status=validated,
+        run_status_path=status_path,
     )
     payload = json.loads(output.read_text(encoding="utf-8"))
 
@@ -616,8 +628,12 @@ def test_metric_json_is_byte_identical_across_run_roots(
     second_repeat = tmp_path / "second/evaluation/official_metrics.repeat.json"
     first.parent.mkdir(parents=True)
     second.parent.mkdir(parents=True)
-    first_status = _validated_run_status(tmp_path / "first/run", monkeypatch)
-    second_status = _validated_run_status(tmp_path / "second/run", monkeypatch)
+    first_status_path, first_status = _validated_run_status(
+        tmp_path / "first/run", monkeypatch
+    )
+    second_status_path, second_status = _validated_run_status(
+        tmp_path / "second/run", monkeypatch
+    )
 
     write_repeated_metrics(
         results_dir=first_results,
@@ -626,7 +642,7 @@ def test_metric_json_is_byte_identical_across_run_roots(
         mode="causal_checkpoints",
         metrics_path=first,
         repeat_path=first_repeat,
-        run_status=first_status,
+        run_status_path=first_status_path,
     )
     write_repeated_metrics(
         results_dir=second_results,
@@ -635,7 +651,7 @@ def test_metric_json_is_byte_identical_across_run_roots(
         mode="causal_checkpoints",
         metrics_path=second,
         repeat_path=second_repeat,
-        run_status=second_status,
+        run_status_path=second_status_path,
     )
 
     assert first.read_bytes() == first_repeat.read_bytes()
@@ -660,7 +676,7 @@ def test_missing_metric_csv_is_recorded_as_unavailable(
     (results / "dynamic_objects.csv").unlink()
     metrics = tmp_path / "official_metrics.json"
     repeat = tmp_path / "official_metrics.repeat.json"
-    validated = _validated_run_status(tmp_path / "run", monkeypatch)
+    status_path, validated = _validated_run_status(tmp_path / "run", monkeypatch)
 
     summary = write_repeated_metrics(
         results_dir=results,
@@ -669,7 +685,7 @@ def test_missing_metric_csv_is_recorded_as_unavailable(
         mode="causal_checkpoints",
         metrics_path=metrics,
         repeat_path=repeat,
-        run_status=validated,
+        run_status_path=status_path,
     )
 
     payload = json.loads(metrics.read_text(encoding="utf-8"))
