@@ -300,6 +300,10 @@ def test_commit_new_rejects_self_consistent_temp_reown_after_load(
                 source.mkdir()
                 for member in alternate.path.iterdir():
                     os.link(member, source / member.name)
+            (source / "foreign-sentinel.txt").write_text(
+                "must survive",
+                encoding="utf-8",
+            )
             replaced = True
         return restored
 
@@ -321,6 +325,76 @@ def test_commit_new_rejects_self_consistent_temp_reown_after_load(
 
     assert replaced is True
     assert not target.exists()
+    assert (tmp_path / "captured-original").exists() is False
+    assert (next(tmp_path.glob(".snapshot.tmp-*")) / "foreign-sentinel.txt").read_text(
+        encoding="utf-8"
+    ) == "must survive"
+
+
+def test_cleanup_owned_temporary_preserves_candidate_replaced_after_identity_check(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    temporary = tmp_path / ".snapshot.tmp-owned"
+    temporary.mkdir()
+    (temporary / "owned.bin").write_bytes(b"owned")
+    identity = snapshot_module._owned_directory_identity(temporary)
+    displaced = tmp_path / "displaced-owned"
+    original_lstat = snapshot_module.os.lstat
+    attacked = False
+
+    def replace_after_lstat(path: object, *args: object, **kwargs: object):
+        nonlocal attacked
+        status = original_lstat(path, *args, **kwargs)
+        if not attacked and Path(path) == temporary:
+            temporary.rename(displaced)
+            temporary.mkdir()
+            (temporary / "foreign-sentinel.txt").write_text(
+                "must survive",
+                encoding="utf-8",
+            )
+            attacked = True
+        return status
+
+    monkeypatch.setattr(snapshot_module.os, "lstat", replace_after_lstat)
+
+    snapshot_module._cleanup_owned_temporary(
+        temporary,
+        identity,
+        excluded_path=tmp_path / "target",
+    )
+
+    assert attacked is True
+    assert (temporary / "foreign-sentinel.txt").read_text(encoding="utf-8") == (
+        "must survive"
+    )
+    assert (displaced / "owned.bin").read_bytes() == b"owned"
+
+
+def test_cleanup_owned_temporary_is_best_effort(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    temporary = tmp_path / ".snapshot.tmp-owned"
+    temporary.mkdir()
+    (temporary / "owned.bin").write_bytes(b"owned")
+    identity = snapshot_module._owned_directory_identity(temporary)
+    original_listdir = snapshot_module.os.listdir
+
+    def fail_anchored_listdir(path: object):
+        if isinstance(path, int):
+            raise OSError("injected cleanup list failure")
+        return original_listdir(path)
+
+    monkeypatch.setattr(snapshot_module.os, "listdir", fail_anchored_listdir)
+
+    snapshot_module._cleanup_owned_temporary(
+        temporary,
+        identity,
+        excluded_path=tmp_path / "target",
+    )
+
+    assert (temporary / "owned.bin").read_bytes() == b"owned"
 
 
 def test_snapshot_publication_uncertain_error_is_publicly_exported() -> None:

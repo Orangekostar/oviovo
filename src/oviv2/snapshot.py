@@ -75,6 +75,104 @@ def _source_fingerprint(
     )
 
 
+def _owned_directory_identity(path: Path) -> tuple[int, int]:
+    status = os.lstat(path)
+    if not stat.S_ISDIR(status.st_mode):
+        raise ValueError("owned snapshot temporary is not a directory")
+    return status.st_dev, status.st_ino
+
+
+def _cleanup_owned_temporary(
+    original_path: Path,
+    identity: tuple[int, int],
+    *,
+    excluded_path: Path,
+) -> None:
+    flags = (
+        os.O_RDONLY
+        | getattr(os, "O_CLOEXEC", 0)
+        | getattr(os, "O_DIRECTORY", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+    )
+    try:
+        parent_fd = os.open(original_path.parent, flags)
+    except OSError:
+        return
+    try:
+        candidate_names = [original_path.name, *sorted(os.listdir(parent_fd))]
+        excluded_name = (
+            excluded_path.name
+            if excluded_path.parent == original_path.parent
+            else None
+        )
+        for candidate_name in dict.fromkeys(candidate_names):
+            if candidate_name == excluded_name:
+                continue
+            candidate = original_path.parent / candidate_name
+            try:
+                status = os.lstat(candidate)
+            except OSError:
+                continue
+            if not stat.S_ISDIR(status.st_mode) or (
+                (status.st_dev, status.st_ino) != identity
+            ):
+                continue
+            try:
+                candidate_fd = os.open(candidate_name, flags, dir_fd=parent_fd)
+            except OSError:
+                continue
+            try:
+                opened = os.fstat(candidate_fd)
+                named = os.stat(
+                    candidate_name,
+                    dir_fd=parent_fd,
+                    follow_symlinks=False,
+                )
+                if (
+                    (opened.st_dev, opened.st_ino) != identity
+                    or (named.st_dev, named.st_ino) != identity
+                ):
+                    continue
+                removable = True
+                for member_name in os.listdir(candidate_fd):
+                    try:
+                        member = os.stat(
+                            member_name,
+                            dir_fd=candidate_fd,
+                            follow_symlinks=False,
+                        )
+                        if stat.S_ISDIR(member.st_mode):
+                            removable = False
+                            continue
+                        os.unlink(member_name, dir_fd=candidate_fd)
+                    except OSError:
+                        removable = False
+                if not removable:
+                    return
+                named = os.stat(
+                    candidate_name,
+                    dir_fd=parent_fd,
+                    follow_symlinks=False,
+                )
+                opened_after = os.fstat(candidate_fd)
+                if (
+                    (opened_after.st_dev, opened_after.st_ino) != identity
+                    or (named.st_dev, named.st_ino) != identity
+                ):
+                    return
+                try:
+                    os.rmdir(candidate_name, dir_fd=parent_fd)
+                except OSError:
+                    pass
+                return
+            finally:
+                os.close(candidate_fd)
+    except OSError:
+        return
+    finally:
+        os.close(parent_fd)
+
+
 def _read_source_member_at(
     directory_fd: int,
     name: str,
@@ -681,6 +779,7 @@ class VoxelMapSnapshot:
         temporary = Path(
             tempfile.mkdtemp(prefix=f".{target.name}.tmp-", dir=target.parent)
         )
+        temporary_identity = _owned_directory_identity(temporary)
         published = False
         try:
             data_files = cls._write_snapshot_files(
@@ -729,11 +828,12 @@ class VoxelMapSnapshot:
                 source_witness=source_witness,
             )
         finally:
-            if not published and temporary.exists():
-                try:
-                    shutil.rmtree(temporary)
-                except OSError:
-                    pass
+            if not published:
+                _cleanup_owned_temporary(
+                    temporary,
+                    temporary_identity,
+                    excluded_path=target,
+                )
 
     @classmethod
     def load(cls, snapshot_dir: str | Path) -> "VoxelMapSnapshot":
