@@ -997,6 +997,39 @@ def test_fresh_preflight_decodes_only_requested_rgb_once(
     assert len(converted) == 1
 
 
+def test_replica_preflight_binds_paths_without_rgb_pixels(tmp_path: Path) -> None:
+    config, _, _ = _write_fixture(tmp_path)
+
+    preflight = _preflight(config, 2, _args(config, tmp_path / "dense"))
+
+    assert not hasattr(preflight, "rgb_frames")
+    assert [binding.source_frame_id for binding in preflight.rgb_bindings] == [10, 13]
+    assert [binding.dataset_frame_id for binding in preflight.rgb_bindings] == [0, 1]
+    assert all(isinstance(binding.path, Path) for binding in preflight.rgb_bindings)
+
+
+def test_multiframe_replica_run_indexes_each_frame_directory_once(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config, _, _ = _write_fixture(tmp_path)
+    results = tmp_path / "dataset" / "results"
+    original = Path.glob
+    indexed: list[str] = []
+
+    def tracked_glob(directory: Path, pattern: str):
+        if directory == results and pattern in {"frame*.jpg", "depth*.png"}:
+            indexed.append(pattern)
+        return original(directory, pattern)
+
+    monkeypatch.setattr(Path, "glob", tracked_glob)
+
+    run(_args(config, tmp_path / "dense"))
+
+    assert indexed.count("frame*.jpg") == 1
+    assert indexed.count("depth*.png") == 1
+
+
 def test_fresh_preflight_does_not_decode_depth_pixels(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

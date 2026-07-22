@@ -107,11 +107,19 @@ class _WorkerConfig:
 
 
 @dataclass(frozen=True)
+class _RgbFrameBinding:
+    source_frame_id: int
+    dataset_frame_id: int
+    path: Path
+
+
+@dataclass(frozen=True)
 class _Preflight:
     dataset_name: str
     scene: str
     dataset: ReplicaRoom0Dataset | ScanNet200Dataset | TesseCdRgbdDataset
     source_frame_ids: tuple[int, ...]
+    rgb_bindings: tuple[_RgbFrameBinding, ...]
     image_shape: tuple[int, int]
     classes: tuple[str, ...]
     object_semantic_ids: tuple[int, ...]
@@ -615,36 +623,27 @@ def _load_classes(
     return tuple(classes), sha256_file(path)
 
 
-def _indexed_replica_paths(directory: Path, pattern: str) -> dict[int, Path]:
-    indexed: dict[int, Path] = {}
-    for path in sorted(directory.glob(pattern)):
-        match = re.search(r"(\d+)", path.stem)
-        if match is None:
-            raise ValueError(f"Replica frame path has no numeric index: {path.name}")
-        frame_index = int(match.group(1))
-        if frame_index in indexed:
-            raise ValueError(f"Replica frame index is duplicated: {frame_index}")
-        indexed[frame_index] = path
-    return indexed
-
-
 def _load_rgb_frame(
     dataset: ReplicaRoom0Dataset | ScanNet200Dataset | TesseCdRgbdDataset,
     cache_index: int,
+    binding: _RgbFrameBinding | None = None,
 ) -> np.ndarray:
-    if isinstance(dataset, TesseCdRgbdDataset):
-        rgb_path = dataset.records[cache_index].rgb_path
-        image_shape = (dataset.intrinsics.height, dataset.intrinsics.width)
-    elif isinstance(dataset, ScanNet200Dataset):
-        source_frame_id = dataset.frame_indices[cache_index]
-        rgb_path = dataset.root / "color" / f"{source_frame_id}.jpg"
-        image_shape = (dataset.intrinsics.height, dataset.intrinsics.width)
-    else:
-        frame_index = dataset.frame_indices[cache_index]
-        rgb_path = _indexed_replica_paths(dataset.rgb_dir, "frame*.jpg").get(frame_index)
-        if rgb_path is None:
-            raise ValueError(f"Replica frame {frame_index} is missing RGB data")
-        image_shape = (dataset.intrinsics.height, dataset.intrinsics.width)
+    if binding is None:
+        if isinstance(dataset, TesseCdRgbdDataset):
+            record = dataset.records[cache_index]
+            binding = _RgbFrameBinding(record.frame_index, record.frame_index, record.rgb_path)
+        elif isinstance(dataset, ScanNet200Dataset):
+            dataset_frame_id = dataset.frame_indices[cache_index]
+            binding = _RgbFrameBinding(
+                dataset_frame_id,
+                dataset_frame_id,
+                dataset.root / "color" / f"{dataset_frame_id}.jpg",
+            )
+        else:
+            record = dataset._records[cache_index]
+            binding = _RgbFrameBinding(record.frame_index, record.frame_index, record.rgb_path)
+    rgb_path = binding.path
+    image_shape = (dataset.intrinsics.height, dataset.intrinsics.width)
     with Image.open(rgb_path) as image:
         if isinstance(dataset, ScanNet200Dataset):
             image = image.convert("RGB").resize(
@@ -661,26 +660,56 @@ def _load_rgb_frame(
     return np.ascontiguousarray(rgb)
 
 
+def _bind_rgb_frames(
+    dataset: ReplicaRoom0Dataset | ScanNet200Dataset | TesseCdRgbdDataset,
+    source_frame_ids: tuple[int, ...],
+) -> tuple[_RgbFrameBinding, ...]:
+    if len(dataset) != len(source_frame_ids):
+        raise ValueError("dataset length must match the frozen source frame IDs")
+    if isinstance(dataset, TesseCdRgbdDataset):
+        return tuple(
+            _RgbFrameBinding(source_id, record.frame_index, record.rgb_path)
+            for source_id, record in zip(source_frame_ids, dataset.records)
+        )
+    if isinstance(dataset, ScanNet200Dataset):
+        return tuple(
+            _RgbFrameBinding(
+                source_id,
+                dataset_frame_id,
+                dataset.root / "color" / f"{dataset_frame_id}.jpg",
+            )
+            for source_id, dataset_frame_id in zip(
+                source_frame_ids,
+                dataset.frame_indices,
+            )
+        )
+    return tuple(
+        _RgbFrameBinding(source_id, record.frame_index, record.rgb_path)
+        for source_id, record in zip(source_frame_ids, dataset._records)
+    )
+
+
 def _validate_replica_frame_headers(
     dataset: ReplicaRoom0Dataset,
+    rgb_bindings: tuple[_RgbFrameBinding, ...],
     requested_frames: int,
     image_shape: tuple[int, int],
 ) -> None:
-    rgb_paths = _indexed_replica_paths(dataset.rgb_dir, "frame*.jpg")
-    depth_paths = _indexed_replica_paths(dataset.depth_dir, "depth*.png")
     expected_size = (image_shape[1], image_shape[0])
-    selected = dataset.frame_indices[:requested_frames]
+    selected = rgb_bindings[:requested_frames]
     if len(selected) != requested_frames:
         raise ValueError("Replica dataset does not cover the requested frame prefix")
-    for cache_index, frame_index in enumerate(selected):
-        rgb_path = rgb_paths.get(frame_index)
-        depth_path = depth_paths.get(frame_index)
-        if rgb_path is None or depth_path is None:
-            raise ValueError(f"Replica frame {frame_index} is missing RGB or depth data")
-        with Image.open(rgb_path) as image:
+    for cache_index, binding in enumerate(selected):
+        record = dataset._records[cache_index]
+        if (
+            record.frame_index != binding.dataset_frame_id
+            or record.rgb_path != binding.path
+        ):
+            raise ValueError(f"Replica frame {cache_index} path binding mismatch")
+        with Image.open(binding.path) as image:
             if image.size != expected_size:
                 raise ValueError(f"dataset frame {cache_index} RGB image shape is inconsistent")
-        with Image.open(depth_path) as image:
+        with Image.open(record.depth_path) as image:
             if image.size != expected_size:
                 raise ValueError(f"dataset frame {cache_index} depth image shape is inconsistent")
 
@@ -992,8 +1021,14 @@ def _preflight(
         _strict_int(dataset.intrinsics.height, "dataset image height", positive=True),
         _strict_int(dataset.intrinsics.width, "dataset image width", positive=True),
     )
+    rgb_bindings = _bind_rgb_frames(dataset, source_ids)
     if isinstance(dataset, ReplicaRoom0Dataset):
-        _validate_replica_frame_headers(dataset, requested_frames, image_shape)
+        _validate_replica_frame_headers(
+            dataset,
+            rgb_bindings,
+            requested_frames,
+            image_shape,
+        )
     if dataset_name == "Replica" and source_ids[-1] >= selection_stop:
         raise ValueError("source frame IDs exceed manifest frame_selection")
     if dataset_name == "TESSE-CD" and image_shape != (480, 720):
@@ -1003,6 +1038,7 @@ def _preflight(
         scene=scene,
         dataset=dataset,
         source_frame_ids=source_ids,
+        rgb_bindings=rgb_bindings,
         image_shape=image_shape,
         classes=classes,
         object_semantic_ids=object_semantic_ids,
@@ -1429,7 +1465,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         cache_hashes: dict[str, str] = {}
         for cache_index in range(requested_frames):
             source_id = preflight.source_frame_ids[cache_index]
-            rgb = _load_rgb_frame(preflight.dataset, cache_index)
+            binding = preflight.rgb_bindings[cache_index]
+            if binding.source_frame_id != source_id:
+                raise ValueError(f"dataset frame {cache_index} source ID binding changed")
+            rgb = _load_rgb_frame(preflight.dataset, cache_index, binding)
             if tuple(rgb.shape[:2]) != preflight.image_shape:
                 raise ValueError(f"dataset frame {cache_index} image shape changed after preflight")
             response = _request(
