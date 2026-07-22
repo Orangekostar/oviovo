@@ -213,6 +213,9 @@ def _presence_runs(
 def _checkpoint_endpoints(
     intervals: Sequence[Mapping[str, Any]], query: int
 ) -> tuple[list[int], list[int]]:
+    if query >= (1 << 64) - 1:
+        raise ValueError("checkpoint timestamp cannot encode an ongoing interval")
+    ongoing_end = query + 1
     starts: list[int] = []
     ends: list[int] = []
     for interval in intervals:
@@ -221,7 +224,9 @@ def _checkpoint_endpoints(
             continue
         end = interval["end_ns_exclusive"]
         starts.append(start)
-        ends.append(int(end) if end is not None and int(end) <= query else query)
+        ends.append(
+            int(end) if end is not None and int(end) <= query else ongoing_end
+        )
     return starts, ends
 
 
@@ -742,6 +747,7 @@ def prepare_temporal_bridge(
         "protocol": {
             "node_symbol_order": "first_appearance_timestamp_then_entity_id",
             "presence_intervals": "closed_open",
+            "ongoing_interval_endpoint": "query_timestamp_ns+1",
             "trajectory_bound": (
                 "sample_frame_index<=query_frame_index and "
                 "sample_timestamp_ns<=query_timestamp_ns"

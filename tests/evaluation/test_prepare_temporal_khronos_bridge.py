@@ -90,6 +90,21 @@ def _entity(entity_id: str, x: float) -> EntityPrediction:
     )
 
 
+def _official_is_present(obj: dict[str, Any], query: int) -> bool:
+    appeared = max(
+        timestamp for timestamp in obj["first_observed_ns"] if timestamp <= query
+    )
+    disappeared = max(
+        (
+            timestamp
+            for timestamp in obj["last_observed_ns"]
+            if timestamp <= query
+        ),
+        default=-1,
+    )
+    return appeared > disappeared
+
+
 def _write_temporal_fixture(root: Path) -> Path:
     root.mkdir()
     schedule = root / "schedule.json"
@@ -285,7 +300,7 @@ def test_prepares_stable_symbols_intervals_and_causal_native_tracks(
     }
     assert final_objects["r-reappear"]["node_symbol"] == "O0"
     assert final_objects["r-reappear"]["first_observed_ns"] == [100, 500]
-    assert final_objects["r-reappear"]["last_observed_ns"] == [300, 500]
+    assert final_objects["r-reappear"]["last_observed_ns"] == [300, 501]
     assert final_objects["sparse"]["dynamic_track_eligible"] is False
     assert final_objects["sparse"]["trajectory_sample_count"] == 0
 
@@ -295,7 +310,8 @@ def test_prepares_stable_symbols_intervals_and_causal_native_tracks(
         for obj in checkpoint["objects"]:
             assert len(obj["first_observed_ns"]) == len(obj["last_observed_ns"])
             assert obj["first_observed_ns"]
-            assert all(timestamp <= query for timestamp in obj["last_observed_ns"])
+            assert obj["last_observed_ns"][-1] == query + 1
+            assert _official_is_present(obj, query)
             assert not Path(obj["trajectory_json"]).is_absolute()
             assert not Path(obj["points_ply"]).is_absolute()
             trajectory = json.loads(
