@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -330,5 +331,22 @@ def test_release_finalizer_rejects_noncanonical_frozen_binding_path(
         finalize_oviv2_common_v2_release(
             freeze,
             run_id="path-escape",
+            output=tmp_path / "result.json",
+        )
+
+
+def test_release_finalizer_rejects_hardlinked_run_local_sources(
+    tmp_path: Path,
+) -> None:
+    freeze = _fixture(tmp_path)
+    primary = tmp_path / "apartment/run1/temporal/checkpoints/00000100/entities.jsonl"
+    repeat = tmp_path / "apartment/run2/temporal/checkpoints/00000100/entities.jsonl"
+    repeat.unlink()
+    os.link(primary, repeat)
+
+    with pytest.raises(ValueError, match="run-local sources must be independent files"):
+        finalize_oviv2_common_v2_release(
+            freeze,
+            run_id="hardlink",
             output=tmp_path / "result.json",
         )

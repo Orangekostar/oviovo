@@ -20,6 +20,7 @@ if str(ROOT) not in sys.path:
 
 from scripts.evaluation import finalize_tesse_common_v2 as pinned_common
 from scripts.evaluation.canonicalize_tesse_common_v2_summary import (
+    EXTERNAL_SOURCE_ROLES,
     canonical_summary_bytes,
     canonicalize_summary,
 )
@@ -286,6 +287,28 @@ def finalize_oviv2_common_v2_release(
             raise ValueError(
                 f"{scene} canonical summaries must be byte-identical"
             )
+        primary_sources = _mapping(
+            raw_summaries[(scene, 1)].get("sources"),
+            label=f"{scene} primary sources",
+        )
+        repeat_sources = _mapping(
+            raw_summaries[(scene, 2)].get("sources"),
+            label=f"{scene} repeat sources",
+        )
+        for role in set(primary_sources) - EXTERNAL_SOURCE_ROLES:
+            primary_source = _mapping(
+                primary_sources[role], label=f"{scene} primary {role} source"
+            )
+            repeat_source = _mapping(
+                repeat_sources[role], label=f"{scene} repeat {role} source"
+            )
+            if os.path.samefile(
+                Path(str(primary_source["path"])),
+                Path(str(repeat_source["path"])),
+            ):
+                raise ValueError(
+                    f"{scene} run-local sources must be independent files: {role}"
+                )
 
     shared_source_roles = (
         "target_manifest",
