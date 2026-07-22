@@ -56,11 +56,15 @@ def _json_exact_equal(first: object, second: object) -> bool:
     return first == second
 
 
-def _direct_directory(path: Path, *, label: str) -> Path:
+def _direct_directory(path: Path, *, label: str) -> tuple[Path, FileIdentity]:
     absolute = _absolute_lexical(path)
     descriptor, _ = _open_directory_no_symlinks(absolute, label=label)
-    os.close(descriptor)
-    return absolute
+    try:
+        status = os.fstat(descriptor)
+        identity = (status.st_dev, status.st_ino)
+    finally:
+        os.close(descriptor)
+    return absolute, identity
 
 
 def _expected_internal_path(role: str, *, artifact_root: Path) -> Path:
@@ -81,9 +85,25 @@ def _expected_internal_path(role: str, *, artifact_root: Path) -> Path:
 
 
 def _stable_regular_file_with_identity(
-    path: Path, *, label: str, capture: bool
+    path: Path,
+    *,
+    label: str,
+    capture: bool,
+    expected_ancestor: tuple[Path, FileIdentity] | None = None,
 ) -> tuple[str, int, bytes | None, FileIdentity]:
     descriptor, identities = _open_regular_no_symlinks(path, label=label)
+    if expected_ancestor is not None:
+        ancestor, expected_identity = expected_ancestor
+        absolute_path = _absolute_lexical(path)
+        absolute_ancestor = _absolute_lexical(ancestor)
+        if not absolute_path.is_relative_to(absolute_ancestor):
+            os.close(descriptor)
+            raise ValueError(f"{label} is outside its expected artifact root")
+        ancestor_index = len(absolute_ancestor.parts) - 1
+        observed_identity = identities[ancestor_index][:2]
+        if observed_identity != expected_identity:
+            os.close(descriptor)
+            raise ValueError("artifact root identity changed during evidence capture")
     chunks: list[bytes] | None = [] if capture else None
     digest = hashlib.sha256()
     byte_count = 0
@@ -150,7 +170,10 @@ def _compact_canonical_json(payload: Mapping[str, Any]) -> bytes:
 
 
 def _temporal_identity_projection(
-    content: bytes, *, temporal_path: Path
+    content: bytes,
+    *,
+    temporal_path: Path,
+    artifact_root: tuple[Path, FileIdentity],
 ) -> tuple[
     str,
     int,
@@ -189,6 +212,7 @@ def _temporal_identity_projection(
             sidecar_path,
             label="temporal source_index",
             capture=True,
+            expected_ancestor=artifact_root,
         )
     )
     assert sidecar_content is not None
@@ -250,6 +274,7 @@ def _canonical_source(
     declaration: object,
     *,
     expected_path: Path,
+    artifact_root: tuple[Path, FileIdentity] | None,
 ) -> tuple[
     dict[str, object],
     str,
@@ -275,6 +300,7 @@ def _canonical_source(
         observed_path,
         label=f"{role} source",
         capture=role == "temporal_index",
+        expected_ancestor=artifact_root,
     )
     declared_digest = declaration.get("sha256")
     declared_bytes = declaration.get("byte_count")
@@ -294,7 +320,9 @@ def _canonical_source(
     if role == "temporal_index":
         assert content is not None
         projection = _temporal_identity_projection(
-            content, temporal_path=observed_path
+            content,
+            temporal_path=observed_path,
+            artifact_root=artifact_root,
         )
         if projection is not None:
             (
@@ -346,6 +374,7 @@ def capture_and_canonicalize_summary(
     *,
     artifact_root: Path,
     external_sources: Mapping[str, Path],
+    expected_artifact_root_identity: FileIdentity | None = None,
 ) -> tuple[
     dict[str, Any],
     dict[str, Any],
@@ -353,13 +382,21 @@ def capture_and_canonicalize_summary(
     dict[str, FileIdentity],
     dict[str, CapturedArtifact],
 ]:
-    root = _direct_directory(artifact_root, label="artifact root")
+    root, root_identity = _direct_directory(artifact_root, label="artifact root")
+    if (
+        expected_artifact_root_identity is not None
+        and root_identity != expected_artifact_root_identity
+    ):
+        raise ValueError("artifact root identity changed during evidence capture")
     expected_summary = root / "evaluation/summary.json"
     if _absolute_lexical(summary) != expected_summary:
         raise ValueError("summary path must be artifact_root/evaluation/summary.json")
     raw_digest, raw_byte_count, raw_bytes, raw_identity = (
         _stable_regular_file_with_identity(
-            expected_summary, label="raw common-v2 summary", capture=True
+            expected_summary,
+            label="raw common-v2 summary",
+            capture=True,
+            expected_ancestor=(root, root_identity),
         )
     )
     assert raw_bytes is not None
@@ -425,7 +462,14 @@ def capture_and_canonicalize_summary(
             else _expected_internal_path(role, artifact_root=root)
         )
         canonical, physical_path, identities, artifacts = _canonical_source(
-            role, declaration, expected_path=expected_path
+            role,
+            declaration,
+            expected_path=expected_path,
+            artifact_root=(
+                None
+                if role in EXTERNAL_SOURCE_ROLES
+                else (root, root_identity)
+            ),
         )
         canonical_sources[role] = canonical
         source_identities.update(identities)

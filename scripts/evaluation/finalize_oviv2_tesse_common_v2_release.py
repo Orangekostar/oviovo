@@ -55,6 +55,105 @@ _REQUIRED_SHARED_BINDINGS = frozenset(
         "finalizers",
     }
 )
+_FORMAL_IDENTITY_FIELDS = frozenset({"frozen_run_identity", "run_execution"})
+_RUN_MANIFEST_FIELDS = frozenset(
+    {
+        "schema_version",
+        "dataset",
+        "method_id",
+        "mode",
+        "scene",
+        "missing_observation_policy",
+        "algorithm_hash",
+        "normalized_algorithm_config",
+        "stage3_lineage_commit",
+        "maintenance_parameters",
+        "processed_frame_count",
+        "official_schedule_frame_indices",
+        "evaluation_checkpoint_frames",
+        "scheduled_frame_indices",
+        "captured_frame_indices",
+        "config",
+        "schedule",
+        "source_bindings",
+        "occlusion_checkpoint_index",
+        "checkpoints",
+    }
+) | _FORMAL_IDENTITY_FIELDS
+_SOURCE_INDEX_FIELDS = frozenset(
+    {
+        "schema_version",
+        "dataset",
+        "mode",
+        "method",
+        "scene",
+        "schedule",
+        "capture_status",
+        "trajectories",
+        "checkpoints",
+    }
+) | _FORMAL_IDENTITY_FIELDS
+_OCCLUSION_INDEX_FIELDS = frozenset(
+    {
+        "schema_version",
+        "manifest_id",
+        "dataset",
+        "method_id",
+        "scene",
+        "algorithm_hash",
+        "run_config",
+        "target_manifest",
+        "evaluation_checkpoint_frames_sha256",
+        "snapshots",
+    }
+) | _FORMAL_IDENTITY_FIELDS
+_TEMPORAL_MANIFEST_FIELDS = frozenset(
+    {
+        "schema_version",
+        "dataset",
+        "mode",
+        "method",
+        "scene",
+        "sources",
+        "checkpoints",
+        "entity_lifecycles",
+        "trajectories",
+    }
+) | _FORMAL_IDENTITY_FIELDS
+_SOURCE_CHECKPOINT_FIELDS = frozenset(
+    {
+        "frame_index",
+        "timestamp_ns",
+        "consumed_through_frame",
+        "consumed_through_frame_exclusive",
+        "checkpoint_status",
+        "snapshot",
+        "entities",
+    }
+)
+_TEMPORAL_CHECKPOINT_FIELDS = frozenset(
+    {
+        "frame_index",
+        "timestamp_ns",
+        "consumed_through_frame",
+        "consumed_through_frame_exclusive",
+        "snapshot",
+        "entities",
+    }
+)
+_OCCLUSION_SNAPSHOT_FIELDS = frozenset(
+    {
+        "scene",
+        "frame_index",
+        "timestamp_ns",
+        "relative_timestamp_ns",
+        "consumed_through_frame",
+        "consumed_through_frame_exclusive",
+        "format",
+        "path",
+        "checksums_sha256",
+    }
+)
 
 
 def _mapping(value: object, *, label: str) -> Mapping[str, Any]:
@@ -166,10 +265,16 @@ def _compact_json_hash(payload: Mapping[str, Any]) -> str:
 
 
 def _captured_json_artifact(
-    path: Path, *, label: str
+    path: Path,
+    *,
+    label: str,
+    artifact_root: tuple[Path, FileIdentity],
 ) -> tuple[dict[str, Any], dict[str, object], FileIdentity]:
     digest, byte_count, content, identity = _stable_regular_file_with_identity(
-        path, label=label, capture=True
+        path,
+        label=label,
+        capture=True,
+        expected_ancestor=artifact_root,
     )
     assert content is not None
     try:
@@ -204,6 +309,427 @@ def _validate_run_execution(
     if not _json_exact_equal(execution, expected):
         raise ValueError(f"{scene}.run{repeat} execution identity mismatch")
     return execution
+
+
+def _content_record(value: object, *, label: str) -> dict[str, object]:
+    record = _mapping(value, label=label)
+    if set(record) != {"sha256", "byte_count"} or not (
+        isinstance(record.get("sha256"), str)
+        and re.fullmatch(r"[0-9a-f]{64}", str(record["sha256"]))
+        and type(record.get("byte_count")) is int
+        and int(record["byte_count"]) >= 0
+    ):
+        raise ValueError(f"{label} is invalid")
+    return dict(record)
+
+
+def _relative_content_record(
+    value: object,
+    *,
+    label: str,
+    expected_path: str | None = None,
+    allow_parent: bool = False,
+) -> dict[str, object]:
+    record = _mapping(value, label=label)
+    if set(record) != {"path", "sha256", "byte_count"}:
+        raise ValueError(f"{label} is invalid")
+    raw_path = record.get("path")
+    if not isinstance(raw_path, str):
+        raise ValueError(f"{label} path is invalid")
+    path = Path(raw_path)
+    if (
+        not raw_path
+        or "\\" in raw_path
+        or path.is_absolute()
+        or "." in path.parts
+        or (not allow_parent and ".." in path.parts)
+        or path.as_posix() != raw_path
+        or (expected_path is not None and raw_path != expected_path)
+    ):
+        raise ValueError(f"{label} path is invalid")
+    content = _content_record(
+        {"sha256": record.get("sha256"), "byte_count": record.get("byte_count")},
+        label=label,
+    )
+    return {"path": raw_path, **content}
+
+
+def _integer_sequence(value: object, *, label: str) -> list[int]:
+    if not isinstance(value, list) or any(type(item) is not int for item in value):
+        raise ValueError(f"{label} must be an integer list")
+    if value != sorted(set(value)):
+        raise ValueError(f"{label} must be sorted and unique")
+    return list(value)
+
+
+def _checkpoint_entries(
+    value: object,
+    *,
+    label: str,
+    exact_fields: frozenset[str] | None = None,
+) -> dict[int, Mapping[str, Any]]:
+    if not isinstance(value, list) or not value:
+        raise ValueError(f"{label} must be a non-empty list")
+    entries: dict[int, Mapping[str, Any]] = {}
+    for raw in value:
+        entry = _mapping(raw, label=f"{label} entry")
+        if exact_fields is not None and set(entry) != exact_fields:
+            raise ValueError(f"{label} entry fields are invalid")
+        frame = entry.get("frame_index")
+        if type(frame) is not int or frame < 0 or frame in entries:
+            raise ValueError(f"{label} frame identities are invalid")
+        entries[frame] = entry
+    if list(entries) != sorted(entries):
+        raise ValueError(f"{label} frames must be sorted")
+    return entries
+
+
+def _validate_checkpoint_identity(
+    entry: Mapping[str, Any], *, frame: int, scene: str, label: str
+) -> tuple[int, int, int]:
+    timestamp = entry.get("timestamp_ns")
+    consumed = entry.get("consumed_through_frame")
+    consumed_exclusive = entry.get("consumed_through_frame_exclusive")
+    if not (
+        type(timestamp) is int
+        and timestamp >= 0
+        and consumed == frame
+        and type(consumed) is int
+        and consumed_exclusive == frame + 1
+        and type(consumed_exclusive) is int
+        and ("scene" not in entry or entry.get("scene") == scene)
+    ):
+        raise ValueError(f"{label} checkpoint identity mismatch")
+    return timestamp, consumed, consumed_exclusive
+
+
+def _same_content_record(first: object, second: object, *, label: str) -> None:
+    first_record = _mapping(first, label=f"{label} first record")
+    second_record = _mapping(second, label=f"{label} second record")
+    first_content = {
+        "sha256": first_record.get("sha256"),
+        "byte_count": first_record.get("byte_count"),
+    }
+    second_content = {
+        "sha256": second_record.get("sha256"),
+        "byte_count": second_record.get("byte_count"),
+    }
+    if not _json_exact_equal(first_content, second_content):
+        raise ValueError(f"{label} content records differ")
+
+
+def _validate_formal_artifact_contracts(
+    payloads: Mapping[str, Mapping[str, Any]],
+    records: Mapping[str, Mapping[str, object]],
+    *,
+    scene: str,
+    expected_identity: Mapping[str, Any],
+    algorithm: Mapping[str, Any],
+    summary: Mapping[str, Any],
+) -> None:
+    run_manifest = payloads["run_manifest"]
+    if set(run_manifest) != _RUN_MANIFEST_FIELDS or not (
+        type(run_manifest.get("schema_version")) is int
+        and run_manifest.get("schema_version") == 1
+        and run_manifest.get("dataset") == "TESSE-CD"
+        and run_manifest.get("method_id") == "OVIV2"
+        and run_manifest.get("mode") == "causal_checkpoints"
+        and run_manifest.get("scene") == scene
+        and run_manifest.get("missing_observation_policy") == "signed_depth"
+        and run_manifest.get("algorithm_hash") == expected_identity["algorithm_hash"]
+        and run_manifest.get("stage3_lineage_commit") == STAGE3_LINEAGE_COMMIT
+        and _json_exact_equal(
+            run_manifest.get("normalized_algorithm_config"),
+            algorithm.get("normalized_config"),
+        )
+    ):
+        raise ValueError("run_manifest contract mismatch")
+    if set(
+        _mapping(
+            run_manifest.get("maintenance_parameters"),
+            label="run maintenance parameters",
+        )
+    ) != {
+        "visibility_depth_tolerance_m",
+        "absence_negative_support",
+        "ownership_min_net_support",
+    }:
+        raise ValueError("run_manifest maintenance contract mismatch")
+    if not _mapping(
+        run_manifest.get("source_bindings"), label="run source bindings"
+    ):
+        raise ValueError("run_manifest source bindings are empty")
+    if not _json_exact_equal(
+        _content_record(run_manifest.get("config"), label="run config"),
+        expected_identity["config"],
+    ):
+        raise ValueError("run_manifest config binding mismatch")
+    _content_record(run_manifest.get("schedule"), label="run schedule")
+    occlusion_declaration = _relative_content_record(
+        run_manifest.get("occlusion_checkpoint_index"),
+        label="run occlusion index",
+        expected_path="occlusion_checkpoint_index.json",
+    )
+    _same_content_record(
+        occlusion_declaration,
+        records["occlusion_checkpoint_index"],
+        label="run occlusion index",
+    )
+    official_frames = _integer_sequence(
+        run_manifest.get("official_schedule_frame_indices"),
+        label="official schedule frames",
+    )
+    evaluation_frames = _integer_sequence(
+        run_manifest.get("evaluation_checkpoint_frames"),
+        label="evaluation checkpoint frames",
+    )
+    scheduled_frames = _integer_sequence(
+        run_manifest.get("scheduled_frame_indices"),
+        label="scheduled checkpoint frames",
+    )
+    captured_frames = _integer_sequence(
+        run_manifest.get("captured_frame_indices"),
+        label="captured checkpoint frames",
+    )
+    run_checkpoints = _checkpoint_entries(
+        run_manifest.get("checkpoints"), label="run checkpoints"
+    )
+    if not (
+        captured_frames == scheduled_frames == list(run_checkpoints)
+        and set(official_frames) <= set(scheduled_frames)
+        and set(evaluation_frames) <= set(scheduled_frames)
+        and type(run_manifest.get("processed_frame_count")) is int
+        and int(run_manifest["processed_frame_count"]) > max(scheduled_frames)
+    ):
+        raise ValueError("run_manifest checkpoint coverage mismatch")
+    for frame, entry in run_checkpoints.items():
+        required = {
+            "scene",
+            "frame_index",
+            "timestamp_ns",
+            "relative_timestamp_ns",
+            "consumed_through_frame",
+            "consumed_through_frame_exclusive",
+            "format",
+        }
+        if not required <= set(entry):
+            raise ValueError("run checkpoint fields are incomplete")
+        _validate_checkpoint_identity(
+            entry, frame=frame, scene=scene, label="run"
+        )
+
+    source_index = payloads["source_index"]
+    if set(source_index) != _SOURCE_INDEX_FIELDS or not (
+        type(source_index.get("schema_version")) is int
+        and source_index.get("schema_version") == 1
+        and source_index.get("dataset") == "TESSE-CD"
+        and source_index.get("mode") == "causal_checkpoint_exports"
+        and source_index.get("method") == "OVIV2"
+        and source_index.get("scene") == scene
+    ):
+        raise ValueError("source_index contract mismatch")
+    for role in ("schedule", "capture_status", "trajectories"):
+        _relative_content_record(
+            source_index.get(role), label=f"source_index {role}"
+        )
+    source_checkpoints = _checkpoint_entries(
+        source_index.get("checkpoints"),
+        label="source checkpoints",
+        exact_fields=_SOURCE_CHECKPOINT_FIELDS,
+    )
+    if list(source_checkpoints) != official_frames:
+        raise ValueError("source_index checkpoint coverage mismatch")
+    for frame, entry in source_checkpoints.items():
+        _validate_checkpoint_identity(
+            entry, frame=frame, scene=scene, label="source_index"
+        )
+        for role in ("checkpoint_status", "snapshot", "entities"):
+            _relative_content_record(
+                entry.get(role), label=f"source checkpoint {role}"
+            )
+
+    occlusion = payloads["occlusion_checkpoint_index"]
+    if set(occlusion) != _OCCLUSION_INDEX_FIELDS or not (
+        type(occlusion.get("schema_version")) is int
+        and occlusion.get("schema_version") == 2
+        and occlusion.get("manifest_id")
+        == "oviv2_tesse_cd_occlusion_checkpoints_v1"
+        and occlusion.get("dataset") == "TESSE-CD"
+        and occlusion.get("method_id") == "OVIV2"
+        and occlusion.get("scene") == scene
+        and occlusion.get("algorithm_hash") == expected_identity["algorithm_hash"]
+        and isinstance(occlusion.get("evaluation_checkpoint_frames_sha256"), str)
+        and re.fullmatch(
+            r"[0-9a-f]{64}",
+            str(occlusion["evaluation_checkpoint_frames_sha256"]),
+        )
+    ):
+        raise ValueError("occlusion_checkpoint_index contract mismatch")
+    run_config = _relative_content_record(
+        occlusion.get("run_config"),
+        label="occlusion run config",
+        expected_path="normalized_run_config.json",
+    )
+    if not _json_exact_equal(
+        {"sha256": run_config["sha256"], "byte_count": run_config["byte_count"]},
+        expected_identity["config"],
+    ):
+        raise ValueError("occlusion run config binding mismatch")
+    _content_record(occlusion.get("target_manifest"), label="occlusion targets")
+    occlusion_snapshots = _checkpoint_entries(
+        occlusion.get("snapshots"),
+        label="occlusion snapshots",
+        exact_fields=_OCCLUSION_SNAPSHOT_FIELDS,
+    )
+    if list(occlusion_snapshots) != evaluation_frames:
+        raise ValueError("occlusion checkpoint coverage mismatch")
+    for frame, entry in occlusion_snapshots.items():
+        _validate_checkpoint_identity(
+            entry, frame=frame, scene=scene, label="occlusion"
+        )
+        if not (
+            isinstance(entry.get("format"), str)
+            and isinstance(entry.get("path"), str)
+            and isinstance(entry.get("checksums_sha256"), str)
+            and re.fullmatch(r"[0-9a-f]{64}", str(entry["checksums_sha256"]))
+        ):
+            raise ValueError("occlusion snapshot contract mismatch")
+
+    temporal_index = payloads["temporal_source_index"]
+    if set(temporal_index) != _SOURCE_INDEX_FIELDS or not (
+        type(temporal_index.get("schema_version")) is int
+        and temporal_index.get("schema_version") == 1
+        and temporal_index.get("dataset") == "TESSE-CD"
+        and temporal_index.get("mode") == "causal_checkpoint_exports"
+        and temporal_index.get("method") == "OVIV2"
+        and temporal_index.get("scene") == scene
+    ):
+        raise ValueError("temporal source_index contract mismatch")
+    for role in ("schedule", "capture_status", "trajectories"):
+        _relative_content_record(
+            temporal_index.get(role),
+            label=f"temporal source_index {role}",
+            allow_parent=True,
+        )
+    temporal_index_checkpoints = _checkpoint_entries(
+        temporal_index.get("checkpoints"),
+        label="temporal source checkpoints",
+        exact_fields=_SOURCE_CHECKPOINT_FIELDS,
+    )
+    if list(temporal_index_checkpoints) != official_frames:
+        raise ValueError("temporal source_index checkpoint coverage mismatch")
+
+    temporal = payloads["temporal_manifest"]
+    if set(temporal) != _TEMPORAL_MANIFEST_FIELDS or not (
+        type(temporal.get("schema_version")) is int
+        and temporal.get("schema_version") == 1
+        and temporal.get("dataset") == "TESSE-CD"
+        and temporal.get("mode") == "causal_checkpoints"
+        and temporal.get("method") == "OVIV2"
+        and temporal.get("scene") == scene
+        and isinstance(temporal.get("entity_lifecycles"), Mapping)
+    ):
+        raise ValueError("temporal_manifest contract mismatch")
+    temporal_sources = _mapping(temporal.get("sources"), label="temporal sources")
+    if set(temporal_sources) != {
+        "source_index",
+        "schedule",
+        "capture_status",
+        "trajectories",
+        "checkpoint_statuses",
+    }:
+        raise ValueError("temporal source contract mismatch")
+    source_index_declaration = _relative_content_record(
+        temporal_sources.get("source_index"),
+        label="temporal source_index",
+        expected_path="sidecars/source_index.json",
+    )
+    _same_content_record(
+        source_index_declaration,
+        records["temporal_source_index"],
+        label="temporal source_index",
+    )
+    for role in ("schedule", "capture_status", "trajectories"):
+        _relative_content_record(
+            temporal_sources.get(role), label=f"temporal {role}"
+        )
+    statuses = temporal_sources.get("checkpoint_statuses")
+    if not isinstance(statuses, list) or len(statuses) != len(official_frames):
+        raise ValueError("temporal checkpoint status coverage mismatch")
+    for status in statuses:
+        _relative_content_record(status, label="temporal checkpoint status")
+    _relative_content_record(temporal.get("trajectories"), label="trajectories")
+    temporal_checkpoints = _checkpoint_entries(
+        temporal.get("checkpoints"),
+        label="temporal checkpoints",
+        exact_fields=_TEMPORAL_CHECKPOINT_FIELDS,
+    )
+    if list(temporal_checkpoints) != official_frames:
+        raise ValueError("temporal checkpoint coverage mismatch")
+    summary_sources = _mapping(summary.get("sources"), label="summary sources")
+    summary_frames_by_role: dict[str, set[int]] = {
+        "snapshot": set(),
+        "entities": set(),
+    }
+    for source_role in summary_sources:
+        match = re.fullmatch(r"(snapshot|entities)\.(\d{6})", source_role)
+        if match is not None:
+            summary_frames_by_role[match.group(1)].add(int(match.group(2)))
+    summary_metrics = _mapping(summary.get("metrics"), label="summary metrics")
+    summary_events = _mapping(
+        summary_metrics.get("events"), label="summary metric events"
+    )
+    event_frames: set[int] = set()
+    for event_id, raw_event in summary_events.items():
+        event = _mapping(raw_event, label=f"summary event {event_id}")
+        event_frames.update(
+            _integer_sequence(
+                event.get("frame_ids"),
+                label=f"summary event {event_id} frames",
+            )
+        )
+    if not event_frames or not (
+        summary_frames_by_role["snapshot"]
+        == summary_frames_by_role["entities"]
+        == event_frames
+        <= set(temporal_checkpoints)
+    ):
+        raise ValueError("summary checkpoint coverage mismatch")
+    for frame, entry in temporal_checkpoints.items():
+        timestamp, consumed, consumed_exclusive = _validate_checkpoint_identity(
+            entry, frame=frame, scene=scene, label="temporal"
+        )
+        sidecar_entry = temporal_index_checkpoints[frame]
+        if (
+            _validate_checkpoint_identity(
+                sidecar_entry,
+                frame=frame,
+                scene=scene,
+                label="temporal source_index",
+            )
+            != (timestamp, consumed, consumed_exclusive)
+        ):
+            raise ValueError("temporal checkpoint identities differ")
+        for role, suffix in (("snapshot", "snapshot.npz"), ("entities", "entities.jsonl")):
+            temporal_record = _relative_content_record(
+                entry.get(role),
+                label=f"temporal checkpoint {role}",
+                expected_path=f"checkpoints/{frame:08d}/{suffix}",
+            )
+            sidecar_record = _relative_content_record(
+                sidecar_entry.get(role),
+                label=f"temporal source checkpoint {role}",
+                expected_path=f"../checkpoints/{frame:08d}/{suffix}",
+                allow_parent=True,
+            )
+            summary_record = summary_sources.get(f"{role}.{frame:06d}")
+            _same_content_record(
+                temporal_record, sidecar_record, label=f"temporal {role}"
+            )
+            if frame in event_frames:
+                _same_content_record(
+                    temporal_record, summary_record, label=f"summary {role}"
+                )
 
 
 def _validate_captured_summary(
@@ -627,6 +1153,7 @@ def finalize_oviv2_common_v2_release(
                     **external_common,
                     "label_space": label_spaces[scene],
                 },
+                expected_artifact_root_identity=root_identities[key],
             )
             _validate_captured_summary(raw_payload, scene=scene)
             raw_summaries[key] = raw_payload
@@ -664,6 +1191,7 @@ def finalize_oviv2_common_v2_release(
                 payload, record, identity = _captured_json_artifact(
                     roots[key] / relative,
                     label=f"{scene}.run{repeat} {role}",
+                    artifact_root=(roots[key], root_identities[key]),
                 )
                 payloads[role] = payload
                 records[role] = {
@@ -697,6 +1225,14 @@ def finalize_oviv2_common_v2_release(
                 for payload in payloads.values()
             ):
                 raise ValueError(f"{scene}.run{repeat} execution identity mismatch")
+            _validate_formal_artifact_contracts(
+                payloads,
+                records,
+                scene=scene,
+                expected_identity=expected_identity,
+                algorithm=algorithm,
+                summary=raw_summaries[key],
+            )
             formal_run_records[key] = records
             run_executions[key] = execution
 

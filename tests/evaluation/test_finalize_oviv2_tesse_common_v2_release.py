@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 
 import pytest
 
@@ -23,6 +24,8 @@ RELEASE_FINALIZER = (
 COMMON_FINALIZER = ROOT / "scripts/evaluation/finalize_tesse_common_v2.py"
 OFFICIAL_FINALIZER = ROOT / "scripts/evaluation/finalize_tesse_t2.py"
 EVALUATOR = ROOT / "scripts/evaluation/evaluate_tesse_cd_common_v2.py"
+COMMON_FRAMES = tuple(range(100, 551, 50))
+OFFICIAL_FRAMES = (90, *COMMON_FRAMES)
 
 
 def _write_json(path: Path, payload: object) -> None:
@@ -37,6 +40,15 @@ def _record(path: Path) -> dict[str, object]:
         "path": str(path.resolve()),
         "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
         "byte_count": path.stat().st_size,
+    }
+
+
+def _relative_record(path: Path, *, root: Path) -> dict[str, object]:
+    record = _record(path)
+    return {
+        "path": Path(os.path.relpath(path, start=root)).as_posix(),
+        "sha256": record["sha256"],
+        "byte_count": record["byte_count"],
     }
 
 
@@ -148,10 +160,8 @@ def _summary(
 ) -> Path:
     evaluation = root / "evaluation"
     evaluation.mkdir(parents=True)
-    checkpoint = root / "temporal/checkpoints/00000100"
-    checkpoint.mkdir(parents=True)
     sidecars = root / "temporal/sidecars"
-    sidecars.mkdir()
+    sidecars.mkdir(parents=True)
     temporal = root / "temporal/temporal_manifest.json"
     temporal.write_text(
         json.dumps({"method": "OVIV2", "scene": scene}, sort_keys=True) + "\n",
@@ -159,10 +169,16 @@ def _summary(
     )
     schedule = sidecars / "schedule.json"
     schedule.write_bytes(target_schedule.read_bytes())
-    snapshot = checkpoint / "snapshot.npz"
-    snapshot.write_bytes(b"snapshot")
-    entities = checkpoint / "entities.jsonl"
-    entities.write_text(entity_content, encoding="utf-8")
+    checkpoint_sources: dict[str, dict[str, object]] = {}
+    for frame in COMMON_FRAMES:
+        checkpoint = root / f"temporal/checkpoints/{frame:08d}"
+        checkpoint.mkdir(parents=True)
+        snapshot = checkpoint / "snapshot.npz"
+        snapshot.write_bytes(f"snapshot {frame}\n".encode("ascii"))
+        entities = checkpoint / "entities.jsonl"
+        entities.write_text(entity_content, encoding="utf-8")
+        checkpoint_sources[f"snapshot.{frame:06d}"] = _record(snapshot)
+        checkpoint_sources[f"entities.{frame:06d}"] = _record(entities)
     path = evaluation / "summary.json"
     _write_json(
         path,
@@ -195,8 +211,7 @@ def _summary(
                 "aliases": _record(aliases),
                 "label_space": _record(label_space),
                 "evaluator": _record(EVALUATOR),
-                "snapshot.000100": _record(snapshot),
-                "entities.000100": _record(entities),
+                **checkpoint_sources,
             },
         },
     )
@@ -222,32 +237,247 @@ def _add_formal_run_artifacts(
         **execution_base,
         "execution_id": _compact_hash(execution_base),
     }
-    for name in (
-        "run_manifest.json",
-        "source_index.json",
-        "occlusion_checkpoint_index.json",
-    ):
+    formal = {
+        "frozen_run_identity": frozen_identity,
+        "run_execution": run_execution,
+    }
+    runner_inputs = root / "inputs"
+    runner_inputs.mkdir()
+    runner_schedule = runner_inputs / "schedule.json"
+    runner_schedule.write_text('{"dataset":"TESSE-CD"}\n', encoding="utf-8")
+    trajectories = root / "trajectories.jsonl"
+    trajectories.write_text("", encoding="utf-8")
+    source_checkpoints: list[dict[str, object]] = []
+    run_checkpoints: list[dict[str, object]] = []
+    checkpoint_statuses: list[dict[str, object]] = []
+    for frame in OFFICIAL_FRAMES:
+        checkpoint_root = root / f"checkpoints/{frame:08d}-{frame}"
+        checkpoint_root.mkdir(parents=True)
+        checkpoint_status = checkpoint_root / "checkpoint_status.json"
         _write_json(
-            root / name,
-            {
-                "schema_version": 1,
-                "dataset": "TESSE-CD",
-                "method": "OVIV2",
-                "scene": scene,
-                "frozen_run_identity": frozen_identity,
-                "run_execution": run_execution,
-            },
+            checkpoint_status,
+            {"schema_version": 1, "frame_index": frame},
         )
+        neutral_snapshot = checkpoint_root / "neutral.npz"
+        neutral_snapshot.write_bytes(f"neutral snapshot {frame}\n".encode("ascii"))
+        neutral_entities = checkpoint_root / "neutral.jsonl"
+        neutral_entities.write_text('{"entity_id":"one"}\n', encoding="utf-8")
+        checkpoint_statuses.append(_relative_record(checkpoint_status, root=root))
+        source_checkpoints.append(
+            {
+                "frame_index": frame,
+                "timestamp_ns": frame,
+                "consumed_through_frame": frame,
+                "consumed_through_frame_exclusive": frame + 1,
+                "checkpoint_status": _relative_record(checkpoint_status, root=root),
+                "snapshot": _relative_record(neutral_snapshot, root=root),
+                "entities": _relative_record(neutral_entities, root=root),
+            }
+        )
+        run_checkpoints.append(
+            {
+                "scene": scene,
+                "frame_index": frame,
+                "timestamp_ns": frame,
+                "relative_timestamp_ns": frame,
+                "consumed_through_frame": frame,
+                "consumed_through_frame_exclusive": frame + 1,
+                "event_ids": [],
+                "roles": ["common_v2"] if frame in COMMON_FRAMES else ["official"],
+                "format": "oviv2_voxel_map_snapshot",
+                "checkpoint_status": _relative_record(checkpoint_status, root=root),
+                "voxel_snapshot": {
+                    "path": f"checkpoints/{frame:08d}-{frame}/voxel_snapshot",
+                    "sha256": "4" * 64,
+                    "byte_count": 1,
+                },
+                "neutral_snapshot": _relative_record(neutral_snapshot, root=root),
+                "neutral_entities": _relative_record(neutral_entities, root=root),
+            }
+        )
+    capture_status = root / "capture_status.json"
+    _write_json(
+        capture_status,
+        {
+            "schema_version": 1,
+            "status": "PASS",
+            "scene": scene,
+            "mode": "causal_checkpoints",
+            "scheduled_frame_indices": list(OFFICIAL_FRAMES),
+            "captured_frame_indices": list(OFFICIAL_FRAMES),
+            "schedule": _relative_record(runner_schedule, root=root),
+            "trajectories": _relative_record(trajectories, root=root),
+            "checkpoint_statuses": checkpoint_statuses,
+        },
+    )
+    _write_json(
+        root / "source_index.json",
+        {
+            "schema_version": 1,
+            "dataset": "TESSE-CD",
+            "mode": "causal_checkpoint_exports",
+            "method": "OVIV2",
+            "scene": scene,
+            "schedule": _relative_record(runner_schedule, root=root),
+            "capture_status": _relative_record(capture_status, root=root),
+            "trajectories": _relative_record(trajectories, root=root),
+            "checkpoints": source_checkpoints,
+            **formal,
+        },
+    )
+    normalized_config = root / "normalized_run_config.json"
+    _write_json(
+        normalized_config,
+        {
+            "missing_observation_policy": "signed_depth",
+            "algorithm_hash": frozen_identity["algorithm_hash"],
+        },
+    )
+    occlusion_index = root / "occlusion_checkpoint_index.json"
+    _write_json(
+        occlusion_index,
+        {
+            "schema_version": 2,
+            "manifest_id": "oviv2_tesse_cd_occlusion_checkpoints_v1",
+            "dataset": "TESSE-CD",
+            "method_id": "OVIV2",
+            "scene": scene,
+            "algorithm_hash": frozen_identity["algorithm_hash"],
+            "run_config": _relative_record(normalized_config, root=root),
+            "target_manifest": {"sha256": "1" * 64, "byte_count": 1},
+            "evaluation_checkpoint_frames_sha256": "2" * 64,
+            "snapshots": [
+                {
+                    "scene": scene,
+                    "frame_index": COMMON_FRAMES[0],
+                    "timestamp_ns": COMMON_FRAMES[0],
+                    "relative_timestamp_ns": COMMON_FRAMES[0],
+                    "consumed_through_frame": COMMON_FRAMES[0],
+                    "consumed_through_frame_exclusive": COMMON_FRAMES[0] + 1,
+                    "format": "oviv2_voxel_map_snapshot",
+                    "path": "checkpoints/00000100-100/voxel_snapshot",
+                    "checksums_sha256": "3" * 64,
+                }
+            ],
+            **formal,
+        },
+    )
+    _write_json(
+        root / "run_manifest.json",
+        {
+            "schema_version": 1,
+            "dataset": "TESSE-CD",
+            "method_id": "OVIV2",
+            "mode": "causal_checkpoints",
+            "scene": scene,
+            "missing_observation_policy": "signed_depth",
+            "algorithm_hash": frozen_identity["algorithm_hash"],
+            "normalized_algorithm_config": {
+                "missing_observation_policy": "signed_depth"
+            },
+            "stage3_lineage_commit": "47962fbd9f363c0696cc5016f8ab42f83a3bf7e5",
+            "maintenance_parameters": {
+                "visibility_depth_tolerance_m": None,
+                "absence_negative_support": None,
+                "ownership_min_net_support": None,
+            },
+            "processed_frame_count": max(OFFICIAL_FRAMES) + 1,
+            "official_schedule_frame_indices": list(OFFICIAL_FRAMES),
+            "evaluation_checkpoint_frames": [COMMON_FRAMES[0]],
+            "scheduled_frame_indices": list(OFFICIAL_FRAMES),
+            "captured_frame_indices": list(OFFICIAL_FRAMES),
+            "config": frozen_identity["config"],
+            "schedule": {
+                "sha256": _record(runner_schedule)["sha256"],
+                "byte_count": runner_schedule.stat().st_size,
+            },
+            "source_bindings": {"fixture": "bound"},
+            "occlusion_checkpoint_index": _relative_record(
+                occlusion_index, root=root
+            ),
+            "checkpoints": run_checkpoints,
+            **formal,
+        },
+    )
     temporal_sidecar = root / "temporal/sidecars/source_index.json"
+    sidecar_schedule = root / "temporal/sidecars/schedule.json"
+    sidecar_capture = root / "temporal/sidecars/capture_status.json"
+    _write_json(sidecar_capture, {"schema_version": 1, "status": "PASS"})
+    sidecar_trajectories = root / "temporal/trajectories.jsonl"
+    sidecar_trajectories.write_text("", encoding="utf-8")
+    sidecar_checkpoints: list[dict[str, object]] = []
+    temporal_checkpoints: list[dict[str, object]] = []
+    temporal_statuses: list[dict[str, object]] = []
+    for frame in OFFICIAL_FRAMES:
+        temporal_checkpoint = root / f"temporal/checkpoints/{frame:08d}"
+        temporal_checkpoint.mkdir(parents=True, exist_ok=True)
+        temporal_snapshot = temporal_checkpoint / "snapshot.npz"
+        temporal_entities = temporal_checkpoint / "entities.jsonl"
+        if not temporal_snapshot.exists():
+            temporal_snapshot.write_bytes(f"snapshot {frame}\n".encode("ascii"))
+        if not temporal_entities.exists():
+            temporal_entities.write_text('{"entity_id":"one"}\n', encoding="utf-8")
+        temporal_status = (
+            root / f"temporal/sidecars/checkpoint_statuses/{frame:08d}.json"
+        )
+        temporal_status.parent.mkdir(parents=True, exist_ok=True)
+        _write_json(
+            temporal_status,
+            {"schema_version": 1, "frame_index": frame},
+        )
+        temporal_statuses.append(
+            _relative_record(temporal_status, root=root / "temporal")
+        )
+        sidecar_checkpoints.append(
+            {
+                "frame_index": frame,
+                "timestamp_ns": frame,
+                "consumed_through_frame": frame,
+                "consumed_through_frame_exclusive": frame + 1,
+                "checkpoint_status": _relative_record(
+                    temporal_status, root=temporal_sidecar.parent
+                ),
+                "snapshot": _relative_record(
+                    temporal_snapshot, root=temporal_sidecar.parent
+                ),
+                "entities": _relative_record(
+                    temporal_entities, root=temporal_sidecar.parent
+                ),
+            }
+        )
+        temporal_checkpoints.append(
+            {
+                "frame_index": frame,
+                "timestamp_ns": frame,
+                "consumed_through_frame": frame,
+                "consumed_through_frame_exclusive": frame + 1,
+                "snapshot": _relative_record(
+                    temporal_snapshot, root=root / "temporal"
+                ),
+                "entities": _relative_record(
+                    temporal_entities, root=root / "temporal"
+                ),
+            }
+        )
     _write_json(
         temporal_sidecar,
         {
             "schema_version": 1,
             "dataset": "TESSE-CD",
+            "mode": "causal_checkpoint_exports",
             "method": "OVIV2",
             "scene": scene,
-            "frozen_run_identity": frozen_identity,
-            "run_execution": run_execution,
+            "schedule": _relative_record(
+                sidecar_schedule, root=temporal_sidecar.parent
+            ),
+            "capture_status": _relative_record(
+                sidecar_capture, root=temporal_sidecar.parent
+            ),
+            "trajectories": _relative_record(
+                sidecar_trajectories, root=temporal_sidecar.parent
+            ),
+            "checkpoints": sidecar_checkpoints,
+            **formal,
         },
     )
     temporal = root / "temporal/temporal_manifest.json"
@@ -259,15 +489,27 @@ def _add_formal_run_artifacts(
             "mode": "causal_checkpoints",
             "method": "OVIV2",
             "scene": scene,
-            "frozen_run_identity": frozen_identity,
-            "run_execution": run_execution,
             "sources": {
                 "source_index": {
                     "path": "sidecars/source_index.json",
                     "sha256": _record(temporal_sidecar)["sha256"],
                     "byte_count": temporal_sidecar.stat().st_size,
-                }
+                },
+                "schedule": _relative_record(sidecar_schedule, root=root / "temporal"),
+                "capture_status": _relative_record(
+                    sidecar_capture, root=root / "temporal"
+                ),
+                "trajectories": _relative_record(
+                    sidecar_trajectories, root=root / "temporal"
+                ),
+                "checkpoint_statuses": temporal_statuses,
             },
+            "checkpoints": temporal_checkpoints,
+            "entity_lifecycles": {},
+            "trajectories": _relative_record(
+                sidecar_trajectories, root=root / "temporal"
+            ),
+            **formal,
         },
     )
     summary = root / "evaluation/summary.json"
@@ -545,6 +787,7 @@ def test_release_uses_one_summary_snapshot_for_validation_and_metrics(
         *,
         artifact_root: Path,
         external_sources: dict[str, Path],
+        expected_artifact_root_identity: tuple[int, int] | None = None,
     ) -> tuple[
         dict[str, object],
         dict[str, object],
@@ -556,6 +799,7 @@ def test_release_uses_one_summary_snapshot_for_validation_and_metrics(
             path,
             artifact_root=artifact_root,
             external_sources=external_sources,
+            expected_artifact_root_identity=expected_artifact_root_identity,
         )
         scene = str(raw["scene"])
         captured_by_scene.setdefault(
@@ -617,6 +861,7 @@ def test_release_rejects_captured_run_local_inode_reuse_after_path_split(
         *,
         artifact_root: Path,
         external_sources: dict[str, Path],
+        expected_artifact_root_identity: tuple[int, int] | None = None,
     ) -> tuple[
         dict[str, object],
         dict[str, object],
@@ -628,6 +873,7 @@ def test_release_rejects_captured_run_local_inode_reuse_after_path_split(
             path,
             artifact_root=artifact_root,
             external_sources=external_sources,
+            expected_artifact_root_identity=expected_artifact_root_identity,
         )
         if artifact_root == tmp_path / "office/run1":
             content = office_source.read_bytes()
@@ -764,5 +1010,117 @@ def test_release_rejects_type_confused_identity_schema_version(
         finalize_oviv2_common_v2_release(
             freeze,
             run_id="type-confused-identity",
+            output=tmp_path / "result.json",
+        )
+
+
+def test_release_rejects_output_root_replacement_before_evidence_capture(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    freeze = _fixture(tmp_path)
+    target_root = tmp_path / "apartment/run1"
+    parked_root = tmp_path / "apartment/run1-original"
+    original = release_module.capture_and_canonicalize_summary
+    replaced = False
+
+    def replace_root_before_capture(
+        path: Path,
+        *,
+        artifact_root: Path,
+        external_sources: dict[str, Path],
+        expected_artifact_root_identity: tuple[int, int] | None = None,
+    ) -> tuple[
+        dict[str, object],
+        dict[str, object],
+        dict[str, object],
+        dict[str, tuple[int, int]],
+        dict[str, object],
+    ]:
+        nonlocal replaced
+        if artifact_root == target_root and not replaced:
+            target_root.rename(parked_root)
+            shutil.copytree(parked_root, target_root)
+            replaced = True
+        return original(
+            path,
+            artifact_root=artifact_root,
+            external_sources=external_sources,
+            expected_artifact_root_identity=expected_artifact_root_identity,
+        )
+
+    monkeypatch.setattr(
+        release_module,
+        "capture_and_canonicalize_summary",
+        replace_root_before_capture,
+    )
+
+    with pytest.raises(ValueError, match="artifact root identity changed"):
+        finalize_oviv2_common_v2_release(
+            freeze,
+            run_id="root-replacement",
+            output=tmp_path / "result.json",
+        )
+
+
+def test_release_rejects_non_runner_formal_artifact_contract(tmp_path: Path) -> None:
+    freeze = _fixture(tmp_path)
+    run_manifest = tmp_path / "office/run2/run_manifest.json"
+    payload = json.loads(run_manifest.read_text(encoding="utf-8"))
+    payload["method"] = payload.pop("method_id")
+    _write_json(run_manifest, payload)
+
+    with pytest.raises(ValueError, match="run_manifest contract mismatch"):
+        finalize_oviv2_common_v2_release(
+            freeze,
+            run_id="non-runner-artifact",
+            output=tmp_path / "result.json",
+        )
+
+
+def test_release_rejects_summary_checkpoint_outside_event_and_temporal_contract(
+    tmp_path: Path,
+) -> None:
+    freeze = _fixture(tmp_path)
+    for repeat in (1, 2):
+        root = tmp_path / f"apartment/run{repeat}"
+        checkpoint = root / "temporal/checkpoints/00000999"
+        checkpoint.mkdir()
+        snapshot = checkpoint / "snapshot.npz"
+        snapshot.write_bytes(b"unbound snapshot\n")
+        entities = checkpoint / "entities.jsonl"
+        entities.write_text('{"entity_id":"unbound"}\n', encoding="utf-8")
+        summary = root / "evaluation/summary.json"
+        payload = json.loads(summary.read_text(encoding="utf-8"))
+        payload["sources"]["snapshot.000999"] = _record(snapshot)
+        payload["sources"]["entities.000999"] = _record(entities)
+        _write_json(summary, payload)
+
+    with pytest.raises(ValueError, match="summary checkpoint coverage mismatch"):
+        finalize_oviv2_common_v2_release(
+            freeze,
+            run_id="summary-extra-checkpoint",
+            output=tmp_path / "result.json",
+        )
+
+
+def test_release_rejects_temporal_checkpoint_content_disagreement(
+    tmp_path: Path,
+) -> None:
+    freeze = _fixture(tmp_path)
+    for repeat in (1, 2):
+        root = tmp_path / f"office/run{repeat}"
+        temporal = root / "temporal/temporal_manifest.json"
+        payload = json.loads(temporal.read_text(encoding="utf-8"))
+        payload["checkpoints"][1]["snapshot"]["sha256"] = "9" * 64
+        _write_json(temporal, payload)
+        summary = root / "evaluation/summary.json"
+        summary_payload = json.loads(summary.read_text(encoding="utf-8"))
+        summary_payload["sources"]["temporal_index"] = _record(temporal)
+        _write_json(summary, summary_payload)
+
+    with pytest.raises(ValueError, match="temporal snapshot content records differ"):
+        finalize_oviv2_common_v2_release(
+            freeze,
+            run_id="temporal-content-disagreement",
             output=tmp_path / "result.json",
         )
