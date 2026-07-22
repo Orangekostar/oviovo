@@ -195,7 +195,7 @@ def test_skips_empty_inclusive_union_when_no_observation_covers_the_core() -> No
     )
     proposals = build_proposal_pyramid(
         observations,
-        (_edge(10, 11), _edge(10, 21), _edge(11, 22)),
+        (_edge(10, 21), _edge(10, 22), _edge(11, 22)),
         _config(core_vote_fraction=1.0, inclusive_coverage=1.0, minimum_voxels=2),
     )
 
@@ -237,6 +237,72 @@ def test_score_uses_exact_gt_free_components() -> None:
     )
     assert proposal.score == pytest.approx(0.30 * 0.5 + 0.25 * 0.8 + 0.25 * 0.5 + 0.20 * 0.75)
     assert 0.0 <= proposal.score <= 1.0
+
+
+def test_core_vote_fraction_uses_exact_decimal_ceiling_at_fifty_five_of_one_hundred() -> None:
+    observations = tuple(
+        _observation(
+            index,
+            index,
+            _voxels(0, 1) if index < 55 else _voxels(0),
+        )
+        for index in range(100)
+    )
+    evidence = tuple(_edge(index, index + 1) for index in range(99))
+    proposals = build_proposal_pyramid(
+        observations,
+        evidence,
+        _config(core_vote_fraction=0.55, minimum_voxels=1),
+    )
+
+    assert (1, 0, 0) in _by_kind(proposals)["core"].voxel_keys
+
+
+def test_deduplicate_same_kind_mask_retains_the_higher_scoring_metadata() -> None:
+    observations = (
+        _observation(10, 1, _voxels(0, 1, 2), confidence=0.1, border_contact_fraction=0.9),
+        _observation(21, 2, _voxels(0, 1, 2), confidence=0.1, border_contact_fraction=0.9),
+        _observation(100, 3, _voxels(0, 1, 2), confidence=0.9, border_contact_fraction=0.1),
+        _observation(101, 4, _voxels(0, 1, 2), confidence=0.9, border_contact_fraction=0.1),
+        _observation(102, 5, _voxels(0, 1, 2), confidence=0.9, border_contact_fraction=0.1),
+        _observation(103, 6, _voxels(0, 1, 2), confidence=0.9, border_contact_fraction=0.1),
+    )
+    proposals = build_proposal_pyramid(
+        observations,
+        (_edge(10, 21), _edge(100, 101), _edge(101, 102), _edge(102, 103)),
+        _config(core_vote_fraction=1.0),
+    )
+
+    core = _by_kind(proposals)["core"]
+    assert core.observation_ids == (100, 101, 102, 103)
+    assert core.supporter_frame_ids == (3, 4, 5, 6)
+    assert core.mean_confidence == pytest.approx(0.9)
+    assert core.consensus_density == pytest.approx(0.5)
+    assert core.score == pytest.approx(0.68)
+
+
+def test_inclusive_zero_includes_all_same_semantic_object_observations() -> None:
+    observations = (
+        _observation(10, 1, _voxels(0, 1, 2)),
+        _observation(21, 2, _voxels(0, 1, 2)),
+        _observation(33, 3, _voxels(20, 21, 22)),
+    )
+    proposals = build_proposal_pyramid(
+        observations,
+        (_edge(10, 21),),
+        _config(core_vote_fraction=1.0, inclusive_coverage=0.0),
+    )
+
+    assert _by_kind(proposals)["union"].observation_ids == (10, 21, 33)
+
+
+def test_same_frame_evidence_is_rejected() -> None:
+    observations = (
+        _observation(10, 1, _voxels(0, 1, 2)),
+        _observation(21, 1, _voxels(0, 1, 2)),
+    )
+    with pytest.raises(ValueError, match="same frame"):
+        build_proposal_pyramid(observations, (_edge(10, 21),), _config())
 
 
 def test_deduplicates_by_kind_priority_and_assigns_stable_ids() -> None:
@@ -352,3 +418,30 @@ def test_public_api_contains_no_ground_truth_or_evaluator_and_uses_sparse_candid
     assert calls == 2
     assert "ground_truth" not in inspect.signature(build_proposal_pyramid).parameters
     assert "evaluator" not in inspect.signature(build_proposal_pyramid).parameters
+
+
+def test_strong_edge_lookup_is_linear_in_sparse_component_edges(monkeypatch: pytest.MonkeyPatch) -> None:
+    import src.evaluation.oviv2_view_proposals as proposal_module
+
+    pair_count = 64
+    observations = tuple(
+        observation
+        for index in range(pair_count)
+        for observation in (
+            _observation(index * 10 + 1, index * 2 + 1, _voxels(index * 10, index * 10 + 1, index * 10 + 2)),
+            _observation(index * 10 + 2, index * 2 + 2, _voxels(index * 10, index * 10 + 1, index * 10 + 2)),
+        )
+    )
+    evidence = tuple(_edge(index * 10 + 1, index * 10 + 2) for index in range(pair_count))
+    inspected_edges = 0
+    original = proposal_module._StrongEdgeIndex.edges_for
+
+    def counted(self: object, observation_ids: tuple[int, ...]) -> tuple[ObservationEdge, ...]:
+        nonlocal inspected_edges
+        inspected_edges += sum(len(self.by_left.get(observation_id, ())) for observation_id in observation_ids)
+        return original(self, observation_ids)
+
+    monkeypatch.setattr(proposal_module._StrongEdgeIndex, "edges_for", counted)
+    build_proposal_pyramid(observations, evidence, _config(core_vote_fraction=1.0))
+
+    assert inspected_edges <= 2 * len(evidence)

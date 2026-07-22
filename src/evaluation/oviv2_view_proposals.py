@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
-from math import ceil
+from decimal import Decimal, ROUND_CEILING
 from numbers import Integral, Real
 from typing import Literal
 
@@ -162,6 +162,28 @@ class _UnionFind:
             self.parent[left_root] = right_root
 
 
+class _StrongEdgeIndex:
+    """Sparse canonical-left adjacency for extracting component-internal edges."""
+
+    def __init__(self, edges: Iterable[ObservationEdge]) -> None:
+        by_left: dict[int, list[ObservationEdge]] = defaultdict(list)
+        for edge in edges:
+            by_left[edge.left_id].append(edge)
+        self.by_left = {
+            observation_id: tuple(sorted(values, key=lambda edge: edge.right_id))
+            for observation_id, values in by_left.items()
+        }
+
+    def edges_for(self, observation_ids: tuple[int, ...]) -> tuple[ObservationEdge, ...]:
+        members = frozenset(observation_ids)
+        return tuple(
+            edge
+            for observation_id in observation_ids
+            for edge in self.by_left.get(observation_id, ())
+            if edge.right_id in members
+        )
+
+
 @dataclass(frozen=True)
 class _Candidate:
     semantic_id: int
@@ -204,6 +226,8 @@ def _validate_inputs(
         pairs.add(pair)
         if edge.left_id not in by_id or edge.right_id not in by_id:
             raise ValueError("evidence endpoint does not identify an observation")
+        if by_id[edge.left_id].frame_id == by_id[edge.right_id].frame_id:
+            raise ValueError("evidence endpoints cannot belong to the same frame")
         if by_id[edge.left_id].semantic_id != by_id[edge.right_id].semantic_id:
             raise ValueError("evidence endpoints must have compatible semantics")
         normalized_edges.append(edge)
@@ -236,9 +260,17 @@ def _component_is_eligible(
     )
 
 
-def _strong_edges_for(ids: tuple[int, ...], edges: tuple[ObservationEdge, ...]) -> tuple[ObservationEdge, ...]:
-    members = frozenset(ids)
-    return tuple(edge for edge in edges if edge.left_id in members and edge.right_id in members)
+def _strong_edges_for(
+    observation_ids: tuple[int, ...],
+    edge_index: _StrongEdgeIndex,
+) -> tuple[ObservationEdge, ...]:
+    return edge_index.edges_for(observation_ids)
+
+
+def _required_core_votes(vote_fraction: float, distinct_view_count: int) -> int:
+    """Ceiling vote threshold from the user-visible decimal configuration."""
+    threshold = Decimal(str(vote_fraction)) * distinct_view_count
+    return int(threshold.to_integral_value(rounding=ROUND_CEILING))
 
 
 def _candidate(
@@ -259,12 +291,12 @@ def _candidate(
 
 def _proposal_from_candidate(candidate: _Candidate, observations: dict[int, FrameObservation]) -> VoxelProposal:
     source = tuple(observations[observation_id] for observation_id in candidate.observation_ids)
-    frame_ids = tuple(sorted({observation.frame_id for observation in source}))
-    possible_pairs = sum(
-        1
-        for left_index, left in enumerate(source)
-        for right in source[left_index + 1 :]
-        if left.frame_id != right.frame_id
+    frame_counts: dict[int, int] = defaultdict(int)
+    for observation in source:
+        frame_counts[observation.frame_id] += 1
+    frame_ids = tuple(sorted(frame_counts))
+    possible_pairs = len(source) * (len(source) - 1) // 2 - sum(
+        count * (count - 1) // 2 for count in frame_counts.values()
     )
     density = 0.0 if possible_pairs == 0 else len(candidate.strong_edges) / possible_pairs
     density = float(np.clip(density, 0.0, 1.0))
@@ -281,12 +313,27 @@ def _proposal_from_candidate(candidate: _Candidate, observations: dict[int, Fram
     )
 
 
-def _deduplicate(candidates: Iterable[_Candidate]) -> tuple[_Candidate, ...]:
+def _candidate_choice_key(
+    candidate: _Candidate,
+    observations: dict[int, FrameObservation],
+) -> tuple[float | int | tuple[int, ...] | tuple[tuple[int, int], ...], ...]:
+    return (
+        _KIND_PRIORITY[candidate.kind],
+        -_proposal_from_candidate(candidate, observations).score,
+        candidate.observation_ids,
+        tuple((edge.left_id, edge.right_id) for edge in candidate.strong_edges),
+    )
+
+
+def _deduplicate(
+    candidates: Iterable[_Candidate],
+    observations: dict[int, FrameObservation],
+) -> tuple[_Candidate, ...]:
     retained: dict[tuple[int, frozenset[VoxelKey]], _Candidate] = {}
     for candidate in candidates:
         key = candidate.semantic_id, candidate.voxel_keys
         previous = retained.get(key)
-        if previous is None or _KIND_PRIORITY[candidate.kind] < _KIND_PRIORITY[previous.kind]:
+        if previous is None or _candidate_choice_key(candidate, observations) < _candidate_choice_key(previous, observations):
             retained[key] = candidate
     return tuple(retained.values())
 
@@ -356,9 +403,15 @@ def build_proposal_pyramid(
     candidates: list[_Candidate] = []
     component_records: list[tuple[int, tuple[int, ...]]] = []
     postings: dict[tuple[int, VoxelKey], list[int]] = defaultdict(list)
+    eligible_by_semantic: dict[int, tuple[int, ...]] = {}
+    semantic_observation_ids: dict[int, list[int]] = defaultdict(list)
     for observation in eligible:
+        semantic_observation_ids[observation.semantic_id].append(observation.observation_id)
         for voxel_key in observation.voxel_keys:
             postings[observation.semantic_id, voxel_key].append(observation.observation_id)
+    for semantic_id, observation_ids in semantic_observation_ids.items():
+        eligible_by_semantic[semantic_id] = tuple(observation_ids)
+    strong_edge_index = _StrongEdgeIndex(strong_edges)
 
     for component in _components(tuple(observation.observation_id for observation in eligible), strong_edges):
         semantic_id = by_id[component[0]].semantic_id
@@ -367,14 +420,14 @@ def build_proposal_pyramid(
         component_records.append((semantic_id, component))
         if not _component_is_eligible(component, by_id, config):
             continue
-        component_edges = _strong_edges_for(component, strong_edges)
+        component_edges = _strong_edges_for(component, strong_edge_index)
         consensus = frozenset().union(*(by_id[observation_id].voxel_keys for observation_id in component))
         candidates.append(_candidate(semantic_id, "consensus", consensus, component, component_edges))
         by_frame: dict[int, set[VoxelKey]] = defaultdict(set)
         for observation_id in component:
             observation = by_id[observation_id]
             by_frame[observation.frame_id].update(observation.voxel_keys)
-        required_votes = ceil(config.core_vote_fraction * len(by_frame))
+        required_votes = _required_core_votes(config.core_vote_fraction, len(by_frame))
         votes: dict[VoxelKey, int] = defaultdict(int)
         for voxel_keys in by_frame.values():
             for voxel_key in voxel_keys:
@@ -383,9 +436,12 @@ def build_proposal_pyramid(
         if len(core) < config.minimum_voxels:
             continue
         candidates.append(_candidate(semantic_id, "core", core, component, component_edges))
-        candidate_ids: set[int] = set()
-        for voxel_key in core:
-            candidate_ids.update(postings[semantic_id, voxel_key])
+        if config.inclusive_coverage == 0.0:
+            candidate_ids = set(eligible_by_semantic[semantic_id])
+        else:
+            candidate_ids = set()
+            for voxel_key in core:
+                candidate_ids.update(postings[semantic_id, voxel_key])
         selected_ids = tuple(
             observation_id
             for observation_id in sorted(candidate_ids)
@@ -394,7 +450,7 @@ def build_proposal_pyramid(
         if not selected_ids:
             continue
         union_voxels = frozenset().union(*(by_id[observation_id].voxel_keys for observation_id in selected_ids))
-        union_edges = _strong_edges_for(selected_ids, strong_edges)
+        union_edges = _strong_edges_for(selected_ids, strong_edge_index)
         candidates.append(_candidate(semantic_id, "union", union_voxels, selected_ids, union_edges))
 
     component_index = {
@@ -439,10 +495,10 @@ def build_proposal_pyramid(
                 "hierarchical",
                 voxel_keys,
                 observation_ids,
-                _strong_edges_for(observation_ids, strong_edges),
+                _strong_edges_for(observation_ids, strong_edge_index),
             )
         )
-    deduplicated = _deduplicate(candidates)
+    deduplicated = _deduplicate(candidates, by_id)
     if len(deduplicated) > config.maximum_proposals:
         raise ValueError("post-dedup proposal count exceeds maximum_proposals")
     return _assign_ids(deduplicated, by_id)
