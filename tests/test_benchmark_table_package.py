@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import csv
+import json
 import re
 import shutil
 import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 PAPER_DIR = ROOT / "docs" / "paper"
@@ -177,11 +180,16 @@ def test_registry_schema_states_and_unique_tokens():
     assert {row["status"] for row in registry} <= {"UNFILLED", "VERIFIED", "N/A"}
     for row in registry:
         assert {key: row[key] for key in expected[row["token"]]} == expected[row["token"]]
-    assert {row["token"] for row in registry if row["status"] == "N/A"} == NA_TOKENS
+    na_rows = [row for row in registry if row["status"] == "N/A"]
+    assert NA_TOKENS <= {row["token"] for row in na_rows}
+    for row in na_rows:
+        if row["token"] not in NA_TOKENS:
+            assert row["source_json"] and row["json_pointer"]
+            assert row["note"].startswith("N/A from verified run ")
 
 
 def test_non_na_tokens_match_both_outputs():
-    expected = Counter({row["token"]: 1 for row in rows() if row["status"] != "N/A"})
+    expected = Counter({row["token"]: 1 for row in rows() if row["token"] not in NA_TOKENS})
     assert token_counts(MARKDOWN) == expected
     assert token_counts(LATEX) == expected
 
@@ -217,9 +225,17 @@ def test_all_active_table_views_display_oviv2_with_online_t2_mode() -> None:
         assert "OVIV2" in rendered
         assert "OVIOVO" not in rendered
     for path in (MARKDOWN, BASELINE_MARKDOWN):
-        assert "| OVIV2 | online |" in path.read_text(encoding="utf-8")
+        rendered = path.read_text(encoding="utf-8")
+        table2 = rendered.split("## Table 2:", 1)[1].split("## Table 3:", 1)[0]
+        assert "| OVIV2 | online |" in table2
     for path in (LATEX, BASELINE_LATEX):
-        assert "OVIV2 & online &" in path.read_text(encoding="utf-8")
+        rendered = path.read_text(encoding="utf-8")
+        table2 = next(
+            table
+            for table in re.findall(r"\\begin\{table\*\}.*?\\end\{table\*\}", rendered, re.DOTALL)
+            if r"\label{tab:dynamic_current_map}" in table
+        )
+        assert "OVIV2 & online &" in table2
 
 
 def test_ovimap_table1_stays_unfilled_until_paper_parity_passes():
@@ -242,6 +258,9 @@ def test_provenance_requirements():
             assert row["source_json"] and row["json_pointer"]
         elif row["status"] == "N/A":
             assert row["note"]
+            if row["token"] not in NA_TOKENS:
+                assert row["source_json"] and row["json_pointer"]
+                assert row["note"].startswith("N/A from verified run ")
 
 
 def test_latex_style():
@@ -295,6 +314,49 @@ def test_generator_check_detects_frozen_registry_field_tampering(tmp_path):
     registry_path = output_dir / REGISTRY.name
     text = registry_path.read_text(encoding="utf-8")
     registry_path.write_text(text.replace("\tOPENFUSION\t", "\tWRONG_METHOD\t", 1), encoding="utf-8")
+
+    result = subprocess.run(
+        [sys.executable, str(GENERATOR), "check", "--output-dir", str(output_dir)],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+    )
+
+    assert result.returncode != 0
+    assert "benchmark_tokens.tsv" in result.stderr
+
+
+@pytest.mark.parametrize("provenance", ["none", "missing", "unverified", "no_evidence"])
+def test_generator_check_rejects_unverified_dynamic_na(tmp_path, provenance):
+    output_dir = tmp_path / "paper"
+    shutil.copytree(PAPER_DIR, output_dir)
+    registry_path = output_dir / REGISTRY.name
+    with registry_path.open(newline="", encoding="utf-8") as handle:
+        registry = list(csv.DictReader(handle, delimiter="\t"))
+    row = next(item for item in registry if item["token"] == "T2_OVIV2_OFFICE_OBJECT_F1")
+    row["status"] = "N/A"
+    row["note"] = "Unavailable without a verified import."
+    if provenance != "none":
+        row["source_json"] = "missing-result.json"
+        row["json_pointer"] = "/unavailable/office/OBJECT_F1"
+    if provenance in {"unverified", "no_evidence"}:
+        row["source_json"] = "result.json"
+        row["note"] = "N/A from verified run fake-run: unavailable"
+        result = {
+            "status": "BLOCKED" if provenance == "unverified" else "VERIFIED",
+            "run_id": "fake-run",
+            "unavailable_bindings": [
+                {
+                    "token": row["token"],
+                    "reason_pointer": row["json_pointer"],
+                }
+            ],
+        }
+        (output_dir / "result.json").write_text(json.dumps(result), encoding="utf-8")
+    with registry_path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=FIELDS, delimiter="\t", lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(registry)
 
     result = subprocess.run(
         [sys.executable, str(GENERATOR), "check", "--output-dir", str(output_dir)],

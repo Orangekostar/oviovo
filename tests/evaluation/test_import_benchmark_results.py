@@ -4,6 +4,7 @@ import csv
 import hashlib
 import json
 import pickle
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -309,6 +310,56 @@ def _oviv2_t2_package(tmp_path: Path, *, unavailable_status: str = "UNFILLED") -
     return registry, markdown, latex, common, official
 
 
+def _write_t4_package(
+    tmp_path: Path,
+    *,
+    method: str,
+    result_method: str | None = None,
+) -> tuple[Path, Path, Path, Path]:
+    token = f"T4_{method}_TOTAL_SPF"
+    registry = tmp_path / "benchmark_tokens.tsv"
+    with registry.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=FIELDS, delimiter="\t", lineterminator="\n")
+        writer.writeheader()
+        writer.writerow(
+            {
+                "token": token,
+                "table": "T4",
+                "method": method,
+                "dataset": "local_same_hardware",
+                "split": "test",
+                "metric": "TOTAL_SPF",
+                "direction": "lower",
+                "precision": "2",
+                "source_json": "",
+                "json_pointer": "",
+                "status": "UNFILLED",
+                "note": "Pending benchmark run.",
+            }
+        )
+    markdown = tmp_path / "benchmark_tables.md"
+    latex = tmp_path / "benchmark_tables.tex"
+    markdown.write_text("{{" + token + "}}", encoding="utf-8")
+    latex.write_text(r"\verb|{{" + token + "}}|", encoding="utf-8")
+    result = tmp_path / "result.json"
+    result.write_text(
+        json.dumps(
+            {
+                "status": "VERIFIED",
+                "run_id": "oviv2-t4-test",
+                "method": {"key": result_method or method, "mode": "online"},
+                "dataset": {"name": "local_same_hardware", "splits": ["test"]},
+                "metrics": {"total_spf": 1.234},
+                "token_bindings": [
+                    {"token": token, "json_pointer": "/metrics/total_spf", "precision": 2}
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    return registry, markdown, latex, result
+
+
 def test_import_merges_oviv2_t2_common_and_official_bindings(tmp_path: Path) -> None:
     registry, markdown, latex, common, official = _oviv2_t2_package(tmp_path)
 
@@ -330,6 +381,109 @@ def test_import_merges_oviv2_t2_common_and_official_bindings(tmp_path: Path) -> 
     assert all(row["source_json"] and row["json_pointer"] for row in imported)
     assert "{{T2_OVIV2_" not in outputs["markdown"].read_text(encoding="utf-8")
     assert "{{T2_OVIV2_" not in outputs["latex"].read_text(encoding="utf-8")
+
+
+def test_imported_source_bound_t2_na_passes_full_package_check(tmp_path: Path) -> None:
+    root = Path(__file__).resolve().parents[2]
+    output_dir = tmp_path / "paper"
+    shutil.copytree(root / "docs" / "paper", output_dir)
+    evidence = output_dir / "official-evidence.json"
+    evidence.write_text('{"status":"PASS"}\n', encoding="utf-8")
+    reason = "official evaluator has no finite object_f1"
+    result = output_dir / "oviv2-official.json"
+    result.write_text(
+        json.dumps(
+            {
+                "status": "VERIFIED",
+                "run_id": "oviv2-official-source-bound",
+                "method": {"key": "OVIV2", "mode": "online"},
+                "dataset": {"name": "TESSE-CD", "splits": ["office_test"]},
+                "unavailable": {"office": {"OBJECT_F1": reason}},
+                "unavailable_evidence": {
+                    "office": {
+                        "OBJECT_F1": {
+                            "reason": reason,
+                            "source": {
+                                "path": str(evidence.resolve()),
+                                "sha256": hashlib.sha256(evidence.read_bytes()).hexdigest(),
+                                "byte_count": evidence.stat().st_size,
+                            },
+                        }
+                    }
+                },
+                "token_bindings": [],
+                "unavailable_bindings": [
+                    {
+                        "token": "T2_OVIV2_OFFICE_OBJECT_F1",
+                        "reason_pointer": "/unavailable/office/OBJECT_F1",
+                        "evidence_pointer": "/unavailable_evidence/office/OBJECT_F1",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    import_results(
+        output_dir / "benchmark_tokens.tsv",
+        [result],
+        output_dir / "benchmark_tables.md",
+        output_dir / "benchmark_tables.tex",
+        output_dir / "benchmark_tables_baselines.md",
+        output_dir / "benchmark_tables_baselines.tex",
+    )
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(root / "tools" / "benchmark_tables.py"),
+            "check",
+            "--output-dir",
+            str(output_dir),
+        ],
+        cwd=root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    assert "benchmark table package: PASS" in completed.stdout
+
+
+@pytest.mark.parametrize("method", ["OVIV2_STATIC", "OVIV2"])
+def test_import_accepts_t4_oviv2_methods(tmp_path: Path, method: str) -> None:
+    registry, markdown, latex, result = _write_t4_package(tmp_path, method=method)
+
+    outputs = import_results(
+        registry,
+        [result],
+        markdown,
+        latex,
+        tmp_path / "out.md",
+        tmp_path / "out.tex",
+    )
+
+    assert outputs["markdown"].read_text(encoding="utf-8") == "1.23"
+    with registry.open(newline="", encoding="utf-8") as handle:
+        row = next(csv.DictReader(handle, delimiter="\t"))
+    assert row["status"] == "VERIFIED"
+
+
+@pytest.mark.parametrize(
+    ("method", "wrong_method"),
+    [("OVIV2_STATIC", "OVIV2"), ("OVIV2", "OVIV2_STATIC")],
+)
+def test_import_rejects_wrong_t4_oviv2_method(
+    tmp_path: Path, method: str, wrong_method: str
+) -> None:
+    registry, markdown, latex, result = _write_t4_package(
+        tmp_path,
+        method=method,
+        result_method=wrong_method,
+    )
+
+    with pytest.raises(ImportFailure, match="method mismatch"):
+        import_results(registry, [result], markdown, latex, tmp_path / "out.md", tmp_path / "out.tex")
 
 
 def test_import_rejects_legacy_t2_oviovo_binding(tmp_path: Path) -> None:

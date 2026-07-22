@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import io
+import json
 import os
 import re
 import sys
@@ -706,6 +707,36 @@ def write_package(output_dir: Path, force: bool = False) -> int:
     return 0
 
 
+def _has_verified_dynamic_na_provenance(
+    registry_path: Path, row: Mapping[str, str]
+) -> bool:
+    source_path = Path(row["source_json"])
+    if not source_path.is_absolute():
+        source_path = registry_path.parent / source_path
+    try:
+        result = json.loads(source_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    if not isinstance(result, Mapping) or result.get("status") != "VERIFIED":
+        return False
+    run_id = result.get("run_id")
+    if not isinstance(run_id, str) or not run_id:
+        return False
+    if not row["note"].startswith(f"N/A from verified run {run_id}: "):
+        return False
+    bindings = result.get("unavailable_bindings")
+    if not isinstance(bindings, list):
+        return False
+    return any(
+        isinstance(binding, Mapping)
+        and binding.get("token") == row["token"]
+        and binding.get("reason_pointer") == row["json_pointer"]
+        and isinstance(binding.get("evidence_pointer"), str)
+        and bool(binding.get("evidence_pointer"))
+        for binding in bindings
+    )
+
+
 def _registry_matches_template(target: Path, expected_text: str) -> bool:
     if not target.is_file():
         return False
@@ -732,6 +763,9 @@ def _registry_matches_template(target: Path, expected_text: str) -> bool:
             if not actual["source_json"] or not actual["json_pointer"]:
                 return False
             if "OVIOVO" in actual["token"]:
+                return False
+        elif actual["status"] == "N/A":
+            if not _has_verified_dynamic_na_provenance(target, actual):
                 return False
         else:
             return False
