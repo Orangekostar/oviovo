@@ -9,7 +9,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 
@@ -74,18 +74,18 @@ def _decode_image(message: Any, *, dtype: np.dtype[Any], channels: int) -> np.nd
     return np.asarray(used.reshape(shape))
 
 
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+def _read_bound_file(path: Path) -> bytes:
+    return path.read_bytes()
 
 
 def compute_export_output_binding(
-    output_root: Path, scene: str, frame_count: int
+    output_root: Path,
+    scene: str,
+    frame_count: int,
+    *,
+    file_parser: Callable[[str, bytes], object] | None = None,
 ) -> dict[str, object]:
-    """Recompute the exact per-file binding recorded by ``export_scene``."""
+    """Read each exported file once, then bind and optionally parse those bytes."""
     if not scene or type(frame_count) is not int or frame_count < 0:
         raise ValueError("export binding requires a scene and non-negative frame count")
     scene_dir = output_root / scene
@@ -103,12 +103,18 @@ def compute_export_output_binding(
         output_root / "cam_params.json",
     ]
     output_hashes: list[tuple[str, str]] = []
+    parsed_files: dict[str, object] = {}
     for path in paths:
         if not path.is_file():
             raise ValueError(f"exported RGB-D artifact is not a file: {path}")
-        output_hashes.append(
-            (path.relative_to(output_root).as_posix(), _sha256(path))
-        )
+        relative = path.relative_to(output_root).as_posix()
+        content = _read_bound_file(path)
+        output_hashes.append((relative, hashlib.sha256(content).hexdigest()))
+        if file_parser is not None:
+            try:
+                parsed_files[relative] = file_parser(relative, content)
+            except Exception as error:
+                parsed_files[relative] = error
     digest = hashlib.sha256()
     for relative, file_hash in sorted(output_hashes):
         digest.update(
@@ -120,6 +126,8 @@ def compute_export_output_binding(
     return {
         "combined_output_sha256": digest.hexdigest(),
         "file_hash_count": len(output_hashes),
+        "file_sha256": dict(output_hashes),
+        "parsed_files": parsed_files,
     }
 
 
@@ -269,7 +277,10 @@ def export_scene(manifest_path: Path, scene: str, output_root: Path) -> Path:
                 "rgb_encoding": "JPEG quality 95 decoded from official rgb8",
                 "depth_encoding": "uint16 millimeters decoded from official 32FC1 meters",
                 "pose": "world_T_base_link_gt multiplied by bag tf_static base_link_gt_T_left_cam",
-                **output_binding,
+                "combined_output_sha256": output_binding[
+                    "combined_output_sha256"
+                ],
+                "file_hash_count": output_binding["file_hash_count"],
             },
             indent=2,
             sort_keys=True,

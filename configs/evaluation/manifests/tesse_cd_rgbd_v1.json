@@ -1,0 +1,34 @@
+{
+  "dataset": "TESSE-CD",
+  "derived_root": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1",
+  "manifest_id": "tesse_cd_rgbd_v1",
+  "scenes": {
+    "apartment": {
+      "combined_output_sha256": "7d596a014333a8e62873cb540c90b5dc23038e6c9b4df45bacc47e0007bef6f3",
+      "export_manifest": {
+        "byte_count": 813,
+        "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/apartment/export_manifest.json",
+        "sha256": "ee35d1843540fc88ae20b5dae5ad34caf192d50f0cab7c5564c47c454d4d5b81"
+      },
+      "file_hash_count": 3493,
+      "source_database_sha256": "43a30e694b8deabf4861b2b20a8f32a5c18c6288f37a886289783af0f26dab07"
+    },
+    "office": {
+      "combined_output_sha256": "494a7e35cf29524616f482bd99859b24547465c15a9de208cde3e8374faa8662",
+      "export_manifest": {
+        "byte_count": 809,
+        "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/office/export_manifest.json",
+        "sha256": "16068d00033c8f8407d143d9e50f2008a5f4feb22c134abd0059fc551637f1f6"
+      },
+      "file_hash_count": 8695,
+      "source_database_sha256": "4305b56149378799bfa468da2ac0acd84716bef59aba004f8e4feb34ec0d3b51"
+    }
+  },
+  "schema_version": 1,
+  "source_manifest": {
+    "byte_count": 8875,
+    "path": "configs/evaluation/manifests/tesse_cd.json",
+    "sha256": "be63826267109a67fe4109c1419eb02dbad99a9e3856d44ac8f848e32e00b907"
+  },
+  "source_role": "official_rgbd_export"
+}

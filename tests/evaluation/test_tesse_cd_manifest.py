@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "configs/evaluation/manifests/tesse_cd.json"
+RGBD_LOCK = ROOT / "configs/evaluation/manifests/tesse_cd_rgbd_v1.json"
 
 
 def test_tesse_cd_manifest_freezes_official_assets_and_causal_cutoffs() -> None:
@@ -65,3 +67,31 @@ def test_tesse_cd_manifest_keeps_ground_truth_out_of_runtime() -> None:
             "dsg",
             "dsg_with_mesh",
         }
+
+
+def test_tesse_cd_rgbd_lock_binds_checked_source_and_exports() -> None:
+    source_bytes = MANIFEST.read_bytes()
+    source = json.loads(source_bytes)
+    lock = json.loads(RGBD_LOCK.read_text(encoding="utf-8"))
+
+    assert lock["manifest_id"] == "tesse_cd_rgbd_v1"
+    assert lock["dataset"] == "TESSE-CD"
+    assert lock["source_role"] == "official_rgbd_export"
+    assert lock["source_manifest"] == {
+        "path": "configs/evaluation/manifests/tesse_cd.json",
+        "sha256": hashlib.sha256(source_bytes).hexdigest(),
+        "byte_count": len(source_bytes),
+    }
+    assert set(lock["scenes"]) == {"apartment", "office"}
+    for scene, binding in lock["scenes"].items():
+        export_path = Path(binding["export_manifest"]["path"])
+        export_bytes = export_path.read_bytes()
+        frame_count = source["sequences"][scene]["timeline"]["depth_frame_count"]
+        assert binding["export_manifest"]["sha256"] == hashlib.sha256(
+            export_bytes
+        ).hexdigest()
+        assert binding["export_manifest"]["byte_count"] == len(export_bytes)
+        assert binding["source_database_sha256"] == source["sequences"][scene][
+            "bag"
+        ]["database"]["sha256"]
+        assert binding["file_hash_count"] == frame_count * 2 + 3

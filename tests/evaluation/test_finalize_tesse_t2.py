@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -706,3 +707,57 @@ def test_full_cli_rejects_nonidentical_repeat_bytes(tmp_path: Path) -> None:
 
     assert completed.returncode != 0
     assert "byte-identical" in completed.stderr
+
+
+@pytest.mark.parametrize("link_kind", ["hardlink", "symlink"])
+def test_full_cli_rejects_repeat_alias_of_primary(
+    tmp_path: Path, link_kind: str
+) -> None:
+    inputs = _full_cli_inputs(tmp_path)
+    primary = inputs["apartment_metrics"]
+    repeat = inputs["apartment_metrics_repeat"]
+    repeat.unlink()
+    if link_kind == "hardlink":
+        os.link(primary, repeat)
+    else:
+        repeat.symlink_to(primary)
+
+    completed = subprocess.run(
+        _full_cli_command(inputs, tmp_path / "result.json"),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode != 0
+    assert (
+        "independent files" in completed.stderr
+        or "regular file" in completed.stderr
+    )
+
+
+@pytest.mark.parametrize("method", [None, 7])
+def test_full_cli_requires_exact_string_status_method(
+    tmp_path: Path, method: object
+) -> None:
+    inputs = _full_cli_inputs(tmp_path)
+    payload = json.loads(inputs["apartment_status"].read_text(encoding="utf-8"))
+    if method is None:
+        payload.pop("method")
+    else:
+        payload["method"] = method
+    encoded = (
+        json.dumps(payload, indent=2, sort_keys=True, allow_nan=False) + "\n"
+    ).encode("utf-8")
+    inputs["apartment_status"].write_bytes(encoded)
+    inputs["apartment_status_repeat"].write_bytes(encoded)
+
+    completed = subprocess.run(
+        _full_cli_command(inputs, tmp_path / "result.json"),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode != 0
+    assert "run method mismatch" in completed.stderr

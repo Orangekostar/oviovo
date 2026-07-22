@@ -22,6 +22,10 @@ import numpy as np
 Voxel = tuple[int, int, int]
 UNKNOWN_SEMANTIC_LABELS = {-1, 4_294_967_295}
 REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_SOURCE_MANIFEST = REPO_ROOT / "configs/evaluation/manifests/tesse_cd.json"
+DEFAULT_DERIVED_RGBD_LOCK = (
+    REPO_ROOT / "configs/evaluation/manifests/tesse_cd_rgbd_v1.json"
+)
 
 
 def _attributes(record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -1410,37 +1414,138 @@ def load_derived_rgbd_frames(
     contract: Mapping[str, Any],
     scene: str,
     derived_root: Path,
+    rgbd_lock: Path,
     *,
     maximum_frame_index: int,
-    source_role: str = "official_rgbd_export",
 ) -> list[dict[str, Any]]:
     from PIL import Image
     from scripts.evaluation.export_tesse_cd_rgbd import (
+        _read_bound_file,
         compute_export_output_binding,
     )
 
-    if source_role != "official_rgbd_export":
-        if source_role == "prediction":
-            reject_prediction_input_paths([derived_root])
-        raise ValueError(f"unsupported derived RGB-D source role: {source_role}")
     if scene not in {"apartment", "office"}:
         raise ValueError(f"unknown TESSE-CD scene: {scene}")
     if type(maximum_frame_index) is not int or maximum_frame_index < 0:
         raise ValueError("maximum_frame_index must be non-negative")
+    if not rgbd_lock.is_file():
+        raise ValueError(f"checked RGB-D lock is not a file: {rgbd_lock}")
+    try:
+        lock = json.loads(rgbd_lock.read_bytes().decode("utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError(f"checked RGB-D lock is not readable: {rgbd_lock}") from error
+    if not isinstance(lock, Mapping):
+        raise ValueError("checked RGB-D lock must contain a JSON object")
+    if lock.get("source_role") != "official_rgbd_export":
+        raise ValueError(
+            f"unsupported derived RGB-D source role: {lock.get('source_role')!r}"
+        )
+    if not (
+        lock.get("schema_version") == 1
+        and lock.get("manifest_id") == "tesse_cd_rgbd_v1"
+        and lock.get("dataset") == "TESSE-CD"
+    ):
+        raise ValueError("checked RGB-D lock identity mismatch")
+
+    def resolved_record_path(record: Mapping[str, Any]) -> Path:
+        candidate = Path(str(record.get("path", "")))
+        if not candidate.is_absolute():
+            candidate = REPO_ROOT / candidate
+        return candidate.resolve()
+
+    source_record = lock.get("source_manifest")
+    expected_source_record = contract["source_manifest"]
+    if not isinstance(source_record, Mapping) or not (
+        resolved_record_path(source_record)
+        == resolved_record_path(expected_source_record)
+        and source_record.get("sha256") == expected_source_record["sha256"]
+        and source_record.get("byte_count") == expected_source_record["byte_count"]
+    ):
+        raise ValueError("checked RGB-D lock source manifest mismatch")
+    locked_root = Path(str(lock.get("derived_root", "")))
+    if not locked_root.is_absolute():
+        locked_root = REPO_ROOT / locked_root
+    if locked_root.resolve() != derived_root.resolve():
+        raise ValueError("checked RGB-D lock derived root mismatch")
+
     scene_root = derived_root / scene
     export_path = scene_root / "export_manifest.json"
-    timestamps_path = scene_root / "timestamps.csv"
-    trajectory_path = scene_root / "traj.txt"
-    for path in (export_path, timestamps_path, trajectory_path):
-        if not path.is_file():
-            raise ValueError(f"source is not a file: {path}")
+    lock_scenes = lock.get("scenes")
+    locked_scene = lock_scenes.get(scene) if isinstance(lock_scenes, Mapping) else None
+    if not isinstance(locked_scene, Mapping):
+        raise ValueError(f"checked RGB-D lock has no {scene} scene binding")
+    export_record = locked_scene.get("export_manifest")
+    if not isinstance(export_record, Mapping) or (
+        resolved_record_path(export_record) != export_path.resolve()
+    ):
+        raise ValueError(f"{scene} checked RGB-D export manifest path mismatch")
+    if not export_path.is_file():
+        raise ValueError(f"source is not a file: {export_path}")
+    export_bytes = _read_bound_file(export_path)
+    if (
+        export_record.get("sha256") != hashlib.sha256(export_bytes).hexdigest()
+        or export_record.get("byte_count") != len(export_bytes)
+    ):
+        raise ValueError(f"{scene} derived RGB-D export manifest SHA256 mismatch")
+    try:
+        export = json.loads(export_bytes.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError(f"{scene} derived RGB-D export manifest is invalid") from error
+
     sequence = contract["scenes"][scene]["sequence"]
     database = sequence["bag"]["database"]
-    export = json.loads(export_path.read_text(encoding="utf-8"))
     expected_frame_count = int(sequence["timeline"]["depth_frame_count"])
+
+    def parse_bound_file(relative: str, content: bytes) -> object:
+        if relative == f"{scene}/timestamps.csv":
+            text = content.decode("utf-8")
+            return list(csv.DictReader(io.StringIO(text, newline="")))
+        if relative == f"{scene}/traj.txt":
+            return [
+                line.strip()
+                for line in content.decode("utf-8").splitlines()
+                if line.strip()
+            ]
+        if relative == "cam_params.json":
+            return json.loads(content.decode("utf-8"))
+        prefix = f"{scene}/results/"
+        if not relative.startswith(prefix):
+            return None
+        name = relative.removeprefix(prefix)
+        index = int(name[5:11])
+        if index > maximum_frame_index:
+            return None
+        with Image.open(io.BytesIO(content)) as image:
+            if name.startswith("frame"):
+                rgb = np.asarray(image.convert("RGB")).copy()
+                if rgb.ndim != 3 or rgb.shape[2] != 3 or rgb.dtype != np.uint8:
+                    raise ValueError(f"{scene} RGB JPEG must decode as uint8 RGB")
+                return None
+            return np.asarray(image).copy()
+
     observed_output_binding = compute_export_output_binding(
-        derived_root, scene, expected_frame_count
+        derived_root,
+        scene,
+        expected_frame_count,
+        file_parser=parse_bound_file,
     )
+    locked_database_sha256 = locked_scene.get("source_database_sha256")
+    locked_combined_sha256 = locked_scene.get("combined_output_sha256")
+    locked_file_count = locked_scene.get("file_hash_count")
+    if (
+        locked_combined_sha256
+        != observed_output_binding["combined_output_sha256"]
+        or locked_file_count != observed_output_binding["file_hash_count"]
+    ):
+        raise ValueError(f"{scene} derived RGB-D combined output SHA256 mismatch")
+    parsed_files = observed_output_binding["parsed_files"]
+    parse_errors = [
+        error for error in parsed_files.values() if isinstance(error, Exception)
+    ]
+    if parse_errors:
+        raise ValueError(
+            f"{scene} derived RGB-D artifact cannot be parsed"
+        ) from parse_errors[0]
     if not (
         export.get("schema_version") == 1
         and export.get("dataset") == "TESSE-CD"
@@ -1449,34 +1554,43 @@ def load_derived_rgbd_frames(
         and Path(str(export.get("source_database", ""))).resolve()
         == Path(str(database["path"])).resolve()
         and export.get("source_database_sha256") == database["sha256"]
-        and Path(str(export.get("source_manifest", ""))).resolve()
-        == Path(str(contract["source_manifest"]["path"])).resolve()
+        and locked_database_sha256 == database["sha256"]
         and export.get("depth_encoding")
         == "uint16 millimeters decoded from official 32FC1 meters"
         and export.get("rgb_encoding")
         == "JPEG quality 95 decoded from official rgb8"
         and export.get("combined_output_sha256")
-        == observed_output_binding["combined_output_sha256"]
+        == locked_combined_sha256
         and export.get("file_hash_count")
-        == observed_output_binding["file_hash_count"]
+        == locked_file_count
     ):
-        if (
-            export.get("combined_output_sha256")
-            != observed_output_binding["combined_output_sha256"]
-            or export.get("file_hash_count")
-            != observed_output_binding["file_hash_count"]
-        ):
-            raise ValueError(f"{scene} derived RGB-D combined output SHA256 mismatch")
         raise ValueError(f"{scene} derived RGB-D export is not source-bound")
 
-    with timestamps_path.open(encoding="utf-8", newline="") as handle:
-        timestamp_rows = list(csv.DictReader(handle))
-    trajectory_rows = [
-        line.strip()
-        for line in trajectory_path.read_text(encoding="utf-8").splitlines()
-        if line.strip()
-    ]
-    if len(timestamp_rows) != expected_frame_count or len(trajectory_rows) != expected_frame_count:
+    timestamp_rows = parsed_files[f"{scene}/timestamps.csv"]
+    trajectory_rows = parsed_files[f"{scene}/traj.txt"]
+    camera_payload = parsed_files["cam_params.json"]
+    if not isinstance(camera_payload, Mapping) or not isinstance(
+        camera_payload.get("camera"), Mapping
+    ):
+        raise ValueError("derived RGB-D camera parameters are invalid")
+    observed_camera = camera_payload["camera"]
+    expected_camera = contract["source_payload"]["camera"]
+    if not (
+        int(observed_camera.get("w", observed_camera.get("width", -1)))
+        == int(expected_camera["width"])
+        and int(observed_camera.get("h", observed_camera.get("height", -1)))
+        == int(expected_camera["height"])
+        and all(
+            float(observed_camera.get(name, float("nan")))
+            == float(expected_camera[name])
+            for name in ("fx", "fy", "cx", "cy")
+        )
+    ):
+        raise ValueError("derived RGB-D camera parameters disagree")
+    if (
+        len(timestamp_rows) != expected_frame_count
+        or len(trajectory_rows) != expected_frame_count
+    ):
         raise ValueError(f"{scene} derived RGB-D frame metadata is incomplete")
     observed_indices = [int(row["frame_index"]) for row in timestamp_rows]
     if observed_indices != list(range(expected_frame_count)):
@@ -1493,10 +1607,7 @@ def load_derived_rgbd_frames(
 
     frames: list[dict[str, Any]] = []
     for index in range(maximum_frame_index + 1):
-        depth_path = scene_root / "results" / f"depth{index:06d}.png"
-        if not depth_path.is_file():
-            raise ValueError(f"source is not a file: {depth_path}")
-        depth_mm = np.asarray(Image.open(depth_path))
+        depth_mm = parsed_files[f"{scene}/results/depth{index:06d}.png"]
         if depth_mm.ndim != 2 or not np.issubdtype(depth_mm.dtype, np.integer):
             raise ValueError(f"{scene} depth PNG must be a single-channel integer image")
         pose_values = np.fromstring(trajectory_rows[index], sep=" ", dtype=np.float64)
@@ -1530,13 +1641,16 @@ def run_generation(
     event_limit: int | None = None,
     fixture_bundle: Path | None = None,
     derived_rgbd_root: Path | None = None,
+    derived_rgbd_lock: Path | None = None,
     scenes: Sequence[str] = ("apartment", "office"),
 ) -> Path:
     contract = load_generation_contract(source_manifest, schedule)
     selected_scenes = tuple(scenes)
     if fixture_bundle is not None:
-        if derived_rgbd_root is not None:
-            raise ValueError("fixture bundle and derived RGB-D root are mutually exclusive")
+        if derived_rgbd_root is not None or derived_rgbd_lock is not None:
+            raise ValueError(
+                "fixture bundle and derived RGB-D root/lock are mutually exclusive"
+            )
         frames, backgrounds = _load_fixture_bundle(fixture_bundle)
         status = "FIXTURE"
         source_paths = (source_manifest, schedule, fixture_bundle)
@@ -1549,6 +1663,14 @@ def run_generation(
                 candidate = Path(str(ground_truth_root)).parent / "derived" / "rgbd_v1"
                 if candidate.is_dir():
                     derived_rgbd_root = candidate
+        if derived_rgbd_root is None and derived_rgbd_lock is not None:
+            raise ValueError("derived RGB-D lock requires a derived RGB-D root")
+        if derived_rgbd_root is not None and derived_rgbd_lock is None:
+            if source_manifest.resolve() != DEFAULT_SOURCE_MANIFEST.resolve():
+                raise ValueError(
+                    "derived RGB-D lock is required for non-repository sources"
+                )
+            derived_rgbd_lock = DEFAULT_DERIVED_RGBD_LOCK
         derived_sources: list[Path] = []
         for scene in selected_scenes:
             events = contract["scenes"][scene]["schedule"]["events"]
@@ -1569,6 +1691,7 @@ def run_generation(
                     contract,
                     scene,
                     derived_rgbd_root,
+                    derived_rgbd_lock,
                     maximum_frame_index=maximum,
                 )
                 derived_sources.extend(
@@ -1592,6 +1715,8 @@ def run_generation(
             and set(selected_scenes) == {"apartment", "office"}
             else "SMOKE"
         )
+        if derived_rgbd_lock is not None:
+            derived_sources.insert(0, derived_rgbd_lock)
         source_paths = (source_manifest, schedule, *derived_sources)
     arrays, metadata = derive_target_arrays(
         contract,
@@ -1627,6 +1752,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--event-limit", type=int)
     parser.add_argument("--fixture-bundle", type=Path)
     parser.add_argument("--derived-rgbd-root", type=Path)
+    parser.add_argument("--derived-rgbd-lock", type=Path)
     parser.add_argument(
         "--scene", action="append", choices=("apartment", "office")
     )
@@ -1639,6 +1765,7 @@ def main(argv: list[str] | None = None) -> int:
         event_limit=args.event_limit,
         fixture_bundle=args.fixture_bundle,
         derived_rgbd_root=args.derived_rgbd_root,
+        derived_rgbd_lock=args.derived_rgbd_lock,
         scenes=tuple(args.scene or ("apartment", "office")),
     )
     return 0

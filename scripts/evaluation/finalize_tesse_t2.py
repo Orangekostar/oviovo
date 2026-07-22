@@ -7,7 +7,9 @@ import argparse
 import hashlib
 import json
 import math
+import os
 from pathlib import Path
+import stat
 from typing import Any, Mapping
 
 
@@ -231,7 +233,10 @@ def _validate_run_status(
     if status.get("scene") != scene or status.get("mode") != mode:
         raise ValueError(f"{scene} run identity mismatch")
     source_method = SOURCE_METHOD_KEYS.get(method_key, method_key)
-    if status.get("method") not in {None, method_key, source_method}:
+    if (
+        type(status.get("method")) is not str
+        or status["method"] != source_method
+    ):
         raise ValueError(f"{scene} run method mismatch")
     if mode == "frozen" and int(status.get("updates_after_freeze", -1)) != 0:
         raise ValueError(f"{scene} updates_after_freeze must be zero")
@@ -386,12 +391,13 @@ def _json_source(
     path: Path, *, label: str
 ) -> tuple[dict[str, Any], dict[str, Any], bytes]:
     try:
-        resolved = path.resolve(strict=True)
-        if not resolved.is_file():
-            raise ValueError
-        content = resolved.read_bytes()
+        file_stat = path.stat(follow_symlinks=False)
+        if path.is_symlink() or not stat.S_ISREG(file_stat.st_mode):
+            raise ValueError(f"{label} must be a regular file")
+        resolved = path.absolute()
+        content = path.read_bytes()
         payload = json.loads(content.decode("utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
         raise ValueError(
             f"{label} must be a readable JSON object: {path}"
         ) from error
@@ -411,10 +417,10 @@ def _json_source(
 def _json_repeat_pair(
     primary: Path, repeat: Path, *, label: str
 ) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
-    if primary.resolve() == repeat.resolve():
-        raise ValueError(f"{label} repeat must use independent files")
     payload, primary_record, primary_bytes = _json_source(primary, label=label)
     _, repeat_record, repeat_bytes = _json_source(repeat, label=f"{label} repeat")
+    if os.path.samefile(primary, repeat):
+        raise ValueError(f"{label} repeat must use independent files")
     if primary_bytes != repeat_bytes:
         raise ValueError(f"{label} repeat must be byte-identical")
     return payload, {"primary": primary_record, "repeat": repeat_record}

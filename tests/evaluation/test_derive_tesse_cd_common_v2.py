@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 from pathlib import Path
 import struct
@@ -254,8 +255,12 @@ def _write_generation_fixture(root: Path) -> tuple[Path, Path]:
 
 
 def _write_derived_rgbd_fixture(
-    root: Path, source_manifest: Path, *, frame_count: int = 20
-) -> Path:
+    root: Path,
+    source_manifest: Path,
+    *,
+    frame_count: int = 20,
+    source_role: str = "official_rgbd_export",
+) -> tuple[Path, Path]:
     from PIL import Image
 
     source = json.loads(source_manifest.read_text(encoding="utf-8"))
@@ -266,6 +271,7 @@ def _write_derived_rgbd_fixture(
         json.dumps({"camera": source["camera"]}, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+    lock_scenes: dict[str, object] = {}
     for scene in ("apartment", "office"):
         scene_root = derived / scene
         results = scene_root / "results"
@@ -316,7 +322,8 @@ def _write_derived_rgbd_fixture(
                 + file_hash.encode("ascii")
                 + b"\n"
             )
-        (scene_root / "export_manifest.json").write_text(
+        export_manifest = scene_root / "export_manifest.json"
+        export_manifest.write_text(
             json.dumps(
                 {
                     "schema_version": 1,
@@ -337,7 +344,30 @@ def _write_derived_rgbd_fixture(
             + "\n",
             encoding="utf-8",
         )
-    return derived
+        lock_scenes[scene] = {
+            "export_manifest": _file_record(export_manifest),
+            "combined_output_sha256": digest.hexdigest(),
+            "file_hash_count": len(output_hashes),
+            "source_database_sha256": database["sha256"],
+        }
+    lock = root / "tesse_cd_rgbd_v1.json"
+    lock.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "manifest_id": "tesse_cd_rgbd_v1",
+                "dataset": "TESSE-CD",
+                "source_role": source_role,
+                "source_manifest": _file_record(source_manifest),
+                "derived_root": str(derived.resolve()),
+                "scenes": lock_scenes,
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return derived, lock
 
 
 def test_match_event_dsg_records_requires_exact_fourteen_known_objects() -> None:
@@ -995,11 +1025,11 @@ def test_derived_rgbd_loader_and_single_scene_smoke_cli(
     tmp_path: Path,
 ) -> None:
     source, schedule = _write_generation_fixture(tmp_path)
-    derived = _write_derived_rgbd_fixture(tmp_path, source)
+    derived, lock = _write_derived_rgbd_fixture(tmp_path, source)
     contract = load_generation_contract(source, schedule)
 
     frames = load_derived_rgbd_frames(
-        contract, "apartment", derived, maximum_frame_index=14
+        contract, "apartment", derived, lock, maximum_frame_index=14
     )
 
     assert len(frames) == 15
@@ -1018,6 +1048,8 @@ def test_derived_rgbd_loader_and_single_scene_smoke_cli(
                 str(output),
                 "--derived-rgbd-root",
                 str(derived),
+                "--derived-rgbd-lock",
+                str(lock),
                 "--scene",
                 "apartment",
                 "--window-frames",
@@ -1054,14 +1086,14 @@ def test_derived_rgbd_loader_rejects_mutated_export_bytes(
     tmp_path: Path, relative_path: str
 ) -> None:
     source, schedule = _write_generation_fixture(tmp_path)
-    derived = _write_derived_rgbd_fixture(tmp_path, source)
+    derived, lock = _write_derived_rgbd_fixture(tmp_path, source)
     contract = load_generation_contract(source, schedule)
     artifact = derived / relative_path
     artifact.write_bytes(artifact.read_bytes() + b"tampered")
 
     with pytest.raises(ValueError, match="combined output SHA256"):
         load_derived_rgbd_frames(
-            contract, "apartment", derived, maximum_frame_index=14
+            contract, "apartment", derived, lock, maximum_frame_index=14
         )
 
 
@@ -1069,11 +1101,58 @@ def test_full_generation_rejects_depth_png_mutated_after_export(
     tmp_path: Path,
 ) -> None:
     source, schedule = _write_generation_fixture(tmp_path)
-    derived = _write_derived_rgbd_fixture(tmp_path, source)
+    derived, lock = _write_derived_rgbd_fixture(tmp_path, source)
     depth = derived / "apartment/results/depth000003.png"
     depth.write_bytes(depth.read_bytes() + b"tampered")
 
     with pytest.raises(ValueError, match="combined output SHA256"):
+        main(
+            [
+                "--source-manifest",
+                str(source),
+                "--schedule",
+                str(schedule),
+                "--output-dir",
+                str(tmp_path / "output"),
+                "--derived-rgbd-root",
+                str(derived),
+                "--derived-rgbd-lock",
+                str(lock),
+                "--scene",
+                "apartment",
+                "--window-frames",
+                "2",
+                "--event-limit",
+                "1",
+            ]
+        )
+
+
+@pytest.mark.parametrize("source_role", ["prediction", "unregistered"])
+def test_derived_rgbd_loader_rejects_untrusted_lock_role(
+    tmp_path: Path, source_role: str
+) -> None:
+    source, schedule = _write_generation_fixture(tmp_path)
+    derived, lock = _write_derived_rgbd_fixture(
+        tmp_path, source, source_role=source_role
+    )
+    contract = load_generation_contract(source, schedule)
+
+    with pytest.raises(ValueError, match="source role"):
+        load_derived_rgbd_frames(
+            contract,
+            "apartment",
+            derived,
+            lock,
+            maximum_frame_index=14,
+        )
+
+
+def test_generation_with_derived_rgbd_requires_checked_lock(tmp_path: Path) -> None:
+    source, schedule = _write_generation_fixture(tmp_path)
+    derived, _ = _write_derived_rgbd_fixture(tmp_path, source)
+
+    with pytest.raises(ValueError, match="RGB-D lock"):
         main(
             [
                 "--source-manifest",
@@ -1094,18 +1173,57 @@ def test_full_generation_rejects_depth_png_mutated_after_export(
         )
 
 
-def test_derived_rgbd_loader_rejects_explicit_prediction_role(
+def test_derived_rgbd_lock_rejects_export_manifest_self_report_change(
     tmp_path: Path,
 ) -> None:
     source, schedule = _write_generation_fixture(tmp_path)
-    derived = _write_derived_rgbd_fixture(tmp_path, source)
-    contract = load_generation_contract(source, schedule)
+    derived, lock = _write_derived_rgbd_fixture(tmp_path, source)
+    export_manifest = derived / "apartment/export_manifest.json"
+    payload = json.loads(export_manifest.read_text(encoding="utf-8"))
+    payload["pose"] = "untrusted self-report"
+    export_manifest.write_text(
+        json.dumps(payload, sort_keys=True) + "\n", encoding="utf-8"
+    )
 
-    with pytest.raises(ValueError, match="prediction or method output"):
+    with pytest.raises(ValueError, match="export manifest SHA256"):
         load_derived_rgbd_frames(
-            contract,
+            load_generation_contract(source, schedule),
             "apartment",
             derived,
+            lock,
             maximum_frame_index=14,
-            source_role="prediction",
         )
+
+
+def test_derived_rgbd_parses_the_same_depth_bytes_used_for_binding(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from PIL import Image
+    from scripts.evaluation import export_tesse_cd_rgbd
+
+    source, schedule = _write_generation_fixture(tmp_path)
+    derived, lock = _write_derived_rgbd_fixture(tmp_path, source)
+    target = (derived / "apartment/results/depth000000.png").resolve()
+    replacement = io.BytesIO()
+    Image.fromarray(np.full((3, 3), 9000, dtype=np.uint16)).save(
+        replacement, format="PNG"
+    )
+    replacement_bytes = replacement.getvalue()
+    original_read = export_tesse_cd_rgbd._read_bound_file
+
+    def read_then_mutate(path: Path) -> bytes:
+        content = original_read(path)
+        if path.resolve() == target:
+            path.write_bytes(replacement_bytes)
+        return content
+
+    monkeypatch.setattr(export_tesse_cd_rgbd, "_read_bound_file", read_then_mutate)
+    frames = load_derived_rgbd_frames(
+        load_generation_contract(source, schedule),
+        "apartment",
+        derived,
+        lock,
+        maximum_frame_index=14,
+    )
+
+    assert np.allclose(frames[0]["depth"], 1.0)
