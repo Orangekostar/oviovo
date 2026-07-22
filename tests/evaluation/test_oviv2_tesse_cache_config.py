@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 from typing import Any, Iterator
 
@@ -53,7 +54,6 @@ EXPECTED = {
         "label_space_sha256": "91a7b359ee678dd67871653959a50c477ba7f371473b9c2bf1b4f41f63691765",
     },
 }
-ALIAS_MAP_SHA256 = "217b3bcd730a6485159e23e56ee9e97ac3c1c56007a016cdc8a20e9fc07abdbc"
 OFFICIAL_TIMELINES = {
     "apartment": (1745, 4_204_107_999, 91_404_110_000),
     "office": (4346, 7_243_018_000, 224_492_999_999),
@@ -84,9 +84,9 @@ def test_cache_config_freezes_input_only_scene_contracts() -> None:
     assert config["stage3_lineage_commit"] == (
         "47962fbd9f363c0696cc5016f8ab42f83a3bf7e5"
     )
-    assert config["camera"] == {
+    camera = config["camera"]
+    assert {key: value for key, value in camera.items() if key != "sha256"} == {
         "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/cam_params.json",
-        "sha256": "73fe7357e25e4708bc6554bb2a0fc925de00e8368d06a18f9eb3eadd9cb808eb",
         "width": 720,
         "height": 480,
         "fx": 415.69219381653056,
@@ -95,12 +95,7 @@ def test_cache_config_freezes_input_only_scene_contracts() -> None:
         "cy": 240.0,
         "depth_scale": 1000.0,
     }
-    assert config["source_manifest"]["sha256"] == (
-        "be63826267109a67fe4109c1419eb02dbad99a9e3856d44ac8f848e32e00b907"
-    )
-    assert config["schedule_manifest"]["sha256"] == (
-        "fb97bacee377f9fd67ee9dae8064dc6f33ac32d129ee633629fec4164d5003e0"
-    )
+    assert len(camera["sha256"]) == 64
 
     for scene, expected in EXPECTED.items():
         record = config["scenes"][scene]
@@ -114,16 +109,23 @@ def test_cache_config_freezes_input_only_scene_contracts() -> None:
         assert record["source_depth_dtype"] == "uint16"
         assert record["depth_unit"] == "millimeter"
         assert record["pose_convention"] == "camera_to_world"
+        assert record["export_manifest"]["file_hash_count"] == (
+            2 * expected["frame_count"] + 3
+        )
 
 
-def test_checked_schedule_hash_matches_adapter_and_cache_declarations() -> None:
+def test_checked_protocol_hashes_match_cache_declarations() -> None:
     config = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
-    checked_sha256 = _sha256(CHECKED_SCHEDULE_PATH)
 
-    assert TesseCdRgbdDataset.SCHEDULE_SHA256 == checked_sha256
-    assert config["schedule_manifest"]["sha256"] == checked_sha256
+    for role in ("source_manifest", "schedule_manifest"):
+        binding = config[role]
+        assert binding["sha256"] == _sha256(REPO_ROOT / binding["path"])
 
 
+@pytest.mark.skipif(
+    os.environ.get("TESSE_CD_RUN_FORMAL_ASSET_TESTS") != "1",
+    reason="set TESSE_CD_RUN_FORMAL_ASSET_TESTS=1 to validate formal assets",
+)
 @pytest.mark.parametrize("scene", ["apartment", "office"])
 def test_official_scene_constructs_with_checked_input_hashes(scene: str) -> None:
     config = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
@@ -131,8 +133,22 @@ def test_official_scene_constructs_with_checked_input_hashes(scene: str) -> None
     frame_count, first_timestamp_ns, last_timestamp_ns = OFFICIAL_TIMELINES[scene]
     export_path = Path(scene_config["export_manifest"]["path"])
 
-    assert _sha256(export_path) == TesseCdRgbdDataset.EXPORT_SHA256[scene]
-    assert _sha256(CHECKED_SCHEDULE_PATH) == TesseCdRgbdDataset.SCHEDULE_SHA256
+    assert _sha256(export_path) == scene_config["export_manifest"]["sha256"]
+    assert _sha256(CHECKED_SCHEDULE_PATH) == config["schedule_manifest"]["sha256"]
+    assert _sha256(Path(config["camera"]["path"])) == config["camera"]["sha256"]
+    assert _sha256(Path(scene_config["timestamps"]["path"])) == (
+        scene_config["timestamps"]["sha256"]
+    )
+    assert _sha256(Path(scene_config["trajectory"]["path"])) == (
+        scene_config["trajectory"]["sha256"]
+    )
+    export = json.loads(export_path.read_text(encoding="utf-8"))
+    assert export["combined_output_sha256"] == (
+        scene_config["export_manifest"]["combined_output_sha256"]
+    )
+    assert export["file_hash_count"] == (
+        scene_config["export_manifest"]["file_hash_count"]
+    )
 
     dataset = TesseCdRgbdDataset(
         OFFICIAL_RGBD_ROOT,
@@ -160,7 +176,8 @@ def test_scene_vocabularies_match_ordered_json_txt_and_hash_bindings() -> None:
         assert vocabulary["object_semantic_ids"] == expected["object_semantic_ids"]
         assert txt_classes == expected["classes"]
         assert vocabulary["label_space"]["sha256"] == expected["label_space_sha256"]
-        assert vocabulary["alias_map"]["sha256"] == ALIAS_MAP_SHA256
+        alias_path = REPO_ROOT / vocabulary["alias_map"]["path"]
+        assert vocabulary["alias_map"]["sha256"] == _sha256(alias_path)
 
         binding = config["scenes"][scene]["vocabulary"]
         assert binding["json_path"] == (

@@ -36,24 +36,11 @@ class TesseCdRgbdDataset:
     WIDTH = 720
     HEIGHT = 480
     DEPTH_SCALE = 1000.0
-    CAMERA_SHA256 = "73fe7357e25e4708bc6554bb2a0fc925de00e8368d06a18f9eb3eadd9cb808eb"
-    SCHEDULE_SHA256 = "fb97bacee377f9fd67ee9dae8064dc6f33ac32d129ee633629fec4164d5003e0"
-    EXPORT_SHA256 = {
-        "apartment": "ee35d1843540fc88ae20b5dae5ad34caf192d50f0cab7c5564c47c454d4d5b81",
-        "office": "16068d00033c8f8407d143d9e50f2008a5f4feb22c134abd0059fc551637f1f6",
-    }
-    INPUT_SHA256 = {
-        "apartment": {
-            "timestamps": "bc369c8c5b4bca30b87c5617bc8c17076c90e5efc00167490cf5c9361af5e83d",
-            "trajectory": "5553fdfc32e0289965d19f4735316445fc07c2eee0ffe57b3f637a3e6e53bc45",
-            "database": "43a30e694b8deabf4861b2b20a8f32a5c18c6288f37a886289783af0f26dab07",
-        },
-        "office": {
-            "timestamps": "a73591a0703d94c6228de1e34f0d93e9ec2892ec72f88ebc35c5e5a945514491",
-            "trajectory": "06a31ee46540b4e67f42e373592c746bad097b1024ffdc94196642787d0d968e",
-            "database": "4305b56149378799bfa468da2ac0acd84716bef59aba004f8e4feb34ec0d3b51",
-        },
-    }
+    REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+    CACHE_MANIFEST_PATH = (
+        REPOSITORY_ROOT
+        / "configs/evaluation/manifests/oviv2_tesse_cd_cache.json"
+    )
 
     def __init__(
         self,
@@ -83,16 +70,27 @@ class TesseCdRgbdDataset:
         if self.export_manifest_path.resolve() != (self.root / "export_manifest.json").resolve():
             raise ValueError("export manifest must be the selected scene export_manifest.json")
 
+        expected_count = self.EXPECTED_FRAMES[scene]
+        official_lock = self._load_official_lock(expected_count)
         export = self._read_json(self.export_manifest_path, "export manifest")
         schedule = self._read_json(self.schedule_manifest_path, "schedule manifest")
         source = self._validate_manifest_chain(export, schedule)
-        self.intrinsics = self._load_camera(source)
+        intrinsics = self._load_camera(source)
+        self._intrinsics_values = (
+            intrinsics.fx,
+            intrinsics.fy,
+            intrinsics.cx,
+            intrinsics.cy,
+            intrinsics.width,
+            intrinsics.height,
+        )
 
-        expected_count = self.EXPECTED_FRAMES[scene]
         rgb_paths, depth_paths = self._validate_frame_files(expected_count)
         timestamps = self._load_timestamps(expected_count, schedule)
         poses = self._load_poses(expected_count)
-        self._validate_official_hashes(expected_count)
+        if official_lock is not None:
+            self._validate_official_inputs(export, official_lock)
+        self._validate_exported_content(export, rgb_paths, depth_paths)
 
         self.records = tuple(
             TesseCdFrameRecord(
@@ -128,6 +126,18 @@ class TesseCdRgbdDataset:
 
     def timestamp_ns(self, index: int) -> int:
         return self.records[index].timestamp_ns
+
+    @property
+    def intrinsics(self) -> CameraIntrinsics:
+        fx, fy, cx, cy, width, height = self._intrinsics_values
+        return CameraIntrinsics(
+            fx=fx,
+            fy=fy,
+            cx=cx,
+            cy=cy,
+            width=width,
+            height=height,
+        )
 
     @classmethod
     def _resolve_roots(cls, root: Path, scene: str) -> tuple[Path, Path]:
@@ -293,8 +303,6 @@ class TesseCdRgbdDataset:
         )
         if values != expected or source_mismatch:
             raise ValueError("camera intrinsics mismatch")
-        if self._sha256(self.camera_path) != self.CAMERA_SHA256:
-            raise ValueError("camera manifest hash mismatch")
         return CameraIntrinsics(**values)
 
     def _validate_frame_files(
@@ -377,39 +385,164 @@ class TesseCdRgbdDataset:
     def _load_poses(self, expected_count: int) -> tuple[np.ndarray, ...]:
         lines = self.trajectory_path.read_text(encoding="utf-8").splitlines()
         if len(lines) != expected_count:
-            raise ValueError("pose frame count mismatch")
+            raise ValueError("trajectory source frame count mismatch")
         poses: list[np.ndarray] = []
         for index, line in enumerate(lines):
-            values = np.fromstring(line, sep=" ", dtype=np.float64)
-            if values.size != 16:
-                raise ValueError(f"pose {index} must contain 16 values")
+            context = f"source frame {index} pose"
+            tokens = line.split()
+            if len(tokens) != 16:
+                raise ValueError(f"{context} must contain exactly 16 tokens")
+            try:
+                values = np.asarray([float(token) for token in tokens], dtype=np.float64)
+            except ValueError as exc:
+                raise ValueError(f"{context} tokens must be numeric") from exc
             pose = values.reshape(4, 4)
             if not np.all(np.isfinite(pose)):
-                raise ValueError(f"pose {index} must be finite")
+                raise ValueError(f"{context} must be finite")
             if not np.allclose(pose[3], (0.0, 0.0, 0.0, 1.0), atol=1e-8):
-                raise ValueError(f"pose {index} must be a homogeneous transform")
+                raise ValueError(f"{context} must be a homogeneous transform")
             rotation = pose[:3, :3]
             if not np.allclose(rotation.T @ rotation, np.eye(3), atol=1e-5) or not np.isclose(
                 np.linalg.det(rotation), 1.0, atol=1e-5
             ):
-                raise ValueError(f"pose {index} rotation must be rigid")
-            pose = np.asarray(pose, dtype=np.float64)
-            pose.setflags(write=False)
-            poses.append(pose)
+                raise ValueError(f"{context} rotation must be rigid")
+            immutable_pose = np.frombuffer(pose.tobytes(), dtype=np.float64).reshape(4, 4)
+            poses.append(immutable_pose)
         return tuple(poses)
 
-    def _validate_official_hashes(self, expected_count: int) -> None:
+    def _validate_exported_content(
+        self,
+        export: Mapping[str, Any],
+        rgb_paths: tuple[Path, ...],
+        depth_paths: tuple[Path, ...],
+    ) -> None:
+        output_root = self.camera_path.parent
+        paths = (
+            *rgb_paths,
+            *depth_paths,
+            self.trajectory_path,
+            self.timestamps_path,
+            self.camera_path,
+        )
+        if export.get("file_hash_count") != len(paths):
+            raise ValueError("export file hash count mismatch")
+
+        output_hashes = [
+            (str(path.relative_to(output_root)), self._sha256(path)) for path in paths
+        ]
+        digest = hashlib.sha256()
+        for relative, file_hash in sorted(output_hashes):
+            digest.update(
+                relative.encode("utf-8")
+                + b"\0"
+                + file_hash.encode("ascii")
+                + b"\n"
+            )
+        expected = self._hash_text(
+            export.get("combined_output_sha256"),
+            "export combined output hash",
+        )
+        if digest.hexdigest() != expected:
+            raise ValueError("export combined output hash mismatch")
+
+    def _load_official_lock(
+        self,
+        expected_count: int,
+    ) -> tuple[Mapping[str, Any], Mapping[str, Any]] | None:
         if expected_count != self.OFFICIAL_FRAME_COUNTS[self.scene]:
-            return
-        if self._sha256(self.export_manifest_path) != self.EXPORT_SHA256[self.scene]:
-            raise ValueError("export manifest hash mismatch")
-        if self._sha256(self.schedule_manifest_path) != self.SCHEDULE_SHA256:
-            raise ValueError("schedule manifest hash mismatch")
-        expected = self.INPUT_SHA256[self.scene]
-        if self._sha256(self.timestamps_path) != expected["timestamps"]:
-            raise ValueError("timestamps hash mismatch")
-        if self._sha256(self.trajectory_path) != expected["trajectory"]:
-            raise ValueError("trajectory hash mismatch")
+            return None
+        cache = self._read_json(self.CACHE_MANIFEST_PATH, "cache input manifest")
+        if (
+            cache.get("schema_version") != 1
+            or cache.get("manifest_id") != "oviv2_tesse_cd_cache_v1"
+            or cache.get("dataset") != "TESSE-CD"
+        ):
+            raise ValueError("cache input manifest identity mismatch")
+        scene_lock = self._mapping(
+            self._mapping(cache.get("scenes"), "cache scenes").get(self.scene),
+            f"cache scene {self.scene}",
+        )
+        if scene_lock.get("frame_count") != expected_count:
+            raise ValueError("cache scene frame count mismatch")
+        return cache, scene_lock
+
+    @classmethod
+    def _locked_path(cls, raw_path: object) -> Path:
+        path = Path(str(raw_path))
+        return path if path.is_absolute() else cls.REPOSITORY_ROOT / path
+
+    def _validate_locked_file(
+        self,
+        actual_path: Path,
+        binding: Mapping[str, Any],
+        role: str,
+    ) -> None:
+        locked_path = self._locked_path(binding.get("path"))
+        if actual_path.resolve() != locked_path.resolve():
+            raise ValueError(f"{role} path disagrees with cache input manifest")
+        expected_hash = self._hash_text(binding.get("sha256"), f"{role} hash")
+        if self._sha256(actual_path) != expected_hash:
+            raise ValueError(f"{role} hash mismatch")
+
+    def _validate_official_inputs(
+        self,
+        export: Mapping[str, Any],
+        lock: tuple[Mapping[str, Any], Mapping[str, Any]],
+    ) -> None:
+        cache, scene_lock = lock
+        camera_lock = self._mapping(cache.get("camera"), "cache camera")
+        schedule_lock = self._mapping(
+            cache.get("schedule_manifest"), "cache schedule manifest"
+        )
+        source_lock = self._mapping(
+            cache.get("source_manifest"), "cache source manifest"
+        )
+        export_lock = self._mapping(
+            scene_lock.get("export_manifest"), "cache export manifest"
+        )
+        timestamps_lock = self._mapping(
+            scene_lock.get("timestamps"), "cache timestamps"
+        )
+        trajectory_lock = self._mapping(
+            scene_lock.get("trajectory"), "cache trajectory"
+        )
+
+        self._validate_locked_file(self.camera_path, camera_lock, "camera manifest")
+        self._validate_locked_file(
+            self.schedule_manifest_path,
+            schedule_lock,
+            "schedule manifest",
+        )
+        self._validate_locked_file(
+            self._locked_path(source_lock.get("path")),
+            source_lock,
+            "source manifest",
+        )
+        self._validate_locked_file(
+            self.export_manifest_path,
+            export_lock,
+            "export manifest",
+        )
+        self._validate_locked_file(
+            self.timestamps_path,
+            timestamps_lock,
+            "timestamps",
+        )
+        self._validate_locked_file(
+            self.trajectory_path,
+            trajectory_lock,
+            "trajectory",
+        )
+        if export.get("combined_output_sha256") != export_lock.get(
+            "combined_output_sha256"
+        ):
+            raise ValueError("export combined output hash disagrees with cache lock")
+        if export.get("file_hash_count") != export_lock.get("file_hash_count"):
+            raise ValueError("export file hash count disagrees with cache lock")
+        if export.get("source_database_sha256") != scene_lock.get(
+            "source_database_sha256"
+        ):
+            raise ValueError("source database hash disagrees with cache lock")
 
 
 __all__ = ["TesseCdFrameRecord", "TesseCdRgbdDataset"]

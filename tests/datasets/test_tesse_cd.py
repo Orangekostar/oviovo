@@ -41,6 +41,31 @@ def _write_json(path: Path, payload: object) -> None:
     )
 
 
+def _exported_content_digest(
+    dataset_root: Path,
+    scene_root: Path,
+) -> tuple[str, int]:
+    paths = [
+        *scene_root.joinpath("results").glob("frame*.jpg"),
+        *scene_root.joinpath("results").glob("depth*.png"),
+        scene_root / "traj.txt",
+        scene_root / "timestamps.csv",
+        dataset_root / "cam_params.json",
+    ]
+    output_hashes = [
+        (str(path.relative_to(dataset_root)), _sha256(path)) for path in paths
+    ]
+    digest = hashlib.sha256()
+    for relative, file_hash in sorted(output_hashes):
+        digest.update(
+            relative.encode("utf-8")
+            + b"\0"
+            + file_hash.encode("ascii")
+            + b"\n"
+        )
+    return digest.hexdigest(), len(output_hashes)
+
+
 def _write_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
     dataset_root = tmp_path / "rgbd_v1"
     scene_root = dataset_root / "apartment"
@@ -102,6 +127,10 @@ def _write_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
         },
     )
 
+    combined_output_sha256, file_hash_count = _exported_content_digest(
+        dataset_root,
+        scene_root,
+    )
     export_manifest = scene_root / "export_manifest.json"
     _write_json(
         export_manifest,
@@ -112,8 +141,8 @@ def _write_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
             "frame_count": 5,
             "source_manifest": str(source_manifest),
             "source_database_sha256": database_sha256,
-            "combined_output_sha256": "b" * 64,
-            "file_hash_count": 13,
+            "combined_output_sha256": combined_output_sha256,
+            "file_hash_count": file_hash_count,
         },
     )
 
@@ -237,8 +266,24 @@ def test_rejects_non_uint16_source_depth(tmp_path: Path) -> None:
         TesseCdRgbdDataset(root, "apartment", export_manifest, schedule_manifest)
 
 
-@pytest.mark.parametrize("bad_pose", ["nan " + "0 " * 15, "0 " * 15])
-def test_rejects_nonfinite_or_wrong_pose(
+@pytest.mark.parametrize(
+    "bad_pose",
+    [
+        pytest.param("nan " + "0 " * 15, id="nonfinite"),
+        pytest.param("0 " * 15, id="too-few-tokens"),
+        pytest.param("0 " * 17, id="too-many-tokens"),
+        pytest.param("not-a-number " + "0 " * 15, id="nonnumeric"),
+        pytest.param(
+            "2 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1",
+            id="nonrigid",
+        ),
+        pytest.param(
+            "1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 1",
+            id="nonhomogeneous",
+        ),
+    ],
+)
+def test_rejects_invalid_pose_with_source_frame_context(
     tmp_path: Path,
     bad_pose: str,
 ) -> None:
@@ -247,8 +292,25 @@ def test_rejects_nonfinite_or_wrong_pose(
     lines[3] = bad_pose.strip()
     (root / "traj.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
-    with pytest.raises(ValueError, match="pose"):
+    with pytest.raises(ValueError, match=r"source frame 3 pose"):
         TesseCdRgbdDataset(root, "apartment", export_manifest, schedule_manifest)
+
+
+def test_record_pose_cannot_be_made_writeable(tmp_path: Path) -> None:
+    dataset = _dataset(tmp_path)
+
+    with pytest.raises(ValueError):
+        dataset.records[0].camera_to_world.setflags(write=True)
+
+
+def test_intrinsics_mutation_does_not_change_dataset(tmp_path: Path) -> None:
+    dataset = _dataset(tmp_path)
+
+    exposed = dataset.intrinsics
+    exposed.fx = 1.0
+
+    assert dataset.intrinsics.fx == CAMERA["fx"]
+    assert dataset[0].intrinsics.fx == CAMERA["fx"]
 
 
 def test_rejects_camera_mismatch(tmp_path: Path) -> None:
@@ -267,6 +329,26 @@ def test_rejects_missing_frame_in_contiguous_sequence(tmp_path: Path) -> None:
     (root / "results" / "frame000003.jpg").unlink()
 
     with pytest.raises(ValueError, match="frame|RGB"):
+        TesseCdRgbdDataset(root, "apartment", export_manifest, schedule_manifest)
+
+
+def test_rejects_same_shape_uint16_depth_content_tamper(tmp_path: Path) -> None:
+    root, export_manifest, schedule_manifest = _write_fixture(tmp_path)
+    Image.fromarray(np.full((480, 720), 9_999, dtype=np.uint16)).save(
+        root / "results" / "depth000003.png"
+    )
+
+    with pytest.raises(ValueError, match="combined output hash mismatch"):
+        TesseCdRgbdDataset(root, "apartment", export_manifest, schedule_manifest)
+
+
+def test_rejects_export_file_hash_count_drift(tmp_path: Path) -> None:
+    root, export_manifest, schedule_manifest = _write_fixture(tmp_path)
+    payload = json.loads(export_manifest.read_text(encoding="utf-8"))
+    payload["file_hash_count"] += 1
+    _write_json(export_manifest, payload)
+
+    with pytest.raises(ValueError, match="file hash count"):
         TesseCdRgbdDataset(root, "apartment", export_manifest, schedule_manifest)
 
 
