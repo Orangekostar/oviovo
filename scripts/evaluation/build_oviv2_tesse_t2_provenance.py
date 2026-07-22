@@ -1523,6 +1523,21 @@ def build_provenance(
     if final_sources != source_bindings or final_schedule != schedule_binding:
         raise ValueError("frozen source bindings changed during provenance capture")
     _revalidate_records(payload)
+    for key in RUN_KEYS:
+        if (
+            _directory_identity(
+                mapping_roots[key], label=f"{key} mapping root"
+            )
+            != mapping_identities[key]
+        ):
+            raise ValueError(f"{key} mapping root changed during provenance capture")
+        if (
+            _directory_identity(
+                official_roots[key], label=f"{key} official root"
+            )
+            != official_identities[key]
+        ):
+            raise ValueError(f"{key} official root changed during provenance capture")
     final_state = _repository_state()
     if final_state != current:
         raise ValueError("builder repository changed during provenance capture")

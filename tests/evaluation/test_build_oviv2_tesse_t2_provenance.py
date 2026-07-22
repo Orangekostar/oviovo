@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import shutil
 from typing import Any, Callable
 
 import pytest
@@ -1031,6 +1032,25 @@ def test_revalidates_frozen_sources_before_return(
     monkeypatch.setattr(builder, "_commands", mutate_after_validation)
 
     with pytest.raises(ValueError, match="hash binding mismatch"):
+        package.build()
+
+
+def test_rejects_byte_identical_mapping_root_replacement_before_return(
+    package: Fixture,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original_commands = builder._commands
+
+    def replace_after_validation(values: list[str]) -> list[str]:
+        root = package.mapping_roots["apartment_run1"]
+        original_root = root.with_name(f"{root.name}-original")
+        root.rename(original_root)
+        shutil.copytree(original_root, root)
+        return original_commands(values)
+
+    monkeypatch.setattr(builder, "_commands", replace_after_validation)
+
+    with pytest.raises(ValueError, match="mapping root changed"):
         package.build()
 
 
