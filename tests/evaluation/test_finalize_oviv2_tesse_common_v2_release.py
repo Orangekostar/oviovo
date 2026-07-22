@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from scripts.evaluation import finalize_oviv2_tesse_common_v2_release as release_module
 from scripts.evaluation.finalize_oviv2_tesse_common_v2_release import (
     finalize_oviv2_common_v2_release,
 )
@@ -349,4 +350,63 @@ def test_release_finalizer_rejects_hardlinked_run_local_sources(
             freeze,
             run_id="hardlink",
             output=tmp_path / "result.json",
+        )
+
+
+def test_release_uses_one_summary_snapshot_for_validation_and_metrics(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    freeze = _fixture(tmp_path)
+    original = release_module.capture_and_canonicalize_summary
+    captured_by_scene: dict[str, tuple[float, dict[str, object]]] = {}
+
+    def mutate_after_capture(
+        path: Path,
+        *,
+        artifact_root: Path,
+        external_sources: dict[str, Path],
+    ) -> tuple[dict[str, object], dict[str, object], dict[str, object]]:
+        raw, canonical, raw_record = original(
+            path,
+            artifact_root=artifact_root,
+            external_sources=external_sources,
+        )
+        scene = str(raw["scene"])
+        captured_by_scene.setdefault(
+            scene,
+            (float(raw["metrics"]["current_miou"]), raw_record),
+        )
+        changed = json.loads(path.read_text(encoding="utf-8"))
+        changed["metrics"]["current_miou"] = 0.1
+        _write_json(path, changed)
+        return raw, canonical, raw_record
+
+    monkeypatch.setattr(
+        release_module,
+        "capture_and_canonicalize_summary",
+        mutate_after_capture,
+    )
+
+    result = finalize_oviv2_common_v2_release(
+        freeze,
+        run_id="single-summary-snapshot",
+        output=tmp_path / "result.json",
+    )
+
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    for scene in ("apartment", "office"):
+        expected_metric, expected_raw_record = captured_by_scene[scene]
+        assert payload["scene_metrics"][scene]["current_miou"] == expected_metric
+        assert payload["scene_summaries"][scene]["raw_primary"] == {
+            "role": f"{scene}.run1.raw_summary",
+            **expected_raw_record,
+        }
+        on_disk_metric = json.loads(
+            (tmp_path / scene / "run1/evaluation/summary.json").read_text(
+                encoding="utf-8"
+            )
+        )["metrics"]["current_miou"]
+        assert on_disk_metric == 0.1
+        assert payload["scene_metrics"][scene]["current_miou"] != (
+            on_disk_metric
         )

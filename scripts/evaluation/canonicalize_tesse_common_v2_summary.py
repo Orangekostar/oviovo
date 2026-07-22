@@ -107,11 +107,25 @@ def canonicalize_summary(
     artifact_root: Path,
     external_sources: Mapping[str, Path],
 ) -> dict[str, Any]:
+    _, canonical, _ = capture_and_canonicalize_summary(
+        summary,
+        artifact_root=artifact_root,
+        external_sources=external_sources,
+    )
+    return canonical
+
+
+def capture_and_canonicalize_summary(
+    summary: Path,
+    *,
+    artifact_root: Path,
+    external_sources: Mapping[str, Path],
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, object]]:
     root = _direct_directory(artifact_root, label="artifact root")
     expected_summary = root / "evaluation/summary.json"
     if _absolute_lexical(summary) != expected_summary:
         raise ValueError("summary path must be artifact_root/evaluation/summary.json")
-    _, _, raw_bytes = _stable_regular_file(
+    raw_digest, raw_byte_count, raw_bytes = _stable_regular_file(
         expected_summary, label="raw common-v2 summary", capture=True
     )
     assert raw_bytes is not None
@@ -195,7 +209,11 @@ def canonicalize_summary(
             raise ValueError("physical source path leaked into canonical summary")
     if os.fspath(root).encode("utf-8") in encoded:
         raise ValueError("artifact root leaked into canonical summary")
-    return canonical_payload
+    return (
+        dict(payload),
+        canonical_payload,
+        {"sha256": raw_digest, "byte_count": raw_byte_count},
+    )
 
 
 def canonical_summary_bytes(payload: Mapping[str, Any]) -> bytes:

@@ -22,7 +22,7 @@ from scripts.evaluation import finalize_tesse_common_v2 as pinned_common
 from scripts.evaluation.canonicalize_tesse_common_v2_summary import (
     EXTERNAL_SOURCE_ROLES,
     canonical_summary_bytes,
-    canonicalize_summary,
+    capture_and_canonicalize_summary,
 )
 from scripts.evaluation.finalize_tesse_t2 import (
     _absolute_lexical,
@@ -125,11 +125,33 @@ def _canonical_record(payload: Mapping[str, Any], *, role: str) -> dict[str, obj
     }
 
 
-def _raw_summary_record(path: Path, *, role: str) -> dict[str, object]:
-    digest, byte_count, _ = _stable_regular_file(
-        path, label=f"{role} raw summary", capture=False
-    )
-    return {"role": role, "sha256": digest, "byte_count": byte_count}
+def _validate_captured_summary(
+    payload: Mapping[str, Any], *, scene: str
+) -> None:
+    if not (
+        payload.get("schema_version") == 1
+        and payload.get("manifest_id") == "tesse_cd_common_v2_scene_summary"
+        and payload.get("dataset") == "TESSE-CD"
+        and payload.get("protocol") == "tesse_cd_common_v2"
+        and payload.get("status") == "PASS"
+        and payload.get("method") == "OVIV2"
+        and payload.get("mode") == pinned_common.METHODS["OVIV2"]["summary_mode"]
+        and payload.get("scene") == scene
+    ):
+        raise ValueError(f"{scene} scene summary identity mismatch")
+    metrics = _mapping(payload.get("metrics"), label=f"{scene} metrics")
+    for name in pinned_common.METRICS:
+        value = metrics.get(name)
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError(f"{scene}.{name} must be numeric")
+        number = float(value)
+        upper = 450.0 if name == "recovery_frames" else 1.0
+        if not math.isfinite(number) or not 0.0 <= number <= upper:
+            raise ValueError(f"{scene}.{name} is outside its valid range")
+    pinned_common._validate_metric_details(metrics, scene=scene)
+    sources = _mapping(payload.get("sources"), label=f"{scene} sources")
+    if not pinned_common.REQUIRED_SUMMARY_SOURCES <= set(sources):
+        raise ValueError(f"{scene} summary source coverage is incomplete")
 
 
 def finalize_oviv2_common_v2_release(
@@ -263,20 +285,23 @@ def finalize_oviv2_common_v2_release(
             key = (scene, repeat)
             summary_path = roots[key] / "evaluation/summary.json"
             summary_paths[key] = summary_path
-            raw_summaries[key] = pinned_common._load_summary(
-                summary_path, scene=scene, method="OVIV2"
+            raw_payload, canonical_payload, raw_content_record = (
+                capture_and_canonicalize_summary(
+                    summary_path,
+                    artifact_root=roots[key],
+                    external_sources={
+                        **external_common,
+                        "label_space": label_spaces[scene],
+                    },
+                )
             )
-            canonical[key] = canonicalize_summary(
-                summary_path,
-                artifact_root=roots[key],
-                external_sources={
-                    **external_common,
-                    "label_space": label_spaces[scene],
-                },
-            )
-            raw_records[key] = _raw_summary_record(
-                summary_path, role=f"{scene}.run{repeat}.raw_summary"
-            )
+            _validate_captured_summary(raw_payload, scene=scene)
+            raw_summaries[key] = raw_payload
+            canonical[key] = canonical_payload
+            raw_records[key] = {
+                "role": f"{scene}.run{repeat}.raw_summary",
+                **raw_content_record,
+            }
 
     for scene in SCENES:
         if os.path.samefile(summary_paths[(scene, 1)], summary_paths[(scene, 2)]):
