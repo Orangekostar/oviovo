@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import stat
 import subprocess
 import sys
 from typing import Any, Mapping
@@ -28,6 +29,7 @@ CPP_SOURCE = (
     REPO_ROOT
     / "scripts/evaluation/compat/khronos_temporal_bridge/import_temporal_baseline.cpp"
 )
+DEFAULT_WORKSPACE = Path("/home/ww/oviovo_baseline_builds/khronos-jazzy-ws")
 CMAKE_BEGIN = "# OVIV2_KHRONOS_TEMPORAL_BRIDGE_BEGIN"
 CMAKE_END = "# OVIV2_KHRONOS_TEMPORAL_BRIDGE_END"
 CMAKE_BLOCK = f"""{CMAKE_BEGIN}
@@ -74,6 +76,159 @@ def _validate_entry(entry: Mapping[str, Any], *, label: str) -> Path:
     if _sha256(path) != str(entry.get("sha256", "")):
         raise ValueError(f"{label} SHA256 mismatch")
     return path
+
+
+def _identity(status: os.stat_result) -> dict[str, int]:
+    return {
+        "device": status.st_dev,
+        "inode": status.st_ino,
+        "mode": status.st_mode,
+        "uid": status.st_uid,
+        "gid": status.st_gid,
+        "size": status.st_size,
+        "mtime_ns": status.st_mtime_ns,
+        "ctime_ns": status.st_ctime_ns,
+    }
+
+
+def _trusted_workspace_root(workspace: Path) -> Path:
+    declared = Path(os.path.abspath(workspace))
+    try:
+        resolved = declared.resolve(strict=True)
+    except OSError as error:
+        raise ValueError(f"trusted workspace is invalid: {declared}") from error
+    if declared != resolved or not resolved.is_dir():
+        raise ValueError("trusted workspace must be a real directory without symlinks")
+    return resolved
+
+
+def _assert_trusted_parents(path: Path, workspace: Path) -> None:
+    try:
+        relative = path.relative_to(workspace)
+    except ValueError as error:
+        raise ValueError(f"executable symlink escapes trusted workspace: {path}") from error
+    current = workspace
+    for part in relative.parts[:-1]:
+        current /= part
+        try:
+            status = current.lstat()
+        except OSError as error:
+            raise ValueError(f"executable parent is invalid: {current}") from error
+        if stat.S_ISLNK(status.st_mode):
+            raise ValueError(f"executable parent symlink is not trusted: {current}")
+        if not stat.S_ISDIR(status.st_mode):
+            raise ValueError(f"executable parent is not a directory: {current}")
+
+
+def _resolved_elf_record(path: Path) -> dict[str, Any]:
+    flags = (
+        os.O_RDONLY
+        | getattr(os, "O_CLOEXEC", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+        | getattr(os, "O_NONBLOCK", 0)
+    )
+    try:
+        descriptor = os.open(path, flags)
+    except OSError as error:
+        raise ValueError(f"resolved ELF is not a readable regular file: {path}") from error
+    try:
+        before = os.fstat(descriptor)
+        if not stat.S_ISREG(before.st_mode):
+            raise ValueError(f"resolved ELF is not a regular file: {path}")
+        if not before.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH):
+            raise ValueError(f"resolved ELF is not executable: {path}")
+        digest = hashlib.sha256()
+        with os.fdopen(descriptor, "rb", closefd=False) as handle:
+            magic = handle.read(4)
+            if magic != b"\x7fELF":
+                raise ValueError(f"resolved executable is not an ELF file: {path}")
+            digest.update(magic)
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+        after = os.fstat(descriptor)
+    finally:
+        os.close(descriptor)
+    try:
+        path_status = path.lstat()
+    except OSError as error:
+        raise ValueError(f"resolved ELF changed while hashing: {path}") from error
+    if (
+        _identity(before) != _identity(after)
+        or _identity(after) != _identity(path_status)
+    ):
+        raise ValueError(f"resolved ELF changed while hashing: {path}")
+    return {
+        "path": str(path),
+        "sha256": digest.hexdigest(),
+        "byte_count": after.st_size,
+        "identity": _identity(after),
+    }
+
+
+def _revalidate_symlink_chain(chain: list[dict[str, Any]]) -> None:
+    for expected in chain:
+        path = Path(expected["path"])
+        try:
+            before = path.lstat()
+            target = os.readlink(path)
+            after = path.lstat()
+        except OSError as error:
+            raise ValueError(f"executable symlink chain changed: {path}") from error
+        if (
+            _identity(before) != expected["identity"]
+            or _identity(after) != expected["identity"]
+            or target != expected["target"]
+        ):
+            raise ValueError(f"executable symlink chain changed: {path}")
+
+
+def _executable_provenance(
+    declared_path: Path, *, trusted_workspace: Path
+) -> dict[str, Any]:
+    workspace = _trusted_workspace_root(trusted_workspace)
+    declared = Path(os.path.abspath(declared_path))
+    current = declared
+    seen: set[Path] = set()
+    chain: list[dict[str, Any]] = []
+    for _ in range(32):
+        _assert_trusted_parents(current, workspace)
+        if current in seen:
+            raise ValueError("executable symlink chain contains a loop")
+        seen.add(current)
+        try:
+            before = current.lstat()
+        except OSError as error:
+            raise ValueError(f"executable symlink target is missing: {current}") from error
+        if not stat.S_ISLNK(before.st_mode):
+            if not chain:
+                raise ValueError("declared install executable must be a symlink")
+            resolved = _resolved_elf_record(current)
+            _revalidate_symlink_chain(chain)
+            return {
+                "declared_path": str(declared),
+                "symlink_chain": chain,
+                "resolved": resolved,
+            }
+        target = os.readlink(current)
+        after = current.lstat()
+        if _identity(before) != _identity(after):
+            raise ValueError(f"executable symlink changed while reading: {current}")
+        chain.append(
+            {
+                "path": str(current),
+                "target": target,
+                "identity": _identity(after),
+            }
+        )
+        raw_target = Path(target)
+        current = Path(
+            os.path.abspath(
+                raw_target
+                if raw_target.is_absolute()
+                else current.parent / raw_target
+            )
+        )
+    raise ValueError("executable symlink chain exceeds 32 links")
 
 
 def stage_importer_source(source: Path, workspace: Path) -> dict[str, Any]:
@@ -150,10 +305,12 @@ def build_bridge_command(
     conda: Path,
     environment: str,
     workspace: Path,
+    executable: Path,
     manifest: Path,
     output: Path,
 ) -> list[str]:
-    executable = workspace / "install/khronos_eval/lib/khronos_eval/import_temporal_baseline"
+    if executable.is_symlink() or not executable.is_file():
+        raise ValueError("bridge command requires a verified resolved executable")
     return [
         str(conda),
         "run",
@@ -177,20 +334,25 @@ def write_build_manifest(
     cmake: Path,
     executable: Path,
     destination: Path,
+    *,
+    trusted_workspace: Path,
 ) -> Path:
     if os.path.lexists(destination):
         raise FileExistsError(f"build manifest already exists: {destination}")
-    for path in (source, staged_source, cmake, executable):
+    for path in (source, staged_source, cmake):
         if not path.is_file():
             raise ValueError(f"temporal bridge build input is missing: {path}")
     payload = {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": "PASS",
         "mode": "khronos_temporal_importer_build",
         "source": _entry(source),
         "staged_source": _entry(staged_source),
         "cmake": _entry(cmake),
-        "executable": _entry(executable),
+        "trusted_workspace": str(_trusted_workspace_root(trusted_workspace)),
+        "executable": _executable_provenance(
+            executable, trusted_workspace=trusted_workspace
+        ),
         "build_scope": ["khronos_eval"],
     }
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -202,29 +364,49 @@ def write_build_manifest(
 
 
 def validate_build_manifest(
-    path: Path, *, expected_source: Path = CPP_SOURCE
+    path: Path,
+    *,
+    expected_source: Path = CPP_SOURCE,
+    expected_workspace: Path = DEFAULT_WORKSPACE,
 ) -> dict[str, Any]:
     payload = loads_strict(
         path.read_text(encoding="utf-8"), label="temporal importer build manifest"
     )
     if (
-        payload.get("schema_version") != 1
+        payload.get("schema_version") != 2
         or payload.get("status") != "PASS"
         or payload.get("mode") != "khronos_temporal_importer_build"
         or payload.get("build_scope") != ["khronos_eval"]
     ):
         raise ValueError("invalid temporal importer build manifest")
+    workspace = _trusted_workspace_root(expected_workspace)
+    if payload.get("trusted_workspace") != str(workspace):
+        raise ValueError("temporal importer trusted workspace mismatch")
     source = _validate_entry(payload.get("source", {}), label="source")
     staged_source = _validate_entry(
         payload.get("staged_source", {}), label="staged source"
     )
     cmake = _validate_entry(payload.get("cmake", {}), label="cmake")
-    _validate_entry(payload.get("executable", {}), label="executable")
+    executable = payload.get("executable")
+    if not isinstance(executable, Mapping):
+        raise ValueError("temporal importer executable provenance is invalid")
+    declared_path = Path(str(executable.get("declared_path", "")))
+    observed_executable = _executable_provenance(
+        declared_path, trusted_workspace=workspace
+    )
+    if dict(executable) != observed_executable:
+        raise ValueError("executable symlink chain or resolved ELF provenance mismatch")
     if source != expected_source.resolve() or _sha256(source) != _sha256(expected_source):
         raise ValueError("temporal importer source does not match expected source")
     if staged_source.read_bytes() != source.read_bytes():
         raise ValueError("staged temporal importer source does not match reviewed source")
-    expected_staged_source = cmake.parent / "app/import_temporal_baseline.cpp"
+    expected_cmake = workspace / "src/khronos/khronos_eval/CMakeLists.txt"
+    if cmake != expected_cmake:
+        raise ValueError("temporal importer CMake path is invalid")
+    expected_staged_source = (
+        workspace
+        / "src/khronos/khronos_eval/app/import_temporal_baseline.cpp"
+    )
     if staged_source != expected_staged_source.resolve():
         raise ValueError("staged temporal importer source path is invalid")
     return payload
@@ -309,19 +491,37 @@ def run(args: argparse.Namespace) -> Path:
         cmake,
         executable,
         args.output / "build_manifest.json",
+        trusted_workspace=args.workspace,
     )
-    validate_build_manifest(build_manifest, expected_source=CPP_SOURCE)
+    build_payload = validate_build_manifest(
+        build_manifest,
+        expected_source=CPP_SOURCE,
+        expected_workspace=args.workspace,
+    )
+    resolved_executable = Path(build_payload["executable"]["resolved"]["path"])
 
     copied_manifest = snapshot_bridge_input(
         args.manifest, args.output / "bridge_input"
     )
     bridge = validate_temporal_bridge_manifest(copied_manifest)
 
+    pre_execute_build = validate_build_manifest(
+        build_manifest,
+        expected_source=CPP_SOURCE,
+        expected_workspace=args.workspace,
+    )
+    if (
+        Path(pre_execute_build["executable"]["resolved"]["path"])
+        != resolved_executable
+    ):
+        raise ValueError("resolved temporal importer changed before execution")
+
     map_output = args.output / "map"
     command = build_bridge_command(
         conda=args.conda,
         environment=args.environment,
         workspace=args.workspace,
+        executable=resolved_executable,
         manifest=copied_manifest,
         output=map_output,
     )
@@ -352,13 +552,22 @@ def run(args: argparse.Namespace) -> Path:
         == expected_timestamps
     )
     validate_temporal_bridge_manifest(copied_manifest)
-    validate_build_manifest(build_manifest, expected_source=CPP_SOURCE)
+    post_execute_build = validate_build_manifest(
+        build_manifest,
+        expected_source=CPP_SOURCE,
+        expected_workspace=args.workspace,
+    )
+    if (
+        Path(post_execute_build["executable"]["resolved"]["path"])
+        != resolved_executable
+    ):
+        raise ValueError("resolved temporal importer changed during execution")
     sources = [
         copied_manifest,
         CPP_SOURCE,
         staged_source,
         cmake,
-        executable,
+        resolved_executable,
         build_manifest,
         build_log,
         log_path,
@@ -406,7 +615,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--workspace",
         type=Path,
-        default=Path("/home/ww/oviovo_baseline_builds/khronos-jazzy-ws"),
+        default=DEFAULT_WORKSPACE,
     )
     parser.add_argument(
         "--conda", type=Path, default=Path("/home/ww/miniconda3/bin/conda")
