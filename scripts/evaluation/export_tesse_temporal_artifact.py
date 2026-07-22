@@ -32,14 +32,6 @@ class _VerifiedSource:
     byte_count: int
     fingerprint: tuple[int, int, int, int]
 
-    def record(self) -> dict[str, Any]:
-        return {
-            "path": str(self.path.resolve()),
-            "sha256": self.sha256,
-            "byte_count": self.byte_count,
-        }
-
-
 def _fingerprint(path: Path) -> tuple[int, int, int, int]:
     status = path.stat()
     return (status.st_dev, status.st_ino, status.st_size, status.st_mtime_ns)
@@ -321,9 +313,33 @@ def _output_record(path: Path, *, output: Path) -> dict[str, Any]:
 
 def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
     path.write_text(
-        json.dumps(payload, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        json.dumps(
+            payload,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        )
+        + "\n",
         encoding="utf-8",
     )
+
+
+def _copy_source(
+    source: _VerifiedSource,
+    destination: Path,
+    *,
+    output: Path,
+    label: str,
+) -> dict[str, Any]:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(source.path, destination)
+    _assert_unchanged(source, label=label)
+    if (
+        _sha256(destination) != source.sha256
+        or destination.stat().st_size != source.byte_count
+    ):
+        raise ValueError(f"{label} copy does not match verified source")
+    return _output_record(destination, output=output)
 
 
 def _fsync_tree(root: Path) -> None:
@@ -525,6 +541,42 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
     )
     reserved = False
     try:
+        sidecar_root = staging / "sidecars"
+        copied_sources = {
+            "source_index": _copy_source(
+                index_source,
+                sidecar_root / "source_index.json",
+                output=staging,
+                label="source index",
+            ),
+            "schedule": _copy_source(
+                schedule_source,
+                sidecar_root / "schedule.json",
+                output=staging,
+                label="schedule",
+            ),
+            "capture_status": _copy_source(
+                capture_source,
+                sidecar_root / "capture_status.json",
+                output=staging,
+                label="capture status",
+            ),
+            "trajectories": _copy_source(
+                trajectory_source,
+                sidecar_root / "source_trajectories.jsonl",
+                output=staging,
+                label="trajectories",
+            ),
+            "checkpoint_statuses": [
+                _copy_source(
+                    source,
+                    sidecar_root / "checkpoint_statuses" / f"{position:08d}.json",
+                    output=staging,
+                    label=f"checkpoint status {position}",
+                )
+                for position, source in enumerate(checkpoint_status_sources)
+            ],
+        }
         output_checkpoints: list[dict[str, Any]] = []
         for checkpoint in checkpoint_inputs:
             frame = int(checkpoint["frame_index"])
@@ -578,15 +630,7 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
             "mode": "causal_checkpoints",
             "method": method,
             "scene": scene,
-            "sources": {
-                "source_index": index_source.record(),
-                "schedule": schedule_source.record(),
-                "capture_status": capture_source.record(),
-                "trajectories": trajectory_source.record(),
-                "checkpoint_statuses": [
-                    source.record() for source in checkpoint_status_sources
-                ],
-            },
+            "sources": copied_sources,
             "checkpoints": output_checkpoints,
             "entity_lifecycles": lifecycles,
             "trajectories": _output_record(

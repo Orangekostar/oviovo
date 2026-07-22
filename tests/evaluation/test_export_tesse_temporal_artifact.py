@@ -304,6 +304,22 @@ def test_exports_presence_intervals_and_byte_identical_repeat(tmp_path: Path) ->
     }
     assert first_files == second_files
 
+    assert first.read_bytes().endswith(b"\n")
+    assert not first.read_bytes().endswith(b"\n\n")
+    assert b"\n " not in first.read_bytes()
+    for source in (
+        manifest["sources"]["source_index"],
+        manifest["sources"]["schedule"],
+        manifest["sources"]["capture_status"],
+        manifest["sources"]["trajectories"],
+        *manifest["sources"]["checkpoint_statuses"],
+    ):
+        assert not Path(source["path"]).is_absolute()
+        copied = first.parent / source["path"]
+        assert copied.is_file()
+        assert hashlib.sha256(copied.read_bytes()).hexdigest() == source["sha256"]
+        assert copied.stat().st_size == source["byte_count"]
+
 
 def test_accepts_panoptic_checkpoint_and_trajectory_fixture(tmp_path: Path) -> None:
     index_path, _ = _build_fixture(tmp_path / "panoptic", panoptic=True)
