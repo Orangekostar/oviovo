@@ -584,6 +584,175 @@ def test_compact_checkpoint_writer_materializes_ownership_once(
     assert isinstance(checkpoint.ownership, ReversibleOwnershipStore)
 
 
+def test_compact_checkpoint_commit_close_failure_does_not_mask_writer_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    parent = tmp_path / "parent"
+    parent.mkdir()
+    target = parent / "checkpoint"
+    parent_identity = compact_module._identity(os.stat(parent))
+    real_close = compact_module.os.close
+    writer_failed = False
+
+    def fail_writer(*_args: object, **_kwargs: object) -> tuple[int, int]:
+        nonlocal writer_failed
+        writer_failed = True
+        raise RuntimeError("primary writer failure")
+
+    def fail_parent_close(descriptor: int) -> None:
+        identity = compact_module._identity(os.fstat(descriptor))
+        real_close(descriptor)
+        if writer_failed and identity == parent_identity:
+            raise OSError("secondary close failure")
+
+    monkeypatch.setattr(compact_module, "_write_regular_at", fail_writer)
+    monkeypatch.setattr(compact_module.os, "close", fail_parent_close)
+
+    with pytest.raises(RuntimeError, match="primary writer failure"):
+        CompactOwnershipCheckpoint.commit_new(
+            target,
+            _metadata(),
+            _ownership(),
+        )
+
+    assert not target.exists()
+    assert not list(parent.glob(".checkpoint.tmp-*"))
+
+
+def test_compact_checkpoint_file_close_failure_does_not_mask_write_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    directory_fd = os.open(tmp_path, os.O_RDONLY | os.O_DIRECTORY)
+    real_close = compact_module.os.close
+
+    def fail_write(_descriptor: int, _content: object) -> int:
+        raise OSError("primary write failure")
+
+    def fail_close(descriptor: int) -> None:
+        real_close(descriptor)
+        raise OSError("secondary close failure")
+
+    monkeypatch.setattr(compact_module.os, "write", fail_write)
+    monkeypatch.setattr(compact_module.os, "close", fail_close)
+    try:
+        with pytest.raises(OSError, match="primary write failure"):
+            compact_module._write_regular_at(directory_fd, "member", b"content")
+    finally:
+        real_close(directory_fd)
+
+    assert not (tmp_path / "member").exists()
+
+
+def test_compact_checkpoint_directory_close_failure_does_not_mask_open_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    real_close = compact_module.os.close
+
+    def fail_close(descriptor: int) -> None:
+        real_close(descriptor)
+        raise OSError("secondary close failure")
+
+    monkeypatch.setattr(compact_module.os, "close", fail_close)
+
+    with pytest.raises(FileNotFoundError, match="missing"):
+        compact_module._open_directory_without_symlinks(tmp_path / "missing")
+
+
+def test_compact_checkpoint_file_initial_fstat_failure_closes_descriptor(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    real_open = compact_module.os.open
+    real_close = compact_module.os.close
+    real_fstat = compact_module.os.fstat
+    directory_fd = real_open(tmp_path, os.O_RDONLY | os.O_DIRECTORY)
+    member_fd: int | None = None
+    member_closed = False
+
+    def track_open(path: object, *args: object, **kwargs: object) -> int:
+        nonlocal member_fd
+        descriptor = real_open(path, *args, **kwargs)
+        if path == "member":
+            member_fd = descriptor
+        return descriptor
+
+    def fail_member_fstat(descriptor: int) -> os.stat_result:
+        if descriptor == member_fd:
+            raise OSError("primary member fstat failure")
+        return real_fstat(descriptor)
+
+    def track_close(descriptor: int) -> None:
+        nonlocal member_closed
+        if descriptor == member_fd:
+            member_closed = True
+        real_close(descriptor)
+
+    try:
+        monkeypatch.setattr(compact_module.os, "open", track_open)
+        monkeypatch.setattr(compact_module.os, "fstat", fail_member_fstat)
+        monkeypatch.setattr(compact_module.os, "close", track_close)
+        with pytest.raises(OSError, match="primary member fstat failure"):
+            compact_module._write_regular_at(directory_fd, "member", b"content")
+    finally:
+        if member_fd is not None and not member_closed:
+            real_close(member_fd)
+        real_close(directory_fd)
+        (tmp_path / "member").unlink(missing_ok=True)
+
+    assert member_closed
+
+
+def test_compact_checkpoint_parent_initial_fstat_failure_closes_descriptor(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    parent = tmp_path / "parent"
+    parent.mkdir()
+    target = parent / "checkpoint"
+    real_close = compact_module.os.close
+    real_fstat = compact_module.os.fstat
+    parent_fd = os.open(parent, os.O_RDONLY | os.O_DIRECTORY)
+    parent_closed = False
+
+    def return_parent_fd(_path: Path) -> int:
+        return parent_fd
+
+    def fail_parent_fstat(descriptor: int) -> os.stat_result:
+        if descriptor == parent_fd:
+            raise OSError("primary parent fstat failure")
+        return real_fstat(descriptor)
+
+    def track_close(descriptor: int) -> None:
+        nonlocal parent_closed
+        if descriptor == parent_fd:
+            parent_closed = True
+        real_close(descriptor)
+
+    try:
+        monkeypatch.setattr(
+            compact_module,
+            "_open_directory_without_symlinks",
+            return_parent_fd,
+        )
+        monkeypatch.setattr(compact_module.os, "fstat", fail_parent_fstat)
+        monkeypatch.setattr(compact_module.os, "close", track_close)
+        with pytest.raises(OSError, match="primary parent fstat failure"):
+            CompactOwnershipCheckpoint.commit_new(
+                target,
+                _metadata(),
+                _ownership(),
+            )
+    finally:
+        if not parent_closed:
+            real_close(parent_fd)
+
+    assert parent_closed
+    assert not target.exists()
+
+
 def test_compact_checkpoint_receipt_validates_without_materializing(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

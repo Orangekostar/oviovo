@@ -228,6 +228,13 @@ def _identity(status: os.stat_result) -> tuple[int, int]:
     return status.st_dev, status.st_ino
 
 
+def _close_best_effort(descriptor: int) -> None:
+    try:
+        os.close(descriptor)
+    except OSError:
+        pass
+
+
 def _require_basename(name: str, *, label: str) -> str:
     if (
         not name
@@ -252,11 +259,11 @@ def _open_directory_without_symlinks(path: Path) -> int:
                 _DIRECTORY_OPEN_FLAGS,
                 dir_fd=descriptor,
             )
-            os.close(descriptor)
+            _close_best_effort(descriptor)
             descriptor = next_descriptor
         return descriptor
     except BaseException:
-        os.close(descriptor)
+        _close_best_effort(descriptor)
         raise
 
 
@@ -272,7 +279,7 @@ def _assert_parent_path_identity(
         if _identity(os.fstat(current_fd)) != expected_identity:
             raise ValueError("compact checkpoint parent identity changed")
     finally:
-        os.close(current_fd)
+        _close_best_effort(current_fd)
 
 
 def _create_temporary_directory_at(
@@ -316,7 +323,7 @@ def _create_temporary_directory_at(
             return temporary_name, temporary_fd, _identity(opened)
         except BaseException:
             if temporary_fd is not None:
-                os.close(temporary_fd)
+                _close_best_effort(temporary_fd)
             try:
                 os.rmdir(temporary_name, dir_fd=parent_fd)
             except OSError:
@@ -336,9 +343,10 @@ def _write_regular_at(
         0o600,
         dir_fd=directory_fd,
     )
-    identity = _identity(os.fstat(descriptor))
+    identity: tuple[int, int] | None = None
     succeeded = False
     try:
+        identity = _identity(os.fstat(descriptor))
         remaining = memoryview(content)
         while remaining:
             written = os.write(descriptor, remaining)
@@ -351,8 +359,8 @@ def _write_regular_at(
         succeeded = True
         return identity
     finally:
-        os.close(descriptor)
-        if not succeeded:
+        _close_best_effort(descriptor)
+        if not succeeded and identity is not None:
             try:
                 current = os.stat(
                     name,
@@ -605,7 +613,7 @@ class CompactOwnershipSourceWitness:
             if _fingerprint(directory_before) != _fingerprint(directory_after):
                 raise ValueError("compact checkpoint source identity changed")
         finally:
-            os.close(directory_fd)
+            _close_best_effort(directory_fd)
         try:
             path_after = os.lstat(path)
         except OSError as error:
@@ -665,7 +673,7 @@ class CompactOwnershipSourceWitness:
             if _fingerprint(os.fstat(directory_fd)) != self.directory_fingerprint:
                 raise ValueError("compact checkpoint source identity changed")
         finally:
-            os.close(directory_fd)
+            _close_best_effort(directory_fd)
         try:
             path_after = os.lstat(self.path)
         except OSError as error:
@@ -1157,7 +1165,7 @@ def _read_regular_at(
             raise ValueError(f"compact checkpoint file changed while reading: {name}")
         return b"".join(chunks), _fingerprint(after)
     finally:
-        os.close(descriptor)
+        _close_best_effort(descriptor)
 
 
 def _capture_published_directory_at(
@@ -1201,7 +1209,7 @@ def _capture_published_directory_at(
             raise ValueError("published compact checkpoint identity changed")
         return _fingerprint(directory_after)
     finally:
-        os.close(directory_fd)
+        _close_best_effort(directory_fd)
 
 
 @dataclass(frozen=True)
@@ -1275,9 +1283,6 @@ class CompactOwnershipCheckpoint:
             raise ValueError(
                 "compact checkpoint parent is not a real symlink-free directory"
             ) from error
-        parent_status = os.fstat(parent_fd)
-        parent_fingerprint = _fingerprint(parent_status)
-        parent_identity = parent_fingerprint[:2]
         temporary_name: str | None = None
         temporary_fd: int | None = None
         temporary_identity: tuple[int, int] | None = None
@@ -1285,6 +1290,9 @@ class CompactOwnershipCheckpoint:
         published = False
         scan_parent_for_temporary_identity = False
         try:
+            parent_status = os.fstat(parent_fd)
+            parent_fingerprint = _fingerprint(parent_status)
+            parent_identity = parent_fingerprint[:2]
             _assert_parent_path_identity(target.parent, parent_identity)
             _publication_test_hook("after_parent_check")
             _assert_parent_path_identity(target.parent, parent_identity)
@@ -1445,8 +1453,8 @@ class CompactOwnershipCheckpoint:
                     scan_parent_for_identity=scan_parent_for_temporary_identity,
                 )
             if temporary_fd is not None:
-                os.close(temporary_fd)
-            os.close(parent_fd)
+                _close_best_effort(temporary_fd)
+            _close_best_effort(parent_fd)
 
     @classmethod
     def load(cls, checkpoint_dir: str | Path) -> "CompactOwnershipCheckpoint":
@@ -1481,7 +1489,7 @@ class CompactOwnershipCheckpoint:
             if _fingerprint(directory_before) != _fingerprint(directory_after):
                 raise ValueError("compact checkpoint directory changed while loading")
         finally:
-            os.close(directory_fd)
+            _close_best_effort(directory_fd)
 
         checksums = _strict_json(contents["checksums.json"], label="checksums")
         if set(checksums) != _CHECKSUM_FILES:
