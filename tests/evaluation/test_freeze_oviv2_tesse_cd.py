@@ -16,6 +16,7 @@ import numpy as np
 
 from scripts.evaluation.freeze_oviv2_tesse_cd import (
     ALGORITHM_EXCLUDED_FIELDS,
+    PublicationUncertainError,
     STAGE3_LINEAGE_COMMIT,
     _canonical_json_bytes,
     _validate_target_manifest,
@@ -1500,6 +1501,60 @@ def test_freeze_uncertain_cleanup_does_not_delete_swapped_destination(
         fixture.run()
 
     assert fixture.output_apartment.read_bytes() == b"foreign-destination\n"
+
+
+def test_freeze_escalates_publication_error_when_rollback_is_uncertain(
+    fixture: Fixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    real_link = os.link
+    calls = 0
+
+    def replace_first_before_second_failure(
+        source: str,
+        destination: str,
+        *,
+        source_dir_fd: int,
+        destination_dir_fd: int,
+    ) -> None:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            real_link(
+                source,
+                destination,
+                src_dir_fd=source_dir_fd,
+                dst_dir_fd=destination_dir_fd,
+                follow_symlinks=False,
+            )
+            return
+        os.unlink(fixture.output_apartment.name, dir_fd=destination_dir_fd)
+        descriptor = os.open(
+            fixture.output_apartment.name,
+            os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+            0o600,
+            dir_fd=destination_dir_fd,
+        )
+        os.write(descriptor, b"foreign-after-first-publication\n")
+        os.close(descriptor)
+        raise OSError("injected second publication failure")
+
+    monkeypatch.setattr(
+        "scripts.evaluation.freeze_oviv2_tesse_cd._link_no_replace",
+        replace_first_before_second_failure,
+    )
+
+    with pytest.raises(
+        PublicationUncertainError,
+        match="publication error.*rollback uncertainty",
+    ) as raised:
+        fixture.run()
+
+    assert isinstance(raised.value.__cause__, OSError)
+    assert "injected second publication failure" in str(raised.value.__cause__)
+    assert fixture.output_apartment.read_bytes() == (
+        b"foreign-after-first-publication\n"
+    )
+    assert not fixture.output_office.exists()
 
 
 def test_freeze_rejects_output_parent_inode_swap_during_publication(

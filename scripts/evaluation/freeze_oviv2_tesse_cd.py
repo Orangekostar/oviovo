@@ -2036,9 +2036,25 @@ def _publish_json_transaction(
             raise uncertain("published destination changed before commit")
         for descriptor, _, _ in bound.values():
             os.fsync(descriptor)
-    except BaseException:
+    except BaseException as publication_error:
+        rollback_uncertainty: list[str] = []
         for item, name in reversed(published):
-            unlink_if_owned(item, name)
+            try:
+                if not unlink_if_owned(item, name):
+                    rollback_uncertainty.append(
+                        f"{item.parent / name} ({classify_name(item, name)})"
+                    )
+            except OSError as cleanup_error:
+                rollback_uncertainty.append(
+                    f"{item.parent / name} (cleanup error: {cleanup_error})"
+                )
+        if rollback_uncertainty:
+            details = ", ".join(rollback_uncertainty)
+            raise PublicationUncertainError(
+                "publication error: "
+                f"{type(publication_error).__name__}: {publication_error}; "
+                f"rollback uncertainty: {details}"
+            ) from publication_error
         raise
     finally:
         for item in temporary:
