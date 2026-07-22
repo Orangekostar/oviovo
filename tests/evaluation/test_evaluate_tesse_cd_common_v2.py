@@ -506,7 +506,27 @@ def test_causal_temporal_evaluator_rejects_unregistered_artifact_label(
         tmp_path / "source", temporal_method="CONCEPTGRAPHS"
     )
 
-    with pytest.raises(ValueError, match="snapshot identity mismatch"):
+    with pytest.raises(ValueError, match="unsupported causal.*method"):
+        evaluate_common_v2(
+            temporal,
+            targets,
+            aliases,
+            label_space,
+            tmp_path / "output",
+        )
+
+
+@pytest.mark.parametrize("method", ["UNKNOWN_CAUSAL", "OVIOVO"])
+def test_causal_temporal_evaluator_rejects_unregistered_matching_method(
+    tmp_path: Path, method: str
+) -> None:
+    temporal, targets, aliases, label_space = _causal_fixture(
+        tmp_path / "source",
+        temporal_method=method,
+        snapshot_method=method,
+    )
+
+    with pytest.raises(ValueError, match="unsupported causal.*method"):
         evaluate_common_v2(
             temporal,
             targets,
@@ -540,6 +560,22 @@ def test_causal_temporal_evaluator_rejects_wrong_exclusive_boundary(
     _write_json(temporal, payload)
 
     with pytest.raises(ValueError, match="exclusive|future"):
+        evaluate_common_v2(
+            temporal,
+            targets,
+            aliases,
+            label_space,
+            tmp_path / "output",
+        )
+
+
+def test_declared_file_requires_explicit_byte_count(tmp_path: Path) -> None:
+    temporal, targets, aliases, label_space = _causal_fixture(tmp_path / "source")
+    payload = json.loads(temporal.read_text(encoding="utf-8"))
+    payload["checkpoints"][0]["snapshot"].pop("byte_count")
+    _write_json(temporal, payload)
+
+    with pytest.raises(ValueError, match="byte count.*non-negative integer"):
         evaluate_common_v2(
             temporal,
             targets,

@@ -164,7 +164,7 @@ def test_build_result_hashes_sources_and_omits_unavailable_bindings(tmp_path) ->
         "raw_outputs": [raw],
     }
 
-    result = finalize_tesse_t2.build_result(
+    result = finalize_tesse_t2._build_result_payload(
         _scene(
             "apartment",
             "OVIMAP_FROZEN",
@@ -184,7 +184,7 @@ def test_build_result_hashes_sources_and_omits_unavailable_bindings(tmp_path) ->
         mode="frozen",
     )
 
-    assert result["status"] == "VERIFIED"
+    assert "status" not in result
     assert result["unavailable"]["apartment"]["change_f1"] == "no finite change states"
     assert len(result["token_bindings"]) == 4
     assert result["unavailable_bindings"] == [
@@ -221,7 +221,7 @@ def test_build_result_rejects_frozen_updates_after_freeze(tmp_path) -> None:
     }
 
     with pytest.raises(ValueError, match="updates_after_freeze"):
-        finalize_tesse_t2.build_result(
+        finalize_tesse_t2._build_result_payload(
             _scene(
                 "apartment",
                 "OVIMAP_FROZEN",
@@ -266,7 +266,7 @@ def test_build_result_separates_khronos_execution_and_table_modes(tmp_path) -> N
         for scene in ("apartment", "office")
     }
 
-    result = finalize_tesse_t2.build_result(
+    result = finalize_tesse_t2._build_result_payload(
         _scene(
             "apartment",
             "KHRONOS",
@@ -313,7 +313,7 @@ def test_oviv2_official_finalizer_uses_causal_execution_and_online_table_mode(
         for scene in ("apartment", "office")
     }
 
-    result = finalize_tesse_t2.build_result(
+    result = finalize_tesse_t2._build_result_payload(
         scenes["apartment"],
         scenes["office"],
         statuses["apartment"],
@@ -338,7 +338,7 @@ def test_oviv2_official_finalizer_uses_causal_execution_and_online_table_mode(
 
 def test_official_finalizer_rejects_legacy_oviovo_method_key(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="unsupported .*method"):
-        finalize_tesse_t2.build_result(
+        finalize_tesse_t2._build_result_payload(
             _scene("apartment", "OVIOVO", "causal_checkpoints"),
             _scene("office", "OVIOVO", "causal_checkpoints"),
             {
@@ -420,7 +420,7 @@ def _provenance(tmp_path: Path) -> dict[str, object]:
 
 
 def test_dualmap_native_preserves_source_bound_unavailable_metrics(tmp_path) -> None:
-    result = finalize_tesse_t2.build_result(
+    result = finalize_tesse_t2._build_result_payload(
         _dualmap_scene("apartment", tmp_path / "apartment_sources"),
         _dualmap_scene("office", tmp_path / "office_sources"),
         _dualmap_status("apartment"),
@@ -451,7 +451,7 @@ def test_dualmap_native_preserves_source_bound_unavailable_metrics(tmp_path) -> 
 
 
 def test_panoptic_composed_preserves_source_bound_unavailable_metrics(tmp_path) -> None:
-    result = finalize_tesse_t2.build_result(
+    result = finalize_tesse_t2._build_result_payload(
         _panoptic_scene("apartment", tmp_path / "apartment_sources"),
         _panoptic_scene("office", tmp_path / "office_sources"),
         _panoptic_status("apartment"),
@@ -489,7 +489,7 @@ def test_dualmap_native_rejects_tampered_unavailable_metric_source(tmp_path) -> 
     dynamic_path.write_bytes(changed)
 
     with pytest.raises(ValueError, match="dynamic_f1.*SHA256"):
-        finalize_tesse_t2.build_result(
+        finalize_tesse_t2._build_result_payload(
             apartment,
             _dualmap_scene("office", tmp_path / "office_sources"),
             _dualmap_status("apartment"),
@@ -560,3 +560,149 @@ def test_scene_evidence_cli_writes_mergeable_packet(tmp_path) -> None:
 
     assert completed.returncode == 0, completed.stderr
     assert json.loads(output.read_text(encoding="utf-8"))["scene"] == "apartment"
+
+
+def _write_json_pair(
+    root: Path, name: str, payload: dict[str, object]
+) -> tuple[Path, Path]:
+    primary = root / f"{name}.json"
+    repeat = root / f"{name}-repeat.json"
+    primary.write_text(
+        json.dumps(payload, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
+    repeat.write_bytes(primary.read_bytes())
+    return primary, repeat
+
+
+def _full_cli_inputs(tmp_path: Path) -> dict[str, Path]:
+    apartment_metrics, apartment_metrics_repeat = _write_json_pair(
+        tmp_path,
+        "apartment-metrics",
+        _scene(
+            "apartment",
+            "OVIMAP_FROZEN",
+            "frozen",
+            source_root=tmp_path / "apartment_sources",
+        ),
+    )
+    office_metrics, office_metrics_repeat = _write_json_pair(
+        tmp_path,
+        "office-metrics",
+        _scene(
+            "office",
+            "OVIMAP_FROZEN",
+            "frozen",
+            source_root=tmp_path / "office_sources",
+        ),
+    )
+    apartment_status, apartment_status_repeat = _write_json_pair(
+        tmp_path, "apartment-status", _status("apartment")
+    )
+    office_status, office_status_repeat = _write_json_pair(
+        tmp_path, "office-status", _status("office")
+    )
+    provenance = tmp_path / "provenance.json"
+    provenance.write_text(
+        json.dumps(_provenance(tmp_path), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return {
+        "apartment_metrics": apartment_metrics,
+        "apartment_metrics_repeat": apartment_metrics_repeat,
+        "office_metrics": office_metrics,
+        "office_metrics_repeat": office_metrics_repeat,
+        "apartment_status": apartment_status,
+        "apartment_status_repeat": apartment_status_repeat,
+        "office_status": office_status,
+        "office_status_repeat": office_status_repeat,
+        "provenance": provenance,
+    }
+
+
+def _full_cli_command(inputs: dict[str, Path], output: Path) -> list[str]:
+    return [
+        sys.executable,
+        str(Path(finalize_tesse_t2.__file__)),
+        "--method",
+        "OVIMAP_FROZEN",
+        "--apartment-metrics",
+        str(inputs["apartment_metrics"]),
+        "--apartment-metrics-repeat",
+        str(inputs["apartment_metrics_repeat"]),
+        "--office-metrics",
+        str(inputs["office_metrics"]),
+        "--office-metrics-repeat",
+        str(inputs["office_metrics_repeat"]),
+        "--apartment-status",
+        str(inputs["apartment_status"]),
+        "--apartment-status-repeat",
+        str(inputs["apartment_status_repeat"]),
+        "--office-status",
+        str(inputs["office_status"]),
+        "--office-status-repeat",
+        str(inputs["office_status_repeat"]),
+        "--provenance",
+        str(inputs["provenance"]),
+        "--output",
+        str(output),
+    ]
+
+
+def test_full_cli_requires_repeat_inputs(tmp_path: Path) -> None:
+    inputs = _full_cli_inputs(tmp_path)
+    command = _full_cli_command(inputs, tmp_path / "result.json")
+    for flag in (
+        "--apartment-metrics-repeat",
+        "--office-metrics-repeat",
+        "--apartment-status-repeat",
+        "--office-status-repeat",
+    ):
+        position = command.index(flag)
+        del command[position : position + 2]
+
+    completed = subprocess.run(command, capture_output=True, text=True, check=False)
+
+    assert completed.returncode != 0
+    assert "repeat" in completed.stderr.lower()
+
+
+def test_full_cli_hash_binds_primary_and_repeat_evidence(tmp_path: Path) -> None:
+    inputs = _full_cli_inputs(tmp_path)
+    output = tmp_path / "result.json"
+
+    completed = subprocess.run(
+        _full_cli_command(inputs, output),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    result = json.loads(output.read_text(encoding="utf-8"))
+    assert result["status"] == "VERIFIED"
+    assert result["protocol"]["deterministic_repeat"] == "byte-identical"
+    for scene in ("apartment", "office"):
+        for kind in ("metrics", "status"):
+            pair = result["evidence_sources"][scene][kind]
+            assert pair["primary"]["sha256"] == pair["repeat"]["sha256"]
+            assert pair["primary"]["path"] != pair["repeat"]["path"]
+            assert pair["primary"]["byte_count"] > 0
+    assert result["evidence_sources"]["provenance"]["sha256"]
+
+
+def test_full_cli_rejects_nonidentical_repeat_bytes(tmp_path: Path) -> None:
+    inputs = _full_cli_inputs(tmp_path)
+    inputs["office_status_repeat"].write_bytes(
+        inputs["office_status_repeat"].read_bytes() + b" "
+    )
+
+    completed = subprocess.run(
+        _full_cli_command(inputs, tmp_path / "result.json"),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode != 0
+    assert "byte-identical" in completed.stderr

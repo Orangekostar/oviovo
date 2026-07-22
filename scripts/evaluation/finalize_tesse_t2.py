@@ -288,7 +288,7 @@ def build_scene_evidence(
     }
 
 
-def build_result(
+def _build_result_payload(
     apartment: Mapping[str, Any],
     office: Mapping[str, Any],
     apartment_status: Mapping[str, Any],
@@ -334,7 +334,6 @@ def build_result(
         raise ValueError("provenance commands must be a non-empty list")
 
     return {
-        "status": "VERIFIED",
         "run_id": str(provenance["run_id"]),
         "method": {
             "key": method_key,
@@ -358,7 +357,6 @@ def build_result(
         "protocol": {
             "name": "Khronos upstream TESSE-CD evaluator via neutral-map bridge",
             "aggregation": "macro over unique online state/query rows per sequence",
-            "deterministic_repeat": "byte-identical",
             "binding_policy": "only finite official metrics are importable",
         },
         "run_status": {
@@ -384,12 +382,116 @@ def build_result(
     }
 
 
+def _json_source(
+    path: Path, *, label: str
+) -> tuple[dict[str, Any], dict[str, Any], bytes]:
+    try:
+        resolved = path.resolve(strict=True)
+        if not resolved.is_file():
+            raise ValueError
+        content = resolved.read_bytes()
+        payload = json.loads(content.decode("utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
+        raise ValueError(
+            f"{label} must be a readable JSON object: {path}"
+        ) from error
+    if not isinstance(payload, Mapping):
+        raise ValueError(f"{label} must contain a JSON object")
+    return (
+        dict(payload),
+        {
+            "path": str(resolved),
+            "sha256": hashlib.sha256(content).hexdigest(),
+            "byte_count": len(content),
+        },
+        content,
+    )
+
+
+def _json_repeat_pair(
+    primary: Path, repeat: Path, *, label: str
+) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
+    if primary.resolve() == repeat.resolve():
+        raise ValueError(f"{label} repeat must use independent files")
+    payload, primary_record, primary_bytes = _json_source(primary, label=label)
+    _, repeat_record, repeat_bytes = _json_source(repeat, label=f"{label} repeat")
+    if primary_bytes != repeat_bytes:
+        raise ValueError(f"{label} repeat must be byte-identical")
+    return payload, {"primary": primary_record, "repeat": repeat_record}
+
+
+def build_result(
+    apartment_metrics: Path,
+    apartment_metrics_repeat: Path,
+    office_metrics: Path,
+    office_metrics_repeat: Path,
+    apartment_status: Path,
+    apartment_status_repeat: Path,
+    office_status: Path,
+    office_status_repeat: Path,
+    provenance: Path,
+    *,
+    method_key: str,
+    mode: str,
+) -> dict[str, Any]:
+    apartment_payload, apartment_metrics_sources = _json_repeat_pair(
+        apartment_metrics,
+        apartment_metrics_repeat,
+        label="apartment metrics",
+    )
+    office_payload, office_metrics_sources = _json_repeat_pair(
+        office_metrics,
+        office_metrics_repeat,
+        label="office metrics",
+    )
+    apartment_status_payload, apartment_status_sources = _json_repeat_pair(
+        apartment_status,
+        apartment_status_repeat,
+        label="apartment status",
+    )
+    office_status_payload, office_status_sources = _json_repeat_pair(
+        office_status,
+        office_status_repeat,
+        label="office status",
+    )
+    provenance_payload, provenance_source, _ = _json_source(
+        provenance, label="provenance"
+    )
+    result = _build_result_payload(
+        apartment_payload,
+        office_payload,
+        apartment_status_payload,
+        office_status_payload,
+        provenance_payload,
+        method_key=method_key,
+        mode=mode,
+    )
+    result["status"] = "VERIFIED"
+    result["protocol"]["deterministic_repeat"] = "byte-identical"
+    result["evidence_sources"] = {
+        "apartment": {
+            "metrics": apartment_metrics_sources,
+            "status": apartment_status_sources,
+        },
+        "office": {
+            "metrics": office_metrics_sources,
+            "status": office_status_sources,
+        },
+        "provenance": provenance_source,
+    }
+    return result
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--apartment-metrics", type=Path)
+    parser.add_argument("--apartment-metrics-repeat", type=Path)
     parser.add_argument("--office-metrics", type=Path)
+    parser.add_argument("--office-metrics-repeat", type=Path)
     parser.add_argument("--apartment-status", type=Path)
+    parser.add_argument("--apartment-status-repeat", type=Path)
     parser.add_argument("--office-status", type=Path)
+    parser.add_argument("--office-status-repeat", type=Path)
     parser.add_argument("--provenance", type=Path)
     parser.add_argument("--scene-metrics", type=Path)
     parser.add_argument("--scene-status", type=Path)
@@ -415,24 +517,29 @@ def main() -> int:
 
     required = {
         "--apartment-metrics": args.apartment_metrics,
+        "--apartment-metrics-repeat": args.apartment_metrics_repeat,
         "--office-metrics": args.office_metrics,
+        "--office-metrics-repeat": args.office_metrics_repeat,
         "--apartment-status": args.apartment_status,
+        "--apartment-status-repeat": args.apartment_status_repeat,
         "--office-status": args.office_status,
+        "--office-status-repeat": args.office_status_repeat,
         "--provenance": args.provenance,
     }
     missing = [name for name, value in required.items() if value is None]
     if missing:
         parser.error("full result requires " + ", ".join(missing))
 
-    def load(path: Path) -> dict[str, Any]:
-        return json.loads(path.read_text(encoding="utf-8"))
-
     result = build_result(
-        load(args.apartment_metrics),
-        load(args.office_metrics),
-        load(args.apartment_status),
-        load(args.office_status),
-        load(args.provenance),
+        args.apartment_metrics,
+        args.apartment_metrics_repeat,
+        args.office_metrics,
+        args.office_metrics_repeat,
+        args.apartment_status,
+        args.apartment_status_repeat,
+        args.office_status,
+        args.office_status_repeat,
+        args.provenance,
         method_key=args.method,
         mode=METHOD_MODES[args.method],
     )

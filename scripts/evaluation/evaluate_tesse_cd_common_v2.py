@@ -40,6 +40,11 @@ KHRONOS_CLIP_WEIGHT_SHA256 = (
 )
 CAUSAL_SNAPSHOT_METHOD_LABELS = {
     "DUALMAP": frozenset({"DUALMAP", "DualMap"}),
+    "DualMap": frozenset({"DUALMAP", "DualMap"}),
+    "KHRONOS_OPEN": frozenset({"KHRONOS_OPEN", "KHRONOS", "Khronos"}),
+    "KHRONOS_ORACLE": frozenset(
+        {"KHRONOS_ORACLE", "KHRONOS", "Khronos"}
+    ),
     "OVIV2": frozenset({"OVIV2"}),
     "PANOPTIC_SHARED": frozenset(
         {"PANOPTIC_SHARED", "Panoptic Mapping + shared masks"}
@@ -58,7 +63,7 @@ class KhronosTextHead:
 
 def _snapshot_method_matches(method: str, snapshot_method: str) -> bool:
     return snapshot_method in CAUSAL_SNAPSHOT_METHOD_LABELS.get(
-        method, frozenset({method})
+        method, frozenset()
     )
 
 
@@ -125,9 +130,12 @@ def _declared_file(
     raw = Path(str(source.get("path", "")))
     path = raw if raw.is_absolute() else (base / raw if base is not None else raw)
     record = _file_record(path)
+    declared_byte_count = source.get("byte_count")
+    if type(declared_byte_count) is not int or declared_byte_count < 0:
+        raise ValueError(f"{label} byte count must be a non-negative integer")
     if source.get("sha256") != record["sha256"]:
         raise ValueError(f"{label} SHA256 mismatch")
-    if "byte_count" in source and source.get("byte_count") != record["byte_count"]:
+    if declared_byte_count != record["byte_count"]:
         raise ValueError(f"{label} byte count mismatch")
     return path, record
 
@@ -735,6 +743,8 @@ def evaluate_common_v2(
         and method
     ):
         raise ValueError("causal temporal index identity mismatch")
+    if method not in CAUSAL_SNAPSHOT_METHOD_LABELS:
+        raise ValueError(f"unsupported causal temporal method: {method}")
     sources = _mapping(index.get("sources"), "causal index sources")
     schedule_path, schedule_record = _declared_file(
         sources.get("schedule"),

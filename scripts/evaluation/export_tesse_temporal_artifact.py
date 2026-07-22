@@ -154,15 +154,26 @@ def _load_schedule(
     return dict(scene_payload), entries
 
 
-def _checkpoint_identity(payload: Mapping[str, Any]) -> tuple[int, int, int]:
+def _checkpoint_identity(payload: Mapping[str, Any]) -> tuple[int, int, int, int]:
     frame = payload.get("checkpoint_frame", payload.get("frame_index", -1))
     timestamp = payload.get("timestamp_ns", payload.get("source_timestamp_ns", -1))
     consumed = payload.get("consumed_through_frame", -1)
-    if type(frame) is not int or type(timestamp) is not int or type(consumed) is not int:
+    consumed_exclusive = payload.get("consumed_through_frame_exclusive", -1)
+    if (
+        type(frame) is not int
+        or type(timestamp) is not int
+        or type(consumed) is not int
+        or type(consumed_exclusive) is not int
+    ):
         raise ValueError("checkpoint identity fields must be integers")
-    if frame < 0 or timestamp <= 0 or consumed < 0 or consumed > frame:
-        raise ValueError("checkpoint consumed through frame exceeds checkpoint")
-    return frame, timestamp, consumed
+    if (
+        frame < 0
+        or timestamp <= 0
+        or consumed != frame
+        or consumed_exclusive != frame + 1
+    ):
+        raise ValueError("checkpoint freeze boundary must be [0, t+1)")
+    return frame, timestamp, consumed, consumed_exclusive
 
 
 def _timestamp_matches(value: float, timestamp_ns: int) -> bool:
@@ -385,15 +396,28 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
         assert isinstance(raw_checkpoint, Mapping)
         frame, timestamp = expected_identity
         consumed = raw_checkpoint.get("consumed_through_frame")
-        if type(consumed) is not int or consumed < 0 or consumed > frame:
-            raise ValueError("source checkpoint consumed a future frame")
+        consumed_exclusive = raw_checkpoint.get(
+            "consumed_through_frame_exclusive"
+        )
+        if (
+            type(consumed) is not int
+            or type(consumed_exclusive) is not int
+            or consumed != frame
+            or consumed_exclusive != frame + 1
+        ):
+            raise ValueError("source checkpoint freeze boundary must be [0, t+1)")
         status_source = _declared_source(
             raw_checkpoint.get("checkpoint_status", {}),
             base=base,
             label=f"checkpoint {frame} status",
         )
         status = _read_json(status_source, label=f"checkpoint {frame} status")
-        if _checkpoint_identity(status) != (frame, timestamp, consumed):
+        if _checkpoint_identity(status) != (
+            frame,
+            timestamp,
+            consumed,
+            consumed_exclusive,
+        ):
             raise ValueError("checkpoint sidecar identity mismatch")
         snapshot_source = _declared_source(
             raw_checkpoint.get("snapshot", {}),
@@ -450,6 +474,7 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
                 "frame_index": frame,
                 "timestamp_ns": timestamp,
                 "consumed_through_frame": consumed,
+                "consumed_through_frame_exclusive": consumed_exclusive,
                 "snapshot": snapshot_source,
                 "entities": entities_source,
             }
@@ -493,9 +518,8 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
                     checkpoint["consumed_through_frame"]
                 ),
                 "consumed_through_frame_exclusive": int(
-                    checkpoint["consumed_through_frame"]
-                )
-                + 1,
+                    checkpoint["consumed_through_frame_exclusive"]
+                ),
                 "snapshot": _output_record(snapshot_path, output=output),
                 "entities": _output_record(entities_path, output=output),
             }

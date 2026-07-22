@@ -153,6 +153,7 @@ def _build_fixture(
                 "frame_index": frame,
                 "source_timestamp_ns": timestamp,
                 "consumed_through_frame": frame,
+                "consumed_through_frame_exclusive": frame + 1,
                 "panmap_file": f"frame_{frame:08d}.panmap",
             }
             if panoptic
@@ -162,6 +163,7 @@ def _build_fixture(
                 "checkpoint_frame": frame,
                 "timestamp_ns": timestamp,
                 "consumed_through_frame": frame,
+                "consumed_through_frame_exclusive": frame + 1,
             }
         )
         _write_json(status_path, status_payload)
@@ -181,6 +183,7 @@ def _build_fixture(
                 "frame_index": frame,
                 "timestamp_ns": timestamp,
                 "consumed_through_frame": frame,
+                "consumed_through_frame_exclusive": frame + 1,
                 "checkpoint_status": _record(status_path),
                 "snapshot": _record(artifact_paths["snapshot"]),
                 "entities": _record(artifact_paths["entities"]),
@@ -329,6 +332,33 @@ def test_rejects_missing_schedule_checkpoint_without_final_fallback(
     (final / "snapshot.npz").write_bytes(b"must-not-be-read")
 
     with pytest.raises(ValueError, match="exactly cover schedule"):
+        export_temporal_artifact(index_path, tmp_path / "output")
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("consumed_through_frame", 1),
+        ("consumed_through_frame_exclusive", 2),
+    ],
+)
+def test_rejects_checkpoint_that_does_not_end_exactly_at_t(
+    tmp_path: Path, field: str, value: int
+) -> None:
+    index_path, payload = _build_fixture(tmp_path / "source")
+    payload["checkpoints"][1][field] = value
+    _rewrite_index(index_path, payload)
+
+    with pytest.raises(ValueError, match="freeze boundary"):
+        export_temporal_artifact(index_path, tmp_path / "output")
+
+
+def test_rejects_checkpoint_without_exclusive_boundary(tmp_path: Path) -> None:
+    index_path, payload = _build_fixture(tmp_path / "source")
+    payload["checkpoints"][1].pop("consumed_through_frame_exclusive")
+    _rewrite_index(index_path, payload)
+
+    with pytest.raises(ValueError, match="freeze boundary"):
         export_temporal_artifact(index_path, tmp_path / "output")
 
 

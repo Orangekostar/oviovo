@@ -260,6 +260,12 @@ def _write_derived_rgbd_fixture(
 
     source = json.loads(source_manifest.read_text(encoding="utf-8"))
     derived = root / "derived_rgbd"
+    camera_path = derived / "cam_params.json"
+    camera_path.parent.mkdir(parents=True)
+    camera_path.write_text(
+        json.dumps({"camera": source["camera"]}, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     for scene in ("apartment", "office"):
         scene_root = derived / scene
         results = scene_root / "results"
@@ -274,6 +280,8 @@ def _write_derived_rgbd_fixture(
             poses.append(" ".join(str(value) for value in np.eye(4).reshape(-1)))
             depth = np.full((3, 3), 1000 if index < 3 else 1049, dtype=np.uint16)
             Image.fromarray(depth).save(results / f"depth{index:06d}.png")
+            rgb = np.full((3, 3, 3), index, dtype=np.uint8)
+            Image.fromarray(rgb).save(results / f"frame{index:06d}.jpg", quality=95)
         (scene_root / "timestamps.csv").write_text(
             "frame_index,sensor_timestamp_ns,relative_timestamp_ns\n"
             + "".join(f"{a},{b},{c}\n" for a, b, c in timestamps),
@@ -281,6 +289,33 @@ def _write_derived_rgbd_fixture(
         )
         (scene_root / "traj.txt").write_text("\n".join(poses) + "\n", encoding="utf-8")
         database = source["sequences"][scene]["bag"]["database"]
+        output_files = [
+            path
+            for index in range(frame_count)
+            for path in (
+                results / f"frame{index:06d}.jpg",
+                results / f"depth{index:06d}.png",
+            )
+        ] + [
+            scene_root / "traj.txt",
+            scene_root / "timestamps.csv",
+            camera_path,
+        ]
+        output_hashes = [
+            (
+                path.relative_to(derived).as_posix(),
+                hashlib.sha256(path.read_bytes()).hexdigest(),
+            )
+            for path in output_files
+        ]
+        digest = hashlib.sha256()
+        for relative, file_hash in sorted(output_hashes):
+            digest.update(
+                relative.encode("utf-8")
+                + b"\0"
+                + file_hash.encode("ascii")
+                + b"\n"
+            )
         (scene_root / "export_manifest.json").write_text(
             json.dumps(
                 {
@@ -291,8 +326,11 @@ def _write_derived_rgbd_fixture(
                     "source_database": database["path"],
                     "source_database_sha256": database["sha256"],
                     "source_manifest": str(source_manifest.resolve()),
+                    "rgb_encoding": "JPEG quality 95 decoded from official rgb8",
                     "depth_encoding": "uint16 millimeters decoded from official 32FC1 meters",
                     "pose": "world_T_base_link_gt multiplied by bag tf_static base_link_gt_T_left_cam",
+                    "combined_output_sha256": digest.hexdigest(),
+                    "file_hash_count": len(output_hashes),
                 },
                 sort_keys=True,
             )
@@ -650,6 +688,18 @@ def test_checked_in_manifest_is_explicitly_contract_only_and_hash_bound() -> Non
     ).encode("utf-8")
     assert payload["input_binding_sha256"] == hashlib.sha256(canonical).hexdigest()
     assert CONTRACT_MANIFEST.read_bytes() == render_manifest(payload)
+    rebuilt = build_contract_manifest(
+        source_manifest=SOURCE_MANIFEST,
+        schedule=SCHEDULE,
+        ground_truth_sources={
+            f"{scene}.{name}": Path(declaration["path"])
+            for scene in ("apartment", "office")
+            for name, declaration in source["sequences"][scene]["ground_truth"][
+                "files"
+            ].items()
+        },
+    )
+    assert render_manifest(rebuilt) == CONTRACT_MANIFEST.read_bytes()
 
 
 def test_generation_contract_parses_sources_schedule_and_exact_object_coverage(
@@ -987,4 +1037,75 @@ def test_derived_rgbd_loader_and_single_scene_smoke_cli(
             name.startswith("apartment_event_")
             or name.startswith("apartment.current_semantic.")
             for name in targets.files
+        )
+
+
+@pytest.mark.parametrize(
+    "relative_path",
+    [
+        "apartment/results/frame000000.jpg",
+        "apartment/results/depth000000.png",
+        "apartment/traj.txt",
+        "apartment/timestamps.csv",
+        "cam_params.json",
+    ],
+)
+def test_derived_rgbd_loader_rejects_mutated_export_bytes(
+    tmp_path: Path, relative_path: str
+) -> None:
+    source, schedule = _write_generation_fixture(tmp_path)
+    derived = _write_derived_rgbd_fixture(tmp_path, source)
+    contract = load_generation_contract(source, schedule)
+    artifact = derived / relative_path
+    artifact.write_bytes(artifact.read_bytes() + b"tampered")
+
+    with pytest.raises(ValueError, match="combined output SHA256"):
+        load_derived_rgbd_frames(
+            contract, "apartment", derived, maximum_frame_index=14
+        )
+
+
+def test_full_generation_rejects_depth_png_mutated_after_export(
+    tmp_path: Path,
+) -> None:
+    source, schedule = _write_generation_fixture(tmp_path)
+    derived = _write_derived_rgbd_fixture(tmp_path, source)
+    depth = derived / "apartment/results/depth000003.png"
+    depth.write_bytes(depth.read_bytes() + b"tampered")
+
+    with pytest.raises(ValueError, match="combined output SHA256"):
+        main(
+            [
+                "--source-manifest",
+                str(source),
+                "--schedule",
+                str(schedule),
+                "--output-dir",
+                str(tmp_path / "output"),
+                "--derived-rgbd-root",
+                str(derived),
+                "--scene",
+                "apartment",
+                "--window-frames",
+                "2",
+                "--event-limit",
+                "1",
+            ]
+        )
+
+
+def test_derived_rgbd_loader_rejects_explicit_prediction_role(
+    tmp_path: Path,
+) -> None:
+    source, schedule = _write_generation_fixture(tmp_path)
+    derived = _write_derived_rgbd_fixture(tmp_path, source)
+    contract = load_generation_contract(source, schedule)
+
+    with pytest.raises(ValueError, match="prediction or method output"):
+        load_derived_rgbd_frames(
+            contract,
+            "apartment",
+            derived,
+            maximum_frame_index=14,
+            source_role="prediction",
         )

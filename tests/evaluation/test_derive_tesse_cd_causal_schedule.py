@@ -17,6 +17,7 @@ from scripts.evaluation.derive_tesse_cd_causal_schedule import (
     derive_scene_schedule,
     load_depth_timestamps,
     load_event_timestamps,
+    render_schedule,
     run,
 )
 
@@ -344,6 +345,7 @@ def test_public_build_and_run_do_not_expose_source_identity_bypasses() -> None:
 def test_checked_in_schedule_matches_real_derivation_and_canonical_sources() -> None:
     source = json.loads(MANIFEST.read_text(encoding="utf-8"))
     frozen = json.loads(FROZEN_SCHEDULE.read_text(encoding="utf-8"))
+    assert render_schedule(build_schedule(MANIFEST)) == FROZEN_SCHEDULE.read_bytes()
 
     assert {
         key: frozen[key]

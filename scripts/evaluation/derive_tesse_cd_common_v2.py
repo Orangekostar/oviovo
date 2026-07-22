@@ -1412,9 +1412,17 @@ def load_derived_rgbd_frames(
     derived_root: Path,
     *,
     maximum_frame_index: int,
+    source_role: str = "official_rgbd_export",
 ) -> list[dict[str, Any]]:
     from PIL import Image
+    from scripts.evaluation.export_tesse_cd_rgbd import (
+        compute_export_output_binding,
+    )
 
+    if source_role != "official_rgbd_export":
+        if source_role == "prediction":
+            reject_prediction_input_paths([derived_root])
+        raise ValueError(f"unsupported derived RGB-D source role: {source_role}")
     if scene not in {"apartment", "office"}:
         raise ValueError(f"unknown TESSE-CD scene: {scene}")
     if type(maximum_frame_index) is not int or maximum_frame_index < 0:
@@ -1430,6 +1438,9 @@ def load_derived_rgbd_frames(
     database = sequence["bag"]["database"]
     export = json.loads(export_path.read_text(encoding="utf-8"))
     expected_frame_count = int(sequence["timeline"]["depth_frame_count"])
+    observed_output_binding = compute_export_output_binding(
+        derived_root, scene, expected_frame_count
+    )
     if not (
         export.get("schema_version") == 1
         and export.get("dataset") == "TESSE-CD"
@@ -1442,7 +1453,20 @@ def load_derived_rgbd_frames(
         == Path(str(contract["source_manifest"]["path"])).resolve()
         and export.get("depth_encoding")
         == "uint16 millimeters decoded from official 32FC1 meters"
+        and export.get("rgb_encoding")
+        == "JPEG quality 95 decoded from official rgb8"
+        and export.get("combined_output_sha256")
+        == observed_output_binding["combined_output_sha256"]
+        and export.get("file_hash_count")
+        == observed_output_binding["file_hash_count"]
     ):
+        if (
+            export.get("combined_output_sha256")
+            != observed_output_binding["combined_output_sha256"]
+            or export.get("file_hash_count")
+            != observed_output_binding["file_hash_count"]
+        ):
+            raise ValueError(f"{scene} derived RGB-D combined output SHA256 mismatch")
         raise ValueError(f"{scene} derived RGB-D export is not source-bound")
 
     with timestamps_path.open(encoding="utf-8", newline="") as handle:

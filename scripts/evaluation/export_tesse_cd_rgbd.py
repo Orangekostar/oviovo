@@ -82,6 +82,47 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def compute_export_output_binding(
+    output_root: Path, scene: str, frame_count: int
+) -> dict[str, object]:
+    """Recompute the exact per-file binding recorded by ``export_scene``."""
+    if not scene or type(frame_count) is not int or frame_count < 0:
+        raise ValueError("export binding requires a scene and non-negative frame count")
+    scene_dir = output_root / scene
+    results_dir = scene_dir / "results"
+    paths = [
+        path
+        for index in range(frame_count)
+        for path in (
+            results_dir / f"frame{index:06d}.jpg",
+            results_dir / f"depth{index:06d}.png",
+        )
+    ] + [
+        scene_dir / "traj.txt",
+        scene_dir / "timestamps.csv",
+        output_root / "cam_params.json",
+    ]
+    output_hashes: list[tuple[str, str]] = []
+    for path in paths:
+        if not path.is_file():
+            raise ValueError(f"exported RGB-D artifact is not a file: {path}")
+        output_hashes.append(
+            (path.relative_to(output_root).as_posix(), _sha256(path))
+        )
+    digest = hashlib.sha256()
+    for relative, file_hash in sorted(output_hashes):
+        digest.update(
+            relative.encode("utf-8")
+            + b"\0"
+            + file_hash.encode("ascii")
+            + b"\n"
+        )
+    return {
+        "combined_output_sha256": digest.hexdigest(),
+        "file_hash_count": len(output_hashes),
+    }
+
+
 def _load_pose_inputs(bag: Path) -> tuple[dict[int, Any], Any]:
     from rosbags.highlevel import AnyReader
 
@@ -153,7 +194,6 @@ def export_scene(manifest_path: Path, scene: str, output_root: Path) -> Path:
     pending_rgb: dict[int, Any] = {}
     pending_depth: dict[int, Any] = {}
     rows: list[tuple[int, int, int]] = []
-    output_hashes: list[tuple[str, str]] = []
     trajectory_path = scene_dir / "traj.txt"
     with trajectory_path.open("w", encoding="utf-8") as trajectory:
         with AnyReader([bag]) as reader:
@@ -202,12 +242,6 @@ def export_scene(manifest_path: Path, scene: str, output_root: Path) -> Path:
                 pose = camera_pose_matrix(poses[timestamp], body_from_camera)
                 trajectory.write(" ".join(f"{value:.12g}" for value in pose.reshape(-1)) + "\n")
                 rows.append((index, timestamp, timestamp - int(sequence["timeline"]["first_depth_timestamp_ns"])))
-                output_hashes.extend(
-                    [
-                        (str(rgb_path.relative_to(output_root)), _sha256(rgb_path)),
-                        (str(depth_path.relative_to(output_root)), _sha256(depth_path)),
-                    ]
-                )
 
     if pending_rgb or pending_depth:
         raise ValueError("TESSE-CD RGB/depth timestamps do not match exactly")
@@ -220,16 +254,7 @@ def export_scene(manifest_path: Path, scene: str, output_root: Path) -> Path:
         writer = csv.writer(handle)
         writer.writerow(("frame_index", "sensor_timestamp_ns", "relative_timestamp_ns"))
         writer.writerows(rows)
-    output_hashes.extend(
-        [
-            (str(trajectory_path.relative_to(output_root)), _sha256(trajectory_path)),
-            (str(timestamps_path.relative_to(output_root)), _sha256(timestamps_path)),
-            (str(camera_path.relative_to(output_root)), _sha256(camera_path)),
-        ]
-    )
-    digest = hashlib.sha256()
-    for relative, file_hash in sorted(output_hashes):
-        digest.update(relative.encode("utf-8") + b"\0" + file_hash.encode("ascii") + b"\n")
+    output_binding = compute_export_output_binding(output_root, scene, len(rows))
     export_manifest = scene_dir / "export_manifest.json"
     export_manifest.write_text(
         json.dumps(
@@ -244,8 +269,7 @@ def export_scene(manifest_path: Path, scene: str, output_root: Path) -> Path:
                 "rgb_encoding": "JPEG quality 95 decoded from official rgb8",
                 "depth_encoding": "uint16 millimeters decoded from official 32FC1 meters",
                 "pose": "world_T_base_link_gt multiplied by bag tf_static base_link_gt_T_left_cam",
-                "combined_output_sha256": digest.hexdigest(),
-                "file_hash_count": len(output_hashes),
+                **output_binding,
             },
             indent=2,
             sort_keys=True,
