@@ -6,7 +6,7 @@ from __future__ import annotations
 import argparse
 from collections import Counter, OrderedDict
 from collections.abc import Iterator, Mapping
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 import hashlib
 import io
 import json
@@ -26,30 +26,65 @@ from src.oviv2.snapshot import VoxelMapSnapshot
 
 
 SnapshotKey = tuple[str, int]
+_REPOSITORY_SOURCE_ROLES = frozenset(
+    {"source_manifest", "schedule", "rgbd_lock"}
+)
+_SCENE_SOURCE_SUFFIXES = (
+    "changes",
+    "dsg_with_mesh",
+    "export_manifest",
+    "timestamps",
+    "trajectory",
+)
 
 
 class _LazyCheckpointSnapshots(Mapping[SnapshotKey, VoxelMapSnapshot]):
-    def __init__(self, paths: Mapping[SnapshotKey, Path], *, cache_size: int = 1) -> None:
-        self._paths = dict(paths)
+    def __init__(
+        self,
+        bindings: Mapping[SnapshotKey, "_SnapshotBinding"],
+        *,
+        cache_size: int = 1,
+    ) -> None:
+        self._bindings = dict(bindings)
         self._cache_size = cache_size
         self._cache: OrderedDict[SnapshotKey, VoxelMapSnapshot] = OrderedDict()
 
     def __len__(self) -> int:
-        return len(self._paths)
+        return len(self._bindings)
 
     def __iter__(self) -> Iterator[SnapshotKey]:
-        return iter(self._paths)
+        return iter(self._bindings)
 
     def __getitem__(self, key: SnapshotKey) -> VoxelMapSnapshot:
-        if key not in self._paths:
+        if key not in self._bindings:
             raise KeyError(key)
         cached = self._cache.pop(key, None)
         if cached is None:
-            cached = VoxelMapSnapshot.load(self._paths[key])
+            binding = self._bindings[key]
+            _revalidate_snapshot_binding(binding)
+            cached = VoxelMapSnapshot.load(binding.path)
+            if cached.checksums != binding.checksums:
+                raise ValueError(f"snapshot checksums changed after index check: {key}")
+            loaded_metadata = asdict(cached.metadata)
+            if cached.metadata.schema_version in {1, 2}:
+                loaded_metadata.pop("dense_semantic_provenance")
+            if loaded_metadata != binding.metadata:
+                raise ValueError(f"snapshot metadata changed after index check: {key}")
+            if not (
+                cached.metadata.scene_id == key[0]
+                and cached.metadata.frame_id == key[1]
+                and cached.metadata.timestamp == binding.timestamp_ns / 1_000_000_000
+            ):
+                raise ValueError(f"snapshot timestamp or identity mismatch: {key}")
+            _revalidate_snapshot_binding(binding)
         self._cache[key] = cached
         while len(self._cache) > self._cache_size:
             self._cache.popitem(last=False)
         return cached
+
+    def revalidate_all(self) -> None:
+        for binding in self._bindings.values():
+            _revalidate_snapshot_binding(binding)
 
 
 @dataclass(frozen=True)
@@ -58,6 +93,16 @@ class _FileWitness:
     fingerprint: tuple[int, int, int, int, int]
     sha256: str
     byte_count: int
+
+
+@dataclass(frozen=True)
+class _SnapshotBinding:
+    path: Path
+    directory_fingerprint: tuple[int, int, int, int, int]
+    file_fingerprints: dict[str, tuple[int, int, int, int, int]]
+    checksums: dict[str, str]
+    metadata: dict[str, Any]
+    timestamp_ns: int
 
 
 def _reject_duplicate_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -150,22 +195,216 @@ def _revalidate_witness(witness: _FileWitness, *, label: str) -> None:
         raise ValueError(f"{label} changed after validation")
 
 
-def _source_path(raw_path: object) -> Path:
+def _strict_jsonl(content: bytes, *, label: str) -> None:
+    try:
+        lines = content.decode("utf-8").splitlines()
+    except UnicodeDecodeError as error:
+        raise ValueError(f"invalid {label}: {error}") from error
+    if not lines:
+        raise ValueError(f"{label} must not be empty")
+    for line_number, line in enumerate(lines, start=1):
+        if not line:
+            raise ValueError(f"{label} contains an empty line at {line_number}")
+        _load_json_bytes(line.encode("utf-8"), label=f"{label} line {line_number}")
+
+
+def _validate_snapshot_metadata_types(metadata: Mapping[str, Any]) -> None:
+    required = {
+        "scene_id",
+        "frame_id",
+        "timestamp",
+        "revision",
+        "voxel_size_m",
+        "block_resolution",
+        "schema_version",
+    }
+    if frozenset(metadata) not in {
+        frozenset(required),
+        frozenset({*required, "dense_semantic_provenance"}),
+    }:
+        raise ValueError("snapshot metadata fields are not exact")
+    if not isinstance(metadata["scene_id"], str) or not metadata["scene_id"]:
+        raise ValueError("snapshot scene_id is invalid")
+    for name in ("frame_id", "revision"):
+        if type(metadata[name]) is not int or metadata[name] < 0:
+            raise ValueError(f"snapshot {name} must be a non-negative integer")
+    if type(metadata["schema_version"]) is not int:
+        raise ValueError("snapshot schema_version must be an integer")
+    if type(metadata["block_resolution"]) is not int:
+        raise ValueError("snapshot block_resolution must be an integer")
+    for name in ("timestamp", "voxel_size_m"):
+        value = metadata[name]
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not np.isfinite(value)
+        ):
+            raise ValueError(f"snapshot {name} must be finite numeric")
+
+
+def _capture_snapshot_binding(
+    path: Path,
+    *,
+    timestamp_ns: int,
+    expected_checksums_sha256: str,
+) -> _SnapshotBinding:
+    try:
+        directory_status = os.lstat(path)
+    except OSError as error:
+        raise ValueError(f"snapshot directory is missing: {path}") from error
+    if not stat.S_ISDIR(directory_status.st_mode):
+        raise ValueError(f"snapshot path is not a real directory: {path}")
+    checksums_content, checksums_witness = _read_bound_file(
+        path / "checksums.json",
+        label="snapshot checksum manifest",
+    )
+    if checksums_witness.sha256 != expected_checksums_sha256:
+        raise ValueError(f"snapshot checksum binding mismatch: {path}")
+    checksums_payload = _load_json_bytes(
+        checksums_content,
+        label="snapshot checksum manifest",
+    )
+    allowed_files_v1 = {
+        "metadata.json",
+        "geometry.npz",
+        "evidence.npz",
+        "ownership.npz",
+    }
+    allowed_files_v2 = {*allowed_files_v1, "entities.jsonl"}
+    if frozenset(checksums_payload) not in {
+        frozenset(allowed_files_v1),
+        frozenset(allowed_files_v2),
+    }:
+        raise ValueError("snapshot checksum manifest has unexpected files")
+    if any(
+        not isinstance(value, str)
+        or len(value) != 64
+        or any(character not in "0123456789abcdef" for character in value)
+        for value in checksums_payload.values()
+    ):
+        raise ValueError("snapshot checksum manifest has an invalid hash")
+    expected_physical = {*checksums_payload, "checksums.json"}
+    try:
+        physical = {item.name for item in path.iterdir()}
+    except OSError as error:
+        raise ValueError(f"snapshot inventory is unreadable: {path}") from error
+    if physical != expected_physical:
+        raise ValueError("snapshot physical files do not match checksum manifest")
+
+    file_fingerprints: dict[str, tuple[int, int, int, int, int]] = {}
+    metadata_payload: dict[str, Any] | None = None
+    for name in sorted(expected_physical):
+        source = path / name
+        try:
+            source_status = os.lstat(source)
+        except OSError as error:
+            raise ValueError(f"snapshot file is missing: {source}") from error
+        if not stat.S_ISREG(source_status.st_mode):
+            raise ValueError(f"snapshot file is not regular: {source}")
+        file_fingerprints[name] = _fingerprint(source_status)
+        if name == "checksums.json":
+            file_fingerprints[name] = checksums_witness.fingerprint
+        if name not in {"metadata.json", "entities.jsonl"}:
+            continue
+        content, witness = _read_bound_file(source, label=f"snapshot {name}")
+        file_fingerprints[name] = witness.fingerprint
+        if witness.sha256 != checksums_payload[name]:
+            raise ValueError(f"snapshot checksum mismatch for {name}")
+        if name == "metadata.json":
+            metadata_payload = _load_json_bytes(content, label="snapshot metadata")
+            _validate_snapshot_metadata_types(metadata_payload)
+        else:
+            _strict_jsonl(content, label="snapshot entities")
+    if metadata_payload is None:
+        raise ValueError("snapshot metadata is missing")
+    binding = _SnapshotBinding(
+        path=path,
+        directory_fingerprint=_fingerprint(directory_status),
+        file_fingerprints=file_fingerprints,
+        checksums={str(key): str(value) for key, value in checksums_payload.items()},
+        metadata=metadata_payload,
+        timestamp_ns=timestamp_ns,
+    )
+    _revalidate_snapshot_binding(binding)
+    return binding
+
+
+def _revalidate_snapshot_binding(binding: _SnapshotBinding) -> None:
+    try:
+        directory_status = os.lstat(binding.path)
+    except OSError as error:
+        raise ValueError(f"snapshot changed after index check: {binding.path}") from error
+    if not stat.S_ISDIR(directory_status.st_mode) or (
+        _fingerprint(directory_status) != binding.directory_fingerprint
+    ):
+        raise ValueError(f"snapshot identity changed after index check: {binding.path}")
+    try:
+        physical = {item.name for item in binding.path.iterdir()}
+    except OSError as error:
+        raise ValueError(f"snapshot changed after index check: {binding.path}") from error
+    if physical != set(binding.file_fingerprints):
+        raise ValueError(f"snapshot inventory changed after index check: {binding.path}")
+    for name, expected in binding.file_fingerprints.items():
+        try:
+            status = os.lstat(binding.path / name)
+        except OSError as error:
+            raise ValueError(
+                f"snapshot file changed after index check: {binding.path / name}"
+            ) from error
+        if not stat.S_ISREG(status.st_mode) or _fingerprint(status) != expected:
+            raise ValueError(
+                f"snapshot file identity changed after index check: {binding.path / name}"
+            )
+
+
+def _expected_source_roles(metadata: Mapping[str, Any]) -> set[str]:
+    expected = {*_REPOSITORY_SOURCE_ROLES, "camera"}
+    for scene in ("apartment", "office"):
+        expected.update(f"{scene}.{suffix}" for suffix in _SCENE_SOURCE_SUFFIXES)
+        expected.update(
+            f"{scene}.depth.{frame_index:06d}"
+            for frame_index in metadata["scene_frame_indices"][scene]
+        )
+    return expected
+
+
+def _source_path(
+    raw_path: object,
+    *,
+    role: str,
+    dataset_root: Path,
+    formal: bool,
+) -> Path:
     if not isinstance(raw_path, str) or not raw_path:
         raise ValueError("target source path is invalid")
     path = Path(raw_path)
-    return path if path.is_absolute() else REPO_ROOT / path
+    if formal and path.is_absolute():
+        raise ValueError(f"formal target source path must be relative: {role}")
+    if path.is_absolute():
+        return path
+    if "\\" in raw_path or any(part in {"", ".", ".."} for part in path.parts):
+        raise ValueError(f"target source path is not canonical: {role}")
+    if path.as_posix() != raw_path:
+        raise ValueError(f"target source path is not canonical: {role}")
+    root = REPO_ROOT if role in _REPOSITORY_SOURCE_ROLES else dataset_root
+    return root / path
 
 
 def _load_target_package(
     target_dir: Path,
+    *,
+    dataset_root: Path,
 ) -> tuple[dict[str, np.ndarray], dict[str, Any], _FileWitness, list[_FileWitness]]:
+    dataset_root = Path(dataset_root)
+    if not dataset_root.is_dir() or dataset_root.is_symlink():
+        raise ValueError(f"dataset_root is not a real directory: {dataset_root}")
     manifest_content, manifest_witness = _read_bound_file(
         target_dir / "manifest.json", label="target manifest"
     )
     manifest = _load_json_bytes(manifest_content, label="target manifest")
     if not (
-        manifest.get("schema_version") == 1
+        type(manifest.get("schema_version")) is int
+        and manifest.get("schema_version") == 1
         and manifest.get("manifest_id") == "tesse_cd_occlusion_v1_targets"
         and manifest.get("dataset") == "TESSE-CD"
         and manifest.get("status") in {"FIXTURE", "SMOKE", "GENERATED"}
@@ -194,7 +433,9 @@ def _load_target_package(
     declared_arrays = array_record.get("arrays")
     if not isinstance(declared_arrays, Mapping) or set(declared_arrays) != set(arrays):
         raise ValueError("target array inventory mismatch")
-    if array_record.get("count") != len(arrays):
+    if type(array_record.get("count")) is not int or array_record.get(
+        "count"
+    ) != len(arrays):
         raise ValueError("target array count mismatch")
     for name, values in arrays.items():
         declaration = declared_arrays[name]
@@ -214,6 +455,10 @@ def _load_target_package(
     sources = manifest.get("sources")
     if not isinstance(sources, Mapping) or not sources:
         raise ValueError("target source bindings are missing")
+    expected_roles = _expected_source_roles(metadata)
+    if set(sources) != expected_roles:
+        raise ValueError("target sources do not match the exact role allowlist")
+    formal = manifest["status"] == "GENERATED"
     for role, raw_record in sorted(sources.items()):
         if not isinstance(raw_record, Mapping) or set(raw_record) != {
             "path",
@@ -222,12 +467,19 @@ def _load_target_package(
         }:
             raise ValueError(f"target source binding is invalid: {role}")
         _, witness = _read_bound_file(
-            _source_path(raw_record["path"]),
+            _source_path(
+                raw_record["path"],
+                role=role,
+                dataset_root=dataset_root,
+                formal=formal,
+            ),
             label=f"target source {role}",
             capture_content=False,
         )
         if not (
-            raw_record["sha256"] == witness.sha256
+            isinstance(raw_record["sha256"], str)
+            and raw_record["sha256"] == witness.sha256
+            and type(raw_record["byte_count"]) is int
             and raw_record["byte_count"] == witness.byte_count
         ):
             raise ValueError(f"target source hash mismatch: {role}")
@@ -244,6 +496,43 @@ def _canonical_relative_path(raw_path: object) -> Path:
     if path.as_posix() != raw_path:
         raise ValueError("snapshot path must be canonical and relative")
     return path
+
+
+def _plain_nonnegative_int(value: object) -> bool:
+    return type(value) is int and value >= 0
+
+
+def _load_bound_run_config(
+    record: object,
+    *,
+    index_root: Path,
+) -> tuple[dict[str, Any], _FileWitness]:
+    if not isinstance(record, Mapping) or set(record) != {
+        "path",
+        "sha256",
+        "byte_count",
+    }:
+        raise ValueError("run config binding is invalid")
+    relative = _canonical_relative_path(record["path"])
+    path = index_root / relative
+    if path.is_symlink():
+        raise ValueError("run config path must not be a symlink")
+    content, witness = _read_bound_file(path, label="normalized run config")
+    if not (
+        isinstance(record["sha256"], str)
+        and record["sha256"] == witness.sha256
+        and _plain_nonnegative_int(record["byte_count"])
+        and record["byte_count"] == witness.byte_count
+    ):
+        raise ValueError("run config hash binding mismatch")
+    config = _load_json_bytes(content, label="normalized run config")
+    policy = config.get("missing_observation_policy")
+    if not isinstance(policy, str) or policy not in {
+        "signed_depth",
+        "missing_as_absence",
+    }:
+        raise ValueError("normalized run config missing_observation_policy is invalid")
+    return config, witness
 
 
 def _required_checkpoint_times(metadata: Mapping[str, Any]) -> dict[SnapshotKey, int]:
@@ -265,8 +554,8 @@ def build_evaluation_checkpoint_plan(
     arrays: Mapping[str, np.ndarray],
     metadata: Mapping[str, Any],
 ) -> dict[str, Any]:
-    """Build the frozen, target-derived snapshot-frame plan consumed by the runner."""
-    validate_generated_target(arrays, metadata)
+    """Build the frozen snapshot-frame plan from an already validated target."""
+    del arrays
     required = _required_checkpoint_times(metadata)
     frames = {
         scene: sorted(
@@ -305,6 +594,8 @@ def _load_checkpoint_snapshots(
     Mapping[SnapshotKey, VoxelMapSnapshot],
     dict[str, Any],
     _FileWitness,
+    _FileWitness,
+    str,
 ]:
     content, index_witness = _read_bound_file(
         checkpoint_index, label="checkpoint index"
@@ -315,37 +606,46 @@ def _load_checkpoint_snapshots(
         "manifest_id",
         "dataset",
         "method_id",
-        "missing_observation_policy",
+        "run_config",
         "target_manifest",
         "evaluation_checkpoint_frames_sha256",
         "snapshots",
     } or not (
-        payload["schema_version"] == 1
+        type(payload["schema_version"]) is int
+        and payload["schema_version"] == 1
         and payload["manifest_id"] == "oviv2_tesse_cd_occlusion_checkpoints_v1"
         and payload["dataset"] == "TESSE-CD"
         and payload["method_id"] == "OVIV2"
-        and payload["missing_observation_policy"]
-        in {"signed_depth", "missing_as_absence"}
     ):
         raise ValueError("checkpoint index identity mismatch")
-    if payload["target_manifest"] != {
-        "sha256": target_manifest_witness.sha256,
-        "byte_count": target_manifest_witness.byte_count,
-    }:
+    target_binding = payload["target_manifest"]
+    if not isinstance(target_binding, Mapping) or not (
+        set(target_binding) == {"sha256", "byte_count"}
+        and target_binding["sha256"] == target_manifest_witness.sha256
+        and _plain_nonnegative_int(target_binding["byte_count"])
+        and target_binding["byte_count"] == target_manifest_witness.byte_count
+    ):
         raise ValueError("checkpoint target manifest binding mismatch")
-    if payload["evaluation_checkpoint_frames_sha256"] != checkpoint_plan[
-        "evaluation_checkpoint_frames_sha256"
-    ]:
+    run_config, run_config_witness = _load_bound_run_config(
+        payload["run_config"],
+        index_root=checkpoint_index.parent,
+    )
+    policy = run_config["missing_observation_policy"]
+    if not isinstance(payload["evaluation_checkpoint_frames_sha256"], str) or (
+        payload["evaluation_checkpoint_frames_sha256"]
+        != checkpoint_plan["evaluation_checkpoint_frames_sha256"]
+    ):
         raise ValueError("evaluation checkpoint frame binding mismatch")
     records = payload["snapshots"]
     if not isinstance(records, list):
         raise ValueError("checkpoint snapshot inventory must be a list")
     required = _required_checkpoint_times(metadata)
-    snapshot_paths: dict[SnapshotKey, Path] = {}
+    snapshot_bindings: dict[SnapshotKey, _SnapshotBinding] = {}
     for record in records:
         if not isinstance(record, Mapping) or set(record) != {
             "scene",
             "frame_index",
+            "timestamp_ns",
             "relative_timestamp_ns",
             "consumed_through_frame",
             "consumed_through_frame_exclusive",
@@ -362,11 +662,17 @@ def _load_checkpoint_snapshots(
         ):
             raise ValueError("checkpoint scene or frame is invalid")
         key = (scene, frame_index)
-        if key in snapshot_paths:
+        if key in snapshot_bindings:
             raise ValueError(f"duplicate checkpoint: {key}")
         if key not in required:
             raise ValueError(f"unexpected checkpoint: {key}")
-        if not (
+        causal_values = (
+            record["timestamp_ns"],
+            record["relative_timestamp_ns"],
+            record["consumed_through_frame"],
+            record["consumed_through_frame_exclusive"],
+        )
+        if not all(_plain_nonnegative_int(value) for value in causal_values) or not (
             record["relative_timestamp_ns"] == required[key]
             and record["consumed_through_frame"] == frame_index
             and record["consumed_through_frame_exclusive"] == frame_index + 1
@@ -379,19 +685,24 @@ def _load_checkpoint_snapshots(
             current = current / part
             if current.is_symlink():
                 raise ValueError(f"snapshot path contains a symlink: {relative}")
-        _, checksums_witness = _read_bound_file(
-            snapshot_path / "checksums.json",
-            label="snapshot checksum manifest",
-            capture_content=False,
-        )
-        if record["checksums_sha256"] != checksums_witness.sha256:
+        if not isinstance(record["checksums_sha256"], str):
             raise ValueError(f"snapshot checksum binding mismatch: {key}")
-        snapshot_paths[key] = snapshot_path
-    missing = sorted(set(required).difference(snapshot_paths))
+        snapshot_bindings[key] = _capture_snapshot_binding(
+            snapshot_path,
+            timestamp_ns=record["timestamp_ns"],
+            expected_checksums_sha256=record["checksums_sha256"],
+        )
+    missing = sorted(set(required).difference(snapshot_bindings))
     if missing:
         scene, frame_index = missing[0]
         raise ValueError(f"missing checkpoint for {scene} frame {frame_index}")
-    return _LazyCheckpointSnapshots(snapshot_paths), payload, index_witness
+    return (
+        _LazyCheckpointSnapshots(snapshot_bindings),
+        payload,
+        index_witness,
+        run_config_witness,
+        policy,
+    )
 
 
 def _render_json(payload: Mapping[str, Any]) -> bytes:
@@ -524,8 +835,11 @@ def evaluate_fixed_anchor_ownership(
     arrays: Mapping[str, np.ndarray],
     metadata: Mapping[str, Any],
     snapshots: Mapping[SnapshotKey, Any],
+    missing_observation_policy: str,
 ) -> dict[str, Any]:
     """Map at each anchor once, then score every later checkpoint without rematching."""
+    if missing_observation_policy not in {"signed_depth", "missing_as_absence"}:
+        raise ValueError("missing_observation_policy is invalid")
     raw_episodes = metadata.get("episodes")
     if not isinstance(raw_episodes, list) or not raw_episodes:
         raise ValueError("occlusion metadata has no episodes")
@@ -535,8 +849,10 @@ def evaluate_fixed_anchor_ownership(
 
     mappings: list[dict[str, Any]] = []
     episode_counts: dict[str, dict[str, int]] = {}
+    episode_scenes: dict[str, str] = {}
     for episode_id, episode in episodes.items():
         scene = str(episode["scene"])
+        episode_scenes[episode_id] = scene
         anchor = episode["anchor"]
         anchor_snapshot = _required_snapshot(
             snapshots, scene, int(anchor["frame_index"])
@@ -617,12 +933,32 @@ def evaluate_fixed_anchor_ownership(
         stress_layers[label] = _finalize_metrics(counts)
 
     headline = stress_layers["0.90"]
+    headline_ids = layers["0.90"]["episode_ids"]
+    scene_coverage = {
+        scene: {
+            "episode_count": sum(
+                episode_scenes[episode_id] == scene for episode_id in headline_ids
+            ),
+            "anchor_mapped_episode_count": sum(
+                episode_scenes[episode_id] == scene
+                and episode_counts[episode_id]["anchor_mapped_episode_count"] == 1
+                for episode_id in headline_ids
+            ),
+        }
+        for scene in ("apartment", "office")
+    }
+    both_scenes_covered = all(
+        coverage["episode_count"] > 0
+        and coverage["anchor_mapped_episode_count"] == coverage["episode_count"]
+        for coverage in scene_coverage.values()
+    )
     return {
         "fixed_anchor_mapping_rule": "majority_owner_then_lowest_entity_id",
         "fixed_anchor_mappings": mappings,
         "stress_layers": stress_layers,
         "headline_gate": {
             "stress_layer": "0.90",
+            "missing_observation_policy": missing_observation_policy,
             "episode_count": headline["episode_count"],
             "anchor_mapped_episode_count": headline[
                 "anchor_mapped_episode_count"
@@ -631,11 +967,20 @@ def evaluate_fixed_anchor_ownership(
                 "anchor_owned_target_voxels"
             ],
             "false_release_count": headline["false_release_count"],
+            "false_reassignment_count": headline["false_reassignment_count"],
+            "retained_ownership_recall": headline[
+                "retained_ownership_recall"
+            ],
+            "scene_coverage": scene_coverage,
             "passed": bool(
-                headline["anchor_owned_target_voxels"] > 0
+                missing_observation_policy == "signed_depth"
+                and both_scenes_covered
+                and headline["anchor_owned_target_voxels"] > 0
                 and headline["anchor_mapped_episode_count"]
                 == headline["episode_count"]
                 and headline["false_release_count"] == 0
+                and headline["false_reassignment_count"] == 0
+                and headline["retained_ownership_recall"] == 1.0
             ),
         },
     }
@@ -645,20 +990,30 @@ def evaluate_occlusion_package(
     *,
     target_dir: str | Path,
     checkpoint_index: str | Path,
+    dataset_root: str | Path,
     output_path: str | Path | None = None,
 ) -> dict[str, Any]:
     """Validate frozen inputs, evaluate fixed anchors, and optionally publish JSON."""
     output = Path(output_path) if output_path is not None else None
     if output is not None and os.path.lexists(output):
         raise ValueError(f"output already exists: {output}")
-    arrays, metadata, target_manifest_witness, target_witnesses = _load_target_package(
-        Path(target_dir)
+    arrays, metadata, target_manifest_witness, target_witnesses = (
+        _load_target_package(
+            Path(target_dir),
+            dataset_root=Path(dataset_root),
+        )
     )
     checkpoint_plan = build_evaluation_checkpoint_plan(
         arrays=arrays,
         metadata=metadata,
     )
-    snapshots, checkpoint_payload, checkpoint_witness = _load_checkpoint_snapshots(
+    (
+        snapshots,
+        checkpoint_payload,
+        checkpoint_witness,
+        run_config_witness,
+        missing_observation_policy,
+    ) = _load_checkpoint_snapshots(
         Path(checkpoint_index),
         metadata=metadata,
         target_manifest_witness=target_manifest_witness,
@@ -668,20 +1023,27 @@ def evaluate_occlusion_package(
         arrays=arrays,
         metadata=metadata,
         snapshots=snapshots,
+        missing_observation_policy=missing_observation_policy,
     )
     result = {
         "schema_version": 1,
         "manifest_id": "oviv2_tesse_cd_occlusion_evaluation_v1",
         "dataset": "TESSE-CD",
         "method_id": checkpoint_payload["method_id"],
-        "missing_observation_policy": checkpoint_payload[
-            "missing_observation_policy"
-        ],
+        "missing_observation_policy": missing_observation_policy,
         "target_manifest": {
             "sha256": target_manifest_witness.sha256,
             "byte_count": target_manifest_witness.byte_count,
         },
         "checkpoint_count": len(snapshots),
+        "checkpoint_index": {
+            "sha256": checkpoint_witness.sha256,
+            "byte_count": checkpoint_witness.byte_count,
+        },
+        "run_config": {
+            "sha256": run_config_witness.sha256,
+            "byte_count": run_config_witness.byte_count,
+        },
         "evaluation_checkpoint_frames_sha256": checkpoint_plan[
             "evaluation_checkpoint_frames_sha256"
         ],
@@ -692,6 +1054,8 @@ def evaluate_occlusion_package(
     for witness in target_witnesses:
         _revalidate_witness(witness, label="target input")
     _revalidate_witness(checkpoint_witness, label="checkpoint index")
+    _revalidate_witness(run_config_witness, label="normalized run config")
+    snapshots.revalidate_all()  # type: ignore[attr-defined]
     if output is not None:
         _publish_no_replace(output, encoded)
     return result
@@ -701,11 +1065,13 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--targets", type=Path, required=True)
     parser.add_argument("--checkpoints", type=Path, required=True)
+    parser.add_argument("--dataset-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
     result = evaluate_occlusion_package(
         target_dir=args.targets,
         checkpoint_index=args.checkpoints,
+        dataset_root=args.dataset_root,
         output_path=args.output,
     )
     print(json.dumps(result["headline_gate"], sort_keys=True, allow_nan=False))

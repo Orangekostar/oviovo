@@ -473,6 +473,33 @@ def test_shared_runtime_config_reads_ownership_min_net_support() -> None:
     assert runtime_config_from_json({}).ownership_min_net_support == pytest.approx(1e-6)
 
 
+def test_shared_runtime_config_reads_missing_observation_policy() -> None:
+    from src.oviv2.runner_config import runtime_config_from_json
+
+    assert (
+        runtime_config_from_json({}).missing_observation_policy == "signed_depth"
+    )
+    assert (
+        runtime_config_from_json(
+            {"missing_observation_policy": "missing_as_absence"}
+        ).missing_observation_policy
+        == "missing_as_absence"
+    )
+
+
+@pytest.mark.parametrize(
+    "policy",
+    [None, "", "absence", "SIGNED_DEPTH", 1, []],
+)
+def test_shared_runtime_config_rejects_invalid_missing_observation_policy(
+    policy: object,
+) -> None:
+    from src.oviv2.runner_config import runtime_config_from_json
+
+    with pytest.raises(ValueError, match="missing_observation_policy"):
+        runtime_config_from_json({"missing_observation_policy": policy})
+
+
 def test_shared_runtime_config_rejects_invalid_ownership_min_net_support() -> None:
     from src.oviv2.runner_config import runtime_config_from_json
 

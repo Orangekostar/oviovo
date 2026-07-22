@@ -101,6 +101,9 @@ def runtime_config_from_json(config: dict[str, Any]) -> Oviv2RuntimeConfig:
         ownership_min_net_support=float(
             config.get("ownership_min_net_support", 1e-6)
         ),
+        missing_observation_policy=config.get(
+            "missing_observation_policy", "signed_depth"
+        ),
         dense_semantics=dense_semantics,
     )
 

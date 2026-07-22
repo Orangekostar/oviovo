@@ -121,6 +121,7 @@ def test_fixed_anchor_majority_tie_uses_lower_owner_and_never_rematches() -> Non
         arrays=arrays,
         metadata=_metadata(episodes),
         snapshots=snapshots,
+        missing_observation_policy="signed_depth",
     )
 
     assert result["fixed_anchor_mappings"] == [
@@ -189,6 +190,7 @@ def test_reports_finite_voxel_object_episode_metrics_for_all_stress_layers() -> 
         arrays=arrays,
         metadata=_metadata([low, headline]),
         snapshots=snapshots,
+        missing_observation_policy="signed_depth",
     )
 
     assert result["stress_layers"]["0.50"]["episode_count"] == 2
@@ -198,11 +200,24 @@ def test_reports_finite_voxel_object_episode_metrics_for_all_stress_layers() -> 
     assert result["stress_layers"]["0.90"]["zero_release_episode_rate"] == 1.0
     assert result["headline_gate"] == {
         "stress_layer": "0.90",
+        "missing_observation_policy": "signed_depth",
         "episode_count": 1,
         "anchor_mapped_episode_count": 1,
         "anchor_owned_target_voxels": 4,
         "false_release_count": 0,
-        "passed": True,
+        "false_reassignment_count": 1,
+        "retained_ownership_recall": 0.75,
+        "scene_coverage": {
+            "apartment": {
+                "episode_count": 0,
+                "anchor_mapped_episode_count": 0,
+            },
+            "office": {
+                "episode_count": 1,
+                "anchor_mapped_episode_count": 1,
+            },
+        },
+        "passed": False,
     }
     for metrics in result["stress_layers"].values():
         for name, value in metrics.items():
@@ -231,6 +246,7 @@ def test_headline_gate_fails_closed_for_unmapped_episode() -> None:
             ("apartment", 0): _snapshot("apartment", 0, {}),
             ("apartment", 1): _snapshot("apartment", 1, {}),
         },
+        missing_observation_policy="signed_depth",
     )
 
     headline = result["stress_layers"]["0.90"]
@@ -260,6 +276,7 @@ def test_rejects_missing_and_future_checkpoints() -> None:
             arrays=arrays,
             metadata=metadata,
             snapshots={("apartment", 0): anchor},
+            missing_observation_policy="signed_depth",
         )
 
     with pytest.raises(ValueError, match="future snapshot"):
@@ -272,4 +289,5 @@ def test_rejects_missing_and_future_checkpoints() -> None:
                     "apartment", 2, {key: 7 for key in keys}
                 ),
             },
+            missing_observation_policy="signed_depth",
         )
