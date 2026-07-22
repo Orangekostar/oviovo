@@ -25,6 +25,10 @@ from src.evaluation.baselines.tesse_cd import (
     summarize_khronos_official_metrics_partial,
 )
 from src.evaluation.json_contracts import loads_strict
+from scripts.evaluation.prepare_temporal_khronos_bridge import (
+    validate_temporal_bridge_manifest,
+)
+from scripts.evaluation.run_temporal_khronos_bridge import validate_build_manifest
 
 
 CANONICAL_TESSE_MANIFEST = (
@@ -118,10 +122,31 @@ def validate_khronos_run_status(path: Path, *, scene: str) -> dict[str, Any]:
     sources = payload.get("sources")
     if not isinstance(sources, list) or not sources:
         raise ValueError("Khronos run status requires hashed sources")
+    source_paths: set[Path] = set()
     for index, entry in enumerate(sources):
         if not isinstance(entry, Mapping):
             raise ValueError("Khronos run source record is invalid")
-        _validate_source_entry(entry, label=f"Khronos run source {index}")
+        source_path = _validate_source_entry(
+            entry, label=f"Khronos run source {index}"
+        ).resolve()
+        if source_path in source_paths:
+            raise ValueError("Khronos run source paths must be unique")
+        source_paths.add(source_path)
+    run_root = path.parent.resolve()
+    required = {
+        (run_root / "map/final.4dmap").resolve(),
+        (run_root / "map/map_timestamps.json").resolve(),
+        (run_root / "map/experiment_log.txt").resolve(),
+        (run_root / "bridge_input/bridge_manifest.json").resolve(),
+        (run_root / "build_manifest.json").resolve(),
+    }
+    missing = required - source_paths
+    if missing:
+        raise ValueError(
+            f"Khronos run required artifact is missing: {sorted(map(str, missing))}"
+        )
+    validate_temporal_bridge_manifest(run_root / "bridge_input/bridge_manifest.json")
+    validate_build_manifest(run_root / "build_manifest.json")
     return payload
 
 
@@ -175,10 +200,6 @@ def _overlay_command(
 def _write_metrics(
     *, results_dir: Path, scene: str, method: str, mode: str, output: Path
 ) -> None:
-    sources = []
-    for name in ("static_objects.csv", "dynamic_objects.csv", "background_mesh.csv"):
-        path = results_dir / name
-        sources.append({"path": str(path.resolve()), "sha256": _sha256(path)})
     payload = {
         "dataset": "TESSE-CD",
         "scene": scene,
@@ -188,7 +209,7 @@ def _write_metrics(
         "display_mode": "online",
         "aggregation": "upstream online 4D plotting aggregation",
         "metrics": summarize_khronos_official_metrics(results_dir),
-        "sources": sources,
+        "sources": _metric_sources(results_dir, relative_to=output.parent),
     }
     output.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
@@ -213,7 +234,9 @@ def _write_partial_metrics(
             **partial["metrics"],
         },
         "unavailable": partial["unavailable"],
-        "sources": _metric_sources(results_dir),
+        "sources": _metric_sources(
+            results_dir, relative_to=output.parent, allow_missing=True
+        ),
     }
     output.write_text(
         json.dumps(payload, indent=2, sort_keys=True, allow_nan=False) + "\n",
@@ -221,13 +244,21 @@ def _write_partial_metrics(
     )
 
 
-def _metric_sources(results_dir: Path) -> list[dict[str, Any]]:
+def _metric_sources(
+    results_dir: Path, *, relative_to: Path, allow_missing: bool = False
+) -> list[dict[str, Any]]:
     sources = []
     for name in ("static_objects.csv", "dynamic_objects.csv", "background_mesh.csv"):
         path = results_dir / name
+        logical_path = os.path.relpath(path, start=relative_to)
+        if not path.is_file():
+            if allow_missing:
+                sources.append({"path": logical_path, "status": "MISSING"})
+                continue
+            raise ValueError(f"Khronos result file is missing: {path}")
         sources.append(
             {
-                "path": str(path.resolve()),
+                "path": logical_path,
                 "sha256": _sha256(path),
                 "byte_count": path.stat().st_size,
             }
@@ -284,7 +315,11 @@ def write_repeated_metrics(
             "status": "UNAVAILABLE",
             "reason": errors[0],
             "repeat_reason": errors[1],
-            "sources": _metric_sources(results_dir),
+            "sources": _metric_sources(
+                results_dir,
+                relative_to=metrics_path.parent,
+                allow_missing=True,
+            ),
             "official_metrics_partial": {
                 "path": str(metrics_path.resolve()),
                 "sha256": _sha256(metrics_path),

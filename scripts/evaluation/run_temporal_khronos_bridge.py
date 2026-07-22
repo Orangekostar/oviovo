@@ -172,11 +172,15 @@ def build_bridge_command(
 
 
 def write_build_manifest(
-    source: Path, cmake: Path, executable: Path, destination: Path
+    source: Path,
+    staged_source: Path,
+    cmake: Path,
+    executable: Path,
+    destination: Path,
 ) -> Path:
     if os.path.lexists(destination):
         raise FileExistsError(f"build manifest already exists: {destination}")
-    for path in (source, cmake, executable):
+    for path in (source, staged_source, cmake, executable):
         if not path.is_file():
             raise ValueError(f"temporal bridge build input is missing: {path}")
     payload = {
@@ -184,6 +188,7 @@ def write_build_manifest(
         "status": "PASS",
         "mode": "khronos_temporal_importer_build",
         "source": _entry(source),
+        "staged_source": _entry(staged_source),
         "cmake": _entry(cmake),
         "executable": _entry(executable),
         "build_scope": ["khronos_eval"],
@@ -210,11 +215,52 @@ def validate_build_manifest(
     ):
         raise ValueError("invalid temporal importer build manifest")
     source = _validate_entry(payload.get("source", {}), label="source")
-    _validate_entry(payload.get("cmake", {}), label="cmake")
+    staged_source = _validate_entry(
+        payload.get("staged_source", {}), label="staged source"
+    )
+    cmake = _validate_entry(payload.get("cmake", {}), label="cmake")
     _validate_entry(payload.get("executable", {}), label="executable")
     if source != expected_source.resolve() or _sha256(source) != _sha256(expected_source):
         raise ValueError("temporal importer source does not match expected source")
+    if staged_source.read_bytes() != source.read_bytes():
+        raise ValueError("staged temporal importer source does not match reviewed source")
+    expected_staged_source = cmake.parent / "app/import_temporal_baseline.cpp"
+    if staged_source != expected_staged_source.resolve():
+        raise ValueError("staged temporal importer source path is invalid")
     return payload
+
+
+def _bridge_tree_records(root: Path) -> list[tuple[str, str, int]]:
+    records: list[tuple[str, str, int]] = []
+    for path in sorted(root.rglob("*")):
+        if path.is_symlink():
+            raise ValueError(f"bridge input snapshot rejects symlink: {path}")
+        if path.is_file():
+            records.append(
+                (str(path.relative_to(root)), _sha256(path), path.stat().st_size)
+            )
+        elif not path.is_dir():
+            raise ValueError(f"bridge input snapshot rejects special file: {path}")
+    return records
+
+
+def snapshot_bridge_input(manifest: Path, destination: Path) -> Path:
+    if manifest.name != "bridge_manifest.json":
+        raise ValueError("temporal bridge manifest must be named bridge_manifest.json")
+    validate_temporal_bridge_manifest(manifest)
+    source_root = manifest.parent
+    if os.path.lexists(destination):
+        raise FileExistsError(f"bridge input snapshot already exists: {destination}")
+    before = _bridge_tree_records(source_root)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(source_root, destination)
+    copied_manifest = destination / manifest.name
+    if _bridge_tree_records(source_root) != before:
+        raise ValueError("bridge input changed while snapshotting")
+    if _bridge_tree_records(destination) != before:
+        raise ValueError("bridge input snapshot byte mismatch")
+    validate_temporal_bridge_manifest(copied_manifest)
+    return copied_manifest
 
 
 def run(args: argparse.Namespace) -> Path:
@@ -231,7 +277,7 @@ def run(args: argparse.Namespace) -> Path:
     if bridge.get("scene_id") != args.scene:
         raise ValueError("temporal bridge manifest scene mismatch")
     args.output.mkdir(parents=True)
-    stage_importer_source(args.source, args.workspace)
+    stage_importer_source(CPP_SOURCE, args.workspace)
     build_log = args.output / "build.log"
     build_command = build_package_command(
         conda=args.conda, environment=args.environment, workspace=args.workspace
@@ -253,17 +299,30 @@ def run(args: argparse.Namespace) -> Path:
     if built.returncode != 0 or not executable.is_file():
         raise RuntimeError(f"temporal importer build failed: {build_log}")
     cmake = args.workspace / "src/khronos/khronos_eval/CMakeLists.txt"
-    build_manifest = write_build_manifest(
-        args.source, cmake, executable, args.output / "build_manifest.json"
+    staged_source = (
+        args.workspace
+        / "src/khronos/khronos_eval/app/import_temporal_baseline.cpp"
     )
-    validate_build_manifest(build_manifest, expected_source=args.source)
+    build_manifest = write_build_manifest(
+        CPP_SOURCE,
+        staged_source,
+        cmake,
+        executable,
+        args.output / "build_manifest.json",
+    )
+    validate_build_manifest(build_manifest, expected_source=CPP_SOURCE)
+
+    copied_manifest = snapshot_bridge_input(
+        args.manifest, args.output / "bridge_input"
+    )
+    bridge = validate_temporal_bridge_manifest(copied_manifest)
 
     map_output = args.output / "map"
     command = build_bridge_command(
         conda=args.conda,
         environment=args.environment,
         workspace=args.workspace,
-        manifest=args.manifest,
+        manifest=copied_manifest,
         output=map_output,
     )
     log_path = args.output / "bridge.log"
@@ -292,9 +351,12 @@ def run(args: argparse.Namespace) -> Path:
         and json.loads(timestamps_path.read_text(encoding="utf-8"))
         == expected_timestamps
     )
+    validate_temporal_bridge_manifest(copied_manifest)
+    validate_build_manifest(build_manifest, expected_source=CPP_SOURCE)
     sources = [
-        args.manifest,
-        args.source,
+        copied_manifest,
+        CPP_SOURCE,
+        staged_source,
         cmake,
         executable,
         build_manifest,
@@ -341,9 +403,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--mode", choices=("causal_checkpoints",), default="causal_checkpoints"
     )
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument(
-        "--source", type=Path, default=CPP_SOURCE
-    )
     parser.add_argument(
         "--workspace",
         type=Path,

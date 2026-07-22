@@ -20,6 +20,74 @@ from scripts.evaluation.run_khronos_official_eval import (
 )
 
 
+def _source_record(path: Path) -> dict[str, object]:
+    return {
+        "path": str(path.resolve()),
+        "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        "byte_count": path.stat().st_size,
+    }
+
+
+def _write_valid_results(root: Path) -> Path:
+    root.mkdir(parents=True)
+    (root / "static_objects.csv").write_text(
+        "Name,Query,AppearedTP,DisappearedTP,AppearedFP,DisappearedFP,"
+        "AppearedFN,DisappearedFN,NumObjDetected,NumObjMissed,NumObjHallucinated\n"
+        "0,10,1,0,0,0,0,0,1,0,0\n",
+        encoding="utf-8",
+    )
+    (root / "dynamic_objects.csv").write_text(
+        "Name,Query,NumObjDetected,NumObjMissed,NumObjHallucinated\n"
+        "0,10,1,0,0\n",
+        encoding="utf-8",
+    )
+    (root / "background_mesh.csv").write_text(
+        "Name,Accuracy@0.2,Completeness@0.2\n0,1.0,1.0\n",
+        encoding="utf-8",
+    )
+    return root
+
+
+def _write_required_run_status(
+    root: Path, monkeypatch: pytest.MonkeyPatch
+) -> tuple[Path, dict[str, Path]]:
+    required = {
+        "final": root / "map/final.4dmap",
+        "timestamps": root / "map/map_timestamps.json",
+        "experiment": root / "map/experiment_log.txt",
+        "bridge": root / "bridge_input/bridge_manifest.json",
+        "build": root / "build_manifest.json",
+    }
+    for name, path in required.items():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(name, encoding="utf-8")
+    monkeypatch.setattr(
+        official_eval, "validate_temporal_bridge_manifest", lambda _: {}
+    )
+    monkeypatch.setattr(
+        official_eval, "validate_build_manifest", lambda _: {}
+    )
+    status = root / "run_status.json"
+    status.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "status": "PASS",
+                "dataset": "TESSE-CD",
+                "scene": "apartment",
+                "method": "OVIV2",
+                "mode": "causal_checkpoints",
+                "bridge_mode": "temporal_checkpoints",
+                "sources": [_source_record(path) for path in required.values()],
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return status, required
+
+
 def test_patch_evaluation_config_binds_local_gt_paths() -> None:
     config = {
         "ground_truth_dsg_file": "/upstream/dsg.json",
@@ -220,71 +288,44 @@ def test_canonical_tesse_manifest_rejects_symlink(tmp_path: Path) -> None:
         validate_tesse_manifest(linked, scene="apartment")
 
 
-def test_khronos_run_status_revalidates_hashed_sources(tmp_path: Path) -> None:
-    source = tmp_path / "final.4dmap"
-    source.write_bytes(b"map")
-    status = tmp_path / "run_status.json"
-    status.write_text(
-        json.dumps(
-            {
-                "schema_version": 1,
-                "status": "PASS",
-                "dataset": "TESSE-CD",
-                "scene": "apartment",
-                "method": "OVIV2",
-                "mode": "causal_checkpoints",
-                "bridge_mode": "temporal_checkpoints",
-                "sources": [
-                    {
-                        "path": str(source),
-                        "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
-                        "byte_count": source.stat().st_size,
-                    }
-                ],
-            },
-            sort_keys=True,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+def test_khronos_run_status_revalidates_hashed_sources(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    status, required = _write_required_run_status(tmp_path / "run", monkeypatch)
 
     validate_khronos_run_status(status, scene="apartment")
-    source.write_bytes(b"changed")
+    required["final"].write_bytes(b"changed")
     with pytest.raises(ValueError, match="source"):
         validate_khronos_run_status(status, scene="apartment")
 
 
-def test_khronos_run_status_rejects_symlinked_source(tmp_path: Path) -> None:
+def test_khronos_run_status_rejects_symlinked_source(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    status, required = _write_required_run_status(tmp_path / "run", monkeypatch)
     target = tmp_path / "target.4dmap"
     target.write_bytes(b"map")
-    source = tmp_path / "final.4dmap"
+    source = required["final"]
+    source.unlink()
     source.symlink_to(target.name)
-    status = tmp_path / "run_status.json"
-    status.write_text(
-        json.dumps(
-            {
-                "schema_version": 1,
-                "status": "PASS",
-                "dataset": "TESSE-CD",
-                "scene": "apartment",
-                "method": "OVIV2",
-                "mode": "causal_checkpoints",
-                "bridge_mode": "temporal_checkpoints",
-                "sources": [
-                    {
-                        "path": str(source),
-                        "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
-                        "byte_count": source.stat().st_size,
-                    }
-                ],
-            },
-            sort_keys=True,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
 
     with pytest.raises(ValueError, match="symlink"):
+        validate_khronos_run_status(status, scene="apartment")
+
+
+def test_khronos_run_status_rejects_missing_required_artifact(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    status, required = _write_required_run_status(tmp_path / "run", monkeypatch)
+    payload = json.loads(status.read_text(encoding="utf-8"))
+    payload["sources"] = [
+        entry
+        for entry in payload["sources"]
+        if Path(entry["path"]) != required["timestamps"].resolve()
+    ]
+    status.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="required artifact"):
         validate_khronos_run_status(status, scene="apartment")
 
 
@@ -340,3 +381,62 @@ def test_partial_metric_record_uses_online_display_mode_and_hashed_sources(
 
     assert payload["display_mode"] == "online"
     assert all(source["byte_count"] > 0 for source in payload["sources"])
+
+
+def test_metric_json_is_byte_identical_across_run_roots(tmp_path: Path) -> None:
+    first_results = _write_valid_results(tmp_path / "first/map/results")
+    second_results = _write_valid_results(tmp_path / "second/map/results")
+    first = tmp_path / "first/evaluation/official_metrics.json"
+    second = tmp_path / "second/evaluation/official_metrics.json"
+    first.parent.mkdir(parents=True)
+    second.parent.mkdir(parents=True)
+
+    official_eval._write_metrics(
+        results_dir=first_results,
+        scene="apartment",
+        method="OVIV2",
+        mode="causal_checkpoints",
+        output=first,
+    )
+    official_eval._write_metrics(
+        results_dir=second_results,
+        scene="apartment",
+        method="OVIV2",
+        mode="causal_checkpoints",
+        output=second,
+    )
+
+    assert first.read_bytes() == second.read_bytes()
+    assert [entry["path"] for entry in json.loads(first.read_text())["sources"]] == [
+        "../map/results/static_objects.csv",
+        "../map/results/dynamic_objects.csv",
+        "../map/results/background_mesh.csv",
+    ]
+
+
+def test_missing_metric_csv_is_recorded_as_unavailable(tmp_path: Path) -> None:
+    results = _write_valid_results(tmp_path / "results")
+    (results / "dynamic_objects.csv").unlink()
+    metrics = tmp_path / "official_metrics.json"
+    repeat = tmp_path / "official_metrics.repeat.json"
+
+    summary = write_repeated_metrics(
+        results_dir=results,
+        scene="apartment",
+        method="OVIV2",
+        mode="causal_checkpoints",
+        metrics_path=metrics,
+        repeat_path=repeat,
+    )
+
+    payload = json.loads(metrics.read_text(encoding="utf-8"))
+    assert summary["status"] == "UNAVAILABLE"
+    assert metrics.read_bytes() == repeat.read_bytes()
+    assert payload["metrics"]["dynamic_f1"] is None
+    assert "dynamic_objects.csv" in payload["unavailable"]["dynamic_f1"]
+    missing = next(
+        source
+        for source in payload["sources"]
+        if Path(source["path"]).name == "dynamic_objects.csv"
+    )
+    assert missing == {"path": "results/dynamic_objects.csv", "status": "MISSING"}

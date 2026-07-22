@@ -17,6 +17,31 @@ from src.evaluation.contracts import EntityPrediction, MapSnapshot
 from src.evaluation.exporters.oviovo import write_map_snapshot
 
 
+_FIXTURE_SCHEDULE_BYTES = (
+    json.dumps(
+        {
+            "schema_version": 2,
+            "manifest_id": "tesse_cd_causal_schedule_v2",
+            "dataset": "TESSE-CD",
+            "method_predictions_used": False,
+            "parameters": {"frame_indexing": "zero_based"},
+            "scenes": {
+                "apartment": {
+                    "frame_count": 5,
+                    "entries": [
+                        {"frame_index": 0, "timestamp_ns": 100},
+                        {"frame_index": 2, "timestamp_ns": 300},
+                        {"frame_index": 4, "timestamp_ns": 500},
+                    ],
+                }
+            },
+        },
+        sort_keys=True,
+    )
+    + "\n"
+).encode("utf-8")
+
+
 @pytest.fixture(autouse=True)
 def _bind_fixture_label_space(monkeypatch: pytest.MonkeyPatch) -> None:
     fixture_contents = (
@@ -33,6 +58,12 @@ def _bind_fixture_label_space(monkeypatch: pytest.MonkeyPatch) -> None:
             ),
             "office": frozenset(),
         },
+        raising=False,
+    )
+    monkeypatch.setattr(
+        bridge_module,
+        "OFFICIAL_SCHEDULE_SHA256",
+        frozenset({hashlib.sha256(_FIXTURE_SCHEDULE_BYTES).hexdigest()}),
         raising=False,
     )
 
@@ -62,30 +93,7 @@ def _entity(entity_id: str, x: float) -> EntityPrediction:
 def _write_temporal_fixture(root: Path) -> Path:
     root.mkdir()
     schedule = root / "schedule.json"
-    schedule.write_text(
-        json.dumps(
-            {
-                "schema_version": 2,
-                "manifest_id": "tesse_cd_causal_schedule_v2",
-                "dataset": "TESSE-CD",
-                "method_predictions_used": False,
-                "parameters": {"frame_indexing": "zero_based"},
-                "scenes": {
-                    "apartment": {
-                        "frame_count": 5,
-                        "entries": [
-                            {"frame_index": 0, "timestamp_ns": 100},
-                            {"frame_index": 2, "timestamp_ns": 300},
-                            {"frame_index": 4, "timestamp_ns": 500},
-                        ],
-                    }
-                },
-            },
-            sort_keys=True,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+    schedule.write_bytes(_FIXTURE_SCHEDULE_BYTES)
     checkpoints = [
         (100, [_entity("r-reappear", 1), _entity("sparse", 2), _entity("z-first", 3)]),
         (300, [_entity("a-later", 4), _entity("sparse", 5), _entity("z-first", 6)]),
@@ -119,7 +127,7 @@ def _write_temporal_fixture(root: Path) -> Path:
         (0, 100, "r-reappear", [1.0, 0.0, 1.0]),
         (0, 100, "sparse", [2.0, 0.0, 1.0]),
         (0, 100, "z-first", [3.0, 0.0, 1.0]),
-        (1, 200, "z-first", [3.5, 0.0, 1.0]),
+        (3, 200, "z-first", [3.5, 0.0, 1.0]),
         (2, 300, "a-later", [4.0, 0.0, 1.0]),
         (2, 300, "z-first", [6.0, 0.0, 1.0]),
         (3, 400, "a-later", [5.5, 0.0, 1.0]),
@@ -253,7 +261,7 @@ def test_prepares_stable_symbols_intervals_and_causal_native_tracks(
         entry["entity_id"]: entry for entry in manifest["symbol_assignments"]
     }
     assert assignments["r-reappear"]["first_observed_ns"] == [100, 500]
-    assert assignments["r-reappear"]["last_observed_ns"] == [300]
+    assert assignments["r-reappear"]["last_observed_ns"] == [300, None]
     assert assignments["r-reappear"]["presence_intervals"] == [
         {"start_ns": 100, "end_ns_exclusive": 300},
         {"start_ns": 500, "end_ns_exclusive": None},
@@ -270,20 +278,24 @@ def test_prepares_stable_symbols_intervals_and_causal_native_tracks(
         entry["entity_id"]: entry for entry in manifest["checkpoints"][1]["objects"]
     }
     assert "r-reappear" not in middle_objects
-    assert middle_objects["z-first"]["trajectory_sample_count"] == 3
+    assert middle_objects["z-first"]["trajectory_sample_count"] == 2
     assert middle_objects["a-later"]["trajectory_sample_count"] == 0
     final_objects = {
         entry["entity_id"]: entry for entry in manifest["checkpoints"][2]["objects"]
     }
     assert final_objects["r-reappear"]["node_symbol"] == "O0"
     assert final_objects["r-reappear"]["first_observed_ns"] == [100, 500]
-    assert final_objects["r-reappear"]["last_observed_ns"] == [300]
+    assert final_objects["r-reappear"]["last_observed_ns"] == [300, 500]
     assert final_objects["sparse"]["dynamic_track_eligible"] is False
     assert final_objects["sparse"]["trajectory_sample_count"] == 0
 
     for checkpoint in manifest["checkpoints"]:
         query = checkpoint["timestamp_ns"]
+        frame = checkpoint["frame_index"]
         for obj in checkpoint["objects"]:
+            assert len(obj["first_observed_ns"]) == len(obj["last_observed_ns"])
+            assert obj["first_observed_ns"]
+            assert all(timestamp <= query for timestamp in obj["last_observed_ns"])
             assert not Path(obj["trajectory_json"]).is_absolute()
             assert not Path(obj["points_ply"]).is_absolute()
             trajectory = json.loads(
@@ -292,6 +304,7 @@ def test_prepares_stable_symbols_intervals_and_causal_native_tracks(
                 )
             )
             assert all(sample["timestamp_ns"] <= query for sample in trajectory)
+            assert all(sample["frame_index"] <= frame for sample in trajectory)
             for key in ("points_ply", "trajectory_json"):
                 path = manifest_path.parent / obj[key]
                 assert hashlib.sha256(path.read_bytes()).hexdigest() == obj[
@@ -323,6 +336,29 @@ def test_rejects_checkpoint_schedule_mismatch(tmp_path: Path) -> None:
     )
 
     with pytest.raises(ValueError, match="schedule"):
+        prepare_temporal_bridge(temporal, labels, tmp_path / "bridge")
+
+
+def test_rejects_self_consistent_noncanonical_schedule(tmp_path: Path) -> None:
+    temporal = _write_temporal_fixture(tmp_path / "temporal")
+    payload = json.loads(temporal.read_text(encoding="utf-8"))
+    schedule_path = temporal.parent / payload["sources"]["schedule"]["path"]
+    schedule = json.loads(schedule_path.read_text(encoding="utf-8"))
+    schedule["parameters"]["unreviewed_variant"] = True
+    schedule_path.write_text(
+        json.dumps(schedule, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    payload["sources"]["schedule"] = _record(
+        schedule_path, relative_to=temporal.parent
+    )
+    temporal.write_text(json.dumps(payload, sort_keys=True) + "\n", encoding="utf-8")
+    labels = tmp_path / "labels.yaml"
+    labels.write_text(
+        "label_names: [{label: 0, name: Unknown}, {label: 5, name: Chair}]\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="official TESSE-CD causal schedule"):
         prepare_temporal_bridge(temporal, labels, tmp_path / "bridge")
 
 
@@ -427,7 +463,7 @@ def test_rejects_temporal_trajectory_later_than_query(tmp_path: Path) -> None:
     trajectory = temporal.parent / manifest["trajectories"]["path"]
     rows = trajectory.read_text(encoding="utf-8").splitlines()
     row = json.loads(rows[3])
-    row["timestamp_ns"] = 301
+    row["timestamp_ns"] = 501
     rows[3] = json.dumps(row, sort_keys=True)
     trajectory.write_text("\n".join(rows) + "\n", encoding="utf-8")
     manifest["trajectories"] = _record(trajectory, relative_to=temporal.parent)

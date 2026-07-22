@@ -37,6 +37,9 @@ OFFICIAL_LABEL_SPACE_SHA256 = {
         {"91a7b359ee678dd67871653959a50c477ba7f371473b9c2bf1b4f41f63691765"}
     ),
 }
+OFFICIAL_SCHEDULE_SHA256 = frozenset(
+    {"fb97bacee377f9fd67ee9dae8064dc6f33ac32d129ee633629fec4164d5003e0"}
+)
 
 
 @dataclass(frozen=True)
@@ -207,6 +210,21 @@ def _presence_runs(
     return runs
 
 
+def _checkpoint_endpoints(
+    intervals: Sequence[Mapping[str, Any]], query: int
+) -> tuple[list[int], list[int]]:
+    starts: list[int] = []
+    ends: list[int] = []
+    for interval in intervals:
+        start = int(interval["start_ns"])
+        if start > query:
+            continue
+        end = interval["end_ns_exclusive"]
+        starts.append(start)
+        ends.append(int(end) if end is not None and int(end) <= query else query)
+    return starts, ends
+
+
 def _load_trajectories(
     path: Path, checkpoints: Sequence[Mapping[str, Any]]
 ) -> dict[str, list[dict[str, Any]]]:
@@ -289,6 +307,8 @@ def _scheduled_checkpoints(
     ):
         raise ValueError("temporal artifact requires a hashed schedule source")
     schedule_source = _source_path(sources["schedule"], base, "schedule")
+    if schedule_source.sha256 not in OFFICIAL_SCHEDULE_SHA256:
+        raise ValueError("official bridge requires the official TESSE-CD causal schedule")
     schedule = _read_json(schedule_source, label="schedule")
     if (
         schedule.get("schema_version") != 2
@@ -359,7 +379,7 @@ def validate_temporal_bridge_manifest(manifest_path: Path) -> dict[str, Any]:
         if not isinstance(intervals, list) or not intervals:
             raise ValueError("temporal bridge assignment intervals are invalid")
         starts: list[int] = []
-        ends: list[int] = []
+        ends: list[int | None] = []
         previous_end = -1
         for interval in intervals:
             if not isinstance(interval, Mapping) or set(interval) != {
@@ -376,10 +396,12 @@ def validate_temporal_bridge_manifest(manifest_path: Path) -> dict[str, Any]:
             ):
                 raise ValueError("temporal bridge assignment interval is invalid")
             starts.append(start)
+            ends.append(end)
             if end is not None:
-                ends.append(end)
                 previous_end = end
             else:
+                if interval is not intervals[-1]:
+                    raise ValueError("open temporal bridge interval must be final")
                 previous_end = start
         if (
             assignment.get("first_observed_ns") != starts
@@ -430,12 +452,9 @@ def validate_temporal_bridge_manifest(manifest_path: Path) -> dict[str, Any]:
                 )
             ):
                 raise ValueError("temporal bridge object assignment mismatch")
-            expected_starts = [
-                value for value in assignment["first_observed_ns"] if value <= query
-            ]
-            expected_ends = [
-                value for value in assignment["last_observed_ns"] if value <= query
-            ]
+            expected_starts, expected_ends = _checkpoint_endpoints(
+                assignment["presence_intervals"], query
+            )
             if (
                 obj.get("first_observed_ns") != expected_starts
                 or obj.get("last_observed_ns") != expected_ends
@@ -459,8 +478,12 @@ def validate_temporal_bridge_manifest(manifest_path: Path) -> dict[str, Any]:
                 trajectory_path.read_text(encoding="utf-8"),
                 label="bridge trajectory",
             )
-            if any(int(sample["timestamp_ns"]) > query for sample in trajectory):
-                raise ValueError("bridge trajectory sample is later than query")
+            if any(
+                int(sample["timestamp_ns"]) > query
+                or int(sample["frame_index"]) > frame
+                for sample in trajectory
+            ):
+                raise ValueError("bridge trajectory sample is later than checkpoint")
             if not obj["dynamic_track_eligible"] and trajectory:
                 raise ValueError("ineligible dynamic track must have no trajectory")
             if obj["dynamic_track_eligible"] and len(trajectory) < 2:
@@ -597,9 +620,12 @@ def prepare_temporal_bridge(
         intervals = _presence_runs(state["positions"], checkpoints)
         starts = [int(interval["start_ns"]) for interval in intervals]
         ends = [
-            int(interval["end_ns_exclusive"])
+            (
+                int(interval["end_ns_exclusive"])
+                if interval["end_ns_exclusive"] is not None
+                else None
+            )
             for interval in intervals
-            if interval["end_ns_exclusive"] is not None
         ]
         label_name = state["semantic_label_name"]
         normalized = _normalize_label(label_name or "")
@@ -630,6 +656,7 @@ def prepare_temporal_bridge(
     checkpoint_outputs = []
     for position, (checkpoint, snapshot) in enumerate(zip(checkpoints, snapshots)):
         query = timestamps[position]
+        frame = int(checkpoint["frame_index"])
         checkpoint_dir = artifact_root / "checkpoints" / f"{position:08d}"
         objects_dir = checkpoint_dir / "objects"
         trajectories_dir = checkpoint_dir / "trajectories"
@@ -653,6 +680,7 @@ def prepare_temporal_bridge(
                 sample
                 for sample in trajectories.get(entity.entity_id, ())
                 if int(sample["timestamp_ns"]) <= query
+                and int(sample["frame_index"]) <= frame
             ]
             eligible = len(prefix) >= 2
             if not eligible:
@@ -661,16 +689,9 @@ def prepare_temporal_bridge(
             trajectory_output = trajectories_dir / f"O{assignment['node_index']}.json"
             _write_binary_ply(points_path, entity.points_xyz)
             _write_json(trajectory_output, prefix)
-            starts = [
-                timestamp
-                for timestamp in assignment["first_observed_ns"]
-                if timestamp <= query
-            ]
-            ends = [
-                timestamp
-                for timestamp in assignment["last_observed_ns"]
-                if timestamp <= query
-            ]
+            starts, ends = _checkpoint_endpoints(
+                assignment["presence_intervals"], query
+            )
             objects.append(
                 {
                     "entity_id": entity.entity_id,
@@ -721,7 +742,10 @@ def prepare_temporal_bridge(
         "protocol": {
             "node_symbol_order": "first_appearance_timestamp_then_entity_id",
             "presence_intervals": "closed_open",
-            "trajectory_bound": "sample_timestamp_ns<=query_timestamp_ns",
+            "trajectory_bound": (
+                "sample_frame_index<=query_frame_index and "
+                "sample_timestamp_ns<=query_timestamp_ns"
+            ),
             "dynamic_track_min_native_samples": 2,
             "sparse_track_policy": "no_synthetic_trajectory",
         },

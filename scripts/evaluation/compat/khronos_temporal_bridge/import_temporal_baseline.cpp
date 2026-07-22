@@ -136,6 +136,11 @@ DynamicSceneGraph::Ptr buildGraph(const Json& checkpoint) {
         entry.at("first_observed_ns").get<std::vector<uint64_t>>();
     attributes->last_observed_ns =
         entry.at("last_observed_ns").get<std::vector<uint64_t>>();
+    if (attributes->first_observed_ns.empty() ||
+        attributes->first_observed_ns.size() !=
+            attributes->last_observed_ns.size()) {
+      throw std::runtime_error("presence interval endpoint vectors are invalid");
+    }
     if (!std::is_sorted(attributes->first_observed_ns.begin(),
                         attributes->first_observed_ns.end()) ||
         !std::is_sorted(attributes->last_observed_ns.begin(),

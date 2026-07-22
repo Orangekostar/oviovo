@@ -6,11 +6,13 @@ from pathlib import Path
 
 import pytest
 
+import scripts.evaluation.run_temporal_khronos_bridge as bridge_runner
 from scripts.evaluation.run_temporal_khronos_bridge import (
     build_bridge_command,
     build_package_command,
     parse_args,
     run,
+    snapshot_bridge_input,
     stage_importer_source,
     validate_build_manifest,
     write_build_manifest,
@@ -48,6 +50,7 @@ def test_cpp_importer_uses_stable_symbols_intervals_trajectory_and_ordered_updat
     assert "NodeSymbol('O', entry.at(\"node_index\")" in text
     assert "first_observed_ns" in text
     assert "last_observed_ns" in text
+    assert "presence interval endpoint vectors are invalid" in text
     assert "trajectory_timestamps" in text
     assert "trajectory_positions" in text
     assert "dynamic_track_eligible" in text
@@ -85,8 +88,10 @@ def test_build_manifest_and_run_command_are_hash_bound(tmp_path: Path) -> None:
     executable = workspace / "install/khronos_eval/lib/khronos_eval/import_temporal_baseline"
     executable.parent.mkdir(parents=True)
     executable.write_bytes(b"executable")
+    staged = workspace / "src/khronos/khronos_eval/app/import_temporal_baseline.cpp"
     build_manifest = write_build_manifest(
         CPP,
+        staged,
         workspace / "src/khronos/khronos_eval/CMakeLists.txt",
         executable,
         tmp_path / "build_manifest.json",
@@ -102,6 +107,7 @@ def test_build_manifest_and_run_command_are_hash_bound(tmp_path: Path) -> None:
     )
 
     assert payload["executable"]["sha256"] == hashlib.sha256(b"executable").hexdigest()
+    assert payload["staged_source"]["sha256"] == payload["source"]["sha256"]
     assert command[-2:] == ["/bridge/manifest.json", "/run/map"]
     assert str(executable) in command
 
@@ -145,7 +151,7 @@ def test_build_manifest_refuses_existing_destination(tmp_path: Path) -> None:
     destination.write_text("preserve\n", encoding="utf-8")
 
     with pytest.raises(FileExistsError, match="already exists"):
-        write_build_manifest(source, cmake, executable, destination)
+        write_build_manifest(source, source, cmake, executable, destination)
 
     assert destination.read_text(encoding="utf-8") == "preserve\n"
 
@@ -190,6 +196,7 @@ def test_build_manifest_rejects_symlinked_build_artifact(tmp_path: Path) -> None
     with pytest.raises(ValueError, match="symlink"):
         write_build_manifest(
             source,
+            source,
             cmake,
             executable,
             tmp_path / "build_manifest.json",
@@ -216,6 +223,42 @@ def test_parser_fixes_oviv2_causal_identity() -> None:
                 "--method", "DUALMAP",
             ]
         )
+
+    with pytest.raises(SystemExit):
+        parse_args(
+            [
+                "--manifest", "/bridge/manifest.json",
+                "--scene", "apartment",
+                "--output", "/run",
+                "--source", "/tmp/unreviewed.cpp",
+            ]
+        )
+
+
+def test_snapshot_bridge_input_copies_then_revalidates(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source_root = tmp_path / "source"
+    artifact = source_root / "checkpoints/00000000/object.ply"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_bytes(b"points")
+    manifest = source_root / "bridge_manifest.json"
+    manifest.write_text('{"schema_version": 1}\n', encoding="utf-8")
+    validated: list[Path] = []
+
+    def validate(path: Path) -> dict[str, object]:
+        validated.append(path.resolve())
+        return {"path": str(path)}
+
+    monkeypatch.setattr(
+        bridge_runner, "validate_temporal_bridge_manifest", validate
+    )
+    copied = snapshot_bridge_input(manifest, tmp_path / "run/bridge_input")
+
+    assert copied == tmp_path / "run/bridge_input/bridge_manifest.json"
+    assert copied.read_bytes() == manifest.read_bytes()
+    assert (copied.parent / "checkpoints/00000000/object.ply").read_bytes() == b"points"
+    assert validated == [manifest.resolve(), copied.resolve()]
 
 
 def test_run_refuses_dangling_output_symlink_before_external_work(
