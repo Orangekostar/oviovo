@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+from dataclasses import dataclass
 import hashlib
 import importlib.metadata
 import io
@@ -57,6 +58,21 @@ _OFFICE_METRIC_KEYS = frozenset(
 _ACTIVE_SNAPSHOTS: dict[
     Path, tuple[tuple[int, int, int, int, int], bytes | None, str, int]
 ] | None = None
+
+
+class PublicationUncertainError(ValueError):
+    pass
+
+
+@dataclass(frozen=True)
+class _TemporaryPublication:
+    parent: Path
+    name: str
+    descriptor: int
+    device: int
+    inode: int
+    byte_count: int
+    sha256: str
 
 
 def _strict_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -1777,8 +1793,9 @@ def _publish_json_transaction(
     normalized = tuple((_absolute_path(path), content) for path, content in publications)
     parents = {path.parent for path, _ in normalized} | {guard}
     bound: dict[Path, tuple[int, int, int]] = {}
-    temporary: list[tuple[Path, str]] = []
-    published: list[tuple[Path, str, int, int]] = []
+    temporary: list[_TemporaryPublication] = []
+    active_temporary: set[tuple[Path, str]] = set()
+    published: list[tuple[_TemporaryPublication, str]] = []
 
     def assert_bound(parent: Path) -> None:
         descriptor, device, inode = bound[parent]
@@ -1802,6 +1819,98 @@ def _publish_json_transaction(
     def guard_names() -> set[str]:
         return set(os.listdir(bound[guard][0]))
 
+    def descriptor_hash(descriptor: int) -> tuple[str, int]:
+        position = os.lseek(descriptor, 0, os.SEEK_CUR)
+        os.lseek(descriptor, 0, os.SEEK_SET)
+        digest = hashlib.sha256()
+        byte_count = 0
+        while True:
+            chunk = os.read(descriptor, 1024 * 1024)
+            if not chunk:
+                break
+            digest.update(chunk)
+            byte_count += len(chunk)
+        os.lseek(descriptor, position, os.SEEK_SET)
+        return digest.hexdigest(), byte_count
+
+    def retained_file_is_expected(item: _TemporaryPublication) -> bool:
+        try:
+            status = os.fstat(item.descriptor)
+            digest, byte_count = descriptor_hash(item.descriptor)
+        except OSError:
+            return False
+        return (
+            status.st_dev == item.device
+            and status.st_ino == item.inode
+            and status.st_size == item.byte_count
+            and byte_count == item.byte_count
+            and digest == item.sha256
+        )
+
+    def classify_name(item: _TemporaryPublication, name: str) -> str:
+        parent_fd = bound[item.parent][0]
+        try:
+            before = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+        except FileNotFoundError:
+            return "missing"
+        if (
+            not stat.S_ISREG(before.st_mode)
+            or before.st_dev != item.device
+            or before.st_ino != item.inode
+            or before.st_size != item.byte_count
+        ):
+            return "foreign"
+        try:
+            descriptor = os.open(
+                name,
+                os.O_RDONLY
+                | getattr(os, "O_CLOEXEC", 0)
+                | getattr(os, "O_NOFOLLOW", 0),
+                dir_fd=parent_fd,
+            )
+        except OSError:
+            return "foreign"
+        try:
+            opened = os.fstat(descriptor)
+            digest = hashlib.sha256()
+            byte_count = 0
+            while True:
+                chunk = os.read(descriptor, 1024 * 1024)
+                if not chunk:
+                    break
+                digest.update(chunk)
+                byte_count += len(chunk)
+            after = os.fstat(descriptor)
+        finally:
+            os.close(descriptor)
+        try:
+            current = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+        except FileNotFoundError:
+            return "foreign"
+        identities = {
+            (value.st_dev, value.st_ino, value.st_size)
+            for value in (before, opened, after, current)
+        }
+        if (
+            identities != {(item.device, item.inode, item.byte_count)}
+            or byte_count != item.byte_count
+            or digest.hexdigest() != item.sha256
+        ):
+            return "foreign"
+        return "owned"
+
+    def unlink_if_owned(item: _TemporaryPublication, name: str) -> bool:
+        if classify_name(item, name) != "owned":
+            return False
+        try:
+            os.unlink(name, dir_fd=bound[item.parent][0])
+        except FileNotFoundError:
+            return False
+        return True
+
+    def uncertain(message: str) -> PublicationUncertainError:
+        return PublicationUncertainError(f"publication uncertain: {message}")
+
     allowed_names: set[str] = set()
     for path in allowed_root_entries:
         absolute = _absolute_path(path)
@@ -1812,8 +1921,12 @@ def _publish_json_transaction(
     def expected_guard_names() -> set[str]:
         return (
             allowed_names
-            | {name for parent, name in temporary if parent == guard}
-            | {name for parent, name, _, _ in published if parent == guard}
+            | {name for parent, name in active_temporary if parent == guard}
+            | {
+                name
+                for item, name in published
+                if item.parent == guard
+            }
         )
 
     def assert_guard_clean() -> None:
@@ -1844,7 +1957,7 @@ def _publish_json_transaction(
                 try:
                     descriptor = os.open(
                         temp_name,
-                        os.O_WRONLY
+                        os.O_RDWR
                         | os.O_CREAT
                         | os.O_EXCL
                         | getattr(os, "O_CLOEXEC", 0)
@@ -1855,53 +1968,82 @@ def _publish_json_transaction(
                     break
                 except FileExistsError:
                     continue
-            temporary.append((destination.parent, temp_name))
-            with os.fdopen(descriptor, "wb") as stream:
-                stream.write(content)
-                stream.flush()
-                os.fsync(stream.fileno())
+            status = os.fstat(descriptor)
+            item = _TemporaryPublication(
+                parent=destination.parent,
+                name=temp_name,
+                descriptor=descriptor,
+                device=status.st_dev,
+                inode=status.st_ino,
+                byte_count=len(content),
+                sha256=_sha256_bytes(content),
+            )
+            temporary.append(item)
+            active_temporary.add((item.parent, item.name))
+            view = memoryview(content)
+            while view:
+                written = os.write(descriptor, view)
+                if written <= 0:
+                    raise OSError("failed to write publication temporary file")
+                view = view[written:]
+            os.fsync(descriptor)
+            digest, byte_count = descriptor_hash(descriptor)
+            if byte_count != item.byte_count or digest != item.sha256:
+                raise uncertain(f"temporary content mismatch for {destination}")
         assert_guard_clean()
-        for (destination, _), (temp_parent, temp_name) in zip(
-            normalized, tuple(temporary), strict=True
-        ):
+        for (destination, _), item in zip(normalized, temporary, strict=True):
             assert_all_bound()
             assert_guard_clean()
+            if (
+                not retained_file_is_expected(item)
+                or classify_name(item, item.name) != "owned"
+            ):
+                raise uncertain(f"temporary file changed before link: {destination}")
             parent_fd = bound[destination.parent][0]
-            _link_no_replace(
-                temp_name,
-                destination.name,
-                source_dir_fd=bound[temp_parent][0],
-                destination_dir_fd=parent_fd,
-            )
-            status = os.stat(destination.name, dir_fd=parent_fd, follow_symlinks=False)
-            published.append(
-                (destination.parent, destination.name, status.st_dev, status.st_ino)
-            )
+            try:
+                _link_no_replace(
+                    item.name,
+                    destination.name,
+                    source_dir_fd=bound[item.parent][0],
+                    destination_dir_fd=parent_fd,
+                )
+            except FileExistsError:
+                raise
+            except BaseException as exc:
+                state = classify_name(item, destination.name)
+                if state == "owned":
+                    published.append((item, destination.name))
+                elif state == "foreign":
+                    raise uncertain(
+                        f"destination identity after failed link: {destination}"
+                    ) from exc
+                raise
+            if classify_name(item, destination.name) != "owned":
+                raise uncertain(f"destination identity after link: {destination}")
+            published.append((item, destination.name))
             assert_all_bound()
-            os.unlink(temp_name, dir_fd=bound[temp_parent][0])
-            temporary.remove((temp_parent, temp_name))
+            if not unlink_if_owned(item, item.name):
+                raise uncertain(f"temporary cleanup identity: {destination}")
+            active_temporary.remove((item.parent, item.name))
             assert_guard_clean()
         assert_all_bound()
         assert_guard_clean()
+        if any(
+            not retained_file_is_expected(item)
+            or classify_name(item, name) != "owned"
+            for item, name in published
+        ):
+            raise uncertain("published destination changed before commit")
         for descriptor, _, _ in bound.values():
             os.fsync(descriptor)
     except BaseException:
-        for parent, name, device, inode in reversed(published):
-            try:
-                status = os.stat(
-                    name, dir_fd=bound[parent][0], follow_symlinks=False
-                )
-                if status.st_dev == device and status.st_ino == inode:
-                    os.unlink(name, dir_fd=bound[parent][0])
-            except FileNotFoundError:
-                pass
+        for item, name in reversed(published):
+            unlink_if_owned(item, name)
         raise
     finally:
-        for parent, name in temporary:
-            try:
-                os.unlink(name, dir_fd=bound[parent][0])
-            except FileNotFoundError:
-                pass
+        for item in temporary:
+            unlink_if_owned(item, item.name)
+            os.close(item.descriptor)
         for descriptor, _, _ in bound.values():
             os.close(descriptor)
 

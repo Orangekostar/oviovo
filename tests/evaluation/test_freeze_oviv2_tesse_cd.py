@@ -1384,6 +1384,124 @@ def test_freeze_rolls_back_if_prior_run_appears_during_publication(
     assert not fixture.prepared_manifest.exists()
 
 
+def test_freeze_rejects_temp_name_replacement_before_link(
+    fixture: Fixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    tokens = iter(("a" * 16, "b" * 16, "c" * 16))
+    calls = 0
+    temp_path = (
+        fixture.output_apartment.parent
+        / f".{fixture.output_apartment.name}.{'a' * 16}.freeze-tmp"
+    )
+
+    def replace_before_last_temp(_: int) -> str:
+        nonlocal calls
+        calls += 1
+        if calls == 3:
+            temp_path.unlink()
+            temp_path.write_bytes(b"foreign-temp\n")
+        return next(tokens)
+
+    monkeypatch.setattr(
+        "scripts.evaluation.freeze_oviv2_tesse_cd.secrets.token_hex",
+        replace_before_last_temp,
+    )
+
+    with pytest.raises(ValueError, match="publication uncertain"):
+        fixture.run()
+
+    assert not fixture.output_apartment.exists()
+    assert temp_path.read_bytes() == b"foreign-temp\n"
+
+
+def test_freeze_detects_temp_swap_between_validation_and_link(
+    fixture: Fixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    real_link = os.link
+    raced = False
+
+    def swap_source_then_link(
+        source: str,
+        destination: str,
+        *,
+        source_dir_fd: int,
+        destination_dir_fd: int,
+    ) -> None:
+        nonlocal raced
+        if not raced:
+            raced = True
+            os.unlink(source, dir_fd=source_dir_fd)
+            descriptor = os.open(
+                source,
+                os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+                0o600,
+                dir_fd=source_dir_fd,
+            )
+            os.write(descriptor, b"foreign-link-source\n")
+            os.close(descriptor)
+        real_link(
+            source,
+            destination,
+            src_dir_fd=source_dir_fd,
+            dst_dir_fd=destination_dir_fd,
+            follow_symlinks=False,
+        )
+
+    monkeypatch.setattr(
+        "scripts.evaluation.freeze_oviv2_tesse_cd._link_no_replace",
+        swap_source_then_link,
+    )
+
+    with pytest.raises(ValueError, match="publication uncertain"):
+        fixture.run()
+
+    assert fixture.output_apartment.read_bytes() == b"foreign-link-source\n"
+
+
+def test_freeze_uncertain_cleanup_does_not_delete_swapped_destination(
+    fixture: Fixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    real_link = os.link
+    raced = False
+
+    def replace_destination_after_link(
+        source: str,
+        destination: str,
+        *,
+        source_dir_fd: int,
+        destination_dir_fd: int,
+    ) -> None:
+        nonlocal raced
+        real_link(
+            source,
+            destination,
+            src_dir_fd=source_dir_fd,
+            dst_dir_fd=destination_dir_fd,
+            follow_symlinks=False,
+        )
+        if not raced:
+            raced = True
+            os.unlink(destination, dir_fd=destination_dir_fd)
+            descriptor = os.open(
+                destination,
+                os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+                0o600,
+                dir_fd=destination_dir_fd,
+            )
+            os.write(descriptor, b"foreign-destination\n")
+            os.close(descriptor)
+
+    monkeypatch.setattr(
+        "scripts.evaluation.freeze_oviv2_tesse_cd._link_no_replace",
+        replace_destination_after_link,
+    )
+
+    with pytest.raises(ValueError, match="publication uncertain"):
+        fixture.run()
+
+    assert fixture.output_apartment.read_bytes() == b"foreign-destination\n"
+
+
 def test_freeze_rejects_output_parent_inode_swap_during_publication(
     fixture: Fixture, monkeypatch: pytest.MonkeyPatch
 ) -> None:
