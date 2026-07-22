@@ -147,6 +147,25 @@ class _SourceWitness:
     resolved_path: Path
     fingerprint: tuple[int, int, int, int, int]
     record: dict[str, Any]
+    logical_root: Path | None = None
+    relative_path: Path | None = None
+    component_identities: tuple[tuple[int, int, int], ...] = ()
+
+
+@dataclass
+class _OpenedBeneath:
+    root: Path
+    relative: Path
+    logical_path: Path
+    resolved_path: Path
+    component_identities: tuple[tuple[int, int, int], ...]
+    descriptors: list[int]
+    terminal_fd: int
+
+    def close(self) -> None:
+        for descriptor in reversed(self.descriptors):
+            os.close(descriptor)
+        self.descriptors.clear()
 
 
 def _serialized_path(path: Path) -> str:
@@ -168,7 +187,27 @@ def _canonical_relative_path(raw_path: str, *, label: str) -> Path:
     return path
 
 
-def _resolve_beneath(raw_path: str, root: Path, *, label: str) -> Path:
+def _component_identity(status: os.stat_result) -> tuple[int, int, int]:
+    return (status.st_dev, status.st_ino, stat.S_IFMT(status.st_mode))
+
+
+def _fd_resolved_path(descriptor: int, fallback: Path) -> Path:
+    try:
+        raw = os.readlink(f"/proc/self/fd/{descriptor}")
+    except OSError:
+        return fallback
+    if raw.endswith(" (deleted)"):
+        raw = raw[: -len(" (deleted)")]
+    return Path(raw)
+
+
+def _open_beneath(
+    raw_path: str,
+    root: Path,
+    *,
+    label: str,
+    terminal_must_be_file: bool,
+) -> _OpenedBeneath:
     relative = _canonical_relative_path(raw_path, label=label)
     try:
         resolved_root = Path(root).resolve(strict=True)
@@ -183,9 +222,11 @@ def _resolve_beneath(raw_path: str, root: Path, *, label: str) -> Path:
     )
     no_follow = os.O_NOFOLLOW
     descriptors: list[int] = []
+    identities: list[tuple[int, int, int]] = []
     try:
         current = os.open(resolved_root, directory_flags)
         descriptors.append(current)
+        identities.append(_component_identity(os.fstat(current)))
         for index, component in enumerate(relative.parts):
             observed = os.lstat(component, dir_fd=current)
             if stat.S_ISLNK(observed.st_mode):
@@ -195,7 +236,11 @@ def _resolve_beneath(raw_path: str, root: Path, *, label: str) -> Path:
             terminal = index == len(relative.parts) - 1
             if not terminal and not stat.S_ISDIR(observed.st_mode):
                 raise ValueError(f"{label} has a non-directory path component")
-            if terminal and not (
+            if terminal and terminal_must_be_file and not stat.S_ISREG(
+                observed.st_mode
+            ):
+                raise ValueError(f"{label} is not an ordinary file")
+            if terminal and not terminal_must_be_file and not (
                 stat.S_ISREG(observed.st_mode) or stat.S_ISDIR(observed.st_mode)
             ):
                 raise ValueError(f"{label} is not an ordinary file or directory")
@@ -212,21 +257,47 @@ def _resolve_beneath(raw_path: str, root: Path, *, label: str) -> Path:
                     == stat.S_IFMT(confirmed.st_mode)
                 ):
                     raise ValueError(f"{label} changed while resolving")
-                if not terminal:
-                    descriptors.append(opened)
-                    current = opened
-                    opened = -1
+                descriptors.append(opened)
+                identities.append(_component_identity(confirmed))
+                current = opened
+                opened = -1
             finally:
                 if opened >= 0:
                     os.close(opened)
+        return _OpenedBeneath(
+            root=resolved_root,
+            relative=relative,
+            logical_path=resolved_root / relative,
+            resolved_path=_fd_resolved_path(current, resolved_root / relative),
+            component_identities=tuple(identities),
+            descriptors=descriptors,
+            terminal_fd=current,
+        )
     except ValueError:
-        raise
-    except OSError as error:
-        raise ValueError(f"{label} does not exist beneath its root") from error
-    finally:
         for descriptor in reversed(descriptors):
             os.close(descriptor)
-    return resolved_root / relative
+        raise
+    except OSError as error:
+        for descriptor in reversed(descriptors):
+            os.close(descriptor)
+        raise ValueError(f"{label} does not exist beneath its root") from error
+    except BaseException:
+        for descriptor in reversed(descriptors):
+            os.close(descriptor)
+        raise
+
+
+def _resolve_beneath(raw_path: str, root: Path, *, label: str) -> Path:
+    opened = _open_beneath(
+        raw_path,
+        root,
+        label=label,
+        terminal_must_be_file=False,
+    )
+    try:
+        return opened.logical_path
+    finally:
+        opened.close()
 
 
 def resolve_dataset_source(relative_path: str, dataset_root: Path) -> Path:
@@ -292,6 +363,86 @@ def _read_source_bytes(
     return content, _SourceWitness(declared, candidate, before, record)
 
 
+def _opened_source_witness(
+    opened: _OpenedBeneath,
+    fingerprint: tuple[int, int, int, int, int],
+    record: dict[str, Any],
+) -> _SourceWitness:
+    return _SourceWitness(
+        declared_path=opened.logical_path,
+        resolved_path=opened.resolved_path,
+        fingerprint=fingerprint,
+        record=record,
+        logical_root=opened.root,
+        relative_path=opened.relative,
+        component_identities=opened.component_identities,
+    )
+
+
+def _read_source_bytes_beneath(
+    root: Path,
+    relative_path: str,
+    *,
+    serialized_path: str,
+    label: str,
+) -> tuple[bytes, _SourceWitness]:
+    opened = _open_beneath(
+        relative_path,
+        root,
+        label=label,
+        terminal_must_be_file=True,
+    )
+    try:
+        before = _status_fingerprint(os.fstat(opened.terminal_fd))
+        with os.fdopen(os.dup(opened.terminal_fd), "rb") as handle:
+            content = handle.read()
+        after = _status_fingerprint(os.fstat(opened.terminal_fd))
+        if before != after:
+            raise ValueError(f"source changed while reading: {opened.logical_path}")
+        record = {
+            "path": serialized_path,
+            "sha256": hashlib.sha256(content).hexdigest(),
+            "byte_count": len(content),
+        }
+        return content, _opened_source_witness(opened, before, record)
+    finally:
+        opened.close()
+
+
+def _capture_source_witness_beneath(
+    root: Path,
+    relative_path: str,
+    *,
+    serialized_path: str,
+    label: str,
+) -> _SourceWitness:
+    opened = _open_beneath(
+        relative_path,
+        root,
+        label=label,
+        terminal_must_be_file=True,
+    )
+    try:
+        before = _status_fingerprint(os.fstat(opened.terminal_fd))
+        digest = hashlib.sha256()
+        byte_count = 0
+        with os.fdopen(os.dup(opened.terminal_fd), "rb") as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+                byte_count += len(chunk)
+        after = _status_fingerprint(os.fstat(opened.terminal_fd))
+        if before != after:
+            raise ValueError(f"source changed while reading: {opened.logical_path}")
+        record = {
+            "path": serialized_path,
+            "sha256": digest.hexdigest(),
+            "byte_count": byte_count,
+        }
+        return _opened_source_witness(opened, before, record)
+    finally:
+        opened.close()
+
+
 class _HashingReader(io.RawIOBase):
     def __init__(self, handle: Any) -> None:
         self._handle = handle
@@ -338,25 +489,84 @@ def _read_source_json(
     return payload, _SourceWitness(declared, candidate, before, record)
 
 
+def _read_source_json_beneath(
+    root: Path,
+    relative_path: str,
+    *,
+    serialized_path: str,
+    label: str,
+) -> tuple[Any, _SourceWitness]:
+    opened = _open_beneath(
+        relative_path,
+        root,
+        label=label,
+        terminal_must_be_file=True,
+    )
+    try:
+        before = _status_fingerprint(os.fstat(opened.terminal_fd))
+        try:
+            with os.fdopen(
+                os.dup(opened.terminal_fd), "rb", buffering=0
+            ) as source:
+                hashing = _HashingReader(source)
+                with io.TextIOWrapper(
+                    io.BufferedReader(hashing), encoding="utf-8"
+                ) as text_handle:
+                    payload = json.load(text_handle)
+        except (UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise ValueError(
+                f"source is not valid JSON: {opened.logical_path}"
+            ) from error
+        after = _status_fingerprint(os.fstat(opened.terminal_fd))
+        if before != after or hashing.byte_count != before[2]:
+            raise ValueError(f"source changed while reading: {opened.logical_path}")
+        record = {
+            "path": serialized_path,
+            "sha256": hashing.digest.hexdigest(),
+            "byte_count": hashing.byte_count,
+        }
+        return payload, _opened_source_witness(opened, before, record)
+    finally:
+        opened.close()
+
+
 def _file_record(path: Path) -> dict[str, Any]:
     return _capture_source_witness(path).record
 
 
 def _revalidate_source_witness(witness: _SourceWitness) -> None:
     try:
-        observed = _capture_source_witness(
-            witness.declared_path,
-            serialized_path=str(witness.record["path"]),
-        )
+        if witness.logical_root is None:
+            observed = _capture_source_witness(
+                witness.declared_path,
+                serialized_path=str(witness.record["path"]),
+            )
+        else:
+            if witness.relative_path is None:
+                raise ValueError("logical source witness has no relative path")
+            observed = _capture_source_witness_beneath(
+                witness.logical_root,
+                witness.relative_path.as_posix(),
+                serialized_path=str(witness.record["path"]),
+                label="publication source",
+            )
     except (OSError, ValueError) as error:
         raise ValueError(
             f"source changed before publication: {witness.declared_path}"
         ) from error
-    if not (
-        observed.resolved_path == witness.resolved_path
-        and observed.fingerprint == witness.fingerprint
+    same_identity = (
+        observed.fingerprint == witness.fingerprint
         and observed.record == witness.record
-    ):
+    )
+    if witness.logical_root is None:
+        same_identity = same_identity and (
+            observed.resolved_path == witness.resolved_path
+        )
+    else:
+        same_identity = same_identity and (
+            observed.component_identities == witness.component_identities
+        )
+    if not same_identity:
         raise ValueError(
             f"source changed before publication: {witness.declared_path}"
         )
@@ -377,6 +587,28 @@ def _revalidate_source_identity_barrier(
 ) -> None:
     """Establish a fast common-time identity barrier immediately before reserve."""
     for witness in witnesses:
+        if witness.logical_root is not None:
+            if witness.relative_path is None:
+                raise ValueError("logical source witness has no relative path")
+            opened = _open_beneath(
+                witness.relative_path.as_posix(),
+                witness.logical_root,
+                label="publication source",
+                terminal_must_be_file=True,
+            )
+            try:
+                fingerprint = _status_fingerprint(os.fstat(opened.terminal_fd))
+                if not (
+                    opened.component_identities == witness.component_identities
+                    and fingerprint == witness.fingerprint
+                ):
+                    raise ValueError(
+                        "source changed before publication: "
+                        f"{witness.declared_path}"
+                    )
+            finally:
+                opened.close()
+            continue
         try:
             before = os.lstat(witness.declared_path)
             if not stat.S_ISREG(before.st_mode):
@@ -1598,9 +1830,13 @@ def _read_bound_source(
     role: str, declaration: Mapping[str, Any], dataset_root: Path
 ) -> tuple[bytes, _SourceWitness]:
     _validate_record(role, declaration)
-    path = _resolve_record_path(role, declaration, dataset_root)
-    content, witness = _read_source_bytes(
-        path, serialized_path=str(declaration["path"])
+    relative_path = str(declaration["path"])
+    source_root = REPO_ROOT if role in REPOSITORY_SOURCE_ROLES else dataset_root
+    content, witness = _read_source_bytes_beneath(
+        source_root,
+        relative_path,
+        serialized_path=relative_path,
+        label=f"{role} bound source",
     )
     if witness.record != dict(declaration):
         raise ValueError(f"source hash or byte count drift: {role}")
@@ -1611,9 +1847,13 @@ def _read_bound_json_source(
     role: str, declaration: Mapping[str, Any], dataset_root: Path
 ) -> tuple[Any, _SourceWitness]:
     _validate_record(role, declaration)
-    path = _resolve_record_path(role, declaration, dataset_root)
-    payload, witness = _read_source_json(
-        path, serialized_path=str(declaration["path"])
+    relative_path = str(declaration["path"])
+    source_root = REPO_ROOT if role in REPOSITORY_SOURCE_ROLES else dataset_root
+    payload, witness = _read_source_json_beneath(
+        source_root,
+        relative_path,
+        serialized_path=relative_path,
+        label=f"{role} bound source",
     )
     if witness.record != dict(declaration):
         raise ValueError(f"source hash or byte count drift: {role}")
@@ -1810,7 +2050,7 @@ def _derive_formal_streaming(
             raise ValueError(f"{scene} source timestamps are not unique and increasing")
 
         depth_root_relative = str(depth_declarations[scene].get("root", ""))
-        depth_root = resolve_dataset_source(depth_root_relative, dataset_root)
+        resolve_dataset_source(depth_root_relative, dataset_root)
         expected_depth_suffix = Path("derived/rgbd_v1") / scene / "results"
         if Path(depth_root_relative) != expected_depth_suffix:
             raise ValueError(f"{scene} depth root disagrees with checked RGB-D lock")
@@ -1827,16 +2067,15 @@ def _derive_formal_streaming(
         for index, (timestamp_row, trajectory_row) in enumerate(
             zip(timestamp_rows, trajectories)
         ):
-            path = depth_root / f"depth{index:06d}.png"
             role = f"{scene}.depth.{index:06d}"
             serialized_depth_path = (
                 Path(depth_root_relative) / f"depth{index:06d}.png"
             ).as_posix()
-            resolved_depth_path = resolve_dataset_source(
-                serialized_depth_path, dataset_root
-            )
-            content, witness = _read_source_bytes(
-                resolved_depth_path, serialized_path=serialized_depth_path
+            content, witness = _read_source_bytes_beneath(
+                dataset_root,
+                serialized_depth_path,
+                serialized_path=serialized_depth_path,
+                label=f"{role} depth source",
             )
             retain(role, witness)
             depth_records[role] = witness.record

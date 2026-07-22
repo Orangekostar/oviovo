@@ -1074,6 +1074,59 @@ def test_dataset_source_witness_rejects_intermediate_redirect_after_read(
         occlusion_deriver._revalidate_source_witness(witness)
 
 
+def test_bound_source_read_holds_parent_fd_across_intermediate_redirect_race(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    dataset_root = tmp_path / "dataset"
+    logical = dataset_root / "logical"
+    alternate = dataset_root / "alternate"
+    logical.mkdir(parents=True)
+    alternate.mkdir()
+    content = b'{"same": true}\n'
+    original_source = logical / "camera.json"
+    original_source.write_bytes(content)
+    (alternate / "camera.json").write_bytes(content)
+    original_status = original_source.stat()
+    declaration = {
+        "path": "logical/camera.json",
+        "sha256": hashlib.sha256(content).hexdigest(),
+        "byte_count": len(content),
+    }
+    original_open = occlusion_deriver.os.open
+    redirected = False
+
+    def redirect_before_terminal_open(
+        path: object,
+        flags: int,
+        mode: int = 0o777,
+        *,
+        dir_fd: int | None = None,
+    ) -> int:
+        nonlocal redirected
+        if path == "camera.json" and dir_fd is not None and not redirected:
+            logical.rename(dataset_root / "original")
+            logical.symlink_to(alternate, target_is_directory=True)
+            redirected = True
+        return original_open(path, flags, mode, dir_fd=dir_fd)
+
+    monkeypatch.setattr(occlusion_deriver.os, "open", redirect_before_terminal_open)
+
+    observed, witness = occlusion_deriver._read_bound_source(
+        "camera", declaration, dataset_root
+    )
+
+    assert redirected is True
+    assert observed == content
+    assert witness.fingerprint[:2] == (
+        original_status.st_dev,
+        original_status.st_ino,
+    )
+    with pytest.raises(ValueError, match="source changed before publication"):
+        occlusion_deriver._revalidate_source_witness(witness)
+    with pytest.raises(ValueError, match="symbolic link"):
+        occlusion_deriver._revalidate_source_identity_barrier([witness])
+
+
 def test_deriver_cli_can_run_directly_from_repository_root() -> None:
     completed = subprocess.run(
         [
