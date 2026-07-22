@@ -4,6 +4,7 @@ import csv
 import hashlib
 import json
 import pickle
+import re
 import shutil
 import subprocess
 import sys
@@ -28,6 +29,7 @@ FIELDS = [
     "status",
     "note",
 ]
+SOURCE_SHA_RE = re.compile(r"source_sha256=([0-9a-f]{64})")
 
 T2_COMMON_METRICS = {
     "CURRENT_MIOU": 0.401,
@@ -383,7 +385,9 @@ def test_import_merges_oviv2_t2_common_and_official_bindings(tmp_path: Path) -> 
     assert "{{T2_OVIV2_" not in outputs["latex"].read_text(encoding="utf-8")
 
 
-def test_imported_source_bound_t2_na_passes_full_package_check(tmp_path: Path) -> None:
+def _import_source_bound_t2_na_package(
+    tmp_path: Path,
+) -> tuple[Path, Path, Path, Path]:
     root = Path(__file__).resolve().parents[2]
     output_dir = tmp_path / "paper"
     shutil.copytree(root / "docs" / "paper", output_dir)
@@ -432,7 +436,11 @@ def test_imported_source_bound_t2_na_passes_full_package_check(tmp_path: Path) -
         output_dir / "benchmark_tables_baselines.md",
         output_dir / "benchmark_tables_baselines.tex",
     )
-    completed = subprocess.run(
+    return root, output_dir, result, evidence
+
+
+def _run_package_check(root: Path, output_dir: Path) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
         [
             sys.executable,
             str(root / "tools" / "benchmark_tables.py"),
@@ -446,8 +454,133 @@ def test_imported_source_bound_t2_na_passes_full_package_check(tmp_path: Path) -
         text=True,
     )
 
+
+def _rewrite_dynamic_na_registry(
+    output_dir: Path,
+    mutation,
+) -> None:
+    registry_path = output_dir / "benchmark_tokens.tsv"
+    with registry_path.open(newline="", encoding="utf-8") as handle:
+        registry = list(csv.DictReader(handle, delimiter="\t"))
+    row = next(item for item in registry if item["token"] == "T2_OVIV2_OFFICE_OBJECT_F1")
+    mutation(row)
+    with registry_path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=FIELDS, delimiter="\t", lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(registry)
+
+
+def _refresh_registry_source_sha(output_dir: Path, result: Path) -> None:
+    digest = hashlib.sha256(result.read_bytes()).hexdigest()
+
+    def refresh(row: dict[str, str]) -> None:
+        if SOURCE_SHA_RE.search(row["note"]):
+            row["note"] = SOURCE_SHA_RE.sub(f"source_sha256={digest}", row["note"], count=1)
+
+    _rewrite_dynamic_na_registry(output_dir, refresh)
+
+
+def test_imported_source_bound_t2_na_passes_full_package_check(tmp_path: Path) -> None:
+    root, output_dir, result, _ = _import_source_bound_t2_na_package(tmp_path)
+    with (output_dir / "benchmark_tokens.tsv").open(newline="", encoding="utf-8") as handle:
+        row = next(
+            item
+            for item in csv.DictReader(handle, delimiter="\t")
+            if item["token"] == "T2_OVIV2_OFFICE_OBJECT_F1"
+        )
+    source_hashes = SOURCE_SHA_RE.findall(row["note"])
+    assert source_hashes == [hashlib.sha256(result.read_bytes()).hexdigest()]
+
+    completed = _run_package_check(root, output_dir)
+
     assert completed.returncode == 0, completed.stdout + completed.stderr
     assert "benchmark table package: PASS" in completed.stdout
+
+
+@pytest.mark.parametrize(
+    "attack",
+    [
+        "duplicate_binding",
+        "missing_reason_pointer",
+        "missing_evidence_pointer",
+        "empty_reason",
+        "reason_mismatch",
+        "evidence_missing_path",
+        "evidence_missing_hash",
+        "evidence_missing_byte_count",
+        "evidence_hash_drift",
+        "evidence_count_drift",
+        "source_sha_missing",
+        "source_sha_mismatch",
+        "source_sha_duplicate",
+        "source_sha_noncanonical",
+    ],
+)
+def test_package_check_rejects_tampered_source_bound_na(
+    tmp_path: Path, attack: str
+) -> None:
+    root, output_dir, result, evidence = _import_source_bound_t2_na_package(tmp_path)
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    binding = payload["unavailable_bindings"][0]
+    evidence_record = payload["unavailable_evidence"]["office"]["OBJECT_F1"]
+    source = evidence_record["source"]
+    result_changed = True
+
+    if attack == "duplicate_binding":
+        payload["unavailable_bindings"].append(dict(binding))
+    elif attack == "missing_reason_pointer":
+        binding["reason_pointer"] = "/missing/reason"
+        _rewrite_dynamic_na_registry(
+            output_dir,
+            lambda row: row.update(json_pointer="/missing/reason"),
+        )
+    elif attack == "missing_evidence_pointer":
+        binding["evidence_pointer"] = "/missing/evidence"
+    elif attack == "empty_reason":
+        payload["unavailable"]["office"]["OBJECT_F1"] = " "
+        evidence_record["reason"] = " "
+    elif attack == "reason_mismatch":
+        evidence_record["reason"] = "different unavailable reason"
+    elif attack == "evidence_missing_path":
+        source.pop("path")
+    elif attack == "evidence_missing_hash":
+        source.pop("sha256")
+    elif attack == "evidence_missing_byte_count":
+        source.pop("byte_count")
+    elif attack == "evidence_hash_drift":
+        evidence.write_text('{"status":"FAIL"}\n', encoding="utf-8")
+        result_changed = False
+    elif attack == "evidence_count_drift":
+        evidence.write_text(evidence.read_text(encoding="utf-8") + "x", encoding="utf-8")
+        source["sha256"] = hashlib.sha256(evidence.read_bytes()).hexdigest()
+    else:
+        result_changed = False
+
+    if result_changed:
+        result.write_text(json.dumps(payload), encoding="utf-8")
+        _refresh_registry_source_sha(output_dir, result)
+
+    if attack.startswith("source_sha_"):
+        def mutate_source_sha(row: dict[str, str]) -> None:
+            match = SOURCE_SHA_RE.search(row["note"])
+            if match is None:
+                return
+            field = match.group(0)
+            if attack == "source_sha_missing":
+                row["note"] = row["note"].replace(f" [{field}]", "")
+            elif attack == "source_sha_mismatch":
+                row["note"] = row["note"].replace(field, f"source_sha256={'0' * 64}")
+            elif attack == "source_sha_duplicate":
+                row["note"] = row["note"].replace(field, f"{field} {field}")
+            else:
+                row["note"] = row["note"].replace(field, field.upper())
+
+        _rewrite_dynamic_na_registry(output_dir, mutate_source_sha)
+
+    completed = _run_package_check(root, output_dir)
+
+    assert completed.returncode != 0
+    assert "benchmark_tokens.tsv" in completed.stderr
 
 
 @pytest.mark.parametrize("method", ["OVIV2_STATIC", "OVIV2"])

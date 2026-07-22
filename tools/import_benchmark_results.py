@@ -373,7 +373,10 @@ def import_results(
             row["source_json"] = _source_label(result_path, registry_path)
             row["json_pointer"] = pointer
             row["status"] = "N/A"
-            row["note"] = f"N/A from verified run {result.get('run_id', '')}: {reason.strip()}"
+            row["note"] = (
+                f"N/A from verified run {result.get('run_id', '')} "
+                f"[source_sha256={_sha256(result_path)}]: {reason.strip()}"
+            )
 
     markdown = markdown_template.read_text(encoding="utf-8")
     latex = latex_template.read_text(encoding="utf-8")

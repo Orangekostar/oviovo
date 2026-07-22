@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import io
 import json
 import os
@@ -39,7 +40,12 @@ ARTIFACT_NAMES = (
     "benchmark_tokens.tsv",
 )
 KEY_RE = re.compile(r"^[A-Z0-9_]+$")
+DYNAMIC_NA_NOTE_RE = re.compile(
+    r"\AN/A from verified run (?P<run_id>.+) "
+    r"\[source_sha256=(?P<source_sha256>[0-9a-f]{64})\]: (?P<reason>.+)\Z"
+)
 NA_NOTE = "No native entity AP output."
+MISSING = object()
 
 
 @dataclass(frozen=True)
@@ -707,34 +713,94 @@ def write_package(output_dir: Path, force: bool = False) -> int:
     return 0
 
 
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _resolve_json_pointer(document: object, pointer: object) -> object:
+    if not isinstance(pointer, str) or not pointer.startswith("/"):
+        return MISSING
+    value = document
+    for raw_part in pointer[1:].split("/"):
+        part = raw_part.replace("~1", "/").replace("~0", "~")
+        try:
+            if isinstance(value, list):
+                value = value[int(part)]
+            elif isinstance(value, Mapping):
+                value = value[part]
+            else:
+                return MISSING
+        except (KeyError, IndexError, ValueError):
+            return MISSING
+    return value
+
+
+def _matches_hashed_file(record: object) -> bool:
+    if not isinstance(record, Mapping):
+        return False
+    path = Path(str(record.get("path", "")))
+    byte_count = record.get("byte_count")
+    return (
+        path.is_file()
+        and isinstance(record.get("sha256"), str)
+        and record.get("sha256") == _sha256(path)
+        and isinstance(byte_count, int)
+        and not isinstance(byte_count, bool)
+        and byte_count == path.stat().st_size
+    )
+
+
 def _has_verified_dynamic_na_provenance(
     registry_path: Path, row: Mapping[str, str]
 ) -> bool:
+    if row["note"].count("source_sha256=") != 1:
+        return False
+    note_match = DYNAMIC_NA_NOTE_RE.fullmatch(row["note"])
+    if note_match is None:
+        return False
     source_path = Path(row["source_json"])
     if not source_path.is_absolute():
         source_path = registry_path.parent / source_path
+    if not source_path.is_file() or _sha256(source_path) != note_match["source_sha256"]:
+        return False
     try:
         result = json.loads(source_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except (OSError, UnicodeError, json.JSONDecodeError):
         return False
     if not isinstance(result, Mapping) or result.get("status") != "VERIFIED":
         return False
     run_id = result.get("run_id")
-    if not isinstance(run_id, str) or not run_id:
-        return False
-    if not row["note"].startswith(f"N/A from verified run {run_id}: "):
+    if run_id != note_match["run_id"]:
         return False
     bindings = result.get("unavailable_bindings")
     if not isinstance(bindings, list):
         return False
-    return any(
-        isinstance(binding, Mapping)
-        and binding.get("token") == row["token"]
-        and binding.get("reason_pointer") == row["json_pointer"]
-        and isinstance(binding.get("evidence_pointer"), str)
-        and bool(binding.get("evidence_pointer"))
+    matching_bindings = [
+        binding
         for binding in bindings
-    )
+        if isinstance(binding, Mapping)
+        and binding.get("token") == row["token"]
+    ]
+    if len(matching_bindings) != 1:
+        return False
+    binding = matching_bindings[0]
+    if binding.get("reason_pointer") != row["json_pointer"]:
+        return False
+    reason = _resolve_json_pointer(result, binding.get("reason_pointer"))
+    if (
+        not isinstance(reason, str)
+        or not reason.strip()
+        or reason.strip() != note_match["reason"]
+    ):
+        return False
+    evidence = _resolve_json_pointer(result, binding.get("evidence_pointer"))
+    if not isinstance(evidence, Mapping) or evidence.get("reason") != reason:
+        return False
+    return _matches_hashed_file(evidence.get("source"))
 
 
 def _registry_matches_template(target: Path, expected_text: str) -> bool:
