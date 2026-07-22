@@ -13,14 +13,22 @@ import os
 from pathlib import Path
 import pickle
 import re
+import shutil
+import stat
 import subprocess
+import sys
 import tempfile
 from typing import Any, Iterable, Mapping
 
 import numpy as np
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from src.oviv2 import hybrid_cache
+
+
 SCENES = ("apartment", "office")
 SCENE_GPUS = {"apartment": 0, "office": 1}
 SCENE_FRAME_COUNTS = {"apartment": 1745, "office": 4346}
@@ -35,6 +43,7 @@ REQUIRED_CACHE_FIELDS = {
     "image_feats",
     "text_feats",
 }
+ALLOWED_CACHE_FIELDS = REQUIRED_CACHE_FIELDS | {"image_crops"}
 PROVENANCE_PATH_KEYS = {
     "script": "script",
     "hydra_config": "hydra_config_path",
@@ -59,6 +68,64 @@ class FrontendCommand:
     image_shape: tuple[int, int]
     classes_file: Path
     classes_sha256: str
+    source_root: Path
+
+
+class FrontendManifestPublicationUncertainError(RuntimeError):
+    """The complete manifest exists, but parent-directory durability is unknown."""
+
+    def __init__(self, path: Path) -> None:
+        self.path = path
+        super().__init__(f"frontend manifest publication durability is uncertain: {path}")
+
+
+@dataclass(frozen=True)
+class _FileIdentity:
+    device: int
+    inode: int
+    mode: int
+    size: int
+    modified_ns: int
+    changed_ns: int
+
+
+@dataclass(frozen=True)
+class _FileBinding:
+    path: Path
+    sha256: str
+    identity: _FileIdentity
+
+
+@dataclass(frozen=True)
+class _RunSnapshot:
+    input_manifest: _FileBinding
+    provenance: Mapping[str, _FileBinding]
+    vocabularies: Mapping[str, _FileBinding]
+    classes: Mapping[str, tuple[str, ...]]
+
+    @property
+    def bindings(self) -> tuple[_FileBinding, ...]:
+        unique: dict[Path, _FileBinding] = {self.input_manifest.path: self.input_manifest}
+        for binding in (*self.provenance.values(), *self.vocabularies.values()):
+            unique.setdefault(binding.path, binding)
+        return tuple(unique.values())
+
+
+class _IgnoredImageCrop:
+    """Inert target for unused PIL image crops embedded by the upstream script."""
+
+    def __new__(cls, *_args: object, **_kwargs: object) -> "_IgnoredImageCrop":
+        return super().__new__(cls)
+
+    def __setstate__(self, _state: object) -> None:
+        return None
+
+
+class _TesseFrontendRestrictedUnpickler(hybrid_cache._RestrictedUnpickler):
+    def find_class(self, module: str, name: str) -> Any:
+        if (module, name) == ("PIL.Image", "Image"):
+            return _IgnoredImageCrop
+        return super().find_class(module, name)
 
 
 def _json_hash(value: Any) -> str:
@@ -67,11 +134,7 @@ def _json_hash(value: Any) -> str:
 
 
 def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+    return hybrid_cache.sha256(path)
 
 
 def _resolve_path(value: object) -> Path:
@@ -79,6 +142,151 @@ def _resolve_path(value: object) -> Path:
     if not path.is_absolute():
         path = REPO_ROOT / path
     return Path(os.path.abspath(path))
+
+
+def _file_identity(metadata: os.stat_result) -> _FileIdentity:
+    if not stat.S_ISREG(metadata.st_mode):
+        raise ValueError("snapshot input must be a regular file")
+    return _FileIdentity(
+        device=metadata.st_dev,
+        inode=metadata.st_ino,
+        mode=metadata.st_mode,
+        size=metadata.st_size,
+        modified_ns=metadata.st_mtime_ns,
+        changed_ns=metadata.st_ctime_ns,
+    )
+
+
+def _assert_binding_unchanged(binding: _FileBinding) -> None:
+    try:
+        hybrid_cache._assert_no_symlink(binding.path, field_name="snapshot input")
+        current = _file_identity(os.lstat(binding.path))
+    except (FileNotFoundError, OSError, ValueError) as exc:
+        raise ValueError(f"file changed after snapshot: {binding.path}") from exc
+    if current != binding.identity:
+        raise ValueError(f"file changed after snapshot: {binding.path}")
+
+
+def _assert_bindings_unchanged(bindings: Iterable[_FileBinding]) -> None:
+    seen: set[Path] = set()
+    for binding in bindings:
+        if binding.path in seen:
+            continue
+        seen.add(binding.path)
+        _assert_binding_unchanged(binding)
+
+
+def _snapshot_regular_file(
+    path: Path,
+    *,
+    field_name: str,
+    retain_bytes: bool = False,
+) -> tuple[_FileBinding, bytes | None]:
+    source = hybrid_cache._open_regular_input(path, field_name=field_name)
+    retained = bytearray() if retain_bytes else None
+    digest = hashlib.sha256()
+    with source:
+        before = _file_identity(os.fstat(source.fileno()))
+        while block := source.read(1024 * 1024):
+            digest.update(block)
+            if retained is not None:
+                retained.extend(block)
+        after = _file_identity(os.fstat(source.fileno()))
+    if before != after:
+        raise ValueError(f"file changed during snapshot: {path}")
+    binding = _FileBinding(path=path, sha256=digest.hexdigest(), identity=after)
+    _assert_binding_unchanged(binding)
+    return binding, None if retained is None else bytes(retained)
+
+
+def _load_frozen_input_manifest(
+    config: Mapping[str, Any],
+) -> tuple[dict[str, Any], _FileBinding]:
+    manifest_path = _resolve_path(config.get("manifest"))
+    binding, data = _snapshot_regular_file(
+        manifest_path,
+        field_name="TESSE-CD input manifest",
+        retain_bytes=True,
+    )
+    expected = config.get("manifest_sha256")
+    if (
+        not isinstance(expected, str)
+        or SHA256_PATTERN.fullmatch(expected) is None
+        or binding.sha256 != expected
+    ):
+        raise ValueError("input manifest hash mismatch")
+    assert data is not None
+    try:
+        payload = json.loads(data.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError("TESSE-CD input manifest is not valid UTF-8 JSON") from exc
+    if not isinstance(payload, dict):
+        raise ValueError("TESSE-CD input manifest root must be an object")
+    return payload, binding
+
+
+def _capture_run_snapshot(
+    config: Mapping[str, Any],
+    commands: Iterable[FrontendCommand],
+    input_manifest: _FileBinding,
+) -> _RunSnapshot:
+    expected_input = config.get("manifest_sha256")
+    if input_manifest.sha256 != expected_input:
+        raise ValueError("input manifest hash mismatch")
+    frontend = config.get("frontend")
+    if not isinstance(frontend, Mapping):
+        raise ValueError("frontend config must be an object")
+    expected_provenance = frontend.get("provenance_sha256")
+    if not isinstance(expected_provenance, Mapping) or set(expected_provenance) != set(
+        PROVENANCE_PATH_KEYS
+    ):
+        raise ValueError("frontend provenance_sha256 keys are not frozen")
+
+    by_path: dict[Path, _FileBinding] = {}
+    provenance: dict[str, _FileBinding] = {}
+    for name, config_key in PROVENANCE_PATH_KEYS.items():
+        path = _resolve_path(frontend.get(config_key))
+        binding = by_path.get(path)
+        if binding is None:
+            binding, _ = _snapshot_regular_file(path, field_name=name)
+            by_path[path] = binding
+        expected = expected_provenance[name]
+        if (
+            not isinstance(expected, str)
+            or SHA256_PATTERN.fullmatch(expected) is None
+            or binding.sha256 != expected
+        ):
+            raise ValueError(f"{name} hash mismatch")
+        provenance[name] = binding
+
+    vocabularies: dict[str, _FileBinding] = {}
+    classes: dict[str, tuple[str, ...]] = {}
+    for command in commands:
+        binding, data = _snapshot_regular_file(
+            command.classes_file,
+            field_name=f"{command.scene} vocabulary",
+            retain_bytes=True,
+        )
+        if binding.sha256 != command.classes_sha256:
+            raise ValueError(f"scene {command.scene} vocabulary hash mismatch")
+        assert data is not None
+        try:
+            lines = data.decode("utf-8").splitlines()
+        except UnicodeDecodeError as exc:
+            raise ValueError(f"scene {command.scene} vocabulary is not UTF-8") from exc
+        normalized = hybrid_cache._classes(
+            [line.strip() for line in lines if line.strip()]
+        )
+        vocabularies[command.scene] = binding
+        classes[command.scene] = normalized
+
+    snapshot = _RunSnapshot(
+        input_manifest=input_manifest,
+        provenance=provenance,
+        vocabularies=vocabularies,
+        classes=classes,
+    )
+    return snapshot
 
 
 def _strict_int(value: object, *, name: str) -> int:
@@ -106,6 +314,7 @@ def build_commands(
     manifest: Mapping[str, Any],
     *,
     scenes: Iterable[str] | None = None,
+    gpu_ids: tuple[int, ...] | None = None,
 ) -> list[FrontendCommand]:
     records = _scene_records(manifest)
     requested_values = SCENES if scenes is None else tuple(scenes)
@@ -113,6 +322,17 @@ def build_commands(
     unknown = requested - set(SCENES)
     if unknown:
         raise ValueError(f"unknown TESSE-CD scene: {', '.join(sorted(unknown))}")
+    requested_scenes = tuple(scene for scene in SCENES if scene in requested)
+    selected_gpu_ids = (
+        tuple(SCENE_GPUS[scene] for scene in requested_scenes)
+        if gpu_ids is None
+        else gpu_ids
+    )
+    if len(selected_gpu_ids) != len(requested_scenes):
+        raise ValueError("exactly one GPU ID per requested scene is required")
+    if any(type(value) is not int or value < 0 for value in selected_gpu_ids):
+        raise ValueError("GPU IDs must be non-negative integers")
+    gpu_by_scene = dict(zip(requested_scenes, selected_gpu_ids, strict=True))
     frontend = config.get("frontend")
     if not isinstance(frontend, Mapping):
         raise ValueError("frontend config must be an object")
@@ -123,6 +343,7 @@ def build_commands(
     if dimensions != IMAGE_SHAPE:
         raise ValueError("TESSE-CD frontend image shape must be 480x720")
     logs_root = _resolve_path(config.get("frontend_logs_root"))
+    output_root = _resolve_path(config.get("frontend_cache_root"))
 
     commands: list[FrontendCommand] = []
     for scene in SCENES:
@@ -146,6 +367,8 @@ def build_commands(
         root = _resolve_path(record.get("root"))
         if root.is_symlink() or not root.is_dir() or root.name != scene:
             raise ValueError(f"scene {scene} root path must end with the scene name")
+        if output_root.is_relative_to(root) or root.is_relative_to(output_root):
+            raise ValueError("frontend cache root must be independent of source RGB-D")
         vocabulary = record.get("vocabulary")
         if not isinstance(vocabulary, Mapping):
             raise ValueError(f"scene {scene} vocabulary must be an object")
@@ -165,23 +388,20 @@ def build_commands(
             raise ValueError(f"scene {scene} experiment suffix is not a safe path component")
         log_dir = logs_root / scene
         descriptor = {
-            "scene": scene,
-            "frame_count": frame_count,
             "image_shape": list(IMAGE_SHAPE),
-            "classes_sha256": classes_sha256,
-            "frontend": {
-                key: frontend[key]
-                for key in sorted(frontend)
-                if key not in {"gsa_variant_template", "exp_suffix_template"}
+            "frontend_algorithm": {
+                "clip_model_card": frontend["clip_model_card"],
+                "desired_height": frontend["desired_height"],
+                "desired_width": frontend["desired_width"],
+                "hydra_config_name": frontend["hydra_config_name"],
+                "provenance_sha256": frontend["provenance_sha256"],
             },
-            "gsa_variant": variant,
-            "exp_suffix": suffix,
         }
         argv = (
             str(frontend["python"]),
             str(frontend["script"]),
             f"--config-name={frontend['hydra_config_name']}",
-            f"dataset_root={root.parent}",
+            f"dataset_root={output_root}",
             f"dataset_config={frontend['dataset_config']}",
             f"scene_id={scene}",
             "start=0",
@@ -204,9 +424,9 @@ def build_commands(
         commands.append(
             FrontendCommand(
                 scene=scene,
-                gpu_id=SCENE_GPUS[scene],
+                gpu_id=gpu_by_scene[scene],
                 argv=argv,
-                cache_dir=root / f"gsa_detections_{variant}",
+                cache_dir=output_root / scene / f"gsa_detections_{variant}",
                 log_dir=log_dir,
                 algorithm_hash=_json_hash(descriptor),
                 frame_count=frame_count,
@@ -214,6 +434,7 @@ def build_commands(
                 image_shape=IMAGE_SHAPE,
                 classes_file=classes_file,
                 classes_sha256=classes_sha256,
+                source_root=root,
             )
         )
     return commands
@@ -245,7 +466,11 @@ def warm_shared_clip_cache(frontend: Mapping[str, Any]) -> str:
         raise ValueError("frontend provenance_sha256 must be an object")
     expected = str(provenance.get("yolo_clip_model", ""))
     if model_path.is_file():
-        if _sha256(model_path) != expected:
+        binding, _ = _snapshot_regular_file(
+            model_path,
+            field_name="shared YOLO-World CLIP model",
+        )
+        if binding.sha256 != expected:
             raise ValueError("shared YOLO-World CLIP model checksum mismatch")
         return expected
     code = (
@@ -254,7 +479,13 @@ def warm_shared_clip_cache(frontend: Mapping[str, Any]) -> str:
     ).format(model_path.parent)
     model_path.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run([str(frontend["python"]), "-c", code], check=True)
-    if not model_path.is_file() or _sha256(model_path) != expected:
+    if not model_path.is_file():
+        raise ValueError("shared YOLO-World CLIP model checksum mismatch after warmup")
+    binding, _ = _snapshot_regular_file(
+        model_path,
+        field_name="shared YOLO-World CLIP model",
+    )
+    if binding.sha256 != expected:
         raise ValueError("shared YOLO-World CLIP model checksum mismatch after warmup")
     return expected
 
@@ -262,24 +493,6 @@ def warm_shared_clip_cache(frontend: Mapping[str, Any]) -> str:
 def _regular_file(path: Path, *, name: str) -> None:
     if path.is_symlink() or not path.is_file():
         raise ValueError(f"{name} must be a regular non-symlink file: {path}")
-
-
-def _validated_provenance(frontend: Mapping[str, Any]) -> dict[str, str]:
-    expected = frontend.get("provenance_sha256")
-    if not isinstance(expected, Mapping) or set(expected) != set(PROVENANCE_PATH_KEYS):
-        raise ValueError("frontend provenance_sha256 keys are not frozen")
-    result: dict[str, str] = {}
-    for name, config_key in PROVENANCE_PATH_KEYS.items():
-        path = _resolve_path(frontend.get(config_key))
-        _regular_file(path, name=name)
-        digest = _sha256(path)
-        recorded = expected[name]
-        if not isinstance(recorded, str) or SHA256_PATTERN.fullmatch(recorded) is None:
-            raise ValueError(f"{name} hash is not a canonical SHA-256")
-        if digest != recorded:
-            raise ValueError(f"{name} hash mismatch")
-        result[name] = digest
-    return result
 
 
 def _cache_prefix_sha256(cache_hashes: Mapping[str, str]) -> str:
@@ -290,8 +503,18 @@ def _cache_prefix_sha256(cache_hashes: Mapping[str, str]) -> str:
     return digest.hexdigest()
 
 
+def _fsync_directory(directory: Path) -> None:
+    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_CLOEXEC", 0)
+    descriptor = os.open(directory, flags)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
 def _publish_json_new(path: Path, payload: Mapping[str, Any]) -> None:
     temporary: Path | None = None
+    published = False
     try:
         with tempfile.NamedTemporaryFile(
             mode="w",
@@ -306,15 +529,120 @@ def _publish_json_new(path: Path, payload: Mapping[str, Any]) -> None:
             stream.write("\n")
             stream.flush()
             os.fsync(stream.fileno())
-        os.link(temporary, path)
-        directory_fd = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
+        os.link(temporary, path, follow_symlinks=False)
+        published = True
         try:
-            os.fsync(directory_fd)
-        finally:
-            os.close(directory_fd)
+            _fsync_directory(path.parent)
+        except BaseException as exc:
+            raise FrontendManifestPublicationUncertainError(path) from exc
     finally:
         if temporary is not None and temporary.exists():
-            temporary.unlink()
+            try:
+                temporary.unlink()
+            except OSError:
+                if not published:
+                    raise
+
+
+def _read_cache_snapshot(path: Path) -> tuple[object, _FileBinding]:
+    source = hybrid_cache._open_regular_input(path, field_name="frontend cache input")
+    try:
+        with source, tempfile.SpooledTemporaryFile(
+            max_size=hybrid_cache._SNAPSHOT_MEMORY_LIMIT_BYTES,
+            mode="w+b",
+        ) as snapshot:
+            before = _file_identity(os.fstat(source.fileno()))
+            digest = hashlib.sha256()
+            while block := source.read(1024 * 1024):
+                digest.update(block)
+                snapshot.write(block)
+            after = _file_identity(os.fstat(source.fileno()))
+            if before != after:
+                raise ValueError(f"file changed during snapshot: {path}")
+            snapshot.seek(0)
+            with gzip.GzipFile(fileobj=snapshot, mode="rb") as compressed:
+                payload = _TesseFrontendRestrictedUnpickler(compressed).load()
+                if compressed.read(1):
+                    raise ValueError("frontend cache payload has trailing data")
+    except ValueError:
+        raise
+    except (
+        EOFError,
+        OSError,
+        pickle.PickleError,
+        AttributeError,
+        ImportError,
+        IndexError,
+        TypeError,
+    ) as exc:
+        message = str(exc)
+        if "unsafe pickle" in message:
+            raise ValueError(message) from exc
+        raise ValueError("invalid frontend cache gzip or pickle payload") from exc
+    binding = _FileBinding(path=path, sha256=digest.hexdigest(), identity=after)
+    _assert_binding_unchanged(binding)
+    return payload, binding
+
+
+def _validate_cache_payload(
+    payload: object,
+    *,
+    classes: tuple[str, ...],
+    image_shape: tuple[int, int],
+    path: Path,
+) -> None:
+    if not isinstance(payload, dict):
+        raise ValueError(f"frontend cache payload must be a dictionary: {path}")
+    keys = set(payload)
+    if not REQUIRED_CACHE_FIELDS <= keys or not keys <= ALLOWED_CACHE_FIELDS:
+        raise ValueError(f"frontend cache payload has invalid required fields: {path}")
+    masks = hybrid_cache._numeric_ndarray(payload["mask"], "mask")
+    boxes = hybrid_cache._numeric_ndarray(payload["xyxy"], "xyxy")
+    confidences = hybrid_cache._numeric_ndarray(payload["confidence"], "confidence")
+    class_ids = hybrid_cache._integer_ndarray(payload["class_id"], "class_id")
+    image_features = hybrid_cache._numeric_ndarray(payload["image_feats"], "image_feats")
+    text_features = hybrid_cache._numeric_ndarray(payload["text_feats"], "text_feats")
+    cached_classes = hybrid_cache._classes(payload["classes"])
+    count = masks.shape[0] if masks.ndim == 3 else -1
+    height, width = image_shape
+    if masks.shape != (count, height, width) or boxes.shape != (count, 4):
+        raise ValueError(f"frontend cache mask/box shape mismatch: {path}")
+    if confidences.shape != (count,) or class_ids.shape != (count,):
+        raise ValueError(f"frontend cache vector length mismatch: {path}")
+    if cached_classes != classes:
+        raise ValueError(f"frontend cache class order mismatch: {path}")
+    if count and (class_ids.min() < 0 or class_ids.max() >= len(classes)):
+        raise ValueError(f"frontend cache class ID out of range: {path}")
+    for name, features in (
+        ("image_feats", image_features),
+        ("text_feats", text_features),
+    ):
+        if (
+            features.ndim != 2
+            or features.shape[0] != count
+            or features.shape[1] <= 0
+        ):
+            raise ValueError(f"frontend cache {name} is invalid: {path}")
+        if count and np.any(np.linalg.norm(features.astype(np.float64), axis=1) == 0.0):
+            raise ValueError(f"frontend cache {name} contains a zero row: {path}")
+    if image_features.shape[1:] != text_features.shape[1:]:
+        raise ValueError(f"frontend cache feature dimensions do not match: {path}")
+    for name, values in (
+        ("mask", masks),
+        ("xyxy", boxes),
+        ("confidence", confidences),
+        ("image_feats", image_features),
+        ("text_feats", text_features),
+    ):
+        if not np.all(np.isfinite(values)):
+            raise ValueError(f"frontend cache {name} must be finite: {path}")
+    crops = payload.get("image_crops", [])
+    if not isinstance(crops, (list, tuple)):
+        raise ValueError(f"frontend cache image_crops are invalid: {path}")
+    for value in crops:
+        if isinstance(value, _IgnoredImageCrop):
+            continue
+        hybrid_cache._numeric_ndarray(value, "image_crops item")
 
 
 def _load_json_object(path: Path) -> dict[str, Any]:
@@ -324,11 +652,62 @@ def _load_json_object(path: Path) -> dict[str, Any]:
     return value
 
 
+def _visible_gpu_ids() -> set[int]:
+    result = subprocess.run(
+        ["nvidia-smi", "--query-gpu=index", "--format=csv,noheader"],
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    try:
+        return {int(value.strip()) for value in result.stdout.splitlines() if value.strip()}
+    except ValueError as exc:
+        raise ValueError("nvidia-smi returned an invalid GPU index") from exc
+
+
+def _validate_output_disk(config: Mapping[str, Any]) -> dict[str, Any]:
+    output_root = _resolve_path(config.get("frontend_cache_root"))
+    hybrid_cache._assert_no_symlink(output_root, field_name="frontend cache root")
+    current = output_root
+    while not current.exists():
+        if current == current.parent:
+            raise ValueError("frontend cache root has no existing ancestor")
+        current = current.parent
+    if current.is_symlink() or not current.is_dir():
+        raise ValueError("frontend cache root ancestor must be a regular directory")
+    if not os.access(current, os.W_OK | os.X_OK):
+        raise ValueError("frontend cache root ancestor is not writable")
+    usage = shutil.disk_usage(current)
+    minimum = _strict_int(config.get("minimum_free_bytes"), name="minimum_free_bytes")
+    if minimum <= 0 or usage.free < minimum:
+        raise ValueError("frontend cache disk has insufficient free space")
+    return {"output_root": str(output_root), "free_bytes": usage.free}
+
+
+def _preflight(
+    commands: list[FrontendCommand],
+    config: Mapping[str, Any],
+    run_snapshot: _RunSnapshot,
+) -> dict[str, Any]:
+    requested = {command.gpu_id for command in commands}
+    missing = requested - _visible_gpu_ids()
+    if missing:
+        raise ValueError(f"requested GPU is not visible: {', '.join(map(str, sorted(missing)))}")
+    disk = _validate_output_disk(config)
+    _assert_bindings_unchanged(run_snapshot.bindings)
+    return {
+        "status": "ready",
+        "gpu_ids": [command.gpu_id for command in commands],
+        **disk,
+    }
+
+
 def validate_frontend_cache(
     command: FrontendCommand,
     config: Mapping[str, Any],
     *,
     input_manifest_sha256: str,
+    run_snapshot: _RunSnapshot | None = None,
 ) -> dict[str, Any]:
     if command.scene not in SCENES:
         raise ValueError("unknown TESSE-CD scene in frontend command")
@@ -343,73 +722,49 @@ def validate_frontend_cache(
         or input_manifest_sha256 != recorded_manifest_sha256
     ):
         raise ValueError("input manifest hash mismatch")
-
-    classes = [
-        value.strip()
-        for value in command.classes_file.read_text(encoding="utf-8").splitlines()
-        if value.strip()
-    ]
-    if not classes or len(set(classes)) != len(classes):
-        raise ValueError("frontend vocabulary must contain unique non-empty classes")
-    if _sha256(command.classes_file) != command.classes_sha256:
-        raise ValueError("frontend vocabulary hash mismatch")
+    if run_snapshot is None:
+        _, input_binding = _load_frozen_input_manifest(config)
+        run_snapshot = _capture_run_snapshot(config, (command,), input_binding)
+    if run_snapshot.input_manifest.sha256 != input_manifest_sha256:
+        raise ValueError("input manifest snapshot hash mismatch")
+    if command.scene not in run_snapshot.classes:
+        raise ValueError("run snapshot does not bind the requested scene vocabulary")
+    vocabulary_binding = run_snapshot.vocabularies[command.scene]
+    if (
+        vocabulary_binding.path != command.classes_file
+        or vocabulary_binding.sha256 != command.classes_sha256
+    ):
+        raise ValueError("run snapshot vocabulary binding mismatch")
+    classes = run_snapshot.classes[command.scene]
 
     expected_names = [
         f"frame{cache_index:06d}.pkl.gz" for cache_index in range(command.frame_count)
     ]
+    hybrid_cache._assert_no_symlink(
+        command.cache_dir,
+        field_name="frontend cache directory",
+    )
     actual_names = sorted(path.name for path in command.cache_dir.glob("*.pkl.gz"))
     if actual_names != expected_names:
         raise ValueError("frontend directory contains a missing or unexpected cache file")
 
     cache_hashes: dict[str, str] = {}
-    height, width = command.image_shape
-    for cache_index, name in enumerate(expected_names):
+    cache_bindings: list[_FileBinding] = []
+    for name in expected_names:
         path = command.cache_dir / name
-        _regular_file(path, name=f"frontend cache frame {cache_index}")
-        with gzip.open(path, "rb") as stream:
-            payload = pickle.load(stream)
-        if not isinstance(payload, dict):
-            raise ValueError(f"frontend cache payload must be a dictionary: {path}")
-        if not REQUIRED_CACHE_FIELDS <= set(payload):
-            raise ValueError(f"frontend cache payload is missing required fields: {path}")
-        masks = np.asarray(payload["mask"])
-        boxes = np.asarray(payload["xyxy"])
-        confidences = np.asarray(payload["confidence"])
-        class_ids = np.asarray(payload["class_id"])
-        cached_classes = [str(value) for value in payload["classes"]]
-        count = masks.shape[0] if masks.ndim == 3 else -1
-        if masks.shape != (count, height, width) or boxes.shape != (count, 4):
-            raise ValueError(f"frontend cache mask/box shape mismatch: {path}")
-        if confidences.shape != (count,) or class_ids.shape != (count,):
-            raise ValueError(f"frontend cache vector length mismatch: {path}")
-        if class_ids.dtype.kind not in {"i", "u"}:
-            raise ValueError(f"frontend cache class IDs must be integers: {path}")
-        if not np.all(np.isfinite(boxes)) or not np.all(np.isfinite(confidences)):
-            raise ValueError(f"frontend cache boxes/confidences must be finite: {path}")
-        if cached_classes != classes:
-            raise ValueError(f"frontend cache class order mismatch: {path}")
-        if count and (class_ids.min() < 0 or class_ids.max() >= len(classes)):
-            raise ValueError(f"frontend cache class ID out of range: {path}")
-        for field in ("image_feats", "text_feats"):
-            features = np.asarray(payload[field], dtype=np.float64)
-            if (
-                features.ndim != 2
-                or features.shape[0] != count
-                or features.shape[1] <= 0
-                or not np.all(np.isfinite(features))
-            ):
-                raise ValueError(f"frontend cache {field} is invalid: {path}")
-            if count and np.any(np.linalg.norm(features, axis=1) == 0.0):
-                raise ValueError(f"frontend cache {field} contains a zero row: {path}")
-        cache_hashes[name] = _sha256(path)
+        payload, binding = _read_cache_snapshot(path)
+        _validate_cache_payload(
+            payload,
+            classes=classes,
+            image_shape=command.image_shape,
+            path=path,
+        )
+        cache_bindings.append(binding)
+        cache_hashes[name] = binding.sha256
 
-    frontend = config.get("frontend")
-    if not isinstance(frontend, Mapping):
-        raise ValueError("frontend config must be an object")
-    provenance = _validated_provenance(frontend)
-    expected_provenance = frontend.get("provenance_sha256")
-    if provenance != expected_provenance:
-        raise ValueError("verified frontend provenance does not match config")
+    provenance = {
+        name: binding.sha256 for name, binding in run_snapshot.provenance.items()
+    }
 
     result = {
         "schema_version": 1,
@@ -421,7 +776,7 @@ def validate_frontend_cache(
         "source_frame_ids_hash": _json_hash(list(command.source_frame_ids)),
         "image_shape": list(command.image_shape),
         "class_count": len(classes),
-        "classes": classes,
+        "classes": list(classes),
         "vocabulary_sha256": command.classes_sha256,
         "algorithm_hash": command.algorithm_hash,
         "feature_model_id": f"clip-sha256:{provenance['clip_model']}",
@@ -430,46 +785,99 @@ def validate_frontend_cache(
         "cache_files_sha256": cache_hashes,
         "cache_prefix_sha256": _cache_prefix_sha256(cache_hashes),
     }
+    _assert_bindings_unchanged((*run_snapshot.bindings, *cache_bindings))
     manifest_path = command.cache_dir / "frontend_manifest.json"
     if manifest_path.exists() or manifest_path.is_symlink():
-        _regular_file(manifest_path, name="frontend manifest")
-        if _load_json_object(manifest_path) != result:
+        binding, data = _snapshot_regular_file(
+            manifest_path,
+            field_name="frontend manifest",
+            retain_bytes=True,
+        )
+        assert data is not None
+        try:
+            existing = json.loads(data.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ValueError("existing frontend manifest is invalid") from exc
+        _assert_binding_unchanged(binding)
+        if existing != result:
             raise ValueError("existing frontend manifest does not match validated cache")
         return result
     try:
         _publish_json_new(manifest_path, result)
     except FileExistsError:
-        _regular_file(manifest_path, name="frontend manifest")
-        if _load_json_object(manifest_path) != result:
+        binding, data = _snapshot_regular_file(
+            manifest_path,
+            field_name="frontend manifest",
+            retain_bytes=True,
+        )
+        assert data is not None
+        try:
+            existing = json.loads(data.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ValueError("existing frontend manifest is invalid") from exc
+        _assert_binding_unchanged(binding)
+        if existing != result:
             raise ValueError("existing frontend manifest does not match validated cache")
     return result
+
+
+def _prepare_input_view(command: FrontendCommand) -> None:
+    source_results = command.source_root / "results"
+    source_trajectory = command.source_root / "traj.txt"
+    hybrid_cache._assert_no_symlink(source_results, field_name="source RGB-D results")
+    hybrid_cache._assert_no_symlink(source_trajectory, field_name="source trajectory")
+    if not source_results.is_dir():
+        raise ValueError("source RGB-D results must be a directory")
+    _regular_file(source_trajectory, name="source trajectory")
+
+    output_scene = command.cache_dir.parent
+    hybrid_cache._assert_no_symlink(output_scene, field_name="frontend output scene")
+    output_scene.mkdir(parents=True, exist_ok=True)
+    hybrid_cache._assert_no_symlink(output_scene, field_name="frontend output scene")
+    for source, name, is_directory in (
+        (source_results, "results", True),
+        (source_trajectory, "traj.txt", False),
+    ):
+        destination = output_scene / name
+        try:
+            destination.symlink_to(source, target_is_directory=is_directory)
+        except FileExistsError:
+            if not destination.is_symlink() or destination.resolve() != source.resolve():
+                raise ValueError(f"frontend input view binding mismatch: {destination}")
+
+
+def _cache_file_set_is_complete(command: FrontendCommand) -> bool:
+    expected = {
+        f"frame{cache_index:06d}.pkl.gz"
+        for cache_index in range(command.frame_count)
+    }
+    actual = {path.name for path in command.cache_dir.glob("*.pkl.gz")}
+    return actual == expected
 
 
 def _run_queue(
     commands: list[FrontendCommand],
     config: Mapping[str, Any],
     input_manifest_sha256: str,
+    run_snapshot: _RunSnapshot,
 ) -> None:
     frontend = config["frontend"]
     cwd = _resolve_path(frontend["script"]).parents[2]
     for command in commands:
         manifest_path = command.cache_dir / "frontend_manifest.json"
-        if manifest_path.exists() or manifest_path.is_symlink():
+        if (
+            manifest_path.exists()
+            or manifest_path.is_symlink()
+            or _cache_file_set_is_complete(command)
+        ):
             validate_frontend_cache(
                 command,
                 config,
                 input_manifest_sha256=input_manifest_sha256,
+                run_snapshot=run_snapshot,
             )
             continue
-        try:
-            validate_frontend_cache(
-                command,
-                config,
-                input_manifest_sha256=input_manifest_sha256,
-            )
-            continue
-        except (FileNotFoundError, ValueError, EOFError, OSError, pickle.UnpicklingError):
-            pass
+        _prepare_input_view(command)
         command.log_dir.mkdir(parents=True, exist_ok=True)
         environment = build_environment(command.gpu_id, cwd)
         with (command.log_dir / "frontend.log").open("w", encoding="utf-8") as log:
@@ -485,6 +893,7 @@ def _run_queue(
             command,
             config,
             input_manifest_sha256=input_manifest_sha256,
+            run_snapshot=run_snapshot,
         )
 
 
@@ -496,24 +905,23 @@ def main(argv: list[str] | None = None) -> int:
         default=REPO_ROOT / "configs/oviv2_tesse_cd_frontend_stage3.json",
     )
     parser.add_argument("--scene", action="append")
-    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--gpu", type=int, action="append")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--dry-run", action="store_true")
+    mode.add_argument("--preflight-only", action="store_true")
     args = parser.parse_args(argv)
 
     config_path = args.config.expanduser().resolve()
     _regular_file(config_path, name="frontend config")
     config = _load_json_object(config_path)
-    manifest_path = _resolve_path(config.get("manifest"))
-    _regular_file(manifest_path, name="TESSE-CD input manifest")
-    input_manifest_sha256 = _sha256(manifest_path)
-    recorded_manifest_sha256 = config.get("manifest_sha256")
-    if (
-        not isinstance(recorded_manifest_sha256, str)
-        or SHA256_PATTERN.fullmatch(recorded_manifest_sha256) is None
-        or input_manifest_sha256 != recorded_manifest_sha256
-    ):
-        raise ValueError("input manifest hash mismatch")
-    manifest = _load_json_object(manifest_path)
-    commands = build_commands(config, manifest, scenes=args.scene)
+    manifest, input_binding = _load_frozen_input_manifest(config)
+    input_manifest_sha256 = input_binding.sha256
+    commands = build_commands(
+        config,
+        manifest,
+        scenes=args.scene,
+        gpu_ids=None if args.gpu is None else tuple(args.gpu),
+    )
     if args.dry_run:
         for command in commands:
             print(
@@ -528,12 +936,16 @@ def main(argv: list[str] | None = None) -> int:
             )
         return 0
 
-    frontend = config["frontend"]
-    warm_shared_clip_cache(frontend)
-    _validated_provenance(frontend)
+    run_snapshot = _capture_run_snapshot(config, commands, input_binding)
+    if args.preflight_only:
+        print(json.dumps(_preflight(commands, config, run_snapshot), sort_keys=True))
+        return 0
+
+    _preflight(commands, config, run_snapshot)
+    gpu_ids = tuple(dict.fromkeys(command.gpu_id for command in commands))
     queues = [
         [command for command in commands if command.gpu_id == gpu_id]
-        for gpu_id in (0, 1)
+        for gpu_id in gpu_ids
     ]
     queues = [queue for queue in queues if queue]
     with ThreadPoolExecutor(max_workers=len(queues)) as executor:
@@ -543,6 +955,7 @@ def main(argv: list[str] | None = None) -> int:
                 queue,
                 config,
                 input_manifest_sha256,
+                run_snapshot,
             )
             for queue in queues
         ]
