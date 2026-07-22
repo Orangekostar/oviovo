@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -232,4 +233,54 @@ def test_neutral_snapshot_rejects_timestamp_mismatch() -> None:
             object_semantic_ids=frozenset({1}),
             fusion=SemanticFusionConfig(),
             timestamp_ns_by_frame=(100, 123),
+        )
+
+
+def test_neutral_snapshot_rejects_subnanosecond_metadata_timestamp_drift() -> None:
+    snapshot = _snapshot()
+    snapshot = replace(
+        snapshot,
+        metadata=replace(
+            snapshot.metadata,
+            timestamp=123 / 1_000_000_000 + 0.5e-9,
+        ),
+    )
+
+    with pytest.raises(ValueError, match="metadata timestamp"):
+        build_neutral_current_snapshot(
+            snapshot,
+            timestamp_ns=123,
+            class_names=("unknown", "chair", "wall"),
+            object_semantic_ids=frozenset({1}),
+            fusion=SemanticFusionConfig(),
+            timestamp_ns_by_frame=(100, 123),
+        )
+
+
+@pytest.mark.parametrize(
+    ("first_frame", "last_frame", "message"),
+    [
+        (0, 2, "future|current frame"),
+        (1, 0, "first frame"),
+        (-1, 0, "at least 0"),
+    ],
+)
+def test_neutral_snapshot_rejects_invalid_registry_frame_range(
+    first_frame: int,
+    last_frame: int,
+    message: str,
+) -> None:
+    snapshot = _snapshot()
+    assert snapshot.registry is not None
+    snapshot.registry.entities[99].first_frame_id = first_frame
+    snapshot.registry.entities[99].last_frame_id = last_frame
+
+    with pytest.raises(ValueError, match=message):
+        build_neutral_current_snapshot(
+            snapshot,
+            timestamp_ns=123,
+            class_names=("unknown", "chair", "wall"),
+            object_semantic_ids=frozenset({1}),
+            fusion=SemanticFusionConfig(),
+            timestamp_ns_by_frame=(100, 123, 200),
         )

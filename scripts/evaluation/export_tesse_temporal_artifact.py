@@ -25,6 +25,110 @@ if str(REPO_ROOT) not in sys.path:
 from src.evaluation.exporters.oviovo import read_map_snapshot
 
 
+_SOURCE_RECORD_FIELDS = frozenset({"path", "sha256", "byte_count"})
+_SOURCE_INDEX_FIELDS = frozenset(
+    {
+        "schema_version",
+        "dataset",
+        "mode",
+        "method",
+        "scene",
+        "schedule",
+        "capture_status",
+        "trajectories",
+        "checkpoints",
+    }
+)
+_CAPTURE_STATUS_FIELDS = frozenset(
+    {
+        "schema_version",
+        "status",
+        "scene",
+        "mode",
+        "scheduled_frame_indices",
+        "captured_frame_indices",
+        "schedule",
+        "trajectories",
+        "checkpoint_statuses",
+    }
+)
+_CHECKPOINT_INDEX_FIELDS = frozenset(
+    {
+        "frame_index",
+        "timestamp_ns",
+        "consumed_through_frame",
+        "consumed_through_frame_exclusive",
+        "checkpoint_status",
+        "snapshot",
+        "entities",
+    }
+)
+_SCHEDULE_FIELDS = frozenset(
+    {
+        "schema_version",
+        "manifest_id",
+        "dataset",
+        "method_predictions_used",
+        "parameters",
+        "scenes",
+    }
+)
+_SCHEDULE_FIELDS_WITH_SOURCE = _SCHEDULE_FIELDS | {"source_manifest"}
+_SCHEDULE_PARAMETER_FIELDS = frozenset(
+    {
+        "frame_indexing",
+        "official_stride_frames",
+        "common_event_step_frames",
+        "common_event_horizon_frames",
+        "common_checkpoints_per_event",
+        "event_frame_rule",
+    }
+)
+_SCHEDULE_SCENE_FIELDS = frozenset({"frame_count", "entries"})
+_SCHEDULE_SCENE_FIELDS_WITH_SOURCES = _SCHEDULE_SCENE_FIELDS | {
+    "events",
+    "first_depth_timestamp_ns",
+    "last_depth_timestamp_ns",
+    "sources",
+}
+_SCHEDULE_ENTRY_FIELDS = frozenset({"frame_index", "timestamp_ns"})
+_SCHEDULE_ENTRY_FIELDS_FULL = _SCHEDULE_ENTRY_FIELDS | {
+    "relative_timestamp_ns",
+    "event_ids",
+    "roles",
+}
+_SCHEDULE_EVENT_FIELDS = frozenset(
+    {
+        "event_id",
+        "event_relative_timestamp_ns",
+        "intervention_frame_index",
+        "intervention_timestamp_ns",
+        "intervention_relative_timestamp_ns",
+        "common_checkpoint_frame_indices",
+    }
+)
+_GENERIC_CHECKPOINT_STATUS_FIELDS = frozenset(
+    {
+        "schema_version",
+        "status",
+        "checkpoint_frame",
+        "timestamp_ns",
+        "consumed_through_frame",
+        "consumed_through_frame_exclusive",
+    }
+)
+_PANOPTIC_CHECKPOINT_STATUS_FIELDS = frozenset(
+    {
+        "schema_version",
+        "frame_index",
+        "source_timestamp_ns",
+        "consumed_through_frame",
+        "consumed_through_frame_exclusive",
+        "panmap_file",
+    }
+)
+
+
 @dataclass(frozen=True)
 class _VerifiedSource:
     path: Path
@@ -57,6 +161,8 @@ def _assert_unchanged(source: _VerifiedSource, *, label: str) -> None:
 def _declared_source(
     record: Mapping[str, Any], *, base: Path, label: str
 ) -> _VerifiedSource:
+    if set(record) != _SOURCE_RECORD_FIELDS:
+        raise ValueError(f"{label} source record fields are invalid")
     raw_path = Path(str(record.get("path", "")))
     path = raw_path if raw_path.is_absolute() else base / raw_path
     path = path.resolve()
@@ -87,7 +193,13 @@ def _direct_source(path: Path, *, label: str) -> _VerifiedSource:
 
 
 def _read_json(source: _VerifiedSource, *, label: str) -> dict[str, Any]:
-    payload = json.loads(source.path.read_text(encoding="utf-8"))
+    def reject_constant(value: str) -> None:
+        raise ValueError(f"{label} contains non-finite JSON constant {value}")
+
+    payload = json.loads(
+        source.path.read_text(encoding="utf-8"),
+        parse_constant=reject_constant,
+    )
     _assert_unchanged(source, label=label)
     if not isinstance(payload, dict):
         raise ValueError(f"{label} must contain a JSON object")
@@ -95,6 +207,8 @@ def _read_json(source: _VerifiedSource, *, label: str) -> dict[str, Any]:
 
 
 def _same_source(left: Mapping[str, Any], right: _VerifiedSource, *, base: Path) -> bool:
+    if set(left) != _SOURCE_RECORD_FIELDS:
+        return False
     raw_path = Path(str(left.get("path", "")))
     path = (raw_path if raw_path.is_absolute() else base / raw_path).resolve()
     return (
@@ -106,7 +220,7 @@ def _same_source(left: Mapping[str, Any], right: _VerifiedSource, *, base: Path)
 
 def _load_schedule(
     source: _VerifiedSource, *, scene: str
-) -> tuple[dict[str, Any], list[dict[str, int]]]:
+) -> tuple[dict[str, Any], dict[str, Any], list[dict[str, int]]]:
     payload = _read_json(source, label="schedule")
     if (
         payload.get("dataset") != "TESSE-CD"
@@ -145,7 +259,7 @@ def _load_schedule(
         entries.append({"frame_index": frame_index, "timestamp_ns": timestamp_ns})
         previous_frame = frame_index
         previous_timestamp = timestamp_ns
-    return dict(scene_payload), entries
+    return payload, dict(scene_payload), entries
 
 
 def _checkpoint_identity(payload: Mapping[str, Any]) -> tuple[int, int, int, int]:
@@ -311,6 +425,17 @@ def _output_record(path: Path, *, output: Path) -> dict[str, Any]:
     }
 
 
+def _relative_record(path: Path, *, base: Path) -> dict[str, Any]:
+    relative = Path(os.path.relpath(path, start=base)).as_posix()
+    if Path(relative).is_absolute():
+        raise ValueError("artifact record path must be relative")
+    return {
+        "path": relative,
+        "sha256": _sha256(path),
+        "byte_count": path.stat().st_size,
+    }
+
+
 def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
     path.write_text(
         json.dumps(
@@ -324,22 +449,300 @@ def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
     )
 
 
-def _copy_source(
-    source: _VerifiedSource,
-    destination: Path,
+def _require_fields(
+    payload: Mapping[str, Any],
+    expected: frozenset[str],
     *,
-    output: Path,
+    label: str,
+) -> None:
+    if set(payload) != expected:
+        raise ValueError(f"{label} fields are invalid")
+
+
+def _json_integer(value: object, *, label: str, minimum: int) -> int:
+    if type(value) is not int or value < minimum:
+        raise ValueError(f"{label} must be an integer of at least {minimum}")
+    return value
+
+
+def _json_strings(
+    value: object,
+    *,
+    label: str,
+    allow_empty: bool,
+) -> list[str]:
+    if not isinstance(value, list) or any(
+        not isinstance(item, str) or not item for item in value
+    ):
+        raise ValueError(f"{label} must contain non-empty strings")
+    if not allow_empty and not value:
+        raise ValueError(f"{label} must be non-empty")
+    if len(value) != len(set(value)):
+        raise ValueError(f"{label} must not contain duplicates")
+    return list(value)
+
+
+def _logical_source_record(
+    record: Mapping[str, Any],
+    *,
+    logical_id: str,
     label: str,
 ) -> dict[str, Any]:
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(source.path, destination)
-    _assert_unchanged(source, label=label)
+    _require_fields(record, _SOURCE_RECORD_FIELDS, label=label)
+    path = record.get("path")
+    sha256 = record.get("sha256")
+    byte_count = record.get("byte_count")
+    if not isinstance(path, str) or not path.strip():
+        raise ValueError(f"{label} path must be non-empty")
     if (
-        _sha256(destination) != source.sha256
-        or destination.stat().st_size != source.byte_count
+        not isinstance(sha256, str)
+        or len(sha256) != 64
+        or any(character not in "0123456789abcdef" for character in sha256)
     ):
-        raise ValueError(f"{label} copy does not match verified source")
-    return _output_record(destination, output=output)
+        raise ValueError(f"{label} SHA256 must be lowercase hexadecimal")
+    if type(byte_count) is not int or byte_count < 0:
+        raise ValueError(f"{label} byte count must be a non-negative integer")
+    return {
+        "logical_id": logical_id,
+        "sha256": sha256,
+        "byte_count": byte_count,
+    }
+
+
+def _normalize_schedule(
+    payload: Mapping[str, Any],
+    *,
+    selected_scene: str,
+) -> dict[str, Any]:
+    fields = frozenset(payload)
+    if fields not in {_SCHEDULE_FIELDS, _SCHEDULE_FIELDS_WITH_SOURCE}:
+        raise ValueError("schedule fields are invalid")
+    parameters = payload.get("parameters")
+    if not isinstance(parameters, Mapping) or not set(parameters).issubset(
+        _SCHEDULE_PARAMETER_FIELDS
+    ):
+        raise ValueError("schedule parameter fields are invalid")
+    if any(isinstance(value, (Mapping, list)) for value in parameters.values()):
+        raise ValueError("schedule parameter values must be scalar")
+    if parameters.get("frame_indexing") != "zero_based":
+        raise ValueError("schedule frame indexing must be zero_based")
+    for name in (
+        "official_stride_frames",
+        "common_event_step_frames",
+        "common_event_horizon_frames",
+        "common_checkpoints_per_event",
+    ):
+        if name in parameters:
+            _json_integer(parameters[name], label=f"schedule {name}", minimum=0)
+    if "event_frame_rule" in parameters and (
+        not isinstance(parameters["event_frame_rule"], str)
+        or not parameters["event_frame_rule"]
+    ):
+        raise ValueError("schedule event_frame_rule must be non-empty")
+    scenes = payload.get("scenes")
+    scene_names = set(scenes) if isinstance(scenes, Mapping) else set()
+    if (
+        not scene_names
+        or selected_scene not in scene_names
+        or not scene_names.issubset({"apartment", "office"})
+    ):
+        raise ValueError("schedule scenes fields are invalid")
+
+    normalized_scenes: dict[str, Any] = {}
+    for scene in sorted(scene_names):
+        raw_scene = scenes[scene]
+        if not isinstance(raw_scene, Mapping):
+            raise ValueError(f"schedule {scene} scene must be an object")
+        scene_fields = frozenset(raw_scene)
+        if scene_fields not in {
+            _SCHEDULE_SCENE_FIELDS,
+            _SCHEDULE_SCENE_FIELDS_WITH_SOURCES,
+        }:
+            raise ValueError(f"schedule {scene} scene fields are invalid")
+        raw_entries = raw_scene.get("entries")
+        if not isinstance(raw_entries, list):
+            raise ValueError(f"schedule {scene} entries must be a list")
+        frame_count = _json_integer(
+            raw_scene.get("frame_count"),
+            label=f"schedule {scene} frame_count",
+            minimum=1,
+        )
+        entries: list[dict[str, Any]] = []
+        for raw_entry in raw_entries:
+            if not isinstance(raw_entry, Mapping) or frozenset(raw_entry) not in {
+                _SCHEDULE_ENTRY_FIELDS,
+                _SCHEDULE_ENTRY_FIELDS_FULL,
+            }:
+                raise ValueError(f"schedule {scene} entry fields are invalid")
+            frame_index = _json_integer(
+                raw_entry.get("frame_index"),
+                label=f"schedule {scene} entry frame_index",
+                minimum=0,
+            )
+            if frame_index >= frame_count:
+                raise ValueError(f"schedule {scene} entry is outside frame_count")
+            _json_integer(
+                raw_entry.get("timestamp_ns"),
+                label=f"schedule {scene} entry timestamp_ns",
+                minimum=1,
+            )
+            if frozenset(raw_entry) == _SCHEDULE_ENTRY_FIELDS_FULL:
+                _json_integer(
+                    raw_entry.get("relative_timestamp_ns"),
+                    label=f"schedule {scene} entry relative_timestamp_ns",
+                    minimum=0,
+                )
+                _json_strings(
+                    raw_entry.get("event_ids"),
+                    label=f"schedule {scene} entry event_ids",
+                    allow_empty=True,
+                )
+                roles = _json_strings(
+                    raw_entry.get("roles"),
+                    label=f"schedule {scene} entry roles",
+                    allow_empty=False,
+                )
+                if any(role not in {"official", "common_v2"} for role in roles):
+                    raise ValueError(f"schedule {scene} entry role is unsupported")
+            entries.append(dict(raw_entry))
+        normalized_scene: dict[str, Any] = {
+            "frame_count": frame_count,
+            "entries": entries,
+        }
+        if scene_fields == _SCHEDULE_SCENE_FIELDS_WITH_SOURCES:
+            raw_events = raw_scene.get("events")
+            if not isinstance(raw_events, list):
+                raise ValueError(f"schedule {scene} events must be a list")
+            events: list[dict[str, Any]] = []
+            for raw_event in raw_events:
+                if not isinstance(raw_event, Mapping):
+                    raise ValueError(f"schedule {scene} event must be an object")
+                _require_fields(
+                    raw_event,
+                    _SCHEDULE_EVENT_FIELDS,
+                    label=f"schedule {scene} event",
+                )
+                event_id = raw_event.get("event_id")
+                if not isinstance(event_id, str) or not event_id:
+                    raise ValueError(f"schedule {scene} event ID is invalid")
+                for name in (
+                    "event_relative_timestamp_ns",
+                    "intervention_frame_index",
+                    "intervention_timestamp_ns",
+                    "intervention_relative_timestamp_ns",
+                ):
+                    _json_integer(
+                        raw_event.get(name),
+                        label=f"schedule {scene} event {name}",
+                        minimum=0,
+                    )
+                checkpoint_frames = raw_event.get(
+                    "common_checkpoint_frame_indices"
+                )
+                if not isinstance(checkpoint_frames, list) or not checkpoint_frames:
+                    raise ValueError(
+                        f"schedule {scene} event checkpoint frames are invalid"
+                    )
+                for checkpoint_frame in checkpoint_frames:
+                    normalized_frame = _json_integer(
+                        checkpoint_frame,
+                        label=f"schedule {scene} event checkpoint frame",
+                        minimum=0,
+                    )
+                    if normalized_frame >= frame_count:
+                        raise ValueError(
+                            f"schedule {scene} event checkpoint is outside frame_count"
+                        )
+                events.append(dict(raw_event))
+            raw_sources = raw_scene.get("sources")
+            if not isinstance(raw_sources, Mapping) or set(raw_sources) != {
+                "database",
+                "gt_changes",
+            }:
+                raise ValueError(f"schedule {scene} source fields are invalid")
+            normalized_scene.update(
+                {
+                    "events": events,
+                    "first_depth_timestamp_ns": _json_integer(
+                        raw_scene.get("first_depth_timestamp_ns"),
+                        label=f"schedule {scene} first depth timestamp",
+                        minimum=1,
+                    ),
+                    "last_depth_timestamp_ns": _json_integer(
+                        raw_scene.get("last_depth_timestamp_ns"),
+                        label=f"schedule {scene} last depth timestamp",
+                        minimum=1,
+                    ),
+                    "sources": {
+                        "database": _logical_source_record(
+                            raw_sources["database"],
+                            logical_id=f"tesse-cd:{scene}:database",
+                            label=f"schedule {scene} database",
+                        ),
+                        "gt_changes": _logical_source_record(
+                            raw_sources["gt_changes"],
+                            logical_id=f"tesse-cd:{scene}:gt_changes",
+                            label=f"schedule {scene} gt_changes",
+                        ),
+                    },
+                }
+            )
+        normalized_scenes[scene] = normalized_scene
+
+    normalized: dict[str, Any] = {
+        "schema_version": payload.get("schema_version"),
+        "manifest_id": payload.get("manifest_id"),
+        "dataset": payload.get("dataset"),
+        "method_predictions_used": payload.get("method_predictions_used"),
+        "parameters": dict(parameters),
+        "scenes": normalized_scenes,
+    }
+    if fields == _SCHEDULE_FIELDS_WITH_SOURCE:
+        source_manifest = payload.get("source_manifest")
+        if not isinstance(source_manifest, Mapping):
+            raise ValueError("schedule source manifest must be an object")
+        normalized["source_manifest"] = _logical_source_record(
+            source_manifest,
+            logical_id="tesse-cd:source-manifest",
+            label="schedule source manifest",
+        )
+    return normalized
+
+
+def _normalize_checkpoint_status(
+    payload: Mapping[str, Any],
+    *,
+    frame_index: int,
+) -> dict[str, Any]:
+    fields = frozenset(payload)
+    generic_with_events = _GENERIC_CHECKPOINT_STATUS_FIELDS | {"event_ids", "roles"}
+    if fields in {_GENERIC_CHECKPOINT_STATUS_FIELDS, generic_with_events}:
+        if payload.get("schema_version") != 1 or payload.get("status") != "PASS":
+            raise ValueError("checkpoint status identity is invalid")
+        normalized = dict(payload)
+        if fields == generic_with_events:
+            for name in ("event_ids", "roles"):
+                _json_strings(
+                    payload.get(name),
+                    label=f"checkpoint status {name}",
+                    allow_empty=name == "event_ids",
+                )
+        return normalized
+    if fields == _PANOPTIC_CHECKPOINT_STATUS_FIELDS:
+        if payload.get("schema_version") != 1:
+            raise ValueError("checkpoint status identity is invalid")
+        panmap_file = payload.get("panmap_file")
+        if (
+            not isinstance(panmap_file, str)
+            or not panmap_file
+            or Path(panmap_file).is_absolute()
+            or Path(panmap_file).name != panmap_file
+        ):
+            raise ValueError("checkpoint status panmap_file is invalid")
+        normalized = dict(payload)
+        normalized["panmap_file"] = f"logical:panmap:{frame_index}"
+        return normalized
+    raise ValueError("checkpoint status fields are invalid")
 
 
 def _fsync_tree(root: Path) -> None:
@@ -364,6 +767,8 @@ def _fsync_tree(root: Path) -> None:
 def export_temporal_artifact(source_index: Path, output: Path) -> Path:
     index_source = _direct_source(source_index, label="source index")
     index = _read_json(index_source, label="source index")
+    if set(index) != _SOURCE_INDEX_FIELDS:
+        raise ValueError("source index fields are invalid")
     if (
         index.get("schema_version") != 1
         or index.get("dataset") != "TESSE-CD"
@@ -379,7 +784,7 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
     schedule_source = _declared_source(
         index.get("schedule", {}), base=base, label="schedule"
     )
-    _, schedule = _load_schedule(schedule_source, scene=scene)
+    schedule_payload, _, schedule = _load_schedule(schedule_source, scene=scene)
     expected = [
         (int(entry["frame_index"]), int(entry["timestamp_ns"])) for entry in schedule
     ]
@@ -390,6 +795,8 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
         index.get("capture_status", {}), base=base, label="capture status"
     )
     capture = _read_json(capture_source, label="capture status")
+    if set(capture) != _CAPTURE_STATUS_FIELDS:
+        raise ValueError("capture status fields are invalid")
     expected_frames = [frame for frame, _ in expected]
     if (
         capture.get("status") != "PASS"
@@ -443,6 +850,8 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
             or consumed_exclusive != frame + 1
         ):
             raise ValueError("source checkpoint freeze boundary must be [0, t+1)")
+        if set(raw_checkpoint) != _CHECKPOINT_INDEX_FIELDS:
+            raise ValueError("source checkpoint fields are invalid")
         status_source = _declared_source(
             raw_checkpoint.get("checkpoint_status", {}),
             base=base,
@@ -512,6 +921,7 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
                 "timestamp_ns": timestamp,
                 "consumed_through_frame": consumed,
                 "consumed_through_frame_exclusive": consumed_exclusive,
+                "status": status,
                 "snapshot": snapshot_source,
                 "entities": entities_source,
             }
@@ -542,42 +952,9 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
     reserved = False
     try:
         sidecar_root = staging / "sidecars"
-        copied_sources = {
-            "source_index": _copy_source(
-                index_source,
-                sidecar_root / "source_index.json",
-                output=staging,
-                label="source index",
-            ),
-            "schedule": _copy_source(
-                schedule_source,
-                sidecar_root / "schedule.json",
-                output=staging,
-                label="schedule",
-            ),
-            "capture_status": _copy_source(
-                capture_source,
-                sidecar_root / "capture_status.json",
-                output=staging,
-                label="capture status",
-            ),
-            "trajectories": _copy_source(
-                trajectory_source,
-                sidecar_root / "source_trajectories.jsonl",
-                output=staging,
-                label="trajectories",
-            ),
-            "checkpoint_statuses": [
-                _copy_source(
-                    source,
-                    sidecar_root / "checkpoint_statuses" / f"{position:08d}.json",
-                    output=staging,
-                    label=f"checkpoint status {position}",
-                )
-                for position, source in enumerate(checkpoint_status_sources)
-            ],
-        }
+        sidecar_root.mkdir(parents=True)
         output_checkpoints: list[dict[str, Any]] = []
+        checkpoint_paths: list[dict[str, Any]] = []
         for checkpoint in checkpoint_inputs:
             frame = int(checkpoint["frame_index"])
             directory = staging / "checkpoints" / f"{frame:08d}"
@@ -606,6 +983,20 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
                     "entities": _output_record(entities_path, output=staging),
                 }
             )
+            checkpoint_paths.append(
+                {
+                    "frame_index": frame,
+                    "timestamp_ns": int(checkpoint["timestamp_ns"]),
+                    "consumed_through_frame": int(
+                        checkpoint["consumed_through_frame"]
+                    ),
+                    "consumed_through_frame_exclusive": int(
+                        checkpoint["consumed_through_frame_exclusive"]
+                    ),
+                    "snapshot_path": snapshot_path,
+                    "entities_path": entities_path,
+                }
+            )
 
         trajectories_path = staging / "trajectories.jsonl"
         trajectories_path.write_text(
@@ -621,6 +1012,104 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
             ),
             encoding="utf-8",
         )
+
+        schedule_path = sidecar_root / "schedule.json"
+        _write_json(
+            schedule_path,
+            _normalize_schedule(schedule_payload, selected_scene=scene),
+        )
+        status_root = sidecar_root / "checkpoint_statuses"
+        status_root.mkdir()
+        status_paths: list[Path] = []
+        for checkpoint in checkpoint_inputs:
+            frame = int(checkpoint["frame_index"])
+            status_path = status_root / f"{frame:08d}.json"
+            _write_json(
+                status_path,
+                _normalize_checkpoint_status(
+                    checkpoint["status"],
+                    frame_index=frame,
+                ),
+            )
+            status_paths.append(status_path)
+
+        schedule_sidecar_record = _relative_record(
+            schedule_path,
+            base=sidecar_root,
+        )
+        trajectory_sidecar_record = _relative_record(
+            trajectories_path,
+            base=sidecar_root,
+        )
+        status_sidecar_records = [
+            _relative_record(path, base=sidecar_root) for path in status_paths
+        ]
+        capture_path = sidecar_root / "capture_status.json"
+        normalized_capture = {
+            "schema_version": capture["schema_version"],
+            "status": capture["status"],
+            "scene": capture["scene"],
+            "mode": capture["mode"],
+            "scheduled_frame_indices": capture["scheduled_frame_indices"],
+            "captured_frame_indices": capture["captured_frame_indices"],
+            "schedule": schedule_sidecar_record,
+            "trajectories": trajectory_sidecar_record,
+            "checkpoint_statuses": status_sidecar_records,
+        }
+        _write_json(capture_path, normalized_capture)
+
+        normalized_index_checkpoints = []
+        for checkpoint, status_path in zip(checkpoint_paths, status_paths):
+            normalized_index_checkpoints.append(
+                {
+                    "frame_index": checkpoint["frame_index"],
+                    "timestamp_ns": checkpoint["timestamp_ns"],
+                    "consumed_through_frame": checkpoint[
+                        "consumed_through_frame"
+                    ],
+                    "consumed_through_frame_exclusive": checkpoint[
+                        "consumed_through_frame_exclusive"
+                    ],
+                    "checkpoint_status": _relative_record(
+                        status_path,
+                        base=sidecar_root,
+                    ),
+                    "snapshot": _relative_record(
+                        checkpoint["snapshot_path"],
+                        base=sidecar_root,
+                    ),
+                    "entities": _relative_record(
+                        checkpoint["entities_path"],
+                        base=sidecar_root,
+                    ),
+                }
+            )
+        index_path = sidecar_root / "source_index.json"
+        normalized_index = {
+            "schema_version": index["schema_version"],
+            "dataset": index["dataset"],
+            "mode": index["mode"],
+            "method": index["method"],
+            "scene": index["scene"],
+            "schedule": schedule_sidecar_record,
+            "capture_status": _relative_record(
+                capture_path,
+                base=sidecar_root,
+            ),
+            "trajectories": trajectory_sidecar_record,
+            "checkpoints": normalized_index_checkpoints,
+        }
+        _write_json(index_path, normalized_index)
+
+        normalized_sources = {
+            "source_index": _output_record(index_path, output=staging),
+            "schedule": _output_record(schedule_path, output=staging),
+            "capture_status": _output_record(capture_path, output=staging),
+            "trajectories": _output_record(trajectories_path, output=staging),
+            "checkpoint_statuses": [
+                _output_record(path, output=staging) for path in status_paths
+            ],
+        }
         for source, label in verified:
             _assert_unchanged(source, label=label)
 
@@ -630,7 +1119,7 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
             "mode": "causal_checkpoints",
             "method": method,
             "scene": scene,
-            "sources": copied_sources,
+            "sources": normalized_sources,
             "checkpoints": output_checkpoints,
             "entity_lifecycles": lifecycles,
             "trajectories": _output_record(

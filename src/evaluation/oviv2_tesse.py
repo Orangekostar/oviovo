@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 import json
-import math
 from pathlib import Path
 from typing import Any
 
@@ -202,15 +201,10 @@ def build_neutral_current_snapshot(
     if frame_timestamps[frame_index] != current_timestamp_ns:
         raise ValueError("snapshot frame timestamp does not match timestamp_ns")
     snapshot_timestamp = float(snapshot.metadata.timestamp)
-    if not (
-        snapshot_timestamp == float(current_timestamp_ns)
-        or math.isclose(
-            snapshot_timestamp,
-            current_timestamp_ns / 1_000_000_000,
-            rel_tol=0.0,
-            abs_tol=1e-9,
-        )
-    ):
+    if snapshot_timestamp not in {
+        float(current_timestamp_ns),
+        current_timestamp_ns / 1_000_000_000,
+    }:
         raise ValueError("snapshot metadata timestamp does not match timestamp_ns")
 
     names = _class_names(class_names)
@@ -228,6 +222,20 @@ def build_neutral_current_snapshot(
     registry = snapshot.registry
     posteriors: dict[int, tuple[tuple[int, float], ...]] = {}
     for entity_id, entity in sorted(registry.entities.items()):
+        first_frame = _integer(
+            entity.first_frame_id,
+            "entity first_frame_id",
+            minimum=0,
+        )
+        last_frame = _integer(
+            entity.last_frame_id,
+            "entity last_frame_id",
+            minimum=0,
+        )
+        if first_frame > last_frame:
+            raise ValueError("entity first frame must not exceed its last frame")
+        if last_frame > frame_index:
+            raise ValueError("entity registry state comes from a future current frame")
         probabilities = tuple(entity.semantic_posterior.probabilities)
         if any(semantic_id >= len(names) for semantic_id, _ in probabilities):
             raise ValueError("registry semantic ID is outside class_names")

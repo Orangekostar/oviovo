@@ -227,6 +227,14 @@ def _rewrite_index(index_path: Path, payload: dict[str, Any]) -> None:
     _write_json(index_path, payload)
 
 
+def _artifact_files(root: Path) -> dict[Path, bytes]:
+    return {
+        path.relative_to(root): path.read_bytes()
+        for path in root.rglob("*")
+        if path.is_file()
+    }
+
+
 def test_cli_help_runs_from_outside_repository(tmp_path: Path) -> None:
     completed = subprocess.run(
         [
@@ -245,7 +253,7 @@ def test_cli_help_runs_from_outside_repository(tmp_path: Path) -> None:
 
 
 def test_exports_presence_intervals_and_byte_identical_repeat(tmp_path: Path) -> None:
-    index_path, source_index = _build_fixture(tmp_path / "source")
+    index_path, _ = _build_fixture(tmp_path / "source")
 
     first = export_temporal_artifact(index_path, tmp_path / "first")
     second = export_temporal_artifact(index_path, tmp_path / "second")
@@ -254,10 +262,7 @@ def test_exports_presence_intervals_and_byte_identical_repeat(tmp_path: Path) ->
     assert manifest["schema_version"] == 1
     assert manifest["mode"] == "causal_checkpoints"
     assert manifest["scene"] == "apartment"
-    assert (
-        manifest["sources"]["trajectories"]["sha256"]
-        == source_index["trajectories"]["sha256"]
-    )
+    assert manifest["sources"]["trajectories"] == manifest["trajectories"]
     assert [item["frame_index"] for item in manifest["checkpoints"]] == [0, 2, 4]
     assert [item["timestamp_ns"] for item in manifest["checkpoints"]] == [100, 300, 500]
     assert [
@@ -319,6 +324,77 @@ def test_exports_presence_intervals_and_byte_identical_repeat(tmp_path: Path) ->
         assert copied.is_file()
         assert hashlib.sha256(copied.read_bytes()).hexdigest() == source["sha256"]
         assert copied.stat().st_size == source["byte_count"]
+
+
+def test_artifact_is_byte_identical_across_distinct_source_roots(
+    tmp_path: Path,
+) -> None:
+    first_index, _ = _build_fixture(tmp_path / "source-a")
+    second_index, _ = _build_fixture(tmp_path / "source-b")
+
+    first_manifest = export_temporal_artifact(first_index, tmp_path / "output-a")
+    second_manifest = export_temporal_artifact(second_index, tmp_path / "output-b")
+
+    first_files = _artifact_files(first_manifest.parent)
+    second_files = _artifact_files(second_manifest.parent)
+    assert first_files == second_files
+    forbidden = (
+        str(first_index.parent.resolve()).encode(),
+        str(second_index.parent.resolve()).encode(),
+    )
+    assert all(
+        source_root not in content
+        for content in first_files.values()
+        for source_root in forbidden
+    )
+    for relative_path, content in first_files.items():
+        if relative_path.suffix != ".json":
+            continue
+        payload = json.loads(
+            content,
+            parse_constant=lambda value: (_ for _ in ()).throw(
+                ValueError(f"non-finite JSON constant: {value}")
+            ),
+        )
+        expected = (
+            json.dumps(
+                payload,
+                sort_keys=True,
+                separators=(",", ":"),
+                allow_nan=False,
+            )
+            + "\n"
+        ).encode()
+        assert content == expected, relative_path
+
+
+@pytest.mark.parametrize("nonfinite", [float("nan"), float("inf"), float("-inf")])
+def test_rejects_nonfinite_copied_json_sidecar(
+    tmp_path: Path,
+    nonfinite: float,
+) -> None:
+    index_path, payload = _build_fixture(tmp_path / "source")
+    capture_path = Path(payload["capture_status"]["path"])
+    capture = json.loads(capture_path.read_text(encoding="utf-8"))
+    capture["schema_version"] = nonfinite
+    capture_path.write_text(
+        json.dumps(capture, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    payload["capture_status"] = _record(capture_path)
+    _rewrite_index(index_path, payload)
+
+    with pytest.raises(ValueError, match="non-finite JSON"):
+        export_temporal_artifact(index_path, tmp_path / "output")
+
+
+def test_rejects_unknown_source_index_path_field(tmp_path: Path) -> None:
+    index_path, payload = _build_fixture(tmp_path / "source")
+    payload["unreviewed_cache_path"] = "/tmp/not-part-of-the-contract"
+    _rewrite_index(index_path, payload)
+
+    with pytest.raises(ValueError, match="source index fields"):
+        export_temporal_artifact(index_path, tmp_path / "output")
 
 
 def test_accepts_panoptic_checkpoint_and_trajectory_fixture(tmp_path: Path) -> None:
