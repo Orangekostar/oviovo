@@ -75,102 +75,122 @@ def _source_fingerprint(
     )
 
 
-def _owned_directory_identity(path: Path) -> tuple[int, int]:
-    status = os.lstat(path)
-    if not stat.S_ISDIR(status.st_mode):
-        raise ValueError("owned snapshot temporary is not a directory")
-    return status.st_dev, status.st_ino
-
-
-def _cleanup_owned_temporary(
-    original_path: Path,
-    identity: tuple[int, int],
-    *,
-    excluded_path: Path,
-) -> None:
+def _open_owned_directory(path: Path) -> tuple[int, tuple[int, int]]:
     flags = (
         os.O_RDONLY
         | getattr(os, "O_CLOEXEC", 0)
         | getattr(os, "O_DIRECTORY", 0)
         | getattr(os, "O_NOFOLLOW", 0)
     )
+    directory_fd = os.open(path, flags)
     try:
-        parent_fd = os.open(original_path.parent, flags)
+        opened = os.fstat(directory_fd)
+        named = os.lstat(path)
+        if not (
+            stat.S_ISDIR(opened.st_mode)
+            and stat.S_ISDIR(named.st_mode)
+            and (opened.st_dev, opened.st_ino) == (named.st_dev, named.st_ino)
+        ):
+            raise ValueError("owned snapshot temporary identity changed")
+        return directory_fd, (opened.st_dev, opened.st_ino)
+    except BaseException:
+        try:
+            os.close(directory_fd)
+        except OSError:
+            pass
+        raise
+
+
+def _bind_owned_member_at(
+    directory_fd: int,
+    name: str,
+) -> tuple[int, int, int, int, int]:
+    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    member_fd = os.open(name, flags, dir_fd=directory_fd)
+    try:
+        opened_before = os.fstat(member_fd)
+        named_before = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+        if not (
+            stat.S_ISREG(opened_before.st_mode)
+            and _source_fingerprint(opened_before) == _source_fingerprint(named_before)
+        ):
+            raise ValueError("owned snapshot member identity changed")
+        os.fsync(member_fd)
+        opened_after = os.fstat(member_fd)
+        named_after = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+        fingerprint = _source_fingerprint(opened_after)
+        if not (
+            fingerprint == _source_fingerprint(opened_before)
+            and fingerprint == _source_fingerprint(named_after)
+        ):
+            raise ValueError("owned snapshot member identity changed")
+        return fingerprint
+    finally:
+        os.close(member_fd)
+
+
+def _cleanup_bound_snapshot_members(
+    directory_fd: int,
+    directory_identity: tuple[int, int],
+    member_bindings: dict[str, tuple[int, int, int, int, int]],
+    *,
+    protected_path: Path,
+) -> None:
+    try:
+        directory = os.fstat(directory_fd)
     except OSError:
         return
-    try:
-        candidate_names = [original_path.name, *sorted(os.listdir(parent_fd))]
-        excluded_name = (
-            excluded_path.name
-            if excluded_path.parent == original_path.parent
-            else None
-        )
-        for candidate_name in dict.fromkeys(candidate_names):
-            if candidate_name == excluded_name:
-                continue
-            candidate = original_path.parent / candidate_name
-            try:
-                status = os.lstat(candidate)
-            except OSError:
-                continue
-            if not stat.S_ISDIR(status.st_mode) or (
-                (status.st_dev, status.st_ino) != identity
+    if (
+        not stat.S_ISDIR(directory.st_mode)
+        or (directory.st_dev, directory.st_ino) != directory_identity
+    ):
+        return
+
+    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    for name, expected in member_bindings.items():
+        member_fd: int | None = None
+        try:
+            member_fd = os.open(name, flags, dir_fd=directory_fd)
+            opened_before = os.fstat(member_fd)
+            named_before = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+            directory_before = os.fstat(directory_fd)
+            if not (
+                stat.S_ISREG(opened_before.st_mode)
+                and _source_fingerprint(opened_before) == expected
+                and _source_fingerprint(named_before) == expected
+                and (directory_before.st_dev, directory_before.st_ino)
+                == directory_identity
             ):
                 continue
+
+            opened_after = os.fstat(member_fd)
+            named_after = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+            directory_after = os.fstat(directory_fd)
             try:
-                candidate_fd = os.open(candidate_name, flags, dir_fd=parent_fd)
-            except OSError:
+                protected = os.lstat(protected_path)
+            except FileNotFoundError:
+                protected = None
+            if protected is not None and (
+                stat.S_ISDIR(protected.st_mode)
+                and (protected.st_dev, protected.st_ino) == directory_identity
+            ):
+                return
+            if not (
+                _source_fingerprint(opened_after) == expected
+                and _source_fingerprint(named_after) == expected
+                and (directory_after.st_dev, directory_after.st_ino)
+                == directory_identity
+            ):
                 continue
-            try:
-                opened = os.fstat(candidate_fd)
-                named = os.stat(
-                    candidate_name,
-                    dir_fd=parent_fd,
-                    follow_symlinks=False,
-                )
-                if (
-                    (opened.st_dev, opened.st_ino) != identity
-                    or (named.st_dev, named.st_ino) != identity
-                ):
-                    continue
-                removable = True
-                for member_name in os.listdir(candidate_fd):
-                    try:
-                        member = os.stat(
-                            member_name,
-                            dir_fd=candidate_fd,
-                            follow_symlinks=False,
-                        )
-                        if stat.S_ISDIR(member.st_mode):
-                            removable = False
-                            continue
-                        os.unlink(member_name, dir_fd=candidate_fd)
-                    except OSError:
-                        removable = False
-                if not removable:
-                    return
-                named = os.stat(
-                    candidate_name,
-                    dir_fd=parent_fd,
-                    follow_symlinks=False,
-                )
-                opened_after = os.fstat(candidate_fd)
-                if (
-                    (opened_after.st_dev, opened_after.st_ino) != identity
-                    or (named.st_dev, named.st_ino) != identity
-                ):
-                    return
+            os.unlink(name, dir_fd=directory_fd)
+        except OSError:
+            continue
+        finally:
+            if member_fd is not None:
                 try:
-                    os.rmdir(candidate_name, dir_fd=parent_fd)
+                    os.close(member_fd)
                 except OSError:
                     pass
-                return
-            finally:
-                os.close(candidate_fd)
-    except OSError:
-        return
-    finally:
-        os.close(parent_fd)
 
 
 def _read_source_member_at(
@@ -779,9 +799,12 @@ class VoxelMapSnapshot:
         temporary = Path(
             tempfile.mkdtemp(prefix=f".{target.name}.tmp-", dir=target.parent)
         )
-        temporary_identity = _owned_directory_identity(temporary)
-        published = False
+        temporary_fd: int | None = None
+        temporary_identity: tuple[int, int] | None = None
+        member_bindings: dict[str, tuple[int, int, int, int, int]] = {}
+        cleanup_before_publication = True
         try:
+            temporary_fd, temporary_identity = _open_owned_directory(temporary)
             data_files = cls._write_snapshot_files(
                 temporary,
                 metadata,
@@ -791,16 +814,14 @@ class VoxelMapSnapshot:
                 registry,
             )
             for name in (*data_files, "checksums.json"):
-                file_descriptor = os.open(temporary / name, os.O_RDONLY)
-                try:
-                    os.fsync(file_descriptor)
-                finally:
-                    os.close(file_descriptor)
-            cls._fsync_directory(temporary)
+                member_bindings[name] = _bind_owned_member_at(temporary_fd, name)
+            os.fsync(temporary_fd)
             staged_witness = SnapshotSourceWitness.capture_staged(
                 temporary,
                 data_files=data_files,
             )
+            if staged_witness.directory_fingerprint[:2] != temporary_identity:
+                raise ValueError("snapshot source identity changed before staged load")
             restored = cls.load(temporary)
             staged_witness.revalidate()
             witnessed_checksums = {
@@ -812,8 +833,8 @@ class VoxelMapSnapshot:
                 raise ValueError("snapshot source content changed during staged load")
             staged_witness = replace(staged_witness, path=target)
 
+            cleanup_before_publication = False
             cls._publish_directory_no_replace(temporary, target)
-            published = True
             try:
                 source_witness = staged_witness.bind_published()
             except Exception as publication_error:
@@ -828,12 +849,22 @@ class VoxelMapSnapshot:
                 source_witness=source_witness,
             )
         finally:
-            if not published:
-                _cleanup_owned_temporary(
-                    temporary,
+            if (
+                cleanup_before_publication
+                and temporary_fd is not None
+                and temporary_identity is not None
+            ):
+                _cleanup_bound_snapshot_members(
+                    temporary_fd,
                     temporary_identity,
-                    excluded_path=target,
+                    member_bindings,
+                    protected_path=target,
                 )
+            if temporary_fd is not None:
+                try:
+                    os.close(temporary_fd)
+                except OSError:
+                    pass
 
     @classmethod
     def load(cls, snapshot_dir: str | Path) -> "VoxelMapSnapshot":

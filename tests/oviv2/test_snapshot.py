@@ -71,6 +71,12 @@ def _snapshot_state(path: Path) -> tuple[int, dict[str, tuple[bytes, int, str]]]
     )
 
 
+def _single_preserved_staging_directory(parent: Path) -> Path:
+    staged = list(parent.glob(".snapshot.tmp-*"))
+    assert len(staged) == 1
+    return staged[0]
+
+
 def _dense_provenance() -> DenseSemanticProvenance:
     return DenseSemanticProvenance(
         backend="radseg",
@@ -293,7 +299,9 @@ def test_commit_new_rejects_self_consistent_temp_reown_after_load(
         source = Path(snapshot_dir)
         restored = original_load(source)
         if source.name.startswith(".snapshot.tmp-") and not replaced:
-            source.rename(tmp_path / "captured-original")
+            captured = tmp_path / "captured-original"
+            displaced = tmp_path / "captured-twice"
+            source.rename(captured)
             if replacement_mode == "copy":
                 shutil.copytree(alternate.path, source)
             else:
@@ -304,6 +312,7 @@ def test_commit_new_rejects_self_consistent_temp_reown_after_load(
                 "must survive",
                 encoding="utf-8",
             )
+            captured.rename(displaced)
             replaced = True
         return restored
 
@@ -325,76 +334,88 @@ def test_commit_new_rejects_self_consistent_temp_reown_after_load(
 
     assert replaced is True
     assert not target.exists()
-    assert (tmp_path / "captured-original").exists() is False
+    displaced = tmp_path / "captured-twice"
+    assert displaced.is_dir()
+    assert list(displaced.iterdir()) == []
     assert (next(tmp_path.glob(".snapshot.tmp-*")) / "foreign-sentinel.txt").read_text(
         encoding="utf-8"
     ) == "must survive"
 
 
-def test_cleanup_owned_temporary_preserves_candidate_replaced_after_identity_check(
+def test_commit_new_cleanup_preserves_unknown_foreign_member(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    temporary = tmp_path / ".snapshot.tmp-owned"
-    temporary.mkdir()
-    (temporary / "owned.bin").write_bytes(b"owned")
-    identity = snapshot_module._owned_directory_identity(temporary)
-    displaced = tmp_path / "displaced-owned"
-    original_lstat = snapshot_module.os.lstat
-    attacked = False
+    metadata, geometry, evidence, ownership = _components()
+    original_load = VoxelMapSnapshot.load
 
-    def replace_after_lstat(path: object, *args: object, **kwargs: object):
-        nonlocal attacked
-        status = original_lstat(path, *args, **kwargs)
-        if not attacked and Path(path) == temporary:
-            temporary.rename(displaced)
-            temporary.mkdir()
-            (temporary / "foreign-sentinel.txt").write_text(
+    def inject_foreign_member_then_fail(
+        _cls,
+        snapshot_dir: str | Path,
+    ) -> VoxelMapSnapshot:
+        source = Path(snapshot_dir)
+        if source.name.startswith(".snapshot.tmp-"):
+            (source / "foreign-sentinel.txt").write_text(
                 "must survive",
                 encoding="utf-8",
             )
-            attacked = True
-        return status
+            raise RuntimeError("injected pre-publication failure")
+        return original_load(source)
 
-    monkeypatch.setattr(snapshot_module.os, "lstat", replace_after_lstat)
-
-    snapshot_module._cleanup_owned_temporary(
-        temporary,
-        identity,
-        excluded_path=tmp_path / "target",
+    monkeypatch.setattr(
+        VoxelMapSnapshot,
+        "load",
+        classmethod(inject_foreign_member_then_fail),
     )
 
-    assert attacked is True
-    assert (temporary / "foreign-sentinel.txt").read_text(encoding="utf-8") == (
-        "must survive"
-    )
-    assert (displaced / "owned.bin").read_bytes() == b"owned"
+    with pytest.raises(RuntimeError, match="pre-publication failure"):
+        VoxelMapSnapshot.commit_new(
+            tmp_path / "snapshot",
+            metadata,
+            geometry,
+            evidence,
+            ownership,
+        )
+
+    staged = _single_preserved_staging_directory(tmp_path)
+    assert [path.name for path in staged.iterdir()] == ["foreign-sentinel.txt"]
 
 
-def test_cleanup_owned_temporary_is_best_effort(
+def test_commit_new_cleanup_never_removes_replacement_directory(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    temporary = tmp_path / ".snapshot.tmp-owned"
-    temporary.mkdir()
-    (temporary / "owned.bin").write_bytes(b"owned")
-    identity = snapshot_module._owned_directory_identity(temporary)
-    original_listdir = snapshot_module.os.listdir
+    metadata, geometry, evidence, ownership = _components()
+    displaced = tmp_path / "displaced-owned-stage"
+    def replace_stage_then_fail(
+        _cls,
+        snapshot_dir: str | Path,
+    ) -> VoxelMapSnapshot:
+        source = Path(snapshot_dir)
+        source.rename(displaced)
+        source.mkdir()
+        raise RuntimeError("injected stage replacement")
 
-    def fail_anchored_listdir(path: object):
-        if isinstance(path, int):
-            raise OSError("injected cleanup list failure")
-        return original_listdir(path)
-
-    monkeypatch.setattr(snapshot_module.os, "listdir", fail_anchored_listdir)
-
-    snapshot_module._cleanup_owned_temporary(
-        temporary,
-        identity,
-        excluded_path=tmp_path / "target",
+    monkeypatch.setattr(
+        VoxelMapSnapshot,
+        "load",
+        classmethod(replace_stage_then_fail),
     )
 
-    assert (temporary / "owned.bin").read_bytes() == b"owned"
+    with pytest.raises(RuntimeError, match="stage replacement"):
+        VoxelMapSnapshot.commit_new(
+            tmp_path / "snapshot",
+            metadata,
+            geometry,
+            evidence,
+            ownership,
+        )
+
+    replacement = _single_preserved_staging_directory(tmp_path)
+    assert replacement.is_dir()
+    assert list(replacement.iterdir()) == []
+    assert displaced.is_dir()
+    assert list(displaced.iterdir()) == []
 
 
 def test_snapshot_publication_uncertain_error_is_publicly_exported() -> None:
@@ -439,10 +460,11 @@ def test_snapshot_commit_new_existing_target_is_byte_for_byte_unchanged(
 
     assert _snapshot_state(target) == before
     assert VoxelMapSnapshot.load(target).metadata == metadata
-    assert list(tmp_path.glob(".snapshot.tmp-*")) == []
+    staged = _single_preserved_staging_directory(tmp_path)
+    assert VoxelMapSnapshot.load(staged).metadata.revision == 2
 
 
-def test_snapshot_commit_new_publication_failure_leaves_no_target_or_temp(
+def test_snapshot_commit_new_publication_failure_preserves_staged_snapshot(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -468,10 +490,11 @@ def test_snapshot_commit_new_publication_failure_leaves_no_target_or_temp(
         )
 
     assert not target.exists()
-    assert list(tmp_path.glob(".snapshot.tmp-*")) == []
+    staged = _single_preserved_staging_directory(tmp_path)
+    assert VoxelMapSnapshot.load(staged).metadata == metadata
 
 
-def test_snapshot_commit_new_staging_failure_leaves_no_target_or_temp(
+def test_snapshot_commit_new_staging_failure_preserves_partial_snapshot(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -500,7 +523,13 @@ def test_snapshot_commit_new_staging_failure_leaves_no_target_or_temp(
         )
 
     assert not target.exists()
-    assert list(tmp_path.glob(".snapshot.tmp-*")) == []
+    staged = _single_preserved_staging_directory(tmp_path)
+    assert {path.name for path in staged.iterdir()} == {
+        "metadata.json",
+        "geometry.npz",
+        "evidence.npz",
+        "ownership.npz",
+    }
 
 
 def test_snapshot_commit_new_falls_back_without_renameat2(
@@ -595,7 +624,8 @@ def test_snapshot_commit_new_fallback_preserves_existing_nonempty_target(
 
     assert _snapshot_state(target) == before
     assert VoxelMapSnapshot.load(target).metadata == metadata
-    assert list(tmp_path.glob(".snapshot.tmp-*")) == []
+    staged = _single_preserved_staging_directory(tmp_path)
+    assert VoxelMapSnapshot.load(staged).metadata.revision == 2
 
 
 def test_snapshot_commit_new_fallback_intermediate_failure_preserves_reservation(
@@ -630,7 +660,8 @@ def test_snapshot_commit_new_fallback_intermediate_failure_preserves_reservation
     assert raised.value.published is None
     assert target.is_dir()
     assert list(target.iterdir()) == []
-    assert list(tmp_path.glob(".snapshot.tmp-*")) == []
+    staged = _single_preserved_staging_directory(tmp_path)
+    assert VoxelMapSnapshot.load(staged).metadata == metadata
 
 
 def test_snapshot_commit_new_parent_fsync_failure_reports_published_uncertain_target(
@@ -742,7 +773,7 @@ def test_snapshot_commit_new_never_deletes_concurrently_replaced_target(
     assert list(tmp_path.glob(".snapshot.tmp-*")) == []
 
 
-def test_snapshot_commit_new_pre_publish_load_failure_cleans_target_and_allows_retry(
+def test_snapshot_commit_new_pre_publish_load_failure_scrubs_owned_stage_and_allows_retry(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -781,7 +812,8 @@ def test_snapshot_commit_new_pre_publish_load_failure_cleans_target_and_allows_r
         )
 
     assert not target.exists()
-    assert list(tmp_path.glob(".snapshot.tmp-*")) == []
+    staged = _single_preserved_staging_directory(tmp_path)
+    assert list(staged.iterdir()) == []
 
     retried = VoxelMapSnapshot.commit_new(
         target,
@@ -791,6 +823,7 @@ def test_snapshot_commit_new_pre_publish_load_failure_cleans_target_and_allows_r
         ownership,
     )
     assert retried.metadata == metadata
+    assert list(staged.iterdir()) == []
 
 
 def test_snapshot_commit_new_race_has_exactly_one_winner(
@@ -838,7 +871,11 @@ def test_snapshot_commit_new_race_has_exactly_one_winner(
     assert len(failures) == 1
     assert isinstance(failures[0], FileExistsError)
     assert VoxelMapSnapshot.load(target).metadata == successes[0].metadata
-    assert list(tmp_path.glob(".snapshot.tmp-*")) == []
+    staged = _single_preserved_staging_directory(tmp_path)
+    assert {
+        VoxelMapSnapshot.load(target).metadata.revision,
+        VoxelMapSnapshot.load(staged).metadata.revision,
+    } == {1, 2}
 
 
 def test_snapshot_commit_new_fallback_race_has_exactly_one_winner(
@@ -878,7 +915,11 @@ def test_snapshot_commit_new_fallback_race_has_exactly_one_winner(
     assert len(failures) == 1
     assert isinstance(failures[0], FileExistsError)
     assert VoxelMapSnapshot.load(target).metadata == successes[0].metadata
-    assert list(tmp_path.glob(".snapshot.tmp-*")) == []
+    staged = _single_preserved_staging_directory(tmp_path)
+    assert {
+        VoxelMapSnapshot.load(target).metadata.revision,
+        VoxelMapSnapshot.load(staged).metadata.revision,
+    } == {1, 2}
 
 
 def test_v2_snapshot_embeds_registry_and_hashes_entities(tmp_path: Path) -> None:
