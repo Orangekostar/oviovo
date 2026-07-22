@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, replace
 import gc
 import hashlib
@@ -7,6 +8,7 @@ import io
 import json
 import os
 from pathlib import Path
+import threading
 import weakref
 import zipfile
 
@@ -69,6 +71,10 @@ def _tree_bytes(root: Path) -> dict[str, bytes]:
         for path in sorted(root.iterdir())
         if path.is_file()
     }
+
+
+def _staging_path(target: Path) -> Path:
+    return target.parent / f".{target.name}.compact-staging"
 
 
 def _rewrite_ownership_archive(
@@ -148,6 +154,8 @@ def test_compact_checkpoint_round_trip_is_exact_and_byte_deterministic(
         "checksums.json",
     }
     assert _tree_bytes(tmp_path / "first") == _tree_bytes(tmp_path / "second")
+    assert not _staging_path(tmp_path / "first").exists()
+    assert not _staging_path(tmp_path / "second").exists()
     assert first.metadata.format == COMPACT_OWNERSHIP_FORMAT
     assert first.metadata.schema_version == 1
     assert asdict(first.metadata.dense_semantic_provenance) == asdict(_provenance())
@@ -617,7 +625,7 @@ def test_compact_checkpoint_commit_close_failure_does_not_mask_writer_failure(
         )
 
     assert not target.exists()
-    assert not list(parent.glob(".checkpoint.tmp-*"))
+    assert _staging_path(target).is_dir()
 
 
 def test_compact_checkpoint_file_close_failure_does_not_mask_write_failure(
@@ -642,7 +650,70 @@ def test_compact_checkpoint_file_close_failure_does_not_mask_write_failure(
     finally:
         real_close(directory_fd)
 
-    assert not (tmp_path / "member").exists()
+    assert (tmp_path / "member").is_file()
+
+
+def test_compact_checkpoint_failed_staging_is_single_slot_and_blocks_retry(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    target = tmp_path / "checkpoint"
+    writer_calls = 0
+
+    def fail_writer(*_args: object, **_kwargs: object) -> tuple[int, int]:
+        nonlocal writer_calls
+        writer_calls += 1
+        raise RuntimeError("injected writer failure")
+
+    monkeypatch.setattr(compact_module, "_write_regular_at", fail_writer)
+
+    with pytest.raises(RuntimeError, match="injected writer failure"):
+        CompactOwnershipCheckpoint.commit_new(target, _metadata(), _ownership())
+    with pytest.raises(FileExistsError):
+        CompactOwnershipCheckpoint.commit_new(target, _metadata(), _ownership())
+
+    assert writer_calls == 1
+    assert not target.exists()
+    assert _staging_path(target).is_dir()
+    assert not list(tmp_path.glob(".checkpoint.tmp-*"))
+
+
+def test_compact_checkpoint_concurrent_commits_are_no_clobber_and_single_slot(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    target = tmp_path / "checkpoint"
+    barrier = threading.Barrier(2)
+
+    def synchronize(stage: str) -> None:
+        if stage == "after_parent_check":
+            barrier.wait(timeout=10.0)
+
+    def attempt() -> str:
+        try:
+            CompactOwnershipCheckpoint.commit_new(
+                target,
+                _metadata(),
+                _ownership(),
+            )
+        except FileExistsError:
+            return "exists"
+        return "committed"
+
+    monkeypatch.setattr(compact_module, "_publication_test_hook", synchronize)
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        outcomes = list(executor.map(lambda _index: attempt(), range(2)))
+
+    assert sorted(outcomes) == ["committed", "exists"]
+    CompactOwnershipCheckpoint.load(target)
+    staging = _staging_path(target)
+    if staging.exists():
+        assert {path.name for path in staging.iterdir()} == {
+            "metadata.json",
+            "ownership.npz",
+            "checksums.json",
+        }
+    assert not list(tmp_path.glob(".checkpoint.tmp-*"))
 
 
 def test_compact_checkpoint_directory_close_failure_does_not_mask_open_failure(
@@ -898,7 +969,8 @@ def test_compact_checkpoint_writer_rejects_parent_swap_before_publication(
     assert (parent / "foreign.txt").read_text(encoding="utf-8") == "do not delete"
     assert not (parent / "checkpoint").exists()
     assert not (old_parent / "checkpoint").exists()
-    assert not list(old_parent.glob(".checkpoint.tmp-*"))
+    old_staging = _staging_path(old_parent / "checkpoint")
+    assert old_staging.exists() is (swap_stage != "after_parent_check")
 
 
 def test_compact_checkpoint_parent_swap_after_rename_is_publication_uncertain(
@@ -968,7 +1040,7 @@ def test_compact_checkpoint_rename_race_is_no_clobber_and_preserves_foreign_targ
     assert (parent / "checkpoint/foreign.txt").read_text(encoding="utf-8") == (
         "do not delete"
     )
-    assert not list(parent.glob(".checkpoint.tmp-*"))
+    assert _staging_path(parent / "checkpoint").is_dir()
 
 
 def test_compact_checkpoint_rename_helper_rechecks_parent_before_syscall(
@@ -1005,7 +1077,7 @@ def test_compact_checkpoint_rename_helper_rechecks_parent_before_syscall(
 
     assert (parent / "foreign.txt").read_text(encoding="utf-8") == "do not delete"
     assert not (old_parent / "checkpoint").exists()
-    assert not list(old_parent.glob(".checkpoint.tmp-*"))
+    assert _staging_path(old_parent / "checkpoint").is_dir()
 
 
 def test_compact_checkpoint_rename_helper_rejects_replaced_temp_inode(
@@ -1039,13 +1111,13 @@ def test_compact_checkpoint_rename_helper_rejects_replaced_temp_inode(
     with pytest.raises(ValueError, match="temporary source identity changed"):
         CompactOwnershipCheckpoint.commit_new(
             parent / "checkpoint", _metadata(), _ownership()
-        )
+    )
 
     assert not (parent / "checkpoint").exists()
-    assert not (parent / saved_name).exists()
-    foreign_temps = list(parent.glob(".checkpoint.tmp-*"))
-    assert len(foreign_temps) == 1
-    assert {path.name for path in foreign_temps[0].iterdir()} == {
+    assert (parent / saved_name).is_dir()
+    foreign_staging = _staging_path(parent / "checkpoint")
+    assert foreign_staging.is_dir()
+    assert {path.name for path in foreign_staging.iterdir()} == {
         "metadata.json",
         "ownership.npz",
         "checksums.json",
@@ -1073,7 +1145,7 @@ def test_compact_checkpoint_replaced_temp_after_stat_is_uncertain(
             source_names = [
                 name
                 for name in os.listdir(parent_fd)
-                if name.startswith(".checkpoint.tmp-")
+                if name == ".checkpoint.compact-staging"
             ]
             assert len(source_names) == 1
             _replace_directory_with_hardlinked_members(
@@ -1111,7 +1183,7 @@ def test_compact_checkpoint_replaced_temp_after_stat_is_uncertain(
     "failure_point",
     ["open", "stat_before_open", "fstat", "stat_after_open"],
 )
-def test_compact_checkpoint_temp_creation_failure_leaks_nothing(
+def test_compact_checkpoint_temp_creation_failure_preserves_single_stage(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     failure_point: str,
@@ -1125,8 +1197,9 @@ def test_compact_checkpoint_temp_creation_failure_leaks_nothing(
     temporary_stat_calls = 0
 
     def is_temporary_name(path: object) -> bool:
-        return isinstance(path, (str, bytes)) and os.fsdecode(path).startswith(
-            ".checkpoint.tmp-"
+        return (
+            isinstance(path, (str, bytes))
+            and os.fsdecode(path) == ".checkpoint.compact-staging"
         )
 
     def controlled_open(path: object, *args: object, **kwargs: object) -> int:
@@ -1161,6 +1234,7 @@ def test_compact_checkpoint_temp_creation_failure_leaks_nothing(
             parent / "checkpoint", _metadata(), _ownership()
         )
 
+    assert _staging_path(parent / "checkpoint").is_dir()
     assert not list(parent.glob(".checkpoint.tmp-*"))
     for descriptor in temporary_fds:
         with pytest.raises(OSError):

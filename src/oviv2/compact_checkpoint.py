@@ -9,7 +9,6 @@ import io
 import json
 import os
 from pathlib import Path
-import secrets
 import stat
 import struct
 from typing import Any
@@ -286,50 +285,41 @@ def _create_temporary_directory_at(
     parent_fd: int,
     target_name: str,
 ) -> tuple[str, int, tuple[int, int]]:
-    prefix = f".{_require_basename(target_name, label='target name')}.tmp-"
-    for _ in range(128):
-        temporary_name = prefix + secrets.token_hex(12)
-        temporary_fd: int | None = None
-        try:
-            os.mkdir(temporary_name, mode=0o700, dir_fd=parent_fd)
-        except FileExistsError:
-            continue
-        try:
-            created = os.stat(
-                temporary_name,
-                dir_fd=parent_fd,
-                follow_symlinks=False,
+    target_name = _require_basename(target_name, label="target name")
+    temporary_name = f".{target_name}.compact-staging"
+    temporary_fd: int | None = None
+    os.mkdir(temporary_name, mode=0o700, dir_fd=parent_fd)
+    try:
+        created = os.stat(
+            temporary_name,
+            dir_fd=parent_fd,
+            follow_symlinks=False,
+        )
+        created_identity = _identity(created)
+        temporary_fd = os.open(
+            temporary_name,
+            _DIRECTORY_OPEN_FLAGS,
+            dir_fd=parent_fd,
+        )
+        opened = os.fstat(temporary_fd)
+        named = os.stat(
+            temporary_name,
+            dir_fd=parent_fd,
+            follow_symlinks=False,
+        )
+        if (
+            not stat.S_ISDIR(named.st_mode)
+            or _identity(opened) != created_identity
+            or _identity(named) != created_identity
+        ):
+            raise ValueError(
+                "compact checkpoint temporary directory identity changed"
             )
-            created_identity = _identity(created)
-            temporary_fd = os.open(
-                temporary_name,
-                _DIRECTORY_OPEN_FLAGS,
-                dir_fd=parent_fd,
-            )
-            opened = os.fstat(temporary_fd)
-            named = os.stat(
-                temporary_name,
-                dir_fd=parent_fd,
-                follow_symlinks=False,
-            )
-            if (
-                not stat.S_ISDIR(named.st_mode)
-                or _identity(opened) != created_identity
-                or _identity(named) != created_identity
-            ):
-                raise ValueError(
-                    "compact checkpoint temporary directory identity changed"
-                )
-            return temporary_name, temporary_fd, _identity(opened)
-        except BaseException:
-            if temporary_fd is not None:
-                _close_best_effort(temporary_fd)
-            try:
-                os.rmdir(temporary_name, dir_fd=parent_fd)
-            except OSError:
-                pass
-            raise
-    raise FileExistsError("could not reserve a unique compact checkpoint temp name")
+        return temporary_name, temporary_fd, _identity(opened)
+    except BaseException:
+        if temporary_fd is not None:
+            _close_best_effort(temporary_fd)
+        raise
 
 
 def _write_regular_at(
@@ -343,8 +333,6 @@ def _write_regular_at(
         0o600,
         dir_fd=directory_fd,
     )
-    identity: tuple[int, int] | None = None
-    succeeded = False
     try:
         identity = _identity(os.fstat(descriptor))
         remaining = memoryview(content)
@@ -356,21 +344,9 @@ def _write_regular_at(
         os.fsync(descriptor)
         if _identity(os.fstat(descriptor)) != identity:
             raise ValueError(f"compact checkpoint file identity changed: {name}")
-        succeeded = True
         return identity
     finally:
         _close_best_effort(descriptor)
-        if not succeeded and identity is not None:
-            try:
-                current = os.stat(
-                    name,
-                    dir_fd=directory_fd,
-                    follow_symlinks=False,
-                )
-                if _identity(current) == identity:
-                    os.unlink(name, dir_fd=directory_fd)
-            except OSError:
-                pass
 
 
 def _rename_directory_no_replace_at(
@@ -442,57 +418,6 @@ def _rename_directory_no_replace_at(
         f"{os.strerror(error_number)}",
         f"{source_name} -> {target_name}",
     )
-
-
-def _cleanup_owned_temporary(
-    parent_fd: int,
-    temporary_fd: int,
-    temporary_name: str,
-    temporary_identity: tuple[int, int],
-    owned_files: dict[str, tuple[int, int]],
-    *,
-    scan_parent_for_identity: bool = False,
-) -> None:
-    for name, expected_identity in owned_files.items():
-        try:
-            current = os.stat(name, dir_fd=temporary_fd, follow_symlinks=False)
-        except OSError:
-            continue
-        if _identity(current) != expected_identity:
-            continue
-        try:
-            os.unlink(name, dir_fd=temporary_fd)
-        except OSError:
-            pass
-    candidate_names = [temporary_name]
-    if scan_parent_for_identity:
-        try:
-            candidate_names.extend(os.listdir(parent_fd))
-        except OSError:
-            pass
-    for candidate_name in dict.fromkeys(candidate_names):
-        try:
-            candidate_name = _require_basename(
-                candidate_name,
-                label="temporary cleanup candidate",
-            )
-            named = os.stat(
-                candidate_name,
-                dir_fd=parent_fd,
-                follow_symlinks=False,
-            )
-        except (OSError, ValueError):
-            continue
-        if (
-            not stat.S_ISDIR(named.st_mode)
-            or _identity(named) != temporary_identity
-        ):
-            continue
-        try:
-            os.rmdir(candidate_name, dir_fd=parent_fd)
-        except OSError:
-            pass
-        return
 
 
 def _reject_symlink_components(path: Path, *, label: str) -> None:
@@ -1286,9 +1211,7 @@ class CompactOwnershipCheckpoint:
         temporary_name: str | None = None
         temporary_fd: int | None = None
         temporary_identity: tuple[int, int] | None = None
-        owned_files: dict[str, tuple[int, int]] = {}
         published = False
-        scan_parent_for_temporary_identity = False
         try:
             parent_status = os.fstat(parent_fd)
             parent_fingerprint = _fingerprint(parent_status)
@@ -1334,7 +1257,7 @@ class CompactOwnershipCheckpoint:
                 else None
             )
             for name, content in files.items():
-                owned_files[name] = _write_regular_at(
+                _write_regular_at(
                     temporary_fd,
                     name,
                     content,
@@ -1425,9 +1348,6 @@ class CompactOwnershipCheckpoint:
                 checksums=dict(checksums),
                 source_witness=witness,
             )
-        except _TemporarySourceIdentityChanged:
-            scan_parent_for_temporary_identity = True
-            raise
         except CompactCheckpointPublicationUncertainError:
             raise
         except Exception as error:
@@ -1438,20 +1358,6 @@ class CompactOwnershipCheckpoint:
                 ) from error
             raise
         finally:
-            if (
-                not published
-                and temporary_name is not None
-                and temporary_fd is not None
-                and temporary_identity is not None
-            ):
-                _cleanup_owned_temporary(
-                    parent_fd,
-                    temporary_fd,
-                    temporary_name,
-                    temporary_identity,
-                    owned_files,
-                    scan_parent_for_identity=scan_parent_for_temporary_identity,
-                )
             if temporary_fd is not None:
                 _close_best_effort(temporary_fd)
             _close_best_effort(parent_fd)
