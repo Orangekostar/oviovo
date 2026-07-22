@@ -78,10 +78,13 @@ def _file_record(path: Path) -> dict[str, object]:
     resolved = path.resolve()
     try:
         serialized_path = resolved.relative_to(ROOT).as_posix()
+        path_base = "repository"
     except ValueError:
         serialized_path = str(resolved)
+        path_base = "absolute"
     return {
         "path": serialized_path,
+        "path_base": path_base,
         "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
         "byte_count": path.stat().st_size,
     }
@@ -236,6 +239,8 @@ def _write_generation_fixture(root: Path) -> tuple[Path, Path]:
         encoding="utf-8",
     )
     schedule = root / "schedule.json"
+    schedule_source_record = _file_record(source_manifest)
+    schedule_source_record.pop("path_base")
     schedule.write_text(
         json.dumps(
             {
@@ -243,7 +248,7 @@ def _write_generation_fixture(root: Path) -> tuple[Path, Path]:
                 "manifest_id": "tesse_cd_causal_schedule_v2",
                 "dataset": "TESSE-CD",
                 "method_predictions_used": False,
-                "source_manifest": _file_record(source_manifest),
+                "source_manifest": schedule_source_record,
                 "scenes": schedule_scenes,
             },
             sort_keys=True,
@@ -687,6 +692,8 @@ def test_checked_in_manifest_is_explicitly_contract_only_and_hash_bound() -> Non
     assert "targets" not in payload
     assert payload["source_manifest"] == _file_record(SOURCE_MANIFEST)
     assert payload["schedule"] == _file_record(SCHEDULE)
+    assert payload["source_manifest"]["path_base"] == "repository"
+    assert payload["schedule"]["path_base"] == "repository"
     assert not Path(payload["source_manifest"]["path"]).is_absolute()
     assert not Path(payload["schedule"]["path"]).is_absolute()
     assert str(ROOT) not in CONTRACT_MANIFEST.read_text(encoding="utf-8")
@@ -703,10 +710,14 @@ def test_checked_in_manifest_is_explicitly_contract_only_and_hash_bound() -> Non
             declaration = files[manifest_name]
             expected_ground_truth[f"{scene}.{source_name}"] = {
                 "path": str(Path(declaration["path"]).resolve()),
+                "path_base": "absolute",
                 "sha256": declaration["sha256"],
                 "byte_count": declaration["size_bytes"],
             }
     assert payload["ground_truth_sources"] == expected_ground_truth
+    assert {
+        record["path_base"] for record in payload["ground_truth_sources"].values()
+    } == {"absolute"}
 
     binding = {
         "source_manifest": payload["source_manifest"],
@@ -811,6 +822,12 @@ def test_deterministic_target_package_has_equal_npz_and_manifest_hashes(
     assert payload["target_arrays"]["sha256"] == hashlib.sha256(
         (first.parent / "targets.npz").read_bytes()
     ).hexdigest()
+    assert payload["sources"] == [
+        {
+            **_file_record(source),
+            "path_base": "absolute",
+        }
+    ]
 
 
 def test_confirmed_free_checkpoint_may_be_empty_before_space_is_observed(

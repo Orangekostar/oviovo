@@ -114,10 +114,38 @@ def _declared_file(
     *,
     label: str,
     base: Path | None = None,
+    repository_root: Path | None = None,
 ) -> tuple[Path, dict[str, object]]:
     source = _mapping(declaration, f"{label} declaration")
-    raw = Path(str(source.get("path", "")))
-    path = raw if raw.is_absolute() else (base / raw if base is not None else raw)
+    raw_value = source.get("path")
+    if not isinstance(raw_value, str) or not raw_value:
+        raise ValueError(f"{label} path must be a non-empty string")
+    raw = Path(raw_value)
+    path_base = source.get("path_base")
+    if path_base is None:
+        path = raw if raw.is_absolute() else (base / raw if base is not None else raw)
+    elif path_base == "repository":
+        if raw.is_absolute():
+            raise ValueError(f"{label} repository path must be relative")
+        if ".." in raw.parts:
+            raise ValueError(f"{label} repository path must not escape repository root")
+        root = ROOT if repository_root is None else repository_root
+        resolved_root = root.resolve(strict=True)
+        if resolved_root != root.absolute() or not resolved_root.is_dir():
+            raise ValueError("repository root must be a direct directory")
+        path = resolved_root / raw
+        try:
+            path.resolve(strict=True).relative_to(resolved_root)
+        except (OSError, ValueError) as error:
+            raise ValueError(
+                f"{label} repository path must not escape repository root"
+            ) from error
+    elif path_base == "absolute":
+        if not raw.is_absolute():
+            raise ValueError(f"{label} absolute path_base requires an absolute path")
+        path = raw
+    else:
+        raise ValueError(f"{label} has unknown path_base: {path_base!r}")
     record = _file_record(path)
     declared_byte_count = source.get("byte_count")
     if type(declared_byte_count) is not int or declared_byte_count < 0:
@@ -126,7 +154,7 @@ def _declared_file(
         raise ValueError(f"{label} SHA256 mismatch")
     if declared_byte_count != record["byte_count"]:
         raise ValueError(f"{label} byte count mismatch")
-    return path, record
+    return path.resolve(strict=True), record
 
 
 def _validate_index(index: Mapping[str, Any]) -> None:

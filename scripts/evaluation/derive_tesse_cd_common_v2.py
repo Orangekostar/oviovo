@@ -551,10 +551,13 @@ def _file_record(path: Path) -> dict[str, Any]:
     resolved = path.resolve()
     try:
         serialized_path = resolved.relative_to(REPO_ROOT).as_posix()
+        path_base = "repository"
     except ValueError:
         serialized_path = str(resolved)
+        path_base = "absolute"
     return {
         "path": serialized_path,
+        "path_base": path_base,
         "sha256": digest.hexdigest(),
         "byte_count": byte_count,
     }
@@ -660,12 +663,15 @@ def load_generation_contract(
         raise ValueError("source manifest does not match canonical source identity")
 
     schedule_payload = json.loads(schedule.read_text(encoding="utf-8"))
+    legacy_source_record = dict(source_record)
+    legacy_source_record.pop("path_base")
+    declared_source_record = schedule_payload.get("source_manifest")
     if not (
         schedule_payload.get("schema_version") == 2
         and schedule_payload.get("manifest_id") == "tesse_cd_causal_schedule_v2"
         and schedule_payload.get("dataset") == "TESSE-CD"
         and schedule_payload.get("method_predictions_used") is False
-        and schedule_payload.get("source_manifest") == source_record
+        and declared_source_record in (source_record, legacy_source_record)
     ):
         raise ValueError("schedule is not bound to the canonical source manifest")
 

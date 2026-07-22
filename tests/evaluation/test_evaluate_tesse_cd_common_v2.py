@@ -496,6 +496,97 @@ def test_load_targets_accepts_checked_schedule_bytes_at_distinct_paths(
     assert temporal_record["sha256"] == OFFICIAL_SCHEDULE_SHA256
 
 
+def test_load_targets_resolves_repository_scoped_schedule_after_relocation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _, targets = _fixture(tmp_path / "source")
+    repository_root = tmp_path / "relocated-repository"
+    relative_schedule = Path(
+        "configs/evaluation/manifests/tesse_cd_causal_schedule_v2.json"
+    )
+    relocated_schedule = repository_root / relative_schedule
+    relocated_schedule.parent.mkdir(parents=True)
+    source_schedule = tmp_path / "source" / "schedule.json"
+    relocated_schedule.write_bytes(source_schedule.read_bytes())
+    payload = json.loads(targets.read_text(encoding="utf-8"))
+    payload["metadata"]["schedule"] = {
+        **_record(relocated_schedule),
+        "path": relative_schedule.as_posix(),
+        "path_base": "repository",
+    }
+    _write_json(targets, payload)
+    monkeypatch.setattr(evaluator_module, "ROOT", repository_root)
+
+    arrays, _, metadata = evaluator_module._load_targets(
+        targets,
+        schedule_record=_record(relocated_schedule),
+    )
+
+    assert arrays
+    assert metadata["schedule"]["path_base"] == "repository"
+
+
+def test_declared_file_accepts_explicit_absolute_external_path(tmp_path: Path) -> None:
+    source = tmp_path / "external.json"
+    source.write_text("{}\n", encoding="utf-8")
+    declaration = {**_record(source), "path_base": "absolute"}
+
+    path, record = evaluator_module._declared_file(
+        declaration,
+        label="external source",
+    )
+
+    assert path == source.resolve()
+    assert record == _record(source)
+
+
+def test_declared_file_rejects_absolute_path_with_repository_scope(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "source.json"
+    source.write_text("{}\n", encoding="utf-8")
+    declaration = {**_record(source), "path_base": "repository"}
+
+    with pytest.raises(ValueError, match="repository.*relative"):
+        evaluator_module._declared_file(
+            declaration,
+            label="repository source",
+            base=tmp_path,
+        )
+
+
+def test_declared_file_rejects_repository_scope_escape(tmp_path: Path) -> None:
+    repository_root = tmp_path / "repository"
+    repository_root.mkdir()
+    source = tmp_path / "outside.json"
+    source.write_text("{}\n", encoding="utf-8")
+    declaration = {
+        **_record(source),
+        "path": "../outside.json",
+        "path_base": "repository",
+    }
+
+    with pytest.raises(ValueError, match="repository.*escape"):
+        evaluator_module._declared_file(
+            declaration,
+            label="repository source",
+            base=repository_root,
+            repository_root=repository_root,
+        )
+
+
+def test_declared_file_rejects_unknown_path_base(tmp_path: Path) -> None:
+    source = tmp_path / "source.json"
+    source.write_text("{}\n", encoding="utf-8")
+    declaration = {**_record(source), "path_base": "working-directory"}
+
+    with pytest.raises(ValueError, match="unknown path_base"):
+        evaluator_module._declared_file(
+            declaration,
+            label="unknown source",
+        )
+
+
 def test_load_targets_rejects_checked_schedule_content_drift(tmp_path: Path) -> None:
     _, targets = _fixture(tmp_path / "source")
     target_schedule = targets.parent / "target_schedule.json"
