@@ -9,6 +9,7 @@ import json
 import math
 import os
 from pathlib import Path
+import stat
 import sys
 from typing import Any, Callable, Mapping, Sequence
 
@@ -133,6 +134,54 @@ def _relative_path(value: object, role: str) -> Path:
     if path.as_posix() != value:
         raise ValueError(f"{role} path must be canonical and relative")
     return path
+
+
+def _snapshot_tree_witnesses(
+    index_path: Path,
+    index: Mapping[str, Any],
+    *,
+    role: str,
+) -> list[tuple[Path, tuple[int, int, int, int, int], str]]:
+    snapshots = index.get("snapshots")
+    if not isinstance(snapshots, list):
+        raise ValueError(f"{role} snapshot inventory is invalid")
+    witnesses: list[tuple[Path, tuple[int, int, int, int, int], str]] = []
+    for position, record in enumerate(snapshots):
+        if not isinstance(record, Mapping):
+            raise ValueError(f"{role} snapshot {position} is invalid")
+        relative = _relative_path(record.get("path"), f"{role} snapshot {position}")
+        root = index_path.parent / relative
+        try:
+            root_status = os.lstat(root)
+        except OSError as error:
+            raise ValueError(f"{role} snapshot {position} is missing") from error
+        candidates = [root]
+        if stat.S_ISDIR(root_status.st_mode):
+            for directory, dirnames, filenames in os.walk(root, followlinks=False):
+                dirnames.sort()
+                filenames.sort()
+                candidates.extend(Path(directory) / name for name in dirnames)
+                candidates.extend(Path(directory) / name for name in filenames)
+        for candidate in candidates:
+            status = os.lstat(candidate)
+            if stat.S_ISLNK(status.st_mode) or not (
+                stat.S_ISDIR(status.st_mode) or stat.S_ISREG(status.st_mode)
+            ):
+                raise ValueError(f"{role} snapshot tree contains an invalid entry")
+            witnesses.append(
+                (
+                    candidate,
+                    (
+                        status.st_dev,
+                        status.st_ino,
+                        status.st_size,
+                        status.st_mtime_ns,
+                        status.st_ctime_ns,
+                    ),
+                    f"{role} snapshot artifact",
+                )
+            )
+    return witnesses
 
 
 def _load_ablation_manifest(
@@ -381,12 +430,16 @@ def _load_bundle(
     list[tuple[Path, bytes, str]],
     dict[str, dict[str, Any]],
     dict[str, dict[str, Any]],
+    list[tuple[Path, tuple[int, int, int, int, int], str]],
     list[tuple[Path, tuple[int, int], str]],
 ]:
     if len(paths) != 2:
         raise ValueError(f"{role} requires exactly two checkpoint indexes")
     loaded: dict[str, tuple[Path, dict[str, Any], bytes, Path, bytes]] = {}
     root_witnesses: dict[str, tuple[Path, tuple[int, int], str]] = {}
+    snapshot_witnesses: list[
+        tuple[Path, tuple[int, int, int, int, int], str]
+    ] = []
     for raw_path in paths:
         path = Path(raw_path)
         index, index_raw = _load_json(path, f"{role} checkpoint index")
@@ -421,6 +474,13 @@ def _load_bundle(
             output_root,
             (status.st_dev, status.st_ino),
             f"{role} {scene} root",
+        )
+        snapshot_witnesses.extend(
+            _snapshot_tree_witnesses(
+                path,
+                index,
+                role=f"{role} {scene}",
+            )
         )
         if expected_frozen_identities is not None:
             frozen_identity = index.get("frozen_run_identity")
@@ -513,6 +573,7 @@ def _load_bundle(
         frozen_identities,
         run_executions,
         [root_witnesses[scene] for scene in SCENES],
+        snapshot_witnesses,
     )
 
 
@@ -643,6 +704,7 @@ def finalize_occlusion_ablation(
         signed_frozen_identities,
         signed_run_executions,
         signed_root_witnesses,
+        signed_snapshot_witnesses,
     ) = _load_bundle(
         signed_checkpoints,
         expected_configs=parent_configs,
@@ -659,6 +721,7 @@ def finalize_occlusion_ablation(
         missing_frozen_identities,
         missing_run_executions,
         missing_root_witnesses,
+        missing_snapshot_witnesses,
     ) = _load_bundle(
         ablation_checkpoints,
         expected_configs=ablation_configs,
@@ -668,6 +731,20 @@ def finalize_occlusion_ablation(
     )
     if missing_frozen_identities or missing_run_executions:
         raise ValueError("missing-as-absence bundle cannot use the signed frozen identity")
+    bundle_roots = [
+        identity
+        for _, identity, _ in (*signed_root_witnesses, *missing_root_witnesses)
+    ]
+    if len(set(bundle_roots)) != 4:
+        raise ValueError("signed and ablation physical roots are not independent")
+    signed_snapshot_identities = {
+        identity[:2] for _, identity, _ in signed_snapshot_witnesses
+    }
+    missing_snapshot_identities = {
+        identity[:2] for _, identity, _ in missing_snapshot_witnesses
+    }
+    if not signed_snapshot_identities.isdisjoint(missing_snapshot_identities):
+        raise ValueError("signed and ablation snapshot artifacts are not independent")
 
     if signed["target_manifest"] != missing["target_manifest"]:
         raise ValueError("signed and ablation target bindings differ")
@@ -831,6 +908,23 @@ def finalize_occlusion_ablation(
         except OSError as error:
             raise ValueError(f"{role} changed during finalization") from error
         if (status.st_dev, status.st_ino) != identity:
+            raise ValueError(f"{role} changed during finalization")
+    for path, identity, role in (
+        *signed_snapshot_witnesses,
+        *missing_snapshot_witnesses,
+    ):
+        try:
+            status = os.stat(path, follow_symlinks=False)
+        except OSError as error:
+            raise ValueError(f"{role} changed during finalization") from error
+        current = (
+            status.st_dev,
+            status.st_ino,
+            status.st_size,
+            status.st_mtime_ns,
+            status.st_ctime_ns,
+        )
+        if current != identity:
             raise ValueError(f"{role} changed during finalization")
     _write_exclusive(output, _canonical_bytes(final))
     directory = os.open(output.parent, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))

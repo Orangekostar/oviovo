@@ -861,6 +861,22 @@ def _load_single_checkpoint_index(
                 "missing_observation_policy",
                 "input_bindings_sha256",
             }
+            freeze_binding = (
+                frozen_identity.get("freeze_manifest")
+                if isinstance(frozen_identity, Mapping)
+                else None
+            )
+            config_binding = (
+                frozen_identity.get("config")
+                if isinstance(frozen_identity, Mapping)
+                else None
+            )
+            repository_binding = (
+                frozen_identity.get("repository")
+                if isinstance(frozen_identity, Mapping)
+                else None
+            )
+            content_bindings = (freeze_binding, config_binding)
             if not isinstance(frozen_identity, Mapping) or not (
                 set(frozen_identity) == frozen_fields
                 and type(frozen_identity.get("schema_version")) is int
@@ -871,6 +887,39 @@ def _load_single_checkpoint_index(
                 and frozen_identity.get("scene") == index_scene
                 and frozen_identity.get("algorithm_hash") == index_algorithm_hash
                 and frozen_identity.get("missing_observation_policy") == "signed_depth"
+                and policy == "signed_depth"
+                and all(
+                    isinstance(binding, Mapping)
+                    and set(binding) == {"sha256", "byte_count"}
+                    and isinstance(binding.get("sha256"), str)
+                    and len(binding["sha256"]) == 64
+                    and all(
+                        character in "0123456789abcdef"
+                        for character in binding["sha256"]
+                    )
+                    and type(binding.get("byte_count")) is int
+                    and binding["byte_count"] >= 0
+                    for binding in content_bindings
+                )
+                and isinstance(repository_binding, Mapping)
+                and set(repository_binding) == {"commit", "tree"}
+                and all(
+                    isinstance(repository_binding.get(field), str)
+                    and len(repository_binding[field]) == 40
+                    and all(
+                        character in "0123456789abcdef"
+                        for character in repository_binding[field]
+                    )
+                    for field in ("commit", "tree")
+                )
+                and isinstance(
+                    frozen_identity.get("input_bindings_sha256"), str
+                )
+                and len(frozen_identity["input_bindings_sha256"]) == 64
+                and all(
+                    character in "0123456789abcdef"
+                    for character in frozen_identity["input_bindings_sha256"]
+                )
             ):
                 raise ValueError("checkpoint frozen run identity mismatch")
             execution_fields = {

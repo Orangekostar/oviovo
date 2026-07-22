@@ -1054,6 +1054,34 @@ def test_rejects_byte_identical_mapping_root_replacement_before_return(
         package.build()
 
 
+@pytest.mark.parametrize("identity_role", ["frozen", "execution"])
+def test_formal_identity_comparison_is_type_sensitive(
+    package: Fixture,
+    identity_role: str,
+) -> None:
+    provenance = package.build()
+    key = "apartment_run1"
+    payload = {
+        "frozen_run_identity": provenance["frozen_run_identities"]["apartment"],
+        "run_execution": provenance["run_executions"][key],
+    }
+    if identity_role == "frozen":
+        payload["frozen_run_identity"] = dict(payload["frozen_run_identity"])
+        payload["frozen_run_identity"]["schema_version"] = True
+    else:
+        payload["run_execution"] = dict(payload["run_execution"])
+        payload["run_execution"]["schema_version"] = True
+
+    with pytest.raises(ValueError, match="frozen run identity|run execution mismatch"):
+        builder._validate_formal_run_fields(
+            payload,
+            expected_frozen=provenance["frozen_run_identities"]["apartment"],
+            key=key,
+            root=package.mapping_roots[key],
+            label="test artifact",
+        )
+
+
 def test_large_raw_outputs_are_stream_hashed(
     package: Fixture, monkeypatch: pytest.MonkeyPatch
 ) -> None:

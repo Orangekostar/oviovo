@@ -29,6 +29,7 @@ from scripts.evaluation.finalize_tesse_t2 import (  # noqa: E402
     build_scene_evidence,
 )
 from scripts.evaluation.canonicalize_tesse_common_v2_summary import (  # noqa: E402
+    _json_exact_equal,
     _temporal_identity_projection,
 )
 from scripts.evaluation.prepare_temporal_khronos_bridge import (  # noqa: E402
@@ -309,7 +310,7 @@ def _validate_formal_run_fields(
     if (
         not isinstance(frozen, Mapping)
         or set(frozen) != _FROZEN_RUN_IDENTITY_FIELDS
-        or dict(frozen) != dict(expected_frozen)
+        or not _json_exact_equal(dict(frozen), dict(expected_frozen))
     ):
         raise ValueError(f"{label} frozen run identity mismatch")
     if not isinstance(execution, Mapping) or set(execution) != _RUN_EXECUTION_FIELDS:
@@ -326,7 +327,7 @@ def _validate_formal_run_fields(
         **expected_base,
         "execution_id": hashlib.sha256(_canonical_json(expected_base)).hexdigest(),
     }
-    if dict(execution) != expected_execution:
+    if not _json_exact_equal(dict(execution), expected_execution):
         raise ValueError(f"{label} run execution mismatch")
     return expected_execution
 
@@ -1097,7 +1098,7 @@ def _official_run(
         root=mapping_root,
         label=f"{key} temporal manifest",
     )
-    if observed_execution != dict(run_execution):
+    if not _json_exact_equal(observed_execution, dict(run_execution)):
         raise ValueError(f"{key} temporal run execution mismatch")
     temporal_content, _ = _file(
         temporal_path, label=f"{key} temporal manifest", capture=True

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -309,6 +310,16 @@ def _bind_real_indexes(
     return indexes
 
 
+def _isolate_real_indexes(indexes: tuple[Path, Path]) -> tuple[Path, Path]:
+    isolated: list[Path] = []
+    for path in indexes:
+        scene = json.loads(path.read_text(encoding="utf-8"))["scene"]
+        destination = path.parent.with_name(f"{path.parent.name}-{scene}")
+        shutil.copytree(path.parent, destination)
+        isolated.append(destination / path.name)
+    return isolated[0], isolated[1]
+
+
 def _bind_formal_indexes(
     indexes: tuple[Path, Path],
     *,
@@ -588,6 +599,86 @@ def test_rejects_byte_identical_signed_root_replacement_during_reevaluation(
         _finalize(fixture, tmp_path, reevaluate=replace_root)
 
 
+def test_rejects_distinct_ablation_indexes_reusing_signed_physical_roots(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture(tmp_path)
+    colocated: list[Path] = []
+    for signed_path, ablation_path in zip(
+        fixture["signed_indexes"],
+        fixture["ablation_indexes"],
+        strict=True,
+    ):
+        index = json.loads(ablation_path.read_text(encoding="utf-8"))
+        source_config = ablation_path.parent / index["run_config"]["path"]
+        config_path = signed_path.parent / "ablation_run_config.json"
+        config_path.write_bytes(source_config.read_bytes())
+        config_raw = config_path.read_bytes()
+        index["run_config"] = {
+            "path": config_path.name,
+            "sha256": _sha256_bytes(config_raw),
+            "byte_count": len(config_raw),
+        }
+        index_path = signed_path.parent / "ablation_checkpoint_index.json"
+        _write(index_path, index)
+        colocated.append(index_path)
+    fixture["ablation_indexes"] = (colocated[0], colocated[1])
+    fixture["ablation_result"] = _result(
+        fixture["ablation_indexes"],
+        policy="missing_as_absence",
+        passed=False,
+        false_releases=2,
+        recall=0.5,
+    )
+    _write(
+        fixture["ablation_result_path"],
+        fixture["ablation_result"],
+        result=True,
+    )
+
+    with pytest.raises(ValueError, match="physical roots are not independent"):
+        _finalize(fixture, tmp_path)
+
+
+def test_rejects_hardlinked_snapshots_across_policy_bundles(tmp_path: Path) -> None:
+    fixture = _fixture(tmp_path)
+    signed_index_path = fixture["signed_indexes"][0]
+    ablation_index_path = fixture["ablation_indexes"][0]
+    signed_snapshot = signed_index_path.parent / "snapshot/data.bin"
+    signed_snapshot.parent.mkdir()
+    signed_snapshot.write_bytes(b"shared snapshot\n")
+    ablation_snapshot = ablation_index_path.parent / "snapshot/data.bin"
+    ablation_snapshot.parent.mkdir()
+    os.link(signed_snapshot, ablation_snapshot)
+    for index_path in (signed_index_path, ablation_index_path):
+        index = json.loads(index_path.read_text(encoding="utf-8"))
+        index["snapshots"] = [{"path": "snapshot"}]
+        _write(index_path, index)
+    fixture["signed_result"] = _result(
+        fixture["signed_indexes"],
+        policy="signed_depth",
+        passed=True,
+        false_releases=0,
+        recall=1.0,
+    )
+    fixture["ablation_result"] = _result(
+        fixture["ablation_indexes"],
+        policy="missing_as_absence",
+        passed=False,
+        false_releases=2,
+        recall=0.5,
+    )
+    _write(fixture["signed_result_path"], fixture["signed_result"], result=True)
+    _write(
+        fixture["ablation_result_path"],
+        fixture["ablation_result"],
+        result=True,
+    )
+
+    with pytest.raises(ValueError, match="snapshot artifacts are not independent"):
+        _finalize(fixture, tmp_path)
+
+
 @pytest.mark.parametrize("case", ["signed_gate", "no_degradation"])
 def test_withholds_claim_when_gate_or_directional_comparison_fails(
     tmp_path: Path,
@@ -803,8 +894,10 @@ def test_direct_cli_help_loads_repository_package() -> None:
 
 def test_default_finalizer_consumes_real_evaluator_artifacts(tmp_path: Path) -> None:
     targets, _ = _write_real_targets(tmp_path / "real-target")
-    signed_indexes = _split_real_indexes(
-        _write_real_checkpoint_index(tmp_path / "real-signed", targets)
+    signed_indexes = _isolate_real_indexes(
+        _split_real_indexes(
+            _write_real_checkpoint_index(tmp_path / "real-signed", targets)
+        )
     )
     index = json.loads(signed_indexes[0].read_text(encoding="utf-8"))
     target_hash = index["target_manifest"]["sha256"]
@@ -834,8 +927,10 @@ def test_default_finalizer_consumes_real_evaluator_artifacts(tmp_path: Path) -> 
         scene: json.loads((ablation_root / f"{scene}.json").read_text())
         for scene in ("apartment", "office")
     }
-    ablation_indexes = _split_real_indexes(
-        _write_real_checkpoint_index(tmp_path / "real-ablation", targets)
+    ablation_indexes = _isolate_real_indexes(
+        _split_real_indexes(
+            _write_real_checkpoint_index(tmp_path / "real-ablation", targets)
+        )
     )
     _bind_real_indexes(ablation_indexes, ablation_configs)
     signed_result = tmp_path / "real-signed-result.json"

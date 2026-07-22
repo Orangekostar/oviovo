@@ -754,6 +754,69 @@ def test_schema2_rejects_synchronized_declared_algorithm_hash_tamper(
         )
 
 
+def test_formal_schema2_index_requires_signed_depth_run_config(tmp_path: Path) -> None:
+    targets, _ = _write_targets(tmp_path / "fixture")
+    apartment, office = _split_schema2_indexes_by_scene(
+        _write_checkpoint_index(tmp_path / "fixture", targets)
+    )
+    payload = json.loads(apartment.read_text(encoding="utf-8"))
+    config_path = apartment.parent / payload["run_config"]["path"]
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config["missing_observation_policy"] = "missing_as_absence"
+    config["algorithm_hash"] = occlusion_evaluator.canonical_algorithm_hash(config)
+    config_path.write_text(
+        json.dumps(config, sort_keys=True, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+    payload["algorithm_hash"] = config["algorithm_hash"]
+    payload["run_config"] = {
+        "path": config_path.name,
+        "sha256": _sha256(config_path),
+        "byte_count": config_path.stat().st_size,
+    }
+    root_status = apartment.parent.stat()
+    execution = {
+        "schema_version": 1,
+        "run_slot": "apartment_run1",
+        "output_root": str(apartment.parent.resolve()),
+        "root_device": root_status.st_dev,
+        "root_inode": root_status.st_ino,
+    }
+    execution["execution_id"] = hashlib.sha256(
+        json.dumps(
+            execution,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
+    ).hexdigest()
+    payload["frozen_run_identity"] = {
+        "schema_version": 1,
+        "freeze_id": "oviv2-tessecd-v1",
+        "dataset": "TESSE-CD",
+        "method_id": "OVIV2",
+        "scene": "apartment",
+        "freeze_manifest": {"sha256": "1" * 64, "byte_count": 1},
+        "repository": {"commit": "2" * 40, "tree": "3" * 40},
+        "config": {"sha256": "4" * 64, "byte_count": 1},
+        "algorithm_hash": config["algorithm_hash"],
+        "missing_observation_policy": "signed_depth",
+        "input_bindings_sha256": "5" * 64,
+    }
+    payload["run_execution"] = execution
+    apartment.write_text(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="frozen run identity"):
+        evaluate_occlusion_package(
+            target_dir=targets,
+            checkpoint_index=[apartment, office],
+            dataset_root=targets.parent / "sources",
+        )
+
+
 def test_mixed_full_and_compact_checkpoints_share_one_evaluator_interface(
     tmp_path: Path,
 ) -> None:
