@@ -5,10 +5,20 @@ import json
 from pathlib import Path
 from typing import Any, Iterator
 
+import pytest
+
+from src.datasets.tesse_cd import TesseCdRgbdDataset
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CONFIG_PATH = REPO_ROOT / "configs/evaluation/manifests/oviv2_tesse_cd_cache.json"
 VOCABULARY_ROOT = REPO_ROOT / "configs/evaluation/vocabularies"
+CHECKED_SCHEDULE_PATH = (
+    REPO_ROOT / "configs/evaluation/manifests/tesse_cd_causal_schedule_v2.json"
+)
+OFFICIAL_RGBD_ROOT = Path(
+    "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1"
+)
 
 EXPECTED = {
     "apartment": {
@@ -44,6 +54,10 @@ EXPECTED = {
     },
 }
 ALIAS_MAP_SHA256 = "217b3bcd730a6485159e23e56ee9e97ac3c1c56007a016cdc8a20e9fc07abdbc"
+OFFICIAL_TIMELINES = {
+    "apartment": (1745, 4_204_107_999, 91_404_110_000),
+    "office": (4346, 7_243_018_000, 224_492_999_999),
+}
 
 
 def _sha256(path: Path) -> str:
@@ -85,7 +99,7 @@ def test_cache_config_freezes_input_only_scene_contracts() -> None:
         "be63826267109a67fe4109c1419eb02dbad99a9e3856d44ac8f848e32e00b907"
     )
     assert config["schedule_manifest"]["sha256"] == (
-        "f4223fc4ec136f312b658b3fe3d9b090dc89ed14be7744a13ca4dd45cb127367"
+        "fb97bacee377f9fd67ee9dae8064dc6f33ac32d129ee633629fec4164d5003e0"
     )
 
     for scene, expected in EXPECTED.items():
@@ -100,6 +114,36 @@ def test_cache_config_freezes_input_only_scene_contracts() -> None:
         assert record["source_depth_dtype"] == "uint16"
         assert record["depth_unit"] == "millimeter"
         assert record["pose_convention"] == "camera_to_world"
+
+
+def test_checked_schedule_hash_matches_adapter_and_cache_declarations() -> None:
+    config = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+    checked_sha256 = _sha256(CHECKED_SCHEDULE_PATH)
+
+    assert TesseCdRgbdDataset.SCHEDULE_SHA256 == checked_sha256
+    assert config["schedule_manifest"]["sha256"] == checked_sha256
+
+
+@pytest.mark.parametrize("scene", ["apartment", "office"])
+def test_official_scene_constructs_with_checked_input_hashes(scene: str) -> None:
+    config = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+    scene_config = config["scenes"][scene]
+    frame_count, first_timestamp_ns, last_timestamp_ns = OFFICIAL_TIMELINES[scene]
+    export_path = Path(scene_config["export_manifest"]["path"])
+
+    assert _sha256(export_path) == TesseCdRgbdDataset.EXPORT_SHA256[scene]
+    assert _sha256(CHECKED_SCHEDULE_PATH) == TesseCdRgbdDataset.SCHEDULE_SHA256
+
+    dataset = TesseCdRgbdDataset(
+        OFFICIAL_RGBD_ROOT,
+        scene,
+        export_path,
+        CHECKED_SCHEDULE_PATH,
+    )
+
+    assert len(dataset) == frame_count
+    assert dataset.timestamp_ns(0) == first_timestamp_ns
+    assert dataset.timestamp_ns(-1) == last_timestamp_ns
 
 
 def test_scene_vocabularies_match_ordered_json_txt_and_hash_bindings() -> None:
