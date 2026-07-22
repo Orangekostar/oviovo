@@ -20,6 +20,9 @@ from scripts.evaluation.run_khronos_official_eval import (
 )
 
 
+RUN_ID = "oviv2-tessecd-v1"
+
+
 def _source_record(path: Path) -> dict[str, object]:
     return {
         "path": str(path.resolve()),
@@ -49,7 +52,10 @@ def _write_valid_results(root: Path) -> Path:
 
 
 def _write_required_run_status(
-    root: Path, monkeypatch: pytest.MonkeyPatch
+    root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    identity_extras: dict[str, object] | None = None,
 ) -> tuple[Path, dict[str, Path]]:
     required = {
         "final": root / "map/final.4dmap",
@@ -57,6 +63,7 @@ def _write_required_run_status(
         "experiment": root / "map/experiment_log.txt",
         "bridge": root / "bridge_input/bridge_manifest.json",
         "build": root / "build_manifest.json",
+        "config": root / "oviv2_tesse_cd_apartment_v1.json",
     }
     for name, path in required.items():
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -68,6 +75,7 @@ def _write_required_run_status(
         official_eval, "validate_build_manifest", lambda _: {}
     )
     status = root / "run_status.json"
+    config = _source_record(required["config"])
     status.write_text(
         json.dumps(
             {
@@ -78,6 +86,12 @@ def _write_required_run_status(
                 "method": "OVIV2",
                 "mode": "causal_checkpoints",
                 "bridge_mode": "temporal_checkpoints",
+                "run_identity": {
+                    "run_id": RUN_ID,
+                    "config_sha256": config["sha256"],
+                    **(identity_extras or {}),
+                },
+                "config": config,
                 "sources": [_source_record(path) for path in required.values()],
             },
             sort_keys=True,
@@ -86,6 +100,13 @@ def _write_required_run_status(
         encoding="utf-8",
     )
     return status, required
+
+
+def _validated_run_status(
+    root: Path, monkeypatch: pytest.MonkeyPatch
+) -> dict[str, object]:
+    status, _ = _write_required_run_status(root, monkeypatch)
+    return validate_khronos_run_status(status, scene="apartment")
 
 
 def test_patch_evaluation_config_binds_local_gt_paths() -> None:
@@ -192,14 +213,25 @@ def test_repeated_metrics_records_consistent_unavailable_summary(
     for name in ("static_objects.csv", "dynamic_objects.csv", "background_mesh.csv"):
         (results / name).write_text(f"{name}\n", encoding="utf-8")
 
-    def unavailable(**_: object) -> None:
+    def unavailable(_: Path) -> None:
         raise ValueError("Khronos change F1 has no finite states")
 
-    def partial(*, output: Path, **_: object) -> None:
-        output.write_text('{"status":"PARTIAL"}\n', encoding="utf-8")
-
-    monkeypatch.setattr(official_eval, "_write_metrics", unavailable)
-    monkeypatch.setattr(official_eval, "_write_partial_metrics", partial)
+    monkeypatch.setattr(
+        official_eval, "summarize_khronos_official_metrics", unavailable
+    )
+    monkeypatch.setattr(
+        official_eval,
+        "summarize_khronos_official_metrics_partial",
+        lambda _: {
+            "state_count": 1,
+            "metrics": {"object_f1": 1.0, "dynamic_f1": None, "change_f1": None},
+            "unavailable": {
+                "dynamic_f1": "upstream omitted dynamic states",
+                "change_f1": "upstream omitted change states",
+            },
+        },
+    )
+    validated = _validated_run_status(tmp_path / "run", monkeypatch)
     summary = write_repeated_metrics(
         results_dir=results,
         scene="apartment",
@@ -207,6 +239,7 @@ def test_repeated_metrics_records_consistent_unavailable_summary(
         mode="causal_checkpoints",
         metrics_path=tmp_path / "official_metrics.json",
         repeat_path=tmp_path / "official_metrics.repeat.json",
+        run_status=validated,
     )
 
     assert summary["status"] == "UNAVAILABLE"
@@ -223,13 +256,16 @@ def test_repeated_metrics_records_consistent_unavailable_summary(
     assert all(len(entry["sha256"]) == 64 for entry in summary["sources"])
 
 
-def test_repeated_metrics_refuses_existing_outputs(tmp_path: Path) -> None:
+def test_repeated_metrics_refuses_existing_outputs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     results = tmp_path / "results"
     results.mkdir()
     for name in ("static_objects.csv", "dynamic_objects.csv", "background_mesh.csv"):
         (results / name).write_text(f"{name}\n", encoding="utf-8")
     metrics = tmp_path / "official_metrics.json"
     metrics.write_text("preserve\n", encoding="utf-8")
+    validated = _validated_run_status(tmp_path / "run", monkeypatch)
 
     with pytest.raises(FileExistsError, match="already exists"):
         write_repeated_metrics(
@@ -239,12 +275,15 @@ def test_repeated_metrics_refuses_existing_outputs(tmp_path: Path) -> None:
             mode="causal_checkpoints",
             metrics_path=metrics,
             repeat_path=tmp_path / "official_metrics.repeat.json",
+            run_status=validated,
         )
 
     assert metrics.read_text(encoding="utf-8") == "preserve\n"
 
 
-def test_repeated_metrics_refuses_dangling_symlink_output(tmp_path: Path) -> None:
+def test_repeated_metrics_refuses_dangling_symlink_output(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     results = tmp_path / "results"
     results.mkdir()
     for name in ("static_objects.csv", "dynamic_objects.csv", "background_mesh.csv"):
@@ -252,6 +291,7 @@ def test_repeated_metrics_refuses_dangling_symlink_output(tmp_path: Path) -> Non
     victim = tmp_path / "victim.json"
     metrics = tmp_path / "official_metrics.json"
     metrics.symlink_to(victim.name)
+    validated = _validated_run_status(tmp_path / "run", monkeypatch)
 
     with pytest.raises(FileExistsError, match="already exists"):
         write_repeated_metrics(
@@ -261,6 +301,7 @@ def test_repeated_metrics_refuses_dangling_symlink_output(tmp_path: Path) -> Non
             mode="causal_checkpoints",
             metrics_path=metrics,
             repeat_path=tmp_path / "official_metrics.repeat.json",
+            run_status=validated,
         )
 
     assert not victim.exists()
@@ -296,6 +337,75 @@ def test_khronos_run_status_revalidates_hashed_sources(
     validate_khronos_run_status(status, scene="apartment")
     required["final"].write_bytes(b"changed")
     with pytest.raises(ValueError, match="source"):
+        validate_khronos_run_status(status, scene="apartment")
+
+
+def test_khronos_run_status_normalizes_bound_identity(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    status, required = _write_required_run_status(
+        tmp_path / "run",
+        monkeypatch,
+        identity_extras={"note": "must not propagate"},
+    )
+
+    validated = validate_khronos_run_status(status, scene="apartment")
+
+    assert validated["run_identity"] == {
+        "run_id": RUN_ID,
+        "config_sha256": hashlib.sha256(required["config"].read_bytes()).hexdigest(),
+    }
+
+
+def test_khronos_run_status_rejects_missing_identity(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    status, _ = _write_required_run_status(tmp_path / "run", monkeypatch)
+    payload = json.loads(status.read_text(encoding="utf-8"))
+    payload.pop("run_identity")
+    status.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="run identity.*required"):
+        validate_khronos_run_status(status, scene="apartment")
+
+
+def test_khronos_run_status_rejects_noncanonical_run_id(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    status, _ = _write_required_run_status(tmp_path / "run", monkeypatch)
+    payload = json.loads(status.read_text(encoding="utf-8"))
+    payload["run_identity"]["run_id"] = "tampered/run"
+    status.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="run_id.*canonical"):
+        validate_khronos_run_status(status, scene="apartment")
+
+
+def test_khronos_run_status_rejects_config_hash_tampering(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    status, _ = _write_required_run_status(tmp_path / "run", monkeypatch)
+    payload = json.loads(status.read_text(encoding="utf-8"))
+    payload["run_identity"]["config_sha256"] = "f" * 64
+    status.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="config.*binding"):
+        validate_khronos_run_status(status, scene="apartment")
+
+
+def test_khronos_run_status_rejects_config_record_not_in_sources(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    status, required = _write_required_run_status(tmp_path / "run", monkeypatch)
+    payload = json.loads(status.read_text(encoding="utf-8"))
+    payload["sources"] = [
+        entry
+        for entry in payload["sources"]
+        if Path(entry["path"]) != required["config"].resolve()
+    ]
+    status.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="config.*source"):
         validate_khronos_run_status(status, scene="apartment")
 
 
@@ -349,6 +459,104 @@ def test_run_refuses_existing_evaluation_directory_before_external_work(
         run(args)
 
 
+def test_repeated_metrics_rejects_unvalidated_status(tmp_path: Path) -> None:
+    results = _write_valid_results(tmp_path / "map/results")
+
+    with pytest.raises(ValueError, match="validated run status"):
+        write_repeated_metrics(
+            results_dir=results,
+            scene="apartment",
+            method="OVIV2",
+            mode="causal_checkpoints",
+            metrics_path=tmp_path / "official_metrics.json",
+            repeat_path=tmp_path / "official_metrics.repeat.json",
+            run_status={
+                "run_identity": {
+                    "run_id": "caller-controlled",
+                    "config_sha256": "f" * 64,
+                }
+            },
+        )
+
+
+def test_run_passes_exact_validated_status_to_metric_writer(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workspace = tmp_path / "workspace"
+    base = workspace / "src/khronos/khronos_eval/config/pipeline/apartment.yaml"
+    base.parent.mkdir(parents=True)
+    base.write_text(
+        "ground_truth_dsg_file: old\n"
+        "ground_truth_background_file: old\n"
+        "gt_changes_file: old\n"
+        "evaluation:\n  object_evaluation:\n    changes_file: old\n",
+        encoding="utf-8",
+    )
+    run_root = tmp_path / "run"
+    run_root.mkdir()
+    (run_root / "run_status.json").write_text(
+        "not raw-readable json\n", encoding="utf-8"
+    )
+    validated = {
+        "run_identity": {
+            "run_id": RUN_ID,
+            "config_sha256": "a" * 64,
+        }
+    }
+    monkeypatch.setattr(
+        official_eval,
+        "validate_khronos_run_status",
+        lambda *_args, **_kwargs: validated,
+    )
+    files = {
+        "dsg": {"path": str(tmp_path / "dsg")},
+        "background_mesh": {"path": str(tmp_path / "mesh")},
+        "changes": {"path": str(tmp_path / "changes")},
+    }
+    monkeypatch.setattr(
+        official_eval,
+        "validate_tesse_manifest",
+        lambda *_args, **_kwargs: {
+            "sequences": {"apartment": {"ground_truth": {"files": files}}}
+        },
+    )
+    monkeypatch.setattr(official_eval, "validate_ground_truth_files", lambda _: files)
+
+    def completed(command: list[str], **_: object) -> object:
+        time_path = Path(command[command.index("-o") + 1])
+        time_path.write_text("time\n", encoding="utf-8")
+        return type(
+            "Completed",
+            (),
+            {"returncode": 0, "stdout": "", "stderr": ""},
+        )()
+
+    monkeypatch.setattr(official_eval.subprocess, "run", completed)
+    captured: dict[str, object] = {}
+
+    def write_metrics(**kwargs: object) -> dict[str, object]:
+        captured.update(kwargs)
+        return {
+            "status": "PASS",
+            "official_metrics": {"path": "metrics", "sha256": "b" * 64},
+            "official_metrics_repeat": {"path": "repeat", "sha256": "b" * 64},
+        }
+
+    monkeypatch.setattr(official_eval, "write_repeated_metrics", write_metrics)
+    args = parse_args(
+        [
+            "--workspace", str(workspace),
+            "--manifest", str(tmp_path / "manifest.json"),
+            "--run-root", str(run_root),
+            "--scene", "apartment",
+        ]
+    )
+
+    run(args)
+
+    assert captured["run_status"] is validated
+
+
 def test_partial_metric_record_uses_online_display_mode_and_hashed_sources(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -369,56 +577,90 @@ def test_partial_metric_record_uses_online_display_mode_and_hashed_sources(
         },
     )
     output = tmp_path / "partial.json"
+    repeat = tmp_path / "partial.repeat.json"
+    validated = _validated_run_status(tmp_path / "run", monkeypatch)
 
-    official_eval._write_partial_metrics(
+    def unavailable(_: Path) -> None:
+        raise ValueError("Khronos change F1 has no finite states")
+
+    monkeypatch.setattr(
+        official_eval, "summarize_khronos_official_metrics", unavailable
+    )
+
+    write_repeated_metrics(
         results_dir=results,
         scene="apartment",
         method="OVIV2",
         mode="causal_checkpoints",
-        output=output,
+        metrics_path=output,
+        repeat_path=repeat,
+        run_status=validated,
     )
     payload = json.loads(output.read_text(encoding="utf-8"))
 
+    assert payload["status"] == "PARTIAL"
+    assert payload["run_identity"] == validated["run_identity"]
     assert payload["display_mode"] == "online"
     assert all(source["byte_count"] > 0 for source in payload["sources"])
+    assert output.read_bytes() == repeat.read_bytes()
 
 
-def test_metric_json_is_byte_identical_across_run_roots(tmp_path: Path) -> None:
+def test_metric_json_is_byte_identical_across_run_roots(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     first_results = _write_valid_results(tmp_path / "first/map/results")
     second_results = _write_valid_results(tmp_path / "second/map/results")
     first = tmp_path / "first/evaluation/official_metrics.json"
     second = tmp_path / "second/evaluation/official_metrics.json"
+    first_repeat = tmp_path / "first/evaluation/official_metrics.repeat.json"
+    second_repeat = tmp_path / "second/evaluation/official_metrics.repeat.json"
     first.parent.mkdir(parents=True)
     second.parent.mkdir(parents=True)
+    first_status = _validated_run_status(tmp_path / "first/run", monkeypatch)
+    second_status = _validated_run_status(tmp_path / "second/run", monkeypatch)
 
-    official_eval._write_metrics(
+    write_repeated_metrics(
         results_dir=first_results,
         scene="apartment",
         method="OVIV2",
         mode="causal_checkpoints",
-        output=first,
+        metrics_path=first,
+        repeat_path=first_repeat,
+        run_status=first_status,
     )
-    official_eval._write_metrics(
+    write_repeated_metrics(
         results_dir=second_results,
         scene="apartment",
         method="OVIV2",
         mode="causal_checkpoints",
-        output=second,
+        metrics_path=second,
+        repeat_path=second_repeat,
+        run_status=second_status,
     )
 
+    assert first.read_bytes() == first_repeat.read_bytes()
+    assert second.read_bytes() == second_repeat.read_bytes()
     assert first.read_bytes() == second.read_bytes()
-    assert [entry["path"] for entry in json.loads(first.read_text())["sources"]] == [
+    payload = json.loads(first.read_text())
+    assert payload["status"] == "PASS"
+    assert payload["run_identity"] == first_status["run_identity"]
+    assert payload["run_identity"] == second_status["run_identity"]
+    assert set(payload["run_identity"]) == {"run_id", "config_sha256"}
+    assert [entry["path"] for entry in payload["sources"]] == [
         "../map/results/static_objects.csv",
         "../map/results/dynamic_objects.csv",
         "../map/results/background_mesh.csv",
     ]
 
 
-def test_missing_metric_csv_is_recorded_as_unavailable(tmp_path: Path) -> None:
+def test_missing_metric_csv_is_recorded_as_unavailable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     results = _write_valid_results(tmp_path / "results")
     (results / "dynamic_objects.csv").unlink()
     metrics = tmp_path / "official_metrics.json"
     repeat = tmp_path / "official_metrics.repeat.json"
+    validated = _validated_run_status(tmp_path / "run", monkeypatch)
 
     summary = write_repeated_metrics(
         results_dir=results,
@@ -427,12 +669,14 @@ def test_missing_metric_csv_is_recorded_as_unavailable(tmp_path: Path) -> None:
         mode="causal_checkpoints",
         metrics_path=metrics,
         repeat_path=repeat,
+        run_status=validated,
     )
 
     payload = json.loads(metrics.read_text(encoding="utf-8"))
     assert summary["status"] == "UNAVAILABLE"
     assert metrics.read_bytes() == repeat.read_bytes()
     assert payload["metrics"]["dynamic_f1"] is None
+    assert payload["run_identity"] == validated["run_identity"]
     assert "dynamic_objects.csv" in payload["unavailable"]["dynamic_f1"]
     missing = next(
         source

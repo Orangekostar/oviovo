@@ -9,6 +9,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 import time
@@ -37,6 +38,32 @@ CANONICAL_TESSE_MANIFEST = (
 CANONICAL_TESSE_MANIFEST_SHA256 = (
     "be63826267109a67fe4109c1419eb02dbad99a9e3856d44ac8f848e32e00b907"
 )
+RUN_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
+
+
+class _ValidatedKhronosRunStatus(dict[str, Any]):
+    def __init__(
+        self, payload: Mapping[str, Any], run_identity: Mapping[str, str]
+    ) -> None:
+        super().__init__(payload)
+        self["run_identity"] = dict(run_identity)
+        self._metric_identity = (
+            run_identity["run_id"],
+            run_identity["config_sha256"],
+        )
+        self._scene = str(payload["scene"])
+        self._method = str(payload["method"])
+        self._mode = str(payload["mode"])
+
+    def metric_identity(
+        self, *, scene: str, method: str, mode: str
+    ) -> dict[str, str]:
+        if (scene, method, mode) != (self._scene, self._method, self._mode):
+            raise ValueError("official metrics do not match validated run status")
+        return {
+            "run_id": self._metric_identity[0],
+            "config_sha256": self._metric_identity[1],
+        }
 
 
 def _sha256(path: Path) -> str:
@@ -45,6 +72,23 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _run_identity(payload: Mapping[str, Any]) -> dict[str, str]:
+    raw = payload.get("run_identity")
+    if not isinstance(raw, Mapping):
+        raise ValueError("Khronos run identity is required")
+    run_id = raw.get("run_id")
+    if type(run_id) is not str or RUN_ID_PATTERN.fullmatch(run_id) is None:
+        raise ValueError("Khronos run identity run_id is not canonical")
+    config_sha256 = raw.get("config_sha256")
+    if (
+        type(config_sha256) is not str
+        or len(config_sha256) != 64
+        or any(char not in "0123456789abcdef" for char in config_sha256)
+    ):
+        raise ValueError("Khronos run identity config_sha256 is invalid")
+    return {"run_id": run_id, "config_sha256": config_sha256}
 
 
 def validate_tesse_manifest(path: Path, *, scene: str) -> dict[str, Any]:
@@ -106,7 +150,9 @@ def validate_ground_truth_files(
     return selected
 
 
-def validate_khronos_run_status(path: Path, *, scene: str) -> dict[str, Any]:
+def validate_khronos_run_status(
+    path: Path, *, scene: str
+) -> _ValidatedKhronosRunStatus:
     payload = loads_strict(path.read_text(encoding="utf-8"), label="Khronos run status")
     if (
         not isinstance(payload, dict)
@@ -123,6 +169,7 @@ def validate_khronos_run_status(path: Path, *, scene: str) -> dict[str, Any]:
     if not isinstance(sources, list) or not sources:
         raise ValueError("Khronos run status requires hashed sources")
     source_paths: set[Path] = set()
+    source_records: dict[Path, dict[str, Any]] = {}
     for index, entry in enumerate(sources):
         if not isinstance(entry, Mapping):
             raise ValueError("Khronos run source record is invalid")
@@ -132,6 +179,16 @@ def validate_khronos_run_status(path: Path, *, scene: str) -> dict[str, Any]:
         if source_path in source_paths:
             raise ValueError("Khronos run source paths must be unique")
         source_paths.add(source_path)
+        source_records[source_path] = dict(entry)
+    identity = _run_identity(payload)
+    config = payload.get("config")
+    if not isinstance(config, Mapping):
+        raise ValueError("Khronos run config source is required")
+    config_path = _validate_source_entry(config, label="Khronos run config").resolve()
+    if source_records.get(config_path) != dict(config):
+        raise ValueError("Khronos run config must be a declared hashed source")
+    if config.get("sha256") != identity["config_sha256"]:
+        raise ValueError("Khronos run identity config binding mismatch")
     run_root = path.parent.resolve()
     required = {
         (run_root / "map/final.4dmap").resolve(),
@@ -147,7 +204,7 @@ def validate_khronos_run_status(path: Path, *, scene: str) -> dict[str, Any]:
         )
     validate_temporal_bridge_manifest(run_root / "bridge_input/bridge_manifest.json")
     validate_build_manifest(run_root / "build_manifest.json")
-    return payload
+    return _ValidatedKhronosRunStatus(payload, identity)
 
 
 def patch_evaluation_config(
@@ -198,9 +255,16 @@ def _overlay_command(
 
 
 def _write_metrics(
-    *, results_dir: Path, scene: str, method: str, mode: str, output: Path
+    *,
+    results_dir: Path,
+    scene: str,
+    method: str,
+    mode: str,
+    output: Path,
+    run_identity: Mapping[str, str],
 ) -> None:
     payload = {
+        "status": "PASS",
         "dataset": "TESSE-CD",
         "scene": scene,
         "split": f"{scene}_test",
@@ -208,6 +272,7 @@ def _write_metrics(
         "mode": mode,
         "display_mode": "online",
         "aggregation": "upstream online 4D plotting aggregation",
+        "run_identity": dict(run_identity),
         "metrics": summarize_khronos_official_metrics(results_dir),
         "sources": _metric_sources(results_dir, relative_to=output.parent),
     }
@@ -217,7 +282,13 @@ def _write_metrics(
 
 
 def _write_partial_metrics(
-    *, results_dir: Path, scene: str, method: str, mode: str, output: Path
+    *,
+    results_dir: Path,
+    scene: str,
+    method: str,
+    mode: str,
+    output: Path,
+    run_identity: Mapping[str, str],
 ) -> None:
     partial = summarize_khronos_official_metrics_partial(results_dir)
     payload = {
@@ -229,6 +300,7 @@ def _write_partial_metrics(
         "mode": mode,
         "display_mode": "online",
         "aggregation": "upstream online 4D plotting aggregation",
+        "run_identity": dict(run_identity),
         "metrics": {
             "state_count": partial["state_count"],
             **partial["metrics"],
@@ -274,9 +346,17 @@ def write_repeated_metrics(
     mode: str,
     metrics_path: Path,
     repeat_path: Path,
+    run_status: Mapping[str, Any],
 ) -> dict[str, Any]:
     if method != "OVIV2" or mode != "causal_checkpoints":
         raise ValueError("official metrics require OVIV2 causal identity")
+    if type(run_status) is not _ValidatedKhronosRunStatus:
+        raise ValueError("official metrics require a validated run status")
+    run_identity = run_status.metric_identity(
+        scene=scene,
+        method=method,
+        mode=mode,
+    )
     for output in (metrics_path, repeat_path):
         if os.path.lexists(output):
             raise FileExistsError(f"official metric output already exists: {output}")
@@ -289,6 +369,7 @@ def write_repeated_metrics(
                 method=method,
                 mode=mode,
                 output=output,
+                run_identity=run_identity,
             )
         except ValueError as error:
             errors.append(str(error))
@@ -301,6 +382,7 @@ def write_repeated_metrics(
             method=method,
             mode=mode,
             output=metrics_path,
+            run_identity=run_identity,
         )
         _write_partial_metrics(
             results_dir=results_dir,
@@ -308,6 +390,7 @@ def write_repeated_metrics(
             method=method,
             mode=mode,
             output=repeat_path,
+            run_identity=run_identity,
         )
         if metrics_path.read_bytes() != repeat_path.read_bytes():
             raise RuntimeError("partial Khronos metric repeat is not byte-identical")
@@ -353,7 +436,7 @@ def run(args: argparse.Namespace) -> Path:
     if args.method != "OVIV2" or args.mode != "causal_checkpoints":
         raise ValueError("official evaluation requires OVIV2 causal identity")
     status_path = args.run_root / "run_status.json"
-    validate_khronos_run_status(status_path, scene=args.scene)
+    run_status = validate_khronos_run_status(status_path, scene=args.scene)
 
     manifest = validate_tesse_manifest(args.manifest, scene=args.scene)
     sequence = manifest["sequences"][args.scene]
@@ -439,6 +522,7 @@ def run(args: argparse.Namespace) -> Path:
         mode=args.mode,
         metrics_path=metrics_path,
         repeat_path=repeat_path,
+        run_status=run_status,
     )
     if metric_summary["status"] == "PASS":
         evaluation_status.update(
