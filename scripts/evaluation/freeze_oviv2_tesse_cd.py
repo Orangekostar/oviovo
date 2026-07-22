@@ -1793,6 +1793,8 @@ def _publish_json_transaction(
     normalized = tuple((_absolute_path(path), content) for path, content in publications)
     parents = {path.parent for path, _ in normalized} | {guard}
     bound: dict[Path, tuple[int, int, int]] = {}
+    directory_descriptors: set[int] = set()
+    temp_descriptors: set[int] = set()
     temporary: list[_TemporaryPublication] = []
     active_temporary: set[tuple[Path, str]] = set()
     published: list[tuple[_TemporaryPublication, str]] = []
@@ -1933,6 +1935,11 @@ def _publish_json_transaction(
         if guard_names() != expected_guard_names():
             raise FileExistsError(f"prior run output appeared under {guard}")
 
+    primary_error: BaseException | None = None
+    primary_traceback = None
+    rollback_uncertainty: list[str] = []
+    temp_cleanup_uncertainty: list[str] = []
+    close_uncertainty: list[str] = []
     try:
         for parent in sorted(parents):
             parent.mkdir(parents=True, exist_ok=True)
@@ -1944,6 +1951,7 @@ def _publish_json_transaction(
                 | getattr(os, "O_CLOEXEC", 0)
                 | getattr(os, "O_NOFOLLOW", 0),
             )
+            directory_descriptors.add(descriptor)
             status = os.fstat(descriptor)
             bound[parent] = (descriptor, status.st_dev, status.st_ino)
             assert_bound(parent)
@@ -1965,6 +1973,7 @@ def _publish_json_transaction(
                         0o600,
                         dir_fd=parent_fd,
                     )
+                    temp_descriptors.add(descriptor)
                     break
                 except FileExistsError:
                     continue
@@ -2037,7 +2046,8 @@ def _publish_json_transaction(
         for descriptor, _, _ in bound.values():
             os.fsync(descriptor)
     except BaseException as publication_error:
-        rollback_uncertainty: list[str] = []
+        primary_error = publication_error
+        primary_traceback = publication_error.__traceback__
         for item, name in reversed(published):
             try:
                 if not unlink_if_owned(item, name):
@@ -2048,20 +2058,68 @@ def _publish_json_transaction(
                 rollback_uncertainty.append(
                     f"{item.parent / name} (cleanup error: {cleanup_error})"
                 )
-        if rollback_uncertainty:
-            details = ", ".join(rollback_uncertainty)
-            raise PublicationUncertainError(
-                "publication error: "
-                f"{type(publication_error).__name__}: {publication_error}; "
-                f"rollback uncertainty: {details}"
-            ) from publication_error
-        raise
+    for item in temporary:
+        if (item.parent, item.name) not in active_temporary:
+            continue
+        try:
+            if not unlink_if_owned(item, item.name):
+                temp_cleanup_uncertainty.append(
+                    f"{item.parent / item.name} ({classify_name(item, item.name)})"
+                )
+        except OSError as cleanup_error:
+            temp_cleanup_uncertainty.append(
+                f"{item.parent / item.name} (cleanup error: {cleanup_error})"
+            )
+    try:
+        for descriptor in temp_descriptors:
+            try:
+                os.close(descriptor)
+            except OSError as close_error:
+                close_uncertainty.append(
+                    f"temporary fd {descriptor} (close error: {close_error})"
+                )
     finally:
-        for item in temporary:
-            unlink_if_owned(item, item.name)
-            os.close(item.descriptor)
-        for descriptor, _, _ in bound.values():
-            os.close(descriptor)
+        for descriptor in directory_descriptors:
+            try:
+                os.close(descriptor)
+            except OSError as close_error:
+                close_uncertainty.append(
+                    f"directory fd {descriptor} (close error: {close_error})"
+                )
+
+    uncertainty_sections: list[str] = []
+    if rollback_uncertainty:
+        uncertainty_sections.append(
+            "rollback uncertainty: " + ", ".join(rollback_uncertainty)
+        )
+    if temp_cleanup_uncertainty:
+        uncertainty_sections.append(
+            "temp cleanup uncertainty: " + ", ".join(temp_cleanup_uncertainty)
+        )
+    if close_uncertainty:
+        uncertainty_sections.append(
+            "fd close uncertainty: " + ", ".join(close_uncertainty)
+        )
+
+    if primary_error is not None and uncertainty_sections:
+        if isinstance(primary_error, PublicationUncertainError):
+            message = str(primary_error)
+            cause = primary_error.__cause__ or primary_error
+        else:
+            message = (
+                "publication uncertain: publication error: "
+                f"{type(primary_error).__name__}: {primary_error}"
+            )
+            cause = primary_error
+        raise PublicationUncertainError(
+            f"{message}; {'; '.join(uncertainty_sections)}"
+        ) from cause
+    if primary_error is not None:
+        raise primary_error.with_traceback(primary_traceback)
+    if uncertainty_sections:
+        raise PublicationUncertainError(
+            f"publication uncertain: {'; '.join(uncertainty_sections)}"
+        )
 
 
 def _freeze_impl(

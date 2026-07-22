@@ -1408,11 +1408,67 @@ def test_freeze_rejects_temp_name_replacement_before_link(
         replace_before_last_temp,
     )
 
-    with pytest.raises(ValueError, match="publication uncertain"):
+    with pytest.raises(
+        ValueError,
+        match="publication uncertain.*temp cleanup uncertainty",
+    ):
         fixture.run()
 
     assert not fixture.output_apartment.exists()
     assert temp_path.read_bytes() == b"foreign-temp\n"
+
+
+def test_freeze_aggregates_denied_temp_cleanup_and_closes_all_fds(
+    fixture: Fixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    real_open = os.open
+    real_unlink = os.unlink
+    opened_descriptors: list[int] = []
+
+    def track_open(path: Any, flags: int, *args: Any, **kwargs: Any) -> int:
+        descriptor = real_open(path, flags, *args, **kwargs)
+        if (
+            isinstance(path, str)
+            and path.endswith(".freeze-tmp")
+            or flags & getattr(os, "O_DIRECTORY", 0)
+        ):
+            opened_descriptors.append(descriptor)
+        return descriptor
+
+    def deny_temp_unlink(
+        path: Any, *args: Any, dir_fd: int | None = None, **kwargs: Any
+    ) -> None:
+        if isinstance(path, str) and path.endswith(".freeze-tmp"):
+            raise PermissionError("injected temp cleanup denial")
+        real_unlink(path, *args, dir_fd=dir_fd, **kwargs)
+
+    def fail_first_link(*args: Any, **kwargs: Any) -> None:
+        raise OSError("injected publication failure before first link")
+
+    monkeypatch.setattr(
+        "scripts.evaluation.freeze_oviv2_tesse_cd.os.open", track_open
+    )
+    monkeypatch.setattr(
+        "scripts.evaluation.freeze_oviv2_tesse_cd.os.unlink", deny_temp_unlink
+    )
+    monkeypatch.setattr(
+        "scripts.evaluation.freeze_oviv2_tesse_cd._link_no_replace",
+        fail_first_link,
+    )
+
+    with pytest.raises(
+        PublicationUncertainError,
+        match="publication error.*temp cleanup uncertainty.*denial",
+    ) as raised:
+        fixture.run()
+
+    assert isinstance(raised.value.__cause__, OSError)
+    assert "before first link" in str(raised.value.__cause__)
+    assert len(list(fixture.repo.rglob("*.freeze-tmp"))) == 3
+    assert opened_descriptors
+    for descriptor in set(opened_descriptors):
+        with pytest.raises(OSError):
+            os.fstat(descriptor)
 
 
 def test_freeze_detects_temp_swap_between_validation_and_link(
