@@ -1641,18 +1641,70 @@ def _production_checkpoint_exporter(
     }
 
 
+def _repository_provenance() -> dict[str, str]:
+    commit = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=REPO_ROOT,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    ).stdout.strip().decode("ascii")
+    dirty_state = subprocess.run(
+        [
+            "git",
+            "status",
+            "--porcelain=v1",
+            "-z",
+            "--untracked-files=all",
+        ],
+        cwd=REPO_ROOT,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    ).stdout
+    return {
+        "repository_commit": commit,
+        "dirty_state_digest": hashlib.sha256(dirty_state).hexdigest(),
+    }
+
+
+def _stable_run_provenance(
+    started: Mapping[str, Any], finished: Mapping[str, Any]
+) -> dict[str, Any]:
+    fields = ("repository_commit", "dirty_state_digest")
+    started_has_repository = any(field in started for field in fields)
+    finished_has_repository = any(field in finished for field in fields)
+    if not started_has_repository and not finished_has_repository:
+        return dict(finished)
+    if not all(field in started and field in finished for field in fields):
+        raise ValueError("runner repository provenance changed during run")
+    if (
+        not isinstance(started["repository_commit"], str)
+        or len(started["repository_commit"]) != 40
+        or any(
+            character not in "0123456789abcdef"
+            for character in started["repository_commit"]
+        )
+        or not _is_sha256(started["dirty_state_digest"])
+        or not isinstance(finished["repository_commit"], str)
+        or len(finished["repository_commit"]) != 40
+        or any(
+            character not in "0123456789abcdef"
+            for character in finished["repository_commit"]
+        )
+        or not _is_sha256(finished["dirty_state_digest"])
+    ):
+        raise ValueError("runner repository provenance is invalid")
+    clean_digest = hashlib.sha256(b"").hexdigest()
+    if started["dirty_state_digest"] != clean_digest:
+        raise ValueError("runner repository is dirty before run")
+    if any(started[field] != finished[field] for field in fields):
+        raise ValueError("runner repository changed during run")
+    return dict(finished)
+
+
 def _production_provenance() -> Mapping[str, Any]:
-    try:
-        commit = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            cwd=REPO_ROOT,
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        ).stdout.strip()
-    except (OSError, subprocess.CalledProcessError):
-        commit = "unavailable"
+    repository = _repository_provenance()
     try:
         gpu_inventory = subprocess.run(
             [
@@ -1693,7 +1745,7 @@ def _production_provenance() -> Mapping[str, Any]:
         except importlib.metadata.PackageNotFoundError:
             library_versions[distribution] = "unavailable"
     return {
-        "repository_commit": commit,
+        **repository,
         "command": [str(value) for value in sys.argv],
         "hostname": platform.node(),
         "platform": platform.platform(),

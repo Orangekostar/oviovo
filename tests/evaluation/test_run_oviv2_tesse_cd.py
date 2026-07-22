@@ -40,6 +40,67 @@ from src.oviv2.dense_semantics import DenseSemanticProvenance
 from src.oviv2.ownership import ReversibleOwnershipStore
 
 
+def test_repository_provenance_hashes_exact_git_status_bytes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    outputs = {
+        ("rev-parse", "HEAD"): b"a" * 40 + b"\n",
+        (
+            "status",
+            "--porcelain=v1",
+            "-z",
+            "--untracked-files=all",
+        ): b" M tracked.py\0",
+    }
+
+    def fake_run(command: list[str], **_: object) -> SimpleNamespace:
+        assert command[0] == "git"
+        return SimpleNamespace(stdout=outputs[tuple(command[1:])])
+
+    monkeypatch.setattr(runner_module.subprocess, "run", fake_run)
+
+    provenance = runner_module._repository_provenance()
+
+    assert provenance == {
+        "repository_commit": "a" * 40,
+        "dirty_state_digest": hashlib.sha256(b" M tracked.py\0").hexdigest(),
+    }
+
+
+@pytest.mark.parametrize(
+    "started,finished,message",
+    [
+        (
+            {
+                "repository_commit": "a" * 40,
+                "dirty_state_digest": "f" * 64,
+            },
+            {
+                "repository_commit": "a" * 40,
+                "dirty_state_digest": "f" * 64,
+            },
+            "dirty",
+        ),
+        (
+            {
+                "repository_commit": "a" * 40,
+                "dirty_state_digest": hashlib.sha256(b"").hexdigest(),
+            },
+            {
+                "repository_commit": "b" * 40,
+                "dirty_state_digest": hashlib.sha256(b"").hexdigest(),
+            },
+            "changed",
+        ),
+    ],
+)
+def test_run_provenance_requires_clean_stable_repository(
+    started: dict[str, str], finished: dict[str, str], message: str
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        runner_module._stable_run_provenance(started, finished)
+
+
 def _write_json(path: Path, payload: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
