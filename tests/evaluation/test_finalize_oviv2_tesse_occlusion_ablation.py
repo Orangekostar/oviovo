@@ -176,10 +176,80 @@ def _parent_freeze(
     return path, configs
 
 
+def _formal_identity_fields(
+    scene_root: Path,
+    *,
+    scene: str,
+    config: dict[str, Any],
+    freeze: dict[str, Any],
+    freeze_raw: bytes,
+) -> dict[str, Any]:
+    frozen_identity = {
+        "schema_version": 1,
+        "freeze_id": "oviv2-tessecd-v1",
+        "dataset": "TESSE-CD",
+        "method_id": "OVIV2",
+        "scene": scene,
+        "freeze_manifest": {
+            "sha256": _sha256_bytes(freeze_raw),
+            "byte_count": len(freeze_raw),
+        },
+        "repository": {
+            "commit": freeze["repository"]["commit"],
+            "tree": freeze["repository"]["tree"],
+        },
+        "config": {
+            "sha256": freeze["scenes"][scene]["frozen_config"]["sha256"],
+            "byte_count": freeze["scenes"][scene]["frozen_config"]["byte_count"],
+        },
+        "algorithm_hash": config["algorithm_hash"],
+        "missing_observation_policy": "signed_depth",
+        "input_bindings_sha256": hashlib.sha256(
+            json.dumps(
+                {
+                    "shared_bindings": freeze["shared_bindings"],
+                    "scene": freeze["scenes"][scene],
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+                allow_nan=False,
+            ).encode("utf-8")
+        ).hexdigest(),
+    }
+    status = scene_root.stat()
+    execution = {
+        "schema_version": 1,
+        "run_slot": f"{scene}_run1",
+        "output_root": str(scene_root.resolve()),
+        "root_device": status.st_dev,
+        "root_inode": status.st_ino,
+    }
+    execution["execution_id"] = hashlib.sha256(
+        json.dumps(
+            execution,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
+    ).hexdigest()
+    return {
+        "frozen_run_identity": frozen_identity,
+        "run_execution": execution,
+    }
+
+
 def _bundle(
     root: Path,
     configs: dict[str, dict[str, Any]],
+    *,
+    formal_freeze: Path | None = None,
 ) -> tuple[Path, Path]:
+    freeze = (
+        json.loads(formal_freeze.read_text(encoding="utf-8"))
+        if formal_freeze is not None
+        else None
+    )
+    freeze_raw = formal_freeze.read_bytes() if formal_freeze is not None else None
     paths: list[Path] = []
     for scene in ("apartment", "office"):
         scene_root = root / scene
@@ -202,6 +272,16 @@ def _bundle(
             "evaluation_checkpoint_frames_sha256": "2" * 64,
             "snapshots": [],
         }
+        if freeze is not None and freeze_raw is not None:
+            payload.update(
+                _formal_identity_fields(
+                    scene_root,
+                    scene=scene,
+                    config=configs[scene],
+                    freeze=freeze,
+                    freeze_raw=freeze_raw,
+                )
+            )
         index_path = scene_root / "occlusion_checkpoint_index.json"
         _write(index_path, payload)
         paths.append(index_path)
@@ -224,6 +304,30 @@ def _bind_real_indexes(
             "sha256": _sha256_bytes(config_raw),
             "byte_count": len(config_raw),
         }
+        _write(path, index)
+    return indexes
+
+
+def _bind_formal_indexes(
+    indexes: tuple[Path, Path],
+    *,
+    freeze_path: Path,
+    configs: dict[str, dict[str, Any]],
+) -> tuple[Path, Path]:
+    freeze_raw = freeze_path.read_bytes()
+    freeze = json.loads(freeze_raw)
+    for path in indexes:
+        index = json.loads(path.read_text(encoding="utf-8"))
+        scene = index["scene"]
+        index.update(
+            _formal_identity_fields(
+                path.parent,
+                scene=scene,
+                config=configs[scene],
+                freeze=freeze,
+                freeze_raw=freeze_raw,
+            )
+        )
         _write(path, index)
     return indexes
 
@@ -313,7 +417,11 @@ def _fixture(tmp_path: Path) -> dict[str, Any]:
         scene: json.loads((ablation_root / f"{scene}.json").read_text())
         for scene in ("apartment", "office")
     }
-    signed_indexes = _bundle(tmp_path / "signed", signed_configs)
+    signed_indexes = _bundle(
+        tmp_path / "signed",
+        signed_configs,
+        formal_freeze=parent_path,
+    )
     ablation_indexes = _bundle(tmp_path / "ablation", ablation_configs)
     signed_result = _result(
         signed_indexes,
@@ -428,6 +536,31 @@ def test_finalizes_independent_bundles_and_emits_bounded_eligible_claim(
         for item in final["bundles"]["missing_as_absence"]["checkpoint_indexes"]
     }
     assert signed_hashes.isdisjoint(ablation_hashes)
+
+
+@pytest.mark.parametrize(
+    ("field", "message"),
+    [
+        ("frozen_run_identity", "frozen run identity mismatch"),
+        ("run_execution", "run execution identity mismatch"),
+    ],
+)
+def test_rejects_signed_bundle_formal_identity_drift(
+    tmp_path: Path,
+    field: str,
+    message: str,
+) -> None:
+    fixture = _fixture(tmp_path)
+    index_path = fixture["signed_indexes"][0]
+    index = json.loads(index_path.read_text(encoding="utf-8"))
+    if field == "frozen_run_identity":
+        index[field]["algorithm_hash"] = "0" * 64
+    else:
+        index[field]["root_inode"] += 1
+    _write(index_path, index)
+
+    with pytest.raises(ValueError, match=message):
+        _finalize(fixture, tmp_path)
 
 
 @pytest.mark.parametrize("case", ["signed_gate", "no_degradation"])
@@ -665,6 +798,11 @@ def test_default_finalizer_consumes_real_evaluator_artifacts(tmp_path: Path) -> 
         signed_configs[scene] = config
     _bind_real_indexes(signed_indexes, signed_configs)
     parent, _ = _parent_freeze(tmp_path / "real-parent", signed_configs)
+    _bind_formal_indexes(
+        signed_indexes,
+        freeze_path=parent,
+        configs=signed_configs,
+    )
     ablation_root = tmp_path / "real-ablation-config"
     build_ablation(parent_freeze=parent, output_dir=ablation_root)
     ablation_configs = {

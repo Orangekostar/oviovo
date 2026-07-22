@@ -17,6 +17,10 @@ import numpy as np
 import pytest
 
 import scripts.evaluation.run_oviv2_tesse_cd as runner_module
+from scripts.evaluation.canonicalize_tesse_common_v2_summary import (
+    canonical_summary_bytes,
+    canonicalize_summary,
+)
 from scripts.evaluation.export_tesse_temporal_artifact import export_temporal_artifact
 from scripts.evaluation.run_oviv2_tesse_cd import (
     RunnerDependencies,
@@ -1370,6 +1374,76 @@ def test_formal_runs_propagate_stable_identity_and_distinct_execution(
     assert first_temporal_payload["run_execution"] != second_temporal_payload[
         "run_execution"
     ]
+
+    external_root = tmp_path / "common-v2-inputs"
+    external_root.mkdir()
+    external_sources = {
+        role: external_root / name
+        for role, name in {
+            "target_manifest": "target-manifest.json",
+            "target_arrays": "targets.npz",
+            "aliases": "aliases.yaml",
+            "label_space": "labels.yaml",
+            "evaluator": "evaluator.py",
+        }.items()
+    }
+    for role, path in external_sources.items():
+        path.write_bytes(f"{role}\n".encode("utf-8"))
+
+    canonical: list[bytes] = []
+    for root in (
+        Path(roots["apartment_run1"]),
+        Path(roots["apartment_run2"]),
+    ):
+        temporal_path = root / "temporal/temporal_manifest.json"
+        temporal_payload = json.loads(temporal_path.read_text(encoding="utf-8"))
+        sources = {
+            "temporal_index": _record(temporal_path),
+            "schedule": _record(root / "temporal/sidecars/schedule.json"),
+            **{role: _record(path) for role, path in external_sources.items()},
+        }
+        frames = []
+        for checkpoint in temporal_payload["checkpoints"]:
+            frame = checkpoint["frame_index"]
+            sources[f"snapshot.{frame:06d}"] = _record(
+                root / f"temporal/checkpoints/{frame:08d}/snapshot.npz"
+            )
+            sources[f"entities.{frame:06d}"] = _record(
+                root / f"temporal/checkpoints/{frame:08d}/entities.jsonl"
+            )
+            frames.append({"frame_id": frame, "current_miou": 0.6})
+        summary = root / "evaluation/summary.json"
+        _write_json(
+            summary,
+            {
+                "schema_version": 1,
+                "manifest_id": "tesse_cd_common_v2_scene_summary",
+                "dataset": "TESSE-CD",
+                "protocol": "tesse_cd_common_v2",
+                "status": "PASS",
+                "method": "OVIV2",
+                "mode": "causal_checkpoints",
+                "scene": "apartment",
+                "metrics": {
+                    "background_f5": 0.5,
+                    "current_miou": 0.6,
+                    "ghost_rate": 0.1,
+                    "recovery_frames": 100.0,
+                },
+                "frames": frames,
+                "sources": sources,
+            },
+        )
+        canonical.append(
+            canonical_summary_bytes(
+                canonicalize_summary(
+                    summary,
+                    artifact_root=root,
+                    external_sources=external_sources,
+                )
+            )
+        )
+    assert canonical[0] == canonical[1]
 
 
 def test_formal_run_rejects_prepared_freeze(

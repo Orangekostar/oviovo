@@ -86,6 +86,16 @@ def canonical_algorithm_hash(config: Mapping[str, Any]) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+def _identity_hash(value: object) -> str:
+    payload = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
 class _LazyCheckpointSnapshots(Mapping[SnapshotKey, Any]):
     def __init__(
         self,
@@ -777,7 +787,16 @@ def _load_single_checkpoint_index(
         if index_schema_version == 1
         else base_fields | {"scene", "algorithm_hash"}
     )
-    if set(payload) != expected_fields or not (
+    formal_fields = {"frozen_run_identity", "run_execution"}
+    allowed_fields = (
+        {frozenset(expected_fields)}
+        if index_schema_version == 1
+        else {
+            frozenset(expected_fields),
+            frozenset(expected_fields | formal_fields),
+        }
+    )
+    if frozenset(payload) not in allowed_fields or not (
         type(index_schema_version) is int
         and index_schema_version in {1, 2}
         and payload["manifest_id"] == "oviv2_tesse_cd_occlusion_checkpoints_v1"
@@ -826,6 +845,64 @@ def _load_single_checkpoint_index(
             and canonical_algorithm_hash(run_config) == index_algorithm_hash
         ):
             raise ValueError("normalized run config algorithm hash mismatch")
+        if formal_fields <= set(payload):
+            frozen_identity = payload["frozen_run_identity"]
+            execution = payload["run_execution"]
+            frozen_fields = {
+                "schema_version",
+                "freeze_id",
+                "dataset",
+                "method_id",
+                "scene",
+                "freeze_manifest",
+                "repository",
+                "config",
+                "algorithm_hash",
+                "missing_observation_policy",
+                "input_bindings_sha256",
+            }
+            if not isinstance(frozen_identity, Mapping) or not (
+                set(frozen_identity) == frozen_fields
+                and type(frozen_identity.get("schema_version")) is int
+                and frozen_identity.get("schema_version") == 1
+                and frozen_identity.get("freeze_id") == "oviv2-tessecd-v1"
+                and frozen_identity.get("dataset") == "TESSE-CD"
+                and frozen_identity.get("method_id") == "OVIV2"
+                and frozen_identity.get("scene") == index_scene
+                and frozen_identity.get("algorithm_hash") == index_algorithm_hash
+                and frozen_identity.get("missing_observation_policy") == "signed_depth"
+            ):
+                raise ValueError("checkpoint frozen run identity mismatch")
+            execution_fields = {
+                "schema_version",
+                "run_slot",
+                "output_root",
+                "root_device",
+                "root_inode",
+                "execution_id",
+            }
+            output_root = Path(os.path.abspath(checkpoint_index.parent))
+            root_status = os.stat(output_root, follow_symlinks=False)
+            if not isinstance(execution, Mapping) or set(execution) != execution_fields:
+                raise ValueError("checkpoint run execution identity mismatch")
+            execution_base = {
+                key: execution[key]
+                for key in execution_fields
+                if key != "execution_id"
+            }
+            if not (
+                type(execution.get("schema_version")) is int
+                and execution.get("schema_version") == 1
+                and execution.get("run_slot")
+                in {f"{index_scene}_run1", f"{index_scene}_run2"}
+                and execution.get("output_root") == os.fspath(output_root)
+                and type(execution.get("root_device")) is int
+                and execution.get("root_device") == root_status.st_dev
+                and type(execution.get("root_inode")) is int
+                and execution.get("root_inode") == root_status.st_ino
+                and execution.get("execution_id") == _identity_hash(execution_base)
+            ):
+                raise ValueError("checkpoint run execution identity mismatch")
         if (
             run_config.get("occlusion_target_manifest_sha256")
             != target_manifest_witness.sha256

@@ -55,7 +55,7 @@ _RESULT_FIELDS = frozenset(
         "headline_gate",
     }
 )
-_INDEX_FIELDS = frozenset(
+_BASE_INDEX_FIELDS = frozenset(
     {
         "schema_version",
         "manifest_id",
@@ -67,6 +67,20 @@ _INDEX_FIELDS = frozenset(
         "target_manifest",
         "evaluation_checkpoint_frames_sha256",
         "snapshots",
+    }
+)
+_FORMAL_INDEX_FIELDS = _BASE_INDEX_FIELDS | {
+    "frozen_run_identity",
+    "run_execution",
+}
+_RUN_EXECUTION_FIELDS = frozenset(
+    {
+        "schema_version",
+        "run_slot",
+        "output_root",
+        "root_device",
+        "root_inode",
+        "execution_id",
     }
 )
 
@@ -359,11 +373,14 @@ def _load_bundle(
     expected_policy: str,
     result: Mapping[str, Any],
     role: str,
+    expected_frozen_identities: Mapping[str, Mapping[str, Any]] | None = None,
 ) -> tuple[
     tuple[Path, Path],
     list[dict[str, int | str]],
     list[dict[str, int | str]],
     list[tuple[Path, bytes, str]],
+    dict[str, dict[str, Any]],
+    dict[str, dict[str, Any]],
 ]:
     if len(paths) != 2:
         raise ValueError(f"{role} requires exactly two checkpoint indexes")
@@ -371,8 +388,21 @@ def _load_bundle(
     for raw_path in paths:
         path = Path(raw_path)
         index, index_raw = _load_json(path, f"{role} checkpoint index")
-        if set(index) != _INDEX_FIELDS or not (
-            index.get("schema_version") == 2
+        expected_fields = (
+            _FORMAL_INDEX_FIELDS
+            if expected_frozen_identities is not None
+            else _BASE_INDEX_FIELDS
+        )
+        if (
+            expected_frozen_identities is None
+            and set(index) == _FORMAL_INDEX_FIELDS
+        ):
+            raise ValueError(
+                f"{role} {index.get('scene')} run config does not match its frozen config"
+            )
+        if set(index) != expected_fields or not (
+            type(index.get("schema_version")) is int
+            and index.get("schema_version") == 2
             and index.get("manifest_id")
             == "oviv2_tesse_cd_occlusion_checkpoints_v1"
             and index.get("dataset") == "TESSE-CD"
@@ -383,6 +413,35 @@ def _load_bundle(
         scene = index.get("scene")
         if scene not in SCENES or scene in loaded:
             raise ValueError(f"{role} checkpoint indexes must cover both scenes exactly")
+        if expected_frozen_identities is not None:
+            frozen_identity = index.get("frozen_run_identity")
+            if not isinstance(frozen_identity, Mapping) or _canonical_bytes(
+                frozen_identity
+            ) != _canonical_bytes(expected_frozen_identities[scene]):
+                raise ValueError(f"{role} {scene} frozen run identity mismatch")
+            execution = index.get("run_execution")
+            if not isinstance(execution, Mapping) or set(execution) != _RUN_EXECUTION_FIELDS:
+                raise ValueError(f"{role} {scene} run execution identity is invalid")
+            output_root = Path(os.path.abspath(path.parent))
+            status = os.stat(output_root, follow_symlinks=False)
+            execution_base = {
+                field: execution.get(field)
+                for field in _RUN_EXECUTION_FIELDS
+                if field != "execution_id"
+            }
+            if not (
+                type(execution.get("schema_version")) is int
+                and execution.get("schema_version") == 1
+                and execution.get("run_slot")
+                in {f"{scene}_run1", f"{scene}_run2"}
+                and execution.get("output_root") == os.fspath(output_root)
+                and type(execution.get("root_device")) is int
+                and execution.get("root_device") == status.st_dev
+                and type(execution.get("root_inode")) is int
+                and execution.get("root_inode") == status.st_ino
+                and execution.get("execution_id") == _json_hash(execution_base)
+            ):
+                raise ValueError(f"{role} {scene} run execution identity mismatch")
         run_binding = index.get("run_config")
         if not isinstance(run_binding, Mapping) or set(run_binding) != {
             "path",
@@ -429,7 +488,24 @@ def _load_bundle(
             (loaded[scene][3], loaded[scene][4], f"{role} {scene} run config"),
         )
     ]
-    return ordered, index_records, config_records, witnesses
+    frozen_identities = {
+        scene: dict(loaded[scene][1]["frozen_run_identity"])
+        for scene in SCENES
+        if "frozen_run_identity" in loaded[scene][1]
+    }
+    run_executions = {
+        scene: dict(loaded[scene][1]["run_execution"])
+        for scene in SCENES
+        if "run_execution" in loaded[scene][1]
+    }
+    return (
+        ordered,
+        index_records,
+        config_records,
+        witnesses,
+        frozen_identities,
+        run_executions,
+    )
 
 
 def _headline_projection(result: Mapping[str, Any]) -> dict[str, Any]:
@@ -445,6 +521,58 @@ def _headline_projection(result: Mapping[str, Any]) -> dict[str, Any]:
         "scene_coverage": gate["scene_coverage"],
         "passed": gate["passed"],
     }
+
+
+def _expected_frozen_run_identities(
+    parent: Mapping[str, Any],
+    *,
+    parent_raw: bytes,
+    parent_configs: Mapping[str, Mapping[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    shared = parent.get("shared_bindings")
+    scenes = parent.get("scenes")
+    repository = parent.get("repository")
+    if not all(isinstance(value, Mapping) for value in (shared, scenes, repository)):
+        raise ValueError("parent freeze identity bindings are invalid")
+    assert isinstance(shared, Mapping)
+    assert isinstance(scenes, Mapping)
+    assert isinstance(repository, Mapping)
+    expected: dict[str, dict[str, Any]] = {}
+    for scene in SCENES:
+        scene_binding = scenes.get(scene)
+        if not isinstance(scene_binding, Mapping):
+            raise ValueError(f"parent {scene} freeze identity binding is invalid")
+        config = scene_binding.get("frozen_config")
+        if not isinstance(config, Mapping):
+            raise ValueError(f"parent {scene} frozen config binding is invalid")
+        expected[scene] = {
+            "schema_version": 1,
+            "freeze_id": "oviv2-tessecd-v1",
+            "dataset": "TESSE-CD",
+            "method_id": "OVIV2",
+            "scene": scene,
+            "freeze_manifest": _content_record(parent_raw),
+            "repository": {
+                "commit": repository["commit"],
+                "tree": repository["tree"],
+            },
+            "config": _binding_record(
+                {
+                    "sha256": config.get("sha256"),
+                    "byte_count": config.get("byte_count"),
+                },
+                f"parent {scene} frozen config",
+            ),
+            "algorithm_hash": parent_configs[scene]["algorithm_hash"],
+            "missing_observation_policy": "signed_depth",
+            "input_bindings_sha256": _json_hash(
+                {
+                    "shared_bindings": dict(shared),
+                    "scene": dict(scene_binding),
+                }
+            ),
+        }
+    return expected
 
 
 def finalize_occlusion_ablation(
@@ -494,20 +622,42 @@ def finalize_occlusion_ablation(
         policy="missing_as_absence",
         role="missing-as-absence result",
     )
-    signed_paths, signed_indexes, signed_configs, signed_witnesses = _load_bundle(
+    expected_frozen_identities = _expected_frozen_run_identities(
+        parent,
+        parent_raw=parent_raw,
+        parent_configs=parent_configs,
+    )
+    (
+        signed_paths,
+        signed_indexes,
+        signed_configs,
+        signed_witnesses,
+        signed_frozen_identities,
+        signed_run_executions,
+    ) = _load_bundle(
         signed_checkpoints,
         expected_configs=parent_configs,
         expected_policy="signed_depth",
         result=signed,
         role="signed-depth bundle",
+        expected_frozen_identities=expected_frozen_identities,
     )
-    missing_paths, missing_indexes, missing_configs, missing_witnesses = _load_bundle(
+    (
+        missing_paths,
+        missing_indexes,
+        missing_configs,
+        missing_witnesses,
+        missing_frozen_identities,
+        missing_run_executions,
+    ) = _load_bundle(
         ablation_checkpoints,
         expected_configs=ablation_configs,
         expected_policy="missing_as_absence",
         result=missing,
         role="missing-as-absence bundle",
     )
+    if missing_frozen_identities or missing_run_executions:
+        raise ValueError("missing-as-absence bundle cannot use the signed frozen identity")
 
     if signed["target_manifest"] != missing["target_manifest"]:
         raise ValueError("signed and ablation target bindings differ")
@@ -619,6 +769,8 @@ def finalize_occlusion_ablation(
                 "result": _content_record(signed_raw),
                 "checkpoint_indexes": signed_indexes,
                 "run_configs": signed_configs,
+                "frozen_run_identities": signed_frozen_identities,
+                "run_executions": signed_run_executions,
             },
             "missing_as_absence": {
                 "algorithm_hash": ablation["algorithm"]["ablation_sha256"],
