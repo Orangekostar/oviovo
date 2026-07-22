@@ -24,6 +24,14 @@ from src.evaluation.baselines.ovimap_paper_audit import (
     audit_paper_parity,
     summarize_feature_file,
 )
+from tools.benchmark_result_contract import (
+    ResultContractError,
+    binding_list,
+    parse_result_identity,
+    require_result_document,
+    resolve_json_pointer,
+    validate_registry_identity,
+)
 
 
 class ImportFailure(RuntimeError):
@@ -137,23 +145,10 @@ def _read_registry(path: Path) -> tuple[list[str], list[dict[str, str]]]:
 
 
 def _resolve_json_pointer(document: Any, pointer: str) -> Any:
-    if pointer == "":
-        return document
-    if not pointer.startswith("/"):
-        raise ImportFailure(f"invalid JSON pointer: {pointer}")
-    value = document
-    for raw_part in pointer[1:].split("/"):
-        part = raw_part.replace("~1", "/").replace("~0", "~")
-        try:
-            if isinstance(value, list):
-                value = value[int(part)]
-            elif isinstance(value, Mapping):
-                value = value[part]
-            else:
-                raise KeyError(part)
-        except (KeyError, IndexError, ValueError) as error:
-            raise ImportFailure(f"JSON pointer does not resolve: {pointer}") from error
-    return value
+    try:
+        return resolve_json_pointer(document, pointer)
+    except ResultContractError as error:
+        raise ImportFailure(str(error)) from error
 
 
 def _require_hashed_file(record: Any, *, label: str) -> Path:
@@ -252,28 +247,28 @@ def import_results(
             raise ImportFailure(f"duplicate result file: {result_path}")
         seen_result_paths.add(canonical_path)
         try:
-            result = json.loads(result_path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError) as error:
+            raw_result = json.loads(result_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError, UnicodeError) as error:
             raise ImportFailure(f"cannot read result JSON: {result_path}") from error
+        try:
+            result = require_result_document(raw_result)
+            identity = parse_result_identity(result)
+            bindings = binding_list(result, "token_bindings", required=True)
+            unavailable_bindings = binding_list(result, "unavailable_bindings")
+        except ResultContractError as error:
+            raise ImportFailure(str(error)) from error
         if result.get("status") != "VERIFIED":
             raise ImportFailure(f"result status must be VERIFIED: {result_path}")
-        result_method = str(result.get("method", {}).get("key", ""))
+        result_method = identity.method
         if "OVIOVO" in result_method.upper():
             raise ImportFailure("OVIOVO results are outside this importer scope")
-        dataset = result.get("dataset", {})
-        result_dataset = str(dataset.get("name", ""))
-        result_splits = {str(value) for value in dataset.get("splits", ())}
-        bindings = result.get("token_bindings")
-        unavailable_bindings = result.get("unavailable_bindings", [])
-        if not isinstance(bindings, list) or not isinstance(unavailable_bindings, list):
-            raise ImportFailure("result bindings must be lists")
         if not bindings and not unavailable_bindings:
             raise ImportFailure("VERIFIED result must provide result bindings")
         ovimap_replica8_bindings = [
             binding
             for binding in bindings
             if (
-                (row := by_token.get(str(binding.get("token", "")))) is not None
+                (row := by_token.get(binding["token"])) is not None
                 and row.get("table") == "T1"
                 and row.get("method") == "OVIMAP"
                 and row.get("dataset") == "Replica"
@@ -283,7 +278,7 @@ def import_results(
         if result_method == "OVIMAP" and ovimap_replica8_bindings:
             evidence_metrics = _require_ovimap_paper_audit(result, result_path)
             for binding in ovimap_replica8_bindings:
-                row = by_token[str(binding.get("token", ""))]
+                row = by_token[binding["token"]]
                 evidence_name = OVIMAP_REPLICA8_PAPER_METRICS.get(row.get("metric", ""))
                 if evidence_name is None:
                     raise ImportFailure(
@@ -301,7 +296,7 @@ def import_results(
                     )
 
         for binding in bindings:
-            token = str(binding.get("token", ""))
+            token = binding["token"]
             if "OVIOVO" in token.upper():
                 raise ImportFailure(f"OVIOVO token is outside this importer scope: {token}")
             if token in bound_tokens:
@@ -312,12 +307,10 @@ def import_results(
                 raise ImportFailure(f"token is not present in registry: {token}")
             if row.get("method") not in ALLOWED_METHODS.get(row.get("table", ""), set()):
                 raise ImportFailure(f"token is outside the allowed T1/T2/T4 baseline scope: {token}")
-            if row.get("method") != result_method:
-                raise ImportFailure(
-                    f"method mismatch for {token}: registry={row.get('method')} result={result_method}"
-                )
-            if row.get("dataset") != result_dataset or row.get("split") not in result_splits:
-                raise ImportFailure(f"dataset or split mismatch for {token}")
+            try:
+                validate_registry_identity(identity, row, token=token)
+            except ResultContractError as error:
+                raise ImportFailure(str(error)) from error
             try:
                 registry_precision = int(row.get("precision", ""))
                 binding_precision = int(binding.get("precision"))
@@ -337,10 +330,10 @@ def import_results(
             row["source_json"] = _source_label(result_path, registry_path)
             row["json_pointer"] = pointer
             row["status"] = "VERIFIED"
-            row["note"] = f"Imported from verified run {result.get('run_id', '')}.".strip()
+            row["note"] = f"Imported from verified run {identity.run_id}."
 
         for binding in unavailable_bindings:
-            token = str(binding.get("token", ""))
+            token = binding["token"]
             if "OVIOVO" in token.upper():
                 raise ImportFailure(f"OVIOVO token is outside this importer scope: {token}")
             if token in bound_tokens:
@@ -351,12 +344,10 @@ def import_results(
                 raise ImportFailure(f"token is not present in registry: {token}")
             if row.get("method") not in ALLOWED_METHODS.get(row.get("table", ""), set()):
                 raise ImportFailure(f"token is outside the allowed T1/T2/T4 baseline scope: {token}")
-            if row.get("method") != result_method:
-                raise ImportFailure(
-                    f"method mismatch for {token}: registry={row.get('method')} result={result_method}"
-                )
-            if row.get("dataset") != result_dataset or row.get("split") not in result_splits:
-                raise ImportFailure(f"dataset or split mismatch for {token}")
+            try:
+                validate_registry_identity(identity, row, token=token)
+            except ResultContractError as error:
+                raise ImportFailure(str(error)) from error
             if row.get("status") != "UNFILLED":
                 raise ImportFailure(f"source-bound N/A requires an UNFILLED registry row: {token}")
             pointer = str(binding.get("reason_pointer", ""))
@@ -374,7 +365,7 @@ def import_results(
             row["json_pointer"] = pointer
             row["status"] = "N/A"
             row["note"] = (
-                f"N/A from verified run {result.get('run_id', '')} "
+                f"N/A from verified run {identity.run_id} "
                 f"[source_sha256={_sha256(result_path)}]: {reason.strip()}"
             )
 

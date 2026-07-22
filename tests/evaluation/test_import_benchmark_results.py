@@ -501,8 +501,15 @@ def test_imported_source_bound_t2_na_passes_full_package_check(tmp_path: Path) -
     "attack",
     [
         "duplicate_binding",
+        "finite_duplicate_binding",
+        "binding_token",
+        "method",
+        "dataset",
+        "split",
         "missing_reason_pointer",
         "missing_evidence_pointer",
+        "noncanonical_reason_index",
+        "invalid_evidence_escape",
         "empty_reason",
         "reason_mismatch",
         "evidence_missing_path",
@@ -528,6 +535,22 @@ def test_package_check_rejects_tampered_source_bound_na(
 
     if attack == "duplicate_binding":
         payload["unavailable_bindings"].append(dict(binding))
+    elif attack == "finite_duplicate_binding":
+        payload["token_bindings"].append(
+            {
+                "token": binding["token"],
+                "json_pointer": "/metrics/macro/CURRENT_MIOU",
+                "precision": 3,
+            }
+        )
+    elif attack == "binding_token":
+        binding["token"] = "T2_OVIV2_OFFICE_DYNAMIC_F1"
+    elif attack == "method":
+        payload["method"]["key"] = "DUALMAP"
+    elif attack == "dataset":
+        payload["dataset"]["name"] = "wrong-dataset"
+    elif attack == "split":
+        payload["dataset"]["splits"] = ["apartment_test"]
     elif attack == "missing_reason_pointer":
         binding["reason_pointer"] = "/missing/reason"
         _rewrite_dynamic_na_registry(
@@ -536,6 +559,16 @@ def test_package_check_rejects_tampered_source_bound_na(
         )
     elif attack == "missing_evidence_pointer":
         binding["evidence_pointer"] = "/missing/evidence"
+    elif attack == "noncanonical_reason_index":
+        payload["reason_list"] = [payload["unavailable"]["office"]["OBJECT_F1"]]
+        binding["reason_pointer"] = "/reason_list/-1"
+        _rewrite_dynamic_na_registry(
+            output_dir,
+            lambda row: row.update(json_pointer="/reason_list/-1"),
+        )
+    elif attack == "invalid_evidence_escape":
+        payload["evidence~2"] = evidence_record
+        binding["evidence_pointer"] = "/evidence~2"
     elif attack == "empty_reason":
         payload["unavailable"]["office"]["OBJECT_F1"] = " "
         evidence_record["reason"] = " "
@@ -581,6 +614,113 @@ def test_package_check_rejects_tampered_source_bound_na(
 
     assert completed.returncode != 0
     assert "benchmark_tokens.tsv" in completed.stderr
+
+
+@pytest.mark.parametrize(
+    "case",
+    ["missing", "wrong_type", "empty", "newline", "non_ascii", "too_long"],
+)
+def test_import_rejects_unsafe_run_id(tmp_path: Path, case: str) -> None:
+    registry, markdown, latex, common, _ = _oviv2_t2_package(tmp_path)
+    payload = json.loads(common.read_text(encoding="utf-8"))
+    if case == "missing":
+        payload.pop("run_id")
+    elif case == "wrong_type":
+        payload["run_id"] = 42
+    elif case == "empty":
+        payload["run_id"] = ""
+    elif case == "newline":
+        payload["run_id"] = "bad\nrun"
+    elif case == "non_ascii":
+        payload["run_id"] = "r\u00fan"
+    else:
+        payload["run_id"] = "a" * 129
+    common.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ImportFailure, match="run_id"):
+        import_results(registry, [common], markdown, latex, tmp_path / "out.md", tmp_path / "out.tex")
+
+
+@pytest.mark.parametrize(
+    "pointer",
+    [
+        "/metrics/macro/~2",
+        "/metrics/values/-1",
+        "/metrics/values/00",
+        "/metrics/values/01",
+        "/metrics/values/+1",
+        "/metrics/values/",
+    ],
+)
+def test_import_rejects_noncanonical_json_pointer(tmp_path: Path, pointer: str) -> None:
+    registry, markdown, latex, common, _ = _oviv2_t2_package(tmp_path)
+    payload = json.loads(common.read_text(encoding="utf-8"))
+    payload["metrics"]["macro"]["~2"] = 0.4
+    payload["metrics"]["values"] = [0.4, 0.5]
+    payload["token_bindings"][0]["json_pointer"] = pointer
+    common.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ImportFailure, match="JSON pointer"):
+        import_results(registry, [common], markdown, latex, tmp_path / "out.md", tmp_path / "out.tex")
+
+
+def test_import_accepts_canonical_json_pointer_escapes(tmp_path: Path) -> None:
+    registry, markdown, latex, common, _ = _oviv2_t2_package(tmp_path)
+    payload = json.loads(common.read_text(encoding="utf-8"))
+    payload["metrics"]["macro"]["a/b~c"] = 0.4
+    payload["token_bindings"][0]["json_pointer"] = "/metrics/macro/a~1b~0c"
+    common.write_text(json.dumps(payload), encoding="utf-8")
+
+    import_results(registry, [common], markdown, latex, tmp_path / "out.md", tmp_path / "out.tex")
+
+
+@pytest.mark.parametrize(
+    "case",
+    [
+        "root_list",
+        "method_list",
+        "method_key_list",
+        "dataset_list",
+        "dataset_name_list",
+        "splits_none",
+        "splits_string",
+        "split_item_int",
+        "binding_none",
+        "binding_token_list",
+        "unavailable_binding_none",
+    ],
+)
+def test_import_wraps_malformed_result_structures_as_import_failure(
+    tmp_path: Path, case: str
+) -> None:
+    registry, markdown, latex, common, _ = _oviv2_t2_package(tmp_path)
+    payload = json.loads(common.read_text(encoding="utf-8"))
+    if case == "root_list":
+        payload = []
+    elif case == "method_list":
+        payload["method"] = []
+    elif case == "method_key_list":
+        payload["method"]["key"] = []
+    elif case == "dataset_list":
+        payload["dataset"] = []
+    elif case == "dataset_name_list":
+        payload["dataset"]["name"] = []
+    elif case == "splits_none":
+        payload["dataset"]["splits"] = None
+    elif case == "splits_string":
+        payload["dataset"]["splits"] = "macro_test"
+    elif case == "split_item_int":
+        payload["dataset"]["splits"] = [1]
+    elif case == "binding_none":
+        payload["token_bindings"][0] = None
+    elif case == "binding_token_list":
+        payload["token_bindings"][0]["token"] = []
+    else:
+        payload["unavailable_bindings"] = [None]
+    common.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ImportFailure):
+        import_results(registry, [common], markdown, latex, tmp_path / "out.md", tmp_path / "out.tex")
 
 
 @pytest.mark.parametrize("method", ["OVIV2_STATIC", "OVIV2"])

@@ -17,6 +17,25 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Literal, Mapping, Sequence
 
+if __package__:
+    from .benchmark_result_contract import (
+        ResultContractError,
+        binding_list,
+        parse_result_identity,
+        require_result_document,
+        resolve_json_pointer,
+        validate_registry_identity,
+    )
+else:
+    from benchmark_result_contract import (
+        ResultContractError,
+        binding_list,
+        parse_result_identity,
+        require_result_document,
+        resolve_json_pointer,
+        validate_registry_identity,
+    )
+
 Direction = Literal["higher", "lower"]
 Precision = Literal[2, 3]
 
@@ -45,7 +64,6 @@ DYNAMIC_NA_NOTE_RE = re.compile(
     r"\[source_sha256=(?P<source_sha256>[0-9a-f]{64})\]: (?P<reason>.+)\Z"
 )
 NA_NOTE = "No native entity AP output."
-MISSING = object()
 
 
 @dataclass(frozen=True)
@@ -721,24 +739,6 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _resolve_json_pointer(document: object, pointer: object) -> object:
-    if not isinstance(pointer, str) or not pointer.startswith("/"):
-        return MISSING
-    value = document
-    for raw_part in pointer[1:].split("/"):
-        part = raw_part.replace("~1", "/").replace("~0", "~")
-        try:
-            if isinstance(value, list):
-                value = value[int(part)]
-            elif isinstance(value, Mapping):
-                value = value[part]
-            else:
-                return MISSING
-        except (KeyError, IndexError, ValueError):
-            return MISSING
-    return value
-
-
 def _matches_hashed_file(record: object) -> bool:
     if not isinstance(record, Mapping):
         return False
@@ -771,33 +771,41 @@ def _has_verified_dynamic_na_provenance(
         result = json.loads(source_path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError):
         return False
-    if not isinstance(result, Mapping) or result.get("status") != "VERIFIED":
+    try:
+        result = require_result_document(result)
+        identity = parse_result_identity(result)
+        validate_registry_identity(identity, row, token=row["token"])
+        finite_bindings = binding_list(result, "token_bindings")
+        unavailable_bindings = binding_list(result, "unavailable_bindings", required=True)
+    except ResultContractError:
         return False
-    run_id = result.get("run_id")
-    if run_id != note_match["run_id"]:
+    if result.get("status") != "VERIFIED":
         return False
-    bindings = result.get("unavailable_bindings")
-    if not isinstance(bindings, list):
+    if identity.run_id != note_match["run_id"]:
         return False
     matching_bindings = [
         binding
-        for binding in bindings
-        if isinstance(binding, Mapping)
-        and binding.get("token") == row["token"]
+        for binding in (*finite_bindings, *unavailable_bindings)
+        if binding["token"] == row["token"]
     ]
     if len(matching_bindings) != 1:
         return False
     binding = matching_bindings[0]
+    if binding not in unavailable_bindings:
+        return False
     if binding.get("reason_pointer") != row["json_pointer"]:
         return False
-    reason = _resolve_json_pointer(result, binding.get("reason_pointer"))
+    try:
+        reason = resolve_json_pointer(result, binding.get("reason_pointer"))
+        evidence = resolve_json_pointer(result, binding.get("evidence_pointer"))
+    except ResultContractError:
+        return False
     if (
         not isinstance(reason, str)
         or not reason.strip()
         or reason.strip() != note_match["reason"]
     ):
         return False
-    evidence = _resolve_json_pointer(result, binding.get("evidence_pointer"))
     if not isinstance(evidence, Mapping) or evidence.get("reason") != reason:
         return False
     return _matches_hashed_file(evidence.get("source"))
