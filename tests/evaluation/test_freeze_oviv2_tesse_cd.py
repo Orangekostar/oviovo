@@ -43,6 +43,14 @@ def _json_hash(value: Any) -> str:
     )
 
 
+def _cache_prefix_sha256(hashes: dict[str, str]) -> str:
+    digest = hashlib.sha256()
+    for index, checksum in enumerate(hashes.values()):
+        digest.update(index.to_bytes(8, "little", signed=False))
+        digest.update(bytes.fromhex(checksum))
+    return digest.hexdigest()
+
+
 def _write_bytes(path: Path, value: bytes) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(value)
@@ -138,7 +146,14 @@ class Fixture:
 
         self.camera = _write_json(
             self.repo / "assets/rgbd/cam_params.json",
-            {"height": 480, "width": 720, "fx": 1.0, "fy": 1.0},
+            {
+                "height": 480,
+                "width": 720,
+                "fx": 1.0,
+                "fy": 1.0,
+                "cx": 0.0,
+                "cy": 0.0,
+            },
         )
         self.scene_artifacts: dict[str, dict[str, Path]] = {}
         self.configs: dict[str, dict[str, Any]] = {}
@@ -147,8 +162,23 @@ class Fixture:
         for scene, frame_count in (("apartment", 2), ("office", 3)):
             root = self.repo / f"assets/rgbd/{scene}"
             database = _write_bytes(root / f"{scene}.db3", f"db-{scene}\n".encode())
-            timestamps = _write_bytes(root / "timestamps.csv", b"0,0\n")
-            trajectory = _write_bytes(root / "traj.txt", b"0 0 0 0 0 0 1\n")
+            timestamps = _write_bytes(
+                root / "timestamps.csv",
+                (
+                    "frame_index,sensor_timestamp_ns,relative_timestamp_ns\n"
+                    + "".join(
+                        f"{index},{1000 + index * 50},{index * 50}\n"
+                        for index in range(frame_count)
+                    )
+                ).encode(),
+            )
+            trajectory = _write_bytes(
+                root / "traj.txt",
+                b"1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1\n" * frame_count,
+            )
+            for index in range(frame_count):
+                _write_bytes(root / "results" / f"frame{index:06d}.jpg", b"rgb\n")
+                _write_bytes(root / "results" / f"depth{index:06d}.png", b"depth\n")
             vocabulary_json = _write_json(
                 self.repo / f"configs/evaluation/vocabularies/tesse_cd_{scene}.json",
                 {"scene": scene, "classes": ["chair", "wall"]},
@@ -263,6 +293,119 @@ class Fixture:
 
         for scene, frame_count in (("apartment", 2), ("office", 3)):
             artifact = self.scene_artifacts[scene]
+            frontend_hashes = {
+                f"frame{index:06d}.pkl.gz": _sha256(
+                    _write_bytes(
+                        artifact["frontend_manifest"].parent
+                        / f"frame{index:06d}.pkl.gz",
+                        f"frontend-{scene}-{index}\n".encode(),
+                    )
+                )
+                for index in range(frame_count)
+            }
+            dense_hashes = {
+                f"frame{index:06d}.npz": _sha256(
+                    _write_bytes(
+                        artifact["dense_manifest"].parent / f"frame{index:06d}.npz",
+                        f"dense-{scene}-{index}\n".encode(),
+                    )
+                )
+                for index in range(frame_count)
+            }
+            frontend = json.loads(artifact["frontend_manifest"].read_text())
+            export = json.loads(artifact["export_manifest"].read_text())
+            pose_sha256 = _json_hash(
+                [
+                    [1.0, 0.0, 0.0, 0.0],
+                    [0.0, 1.0, 0.0, 0.0],
+                    [0.0, 0.0, 1.0, 0.0],
+                    [0.0, 0.0, 0.0, 1.0],
+                ]
+            )
+
+            def witness_record(index: int) -> dict[str, Any]:
+                return {
+                    "frame_index": index,
+                    "timestamp_ns": 1000 + index * 50,
+                    "relative_timestamp_ns": index * 50,
+                    "rgb_path": str(
+                        artifact["root"] / "results" / f"frame{index:06d}.jpg"
+                    ),
+                    "depth_path": str(
+                        artifact["root"] / "results" / f"depth{index:06d}.png"
+                    ),
+                    "camera_to_world_sha256": pose_sha256,
+                }
+
+            frontend.update(
+                {
+                    "source_frame_ids": list(range(frame_count)),
+                    "source_frame_ids_hash": _json_hash(list(range(frame_count))),
+                    "image_shape": [480, 720],
+                    "class_count": 2,
+                    "classes": ["chair", "wall"],
+                    "vocabulary_sha256": _sha256(artifact["vocabulary_txt"]),
+                    "input_manifest_sha256": _sha256(self.input_manifest),
+                    "input_witness": {
+                        "schema_version": 1,
+                        "scene": scene,
+                        "root": str(artifact["root"]),
+                        "validated_frame_count": frame_count,
+                        "intrinsics": {
+                            "fx": 1.0,
+                            "fy": 1.0,
+                            "cx": 0.0,
+                            "cy": 0.0,
+                            "width": 720,
+                            "height": 480,
+                        },
+                        "export_manifest": {
+                            **_record(artifact["export_manifest"]),
+                            "combined_output_sha256": export[
+                                "combined_output_sha256"
+                            ],
+                            "validated_combined_output_sha256": export[
+                                "combined_output_sha256"
+                            ],
+                            "file_hash_count": export["file_hash_count"],
+                            "validated_file_hash_count": export["file_hash_count"],
+                        },
+                        "camera_manifest": _record(self.camera),
+                        "schedule_manifest": _record(self.schedule),
+                        "source_manifest": _record(self.source_manifest),
+                        "timestamps": _record(artifact["timestamps"]),
+                        "trajectory": _record(artifact["trajectory"]),
+                        "first_record": witness_record(0),
+                        "last_record": witness_record(frame_count - 1),
+                    },
+                    "cache_files_sha256": frontend_hashes,
+                    "cache_prefix_sha256": _cache_prefix_sha256(frontend_hashes),
+                }
+            )
+            _write_json(artifact["frontend_manifest"], frontend)
+            dense = json.loads(artifact["dense_manifest"].read_text())
+            dense["provenance"].update(
+                {
+                    "source_commit": "1" * 40,
+                    "radio_commit": "2" * 40,
+                    "cache_prefix_sha256": _cache_prefix_sha256(dense_hashes),
+                }
+            )
+            dense.update(
+                {
+                    "source_frame_ids": list(range(frame_count)),
+                    "image_shape": [480, 720],
+                    "sample_stride": 4,
+                    "top_k": 4,
+                    "class_count": 2,
+                    "vocabulary_sha256": _sha256(artifact["vocabulary_json"]),
+                    "cache_files_sha256": dense_hashes,
+                }
+            )
+            _write_json(artifact["dense_manifest"], dense)
+
+        for scene, frame_count in (("apartment", 2), ("office", 3)):
+            artifact = self.scene_artifacts[scene]
             config = {
                 "schema_version": 1,
                 "method_id": "OVIV2",
@@ -278,6 +421,8 @@ class Fixture:
                 "frontend_manifest": str(artifact["frontend_manifest"]),
                 "dense_cache_dir": str(artifact["dense_manifest"].parent),
                 "dense_manifest": str(artifact["dense_manifest"]),
+                "dense_sample_stride": 4,
+                "dense_top_k": 4,
                 "vocabulary_json": str(artifact["vocabulary_json"]),
                 "vocabulary_txt": str(artifact["vocabulary_txt"]),
                 "evaluation_checkpoint_frames": [1] if scene == "apartment" else [1, 2],
@@ -428,6 +573,25 @@ class Fixture:
             **overrides,
         )
 
+    def finalize(self, **overrides: Any) -> dict[str, Any]:
+        tracked = {
+            str(self.output_apartment.resolve()): _sha256(self.output_apartment),
+            str(self.output_office.resolve()): _sha256(self.output_office),
+        }
+        repository_state = {
+            "commit": "d" * 40,
+            "tree": "e" * 40,
+            "tracked_frozen_config_sha256": tracked,
+            **overrides.pop("repository_state", {}),
+        }
+        return self.run(repository_state=repository_state, **overrides)
+
+    @property
+    def prepared_manifest(self) -> Path:
+        return self.output_manifest.with_name(
+            f"{self.output_manifest.stem}.prepared{self.output_manifest.suffix}"
+        )
+
 
 @pytest.fixture
 def fixture(tmp_path: Path) -> Fixture:
@@ -447,7 +611,13 @@ def test_cli_direct_execution_resolves_repository_imports() -> None:
 
 
 def test_freeze_writes_selected_configs_and_complete_manifest(fixture: Fixture) -> None:
-    manifest = fixture.run()
+    prepared = fixture.run()
+
+    assert prepared["status"] == "PREPARED"
+    assert fixture.prepared_manifest.is_file()
+    assert not fixture.output_manifest.exists()
+
+    manifest = fixture.finalize()
 
     apartment = json.loads(fixture.output_apartment.read_text())
     office = json.loads(fixture.output_office.read_text())
@@ -464,7 +634,7 @@ def test_freeze_writes_selected_configs_and_complete_manifest(fixture: Fixture) 
     assert apartment["algorithm_hash"] == manifest["algorithm"]["sha256"]
     assert manifest["status"] == "FROZEN"
     assert manifest["freeze_id"] == "oviv2-tessecd-v1"
-    assert manifest["repository"]["commit"] == "a" * 40
+    assert manifest["repository"]["commit"] == "d" * 40
     assert manifest["repository"]["stage3_is_ancestor"] is True
     assert manifest["selection"]["candidate_count"] == 18
     assert manifest["selection"]["selected_config_sha256"] == _json_hash(apartment)
@@ -473,6 +643,8 @@ def test_freeze_writes_selected_configs_and_complete_manifest(fixture: Fixture) 
     assert manifest["scenes"]["apartment"]["cache"]["frontend_manifest"]["sha256"]
     assert manifest["scenes"]["office"]["cache"]["dense_manifest"]["sha256"]
     assert manifest["models"]["dense"]["apartment"]["model_sha256"] == "d" * 64
+    assert manifest["models"]["dense"]["apartment"]["source_commit"] == "1" * 40
+    assert manifest["models"]["dense"]["office"]["radio_commit"] == "2" * 40
     assert manifest["shared_bindings"]["common_target_arrays"]["sha256"] == _sha256(
         fixture.targets
     )
@@ -488,16 +660,42 @@ def test_freeze_writes_selected_configs_and_complete_manifest(fixture: Fixture) 
     assert set(manifest["shared_bindings"]["finalizers"]) == {"common_v2", "official_t2"}
     assert manifest["environment"] == fixture.environment
     assert len(manifest["commands"]["mapping"]) == 4
+    assert manifest["commands"]["cwd"] == str(fixture.repo)
+    assert all(command.startswith(sys.executable + " ") for command in manifest["commands"]["mapping"])
+    assert all(
+        str(fixture.repo / "scripts/evaluation/run_oviv2_tesse_cd.py") in command
+        for command in manifest["commands"]["mapping"]
+    )
     assert manifest["office_pre_freeze_audit"]["metric_sources_found"] == []
     assert set(manifest["output_roots"]) == {"apartment_run1", "apartment_run2", "office_run1", "office_run2"}
 
     for path in (
         fixture.output_apartment,
         fixture.output_office,
+        fixture.prepared_manifest,
         fixture.output_manifest,
     ):
         parsed = json.loads(path.read_text())
         assert path.read_bytes() == _canonical_json_bytes(parsed)
+
+
+def test_finalize_rejects_configs_not_bound_to_clean_commit(fixture: Fixture) -> None:
+    fixture.run()
+
+    with pytest.raises(ValueError, match="tracked frozen config"):
+        fixture.run(repository_state={"commit": "d" * 40, "tree": "e" * 40})
+
+    assert not fixture.output_manifest.exists()
+
+
+def test_finalize_rejects_frozen_config_changed_after_prepare(fixture: Fixture) -> None:
+    fixture.run()
+    fixture.output_office.write_bytes(fixture.output_office.read_bytes() + b" ")
+
+    with pytest.raises(ValueError, match="prepared frozen config"):
+        fixture.finalize()
+
+    assert not fixture.output_manifest.exists()
 
 
 @pytest.mark.parametrize(
@@ -553,6 +751,50 @@ def test_freeze_rejects_candidate_summary_hash_or_content_mismatch(fixture: Fixt
         fixture.run()
 
 
+def test_freeze_rejects_bool_in_predeclared_parameter_grid(fixture: Fixture) -> None:
+    selection = json.loads(fixture.selection_path.read_text())
+    selection["parameter_grid"]["absence_negative_support"] = [0.5, True]
+    _write_json(fixture.selection_path, selection)
+
+    with pytest.raises(ValueError, match="predeclared parameter grid"):
+        fixture.run()
+
+
+def test_freeze_rejects_symlinked_declared_artifact(fixture: Fixture) -> None:
+    link = fixture.repo / "targets/common-v2/manifest-link.json"
+    link.symlink_to(fixture.target_manifest)
+    selection = json.loads(fixture.selection_path.read_text())
+    selection["common_target_manifest"] = {
+        "path": str(link),
+        "sha256": _sha256(fixture.target_manifest),
+        "byte_count": fixture.target_manifest.stat().st_size,
+    }
+    _write_json(fixture.selection_path, selection)
+
+    with pytest.raises(ValueError, match="non-symlink"):
+        fixture.run()
+
+
+def test_freeze_rejects_source_config_replaced_during_validation(
+    fixture: Fixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.freeze_oviv2_tesse_cd as freeze_module
+
+    original = freeze_module._validate_selection
+
+    def replace_after_selection(*args: Any, **kwargs: Any) -> Any:
+        result = original(*args, **kwargs)
+        fixture.config_paths["office"].write_bytes(
+            fixture.config_paths["office"].read_bytes() + b" "
+        )
+        return result
+
+    monkeypatch.setattr(freeze_module, "_validate_selection", replace_after_selection)
+
+    with pytest.raises(ValueError, match="changed during freeze"):
+        fixture.run()
+
+
 def test_freeze_rejects_non_allowlisted_office_algorithm_difference(fixture: Fixture) -> None:
     def mutate(value: dict[str, Any]) -> None:
         value["association_minimum_score"] = 0.99
@@ -584,6 +826,85 @@ def test_freeze_rejects_cross_scene_model_weight_change(fixture: Fixture) -> Non
 
     with pytest.raises(ValueError, match="same frozen model"):
         fixture.run()
+
+
+def test_freeze_rejects_cache_manifest_missing_runner_required_field(
+    fixture: Fixture,
+) -> None:
+    frontend_path = fixture.scene_artifacts["office"]["frontend_manifest"]
+    frontend = json.loads(frontend_path.read_text())
+    del frontend["input_witness"]
+    _write_json(frontend_path, frontend)
+    selection = json.loads(fixture.selection_path.read_text())
+    selection["freeze_bindings"]["scenes"]["office"]["frontend_manifest"] = _record(
+        frontend_path
+    )
+    _write_json(fixture.selection_path, selection)
+
+    with pytest.raises(ValueError, match="frontend cache manifest"):
+        fixture.run()
+
+
+def test_freeze_rejects_frontend_witness_timestamp_mismatch(fixture: Fixture) -> None:
+    frontend_path = fixture.scene_artifacts["office"]["frontend_manifest"]
+    frontend = json.loads(frontend_path.read_text())
+    frontend["input_witness"]["last_record"]["timestamp_ns"] += 1
+    _write_json(frontend_path, frontend)
+    selection = json.loads(fixture.selection_path.read_text())
+    selection["freeze_bindings"]["scenes"]["office"]["frontend_manifest"] = (
+        _record(frontend_path)
+    )
+    _write_json(fixture.selection_path, selection)
+
+    with pytest.raises(ValueError, match="frontend cache manifest"):
+        fixture.run()
+
+
+def test_freeze_rejects_cache_file_changed_after_command_generation(
+    fixture: Fixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.freeze_oviv2_tesse_cd as freeze_module
+
+    fixture.run()
+    original = freeze_module._mapping_commands
+
+    def mutate_after_cache_validation(*args: Any, **kwargs: Any) -> Any:
+        result = original(*args, **kwargs)
+        cache_file = (
+            fixture.scene_artifacts["office"]["frontend_manifest"].parent
+            / "frame000000.pkl.gz"
+        )
+        cache_file.write_bytes(cache_file.read_bytes() + b"tamper")
+        return result
+
+    monkeypatch.setattr(
+        freeze_module, "_mapping_commands", mutate_after_cache_validation
+    )
+
+    with pytest.raises(ValueError, match="changed during freeze"):
+        fixture.finalize()
+    assert not fixture.output_manifest.exists()
+
+
+def test_freeze_allows_scene_vocabulary_specific_dense_inference_hash(
+    fixture: Fixture,
+) -> None:
+    dense_path = fixture.scene_artifacts["office"]["dense_manifest"]
+    dense = json.loads(dense_path.read_text())
+    dense["provenance"]["inference_config_sha256"] = "9" * 64
+    _write_json(dense_path, dense)
+    selection = json.loads(fixture.selection_path.read_text())
+    selection["freeze_bindings"]["scenes"]["office"]["dense_manifest"] = _record(
+        dense_path
+    )
+    _write_json(fixture.selection_path, selection)
+
+    manifest = fixture.run()
+
+    assert (
+        manifest["models"]["dense"]["office"]["inference_config_sha256"]
+        == "9" * 64
+    )
 
 
 def test_freeze_rejects_cache_directory_that_does_not_own_manifest(
@@ -663,6 +984,34 @@ def test_freeze_rejects_office_metric_source_before_freeze(fixture: Fixture) -> 
         fixture.run()
 
 
+def test_freeze_rejects_nested_office_result_source_before_freeze(
+    fixture: Fixture,
+) -> None:
+    def mutate(value: dict[str, Any]) -> None:
+        value["provenance"] = {
+            "held_out": {"result_path": "outputs/other/office/summary.json"}
+        }
+        value["algorithm_hash"] = _algorithm_hash(value)
+
+    fixture.rewrite_config("office", mutate)
+
+    with pytest.raises(ValueError, match="Office metric source"):
+        fixture.run()
+
+
+def test_freeze_rejects_office_result_path_hidden_in_plain_string_field(
+    fixture: Fixture,
+) -> None:
+    def mutate(value: dict[str, Any]) -> None:
+        value["audit_path"] = "/tmp/private/office/result.json"
+        value["algorithm_hash"] = _algorithm_hash(value)
+
+    fixture.rewrite_config("office", mutate)
+
+    with pytest.raises(ValueError, match="Office metric source"):
+        fixture.run()
+
+
 @pytest.mark.parametrize("existing", ["apartment", "office", "manifest", "prior_run"])
 def test_freeze_is_no_clobber_and_rejects_prior_run_output(
     fixture: Fixture, existing: str
@@ -706,6 +1055,7 @@ def test_freeze_rolls_back_its_publications_on_atomic_link_failure(
     assert not fixture.output_apartment.exists()
     assert not fixture.output_office.exists()
     assert not fixture.output_manifest.exists()
+    assert not fixture.prepared_manifest.exists()
     assert list(fixture.repo.rglob("*.freeze-tmp")) == []
 
 
@@ -733,6 +1083,7 @@ def test_freeze_rolls_back_if_prior_run_appears_during_publication(
     assert not fixture.output_apartment.exists()
     assert not fixture.output_office.exists()
     assert not fixture.output_manifest.exists()
+    assert not fixture.prepared_manifest.exists()
 
 
 @pytest.mark.parametrize(
