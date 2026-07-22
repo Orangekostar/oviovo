@@ -801,6 +801,49 @@ def test_official_only_checkpoints_keep_full_snapshot_and_neutral_inventory(
     assert index["snapshots"] == []
 
 
+def test_compact_runner_releases_each_lightweight_identity_receipt(
+    tmp_path: Path,
+) -> None:
+    config_path = _write_config(
+        tmp_path,
+        evaluation_frames={"apartment": [0, 2, 4], "office": []},
+    )
+    receipt_refs: list[weakref.ReferenceType[object]] = []
+    materialized_ownership: list[bool] = []
+    maximum_prior_live = 0
+
+    class TrackingRuntime(_Runtime):
+        def commit_compact_ownership_new(self, target: Path) -> object:
+            nonlocal maximum_prior_live
+            gc.collect()
+            maximum_prior_live = max(
+                maximum_prior_live,
+                sum(reference() is not None for reference in receipt_refs),
+            )
+            receipt = super().commit_compact_ownership_new(target)
+            materialized_ownership.append(hasattr(receipt, "ownership"))
+            receipt_refs.append(weakref.ref(receipt))
+            return receipt
+
+    dependencies = _dependencies([])
+    runtime = TrackingRuntime([])
+    dependencies = RunnerDependencies(
+        dataset_factory=dependencies.dataset_factory,
+        cache_loader_factory=dependencies.cache_loader_factory,
+        runtime_factory=lambda _config, _caches: runtime,
+        checkpoint_exporter=dependencies.checkpoint_exporter,
+        provenance_factory=dependencies.provenance_factory,
+    )
+
+    run(config_path, tmp_path / "run", dependencies=dependencies)
+    gc.collect()
+
+    assert len(receipt_refs) == 3
+    assert maximum_prior_live == 0
+    assert all(reference() is None for reference in receipt_refs)
+    assert materialized_ownership == [False, False, False]
+
+
 def test_large_checkpoint_plan_retains_only_witnesses_not_snapshot_objects(
     tmp_path: Path,
 ) -> None:
