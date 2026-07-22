@@ -1,0 +1,443 @@
+from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+import numpy as np
+import pytest
+
+from scripts.evaluation.derive_tesse_cd_common_v2 import deterministic_npz_bytes
+from scripts.evaluation.derive_tesse_cd_occlusion_v1 import (
+    build_contract_manifest,
+    depth_collection_binding,
+    derive_occlusion_targets,
+    render_manifest,
+    validate_source_allowlist,
+    validate_source_bindings,
+    write_occlusion_package,
+)
+from src.evaluation.oviv2_occlusion import classify_depth
+
+
+ROOT = Path(__file__).resolve().parents[2]
+CONTRACT = ROOT / "configs/evaluation/manifests/tesse_cd_occlusion_v1.json"
+
+
+def _frame(
+    index: int, depth_m: float, *, timestamp_ns: int | None = None
+) -> dict[str, object]:
+    return {
+        "frame_index": index,
+        "relative_timestamp_ns": index if timestamp_ns is None else timestamp_ns,
+        "depth": np.asarray([[depth_m]], dtype=np.float32),
+        "world_from_camera": np.eye(4, dtype=np.float64),
+    }
+
+
+def _record(object_id: int, *, first: int = 0, last: int = 10) -> dict[str, object]:
+    return {
+        "id": object_id,
+        "attributes": {
+            "name": f"O({object_id})",
+            "semantic_label": 3,
+            "first_observed_ns": [first],
+            "last_observed_ns": [last],
+            "dynamic_object_points": [[[0.0, 0.0, 2.0]]],
+        },
+    }
+
+
+def _fixture_inputs() -> tuple[
+    dict[str, list[dict[str, object]]],
+    dict[str, list[dict[str, object]]],
+]:
+    frames = {
+        scene: [
+            _frame(0, 2.0),
+            _frame(1, 1.0),
+            _frame(2, 1.0),
+            _frame(3, 2.0),
+        ]
+        for scene in ("apartment", "office")
+    }
+    records = {scene: [_record(index)] for index, scene in enumerate(frames)}
+    return frames, records
+
+
+def _source_paths(root: Path) -> dict[str, Path]:
+    root.mkdir(parents=True, exist_ok=True)
+    paths: dict[str, Path] = {}
+    for role in ("source_manifest", "schedule", "rgbd_lock", "camera"):
+        path = root / f"{role}.bin"
+        path.write_bytes(role.encode("ascii"))
+        paths[role] = path
+    for scene in ("apartment", "office"):
+        for role in (
+            "changes",
+            "dsg_with_mesh",
+            "export_manifest",
+            "timestamps",
+            "trajectory",
+        ):
+            path = root / f"{scene}.{role}.bin"
+            path.write_bytes(f"{scene}.{role}".encode("ascii"))
+            paths[f"{scene}.{role}"] = path
+        for index in range(4):
+            path = root / f"{scene}.depth.{index:06d}.png"
+            path.write_bytes(f"{scene}.{index}".encode("ascii"))
+            paths[f"{scene}.depth.{index:06d}"] = path
+    return paths
+
+
+def test_classify_depth_has_explicit_ten_centimeter_boundaries() -> None:
+    assert classify_depth(d_obs=2.00, d_gt=2.05, tolerance_m=0.10) == "present"
+    assert classify_depth(d_obs=1.50, d_gt=2.05, tolerance_m=0.10) == "occluded"
+    assert classify_depth(d_obs=2.50, d_gt=2.05, tolerance_m=0.10) == "absent"
+    assert classify_depth(d_obs=1.95, d_gt=2.05, tolerance_m=0.10) == "present"
+    assert classify_depth(d_obs=2.15, d_gt=2.05, tolerance_m=0.10) == "present"
+    assert classify_depth(d_obs=float("nan"), d_gt=2.05, tolerance_m=0.10) == "unobserved"
+    assert classify_depth(d_obs=0.0, d_gt=2.05, tolerance_m=0.10) == "unobserved"
+
+    with pytest.raises(ValueError, match="d_gt"):
+        classify_depth(d_obs=2.0, d_gt=float("nan"), tolerance_m=0.10)
+    with pytest.raises(ValueError, match="tolerance"):
+        classify_depth(d_obs=2.0, d_gt=2.0, tolerance_m=0.0)
+
+
+def test_derivation_uses_prior_present_anchor_and_merges_consecutive_occlusion() -> None:
+    frames, records = _fixture_inputs()
+
+    arrays, metadata = derive_occlusion_targets(
+        frames_by_scene=frames,
+        dsg_records_by_scene=records,
+        camera={"width": 1, "height": 1, "fx": 1.0, "fy": 1.0, "cx": 0.0, "cy": 0.0},
+    )
+
+    assert metadata["prediction_inputs_used"] is False
+    assert metadata["headline_stress_layer"] == "0.90"
+    assert metadata["scene_frame_indices"] == {
+        "apartment": [0, 1, 2, 3],
+        "office": [0, 1, 2, 3],
+    }
+    assert len(metadata["episodes"]) == 2
+    for episode in metadata["episodes"]:
+        assert episode["lifecycle"] == {
+            "index": 0,
+            "first_timestamp_ns": 0,
+            "last_timestamp_ns": 10,
+        }
+        assert episode["anchor"]["frame_index"] == 0
+        assert episode["start_frame_index"] == 1
+        assert episode["end_frame_index"] == 2
+        assert [item["frame_index"] for item in episode["checkpoints"]] == [1, 2]
+        assert episode["occlusion_fraction"] == 1.0
+        assert arrays[episode["anchor"]["array"]].dtype == np.int64
+        assert arrays[episode["anchor"]["array"]].shape == (1, 3)
+        for checkpoint in episode["checkpoints"]:
+            assert np.array_equal(
+                arrays[checkpoint["array"]], np.asarray([[0, 0, 40]], dtype=np.int64)
+            )
+
+    assert metadata["stress_layers"]["all"]["episode_count"] == 2
+    assert metadata["stress_layers"]["0.50"]["episode_count"] == 2
+    assert metadata["stress_layers"]["0.75"]["episode_count"] == 2
+    assert metadata["stress_layers"]["0.90"]["episode_count"] == 2
+    assert metadata["scenes"]["apartment"]["headline_episode_count"] == 1
+    assert metadata["scenes"]["office"]["headline_episode_count"] == 1
+
+
+def test_derivation_never_uses_unknown_or_future_lifecycle_as_anchor() -> None:
+    frames, records = _fixture_inputs()
+    records["apartment"][0]["attributes"]["semantic_label"] = 4_294_967_295
+    records["office"][0]["attributes"]["first_observed_ns"] = [20]
+    records["office"][0]["attributes"]["last_observed_ns"] = [30]
+
+    with pytest.raises(ValueError, match="no qualifying occlusion episode"):
+        derive_occlusion_targets(
+            frames_by_scene=frames,
+            dsg_records_by_scene=records,
+            camera={"width": 1, "height": 1, "fx": 1.0, "fy": 1.0, "cx": 0.0, "cy": 0.0},
+        )
+
+
+def test_headline_layer_fails_closed_when_either_scene_has_no_ninety_percent_episode() -> None:
+    frames, records = _fixture_inputs()
+    frames["office"] = [_frame(0, 2.0), _frame(1, 2.0)]
+
+    with pytest.raises(ValueError, match="office has no 0.90 occlusion episode"):
+        derive_occlusion_targets(
+            frames_by_scene=frames,
+            dsg_records_by_scene=records,
+            camera={"width": 1, "height": 1, "fx": 1.0, "fy": 1.0, "cx": 0.0, "cy": 0.0},
+        )
+
+
+@pytest.mark.parametrize(
+    ("extra_role", "name"),
+    [
+        ("apartment.rgb.000000", "frame000000.jpg"),
+        ("method.snapshot", "snapshot.npz"),
+        ("prediction", "prediction.json"),
+        ("frontend", "detections.pkl.gz"),
+    ],
+)
+def test_source_allowlist_rejects_rgb_and_method_inputs(
+    tmp_path: Path, extra_role: str, name: str
+) -> None:
+    paths = _source_paths(tmp_path)
+    candidate = tmp_path / name
+    candidate.write_bytes(b"forbidden")
+    paths[extra_role] = candidate
+
+    with pytest.raises(ValueError, match="exact source allowlist"):
+        validate_source_allowlist(
+            paths,
+            scene_frame_indices={
+                "apartment": [0, 1, 2, 3],
+                "office": [0, 1, 2, 3],
+            },
+        )
+
+
+def test_source_allowlist_rejects_method_path_hidden_under_allowed_role(
+    tmp_path: Path,
+) -> None:
+    paths = _source_paths(tmp_path / "official")
+    hidden = tmp_path / "method_output" / "camera.json"
+    hidden.parent.mkdir()
+    hidden.write_text("{}\n", encoding="utf-8")
+    paths["camera"] = hidden
+
+    with pytest.raises(ValueError, match="prediction or method output path"):
+        validate_source_allowlist(
+            paths,
+            scene_frame_indices={
+                "apartment": range(4),
+                "office": range(4),
+            },
+        )
+
+
+def test_source_allowlist_binds_every_file_sha_and_byte_count(tmp_path: Path) -> None:
+    paths = _source_paths(tmp_path)
+    first = validate_source_allowlist(
+        paths,
+        scene_frame_indices={"apartment": range(4), "office": range(4)},
+    )
+    assert list(first) == sorted(first)
+    assert all(set(record) == {"path", "sha256", "byte_count"} for record in first.values())
+
+    paths["office.depth.000003"].write_bytes(b"drift")
+    second = validate_source_allowlist(
+        paths,
+        scene_frame_indices={"apartment": range(4), "office": range(4)},
+    )
+    assert first["office.depth.000003"] != second["office.depth.000003"]
+
+
+@pytest.mark.parametrize("drift_role", ["camera", "office.depth.000003"])
+def test_frozen_source_bindings_reject_hash_drift(
+    tmp_path: Path, drift_role: str
+) -> None:
+    paths = _source_paths(tmp_path)
+    indices = {"apartment": range(4), "office": range(4)}
+    records = validate_source_allowlist(paths, scene_frame_indices=indices)
+    expected_files = {
+        role: record for role, record in records.items() if ".depth." not in role
+    }
+    expected_depth = {
+        scene: depth_collection_binding(
+            records, scene=scene, frame_indices=indices[scene]
+        )
+        for scene in ("apartment", "office")
+    }
+    paths[drift_role].write_bytes(b"source drift")
+
+    with pytest.raises(ValueError, match="hash or byte count drift"):
+        validate_source_bindings(
+            paths,
+            scene_frame_indices=indices,
+            expected_source_records=expected_files,
+            expected_depth_bindings=expected_depth,
+        )
+
+
+def test_manifest_and_npz_are_byte_identical_across_output_roots(tmp_path: Path) -> None:
+    frames, records = _fixture_inputs()
+    arrays, metadata = derive_occlusion_targets(
+        frames_by_scene=frames,
+        dsg_records_by_scene=records,
+        camera={"width": 1, "height": 1, "fx": 1.0, "fy": 1.0, "cx": 0.0, "cy": 0.0},
+    )
+    paths = _source_paths(tmp_path / "sources")
+    first = write_occlusion_package(
+        tmp_path / "run-a",
+        arrays=arrays,
+        metadata=metadata,
+        source_paths=paths,
+        status="FIXTURE",
+    )
+    second = write_occlusion_package(
+        tmp_path / "nested" / "run-b",
+        arrays=arrays,
+        metadata=metadata,
+        source_paths=paths,
+        status="FIXTURE",
+    )
+
+    assert first.read_bytes() == second.read_bytes()
+    assert (first.parent / "targets.npz").read_bytes() == (
+        second.parent / "targets.npz"
+    ).read_bytes()
+    payload = json.loads(first.read_text(encoding="utf-8"))
+    assert payload["prediction_inputs_used"] is False
+    assert payload["target_arrays"]["sha256"] == hashlib.sha256(
+        deterministic_npz_bytes(arrays)
+    ).hexdigest()
+    assert payload["sources"] == validate_source_allowlist(
+        paths, scene_frame_indices=metadata["scene_frame_indices"]
+    )
+
+
+def test_write_rejects_empty_episode_package(tmp_path: Path) -> None:
+    paths = _source_paths(tmp_path / "sources")
+    with pytest.raises(ValueError, match="no qualifying occlusion episode"):
+        write_occlusion_package(
+            tmp_path / "output",
+            arrays={"unused": np.asarray([[0, 0, 1]], dtype=np.int64)},
+            metadata={
+                "prediction_inputs_used": False,
+                "episodes": [],
+                "scene_frame_indices": {
+                    "apartment": [0, 1, 2, 3],
+                    "office": [0, 1, 2, 3],
+                },
+            },
+            source_paths=paths,
+            status="FIXTURE",
+        )
+
+
+def test_writer_revalidates_frozen_bindings_before_publish(tmp_path: Path) -> None:
+    frames, records = _fixture_inputs()
+    arrays, metadata = derive_occlusion_targets(
+        frames_by_scene=frames,
+        dsg_records_by_scene=records,
+        camera={
+            "width": 1,
+            "height": 1,
+            "fx": 1.0,
+            "fy": 1.0,
+            "cx": 0.0,
+            "cy": 0.0,
+        },
+    )
+    paths = _source_paths(tmp_path / "sources")
+    indices = metadata["scene_frame_indices"]
+    bound = validate_source_allowlist(paths, scene_frame_indices=indices)
+    expected_files = {
+        role: record for role, record in bound.items() if ".depth." not in role
+    }
+    expected_depth = {
+        scene: depth_collection_binding(
+            bound, scene=scene, frame_indices=indices[scene]
+        )
+        for scene in ("apartment", "office")
+    }
+    paths["camera"].write_bytes(b"changed after derivation")
+    output = tmp_path / "output"
+
+    with pytest.raises(ValueError, match="hash or byte count drift"):
+        write_occlusion_package(
+            output,
+            arrays=arrays,
+            metadata=metadata,
+            source_paths=paths,
+            expected_source_records=expected_files,
+            expected_depth_bindings=expected_depth,
+            status="FIXTURE",
+        )
+    assert not output.exists()
+
+
+def test_build_contract_is_input_only_and_detects_hash_drift(tmp_path: Path) -> None:
+    paths = _source_paths(tmp_path)
+    records = validate_source_allowlist(
+        paths, scene_frame_indices={"apartment": range(4), "office": range(4)}
+    )
+    depth_bindings = {
+        scene: depth_collection_binding(
+            records, scene=scene, frame_indices=range(4)
+        )
+        for scene in ("apartment", "office")
+    }
+    payload = build_contract_manifest(source_records=records, depth_bindings=depth_bindings)
+
+    assert payload["status"] == "CONTRACT_ONLY"
+    assert payload["targets_generated"] is False
+    assert payload["prediction_inputs_used"] is False
+    assert "episodes" not in payload
+    assert render_manifest(payload) == render_manifest(
+        build_contract_manifest(source_records=records, depth_bindings=depth_bindings)
+    )
+
+    changed = dict(records)
+    changed["source_manifest"] = dict(changed["source_manifest"])
+    changed["source_manifest"]["sha256"] = "0" * 64
+    assert build_contract_manifest(source_records=changed, depth_bindings=depth_bindings) != payload
+
+
+def test_checked_contract_preregisters_inputs_and_does_not_claim_results() -> None:
+    payload = json.loads(CONTRACT.read_text(encoding="utf-8"))
+
+    assert CONTRACT.read_bytes() == render_manifest(payload)
+    assert payload["manifest_id"] == "tesse_cd_occlusion_v1"
+    assert payload["status"] == "CONTRACT_ONLY"
+    assert payload["targets_generated"] is False
+    assert payload["prediction_inputs_used"] is False
+    assert payload["parameters"]["depth_tolerance_m"] == 0.10
+    assert payload["parameters"]["stress_thresholds"] == [0.50, 0.75, 0.90]
+    assert payload["parameters"]["headline_stress_threshold"] == 0.90
+    assert set(payload["input_roles"]) == {
+        "source_manifest",
+        "schedule",
+        "rgbd_lock",
+        "camera",
+        "scene.changes",
+        "scene.dsg_with_mesh",
+        "scene.export_manifest",
+        "scene.timestamps",
+        "scene.trajectory",
+        "scene.depth.NNNNNN",
+    }
+    serialized = CONTRACT.read_text(encoding="utf-8").lower()
+    assert "snapshot" not in serialized
+    assert "frontend" not in serialized
+    assert "prediction" not in serialized.replace('"prediction_inputs_used": false', "")
+    assert "frame000000.jpg" not in serialized
+    rebuilt = build_contract_manifest(
+        source_records=payload["source_records"],
+        depth_bindings=payload["depth_collections"],
+    )
+    assert render_manifest(rebuilt) == CONTRACT.read_bytes()
+
+
+def test_deriver_cli_can_run_directly_from_repository_root() -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/evaluation/derive_tesse_cd_occlusion_v1.py",
+            "--help",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert "--contract" in completed.stdout
+    assert "--output-dir" in completed.stdout

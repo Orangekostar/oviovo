@@ -1,0 +1,125 @@
+{
+  "dataset": "TESSE-CD",
+  "depth_collections": {
+    "apartment": {
+      "binding_rule": "sha256(role\\0sha256\\0byte_count\\n) in frame order",
+      "combined_sha256": "bca13efeac1dc1565e59c7e04fde088fdebe369aab4f232d2e8bdc7ae813a249",
+      "frame_count": 1745,
+      "root": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/apartment/results",
+      "total_byte_count": 444382186
+    },
+    "office": {
+      "binding_rule": "sha256(role\\0sha256\\0byte_count\\n) in frame order",
+      "combined_sha256": "b37ea60b5bcd3112e97af914ed7cf571bf5d3e566dca28a3d24c10133a74357d",
+      "frame_count": 4346,
+      "root": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/office/results",
+      "total_byte_count": 925609137
+    }
+  },
+  "fixture_tested": true,
+  "input_binding_sha256": "bc7d0d9f6d4a538e2cf3f94f6d415dfabd5d0fbae99f01f52e26658a5f189df2",
+  "input_roles": [
+    "source_manifest",
+    "schedule",
+    "rgbd_lock",
+    "camera",
+    "scene.changes",
+    "scene.dsg_with_mesh",
+    "scene.export_manifest",
+    "scene.timestamps",
+    "scene.trajectory",
+    "scene.depth.NNNNNN"
+  ],
+  "manifest_id": "tesse_cd_occlusion_v1",
+  "parameters": {
+    "active_interval": "first <= timestamp < last",
+    "anchor_rule": "first prior non-empty present voxel set in lifecycle",
+    "depth_tolerance_m": 0.1,
+    "episode_fraction_rule": "maximum checkpoint occluded/anchor voxel fraction",
+    "episode_rule": "consecutive non-empty source frames",
+    "headline_stress_threshold": 0.9,
+    "stress_thresholds": [
+      0.5,
+      0.75,
+      0.9
+    ],
+    "target_rule": "anchor present voxels intersect current occluded voxels",
+    "voxel_size_m": 0.05
+  },
+  "prediction_inputs_used": false,
+  "schema_version": 1,
+  "source_records": {
+    "apartment.changes": {
+      "byte_count": 185,
+      "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/apartment/gt_changes.csv",
+      "sha256": "fe15533332a6f2f672598a255e3099bdf28370ff69524a48de8e3ee22d09a4a7"
+    },
+    "apartment.dsg_with_mesh": {
+      "byte_count": 722433158,
+      "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/apartment/gt_dsg_with_mesh_consolidated.json",
+      "sha256": "ed6fd750748f2681602800f477505888e3a1ba7f1b7ba9eec7706886e05e2201"
+    },
+    "apartment.export_manifest": {
+      "byte_count": 813,
+      "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/apartment/export_manifest.json",
+      "sha256": "ee35d1843540fc88ae20b5dae5ad34caf192d50f0cab7c5564c47c454d4d5b81"
+    },
+    "apartment.timestamps": {
+      "byte_count": 50950,
+      "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/apartment/timestamps.csv",
+      "sha256": "bc369c8c5b4bca30b87c5617bc8c17076c90e5efc00167490cf5c9361af5e83d"
+    },
+    "apartment.trajectory": {
+      "byte_count": 296596,
+      "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/apartment/traj.txt",
+      "sha256": "5553fdfc32e0289965d19f4735316445fc07c2eee0ffe57b3f637a3e6e53bc45"
+    },
+    "camera": {
+      "byte_count": 164,
+      "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/cam_params.json",
+      "sha256": "73fe7357e25e4708bc6554bb2a0fc925de00e8368d06a18f9eb3eadd9cb808eb"
+    },
+    "office.changes": {
+      "byte_count": 214,
+      "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/office/gt_changes.csv",
+      "sha256": "748818a20724fce95e136c434a74a27f8649e400bbbc69a5f27beb3237624c44"
+    },
+    "office.dsg_with_mesh": {
+      "byte_count": 918443018,
+      "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/ground_truth/office/gt_dsg_with_mesh_consolidated.json",
+      "sha256": "90a69a068174f9c9cbfa278d57380b46306f31bbe272ab50ed2a19b430beabc7"
+    },
+    "office.export_manifest": {
+      "byte_count": 809,
+      "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/office/export_manifest.json",
+      "sha256": "16068d00033c8f8407d143d9e50f2008a5f4feb22c134abd0059fc551637f1f6"
+    },
+    "office.timestamps": {
+      "byte_count": 133873,
+      "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/office/timestamps.csv",
+      "sha256": "a73591a0703d94c6228de1e34f0d93e9ec2892ec72f88ebc35c5e5a945514491"
+    },
+    "office.trajectory": {
+      "byte_count": 858114,
+      "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/office/traj.txt",
+      "sha256": "06a31ee46540b4e67f42e373592c746bad097b1024ffdc94196642787d0d968e"
+    },
+    "rgbd_lock": {
+      "byte_count": 1435,
+      "path": "configs/evaluation/manifests/tesse_cd_rgbd_v1.json",
+      "sha256": "1840ca76f3a31836dcef7a07b00ed810c3e166e999e04081cbd6308613792fd2"
+    },
+    "schedule": {
+      "byte_count": 28302,
+      "path": "configs/evaluation/manifests/tesse_cd_causal_schedule_v2.json",
+      "sha256": "fb97bacee377f9fd67ee9dae8064dc6f33ac32d129ee633629fec4164d5003e0"
+    },
+    "source_manifest": {
+      "byte_count": 8875,
+      "path": "configs/evaluation/manifests/tesse_cd.json",
+      "sha256": "be63826267109a67fe4109c1419eb02dbad99a9e3856d44ac8f848e32e00b907"
+    }
+  },
+  "status": "CONTRACT_ONLY",
+  "targets_generated": false
+}
