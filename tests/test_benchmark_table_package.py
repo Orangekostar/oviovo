@@ -14,6 +14,8 @@ MARKDOWN = PAPER_DIR / "benchmark_tables.md"
 LATEX = PAPER_DIR / "benchmark_tables.tex"
 REGISTRY = PAPER_DIR / "benchmark_tokens.tsv"
 GENERATOR = ROOT / "tools" / "benchmark_tables.py"
+BASELINE_MARKDOWN = PAPER_DIR / "benchmark_tables_baselines.md"
+BASELINE_LATEX = PAPER_DIR / "benchmark_tables_baselines.tex"
 LABELS = {
     "tab:static_mapping", "tab:dynamic_current_map", "tab:causal_ablation",
     "tab:online_efficiency", "tab:supp_current_query",
@@ -28,13 +30,13 @@ EXPECTED_METHODS = {
     "T1": ("OPENFUSION", "OVIMAP", "CONCEPTGRAPHS", "DUALMAP", "OVIV2"),
     "T2": (
         "OVIMAP_FROZEN", "CONCEPTGRAPHS_FROZEN", "DUALMAP",
-        "PANOPTIC_SHARED", "KHRONOS_OPEN", "KHRONOS_ORACLE", "OVIOVO",
+        "PANOPTIC_SHARED", "KHRONOS_OPEN", "KHRONOS_ORACLE", "OVIV2",
     ),
     "T3": ("BASE", "VIS", "OWNER", "RECLAIM", "REID", "FULL"),
-    "T4": ("OVIMAP", "CONCEPTGRAPHS", "DUALMAP", "KHRONOS", "OVIOVO_STATIC", "OVIOVO"),
-    "S1": ("OVIMAP_FROZEN", "CONCEPTGRAPHS_FROZEN", "DUALMAP", "KHRONOS_SHARED", "OVIOVO"),
-    "S2": ("ESAM_VISIT", "KHRONOS_ADAPTED", "RESCENE4D", "OVIOVO_NO_REID", "OVIOVO"),
-    "S3": ("DUALMAP_CAL", "CONCEPTGRAPHS_CAL", "KHRONOS_SHARED_CAL", "OVIOVO_UNCAL", "OVIOVO"),
+    "T4": ("OVIMAP", "CONCEPTGRAPHS", "DUALMAP", "KHRONOS", "OVIV2_STATIC", "OVIV2"),
+    "S1": ("OVIMAP_FROZEN", "CONCEPTGRAPHS_FROZEN", "DUALMAP", "KHRONOS_SHARED", "OVIV2"),
+    "S2": ("ESAM_VISIT", "KHRONOS_ADAPTED", "RESCENE4D", "OVIV2_NO_REID", "OVIV2"),
+    "S3": ("DUALMAP_CAL", "CONCEPTGRAPHS_CAL", "KHRONOS_SHARED_CAL", "OVIV2_UNCAL", "OVIV2"),
 }
 EXPECTED_METRICS = {
     "T1": (
@@ -190,6 +192,34 @@ def test_table1_uses_only_oviv2_tokens_for_our_static_method():
     assert not any(token.startswith("T1_OVIOVO_") for token in registry_tokens)
     assert "| OVIV2 | online |" in MARKDOWN.read_text(encoding="utf-8")
     assert "OVIV2 & online &" in LATEX.read_text(encoding="utf-8")
+
+
+def test_all_active_user_facing_method_tokens_use_oviv2() -> None:
+    active_tables = {"T2", "T4", "S1", "S2", "S3"}
+    active_rows = [row for row in rows() if row["table"] in active_tables]
+    oviv2_rows = [row for row in active_rows if "OVIV2" in row["method"]]
+
+    assert Counter(row["table"] for row in oviv2_rows) == {
+        "T2": 10,
+        "T4": 24,
+        "S1": 14,
+        "S2": 12,
+        "S3": 12,
+    }
+    assert len(oviv2_rows) == 72
+    assert not any("OVIOVO" in row["token"] or "OVIOVO" in row["method"] for row in active_rows)
+
+
+def test_all_active_table_views_display_oviv2_with_online_t2_mode() -> None:
+    views = (MARKDOWN, LATEX, BASELINE_MARKDOWN, BASELINE_LATEX)
+    for path in views:
+        rendered = path.read_text(encoding="utf-8")
+        assert "OVIV2" in rendered
+        assert "OVIOVO" not in rendered
+    for path in (MARKDOWN, BASELINE_MARKDOWN):
+        assert "| OVIV2 | online |" in path.read_text(encoding="utf-8")
+    for path in (LATEX, BASELINE_LATEX):
+        assert "OVIV2 & online &" in path.read_text(encoding="utf-8")
 
 
 def test_ovimap_table1_stays_unfilled_until_paper_parity_passes():

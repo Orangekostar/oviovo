@@ -39,8 +39,9 @@ ALLOWED_METHODS = {
         "PANOPTIC_SHARED",
         "KHRONOS_OPEN",
         "KHRONOS_ORACLE",
+        "OVIV2",
     },
-    "T4": {"OVIMAP", "CONCEPTGRAPHS", "DUALMAP", "KHRONOS"},
+    "T4": {"OVIMAP", "CONCEPTGRAPHS", "DUALMAP", "KHRONOS", "OVIV2_STATIC", "OVIV2"},
 }
 
 OVIMAP_REPLICA8_PAPER_METRICS = {
@@ -155,6 +156,40 @@ def _resolve_json_pointer(document: Any, pointer: str) -> Any:
     return value
 
 
+def _require_hashed_file(record: Any, *, label: str) -> Path:
+    if not isinstance(record, Mapping):
+        raise ImportFailure(f"{label} is invalid")
+    path = Path(str(record.get("path", "")))
+    _require_file(path)
+    if record.get("sha256") != _sha256(path):
+        raise ImportFailure(f"{label} hash mismatch")
+    return path
+
+
+def _require_unavailable_evidence(
+    result: Mapping[str, Any],
+    binding: Mapping[str, Any],
+    *,
+    token: str,
+    reason: str,
+) -> None:
+    raw_pointer = binding.get("evidence_pointer")
+    if not isinstance(raw_pointer, str) or not raw_pointer:
+        raise ImportFailure(f"unavailable evidence pointer is required for {token}")
+    evidence = _resolve_json_pointer(result, raw_pointer)
+    if not isinstance(evidence, Mapping) or evidence.get("reason") != reason:
+        raise ImportFailure(f"unavailable evidence reason mismatch for {token}")
+    source = evidence.get("source")
+    path = _require_hashed_file(source, label="unavailable evidence source")
+    if (
+        not isinstance(source, Mapping)
+        or not isinstance(source.get("byte_count"), int)
+        or isinstance(source.get("byte_count"), bool)
+        or source.get("byte_count") != path.stat().st_size
+    ):
+        raise ImportFailure(f"unavailable evidence source hash or byte count mismatch for {token}")
+
+
 def _atomic_text(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
@@ -229,8 +264,11 @@ def import_results(
         result_dataset = str(dataset.get("name", ""))
         result_splits = {str(value) for value in dataset.get("splits", ())}
         bindings = result.get("token_bindings")
-        if not isinstance(bindings, list) or not bindings:
-            raise ImportFailure("VERIFIED result must provide token_bindings")
+        unavailable_bindings = result.get("unavailable_bindings", [])
+        if not isinstance(bindings, list) or not isinstance(unavailable_bindings, list):
+            raise ImportFailure("result bindings must be lists")
+        if not bindings and not unavailable_bindings:
+            raise ImportFailure("VERIFIED result must provide result bindings")
         ovimap_replica8_bindings = [
             binding
             for binding in bindings
@@ -300,6 +338,42 @@ def import_results(
             row["json_pointer"] = pointer
             row["status"] = "VERIFIED"
             row["note"] = f"Imported from verified run {result.get('run_id', '')}.".strip()
+
+        for binding in unavailable_bindings:
+            token = str(binding.get("token", ""))
+            if "OVIOVO" in token.upper():
+                raise ImportFailure(f"OVIOVO token is outside this importer scope: {token}")
+            if token in bound_tokens:
+                raise ImportFailure(f"duplicate token binding: {token}")
+            bound_tokens.add(token)
+            row = by_token.get(token)
+            if row is None:
+                raise ImportFailure(f"token is not present in registry: {token}")
+            if row.get("method") not in ALLOWED_METHODS.get(row.get("table", ""), set()):
+                raise ImportFailure(f"token is outside the allowed T1/T2/T4 baseline scope: {token}")
+            if row.get("method") != result_method:
+                raise ImportFailure(
+                    f"method mismatch for {token}: registry={row.get('method')} result={result_method}"
+                )
+            if row.get("dataset") != result_dataset or row.get("split") not in result_splits:
+                raise ImportFailure(f"dataset or split mismatch for {token}")
+            if row.get("status") != "UNFILLED":
+                raise ImportFailure(f"source-bound N/A requires an UNFILLED registry row: {token}")
+            pointer = str(binding.get("reason_pointer", ""))
+            reason = _resolve_json_pointer(result, pointer)
+            if not isinstance(reason, str) or not reason.strip():
+                raise ImportFailure(f"unavailable reason for {token} must be non-empty text")
+            _require_unavailable_evidence(
+                result,
+                binding,
+                token=token,
+                reason=reason,
+            )
+            replacements[token] = "--"
+            row["source_json"] = _source_label(result_path, registry_path)
+            row["json_pointer"] = pointer
+            row["status"] = "N/A"
+            row["note"] = f"N/A from verified run {result.get('run_id', '')}: {reason.strip()}"
 
     markdown = markdown_template.read_text(encoding="utf-8")
     latex = latex_template.read_text(encoding="utf-8")

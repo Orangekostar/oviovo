@@ -28,6 +28,14 @@ FIELDS = [
     "note",
 ]
 
+T2_COMMON_METRICS = {
+    "CURRENT_MIOU": 0.401,
+    "GHOST_RATE": 0.052,
+    "BG_F5": 0.603,
+    "RECOVERY_FRAMES": 8.0,
+}
+T2_OFFICIAL_METRICS = ("OBJECT_F1", "DYNAMIC_F1", "CHANGE_F1")
+
 
 def _write_registry(path: Path) -> None:
     rows = [
@@ -160,6 +168,270 @@ def _templates(tmp_path: Path) -> tuple[Path, Path]:
         + "\n"
     )
     return markdown, latex
+
+
+def _write_oviv2_t2_registry(path: Path, *, unavailable_status: str = "UNFILLED") -> list[str]:
+    rows = []
+    tokens = []
+    for metric in T2_COMMON_METRICS:
+        token = f"T2_OVIV2_{metric}"
+        tokens.append(token)
+        rows.append(
+            {
+                "token": token,
+                "table": "T2",
+                "method": "OVIV2",
+                "dataset": "TESSE-CD",
+                "split": "macro_test",
+                "metric": metric,
+                "direction": "lower" if metric in {"GHOST_RATE", "RECOVERY_FRAMES"} else "higher",
+                "precision": "3",
+                "source_json": "",
+                "json_pointer": "",
+                "status": "UNFILLED",
+                "note": "Pending benchmark run.",
+            }
+        )
+    for scene in ("APARTMENT", "OFFICE"):
+        for metric in T2_OFFICIAL_METRICS:
+            token = f"T2_OVIV2_{scene}_{metric}"
+            tokens.append(token)
+            status = unavailable_status if scene == "OFFICE" else "UNFILLED"
+            rows.append(
+                {
+                    "token": token,
+                    "table": "T2",
+                    "method": "OVIV2",
+                    "dataset": "TESSE-CD",
+                    "split": f"{scene.lower()}_test",
+                    "metric": f"{scene}_{metric}",
+                    "direction": "higher",
+                    "precision": "3",
+                    "source_json": "already.json" if status != "UNFILLED" else "",
+                    "json_pointer": "/metrics/old" if status != "UNFILLED" else "",
+                    "status": status,
+                    "note": "Existing result." if status != "UNFILLED" else "Pending benchmark run.",
+                }
+            )
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=FIELDS, delimiter="\t", lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+    return tokens
+
+
+def _write_oviv2_t2_results(tmp_path: Path) -> tuple[Path, Path, Path]:
+    evidence = tmp_path / "official_evaluator.json"
+    evidence.write_text('{"status":"PASS"}\n', encoding="utf-8")
+    source = {
+        "path": str(evidence.resolve()),
+        "sha256": hashlib.sha256(evidence.read_bytes()).hexdigest(),
+        "byte_count": evidence.stat().st_size,
+    }
+    common = tmp_path / "common.json"
+    common.write_text(
+        json.dumps(
+            {
+                "status": "VERIFIED",
+                "run_id": "oviv2-common",
+                "method": {"key": "OVIV2", "display_label": "OVIV2", "mode": "online"},
+                "dataset": {"name": "TESSE-CD", "splits": ["macro_test"]},
+                "metrics": {"macro": T2_COMMON_METRICS},
+                "token_bindings": [
+                    {
+                        "token": f"T2_OVIV2_{metric}",
+                        "json_pointer": f"/metrics/macro/{metric}",
+                        "precision": 3,
+                    }
+                    for metric in T2_COMMON_METRICS
+                ],
+                "unavailable_bindings": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    reasons = {metric: f"official evaluator has no finite {metric.lower()}" for metric in T2_OFFICIAL_METRICS}
+    official = tmp_path / "official.json"
+    official.write_text(
+        json.dumps(
+            {
+                "status": "VERIFIED",
+                "run_id": "oviv2-official",
+                "method": {"key": "OVIV2", "display_label": "OVIV2", "mode": "online"},
+                "dataset": {
+                    "name": "TESSE-CD",
+                    "splits": ["apartment_test", "office_test"],
+                },
+                "metrics": {
+                    "apartment": {metric: 0.5 for metric in T2_OFFICIAL_METRICS},
+                },
+                "unavailable": {"office": reasons},
+                "unavailable_evidence": {
+                    "office": {
+                        metric: {"reason": reason, "source": source}
+                        for metric, reason in reasons.items()
+                    }
+                },
+                "token_bindings": [
+                    {
+                        "token": f"T2_OVIV2_APARTMENT_{metric}",
+                        "json_pointer": f"/metrics/apartment/{metric}",
+                        "precision": 3,
+                    }
+                    for metric in T2_OFFICIAL_METRICS
+                ],
+                "unavailable_bindings": [
+                    {
+                        "token": f"T2_OVIV2_OFFICE_{metric}",
+                        "reason_pointer": f"/unavailable/office/{metric}",
+                        "evidence_pointer": f"/unavailable_evidence/office/{metric}",
+                    }
+                    for metric in T2_OFFICIAL_METRICS
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    return common, official, evidence
+
+
+def _oviv2_t2_package(tmp_path: Path, *, unavailable_status: str = "UNFILLED") -> tuple[Path, Path, Path, Path, Path]:
+    registry = tmp_path / "benchmark_tokens.tsv"
+    tokens = _write_oviv2_t2_registry(registry, unavailable_status=unavailable_status)
+    markdown = tmp_path / "benchmark_tables.md"
+    latex = tmp_path / "benchmark_tables.tex"
+    markdown.write_text(" ".join(f"{{{{{token}}}}}" for token in tokens), encoding="utf-8")
+    latex.write_text(
+        " ".join(r"\verb|{{" + token + "}}|" for token in tokens),
+        encoding="utf-8",
+    )
+    common, official, _ = _write_oviv2_t2_results(tmp_path)
+    return registry, markdown, latex, common, official
+
+
+def test_import_merges_oviv2_t2_common_and_official_bindings(tmp_path: Path) -> None:
+    registry, markdown, latex, common, official = _oviv2_t2_package(tmp_path)
+
+    outputs = import_results(
+        registry,
+        [common, official],
+        markdown,
+        latex,
+        tmp_path / "out.md",
+        tmp_path / "out.tex",
+    )
+
+    with registry.open(newline="", encoding="utf-8") as handle:
+        imported = list(csv.DictReader(handle, delimiter="\t"))
+    assert len(imported) == 10
+    assert len({row["token"] for row in imported}) == 10
+    assert sum(row["status"] == "VERIFIED" for row in imported) == 7
+    assert sum(row["status"] == "N/A" for row in imported) == 3
+    assert all(row["source_json"] and row["json_pointer"] for row in imported)
+    assert "{{T2_OVIV2_" not in outputs["markdown"].read_text(encoding="utf-8")
+    assert "{{T2_OVIV2_" not in outputs["latex"].read_text(encoding="utf-8")
+
+
+def test_import_rejects_legacy_t2_oviovo_binding(tmp_path: Path) -> None:
+    registry, markdown, latex, common, _ = _oviv2_t2_package(tmp_path)
+    payload = json.loads(common.read_text(encoding="utf-8"))
+    payload["token_bindings"][0]["token"] = "T2_OVIOVO_CURRENT_MIOU"
+    common.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ImportFailure, match="OVIOVO"):
+        import_results(registry, [common], markdown, latex, tmp_path / "out.md", tmp_path / "out.tex")
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("method", "DUALMAP", "method mismatch"),
+        ("split", "wrong_test", "dataset or split mismatch"),
+    ],
+)
+def test_import_rejects_oviv2_t2_method_or_split_mismatch(
+    tmp_path: Path, field: str, value: str, message: str
+) -> None:
+    registry, markdown, latex, common, _ = _oviv2_t2_package(tmp_path)
+    payload = json.loads(common.read_text(encoding="utf-8"))
+    if field == "method":
+        payload["method"]["key"] = value
+    else:
+        payload["dataset"]["splits"] = [value]
+    common.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ImportFailure, match=message):
+        import_results(registry, [common], markdown, latex, tmp_path / "out.md", tmp_path / "out.tex")
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        ("missing_pointer", "evidence pointer"),
+        ("missing_hash", "source hash"),
+        ("wrong_hash", "source hash"),
+        ("wrong_byte_count", "source hash"),
+        ("non_integer_byte_count", "byte count"),
+    ],
+)
+def test_import_rejects_unhashed_or_unbound_unavailable_evidence(
+    tmp_path: Path, mutation: str, message: str
+) -> None:
+    registry, markdown, latex, _, official = _oviv2_t2_package(tmp_path)
+    payload = json.loads(official.read_text(encoding="utf-8"))
+    binding = payload["unavailable_bindings"][0]
+    evidence = payload["unavailable_evidence"]["office"]["OBJECT_F1"]["source"]
+    if mutation == "missing_pointer":
+        binding.pop("evidence_pointer")
+    elif mutation == "missing_hash":
+        evidence.pop("sha256")
+    elif mutation == "wrong_hash":
+        evidence["sha256"] = "0" * 64
+    elif mutation == "wrong_byte_count":
+        evidence["byte_count"] += 1
+    else:
+        evidence["byte_count"] = float(evidence["byte_count"])
+    official.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ImportFailure, match=message):
+        import_results(registry, [official], markdown, latex, tmp_path / "out.md", tmp_path / "out.tex")
+
+
+def test_import_rejects_empty_unavailable_reason(tmp_path: Path) -> None:
+    registry, markdown, latex, _, official = _oviv2_t2_package(tmp_path)
+    payload = json.loads(official.read_text(encoding="utf-8"))
+    payload["unavailable"]["office"]["OBJECT_F1"] = ""
+    payload["unavailable_evidence"]["office"]["OBJECT_F1"]["reason"] = ""
+    official.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ImportFailure, match="non-empty"):
+        import_results(registry, [official], markdown, latex, tmp_path / "out.md", tmp_path / "out.tex")
+
+
+def test_import_rejects_finite_and_unavailable_t2_binding_for_same_token(tmp_path: Path) -> None:
+    registry, markdown, latex, _, official = _oviv2_t2_package(tmp_path)
+    payload = json.loads(official.read_text(encoding="utf-8"))
+    payload["metrics"]["office"] = {"OBJECT_F1": 0.5}
+    payload["token_bindings"].append(
+        {
+            "token": "T2_OVIV2_OFFICE_OBJECT_F1",
+            "json_pointer": "/metrics/office/OBJECT_F1",
+            "precision": 3,
+        }
+    )
+    official.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ImportFailure, match="duplicate token binding"):
+        import_results(registry, [official], markdown, latex, tmp_path / "out.md", tmp_path / "out.tex")
+
+
+def test_import_only_sets_source_bound_na_on_unfilled_registry_row(tmp_path: Path) -> None:
+    registry, markdown, latex, _, official = _oviv2_t2_package(
+        tmp_path, unavailable_status="VERIFIED"
+    )
+
+    with pytest.raises(ImportFailure, match="UNFILLED"):
+        import_results(registry, [official], markdown, latex, tmp_path / "out.md", tmp_path / "out.tex")
 
 
 def test_import_reads_json_pointer_updates_registry_and_derives_tables(tmp_path) -> None:

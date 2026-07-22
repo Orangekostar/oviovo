@@ -228,7 +228,7 @@ def _build_tables() -> tuple[Table, ...]:
                     ("PANOPTIC_SHARED", "Panoptic Mapping + shared masks", "composed"),
                     ("KHRONOS_OPEN", "Khronos (open-set)", "online"),
                     ("KHRONOS_ORACLE", "Khronos (GT semantics)", "oracle"),
-                    ("OVIOVO", "OVIOVO", "online"),
+                    ("OVIV2", "OVIV2", "online"),
                 )
             ),
             panels=(
@@ -309,8 +309,8 @@ def _build_tables() -> tuple[Table, ...]:
                     ("CONCEPTGRAPHS", "ConceptGraphs", "native"),
                     ("DUALMAP", "DualMap", "native"),
                     ("KHRONOS", "Khronos", "online"),
-                    ("OVIOVO_STATIC", "OVIOVO (maintenance off)", "maintenance-off"),
-                    ("OVIOVO", "OVIOVO", "online"),
+                    ("OVIV2_STATIC", "OVIV2 (maintenance off)", "maintenance-off"),
+                    ("OVIV2", "OVIV2", "online"),
                 )
             ),
             panels=(
@@ -359,7 +359,7 @@ def _build_tables() -> tuple[Table, ...]:
                     ("CONCEPTGRAPHS_FROZEN", "ConceptGraphs (frozen)", "frozen"),
                     ("DUALMAP", "DualMap", "native"),
                     ("KHRONOS_SHARED", "Khronos + shared text head", "composed"),
-                    ("OVIOVO", "OVIOVO", "online"),
+                    ("OVIV2", "OVIV2", "online"),
                 )
             ),
             panels=tuple(
@@ -397,8 +397,8 @@ def _build_tables() -> tuple[Table, ...]:
                     ("ESAM_VISIT", "ESAM (per-visit)", "per-visit"),
                     ("KHRONOS_ADAPTED", "Khronos (adapted stream)", "online-adapted"),
                     ("RESCENE4D", "ReScene4D", "offline"),
-                    ("OVIOVO_NO_REID", "OVIOVO (no re-ID)", "online"),
-                    ("OVIOVO", "OVIOVO", "online"),
+                    ("OVIV2_NO_REID", "OVIV2 (no re-ID)", "online"),
+                    ("OVIV2", "OVIV2", "online"),
                 )
             ),
             panels=(
@@ -422,7 +422,7 @@ def _build_tables() -> tuple[Table, ...]:
             title="Absence Reliability and Calibration",
             label="tab:supp_reliability",
             caption=(
-                "Presence and absence reliability on held-out queries. Composed baseline rejectors and OVIOVO use "
+                "Presence and absence reliability on held-out queries. Composed baseline rejectors and OVIV2 use "
                 "one validation-only calibration policy serialized before test execution."
             ),
             message="A current-state map must reject absent targets instead of always returning an embedding match.",
@@ -431,8 +431,8 @@ def _build_tables() -> tuple[Table, ...]:
                     ("DUALMAP_CAL", "DualMap + calibrated rejector", "composed"),
                     ("CONCEPTGRAPHS_CAL", "ConceptGraphs + calibrated rejector", "composed"),
                     ("KHRONOS_SHARED_CAL", "Khronos shared head + rejector", "composed"),
-                    ("OVIOVO_UNCAL", "OVIOVO (uncalibrated)", "online"),
-                    ("OVIOVO", "OVIOVO", "calibrated"),
+                    ("OVIV2_UNCAL", "OVIV2 (uncalibrated)", "online"),
+                    ("OVIV2", "OVIV2", "calibrated"),
                 )
             ),
             panels=(
@@ -569,7 +569,7 @@ def render_registry() -> str:
 
 def render_markdown() -> str:
     lines = [
-        "# OVIOVO AAAI Benchmark Tables",
+        "# OVIV2 AAAI Benchmark Tables",
         "",
         "Numerical cells are provenance tokens. `--` denotes a protocol-level N/A.",
         "",
