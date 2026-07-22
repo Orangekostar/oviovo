@@ -458,21 +458,34 @@ class Oviv2Runtime:
             if current is not None:
                 ownership.release(voxel_key, current.entity_id, revision)
 
+    def _snapshot_metadata(self) -> VoxelSnapshotMetadata:
+        return VoxelSnapshotMetadata(
+            scene_id=self.scene_id,
+            frame_id=max(self.last_frame_id, 0),
+            timestamp=self.last_timestamp,
+            revision=self.revision,
+            voxel_size_m=self.config.tsdf.voxel_size_m,
+            block_resolution=self.config.tsdf.block_resolution,
+            schema_version=(
+                3 if self.dense_semantic_provenance is not None else 2
+            ),
+            dense_semantic_provenance=self.dense_semantic_provenance,
+        )
+
     def commit(self, target_dir: str | Path) -> VoxelMapSnapshot:
         return VoxelMapSnapshot.commit(
             target_dir,
-            VoxelSnapshotMetadata(
-                scene_id=self.scene_id,
-                frame_id=max(self.last_frame_id, 0),
-                timestamp=self.last_timestamp,
-                revision=self.revision,
-                voxel_size_m=self.config.tsdf.voxel_size_m,
-                block_resolution=self.config.tsdf.block_resolution,
-                schema_version=(
-                    3 if self.dense_semantic_provenance is not None else 2
-                ),
-                dense_semantic_provenance=self.dense_semantic_provenance,
-            ),
+            self._snapshot_metadata(),
+            self.geometry,
+            self.evidence,
+            self.ownership,
+            registry=self.registry,
+        )
+
+    def commit_new(self, target_dir: str | Path) -> VoxelMapSnapshot:
+        return VoxelMapSnapshot.commit_new(
+            target_dir,
+            self._snapshot_metadata(),
             self.geometry,
             self.evidence,
             self.ownership,

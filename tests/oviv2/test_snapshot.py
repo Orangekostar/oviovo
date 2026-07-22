@@ -54,6 +54,20 @@ def _registry() -> EntityRegistry:
     return registry
 
 
+def _snapshot_state(path: Path) -> tuple[int, dict[str, tuple[bytes, int, str]]]:
+    return (
+        path.stat().st_mtime_ns,
+        {
+            item.name: (
+                item.read_bytes(),
+                item.stat().st_mtime_ns,
+                hashlib.sha256(item.read_bytes()).hexdigest(),
+            )
+            for item in sorted(path.iterdir())
+        },
+    )
+
+
 def _dense_provenance() -> DenseSemanticProvenance:
     return DenseSemanticProvenance(
         backend="radseg",
@@ -104,6 +118,180 @@ def test_snapshot_commit_writes_and_loads_complete_contract(tmp_path: Path) -> N
     assert restored.geometry.active_block_count == geometry.active_block_count
     assert restored.evidence.entity_candidates((0, 0, 20)) == evidence.entity_candidates((0, 0, 20))
     assert restored.ownership.owner_of((0, 0, 20)) == ownership.owner_of((0, 0, 20))
+
+
+def test_snapshot_commit_new_publishes_complete_contract(tmp_path: Path) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+
+    committed = VoxelMapSnapshot.commit_new(
+        target,
+        metadata,
+        geometry,
+        evidence,
+        ownership,
+    )
+
+    assert committed.path == target
+    assert VoxelMapSnapshot.load(target).metadata == metadata
+    assert {path.name for path in target.iterdir()} == {
+        *VoxelMapSnapshot._DATA_FILES_V1,
+        "checksums.json",
+    }
+    assert list(tmp_path.glob(".snapshot.tmp-*")) == []
+
+
+def test_snapshot_commit_new_existing_target_is_byte_for_byte_unchanged(
+    tmp_path: Path,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+    VoxelMapSnapshot.commit(target, metadata, geometry, evidence, ownership)
+    before = _snapshot_state(target)
+
+    with pytest.raises(FileExistsError):
+        VoxelMapSnapshot.commit_new(
+            target,
+            replace(metadata, frame_id=20, revision=2),
+            geometry,
+            evidence,
+            ownership,
+        )
+
+    assert _snapshot_state(target) == before
+    assert VoxelMapSnapshot.load(target).metadata == metadata
+    assert list(tmp_path.glob(".snapshot.tmp-*")) == []
+
+
+def test_snapshot_commit_new_publication_failure_leaves_no_target_or_temp(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+
+    def fail_publish(_cls, _source: Path, _target: Path) -> None:
+        raise OSError("injected no-replace publication failure")
+
+    monkeypatch.setattr(
+        VoxelMapSnapshot,
+        "_rename_directory_no_replace",
+        classmethod(fail_publish),
+    )
+
+    with pytest.raises(OSError, match="no-replace publication failure"):
+        VoxelMapSnapshot.commit_new(
+            target,
+            metadata,
+            geometry,
+            evidence,
+            ownership,
+        )
+
+    assert not target.exists()
+    assert list(tmp_path.glob(".snapshot.tmp-*")) == []
+
+
+def test_snapshot_commit_new_staging_failure_leaves_no_target_or_temp(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+    original_write_json = VoxelMapSnapshot._write_json
+
+    def fail_manifest(path: Path, payload: dict) -> None:
+        if path.name == "checksums.json":
+            raise OSError("injected manifest failure")
+        original_write_json(path, payload)
+
+    monkeypatch.setattr(
+        VoxelMapSnapshot,
+        "_write_json",
+        staticmethod(fail_manifest),
+    )
+
+    with pytest.raises(OSError, match="manifest failure"):
+        VoxelMapSnapshot.commit_new(
+            target,
+            metadata,
+            geometry,
+            evidence,
+            ownership,
+        )
+
+    assert not target.exists()
+    assert list(tmp_path.glob(".snapshot.tmp-*")) == []
+
+
+def test_snapshot_commit_new_fails_closed_without_renameat2(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+
+    monkeypatch.setattr(snapshot_module.ctypes, "CDLL", lambda *_args, **_kwargs: object())
+
+    with pytest.raises(NotImplementedError, match="renameat2"):
+        VoxelMapSnapshot.commit_new(
+            target,
+            metadata,
+            geometry,
+            evidence,
+            ownership,
+        )
+
+    assert not target.exists()
+    assert list(tmp_path.glob(".snapshot.tmp-*")) == []
+
+
+def test_snapshot_commit_new_race_has_exactly_one_winner(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+    barrier = threading.Barrier(2)
+    original_publish = VoxelMapSnapshot._rename_directory_no_replace
+    successes: list[VoxelMapSnapshot] = []
+    failures: list[BaseException] = []
+
+    def publish_together(_cls, source: Path, destination: Path) -> None:
+        barrier.wait()
+        original_publish(source, destination)
+
+    def commit(revision: int) -> None:
+        try:
+            successes.append(
+                VoxelMapSnapshot.commit_new(
+                    target,
+                    replace(metadata, frame_id=revision * 10, revision=revision),
+                    geometry,
+                    evidence,
+                    ownership,
+                )
+            )
+        except BaseException as exc:
+            failures.append(exc)
+
+    monkeypatch.setattr(
+        VoxelMapSnapshot,
+        "_rename_directory_no_replace",
+        classmethod(publish_together),
+    )
+    threads = [threading.Thread(target=commit, args=(revision,)) for revision in (1, 2)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=10.0)
+
+    assert all(not thread.is_alive() for thread in threads)
+    assert len(successes) == 1
+    assert len(failures) == 1
+    assert isinstance(failures[0], FileExistsError)
+    assert VoxelMapSnapshot.load(target).metadata == successes[0].metadata
+    assert list(tmp_path.glob(".snapshot.tmp-*")) == []
 
 
 def test_v2_snapshot_embeds_registry_and_hashes_entities(tmp_path: Path) -> None:

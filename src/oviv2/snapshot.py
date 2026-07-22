@@ -216,6 +216,54 @@ class VoxelMapSnapshot:
                 f"{left} <-> {right}",
             )
 
+    @classmethod
+    def _rename_directory_no_replace(cls, source: Path, target: Path) -> None:
+        libc = ctypes.CDLL(None, use_errno=True)
+        try:
+            renameat2 = libc.renameat2
+        except AttributeError as exc:
+            raise NotImplementedError(
+                "renameat2 is unavailable; immutable snapshot publication is unsupported"
+            ) from exc
+        renameat2.argtypes = (
+            ctypes.c_int,
+            ctypes.c_char_p,
+            ctypes.c_int,
+            ctypes.c_char_p,
+            ctypes.c_uint,
+        )
+        renameat2.restype = ctypes.c_int
+        ctypes.set_errno(0)
+        result = renameat2(
+            -100,
+            os.fsencode(source),
+            -100,
+            os.fsencode(target),
+            1,
+        )
+        if result == 0:
+            return
+        error_number = ctypes.get_errno()
+        if error_number in {errno.EEXIST, errno.ENOTEMPTY}:
+            raise FileExistsError(
+                errno.EEXIST,
+                "immutable snapshot target already exists",
+                target,
+            )
+        if error_number in {
+            errno.ENOSYS,
+            errno.EINVAL,
+            getattr(errno, "EOPNOTSUPP", errno.ENOSYS),
+        }:
+            raise NotImplementedError(
+                "RENAME_NOREPLACE is unavailable; immutable snapshot publication is unsupported"
+            )
+        raise OSError(
+            error_number,
+            f"immutable snapshot publication failed: {os.strerror(error_number)}",
+            f"{source} -> {target}",
+        )
+
     @staticmethod
     def _fsync_directory(path: Path) -> None:
         directory_fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY)
@@ -223,6 +271,33 @@ class VoxelMapSnapshot:
             os.fsync(directory_fd)
         finally:
             os.close(directory_fd)
+
+    @classmethod
+    def _write_snapshot_files(
+        cls,
+        destination: Path,
+        metadata: VoxelSnapshotMetadata,
+        geometry: SparseTsdfVolume,
+        evidence: SparseEvidenceStore,
+        ownership: ReversibleOwnershipStore,
+        registry: EntityRegistry | None,
+    ) -> tuple[str, ...]:
+        metadata_payload = asdict(metadata)
+        if metadata.schema_version in {1, 2}:
+            metadata_payload.pop("dense_semantic_provenance")
+        cls._write_json(destination / "metadata.json", metadata_payload)
+        geometry.save(destination / "geometry.npz")
+        evidence.save(destination / "evidence.npz")
+        ownership.save(destination / "ownership.npz")
+        if registry is not None:
+            registry.save(destination / "entities.jsonl")
+        data_files = cls._data_files(metadata.schema_version)
+        checksums = {
+            name: cls._sha256(destination / name)
+            for name in data_files
+        }
+        cls._write_json(destination / "checksums.json", checksums)
+        return data_files
 
     @classmethod
     def commit(
@@ -249,21 +324,14 @@ class VoxelMapSnapshot:
         exchanged = False
         published = False
         try:
-            metadata_payload = asdict(metadata)
-            if metadata.schema_version in {1, 2}:
-                metadata_payload.pop("dense_semantic_provenance")
-            cls._write_json(temporary / "metadata.json", metadata_payload)
-            geometry.save(temporary / "geometry.npz")
-            evidence.save(temporary / "evidence.npz")
-            ownership.save(temporary / "ownership.npz")
-            if registry is not None:
-                registry.save(temporary / "entities.jsonl")
-            data_files = cls._data_files(metadata.schema_version)
-            checksums = {
-                name: cls._sha256(temporary / name)
-                for name in data_files
-            }
-            cls._write_json(temporary / "checksums.json", checksums)
+            cls._write_snapshot_files(
+                temporary,
+                metadata,
+                geometry,
+                evidence,
+                ownership,
+                registry,
+            )
             cls._fsync_directory(temporary)
             cls.load(temporary)
 
@@ -306,6 +374,53 @@ class VoxelMapSnapshot:
             return restored
         finally:
             if not published and not exchanged and temporary.exists():
+                try:
+                    shutil.rmtree(temporary)
+                except OSError:
+                    pass
+
+    @classmethod
+    def commit_new(
+        cls,
+        target_dir: str | Path,
+        metadata: VoxelSnapshotMetadata,
+        geometry: SparseTsdfVolume,
+        evidence: SparseEvidenceStore,
+        ownership: ReversibleOwnershipStore,
+        *,
+        registry: EntityRegistry | None = None,
+    ) -> "VoxelMapSnapshot":
+        if not isinstance(metadata, VoxelSnapshotMetadata):
+            raise TypeError("metadata must be VoxelSnapshotMetadata")
+        cls._validate_components(metadata, geometry, evidence, ownership, registry)
+        target = Path(target_dir)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        temporary = Path(
+            tempfile.mkdtemp(prefix=f".{target.name}.tmp-", dir=target.parent)
+        )
+        try:
+            data_files = cls._write_snapshot_files(
+                temporary,
+                metadata,
+                geometry,
+                evidence,
+                ownership,
+                registry,
+            )
+            for name in (*data_files, "checksums.json"):
+                file_descriptor = os.open(temporary / name, os.O_RDONLY)
+                try:
+                    os.fsync(file_descriptor)
+                finally:
+                    os.close(file_descriptor)
+            cls._fsync_directory(temporary)
+            cls.load(temporary)
+
+            cls._rename_directory_no_replace(temporary, target)
+            cls._fsync_directory(target.parent)
+            return cls.load(target)
+        finally:
+            if temporary.exists():
                 try:
                     shutil.rmtree(temporary)
                 except OSError:

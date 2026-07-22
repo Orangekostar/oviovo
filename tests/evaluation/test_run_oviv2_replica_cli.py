@@ -444,6 +444,42 @@ def test_runtime_config_without_stage1_fields_keeps_legacy_association() -> None
     assert runtime.tracker.association is not runtime.registry.association
 
 
+def test_shared_config_parsers_match_replica_wrappers() -> None:
+    from src.oviv2.runner_config import (
+        runtime_config_from_json,
+        semantic_fusion_config_from_json,
+        structure_config_from_json,
+    )
+
+    config = json.loads(_STAGE3_CONFIG.read_text(encoding="utf-8"))
+    voxel_size_m = float(config["voxel_size_m"])
+
+    assert runtime_config_from_json(config) == _runtime_config(config)
+    assert semantic_fusion_config_from_json(config) == runner_module._semantic_fusion_config(
+        config
+    )
+    assert structure_config_from_json(
+        config,
+        voxel_size_m=voxel_size_m,
+    ) == runner_module._structure_config(config, voxel_size_m=voxel_size_m)
+
+
+def test_shared_runtime_config_reads_ownership_min_net_support() -> None:
+    from src.oviv2.runner_config import runtime_config_from_json
+
+    assert runtime_config_from_json(
+        {"ownership_min_net_support": 0.25}
+    ).ownership_min_net_support == pytest.approx(0.25)
+    assert runtime_config_from_json({}).ownership_min_net_support == pytest.approx(1e-6)
+
+
+def test_shared_runtime_config_rejects_invalid_ownership_min_net_support() -> None:
+    from src.oviv2.runner_config import runtime_config_from_json
+
+    with pytest.raises(ValueError, match="ownership_min_net_support"):
+        runtime_config_from_json({"ownership_min_net_support": -0.25})
+
+
 @pytest.mark.parametrize(
     ("field", "value"),
     [("semantic_mode", "evidence"), ("feature_mode", "uncached")],

@@ -705,6 +705,22 @@ def test_runtime_commit_round_trip_contains_only_voxel_layers(tmp_path: Path) ->
     }
 
 
+def test_runtime_commit_new_refuses_to_replace_checkpoint(tmp_path: Path) -> None:
+    runtime = Oviv2Runtime("room0")
+    runtime.process_frame(frame(), ())
+    target = tmp_path / "snapshot"
+
+    committed = runtime.commit_new(target)
+    before = (target / "checksums.json").read_bytes()
+
+    with pytest.raises(FileExistsError):
+        runtime.commit_new(target)
+
+    assert committed.path == target
+    assert VoxelMapSnapshot.load(target).metadata == committed.metadata
+    assert (target / "checksums.json").read_bytes() == before
+
+
 def test_dense_runtime_commit_round_trip_uses_schema3_typed_provenance(
     tmp_path: Path,
 ) -> None:
