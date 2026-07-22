@@ -1036,6 +1036,7 @@ def _official_run(
     config_record: Mapping[str, Any],
     mapping_checkpoints: Sequence[tuple[int, int, int, int, str, int, str, int]],
     mapping_root: Path,
+    official_root_identity: tuple[int, int],
     frozen_run_identity: Mapping[str, Any],
     run_execution: Mapping[str, Any],
 ) -> dict[str, Any]:
@@ -1107,6 +1108,7 @@ def _official_run(
     temporal_projection = _temporal_identity_projection(
         temporal_content,
         temporal_path=temporal_path,
+        artifact_root=(root, official_root_identity),
     )
     if temporal_projection is None:
         raise ValueError(f"{key} temporal manifest has no frozen run identity")
@@ -1420,6 +1422,7 @@ def build_provenance(
             config_record=config_records[scene],
             mapping_checkpoints=mapping[key]["checkpoints"],
             mapping_root=mapping[key]["root"],
+            official_root_identity=official_identities[key],
             frozen_run_identity=mapping[key]["frozen_run_identity"],
             run_execution=mapping[key]["run_execution"],
         )
