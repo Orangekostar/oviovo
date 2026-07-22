@@ -500,6 +500,7 @@ def test_imported_source_bound_t2_na_passes_full_package_check(tmp_path: Path) -
 @pytest.mark.parametrize(
     "attack",
     [
+        "missing_token_bindings",
         "duplicate_binding",
         "finite_duplicate_binding",
         "binding_token",
@@ -508,6 +509,7 @@ def test_imported_source_bound_t2_na_passes_full_package_check(tmp_path: Path) -
         "split",
         "missing_reason_pointer",
         "missing_evidence_pointer",
+        "root_evidence_pointer",
         "noncanonical_reason_index",
         "invalid_evidence_escape",
         "empty_reason",
@@ -533,7 +535,9 @@ def test_package_check_rejects_tampered_source_bound_na(
     source = evidence_record["source"]
     result_changed = True
 
-    if attack == "duplicate_binding":
+    if attack == "missing_token_bindings":
+        payload.pop("token_bindings")
+    elif attack == "duplicate_binding":
         payload["unavailable_bindings"].append(dict(binding))
     elif attack == "finite_duplicate_binding":
         payload["token_bindings"].append(
@@ -559,6 +563,10 @@ def test_package_check_rejects_tampered_source_bound_na(
         )
     elif attack == "missing_evidence_pointer":
         binding["evidence_pointer"] = "/missing/evidence"
+    elif attack == "root_evidence_pointer":
+        binding["evidence_pointer"] = ""
+        payload["reason"] = evidence_record["reason"]
+        payload["source"] = dict(source)
     elif attack == "noncanonical_reason_index":
         payload["reason_list"] = [payload["unavailable"]["office"]["OBJECT_F1"]]
         binding["reason_pointer"] = "/reason_list/-1"

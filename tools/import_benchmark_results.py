@@ -29,6 +29,7 @@ from tools.benchmark_result_contract import (
     binding_list,
     parse_result_identity,
     require_result_document,
+    resolve_evidence_pointer,
     resolve_json_pointer,
     validate_registry_identity,
 )
@@ -168,10 +169,10 @@ def _require_unavailable_evidence(
     token: str,
     reason: str,
 ) -> None:
-    raw_pointer = binding.get("evidence_pointer")
-    if not isinstance(raw_pointer, str) or not raw_pointer:
-        raise ImportFailure(f"unavailable evidence pointer is required for {token}")
-    evidence = _resolve_json_pointer(result, raw_pointer)
+    try:
+        evidence = resolve_evidence_pointer(result, binding, token=token)
+    except ResultContractError as error:
+        raise ImportFailure(str(error)) from error
     if not isinstance(evidence, Mapping) or evidence.get("reason") != reason:
         raise ImportFailure(f"unavailable evidence reason mismatch for {token}")
     source = evidence.get("source")

@@ -133,3 +133,12 @@ def resolve_json_pointer(document: Any, pointer: Any) -> Any:
         except (KeyError, IndexError) as error:
             raise ResultContractError(f"JSON pointer does not resolve: {pointer}") from error
     return value
+
+
+def resolve_evidence_pointer(
+    document: Any, binding: Mapping[str, Any], *, token: str
+) -> Any:
+    pointer = binding.get("evidence_pointer")
+    if not isinstance(pointer, str) or not pointer:
+        raise ResultContractError(f"unavailable evidence pointer is required for {token}")
+    return resolve_json_pointer(document, pointer)

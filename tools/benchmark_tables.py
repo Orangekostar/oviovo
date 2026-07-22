@@ -23,6 +23,7 @@ if __package__:
         binding_list,
         parse_result_identity,
         require_result_document,
+        resolve_evidence_pointer,
         resolve_json_pointer,
         validate_registry_identity,
     )
@@ -32,6 +33,7 @@ else:
         binding_list,
         parse_result_identity,
         require_result_document,
+        resolve_evidence_pointer,
         resolve_json_pointer,
         validate_registry_identity,
     )
@@ -775,8 +777,8 @@ def _has_verified_dynamic_na_provenance(
         result = require_result_document(result)
         identity = parse_result_identity(result)
         validate_registry_identity(identity, row, token=row["token"])
-        finite_bindings = binding_list(result, "token_bindings")
-        unavailable_bindings = binding_list(result, "unavailable_bindings", required=True)
+        finite_bindings = binding_list(result, "token_bindings", required=True)
+        unavailable_bindings = binding_list(result, "unavailable_bindings")
     except ResultContractError:
         return False
     if result.get("status") != "VERIFIED":
@@ -797,7 +799,7 @@ def _has_verified_dynamic_na_provenance(
         return False
     try:
         reason = resolve_json_pointer(result, binding.get("reason_pointer"))
-        evidence = resolve_json_pointer(result, binding.get("evidence_pointer"))
+        evidence = resolve_evidence_pointer(result, binding, token=row["token"])
     except ResultContractError:
         return False
     if (
