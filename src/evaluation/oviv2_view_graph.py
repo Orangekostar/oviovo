@@ -3,7 +3,6 @@ from __future__ import annotations
 from collections import defaultdict
 from collections.abc import Sequence
 from dataclasses import dataclass
-from itertools import combinations
 from numbers import Integral, Real
 
 import numpy as np
@@ -99,6 +98,10 @@ class ObservationEdge:
                 )
 
 
+def _shared_voxel_count(left: FrameObservation, right: FrameObservation) -> int:
+    return len(left.voxel_keys & right.voxel_keys)
+
+
 def build_sparse_observation_edges(
     observations: Sequence[FrameObservation],
     config: ViewGraphConfig,
@@ -116,62 +119,86 @@ def build_sparse_observation_edges(
             raise ValueError(f"duplicate observation_id {observation.observation_id}")
         by_id[observation.observation_id] = observation
 
-    inverted: dict[VoxelKey, list[int]] = defaultdict(list)
-    for observation_id, observation in by_id.items():
-        if observation.kind is not ObservationKind.OBJECT or observation.semantic_id <= 0:
-            continue
+    threshold = config.minimum_overlap_voxels
+    eligible = tuple(
+        sorted(
+            (
+                observation
+                for observation in by_id.values()
+                if observation.kind is ObservationKind.OBJECT
+                and observation.semantic_id > 0
+                and len(observation.voxel_keys) >= threshold
+            ),
+            key=lambda observation: observation.observation_id,
+        )
+    )
+    document_frequency: dict[VoxelKey, int] = defaultdict(int)
+    for observation in eligible:
         for voxel_key in observation.voxel_keys:
-            inverted[voxel_key].append(observation_id)
+            document_frequency[voxel_key] += 1
+    token_rank = {
+        voxel_key: rank
+        for rank, voxel_key in enumerate(
+            sorted(document_frequency, key=lambda key: (document_frequency[key], key))
+        )
+    }
 
-    shared_counts: dict[tuple[int, int], int] = defaultdict(int)
-    for observation_ids in inverted.values():
-        for first_id, second_id in combinations(observation_ids, 2):
-            left_id, right_id = sorted((first_id, second_id))
+    postings: dict[VoxelKey, list[int]] = defaultdict(list)
+    edges: list[ObservationEdge] = []
+    for right in eligible:
+        ordered_tokens = sorted(right.voxel_keys, key=token_rank.__getitem__)
+        prefix_tokens = ordered_tokens[: len(ordered_tokens) - threshold + 1]
+        candidate_ids: set[int] = set()
+        for voxel_key in prefix_tokens:
+            candidate_ids.update(postings[voxel_key])
+
+        for left_id in sorted(candidate_ids):
             left = by_id[left_id]
-            right = by_id[right_id]
             if left.frame_id == right.frame_id:
                 continue
             if config.require_semantic_agreement and left.semantic_id != right.semantic_id:
                 continue
-            shared_counts[left_id, right_id] += 1
-
-    edges: list[ObservationEdge] = []
-    for (left_id, right_id), shared_voxels in shared_counts.items():
-        if shared_voxels < config.minimum_overlap_voxels:
-            continue
-        left = by_id[left_id]
-        right = by_id[right_id]
-        left_size = len(left.voxel_keys)
-        right_size = len(right.voxel_keys)
-        union_size = left_size + right_size - shared_voxels
-        feature_cosine: float | None = None
-        if (
-            left.image_feature is not None
-            and right.image_feature is not None
-            and left.feature_model_id == right.feature_model_id
-        ):
-            if left.image_feature.shape != right.image_feature.shape:
-                raise ValueError("matching feature_model_id values require equal image feature dimensions")
-            feature_cosine = _finite_cosine(left.image_feature, right.image_feature, "feature_cosine")
-        view_direction_cosine: float | None = None
-        if left.view_direction_xyz is not None and right.view_direction_xyz is not None:
-            view_direction_cosine = _finite_cosine(
-                left.view_direction_xyz,
-                right.view_direction_xyz,
-                "view_direction_cosine",
+            shared_voxels = _shared_voxel_count(left, right)
+            if shared_voxels < threshold:
+                continue
+            right_id = right.observation_id
+            left_size = len(left.voxel_keys)
+            right_size = len(right.voxel_keys)
+            union_size = left_size + right_size - shared_voxels
+            feature_cosine: float | None = None
+            if (
+                left.image_feature is not None
+                and right.image_feature is not None
+                and left.feature_model_id == right.feature_model_id
+            ):
+                if left.image_feature.shape != right.image_feature.shape:
+                    raise ValueError("matching feature_model_id values require equal image feature dimensions")
+                feature_cosine = _finite_cosine(
+                    left.image_feature,
+                    right.image_feature,
+                    "feature_cosine",
+                )
+            view_direction_cosine: float | None = None
+            if left.view_direction_xyz is not None and right.view_direction_xyz is not None:
+                view_direction_cosine = _finite_cosine(
+                    left.view_direction_xyz,
+                    right.view_direction_xyz,
+                    "view_direction_cosine",
+                )
+            edges.append(
+                ObservationEdge(
+                    left_id=left_id,
+                    right_id=right_id,
+                    shared_voxels=shared_voxels,
+                    voxel_iou=shared_voxels / union_size,
+                    left_coverage=shared_voxels / left_size,
+                    right_coverage=shared_voxels / right_size,
+                    feature_cosine=feature_cosine,
+                    view_direction_cosine=view_direction_cosine,
+                )
             )
-        edges.append(
-            ObservationEdge(
-                left_id=left_id,
-                right_id=right_id,
-                shared_voxels=shared_voxels,
-                voxel_iou=shared_voxels / union_size,
-                left_coverage=shared_voxels / left_size,
-                right_coverage=shared_voxels / right_size,
-                feature_cosine=feature_cosine,
-                view_direction_cosine=view_direction_cosine,
-            )
-        )
+        for voxel_key in prefix_tokens:
+            postings[voxel_key].append(right.observation_id)
     return tuple(sorted(edges, key=lambda edge: (edge.left_id, edge.right_id)))
 
 

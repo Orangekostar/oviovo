@@ -177,6 +177,24 @@ def test_preserves_all_three_cross_frame_pairs_before_selection() -> None:
     assert [edge.shared_voxels for edge in evidence] == [2, 2, 2]
 
 
+def test_prefix_join_finds_exact_threshold_overlap_at_suffix_boundaries() -> None:
+    observations = (
+        _observation(10, 1, {(10, 0, 0), (11, 0, 0), (100, 0, 0), (101, 0, 0)}),
+        _observation(
+            21,
+            2,
+            {(20, 0, 0), (21, 0, 0), (22, 0, 0), (100, 0, 0), (101, 0, 0)},
+        ),
+    )
+
+    evidence = build_sparse_observation_edges(observations, ViewGraphConfig(2))
+
+    assert [(edge.left_id, edge.right_id, edge.shared_voxels) for edge in evidence] == [
+        (10, 21, 2),
+    ]
+    assert evidence[0].voxel_iou == pytest.approx(2.0 / 7.0)
+
+
 def test_building_validates_observation_sequence_and_config_types() -> None:
     with pytest.raises(TypeError, match="observations"):
         build_sparse_observation_edges(object(), ViewGraphConfig(2))  # type: ignore[arg-type]
@@ -322,6 +340,48 @@ def test_uses_sparse_inverted_index_without_square_node_allocation(monkeypatch: 
     evidence = build_sparse_observation_edges(observations, ViewGraphConfig(2))
 
     assert [(edge.left_id, edge.right_id) for edge in evidence] == [(0, 1)]
+
+
+def test_high_frequency_negative_overlap_avoids_quadratic_candidate_enumeration(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    observations = [
+        _observation(index, index, {(0, 0, 0), (index, 1, 0)})
+        for index in range(1_000)
+    ]
+    import src.evaluation.oviv2_view_graph as graph_module
+
+    pair_enumerations = 0
+    exact_intersections = 0
+
+    def bounded_combinations(values: object, r: int) -> object:
+        nonlocal pair_enumerations
+        from itertools import combinations
+
+        for pair in combinations(values, r):  # type: ignore[arg-type]
+            pair_enumerations += 1
+            if pair_enumerations > len(observations):
+                raise AssertionError("quadratic shared-voxel candidate enumeration")
+            yield pair
+
+    def counted_shared_voxels(left: FrameObservation, right: FrameObservation) -> int:
+        nonlocal exact_intersections
+        exact_intersections += 1
+        return len(left.voxel_keys & right.voxel_keys)
+
+    monkeypatch.setattr(graph_module, "combinations", bounded_combinations, raising=False)
+    monkeypatch.setattr(
+        graph_module,
+        "_shared_voxel_count",
+        counted_shared_voxels,
+        raising=False,
+    )
+
+    evidence = build_sparse_observation_edges(observations, ViewGraphConfig(2))
+
+    assert evidence == ()
+    assert pair_enumerations <= len(observations)
+    assert exact_intersections <= len(observations)
 
 
 def test_records_are_frozen_and_functions_return_immutable_tuples() -> None:
