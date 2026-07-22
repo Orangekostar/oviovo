@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from dataclasses import asdict
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
+import zipfile
 
 import numpy as np
 import pytest
@@ -65,6 +67,38 @@ def _tree_bytes(root: Path) -> dict[str, bytes]:
         for path in sorted(root.iterdir())
         if path.is_file()
     }
+
+
+def _rewrite_ownership_archive(
+    target: Path,
+    replacements: dict[str, bytes],
+) -> None:
+    ownership_path = target / "ownership.npz"
+    with zipfile.ZipFile(ownership_path, mode="r") as source:
+        members = {
+            info.filename: source.read(info)
+            for info in source.infolist()
+        }
+    members.update(replacements)
+    destination = io.BytesIO()
+    with zipfile.ZipFile(
+        destination,
+        mode="w",
+        compression=zipfile.ZIP_DEFLATED,
+    ) as archive:
+        for name, content in members.items():
+            archive.writestr(name, content)
+    ownership_path.write_bytes(destination.getvalue())
+    checksums_path = target / "checksums.json"
+    checksums = json.loads(checksums_path.read_text(encoding="utf-8"))
+    checksums["ownership.npz"] = hashlib.sha256(destination.getvalue()).hexdigest()
+    checksums_path.write_text(json.dumps(checksums), encoding="utf-8")
+
+
+def _npy_bytes(array: np.ndarray) -> bytes:
+    destination = io.BytesIO()
+    np.lib.format.write_array(destination, array, allow_pickle=False)
+    return destination.getvalue()
 
 
 def test_compact_checkpoint_round_trip_is_exact_and_byte_deterministic(
@@ -233,6 +267,291 @@ def test_compact_checkpoint_rejects_nonfinite_ownership(tmp_path: Path) -> None:
         CompactOwnershipCheckpoint.load(target)
 
 
+def test_compact_checkpoint_rejects_evidence_revision_after_checkpoint(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "checkpoint"
+    CompactOwnershipCheckpoint.commit_new(target, _metadata(), _ownership())
+    with np.load(target / "ownership.npz", allow_pickle=False) as payload:
+        revisions = np.array(payload["evidence_revisions"], copy=True)
+    revisions[0] = _metadata().revision + 1
+    _rewrite_ownership_archive(
+        target,
+        {"evidence_revisions.npy": _npy_bytes(revisions)},
+    )
+
+    with pytest.raises(ValueError, match="evidence_revisions.*checkpoint revision"):
+        CompactOwnershipCheckpoint.load(target)
+
+
+@pytest.mark.parametrize(
+    "limit_name,limit_value",
+    [
+        ("_MAX_ARCHIVE_BYTES", 1),
+        ("_MAX_MEMBER_COMPRESSED_BYTES", 1),
+        ("_MAX_MEMBER_UNCOMPRESSED_BYTES", 1),
+        ("_MAX_TOTAL_UNCOMPRESSED_BYTES", 1),
+        ("_MAX_CENTRAL_DIRECTORY_BYTES", 1),
+        ("_MAX_NPY_HEADER_BYTES", 1),
+        ("_MAX_OWNERSHIP_RECORDS", 1),
+        ("_MAX_JSON_BYTES", 1),
+    ],
+)
+def test_compact_checkpoint_preflights_resource_budgets_before_np_load(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    limit_name: str,
+    limit_value: int,
+) -> None:
+    target = tmp_path / "checkpoint"
+    CompactOwnershipCheckpoint.commit_new(target, _metadata(), _ownership())
+    monkeypatch.setattr(compact_module, limit_name, limit_value)
+    called = False
+
+    def forbidden_load(*_args: object, **_kwargs: object) -> object:
+        nonlocal called
+        called = True
+        raise AssertionError("np.load must not run before compact archive preflight")
+
+    monkeypatch.setattr(compact_module.np, "load", forbidden_load)
+
+    with pytest.raises(ValueError, match="resource|budget|size|limit|header|record"):
+        CompactOwnershipCheckpoint.load(target)
+
+    assert not called
+
+
+def test_compact_checkpoint_rejects_block_budget_before_dense_allocation(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    target = tmp_path / "checkpoint"
+    CompactOwnershipCheckpoint.commit_new(target, _metadata(), _ownership())
+    monkeypatch.setattr(compact_module, "_MAX_OWNERSHIP_BLOCKS", 1)
+    called = False
+
+    def forbidden_new_block(self: ReversibleOwnershipStore) -> object:
+        nonlocal called
+        called = True
+        raise AssertionError("dense blocks must not allocate before block budget check")
+
+    monkeypatch.setattr(ReversibleOwnershipStore, "_new_block", forbidden_new_block)
+
+    with pytest.raises(ValueError, match="block count.*resource limit"):
+        CompactOwnershipCheckpoint.load(target)
+
+    assert not called
+
+
+def test_compact_checkpoint_rejects_dense_storage_budget_before_allocation(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    target = tmp_path / "checkpoint"
+    CompactOwnershipCheckpoint.commit_new(target, _metadata(), _ownership())
+    monkeypatch.setattr(compact_module, "_MAX_DENSE_OWNERSHIP_BYTES", 1)
+    called = False
+
+    def forbidden_new_block(self: ReversibleOwnershipStore) -> object:
+        nonlocal called
+        called = True
+        raise AssertionError("dense blocks must not allocate before storage budget check")
+
+    monkeypatch.setattr(ReversibleOwnershipStore, "_new_block", forbidden_new_block)
+
+    with pytest.raises(ValueError, match="dense block storage.*resource limit"):
+        CompactOwnershipCheckpoint.load(target)
+
+    assert not called
+
+
+def test_compact_checkpoint_rejects_huge_block_resolution_before_allocation(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    target = tmp_path / "checkpoint"
+    CompactOwnershipCheckpoint.commit_new(target, _metadata(), _ownership())
+    huge_resolution = 1_000_000
+    _rewrite_ownership_archive(
+        target,
+        {
+            "block_resolution.npy": _npy_bytes(
+                np.asarray([huge_resolution], dtype=np.int64)
+            )
+        },
+    )
+    metadata_path = target / "metadata.json"
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    metadata["block_resolution"] = huge_resolution
+    metadata_bytes = compact_module._canonical_json(metadata)
+    metadata_path.write_bytes(metadata_bytes)
+    checksums_path = target / "checksums.json"
+    checksums = json.loads(checksums_path.read_text(encoding="utf-8"))
+    checksums["metadata.json"] = hashlib.sha256(metadata_bytes).hexdigest()
+    checksums_path.write_text(json.dumps(checksums), encoding="utf-8")
+    called = False
+
+    def forbidden_new_block(self: ReversibleOwnershipStore) -> object:
+        nonlocal called
+        called = True
+        raise AssertionError("huge dense block must not allocate")
+
+    monkeypatch.setattr(ReversibleOwnershipStore, "_new_block", forbidden_new_block)
+
+    with pytest.raises(ValueError, match="dense block storage.*resource limit"):
+        CompactOwnershipCheckpoint.load(target)
+
+    assert not called
+
+
+@pytest.mark.parametrize(
+    "member_name,replacement,message",
+    [
+        (
+            "voxel_keys.npy",
+            _npy_bytes(np.zeros((2, 3), dtype=np.float32)),
+            "voxel_keys.*dtype",
+        ),
+        (
+            "entity_ids.npy",
+            _npy_bytes(np.zeros((2, 1), dtype=np.int64)),
+            "entity_ids.*shape",
+        ),
+    ],
+)
+def test_compact_checkpoint_preflights_npy_contract_before_np_load(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    member_name: str,
+    replacement: bytes,
+    message: str,
+) -> None:
+    target = tmp_path / "checkpoint"
+    CompactOwnershipCheckpoint.commit_new(target, _metadata(), _ownership())
+    _rewrite_ownership_archive(target, {member_name: replacement})
+    called = False
+
+    def forbidden_load(*_args: object, **_kwargs: object) -> object:
+        nonlocal called
+        called = True
+        raise AssertionError("np.load must not run before NPY contract preflight")
+
+    monkeypatch.setattr(compact_module.np, "load", forbidden_load)
+
+    with pytest.raises(ValueError, match=message):
+        CompactOwnershipCheckpoint.load(target)
+
+    assert not called
+
+
+def test_compact_checkpoint_rejects_forged_huge_shape_before_np_load(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    target = tmp_path / "checkpoint"
+    CompactOwnershipCheckpoint.commit_new(target, _metadata(), _ownership())
+    forged = io.BytesIO()
+    np.lib.format.write_array_header_1_0(
+        forged,
+        {
+            "descr": np.dtype(np.int64).str,
+            "fortran_order": False,
+            "shape": (compact_module._MAX_OWNERSHIP_RECORDS + 1, 3),
+        },
+    )
+    _rewrite_ownership_archive(target, {"voxel_keys.npy": forged.getvalue()})
+    called = False
+
+    def forbidden_load(*_args: object, **_kwargs: object) -> object:
+        nonlocal called
+        called = True
+        raise AssertionError("np.load must not run before shape budget preflight")
+
+    monkeypatch.setattr(compact_module.np, "load", forbidden_load)
+
+    with pytest.raises(ValueError, match="voxel_keys.*record|shape.*resource"):
+        CompactOwnershipCheckpoint.load(target)
+
+    assert not called
+
+
+def test_compact_checkpoint_100k_records_is_deterministic_and_compact(
+    tmp_path: Path,
+) -> None:
+    ownership = ReversibleOwnershipStore(block_resolution=8)
+    record_count = 100_000
+    for index in range(record_count):
+        x = index % 50 - 25
+        y = (index // 50) % 40 - 20
+        z = index // 2_000 - 25
+        ownership.assign(
+            (x, y, z),
+            index % 127 + 1,
+            (index % 101) / 100.0,
+            index % (_metadata().revision + 1),
+        )
+
+    CompactOwnershipCheckpoint.commit_new(
+        tmp_path / "first", _metadata(), ownership
+    )
+    CompactOwnershipCheckpoint.commit_new(
+        tmp_path / "second", _metadata(), ownership
+    )
+
+    first = (tmp_path / "first/ownership.npz").read_bytes()
+    second = (tmp_path / "second/ownership.npz").read_bytes()
+    assert first == second
+    assert len(first) < 2 * 1024 * 1024
+    assert len(CompactOwnershipCheckpoint.load(tmp_path / "first").ownership.records()) == (
+        record_count
+    )
+    assert compact_module._OWNERSHIP_COMPRESSION_LEVEL == 6
+
+
+def test_compact_checkpoint_max_writer_contract_fits_resource_budgets() -> None:
+    assert compact_module._MAX_OWNERSHIP_RECORDS >= 1_000_000
+    assert compact_module._MAX_DENSE_OWNERSHIP_BYTES >= 512 * 1024 * 1024
+
+    budget = compact_module._canonical_archive_budget(
+        compact_module._MAX_OWNERSHIP_RECORDS
+    )
+
+    assert (
+        budget.max_member_uncompressed_bytes
+        <= compact_module._MAX_MEMBER_UNCOMPRESSED_BYTES
+    )
+    assert (
+        budget.max_member_compressed_bytes
+        <= compact_module._MAX_MEMBER_COMPRESSED_BYTES
+    )
+    assert (
+        budget.total_uncompressed_bytes
+        <= compact_module._MAX_TOTAL_UNCOMPRESSED_BYTES
+    )
+    assert budget.archive_bytes <= compact_module._MAX_ARCHIVE_BYTES
+
+
+def test_compact_checkpoint_writer_materializes_ownership_once(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original = compact_module._validated_ownership
+    calls = 0
+
+    def counted(*args: object, **kwargs: object) -> ReversibleOwnershipStore:
+        nonlocal calls
+        calls += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(compact_module, "_validated_ownership", counted)
+
+    CompactOwnershipCheckpoint.commit_new(
+        tmp_path / "checkpoint", _metadata(), _ownership()
+    )
+
+    assert calls == 1
+
+
 def test_compact_checkpoint_writer_rejects_symlinked_parent(tmp_path: Path) -> None:
     real = tmp_path / "real"
     real.mkdir()
@@ -244,6 +563,150 @@ def test_compact_checkpoint_writer_rejects_symlinked_parent(tmp_path: Path) -> N
             linked / "checkpoint", _metadata(), _ownership()
         )
     assert not os.path.lexists(real / "checkpoint")
+
+
+@pytest.mark.parametrize(
+    "swap_stage",
+    ["after_parent_check", "after_temp_create", "before_rename"],
+)
+def test_compact_checkpoint_writer_rejects_parent_swap_before_publication(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    swap_stage: str,
+) -> None:
+    parent = tmp_path / "parent"
+    parent.mkdir()
+    old_parent = tmp_path / "old-parent"
+    swapped = False
+
+    def swap_at_stage(stage: str) -> None:
+        nonlocal swapped
+        if stage != swap_stage or swapped:
+            return
+        parent.rename(old_parent)
+        parent.mkdir()
+        (parent / "foreign.txt").write_text("do not delete", encoding="utf-8")
+        swapped = True
+
+    monkeypatch.setattr(compact_module, "_publication_test_hook", swap_at_stage)
+
+    with pytest.raises(ValueError, match="parent.*identity.*changed"):
+        CompactOwnershipCheckpoint.commit_new(
+            parent / "checkpoint", _metadata(), _ownership()
+        )
+
+    assert swapped
+    assert (parent / "foreign.txt").read_text(encoding="utf-8") == "do not delete"
+    assert not (parent / "checkpoint").exists()
+    assert not (old_parent / "checkpoint").exists()
+    assert not list(old_parent.glob(".checkpoint.tmp-*"))
+
+
+def test_compact_checkpoint_parent_swap_after_rename_is_publication_uncertain(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    parent = tmp_path / "parent"
+    parent.mkdir()
+    old_parent = tmp_path / "old-parent"
+
+    def swap_after_rename(stage: str) -> None:
+        if stage != "after_rename":
+            return
+        parent.rename(old_parent)
+        parent.mkdir()
+        foreign_target = parent / "checkpoint"
+        foreign_target.mkdir()
+        (foreign_target / "foreign.txt").write_text(
+            "do not delete", encoding="utf-8"
+        )
+
+    monkeypatch.setattr(
+        compact_module,
+        "_publication_test_hook",
+        swap_after_rename,
+    )
+
+    with pytest.raises(
+        compact_module.CompactCheckpointPublicationUncertainError
+    ) as raised:
+        CompactOwnershipCheckpoint.commit_new(
+            parent / "checkpoint", _metadata(), _ownership()
+        )
+
+    assert raised.value.published is True
+    assert (old_parent / "checkpoint/ownership.npz").is_file()
+    assert (parent / "checkpoint/foreign.txt").read_text(encoding="utf-8") == (
+        "do not delete"
+    )
+
+
+def test_compact_checkpoint_rename_race_is_no_clobber_and_preserves_foreign_target(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    parent = tmp_path / "parent"
+    parent.mkdir()
+
+    def insert_foreign_target(stage: str) -> None:
+        if stage != "before_rename":
+            return
+        target = parent / "checkpoint"
+        target.mkdir()
+        (target / "foreign.txt").write_text("do not delete", encoding="utf-8")
+
+    monkeypatch.setattr(
+        compact_module,
+        "_publication_test_hook",
+        insert_foreign_target,
+    )
+
+    with pytest.raises(FileExistsError):
+        CompactOwnershipCheckpoint.commit_new(
+            parent / "checkpoint", _metadata(), _ownership()
+        )
+
+    assert (parent / "checkpoint/foreign.txt").read_text(encoding="utf-8") == (
+        "do not delete"
+    )
+    assert not list(parent.glob(".checkpoint.tmp-*"))
+
+
+def test_compact_checkpoint_rename_helper_rechecks_parent_before_syscall(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    parent = tmp_path / "parent"
+    parent.mkdir()
+    old_parent = tmp_path / "old-parent"
+    original = compact_module._rename_directory_no_replace_at
+    swapped = False
+
+    def swap_before_syscall(*args: object, **kwargs: object) -> None:
+        nonlocal swapped
+        if not swapped:
+            parent.rename(old_parent)
+            parent.mkdir()
+            (parent / "foreign.txt").write_text(
+                "do not delete", encoding="utf-8"
+            )
+            swapped = True
+        original(*args, **kwargs)
+
+    monkeypatch.setattr(
+        compact_module,
+        "_rename_directory_no_replace_at",
+        swap_before_syscall,
+    )
+
+    with pytest.raises(ValueError, match="parent.*identity.*changed"):
+        CompactOwnershipCheckpoint.commit_new(
+            parent / "checkpoint", _metadata(), _ownership()
+        )
+
+    assert (parent / "foreign.txt").read_text(encoding="utf-8") == "do not delete"
+    assert not (old_parent / "checkpoint").exists()
+    assert not list(old_parent.glob(".checkpoint.tmp-*"))
 
 
 def test_runtime_commits_compact_ownership_without_full_snapshot(tmp_path: Path) -> None:

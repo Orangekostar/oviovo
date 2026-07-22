@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter, OrderedDict
-from collections.abc import Iterator, Mapping
+from collections.abc import Iterator, Mapping, Sequence
 import csv
 from dataclasses import asdict, dataclass
 import hashlib
@@ -14,10 +14,15 @@ import json
 import os
 from pathlib import Path
 import stat
+import sys
 import tempfile
 from typing import Any
 
 import numpy as np
+
+_SCRIPT_REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(_SCRIPT_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_REPO_ROOT))
 
 from scripts.evaluation.derive_tesse_cd_occlusion_v1 import (
     REPO_ROOT,
@@ -34,6 +39,23 @@ from src.oviv2.compact_checkpoint import (
 SnapshotKey = tuple[str, int]
 SourceFrameTime = tuple[int, int]
 FULL_SNAPSHOT_FORMAT = "oviv2_voxel_map_snapshot"
+RUNNER_SCENE_CONFIG_FIELDS = frozenset(
+    {
+        "algorithm_hash",
+        "scene",
+        "frame_count",
+        "dataset_root",
+        "export_manifest",
+        "frontend_cache_dir",
+        "frontend_manifest",
+        "dense_cache_dir",
+        "dense_manifest",
+        "evaluation_checkpoint_frames",
+        "occlusion_target_manifest",
+        "vocabulary_json",
+        "vocabulary_txt",
+    }
+)
 _REPOSITORY_SOURCE_ROLES = frozenset(
     {"source_manifest", "schedule", "rgbd_lock"}
 )
@@ -44,6 +66,24 @@ _SCENE_SOURCE_SUFFIXES = (
     "timestamps",
     "trajectory",
 )
+
+
+def canonical_algorithm_config(config: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        key: config[key]
+        for key in sorted(config)
+        if key not in RUNNER_SCENE_CONFIG_FIELDS
+    }
+
+
+def canonical_algorithm_hash(config: Mapping[str, Any]) -> str:
+    payload = json.dumps(
+        canonical_algorithm_config(config),
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
 
 
 class _LazyCheckpointSnapshots(Mapping[SnapshotKey, Any]):
@@ -703,7 +743,7 @@ def build_evaluation_checkpoint_plan(
     }
 
 
-def _load_checkpoint_snapshots(
+def _load_single_checkpoint_index(
     checkpoint_index: Path,
     *,
     metadata: Mapping[str, Any],
@@ -722,7 +762,7 @@ def _load_checkpoint_snapshots(
     )
     payload = _load_json_bytes(content, label="checkpoint index")
     index_schema_version = payload.get("schema_version")
-    if set(payload) != {
+    base_fields = {
         "schema_version",
         "manifest_id",
         "dataset",
@@ -731,7 +771,13 @@ def _load_checkpoint_snapshots(
         "target_manifest",
         "evaluation_checkpoint_frames_sha256",
         "snapshots",
-    } or not (
+    }
+    expected_fields = (
+        base_fields
+        if index_schema_version == 1
+        else base_fields | {"scene", "algorithm_hash"}
+    )
+    if set(payload) != expected_fields or not (
         type(index_schema_version) is int
         and index_schema_version in {1, 2}
         and payload["manifest_id"] == "oviv2_tesse_cd_occlusion_checkpoints_v1"
@@ -757,6 +803,41 @@ def _load_checkpoint_snapshots(
         != checkpoint_plan["evaluation_checkpoint_frames_sha256"]
     ):
         raise ValueError("evaluation checkpoint frame binding mismatch")
+    index_scene: str | None = None
+    if index_schema_version == 2:
+        index_scene = payload["scene"]
+        index_algorithm_hash = payload["algorithm_hash"]
+        if index_scene not in {"apartment", "office"}:
+            raise ValueError("checkpoint index scene is invalid")
+        if not (
+            isinstance(index_algorithm_hash, str)
+            and len(index_algorithm_hash) == 64
+            and all(character in "0123456789abcdef" for character in index_algorithm_hash)
+        ):
+            raise ValueError("checkpoint index algorithm hash is invalid")
+        if not (
+            run_config.get("dataset") == "TESSE-CD"
+            and run_config.get("method_id") == "OVIV2"
+            and run_config.get("scene") == index_scene
+        ):
+            raise ValueError("normalized run config scene or identity mismatch")
+        if not (
+            run_config.get("algorithm_hash") == index_algorithm_hash
+            and canonical_algorithm_hash(run_config) == index_algorithm_hash
+        ):
+            raise ValueError("normalized run config algorithm hash mismatch")
+        if (
+            run_config.get("occlusion_target_manifest_sha256")
+            != target_manifest_witness.sha256
+        ):
+            raise ValueError("normalized run config target manifest binding mismatch")
+        if (
+            run_config.get("evaluation_checkpoint_frames_sha256")
+            != checkpoint_plan["evaluation_checkpoint_frames_sha256"]
+            or run_config.get("evaluation_checkpoint_frames")
+            != checkpoint_plan["evaluation_checkpoint_frames"][index_scene]
+        ):
+            raise ValueError("normalized run config checkpoint plan binding mismatch")
     records = payload["snapshots"]
     if not isinstance(records, list):
         raise ValueError("checkpoint snapshot inventory must be a list")
@@ -785,6 +866,8 @@ def _load_checkpoint_snapshots(
             or frame_index < 0
         ):
             raise ValueError("checkpoint scene or frame is invalid")
+        if index_scene is not None and scene != index_scene:
+            raise ValueError("checkpoint record violates index scene membership")
         key = (scene, frame_index)
         if key in snapshot_bindings:
             raise ValueError(f"duplicate checkpoint: {key}")
@@ -833,7 +916,12 @@ def _load_checkpoint_snapshots(
             expected_checksums_sha256=record["checksums_sha256"],
             checkpoint_format=checkpoint_format,
         )
-    missing = sorted(set(required).difference(snapshot_bindings))
+    expected_keys = (
+        set(required)
+        if index_scene is None
+        else {key for key in required if key[0] == index_scene}
+    )
+    missing = sorted(expected_keys.difference(snapshot_bindings))
     if missing:
         scene, frame_index = missing[0]
         raise ValueError(f"missing checkpoint for {scene} frame {frame_index}")
@@ -846,6 +934,87 @@ def _load_checkpoint_snapshots(
     )
 
 
+def _load_checkpoint_snapshots(
+    checkpoint_index: str | Path | Sequence[str | Path],
+    *,
+    metadata: Mapping[str, Any],
+    target_manifest_witness: _FileWitness,
+    checkpoint_plan: Mapping[str, Any],
+    source_frame_times: Mapping[SnapshotKey, SourceFrameTime],
+) -> tuple[
+    Mapping[SnapshotKey, Any],
+    dict[str, Any],
+    _FileWitness | tuple[_FileWitness, ...],
+    _FileWitness | tuple[_FileWitness, ...],
+    str,
+]:
+    if isinstance(checkpoint_index, (str, Path)):
+        paths = (Path(checkpoint_index),)
+    else:
+        paths = tuple(Path(path) for path in checkpoint_index)
+    if not paths:
+        raise ValueError("at least one checkpoint index is required")
+
+    loaded = [
+        _load_single_checkpoint_index(
+            path,
+            metadata=metadata,
+            target_manifest_witness=target_manifest_witness,
+            checkpoint_plan=checkpoint_plan,
+            source_frame_times=source_frame_times,
+        )
+        for path in paths
+    ]
+    if len(loaded) == 1 and loaded[0][1]["schema_version"] == 1:
+        return loaded[0]
+    if len(loaded) != 2 or any(
+        item[1]["schema_version"] != 2 for item in loaded
+    ):
+        raise ValueError(
+            "schema2 checkpoint indexes must contain apartment and office exactly"
+        )
+
+    loaded.sort(key=lambda item: item[1]["scene"])
+    scenes = [item[1]["scene"] for item in loaded]
+    if scenes != ["apartment", "office"]:
+        raise ValueError(
+            "schema2 checkpoint indexes must contain apartment and office exactly"
+        )
+    algorithm_hashes = {item[1]["algorithm_hash"] for item in loaded}
+    if len(algorithm_hashes) != 1:
+        raise ValueError("checkpoint index algorithm hash mismatch across scenes")
+    policies = {item[4] for item in loaded}
+    if len(policies) != 1:
+        raise ValueError("normalized run config policy mismatch across scenes")
+
+    combined_bindings: dict[SnapshotKey, _SnapshotBinding] = {}
+    for snapshots, _, _, _, _ in loaded:
+        bindings = snapshots._bindings  # type: ignore[attr-defined]
+        duplicates = set(combined_bindings).intersection(bindings)
+        if duplicates:
+            raise ValueError(f"duplicate checkpoint across indexes: {min(duplicates)}")
+        combined_bindings.update(bindings)
+    required = set(_required_checkpoint_times(metadata))
+    if set(combined_bindings) != required:
+        missing = sorted(required.difference(combined_bindings))
+        if missing:
+            raise ValueError(f"missing checkpoint for {missing[0][0]} frame {missing[0][1]}")
+        raise ValueError("checkpoint inventory contains unexpected records")
+
+    payload = {
+        "method_id": "OVIV2",
+        "schema_version": 2,
+        "scene_indexes": [item[1] for item in loaded],
+    }
+    return (
+        _LazyCheckpointSnapshots(combined_bindings),
+        payload,
+        tuple(item[2] for item in loaded),
+        tuple(item[3] for item in loaded),
+        next(iter(policies)),
+    )
+
+
 def _render_json(payload: Mapping[str, Any]) -> bytes:
     try:
         return (
@@ -853,6 +1022,22 @@ def _render_json(payload: Mapping[str, Any]) -> bytes:
         ).encode("utf-8")
     except (TypeError, ValueError) as error:
         raise ValueError("occlusion result is not finite canonical JSON") from error
+
+
+def _witness_tuple(
+    witness: _FileWitness | tuple[_FileWitness, ...],
+) -> tuple[_FileWitness, ...]:
+    return witness if isinstance(witness, tuple) else (witness,)
+
+
+def _witness_result(
+    witness: _FileWitness | tuple[_FileWitness, ...],
+) -> dict[str, int | str] | list[dict[str, int | str]]:
+    records = [
+        {"sha256": item.sha256, "byte_count": item.byte_count}
+        for item in _witness_tuple(witness)
+    ]
+    return records[0] if len(records) == 1 else records
 
 
 def _publish_no_replace(path: Path, content: bytes) -> None:
@@ -1130,7 +1315,7 @@ def evaluate_fixed_anchor_ownership(
 def evaluate_occlusion_package(
     *,
     target_dir: str | Path,
-    checkpoint_index: str | Path,
+    checkpoint_index: str | Path | Sequence[str | Path],
     dataset_root: str | Path,
     output_path: str | Path | None = None,
 ) -> dict[str, Any]:
@@ -1161,7 +1346,7 @@ def evaluate_occlusion_package(
         run_config_witness,
         missing_observation_policy,
     ) = _load_checkpoint_snapshots(
-        Path(checkpoint_index),
+        checkpoint_index,
         metadata=metadata,
         target_manifest_witness=target_manifest_witness,
         checkpoint_plan=checkpoint_plan,
@@ -1184,14 +1369,8 @@ def evaluate_occlusion_package(
             "byte_count": target_manifest_witness.byte_count,
         },
         "checkpoint_count": len(snapshots),
-        "checkpoint_index": {
-            "sha256": checkpoint_witness.sha256,
-            "byte_count": checkpoint_witness.byte_count,
-        },
-        "run_config": {
-            "sha256": run_config_witness.sha256,
-            "byte_count": run_config_witness.byte_count,
-        },
+        "checkpoint_index": _witness_result(checkpoint_witness),
+        "run_config": _witness_result(run_config_witness),
         "evaluation_checkpoint_frames_sha256": checkpoint_plan[
             "evaluation_checkpoint_frames_sha256"
         ],
@@ -1201,8 +1380,10 @@ def evaluate_occlusion_package(
     _revalidate_witness(target_manifest_witness, label="target manifest")
     for witness in target_witnesses:
         _revalidate_witness(witness, label="target input")
-    _revalidate_witness(checkpoint_witness, label="checkpoint index")
-    _revalidate_witness(run_config_witness, label="normalized run config")
+    for witness in _witness_tuple(checkpoint_witness):
+        _revalidate_witness(witness, label="checkpoint index")
+    for witness in _witness_tuple(run_config_witness):
+        _revalidate_witness(witness, label="normalized run config")
     snapshots.revalidate_all()  # type: ignore[attr-defined]
     if output is not None:
         _publish_no_replace(output, encoded)
@@ -1212,7 +1393,7 @@ def evaluate_occlusion_package(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--targets", type=Path, required=True)
-    parser.add_argument("--checkpoints", type=Path, required=True)
+    parser.add_argument("--checkpoints", type=Path, action="append", required=True)
     parser.add_argument("--dataset-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)

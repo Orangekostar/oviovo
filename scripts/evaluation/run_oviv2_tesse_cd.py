@@ -28,6 +28,13 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from scripts.evaluation.evaluate_oviv2_tesse_occlusion import (  # noqa: E402
+    RUNNER_SCENE_CONFIG_FIELDS,
+    build_evaluation_checkpoint_plan,
+    canonical_algorithm_config,
+    canonical_algorithm_hash,
+)
+
 @dataclass(frozen=True)
 class TesseCausalCheckpoint:
     frame_index: int
@@ -37,23 +44,7 @@ class TesseCausalCheckpoint:
     roles: tuple[str, ...]
 
 
-SCENE_CONFIG_FIELDS = frozenset(
-    {
-        "algorithm_hash",
-        "scene",
-        "frame_count",
-        "dataset_root",
-        "export_manifest",
-        "frontend_cache_dir",
-        "frontend_manifest",
-        "dense_cache_dir",
-        "dense_manifest",
-        "evaluation_checkpoint_frames",
-        "occlusion_target_manifest",
-        "vocabulary_json",
-        "vocabulary_txt",
-    }
-)
+SCENE_CONFIG_FIELDS = RUNNER_SCENE_CONFIG_FIELDS
 
 
 @dataclass(frozen=True)
@@ -65,6 +56,17 @@ class RunnerDependencies:
         [Any, TesseCausalCheckpoint, Path, Mapping[str, Any]], Mapping[str, Any] | None
     ]
     provenance_factory: Callable[[], Mapping[str, Any]]
+
+
+@dataclass(frozen=True)
+class _CheckpointIdentity:
+    path: Path
+    directory_fingerprint: tuple[int, int, int, int, int]
+    checksums_fingerprint: tuple[int, int, int, int, int]
+    checksums_sha256: str
+    member_fingerprints: tuple[
+        tuple[str, tuple[int, int, int, int, int]], ...
+    ]
 
 
 def _strict_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -91,6 +93,142 @@ def _load_json_bytes(data: bytes, path: Path) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError(f"JSON root must be an object: {path}")
     return payload
+
+
+def _stat_fingerprint(status: os.stat_result) -> tuple[int, int, int, int, int]:
+    return (
+        status.st_dev,
+        status.st_ino,
+        status.st_size,
+        status.st_mtime_ns,
+        status.st_ctime_ns,
+    )
+
+
+def _read_regular_at(
+    directory_fd: int,
+    name: str,
+) -> tuple[bytes, tuple[int, int, int, int, int]]:
+    descriptor = os.open(
+        name,
+        os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0),
+        dir_fd=directory_fd,
+    )
+    try:
+        before = os.fstat(descriptor)
+        if not stat.S_ISREG(before.st_mode):
+            raise ValueError("checkpoint member is not a regular file")
+        content = b"".join(iter(lambda: os.read(descriptor, 1024 * 1024), b""))
+        after = os.fstat(descriptor)
+        if _stat_fingerprint(before) != _stat_fingerprint(after):
+            raise ValueError("checkpoint member changed while reading")
+        return content, _stat_fingerprint(after)
+    finally:
+        os.close(descriptor)
+
+
+def _member_fingerprint_at(
+    directory_fd: int,
+    name: str,
+) -> tuple[int, int, int, int, int]:
+    descriptor = os.open(
+        name,
+        os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0),
+        dir_fd=directory_fd,
+    )
+    try:
+        status = os.fstat(descriptor)
+        if not stat.S_ISREG(status.st_mode):
+            raise ValueError("checkpoint member is not a regular file")
+        return _stat_fingerprint(status)
+    finally:
+        os.close(descriptor)
+
+
+def _open_checkpoint_directory(path: Path) -> int:
+    return os.open(
+        path,
+        os.O_RDONLY | getattr(os, "O_CLOEXEC", 0)
+        | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0),
+    )
+
+
+def _capture_checkpoint_identity(path: Path) -> _CheckpointIdentity:
+    try:
+        directory_fd = _open_checkpoint_directory(path)
+        try:
+            directory_status = os.fstat(directory_fd)
+            checksums_content, checksums_fingerprint = _read_regular_at(
+                directory_fd, "checksums.json"
+            )
+            checksums = _load_json_bytes(checksums_content, path / "checksums.json")
+            if not checksums:
+                raise ValueError("checkpoint checksum inventory must not be empty")
+            expected_names = set(checksums) | {"checksums.json"}
+            if set(os.listdir(directory_fd)) != expected_names:
+                raise ValueError("checkpoint physical inventory does not match checksums")
+            member_fingerprints = []
+            for name in sorted(checksums):
+                if not (
+                    isinstance(name, str)
+                    and name not in {".", ".."}
+                    and Path(name).parts == (name,)
+                    and isinstance(checksums[name], str)
+                    and _is_sha256(checksums[name])
+                ):
+                    raise ValueError("checkpoint checksum inventory is invalid")
+                member_fingerprints.append(
+                    (name, _member_fingerprint_at(directory_fd, name))
+                )
+            if _stat_fingerprint(os.lstat(path)) != _stat_fingerprint(
+                directory_status
+            ):
+                raise ValueError("checkpoint identity changed while capturing")
+            return _CheckpointIdentity(
+                path=path,
+                directory_fingerprint=_stat_fingerprint(directory_status),
+                checksums_fingerprint=checksums_fingerprint,
+                checksums_sha256=_sha256_bytes(checksums_content),
+                member_fingerprints=tuple(member_fingerprints),
+            )
+        finally:
+            os.close(directory_fd)
+    except OSError as error:
+        raise ValueError("checkpoint identity could not be captured") from error
+
+
+def _revalidate_checkpoint_identity(identity: _CheckpointIdentity) -> None:
+    try:
+        before = os.lstat(identity.path)
+        directory_fd = _open_checkpoint_directory(identity.path)
+        try:
+            directory_status = os.fstat(directory_fd)
+            checksums_content, checksums_fingerprint = _read_regular_at(
+                directory_fd, "checksums.json"
+            )
+            actual_names = set(os.listdir(directory_fd))
+            member_fingerprints = tuple(
+                (name, _member_fingerprint_at(directory_fd, name))
+                for name, _ in identity.member_fingerprints
+            )
+            after = os.lstat(identity.path)
+        finally:
+            os.close(directory_fd)
+    except (OSError, ValueError) as error:
+        raise ValueError("checkpoint identity changed before index publication") from error
+    expected_names = {name for name, _ in identity.member_fingerprints} | {
+        "checksums.json"
+    }
+    if not (
+        _stat_fingerprint(before) == identity.directory_fingerprint
+        and _stat_fingerprint(directory_status) == identity.directory_fingerprint
+        and _stat_fingerprint(after) == identity.directory_fingerprint
+        and checksums_fingerprint == identity.checksums_fingerprint
+        and _sha256_bytes(checksums_content) == identity.checksums_sha256
+        and actual_names == expected_names
+        and member_fingerprints == identity.member_fingerprints
+    ):
+        raise ValueError("checkpoint identity changed before index publication")
 
 
 def _string_tuple(value: object, name: str) -> tuple[str, ...]:
@@ -191,21 +329,11 @@ def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
 
 
 def algorithm_config(config: Mapping[str, Any]) -> dict[str, Any]:
-    return {
-        key: config[key]
-        for key in sorted(config)
-        if key not in SCENE_CONFIG_FIELDS
-    }
+    return canonical_algorithm_config(config)
 
 
 def algorithm_hash(config: Mapping[str, Any]) -> str:
-    payload = json.dumps(
-        algorithm_config(config),
-        sort_keys=True,
-        separators=(",", ":"),
-        allow_nan=False,
-    ).encode("utf-8")
-    return hashlib.sha256(payload).hexdigest()
+    return canonical_algorithm_hash(config)
 
 
 def apply_frozen_visibility_policy(runtime_config: Any, policy: str) -> Any:
@@ -366,6 +494,38 @@ def _validate_config(
             "evaluation_checkpoint_frames must be strictly increasing and unique"
         )
     return str(scene), frame_count, schedule, evaluation_frames
+
+
+def _checkpoint_plan_from_target_manifest(
+    content: bytes,
+    path: Path,
+) -> dict[str, Any]:
+    payload = _load_json_bytes(content, path)
+    metadata = payload.get("metadata")
+    if not (
+        payload.get("schema_version") == 1
+        and payload.get("manifest_id") == "tesse_cd_occlusion_v1_targets"
+        and payload.get("dataset") == "TESSE-CD"
+        and isinstance(metadata, Mapping)
+    ):
+        raise ValueError("occlusion target manifest identity mismatch")
+    plan = build_evaluation_checkpoint_plan(arrays={}, metadata=metadata)
+    declared_frames = metadata.get("scene_frame_indices")
+    if not isinstance(declared_frames, Mapping) or set(declared_frames) != {
+        "apartment",
+        "office",
+    }:
+        raise ValueError("occlusion target checkpoint inventory is inconsistent")
+    for scene in ("apartment", "office"):
+        frames = declared_frames[scene]
+        if not (
+            isinstance(frames, list)
+            and all(type(frame) is int and frame >= 0 for frame in frames)
+            and frames == sorted(set(frames))
+            and set(plan["evaluation_checkpoint_frames"][scene]).issubset(frames)
+        ):
+            raise ValueError("occlusion target checkpoint inventory is inconsistent")
+    return plan
 
 
 def _checkpoint_record(
@@ -594,6 +754,17 @@ def run(
     source_target_manifest_bytes = target_manifest_path.read_bytes()
     if _sha256_bytes(source_target_manifest_bytes) != target_manifest_sha256:
         raise ValueError("occlusion target manifest checksum binding mismatch")
+    checkpoint_plan = _checkpoint_plan_from_target_manifest(
+        source_target_manifest_bytes,
+        target_manifest_path,
+    )
+    if (
+        list(evaluation_frames)
+        != checkpoint_plan["evaluation_checkpoint_frames"][scene]
+        or checkpoint_plan_sha256
+        != checkpoint_plan["evaluation_checkpoint_frames_sha256"]
+    ):
+        raise ValueError("evaluation checkpoint frame binding mismatch")
     destination = Path(output).absolute()
     if destination.exists() or destination.is_symlink():
         raise FileExistsError(destination)
@@ -637,6 +808,7 @@ def run(
         exported_sources: dict[int, dict[str, Any]] = {}
         trajectory_rows: list[Mapping[str, Any]] = []
         captured: list[int] = []
+        checkpoint_identities: list[tuple[Any, _CheckpointIdentity]] = []
         for frame_index in range(frame_count):
             frame = dataset[frame_index]
             if int(frame.frame_id) != frame_index:
@@ -676,6 +848,9 @@ def run(
                 )
                 checkpoint_format = "oviv2_compact_ownership_checkpoint"
                 snapshot_root = checkpoint_root / "ownership_checkpoint"
+            checkpoint_identities.append(
+                (snapshot, _capture_checkpoint_identity(snapshot_root))
+            )
             if int(snapshot.metadata.frame_id) != frame_index:
                 raise ValueError("committed snapshot frame does not match checkpoint")
             snapshot_timestamp = float(snapshot.metadata.timestamp)
@@ -858,6 +1033,11 @@ def run(
         assert_inputs_unchanged = getattr(caches, "assert_inputs_unchanged", None)
         if assert_inputs_unchanged is not None:
             assert_inputs_unchanged()
+        for committed_snapshot, identity in checkpoint_identities:
+            revalidate_source = getattr(committed_snapshot, "revalidate_source", None)
+            if callable(revalidate_source):
+                revalidate_source()
+            _revalidate_checkpoint_identity(identity)
         normalized_config_path = staging / "normalized_run_config.json"
         _write_json(normalized_config_path, config)
         normalized_config_record = _file_record(
@@ -872,6 +1052,8 @@ def run(
                 "manifest_id": "oviv2_tesse_cd_occlusion_checkpoints_v1",
                 "dataset": "TESSE-CD",
                 "method_id": "OVIV2",
+                "scene": scene,
+                "algorithm_hash": algorithm_hash(config),
                 "run_config": normalized_config_record,
                 "target_manifest": {
                     "sha256": target_manifest_sha256,

@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import ast
+from collections.abc import Mapping
 from dataclasses import dataclass
 import hashlib
 import json
+import os
 from pathlib import Path
+import shutil
 from types import SimpleNamespace
 
 import numpy as np
@@ -82,11 +85,66 @@ def _write_schedule(
     )
 
 
-def _write_config(tmp_path: Path) -> Path:
+def _checkpoint_plan_hash(frames: dict[str, list[int]]) -> str:
+    binding = {
+        "schema_version": 1,
+        "manifest_id": "tesse_cd_occlusion_v1_checkpoint_frames",
+        "evaluation_checkpoint_frames": frames,
+    }
+    return hashlib.sha256(
+        json.dumps(
+            binding,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
+    ).hexdigest()
+
+
+def _target_metadata(frames: dict[str, list[int]]) -> dict[str, object]:
+    episodes: list[dict[str, object]] = []
+    for scene in ("apartment", "office"):
+        scene_frames = frames[scene]
+        if not scene_frames:
+            continue
+        episodes.append(
+            {
+                "scene": scene,
+                "anchor": {
+                    "frame_index": scene_frames[0],
+                    "relative_timestamp_ns": scene_frames[0] * 10,
+                },
+                "checkpoints": [
+                    {
+                        "frame_index": frame_index,
+                        "relative_timestamp_ns": frame_index * 10,
+                    }
+                    for frame_index in scene_frames[1:]
+                ],
+            }
+        )
+    return {"scene_frame_indices": frames, "episodes": episodes}
+
+
+def _write_config(
+    tmp_path: Path,
+    *,
+    evaluation_frames: dict[str, list[int]] | None = None,
+) -> Path:
+    if evaluation_frames is None:
+        evaluation_frames = {"apartment": [], "office": []}
     schedule = tmp_path / "schedule.json"
     _write_schedule(schedule)
     target_manifest = tmp_path / "occlusion-target-manifest.json"
-    _write_json(target_manifest, {"manifest_id": "test-occlusion-target"})
+    _write_json(
+        target_manifest,
+        {
+            "dataset": "TESSE-CD",
+            "manifest_id": "tesse_cd_occlusion_v1_targets",
+            "metadata": _target_metadata(evaluation_frames),
+            "schema_version": 1,
+        },
+    )
     config = {
         "dataset": "TESSE-CD",
         "frame_count": 5,
@@ -94,12 +152,16 @@ def _write_config(tmp_path: Path) -> Path:
         "missing_observation_policy": "signed_depth",
         "occlusion_target_manifest": str(target_manifest),
         "occlusion_target_manifest_sha256": runner_module._sha256(target_manifest),
-        "evaluation_checkpoint_frames_sha256": "f" * 64,
+        "evaluation_checkpoint_frames": evaluation_frames["apartment"],
+        "evaluation_checkpoint_frames_sha256": _checkpoint_plan_hash(
+            evaluation_frames
+        ),
         "scene": "apartment",
         "schedule_manifest": str(schedule),
         "schema_version": 1,
         "stage3_lineage_commit": "47962fbd9f363c0696cc5016f8ab42f83a3bf7e5",
     }
+    config["algorithm_hash"] = algorithm_hash(config)
     path = tmp_path / "runner.json"
     _write_json(path, config)
     return path
@@ -351,10 +413,11 @@ def test_five_frame_end_to_end_is_byte_identical(tmp_path: Path) -> None:
 def test_frozen_evaluation_checkpoints_are_union_with_official_schedule(
     tmp_path: Path,
 ) -> None:
-    config_path = _write_config(tmp_path)
+    config_path = _write_config(
+        tmp_path,
+        evaluation_frames={"apartment": [2, 3], "office": []},
+    )
     config = json.loads(config_path.read_text(encoding="utf-8"))
-    config["evaluation_checkpoint_frames"] = [2, 3]
-    _write_json(config_path, config)
     calls: list[str] = []
 
     manifest = run(config_path, tmp_path / "run", dependencies=_dependencies(calls))
@@ -400,7 +463,11 @@ def test_frozen_evaluation_checkpoints_are_union_with_official_schedule(
     index_path = tmp_path / "run/occlusion_checkpoint_index.json"
     index = json.loads(index_path.read_text(encoding="utf-8"))
     assert index["schema_version"] == 2
-    assert index["evaluation_checkpoint_frames_sha256"] == "f" * 64
+    assert index["evaluation_checkpoint_frames_sha256"] == config[
+        "evaluation_checkpoint_frames_sha256"
+    ]
+    assert index["scene"] == "apartment"
+    assert index["algorithm_hash"] == config["algorithm_hash"]
     assert index["target_manifest"] == {
         "byte_count": Path(config["occlusion_target_manifest"]).stat().st_size,
         "sha256": config["occlusion_target_manifest_sha256"],
@@ -421,10 +488,10 @@ def test_frozen_evaluation_checkpoints_are_union_with_official_schedule(
 def test_mixed_checkpoint_run_is_byte_identical_and_compact_is_bounded(
     tmp_path: Path,
 ) -> None:
-    config_path = _write_config(tmp_path)
-    config = json.loads(config_path.read_text(encoding="utf-8"))
-    config["evaluation_checkpoint_frames"] = [0, 2, 3, 4]
-    _write_json(config_path, config)
+    config_path = _write_config(
+        tmp_path,
+        evaluation_frames={"apartment": [0, 2, 3, 4], "office": []},
+    )
 
     run(config_path, tmp_path / "first", dependencies=_dependencies([]))
     run(config_path, tmp_path / "second", dependencies=_dependencies([]))
@@ -478,6 +545,213 @@ def test_official_only_checkpoints_keep_full_snapshot_and_neutral_inventory(
         )
     )
     assert index["snapshots"] == []
+
+
+def test_rejects_plan_hash_when_other_target_scene_changes(tmp_path: Path) -> None:
+    config_path = _write_config(
+        tmp_path,
+        evaluation_frames={"apartment": [2], "office": [1]},
+    )
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    target_path = Path(config["occlusion_target_manifest"])
+    target = json.loads(target_path.read_text(encoding="utf-8"))
+    target["metadata"] = _target_metadata(
+        {"apartment": [2], "office": [1, 4]}
+    )
+    _write_json(target_path, target)
+    config["occlusion_target_manifest_sha256"] = runner_module._sha256(target_path)
+    config["algorithm_hash"] = algorithm_hash(config)
+    _write_json(config_path, config)
+
+    with pytest.raises(ValueError, match="evaluation checkpoint.*binding"):
+        run(config_path, tmp_path / "run", dependencies=_dependencies([]))
+
+
+def test_target_declared_scene_frames_may_strictly_cover_required_checkpoint_plan(
+    tmp_path: Path,
+) -> None:
+    required_frames = {"apartment": [2], "office": [1]}
+    metadata = _target_metadata(required_frames)
+    metadata["scene_frame_indices"] = {
+        "apartment": [0, 2, 4],
+        "office": [0, 1, 3],
+    }
+    target_manifest = tmp_path / "occlusion-target-manifest.json"
+    _write_json(
+        target_manifest,
+        {
+            "dataset": "TESSE-CD",
+            "manifest_id": "tesse_cd_occlusion_v1_targets",
+            "metadata": metadata,
+            "schema_version": 1,
+        },
+    )
+
+    plan = runner_module._checkpoint_plan_from_target_manifest(
+        target_manifest.read_bytes(),
+        target_manifest,
+    )
+
+    assert plan["evaluation_checkpoint_frames"] == required_frames
+    assert plan["evaluation_checkpoint_frames_sha256"] == _checkpoint_plan_hash(
+        required_frames
+    )
+
+
+def test_compact_checkpoint_is_revalidated_before_index_publication(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config_path = _write_config(
+        tmp_path,
+        evaluation_frames={"apartment": [2], "office": []},
+    )
+    original = CompactOwnershipCheckpoint.revalidate_source
+    revalidated: list[Path] = []
+
+    def tracked(checkpoint: CompactOwnershipCheckpoint) -> None:
+        revalidated.append(checkpoint.path)
+        original(checkpoint)
+
+    monkeypatch.setattr(CompactOwnershipCheckpoint, "revalidate_source", tracked)
+
+    run(config_path, tmp_path / "run", dependencies=_dependencies([]))
+
+    assert sum(path.name == "ownership_checkpoint" for path in revalidated) == 1
+
+
+def test_full_checkpoint_identity_barrier_rejects_equal_directory_replacement(
+    tmp_path: Path,
+) -> None:
+    config_path = _write_config(tmp_path)
+    dependencies = _dependencies([])
+    original_exporter = dependencies.checkpoint_exporter
+    replaced = False
+
+    def replacing_exporter(
+        snapshot: object,
+        checkpoint: object,
+        destination: Path,
+        context: object,
+    ) -> Mapping[str, object] | None:
+        nonlocal replaced
+        result = original_exporter(snapshot, checkpoint, destination, context)
+        if not replaced:
+            checkpoint_root = destination / "voxel_snapshot"
+            original_root = destination / "voxel_snapshot.original"
+            replacement = destination / "voxel_snapshot.replacement"
+            shutil.copytree(checkpoint_root, replacement)
+            checkpoint_root.rename(original_root)
+            replacement.rename(checkpoint_root)
+            replaced = True
+        return result
+
+    dependencies = RunnerDependencies(
+        dataset_factory=dependencies.dataset_factory,
+        cache_loader_factory=dependencies.cache_loader_factory,
+        runtime_factory=dependencies.runtime_factory,
+        checkpoint_exporter=replacing_exporter,
+        provenance_factory=dependencies.provenance_factory,
+    )
+
+    with pytest.raises(ValueError, match="checkpoint.*identity|changed"):
+        run(config_path, tmp_path / "run", dependencies=dependencies)
+
+
+def test_full_checkpoint_identity_barrier_rejects_equal_member_rewrite(
+    tmp_path: Path,
+) -> None:
+    config_path = _write_config(tmp_path)
+    dependencies = _dependencies([])
+    original_exporter = dependencies.checkpoint_exporter
+    replaced = False
+
+    def rewriting_exporter(
+        snapshot: object,
+        checkpoint: object,
+        destination: Path,
+        context: object,
+    ) -> Mapping[str, object] | None:
+        nonlocal replaced
+        result = original_exporter(snapshot, checkpoint, destination, context)
+        if not replaced:
+            state_path = destination / "voxel_snapshot/state.bin"
+            state_path.write_bytes(state_path.read_bytes())
+            replaced = True
+        return result
+
+    dependencies = RunnerDependencies(
+        dataset_factory=dependencies.dataset_factory,
+        cache_loader_factory=dependencies.cache_loader_factory,
+        runtime_factory=dependencies.runtime_factory,
+        checkpoint_exporter=rewriting_exporter,
+        provenance_factory=dependencies.provenance_factory,
+    )
+
+    with pytest.raises(ValueError, match="checkpoint.*identity|changed"):
+        run(config_path, tmp_path / "run", dependencies=dependencies)
+
+
+def test_full_checkpoint_identity_barrier_rejects_hardlink_directory_swap(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config_path = _write_config(tmp_path)
+    dependencies = _dependencies([])
+    original_lstat = runner_module.os.lstat
+    original_revalidate = runner_module._revalidate_checkpoint_identity
+    target: Path | None = None
+    replacement: Path | None = None
+    armed = False
+    swapped = False
+
+    class SwapRuntime(_Runtime):
+        def commit_new(self, checkpoint_path: Path) -> SimpleNamespace:
+            nonlocal target, replacement
+            snapshot = super().commit_new(checkpoint_path)
+            if target is None:
+                target = checkpoint_path
+                replacement = checkpoint_path.with_name(
+                    "voxel_snapshot.replacement"
+                )
+                assert replacement is not None
+                replacement.mkdir()
+                for member in target.iterdir():
+                    os.link(member, replacement / member.name)
+            return snapshot
+
+    def swapping_lstat(path: object, *args: object, **kwargs: object):
+        nonlocal swapped
+        status = original_lstat(path, *args, **kwargs)
+        if armed and not swapped and target is not None and Path(path) == target:
+            assert replacement is not None
+            target.rename(target.with_name("voxel_snapshot.original"))
+            replacement.rename(target)
+            swapped = True
+        return status
+
+    def attack_during_revalidation(identity: object) -> None:
+        nonlocal armed
+        armed = True
+        original_revalidate(identity)
+
+    monkeypatch.setattr(runner_module.os, "lstat", swapping_lstat)
+    monkeypatch.setattr(
+        runner_module,
+        "_revalidate_checkpoint_identity",
+        attack_during_revalidation,
+    )
+    dependencies = RunnerDependencies(
+        dataset_factory=dependencies.dataset_factory,
+        cache_loader_factory=dependencies.cache_loader_factory,
+        runtime_factory=lambda _config, _caches: SwapRuntime([]),
+        checkpoint_exporter=dependencies.checkpoint_exporter,
+        provenance_factory=dependencies.provenance_factory,
+    )
+
+    with pytest.raises(ValueError, match="checkpoint.*identity|changed"):
+        run(config_path, tmp_path / "run", dependencies=dependencies)
+    assert swapped is True
 
 
 def test_frozen_visibility_policy_overrides_runtime_parser_default() -> None:

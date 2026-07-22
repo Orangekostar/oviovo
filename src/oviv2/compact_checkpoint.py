@@ -1,23 +1,26 @@
 from __future__ import annotations
 
+from collections import Counter
+import ctypes
 from dataclasses import asdict, dataclass, fields
+import errno
 import hashlib
 import io
 import json
 import os
 from pathlib import Path
-import shutil
+import secrets
 import stat
-import tempfile
+import struct
 from typing import Any
 import zipfile
+import zlib
 
 import numpy as np
 from numpy.lib import format as npy_format
 
 from src.oviv2.dense_semantics import DenseSemanticProvenance
 from src.oviv2.ownership import ReversibleOwnershipStore
-from src.oviv2.snapshot import VoxelMapSnapshot
 
 
 COMPACT_OWNERSHIP_FORMAT = "oviv2_compact_ownership_checkpoint"
@@ -33,6 +36,131 @@ _OWNERSHIP_ARRAYS = (
     "evidence_revisions",
 )
 _OWNERSHIP_MEMBERS = frozenset(f"{name}.npy" for name in _OWNERSHIP_ARRAYS)
+_ZIP_EOCD_SIGNATURE = b"PK\x05\x06"
+
+# These limits match the dense-cache resource scale while remaining finite. A
+# 1M-record compact archive has about 56 MB of raw payload; its conservative
+# ZIP/deflate bound is checked by _canonical_archive_budget before writing.
+_MAX_OWNERSHIP_RECORDS = 1_000_000
+_MAX_OWNERSHIP_BLOCKS = 32_768
+_MAX_DENSE_OWNERSHIP_BYTES = 512 * 1024 * 1024
+_MAX_ARCHIVE_BYTES = 64 * 1024 * 1024
+_MAX_MEMBER_COMPRESSED_BYTES = 32 * 1024 * 1024
+_MAX_MEMBER_UNCOMPRESSED_BYTES = 32 * 1024 * 1024
+_MAX_TOTAL_UNCOMPRESSED_BYTES = 64 * 1024 * 1024
+_MAX_CENTRAL_DIRECTORY_BYTES = 64 * 1024
+_MAX_NPY_HEADER_BYTES = 16 * 1024
+_MAX_JSON_BYTES = 64 * 1024
+_OWNERSHIP_COMPRESSION_LEVEL = 6
+_NPY_MEMBER_OVERHEAD_BOUND = _MAX_NPY_HEADER_BYTES + 16
+_ZIP64_LOCAL_EXTRA_BOUND = 20
+_ZIP64_CENTRAL_EXTRA_BOUND = 28
+_ZIP_DATA_DESCRIPTOR_BOUND = 24
+_ZIP_END_RECORDS_BOUND = 22 + 56 + 20
+_RENAME_NOREPLACE = 1
+_DIRECTORY_OPEN_FLAGS = (
+    os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
+)
+
+
+class CompactCheckpointPublicationUncertainError(RuntimeError):
+    def __init__(self, target: Path, publication_error: Exception) -> None:
+        self.target = target
+        self.publication_error = publication_error
+        self.published = True
+        super().__init__(
+            f"compact checkpoint was published in its anchored parent for {target}, "
+            "but the user path or durability could not be verified; publication "
+            "state is uncertain"
+        )
+
+
+def _publication_test_hook(_stage: str) -> None:
+    pass
+
+
+@dataclass(frozen=True)
+class _NpyHeader:
+    shape: tuple[int, ...]
+    dtype: np.dtype
+    header_bytes: int
+
+
+@dataclass(frozen=True)
+class _OwnershipArchiveBudget:
+    max_member_uncompressed_bytes: int
+    max_member_compressed_bytes: int
+    total_uncompressed_bytes: int
+    central_directory_bytes: int
+    archive_bytes: int
+
+
+def _zlib_compress_bound(source_bytes: int) -> int:
+    return (
+        source_bytes
+        + (source_bytes >> 12)
+        + (source_bytes >> 14)
+        + (source_bytes >> 25)
+        + 13
+    )
+
+
+def _canonical_archive_budget(record_count: int) -> _OwnershipArchiveBudget:
+    payload_bytes = {
+        "schema_version": 8,
+        "block_resolution": 8,
+        "voxel_keys": record_count * 3 * 8,
+        "entity_ids": record_count * 8,
+        "confidence": record_count * 8,
+        "epochs": record_count * 8,
+        "evidence_revisions": record_count * 8,
+    }
+    member_bytes = {
+        name: payload_bytes[name] + _NPY_MEMBER_OVERHEAD_BOUND
+        for name in _OWNERSHIP_ARRAYS
+    }
+    compressed_bounds = {
+        name: _zlib_compress_bound(size)
+        for name, size in member_bytes.items()
+    }
+    central_directory_bytes = sum(
+        46
+        + len(f"{name}.npy".encode("utf-8"))
+        + _ZIP64_CENTRAL_EXTRA_BOUND
+        for name in _OWNERSHIP_ARRAYS
+    )
+    archive_bytes = _ZIP_END_RECORDS_BOUND + central_directory_bytes
+    for name in _OWNERSHIP_ARRAYS:
+        filename_bytes = len(f"{name}.npy".encode("utf-8"))
+        archive_bytes += (
+            30
+            + filename_bytes
+            + _ZIP64_LOCAL_EXTRA_BOUND
+            + compressed_bounds[name]
+            + _ZIP_DATA_DESCRIPTOR_BOUND
+        )
+    return _OwnershipArchiveBudget(
+        max_member_uncompressed_bytes=max(member_bytes.values()),
+        max_member_compressed_bytes=max(compressed_bounds.values()),
+        total_uncompressed_bytes=sum(member_bytes.values()),
+        central_directory_bytes=central_directory_bytes,
+        archive_bytes=archive_bytes,
+    )
+
+
+def _validate_canonical_archive_budget(
+    budget: _OwnershipArchiveBudget,
+) -> None:
+    if budget.max_member_uncompressed_bytes > _MAX_MEMBER_UNCOMPRESSED_BYTES:
+        raise ValueError("ownership member uncompressed resource budget exceeds limit")
+    if budget.max_member_compressed_bytes > _MAX_MEMBER_COMPRESSED_BYTES:
+        raise ValueError("ownership member compressed resource budget exceeds limit")
+    if budget.total_uncompressed_bytes > _MAX_TOTAL_UNCOMPRESSED_BYTES:
+        raise ValueError("ownership total uncompressed resource budget exceeds limit")
+    if budget.central_directory_bytes > _MAX_CENTRAL_DIRECTORY_BYTES:
+        raise ValueError("ownership central directory resource budget exceeds limit")
+    if budget.archive_bytes > _MAX_ARCHIVE_BYTES:
+        raise ValueError("ownership compressed archive resource budget exceeds limit")
 
 
 def _strict_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -79,6 +207,240 @@ def _fingerprint(status: os.stat_result) -> tuple[int, int, int, int, int]:
         status.st_mtime_ns,
         status.st_ctime_ns,
     )
+
+
+def _identity(status: os.stat_result) -> tuple[int, int]:
+    return status.st_dev, status.st_ino
+
+
+def _require_basename(name: str, *, label: str) -> str:
+    if (
+        not name
+        or name in {".", ".."}
+        or os.sep in name
+        or (os.altsep is not None and os.altsep in name)
+        or "\x00" in name
+    ):
+        raise ValueError(f"{label} must be a single safe basename")
+    return name
+
+
+def _open_directory_without_symlinks(path: Path) -> int:
+    if not path.is_absolute():
+        raise ValueError("directory path must be absolute")
+    descriptor = os.open(os.sep, _DIRECTORY_OPEN_FLAGS)
+    try:
+        for component in path.parts[1:]:
+            component = _require_basename(component, label="directory component")
+            next_descriptor = os.open(
+                component,
+                _DIRECTORY_OPEN_FLAGS,
+                dir_fd=descriptor,
+            )
+            os.close(descriptor)
+            descriptor = next_descriptor
+        return descriptor
+    except BaseException:
+        os.close(descriptor)
+        raise
+
+
+def _assert_parent_path_identity(
+    parent: Path,
+    expected_identity: tuple[int, int],
+) -> None:
+    try:
+        current_fd = _open_directory_without_symlinks(parent)
+    except (OSError, ValueError) as error:
+        raise ValueError("compact checkpoint parent identity changed") from error
+    try:
+        if _identity(os.fstat(current_fd)) != expected_identity:
+            raise ValueError("compact checkpoint parent identity changed")
+    finally:
+        os.close(current_fd)
+
+
+def _create_temporary_directory_at(
+    parent_fd: int,
+    target_name: str,
+) -> tuple[str, int, tuple[int, int]]:
+    prefix = f".{_require_basename(target_name, label='target name')}.tmp-"
+    for _ in range(128):
+        temporary_name = prefix + secrets.token_hex(12)
+        try:
+            os.mkdir(temporary_name, mode=0o700, dir_fd=parent_fd)
+        except FileExistsError:
+            continue
+        created = os.stat(
+            temporary_name,
+            dir_fd=parent_fd,
+            follow_symlinks=False,
+        )
+        created_identity = _identity(created)
+        try:
+            temporary_fd = os.open(
+                temporary_name,
+                _DIRECTORY_OPEN_FLAGS,
+                dir_fd=parent_fd,
+            )
+        except BaseException:
+            try:
+                current = os.stat(
+                    temporary_name,
+                    dir_fd=parent_fd,
+                    follow_symlinks=False,
+                )
+                if _identity(current) == created_identity:
+                    os.rmdir(temporary_name, dir_fd=parent_fd)
+            except OSError:
+                pass
+            raise
+        opened = os.fstat(temporary_fd)
+        named = os.stat(
+            temporary_name,
+            dir_fd=parent_fd,
+            follow_symlinks=False,
+        )
+        if (
+            not stat.S_ISDIR(named.st_mode)
+            or _identity(opened) != created_identity
+            or _identity(named) != created_identity
+        ):
+            os.close(temporary_fd)
+            if stat.S_ISDIR(named.st_mode) and _identity(named) == created_identity:
+                try:
+                    os.rmdir(temporary_name, dir_fd=parent_fd)
+                except OSError:
+                    pass
+            raise ValueError("compact checkpoint temporary directory identity changed")
+        return temporary_name, temporary_fd, _identity(opened)
+    raise FileExistsError("could not reserve a unique compact checkpoint temp name")
+
+
+def _write_regular_at(
+    directory_fd: int,
+    name: str,
+    content: bytes,
+) -> tuple[int, int]:
+    descriptor = os.open(
+        _require_basename(name, label="checkpoint member"),
+        os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_CLOEXEC | os.O_NOFOLLOW,
+        0o600,
+        dir_fd=directory_fd,
+    )
+    identity = _identity(os.fstat(descriptor))
+    succeeded = False
+    try:
+        remaining = memoryview(content)
+        while remaining:
+            written = os.write(descriptor, remaining)
+            if written <= 0:
+                raise OSError(errno.EIO, f"failed writing compact checkpoint {name}")
+            remaining = remaining[written:]
+        os.fsync(descriptor)
+        if _identity(os.fstat(descriptor)) != identity:
+            raise ValueError(f"compact checkpoint file identity changed: {name}")
+        succeeded = True
+        return identity
+    finally:
+        os.close(descriptor)
+        if not succeeded:
+            try:
+                current = os.stat(
+                    name,
+                    dir_fd=directory_fd,
+                    follow_symlinks=False,
+                )
+                if _identity(current) == identity:
+                    os.unlink(name, dir_fd=directory_fd)
+            except OSError:
+                pass
+
+
+def _rename_directory_no_replace_at(
+    parent_fd: int,
+    source_name: str,
+    target_name: str,
+    *,
+    parent_path: Path,
+    expected_parent_identity: tuple[int, int],
+) -> None:
+    source_name = _require_basename(source_name, label="temporary name")
+    target_name = _require_basename(target_name, label="target name")
+    _assert_parent_path_identity(parent_path, expected_parent_identity)
+    libc = ctypes.CDLL(None, use_errno=True)
+    try:
+        renameat2 = libc.renameat2
+    except AttributeError as error:
+        raise OSError(
+            errno.ENOSYS,
+            "dirfd-relative RENAME_NOREPLACE is unavailable",
+        ) from error
+    renameat2.argtypes = (
+        ctypes.c_int,
+        ctypes.c_char_p,
+        ctypes.c_int,
+        ctypes.c_char_p,
+        ctypes.c_uint,
+    )
+    renameat2.restype = ctypes.c_int
+    ctypes.set_errno(0)
+    result = renameat2(
+        parent_fd,
+        os.fsencode(source_name),
+        parent_fd,
+        os.fsencode(target_name),
+        _RENAME_NOREPLACE,
+    )
+    if result == 0:
+        return
+    error_number = ctypes.get_errno()
+    if error_number in {errno.EEXIST, errno.ENOTEMPTY}:
+        raise FileExistsError(
+            errno.EEXIST,
+            "immutable compact checkpoint target already exists",
+            target_name,
+        )
+    raise OSError(
+        error_number,
+        "dirfd-relative compact checkpoint publication failed: "
+        f"{os.strerror(error_number)}",
+        f"{source_name} -> {target_name}",
+    )
+
+
+def _cleanup_owned_temporary(
+    parent_fd: int,
+    temporary_fd: int,
+    temporary_name: str,
+    temporary_identity: tuple[int, int],
+    owned_files: dict[str, tuple[int, int]],
+) -> None:
+    for name, expected_identity in owned_files.items():
+        try:
+            current = os.stat(name, dir_fd=temporary_fd, follow_symlinks=False)
+        except OSError:
+            continue
+        if _identity(current) != expected_identity:
+            continue
+        try:
+            os.unlink(name, dir_fd=temporary_fd)
+        except OSError:
+            pass
+    try:
+        named = os.stat(
+            temporary_name,
+            dir_fd=parent_fd,
+            follow_symlinks=False,
+        )
+    except OSError:
+        return
+    if not stat.S_ISDIR(named.st_mode) or _identity(named) != temporary_identity:
+        return
+    try:
+        os.rmdir(temporary_name, dir_fd=parent_fd)
+    except OSError:
+        pass
 
 
 def _reject_symlink_components(path: Path, *, label: str) -> None:
@@ -150,6 +512,70 @@ class _SourceWitness:
     directory_fingerprint: tuple[int, int, int, int, int]
     file_fingerprints: dict[str, tuple[int, int, int, int, int]]
 
+    @classmethod
+    def capture_published(
+        cls,
+        path: Path,
+        *,
+        expected_file_fingerprints: dict[
+            str, tuple[int, int, int, int, int]
+        ],
+    ) -> "_SourceWitness":
+        _reject_symlink_components(path, label="compact checkpoint source")
+        try:
+            path_before = os.lstat(path)
+        except OSError as error:
+            raise ValueError("compact checkpoint source changed") from error
+        flags = (
+            os.O_RDONLY
+            | getattr(os, "O_DIRECTORY", 0)
+            | getattr(os, "O_CLOEXEC", 0)
+            | getattr(os, "O_NOFOLLOW", 0)
+        )
+        try:
+            directory_fd = os.open(path, flags)
+        except OSError as error:
+            raise ValueError("compact checkpoint source changed") from error
+        try:
+            directory_before = os.fstat(directory_fd)
+            if (
+                not stat.S_ISDIR(directory_before.st_mode)
+                or _fingerprint(directory_before) != _fingerprint(path_before)
+            ):
+                raise ValueError("compact checkpoint source identity changed")
+            if set(os.listdir(directory_fd)) != _INVENTORY:
+                raise ValueError("compact checkpoint physical inventory is invalid")
+            file_fingerprints: dict[
+                str, tuple[int, int, int, int, int]
+            ] = {}
+            for name in sorted(_INVENTORY):
+                current = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+                if not stat.S_ISREG(current.st_mode):
+                    raise ValueError(
+                        f"compact checkpoint file is not regular: {name}"
+                    )
+                file_fingerprints[name] = _fingerprint(current)
+            if file_fingerprints != expected_file_fingerprints:
+                raise ValueError("compact checkpoint files changed during publication")
+            directory_after = os.fstat(directory_fd)
+            if _fingerprint(directory_before) != _fingerprint(directory_after):
+                raise ValueError("compact checkpoint source identity changed")
+        finally:
+            os.close(directory_fd)
+        try:
+            path_after = os.lstat(path)
+        except OSError as error:
+            raise ValueError("compact checkpoint source changed") from error
+        if _fingerprint(path_after) != _fingerprint(directory_after):
+            raise ValueError("compact checkpoint source identity changed")
+        witness = cls(
+            path=path,
+            directory_fingerprint=_fingerprint(directory_after),
+            file_fingerprints=file_fingerprints,
+        )
+        witness.revalidate()
+        return witness
+
     def revalidate(self) -> None:
         try:
             path_before = os.lstat(self.path)
@@ -207,38 +633,78 @@ class _SourceWitness:
 def _ownership_arrays(
     ownership: ReversibleOwnershipStore,
 ) -> dict[str, np.ndarray]:
-    records = tuple(sorted(ownership.records(), key=lambda item: item[0]))
+    key_chunks: list[np.ndarray] = []
+    entity_chunks: list[np.ndarray] = []
+    confidence_chunks: list[np.ndarray] = []
+    epoch_chunks: list[np.ndarray] = []
+    revision_chunks: list[np.ndarray] = []
+    resolution = ownership.block_resolution
+    for block_key in sorted(ownership._blocks):
+        block = ownership._blocks[block_key]
+        local_keys = np.argwhere(block.entity_ids > 0)
+        if local_keys.size == 0:
+            continue
+        positions = (local_keys[:, 0], local_keys[:, 1], local_keys[:, 2])
+        key_chunks.append(
+            local_keys + np.asarray(block_key, dtype=np.int64) * resolution
+        )
+        entity_chunks.append(block.entity_ids[positions])
+        confidence_chunks.append(block.confidence[positions])
+        epoch_chunks.append(block.epochs[positions])
+        revision_chunks.append(block.evidence_revisions[positions])
+
+    count = sum(chunk.shape[0] for chunk in key_chunks)
+    if count > _MAX_OWNERSHIP_RECORDS:
+        raise ValueError("ownership record count exceeds resource limit")
+    if len(key_chunks) > _MAX_OWNERSHIP_BLOCKS:
+        raise ValueError("ownership block count exceeds resource limit")
+    dense_storage_bytes = len(key_chunks) * resolution**3 * 4 * 8
+    if dense_storage_bytes > _MAX_DENSE_OWNERSHIP_BYTES:
+        raise ValueError("ownership dense block storage exceeds resource limit")
+    if key_chunks:
+        voxel_keys = np.concatenate(key_chunks)
+        entity_ids = np.concatenate(entity_chunks)
+        confidence = np.concatenate(confidence_chunks)
+        epochs = np.concatenate(epoch_chunks)
+        evidence_revisions = np.concatenate(revision_chunks)
+        order = np.lexsort(
+            (voxel_keys[:, 2], voxel_keys[:, 1], voxel_keys[:, 0])
+        )
+        voxel_keys = voxel_keys[order]
+        entity_ids = entity_ids[order]
+        confidence = confidence[order]
+        epochs = epochs[order]
+        evidence_revisions = evidence_revisions[order]
+    else:
+        voxel_keys = np.empty((0, 3), dtype=np.int64)
+        entity_ids = np.empty((0,), dtype=np.int64)
+        confidence = np.empty((0,), dtype=np.float64)
+        epochs = np.empty((0,), dtype=np.int64)
+        evidence_revisions = np.empty((0,), dtype=np.int64)
     return {
         "schema_version": np.asarray([1], dtype=np.int64),
         "block_resolution": np.asarray(
             [ownership.block_resolution], dtype=np.int64
         ),
-        "voxel_keys": np.asarray(
-            [key for key, _ in records], dtype=np.int64
-        ).reshape(-1, 3),
-        "entity_ids": np.asarray(
-            [record.entity_id for _, record in records], dtype=np.int64
-        ),
-        "confidence": np.asarray(
-            [record.confidence for _, record in records], dtype=np.float64
-        ),
-        "epochs": np.asarray(
-            [record.epoch for _, record in records], dtype=np.int64
-        ),
-        "evidence_revisions": np.asarray(
-            [record.evidence_revision for _, record in records], dtype=np.int64
-        ),
+        "voxel_keys": voxel_keys,
+        "entity_ids": entity_ids,
+        "confidence": confidence,
+        "epochs": epochs,
+        "evidence_revisions": evidence_revisions,
     }
 
 
 def _canonical_ownership_npz(ownership: ReversibleOwnershipStore) -> bytes:
     arrays = _ownership_arrays(ownership)
+    _validate_canonical_archive_budget(
+        _canonical_archive_budget(arrays["voxel_keys"].shape[0])
+    )
     destination = io.BytesIO()
     with zipfile.ZipFile(
         destination,
         mode="w",
         compression=zipfile.ZIP_DEFLATED,
-        compresslevel=9,
+        compresslevel=_OWNERSHIP_COMPRESSION_LEVEL,
         allowZip64=True,
     ) as archive:
         for name in _OWNERSHIP_ARRAYS:
@@ -248,25 +714,201 @@ def _canonical_ownership_npz(ownership: ReversibleOwnershipStore) -> bytes:
             info.compress_type = zipfile.ZIP_DEFLATED
             info.create_system = 3
             info.external_attr = 0o600 << 16
-            archive.writestr(info, payload.getvalue(), compress_type=zipfile.ZIP_DEFLATED)
+            archive.writestr(
+                info,
+                payload.getvalue(),
+                compress_type=zipfile.ZIP_DEFLATED,
+            )
     return destination.getvalue()
 
 
-def _validated_ownership(content: bytes, *, block_resolution: int) -> ReversibleOwnershipStore:
+def _precheck_central_directory(content: bytes) -> None:
+    search_start = max(0, len(content) - (65_535 + 22))
+    search_end = len(content)
+    eocd_offset = -1
+    eocd: tuple[bytes, int, int, int, int, int, int, int] | None = None
+    while search_end > search_start:
+        candidate = content.rfind(_ZIP_EOCD_SIGNATURE, search_start, search_end)
+        if candidate < 0:
+            break
+        if candidate + 22 <= len(content):
+            parsed = struct.unpack_from("<4s4H2IH", content, candidate)
+            if candidate + 22 + parsed[-1] == len(content):
+                eocd_offset = candidate
+                eocd = parsed
+                break
+        search_end = candidate
+    if eocd is None:
+        raise ValueError("ownership archive has no valid ZIP central directory")
+    (
+        _signature,
+        disk_number,
+        central_disk,
+        disk_entries,
+        total_entries,
+        central_size,
+        central_offset,
+        _comment_size,
+    ) = eocd
+    if disk_number != 0 or central_disk != 0 or disk_entries != total_entries:
+        raise ValueError("ownership archive multi-disk ZIP is forbidden")
+    if total_entries != len(_OWNERSHIP_MEMBERS):
+        raise ValueError("ownership archive member count is invalid")
+    if central_size > _MAX_CENTRAL_DIRECTORY_BYTES:
+        raise ValueError("ownership archive central directory exceeds resource limit")
+    if central_offset + central_size != eocd_offset:
+        raise ValueError("ownership archive central directory offsets are invalid")
+
+
+def _read_npy_header(
+    archive: zipfile.ZipFile,
+    info: zipfile.ZipInfo,
+    name: str,
+) -> _NpyHeader:
     try:
-        with zipfile.ZipFile(io.BytesIO(content), mode="r") as archive:
-            names = [entry.filename for entry in archive.infolist()]
-            if len(names) != len(set(names)):
-                raise ValueError("ownership archive contains duplicate members")
-            if set(names) != _OWNERSHIP_MEMBERS:
-                raise ValueError("ownership archive inventory is invalid")
-            if any(entry.is_dir() for entry in archive.infolist()):
-                raise ValueError("ownership archive contains a directory")
+        with archive.open(info, mode="r") as member:
+            version = npy_format.read_magic(member)
+            if version == (1, 0):
+                shape, _fortran_order, dtype = npy_format.read_array_header_1_0(
+                    member,
+                    max_header_size=_MAX_NPY_HEADER_BYTES,
+                )
+            elif version == (2, 0):
+                shape, _fortran_order, dtype = npy_format.read_array_header_2_0(
+                    member,
+                    max_header_size=_MAX_NPY_HEADER_BYTES,
+                )
+            else:
+                raise ValueError(
+                    f"ownership {name} has unsupported NPY version {version}"
+                )
+            header_bytes = member.tell()
+    except (EOFError, OSError, ValueError) as error:
+        if isinstance(error, ValueError) and str(error).startswith("ownership"):
+            raise
+        raise ValueError(
+            f"ownership {name} NPY header exceeds resource limit or is invalid"
+        ) from error
+    normalized_dtype = np.dtype(dtype)
+    if normalized_dtype.hasobject:
+        raise ValueError(f"ownership {name} object dtype is forbidden")
+    element_count = 1
+    for dimension in shape:
+        if type(dimension) is not int or dimension < 0:
+            raise ValueError(f"ownership {name} has an invalid NPY shape")
+        element_count *= dimension
+        if (
+            element_count * normalized_dtype.itemsize
+            > _MAX_MEMBER_UNCOMPRESSED_BYTES
+        ):
+            raise ValueError(f"ownership {name} NPY shape exceeds resource limit")
+    if (
+        name == "voxel_keys"
+        and len(shape) == 2
+        and shape[1:] == (3,)
+        and shape[0] > _MAX_OWNERSHIP_RECORDS
+    ):
+        raise ValueError("ownership voxel_keys record count exceeds resource limit")
+    expected_file_size = header_bytes + element_count * normalized_dtype.itemsize
+    if expected_file_size != info.file_size:
+        raise ValueError(f"ownership {name} NPY header/data size mismatch")
+    return _NpyHeader(tuple(shape), normalized_dtype, header_bytes)
+
+
+def _require_npy_contract(
+    headers: dict[str, _NpyHeader],
+    name: str,
+    shape: tuple[int, ...],
+    dtype: np.dtype,
+) -> None:
+    header = headers[name]
+    if header.dtype != dtype:
+        raise ValueError(f"ownership {name} has an invalid NPY dtype")
+    if header.shape != shape:
+        raise ValueError(f"ownership {name} has an invalid NPY shape")
+
+
+def _preflight_ownership_archive(content: bytes) -> None:
+    if len(content) > _MAX_ARCHIVE_BYTES:
+        raise ValueError("ownership archive exceeds compressed size limit")
+    _precheck_central_directory(content)
+    with zipfile.ZipFile(io.BytesIO(content), mode="r") as archive:
+        infos = archive.infolist()
+        counts = Counter(info.filename for info in infos)
+        names = set(counts)
+        if (
+            len(infos) != len(_OWNERSHIP_MEMBERS)
+            or names != _OWNERSHIP_MEMBERS
+            or any(count != 1 for count in counts.values())
+        ):
+            raise ValueError("ownership archive inventory is invalid")
+        info_by_name: dict[str, zipfile.ZipInfo] = {}
+        total_uncompressed = 0
+        for info in infos:
+            name = info.filename.removesuffix(".npy")
+            if (
+                info.is_dir()
+                or "/" in info.filename
+                or "\\" in info.filename
+                or info.flag_bits & 0x1
+            ):
+                raise ValueError(f"ownership {name} has an unsafe ZIP member")
+            if info.compress_type not in {zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED}:
+                raise ValueError(f"ownership {name} uses unsupported ZIP compression")
+            if info.compress_size > _MAX_MEMBER_COMPRESSED_BYTES:
+                raise ValueError(
+                    f"ownership {name} compressed member exceeds resource limit"
+                )
+            if info.file_size > _MAX_MEMBER_UNCOMPRESSED_BYTES:
+                raise ValueError(
+                    f"ownership {name} uncompressed member exceeds resource limit"
+                )
+            if info.file_size > 0 and info.compress_size <= 0:
+                raise ValueError(f"ownership {name} has invalid compressed size")
+            total_uncompressed += info.file_size
+            if total_uncompressed > _MAX_TOTAL_UNCOMPRESSED_BYTES:
+                raise ValueError(
+                    "ownership archive total uncompressed size exceeds resource limit"
+                )
+            info_by_name[name] = info
+
+        headers = {
+            name: _read_npy_header(archive, info_by_name[name], name)
+            for name in _OWNERSHIP_ARRAYS
+        }
+        int64 = np.dtype(np.int64)
+        _require_npy_contract(headers, "schema_version", (1,), int64)
+        _require_npy_contract(headers, "block_resolution", (1,), int64)
+        voxel_keys = headers["voxel_keys"]
+        if voxel_keys.dtype != int64:
+            raise ValueError("ownership voxel_keys have an invalid NPY dtype")
+        if len(voxel_keys.shape) != 2 or voxel_keys.shape[1:] != (3,):
+            raise ValueError("ownership voxel_keys have an invalid NPY shape")
+        count = voxel_keys.shape[0]
+        if count > _MAX_OWNERSHIP_RECORDS:
+            raise ValueError("ownership voxel_keys record count exceeds resource limit")
+        for name, dtype in {
+            "entity_ids": int64,
+            "confidence": np.dtype(np.float64),
+            "epochs": int64,
+            "evidence_revisions": int64,
+        }.items():
+            _require_npy_contract(headers, name, (count,), dtype)
+
+
+def _validated_ownership(
+    content: bytes,
+    *,
+    block_resolution: int,
+    revision: int,
+) -> ReversibleOwnershipStore:
+    try:
+        _preflight_ownership_archive(content)
         with np.load(io.BytesIO(content), allow_pickle=False) as payload:
             if set(payload.files) != set(_OWNERSHIP_ARRAYS):
                 raise ValueError("ownership array inventory is invalid")
             arrays = {name: np.array(payload[name], copy=True) for name in payload.files}
-    except (OSError, ValueError, zipfile.BadZipFile) as error:
+    except (EOFError, OSError, ValueError, zipfile.BadZipFile, zlib.error) as error:
         if isinstance(error, ValueError) and str(error).startswith("ownership"):
             raise
         raise ValueError("ownership checkpoint is not a valid safe NPZ") from error
@@ -284,7 +926,11 @@ def _validated_ownership(content: bytes, *, block_resolution: int) -> Reversible
         raise ValueError("ownership block_resolution does not match metadata")
 
     voxel_keys = arrays["voxel_keys"]
-    if voxel_keys.dtype != np.int64 or voxel_keys.ndim != 2 or voxel_keys.shape[1:] != (3,):
+    if (
+        voxel_keys.dtype != np.int64
+        or voxel_keys.ndim != 2
+        or voxel_keys.shape[1:] != (3,)
+    ):
         raise ValueError("ownership voxel_keys have an invalid dtype or shape")
     count = voxel_keys.shape[0]
     contracts = {
@@ -296,9 +942,22 @@ def _validated_ownership(content: bytes, *, block_resolution: int) -> Reversible
     for name, dtype in contracts.items():
         if arrays[name].dtype != dtype or arrays[name].shape != (count,):
             raise ValueError(f"ownership {name} has an invalid dtype or shape")
+    if count > 1:
+        previous = voxel_keys[:-1]
+        current = voxel_keys[1:]
+        strictly_greater = (current[:, 0] > previous[:, 0]) | (
+            (current[:, 0] == previous[:, 0])
+            & (
+                (current[:, 1] > previous[:, 1])
+                | (
+                    (current[:, 1] == previous[:, 1])
+                    & (current[:, 2] > previous[:, 2])
+                )
+            )
+        )
+        if not np.all(strictly_greater):
+            raise ValueError("ownership voxel_keys must be sorted and unique")
     keys = [tuple(int(value) for value in row) for row in voxel_keys]
-    if keys != sorted(set(keys)):
-        raise ValueError("ownership voxel_keys must be sorted and unique")
     if np.any(arrays["entity_ids"] <= 0):
         raise ValueError("ownership entity_ids must be positive")
     confidence = arrays["confidence"]
@@ -310,26 +969,70 @@ def _validated_ownership(content: bytes, *, block_resolution: int) -> Reversible
         raise ValueError("ownership epochs must be positive")
     if np.any(arrays["evidence_revisions"] < 0):
         raise ValueError("ownership evidence_revisions must be non-negative")
+    if np.any(arrays["evidence_revisions"] > revision):
+        raise ValueError(
+            "ownership evidence_revisions cannot exceed checkpoint revision"
+        )
 
     store = ReversibleOwnershipStore(block_resolution=block_resolution)
-    for index, key in enumerate(keys):
-        store.assign(
-            key,
-            int(arrays["entity_ids"][index]),
-            float(confidence[index]),
-            int(arrays["evidence_revisions"][index]),
+    if count:
+        dense_block_bytes = block_resolution**3 * 4 * 8
+        if dense_block_bytes > _MAX_DENSE_OWNERSHIP_BYTES:
+            raise ValueError(
+                "ownership dense block storage exceeds resource limit"
+            )
+        block_keys = np.floor_divide(voxel_keys, block_resolution)
+        local_keys = voxel_keys - block_keys * block_resolution
+        by_block = np.lexsort(
+            (block_keys[:, 2], block_keys[:, 1], block_keys[:, 0])
         )
-        block, local, _ = store._location(key, allocate=False)
-        assert block is not None
-        block.epochs[local] = arrays["epochs"][index]
+        sorted_block_keys = block_keys[by_block]
+        starts = np.concatenate(
+            (
+                np.asarray([0], dtype=np.int64),
+                np.flatnonzero(
+                    np.any(sorted_block_keys[1:] != sorted_block_keys[:-1], axis=1)
+                )
+                + 1,
+            )
+        )
+        ends = np.concatenate((starts[1:], np.asarray([count], dtype=np.int64)))
+        if len(starts) > _MAX_OWNERSHIP_BLOCKS:
+            raise ValueError("ownership block count exceeds resource limit")
+        dense_storage_bytes = len(starts) * dense_block_bytes
+        if dense_storage_bytes > _MAX_DENSE_OWNERSHIP_BYTES:
+            raise ValueError(
+                "ownership dense block storage exceeds resource limit"
+            )
+        for start, end in zip(starts, ends, strict=True):
+            indices = by_block[int(start) : int(end)]
+            block_key = tuple(int(value) for value in sorted_block_keys[int(start)])
+            block = store._new_block()
+            local = local_keys[indices]
+            positions = (local[:, 0], local[:, 1], local[:, 2])
+            block.entity_ids[positions] = arrays["entity_ids"][indices]
+            block.confidence[positions] = confidence[indices]
+            block.epochs[positions] = arrays["epochs"][indices]
+            block.evidence_revisions[positions] = arrays[
+                "evidence_revisions"
+            ][indices]
+            store._blocks[block_key] = block
+        for key, entity_id in zip(keys, arrays["entity_ids"], strict=True):
+            store._entity_voxels.setdefault(int(entity_id), set()).add(key)
     return store
 
 
 def _read_regular_at(
     directory_fd: int,
     name: str,
+    *,
+    max_bytes: int,
 ) -> tuple[bytes, tuple[int, int, int, int, int]]:
-    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    flags = (
+        os.O_RDONLY
+        | getattr(os, "O_CLOEXEC", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+    )
     try:
         descriptor = os.open(name, flags, dir_fd=directory_fd)
     except OSError as error:
@@ -338,11 +1041,17 @@ def _read_regular_at(
         before = os.fstat(descriptor)
         if not stat.S_ISREG(before.st_mode):
             raise ValueError(f"compact checkpoint file is not regular: {name}")
+        if before.st_size > max_bytes:
+            raise ValueError(f"compact checkpoint {name} exceeds size limit")
         chunks: list[bytes] = []
+        total = 0
         while True:
             chunk = os.read(descriptor, 1024 * 1024)
             if not chunk:
                 break
+            total += len(chunk)
+            if total > max_bytes:
+                raise ValueError(f"compact checkpoint {name} exceeds size limit")
             chunks.append(chunk)
         after = os.fstat(descriptor)
         if _fingerprint(before) != _fingerprint(after):
@@ -350,6 +1059,47 @@ def _read_regular_at(
         return b"".join(chunks), _fingerprint(after)
     finally:
         os.close(descriptor)
+
+
+def _capture_published_directory_at(
+    parent_fd: int,
+    target_name: str,
+    expected_file_fingerprints: dict[
+        str, tuple[int, int, int, int, int]
+    ],
+) -> tuple[int, int, int, int, int]:
+    target_name = _require_basename(target_name, label="target name")
+    directory_fd = os.open(
+        target_name,
+        _DIRECTORY_OPEN_FLAGS,
+        dir_fd=parent_fd,
+    )
+    try:
+        directory_before = os.fstat(directory_fd)
+        named = os.stat(target_name, dir_fd=parent_fd, follow_symlinks=False)
+        if (
+            not stat.S_ISDIR(named.st_mode)
+            or _identity(named) != _identity(directory_before)
+        ):
+            raise ValueError("published compact checkpoint identity changed")
+        if set(os.listdir(directory_fd)) != _INVENTORY:
+            raise ValueError("published compact checkpoint inventory changed")
+        actual_files: dict[str, tuple[int, int, int, int, int]] = {}
+        for name in sorted(_INVENTORY):
+            current = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+            if not stat.S_ISREG(current.st_mode):
+                raise ValueError(
+                    f"published compact checkpoint file is not regular: {name}"
+                )
+            actual_files[name] = _fingerprint(current)
+        if actual_files != expected_file_fingerprints:
+            raise ValueError("published compact checkpoint files changed")
+        directory_after = os.fstat(directory_fd)
+        if _fingerprint(directory_before) != _fingerprint(directory_after):
+            raise ValueError("published compact checkpoint identity changed")
+        return _fingerprint(directory_after)
+    finally:
+        os.close(directory_fd)
 
 
 @dataclass(frozen=True)
@@ -376,22 +1126,44 @@ class CompactOwnershipCheckpoint:
             raise TypeError("ownership must be ReversibleOwnershipStore")
         if ownership.block_resolution != metadata.block_resolution:
             raise ValueError("ownership block_resolution does not match metadata")
-        target = Path(target_dir).absolute()
+        raw_target = Path(target_dir)
+        _require_basename(raw_target.name, label="compact checkpoint target")
+        target = Path(os.path.abspath(os.fspath(raw_target)))
+        target_name = _require_basename(target.name, label="compact checkpoint target")
         _reject_symlink_components(target.parent, label="compact checkpoint parent")
         try:
-            parent_status = os.lstat(target.parent)
+            parent_fd = _open_directory_without_symlinks(target.parent)
         except FileNotFoundError as error:
             raise FileNotFoundError(target.parent) from error
-        if not stat.S_ISDIR(parent_status.st_mode):
-            raise NotADirectoryError(target.parent)
-        if os.path.lexists(target):
-            raise FileExistsError(target)
-
-        temporary = Path(
-            tempfile.mkdtemp(prefix=f".{target.name}.tmp-", dir=target.parent)
-        )
+        except OSError as error:
+            raise ValueError(
+                "compact checkpoint parent is not a real symlink-free directory"
+            ) from error
+        parent_status = os.fstat(parent_fd)
+        parent_fingerprint = _fingerprint(parent_status)
+        parent_identity = parent_fingerprint[:2]
+        temporary_name: str | None = None
+        temporary_fd: int | None = None
+        temporary_identity: tuple[int, int] | None = None
+        owned_files: dict[str, tuple[int, int]] = {}
         published = False
         try:
+            _assert_parent_path_identity(target.parent, parent_identity)
+            _publication_test_hook("after_parent_check")
+            _assert_parent_path_identity(target.parent, parent_identity)
+            try:
+                os.stat(target_name, dir_fd=parent_fd, follow_symlinks=False)
+            except FileNotFoundError:
+                pass
+            else:
+                raise FileExistsError(target)
+
+            temporary_name, temporary_fd, temporary_identity = (
+                _create_temporary_directory_at(parent_fd, target_name)
+            )
+            _publication_test_hook("after_temp_create")
+            _assert_parent_path_identity(target.parent, parent_identity)
+
             metadata_bytes = _canonical_json(asdict(metadata))
             ownership_bytes = _canonical_ownership_npz(ownership)
             checksums = {
@@ -403,28 +1175,112 @@ class CompactOwnershipCheckpoint:
                 "ownership.npz": ownership_bytes,
                 "checksums.json": _canonical_json(checksums),
             }
+            validated_ownership = _validated_ownership(
+                ownership_bytes,
+                block_resolution=metadata.block_resolution,
+                revision=metadata.revision,
+            )
             for name, content in files.items():
-                path = temporary / name
-                descriptor = os.open(
-                    path,
-                    os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_CLOEXEC", 0),
-                    0o600,
+                owned_files[name] = _write_regular_at(
+                    temporary_fd,
+                    name,
+                    content,
                 )
-                try:
-                    with os.fdopen(descriptor, "wb", closefd=False) as stream:
-                        stream.write(content)
-                        stream.flush()
-                        os.fsync(stream.fileno())
-                finally:
-                    os.close(descriptor)
-            VoxelMapSnapshot._fsync_directory(temporary)
-            cls.load(temporary)
-            VoxelMapSnapshot._publish_directory_no_replace(temporary, target)
+            os.fsync(temporary_fd)
+            named_temporary = os.stat(
+                temporary_name,
+                dir_fd=parent_fd,
+                follow_symlinks=False,
+            )
+            if (
+                not stat.S_ISDIR(named_temporary.st_mode)
+                or _identity(named_temporary) != temporary_identity
+                or _identity(os.fstat(temporary_fd)) != temporary_identity
+            ):
+                raise ValueError(
+                    "compact checkpoint temporary directory identity changed"
+                )
+            if set(os.listdir(temporary_fd)) != _INVENTORY:
+                raise ValueError("compact checkpoint temporary inventory changed")
+            file_fingerprints: dict[
+                str, tuple[int, int, int, int, int]
+            ] = {}
+            for name in sorted(_INVENTORY):
+                max_bytes = (
+                    _MAX_ARCHIVE_BYTES
+                    if name == "ownership.npz"
+                    else _MAX_JSON_BYTES
+                )
+                persisted, file_fingerprints[name] = _read_regular_at(
+                    temporary_fd,
+                    name,
+                    max_bytes=max_bytes,
+                )
+                if persisted != files[name]:
+                    raise ValueError(
+                        f"compact checkpoint file changed after write: {name}"
+                    )
+
+            _publication_test_hook("before_rename")
+            _assert_parent_path_identity(target.parent, parent_identity)
+            _rename_directory_no_replace_at(
+                parent_fd,
+                temporary_name,
+                target_name,
+                parent_path=target.parent,
+                expected_parent_identity=parent_identity,
+            )
             published = True
-            return cls.load(target)
+            os.fsync(parent_fd)
+            _publication_test_hook("after_rename")
+            _assert_parent_path_identity(target.parent, parent_identity)
+            if _identity(os.fstat(parent_fd)) != parent_identity:
+                raise ValueError("anchored compact checkpoint parent changed")
+            anchored_directory_fingerprint = _capture_published_directory_at(
+                parent_fd,
+                target_name,
+                file_fingerprints,
+            )
+            witness = _SourceWitness.capture_published(
+                target,
+                expected_file_fingerprints=file_fingerprints,
+            )
+            if witness.directory_fingerprint != anchored_directory_fingerprint:
+                raise ValueError("published compact checkpoint path identity changed")
+            _assert_parent_path_identity(target.parent, parent_identity)
+            return cls(
+                target,
+                metadata,
+                validated_ownership,
+                dict(checksums),
+                witness,
+            )
+        except CompactCheckpointPublicationUncertainError:
+            raise
+        except Exception as error:
+            if published:
+                raise CompactCheckpointPublicationUncertainError(
+                    target,
+                    error,
+                ) from error
+            raise
         finally:
-            if not published and temporary.exists():
-                shutil.rmtree(temporary, ignore_errors=True)
+            if (
+                not published
+                and temporary_name is not None
+                and temporary_fd is not None
+                and temporary_identity is not None
+            ):
+                _cleanup_owned_temporary(
+                    parent_fd,
+                    temporary_fd,
+                    temporary_name,
+                    temporary_identity,
+                    owned_files,
+                )
+            if temporary_fd is not None:
+                os.close(temporary_fd)
+            os.close(parent_fd)
 
     @classmethod
     def load(cls, checkpoint_dir: str | Path) -> "CompactOwnershipCheckpoint":
@@ -445,8 +1301,15 @@ class CompactOwnershipCheckpoint:
             contents: dict[str, bytes] = {}
             fingerprints: dict[str, tuple[int, int, int, int, int]] = {}
             for name in sorted(_INVENTORY):
+                max_bytes = (
+                    _MAX_ARCHIVE_BYTES
+                    if name == "ownership.npz"
+                    else _MAX_JSON_BYTES
+                )
                 contents[name], fingerprints[name] = _read_regular_at(
-                    directory_fd, name
+                    directory_fd,
+                    name,
+                    max_bytes=max_bytes,
                 )
             directory_after = os.fstat(directory_fd)
             if _fingerprint(directory_before) != _fingerprint(directory_after):
@@ -486,6 +1349,7 @@ class CompactOwnershipCheckpoint:
         ownership = _validated_ownership(
             contents["ownership.npz"],
             block_resolution=metadata.block_resolution,
+            revision=metadata.revision,
         )
         witness = _SourceWitness(
             path=source,

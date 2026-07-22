@@ -327,6 +327,56 @@ def _write_checkpoint_index(
     return path
 
 
+def _split_schema2_indexes_by_scene(
+    checkpoint_index: Path,
+) -> tuple[Path, Path]:
+    payload = json.loads(checkpoint_index.read_text(encoding="utf-8"))
+    indexes: list[Path] = []
+    for scene in ("apartment", "office"):
+        config = {
+            "schema_version": 1,
+            "dataset": "TESSE-CD",
+            "method_id": "OVIV2",
+            "scene": scene,
+            "missing_observation_policy": "signed_depth",
+            "occlusion_target_manifest_sha256": payload["target_manifest"]["sha256"],
+            "evaluation_checkpoint_frames": [0, 1],
+            "evaluation_checkpoint_frames_sha256": payload[
+                "evaluation_checkpoint_frames_sha256"
+            ],
+        }
+        algorithm_hash = occlusion_evaluator.canonical_algorithm_hash(config)
+        config["algorithm_hash"] = algorithm_hash
+        config_path = checkpoint_index.parent / f"normalized_run_config.{scene}.json"
+        config_path.write_text(
+            json.dumps(config, sort_keys=True, separators=(",", ":")) + "\n",
+            encoding="utf-8",
+        )
+        scene_payload = {
+            **payload,
+            "schema_version": 2,
+            "scene": scene,
+            "algorithm_hash": algorithm_hash,
+            "run_config": {
+                "path": config_path.name,
+                "sha256": _sha256(config_path),
+                "byte_count": config_path.stat().st_size,
+            },
+            "snapshots": [
+                {**record, "format": "oviv2_voxel_map_snapshot"}
+                for record in payload["snapshots"]
+                if record["scene"] == scene
+            ],
+        }
+        path = checkpoint_index.parent / f"checkpoint_index.{scene}.json"
+        path.write_text(
+            json.dumps(scene_payload, sort_keys=True, separators=(",", ":")) + "\n",
+            encoding="utf-8",
+        )
+        indexes.append(path)
+    return indexes[0], indexes[1]
+
+
 def test_builds_canonical_target_bound_evaluation_checkpoint_plan(
     tmp_path: Path,
 ) -> None:
@@ -570,13 +620,152 @@ def test_package_evaluation_is_byte_identical_and_passes_headline_gate(
     assert b"NaN" not in first.read_bytes()
 
 
+def test_two_per_scene_indexes_are_consumed_with_independent_run_configs(
+    tmp_path: Path,
+) -> None:
+    targets, _ = _write_targets(tmp_path / "fixture")
+    indexes = _split_schema2_indexes_by_scene(
+        _write_checkpoint_index(tmp_path / "fixture", targets)
+    )
+
+    result = evaluate_occlusion_package(
+        target_dir=targets,
+        checkpoint_index=indexes,
+        dataset_root=targets.parent / "sources",
+    )
+
+    assert result["checkpoint_count"] == 4
+    assert result["headline_gate"]["passed"] is True
+    assert result["checkpoint_index"] == [
+        {"sha256": _sha256(path), "byte_count": path.stat().st_size}
+        for path in indexes
+    ]
+    assert len(result["run_config"]) == 2
+
+
+def test_cli_accepts_two_per_scene_checkpoint_indexes(tmp_path: Path) -> None:
+    targets, _ = _write_targets(tmp_path / "fixture")
+    apartment, office = _split_schema2_indexes_by_scene(
+        _write_checkpoint_index(tmp_path / "fixture", targets)
+    )
+
+    assert main(
+        [
+            "--targets",
+            str(targets),
+            "--checkpoints",
+            str(apartment),
+            "--checkpoints",
+            str(office),
+            "--dataset-root",
+            str(targets.parent / "sources"),
+            "--output",
+            str(tmp_path / "result.json"),
+        ]
+    ) == 0
+
+
+def test_two_index_bundle_rejects_missing_scene_and_algorithm_drift(
+    tmp_path: Path,
+) -> None:
+    targets, _ = _write_targets(tmp_path / "fixture")
+    apartment, office = _split_schema2_indexes_by_scene(
+        _write_checkpoint_index(tmp_path / "fixture", targets)
+    )
+
+    with pytest.raises(ValueError, match="apartment and office|missing checkpoint"):
+        evaluate_occlusion_package(
+            target_dir=targets,
+            checkpoint_index=[apartment],
+            dataset_root=targets.parent / "sources",
+        )
+
+    office_payload = json.loads(office.read_text(encoding="utf-8"))
+    office_payload["algorithm_hash"] = "b" * 64
+    office.write_text(json.dumps(office_payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="algorithm hash"):
+        evaluate_occlusion_package(
+            target_dir=targets,
+            checkpoint_index=[apartment, office],
+            dataset_root=targets.parent / "sources",
+        )
+
+
+def test_schema2_index_rejects_cross_scene_record_and_config_relabel(
+    tmp_path: Path,
+) -> None:
+    targets, _ = _write_targets(tmp_path / "fixture")
+    apartment, office = _split_schema2_indexes_by_scene(
+        _write_checkpoint_index(tmp_path / "fixture", targets)
+    )
+    apartment_payload = json.loads(apartment.read_text(encoding="utf-8"))
+    apartment_payload["snapshots"][0]["scene"] = "office"
+    apartment.write_text(json.dumps(apartment_payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="scene membership|duplicate checkpoint"):
+        evaluate_occlusion_package(
+            target_dir=targets,
+            checkpoint_index=[apartment, office],
+            dataset_root=targets.parent / "sources",
+        )
+
+    apartment, office = _split_schema2_indexes_by_scene(
+        _write_checkpoint_index(tmp_path / "second", targets)
+    )
+    payload = json.loads(apartment.read_text(encoding="utf-8"))
+    config_path = apartment.parent / payload["run_config"]["path"]
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config["scene"] = "office"
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    payload["run_config"]["sha256"] = _sha256(config_path)
+    payload["run_config"]["byte_count"] = config_path.stat().st_size
+    apartment.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="run config.*scene"):
+        evaluate_occlusion_package(
+            target_dir=targets,
+            checkpoint_index=[apartment, office],
+            dataset_root=targets.parent / "sources",
+        )
+
+
+def test_schema2_rejects_synchronized_declared_algorithm_hash_tamper(
+    tmp_path: Path,
+) -> None:
+    targets, _ = _write_targets(tmp_path / "fixture")
+    apartment, office = _split_schema2_indexes_by_scene(
+        _write_checkpoint_index(tmp_path / "fixture", targets)
+    )
+    payload = json.loads(apartment.read_text(encoding="utf-8"))
+    config_path = apartment.parent / payload["run_config"]["path"]
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    payload["algorithm_hash"] = "b" * 64
+    config["algorithm_hash"] = "b" * 64
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    payload["run_config"]["sha256"] = _sha256(config_path)
+    payload["run_config"]["byte_count"] = config_path.stat().st_size
+    apartment.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="algorithm hash"):
+        evaluate_occlusion_package(
+            target_dir=targets,
+            checkpoint_index=[apartment, office],
+            dataset_root=targets.parent / "sources",
+        )
+
+
 def test_mixed_full_and_compact_checkpoints_share_one_evaluator_interface(
     tmp_path: Path,
 ) -> None:
     targets, _ = _write_targets(tmp_path / "fixture")
-    checkpoints = _convert_index_to_mixed(
-        _write_checkpoint_index(tmp_path / "fixture", targets),
-        compact_keys={("apartment", 1), ("office", 0)},
+    checkpoints = tuple(
+        _convert_index_to_mixed(
+            index,
+            compact_keys={("apartment", 1), ("office", 0)},
+        )
+        for index in _split_schema2_indexes_by_scene(
+            _write_checkpoint_index(tmp_path / "fixture", targets)
+        )
     )
 
     result = evaluate_occlusion_package(
@@ -602,13 +791,18 @@ def test_rejects_checkpoint_format_disguise(
     compact: bool,
 ) -> None:
     targets, _ = _write_targets(tmp_path / "fixture")
-    checkpoints = _convert_index_to_mixed(
-        _write_checkpoint_index(tmp_path / "fixture", targets),
-        compact_keys={("apartment", 0)} if compact else set(),
+    checkpoints = tuple(
+        _convert_index_to_mixed(
+            index,
+            compact_keys={("apartment", 0)} if compact else set(),
+        )
+        for index in _split_schema2_indexes_by_scene(
+            _write_checkpoint_index(tmp_path / "fixture", targets)
+        )
     )
-    payload = json.loads(checkpoints.read_text(encoding="utf-8"))
+    payload = json.loads(checkpoints[0].read_text(encoding="utf-8"))
     payload["snapshots"][0]["format"] = declared_format
-    checkpoints.write_text(json.dumps(payload), encoding="utf-8")
+    checkpoints[0].write_text(json.dumps(payload), encoding="utf-8")
 
     with pytest.raises(ValueError, match="format|inventory|checksum"):
         evaluate_occlusion_package(
@@ -622,9 +816,14 @@ def test_compact_checkpoint_final_barrier_rejects_replacement(
     tmp_path: Path,
 ) -> None:
     targets, _ = _write_targets(tmp_path / "fixture")
-    checkpoints = _convert_index_to_mixed(
-        _write_checkpoint_index(tmp_path / "fixture", targets),
-        compact_keys={("apartment", 0)},
+    checkpoints = tuple(
+        _convert_index_to_mixed(
+            index,
+            compact_keys={("apartment", 0)},
+        )
+        for index in _split_schema2_indexes_by_scene(
+            _write_checkpoint_index(tmp_path / "fixture", targets)
+        )
     )
     arrays, metadata, manifest_witness, _, source_frame_times = _load_target_package(
         targets,
@@ -638,13 +837,13 @@ def test_compact_checkpoint_final_barrier_rejects_replacement(
         checkpoint_plan=plan,
         source_frame_times=source_frame_times,
     )
-    payload = json.loads(checkpoints.read_text(encoding="utf-8"))
+    payload = json.loads(checkpoints[0].read_text(encoding="utf-8"))
     record = next(
         item
         for item in payload["snapshots"]
         if item["scene"] == "apartment" and item["frame_index"] == 0
     )
-    original = checkpoints.parent / record["path"]
+    original = checkpoints[0].parent / record["path"]
     replacement = original.with_name("replacement")
     loaded = CompactOwnershipCheckpoint.load(original)
     CompactOwnershipCheckpoint.commit_new(
