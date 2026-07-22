@@ -75,6 +75,13 @@ def _source_fingerprint(
     )
 
 
+def _close_best_effort(descriptor: int) -> None:
+    try:
+        os.close(descriptor)
+    except OSError:
+        pass
+
+
 def _open_owned_directory(path: Path) -> tuple[int, tuple[int, int]]:
     flags = (
         os.O_RDONLY
@@ -94,10 +101,7 @@ def _open_owned_directory(path: Path) -> tuple[int, tuple[int, int]]:
             raise ValueError("owned snapshot temporary identity changed")
         return directory_fd, (opened.st_dev, opened.st_ino)
     except BaseException:
-        try:
-            os.close(directory_fd)
-        except OSError:
-            pass
+        _close_best_effort(directory_fd)
         raise
 
 
@@ -126,7 +130,7 @@ def _bind_owned_member_at(
             raise ValueError("owned snapshot member identity changed")
         return fingerprint
     finally:
-        os.close(member_fd)
+        _close_best_effort(member_fd)
 
 
 def _read_source_member_at(
@@ -148,7 +152,7 @@ def _read_source_member_at(
             raise ValueError("snapshot source member changed while reading")
         return content, _source_fingerprint(after)
     finally:
-        os.close(descriptor)
+        _close_best_effort(descriptor)
 
 
 def _hash_source_member_at(
@@ -172,7 +176,7 @@ def _hash_source_member_at(
             raise ValueError("snapshot source member changed while reading")
         return digest.hexdigest(), _source_fingerprint(after)
     finally:
-        os.close(descriptor)
+        _close_best_effort(descriptor)
 
 
 @dataclass(frozen=True)
@@ -234,7 +238,7 @@ class SnapshotSourceWitness:
                 member_bindings=tuple(bindings),
             )
         finally:
-            os.close(directory_fd)
+            _close_best_effort(directory_fd)
 
     def revalidate(self) -> None:
         try:
@@ -264,7 +268,7 @@ class SnapshotSourceWitness:
                 directory_after = os.fstat(directory_fd)
                 path_after = os.lstat(self.path)
             finally:
-                os.close(directory_fd)
+                _close_best_effort(directory_fd)
         except (OSError, ValueError) as error:
             raise ValueError("snapshot source identity changed") from error
         expected_inventory = {name for name, _, _ in self.member_bindings}
@@ -309,7 +313,7 @@ class SnapshotSourceWitness:
                 directory_after = os.fstat(directory_fd)
                 path_after = os.lstat(self.path)
             finally:
-                os.close(directory_fd)
+                _close_best_effort(directory_fd)
         except OSError as error:
             raise ValueError("snapshot source identity changed during publication") from error
         staged_identity = self.directory_fingerprint[:2]
@@ -512,7 +516,13 @@ class VoxelMapSnapshot:
             )
 
     @classmethod
-    def _rename_directory_no_replace(cls, source: Path, target: Path) -> None:
+    def _rename_directory_no_replace(
+        cls,
+        source: Path,
+        target: Path,
+        *,
+        expected_source_identity: tuple[int, int] | None = None,
+    ) -> None:
         libc = ctypes.CDLL(None, use_errno=True)
         try:
             renameat2 = libc.renameat2
@@ -528,14 +538,31 @@ class VoxelMapSnapshot:
             ctypes.c_uint,
         )
         renameat2.restype = ctypes.c_int
-        ctypes.set_errno(0)
-        result = renameat2(
-            -100,
-            os.fsencode(source),
-            -100,
-            os.fsencode(target),
-            1,
-        )
+        source_parent_fd, _ = _open_owned_directory(source.parent)
+        target_parent_fd, _ = _open_owned_directory(target.parent)
+        try:
+            source_status = os.stat(
+                source.name,
+                dir_fd=source_parent_fd,
+                follow_symlinks=False,
+            )
+            if not stat.S_ISDIR(source_status.st_mode) or (
+                expected_source_identity is not None
+                and (source_status.st_dev, source_status.st_ino)
+                != expected_source_identity
+            ):
+                raise ValueError("snapshot staging identity changed before publication")
+            ctypes.set_errno(0)
+            result = renameat2(
+                source_parent_fd,
+                os.fsencode(source.name),
+                target_parent_fd,
+                os.fsencode(target.name),
+                1,
+            )
+        finally:
+            _close_best_effort(target_parent_fd)
+            _close_best_effort(source_parent_fd)
         if result == 0:
             return
         error_number = ctypes.get_errno()
@@ -560,33 +587,18 @@ class VoxelMapSnapshot:
         )
 
     @classmethod
-    def _publish_directory_with_reservation(cls, source: Path, target: Path) -> None:
-        target.mkdir()
-        try:
-            cls._fsync_directory(target.parent)
-            os.replace(source, target)
-        except OSError as publication_error:
-            raise SnapshotPublicationUncertainError(
-                target,
-                publication_error,
-                published=None,
-            ) from publication_error
-        try:
-            cls._fsync_directory(target.parent)
-        except OSError as publication_error:
-            raise SnapshotPublicationUncertainError(
-                target,
-                publication_error,
-                published=True,
-            ) from publication_error
-
-    @classmethod
-    def _publish_directory_no_replace(cls, source: Path, target: Path) -> None:
-        try:
-            cls._rename_directory_no_replace(source, target)
-        except NotImplementedError:
-            cls._publish_directory_with_reservation(source, target)
-            return
+    def _publish_directory_no_replace(
+        cls,
+        source: Path,
+        target: Path,
+        *,
+        expected_source_identity: tuple[int, int] | None = None,
+    ) -> None:
+        cls._rename_directory_no_replace(
+            source,
+            target,
+            expected_source_identity=expected_source_identity,
+        )
         try:
             cls._fsync_directory(target.parent)
         except OSError as publication_error:
@@ -602,7 +614,7 @@ class VoxelMapSnapshot:
         try:
             os.fsync(directory_fd)
         finally:
-            os.close(directory_fd)
+            _close_best_effort(directory_fd)
 
     @classmethod
     def _write_snapshot_files(
@@ -753,8 +765,9 @@ class VoxelMapSnapshot:
         staging_identity: tuple[int, int] | None = None
         try:
             staging_fd, staging_identity = _open_owned_directory(staging)
+            write_root = Path(f"/proc/self/fd/{staging_fd}")
             data_files = cls._write_snapshot_files(
-                staging,
+                write_root,
                 metadata,
                 geometry,
                 evidence,
@@ -781,7 +794,11 @@ class VoxelMapSnapshot:
                 raise ValueError("snapshot source content changed during staged load")
             staged_witness = replace(staged_witness, path=target)
 
-            cls._publish_directory_no_replace(staging, target)
+            cls._publish_directory_no_replace(
+                staging,
+                target,
+                expected_source_identity=staging_identity,
+            )
             try:
                 source_witness = staged_witness.bind_published()
             except Exception as publication_error:
@@ -797,10 +814,7 @@ class VoxelMapSnapshot:
             )
         finally:
             if staging_fd is not None:
-                try:
-                    os.close(staging_fd)
-                except OSError:
-                    pass
+                _close_best_effort(staging_fd)
 
     @classmethod
     def load(cls, snapshot_dir: str | Path) -> "VoxelMapSnapshot":
