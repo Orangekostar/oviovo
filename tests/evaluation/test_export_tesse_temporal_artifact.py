@@ -20,6 +20,13 @@ from src.evaluation.exporters.oviovo import write_map_snapshot
 
 
 ROOT = Path(__file__).resolve().parents[2]
+OFFICIAL_SCHEDULE = (
+    ROOT / "configs/evaluation/manifests/tesse_cd_causal_schedule_v2.json"
+)
+COMMON_V2_MANIFEST = ROOT / "configs/evaluation/manifests/tesse_cd_common_v2.json"
+OFFICIAL_SCHEDULE_SHA256 = (
+    "fb97bacee377f9fd67ee9dae8064dc6f33ac32d129ee633629fec4164d5003e0"
+)
 
 
 def _record(path: Path) -> dict[str, Any]:
@@ -235,6 +242,35 @@ def _artifact_files(root: Path) -> dict[Path, bytes]:
     }
 
 
+def _rewrite_trajectories(
+    index_path: Path,
+    payload: dict[str, Any],
+    content: str,
+) -> None:
+    trajectory_path = Path(payload["trajectories"]["path"])
+    trajectory_path.write_text(content, encoding="utf-8")
+    payload["trajectories"] = _record(trajectory_path)
+    capture_path = Path(payload["capture_status"]["path"])
+    capture = json.loads(capture_path.read_text(encoding="utf-8"))
+    capture["trajectories"] = payload["trajectories"]
+    _write_json(capture_path, capture)
+    payload["capture_status"] = _record(capture_path)
+    _rewrite_index(index_path, payload)
+
+
+def _rewrite_checkpoint_entities(
+    index_path: Path,
+    payload: dict[str, Any],
+    *,
+    checkpoint: int,
+    content: str,
+) -> None:
+    entities_path = Path(payload["checkpoints"][checkpoint]["entities"]["path"])
+    entities_path.write_text(content, encoding="utf-8")
+    payload["checkpoints"][checkpoint]["entities"] = _record(entities_path)
+    _rewrite_index(index_path, payload)
+
+
 def test_cli_help_runs_from_outside_repository(tmp_path: Path) -> None:
     completed = subprocess.run(
         [
@@ -253,7 +289,7 @@ def test_cli_help_runs_from_outside_repository(tmp_path: Path) -> None:
 
 
 def test_exports_presence_intervals_and_byte_identical_repeat(tmp_path: Path) -> None:
-    index_path, _ = _build_fixture(tmp_path / "source")
+    index_path, source_index = _build_fixture(tmp_path / "source")
 
     first = export_temporal_artifact(index_path, tmp_path / "first")
     second = export_temporal_artifact(index_path, tmp_path / "second")
@@ -312,6 +348,9 @@ def test_exports_presence_intervals_and_byte_identical_repeat(tmp_path: Path) ->
     assert first.read_bytes().endswith(b"\n")
     assert not first.read_bytes().endswith(b"\n\n")
     assert b"\n " not in first.read_bytes()
+    exported_schedule = first.parent / manifest["sources"]["schedule"]["path"]
+    source_schedule = Path(source_index["schedule"]["path"])
+    assert exported_schedule.read_bytes() == source_schedule.read_bytes()
     for source in (
         manifest["sources"]["source_index"],
         manifest["sources"]["schedule"],
@@ -330,7 +369,23 @@ def test_artifact_is_byte_identical_across_distinct_source_roots(
     tmp_path: Path,
 ) -> None:
     first_index, _ = _build_fixture(tmp_path / "source-a")
-    second_index, _ = _build_fixture(tmp_path / "source-b")
+    second_index, second_payload = _build_fixture(tmp_path / "source-b")
+    for checkpoint_index, checkpoint in enumerate(second_payload["checkpoints"]):
+        entities_path = Path(checkpoint["entities"]["path"])
+        records = [
+            json.loads(line)
+            for line in entities_path.read_text(encoding="utf-8").splitlines()
+        ]
+        differently_formatted = "".join(
+            json.dumps(dict(reversed(tuple(record.items())))) + "\n"
+            for record in records
+        )
+        _rewrite_checkpoint_entities(
+            second_index,
+            second_payload,
+            checkpoint=checkpoint_index,
+            content=differently_formatted,
+        )
 
     first_manifest = export_temporal_artifact(first_index, tmp_path / "output-a")
     second_manifest = export_temporal_artifact(second_index, tmp_path / "output-b")
@@ -348,7 +403,23 @@ def test_artifact_is_byte_identical_across_distinct_source_roots(
         for source_root in forbidden
     )
     for relative_path, content in first_files.items():
-        if relative_path.suffix != ".json":
+        if relative_path.suffix == ".jsonl":
+            for line in content.splitlines():
+                payload = json.loads(
+                    line,
+                    parse_constant=lambda value: (_ for _ in ()).throw(
+                        ValueError(f"non-finite JSON constant: {value}")
+                    ),
+                )
+                assert line == json.dumps(
+                    payload,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    allow_nan=False,
+                ).encode(), relative_path
+        if relative_path.suffix != ".json" or relative_path == Path(
+            "sidecars/schedule.json"
+        ):
             continue
         payload = json.loads(
             content,
@@ -366,6 +437,99 @@ def test_artifact_is_byte_identical_across_distinct_source_roots(
             + "\n"
         ).encode()
         assert content == expected, relative_path
+
+
+def test_official_schedule_preserves_checked_bytes_and_common_v2_hash(
+    tmp_path: Path,
+) -> None:
+    from scripts.evaluation.evaluate_tesse_cd_common_v2 import _load_schedule
+
+    common_v2 = json.loads(COMMON_V2_MANIFEST.read_text(encoding="utf-8"))
+    assert common_v2["schedule"]["sha256"] == OFFICIAL_SCHEDULE_SHA256
+    assert hashlib.sha256(OFFICIAL_SCHEDULE.read_bytes()).hexdigest() == (
+        OFFICIAL_SCHEDULE_SHA256
+    )
+    source = exporter_module._direct_source(OFFICIAL_SCHEDULE, label="schedule")
+    payload = exporter_module._read_json(source, label="schedule")
+    output = tmp_path / "schedule.json"
+
+    exporter_module._write_schedule_sidecar(
+        source,
+        payload,
+        selected_scene="apartment",
+        output=output,
+    )
+
+    assert output.read_bytes() == OFFICIAL_SCHEDULE.read_bytes()
+    assert hashlib.sha256(output.read_bytes()).hexdigest() == OFFICIAL_SCHEDULE_SHA256
+    assert exporter_module._output_record(output, output=tmp_path)["sha256"] == (
+        common_v2["schedule"]["sha256"]
+    )
+    events, common = _load_schedule(output, scene="apartment")
+    assert events
+    assert common
+
+
+def test_rejects_unknown_trajectory_path_field(tmp_path: Path) -> None:
+    index_path, payload = _build_fixture(tmp_path / "source")
+    trajectory_path = Path(payload["trajectories"]["path"])
+    rows = trajectory_path.read_text(encoding="utf-8").splitlines()
+    row = json.loads(rows[0])
+    row["cache_path"] = "/tmp/not-part-of-the-contract"
+    rows[0] = json.dumps(row, sort_keys=True)
+    _rewrite_trajectories(index_path, payload, "\n".join(rows) + "\n")
+
+    with pytest.raises(ValueError, match="trajectory .* fields"):
+        export_temporal_artifact(index_path, tmp_path / "output")
+
+
+def test_rejects_nonfinite_trajectory_json(tmp_path: Path) -> None:
+    index_path, payload = _build_fixture(tmp_path / "source")
+    trajectory_path = Path(payload["trajectories"]["path"])
+    rows = trajectory_path.read_text(encoding="utf-8").splitlines()
+    row = json.loads(rows[0])
+    row["centroid_xyz"][0] = float("nan")
+    rows[0] = json.dumps(row, sort_keys=True)
+    _rewrite_trajectories(index_path, payload, "\n".join(rows) + "\n")
+
+    with pytest.raises(ValueError, match="non-finite JSON"):
+        export_temporal_artifact(index_path, tmp_path / "output")
+
+
+def test_rejects_unknown_entity_path_field(tmp_path: Path) -> None:
+    index_path, payload = _build_fixture(tmp_path / "source")
+    entities_path = Path(payload["checkpoints"][0]["entities"]["path"])
+    rows = entities_path.read_text(encoding="utf-8").splitlines()
+    row = json.loads(rows[0])
+    row["cache_path"] = "/tmp/not-part-of-the-contract"
+    rows[0] = json.dumps(row, sort_keys=True)
+    _rewrite_checkpoint_entities(
+        index_path,
+        payload,
+        checkpoint=0,
+        content="\n".join(rows) + "\n",
+    )
+
+    with pytest.raises(ValueError, match="entity .* fields"):
+        export_temporal_artifact(index_path, tmp_path / "output")
+
+
+def test_rejects_nonfinite_entity_json(tmp_path: Path) -> None:
+    index_path, payload = _build_fixture(tmp_path / "source")
+    entities_path = Path(payload["checkpoints"][0]["entities"]["path"])
+    rows = entities_path.read_text(encoding="utf-8").splitlines()
+    row = json.loads(rows[0])
+    row["semantic_score"] = float("nan")
+    rows[0] = json.dumps(row, sort_keys=True)
+    _rewrite_checkpoint_entities(
+        index_path,
+        payload,
+        checkpoint=0,
+        content="\n".join(rows) + "\n",
+    )
+
+    with pytest.raises(ValueError, match="non-finite JSON"):
+        export_temporal_artifact(index_path, tmp_path / "output")
 
 
 @pytest.mark.parametrize("nonfinite", [float("nan"), float("inf"), float("-inf")])

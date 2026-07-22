@@ -127,6 +127,33 @@ _PANOPTIC_CHECKPOINT_STATUS_FIELDS = frozenset(
         "panmap_file",
     }
 )
+_GENERIC_TRAJECTORY_FIELDS = frozenset(
+    {"frame_index", "timestamp_ns", "entity_id", "centroid_xyz"}
+)
+_PANOPTIC_TRAJECTORY_FIELDS = frozenset(
+    {"frame_index", "source_timestamp_ns", "entities"}
+)
+_PANOPTIC_TRAJECTORY_ENTITY_FIELDS = frozenset(
+    {"native_submap_id", "centroid_xyz"}
+)
+_ENTITY_RECORD_FIELDS = frozenset(
+    {
+        "index",
+        "entity_id",
+        "semantic_label",
+        "semantic_score",
+        "lifecycle_state",
+        "first_seen",
+        "last_seen",
+        "point_start",
+        "point_count",
+        "embedding_key",
+        "metadata",
+    }
+)
+_OFFICIAL_SCHEDULE_SHA256 = (
+    "fb97bacee377f9fd67ee9dae8064dc6f33ac32d129ee633629fec4164d5003e0"
+)
 
 
 @dataclass(frozen=True)
@@ -192,14 +219,40 @@ def _direct_source(path: Path, *, label: str) -> _VerifiedSource:
     return source
 
 
-def _read_json(source: _VerifiedSource, *, label: str) -> dict[str, Any]:
+def _reject_nonfinite_values(value: Any, *, label: str) -> None:
+    if type(value) is float and not math.isfinite(value):
+        raise ValueError(f"{label} contains non-finite JSON number")
+    if isinstance(value, Mapping):
+        for item in value.values():
+            _reject_nonfinite_values(item, label=label)
+    elif isinstance(value, list):
+        for item in value:
+            _reject_nonfinite_values(item, label=label)
+
+
+def _loads_json(content: str, *, label: str) -> Any:
     def reject_constant(value: str) -> None:
         raise ValueError(f"{label} contains non-finite JSON constant {value}")
 
+    def reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        payload: dict[str, Any] = {}
+        for key, value in pairs:
+            if key in payload:
+                raise ValueError(f"{label} contains duplicate JSON key {key}")
+            payload[key] = value
+        return payload
+
     payload = json.loads(
-        source.path.read_text(encoding="utf-8"),
+        content,
         parse_constant=reject_constant,
+        object_pairs_hook=reject_duplicate_keys,
     )
+    _reject_nonfinite_values(payload, label=label)
+    return payload
+
+
+def _read_json(source: _VerifiedSource, *, label: str) -> dict[str, Any]:
+    payload = _loads_json(source.path.read_text(encoding="utf-8"), label=label)
     _assert_unchanged(source, label=label)
     if not isinstance(payload, dict):
         raise ValueError(f"{label} must contain a JSON object")
@@ -344,6 +397,137 @@ def _presence_intervals(
     return lifecycles
 
 
+def _validate_metadata_value(value: Any, *, label: str) -> None:
+    if value is None or type(value) in {bool, int, str}:
+        if isinstance(value, str) and Path(value).is_absolute():
+            raise ValueError(f"{label} contains an absolute path")
+        return
+    if type(value) is float:
+        if not math.isfinite(value):
+            raise ValueError(f"{label} contains non-finite JSON number")
+        return
+    if isinstance(value, list):
+        for item in value:
+            _validate_metadata_value(item, label=label)
+        return
+    if isinstance(value, Mapping):
+        for key, item in value.items():
+            lowered = str(key).lower()
+            if lowered == "path" or lowered.endswith("_path"):
+                raise ValueError(f"{label} contains a path field")
+            _validate_metadata_value(item, label=label)
+        return
+    raise ValueError(f"{label} contains an unsupported JSON value")
+
+
+def _reject_absolute_path_strings(value: Any, *, label: str) -> None:
+    if isinstance(value, str) and Path(value).is_absolute():
+        raise ValueError(f"{label} contains an absolute path")
+    if isinstance(value, Mapping):
+        for item in value.values():
+            _reject_absolute_path_strings(item, label=label)
+    elif isinstance(value, list):
+        for item in value:
+            _reject_absolute_path_strings(item, label=label)
+
+
+def _json_number(value: Any, *, label: str) -> float:
+    if type(value) not in {int, float} or not math.isfinite(float(value)):
+        raise ValueError(f"{label} must be a finite number")
+    return float(value)
+
+
+def _load_entity_records(
+    source: _VerifiedSource, *, frame_index: int
+) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for line_number, line in enumerate(
+        source.path.read_text(encoding="utf-8").splitlines(), start=1
+    ):
+        if not line.strip():
+            continue
+        label = f"entity line {line_number}"
+        raw = _loads_json(line, label=label)
+        if not isinstance(raw, Mapping):
+            raise ValueError(f"{label} must be an object")
+        _require_fields(raw, _ENTITY_RECORD_FIELDS, label=label)
+        _reject_absolute_path_strings(raw, label=label)
+        index = raw.get("index")
+        if type(index) is not int or index != len(records):
+            raise ValueError("entity metadata indices must be contiguous")
+        entity_id = raw.get("entity_id")
+        if not isinstance(entity_id, str) or not entity_id.strip():
+            raise ValueError(f"{label} entity_id must be non-empty")
+        semantic_label = raw.get("semantic_label")
+        if semantic_label is not None and not isinstance(semantic_label, str):
+            raise ValueError(f"{label} semantic_label must be a string or null")
+        _json_number(raw.get("semantic_score"), label=f"{label} semantic_score")
+        lifecycle_state = raw.get("lifecycle_state")
+        if not isinstance(lifecycle_state, str) or not lifecycle_state:
+            raise ValueError(f"{label} lifecycle_state must be non-empty")
+        first_seen = _json_number(raw.get("first_seen"), label=f"{label} first_seen")
+        last_seen = _json_number(raw.get("last_seen"), label=f"{label} last_seen")
+        if first_seen > last_seen:
+            raise ValueError(f"{label} first_seen cannot exceed last_seen")
+        _json_integer(raw.get("point_start"), label=f"{label} point_start", minimum=0)
+        _json_integer(raw.get("point_count"), label=f"{label} point_count", minimum=0)
+        embedding_key = raw.get("embedding_key")
+        if not isinstance(embedding_key, str):
+            raise ValueError(f"{label} embedding_key must be a string")
+        metadata = raw.get("metadata")
+        if not isinstance(metadata, Mapping):
+            raise ValueError(f"{label} metadata must be an object")
+        _validate_metadata_value(metadata, label=f"{label} metadata")
+        records.append(dict(raw))
+    _assert_unchanged(source, label=f"checkpoint {frame_index} entities")
+    return records
+
+
+def _canonical_entity_jsonl(snapshot: Any, records: Sequence[Mapping[str, Any]]) -> str:
+    if len(snapshot.entities) != len(records):
+        raise ValueError("neutral snapshot entity count mismatch")
+    output: list[str] = []
+    point_start = 0
+    for index, (entity, source_record) in enumerate(
+        zip(snapshot.entities, records, strict=True)
+    ):
+        point_count = len(entity.points_xyz)
+        embedding_key = (
+            f"embedding_{index:06d}" if entity.semantic_embedding is not None else ""
+        )
+        if (
+            source_record["entity_id"] != entity.entity_id
+            or source_record["semantic_label"] != entity.semantic_label
+            or float(source_record["semantic_score"]) != entity.semantic_score
+            or source_record["lifecycle_state"] != entity.lifecycle_state
+            or float(source_record["first_seen"]) != entity.first_seen
+            or float(source_record["last_seen"]) != entity.last_seen
+            or source_record["point_start"] != point_start
+            or source_record["point_count"] != point_count
+            or source_record["embedding_key"] != embedding_key
+            or dict(source_record["metadata"]) != entity.metadata
+        ):
+            raise ValueError("neutral entity metadata does not match snapshot")
+        record = {
+            "index": index,
+            "entity_id": entity.entity_id,
+            "semantic_label": entity.semantic_label,
+            "semantic_score": entity.semantic_score,
+            "lifecycle_state": entity.lifecycle_state,
+            "first_seen": entity.first_seen,
+            "last_seen": entity.last_seen,
+            "point_start": point_start,
+            "point_count": point_count,
+            "embedding_key": embedding_key,
+            "metadata": dict(entity.metadata),
+        }
+        output.append(
+            json.dumps(record, sort_keys=True, separators=(",", ":"), allow_nan=False)
+        )
+        point_start += point_count
+    return "\n".join(output) + ("\n" if output else "")
+
+
 def _normalize_trajectories(
     source: _VerifiedSource, schedule: Sequence[Mapping[str, int]]
 ) -> list[dict[str, Any]]:
@@ -357,11 +541,26 @@ def _normalize_trajectories(
     ):
         if not line.strip():
             continue
-        raw = json.loads(line)
+        label = f"trajectory line {line_number}"
+        raw = _loads_json(line, label=label)
         if not isinstance(raw, Mapping):
-            raise ValueError(f"trajectory line {line_number} must be an object")
+            raise ValueError(f"{label} must be an object")
+        fields = frozenset(raw)
+        generic_fields = {
+            _GENERIC_TRAJECTORY_FIELDS,
+            _GENERIC_TRAJECTORY_FIELDS | {"observation_count"},
+        }
+        if "entities" in raw:
+            if fields != _PANOPTIC_TRAJECTORY_FIELDS:
+                raise ValueError(f"{label} fields are invalid")
+            timestamp_field = "source_timestamp_ns"
+        else:
+            if fields not in generic_fields:
+                raise ValueError(f"{label} fields are invalid")
+            timestamp_field = "timestamp_ns"
+        _reject_absolute_path_strings(raw, label=label)
         frame = raw.get("frame_index")
-        timestamp = raw.get("timestamp_ns", raw.get("source_timestamp_ns"))
+        timestamp = raw.get(timestamp_field)
         if type(frame) is not int or type(timestamp) is not int:
             raise ValueError("trajectory frame and timestamp must be integers")
         if frame < previous_frame or timestamp < previous_timestamp:
@@ -388,12 +587,22 @@ def _normalize_trajectories(
         for raw_entity in raw_entities:
             if not isinstance(raw_entity, Mapping):
                 raise ValueError("trajectory entity must be an object")
+            if raw_entity is not raw:
+                entity_fields = frozenset(raw_entity)
+                if entity_fields not in {
+                    _PANOPTIC_TRAJECTORY_ENTITY_FIELDS,
+                    _PANOPTIC_TRAJECTORY_ENTITY_FIELDS | {"observation_count"},
+                }:
+                    raise ValueError("trajectory entity fields are invalid")
             identifier = raw_entity.get("entity_id")
             if identifier is None and "native_submap_id" in raw_entity:
-                identifier = f"panoptic:{raw_entity['native_submap_id']}"
-            entity_id = str(identifier or "").strip()
-            if not entity_id:
+                native_id = raw_entity["native_submap_id"]
+                if type(native_id) is not int or native_id < 0:
+                    raise ValueError("trajectory native_submap_id must be non-negative")
+                identifier = f"panoptic:{native_id}"
+            if not isinstance(identifier, str) or not identifier.strip():
                 raise ValueError("trajectory entity ID must be non-empty")
+            entity_id = identifier.strip()
             key = (frame, entity_id)
             if key in seen:
                 raise ValueError("duplicate entity trajectory sample within one frame")
@@ -709,6 +918,25 @@ def _normalize_schedule(
     return normalized
 
 
+def _write_schedule_sidecar(
+    source: _VerifiedSource,
+    payload: Mapping[str, Any],
+    *,
+    selected_scene: str,
+    output: Path,
+) -> None:
+    _normalize_schedule(payload, selected_scene=selected_scene)
+    if (
+        frozenset(payload) == _SCHEDULE_FIELDS_WITH_SOURCE
+        and source.sha256 != _OFFICIAL_SCHEDULE_SHA256
+    ):
+        raise ValueError("official schedule SHA256 does not match common-v2")
+    shutil.copyfile(source.path, output)
+    _assert_unchanged(source, label="schedule")
+    if _sha256(output) != source.sha256 or output.stat().st_size != source.byte_count:
+        raise ValueError("schedule sidecar copy does not match checked source bytes")
+
+
 def _normalize_checkpoint_status(
     payload: Mapping[str, Any],
     *,
@@ -875,6 +1103,7 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
             base=base,
             label=f"checkpoint {frame} entities",
         )
+        entity_records = _load_entity_records(entities_source, frame_index=frame)
         snapshot = read_map_snapshot(snapshot_source.path, entities_source.path)
         _assert_unchanged(snapshot_source, label=f"checkpoint {frame} snapshot")
         _assert_unchanged(entities_source, label=f"checkpoint {frame} entities")
@@ -886,6 +1115,7 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
             snapshot_method = snapshot.method
         elif snapshot.method != snapshot_method:
             raise ValueError("neutral checkpoint method conflict")
+        entity_jsonl = _canonical_entity_jsonl(snapshot, entity_records)
 
         entity_ids = [entity.entity_id for entity in snapshot.entities]
         if len(entity_ids) != len(set(entity_ids)):
@@ -924,6 +1154,7 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
                 "status": status,
                 "snapshot": snapshot_source,
                 "entities": entities_source,
+                "entity_jsonl": entity_jsonl,
             }
         )
 
@@ -962,7 +1193,7 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
             snapshot_path = directory / "snapshot.npz"
             entities_path = directory / "entities.jsonl"
             shutil.copyfile(checkpoint["snapshot"].path, snapshot_path)
-            shutil.copyfile(checkpoint["entities"].path, entities_path)
+            entities_path.write_text(checkpoint["entity_jsonl"], encoding="utf-8")
             _assert_unchanged(
                 checkpoint["snapshot"], label=f"checkpoint {frame} snapshot"
             )
@@ -1014,9 +1245,11 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
         )
 
         schedule_path = sidecar_root / "schedule.json"
-        _write_json(
-            schedule_path,
-            _normalize_schedule(schedule_payload, selected_scene=scene),
+        _write_schedule_sidecar(
+            schedule_source,
+            schedule_payload,
+            selected_scene=scene,
+            output=schedule_path,
         )
         status_root = sidecar_root / "checkpoint_statuses"
         status_root.mkdir()
