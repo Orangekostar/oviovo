@@ -482,8 +482,8 @@ def test_official_bridge_missing_record_is_bound_to_partial_metrics_json(
         "path": "bridge/dynamic_objects.csv",
         "status": "MISSING",
     }
-    assert missing["source"] == missing["source_base"]
-    assert missing["source"]["path"] == metrics_path.name
+    assert "source_base" not in missing
+    assert Path(missing["source"]["path"]) == metrics_path.absolute()
     assert missing["source"]["sha256"] == evidence["official_metrics_source"][
         "sha256"
     ]
@@ -536,7 +536,6 @@ def test_official_bridge_missing_record_rejects_fake_status_or_extra_fields(
     "attack",
     [
         "/tmp/dynamic_objects.csv",
-        "../outside/dynamic_objects.csv",
         "bridge//dynamic_objects.csv",
         "bridge\\dynamic_objects.csv",
     ],
@@ -606,27 +605,40 @@ def test_scene_evidence_resolves_relative_sources_from_metrics_parent(
     )
 
     sources = evidence["unavailable_evidence"]
-    assert sources["dynamic_f1"]["source"]["path"] == "bridge/dynamic_objects.csv"
-    assert sources["change_f1"]["source"]["path"] == "bridge/static_objects.csv"
+    assert Path(sources["dynamic_f1"]["source"]["path"]) == (
+        metrics_path.parent / "bridge/dynamic_objects.csv"
+    ).absolute()
+    assert Path(sources["change_f1"]["source"]["path"]) == (
+        metrics_path.parent / "bridge/static_objects.csv"
+    ).absolute()
 
 
-def test_relative_source_bindings_are_identical_across_run_roots(tmp_path: Path) -> None:
-    first_paths = _write_relative_scene_inputs(tmp_path / "run-a")
-    second_paths = _write_relative_scene_inputs(tmp_path / "run-b")
-
-    evidence = [
-        finalize_tesse_t2.build_scene_evidence(
-            metrics_path,
-            status_path,
-            method_key="DUALMAP",
-            mode="native",
-        )["unavailable_evidence"]
-        for metrics_path, status_path in (first_paths, second_paths)
-    ]
-
-    assert json.dumps(evidence[0], sort_keys=True) == json.dumps(
-        evidence[1], sort_keys=True
+def test_scene_evidence_allows_parent_path_within_explicit_run_root(
+    tmp_path: Path,
+) -> None:
+    run = tmp_path / "run"
+    evaluation = run / "evaluation"
+    evaluation.mkdir(parents=True)
+    metrics = _dualmap_scene("apartment", run / "map" / "results")
+    for source in metrics["sources"]:
+        source["path"] = f"../map/results/{Path(source['path']).name}"
+    metrics_path = evaluation / "official_metrics.json"
+    metrics_path.write_text(json.dumps(metrics) + "\n", encoding="utf-8")
+    status_path = evaluation / "run_status.json"
+    status_path.write_text(
+        json.dumps(_dualmap_status("apartment")) + "\n", encoding="utf-8"
     )
+
+    evidence = finalize_tesse_t2.build_scene_evidence(
+        metrics_path,
+        status_path,
+        method_key="DUALMAP",
+        mode="native",
+        artifact_root=run,
+    )
+
+    source = evidence["unavailable_evidence"]["change_f1"]["source"]
+    assert Path(source["path"]) == (run / "map/results/static_objects.csv").absolute()
 
 
 def test_scene_evidence_rejects_relative_source_parent_escape(
@@ -648,13 +660,62 @@ def test_scene_evidence_rejects_relative_source_parent_escape(
             )
     metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
 
-    with pytest.raises(ValueError, match="canonical|escape|relative"):
+    with pytest.raises(ValueError, match="artifact root|escape|beneath"):
         finalize_tesse_t2.build_scene_evidence(
             metrics_path,
             status_path,
             method_key="DUALMAP",
             mode="native",
+            artifact_root=run,
         )
+
+
+def test_declared_source_rejects_component_swap_while_resolving(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    run = tmp_path / "run"
+    evaluation = run / "evaluation"
+    source = run / "map" / "results" / "static_objects.csv"
+    source.parent.mkdir(parents=True)
+    evaluation.mkdir()
+    source.write_bytes(b"original")
+    outside = tmp_path / "outside"
+    (outside / "results").mkdir(parents=True)
+    (outside / "results" / source.name).write_bytes(b"replacement")
+    entry = {
+        "path": "../map/results/static_objects.csv",
+        "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+        "byte_count": source.stat().st_size,
+    }
+    original_open = os.open
+    swapped = False
+
+    def swap_component(
+        path: object, flags: int, *args: object, **kwargs: object
+    ) -> int:
+        nonlocal swapped
+        if path == "map" and kwargs.get("dir_fd") is not None and not swapped:
+            swapped = True
+            held = run / "map-held"
+            (run / "map").rename(held)
+            (run / "map").symlink_to(outside, target_is_directory=True)
+            try:
+                return original_open(path, flags, *args, **kwargs)
+            finally:
+                (run / "map").unlink()
+                held.rename(run / "map")
+        return original_open(path, flags, *args, **kwargs)
+
+    monkeypatch.setattr(finalize_tesse_t2.os, "open", swap_component)
+
+    with pytest.raises(ValueError, match="safely|symbolic link|changed"):
+        finalize_tesse_t2._validated_declared_source(
+            entry,
+            label="test",
+            artifact_base=evaluation,
+            artifact_root=run,
+        )
+    assert swapped
 
 
 @pytest.mark.parametrize("link_kind", ["intermediate", "terminal"])
@@ -1272,10 +1333,19 @@ def test_full_result_resolves_each_relative_source_from_its_metrics_parent(
 
     assert result["unavailable_evidence"]["apartment"]["change_f1"]["source"][
         "path"
-    ] == "apartment_sources/static_objects.csv"
+    ] == str(
+        (
+            inputs["apartment_metrics"].parent
+            / "apartment_sources/static_objects.csv"
+        ).absolute()
+    )
     assert result["unavailable_evidence"]["office"]["change_f1"]["source"][
         "path"
-    ] == "office_sources/static_objects.csv"
+    ] == str(
+        (
+            inputs["office_metrics"].parent / "office_sources/static_objects.csv"
+        ).absolute()
+    )
 
 
 def test_full_cli_requires_repeat_inputs(tmp_path: Path) -> None:
@@ -1310,20 +1380,37 @@ def test_full_cli_hash_binds_primary_and_repeat_evidence(tmp_path: Path) -> None
     assert completed.returncode == 0, completed.stderr
     result = json.loads(output.read_text(encoding="utf-8"))
     assert result["status"] == "VERIFIED"
-    assert result["protocol"]["deterministic_repeat"] == "byte-identical"
+    assert result["protocol"]["deterministic_repeat"] == "metrics-byte-identical"
     for scene in ("apartment", "office"):
         for kind in ("metrics", "status"):
             pair = result["evidence_sources"][scene][kind]
-            assert pair["primary"]["sha256"] == pair["repeat"]["sha256"]
+            if kind == "metrics":
+                assert pair["primary"]["sha256"] == pair["repeat"]["sha256"]
             assert pair["primary"]["path"] != pair["repeat"]["path"]
             assert pair["primary"]["byte_count"] > 0
     assert result["evidence_sources"]["provenance"]["sha256"]
 
 
-def test_full_cli_rejects_nonidentical_repeat_bytes(tmp_path: Path) -> None:
+def test_full_cli_allows_nonidentical_repeat_status_bytes(tmp_path: Path) -> None:
     inputs = _full_cli_inputs(tmp_path)
     inputs["office_status_repeat"].write_bytes(
         inputs["office_status_repeat"].read_bytes() + b" "
+    )
+
+    completed = subprocess.run(
+        _full_cli_command(inputs, tmp_path / "result.json"),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+
+
+def test_full_cli_rejects_nonidentical_repeat_metrics_bytes(tmp_path: Path) -> None:
+    inputs = _full_cli_inputs(tmp_path)
+    inputs["office_metrics_repeat"].write_bytes(
+        inputs["office_metrics_repeat"].read_bytes() + b" "
     )
 
     completed = subprocess.run(

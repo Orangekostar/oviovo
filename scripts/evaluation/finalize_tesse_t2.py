@@ -335,32 +335,54 @@ def _canonical_relative_source(raw: str, *, label: str) -> Path:
         or "\\" in raw
         or path.is_absolute()
         or "." in path.parts
-        or ".." in path.parts
         or path.as_posix() != raw
     ):
         raise ValueError(f"{label} must be a canonical artifact-relative path")
     return path
 
 
-def _record_relative_to_artifact(
-    record: Mapping[str, Any], artifact_root: Path, *, label: str
-) -> dict[str, Any]:
-    path = _absolute_lexical(Path(str(record.get("path", ""))))
-    root = _absolute_lexical(artifact_root)
+def _resolved_relative_source(
+    relative: Path,
+    *,
+    artifact_base: Path | None,
+    artifact_root: Path | None,
+    label: str,
+) -> Path:
+    if artifact_base is None:
+        raise ValueError(f"{label} relative source requires an artifact base")
+    base = _absolute_lexical(artifact_base)
+    if artifact_root is None:
+        if ".." in relative.parts:
+            raise ValueError(
+                f"{label} parent traversal requires an explicit artifact root"
+            )
+        root = base
+    else:
+        root = _absolute_lexical(artifact_root)
     try:
-        relative = path.relative_to(root)
+        base.relative_to(root)
     except ValueError as error:
-        raise ValueError(f"{label} must be beneath the artifact root") from error
-    if relative == Path("."):
-        raise ValueError(f"{label} must identify a file beneath the artifact root")
-    canonical = _canonical_relative_source(relative.as_posix(), label=label)
-    result = dict(record)
-    result["path"] = canonical.as_posix()
-    return result
+        raise ValueError(
+            f"{label} artifact base must be beneath the artifact root"
+        ) from error
+    target = _absolute_lexical(base / relative)
+    try:
+        target.relative_to(root)
+    except ValueError as error:
+        raise ValueError(f"{label} source escapes the artifact root") from error
+    if target == root:
+        raise ValueError(
+            f"{label} source must identify a file beneath the artifact root"
+        )
+    return target
 
 
 def _validated_declared_source(
-    entry: Mapping[str, Any], *, label: str, artifact_base: Path | None = None
+    entry: Mapping[str, Any],
+    *,
+    label: str,
+    artifact_base: Path | None = None,
+    artifact_root: Path | None = None,
 ) -> dict[str, Any]:
     raw_path = entry.get("path")
     if type(raw_path) is not str or not raw_path:
@@ -368,13 +390,14 @@ def _validated_declared_source(
     declared = Path(raw_path)
     if declared.is_absolute():
         path = _absolute_lexical(declared)
-        output_path = str(path)
     else:
         relative = _canonical_relative_source(raw_path, label=f"{label} source path")
-        if artifact_base is None:
-            raise ValueError(f"{label} relative source requires an artifact base")
-        path = _absolute_lexical(artifact_base) / relative
-        output_path = relative.as_posix()
+        path = _resolved_relative_source(
+            relative,
+            artifact_base=artifact_base,
+            artifact_root=artifact_root,
+            label=label,
+        )
     byte_count = entry.get("byte_count")
     if type(byte_count) is not int or byte_count < 0:
         raise ValueError(f"{label} source byte count mismatch")
@@ -389,14 +412,18 @@ def _validated_declared_source(
     if declared_sha256 != observed:
         raise ValueError(f"{label} source SHA256 mismatch")
     return {
-        "path": output_path,
+        "path": str(path),
         "sha256": observed,
         "byte_count": byte_count,
     }
 
 
 def _validated_missing_source(
-    entry: Mapping[str, Any], *, label: str, artifact_base: Path | None
+    entry: Mapping[str, Any],
+    *,
+    label: str,
+    artifact_base: Path | None,
+    artifact_root: Path | None = None,
 ) -> dict[str, str]:
     if set(entry) != {"path", "status"} or entry.get("status") != "MISSING":
         raise ValueError(
@@ -406,9 +433,12 @@ def _validated_missing_source(
     if type(raw_path) is not str:
         raise ValueError(f"{label} MISSING record path must be a string")
     relative = _canonical_relative_source(raw_path, label=f"{label} source path")
-    if artifact_base is None:
-        raise ValueError(f"{label} relative source requires an artifact base")
-    target = _absolute_lexical(artifact_base) / relative
+    target = _resolved_relative_source(
+        relative,
+        artifact_base=artifact_base,
+        artifact_root=artifact_root,
+        label=label,
+    )
     parent = target.parent
     descriptor, identities = _open_directory_no_symlinks(
         parent, label=f"{label} missing source parent"
@@ -455,7 +485,7 @@ def _source_bound_unavailable(
     scene: str,
     artifact_base: Path | None = None,
     declaration_source: Mapping[str, Any] | None = None,
-    result_artifact_root: Path | None = None,
+    artifact_root: Path | None = None,
 ) -> dict[str, dict[str, Any]]:
     if not unavailable:
         return {}
@@ -474,6 +504,7 @@ def _source_bound_unavailable(
                 raw,
                 label=f"{scene} metric source",
                 artifact_base=artifact_base,
+                artifact_root=artifact_root,
             )
         name = Path(raw_path).name
         if not name or name in by_name:
@@ -495,24 +526,15 @@ def _source_bound_unavailable(
                 source,
                 label=f"{scene}.{metric}",
                 artifact_base=artifact_base,
+                artifact_root=artifact_root,
             )
             metrics_source = _validated_declared_source(
                 declaration_source,
                 label=f"{scene}.{metric} metrics declaration",
             )
-            source_base = (
-                metrics_source
-                if result_artifact_root is None
-                else _record_relative_to_artifact(
-                    metrics_source,
-                    result_artifact_root,
-                    label=f"{scene}.{metric} metrics source base",
-                )
-            )
             evidence[metric] = {
                 "reason": reason,
-                "source": source_base,
-                "source_base": source_base,
+                "source": metrics_source,
                 "missing_source": missing,
             }
         else:
@@ -522,22 +544,9 @@ def _source_bound_unavailable(
                     source,
                     label=f"{scene}.{metric}",
                     artifact_base=artifact_base,
+                    artifact_root=artifact_root,
                 ),
             }
-            if declaration_source is not None:
-                metrics_source = _validated_declared_source(
-                    declaration_source,
-                    label=f"{scene}.{metric} metrics declaration",
-                )
-                record["source_base"] = (
-                    metrics_source
-                    if result_artifact_root is None
-                    else _record_relative_to_artifact(
-                        metrics_source,
-                        result_artifact_root,
-                        label=f"{scene}.{metric} metrics source base",
-                    )
-                )
             evidence[metric] = record
     return evidence
 
@@ -546,7 +555,6 @@ def _hashed_entry(
     entry: Mapping[str, Any],
     *,
     label: str,
-    artifact_root: Path | None = None,
     artifact_base: Path | None = None,
 ) -> dict[str, Any]:
     if not isinstance(entry, Mapping) or type(entry.get("path")) is not str:
@@ -558,6 +566,8 @@ def _hashed_entry(
         relative = _canonical_relative_source(
             entry["path"], label=f"{label} path"
         )
+        if ".." in relative.parts:
+            raise ValueError(f"{label} path must not contain parent traversal")
         path = _absolute_lexical(
             relative if artifact_base is None else artifact_base / relative
         )
@@ -570,11 +580,7 @@ def _hashed_entry(
         sha256=observed,
         byte_count=byte_count,
     )
-    return (
-        result
-        if artifact_root is None
-        else _record_relative_to_artifact(result, artifact_root, label=label)
-    )
+    return result
 
 
 def _hashed_entries(
@@ -582,7 +588,6 @@ def _hashed_entries(
     label: str,
     *,
     allow_empty: bool = False,
-    artifact_root: Path | None = None,
     artifact_base: Path | None = None,
 ) -> list[dict[str, Any]]:
     if not isinstance(value, list) or (not value and not allow_empty):
@@ -591,7 +596,6 @@ def _hashed_entries(
         _hashed_entry(
             entry,
             label=f"provenance {label}[{index}]",
-            artifact_root=artifact_root,
             artifact_base=artifact_base,
         )
         for index, entry in enumerate(value)
@@ -659,11 +663,7 @@ def build_scene_evidence(
         scene=scene,
         artifact_base=Path(metrics_source["path"]).parent,
         declaration_source=metrics_source,
-        result_artifact_root=(
-            Path(metrics_source["path"]).parent
-            if artifact_root is None
-            else artifact_root
-        ),
+        artifact_root=artifact_root,
     )
     result = {
         "schema_version": 1,
@@ -682,17 +682,6 @@ def build_scene_evidence(
         "official_metrics": dict(metrics_payload),
         "run_status": dict(status_payload),
     }
-    if artifact_root is not None:
-        result["artifact_root"] = {
-            "path": ".",
-            "resolution": "result_parent",
-        }
-        result["official_metrics_source"] = _record_relative_to_artifact(
-            metrics_source, artifact_root, label="official metrics source"
-        )
-        result["run_status_source"] = _record_relative_to_artifact(
-            status_source, artifact_root, label="run status source"
-        )
     return result
 
 
@@ -725,7 +714,7 @@ def _build_result_payload(
             declaration_source=(
                 None if metrics_sources is None else metrics_sources.get("apartment")
             ),
-            result_artifact_root=artifact_root,
+            artifact_root=artifact_root,
         ),
         "office": _source_bound_unavailable(
             office,
@@ -735,7 +724,7 @@ def _build_result_payload(
             declaration_source=(
                 None if metrics_sources is None else metrics_sources.get("office")
             ),
-            result_artifact_root=artifact_root,
+            artifact_root=artifact_root,
         ),
     }
     _validate_run_status(
@@ -773,7 +762,6 @@ def _build_result_payload(
     configs = _hashed_entries(
         provenance["configs"],
         "configs",
-        artifact_root=artifact_root,
         artifact_base=provenance_base,
     )
     config_sha256 = {record["sha256"] for record in configs}
@@ -803,7 +791,6 @@ def _build_result_payload(
             "manifest": _hashed_entry(
                 provenance["dataset_manifest"],
                 label="dataset manifest",
-                artifact_root=artifact_root,
                 artifact_base=provenance_base,
             ),
         },
@@ -828,13 +815,11 @@ def _build_result_payload(
             provenance.get("weights", []),
             "weights",
             allow_empty=True,
-            artifact_root=artifact_root,
             artifact_base=provenance_base,
         ),
         "raw_outputs": _hashed_entries(
             provenance["raw_outputs"],
             "raw_outputs",
-            artifact_root=artifact_root,
             artifact_base=provenance_base,
         ),
         "protocol_deviations": [
@@ -845,11 +830,6 @@ def _build_result_payload(
             method_key, metrics
         ),
     }
-    if artifact_root is not None:
-        result["artifact_root"] = {
-            "path": ".",
-            "resolution": "result_parent",
-        }
     return result
 
 
@@ -900,15 +880,25 @@ def _json_source(
 
 
 def _json_repeat_pair(
-    primary: Path, repeat: Path, *, label: str
-) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
+    primary: Path,
+    repeat: Path,
+    *,
+    label: str,
+    require_byte_identical: bool,
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, dict[str, Any]]]:
     payload, primary_record, primary_bytes = _json_source(primary, label=label)
-    _, repeat_record, repeat_bytes = _json_source(repeat, label=f"{label} repeat")
+    repeat_payload, repeat_record, repeat_bytes = _json_source(
+        repeat, label=f"{label} repeat"
+    )
     if os.path.samefile(primary, repeat):
         raise ValueError(f"{label} repeat must use independent files")
-    if primary_bytes != repeat_bytes:
+    if require_byte_identical and primary_bytes != repeat_bytes:
         raise ValueError(f"{label} repeat must be byte-identical")
-    return payload, {"primary": primary_record, "repeat": repeat_record}
+    return (
+        payload,
+        repeat_payload,
+        {"primary": primary_record, "repeat": repeat_record},
+    )
 
 
 def build_result(
@@ -926,25 +916,37 @@ def build_result(
     mode: str,
     artifact_root: Path | None = None,
 ) -> dict[str, Any]:
-    apartment_payload, apartment_metrics_sources = _json_repeat_pair(
+    apartment_payload, _, apartment_metrics_sources = _json_repeat_pair(
         apartment_metrics,
         apartment_metrics_repeat,
         label="apartment metrics",
+        require_byte_identical=True,
     )
-    office_payload, office_metrics_sources = _json_repeat_pair(
+    office_payload, _, office_metrics_sources = _json_repeat_pair(
         office_metrics,
         office_metrics_repeat,
         label="office metrics",
+        require_byte_identical=True,
     )
-    apartment_status_payload, apartment_status_sources = _json_repeat_pair(
+    (
+        apartment_status_payload,
+        apartment_status_repeat_payload,
+        apartment_status_sources,
+    ) = _json_repeat_pair(
         apartment_status,
         apartment_status_repeat,
         label="apartment status",
+        require_byte_identical=False,
     )
-    office_status_payload, office_status_sources = _json_repeat_pair(
+    (
+        office_status_payload,
+        office_status_repeat_payload,
+        office_status_sources,
+    ) = _json_repeat_pair(
         office_status,
         office_status_repeat,
         label="office status",
+        require_byte_identical=False,
     )
     provenance_payload, provenance_source, _ = _json_source(
         provenance, label="provenance"
@@ -969,7 +971,18 @@ def build_result(
         provenance_base=Path(provenance_source["path"]).parent,
     )
     result["status"] = "VERIFIED"
-    result["protocol"]["deterministic_repeat"] = "byte-identical"
+    result["protocol"]["deterministic_repeat"] = "metrics-byte-identical"
+    for scene, metrics_payload, status_payload in (
+        ("apartment", apartment_payload, apartment_status_repeat_payload),
+        ("office", office_payload, office_status_repeat_payload),
+    ):
+        _validate_run_status(
+            status_payload,
+            scene=scene,
+            method_key=method_key,
+            mode=mode,
+        )
+        _paired_run_identity(metrics_payload, status_payload, scene=scene)
     evidence_sources = {
         "apartment": {
             "metrics": apartment_metrics_sources,
@@ -981,18 +994,6 @@ def build_result(
         },
         "provenance": provenance_source,
     }
-    if artifact_root is not None:
-        for scene in ("apartment", "office"):
-            for kind in ("metrics", "status"):
-                for run in ("primary", "repeat"):
-                    evidence_sources[scene][kind][run] = _record_relative_to_artifact(
-                        evidence_sources[scene][kind][run],
-                        artifact_root,
-                        label=f"{scene} {kind} {run}",
-                    )
-        evidence_sources["provenance"] = _record_relative_to_artifact(
-            provenance_source, artifact_root, label="provenance source"
-        )
     result["evidence_sources"] = evidence_sources
     return result
 
@@ -1035,6 +1036,7 @@ def main() -> int:
     parser.add_argument("--scene-metrics", type=Path)
     parser.add_argument("--scene-status", type=Path)
     parser.add_argument("--method", choices=tuple(METHOD_MODES), required=True)
+    parser.add_argument("--artifact-root", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
 
@@ -1046,7 +1048,7 @@ def main() -> int:
             args.scene_status,
             method_key=args.method,
             mode=METHOD_MODES[args.method],
-            artifact_root=args.output.parent,
+            artifact_root=args.artifact_root,
         )
         _atomic_json_no_replace(args.output, result)
         return 0
@@ -1078,7 +1080,7 @@ def main() -> int:
         args.provenance,
         method_key=args.method,
         mode=METHOD_MODES[args.method],
-        artifact_root=args.output.parent,
+        artifact_root=args.artifact_root,
     )
     _atomic_json_no_replace(args.output, result)
     return 0

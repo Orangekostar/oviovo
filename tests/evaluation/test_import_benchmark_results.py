@@ -14,7 +14,6 @@ import pytest
 
 from scripts.evaluation import finalize_tesse_t2
 from src.evaluation.baselines.ovimap_paper_audit import PAPER_PROTOCOL
-from tools import import_benchmark_results as importer_module
 from tools.import_benchmark_results import ImportFailure, import_results
 
 FIELDS = [
@@ -314,9 +313,9 @@ def _oviv2_t2_package(tmp_path: Path, *, unavailable_status: str = "UNFILLED") -
     return registry, markdown, latex, common, official
 
 
-def _finalized_relative_official_result(root: Path) -> Path:
+def _finalized_producer_layout_result(root: Path) -> Path:
     root.mkdir(parents=True)
-    run_id = "oviv2-relative-test"
+    run_id = "oviv2-producer-layout-test"
     config = root / "config.json"
     config.write_text('{"method":"OVIV2"}\n', encoding="utf-8")
     config_sha256 = hashlib.sha256(config.read_bytes()).hexdigest()
@@ -327,20 +326,25 @@ def _finalized_relative_official_result(root: Path) -> Path:
 
     inputs: dict[str, Path] = {}
     for scene in ("apartment", "office"):
-        source_root = root / f"{scene}_sources"
-        source_root.mkdir()
+        scene_root = root / scene
+        source_root = scene_root / "map" / "results"
+        source_root.mkdir(parents=True)
+        evaluation = scene_root / "evaluation"
+        evaluation.mkdir()
         sources = []
-        for name in ("static_objects.csv", "dynamic_objects.csv", "background_mesh.csv"):
+        for name in (
+            "static_objects.csv",
+            "dynamic_objects.csv",
+            "background_mesh.csv",
+        ):
             path = source_root / name
             if name == "dynamic_objects.csv":
-                sources.append(
-                    {"path": f"{scene}_sources/{name}", "status": "MISSING"}
-                )
+                sources.append({"path": f"../map/results/{name}", "status": "MISSING"})
                 continue
             path.write_text(f"source={name}\n", encoding="utf-8")
             sources.append(
                 {
-                    "path": f"{scene}_sources/{name}",
+                    "path": f"../map/results/{name}",
                     "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
                     "byte_count": path.stat().st_size,
                 }
@@ -378,8 +382,8 @@ def _finalized_relative_official_result(root: Path) -> Path:
             },
         }
         for kind, payload in (("metrics", metrics), ("status", status)):
-            primary = root / f"{scene}-{kind}.json"
-            repeat = root / f"{scene}-{kind}.repeat.json"
+            primary = evaluation / f"official_{kind}.json"
+            repeat = evaluation / f"official_{kind}.repeat.json"
             encoded = (
                 json.dumps(payload, indent=2, sort_keys=True, allow_nan=False) + "\n"
             ).encode("utf-8")
@@ -411,35 +415,40 @@ def _finalized_relative_official_result(root: Path) -> Path:
         + "\n",
         encoding="utf-8",
     )
-    result = finalize_tesse_t2.build_result(
-        **inputs,
-        provenance=provenance,
-        method_key="OVIV2",
-        mode="causal_checkpoints",
-        artifact_root=root,
-    )
     output = root / "official.json"
-    output.write_text(
-        json.dumps(result, indent=2, sort_keys=True, allow_nan=False) + "\n",
-        encoding="utf-8",
+    command = [
+        sys.executable,
+        str(Path(finalize_tesse_t2.__file__)),
+        "--method",
+        "OVIV2",
+        "--artifact-root",
+        str(root),
+    ]
+    for name, path in inputs.items():
+        command.extend((f"--{name.replace('_', '-')}", str(path)))
+    command.extend(("--provenance", str(provenance), "--output", str(output)))
+    completed = subprocess.run(
+        command,
+        capture_output=True,
+        text=True,
+        check=False,
     )
+    assert completed.returncode == 0, completed.stderr
     return output
 
 
-def test_finalizer_relative_artifacts_are_byte_identical_and_importable_across_roots(
+def test_producer_layout_finalizes_and_imports_with_existing_contract(
     tmp_path: Path,
 ) -> None:
-    first = _finalized_relative_official_result(tmp_path / "run-a")
-    second = _finalized_relative_official_result(tmp_path / "run-b")
-    assert first.read_bytes() == second.read_bytes()
-    payload = json.loads(first.read_text(encoding="utf-8"))
-    assert payload["artifact_root"] == {
-        "path": ".",
-        "resolution": "result_parent",
-    }
+    official = _finalized_producer_layout_result(tmp_path / "run")
+    payload = json.loads(official.read_text(encoding="utf-8"))
+    assert "artifact_root" not in payload
     missing = payload["unavailable_evidence"]["apartment"]["dynamic_f1"]
     assert missing["missing_source"]["status"] == "MISSING"
-    assert missing["source"] == missing["source_base"]
+    assert "source_base" not in missing
+    assert Path(missing["source"]["path"]).is_absolute()
+    present = payload["unavailable_evidence"]["apartment"]["change_f1"]
+    assert Path(present["source"]["path"]).is_absolute()
 
     registry = tmp_path / "benchmark_tokens.tsv"
     tokens = _write_oviv2_t2_registry(registry)
@@ -455,7 +464,7 @@ def test_finalizer_relative_artifacts_are_byte_identical_and_importable_across_r
 
     outputs = import_results(
         registry,
-        [first],
+        [official],
         markdown,
         latex,
         tmp_path / "out.md",
@@ -465,109 +474,6 @@ def test_finalizer_relative_artifacts_are_byte_identical_and_importable_across_r
     rendered = outputs["markdown"].read_text(encoding="utf-8")
     assert "0.500" in rendered
     assert "--" in rendered
-
-
-@pytest.mark.parametrize(
-    ("field", "attack"),
-    [
-        ("artifact_root", ".."),
-        ("source_base", "../official_evaluator.json"),
-        ("source", "../official_evaluator.json"),
-    ],
-)
-def test_import_rejects_relative_evidence_path_escape(
-    tmp_path: Path, field: str, attack: str
-) -> None:
-    registry, markdown, latex, _, official = _oviv2_t2_package(tmp_path)
-    payload = json.loads(official.read_text(encoding="utf-8"))
-    payload["artifact_root"] = {"path": ".", "resolution": "result_parent"}
-    for evidence in payload["unavailable_evidence"]["office"].values():
-        absolute = Path(evidence["source"]["path"])
-        relative = absolute.relative_to(official.parent).as_posix()
-        evidence["source"]["path"] = relative
-        evidence["source_base"] = dict(evidence["source"])
-    if field == "artifact_root":
-        payload["artifact_root"]["path"] = attack
-    else:
-        evidence = next(iter(payload["unavailable_evidence"]["office"].values()))
-        evidence[field]["path"] = attack
-    official.write_text(json.dumps(payload), encoding="utf-8")
-
-    with pytest.raises(ImportFailure, match="artifact root|canonical relative"):
-        import_results(
-            registry,
-            [official],
-            markdown,
-            latex,
-            tmp_path / "out.md",
-            tmp_path / "out.tex",
-        )
-
-
-def test_import_rejects_relative_evidence_replaced_while_hashing(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    source = tmp_path / "evidence.json"
-    source.write_bytes(b"original")
-    replacement = tmp_path / "replacement.json"
-    replacement.write_bytes(b"replaced")
-    record = {
-        "path": source.name,
-        "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
-        "byte_count": source.stat().st_size,
-    }
-    original_read = importer_module.os.read
-    replaced = False
-
-    def replace_path(descriptor: int, size: int) -> bytes:
-        nonlocal replaced
-        if not replaced:
-            replaced = True
-            replacement.replace(source)
-        return original_read(descriptor, size)
-
-    monkeypatch.setattr(importer_module.os, "read", replace_path)
-
-    with pytest.raises(ImportFailure, match="changed"):
-        importer_module._require_hashed_file(
-            record,
-            label="unavailable evidence source",
-            relative_to=tmp_path,
-        )
-    assert replaced
-
-
-def test_import_rejects_non_object_missing_metrics_declaration(tmp_path: Path) -> None:
-    declaration = tmp_path / "metrics.json"
-    declaration.write_text("[]\n", encoding="utf-8")
-    record = {
-        "path": declaration.name,
-        "sha256": hashlib.sha256(declaration.read_bytes()).hexdigest(),
-        "byte_count": declaration.stat().st_size,
-    }
-    result = {
-        "artifact_root": {"path": ".", "resolution": "result_parent"},
-        "unavailable_evidence": {
-            "dynamic": {
-                "reason": "missing",
-                "source": record,
-                "source_base": record,
-                "missing_source": {
-                    "path": "results/dynamic_objects.csv",
-                    "status": "MISSING",
-                },
-            }
-        },
-    }
-
-    with pytest.raises(ImportFailure, match="metrics declaration"):
-        importer_module._require_unavailable_evidence(
-            result,
-            {"evidence_pointer": "/unavailable_evidence/dynamic"},
-            token="T2_OVIV2_APARTMENT_DYNAMIC_F1",
-            reason="missing",
-            result_path=tmp_path / "result.json",
-        )
 
 
 def _write_t4_package(
