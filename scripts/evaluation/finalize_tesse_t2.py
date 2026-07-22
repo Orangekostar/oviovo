@@ -191,8 +191,8 @@ def _absolute_lexical(path: Path) -> Path:
     return Path(os.path.abspath(os.fspath(path)))
 
 
-def _open_regular_no_symlinks(
-    path: Path, *, label: str
+def _open_no_symlinks(
+    path: Path, *, label: str, terminal_directory: bool
 ) -> tuple[int, tuple[tuple[int, int, int], ...]]:
     absolute = _absolute_lexical(path)
     flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0)
@@ -214,13 +214,23 @@ def _open_regular_no_symlinks(
                     f"{label} regular file path contains a symbolic link component"
                 )
             terminal = index == len(absolute.parts[1:]) - 1
-            expected = stat.S_ISREG if terminal else stat.S_ISDIR
+            expected = (
+                stat.S_ISDIR
+                if not terminal or terminal_directory
+                else stat.S_ISREG
+            )
             if not expected(observed.st_mode):
-                kind = "regular file" if terminal else "directory"
+                kind = "directory" if not terminal or terminal_directory else "regular file"
                 raise ValueError(f"{label} path component is not a {kind}")
             opened = os.open(
                 component,
-                flags | no_follow | (0 if terminal else getattr(os, "O_DIRECTORY", 0)),
+                flags
+                | no_follow
+                | (
+                    getattr(os, "O_DIRECTORY", 0)
+                    if not terminal or terminal_directory
+                    else 0
+                ),
                 dir_fd=current,
             )
             confirmed = os.fstat(opened)
@@ -248,6 +258,18 @@ def _open_regular_no_symlinks(
     finally:
         for descriptor in reversed(descriptors):
             os.close(descriptor)
+
+
+def _open_regular_no_symlinks(
+    path: Path, *, label: str
+) -> tuple[int, tuple[tuple[int, int, int], ...]]:
+    return _open_no_symlinks(path, label=label, terminal_directory=False)
+
+
+def _open_directory_no_symlinks(
+    path: Path, *, label: str
+) -> tuple[int, tuple[tuple[int, int, int], ...]]:
+    return _open_no_symlinks(path, label=label, terminal_directory=True)
 
 
 def _stable_regular_file(
@@ -320,6 +342,23 @@ def _canonical_relative_source(raw: str, *, label: str) -> Path:
     return path
 
 
+def _record_relative_to_artifact(
+    record: Mapping[str, Any], artifact_root: Path, *, label: str
+) -> dict[str, Any]:
+    path = _absolute_lexical(Path(str(record.get("path", ""))))
+    root = _absolute_lexical(artifact_root)
+    try:
+        relative = path.relative_to(root)
+    except ValueError as error:
+        raise ValueError(f"{label} must be beneath the artifact root") from error
+    if relative == Path("."):
+        raise ValueError(f"{label} must identify a file beneath the artifact root")
+    canonical = _canonical_relative_source(relative.as_posix(), label=label)
+    result = dict(record)
+    result["path"] = canonical.as_posix()
+    return result
+
+
 def _validated_declared_source(
     entry: Mapping[str, Any], *, label: str, artifact_base: Path | None = None
 ) -> dict[str, Any]:
@@ -356,12 +395,67 @@ def _validated_declared_source(
     }
 
 
+def _validated_missing_source(
+    entry: Mapping[str, Any], *, label: str, artifact_base: Path | None
+) -> dict[str, str]:
+    if set(entry) != {"path", "status"} or entry.get("status") != "MISSING":
+        raise ValueError(
+            f"{label} MISSING record must contain exactly path and status=MISSING"
+        )
+    raw_path = entry.get("path")
+    if type(raw_path) is not str:
+        raise ValueError(f"{label} MISSING record path must be a string")
+    relative = _canonical_relative_source(raw_path, label=f"{label} source path")
+    if artifact_base is None:
+        raise ValueError(f"{label} relative source requires an artifact base")
+    target = _absolute_lexical(artifact_base) / relative
+    parent = target.parent
+    descriptor, identities = _open_directory_no_symlinks(
+        parent, label=f"{label} missing source parent"
+    )
+    try:
+        try:
+            observed = os.stat(target.name, dir_fd=descriptor, follow_symlinks=False)
+        except FileNotFoundError:
+            observed = None
+        if observed is not None:
+            if stat.S_ISLNK(observed.st_mode):
+                raise ValueError(
+                    f"{label} missing source path contains a symbolic link component"
+                )
+            raise ValueError(f"{label} source is marked MISSING but exists")
+    finally:
+        os.close(descriptor)
+
+    reopened, reopened_identities = _open_directory_no_symlinks(
+        parent, label=f"{label} missing source parent"
+    )
+    try:
+        if reopened_identities != identities:
+            raise ValueError(f"{label} missing source parent changed while validating")
+        try:
+            observed = os.stat(target.name, dir_fd=reopened, follow_symlinks=False)
+        except FileNotFoundError:
+            observed = None
+        if observed is not None:
+            if stat.S_ISLNK(observed.st_mode):
+                raise ValueError(
+                    f"{label} missing source path contains a symbolic link component"
+                )
+            raise ValueError(f"{label} source appeared while validating MISSING record")
+    finally:
+        os.close(reopened)
+    return {"path": relative.as_posix(), "status": "MISSING"}
+
+
 def _source_bound_unavailable(
     payload: Mapping[str, Any],
     unavailable: Mapping[str, str],
     *,
     scene: str,
     artifact_base: Path | None = None,
+    declaration_source: Mapping[str, Any] | None = None,
+    result_artifact_root: Path | None = None,
 ) -> dict[str, dict[str, Any]]:
     if not unavailable:
         return {}
@@ -375,6 +469,12 @@ def _source_bound_unavailable(
         raw_path = raw.get("path")
         if type(raw_path) is not str:
             raise ValueError(f"{scene} metric source path must be a string")
+        if "status" in raw or set(raw) == {"path"}:
+            _validated_missing_source(
+                raw,
+                label=f"{scene} metric source",
+                artifact_base=artifact_base,
+            )
         name = Path(raw_path).name
         if not name or name in by_name:
             raise ValueError(f"{scene} metric source names must be unique")
@@ -385,26 +485,96 @@ def _source_bound_unavailable(
         filename = METRIC_SOURCE_FILES[metric]
         if filename not in by_name:
             raise ValueError(f"{scene}.{metric} source is missing: {filename}")
-        evidence[metric] = {
-            "reason": reason,
-            "source": _validated_declared_source(
-                by_name[filename],
+        source = by_name[filename]
+        if source.get("status") == "MISSING":
+            if declaration_source is None:
+                raise ValueError(
+                    f"{scene}.{metric} MISSING record requires its metrics JSON source"
+                )
+            missing = _validated_missing_source(
+                source,
                 label=f"{scene}.{metric}",
                 artifact_base=artifact_base,
-            ),
-        }
+            )
+            metrics_source = _validated_declared_source(
+                declaration_source,
+                label=f"{scene}.{metric} metrics declaration",
+            )
+            source_base = (
+                metrics_source
+                if result_artifact_root is None
+                else _record_relative_to_artifact(
+                    metrics_source,
+                    result_artifact_root,
+                    label=f"{scene}.{metric} metrics source base",
+                )
+            )
+            evidence[metric] = {
+                "reason": reason,
+                "source": source_base,
+                "source_base": source_base,
+                "missing_source": missing,
+            }
+        else:
+            record = {
+                "reason": reason,
+                "source": _validated_declared_source(
+                    source,
+                    label=f"{scene}.{metric}",
+                    artifact_base=artifact_base,
+                ),
+            }
+            if declaration_source is not None:
+                metrics_source = _validated_declared_source(
+                    declaration_source,
+                    label=f"{scene}.{metric} metrics declaration",
+                )
+                record["source_base"] = (
+                    metrics_source
+                    if result_artifact_root is None
+                    else _record_relative_to_artifact(
+                        metrics_source,
+                        result_artifact_root,
+                        label=f"{scene}.{metric} metrics source base",
+                    )
+                )
+            evidence[metric] = record
     return evidence
 
 
-def _hashed_entry(entry: Mapping[str, Any]) -> dict[str, Any]:
-    path = Path(str(entry["path"]))
+def _hashed_entry(
+    entry: Mapping[str, Any],
+    *,
+    label: str,
+    artifact_root: Path | None = None,
+    artifact_base: Path | None = None,
+) -> dict[str, Any]:
+    if not isinstance(entry, Mapping) or type(entry.get("path")) is not str:
+        raise ValueError(f"{label} provenance record requires a string path")
+    declared = Path(entry["path"])
+    if declared.is_absolute():
+        path = _absolute_lexical(declared)
+    else:
+        relative = _canonical_relative_source(
+            entry["path"], label=f"{label} path"
+        )
+        path = _absolute_lexical(
+            relative if artifact_base is None else artifact_base / relative
+        )
+    observed, byte_count, _ = _stable_regular_file(
+        path, label=label, capture=False
+    )
     result = dict(entry)
     result.update(
-        path=str(path.resolve()),
-        sha256=_sha256(path),
-        byte_count=path.stat().st_size,
+        path=str(path),
+        sha256=observed,
+        byte_count=byte_count,
     )
-    return result
+    return (
+        result
+        if artifact_root is None
+        else _record_relative_to_artifact(result, artifact_root, label=label)
+    )
 
 
 def _hashed_entries(
@@ -412,10 +582,20 @@ def _hashed_entries(
     label: str,
     *,
     allow_empty: bool = False,
+    artifact_root: Path | None = None,
+    artifact_base: Path | None = None,
 ) -> list[dict[str, Any]]:
     if not isinstance(value, list) or (not value and not allow_empty):
         raise ValueError(f"provenance {label} must be a list")
-    return [_hashed_entry(entry) for entry in value]
+    return [
+        _hashed_entry(
+            entry,
+            label=f"provenance {label}[{index}]",
+            artifact_root=artifact_root,
+            artifact_base=artifact_base,
+        )
+        for index, entry in enumerate(value)
+    ]
 
 
 def _validate_run_status(
@@ -445,6 +625,7 @@ def build_scene_evidence(
     *,
     method_key: str,
     mode: str,
+    artifact_root: Path | None = None,
 ) -> dict[str, Any]:
     if METHOD_MODES.get(method_key) != mode:
         raise ValueError("unsupported TESSE-CD method or mode")
@@ -477,8 +658,14 @@ def build_scene_evidence(
         unavailable,
         scene=scene,
         artifact_base=Path(metrics_source["path"]).parent,
+        declaration_source=metrics_source,
+        result_artifact_root=(
+            Path(metrics_source["path"]).parent
+            if artifact_root is None
+            else artifact_root
+        ),
     )
-    return {
+    result = {
         "schema_version": 1,
         "manifest_id": "tesse_cd_t2_scene_evidence",
         "status": "PASS",
@@ -495,6 +682,18 @@ def build_scene_evidence(
         "official_metrics": dict(metrics_payload),
         "run_status": dict(status_payload),
     }
+    if artifact_root is not None:
+        result["artifact_root"] = {
+            "path": ".",
+            "resolution": "result_parent",
+        }
+        result["official_metrics_source"] = _record_relative_to_artifact(
+            metrics_source, artifact_root, label="official metrics source"
+        )
+        result["run_status_source"] = _record_relative_to_artifact(
+            status_source, artifact_root, label="run status source"
+        )
+    return result
 
 
 def _build_result_payload(
@@ -507,6 +706,9 @@ def _build_result_payload(
     method_key: str,
     mode: str,
     source_bases: Mapping[str, Path] | None = None,
+    metrics_sources: Mapping[str, Mapping[str, Any]] | None = None,
+    artifact_root: Path | None = None,
+    provenance_base: Path | None = None,
 ) -> dict[str, Any]:
     metrics, unavailable = build_partial_official_metrics(
         apartment,
@@ -520,12 +722,20 @@ def _build_result_payload(
             unavailable["apartment"],
             scene="apartment",
             artifact_base=None if source_bases is None else source_bases.get("apartment"),
+            declaration_source=(
+                None if metrics_sources is None else metrics_sources.get("apartment")
+            ),
+            result_artifact_root=artifact_root,
         ),
         "office": _source_bound_unavailable(
             office,
             unavailable["office"],
             scene="office",
             artifact_base=None if source_bases is None else source_bases.get("office"),
+            declaration_source=(
+                None if metrics_sources is None else metrics_sources.get("office")
+            ),
+            result_artifact_root=artifact_root,
         ),
     }
     _validate_run_status(
@@ -560,7 +770,12 @@ def _build_result_payload(
         or RUN_ID_PATTERN.fullmatch(provenance_run_id) is None
     ):
         raise ValueError("provenance run_id must be canonical")
-    configs = _hashed_entries(provenance["configs"], "configs")
+    configs = _hashed_entries(
+        provenance["configs"],
+        "configs",
+        artifact_root=artifact_root,
+        artifact_base=provenance_base,
+    )
     config_sha256 = {record["sha256"] for record in configs}
     for scene, identity in run_identity.items():
         if identity["run_id"] != provenance_run_id:
@@ -568,7 +783,7 @@ def _build_result_payload(
         if identity["config_sha256"] not in config_sha256:
             raise ValueError(f"{scene} run identity has no provenance config binding")
 
-    return {
+    result = {
         "run_id": provenance_run_id,
         "run_identity": run_identity,
         "method": {
@@ -585,7 +800,12 @@ def _build_result_payload(
         "dataset": {
             "name": "TESSE-CD",
             "splits": ["apartment_test", "office_test"],
-            "manifest": _hashed_entry(provenance["dataset_manifest"]),
+            "manifest": _hashed_entry(
+                provenance["dataset_manifest"],
+                label="dataset manifest",
+                artifact_root=artifact_root,
+                artifact_base=provenance_base,
+            ),
         },
         "metrics": metrics,
         "unavailable": unavailable,
@@ -605,9 +825,18 @@ def _build_result_payload(
         "seed": int(provenance.get("seed", 0)),
         "configs": configs,
         "weights": _hashed_entries(
-            provenance.get("weights", []), "weights", allow_empty=True
+            provenance.get("weights", []),
+            "weights",
+            allow_empty=True,
+            artifact_root=artifact_root,
+            artifact_base=provenance_base,
         ),
-        "raw_outputs": _hashed_entries(provenance["raw_outputs"], "raw_outputs"),
+        "raw_outputs": _hashed_entries(
+            provenance["raw_outputs"],
+            "raw_outputs",
+            artifact_root=artifact_root,
+            artifact_base=provenance_base,
+        ),
         "protocol_deviations": [
             str(value) for value in provenance.get("protocol_deviations", ())
         ],
@@ -616,6 +845,12 @@ def _build_result_payload(
             method_key, metrics
         ),
     }
+    if artifact_root is not None:
+        result["artifact_root"] = {
+            "path": ".",
+            "resolution": "result_parent",
+        }
+    return result
 
 
 def _strict_json_object(content: bytes, *, label: str) -> dict[str, Any]:
@@ -689,6 +924,7 @@ def build_result(
     *,
     method_key: str,
     mode: str,
+    artifact_root: Path | None = None,
 ) -> dict[str, Any]:
     apartment_payload, apartment_metrics_sources = _json_repeat_pair(
         apartment_metrics,
@@ -725,10 +961,16 @@ def build_result(
             "apartment": Path(apartment_metrics_sources["primary"]["path"]).parent,
             "office": Path(office_metrics_sources["primary"]["path"]).parent,
         },
+        metrics_sources={
+            "apartment": apartment_metrics_sources["primary"],
+            "office": office_metrics_sources["primary"],
+        },
+        artifact_root=artifact_root,
+        provenance_base=Path(provenance_source["path"]).parent,
     )
     result["status"] = "VERIFIED"
     result["protocol"]["deterministic_repeat"] = "byte-identical"
-    result["evidence_sources"] = {
+    evidence_sources = {
         "apartment": {
             "metrics": apartment_metrics_sources,
             "status": apartment_status_sources,
@@ -739,6 +981,19 @@ def build_result(
         },
         "provenance": provenance_source,
     }
+    if artifact_root is not None:
+        for scene in ("apartment", "office"):
+            for kind in ("metrics", "status"):
+                for run in ("primary", "repeat"):
+                    evidence_sources[scene][kind][run] = _record_relative_to_artifact(
+                        evidence_sources[scene][kind][run],
+                        artifact_root,
+                        label=f"{scene} {kind} {run}",
+                    )
+        evidence_sources["provenance"] = _record_relative_to_artifact(
+            provenance_source, artifact_root, label="provenance source"
+        )
+    result["evidence_sources"] = evidence_sources
     return result
 
 
@@ -791,6 +1046,7 @@ def main() -> int:
             args.scene_status,
             method_key=args.method,
             mode=METHOD_MODES[args.method],
+            artifact_root=args.output.parent,
         )
         _atomic_json_no_replace(args.output, result)
         return 0
@@ -822,6 +1078,7 @@ def main() -> int:
         args.provenance,
         method_key=args.method,
         mode=METHOD_MODES[args.method],
+        artifact_root=args.output.parent,
     )
     _atomic_json_no_replace(args.output, result)
     return 0

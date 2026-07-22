@@ -449,6 +449,147 @@ def _write_relative_scene_inputs(
     return metrics_path, status_path
 
 
+def _write_missing_scene_inputs(root: Path) -> tuple[Path, Path]:
+    metrics_path, status_path = _write_relative_scene_inputs(root)
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    dynamic = root / "bridge" / "dynamic_objects.csv"
+    dynamic.unlink()
+    for source in payload["sources"]:
+        if Path(source["path"]).name == dynamic.name:
+            source.clear()
+            source.update(path="bridge/dynamic_objects.csv", status="MISSING")
+    metrics_path.write_text(
+        json.dumps(payload, sort_keys=True, allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
+    return metrics_path, status_path
+
+
+def test_official_bridge_missing_record_is_bound_to_partial_metrics_json(
+    tmp_path: Path,
+) -> None:
+    metrics_path, status_path = _write_missing_scene_inputs(tmp_path / "run")
+
+    evidence = finalize_tesse_t2.build_scene_evidence(
+        metrics_path,
+        status_path,
+        method_key="DUALMAP",
+        mode="native",
+    )
+
+    missing = evidence["unavailable_evidence"]["dynamic_f1"]
+    assert missing["missing_source"] == {
+        "path": "bridge/dynamic_objects.csv",
+        "status": "MISSING",
+    }
+    assert missing["source"] == missing["source_base"]
+    assert missing["source"]["path"] == metrics_path.name
+    assert missing["source"]["sha256"] == evidence["official_metrics_source"][
+        "sha256"
+    ]
+    assert "sha256" not in missing["missing_source"]
+    assert "byte_count" not in missing["missing_source"]
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        {"path": "bridge/dynamic_objects.csv"},
+        {"path": "bridge/dynamic_objects.csv", "status": "missing"},
+        {"path": "bridge/dynamic_objects.csv", "status": 1},
+        {
+            "path": "bridge/dynamic_objects.csv",
+            "status": "MISSING",
+            "sha256": "0" * 64,
+        },
+        {
+            "path": "bridge/dynamic_objects.csv",
+            "status": "MISSING",
+            "byte_count": 0,
+        },
+    ],
+)
+def test_official_bridge_missing_record_rejects_fake_status_or_extra_fields(
+    tmp_path: Path, mutation: dict[str, object]
+) -> None:
+    metrics_path, status_path = _write_missing_scene_inputs(tmp_path / "run")
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    dynamic = next(
+        source
+        for source in payload["sources"]
+        if Path(source["path"]).name == "dynamic_objects.csv"
+    )
+    dynamic.clear()
+    dynamic.update(mutation)
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="MISSING record"):
+        finalize_tesse_t2.build_scene_evidence(
+            metrics_path,
+            status_path,
+            method_key="DUALMAP",
+            mode="native",
+        )
+
+
+@pytest.mark.parametrize(
+    "attack",
+    [
+        "/tmp/dynamic_objects.csv",
+        "../outside/dynamic_objects.csv",
+        "bridge//dynamic_objects.csv",
+        "bridge\\dynamic_objects.csv",
+    ],
+)
+def test_official_bridge_missing_record_rejects_noncanonical_path(
+    tmp_path: Path, attack: str
+) -> None:
+    metrics_path, status_path = _write_missing_scene_inputs(tmp_path / "run")
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    dynamic = next(
+        source
+        for source in payload["sources"]
+        if Path(source["path"]).name == "dynamic_objects.csv"
+    )
+    dynamic["path"] = attack
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="canonical artifact-relative"):
+        finalize_tesse_t2.build_scene_evidence(
+            metrics_path,
+            status_path,
+            method_key="DUALMAP",
+            mode="native",
+        )
+
+
+@pytest.mark.parametrize("link_kind", ["intermediate", "terminal"])
+def test_official_bridge_missing_record_rejects_symlink_escape(
+    tmp_path: Path, link_kind: str
+) -> None:
+    run = tmp_path / "run"
+    metrics_path, status_path = _write_missing_scene_inputs(run)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    if link_kind == "intermediate":
+        for path in (run / "bridge").iterdir():
+            path.unlink()
+        (run / "bridge").rmdir()
+        (run / "bridge").symlink_to(outside, target_is_directory=True)
+    else:
+        (run / "bridge" / "dynamic_objects.csv").symlink_to(
+            outside / "dynamic_objects.csv"
+        )
+
+    with pytest.raises(ValueError, match="symbolic link"):
+        finalize_tesse_t2.build_scene_evidence(
+            metrics_path,
+            status_path,
+            method_key="DUALMAP",
+            mode="native",
+        )
+
+
 def test_scene_evidence_resolves_relative_sources_from_metrics_parent(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -572,6 +713,62 @@ def test_declared_source_rejects_path_replacement_while_reading(
             entry,
             label="test",
             artifact_base=tmp_path,
+        )
+    assert replaced
+
+
+@pytest.mark.parametrize(
+    "provenance_field", ["dataset_manifest", "configs", "weights", "raw_outputs"]
+)
+def test_provenance_records_reject_symlinked_files(
+    tmp_path: Path, provenance_field: str
+) -> None:
+    provenance = _provenance(tmp_path)
+    target = tmp_path / f"{provenance_field}-target"
+    target.write_text("config.yaml" if provenance_field == "configs" else "artifact")
+    linked = tmp_path / f"{provenance_field}-link"
+    linked.symlink_to(target)
+    record = {"name": provenance_field, "path": str(linked)}
+    if provenance_field == "dataset_manifest":
+        provenance[provenance_field] = record
+    else:
+        provenance[provenance_field] = [record]
+
+    with pytest.raises(ValueError, match="symbolic link"):
+        finalize_tesse_t2._build_result_payload(
+            _dualmap_scene("apartment", tmp_path / "apartment_sources"),
+            _dualmap_scene("office", tmp_path / "office_sources"),
+            _dualmap_status("apartment"),
+            _dualmap_status("office"),
+            provenance,
+            method_key="DUALMAP",
+            mode="native",
+        )
+
+
+def test_provenance_record_rejects_path_replacement_while_reading(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = tmp_path / "manifest.json"
+    source.write_bytes(b"original")
+    replacement = tmp_path / "replacement.json"
+    replacement.write_bytes(b"replaced")
+    original_read = os.read
+    replaced = False
+
+    def replace_path(descriptor: int, size: int) -> bytes:
+        nonlocal replaced
+        if not replaced:
+            replaced = True
+            replacement.replace(source)
+        return original_read(descriptor, size)
+
+    monkeypatch.setattr(finalize_tesse_t2.os, "read", replace_path)
+
+    with pytest.raises(ValueError, match="changed"):
+        finalize_tesse_t2._hashed_entry(
+            {"path": str(source)},
+            label="dataset manifest",
         )
     assert replaced
 

@@ -9,6 +9,7 @@ import hashlib
 import json
 import math
 import os
+import stat
 import sys
 import tempfile
 from pathlib import Path
@@ -24,6 +25,7 @@ from src.evaluation.baselines.ovimap_paper_audit import (
     audit_paper_parity,
     summarize_feature_file,
 )
+from src.evaluation.json_contracts import loads_strict
 from tools.benchmark_result_contract import (
     ResultContractError,
     binding_list,
@@ -152,14 +154,143 @@ def _resolve_json_pointer(document: Any, pointer: str) -> Any:
         raise ImportFailure(str(error)) from error
 
 
-def _require_hashed_file(record: Any, *, label: str) -> Path:
+def _canonical_relative_path(raw: object, *, label: str) -> Path:
+    if type(raw) is not str or not raw or "\\" in raw:
+        raise ImportFailure(f"{label} must be a canonical relative path")
+    path = Path(raw)
+    if (
+        path.is_absolute()
+        or "." in path.parts
+        or ".." in path.parts
+        or path.as_posix() != raw
+    ):
+        raise ImportFailure(f"{label} must be a canonical relative path")
+    return path
+
+
+def _result_artifact_root(
+    result: Mapping[str, Any], result_path: Path
+) -> Path | None:
+    record = result.get("artifact_root")
+    if record is None:
+        return None
+    if (
+        not isinstance(record, Mapping)
+        or set(record) != {"path", "resolution"}
+        or record.get("path") != "."
+        or record.get("resolution") != "result_parent"
+    ):
+        raise ImportFailure("result artifact root must be result_parent at canonical path .")
+    return Path(os.path.abspath(result_path.parent))
+
+
+def _reject_symlink_components(path: Path, *, label: str) -> None:
+    absolute = Path(os.path.abspath(path))
+    current = Path(absolute.anchor)
+    try:
+        for component in absolute.parts[1:]:
+            current /= component
+            if current.is_symlink():
+                raise ImportFailure(f"{label} contains a symbolic link component")
+    except OSError as error:
+        raise ImportFailure(f"{label} cannot be inspected safely") from error
+
+
+def _stable_file_snapshot(
+    path: Path, *, label: str, capture: bool
+) -> tuple[str, int, bytes | None]:
+    _reject_symlink_components(path, label=label)
+    try:
+        initial = os.stat(path, follow_symlinks=False)
+        if not stat.S_ISREG(initial.st_mode):
+            raise ImportFailure(f"{label} must be a regular file")
+        descriptor = os.open(
+            path,
+            os.O_RDONLY
+            | getattr(os, "O_CLOEXEC", 0)
+            | getattr(os, "O_NOFOLLOW", 0),
+        )
+    except OSError as error:
+        raise ImportFailure(f"{label} cannot be opened safely") from error
+    chunks: list[bytes] | None = [] if capture else None
+    digest = hashlib.sha256()
+    byte_count = 0
+    try:
+        opened = os.fstat(descriptor)
+        identity = (
+            opened.st_dev,
+            opened.st_ino,
+            opened.st_size,
+            opened.st_mtime_ns,
+            opened.st_ctime_ns,
+        )
+        if (initial.st_dev, initial.st_ino) != identity[:2]:
+            raise ImportFailure(f"{label} changed before it was opened")
+        while True:
+            chunk = os.read(descriptor, 1024 * 1024)
+            if not chunk:
+                break
+            digest.update(chunk)
+            byte_count += len(chunk)
+            if chunks is not None:
+                chunks.append(chunk)
+        after = os.fstat(descriptor)
+    except OSError as error:
+        raise ImportFailure(f"{label} changed while it was read") from error
+    finally:
+        os.close(descriptor)
+    _reject_symlink_components(path, label=label)
+    try:
+        current = os.stat(path, follow_symlinks=False)
+    except OSError as error:
+        raise ImportFailure(f"{label} changed while it was read") from error
+    if (
+        byte_count != opened.st_size
+        or (
+            after.st_dev,
+            after.st_ino,
+            after.st_size,
+            after.st_mtime_ns,
+            after.st_ctime_ns,
+        )
+        != identity
+        or (
+            current.st_dev,
+            current.st_ino,
+            current.st_size,
+            current.st_mtime_ns,
+            current.st_ctime_ns,
+        )
+        != identity
+    ):
+        raise ImportFailure(f"{label} changed while it was read")
+    return digest.hexdigest(), byte_count, None if chunks is None else b"".join(chunks)
+
+
+def _require_hashed_file(
+    record: Any,
+    *,
+    label: str,
+    relative_to: Path | None = None,
+    capture: bool = False,
+) -> tuple[Path, bytes | None]:
     if not isinstance(record, Mapping):
         raise ImportFailure(f"{label} is invalid")
-    path = Path(str(record.get("path", "")))
-    _require_file(path)
-    if record.get("sha256") != _sha256(path):
+    raw_path = record.get("path")
+    if relative_to is None:
+        path = Path(str(raw_path))
+    else:
+        relative = _canonical_relative_path(raw_path, label=f"{label} path")
+        path = Path(os.path.abspath(relative_to)) / relative
+    observed, byte_count, captured = _stable_file_snapshot(
+        path, label=label, capture=capture
+    )
+    if record.get("sha256") != observed:
         raise ImportFailure(f"{label} hash mismatch")
-    return path
+    declared_bytes = record.get("byte_count")
+    if type(declared_bytes) is not int or declared_bytes != byte_count:
+        raise ImportFailure(f"{label} hash or byte count mismatch")
+    return path, captured
 
 
 def _require_unavailable_evidence(
@@ -168,6 +299,7 @@ def _require_unavailable_evidence(
     *,
     token: str,
     reason: str,
+    result_path: Path,
 ) -> None:
     try:
         evidence = resolve_evidence_pointer(result, binding, token=token)
@@ -176,14 +308,56 @@ def _require_unavailable_evidence(
     if not isinstance(evidence, Mapping) or evidence.get("reason") != reason:
         raise ImportFailure(f"unavailable evidence reason mismatch for {token}")
     source = evidence.get("source")
-    path = _require_hashed_file(source, label="unavailable evidence source")
+    artifact_root = _result_artifact_root(result, result_path)
+    if artifact_root is None:
+        _require_hashed_file(source, label="unavailable evidence source")
+        return
+
+    source_base = evidence.get("source_base")
+    source_base_path, source_base_bytes = _require_hashed_file(
+        source_base,
+        label="unavailable evidence source base",
+        relative_to=artifact_root,
+        capture=True,
+    )
+    missing = evidence.get("missing_source")
+    if missing is None:
+        _require_hashed_file(
+            source,
+            label="unavailable evidence source",
+            relative_to=source_base_path.parent,
+        )
+        return
     if (
-        not isinstance(source, Mapping)
-        or not isinstance(source.get("byte_count"), int)
-        or isinstance(source.get("byte_count"), bool)
-        or source.get("byte_count") != path.stat().st_size
+        not isinstance(missing, Mapping)
+        or set(missing) != {"path", "status"}
+        or missing.get("status") != "MISSING"
+        or source != source_base
     ):
-        raise ImportFailure(f"unavailable evidence source hash or byte count mismatch for {token}")
+        raise ImportFailure(f"unavailable MISSING evidence is invalid for {token}")
+    relative_missing = _canonical_relative_path(
+        missing.get("path"), label="unavailable MISSING source path"
+    )
+    missing_path = source_base_path.parent / relative_missing
+    _reject_symlink_components(missing_path.parent, label="unavailable MISSING source")
+    if os.path.lexists(missing_path):
+        raise ImportFailure(f"unavailable MISSING source unexpectedly exists for {token}")
+    try:
+        declaration = loads_strict(
+            (source_base_bytes or b"").decode("utf-8"),
+            label="unavailable metrics declaration",
+        )
+    except (UnicodeDecodeError, ValueError) as error:
+        raise ImportFailure("unavailable metrics declaration is invalid") from error
+    if not isinstance(declaration, Mapping):
+        raise ImportFailure("unavailable metrics declaration must contain an object")
+    declarations = declaration.get("sources")
+    if (
+        declaration.get("status") != "PARTIAL"
+        or not isinstance(declarations, list)
+        or sum(item == dict(missing) for item in declarations) != 1
+    ):
+        raise ImportFailure(f"MISSING source is not bound by its metrics JSON for {token}")
 
 
 def _atomic_text(path: Path, content: str) -> None:
@@ -360,6 +534,7 @@ def import_results(
                 binding,
                 token=token,
                 reason=reason,
+                result_path=result_path,
             )
             replacements[token] = "--"
             row["source_json"] = _source_label(result_path, registry_path)
