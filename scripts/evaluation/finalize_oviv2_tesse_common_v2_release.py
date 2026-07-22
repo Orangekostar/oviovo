@@ -25,6 +25,7 @@ from scripts.evaluation.canonicalize_tesse_common_v2_summary import (
     FileIdentity,
     canonical_summary_bytes,
     capture_and_canonicalize_summary,
+    _json_exact_equal,
     _stable_regular_file_with_identity,
 )
 from scripts.evaluation.finalize_tesse_t2 import (
@@ -200,7 +201,7 @@ def _validate_run_execution(
         "root_inode": root_identity[1],
     }
     expected = {**base, "execution_id": _compact_json_hash(base)}
-    if execution != expected:
+    if not _json_exact_equal(execution, expected):
         raise ValueError(f"{scene}.run{repeat} execution identity mismatch")
     return execution
 
@@ -258,8 +259,10 @@ def _target_declared_record(
         }
         cache[path] = record
     if (
-        declaration.get("sha256") != record["sha256"]
-        or declaration.get("byte_count") != record["byte_count"]
+        not _json_exact_equal(declaration.get("sha256"), record["sha256"])
+        or not _json_exact_equal(
+            declaration.get("byte_count"), record["byte_count"]
+        )
     ):
         raise ValueError(f"{label} hash mismatch")
     return dict(record)
@@ -535,7 +538,9 @@ def finalize_oviv2_common_v2_release(
             config.get("missing_observation_policy") == "signed_depth"
             and config.get("algorithm_hash") == algorithm["sha256"]
             and _algorithm_hash(config) == algorithm["sha256"]
-            and _algorithm_config(config) == algorithm.get("normalized_config")
+            and _json_exact_equal(
+                _algorithm_config(config), algorithm.get("normalized_config")
+            )
         ):
             raise ValueError(f"{scene} frozen config differs from frozen algorithm")
         frozen_config_records[scene] = config_record
@@ -674,7 +679,9 @@ def finalize_oviv2_common_v2_release(
                 }
             expected_identity = expected_run_identities[scene]
             if any(
-                payload.get("frozen_run_identity") != expected_identity
+                not _json_exact_equal(
+                    payload.get("frozen_run_identity"), expected_identity
+                )
                 for payload in payloads.values()
             ):
                 raise ValueError(f"{scene}.run{repeat} frozen run identity mismatch")
@@ -686,7 +693,7 @@ def finalize_oviv2_common_v2_release(
                 root_identity=root_identities[key],
             )
             if any(
-                payload.get("run_execution") != execution
+                not _json_exact_equal(payload.get("run_execution"), execution)
                 for payload in payloads.values()
             ):
                 raise ValueError(f"{scene}.run{repeat} execution identity mismatch")

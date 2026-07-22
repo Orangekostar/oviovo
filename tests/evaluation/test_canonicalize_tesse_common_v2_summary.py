@@ -351,6 +351,35 @@ def test_canonical_summary_rejects_temporal_source_index_drift(tmp_path: Path) -
         )
 
 
+def test_canonical_summary_rejects_type_confused_temporal_execution(
+    tmp_path: Path,
+) -> None:
+    summary, expected = _fixture(tmp_path / "run", tmp_path / "external")
+    _add_formal_identity(summary, root=tmp_path / "run", execution_id="run1")
+    sidecar = tmp_path / "run/temporal/sidecars/source_index.json"
+    sidecar_payload = json.loads(sidecar.read_text(encoding="utf-8"))
+    sidecar_payload["run_execution"]["schema_version"] = True
+    _write_json(sidecar, sidecar_payload)
+    temporal = tmp_path / "run/temporal/temporal_manifest.json"
+    temporal_payload = json.loads(temporal.read_text(encoding="utf-8"))
+    temporal_payload["sources"]["source_index"] = {
+        "path": "sidecars/source_index.json",
+        "sha256": _record(sidecar)["sha256"],
+        "byte_count": sidecar.stat().st_size,
+    }
+    _write_json(temporal, temporal_payload)
+    summary_payload = json.loads(summary.read_text(encoding="utf-8"))
+    summary_payload["sources"]["temporal_index"] = _record(temporal)
+    _write_json(summary, summary_payload)
+
+    with pytest.raises(ValueError, match="temporal and source_index identities differ"):
+        canonicalize_summary(
+            summary,
+            artifact_root=tmp_path / "run",
+            external_sources=expected,
+        )
+
+
 def test_canonicalizer_cli_writes_one_no_replace_summary(tmp_path: Path) -> None:
     summary, expected = _fixture(tmp_path / "run", tmp_path / "external")
     output = tmp_path / "canonical.json"

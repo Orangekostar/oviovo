@@ -740,3 +740,29 @@ def test_release_rejects_identity_disagreement_within_one_run(tmp_path: Path) ->
             run_id="artifact-identity-disagreement",
             output=tmp_path / "result.json",
         )
+
+
+@pytest.mark.parametrize(
+    ("identity_field", "malformed_value"),
+    (
+        ("frozen_run_identity", True),
+        ("run_execution", 1.0),
+    ),
+)
+def test_release_rejects_type_confused_identity_schema_version(
+    tmp_path: Path,
+    identity_field: str,
+    malformed_value: object,
+) -> None:
+    freeze = _fixture(tmp_path)
+    run_manifest = tmp_path / "apartment/run1/run_manifest.json"
+    payload = json.loads(run_manifest.read_text(encoding="utf-8"))
+    payload[identity_field]["schema_version"] = malformed_value
+    _write_json(run_manifest, payload)
+
+    with pytest.raises(ValueError, match="identity mismatch"):
+        finalize_oviv2_common_v2_release(
+            freeze,
+            run_id="type-confused-identity",
+            output=tmp_path / "result.json",
+        )

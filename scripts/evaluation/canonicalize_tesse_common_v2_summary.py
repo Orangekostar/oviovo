@@ -41,6 +41,21 @@ def _mapping(value: object, *, label: str) -> Mapping[str, Any]:
     return value
 
 
+def _json_exact_equal(first: object, second: object) -> bool:
+    if type(first) is not type(second):
+        return False
+    if isinstance(first, dict):
+        return set(first) == set(second) and all(
+            _json_exact_equal(first[key], second[key]) for key in first
+        )
+    if isinstance(first, list):
+        return len(first) == len(second) and all(
+            _json_exact_equal(left, right)
+            for left, right in zip(first, second, strict=True)
+        )
+    return first == second
+
+
 def _direct_directory(path: Path, *, label: str) -> Path:
     absolute = _absolute_lexical(path)
     descriptor, _ = _open_directory_no_symlinks(absolute, label=label)
@@ -188,17 +203,21 @@ def _temporal_identity_projection(
         raise ValueError("temporal source_index is not UTF-8") from error
     sidecar_payload = loads_strict(sidecar_text, label="temporal source_index")
     sidecar = _mapping(sidecar_payload, label="temporal source_index")
-    if (
-        _mapping(
+    if not (
+        _json_exact_equal(
+            _mapping(
             sidecar.get("frozen_run_identity"),
             label="source_index frozen identity",
+            ),
+            frozen_identity,
         )
-        != frozen_identity
-        or _mapping(
-            sidecar.get("run_execution"),
-            label="source_index run execution",
+        and _json_exact_equal(
+            _mapping(
+                sidecar.get("run_execution"),
+                label="source_index run execution",
+            ),
+            run_execution,
         )
-        != run_execution
     ):
         raise ValueError("temporal and source_index identities differ")
 
