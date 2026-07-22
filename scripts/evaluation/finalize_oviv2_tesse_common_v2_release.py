@@ -21,6 +21,7 @@ if str(ROOT) not in sys.path:
 from scripts.evaluation import finalize_tesse_common_v2 as pinned_common
 from scripts.evaluation.canonicalize_tesse_common_v2_summary import (
     EXTERNAL_SOURCE_ROLES,
+    FileIdentity,
     canonical_summary_bytes,
     capture_and_canonicalize_summary,
 )
@@ -80,6 +81,22 @@ def _verified_binding(
     label: str,
     expected_path: Path | None = None,
 ) -> tuple[Path, dict[str, object]]:
+    path, record, _ = _verified_binding_data(
+        value,
+        label=label,
+        expected_path=expected_path,
+        capture=False,
+    )
+    return path, record
+
+
+def _verified_binding_data(
+    value: object,
+    *,
+    label: str,
+    expected_path: Path | None = None,
+    capture: bool,
+) -> tuple[Path, dict[str, object], bytes | None]:
     declaration = _mapping(value, label=f"{label} binding")
     if set(declaration) != {"path", "sha256", "byte_count"}:
         raise ValueError(f"{label} binding fields are invalid")
@@ -91,8 +108,8 @@ def _verified_binding(
         raise ValueError(f"{label} path must be canonical")
     if expected_path is not None and path != _absolute_lexical(expected_path):
         raise ValueError(f"{label} path mismatch")
-    digest, byte_count, _ = _stable_regular_file(
-        path, label=f"{label} file", capture=False
+    digest, byte_count, content = _stable_regular_file(
+        path, label=f"{label} file", capture=capture
     )
     if (
         not isinstance(declaration.get("sha256"), str)
@@ -102,11 +119,15 @@ def _verified_binding(
         or declaration.get("byte_count") != byte_count
     ):
         raise ValueError(f"{label} content mismatch")
-    return path, {
-        "role": label,
-        "sha256": digest,
-        "byte_count": byte_count,
-    }
+    return (
+        path,
+        {
+            "role": label,
+            "sha256": digest,
+            "byte_count": byte_count,
+        },
+        content,
+    )
 
 
 def _direct_root(path: Path, *, label: str) -> Path:
@@ -154,6 +175,183 @@ def _validate_captured_summary(
         raise ValueError(f"{scene} summary source coverage is incomplete")
 
 
+def _target_declared_record(
+    value: object,
+    *,
+    label: str,
+    cache: dict[Path, dict[str, object]],
+    base: Path | None = None,
+) -> dict[str, object]:
+    declaration = _mapping(value, label=f"{label} declaration")
+    raw = Path(str(declaration.get("path", "")))
+    path = _absolute_lexical(
+        raw if raw.is_absolute() else (base / raw if base is not None else raw)
+    )
+    record = cache.get(path)
+    if record is None:
+        digest, byte_count, _ = _stable_regular_file(
+            path, label=label, capture=False
+        )
+        record = {
+            "path": os.fspath(path),
+            "sha256": digest,
+            "byte_count": byte_count,
+        }
+        cache[path] = record
+    if (
+        declaration.get("sha256") != record["sha256"]
+        or declaration.get("byte_count") != record["byte_count"]
+    ):
+        raise ValueError(f"{label} hash mismatch")
+    return dict(record)
+
+
+def _validate_captured_target_package(
+    content: bytes,
+    *,
+    manifest_path: Path,
+    arrays_path: Path,
+    arrays_record: Mapping[str, object],
+    schedule_path: Path,
+    schedule_record: Mapping[str, object],
+) -> dict[str, Any]:
+    try:
+        text = content.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ValueError("common-v2 target package is not UTF-8") from error
+    payload = loads_strict(text, label="common-v2 target package")
+    target = _mapping(payload, label="target package")
+    metadata = _mapping(target.get("metadata"), label="target metadata")
+    if not (
+        target.get("schema_version") == 1
+        and target.get("manifest_id") == "tesse_cd_common_v2_targets"
+        and target.get("dataset") == "TESSE-CD"
+        and target.get("status") == "GENERATED"
+        and target.get("targets_generated") is True
+        and target.get("prediction_inputs_used") is False
+        and metadata.get("prediction_inputs_used") is False
+        and metadata.get("protocol_complete") is True
+        and metadata.get("window_frames") == 450
+        and metadata.get("voxel_size_m") == 0.05
+        and set(metadata.get("scenes", ())) == set(SCENES)
+    ):
+        raise ValueError("target package is not complete and prediction-independent")
+
+    cache = {
+        arrays_path: {
+            "path": os.fspath(arrays_path),
+            "sha256": arrays_record["sha256"],
+            "byte_count": arrays_record["byte_count"],
+        },
+        schedule_path: {
+            "path": os.fspath(schedule_path),
+            "sha256": schedule_record["sha256"],
+            "byte_count": schedule_record["byte_count"],
+        },
+    }
+    observed_arrays = _target_declared_record(
+        target.get("target_arrays"),
+        label="target arrays",
+        cache=cache,
+        base=manifest_path.parent,
+    )
+    if observed_arrays != cache[arrays_path]:
+        raise ValueError("scene summaries do not bind the target arrays")
+
+    target_sources = target.get("sources")
+    if not isinstance(target_sources, list) or not target_sources:
+        raise ValueError("target package sources must be non-empty")
+    validated_sources = [
+        _target_declared_record(
+            declaration,
+            label="target source",
+            cache=cache,
+        )
+        for declaration in target_sources
+    ]
+    _target_declared_record(
+        metadata.get("source_manifest"),
+        label="target source manifest",
+        cache=cache,
+    )
+    declared_schedule = _target_declared_record(
+        metadata.get("schedule"),
+        label="target schedule",
+        cache=cache,
+    )
+    if declared_schedule != cache[schedule_path]:
+        raise ValueError("target package schedule binding mismatch")
+    declared_sources = _mapping(
+        metadata.get("declared_source_records"),
+        label="target declared source records",
+    )
+    if not declared_sources:
+        raise ValueError("target declared source records must be non-empty")
+    validated_declared_sources = {
+        str(label): _target_declared_record(
+            declaration,
+            label="target source",
+            cache=cache,
+        )
+        for label, declaration in declared_sources.items()
+    }
+
+    observability = _mapping(
+        metadata.get("background_observable_by_event"),
+        label="target observability",
+    )
+    if not observability or any(
+        type(value) is not bool for value in observability.values()
+    ):
+        raise ValueError(
+            "target observability must contain prediction-independent booleans"
+        )
+    arrays = _mapping(
+        _mapping(target.get("target_arrays"), label="target arrays").get("arrays"),
+        label="target array declarations",
+    )
+    revealed = {
+        str(name).removesuffix(".revealed_background"): _mapping(
+            declaration, label=f"target array {name}"
+        )
+        for name, declaration in arrays.items()
+        if str(name).endswith(".revealed_background")
+    }
+    if set(revealed) != set(observability) or any(
+        bool(
+            pinned_common._nonnegative_int(
+                declaration.get("element_count"),
+                label=f"{event_id} target elements",
+            )
+        )
+        is not observability[event_id]
+        for event_id, declaration in revealed.items()
+    ):
+        raise ValueError("target observability disagrees with target arrays")
+    observable_count = sum(observability.values())
+    if (
+        metadata.get("background_observable_event_count") != observable_count
+        or metadata.get("unobservable_revealed_target_event_count")
+        != len(observability) - observable_count
+        or any(
+            not any(
+                value
+                for event_id, value in observability.items()
+                if str(event_id).startswith(f"{scene}_event_")
+            )
+            for scene in SCENES
+        )
+    ):
+        raise ValueError("target observability counts are inconsistent")
+    return {
+        "target_arrays": cache[arrays_path],
+        "prediction_inputs_used": False,
+        "background_observable_by_event": dict(observability),
+        "sources": validated_sources,
+        "declared_source_records": validated_declared_sources,
+    }
+
+
 def finalize_oviv2_common_v2_release(
     freeze_manifest: Path,
     *,
@@ -183,9 +381,14 @@ def finalize_oviv2_common_v2_release(
     shared = _mapping(freeze.get("shared_bindings"), label="shared bindings")
     if not _REQUIRED_SHARED_BINDINGS <= set(shared):
         raise ValueError("freeze shared bindings are incomplete")
-    target_manifest_path, target_manifest_record = _verified_binding(
-        shared["common_target_manifest"], label="common_target_manifest"
+    target_manifest_path, target_manifest_record, target_manifest_content = (
+        _verified_binding_data(
+            shared["common_target_manifest"],
+            label="common_target_manifest",
+            capture=True,
+        )
     )
+    assert target_manifest_content is not None
     target_arrays_path, target_arrays_record = _verified_binding(
         shared["common_target_arrays"], label="common_target_arrays"
     )
@@ -278,14 +481,15 @@ def finalize_oviv2_common_v2_release(
     }
     raw_summaries: dict[tuple[str, int], dict[str, Any]] = {}
     canonical: dict[tuple[str, int], dict[str, Any]] = {}
-    summary_paths: dict[tuple[str, int], Path] = {}
     raw_records: dict[tuple[str, int], dict[str, object]] = {}
+    captured_identities: dict[
+        tuple[str, int], dict[str, FileIdentity]
+    ] = {}
     for scene in SCENES:
         for repeat in REPEATS:
             key = (scene, repeat)
             summary_path = roots[key] / "evaluation/summary.json"
-            summary_paths[key] = summary_path
-            raw_payload, canonical_payload, raw_content_record = (
+            raw_payload, canonical_payload, raw_content_record, identities = (
                 capture_and_canonicalize_summary(
                     summary_path,
                     artifact_root=roots[key],
@@ -302,39 +506,30 @@ def finalize_oviv2_common_v2_release(
                 "role": f"{scene}.run{repeat}.raw_summary",
                 **raw_content_record,
             }
+            captured_identities[key] = identities
+
+    observed_run_local_identities: dict[FileIdentity, tuple[str, int, str]] = {}
+    for (scene, repeat), identities in captured_identities.items():
+        for role, identity in identities.items():
+            if role in EXTERNAL_SOURCE_ROLES:
+                continue
+            previous = observed_run_local_identities.setdefault(
+                identity, (scene, repeat, role)
+            )
+            if previous != (scene, repeat, role):
+                raise ValueError(
+                    "run-local sources must be independent files: "
+                    f"{previous[0]}.run{previous[1]}.{previous[2]} and "
+                    f"{scene}.run{repeat}.{role}"
+                )
 
     for scene in SCENES:
-        if os.path.samefile(summary_paths[(scene, 1)], summary_paths[(scene, 2)]):
-            raise ValueError(f"{scene} summaries must be independent files")
         if canonical_summary_bytes(canonical[(scene, 1)]) != canonical_summary_bytes(
             canonical[(scene, 2)]
         ):
             raise ValueError(
                 f"{scene} canonical summaries must be byte-identical"
             )
-        primary_sources = _mapping(
-            raw_summaries[(scene, 1)].get("sources"),
-            label=f"{scene} primary sources",
-        )
-        repeat_sources = _mapping(
-            raw_summaries[(scene, 2)].get("sources"),
-            label=f"{scene} repeat sources",
-        )
-        for role in set(primary_sources) - EXTERNAL_SOURCE_ROLES:
-            primary_source = _mapping(
-                primary_sources[role], label=f"{scene} primary {role} source"
-            )
-            repeat_source = _mapping(
-                repeat_sources[role], label=f"{scene} repeat {role} source"
-            )
-            if os.path.samefile(
-                Path(str(primary_source["path"])),
-                Path(str(repeat_source["path"])),
-            ):
-                raise ValueError(
-                    f"{scene} run-local sources must be independent files: {role}"
-                )
-
     shared_source_roles = (
         "target_manifest",
         "target_arrays",
@@ -354,22 +549,13 @@ def finalize_oviv2_common_v2_release(
     }:
         raise ValueError("scene summaries disagree with frozen schedule")
 
-    target_evidence = pinned_common._validate_target_package(
-        {
-            "path": str(target_manifest_path),
-            "sha256": target_manifest_record["sha256"],
-            "byte_count": target_manifest_record["byte_count"],
-        },
-        {
-            "path": str(target_arrays_path),
-            "sha256": target_arrays_record["sha256"],
-            "byte_count": target_arrays_record["byte_count"],
-        },
-        {
-            "path": str(schedule_path),
-            "sha256": schedule_record["sha256"],
-            "byte_count": schedule_record["byte_count"],
-        },
+    target_evidence = _validate_captured_target_package(
+        target_manifest_content,
+        manifest_path=target_manifest_path,
+        arrays_path=target_arrays_path,
+        arrays_record=target_arrays_record,
+        schedule_path=schedule_path,
+        schedule_record=schedule_record,
     )
     observability = _mapping(
         target_evidence.get("background_observable_by_event"),

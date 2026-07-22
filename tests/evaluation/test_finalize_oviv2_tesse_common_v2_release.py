@@ -365,8 +365,13 @@ def test_release_uses_one_summary_snapshot_for_validation_and_metrics(
         *,
         artifact_root: Path,
         external_sources: dict[str, Path],
-    ) -> tuple[dict[str, object], dict[str, object], dict[str, object]]:
-        raw, canonical, raw_record = original(
+    ) -> tuple[
+        dict[str, object],
+        dict[str, object],
+        dict[str, object],
+        dict[str, tuple[int, int]],
+    ]:
+        raw, canonical, raw_record, identities = original(
             path,
             artifact_root=artifact_root,
             external_sources=external_sources,
@@ -379,7 +384,7 @@ def test_release_uses_one_summary_snapshot_for_validation_and_metrics(
         changed = json.loads(path.read_text(encoding="utf-8"))
         changed["metrics"]["current_miou"] = 0.1
         _write_json(path, changed)
-        return raw, canonical, raw_record
+        return raw, canonical, raw_record, identities
 
     monkeypatch.setattr(
         release_module,
@@ -410,3 +415,90 @@ def test_release_uses_one_summary_snapshot_for_validation_and_metrics(
         assert payload["scene_metrics"][scene]["current_miou"] != (
             on_disk_metric
         )
+
+
+def test_release_rejects_captured_run_local_inode_reuse_after_path_split(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    freeze = _fixture(tmp_path)
+    apartment_source = (
+        tmp_path / "apartment/run1/temporal/checkpoints/00000100/entities.jsonl"
+    )
+    office_source = (
+        tmp_path / "office/run1/temporal/checkpoints/00000100/entities.jsonl"
+    )
+    office_source.unlink()
+    os.link(apartment_source, office_source)
+    original = release_module.capture_and_canonicalize_summary
+
+    def split_after_capture(
+        path: Path,
+        *,
+        artifact_root: Path,
+        external_sources: dict[str, Path],
+    ) -> tuple[
+        dict[str, object],
+        dict[str, object],
+        dict[str, object],
+        dict[str, tuple[int, int]],
+    ]:
+        captured = original(
+            path,
+            artifact_root=artifact_root,
+            external_sources=external_sources,
+        )
+        if artifact_root == tmp_path / "office/run1":
+            content = office_source.read_bytes()
+            office_source.unlink()
+            office_source.write_bytes(content)
+        return captured
+
+    monkeypatch.setattr(
+        release_module,
+        "capture_and_canonicalize_summary",
+        split_after_capture,
+    )
+
+    with pytest.raises(ValueError, match="run-local sources must be independent files"):
+        finalize_oviv2_common_v2_release(
+            freeze,
+            run_id="captured-inode-reuse",
+            output=tmp_path / "result.json",
+        )
+
+
+def test_release_does_not_reopen_target_manifest_after_stable_capture(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    freeze = _fixture(tmp_path)
+    target_manifest = tmp_path / "targets/manifest.json"
+    original = release_module.pinned_common._validate_target_package
+
+    def mutate_before_pinned_validation(
+        manifest_record: dict[str, object],
+        arrays_record: dict[str, object],
+        schedule_record: dict[str, object],
+    ) -> dict[str, object]:
+        changed = json.loads(target_manifest.read_text(encoding="utf-8"))
+        changed["target_arrays"]["arrays"][
+            "apartment_event_01.revealed_background"
+        ]["element_count"] = 4
+        _write_json(target_manifest, changed)
+        return original(manifest_record, arrays_record, schedule_record)
+
+    monkeypatch.setattr(
+        release_module.pinned_common,
+        "_validate_target_package",
+        mutate_before_pinned_validation,
+    )
+
+    result = finalize_oviv2_common_v2_release(
+        freeze,
+        run_id="target-single-snapshot",
+        output=tmp_path / "result.json",
+    )
+
+    payload = json.loads(result.read_text(encoding="utf-8"))
+    assert payload["target_package"]["manifest"]["sha256"] == (
+        hashlib.sha256(target_manifest.read_bytes()).hexdigest()
+    )

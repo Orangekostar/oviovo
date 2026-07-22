@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -20,7 +21,7 @@ from scripts.evaluation.finalize_tesse_t2 import (
     _absolute_lexical,
     _atomic_json_no_replace,
     _open_directory_no_symlinks,
-    _stable_regular_file,
+    _open_regular_no_symlinks,
 )
 from src.evaluation.json_contracts import loads_strict
 
@@ -30,6 +31,7 @@ EXTERNAL_SOURCE_ROLES = frozenset(
     {"target_manifest", "target_arrays", "aliases", "label_space", "evaluator"}
 )
 _CHECKPOINT_ROLE = re.compile(r"^(snapshot|entities)\.(\d{6})$")
+FileIdentity = tuple[int, int]
 
 
 def _direct_directory(path: Path, *, label: str) -> Path:
@@ -56,12 +58,69 @@ def _expected_internal_path(role: str, *, artifact_root: Path) -> Path:
     return artifact_root / relative
 
 
+def _stable_regular_file_with_identity(
+    path: Path, *, label: str, capture: bool
+) -> tuple[str, int, bytes | None, FileIdentity]:
+    descriptor, identities = _open_regular_no_symlinks(path, label=label)
+    chunks: list[bytes] | None = [] if capture else None
+    digest = hashlib.sha256()
+    byte_count = 0
+    try:
+        before = os.fstat(descriptor)
+        snapshot = (
+            before.st_dev,
+            before.st_ino,
+            before.st_size,
+            before.st_mtime_ns,
+            before.st_ctime_ns,
+        )
+        while True:
+            chunk = os.read(descriptor, 1024 * 1024)
+            if not chunk:
+                break
+            digest.update(chunk)
+            byte_count += len(chunk)
+            if chunks is not None:
+                chunks.append(chunk)
+        after = os.fstat(descriptor)
+        if byte_count != before.st_size or (
+            after.st_dev,
+            after.st_ino,
+            after.st_size,
+            after.st_mtime_ns,
+            after.st_ctime_ns,
+        ) != snapshot:
+            raise ValueError(f"{label} changed while it was read")
+    finally:
+        os.close(descriptor)
+
+    reopened, reopened_identities = _open_regular_no_symlinks(path, label=label)
+    try:
+        current = os.fstat(reopened)
+        if reopened_identities != identities or (
+            current.st_dev,
+            current.st_ino,
+            current.st_size,
+            current.st_mtime_ns,
+            current.st_ctime_ns,
+        ) != snapshot:
+            raise ValueError(f"{label} changed while it was read")
+    finally:
+        os.close(reopened)
+    return (
+        digest.hexdigest(),
+        byte_count,
+        None if chunks is None else b"".join(chunks),
+        (snapshot[0], snapshot[1]),
+    )
+
+
 def _canonical_source(
     role: str,
     declaration: object,
     *,
     expected_path: Path,
-) -> tuple[dict[str, object], str]:
+) -> tuple[dict[str, object], str, FileIdentity]:
     if not isinstance(declaration, Mapping) or set(declaration) != {
         "path",
         "sha256",
@@ -77,7 +136,7 @@ def _canonical_source(
     expected = _absolute_lexical(expected_path)
     if observed_path != expected:
         raise ValueError(f"{role} path mismatch")
-    digest, byte_count, _ = _stable_regular_file(
+    digest, byte_count, _, identity = _stable_regular_file_with_identity(
         observed_path, label=f"{role} source", capture=False
     )
     declared_digest = declaration.get("sha256")
@@ -98,6 +157,7 @@ def _canonical_source(
             "byte_count": byte_count,
         },
         raw_path,
+        identity,
     )
 
 
@@ -107,7 +167,7 @@ def canonicalize_summary(
     artifact_root: Path,
     external_sources: Mapping[str, Path],
 ) -> dict[str, Any]:
-    _, canonical, _ = capture_and_canonicalize_summary(
+    _, canonical, _, _ = capture_and_canonicalize_summary(
         summary,
         artifact_root=artifact_root,
         external_sources=external_sources,
@@ -120,13 +180,20 @@ def capture_and_canonicalize_summary(
     *,
     artifact_root: Path,
     external_sources: Mapping[str, Path],
-) -> tuple[dict[str, Any], dict[str, Any], dict[str, object]]:
+) -> tuple[
+    dict[str, Any],
+    dict[str, Any],
+    dict[str, object],
+    dict[str, FileIdentity],
+]:
     root = _direct_directory(artifact_root, label="artifact root")
     expected_summary = root / "evaluation/summary.json"
     if _absolute_lexical(summary) != expected_summary:
         raise ValueError("summary path must be artifact_root/evaluation/summary.json")
-    raw_digest, raw_byte_count, raw_bytes = _stable_regular_file(
+    raw_digest, raw_byte_count, raw_bytes, raw_identity = (
+        _stable_regular_file_with_identity(
         expected_summary, label="raw common-v2 summary", capture=True
+        )
     )
     assert raw_bytes is not None
     try:
@@ -180,6 +247,7 @@ def capture_and_canonicalize_summary(
         raise ValueError("raw common-v2 source roles are incomplete or inconsistent")
 
     canonical_sources: dict[str, dict[str, object]] = {}
+    source_identities: dict[str, FileIdentity] = {}
     physical_paths: list[str] = []
     for raw_role, declaration in sources.items():
         role = str(raw_role)
@@ -188,10 +256,11 @@ def capture_and_canonicalize_summary(
             if role in EXTERNAL_SOURCE_ROLES
             else _expected_internal_path(role, artifact_root=root)
         )
-        canonical, physical_path = _canonical_source(
+        canonical, physical_path, identity = _canonical_source(
             role, declaration, expected_path=expected_path
         )
         canonical_sources[role] = canonical
+        source_identities[role] = identity
         physical_paths.append(physical_path)
 
     canonical_payload = copy.deepcopy(dict(payload))
@@ -213,6 +282,7 @@ def capture_and_canonicalize_summary(
         dict(payload),
         canonical_payload,
         {"sha256": raw_digest, "byte_count": raw_byte_count},
+        {"raw_summary": raw_identity, **source_identities},
     )
 
 
