@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import builtins
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 import gc
@@ -384,6 +385,59 @@ def _deterministic_files(root: Path) -> dict[str, bytes]:
         for path in sorted(root.rglob("*"))
         if path.is_file() and path.name not in {"run_provenance.json", "timing.json"}
     }
+
+
+def test_production_provenance_treats_torch_loader_oserror_as_unavailable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original_import = builtins.__import__
+
+    def import_with_broken_torch(
+        name: str,
+        globals: object = None,
+        locals: object = None,
+        fromlist: tuple[str, ...] = (),
+        level: int = 0,
+    ) -> object:
+        if name == "torch":
+            raise OSError("libtorch_global_deps.so is unavailable")
+        return original_import(name, globals, locals, fromlist, level)
+
+    monkeypatch.setattr(builtins, "__import__", import_with_broken_torch)
+
+    provenance = runner_module._production_provenance()
+
+    assert provenance["torch_cuda_version"] == "unavailable"
+    assert provenance["cudnn_version"] is None
+
+
+def test_provenance_is_captured_once_before_frame_processing_and_reused(
+    tmp_path: Path,
+) -> None:
+    config = _write_config(tmp_path)
+    calls: list[str] = []
+    dependencies = _dependencies(calls)
+
+    def provenance() -> Mapping[str, object]:
+        calls.append("provenance")
+        return {"hostname": "captured-host", "marker": "captured-once"}
+
+    dependencies = RunnerDependencies(
+        dataset_factory=dependencies.dataset_factory,
+        cache_loader_factory=dependencies.cache_loader_factory,
+        runtime_factory=dependencies.runtime_factory,
+        checkpoint_exporter=dependencies.checkpoint_exporter,
+        provenance_factory=provenance,
+    )
+
+    run(config, tmp_path / "run", dependencies=dependencies)
+
+    assert calls[0] == "provenance"
+    assert calls.count("provenance") == 1
+    captured = json.loads(
+        (tmp_path / "run/run_provenance.json").read_text(encoding="utf-8")
+    )
+    assert captured["marker"] == "captured-once"
 
 
 def test_five_frame_end_to_end_is_byte_identical(tmp_path: Path) -> None:

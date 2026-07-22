@@ -634,6 +634,7 @@ def run(
     try:
         if dependencies is None:
             dependencies = _production_dependencies()
+        production_provenance = dict(dependencies.provenance_factory())
         dataset = dependencies.dataset_factory(config)
         if len(dataset) != frame_count:
             raise ValueError("dataset frame count does not match runner config")
@@ -966,7 +967,7 @@ def run(
         _write_json(
             staging / "run_provenance.json",
             {
-                **dict(dependencies.provenance_factory()),
+                **production_provenance,
                 "config_path": str(source_config),
                 "output": str(destination),
                 "python": platform.python_version(),
@@ -1681,7 +1682,7 @@ def _production_provenance() -> Mapping[str, Any]:
 
         torch_cuda_version = torch.version.cuda or "unavailable"
         cudnn_version = torch.backends.cudnn.version()
-    except (AttributeError, ImportError, RuntimeError):
+    except (AttributeError, ImportError, OSError, RuntimeError):
         torch_cuda_version = "unavailable"
         cudnn_version = None
 
