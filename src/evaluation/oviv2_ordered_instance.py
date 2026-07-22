@@ -10,6 +10,7 @@ import numpy as np
 
 from src.evaluation.oviv2_instance_head import (
     ProjectedInstanceHypothesis,
+    _POPCOUNT_UINT8,
     deduplicate_projected_hypotheses,
 )
 from src.evaluation.oviv2_replica import (
@@ -78,6 +79,25 @@ def _validate_unique_ids(
     identifiers = [item.hypothesis_id for item in (*primary, *suffix)]
     if len(identifiers) != len(set(identifiers)):
         raise ValueError("primary and suffix must not share hypothesis IDs")
+
+
+def _pack_mask(item: ProjectedInstanceHypothesis) -> tuple[np.ndarray, int]:
+    return np.packbits(item.mask, bitorder="big"), int(np.sum(item.mask))
+
+
+def _packed_iou(
+    left_packed: np.ndarray,
+    left_size: int,
+    right_packed: np.ndarray,
+    right_size: int,
+) -> float:
+    intersection = int(
+        _POPCOUNT_UINT8[np.bitwise_and(left_packed, right_packed)].sum(
+            dtype=np.int64
+        )
+    )
+    union = left_size + right_size - intersection
+    return float(intersection / union) if union else 1.0
 
 
 def _semantic_id_set(values: set[int]) -> set[int]:
@@ -161,9 +181,13 @@ def compose_ordered_predictions(
     suffix_values = _validated_predictions(suffix, "suffix")
     _validate_equal_mask_lengths(primary_values, suffix_values)
     _validate_unique_ids(primary_values, suffix_values)
+    packed_masks = {
+        item.hypothesis_id: _pack_mask(item)
+        for item in (*primary_values, *suffix_values)
+    }
 
     supported_primary = tuple(
-        item for item in primary_values if int(np.sum(item.mask)) >= minimum
+        item for item in primary_values if packed_masks[item.hypothesis_id][1] >= minimum
     )
     accepted_primary = deduplicate_projected_hypotheses(
         supported_primary, primary_threshold
@@ -175,34 +199,39 @@ def compose_ordered_predictions(
         raise ValueError("minimum primary score must be positive")
 
     supported_suffix = [
-        item for item in suffix_values if int(np.sum(item.mask)) >= minimum
+        item for item in suffix_values if packed_masks[item.hypothesis_id][1] >= minimum
     ]
     kept_suffix: list[ProjectedInstanceHypothesis] = []
+    screened_masks = [
+        packed_masks[item.hypothesis_id] for item in accepted_primary
+    ]
     rejected_suffix_ids: list[str] = []
     for candidate in sorted(
         supported_suffix, key=lambda item: (-item.score, item.hypothesis_id)
     ):
+        candidate_packed, candidate_size = packed_masks[candidate.hypothesis_id]
         if any(
-            projected_iou(candidate, accepted) >= suffix_threshold
-            for accepted in (*accepted_primary, *kept_suffix)
+            _packed_iou(candidate_packed, candidate_size, accepted_packed, accepted_size)
+            >= suffix_threshold
+            for accepted_packed, accepted_size in screened_masks
         ):
             rejected_suffix_ids.append(candidate.hypothesis_id)
         else:
             kept_suffix.append(candidate)
+            screened_masks.append((candidate_packed, candidate_size))
 
     if kept_suffix:
         maximum_suffix_score = max(item.score for item in kept_suffix)
         if maximum_suffix_score <= 0.0:
             raise ValueError("kept suffix scores must include a positive value")
         ceiling = float(np.nextafter(minimum_primary_score, 0.0))
-        scale = ceiling / maximum_suffix_score
         scaled_suffix = tuple(
             ProjectedInstanceHypothesis(
                 item.hypothesis_id,
                 item.entity_id,
                 item.semantic_id,
                 item.kind,
-                item.score * scale,
+                min(ceiling * (item.score / maximum_suffix_score), ceiling),
                 item.mask,
             )
             for item in kept_suffix

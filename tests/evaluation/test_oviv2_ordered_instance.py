@@ -127,6 +127,70 @@ def test_iou_and_fingerprint_are_ordered_lossless_audit_values() -> None:
     )
 
 
+def test_fingerprint_has_a_stable_golden_non_byte_aligned_serialization() -> None:
+    api = _api()
+    predictions = (
+        _hypothesis("gold:a", [1, 0, 1, 0, 0, 0, 0, 1, 1], score=0.5),
+        _hypothesis("gold:b", [0, 1, 0, 1, 1, 0, 0, 0, 1], score=0.75),
+    )
+
+    assert api["fingerprint"](predictions) == (
+        "4a297ac6afbeb5b523e12882b34f686bc82854880b910842fd19662bf0e02f6e"
+    )
+
+
+@pytest.mark.parametrize(
+    ("primary_score", "suffix_score"),
+    (
+        (0.22035987277261138, 0.76152751963645),
+        (0.7, 0.6724338613511783),
+    ),
+)
+def test_composition_scales_exact_float_scores_below_the_primary_ceiling(
+    primary_score: float,
+    suffix_score: float,
+) -> None:
+    api = _api()
+    composition = api["compose"](
+        (_hypothesis("p", [1, 1, 0, 0, 0, 0], score=primary_score),),
+        (
+            _hypothesis("vc:max", [0, 0, 1, 1, 0, 0], score=suffix_score),
+            _hypothesis("vc:lower", [0, 0, 0, 0, 1, 1], score=suffix_score / 2.0),
+        ),
+        min_instance_vertices=2,
+        primary_deduplication_iou=0.7,
+        suffix_deduplication_iou=0.9,
+    )
+
+    assert composition.suffix[0].score <= np.nextafter(primary_score, 0.0)
+    assert composition.suffix[0].score < primary_score
+    assert 0.0 < composition.suffix[1].score < composition.suffix[0].score
+
+
+def test_composition_uses_packed_suffix_iou_and_preserves_partial_bytes(monkeypatch) -> None:
+    import src.evaluation.oviv2_ordered_instance as ordered_instance
+
+    api = _api()
+
+    def fail_if_called(*_args, **_kwargs):
+        raise AssertionError("composition must not allocate boolean IoU arrays")
+
+    monkeypatch.setattr(ordered_instance, "projected_iou", fail_if_called)
+    composition = api["compose"](
+        (_hypothesis("p", [0, 0, 0, 0, 0, 0, 0, 0, 0, 1], score=0.8),),
+        (
+            _hypothesis("vc:duplicate", [0, 0, 0, 0, 0, 0, 0, 0, 0, 1], score=0.7),
+            _hypothesis("vc:novel", [0, 0, 0, 0, 0, 0, 0, 0, 1, 0], score=0.6),
+        ),
+        min_instance_vertices=1,
+        primary_deduplication_iou=0.7,
+        suffix_deduplication_iou=0.9,
+    )
+
+    assert composition.ordered_ids == ("p", "vc:novel")
+    assert composition.rejected_suffix_ids == ("vc:duplicate",)
+
+
 def test_composition_rejects_invalid_inputs_and_unseparable_primary_or_suffix() -> None:
     api = _api()
     good = _hypothesis("p", [1, 1, 0, 0, 0, 0], score=0.8)
@@ -219,6 +283,31 @@ def test_ordered_evaluation_does_not_reorder_and_rejects_unsupported_or_duplicat
     with pytest.raises(ValueError, match="duplicate"):
         api["evaluate"]((ordered[0], _hypothesis("late-score", [0, 0, 0, 1, 1, 1])),
                         ground_truth, instance_semantic_ids={4}, min_instance_vertices=2)
+
+
+def test_ordered_evaluation_consumes_the_given_prediction_order_for_ap() -> None:
+    api = _api()
+    ground_truth = _ground_truth()
+    false_positive = _hypothesis("fp", [0, 0, 1, 1, 0, 0], score=0.9)
+    true_positive = _hypothesis("tp", [1, 1, 1, 0, 0, 0], score=0.1)
+
+    fp_then_tp = api["evaluate"](
+        (false_positive, true_positive), ground_truth,
+        instance_semantic_ids={4}, min_instance_vertices=2,
+    )
+    tp_then_fp = api["evaluate"](
+        (true_positive, false_positive), ground_truth,
+        instance_semantic_ids={4}, min_instance_vertices=2,
+    )
+    expected_fp_then_tp = _average_precision(
+        np.asarray([0.0, 1.0]), np.asarray([1.0, 0.0]), 2
+    )
+    expected_tp_then_fp = _average_precision(
+        np.asarray([1.0, 0.0]), np.asarray([0.0, 1.0]), 2
+    )
+
+    assert fp_then_tp["ap50"] == expected_fp_then_tp == pytest.approx(0.25)
+    assert tp_then_fp["ap50"] == expected_tp_then_fp == pytest.approx(0.5)
 
 
 def test_ordered_evaluation_validates_ground_truth_masks_and_semantic_ids() -> None:
