@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import hashlib
 import json
 import os
@@ -14,10 +15,13 @@ import pytest
 import scripts.precompute_oviv2_dense_semantics as precompute_module
 from scripts.precompute_oviv2_dense_semantics import (
     _atomic_json,
+    _load_rgb_frame,
     _load_json,
+    _preflight,
     parse_args,
     run,
 )
+from src.datasets.tesse_cd import TesseCdRgbdDataset
 from src.oviv2.dense_semantics import (
     DenseSemanticProvenance,
     load_dense_frame,
@@ -86,8 +90,8 @@ classes_raw = classes_path.read_bytes()
 classes = json.loads(classes_raw)["classes"]
 vocabulary_sha256 = hashlib.sha256(classes_raw).hexdigest()
 mode = os.environ.get("FAKE_MODE", "ok")
-sample_stride = 1 if mode == "bool_infer_stride" else 2
-top_k = 2
+sample_stride = 1 if mode == "bool_infer_stride" else (4 if mode == "tesse" else 2)
+top_k = 4 if mode == "tesse" else 2
 infer_count = 0
 provenance = {
     "backend": "fake-radseg",
@@ -153,13 +157,20 @@ for line in sys.stdin:
                     math.ceil(width / sample_stride),
                 )
                 class_ids = np.empty((*sampled, top_k), dtype=np.int64)
-                class_ids[..., 0] = 1
-                class_ids[..., 1] = 2
                 probabilities = np.empty((*sampled, top_k), dtype=np.float32)
-                probabilities[..., 0] = 0.75
-                probabilities[..., 1] = 0.20
+                for top_index in range(top_k):
+                    class_ids[..., top_index] = top_index + 1
+                    probabilities[..., top_index] = (
+                        [0.4, 0.3, 0.2, 0.1][top_index]
+                        if top_k == 4
+                        else [0.75, 0.20][top_index]
+                    )
                 entropy = np.full(sampled, 0.5, dtype=np.float32)
-                margin = np.full(sampled, 0.55, dtype=np.float32)
+                margin = np.full(
+                    sampled,
+                    0.1 if top_k == 4 else 0.55,
+                    dtype=np.float32,
+                )
                 blocks = {
                     "class_ids": block(class_ids),
                     "probabilities": block(probabilities),
@@ -345,6 +356,225 @@ def _write_scannet_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
     return config, classes_json, log_path
 
 
+TESSE_CLASSES = [
+    "Fridge",
+    "Books",
+    "Chair",
+    "Vase",
+    "Couch",
+    "Drawer",
+    "Objects",
+    "Table",
+    "Bin",
+    "Humans",
+]
+TESSE_OBJECT_IDS = [1, 2, 5, 6, 7, 9, 10, 16, 18, 20]
+TESSE_CAMERA = {
+    "cx": 360.0,
+    "cy": 240.0,
+    "fx": 415.69219381653056,
+    "fy": 415.69219381653056,
+    "h": 480,
+    "scale": 1000.0,
+    "w": 720,
+}
+
+
+def _tesse_export_digest(dataset_root: Path, scene_root: Path) -> tuple[str, int]:
+    paths = [
+        *scene_root.joinpath("results").glob("frame*.jpg"),
+        *scene_root.joinpath("results").glob("depth*.png"),
+        scene_root / "traj.txt",
+        scene_root / "timestamps.csv",
+        dataset_root / "cam_params.json",
+    ]
+    digest = hashlib.sha256()
+    for path in sorted(paths, key=lambda item: str(item.relative_to(dataset_root))):
+        relative = str(path.relative_to(dataset_root))
+        file_hash = hashlib.sha256(path.read_bytes()).hexdigest()
+        digest.update(relative.encode("utf-8") + b"\0" + file_hash.encode("ascii") + b"\n")
+    return digest.hexdigest(), len(paths)
+
+
+def _write_tesse_fixture(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> tuple[Path, Path, Path]:
+    monkeypatch.setitem(TesseCdRgbdDataset.EXPECTED_FRAMES, "apartment", 2)
+    dataset_root = tmp_path / "rgbd_v1"
+    scene_root = dataset_root / "apartment"
+    results = scene_root / "results"
+    results.mkdir(parents=True)
+    camera_path = dataset_root / "cam_params.json"
+    _write_json(camera_path, {"camera": TESSE_CAMERA})
+    timestamps = (4_204_107_999, 4_254_107_999)
+    for index in range(2):
+        Image.fromarray(
+            np.full((480, 720, 3), 20 + index, dtype=np.uint8),
+            mode="RGB",
+        ).save(results / f"frame{index:06d}.jpg", quality=95)
+        Image.fromarray(np.full((480, 720), 1000 + index, dtype=np.uint16)).save(
+            results / f"depth{index:06d}.png"
+        )
+    with (scene_root / "timestamps.csv").open(
+        "w", encoding="utf-8", newline=""
+    ) as handle:
+        writer = csv.writer(handle)
+        writer.writerow(("frame_index", "sensor_timestamp_ns", "relative_timestamp_ns"))
+        writer.writerow((0, timestamps[0], 0))
+        writer.writerow((1, timestamps[1], timestamps[1] - timestamps[0]))
+    pose = " ".join(str(value) for value in np.eye(4).reshape(-1))
+    (scene_root / "traj.txt").write_text(f"{pose}\n{pose}\n", encoding="utf-8")
+
+    source_manifest = tmp_path / "tesse_cd.json"
+    database_hash = "a" * 64
+    _write_json(
+        source_manifest,
+        {
+            "schema_version": 1,
+            "dataset": "TESSE-CD",
+            "camera": {
+                "width": 720,
+                "height": 480,
+                "fx": TESSE_CAMERA["fx"],
+                "fy": TESSE_CAMERA["fy"],
+                "cx": TESSE_CAMERA["cx"],
+                "cy": TESSE_CAMERA["cy"],
+            },
+            "sequences": {
+                "apartment": {
+                    "bag": {"database": {"sha256": database_hash}},
+                    "timeline": {"depth_frame_count": 2},
+                }
+            },
+        },
+    )
+    schedule = tmp_path / "schedule.json"
+    _write_json(
+        schedule,
+        {
+            "schema_version": 2,
+            "dataset": "TESSE-CD",
+            "manifest_id": "tesse_cd_causal_schedule_v2",
+            "source_manifest": {
+                "path": str(source_manifest),
+                "sha256": hashlib.sha256(source_manifest.read_bytes()).hexdigest(),
+            },
+            "scenes": {
+                "apartment": {
+                    "frame_count": 2,
+                    "first_depth_timestamp_ns": timestamps[0],
+                    "last_depth_timestamp_ns": timestamps[-1],
+                    "sources": {"database": {"sha256": database_hash}},
+                }
+            },
+        },
+    )
+    combined_hash, file_count = _tesse_export_digest(dataset_root, scene_root)
+    export = scene_root / "export_manifest.json"
+    _write_json(
+        export,
+        {
+            "schema_version": 1,
+            "dataset": "TESSE-CD",
+            "scene": "apartment",
+            "frame_count": 2,
+            "source_manifest": str(source_manifest),
+            "source_database_sha256": database_hash,
+            "combined_output_sha256": combined_hash,
+            "file_hash_count": file_count,
+        },
+    )
+    classes_json = tmp_path / "tesse_apartment.json"
+    _write_json(
+        classes_json,
+        {
+            "schema_version": 1,
+            "dataset": "TESSE-CD",
+            "scene": "apartment",
+            "classes": TESSE_CLASSES,
+            "object_semantic_ids": TESSE_OBJECT_IDS,
+            "unknown_semantic_id": 0,
+        },
+    )
+    worker = tmp_path / "fake_tesse_worker.py"
+    worker.write_text(FAKE_WORKER, encoding="utf-8")
+    log_path = tmp_path / "tesse_worker.jsonl"
+    benchmark = tmp_path / "oviv2_tesse_cd_cache.json"
+    _write_json(
+        benchmark,
+        {
+            "schema_version": 1,
+            "manifest_id": "oviv2_tesse_cd_cache_v1",
+            "dataset": "TESSE-CD",
+            "stage3_lineage_commit": "47962fbd9f363c0696cc5016f8ab42f83a3bf7e5",
+            "camera": {
+                "path": str(camera_path),
+                "sha256": hashlib.sha256(camera_path.read_bytes()).hexdigest(),
+                "width": 720,
+                "height": 480,
+                "fx": TESSE_CAMERA["fx"],
+                "fy": TESSE_CAMERA["fy"],
+                "cx": TESSE_CAMERA["cx"],
+                "cy": TESSE_CAMERA["cy"],
+                "depth_scale": 1000.0,
+            },
+            "source_manifest": {
+                "path": str(source_manifest),
+                "sha256": hashlib.sha256(source_manifest.read_bytes()).hexdigest(),
+            },
+            "schedule_manifest": {
+                "path": str(schedule),
+                "sha256": hashlib.sha256(schedule.read_bytes()).hexdigest(),
+            },
+            "scenes": {
+                "apartment": {
+                    "root": str(scene_root),
+                    "frame_count": 2,
+                    "image_shape": [480, 720],
+                    "depth_unit": "millimeter",
+                    "source_depth_dtype": "uint16",
+                    "pose_convention": "camera_to_world",
+                    "source_frame_ids": {"start": 0, "stop_exclusive": 2, "stride": 1},
+                    "export_manifest": {
+                        "path": str(export),
+                        "sha256": hashlib.sha256(export.read_bytes()).hexdigest(),
+                        "combined_output_sha256": combined_hash,
+                        "file_hash_count": file_count,
+                    },
+                    "vocabulary": {
+                        "json_path": str(classes_json),
+                        "json_sha256": hashlib.sha256(classes_json.read_bytes()).hexdigest(),
+                    },
+                }
+            },
+        },
+    )
+    config = tmp_path / "tesse_dense.json"
+    _write_json(
+        config,
+        {
+            "scene": "apartment",
+            "dataset_root": str(scene_root),
+            "manifest": str(benchmark),
+            "num_frames": 2,
+            "stage3_lineage_commit": "47962fbd9f363c0696cc5016f8ab42f83a3bf7e5",
+            "dense_semantics": {
+                "classes_json": str(classes_json),
+                "worker_command": [sys.executable, str(worker)],
+                "worker_cwd": str(tmp_path),
+                "request_timeout_sec": 5.0,
+                "worker_env": {
+                    "FAKE_CLASSES_JSON": str(classes_json),
+                    "FAKE_LOG": str(log_path),
+                    "FAKE_MODE": "tesse",
+                },
+            },
+        },
+    )
+    return config, classes_json, benchmark
+
+
 def _args(config: Path, output: Path, *, num_frames: int = 2, resume: bool = False):
     values = [
         "--config",
@@ -482,6 +712,135 @@ def test_precompute_supports_scannet200_explicit_source_frames(tmp_path: Path) -
     assert manifest["vocabulary_sha256"] == hashlib.sha256(
         classes_json.read_bytes()
     ).hexdigest()
+
+
+def test_tesse_preflight_uses_checked_scene_contract_without_materializing_rgb(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config, classes_json, _ = _write_tesse_fixture(tmp_path, monkeypatch)
+
+    preflight = _preflight(config, 2, _args(config, tmp_path / "dense"))
+
+    assert isinstance(preflight.dataset, TesseCdRgbdDataset)
+    assert not hasattr(preflight, "rgb_frames")
+    assert preflight.dataset_name == "TESSE-CD"
+    assert preflight.scene == "apartment"
+    assert preflight.source_frame_ids == (0, 1)
+    assert preflight.image_shape == (480, 720)
+    assert preflight.classes == tuple(TESSE_CLASSES)
+    assert preflight.object_semantic_ids == tuple(TESSE_OBJECT_IDS)
+    assert preflight.vocabulary_sha256 == hashlib.sha256(
+        classes_json.read_bytes()
+    ).hexdigest()
+
+
+def test_tesse_load_rgb_frame_streams_only_requested_rgb_without_depth_decode(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config, _, _ = _write_tesse_fixture(tmp_path, monkeypatch)
+    preflight = _preflight(config, 2, _args(config, tmp_path / "dense"))
+    converted: list[str | None] = []
+    original_convert = Image.Image.convert
+
+    def tracked_convert(image, *args, **kwargs):
+        converted.append(getattr(image, "filename", None))
+        return original_convert(image, *args, **kwargs)
+
+    def reject_depth_load(self, *args, **kwargs):
+        raise AssertionError("streaming RGB must not decode depth")
+
+    monkeypatch.setattr(Image.Image, "convert", tracked_convert)
+    monkeypatch.setattr(PngImagePlugin.PngImageFile, "load", reject_depth_load)
+
+    rgb = _load_rgb_frame(preflight.dataset, 1)
+
+    assert rgb.shape == (480, 720, 3)
+    assert rgb.dtype == np.uint8
+    assert len(converted) == 1
+    assert converted[0] is not None and converted[0].endswith("frame000001.jpg")
+
+
+def test_tesse_precompute_preserves_frozen_radseg_output_contract(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config, _, _ = _write_tesse_fixture(tmp_path, monkeypatch)
+    output = tmp_path / "dense"
+
+    manifest = run(_args(config, output, num_frames=1))
+    frame = load_dense_frame(
+        output / "frame000000.npz",
+        expected_sha256=manifest["cache_files_sha256"]["frame000000.npz"],
+    )
+
+    assert manifest["class_count"] == 10
+    assert manifest["sample_stride"] == 4
+    assert manifest["top_k"] == 4
+    assert frame.class_ids.shape == (120, 180, 4)
+    assert frame.probabilities.shape == (120, 180, 4)
+    assert frame.entropy.shape == (120, 180)
+    assert frame.margin.shape == (120, 180)
+
+
+@pytest.mark.parametrize(
+    ("binding_path", "field", "bad_value", "message"),
+    [
+        (("camera",), "fx", 400.0, "camera"),
+        (("schedule_manifest",), "sha256", "0" * 64, "schedule"),
+        (("scenes", "apartment", "export_manifest"), "sha256", "0" * 64, "export"),
+        (
+            ("scenes", "apartment", "source_frame_ids"),
+            "stride",
+            2,
+            "source frame",
+        ),
+    ],
+)
+def test_tesse_preflight_rejects_drift_from_checked_bindings(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    binding_path: tuple[str, ...],
+    field: str,
+    bad_value: object,
+    message: str,
+) -> None:
+    config, _, benchmark_path = _write_tesse_fixture(tmp_path, monkeypatch)
+    benchmark = json.loads(benchmark_path.read_text(encoding="utf-8"))
+    binding = benchmark
+    for key in binding_path:
+        binding = binding[key]
+    binding[field] = bad_value
+    _write_json(benchmark_path, benchmark)
+
+    with pytest.raises(ValueError, match=message):
+        _preflight(config, 1, _args(config, tmp_path / "dense", num_frames=1))
+
+
+def test_checked_tesse_dense_configs_are_stage3_only() -> None:
+    expected = {"apartment": 1745, "office": 4346}
+    for scene, frame_count in expected.items():
+        path = (
+            Path(__file__).resolve().parents[2]
+            / f"configs/oviv2_tesse_{scene}_dense_stage3.json"
+        )
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        assert payload == {
+            "scene": scene,
+            "dataset_root": (
+                f"/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/{scene}"
+            ),
+            "manifest": "configs/evaluation/manifests/oviv2_tesse_cd_cache.json",
+            "num_frames": frame_count,
+            "stage3_lineage_commit": "47962fbd9f363c0696cc5016f8ab42f83a3bf7e5",
+        }
+        serialized = json.dumps(payload, sort_keys=True).lower()
+        assert all(token not in serialized for token in ("stage4", "route3", "scannet200"))
+        assert all(
+            token not in serialized
+            for token in ("ground_truth", "prediction", "target")
+        )
 
 
 def test_cli_entrypoint_uses_configured_real_worker(tmp_path: Path) -> None:

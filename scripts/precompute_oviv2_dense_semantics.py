@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Precompute immutable dense semantic probability caches for OVIV2 Replica."""
+"""Precompute immutable dense semantic probability caches for OVIV2 RGB-D datasets."""
 
 from __future__ import annotations
 
@@ -28,6 +28,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from src.datasets.replica import ReplicaRoom0Dataset  # noqa: E402
 from src.datasets.scannet200 import ScanNet200Dataset  # noqa: E402
+from src.datasets.tesse_cd import TesseCdRgbdDataset  # noqa: E402
 from src.models.json_line_worker_client import JsonLineWorkerClient  # noqa: E402
 from src.oviv2.dense_semantics import (  # noqa: E402
     DenseSemanticFrame,
@@ -39,6 +40,7 @@ from src.oviv2.dense_semantics import (  # noqa: E402
 
 
 _METHOD = "OVIV2-dense-semantic-cache"
+_STAGE3_LINEAGE_COMMIT = "47962fbd9f363c0696cc5016f8ab42f83a3bf7e5"
 _MANIFEST_NAME = "dense_manifest.json"
 _MAX_JSON_BYTES = 8 * 1024 * 1024
 _MAX_ARRAY_BYTES = 512 * 1024 * 1024
@@ -106,11 +108,13 @@ class _WorkerConfig:
 
 @dataclass(frozen=True)
 class _Preflight:
+    dataset_name: str
     scene: str
-    rgb_frames: tuple[np.ndarray, ...]
+    dataset: ReplicaRoom0Dataset | ScanNet200Dataset | TesseCdRgbdDataset
     source_frame_ids: tuple[int, ...]
     image_shape: tuple[int, int]
     classes: tuple[str, ...]
+    object_semantic_ids: tuple[int, ...]
     vocabulary_sha256: str
     worker: _WorkerConfig
 
@@ -563,9 +567,29 @@ def _worker_config(
     )
 
 
-def _load_classes(path: Path, benchmark_classes: Sequence[str]) -> tuple[tuple[str, ...], str]:
+def _load_classes(
+    path: Path,
+    benchmark_classes: Sequence[str],
+    *,
+    object_semantic_ids: Sequence[int] = (),
+    scene: str | None = None,
+) -> tuple[tuple[str, ...], str]:
     payload = _load_json(path, "classes JSON")
-    if set(payload) - {"classes", "aliases"}:
+    allowed_keys = (
+        {
+            "alias_map",
+            "classes",
+            "dataset",
+            "label_space",
+            "object_semantic_ids",
+            "scene",
+            "schema_version",
+            "unknown_semantic_id",
+        }
+        if scene is not None
+        else {"classes", "aliases"}
+    )
+    if set(payload) - allowed_keys:
         raise ValueError("classes JSON contains unsupported keys")
     classes = payload.get("classes")
     if (
@@ -579,6 +603,15 @@ def _load_classes(path: Path, benchmark_classes: Sequence[str]) -> tuple[tuple[s
         )
     if classes != list(benchmark_classes):
         raise ValueError("classes JSON order does not match benchmark vocabulary")
+    if scene is not None:
+        if (
+            payload.get("schema_version") != 1
+            or payload.get("dataset") != "TESSE-CD"
+            or payload.get("scene") != scene
+            or payload.get("unknown_semantic_id") != 0
+            or payload.get("object_semantic_ids") != list(object_semantic_ids)
+        ):
+            raise ValueError("TESSE classes JSON does not match the frozen scene vocabulary")
     return tuple(classes), sha256_file(path)
 
 
@@ -595,24 +628,51 @@ def _indexed_replica_paths(directory: Path, pattern: str) -> dict[int, Path]:
     return indexed
 
 
-def _load_requested_rgb_frames(
-    dataset: ReplicaRoom0Dataset | ScanNet200Dataset,
+def _load_rgb_frame(
+    dataset: ReplicaRoom0Dataset | ScanNet200Dataset | TesseCdRgbdDataset,
+    cache_index: int,
+) -> np.ndarray:
+    if isinstance(dataset, TesseCdRgbdDataset):
+        rgb_path = dataset.records[cache_index].rgb_path
+        image_shape = (dataset.intrinsics.height, dataset.intrinsics.width)
+    elif isinstance(dataset, ScanNet200Dataset):
+        source_frame_id = dataset.frame_indices[cache_index]
+        rgb_path = dataset.root / "color" / f"{source_frame_id}.jpg"
+        image_shape = (dataset.intrinsics.height, dataset.intrinsics.width)
+    else:
+        frame_index = dataset.frame_indices[cache_index]
+        rgb_path = _indexed_replica_paths(dataset.rgb_dir, "frame*.jpg").get(frame_index)
+        if rgb_path is None:
+            raise ValueError(f"Replica frame {frame_index} is missing RGB data")
+        image_shape = (dataset.intrinsics.height, dataset.intrinsics.width)
+    with Image.open(rgb_path) as image:
+        if isinstance(dataset, ScanNet200Dataset):
+            image = image.convert("RGB").resize(
+                (image_shape[1], image_shape[0]),
+                Image.Resampling.BILINEAR,
+            )
+        else:
+            if image.size != (image_shape[1], image_shape[0]):
+                raise ValueError(f"dataset frame {cache_index} RGB image shape is inconsistent")
+            image = image.convert("RGB")
+        rgb = np.asarray(image, dtype=np.uint8)
+    if rgb.shape != (*image_shape, 3) or rgb.dtype != np.dtype(np.uint8):
+        raise ValueError(f"dataset frame {cache_index} has an invalid RGB image")
+    return np.ascontiguousarray(rgb)
+
+
+def _validate_replica_frame_headers(
+    dataset: ReplicaRoom0Dataset,
     requested_frames: int,
     image_shape: tuple[int, int],
-) -> tuple[np.ndarray, ...]:
-    if isinstance(dataset, ScanNet200Dataset):
-        frames = []
-        for cache_index in range(requested_frames):
-            rgb = dataset[cache_index].rgb
-            if rgb.shape != (*image_shape, 3) or rgb.dtype != np.dtype(np.uint8):
-                raise ValueError(f"dataset frame {cache_index} has an invalid RGB image")
-            frames.append(np.ascontiguousarray(rgb))
-        return tuple(frames)
+) -> None:
     rgb_paths = _indexed_replica_paths(dataset.rgb_dir, "frame*.jpg")
     depth_paths = _indexed_replica_paths(dataset.depth_dir, "depth*.png")
-    frames: list[np.ndarray] = []
     expected_size = (image_shape[1], image_shape[0])
-    for cache_index, frame_index in enumerate(dataset.frame_indices[:requested_frames]):
+    selected = dataset.frame_indices[:requested_frames]
+    if len(selected) != requested_frames:
+        raise ValueError("Replica dataset does not cover the requested frame prefix")
+    for cache_index, frame_index in enumerate(selected):
         rgb_path = rgb_paths.get(frame_index)
         depth_path = depth_paths.get(frame_index)
         if rgb_path is None or depth_path is None:
@@ -620,16 +680,131 @@ def _load_requested_rgb_frames(
         with Image.open(rgb_path) as image:
             if image.size != expected_size:
                 raise ValueError(f"dataset frame {cache_index} RGB image shape is inconsistent")
-            rgb = np.asarray(image.convert("RGB"), dtype=np.uint8)
         with Image.open(depth_path) as image:
             if image.size != expected_size:
                 raise ValueError(f"dataset frame {cache_index} depth image shape is inconsistent")
-        if rgb.shape != (*image_shape, 3) or rgb.dtype != np.dtype(np.uint8):
-            raise ValueError(f"dataset frame {cache_index} has an invalid RGB image")
-        frames.append(np.ascontiguousarray(rgb))
-    if len(frames) != requested_frames:
-        raise ValueError("Replica dataset does not cover the requested frame prefix")
-    return tuple(frames)
+
+
+def _checked_path(
+    binding: Mapping[str, Any],
+    role: str,
+    key: str = "path",
+    hash_key: str = "sha256",
+) -> Path:
+    path = _config_path(binding.get(key), f"{role}.{key}")
+    expected_hash = binding.get(hash_key)
+    if not isinstance(expected_hash, str) or _SHA256_PATTERN.fullmatch(expected_hash) is None:
+        raise ValueError(f"{role} hash must be a SHA-256 digest")
+    if sha256_file(path) != expected_hash:
+        raise ValueError(f"{role} hash mismatch")
+    return path
+
+
+def _tesse_scene_contract(
+    benchmark: Mapping[str, Any],
+    scene: str,
+    dataset_root: Path,
+    config_frames: int,
+) -> tuple[Mapping[str, Any], Path, tuple[str, ...], tuple[int, ...], Path, Path]:
+    if benchmark.get("manifest_id") != "oviv2_tesse_cd_cache_v1":
+        raise ValueError("TESSE cache manifest identity mismatch")
+    if benchmark.get("stage3_lineage_commit") != _STAGE3_LINEAGE_COMMIT:
+        raise ValueError("TESSE cache manifest Stage3 lineage mismatch")
+    scenes = benchmark.get("scenes")
+    if not isinstance(scenes, dict) or not isinstance(scenes.get(scene), dict):
+        raise ValueError("configured scene is absent from TESSE cache manifest")
+    scene_record = scenes[scene]
+    if scene_record.get("frame_count") != config_frames:
+        raise ValueError("config num_frames must match TESSE scene frame count")
+    locked_root = _config_path(scene_record.get("root"), "TESSE scene root")
+    if dataset_root.resolve() != locked_root.resolve():
+        raise ValueError("dataset_root must match the checked TESSE scene root")
+
+    source_ids = scene_record.get("source_frame_ids")
+    if source_ids != {"start": 0, "stop_exclusive": config_frames, "stride": 1}:
+        raise ValueError("TESSE source frame IDs must be the contiguous checked sequence")
+    if (
+        scene_record.get("image_shape") != [480, 720]
+        or scene_record.get("source_depth_dtype") != "uint16"
+        or scene_record.get("depth_unit") != "millimeter"
+        or scene_record.get("pose_convention") != "camera_to_world"
+    ):
+        raise ValueError("TESSE scene RGB-D contract mismatch")
+
+    camera = benchmark.get("camera")
+    if not isinstance(camera, dict) or {
+        "width": camera.get("width"),
+        "height": camera.get("height"),
+        "fx": camera.get("fx"),
+        "fy": camera.get("fy"),
+        "cx": camera.get("cx"),
+        "cy": camera.get("cy"),
+        "depth_scale": camera.get("depth_scale"),
+    } != {
+        "width": 720,
+        "height": 480,
+        "fx": 415.69219381653056,
+        "fy": 415.69219381653056,
+        "cx": 360.0,
+        "cy": 240.0,
+        "depth_scale": 1000.0,
+    }:
+        raise ValueError("TESSE camera contract mismatch")
+    _checked_path(camera, "TESSE camera")
+
+    schedule_binding = benchmark.get("schedule_manifest")
+    export_binding = scene_record.get("export_manifest")
+    source_binding = benchmark.get("source_manifest")
+    if not all(isinstance(item, dict) for item in (schedule_binding, export_binding, source_binding)):
+        raise ValueError("TESSE checked manifest bindings must be objects")
+    schedule_path = _checked_path(schedule_binding, "TESSE schedule")
+    export_path = _checked_path(export_binding, "TESSE export")
+    _checked_path(source_binding, "TESSE source manifest")
+    export = _load_json(export_path, "TESSE export manifest")
+    if (
+        export.get("combined_output_sha256")
+        != export_binding.get("combined_output_sha256")
+        or export.get("file_hash_count") != export_binding.get("file_hash_count")
+    ):
+        raise ValueError("TESSE export content binding mismatch")
+
+    vocabulary = scene_record.get("vocabulary")
+    if not isinstance(vocabulary, dict):
+        raise ValueError("TESSE scene vocabulary binding must be an object")
+    vocabulary_path = _checked_path(
+        vocabulary,
+        "TESSE vocabulary",
+        key="json_path",
+        hash_key="json_sha256",
+    )
+    vocabulary_payload = _load_json(vocabulary_path, "TESSE vocabulary")
+    classes = vocabulary_payload.get("classes")
+    object_ids = vocabulary_payload.get("object_semantic_ids")
+    if (
+        vocabulary_payload.get("schema_version") != 1
+        or vocabulary_payload.get("dataset") != "TESSE-CD"
+        or vocabulary_payload.get("scene") != scene
+        or not isinstance(classes, list)
+        or not classes
+        or any(not isinstance(value, str) or not value for value in classes)
+        or len(set(classes)) != len(classes)
+        or not isinstance(object_ids, list)
+        or len(object_ids) != len(classes)
+        or any(type(value) is not int or value <= 0 for value in object_ids)
+        or len(set(object_ids)) != len(object_ids)
+    ):
+        raise ValueError("TESSE scene vocabulary and object IDs are invalid")
+    expected_class_count = 10 if scene == "apartment" else 7 if scene == "office" else -1
+    if len(classes) != expected_class_count:
+        raise ValueError("TESSE scene class count mismatch")
+    return (
+        scene_record,
+        vocabulary_path,
+        tuple(classes),
+        tuple(object_ids),
+        export_path,
+        schedule_path,
+    )
 
 
 def _preflight(
@@ -652,34 +827,52 @@ def _preflight(
     if type(benchmark.get("schema_version")) is not int or benchmark["schema_version"] != 1:
         raise ValueError("benchmark manifest must use schema_version 1")
     dataset_name = benchmark.get("dataset")
-    if dataset_name not in {"Replica", "ScanNet200"}:
-        raise ValueError("benchmark manifest dataset must be Replica or ScanNet200")
-    scenes = benchmark.get("scenes")
-    matching_scenes = (
-        [item for item in scenes if isinstance(item, dict) and item.get("scene") == scene]
-        if isinstance(scenes, list)
-        else []
-    )
-    if len(matching_scenes) != 1:
-        raise ValueError("configured scene is absent from benchmark manifest")
-    scene_record = matching_scenes[0]
-    vocabulary = benchmark.get("vocabulary")
-    if not isinstance(vocabulary, dict):
-        raise ValueError("benchmark vocabulary must be an object")
-    benchmark_classes = vocabulary.get("classes")
-    if (
-        not isinstance(benchmark_classes, list)
-        or not benchmark_classes
-        or any(not isinstance(value, str) or not value for value in benchmark_classes)
-        or len(set(benchmark_classes)) != len(benchmark_classes)
-    ):
-        raise ValueError("benchmark vocabulary must contain unique non-empty classes")
-    source_path = vocabulary.get("source_path")
-    manifest_classes_json = (
-        _config_path(source_path, "benchmark vocabulary.source_path")
-        if source_path is not None
-        else None
-    )
+    if dataset_name not in {"Replica", "ScanNet200", "TESSE-CD"}:
+        raise ValueError(
+            "benchmark manifest dataset must be Replica, ScanNet200, or TESSE-CD"
+        )
+    object_semantic_ids: tuple[int, ...] = ()
+    export_path: Path | None = None
+    schedule_path: Path | None = None
+    if dataset_name == "TESSE-CD":
+        if config.get("stage3_lineage_commit") != _STAGE3_LINEAGE_COMMIT:
+            raise ValueError("TESSE dense config Stage3 lineage mismatch")
+        (
+            scene_record,
+            manifest_classes_json,
+            benchmark_classes,
+            object_semantic_ids,
+            export_path,
+            schedule_path,
+        ) = _tesse_scene_contract(benchmark, scene, dataset_root, config_frames)
+        source_ids = tuple(range(config_frames))
+    else:
+        scenes = benchmark.get("scenes")
+        matching_scenes = (
+            [item for item in scenes if isinstance(item, dict) and item.get("scene") == scene]
+            if isinstance(scenes, list)
+            else []
+        )
+        if len(matching_scenes) != 1:
+            raise ValueError("configured scene is absent from benchmark manifest")
+        scene_record = matching_scenes[0]
+        vocabulary = benchmark.get("vocabulary")
+        if not isinstance(vocabulary, dict):
+            raise ValueError("benchmark vocabulary must be an object")
+        benchmark_classes = vocabulary.get("classes")
+        if (
+            not isinstance(benchmark_classes, list)
+            or not benchmark_classes
+            or any(not isinstance(value, str) or not value for value in benchmark_classes)
+            or len(set(benchmark_classes)) != len(benchmark_classes)
+        ):
+            raise ValueError("benchmark vocabulary must contain unique non-empty classes")
+        source_path = vocabulary.get("source_path")
+        manifest_classes_json = (
+            _config_path(source_path, "benchmark vocabulary.source_path")
+            if source_path is not None
+            else None
+        )
     if dataset_name == "Replica":
         source_start = _strict_int(
             config.get("source_start"),
@@ -724,7 +917,7 @@ def _preflight(
         source_ids = tuple(
             source_start + index * source_stride for index in range(config_frames)
         )
-    else:
+    elif dataset_name == "ScanNet200":
         recorded_frames = _strict_int(
             scene_record.get("frame_count"), "manifest scene frame_count", positive=True
         )
@@ -743,10 +936,22 @@ def _preflight(
             raise ValueError("config num_frames must match ScanNet source_frame_ids")
 
     worker = _worker_config(config, args, manifest_classes_json)
-    classes, vocabulary_sha256 = _load_classes(worker.classes_json, benchmark_classes)
+    if (
+        dataset_name == "TESSE-CD"
+        and worker.classes_json.resolve(strict=False)
+        != manifest_classes_json.resolve(strict=False)
+    ):
+        raise ValueError("TESSE classes JSON must match the checked scene vocabulary path")
+    classes, vocabulary_sha256 = _load_classes(
+        worker.classes_json,
+        benchmark_classes,
+        object_semantic_ids=object_semantic_ids,
+        scene=scene if dataset_name == "TESSE-CD" else None,
+    )
     if dataset_name == "Replica":
-        dataset: ReplicaRoom0Dataset | ScanNet200Dataset = ReplicaRoom0Dataset(dataset_root)
-    else:
+        dataset: ReplicaRoom0Dataset | ScanNet200Dataset | TesseCdRgbdDataset
+        dataset = ReplicaRoom0Dataset(dataset_root)
+    elif dataset_name == "ScanNet200":
         frame_inputs = scene_record.get("frame_inputs")
         if not isinstance(frame_inputs, dict):
             raise ValueError("ScanNet scene frame_inputs must be an object")
@@ -771,6 +976,14 @@ def _preflight(
             expected_image_shape=image_shape,
             depth_scale=float(scene_record.get("depth_scale", 1000.0)),
         )
+    else:
+        assert export_path is not None and schedule_path is not None
+        dataset = TesseCdRgbdDataset(
+            dataset_root,
+            scene,
+            export_path,
+            schedule_path,
+        )
     if len(dataset) != config_frames:
         raise ValueError(
             f"dataset length {len(dataset)} does not match config num_frames {config_frames}"
@@ -779,19 +992,20 @@ def _preflight(
         _strict_int(dataset.intrinsics.height, "dataset image height", positive=True),
         _strict_int(dataset.intrinsics.width, "dataset image width", positive=True),
     )
-    rgb_frames = (
-        ()
-        if args.resume
-        else _load_requested_rgb_frames(dataset, requested_frames, image_shape)
-    )
+    if isinstance(dataset, ReplicaRoom0Dataset):
+        _validate_replica_frame_headers(dataset, requested_frames, image_shape)
     if dataset_name == "Replica" and source_ids[-1] >= selection_stop:
         raise ValueError("source frame IDs exceed manifest frame_selection")
+    if dataset_name == "TESSE-CD" and image_shape != (480, 720):
+        raise ValueError("TESSE dataset image shape must be exactly 480x720")
     return _Preflight(
+        dataset_name=dataset_name,
         scene=scene,
-        rgb_frames=rgb_frames,
+        dataset=dataset,
         source_frame_ids=source_ids,
         image_shape=image_shape,
         classes=classes,
+        object_semantic_ids=object_semantic_ids,
         vocabulary_sha256=vocabulary_sha256,
         worker=worker,
     )
@@ -825,6 +1039,8 @@ def _metadata(response: dict[str, Any], preflight: _Preflight) -> _WorkerMetadat
     top_k = _strict_int(response.get("top_k"), "metadata top_k", positive=True)
     if top_k > class_count:
         raise ValueError("metadata top_k cannot exceed class_count")
+    if preflight.dataset_name == "TESSE-CD" and (sample_stride, top_k) != (4, 4):
+        raise ValueError("TESSE dense worker must use sample_stride=4 and top_k=4")
     provenance = response.get("provenance")
     if not isinstance(provenance, dict) or set(provenance) != _PROVENANCE_KEYS:
         raise ValueError("worker metadata provenance keys do not match the contract")
@@ -1213,7 +1429,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         cache_hashes: dict[str, str] = {}
         for cache_index in range(requested_frames):
             source_id = preflight.source_frame_ids[cache_index]
-            rgb = preflight.rgb_frames[cache_index]
+            rgb = _load_rgb_frame(preflight.dataset, cache_index)
             if tuple(rgb.shape[:2]) != preflight.image_shape:
                 raise ValueError(f"dataset frame {cache_index} image shape changed after preflight")
             response = _request(
