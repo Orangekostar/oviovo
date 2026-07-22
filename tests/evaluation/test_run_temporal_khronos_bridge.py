@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -119,14 +120,18 @@ def test_build_manifest_and_run_command_are_hash_bound(tmp_path: Path) -> None:
     payload = validate_build_manifest(
         build_manifest, expected_source=CPP, expected_workspace=workspace
     )
-    command = build_bridge_command(
-        conda=Path("/conda"),
-        environment="khronos",
-        workspace=workspace,
-        executable=Path(payload["executable"]["resolved"]["path"]),
-        manifest=Path("/bridge/manifest.json"),
-        output=Path("/run/map"),
-    )
+    executable_fd = os.open(resolved_executable, os.O_RDONLY)
+    try:
+        command = build_bridge_command(
+            conda=Path("/conda"),
+            environment="khronos",
+            workspace=workspace,
+            executable_fd=executable_fd,
+            manifest=Path("/bridge/manifest.json"),
+            output=Path("/run/map"),
+        )
+    finally:
+        os.close(executable_fd)
 
     assert payload["schema_version"] == 2
     assert payload["executable"]["declared_path"] == str(executable)
@@ -138,7 +143,8 @@ def test_build_manifest_and_run_command_are_hash_bound(tmp_path: Path) -> None:
     ).hexdigest()
     assert payload["staged_source"]["sha256"] == payload["source"]["sha256"]
     assert command[-2:] == ["/bridge/manifest.json", "/run/map"]
-    assert str(resolved_executable) in command
+    assert f"/proc/self/fd/{executable_fd}" in command
+    assert str(resolved_executable) not in command
     assert str(executable) not in command
 
     resolved_executable.write_bytes(b"\x7fELFtampered")
@@ -363,6 +369,50 @@ def test_build_manifest_rejects_non_elf_target(tmp_path: Path) -> None:
         )
 
 
+def test_build_manifest_rejects_noncanonical_install_entry(tmp_path: Path) -> None:
+    workspace = _fake_workspace(tmp_path / "ws")
+    stage_importer_source(CPP, workspace)
+    resolved = _write_elf(workspace / "build/khronos_eval/unreviewed_importer")
+    alternate = workspace / "install/khronos_eval/lib/khronos_eval/unreviewed_importer"
+    alternate.parent.mkdir(parents=True)
+    alternate.symlink_to(resolved)
+
+    with pytest.raises(ValueError, match="canonical install executable"):
+        write_build_manifest(
+            CPP,
+            workspace / "src/khronos/khronos_eval/app/import_temporal_baseline.cpp",
+            workspace / "src/khronos/khronos_eval/CMakeLists.txt",
+            alternate,
+            tmp_path / "rejected-at-write.json",
+            trusted_workspace=workspace,
+        )
+
+    canonical_resolved = _write_elf(
+        workspace / "build/khronos_eval/import_temporal_baseline"
+    )
+    canonical = _install_symlink(workspace, canonical_resolved)
+    manifest = write_build_manifest(
+        CPP,
+        workspace / "src/khronos/khronos_eval/app/import_temporal_baseline.cpp",
+        workspace / "src/khronos/khronos_eval/CMakeLists.txt",
+        canonical,
+        tmp_path / "build_manifest.json",
+        trusted_workspace=workspace,
+    )
+    payload = json.loads(manifest.read_text(encoding="utf-8"))
+    payload["executable"] = bridge_runner._executable_provenance(
+        alternate, trusted_workspace=workspace
+    )
+    manifest.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+    with pytest.raises(ValueError, match="canonical install executable"):
+        validate_build_manifest(
+            manifest, expected_source=CPP, expected_workspace=workspace
+        )
+
+
 def test_run_revalidates_build_before_and_after_using_resolved_elf(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -383,6 +433,8 @@ def test_run_revalidates_build_before_and_after_using_resolved_elf(
     }
     validation_calls: list[Path] = []
     commands: list[list[str]] = []
+    importer_kwargs: dict[str, object] = {}
+    expected_record = bridge_runner._resolved_elf_record(resolved)
 
     monkeypatch.setattr(bridge_runner, "stage_importer_source", lambda *_: {})
     monkeypatch.setattr(
@@ -402,11 +454,18 @@ def test_run_revalidates_build_before_and_after_using_resolved_elf(
 
     def validate_manifest(path: Path, **_: object) -> dict[str, object]:
         validation_calls.append(path)
-        return {"executable": {"resolved": {"path": str(resolved)}}}
+        return {"executable": {"resolved": expected_record}}
 
-    def execute(command: list[str], **_: object) -> SimpleNamespace:
+    def execute(command: list[str], **kwargs: object) -> SimpleNamespace:
         commands.append(command)
         if len(commands) == 2:
+            importer_kwargs.update(kwargs)
+            inherited = kwargs.get("pass_fds")
+            assert isinstance(inherited, tuple) and len(inherited) == 1
+            descriptor = inherited[0]
+            assert f"/proc/self/fd/{descriptor}" in command
+            os.lseek(descriptor, 0, os.SEEK_SET)
+            assert os.read(descriptor, 64) == b"\x7fELFapproved"
             map_root = output / "map"
             map_root.mkdir()
             (map_root / "final.4dmap").write_bytes(b"map")
@@ -440,8 +499,73 @@ def test_run_revalidates_build_before_and_after_using_resolved_elf(
         output / "build_manifest.json",
         output / "build_manifest.json",
     ]
-    assert str(resolved) in status["command"]
+    assert len(importer_kwargs["pass_fds"]) == 1
+    assert any(item.startswith("/proc/self/fd/") for item in status["command"])
+    assert str(resolved) not in status["command"]
     assert str(declared) not in status["command"]
+
+
+def test_verified_descriptor_cannot_be_redirected_by_path_swap(tmp_path: Path) -> None:
+    resolved = _write_elf(tmp_path / "import_temporal_baseline")
+    expected = bridge_runner._resolved_elf_record(resolved)
+    descriptor = bridge_runner._open_verified_executable(resolved, expected)
+    held = resolved.with_name("held-approved-importer")
+    try:
+        resolved.rename(held)
+        _write_elf(resolved, payload=b"tampered")
+        os.lseek(descriptor, 0, os.SEEK_SET)
+        assert os.read(descriptor, 64) == b"\x7fELFapproved"
+        assert bridge_runner._revalidate_open_executable(
+            descriptor, resolved, expected
+        ) == expected
+    finally:
+        os.close(descriptor)
+
+
+def test_run_rejects_symlinked_workspace_before_write_or_command(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    real_workspace = _fake_workspace(tmp_path / "real-workspace")
+    linked_workspace = tmp_path / "linked-workspace"
+    linked_workspace.symlink_to(real_workspace.name)
+    manifest = tmp_path / "bridge_manifest.json"
+    manifest.write_text("{}\n", encoding="utf-8")
+    output = tmp_path / "run"
+    monkeypatch.setattr(
+        bridge_runner,
+        "validate_temporal_bridge_manifest",
+        lambda _: {
+            "dataset": "TESSE-CD",
+            "method": "OVIV2",
+            "scene_id": "apartment",
+            "query_timestamps_ns": [100],
+        },
+    )
+    monkeypatch.setattr(
+        bridge_runner,
+        "stage_importer_source",
+        lambda *_: pytest.fail("workspace was written before trust validation"),
+    )
+    monkeypatch.setattr(
+        bridge_runner.subprocess,
+        "run",
+        lambda *_args, **_kwargs: pytest.fail(
+            "external command ran before workspace trust validation"
+        ),
+    )
+    args = parse_args(
+        [
+            "--manifest", str(manifest),
+            "--scene", "apartment",
+            "--output", str(output),
+            "--workspace", str(linked_workspace),
+        ]
+    )
+
+    with pytest.raises(ValueError, match="trusted workspace"):
+        run(args)
+
+    assert not output.exists()
 
 
 def test_parser_fixes_oviv2_causal_identity() -> None:

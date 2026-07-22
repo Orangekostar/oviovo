@@ -120,42 +120,23 @@ def _assert_trusted_parents(path: Path, workspace: Path) -> None:
             raise ValueError(f"executable parent is not a directory: {current}")
 
 
-def _resolved_elf_record(path: Path) -> dict[str, Any]:
-    flags = (
-        os.O_RDONLY
-        | getattr(os, "O_CLOEXEC", 0)
-        | getattr(os, "O_NOFOLLOW", 0)
-        | getattr(os, "O_NONBLOCK", 0)
-    )
-    try:
-        descriptor = os.open(path, flags)
-    except OSError as error:
-        raise ValueError(f"resolved ELF is not a readable regular file: {path}") from error
-    try:
-        before = os.fstat(descriptor)
-        if not stat.S_ISREG(before.st_mode):
-            raise ValueError(f"resolved ELF is not a regular file: {path}")
-        if not before.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH):
-            raise ValueError(f"resolved ELF is not executable: {path}")
-        digest = hashlib.sha256()
-        with os.fdopen(descriptor, "rb", closefd=False) as handle:
-            magic = handle.read(4)
-            if magic != b"\x7fELF":
-                raise ValueError(f"resolved executable is not an ELF file: {path}")
-            digest.update(magic)
-            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-                digest.update(chunk)
-        after = os.fstat(descriptor)
-    finally:
-        os.close(descriptor)
-    try:
-        path_status = path.lstat()
-    except OSError as error:
-        raise ValueError(f"resolved ELF changed while hashing: {path}") from error
-    if (
-        _identity(before) != _identity(after)
-        or _identity(after) != _identity(path_status)
-    ):
+def _elf_record_from_descriptor(descriptor: int, path: Path) -> dict[str, Any]:
+    before = os.fstat(descriptor)
+    if not stat.S_ISREG(before.st_mode):
+        raise ValueError(f"resolved ELF is not a regular file: {path}")
+    if not before.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH):
+        raise ValueError(f"resolved ELF is not executable: {path}")
+    os.lseek(descriptor, 0, os.SEEK_SET)
+    digest = hashlib.sha256()
+    with os.fdopen(descriptor, "rb", closefd=False) as handle:
+        magic = handle.read(4)
+        if magic != b"\x7fELF":
+            raise ValueError(f"resolved executable is not an ELF file: {path}")
+        digest.update(magic)
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    after = os.fstat(descriptor)
+    if _identity(before) != _identity(after):
         raise ValueError(f"resolved ELF changed while hashing: {path}")
     return {
         "path": str(path),
@@ -163,6 +144,54 @@ def _resolved_elf_record(path: Path) -> dict[str, Any]:
         "byte_count": after.st_size,
         "identity": _identity(after),
     }
+
+
+def _open_elf(path: Path) -> int:
+    flags = (
+        os.O_RDONLY
+        | getattr(os, "O_CLOEXEC", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+        | getattr(os, "O_NONBLOCK", 0)
+    )
+    try:
+        return os.open(path, flags)
+    except OSError as error:
+        raise ValueError(f"resolved ELF is not a readable regular file: {path}") from error
+
+
+def _resolved_elf_record(path: Path) -> dict[str, Any]:
+    descriptor = _open_elf(path)
+    try:
+        record = _elf_record_from_descriptor(descriptor, path)
+    finally:
+        os.close(descriptor)
+    try:
+        path_status = path.lstat()
+    except OSError as error:
+        raise ValueError(f"resolved ELF changed while hashing: {path}") from error
+    if record["identity"] != _identity(path_status):
+        raise ValueError(f"resolved ELF changed while hashing: {path}")
+    return record
+
+
+def _open_verified_executable(path: Path, expected: Mapping[str, Any]) -> int:
+    descriptor = _open_elf(path)
+    try:
+        if _elf_record_from_descriptor(descriptor, path) != dict(expected):
+            raise ValueError("resolved ELF does not match verified build provenance")
+        return descriptor
+    except Exception:
+        os.close(descriptor)
+        raise
+
+
+def _revalidate_open_executable(
+    descriptor: int, path: Path, expected: Mapping[str, Any]
+) -> dict[str, Any]:
+    record = _elf_record_from_descriptor(descriptor, path)
+    if record != dict(expected):
+        raise ValueError("executed ELF changed while the verified descriptor was open")
+    return record
 
 
 def _revalidate_symlink_chain(chain: list[dict[str, Any]]) -> None:
@@ -305,27 +334,40 @@ def build_bridge_command(
     conda: Path,
     environment: str,
     workspace: Path,
-    executable: Path,
+    executable_fd: int,
     manifest: Path,
     output: Path,
 ) -> list[str]:
-    if executable.is_symlink() or not executable.is_file():
-        raise ValueError("bridge command requires a verified resolved executable")
+    if type(executable_fd) is not int or executable_fd < 0:
+        raise ValueError("bridge command requires a verified executable descriptor")
+    try:
+        descriptor_status = os.fstat(executable_fd)
+    except OSError as error:
+        raise ValueError(
+            "bridge command requires an open verified executable descriptor"
+        ) from error
+    if not stat.S_ISREG(descriptor_status.st_mode):
+        raise ValueError("bridge command executable descriptor is not regular")
+    conda_profile = conda.parent.parent / "etc/profile.d/conda.sh"
     return [
-        str(conda),
-        "run",
-        "--no-capture-output",
-        "-n",
-        environment,
-        "bash",
+        "/bin/bash",
         "-lc",
-        'source "$1/install/setup.bash"; shift; exec "$@"',
+        (
+            'source "$1"; conda activate "$2"; '
+            'source "$3/install/setup.bash"; shift 3; exec "$@"'
+        ),
         "bash",
+        str(conda_profile),
+        environment,
         str(workspace),
-        str(executable),
+        f"/proc/self/fd/{executable_fd}",
         str(manifest),
         str(output),
     ]
+
+
+def _canonical_install_executable(workspace: Path) -> Path:
+    return workspace / "install/khronos_eval/lib/khronos_eval/import_temporal_baseline"
 
 
 def write_build_manifest(
@@ -342,6 +384,10 @@ def write_build_manifest(
     for path in (source, staged_source, cmake):
         if not path.is_file():
             raise ValueError(f"temporal bridge build input is missing: {path}")
+    workspace = _trusted_workspace_root(trusted_workspace)
+    declared_executable = Path(os.path.abspath(executable))
+    if declared_executable != _canonical_install_executable(workspace):
+        raise ValueError("build manifest requires the canonical install executable")
     payload = {
         "schema_version": 2,
         "status": "PASS",
@@ -349,9 +395,9 @@ def write_build_manifest(
         "source": _entry(source),
         "staged_source": _entry(staged_source),
         "cmake": _entry(cmake),
-        "trusted_workspace": str(_trusted_workspace_root(trusted_workspace)),
+        "trusted_workspace": str(workspace),
         "executable": _executable_provenance(
-            executable, trusted_workspace=trusted_workspace
+            declared_executable, trusted_workspace=workspace
         ),
         "build_scope": ["khronos_eval"],
     }
@@ -391,6 +437,8 @@ def validate_build_manifest(
     if not isinstance(executable, Mapping):
         raise ValueError("temporal importer executable provenance is invalid")
     declared_path = Path(str(executable.get("declared_path", "")))
+    if declared_path != _canonical_install_executable(workspace):
+        raise ValueError("build manifest requires the canonical install executable")
     observed_executable = _executable_provenance(
         declared_path, trusted_workspace=workspace
     )
@@ -448,6 +496,7 @@ def snapshot_bridge_input(manifest: Path, destination: Path) -> Path:
 def run(args: argparse.Namespace) -> Path:
     if os.path.lexists(args.output):
         raise ValueError(f"output already exists: {args.output}")
+    workspace = _trusted_workspace_root(args.workspace)
     bridge = validate_temporal_bridge_manifest(args.manifest)
     if (
         bridge.get("dataset") != "TESSE-CD"
@@ -459,30 +508,27 @@ def run(args: argparse.Namespace) -> Path:
     if bridge.get("scene_id") != args.scene:
         raise ValueError("temporal bridge manifest scene mismatch")
     args.output.mkdir(parents=True)
-    stage_importer_source(CPP_SOURCE, args.workspace)
+    stage_importer_source(CPP_SOURCE, workspace)
     build_log = args.output / "build.log"
     build_command = build_package_command(
-        conda=args.conda, environment=args.environment, workspace=args.workspace
+        conda=args.conda, environment=args.environment, workspace=workspace
     )
     with build_log.open("w", encoding="utf-8") as output:
         built = subprocess.run(
             build_command,
-            cwd=args.workspace,
+            cwd=workspace,
             stdout=output,
             stderr=subprocess.STDOUT,
             text=True,
             timeout=args.build_timeout_s,
             check=False,
         )
-    executable = (
-        args.workspace
-        / "install/khronos_eval/lib/khronos_eval/import_temporal_baseline"
-    )
+    executable = _canonical_install_executable(workspace)
     if built.returncode != 0 or not executable.is_file():
         raise RuntimeError(f"temporal importer build failed: {build_log}")
-    cmake = args.workspace / "src/khronos/khronos_eval/CMakeLists.txt"
+    cmake = workspace / "src/khronos/khronos_eval/CMakeLists.txt"
     staged_source = (
-        args.workspace
+        workspace
         / "src/khronos/khronos_eval/app/import_temporal_baseline.cpp"
     )
     build_manifest = write_build_manifest(
@@ -491,12 +537,12 @@ def run(args: argparse.Namespace) -> Path:
         cmake,
         executable,
         args.output / "build_manifest.json",
-        trusted_workspace=args.workspace,
+        trusted_workspace=workspace,
     )
     build_payload = validate_build_manifest(
         build_manifest,
         expected_source=CPP_SOURCE,
-        expected_workspace=args.workspace,
+        expected_workspace=workspace,
     )
     resolved_executable = Path(build_payload["executable"]["resolved"]["path"])
 
@@ -508,35 +554,45 @@ def run(args: argparse.Namespace) -> Path:
     pre_execute_build = validate_build_manifest(
         build_manifest,
         expected_source=CPP_SOURCE,
-        expected_workspace=args.workspace,
+        expected_workspace=workspace,
     )
-    if (
-        Path(pre_execute_build["executable"]["resolved"]["path"])
-        != resolved_executable
-    ):
+    if pre_execute_build["executable"]["resolved"] != build_payload["executable"][
+        "resolved"
+    ]:
         raise ValueError("resolved temporal importer changed before execution")
 
     map_output = args.output / "map"
-    command = build_bridge_command(
-        conda=args.conda,
-        environment=args.environment,
-        workspace=args.workspace,
-        executable=resolved_executable,
-        manifest=copied_manifest,
-        output=map_output,
-    )
     log_path = args.output / "bridge.log"
     timing_path = args.output / "bridge.time.log"
     started_at = datetime.now(timezone.utc).isoformat()
-    with log_path.open("w", encoding="utf-8") as output:
-        completed = subprocess.run(
-            ["/usr/bin/time", "-v", "-o", str(timing_path), *command],
-            stdout=output,
-            stderr=subprocess.STDOUT,
-            text=True,
-            timeout=args.timeout_s,
-            check=False,
+    executable_record = build_payload["executable"]["resolved"]
+    executable_fd = _open_verified_executable(
+        resolved_executable, executable_record
+    )
+    try:
+        command = build_bridge_command(
+            conda=args.conda,
+            environment=args.environment,
+            workspace=workspace,
+            executable_fd=executable_fd,
+            manifest=copied_manifest,
+            output=map_output,
         )
+        with log_path.open("w", encoding="utf-8") as output:
+            completed = subprocess.run(
+                ["/usr/bin/time", "-v", "-o", str(timing_path), *command],
+                stdout=output,
+                stderr=subprocess.STDOUT,
+                text=True,
+                timeout=args.timeout_s,
+                check=False,
+                pass_fds=(executable_fd,),
+            )
+        executed_executable = _revalidate_open_executable(
+            executable_fd, resolved_executable, executable_record
+        )
+    finally:
+        os.close(executable_fd)
     final_map = map_output / "final.4dmap"
     experiment_log = map_output / "experiment_log.txt"
     timestamps_path = map_output / "map_timestamps.json"
@@ -555,12 +611,9 @@ def run(args: argparse.Namespace) -> Path:
     post_execute_build = validate_build_manifest(
         build_manifest,
         expected_source=CPP_SOURCE,
-        expected_workspace=args.workspace,
+        expected_workspace=workspace,
     )
-    if (
-        Path(post_execute_build["executable"]["resolved"]["path"])
-        != resolved_executable
-    ):
+    if post_execute_build["executable"]["resolved"] != executable_record:
         raise ValueError("resolved temporal importer changed during execution")
     sources = [
         copied_manifest,
@@ -591,6 +644,7 @@ def run(args: argparse.Namespace) -> Path:
         "query_timestamps_ns": expected_timestamps,
         "build_command": build_command,
         "command": command,
+        "executed_executable": executed_executable,
         "sources": [_entry(path) for path in sources],
     }
     status_path = args.output / "run_status.json"
