@@ -45,6 +45,7 @@ def test_repository_provenance_hashes_exact_git_status_bytes(
 ) -> None:
     outputs = {
         ("rev-parse", "HEAD"): b"a" * 40 + b"\n",
+        ("rev-parse", "HEAD^{tree}"): b"b" * 40 + b"\n",
         (
             "status",
             "--porcelain=v1",
@@ -63,6 +64,7 @@ def test_repository_provenance_hashes_exact_git_status_bytes(
 
     assert provenance == {
         "repository_commit": "a" * 40,
+        "repository_tree": "b" * 40,
         "dirty_state_digest": hashlib.sha256(b" M tracked.py\0").hexdigest(),
     }
 
@@ -73,10 +75,12 @@ def test_repository_provenance_hashes_exact_git_status_bytes(
         (
             {
                 "repository_commit": "a" * 40,
+                "repository_tree": "b" * 40,
                 "dirty_state_digest": "f" * 64,
             },
             {
                 "repository_commit": "a" * 40,
+                "repository_tree": "b" * 40,
                 "dirty_state_digest": "f" * 64,
             },
             "dirty",
@@ -84,10 +88,12 @@ def test_repository_provenance_hashes_exact_git_status_bytes(
         (
             {
                 "repository_commit": "a" * 40,
+                "repository_tree": "b" * 40,
                 "dirty_state_digest": hashlib.sha256(b"").hexdigest(),
             },
             {
                 "repository_commit": "b" * 40,
+                "repository_tree": "c" * 40,
                 "dirty_state_digest": hashlib.sha256(b"").hexdigest(),
             },
             "changed",
@@ -230,6 +236,83 @@ def _write_config(
     path = tmp_path / "runner.json"
     _write_json(path, config)
     return path
+
+
+def _record(path: Path) -> dict[str, object]:
+    return {
+        "path": str(path.resolve()),
+        "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        "byte_count": path.stat().st_size,
+    }
+
+
+def _write_formal_freeze(
+    tmp_path: Path,
+    config_path: Path,
+    *,
+    repository_commit: str = "a" * 40,
+    repository_tree: str = "b" * 40,
+) -> tuple[Path, dict[str, str]]:
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    office_config = dict(config)
+    office_config["scene"] = "office"
+    office_config["evaluation_checkpoint_frames"] = []
+    office_config["algorithm_hash"] = algorithm_hash(office_config)
+    office_path = tmp_path / "office.json"
+    _write_json(office_path, office_config)
+    roots = {
+        f"{scene}_run{repeat}": str(
+            (tmp_path / "formal" / scene / f"run{repeat}").resolve()
+        )
+        for scene in ("apartment", "office")
+        for repeat in (1, 2)
+    }
+    schedule = Path(config["schedule_manifest"])
+    target = Path(config["occlusion_target_manifest"])
+    freeze = tmp_path / "freeze.json"
+    _write_json(
+        freeze,
+        {
+            "schema_version": 1,
+            "freeze_id": "oviv2-tessecd-v1",
+            "status": "FROZEN",
+            "method": "OVIV2",
+            "dataset": "TESSE-CD",
+            "repository": {
+                "clean": True,
+                "commit": repository_commit,
+                "tree": repository_tree,
+                "stage3_lineage_commit": (
+                    "47962fbd9f363c0696cc5016f8ab42f83a3bf7e5"
+                ),
+                "stage3_is_ancestor": True,
+            },
+            "algorithm": {
+                "sha256": config["algorithm_hash"],
+                "normalized_config": runner_module.algorithm_config(config),
+            },
+            "scenes": {
+                "apartment": {"frozen_config": _record(config_path)},
+                "office": {"frozen_config": _record(office_path)},
+            },
+            "shared_bindings": {
+                "schedule": _record(schedule),
+                "occlusion_target_manifest": _record(target),
+            },
+            "output_roots": roots,
+        },
+    )
+    return freeze, roots
+
+
+def _clean_repository_state(
+    *, commit: str = "a" * 40, tree: str = "b" * 40
+) -> dict[str, str]:
+    return {
+        "repository_commit": commit,
+        "repository_tree": tree,
+        "dirty_state_digest": hashlib.sha256(b"").hexdigest(),
+    }
 
 
 class _Dataset:
@@ -1174,10 +1257,26 @@ def test_schedule_swap_back_cannot_change_executed_checkpoints(
     assert manifest["captured_frame_indices"] == [1, 3]
 
 
-def test_production_cli_accepts_only_config_and_output() -> None:
-    parsed = parse_args(["--config", "scene.json", "--output", "run"])
+def test_formal_cli_requires_freeze_manifest_and_run_slot() -> None:
+    parsed = parse_args(
+        [
+            "--config",
+            "scene.json",
+            "--output",
+            "run",
+            "--freeze-manifest",
+            "freeze.json",
+            "--run-slot",
+            "apartment_run1",
+        ]
+    )
     assert parsed.config == Path("scene.json")
     assert parsed.output == Path("run")
+    assert parsed.freeze_manifest == Path("freeze.json")
+    assert parsed.run_slot == "apartment_run1"
+
+    with pytest.raises(SystemExit):
+        parse_args(["--config", "scene.json", "--output", "run"])
 
     with pytest.raises(SystemExit):
         parse_args(
@@ -1186,9 +1285,219 @@ def test_production_cli_accepts_only_config_and_output() -> None:
                 "scene.json",
                 "--output",
                 "run",
-                "--scene",
-                "office",
+                "--freeze-manifest",
+                "freeze.json",
+                "--run-slot",
+                "unknown",
             ]
+        )
+
+
+def test_formal_runs_propagate_stable_identity_and_distinct_execution(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = _write_config(tmp_path)
+    freeze, roots = _write_formal_freeze(tmp_path, config)
+    monkeypatch.setattr(
+        runner_module,
+        "_repository_provenance",
+        lambda: _clean_repository_state(),
+    )
+
+    first = run(
+        config,
+        roots["apartment_run1"],
+        freeze_manifest=freeze,
+        run_slot="apartment_run1",
+        dependencies=_dependencies([]),
+    )
+    second = run(
+        config,
+        roots["apartment_run2"],
+        freeze_manifest=freeze,
+        run_slot="apartment_run2",
+        dependencies=_dependencies([]),
+    )
+
+    assert first["frozen_run_identity"] == second["frozen_run_identity"]
+    assert first["frozen_run_identity"]["freeze_id"] == "oviv2-tessecd-v1"
+    assert first["frozen_run_identity"]["algorithm_hash"] == first[
+        "algorithm_hash"
+    ]
+    assert first["run_execution"] != second["run_execution"]
+    assert first["run_execution"]["run_slot"] == "apartment_run1"
+    assert second["run_execution"]["run_slot"] == "apartment_run2"
+    assert first["run_execution"]["output_root"] == roots["apartment_run1"]
+    assert second["run_execution"]["output_root"] == roots["apartment_run2"]
+    first_stat = Path(roots["apartment_run1"]).stat()
+    second_stat = Path(roots["apartment_run2"]).stat()
+    assert first_stat.st_ino != second_stat.st_ino
+    assert first["run_execution"]["root_device"] == first_stat.st_dev
+    assert first["run_execution"]["root_inode"] == first_stat.st_ino
+    assert second["run_execution"]["root_device"] == second_stat.st_dev
+    assert second["run_execution"]["root_inode"] == second_stat.st_ino
+
+    artifact_names = (
+        "run_manifest.json",
+        "source_index.json",
+        "occlusion_checkpoint_index.json",
+    )
+    for root, manifest in (
+        (Path(roots["apartment_run1"]), first),
+        (Path(roots["apartment_run2"]), second),
+    ):
+        for name in artifact_names:
+            payload = json.loads((root / name).read_text(encoding="utf-8"))
+            assert payload["frozen_run_identity"] == manifest[
+                "frozen_run_identity"
+            ]
+            assert payload["run_execution"] == manifest["run_execution"]
+
+    first_temporal = export_temporal_artifact(
+        Path(roots["apartment_run1"]) / "source_index.json",
+        Path(roots["apartment_run1"]) / "temporal",
+    )
+    second_temporal = export_temporal_artifact(
+        Path(roots["apartment_run2"]) / "source_index.json",
+        Path(roots["apartment_run2"]) / "temporal",
+    )
+    first_temporal_payload = json.loads(first_temporal.read_text(encoding="utf-8"))
+    second_temporal_payload = json.loads(second_temporal.read_text(encoding="utf-8"))
+    assert first_temporal_payload["frozen_run_identity"] == second_temporal_payload[
+        "frozen_run_identity"
+    ]
+    assert first_temporal_payload["run_execution"] != second_temporal_payload[
+        "run_execution"
+    ]
+
+
+def test_formal_run_rejects_prepared_freeze(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = _write_config(tmp_path)
+    freeze, roots = _write_formal_freeze(tmp_path, config)
+    payload = json.loads(freeze.read_text(encoding="utf-8"))
+    payload["status"] = "PREPARED"
+    _write_json(freeze, payload)
+    monkeypatch.setattr(
+        runner_module, "_repository_provenance", lambda: _clean_repository_state()
+    )
+
+    with pytest.raises(ValueError, match="FROZEN oviv2-tessecd-v1"):
+        run(
+            config,
+            roots["apartment_run1"],
+            freeze_manifest=freeze,
+            run_slot="apartment_run1",
+            dependencies=_dependencies([]),
+        )
+
+
+def test_formal_run_rejects_dirty_or_wrong_repository(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = _write_config(tmp_path)
+    freeze, roots = _write_formal_freeze(tmp_path, config)
+    dirty = _clean_repository_state()
+    dirty["dirty_state_digest"] = hashlib.sha256(b" M runner.py\0").hexdigest()
+    monkeypatch.setattr(runner_module, "_repository_provenance", lambda: dirty)
+
+    with pytest.raises(ValueError, match="clean repository"):
+        run(
+            config,
+            roots["apartment_run1"],
+            freeze_manifest=freeze,
+            run_slot="apartment_run1",
+            dependencies=_dependencies([]),
+        )
+
+    monkeypatch.setattr(
+        runner_module,
+        "_repository_provenance",
+        lambda: _clean_repository_state(tree="c" * 40),
+    )
+    with pytest.raises(ValueError, match="repository commit and tree"):
+        run(
+            config,
+            roots["apartment_run1"],
+            freeze_manifest=freeze,
+            run_slot="apartment_run1",
+            dependencies=_dependencies([]),
+        )
+
+
+def test_formal_run_rejects_config_policy_slot_and_input_hash_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        runner_module, "_repository_provenance", lambda: _clean_repository_state()
+    )
+
+    config = _write_config(tmp_path / "config-drift")
+    freeze, roots = _write_formal_freeze(tmp_path / "config-drift", config)
+    config_payload = json.loads(config.read_text(encoding="utf-8"))
+    config_payload["visibility_depth_tolerance_m"] = 0.2
+    config_payload["algorithm_hash"] = algorithm_hash(config_payload)
+    _write_json(config, config_payload)
+    with pytest.raises(ValueError, match="frozen config.*content mismatch"):
+        run(
+            config,
+            roots["apartment_run1"],
+            freeze_manifest=freeze,
+            run_slot="apartment_run1",
+            dependencies=_dependencies([]),
+        )
+
+    config = _write_config(tmp_path / "policy-drift")
+    freeze, roots = _write_formal_freeze(tmp_path / "policy-drift", config)
+    config_payload = json.loads(config.read_text(encoding="utf-8"))
+    config_payload["missing_observation_policy"] = "missing_as_absence"
+    config_payload["algorithm_hash"] = algorithm_hash(config_payload)
+    _write_json(config, config_payload)
+    freeze_payload = json.loads(freeze.read_text(encoding="utf-8"))
+    freeze_payload["scenes"]["apartment"]["frozen_config"] = _record(config)
+    freeze_payload["algorithm"] = {
+        "sha256": config_payload["algorithm_hash"],
+        "normalized_config": runner_module.algorithm_config(config_payload),
+    }
+    _write_json(freeze, freeze_payload)
+    with pytest.raises(ValueError, match="signed_depth"):
+        run(
+            config,
+            roots["apartment_run1"],
+            freeze_manifest=freeze,
+            run_slot="apartment_run1",
+            dependencies=_dependencies([]),
+        )
+
+    config = _write_config(tmp_path / "slot-drift")
+    freeze, roots = _write_formal_freeze(tmp_path / "slot-drift", config)
+    with pytest.raises(ValueError, match="run slot"):
+        run(
+            config,
+            roots["office_run1"],
+            freeze_manifest=freeze,
+            run_slot="office_run1",
+            dependencies=_dependencies([]),
+        )
+
+    config = _write_config(tmp_path / "input-drift")
+    freeze, roots = _write_formal_freeze(tmp_path / "input-drift", config)
+    schedule = Path(
+        json.loads(config.read_text(encoding="utf-8"))["schedule_manifest"]
+    )
+    schedule.write_bytes(schedule.read_bytes() + b" ")
+    with pytest.raises(ValueError, match="frozen input binding"):
+        run(
+            config,
+            roots["apartment_run1"],
+            freeze_manifest=freeze,
+            run_slot="apartment_run1",
+            dependencies=_dependencies([]),
         )
 
 

@@ -31,7 +31,7 @@ from src.evaluation.tesse_methods import (
 
 
 _SOURCE_RECORD_FIELDS = frozenset({"path", "sha256", "byte_count"})
-_SOURCE_INDEX_FIELDS = frozenset(
+_SOURCE_INDEX_BASE_FIELDS = frozenset(
     {
         "schema_version",
         "dataset",
@@ -42,6 +42,33 @@ _SOURCE_INDEX_FIELDS = frozenset(
         "capture_status",
         "trajectories",
         "checkpoints",
+    }
+)
+_FORMAL_RUN_FIELDS = frozenset({"frozen_run_identity", "run_execution"})
+_SOURCE_INDEX_FIELDS = _SOURCE_INDEX_BASE_FIELDS | _FORMAL_RUN_FIELDS
+_FROZEN_RUN_IDENTITY_FIELDS = frozenset(
+    {
+        "schema_version",
+        "freeze_id",
+        "dataset",
+        "method_id",
+        "scene",
+        "freeze_manifest",
+        "repository",
+        "config",
+        "algorithm_hash",
+        "missing_observation_policy",
+        "input_bindings_sha256",
+    }
+)
+_RUN_EXECUTION_FIELDS = frozenset(
+    {
+        "schema_version",
+        "run_slot",
+        "execution_id",
+        "output_root",
+        "root_device",
+        "root_inode",
     }
 )
 _CAPTURE_STATUS_FIELDS = frozenset(
@@ -661,6 +688,129 @@ def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
     )
 
 
+def _is_sha256(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
+def _content_record(value: object, *, label: str) -> dict[str, Any]:
+    if not isinstance(value, Mapping) or set(value) != {"sha256", "byte_count"}:
+        raise ValueError(f"{label} content record is invalid")
+    if not (
+        _is_sha256(value.get("sha256"))
+        and type(value.get("byte_count")) is int
+        and value["byte_count"] >= 0
+    ):
+        raise ValueError(f"{label} content record is invalid")
+    return {"sha256": value["sha256"], "byte_count": value["byte_count"]}
+
+
+def _formal_run_fields(
+    index: Mapping[str, Any],
+    *,
+    index_source: _VerifiedSource,
+) -> tuple[dict[str, Any], list[tuple[_VerifiedSource, str]]]:
+    present = _FORMAL_RUN_FIELDS & set(index)
+    if not present:
+        return {}, []
+    if present != _FORMAL_RUN_FIELDS:
+        raise ValueError("formal source index identity fields are incomplete")
+    frozen = index.get("frozen_run_identity")
+    execution = index.get("run_execution")
+    if not isinstance(frozen, Mapping) or set(frozen) != _FROZEN_RUN_IDENTITY_FIELDS:
+        raise ValueError("frozen run identity fields are invalid")
+    if not isinstance(execution, Mapping) or set(execution) != _RUN_EXECUTION_FIELDS:
+        raise ValueError("run execution fields are invalid")
+    repository = frozen.get("repository")
+    if not isinstance(repository, Mapping) or set(repository) != {"commit", "tree"}:
+        raise ValueError("frozen run repository identity is invalid")
+    if not all(
+        isinstance(repository.get(field), str)
+        and len(str(repository[field])) == 40
+        for field in ("commit", "tree")
+    ):
+        raise ValueError("frozen run repository identity is invalid")
+    _content_record(frozen.get("freeze_manifest"), label="freeze manifest")
+    _content_record(frozen.get("config"), label="frozen config")
+    if not (
+        frozen.get("schema_version") == 1
+        and frozen.get("freeze_id") == "oviv2-tessecd-v1"
+        and frozen.get("dataset") == "TESSE-CD"
+        and frozen.get("method_id") == "OVIV2"
+        and frozen.get("scene") == index.get("scene")
+        and frozen.get("missing_observation_policy") == "signed_depth"
+        and _is_sha256(frozen.get("algorithm_hash"))
+        and _is_sha256(frozen.get("input_bindings_sha256"))
+    ):
+        raise ValueError("frozen run identity is invalid")
+    scene = str(index["scene"])
+    slot = execution.get("run_slot")
+    output_root = execution.get("output_root")
+    if not (
+        execution.get("schema_version") == 1
+        and isinstance(slot, str)
+        and slot in {
+            "apartment_run1",
+            "apartment_run2",
+            "office_run1",
+            "office_run2",
+        }
+        and slot.startswith(f"{scene}_run")
+        and isinstance(output_root, str)
+        and Path(output_root).is_absolute()
+        and output_root == os.fspath(Path(os.path.abspath(output_root)))
+        and type(execution.get("root_device")) is int
+        and type(execution.get("root_inode")) is int
+        and execution["root_device"] >= 0
+        and execution["root_inode"] > 0
+        and _is_sha256(execution.get("execution_id"))
+    ):
+        raise ValueError("run execution identity is invalid")
+    root = Path(output_root)
+    if root != index_source.path.parent:
+        raise ValueError("run execution output root does not own the source index")
+    status = os.stat(root, follow_symlinks=False)
+    if (
+        status.st_dev != execution["root_device"]
+        or status.st_ino != execution["root_inode"]
+    ):
+        raise ValueError("run execution root inode mismatch")
+    execution_base = {
+        key: execution[key] for key in sorted(execution) if key != "execution_id"
+    }
+    execution_id = hashlib.sha256(
+        json.dumps(
+            execution_base,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
+    ).hexdigest()
+    if execution["execution_id"] != execution_id:
+        raise ValueError("run execution hash mismatch")
+
+    verified: list[tuple[_VerifiedSource, str]] = []
+    for name, label in (
+        ("run_manifest.json", "run manifest"),
+        ("occlusion_checkpoint_index.json", "occlusion checkpoint index"),
+    ):
+        source = _direct_source(root / name, label=label)
+        payload = _read_json(source, label=label)
+        if (
+            payload.get("frozen_run_identity") != frozen
+            or payload.get("run_execution") != execution
+        ):
+            raise ValueError(f"{label} formal identity mismatch")
+        verified.append((source, label))
+    return {
+        "frozen_run_identity": dict(frozen),
+        "run_execution": dict(execution),
+    }, verified
+
+
 def _require_fields(
     payload: Mapping[str, Any],
     expected: frozenset[str],
@@ -998,7 +1148,10 @@ def _fsync_tree(root: Path) -> None:
 def export_temporal_artifact(source_index: Path, output: Path) -> Path:
     index_source = _direct_source(source_index, label="source index")
     index = _read_json(index_source, label="source index")
-    if set(index) != _SOURCE_INDEX_FIELDS:
+    if set(index) not in {
+        _SOURCE_INDEX_BASE_FIELDS,
+        _SOURCE_INDEX_FIELDS,
+    }:
         raise ValueError("source index fields are invalid")
     if (
         type(index.get("schema_version")) is not int
@@ -1022,6 +1175,10 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
     method = raw_method
     if method not in CAUSAL_SNAPSHOT_METHOD_LABELS:
         raise ValueError(f"unsupported causal snapshot method: {method}")
+    formal_run_fields, formal_verified = _formal_run_fields(
+        index,
+        index_source=index_source,
+    )
     base = index_source.path.parent
 
     schedule_source = _declared_source(
@@ -1074,6 +1231,7 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
         (schedule_source, "schedule"),
         (trajectory_source, "trajectories"),
         (capture_source, "capture status"),
+        *formal_verified,
     ]
     checkpoint_inputs: list[dict[str, Any]] = []
     states: dict[str, dict[str, Any]] = {}
@@ -1347,6 +1505,7 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
             ),
             "trajectories": trajectory_sidecar_record,
             "checkpoints": normalized_index_checkpoints,
+            **formal_run_fields,
         }
         _write_json(index_path, normalized_index)
 
@@ -1374,6 +1533,7 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
             "trajectories": _output_record(
                 trajectories_path, output=staging
             ),
+            **formal_run_fields,
         }
         _write_json(staging / "temporal_manifest.json", manifest)
         _fsync_tree(staging)

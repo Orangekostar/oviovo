@@ -58,6 +58,16 @@ class RunnerDependencies:
     provenance_factory: Callable[[], Mapping[str, Any]]
 
 
+@dataclass(frozen=True)
+class FrozenRunContext:
+    manifest_path: Path
+    manifest_bytes: bytes
+    repository_state: Mapping[str, str]
+    input_bindings: Mapping[str, Any]
+    frozen_run_identity: Mapping[str, Any]
+    run_slot: str
+
+
 def _strict_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     result: dict[str, Any] = {}
     for key, value in pairs:
@@ -223,6 +233,227 @@ def _json_hash(value: Any) -> str:
         allow_nan=False,
     ).encode("utf-8")
     return _sha256_bytes(encoded)
+
+
+def _absolute_lexical(path: str | Path) -> Path:
+    return Path(os.path.abspath(os.fspath(path)))
+
+
+def _binding_path(value: object, *, base: Path, role: str) -> Path:
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{role} path is invalid")
+    path = Path(value)
+    return _absolute_lexical(path if path.is_absolute() else base / path)
+
+
+def _verify_frozen_file_binding(
+    value: object,
+    *,
+    base: Path,
+    role: str,
+    expected_path: Path | None = None,
+) -> dict[str, Any]:
+    if not isinstance(value, Mapping) or not {
+        "path",
+        "sha256",
+        "byte_count",
+    } <= set(value):
+        raise ValueError(f"{role} frozen input binding is invalid")
+    path = _binding_path(value.get("path"), base=base, role=role)
+    if expected_path is not None and path != _absolute_lexical(expected_path):
+        raise ValueError(f"{role} frozen input binding path mismatch")
+    _require_regular_file(path, role)
+    raw = path.read_bytes()
+    if (
+        not _is_sha256(value.get("sha256"))
+        or value.get("sha256") != _sha256_bytes(raw)
+        or type(value.get("byte_count")) is not int
+        or value.get("byte_count") != len(raw)
+    ):
+        raise ValueError(f"{role} frozen input binding content mismatch")
+    return {"sha256": value["sha256"], "byte_count": value["byte_count"]}
+
+
+def _revalidate_frozen_bindings(
+    value: object,
+    *,
+    base: Path,
+    path: str = "inputs",
+) -> None:
+    if isinstance(value, Mapping):
+        if {"path", "sha256", "byte_count"} <= set(value):
+            _verify_frozen_file_binding(value, base=base, role=path)
+        for key, nested in value.items():
+            _revalidate_frozen_bindings(
+                nested,
+                base=base,
+                path=f"{path}.{key}",
+            )
+    elif isinstance(value, list):
+        for index, nested in enumerate(value):
+            _revalidate_frozen_bindings(
+                nested,
+                base=base,
+                path=f"{path}[{index}]",
+            )
+
+
+def _validate_repository_state(
+    state: Mapping[str, Any],
+    frozen: Mapping[str, Any],
+) -> dict[str, str]:
+    clean_digest = hashlib.sha256(b"").hexdigest()
+    if state.get("dirty_state_digest") != clean_digest:
+        raise ValueError("formal runner requires a clean repository")
+    if (
+        state.get("repository_commit") != frozen.get("commit")
+        or state.get("repository_tree") != frozen.get("tree")
+    ):
+        raise ValueError("current repository commit and tree differ from the freeze")
+    commit = state.get("repository_commit")
+    tree = state.get("repository_tree")
+    if not (
+        isinstance(commit, str)
+        and len(commit) == 40
+        and isinstance(tree, str)
+        and len(tree) == 40
+    ):
+        raise ValueError("formal runner repository identity is invalid")
+    return {
+        "repository_commit": commit,
+        "repository_tree": tree,
+        "dirty_state_digest": clean_digest,
+    }
+
+
+def _load_frozen_run_context(
+    freeze_manifest: str | Path,
+    *,
+    run_slot: str,
+    source_config: Path,
+    source_config_bytes: bytes,
+    config: Mapping[str, Any],
+    destination: Path,
+) -> FrozenRunContext:
+    manifest_path = _absolute_lexical(freeze_manifest)
+    _require_regular_file(manifest_path, "freeze manifest")
+    manifest_bytes = manifest_path.read_bytes()
+    manifest = _load_json_bytes(manifest_bytes, manifest_path)
+    if not (
+        manifest.get("schema_version") == 1
+        and manifest.get("freeze_id") == "oviv2-tessecd-v1"
+        and manifest.get("status") == "FROZEN"
+        and manifest.get("method") == "OVIV2"
+        and manifest.get("dataset") == "TESSE-CD"
+    ):
+        raise ValueError("formal runner requires the FROZEN oviv2-tessecd-v1 manifest")
+    repository = manifest.get("repository")
+    if not isinstance(repository, Mapping) or not (
+        repository.get("clean") is True
+        and repository.get("stage3_lineage_commit")
+        == "47962fbd9f363c0696cc5016f8ab42f83a3bf7e5"
+        and repository.get("stage3_is_ancestor") is True
+    ):
+        raise ValueError("freeze repository identity is invalid")
+    current = _validate_repository_state(_repository_provenance(), repository)
+
+    scene = config.get("scene")
+    scenes = manifest.get("scenes")
+    if not isinstance(scenes, Mapping) or set(scenes) != {"apartment", "office"}:
+        raise ValueError("freeze scene bindings are incomplete")
+    selected = scenes.get(scene)
+    if not isinstance(selected, Mapping):
+        raise ValueError("freeze scene binding is invalid")
+    config_record = _verify_frozen_file_binding(
+        selected.get("frozen_config"),
+        base=manifest_path.parent,
+        role=f"{scene} frozen config",
+        expected_path=source_config,
+    )
+    if (
+        config_record["sha256"] != _sha256_bytes(source_config_bytes)
+        or config_record["byte_count"] != len(source_config_bytes)
+    ):
+        raise ValueError("frozen config content does not match the runner config")
+    if config.get("missing_observation_policy") != "signed_depth":
+        raise ValueError("oviv2-tessecd-v1 formal runs require signed_depth")
+    algorithm = manifest.get("algorithm")
+    if not isinstance(algorithm, Mapping) or not (
+        algorithm.get("sha256") == algorithm_hash(config)
+        and algorithm.get("sha256") == config.get("algorithm_hash")
+        and algorithm.get("normalized_config") == algorithm_config(config)
+    ):
+        raise ValueError("runner config algorithm differs from the freeze")
+
+    output_roots = manifest.get("output_roots")
+    expected_slots = {
+        f"{slot_scene}_run{repeat}"
+        for slot_scene in ("apartment", "office")
+        for repeat in (1, 2)
+    }
+    if not isinstance(output_roots, Mapping) or set(output_roots) != expected_slots:
+        raise ValueError("freeze output slots are incomplete")
+    if run_slot not in expected_slots or not run_slot.startswith(f"{scene}_run"):
+        raise ValueError("run slot does not match the frozen scene")
+    raw_output = output_roots.get(run_slot)
+    if not isinstance(raw_output, str) or not Path(raw_output).is_absolute():
+        raise ValueError("frozen run slot output root is invalid")
+    expected_output = _absolute_lexical(raw_output)
+    if raw_output != os.fspath(expected_output) or expected_output != destination:
+        raise ValueError("run slot output does not match the frozen output root")
+    normalized_roots = [_absolute_lexical(str(value)) for value in output_roots.values()]
+    if len(set(normalized_roots)) != len(normalized_roots):
+        raise ValueError("frozen output roots must be distinct")
+
+    shared_bindings = manifest.get("shared_bindings")
+    if not isinstance(shared_bindings, Mapping):
+        raise ValueError("freeze shared input bindings are missing")
+    input_bindings = {
+        "shared_bindings": dict(shared_bindings),
+        "scene": dict(selected),
+    }
+    _revalidate_frozen_bindings(input_bindings, base=manifest_path.parent)
+    identity = {
+        "schema_version": 1,
+        "freeze_id": "oviv2-tessecd-v1",
+        "dataset": "TESSE-CD",
+        "method_id": "OVIV2",
+        "scene": scene,
+        "freeze_manifest": _byte_record(manifest_bytes),
+        "repository": {
+            "commit": current["repository_commit"],
+            "tree": current["repository_tree"],
+        },
+        "config": config_record,
+        "algorithm_hash": algorithm["sha256"],
+        "missing_observation_policy": "signed_depth",
+        "input_bindings_sha256": _json_hash(input_bindings),
+    }
+    return FrozenRunContext(
+        manifest_path=manifest_path,
+        manifest_bytes=manifest_bytes,
+        repository_state=current,
+        input_bindings=input_bindings,
+        frozen_run_identity=identity,
+        run_slot=run_slot,
+    )
+
+
+def _run_execution(
+    *,
+    run_slot: str,
+    output: Path,
+    staging: Path,
+) -> dict[str, Any]:
+    status = os.stat(staging, follow_symlinks=False)
+    base = {
+        "schema_version": 1,
+        "run_slot": run_slot,
+        "output_root": os.fspath(output),
+        "root_device": status.st_dev,
+        "root_inode": status.st_ino,
+    }
+    return {**base, "execution_id": _json_hash(base)}
 
 
 def _cache_prefix_sha256(hashes: Mapping[str, str]) -> str:
@@ -579,6 +810,8 @@ def run(
     config_path: str | Path,
     output: str | Path,
     *,
+    freeze_manifest: str | Path | None = None,
+    run_slot: str | None = None,
     dependencies: RunnerDependencies | None = None,
 ) -> dict[str, Any]:
     source_config = Path(config_path).absolute()
@@ -586,6 +819,21 @@ def run(
     source_config_bytes = source_config.read_bytes()
     config = _load_json_bytes(source_config_bytes, source_config)
     scene, frame_count, schedule_path, evaluation_frames = _validate_config(config)
+    destination = _absolute_lexical(output)
+    if (freeze_manifest is None) != (run_slot is None):
+        raise ValueError("freeze_manifest and run_slot must be provided together")
+    frozen_context = (
+        _load_frozen_run_context(
+            freeze_manifest,
+            run_slot=str(run_slot),
+            source_config=source_config,
+            source_config_bytes=source_config_bytes,
+            config=config,
+            destination=destination,
+        )
+        if freeze_manifest is not None
+        else None
+    )
     _require_regular_file(schedule_path, "causal schedule")
     source_schedule_bytes = schedule_path.read_bytes()
     official_checkpoints = tuple(
@@ -618,7 +866,6 @@ def run(
         != checkpoint_plan["evaluation_checkpoint_frames_sha256"]
     ):
         raise ValueError("evaluation checkpoint frame binding mismatch")
-    destination = Path(output).absolute()
     if destination.exists() or destination.is_symlink():
         raise FileExistsError(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -628,6 +875,23 @@ def run(
             prefix=f".{destination.name}.staging-",
             dir=destination.parent,
         )
+    )
+    execution = (
+        _run_execution(
+            run_slot=frozen_context.run_slot,
+            output=destination,
+            staging=staging,
+        )
+        if frozen_context is not None
+        else None
+    )
+    formal_identity_fields = (
+        {
+            "frozen_run_identity": dict(frozen_context.frozen_run_identity),
+            "run_execution": dict(execution),
+        }
+        if frozen_context is not None and execution is not None
+        else {}
     )
 
     started = time.perf_counter()
@@ -872,6 +1136,7 @@ def run(
                 "capture_status": capture_source_record,
                 "trajectories": trajectory_source_record,
                 "checkpoints": official_sources,
+                **formal_identity_fields,
             },
         )
 
@@ -917,6 +1182,7 @@ def run(
                 },
                 "evaluation_checkpoint_frames_sha256": checkpoint_plan_sha256,
                 "snapshots": occlusion_records,
+                **formal_identity_fields,
             },
         )
         occlusion_index_record = _file_record(
@@ -962,7 +1228,35 @@ def run(
             "source_bindings": dict(cache_bindings),
             "occlusion_checkpoint_index": occlusion_index_record,
             "checkpoints": checkpoint_records,
+            **formal_identity_fields,
         }
+        if frozen_context is not None and execution is not None:
+            _require_regular_file(frozen_context.manifest_path, "freeze manifest")
+            if frozen_context.manifest_path.read_bytes() != frozen_context.manifest_bytes:
+                raise ValueError("freeze manifest changed during run")
+            _revalidate_frozen_bindings(
+                frozen_context.input_bindings,
+                base=frozen_context.manifest_path.parent,
+            )
+            if (
+                _validate_repository_state(
+                    _repository_provenance(),
+                    {
+                        "commit": frozen_context.repository_state[
+                            "repository_commit"
+                        ],
+                        "tree": frozen_context.repository_state["repository_tree"],
+                    },
+                )
+                != frozen_context.repository_state
+            ):
+                raise ValueError("repository identity changed during run")
+            staging_status = os.stat(staging, follow_symlinks=False)
+            if (
+                staging_status.st_dev != execution["root_device"]
+                or staging_status.st_ino != execution["root_inode"]
+            ):
+                raise ValueError("run staging root identity changed during run")
         _write_json(staging / "run_manifest.json", manifest)
         _write_json(
             staging / "run_provenance.json",
@@ -997,6 +1291,15 @@ def run(
             },
         )
         _publish_run(staging, destination)
+        if execution is not None:
+            published = os.stat(destination, follow_symlinks=False)
+            if (
+                published.st_dev != execution["root_device"]
+                or published.st_ino != execution["root_inode"]
+            ):
+                raise RunPublicationUncertainError(
+                    f"published run root identity is uncertain: {destination}"
+                )
         return manifest
     except BaseException:
         if staging.exists():
@@ -1649,6 +1952,13 @@ def _repository_provenance() -> dict[str, str]:
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     ).stdout.strip().decode("ascii")
+    tree = subprocess.run(
+        ["git", "rev-parse", "HEAD^{tree}"],
+        cwd=REPO_ROOT,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    ).stdout.strip().decode("ascii")
     dirty_state = subprocess.run(
         [
             "git",
@@ -1664,6 +1974,7 @@ def _repository_provenance() -> dict[str, str]:
     ).stdout
     return {
         "repository_commit": commit,
+        "repository_tree": tree,
         "dirty_state_digest": hashlib.sha256(dirty_state).hexdigest(),
     }
 
@@ -1671,7 +1982,7 @@ def _repository_provenance() -> dict[str, str]:
 def _stable_run_provenance(
     started: Mapping[str, Any], finished: Mapping[str, Any]
 ) -> dict[str, Any]:
-    fields = ("repository_commit", "dirty_state_digest")
+    fields = ("repository_commit", "repository_tree", "dirty_state_digest")
     started_has_repository = any(field in started for field in fields)
     finished_has_repository = any(field in finished for field in fields)
     if not started_has_repository and not finished_has_repository:
@@ -1685,12 +1996,24 @@ def _stable_run_provenance(
             character not in "0123456789abcdef"
             for character in started["repository_commit"]
         )
+        or not isinstance(started["repository_tree"], str)
+        or len(started["repository_tree"]) != 40
+        or any(
+            character not in "0123456789abcdef"
+            for character in started["repository_tree"]
+        )
         or not _is_sha256(started["dirty_state_digest"])
         or not isinstance(finished["repository_commit"], str)
         or len(finished["repository_commit"]) != 40
         or any(
             character not in "0123456789abcdef"
             for character in finished["repository_commit"]
+        )
+        or not isinstance(finished["repository_tree"], str)
+        or len(finished["repository_tree"]) != 40
+        or any(
+            character not in "0123456789abcdef"
+            for character in finished["repository_tree"]
         )
         or not _is_sha256(finished["dirty_state_digest"])
     ):
@@ -1773,12 +2096,28 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--freeze-manifest", required=True, type=Path)
+    parser.add_argument(
+        "--run-slot",
+        required=True,
+        choices=(
+            "apartment_run1",
+            "apartment_run2",
+            "office_run1",
+            "office_run2",
+        ),
+    )
     return parser.parse_args(argv)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
-    manifest = run(args.config, args.output)
+    manifest = run(
+        args.config,
+        args.output,
+        freeze_manifest=args.freeze_manifest,
+        run_slot=args.run_slot,
+    )
     print(
         json.dumps(
             {
