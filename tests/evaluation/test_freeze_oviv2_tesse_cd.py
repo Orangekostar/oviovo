@@ -851,6 +851,201 @@ def test_target_validation_matches_formal_common_v2_contract(
         )
 
 
+def _set_target_schedule_binding(
+    fixture: Fixture, schedule_binding: dict[str, Any]
+) -> dict[str, Any]:
+    target = json.loads(fixture.target_manifest.read_text())
+    target["metadata"]["schedule"] = schedule_binding
+    _write_json(fixture.target_manifest, target)
+    return _record(fixture.target_manifest)
+
+
+def test_target_schedule_without_path_base_resolves_from_target_manifest(
+    fixture: Fixture,
+) -> None:
+    target_schedule = _write_bytes(
+        fixture.target_manifest.parent / "schedule.json",
+        fixture.schedule.read_bytes(),
+    )
+    schedule_binding = {
+        **_record(target_schedule),
+        "path": target_schedule.name,
+    }
+
+    target_binding, _ = _validate_target_manifest(
+        _set_target_schedule_binding(fixture, schedule_binding),
+        fixture.repo,
+        _record(target_schedule),
+    )
+
+    assert target_binding["sha256"] == _sha256(fixture.target_manifest)
+
+
+def test_target_schedule_rejects_same_bytes_at_different_path(fixture: Fixture) -> None:
+    target_schedule = _write_bytes(
+        fixture.target_manifest.parent / "schedule.json",
+        fixture.schedule.read_bytes(),
+    )
+    schedule_binding = {
+        **_record(target_schedule),
+        "path": target_schedule.name,
+    }
+
+    with pytest.raises(ValueError, match="path binding mismatch"):
+        _validate_target_manifest(
+            _set_target_schedule_binding(fixture, schedule_binding),
+            fixture.repo,
+            _record(fixture.schedule),
+        )
+
+
+def test_target_schedule_accepts_repository_scoped_binding(fixture: Fixture) -> None:
+    schedule_binding = {
+        **_record(fixture.schedule),
+        "path": fixture.schedule.relative_to(fixture.repo).as_posix(),
+        "path_base": "repository",
+    }
+
+    target_binding, _ = _validate_target_manifest(
+        _set_target_schedule_binding(fixture, schedule_binding),
+        fixture.repo,
+        _record(fixture.schedule),
+    )
+
+    assert target_binding["sha256"] == _sha256(fixture.target_manifest)
+
+
+def test_target_schedule_accepts_absolute_scoped_binding(fixture: Fixture) -> None:
+    schedule_binding = {
+        **_record(fixture.schedule),
+        "path_base": "absolute",
+    }
+
+    target_binding, _ = _validate_target_manifest(
+        _set_target_schedule_binding(fixture, schedule_binding),
+        fixture.repo,
+        _record(fixture.schedule),
+    )
+
+    assert target_binding["sha256"] == _sha256(fixture.target_manifest)
+
+
+def test_target_schedule_rejects_unknown_path_base(fixture: Fixture) -> None:
+    schedule_binding = {
+        **_record(fixture.schedule),
+        "path_base": "working-directory",
+    }
+
+    with pytest.raises(ValueError, match="unknown path_base"):
+        _validate_target_manifest(
+            _set_target_schedule_binding(fixture, schedule_binding),
+            fixture.repo,
+            _record(fixture.schedule),
+        )
+
+
+@pytest.mark.parametrize(
+    ("path_base", "path", "message"),
+    [
+        ("repository", "absolute", "repository.*relative"),
+        ("absolute", "relative", "absolute.*requires.*absolute"),
+    ],
+)
+def test_target_schedule_rejects_path_base_mode_mismatch(
+    fixture: Fixture, path_base: str, path: str, message: str
+) -> None:
+    serialized_path = (
+        str(fixture.schedule)
+        if path == "absolute"
+        else fixture.schedule.relative_to(fixture.repo).as_posix()
+    )
+    schedule_binding = {
+        **_record(fixture.schedule),
+        "path": serialized_path,
+        "path_base": path_base,
+    }
+
+    with pytest.raises(ValueError, match=message):
+        _validate_target_manifest(
+            _set_target_schedule_binding(fixture, schedule_binding),
+            fixture.repo,
+            _record(fixture.schedule),
+        )
+
+
+def test_target_schedule_rejects_repository_parent_escape(fixture: Fixture) -> None:
+    schedule_binding = {
+        **_record(fixture.schedule),
+        "path": "../outside-schedule.json",
+        "path_base": "repository",
+    }
+
+    with pytest.raises(ValueError, match="repository.*escape"):
+        _validate_target_manifest(
+            _set_target_schedule_binding(fixture, schedule_binding),
+            fixture.repo,
+            _record(fixture.schedule),
+        )
+
+
+def test_target_schedule_rejects_repository_symlink_escape(
+    fixture: Fixture, tmp_path: Path
+) -> None:
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    escaped_schedule = _write_bytes(
+        outside / "schedule.json", fixture.schedule.read_bytes()
+    )
+    (fixture.repo / "escaped").symlink_to(outside, target_is_directory=True)
+    schedule_binding = {
+        **_record(escaped_schedule),
+        "path": "escaped/schedule.json",
+        "path_base": "repository",
+    }
+
+    with pytest.raises(ValueError, match="repository.*escape"):
+        _validate_target_manifest(
+            _set_target_schedule_binding(fixture, schedule_binding),
+            fixture.repo,
+            _record(fixture.schedule),
+        )
+
+
+@pytest.mark.parametrize(("field", "value"), [("sha256", "0" * 64), ("byte_count", 0)])
+def test_target_schedule_scope_remains_bound_to_frozen_schedule(
+    fixture: Fixture, field: str, value: Any
+) -> None:
+    schedule_binding = {
+        **_record(fixture.schedule),
+        "path": fixture.schedule.relative_to(fixture.repo).as_posix(),
+        "path_base": "repository",
+    }
+    frozen_schedule = _record(fixture.schedule)
+    frozen_schedule[field] = value
+
+    with pytest.raises(ValueError, match="schedule binding mismatch"):
+        _validate_target_manifest(
+            _set_target_schedule_binding(fixture, schedule_binding),
+            fixture.repo,
+            frozen_schedule,
+        )
+
+
+@pytest.mark.parametrize("binding", ["selection", "candidate"])
+def test_scope_field_is_not_allowed_on_ordinary_artifact_bindings(
+    fixture: Fixture, binding: str
+) -> None:
+    selection = json.loads(fixture.selection_path.read_text())
+    if binding == "selection":
+        selection["common_target_manifest"]["path_base"] = "absolute"
+    else:
+        selection["candidates"][0]["config"]["path_base"] = "absolute"
+    _write_json(fixture.selection_path, selection)
+
+    with pytest.raises(ValueError, match="artifact binding is incomplete"):
+        fixture.run()
+
+
 def test_freeze_writes_selected_configs_and_complete_manifest(fixture: Fixture) -> None:
     prepared = fixture.run()
 

@@ -318,6 +318,67 @@ def _require_complete_file_binding(value: object, role: str) -> None:
         raise ValueError(f"{role} artifact binding is incomplete")
 
 
+def _verify_target_schedule_binding(
+    value: object,
+    *,
+    repo_root: Path,
+    target_manifest_dir: Path,
+    expected_path: Path,
+) -> dict[str, Any]:
+    role = "common target schedule"
+    if (
+        not isinstance(value, dict)
+        or set(value) not in (
+            {"path", "sha256", "byte_count"},
+            {"path", "path_base", "sha256", "byte_count"},
+        )
+        or not isinstance(value.get("path"), str)
+        or not value["path"].strip()
+        or not _is_sha256(value.get("sha256"))
+        or type(value.get("byte_count")) is not int
+        or value["byte_count"] < 0
+    ):
+        raise ValueError(f"{role} artifact binding is incomplete")
+
+    raw_path = Path(value["path"]).expanduser()
+    path_base = value.get("path_base")
+    if path_base is None:
+        path = _resolve_path(raw_path.as_posix(), target_manifest_dir, role)
+    elif path_base == "repository":
+        if raw_path.is_absolute():
+            raise ValueError(f"{role} repository path must be relative")
+        if ".." in raw_path.parts:
+            raise ValueError(f"{role} repository path must not escape repository root")
+        resolved_root = repo_root.resolve(strict=True)
+        if resolved_root != repo_root.absolute() or not resolved_root.is_dir():
+            raise ValueError("repository root must be a direct directory")
+        candidate = resolved_root / raw_path
+        try:
+            candidate.resolve(strict=True).relative_to(resolved_root)
+        except (OSError, ValueError) as exc:
+            raise ValueError(
+                f"{role} repository path must not escape repository root"
+            ) from exc
+        path = _absolute_path(candidate)
+    elif path_base == "absolute":
+        if not raw_path.is_absolute():
+            raise ValueError(f"{role} absolute path_base requires an absolute path")
+        path = _absolute_path(raw_path)
+    else:
+        raise ValueError(f"{role} has unknown path_base: {path_base!r}")
+
+    return _verify_binding(
+        {
+            "path": str(path),
+            "sha256": value["sha256"],
+            "byte_count": value["byte_count"],
+        },
+        repo_root=repo_root,
+        role=role,
+        expected_path=expected_path,
+    )
+
+
 def _git(repo_root: Path, *arguments: str, check: bool = True) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         ["git", "-C", str(repo_root), *arguments],
@@ -544,11 +605,10 @@ def _validate_target_manifest(
         or not isinstance(arrays.get("arrays"), dict)
     ):
         raise ValueError("common target manifest is incomplete or unbound")
-    _require_complete_file_binding(metadata["schedule"], "common target schedule")
-    target_schedule = _verify_binding(
+    target_schedule = _verify_target_schedule_binding(
         metadata["schedule"],
-        repo_root=target_path.parent,
-        role="common target schedule",
+        repo_root=repo_root,
+        target_manifest_dir=target_path.parent,
         expected_path=Path(str(schedule_binding["path"])),
     )
     if (
