@@ -381,10 +381,12 @@ def _load_bundle(
     list[tuple[Path, bytes, str]],
     dict[str, dict[str, Any]],
     dict[str, dict[str, Any]],
+    list[tuple[Path, tuple[int, int], str]],
 ]:
     if len(paths) != 2:
         raise ValueError(f"{role} requires exactly two checkpoint indexes")
     loaded: dict[str, tuple[Path, dict[str, Any], bytes, Path, bytes]] = {}
+    root_witnesses: dict[str, tuple[Path, tuple[int, int], str]] = {}
     for raw_path in paths:
         path = Path(raw_path)
         index, index_raw = _load_json(path, f"{role} checkpoint index")
@@ -413,6 +415,13 @@ def _load_bundle(
         scene = index.get("scene")
         if scene not in SCENES or scene in loaded:
             raise ValueError(f"{role} checkpoint indexes must cover both scenes exactly")
+        output_root = Path(os.path.abspath(path.parent))
+        status = os.stat(output_root, follow_symlinks=False)
+        root_witnesses[scene] = (
+            output_root,
+            (status.st_dev, status.st_ino),
+            f"{role} {scene} root",
+        )
         if expected_frozen_identities is not None:
             frozen_identity = index.get("frozen_run_identity")
             if not isinstance(frozen_identity, Mapping) or _canonical_bytes(
@@ -422,8 +431,6 @@ def _load_bundle(
             execution = index.get("run_execution")
             if not isinstance(execution, Mapping) or set(execution) != _RUN_EXECUTION_FIELDS:
                 raise ValueError(f"{role} {scene} run execution identity is invalid")
-            output_root = Path(os.path.abspath(path.parent))
-            status = os.stat(output_root, follow_symlinks=False)
             execution_base = {
                 field: execution.get(field)
                 for field in _RUN_EXECUTION_FIELDS
@@ -505,6 +512,7 @@ def _load_bundle(
         witnesses,
         frozen_identities,
         run_executions,
+        [root_witnesses[scene] for scene in SCENES],
     )
 
 
@@ -634,6 +642,7 @@ def finalize_occlusion_ablation(
         signed_witnesses,
         signed_frozen_identities,
         signed_run_executions,
+        signed_root_witnesses,
     ) = _load_bundle(
         signed_checkpoints,
         expected_configs=parent_configs,
@@ -649,6 +658,7 @@ def finalize_occlusion_ablation(
         missing_witnesses,
         missing_frozen_identities,
         missing_run_executions,
+        missing_root_witnesses,
     ) = _load_bundle(
         ablation_checkpoints,
         expected_configs=ablation_configs,
@@ -814,6 +824,13 @@ def finalize_occlusion_ablation(
     ]
     for path, raw, role in witnesses:
         if _read_regular_file(path, role) != raw:
+            raise ValueError(f"{role} changed during finalization")
+    for path, identity, role in (*signed_root_witnesses, *missing_root_witnesses):
+        try:
+            status = os.stat(path, follow_symlinks=False)
+        except OSError as error:
+            raise ValueError(f"{role} changed during finalization") from error
+        if (status.st_dev, status.st_ino) != identity:
             raise ValueError(f"{role} changed during finalization")
     _write_exclusive(output, _canonical_bytes(final))
     directory = os.open(output.parent, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))

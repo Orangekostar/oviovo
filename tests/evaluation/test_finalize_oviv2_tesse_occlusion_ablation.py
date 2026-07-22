@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 from typing import Any
@@ -561,6 +562,30 @@ def test_rejects_signed_bundle_formal_identity_drift(
 
     with pytest.raises(ValueError, match=message):
         _finalize(fixture, tmp_path)
+
+
+def test_rejects_byte_identical_signed_root_replacement_during_reevaluation(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture(tmp_path)
+    evaluate = _reevaluator(fixture)
+    replaced = False
+
+    def replace_root(**kwargs: Any) -> dict[str, Any]:
+        nonlocal replaced
+        result = evaluate(**kwargs)
+        if not replaced and tuple(Path(path) for path in kwargs["checkpoint_index"]) == fixture[
+            "signed_indexes"
+        ]:
+            root = fixture["signed_indexes"][0].parent
+            original = root.with_name(f"{root.name}-original")
+            root.rename(original)
+            shutil.copytree(original, root)
+            replaced = True
+        return result
+
+    with pytest.raises(ValueError, match="root changed during finalization"):
+        _finalize(fixture, tmp_path, reevaluate=replace_root)
 
 
 @pytest.mark.parametrize("case", ["signed_gate", "no_degradation"])
