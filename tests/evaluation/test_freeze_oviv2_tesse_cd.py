@@ -7,6 +7,7 @@ import json
 import math
 import os
 from pathlib import Path
+import shlex
 import subprocess
 import sys
 from typing import Any
@@ -146,6 +147,23 @@ class Fixture:
             self.repo / "scripts/evaluation/finalize_tesse_t2.py",
             b"# official finalizer fixture\n",
         )
+        self.canonicalizer = _write_bytes(
+            self.repo
+            / "scripts/evaluation/canonicalize_tesse_common_v2_summary.py",
+            b"# canonical summary generator\n",
+        )
+        self.release_finalizer = _write_bytes(
+            self.repo
+            / "scripts/evaluation/finalize_oviv2_tesse_common_v2_release.py",
+            b"# OVIV2 common-v2 release finalizer\n",
+        )
+        self.label_spaces = {
+            scene: _write_bytes(
+                self.repo / f"label_spaces/{scene}.yaml",
+                f"labels: [{scene}]\n".encode(),
+            )
+            for scene in SCENES
+        }
 
         self.camera = _write_json(
             self.repo / "assets/rgbd/cam_params.json",
@@ -496,6 +514,8 @@ class Fixture:
             output_apartment_config=self.output_apartment,
             output_office_config=self.output_office,
             output_manifest=self.output_manifest,
+            apartment_label_space=self.label_spaces["apartment"],
+            office_label_space=self.label_spaces["office"],
         )
 
     def _write_selection(
@@ -1094,6 +1114,13 @@ def test_freeze_writes_selected_configs_and_complete_manifest(fixture: Fixture) 
         fixture.evaluator
     )
     assert set(manifest["shared_bindings"]["finalizers"]) == {"common_v2", "official_t2"}
+    assert manifest["release_bindings"] == {
+        "canonical_summary_generator": _record(fixture.canonicalizer),
+        "release_finalizer": _record(fixture.release_finalizer),
+        "label_spaces": {
+            scene: _record(path) for scene, path in fixture.label_spaces.items()
+        },
+    }
     assert manifest["environment"] == fixture.environment
     assert len(manifest["commands"]["mapping"]) == 4
     assert manifest["commands"]["cwd"] == str(fixture.repo)
@@ -1101,6 +1128,18 @@ def test_freeze_writes_selected_configs_and_complete_manifest(fixture: Fixture) 
     assert all(
         str(fixture.repo / "scripts/evaluation/run_oviv2_tesse_cd.py") in command
         for command in manifest["commands"]["mapping"]
+    )
+    parsed_commands = [shlex.split(command) for command in manifest["commands"]["mapping"]]
+    assert [command[command.index("--run-slot") + 1] for command in parsed_commands] == [
+        "apartment_run1",
+        "apartment_run2",
+        "office_run1",
+        "office_run2",
+    ]
+    assert all(
+        command[command.index("--freeze-manifest") + 1]
+        == str(fixture.output_manifest.resolve())
+        for command in parsed_commands
     )
     assert manifest["office_pre_freeze_audit"]["metric_sources_found"] == []
     assert set(manifest["output_roots"]) == {"apartment_run1", "apartment_run2", "office_run1", "office_run2"}
@@ -1113,6 +1152,14 @@ def test_freeze_writes_selected_configs_and_complete_manifest(fixture: Fixture) 
     ):
         parsed = json.loads(path.read_text())
         assert path.read_bytes() == _canonical_json_bytes(parsed)
+
+
+def test_finalize_rejects_release_tool_changed_after_prepare(fixture: Fixture) -> None:
+    fixture.run()
+    fixture.canonicalizer.write_bytes(b"# changed canonicalizer\n")
+
+    with pytest.raises(ValueError, match="prepared freeze manifest"):
+        fixture.finalize()
 
 
 def test_finalize_rejects_configs_not_bound_to_clean_commit(fixture: Fixture) -> None:

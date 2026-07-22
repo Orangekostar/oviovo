@@ -306,6 +306,16 @@ def _verify_binding(
     return {"path": str(path), "sha256": actual_hash, "byte_count": byte_count}
 
 
+def _frozen_file_binding(path: Path, role: str) -> dict[str, Any]:
+    absolute = _absolute_path(path)
+    _, digest, byte_count = _read_snapshot(absolute, role, collect=False)
+    return {
+        "path": str(absolute),
+        "sha256": digest,
+        "byte_count": byte_count,
+    }
+
+
 def _require_complete_file_binding(value: object, role: str) -> None:
     if (
         not isinstance(value, dict)
@@ -1781,6 +1791,10 @@ def _mapping_commands(
                         str(config_paths[scene]),
                         "--output",
                         str(output),
+                        "--freeze-manifest",
+                        str(_absolute_path(args.output_manifest)),
+                        "--run-slot",
+                        f"{scene}_run{repeat}",
                     ]
                 )
             )
@@ -2287,6 +2301,28 @@ def _freeze_impl(
             "official_t2": declared["shared"]["official_finalizer"],
         },
     }
+    release_bindings = {
+        "canonical_summary_generator": _frozen_file_binding(
+            root
+            / "scripts/evaluation/canonicalize_tesse_common_v2_summary.py",
+            "canonical summary generator",
+        ),
+        "release_finalizer": _frozen_file_binding(
+            root
+            / "scripts/evaluation/finalize_oviv2_tesse_common_v2_release.py",
+            "OVIV2 common-v2 release finalizer",
+        ),
+        "label_spaces": {
+            "apartment": _frozen_file_binding(
+                _absolute_path(args.apartment_label_space),
+                "Apartment label space",
+            ),
+            "office": _frozen_file_binding(
+                _absolute_path(args.office_label_space),
+                "Office label space",
+            ),
+        },
+    }
     manifest = {
         "schema_version": 1,
         "freeze_id": "oviv2-tessecd-v1",
@@ -2337,6 +2373,7 @@ def _freeze_impl(
             },
         },
         "shared_bindings": shared_bindings,
+        "release_bindings": release_bindings,
         "models": models,
         "environment": dict(environment) if environment is not None else _default_environment(),
         "commands": {
@@ -2373,7 +2410,10 @@ def _freeze_impl(
             or prepared.get("algorithm") != manifest["algorithm"]
             or prepared.get("selection") != manifest["selection"]
             or prepared.get("shared_bindings") != manifest["shared_bindings"]
+            or prepared.get("release_bindings") != manifest["release_bindings"]
             or prepared.get("models") != manifest["models"]
+            or prepared.get("commands") != manifest["commands"]
+            or prepared.get("output_roots") != manifest["output_roots"]
             or any(
                 prepared.get("scenes", {}).get(scene, {}).get("frozen_config")
                 != manifest["scenes"][scene]["frozen_config"]
@@ -2452,6 +2492,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output-apartment-config", type=Path, required=True)
     parser.add_argument("--output-office-config", type=Path, required=True)
     parser.add_argument("--output-manifest", type=Path, required=True)
+    parser.add_argument("--apartment-label-space", type=Path, required=True)
+    parser.add_argument("--office-label-space", type=Path, required=True)
     return parser.parse_args(argv)
 
 
