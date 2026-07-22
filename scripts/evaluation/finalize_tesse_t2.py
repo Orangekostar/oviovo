@@ -56,7 +56,10 @@ def _run_identity(
         raise ValueError(f"{label} run identity run_id is not canonical")
     if not _is_lower_sha256(raw.get("config_sha256")):
         raise ValueError(f"{label} run identity config_sha256 is invalid")
-    return dict(raw)
+    return {
+        "run_id": run_id,
+        "config_sha256": raw["config_sha256"],
+    }
 
 
 def _paired_run_identity(

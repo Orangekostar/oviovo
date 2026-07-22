@@ -594,6 +594,28 @@ def test_scene_evidence_rejects_metrics_status_run_identity_mismatch(
         )
 
 
+def test_scene_evidence_normalizes_run_identity_extra_fields(
+    tmp_path: Path,
+) -> None:
+    metrics = _dualmap_scene("apartment", tmp_path / "apartment_sources")
+    status = _dualmap_status("apartment")
+    metrics["run_identity"]["metrics_note"] = "must not propagate"
+    status["run_identity"]["status_note"] = "must not propagate"
+    metrics_path = tmp_path / "official_metrics.json"
+    metrics_path.write_text(json.dumps(metrics) + "\n", encoding="utf-8")
+    status_path = tmp_path / "run_status.json"
+    status_path.write_text(json.dumps(status) + "\n", encoding="utf-8")
+
+    evidence = finalize_tesse_t2.build_scene_evidence(
+        metrics_path,
+        status_path,
+        method_key="DUALMAP",
+        mode="native",
+    )
+
+    assert evidence["run_identity"] == _run_identity()
+
+
 @pytest.mark.parametrize("missing_from", ["metrics", "status"])
 def test_scene_evidence_rejects_missing_run_identity(
     tmp_path: Path, missing_from: str
