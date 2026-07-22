@@ -357,6 +357,10 @@ def _validate_metric_run_layout(
         raise ValueError(
             "official metrics inputs and outputs must share the same run root"
         )
+    for name in ("static_objects.csv", "dynamic_objects.csv", "background_mesh.csv"):
+        result = results / name
+        if result.is_symlink():
+            raise ValueError(f"Khronos result CSV must not be a symlink: {result}")
     return status_path
 
 

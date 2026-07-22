@@ -540,6 +540,31 @@ def test_repeated_metrics_rejects_symlinked_results_directory(
         )
 
 
+def test_repeated_metrics_rejects_symlinked_result_files(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    run_root = tmp_path / "run"
+    status_path, _ = _validated_run_status(run_root, monkeypatch)
+    external = _write_valid_results(tmp_path / "external-results")
+    results = run_root / "map/results"
+    results.mkdir()
+    for source in external.iterdir():
+        (results / source.name).symlink_to(source)
+    evaluation = run_root / "evaluation"
+    evaluation.mkdir()
+
+    with pytest.raises(ValueError, match="result CSV must not be a symlink"):
+        write_repeated_metrics(
+            results_dir=results,
+            scene="apartment",
+            method="OVIV2",
+            mode="causal_checkpoints",
+            metrics_path=evaluation / "official_metrics.json",
+            repeat_path=evaluation / "official_metrics.repeat.json",
+            run_status_path=status_path,
+        )
+
+
 def test_repeated_metrics_rejects_noncanonical_output_path(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
