@@ -4,10 +4,12 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager, ExitStack
 from dataclasses import asdict, dataclass
 import base64
 import binascii
 import hashlib
+import io
 import json
 import math
 import os
@@ -16,6 +18,7 @@ import re
 import secrets
 import stat
 import sys
+import tempfile
 from typing import Any, Mapping, Sequence
 
 import numpy as np
@@ -44,6 +47,7 @@ _STAGE3_LINEAGE_COMMIT = "47962fbd9f363c0696cc5016f8ab42f83a3bf7e5"
 _MANIFEST_NAME = "dense_manifest.json"
 _MAX_JSON_BYTES = 8 * 1024 * 1024
 _MAX_ARRAY_BYTES = 512 * 1024 * 1024
+_MAX_RGB_BYTES = 128 * 1024 * 1024
 _MAX_WORKER_RESPONSE_CHARS = 16 * 1024 * 1024 + 1
 _SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
 _ARRAY_BLOCK_KEYS = frozenset({"encoding", "dtype", "shape", "data"})
@@ -97,6 +101,10 @@ _MANIFEST_KEYS = frozenset(
 )
 
 
+class DenseManifestPublicationUncertainError(RuntimeError):
+    """The complete manifest was linked, but directory durability is uncertain."""
+
+
 @dataclass(frozen=True)
 class _WorkerConfig:
     command: tuple[str, ...]
@@ -111,6 +119,12 @@ class _RgbFrameBinding:
     source_frame_id: int
     dataset_frame_id: int
     path: Path
+    device: int
+    inode: int
+    size: int
+    mtime_ns: int
+    ctime_ns: int
+    expected_sha256: str | None
 
 
 @dataclass(frozen=True)
@@ -124,6 +138,8 @@ class _Preflight:
     classes: tuple[str, ...]
     object_semantic_ids: tuple[int, ...]
     vocabulary_sha256: str
+    worker_vocabulary_bytes: bytes | None
+    worker_vocabulary_sha256: str
     worker: _WorkerConfig
 
 
@@ -257,13 +273,16 @@ def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
         | getattr(os, "O_DIRECTORY", 0)
         | getattr(os, "O_NOFOLLOW", 0)
     )
-    parent_descriptor = os.open(parent, parent_flags)
+    parent_descriptor: int | None = None
     temporary_name: str | None = None
     temporary_descriptor: int | None = None
     destination_linked = False
     directory_changed = False
+    failure: BaseException | None = None
+    failure_traceback = None
 
     def require_parent_identity() -> None:
+        assert parent_descriptor is not None
         opened = os.fstat(parent_descriptor)
         try:
             current = os.stat(parent, follow_symlinks=False)
@@ -278,6 +297,7 @@ def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
             raise RuntimeError("manifest parent directory changed during publication")
 
     try:
+        parent_descriptor = os.open(parent, parent_flags)
         require_parent_identity()
         for _ in range(128):
             candidate = f".{path.name}.{secrets.token_hex(16)}.tmp"
@@ -322,25 +342,56 @@ def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
             follow_symlinks=False,
         )
         destination_linked = True
-        try:
-            require_parent_identity()
-        except RuntimeError:
-            os.unlink(path.name, dir_fd=parent_descriptor)
-            destination_linked = False
-            raise
+        require_parent_identity()
         os.unlink(temporary_name, dir_fd=parent_descriptor)
         temporary_name = None
+        os.fsync(parent_descriptor)
+    except BaseException as exc:
+        failure = exc
+        failure_traceback = exc.__traceback__
     finally:
         if temporary_descriptor is not None:
-            os.close(temporary_descriptor)
-        if temporary_name is not None:
+            try:
+                os.close(temporary_descriptor)
+            except BaseException as exc:
+                if failure is None:
+                    failure = exc
+                    failure_traceback = exc.__traceback__
+        if temporary_name is not None and parent_descriptor is not None:
             try:
                 os.unlink(temporary_name, dir_fd=parent_descriptor)
             except FileNotFoundError:
                 pass
-        if directory_changed or destination_linked:
-            os.fsync(parent_descriptor)
-        os.close(parent_descriptor)
+            except BaseException as exc:
+                if failure is None:
+                    failure = exc
+                    failure_traceback = exc.__traceback__
+        if (
+            parent_descriptor is not None
+            and directory_changed
+            and not destination_linked
+        ):
+            try:
+                os.fsync(parent_descriptor)
+            except BaseException as exc:
+                if failure is None:
+                    failure = exc
+                    failure_traceback = exc.__traceback__
+        if parent_descriptor is not None:
+            try:
+                os.close(parent_descriptor)
+            except BaseException as exc:
+                if failure is None:
+                    failure = exc
+                    failure_traceback = exc.__traceback__
+
+    if failure is not None:
+        if destination_linked:
+            raise DenseManifestPublicationUncertainError(
+                "dense manifest publication is uncertain after link; "
+                "the complete target was retained and automatic retry is forbidden"
+            ) from failure
+        raise failure.with_traceback(failure_traceback)
 
 
 def _classes_argument(command: Sequence[str]) -> str | None:
@@ -623,6 +674,60 @@ def _load_classes(
     return tuple(classes), sha256_file(path)
 
 
+def _canonical_worker_vocabulary(classes: Sequence[str]) -> bytes:
+    return (
+        json.dumps(
+            {"aliases": {}, "classes": list(classes)},
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=True,
+            allow_nan=False,
+        ).encode("utf-8")
+        + b"\n"
+    )
+
+
+@contextmanager
+def _materialized_worker_config(preflight: _Preflight):
+    if preflight.worker_vocabulary_bytes is None:
+        yield preflight.worker
+        return
+    with tempfile.TemporaryDirectory(prefix="oviv2-dense-vocabulary-") as raw_directory:
+        directory = Path(raw_directory)
+        path = directory / "classes.json"
+        descriptor = os.open(
+            path,
+            os.O_WRONLY
+            | os.O_CREAT
+            | os.O_EXCL
+            | getattr(os, "O_CLOEXEC", 0)
+            | getattr(os, "O_NOFOLLOW", 0),
+            0o600,
+        )
+        try:
+            payload = preflight.worker_vocabulary_bytes
+            written = 0
+            while written < len(payload):
+                count = os.write(descriptor, payload[written:])
+                if count <= 0:
+                    raise OSError("worker vocabulary projection write made no progress")
+                written += count
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
+        os.chmod(path, 0o400)
+        _fsync_directory(directory)
+        if sha256_file(path) != preflight.worker_vocabulary_sha256:
+            raise RuntimeError("worker vocabulary projection hash changed before startup")
+        yield _WorkerConfig(
+            command=_replace_classes_argument(preflight.worker.command, path),
+            env=preflight.worker.env,
+            cwd=preflight.worker.cwd,
+            request_timeout_sec=preflight.worker.request_timeout_sec,
+            classes_json=path,
+        )
+
+
 def _load_rgb_frame(
     dataset: ReplicaRoom0Dataset | ScanNet200Dataset | TesseCdRgbdDataset,
     cache_index: int,
@@ -631,20 +736,28 @@ def _load_rgb_frame(
     if binding is None:
         if isinstance(dataset, TesseCdRgbdDataset):
             record = dataset.records[cache_index]
-            binding = _RgbFrameBinding(record.frame_index, record.frame_index, record.rgb_path)
+            binding = _capture_rgb_binding(
+                record.frame_index,
+                record.frame_index,
+                record.rgb_path,
+            )
         elif isinstance(dataset, ScanNet200Dataset):
             dataset_frame_id = dataset.frame_indices[cache_index]
-            binding = _RgbFrameBinding(
+            binding = _capture_rgb_binding(
                 dataset_frame_id,
                 dataset_frame_id,
                 dataset.root / "color" / f"{dataset_frame_id}.jpg",
             )
         else:
             record = dataset._records[cache_index]
-            binding = _RgbFrameBinding(record.frame_index, record.frame_index, record.rgb_path)
-    rgb_path = binding.path
+            binding = _capture_rgb_binding(
+                record.frame_index,
+                record.frame_index,
+                record.rgb_path,
+            )
     image_shape = (dataset.intrinsics.height, dataset.intrinsics.width)
-    with Image.open(rgb_path) as image:
+    raw = _read_bound_rgb(binding)
+    with Image.open(io.BytesIO(raw)) as image:
         if isinstance(dataset, ScanNet200Dataset):
             image = image.convert("RGB").resize(
                 (image_shape[1], image_shape[0]),
@@ -660,23 +773,132 @@ def _load_rgb_frame(
     return np.ascontiguousarray(rgb)
 
 
+def _binding_identity(status: os.stat_result) -> tuple[int, int, int, int, int]:
+    return (
+        status.st_dev,
+        status.st_ino,
+        status.st_size,
+        status.st_mtime_ns,
+        status.st_ctime_ns,
+    )
+
+
+def _capture_rgb_binding(
+    source_frame_id: int,
+    dataset_frame_id: int,
+    path: Path,
+    expected_sha256: str | None = None,
+) -> _RgbFrameBinding:
+    if expected_sha256 is not None and _SHA256_PATTERN.fullmatch(expected_sha256) is None:
+        raise ValueError("RGB expected SHA-256 is invalid")
+    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        descriptor = os.open(path, flags)
+    except OSError as exc:
+        raise ValueError(f"RGB frame must be a regular non-symlink file: {path}") from exc
+    try:
+        before = os.fstat(descriptor)
+        if not stat.S_ISREG(before.st_mode) or before.st_size > _MAX_RGB_BYTES:
+            raise ValueError(f"RGB frame is not a bounded regular file: {path}")
+        if expected_sha256 is not None:
+            digest = hashlib.sha256()
+            byte_count = 0
+            while True:
+                chunk = os.read(descriptor, 1024 * 1024)
+                if not chunk:
+                    break
+                byte_count += len(chunk)
+                if byte_count > _MAX_RGB_BYTES:
+                    raise ValueError(f"RGB frame exceeds the byte limit: {path}")
+                digest.update(chunk)
+            after = os.fstat(descriptor)
+            if (
+                byte_count != before.st_size
+                or _binding_identity(before) != _binding_identity(after)
+            ):
+                raise ValueError(f"RGB frame changed while binding: {path}")
+            if digest.hexdigest() != expected_sha256:
+                raise ValueError(f"RGB frame hash mismatch: {path}")
+        else:
+            after = os.fstat(descriptor)
+            if _binding_identity(before) != _binding_identity(after):
+                raise ValueError(f"RGB frame changed while binding: {path}")
+    finally:
+        os.close(descriptor)
+    device, inode, size, mtime_ns, ctime_ns = _binding_identity(after)
+    return _RgbFrameBinding(
+        source_frame_id=source_frame_id,
+        dataset_frame_id=dataset_frame_id,
+        path=path,
+        device=device,
+        inode=inode,
+        size=size,
+        mtime_ns=mtime_ns,
+        ctime_ns=ctime_ns,
+        expected_sha256=expected_sha256,
+    )
+
+
+def _read_bound_rgb(binding: _RgbFrameBinding) -> bytes:
+    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        descriptor = os.open(binding.path, flags)
+    except OSError as exc:
+        raise ValueError("RGB frame identity changed after preflight") from exc
+    expected_identity = (
+        binding.device,
+        binding.inode,
+        binding.size,
+        binding.mtime_ns,
+        binding.ctime_ns,
+    )
+    try:
+        before = os.fstat(descriptor)
+        if not stat.S_ISREG(before.st_mode) or _binding_identity(before) != expected_identity:
+            raise ValueError("RGB frame identity changed after preflight")
+        chunks: list[bytes] = []
+        byte_count = 0
+        while True:
+            chunk = os.read(descriptor, 1024 * 1024)
+            if not chunk:
+                break
+            byte_count += len(chunk)
+            if byte_count > binding.size or byte_count > _MAX_RGB_BYTES:
+                raise ValueError("RGB frame changed while reading")
+            chunks.append(chunk)
+        after = os.fstat(descriptor)
+        if byte_count != binding.size or _binding_identity(after) != expected_identity:
+            raise ValueError("RGB frame changed while reading")
+    finally:
+        os.close(descriptor)
+    raw = b"".join(chunks)
+    if (
+        binding.expected_sha256 is not None
+        and hashlib.sha256(raw).hexdigest() != binding.expected_sha256
+    ):
+        raise ValueError("RGB frame hash changed after preflight")
+    return raw
+
+
 def _bind_rgb_frames(
     dataset: ReplicaRoom0Dataset | ScanNet200Dataset | TesseCdRgbdDataset,
     source_frame_ids: tuple[int, ...],
+    expected_sha256: Mapping[int, str] | None = None,
 ) -> tuple[_RgbFrameBinding, ...]:
     if len(dataset) != len(source_frame_ids):
         raise ValueError("dataset length must match the frozen source frame IDs")
     if isinstance(dataset, TesseCdRgbdDataset):
         return tuple(
-            _RgbFrameBinding(source_id, record.frame_index, record.rgb_path)
+            _capture_rgb_binding(source_id, record.frame_index, record.rgb_path)
             for source_id, record in zip(source_frame_ids, dataset.records)
         )
     if isinstance(dataset, ScanNet200Dataset):
         return tuple(
-            _RgbFrameBinding(
+            _capture_rgb_binding(
                 source_id,
                 dataset_frame_id,
                 dataset.root / "color" / f"{dataset_frame_id}.jpg",
+                None if expected_sha256 is None else expected_sha256.get(source_id),
             )
             for source_id, dataset_frame_id in zip(
                 source_frame_ids,
@@ -684,7 +906,7 @@ def _bind_rgb_frames(
             )
         )
     return tuple(
-        _RgbFrameBinding(source_id, record.frame_index, record.rgb_path)
+        _capture_rgb_binding(source_id, record.frame_index, record.rgb_path)
         for source_id, record in zip(source_frame_ids, dataset._records)
     )
 
@@ -902,6 +1124,7 @@ def _preflight(
             if source_path is not None
             else None
         )
+    rgb_expected_sha256: dict[int, str] | None = None
     if dataset_name == "Replica":
         source_start = _strict_int(
             config.get("source_start"),
@@ -977,6 +1200,16 @@ def _preflight(
         object_semantic_ids=object_semantic_ids,
         scene=scene if dataset_name == "TESSE-CD" else None,
     )
+    worker_vocabulary_bytes = (
+        _canonical_worker_vocabulary(classes)
+        if dataset_name == "TESSE-CD"
+        else None
+    )
+    worker_vocabulary_sha256 = (
+        hashlib.sha256(worker_vocabulary_bytes).hexdigest()
+        if worker_vocabulary_bytes is not None
+        else vocabulary_sha256
+    )
     if dataset_name == "Replica":
         dataset: ReplicaRoom0Dataset | ScanNet200Dataset | TesseCdRgbdDataset
         dataset = ReplicaRoom0Dataset(dataset_root)
@@ -990,6 +1223,9 @@ def _preflight(
                 for role in ("color", "depth", "pose")
             }
             for source_id in source_ids
+        }
+        rgb_expected_sha256 = {
+            source_id: hashes["color"] for source_id, hashes in input_hashes.items()
         }
         raw_image_shape = scene_record.get("image_shape")
         if not isinstance(raw_image_shape, list) or len(raw_image_shape) != 2:
@@ -1021,7 +1257,11 @@ def _preflight(
         _strict_int(dataset.intrinsics.height, "dataset image height", positive=True),
         _strict_int(dataset.intrinsics.width, "dataset image width", positive=True),
     )
-    rgb_bindings = _bind_rgb_frames(dataset, source_ids)
+    rgb_bindings = _bind_rgb_frames(
+        dataset,
+        source_ids,
+        expected_sha256=rgb_expected_sha256,
+    )
     if isinstance(dataset, ReplicaRoom0Dataset):
         _validate_replica_frame_headers(
             dataset,
@@ -1043,6 +1283,8 @@ def _preflight(
         classes=classes,
         object_semantic_ids=object_semantic_ids,
         vocabulary_sha256=vocabulary_sha256,
+        worker_vocabulary_bytes=worker_vocabulary_bytes,
+        worker_vocabulary_sha256=worker_vocabulary_sha256,
         worker=worker,
     )
 
@@ -1080,8 +1322,8 @@ def _metadata(response: dict[str, Any], preflight: _Preflight) -> _WorkerMetadat
     provenance = response.get("provenance")
     if not isinstance(provenance, dict) or set(provenance) != _PROVENANCE_KEYS:
         raise ValueError("worker metadata provenance keys do not match the contract")
-    if provenance.get("vocabulary_sha256") != preflight.vocabulary_sha256:
-        raise ValueError("worker vocabulary_sha256 does not match config classes JSON")
+    if provenance.get("vocabulary_sha256") != preflight.worker_vocabulary_sha256:
+        raise ValueError("worker vocabulary_sha256 does not match the frozen projection")
     typed = DenseSemanticProvenance(
         **provenance,
         cache_prefix_sha256="0" * 64,
@@ -1437,14 +1679,17 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "output path",
     )
 
-    client = JsonLineWorkerClient(
-        command=list(preflight.worker.command),
-        env=dict(preflight.worker.env),
-        cwd=str(preflight.worker.cwd),
-        request_timeout_sec=preflight.worker.request_timeout_sec,
-        max_response_chars=_MAX_WORKER_RESPONSE_CHARS,
-    )
+    resources = ExitStack()
+    client: JsonLineWorkerClient | None = None
     try:
+        worker = resources.enter_context(_materialized_worker_config(preflight))
+        client = JsonLineWorkerClient(
+            command=list(worker.command),
+            env=dict(worker.env),
+            cwd=str(worker.cwd),
+            request_timeout_sec=worker.request_timeout_sec,
+            max_response_chars=_MAX_WORKER_RESPONSE_CHARS,
+        )
         metadata = _metadata(
             _request(client, {"operation": "metadata"}, "metadata request"),
             preflight,
@@ -1511,7 +1756,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         _atomic_json(output / _MANIFEST_NAME, manifest)
         return manifest
     finally:
-        client.close()
+        if client is not None:
+            client.close()
+        resources.close()
 
 
 def main(argv: list[str] | None = None) -> int:

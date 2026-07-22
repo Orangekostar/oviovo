@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
 import subprocess
+import stat
 import sys
 
 import numpy as np
@@ -17,6 +19,7 @@ from scripts.precompute_oviv2_dense_semantics import (
     _atomic_json,
     _load_rgb_frame,
     _load_json,
+    _materialized_worker_config,
     _preflight,
     parse_args,
     run,
@@ -84,10 +87,11 @@ def argument(name):
 
 
 classes_path = Path(
-    os.environ.get("FAKE_CLASSES_JSON") or argument("--classes-json")
+    argument("--classes-json") or os.environ.get("FAKE_CLASSES_JSON")
 )
 classes_raw = classes_path.read_bytes()
-classes = json.loads(classes_raw)["classes"]
+classes_payload = json.loads(classes_raw)
+classes = classes_payload["classes"]
 vocabulary_sha256 = hashlib.sha256(classes_raw).hexdigest()
 mode = os.environ.get("FAKE_MODE", "ok")
 sample_stride = 1 if mode == "bool_infer_stride" else (4 if mode == "tesse" else 2)
@@ -107,7 +111,13 @@ provenance = {
     "prompt_sha256": "1" * 64,
     "inference_config_sha256": "2" * 64,
 }
-log({"event": "start", "pid": os.getpid(), "argv": sys.argv[1:]})
+log({
+    "event": "start",
+    "pid": os.getpid(),
+    "argv": sys.argv[1:],
+    "classes_keys": sorted(classes_payload),
+    "classes_sha256": vocabulary_sha256,
+})
 
 for line in sys.stdin:
     request = json.loads(line)
@@ -733,6 +743,7 @@ def test_tesse_preflight_uses_checked_scene_contract_without_materializing_rgb(
     assert preflight.vocabulary_sha256 == hashlib.sha256(
         classes_json.read_bytes()
     ).hexdigest()
+    assert preflight.worker_vocabulary_sha256 != preflight.vocabulary_sha256
 
 
 def test_tesse_load_rgb_frame_streams_only_requested_rgb_without_depth_decode(
@@ -754,12 +765,12 @@ def test_tesse_load_rgb_frame_streams_only_requested_rgb_without_depth_decode(
     monkeypatch.setattr(Image.Image, "convert", tracked_convert)
     monkeypatch.setattr(PngImagePlugin.PngImageFile, "load", reject_depth_load)
 
-    rgb = _load_rgb_frame(preflight.dataset, 1)
+    rgb = _load_rgb_frame(preflight.dataset, 1, preflight.rgb_bindings[1])
 
     assert rgb.shape == (480, 720, 3)
     assert rgb.dtype == np.uint8
     assert len(converted) == 1
-    assert converted[0] is not None and converted[0].endswith("frame000001.jpg")
+    assert int(rgb[0, 0, 0]) == 21
 
 
 def test_tesse_precompute_preserves_frozen_radseg_output_contract(
@@ -782,6 +793,123 @@ def test_tesse_precompute_preserves_frozen_radseg_output_contract(
     assert frame.probabilities.shape == (120, 180, 4)
     assert frame.entropy.shape == (120, 180)
     assert frame.margin.shape == (120, 180)
+
+
+def test_tesse_worker_receives_canonical_projection_and_manifest_binds_both_hashes(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config, classes_json, _ = _write_tesse_fixture(tmp_path, monkeypatch)
+    config_payload = json.loads(config.read_text(encoding="utf-8"))
+    log_path = Path(config_payload["dense_semantics"]["worker_env"]["FAKE_LOG"])
+
+    manifest = run(_args(config, tmp_path / "dense", num_frames=1))
+
+    projected = json.dumps(
+        {"aliases": {}, "classes": TESSE_CLASSES},
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+        allow_nan=False,
+    ).encode("utf-8") + b"\n"
+    projection_hash = hashlib.sha256(projected).hexdigest()
+    source_hash = hashlib.sha256(classes_json.read_bytes()).hexdigest()
+    start = _events(log_path)[0]
+    assert start["classes_keys"] == ["aliases", "classes"]
+    assert start["classes_sha256"] == projection_hash
+    assert manifest["vocabulary_sha256"] == source_hash
+    assert manifest["provenance"]["vocabulary_sha256"] == projection_hash
+    classes_index = start["argv"].index("--classes-json") + 1
+    assert not Path(start["argv"][classes_index]).exists()
+
+
+@pytest.mark.parametrize(("scene", "class_count"), [("apartment", 10), ("office", 7)])
+def test_formal_tesse_command_projection_passes_real_worker_parser_preflight(
+    tmp_path: Path,
+    scene: str,
+    class_count: int,
+) -> None:
+    required = [
+        Path("/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1"),
+        Path("/home/ww/oviovo_references/modules/RADSeg"),
+        Path("/home/ww/oviovo_references/modules/RADIO"),
+        Path("/home/ww/oviovo_benchmark_assets/weights/segment_anything/sam_vit_h_4b8939.pth"),
+    ]
+    if not all(path.exists() for path in required):
+        pytest.skip("formal TESSE/RADSeg assets are unavailable")
+    repo_root = Path(__file__).resolve().parents[2]
+    config = repo_root / f"configs/oviv2_tesse_{scene}_dense_stage3.json"
+    worker_python = "/home/ww/miniconda3/envs/oviovo-radseg/bin/python"
+    args = parse_args(
+        [
+            "--config",
+            str(config),
+            "--output",
+            str(tmp_path / scene),
+            "--num-frames",
+            "1",
+            "--classes-json",
+            str(repo_root / f"configs/evaluation/vocabularies/tesse_cd_{scene}.json"),
+            "--worker-python",
+            worker_python,
+            "--worker-script",
+            "scripts/radseg_dense_worker.py",
+            "--backend",
+            "radseg",
+            "--source-root",
+            "/home/ww/oviovo_references/modules/RADSeg",
+            "--radio-root",
+            "/home/ww/oviovo_references/modules/RADIO",
+            "--model-version",
+            "/home/ww/oviovo_benchmark_assets/weights/radio/c-radio_v3-b_half-44653a.pth.tar",
+            "--lang-model",
+            "siglip2",
+            "--language-model-root",
+            "/home/ww/oviovo_benchmark_assets/weights/siglip2-so400m-patch16-naflex-cc24074",
+            "--language-model-id",
+            "google/siglip2-so400m-patch16-naflex",
+            "--language-model-revision",
+            "cc24074f717b612951c2dead130904ab9b65a81e",
+            "--language-model-sha256",
+            "0e5dbd4cd9511c4335ae4a144ac5187841a2f7fed2a07df9c36668516e02cafe",
+            "--device",
+            "cuda",
+            "--sample-stride",
+            "4",
+            "--top-k",
+            "4",
+            "--amp",
+            "--sam-refinement",
+            "--sam-checkpoint",
+            "/home/ww/oviovo_benchmark_assets/weights/segment_anything/sam_vit_h_4b8939.pth",
+        ]
+    )
+    preflight = _preflight(config, 1, args)
+    parser_script = """
+import json
+import sys
+from scripts.radseg_dense_worker import load_frozen_classes, parse_args, validate_cli_args
+args = parse_args(sys.argv[1:])
+classes, digest = load_frozen_classes(args.classes_json)
+validate_cli_args(args, classes)
+print(json.dumps({"class_count": len(classes), "sha256": digest}, sort_keys=True))
+"""
+
+    with _materialized_worker_config(preflight) as worker:
+        result = subprocess.run(
+            [worker_python, "-c", parser_script, *worker.command[2:]],
+            cwd=repo_root,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+    assert result.returncode == 0, result.stderr
+    parsed = json.loads(result.stdout)
+    assert parsed == {
+        "class_count": class_count,
+        "sha256": preflight.worker_vocabulary_sha256,
+    }
 
 
 @pytest.mark.parametrize(
@@ -1006,6 +1134,62 @@ def test_replica_preflight_binds_paths_without_rgb_pixels(tmp_path: Path) -> Non
     assert [binding.source_frame_id for binding in preflight.rgb_bindings] == [10, 13]
     assert [binding.dataset_frame_id for binding in preflight.rgb_bindings] == [0, 1]
     assert all(isinstance(binding.path, Path) for binding in preflight.rgb_bindings)
+    assert all(binding.size > 0 for binding in preflight.rgb_bindings)
+    assert all(binding.device >= 0 and binding.inode > 0 for binding in preflight.rgb_bindings)
+    assert all(binding.mtime_ns > 0 and binding.ctime_ns > 0 for binding in preflight.rgb_bindings)
+
+
+def test_rgb_binding_rejects_path_replacement_after_preflight(tmp_path: Path) -> None:
+    config, _, _ = _write_fixture(tmp_path)
+    preflight = _preflight(config, 1, _args(config, tmp_path / "dense", num_frames=1))
+    binding = preflight.rgb_bindings[0]
+    replacement = tmp_path / "replacement.jpg"
+    Image.fromarray(np.full((4, 5, 3), 99, dtype=np.uint8)).save(replacement)
+    os.replace(replacement, binding.path)
+
+    with pytest.raises(ValueError, match="identity"):
+        _load_rgb_frame(preflight.dataset, 0, binding)
+
+
+def test_rgb_binding_rejects_in_place_content_change_after_preflight(tmp_path: Path) -> None:
+    config, _, _ = _write_fixture(tmp_path)
+    preflight = _preflight(config, 1, _args(config, tmp_path / "dense", num_frames=1))
+    binding = preflight.rgb_bindings[0]
+    payload = bytearray(binding.path.read_bytes())
+    payload[-1] ^= 1
+    with binding.path.open("r+b") as stream:
+        stream.write(payload)
+        stream.flush()
+        os.fsync(stream.fileno())
+    os.utime(
+        binding.path,
+        ns=(binding.mtime_ns + 1, binding.mtime_ns + 1),
+    )
+
+    with pytest.raises(ValueError, match="identity|changed"):
+        _load_rgb_frame(preflight.dataset, 0, binding)
+
+
+def test_rgb_loader_decodes_only_bytes_read_from_bound_descriptor(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config, _, _ = _write_fixture(tmp_path)
+    preflight = _preflight(config, 1, _args(config, tmp_path / "dense", num_frames=1))
+    binding = preflight.rgb_bindings[0]
+    original_open = Image.open
+    opened: list[object] = []
+
+    def tracked_open(source, *args, **kwargs):
+        opened.append(source)
+        return original_open(source, *args, **kwargs)
+
+    monkeypatch.setattr(Image, "open", tracked_open)
+
+    rgb = _load_rgb_frame(preflight.dataset, 0, binding)
+
+    assert rgb.shape == (4, 5, 3)
+    assert opened and all(isinstance(source, io.BytesIO) for source in opened)
 
 
 def test_multiframe_replica_run_indexes_each_frame_directory_once(
@@ -1188,13 +1372,75 @@ def test_atomic_manifest_rejects_parent_directory_replacement(
 
     monkeypatch.setattr(os, "link", replace_parent_before_link)
 
-    with pytest.raises(RuntimeError, match="parent directory changed"):
+    with pytest.raises(
+        precompute_module.DenseManifestPublicationUncertainError,
+        match="uncertain",
+    ):
         _atomic_json(destination, {"owner": "producer"})
 
     assert not destination.exists()
-    assert not (displaced / destination.name).exists()
+    assert json.loads((displaced / destination.name).read_text(encoding="utf-8")) == {
+        "owner": "producer"
+    }
     assert list(parent.iterdir()) == []
-    assert list(displaced.iterdir()) == []
+    assert [path.name for path in displaced.iterdir()] == [destination.name]
+
+
+def test_atomic_manifest_post_link_fsync_failure_is_uncertain_and_leaks_no_fd(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    destination = tmp_path / "dense_manifest.json"
+    payload = {"complete": True, "frames": 2}
+    real_fsync = os.fsync
+    before_fds = len(list(Path("/proc/self/fd").iterdir()))
+
+    def fail_published_directory_fsync(descriptor: int) -> None:
+        status = os.fstat(descriptor)
+        if stat.S_ISDIR(status.st_mode) and destination.exists():
+            raise OSError("injected post-link directory fsync failure")
+        real_fsync(descriptor)
+
+    monkeypatch.setattr(os, "fsync", fail_published_directory_fsync)
+
+    with pytest.raises(
+        precompute_module.DenseManifestPublicationUncertainError,
+        match="uncertain",
+    ):
+        _atomic_json(destination, payload)
+
+    assert json.loads(destination.read_text(encoding="utf-8")) == payload
+    assert list(tmp_path.glob(".dense_manifest.json.*.tmp")) == []
+    assert len(list(Path("/proc/self/fd").iterdir())) == before_fds
+
+
+def test_atomic_manifest_pre_link_failure_has_no_target_and_can_retry(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    destination = tmp_path / "dense_manifest.json"
+    real_link = os.link
+    attempts = 0
+
+    def fail_first_link(*args, **kwargs):
+        nonlocal attempts
+        attempts += 1
+        if attempts == 1:
+            raise OSError("injected pre-link failure")
+        return real_link(*args, **kwargs)
+
+    monkeypatch.setattr(os, "link", fail_first_link)
+
+    with pytest.raises(OSError, match="pre-link"):
+        _atomic_json(destination, {"attempt": 1})
+
+    assert not destination.exists()
+    assert list(tmp_path.glob(".dense_manifest.json.*.tmp")) == []
+
+    _atomic_json(destination, {"attempt": 2})
+
+    assert json.loads(destination.read_text(encoding="utf-8")) == {"attempt": 2}
+    assert attempts == 2
 
 
 def test_metadata_failure_does_not_create_output_and_closes_worker(tmp_path: Path) -> None:
