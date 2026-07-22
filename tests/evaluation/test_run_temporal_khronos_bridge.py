@@ -424,6 +424,8 @@ def test_run_revalidates_build_before_and_after_using_resolved_elf(
     manifest = tmp_path / "bridge/bridge_manifest.json"
     manifest.parent.mkdir()
     manifest.write_text("{}\n", encoding="utf-8")
+    config = tmp_path / "oviv2_tesse_cd_apartment_v1.json"
+    config.write_text('{"mode":"causal_checkpoints"}\n', encoding="utf-8")
     output = tmp_path / "run"
     bridge = {
         "dataset": "TESSE-CD",
@@ -488,6 +490,7 @@ def test_run_revalidates_build_before_and_after_using_resolved_elf(
             "--scene", "apartment",
             "--output", str(output),
             "--workspace", str(workspace),
+            "--config", str(config),
         ]
     )
 
@@ -503,6 +506,12 @@ def test_run_revalidates_build_before_and_after_using_resolved_elf(
     assert any(item.startswith("/proc/self/fd/") for item in status["command"])
     assert str(resolved) not in status["command"]
     assert str(declared) not in status["command"]
+    assert status["run_identity"] == {
+        "run_id": "oviv2-tessecd-v1",
+        "config_sha256": hashlib.sha256(config.read_bytes()).hexdigest(),
+    }
+    assert status["config"] in status["sources"]
+    assert Path(status["config"]["path"]) == config.resolve()
 
 
 def test_verified_descriptor_cannot_be_redirected_by_path_swap(tmp_path: Path) -> None:
@@ -559,6 +568,7 @@ def test_run_rejects_symlinked_workspace_before_write_or_command(
             "--scene", "apartment",
             "--output", str(output),
             "--workspace", str(linked_workspace),
+            "--config", str(tmp_path / "missing-config.json"),
         ]
     )
 
@@ -574,17 +584,20 @@ def test_parser_fixes_oviv2_causal_identity() -> None:
             "--manifest", "/bridge/manifest.json",
             "--scene", "apartment",
             "--output", "/run",
+            "--config", "/configs/oviv2_tesse_cd_apartment_v1.json",
         ]
     )
 
     assert args.method == "OVIV2"
     assert args.mode == "causal_checkpoints"
+    assert args.run_id == "oviv2-tessecd-v1"
     with pytest.raises(SystemExit):
         parse_args(
             [
                 "--manifest", "/bridge/manifest.json",
                 "--scene", "apartment",
                 "--output", "/run",
+                "--config", "/configs/oviv2_tesse_cd_apartment_v1.json",
                 "--method", "DUALMAP",
             ]
         )
@@ -595,9 +608,50 @@ def test_parser_fixes_oviv2_causal_identity() -> None:
                 "--manifest", "/bridge/manifest.json",
                 "--scene", "apartment",
                 "--output", "/run",
+                "--config", "/configs/oviv2_tesse_cd_apartment_v1.json",
                 "--source", "/tmp/unreviewed.cpp",
             ]
         )
+
+    with pytest.raises(SystemExit):
+        parse_args(
+            [
+                "--manifest", "/bridge/manifest.json",
+                "--scene", "apartment",
+                "--output", "/run",
+            ]
+        )
+
+
+def test_run_rejects_noncanonical_run_id_before_output_write(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workspace = _fake_workspace(tmp_path / "workspace")
+    manifest = tmp_path / "bridge_manifest.json"
+    manifest.write_text("{}\n", encoding="utf-8")
+    config = tmp_path / "config.json"
+    config.write_text("{}\n", encoding="utf-8")
+    output = tmp_path / "run"
+    monkeypatch.setattr(
+        bridge_runner,
+        "validate_temporal_bridge_manifest",
+        lambda _: pytest.fail("manifest validation followed an invalid run id"),
+    )
+    args = parse_args(
+        [
+            "--manifest", str(manifest),
+            "--scene", "apartment",
+            "--output", str(output),
+            "--workspace", str(workspace),
+            "--config", str(config),
+            "--run-id", "tampered/run",
+        ]
+    )
+
+    with pytest.raises(ValueError, match="run_id.*canonical"):
+        run(args)
+
+    assert not output.exists()
 
 
 def test_snapshot_bridge_input_copies_then_revalidates(
@@ -637,6 +691,7 @@ def test_run_refuses_dangling_output_symlink_before_external_work(
             "--manifest", str(tmp_path / "missing.json"),
             "--scene", "apartment",
             "--output", str(output),
+            "--config", str(tmp_path / "missing-config.json"),
         ]
     )
 

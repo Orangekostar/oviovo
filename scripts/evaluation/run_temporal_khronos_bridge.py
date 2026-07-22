@@ -9,6 +9,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import stat
 import subprocess
@@ -30,6 +31,7 @@ CPP_SOURCE = (
     / "scripts/evaluation/compat/khronos_temporal_bridge/import_temporal_baseline.cpp"
 )
 DEFAULT_WORKSPACE = Path("/home/ww/oviovo_baseline_builds/khronos-jazzy-ws")
+RUN_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 CMAKE_BEGIN = "# OVIV2_KHRONOS_TEMPORAL_BRIDGE_BEGIN"
 CMAKE_END = "# OVIV2_KHRONOS_TEMPORAL_BRIDGE_END"
 CMAKE_BLOCK = f"""{CMAKE_BEGIN}
@@ -76,6 +78,19 @@ def _validate_entry(entry: Mapping[str, Any], *, label: str) -> Path:
     if _sha256(path) != str(entry.get("sha256", "")):
         raise ValueError(f"{label} SHA256 mismatch")
     return path
+
+
+def _run_identity(run_id: str, config: Mapping[str, Any]) -> dict[str, str]:
+    if type(run_id) is not str or RUN_ID_PATTERN.fullmatch(run_id) is None:
+        raise ValueError("temporal bridge run identity run_id is not canonical")
+    config_sha256 = config.get("sha256")
+    if (
+        type(config_sha256) is not str
+        or len(config_sha256) != 64
+        or any(character not in "0123456789abcdef" for character in config_sha256)
+    ):
+        raise ValueError("temporal bridge run identity config SHA256 is invalid")
+    return {"run_id": run_id, "config_sha256": config_sha256}
 
 
 def _identity(status: os.stat_result) -> dict[str, int]:
@@ -497,6 +512,8 @@ def run(args: argparse.Namespace) -> Path:
     if os.path.lexists(args.output):
         raise ValueError(f"output already exists: {args.output}")
     workspace = _trusted_workspace_root(args.workspace)
+    config_record = _entry(args.config)
+    run_identity = _run_identity(args.run_id, config_record)
     bridge = validate_temporal_bridge_manifest(args.manifest)
     if (
         bridge.get("dataset") != "TESSE-CD"
@@ -550,6 +567,8 @@ def run(args: argparse.Namespace) -> Path:
         args.manifest, args.output / "bridge_input"
     )
     bridge = validate_temporal_bridge_manifest(copied_manifest)
+    if _entry(args.config) != config_record:
+        raise ValueError("frozen OVIV2 run config changed before importer execution")
 
     pre_execute_build = validate_build_manifest(
         build_manifest,
@@ -615,7 +634,10 @@ def run(args: argparse.Namespace) -> Path:
     )
     if post_execute_build["executable"]["resolved"] != executable_record:
         raise ValueError("resolved temporal importer changed during execution")
+    if _entry(args.config) != config_record:
+        raise ValueError("frozen OVIV2 run config changed before status publication")
     sources = [
+        args.config,
         copied_manifest,
         CPP_SOURCE,
         staged_source,
@@ -638,6 +660,8 @@ def run(args: argparse.Namespace) -> Path:
         "mode": args.mode,
         "bridge_mode": "temporal_checkpoints",
         "display_mode": "online",
+        "run_identity": run_identity,
+        "config": config_record,
         "started_at": started_at,
         "finished_at": datetime.now(timezone.utc).isoformat(),
         "exit_status": completed.returncode,
@@ -660,6 +684,8 @@ def run(args: argparse.Namespace) -> Path:
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, required=True)
+    parser.add_argument("--config", type=Path, required=True)
+    parser.add_argument("--run-id", default="oviv2-tessecd-v1")
     parser.add_argument("--scene", choices=("apartment", "office"), required=True)
     parser.add_argument("--method", choices=("OVIV2",), default="OVIV2")
     parser.add_argument(
