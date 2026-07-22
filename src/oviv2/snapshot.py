@@ -398,6 +398,8 @@ class VoxelMapSnapshot:
         temporary = Path(
             tempfile.mkdtemp(prefix=f".{target.name}.tmp-", dir=target.parent)
         )
+        published = False
+        published_identity = cls._directory_identity(temporary)
         try:
             data_files = cls._write_snapshot_files(
                 temporary,
@@ -417,8 +419,27 @@ class VoxelMapSnapshot:
             cls.load(temporary)
 
             cls._rename_directory_no_replace(temporary, target)
+            published = True
             cls._fsync_directory(target.parent)
             return cls.load(target)
+        except Exception as publication_error:
+            if published:
+                try:
+                    if cls._directory_identity(target) == published_identity:
+                        shutil.rmtree(target)
+                except FileNotFoundError:
+                    pass
+                except Exception as cleanup_error:
+                    raise _SnapshotRollbackError(
+                        publication_error,
+                        cleanup_error,
+                    ) from publication_error
+                finally:
+                    try:
+                        cls._fsync_directory(target.parent)
+                    except OSError:
+                        pass
+            raise
         finally:
             if temporary.exists():
                 try:
