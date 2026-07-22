@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import copy
+from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
 from pathlib import Path
 import subprocess
 import sys
+import threading
 
 import numpy as np
 import pytest
@@ -13,10 +15,13 @@ import pytest
 import scripts.evaluation.derive_tesse_cd_occlusion_v1 as occlusion_deriver
 from scripts.evaluation.derive_tesse_cd_common_v2 import deterministic_npz_bytes
 from scripts.evaluation.derive_tesse_cd_occlusion_v1 import (
+    OcclusionPublicationUncertainError,
+    StreamingDiagnostics,
     build_contract_manifest,
     depth_collection_binding,
     derive_occlusion_targets,
     render_manifest,
+    resolve_dataset_source,
     validate_source_allowlist,
     validate_source_bindings,
     validate_generated_target,
@@ -159,6 +164,35 @@ def test_derivation_uses_prior_present_anchor_and_merges_consecutive_occlusion()
     assert metadata["stress_layers"]["0.90"]["episode_count"] == 2
     assert metadata["scenes"]["apartment"]["headline_episode_count"] == 1
     assert metadata["scenes"]["office"]["headline_episode_count"] == 1
+
+
+def test_derivation_streams_one_depth_and_one_scene_dsg_and_inverts_once_per_frame(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    frames, records = _fixture_inputs()
+    diagnostics = StreamingDiagnostics()
+    original_inverse = occlusion_deriver.np.linalg.inv
+    inverse_calls = 0
+
+    def counted_inverse(transform: np.ndarray) -> np.ndarray:
+        nonlocal inverse_calls
+        inverse_calls += 1
+        return original_inverse(transform)
+
+    monkeypatch.setattr(occlusion_deriver.np.linalg, "inv", counted_inverse)
+    derive_occlusion_targets(
+        frames_by_scene={scene: iter(values) for scene, values in frames.items()},
+        dsg_records_by_scene=records,
+        camera={"width": 1, "height": 1, "fx": 1.0, "fy": 1.0, "cx": 0.0, "cy": 0.0},
+        diagnostics=diagnostics,
+    )
+
+    assert diagnostics.max_live_depth_frames == 1
+    assert diagnostics.live_depth_frames == 0
+    assert diagnostics.max_live_scene_dsgs == 1
+    assert diagnostics.live_scene_dsgs == 0
+    assert diagnostics.pose_inverse_count == 8
+    assert inverse_calls == 8
 
 
 def test_derivation_never_uses_unknown_or_future_lifecycle_as_anchor() -> None:
@@ -545,6 +579,221 @@ def test_source_change_after_initial_validation_prevents_publish_and_retry_works
     assert manifest.is_file()
 
 
+def test_publish_pre_reservation_fsync_failure_cleans_staging_and_is_retryable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    frames, records = _fixture_inputs()
+    arrays, metadata = derive_occlusion_targets(
+        frames_by_scene=frames,
+        dsg_records_by_scene=records,
+        camera={"width": 1, "height": 1, "fx": 1.0, "fy": 1.0, "cx": 0.0, "cy": 0.0},
+    )
+    paths = _source_paths(tmp_path / "sources")
+    output = tmp_path / "output"
+    original = occlusion_deriver._fsync_tree
+
+    monkeypatch.setattr(
+        occlusion_deriver,
+        "_fsync_tree",
+        lambda _path: (_ for _ in ()).throw(OSError("injected tree fsync failure")),
+    )
+    with pytest.raises(OSError, match="injected tree fsync failure"):
+        write_occlusion_package(
+            output,
+            arrays=arrays,
+            metadata=metadata,
+            source_paths=paths,
+            status="FIXTURE",
+        )
+    assert not output.exists()
+    assert not list(tmp_path.glob(".output.*"))
+
+    monkeypatch.setattr(occlusion_deriver, "_fsync_tree", original)
+    assert write_occlusion_package(
+        output,
+        arrays=arrays,
+        metadata=metadata,
+        source_paths=paths,
+        status="FIXTURE",
+    ).is_file()
+
+
+def test_publish_replace_failure_after_reservation_is_uncertain_and_preserved(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    frames, records = _fixture_inputs()
+    arrays, metadata = derive_occlusion_targets(
+        frames_by_scene=frames,
+        dsg_records_by_scene=records,
+        camera={"width": 1, "height": 1, "fx": 1.0, "fy": 1.0, "cx": 0.0, "cy": 0.0},
+    )
+    paths = _source_paths(tmp_path / "sources")
+    output = tmp_path / "output"
+    monkeypatch.setattr(
+        occlusion_deriver.os,
+        "replace",
+        lambda _source, _target: (_ for _ in ()).throw(OSError("injected replace failure")),
+    )
+
+    with pytest.raises(OcclusionPublicationUncertainError) as raised:
+        write_occlusion_package(
+            output,
+            arrays=arrays,
+            metadata=metadata,
+            source_paths=paths,
+            status="FIXTURE",
+        )
+
+    assert raised.value.published is None
+    assert raised.value.staging.is_dir()
+    assert output.is_dir()
+    assert not any(output.iterdir())
+
+
+def test_publish_parent_fsync_failure_preserves_published_output_as_uncertain(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    frames, records = _fixture_inputs()
+    arrays, metadata = derive_occlusion_targets(
+        frames_by_scene=frames,
+        dsg_records_by_scene=records,
+        camera={"width": 1, "height": 1, "fx": 1.0, "fy": 1.0, "cx": 0.0, "cy": 0.0},
+    )
+    paths = _source_paths(tmp_path / "sources")
+    output = tmp_path / "output"
+    original_fsync_directory = occlusion_deriver._fsync_directory
+
+    def fail_published_parent(path: Path) -> None:
+        if path == output.parent and output.exists():
+            raise OSError("injected parent fsync failure")
+        original_fsync_directory(path)
+
+    monkeypatch.setattr(
+        occlusion_deriver,
+        "_fsync_directory",
+        fail_published_parent,
+    )
+
+    with pytest.raises(OcclusionPublicationUncertainError) as raised:
+        write_occlusion_package(
+            output,
+            arrays=arrays,
+            metadata=metadata,
+            source_paths=paths,
+            status="FIXTURE",
+        )
+
+    assert raised.value.published is True
+    assert (output / "manifest.json").is_file()
+    assert (output / "targets.npz").is_file()
+
+
+def test_publish_never_overwrites_existing_output(tmp_path: Path) -> None:
+    frames, records = _fixture_inputs()
+    arrays, metadata = derive_occlusion_targets(
+        frames_by_scene=frames,
+        dsg_records_by_scene=records,
+        camera={"width": 1, "height": 1, "fx": 1.0, "fy": 1.0, "cx": 0.0, "cy": 0.0},
+    )
+    paths = _source_paths(tmp_path / "sources")
+    output = tmp_path / "output"
+    output.mkdir()
+    sentinel = output / "sentinel"
+    sentinel.write_bytes(b"keep")
+
+    with pytest.raises(ValueError, match="output already exists"):
+        write_occlusion_package(
+            output,
+            arrays=arrays,
+            metadata=metadata,
+            source_paths=paths,
+            status="FIXTURE",
+        )
+
+    assert sentinel.read_bytes() == b"keep"
+    assert not list(tmp_path.glob(".output.*"))
+
+
+def test_concurrent_publishers_have_exactly_one_winner(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    frames, records = _fixture_inputs()
+    arrays, metadata = derive_occlusion_targets(
+        frames_by_scene=frames,
+        dsg_records_by_scene=records,
+        camera={"width": 1, "height": 1, "fx": 1.0, "fy": 1.0, "cx": 0.0, "cy": 0.0},
+    )
+    paths = _source_paths(tmp_path / "sources")
+    output = tmp_path / "output"
+    barrier = threading.Barrier(2)
+    original_fsync_tree = occlusion_deriver._fsync_tree
+
+    def synchronize_staging(path: Path) -> None:
+        original_fsync_tree(path)
+        barrier.wait(timeout=10)
+
+    monkeypatch.setattr(occlusion_deriver, "_fsync_tree", synchronize_staging)
+
+    def publish() -> Path:
+        return write_occlusion_package(
+            output,
+            arrays=arrays,
+            metadata=metadata,
+            source_paths=paths,
+            status="FIXTURE",
+        )
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = [executor.submit(publish), executor.submit(publish)]
+        outcomes = [future.exception() for future in futures]
+
+    assert sum(error is None for error in outcomes) == 1
+    assert sum(isinstance(error, ValueError) for error in outcomes) == 1
+    assert (output / "manifest.json").is_file()
+    assert not list(tmp_path.glob(".output.*"))
+
+
+def test_writer_uses_captured_first_pass_without_independent_rebinding(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    frames, records = _fixture_inputs()
+    arrays, metadata = derive_occlusion_targets(
+        frames_by_scene=frames,
+        dsg_records_by_scene=records,
+        camera={"width": 1, "height": 1, "fx": 1.0, "fy": 1.0, "cx": 0.0, "cy": 0.0},
+    )
+    paths = _source_paths(tmp_path / "sources")
+    captured_records, captured_witnesses = occlusion_deriver._capture_source_allowlist(
+        paths, scene_frame_indices=metadata["scene_frame_indices"]
+    )
+    monkeypatch.setattr(
+        occlusion_deriver,
+        "_capture_source_bindings",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("writer performed an independent binding pass")
+        ),
+    )
+    monkeypatch.setattr(
+        occlusion_deriver,
+        "_capture_source_allowlist",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("writer performed an independent allowlist pass")
+        ),
+    )
+
+    manifest = write_occlusion_package(
+        tmp_path / "output",
+        arrays=arrays,
+        metadata=metadata,
+        source_paths=paths,
+        captured_source_records=captured_records,
+        captured_source_witnesses=captured_witnesses,
+        status="FIXTURE",
+    )
+
+    assert manifest.is_file()
+
+
 def test_generated_publish_requires_matching_frozen_contract(tmp_path: Path) -> None:
     frames, records = _fixture_inputs()
     arrays, metadata = derive_occlusion_targets(
@@ -642,6 +891,7 @@ def test_checked_contract_preregisters_inputs_and_does_not_claim_results() -> No
     assert payload["manifest_id"] == "tesse_cd_occlusion_v1"
     assert payload["status"] == "CONTRACT_ONLY"
     assert payload["targets_generated"] is False
+    assert payload["dataset_root_id"] == "tesse_cd_official_root_v1"
     assert payload["prediction_inputs_used"] is False
     assert payload["parameters"]["depth_tolerance_m"] == 0.10
     assert payload["parameters"]["stress_thresholds"] == [0.50, 0.75, 0.90]
@@ -659,6 +909,7 @@ def test_checked_contract_preregisters_inputs_and_does_not_claim_results() -> No
         "scene.depth.NNNNNN",
     }
     serialized = CONTRACT.read_text(encoding="utf-8").lower()
+    assert "/home/ww" not in serialized
     assert "snapshot" not in serialized
     assert "frontend" not in serialized
     assert "prediction" not in serialized.replace('"prediction_inputs_used": false', "")
@@ -666,8 +917,27 @@ def test_checked_contract_preregisters_inputs_and_does_not_claim_results() -> No
     rebuilt = build_contract_manifest(
         source_records=payload["source_records"],
         depth_bindings=payload["depth_collections"],
+        dataset_root_id=payload["dataset_root_id"],
     )
     assert render_manifest(rebuilt) == CONTRACT.read_bytes()
+
+
+def test_dataset_source_resolution_rejects_absolute_parent_and_symlink_escape(
+    tmp_path: Path,
+) -> None:
+    dataset_root = tmp_path / "dataset"
+    dataset_root.mkdir()
+    inside = dataset_root / "derived" / "camera.json"
+    inside.parent.mkdir()
+    inside.write_text("{}\n", encoding="utf-8")
+    outside = tmp_path / "outside.json"
+    outside.write_text("{}\n", encoding="utf-8")
+    (dataset_root / "escape.json").symlink_to(outside)
+
+    assert resolve_dataset_source("derived/camera.json", dataset_root) == inside.resolve()
+    for unsafe in (str(outside.resolve()), "../outside.json", "escape.json"):
+        with pytest.raises(ValueError, match="dataset-root"):
+            resolve_dataset_source(unsafe, dataset_root)
 
 
 def test_deriver_cli_can_run_directly_from_repository_root() -> None:
@@ -686,3 +956,5 @@ def test_deriver_cli_can_run_directly_from_repository_root() -> None:
     assert completed.returncode == 0, completed.stderr
     assert "--contract" in completed.stdout
     assert "--output-dir" in completed.stdout
+    assert "--dataset-root" in completed.stdout
+    assert "--preflight-only" in completed.stdout

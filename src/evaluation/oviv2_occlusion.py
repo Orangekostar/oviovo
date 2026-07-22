@@ -36,10 +36,11 @@ def classify_voxel_depths(
     voxel_keys: np.ndarray,
     *,
     depth: np.ndarray,
-    world_from_camera: np.ndarray,
+    camera_from_world: np.ndarray,
     camera: Mapping[str, float | int],
     voxel_size_m: float = 0.05,
     tolerance_m: float = 0.10,
+    depth_scale_m: float = 1.0,
 ) -> dict[DepthState, np.ndarray]:
     """Project sorted voxel centers and partition them into depth states."""
     keys = np.asarray(voxel_keys)
@@ -52,22 +53,22 @@ def classify_voxel_depths(
     if not np.isfinite(voxel_size_m) or voxel_size_m <= 0:
         raise ValueError("voxel_size_m must be positive and finite")
 
-    image = np.asarray(depth, dtype=np.float64)
+    image = np.asarray(depth)
     height = int(camera["height"])
     width = int(camera["width"])
     if image.shape != (height, width):
         raise ValueError("depth shape disagrees with camera")
-    transform = np.asarray(world_from_camera, dtype=np.float64)
+    if not np.issubdtype(image.dtype, np.number):
+        raise ValueError("depth must be numeric")
+    if not np.isfinite(depth_scale_m) or depth_scale_m <= 0:
+        raise ValueError("depth_scale_m must be positive and finite")
+    transform = np.asarray(camera_from_world, dtype=np.float64)
     if (
         transform.shape != (4, 4)
         or not np.all(np.isfinite(transform))
         or not np.allclose(transform[3], [0.0, 0.0, 0.0, 1.0])
     ):
-        raise ValueError("world_from_camera must be a finite homogeneous transform")
-    try:
-        camera_from_world = np.linalg.inv(transform)
-    except np.linalg.LinAlgError as error:
-        raise ValueError("world_from_camera must be invertible") from error
+        raise ValueError("camera_from_world must be a finite homogeneous transform")
 
     fx = float(camera["fx"])
     fy = float(camera["fy"])
@@ -77,7 +78,7 @@ def classify_voxel_depths(
         raise ValueError("camera intrinsics are invalid")
 
     points = (keys.astype(np.float64) + 0.5) * float(voxel_size_m)
-    camera_points = points @ camera_from_world[:3, :3].T + camera_from_world[:3, 3]
+    camera_points = points @ transform[:3, :3].T + transform[:3, 3]
     gt_depth = camera_points[:, 2]
     projected = gt_depth > 0
     columns = np.full(len(keys), -1, dtype=np.int64)
@@ -102,7 +103,7 @@ def classify_voxel_depths(
             state = "unobserved"
         else:
             state = classify_depth(
-                d_obs=float(image[rows[index], columns[index]]),
+                d_obs=float(image[rows[index], columns[index]]) * float(depth_scale_m),
                 d_gt=float(gt_depth[index]),
                 tolerance_m=tolerance_m,
             )
