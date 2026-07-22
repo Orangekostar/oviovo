@@ -243,11 +243,15 @@ def _load_targets(
         and set(metadata.get("scenes", ())) == {"apartment", "office"}
     ):
         raise ValueError("target package must be complete GENERATED common-v2 targets")
-    declared_schedule = _mapping(metadata.get("schedule"), "target schedule")
+    _, target_schedule_record = _declared_file(
+        metadata.get("schedule"),
+        label="target schedule",
+        base=manifest_path.parent,
+    )
     if (
-        declared_schedule.get("sha256") != schedule_record["sha256"]
-        or Path(str(declared_schedule.get("path", ""))).resolve()
-        != Path(str(schedule_record["path"])).resolve()
+        target_schedule_record["sha256"] != schedule_record.get("sha256")
+        or target_schedule_record["byte_count"]
+        != schedule_record.get("byte_count")
     ):
         raise ValueError("target package schedule binding mismatch")
 

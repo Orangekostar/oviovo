@@ -23,6 +23,12 @@ from src.evaluation.exporters.oviovo import write_map_snapshot
 
 
 ROOT = Path(__file__).resolve().parents[2]
+OFFICIAL_SCHEDULE = (
+    ROOT / "configs/evaluation/manifests/tesse_cd_causal_schedule_v2.json"
+)
+OFFICIAL_SCHEDULE_SHA256 = (
+    "fb97bacee377f9fd67ee9dae8064dc6f33ac32d129ee633629fec4164d5003e0"
+)
 
 
 def _record(path: Path) -> dict[str, object]:
@@ -322,6 +328,14 @@ def _causal_fixture(
     return temporal, targets, aliases, label_space
 
 
+def _bind_target_schedule(target_manifest: Path, schedule: Path) -> None:
+    payload = json.loads(target_manifest.read_text(encoding="utf-8"))
+    declaration = _record(schedule)
+    declaration["path"] = schedule.relative_to(target_manifest.parent).as_posix()
+    payload["metadata"]["schedule"] = declaration
+    _write_json(target_manifest, payload)
+
+
 def test_cli_help_runs_outside_repository(tmp_path: Path) -> None:
     completed = subprocess.run(
         [
@@ -459,6 +473,83 @@ def test_causal_temporal_evaluator_loads_each_checkpoint_snapshot(
         "label_space",
         "evaluator",
     } <= set(payload["sources"])
+
+
+def test_load_targets_accepts_checked_schedule_bytes_at_distinct_paths(
+    tmp_path: Path,
+) -> None:
+    _, targets = _fixture(tmp_path / "source")
+    target_schedule = targets.parent / "target_schedule.json"
+    temporal_schedule = tmp_path / "temporal_schedule.json"
+    target_schedule.write_bytes(OFFICIAL_SCHEDULE.read_bytes())
+    temporal_schedule.write_bytes(OFFICIAL_SCHEDULE.read_bytes())
+    _bind_target_schedule(targets, target_schedule)
+    temporal_record = _record(temporal_schedule)
+
+    arrays, _, metadata = evaluator_module._load_targets(
+        targets,
+        schedule_record=temporal_record,
+    )
+
+    assert arrays
+    assert metadata["schedule"]["sha256"] == OFFICIAL_SCHEDULE_SHA256
+    assert temporal_record["sha256"] == OFFICIAL_SCHEDULE_SHA256
+
+
+def test_load_targets_rejects_checked_schedule_content_drift(tmp_path: Path) -> None:
+    _, targets = _fixture(tmp_path / "source")
+    target_schedule = targets.parent / "target_schedule.json"
+    temporal_schedule = tmp_path / "temporal_schedule.json"
+    target_schedule.write_bytes(OFFICIAL_SCHEDULE.read_bytes() + b" ")
+    temporal_schedule.write_bytes(OFFICIAL_SCHEDULE.read_bytes())
+    _bind_target_schedule(targets, target_schedule)
+
+    with pytest.raises(ValueError, match="schedule binding mismatch"):
+        evaluator_module._load_targets(
+            targets,
+            schedule_record=_record(temporal_schedule),
+        )
+
+
+def test_causal_evaluator_accepts_equal_schedule_bytes_at_distinct_paths(
+    tmp_path: Path,
+) -> None:
+    temporal, targets, aliases, label_space = _causal_fixture(tmp_path / "source")
+    temporal_payload = json.loads(temporal.read_text(encoding="utf-8"))
+    source_schedule = Path(temporal_payload["sources"]["schedule"]["path"])
+    target_schedule = targets.parent / "target_schedule.json"
+    target_schedule.write_bytes(source_schedule.read_bytes())
+    _bind_target_schedule(targets, target_schedule)
+
+    result = evaluate_common_v2(
+        temporal,
+        targets,
+        aliases,
+        label_space,
+        tmp_path / "output",
+    )
+
+    assert json.loads(result.read_text(encoding="utf-8"))["status"] == "PASS"
+
+
+def test_causal_evaluator_rejects_target_schedule_content_drift(
+    tmp_path: Path,
+) -> None:
+    temporal, targets, aliases, label_space = _causal_fixture(tmp_path / "source")
+    temporal_payload = json.loads(temporal.read_text(encoding="utf-8"))
+    source_schedule = Path(temporal_payload["sources"]["schedule"]["path"])
+    target_schedule = targets.parent / "target_schedule.json"
+    target_schedule.write_bytes(source_schedule.read_bytes() + b" ")
+    _bind_target_schedule(targets, target_schedule)
+
+    with pytest.raises(ValueError, match="schedule binding mismatch"):
+        evaluate_common_v2(
+            temporal,
+            targets,
+            aliases,
+            label_space,
+            tmp_path / "output",
+        )
 
 
 def test_causal_temporal_evaluator_accepts_registered_dualmap_artifact_label(
