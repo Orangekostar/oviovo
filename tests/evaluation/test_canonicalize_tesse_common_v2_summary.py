@@ -89,6 +89,73 @@ def _fixture(root: Path, external: Path) -> tuple[Path, dict[str, Path]]:
     return summary, external_sources
 
 
+def _add_formal_identity(
+    summary: Path,
+    *,
+    root: Path,
+    execution_id: str,
+    algorithm_hash: str = "a" * 64,
+) -> None:
+    frozen_identity = {
+        "schema_version": 1,
+        "freeze_id": "oviv2-tessecd-v1",
+        "dataset": "TESSE-CD",
+        "method_id": "OVIV2",
+        "scene": "apartment",
+        "freeze_manifest": {"sha256": "b" * 64, "byte_count": 123},
+        "repository": {"commit": "c" * 40, "tree": "d" * 40},
+        "config": {"sha256": "e" * 64, "byte_count": 456},
+        "algorithm_hash": algorithm_hash,
+        "missing_observation_policy": "signed_visibility",
+        "input_bindings_sha256": "f" * 64,
+    }
+    run_execution = {
+        "schema_version": 1,
+        "run_slot": f"apartment_{execution_id}",
+        "execution_id": execution_id,
+        "output_root": str(root),
+        "root_device": 100,
+        "root_inode": 200 if execution_id == "run1" else 300,
+    }
+    sidecar = root / "temporal/sidecars/source_index.json"
+    _write_json(
+        sidecar,
+        {
+            "schema_version": 1,
+            "dataset": "TESSE-CD",
+            "method": "OVIV2",
+            "scene": "apartment",
+            "frozen_run_identity": frozen_identity,
+            "run_execution": run_execution,
+            "checkpoints": [{"frame_index": 10}],
+        },
+    )
+    temporal = root / "temporal/temporal_manifest.json"
+    _write_json(
+        temporal,
+        {
+            "schema_version": 1,
+            "dataset": "TESSE-CD",
+            "mode": "causal_checkpoints",
+            "method": "OVIV2",
+            "scene": "apartment",
+            "frozen_run_identity": frozen_identity,
+            "run_execution": run_execution,
+            "sources": {
+                "source_index": {
+                    "path": "sidecars/source_index.json",
+                    "sha256": _record(sidecar)["sha256"],
+                    "byte_count": sidecar.stat().st_size,
+                }
+            },
+            "checkpoints": [{"frame_id": 10}],
+        },
+    )
+    payload = json.loads(summary.read_text(encoding="utf-8"))
+    payload["sources"]["temporal_index"] = _record(temporal)
+    _write_json(summary, payload)
+
+
 def test_canonical_summary_is_identical_across_independent_run_roots(
     tmp_path: Path,
 ) -> None:
@@ -209,6 +276,79 @@ def test_canonical_summary_changes_when_bound_content_changes(tmp_path: Path) ->
     )
 
     assert first_bytes != second_bytes
+
+
+def test_canonical_summary_projects_run_execution_from_temporal_identity(
+    tmp_path: Path,
+) -> None:
+    external = tmp_path / "external"
+    first, expected = _fixture(tmp_path / "run-a", external)
+    second, _ = _fixture(tmp_path / "run-b", external)
+    _add_formal_identity(first, root=tmp_path / "run-a", execution_id="run1")
+    _add_formal_identity(second, root=tmp_path / "run-b", execution_id="run2")
+
+    first_bytes = canonical_summary_bytes(
+        canonicalize_summary(
+            first,
+            artifact_root=tmp_path / "run-a",
+            external_sources=expected,
+        )
+    )
+    second_bytes = canonical_summary_bytes(
+        canonicalize_summary(
+            second,
+            artifact_root=tmp_path / "run-b",
+            external_sources=expected,
+        )
+    )
+
+    assert first_bytes == second_bytes
+    assert b"run_execution" not in first_bytes
+    assert str(tmp_path / "run-a").encode() not in first_bytes
+
+
+def test_canonical_summary_retains_frozen_identity_in_temporal_projection(
+    tmp_path: Path,
+) -> None:
+    external = tmp_path / "external"
+    first, expected = _fixture(tmp_path / "run-a", external)
+    second, _ = _fixture(tmp_path / "run-b", external)
+    _add_formal_identity(first, root=tmp_path / "run-a", execution_id="run1")
+    _add_formal_identity(
+        second,
+        root=tmp_path / "run-b",
+        execution_id="run2",
+        algorithm_hash="0" * 64,
+    )
+
+    first_payload = canonicalize_summary(
+        first,
+        artifact_root=tmp_path / "run-a",
+        external_sources=expected,
+    )
+    second_payload = canonicalize_summary(
+        second,
+        artifact_root=tmp_path / "run-b",
+        external_sources=expected,
+    )
+
+    assert canonical_summary_bytes(first_payload) != canonical_summary_bytes(
+        second_payload
+    )
+
+
+def test_canonical_summary_rejects_temporal_source_index_drift(tmp_path: Path) -> None:
+    summary, expected = _fixture(tmp_path / "run", tmp_path / "external")
+    _add_formal_identity(summary, root=tmp_path / "run", execution_id="run1")
+    sidecar = tmp_path / "run/temporal/sidecars/source_index.json"
+    sidecar.write_text("mutated\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="temporal source_index content mismatch"):
+        canonicalize_summary(
+            summary,
+            artifact_root=tmp_path / "run",
+            external_sources=expected,
+        )
 
 
 def test_canonicalizer_cli_writes_one_no_replace_summary(tmp_path: Path) -> None:

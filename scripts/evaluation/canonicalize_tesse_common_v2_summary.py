@@ -34,6 +34,12 @@ _CHECKPOINT_ROLE = re.compile(r"^(snapshot|entities)\.(\d{6})$")
 FileIdentity = tuple[int, int]
 
 
+def _mapping(value: object, *, label: str) -> Mapping[str, Any]:
+    if not isinstance(value, Mapping):
+        raise ValueError(f"{label} must be a mapping")
+    return value
+
+
 def _direct_directory(path: Path, *, label: str) -> Path:
     absolute = _absolute_lexical(path)
     descriptor, _ = _open_directory_no_symlinks(absolute, label=label)
@@ -115,12 +121,108 @@ def _stable_regular_file_with_identity(
     )
 
 
+def _compact_canonical_json(payload: Mapping[str, Any]) -> bytes:
+    return (
+        json.dumps(
+            payload,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        )
+        + "\n"
+    ).encode("utf-8")
+
+
+def _temporal_identity_projection(
+    content: bytes, *, temporal_path: Path
+) -> tuple[str, int, FileIdentity] | None:
+    try:
+        text = content.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ValueError("temporal_index source is not UTF-8") from error
+    payload = loads_strict(text, label="temporal_index source")
+    temporal = _mapping(payload, label="temporal_index source")
+    identity_fields = {"frozen_run_identity", "run_execution"} & set(temporal)
+    if not identity_fields:
+        return None
+    if identity_fields != {"frozen_run_identity", "run_execution"}:
+        raise ValueError("temporal identity fields are incomplete")
+    frozen_identity = _mapping(
+        temporal.get("frozen_run_identity"), label="temporal frozen identity"
+    )
+    run_execution = _mapping(
+        temporal.get("run_execution"), label="temporal run execution"
+    )
+    sources = _mapping(temporal.get("sources"), label="temporal sources")
+    declaration = _mapping(
+        sources.get("source_index"), label="temporal source_index declaration"
+    )
+    if set(declaration) != {"path", "sha256", "byte_count"}:
+        raise ValueError("temporal source_index record fields are invalid")
+    if declaration.get("path") != "sidecars/source_index.json":
+        raise ValueError("temporal source_index path mismatch")
+    sidecar_path = temporal_path.parent / "sidecars/source_index.json"
+    sidecar_digest, sidecar_bytes, sidecar_content, sidecar_identity = (
+        _stable_regular_file_with_identity(
+            sidecar_path,
+            label="temporal source_index",
+            capture=True,
+        )
+    )
+    assert sidecar_content is not None
+    if (
+        declaration.get("sha256") != sidecar_digest
+        or declaration.get("byte_count") != sidecar_bytes
+    ):
+        raise ValueError("temporal source_index content mismatch")
+    try:
+        sidecar_text = sidecar_content.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ValueError("temporal source_index is not UTF-8") from error
+    sidecar_payload = loads_strict(sidecar_text, label="temporal source_index")
+    sidecar = _mapping(sidecar_payload, label="temporal source_index")
+    if (
+        _mapping(
+            sidecar.get("frozen_run_identity"),
+            label="source_index frozen identity",
+        )
+        != frozen_identity
+        or _mapping(
+            sidecar.get("run_execution"),
+            label="source_index run execution",
+        )
+        != run_execution
+    ):
+        raise ValueError("temporal and source_index identities differ")
+
+    projected_sidecar = copy.deepcopy(dict(sidecar))
+    projected_sidecar.pop("run_execution")
+    projected_sidecar_bytes = _compact_canonical_json(projected_sidecar)
+    projected_temporal = copy.deepcopy(dict(temporal))
+    projected_temporal.pop("run_execution")
+    projected_temporal_sources = dict(
+        _mapping(projected_temporal.get("sources"), label="temporal sources")
+    )
+    projected_temporal_sources["source_index"] = {
+        "path": "sidecars/source_index.json",
+        "sha256": hashlib.sha256(projected_sidecar_bytes).hexdigest(),
+        "byte_count": len(projected_sidecar_bytes),
+    }
+    projected_temporal["sources"] = projected_temporal_sources
+    projected_temporal_bytes = _compact_canonical_json(projected_temporal)
+    return (
+        hashlib.sha256(projected_temporal_bytes).hexdigest(),
+        len(projected_temporal_bytes),
+        sidecar_identity,
+    )
+
+
 def _canonical_source(
     role: str,
     declaration: object,
     *,
     expected_path: Path,
-) -> tuple[dict[str, object], str, FileIdentity]:
+) -> tuple[dict[str, object], str, dict[str, FileIdentity]]:
     if not isinstance(declaration, Mapping) or set(declaration) != {
         "path",
         "sha256",
@@ -136,8 +238,10 @@ def _canonical_source(
     expected = _absolute_lexical(expected_path)
     if observed_path != expected:
         raise ValueError(f"{role} path mismatch")
-    digest, byte_count, _, identity = _stable_regular_file_with_identity(
-        observed_path, label=f"{role} source", capture=False
+    digest, byte_count, content, identity = _stable_regular_file_with_identity(
+        observed_path,
+        label=f"{role} source",
+        capture=role == "temporal_index",
     )
     declared_digest = declaration.get("sha256")
     declared_bytes = declaration.get("byte_count")
@@ -150,14 +254,25 @@ def _canonical_source(
         or declared_bytes != byte_count
     ):
         raise ValueError(f"{role} content mismatch")
+    canonical_digest = digest
+    canonical_byte_count = byte_count
+    identities = {role: identity}
+    if role == "temporal_index":
+        assert content is not None
+        projection = _temporal_identity_projection(
+            content, temporal_path=observed_path
+        )
+        if projection is not None:
+            canonical_digest, canonical_byte_count, sidecar_identity = projection
+            identities["temporal_source_index"] = sidecar_identity
     return (
         {
             "role": role,
-            "sha256": digest,
-            "byte_count": byte_count,
+            "sha256": canonical_digest,
+            "byte_count": canonical_byte_count,
         },
         raw_path,
-        identity,
+        identities,
     )
 
 
@@ -256,11 +371,11 @@ def capture_and_canonicalize_summary(
             if role in EXTERNAL_SOURCE_ROLES
             else _expected_internal_path(role, artifact_root=root)
         )
-        canonical, physical_path, identity = _canonical_source(
+        canonical, physical_path, identities = _canonical_source(
             role, declaration, expected_path=expected_path
         )
         canonical_sources[role] = canonical
-        source_identities[role] = identity
+        source_identities.update(identities)
         physical_paths.append(physical_path)
 
     canonical_payload = copy.deepcopy(dict(payload))
