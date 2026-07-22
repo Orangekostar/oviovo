@@ -22,7 +22,12 @@ import sys
 import tempfile
 from typing import Any, Mapping
 
-from scripts.evaluation.run_oviv2_tesse_cd import algorithm_hash
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.evaluation.run_oviv2_tesse_cd import algorithm_hash  # noqa: E402
 
 
 TUNABLE_FIELDS = frozenset(
@@ -37,7 +42,6 @@ GRID = {
     "absence_negative_support": (0.5, 1.0),
     "ownership_min_net_support": (0.000001, 0.5, 1.0),
 }
-REPO_ROOT = Path(__file__).resolve().parents[2]
 STAGE3_LINEAGE_COMMIT = "47962fbd9f363c0696cc5016f8ab42f83a3bf7e5"
 SELECTION_RULE = (
     "maximize current_miou",

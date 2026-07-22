@@ -4,6 +4,8 @@ import hashlib
 import json
 import math
 from pathlib import Path
+import subprocess
+import sys
 import threading
 import time
 
@@ -21,6 +23,7 @@ from scripts.evaluation.run_oviv2_tesse_cd import algorithm_hash
 
 ROOT = Path(__file__).resolve().parents[2]
 ALIASES = ROOT / "configs/evaluation/semantic_aliases/tesse_cd_common_v2.yaml"
+TUNING_SCRIPT = ROOT / "scripts/evaluation/tune_oviv2_tesse_apartment.py"
 
 
 def _base_config() -> dict[str, object]:
@@ -262,6 +265,62 @@ def test_dry_run_writes_nothing(tmp_path: Path) -> None:
     assert payload["status"] == "DRY_RUN"
     assert payload["candidate_count"] == 18
     assert not output.exists()
+
+
+def test_direct_script_help_runs_from_repository_root() -> None:
+    completed = subprocess.run(
+        [sys.executable, str(TUNING_SCRIPT), "--help"],
+        cwd=ROOT,
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert "--base-config" in completed.stdout
+
+
+def test_direct_script_dry_run_and_commands_work_outside_repository(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "must-not-exist"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(TUNING_SCRIPT),
+            "--base-config",
+            str(ROOT / "configs/oviv2_tesse_cd_apartment_v1.json"),
+            "--office-config",
+            str(ROOT / "configs/oviv2_tesse_cd_office_v1.json"),
+            "--output",
+            str(output),
+            "--target-manifest",
+            str(tmp_path / "not-read-target.json"),
+            "--aliases",
+            str(ALIASES),
+            "--label-space",
+            str(tmp_path / "not-read-labels.yaml"),
+            "--dry-run",
+        ],
+        cwd=tmp_path,
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(completed.stdout)
+    assert payload["status"] == "DRY_RUN"
+    assert payload["candidate_count"] == 18
+    assert not output.exists()
+    for candidate in payload["candidates"]:
+        for command in candidate["commands"]:
+            assert command[0] == str(Path(sys.executable).absolute())
+            assert Path(command[1]).is_absolute()
+            assert Path(command[1]).is_file()
+            assert "-m" not in command
 
 
 def test_run_batches_at_most_three_and_writes_deterministic_selection(
