@@ -12,6 +12,12 @@ from scripts.evaluation import finalize_oviv2_tesse_common_v2_release as release
 from scripts.evaluation.finalize_oviv2_tesse_common_v2_release import (
     finalize_oviv2_common_v2_release,
 )
+from scripts.evaluation.export_tesse_temporal_artifact import _presence_intervals
+from scripts.evaluation.run_oviv2_tesse_cd import (
+    TesseCausalCheckpoint,
+    _checkpoint_record,
+    _compact_checkpoint_record,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -26,6 +32,8 @@ OFFICIAL_FINALIZER = ROOT / "scripts/evaluation/finalize_tesse_t2.py"
 EVALUATOR = ROOT / "scripts/evaluation/evaluate_tesse_cd_common_v2.py"
 COMMON_FRAMES = tuple(range(100, 551, 50))
 OFFICIAL_FRAMES = (90, *COMMON_FRAMES)
+EVALUATION_FRAMES = (80, COMMON_FRAMES[0])
+SCHEDULED_FRAMES = tuple(sorted(set(OFFICIAL_FRAMES) | set(EVALUATION_FRAMES)))
 
 
 def _write_json(path: Path, payload: object) -> None:
@@ -250,7 +258,7 @@ def _add_formal_run_artifacts(
     source_checkpoints: list[dict[str, object]] = []
     run_checkpoints: list[dict[str, object]] = []
     checkpoint_statuses: list[dict[str, object]] = []
-    for frame in OFFICIAL_FRAMES:
+    for frame in SCHEDULED_FRAMES:
         checkpoint_root = root / f"checkpoints/{frame:08d}-{frame}"
         checkpoint_root.mkdir(parents=True)
         checkpoint_status = checkpoint_root / "checkpoint_status.json"
@@ -258,10 +266,55 @@ def _add_formal_run_artifacts(
             checkpoint_status,
             {"schema_version": 1, "frame_index": frame},
         )
-        neutral_snapshot = checkpoint_root / "neutral.npz"
-        neutral_snapshot.write_bytes(f"neutral snapshot {frame}\n".encode("ascii"))
-        neutral_entities = checkpoint_root / "neutral.jsonl"
-        neutral_entities.write_text('{"entity_id":"one"}\n', encoding="utf-8")
+        roles = (
+            ("common_v2",)
+            if frame in COMMON_FRAMES
+            else ("official",)
+            if frame in OFFICIAL_FRAMES
+            else ("occlusion_v1",)
+        )
+        checkpoint = TesseCausalCheckpoint(
+            frame_index=frame,
+            timestamp_ns=frame,
+            relative_timestamp_ns=frame,
+            event_ids=(),
+            roles=roles,
+        )
+        if frame not in OFFICIAL_FRAMES:
+            ownership = checkpoint_root / "ownership_checkpoint"
+            ownership.mkdir()
+            (ownership / "checksums.json").write_text("{}\n", encoding="utf-8")
+            run_record = _compact_checkpoint_record(
+                checkpoint,
+                scene=scene,
+                run_root=root,
+                checkpoint_root=checkpoint_root,
+            )
+            run_record["checkpoint_status"] = _relative_record(
+                checkpoint_status, root=root
+            )
+            run_checkpoints.append(run_record)
+            continue
+        artifact = checkpoint_root / "artifact"
+        neutral_snapshot = artifact / f"snapshots/{frame:.6f}_current.npz"
+        neutral_snapshot.parent.mkdir(parents=True)
+        temporal_snapshot = root / f"temporal/checkpoints/{frame:08d}/snapshot.npz"
+        neutral_snapshot.write_bytes(
+            temporal_snapshot.read_bytes()
+            if temporal_snapshot.exists()
+            else f"snapshot {frame}\n".encode("ascii")
+        )
+        neutral_entities = artifact / f"entities/{frame:.6f}_current.jsonl"
+        neutral_entities.parent.mkdir()
+        temporal_entities = root / f"temporal/checkpoints/{frame:08d}/entities.jsonl"
+        neutral_entities.write_bytes(
+            temporal_entities.read_bytes()
+            if temporal_entities.exists()
+            else b'{"entity_id":"one"}\n'
+        )
+        voxel_snapshot = checkpoint_root / "voxel_snapshot"
+        voxel_snapshot.mkdir()
+        (voxel_snapshot / "checksums.json").write_text("{}\n", encoding="utf-8")
         checkpoint_statuses.append(_relative_record(checkpoint_status, root=root))
         source_checkpoints.append(
             {
@@ -274,27 +327,20 @@ def _add_formal_run_artifacts(
                 "entities": _relative_record(neutral_entities, root=root),
             }
         )
-        run_checkpoints.append(
+        run_record = _checkpoint_record(
+            checkpoint,
+            scene=scene,
+            run_root=root,
+            checkpoint_root=checkpoint_root,
+        )
+        run_record.update(
             {
-                "scene": scene,
-                "frame_index": frame,
-                "timestamp_ns": frame,
-                "relative_timestamp_ns": frame,
-                "consumed_through_frame": frame,
-                "consumed_through_frame_exclusive": frame + 1,
-                "event_ids": [],
-                "roles": ["common_v2"] if frame in COMMON_FRAMES else ["official"],
-                "format": "oviv2_voxel_map_snapshot",
                 "checkpoint_status": _relative_record(checkpoint_status, root=root),
-                "voxel_snapshot": {
-                    "path": f"checkpoints/{frame:08d}-{frame}/voxel_snapshot",
-                    "sha256": "4" * 64,
-                    "byte_count": 1,
-                },
                 "neutral_snapshot": _relative_record(neutral_snapshot, root=root),
                 "neutral_entities": _relative_record(neutral_entities, root=root),
             }
         )
+        run_checkpoints.append(run_record)
     capture_status = root / "capture_status.json"
     _write_json(
         capture_status,
@@ -349,15 +395,24 @@ def _add_formal_run_artifacts(
             "snapshots": [
                 {
                     "scene": scene,
-                    "frame_index": COMMON_FRAMES[0],
-                    "timestamp_ns": COMMON_FRAMES[0],
-                    "relative_timestamp_ns": COMMON_FRAMES[0],
-                    "consumed_through_frame": COMMON_FRAMES[0],
-                    "consumed_through_frame_exclusive": COMMON_FRAMES[0] + 1,
-                    "format": "oviv2_voxel_map_snapshot",
-                    "path": "checkpoints/00000100-100/voxel_snapshot",
+                    "frame_index": frame,
+                    "timestamp_ns": frame,
+                    "relative_timestamp_ns": frame,
+                    "consumed_through_frame": frame,
+                    "consumed_through_frame_exclusive": frame + 1,
+                    "format": (
+                        "oviv2_voxel_map_snapshot"
+                        if frame in OFFICIAL_FRAMES
+                        else "oviv2_compact_ownership_checkpoint"
+                    ),
+                    "path": (
+                        f"checkpoints/{frame:08d}-{frame}/voxel_snapshot"
+                        if frame in OFFICIAL_FRAMES
+                        else f"checkpoints/{frame:08d}-{frame}/ownership_checkpoint"
+                    ),
                     "checksums_sha256": "3" * 64,
                 }
+                for frame in EVALUATION_FRAMES
             ],
             **formal,
         },
@@ -383,9 +438,9 @@ def _add_formal_run_artifacts(
             },
             "processed_frame_count": max(OFFICIAL_FRAMES) + 1,
             "official_schedule_frame_indices": list(OFFICIAL_FRAMES),
-            "evaluation_checkpoint_frames": [COMMON_FRAMES[0]],
-            "scheduled_frame_indices": list(OFFICIAL_FRAMES),
-            "captured_frame_indices": list(OFFICIAL_FRAMES),
+            "evaluation_checkpoint_frames": list(EVALUATION_FRAMES),
+            "scheduled_frame_indices": list(SCHEDULED_FRAMES),
+            "captured_frame_indices": list(SCHEDULED_FRAMES),
             "config": frozen_identity["config"],
             "schedule": {
                 "sha256": _record(runner_schedule)["sha256"],
@@ -505,7 +560,19 @@ def _add_formal_run_artifacts(
                 "checkpoint_statuses": temporal_statuses,
             },
             "checkpoints": temporal_checkpoints,
-            "entity_lifecycles": {},
+            "entity_lifecycles": _presence_intervals(
+                {
+                    "one": {
+                        "semantic_label": "fixture",
+                        "entity_type": "object",
+                        "positions": list(range(len(OFFICIAL_FRAMES))),
+                    }
+                },
+                [
+                    {"frame_index": frame, "timestamp_ns": frame}
+                    for frame in OFFICIAL_FRAMES
+                ],
+            ),
             "trajectories": _relative_record(
                 sidecar_trajectories, root=root / "temporal"
             ),
@@ -1122,5 +1189,41 @@ def test_release_rejects_temporal_checkpoint_content_disagreement(
         finalize_oviv2_common_v2_release(
             freeze,
             run_id="temporal-content-disagreement",
+            output=tmp_path / "result.json",
+        )
+
+
+def test_release_rejects_root_source_snapshot_disagreement_with_temporal(
+    tmp_path: Path,
+) -> None:
+    freeze = _fixture(tmp_path)
+    for repeat in (1, 2):
+        root = tmp_path / f"apartment/run{repeat}"
+        source_index = root / "source_index.json"
+        source_payload = json.loads(source_index.read_text(encoding="utf-8"))
+        source_checkpoint = next(
+            item
+            for item in source_payload["checkpoints"]
+            if item["frame_index"] == OFFICIAL_FRAMES[0]
+        )
+        source_checkpoint["snapshot"]["sha256"] = "8" * 64
+        _write_json(source_index, source_payload)
+
+        run_manifest = root / "run_manifest.json"
+        run_payload = json.loads(run_manifest.read_text(encoding="utf-8"))
+        run_checkpoint = next(
+            item
+            for item in run_payload["checkpoints"]
+            if item["frame_index"] == OFFICIAL_FRAMES[0]
+        )
+        run_checkpoint["neutral_snapshot"]["sha256"] = "8" * 64
+        _write_json(run_manifest, run_payload)
+
+    with pytest.raises(
+        ValueError, match="root-to-temporal snapshot content records differ"
+    ):
+        finalize_oviv2_common_v2_release(
+            freeze,
+            run_id="root-temporal-content-disagreement",
             output=tmp_path / "result.json",
         )

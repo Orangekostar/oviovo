@@ -154,6 +154,40 @@ _OCCLUSION_SNAPSHOT_FIELDS = frozenset(
         "checksums_sha256",
     }
 )
+_RUN_CHECKPOINT_BASE_FIELDS = frozenset(
+    {
+        "scene",
+        "frame_index",
+        "timestamp_ns",
+        "relative_timestamp_ns",
+        "consumed_through_frame",
+        "consumed_through_frame_exclusive",
+        "event_ids",
+        "roles",
+        "checkpoint_status",
+    }
+)
+_FULL_RUN_CHECKPOINT_FIELDS = _RUN_CHECKPOINT_BASE_FIELDS | {
+    "voxel_snapshot",
+    "artifact",
+    "neutral_snapshot",
+    "neutral_entities",
+}
+_COMPACT_RUN_CHECKPOINT_FIELDS = _RUN_CHECKPOINT_BASE_FIELDS | {
+    "format",
+    "ownership_checkpoint",
+}
+_ENTITY_LIFECYCLE_FIELDS = frozenset(
+    {"entity_id", "semantic_label", "entity_type", "presence_intervals"}
+)
+_PRESENCE_INTERVAL_FIELDS = frozenset(
+    {
+        "first_frame_index",
+        "first_timestamp_ns",
+        "last_frame_index",
+        "last_timestamp_ns",
+    }
+)
 
 
 def _mapping(value: object, *, label: str) -> Mapping[str, Any]:
@@ -362,6 +396,18 @@ def _integer_sequence(value: object, *, label: str) -> list[int]:
     return list(value)
 
 
+def _string_sequence(
+    value: object, *, label: str, allow_empty: bool
+) -> list[str]:
+    if not isinstance(value, list) or any(
+        not isinstance(item, str) or not item for item in value
+    ):
+        raise ValueError(f"{label} must be a string list")
+    if not allow_empty and not value:
+        raise ValueError(f"{label} must be non-empty")
+    return list(value)
+
+
 def _checkpoint_entries(
     value: object,
     *,
@@ -416,6 +462,56 @@ def _same_content_record(first: object, second: object, *, label: str) -> None:
     }
     if not _json_exact_equal(first_content, second_content):
         raise ValueError(f"{label} content records differ")
+
+
+def _validate_entity_lifecycles(
+    value: object, *, official_frames: list[int]
+) -> None:
+    if not isinstance(value, list):
+        raise ValueError("temporal entity_lifecycles must be a list")
+    previous_entity_id: str | None = None
+    official_frame_set = set(official_frames)
+    for raw_lifecycle in value:
+        lifecycle = _mapping(raw_lifecycle, label="temporal entity lifecycle")
+        if set(lifecycle) != _ENTITY_LIFECYCLE_FIELDS:
+            raise ValueError("temporal entity lifecycle fields are invalid")
+        strings = [
+            lifecycle.get("entity_id"),
+            lifecycle.get("semantic_label"),
+            lifecycle.get("entity_type"),
+        ]
+        if any(not isinstance(item, str) or not item for item in strings):
+            raise ValueError("temporal entity lifecycle identity is invalid")
+        entity_id = str(lifecycle["entity_id"])
+        if previous_entity_id is not None and entity_id <= previous_entity_id:
+            raise ValueError("temporal entity lifecycles must be sorted and unique")
+        previous_entity_id = entity_id
+        intervals = lifecycle.get("presence_intervals")
+        if not isinstance(intervals, list) or not intervals:
+            raise ValueError("temporal presence intervals must be non-empty")
+        previous_last_frame = -1
+        for raw_interval in intervals:
+            interval = _mapping(raw_interval, label="temporal presence interval")
+            if set(interval) != _PRESENCE_INTERVAL_FIELDS:
+                raise ValueError("temporal presence interval fields are invalid")
+            first_frame = interval.get("first_frame_index")
+            first_timestamp = interval.get("first_timestamp_ns")
+            last_frame = interval.get("last_frame_index")
+            last_timestamp = interval.get("last_timestamp_ns")
+            if not (
+                type(first_frame) is int
+                and type(first_timestamp) is int
+                and type(last_frame) is int
+                and type(last_timestamp) is int
+                and first_frame in official_frame_set
+                and last_frame in official_frame_set
+                and first_frame <= last_frame
+                and first_timestamp >= 0
+                and first_timestamp <= last_timestamp
+                and first_frame > previous_last_frame
+            ):
+                raise ValueError("temporal presence interval identity is invalid")
+            previous_last_frame = last_frame
 
 
 def _validate_formal_artifact_contracts(
@@ -496,27 +592,70 @@ def _validate_formal_artifact_contracts(
     )
     if not (
         captured_frames == scheduled_frames == list(run_checkpoints)
-        and set(official_frames) <= set(scheduled_frames)
-        and set(evaluation_frames) <= set(scheduled_frames)
+        and set(scheduled_frames) == set(official_frames) | set(evaluation_frames)
         and type(run_manifest.get("processed_frame_count")) is int
         and int(run_manifest["processed_frame_count"]) > max(scheduled_frames)
     ):
         raise ValueError("run_manifest checkpoint coverage mismatch")
     for frame, entry in run_checkpoints.items():
-        required = {
-            "scene",
-            "frame_index",
-            "timestamp_ns",
-            "relative_timestamp_ns",
-            "consumed_through_frame",
-            "consumed_through_frame_exclusive",
-            "format",
-        }
-        if not required <= set(entry):
-            raise ValueError("run checkpoint fields are incomplete")
-        _validate_checkpoint_identity(
+        timestamp, _, _ = _validate_checkpoint_identity(
             entry, frame=frame, scene=scene, label="run"
         )
+        if not (
+            type(entry.get("relative_timestamp_ns")) is int
+            and int(entry["relative_timestamp_ns"]) >= 0
+        ):
+            raise ValueError("run checkpoint relative timestamp is invalid")
+        _string_sequence(
+            entry.get("event_ids"),
+            label="run checkpoint event_ids",
+            allow_empty=True,
+        )
+        _string_sequence(
+            entry.get("roles"),
+            label="run checkpoint roles",
+            allow_empty=False,
+        )
+        checkpoint_root = f"checkpoints/{frame:08d}-{timestamp}"
+        _relative_content_record(
+            entry.get("checkpoint_status"),
+            label="run checkpoint status",
+            expected_path=f"{checkpoint_root}/checkpoint_status.json",
+        )
+        if frame in official_frames:
+            if set(entry) != _FULL_RUN_CHECKPOINT_FIELDS:
+                raise ValueError("full run checkpoint fields are invalid")
+            for role in ("voxel_snapshot", "artifact"):
+                _relative_content_record(
+                    entry.get(role),
+                    label=f"full run checkpoint {role}",
+                    expected_path=f"{checkpoint_root}/{role}",
+                )
+            for role, suffix in (
+                ("neutral_snapshot", ".npz"),
+                ("neutral_entities", ".jsonl"),
+            ):
+                record = _relative_content_record(
+                    entry.get(role), label=f"full run checkpoint {role}"
+                )
+                path = Path(str(record["path"]))
+                if not (
+                    path.is_relative_to(Path(checkpoint_root) / "artifact")
+                    and path.suffix == suffix
+                ):
+                    raise ValueError(f"full run checkpoint {role} path is invalid")
+        else:
+            if not (
+                set(entry) == _COMPACT_RUN_CHECKPOINT_FIELDS
+                and entry.get("format")
+                == "oviv2_compact_ownership_checkpoint"
+            ):
+                raise ValueError("compact run checkpoint fields are invalid")
+            _relative_content_record(
+                entry.get("ownership_checkpoint"),
+                label="compact ownership checkpoint",
+                expected_path=f"{checkpoint_root}/ownership_checkpoint",
+            )
 
     source_index = payloads["source_index"]
     if set(source_index) != _SOURCE_INDEX_FIELDS or not (
@@ -540,12 +679,27 @@ def _validate_formal_artifact_contracts(
     if list(source_checkpoints) != official_frames:
         raise ValueError("source_index checkpoint coverage mismatch")
     for frame, entry in source_checkpoints.items():
-        _validate_checkpoint_identity(
+        source_identity = _validate_checkpoint_identity(
             entry, frame=frame, scene=scene, label="source_index"
         )
+        run_entry = run_checkpoints[frame]
+        if _validate_checkpoint_identity(
+            run_entry, frame=frame, scene=scene, label="run"
+        ) != source_identity:
+            raise ValueError("run-to-source checkpoint identities differ")
         for role in ("checkpoint_status", "snapshot", "entities"):
             _relative_content_record(
                 entry.get(role), label=f"source checkpoint {role}"
+            )
+        for source_role, run_role in (
+            ("checkpoint_status", "checkpoint_status"),
+            ("snapshot", "neutral_snapshot"),
+            ("entities", "neutral_entities"),
+        ):
+            _same_content_record(
+                entry.get(source_role),
+                run_entry.get(run_role),
+                label=f"run-to-source {source_role}",
             )
 
     occlusion = payloads["occlusion_checkpoint_index"]
@@ -627,9 +781,12 @@ def _validate_formal_artifact_contracts(
         and temporal.get("mode") == "causal_checkpoints"
         and temporal.get("method") == "OVIV2"
         and temporal.get("scene") == scene
-        and isinstance(temporal.get("entity_lifecycles"), Mapping)
+        and isinstance(temporal.get("entity_lifecycles"), list)
     ):
         raise ValueError("temporal_manifest contract mismatch")
+    _validate_entity_lifecycles(
+        temporal.get("entity_lifecycles"), official_frames=official_frames
+    )
     temporal_sources = _mapping(temporal.get("sources"), label="temporal sources")
     if set(temporal_sources) != {
         "source_index",
@@ -710,6 +867,17 @@ def _validate_formal_artifact_contracts(
             != (timestamp, consumed, consumed_exclusive)
         ):
             raise ValueError("temporal checkpoint identities differ")
+        root_source_entry = source_checkpoints[frame]
+        if (
+            _validate_checkpoint_identity(
+                root_source_entry,
+                frame=frame,
+                scene=scene,
+                label="root source_index",
+            )
+            != (timestamp, consumed, consumed_exclusive)
+        ):
+            raise ValueError("root-to-temporal checkpoint identities differ")
         for role, suffix in (("snapshot", "snapshot.npz"), ("entities", "entities.jsonl")):
             temporal_record = _relative_content_record(
                 entry.get(role),
@@ -726,6 +894,12 @@ def _validate_formal_artifact_contracts(
             _same_content_record(
                 temporal_record, sidecar_record, label=f"temporal {role}"
             )
+            if role == "snapshot":
+                _same_content_record(
+                    root_source_entry.get("snapshot"),
+                    temporal_record,
+                    label="root-to-temporal snapshot",
+                )
             if frame in event_frames:
                 _same_content_record(
                     temporal_record, summary_record, label=f"summary {role}"
