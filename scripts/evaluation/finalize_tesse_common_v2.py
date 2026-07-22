@@ -9,6 +9,7 @@ import json
 import math
 import os
 from pathlib import Path
+import stat
 from statistics import fmean
 import tempfile
 from typing import Any, Mapping
@@ -429,7 +430,16 @@ def finalize_common_v2(
     summaries: dict[str, dict[str, Any]] = {}
     summary_records: dict[str, dict[str, dict[str, object]]] = {}
     for scene, (primary, repeat) in pairs.items():
-        if primary.resolve(strict=True) == repeat.resolve(strict=True):
+        for label, path in (("primary", primary), ("repeat", repeat)):
+            try:
+                file_stat = path.stat(follow_symlinks=False)
+            except OSError as error:
+                raise ValueError(
+                    f"{scene} {label} must be a regular file"
+                ) from error
+            if not stat.S_ISREG(file_stat.st_mode):
+                raise ValueError(f"{scene} {label} must be a regular file")
+        if os.path.samefile(primary, repeat):
             raise ValueError(f"{scene} primary and repeat must be independent files")
         if primary.read_bytes() != repeat.read_bytes():
             raise ValueError(f"{scene} primary and repeat summaries must be byte-identical")

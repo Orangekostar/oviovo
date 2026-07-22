@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -397,6 +398,46 @@ def test_rejects_same_file_as_independent_repeat(tmp_path: Path) -> None:
             apartment,
             office,
             office,
+            method="OVIMAP_FROZEN",
+            run_id="test",
+            output=tmp_path / "result.json",
+        )
+
+
+def test_rejects_hardlink_as_independent_repeat(tmp_path: Path) -> None:
+    apartment = _summary(tmp_path / "apartment.json", scene="apartment")
+    apartment_repeat = tmp_path / "apartment-repeat.json"
+    os.link(apartment, apartment_repeat)
+    office = _summary(tmp_path / "office.json", scene="office")
+    office_repeat = tmp_path / "office-repeat.json"
+    office_repeat.write_bytes(office.read_bytes())
+
+    with pytest.raises(ValueError, match="independent files"):
+        finalize_common_v2(
+            apartment,
+            apartment_repeat,
+            office,
+            office_repeat,
+            method="OVIMAP_FROZEN",
+            run_id="test",
+            output=tmp_path / "result.json",
+        )
+
+
+def test_rejects_symlink_repeat_as_nonregular_file(tmp_path: Path) -> None:
+    apartment = _summary(tmp_path / "apartment.json", scene="apartment")
+    apartment_repeat = tmp_path / "apartment-repeat.json"
+    apartment_repeat.symlink_to(apartment)
+    office = _summary(tmp_path / "office.json", scene="office")
+    office_repeat = tmp_path / "office-repeat.json"
+    office_repeat.write_bytes(office.read_bytes())
+
+    with pytest.raises(ValueError, match="regular file"):
+        finalize_common_v2(
+            apartment,
+            apartment_repeat,
+            office,
+            office_repeat,
             method="OVIMAP_FROZEN",
             run_id="test",
             output=tmp_path / "result.json",
