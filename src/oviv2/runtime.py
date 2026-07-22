@@ -22,6 +22,10 @@ from src.oviv2.geometry import SparseTsdfVolume, TsdfConfig
 from src.oviv2.observations import FrameObservation, ObservationKind
 from src.oviv2.ownership import ReversibleOwnershipStore
 from src.oviv2.snapshot import VoxelMapSnapshot, VoxelSnapshotMetadata
+from src.oviv2.compact_checkpoint import (
+    CompactOwnershipCheckpoint,
+    CompactOwnershipMetadata,
+)
 from src.oviv2.tracking import LocalTracker, LocalTrackerConfig
 from src.oviv2.visibility import VisibilityConfig, VisibilityStatus, VoxelVisibilityProjector
 
@@ -513,4 +517,27 @@ class Oviv2Runtime:
             self.evidence,
             self.ownership,
             registry=self.registry,
+        )
+
+    def commit_compact_ownership_new(
+        self,
+        target_dir: str | Path,
+    ) -> CompactOwnershipCheckpoint:
+        metadata = self._snapshot_metadata()
+        if metadata.dense_semantic_provenance is None:
+            raise ValueError(
+                "compact ownership checkpoints require dense semantic provenance"
+            )
+        return CompactOwnershipCheckpoint.commit_new(
+            target_dir,
+            CompactOwnershipMetadata(
+                scene_id=metadata.scene_id,
+                frame_id=metadata.frame_id,
+                timestamp=metadata.timestamp,
+                revision=metadata.revision,
+                voxel_size_m=metadata.voxel_size_m,
+                block_resolution=metadata.block_resolution,
+                dense_semantic_provenance=metadata.dense_semantic_provenance,
+            ),
+            self.ownership,
         )
