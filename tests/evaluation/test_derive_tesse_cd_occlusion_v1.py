@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 from pathlib import Path
@@ -9,6 +10,7 @@ import sys
 import numpy as np
 import pytest
 
+import scripts.evaluation.derive_tesse_cd_occlusion_v1 as occlusion_deriver
 from scripts.evaluation.derive_tesse_cd_common_v2 import deterministic_npz_bytes
 from scripts.evaluation.derive_tesse_cd_occlusion_v1 import (
     build_contract_manifest,
@@ -17,6 +19,7 @@ from scripts.evaluation.derive_tesse_cd_occlusion_v1 import (
     render_manifest,
     validate_source_allowlist,
     validate_source_bindings,
+    validate_generated_target,
     write_occlusion_package,
 )
 from src.evaluation.oviv2_occlusion import classify_depth
@@ -90,6 +93,15 @@ def _source_paths(root: Path) -> dict[str, Path]:
             path.write_bytes(f"{scene}.{index}".encode("ascii"))
             paths[f"{scene}.depth.{index:06d}"] = path
     return paths
+
+
+def _bound_file(path: Path) -> dict[str, object]:
+    content = path.read_bytes()
+    return {
+        "path": str(path.resolve()),
+        "sha256": hashlib.sha256(content).hexdigest(),
+        "byte_count": len(content),
+    }
 
 
 def test_classify_depth_has_explicit_ten_centimeter_boundaries() -> None:
@@ -361,6 +373,208 @@ def test_writer_revalidates_frozen_bindings_before_publish(tmp_path: Path) -> No
             status="FIXTURE",
         )
     assert not output.exists()
+
+
+@pytest.mark.parametrize(
+    "attack",
+    [
+        "single_scene",
+        "missing_stratum",
+        "zero_scene_headline",
+        "duplicate_episode_id",
+        "future_anchor",
+        "bad_bounds",
+        "empty_checkpoints",
+        "missing_array",
+        "dangling_array",
+        "count_mismatch",
+        "outside_anchor",
+        "missing_object_id",
+    ],
+)
+def test_generated_target_validation_rejects_forged_or_incomplete_packages(
+    attack: str,
+) -> None:
+    frames, records = _fixture_inputs()
+    arrays, metadata = derive_occlusion_targets(
+        frames_by_scene=frames,
+        dsg_records_by_scene=records,
+        camera={
+            "width": 1,
+            "height": 1,
+            "fx": 1.0,
+            "fy": 1.0,
+            "cx": 0.0,
+            "cy": 0.0,
+        },
+    )
+    forged_arrays = {name: value.copy() for name, value in arrays.items()}
+    forged = copy.deepcopy(metadata)
+    if attack == "single_scene":
+        forged["scenes"].pop("office")
+    elif attack == "missing_stratum":
+        forged["stress_layers"].pop("0.90")
+    elif attack == "zero_scene_headline":
+        forged["scenes"]["office"]["headline_episode_count"] = 0
+    elif attack == "duplicate_episode_id":
+        forged["episodes"].append(copy.deepcopy(forged["episodes"][0]))
+    elif attack == "future_anchor":
+        forged["episodes"][0]["anchor"]["relative_timestamp_ns"] = -1
+    elif attack == "bad_bounds":
+        forged["episodes"][0]["end_frame_index"] += 1
+    elif attack == "empty_checkpoints":
+        forged["episodes"][0]["checkpoints"] = []
+    elif attack == "missing_array":
+        forged["episodes"][0]["anchor"]["array"] = "missing"
+    elif attack == "dangling_array":
+        forged_arrays["dangling"] = np.asarray([[0, 0, 1]], dtype=np.int64)
+    elif attack == "count_mismatch":
+        forged["episodes"][0]["checkpoints"][0]["occluded_voxel_count"] += 1
+    elif attack == "outside_anchor":
+        array_name = forged["episodes"][0]["checkpoints"][0]["array"]
+        forged_arrays[array_name] = np.asarray([[9, 9, 9]], dtype=np.int64)
+    elif attack == "missing_object_id":
+        forged["episodes"][0]["object_id"] = None
+
+    with pytest.raises(ValueError, match="generated occlusion target"):
+        validate_generated_target(forged_arrays, forged)
+
+
+def test_generated_target_validation_accepts_complete_two_scene_package() -> None:
+    frames, records = _fixture_inputs()
+    arrays, metadata = derive_occlusion_targets(
+        frames_by_scene=frames,
+        dsg_records_by_scene=records,
+        camera={
+            "width": 1,
+            "height": 1,
+            "fx": 1.0,
+            "fy": 1.0,
+            "cx": 0.0,
+            "cy": 0.0,
+        },
+    )
+
+    validate_generated_target(arrays, metadata)
+
+
+@pytest.mark.parametrize("mutation", ["content", "same_bytes_new_inode"])
+def test_source_change_after_initial_validation_prevents_publish_and_retry_works(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, mutation: str
+) -> None:
+    frames, records = _fixture_inputs()
+    arrays, metadata = derive_occlusion_targets(
+        frames_by_scene=frames,
+        dsg_records_by_scene=records,
+        camera={
+            "width": 1,
+            "height": 1,
+            "fx": 1.0,
+            "fy": 1.0,
+            "cx": 0.0,
+            "cy": 0.0,
+        },
+    )
+    paths = _source_paths(tmp_path / "sources")
+    output = tmp_path / "output"
+    original_render = occlusion_deriver.render_manifest
+
+    def mutate_after_serialization(payload: object) -> bytes:
+        content = original_render(payload)
+        if mutation == "content":
+            paths["camera"].write_bytes(b"changed after initial validation")
+        else:
+            replacement = paths["camera"].with_suffix(".replacement")
+            replacement.write_bytes(paths["camera"].read_bytes())
+            replacement.replace(paths["camera"])
+        return content
+
+    monkeypatch.setattr(
+        occlusion_deriver, "render_manifest", mutate_after_serialization
+    )
+    with pytest.raises(ValueError, match="source changed before publication"):
+        write_occlusion_package(
+            output,
+            arrays=arrays,
+            metadata=metadata,
+            source_paths=paths,
+            status="FIXTURE",
+        )
+    assert not output.exists()
+    assert not list(tmp_path.glob(".output.*"))
+
+    monkeypatch.setattr(occlusion_deriver, "render_manifest", original_render)
+    manifest = write_occlusion_package(
+        output,
+        arrays=arrays,
+        metadata=metadata,
+        source_paths=paths,
+        status="FIXTURE",
+    )
+    assert manifest.is_file()
+
+
+def test_generated_publish_requires_matching_frozen_contract(tmp_path: Path) -> None:
+    frames, records = _fixture_inputs()
+    arrays, metadata = derive_occlusion_targets(
+        frames_by_scene=frames,
+        dsg_records_by_scene=records,
+        camera={
+            "width": 1,
+            "height": 1,
+            "fx": 1.0,
+            "fy": 1.0,
+            "cx": 0.0,
+            "cy": 0.0,
+        },
+    )
+    paths = _source_paths(tmp_path / "sources")
+    indices = metadata["scene_frame_indices"]
+    bound = validate_source_allowlist(paths, scene_frame_indices=indices)
+    expected_files = {
+        role: record for role, record in bound.items() if ".depth." not in role
+    }
+    expected_depth = {
+        scene: depth_collection_binding(
+            bound, scene=scene, frame_indices=indices[scene]
+        )
+        for scene in ("apartment", "office")
+    }
+    contract = tmp_path / "contract.json"
+    contract.write_bytes(
+        render_manifest(
+            build_contract_manifest(
+                source_records=expected_files,
+                depth_bindings=expected_depth,
+            )
+        )
+    )
+    metadata["contract"] = _bound_file(contract)
+
+    with pytest.raises(ValueError, match="frozen CONTRACT_ONLY"):
+        write_occlusion_package(
+            tmp_path / "missing-contract",
+            arrays=arrays,
+            metadata=metadata,
+            source_paths=paths,
+            expected_source_records=expected_files,
+            expected_depth_bindings=expected_depth,
+            status="GENERATED",
+        )
+
+    manifest = write_occlusion_package(
+        tmp_path / "generated",
+        arrays=arrays,
+        metadata=metadata,
+        source_paths=paths,
+        expected_source_records=expected_files,
+        expected_depth_bindings=expected_depth,
+        contract_path=contract,
+        status="GENERATED",
+    )
+    payload = json.loads(manifest.read_text(encoding="utf-8"))
+    assert payload["status"] == "GENERATED"
+    assert payload["metadata"]["contract"] == _bound_file(contract)
 
 
 def test_build_contract_is_input_only_and_detects_hash_drift(tmp_path: Path) -> None:

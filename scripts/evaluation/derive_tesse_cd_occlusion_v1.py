@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+from dataclasses import dataclass
 import hashlib
 import io
 import json
@@ -64,6 +65,14 @@ FORBIDDEN_SOURCE_COMPONENTS = {
 DEFAULT_CONTRACT = REPO_ROOT / "configs/evaluation/manifests/tesse_cd_occlusion_v1.json"
 
 
+@dataclass(frozen=True)
+class _SourceWitness:
+    declared_path: Path
+    resolved_path: Path
+    fingerprint: tuple[int, int, int, int, int]
+    record: dict[str, Any]
+
+
 def _serialized_path(path: Path) -> str:
     resolved = path.resolve()
     try:
@@ -72,21 +81,94 @@ def _serialized_path(path: Path) -> str:
         return str(resolved)
 
 
-def _file_record(path: Path) -> dict[str, Any]:
-    candidate = Path(path)
+def _fingerprint(path: Path) -> tuple[int, int, int, int, int]:
+    status = path.stat()
+    return (
+        status.st_dev,
+        status.st_ino,
+        status.st_size,
+        status.st_mtime_ns,
+        status.st_ctime_ns,
+    )
+
+
+def _capture_source_witness(path: Path) -> _SourceWitness:
+    declared = Path(path).absolute()
+    candidate = declared.resolve()
     if not candidate.is_file():
         raise ValueError(f"source is not a file: {candidate}")
+    before = _fingerprint(candidate)
     digest = hashlib.sha256()
     byte_count = 0
     with candidate.open("rb") as handle:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
             byte_count += len(chunk)
-    return {
+    after = _fingerprint(candidate)
+    if before != after:
+        raise ValueError(f"source changed while reading: {candidate}")
+    record = {
         "path": _serialized_path(candidate),
         "sha256": digest.hexdigest(),
         "byte_count": byte_count,
     }
+    return _SourceWitness(declared, candidate, before, record)
+
+
+def _read_source_bytes(path: Path) -> tuple[bytes, _SourceWitness]:
+    """Read once, hashing the exact bytes returned to the parser."""
+    declared = Path(path).absolute()
+    candidate = declared.resolve()
+    if not candidate.is_file():
+        raise ValueError(f"source is not a file: {candidate}")
+    before = _fingerprint(candidate)
+    with candidate.open("rb") as handle:
+        content = handle.read()
+    after = _fingerprint(candidate)
+    if before != after:
+        raise ValueError(f"source changed while reading: {candidate}")
+    record = {
+        "path": _serialized_path(candidate),
+        "sha256": hashlib.sha256(content).hexdigest(),
+        "byte_count": len(content),
+    }
+    return content, _SourceWitness(declared, candidate, before, record)
+
+
+def _file_record(path: Path) -> dict[str, Any]:
+    return _capture_source_witness(path).record
+
+
+def _revalidate_source_witness(witness: _SourceWitness) -> None:
+    try:
+        observed = _capture_source_witness(witness.declared_path)
+    except (OSError, ValueError) as error:
+        raise ValueError(
+            f"source changed before publication: {witness.declared_path}"
+        ) from error
+    if not (
+        observed.resolved_path == witness.resolved_path
+        and observed.fingerprint == witness.fingerprint
+        and observed.record == witness.record
+    ):
+        raise ValueError(
+            f"source changed before publication: {witness.declared_path}"
+        )
+
+
+def _revalidate_source_identity(witness: _SourceWitness) -> None:
+    """Create a cheap common-time barrier after the sequential hash pass."""
+    try:
+        resolved = witness.declared_path.resolve()
+        fingerprint = _fingerprint(resolved)
+    except OSError as error:
+        raise ValueError(
+            f"source changed before publication: {witness.declared_path}"
+        ) from error
+    if resolved != witness.resolved_path or fingerprint != witness.fingerprint:
+        raise ValueError(
+            f"source changed before publication: {witness.declared_path}"
+        )
 
 
 def _expected_source_roles(
@@ -110,6 +192,17 @@ def validate_source_allowlist(
     scene_frame_indices: Mapping[str, Iterable[int]],
 ) -> dict[str, dict[str, Any]]:
     """Require the exact GT/depth/pose/camera input set and bind every file."""
+    records, _ = _capture_source_allowlist(
+        source_paths, scene_frame_indices=scene_frame_indices
+    )
+    return records
+
+
+def _capture_source_allowlist(
+    source_paths: Mapping[str, Path],
+    *,
+    scene_frame_indices: Mapping[str, Iterable[int]],
+) -> tuple[dict[str, dict[str, Any]], dict[str, _SourceWitness]]:
     expected = _expected_source_roles(scene_frame_indices)
     observed = tuple(sorted(str(role) for role in source_paths))
     if observed != expected:
@@ -119,6 +212,7 @@ def validate_source_allowlist(
             f"exact source allowlist mismatch; missing={missing}, extra={extra}"
         )
     records: dict[str, dict[str, Any]] = {}
+    witnesses: dict[str, _SourceWitness] = {}
     for role in expected:
         path = Path(source_paths[role])
         components = {part.lower() for part in path.parts}
@@ -130,8 +224,10 @@ def validate_source_allowlist(
             r"(?:apartment|office)\.depth\.\d{6}", role
         ):
             raise ValueError(f"exact source allowlist rejects role: {role}")
-        records[role] = _file_record(path)
-    return records
+        witness = _capture_source_witness(path)
+        records[role] = witness.record
+        witnesses[role] = witness
+    return records, witnesses
 
 
 def depth_collection_binding(
@@ -213,8 +309,27 @@ def validate_source_bindings(
     expected_depth_bindings: Mapping[str, Mapping[str, Any]],
 ) -> dict[str, dict[str, Any]]:
     """Reject any file drift against the pre-registered source contract."""
-    observed = validate_source_allowlist(
-        source_paths, scene_frame_indices=scene_frame_indices
+    observed, _ = _capture_source_bindings(
+        source_paths,
+        scene_frame_indices=scene_frame_indices,
+        expected_source_records=expected_source_records,
+        expected_depth_bindings=expected_depth_bindings,
+    )
+    return observed
+
+
+def _capture_source_bindings(
+    source_paths: Mapping[str, Path],
+    *,
+    scene_frame_indices: Mapping[str, Iterable[int]],
+    expected_source_records: Mapping[str, Mapping[str, Any]],
+    expected_depth_bindings: Mapping[str, Mapping[str, Any]],
+) -> tuple[dict[str, dict[str, Any]], dict[str, _SourceWitness]]:
+    normalized_indices = {
+        scene: tuple(values) for scene, values in scene_frame_indices.items()
+    }
+    observed, witnesses = _capture_source_allowlist(
+        source_paths, scene_frame_indices=normalized_indices
     )
     observed_non_depth = {
         role: record for role, record in observed.items() if ".depth." not in role
@@ -233,11 +348,11 @@ def validate_source_bindings(
         actual = depth_collection_binding(
             observed,
             scene=scene,
-            frame_indices=scene_frame_indices[scene],
+            frame_indices=normalized_indices[scene],
         )
         if actual != expected:
             raise ValueError(f"source hash or byte count drift: {scene} depth collection")
-    return observed
+    return observed, witnesses
 
 
 def _validate_record(role: str, record: Mapping[str, Any]) -> None:
@@ -581,6 +696,249 @@ def _validate_target_arrays(arrays: Mapping[str, np.ndarray]) -> None:
             raise ValueError(f"target array must be non-empty, sorted, and unique: {name}")
 
 
+def _generated_target_error(message: str) -> ValueError:
+    return ValueError(f"generated occlusion target is invalid: {message}")
+
+
+def _plain_nonnegative_int(value: Any) -> bool:
+    return type(value) is int and value >= 0
+
+
+def validate_generated_target(
+    arrays: Mapping[str, np.ndarray], metadata: Mapping[str, Any]
+) -> None:
+    """Validate the complete two-scene metadata-to-NPZ closure."""
+    try:
+        _validate_target_arrays(arrays)
+    except ValueError as error:
+        raise _generated_target_error(str(error)) from error
+    if metadata.get("prediction_inputs_used") is not False:
+        raise _generated_target_error("prediction_inputs_used must be false")
+    scene_frames = metadata.get("scene_frame_indices")
+    scenes = metadata.get("scenes")
+    episodes = metadata.get("episodes")
+    layers = metadata.get("stress_layers")
+    if not isinstance(scene_frames, Mapping) or set(scene_frames) != set(SCENES):
+        raise _generated_target_error("scene frame coverage must be exact")
+    if not isinstance(scenes, Mapping) or set(scenes) != set(SCENES):
+        raise _generated_target_error("scene summaries must be exact")
+    if not isinstance(episodes, list) or not episodes:
+        raise _generated_target_error("episodes must be a non-empty list")
+    if not isinstance(layers, Mapping) or set(layers) != {
+        "all",
+        "0.50",
+        "0.75",
+        "0.90",
+    }:
+        raise _generated_target_error("stress strata must be exact")
+    if metadata.get("headline_stress_layer") != "0.90":
+        raise _generated_target_error("headline stress layer must be 0.90")
+
+    normalized_frames: dict[str, tuple[int, ...]] = {}
+    for scene in SCENES:
+        values = scene_frames[scene]
+        if not isinstance(values, list) or any(
+            not _plain_nonnegative_int(value) for value in values
+        ):
+            raise _generated_target_error(f"{scene} frame indices are invalid")
+        indices = tuple(values)
+        if not indices or indices != tuple(range(len(indices))):
+            raise _generated_target_error(f"{scene} frame coverage is not contiguous")
+        normalized_frames[scene] = indices
+
+    episode_ids: list[str] = []
+    array_references: list[str] = []
+    expected_episode_fields = {
+        "episode_id",
+        "scene",
+        "object_id",
+        "object_name",
+        "semantic_label",
+        "lifecycle",
+        "anchor",
+        "start_frame_index",
+        "end_frame_index",
+        "checkpoints",
+        "occlusion_fraction",
+    }
+    for episode in episodes:
+        if not isinstance(episode, Mapping) or set(episode) != expected_episode_fields:
+            raise _generated_target_error("episode fields are not exact")
+        episode_id = episode["episode_id"]
+        scene = episode["scene"]
+        if not isinstance(episode_id, str) or not episode_id:
+            raise _generated_target_error("episode ID is invalid")
+        if episode_id in episode_ids:
+            raise _generated_target_error("episode IDs are not unique")
+        episode_ids.append(episode_id)
+        if scene not in SCENES:
+            raise _generated_target_error("episode scene is invalid")
+        object_id = episode["object_id"]
+        if not (
+            _plain_nonnegative_int(object_id)
+            or (isinstance(object_id, str) and bool(object_id.strip()))
+        ):
+            raise _generated_target_error("episode object ID is invalid")
+        if not isinstance(episode["object_name"], str) or not episode["object_name"]:
+            raise _generated_target_error("episode object name is invalid")
+        if type(episode["semantic_label"]) is not int or episode[
+            "semantic_label"
+        ] in UNKNOWN_SEMANTIC_LABELS:
+            raise _generated_target_error("episode semantic label is invalid")
+
+        lifecycle = episode["lifecycle"]
+        anchor = episode["anchor"]
+        checkpoints = episode["checkpoints"]
+        if not isinstance(lifecycle, Mapping) or set(lifecycle) != {
+            "index",
+            "first_timestamp_ns",
+            "last_timestamp_ns",
+        }:
+            raise _generated_target_error("lifecycle is invalid")
+        if not isinstance(anchor, Mapping) or set(anchor) != {
+            "frame_index",
+            "relative_timestamp_ns",
+            "array",
+            "voxel_count",
+        }:
+            raise _generated_target_error("anchor is invalid")
+        if not isinstance(checkpoints, list) or not checkpoints:
+            raise _generated_target_error("checkpoints must be non-empty")
+        lifecycle_index = lifecycle["index"]
+        first_timestamp = lifecycle["first_timestamp_ns"]
+        last_timestamp = lifecycle["last_timestamp_ns"]
+        if not (
+            _plain_nonnegative_int(lifecycle_index)
+            and _plain_nonnegative_int(first_timestamp)
+            and _plain_nonnegative_int(last_timestamp)
+            and first_timestamp < last_timestamp
+        ):
+            raise _generated_target_error("lifecycle bounds are invalid")
+        anchor_frame = anchor["frame_index"]
+        anchor_timestamp = anchor["relative_timestamp_ns"]
+        anchor_count = anchor["voxel_count"]
+        anchor_array = anchor["array"]
+        if not (
+            _plain_nonnegative_int(anchor_frame)
+            and anchor_frame in normalized_frames[scene]
+            and _plain_nonnegative_int(anchor_timestamp)
+            and first_timestamp <= anchor_timestamp < last_timestamp
+            and type(anchor_count) is int
+            and anchor_count > 0
+            and isinstance(anchor_array, str)
+            and anchor_array in arrays
+            and len(arrays[anchor_array]) == anchor_count
+        ):
+            raise _generated_target_error("anchor binding is invalid")
+        array_references.append(anchor_array)
+        anchor_voxels = {
+            tuple(int(value) for value in row) for row in arrays[anchor_array]
+        }
+
+        checkpoint_frames: list[int] = []
+        checkpoint_timestamps: list[int] = []
+        checkpoint_fractions: list[float] = []
+        for checkpoint in checkpoints:
+            if not isinstance(checkpoint, Mapping) or set(checkpoint) != {
+                "frame_index",
+                "relative_timestamp_ns",
+                "array",
+                "occluded_voxel_count",
+                "occlusion_fraction",
+            }:
+                raise _generated_target_error("checkpoint fields are not exact")
+            frame_index = checkpoint["frame_index"]
+            timestamp = checkpoint["relative_timestamp_ns"]
+            array_name = checkpoint["array"]
+            count = checkpoint["occluded_voxel_count"]
+            fraction = checkpoint["occlusion_fraction"]
+            if not (
+                _plain_nonnegative_int(frame_index)
+                and frame_index in normalized_frames[scene]
+                and frame_index > anchor_frame
+                and _plain_nonnegative_int(timestamp)
+                and anchor_timestamp < timestamp < last_timestamp
+                and isinstance(array_name, str)
+                and array_name in arrays
+                and type(count) is int
+                and count > 0
+                and len(arrays[array_name]) == count
+                and {
+                    tuple(int(value) for value in row) for row in arrays[array_name]
+                }
+                <= anchor_voxels
+                and isinstance(fraction, (int, float))
+                and not isinstance(fraction, bool)
+                and np.isfinite(fraction)
+                and 0.0 < float(fraction) <= 1.0
+                and np.isclose(
+                    float(fraction), count / anchor_count, rtol=0.0, atol=1e-12
+                )
+            ):
+                raise _generated_target_error("checkpoint binding is invalid")
+            checkpoint_frames.append(frame_index)
+            checkpoint_timestamps.append(timestamp)
+            checkpoint_fractions.append(float(fraction))
+            array_references.append(array_name)
+        if checkpoint_frames != list(
+            range(checkpoint_frames[0], checkpoint_frames[0] + len(checkpoint_frames))
+        ) or checkpoint_timestamps != sorted(set(checkpoint_timestamps)):
+            raise _generated_target_error("checkpoint sequence is not consecutive")
+        if not (
+            episode["start_frame_index"] == checkpoint_frames[0]
+            and episode["end_frame_index"] == checkpoint_frames[-1]
+            and isinstance(episode["occlusion_fraction"], (int, float))
+            and not isinstance(episode["occlusion_fraction"], bool)
+            and np.isclose(
+                float(episode["occlusion_fraction"]),
+                max(checkpoint_fractions),
+                rtol=0.0,
+                atol=1e-12,
+            )
+        ):
+            raise _generated_target_error("episode bounds or fraction are invalid")
+
+    if len(array_references) != len(set(array_references)) or set(
+        array_references
+    ) != set(arrays):
+        raise _generated_target_error("array references are dangling or incomplete")
+
+    for scene in SCENES:
+        selected = [episode for episode in episodes if episode["scene"] == scene]
+        headline = sum(
+            float(episode["occlusion_fraction"]) >= 0.90 for episode in selected
+        )
+        summary = scenes[scene]
+        if not isinstance(summary, Mapping) or summary != {
+            "episode_count": len(selected),
+            "headline_episode_count": headline,
+        }:
+            raise _generated_target_error(f"{scene} summary is inconsistent")
+        if headline <= 0:
+            raise _generated_target_error(f"{scene} has no 0.90 episode")
+
+    for label, threshold in (
+        ("all", None),
+        ("0.50", 0.50),
+        ("0.75", 0.75),
+        ("0.90", 0.90),
+    ):
+        expected_ids = [
+            str(episode["episode_id"])
+            for episode in episodes
+            if threshold is None
+            or float(episode["occlusion_fraction"]) >= threshold
+        ]
+        expected_layer: dict[str, Any] = {
+            "episode_count": len(expected_ids),
+            "episode_ids": expected_ids,
+        }
+        if threshold is not None:
+            expected_layer["minimum_occlusion_fraction"] = threshold
+        if layers[label] != expected_layer:
+            raise _generated_target_error(f"{label} stress stratum is inconsistent")
+
+
 def write_occlusion_package(
     output_dir: Path,
     *,
@@ -589,6 +947,7 @@ def write_occlusion_package(
     source_paths: Mapping[str, Path],
     expected_source_records: Mapping[str, Mapping[str, Any]] | None = None,
     expected_depth_bindings: Mapping[str, Mapping[str, Any]] | None = None,
+    contract_path: Path | None = None,
     status: str = "GENERATED",
 ) -> Path:
     """Atomically publish deterministic JSON and NPZ target artifacts."""
@@ -599,19 +958,45 @@ def write_occlusion_package(
         raise ValueError("prediction inputs must not be used")
     if status not in {"FIXTURE", "SMOKE", "GENERATED"}:
         raise ValueError(f"invalid target status: {status}")
-    _validate_target_arrays(arrays)
+    validate_generated_target(arrays, metadata)
+    contract_witness: _SourceWitness | None = None
+    if status == "GENERATED":
+        if (
+            contract_path is None
+            or expected_source_records is None
+            or expected_depth_bindings is None
+        ):
+            raise ValueError(
+                "GENERATED publication requires a frozen CONTRACT_ONLY contract"
+            )
+        contract, contract_witness = _load_checked_contract_with_witness(
+            contract_path
+        )
+        if not (
+            contract["source_records"]
+            == {
+                str(role): dict(record)
+                for role, record in sorted(expected_source_records.items())
+            }
+            and contract["depth_collections"]
+            == {scene: dict(expected_depth_bindings[scene]) for scene in SCENES}
+            and metadata.get("contract") == contract_witness.record
+        ):
+            raise ValueError(
+                "GENERATED publication frozen CONTRACT_ONLY bindings mismatch"
+            )
     scene_frame_indices = metadata.get("scene_frame_indices")
     if not isinstance(scene_frame_indices, Mapping):
         raise ValueError("scene frame indices are missing")
     if (expected_source_records is None) != (expected_depth_bindings is None):
         raise ValueError("frozen source and depth bindings must be provided together")
     if expected_source_records is None:
-        sources = validate_source_allowlist(
+        sources, source_witnesses = _capture_source_allowlist(
             source_paths, scene_frame_indices=scene_frame_indices
         )
     else:
         assert expected_depth_bindings is not None
-        sources = validate_source_bindings(
+        sources, source_witnesses = _capture_source_bindings(
             source_paths,
             scene_frame_indices=scene_frame_indices,
             expected_source_records=expected_source_records,
@@ -650,14 +1035,24 @@ def write_occlusion_package(
         tempfile.mkdtemp(prefix=f".{output_dir.name}.", dir=output_dir.parent)
     )
     try:
+        manifest_bytes = render_manifest(payload)
         for name, content in (
             ("targets.npz", target_bytes),
-            ("manifest.json", render_manifest(payload)),
+            ("manifest.json", manifest_bytes),
         ):
             with (temporary / name).open("xb") as handle:
                 handle.write(content)
                 handle.flush()
                 os.fsync(handle.fileno())
+        publication_witnesses = [
+            source_witnesses[role] for role in sorted(source_witnesses)
+        ]
+        if contract_witness is not None:
+            publication_witnesses.append(contract_witness)
+        for witness in publication_witnesses:
+            _revalidate_source_witness(witness)
+        for witness in publication_witnesses:
+            _revalidate_source_identity(witness)
         os.rename(temporary, output_dir)
     finally:
         if temporary.exists():
@@ -670,9 +1065,12 @@ def _resolve_record_path(record: Mapping[str, Any]) -> Path:
     return (REPO_ROOT / path).resolve() if not path.is_absolute() else path.resolve()
 
 
-def _load_checked_contract(path: Path) -> dict[str, Any]:
+def _load_checked_contract_with_witness(
+    path: Path,
+) -> tuple[dict[str, Any], _SourceWitness]:
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
+        content, witness = _read_source_bytes(path)
+        payload = json.loads(content.decode("utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
         raise ValueError(f"occlusion contract is not readable: {path}") from error
     if not isinstance(payload, dict) or not (
@@ -691,15 +1089,23 @@ def _load_checked_contract(path: Path) -> dict[str, Any]:
     )
     if payload != rebuilt:
         raise ValueError("occlusion contract input binding mismatch")
+    return payload, witness
+
+
+def _load_checked_contract(path: Path) -> dict[str, Any]:
+    payload, _ = _load_checked_contract_with_witness(path)
     return payload
 
 
-def _validate_bound_record(role: str, declaration: Mapping[str, Any]) -> Path:
+def _read_bound_source(
+    role: str, declaration: Mapping[str, Any]
+) -> tuple[bytes, _SourceWitness]:
     _validate_record(role, declaration)
     path = _resolve_record_path(declaration)
-    if _file_record(path) != dict(declaration):
+    content, witness = _read_source_bytes(path)
+    if witness.record != dict(declaration):
         raise ValueError(f"source hash or byte count drift: {role}")
-    return path
+    return content, witness
 
 
 def _camera_from_payload(payload: Mapping[str, Any]) -> dict[str, float | int]:
@@ -717,7 +1123,7 @@ def _camera_from_payload(payload: Mapping[str, Any]) -> dict[str, float | int]:
 
 
 def _load_formal_inputs(
-    contract_path: Path,
+    contract: Mapping[str, Any],
 ) -> tuple[
     dict[str, list[dict[str, Any]]],
     dict[str, list[dict[str, Any]]],
@@ -726,7 +1132,6 @@ def _load_formal_inputs(
 ]:
     from PIL import Image
 
-    contract = _load_checked_contract(contract_path)
     declarations = contract.get("source_records")
     depth_declarations = contract.get("depth_collections")
     if not isinstance(declarations, Mapping) or not isinstance(depth_declarations, Mapping):
@@ -736,14 +1141,15 @@ def _load_formal_inputs(
     }
     if set(declarations) != expected_non_depth:
         raise ValueError("occlusion contract has a non-exact source allowlist")
-    source_paths = {
-        role: _validate_bound_record(role, declarations[role])
-        for role in sorted(expected_non_depth)
-    }
-
-    source = json.loads(source_paths["source_manifest"].read_text(encoding="utf-8"))
-    schedule = json.loads(source_paths["schedule"].read_text(encoding="utf-8"))
-    rgbd_lock = json.loads(source_paths["rgbd_lock"].read_text(encoding="utf-8"))
+    source_paths: dict[str, Path] = {}
+    global_bytes: dict[str, bytes] = {}
+    for role in SINGLE_ROLES:
+        content, witness = _read_bound_source(role, declarations[role])
+        global_bytes[role] = content
+        source_paths[role] = witness.resolved_path
+    source = json.loads(global_bytes["source_manifest"])
+    schedule = json.loads(global_bytes["schedule"])
+    rgbd_lock = json.loads(global_bytes["rgbd_lock"])
     if not (
         source.get("schema_version") == 1
         and source.get("manifest_id") == "tesse_cd_dynamic_v1"
@@ -766,7 +1172,7 @@ def _load_formal_inputs(
         and set(rgbd_lock.get("scenes", {})) == set(SCENES)
     ):
         raise ValueError("TESSE-CD source/schedule/RGB-D identity mismatch")
-    camera_payload = json.loads(source_paths["camera"].read_text(encoding="utf-8"))
+    camera_payload = json.loads(global_bytes["camera"])
     camera = _camera_from_payload(camera_payload)
     expected_camera = source.get("camera", {})
     if not (
@@ -779,6 +1185,12 @@ def _load_formal_inputs(
     frames_by_scene: dict[str, list[dict[str, Any]]] = {}
     records_by_scene: dict[str, list[dict[str, Any]]] = {}
     for scene in SCENES:
+        scene_bytes: dict[str, bytes] = {}
+        for source_name in SCENE_ROLES:
+            role = f"{scene}.{source_name}"
+            content, witness = _read_bound_source(role, declarations[role])
+            scene_bytes[source_name] = content
+            source_paths[role] = witness.resolved_path
         sequence = source["sequences"][scene]
         files = sequence["ground_truth"]["files"]
         for source_name in ("changes", "dsg_with_mesh"):
@@ -795,13 +1207,13 @@ def _load_formal_inputs(
         if locked_scene.get("export_manifest") != declarations[f"{scene}.export_manifest"]:
             raise ValueError(f"{scene} RGB-D export binding mismatch")
 
-        with source_paths[f"{scene}.changes"].open(
-            encoding="utf-8", newline=""
-        ) as handle:
-            changes = list(csv.DictReader(handle))
-        dsg_payload = json.loads(
-            source_paths[f"{scene}.dsg_with_mesh"].read_text(encoding="utf-8")
+        changes = list(
+            csv.DictReader(
+                io.StringIO(scene_bytes["changes"].decode("utf-8"), newline="")
+            )
         )
+        dsg_payload = json.loads(scene_bytes["dsg_with_mesh"])
+        del scene_bytes["dsg_with_mesh"]
         dsg_records = dsg_payload.get("nodes")
         if not isinstance(dsg_records, list):
             raise ValueError(f"{scene} DSG nodes must be a list")
@@ -828,14 +1240,12 @@ def _load_formal_inputs(
 
         timestamp_rows = list(
             csv.DictReader(
-                source_paths[f"{scene}.timestamps"].read_text(encoding="utf-8").splitlines()
+                scene_bytes["timestamps"].decode("utf-8").splitlines()
             )
         )
         trajectories = [
             row
-            for row in source_paths[f"{scene}.trajectory"]
-            .read_text(encoding="utf-8")
-            .splitlines()
+            for row in scene_bytes["trajectory"].decode("utf-8").splitlines()
             if row.strip()
         ]
         expected_count = int(sequence["timeline"]["depth_frame_count"])
@@ -854,13 +1264,15 @@ def _load_formal_inputs(
         if depth_root != locked_root / scene / "results":
             raise ValueError(f"{scene} depth root disagrees with checked RGB-D lock")
         frames: list[dict[str, Any]] = []
+        depth_records: dict[str, dict[str, Any]] = {}
         for index, (timestamp_row, trajectory_row) in enumerate(
             zip(timestamp_rows, trajectories)
         ):
             path = depth_root / f"depth{index:06d}.png"
             role = f"{scene}.depth.{index:06d}"
-            source_paths[role] = path
-            content = path.read_bytes()
+            content, witness = _read_source_bytes(path)
+            source_paths[role] = witness.resolved_path
+            depth_records[role] = witness.record
             with Image.open(io.BytesIO(content)) as image:
                 depth_mm = np.asarray(image).copy()
             if depth_mm.shape != (int(camera["height"]), int(camera["width"])) or not np.issubdtype(
@@ -882,31 +1294,30 @@ def _load_formal_inputs(
                     "world_from_camera": pose_values.reshape(4, 4),
                 }
             )
+        observed_depth = depth_collection_binding(
+            depth_records,
+            scene=scene,
+            frame_indices=range(expected_count),
+        )
+        expected_depth = dict(depth_declarations[scene])
+        expected_depth.pop("root", None)
+        if observed_depth != expected_depth:
+            raise ValueError(f"{scene} depth collection hash or byte count drift")
         frames_by_scene[scene] = frames
-
-    scene_indices = {
-        scene: range(len(frames_by_scene[scene])) for scene in SCENES
-    }
-    validate_source_bindings(
-        source_paths,
-        scene_frame_indices=scene_indices,
-        expected_source_records=declarations,
-        expected_depth_bindings=depth_declarations,
-    )
     return frames_by_scene, records_by_scene, camera, source_paths
 
 
 def run_generation(
     contract_path: Path, output_dir: Path
 ) -> Path:
-    contract = _load_checked_contract(contract_path)
-    frames, records, camera, sources = _load_formal_inputs(contract_path)
+    contract, contract_witness = _load_checked_contract_with_witness(contract_path)
+    frames, records, camera, sources = _load_formal_inputs(contract)
     arrays, metadata = derive_occlusion_targets(
         frames_by_scene=frames,
         dsg_records_by_scene=records,
         camera=camera,
     )
-    metadata["contract"] = _file_record(contract_path)
+    metadata["contract"] = contract_witness.record
     return write_occlusion_package(
         output_dir,
         arrays=arrays,
@@ -914,6 +1325,7 @@ def run_generation(
         source_paths=sources,
         expected_source_records=contract["source_records"],
         expected_depth_bindings=contract["depth_collections"],
+        contract_path=contract_path,
         status="GENERATED",
     )
 
