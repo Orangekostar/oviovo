@@ -425,6 +425,13 @@ def _classes(command) -> list[str]:
     ]
 
 
+def _assert_frontend_layout_absent(command) -> None:
+    root = command.cache_dir.parent.parent
+    assert not root.exists() and not root.is_symlink()
+    assert not list(root.parent.glob(f".{root.name}.*.staging"))
+    assert not list(root.parent.glob(f".{root.name}.*.cleanup"))
+
+
 def _validate_frontend_cache(*args, **kwargs):
     kwargs.setdefault("dataset_factory", _StubTesseCdRgbdDataset)
     return validate_frontend_cache(*args, **kwargs)
@@ -1111,8 +1118,8 @@ def test_inference_aba_on_staged_results_rejects_valid_cache_publication(
     )
 
     with pytest.raises(ValueError, match="staged RGB-D results changed after snapshot"):
-        frontend_module._run_queue(
-            [command],
+        frontend_module._execute_queues(
+            (command,),
             config,
             config["manifest_sha256"],
             snapshot,
@@ -1122,6 +1129,158 @@ def test_inference_aba_on_staged_results_rejects_valid_cache_publication(
         )
 
     assert not (command.cache_dir / "frontend_manifest.json").exists()
+    _assert_frontend_layout_absent(command)
+    retry = frontend_module._prepare_output_layout((command,), snapshot)
+    frontend_module._cleanup_output_layout(retry)
+    _assert_frontend_layout_absent(command)
+
+
+def test_layout_build_failure_cleans_private_staging_and_is_retryable(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config, manifest = _fixture(tmp_path)
+    source_results = Path(manifest["scenes"]["apartment"]["root"]) / "results"
+    source_results.mkdir()
+    (source_results / "frame000000.jpg").write_bytes(b"trusted")
+    command = build_commands(config, manifest, scenes=("apartment",))[0]
+    original_copy = frontend_module._copy_bound_file
+    calls = 0
+
+    def fail_first_copy(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise OSError("copy failed")
+        return original_copy(*args, **kwargs)
+
+    monkeypatch.setattr(frontend_module, "_copy_bound_file", fail_first_copy)
+
+    with pytest.raises(OSError, match="copy failed"):
+        frontend_module._prepare_output_layout((command,))
+
+    _assert_frontend_layout_absent(command)
+    retry = frontend_module._prepare_output_layout((command,))
+    frontend_module._cleanup_output_layout(retry)
+    _assert_frontend_layout_absent(command)
+
+
+@pytest.mark.parametrize("failure_mode", ["subprocess", "validator"])
+def test_runtime_failure_cleans_published_root_and_is_retryable(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    failure_mode: str,
+) -> None:
+    config, command = _small_command(tmp_path)
+    source_results = command.source_root / "results"
+    source_results.mkdir()
+    (source_results / "frame000000.jpg").write_bytes(b"trusted")
+    manifest, input_binding = frontend_module._load_frozen_input_manifest(config)
+    snapshot = frontend_module._capture_run_snapshot(
+        config,
+        (command,),
+        input_binding,
+        manifest,
+        dataset_factory=_StubTesseCdRgbdDataset,
+    )
+    layout = frontend_module._prepare_output_layout((command,), snapshot)
+
+    def fail_or_emit_no_cache(*_args, **_kwargs):
+        if failure_mode == "subprocess":
+            raise subprocess.CalledProcessError(1, command.argv)
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr(frontend_module.subprocess, "run", fail_or_emit_no_cache)
+
+    expected = subprocess.CalledProcessError if failure_mode == "subprocess" else ValueError
+    with pytest.raises(expected):
+        frontend_module._execute_queues(
+            (command,),
+            config,
+            config["manifest_sha256"],
+            snapshot,
+            manifest,
+            _StubTesseCdRgbdDataset,
+            layout,
+        )
+
+    _assert_frontend_layout_absent(command)
+    retry = frontend_module._prepare_output_layout((command,), snapshot)
+    frontend_module._cleanup_output_layout(retry)
+    _assert_frontend_layout_absent(command)
+
+
+def test_manifest_publication_uncertain_preserves_published_root(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config, command = _small_command(tmp_path)
+    source_results = command.source_root / "results"
+    source_results.mkdir()
+    (source_results / "frame000000.jpg").write_bytes(b"trusted")
+    manifest, input_binding = frontend_module._load_frozen_input_manifest(config)
+    snapshot = frontend_module._capture_run_snapshot(
+        config,
+        (command,),
+        input_binding,
+        manifest,
+        dataset_factory=_StubTesseCdRgbdDataset,
+    )
+    layout = frontend_module._prepare_output_layout((command,), snapshot)
+    classes = _classes(command)
+
+    def emit_valid_cache(*_args, **_kwargs):
+        _write_cache(
+            command,
+            [_cache_payload(classes), _cache_payload(classes, count=0)],
+        )
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr(frontend_module.subprocess, "run", emit_valid_cache)
+    monkeypatch.setattr(
+        frontend_module,
+        "_fsync_directory",
+        lambda _directory: (_ for _ in ()).throw(OSError("parent fsync failed")),
+    )
+
+    with pytest.raises(FrontendManifestPublicationUncertainError):
+        frontend_module._execute_queues(
+            (command,),
+            config,
+            config["manifest_sha256"],
+            snapshot,
+            manifest,
+            _StubTesseCdRgbdDataset,
+            layout,
+        )
+
+    assert layout.root.path.is_dir()
+    assert (command.cache_dir / "frontend_manifest.json").is_file()
+
+
+def test_cleanup_fsync_failure_reports_uncertain_and_preserves_quarantine(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config, manifest = _fixture(tmp_path)
+    (Path(manifest["scenes"]["apartment"]["root"]) / "results").mkdir()
+    command = build_commands(config, manifest, scenes=("apartment",))[0]
+    layout = frontend_module._prepare_output_layout((command,))
+    root = layout.root.path
+
+    def fail_fsync(_descriptor: int) -> None:
+        raise OSError("cleanup fsync failed")
+
+    monkeypatch.setattr(frontend_module.os, "fsync", fail_fsync)
+
+    with pytest.raises(
+        frontend_module.FrontendLayoutCleanupUncertainError,
+        match="cleanup is uncertain",
+    ):
+        frontend_module._cleanup_output_layout(layout)
+
+    assert not root.exists()
+    assert len(list(root.parent.glob(f".{root.name}.*.cleanup"))) == 1
 
 
 def test_real_dataset_preflight_rejects_empty_scene_directories(
@@ -1410,15 +1569,26 @@ def test_output_layout_fd_chain_never_copies_into_replacement_directory(
         replace_after_publication,
     )
 
-    with pytest.raises(ValueError, match=f"frontend .*{replaced_level}.*changed"):
+    expected_error = (
+        frontend_module.FrontendLayoutCleanupUncertainError
+        if replaced_level == "root"
+        else ValueError
+    )
+    expected_message = (
+        "cleanup is uncertain"
+        if replaced_level == "root"
+        else "frontend .*scene.*changed"
+    )
+    with pytest.raises(expected_error, match=expected_message):
         frontend_module._prepare_output_layout((command,))
 
     assert replaced
     assert not (scene_root / "results/frame000000.jpg").exists()
     if replaced_level == "root":
         assert (moved / "apartment/results/frame000000.jpg").read_bytes() == b"trusted"
+        assert output_root.is_dir()
     else:
-        assert (moved / "results/frame000000.jpg").read_bytes() == b"trusted"
+        _assert_frontend_layout_absent(command)
 
 
 def test_formal_modes_cannot_skip_scene_or_change_execution_gpus(

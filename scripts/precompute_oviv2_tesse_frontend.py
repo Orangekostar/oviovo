@@ -84,6 +84,14 @@ class FrontendManifestPublicationUncertainError(RuntimeError):
         super().__init__(f"frontend manifest publication durability is uncertain: {path}")
 
 
+class FrontendLayoutCleanupUncertainError(RuntimeError):
+    """A bound layout could not be durably quarantined and removed."""
+
+    def __init__(self, path: Path) -> None:
+        self.path = path
+        super().__init__(f"frontend layout cleanup is uncertain: {path}")
+
+
 @dataclass(frozen=True)
 class _FileIdentity:
     device: int
@@ -1449,6 +1457,141 @@ def _private_staging_name(target_name: str) -> str:
     return f".{target_name}.{secrets.token_hex(16)}.staging"
 
 
+def _private_cleanup_name(target_name: str) -> str:
+    return f".{target_name}.{secrets.token_hex(16)}.cleanup"
+
+
+def _binding_matches(metadata: os.stat_result, binding: _DirectoryBinding) -> bool:
+    return (
+        stat.S_ISDIR(metadata.st_mode)
+        and metadata.st_dev == binding.device
+        and metadata.st_ino == binding.inode
+    )
+
+
+def _remove_directory_contents_fd(descriptor: int) -> None:
+    os.fchmod(descriptor, 0o700)
+    for name in os.listdir(descriptor):
+        metadata = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+        if stat.S_ISDIR(metadata.st_mode):
+            child = os.open(
+                name,
+                _directory_open_flags(),
+                dir_fd=descriptor,
+            )
+            try:
+                if not _binding_matches(
+                    os.fstat(child),
+                    _DirectoryBinding(
+                        path=Path(name),
+                        device=metadata.st_dev,
+                        inode=metadata.st_ino,
+                    ),
+                ):
+                    raise ValueError("cleanup directory changed before recursive open")
+                _remove_directory_contents_fd(child)
+            finally:
+                os.close(child)
+            os.rmdir(name, dir_fd=descriptor)
+        else:
+            os.unlink(name, dir_fd=descriptor)
+    os.fsync(descriptor)
+
+
+def _quarantine_and_remove_bound_directory(
+    parent_descriptor: int,
+    candidate_names: Iterable[str],
+    binding: _DirectoryBinding,
+) -> None:
+    matches: list[str] = []
+    for name in candidate_names:
+        try:
+            metadata = os.stat(
+                name,
+                dir_fd=parent_descriptor,
+                follow_symlinks=False,
+            )
+        except FileNotFoundError:
+            continue
+        if _binding_matches(metadata, binding):
+            matches.append(name)
+    if len(matches) != 1:
+        raise FrontendLayoutCleanupUncertainError(binding.path)
+    source_name = matches[0]
+    cleanup_name = _private_cleanup_name(binding.path.name)
+    _require_absent_at(
+        parent_descriptor,
+        cleanup_name,
+        role="frontend cleanup quarantine",
+    )
+    try:
+        _rename_directory_no_replace_at(
+            parent_descriptor,
+            source_name,
+            cleanup_name,
+        )
+        os.fsync(parent_descriptor)
+        cleanup_descriptor, cleanup_binding = _open_directory_at(
+            parent_descriptor,
+            cleanup_name,
+            binding.path,
+            role="frontend cleanup quarantine",
+        )
+        try:
+            if cleanup_binding != binding:
+                raise ValueError("frontend cleanup quarantine identity mismatch")
+            _remove_directory_contents_fd(cleanup_descriptor)
+        finally:
+            os.close(cleanup_descriptor)
+        os.rmdir(cleanup_name, dir_fd=parent_descriptor)
+        os.fsync(parent_descriptor)
+    except FrontendLayoutCleanupUncertainError:
+        raise
+    except BaseException as exc:
+        raise FrontendLayoutCleanupUncertainError(binding.path) from exc
+
+
+def _open_existing_absolute_directory(path: Path) -> tuple[int, _DirectoryBinding]:
+    absolute = Path(os.path.abspath(path))
+    descriptor = os.open("/", _directory_open_flags())
+    try:
+        for name in absolute.parts[1:]:
+            child = os.open(
+                name,
+                _directory_open_flags(),
+                dir_fd=descriptor,
+            )
+            os.close(descriptor)
+            descriptor = child
+        return descriptor, _directory_binding_from_fd(
+            descriptor,
+            absolute,
+            role="frontend cache parent",
+        )
+    except BaseException:
+        os.close(descriptor)
+        raise
+
+
+def _cleanup_output_layout(layout: _OutputLayout) -> None:
+    try:
+        parent_descriptor, parent_binding = _open_existing_absolute_directory(
+            layout.parent.path
+        )
+    except BaseException as exc:
+        raise FrontendLayoutCleanupUncertainError(layout.root.path) from exc
+    try:
+        if parent_binding != layout.parent:
+            raise FrontendLayoutCleanupUncertainError(layout.root.path)
+        _quarantine_and_remove_bound_directory(
+            parent_descriptor,
+            (layout.root.path.name,),
+            layout.root,
+        )
+    finally:
+        os.close(parent_descriptor)
+
+
 def _copy_bound_file(
     source_binding: _FileBinding,
     destination: Path,
@@ -1586,6 +1729,8 @@ def _prepare_output_layout(
     results: dict[str, _DirectoryContentBinding] = {}
     input_copies: dict[Path, _FileBinding] = {}
     parent_descriptor, parent_binding = _open_or_create_absolute_directory(root.parent)
+    root_staging_name: str | None = None
+    root_binding: _DirectoryBinding | None = None
     try:
         _require_absent_at(
             parent_descriptor,
@@ -1726,6 +1871,17 @@ def _prepare_output_layout(
             _verify_directory_content(binding, role="staged RGB-D results")
         _assert_bindings_unchanged(layout.input_copies.values())
         return layout
+    except BaseException as build_error:
+        if root_binding is not None and root_staging_name is not None:
+            try:
+                _quarantine_and_remove_bound_directory(
+                    parent_descriptor,
+                    (root.name, root_staging_name),
+                    root_binding,
+                )
+            except FrontendLayoutCleanupUncertainError as cleanup_error:
+                raise cleanup_error from build_error
+        raise
     finally:
         os.close(parent_descriptor)
 
@@ -1825,6 +1981,63 @@ def _run_queue(
         )
 
 
+def _execute_queues(
+    commands: Iterable[FrontendCommand],
+    config: Mapping[str, Any],
+    input_manifest_sha256: str,
+    run_snapshot: _RunSnapshot,
+    manifest: Mapping[str, Any],
+    dataset_factory: DatasetFactory,
+    output_layout: _OutputLayout,
+) -> None:
+    selected = tuple(commands)
+    gpu_ids = tuple(dict.fromkeys(command.gpu_id for command in selected))
+    queues = [
+        [command for command in selected if command.gpu_id == gpu_id]
+        for gpu_id in gpu_ids
+    ]
+    errors: list[BaseException] = []
+    try:
+        with ThreadPoolExecutor(max_workers=len(queues)) as executor:
+            futures = [
+                executor.submit(
+                    _run_queue,
+                    queue,
+                    config,
+                    input_manifest_sha256,
+                    run_snapshot,
+                    manifest,
+                    dataset_factory,
+                    output_layout,
+                )
+                for queue in queues
+            ]
+            for future in futures:
+                try:
+                    future.result()
+                except BaseException as exc:
+                    errors.append(exc)
+    except BaseException as exc:
+        errors.append(exc)
+    if not errors:
+        return
+    uncertain = next(
+        (
+            error
+            for error in errors
+            if isinstance(error, FrontendManifestPublicationUncertainError)
+        ),
+        None,
+    )
+    if uncertain is not None:
+        raise uncertain
+    try:
+        _cleanup_output_layout(output_layout)
+    except FrontendLayoutCleanupUncertainError as cleanup_error:
+        raise cleanup_error from errors[0]
+    raise errors[0]
+
+
 def main(
     argv: list[str] | None = None,
     *,
@@ -1886,28 +2099,15 @@ def main(
 
     _preflight(commands, config, run_snapshot)
     output_layout = _prepare_output_layout(commands, run_snapshot)
-    gpu_ids = tuple(dict.fromkeys(command.gpu_id for command in commands))
-    queues = [
-        [command for command in commands if command.gpu_id == gpu_id]
-        for gpu_id in gpu_ids
-    ]
-    queues = [queue for queue in queues if queue]
-    with ThreadPoolExecutor(max_workers=len(queues)) as executor:
-        futures = [
-            executor.submit(
-                _run_queue,
-                queue,
-                config,
-                input_manifest_sha256,
-                run_snapshot,
-                manifest,
-                dataset_factory,
-                output_layout,
-            )
-            for queue in queues
-        ]
-        for future in futures:
-            future.result()
+    _execute_queues(
+        commands,
+        config,
+        input_manifest_sha256,
+        run_snapshot,
+        manifest,
+        dataset_factory,
+        output_layout,
+    )
     return 0
 
 
