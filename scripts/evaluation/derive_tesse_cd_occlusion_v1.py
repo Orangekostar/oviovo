@@ -305,6 +305,19 @@ def resolve_dataset_source(relative_path: str, dataset_root: Path) -> Path:
     return _resolve_beneath(relative_path, dataset_root, label="dataset-root source")
 
 
+def _source_size_beneath(root: Path, relative_path: str, *, label: str) -> int:
+    opened = _open_beneath(
+        relative_path,
+        root,
+        label=label,
+        terminal_must_be_file=True,
+    )
+    try:
+        return os.fstat(opened.terminal_fd).st_size
+    finally:
+        opened.close()
+
+
 def _fingerprint(path: Path) -> tuple[int, int, int, int, int]:
     status = path.stat()
     return (
@@ -1783,15 +1796,6 @@ def _validate_contract_paths(payload: Mapping[str, Any]) -> None:
             _canonical_relative_path(root, label=f"{scene} depth root")
 
 
-def _resolve_record_path(
-    role: str, record: Mapping[str, Any], dataset_root: Path
-) -> Path:
-    raw_path = str(record.get("path", ""))
-    if role in REPOSITORY_SOURCE_ROLES:
-        return _resolve_beneath(raw_path, REPO_ROOT, label=f"{role} repository source")
-    return resolve_dataset_source(raw_path, dataset_root)
-
-
 def _load_checked_contract_with_witness(
     path: Path,
 ) -> tuple[dict[str, Any], _SourceWitness]:
@@ -2134,8 +2138,12 @@ def preflight_contract(contract_path: Path, dataset_root: Path) -> dict[str, Any
     largest_source = 0
     declarations = contract["source_records"]
     for role, declaration in declarations.items():
-        path = _resolve_record_path(role, declaration, root)
-        size = path.stat().st_size
+        source_root = REPO_ROOT if role in REPOSITORY_SOURCE_ROLES else root
+        size = _source_size_beneath(
+            source_root,
+            str(declaration["path"]),
+            label=f"{role} preflight source",
+        )
         if size != declaration["byte_count"]:
             raise ValueError(f"source byte count drift: {role}")
         largest_source = max(largest_source, size)
@@ -2146,10 +2154,11 @@ def preflight_contract(contract_path: Path, dataset_root: Path) -> dict[str, Any
         depth_root = str(binding["root"])
         scene_total = 0
         for index in range(int(binding["frame_count"])):
-            path = resolve_dataset_source(
-                (Path(depth_root) / f"depth{index:06d}.png").as_posix(), root
+            size = _source_size_beneath(
+                root,
+                (Path(depth_root) / f"depth{index:06d}.png").as_posix(),
+                label=f"{scene}.depth.{index:06d} preflight source",
             )
-            size = path.stat().st_size
             scene_total += size
             total_depth_bytes += size
             largest_depth_frame = max(largest_depth_frame, size)

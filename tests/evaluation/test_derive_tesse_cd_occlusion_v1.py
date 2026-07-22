@@ -1127,6 +1127,82 @@ def test_bound_source_read_holds_parent_fd_across_intermediate_redirect_race(
         occlusion_deriver._revalidate_source_identity_barrier([witness])
 
 
+def test_preflight_size_uses_verified_fd_across_intermediate_redirect_race(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    dataset_root = tmp_path / "dataset"
+    dataset_root.mkdir()
+    source_records: dict[str, dict[str, object]] = {}
+    roles = set(occlusion_deriver.SINGLE_ROLES) | {
+        f"{scene}.{role}"
+        for scene in occlusion_deriver.SCENES
+        for role in occlusion_deriver.SCENE_ROLES
+    }
+    for role in sorted(roles):
+        path = dataset_root / "sources" / f"{role}.bin"
+        path.parent.mkdir(exist_ok=True)
+        path.write_bytes(b"x")
+        source_records[role] = {
+            "path": path.relative_to(dataset_root).as_posix(),
+            "sha256": "0" * 64,
+            "byte_count": 1,
+        }
+    logical = dataset_root / "logical"
+    alternate = dataset_root / "alternate"
+    logical.mkdir()
+    alternate.mkdir()
+    (logical / "camera.bin").write_bytes(b"old")
+    replacement = b"replacement"
+    (alternate / "camera.bin").write_bytes(replacement)
+    source_records["camera"] = {
+        "path": "logical/camera.bin",
+        "sha256": "0" * 64,
+        "byte_count": len(replacement),
+    }
+    depth_collections: dict[str, dict[str, object]] = {}
+    for scene in occlusion_deriver.SCENES:
+        depth_root = dataset_root / "depth" / scene
+        depth_root.mkdir(parents=True)
+        (depth_root / "depth000000.png").write_bytes(b"d")
+        depth_collections[scene] = {
+            "root": depth_root.relative_to(dataset_root).as_posix(),
+            "frame_count": 1,
+            "total_byte_count": 1,
+        }
+    contract = {
+        "dataset_root_id": "tesse_cd_official_root_v1",
+        "source_records": source_records,
+        "depth_collections": depth_collections,
+    }
+    monkeypatch.setattr(
+        occlusion_deriver, "_load_checked_contract", lambda _path: contract
+    )
+    monkeypatch.setattr(occlusion_deriver, "REPOSITORY_SOURCE_ROLES", frozenset())
+    original_open = occlusion_deriver.os.open
+    redirected = False
+
+    def redirect_before_terminal_open(
+        path: object,
+        flags: int,
+        mode: int = 0o777,
+        *,
+        dir_fd: int | None = None,
+    ) -> int:
+        nonlocal redirected
+        if path == "camera.bin" and dir_fd is not None and not redirected:
+            logical.rename(dataset_root / "original")
+            logical.symlink_to(alternate, target_is_directory=True)
+            redirected = True
+        return original_open(path, flags, mode, dir_fd=dir_fd)
+
+    monkeypatch.setattr(occlusion_deriver.os, "open", redirect_before_terminal_open)
+
+    with pytest.raises(ValueError, match="source byte count drift: camera"):
+        occlusion_deriver.preflight_contract(tmp_path / "contract.json", dataset_root)
+
+    assert redirected is True
+
+
 def test_deriver_cli_can_run_directly_from_repository_root() -> None:
     completed = subprocess.run(
         [
