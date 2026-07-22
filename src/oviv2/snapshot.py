@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import ctypes
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 import errno
 import hashlib
 import json
@@ -36,6 +36,16 @@ class _SnapshotRollbackError(RuntimeError):
             "snapshot publication failed "
             f"({publication_error}); rollback failed ({rollback_error}); "
             "target state is uncertain"
+        )
+
+
+class _SnapshotPublicationUncertainError(RuntimeError):
+    def __init__(self, target: Path, publication_error: OSError) -> None:
+        self.target = target
+        self.publication_error = publication_error
+        super().__init__(
+            f"snapshot target was published at {target}, but parent directory fsync failed; "
+            "durability is uncertain"
         )
 
 
@@ -399,7 +409,6 @@ class VoxelMapSnapshot:
             tempfile.mkdtemp(prefix=f".{target.name}.tmp-", dir=target.parent)
         )
         published = False
-        published_identity = cls._directory_identity(temporary)
         try:
             data_files = cls._write_snapshot_files(
                 temporary,
@@ -416,32 +425,20 @@ class VoxelMapSnapshot:
                 finally:
                     os.close(file_descriptor)
             cls._fsync_directory(temporary)
-            cls.load(temporary)
+            restored = replace(cls.load(temporary), path=target)
 
             cls._rename_directory_no_replace(temporary, target)
             published = True
-            cls._fsync_directory(target.parent)
-            return cls.load(target)
-        except Exception as publication_error:
-            if published:
-                try:
-                    if cls._directory_identity(target) == published_identity:
-                        shutil.rmtree(target)
-                except FileNotFoundError:
-                    pass
-                except Exception as cleanup_error:
-                    raise _SnapshotRollbackError(
-                        publication_error,
-                        cleanup_error,
-                    ) from publication_error
-                finally:
-                    try:
-                        cls._fsync_directory(target.parent)
-                    except OSError:
-                        pass
-            raise
+            try:
+                cls._fsync_directory(target.parent)
+            except OSError as publication_error:
+                raise _SnapshotPublicationUncertainError(
+                    target,
+                    publication_error,
+                ) from publication_error
+            return restored
         finally:
-            if temporary.exists():
+            if not published and temporary.exists():
                 try:
                     shutil.rmtree(temporary)
                 except OSError:

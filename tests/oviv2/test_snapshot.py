@@ -246,7 +246,7 @@ def test_snapshot_commit_new_fails_closed_without_renameat2(
     assert list(tmp_path.glob(".snapshot.tmp-*")) == []
 
 
-def test_snapshot_commit_new_parent_fsync_failure_removes_target_and_allows_retry(
+def test_snapshot_commit_new_parent_fsync_failure_reports_published_uncertain_target(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -269,7 +269,10 @@ def test_snapshot_commit_new_parent_fsync_failure_removes_target_and_allows_retr
         staticmethod(fail_first_parent_fsync),
     )
 
-    with pytest.raises(OSError, match="immutable parent fsync failure"):
+    with pytest.raises(
+        RuntimeError,
+        match="published.*durability is uncertain",
+    ) as raised:
         VoxelMapSnapshot.commit_new(
             target,
             metadata,
@@ -278,48 +281,109 @@ def test_snapshot_commit_new_parent_fsync_failure_removes_target_and_allows_retr
             ownership,
         )
 
-    assert not target.exists()
+    assert type(raised.value).__name__ == "_SnapshotPublicationUncertainError"
+    assert isinstance(raised.value.__cause__, OSError)
+    assert "immutable parent fsync failure" in str(raised.value.__cause__)
+    assert VoxelMapSnapshot.load(target).metadata == metadata
     assert list(tmp_path.glob(".snapshot.tmp-*")) == []
+    assert parent_fsync_calls == 1
 
-    retried = VoxelMapSnapshot.commit_new(
-        target,
-        metadata,
+
+def test_snapshot_commit_new_never_deletes_concurrently_replaced_target(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    target = tmp_path / "snapshot"
+    winner = tmp_path / "concurrent-winner"
+    displaced = tmp_path / "displaced-publish"
+    winner_metadata = replace(metadata, frame_id=20, revision=2)
+    VoxelMapSnapshot.commit(
+        winner,
+        winner_metadata,
         geometry,
         evidence,
         ownership,
     )
-    assert retried.metadata == metadata
-    assert parent_fsync_calls == 3
+    original_identity = VoxelMapSnapshot._directory_identity
+    original_fsync_directory = VoxelMapSnapshot._fsync_directory
+    parent_fsync_calls = 0
+
+    def replace_target_after_stat(path: Path) -> tuple[int, int]:
+        identity = original_identity(path)
+        if path == target:
+            os.replace(target, displaced)
+            os.replace(winner, target)
+        return identity
+
+    def fail_first_parent_fsync(path: Path) -> None:
+        nonlocal parent_fsync_calls
+        if path == target.parent:
+            parent_fsync_calls += 1
+            if parent_fsync_calls == 1:
+                raise OSError("injected immutable parent fsync failure")
+        original_fsync_directory(path)
+
+    monkeypatch.setattr(
+        VoxelMapSnapshot,
+        "_directory_identity",
+        staticmethod(replace_target_after_stat),
+    )
+    monkeypatch.setattr(
+        VoxelMapSnapshot,
+        "_fsync_directory",
+        staticmethod(fail_first_parent_fsync),
+    )
+
+    with pytest.raises(RuntimeError, match="published.*durability is uncertain"):
+        VoxelMapSnapshot.commit_new(
+            target,
+            metadata,
+            geometry,
+            evidence,
+            ownership,
+        )
+
+    monkeypatch.setattr(
+        VoxelMapSnapshot,
+        "_directory_identity",
+        staticmethod(original_identity),
+    )
+    assert VoxelMapSnapshot.load(winner).metadata == winner_metadata
+    assert VoxelMapSnapshot.load(target).metadata == metadata
+    assert list(tmp_path.glob(".snapshot.tmp-*")) == []
 
 
-def test_snapshot_commit_new_post_publish_load_failure_removes_target_and_allows_retry(
+def test_snapshot_commit_new_pre_publish_load_failure_cleans_target_and_allows_retry(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     metadata, geometry, evidence, ownership = _components()
     target = tmp_path / "snapshot"
     original_load = VoxelMapSnapshot.load
-    target_load_calls = 0
+    staged_load_calls = 0
 
-    def fail_first_target_load(
+    def fail_first_staged_load(
         _cls,
         snapshot_dir: str | Path,
     ) -> VoxelMapSnapshot:
-        nonlocal target_load_calls
-        if Path(snapshot_dir) == target:
-            target_load_calls += 1
-            if target_load_calls == 1:
-                assert target.is_dir()
-                raise RuntimeError("injected immutable target load failure")
+        nonlocal staged_load_calls
+        source = Path(snapshot_dir)
+        if source == target:
+            raise AssertionError("snapshot load must complete before publication")
+        if source.name.startswith(".snapshot.tmp-"):
+            staged_load_calls += 1
+            if staged_load_calls == 1:
+                raise RuntimeError("injected staged snapshot load failure")
         return original_load(snapshot_dir)
 
     monkeypatch.setattr(
         VoxelMapSnapshot,
         "load",
-        classmethod(fail_first_target_load),
+        classmethod(fail_first_staged_load),
     )
 
-    with pytest.raises(RuntimeError, match="immutable target load failure"):
+    with pytest.raises(RuntimeError, match="staged snapshot load failure"):
         VoxelMapSnapshot.commit_new(
             target,
             metadata,
@@ -339,7 +403,6 @@ def test_snapshot_commit_new_post_publish_load_failure_removes_target_and_allows
         ownership,
     )
     assert retried.metadata == metadata
-    assert target_load_calls == 2
 
 
 def test_snapshot_commit_new_race_has_exactly_one_winner(
