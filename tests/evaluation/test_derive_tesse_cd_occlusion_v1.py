@@ -129,7 +129,7 @@ def test_derivation_uses_prior_present_anchor_and_merges_consecutive_occlusion()
     )
 
     assert metadata["prediction_inputs_used"] is False
-    assert metadata["headline_stress_layer"] == "0.90"
+    assert metadata["parameters"] == json.loads(CONTRACT.read_text())["parameters"]
     assert metadata["scene_frame_indices"] == {
         "apartment": [0, 1, 2, 3],
         "office": [0, 1, 2, 3],
@@ -390,6 +390,10 @@ def test_writer_revalidates_frozen_bindings_before_publish(tmp_path: Path) -> No
         "count_mismatch",
         "outside_anchor",
         "missing_object_id",
+        "tolerance_99",
+        "policy_drift",
+        "extra_prediction_metadata",
+        "extra_method_parameter",
     ],
 )
 def test_generated_target_validation_rejects_forged_or_incomplete_packages(
@@ -435,6 +439,14 @@ def test_generated_target_validation_rejects_forged_or_incomplete_packages(
         forged_arrays[array_name] = np.asarray([[9, 9, 9]], dtype=np.int64)
     elif attack == "missing_object_id":
         forged["episodes"][0]["object_id"] = None
+    elif attack == "tolerance_99":
+        forged["parameters"]["depth_tolerance_m"] = 99.0
+    elif attack == "policy_drift":
+        forged["parameters"]["episode_rule"] = "merge arbitrary gaps"
+    elif attack == "extra_prediction_metadata":
+        forged["method_predictions_used"] = False
+    elif attack == "extra_method_parameter":
+        forged["parameters"]["method_mode"] = "signed_depth"
 
     with pytest.raises(ValueError, match="generated occlusion target"):
         validate_generated_target(forged_arrays, forged)
@@ -456,6 +468,25 @@ def test_generated_target_validation_accepts_complete_two_scene_package() -> Non
     )
 
     validate_generated_target(arrays, metadata)
+
+
+def test_derivation_rejects_non_preregistered_depth_tolerance() -> None:
+    frames, records = _fixture_inputs()
+
+    with pytest.raises(ValueError, match="depth_tolerance_m"):
+        derive_occlusion_targets(
+            frames_by_scene=frames,
+            dsg_records_by_scene=records,
+            camera={
+                "width": 1,
+                "height": 1,
+                "fx": 1.0,
+                "fy": 1.0,
+                "cx": 0.0,
+                "cy": 0.0,
+            },
+            depth_tolerance_m=99.0,
+        )
 
 
 @pytest.mark.parametrize("mutation", ["content", "same_bytes_new_inode"])

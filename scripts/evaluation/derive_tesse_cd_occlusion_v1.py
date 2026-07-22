@@ -65,6 +65,29 @@ FORBIDDEN_SOURCE_COMPONENTS = {
 DEFAULT_CONTRACT = REPO_ROOT / "configs/evaluation/manifests/tesse_cd_occlusion_v1.json"
 
 
+def _preregistered_parameters() -> dict[str, Any]:
+    return {
+        "voxel_size_m": 0.05,
+        "depth_tolerance_m": 0.10,
+        "active_interval": "first <= timestamp < last",
+        "anchor_rule": "first prior non-empty present voxel set in lifecycle",
+        "target_rule": "anchor present voxels intersect current occluded voxels",
+        "episode_rule": "consecutive non-empty source frames",
+        "episode_fraction_rule": "maximum checkpoint occluded/anchor voxel fraction",
+        "stress_thresholds": [0.50, 0.75, 0.90],
+        "headline_stress_threshold": 0.90,
+    }
+
+
+def _canonical_json_bytes(value: Any) -> bytes:
+    try:
+        return json.dumps(
+            value, sort_keys=True, separators=(",", ":"), allow_nan=False
+        ).encode("utf-8")
+    except (TypeError, ValueError) as error:
+        raise ValueError("value is not canonical finite JSON") from error
+
+
 @dataclass(frozen=True)
 class _SourceWitness:
     declared_path: Path
@@ -393,9 +416,7 @@ def build_contract_manifest(
         "source_records": normalized_records,
         "depth_collections": normalized_depth,
     }
-    canonical = json.dumps(
-        binding, sort_keys=True, separators=(",", ":"), allow_nan=False
-    ).encode("utf-8")
+    canonical = _canonical_json_bytes(binding)
     return {
         "schema_version": 1,
         "manifest_id": "tesse_cd_occlusion_v1",
@@ -405,17 +426,7 @@ def build_contract_manifest(
         "fixture_tested": True,
         "prediction_inputs_used": False,
         "input_roles": list(INPUT_ROLE_PATTERNS),
-        "parameters": {
-            "voxel_size_m": 0.05,
-            "depth_tolerance_m": 0.10,
-            "active_interval": "first <= timestamp < last",
-            "anchor_rule": "first prior non-empty present voxel set in lifecycle",
-            "target_rule": "anchor present voxels intersect current occluded voxels",
-            "episode_rule": "consecutive non-empty source frames",
-            "episode_fraction_rule": "maximum checkpoint occluded/anchor voxel fraction",
-            "stress_thresholds": [0.50, 0.75, 0.90],
-            "headline_stress_threshold": 0.90,
-        },
+        "parameters": _preregistered_parameters(),
         "source_records": normalized_records,
         "depth_collections": normalized_depth,
         "input_binding_sha256": hashlib.sha256(canonical).hexdigest(),
@@ -537,6 +548,11 @@ def derive_occlusion_targets(
     depth_tolerance_m: float = 0.10,
 ) -> tuple[dict[str, np.ndarray], dict[str, Any]]:
     """Derive fixed-anchor occlusion episodes from official GT and depth only."""
+    parameters = _preregistered_parameters()
+    if voxel_size_m != parameters["voxel_size_m"]:
+        raise ValueError("voxel_size_m must match the pre-registered value")
+    if depth_tolerance_m != parameters["depth_tolerance_m"]:
+        raise ValueError("depth_tolerance_m must match the pre-registered value")
     if set(frames_by_scene) != set(SCENES) or set(dsg_records_by_scene) != set(SCENES):
         raise ValueError("occlusion derivation requires apartment and office exactly")
     arrays: dict[str, np.ndarray] = {}
@@ -671,11 +687,7 @@ def derive_occlusion_targets(
         }
     return arrays, {
         "prediction_inputs_used": False,
-        "voxel_size_m": voxel_size_m,
-        "depth_tolerance_m": depth_tolerance_m,
-        "anchor_policy": "fixed first prior present set within the same GT lifecycle",
-        "episode_fraction_policy": "maximum checkpoint fraction",
-        "headline_stress_layer": "0.90",
+        "parameters": parameters,
         "scene_frame_indices": scene_frame_indices,
         "scenes": scene_summary,
         "stress_layers": stress_layers,
@@ -712,8 +724,29 @@ def validate_generated_target(
         _validate_target_arrays(arrays)
     except ValueError as error:
         raise _generated_target_error(str(error)) from error
+    allowed_metadata_fields = {
+        "prediction_inputs_used",
+        "parameters",
+        "scene_frame_indices",
+        "scenes",
+        "stress_layers",
+        "episodes",
+    }
+    if set(metadata) not in (
+        allowed_metadata_fields,
+        allowed_metadata_fields | {"contract"},
+    ):
+        raise _generated_target_error("metadata fields are not exact")
     if metadata.get("prediction_inputs_used") is not False:
         raise _generated_target_error("prediction_inputs_used must be false")
+    try:
+        parameters_match = _canonical_json_bytes(
+            metadata.get("parameters")
+        ) == _canonical_json_bytes(_preregistered_parameters())
+    except ValueError as error:
+        raise _generated_target_error("parameters are not canonical JSON") from error
+    if not parameters_match:
+        raise _generated_target_error("parameters differ from pre-registration")
     scene_frames = metadata.get("scene_frame_indices")
     scenes = metadata.get("scenes")
     episodes = metadata.get("episodes")
@@ -731,8 +764,6 @@ def validate_generated_target(
         "0.90",
     }:
         raise _generated_target_error("stress strata must be exact")
-    if metadata.get("headline_stress_layer") != "0.90":
-        raise _generated_target_error("headline stress layer must be 0.90")
 
     normalized_frames: dict[str, tuple[int, ...]] = {}
     for scene in SCENES:
@@ -980,6 +1011,8 @@ def write_occlusion_package(
             }
             and contract["depth_collections"]
             == {scene: dict(expected_depth_bindings[scene]) for scene in SCENES}
+            and _canonical_json_bytes(metadata.get("parameters"))
+            == _canonical_json_bytes(contract["parameters"])
             and metadata.get("contract") == contract_witness.record
         ):
             raise ValueError(
