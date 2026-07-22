@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -15,6 +16,7 @@ from scripts.evaluation.tune_oviv2_tesse_apartment import (
     run_tuning,
     selection_key,
 )
+from scripts.evaluation.run_oviv2_tesse_cd import algorithm_hash
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -189,6 +191,15 @@ def test_rejects_non_apartment_or_non_stage3_base(
         build_candidate_configs(base)
 
 
+def test_rejects_self_consistent_change_outside_tuning_grid() -> None:
+    base = _base_config()
+    base["association_geometry_weight"] = 0.99
+    base["algorithm_hash"] = algorithm_hash(base)
+
+    with pytest.raises(ValueError, match="canonical Stage3 base"):
+        build_candidate_configs(base)
+
+
 def test_commands_mode_is_canonical_and_does_not_read_targets(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -223,6 +234,12 @@ def test_commands_mode_is_canonical_and_does_not_read_targets(
     assert payload["max_parallel"] == 3
     assert len(payload["candidates"]) == 18
     assert all(len(item["commands"]) == 3 for item in payload["candidates"])
+    for item in payload["candidates"]:
+        for command in item["commands"]:
+            assert Path(command[0]).is_absolute()
+            assert Path(command[0]).is_file()
+            assert Path(command[1]).is_absolute()
+            assert Path(command[1]).is_file()
     assert len(list((output / "configs").glob("candidate-*.json"))) == 18
     serialized = result.read_text(encoding="utf-8").lower()
     assert "ground_truth" not in serialized
@@ -328,6 +345,88 @@ def test_run_batches_at_most_three_and_writes_deterministic_selection(
         "selected_config_sha256"
     ]
     assert payload["selected_metrics"] == second_payload["selected_metrics"]
+
+
+def test_evaluator_summary_is_parsed_and_hashed_from_one_snapshot(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original_read_bytes = Path.read_bytes
+    read_counts: dict[Path, int] = {}
+
+    def swap_second_read(path: Path) -> bytes:
+        if path.name == "summary.json" and path.parent.name == "evaluation":
+            read_counts[path] = read_counts.get(path, 0) + 1
+            if read_counts[path] == 2:
+                return original_read_bytes(path) + b"swapped"
+        return original_read_bytes(path)
+
+    monkeypatch.setattr(Path, "read_bytes", swap_second_read)
+    output = tmp_path / "run"
+    selection_path = run_tuning(
+        base_config=_write_base_config(tmp_path / "base.json"),
+        output=output,
+        target_manifest=tmp_path / "target.json",
+        aliases=ALIASES,
+        label_space=tmp_path / "labels.yaml",
+        execute_candidate=_fake_executor(),
+    )
+    assert isinstance(selection_path, Path)
+    selection = json.loads(selection_path.read_text(encoding="utf-8"))
+    for candidate in selection["candidates"]:
+        summary_path = output / candidate["evaluator_summary"]["path"]
+        assert candidate["evaluator_summary"]["sha256"] == hashlib.sha256(
+            original_read_bytes(summary_path)
+        ).hexdigest()
+
+
+def test_final_output_is_not_visible_until_sweep_succeeds(tmp_path: Path) -> None:
+    output = tmp_path / "run"
+    fake = _fake_executor()
+
+    def assert_hidden(item: CandidateExecution) -> None:
+        assert not output.exists()
+        fake(item)
+
+    result = run_tuning(
+        base_config=_write_base_config(tmp_path / "base.json"),
+        output=output,
+        target_manifest=tmp_path / "target.json",
+        aliases=ALIASES,
+        label_space=tmp_path / "labels.yaml",
+        execute_candidate=assert_hidden,
+    )
+
+    assert result == output / "selection.json"
+    assert output.is_dir()
+    assert list(tmp_path.glob(".run.staging-*")) == []
+
+
+def test_rejects_candidate_directory_symlink_without_writing_outside(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "run"
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    fake = _fake_executor()
+
+    def symlink_first(item: CandidateExecution) -> None:
+        if item.candidate.candidate_id == "candidate-00":
+            item.artifact_root.symlink_to(outside, target_is_directory=True)
+        fake(item)
+
+    with pytest.raises(ValueError, match="symlink"):
+        run_tuning(
+            base_config=_write_base_config(tmp_path / "base.json"),
+            output=output,
+            target_manifest=tmp_path / "target.json",
+            aliases=ALIASES,
+            label_space=tmp_path / "labels.yaml",
+            execute_candidate=symlink_first,
+        )
+
+    assert not output.exists()
+    assert not (outside / "candidate_summary.json").exists()
 
 
 @pytest.mark.parametrize(

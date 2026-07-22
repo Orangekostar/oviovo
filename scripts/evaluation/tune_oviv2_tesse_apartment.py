@@ -6,7 +6,9 @@ from __future__ import annotations
 import argparse
 from collections.abc import Callable, Sequence
 from concurrent.futures import ThreadPoolExecutor
+import ctypes
 from dataclasses import dataclass
+import errno
 import hashlib
 import itertools
 import json
@@ -14,7 +16,10 @@ import math
 import os
 from pathlib import Path
 import shutil
+import stat
 import subprocess
+import sys
+import tempfile
 from typing import Any, Mapping
 
 from scripts.evaluation.run_oviv2_tesse_cd import algorithm_hash
@@ -89,6 +94,10 @@ def _validate_base_config(config: Mapping[str, Any]) -> None:
     frozen_hash = config.get("algorithm_hash")
     if frozen_hash != algorithm_hash(config):
         raise ValueError("base config algorithm_hash does not match Stage3 parameters")
+    canonical_path = REPO_ROOT / "configs/oviv2_tesse_cd_apartment_v1.json"
+    canonical, _ = _load_json(canonical_path, "canonical Apartment Stage3 config")
+    if dict(config) != canonical:
+        raise ValueError("base config does not match the canonical Stage3 base")
 
 
 def build_candidate_configs(config: Mapping[str, Any]) -> tuple[CandidateConfig, ...]:
@@ -144,6 +153,7 @@ def _load_json_bytes(data: bytes, path: Path) -> dict[str, Any]:
 
 
 def _load_json(path: Path, label: str) -> tuple[dict[str, Any], bytes]:
+    _reject_symlink_components(path, label)
     if not path.is_file() or path.is_symlink():
         raise FileNotFoundError(f"missing {label}: {path}")
     data = path.read_bytes()
@@ -151,6 +161,7 @@ def _load_json(path: Path, label: str) -> tuple[dict[str, Any], bytes]:
 
 
 def _file_record(path: Path, *, relative_to: Path) -> dict[str, Any]:
+    _reject_symlink_components(path, "result artifact")
     if not path.is_file() or path.is_symlink():
         raise FileNotFoundError(f"missing result artifact: {path}")
     data = path.read_bytes()
@@ -161,7 +172,59 @@ def _file_record(path: Path, *, relative_to: Path) -> dict[str, Any]:
     }
 
 
+def _stable_json_record(
+    path: Path,
+    label: str,
+    *,
+    relative_to: Path,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    _reject_symlink_components(path, label)
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        descriptor = os.open(path, flags)
+    except OSError as exc:
+        raise FileNotFoundError(f"missing {label}: {path}") from exc
+    try:
+        before = os.fstat(descriptor)
+        if not stat.S_ISREG(before.st_mode):
+            raise ValueError(f"{label} must be a regular non-symlink file")
+        chunks: list[bytes] = []
+        while True:
+            chunk = os.read(descriptor, 1024 * 1024)
+            if not chunk:
+                break
+            chunks.append(chunk)
+        after = os.fstat(descriptor)
+    finally:
+        os.close(descriptor)
+    def witness(value: os.stat_result) -> tuple[int, int, int, int, int]:
+        return (
+            value.st_dev,
+            value.st_ino,
+            value.st_size,
+            value.st_mtime_ns,
+            value.st_ctime_ns,
+        )
+    try:
+        path_status = os.stat(path, follow_symlinks=False)
+    except OSError as exc:
+        raise ValueError(f"{label} changed while it was read") from exc
+    if witness(before) != witness(after) or witness(after) != witness(path_status):
+        raise ValueError(f"{label} changed while it was read")
+    _reject_symlink_components(path, label)
+    data = b"".join(chunks)
+    if len(data) != after.st_size:
+        raise ValueError(f"{label} size changed while it was read")
+    payload = _load_json_bytes(data, path)
+    return payload, {
+        "path": path.relative_to(relative_to).as_posix(),
+        "sha256": hashlib.sha256(data).hexdigest(),
+        "byte_count": len(data),
+    }
+
+
 def _absolute_file_record(path: Path) -> dict[str, Any]:
+    _reject_symlink_components(path, "freeze binding")
     if not path.is_file() or path.is_symlink():
         raise FileNotFoundError(f"missing freeze binding: {path}")
     data = path.read_bytes()
@@ -179,6 +242,19 @@ def _resolve_repo_path(value: object, label: str) -> Path:
     return (REPO_ROOT / raw if not raw.is_absolute() else raw).absolute()
 
 
+def _reject_symlink_components(path: Path, label: str) -> None:
+    absolute = Path(os.path.abspath(path))
+    current = Path(absolute.anchor)
+    for component in absolute.parts[1:]:
+        current /= component
+        try:
+            status = os.lstat(current)
+        except FileNotFoundError:
+            return
+        if stat.S_ISLNK(status.st_mode):
+            raise ValueError(f"{label} path contains a symlink: {current}")
+
+
 def _declared_file_record(
     value: object,
     label: str,
@@ -188,6 +264,7 @@ def _declared_file_record(
     if not isinstance(value, Mapping):
         raise ValueError(f"{label} binding must be an object")
     path = _resolve_repo_path(value.get("path"), label)
+    _reject_symlink_components(path, label)
     if not path.is_file() or path.is_symlink():
         raise FileNotFoundError(f"missing {label}: {path}")
     declared_hash = _sha256(value.get("sha256"), f"{label} sha256")
@@ -314,6 +391,7 @@ def _build_freeze_bindings(
 
 
 def _write_exclusive(path: Path, data: bytes) -> None:
+    _reject_symlink_components(path.parent, "output parent")
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("xb") as stream:
         stream.write(data)
@@ -322,9 +400,44 @@ def _write_exclusive(path: Path, data: bytes) -> None:
 
 
 def _write_atomic(path: Path, payload: Mapping[str, Any]) -> None:
+    _reject_symlink_components(path.parent, "output parent")
     temporary = path.with_name(f".{path.name}.tmp-{os.getpid()}")
     _write_exclusive(temporary, _canonical_json_line(payload))
     os.replace(temporary, path)
+
+
+def _publish_directory_no_replace(source: Path, target: Path) -> None:
+    libc = ctypes.CDLL(None, use_errno=True)
+    try:
+        renameat2 = libc.renameat2
+    except AttributeError as exc:
+        raise RuntimeError("atomic no-clobber directory publication is unavailable") from exc
+    renameat2.argtypes = (
+        ctypes.c_int,
+        ctypes.c_char_p,
+        ctypes.c_int,
+        ctypes.c_char_p,
+        ctypes.c_uint,
+    )
+    renameat2.restype = ctypes.c_int
+    ctypes.set_errno(0)
+    result = renameat2(
+        -100,
+        os.fsencode(source),
+        -100,
+        os.fsencode(target),
+        1,
+    )
+    if result != 0:
+        error_number = ctypes.get_errno()
+        if error_number in {errno.EEXIST, errno.ENOTEMPTY}:
+            raise FileExistsError(target)
+        raise OSError(error_number, os.strerror(error_number), target)
+    descriptor = os.open(target.parent, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
 
 
 def _commands_for_candidate(
@@ -339,27 +452,24 @@ def _commands_for_candidate(
     artifact = f"candidates/{candidate_id}"
     return (
         (
-            "python",
-            "-m",
-            "scripts.evaluation.run_oviv2_tesse_cd",
+            str(Path(sys.executable).absolute()),
+            str(REPO_ROOT / "scripts/evaluation/run_oviv2_tesse_cd.py"),
             "--config",
             config,
             "--output",
             f"{artifact}/run",
         ),
         (
-            "python",
-            "-m",
-            "scripts.evaluation.export_tesse_temporal_artifact",
+            str(Path(sys.executable).absolute()),
+            str(REPO_ROOT / "scripts/evaluation/export_tesse_temporal_artifact.py"),
             "--source-index",
             f"{artifact}/run/source_index.json",
             "--output",
             f"{artifact}/temporal",
         ),
         (
-            "python",
-            "-m",
-            "scripts.evaluation.evaluate_tesse_cd_common_v2",
+            str(Path(sys.executable).absolute()),
+            str(REPO_ROOT / "scripts/evaluation/evaluate_tesse_cd_common_v2.py"),
             "--temporal-index",
             f"{artifact}/temporal/temporal_manifest.json",
             "--target-manifest",
@@ -458,6 +568,7 @@ def _candidate_record(
     item: CandidateExecution,
     *,
     output: Path,
+    published_output: Path,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     config_record = _file_record(item.config_path, relative_to=output)
     if (
@@ -466,7 +577,11 @@ def _candidate_record(
     ):
         raise ValueError("candidate config changed during tuning")
     run_path = item.artifact_root / "run/run_manifest.json"
-    run_manifest, _ = _load_json(run_path, "candidate run manifest")
+    run_manifest, run_record = _stable_json_record(
+        run_path,
+        "candidate run manifest",
+        relative_to=output,
+    )
     if (
         run_manifest.get("schema_version") != 1
         or run_manifest.get("dataset") != "TESSE-CD"
@@ -489,7 +604,11 @@ def _candidate_record(
         raise ValueError("candidate run identity does not match its Apartment config")
 
     summary_path = item.artifact_root / "evaluation/summary.json"
-    summary, _ = _load_json(summary_path, "candidate evaluator summary")
+    summary, evaluator_record = _stable_json_record(
+        summary_path,
+        "candidate evaluator summary",
+        relative_to=output,
+    )
     if (
         summary.get("schema_version") != 1
         or summary.get("manifest_id")
@@ -542,14 +661,18 @@ def _candidate_record(
         "common_target_manifest_sha256": target_record["sha256"],
         "metrics": metrics,
         "config": config_record,
-        "run_identity": _file_record(run_path, relative_to=output),
-        "evaluator_summary": _file_record(summary_path, relative_to=output),
+        "run_identity": run_record,
+        "evaluator_summary": evaluator_record,
     }
     candidate_summary_path = item.artifact_root / "candidate_summary.json"
     _write_atomic(candidate_summary_path, summary_payload)
+    summary_record = _absolute_file_record(candidate_summary_path)
+    summary_record["path"] = str(
+        published_output / candidate_summary_path.relative_to(output)
+    )
     record = {
         **summary_payload,
-        "summary": _absolute_file_record(candidate_summary_path),
+        "summary": summary_record,
     }
     return record, target_record
 
@@ -558,22 +681,26 @@ def _build_selection(
     executions: Sequence[CandidateExecution],
     *,
     output: Path,
+    published_output: Path,
     base_config_sha256: str,
     freeze_bindings: Mapping[str, Any],
 ) -> dict[str, Any]:
     expected_ids = {item.candidate.candidate_id for item in executions}
     candidates_root = output / "candidates"
-    actual_ids = (
-        {path.name for path in candidates_root.iterdir() if path.is_dir()}
-        if candidates_root.is_dir()
-        else set()
-    )
+    entries = list(candidates_root.iterdir()) if candidates_root.is_dir() else []
+    if any(path.is_symlink() or not path.is_dir() for path in entries):
+        raise ValueError("candidate result path contains a symlink or non-directory")
+    actual_ids = {path.name for path in entries}
     if actual_ids != expected_ids:
         raise ValueError("missing or extra candidate result directories")
     records: list[dict[str, Any]] = []
     target_records: dict[bytes, dict[str, Any]] = {}
     for item in executions:
-        record, target_record = _candidate_record(item, output=output)
+        record, target_record = _candidate_record(
+            item,
+            output=output,
+            published_output=published_output,
+        )
         records.append(record)
         target_records[_canonical_json(target_record)] = target_record
     if len(records) != 18 or len({item["candidate_id"] for item in records}) != 18:
@@ -635,28 +762,44 @@ def run_tuning(
     aliases_path = Path(aliases).absolute()
     label_space_path = Path(label_space).absolute()
     office_config_path = Path(office_config).absolute()
-    executions = tuple(
-        CandidateExecution(
-            candidate=candidate,
-            config_path=destination / f"configs/{candidate.candidate_id}.json",
-            artifact_root=destination / f"candidates/{candidate.candidate_id}",
-            commands=_commands_for_candidate(
-                candidate,
-                target_manifest=target_path,
-                aliases=aliases_path,
-                label_space=label_space_path,
-            ),
+
+    def executions_for(root: Path) -> tuple[CandidateExecution, ...]:
+        return tuple(
+            CandidateExecution(
+                candidate=candidate,
+                config_path=root / f"configs/{candidate.candidate_id}.json",
+                artifact_root=root / f"candidates/{candidate.candidate_id}",
+                commands=_commands_for_candidate(
+                    candidate,
+                    target_manifest=target_path,
+                    aliases=aliases_path,
+                    label_space=label_space_path,
+                ),
+            )
+            for candidate in candidates
         )
-        for candidate in candidates
-    )
+
     if dry_run:
-        return _plan_payload(executions, status="DRY_RUN", max_parallel=max_parallel)
+        return _plan_payload(
+            executions_for(destination),
+            status="DRY_RUN",
+            max_parallel=max_parallel,
+        )
 
     destination.parent.mkdir(parents=True, exist_ok=True)
-    destination.mkdir()
+    _reject_symlink_components(destination.parent, "output parent")
+    if destination.exists() or destination.is_symlink():
+        raise FileExistsError(destination)
+    working = Path(
+        tempfile.mkdtemp(
+            prefix=f".{destination.name}.staging-",
+            dir=destination.parent,
+        )
+    )
+    executions = executions_for(working)
     try:
-        (destination / "configs").mkdir()
-        (destination / "candidates").mkdir()
+        (working / "configs").mkdir()
+        (working / "candidates").mkdir()
         for item in executions:
             _write_exclusive(item.config_path, item.candidate.config_bytes)
         commands_payload = _plan_payload(
@@ -664,10 +807,10 @@ def run_tuning(
             status="COMMANDS",
             max_parallel=max_parallel,
         )
-        _write_atomic(destination / "commands.json", commands_payload)
+        _write_atomic(working / "commands.json", commands_payload)
         if mode == "commands":
             _write_atomic(
-                destination / "sweep_status.json",
+                working / "sweep_status.json",
                 {
                     "schema_version": 1,
                     "status": "COMMANDS",
@@ -675,6 +818,7 @@ def run_tuning(
                     "candidate_count": 18,
                 },
             )
+            _publish_directory_no_replace(working, destination)
             return destination / "commands.json"
 
         freeze_bindings = _build_freeze_bindings(
@@ -691,26 +835,28 @@ def run_tuning(
                     future.result()
         selection = _build_selection(
             executions,
-            output=destination,
+            output=working,
+            published_output=destination,
             base_config_sha256=hashlib.sha256(base_bytes).hexdigest(),
             freeze_bindings=freeze_bindings,
         )
-        _write_atomic(destination / "selection.json", selection)
+        _write_atomic(working / "selection.json", selection)
         _write_atomic(
-            destination / "sweep_status.json",
+            working / "sweep_status.json",
             {
                 "schema_version": 1,
                 "status": "PASS",
                 "scene": "apartment",
                 "candidate_count": 18,
                 "selection_sha256": hashlib.sha256(
-                    (destination / "selection.json").read_bytes()
+                    (working / "selection.json").read_bytes()
                 ).hexdigest(),
             },
         )
+        _publish_directory_no_replace(working, destination)
         return destination / "selection.json"
     except BaseException:
-        shutil.rmtree(destination, ignore_errors=True)
+        shutil.rmtree(working, ignore_errors=True)
         raise
 
 
