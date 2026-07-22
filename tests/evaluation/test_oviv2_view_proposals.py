@@ -415,7 +415,7 @@ def test_public_api_contains_no_ground_truth_or_evaluator_and_uses_sparse_candid
     monkeypatch.setattr(proposal_module, "_core_overlap_fraction", counted)
     build_proposal_pyramid(observations, (_edge(10, 21),), _config())
 
-    assert calls == 2
+    assert calls == 0
     assert "ground_truth" not in inspect.signature(build_proposal_pyramid).parameters
     assert "evaluator" not in inspect.signature(build_proposal_pyramid).parameters
 
@@ -445,3 +445,85 @@ def test_strong_edge_lookup_is_linear_in_sparse_component_edges(monkeypatch: pyt
     build_proposal_pyramid(observations, evidence, _config(core_vote_fraction=1.0))
 
     assert inspected_edges <= 2 * len(evidence)
+
+
+@pytest.mark.parametrize("inclusive_coverage", [0.2, 0.0])
+def test_reuses_identical_inclusive_selection_and_large_union_candidates(
+    monkeypatch: pytest.MonkeyPatch,
+    inclusive_coverage: float,
+) -> None:
+    import src.evaluation.oviv2_view_proposals as proposal_module
+
+    component_count = 12
+    shared_voxels = _voxels(*range(1_601))
+    observations = tuple(
+        observation
+        for index in range(component_count)
+        for observation in (
+            _observation(index * 10 + 1, index * 2 + 1, shared_voxels | _voxels(2_000 + index)),
+            _observation(index * 10 + 2, index * 2 + 2, shared_voxels),
+        )
+    )
+    evidence = tuple(_edge(index * 10 + 1, index * 10 + 2) for index in range(component_count))
+    selection_calls = 0
+    union_calls = 0
+    original_select = proposal_module._select_inclusive_observation_ids
+    original_union = proposal_module._build_union_candidate
+
+    def counted_select(*args: object, **kwargs: object) -> tuple[int, ...]:
+        nonlocal selection_calls
+        selection_calls += 1
+        return original_select(*args, **kwargs)
+
+    def counted_union(*args: object, **kwargs: object) -> object:
+        nonlocal union_calls
+        union_calls += 1
+        return original_union(*args, **kwargs)
+
+    monkeypatch.setattr(proposal_module, "_select_inclusive_observation_ids", counted_select)
+    monkeypatch.setattr(proposal_module, "_build_union_candidate", counted_union)
+    proposals = build_proposal_pyramid(
+        observations,
+        evidence,
+        _config(core_vote_fraction=1.0, inclusive_coverage=inclusive_coverage),
+    )
+
+    assert selection_calls == 1
+    assert union_calls == 1
+    assert proposals[0].kind == "core"
+    assert proposals[-1].kind == "union"
+    assert proposals[-1].observation_ids == tuple(observation.observation_id for observation in observations)
+
+
+def test_maximum_proposals_raises_before_constructing_remaining_candidates(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.evaluation.oviv2_view_proposals as proposal_module
+
+    component_count = 16
+    observations = tuple(
+        observation
+        for index in range(component_count)
+        for observation in (
+            _observation(index * 10 + 1, index * 2 + 1, _voxels(index * 10, index * 10 + 1, index * 10 + 2)),
+            _observation(index * 10 + 2, index * 2 + 2, _voxels(index * 10, index * 10 + 1, index * 10 + 2)),
+        )
+    )
+    evidence = tuple(_edge(index * 10 + 1, index * 10 + 2) for index in range(component_count))
+    calls = 0
+    original = proposal_module._candidate
+
+    def counted(*args: object, **kwargs: object) -> object:
+        nonlocal calls
+        calls += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(proposal_module, "_candidate", counted)
+    with pytest.raises(ValueError, match="maximum_proposals"):
+        build_proposal_pyramid(
+            observations,
+            evidence,
+            _config(core_vote_fraction=1.0, maximum_proposals=1),
+        )
+
+    assert calls <= 4

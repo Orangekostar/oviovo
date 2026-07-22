@@ -289,6 +289,42 @@ def _candidate(
     )
 
 
+def _select_inclusive_observation_ids(
+    semantic_id: int,
+    core: frozenset[VoxelKey],
+    inclusive_coverage: float,
+    postings: dict[tuple[int, VoxelKey], list[int]],
+    eligible_by_semantic: dict[int, tuple[int, ...]],
+) -> tuple[int, ...]:
+    if inclusive_coverage == 0.0:
+        return eligible_by_semantic[semantic_id]
+    overlap_counts: dict[int, int] = defaultdict(int)
+    for voxel_key in core:
+        for observation_id in postings[semantic_id, voxel_key]:
+            overlap_counts[observation_id] += 1
+    return tuple(
+        observation_id
+        for observation_id in sorted(overlap_counts)
+        if overlap_counts[observation_id] / len(core) >= inclusive_coverage
+    )
+
+
+def _build_union_candidate(
+    semantic_id: int,
+    selected_ids: tuple[int, ...],
+    observations: dict[int, FrameObservation],
+    strong_edge_index: _StrongEdgeIndex,
+) -> _Candidate:
+    union_voxels = frozenset().union(*(observations[observation_id].voxel_keys for observation_id in selected_ids))
+    return _candidate(
+        semantic_id,
+        "union",
+        union_voxels,
+        selected_ids,
+        _strong_edges_for(selected_ids, strong_edge_index),
+    )
+
+
 def _proposal_from_candidate(candidate: _Candidate, observations: dict[int, FrameObservation]) -> VoxelProposal:
     source = tuple(observations[observation_id] for observation_id in candidate.observation_ids)
     frame_counts: dict[int, int] = defaultdict(int)
@@ -325,17 +361,34 @@ def _candidate_choice_key(
     )
 
 
-def _deduplicate(
-    candidates: Iterable[_Candidate],
-    observations: dict[int, FrameObservation],
-) -> tuple[_Candidate, ...]:
-    retained: dict[tuple[int, frozenset[VoxelKey]], _Candidate] = {}
-    for candidate in candidates:
+class _RetainedCandidates:
+    def __init__(self, observations: dict[int, FrameObservation], maximum_proposals: int) -> None:
+        self._observations = observations
+        self._maximum_proposals = maximum_proposals
+        self._retained: dict[tuple[int, frozenset[VoxelKey]], _Candidate] = {}
+        self._choice_keys: dict[_Candidate, tuple[float | int | tuple[int, ...] | tuple[tuple[int, int], ...], ...]] = {}
+
+    def add(self, candidate: _Candidate) -> None:
         key = candidate.semantic_id, candidate.voxel_keys
-        previous = retained.get(key)
-        if previous is None or _candidate_choice_key(candidate, observations) < _candidate_choice_key(previous, observations):
-            retained[key] = candidate
-    return tuple(retained.values())
+        previous = self._retained.get(key)
+        if previous is None:
+            if len(self._retained) >= self._maximum_proposals:
+                raise ValueError("post-dedup proposal count exceeds maximum_proposals")
+            self._retained[key] = candidate
+            return
+        candidate_key = self._choice_keys.setdefault(
+            candidate,
+            _candidate_choice_key(candidate, self._observations),
+        )
+        previous_key = self._choice_keys.setdefault(
+            previous,
+            _candidate_choice_key(previous, self._observations),
+        )
+        if candidate_key < previous_key:
+            self._retained[key] = candidate
+
+    def values(self) -> tuple[_Candidate, ...]:
+        return tuple(self._retained.values())
 
 
 def _assign_ids(candidates: Iterable[_Candidate], observations: dict[int, FrameObservation]) -> tuple[VoxelProposal, ...]:
@@ -400,7 +453,7 @@ def build_proposal_pyramid(
         )
         if by_id[edge.left_id].semantic_id == by_id[edge.right_id].semantic_id
     )
-    candidates: list[_Candidate] = []
+    retained = _RetainedCandidates(by_id, config.maximum_proposals)
     component_records: list[tuple[int, tuple[int, ...]]] = []
     postings: dict[tuple[int, VoxelKey], list[int]] = defaultdict(list)
     eligible_by_semantic: dict[int, tuple[int, ...]] = {}
@@ -412,6 +465,8 @@ def build_proposal_pyramid(
     for semantic_id, observation_ids in semantic_observation_ids.items():
         eligible_by_semantic[semantic_id] = tuple(observation_ids)
     strong_edge_index = _StrongEdgeIndex(strong_edges)
+    inclusive_selection_cache: dict[tuple[int, frozenset[VoxelKey]], tuple[int, ...]] = {}
+    union_candidate_cache: dict[tuple[int, tuple[int, ...]], _Candidate] = {}
 
     for component in _components(tuple(observation.observation_id for observation in eligible), strong_edges):
         semantic_id = by_id[component[0]].semantic_id
@@ -422,7 +477,7 @@ def build_proposal_pyramid(
             continue
         component_edges = _strong_edges_for(component, strong_edge_index)
         consensus = frozenset().union(*(by_id[observation_id].voxel_keys for observation_id in component))
-        candidates.append(_candidate(semantic_id, "consensus", consensus, component, component_edges))
+        retained.add(_candidate(semantic_id, "consensus", consensus, component, component_edges))
         by_frame: dict[int, set[VoxelKey]] = defaultdict(set)
         for observation_id in component:
             observation = by_id[observation_id]
@@ -435,23 +490,31 @@ def build_proposal_pyramid(
         core = frozenset(voxel_key for voxel_key, count in votes.items() if count >= required_votes)
         if len(core) < config.minimum_voxels:
             continue
-        candidates.append(_candidate(semantic_id, "core", core, component, component_edges))
-        if config.inclusive_coverage == 0.0:
-            candidate_ids = set(eligible_by_semantic[semantic_id])
-        else:
-            candidate_ids = set()
-            for voxel_key in core:
-                candidate_ids.update(postings[semantic_id, voxel_key])
-        selected_ids = tuple(
-            observation_id
-            for observation_id in sorted(candidate_ids)
-            if _core_overlap_fraction(core, by_id[observation_id]) >= config.inclusive_coverage
-        )
+        retained.add(_candidate(semantic_id, "core", core, component, component_edges))
+        selection_key = semantic_id, core
+        selected_ids = inclusive_selection_cache.get(selection_key)
+        if selected_ids is None:
+            selected_ids = _select_inclusive_observation_ids(
+                semantic_id,
+                core,
+                config.inclusive_coverage,
+                postings,
+                eligible_by_semantic,
+            )
+            inclusive_selection_cache[selection_key] = selected_ids
         if not selected_ids:
             continue
-        union_voxels = frozenset().union(*(by_id[observation_id].voxel_keys for observation_id in selected_ids))
-        union_edges = _strong_edges_for(selected_ids, strong_edge_index)
-        candidates.append(_candidate(semantic_id, "union", union_voxels, selected_ids, union_edges))
+        union_key = semantic_id, selected_ids
+        union_candidate = union_candidate_cache.get(union_key)
+        if union_candidate is None:
+            union_candidate = _build_union_candidate(
+                semantic_id,
+                selected_ids,
+                by_id,
+                strong_edge_index,
+            )
+            union_candidate_cache[union_key] = union_candidate
+        retained.add(union_candidate)
 
     component_index = {
         observation_id: component_index
@@ -489,7 +552,7 @@ def build_proposal_pyramid(
         if not _component_is_eligible(observation_ids, by_id, config):
             continue
         voxel_keys = frozenset().union(*(by_id[observation_id].voxel_keys for observation_id in observation_ids))
-        candidates.append(
+        retained.add(
             _candidate(
                 semantic_id,
                 "hierarchical",
@@ -498,7 +561,4 @@ def build_proposal_pyramid(
                 _strong_edges_for(observation_ids, strong_edge_index),
             )
         )
-    deduplicated = _deduplicate(candidates, by_id)
-    if len(deduplicated) > config.maximum_proposals:
-        raise ValueError("post-dedup proposal count exceeds maximum_proposals")
-    return _assign_ids(deduplicated, by_id)
+    return _assign_ids(retained.values(), by_id)
