@@ -75,6 +75,10 @@ class CompactCheckpointPublicationUncertainError(RuntimeError):
         )
 
 
+class _TemporarySourceIdentityChanged(ValueError):
+    pass
+
+
 def _publication_test_hook(_stage: str) -> None:
     pass
 
@@ -368,10 +372,29 @@ def _rename_directory_no_replace_at(
     *,
     parent_path: Path,
     expected_parent_identity: tuple[int, int],
+    expected_source_identity: tuple[int, int],
 ) -> None:
     source_name = _require_basename(source_name, label="temporary name")
     target_name = _require_basename(target_name, label="target name")
     _assert_parent_path_identity(parent_path, expected_parent_identity)
+    try:
+        source_status = os.stat(
+            source_name,
+            dir_fd=parent_fd,
+            follow_symlinks=False,
+        )
+    except OSError as error:
+        raise _TemporarySourceIdentityChanged(
+            "compact checkpoint temporary source identity changed"
+        ) from error
+    if (
+        not stat.S_ISDIR(source_status.st_mode)
+        or _identity(source_status) != expected_source_identity
+    ):
+        raise _TemporarySourceIdentityChanged(
+            "compact checkpoint temporary source identity changed"
+        )
+    _publication_test_hook("after_source_identity_check")
     libc = ctypes.CDLL(None, use_errno=True)
     try:
         renameat2 = libc.renameat2
@@ -419,6 +442,8 @@ def _cleanup_owned_temporary(
     temporary_name: str,
     temporary_identity: tuple[int, int],
     owned_files: dict[str, tuple[int, int]],
+    *,
+    scan_parent_for_identity: bool = False,
 ) -> None:
     for name, expected_identity in owned_files.items():
         try:
@@ -431,20 +456,35 @@ def _cleanup_owned_temporary(
             os.unlink(name, dir_fd=temporary_fd)
         except OSError:
             pass
-    try:
-        named = os.stat(
-            temporary_name,
-            dir_fd=parent_fd,
-            follow_symlinks=False,
-        )
-    except OSError:
+    candidate_names = [temporary_name]
+    if scan_parent_for_identity:
+        try:
+            candidate_names.extend(os.listdir(parent_fd))
+        except OSError:
+            pass
+    for candidate_name in dict.fromkeys(candidate_names):
+        try:
+            candidate_name = _require_basename(
+                candidate_name,
+                label="temporary cleanup candidate",
+            )
+            named = os.stat(
+                candidate_name,
+                dir_fd=parent_fd,
+                follow_symlinks=False,
+            )
+        except (OSError, ValueError):
+            continue
+        if (
+            not stat.S_ISDIR(named.st_mode)
+            or _identity(named) != temporary_identity
+        ):
+            continue
+        try:
+            os.rmdir(candidate_name, dir_fd=parent_fd)
+        except OSError:
+            pass
         return
-    if not stat.S_ISDIR(named.st_mode) or _identity(named) != temporary_identity:
-        return
-    try:
-        os.rmdir(temporary_name, dir_fd=parent_fd)
-    except OSError:
-        pass
 
 
 def _reject_symlink_components(path: Path, *, label: str) -> None:
@@ -1126,6 +1166,8 @@ def _capture_published_directory_at(
     expected_file_fingerprints: dict[
         str, tuple[int, int, int, int, int]
     ],
+    *,
+    expected_directory_identity: tuple[int, int],
 ) -> tuple[int, int, int, int, int]:
     target_name = _require_basename(target_name, label="target name")
     directory_fd = os.open(
@@ -1139,6 +1181,7 @@ def _capture_published_directory_at(
         if (
             not stat.S_ISDIR(named.st_mode)
             or _identity(named) != _identity(directory_before)
+            or _identity(directory_before) != expected_directory_identity
         ):
             raise ValueError("published compact checkpoint identity changed")
         if set(os.listdir(directory_fd)) != _INVENTORY:
@@ -1240,6 +1283,7 @@ class CompactOwnershipCheckpoint:
         temporary_identity: tuple[int, int] | None = None
         owned_files: dict[str, tuple[int, int]] = {}
         published = False
+        scan_parent_for_temporary_identity = False
         try:
             _assert_parent_path_identity(target.parent, parent_identity)
             _publication_test_hook("after_parent_check")
@@ -1330,6 +1374,7 @@ class CompactOwnershipCheckpoint:
                 target_name,
                 parent_path=target.parent,
                 expected_parent_identity=parent_identity,
+                expected_source_identity=temporary_identity,
             )
             published = True
             os.fsync(parent_fd)
@@ -1337,11 +1382,19 @@ class CompactOwnershipCheckpoint:
             _assert_parent_path_identity(target.parent, parent_identity)
             if _identity(os.fstat(parent_fd)) != parent_identity:
                 raise ValueError("anchored compact checkpoint parent changed")
+            if _identity(os.fstat(temporary_fd)) != temporary_identity:
+                raise ValueError("published compact checkpoint source identity changed")
             anchored_directory_fingerprint = _capture_published_directory_at(
                 parent_fd,
                 target_name,
                 file_fingerprints,
+                expected_directory_identity=temporary_identity,
             )
+            if (
+                anchored_directory_fingerprint[:2] != temporary_identity
+                or _identity(os.fstat(temporary_fd)) != temporary_identity
+            ):
+                raise ValueError("published compact checkpoint source identity changed")
             witness = CompactOwnershipSourceWitness.capture_published(
                 target,
                 expected_file_fingerprints=file_fingerprints,
@@ -1364,6 +1417,9 @@ class CompactOwnershipCheckpoint:
                 checksums=dict(checksums),
                 source_witness=witness,
             )
+        except _TemporarySourceIdentityChanged:
+            scan_parent_for_temporary_identity = True
+            raise
         except CompactCheckpointPublicationUncertainError:
             raise
         except Exception as error:
@@ -1386,6 +1442,7 @@ class CompactOwnershipCheckpoint:
                     temporary_name,
                     temporary_identity,
                     owned_files,
+                    scan_parent_for_identity=scan_parent_for_temporary_identity,
                 )
             if temporary_fd is not None:
                 os.close(temporary_fd)

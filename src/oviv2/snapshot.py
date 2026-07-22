@@ -52,8 +52,8 @@ class SnapshotPublicationUncertainError(RuntimeError):
         self.published = published
         if published:
             message = (
-                f"snapshot target was published at {target}, but parent directory fsync failed; "
-                "durability is uncertain"
+                f"snapshot target was published at {target}, but post-publication "
+                "verification failed; identity or durability is uncertain"
             )
         else:
             message = (
@@ -134,7 +134,6 @@ class SnapshotSourceWitness:
         cls,
         staged: Path,
         *,
-        published_path: Path,
         data_files: tuple[str, ...],
     ) -> "SnapshotSourceWitness":
         directory_fd = os.open(
@@ -176,7 +175,7 @@ class SnapshotSourceWitness:
             ):
                 raise ValueError("snapshot source identity changed while capturing")
             return cls(
-                path=published_path,
+                path=staged,
                 directory_fingerprint=_source_fingerprint(directory_after),
                 member_bindings=tuple(bindings),
             )
@@ -699,12 +698,20 @@ class VoxelMapSnapshot:
                 finally:
                     os.close(file_descriptor)
             cls._fsync_directory(temporary)
-            restored = cls.load(temporary)
             staged_witness = SnapshotSourceWitness.capture_staged(
                 temporary,
-                published_path=target,
                 data_files=data_files,
             )
+            restored = cls.load(temporary)
+            staged_witness.revalidate()
+            witnessed_checksums = {
+                name: digest
+                for name, _fingerprint, digest in staged_witness.member_bindings
+                if name != "checksums.json"
+            }
+            if witnessed_checksums != restored.checksums:
+                raise ValueError("snapshot source content changed during staged load")
+            staged_witness = replace(staged_witness, path=target)
 
             cls._publish_directory_no_replace(temporary, target)
             published = True

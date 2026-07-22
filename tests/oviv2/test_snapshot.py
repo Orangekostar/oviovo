@@ -190,6 +190,7 @@ def test_commit_new_rejects_equal_content_replacement_before_return(
         )
     assert raised.value.published is True
     assert raised.value.target == target
+    assert "post-publication verification failed" in str(raised.value)
     assert target.is_dir()
     assert (tmp_path / "snapshot.displaced").is_dir()
 
@@ -260,6 +261,66 @@ def test_source_witness_rejects_hardlink_directory_swap_during_revalidation(
     with pytest.raises(ValueError, match="snapshot source.*identity|changed"):
         committed.revalidate_source()
     assert swapped is True
+
+
+@pytest.mark.parametrize("replacement_mode", ["copy", "hardlink"])
+def test_commit_new_rejects_self_consistent_temp_reown_after_load(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    replacement_mode: str,
+) -> None:
+    metadata, geometry, evidence, ownership = _components()
+    alternate_geometry = SparseTsdfVolume(geometry.config)
+    alternate_evidence = SparseEvidenceStore(evidence.config)
+    alternate_ownership = ReversibleOwnershipStore(
+        block_resolution=ownership.block_resolution
+    )
+    alternate = VoxelMapSnapshot.commit(
+        tmp_path / "alternate",
+        metadata,
+        alternate_geometry,
+        alternate_evidence,
+        alternate_ownership,
+    )
+    original_load = VoxelMapSnapshot.load
+    replaced = False
+
+    def replace_temp_after_load(
+        _cls,
+        snapshot_dir: str | Path,
+    ) -> VoxelMapSnapshot:
+        nonlocal replaced
+        source = Path(snapshot_dir)
+        restored = original_load(source)
+        if source.name.startswith(".snapshot.tmp-") and not replaced:
+            source.rename(tmp_path / "captured-original")
+            if replacement_mode == "copy":
+                shutil.copytree(alternate.path, source)
+            else:
+                source.mkdir()
+                for member in alternate.path.iterdir():
+                    os.link(member, source / member.name)
+            replaced = True
+        return restored
+
+    monkeypatch.setattr(
+        VoxelMapSnapshot,
+        "load",
+        classmethod(replace_temp_after_load),
+    )
+    target = tmp_path / "snapshot"
+
+    with pytest.raises(ValueError, match="snapshot source.*identity|changed"):
+        VoxelMapSnapshot.commit_new(
+            target,
+            metadata,
+            geometry,
+            evidence,
+            ownership,
+        )
+
+    assert replaced is True
+    assert not target.exists()
 
 
 def test_snapshot_publication_uncertain_error_is_publicly_exported() -> None:

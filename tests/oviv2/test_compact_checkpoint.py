@@ -103,6 +103,35 @@ def _npy_bytes(array: np.ndarray) -> bytes:
     return destination.getvalue()
 
 
+def _replace_directory_with_hardlinked_members(
+    parent_fd: int,
+    source_name: str,
+    saved_name: str,
+) -> None:
+    os.rename(
+        source_name,
+        saved_name,
+        src_dir_fd=parent_fd,
+        dst_dir_fd=parent_fd,
+    )
+    os.mkdir(source_name, mode=0o700, dir_fd=parent_fd)
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
+    saved_fd = os.open(saved_name, flags, dir_fd=parent_fd)
+    replacement_fd = os.open(source_name, flags, dir_fd=parent_fd)
+    try:
+        for name in ("metadata.json", "ownership.npz", "checksums.json"):
+            os.link(
+                name,
+                name,
+                src_dir_fd=saved_fd,
+                dst_dir_fd=replacement_fd,
+                follow_symlinks=False,
+            )
+    finally:
+        os.close(replacement_fd)
+        os.close(saved_fd)
+
+
 def test_compact_checkpoint_round_trip_is_exact_and_byte_deterministic(
     tmp_path: Path,
 ) -> None:
@@ -808,6 +837,105 @@ def test_compact_checkpoint_rename_helper_rechecks_parent_before_syscall(
     assert (parent / "foreign.txt").read_text(encoding="utf-8") == "do not delete"
     assert not (old_parent / "checkpoint").exists()
     assert not list(old_parent.glob(".checkpoint.tmp-*"))
+
+
+def test_compact_checkpoint_rename_helper_rejects_replaced_temp_inode(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    parent = tmp_path / "parent"
+    parent.mkdir()
+    original = compact_module._rename_directory_no_replace_at
+    saved_name = ".saved-original"
+
+    def replace_before_helper(
+        parent_fd: int,
+        source_name: str,
+        target_name: str,
+        **kwargs: object,
+    ) -> None:
+        _replace_directory_with_hardlinked_members(
+            parent_fd,
+            source_name,
+            saved_name,
+        )
+        original(parent_fd, source_name, target_name, **kwargs)
+
+    monkeypatch.setattr(
+        compact_module,
+        "_rename_directory_no_replace_at",
+        replace_before_helper,
+    )
+
+    with pytest.raises(ValueError, match="temporary source identity changed"):
+        CompactOwnershipCheckpoint.commit_new(
+            parent / "checkpoint", _metadata(), _ownership()
+        )
+
+    assert not (parent / "checkpoint").exists()
+    assert not (parent / saved_name).exists()
+    foreign_temps = list(parent.glob(".checkpoint.tmp-*"))
+    assert len(foreign_temps) == 1
+    assert {path.name for path in foreign_temps[0].iterdir()} == {
+        "metadata.json",
+        "ownership.npz",
+        "checksums.json",
+    }
+
+
+def test_compact_checkpoint_replaced_temp_after_stat_is_uncertain(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    parent = tmp_path / "parent"
+    parent.mkdir()
+    saved_name = ".saved-original"
+    replaced = False
+
+    def replace_after_identity_check(stage: str) -> None:
+        nonlocal replaced
+        if stage != "after_source_identity_check" or replaced:
+            return
+        parent_fd = os.open(
+            parent,
+            os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+        )
+        try:
+            source_names = [
+                name
+                for name in os.listdir(parent_fd)
+                if name.startswith(".checkpoint.tmp-")
+            ]
+            assert len(source_names) == 1
+            _replace_directory_with_hardlinked_members(
+                parent_fd,
+                source_names[0],
+                saved_name,
+            )
+        finally:
+            os.close(parent_fd)
+        replaced = True
+
+    monkeypatch.setattr(
+        compact_module,
+        "_publication_test_hook",
+        replace_after_identity_check,
+    )
+
+    with pytest.raises(
+        compact_module.CompactCheckpointPublicationUncertainError
+    ) as raised:
+        CompactOwnershipCheckpoint.commit_receipt_new(
+            parent / "checkpoint", _metadata(), _ownership()
+        )
+
+    assert replaced
+    assert raised.value.published is True
+    assert (parent / "checkpoint/ownership.npz").is_file()
+    assert (parent / saved_name / "ownership.npz").is_file()
+    assert os.stat(parent / "checkpoint").st_ino != os.stat(
+        parent / saved_name
+    ).st_ino
 
 
 @pytest.mark.parametrize(
