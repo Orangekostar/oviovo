@@ -315,6 +315,51 @@ def _metric_sources(
     return sources
 
 
+def _validate_metric_run_layout(
+    *,
+    results_dir: Path,
+    metrics_path: Path,
+    repeat_path: Path,
+    run_status_path: Path,
+) -> Path:
+    status_path = Path(os.path.abspath(run_status_path))
+    if (
+        status_path.name != "run_status.json"
+        or status_path.is_symlink()
+        or not status_path.is_file()
+        or status_path.resolve(strict=True) != status_path
+    ):
+        raise ValueError(
+            "official metrics inputs and outputs must share the same run root"
+        )
+    run_root = status_path.parent
+    expected = {
+        Path(os.path.abspath(results_dir)): run_root / "map/results",
+        Path(os.path.abspath(metrics_path)): run_root
+        / "evaluation/official_metrics.json",
+        Path(os.path.abspath(repeat_path)): run_root
+        / "evaluation/official_metrics.repeat.json",
+    }
+    if any(actual != required for actual, required in expected.items()):
+        raise ValueError(
+            "official metrics inputs and outputs must share the same run root"
+        )
+    results = run_root / "map/results"
+    evaluation = run_root / "evaluation"
+    if (
+        results.is_symlink()
+        or not results.is_dir()
+        or results.resolve(strict=True) != results
+        or evaluation.is_symlink()
+        or not evaluation.is_dir()
+        or evaluation.resolve(strict=True) != evaluation
+    ):
+        raise ValueError(
+            "official metrics inputs and outputs must share the same run root"
+        )
+    return status_path
+
+
 def write_repeated_metrics(
     *,
     results_dir: Path,
@@ -327,7 +372,13 @@ def write_repeated_metrics(
 ) -> dict[str, Any]:
     if method != "OVIV2" or mode != "causal_checkpoints":
         raise ValueError("official metrics require OVIV2 causal identity")
-    run_status = validate_khronos_run_status(run_status_path, scene=scene)
+    status_path = _validate_metric_run_layout(
+        results_dir=results_dir,
+        metrics_path=metrics_path,
+        repeat_path=repeat_path,
+        run_status_path=run_status_path,
+    )
+    run_status = validate_khronos_run_status(status_path, scene=scene)
     run_identity = dict(run_status["run_identity"])
     if (
         run_status.get("method") != method

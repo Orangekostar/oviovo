@@ -208,7 +208,9 @@ def test_parser_accepts_oviv2_causal_identity() -> None:
 def test_repeated_metrics_records_consistent_unavailable_summary(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    results = tmp_path / "results"
+    run_root = tmp_path / "run"
+    status_path, _ = _validated_run_status(run_root, monkeypatch)
+    results = run_root / "map/results"
     results.mkdir()
     for name in ("static_objects.csv", "dynamic_objects.csv", "background_mesh.csv"):
         (results / name).write_text(f"{name}\n", encoding="utf-8")
@@ -231,14 +233,15 @@ def test_repeated_metrics_records_consistent_unavailable_summary(
             },
         },
     )
-    status_path, _ = _validated_run_status(tmp_path / "run", monkeypatch)
+    evaluation = run_root / "evaluation"
+    evaluation.mkdir()
     summary = write_repeated_metrics(
         results_dir=results,
         scene="apartment",
         method="OVIV2",
         mode="causal_checkpoints",
-        metrics_path=tmp_path / "official_metrics.json",
-        repeat_path=tmp_path / "official_metrics.repeat.json",
+        metrics_path=evaluation / "official_metrics.json",
+        repeat_path=evaluation / "official_metrics.repeat.json",
         run_status_path=status_path,
     )
 
@@ -259,13 +262,16 @@ def test_repeated_metrics_records_consistent_unavailable_summary(
 def test_repeated_metrics_refuses_existing_outputs(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    results = tmp_path / "results"
+    run_root = tmp_path / "run"
+    status_path, _ = _validated_run_status(run_root, monkeypatch)
+    results = run_root / "map/results"
     results.mkdir()
     for name in ("static_objects.csv", "dynamic_objects.csv", "background_mesh.csv"):
         (results / name).write_text(f"{name}\n", encoding="utf-8")
-    metrics = tmp_path / "official_metrics.json"
+    evaluation = run_root / "evaluation"
+    evaluation.mkdir()
+    metrics = evaluation / "official_metrics.json"
     metrics.write_text("preserve\n", encoding="utf-8")
-    status_path, _ = _validated_run_status(tmp_path / "run", monkeypatch)
 
     with pytest.raises(FileExistsError, match="already exists"):
         write_repeated_metrics(
@@ -274,7 +280,7 @@ def test_repeated_metrics_refuses_existing_outputs(
             method="OVIV2",
             mode="causal_checkpoints",
             metrics_path=metrics,
-            repeat_path=tmp_path / "official_metrics.repeat.json",
+            repeat_path=evaluation / "official_metrics.repeat.json",
             run_status_path=status_path,
         )
 
@@ -284,14 +290,17 @@ def test_repeated_metrics_refuses_existing_outputs(
 def test_repeated_metrics_refuses_dangling_symlink_output(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    results = tmp_path / "results"
+    run_root = tmp_path / "run"
+    status_path, _ = _validated_run_status(run_root, monkeypatch)
+    results = run_root / "map/results"
     results.mkdir()
     for name in ("static_objects.csv", "dynamic_objects.csv", "background_mesh.csv"):
         (results / name).write_text(f"{name}\n", encoding="utf-8")
-    victim = tmp_path / "victim.json"
-    metrics = tmp_path / "official_metrics.json"
+    evaluation = run_root / "evaluation"
+    evaluation.mkdir()
+    victim = evaluation / "victim.json"
+    metrics = evaluation / "official_metrics.json"
     metrics.symlink_to(victim.name)
-    status_path, _ = _validated_run_status(tmp_path / "run", monkeypatch)
 
     with pytest.raises(FileExistsError, match="already exists"):
         write_repeated_metrics(
@@ -300,7 +309,7 @@ def test_repeated_metrics_refuses_dangling_symlink_output(
             method="OVIV2",
             mode="causal_checkpoints",
             metrics_path=metrics,
-            repeat_path=tmp_path / "official_metrics.repeat.json",
+            repeat_path=evaluation / "official_metrics.repeat.json",
             run_status_path=status_path,
         )
 
@@ -461,6 +470,8 @@ def test_run_refuses_existing_evaluation_directory_before_external_work(
 
 def test_repeated_metrics_rejects_unvalidated_status(tmp_path: Path) -> None:
     results = _write_valid_results(tmp_path / "map/results")
+    evaluation = tmp_path / "evaluation"
+    evaluation.mkdir()
     forged_status = tmp_path / "run_status.json"
     forged_status.write_text(
         json.dumps(
@@ -481,9 +492,72 @@ def test_repeated_metrics_rejects_unvalidated_status(tmp_path: Path) -> None:
             scene="apartment",
             method="OVIV2",
             mode="causal_checkpoints",
-            metrics_path=tmp_path / "official_metrics.json",
-            repeat_path=tmp_path / "official_metrics.repeat.json",
+            metrics_path=evaluation / "official_metrics.json",
+            repeat_path=evaluation / "official_metrics.repeat.json",
             run_status_path=forged_status,
+        )
+
+
+def test_repeated_metrics_rejects_results_from_different_run_root(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    status_path, _ = _validated_run_status(tmp_path / "run-a", monkeypatch)
+    results = _write_valid_results(tmp_path / "run-b/map/results")
+    evaluation = tmp_path / "run-a/evaluation"
+    evaluation.mkdir()
+
+    with pytest.raises(ValueError, match="same run root"):
+        write_repeated_metrics(
+            results_dir=results,
+            scene="apartment",
+            method="OVIV2",
+            mode="causal_checkpoints",
+            metrics_path=evaluation / "official_metrics.json",
+            repeat_path=evaluation / "official_metrics.repeat.json",
+            run_status_path=status_path,
+        )
+
+
+def test_repeated_metrics_rejects_symlinked_results_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    run_root = tmp_path / "run"
+    status_path, _ = _validated_run_status(run_root, monkeypatch)
+    external = _write_valid_results(tmp_path / "external-results")
+    (run_root / "map/results").symlink_to(external, target_is_directory=True)
+    evaluation = run_root / "evaluation"
+    evaluation.mkdir()
+
+    with pytest.raises(ValueError, match="same run root"):
+        write_repeated_metrics(
+            results_dir=run_root / "map/results",
+            scene="apartment",
+            method="OVIV2",
+            mode="causal_checkpoints",
+            metrics_path=evaluation / "official_metrics.json",
+            repeat_path=evaluation / "official_metrics.repeat.json",
+            run_status_path=status_path,
+        )
+
+
+def test_repeated_metrics_rejects_noncanonical_output_path(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    run_root = tmp_path / "run"
+    status_path, _ = _validated_run_status(run_root, monkeypatch)
+    results = _write_valid_results(run_root / "map/results")
+    evaluation = run_root / "evaluation"
+    evaluation.mkdir()
+
+    with pytest.raises(ValueError, match="same run root"):
+        write_repeated_metrics(
+            results_dir=results,
+            scene="apartment",
+            method="OVIV2",
+            mode="causal_checkpoints",
+            metrics_path=evaluation / "partial.json",
+            repeat_path=evaluation / "official_metrics.repeat.json",
+            run_status_path=status_path,
         )
 
 
@@ -572,7 +646,9 @@ def test_run_passes_status_path_to_revalidating_metric_writer(
 def test_partial_metric_record_uses_online_display_mode_and_hashed_sources(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    results = tmp_path / "results"
+    run_root = tmp_path / "run"
+    status_path, validated = _validated_run_status(run_root, monkeypatch)
+    results = run_root / "map/results"
     results.mkdir()
     for name in ("static_objects.csv", "dynamic_objects.csv", "background_mesh.csv"):
         (results / name).write_text(f"{name}\n", encoding="utf-8")
@@ -588,9 +664,10 @@ def test_partial_metric_record_uses_online_display_mode_and_hashed_sources(
             },
         },
     )
-    output = tmp_path / "partial.json"
-    repeat = tmp_path / "partial.repeat.json"
-    status_path, validated = _validated_run_status(tmp_path / "run", monkeypatch)
+    evaluation = run_root / "evaluation"
+    evaluation.mkdir()
+    output = evaluation / "official_metrics.json"
+    repeat = evaluation / "official_metrics.repeat.json"
 
     def unavailable(_: Path) -> None:
         raise ValueError("Khronos change F1 has no finite states")
@@ -620,19 +697,21 @@ def test_partial_metric_record_uses_online_display_mode_and_hashed_sources(
 def test_metric_json_is_byte_identical_across_run_roots(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    first_results = _write_valid_results(tmp_path / "first/map/results")
-    second_results = _write_valid_results(tmp_path / "second/map/results")
-    first = tmp_path / "first/evaluation/official_metrics.json"
-    second = tmp_path / "second/evaluation/official_metrics.json"
-    first_repeat = tmp_path / "first/evaluation/official_metrics.repeat.json"
-    second_repeat = tmp_path / "second/evaluation/official_metrics.repeat.json"
+    first_root = tmp_path / "first/run"
+    second_root = tmp_path / "second/run"
+    first_results = _write_valid_results(first_root / "map/results")
+    second_results = _write_valid_results(second_root / "map/results")
+    first = first_root / "evaluation/official_metrics.json"
+    second = second_root / "evaluation/official_metrics.json"
+    first_repeat = first_root / "evaluation/official_metrics.repeat.json"
+    second_repeat = second_root / "evaluation/official_metrics.repeat.json"
     first.parent.mkdir(parents=True)
     second.parent.mkdir(parents=True)
     first_status_path, first_status = _validated_run_status(
-        tmp_path / "first/run", monkeypatch
+        first_root, monkeypatch
     )
     second_status_path, second_status = _validated_run_status(
-        tmp_path / "second/run", monkeypatch
+        second_root, monkeypatch
     )
 
     write_repeated_metrics(
@@ -672,11 +751,14 @@ def test_metric_json_is_byte_identical_across_run_roots(
 def test_missing_metric_csv_is_recorded_as_unavailable(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    results = _write_valid_results(tmp_path / "results")
+    run_root = tmp_path / "run"
+    status_path, validated = _validated_run_status(run_root, monkeypatch)
+    results = _write_valid_results(run_root / "map/results")
     (results / "dynamic_objects.csv").unlink()
-    metrics = tmp_path / "official_metrics.json"
-    repeat = tmp_path / "official_metrics.repeat.json"
-    status_path, validated = _validated_run_status(tmp_path / "run", monkeypatch)
+    evaluation = run_root / "evaluation"
+    evaluation.mkdir()
+    metrics = evaluation / "official_metrics.json"
+    repeat = evaluation / "official_metrics.repeat.json"
 
     summary = write_repeated_metrics(
         results_dir=results,
@@ -699,4 +781,7 @@ def test_missing_metric_csv_is_recorded_as_unavailable(
         for source in payload["sources"]
         if Path(source["path"]).name == "dynamic_objects.csv"
     )
-    assert missing == {"path": "results/dynamic_objects.csv", "status": "MISSING"}
+    assert missing == {
+        "path": "../map/results/dynamic_objects.csv",
+        "status": "MISSING",
+    }
