@@ -727,20 +727,34 @@ class VoxelMapSnapshot:
         cls._validate_components(metadata, geometry, evidence, ownership, registry)
         target = Path(target_dir)
         try:
-            parent_mode = target.parent.stat().st_mode
+            parent_status = os.lstat(target.parent)
         except FileNotFoundError as exc:
             raise FileNotFoundError(target.parent) from exc
-        if not stat.S_ISDIR(parent_mode):
+        if not stat.S_ISDIR(parent_status.st_mode):
             raise NotADirectoryError(target.parent)
-        temporary = Path(
-            tempfile.mkdtemp(prefix=f".{target.name}.tmp-", dir=target.parent)
-        )
-        temporary_fd: int | None = None
-        temporary_identity: tuple[int, int] | None = None
         try:
-            temporary_fd, temporary_identity = _open_owned_directory(temporary)
+            os.lstat(target)
+        except FileNotFoundError:
+            pass
+        else:
+            raise FileExistsError(errno.EEXIST, "snapshot target already exists", target)
+
+        staging = target.with_name(f".{target.name}.snapshot-staging")
+        try:
+            staging.mkdir()
+        except FileExistsError:
+            raise FileExistsError(
+                errno.EEXIST,
+                "snapshot staging already exists",
+                staging,
+            ) from None
+
+        staging_fd: int | None = None
+        staging_identity: tuple[int, int] | None = None
+        try:
+            staging_fd, staging_identity = _open_owned_directory(staging)
             data_files = cls._write_snapshot_files(
-                temporary,
+                staging,
                 metadata,
                 geometry,
                 evidence,
@@ -748,15 +762,15 @@ class VoxelMapSnapshot:
                 registry,
             )
             for name in (*data_files, "checksums.json"):
-                _bind_owned_member_at(temporary_fd, name)
-            os.fsync(temporary_fd)
+                _bind_owned_member_at(staging_fd, name)
+            os.fsync(staging_fd)
             staged_witness = SnapshotSourceWitness.capture_staged(
-                temporary,
+                staging,
                 data_files=data_files,
             )
-            if staged_witness.directory_fingerprint[:2] != temporary_identity:
+            if staged_witness.directory_fingerprint[:2] != staging_identity:
                 raise ValueError("snapshot source identity changed before staged load")
-            restored = cls.load(temporary)
+            restored = cls.load(staging)
             staged_witness.revalidate()
             witnessed_checksums = {
                 name: digest
@@ -767,7 +781,7 @@ class VoxelMapSnapshot:
                 raise ValueError("snapshot source content changed during staged load")
             staged_witness = replace(staged_witness, path=target)
 
-            cls._publish_directory_no_replace(temporary, target)
+            cls._publish_directory_no_replace(staging, target)
             try:
                 source_witness = staged_witness.bind_published()
             except Exception as publication_error:
@@ -782,9 +796,9 @@ class VoxelMapSnapshot:
                 source_witness=source_witness,
             )
         finally:
-            if temporary_fd is not None:
+            if staging_fd is not None:
                 try:
-                    os.close(temporary_fd)
+                    os.close(staging_fd)
                 except OSError:
                     pass
 
