@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 from dataclasses import dataclass, replace
 from pathlib import Path
+from typing import Literal
 
 import numpy as np
 import open3d as o3d
@@ -36,9 +37,20 @@ class Oviv2RuntimeConfig:
     semantic_support_scale: float = 1.0
     entity_support_scale: float = 1.0
     ownership_min_net_support: float = 1e-6
+    missing_observation_policy: Literal[
+        "signed_depth", "missing_as_absence"
+    ] = "signed_depth"
     dense_semantics: DenseSemanticConfig | None = None
 
     def __post_init__(self) -> None:
+        if not isinstance(self.missing_observation_policy, str) or (
+            self.missing_observation_policy
+            not in {"signed_depth", "missing_as_absence"}
+        ):
+            raise ValueError(
+                "missing_observation_policy must be 'signed_depth' or "
+                "'missing_as_absence'"
+            )
         if self.dense_semantics is not None and not isinstance(
             self.dense_semantics,
             DenseSemanticConfig,
@@ -300,6 +312,7 @@ class Oviv2Runtime:
             },
             evidence=trial_evidence,
             ownership=trial_ownership,
+            matched_entity_ids=frozenset(accepted_entity_ids),
         )
 
         for item in observations:
@@ -367,6 +380,7 @@ class Oviv2Runtime:
         *,
         revision: int,
         entity_voxels: dict[int, frozenset[VoxelKey]],
+        matched_entity_ids: frozenset[int] = frozenset(),
     ) -> None:
         self._apply_visibility_to(
             frame,
@@ -374,6 +388,7 @@ class Oviv2Runtime:
             entity_voxels=entity_voxels,
             evidence=self.evidence,
             ownership=self.ownership,
+            matched_entity_ids=matched_entity_ids,
         )
 
     def _apply_visibility_to(
@@ -384,6 +399,7 @@ class Oviv2Runtime:
         entity_voxels: dict[int, frozenset[VoxelKey]],
         evidence: SparseEvidenceStore,
         ownership: ReversibleOwnershipStore,
+        matched_entity_ids: frozenset[int],
     ) -> None:
         changed: set[VoxelKey] = set()
         for entity_id in sorted(entity_voxels):
@@ -391,7 +407,14 @@ class Oviv2Runtime:
                 tuple(entity_voxels[entity_id]),
                 frame,
             )
-            for voxel_key in grouped[VisibilityStatus.ABSENT]:
+            penalized = list(grouped[VisibilityStatus.ABSENT])
+            if (
+                self.config.missing_observation_policy == "missing_as_absence"
+                and entity_id not in matched_entity_ids
+            ):
+                penalized.extend(grouped[VisibilityStatus.PRESENT])
+                penalized.extend(grouped[VisibilityStatus.OCCLUDED])
+            for voxel_key in penalized:
                 candidates = {
                     item.entity_id for item in evidence.entity_candidates(voxel_key)
                 }

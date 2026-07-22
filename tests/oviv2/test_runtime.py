@@ -680,6 +680,140 @@ def test_only_absent_visibility_adds_negative_entity_evidence() -> None:
     assert absent.negative_support > 0.0
 
 
+@pytest.mark.parametrize("policy", ["", "absence", "SIGNED_DEPTH", None, []])
+def test_runtime_rejects_unknown_missing_observation_policy(policy: object) -> None:
+    with pytest.raises((TypeError, ValueError), match="missing_observation_policy"):
+        Oviv2RuntimeConfig(missing_observation_policy=policy)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("occluded_frame_count", [1, 10, 100])
+def test_signed_depth_never_penalizes_or_releases_occluded_owner(
+    occluded_frame_count: int,
+) -> None:
+    runtime = Oviv2Runtime(
+        "room0",
+        Oviv2RuntimeConfig(missing_observation_policy="signed_depth"),
+    )
+    key = (0, 0, 20)
+    runtime.evidence.update_entity(key, 1, 2.0, 0.0, 0.0, 1)
+    runtime.ownership.assign(key, 1, 1.0, 1)
+    original_owner = runtime.ownership.owner_of(key)
+    occluded = frame()
+    occluded.depth[:] = 0.5
+
+    for revision in range(2, occluded_frame_count + 2):
+        runtime.apply_visibility(
+            occluded,
+            revision=revision,
+            entity_voxels={1: frozenset({key})},
+        )
+
+    evidence = runtime.evidence.entity_candidates(key)[0]
+    assert evidence.negative_support == 0.0
+    assert runtime.ownership.owner_of(key) == original_owner
+
+
+@pytest.mark.parametrize(
+    ("depth_m", "penalized"),
+    [(1.0, True), (0.5, True), (0.0, False)],
+)
+def test_missing_as_absence_only_penalizes_unmatched_projectable_voxels(
+    depth_m: float,
+    penalized: bool,
+) -> None:
+    runtime = Oviv2Runtime(
+        "room0",
+        Oviv2RuntimeConfig(missing_observation_policy="missing_as_absence"),
+    )
+    key = (0, 0, 20)
+    runtime.evidence.update_entity(key, 1, 2.0, 0.0, 0.0, 1)
+    runtime.ownership.assign(key, 1, 1.0, 1)
+    current = frame()
+    current.depth[:] = depth_m
+
+    runtime.apply_visibility(
+        current,
+        revision=2,
+        entity_voxels={1: frozenset({key})},
+        matched_entity_ids=frozenset(),
+    )
+
+    evidence = runtime.evidence.entity_candidates(key)[0]
+    assert (evidence.negative_support > 0.0) is penalized
+
+
+def test_missing_as_absence_does_not_penalize_matched_entity() -> None:
+    runtime = Oviv2Runtime(
+        "room0",
+        Oviv2RuntimeConfig(missing_observation_policy="missing_as_absence"),
+    )
+    key = (0, 0, 20)
+    runtime.evidence.update_entity(key, 1, 2.0, 0.0, 0.0, 1)
+    current = frame()
+    current.depth[:] = 0.5
+
+    runtime.apply_visibility(
+        current,
+        revision=2,
+        entity_voxels={1: frozenset({key})},
+        matched_entity_ids=frozenset({1}),
+    )
+
+    assert runtime.evidence.entity_candidates(key)[0].negative_support == 0.0
+
+
+def test_process_frame_passes_matched_entities_to_missing_as_absence_policy() -> None:
+    runtime = Oviv2Runtime(
+        "room0",
+        Oviv2RuntimeConfig(
+            tracker=LocalTrackerConfig(confirm_hits=2),
+            missing_observation_policy="missing_as_absence",
+        ),
+    )
+    key = (0, 0, 20)
+    runtime.process_frame(frame(0), (object_observation(0, key, 2, "chair"),))
+    runtime.process_frame(frame(1), (object_observation(1, key, 2, "chair"),))
+    before = runtime.evidence.entity_candidates(key)[0].negative_support
+    occluded = frame(2)
+    occluded.depth[:] = 0.5
+
+    runtime.process_frame(
+        occluded,
+        (object_observation(2, key, 2, "chair"),),
+    )
+
+    assert runtime.evidence.entity_candidates(key)[0].negative_support == before
+
+
+@pytest.mark.parametrize("occluded_frame_count", [1, 10, 100])
+def test_missing_as_absence_eventually_releases_occluded_owner(
+    occluded_frame_count: int,
+) -> None:
+    runtime = Oviv2Runtime(
+        "room0",
+        Oviv2RuntimeConfig(missing_observation_policy="missing_as_absence"),
+    )
+    key = (0, 0, 20)
+    runtime.evidence.update_entity(key, 1, 2.0, 0.0, 0.0, 1)
+    runtime.ownership.assign(key, 1, 1.0, 1)
+    occluded = frame()
+    occluded.depth[:] = 0.5
+
+    for revision in range(2, occluded_frame_count + 2):
+        runtime.apply_visibility(
+            occluded,
+            revision=revision,
+            entity_voxels={1: frozenset({key})},
+            matched_entity_ids=frozenset(),
+        )
+
+    owner = runtime.ownership.owner_of(key)
+    if occluded_frame_count == 1:
+        assert owner is not None and owner.entity_id == 1
+    else:
+        assert owner is None
+
+
 def test_runtime_commit_round_trip_contains_only_voxel_layers(tmp_path: Path) -> None:
     runtime = Oviv2Runtime("room0")
     runtime.process_frame(frame(), ())
