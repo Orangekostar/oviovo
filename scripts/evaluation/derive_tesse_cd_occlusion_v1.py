@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import stat
 import sys
 import tempfile
 from typing import Any, Iterable, Mapping, Sequence
@@ -312,6 +313,53 @@ def _revalidate_source_witness(witness: _SourceWitness) -> None:
         raise ValueError(
             f"source changed before publication: {witness.declared_path}"
         )
+
+
+def _status_fingerprint(status: os.stat_result) -> tuple[int, int, int, int, int]:
+    return (
+        status.st_dev,
+        status.st_ino,
+        status.st_size,
+        status.st_mtime_ns,
+        status.st_ctime_ns,
+    )
+
+
+def _revalidate_source_identity_barrier(
+    witnesses: Sequence[_SourceWitness],
+) -> None:
+    """Establish a fast common-time identity barrier immediately before reserve."""
+    for witness in witnesses:
+        try:
+            before = os.lstat(witness.declared_path)
+            if not stat.S_ISREG(before.st_mode):
+                raise ValueError(
+                    "publication source must remain an ordinary non-symlink file: "
+                    f"{witness.declared_path}"
+                )
+            resolved = witness.declared_path.resolve(strict=True)
+            after = os.lstat(witness.declared_path)
+            if not stat.S_ISREG(after.st_mode):
+                raise ValueError(
+                    "publication source must remain an ordinary non-symlink file: "
+                    f"{witness.declared_path}"
+                )
+            fingerprint = _fingerprint(resolved)
+        except ValueError:
+            raise
+        except OSError as error:
+            raise ValueError(
+                f"source changed before publication: {witness.declared_path}"
+            ) from error
+        if not (
+            resolved == witness.resolved_path
+            and _status_fingerprint(before) == witness.fingerprint
+            and _status_fingerprint(after) == witness.fingerprint
+            and fingerprint == witness.fingerprint
+        ):
+            raise ValueError(
+                f"source changed before publication: {witness.declared_path}"
+            )
 
 
 def _expected_source_roles(
@@ -1404,6 +1452,7 @@ def write_occlusion_package(
             publication_witnesses.append(contract_witness)
         for witness in publication_witnesses:
             _revalidate_source_witness(witness)
+        _revalidate_source_identity_barrier(publication_witnesses)
         try:
             output_dir.mkdir()
         except FileExistsError as error:

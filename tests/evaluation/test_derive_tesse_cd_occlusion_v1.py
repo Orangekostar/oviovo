@@ -579,6 +579,75 @@ def test_source_change_after_initial_validation_prevents_publish_and_retry_works
     assert manifest.is_file()
 
 
+def test_cross_file_drift_after_early_rehash_is_rejected_by_identity_barrier(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    frames, records = _fixture_inputs()
+    arrays, metadata = derive_occlusion_targets(
+        frames_by_scene=frames,
+        dsg_records_by_scene=records,
+        camera={"width": 1, "height": 1, "fx": 1.0, "fy": 1.0, "cx": 0.0, "cy": 0.0},
+    )
+    paths = _source_paths(tmp_path / "sources")
+    output = tmp_path / "output"
+    first_role = sorted(paths)[0]
+    original_revalidate = occlusion_deriver._revalidate_source_witness
+    revalidated = 0
+
+    def mutate_after_first_rehash(witness: object) -> None:
+        nonlocal revalidated
+        original_revalidate(witness)
+        revalidated += 1
+        if revalidated == 1:
+            paths[first_role].write_bytes(b"changed after its full rehash")
+
+    monkeypatch.setattr(
+        occlusion_deriver,
+        "_revalidate_source_witness",
+        mutate_after_first_rehash,
+    )
+
+    with pytest.raises(ValueError, match="source changed before publication"):
+        write_occlusion_package(
+            output,
+            arrays=arrays,
+            metadata=metadata,
+            source_paths=paths,
+            status="FIXTURE",
+        )
+
+    assert revalidated == len(paths)
+    assert not output.exists()
+    assert not list(tmp_path.glob(".output.*"))
+
+
+def test_publication_identity_barrier_rejects_symlink_source(tmp_path: Path) -> None:
+    frames, records = _fixture_inputs()
+    arrays, metadata = derive_occlusion_targets(
+        frames_by_scene=frames,
+        dsg_records_by_scene=records,
+        camera={"width": 1, "height": 1, "fx": 1.0, "fy": 1.0, "cx": 0.0, "cy": 0.0},
+    )
+    paths = _source_paths(tmp_path / "sources")
+    camera_target = paths["camera"]
+    camera_link = camera_target.with_suffix(".link")
+    camera_link.symlink_to(camera_target)
+    paths["camera"] = camera_link
+    output = tmp_path / "output"
+
+    with pytest.raises(ValueError, match="ordinary non-symlink file"):
+        write_occlusion_package(
+            output,
+            arrays=arrays,
+            metadata=metadata,
+            source_paths=paths,
+            status="FIXTURE",
+        )
+
+    assert not output.exists()
+    assert not list(tmp_path.glob(".output.*"))
+
+
 def test_publish_pre_reservation_fsync_failure_cleans_staging_and_is_retryable(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
