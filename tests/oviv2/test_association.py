@@ -214,6 +214,45 @@ def test_sparse_custom_scorer_preserves_a_tiny_real_score_advantage() -> None:
     ]
 
 
+def test_sparse_custom_scorer_preserves_mirrored_ulp_score_advantage() -> None:
+    left = tuple(target(target_id, {(0, 0, 0)}) for target_id in (0, 1))
+    right = tuple(target(target_id, {(0, 0, 0)}) for target_id in (10, 11))
+    stronger = float(np.nextafter(0.5, 1.0))
+
+    def scorer(
+        left_item: AssociationTarget,
+        right_item: AssociationTarget,
+        _config: AssociationConfig,
+    ) -> CandidateScore:
+        score = (
+            stronger
+            if (left_item.target_id, right_item.target_id) == (1, 10)
+            else 0.5
+        )
+        return CandidateScore(
+            left_item.target_id,
+            right_item.target_id,
+            score,
+            0.0,
+            0.0,
+            None,
+            False,
+            True,
+        )
+
+    assignments = solve_assignment(
+        left,
+        right,
+        AssociationConfig(),
+        candidate_scorer=scorer,
+    )
+
+    assert [(item.left_id, item.right_id) for item in assignments] == [
+        (0, 11),
+        (1, 10),
+    ]
+
+
 def test_directed_voxel_overlap_preserves_both_directions() -> None:
     larger = frozenset({(0, 0, 0), (1, 0, 0)})
     smaller = frozenset({(0, 0, 0)})

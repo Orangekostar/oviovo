@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from fractions import Fraction
 import math
 
+import networkx as nx
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
@@ -391,91 +392,50 @@ def _solve_sparse_assignment(
 ) -> tuple[Assignment, ...]:
     row_count = len(left_values)
     column_count = len(right_values)
-    augmented_size = row_count + column_count
-    # Dummy rows and columns make unmatched choices explicit in sparse graphs.
-    costs = np.full((augmented_size, augmented_size), np.inf, dtype=np.float64)
     scores: dict[tuple[int, int], CandidateScore] = {}
-    unmatched_penalty = float(min(row_count, column_count) + 1)
-
     for row, left_item in enumerate(left_values):
         for column, right_item in enumerate(right_values):
             candidate = candidate_scorer(left_item, right_item, config)
             if candidate is None or not candidate.accepted:
                 continue
             scores[(row, column)] = candidate
-            costs[row, column] = -candidate.score
-        costs[row, column_count + row] = unmatched_penalty
 
-    for column in range(column_count):
-        costs[row_count + column, column] = unmatched_penalty
-        costs[row_count + column, column_count:] = 0.0
+    graph = nx.Graph()
+    observation_nodes = [("observation", row) for row in range(row_count)]
+    entity_nodes = [("entity", column) for column in range(column_count)]
+    graph.add_nodes_from(observation_nodes, bipartite=0)
+    graph.add_nodes_from(entity_nodes, bipartite=1)
+    if not scores:
+        return ()
 
-    primary_rows, primary_columns = linear_sum_assignment(costs)
-
-    def exact_cost(rows: np.ndarray, columns: np.ndarray) -> Fraction:
-        return sum(
-            (
-                Fraction.from_float(float(costs[row, column]))
-                for row, column in zip(rows, columns)
-            ),
-            start=Fraction(),
+    ratios = {
+        edge: candidate.score.as_integer_ratio()
+        for edge, candidate in scores.items()
+    }
+    # Binary64 denominators are powers of two, so this preserves exact score sums.
+    common_denominator = max(denominator for _, denominator in ratios.values())
+    tie_base = row_count + 1
+    # The base-N digits encode entity-first, then observation-first tie choices.
+    tie_scale = tie_base**column_count
+    for (row, column), (numerator, denominator) in ratios.items():
+        score_units = numerator * (common_denominator // denominator)
+        tie_digit = (row_count - row) * tie_base ** (column_count - column - 1)
+        graph.add_edge(
+            observation_nodes[row],
+            entity_nodes[column],
+            weight=score_units * tie_scale + tie_digit,
         )
 
-    primary_cost = exact_cost(primary_rows, primary_columns)
-
-    def constrained_solution(
-        constraints: dict[int, int],
-    ) -> tuple[np.ndarray, np.ndarray] | None:
-        constrained_costs = costs.copy()
-        for column, row in constraints.items():
-            edge_cost = costs[row, column]
-            constrained_costs[row, :] = np.inf
-            constrained_costs[:, column] = np.inf
-            constrained_costs[row, column] = edge_cost
-        try:
-            rows, columns = linear_sum_assignment(constrained_costs)
-        except ValueError:
-            return None
-        if exact_cost(rows, columns) != primary_cost:
-            return None
-        return rows, columns
-
-    constraints: dict[int, int] = {}
-    used_observation_rows: set[int] = set()
-    final_solution = (primary_rows, primary_columns)
-    # Preserve the exact primary optimum while fixing entity-first tie choices.
-    for column in range(column_count):
-        chosen = False
-        for row in range(row_count):
-            if row in used_observation_rows or (row, column) not in scores:
-                continue
-            solution = constrained_solution({**constraints, column: row})
-            if solution is None:
-                continue
-            constraints[column] = row
-            used_observation_rows.add(row)
-            final_solution = solution
-            chosen = True
-            break
-        if chosen:
-            continue
-        unmatched_row = row_count + column
-        solution = constrained_solution({**constraints, column: unmatched_row})
-        if solution is None:
-            raise RuntimeError("failed to preserve the optimal sparse assignment")
-        constraints[column] = unmatched_row
-        final_solution = solution
-
-    rows, columns = final_solution
-    result = [
-        Assignment(
-            scores[(row, column)].left_id,
-            scores[(row, column)].right_id,
-            scores[(row, column)].score,
+    matching = nx.max_weight_matching(graph, maxcardinality=True, weight="weight")
+    result = []
+    for first, second in matching:
+        observation_node, entity_node = (
+            (first, second) if first[0] == "observation" else (second, first)
         )
-        for row, column in zip(rows, columns)
-        if (row, column) in scores
-    ]
+        row = observation_node[1]
+        column = entity_node[1]
+        candidate = scores[(row, column)]
+        result.append(Assignment(candidate.left_id, candidate.right_id, candidate.score))
     return tuple(sorted(result, key=lambda value: (value.left_id, value.right_id)))
 
 
