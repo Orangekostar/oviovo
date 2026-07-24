@@ -143,6 +143,8 @@ def _validate_state(
         raise ValueError("state.absence_view_bins must be sorted and unique")
     if any(value >= available_bins for value in normalized_bins):
         raise ValueError("state.absence_view_bins item is out of range")
+    if state.absent_streak > 0 and not normalized_bins:
+        raise ValueError("state.absence_view_bins is required for an absence streak")
     if len(normalized_bins) > state.absent_streak:
         raise ValueError("state.absence_view_bins cannot exceed absent_streak")
     return state

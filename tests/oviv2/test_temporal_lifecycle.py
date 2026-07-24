@@ -308,6 +308,8 @@ def test_invalid_evidence_fails_without_mutating_state(
         state(bins=(8,)),
         state(absent_streak=0, bins=(1,)),
         state(absent_streak=1, bins=(1, 2)),
+        state(absent_streak=1, bins=()),
+        state(absent_streak=2, bins=()),
         state(absent_streak=-1),
         replace(state(), entity_id=-1),
         state(frame_id=-1),
