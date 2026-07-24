@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from array import array
 from collections.abc import Callable
 from dataclasses import dataclass
 from fractions import Fraction
@@ -7,7 +8,6 @@ import math
 
 import networkx as nx
 import numpy as np
-from scipy.optimize import linear_sum_assignment
 
 from src.oviv2.addressing import VoxelKey
 
@@ -392,50 +392,119 @@ def _solve_sparse_assignment(
 ) -> tuple[Assignment, ...]:
     row_count = len(left_values)
     column_count = len(right_values)
-    scores: dict[tuple[int, int], CandidateScore] = {}
+    observation_nodes = [("observation", row) for row in range(row_count)]
+    entity_nodes = [("entity", column) for column in range(column_count)]
+    components = nx.utils.UnionFind()
+    edge_rows = array("I")
+    edge_columns = array("I")
+    edge_scores = array("d")
     for row, left_item in enumerate(left_values):
         for column, right_item in enumerate(right_values):
             candidate = candidate_scorer(left_item, right_item, config)
-            if candidate is None or not candidate.accepted:
+            if candidate is None:
                 continue
-            scores[(row, column)] = candidate
-
-    graph = nx.Graph()
-    observation_nodes = [("observation", row) for row in range(row_count)]
-    entity_nodes = [("entity", column) for column in range(column_count)]
-    graph.add_nodes_from(observation_nodes, bipartite=0)
-    graph.add_nodes_from(entity_nodes, bipartite=1)
-    if not scores:
+            if not isinstance(candidate, CandidateScore):
+                raise TypeError("candidate_scorer must return CandidateScore or None")
+            if (
+                candidate.left_id != left_item.target_id
+                or candidate.right_id != right_item.target_id
+            ):
+                raise ValueError("candidate_scorer returned mismatched CandidateScore IDs")
+            if not candidate.accepted:
+                continue
+            edge_rows.append(row)
+            edge_columns.append(column)
+            edge_scores.append(candidate.score)
+            components.union(observation_nodes[row], entity_nodes[column])
+    if not edge_scores:
         return ()
 
-    ratios = {
-        edge: candidate.score.as_integer_ratio()
-        for edge, candidate in scores.items()
-    }
     # Binary64 denominators are powers of two, so this preserves exact score sums.
-    common_denominator = max(denominator for _, denominator in ratios.values())
+    common_denominator = max(
+        score.as_integer_ratio()[1] for score in edge_scores
+    )
     tie_base = row_count + 1
     # The base-N digits encode entity-first, then observation-first tie choices.
     tie_scale = tie_base**column_count
-    for (row, column), (numerator, denominator) in ratios.items():
+
+    def combined_weight(row: int, column: int, score: float) -> int:
+        numerator, denominator = score.as_integer_ratio()
         score_units = numerator * (common_denominator // denominator)
         tie_digit = (row_count - row) * tie_base ** (column_count - column - 1)
-        graph.add_edge(
-            observation_nodes[row],
-            entity_nodes[column],
-            weight=score_units * tie_scale + tie_digit,
-        )
+        return score_units * tie_scale + tie_digit
 
-    matching = nx.max_weight_matching(graph, maxcardinality=True, weight="weight")
+    component_edges: dict[tuple[str, int], array] = {}
+    for edge_index, row in enumerate(edge_rows):
+        root = components[observation_nodes[row]]
+        indexes = component_edges.get(root)
+        if indexes is None:
+            indexes = array("I")
+            component_edges[root] = indexes
+        indexes.append(edge_index)
+
     result = []
-    for first, second in matching:
-        observation_node, entity_node = (
-            (first, second) if first[0] == "observation" else (second, first)
+    for component_index, edge_indexes in enumerate(component_edges.values()):
+        component_observations = {
+            observation_nodes[edge_rows[index]] for index in edge_indexes
+        }
+        component_entities = {
+            entity_nodes[edge_columns[index]] for index in edge_indexes
+        }
+        topology = nx.Graph()
+        topology.add_edges_from(
+            (
+                observation_nodes[edge_rows[index]],
+                entity_nodes[edge_columns[index]],
+            )
+            for index in edge_indexes
         )
-        row = observation_node[1]
-        column = entity_node[1]
-        candidate = scores[(row, column)]
-        result.append(Assignment(candidate.left_id, candidate.right_id, candidate.score))
+        cardinality_matching = nx.algorithms.bipartite.maximum_matching(
+            topology,
+            top_nodes=component_observations,
+        )
+        cardinality = sum(
+            node in cardinality_matching for node in component_observations
+        )
+        topology.clear()
+
+        source = ("source", component_index)
+        sink = ("sink", component_index)
+        flow_graph = nx.DiGraph()
+        flow_graph.add_node(source, demand=-cardinality)
+        flow_graph.add_node(sink, demand=cardinality)
+        for observation_node in sorted(component_observations):
+            flow_graph.add_node(observation_node, demand=0)
+            flow_graph.add_edge(source, observation_node, capacity=1, weight=0)
+        for entity_node in sorted(component_entities):
+            flow_graph.add_node(entity_node, demand=0)
+            flow_graph.add_edge(entity_node, sink, capacity=1, weight=0)
+        for index in edge_indexes:
+            row = edge_rows[index]
+            column = edge_columns[index]
+            score = edge_scores[index]
+            flow_graph.add_edge(
+                observation_nodes[row],
+                entity_nodes[column],
+                capacity=1,
+                weight=-combined_weight(row, column, score),
+            )
+
+        _, flow = nx.network_simplex(flow_graph)
+        for observation_node in sorted(component_observations):
+            row = observation_node[1]
+            for entity_node, amount in flow[observation_node].items():
+                if amount != 1:
+                    continue
+                column = entity_node[1]
+                encoded_weight = -flow_graph[observation_node][entity_node]["weight"]
+                score_units = encoded_weight // tie_scale
+                result.append(
+                    Assignment(
+                        left_values[row].target_id,
+                        right_values[column].target_id,
+                        score_units / common_denominator,
+                    )
+                )
     return tuple(sorted(result, key=lambda value: (value.left_id, value.right_id)))
 
 
@@ -462,10 +531,10 @@ def solve_assignment(
         ids = [value.target_id for value in values]
         if len(ids) != len(set(ids)):
             raise ValueError(f"{name} target IDs must be unique")
-    if not left_values or not right_values:
-        return ()
     if candidate_scorer is not None and not callable(candidate_scorer):
         raise TypeError("candidate_scorer must be callable or None")
+    if not left_values or not right_values:
+        return ()
     if candidate_scorer is not None and candidate_scorer is not score_candidate:
         return _solve_sparse_assignment(
             left_values,
@@ -485,6 +554,8 @@ def solve_assignment(
                 continue
             scores[(row, column)] = candidate
             costs[row, column] = 1.0 - candidate.score
+
+    from scipy.optimize import linear_sum_assignment
 
     primary_rows, primary_columns = linear_sum_assignment(costs)
     perturbed_costs = costs.copy()

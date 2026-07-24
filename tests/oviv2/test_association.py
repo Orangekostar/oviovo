@@ -274,6 +274,87 @@ def test_sparse_custom_scorer_preserves_mirrored_ulp_score_advantage() -> None:
     ]
 
 
+def test_candidate_scorer_is_validated_before_empty_input_return() -> None:
+    with pytest.raises(TypeError, match="candidate_scorer"):
+        solve_assignment(
+            (),
+            (),
+            AssociationConfig(),
+            candidate_scorer=42,  # type: ignore[arg-type]
+        )
+
+
+def test_custom_scorer_rejects_non_candidate_score_result() -> None:
+    with pytest.raises(TypeError, match="CandidateScore"):
+        solve_assignment(
+            (target(1, {(0, 0, 0)}),),
+            (target(2, {(0, 0, 0)}),),
+            AssociationConfig(),
+            candidate_scorer=lambda *_args: object(),  # type: ignore[arg-type,return-value]
+        )
+
+
+def test_custom_scorer_rejects_mismatched_candidate_ids() -> None:
+    def mismatched_scorer(
+        _left_item: AssociationTarget,
+        _right_item: AssociationTarget,
+        _config: AssociationConfig,
+    ) -> CandidateScore:
+        return CandidateScore(100, 200, 1.0, 0.0, 0.0, None, False, True)
+
+    with pytest.raises(ValueError, match="IDs"):
+        solve_assignment(
+            (target(1, {(0, 0, 0)}),),
+            (target(2, {(0, 0, 0)}),),
+            AssociationConfig(),
+            candidate_scorer=mismatched_scorer,
+        )
+
+
+def test_disconnected_hall_deficient_components_preserve_exact_objective() -> None:
+    left = tuple(target(target_id, {(0, 0, 0)}) for target_id in range(4))
+    right = tuple(target(target_id, {(0, 0, 0)}) for target_id in range(10, 14))
+    edge_scores = {
+        (0, 10): 0.5,
+        (0, 11): 0.5,
+        (1, 10): 0.6,
+        (2, 12): 0.4,
+        (3, 12): 0.5,
+    }
+
+    def scorer(
+        left_item: AssociationTarget,
+        right_item: AssociationTarget,
+        _config: AssociationConfig,
+    ) -> CandidateScore | None:
+        score = edge_scores.get((left_item.target_id, right_item.target_id))
+        if score is None:
+            return None
+        return CandidateScore(
+            left_item.target_id,
+            right_item.target_id,
+            score,
+            0.0,
+            0.0,
+            None,
+            False,
+            True,
+        )
+
+    assignments = solve_assignment(
+        left,
+        right,
+        AssociationConfig(),
+        candidate_scorer=scorer,
+    )
+
+    assert [(item.left_id, item.right_id) for item in assignments] == [
+        (0, 11),
+        (1, 10),
+        (3, 12),
+    ]
+
+
 def test_directed_voxel_overlap_preserves_both_directions() -> None:
     larger = frozenset({(0, 0, 0), (1, 0, 0)})
     smaller = frozenset({(0, 0, 0)})
