@@ -407,3 +407,190 @@ def test_bool_geometry_inputs_are_rejected() -> None:
     frame.intrinsics.fx = True
     with pytest.raises(TypeError, match="intrinsics"):
         backproject_observation(frame, _observation(), _config())
+
+
+@pytest.mark.parametrize("error_type", [RuntimeError, FloatingPointError])
+def test_expected_icp_runtime_failures_fall_back(
+    monkeypatch: pytest.MonkeyPatch, error_type: type[Exception]
+) -> None:
+    submap = _submap(np.asarray([[0, 0, 0], [1, 0, 0], [0, 1, 0]]))
+
+    def runner(*args: object) -> tuple[np.ndarray, float, float]:
+        raise error_type("expected numerical failure")
+
+    monkeypatch.setattr("src.oviv2.temporal_geometry._run_icp", runner)
+    result = estimate_object_motion(
+        submap, submap.world_points(), (11.0, 0.0, 0.0), _config()
+    )
+    assert not result.used_icp and result.object_to_world[0, 3] == 11.0
+
+
+@pytest.mark.parametrize("error_type", [TypeError, MemoryError])
+def test_programming_and_resource_icp_errors_propagate(
+    monkeypatch: pytest.MonkeyPatch, error_type: type[BaseException]
+) -> None:
+    submap = _submap(np.asarray([[0, 0, 0], [1, 0, 0], [0, 1, 0]]))
+
+    def runner(*args: object) -> tuple[np.ndarray, float, float]:
+        raise error_type("must propagate")
+
+    monkeypatch.setattr("src.oviv2.temporal_geometry._run_icp", runner)
+    with pytest.raises(error_type, match="must propagate"):
+        estimate_object_motion(
+            submap, submap.world_points(), (11.0, 0.0, 0.0), _config()
+        )
+
+
+def test_invalid_icp_return_values_fail_closed(monkeypatch: pytest.MonkeyPatch) -> None:
+    submap = _submap(np.asarray([[0, 0, 0], [1, 0, 0], [0, 1, 0]]))
+    monkeypatch.setattr(
+        "src.oviv2.temporal_geometry._run_icp",
+        lambda *args: (np.eye(3), "invalid", object()),
+    )
+    result = estimate_object_motion(
+        submap, submap.world_points(), (11.0, 0.0, 0.0), _config()
+    )
+    assert not result.used_icp and result.object_to_world[0, 3] == 11.0
+
+
+def test_integrate_with_current_pose_returns_points_to_canonical_local_frame() -> None:
+    submap = ObjectSubmap(
+        (0.0, 0.0, 0.0),
+        ((0, 0, 0),),
+        np.asarray([[0.2, 0.0, 0.0]]),
+        np.asarray([1.0]),
+        np.asarray([0], dtype=np.int64),
+    )
+    pose = np.asarray(
+        [[0.0, -1.0, 0.0, 5.0], [1.0, 0.0, 0.0, 6.0], [0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 1.0]]
+    )
+    original_pose = pose.copy()
+    point_world = np.asarray([[5.0, 6.4, 0.0]])
+
+    result = integrate_object_submap(
+        submap, point_world, 1, _config(), object_to_world=pose
+    )
+
+    assert result.local_voxel_keys == ((0, 0, 0),)
+    np.testing.assert_allclose(result.local_points_xyz, [[0.3, 0.0, 0.0]])
+    np.testing.assert_equal(pose, original_pose)
+
+
+def test_motion_composes_bounded_steps_from_previous_pose() -> None:
+    submap = _submap(
+        np.asarray([[0, 0, 0], [1, 0, 0], [0, 1, 0]]),
+        reference=(0.0, 0.0, 0.0),
+    )
+    config = _config(minimum_icp_points=4, maximum_motion_m=1.0)
+    first = estimate_object_motion(
+        submap, submap.world_points(), (0.75, 0.0, 0.0), config
+    )
+    second = estimate_object_motion(
+        submap,
+        submap.world_points(first.object_to_world),
+        (1.5, 0.0, 0.0),
+        config,
+        previous_object_to_world=first.object_to_world,
+    )
+    too_far = estimate_object_motion(
+        submap,
+        submap.world_points(second.object_to_world),
+        (2.6, 0.0, 0.0),
+        config,
+        previous_object_to_world=second.object_to_world,
+    )
+
+    assert first.object_to_world[0, 3] == 0.75
+    assert second.object_to_world[0, 3] == 1.5
+    np.testing.assert_equal(too_far.object_to_world, second.object_to_world)
+
+
+def test_previous_pose_rotation_is_preserved_and_input_is_not_mutated() -> None:
+    submap = _submap(
+        np.asarray([[0, 0, 0], [1, 0, 0], [0, 1, 0]]),
+        reference=(0.0, 0.0, 0.0),
+    )
+    previous = np.asarray(
+        [[0.0, -1.0, 0.0, 0.5], [1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 1.0]]
+    )
+    original = previous.copy()
+    result = estimate_object_motion(
+        submap,
+        submap.world_points(previous),
+        (0.75, 0.0, 0.0),
+        _config(minimum_icp_points=4),
+        previous_object_to_world=previous,
+    )
+
+    np.testing.assert_equal(result.object_to_world[:3, :3], previous[:3, :3])
+    np.testing.assert_equal(previous, original)
+    assert not result.object_to_world.flags.writeable
+
+
+def test_empty_motion_returns_explicit_previous_pose() -> None:
+    previous = np.eye(4)
+    previous[0, 3] = 3.0
+    result = estimate_object_motion(
+        _submap(),
+        np.ones((1, 3)),
+        (4.0, 0.0, 0.0),
+        _config(),
+        previous_object_to_world=previous,
+    )
+    np.testing.assert_equal(result.object_to_world, previous)
+
+
+def test_temporal_geometry_value_equality_is_array_aware() -> None:
+    submap = _submap(np.asarray([[0.1, 0.0, 0.0]]), reference=(0.0, 0.0, 0.0))
+    same_submap = ObjectSubmap(
+        submap.reference_centroid_xyz,
+        submap.local_voxel_keys,
+        submap.local_points_xyz.copy(),
+        submap.weights.copy(),
+        submap.last_seen_frame_ids.copy(),
+    )
+    different_submap = integrate_object_submap(
+        submap, np.asarray([[0.2, 0.0, 0.0]]), 1, _config()
+    )
+    pose = np.eye(4)
+    motion = ObjectMotionEstimate(pose, False, 0.0, 0.2)
+    same_motion = ObjectMotionEstimate(pose.copy(), False, 0.0, 0.2)
+    other_motion = ObjectMotionEstimate(pose.copy(), False, 0.1, 0.2)
+
+    assert (submap == same_submap) is True
+    assert (submap == different_submap) is False
+    assert (submap == object()) is False
+    assert (motion == same_motion) is True
+    assert (motion == other_motion) is False
+    assert (motion == object()) is False
+    with pytest.raises(TypeError):
+        hash(submap)
+    with pytest.raises(TypeError):
+        hash(motion)
+
+
+def test_integrate_rejects_frame_id_beyond_int64_even_when_empty() -> None:
+    submap = _submap()
+    with pytest.raises(ValueError, match="frame_id"):
+        integrate_object_submap(
+            submap, np.empty((0, 3)), np.iinfo(np.int64).max + 1, _config()
+        )
+
+
+def test_integrate_voxel_division_overflow_is_transactional() -> None:
+    submap = _submap(np.asarray([[0.1, 0.0, 0.0]]), reference=(0.0, 0.0, 0.0))
+    original_points = submap.local_points_xyz.copy()
+    original_weights = submap.weights.copy()
+    original_seen = submap.last_seen_frame_ids.copy()
+
+    with pytest.raises(ValueError, match="voxel"):
+        integrate_object_submap(
+            submap,
+            np.asarray([[1e308, 0.0, 0.0]]),
+            1,
+            _config(voxel_size_m=1e-308, depth_max_m=1e308),
+        )
+
+    np.testing.assert_equal(submap.local_points_xyz, original_points)
+    np.testing.assert_equal(submap.weights, original_weights)
+    np.testing.assert_equal(submap.last_seen_frame_ids, original_seen)

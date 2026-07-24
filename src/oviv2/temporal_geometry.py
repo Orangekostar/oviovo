@@ -139,13 +139,15 @@ def _translation_pose(xyz: tuple[float, float, float]) -> np.ndarray:
     return pose
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class ObjectSubmap:
     reference_centroid_xyz: tuple[float, float, float]
     local_voxel_keys: tuple[tuple[int, int, int], ...]
     local_points_xyz: np.ndarray
     weights: np.ndarray
     last_seen_frame_ids: np.ndarray
+
+    __hash__ = None
 
     def __post_init__(self) -> None:
         reference = _finite_xyz(self.reference_centroid_xyz, "reference_centroid_xyz")
@@ -192,6 +194,18 @@ class ObjectSubmap:
         object.__setattr__(self, "weights", _readonly_array(weights, np.dtype(np.float64)))
         object.__setattr__(self, "last_seen_frame_ids", _readonly_array(seen, np.dtype(np.int64)))
 
+    def __eq__(self, other: object) -> bool:
+        if type(other) is not ObjectSubmap:
+            return False
+        assert isinstance(other, ObjectSubmap)
+        return bool(
+            self.reference_centroid_xyz == other.reference_centroid_xyz
+            and self.local_voxel_keys == other.local_voxel_keys
+            and np.array_equal(self.local_points_xyz, other.local_points_xyz)
+            and np.array_equal(self.weights, other.weights)
+            and np.array_equal(self.last_seen_frame_ids, other.last_seen_frame_ids)
+        )
+
     def world_points(self, object_to_world: np.ndarray | None = None) -> np.ndarray:
         transform = (
             _translation_pose(self.reference_centroid_xyz)
@@ -204,12 +218,14 @@ class ObjectSubmap:
         return _readonly_array(world.reshape((-1, 3)), np.dtype(np.float64))
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class ObjectMotionEstimate:
     object_to_world: np.ndarray
     used_icp: bool
     fitness: float
     rmse_m: float
+
+    __hash__ = None
 
     def __post_init__(self) -> None:
         transform = _rigid_transform(self.object_to_world, "object_to_world")
@@ -228,6 +244,17 @@ class ObjectMotionEstimate:
         object.__setattr__(self, "object_to_world", _readonly_array(transform, np.dtype(np.float64)))
         object.__setattr__(self, "fitness", float(self.fitness))
         object.__setattr__(self, "rmse_m", float(self.rmse_m))
+
+    def __eq__(self, other: object) -> bool:
+        if type(other) is not ObjectMotionEstimate:
+            return False
+        assert isinstance(other, ObjectMotionEstimate)
+        return bool(
+            self.used_icp == other.used_icp
+            and self.fitness == other.fitness
+            and self.rmse_m == other.rmse_m
+            and np.array_equal(self.object_to_world, other.object_to_world)
+        )
 
 
 def backproject_observation(
@@ -313,6 +340,8 @@ def integrate_object_submap(
     points_world: np.ndarray,
     frame_id: int,
     config: TemporalGeometryConfig,
+    *,
+    object_to_world: np.ndarray | None = None,
 ) -> ObjectSubmap:
     if not isinstance(submap, ObjectSubmap):
         raise TypeError("submap must be an ObjectSubmap")
@@ -321,21 +350,30 @@ def integrate_object_submap(
     if isinstance(frame_id, (bool, np.bool_)) or not isinstance(frame_id, Integral):
         raise TypeError("frame_id must be an integer")
     normalized_frame_id = int(frame_id)
-    if normalized_frame_id < 0:
-        raise ValueError("frame_id must be nonnegative")
+    if normalized_frame_id < 0 or normalized_frame_id > np.iinfo(np.int64).max:
+        raise ValueError("frame_id must be a nonnegative int64 value")
     if submap.last_seen_frame_ids.size and normalized_frame_id <= int(submap.last_seen_frame_ids.max()):
         raise ValueError("frame_id must increase strictly")
+    current_pose = (
+        _translation_pose(submap.reference_centroid_xyz)
+        if object_to_world is None
+        else _rigid_transform(object_to_world, "object_to_world")
+    )
     if points.shape[0] == 0:
         return submap
 
-    reference = np.asarray(submap.reference_centroid_xyz, dtype=np.float64)
-    local = points - reference
+    with np.errstate(over="ignore", invalid="ignore"):
+        local = (points - current_pose[:3, 3]) @ current_pose[:3, :3]
     if not np.all(np.isfinite(local)):
         raise ValueError("local coordinate conversion produced non-finite values")
     grouped: dict[tuple[int, int, int], list[tuple[float, float, float]]] = {}
     voxel_size = float(config.voxel_size_m)
-    for point in local:
-        key = tuple(math.floor(float(component) / voxel_size) for component in point)
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+        scaled = local / voxel_size
+    if not np.all(np.isfinite(scaled)):
+        raise ValueError("voxel coordinate conversion produced non-finite values")
+    for point, voxel_point in zip(local, scaled):
+        key = tuple(math.floor(float(component)) for component in voxel_point)
         grouped.setdefault(key, []).append(tuple(float(component) for component in point))
 
     records = {
@@ -412,25 +450,29 @@ def estimate_object_motion(
     points_world: np.ndarray,
     observed_centroid_xyz: tuple[float, float, float],
     config: TemporalGeometryConfig,
+    *,
+    previous_object_to_world: np.ndarray | None = None,
 ) -> ObjectMotionEstimate:
     if not isinstance(submap, ObjectSubmap):
         raise TypeError("submap must be an ObjectSubmap")
     _validate_config(config)
     target = _points(points_world, "points_world")
     observed_centroid = _finite_xyz(observed_centroid_xyz, "observed_centroid_xyz")
-    reference_pose = _translation_pose(submap.reference_centroid_xyz)
+    previous_pose = (
+        _translation_pose(submap.reference_centroid_xyz)
+        if previous_object_to_world is None
+        else _rigid_transform(previous_object_to_world, "previous_object_to_world")
+    )
     diagnostic_rmse = float(config.maximum_icp_rmse_m)
     if submap.local_points_xyz.shape[0] == 0 or target.shape[0] == 0:
-        return _motion_result(reference_pose, 0.0, diagnostic_rmse, used_icp=False)
+        return _motion_result(previous_pose, 0.0, diagnostic_rmse, used_icp=False)
 
     displacement = float(
-        np.linalg.norm(np.asarray(observed_centroid) - np.asarray(submap.reference_centroid_xyz))
+        np.linalg.norm(np.asarray(observed_centroid) - previous_pose[:3, 3])
     )
-    fallback_pose = (
-        _translation_pose(observed_centroid)
-        if math.isfinite(displacement) and displacement <= float(config.maximum_motion_m)
-        else reference_pose
-    )
+    fallback_pose = np.array(previous_pose, dtype=np.float64, copy=True, order="C")
+    if math.isfinite(displacement) and displacement <= float(config.maximum_motion_m):
+        fallback_pose[:3, 3] = observed_centroid
     minimum_points = int(config.minimum_icp_points)
     source = submap.local_points_xyz
     if source.shape[0] < minimum_points or target.shape[0] < minimum_points:
@@ -439,17 +481,23 @@ def estimate_object_motion(
         return _motion_result(fallback_pose, 0.0, diagnostic_rmse, used_icp=False)
 
     try:
-        transform, fitness, rmse = _run_icp(
+        icp_result = _run_icp(
             source,
             target,
             fallback_pose,
             max(2.0 * float(config.voxel_size_m), float(config.maximum_icp_rmse_m)),
         )
+    except (RuntimeError, FloatingPointError):
+        return _motion_result(fallback_pose, 0.0, diagnostic_rmse, used_icp=False)
+    try:
+        transform, fitness, rmse = icp_result
         transform = _rigid_transform(transform, "ICP transform")
+        if isinstance(fitness, (bool, np.bool_)) or isinstance(rmse, (bool, np.bool_)):
+            raise TypeError("ICP metrics must be numeric non-boolean values")
         fitness = float(fitness)
         rmse = float(rmse)
         icp_displacement = float(
-            np.linalg.norm(transform[:3, 3] - np.asarray(submap.reference_centroid_xyz))
+            np.linalg.norm(transform[:3, 3] - previous_pose[:3, 3])
         )
         accepted = (
             math.isfinite(fitness)
@@ -461,7 +509,7 @@ def estimate_object_motion(
             and math.isfinite(icp_displacement)
             and icp_displacement <= float(config.maximum_motion_m)
         )
-    except Exception:
+    except (TypeError, ValueError, np.linalg.LinAlgError):
         return _motion_result(fallback_pose, 0.0, diagnostic_rmse, used_icp=False)
     if accepted:
         return _motion_result(transform, fitness, rmse, used_icp=True)
