@@ -179,6 +179,41 @@ def test_strong_present_reactivates_same_dormant_entity(
     assert result.absence_view_bins == ()
 
 
+@pytest.mark.parametrize(
+    ("kind", "view_bin"),
+    [
+        (TemporalEvidenceKind.VISIBLE_ABSENT, 0),
+        (TemporalEvidenceKind.OCCLUDED, None),
+        (TemporalEvidenceKind.OUT_OF_VIEW, None),
+        (TemporalEvidenceKind.DEPTH_UNKNOWN, None),
+    ],
+)
+def test_non_present_evidence_cannot_reactivate_dormant_entity(
+    config: TemporalLifecycleConfig,
+    kind: TemporalEvidenceKind,
+    view_bin: int | None,
+) -> None:
+    permissive_config = replace(
+        config,
+        active_on_probability=0.4,
+        dormant_off_probability=0.2,
+    )
+    dormant = state(lifecycle=TemporalLifecycle.DORMANT, log_odds=-4.0)
+
+    result = advance_lifecycle(
+        dormant,
+        evidence(
+            kind,
+            strength=0.0,
+            timestamp=1010.0,
+            view_bin=view_bin,
+        ),
+        permissive_config,
+    )
+
+    assert result.lifecycle is TemporalLifecycle.DORMANT
+
+
 def test_hysteresis_does_not_oscillate_between_active_and_dormant(
     config: TemporalLifecycleConfig,
 ) -> None:

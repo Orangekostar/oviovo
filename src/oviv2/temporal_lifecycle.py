@@ -232,10 +232,15 @@ def advance_lifecycle(
 
     log_odds = _clamp_log_odds(log_odds, config.log_odds_limit)
     probability = _sigmoid(log_odds)
-    if probability >= config.active_on_probability:
+    if state.lifecycle is TemporalLifecycle.DORMANT:
+        lifecycle = (
+            TemporalLifecycle.ACTIVE
+            if evidence.kind is TemporalEvidenceKind.PRESENT
+            and probability >= config.active_on_probability
+            else TemporalLifecycle.DORMANT
+        )
+    elif probability >= config.active_on_probability:
         lifecycle = TemporalLifecycle.ACTIVE
-    elif state.lifecycle is TemporalLifecycle.DORMANT:
-        lifecycle = TemporalLifecycle.DORMANT
     elif (
         probability <= config.dormant_off_probability
         and absent_streak >= max(2, config.minimum_absent_streak)
