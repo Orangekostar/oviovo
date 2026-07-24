@@ -17,7 +17,11 @@ from src.oviv2.temporal_background import (
     TemporalBackgroundVolume,
     build_background_depth,
 )
-from src.oviv2.temporal_config import TemporalReadoutConfig
+from src.oviv2.temporal_config import (
+    TemporalReadoutConfig,
+    temporal_config_from_json,
+    temporal_config_to_json,
+)
 from src.oviv2.temporal_geometry import (
     ObjectSubmap,
     backproject_observation,
@@ -296,10 +300,14 @@ def _initial_lifecycle(
 ) -> TemporalLifecycleState:
     lifecycle = config.lifecycle
     delta = lifecycle.present_log_likelihood * confidence
+    if not math.isfinite(delta):
+        raise ValueError("initial PRESENT lifecycle delta must be finite")
     if lifecycle.initial_log_odds >= lifecycle.log_odds_limit - delta:
         log_odds = lifecycle.log_odds_limit
     else:
         log_odds = lifecycle.initial_log_odds + delta
+    if not math.isfinite(log_odds):
+        raise ValueError("initial PRESENT lifecycle log odds must be finite")
     if log_odds >= 0.0:
         probability = 1.0 / (1.0 + math.exp(-log_odds))
     else:
@@ -447,7 +455,7 @@ class TemporalCurrentRuntime:
             raise TypeError("config must be TemporalReadoutConfig")
         if not isinstance(tracker_config, LocalTrackerConfig):
             raise TypeError("tracker_config must be LocalTrackerConfig")
-        self.config = config
+        self.config = temporal_config_from_json(temporal_config_to_json(config))
         self.tracker_config = tracker_config
         self.state = TemporalRuntimeState(
             scene_id=scene_id,
@@ -456,7 +464,7 @@ class TemporalCurrentRuntime:
             last_timestamp=-float(np.finfo(np.float64).max),
             next_entity_id=1,
             entities=(),
-            background=TemporalBackgroundVolume(config.geometry),
+            background=TemporalBackgroundVolume(self.config.geometry),
             tracker=LocalTracker(tracker_config),
         )
 

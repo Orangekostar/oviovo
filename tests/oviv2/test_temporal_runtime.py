@@ -597,6 +597,37 @@ def test_extreme_longdouble_inputs_fail_without_runtime_warning() -> None:
             runtime.process_frame(frame, ())
 
 
+@pytest.mark.parametrize(
+    ("changes", "error"),
+    [
+        ({"active_on_probability": np.nan}, "finite"),
+        ({"decay_half_life_seconds": -1.0}, "positive"),
+        ({"dormant_off_probability": 2.0}, r"\[0, 1\]"),
+        ({"minimum_absent_streak": 0}, "positive"),
+        ({"initial_log_odds": np.nan}, "finite"),
+        ({"present_log_likelihood": np.nan}, "finite"),
+        ({"minimum_absent_streak": True}, "integer"),
+        ({"visibility_depth_tolerance_m": 0.05}, "at least"),
+    ],
+)
+def test_runtime_rejects_invalid_temporal_config_eagerly(
+    changes: dict[str, object], error: str
+) -> None:
+    config = _config()
+    invalid = replace(config, lifecycle=replace(config.lifecycle, **changes))
+    from src.oviv2.temporal_runtime import TemporalCurrentRuntime
+
+    with pytest.raises((TypeError, ValueError), match=error):
+        TemporalCurrentRuntime("scene", invalid, _tracker_config())
+
+
+def test_runtime_normalizes_valid_direct_temporal_config() -> None:
+    config = _config()
+    runtime = _runtime(config)
+    assert runtime.config == config
+    assert runtime.config is not config
+
+
 def test_capacity_rejects_new_entity_without_consuming_id_when_no_dormant() -> None:
     runtime = _runtime(_config(maximum_entities=1))
     first_id = _confirm(runtime)
