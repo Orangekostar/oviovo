@@ -83,6 +83,25 @@ def test_hungarian_assignment_is_one_to_one_and_deterministic() -> None:
     ]
 
 
+def test_explicit_default_candidate_scorer_is_backward_compatible() -> None:
+    left = (
+        target(11, {(4, 0, 0)}),
+        target(10, {(0, 0, 0)}),
+    )
+    right = (
+        target(21, {(9, 0, 0)}),
+        target(20, {(0, 0, 0)}),
+    )
+    config = AssociationConfig(bounds_expansion_m=0.0)
+
+    assert solve_assignment(left, right, config) == solve_assignment(
+        left,
+        right,
+        config,
+        candidate_scorer=score_candidate,
+    )
+
+
 def test_directed_voxel_overlap_preserves_both_directions() -> None:
     larger = frozenset({(0, 0, 0), (1, 0, 0)})
     smaller = frozenset({(0, 0, 0)})

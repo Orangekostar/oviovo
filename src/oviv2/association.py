@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from fractions import Fraction
 import math
@@ -383,6 +384,12 @@ def solve_assignment(
     left: tuple[AssociationTarget, ...] | list[AssociationTarget],
     right: tuple[AssociationTarget, ...] | list[AssociationTarget],
     config: AssociationConfig,
+    *,
+    candidate_scorer: Callable[
+        [AssociationTarget, AssociationTarget, AssociationConfig],
+        CandidateScore | None,
+    ]
+    | None = None,
 ) -> tuple[Assignment, ...]:
     if not isinstance(config, AssociationConfig):
         raise TypeError("config must be an AssociationConfig")
@@ -398,6 +405,9 @@ def solve_assignment(
             raise ValueError(f"{name} target IDs must be unique")
     if not left_values or not right_values:
         return ()
+    scorer = score_candidate if candidate_scorer is None else candidate_scorer
+    if not callable(scorer):
+        raise TypeError("candidate_scorer must be callable or None")
 
     row_count = len(left_values)
     column_count = len(right_values)
@@ -405,7 +415,7 @@ def solve_assignment(
     scores: dict[tuple[int, int], CandidateScore] = {}
     for row, left_item in enumerate(left_values):
         for column, right_item in enumerate(right_values):
-            candidate = score_candidate(left_item, right_item, config)
+            candidate = scorer(left_item, right_item, config)
             if candidate is None or not candidate.accepted:
                 continue
             scores[(row, column)] = candidate
