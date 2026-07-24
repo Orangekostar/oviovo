@@ -380,6 +380,105 @@ def score_candidate(
     )
 
 
+def _solve_sparse_assignment(
+    left_values: tuple[AssociationTarget, ...],
+    right_values: tuple[AssociationTarget, ...],
+    config: AssociationConfig,
+    candidate_scorer: Callable[
+        [AssociationTarget, AssociationTarget, AssociationConfig],
+        CandidateScore | None,
+    ],
+) -> tuple[Assignment, ...]:
+    row_count = len(left_values)
+    column_count = len(right_values)
+    augmented_size = row_count + column_count
+    # Dummy rows and columns make unmatched choices explicit in sparse graphs.
+    costs = np.full((augmented_size, augmented_size), np.inf, dtype=np.float64)
+    scores: dict[tuple[int, int], CandidateScore] = {}
+    unmatched_penalty = float(min(row_count, column_count) + 1)
+
+    for row, left_item in enumerate(left_values):
+        for column, right_item in enumerate(right_values):
+            candidate = candidate_scorer(left_item, right_item, config)
+            if candidate is None or not candidate.accepted:
+                continue
+            scores[(row, column)] = candidate
+            costs[row, column] = -candidate.score
+        costs[row, column_count + row] = unmatched_penalty
+
+    for column in range(column_count):
+        costs[row_count + column, column] = unmatched_penalty
+        costs[row_count + column, column_count:] = 0.0
+
+    primary_rows, primary_columns = linear_sum_assignment(costs)
+
+    def exact_cost(rows: np.ndarray, columns: np.ndarray) -> Fraction:
+        return sum(
+            (
+                Fraction.from_float(float(costs[row, column]))
+                for row, column in zip(rows, columns)
+            ),
+            start=Fraction(),
+        )
+
+    primary_cost = exact_cost(primary_rows, primary_columns)
+
+    def constrained_solution(
+        constraints: dict[int, int],
+    ) -> tuple[np.ndarray, np.ndarray] | None:
+        constrained_costs = costs.copy()
+        for column, row in constraints.items():
+            edge_cost = costs[row, column]
+            constrained_costs[row, :] = np.inf
+            constrained_costs[:, column] = np.inf
+            constrained_costs[row, column] = edge_cost
+        try:
+            rows, columns = linear_sum_assignment(constrained_costs)
+        except ValueError:
+            return None
+        if exact_cost(rows, columns) != primary_cost:
+            return None
+        return rows, columns
+
+    constraints: dict[int, int] = {}
+    used_observation_rows: set[int] = set()
+    final_solution = (primary_rows, primary_columns)
+    # Preserve the exact primary optimum while fixing entity-first tie choices.
+    for column in range(column_count):
+        chosen = False
+        for row in range(row_count):
+            if row in used_observation_rows or (row, column) not in scores:
+                continue
+            solution = constrained_solution({**constraints, column: row})
+            if solution is None:
+                continue
+            constraints[column] = row
+            used_observation_rows.add(row)
+            final_solution = solution
+            chosen = True
+            break
+        if chosen:
+            continue
+        unmatched_row = row_count + column
+        solution = constrained_solution({**constraints, column: unmatched_row})
+        if solution is None:
+            raise RuntimeError("failed to preserve the optimal sparse assignment")
+        constraints[column] = unmatched_row
+        final_solution = solution
+
+    rows, columns = final_solution
+    result = [
+        Assignment(
+            scores[(row, column)].left_id,
+            scores[(row, column)].right_id,
+            scores[(row, column)].score,
+        )
+        for row, column in zip(rows, columns)
+        if (row, column) in scores
+    ]
+    return tuple(sorted(result, key=lambda value: (value.left_id, value.right_id)))
+
+
 def solve_assignment(
     left: tuple[AssociationTarget, ...] | list[AssociationTarget],
     right: tuple[AssociationTarget, ...] | list[AssociationTarget],
@@ -405,9 +504,15 @@ def solve_assignment(
             raise ValueError(f"{name} target IDs must be unique")
     if not left_values or not right_values:
         return ()
-    scorer = score_candidate if candidate_scorer is None else candidate_scorer
-    if not callable(scorer):
+    if candidate_scorer is not None and not callable(candidate_scorer):
         raise TypeError("candidate_scorer must be callable or None")
+    if candidate_scorer is not None:
+        return _solve_sparse_assignment(
+            left_values,
+            right_values,
+            config,
+            candidate_scorer,
+        )
 
     row_count = len(left_values)
     column_count = len(right_values)
@@ -415,7 +520,7 @@ def solve_assignment(
     scores: dict[tuple[int, int], CandidateScore] = {}
     for row, left_item in enumerate(left_values):
         for column, right_item in enumerate(right_values):
-            candidate = scorer(left_item, right_item, config)
+            candidate = score_candidate(left_item, right_item, config)
             if candidate is None or not candidate.accepted:
                 continue
             scores[(row, column)] = candidate

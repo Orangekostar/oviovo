@@ -102,6 +102,118 @@ def test_explicit_default_candidate_scorer_is_backward_compatible() -> None:
     )
 
 
+def test_sparse_custom_scorer_tie_prioritizes_entity_id_before_observation_id() -> None:
+    left = (
+        target(0, {(50, 0, 0)}),
+        target(1, {(0, 0, 0)}),
+        target(2, {(60, 0, 0)}),
+    )
+    right = (
+        target(10, {(0, 0, 0)}),
+        target(11, {(0, 0, 0)}),
+        target(12, {(100, 0, 0)}),
+    )
+
+    def sparse_scorer(
+        left_item: AssociationTarget,
+        right_item: AssociationTarget,
+        _config: AssociationConfig,
+    ) -> CandidateScore | None:
+        if left_item.target_id == 1 and right_item.target_id in (10, 11):
+            return CandidateScore(
+                left_item.target_id,
+                right_item.target_id,
+                0.75,
+                0.0,
+                0.0,
+                None,
+                False,
+                True,
+            )
+        return None
+
+    assignments = solve_assignment(
+        left,
+        right,
+        AssociationConfig(),
+        candidate_scorer=sparse_scorer,
+    )
+
+    assert [(item.left_id, item.right_id) for item in assignments] == [(1, 10)]
+
+
+def test_sparse_custom_scorer_tie_is_stable_for_all_input_permutations() -> None:
+    left = tuple(target(target_id, {(target_id, 0, 0)}) for target_id in (0, 1, 2))
+    right = tuple(target(target_id, {(target_id, 0, 0)}) for target_id in (10, 11, 12))
+
+    def sparse_scorer(
+        left_item: AssociationTarget,
+        right_item: AssociationTarget,
+        _config: AssociationConfig,
+    ) -> CandidateScore | None:
+        if left_item.target_id == 1 and right_item.target_id in (10, 11):
+            return CandidateScore(
+                left_item.target_id,
+                right_item.target_id,
+                0.75,
+                0.0,
+                0.0,
+                None,
+                False,
+                True,
+            )
+        return None
+
+    for left_order in permutations(left):
+        for right_order in permutations(right):
+            assignments = solve_assignment(
+                left_order,
+                right_order,
+                AssociationConfig(),
+                candidate_scorer=sparse_scorer,
+            )
+            assert [(item.left_id, item.right_id) for item in assignments] == [(1, 10)]
+
+
+def test_sparse_custom_scorer_preserves_a_tiny_real_score_advantage() -> None:
+    left = tuple(target(target_id, {(0, 0, 0)}) for target_id in (0, 1))
+    right = tuple(target(target_id, {(0, 0, 0)}) for target_id in (10, 11))
+    stronger = float(np.nextafter(0.5, 1.0))
+
+    def scorer(
+        left_item: AssociationTarget,
+        right_item: AssociationTarget,
+        _config: AssociationConfig,
+    ) -> CandidateScore:
+        score = (
+            stronger
+            if (left_item.target_id, right_item.target_id) == (0, 11)
+            else 0.5
+        )
+        return CandidateScore(
+            left_item.target_id,
+            right_item.target_id,
+            score,
+            0.0,
+            0.0,
+            None,
+            False,
+            True,
+        )
+
+    assignments = solve_assignment(
+        left,
+        right,
+        AssociationConfig(),
+        candidate_scorer=scorer,
+    )
+
+    assert [(item.left_id, item.right_id) for item in assignments] == [
+        (0, 11),
+        (1, 10),
+    ]
+
+
 def test_directed_voxel_overlap_preserves_both_directions() -> None:
     larger = frozenset({(0, 0, 0), (1, 0, 0)})
     smaller = frozenset({(0, 0, 0)})
