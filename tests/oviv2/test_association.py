@@ -102,6 +102,27 @@ def test_explicit_default_candidate_scorer_is_backward_compatible() -> None:
     )
 
 
+def test_explicit_default_scorer_matches_legacy_on_sparse_score_tie() -> None:
+    left = (
+        target(0, {(50, 0, 0)}, centroid=(50.0, 0.0, 0.0)),
+        target(1, {(0, 0, 0)}, centroid=(0.0, 0.0, 0.0)),
+        target(2, {(60, 0, 0)}, centroid=(60.0, 0.0, 0.0)),
+    )
+    right = (
+        target(10, {(0, 0, 0)}, centroid=(0.0, 0.0, 0.0)),
+        target(11, {(0, 0, 0)}, centroid=(0.0, 0.0, 0.0)),
+        target(12, {(100, 0, 0)}, centroid=(100.0, 0.0, 0.0)),
+    )
+    config = AssociationConfig(bounds_expansion_m=0.0, max_centroid_distance_m=1.0)
+
+    assert solve_assignment(left, right, config) == solve_assignment(
+        left,
+        right,
+        config,
+        candidate_scorer=score_candidate,
+    )
+
+
 def test_sparse_custom_scorer_tie_prioritizes_entity_id_before_observation_id() -> None:
     left = (
         target(0, {(50, 0, 0)}),

@@ -466,7 +466,7 @@ def solve_assignment(
         return ()
     if candidate_scorer is not None and not callable(candidate_scorer):
         raise TypeError("candidate_scorer must be callable or None")
-    if candidate_scorer is not None:
+    if candidate_scorer is not None and candidate_scorer is not score_candidate:
         return _solve_sparse_assignment(
             left_values,
             right_values,
