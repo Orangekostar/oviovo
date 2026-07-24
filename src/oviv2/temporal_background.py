@@ -5,6 +5,7 @@ import math
 from numbers import Integral, Real
 
 import numpy as np
+import open3d as o3d
 
 from src.core.data_structures import CameraIntrinsics, Frame
 from src.oviv2.geometry import SparseTsdfVolume, TsdfConfig
@@ -208,6 +209,12 @@ def _validate_protected_points(
             raise TypeError(f"{name} must be a real numeric array") from exc
         if raw.dtype.kind not in "iuf":
             raise TypeError(f"{name} must contain real numeric values")
+        wide = np.asarray(raw, dtype=np.longdouble)
+        if not np.isfinite(wide).all():
+            raise ValueError(f"{name} must contain only finite values")
+        float64_limit = np.longdouble(np.finfo(np.float64).max)
+        if np.any(wide > float64_limit) or np.any(wide < -float64_limit):
+            raise ValueError(f"{name} values must lie within the float64 range")
         points = np.asarray(raw, dtype=np.float64)
         if points.ndim != 2 or points.shape[1:] != (3,):
             raise ValueError(f"{name} must have shape (N, 3)")
@@ -275,6 +282,8 @@ class BackgroundMaskResult:
         return bool(
             self.excluded_pixel_count == other.excluded_pixel_count
             and self.valid_background_pixel_count == other.valid_background_pixel_count
+            and self.depth_m.dtype == other.depth_m.dtype
+            and self.depth_m.shape == other.depth_m.shape
             and np.array_equal(self.depth_m, other.depth_m)
         )
 
@@ -317,10 +326,10 @@ def build_background_depth(
             in_bounds = (
                 np.isfinite(u)
                 & np.isfinite(v)
-                & (u >= 0.0)
-                & (u < depth.shape[1])
-                & (v >= 0.0)
-                & (v < depth.shape[0])
+                & (u >= -0.5)
+                & (u < depth.shape[1] - 0.5)
+                & (v >= -0.5)
+                & (v < depth.shape[0] - 0.5)
             )
             if not in_bounds.any():
                 continue
@@ -328,7 +337,12 @@ def build_background_depth(
             v = v[in_bounds]
             x = np.floor(u + 0.5).astype(np.int64)
             y = np.floor(v + 0.5).astype(np.int64)
-            rounded_in_bounds = (x < depth.shape[1]) & (y < depth.shape[0])
+            rounded_in_bounds = (
+                (x >= 0)
+                & (x < depth.shape[1])
+                & (y >= 0)
+                & (y < depth.shape[0])
+            )
             excluded[y[rounded_in_bounds], x[rounded_in_bounds]] = True
 
     excluded = _dilate(excluded, config.background_mask_dilation_px)
@@ -343,20 +357,70 @@ def build_background_depth(
     )
 
 
+def _new_sparse_volume(
+    config: TemporalGeometryConfig, physical_capacity: int
+) -> SparseTsdfVolume:
+    return SparseTsdfVolume(
+        TsdfConfig(
+            voxel_size_m=float(config.voxel_size_m),
+            block_resolution=8,
+            block_count=max(1, int(physical_capacity)),
+            depth_max_m=float(config.depth_max_m),
+            trunc_voxel_multiplier=4.0,
+        )
+    )
+
+
+def _active_block_keys(volume: SparseTsdfVolume) -> np.ndarray:
+    grid = volume._grid
+    active = grid.hashmap().active_buf_indices()
+    if int(active.shape[0]) == 0:
+        return np.empty((0, 3), dtype=np.int32)
+    return np.array(grid.hashmap().key_tensor()[active].numpy(), copy=True)
+
+
+def _candidate_block_keys(
+    volume: SparseTsdfVolume,
+    depth: np.ndarray,
+    intrinsic: np.ndarray,
+    camera_to_world: np.ndarray,
+    config: TemporalGeometryConfig,
+) -> np.ndarray:
+    if np.count_nonzero(depth) == 0:
+        return np.empty((0, 3), dtype=np.int32)
+    clean_depth = np.array(depth, dtype=np.float32, copy=True, order="C")
+    valid = (
+        np.isfinite(clean_depth)
+        & (clean_depth > 0.0)
+        & (clean_depth <= config.depth_max_m)
+    )
+    clean_depth[~valid] = 0.0
+    world_to_camera = np.linalg.inv(camera_to_world)
+    coordinates = volume._grid.compute_unique_block_coordinates(
+        o3d.t.geometry.Image(o3d.core.Tensor(clean_depth)),
+        o3d.core.Tensor(intrinsic, dtype=o3d.core.float64),
+        o3d.core.Tensor(world_to_camera, dtype=o3d.core.float64),
+        depth_scale=1.0,
+        depth_max=float(config.depth_max_m),
+        trunc_voxel_multiplier=4.0,
+    )
+    return np.array(coordinates.numpy(), copy=True).reshape((-1, 3))
+
+
+def _block_key_union_count(existing: np.ndarray, candidate: np.ndarray) -> int:
+    if existing.shape[0] == 0:
+        return int(candidate.shape[0])
+    if candidate.shape[0] == 0:
+        return int(existing.shape[0])
+    return int(np.unique(np.concatenate((existing, candidate), axis=0), axis=0).shape[0])
+
+
 class TemporalBackgroundVolume:
     __hash__ = None
 
     def __init__(self, config: TemporalGeometryConfig) -> None:
         self._config = _validate_config(config)
-        self._volume = SparseTsdfVolume(
-            TsdfConfig(
-                voxel_size_m=float(config.voxel_size_m),
-                block_resolution=8,
-                block_count=config.background_block_count,
-                depth_max_m=float(config.depth_max_m),
-                trunc_voxel_multiplier=4.0,
-            )
-        )
+        self._volume = _new_sparse_volume(config, 1)
         self._last_blocks_touched = 0
 
     @property
@@ -390,8 +454,11 @@ class TemporalBackgroundVolume:
             and self.canonical_block_state() == other.canonical_block_state()
         )
 
-    def _clone(self) -> TemporalBackgroundVolume:
-        trial = TemporalBackgroundVolume(self.config)
+    def _clone(self, physical_capacity: int) -> TemporalBackgroundVolume:
+        trial = self.__class__.__new__(self.__class__)
+        trial._config = self.config
+        trial._volume = _new_sparse_volume(self.config, physical_capacity)
+        trial._last_blocks_touched = 0
         source_grid = self._volume._grid
         source_indices = source_grid.hashmap().active_buf_indices()
         source_count = int(source_indices.shape[0])
@@ -423,8 +490,18 @@ class TemporalBackgroundVolume:
         if np.any(depth < 0.0) or np.any(depth > self.config.depth_max_m):
             raise ValueError("masked_depth must lie in [0, depth_max_m]")
 
-        trial = self._clone()
-        if np.count_nonzero(depth) == 0:
+        candidate_keys = _candidate_block_keys(
+            self._volume, depth, intrinsic, pose, self.config
+        )
+        existing_keys = _active_block_keys(self._volume)
+        union_count = _block_key_union_count(existing_keys, candidate_keys)
+        if union_count > self.config.background_block_count:
+            raise ValueError(
+                "TSDF block capacity would exceed background_block_count"
+            )
+
+        trial = self._clone(max(1, union_count))
+        if candidate_keys.shape[0] == 0:
             return trial
         trial._last_blocks_touched = trial._volume.integrate(
             depth,
@@ -432,4 +509,6 @@ class TemporalBackgroundVolume:
             intrinsic,
             pose,
         )
+        if trial.active_block_count > self.config.background_block_count:
+            raise RuntimeError("TSDF integration exceeded background_block_count")
         return trial

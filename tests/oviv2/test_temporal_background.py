@@ -115,6 +115,39 @@ def test_projected_points_use_inverse_pose_and_nearest_pixel() -> None:
     assert result.depth_m[2, 3] == 1.0
 
 
+@pytest.mark.parametrize(
+    ("axis", "coordinate", "expected_pixel"),
+    [
+        ("x", -0.5, (2, 0)),
+        ("x", -0.500000001, None),
+        ("x", 4.5, None),
+        ("x", 4.499999999, (2, 4)),
+        ("y", -0.5, (0, 2)),
+        ("y", -0.500000001, None),
+        ("y", 4.5, None),
+        ("y", 4.499999999, (4, 2)),
+    ],
+)
+def test_projection_rounding_accepts_exact_half_pixel_image_domain(
+    axis: str,
+    coordinate: float,
+    expected_pixel: tuple[int, int] | None,
+) -> None:
+    frame = _frame()
+    frame.intrinsics = CameraIntrinsics(1.0, 1.0, 0.0, 0.0, 5, 5)
+    point = (
+        np.asarray([[coordinate, 2.0, 1.0]])
+        if axis == "x"
+        else np.asarray([[2.0, coordinate, 1.0]])
+    )
+
+    result = build_background_depth(frame, (), (point,), _config())
+
+    assert result.excluded_pixel_count == int(expected_pixel is not None)
+    if expected_pixel is not None:
+        assert result.depth_m[expected_pixel] == 0.0
+
+
 def test_projection_ignores_finite_points_that_overflow_image_coordinates() -> None:
     frame = _frame()
     points = np.asarray([[1e308, 0.0, 1e-308]], dtype=np.float64)
@@ -169,6 +202,13 @@ def test_background_result_validates_and_compares_arrays_by_value() -> None:
     left = BackgroundMaskResult(np.asarray([[0.0, 1.0]], dtype=np.float32), 1, 1)
     right = BackgroundMaskResult(np.asarray([[0.0, 1.0]], dtype=np.float32), 1, 1)
     assert (left == right) is True
+    assert (
+        left
+        != BackgroundMaskResult(np.asarray([[0.0, 1.0]], dtype=np.float64), 1, 1)
+    )
+    assert left != BackgroundMaskResult(
+        np.asarray([[0.0], [1.0]], dtype=np.float32), 1, 1
+    )
     assert (left == object()) is False
     with pytest.raises(TypeError):
         hash(left)
@@ -187,6 +227,16 @@ def test_all_zero_trial_is_independent_equal_clone_and_touches_nothing() -> None
     assert trial is not volume
     assert trial == volume
     assert trial.last_blocks_touched == 0
+    assert trial.canonical_block_state() == volume.canonical_block_state() == ()
+
+
+def test_default_logical_capacity_uses_minimal_physical_empty_capacity() -> None:
+    volume = TemporalBackgroundVolume(_config(background_block_count=100_000))
+    assert int(volume._volume._grid.hashmap().capacity()) == 1
+
+    trial = volume.trial_integrate(_frame(), np.zeros((5, 5), dtype=np.float32))
+
+    assert int(trial._volume._grid.hashmap().capacity()) == 1
     assert trial.canonical_block_state() == volume.canonical_block_state() == ()
 
 
@@ -250,6 +300,47 @@ def test_trial_preserves_original_blocks_updates_clone_and_rolls_back_on_failure
     assert original.canonical_block_state() == before
 
 
+def test_logical_block_cap_rejects_before_trial_publication() -> None:
+    config = _config(
+        voxel_size_m=1.0,
+        background_block_count=1,
+        maximum_entities=1,
+        maximum_object_voxels=1,
+        maximum_visibility_points_per_entity=1,
+    )
+    frame = _frame(size=4)
+    frame.intrinsics = CameraIntrinsics(2.0, 2.0, 1.5, 1.5, 4, 4)
+    volume = TemporalBackgroundVolume(config)
+
+    with pytest.raises(ValueError, match="background_block_count|block capacity"):
+        volume.trial_integrate(frame, frame.depth)
+
+    assert volume.active_block_count == 0
+    assert volume.last_blocks_touched == 0
+    assert volume.canonical_block_state() == ()
+
+
+def test_single_block_integration_fits_logical_cap_and_clone_is_exact() -> None:
+    config = _config(
+        voxel_size_m=1.0,
+        background_block_count=1,
+        maximum_entities=1,
+        maximum_object_voxels=1,
+        maximum_visibility_points_per_entity=1,
+    )
+    frame = _frame(size=4)
+    frame.intrinsics = CameraIntrinsics(2.0, 2.0, 1.5, 1.5, 4, 4)
+    frame.pose[:3, 3] = (4.0, 4.0, 3.0)
+
+    integrated = TemporalBackgroundVolume(config).trial_integrate(frame, frame.depth)
+    clone = integrated.trial_integrate(frame, np.zeros_like(frame.depth))
+
+    assert integrated.active_block_count == clone.active_block_count == 1
+    assert int(integrated._volume._grid.hashmap().capacity()) == 1
+    assert int(clone._volume._grid.hashmap().capacity()) == 1
+    assert clone.canonical_block_state() == integrated.canonical_block_state()
+
+
 @pytest.mark.parametrize(
     "mutate,exception",
     [
@@ -284,6 +375,19 @@ def test_protected_points_reject_non_real_dtypes_without_warnings(
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         with pytest.raises(TypeError, match="protected_world_points"):
+            build_background_depth(_frame(), (), (points,), _config())
+
+
+def test_protected_longdouble_outside_float64_range_fails_without_warning() -> None:
+    if np.finfo(np.longdouble).max <= np.finfo(np.float64).max:
+        pytest.skip("platform longdouble has no wider finite range")
+    points = np.asarray(
+        [[np.longdouble(np.finfo(np.float64).max) * np.longdouble(2), 0, 1]],
+        dtype=np.longdouble,
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        with pytest.raises(ValueError, match="finite|float64|range"):
             build_background_depth(_frame(), (), (points,), _config())
 
 
