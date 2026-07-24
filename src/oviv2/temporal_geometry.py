@@ -15,12 +15,28 @@ from src.oviv2.temporal_config import TemporalGeometryConfig
 _RIGID_ATOL = 1e-6
 
 
+def _contains_bool(value: object) -> bool:
+    if isinstance(value, (bool, np.bool_)):
+        return True
+    if isinstance(value, np.ndarray):
+        if value.dtype.kind == "b":
+            return True
+        if value.dtype.kind == "O":
+            return any(_contains_bool(item) for item in value.flat)
+        return False
+    if isinstance(value, (tuple, list)):
+        return any(_contains_bool(item) for item in value)
+    return False
+
+
 def _readonly_array(value: np.ndarray, dtype: np.dtype) -> np.ndarray:
     contiguous = np.array(value, dtype=dtype, copy=True, order="C")
     return np.frombuffer(contiguous.tobytes(), dtype=contiguous.dtype).reshape(contiguous.shape)
 
 
 def _points(value: object, name: str) -> np.ndarray:
+    if _contains_bool(value):
+        raise TypeError(f"{name} must contain numeric non-boolean values")
     try:
         raw = np.asarray(value)
     except (TypeError, ValueError) as exc:
@@ -39,6 +55,8 @@ def _points(value: object, name: str) -> np.ndarray:
 
 
 def _finite_xyz(value: object, name: str) -> tuple[float, float, float]:
+    if _contains_bool(value):
+        raise TypeError(f"{name} must contain numeric non-boolean values")
     try:
         xyz = np.asarray(value, dtype=np.float64)
     except (TypeError, ValueError) as exc:
@@ -51,6 +69,8 @@ def _finite_xyz(value: object, name: str) -> tuple[float, float, float]:
 
 
 def _rigid_transform(value: object, name: str) -> np.ndarray:
+    if _contains_bool(value):
+        raise TypeError(f"{name} must contain numeric non-boolean values")
     try:
         transform = np.asarray(value, dtype=np.float64)
     except (TypeError, ValueError) as exc:
@@ -79,12 +99,24 @@ def _validate_config(config: TemporalGeometryConfig) -> None:
             raise TypeError(f"{name} must be numeric")
         if not math.isfinite(float(value)) or float(value) <= 0.0:
             raise ValueError(f"{name} must be finite and positive")
-    for name in ("maximum_object_voxels", "minimum_icp_points"):
+    positive_integer_fields = (
+        "maximum_entities",
+        "maximum_object_voxels",
+        "maximum_visibility_points_per_entity",
+        "background_block_count",
+        "minimum_icp_points",
+    )
+    for name in positive_integer_fields:
         value = getattr(config, name)
-        if isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral):
+        if isinstance(value, (bool, np.bool_)) or not isinstance(value, int):
             raise TypeError(f"{name} must be an integer")
         if int(value) <= 0:
             raise ValueError(f"{name} must be positive")
+    dilation = config.background_mask_dilation_px
+    if isinstance(dilation, (bool, np.bool_)) or not isinstance(dilation, int):
+        raise TypeError("background_mask_dilation_px must be an integer")
+    if dilation < 0:
+        raise ValueError("background_mask_dilation_px must be nonnegative")
     fitness = config.minimum_icp_fitness
     if isinstance(fitness, (bool, np.bool_)) or not isinstance(fitness, Real):
         raise TypeError("minimum_icp_fitness must be numeric")
@@ -92,6 +124,13 @@ def _validate_config(config: TemporalGeometryConfig) -> None:
         raise ValueError("minimum_icp_fitness must be finite and in [0, 1]")
     if float(config.voxel_size_m) > float(config.depth_max_m):
         raise ValueError("voxel_size_m cannot exceed depth_max_m")
+    for name in (
+        "maximum_entities",
+        "maximum_object_voxels",
+        "maximum_visibility_points_per_entity",
+    ):
+        if getattr(config, name) > config.background_block_count:
+            raise ValueError(f"{name} cannot exceed background_block_count")
 
 
 def _translation_pose(xyz: tuple[float, float, float]) -> np.ndarray:
@@ -124,6 +163,8 @@ class ObjectSubmap:
             raise ValueError("local_voxel_keys must be sorted and unique")
 
         points = _points(self.local_points_xyz, "local_points_xyz")
+        if _contains_bool(self.weights):
+            raise TypeError("weights must contain numeric non-boolean values")
         try:
             weights = np.asarray(self.weights, dtype=np.float64)
         except (TypeError, ValueError) as exc:
@@ -205,6 +246,8 @@ def backproject_observation(
         raise ValueError("frame.frame_id must be a nonnegative integer")
     if isinstance(observation.frame_id, (bool, np.bool_)) or observation.frame_id != frame.frame_id:
         raise ValueError("observation.frame_id must match frame.frame_id")
+    if _contains_bool(frame.timestamp) or _contains_bool(observation.timestamp):
+        raise TypeError("frame and observation timestamps must be numeric non-boolean values")
     try:
         frame_timestamp = float(frame.timestamp)
         observation_timestamp = float(observation.timestamp)
@@ -218,6 +261,8 @@ def backproject_observation(
     depth = np.asarray(frame.depth)
     rgb = np.asarray(frame.rgb)
     mask = np.asarray(observation.mask)
+    if _contains_bool(frame.depth):
+        raise TypeError("frame depth must contain numeric non-boolean values")
     if depth.ndim != 2:
         raise ValueError("frame depth must have shape (H, W)")
     if rgb.shape != (*depth.shape, 3):
@@ -231,6 +276,11 @@ def backproject_observation(
             raise ValueError("frame intrinsics dimensions must be positive integers")
     if (int(intrinsics.height), int(intrinsics.width)) != depth.shape:
         raise ValueError("frame intrinsics dimensions must match depth")
+    if any(
+        _contains_bool(value)
+        for value in (intrinsics.fx, intrinsics.fy, intrinsics.cx, intrinsics.cy)
+    ):
+        raise TypeError("frame intrinsics must contain numeric non-boolean values")
     try:
         intrinsic_values = np.asarray(
             [intrinsics.fx, intrinsics.fy, intrinsics.cx, intrinsics.cy], dtype=np.float64
@@ -392,7 +442,7 @@ def estimate_object_motion(
         transform, fitness, rmse = _run_icp(
             source,
             target,
-            _translation_pose(observed_centroid),
+            fallback_pose,
             max(2.0 * float(config.voxel_size_m), float(config.maximum_icp_rmse_m)),
         )
         transform = _rigid_transform(transform, "ICP transform")

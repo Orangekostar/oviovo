@@ -301,6 +301,25 @@ def test_motion_uses_configured_correspondence_distance(monkeypatch: pytest.Monk
     assert captured == [0.3]
 
 
+def test_motion_uses_reference_icp_initial_pose_when_centroid_exceeds_motion_gate(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    submap = _submap(np.asarray([[0, 0, 0], [1, 0, 0], [0, 1, 0]]))
+    initials: list[np.ndarray] = []
+
+    def runner(source: np.ndarray, target: np.ndarray, initial: np.ndarray, distance: float):
+        initials.append(initial.copy())
+        return initial, 1.0, 0.0
+
+    monkeypatch.setattr("src.oviv2.temporal_geometry._run_icp", runner)
+    result = estimate_object_motion(
+        submap, submap.world_points(), (20.0, 0.0, 0.0), _config()
+    )
+
+    assert initials[0][0, 3] == 10.0
+    assert result.object_to_world[0, 3] == 10.0
+
+
 def test_real_open3d_icp_recovers_translation() -> None:
     rng = np.random.default_rng(4)
     local = rng.normal(scale=0.04, size=(40, 3))
@@ -328,3 +347,63 @@ def test_motion_estimate_and_config_fail_closed() -> None:
         estimate_object_motion(
             submap, np.ones((3, 3), dtype=bool), (10.0, 0.0, 0.0), _config()
         )
+
+
+@pytest.mark.parametrize(
+    "changes,message",
+    [
+        ({"voxel_size_m": 0.0}, "voxel_size_m"),
+        ({"depth_max_m": np.nan}, "depth_max_m"),
+        ({"maximum_entities": 0}, "maximum_entities"),
+        ({"maximum_object_voxels": 0}, "maximum_object_voxels"),
+        ({"maximum_visibility_points_per_entity": 0}, "maximum_visibility_points_per_entity"),
+        ({"background_block_count": 0}, "background_block_count"),
+        ({"background_mask_dilation_px": -1}, "background_mask_dilation_px"),
+        ({"background_mask_dilation_px": True}, "background_mask_dilation_px"),
+        ({"minimum_icp_points": 0}, "minimum_icp_points"),
+        ({"minimum_icp_fitness": 1.1}, "minimum_icp_fitness"),
+        ({"maximum_icp_rmse_m": 0.0}, "maximum_icp_rmse_m"),
+        ({"maximum_motion_m": 0.0}, "maximum_motion_m"),
+        ({"maximum_object_voxels": 11}, "maximum_object_voxels"),
+        ({"maximum_entities": 11}, "maximum_entities"),
+        ({"maximum_visibility_points_per_entity": 11}, "maximum_visibility_points_per_entity"),
+    ],
+)
+def test_direct_config_validation_matches_task1_bounds(
+    changes: dict[str, object], message: str
+) -> None:
+    with pytest.raises((TypeError, ValueError), match=message):
+        integrate_object_submap(_submap(), np.empty((0, 3)), 0, _config(**changes))
+
+
+def test_bool_geometry_inputs_are_rejected() -> None:
+    values = {
+        "reference_centroid_xyz": (True, 0.0, 0.0),
+        "local_voxel_keys": ((0, 0, 0),),
+        "local_points_xyz": np.zeros((1, 3)),
+        "weights": np.ones(1),
+        "last_seen_frame_ids": np.zeros(1, dtype=np.int64),
+    }
+    with pytest.raises(TypeError, match="reference_centroid_xyz"):
+        ObjectSubmap(**values)
+    values["reference_centroid_xyz"] = (0.0, 0.0, 0.0)
+    values["weights"] = np.ones(1, dtype=bool)
+    with pytest.raises(TypeError, match="weights"):
+        ObjectSubmap(**values)
+
+    with pytest.raises(TypeError, match="object_to_world"):
+        ObjectMotionEstimate(np.eye(4, dtype=bool), False, 0.0, 0.0)
+    submap = _submap(np.asarray([[0, 0, 0], [1, 0, 0], [0, 1, 0]]))
+    with pytest.raises(TypeError, match="observed_centroid_xyz"):
+        estimate_object_motion(
+            submap, submap.world_points(), (True, 0.0, 0.0), _config()
+        )
+
+    frame = _frame()
+    frame.depth = np.ones(frame.depth.shape, dtype=bool)
+    with pytest.raises(TypeError, match="depth"):
+        backproject_observation(frame, _observation(), _config())
+    frame = _frame()
+    frame.intrinsics.fx = True
+    with pytest.raises(TypeError, match="intrinsics"):
+        backproject_observation(frame, _observation(), _config())
