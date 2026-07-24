@@ -77,6 +77,7 @@ class TemporalAssociationTarget:
     image_prototype: np.ndarray | None
     semantic_probabilities: tuple[tuple[int, float], ...]
     predicted_centroid_xyz: tuple[float, float, float]
+    feature_model_id: str | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "entity_id", _integer(self.entity_id, "entity_id"))
@@ -100,6 +101,12 @@ class TemporalAssociationTarget:
                 "image_prototype",
                 _normalized_immutable_vector(self.image_prototype, "image_prototype"),
             )
+        if self.feature_model_id is not None:
+            if not isinstance(self.feature_model_id, str) or not self.feature_model_id.strip():
+                raise ValueError("feature_model_id must be a non-empty string or None")
+            object.__setattr__(self, "feature_model_id", self.feature_model_id.strip())
+        if (self.image_prototype is None) != (self.feature_model_id is None):
+            raise ValueError("image_prototype and feature_model_id must be provided together")
 
         if not isinstance(self.semantic_probabilities, tuple):
             raise TypeError("semantic_probabilities must be a tuple")
@@ -229,6 +236,7 @@ def _score_edge(
     if (
         observation.image_feature is not None
         and target.image_prototype is not None
+        and observation.value.feature_model_id == target.feature_model_id
         and observation.image_feature.shape == target.image_prototype.shape
     ):
         cosine = float(

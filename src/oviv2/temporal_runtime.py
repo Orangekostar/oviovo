@@ -73,6 +73,45 @@ class TemporalFrameResult:
             if normalized != tuple(sorted(set(normalized))):
                 raise ValueError(f"{name} must be sorted and unique")
             object.__setattr__(self, name, normalized)
+        if set(self.active_entity_ids) & set(self.dormant_entity_ids):
+            raise ValueError("active and dormant entity IDs must be disjoint")
+        if not set(self.new_entity_ids).issubset(self.active_entity_ids) or not set(
+            self.reactivated_entity_ids
+        ).issubset(self.active_entity_ids):
+            raise ValueError("new and reactivated entity IDs must be active subsets")
+        if set(self.new_entity_ids) & set(self.reactivated_entity_ids):
+            raise ValueError("new and reactivated entity IDs must be disjoint")
+
+
+def _finite_float64(value: object, name: str) -> float:
+    if isinstance(value, (bool, np.bool_)) or not isinstance(value, Real):
+        raise TypeError(f"{name} must be numeric")
+    wide = np.longdouble(value)
+    if not np.isfinite(wide):
+        raise ValueError(f"{name} must be finite")
+    limit = np.longdouble(np.finfo(np.float64).max)
+    if wide < -limit or wide > limit:
+        raise ValueError(f"{name} must lie within the float64 range")
+    result = float(wide)
+    if not math.isfinite(result):
+        raise ValueError(f"{name} must be finite")
+    return result
+
+
+def _finite_float64_array(value: object, shape: tuple[int, ...], name: str) -> np.ndarray:
+    raw = np.asarray(value)
+    if raw.dtype.kind not in "iuf":
+        raise TypeError(f"{name} must be numeric")
+    wide = np.asarray(raw, dtype=np.longdouble)
+    limit = np.longdouble(np.finfo(np.float64).max)
+    if wide.shape != shape or not np.isfinite(wide).all():
+        raise ValueError(f"{name} must be a finite array with shape {shape}")
+    if np.any(wide < -limit) or np.any(wide > limit):
+        raise ValueError(f"{name} must lie within the float64 range")
+    result = np.asarray(wide, dtype=np.float64)
+    if not np.isfinite(result).all():
+        raise ValueError(f"{name} must contain finite float64 values")
+    return result
 
 
 def _validate_frame(frame: object) -> Frame:
@@ -82,10 +121,7 @@ def _validate_frame(frame: object) -> Frame:
         raise TypeError("frame.frame_id must be an integer")
     if int(frame.frame_id) < 0:
         raise ValueError("frame.frame_id must be nonnegative")
-    if isinstance(frame.timestamp, (bool, np.bool_)) or not isinstance(frame.timestamp, Real):
-        raise TypeError("frame.timestamp must be numeric")
-    if not math.isfinite(float(frame.timestamp)):
-        raise ValueError("frame.timestamp must be finite")
+    _finite_float64(frame.timestamp, "frame.timestamp")
     depth = np.asarray(frame.depth)
     rgb = np.asarray(frame.rgb)
     pose = np.asarray(frame.pose)
@@ -98,9 +134,7 @@ def _validate_frame(frame: object) -> Frame:
             raise TypeError("frame.rgb must be uint8 or floating point")
         if not np.isfinite(rgb).all() or (rgb.size and (float(rgb.min()) < 0.0 or float(rgb.max()) > 1.0)):
             raise ValueError("floating frame.rgb must be finite and lie in [0, 1]")
-    if pose.dtype.kind not in "iuf" or pose.shape != (4, 4) or not np.isfinite(pose).all():
-        raise ValueError("frame.pose must be a finite numeric 4x4 matrix")
-    pose64 = np.asarray(pose, dtype=np.float64)
+    pose64 = _finite_float64_array(pose, (4, 4), "frame.pose")
     if not np.allclose(pose64[3], (0.0, 0.0, 0.0, 1.0), rtol=0.0, atol=1e-6):
         raise ValueError("frame.pose must be homogeneous")
     rotation = pose64[:3, :3]
@@ -119,10 +153,11 @@ def _validate_frame(frame: object) -> Frame:
             raise ValueError(f"frame.intrinsics.{name} must be positive")
     if (intrinsics.height, intrinsics.width) != depth.shape:
         raise ValueError("frame intrinsics dimensions must match depth")
-    values = (intrinsics.fx, intrinsics.fy, intrinsics.cx, intrinsics.cy)
-    if any(isinstance(value, (bool, np.bool_)) or not isinstance(value, Real) for value in values):
-        raise TypeError("frame intrinsics must be numeric")
-    if not all(math.isfinite(float(value)) for value in values) or intrinsics.fx <= 0 or intrinsics.fy <= 0:
+    values = tuple(
+        _finite_float64(value, f"frame.intrinsics.{name}")
+        for name, value in zip(("fx", "fy", "cx", "cy"), (intrinsics.fx, intrinsics.fy, intrinsics.cx, intrinsics.cy))
+    )
+    if values[0] <= 0 or values[1] <= 0:
         raise ValueError("frame intrinsics must be finite with positive focal lengths")
     return frame
 
@@ -136,8 +171,13 @@ def _validate_inputs(
     frame = _validate_frame(frame)
     if frame.frame_id <= state.last_frame_id:
         raise ValueError("frame.frame_id must increase strictly")
-    if float(frame.timestamp) <= state.last_timestamp:
+    if state.last_frame_id != -1 and float(frame.timestamp) <= state.last_timestamp:
         raise ValueError("frame.timestamp must increase strictly")
+    if frame.source_frame_id is not None:
+        if isinstance(frame.source_frame_id, (bool, np.bool_)) or not isinstance(frame.source_frame_id, Integral):
+            raise TypeError("frame.source_frame_id must be an integer or None")
+        if frame.source_frame_id < 0 or frame.source_frame_id > np.iinfo(np.int64).max:
+            raise ValueError("frame.source_frame_id must be a nonnegative int64")
     if type(observations) is not tuple:
         raise TypeError("observations must be an exact tuple")
     if any(not isinstance(item, FrameObservation) for item in observations):
@@ -154,29 +194,25 @@ def _validate_inputs(
             observation.frame_id, Integral
         ):
             raise TypeError("observation frame_id must be an integer")
-        if isinstance(observation.timestamp, (bool, np.bool_)) or not isinstance(
-            observation.timestamp, Real
-        ):
-            raise TypeError("observation timestamp must be numeric")
-        if not math.isfinite(float(observation.timestamp)):
-            raise ValueError("observation timestamp must be finite")
+        observation_timestamp = _finite_float64(
+            observation.timestamp, "observation timestamp"
+        )
         ids.append(observation.observation_id)
         if observation.frame_id != frame.frame_id:
             raise ValueError("observation frame_id must match frame")
-        if float(observation.timestamp) != float(frame.timestamp):
+        if observation_timestamp != _finite_float64(frame.timestamp, "frame.timestamp"):
             raise ValueError("observation timestamp must match frame")
         if observation.mask.shape != frame.depth.shape:
             raise ValueError("observation mask shape must match frame depth")
-        geometry = np.asarray(
+        geometry = _finite_float64_array(
             (
                 observation.centroid_xyz,
                 observation.bounds_min_xyz,
                 observation.bounds_max_xyz,
             ),
-            dtype=np.float64,
+            (3, 3),
+            "observation geometry",
         )
-        if geometry.shape != (3, 3) or not np.isfinite(geometry).all():
-            raise ValueError("observation geometry must contain finite 3D points")
         if observation.kind is ObservationKind.OBJECT and np.any(
             geometry[2] - geometry[1] <= 0.0
         ):
@@ -187,6 +223,8 @@ def _validate_inputs(
         if not isinstance(dense_semantics, DenseSemanticFrame):
             raise TypeError("dense_semantics must be DenseSemanticFrame or None")
         expected_source = frame.frame_id if frame.source_frame_id is None else frame.source_frame_id
+        if dense_semantics.cache_frame_id != frame.frame_id:
+            raise ValueError("dense_semantics cache_frame_id must match frame.frame_id")
         if dense_semantics.source_frame_id != expected_source:
             raise ValueError("dense_semantics source_frame_id must match frame")
         if dense_semantics.image_shape != frame.depth.shape:
@@ -212,6 +250,7 @@ def _association_target(entity: TemporalEntityState) -> TemporalAssociationTarge
         image_prototype=entity.image_prototype,
         semantic_probabilities=entity.semantic_probabilities,
         predicted_centroid_xyz=centroid,
+        feature_model_id=entity.feature_model_id,
     )
 
 
@@ -236,18 +275,45 @@ def _semantic_update(
     return tuple(normalized)
 
 
-def _prototype_update(old: np.ndarray | None, observation: FrameObservation) -> np.ndarray | None:
+def _prototype_update(
+    old: np.ndarray | None, old_model: str | None, observation: FrameObservation
+) -> tuple[np.ndarray | None, str | None]:
     if observation.image_feature is None:
-        return old
+        return old, old_model
     incoming = np.asarray(observation.image_feature, dtype=np.float64)
-    if old is None or old.shape != incoming.shape:
+    if old is None or old_model != observation.feature_model_id or old.shape != incoming.shape:
         value = incoming
     else:
         confidence = float(observation.confidence)
         value = (1.0 - confidence) * old + confidence * incoming
         if float(np.linalg.norm(value)) == 0.0:
             value = incoming
-    return value / np.linalg.norm(value)
+    return value / np.linalg.norm(value), observation.feature_model_id
+
+
+def _initial_lifecycle(
+    entity_id: int, frame: Frame, confidence: float, config: TemporalReadoutConfig
+) -> TemporalLifecycleState:
+    lifecycle = config.lifecycle
+    delta = lifecycle.present_log_likelihood * confidence
+    if lifecycle.initial_log_odds >= lifecycle.log_odds_limit - delta:
+        log_odds = lifecycle.log_odds_limit
+    else:
+        log_odds = lifecycle.initial_log_odds + delta
+    if log_odds >= 0.0:
+        probability = 1.0 / (1.0 + math.exp(-log_odds))
+    else:
+        exp_value = math.exp(log_odds)
+        probability = exp_value / (1.0 + exp_value)
+    return TemporalLifecycleState(
+        entity_id=entity_id,
+        lifecycle=TemporalLifecycle.ACTIVE if probability >= lifecycle.active_on_probability else TemporalLifecycle.UNCERTAIN,
+        existence_log_odds=log_odds,
+        last_frame_id=frame.frame_id,
+        last_timestamp=float(frame.timestamp),
+        absent_streak=0,
+        absence_view_bins=(),
+    )
 
 
 def _observed_extent(observation: FrameObservation) -> tuple[float, float, float]:
@@ -460,15 +526,19 @@ class TemporalCurrentRuntime:
                 (old_value + new_value) / 2.0
                 for old_value, new_value in zip(old.extent_xyz, observed_extent)
             )
+            prototype, feature_model_id = _prototype_update(
+                old.image_prototype, old.feature_model_id, observation
+            )
             next_entities[entity_id] = TemporalEntityState(
                 lifecycle=lifecycle,
                 semantic_probabilities=_semantic_update(old.semantic_probabilities, observation),
-                image_prototype=_prototype_update(old.image_prototype, observation),
+                image_prototype=prototype,
                 extent_xyz=extent,
                 object_to_world=motion.object_to_world,
                 submap=submap,
                 first_seen_frame_id=old.first_seen_frame_id,
                 last_seen_frame_id=frame.frame_id,
+                feature_model_id=feature_model_id,
             )
 
         for entity_id in association.unmatched_entity_ids:
@@ -487,6 +557,7 @@ class TemporalCurrentRuntime:
                 submap=old.submap,
                 first_seen_frame_id=old.first_seen_frame_id,
                 last_seen_frame_id=old.last_seen_frame_id,
+                feature_model_id=old.feature_model_id,
             )
 
         next_entity_id = current.next_entity_id
@@ -540,34 +611,22 @@ class TemporalCurrentRuntime:
                     self.config.lifecycle,
                 )
             else:
-                log_odds = min(
-                    self.config.lifecycle.log_odds_limit,
-                    self.config.lifecycle.initial_log_odds
-                    + self.config.lifecycle.present_log_likelihood * float(observation.confidence),
+                lifecycle = _initial_lifecycle(
+                    entity_id, frame, float(observation.confidence), self.config
                 )
-                probability = 1.0 / (1.0 + math.exp(-log_odds))
-                lifecycle = TemporalLifecycleState(
-                    entity_id=entity_id,
-                    lifecycle=(
-                        TemporalLifecycle.ACTIVE
-                        if probability >= self.config.lifecycle.active_on_probability
-                        else TemporalLifecycle.UNCERTAIN
-                    ),
-                    existence_log_odds=log_odds,
-                    last_frame_id=frame.frame_id,
-                    last_timestamp=float(frame.timestamp),
-                    absent_streak=0,
-                    absence_view_bins=(),
-                )
+            prototype, feature_model_id = _prototype_update(
+                None, None, observation
+            )
             next_entities[entity_id] = TemporalEntityState(
                 lifecycle=lifecycle,
                 semantic_probabilities=_semantic_update((), observation),
-                image_prototype=_prototype_update(None, observation),
+                image_prototype=prototype,
                 extent_xyz=_observed_extent(observation),
                 object_to_world=pose,
                 submap=submap,
                 first_seen_frame_id=frame.frame_id,
                 last_seen_frame_id=frame.frame_id,
+                feature_model_id=feature_model_id,
             )
             new_ids.append(entity_id)
             next_entity_id += 1
@@ -583,11 +642,10 @@ class TemporalCurrentRuntime:
         background_depth = build_background_depth(
             frame, observations, protected, self.config.geometry
         )
-        background_snapshot = current._mutable_background_snapshot()
-        trial_background = background_snapshot.trial_integrate(
+        trial_background = current._integrate_background_owned(
             frame, background_depth.depth_m
         )
-        next_state = TemporalRuntimeState(
+        next_state = TemporalRuntimeState._adopt_owned(
             scene_id=current.scene_id,
             revision=current.revision + 1,
             last_frame_id=frame.frame_id,

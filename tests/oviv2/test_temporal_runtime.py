@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import copy
+import pickle
+import warnings
+from dataclasses import asdict, replace
 
 import numpy as np
 import pytest
@@ -102,6 +105,8 @@ def _observation(
     centroid_z: float | None = None,
     semantic_id: int = 1,
     confidence: float = 1.0,
+    feature_model_id: str = "test",
+    image_feature: np.ndarray | None = None,
 ) -> FrameObservation:
     observation_id = 10 + frame.frame_id if observation_id is None else observation_id
     z = float(frame.depth[2, 2] if centroid_z is None else centroid_z)
@@ -121,8 +126,12 @@ def _observation(
         centroid_xyz=(0.0, 0.0, z),
         bounds_min_xyz=(-0.05, -0.05, z - 0.05),
         bounds_max_xyz=(0.05, 0.05, z + 0.05),
-        image_feature=np.asarray([1.0, 0.0], dtype=np.float32),
-        feature_model_id="test",
+        image_feature=(
+            np.asarray([1.0, 0.0], dtype=np.float32)
+            if image_feature is None
+            else image_feature
+        ),
+        feature_model_id=feature_model_id,
         visible_pixel_count=1,
     )
 
@@ -190,6 +199,26 @@ def test_moved_object_keeps_id_and_moves_old_geometry() -> None:
     assert result.active_entity_ids == (entity_id,)
     assert result.new_entity_ids == ()
     assert float(after[:, 2].min()) > float(before[:, 2].max()) + 0.2
+
+
+def test_cross_model_geometry_match_atomically_replaces_prototype_provenance() -> None:
+    runtime = _runtime()
+    entity_id = _confirm(runtime)
+    frame = _frame(2)
+    result = runtime.process_frame(
+        frame,
+        (_observation(frame, feature_model_id="new", image_feature=np.array([0.0, 1.0, 0.0])),),
+    )
+    entity = runtime.state.entities[0]
+    assert result.active_entity_ids == (entity_id,)
+    assert entity.feature_model_id == "new"
+    np.testing.assert_allclose(entity.image_prototype, [0.0, 1.0, 0.0])
+
+    frame = _frame(3)
+    runtime.process_frame(frame, (_observation(frame, feature_model_id="test"),))
+    entity = runtime.state.entities[0]
+    assert entity.feature_model_id == "test"
+    np.testing.assert_allclose(entity.image_prototype, [1.0, 0.0])
 
 
 def test_dormant_object_reappears_with_same_id() -> None:
@@ -293,16 +322,37 @@ def test_background_integration_exception_rolls_back_state(
     before = runtime.state
     before_dump = before.canonical_dump()
 
-    def fail(self, frame, masked_depth):
+    def fail(self, depth, rgb, intrinsic, pose):
         self._last_blocks_touched = 999
         raise RuntimeError("background integration")
 
-    monkeypatch.setattr(TemporalBackgroundVolume, "trial_integrate", fail)
+    monkeypatch.setattr(TemporalBackgroundVolume, "_integrate_owned", fail)
     frame = _frame(2)
     with pytest.raises(RuntimeError, match="background integration"):
         runtime.process_frame(frame, (_observation(frame),))
     assert runtime.state is before
     assert runtime.state.canonical_dump() == before_dump
+
+
+def test_runtime_background_uses_one_clone_per_frame(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from src.oviv2.temporal_background import TemporalBackgroundVolume
+
+    runtime = _runtime()
+    _confirm(runtime)
+    original = TemporalBackgroundVolume._clone
+    calls = 0
+
+    def counted(self, capacity):
+        nonlocal calls
+        calls += 1
+        return original(self, capacity)
+
+    monkeypatch.setattr(TemporalBackgroundVolume, "_clone", counted)
+    frame = _frame(2)
+    runtime.process_frame(frame, (_observation(frame),))
+    assert calls == 1
 
 
 def test_repeated_runs_have_equal_results_and_complete_canonical_state() -> None:
@@ -376,6 +426,7 @@ def test_entity_arrays_are_private_readonly_and_value_equal() -> None:
         submap=entity.submap,
         first_seen_frame_id=entity.first_seen_frame_id,
         last_seen_frame_id=entity.last_seen_frame_id,
+        feature_model_id=entity.feature_model_id,
     )
     assert clone == entity
     assert clone is not entity
@@ -464,6 +515,86 @@ def test_repeated_mutable_state_accesses_do_not_share_snapshots() -> None:
     assert second_tracker.tracks
     assert second_background.last_blocks_touched != 999
     assert runtime.state.canonical_dump() == before
+
+
+def test_runtime_state_slots_copy_repr_and_pickle_contract() -> None:
+    runtime = _runtime()
+    _confirm(runtime)
+    state = runtime.state
+    with pytest.raises(TypeError):
+        vars(state)
+    assert not hasattr(state, "__dict__")
+    assert copy.copy(state) is state
+    assert copy.deepcopy(state) is state
+    assert "TemporalRuntimeState" in repr(state)
+    reflected = asdict(state)
+    assert reflected["scene_id"] == "scene"
+    reflected["tracker"].tracks.clear()
+    assert state.canonical_dump() == runtime.state.canonical_dump()
+    with pytest.raises(TypeError, match="pickle"):
+        pickle.dumps(state)
+
+
+def test_dense_semantics_cache_axis_and_source_frame_contract() -> None:
+    runtime = _runtime()
+    frame = _frame(0, timestamp=0.0)
+    arrays = dict(
+        image_shape=(5, 5), sample_stride=1, class_count=1,
+        class_ids=np.ones((5, 5, 1), dtype=np.int64),
+        probabilities=np.ones((5, 5, 1), dtype=np.float32),
+        entropy=np.zeros((5, 5), dtype=np.float32),
+        margin=np.ones((5, 5), dtype=np.float32),
+    )
+    wrong_cache = DenseSemanticFrame(cache_frame_id=1, source_frame_id=100, **arrays)
+    with pytest.raises(ValueError, match="cache_frame_id"):
+        runtime.process_frame(frame, (), wrong_cache)
+    wrong_source = DenseSemanticFrame(cache_frame_id=0, source_frame_id=101, **arrays)
+    with pytest.raises(ValueError, match="source_frame_id"):
+        runtime.process_frame(frame, (), wrong_source)
+
+
+def test_first_frame_confirm_one_handles_timestamp_and_extreme_log_odds() -> None:
+    from src.oviv2.temporal_runtime import TemporalCurrentRuntime
+
+    base = _config()
+    lifecycle = replace(
+        base.lifecycle,
+        initial_log_odds=1e308,
+        present_log_likelihood=1e308,
+        log_odds_limit=1e308,
+    )
+    runtime = TemporalCurrentRuntime(
+        "scene", replace(base, lifecycle=lifecycle),
+        LocalTrackerConfig(confirm_hits=1, max_age_frames=20),
+    )
+    frame = _frame(0, timestamp=-np.finfo(np.float64).max)
+    result = runtime.process_frame(frame, (_observation(frame),))
+    assert result.new_entity_ids == (1,)
+    assert runtime.state.entities[0].lifecycle.existence_log_odds == 1e308
+
+
+def test_frame_result_and_runtime_state_reject_cross_field_invariants() -> None:
+    from src.oviv2.temporal_runtime import TemporalFrameResult
+
+    with pytest.raises(ValueError, match="disjoint"):
+        TemporalFrameResult(0, 1, (1,), (1,), (), (), 0)
+    with pytest.raises(ValueError, match="subset"):
+        TemporalFrameResult(0, 1, (), (), (1,), (), 0)
+    runtime = _runtime()
+    with pytest.raises(ValueError, match="revision"):
+        replace(runtime.state, revision=1)
+
+
+def test_extreme_longdouble_inputs_fail_without_runtime_warning() -> None:
+    runtime = _runtime()
+    frame = _frame(0, timestamp=0.0)
+    pose = np.asarray(frame.pose, dtype=np.longdouble)
+    pose[0, 3] = np.longdouble(np.finfo(np.float64).max) * np.longdouble(2)
+    frame.pose = pose
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        with pytest.raises(ValueError, match="float64 range"):
+            runtime.process_frame(frame, ())
 
 
 def test_capacity_rejects_new_entity_without_consuming_id_when_no_dormant() -> None:

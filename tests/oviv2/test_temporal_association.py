@@ -41,6 +41,7 @@ def observation(
     semantic_id: int = 1,
     confidence: float = 0.9,
     image_feature: np.ndarray | None = None,
+    feature_model_id: str = "clip",
     kind: ObservationKind = ObservationKind.OBJECT,
 ) -> FrameObservation:
     lower = tuple(center - size / 2.0 for center, size in zip(centroid, extent))
@@ -60,7 +61,7 @@ def observation(
         bounds_min_xyz=lower,
         bounds_max_xyz=upper,
         image_feature=image_feature,
-        feature_model_id="clip" if image_feature is not None else None,
+        feature_model_id=feature_model_id if image_feature is not None else None,
     )
 
 
@@ -73,6 +74,7 @@ def target(
     extent: tuple[float, float, float] = (1.0, 1.0, 1.0),
     prototype: np.ndarray | None = None,
     semantics: tuple[tuple[int, float], ...] = ((1, 1.0),),
+    feature_model_id: str = "clip",
 ) -> TemporalAssociationTarget:
     return TemporalAssociationTarget(
         entity_id=entity_id,
@@ -82,7 +84,24 @@ def target(
         image_prototype=prototype,
         semantic_probabilities=semantics,
         predicted_centroid_xyz=centroid if predicted is None else predicted,
+        feature_model_id=feature_model_id if prototype is not None else None,
     )
+
+
+def test_visual_requires_matching_feature_model_provenance() -> None:
+    obs = observation(1, image_feature=np.array([1.0, 0.0]), feature_model_id="new")
+    wrong = target(2, prototype=np.array([1.0, 0.0]), feature_model_id="old")
+    right = target(3, prototype=np.array([1.0, 0.0]), feature_model_id="new")
+    visual_only = config(
+        visual_weight=1.0,
+        semantic_weight=0.0,
+        size_weight=0.0,
+        motion_weight=0.0,
+        geometry_weight=0.0,
+        minimum_score=0.5,
+    )
+    assert associate_temporal_observations((obs,), (wrong,), visual_only).assignments == ()
+    assert associate_temporal_observations((obs,), (right,), visual_only).assignments == ((1, 3),)
 
 
 def test_active_and_uncertain_stage_precedes_better_dormant_candidate() -> None:

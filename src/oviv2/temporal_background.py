@@ -454,6 +454,12 @@ class TemporalBackgroundVolume:
             and self.canonical_block_state() == other.canonical_block_state()
         )
 
+    def __deepcopy__(self, memo: dict[int, object]) -> TemporalBackgroundVolume:
+        del memo
+        snapshot = self._clone(max(1, self.active_block_count))
+        snapshot._last_blocks_touched = self.last_blocks_touched
+        return snapshot
+
     def _clone(self, physical_capacity: int) -> TemporalBackgroundVolume:
         trial = self.__class__.__new__(self.__class__)
         trial._config = self.config
@@ -477,6 +483,11 @@ class TemporalBackgroundVolume:
         return trial
 
     def trial_integrate(
+        self, frame: Frame, masked_depth: np.ndarray
+    ) -> TemporalBackgroundVolume:
+        return self._owned_trial_integrate(frame, masked_depth)
+
+    def _owned_trial_integrate(
         self, frame: Frame, masked_depth: np.ndarray
     ) -> TemporalBackgroundVolume:
         frame, frame_depth, rgb, pose, intrinsic = _validate_frame(frame)
@@ -503,12 +514,21 @@ class TemporalBackgroundVolume:
         trial = self._clone(max(1, union_count))
         if candidate_keys.shape[0] == 0:
             return trial
-        trial._last_blocks_touched = trial._volume.integrate(
+        trial._integrate_owned(depth, rgb, intrinsic, pose)
+        return trial
+
+    def _integrate_owned(
+        self,
+        depth: np.ndarray,
+        rgb: np.ndarray,
+        intrinsic: np.ndarray,
+        pose: np.ndarray,
+    ) -> None:
+        self._last_blocks_touched = self._volume.integrate(
             depth,
             rgb,
             intrinsic,
             pose,
         )
-        if trial.active_block_count > self.config.background_block_count:
+        if self.active_block_count > self.config.background_block_count:
             raise RuntimeError("TSDF integration exceeded background_block_count")
-        return trial

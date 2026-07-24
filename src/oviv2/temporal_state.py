@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import copy
-from dataclasses import dataclass, fields, is_dataclass
+from dataclasses import dataclass, field, fields, is_dataclass
 from enum import Enum
 import math
 from numbers import Integral, Real
@@ -17,11 +17,18 @@ from src.oviv2.tracking import LocalTracker
 
 def _readonly_float_array(value: object, shape: tuple[int, ...], name: str) -> np.ndarray:
     try:
-        array = np.array(value, dtype=np.float64, copy=True, order="C")
+        raw = np.asarray(value)
+        if raw.dtype.kind not in "iuf":
+            raise TypeError
+        wide = np.asarray(raw, dtype=np.longdouble)
     except (TypeError, ValueError) as exc:
         raise TypeError(f"{name} must be numeric") from exc
-    if array.shape != shape or not np.isfinite(array).all():
+    limit = np.longdouble(np.finfo(np.float64).max)
+    if wide.shape != shape or not np.isfinite(wide).all():
         raise ValueError(f"{name} must be a finite array with shape {shape}")
+    if np.any(wide < -limit) or np.any(wide > limit):
+        raise ValueError(f"{name} must lie within the float64 range")
+    array = np.array(wide, dtype=np.float64, copy=True, order="C")
     return np.frombuffer(array.tobytes(), dtype=array.dtype).reshape(array.shape)
 
 
@@ -89,10 +96,14 @@ class TemporalEntityState:
     submap: ObjectSubmap
     first_seen_frame_id: int
     last_seen_frame_id: int
+    feature_model_id: str | None = None
 
     __hash__ = None
 
     def __post_init__(self) -> None:
+        self._initialize_owned(adopt=False)
+
+    def _initialize_owned(self, *, adopt: bool) -> None:
         if not isinstance(self.lifecycle, TemporalLifecycleState):
             raise TypeError("lifecycle must be a TemporalLifecycleState")
         if type(self.semantic_probabilities) is not tuple:
@@ -135,6 +146,12 @@ class TemporalEntityState:
                 "image_prototype",
                 np.frombuffer(prototype.tobytes(), dtype=prototype.dtype),
             )
+        if self.feature_model_id is not None:
+            if not isinstance(self.feature_model_id, str) or not self.feature_model_id.strip():
+                raise ValueError("feature_model_id must be a non-empty string or None")
+            object.__setattr__(self, "feature_model_id", self.feature_model_id.strip())
+        if (self.image_prototype is None) != (self.feature_model_id is None):
+            raise ValueError("image_prototype and feature_model_id must be provided together")
         pose = _readonly_float_array(self.object_to_world, (4, 4), "object_to_world")
         if not np.allclose(pose[3], (0.0, 0.0, 0.0, 1.0), rtol=0.0, atol=1e-6):
             raise ValueError("object_to_world must be homogeneous")
@@ -171,6 +188,7 @@ class TemporalEntityState:
             and self.submap == other.submap
             and self.first_seen_frame_id == other.first_seen_frame_id
             and self.last_seen_frame_id == other.last_seen_frame_id
+            and self.feature_model_id == other.feature_model_id
             and (
                 (self.image_prototype is None and other.image_prototype is None)
                 or (
@@ -186,7 +204,7 @@ class TemporalEntityState:
         return _canonical(self)
 
 
-@dataclass(frozen=True, eq=False)
+@dataclass(frozen=True, eq=False, slots=True, repr=False)
 class TemporalRuntimeState:
     scene_id: str
     revision: int
@@ -196,6 +214,8 @@ class TemporalRuntimeState:
     entities: tuple[TemporalEntityState, ...]
     background: TemporalBackgroundVolume
     tracker: LocalTracker
+    _background_state: TemporalBackgroundVolume = field(init=False, repr=False)
+    _tracker_state: LocalTracker = field(init=False, repr=False)
 
     __hash__ = None
 
@@ -215,6 +235,9 @@ class TemporalRuntimeState:
         return object.__getattribute__(self, name)
 
     def __post_init__(self) -> None:
+        self._initialize_owned(adopt=False)
+
+    def _initialize_owned(self, *, adopt: bool) -> None:
         if not isinstance(self.scene_id, str) or not self.scene_id.strip():
             raise ValueError("scene_id must be a non-empty string")
         object.__setattr__(self, "scene_id", self.scene_id.strip())
@@ -227,9 +250,11 @@ class TemporalRuntimeState:
             object.__setattr__(self, name, int(value))
         if isinstance(self.last_timestamp, (bool, np.bool_)) or not isinstance(self.last_timestamp, Real):
             raise TypeError("last_timestamp must be numeric")
-        timestamp = float(self.last_timestamp)
-        if not math.isfinite(timestamp):
+        wide_timestamp = np.longdouble(self.last_timestamp)
+        limit = np.longdouble(np.finfo(np.float64).max)
+        if not np.isfinite(wide_timestamp) or not -limit <= wide_timestamp <= limit:
             raise ValueError("last_timestamp must be finite")
+        timestamp = float(wide_timestamp)
         object.__setattr__(self, "last_timestamp", timestamp)
         if type(self.entities) is not tuple or any(
             not isinstance(item, TemporalEntityState) for item in self.entities
@@ -248,18 +273,81 @@ class TemporalRuntimeState:
             raise TypeError("background must be a TemporalBackgroundVolume")
         if not isinstance(tracker, LocalTracker):
             raise TypeError("tracker must be a LocalTracker")
-        background_state = _background_snapshot(background)
-        tracker_state = copy.deepcopy(tracker)
-        object.__setattr__(self, "background", background_state)
-        object.__setattr__(self, "tracker", tracker_state)
+        background_state = background if adopt else _background_snapshot(background)
+        tracker_state = tracker if adopt else copy.deepcopy(tracker)
+        object.__setattr__(self, "background", None)
+        object.__setattr__(self, "tracker", None)
         object.__setattr__(self, "_background_state", background_state)
         object.__setattr__(self, "_tracker_state", tracker_state)
+
+        if (self.revision == 0) != (self.last_frame_id == -1):
+            raise ValueError("revision zero must identify the initial state")
+        tracker_frame = tracker_state._last_frame_id
+        if (self.last_frame_id == -1 and tracker_frame is not None) or (
+            self.last_frame_id >= 0 and tracker_frame != self.last_frame_id
+        ):
+            raise ValueError("tracker last frame must match runtime last_frame_id")
+        if any(entity.lifecycle.last_frame_id != self.last_frame_id for entity in self.entities):
+            raise ValueError("entity lifecycle frame must equal runtime last_frame_id")
+        if len(self.entities) > background_state.config.maximum_entities:
+            raise ValueError("entities exceed configured maximum_entities")
+
+    def __repr__(self) -> str:
+        return (
+            f"TemporalRuntimeState(scene_id={self.scene_id!r}, revision={self.revision}, "
+            f"last_frame_id={self.last_frame_id}, entities={len(self.entities)})"
+        )
+
+    def __copy__(self) -> TemporalRuntimeState:
+        return self
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> TemporalRuntimeState:
+        del memo
+        return self
+
+    def __reduce_ex__(self, protocol: int) -> Any:
+        del protocol
+        raise TypeError("TemporalRuntimeState does not support pickle; use canonical_dump")
 
     def _mutable_background_snapshot(self) -> TemporalBackgroundVolume:
         return _background_snapshot(object.__getattribute__(self, "_background_state"))
 
+    def _integrate_background_owned(
+        self, frame: Any, masked_depth: np.ndarray
+    ) -> TemporalBackgroundVolume:
+        background = object.__getattribute__(self, "_background_state")
+        return background._owned_trial_integrate(frame, masked_depth)
+
     def _mutable_tracker_snapshot(self) -> LocalTracker:
         return copy.deepcopy(object.__getattribute__(self, "_tracker_state"))
+
+    @classmethod
+    def _adopt_owned(
+        cls,
+        *,
+        scene_id: str,
+        revision: int,
+        last_frame_id: int,
+        last_timestamp: float,
+        next_entity_id: int,
+        entities: tuple[TemporalEntityState, ...],
+        background: TemporalBackgroundVolume,
+        tracker: LocalTracker,
+    ) -> TemporalRuntimeState:
+        state = object.__new__(cls)
+        for name, value in (
+            ("scene_id", scene_id),
+            ("revision", revision),
+            ("last_frame_id", last_frame_id),
+            ("last_timestamp", last_timestamp),
+            ("next_entity_id", next_entity_id),
+            ("entities", entities),
+            ("background", background),
+            ("tracker", tracker),
+        ):
+            object.__setattr__(state, name, value)
+        state._initialize_owned(adopt=True)
+        return state
 
     def canonical_dump(self) -> tuple[object, ...]:
         background = object.__getattribute__(self, "_background_state")
