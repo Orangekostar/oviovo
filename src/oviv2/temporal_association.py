@@ -105,8 +105,8 @@ class TemporalAssociationTarget:
             if not isinstance(self.feature_model_id, str) or not self.feature_model_id.strip():
                 raise ValueError("feature_model_id must be a non-empty string or None")
             object.__setattr__(self, "feature_model_id", self.feature_model_id.strip())
-        if (self.image_prototype is None) != (self.feature_model_id is None):
-            raise ValueError("image_prototype and feature_model_id must be provided together")
+        if self.image_prototype is None and self.feature_model_id is not None:
+            raise ValueError("feature_model_id requires image_prototype")
 
         if not isinstance(self.semantic_probabilities, tuple):
             raise TypeError("semantic_probabilities must be a tuple")

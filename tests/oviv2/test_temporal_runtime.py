@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 import pickle
 import warnings
-from dataclasses import asdict, replace
+from dataclasses import asdict, fields, replace
 
 import numpy as np
 import pytest
@@ -533,6 +533,32 @@ def test_runtime_state_slots_copy_repr_and_pickle_contract() -> None:
     assert state.canonical_dump() == runtime.state.canonical_dump()
     with pytest.raises(TypeError, match="pickle"):
         pickle.dumps(state)
+    assert tuple(item.name for item in fields(type(state))) == (
+        "scene_id", "revision", "last_frame_id", "last_timestamp",
+        "next_entity_id", "entities", "background", "tracker",
+    )
+
+
+def test_legacy_entity_prototype_without_model_remains_constructible() -> None:
+    from src.oviv2.temporal_state import TemporalEntityState
+
+    runtime = _runtime()
+    _confirm(runtime)
+    entity = runtime.state.entities[0]
+    legacy = TemporalEntityState(
+        lifecycle=entity.lifecycle,
+        semantic_probabilities=entity.semantic_probabilities,
+        image_prototype=entity.image_prototype,
+        extent_xyz=entity.extent_xyz,
+        object_to_world=entity.object_to_world,
+        submap=entity.submap,
+        first_seen_frame_id=entity.first_seen_frame_id,
+        last_seen_frame_id=entity.last_seen_frame_id,
+    )
+    assert legacy.image_prototype is not None
+    assert legacy.feature_model_id is None
+    with pytest.raises(ValueError, match="prototype"):
+        replace(legacy, image_prototype=None, feature_model_id="model")
 
 
 def test_dense_semantics_cache_axis_and_source_frame_contract() -> None:

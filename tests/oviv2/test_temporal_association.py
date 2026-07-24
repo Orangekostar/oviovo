@@ -104,6 +104,26 @@ def test_visual_requires_matching_feature_model_provenance() -> None:
     assert associate_temporal_observations((obs,), (right,), visual_only).assignments == ((1, 3),)
 
 
+def test_legacy_prototype_without_model_is_valid_but_visual_is_unavailable() -> None:
+    legacy = TemporalAssociationTarget(
+        entity_id=2,
+        lifecycle=TemporalLifecycle.ACTIVE,
+        centroid_xyz=(0.0, 0.0, 0.0),
+        extent_xyz=(1.0, 1.0, 1.0),
+        image_prototype=np.array([1.0, 0.0]),
+        semantic_probabilities=(),
+        predicted_centroid_xyz=(0.0, 0.0, 0.0),
+    )
+    obs = observation(1, semantic_id=0, image_feature=np.array([1.0, 0.0]))
+    visual_only = config(
+        visual_weight=1.0, semantic_weight=0.0, size_weight=0.0,
+        motion_weight=0.0, geometry_weight=0.0, minimum_score=0.0,
+    )
+    assert associate_temporal_observations((obs,), (legacy,), visual_only).assignments == ()
+    with pytest.raises(ValueError, match="prototype"):
+        replace(legacy, image_prototype=None, feature_model_id="clip")
+
+
 def test_active_and_uncertain_stage_precedes_better_dormant_candidate() -> None:
     obs = observation(1, image_feature=np.array([1.0, 0.0]))
     active = target(20, centroid=(0.6, 0.0, 0.0), prototype=np.array([1.0, 0.0]))

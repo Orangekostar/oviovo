@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import copy
-from dataclasses import dataclass, field, fields, is_dataclass
+from dataclasses import dataclass, fields, is_dataclass
 from enum import Enum
 import math
 from numbers import Integral, Real
@@ -150,8 +150,8 @@ class TemporalEntityState:
             if not isinstance(self.feature_model_id, str) or not self.feature_model_id.strip():
                 raise ValueError("feature_model_id must be a non-empty string or None")
             object.__setattr__(self, "feature_model_id", self.feature_model_id.strip())
-        if (self.image_prototype is None) != (self.feature_model_id is None):
-            raise ValueError("image_prototype and feature_model_id must be provided together")
+        if self.image_prototype is None and self.feature_model_id is not None:
+            raise ValueError("feature_model_id requires image_prototype")
         pose = _readonly_float_array(self.object_to_world, (4, 4), "object_to_world")
         if not np.allclose(pose[3], (0.0, 0.0, 0.0, 1.0), rtol=0.0, atol=1e-6):
             raise ValueError("object_to_world must be homogeneous")
@@ -204,8 +204,21 @@ class TemporalEntityState:
         return _canonical(self)
 
 
-@dataclass(frozen=True, eq=False, slots=True, repr=False)
+@dataclass(frozen=True, eq=False, repr=False)
 class TemporalRuntimeState:
+    __slots__ = (
+        "scene_id",
+        "revision",
+        "last_frame_id",
+        "last_timestamp",
+        "next_entity_id",
+        "entities",
+        "background",
+        "tracker",
+        "_background_state",
+        "_tracker_state",
+    )
+
     scene_id: str
     revision: int
     last_frame_id: int
@@ -214,8 +227,6 @@ class TemporalRuntimeState:
     entities: tuple[TemporalEntityState, ...]
     background: TemporalBackgroundVolume
     tracker: LocalTracker
-    _background_state: TemporalBackgroundVolume = field(init=False, repr=False)
-    _tracker_state: LocalTracker = field(init=False, repr=False)
 
     __hash__ = None
 
