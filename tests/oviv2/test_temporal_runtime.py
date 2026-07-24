@@ -387,6 +387,85 @@ def test_entity_arrays_are_private_readonly_and_value_equal() -> None:
         hash(clone)
 
 
+def test_published_tracker_access_is_a_defensive_snapshot() -> None:
+    runtime = _runtime()
+    entity_id = _confirm(runtime)
+    before = runtime.state.canonical_dump()
+
+    exposed = runtime.state.tracker
+    exposed.update((), 2)
+    exposed.tracks.clear()
+    exposed.graph._nodes.clear()
+    exposed._next_track_id = 999
+
+    assert runtime.state.canonical_dump() == before
+    frame = _frame(2)
+    result = runtime.process_frame(frame, (_observation(frame),))
+    assert result.active_entity_ids == (entity_id,)
+
+
+def test_published_background_access_is_a_defensive_snapshot() -> None:
+    from src.oviv2.temporal_background import TemporalBackgroundVolume
+
+    runtime = _runtime()
+    _confirm(runtime)
+    before = runtime.state.canonical_dump()
+    expected_touched = runtime.state.background.last_blocks_touched
+
+    exposed = runtime.state.background
+    exposed.trial_integrate(_frame(2), np.zeros((5, 5), dtype=np.float32))
+    exposed._last_blocks_touched = 999
+    exposed._volume = TemporalBackgroundVolume(_config().geometry)._volume
+
+    assert runtime.state.background.last_blocks_touched == expected_touched
+    assert runtime.state.canonical_dump() == before
+
+
+def test_runtime_state_snapshots_constructor_inputs() -> None:
+    from src.oviv2.temporal_background import TemporalBackgroundVolume
+    from src.oviv2.temporal_state import TemporalRuntimeState
+    from src.oviv2.tracking import LocalTracker
+
+    tracker = LocalTracker(_tracker_config())
+    background = TemporalBackgroundVolume(_config().geometry)
+    state = TemporalRuntimeState(
+        scene_id="scene",
+        revision=0,
+        last_frame_id=-1,
+        last_timestamp=-1.0,
+        next_entity_id=1,
+        entities=(),
+        background=background,
+        tracker=tracker,
+    )
+    before = state.canonical_dump()
+
+    tracker.update((), 0)
+    tracker._next_track_id = 123
+    background._last_blocks_touched = 456
+
+    assert state.canonical_dump() == before
+
+
+def test_repeated_mutable_state_accesses_do_not_share_snapshots() -> None:
+    runtime = _runtime()
+    _confirm(runtime)
+    before = runtime.state.canonical_dump()
+
+    first_tracker = runtime.state.tracker
+    second_tracker = runtime.state.tracker
+    first_background = runtime.state.background
+    second_background = runtime.state.background
+    assert first_tracker is not second_tracker
+    assert first_background is not second_background
+
+    first_tracker.tracks.clear()
+    first_background._last_blocks_touched = 999
+    assert second_tracker.tracks
+    assert second_background.last_blocks_touched != 999
+    assert runtime.state.canonical_dump() == before
+
+
 def test_capacity_rejects_new_entity_without_consuming_id_when_no_dormant() -> None:
     runtime = _runtime(_config(maximum_entities=1))
     first_id = _confirm(runtime)

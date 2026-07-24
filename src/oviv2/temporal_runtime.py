@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 from dataclasses import dataclass
 import math
 from numbers import Integral, Real
@@ -408,7 +407,7 @@ class TemporalCurrentRuntime:
         frame, observations, _ = _validate_inputs(
             frame, observations, dense_semantics, current
         )
-        trial_tracker = copy.deepcopy(current.tracker)
+        trial_tracker = current._mutable_tracker_snapshot()
         batch = trial_tracker.update(observations, frame.frame_id)
         confirmed = tuple(
             sorted(
@@ -584,9 +583,7 @@ class TemporalCurrentRuntime:
         background_depth = build_background_depth(
             frame, observations, protected, self.config.geometry
         )
-        background_snapshot = current.background._clone(
-            max(1, current.background.active_block_count)
-        )
+        background_snapshot = current._mutable_background_snapshot()
         trial_background = background_snapshot.trial_integrate(
             frame, background_depth.depth_m
         )

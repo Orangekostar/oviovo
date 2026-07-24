@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from dataclasses import dataclass, fields, is_dataclass
 from enum import Enum
 import math
@@ -68,6 +69,14 @@ def _tracker_dump(tracker: LocalTracker) -> tuple[object, ...]:
         tuple(int(item) for item in graph._frame_ids),
         _canonical(graph._edges),
     )
+
+
+def _background_snapshot(
+    background: TemporalBackgroundVolume,
+) -> TemporalBackgroundVolume:
+    snapshot = background._clone(max(1, background.active_block_count))
+    snapshot._last_blocks_touched = background.last_blocks_touched
+    return snapshot
 
 
 @dataclass(frozen=True, eq=False)
@@ -190,6 +199,21 @@ class TemporalRuntimeState:
 
     __hash__ = None
 
+    def __getattribute__(self, name: str) -> Any:
+        if name == "tracker":
+            try:
+                raw = object.__getattribute__(self, "_tracker_state")
+            except AttributeError:
+                return object.__getattribute__(self, name)
+            return copy.deepcopy(raw)
+        if name == "background":
+            try:
+                raw = object.__getattribute__(self, "_background_state")
+            except AttributeError:
+                return object.__getattribute__(self, name)
+            return _background_snapshot(raw)
+        return object.__getattribute__(self, name)
+
     def __post_init__(self) -> None:
         if not isinstance(self.scene_id, str) or not self.scene_id.strip():
             raise ValueError("scene_id must be a non-empty string")
@@ -218,12 +242,28 @@ class TemporalRuntimeState:
             raise ValueError("next_entity_id must exceed every entity ID")
         if any(entity.lifecycle.last_frame_id > self.last_frame_id for entity in self.entities):
             raise ValueError("entity lifecycle frame cannot exceed runtime last_frame_id")
-        if not isinstance(self.background, TemporalBackgroundVolume):
+        background = object.__getattribute__(self, "background")
+        tracker = object.__getattribute__(self, "tracker")
+        if not isinstance(background, TemporalBackgroundVolume):
             raise TypeError("background must be a TemporalBackgroundVolume")
-        if not isinstance(self.tracker, LocalTracker):
+        if not isinstance(tracker, LocalTracker):
             raise TypeError("tracker must be a LocalTracker")
+        background_state = _background_snapshot(background)
+        tracker_state = copy.deepcopy(tracker)
+        object.__setattr__(self, "background", background_state)
+        object.__setattr__(self, "tracker", tracker_state)
+        object.__setattr__(self, "_background_state", background_state)
+        object.__setattr__(self, "_tracker_state", tracker_state)
+
+    def _mutable_background_snapshot(self) -> TemporalBackgroundVolume:
+        return _background_snapshot(object.__getattribute__(self, "_background_state"))
+
+    def _mutable_tracker_snapshot(self) -> LocalTracker:
+        return copy.deepcopy(object.__getattribute__(self, "_tracker_state"))
 
     def canonical_dump(self) -> tuple[object, ...]:
+        background = object.__getattribute__(self, "_background_state")
+        tracker = object.__getattribute__(self, "_tracker_state")
         return (
             self.scene_id,
             self.revision,
@@ -231,10 +271,10 @@ class TemporalRuntimeState:
             self.last_timestamp,
             self.next_entity_id,
             tuple(entity.canonical_dump() for entity in self.entities),
-            _canonical(self.background.config),
-            self.background.canonical_block_state(),
-            self.background.last_blocks_touched,
-            _tracker_dump(self.tracker),
+            _canonical(background.config),
+            background.canonical_block_state(),
+            background.last_blocks_touched,
+            _tracker_dump(tracker),
         )
 
     def __eq__(self, other: object) -> bool:
