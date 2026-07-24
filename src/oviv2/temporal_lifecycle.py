@@ -143,6 +143,8 @@ def _validate_state(
         raise ValueError("state.absence_view_bins must be sorted and unique")
     if any(value >= available_bins for value in normalized_bins):
         raise ValueError("state.absence_view_bins item is out of range")
+    if len(normalized_bins) > state.absent_streak:
+        raise ValueError("state.absence_view_bins cannot exceed absent_streak")
     return state
 
 
@@ -207,7 +209,7 @@ def advance_lifecycle(
             last_frame_id=evidence.frame_id,
             last_timestamp=evidence.timestamp,
             absent_streak=0,
-            absence_view_bins=state.absence_view_bins,
+            absence_view_bins=(),
         )
 
     delta_t = evidence.timestamp - state.last_timestamp

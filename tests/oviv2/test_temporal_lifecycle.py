@@ -94,7 +94,7 @@ def test_neutral_evidence_preserves_existence_and_active_lifecycle(
     )
     assert result.lifecycle is TemporalLifecycle.ACTIVE
     assert result.absent_streak == 0
-    assert result.absence_view_bins == (1, 3)
+    assert result.absence_view_bins == ()
     assert (result.last_frame_id, result.last_timestamp) == (11, 11.0)
 
 
@@ -157,6 +157,40 @@ def test_required_consecutive_absences_and_distinct_bins_enter_dormant(
     assert current.absent_streak == 3
     assert current.absence_view_bins == (0, 1)
     assert probability(current.existence_log_odds) <= config.dormant_off_probability
+
+
+def test_neutral_evidence_prevents_old_view_bins_from_retiring_a_later_streak(
+    config: TemporalLifecycleConfig,
+) -> None:
+    current = advance_lifecycle(
+        state(),
+        evidence(TemporalEvidenceKind.VISIBLE_ABSENT, view_bin=0),
+        config,
+    )
+    current = advance_lifecycle(
+        current,
+        evidence(
+            TemporalEvidenceKind.OCCLUDED,
+            frame_id=12,
+            timestamp=12.0,
+        ),
+        config,
+    )
+    for frame_id in (13, 14, 15):
+        current = advance_lifecycle(
+            current,
+            evidence(
+                TemporalEvidenceKind.VISIBLE_ABSENT,
+                frame_id=frame_id,
+                timestamp=float(frame_id),
+                view_bin=1,
+            ),
+            config,
+        )
+
+    assert current.lifecycle is TemporalLifecycle.UNCERTAIN
+    assert current.absent_streak == 3
+    assert current.absence_view_bins == (1,)
 
 
 def test_strong_present_reactivates_same_dormant_entity(
@@ -272,6 +306,8 @@ def test_invalid_evidence_fails_without_mutating_state(
         state(bins=(1, 1)),
         state(bins=(-1,)),
         state(bins=(8,)),
+        state(absent_streak=0, bins=(1,)),
+        state(absent_streak=1, bins=(1, 2)),
         state(absent_streak=-1),
         replace(state(), entity_id=-1),
         state(frame_id=-1),
