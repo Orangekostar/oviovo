@@ -128,14 +128,13 @@ def _validate_frame(
     rgb = np.asarray(frame.rgb)
     if rgb.shape != (height, width, 3):
         raise ValueError("frame.rgb must have shape (H, W, 3) matching depth")
-    if rgb.dtype.kind == "b" or rgb.dtype.kind not in "uif":
-        raise TypeError("frame.rgb must be numeric and non-boolean")
-    if rgb.dtype.kind in "if" and not np.isfinite(rgb).all():
-        raise ValueError("frame.rgb must contain only finite values")
-    if rgb.dtype.kind == "f" and rgb.size and (
-        float(rgb.min()) < 0.0 or float(rgb.max()) > 1.0
-    ):
-        raise ValueError("floating frame.rgb values must lie in [0, 1]")
+    if rgb.dtype != np.dtype(np.uint8):
+        if rgb.dtype.kind != "f":
+            raise TypeError("frame.rgb must be uint8 or floating point")
+        if not np.isfinite(rgb).all():
+            raise ValueError("frame.rgb must contain only finite values")
+        if rgb.size and (float(rgb.min()) < 0.0 or float(rgb.max()) > 1.0):
+            raise ValueError("floating frame.rgb values must lie in [0, 1]")
 
     if not isinstance(frame.intrinsics, CameraIntrinsics):
         raise TypeError("frame.intrinsics must be CameraIntrinsics")
@@ -193,18 +192,6 @@ def _validate_observations(
     return observations
 
 
-def _contains_bool(value: object) -> bool:
-    if _is_bool(value):
-        return True
-    if isinstance(value, np.ndarray):
-        if value.dtype.kind == "b":
-            return True
-        return value.dtype.kind == "O" and any(_contains_bool(item) for item in value.flat)
-    if isinstance(value, (tuple, list)):
-        return any(_contains_bool(item) for item in value)
-    return False
-
-
 def _validate_protected_points(
     protected: object, config: TemporalGeometryConfig
 ) -> tuple[np.ndarray, ...]:
@@ -215,12 +202,13 @@ def _validate_protected_points(
     validated: list[np.ndarray] = []
     for index, value in enumerate(protected):
         name = f"protected_world_points[{index}]"
-        if _contains_bool(value):
-            raise TypeError(f"{name} must contain numeric non-boolean values")
         try:
-            points = np.asarray(value, dtype=np.float64)
+            raw = np.asarray(value)
         except (TypeError, ValueError) as exc:
-            raise TypeError(f"{name} must be convertible to float64") from exc
+            raise TypeError(f"{name} must be a real numeric array") from exc
+        if raw.dtype.kind not in "iuf":
+            raise TypeError(f"{name} must contain real numeric values")
+        points = np.asarray(raw, dtype=np.float64)
         if points.ndim != 2 or points.shape[1:] != (3,):
             raise ValueError(f"{name} must have shape (N, 3)")
         if points.shape[0] > config.maximum_visibility_points_per_entity:
@@ -399,7 +387,6 @@ class TemporalBackgroundVolume:
             return False
         return bool(
             self.config == other.config
-            and self.last_blocks_touched == other.last_blocks_touched
             and self.canonical_block_state() == other.canonical_block_state()
         )
 

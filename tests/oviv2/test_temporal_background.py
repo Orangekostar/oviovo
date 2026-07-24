@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import FrozenInstanceError, replace
+import warnings
 
 import numpy as np
 import pytest
@@ -189,6 +190,19 @@ def test_all_zero_trial_is_independent_equal_clone_and_touches_nothing() -> None
     assert trial.canonical_block_state() == volume.canonical_block_state() == ()
 
 
+def test_all_zero_trial_equals_integrated_source_despite_diagnostic_touch_count() -> None:
+    frame = _frame(size=16)
+    frame.intrinsics = CameraIntrinsics(8.0, 8.0, 7.5, 7.5, 16, 16)
+    original = TemporalBackgroundVolume(_config()).trial_integrate(frame, frame.depth)
+    assert original.last_blocks_touched > 0
+
+    trial = original.trial_integrate(frame, np.zeros_like(frame.depth))
+
+    assert trial.last_blocks_touched == 0
+    assert trial.canonical_block_state() == original.canonical_block_state()
+    assert (trial == original) is True
+
+
 def test_object_mask_then_dormant_reveal_controls_integration() -> None:
     frame = _frame(size=16)
     frame.intrinsics = CameraIntrinsics(8.0, 8.0, 7.5, 7.5, 16, 16)
@@ -257,6 +271,22 @@ def test_build_fails_closed_for_bad_contracts(mutate: object, exception: type[Ex
         build_background_depth(*args)
 
 
+@pytest.mark.parametrize(
+    "points",
+    [
+        np.asarray([["0", "0", "1"]]),
+        np.asarray([[0.0 + 1.0j, 0.0, 1.0]]),
+    ],
+)
+def test_protected_points_reject_non_real_dtypes_without_warnings(
+    points: np.ndarray,
+) -> None:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        with pytest.raises(TypeError, match="protected_world_points"):
+            build_background_depth(_frame(), (), (points,), _config())
+
+
 def test_build_rejects_frame_mismatch_bad_mask_and_bad_frame() -> None:
     frame = _frame()
     observation = _observation(frame, 1, ObservationKind.OBJECT, np.zeros((5, 5), bool))
@@ -283,6 +313,42 @@ def test_build_rejects_zero_sized_frames_and_boolean_observation_ids() -> None:
     observation = _observation(frame, True, ObservationKind.OBJECT, np.zeros((5, 5), bool))
     with pytest.raises(TypeError, match="observation_id"):
         build_background_depth(frame, (observation,), (), _config())
+
+
+@pytest.mark.parametrize(
+    "rgb",
+    [
+        np.full((5, 5, 3), -1, dtype=np.int32),
+        np.full((5, 5, 3), 1000, dtype=np.uint16),
+    ],
+)
+def test_build_and_trial_reject_non_uint8_integer_rgb(rgb: np.ndarray) -> None:
+    frame = _frame()
+    frame.rgb = rgb
+    with pytest.raises(TypeError, match="rgb"):
+        build_background_depth(frame, (), (), _config())
+    with pytest.raises(TypeError, match="rgb"):
+        TemporalBackgroundVolume(_config()).trial_integrate(
+            frame, np.zeros_like(frame.depth)
+        )
+
+
+@pytest.mark.parametrize(
+    "rgb",
+    [
+        np.full((5, 5, 3), 127, dtype=np.uint8),
+        np.full((5, 5, 3), 0.5, dtype=np.float32),
+    ],
+)
+def test_build_and_trial_accept_uint8_and_unit_float_rgb(rgb: np.ndarray) -> None:
+    frame = _frame()
+    frame.rgb = rgb
+    result = build_background_depth(frame, (), (), _config())
+    trial = TemporalBackgroundVolume(_config()).trial_integrate(
+        frame, np.zeros_like(frame.depth)
+    )
+    assert result.valid_background_pixel_count == frame.depth.size
+    assert trial.last_blocks_touched == 0
 
 
 @pytest.mark.parametrize(
