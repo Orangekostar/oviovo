@@ -14,6 +14,7 @@ from src.oviv2.temporal_geometry import (
     ObjectSubmap,
     backproject_observation,
     estimate_object_motion,
+    estimate_object_translation,
     integrate_object_submap,
 )
 
@@ -230,6 +231,31 @@ def test_motion_empty_returns_reference_pose_and_centroid_fallback_is_bounded(mo
     result = estimate_object_motion(submap, submap.world_points(), (20.0, 0.0, 0.0), _config())
     assert not result.used_icp and result.object_to_world[0, 3] == 10.0
 
+
+def test_translation_motion_is_bounded_and_never_calls_icp(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    submap = _submap(np.asarray([[0, 0, 0], [1, 0, 0], [0, 1, 0]]))
+    monkeypatch.setattr(
+        "src.oviv2.temporal_geometry._run_icp",
+        lambda *args: (_ for _ in ()).throw(AssertionError("ICP must not run")),
+    )
+
+    moved = estimate_object_translation(
+        submap,
+        submap.world_points(),
+        (11.0, 0.0, 0.0),
+        _config(),
+    )
+    rejected = estimate_object_translation(
+        submap,
+        submap.world_points(),
+        (13.0, 0.0, 0.0),
+        _config(),
+    )
+
+    assert not moved.used_icp and moved.object_to_world[0, 3] == 11.0
+    assert not rejected.used_icp and rejected.object_to_world[0, 3] == 10.0
 
 @pytest.mark.parametrize(
     "fitness,rmse,translation",

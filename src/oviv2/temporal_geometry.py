@@ -445,6 +445,48 @@ def _motion_result(
     return ObjectMotionEstimate(transform, used_icp, fitness, rmse_m)
 
 
+def _bounded_translation_motion(
+    submap: ObjectSubmap,
+    target: np.ndarray,
+    observed_centroid: tuple[float, float, float],
+    config: TemporalGeometryConfig,
+    previous_pose: np.ndarray,
+) -> ObjectMotionEstimate:
+    diagnostic_rmse = float(config.maximum_icp_rmse_m)
+    if submap.local_points_xyz.shape[0] == 0 or target.shape[0] == 0:
+        return _motion_result(previous_pose, 0.0, diagnostic_rmse, used_icp=False)
+    displacement = float(
+        np.linalg.norm(np.asarray(observed_centroid) - previous_pose[:3, 3])
+    )
+    pose = np.array(previous_pose, dtype=np.float64, copy=True, order="C")
+    if math.isfinite(displacement) and displacement <= float(config.maximum_motion_m):
+        pose[:3, 3] = observed_centroid
+    return _motion_result(pose, 0.0, diagnostic_rmse, used_icp=False)
+
+
+def estimate_object_translation(
+    submap: ObjectSubmap,
+    points_world: np.ndarray,
+    observed_centroid_xyz: tuple[float, float, float],
+    config: TemporalGeometryConfig,
+    *,
+    previous_object_to_world: np.ndarray | None = None,
+) -> ObjectMotionEstimate:
+    if not isinstance(submap, ObjectSubmap):
+        raise TypeError("submap must be an ObjectSubmap")
+    _validate_config(config)
+    target = _points(points_world, "points_world")
+    observed_centroid = _finite_xyz(observed_centroid_xyz, "observed_centroid_xyz")
+    previous_pose = (
+        _translation_pose(submap.reference_centroid_xyz)
+        if previous_object_to_world is None
+        else _rigid_transform(previous_object_to_world, "previous_object_to_world")
+    )
+    return _bounded_translation_motion(
+        submap, target, observed_centroid, config, previous_pose
+    )
+
+
 def estimate_object_motion(
     submap: ObjectSubmap,
     points_world: np.ndarray,
@@ -463,16 +505,13 @@ def estimate_object_motion(
         if previous_object_to_world is None
         else _rigid_transform(previous_object_to_world, "previous_object_to_world")
     )
+    fallback = _bounded_translation_motion(
+        submap, target, observed_centroid, config, previous_pose
+    )
+    fallback_pose = fallback.object_to_world
     diagnostic_rmse = float(config.maximum_icp_rmse_m)
     if submap.local_points_xyz.shape[0] == 0 or target.shape[0] == 0:
-        return _motion_result(previous_pose, 0.0, diagnostic_rmse, used_icp=False)
-
-    displacement = float(
-        np.linalg.norm(np.asarray(observed_centroid) - previous_pose[:3, 3])
-    )
-    fallback_pose = np.array(previous_pose, dtype=np.float64, copy=True, order="C")
-    if math.isfinite(displacement) and displacement <= float(config.maximum_motion_m):
-        fallback_pose[:3, 3] = observed_centroid
+        return fallback
     minimum_points = int(config.minimum_icp_points)
     source = submap.local_points_xyz
     if source.shape[0] < minimum_points or target.shape[0] < minimum_points:

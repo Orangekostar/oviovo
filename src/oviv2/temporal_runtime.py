@@ -18,6 +18,7 @@ from src.oviv2.temporal_background import (
     build_background_depth,
 )
 from src.oviv2.temporal_config import (
+    ExecutionProfile,
     TemporalReadoutConfig,
     temporal_config_from_json,
     temporal_config_to_json,
@@ -26,6 +27,7 @@ from src.oviv2.temporal_geometry import (
     ObjectSubmap,
     backproject_observation,
     estimate_object_motion,
+    estimate_object_translation,
     integrate_object_submap,
 )
 from src.oviv2.temporal_lifecycle import (
@@ -455,6 +457,14 @@ class TemporalCurrentRuntime:
             raise TypeError("config must be TemporalReadoutConfig")
         if not isinstance(tracker_config, LocalTrackerConfig):
             raise TypeError("tracker_config must be LocalTrackerConfig")
+        if config.execution_profile not in (
+            ExecutionProfile.A2,
+            ExecutionProfile.A3,
+            ExecutionProfile.A4,
+        ):
+            raise ValueError(
+                "TemporalCurrentRuntime requires execution profile A2, A3, or A4"
+            )
         self.config = temporal_config_from_json(temporal_config_to_json(config))
         self.tracker_config = tracker_config
         self.state = TemporalRuntimeState(
@@ -489,7 +499,20 @@ class TemporalCurrentRuntime:
                 key=lambda item: item.observation_id,
             )
         )
-        targets = tuple(_association_target(entity) for entity in current.entities)
+        allow_dormant_reid = self.config.execution_profile is ExecutionProfile.A4
+        association_entities = tuple(
+            entity
+            for entity in current.entities
+            if allow_dormant_reid
+            or entity.lifecycle.lifecycle is not TemporalLifecycle.DORMANT
+        )
+        excluded_dormant = tuple(
+            entity
+            for entity in current.entities
+            if entity.lifecycle.lifecycle is TemporalLifecycle.DORMANT
+            and not allow_dormant_reid
+        )
+        targets = tuple(_association_target(entity) for entity in association_entities)
         association = associate_temporal_observations(
             confirmed, targets, self.config.association
         )
@@ -498,11 +521,34 @@ class TemporalCurrentRuntime:
         next_entities: dict[int, TemporalEntityState] = {}
         reactivated: list[int] = []
 
+        for old in excluded_dormant:
+            lifecycle = advance_lifecycle(
+                old.lifecycle,
+                _absence_evidence(old, frame, self.config),
+                self.config.lifecycle,
+            )
+            next_entities[old.lifecycle.entity_id] = TemporalEntityState(
+                lifecycle=lifecycle,
+                semantic_probabilities=old.semantic_probabilities,
+                image_prototype=old.image_prototype,
+                extent_xyz=old.extent_xyz,
+                object_to_world=old.object_to_world,
+                submap=old.submap,
+                first_seen_frame_id=old.first_seen_frame_id,
+                last_seen_frame_id=old.last_seen_frame_id,
+                feature_model_id=old.feature_model_id,
+            )
+
         for observation_id, entity_id in association.assignments:
             observation = observations_by_id[observation_id]
             old = entities_by_id[entity_id]
             points = backproject_observation(frame, observation, self.config.geometry)
-            motion = estimate_object_motion(
+            motion_estimator = (
+                estimate_object_motion
+                if self.config.execution_profile is ExecutionProfile.A4
+                else estimate_object_translation
+            )
+            motion = motion_estimator(
                 old.submap,
                 points,
                 observation.centroid_xyz,
@@ -576,6 +622,8 @@ class TemporalCurrentRuntime:
             if points.shape[0] == 0:
                 continue
             if len(next_entities) >= self.config.geometry.maximum_entities:
+                if not allow_dormant_reid:
+                    continue
                 dormant = sorted(
                     (
                         entity
@@ -640,19 +688,25 @@ class TemporalCurrentRuntime:
             next_entity_id += 1
 
         ordered_entities = tuple(next_entities[key] for key in sorted(next_entities))
-        protected = tuple(
-            entity.submap.world_points(entity.object_to_world)[
-                : self.config.geometry.maximum_visibility_points_per_entity
-            ]
-            for entity in ordered_entities
-            if entity.lifecycle.lifecycle in (TemporalLifecycle.ACTIVE, TemporalLifecycle.UNCERTAIN)
-        )
-        background_depth = build_background_depth(
-            frame, observations, protected, self.config.geometry
-        )
-        trial_background = current._integrate_background_owned(
-            frame, background_depth.depth_m
-        )
+        if self.config.execution_profile is ExecutionProfile.A2:
+            trial_background = current._mutable_background_snapshot()
+            if trial_background.active_block_count:
+                raise RuntimeError("A2 temporal background must remain empty")
+            trial_background._last_blocks_touched = 0
+        else:
+            protected = tuple(
+                entity.submap.world_points(entity.object_to_world)[
+                    : self.config.geometry.maximum_visibility_points_per_entity
+                ]
+                for entity in ordered_entities
+                if entity.lifecycle.lifecycle in (TemporalLifecycle.ACTIVE, TemporalLifecycle.UNCERTAIN)
+            )
+            background_depth = build_background_depth(
+                frame, observations, protected, self.config.geometry
+            )
+            trial_background = current._integrate_background_owned(
+                frame, background_depth.depth_m
+            )
         next_state = TemporalRuntimeState._adopt_owned(
             scene_id=current.scene_id,
             revision=current.revision + 1,

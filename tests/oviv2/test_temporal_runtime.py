@@ -12,6 +12,7 @@ from src.core.data_structures import CameraIntrinsics, Frame
 from src.oviv2.observations import FrameObservation, ObservationKind
 from src.oviv2.dense_semantics import DenseSemanticFrame
 from src.oviv2.temporal_config import (
+    ExecutionProfile,
     TemporalAssociationConfig,
     TemporalGeometryConfig,
     TemporalLifecycleConfig,
@@ -20,7 +21,10 @@ from src.oviv2.temporal_config import (
 from src.oviv2.tracking import LocalTrackerConfig
 
 
-def _config(**geometry_changes: object) -> TemporalReadoutConfig:
+def _config(
+    execution_profile: ExecutionProfile = ExecutionProfile.A4,
+    **geometry_changes: object,
+) -> TemporalReadoutConfig:
     geometry = dict(
         voxel_size_m=0.1,
         depth_max_m=4.0,
@@ -65,6 +69,7 @@ def _config(**geometry_changes: object) -> TemporalReadoutConfig:
             conflict_override_geometry=0.9,
         ),
         geometry=TemporalGeometryConfig(**geometry),
+        execution_profile=execution_profile,
     )
 
 
@@ -235,6 +240,200 @@ def test_dormant_object_reappears_with_same_id() -> None:
     result = runtime.process_frame(frame, (_observation(frame),))
     assert result.reactivated_entity_ids == (entity_id,)
     assert result.new_entity_ids == ()
+
+
+@pytest.mark.parametrize("profile", (ExecutionProfile.A0, ExecutionProfile.A1))
+def test_current_runtime_rejects_adapter_profiles(profile: ExecutionProfile) -> None:
+    from src.oviv2.temporal_runtime import TemporalCurrentRuntime
+
+    with pytest.raises(ValueError, match="A2.*A3.*A4"):
+        TemporalCurrentRuntime("scene", _config(profile), _tracker_config())
+
+
+@pytest.mark.parametrize("profile", (ExecutionProfile.A2, ExecutionProfile.A3))
+def test_translation_profiles_never_call_icp_runtime_path(
+    monkeypatch: pytest.MonkeyPatch, profile: ExecutionProfile
+) -> None:
+    import src.oviv2.temporal_runtime as module
+
+    runtime = _runtime(_config(profile))
+    _confirm(runtime)
+    weight_before = float(runtime.state.entities[0].submap.weights.sum())
+    calls = 0
+    original = module.estimate_object_translation
+
+    def capture(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(module, "estimate_object_translation", capture)
+    monkeypatch.setattr(
+        module,
+        "estimate_object_motion",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("ICP path")),
+    )
+    frame = _frame(2, depth=1.2)
+
+    result = runtime.process_frame(frame, (_observation(frame, centroid_z=1.2),))
+
+    assert result.new_entity_ids == ()
+    assert calls == 1
+    assert float(runtime.state.entities[0].submap.weights.sum()) > weight_before
+
+
+def test_a2_translation_failure_rolls_back_state_identity_and_value(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+
+    runtime = _runtime(_config(ExecutionProfile.A2))
+    _confirm(runtime)
+    before = runtime.state
+    before_dump = before.canonical_dump()
+    monkeypatch.setattr(
+        module,
+        "estimate_object_translation",
+        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("translation")),
+    )
+    frame = _frame(2)
+
+    with pytest.raises(RuntimeError, match="translation"):
+        runtime.process_frame(frame, (_observation(frame),))
+
+    assert runtime.state is before
+    assert runtime.state.canonical_dump() == before_dump
+
+
+def test_a4_runtime_routes_icp_accepted_and_fallback_motion(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_geometry import ObjectMotionEstimate
+
+    runtime = _runtime(_config(ExecutionProfile.A4))
+    entity_id = _confirm(runtime)
+    calls = 0
+
+    def gated(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        pose = np.array(kwargs["previous_object_to_world"], copy=True)
+        pose[2, 3] = 1.1 if calls == 1 else 1.2
+        return ObjectMotionEstimate(pose, calls == 1, 0.9, 0.05)
+
+    monkeypatch.setattr(module, "estimate_object_motion", gated)
+    monkeypatch.setattr(
+        module,
+        "estimate_object_translation",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("translation path")),
+    )
+    for frame_id, depth in ((2, 1.1), (3, 1.2)):
+        frame = _frame(frame_id, depth=depth)
+        result = runtime.process_frame(
+            frame, (_observation(frame, centroid_z=depth),)
+        )
+
+    assert calls == 2
+    assert result.active_entity_ids == (entity_id,)
+    assert runtime.state.entities[0].object_to_world[2, 3] == 1.2
+
+
+@pytest.mark.parametrize("profile", (ExecutionProfile.A2, ExecutionProfile.A3))
+def test_translation_profiles_exclude_and_retain_dormant_entities(
+    monkeypatch: pytest.MonkeyPatch, profile: ExecutionProfile
+) -> None:
+    import src.oviv2.temporal_runtime as module
+
+    runtime = _runtime(_config(profile))
+    old_id = _confirm(runtime)
+    runtime.process_frame(_frame(2, depth=2.0), ())
+    assert runtime.process_frame(_frame(3, depth=2.0), ()).dormant_entity_ids == (old_id,)
+    original = module.associate_temporal_observations
+    target_ids: list[tuple[int, ...]] = []
+
+    def capture(observations, targets, config):
+        target_ids.append(tuple(target.entity_id for target in targets))
+        return original(observations, targets, config)
+
+    monkeypatch.setattr(module, "associate_temporal_observations", capture)
+    new_ids: list[int] = []
+    for frame_id in (4, 5):
+        frame = _frame(frame_id)
+        result = runtime.process_frame(frame, (_observation(frame),))
+        new_ids.extend(result.new_entity_ids)
+
+    assert all(old_id not in ids for ids in target_ids)
+    assert old_id in tuple(entity.lifecycle.entity_id for entity in runtime.state.entities)
+    assert result.reactivated_entity_ids == ()
+    assert tuple(new_ids) == (old_id + 1,)
+
+
+@pytest.mark.parametrize("profile", (ExecutionProfile.A2, ExecutionProfile.A3))
+def test_translation_profiles_do_not_evict_excluded_dormant_at_capacity(
+    profile: ExecutionProfile,
+) -> None:
+    runtime = _runtime(_config(profile, maximum_entities=1))
+    old_id = _confirm(runtime)
+    runtime.process_frame(_frame(2, depth=2.0), ())
+    assert runtime.process_frame(_frame(3, depth=2.0), ()).dormant_entity_ids == (old_id,)
+
+    for frame_id in (4, 5):
+        frame = _frame(frame_id, depth=1.8)
+        result = runtime.process_frame(
+            frame, (_observation(frame, centroid_z=1.8, semantic_id=2),)
+        )
+
+    assert result.new_entity_ids == ()
+    assert tuple(entity.lifecycle.entity_id for entity in runtime.state.entities) == (old_id,)
+    assert runtime.state.next_entity_id == old_id + 1
+
+
+def test_a2_skips_masked_background_and_reports_zero(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_background import TemporalBackgroundVolume
+
+    runtime = _runtime(_config(ExecutionProfile.A2))
+    monkeypatch.setattr(
+        module,
+        "build_background_depth",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("masked background")),
+    )
+    monkeypatch.setattr(
+        TemporalBackgroundVolume,
+        "_integrate_owned",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("background integration")),
+    )
+    frame = _frame(0, timestamp=0.0)
+
+    result = runtime.process_frame(frame, (_observation(frame),))
+
+    assert result.background_blocks_touched == 0
+    assert runtime.state.background.active_block_count == 0
+
+
+def test_a3_uses_masked_background_without_icp_or_dormant_targets(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+
+    runtime = _runtime(_config(ExecutionProfile.A3))
+    calls = 0
+    original = module.build_background_depth
+
+    def capture(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(module, "build_background_depth", capture)
+    frame = _frame(0, timestamp=0.0)
+
+    runtime.process_frame(frame, (_observation(frame),))
+
+    assert calls == 1
 
 
 def test_background_reveals_object_pixel_when_entity_retires(
