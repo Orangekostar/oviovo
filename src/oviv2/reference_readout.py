@@ -8,6 +8,7 @@ import numpy as np
 
 from src.core.data_structures import Frame
 from src.oviv2.addressing import VoxelKey
+from src.oviv2.entities import PersistentEntity
 from src.oviv2.runtime import Oviv2Runtime, RuntimeFrameResult
 from src.oviv2.temporal_config import ExecutionProfile, TemporalReadoutConfig
 from src.oviv2 import temporal_lifecycle
@@ -78,6 +79,19 @@ class CumulativeEntityView:
         object.__setattr__(self, "bounds_min_xyz", minimum)
         object.__setattr__(self, "bounds_max_xyz", maximum)
 
+    @classmethod
+    def from_persistent_entity(cls, entity: PersistentEntity) -> CumulativeEntityView:
+        if type(entity) is not PersistentEntity:
+            raise TypeError("entity must be an exact PersistentEntity")
+        result = object.__new__(cls)
+        object.__setattr__(result, "entity_id", entity.entity_id)
+        object.__setattr__(result, "lifecycle_state", entity.lifecycle_state)
+        object.__setattr__(result, "voxel_keys", entity.voxel_keys)
+        object.__setattr__(result, "centroid_xyz", entity.centroid_xyz)
+        object.__setattr__(result, "bounds_min_xyz", entity.bounds_min_xyz)
+        object.__setattr__(result, "bounds_max_xyz", entity.bounds_max_xyz)
+        return result
+
 
 @dataclass(frozen=True)
 class CumulativeReadoutView:
@@ -124,14 +138,7 @@ class CumulativeReadoutView:
             depth_max_m=runtime.config.tsdf.depth_max_m,
             visibility_depth_tolerance_m=runtime.config.visibility_depth_tolerance_m,
             entities=tuple(
-                CumulativeEntityView(
-                    entity_id=item.entity_id,
-                    lifecycle_state=item.lifecycle_state,
-                    voxel_keys=item.voxel_keys,
-                    centroid_xyz=item.centroid_xyz,
-                    bounds_min_xyz=item.bounds_min_xyz,
-                    bounds_max_xyz=item.bounds_max_xyz,
-                )
+                CumulativeEntityView.from_persistent_entity(item)
                 for item in sorted(
                     runtime.registry.entities.values(), key=lambda value: value.entity_id
                 )
@@ -215,6 +222,37 @@ class _BaseReferenceReadout:
             lifecycle_states=(),
             cumulative_view=None,
         )
+
+    def bind_initial_cumulative_view(self, view: CumulativeReadoutView) -> None:
+        if not isinstance(view, CumulativeReadoutView):
+            raise TypeError("view must be a CumulativeReadoutView")
+        if self.state.cumulative_view is not None:
+            raise ValueError("initial cumulative view is already bound")
+        if (
+            view.scene_id != self.state.scene_id
+            or view.revision != 0
+            or view.last_frame_id != -1
+            or self.state.revision != 0
+            or self.state.last_frame_id != -1
+        ):
+            raise ValueError("initial cumulative view progress mismatch")
+        self.state = ReferenceReadoutState(
+            scene_id=self.state.scene_id,
+            revision=0,
+            last_frame_id=-1,
+            last_timestamp=view.last_timestamp,
+            entity_lifecycles=(),
+            lifecycle_states=(),
+            cumulative_view=view,
+        )
+
+    def transaction_snapshot(self) -> ReferenceReadoutState:
+        return self.state
+
+    def restore_transaction(self, snapshot: ReferenceReadoutState) -> None:
+        if not isinstance(snapshot, ReferenceReadoutState):
+            raise TypeError("snapshot must be a ReferenceReadoutState")
+        self.state = snapshot
 
     def _before_publish(self, next_state: ReferenceReadoutState) -> None:
         del next_state

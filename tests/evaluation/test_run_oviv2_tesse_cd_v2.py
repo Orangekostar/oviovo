@@ -24,6 +24,7 @@ from src.oviv2.reference_readout import (
     ReferenceReadoutState,
 )
 from src.oviv2.temporal_config import ExecutionProfile
+from src.oviv2.temporal_lifecycle import TemporalLifecycle, TemporalLifecycleState
 
 
 V1_FILES = (
@@ -293,13 +294,37 @@ class _ReferenceDualRuntime:
             (1, "active"),
             (2, "dormant" if self.profile is ExecutionProfile.A1 else "active"),
         )
+        lifecycle_states = (
+            (
+                TemporalLifecycleState(
+                    1,
+                    TemporalLifecycle.ACTIVE,
+                    1.0,
+                    frame.frame_id,
+                    frame.timestamp,
+                    0,
+                    (),
+                ),
+                TemporalLifecycleState(
+                    2,
+                    TemporalLifecycle.DORMANT,
+                    -1.0,
+                    frame.frame_id,
+                    frame.timestamp,
+                    2,
+                    (1, 2),
+                ),
+            )
+            if self.profile is ExecutionProfile.A1
+            else ()
+        )
         self.temporal.state = ReferenceReadoutState(
             "apartment",
             frame.frame_id + 1,
             frame.frame_id,
             frame.timestamp,
             lifecycles,
-            (),
+            lifecycle_states,
             view,
         )
 
@@ -509,7 +534,34 @@ def test_a2_neutral_uses_temporal_objects_and_exact_cumulative_background(
 
     assert [item.metadata["owner_entity_id"] for item in result.entities] == [7]
     np.testing.assert_array_equal(result.background_xyz, background)
-    assert result.timestamp == timestamp_ns / 1_000_000_000
+    assert result.timestamp == float(timestamp_ns)
+
+
+@pytest.mark.parametrize("profile", [ExecutionProfile.A3, ExecutionProfile.A4])
+def test_masked_temporal_profiles_export_authoritative_nanosecond_timestamp(
+    profile: ExecutionProfile,
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    timestamp_ns = 67804109999
+    background = np.asarray([[9.0, 8.0, 7.0]], dtype=np.float32)
+    temporal = _neutral_fixture(
+        background=background,
+        ids=(7,),
+        timestamp=timestamp_ns / 1_000_000_000,
+    )
+
+    result = module._compose_checkpoint_neutral(
+        profile,
+        cumulative=None,
+        reference_state=None,
+        temporal=temporal,
+        expected_timestamp_ns=timestamp_ns,
+    )
+
+    assert result.timestamp == float(timestamp_ns)
+    assert [item.metadata["owner_entity_id"] for item in result.entities] == [7]
+    np.testing.assert_array_equal(result.background_xyz, background)
 
 
 @pytest.mark.parametrize("profile", [ExecutionProfile.A0, ExecutionProfile.A1])

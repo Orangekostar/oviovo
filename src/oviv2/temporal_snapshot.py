@@ -6,7 +6,7 @@ import hashlib
 import io
 import json
 import math
-from numbers import Real
+from numbers import Integral, Real
 import os
 from pathlib import Path
 import stat
@@ -54,6 +54,61 @@ _LIFECYCLE_TO_CODE = {
 }
 _MAX_JSON_BYTES = 64 * 1024
 _MAX_ARCHIVE_BYTES = 512 * 1024 * 1024
+
+
+def _validate_reference_lifecycle(
+    value: TemporalLifecycleState,
+    metadata: "TemporalSnapshotMetadata",
+) -> None:
+    if not isinstance(value, TemporalLifecycleState):
+        raise TypeError("reference lifecycle state has an invalid type")
+    expected_fields = {
+        "entity_id",
+        "lifecycle",
+        "existence_log_odds",
+        "last_frame_id",
+        "last_timestamp",
+        "absent_streak",
+        "absence_view_bins",
+    }
+    if set(vars(value)) != expected_fields:
+        raise ValueError("reference lifecycle state fields are invalid")
+    if isinstance(value.entity_id, (bool, np.bool_)) or not isinstance(
+        value.entity_id, Integral
+    ) or int(value.entity_id) < 1:
+        raise ValueError("reference lifecycle entity_id must be a positive integer")
+    if not isinstance(value.lifecycle, TemporalLifecycle):
+        raise TypeError("reference lifecycle must be a TemporalLifecycle")
+    if isinstance(value.existence_log_odds, (bool, np.bool_)) or not isinstance(
+        value.existence_log_odds, Real
+    ) or not math.isfinite(float(value.existence_log_odds)):
+        raise ValueError("reference lifecycle existence_log_odds must be finite")
+    if isinstance(value.last_frame_id, (bool, np.bool_)) or not isinstance(
+        value.last_frame_id, Integral
+    ) or not 0 <= int(value.last_frame_id) <= metadata.frame_id:
+        raise ValueError("reference lifecycle last_frame_id is later than checkpoint")
+    if isinstance(value.last_timestamp, (bool, np.bool_)) or not isinstance(
+        value.last_timestamp, Real
+    ) or not math.isfinite(float(value.last_timestamp)):
+        raise ValueError("reference lifecycle last_timestamp must be finite")
+    if float(value.last_timestamp) > metadata.timestamp:
+        raise ValueError("reference lifecycle last_timestamp is later than checkpoint")
+    if isinstance(value.absent_streak, (bool, np.bool_)) or not isinstance(
+        value.absent_streak, Integral
+    ) or int(value.absent_streak) < 0:
+        raise ValueError("reference lifecycle absent_streak must be nonnegative")
+    bins = value.absence_view_bins
+    if type(bins) is not tuple or any(
+        isinstance(item, (bool, np.bool_))
+        or not isinstance(item, Integral)
+        or int(item) < 0
+        for item in bins
+    ):
+        raise ValueError("reference lifecycle absence_view_bins are invalid")
+    if bins != tuple(sorted(set(bins))) or len(bins) > int(value.absent_streak):
+        raise ValueError("reference lifecycle absence_view_bins are inconsistent")
+    if int(value.absent_streak) > 0 and not bins:
+        raise ValueError("reference lifecycle absence_view_bins are required")
 
 
 class TemporalCheckpointPublicationUncertainError(RuntimeError):
@@ -656,26 +711,26 @@ class TemporalCompactCheckpoint:
             type(item) is not tuple or len(item) != 2 for item in raw_lifecycles
         ):
             raise TypeError("reference entity_lifecycles must be an exact tuple of pairs")
+        if any(
+            type(entity_id) is not int
+            or entity_id < 1
+            or type(lifecycle) is not str
+            for entity_id, lifecycle in raw_lifecycles
+        ):
+            raise ValueError("reference entity_lifecycles contain invalid values")
         lifecycle_ids = tuple(item[0] for item in raw_lifecycles)
         if lifecycle_ids != tuple(sorted(set(lifecycle_ids))):
             raise ValueError("reference lifecycle IDs must be sorted and unique")
         lifecycle_names = dict(raw_lifecycles)
         if set(lifecycle_names) != set(entities_by_id):
             raise ValueError("reference lifecycle IDs do not match cumulative entities")
-        if type(state.lifecycle_states) is not tuple or any(
-            not isinstance(item, TemporalLifecycleState)
-            for item in state.lifecycle_states
-        ):
+        if type(state.lifecycle_states) is not tuple:
             raise TypeError("reference lifecycle_states must contain lifecycle states")
+        for item in state.lifecycle_states:
+            _validate_reference_lifecycle(item, metadata)
         evidence_ids = tuple(item.entity_id for item in state.lifecycle_states)
         if evidence_ids != tuple(sorted(set(evidence_ids))):
             raise ValueError("reference evidence IDs must be sorted and unique")
-        if any(
-            item.last_frame_id > metadata.frame_id
-            or item.last_timestamp > metadata.timestamp
-            for item in state.lifecycle_states
-        ):
-            raise ValueError("reference lifecycle evidence is later than checkpoint")
         evidence = {item.entity_id: item for item in state.lifecycle_states}
         if evidence and set(evidence) != set(entities_by_id):
             raise ValueError("reference evidence IDs do not match cumulative entities")
@@ -698,6 +753,8 @@ class TemporalCompactCheckpoint:
             if name not in lifecycle_by_name:
                 raise ValueError("reference lifecycle is invalid")
             item = evidence.get(entity.entity_id)
+            if item is None and name != entity.lifecycle_state:
+                raise ValueError("reference lifecycle does not match cumulative lifecycle")
             lifecycle = lifecycle_by_name[name] if item is None else item.lifecycle
             if item is not None and item.lifecycle.value != name:
                 raise ValueError("reference lifecycle evidence is inconsistent")

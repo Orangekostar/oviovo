@@ -1345,28 +1345,30 @@ def _compose_checkpoint_neutral(
         )
     if not isinstance(temporal, MapSnapshot):
         raise TypeError("temporal neutral composition requires a temporal snapshot")
+    if type(expected_timestamp_ns) is not int or expected_timestamp_ns <= 0:
+        raise ValueError("temporal neutral composition requires expected_timestamp_ns")
+    if temporal.timestamp != expected_timestamp_ns / 1_000_000_000:
+        raise ValueError("temporal neutral snapshot does not match checkpoint timestamp")
+    background_xyz = temporal.background_xyz
     if profile is ExecutionProfile.A2:
         if not isinstance(cumulative, MapSnapshot):
             raise TypeError("A2 neutral composition requires cumulative snapshot")
-        if type(expected_timestamp_ns) is not int or expected_timestamp_ns <= 0:
-            raise ValueError("A2 neutral composition requires expected_timestamp_ns")
         if (
             temporal.scene_id != cumulative.scene_id
             or cumulative.timestamp != float(expected_timestamp_ns)
-            or temporal.timestamp != expected_timestamp_ns / 1_000_000_000
             or temporal.scope != cumulative.scope
         ):
             raise ValueError("A2 temporal and cumulative neutral snapshots do not match")
-        return MapSnapshot(
-            method=temporal.method,
-            scene_id=temporal.scene_id,
-            timestamp=temporal.timestamp,
-            entities=temporal.entities,
-            background_xyz=cumulative.background_xyz,
-            scope=temporal.scope,
-            runtime=temporal.runtime,
-        )
-    return temporal
+        background_xyz = cumulative.background_xyz
+    return MapSnapshot(
+        method=temporal.method,
+        scene_id=temporal.scene_id,
+        timestamp=float(expected_timestamp_ns),
+        entities=temporal.entities,
+        background_xyz=background_xyz,
+        scope=temporal.scope,
+        runtime=temporal.runtime,
+    )
 
 
 def _input_sha256(

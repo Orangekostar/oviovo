@@ -376,6 +376,101 @@ def test_compact_from_reference_validates_binding_and_capacity() -> None:
         TemporalCompactCheckpoint.from_reference(
             metadata, future, maximum_entities=1, maximum_object_voxels=2
         )
+    inconsistent_a0 = replace(state, entity_lifecycles=((1, "dormant"),))
+    with pytest.raises(ValueError, match="cumulative lifecycle"):
+        TemporalCompactCheckpoint.from_reference(
+            metadata,
+            inconsistent_a0,
+            maximum_entities=1,
+            maximum_object_voxels=2,
+        )
+
+
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    [
+        ({"existence_log_odds": float("nan")}, "existence_log_odds"),
+        ({"absent_streak": -1}, "absent_streak"),
+        ({"absence_view_bins": (2, 1)}, "absence_view_bins"),
+        ({"absence_view_bins": (1, 1)}, "absence_view_bins"),
+        ({"absent_streak": 1, "absence_view_bins": ()}, "absence_view_bins"),
+        ({"absent_streak": 1, "absence_view_bins": (1, 2)}, "absence_view_bins"),
+        ({"last_timestamp": float("nan")}, "last_timestamp"),
+    ],
+)
+def test_compact_from_reference_revalidates_malicious_lifecycle_state(
+    changes: dict[str, object], message: str
+) -> None:
+    from src.oviv2.reference_readout import (
+        CumulativeEntityView,
+        CumulativeReadoutView,
+        ReferenceReadoutState,
+    )
+
+    entity = CumulativeEntityView(
+        1,
+        "active",
+        frozenset({(0, 0, 0)}),
+        (0.0, 0.0, 0.0),
+        (0.0, 0.0, 0.0),
+        (1.0, 1.0, 1.0),
+    )
+    view = CumulativeReadoutView("scene", 4, 3, 3.0, 0.1, 4.0, 0.1, (entity,))
+    values: dict[str, object] = {
+        "entity_id": 1,
+        "lifecycle": TemporalLifecycle.ACTIVE,
+        "existence_log_odds": 1.0,
+        "last_frame_id": 3,
+        "last_timestamp": 3.0,
+        "absent_streak": 2,
+        "absence_view_bins": (1, 2),
+    }
+    values.update(changes)
+    lifecycle = object.__new__(TemporalLifecycleState)
+    for name, value in values.items():
+        object.__setattr__(lifecycle, name, value)
+    state = ReferenceReadoutState(
+        "scene", 4, 3, 3.0, ((1, "active"),), (lifecycle,), view
+    )
+
+    with pytest.raises((TypeError, ValueError), match=message):
+        TemporalCompactCheckpoint.from_reference(
+            TemporalSnapshotMetadata("scene", 3, 3.0, 4, 0.1, "a" * 64),
+            state,
+            maximum_entities=1,
+            maximum_object_voxels=2,
+        )
+
+
+def test_compact_from_reference_rejects_incomplete_lifecycle_object() -> None:
+    from src.oviv2.reference_readout import (
+        CumulativeEntityView,
+        CumulativeReadoutView,
+        ReferenceReadoutState,
+    )
+
+    entity = CumulativeEntityView(
+        1,
+        "active",
+        frozenset({(0, 0, 0)}),
+        (0.0, 0.0, 0.0),
+        (0.0, 0.0, 0.0),
+        (1.0, 1.0, 1.0),
+    )
+    view = CumulativeReadoutView("scene", 4, 3, 3.0, 0.1, 4.0, 0.1, (entity,))
+    lifecycle = object.__new__(TemporalLifecycleState)
+    object.__setattr__(lifecycle, "entity_id", 1)
+    state = ReferenceReadoutState(
+        "scene", 4, 3, 3.0, ((1, "active"),), (lifecycle,), view
+    )
+
+    with pytest.raises(ValueError, match="fields"):
+        TemporalCompactCheckpoint.from_reference(
+            TemporalSnapshotMetadata("scene", 3, 3.0, 4, 0.1, "a" * 64),
+            state,
+            maximum_entities=1,
+            maximum_object_voxels=2,
+        )
 
 
 def _tree_hashes(path: Path) -> dict[str, str]:

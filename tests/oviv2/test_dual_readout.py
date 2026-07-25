@@ -164,6 +164,31 @@ def test_constructor_rejects_wrong_runtime_types(argument: object) -> None:
         DualReadoutRuntime(_cumulative(), argument)  # type: ignore[arg-type]
 
 
+def test_constructor_rejects_structural_reference_impostor() -> None:
+    from src.oviv2.dual_readout import DualReadoutRuntime
+
+    class Impostor:
+        state = _temporal().state
+
+        def process_cumulative_frame(self, *args: object, **kwargs: object) -> object:
+            return object()
+
+    with pytest.raises(TypeError, match="reference|temporal"):
+        DualReadoutRuntime(_cumulative(), Impostor())  # type: ignore[arg-type]
+
+
+def test_constructor_rejects_builtin_reference_with_extra_mutable_state() -> None:
+    from src.oviv2.dual_readout import DualReadoutRuntime
+    from src.oviv2.reference_readout import ReferenceCurrentReadout
+
+    config = replace(_temporal_config(), execution_profile=ExecutionProfile.A0)
+    reference = ReferenceCurrentReadout("scene", config)
+    reference.extra = []  # type: ignore[attr-defined]
+
+    with pytest.raises(ValueError, match="unexpected mutable state"):
+        DualReadoutRuntime(_cumulative(), reference)
+
+
 def test_constructor_fails_closed_for_scene_progress_and_processed_timestamp_mismatch() -> None:
     from src.oviv2.dual_readout import DualReadoutRuntime
 
@@ -446,7 +471,9 @@ def test_temporal_runtime_has_no_cumulative_component_reference() -> None:
     )
 
 
-def test_reference_readout_captures_before_and_after_cumulative_in_order() -> None:
+def test_reference_readout_captures_before_and_after_cumulative_in_order(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     from src.oviv2.dual_readout import DualReadoutRuntime
     from src.oviv2.reference_readout import ReferenceCurrentReadout
 
@@ -457,18 +484,22 @@ def test_reference_readout_captures_before_and_after_cumulative_in_order() -> No
             calls.append(("cumulative", self.revision))
             return super().process_frame(*args, **kwargs)
 
-    class ReferenceSpy(ReferenceCurrentReadout):
-        def process_cumulative_frame(self, frame, *, before, after, cumulative_result):
-            calls.extend((("before", before.revision), ("after", after.revision)))
-            return super().process_cumulative_frame(
-                frame,
-                before=before,
-                after=after,
-                cumulative_result=cumulative_result,
-            )
+    original = ReferenceCurrentReadout.process_cumulative_frame
+
+    def process(self, frame, *, before, after, cumulative_result):
+        calls.extend((("before", before.revision), ("after", after.revision)))
+        return original(
+            self,
+            frame,
+            before=before,
+            after=after,
+            cumulative_result=cumulative_result,
+        )
+
+    monkeypatch.setattr(ReferenceCurrentReadout, "process_cumulative_frame", process)
 
     config = replace(_temporal_config(), execution_profile=ExecutionProfile.A0)
-    reference = ReferenceSpy("scene", config)
+    reference = ReferenceCurrentReadout("scene", config)
     cumulative = _cumulative(runtime_type=CumulativeSpy)
     result = DualReadoutRuntime(cumulative, reference).process_frame(_frame(), ())
 
@@ -478,27 +509,72 @@ def test_reference_readout_captures_before_and_after_cumulative_in_order() -> No
     assert reference.state.cumulative_view.revision == 1
 
 
-def test_reference_readout_failure_restores_both_complete_shallow_states() -> None:
+def test_reference_readout_captures_cumulative_only_once_per_frame(monkeypatch) -> None:
+    from src.oviv2.dual_readout import DualReadoutRuntime
+    from src.oviv2.reference_readout import CumulativeReadoutView, ReferenceCurrentReadout
+
+    original = CumulativeReadoutView.capture.__func__
+    revisions: list[int] = []
+
+    def capture(cls, cumulative):
+        revisions.append(cumulative.revision)
+        return original(cls, cumulative)
+
+    monkeypatch.setattr(CumulativeReadoutView, "capture", classmethod(capture))
+    config = replace(_temporal_config(), execution_profile=ExecutionProfile.A0)
+    runtime = DualReadoutRuntime(_cumulative(), ReferenceCurrentReadout("scene", config))
+    revisions.clear()
+
+    runtime.process_frame(_frame(0, 1.0), ())
+    runtime.process_frame(_frame(1, 2.0), ())
+
+    assert revisions == [1, 2]
+
+
+def test_reference_capture_reuses_registry_voxel_frozenset() -> None:
+    from src.oviv2.dual_readout import DualReadoutRuntime
+    from src.oviv2.reference_readout import ReferenceCurrentReadout
+
+    config = replace(_temporal_config(), execution_profile=ExecutionProfile.A0)
+    cumulative = _cumulative()
+    reference = ReferenceCurrentReadout("scene", config)
+    runtime = DualReadoutRuntime(cumulative, reference)
+    first = _frame(0, 1.0)
+    second = _frame(1, 2.0)
+    runtime.process_frame(first, (_observation(first),))
+    runtime.process_frame(second, (replace(_observation(second), observation_id=11),))
+
+    entity_id = next(iter(cumulative.registry.entities))
+    captured = reference.state.cumulative_view
+    assert captured is not None
+    assert captured.entities[0].voxel_keys is cumulative.registry.entities[entity_id].voxel_keys
+
+
+def test_reference_readout_failure_restores_both_complete_shallow_states(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     from src.oviv2.dual_readout import DualReadoutRuntime
     from src.oviv2.reference_readout import ReferenceCurrentReadout
 
     error = RuntimeError("reference failed after mutation")
 
-    class RejectingReference(ReferenceCurrentReadout):
-        def process_cumulative_frame(self, *args, **kwargs):
-            super().process_cumulative_frame(*args, **kwargs)
-            del self.config
-            self.injected = object()
-            raise error
-
     config = replace(_temporal_config(), execution_profile=ExecutionProfile.A0)
     cumulative = _cumulative()
-    reference = RejectingReference("scene", config)
+    reference = ReferenceCurrentReadout("scene", config)
+    original = ReferenceCurrentReadout.process_cumulative_frame
+
+    def reject(self, *args, **kwargs):
+        original(self, *args, **kwargs)
+        self.state = replace(self.state, last_timestamp=99.0)
+        raise error
+
+    monkeypatch.setattr(ReferenceCurrentReadout, "process_cumulative_frame", reject)
+    runtime = DualReadoutRuntime(cumulative, reference)
     before_cumulative = _identity_snapshot(cumulative)
     before_reference = _identity_snapshot(reference)
 
     with pytest.raises(RuntimeError) as caught:
-        DualReadoutRuntime(cumulative, reference).process_frame(_frame(), ())
+        runtime.process_frame(_frame(), ())
 
     assert caught.value is error
     _assert_exact_identity_snapshot(cumulative, before_cumulative)
