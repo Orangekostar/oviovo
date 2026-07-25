@@ -99,6 +99,22 @@ def _hex_digest(value: object, name: str, lengths: set[int]) -> str:
     return value
 
 
+def _normalize_class_names(class_names: Sequence[str]) -> tuple[str, ...]:
+    if isinstance(class_names, (str, bytes)) or not isinstance(class_names, Sequence):
+        raise TypeError("class_names must be a sequence of strings")
+    normalized: list[str] = []
+    for item in class_names:
+        if type(item) is not str:
+            raise TypeError("class_names must contain only strings")
+        stripped = item.strip()
+        if not stripped:
+            raise ValueError("class_names must contain non-empty strings")
+        normalized.append(stripped)
+    if not normalized:
+        raise ValueError("class_names must be non-empty")
+    return tuple(normalized)
+
+
 def _jsonable(value: Any) -> Any:
     if value is None or isinstance(value, (str, bool, int)):
         return value
@@ -197,7 +213,8 @@ def publish_temporal_current_checkpoint(
         raise TypeError("snapshot must be TemporalCurrentSnapshot")
     code_commit = _hex_digest(code_commit, "code_commit", {40, 64})
     input_sha256 = _hex_digest(input_sha256, "input_sha256", {64})
-    neutral = build_temporal_map_snapshot(snapshot, class_names)
+    normalized_class_names = _normalize_class_names(class_names)
+    neutral = build_temporal_map_snapshot(snapshot, normalized_class_names)
     capacities = _full_capacities(snapshot)
     maximum_entities, maximum_entity_points, maximum_background_points, serialized_byte_limit = capacities
     if len(neutral.entities) > maximum_entities:
@@ -225,7 +242,7 @@ def publish_temporal_current_checkpoint(
         "input_sha256": input_sha256,
         "method": neutral.method,
         "scope": neutral.scope,
-        "class_names": [str(item) for item in class_names],
+        "class_names": list(normalized_class_names),
         "maximum_entities": maximum_entities,
         "maximum_entity_points": maximum_entity_points,
         "maximum_background_points": maximum_background_points,

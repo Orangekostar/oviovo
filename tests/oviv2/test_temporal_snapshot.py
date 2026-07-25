@@ -210,6 +210,54 @@ def test_current_snapshot_does_not_alias_input_lifecycle() -> None:
     assert snapshot.entities[0].lifecycle.entity_id == 1
 
 
+def test_current_snapshot_deeply_owns_metadata_and_submap() -> None:
+    metadata = TemporalSnapshotMetadata("scene", 3, 3.0, 4, 0.1, "a" * 64)
+    entity = _entity(1, TemporalLifecycle.ACTIVE)
+    input_submap = entity.submap
+    snapshot = TemporalCurrentSnapshot(
+        metadata, (entity,), TemporalBackgroundVolume(_geometry_config())
+    )
+    assert snapshot.metadata is not metadata
+    assert snapshot.entities[0].submap is not input_submap
+
+    object.__setattr__(metadata, "scene_id", "changed")
+    object.__setattr__(input_submap, "local_voxel_keys", ((99, 0, 0),))
+    object.__setattr__(input_submap, "local_points_xyz", np.asarray([[np.nan, 0.0, 0.0]]))
+    assert snapshot.metadata.scene_id == "scene"
+    assert snapshot.entities[0].submap.local_voxel_keys == ((0, 0, 0), (1, 0, 0))
+    assert np.isfinite(snapshot.entities[0].submap.local_points_xyz).all()
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("local_voxel_keys", ((1, 0, 0), (0, 0, 0)), "sorted"),
+        ("local_points_xyz", np.asarray([[0.0, 0.0]]), "shape"),
+        ("weights", np.asarray([1.0, np.nan]), "finite"),
+    ],
+)
+def test_current_snapshot_revalidates_tampered_submap(
+    field: str, value: object, message: str
+) -> None:
+    entity = _entity(1, TemporalLifecycle.ACTIVE)
+    object.__setattr__(entity.submap, field, value)
+    with pytest.raises((TypeError, ValueError), match=message):
+        TemporalCurrentSnapshot(
+            TemporalSnapshotMetadata("scene", 3, 3.0, 4, 0.1, "a" * 64),
+            (entity,),
+            TemporalBackgroundVolume(_geometry_config()),
+        )
+
+
+def test_current_snapshot_revalidates_tampered_metadata() -> None:
+    metadata = TemporalSnapshotMetadata("scene", 3, 3.0, 4, 0.1, "a" * 64)
+    object.__setattr__(metadata, "frame_id", True)
+    with pytest.raises(ValueError, match="frame_id"):
+        TemporalCurrentSnapshot(
+            metadata, (), TemporalBackgroundVolume(_geometry_config())
+        )
+
+
 def test_compact_from_snapshot_contains_only_bounded_current_state() -> None:
     compact = TemporalCompactCheckpoint.from_snapshot(
         _snapshot(), maximum_entities=4, maximum_object_voxels=8
@@ -393,6 +441,44 @@ def test_compact_load_rejects_bad_npy_contract_before_materialization(
     monkeypatch.setattr(module.np, "load", lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("materialized")))
     with pytest.raises(ValueError, match="dtype"):
         TemporalCompactCheckpoint.load(target, maximum_entities=4, maximum_object_voxels=8)
+
+
+def test_compact_load_rejects_boolean_schema_version(tmp_path: Path) -> None:
+    import src.oviv2.temporal_snapshot as module
+
+    compact = TemporalCompactCheckpoint.from_snapshot(_snapshot())
+    target = compact.commit_new(
+        tmp_path / "checkpoint", maximum_entities=4, maximum_object_voxels=8
+    ).path
+    manifest = json.loads((target / "manifest.json").read_text(encoding="utf-8"))
+    manifest["schema_version"] = True
+    manifest_bytes = module._canonical_json(manifest)
+    (target / "manifest.json").write_bytes(manifest_bytes)
+    checksums = json.loads((target / "checksums.json").read_text(encoding="utf-8"))
+    checksums["manifest.json"] = hashlib.sha256(manifest_bytes).hexdigest()
+    (target / "checksums.json").write_bytes(module._canonical_json(checksums))
+    with pytest.raises(ValueError, match="schema"):
+        TemporalCompactCheckpoint.load(
+            target, maximum_entities=4, maximum_object_voxels=8
+        )
+
+
+def test_compact_empty_and_exact_capacity_roundtrip(tmp_path: Path) -> None:
+    empty = TemporalCurrentSnapshot(
+        _snapshot().metadata, (), TemporalBackgroundVolume(_geometry_config())
+    )
+    empty_loaded = TemporalCompactCheckpoint.from_snapshot(empty).commit_new(
+        tmp_path / "empty", maximum_entities=1, maximum_object_voxels=1
+    )
+    assert empty_loaded.entity_ids.shape == (0,)
+    assert empty_loaded.voxel_keys.shape == (0, 3)
+    assert empty_loaded.voxel_offsets.tolist() == [0]
+
+    full = TemporalCompactCheckpoint.from_snapshot(_snapshot()).commit_new(
+        tmp_path / "exact", maximum_entities=3, maximum_object_voxels=2
+    )
+    assert len(full.entity_ids) == 3
+    assert len(full.voxel_keys) == 6
 
 
 def test_compact_load_rejects_directory_swap_during_materialization(

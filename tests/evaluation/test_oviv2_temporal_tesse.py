@@ -12,6 +12,7 @@ import zipfile
 import numpy as np
 import pytest
 
+from src.core.data_structures import CameraIntrinsics, Frame
 from src.evaluation.oviv2_temporal_tesse import publish_temporal_current_checkpoint
 from src.evaluation.oviv2_temporal_tesse import load_temporal_current_checkpoint
 from src.evaluation.contracts import EntityPrediction, MapSnapshot
@@ -416,18 +417,23 @@ def test_full_publisher_and_loader_reject_oversized_entity_records(tmp_path: Pat
         load_temporal_current_checkpoint(receipt.path)
 
 
-def test_full_roundtrip_accepts_large_bounded_diagnostics(tmp_path: Path) -> None:
+def test_full_roundtrip_accepts_large_bounded_diagnostics(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import src.oviv2.temporal_snapshot as temporal_module
+
+    monkeypatch.setattr(temporal_module, "_MAX_JSON_BYTES", 8 * 1024)
     receipt = publish_temporal_current_checkpoint(
         tmp_path / "checkpoint",
-        _snapshot_with_dormant_entities(400),
+        _snapshot_with_dormant_entities(64),
         ("unknown", "chair"),
         code_commit="c" * 40,
         input_sha256="d" * 64,
     )
-    assert (receipt.path / "diagnostics.json").stat().st_size > 64 * 1024
+    assert (receipt.path / "diagnostics.json").stat().st_size > 8 * 1024
     loaded, diagnostics = load_temporal_current_checkpoint(receipt.path)
     assert loaded.entities == []
-    assert len(diagnostics["dormant"]) == 400
+    assert len(diagnostics["dormant"]) == 64
 
 
 def test_full_diagnostics_limit_is_symmetric_and_fails_before_publication(
@@ -455,3 +461,81 @@ def test_full_diagnostics_limit_is_symmetric_and_fails_before_publication(
     _rewrite_member(receipt.path, "diagnostics.json", malicious)
     with pytest.raises(ValueError, match="diagnostics.*size limit"):
         load_temporal_current_checkpoint(receipt.path)
+
+
+def test_full_publisher_normalizes_class_names_once_and_rejects_nonstrings(
+    tmp_path: Path,
+) -> None:
+    receipt = publish_temporal_current_checkpoint(
+        tmp_path / "normalized",
+        _snapshot_with_entity(semantic_id=1, prototype_dimension=2),
+        (" unknown ", " chair "),
+        code_commit="c" * 40,
+        input_sha256="d" * 64,
+    )
+    manifest = json.loads((receipt.path / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["class_names"] == ["unknown", "chair"]
+    loaded, _diagnostics = load_temporal_current_checkpoint(receipt.path)
+    assert loaded.entities[0].semantic_label == "chair"
+
+    target = tmp_path / "invalid"
+    with pytest.raises(TypeError, match="class_names"):
+        publish_temporal_current_checkpoint(
+            target,
+            _snapshot(),
+            ("unknown", 7),  # type: ignore[arg-type]
+            code_commit="c" * 40,
+            input_sha256="d" * 64,
+        )
+    assert not target.exists()
+
+
+def test_full_nonempty_background_roundtrip(tmp_path: Path) -> None:
+    config = TemporalGeometryConfig(0.1, 4.0, 2, 4, 4, 32, 0, 3, 0.5, 0.1, 2.0)
+    background = TemporalBackgroundVolume(config)
+    frame = Frame(
+        frame_id=0,
+        timestamp=0.0,
+        rgb=np.zeros((8, 8, 3), dtype=np.uint8),
+        depth=np.ones((8, 8), dtype=np.float32),
+        pose=np.eye(4),
+        intrinsics=CameraIntrinsics(8.0, 8.0, 3.5, 3.5, 8, 8),
+    )
+    background = background.trial_integrate(frame, frame.depth)
+    snapshot = TemporalCurrentSnapshot(
+        TemporalSnapshotMetadata("scene", 0, 0.0, 1, 0.1, "b" * 64),
+        (),
+        background,
+    )
+    receipt = publish_temporal_current_checkpoint(
+        tmp_path / "checkpoint", snapshot, ("unknown",),
+        code_commit="c" * 40, input_sha256="d" * 64,
+    )
+    loaded, _diagnostics = load_temporal_current_checkpoint(receipt.path)
+    assert loaded.background_xyz is not None
+    assert len(loaded.background_xyz) > 0
+
+
+def test_full_staging_write_failure_cleans_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import src.oviv2.temporal_snapshot as module
+
+    original = module._write_regular_at
+    calls = 0
+
+    def fail_second(*args: object, **kwargs: object):
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise RuntimeError("write")
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(module, "_write_regular_at", fail_second)
+    with pytest.raises(RuntimeError, match="write"):
+        publish_temporal_current_checkpoint(
+            tmp_path / "target", _snapshot(), ("unknown",),
+            code_commit="c" * 40, input_sha256="d" * 64,
+        )
+    assert calls == 2
+    assert list(tmp_path.iterdir()) == []

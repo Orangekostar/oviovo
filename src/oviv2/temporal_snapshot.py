@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter
-from dataclasses import asdict, dataclass, fields, replace
+from dataclasses import asdict, dataclass, fields
 import hashlib
 import io
 import json
@@ -28,7 +28,8 @@ from src.oviv2.compact_checkpoint import (
     _write_regular_at,
 )
 from src.oviv2.temporal_background import TemporalBackgroundVolume
-from src.oviv2.temporal_lifecycle import TemporalLifecycle
+from src.oviv2.temporal_geometry import ObjectSubmap
+from src.oviv2.temporal_lifecycle import TemporalLifecycle, TemporalLifecycleState
 from src.oviv2.temporal_state import TemporalEntityState
 
 
@@ -163,6 +164,14 @@ class TemporalCurrentSnapshot:
     def __post_init__(self) -> None:
         if not isinstance(self.metadata, TemporalSnapshotMetadata):
             raise TypeError("metadata must be TemporalSnapshotMetadata")
+        owned_metadata = TemporalSnapshotMetadata(
+            scene_id=self.metadata.scene_id,
+            frame_id=self.metadata.frame_id,
+            timestamp=self.metadata.timestamp,
+            revision=self.metadata.revision,
+            voxel_size_m=self.metadata.voxel_size_m,
+            config_sha256=self.metadata.config_sha256,
+        )
         if type(self.entities) is not tuple or any(not isinstance(item, TemporalEntityState) for item in self.entities):
             raise TypeError("entities must be an exact tuple of TemporalEntityState")
         validated_entities: list[TemporalEntityState] = []
@@ -189,26 +198,54 @@ class TemporalCurrentSnapshot:
                 raise ValueError("lifecycle absence_view_bins must be sorted, unique, and bounded by absent_streak")
             if lifecycle.absent_streak > 0 and not bins:
                 raise ValueError("lifecycle absence_view_bins are required for an absence streak")
-            # Re-run the entity's own pose, semantic and submap validation so a
-            # mutated frozen instance cannot cross the snapshot boundary.
-            validated = replace(entity, lifecycle=replace(lifecycle))
+            owned_lifecycle = TemporalLifecycleState(
+                entity_id=lifecycle.entity_id,
+                lifecycle=lifecycle.lifecycle,
+                existence_log_odds=lifecycle.existence_log_odds,
+                last_frame_id=lifecycle.last_frame_id,
+                last_timestamp=lifecycle.last_timestamp,
+                absent_streak=lifecycle.absent_streak,
+                absence_view_bins=tuple(lifecycle.absence_view_bins),
+            )
+            submap = entity.submap
+            if not isinstance(submap, ObjectSubmap):
+                raise TypeError("entity submap must be an ObjectSubmap")
+            owned_submap = ObjectSubmap(
+                reference_centroid_xyz=submap.reference_centroid_xyz,
+                local_voxel_keys=submap.local_voxel_keys,
+                local_points_xyz=submap.local_points_xyz,
+                weights=submap.weights,
+                last_seen_frame_ids=submap.last_seen_frame_ids,
+            )
+            validated = TemporalEntityState(
+                lifecycle=owned_lifecycle,
+                semantic_probabilities=entity.semantic_probabilities,
+                image_prototype=entity.image_prototype,
+                extent_xyz=entity.extent_xyz,
+                object_to_world=entity.object_to_world,
+                submap=owned_submap,
+                first_seen_frame_id=entity.first_seen_frame_id,
+                last_seen_frame_id=entity.last_seen_frame_id,
+                feature_model_id=entity.feature_model_id,
+            )
             validated_entities.append(validated)
         ids = tuple(item.lifecycle.entity_id for item in validated_entities)
         if ids != tuple(sorted(set(ids))):
             raise ValueError("entities must be sorted by unique temporal entity ID")
         for entity in validated_entities:
             if (
-                entity.lifecycle.last_frame_id > self.metadata.frame_id
-                or entity.lifecycle.last_timestamp > self.metadata.timestamp
-                or entity.last_seen_frame_id > self.metadata.frame_id
-                or entity.first_seen_frame_id > self.metadata.frame_id
-                or (entity.submap.last_seen_frame_ids.size and int(entity.submap.last_seen_frame_ids.max()) > self.metadata.frame_id)
+                entity.lifecycle.last_frame_id > owned_metadata.frame_id
+                or entity.lifecycle.last_timestamp > owned_metadata.timestamp
+                or entity.last_seen_frame_id > owned_metadata.frame_id
+                or entity.first_seen_frame_id > owned_metadata.frame_id
+                or (entity.submap.last_seen_frame_ids.size and int(entity.submap.last_seen_frame_ids.max()) > owned_metadata.frame_id)
             ):
                 raise ValueError("entity record is later than checkpoint")
         if not isinstance(self.background, TemporalBackgroundVolume):
             raise TypeError("background must be TemporalBackgroundVolume")
-        if not math.isclose(self.background.config.voxel_size_m, self.metadata.voxel_size_m, rel_tol=0.0, abs_tol=1e-12):
+        if not math.isclose(self.background.config.voxel_size_m, owned_metadata.voxel_size_m, rel_tol=0.0, abs_tol=1e-12):
             raise ValueError("background voxel size does not match metadata")
+        object.__setattr__(self, "metadata", owned_metadata)
         object.__setattr__(self, "entities", tuple(validated_entities))
         object.__setattr__(self, "background", self.background._clone(max(1, self.background.active_block_count)))
 
@@ -655,7 +692,11 @@ class TemporalCompactCheckpoint:
         manifest = _strict_json(contents["manifest.json"], label="manifest")
         if set(manifest) != {"format", "schema_version", "metadata", "maximum_entities", "maximum_object_voxels", "serialized_byte_limit"}:
             raise ValueError("compact checkpoint manifest fields are not exact")
-        if manifest["format"] != TEMPORAL_COMPACT_FORMAT or manifest["schema_version"] != 1:
+        if (
+            manifest["format"] != TEMPORAL_COMPACT_FORMAT
+            or type(manifest["schema_version"]) is not int
+            or manifest["schema_version"] != 1
+        ):
             raise ValueError("compact checkpoint schema is invalid")
         stored_entities = manifest["maximum_entities"]
         stored_voxels = manifest["maximum_object_voxels"]
