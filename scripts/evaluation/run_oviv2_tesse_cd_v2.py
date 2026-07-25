@@ -1149,9 +1149,13 @@ def load_v2_frozen_run_context(
 
 def _production_runtime_factory(config: Mapping[str, Any], caches: Any) -> Any:
     from src.oviv2.dual_readout import DualReadoutRuntime
+    from src.oviv2.reference_readout import (
+        LifecycleOverlayReadout,
+        ReferenceCurrentReadout,
+    )
     from src.oviv2.runner_config import runtime_config_from_json
     from src.oviv2.runtime import Oviv2Runtime
-    from src.oviv2.temporal_config import temporal_config_from_json
+    from src.oviv2.temporal_config import ExecutionProfile, temporal_config_from_json
     from src.oviv2.temporal_runtime import TemporalCurrentRuntime
 
     runtime_config = apply_frozen_visibility_policy(
@@ -1166,11 +1170,16 @@ def _production_runtime_factory(config: Mapping[str, Any], caches: Any) -> Any:
         runtime_config,
         dense_semantic_provenance=caches.dense_provenance,
     )
-    temporal = TemporalCurrentRuntime(
-        str(config["scene"]),
-        temporal_config,
-        tracker_config=runtime_config.tracker,
-    )
+    if temporal_config.execution_profile is ExecutionProfile.A0:
+        temporal = ReferenceCurrentReadout(str(config["scene"]), temporal_config)
+    elif temporal_config.execution_profile is ExecutionProfile.A1:
+        temporal = LifecycleOverlayReadout(str(config["scene"]), temporal_config)
+    else:
+        temporal = TemporalCurrentRuntime(
+            str(config["scene"]),
+            temporal_config,
+            tracker_config=runtime_config.tracker,
+        )
     return DualReadoutRuntime(cumulative, temporal)
 
 
@@ -1252,6 +1261,108 @@ def _snapshot_from_runtime(
         config_sha256=config_sha256,
     )
     return TemporalCurrentSnapshot(metadata, state.entities, state.background)
+
+
+def _cumulative_neutral_from_runtime(
+    runtime: Any,
+    *,
+    checkpoint: TesseCausalCheckpoint,
+    caches: Any,
+) -> MapSnapshot:
+    from src.evaluation.oviv2_tesse import build_neutral_current_snapshot
+    from src.oviv2.runtime import Oviv2Runtime
+
+    cumulative = getattr(runtime, "cumulative", None)
+    if not isinstance(cumulative, Oviv2Runtime):
+        raise ValueError("dual runtime does not expose cumulative Oviv2Runtime")
+    expected_timestamp = checkpoint.timestamp_ns / 1_000_000_000
+    if not (
+        cumulative.last_frame_id == checkpoint.frame_index
+        and cumulative.revision == checkpoint.frame_index + 1
+        and float(cumulative.last_timestamp) == expected_timestamp
+    ):
+        raise ValueError("cumulative state does not match checkpoint progress")
+    required = (
+        "class_names",
+        "object_semantic_ids",
+        "semantic_fusion",
+        "timestamp_ns_by_frame",
+    )
+    if any(not hasattr(caches, name) for name in required):
+        raise TypeError("cumulative neutral export requires production cache bindings")
+    with tempfile.TemporaryDirectory(prefix="oviv2-v1-neutral-") as temporary:
+        snapshot = cumulative.commit_new(Path(temporary) / "cumulative")
+        neutral = build_neutral_current_snapshot(
+            snapshot,
+            timestamp_ns=checkpoint.timestamp_ns,
+            class_names=caches.class_names,
+            object_semantic_ids=caches.object_semantic_ids,
+            fusion=caches.semantic_fusion,
+            timestamp_ns_by_frame=caches.timestamp_ns_by_frame,
+        )
+        snapshot.revalidate_source()
+    return neutral
+
+
+def _compose_checkpoint_neutral(
+    profile: Any,
+    *,
+    cumulative: MapSnapshot | None,
+    reference_state: Any | None,
+    temporal: MapSnapshot | None,
+) -> MapSnapshot:
+    from src.oviv2.reference_readout import ReferenceReadoutState
+    from src.oviv2.temporal_config import ExecutionProfile
+
+    if not isinstance(profile, ExecutionProfile):
+        raise TypeError("profile must be an ExecutionProfile")
+    if profile is ExecutionProfile.A0:
+        if not isinstance(cumulative, MapSnapshot):
+            raise TypeError("A0 neutral composition requires cumulative snapshot")
+        return cumulative
+    if profile is ExecutionProfile.A1:
+        if not isinstance(cumulative, MapSnapshot):
+            raise TypeError("A1 neutral composition requires cumulative snapshot")
+        if not isinstance(reference_state, ReferenceReadoutState):
+            raise TypeError("A1 neutral composition requires reference state")
+        lifecycles = dict(reference_state.entity_lifecycles)
+        kept = []
+        for entity in cumulative.entities:
+            owner_id = entity.metadata.get("owner_entity_id")
+            if type(owner_id) is not int or owner_id not in lifecycles:
+                raise ValueError("cumulative neutral entity has no reference lifecycle")
+            if lifecycles[owner_id] != "dormant":
+                kept.append(entity)
+        return MapSnapshot(
+            method=cumulative.method,
+            scene_id=cumulative.scene_id,
+            timestamp=cumulative.timestamp,
+            entities=kept,
+            background_xyz=cumulative.background_xyz,
+            scope=cumulative.scope,
+            runtime=cumulative.runtime,
+        )
+    if not isinstance(temporal, MapSnapshot):
+        raise TypeError("temporal neutral composition requires a temporal snapshot")
+    if profile is ExecutionProfile.A2:
+        if not isinstance(cumulative, MapSnapshot):
+            raise TypeError("A2 neutral composition requires cumulative snapshot")
+        if (
+            temporal.scene_id != cumulative.scene_id
+            or temporal.timestamp * 1_000_000_000 != cumulative.timestamp
+            or temporal.scope != cumulative.scope
+        ):
+            raise ValueError("A2 temporal and cumulative neutral snapshots do not match")
+        return MapSnapshot(
+            method=temporal.method,
+            scene_id=temporal.scene_id,
+            timestamp=temporal.timestamp,
+            entities=temporal.entities,
+            background_xyz=cumulative.background_xyz,
+            scope=temporal.scope,
+            runtime=temporal.runtime,
+        )
+    return temporal
 
 
 def _input_sha256(
@@ -1444,13 +1555,36 @@ def run(
                 raise ValueError(
                     "checkpoint relative timestamp does not match dataset origin"
                 )
-            snapshot = _snapshot_from_runtime(
-                runtime,
-                checkpoint=checkpoint,
-                scene=scene,
-                config_sha256=str(config["algorithm_hash"]),
-                voxel_size_m=temporal_config.geometry.voxel_size_m,
-            )
+            reference_state = None
+            snapshot = None
+            if temporal_config.execution_profile.profile_id not in {"a0", "a1"}:
+                snapshot = _snapshot_from_runtime(
+                    runtime,
+                    checkpoint=checkpoint,
+                    scene=scene,
+                    config_sha256=str(config["algorithm_hash"]),
+                    voxel_size_m=temporal_config.geometry.voxel_size_m,
+                )
+                metadata = snapshot.metadata
+            else:
+                reference_state = getattr(getattr(runtime, "temporal", None), "state", None)
+                expected_timestamp = checkpoint.timestamp_ns / 1_000_000_000
+                if not (
+                    reference_state is not None
+                    and reference_state.scene_id == scene
+                    and reference_state.last_frame_id == checkpoint.frame_index
+                    and reference_state.revision == checkpoint.frame_index + 1
+                    and float(reference_state.last_timestamp) == expected_timestamp
+                ):
+                    raise ValueError("reference state does not match checkpoint progress")
+                metadata = TemporalSnapshotMetadata(
+                    scene_id=reference_state.scene_id,
+                    frame_id=reference_state.last_frame_id,
+                    timestamp=reference_state.last_timestamp,
+                    revision=reference_state.revision,
+                    voxel_size_m=temporal_config.geometry.voxel_size_m,
+                    config_sha256=str(config["algorithm_hash"]),
+                )
             root = staging / "checkpoints" / f"{frame_index:08d}-{checkpoint.timestamp_ns}"
             _assert_staging_identity(staging, staging_identity)
             root.mkdir(parents=True)
@@ -1460,35 +1594,50 @@ def run(
             if not needs_full and not needs_compact:
                 raise ValueError("checkpoint role combination is invalid")
             artifacts: dict[str, dict[str, Any]] = {}
+            temporal_neutral = None
             if needs_full:
-                receipt = publish_temporal_current_checkpoint(
-                    root / "temporal_current",
-                    snapshot,
-                    caches.class_names,
-                    code_commit=code_commit,
-                    input_sha256=input_sha256,
+                if snapshot is not None:
+                    receipt = publish_temporal_current_checkpoint(
+                        root / "temporal_current",
+                        snapshot,
+                        caches.class_names,
+                        code_commit=code_commit,
+                        input_sha256=input_sha256,
+                    )
+                    artifacts["temporal_current"] = _bind_checkpoint_artifact(
+                        artifact_root=receipt.path,
+                        source_witness=receipt.source_witness,
+                        checkpoint_format=TEMPORAL_CURRENT_FORMAT,
+                        staging=staging,
+                        temporal_config=temporal_config,
+                        witnesses=witnesses,
+                        expected_inventory=expected_checkpoint_inventory,
+                    )
+                    loaded = load_temporal_current_checkpoint(receipt.path)
+                    temporal_neutral = MapSnapshot(
+                        method="OVIV2",
+                        scene_id=loaded.snapshot.scene_id,
+                        timestamp=loaded.snapshot.timestamp,
+                        entities=loaded.snapshot.entities,
+                        background_xyz=loaded.snapshot.background_xyz,
+                        scope=loaded.snapshot.scope,
+                        runtime={},
+                    )
+                    loaded.revalidate_source()
+                cumulative_neutral = (
+                    _cumulative_neutral_from_runtime(
+                        runtime, checkpoint=checkpoint, caches=caches
+                    )
+                    if temporal_config.execution_profile.profile_id in {"a0", "a1", "a2"}
+                    else None
                 )
-                artifacts["temporal_current"] = _bind_checkpoint_artifact(
-                    artifact_root=receipt.path,
-                    source_witness=receipt.source_witness,
-                    checkpoint_format=TEMPORAL_CURRENT_FORMAT,
-                    staging=staging,
-                    temporal_config=temporal_config,
-                    witnesses=witnesses,
-                    expected_inventory=expected_checkpoint_inventory,
-                )
-                loaded = load_temporal_current_checkpoint(receipt.path)
-                neutral = MapSnapshot(
-                    method="OVIV2",
-                    scene_id=loaded.snapshot.scene_id,
-                    timestamp=loaded.snapshot.timestamp,
-                    entities=loaded.snapshot.entities,
-                    background_xyz=loaded.snapshot.background_xyz,
-                    scope=loaded.snapshot.scope,
-                    runtime={},
+                neutral = _compose_checkpoint_neutral(
+                    temporal_config.execution_profile,
+                    cumulative=cumulative_neutral,
+                    reference_state=reference_state,
+                    temporal=temporal_neutral,
                 )
                 neutral_paths = write_map_snapshot(neutral, root / "neutral_current")
-                loaded.revalidate_source()
                 neutral_snapshot = Path(neutral_paths["snapshot"])
                 neutral_entities = Path(neutral_paths["entities"])
                 for path in (neutral_snapshot, neutral_entities):
@@ -1512,13 +1661,33 @@ def run(
                             "centroid_xyz": [float(value) for value in centroid],
                         }
                     )
-                del receipt
+                if snapshot is None:
+                    neutral_tree = _tree_record(
+                        root / "neutral_current", relative_to=staging
+                    )
+                    artifacts["neutral_current"] = {
+                        "format": "oviv2_neutral_current_v1",
+                        "artifact": neutral_tree,
+                        "checksums_sha256": neutral_tree["sha256"],
+                    }
+                else:
+                    del receipt
             if needs_compact:
-                compact = TemporalCompactCheckpoint.from_snapshot(
-                    snapshot,
-                    maximum_entities=temporal_config.geometry.maximum_entities,
-                    maximum_object_voxels=temporal_config.geometry.maximum_object_voxels,
-                ).commit_new(
+                compact_checkpoint = (
+                    TemporalCompactCheckpoint.from_reference(
+                        metadata,
+                        reference_state,
+                        maximum_entities=temporal_config.geometry.maximum_entities,
+                        maximum_object_voxels=temporal_config.geometry.maximum_object_voxels,
+                    )
+                    if reference_state is not None
+                    else TemporalCompactCheckpoint.from_snapshot(
+                        snapshot,
+                        maximum_entities=temporal_config.geometry.maximum_entities,
+                        maximum_object_voxels=temporal_config.geometry.maximum_object_voxels,
+                    )
+                )
+                compact = compact_checkpoint.commit_new(
                     root / "temporal_compact",
                     maximum_entities=temporal_config.geometry.maximum_entities,
                     maximum_object_voxels=temporal_config.geometry.maximum_object_voxels,
@@ -1534,7 +1703,13 @@ def run(
                 )
                 del compact
             primary = artifacts[
-                "temporal_current" if needs_full else "temporal_compact"
+                (
+                    "temporal_current"
+                    if needs_full and snapshot is not None
+                    else "neutral_current"
+                    if needs_full
+                    else "temporal_compact"
+                )
             ]
             status_path = root / "checkpoint_status.json"
             _write_json(
@@ -1859,12 +2034,19 @@ def run(
                 parent = Path(record[role]["path"]).parent
                 expected_directories.add(parent.as_posix())
                 expected_directories.add(parent.parent.as_posix())
+                expected_directories.add(parent.parent.parent.as_posix())
         expected_entries = {
             **{path: "file" for path in expected_files},
             **{path: "directory" for path in expected_directories},
         }
-        if _entry_inventory(staging) != expected_entries:
-            raise ValueError("run publication inventory is invalid")
+        actual_entries = _entry_inventory(staging)
+        if actual_entries != expected_entries:
+            missing = sorted(set(expected_entries.items()) - set(actual_entries.items()))
+            unexpected = sorted(set(actual_entries.items()) - set(expected_entries.items()))
+            raise ValueError(
+                f"run publication inventory is invalid (missing={missing}, "
+                f"unexpected={unexpected})"
+            )
         if frozen is not None:
             if frozen.manifest_path.read_bytes() != frozen.manifest_bytes:
                 raise ValueError("freeze manifest changed during run")

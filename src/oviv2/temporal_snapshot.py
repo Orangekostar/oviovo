@@ -27,6 +27,7 @@ from src.oviv2.compact_checkpoint import (
     _rename_directory_no_replace_at,
     _write_regular_at,
 )
+from src.oviv2.reference_readout import ReferenceReadoutState
 from src.oviv2.temporal_background import TemporalBackgroundVolume
 from src.oviv2.temporal_geometry import ObjectSubmap
 from src.oviv2.temporal_lifecycle import TemporalLifecycle, TemporalLifecycleState
@@ -609,6 +610,117 @@ class TemporalCompactCheckpoint:
             np.asarray([len(item.lifecycle.absence_view_bins) for item in snapshot.entities], dtype=np.int64),
             np.asarray([item.object_to_world for item in snapshot.entities], dtype=np.float64).reshape((-1, 4, 4)),
             np.asarray(chunks, dtype=np.int64).reshape((-1, 3)),
+            np.asarray(offsets, dtype=np.int64),
+        )
+
+    @classmethod
+    def from_reference(
+        cls,
+        metadata: TemporalSnapshotMetadata,
+        state: ReferenceReadoutState,
+        *,
+        maximum_entities: int,
+        maximum_object_voxels: int,
+    ) -> "TemporalCompactCheckpoint":
+        if not isinstance(metadata, TemporalSnapshotMetadata):
+            raise TypeError("metadata must be TemporalSnapshotMetadata")
+        if not isinstance(state, ReferenceReadoutState):
+            raise TypeError("state must be ReferenceReadoutState")
+        view = state.cumulative_view
+        if view is None:
+            raise ValueError("reference state has no cumulative view")
+        if (
+            state.scene_id != view.scene_id
+            or state.revision != view.revision
+            or state.last_frame_id != view.last_frame_id
+            or state.last_timestamp != view.last_timestamp
+            or metadata.scene_id != view.scene_id
+            or metadata.revision != view.revision
+            or metadata.frame_id != view.last_frame_id
+            or metadata.timestamp != view.last_timestamp
+            or not math.isclose(
+                metadata.voxel_size_m, view.voxel_size_m, rel_tol=0.0, abs_tol=1e-12
+            )
+        ):
+            raise ValueError("reference state and metadata binding mismatch")
+
+        _compact_byte_limit(maximum_entities, maximum_object_voxels)
+        if len(view.entities) > maximum_entities:
+            raise ValueError("entity capacity exceeded")
+        if any(len(entity.voxel_keys) > maximum_object_voxels for entity in view.entities):
+            raise ValueError("object voxel capacity exceeded")
+
+        entities_by_id = {entity.entity_id: entity for entity in view.entities}
+        raw_lifecycles = state.entity_lifecycles
+        if type(raw_lifecycles) is not tuple or any(
+            type(item) is not tuple or len(item) != 2 for item in raw_lifecycles
+        ):
+            raise TypeError("reference entity_lifecycles must be an exact tuple of pairs")
+        lifecycle_ids = tuple(item[0] for item in raw_lifecycles)
+        if lifecycle_ids != tuple(sorted(set(lifecycle_ids))):
+            raise ValueError("reference lifecycle IDs must be sorted and unique")
+        lifecycle_names = dict(raw_lifecycles)
+        if set(lifecycle_names) != set(entities_by_id):
+            raise ValueError("reference lifecycle IDs do not match cumulative entities")
+        if type(state.lifecycle_states) is not tuple or any(
+            not isinstance(item, TemporalLifecycleState)
+            for item in state.lifecycle_states
+        ):
+            raise TypeError("reference lifecycle_states must contain lifecycle states")
+        evidence_ids = tuple(item.entity_id for item in state.lifecycle_states)
+        if evidence_ids != tuple(sorted(set(evidence_ids))):
+            raise ValueError("reference evidence IDs must be sorted and unique")
+        if any(
+            item.last_frame_id > metadata.frame_id
+            or item.last_timestamp > metadata.timestamp
+            for item in state.lifecycle_states
+        ):
+            raise ValueError("reference lifecycle evidence is later than checkpoint")
+        evidence = {item.entity_id: item for item in state.lifecycle_states}
+        if evidence and set(evidence) != set(entities_by_id):
+            raise ValueError("reference evidence IDs do not match cumulative entities")
+
+        lifecycle_by_name = {
+            item.value: item
+            for item in (
+                TemporalLifecycle.ACTIVE,
+                TemporalLifecycle.UNCERTAIN,
+                TemporalLifecycle.DORMANT,
+            )
+        }
+        ordered = tuple(view.entities)
+        lifecycles: list[TemporalLifecycle] = []
+        log_odds: list[float] = []
+        absent_streaks: list[int] = []
+        distinct_bins: list[int] = []
+        for entity in ordered:
+            name = lifecycle_names[entity.entity_id]
+            if name not in lifecycle_by_name:
+                raise ValueError("reference lifecycle is invalid")
+            item = evidence.get(entity.entity_id)
+            lifecycle = lifecycle_by_name[name] if item is None else item.lifecycle
+            if item is not None and item.lifecycle.value != name:
+                raise ValueError("reference lifecycle evidence is inconsistent")
+            lifecycles.append(lifecycle)
+            log_odds.append(0.0 if item is None else item.existence_log_odds)
+            absent_streaks.append(0 if item is None else item.absent_streak)
+            distinct_bins.append(0 if item is None else len(item.absence_view_bins))
+
+        offsets = [0]
+        keys: list[tuple[int, int, int]] = []
+        for entity in ordered:
+            keys.extend(sorted(entity.voxel_keys))
+            offsets.append(len(keys))
+        identity = np.eye(4, dtype=np.float64)
+        return cls(
+            metadata,
+            np.asarray([item.entity_id for item in ordered], dtype=np.int64),
+            np.asarray([_LIFECYCLE_TO_CODE[item] for item in lifecycles], dtype=np.uint8),
+            np.asarray(log_odds, dtype=np.float64),
+            np.asarray(absent_streaks, dtype=np.int64),
+            np.asarray(distinct_bins, dtype=np.int64),
+            np.repeat(identity[None, :, :], len(ordered), axis=0),
+            np.asarray(keys, dtype=np.int64).reshape((-1, 3)),
             np.asarray(offsets, dtype=np.int64),
         )
 

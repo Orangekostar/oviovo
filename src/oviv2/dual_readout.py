@@ -1,36 +1,56 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Protocol, runtime_checkable
 
 from src.core.data_structures import Frame
 from src.oviv2.dense_semantics import DenseSemanticFrame
 from src.oviv2.observations import FrameObservation
 from src.oviv2.runtime import Oviv2Runtime, RuntimeFrameResult
+from src.oviv2.reference_readout import (
+    CumulativeReadoutView,
+    ReferenceFrameResult,
+    ReferenceReadoutState,
+)
 from src.oviv2.temporal_runtime import TemporalCurrentRuntime, TemporalFrameResult
+
+
+@runtime_checkable
+class ReferenceReadoutProtocol(Protocol):
+    state: ReferenceReadoutState
+
+    def process_cumulative_frame(
+        self,
+        frame: Frame,
+        *,
+        before: CumulativeReadoutView,
+        after: CumulativeReadoutView,
+        cumulative_result: RuntimeFrameResult,
+    ) -> ReferenceFrameResult: ...
 
 
 @dataclass(frozen=True)
 class DualFrameResult:
     cumulative: RuntimeFrameResult
-    temporal: TemporalFrameResult
+    temporal: TemporalFrameResult | ReferenceFrameResult
 
     def __post_init__(self) -> None:
         if not isinstance(self.cumulative, RuntimeFrameResult):
             raise TypeError("cumulative must be a RuntimeFrameResult")
-        if not isinstance(self.temporal, TemporalFrameResult):
-            raise TypeError("temporal must be a TemporalFrameResult")
+        if not isinstance(self.temporal, (TemporalFrameResult, ReferenceFrameResult)):
+            raise TypeError("temporal must be a temporal or reference frame result")
 
 
 class DualReadoutRuntime:
     def __init__(
         self,
         cumulative: Oviv2Runtime,
-        temporal: TemporalCurrentRuntime,
+        temporal: TemporalCurrentRuntime | ReferenceReadoutProtocol,
     ) -> None:
         if not isinstance(cumulative, Oviv2Runtime):
             raise TypeError("cumulative must be an Oviv2Runtime")
-        if not isinstance(temporal, TemporalCurrentRuntime):
-            raise TypeError("temporal must be a TemporalCurrentRuntime")
+        if not isinstance(temporal, (TemporalCurrentRuntime, ReferenceReadoutProtocol)):
+            raise TypeError("temporal must be a temporal runtime or reference readout")
         temporal_state = temporal.state
         if cumulative.scene_id != temporal_state.scene_id:
             raise ValueError("cumulative and temporal scene IDs must match")
@@ -49,7 +69,7 @@ class DualReadoutRuntime:
     @staticmethod
     def _restore(
         cumulative: Oviv2Runtime,
-        temporal: TemporalCurrentRuntime,
+        temporal: TemporalCurrentRuntime | ReferenceReadoutProtocol,
         cumulative_snapshot: dict[str, object],
         temporal_snapshot: dict[str, object],
         original_error: BaseException,
@@ -81,16 +101,30 @@ class DualReadoutRuntime:
         temporal_snapshot = dict(self.temporal.__dict__)
 
         try:
+            before = (
+                CumulativeReadoutView.capture(self.cumulative)
+                if isinstance(self.temporal, ReferenceReadoutProtocol)
+                else None
+            )
             cumulative_result = self.cumulative.process_frame(
                 frame,
                 observations,
                 dense_semantics,
             )
-            temporal_result = self.temporal.process_frame(
-                frame,
-                observations,
-                dense_semantics,
-            )
+            if isinstance(self.temporal, ReferenceReadoutProtocol):
+                assert before is not None
+                temporal_result = self.temporal.process_cumulative_frame(
+                    frame,
+                    before=before,
+                    after=CumulativeReadoutView.capture(self.cumulative),
+                    cumulative_result=cumulative_result,
+                )
+            else:
+                temporal_result = self.temporal.process_frame(
+                    frame,
+                    observations,
+                    dense_semantics,
+                )
             temporal_state = self.temporal.state
             expected_progress = (
                 cumulative_result.frame_id,

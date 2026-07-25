@@ -274,6 +274,110 @@ def test_compact_from_snapshot_contains_only_bounded_current_state() -> None:
         )
 
 
+def test_compact_from_reference_uses_world_voxels_identity_pose_and_readout_evidence(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_snapshot as module
+    from src.oviv2.reference_readout import (
+        CumulativeEntityView,
+        CumulativeReadoutView,
+        ReferenceReadoutState,
+    )
+
+    view = CumulativeReadoutView(
+        scene_id="scene",
+        revision=4,
+        last_frame_id=3,
+        last_timestamp=3.0,
+        voxel_size_m=0.1,
+        depth_max_m=4.0,
+        visibility_depth_tolerance_m=0.1,
+        entities=(
+            CumulativeEntityView(
+                7,
+                "active",
+                frozenset({(4, 5, 6), (1, 2, 3)}),
+                (0.0, 0.0, 0.0),
+                (0.0, 0.0, 0.0),
+                (1.0, 1.0, 1.0),
+            ),
+        ),
+    )
+    lifecycle = TemporalLifecycleState(
+        7, TemporalLifecycle.UNCERTAIN, 1.25, 3, 3.0, 2, (1, 3)
+    )
+    state = ReferenceReadoutState(
+        "scene", 4, 3, 3.0, ((7, "uncertain"),), (lifecycle,), view
+    )
+    monkeypatch.setattr(
+        module,
+        "ObjectSubmap",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("submap constructed")),
+    )
+
+    compact = TemporalCompactCheckpoint.from_reference(
+        TemporalSnapshotMetadata("scene", 3, 3.0, 4, 0.1, "a" * 64),
+        state,
+        maximum_entities=2,
+        maximum_object_voxels=4,
+    )
+
+    assert compact.entity_ids.tolist() == [7]
+    assert compact.lifecycle_codes.tolist() == [1]
+    assert compact.existence_log_odds.tolist() == [1.25]
+    assert compact.absent_streaks.tolist() == [2]
+    assert compact.distinct_view_bin_counts.tolist() == [2]
+    assert compact.voxel_keys.tolist() == [[1, 2, 3], [4, 5, 6]]
+    np.testing.assert_array_equal(compact.object_to_world[0], np.eye(4))
+
+
+def test_compact_from_reference_validates_binding_and_capacity() -> None:
+    from src.oviv2.reference_readout import (
+        CumulativeEntityView,
+        CumulativeReadoutView,
+        ReferenceReadoutState,
+    )
+
+    entity = CumulativeEntityView(
+        1,
+        "active",
+        frozenset({(0, 0, 0), (1, 0, 0)}),
+        (0.0, 0.0, 0.0),
+        (0.0, 0.0, 0.0),
+        (1.0, 1.0, 1.0),
+    )
+    view = CumulativeReadoutView("scene", 4, 3, 3.0, 0.1, 4.0, 0.1, (entity,))
+    state = ReferenceReadoutState("scene", 4, 3, 3.0, ((1, "active"),), (), view)
+    metadata = TemporalSnapshotMetadata("scene", 3, 3.0, 4, 0.1, "a" * 64)
+
+    with pytest.raises(ValueError, match="object voxel capacity"):
+        TemporalCompactCheckpoint.from_reference(
+            metadata, state, maximum_entities=1, maximum_object_voxels=1
+        )
+    with pytest.raises(ValueError, match="metadata|binding"):
+        TemporalCompactCheckpoint.from_reference(
+            replace(metadata, revision=5),
+            state,
+            maximum_entities=1,
+            maximum_object_voxels=2,
+        )
+    duplicate = replace(state, entity_lifecycles=((1, "active"), (1, "active")))
+    with pytest.raises(ValueError, match="lifecycle IDs"):
+        TemporalCompactCheckpoint.from_reference(
+            metadata, duplicate, maximum_entities=1, maximum_object_voxels=2
+        )
+    future = replace(
+        state,
+        lifecycle_states=(
+            TemporalLifecycleState(1, TemporalLifecycle.ACTIVE, 1.0, 4, 4.0, 0, ()),
+        ),
+    )
+    with pytest.raises(ValueError, match="later than checkpoint"):
+        TemporalCompactCheckpoint.from_reference(
+            metadata, future, maximum_entities=1, maximum_object_voxels=2
+        )
+
+
 def _tree_hashes(path: Path) -> dict[str, str]:
     return {
         item.relative_to(path).as_posix(): hashlib.sha256(item.read_bytes()).hexdigest()

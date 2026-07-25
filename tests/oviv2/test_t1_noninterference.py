@@ -5,6 +5,7 @@ import pickle
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from src.core.data_structures import CameraIntrinsics, Frame
 from src.oviv2.dual_readout import DualReadoutRuntime
@@ -12,8 +13,10 @@ from src.oviv2.evidence import EvidenceConfig
 from src.oviv2.geometry import TsdfConfig
 from src.oviv2.meshing import derive_labeled_mesh
 from src.oviv2.observations import FrameObservation, ObservationKind
+from src.oviv2.reference_readout import LifecycleOverlayReadout, ReferenceCurrentReadout
 from src.oviv2.runtime import Oviv2Runtime, Oviv2RuntimeConfig
 from src.oviv2.temporal_config import (
+    ExecutionProfile,
     TemporalAssociationConfig,
     TemporalGeometryConfig,
     TemporalLifecycleConfig,
@@ -23,12 +26,24 @@ from src.oviv2.temporal_runtime import TemporalCurrentRuntime
 from src.oviv2.tracking import LocalTrackerConfig
 
 
-def _temporal_config() -> TemporalReadoutConfig:
+def _temporal_config(profile: ExecutionProfile) -> TemporalReadoutConfig:
     return TemporalReadoutConfig(
         lifecycle=TemporalLifecycleConfig(0.0, 4.0, -5.0, 12.0, 100.0, 0.7, 0.3, 2, 1, 0.1, 1, 0.5, 8, 4),
         association=TemporalAssociationConfig(1.0, 1.0, 1.0, 1.0, 1.0, 0.2, 2.0, 0.9, 0.9, 0.9),
         geometry=TemporalGeometryConfig(0.05, 4.0, 4, 128, 128, 256, 0, 100, 0.5, 0.1, 2.0),
+        execution_profile=profile,
     )
+
+
+def _readout(
+    profile: ExecutionProfile, tracker: LocalTrackerConfig
+) -> TemporalCurrentRuntime | ReferenceCurrentReadout | LifecycleOverlayReadout:
+    config = _temporal_config(profile)
+    if profile is ExecutionProfile.A0:
+        return ReferenceCurrentReadout("scene", config)
+    if profile is ExecutionProfile.A1:
+        return LifecycleOverlayReadout("scene", config)
+    return TemporalCurrentRuntime("scene", config, tracker)
 
 
 def _frame(frame_id: int) -> Frame:
@@ -106,7 +121,10 @@ def _tree_bytes(path: Path) -> dict[str, tuple[str, bytes]]:
     }
 
 
-def test_dual_readout_is_exactly_noninterfering_for_cumulative_t1(tmp_path: Path) -> None:
+@pytest.mark.parametrize("profile", tuple(ExecutionProfile))
+def test_dual_readout_is_exactly_noninterfering_for_cumulative_t1(
+    tmp_path: Path, profile: ExecutionProfile
+) -> None:
     tracker = LocalTrackerConfig(confirm_hits=2, min_voxel_overlap=0.0, max_centroid_distance_m=2.0)
     config = Oviv2RuntimeConfig(
         tsdf=TsdfConfig(
@@ -119,7 +137,7 @@ def test_dual_readout_is_exactly_noninterfering_for_cumulative_t1(tmp_path: Path
     )
     direct = Oviv2Runtime("scene", config)
     cumulative = Oviv2Runtime("scene", config)
-    temporal = TemporalCurrentRuntime("scene", _temporal_config(), tracker)
+    temporal = _readout(profile, tracker)
     dual = DualReadoutRuntime(cumulative, temporal)
 
     frames = tuple(_frame(frame_id) for frame_id in range(3))

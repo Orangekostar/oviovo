@@ -9,11 +9,21 @@ import shutil
 import sys
 from types import SimpleNamespace
 
+import numpy as np
 import pytest
 
 from scripts.evaluation.run_oviv2_tesse_cd import RunPublicationUncertainError
 from src.oviv2.temporal_background import TemporalBackgroundVolume
 from src.oviv2.temporal_config import temporal_config_from_json
+from src.oviv2.dense_semantics import DenseSemanticProvenance
+from src.evaluation.contracts import EntityPrediction, MapSnapshot
+from src.evaluation.exporters.oviovo import write_map_snapshot
+from src.oviv2.reference_readout import (
+    CumulativeEntityView,
+    CumulativeReadoutView,
+    ReferenceReadoutState,
+)
+from src.oviv2.temporal_config import ExecutionProfile
 
 
 V1_FILES = (
@@ -240,6 +250,60 @@ class _DualRuntime:
         )
 
 
+class _ReferenceDualRuntime:
+    def __init__(self, profile: ExecutionProfile):
+        self.profile = profile
+        self.calls: list[int] = []
+        self.temporal = SimpleNamespace(
+            state=ReferenceReadoutState("apartment", 0, -1, 0.0, (), (), None)
+        )
+
+    def process_frame(self, frame: object, observations: object, dense_semantics: object) -> None:
+        assert observations == () and dense_semantics is None
+        self.calls.append(frame.frame_id)
+        entities = (
+            CumulativeEntityView(
+                1,
+                "active",
+                frozenset({(1, 0, 0)}),
+                (0.05, 0.0, 0.0),
+                (0.0, 0.0, 0.0),
+                (0.1, 0.1, 0.1),
+            ),
+            CumulativeEntityView(
+                2,
+                "active",
+                frozenset({(2, 0, 0)}),
+                (0.1, 0.0, 0.0),
+                (0.0, 0.0, 0.0),
+                (0.2, 0.1, 0.1),
+            ),
+        )
+        view = CumulativeReadoutView(
+            "apartment",
+            frame.frame_id + 1,
+            frame.frame_id,
+            frame.timestamp,
+            0.05,
+            10.0,
+            0.1,
+            entities,
+        )
+        lifecycles = (
+            (1, "active"),
+            (2, "dormant" if self.profile is ExecutionProfile.A1 else "active"),
+        )
+        self.temporal.state = ReferenceReadoutState(
+            "apartment",
+            frame.frame_id + 1,
+            frame.frame_id,
+            frame.timestamp,
+            lifecycles,
+            (),
+            view,
+        )
+
+
 def _dependencies(
     module: object,
     *,
@@ -302,6 +366,208 @@ def _materialize_overlap_config(module: object, tmp_path: Path) -> Path:
         )
     _write_json(schedule_path, schedule)
     return path
+
+
+@pytest.mark.parametrize(
+    ("profile", "expected_type"),
+    [("a0", "ReferenceCurrentReadout"), ("a1", "LifecycleOverlayReadout")],
+)
+def test_production_factory_uses_reference_readout_without_temporal_runtime_or_submap(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    profile: str,
+    expected_type: str,
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+    import src.oviv2.dual_readout  # bind the real temporal class before the trap
+    import src.oviv2.temporal_geometry as geometry_module
+    import src.oviv2.temporal_runtime as runtime_module
+
+    config_path = _materialize_config(module, tmp_path)
+    config = json.loads(config_path.read_text())
+    config["temporal_readout"]["execution_profile"] = profile
+    parsed = temporal_config_from_json(
+        {"temporal_readout": config["temporal_readout"]}
+    )
+    caches = _Caches(
+        parsed,
+        {},
+        dense_provenance=DenseSemanticProvenance(
+            backend="fixture",
+            source_commit="1" * 40,
+            radio_commit="2" * 40,
+            model_id="fixture",
+            model_sha256="3" * 64,
+            auxiliary_model_sha256="4" * 64,
+            vocabulary_sha256="5" * 64,
+            prompt_sha256="6" * 64,
+            inference_config_sha256="7" * 64,
+            cache_prefix_sha256="8" * 64,
+            language_model_id="fixture",
+            language_model_revision="9" * 40,
+            language_model_sha256="a" * 64,
+        ),
+    )
+    trap = lambda *args, **kwargs: (_ for _ in ()).throw(
+        AssertionError("temporal implementation constructed")
+    )
+    monkeypatch.setattr(runtime_module, "TemporalCurrentRuntime", trap)
+    monkeypatch.setattr(geometry_module, "ObjectSubmap", trap)
+
+    dual = module._production_runtime_factory(config, caches)
+
+    assert type(dual.temporal).__name__ == expected_type
+    assert not hasattr(dual.temporal.state, "background")
+    assert not hasattr(dual.temporal.state, "entities")
+
+
+def _neutral_fixture(
+    *, background: np.ndarray, ids: tuple[int, ...], timestamp: float = 120.0
+) -> MapSnapshot:
+    return MapSnapshot(
+        method="OVIV2",
+        scene_id="apartment",
+        timestamp=timestamp,
+        entities=[
+            EntityPrediction(
+                entity_id=f"oviv2:{entity_id}:semantic:1",
+                points_xyz=np.asarray([[float(entity_id), 0.0, 0.0]], dtype=np.float32),
+                semantic_embedding=None,
+                semantic_label="chair",
+                semantic_score=1.0,
+                lifecycle_state="active",
+                first_seen=100.0,
+                last_seen=120.0,
+                metadata={"owner_entity_id": entity_id},
+            )
+            for entity_id in ids
+        ],
+        background_xyz=background,
+        scope="current",
+    )
+
+
+def test_a0_neutral_export_bytes_exactly_match_v1_cumulative(tmp_path: Path) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    cumulative = _neutral_fixture(
+        background=np.asarray([[1.0, 2.0, 3.0]], dtype=np.float32), ids=(1, 2)
+    )
+    result = module._compose_checkpoint_neutral(
+        ExecutionProfile.A0, cumulative=cumulative, reference_state=None, temporal=None
+    )
+    expected = write_map_snapshot(cumulative, tmp_path / "expected")
+    actual = write_map_snapshot(result, tmp_path / "actual")
+
+    assert expected["snapshot"].read_bytes() == actual["snapshot"].read_bytes()
+    assert expected["entities"].read_bytes() == actual["entities"].read_bytes()
+
+
+def test_a1_neutral_filters_only_dormant_and_preserves_cumulative_background() -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    background = np.asarray([[1.0, 2.0, 3.0]], dtype=np.float32)
+    cumulative = _neutral_fixture(background=background, ids=(1, 2))
+    state = ReferenceReadoutState(
+        "apartment", 3, 2, 120.0, ((1, "active"), (2, "dormant")), (), None
+    )
+    result = module._compose_checkpoint_neutral(
+        ExecutionProfile.A1,
+        cumulative=cumulative,
+        reference_state=state,
+        temporal=None,
+    )
+
+    assert [item.metadata["owner_entity_id"] for item in result.entities] == [1]
+    np.testing.assert_array_equal(result.background_xyz, background)
+
+
+def test_a2_neutral_uses_temporal_objects_and_exact_cumulative_background() -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    background = np.asarray([[1.0, 2.0, 3.0]], dtype=np.float32)
+    cumulative = _neutral_fixture(
+        background=background, ids=(1,), timestamp=120_000_000_000.0
+    )
+    temporal = _neutral_fixture(
+        background=np.asarray([[9.0, 9.0, 9.0]], dtype=np.float32), ids=(7,)
+    )
+    result = module._compose_checkpoint_neutral(
+        ExecutionProfile.A2,
+        cumulative=cumulative,
+        reference_state=None,
+        temporal=temporal,
+    )
+
+    assert [item.metadata["owner_entity_id"] for item in result.entities] == [7]
+    np.testing.assert_array_equal(result.background_xyz, background)
+    assert result.timestamp == 120.0
+
+
+@pytest.mark.parametrize("profile", [ExecutionProfile.A0, ExecutionProfile.A1])
+def test_reference_profiles_publish_real_neutral_and_compact_deterministically(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, profile: ExecutionProfile
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+    from scripts.evaluation.export_tesse_temporal_artifact import export_temporal_artifact
+    from src.oviv2.temporal_snapshot import TemporalCompactCheckpoint
+
+    config_path = _materialize_config(module, tmp_path)
+    config = json.loads(config_path.read_text())
+    config["temporal_readout"]["execution_profile"] = profile.profile_id
+    config["algorithm_hash"] = module.algorithm_hash(config)
+    _write_json(config_path, config)
+
+    def cumulative_neutral(runtime: object, *, checkpoint: object, caches: object) -> MapSnapshot:
+        del runtime, caches
+        return MapSnapshot(
+            method="OVIV2",
+            scene_id="apartment",
+            timestamp=float(checkpoint.timestamp_ns),
+            entities=_neutral_fixture(
+                background=np.asarray([[1.0, 2.0, 3.0]], dtype=np.float32),
+                ids=(1, 2),
+            ).entities,
+            background_xyz=np.asarray([[1.0, 2.0, 3.0]], dtype=np.float32),
+            scope="current",
+        )
+
+    monkeypatch.setattr(module, "_cumulative_neutral_from_runtime", cumulative_neutral)
+
+    def dependencies() -> object:
+        base, _ = _dependencies(module)
+        return module.RunnerDependencies(
+            dataset_factory=base.dataset_factory,
+            cache_loader_factory=base.cache_loader_factory,
+            runtime_factory=lambda config, cache: _ReferenceDualRuntime(profile),
+            provenance_factory=base.provenance_factory,
+            environment_factory=base.environment_factory,
+        )
+
+    first = tmp_path / f"{profile.profile_id}-first"
+    second = tmp_path / f"{profile.profile_id}-second"
+    manifest = module.run(config_path, first, dependencies=dependencies())
+    module.run(config_path, second, dependencies=dependencies())
+
+    assert _tree_hashes(first) == _tree_hashes(second)
+    assert not list(first.glob("checkpoints/*/temporal_current"))
+    official = [item for item in manifest["checkpoints"] if "official" in item["roles"]]
+    assert official[0]["format"] == "oviv2_neutral_current_v1"
+    exported = export_temporal_artifact(first / "source_index.json", tmp_path / "exported")
+    assert exported.is_file()
+    for record in manifest["checkpoints"]:
+        compact = record["artifacts"].get("temporal_compact")
+        if compact is not None:
+            restored = TemporalCompactCheckpoint.load(
+                first / compact["artifact"]["path"],
+                maximum_entities=16,
+                maximum_object_voxels=32,
+            )
+            assert restored.entity_ids.tolist() == [1, 2]
+    if profile is ExecutionProfile.A1:
+        entities_path = first / official[0]["neutral_entities"]["path"]
+        assert '"owner_entity_id":1' in entities_path.read_text()
+        assert '"owner_entity_id":2' not in entities_path.read_text()
 
 
 def test_five_frame_dual_readout_is_causal_role_aware_and_deterministic(tmp_path: Path) -> None:

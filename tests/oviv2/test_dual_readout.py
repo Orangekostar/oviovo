@@ -11,6 +11,7 @@ from src.oviv2.geometry import TsdfConfig
 from src.oviv2.observations import FrameObservation, ObservationKind
 from src.oviv2.runtime import Oviv2Runtime, Oviv2RuntimeConfig, RuntimeFrameResult
 from src.oviv2.temporal_config import (
+    ExecutionProfile,
     TemporalAssociationConfig,
     TemporalGeometryConfig,
     TemporalLifecycleConfig,
@@ -443,3 +444,62 @@ def test_temporal_runtime_has_no_cumulative_component_reference() -> None:
         for name in temporal.state.__slots__
         if not name.startswith("_")
     )
+
+
+def test_reference_readout_captures_before_and_after_cumulative_in_order() -> None:
+    from src.oviv2.dual_readout import DualReadoutRuntime
+    from src.oviv2.reference_readout import ReferenceCurrentReadout
+
+    calls: list[tuple[str, int]] = []
+
+    class CumulativeSpy(Oviv2Runtime):
+        def process_frame(self, *args, **kwargs):
+            calls.append(("cumulative", self.revision))
+            return super().process_frame(*args, **kwargs)
+
+    class ReferenceSpy(ReferenceCurrentReadout):
+        def process_cumulative_frame(self, frame, *, before, after, cumulative_result):
+            calls.extend((("before", before.revision), ("after", after.revision)))
+            return super().process_cumulative_frame(
+                frame,
+                before=before,
+                after=after,
+                cumulative_result=cumulative_result,
+            )
+
+    config = replace(_temporal_config(), execution_profile=ExecutionProfile.A0)
+    reference = ReferenceSpy("scene", config)
+    cumulative = _cumulative(runtime_type=CumulativeSpy)
+    result = DualReadoutRuntime(cumulative, reference).process_frame(_frame(), ())
+
+    assert calls == [("cumulative", 0), ("before", 0), ("after", 1)]
+    assert result.temporal.revision == result.cumulative.revision == 1
+    assert reference.state.cumulative_view is not None
+    assert reference.state.cumulative_view.revision == 1
+
+
+def test_reference_readout_failure_restores_both_complete_shallow_states() -> None:
+    from src.oviv2.dual_readout import DualReadoutRuntime
+    from src.oviv2.reference_readout import ReferenceCurrentReadout
+
+    error = RuntimeError("reference failed after mutation")
+
+    class RejectingReference(ReferenceCurrentReadout):
+        def process_cumulative_frame(self, *args, **kwargs):
+            super().process_cumulative_frame(*args, **kwargs)
+            del self.config
+            self.injected = object()
+            raise error
+
+    config = replace(_temporal_config(), execution_profile=ExecutionProfile.A0)
+    cumulative = _cumulative()
+    reference = RejectingReference("scene", config)
+    before_cumulative = _identity_snapshot(cumulative)
+    before_reference = _identity_snapshot(reference)
+
+    with pytest.raises(RuntimeError) as caught:
+        DualReadoutRuntime(cumulative, reference).process_frame(_frame(), ())
+
+    assert caught.value is error
+    _assert_exact_identity_snapshot(cumulative, before_cumulative)
+    _assert_exact_identity_snapshot(reference, before_reference)
