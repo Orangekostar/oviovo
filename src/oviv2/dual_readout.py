@@ -80,12 +80,12 @@ class DualReadoutRuntime:
         cumulative_snapshot = dict(self.cumulative.__dict__)
         temporal_snapshot = dict(self.temporal.__dict__)
 
-        cumulative_result = self.cumulative.process_frame(
-            frame,
-            observations,
-            dense_semantics,
-        )
         try:
+            cumulative_result = self.cumulative.process_frame(
+                frame,
+                observations,
+                dense_semantics,
+            )
             temporal_result = self.temporal.process_frame(
                 frame,
                 observations,

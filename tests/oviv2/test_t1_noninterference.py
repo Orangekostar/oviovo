@@ -137,6 +137,8 @@ def test_dual_readout_is_exactly_noninterfering_for_cumulative_t1(tmp_path: Path
     assert direct_results == tuple(result.cumulative for result in dual_results)
     assert direct_results[1].accepted_entity_ids
     assert dual_results[1].temporal.active_entity_ids
+    assert dual_results[2].temporal.active_entity_ids
+    assert dual_results[2].temporal.dormant_entity_ids == ()
     assert before_frames == tuple((frame.rgb.tobytes(), frame.depth.tobytes(), frame.pose.tobytes()) for frame in frames)
     assert before_batches == tuple(tuple(id(item) for item in batch) for batch in batches)
     assert _cumulative_fingerprint(direct, tmp_path / "direct-registry.jsonl") == _cumulative_fingerprint(cumulative, tmp_path / "dual-registry.jsonl")
@@ -153,6 +155,11 @@ def test_dual_readout_is_exactly_noninterfering_for_cumulative_t1(tmp_path: Path
 
     direct_mesh = derive_labeled_mesh(direct.geometry, direct.evidence, direct.ownership, entity_semantics=direct.registry.semantic_labels())
     dual_mesh = derive_labeled_mesh(cumulative.geometry, cumulative.evidence, cumulative.ownership, entity_semantics=cumulative.registry.semantic_labels())
+    assert direct.geometry.active_block_count > 0
+    assert direct_mesh.vertices_xyz.shape[0] > 0
+    assert direct_mesh.triangles.shape[0] > 0
+    assert np.any(direct_mesh.semantic_ids != 0)
+    assert np.any(direct_mesh.entity_ids != 0)
     for name in ("vertices_xyz", "triangles", "colors_rgb", "semantic_ids", "entity_ids", "semantic_confidence", "ownership_confidence"):
         left = getattr(direct_mesh, name)
         right = getattr(dual_mesh, name)
