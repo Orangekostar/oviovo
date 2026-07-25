@@ -38,6 +38,8 @@ _REQUIRED_METRICS = (
 )
 _OPTIONAL_TIE_AXES = ("dynamic_f1", "change_f1")
 _REQUIRED_GATES = ("correctness", "causality", "determinism", "t1_exact")
+_MAX_SEARCH_MANIFEST_BYTES = 1024 * 1024
+_MAX_PACKAGED_RESULT_BYTES = 4 * 1024 * 1024
 
 
 def _canonical_json(value: object) -> bytes:
@@ -62,7 +64,13 @@ def _reject_symlink_components(path: Path, label: str) -> None:
             raise ValueError(f"{label} path contains a symlink: {current}")
 
 
-def _stable_bytes(path: Path, label: str) -> bytes:
+def _stable_bytes(path: Path, label: str, *, max_bytes: int) -> bytes:
+    if (
+        isinstance(max_bytes, bool)
+        or not isinstance(max_bytes, int)
+        or max_bytes <= 0
+    ):
+        raise ValueError("max_bytes must be a positive integer")
     absolute = path.absolute()
     _reject_symlink_components(absolute, label)
     flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
@@ -74,11 +82,20 @@ def _stable_bytes(path: Path, label: str) -> bytes:
         before = os.fstat(descriptor)
         if not stat.S_ISREG(before.st_mode):
             raise ValueError(f"{label} must be a regular file")
+        if before.st_size > max_bytes:
+            raise ValueError(f"{label} exceeds {max_bytes} byte limit")
         chunks: list[bytes] = []
+        byte_count = 0
         while True:
-            chunk = os.read(descriptor, 1024 * 1024)
+            chunk = os.read(
+                descriptor,
+                min(1024 * 1024, max_bytes - byte_count + 1),
+            )
             if not chunk:
                 break
+            byte_count += len(chunk)
+            if byte_count > max_bytes:
+                raise ValueError(f"{label} exceeds {max_bytes} byte limit")
             chunks.append(chunk)
         after = os.fstat(descriptor)
     finally:
@@ -113,17 +130,21 @@ def _atomic_write_new(path: Path, payload: Mapping[str, Any]) -> None:
         os.fsync(descriptor)
     finally:
         os.close(descriptor)
+    published = False
     try:
         os.link(temporary, path)
+        published = True
+        temporary.unlink()
+        directory = os.open(path.parent, os.O_RDONLY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
     except BaseException:
         temporary.unlink(missing_ok=True)
+        if published:
+            path.unlink(missing_ok=True)
         raise
-    temporary.unlink()
-    directory = os.open(path.parent, os.O_RDONLY)
-    try:
-        os.fsync(directory)
-    finally:
-        os.close(directory)
 
 
 def _metric_value(result: Mapping[str, Any], name: str) -> float:
@@ -172,8 +193,12 @@ def tune(
     if destination.exists() or destination.is_symlink():
         raise FileExistsError(destination)
     manifest_file = Path(manifest_path).absolute()
+    manifest_bytes = _stable_bytes(
+        manifest_file,
+        "search manifest",
+        max_bytes=_MAX_SEARCH_MANIFEST_BYTES,
+    )
     manifest = load_search_manifest(manifest_file)
-    manifest_bytes = _stable_bytes(manifest_file, "search manifest")
     if isinstance(result_paths, (str, bytes)) or not result_paths:
         raise ValueError("result_paths must be a non-empty sequence")
 
@@ -181,9 +206,17 @@ def tune(
     result_records: dict[str, dict[str, Any]] = {}
     for raw_path in result_paths:
         path = Path(raw_path).absolute()
-        before = _stable_bytes(path, "packaged candidate result")
+        before = _stable_bytes(
+            path,
+            "packaged candidate result",
+            max_bytes=_MAX_PACKAGED_RESULT_BYTES,
+        )
         result = load_and_revalidate_result(path, manifest=manifest)
-        after = _stable_bytes(path, "packaged candidate result")
+        after = _stable_bytes(
+            path,
+            "packaged candidate result",
+            max_bytes=_MAX_PACKAGED_RESULT_BYTES,
+        )
         if before != after:
             raise ValueError("packaged candidate result changed during ingestion")
         candidate_id = result["candidate_id"]
@@ -203,8 +236,16 @@ def tune(
         loaded[candidate_id] = result
         result_records[candidate_id] = _result_file_record(path, after, candidate_id)
 
-    if "a0" not in loaded:
-        raise ValueError("A0 result is required to establish promotion floors")
+    declared_ids = tuple(
+        item["candidate_id"] for item in manifest["candidates"]
+    )
+    missing = [candidate_id for candidate_id in declared_ids if candidate_id not in loaded]
+    unknown = sorted(set(loaded) - set(declared_ids))
+    if missing or unknown:
+        raise ValueError(
+            "candidate results do not exactly match manifest declarations; "
+            f"missing={missing}, unknown={unknown}"
+        )
     a0 = loaded["a0"]
     for name in _REQUIRED_METRICS:
         if a0["metrics"][name]["available"] is not True:
@@ -331,7 +372,11 @@ def tune(
         "rejection_ledger": ledger,
     }
 
-    current_manifest_bytes = _stable_bytes(manifest_file, "search manifest")
+    current_manifest_bytes = _stable_bytes(
+        manifest_file,
+        "search manifest",
+        max_bytes=_MAX_SEARCH_MANIFEST_BYTES,
+    )
     if current_manifest_bytes != manifest_bytes:
         raise ValueError("search manifest changed during selection")
     if load_search_manifest(manifest_file) != manifest:
@@ -339,14 +384,22 @@ def tune(
     for candidate_id, original in loaded.items():
         record = result_records[candidate_id]
         path = Path(record["path"])
-        before = _stable_bytes(path, "packaged candidate result")
+        before = _stable_bytes(
+            path,
+            "packaged candidate result",
+            max_bytes=_MAX_PACKAGED_RESULT_BYTES,
+        )
         if (
             hashlib.sha256(before).hexdigest() != record["sha256"]
             or len(before) != record["byte_count"]
         ):
             raise ValueError("packaged candidate result changed during selection")
         revalidated = load_and_revalidate_result(path, manifest=manifest)
-        after = _stable_bytes(path, "packaged candidate result")
+        after = _stable_bytes(
+            path,
+            "packaged candidate result",
+            max_bytes=_MAX_PACKAGED_RESULT_BYTES,
+        )
         if before != after or revalidated != original:
             raise ValueError("packaged candidate result changed during selection")
     _atomic_write_new(destination, selection)

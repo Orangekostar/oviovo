@@ -372,6 +372,25 @@ def _write_result(
     return output
 
 
+def _write_complete_results(
+    root: Path,
+    *,
+    metrics_by_candidate: dict[str, dict[str, float]] | None = None,
+    kwargs_by_candidate: dict[str, dict[str, object]] | None = None,
+) -> list[Path]:
+    metrics_by_candidate = metrics_by_candidate or {}
+    kwargs_by_candidate = kwargs_by_candidate or {}
+    return [
+        _write_result(
+            root,
+            candidate_id,
+            metrics=metrics_by_candidate.get(candidate_id, _metrics()),
+            **kwargs_by_candidate.get(candidate_id, {}),
+        )
+        for candidate_id in ("a0", "a1", "a2", "a3", "a4")
+    ]
+
+
 def test_tuner_uses_source_backed_gates_and_lexicographic_promotion(tmp_path: Path) -> None:
     results = tmp_path / "results"
     results.mkdir()
@@ -406,24 +425,36 @@ def test_tuner_uses_source_backed_gates_and_lexicographic_promotion(tmp_path: Pa
 
 
 def test_a0_is_an_eligible_fallback_and_no_t1_scalarization(tmp_path: Path) -> None:
-    result = _write_result(tmp_path, "a0", metrics=_metrics())
-    selection = tune(MANIFEST, (result,), tmp_path / "selection.json")
+    paths = _write_complete_results(
+        tmp_path,
+        metrics_by_candidate={
+            candidate_id: _metrics(ghost_rate=0.15 + position * 0.01)
+            for position, candidate_id in enumerate(("a0", "a1", "a2", "a3", "a4"))
+        },
+    )
+    selection = tune(MANIFEST, paths, tmp_path / "selection.json")
     assert selection["selected_candidate_id"] == "a0"
     assert selection["rejection_ledger"][0]["reasons"] == []
     assert "score" not in selection
 
-    tampered = json.loads(result.read_text())
+    tampered = json.loads(paths[0].read_text())
     tampered["gates"]["t1_exact"]["passed"] = False
-    result.write_bytes(_bytes(tampered))
+    paths[0].write_bytes(_bytes(tampered))
     with pytest.raises(ValueError, match="does not match revalidated sources"):
-        tune(MANIFEST, (result,), tmp_path / "tampered.json")
+        tune(MANIFEST, paths, tmp_path / "tampered.json")
+
+
+def test_public_tune_requires_every_manifest_candidate(tmp_path: Path) -> None:
+    result = _write_result(tmp_path, "a0", metrics=_metrics())
+    with pytest.raises(ValueError, match=r"missing=.*a1.*a2.*a3.*a4"):
+        tune(MANIFEST, (result,), tmp_path / "selection.json")
 
 
 def test_tuner_revalidates_sources_immediately_before_publish(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    result = _write_result(tmp_path, "a0", metrics=_metrics())
-    packaged = json.loads(result.read_text())
+    paths = _write_complete_results(tmp_path)
+    packaged = json.loads(paths[0].read_text())
     common_path = Path(packaged["sources"]["common_v2_summary"]["path"])
     real_loader = tuner.load_and_revalidate_result
     calls = 0
@@ -441,24 +472,35 @@ def test_tuner_revalidates_sources_immediately_before_publish(
     monkeypatch.setattr(tuner, "load_and_revalidate_result", mutate_after_first_validation)
     output = tmp_path / "selection.json"
     with pytest.raises(ValueError, match=r"source record .*mismatch"):
-        tune(MANIFEST, (result,), output)
-    assert calls == 1
+        tune(MANIFEST, paths, output)
+    assert calls == 5
     assert not output.exists()
 
 
 def test_optional_metric_availability_matches_a0_or_fails_closed(tmp_path: Path) -> None:
-    a0 = _write_result(tmp_path, "a0", metrics=_metrics(), optional_available=False)
-    a1 = _write_result(tmp_path, "a1", metrics=_metrics(ghost_rate=0.1), optional_available=False)
-    selection = tune(MANIFEST, (a0, a1), tmp_path / "selection.json")
+    unavailable = _write_complete_results(
+        tmp_path / "unavailable",
+        kwargs_by_candidate={
+            candidate_id: {"optional_available": False}
+            for candidate_id in ("a0", "a1", "a2", "a3", "a4")
+        },
+    )
+    selection = tune(MANIFEST, unavailable, tmp_path / "selection.json")
     assert selection["skipped_optional_tie_axes"] == {
         "change_f1": "all_candidates_unavailable_matching_a0",
         "dynamic_f1": "all_candidates_unavailable_matching_a0",
     }
     assert all(item["notes"] for item in selection["rejection_ledger"])
 
-    a2 = _write_result(tmp_path, "a2", metrics=_metrics(), optional_available=True)
+    partial = _write_complete_results(
+        tmp_path / "partial",
+        kwargs_by_candidate={
+            candidate_id: {"optional_available": candidate_id == "a2"}
+            for candidate_id in ("a0", "a1", "a2", "a3", "a4")
+        },
+    )
     with pytest.raises(ValueError, match="availability differs"):
-        tune(MANIFEST, (a0, a2), tmp_path / "partial.json")
+        tune(MANIFEST, partial, tmp_path / "partial.json")
 
 
 @pytest.mark.parametrize(
@@ -471,10 +513,65 @@ def test_optional_metric_availability_matches_a0_or_fails_closed(tmp_path: Path)
 def test_tuner_rejects_non_temporal_or_input_binding_drift(
     tmp_path: Path, candidate_kwargs: dict[str, object], match: str
 ) -> None:
-    a0 = _write_result(tmp_path, "a0", metrics=_metrics())
-    a1 = _write_result(tmp_path, "a1", metrics=_metrics(), **candidate_kwargs)
+    paths = _write_complete_results(
+        tmp_path,
+        kwargs_by_candidate={"a1": candidate_kwargs},
+    )
     with pytest.raises(ValueError, match=match):
-        tune(MANIFEST, (a0, a1), tmp_path / "selection.json")
+        tune(MANIFEST, paths, tmp_path / "selection.json")
+
+
+def test_stable_read_rejects_oversized_file_before_reading(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    oversized = tmp_path / "oversized.json"
+    oversized.write_bytes(b"123456789")
+    monkeypatch.setattr(
+        tuner.os,
+        "read",
+        lambda descriptor, count: pytest.fail("oversized file content was read"),
+    )
+    with pytest.raises(ValueError, match="exceeds 8 byte limit"):
+        tuner._stable_bytes(oversized, "packaged candidate result", max_bytes=8)
+
+
+@pytest.mark.parametrize("failure", ["open", "fsync", "close"])
+def test_atomic_publish_removes_destination_after_directory_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str
+) -> None:
+    output = tmp_path / "selection.json"
+    real_open = tuner.os.open
+    real_fsync = tuner.os.fsync
+    real_close = tuner.os.close
+    fsync_calls = 0
+    close_calls = 0
+
+    def failing_open(path: str | Path, flags: int, *args: object) -> int:
+        if failure == "open" and Path(path) == output.parent and flags == tuner.os.O_RDONLY:
+            raise OSError("injected directory open failure")
+        return real_open(path, flags, *args)
+
+    def failing_fsync(descriptor: int) -> None:
+        nonlocal fsync_calls
+        fsync_calls += 1
+        if failure == "fsync" and fsync_calls == 2:
+            raise OSError("injected directory fsync failure")
+        real_fsync(descriptor)
+
+    def failing_close(descriptor: int) -> None:
+        nonlocal close_calls
+        close_calls += 1
+        real_close(descriptor)
+        if failure == "close" and close_calls == 2:
+            raise OSError("injected directory close failure")
+
+    monkeypatch.setattr(tuner.os, "open", failing_open)
+    monkeypatch.setattr(tuner.os, "fsync", failing_fsync)
+    monkeypatch.setattr(tuner.os, "close", failing_close)
+    with pytest.raises(OSError, match=f"directory {failure} failure"):
+        tuner._atomic_write_new(output, {"status": "PASS"})
+    assert not output.exists()
+    assert not list(tmp_path.glob(".selection.json.tmp-*"))
 
 
 def test_results_root_uses_exact_bound_paths_and_requires_all_candidates(tmp_path: Path) -> None:
