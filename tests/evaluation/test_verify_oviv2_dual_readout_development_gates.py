@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 from pathlib import Path
+import stat
 import subprocess
 import sys
 
@@ -135,6 +137,7 @@ def test_fails_closed_before_tests(
         b"1 passed, 1 xfailed\n",
         b".s\n",
         b".x\n",
+        b"1 passed, 9 deselected\n",
     ],
 )
 def test_rejects_skip_or_xfail_and_cleans_output(tmp_path: Path, summary: bytes) -> None:
@@ -142,7 +145,7 @@ def test_rejects_skip_or_xfail_and_cleans_output(tmp_path: Path, summary: bytes)
         del cwd
         return subprocess.CompletedProcess(argv, 0, summary, b"")
 
-    with pytest.raises(gates.GateVerificationError, match="skip|xfail"):
+    with pytest.raises(gates.GateVerificationError, match="skip|xfail|deselect"):
         _generate(tmp_path, run=run)
     assert not (tmp_path / "gate.json").exists()
 
@@ -232,6 +235,19 @@ def test_focused_real_smoke_uses_fast_fixture_command(tmp_path: Path) -> None:
     assert gates.SMOKE_TEST in completed.args
 
 
+def test_real_runner_clears_pytest_addopts_that_would_deselect(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    del tmp_path
+    monkeypatch.setenv("PYTEST_ADDOPTS", "-k definitely_not_a_real_test")
+    completed = gates.run_focused_smoke(
+        repo=Path(__file__).parents[2],
+        python_executable=sys.executable,
+    )
+    assert completed.returncode == 0
+    assert b"deselected" not in completed.stdout
+
+
 def test_atomic_publication_failure_leaves_no_output_or_staging_file(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -261,6 +277,26 @@ def test_atomic_post_link_failure_removes_published_output(
 
     monkeypatch.setattr(gates.os, "fsync", fail_directory_fsync)
     with pytest.raises(OSError, match="directory fsync failed"):
+        _generate(tmp_path)
+    assert not (tmp_path / "gate.json").exists()
+    assert not list(tmp_path.glob(".gate.json.*.tmp"))
+
+
+def test_atomic_directory_close_failure_removes_published_output(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    real_close = gates.os.close
+    failed = False
+
+    def fail_once(descriptor: int) -> None:
+        nonlocal failed
+        if not failed and stat.S_ISDIR(os.fstat(descriptor).st_mode):
+            failed = True
+            raise OSError("directory close failed")
+        real_close(descriptor)
+
+    monkeypatch.setattr(gates.os, "close", fail_once)
+    with pytest.raises(OSError, match="directory close failed"):
         _generate(tmp_path)
     assert not (tmp_path / "gate.json").exists()
     assert not list(tmp_path.glob(".gate.json.*.tmp"))

@@ -78,9 +78,14 @@ def _default_git(argv: tuple[str, ...], cwd: Path) -> bytes:
 def _default_run(
     argv: tuple[str, ...], cwd: Path
 ) -> subprocess.CompletedProcess[bytes]:
+    environment = os.environ.copy()
+    environment["PYTEST_ADDOPTS"] = ""
+    environment["PYTEST_PLUGINS"] = ""
+    environment["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] = "1"
     return subprocess.run(
         argv,
         cwd=cwd,
+        env=environment,
         check=False,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -167,7 +172,15 @@ def _command_record(
     combined = (stdout + b"\n" + stderr).decode("utf-8", errors="replace").lower()
     if completed.returncode != 0:
         raise GateVerificationError(f"test command failed with return code {completed.returncode}")
-    forbidden = (" skipped", " xfailed", " xpassed", "skip=", "xfail=", "xpass=")
+    forbidden = (
+        " skipped",
+        " xfailed",
+        " xpassed",
+        " deselected",
+        "skip=",
+        "xfail=",
+        "xpass=",
+    )
     progress_has_nonpass = False
     for line in combined.splitlines():
         prefix = line.strip().split(maxsplit=1)[0] if line.strip() else ""
@@ -177,7 +190,9 @@ def _command_record(
             progress_has_nonpass = True
             break
     if any(token in combined for token in forbidden) or progress_has_nonpass:
-        raise GateVerificationError("test command reported skip or xfail/xpass outcomes")
+        raise GateVerificationError(
+            "test command reported skip, xfail/xpass, or deselected outcomes"
+        )
     return {
         "argv": list(argv),
         "returncode": completed.returncode,
@@ -219,14 +234,29 @@ def _atomic_json_no_replace(
             path.parent, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
         )
         os.fsync(directory_descriptor)
+        os.close(directory_descriptor)
+        directory_descriptor = None
+        temporary.unlink()
     except BaseException:
-        if linked:
-            path.unlink(missing_ok=True)
-        raise
-    finally:
         if directory_descriptor is not None:
-            os.close(directory_descriptor)
-        temporary.unlink(missing_ok=True)
+            try:
+                os.close(directory_descriptor)
+            except OSError:
+                pass
+        if linked:
+            for _ in range(2):
+                try:
+                    path.unlink(missing_ok=True)
+                    break
+                except OSError:
+                    continue
+        for _ in range(2):
+            try:
+                temporary.unlink(missing_ok=True)
+                break
+            except OSError:
+                continue
+        raise
 
 
 def generate_evidence(
