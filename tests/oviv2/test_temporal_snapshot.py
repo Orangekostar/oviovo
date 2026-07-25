@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import FrozenInstanceError, fields
+from dataclasses import FrozenInstanceError, fields, replace
 import hashlib
 import json
+import os
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 
@@ -173,6 +174,42 @@ def test_current_snapshot_rejects_future_or_unsorted_entities() -> None:
         TemporalCurrentSnapshot(snapshot.metadata, (future,), snapshot.background)
 
 
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    [
+        ({"entity_id": True}, "entity_id"),
+        ({"entity_id": -1}, "entity_id"),
+        ({"existence_log_odds": float("nan")}, "existence_log_odds"),
+        ({"absent_streak": -1}, "absent_streak"),
+        ({"last_frame_id": -1}, "last_frame_id"),
+        ({"last_timestamp": float("nan")}, "last_timestamp"),
+        ({"lifecycle": "active"}, "lifecycle"),
+    ],
+)
+def test_current_snapshot_strictly_validates_nested_lifecycle(
+    changes: dict[str, object], message: str
+) -> None:
+    snapshot = _snapshot()
+    entity = snapshot.entities[0]
+    lifecycle = replace(entity.lifecycle)
+    for name, value in changes.items():
+        object.__setattr__(lifecycle, name, value)
+    object.__setattr__(entity, "lifecycle", lifecycle)
+    with pytest.raises((TypeError, ValueError), match=message):
+        TemporalCurrentSnapshot(snapshot.metadata, (entity,), snapshot.background)
+
+
+def test_current_snapshot_does_not_alias_input_lifecycle() -> None:
+    entity = _entity(1, TemporalLifecycle.ACTIVE)
+    snapshot = TemporalCurrentSnapshot(
+        TemporalSnapshotMetadata("scene", 3, 3.0, 4, 0.1, "a" * 64),
+        (entity,),
+        TemporalBackgroundVolume(_geometry_config()),
+    )
+    object.__setattr__(entity.lifecycle, "entity_id", 99)
+    assert snapshot.entities[0].lifecycle.entity_id == 1
+
+
 def test_compact_from_snapshot_contains_only_bounded_current_state() -> None:
     compact = TemporalCompactCheckpoint.from_snapshot(
         _snapshot(), maximum_entities=4, maximum_object_voxels=8
@@ -258,6 +295,69 @@ def test_compact_known_write_failure_cleans_staging(tmp_path: Path, monkeypatch:
     assert list(tmp_path.iterdir()) == []
 
 
+def test_compact_validates_capacity_before_serialization(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import src.oviv2.temporal_snapshot as module
+
+    empty = TemporalCurrentSnapshot(
+        _snapshot().metadata, (), TemporalBackgroundVolume(_geometry_config())
+    )
+    compact = TemporalCompactCheckpoint.from_snapshot(empty)
+    monkeypatch.setattr(
+        module,
+        "_canonical_npz",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("serialized")),
+    )
+    with pytest.raises(ValueError, match="maximum_entities"):
+        compact.commit_new(
+            tmp_path / "failed",
+            maximum_entities=True,  # type: ignore[arg-type]
+            maximum_object_voxels=8,
+        )
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_compact_publication_after_rename_failure_is_uncertain(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import src.oviv2.temporal_snapshot as module
+
+    compact = TemporalCompactCheckpoint.from_snapshot(_snapshot())
+    target = tmp_path / "published"
+    monkeypatch.setattr(
+        module.TemporalCompactCheckpoint,
+        "load",
+        classmethod(lambda cls, *args, **kwargs: (_ for _ in ()).throw(RuntimeError("load"))),
+    )
+    with pytest.raises(module.TemporalCheckpointPublicationUncertainError) as caught:
+        compact.commit_new(target, maximum_entities=4, maximum_object_voxels=8)
+    assert caught.value.published is True
+    assert target.is_dir()
+
+
+def test_compact_witness_hash_rejects_same_size_tamper_and_inode_swap(tmp_path: Path) -> None:
+    compact = TemporalCompactCheckpoint.from_snapshot(_snapshot())
+    loaded = compact.commit_new(tmp_path / "checkpoint", maximum_entities=4, maximum_object_voxels=8)
+    member = loaded.path / "manifest.json"
+    before = member.stat()
+    content = member.read_bytes()
+    replacement = bytes([content[0] ^ 1]) + content[1:]
+    member.write_bytes(replacement)
+    os.utime(member, ns=(before.st_atime_ns, before.st_mtime_ns))
+    with pytest.raises(ValueError, match="content|hash|identity"):
+        loaded.revalidate_source()
+
+    second = compact.commit_new(tmp_path / "second", maximum_entities=4, maximum_object_voxels=8)
+    original = second.path / "manifest.json"
+    swapped = second.path / "replacement"
+    swapped.write_bytes(original.read_bytes())
+    os.utime(swapped, ns=(original.stat().st_atime_ns, original.stat().st_mtime_ns))
+    os.replace(swapped, original)
+    with pytest.raises(ValueError, match="identity"):
+        second.revalidate_source()
+
+
 def test_compact_load_explicitly_disables_pickle(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     import src.oviv2.temporal_snapshot as module
 
@@ -293,3 +393,37 @@ def test_compact_load_rejects_bad_npy_contract_before_materialization(
     monkeypatch.setattr(module.np, "load", lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("materialized")))
     with pytest.raises(ValueError, match="dtype"):
         TemporalCompactCheckpoint.load(target, maximum_entities=4, maximum_object_voxels=8)
+
+
+def test_compact_load_rejects_directory_swap_during_materialization(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import src.oviv2.temporal_snapshot as module
+
+    compact = TemporalCompactCheckpoint.from_snapshot(_snapshot())
+    source = compact.commit_new(
+        tmp_path / "source", maximum_entities=4, maximum_object_voxels=8
+    ).path
+    empty = TemporalCurrentSnapshot(
+        _snapshot().metadata, (), TemporalBackgroundVolume(_geometry_config())
+    )
+    replacement = TemporalCompactCheckpoint.from_snapshot(empty).commit_new(
+        tmp_path / "replacement", maximum_entities=4, maximum_object_voxels=8
+    ).path
+    original_load = module.np.load
+    swapped = False
+
+    def swap_after_open(*args: object, **kwargs: object):
+        nonlocal swapped
+        result = original_load(*args, **kwargs)
+        if not swapped:
+            swapped = True
+            os.rename(source, tmp_path / "old-source")
+            os.rename(replacement, source)
+        return result
+
+    monkeypatch.setattr(module.np, "load", swap_after_open)
+    with pytest.raises(ValueError, match="identity|changed"):
+        TemporalCompactCheckpoint.load(
+            source, maximum_entities=4, maximum_object_voxels=8
+        )

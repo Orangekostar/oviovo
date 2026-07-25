@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter
-from dataclasses import asdict, dataclass, fields
+from dataclasses import asdict, dataclass, fields, replace
 import hashlib
 import io
 import json
@@ -52,6 +52,17 @@ _LIFECYCLE_TO_CODE = {
 }
 _MAX_JSON_BYTES = 64 * 1024
 _MAX_ARCHIVE_BYTES = 512 * 1024 * 1024
+
+
+class TemporalCheckpointPublicationUncertainError(RuntimeError):
+    def __init__(self, target: str | Path, publication_error: Exception) -> None:
+        self.target = Path(target)
+        self.publication_error = publication_error
+        self.published = True
+        super().__init__(
+            f"temporal checkpoint was published at {self.target}, but durability "
+            "or source binding could not be verified"
+        )
 
 
 def _canonical_json(payload: Mapping[str, Any]) -> bytes:
@@ -154,10 +165,38 @@ class TemporalCurrentSnapshot:
             raise TypeError("metadata must be TemporalSnapshotMetadata")
         if type(self.entities) is not tuple or any(not isinstance(item, TemporalEntityState) for item in self.entities):
             raise TypeError("entities must be an exact tuple of TemporalEntityState")
-        ids = tuple(item.lifecycle.entity_id for item in self.entities)
+        validated_entities: list[TemporalEntityState] = []
+        for entity in self.entities:
+            lifecycle = entity.lifecycle
+            if type(lifecycle.entity_id) is not int or not 0 <= lifecycle.entity_id <= np.iinfo(np.int64).max:
+                raise ValueError("lifecycle entity_id must be a non-negative int64 integer")
+            if not isinstance(lifecycle.lifecycle, TemporalLifecycle):
+                raise TypeError("lifecycle lifecycle must be a TemporalLifecycle enum")
+            if isinstance(lifecycle.existence_log_odds, bool) or not isinstance(lifecycle.existence_log_odds, Real) or not math.isfinite(float(lifecycle.existence_log_odds)):
+                raise ValueError("lifecycle existence_log_odds must be finite numeric")
+            if type(lifecycle.last_frame_id) is not int or lifecycle.last_frame_id < 0:
+                raise ValueError("lifecycle last_frame_id must be a non-negative integer")
+            if isinstance(lifecycle.last_timestamp, bool) or not isinstance(lifecycle.last_timestamp, Real) or not math.isfinite(float(lifecycle.last_timestamp)):
+                raise ValueError("lifecycle last_timestamp must be finite numeric")
+            if type(lifecycle.absent_streak) is not int or lifecycle.absent_streak < 0:
+                raise ValueError("lifecycle absent_streak must be a non-negative integer")
+            if type(lifecycle.absence_view_bins) is not tuple:
+                raise TypeError("lifecycle absence_view_bins must be an exact tuple")
+            bins = lifecycle.absence_view_bins
+            if any(type(value) is not int or value < 0 for value in bins):
+                raise ValueError("lifecycle absence_view_bins must contain non-negative integers")
+            if bins != tuple(sorted(set(bins))) or len(bins) > lifecycle.absent_streak:
+                raise ValueError("lifecycle absence_view_bins must be sorted, unique, and bounded by absent_streak")
+            if lifecycle.absent_streak > 0 and not bins:
+                raise ValueError("lifecycle absence_view_bins are required for an absence streak")
+            # Re-run the entity's own pose, semantic and submap validation so a
+            # mutated frozen instance cannot cross the snapshot boundary.
+            validated = replace(entity, lifecycle=replace(lifecycle))
+            validated_entities.append(validated)
+        ids = tuple(item.lifecycle.entity_id for item in validated_entities)
         if ids != tuple(sorted(set(ids))):
             raise ValueError("entities must be sorted by unique temporal entity ID")
-        for entity in self.entities:
+        for entity in validated_entities:
             if (
                 entity.lifecycle.last_frame_id > self.metadata.frame_id
                 or entity.lifecycle.last_timestamp > self.metadata.timestamp
@@ -170,6 +209,7 @@ class TemporalCurrentSnapshot:
             raise TypeError("background must be TemporalBackgroundVolume")
         if not math.isclose(self.background.config.voxel_size_m, self.metadata.voxel_size_m, rel_tol=0.0, abs_tol=1e-12):
             raise ValueError("background voxel size does not match metadata")
+        object.__setattr__(self, "entities", tuple(validated_entities))
         object.__setattr__(self, "background", self.background._clone(max(1, self.background.active_block_count)))
 
 
@@ -178,6 +218,7 @@ class _DirectoryWitness:
     path: Path
     directory_fingerprint: tuple[int, int, int, int, int]
     file_fingerprints: tuple[tuple[str, tuple[int, int, int, int, int]], ...]
+    content_sha256: tuple[tuple[str, str], ...]
 
     @classmethod
     def capture(cls, path: Path, inventory: frozenset[str]) -> "_DirectoryWitness":
@@ -188,12 +229,28 @@ class _DirectoryWitness:
             if set(os.listdir(descriptor)) != inventory:
                 raise ValueError("checkpoint inventory changed")
             members = []
+            hashes = []
             for name in sorted(inventory):
                 status = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
                 if not stat.S_ISREG(status.st_mode):
                     raise ValueError("checkpoint member is not regular")
                 members.append((name, _fingerprint(status)))
-            witness = cls(path, _fingerprint(directory), tuple(members))
+                member_fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=descriptor)
+                try:
+                    digest = hashlib.sha256()
+                    while True:
+                        chunk = os.read(member_fd, 1024 * 1024)
+                        if not chunk:
+                            break
+                        digest.update(chunk)
+                    if _fingerprint(os.fstat(member_fd)) != _fingerprint(status):
+                        raise ValueError("checkpoint member changed while hashing")
+                    hashes.append((name, digest.hexdigest()))
+                finally:
+                    _close_best_effort(member_fd)
+            if _fingerprint(os.fstat(descriptor)) != _fingerprint(directory):
+                raise ValueError("checkpoint source changed while binding")
+            witness = cls(path, _fingerprint(directory), tuple(members), tuple(hashes))
         finally:
             _close_best_effort(descriptor)
         witness.revalidate()
@@ -207,10 +264,27 @@ class _DirectoryWitness:
                 raise ValueError("checkpoint source identity changed")
             if set(os.listdir(descriptor)) != {name for name, _ in self.file_fingerprints}:
                 raise ValueError("checkpoint inventory changed")
+            hashes = dict(self.content_sha256)
             for name, expected in self.file_fingerprints:
                 current = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
                 if not stat.S_ISREG(current.st_mode) or _fingerprint(current) != expected:
                     raise ValueError("checkpoint file identity changed")
+                member_fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=descriptor)
+                try:
+                    digest = hashlib.sha256()
+                    while True:
+                        chunk = os.read(member_fd, 1024 * 1024)
+                        if not chunk:
+                            break
+                        digest.update(chunk)
+                    if digest.hexdigest() != hashes[name]:
+                        raise ValueError("checkpoint file content hash changed")
+                    if _fingerprint(os.fstat(member_fd)) != expected:
+                        raise ValueError("checkpoint file identity changed while hashing")
+                finally:
+                    _close_best_effort(member_fd)
+            if _fingerprint(os.fstat(descriptor)) != self.directory_fingerprint:
+                raise ValueError("checkpoint source identity changed while hashing")
         finally:
             _close_best_effort(descriptor)
 
@@ -272,6 +346,12 @@ def _publish_new_directory(target_dir: str | Path, files: Mapping[str, bytes], i
         published = True
         os.fsync(parent_fd)
         return _DirectoryWitness.capture(target, inventory)
+    except TemporalCheckpointPublicationUncertainError:
+        raise
+    except Exception as exc:
+        if published:
+            raise TemporalCheckpointPublicationUncertainError(target, exc) from exc
+        raise
     finally:
         if temporary_fd is not None:
             _close_best_effort(temporary_fd)
@@ -502,11 +582,16 @@ class TemporalCompactCheckpoint:
         maximum_entities: int,
         maximum_object_voxels: int,
     ) -> "TemporalCompactCheckpoint":
+        byte_limit = _compact_byte_limit(maximum_entities, maximum_object_voxels)
         if len(self.entity_ids) > maximum_entities or any(np.diff(self.voxel_offsets) > maximum_object_voxels):
             raise ValueError("compact checkpoint capacity exceeded")
+        if len(self.voxel_keys) > maximum_entities * maximum_object_voxels:
+            raise ValueError("compact checkpoint total voxel capacity exceeded")
         arrays = {name: getattr(self, name) for name in _COMPACT_ARRAY_NAMES}
+        raw_bytes = sum(array.nbytes for array in arrays.values())
+        if raw_bytes > byte_limit:
+            raise ValueError("compact checkpoint raw arrays exceed capacity-derived byte limit")
         archive = _canonical_npz(arrays, _COMPACT_ARRAY_NAMES)
-        byte_limit = _compact_byte_limit(maximum_entities, maximum_object_voxels)
         if len(archive) > byte_limit:
             raise ValueError("serialized compact checkpoint exceeds capacity-derived byte limit")
         manifest = _canonical_json({
@@ -520,7 +605,12 @@ class TemporalCompactCheckpoint:
         checksums = {"arrays.npz": _sha256(archive), "manifest.json": _sha256(manifest)}
         files = {"arrays.npz": archive, "manifest.json": manifest, "checksums.json": _canonical_json(checksums)}
         witness = _publish_new_directory(target_dir, files, _COMPACT_INVENTORY)
-        bound = TemporalCompactCheckpoint.load(target_dir, maximum_entities=maximum_entities, maximum_object_voxels=maximum_object_voxels)
+        try:
+            bound = TemporalCompactCheckpoint.load(target_dir, maximum_entities=maximum_entities, maximum_object_voxels=maximum_object_voxels)
+        except TemporalCheckpointPublicationUncertainError:
+            raise
+        except Exception as exc:
+            raise TemporalCheckpointPublicationUncertainError(target_dir, exc) from exc
         object.__setattr__(bound, "_source_witness", witness)
         object.__setattr__(bound, "_path", witness.path)
         return bound
@@ -535,6 +625,7 @@ class TemporalCompactCheckpoint:
     ) -> "TemporalCompactCheckpoint":
         source = Path(os.path.abspath(os.fspath(checkpoint_dir)))
         _reject_symlink_components(source, label="compact checkpoint source")
+        witness = _DirectoryWitness.capture(source, _COMPACT_INVENTORY)
         descriptor = os.open(source, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
         try:
             if set(os.listdir(descriptor)) != _COMPACT_INVENTORY:
@@ -599,7 +690,7 @@ class TemporalCompactCheckpoint:
         result = cls(metadata=TemporalSnapshotMetadata(**metadata_payload), **arrays)
         if len(result.entity_ids) > stored_entities or any(np.diff(result.voxel_offsets) > stored_voxels):
             raise ValueError("compact checkpoint capacity exceeded")
-        witness = _DirectoryWitness.capture(source, _COMPACT_INVENTORY)
+        witness.revalidate()
         object.__setattr__(result, "_source_witness", witness)
         object.__setattr__(result, "_path", source)
         return result
@@ -655,6 +746,7 @@ def build_temporal_map_snapshot(snapshot: TemporalCurrentSnapshot, class_names: 
 
 
 __all__ = [
+    "TemporalCheckpointPublicationUncertainError",
     "TemporalSnapshotMetadata",
     "TemporalCurrentSnapshot",
     "TemporalCompactCheckpoint",
