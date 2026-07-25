@@ -1800,6 +1800,7 @@ def run(
             "code_commit": code_commit,
             "checkpoints": records,
             "occlusion_checkpoint_index": occlusion_index_record,
+            "source_index": source_index_record,
             **formal_fields,
         }
         manifest["artifact_inventory"] = sorted(

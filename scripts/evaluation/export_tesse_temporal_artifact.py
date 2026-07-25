@@ -48,6 +48,32 @@ _SOURCE_INDEX_BASE_FIELDS = frozenset(
 _FORMAL_RUN_FIELDS = frozenset({"frozen_run_identity", "run_execution"})
 _SOURCE_INDEX_FIELDS = _SOURCE_INDEX_BASE_FIELDS | _FORMAL_RUN_FIELDS
 _V2_SOURCE_INDEX_FIELDS = _SOURCE_INDEX_BASE_FIELDS | {"frozen_run_identity"}
+_V2_RUN_MANIFEST_FIELDS = frozenset(
+    {
+        "schema_version",
+        "protocol_id",
+        "dataset",
+        "method_id",
+        "scene",
+        "mode",
+        "algorithm_hash",
+        "processed_frame_count",
+        "scheduled_frame_indices",
+        "captured_frame_indices",
+        "config",
+        "normalized_run_config",
+        "schedule",
+        "target_manifest",
+        "source_bindings",
+        "input_sha256",
+        "code_commit",
+        "checkpoints",
+        "occlusion_checkpoint_index",
+        "source_index",
+        "frozen_run_identity",
+        "artifact_inventory",
+    }
+)
 _V1_FROZEN_RUN_IDENTITY_FIELDS = frozenset(
     {
         "schema_version",
@@ -265,6 +291,16 @@ def _direct_source(path: Path, *, label: str) -> _VerifiedSource:
         raise ValueError(f"{label} source is not a file: {path}")
     fingerprint = _fingerprint(path)
     source = _VerifiedSource(path, _sha256(path), fingerprint[2], fingerprint)
+    _assert_unchanged(source, label=label)
+    return source
+
+
+def _direct_directory_source(path: Path, *, label: str) -> _VerifiedSource:
+    path = path.absolute()
+    metadata = os.lstat(path)
+    if not stat.S_ISDIR(metadata.st_mode):
+        raise ValueError(f"{label} source is not a directory: {path}")
+    source = _VerifiedSource(path, "", metadata.st_size, _fingerprint(path))
     _assert_unchanged(source, label=label)
     return source
 
@@ -915,6 +951,7 @@ def _formal_v2_run_fields(
         or root_status.st_ino != execution["root_inode"]
     ):
         raise ValueError("v2 run execution root inode mismatch")
+    root_source = _direct_directory_source(root, label="formal run root")
     execution_base = {
         key: execution[key] for key in sorted(execution) if key != "execution_id"
     }
@@ -934,6 +971,17 @@ def _formal_v2_run_fields(
     )
     manifest = _read_json(manifest_source, label="run manifest")
     receipt = _read_json(receipt_source, label="execution receipt")
+    if set(manifest) != _V2_RUN_MANIFEST_FIELDS:
+        raise ValueError("v2 run manifest fields are invalid")
+    if not (
+        manifest.get("schema_version") == 2
+        and manifest.get("protocol_id") == "oviv2-tessecd-v2"
+        and manifest.get("dataset") == "TESSE-CD"
+        and manifest.get("method_id") == "OVIV2"
+        and manifest.get("scene") == index.get("scene")
+        and manifest.get("mode") == "dual_readout_causal_checkpoints"
+    ):
+        raise ValueError("v2 run manifest identity is invalid")
     if manifest.get("frozen_run_identity") != frozen:
         raise ValueError("run manifest frozen identity mismatch")
     if "run_execution" in manifest:
@@ -994,10 +1042,18 @@ def _formal_v2_run_fields(
         raise ValueError("formal run artifact inventory mismatch")
     if any(str(record["path"]) not in inventory for record in declared_records):
         raise ValueError("v2 source index record is outside artifact inventory")
+    source_record = manifest.get("source_index")
+    if not isinstance(source_record, Mapping) or not _same_source(
+        source_record, index_source, base=root
+    ):
+        raise ValueError("run manifest source index authority mismatch")
+    if source_record.get("path") != "source_index.json":
+        raise ValueError("run manifest source index path mismatch")
     return {
         "frozen_run_identity": dict(frozen),
         "run_execution": dict(execution),
     }, [
+        (root_source, "formal run root"),
         (manifest_source, "run manifest"),
         (receipt_source, "execution receipt"),
     ]
@@ -1718,6 +1774,15 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
         for source, label in verified:
             _assert_unchanged(source, label=label)
 
+        output_formal_fields = formal_run_fields
+        frozen_identity = formal_run_fields.get("frozen_run_identity")
+        if (
+            isinstance(frozen_identity, Mapping)
+            and frozen_identity.get("freeze_id") == "oviv2-tessecd-v2"
+        ):
+            output_formal_fields = {
+                "frozen_run_identity": dict(frozen_identity)
+            }
         manifest = {
             "schema_version": 1,
             "dataset": "TESSE-CD",
@@ -1730,10 +1795,12 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
             "trajectories": _output_record(
                 trajectories_path, output=staging
             ),
-            **formal_run_fields,
+            **output_formal_fields,
         }
         _write_json(staging / "temporal_manifest.json", manifest)
         _fsync_tree(staging)
+        for source, label in verified:
+            _assert_unchanged(source, label=label)
 
         output.mkdir()
         reserved = True

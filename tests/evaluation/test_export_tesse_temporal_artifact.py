@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 from typing import Any
@@ -302,7 +303,34 @@ def _make_v2_formal_source(root: Path, *, evidence: str = "7") -> Path:
             "dataset": "TESSE-CD",
             "method_id": "OVIV2",
             "scene": "apartment",
+            "mode": "dual_readout_causal_checkpoints",
+            "algorithm_hash": frozen["algorithm_hash"],
+            "processed_frame_count": 5,
+            "scheduled_frame_indices": [0, 2, 4],
+            "captured_frame_indices": [0, 2, 4],
+            "config": {"sha256": "8" * 64, "byte_count": 1},
+            "normalized_run_config": {
+                "path": "source_index.json",
+                "sha256": hashlib.sha256(index_path.read_bytes()).hexdigest(),
+                "byte_count": index_path.stat().st_size,
+            },
+            "schedule": {"sha256": "9" * 64, "byte_count": 1},
+            "target_manifest": {"sha256": "a" * 64, "byte_count": 1},
+            "source_bindings": {},
+            "input_sha256": "b" * 64,
+            "code_commit": "c" * 40,
+            "checkpoints": [],
+            "occlusion_checkpoint_index": {
+                "path": "source_index.json",
+                "sha256": hashlib.sha256(index_path.read_bytes()).hexdigest(),
+                "byte_count": index_path.stat().st_size,
+            },
             "artifact_inventory": inventory,
+            "source_index": {
+                "path": "source_index.json",
+                "sha256": hashlib.sha256(index_path.read_bytes()).hexdigest(),
+                "byte_count": index_path.stat().st_size,
+            },
             "frozen_run_identity": frozen,
         },
     )
@@ -475,7 +503,21 @@ def test_exports_formal_v2_source_without_requiring_execution_in_occlusion_index
 
     manifest = json.loads(manifest_path.read_text())
     assert manifest["frozen_run_identity"]["freeze_id"] == "oviv2-tessecd-v2"
-    assert manifest["run_execution"]["output_root"] == str(index_path.parent.resolve())
+    assert "run_execution" not in manifest
+
+
+def test_formal_v2_exports_are_identical_across_execution_roots(tmp_path: Path) -> None:
+    first_index = _make_v2_formal_source(tmp_path / "source-a")
+    second_index = _make_v2_formal_source(tmp_path / "source-b")
+
+    first = export_temporal_artifact(first_index, tmp_path / "output-a")
+    second = export_temporal_artifact(second_index, tmp_path / "output-b")
+
+    assert _artifact_files(first.parent) == _artifact_files(second.parent)
+    assert all(
+        b"run_execution" not in content
+        for content in _artifact_files(first.parent).values()
+    )
 
 
 @pytest.mark.parametrize(
@@ -530,6 +572,34 @@ def test_formal_v2_rejects_cross_run_source_index_substitution(tmp_path: Path) -
         export_temporal_artifact(second, tmp_path / "output")
 
 
+def test_formal_v2_rejects_coherent_sidecar_and_index_tampering(
+    tmp_path: Path,
+) -> None:
+    index_path = _make_v2_formal_source(tmp_path / "source")
+    root = index_path.parent
+    index = json.loads(index_path.read_text())
+    trajectory = root / index["trajectories"]["path"]
+    trajectory.write_text(trajectory.read_text() + " \n", encoding="utf-8")
+    index["trajectories"] = relative_record = {
+        "path": index["trajectories"]["path"],
+        "sha256": hashlib.sha256(trajectory.read_bytes()).hexdigest(),
+        "byte_count": trajectory.stat().st_size,
+    }
+    capture_path = root / index["capture_status"]["path"]
+    capture = json.loads(capture_path.read_text())
+    capture["trajectories"] = relative_record
+    _write_json(capture_path, capture)
+    index["capture_status"] = {
+        "path": index["capture_status"]["path"],
+        "sha256": hashlib.sha256(capture_path.read_bytes()).hexdigest(),
+        "byte_count": capture_path.stat().st_size,
+    }
+    _write_json(index_path, index)
+
+    with pytest.raises(ValueError, match="source index.*authority|source index.*mismatch"):
+        export_temporal_artifact(index_path, tmp_path / "output")
+
+
 def test_formal_v2_rejects_symlinked_sidecar(tmp_path: Path) -> None:
     index_path = _make_v2_formal_source(tmp_path / "source")
     trajectory = index_path.parent / "trajectories.jsonl"
@@ -539,6 +609,31 @@ def test_formal_v2_rejects_symlinked_sidecar(tmp_path: Path) -> None:
     trajectory.symlink_to(replacement)
 
     with pytest.raises(ValueError, match="symlink"):
+        export_temporal_artifact(index_path, tmp_path / "output")
+
+
+def test_formal_v2_rejects_source_root_replacement_during_read(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    index_path = _make_v2_formal_source(tmp_path / "source")
+    root = index_path.parent
+    original = exporter_module._read_json
+    replaced = False
+
+    def replace_after_schedule(source: object, *, label: str):
+        nonlocal replaced
+        payload = original(source, label=label)
+        if label == "schedule" and not replaced:
+            replacement = tmp_path / "replacement"
+            parked = tmp_path / "parked"
+            shutil.copytree(root, replacement)
+            root.rename(parked)
+            replacement.rename(root)
+            replaced = True
+        return payload
+
+    monkeypatch.setattr(exporter_module, "_read_json", replace_after_schedule)
+    with pytest.raises(ValueError, match="changed|identity"):
         export_temporal_artifact(index_path, tmp_path / "output")
 
 

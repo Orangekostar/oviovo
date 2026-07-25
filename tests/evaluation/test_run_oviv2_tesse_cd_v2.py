@@ -1288,6 +1288,35 @@ def test_complete_v2_formal_freeze_runs_before_publishing(
     receipt = json.loads((output / "execution_receipt.json").read_text())
     assert source_index["frozen_run_identity"] == manifest["frozen_run_identity"]
     assert "run_execution" not in source_index
+    assert manifest["source_index"] == {
+        "path": "source_index.json",
+        "sha256": _sha256(output / "source_index.json"),
+        "byte_count": (output / "source_index.json").stat().st_size,
+    }
+    assert set(manifest) == {
+        "schema_version",
+        "protocol_id",
+        "dataset",
+        "method_id",
+        "scene",
+        "mode",
+        "algorithm_hash",
+        "processed_frame_count",
+        "scheduled_frame_indices",
+        "captured_frame_indices",
+        "config",
+        "normalized_run_config",
+        "schedule",
+        "target_manifest",
+        "source_bindings",
+        "input_sha256",
+        "code_commit",
+        "checkpoints",
+        "occlusion_checkpoint_index",
+        "source_index",
+        "frozen_run_identity",
+        "artifact_inventory",
+    }
     assert receipt["frozen_run_identity"] == manifest["frozen_run_identity"]
     second_output = Path(roots["apartment_run2"])
     second_manifest = module.run(
@@ -1304,6 +1333,7 @@ def test_complete_v2_formal_freeze_runs_before_publishing(
     assert (second_output / "source_index.json").read_bytes() == (
         output / "source_index.json"
     ).read_bytes()
+    assert second_manifest["source_index"] == manifest["source_index"]
 
 
 @pytest.mark.parametrize(
