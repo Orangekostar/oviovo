@@ -8,6 +8,8 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 import hashlib
 import json
+import math
+from numbers import Real
 import os
 from pathlib import Path
 import shutil
@@ -25,10 +27,13 @@ from scripts.evaluation.evaluate_oviv2_tesse_occlusion import (  # noqa: E402
     canonical_algorithm_hash,
 )
 from scripts.evaluation.run_oviv2_tesse_cd import (  # noqa: E402
+    RunPublicationUncertainError,
     TesseCausalCheckpoint,
     _absolute_lexical,
+    _binding_path,
     _byte_record,
     _checkpoint_plan_from_target_manifest,
+    _file_record,
     _is_sha256,
     _json_hash,
     _load_causal_checkpoints_bytes,
@@ -65,6 +70,146 @@ from src.oviv2.temporal_snapshot import (  # noqa: E402
 PROTOCOL_ID = "oviv2-tessecd-v2"
 SCENE_CONFIG_FIELDS = RUNNER_SCENE_CONFIG_FIELDS
 
+_STRING_CONFIG_FIELDS = frozenset(
+    {
+        "algorithm_hash",
+        "dataset",
+        "dataset_root",
+        "dense_cache_dir",
+        "dense_manifest",
+        "dense_semantic_mode",
+        "evaluation_checkpoint_frames_sha256",
+        "export_manifest",
+        "feature_mode",
+        "frontend_cache_dir",
+        "frontend_manifest",
+        "fusion_semantic_mode",
+        "input_manifest",
+        "method_id",
+        "missing_observation_policy",
+        "occlusion_target_manifest",
+        "occlusion_target_manifest_sha256",
+        "protocol_id",
+        "scene",
+        "schedule_manifest",
+        "semantic_mode",
+        "stage3_lineage_commit",
+        "vocabulary_json",
+        "vocabulary_txt",
+    }
+)
+_INTEGER_CONFIG_FIELDS = frozenset(
+    {
+        "block_count",
+        "block_resolution",
+        "confirm_hits",
+        "dense_sample_stride",
+        "dense_top_k",
+        "entity_top_k",
+        "frame_count",
+        "max_age_frames",
+        "min_valid_points",
+        "pixel_stride",
+        "prototype_top_k",
+        "schema_version",
+        "semantic_top_k",
+        "source_stride",
+        "structure_max_components_per_class",
+        "structure_min_component_pixels",
+        "structure_min_valid_points",
+        "structure_object_exclusion_dilation",
+        "structure_pixel_stride",
+        "track_window_size",
+        "view_top_k",
+    }
+)
+_FLOAT_CONFIG_FIELDS = frozenset(
+    {
+        "absence_negative_support",
+        "ambiguous_edge_score",
+        "association_bounds_expansion_m",
+        "association_geometry_weight",
+        "association_max_centroid_distance_m",
+        "association_min_directed_overlap",
+        "association_minimum_score",
+        "association_overlap_weight",
+        "association_semantic_weight",
+        "association_temporal_weight",
+        "association_visual_weight",
+        "dense_entropy_power",
+        "dense_integration_radius_m",
+        "dense_minimum_probability",
+        "dense_minimum_quality",
+        "dense_view_angle_power",
+        "depth_max_m",
+        "entity_max_centroid_distance_m",
+        "entity_min_voxel_overlap",
+        "fusion_entity_weight_scale",
+        "ownership_min_net_support",
+        "prototype_merge_cosine",
+        "semantic_conflict_confidence",
+        "semantic_conflict_visual_override",
+        "structure_ceiling_confidence",
+        "structure_floor_confidence",
+        "structure_horizontal_threshold",
+        "structure_min_component_fraction",
+        "structure_wall_confidence",
+        "structure_wall_vertical_threshold",
+        "third_view_min_score",
+        "track_max_centroid_distance_m",
+        "track_min_voxel_overlap",
+        "trunc_voxel_multiplier",
+        "view_minimum_novelty_cosine",
+        "visibility_depth_tolerance_m",
+        "voxel_size_m",
+    }
+)
+_V2_CONFIG_KEYS = (
+    _STRING_CONFIG_FIELDS
+    | _INTEGER_CONFIG_FIELDS
+    | _FLOAT_CONFIG_FIELDS
+    | {"evaluation_checkpoint_frames", "structure_enabled", "temporal_readout"}
+)
+
+_FREEZE_TOP_KEYS = frozenset(
+    {
+        "schema_version",
+        "freeze_id",
+        "status",
+        "method",
+        "dataset",
+        "repository",
+        "algorithm",
+        "scenes",
+        "shared_bindings",
+        "output_roots",
+    }
+)
+_FREEZE_REPOSITORY_KEYS = frozenset(
+    {
+        "clean",
+        "commit",
+        "parents",
+        "tree",
+        "commit_time_utc",
+        "stage3_lineage_commit",
+        "stage3_is_ancestor",
+    }
+)
+_FREEZE_SCENE_KEYS = frozenset(
+    {
+        "frozen_config",
+        "export_manifest",
+        "frontend_manifest",
+        "dense_manifest",
+        "vocabulary_json",
+        "vocabulary_txt",
+    }
+)
+_FREEZE_SHARED_KEYS = frozenset(
+    {"input_manifest", "schedule", "occlusion_target_manifest"}
+)
+
 
 @dataclass(frozen=True)
 class RunnerDependencies:
@@ -92,6 +237,35 @@ def algorithm_hash(config: Mapping[str, Any]) -> str:
     return canonical_algorithm_hash(config)
 
 
+def _is_git_id(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 40
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
+def _verify_exact_frozen_file_binding(
+    value: object,
+    *,
+    base: Path,
+    role: str,
+    expected_path: Path,
+) -> dict[str, Any]:
+    if not isinstance(value, Mapping) or set(value) != {
+        "path",
+        "sha256",
+        "byte_count",
+    }:
+        raise ValueError(f"{role} frozen input binding fields are not exact")
+    return _verify_frozen_file_binding(
+        value,
+        base=base,
+        role=role,
+        expected_path=expected_path,
+    )
+
+
 def _positive_integer(value: object, name: str) -> int:
     if type(value) is not int or value <= 0:
         raise ValueError(f"{name} must be a positive integer")
@@ -101,12 +275,27 @@ def _positive_integer(value: object, name: str) -> int:
 def _validate_config(
     config: Mapping[str, Any],
 ) -> tuple[str, int, Path, tuple[int, ...], Any]:
-    for key, value in config.items():
-        if key == "structure_enabled":
-            if type(value) is not bool:
-                raise TypeError("structure_enabled must be an exact boolean")
-        elif type(value) is bool:
-            raise TypeError(f"{key} must not use a boolean as a numeric value")
+    missing = _V2_CONFIG_KEYS - set(config)
+    unknown = set(config) - _V2_CONFIG_KEYS
+    if missing:
+        raise ValueError(f"v2 runner config has missing keys: {sorted(missing)}")
+    if unknown:
+        raise ValueError(f"v2 runner config has unknown keys: {sorted(unknown)}")
+    for key in _STRING_CONFIG_FIELDS:
+        value = config[key]
+        if type(value) is not str or not value.strip():
+            raise TypeError(f"{key} must be an exact non-empty string")
+    for key in _INTEGER_CONFIG_FIELDS:
+        if type(config[key]) is not int:
+            raise TypeError(f"{key} must be an exact integer")
+    for key in _FLOAT_CONFIG_FIELDS:
+        value = config[key]
+        if isinstance(value, bool) or not isinstance(value, Real):
+            raise TypeError(f"{key} must be a finite real number")
+        if not math.isfinite(float(value)):
+            raise ValueError(f"{key} must be finite")
+    if type(config["structure_enabled"]) is not bool:
+        raise TypeError("structure_enabled must be an exact boolean")
     if config.get("schema_version") != 2:
         raise ValueError("v2 runner schema_version must be 2")
     if (
@@ -134,6 +323,9 @@ def _validate_config(
         raise ValueError("temporal voxel_size_m must match cumulative geometry")
     if temporal_config.geometry.depth_max_m != config.get("depth_max_m"):
         raise ValueError("temporal depth_max_m must match cumulative geometry")
+    from src.oviv2.runner_config import runtime_config_from_json
+
+    runtime_config_from_json(dict(config))
     configured_hash = config.get("algorithm_hash")
     if not _is_sha256(configured_hash) or configured_hash != algorithm_hash(config):
         raise ValueError("configured algorithm_hash does not match mapping parameters")
@@ -163,7 +355,8 @@ def _load_frozen_run_context(
     manifest_bytes = manifest_path.read_bytes()
     manifest = _load_json_bytes(manifest_bytes, manifest_path)
     if not (
-        manifest.get("schema_version") == 1
+        set(manifest) == _FREEZE_TOP_KEYS
+        and manifest.get("schema_version") == 1
         and manifest.get("freeze_id") == PROTOCOL_ID
         and manifest.get("status") == "FROZEN"
         and manifest.get("method") == "OVIV2"
@@ -171,7 +364,20 @@ def _load_frozen_run_context(
     ):
         raise ValueError(f"formal runner requires the FROZEN {PROTOCOL_ID} manifest")
     repository = manifest.get("repository")
-    if not isinstance(repository, Mapping) or repository.get("clean") is not True:
+    if not (
+        isinstance(repository, Mapping)
+        and set(repository) == _FREEZE_REPOSITORY_KEYS
+        and repository.get("clean") is True
+        and repository.get("stage3_lineage_commit")
+        == "47962fbd9f363c0696cc5016f8ab42f83a3bf7e5"
+        and repository.get("stage3_is_ancestor") is True
+        and _is_git_id(repository.get("commit"))
+        and _is_git_id(repository.get("tree"))
+        and type(repository.get("parents")) is list
+        and all(_is_git_id(parent) for parent in repository["parents"])
+        and type(repository.get("commit_time_utc")) is str
+        and bool(repository["commit_time_utc"].strip())
+    ):
         raise ValueError("freeze repository identity is invalid")
     current = _validate_repository_state(_repository_provenance(), repository)
 
@@ -179,21 +385,67 @@ def _load_frozen_run_context(
     scenes = manifest.get("scenes")
     if not isinstance(scenes, Mapping) or set(scenes) != {"apartment", "office"}:
         raise ValueError("freeze scene bindings are incomplete")
-    selected = scenes.get(scene)
-    if not isinstance(selected, Mapping):
-        raise ValueError("freeze scene binding is invalid")
-    config_record = _verify_frozen_file_binding(
-        selected.get("frozen_config"),
-        base=manifest_path.parent,
-        role=f"{scene} frozen config",
-        expected_path=source_config,
-    )
-    if config_record != _byte_record(source_config_bytes):
+    loaded_configs: dict[str, Mapping[str, Any]] = {}
+    normalized_scenes: dict[str, dict[str, Any]] = {}
+    selected_config_record: dict[str, Any] | None = None
+    for bound_scene in ("apartment", "office"):
+        selected = scenes.get(bound_scene)
+        if not isinstance(selected, Mapping) or set(selected) != _FREEZE_SCENE_KEYS:
+            raise ValueError(f"freeze {bound_scene} scene binding schema is invalid")
+        frozen_config = selected["frozen_config"]
+        if not isinstance(frozen_config, Mapping):
+            raise ValueError(f"freeze {bound_scene} config binding is invalid")
+        frozen_path = _binding_path(
+            frozen_config.get("path"),
+            base=manifest_path.parent,
+            role=f"{bound_scene} frozen config",
+        )
+        config_record = _verify_exact_frozen_file_binding(
+            frozen_config,
+            base=manifest_path.parent,
+            role=f"{bound_scene} frozen config",
+            expected_path=source_config if bound_scene == scene else frozen_path,
+        )
+        frozen_bytes = frozen_path.read_bytes()
+        frozen_payload = _load_json_bytes(frozen_bytes, frozen_path)
+        parsed_scene, *_ = _validate_config(frozen_payload)
+        if parsed_scene != bound_scene:
+            raise ValueError("freeze scene config identity mismatch")
+        loaded_configs[bound_scene] = frozen_payload
+        normalized_scenes[bound_scene] = {"frozen_config": dict(frozen_config)}
+        for role in (
+            "export_manifest",
+            "frontend_manifest",
+            "dense_manifest",
+            "vocabulary_json",
+            "vocabulary_txt",
+        ):
+            _verify_exact_frozen_file_binding(
+                selected[role],
+                base=manifest_path.parent,
+                role=f"{bound_scene} {role}",
+                expected_path=_resolve_path(frozen_payload[role]),
+            )
+            normalized_scenes[bound_scene][role] = dict(selected[role])
+        if bound_scene == scene:
+            selected_config_record = config_record
+    if selected_config_record is None:
+        raise ValueError("freeze selected config binding is missing")
+    if selected_config_record != _byte_record(source_config_bytes):
         raise ValueError("frozen config content does not match runner config")
     algorithm = manifest.get("algorithm")
-    if not isinstance(algorithm, Mapping) or not (
-        algorithm.get("sha256") == config["algorithm_hash"]
+    if not (
+        isinstance(algorithm, Mapping)
+        and set(algorithm) == {"sha256", "normalized_config"}
+        and _is_sha256(algorithm.get("sha256"))
+        and isinstance(algorithm.get("normalized_config"), Mapping)
+        and algorithm.get("sha256") == config["algorithm_hash"]
         and algorithm.get("normalized_config") == algorithm_config(config)
+        and all(
+            frozen["algorithm_hash"] == algorithm["sha256"]
+            and algorithm_config(frozen) == algorithm["normalized_config"]
+            for frozen in loaded_configs.values()
+        )
     ):
         raise ValueError("runner config algorithm differs from the freeze")
 
@@ -205,33 +457,51 @@ def _load_frozen_run_context(
     }
     if not isinstance(output_roots, Mapping) or set(output_roots) != expected_slots:
         raise ValueError("freeze output slots are incomplete")
+    if any(
+        type(value) is not str
+        or not Path(value).is_absolute()
+        or value != os.fspath(_absolute_lexical(value))
+        for value in output_roots.values()
+    ):
+        raise ValueError("frozen run slot output roots are invalid")
     if run_slot not in expected_slots or not run_slot.startswith(f"{scene}_run"):
         raise ValueError("run slot does not match the frozen scene")
     raw_output = output_roots.get(run_slot)
     if not isinstance(raw_output, str) or not Path(raw_output).is_absolute():
         raise ValueError("frozen run slot output root is invalid")
-    if raw_output != os.fspath(_absolute_lexical(raw_output)) or _absolute_lexical(raw_output) != destination:
+    if (
+        raw_output != os.fspath(_absolute_lexical(raw_output))
+        or _absolute_lexical(raw_output) != destination
+    ):
         raise ValueError("run slot output does not match the frozen output root")
     normalized_roots = [_absolute_lexical(str(value)) for value in output_roots.values()]
     if len(set(normalized_roots)) != len(normalized_roots):
         raise ValueError("frozen output roots must be distinct")
 
     shared = manifest.get("shared_bindings")
-    if not isinstance(shared, Mapping):
-        raise ValueError("freeze shared input bindings are missing")
-    _verify_frozen_file_binding(
-        shared.get("schedule"),
-        base=manifest_path.parent,
-        role="shared schedule",
-        expected_path=_resolve_path(config["schedule_manifest"]),
-    )
-    _verify_frozen_file_binding(
-        shared.get("occlusion_target_manifest"),
-        base=manifest_path.parent,
-        role="shared occlusion target manifest",
-        expected_path=_resolve_path(config["occlusion_target_manifest"]),
-    )
-    input_bindings = {"shared_bindings": dict(shared), "scene": dict(selected)}
+    if not isinstance(shared, Mapping) or set(shared) != _FREEZE_SHARED_KEYS:
+        raise ValueError("freeze shared input binding schema is invalid")
+    shared_config_fields = {
+        "input_manifest": "input_manifest",
+        "schedule": "schedule_manifest",
+        "occlusion_target_manifest": "occlusion_target_manifest",
+    }
+    for role, config_field in shared_config_fields.items():
+        expected_paths = {
+            _resolve_path(frozen[config_field]) for frozen in loaded_configs.values()
+        }
+        if len(expected_paths) != 1:
+            raise ValueError(f"freeze shared {role} config paths differ across scenes")
+        _verify_exact_frozen_file_binding(
+            shared[role],
+            base=manifest_path.parent,
+            role=f"shared {role}",
+            expected_path=next(iter(expected_paths)),
+        )
+    input_bindings = {
+        "shared_bindings": dict(shared),
+        "scenes": normalized_scenes,
+    }
     _revalidate_frozen_bindings(input_bindings, base=manifest_path.parent)
     identity = {
         "schema_version": 1,
@@ -245,7 +515,7 @@ def _load_frozen_run_context(
             "commit": current["repository_commit"],
             "tree": current["repository_tree"],
         },
-        "config": config_record,
+        "config": selected_config_record,
         "algorithm_hash": algorithm["sha256"],
         "input_bindings_sha256": _json_hash(input_bindings),
     }
@@ -339,6 +609,15 @@ def _input_sha256(
             "target": _byte_record(target_bytes),
             "cache_bindings": dict(cache_bindings),
         }
+    )
+
+
+def _write_json(path: Path, value: Mapping[str, Any]) -> None:
+    path.write_bytes(
+        (
+            json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
+            + "\n"
+        ).encode("utf-8")
     )
 
 
@@ -512,7 +791,10 @@ def run(
                 artifact_root = compact.path
                 witness = compact
                 checkpoint_format = TEMPORAL_COMPACT_FORMAT
-            witness.revalidate_source() if hasattr(witness, "revalidate_source") else witness.revalidate()
+            if hasattr(witness, "revalidate_source"):
+                witness.revalidate_source()
+            else:
+                witness.revalidate()
             witnesses.append(witness)
             records.append(
                 {
@@ -555,12 +837,15 @@ def run(
         if callable(assert_unchanged):
             assert_unchanged()
         for witness in witnesses:
-            witness.revalidate_source() if hasattr(witness, "revalidate_source") else witness.revalidate()
+            if hasattr(witness, "revalidate_source"):
+                witness.revalidate_source()
+            else:
+                witness.revalidate()
 
         normalized_config = staging / "normalized_run_config.json"
-        normalized_config.write_bytes(
-            (json.dumps(config, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n").encode()
-        )
+        _write_json(normalized_config, config)
+        provenance_path = staging / "run_provenance.json"
+        _write_json(provenance_path, provenance)
         formal_fields = (
             {
                 "frozen_run_identity": dict(frozen.frozen_run_identity),
@@ -581,6 +866,10 @@ def run(
             "scheduled_frame_indices": scheduled,
             "captured_frame_indices": captured,
             "config": _byte_record(source_config_bytes),
+            "normalized_run_config": _file_record(
+                normalized_config, relative_to=staging
+            ),
+            "run_provenance": _file_record(provenance_path, relative_to=staging),
             "schedule": _byte_record(schedule_bytes),
             "target_manifest": _byte_record(target_bytes),
             "source_bindings": dict(cache_bindings),
@@ -589,12 +878,20 @@ def run(
             "checkpoints": records,
             **formal_fields,
         }
-        (staging / "run_manifest.json").write_bytes(
-            (json.dumps(manifest, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n").encode()
+        manifest["artifact_inventory"] = sorted(
+            path.relative_to(staging).as_posix()
+            for path in staging.rglob("*")
+            if path.is_file()
         )
-        (staging / "run_provenance.json").write_bytes(
-            (json.dumps(provenance, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n").encode()
+        run_manifest_path = staging / "run_manifest.json"
+        _write_json(run_manifest_path, manifest)
+        actual_inventory = sorted(
+            path.relative_to(staging).as_posix()
+            for path in staging.rglob("*")
+            if path.is_file() and path != run_manifest_path
         )
+        if actual_inventory != manifest["artifact_inventory"]:
+            raise ValueError("run artifact inventory changed during manifest publication")
         if frozen is not None:
             if frozen.manifest_path.read_bytes() != frozen.manifest_bytes:
                 raise ValueError("freeze manifest changed during run")
