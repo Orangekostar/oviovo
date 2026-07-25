@@ -155,26 +155,51 @@ class Fixture:
             sources = {
                 role: _record(
                     _write_json(
-                        self.repo / f"development/{candidate}/{role}.json",
+                        self.repo
+                        / (
+                            f"development/candidates/{candidate}/apartment/"
+                            f"evidence/{role}.json"
+                        ),
                         (
                             self.configs["apartment"]
                             if role == "candidate_config" and candidate == "a3"
-                            else {
-                                "schema_version": 1,
-                                "candidate_id": candidate,
-                                "role": role,
-                            }
+                            else (
+                                {
+                                    "schema_version": 1,
+                                    "status": "PASS",
+                                    "office_binding": {
+                                        "scene": "office",
+                                        "executed": False,
+                                    },
+                                    "candidates": [
+                                        {
+                                            "candidate_id": candidate,
+                                            "scene": "apartment",
+                                        }
+                                    ],
+                                }
+                                if role == "search_status"
+                                else {
+                                    "schema_version": 1,
+                                    "candidate_id": candidate,
+                                    "role": role,
+                                }
+                            )
                         ),
                     )
                 )
                 for role in SOURCE_ROLES
             }
             result = _write_json(
-                self.repo / f"development/{candidate}.json",
+                self.repo
+                / f"development/candidates/{candidate}/apartment/result.json",
                 {
                     "schema_version": 1,
+                    "manifest_id": "oviv2-tesse-dual-readout-candidate-result-v1",
                     "candidate_id": candidate,
                     "scene": "apartment",
+                    "status": "PASS",
+                    "sources": sources,
                     "config_sha256": (
                         _json_hash(self.configs["apartment"])
                         if candidate == "a3"
@@ -231,7 +256,7 @@ class Fixture:
             "promotion_order": ["hard_gates", "ghost_rate"],
             "metric_policy": {"required": ["ghost_rate"]},
             "floors": {"ghost_rate_exclusive_maximum": 0.218},
-            "skipped_optional_tie_axes": [],
+            "skipped_optional_tie_axes": {},
             "rejection_ledger": ledger,
         }
         self.selection = _write_json(
@@ -633,7 +658,84 @@ def test_freeze_rejects_self_consistent_office_selection_source(
     fixture.selection_value["rejection_ledger"][0]["sources"][
         "official_metrics"
     ] = _record(path)
+    result_path = Path(fixture.selection_value["result_files"][0]["path"])
+    result = json.loads(result_path.read_text(encoding="utf-8"))
+    result["sources"] = fixture.selection_value["rejection_ledger"][0]["sources"]
+    _write_json(result_path, result)
+    fixture.selection_value["result_files"][0] = {
+        "candidate_id": "a0",
+        **_record(result_path),
+    }
     _write_json(fixture.selection, fixture.selection_value)
 
     with pytest.raises(ValueError, match="Office"):
+        fixture.run()
+
+
+def test_freeze_rejects_generic_payload_at_office_metric_path(
+    fixture: Fixture,
+) -> None:
+    candidate = "a0"
+    ledger = fixture.selection_value["rejection_ledger"][0]
+    path = _write_json(
+        fixture.repo / "development/office_metrics.json",
+        {"schema_version": 1, "status": "PASS"},
+    )
+    ledger["sources"]["official_metrics"] = _record(path)
+    result_record = fixture.selection_value["result_files"][0]
+    result_path = Path(result_record["path"])
+    result = json.loads(result_path.read_text(encoding="utf-8"))
+    result["sources"] = ledger["sources"]
+    _write_json(result_path, result)
+    fixture.selection_value["result_files"][0] = {
+        "candidate_id": candidate,
+        **_record(result_path),
+    }
+    _write_json(fixture.selection, fixture.selection_value)
+
+    with pytest.raises(ValueError, match="Office|candidate evidence root"):
+        fixture.run()
+
+
+def test_freeze_rejects_reused_result_file_across_candidates(
+    fixture: Fixture,
+) -> None:
+    first = fixture.selection_value["result_files"][0]
+    fixture.selection_value["result_files"] = [
+        {"candidate_id": candidate, **{key: first[key] for key in ("path", "sha256", "byte_count")}}
+        for candidate in CANDIDATES
+    ]
+    _write_json(fixture.selection, fixture.selection_value)
+
+    with pytest.raises(ValueError, match="result|candidate"):
+        fixture.run()
+
+
+@pytest.mark.parametrize("reuse", ["cross_candidate", "cross_role"])
+def test_freeze_rejects_reused_candidate_specific_source(
+    fixture: Fixture, reuse: str
+) -> None:
+    target_index = 1 if reuse == "cross_candidate" else 0
+    target = fixture.selection_value["rejection_ledger"][target_index]
+    if reuse == "cross_candidate":
+        replacement = fixture.selection_value["rejection_ledger"][0]["sources"][
+            "run_manifest"
+        ]
+        role = "run_manifest"
+    else:
+        replacement = target["sources"]["common_v2_summary"]
+        role = "official_metrics"
+    target["sources"][role] = replacement
+    result_record = fixture.selection_value["result_files"][target_index]
+    result_path = Path(result_record["path"])
+    result = json.loads(result_path.read_text(encoding="utf-8"))
+    result["sources"] = target["sources"]
+    _write_json(result_path, result)
+    fixture.selection_value["result_files"][target_index] = {
+        "candidate_id": target["candidate_id"],
+        **_record(result_path),
+    }
+    _write_json(fixture.selection, fixture.selection_value)
+
+    with pytest.raises(ValueError, match="source|candidate evidence root|reused"):
         fixture.run()

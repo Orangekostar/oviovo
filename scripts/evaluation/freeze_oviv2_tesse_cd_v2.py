@@ -13,6 +13,7 @@ import math
 import os
 from pathlib import Path
 import platform
+import re
 import secrets
 import socket
 import stat
@@ -62,6 +63,16 @@ SOURCE_ROLES = frozenset(
         "determinism_evidence",
     }
 )
+CANDIDATE_SOURCE_ROLES = frozenset(
+    {
+        "candidate_config",
+        "run_manifest",
+        "common_v2_summary",
+        "temporal_occlusion_result",
+        "official_metrics",
+    }
+)
+_OFFICE_PATH_TOKEN = re.compile(r"(^|[^a-z0-9])office([^a-z0-9]|$)")
 SELECTION_KEYS = frozenset(
     {
         "schema_version",
@@ -563,7 +574,7 @@ def _validate_selection(
         and bool(selection["promotion_order"])
         and isinstance(selection.get("metric_policy"), Mapping)
         and isinstance(selection.get("floors"), Mapping)
-        and type(selection.get("skipped_optional_tie_axes")) is list
+        and isinstance(selection.get("skipped_optional_tie_axes"), Mapping)
     ):
         raise ValueError("selection policy evidence is invalid")
     selected_candidate = selection.get("selected_candidate_id")
@@ -575,7 +586,10 @@ def _validate_selection(
     result_files = selection.get("result_files")
     if type(result_files) is not list or len(result_files) != len(CANDIDATES):
         raise ValueError("selection must bind all A0-A4 result files")
+    results_root = _absolute(Path(selection["results_root"]))
     result_candidates: list[str] = []
+    result_payloads: dict[str, dict[str, Any]] = {}
+    result_paths: set[Path] = set()
     for item in result_files:
         if not isinstance(item, Mapping) or set(item) != {
             "candidate_id",
@@ -585,17 +599,44 @@ def _validate_selection(
         }:
             raise ValueError("selection result file schema is invalid")
         candidate = item.get("candidate_id")
-        _verify_record(
+        if candidate not in CANDIDATES:
+            raise ValueError("selection result file candidate is undeclared")
+        verified, result_snapshot = _verify_record(
             {key: item[key] for key in ("path", "sha256", "byte_count")},
             repo_root=repo_root,
             role=f"{candidate} packaged result",
             snapshots=snapshots,
         )
+        result_path = Path(verified["path"])
+        expected_path = (
+            results_root
+            / "candidates"
+            / candidate
+            / "apartment"
+            / "result.json"
+        )
+        if result_path != expected_path or result_path in result_paths:
+            raise ValueError("selection result path does not bind its candidate")
+        result_paths.add(result_path)
+        result_payload = _load_json(result_snapshot, f"{candidate} packaged result")
+        if not (
+            result_payload.get("schema_version") == 1
+            and result_payload.get("manifest_id")
+            == "oviv2-tesse-dual-readout-candidate-result-v1"
+            and result_payload.get("candidate_id") == candidate
+            and result_payload.get("scene") == "apartment"
+            and result_payload.get("status") == "PASS"
+            and isinstance(result_payload.get("sources"), Mapping)
+            and set(result_payload["sources"]) == SOURCE_ROLES
+        ):
+            raise ValueError("packaged result identity or source roles are invalid")
+        result_payloads[candidate] = result_payload
         result_candidates.append(candidate)
     if tuple(result_candidates) != CANDIDATES:
         raise ValueError("selection result files must bind A0-A4 exactly once")
     seen: list[str] = []
     selected_entries = 0
+    candidate_source_paths: dict[Path, tuple[str, str]] = {}
     for entry in ledger:
         if not isinstance(entry, Mapping) or set(entry) != LEDGER_KEYS:
             raise ValueError("selection ledger schema is invalid")
@@ -620,6 +661,9 @@ def _validate_selection(
         sources = entry.get("sources")
         if not isinstance(sources, Mapping) or set(sources) != SOURCE_ROLES:
             raise ValueError("selection ledger source schema is invalid")
+        if sources != result_payloads[candidate]["sources"]:
+            raise ValueError("selection ledger sources differ from packaged result")
+        candidate_root = results_root / "candidates" / candidate / "apartment"
         for role, record in sources.items():
             verified, source_snapshot = _verify_record(
                 record,
@@ -627,11 +671,39 @@ def _validate_selection(
                 role=f"{candidate} {role}",
                 snapshots=snapshots,
             )
-            if "office" in Path(verified["path"]).parts:
+            source_path = Path(verified["path"])
+            if _OFFICE_PATH_TOKEN.search(source_path.as_posix().lower()):
                 raise ValueError("selection ledger contains Office result evidence")
+            if role in CANDIDATE_SOURCE_ROLES:
+                if candidate_root not in source_path.parents:
+                    raise ValueError(
+                        f"{candidate} {role} is outside its candidate evidence root"
+                    )
+                previous = candidate_source_paths.get(source_path)
+                if previous is not None:
+                    raise ValueError(
+                        f"candidate-specific source is reused: {previous} and "
+                        f"{(candidate, role)}"
+                    )
+                candidate_source_paths[source_path] = (candidate, role)
             source_payload = _load_json(source_snapshot, f"{candidate} {role}")
-            if _has_office_read_evidence(source_payload):
+            audited_payload = source_payload
+            if role == "search_status":
+                office_binding = source_payload.get("office_binding")
+                if not (
+                    isinstance(office_binding, Mapping)
+                    and office_binding.get("scene") == "office"
+                    and office_binding.get("executed") is False
+                ):
+                    raise ValueError("search status Office binding is not bind-only")
+                audited_payload = dict(source_payload)
+                audited_payload.pop("office_binding")
+            if _has_office_read_evidence(audited_payload):
                 raise ValueError("selection ledger contains Office result evidence")
+            if source_payload.get("candidate_id") not in {None, candidate}:
+                raise ValueError("candidate source payload identity differs")
+            if source_payload.get("role") not in {None, role}:
+                raise ValueError("candidate source payload role differs")
             if role == "candidate_config" and candidate == selected_candidate:
                 if verified != selection["selected_config_record"]:
                     raise ValueError("selected config source record differs")
