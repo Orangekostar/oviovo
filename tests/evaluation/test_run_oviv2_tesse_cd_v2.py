@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import gc
+import shutil
 import sys
 from types import SimpleNamespace
 
@@ -287,6 +288,20 @@ def _materialize_config(module: object, tmp_path: Path) -> Path:
     return path
 
 
+def _materialize_overlap_config(module: object, tmp_path: Path) -> Path:
+    path = _materialize_config(module, tmp_path)
+    config = json.loads(path.read_text())
+    schedule_path = Path(config["schedule_manifest"])
+    schedule = json.loads(schedule_path.read_text())
+    for scene in ("apartment", "office"):
+        official = schedule["scenes"][scene]["entries"][0]
+        official.update(
+            {"frame_index": 2, "relative_timestamp_ns": 20, "timestamp_ns": 120}
+        )
+    _write_json(schedule_path, schedule)
+    return path
+
+
 def test_five_frame_dual_readout_is_causal_role_aware_and_deterministic(tmp_path: Path) -> None:
     import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
 
@@ -338,6 +353,112 @@ def test_five_frame_dual_readout_is_causal_role_aware_and_deterministic(tmp_path
         )
         assert published["artifact_inventory"] == expected_inventory
     assert {path: path.read_bytes() for path in V1_FILES} == V1_BYTES
+
+
+def test_overlap_checkpoint_publishes_full_and_compact_with_exact_index(
+    tmp_path: Path,
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config = _materialize_overlap_config(module, tmp_path)
+    first = tmp_path / "first"
+    second = tmp_path / "second"
+    first_manifest = module.run(config, first, dependencies=_dependencies(module)[0])
+    second_manifest = module.run(config, second, dependencies=_dependencies(module)[0])
+    overlap = next(item for item in first_manifest["checkpoints"] if item["frame_index"] == 2)
+    assert set(overlap["artifacts"]) == {"temporal_current", "temporal_compact"}
+    assert (first / overlap["artifacts"]["temporal_current"]["artifact"]["path"]).is_dir()
+    assert (first / overlap["artifacts"]["temporal_compact"]["artifact"]["path"]).is_dir()
+    index_path = first / "occlusion_checkpoint_index.json"
+    index = json.loads(index_path.read_text())
+    assert set(index) == {
+        "schema_version",
+        "format",
+        "protocol_id",
+        "dataset",
+        "method_id",
+        "scene",
+        "algorithm_hash",
+        "schedule",
+        "target_manifest",
+        "checkpoints",
+    }
+    assert index["format"] == "oviv2_temporal_compact_v1"
+    assert [item["frame_index"] for item in index["checkpoints"]] == [2, 4]
+    assert all(
+        item["format"] == module.TEMPORAL_COMPACT_FORMAT
+        and item["artifact"]["path"].endswith("/temporal_compact")
+        for item in index["checkpoints"]
+    )
+    assert first_manifest["occlusion_checkpoint_index"] == {
+        "path": "occlusion_checkpoint_index.json",
+        "sha256": _sha256(index_path),
+        "byte_count": index_path.stat().st_size,
+    }
+    assert "occlusion_checkpoint_index.json" in first_manifest["artifact_inventory"]
+    assert first_manifest == second_manifest
+    assert index_path.read_bytes() == (second / "occlusion_checkpoint_index.json").read_bytes()
+
+
+@pytest.mark.parametrize("mutation", ["missing_overlap_compact", "mutated_index"])
+def test_overlap_compact_and_index_are_revalidated_before_publish(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, mutation: str
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config = _materialize_overlap_config(module, tmp_path)
+    original_write = module._write_json
+
+    def inject(path: Path, value: object) -> None:
+        original_write(path, value)
+        if path.name != "execution_receipt.json":
+            return
+        if mutation == "missing_overlap_compact":
+            compact = next(
+                path.parent.glob("checkpoints/00000002-*/temporal_compact"), None
+            )
+            if compact is not None:
+                shutil.rmtree(compact)
+        else:
+            index = path.parent / "occlusion_checkpoint_index.json"
+            if index.exists():
+                index.write_text('{"mutated":true}\n', encoding="utf-8")
+
+    monkeypatch.setattr(module, "_write_json", inject)
+    output = tmp_path / "published" / "run"
+    with pytest.raises((FileNotFoundError, ValueError)):
+        module.run(config, output, dependencies=_dependencies(module)[0])
+    assert not output.exists()
+
+
+def test_checked_in_manifests_have_coverable_full_compact_overlap() -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    expected = {"apartment": 38, "office": 40}
+    for scene, overlap_count in expected.items():
+        config = json.loads(
+            Path(f"configs/oviv2_tesse_cd_{scene}_v2.json").read_text()
+        )
+        schedule_path = module._resolve_path(config["schedule_manifest"])
+        official = module._load_causal_checkpoints_bytes(
+            schedule_path.read_bytes(),
+            schedule_path,
+            scene=scene,
+            frame_count=config["frame_count"],
+        )
+        target_path = module._resolve_path(config["occlusion_target_manifest"])
+        plan = module._checkpoint_plan_from_target_manifest(
+            target_path.read_bytes(), target_path
+        )
+        target_frames = set(plan["evaluation_checkpoint_frames"][scene])
+        full_frames = {
+            item.frame_index
+            for item in official
+            if {"official", "common_v2"} & set(item.roles)
+        }
+        assert target_frames == set(config["evaluation_checkpoint_frames"])
+        assert len(target_frames & full_frames) == overlap_count
+        assert target_frames & full_frames
 
 
 def test_runtime_factory_receives_only_explicit_algorithm_whitelist(tmp_path: Path) -> None:

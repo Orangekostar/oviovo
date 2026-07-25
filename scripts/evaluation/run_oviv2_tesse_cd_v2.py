@@ -445,6 +445,48 @@ def _revalidate_checkpoint_artifact(
         raise ValueError("checkpoint artifact tree changed during run")
 
 
+def _bind_checkpoint_artifact(
+    *,
+    artifact_root: Path,
+    source_witness: Any,
+    checkpoint_format: str,
+    staging: Path,
+    temporal_config: Any,
+    witnesses: list[_CheckpointArtifactWitness],
+    expected_inventory: set[str],
+) -> dict[str, Any]:
+    if hasattr(source_witness, "revalidate_source"):
+        source_witness.revalidate_source()
+    else:
+        source_witness.revalidate()
+    artifact_tree = _tree_record(artifact_root, relative_to=staging)
+    witnesses.append(
+        _CheckpointArtifactWitness(
+            path=artifact_root,
+            checkpoint_format=checkpoint_format,
+            tree_record=artifact_tree,
+            maximum_entities=temporal_config.geometry.maximum_entities,
+            maximum_object_voxels=temporal_config.geometry.maximum_object_voxels,
+        )
+    )
+    artifact_entries = list(artifact_root.iterdir())
+    actual_members = {path.name for path in artifact_entries}
+    expected_members = _CHECKPOINT_MEMBERS[checkpoint_format]
+    if actual_members != expected_members or any(
+        not stat.S_ISREG(os.lstat(path).st_mode) for path in artifact_entries
+    ):
+        raise ValueError("checkpoint artifact inventory is invalid")
+    expected_inventory.update(
+        (artifact_root / name).relative_to(staging).as_posix()
+        for name in expected_members
+    )
+    return {
+        "format": checkpoint_format,
+        "artifact": artifact_tree,
+        "checksums_sha256": _sha256(artifact_root / "checksums.json"),
+    }
+
+
 def algorithm_config(config: Mapping[str, Any]) -> dict[str, Any]:
     return canonical_algorithm_config(config)
 
@@ -1354,8 +1396,13 @@ def run(
             root = staging / "checkpoints" / f"{frame_index:08d}-{checkpoint.timestamp_ns}"
             _assert_staging_identity(staging, staging_identity)
             root.mkdir(parents=True)
-            is_full = bool({"official", "common_v2"} & set(checkpoint.roles))
-            if is_full:
+            roles = set(checkpoint.roles)
+            needs_full = bool({"official", "common_v2"} & roles)
+            needs_compact = "occlusion_v1" in roles
+            if not needs_full and not needs_compact:
+                raise ValueError("checkpoint role combination is invalid")
+            artifacts: dict[str, dict[str, Any]] = {}
+            if needs_full:
                 receipt = publish_temporal_current_checkpoint(
                     root / "temporal_current",
                     snapshot,
@@ -1363,12 +1410,17 @@ def run(
                     code_commit=code_commit,
                     input_sha256=input_sha256,
                 )
-                artifact_root = receipt.path
-                witness = receipt.source_witness
-                checkpoint_format = TEMPORAL_CURRENT_FORMAT
-            else:
-                if set(checkpoint.roles) != {"occlusion_v1"}:
-                    raise ValueError("checkpoint role combination is invalid")
+                artifacts["temporal_current"] = _bind_checkpoint_artifact(
+                    artifact_root=receipt.path,
+                    source_witness=receipt.source_witness,
+                    checkpoint_format=TEMPORAL_CURRENT_FORMAT,
+                    staging=staging,
+                    temporal_config=temporal_config,
+                    witnesses=witnesses,
+                    expected_inventory=expected_checkpoint_inventory,
+                )
+                del receipt
+            if needs_compact:
                 compact = TemporalCompactCheckpoint.from_snapshot(
                     snapshot,
                     maximum_entities=temporal_config.geometry.maximum_entities,
@@ -1378,34 +1430,19 @@ def run(
                     maximum_entities=temporal_config.geometry.maximum_entities,
                     maximum_object_voxels=temporal_config.geometry.maximum_object_voxels,
                 )
-                artifact_root = compact.path
-                witness = compact
-                checkpoint_format = TEMPORAL_COMPACT_FORMAT
-            if hasattr(witness, "revalidate_source"):
-                witness.revalidate_source()
-            else:
-                witness.revalidate()
-            artifact_tree = _tree_record(artifact_root, relative_to=staging)
-            witnesses.append(
-                _CheckpointArtifactWitness(
-                    path=artifact_root,
-                    checkpoint_format=checkpoint_format,
-                    tree_record=artifact_tree,
-                    maximum_entities=temporal_config.geometry.maximum_entities,
-                    maximum_object_voxels=temporal_config.geometry.maximum_object_voxels,
+                artifacts["temporal_compact"] = _bind_checkpoint_artifact(
+                    artifact_root=compact.path,
+                    source_witness=compact,
+                    checkpoint_format=TEMPORAL_COMPACT_FORMAT,
+                    staging=staging,
+                    temporal_config=temporal_config,
+                    witnesses=witnesses,
+                    expected_inventory=expected_checkpoint_inventory,
                 )
-            )
-            artifact_entries = list(artifact_root.iterdir())
-            actual_members = {path.name for path in artifact_entries}
-            expected_members = _CHECKPOINT_MEMBERS[checkpoint_format]
-            if actual_members != expected_members or any(
-                not stat.S_ISREG(os.lstat(path).st_mode) for path in artifact_entries
-            ):
-                raise ValueError("checkpoint artifact inventory is invalid")
-            expected_checkpoint_inventory.update(
-                (artifact_root / name).relative_to(staging).as_posix()
-                for name in expected_members
-            )
+                del compact
+            primary = artifacts[
+                "temporal_current" if needs_full else "temporal_compact"
+            ]
             records.append(
                 {
                     "scene": scene,
@@ -1416,17 +1453,13 @@ def run(
                     "consumed_through_frame_exclusive": checkpoint.frame_index + 1,
                     "event_ids": list(checkpoint.event_ids),
                     "roles": list(checkpoint.roles),
-                    "format": checkpoint_format,
-                    "artifact": artifact_tree,
-                    "checksums_sha256": _sha256(artifact_root / "checksums.json"),
+                    "format": primary["format"],
+                    "artifact": primary["artifact"],
+                    "checksums_sha256": primary["checksums_sha256"],
+                    "artifacts": artifacts,
                 }
             )
             captured.append(frame_index)
-            del witness
-            if is_full:
-                del receipt
-            else:
-                del compact
             _assert_staging_identity(staging, staging_identity)
 
         scheduled = [item.frame_index for item in checkpoints]
@@ -1461,6 +1494,71 @@ def run(
         _assert_staging_identity(staging, staging_identity)
         _write_json(normalized_config, config)
         _assert_staging_identity(staging, staging_identity)
+        records_by_frame = {item["frame_index"]: item for item in records}
+        if len(records_by_frame) != len(records):
+            raise ValueError("checkpoint records contain duplicate frames")
+        occlusion_records: list[dict[str, Any]] = []
+        for frame_index in evaluation_frames:
+            record = records_by_frame.get(frame_index)
+            compact_artifact = (
+                record.get("artifacts", {}).get("temporal_compact")
+                if isinstance(record, Mapping)
+                else None
+            )
+            if not (
+                isinstance(record, Mapping)
+                and "occlusion_v1" in record["roles"]
+                and isinstance(compact_artifact, Mapping)
+                and compact_artifact.get("format") == TEMPORAL_COMPACT_FORMAT
+            ):
+                raise ValueError("occlusion checkpoint has no compact artifact")
+            occlusion_records.append(
+                {
+                    "scene": record["scene"],
+                    "frame_index": record["frame_index"],
+                    "timestamp_ns": record["timestamp_ns"],
+                    "relative_timestamp_ns": record["relative_timestamp_ns"],
+                    "consumed_through_frame": record["consumed_through_frame"],
+                    "consumed_through_frame_exclusive": record[
+                        "consumed_through_frame_exclusive"
+                    ],
+                    "event_ids": record["event_ids"],
+                    "roles": record["roles"],
+                    "format": TEMPORAL_COMPACT_FORMAT,
+                    "maximum_entities": temporal_config.geometry.maximum_entities,
+                    "maximum_object_voxels": temporal_config.geometry.maximum_object_voxels,
+                    "artifact": compact_artifact["artifact"],
+                    "checksums_sha256": compact_artifact["checksums_sha256"],
+                }
+            )
+        if [item["frame_index"] for item in occlusion_records] != list(
+            evaluation_frames
+        ):
+            raise ValueError("occlusion checkpoint index coverage is invalid")
+        occlusion_index = {
+            "schema_version": 1,
+            "format": "oviv2_temporal_compact_v1",
+            "protocol_id": PROTOCOL_ID,
+            "dataset": "TESSE-CD",
+            "method_id": "OVIV2",
+            "scene": scene,
+            "algorithm_hash": config["algorithm_hash"],
+            "schedule": _byte_record(schedule_bytes),
+            "target_manifest": _byte_record(target_bytes),
+            "checkpoints": occlusion_records,
+        }
+        occlusion_index_path = staging / "occlusion_checkpoint_index.json"
+        _write_json(occlusion_index_path, occlusion_index)
+        occlusion_index_bytes = occlusion_index_path.read_bytes()
+        if (
+            _load_json_bytes(occlusion_index_bytes, occlusion_index_path)
+            != occlusion_index
+        ):
+            raise ValueError("occlusion checkpoint index serialization changed")
+        occlusion_index_record = _file_record(
+            occlusion_index_path, relative_to=staging
+        )
+        _assert_staging_identity(staging, staging_identity)
         formal_fields = (
             {"frozen_run_identity": dict(frozen.frozen_run_identity)}
             if frozen is not None
@@ -1487,10 +1585,12 @@ def run(
             "input_sha256": input_sha256,
             "code_commit": code_commit,
             "checkpoints": records,
+            "occlusion_checkpoint_index": occlusion_index_record,
             **formal_fields,
         }
         manifest["artifact_inventory"] = sorted(
-            expected_checkpoint_inventory | {"normalized_run_config.json"}
+            expected_checkpoint_inventory
+            | {"normalized_run_config.json", "occlusion_checkpoint_index.json"}
         )
         run_manifest_path = staging / "run_manifest.json"
         _assert_staging_identity(staging, staging_identity)
@@ -1552,6 +1652,12 @@ def run(
                 },
             ) != frozen.repository_state:
                 raise ValueError("repository identity changed during run")
+        if (
+            occlusion_index_path.read_bytes() != occlusion_index_bytes
+            or _file_record(occlusion_index_path, relative_to=staging)
+            != occlusion_index_record
+        ):
+            raise ValueError("occlusion checkpoint index changed during run")
         _assert_staging_identity(staging, staging_identity)
         if _entry_inventory(staging) != expected_entries:
             raise ValueError("run publication inventory changed before publication")
