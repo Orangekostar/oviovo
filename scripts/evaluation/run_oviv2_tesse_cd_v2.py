@@ -1756,7 +1756,6 @@ def run(
                 **(
                     {
                         "frozen_run_identity": dict(frozen.frozen_run_identity),
-                        "run_execution": dict(execution),
                     }
                     if frozen is not None and execution is not None
                     else {}
@@ -1801,7 +1800,6 @@ def run(
             "code_commit": code_commit,
             "checkpoints": records,
             "occlusion_checkpoint_index": occlusion_index_record,
-            "source_index": source_index_record,
             **formal_fields,
         }
         manifest["artifact_inventory"] = sorted(

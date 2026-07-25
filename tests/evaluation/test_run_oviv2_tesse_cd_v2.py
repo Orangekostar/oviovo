@@ -1269,7 +1269,7 @@ def test_complete_v2_formal_freeze_runs_before_publishing(
 ) -> None:
     import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
 
-    config, freeze, output, _ = _formal_fixture(module, tmp_path)
+    config, freeze, output, roots = _formal_fixture(module, tmp_path)
     freeze_payload = json.loads(freeze.read_text())
     _patch_formal_authorities(module, monkeypatch, freeze_payload)
     manifest = module.run(
@@ -1287,8 +1287,23 @@ def test_complete_v2_formal_freeze_runs_before_publishing(
     source_index = json.loads((output / "source_index.json").read_text())
     receipt = json.loads((output / "execution_receipt.json").read_text())
     assert source_index["frozen_run_identity"] == manifest["frozen_run_identity"]
-    assert source_index["run_execution"] == receipt["run_execution"]
+    assert "run_execution" not in source_index
     assert receipt["frozen_run_identity"] == manifest["frozen_run_identity"]
+    second_output = Path(roots["apartment_run2"])
+    second_manifest = module.run(
+        config,
+        second_output,
+        freeze_manifest=freeze,
+        run_slot="apartment_run2",
+        dependencies=_dependencies(module)[0],
+    )
+    assert second_manifest == manifest
+    assert (second_output / "run_manifest.json").read_bytes() == (
+        output / "run_manifest.json"
+    ).read_bytes()
+    assert (second_output / "source_index.json").read_bytes() == (
+        output / "source_index.json"
+    ).read_bytes()
 
 
 @pytest.mark.parametrize(

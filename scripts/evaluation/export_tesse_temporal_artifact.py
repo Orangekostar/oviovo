@@ -47,6 +47,7 @@ _SOURCE_INDEX_BASE_FIELDS = frozenset(
 )
 _FORMAL_RUN_FIELDS = frozenset({"frozen_run_identity", "run_execution"})
 _SOURCE_INDEX_FIELDS = _SOURCE_INDEX_BASE_FIELDS | _FORMAL_RUN_FIELDS
+_V2_SOURCE_INDEX_FIELDS = _SOURCE_INDEX_BASE_FIELDS | {"frozen_run_identity"}
 _V1_FROZEN_RUN_IDENTITY_FIELDS = frozenset(
     {
         "schema_version",
@@ -733,15 +734,29 @@ def _formal_run_fields(
     present = _FORMAL_RUN_FIELDS & set(index)
     if not present:
         return {}, []
-    if present != _FORMAL_RUN_FIELDS:
-        raise ValueError("formal source index identity fields are incomplete")
     frozen = index.get("frozen_run_identity")
-    execution = index.get("run_execution")
     if not isinstance(frozen, Mapping):
         raise ValueError("frozen run identity fields are invalid")
+    if present == {"frozen_run_identity"}:
+        if frozen.get("freeze_id") != "oviv2-tessecd-v2":
+            raise ValueError("formal source index identity fields are incomplete")
+        receipt_source = _direct_source(
+            index_source.path.parent / "execution_receipt.json",
+            label="execution receipt",
+        )
+        receipt = _read_json(receipt_source, label="execution receipt")
+        execution = receipt.get("run_execution")
+        if receipt.get("frozen_run_identity") != frozen:
+            raise ValueError("execution receipt formal identity mismatch")
+    elif present == _FORMAL_RUN_FIELDS:
+        execution = index.get("run_execution")
+    else:
+        raise ValueError("formal source index identity fields are incomplete")
     if not isinstance(execution, Mapping) or set(execution) != _RUN_EXECUTION_FIELDS:
         raise ValueError("run execution fields are invalid")
     if frozen.get("freeze_id") == "oviv2-tessecd-v2":
+        if present != {"frozen_run_identity"}:
+            raise ValueError("v2 source index must not contain run execution")
         return _formal_v2_run_fields(
             frozen, execution, index=index, index_source=index_source
         )
@@ -979,15 +994,6 @@ def _formal_v2_run_fields(
         raise ValueError("formal run artifact inventory mismatch")
     if any(str(record["path"]) not in inventory for record in declared_records):
         raise ValueError("v2 source index record is outside artifact inventory")
-    source_record = manifest.get("source_index")
-    if not isinstance(source_record, Mapping) or not _same_source(
-        source_record, index_source, base=root
-    ):
-        raise ValueError("run manifest source index authority mismatch")
-    if Path(str(source_record.get("path"))).is_absolute() or source_record.get(
-        "path"
-    ) != "source_index.json":
-        raise ValueError("run manifest source index path is invalid")
     return {
         "frozen_run_identity": dict(frozen),
         "run_execution": dict(execution),
@@ -1337,6 +1343,7 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
     if set(index) not in {
         _SOURCE_INDEX_BASE_FIELDS,
         _SOURCE_INDEX_FIELDS,
+        _V2_SOURCE_INDEX_FIELDS,
     }:
         raise ValueError("source index fields are invalid")
     if (
@@ -1691,7 +1698,11 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
             ),
             "trajectories": trajectory_sidecar_record,
             "checkpoints": normalized_index_checkpoints,
-            **formal_run_fields,
+            **{
+                name: formal_run_fields[name]
+                for name in _FORMAL_RUN_FIELDS
+                if name in index
+            },
         }
         _write_json(index_path, normalized_index)
 

@@ -236,7 +236,7 @@ def _rewrite_index(index_path: Path, payload: dict[str, Any]) -> None:
     _write_json(index_path, payload)
 
 
-def _make_v2_formal_source(root: Path) -> Path:
+def _make_v2_formal_source(root: Path, *, evidence: str = "7") -> Path:
     index_path, index = _build_fixture(root, method="OVIV2")
     index["method"] = "OVIV2"
 
@@ -272,7 +272,7 @@ def _make_v2_formal_source(root: Path) -> Path:
         "config": {"sha256": "4" * 64, "byte_count": 1},
         "algorithm_hash": "5" * 64,
         "input_bindings_sha256": "6" * 64,
-        "formal_evidence_sha256": "7" * 64,
+        "formal_evidence_sha256": evidence * 64,
     }
     status = os.stat(root, follow_symlinks=False)
     execution = {
@@ -287,7 +287,7 @@ def _make_v2_formal_source(root: Path) -> Path:
             execution, sort_keys=True, separators=(",", ":"), allow_nan=False
         ).encode()
     ).hexdigest()
-    index.update({"frozen_run_identity": frozen, "run_execution": execution})
+    index.update({"frozen_run_identity": frozen})
     _write_json(index_path, index)
     inventory = sorted(
         path.relative_to(root).as_posix()
@@ -303,11 +303,6 @@ def _make_v2_formal_source(root: Path) -> Path:
             "method_id": "OVIV2",
             "scene": "apartment",
             "artifact_inventory": inventory,
-            "source_index": {
-                "path": "source_index.json",
-                "sha256": hashlib.sha256(index_path.read_bytes()).hexdigest(),
-                "byte_count": index_path.stat().st_size,
-            },
             "frozen_run_identity": frozen,
         },
     )
@@ -504,9 +499,10 @@ def test_formal_v2_rejects_authority_and_inventory_mutations(
         payload["frozen_run_identity"]["formal_evidence_sha256"] = "0" * 64
         _write_json(path, payload)
     elif mutation == "source_execution":
-        payload = json.loads(index_path.read_text())
+        path = root / "execution_receipt.json"
+        payload = json.loads(path.read_text())
         payload["run_execution"]["root_inode"] += 1
-        _write_json(index_path, payload)
+        _write_json(path, payload)
     elif mutation == "inventory_missing":
         path = root / "run_manifest.json"
         payload = json.loads(path.read_text())
@@ -526,11 +522,11 @@ def test_formal_v2_rejects_authority_and_inventory_mutations(
 
 
 def test_formal_v2_rejects_cross_run_source_index_substitution(tmp_path: Path) -> None:
-    first = _make_v2_formal_source(tmp_path / "first")
+    first = _make_v2_formal_source(tmp_path / "first", evidence="8")
     second = _make_v2_formal_source(tmp_path / "second")
     second.write_bytes(first.read_bytes())
 
-    with pytest.raises(ValueError, match="output root"):
+    with pytest.raises(ValueError, match="identity"):
         export_temporal_artifact(second, tmp_path / "output")
 
 
