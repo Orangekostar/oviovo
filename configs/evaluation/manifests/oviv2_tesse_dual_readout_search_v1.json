@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "manifest_id": "oviv2-tesse-dual-readout-search-v1",
+  "dataset": "TESSE-CD",
+  "method_id": "OVIV2",
+  "protocol_id": "oviv2-tessecd-v2",
+  "development_scene": "apartment",
+  "transfer_scene": "office",
+  "transfer_policy": "bind_only_never_execute",
+  "minimum_available_ram_bytes_per_candidate": 8589934592,
+  "parameter_bounds": {
+    "association.conflict_override_geometry": [0.0, 1.0],
+    "association.conflict_override_visual": [0.0, 1.0],
+    "association.geometry_weight": [0.0, 1.0],
+    "association.maximum_centroid_distance_m": [0.01, 100.0],
+    "association.minimum_score": [0.0, 1.0],
+    "association.motion_weight": [0.0, 1.0],
+    "association.semantic_conflict_probability": [0.0, 1.0],
+    "association.semantic_weight": [0.0, 1.0],
+    "association.size_weight": [0.0, 1.0],
+    "association.visual_weight": [0.0, 1.0],
+    "geometry.background_block_count": [1, 1000000],
+    "geometry.background_mask_dilation_px": [0, 64],
+    "geometry.depth_max_m": [0.01, 100.0],
+    "geometry.maximum_entities": [1, 10000],
+    "geometry.maximum_icp_rmse_m": [0.0001, 10.0],
+    "geometry.maximum_motion_m": [0.0001, 100.0],
+    "geometry.maximum_object_voxels": [1, 1000000],
+    "geometry.maximum_visibility_points_per_entity": [1, 1000000],
+    "geometry.minimum_icp_fitness": [0.0, 1.0],
+    "geometry.minimum_icp_points": [1, 1000000],
+    "geometry.voxel_size_m": [0.0001, 1.0],
+    "lifecycle.absent_log_likelihood": [-20.0, -0.0001],
+    "lifecycle.active_on_probability": [0.0, 1.0],
+    "lifecycle.decay_half_life_seconds": [0.0001, 86400.0],
+    "lifecycle.dormant_off_probability": [0.0, 1.0],
+    "lifecycle.initial_log_odds": [-20.0, 20.0],
+    "lifecycle.log_odds_limit": [0.0001, 20.0],
+    "lifecycle.minimum_absent_streak": [1, 10000],
+    "lifecycle.minimum_distinct_view_bins": [1, 10000],
+    "lifecycle.minimum_visible_fraction": [0.0, 1.0],
+    "lifecycle.minimum_visible_pixel_count": [0, 10000000],
+    "lifecycle.present_log_likelihood": [0.0001, 20.0],
+    "lifecycle.view_bin_azimuth_count": [1, 10000],
+    "lifecycle.view_bin_elevation_count": [1, 10000],
+    "lifecycle.visibility_depth_tolerance_m": [0.0001, 10.0]
+  },
+  "metric_directions": {
+    "background_f5_cm": "maximize",
+    "change_f1": "maximize",
+    "current_miou": "maximize",
+    "dynamic_f1": "maximize",
+    "ghost_rate": "minimize",
+    "object_f1": "maximize",
+    "recovery_frames": "minimize",
+    "runtime_seconds": "minimize"
+  },
+  "metric_policy": {
+    "structured_fields": ["available", "value", "reason", "source"],
+    "selection_required": ["current_miou", "object_f1", "ghost_rate", "background_f5_cm", "recovery_frames", "runtime_seconds"],
+    "optional_tie_axes": ["dynamic_f1", "change_f1"],
+    "optional_availability": "must_match_a0_all_candidates;skip_axis_if_all_unavailable;reject_partial_availability"
+  },
+  "promotion_order": [
+    "t1_exact_gate",
+    "current_miou_floor",
+    "object_f1_floor",
+    "ghost_rate",
+    "background_f5_cm",
+    "recovery_frames",
+    "dynamic_f1",
+    "change_f1",
+    "runtime_seconds",
+    "config_sha256"
+  ],
+  "hard_gates": {
+    "current_miou_not_below_a0": true,
+    "object_f1_not_below_a0": true,
+    "required_result_gates": [
+      "correctness",
+      "causality",
+      "determinism",
+      "t1_exact"
+    ]
+  },
+  "candidates": [
+    {
+      "candidate_id": "a0",
+      "components": {
+        "association_mode": "v1_native",
+        "background_mode": "v1_cumulative",
+        "geometry_mode": "v1_cumulative",
+        "lifecycle_mode": "v1_native",
+        "motion_mode": "none"
+      },
+      "temporal_readout": {
+        "execution_profile": "a0",
+        "lifecycle": {"initial_log_odds": 0.0, "present_log_likelihood": 1.2, "absent_log_likelihood": -0.8, "log_odds_limit": 6.0, "decay_half_life_seconds": 30.0, "active_on_probability": 0.75, "dormant_off_probability": 0.35, "minimum_absent_streak": 2, "minimum_distinct_view_bins": 3, "visibility_depth_tolerance_m": 0.1, "minimum_visible_pixel_count": 10, "minimum_visible_fraction": 0.05, "view_bin_azimuth_count": 8, "view_bin_elevation_count": 4},
+        "association": {"visual_weight": 0.35, "semantic_weight": 0.25, "size_weight": 0.1, "motion_weight": 0.1, "geometry_weight": 0.2, "minimum_score": 0.55, "maximum_centroid_distance_m": 1.5, "semantic_conflict_probability": 0.9, "conflict_override_visual": 0.95, "conflict_override_geometry": 0.85},
+        "geometry": {"voxel_size_m": 0.05, "depth_max_m": 10.0, "maximum_entities": 500, "maximum_object_voxels": 20000, "maximum_visibility_points_per_entity": 10000, "background_block_count": 100000, "background_mask_dilation_px": 2, "minimum_icp_points": 20, "minimum_icp_fitness": 0.5, "maximum_icp_rmse_m": 0.2, "maximum_motion_m": 2.0}
+      }
+    },
+    {
+      "candidate_id": "a1",
+      "components": {
+        "association_mode": "v1_identity",
+        "background_mode": "v1_cumulative",
+        "geometry_mode": "v1_cumulative",
+        "lifecycle_mode": "probabilistic_hysteresis",
+        "motion_mode": "none"
+      },
+      "temporal_readout": {
+        "execution_profile": "a1",
+        "lifecycle": {"initial_log_odds": 0.0, "present_log_likelihood": 1.2, "absent_log_likelihood": -0.8, "log_odds_limit": 6.0, "decay_half_life_seconds": 30.0, "active_on_probability": 0.75, "dormant_off_probability": 0.35, "minimum_absent_streak": 2, "minimum_distinct_view_bins": 3, "visibility_depth_tolerance_m": 0.1, "minimum_visible_pixel_count": 10, "minimum_visible_fraction": 0.05, "view_bin_azimuth_count": 8, "view_bin_elevation_count": 4},
+        "association": {"visual_weight": 0.35, "semantic_weight": 0.25, "size_weight": 0.1, "motion_weight": 0.1, "geometry_weight": 0.2, "minimum_score": 0.55, "maximum_centroid_distance_m": 1.5, "semantic_conflict_probability": 0.9, "conflict_override_visual": 0.95, "conflict_override_geometry": 0.85},
+        "geometry": {"voxel_size_m": 0.05, "depth_max_m": 10.0, "maximum_entities": 500, "maximum_object_voxels": 20000, "maximum_visibility_points_per_entity": 10000, "background_block_count": 100000, "background_mask_dilation_px": 2, "minimum_icp_points": 20, "minimum_icp_fitness": 0.5, "maximum_icp_rmse_m": 0.2, "maximum_motion_m": 2.0}
+      }
+    },
+    {
+      "candidate_id": "a2",
+      "components": {
+        "association_mode": "active_uncertain",
+        "background_mode": "v1_cumulative",
+        "geometry_mode": "object_submap",
+        "lifecycle_mode": "probabilistic_hysteresis",
+        "motion_mode": "translation"
+      },
+      "temporal_readout": {
+        "execution_profile": "a2",
+        "lifecycle": {"initial_log_odds": 0.0, "present_log_likelihood": 1.2, "absent_log_likelihood": -0.8, "log_odds_limit": 6.0, "decay_half_life_seconds": 30.0, "active_on_probability": 0.75, "dormant_off_probability": 0.35, "minimum_absent_streak": 2, "minimum_distinct_view_bins": 3, "visibility_depth_tolerance_m": 0.1, "minimum_visible_pixel_count": 10, "minimum_visible_fraction": 0.05, "view_bin_azimuth_count": 8, "view_bin_elevation_count": 4},
+        "association": {"visual_weight": 0.35, "semantic_weight": 0.25, "size_weight": 0.1, "motion_weight": 0.1, "geometry_weight": 0.2, "minimum_score": 0.55, "maximum_centroid_distance_m": 1.5, "semantic_conflict_probability": 0.9, "conflict_override_visual": 0.95, "conflict_override_geometry": 0.85},
+        "geometry": {"voxel_size_m": 0.05, "depth_max_m": 10.0, "maximum_entities": 500, "maximum_object_voxels": 20000, "maximum_visibility_points_per_entity": 10000, "background_block_count": 100000, "background_mask_dilation_px": 2, "minimum_icp_points": 20, "minimum_icp_fitness": 0.5, "maximum_icp_rmse_m": 0.2, "maximum_motion_m": 2.0}
+      }
+    },
+    {
+      "candidate_id": "a3",
+      "components": {
+        "association_mode": "active_uncertain",
+        "background_mode": "masked_temporal",
+        "geometry_mode": "object_submap",
+        "lifecycle_mode": "probabilistic_hysteresis",
+        "motion_mode": "translation"
+      },
+      "temporal_readout": {
+        "execution_profile": "a3",
+        "lifecycle": {"initial_log_odds": 0.0, "present_log_likelihood": 1.2, "absent_log_likelihood": -0.8, "log_odds_limit": 6.0, "decay_half_life_seconds": 30.0, "active_on_probability": 0.75, "dormant_off_probability": 0.35, "minimum_absent_streak": 2, "minimum_distinct_view_bins": 3, "visibility_depth_tolerance_m": 0.1, "minimum_visible_pixel_count": 10, "minimum_visible_fraction": 0.05, "view_bin_azimuth_count": 8, "view_bin_elevation_count": 4},
+        "association": {"visual_weight": 0.35, "semantic_weight": 0.25, "size_weight": 0.1, "motion_weight": 0.1, "geometry_weight": 0.2, "minimum_score": 0.55, "maximum_centroid_distance_m": 1.5, "semantic_conflict_probability": 0.9, "conflict_override_visual": 0.95, "conflict_override_geometry": 0.85},
+        "geometry": {"voxel_size_m": 0.05, "depth_max_m": 10.0, "maximum_entities": 500, "maximum_object_voxels": 20000, "maximum_visibility_points_per_entity": 10000, "background_block_count": 100000, "background_mask_dilation_px": 2, "minimum_icp_points": 20, "minimum_icp_fitness": 0.5, "maximum_icp_rmse_m": 0.2, "maximum_motion_m": 2.0}
+      }
+    },
+    {
+      "candidate_id": "a4",
+      "components": {
+        "association_mode": "dormant_reid",
+        "background_mode": "masked_temporal",
+        "geometry_mode": "object_submap",
+        "lifecycle_mode": "probabilistic_hysteresis",
+        "motion_mode": "gated_icp"
+      },
+      "temporal_readout": {
+        "execution_profile": "a4",
+        "lifecycle": {"initial_log_odds": 0.0, "present_log_likelihood": 1.2, "absent_log_likelihood": -0.8, "log_odds_limit": 6.0, "decay_half_life_seconds": 30.0, "active_on_probability": 0.75, "dormant_off_probability": 0.35, "minimum_absent_streak": 2, "minimum_distinct_view_bins": 3, "visibility_depth_tolerance_m": 0.1, "minimum_visible_pixel_count": 10, "minimum_visible_fraction": 0.05, "view_bin_azimuth_count": 8, "view_bin_elevation_count": 4},
+        "association": {"visual_weight": 0.35, "semantic_weight": 0.25, "size_weight": 0.1, "motion_weight": 0.1, "geometry_weight": 0.2, "minimum_score": 0.55, "maximum_centroid_distance_m": 1.5, "semantic_conflict_probability": 0.9, "conflict_override_visual": 0.95, "conflict_override_geometry": 0.85},
+        "geometry": {"voxel_size_m": 0.05, "depth_max_m": 10.0, "maximum_entities": 500, "maximum_object_voxels": 20000, "maximum_visibility_points_per_entity": 10000, "background_block_count": 100000, "background_mask_dilation_px": 2, "minimum_icp_points": 20, "minimum_icp_fitness": 0.5, "maximum_icp_rmse_m": 0.2, "maximum_motion_m": 2.0}
+      }
+    }
+  ]
+}
