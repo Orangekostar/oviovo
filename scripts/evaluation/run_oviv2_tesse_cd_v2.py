@@ -9,7 +9,7 @@ from dataclasses import dataclass
 import hashlib
 import json
 import math
-from numbers import Real
+from numbers import Integral, Real
 import os
 from pathlib import Path
 import platform
@@ -812,6 +812,16 @@ def _positive_integer(value: object, name: str) -> int:
     return value
 
 
+def _dataset_timestamp_ns(dataset: Any, frame_index: int) -> int:
+    value = dataset.timestamp_ns(frame_index)
+    if isinstance(value, bool) or not isinstance(value, Integral):
+        raise ValueError("dataset timestamp_ns must be an exact integer")
+    result = int(value)
+    if result < 0:
+        raise ValueError("dataset timestamp_ns must be non-negative")
+    return result
+
+
 def _validate_config(
     config: Mapping[str, Any],
 ) -> tuple[str, int, Path, tuple[int, ...], Any]:
@@ -1339,16 +1349,34 @@ def run(
         cache_bindings = getattr(caches, "bindings", {})
         if not isinstance(cache_bindings, Mapping):
             raise ValueError("cache bindings must be a mapping")
+        try:
+            encoded_bindings = json.dumps(
+                dict(cache_bindings),
+                sort_keys=True,
+                separators=(",", ":"),
+                allow_nan=False,
+            )
+            canonical_source_bindings = json.loads(encoded_bindings)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("cache bindings must be strictly JSON serializable") from exc
+        if not (
+            isinstance(canonical_source_bindings, dict)
+            and canonical_source_bindings == dict(cache_bindings)
+        ):
+            raise ValueError("cache bindings must use canonical JSON values")
         input_sha256 = _input_sha256(
-            source_config_bytes, schedule_bytes, target_bytes, cache_bindings
+            source_config_bytes,
+            schedule_bytes,
+            target_bytes,
+            canonical_source_bindings,
         )
         runtime_config = {key: config[key] for key in _RUNTIME_CONFIG_KEYS}
         runtime = dependencies.runtime_factory(runtime_config, caches)
 
         by_frame = {item.frame_index: item for item in official}
-        first_timestamp_ns = int(dataset.timestamp_ns(0))
+        first_timestamp_ns = _dataset_timestamp_ns(dataset, 0)
         for frame_index in evaluation_frames:
-            timestamp_ns = int(dataset.timestamp_ns(frame_index))
+            timestamp_ns = _dataset_timestamp_ns(dataset, frame_index)
             existing = by_frame.get(frame_index)
             if existing is None:
                 by_frame[frame_index] = TesseCausalCheckpoint(
@@ -1384,8 +1412,15 @@ def run(
             checkpoint = by_frame.get(frame_index)
             if checkpoint is None:
                 continue
-            if int(dataset.timestamp_ns(frame_index)) != checkpoint.timestamp_ns:
+            dataset_timestamp_ns = _dataset_timestamp_ns(dataset, frame_index)
+            if dataset_timestamp_ns != checkpoint.timestamp_ns:
                 raise ValueError("checkpoint timestamp does not match dataset timestamp")
+            if checkpoint.relative_timestamp_ns != (
+                dataset_timestamp_ns - first_timestamp_ns
+            ):
+                raise ValueError(
+                    "checkpoint relative timestamp does not match dataset origin"
+                )
             snapshot = _snapshot_from_runtime(
                 runtime,
                 checkpoint=checkpoint,
@@ -1545,6 +1580,9 @@ def run(
             "algorithm_hash": config["algorithm_hash"],
             "schedule": _byte_record(schedule_bytes),
             "target_manifest": _byte_record(target_bytes),
+            "input_sha256": input_sha256,
+            "code_commit": code_commit,
+            "source_bindings": canonical_source_bindings,
             "checkpoints": occlusion_records,
         }
         occlusion_index_path = staging / "occlusion_checkpoint_index.json"
@@ -1581,7 +1619,7 @@ def run(
             ),
             "schedule": _byte_record(schedule_bytes),
             "target_manifest": _byte_record(target_bytes),
-            "source_bindings": dict(cache_bindings),
+            "source_bindings": canonical_source_bindings,
             "input_sha256": input_sha256,
             "code_commit": code_commit,
             "checkpoints": records,

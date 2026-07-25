@@ -245,6 +245,7 @@ def _dependencies(
     fail_frame: int | None = None,
     provenance: dict[str, object] | None = None,
     environment: dict[str, object] | None = None,
+    cache_bindings: dict[str, object] | None = None,
 ):
     holder: dict[str, object] = {}
 
@@ -256,7 +257,7 @@ def _dependencies(
         del dataset
         holder["cache_config"] = dict(config)
         parsed = temporal_config_from_json({"temporal_readout": _temporal_readout()})
-        return _Caches(parsed, {"stub": "sha256-bound"})
+        return _Caches(parsed, cache_bindings or {"stub": "sha256-bound"})
 
     def runtime(config: dict[str, object], cache: _Caches) -> _DualRuntime:
         holder["runtime_config"] = dict(config)
@@ -381,6 +382,9 @@ def test_overlap_checkpoint_publishes_full_and_compact_with_exact_index(
         "algorithm_hash",
         "schedule",
         "target_manifest",
+        "input_sha256",
+        "code_commit",
+        "source_bindings",
         "checkpoints",
     }
     assert index["format"] == "oviv2_temporal_compact_v1"
@@ -398,6 +402,66 @@ def test_overlap_checkpoint_publishes_full_and_compact_with_exact_index(
     assert "occlusion_checkpoint_index.json" in first_manifest["artifact_inventory"]
     assert first_manifest == second_manifest
     assert index_path.read_bytes() == (second / "occlusion_checkpoint_index.json").read_bytes()
+
+
+def test_checkpoint_relative_timestamp_must_match_dataset_origin(
+    tmp_path: Path,
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config = _materialize_overlap_config(module, tmp_path)
+    payload = json.loads(config.read_text())
+    schedule_path = Path(payload["schedule_manifest"])
+    schedule = json.loads(schedule_path.read_text())
+    schedule["scenes"]["apartment"]["entries"][0]["relative_timestamp_ns"] = 21
+    _write_json(schedule_path, schedule)
+    output = tmp_path / "published" / "run"
+    with pytest.raises(ValueError, match="relative timestamp"):
+        module.run(config, output, dependencies=_dependencies(module)[0])
+    assert not output.exists()
+    assert list(output.parent.glob(".run.staging-*")) == []
+
+
+def test_occlusion_index_binds_stable_source_authorities(tmp_path: Path) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config = _materialize_overlap_config(module, tmp_path)
+    first = tmp_path / "first-authority"
+    second = tmp_path / "second-authority"
+    first_bindings = {"cache": {"sha256": "1" * 64}}
+    second_bindings = {"cache": {"sha256": "2" * 64}}
+    module.run(
+        config,
+        first,
+        dependencies=_dependencies(
+            module,
+            provenance={"repository_commit": "a" * 40},
+            cache_bindings=first_bindings,
+        )[0],
+    )
+    module.run(
+        config,
+        second,
+        dependencies=_dependencies(
+            module,
+            provenance={"repository_commit": "b" * 40},
+            cache_bindings=second_bindings,
+        )[0],
+    )
+    first_index = json.loads((first / "occlusion_checkpoint_index.json").read_text())
+    second_index = json.loads((second / "occlusion_checkpoint_index.json").read_text())
+    first_manifest = json.loads((first / "run_manifest.json").read_text())
+    second_manifest = json.loads((second / "run_manifest.json").read_text())
+    for index, manifest, bindings, commit in (
+        (first_index, first_manifest, first_bindings, "a" * 40),
+        (second_index, second_manifest, second_bindings, "b" * 40),
+    ):
+        assert index["input_sha256"] == manifest["input_sha256"]
+        assert index["code_commit"] == manifest["code_commit"] == commit
+        assert index["source_bindings"] == manifest["source_bindings"] == bindings
+    assert (first / "occlusion_checkpoint_index.json").read_bytes() != (
+        second / "occlusion_checkpoint_index.json"
+    ).read_bytes()
 
 
 @pytest.mark.parametrize("mutation", ["missing_overlap_compact", "mutated_index"])
