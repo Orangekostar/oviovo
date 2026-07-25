@@ -20,6 +20,8 @@ import sys
 import tempfile
 from typing import Any
 
+import numpy as np
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
@@ -63,6 +65,8 @@ from src.evaluation.oviv2_temporal_tesse import (  # noqa: E402
     load_temporal_current_checkpoint,
     publish_temporal_current_checkpoint,
 )
+from src.evaluation.contracts import MapSnapshot  # noqa: E402
+from src.evaluation.exporters.oviovo import write_map_snapshot  # noqa: E402
 from src.oviv2.temporal_snapshot import (  # noqa: E402
     TEMPORAL_COMPACT_FORMAT,
     TemporalCompactCheckpoint,
@@ -424,6 +428,22 @@ def _entry_inventory(root: Path) -> dict[str, str]:
         else:
             raise ValueError("run publication inventory contains a forbidden entry")
     return result
+
+
+def _revalidate_relative_file_record(
+    root: Path, record: Mapping[str, Any], *, label: str
+) -> None:
+    if set(record) != {"path", "sha256", "byte_count"}:
+        raise ValueError(f"{label} record fields are invalid")
+    relative = Path(str(record.get("path", "")))
+    if relative.is_absolute() or not relative.parts or ".." in relative.parts:
+        raise ValueError(f"{label} record path is invalid")
+    path = root / relative
+    metadata = os.lstat(path)
+    if not stat.S_ISREG(metadata.st_mode):
+        raise ValueError(f"{label} is not a regular file")
+    if _file_record(path, relative_to=root) != dict(record):
+        raise ValueError(f"{label} content changed")
 
 
 def _revalidate_checkpoint_artifact(
@@ -1399,6 +1419,9 @@ def run(
         records: list[dict[str, Any]] = []
         witnesses: list[_CheckpointArtifactWitness] = []
         expected_checkpoint_inventory: set[str] = set()
+        official_frames = {item.frame_index for item in official}
+        official_sources: dict[int, dict[str, Any]] = {}
+        trajectory_rows: list[dict[str, Any]] = []
         for frame_index in range(frame_count):
             frame = dataset[frame_index]
             if int(frame.frame_id) != frame_index:
@@ -1454,6 +1477,41 @@ def run(
                     witnesses=witnesses,
                     expected_inventory=expected_checkpoint_inventory,
                 )
+                loaded = load_temporal_current_checkpoint(receipt.path)
+                neutral = MapSnapshot(
+                    method="OVIV2",
+                    scene_id=loaded.snapshot.scene_id,
+                    timestamp=loaded.snapshot.timestamp,
+                    entities=loaded.snapshot.entities,
+                    background_xyz=loaded.snapshot.background_xyz,
+                    scope=loaded.snapshot.scope,
+                    runtime={},
+                )
+                neutral_paths = write_map_snapshot(neutral, root / "neutral_current")
+                loaded.revalidate_source()
+                neutral_snapshot = Path(neutral_paths["snapshot"])
+                neutral_entities = Path(neutral_paths["entities"])
+                for path in (neutral_snapshot, neutral_entities):
+                    if not path.is_file() or path.is_symlink():
+                        raise ValueError("neutral checkpoint sidecar is invalid")
+                    expected_checkpoint_inventory.add(
+                        path.relative_to(staging).as_posix()
+                    )
+                for entity in neutral.entities:
+                    points = np.asarray(entity.points_xyz, dtype=np.float64)
+                    if points.ndim != 2 or points.shape[1:] != (3,) or not len(points):
+                        raise ValueError("neutral entity has no trajectory centroid")
+                    centroid = points.mean(axis=0)
+                    if not np.isfinite(centroid).all():
+                        raise ValueError("neutral entity trajectory is not finite")
+                    trajectory_rows.append(
+                        {
+                            "frame_index": checkpoint.frame_index,
+                            "timestamp_ns": checkpoint.timestamp_ns,
+                            "entity_id": entity.entity_id,
+                            "centroid_xyz": [float(value) for value in centroid],
+                        }
+                    )
                 del receipt
             if needs_compact:
                 compact = TemporalCompactCheckpoint.from_snapshot(
@@ -1478,22 +1536,60 @@ def run(
             primary = artifacts[
                 "temporal_current" if needs_full else "temporal_compact"
             ]
-            records.append(
+            status_path = root / "checkpoint_status.json"
+            _write_json(
+                status_path,
                 {
-                    "scene": scene,
-                    "frame_index": checkpoint.frame_index,
+                    "schema_version": 1,
+                    "status": "PASS",
+                    "checkpoint_frame": checkpoint.frame_index,
                     "timestamp_ns": checkpoint.timestamp_ns,
-                    "relative_timestamp_ns": checkpoint.relative_timestamp_ns,
-                    "consumed_through_frame": checkpoint.frame_index,
-                    "consumed_through_frame_exclusive": checkpoint.frame_index + 1,
                     "event_ids": list(checkpoint.event_ids),
                     "roles": list(checkpoint.roles),
-                    "format": primary["format"],
-                    "artifact": primary["artifact"],
-                    "checksums_sha256": primary["checksums_sha256"],
-                    "artifacts": artifacts,
-                }
+                    "consumed_through_frame": checkpoint.frame_index,
+                    "consumed_through_frame_exclusive": checkpoint.frame_index + 1,
+                },
             )
+            expected_checkpoint_inventory.add(
+                status_path.relative_to(staging).as_posix()
+            )
+            record = {
+                "scene": scene,
+                "frame_index": checkpoint.frame_index,
+                "timestamp_ns": checkpoint.timestamp_ns,
+                "relative_timestamp_ns": checkpoint.relative_timestamp_ns,
+                "consumed_through_frame": checkpoint.frame_index,
+                "consumed_through_frame_exclusive": checkpoint.frame_index + 1,
+                "event_ids": list(checkpoint.event_ids),
+                "roles": list(checkpoint.roles),
+                "format": primary["format"],
+                "artifact": primary["artifact"],
+                "checksums_sha256": primary["checksums_sha256"],
+                "artifacts": artifacts,
+                "checkpoint_status": _file_record(status_path, relative_to=staging),
+            }
+            if needs_full:
+                record.update(
+                    {
+                        "neutral_snapshot": _file_record(
+                            neutral_snapshot, relative_to=staging
+                        ),
+                        "neutral_entities": _file_record(
+                            neutral_entities, relative_to=staging
+                        ),
+                    }
+                )
+            records.append(record)
+            if frame_index in official_frames:
+                official_sources[frame_index] = {
+                    "frame_index": checkpoint.frame_index,
+                    "timestamp_ns": checkpoint.timestamp_ns,
+                    "consumed_through_frame": checkpoint.frame_index,
+                    "consumed_through_frame_exclusive": checkpoint.frame_index + 1,
+                    "checkpoint_status": record["checkpoint_status"],
+                    "snapshot": record["neutral_snapshot"],
+                    "entities": record["neutral_entities"],
+                }
             captured.append(frame_index)
             _assert_staging_identity(staging, staging_identity)
 
@@ -1529,6 +1625,48 @@ def run(
         _assert_staging_identity(staging, staging_identity)
         _write_json(normalized_config, config)
         _assert_staging_identity(staging, staging_identity)
+        inputs_root = staging / "inputs"
+        inputs_root.mkdir()
+        schedule_copy = inputs_root / "schedule.json"
+        schedule_copy.write_bytes(schedule_bytes)
+        schedule_source_record = _file_record(schedule_copy, relative_to=staging)
+        trajectory_rows.sort(key=lambda row: (row["frame_index"], row["entity_id"]))
+        trajectories_path = staging / "trajectories.jsonl"
+        trajectories_path.write_text(
+            "".join(
+                json.dumps(
+                    row,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    allow_nan=False,
+                )
+                + "\n"
+                for row in trajectory_rows
+            ),
+            encoding="utf-8",
+        )
+        trajectories_record = _file_record(trajectories_path, relative_to=staging)
+        ordered_official_sources = [
+            official_sources[item.frame_index] for item in official
+        ]
+        capture_path = staging / "capture_status.json"
+        _write_json(
+            capture_path,
+            {
+                "schema_version": 1,
+                "status": "PASS",
+                "scene": scene,
+                "mode": "causal_checkpoints",
+                "scheduled_frame_indices": [item.frame_index for item in official],
+                "captured_frame_indices": [item.frame_index for item in official],
+                "schedule": schedule_source_record,
+                "trajectories": trajectories_record,
+                "checkpoint_statuses": [
+                    item["checkpoint_status"] for item in ordered_official_sources
+                ],
+            },
+        )
+        capture_record = _file_record(capture_path, relative_to=staging)
         records_by_frame = {item["frame_index"]: item for item in records}
         if len(records_by_frame) != len(records):
             raise ValueError("checkpoint records contain duplicate frames")
@@ -1602,6 +1740,45 @@ def run(
             if frozen is not None
             else {}
         )
+        source_index_path = staging / "source_index.json"
+        _write_json(
+            source_index_path,
+            {
+                "schema_version": 1,
+                "dataset": "TESSE-CD",
+                "mode": "causal_checkpoint_exports",
+                "method": "OVIV2",
+                "scene": scene,
+                "schedule": schedule_source_record,
+                "capture_status": capture_record,
+                "trajectories": trajectories_record,
+                "checkpoints": ordered_official_sources,
+                **(
+                    {
+                        "frozen_run_identity": dict(frozen.frozen_run_identity),
+                        "run_execution": dict(execution),
+                    }
+                    if frozen is not None and execution is not None
+                    else {}
+                ),
+            },
+        )
+        source_index_record = _file_record(source_index_path, relative_to=staging)
+        published_sidecar_records = [
+            schedule_source_record,
+            trajectories_record,
+            capture_record,
+            source_index_record,
+            *(
+                item[role]
+                for item in ordered_official_sources
+                for role in ("checkpoint_status", "snapshot", "entities")
+            ),
+        ]
+        for position, sidecar_record in enumerate(published_sidecar_records):
+            _revalidate_relative_file_record(
+                staging, sidecar_record, label=f"published sidecar {position}"
+            )
         manifest: dict[str, Any] = {
             "schema_version": 2,
             "protocol_id": PROTOCOL_ID,
@@ -1624,11 +1801,19 @@ def run(
             "code_commit": code_commit,
             "checkpoints": records,
             "occlusion_checkpoint_index": occlusion_index_record,
+            "source_index": source_index_record,
             **formal_fields,
         }
         manifest["artifact_inventory"] = sorted(
             expected_checkpoint_inventory
-            | {"normalized_run_config.json", "occlusion_checkpoint_index.json"}
+            | {
+                "normalized_run_config.json",
+                "occlusion_checkpoint_index.json",
+                "inputs/schedule.json",
+                "trajectories.jsonl",
+                "capture_status.json",
+                "source_index.json",
+            }
         )
         run_manifest_path = staging / "run_manifest.json"
         _assert_staging_identity(staging, staging_identity)
@@ -1665,11 +1850,16 @@ def run(
             "run_manifest.json",
             "execution_receipt.json",
         }
-        expected_directories = {"checkpoints"}
+        expected_directories = {"checkpoints", "inputs"}
         for witness in witnesses:
             relative = witness.path.relative_to(staging)
             expected_directories.add(relative.as_posix())
             expected_directories.add(relative.parent.as_posix())
+        for record in ordered_official_sources:
+            for role in ("snapshot", "entities"):
+                parent = Path(record[role]["path"]).parent
+                expected_directories.add(parent.as_posix())
+                expected_directories.add(parent.parent.as_posix())
         expected_entries = {
             **{path: "file" for path in expected_files},
             **{path: "directory" for path in expected_directories},
@@ -1713,6 +1903,12 @@ def run(
                 != prepublish_tree
             ):
                 raise ValueError("published run content changed")
+            for position, sidecar_record in enumerate(published_sidecar_records):
+                _revalidate_relative_file_record(
+                    destination,
+                    sidecar_record,
+                    label=f"published sidecar {position}",
+                )
         except RunPublicationUncertainError:
             raise
         except BaseException as exc:

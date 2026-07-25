@@ -12,6 +12,7 @@ import math
 import os
 from pathlib import Path
 import shutil
+import stat
 import sys
 import tempfile
 from typing import Any, Mapping, Sequence
@@ -46,7 +47,7 @@ _SOURCE_INDEX_BASE_FIELDS = frozenset(
 )
 _FORMAL_RUN_FIELDS = frozenset({"frozen_run_identity", "run_execution"})
 _SOURCE_INDEX_FIELDS = _SOURCE_INDEX_BASE_FIELDS | _FORMAL_RUN_FIELDS
-_FROZEN_RUN_IDENTITY_FIELDS = frozenset(
+_V1_FROZEN_RUN_IDENTITY_FIELDS = frozenset(
     {
         "schema_version",
         "freeze_id",
@@ -59,6 +60,22 @@ _FROZEN_RUN_IDENTITY_FIELDS = frozenset(
         "algorithm_hash",
         "missing_observation_policy",
         "input_bindings_sha256",
+    }
+)
+_V2_FROZEN_RUN_IDENTITY_FIELDS = frozenset(
+    {
+        "schema_version",
+        "freeze_id",
+        "protocol_id",
+        "dataset",
+        "method_id",
+        "scene",
+        "freeze_manifest",
+        "repository",
+        "config",
+        "algorithm_hash",
+        "input_bindings_sha256",
+        "formal_evidence_sha256",
     }
 )
 _RUN_EXECUTION_FIELDS = frozenset(
@@ -720,10 +737,16 @@ def _formal_run_fields(
         raise ValueError("formal source index identity fields are incomplete")
     frozen = index.get("frozen_run_identity")
     execution = index.get("run_execution")
-    if not isinstance(frozen, Mapping) or set(frozen) != _FROZEN_RUN_IDENTITY_FIELDS:
+    if not isinstance(frozen, Mapping):
         raise ValueError("frozen run identity fields are invalid")
     if not isinstance(execution, Mapping) or set(execution) != _RUN_EXECUTION_FIELDS:
         raise ValueError("run execution fields are invalid")
+    if frozen.get("freeze_id") == "oviv2-tessecd-v2":
+        return _formal_v2_run_fields(
+            frozen, execution, index=index, index_source=index_source
+        )
+    if set(frozen) != _V1_FROZEN_RUN_IDENTITY_FIELDS:
+        raise ValueError("frozen run identity fields are invalid")
     repository = frozen.get("repository")
     if not isinstance(repository, Mapping) or set(repository) != {"commit", "tree"}:
         raise ValueError("frozen run repository identity is invalid")
@@ -809,6 +832,169 @@ def _formal_run_fields(
         "frozen_run_identity": dict(frozen),
         "run_execution": dict(execution),
     }, verified
+
+
+def _formal_v2_run_fields(
+    frozen: Mapping[str, Any],
+    execution: Mapping[str, Any],
+    *,
+    index: Mapping[str, Any],
+    index_source: _VerifiedSource,
+) -> tuple[dict[str, Any], list[tuple[_VerifiedSource, str]]]:
+    if set(frozen) != _V2_FROZEN_RUN_IDENTITY_FIELDS:
+        raise ValueError("v2 frozen run identity fields are invalid")
+    repository = frozen.get("repository")
+    if not isinstance(repository, Mapping) or set(repository) != {"commit", "tree"}:
+        raise ValueError("v2 frozen repository identity is invalid")
+    if not all(
+        isinstance(repository.get(field), str)
+        and len(str(repository[field])) == 40
+        and all(character in "0123456789abcdef" for character in repository[field])
+        for field in ("commit", "tree")
+    ):
+        raise ValueError("v2 frozen repository identity is invalid")
+    _content_record(frozen.get("freeze_manifest"), label="freeze manifest")
+    _content_record(frozen.get("config"), label="frozen config")
+    if not (
+        frozen.get("schema_version") == 1
+        and frozen.get("freeze_id") == "oviv2-tessecd-v2"
+        and frozen.get("protocol_id") == "oviv2-tessecd-v2"
+        and frozen.get("dataset") == "TESSE-CD"
+        and frozen.get("method_id") == "OVIV2"
+        and frozen.get("scene") == index.get("scene")
+        and _is_sha256(frozen.get("algorithm_hash"))
+        and _is_sha256(frozen.get("input_bindings_sha256"))
+        and _is_sha256(frozen.get("formal_evidence_sha256"))
+    ):
+        raise ValueError("v2 frozen run identity is invalid")
+
+    scene = str(index["scene"])
+    slot = execution.get("run_slot")
+    output_root = execution.get("output_root")
+    if not (
+        execution.get("schema_version") == 1
+        and isinstance(slot, str)
+        and slot in {
+            "apartment_run1",
+            "apartment_run2",
+            "office_run1",
+            "office_run2",
+        }
+        and slot.startswith(f"{scene}_run")
+        and isinstance(output_root, str)
+        and Path(output_root).is_absolute()
+        and output_root == os.fspath(Path(os.path.abspath(output_root)))
+        and type(execution.get("root_device")) is int
+        and type(execution.get("root_inode")) is int
+        and execution["root_device"] >= 0
+        and execution["root_inode"] > 0
+        and _is_sha256(execution.get("execution_id"))
+    ):
+        raise ValueError("v2 run execution identity is invalid")
+    root = Path(output_root)
+    if root != index_source.path.parent:
+        raise ValueError("run execution output root does not own the source index")
+    root_status = os.stat(root, follow_symlinks=False)
+    if (
+        root_status.st_dev != execution["root_device"]
+        or root_status.st_ino != execution["root_inode"]
+    ):
+        raise ValueError("v2 run execution root inode mismatch")
+    execution_base = {
+        key: execution[key] for key in sorted(execution) if key != "execution_id"
+    }
+    if execution["execution_id"] != hashlib.sha256(
+        json.dumps(
+            execution_base,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
+    ).hexdigest():
+        raise ValueError("v2 run execution hash mismatch")
+
+    manifest_source = _direct_source(root / "run_manifest.json", label="run manifest")
+    receipt_source = _direct_source(
+        root / "execution_receipt.json", label="execution receipt"
+    )
+    manifest = _read_json(manifest_source, label="run manifest")
+    receipt = _read_json(receipt_source, label="execution receipt")
+    if manifest.get("frozen_run_identity") != frozen:
+        raise ValueError("run manifest frozen identity mismatch")
+    if "run_execution" in manifest:
+        raise ValueError("deterministic run manifest contains run execution")
+    if set(receipt) != {
+        "schema_version",
+        "provenance",
+        "environment",
+        "frozen_run_identity",
+        "run_execution",
+    } or not (
+        receipt.get("schema_version") == 1
+        and receipt.get("frozen_run_identity") == frozen
+        and receipt.get("run_execution") == execution
+    ):
+        raise ValueError("execution receipt formal identity mismatch")
+
+    declared_records = [
+        index.get("schedule"),
+        index.get("capture_status"),
+        index.get("trajectories"),
+    ]
+    checkpoints = index.get("checkpoints")
+    if not isinstance(checkpoints, list):
+        raise ValueError("v2 source index checkpoints are invalid")
+    declared_records.extend(
+        checkpoint.get(role) if isinstance(checkpoint, Mapping) else None
+        for checkpoint in checkpoints
+        for role in ("checkpoint_status", "snapshot", "entities")
+    )
+    for record in declared_records:
+        if not isinstance(record, Mapping) or set(record) != _SOURCE_RECORD_FIELDS:
+            raise ValueError("v2 source index record fields are invalid")
+        relative = Path(str(record.get("path", "")))
+        if relative.is_absolute() or not relative.parts or ".." in relative.parts:
+            raise ValueError("v2 source index record path is not root-relative")
+
+    inventory = manifest.get("artifact_inventory")
+    actual_inventory: list[str] = []
+    for path in root.rglob("*"):
+        metadata = os.lstat(path)
+        if stat.S_ISLNK(metadata.st_mode):
+            raise ValueError("formal run inventory contains a symlink")
+        if stat.S_ISREG(metadata.st_mode) and path.name not in {
+            "run_manifest.json",
+            "execution_receipt.json",
+        }:
+            actual_inventory.append(path.relative_to(root).as_posix())
+        elif not (stat.S_ISREG(metadata.st_mode) or stat.S_ISDIR(metadata.st_mode)):
+            raise ValueError("formal run inventory contains a forbidden entry")
+    actual_inventory.sort()
+    if (
+        not isinstance(inventory, list)
+        or inventory != sorted(set(inventory))
+        or inventory != actual_inventory
+        or "source_index.json" not in inventory
+    ):
+        raise ValueError("formal run artifact inventory mismatch")
+    if any(str(record["path"]) not in inventory for record in declared_records):
+        raise ValueError("v2 source index record is outside artifact inventory")
+    source_record = manifest.get("source_index")
+    if not isinstance(source_record, Mapping) or not _same_source(
+        source_record, index_source, base=root
+    ):
+        raise ValueError("run manifest source index authority mismatch")
+    if Path(str(source_record.get("path"))).is_absolute() or source_record.get(
+        "path"
+    ) != "source_index.json":
+        raise ValueError("run manifest source index path is invalid")
+    return {
+        "frozen_run_identity": dict(frozen),
+        "run_execution": dict(execution),
+    }, [
+        (manifest_source, "run manifest"),
+        (receipt_source, "execution receipt"),
+    ]
 
 
 def _require_fields(

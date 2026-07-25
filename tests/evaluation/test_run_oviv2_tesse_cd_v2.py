@@ -65,6 +65,7 @@ def _tree_hashes(root: Path) -> dict[str, str]:
 
 def _temporal_readout() -> dict[str, object]:
     return {
+        "execution_profile": "a4",
         "lifecycle": {
             "initial_log_odds": 0.0,
             "present_log_likelihood": 1.2,
@@ -305,6 +306,9 @@ def _materialize_overlap_config(module: object, tmp_path: Path) -> Path:
 
 def test_five_frame_dual_readout_is_causal_role_aware_and_deterministic(tmp_path: Path) -> None:
     import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+    from scripts.evaluation.export_tesse_temporal_artifact import (
+        export_temporal_artifact,
+    )
 
     config = _materialize_config(module, tmp_path)
     dependencies, holder = _dependencies(module)
@@ -323,6 +327,11 @@ def test_five_frame_dual_readout_is_causal_role_aware_and_deterministic(tmp_path
     assert records[3]["roles"] == ["common_v2"]
     assert records[1]["format"] == "oviv2_temporal_current_checkpoint"
     assert records[3]["format"] == "oviv2_temporal_current_checkpoint"
+    assert "/neutral_current/snapshots/" in records[1]["neutral_snapshot"]["path"]
+    assert "/neutral_current/entities/" in records[1]["neutral_entities"]["path"]
+    assert records[1]["checkpoint_status"]["path"].endswith(
+        "/checkpoint_status.json"
+    )
     assert records[2]["roles"] == ["occlusion_v1"]
     assert records[4]["format"] == "oviv2_temporal_compact_checkpoint"
     for frame_index, record in records.items():
@@ -353,6 +362,35 @@ def test_five_frame_dual_readout_is_causal_role_aware_and_deterministic(tmp_path
             and path.name not in {"run_manifest.json", "execution_receipt.json"}
         )
         assert published["artifact_inventory"] == expected_inventory
+        source_index = json.loads((root / "source_index.json").read_text())
+        assert set(source_index) == {
+            "schema_version",
+            "dataset",
+            "mode",
+            "method",
+            "scene",
+            "schedule",
+            "capture_status",
+            "trajectories",
+            "checkpoints",
+        }
+        assert source_index["method"] == "OVIV2"
+        assert [item["frame_index"] for item in source_index["checkpoints"]] == [1, 3]
+        for role in ("schedule", "capture_status", "trajectories"):
+            assert not Path(source_index[role]["path"]).is_absolute()
+        assert all(
+            not Path(item[role]["path"]).is_absolute()
+            for item in source_index["checkpoints"]
+            for role in ("checkpoint_status", "snapshot", "entities")
+        )
+    first_temporal = export_temporal_artifact(
+        first / "source_index.json", tmp_path / "temporal-a"
+    )
+    second_temporal = export_temporal_artifact(
+        second / "source_index.json", tmp_path / "temporal-b"
+    )
+    assert json.loads(first_temporal.read_text())["method"] == "OVIV2"
+    assert _tree_hashes(first_temporal.parent) == _tree_hashes(second_temporal.parent)
     assert {path: path.read_bytes() for path in V1_FILES} == V1_BYTES
 
 
@@ -1245,6 +1283,12 @@ def test_complete_v2_formal_freeze_runs_before_publishing(
     assert manifest["frozen_run_identity"]["formal_evidence_sha256"] == module._json_hash(
         freeze_payload
     )
+    assert "run_execution" not in manifest
+    source_index = json.loads((output / "source_index.json").read_text())
+    receipt = json.loads((output / "execution_receipt.json").read_text())
+    assert source_index["frozen_run_identity"] == manifest["frozen_run_identity"]
+    assert source_index["run_execution"] == receipt["run_execution"]
+    assert receipt["frozen_run_identity"] == manifest["frozen_run_identity"]
 
 
 @pytest.mark.parametrize(

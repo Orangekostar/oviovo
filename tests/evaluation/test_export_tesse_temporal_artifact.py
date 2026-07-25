@@ -68,6 +68,7 @@ def _build_fixture(
     root: Path,
     *,
     panoptic: bool = False,
+    method: str | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     root.mkdir()
     scene = "apartment"
@@ -179,7 +180,8 @@ def _build_fixture(
         checkpoint_status_records.append(_record(status_path))
 
         snapshot = MapSnapshot(
-            method="Panoptic Mapping + shared masks" if panoptic else "DualMap",
+            method=method
+            or ("Panoptic Mapping + shared masks" if panoptic else "DualMap"),
             scene_id=scene,
             timestamp=float(timestamp),
             entities=artifact_entities[frame],
@@ -232,6 +234,94 @@ def _build_fixture(
 
 def _rewrite_index(index_path: Path, payload: dict[str, Any]) -> None:
     _write_json(index_path, payload)
+
+
+def _make_v2_formal_source(root: Path) -> Path:
+    index_path, index = _build_fixture(root, method="OVIV2")
+    index["method"] = "OVIV2"
+
+    def relative(record: dict[str, Any]) -> dict[str, Any]:
+        return {
+            **record,
+            "path": Path(record["path"]).relative_to(root).as_posix(),
+        }
+
+    index["schedule"] = relative(index["schedule"])
+    index["trajectories"] = relative(index["trajectories"])
+    for checkpoint in index["checkpoints"]:
+        for role in ("checkpoint_status", "snapshot", "entities"):
+            checkpoint[role] = relative(checkpoint[role])
+    capture_path = Path(index["capture_status"]["path"])
+    capture = json.loads(capture_path.read_text())
+    capture["schedule"] = index["schedule"]
+    capture["trajectories"] = index["trajectories"]
+    capture["checkpoint_statuses"] = [
+        checkpoint["checkpoint_status"] for checkpoint in index["checkpoints"]
+    ]
+    _write_json(capture_path, capture)
+    index["capture_status"] = relative(_record(capture_path))
+    frozen = {
+        "schema_version": 1,
+        "freeze_id": "oviv2-tessecd-v2",
+        "protocol_id": "oviv2-tessecd-v2",
+        "dataset": "TESSE-CD",
+        "method_id": "OVIV2",
+        "scene": "apartment",
+        "freeze_manifest": {"sha256": "1" * 64, "byte_count": 1},
+        "repository": {"commit": "2" * 40, "tree": "3" * 40},
+        "config": {"sha256": "4" * 64, "byte_count": 1},
+        "algorithm_hash": "5" * 64,
+        "input_bindings_sha256": "6" * 64,
+        "formal_evidence_sha256": "7" * 64,
+    }
+    status = os.stat(root, follow_symlinks=False)
+    execution = {
+        "schema_version": 1,
+        "run_slot": "apartment_run1",
+        "output_root": str(root.resolve()),
+        "root_device": status.st_dev,
+        "root_inode": status.st_ino,
+    }
+    execution["execution_id"] = hashlib.sha256(
+        json.dumps(
+            execution, sort_keys=True, separators=(",", ":"), allow_nan=False
+        ).encode()
+    ).hexdigest()
+    index.update({"frozen_run_identity": frozen, "run_execution": execution})
+    _write_json(index_path, index)
+    inventory = sorted(
+        path.relative_to(root).as_posix()
+        for path in root.rglob("*")
+        if path.is_file()
+    )
+    _write_json(
+        root / "run_manifest.json",
+        {
+            "schema_version": 2,
+            "protocol_id": "oviv2-tessecd-v2",
+            "dataset": "TESSE-CD",
+            "method_id": "OVIV2",
+            "scene": "apartment",
+            "artifact_inventory": inventory,
+            "source_index": {
+                "path": "source_index.json",
+                "sha256": hashlib.sha256(index_path.read_bytes()).hexdigest(),
+                "byte_count": index_path.stat().st_size,
+            },
+            "frozen_run_identity": frozen,
+        },
+    )
+    _write_json(
+        root / "execution_receipt.json",
+        {
+            "schema_version": 1,
+            "provenance": {},
+            "environment": {},
+            "frozen_run_identity": frozen,
+            "run_execution": execution,
+        },
+    )
+    return index_path
 
 
 def _artifact_files(root: Path) -> dict[Path, bytes]:
@@ -379,6 +469,81 @@ def test_exports_presence_intervals_and_byte_identical_repeat(tmp_path: Path) ->
         assert copied.is_file()
         assert hashlib.sha256(copied.read_bytes()).hexdigest() == source["sha256"]
         assert copied.stat().st_size == source["byte_count"]
+
+
+def test_exports_formal_v2_source_without_requiring_execution_in_occlusion_index(
+    tmp_path: Path,
+) -> None:
+    index_path = _make_v2_formal_source(tmp_path / "source")
+
+    manifest_path = export_temporal_artifact(index_path, tmp_path / "output")
+
+    manifest = json.loads(manifest_path.read_text())
+    assert manifest["frozen_run_identity"]["freeze_id"] == "oviv2-tessecd-v2"
+    assert manifest["run_execution"]["output_root"] == str(index_path.parent.resolve())
+
+
+@pytest.mark.parametrize(
+    "mutation,message",
+    [
+        ("receipt_frozen", "identity"),
+        ("source_execution", "execution"),
+        ("inventory_missing", "inventory"),
+        ("inventory_extra", "inventory"),
+        ("extra_sidecar", "inventory"),
+    ],
+)
+def test_formal_v2_rejects_authority_and_inventory_mutations(
+    tmp_path: Path, mutation: str, message: str
+) -> None:
+    index_path = _make_v2_formal_source(tmp_path / "source")
+    root = index_path.parent
+    if mutation == "receipt_frozen":
+        path = root / "execution_receipt.json"
+        payload = json.loads(path.read_text())
+        payload["frozen_run_identity"]["formal_evidence_sha256"] = "0" * 64
+        _write_json(path, payload)
+    elif mutation == "source_execution":
+        payload = json.loads(index_path.read_text())
+        payload["run_execution"]["root_inode"] += 1
+        _write_json(index_path, payload)
+    elif mutation == "inventory_missing":
+        path = root / "run_manifest.json"
+        payload = json.loads(path.read_text())
+        payload["artifact_inventory"].remove("source_index.json")
+        _write_json(path, payload)
+    elif mutation == "inventory_extra":
+        path = root / "run_manifest.json"
+        payload = json.loads(path.read_text())
+        payload["artifact_inventory"].append("missing.json")
+        payload["artifact_inventory"].sort()
+        _write_json(path, payload)
+    else:
+        _write_json(root / "unexpected.json", {})
+
+    with pytest.raises(ValueError, match=message):
+        export_temporal_artifact(index_path, tmp_path / "output")
+
+
+def test_formal_v2_rejects_cross_run_source_index_substitution(tmp_path: Path) -> None:
+    first = _make_v2_formal_source(tmp_path / "first")
+    second = _make_v2_formal_source(tmp_path / "second")
+    second.write_bytes(first.read_bytes())
+
+    with pytest.raises(ValueError, match="output root"):
+        export_temporal_artifact(second, tmp_path / "output")
+
+
+def test_formal_v2_rejects_symlinked_sidecar(tmp_path: Path) -> None:
+    index_path = _make_v2_formal_source(tmp_path / "source")
+    trajectory = index_path.parent / "trajectories.jsonl"
+    replacement = tmp_path / "replacement.jsonl"
+    replacement.write_bytes(trajectory.read_bytes())
+    trajectory.unlink()
+    trajectory.symlink_to(replacement)
+
+    with pytest.raises(ValueError, match="symlink"):
+        export_temporal_artifact(index_path, tmp_path / "output")
 
 
 def test_artifact_is_byte_identical_across_distinct_source_roots(
