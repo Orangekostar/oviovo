@@ -243,6 +243,11 @@ V2_FREEZE_MODEL_KEYS = frozenset(
 V2_FREEZE_RELEASE_KEYS = frozenset(
     {"temporal_evaluator", "result_finalizer"}
 )
+V2_RELEASE_EXPECTED_PATHS = {
+    "temporal_evaluator": REPO_ROOT
+    / "scripts/evaluation/evaluate_oviv2_tesse_temporal_occlusion.py",
+    "result_finalizer": REPO_ROOT / "scripts/evaluation/finalize_tesse_t2.py",
+}
 V2_FREEZE_OFFICE_AUDIT_KEYS = frozenset(
     {"selection_scene", "metric_sources_found", "office_outputs_read"}
 )
@@ -410,6 +415,7 @@ def _validate_models(
     value: object,
     *,
     scenes: Mapping[str, Mapping[str, Any]],
+    manifest_base: Path,
 ) -> dict[str, Any]:
     if not isinstance(value, Mapping) or set(value) != {"frontend", "dense"}:
         raise ValueError("freeze models schema is invalid")
@@ -427,18 +433,57 @@ def _validate_models(
             if not isinstance(model, Mapping) or set(model) != V2_FREEZE_MODEL_KEYS:
                 raise ValueError(f"freeze {branch} {scene} model schema is invalid")
             expected_manifest = scenes[scene][f"{branch}_manifest"]["sha256"]
+            manifest_path = _binding_path(
+                scenes[scene][f"{branch}_manifest"]["path"],
+                base=manifest_base,
+                role=f"{scene} {branch} manifest",
+            )
+            manifest = _load_json_bytes(manifest_path.read_bytes(), manifest_path)
+            if branch == "frontend":
+                provenance = manifest.get("provenance_sha256")
+                expected_model_id = manifest.get("feature_model_id")
+                expected_model_sha256 = (
+                    provenance.get("clip_model")
+                    if isinstance(provenance, Mapping)
+                    else None
+                )
+                if not (
+                    type(expected_model_id) is str
+                    and _is_sha256(expected_model_sha256)
+                    and expected_model_id
+                    == f"clip-sha256:{expected_model_sha256}"
+                ):
+                    raise ValueError(
+                        f"{scene} frontend manifest model identity is invalid"
+                    )
+            else:
+                provenance = manifest.get("provenance")
+                expected_model_id = (
+                    provenance.get("model_id")
+                    if isinstance(provenance, Mapping)
+                    else None
+                )
+                expected_model_sha256 = (
+                    provenance.get("model_sha256")
+                    if isinstance(provenance, Mapping)
+                    else None
+                )
+                if not (
+                    type(expected_model_id) is str
+                    and bool(expected_model_id.strip())
+                    and _is_sha256(expected_model_sha256)
+                ):
+                    raise ValueError(f"{scene} dense manifest model identity is invalid")
             if not (
                 model.get("manifest_sha256") == expected_manifest
-                and _is_sha256(model.get("model_sha256"))
+                and model.get("model_id") == expected_model_id
+                and model.get("model_sha256") == expected_model_sha256
             ):
                 raise ValueError(f"freeze {branch} {scene} model binding is invalid")
-            model_id = _nonempty_string(
-                model.get("model_id"), f"models.{branch}.{scene}.model_id"
-            )
             result[branch][scene] = {
                 "manifest_sha256": expected_manifest,
-                "model_id": model_id,
-                "model_sha256": model["model_sha256"],
+                "model_id": expected_model_id,
+                "model_sha256": expected_model_sha256,
             }
     return result
 
@@ -456,6 +501,17 @@ def _validate_commands(
     if not Path(cwd).is_absolute() or _absolute_lexical(cwd) != REPO_ROOT:
         raise ValueError("freeze command cwd must equal the repository root")
     python = _nonempty_string(value.get("python"), "commands.python")
+    python_path = Path(python)
+    expected_python = Path(sys.executable).resolve()
+    if not (
+        python_path.is_absolute()
+        and python == str(python_path.resolve())
+        and python_path.resolve() == expected_python
+    ):
+        raise ValueError("freeze command python must equal the active interpreter")
+    _require_regular_file(python_path, "commands.python")
+    if not os.access(python_path, os.X_OK):
+        raise ValueError("freeze command python must be executable")
     mapping = value.get("mapping")
     expected_slots = [
         f"{scene}_run{repeat}"
@@ -513,14 +569,12 @@ def _validate_release_bindings(
         record = value[role]
         if not isinstance(record, Mapping):
             raise ValueError(f"freeze {role} binding is invalid")
-        path = _binding_path(
-            record.get("path"), base=manifest_base, role=f"release {role}"
-        )
+        expected_path = _absolute_lexical(V2_RELEASE_EXPECTED_PATHS[role])
         _verify_exact_frozen_file_binding(
             record,
             base=manifest_base,
             role=f"release {role}",
-            expected_path=path,
+            expected_path=expected_path,
         )
         result[role] = dict(record)
     return result
@@ -732,7 +786,9 @@ def load_v2_frozen_run_context(
     )
     normalized_environment = _validate_environment(manifest["environment"])
     normalized_models = _validate_models(
-        manifest["models"], scenes=normalized_scenes
+        manifest["models"],
+        scenes=normalized_scenes,
+        manifest_base=manifest_path.parent,
     )
     normalized_release = _validate_release_bindings(
         manifest["release_bindings"], manifest_base=manifest_path.parent

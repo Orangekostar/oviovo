@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import hashlib
 import json
 from pathlib import Path
+import sys
 from types import SimpleNamespace
 
 import pytest
@@ -457,7 +458,26 @@ def _formal_fixture(
         for field in scene_fields:
             source = tmp_path / scene / f"{field}.json"
             source.parent.mkdir(parents=True, exist_ok=True)
-            source.write_text(f"{scene}:{field}\n", encoding="utf-8")
+            if field == "frontend_manifest":
+                _write_json(
+                    source,
+                    {
+                        "feature_model_id": f"clip-sha256:{'f' * 64}",
+                        "provenance_sha256": {"clip_model": "f" * 64},
+                    },
+                )
+            elif field == "dense_manifest":
+                _write_json(
+                    source,
+                    {
+                        "provenance": {
+                            "model_id": "fixture-dense-model",
+                            "model_sha256": "d" * 64,
+                        }
+                    },
+                )
+            else:
+                source.write_text(f"{scene}:{field}\n", encoding="utf-8")
             config[field] = str(source)
         config["algorithm_hash"] = module.algorithm_hash(config)
         path = apartment_path if scene == "apartment" else tmp_path / "office.json"
@@ -514,7 +534,7 @@ def _formal_fixture(
                     "run_slot": slot,
                     "output": roots[slot],
                     "argv": [
-                        "/usr/bin/python3",
+                        str(Path(sys.executable).resolve()),
                         str(runner_path),
                         "--config",
                         str(config_path),
@@ -531,7 +551,11 @@ def _formal_fixture(
         branch: {
             scene: {
                 "manifest_sha256": scenes[scene][f"{branch}_manifest"]["sha256"],
-                "model_id": f"fixture-{branch}-model",
+                "model_id": (
+                    "fixture-dense-model"
+                    if branch == "dense"
+                    else f"clip-sha256:{'f' * 64}"
+                ),
                 "model_sha256": ("d" if branch == "dense" else "f") * 64,
             }
             for scene in ("apartment", "office")
@@ -584,7 +608,7 @@ def _formal_fixture(
             },
             "commands": {
                 "cwd": str(Path(module.REPO_ROOT).resolve()),
-                "python": "/usr/bin/python3",
+                "python": str(Path(sys.executable).resolve()),
                 "mapping": mapping,
             },
             "models": models,
@@ -608,6 +632,19 @@ def _clean_repository_state() -> dict[str, str]:
         "repository_tree": "b" * 40,
         "dirty_state_digest": hashlib.sha256(b"").hexdigest(),
     }
+
+
+def _patch_formal_authorities(module, monkeypatch, payload) -> None:
+    monkeypatch.setattr(module, "_repository_provenance", _clean_repository_state)
+    monkeypatch.setattr(
+        module,
+        "V2_RELEASE_EXPECTED_PATHS",
+        {
+            role: Path(record["path"])
+            for role, record in payload["release_bindings"].items()
+        },
+        raising=False,
+    )
 
 
 def test_task14_can_import_the_complete_v2_freeze_contract() -> None:
@@ -640,7 +677,8 @@ def test_complete_v2_formal_freeze_runs_before_publishing(
     import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
 
     config, freeze, output, _ = _formal_fixture(module, tmp_path)
-    monkeypatch.setattr(module, "_repository_provenance", _clean_repository_state)
+    freeze_payload = json.loads(freeze.read_text())
+    _patch_formal_authorities(module, monkeypatch, freeze_payload)
     manifest = module.run(
         config,
         output,
@@ -649,7 +687,6 @@ def test_complete_v2_formal_freeze_runs_before_publishing(
         dependencies=_dependencies(module)[0],
     )
     assert manifest["frozen_run_identity"]["freeze_id"] == "oviv2-tessecd-v2"
-    freeze_payload = json.loads(freeze.read_text())
     assert manifest["frozen_run_identity"]["formal_evidence_sha256"] == module._json_hash(
         freeze_payload
     )
@@ -696,7 +733,7 @@ def test_formal_freeze_requires_every_exact_input_binding_before_output_creation
     else:
         bindings[role]["sha256"] = "0" * 64
     _write_json(freeze, payload)
-    monkeypatch.setattr(module, "_repository_provenance", _clean_repository_state)
+    _patch_formal_authorities(module, monkeypatch, payload)
     with pytest.raises(ValueError):
         module.run(
             config,
@@ -726,7 +763,7 @@ def test_formal_freeze_top_level_objects_are_exact_before_output_creation(
     payload = json.loads(freeze.read_text())
     mutation(payload)
     _write_json(freeze, payload)
-    monkeypatch.setattr(module, "_repository_provenance", _clean_repository_state)
+    _patch_formal_authorities(module, monkeypatch, payload)
     with pytest.raises(ValueError):
         module.run(
             config,
@@ -753,6 +790,10 @@ def test_formal_freeze_top_level_objects_are_exact_before_output_creation(
         "models_missing",
         "models_empty",
         "models_manifest",
+        "models_forged",
+        "dense_model_forged",
+        "commands_python",
+        "release_replacement",
         "release_missing",
         "office_audit",
     ],
@@ -800,12 +841,35 @@ def test_complete_formal_evidence_is_strict_and_bound_before_output_creation(
         payload["models"]["dense"]["apartment"] = {}
     elif mutation == "models_manifest":
         payload["models"]["frontend"]["apartment"]["manifest_sha256"] = "0" * 64
+    elif mutation == "models_forged":
+        payload["models"]["frontend"]["apartment"]["model_id"] = "forged"
+        payload["models"]["frontend"]["apartment"]["model_sha256"] = "a" * 64
+    elif mutation == "dense_model_forged":
+        payload["models"]["dense"]["office"]["model_id"] = "forged"
+        payload["models"]["dense"]["office"]["model_sha256"] = "a" * 64
+    elif mutation == "commands_python":
+        payload["commands"]["python"] = "/invented/python"
+        for command in payload["commands"]["mapping"]:
+            command["argv"][0] = "/invented/python"
+    elif mutation == "release_replacement":
+        replacement = tmp_path / "unrelated-release.py"
+        replacement.write_text("unrelated\n", encoding="utf-8")
+        payload["release_bindings"]["temporal_evaluator"] = _record(replacement)
     elif mutation == "release_missing":
         del payload["release_bindings"]["result_finalizer"]
     else:
         payload["office_pre_freeze_audit"]["office_outputs_read"] = True
     _write_json(freeze, payload)
+    expected_release_paths = {
+        role: Path(record["path"])
+        for role, record in json.loads(freeze.read_text())["release_bindings"].items()
+    }
+    if mutation == "release_replacement":
+        expected_release_paths["temporal_evaluator"] = tmp_path / "temporal-evaluator.py"
     monkeypatch.setattr(module, "_repository_provenance", _clean_repository_state)
+    monkeypatch.setattr(
+        module, "V2_RELEASE_EXPECTED_PATHS", expected_release_paths, raising=False
+    )
     with pytest.raises((FileNotFoundError, TypeError, ValueError)):
         module.run(
             config,
