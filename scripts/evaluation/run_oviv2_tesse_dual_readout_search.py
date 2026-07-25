@@ -379,7 +379,22 @@ def _materialize_config(
     return config
 
 
-def _available_ram_bytes() -> int:
+def _available_ram_bytes(
+    meminfo_path: Path = Path("/proc/meminfo"),
+) -> int:
+    try:
+        for line in meminfo_path.read_text(encoding="ascii").splitlines():
+            fields = line.split()
+            if fields[:1] != ["MemAvailable:"]:
+                continue
+            if len(fields) != 3 or fields[2] != "kB":
+                raise ValueError("MemAvailable has an invalid unit")
+            available = int(fields[1]) * 1024
+            if available <= 0:
+                raise ValueError("MemAvailable must be positive")
+            return available
+    except (OSError, UnicodeError, ValueError):
+        pass
     try:
         pages = os.sysconf("SC_AVPHYS_PAGES")
         page_size = os.sysconf("SC_PAGE_SIZE")

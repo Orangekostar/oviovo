@@ -311,3 +311,17 @@ def test_runner_checks_available_ram_before_creating_output(tmp_path: Path) -> N
             available_ram_bytes=0,
         )
     assert not output.exists()
+
+
+def test_available_ram_uses_linux_memavailable_including_reclaimable_cache(
+    tmp_path: Path,
+) -> None:
+    meminfo = tmp_path / "meminfo"
+    meminfo.write_text(
+        "MemTotal:       1000000 kB\n"
+        "MemFree:          12000 kB\n"
+        "MemAvailable:    800000 kB\n"
+        "Cached:          700000 kB\n"
+    )
+
+    assert search_runner._available_ram_bytes(meminfo) == 800000 * 1024
