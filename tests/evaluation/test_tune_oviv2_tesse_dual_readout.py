@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 import scripts.evaluation.tune_oviv2_tesse_dual_readout as tuner
+from scripts.evaluation import package_oviv2_tesse_dual_readout_result as package_module
 from scripts.evaluation.evaluate_oviv2_tesse_occlusion import canonical_algorithm_hash
 from scripts.evaluation.package_oviv2_tesse_dual_readout_result import package_result
 from scripts.evaluation.run_oviv2_tesse_dual_readout_search import (
@@ -22,6 +23,23 @@ MANIFEST = (
     / "configs/evaluation/manifests/oviv2_tesse_dual_readout_search_v1.json"
 )
 APARTMENT_CONFIG = REPO_ROOT / "configs/oviv2_tesse_cd_apartment_v2.json"
+
+
+@pytest.fixture(autouse=True)
+def _stub_expensive_metric_replays(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        package_module,
+        "_recompute_common_v2_metrics",
+        lambda snapshot, witnesses: dict(snapshot.payload["metrics"]),
+    )
+    monkeypatch.setattr(
+        package_module,
+        "_recompute_official_metrics",
+        lambda snapshot, witnesses: (
+            dict(snapshot.payload["metrics"]),
+            dict(snapshot.payload.get("unavailable", {})),
+        ),
+    )
 
 
 def _bytes(value: object) -> bytes:

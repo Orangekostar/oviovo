@@ -4,6 +4,8 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
@@ -17,6 +19,33 @@ from scripts.evaluation.package_oviv2_tesse_dual_readout_result import (
     load_and_revalidate_result,
     package_result,
 )
+from src.evaluation.baselines.tesse_cd import (
+    summarize_khronos_official_metrics_partial,
+)
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+PRODUCTION_MANIFEST = (
+    REPO_ROOT
+    / "configs/evaluation/manifests/oviv2_tesse_dual_readout_search_v1.json"
+)
+COMMON_METRICS = {
+    "current_miou": 0.4,
+    "ghost_rate": 0.1,
+    "background_f5": 0.3,
+    "recovery_frames": 100.0,
+}
+ORIGINAL_COMMON_REPLAY = package_module._recompute_common_v2_metrics
+
+
+@pytest.fixture(autouse=True)
+def _stub_expensive_common_v2_replay(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        package_module,
+        "_recompute_common_v2_metrics",
+        lambda *args, **kwargs: dict(COMMON_METRICS),
+        raising=False,
+    )
 
 
 def _bytes(value: object) -> bytes:
@@ -37,21 +66,11 @@ def _record(path: Path) -> dict[str, object]:
 def _fixture(root: Path) -> dict[str, Path]:
     h = lambda character: character * 64
     commit = "c" * 40
-    candidate = {
-        "candidate_id": "a2",
-        "components": {
-            "association_mode": "active_uncertain", "background_mode": "v1_cumulative",
-            "geometry_mode": "object_submap", "lifecycle_mode": "probabilistic_hysteresis",
-            "motion_mode": "translation",
-        },
-        "temporal_readout": {"execution_profile": "a2", "lifecycle": {"active_on_probability": 0.75}},
-    }
-    manifest = _write(root / "manifest.json", {
-        "schema_version": 1, "manifest_id": "oviv2-tesse-dual-readout-search-v1",
-        "dataset": "TESSE-CD", "method_id": "OVIV2", "protocol_id": "oviv2-tessecd-v2",
-        "development_scene": "apartment", "transfer_scene": "office",
-        "transfer_policy": "bind_only_never_execute", "candidates": [candidate],
-    })
+    manifest = PRODUCTION_MANIFEST
+    manifest_payload = json.loads(manifest.read_text())
+    candidate = next(
+        item for item in manifest_payload["candidates"] if item["candidate_id"] == "a2"
+    )
     config = {
         "scene": "apartment",
         "temporal_readout": candidate["temporal_readout"], "dataset_root": "/frozen/tesse",
@@ -116,8 +135,8 @@ def _fixture(root: Path) -> dict[str, Path]:
         "sources": {"source_index": _record(export_source_index)}, "checkpoints": [checkpoint], "entity_lifecycles": []})
     common = _write(root / "common.json", {
         "schema_version": 1, "manifest_id": "tesse_cd_common_v2_scene_summary", "dataset": "TESSE-CD",
-        "protocol": "tesse_cd_common_v2", "status": "PASS", "method": "OVIV2", "mode": "frozen", "scene": "apartment",
-        "metrics": {"current_miou": 0.4, "ghost_rate": 0.1, "background_f5": 0.3, "recovery_frames": 100.0},
+        "protocol": "tesse_cd_common_v2", "status": "PASS", "method": "OVIV2", "mode": "causal_checkpoints", "scene": "apartment",
+        "metrics": COMMON_METRICS,
         "sources": {"temporal_index": _record(temporal_manifest)},
     })
     occlusion = _write(root / "occlusion.json", {
@@ -125,16 +144,31 @@ def _fixture(root: Path) -> dict[str, Path]:
         "input_sha256": h("5"), "code_commit": commit, "source_bindings": input_hashes,
         "input_bindings": {"indexes": [_record(index)]},
     })
-    official_sources = root / "official-source.csv"
-    official_sources.write_text("header\n")
+    static_source = root / "static_objects.csv"
+    static_source.write_text(
+        "Name,Query,NumObjDetected,NumObjHallucinated,NumObjMissed,"
+        "AppearedTP,AppearedFP,AppearedFN,DisappearedTP,DisappearedFP,"
+        "DisappearedFN\n0,0,4,1,1,3,1,1,2,1,1\n"
+    )
+    background_source = root / "background_mesh.csv"
+    background_source.write_text("Name,Accuracy@0.2,Completeness@0.2\n0,0.5,0.5\n")
+    official_partial = summarize_khronos_official_metrics_partial(root)
+    missing_dynamic = root / "dynamic_objects.csv"
     official = _write(root / "official_metrics.json", {
-        "status": "PASS", "dataset": "TESSE-CD", "scene": "apartment", "split": "apartment_test",
+        "status": "PARTIAL", "dataset": "TESSE-CD", "scene": "apartment", "split": "apartment_test",
         "method": "OVIV2", "mode": "causal_checkpoints", "display_mode": "online",
         "aggregation": "upstream online 4D plotting aggregation",
         "run_identity": {"run_id": "a2-apartment", "config_sha256": config_sha},
-        "metrics": {"object_f1": 0.7, "dynamic_f1": None, "change_f1": 0.6},
-        "unavailable": {"dynamic_f1": "not_reported_by_official_evaluator"},
-        "sources": [_record(official_sources)],
+        "metrics": {
+            "state_count": official_partial["state_count"],
+            **official_partial["metrics"],
+        },
+        "unavailable": official_partial["unavailable"],
+        "sources": [
+            _record(static_source),
+            {"path": str(missing_dynamic), "status": "MISSING"},
+            _record(background_source),
+        ],
     })
     protected = [{"path": "src/oviv2/dual_readout.py", "sha256": h("7"), "bytes": 123}]
     tests = [{"path": "tests/oviv2/test_dual_readout.py", "sha256": h("8"), "bytes": 456}]
@@ -168,8 +202,119 @@ def test_packages_exact_structured_result_and_revalidates(tmp_path: Path) -> Non
     assert all(set(gate) == {"passed", "reason", "source"} and gate["passed"] for gate in result["gates"].values())
     assert result["metrics"]["background_f5_cm"]["value"] == 0.3
     assert result["metrics"]["runtime_seconds"]["value"] == 12.5
-    assert result["metrics"]["dynamic_f1"] == {"available": False, "value": None, "reason": "not_reported_by_official_evaluator", "source": "official_metrics"}
+    assert result["metrics"]["dynamic_f1"]["available"] is False
+    assert "dynamic_objects.csv" in result["metrics"]["dynamic_f1"]["reason"]
     assert load_and_revalidate_result(output, manifest=paths["manifest"]) == result
+
+
+def test_rejects_metrics_that_do_not_match_recomputed_sources(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    official = json.loads(paths["official_metrics"].read_text())
+    official["metrics"]["object_f1"] = 0.99
+    _write(paths["official_metrics"], official)
+    with pytest.raises(ValueError, match="official metrics differ from recomputed CSV"):
+        _package(paths, tmp_path / "official-tamper.json")
+
+    paths = _fixture(tmp_path / "common")
+    summary = json.loads(paths["common_v2_summary"].read_text())
+    summary["metrics"]["current_miou"] = 0.99
+    _write(paths["common_v2_summary"], summary)
+    with pytest.raises(ValueError, match="common-v2 metrics differ from replay"):
+        _package(paths, tmp_path / "common-tamper.json")
+
+
+def test_direct_cli_help_works_from_repo_root() -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(
+                REPO_ROOT
+                / "scripts/evaluation/package_oviv2_tesse_dual_readout_result.py"
+            ),
+            "--help",
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+
+
+def test_common_v2_replay_uses_declared_production_sources(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    temporal = tmp_path / "temporal.json"
+    target = tmp_path / "targets.json"
+    aliases = tmp_path / "aliases.yaml"
+    label_space = tmp_path / "labels.yaml"
+    for path in (temporal, target, aliases, label_space):
+        path.write_text("{}\n")
+    evaluator = REPO_ROOT / "scripts/evaluation/evaluate_tesse_cd_common_v2.py"
+    sources = {
+        "temporal_index": _record(temporal),
+        "target_manifest": _record(target),
+        "aliases": _record(aliases),
+        "label_space": _record(label_space),
+        "evaluator": _record(evaluator),
+    }
+    payload = {
+        "metrics": COMMON_METRICS,
+        "frames": [{"event_id": "event", "frame_id": 0}],
+        "event_region_prediction_counts": {"event": {"0": 0}},
+        "event_background_prediction_counts": {"event": {"0": 0}},
+        "sources": sources,
+    }
+    common_path = _write(tmp_path / "common.json", payload)
+    common_snapshot = package_module._snapshot(common_path, "common-v2 summary")
+
+    def replay(
+        temporal_index: Path,
+        target_manifest: Path,
+        aliases_path: Path,
+        label_space_path: Path,
+        output: Path,
+    ) -> Path:
+        assert (temporal_index, target_manifest, aliases_path, label_space_path) == (
+            temporal,
+            target,
+            aliases,
+            label_space,
+        )
+        return _write(output / "summary.json", payload)
+
+    monkeypatch.setattr(package_module, "evaluate_common_v2", replay)
+    witnesses: list[package_module.Snapshot | package_module.FileIdentityWitness] = []
+    assert ORIGINAL_COMMON_REPLAY(common_snapshot, witnesses) == COMMON_METRICS
+    assert {item.path for item in witnesses} == {
+        temporal,
+        target,
+        aliases,
+        label_space,
+        evaluator,
+    }
+
+
+def test_rejects_shallow_nonproduction_search_manifest(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    shallow = _write(
+        tmp_path / "shallow-manifest.json",
+        {
+            "schema_version": 1,
+            "manifest_id": "oviv2-tesse-dual-readout-search-v1",
+            "dataset": "TESSE-CD",
+            "method_id": "OVIV2",
+            "protocol_id": "oviv2-tessecd-v2",
+            "development_scene": "apartment",
+            "candidates": [{"candidate_id": "a2"}],
+        },
+    )
+    status = json.loads(paths["search_status"].read_text())
+    status["manifest"] = _record(shallow)
+    _write(paths["search_status"], status)
+    paths["manifest"] = shallow
+    with pytest.raises(ValueError, match="manifest|keys|candidate"):
+        _package(paths, tmp_path / "result.json")
 
 
 @pytest.mark.parametrize("mutation", ["metric", "gate", "source_hash", "coherent_metrics"])
