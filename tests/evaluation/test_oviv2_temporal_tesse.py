@@ -17,7 +17,10 @@ from src.evaluation.oviv2_temporal_tesse import load_temporal_current_checkpoint
 from src.evaluation.contracts import EntityPrediction, MapSnapshot
 from src.oviv2.temporal_background import TemporalBackgroundVolume
 from src.oviv2.temporal_config import TemporalGeometryConfig
+from src.oviv2.temporal_geometry import ObjectSubmap
+from src.oviv2.temporal_lifecycle import TemporalLifecycle, TemporalLifecycleState
 from src.oviv2.temporal_snapshot import TemporalCurrentSnapshot, TemporalSnapshotMetadata
+from src.oviv2.temporal_state import TemporalEntityState
 
 
 def _snapshot() -> TemporalCurrentSnapshot:
@@ -25,6 +28,41 @@ def _snapshot() -> TemporalCurrentSnapshot:
     return TemporalCurrentSnapshot(
         TemporalSnapshotMetadata("scene", 0, 0.0, 1, 0.1, "b" * 64),
         (),
+        TemporalBackgroundVolume(config),
+    )
+
+
+def _snapshot_with_entity(*, semantic_id: int, prototype_dimension: int) -> TemporalCurrentSnapshot:
+    config = TemporalGeometryConfig(0.1, 4.0, 2, 4, 4, 16, 0, 3, 0.5, 0.1, 2.0)
+    prototype = np.linspace(1.0, 2.0, prototype_dimension, dtype=np.float64)
+    entity = TemporalEntityState(
+        lifecycle=TemporalLifecycleState(
+            entity_id=1,
+            lifecycle=TemporalLifecycle.ACTIVE,
+            existence_log_odds=1.0,
+            last_frame_id=0,
+            last_timestamp=0.0,
+            absent_streak=0,
+            absence_view_bins=(),
+        ),
+        semantic_probabilities=((semantic_id, 1.0),),
+        image_prototype=prototype,
+        feature_model_id="test",
+        extent_xyz=(1.0, 1.0, 1.0),
+        object_to_world=np.eye(4),
+        submap=ObjectSubmap(
+            reference_centroid_xyz=(0.0, 0.0, 0.0),
+            local_voxel_keys=((0, 0, 0),),
+            local_points_xyz=np.asarray([[0.05, 0.0, 0.0]]),
+            weights=np.ones(1),
+            last_seen_frame_ids=np.asarray([0], dtype=np.int64),
+        ),
+        first_seen_frame_id=0,
+        last_seen_frame_id=0,
+    )
+    return TemporalCurrentSnapshot(
+        TemporalSnapshotMetadata("scene", 0, 0.0, 1, 0.1, "b" * 64),
+        (entity,),
         TemporalBackgroundVolume(config),
     )
 
@@ -286,3 +324,53 @@ def test_full_loaded_witness_rejects_same_size_tamper_and_inode_swap(tmp_path: P
     os.replace(replacement, original)
     with pytest.raises(ValueError, match="identity"):
         loaded_second.revalidate_source()
+
+
+def test_full_roundtrip_preserves_out_of_vocabulary_semantic_as_none(tmp_path: Path) -> None:
+    receipt = publish_temporal_current_checkpoint(
+        tmp_path / "checkpoint",
+        _snapshot_with_entity(semantic_id=2, prototype_dimension=2),
+        ("unknown",),
+        code_commit="c" * 40,
+        input_sha256="d" * 64,
+    )
+    loaded, _diagnostics = load_temporal_current_checkpoint(receipt.path)
+    assert loaded.entities[0].metadata["semantic_id"] == 2
+    assert loaded.entities[0].semantic_label is None
+
+
+def test_full_roundtrip_accepts_large_bounded_entity_record(tmp_path: Path) -> None:
+    snapshot = _snapshot_with_entity(semantic_id=1, prototype_dimension=10_000)
+    receipt = publish_temporal_current_checkpoint(
+        tmp_path / "checkpoint",
+        snapshot,
+        ("unknown", "chair"),
+        code_commit="c" * 40,
+        input_sha256="d" * 64,
+    )
+    assert (receipt.path / "entities.jsonl").stat().st_size > 64 * 1024
+    loaded, _diagnostics = load_temporal_current_checkpoint(receipt.path)
+    assert loaded.entities[0].semantic_embedding is not None
+    assert loaded.entities[0].semantic_embedding.shape == (10_000,)
+
+
+def test_full_publisher_and_loader_reject_oversized_entity_records(tmp_path: Path) -> None:
+    target = tmp_path / "too-large"
+    with pytest.raises(ValueError, match="entity record|entities JSON|size limit"):
+        publish_temporal_current_checkpoint(
+            target,
+            _snapshot_with_entity(semantic_id=1, prototype_dimension=100_000),
+            ("unknown", "chair"),
+            code_commit="c" * 40,
+            input_sha256="d" * 64,
+        )
+    assert not target.exists()
+
+    receipt = publish_temporal_current_checkpoint(
+        tmp_path / "valid", _snapshot(), ("unknown",),
+        code_commit="c" * 40, input_sha256="d" * 64,
+    )
+    malicious = b'{"padding":"' + b"x" * (2 * 1024 * 1024) + b'"}\n'
+    _rewrite_member(receipt.path, "entities.jsonl", malicious)
+    with pytest.raises(ValueError, match="entity record|entities JSON|size limit"):
+        load_temporal_current_checkpoint(receipt.path)

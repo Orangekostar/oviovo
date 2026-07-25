@@ -29,6 +29,7 @@ from src.oviv2.temporal_snapshot import (
     _read_npy_contract,
     _reject_symlink_components,
     _sha256,
+    _strict_object,
     _strict_json,
     build_temporal_map_snapshot,
 )
@@ -39,6 +40,8 @@ _INVENTORY = frozenset({"manifest.json", "snapshot.npz", "entities.jsonl", "diag
 _ARRAY_NAMES = ("entity_points", "entity_point_offsets", "background_xyz", "background_present")
 _MAX_FULL_MEMBER_BYTES = 512 * 1024 * 1024
 _MAX_FULL_JSON_BYTES = 64 * 1024 * 1024
+_MAX_FULL_ENTITY_RECORD_BYTES = 1024 * 1024
+_MAX_FULL_ENTITIES_JSON_BYTES = 64 * 1024 * 1024
 
 
 def _full_capacities(snapshot: TemporalCurrentSnapshot) -> tuple[int, int, int, int]:
@@ -69,6 +72,24 @@ def _finite_number(value: object, name: str, *, nonnegative: bool = False) -> fl
     if nonnegative and result < 0.0:
         raise ValueError(f"{name} must be non-negative")
     return result
+
+
+def _strict_full_json(content: bytes, *, label: str, max_bytes: int) -> dict[str, Any]:
+    if len(content) > max_bytes:
+        raise ValueError(f"{label} exceeds size limit")
+    try:
+        payload = json.loads(
+            content.decode("utf-8"),
+            object_pairs_hook=_strict_object,
+            parse_constant=lambda item: (_ for _ in ()).throw(
+                ValueError(f"non-finite JSON value: {item}")
+            ),
+        )
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError(f"invalid {label}") from exc
+    if not isinstance(payload, dict):
+        raise ValueError(f"{label} must be an object")
+    return payload
 
 
 def _hex_digest(value: object, name: str, lengths: set[int]) -> str:
@@ -103,7 +124,7 @@ def _serialize_map_snapshot(snapshot: MapSnapshot) -> tuple[bytes, bytes]:
         points = np.asarray(entity.points_xyz, dtype=np.float32)
         chunks.append(points)
         offsets.append(offsets[-1] + len(points))
-        records.append(_canonical_json({
+        record = _canonical_json({
             "index": index,
             "entity_id": entity.entity_id,
             "semantic_embedding": None if entity.semantic_embedding is None else _jsonable(entity.semantic_embedding),
@@ -115,7 +136,10 @@ def _serialize_map_snapshot(snapshot: MapSnapshot) -> tuple[bytes, bytes]:
             "point_start": offsets[-2],
             "point_count": len(points),
             "metadata": _jsonable(entity.metadata),
-        }).rstrip(b"\n"))
+        }).rstrip(b"\n")
+        if len(record) > _MAX_FULL_ENTITY_RECORD_BYTES:
+            raise ValueError("full entity record exceeds size limit")
+        records.append(record)
     entity_points = np.concatenate(chunks).astype(np.float32, copy=False) if chunks else np.empty((0, 3), dtype=np.float32)
     background_present = snapshot.background_xyz is not None
     background = np.asarray(snapshot.background_xyz, dtype=np.float32) if background_present else np.empty((0, 3), dtype=np.float32)
@@ -125,7 +149,10 @@ def _serialize_map_snapshot(snapshot: MapSnapshot) -> tuple[bytes, bytes]:
         "background_xyz": background,
         "background_present": np.asarray([int(background_present)], dtype=np.uint8),
     }, _ARRAY_NAMES)
-    return archive, b"\n".join(records) + (b"\n" if records else b"")
+    entities_json = b"\n".join(records) + (b"\n" if records else b"")
+    if len(entities_json) > _MAX_FULL_ENTITIES_JSON_BYTES:
+        raise ValueError("full entities JSON exceeds total size limit")
+    return archive, entities_json
 
 
 def _diagnostics(snapshot: TemporalCurrentSnapshot) -> bytes:
@@ -369,9 +396,18 @@ def load_temporal_current_checkpoint(checkpoint_dir: str | Path) -> LoadedTempor
             raise ValueError(f"temporal current checksum mismatch for {name}")
     manifest = _strict_json(contents["manifest.json"], label="manifest")
     metadata, class_names, capacities = _validate_manifest(manifest)
+    entities_content = contents["entities.jsonl"]
+    if len(entities_content) > _MAX_FULL_ENTITIES_JSON_BYTES:
+        raise ValueError("full entities JSON exceeds total size limit")
     records = []
-    for line in contents["entities.jsonl"].splitlines():
-        records.append(_strict_json(line, label="entity record"))
+    for line in entities_content.splitlines():
+        records.append(
+            _strict_full_json(
+                line,
+                label="entity record",
+                max_bytes=_MAX_FULL_ENTITY_RECORD_BYTES,
+            )
+        )
     if len(records) > capacities[0]:
         raise ValueError("entity records exceed full capacity")
     _preflight_full_archive(contents["snapshot.npz"], capacities)
@@ -415,11 +451,14 @@ def load_temporal_current_checkpoint(checkpoint_dir: str | Path) -> LoadedTempor
             raise ValueError("entity records are not strictly ordered")
         previous_temporal_id = temporal_id
         semantic_id = entity_metadata["semantic_id"]
-        if type(semantic_id) is not int or not 0 <= semantic_id < len(class_names):
+        if type(semantic_id) is not int or semantic_id < 0:
             raise ValueError("entity semantic ID is invalid")
         semantic_label = record["semantic_label"]
-        if semantic_label != class_names[semantic_id]:
-            raise ValueError("entity semantic label does not match class_names")
+        if semantic_id < len(class_names):
+            if semantic_label != class_names[semantic_id]:
+                raise ValueError("entity semantic label does not match class_names")
+        elif semantic_label is not None:
+            raise ValueError("out-of-vocabulary entity semantic label must be null")
         semantic_score = _finite_number(record["semantic_score"], "entity semantic_score", nonnegative=True)
         if semantic_score > 1.0:
             raise ValueError("entity semantic_score must not exceed one")
