@@ -15,6 +15,7 @@ from pathlib import Path
 import platform
 import shutil
 import socket
+import stat
 import sys
 import tempfile
 from typing import Any
@@ -224,6 +225,46 @@ _RUNTIME_CONFIG_KEYS = frozenset(
         "third_view_min_score",
     }
 )
+_DATASET_CONFIG_KEYS = frozenset(
+    {"dataset_root", "scene", "export_manifest", "schedule_manifest"}
+)
+_CACHE_CONFIG_KEYS = frozenset(
+    {
+        "scene",
+        "frame_count",
+        "input_manifest",
+        "vocabulary_json",
+        "vocabulary_txt",
+        "frontend_cache_dir",
+        "frontend_manifest",
+        "dense_cache_dir",
+        "dense_manifest",
+        "stage3_lineage_commit",
+        "dense_sample_stride",
+        "dense_top_k",
+        "dense_semantic_mode",
+        "voxel_size_m",
+        "pixel_stride",
+        "min_valid_points",
+        "structure_enabled",
+        "structure_pixel_stride",
+        "structure_min_valid_points",
+        "structure_horizontal_threshold",
+        "structure_wall_vertical_threshold",
+        "structure_min_component_pixels",
+        "structure_min_component_fraction",
+        "structure_max_components_per_class",
+        "structure_object_exclusion_dilation",
+        "structure_wall_confidence",
+        "structure_floor_confidence",
+        "structure_ceiling_confidence",
+        "fusion_semantic_mode",
+        "fusion_entity_weight_scale",
+    }
+)
+_ENVIRONMENT_LIBRARY_KEYS = frozenset(
+    {"numpy", "open3d", "scipy", "torch", "pillow"}
+)
 _CHECKPOINT_MEMBERS = {
     TEMPORAL_CURRENT_FORMAT: frozenset(
         {
@@ -371,6 +412,20 @@ def _assert_staging_identity(staging: Path, expected: tuple[int, int]) -> None:
         raise ValueError("run staging root identity changed during run")
 
 
+def _entry_inventory(root: Path) -> dict[str, str]:
+    result: dict[str, str] = {}
+    for path in root.rglob("*"):
+        metadata = os.lstat(path)
+        relative = path.relative_to(root).as_posix()
+        if stat.S_ISDIR(metadata.st_mode):
+            result[relative] = "directory"
+        elif stat.S_ISREG(metadata.st_mode):
+            result[relative] = "file"
+        else:
+            raise ValueError("run publication inventory contains a forbidden entry")
+    return result
+
+
 def _revalidate_checkpoint_artifact(
     witness: _CheckpointArtifactWitness, *, run_root: Path
 ) -> None:
@@ -465,7 +520,7 @@ def _validate_environment(value: object) -> dict[str, Any]:
     libraries = value["libraries"]
     if (
         not isinstance(libraries, Mapping)
-        or not libraries
+        or set(libraries) != _ENVIRONMENT_LIBRARY_KEYS
         or any(
             type(key) is not str
             or not key.strip()
@@ -1048,18 +1103,41 @@ def _production_runtime_factory(config: Mapping[str, Any], caches: Any) -> Any:
 
 
 def _production_environment() -> Mapping[str, Any]:
-    import numpy as np
+    provenance = dict(_production_provenance())
+    gpu = provenance.get("gpu_inventory")
+    nvcc = provenance.get("nvcc_version")
+    libraries = provenance.get("library_versions")
+    if type(gpu) is not list or any(type(item) is not str for item in gpu):
+        gpu = []
+    if type(nvcc) is not list or any(type(item) is not str for item in nvcc):
+        nvcc = []
+    if not isinstance(libraries, Mapping):
+        libraries = {}
+    torch_cuda = provenance.get("torch_cuda_version", "unavailable")
+    cudnn = provenance.get("cudnn_version")
+    cuda = [
+        f"torch_cuda={torch_cuda if torch_cuda is not None else 'unavailable'}",
+        f"cudnn={cudnn if cudnn is not None else 'unavailable'}",
+        *(
+            [f"nvcc={line}" for line in nvcc]
+            if nvcc
+            else ["nvcc=unavailable"]
+        ),
+    ]
 
     return {
         "python": platform.python_version(),
         "python_implementation": platform.python_implementation(),
-        "platform": platform.platform(),
-        "machine": platform.machine() or "unknown",
-        "host": socket.gethostname() or "unknown",
-        "cuda": [os.environ.get("CUDA_VERSION", "unavailable")],
-        "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES"),
-        "gpu": ["unavailable"],
-        "libraries": {"numpy": np.__version__},
+        "platform": str(provenance.get("platform") or platform.platform()),
+        "machine": str(provenance.get("machine") or platform.machine() or "unknown"),
+        "host": str(provenance.get("hostname") or socket.gethostname() or "unknown"),
+        "cuda": cuda,
+        "cuda_visible_devices": provenance.get("cuda_visible_devices"),
+        "gpu": gpu or ["unavailable"],
+        "libraries": {
+            key: str(libraries.get(key, "unavailable"))
+            for key in sorted(_ENVIRONMENT_LIBRARY_KEYS)
+        },
     }
 
 
@@ -1210,10 +1288,12 @@ def run(
             character not in "0123456789abcdef" for character in code_commit
         ):
             raise ValueError("provenance repository_commit is invalid")
-        dataset = dependencies.dataset_factory(config)
+        dataset_config = {key: config[key] for key in _DATASET_CONFIG_KEYS}
+        dataset = dependencies.dataset_factory(dataset_config)
         if len(dataset) != frame_count:
             raise ValueError("dataset frame count does not match runner config")
-        caches = dependencies.cache_loader_factory(config, dataset)
+        cache_config = {key: config[key] for key in _CACHE_CONFIG_KEYS}
+        caches = dependencies.cache_loader_factory(cache_config, dataset)
         cache_bindings = getattr(caches, "bindings", {})
         if not isinstance(cache_bindings, Mapping):
             raise ValueError("cache bindings must be a mapping")
@@ -1315,13 +1395,12 @@ def run(
                     maximum_object_voxels=temporal_config.geometry.maximum_object_voxels,
                 )
             )
-            actual_members = {
-                path.relative_to(artifact_root).as_posix()
-                for path in artifact_root.rglob("*")
-                if path.is_file()
-            }
+            artifact_entries = list(artifact_root.iterdir())
+            actual_members = {path.name for path in artifact_entries}
             expected_members = _CHECKPOINT_MEMBERS[checkpoint_format]
-            if actual_members != expected_members:
+            if actual_members != expected_members or any(
+                not stat.S_ISREG(os.lstat(path).st_mode) for path in artifact_entries
+            ):
                 raise ValueError("checkpoint artifact inventory is invalid")
             expected_checkpoint_inventory.update(
                 (artifact_root / name).relative_to(staging).as_posix()
@@ -1443,14 +1522,21 @@ def run(
         )
         if deterministic_inventory != manifest["artifact_inventory"]:
             raise ValueError("run artifact inventory changed during manifest publication")
-        publication_inventory = sorted(
-            path.relative_to(staging).as_posix()
-            for path in staging.rglob("*")
-            if path.is_file()
-        )
-        if publication_inventory != sorted(
-            [*manifest["artifact_inventory"], "run_manifest.json", "execution_receipt.json"]
-        ):
+        expected_files = {
+            *manifest["artifact_inventory"],
+            "run_manifest.json",
+            "execution_receipt.json",
+        }
+        expected_directories = {"checkpoints"}
+        for witness in witnesses:
+            relative = witness.path.relative_to(staging)
+            expected_directories.add(relative.as_posix())
+            expected_directories.add(relative.parent.as_posix())
+        expected_entries = {
+            **{path: "file" for path in expected_files},
+            **{path: "directory" for path in expected_directories},
+        }
+        if _entry_inventory(staging) != expected_entries:
             raise ValueError("run publication inventory is invalid")
         if frozen is not None:
             if frozen.manifest_path.read_bytes() != frozen.manifest_bytes:

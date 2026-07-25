@@ -31,7 +31,13 @@ TEST_ENVIRONMENT = {
     "cuda": ["fixture-cuda"],
     "cuda_visible_devices": None,
     "gpu": ["fixture-gpu"],
-    "libraries": {"numpy": "fixture-numpy"},
+    "libraries": {
+        "numpy": "fixture-numpy",
+        "open3d": "fixture-open3d",
+        "scipy": "fixture-scipy",
+        "torch": "fixture-torch",
+        "pillow": "fixture-pillow",
+    },
 }
 
 
@@ -241,9 +247,14 @@ def _dependencies(
 ):
     holder: dict[str, object] = {}
 
+    def dataset(config: dict[str, object]) -> _Dataset:
+        holder["dataset_config"] = dict(config)
+        return _Dataset()
+
     def caches(config: dict[str, object], dataset: object) -> _Caches:
         del dataset
-        parsed = temporal_config_from_json({"temporal_readout": config["temporal_readout"]})
+        holder["cache_config"] = dict(config)
+        parsed = temporal_config_from_json({"temporal_readout": _temporal_readout()})
         return _Caches(parsed, {"stub": "sha256-bound"})
 
     def runtime(config: dict[str, object], cache: _Caches) -> _DualRuntime:
@@ -253,7 +264,7 @@ def _dependencies(
         return value
 
     return module.RunnerDependencies(
-        dataset_factory=lambda config: _Dataset(),
+        dataset_factory=dataset,
         cache_loader_factory=caches,
         runtime_factory=runtime,
         provenance_factory=lambda: provenance or {"repository_commit": "a" * 40},
@@ -351,6 +362,33 @@ def test_runtime_factory_receives_only_explicit_algorithm_whitelist(tmp_path: Pa
         "stage3_lineage_commit",
     }
     assert set(received).isdisjoint(forbidden)
+
+
+def test_dataset_and_cache_factories_receive_only_exact_allowlist_views(
+    tmp_path: Path,
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config = _materialize_config(module, tmp_path)
+    dependencies, holder = _dependencies(module)
+    module.run(config, tmp_path / "run", dependencies=dependencies)
+    assert set(holder["dataset_config"]) == module._DATASET_CONFIG_KEYS
+    assert set(holder["cache_config"]) == module._CACHE_CONFIG_KEYS
+    forbidden = {
+        "occlusion_target_manifest",
+        "occlusion_target_manifest_sha256",
+        "evaluation_checkpoint_frames",
+        "evaluation_checkpoint_frames_sha256",
+        "schedule_manifest",
+        "dataset_root",
+        "protocol_id",
+        "method_id",
+        "algorithm_hash",
+    }
+    assert set(holder["cache_config"]).isdisjoint(forbidden)
+    assert set(holder["dataset_config"]).isdisjoint(
+        forbidden - {"schedule_manifest", "dataset_root"}
+    )
 
 
 @pytest.mark.parametrize(
@@ -466,6 +504,87 @@ def test_checkpoint_inventory_rejects_late_unexpected_artifact(
     with pytest.raises(ValueError, match="inventory"):
         module.run(config, output, dependencies=_dependencies(module)[0])
     assert not output.exists()
+
+
+def test_publication_inventory_rejects_late_empty_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config = _materialize_config(module, tmp_path)
+    original_write = module._write_json
+
+    def inject(path: Path, value: object) -> None:
+        original_write(path, value)
+        if path.name == "run_manifest.json":
+            checkpoint = next((path.parent / "checkpoints").glob("*/temporal_current"))
+            (checkpoint / "unexpected-empty-dir").mkdir()
+
+    monkeypatch.setattr(module, "_write_json", inject)
+    output = tmp_path / "published" / "run"
+    with pytest.raises(ValueError, match="inventory"):
+        module.run(config, output, dependencies=_dependencies(module)[0])
+    assert not output.exists()
+
+
+def test_environment_schema_and_production_authority_are_complete(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    invalid = json.loads(json.dumps(TEST_ENVIRONMENT))
+    invalid["libraries"]["extra"] = "1"
+    with pytest.raises(ValueError):
+        module._validate_environment(invalid)
+    monkeypatch.setattr(
+        module,
+        "_production_provenance",
+        lambda: {
+            "hostname": "host",
+            "platform": "platform",
+            "machine": "machine",
+            "cuda_visible_devices": "2",
+            "torch_cuda_version": "12.4",
+            "cudnn_version": 90100,
+            "nvcc_version": ["Cuda compilation tools, release 12.4"],
+            "gpu_inventory": ["2, NVIDIA H100, 550.54"],
+            "library_versions": {
+                "numpy": "2.0",
+                "open3d": "0.18",
+                "scipy": "1.14",
+                "torch": "2.5",
+                "pillow": "11.0",
+            },
+        },
+    )
+    environment = module._production_environment()
+    assert set(environment) == module.V2_FREEZE_ENVIRONMENT_KEYS
+    assert set(environment["libraries"]) == {
+        "numpy",
+        "open3d",
+        "scipy",
+        "torch",
+        "pillow",
+    }
+    assert environment["gpu"] == ["2, NVIDIA H100, 550.54"]
+    assert environment["cuda_visible_devices"] == "2"
+    assert environment["cuda"] == [
+        "torch_cuda=12.4",
+        "cudnn=90100",
+        "nvcc=Cuda compilation tools, release 12.4",
+    ]
+
+
+def test_production_environment_smoke_has_complete_current_schema() -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    environment = module._validate_environment(module._production_environment())
+    assert set(environment) == module.V2_FREEZE_ENVIRONMENT_KEYS
+    assert set(environment["libraries"]) == module._ENVIRONMENT_LIBRARY_KEYS
+    assert environment["gpu"]
+    assert environment["cuda"][0].startswith("torch_cuda=")
+    assert environment["cuda"][1].startswith("cudnn=")
+    assert all(item.startswith("nvcc=") for item in environment["cuda"][2:])
 
 
 def test_compact_checkpoint_objects_are_released_between_checkpoints(
@@ -980,6 +1099,8 @@ def test_formal_freeze_top_level_objects_are_exact_before_output_creation(
         "environment_missing",
         "environment_malformed",
         "environment_mismatch",
+        "environment_gpu_mismatch",
+        "environment_cuda_mismatch",
         "commands_empty",
         "models_missing",
         "models_empty",
@@ -1029,6 +1150,10 @@ def test_complete_formal_evidence_is_strict_and_bound_before_output_creation(
         payload["environment"]["cuda"] = []
     elif mutation == "environment_mismatch":
         payload["environment"]["libraries"]["numpy"] = "999"
+    elif mutation == "environment_gpu_mismatch":
+        payload["environment"]["gpu"] = ["other-gpu"]
+    elif mutation == "environment_cuda_mismatch":
+        payload["environment"]["cuda"] = ["other-cuda"]
     elif mutation == "commands_empty":
         payload["commands"]["mapping"] = []
     elif mutation == "models_missing":
