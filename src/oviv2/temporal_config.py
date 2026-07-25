@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping
 from dataclasses import dataclass, fields
+from enum import Enum
 from numbers import Real
 
 
@@ -53,11 +54,92 @@ class TemporalGeometryConfig:
     maximum_motion_m: float
 
 
+class ExecutionProfile(Enum):
+    A0 = (
+        "a0",
+        "v1_native",
+        "v1_cumulative",
+        "v1_cumulative",
+        "v1_native",
+        "none",
+    )
+    A1 = (
+        "a1",
+        "probabilistic_hysteresis",
+        "v1_cumulative",
+        "v1_cumulative",
+        "v1_identity",
+        "none",
+    )
+    A2 = (
+        "a2",
+        "probabilistic_hysteresis",
+        "object_submap",
+        "v1_cumulative",
+        "active_uncertain",
+        "translation",
+    )
+    A3 = (
+        "a3",
+        "probabilistic_hysteresis",
+        "object_submap",
+        "masked_temporal",
+        "active_uncertain",
+        "translation",
+    )
+    A4 = (
+        "a4",
+        "probabilistic_hysteresis",
+        "object_submap",
+        "masked_temporal",
+        "dormant_reid",
+        "gated_icp",
+    )
+
+    @property
+    def profile_id(self) -> str:
+        return self.value[0]
+
+    @property
+    def lifecycle_mode(self) -> str:
+        return self.value[1]
+
+    @property
+    def geometry_mode(self) -> str:
+        return self.value[2]
+
+    @property
+    def background_mode(self) -> str:
+        return self.value[3]
+
+    @property
+    def association_mode(self) -> str:
+        return self.value[4]
+
+    @property
+    def motion_mode(self) -> str:
+        return self.value[5]
+
+    @classmethod
+    def from_id(cls, profile_id: str) -> ExecutionProfile:
+        if not isinstance(profile_id, str):
+            raise TypeError("execution_profile must be a string")
+        for profile in cls:
+            if profile.profile_id == profile_id:
+                return profile
+        raise ValueError(f"execution_profile has unknown value: {profile_id!r}")
+
+
 @dataclass(frozen=True)
 class TemporalReadoutConfig:
     lifecycle: TemporalLifecycleConfig
     association: TemporalAssociationConfig
     geometry: TemporalGeometryConfig
+    execution_profile: ExecutionProfile = ExecutionProfile.A4
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.execution_profile, ExecutionProfile):
+            raise TypeError("execution_profile must be an ExecutionProfile")
 
 
 def _require_mapping(value: object, path: str) -> Mapping[str, object]:
@@ -306,12 +388,15 @@ def temporal_config_from_json(config: Mapping[str, object]) -> TemporalReadoutCo
     _require_exact_keys(raw, {"temporal_readout"}, "config")
     temporal = _require_mapping(raw["temporal_readout"], "temporal_readout")
     _require_exact_keys(
-        temporal, {"lifecycle", "association", "geometry"}, "temporal_readout"
+        temporal,
+        {"execution_profile", "lifecycle", "association", "geometry"},
+        "temporal_readout",
     )
     result = TemporalReadoutConfig(
         lifecycle=_parse_lifecycle(temporal["lifecycle"]),
         association=_parse_association(temporal["association"]),
         geometry=_parse_geometry(temporal["geometry"]),
+        execution_profile=ExecutionProfile.from_id(temporal["execution_profile"]),
     )
     if (
         result.lifecycle.visibility_depth_tolerance_m
@@ -333,6 +418,7 @@ def temporal_config_to_json(config: TemporalReadoutConfig) -> dict[str, object]:
         raise TypeError("config must be a TemporalReadoutConfig")
     return {
         "temporal_readout": {
+            "execution_profile": config.execution_profile.profile_id,
             "lifecycle": _dataclass_mapping(config.lifecycle),
             "association": _dataclass_mapping(config.association),
             "geometry": _dataclass_mapping(config.geometry),

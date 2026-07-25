@@ -7,6 +7,7 @@ from dataclasses import FrozenInstanceError
 import pytest
 
 from src.oviv2.temporal_config import (
+    ExecutionProfile,
     TemporalReadoutConfig,
     temporal_config_from_json,
     temporal_config_to_json,
@@ -17,6 +18,7 @@ from src.oviv2.temporal_config import (
 def valid_config() -> dict[str, object]:
     return {
         "temporal_readout": {
+            "execution_profile": "a4",
             "lifecycle": {
                 "initial_log_odds": 0.0,
                 "present_log_likelihood": 1.2,
@@ -77,6 +79,125 @@ def test_valid_config_round_trips_and_is_frozen(valid_config: dict[str, object])
     assert temporal_config_from_json(temporal_config_to_json(parsed)) == parsed
     with pytest.raises(FrozenInstanceError):
         parsed.lifecycle.initial_log_odds = 1.0  # type: ignore[misc]
+
+
+@pytest.mark.parametrize(
+    "profile_id,expected_axes",
+    [
+        (
+            "a0",
+            (
+                "v1_native",
+                "v1_cumulative",
+                "v1_cumulative",
+                "v1_native",
+                "none",
+            ),
+        ),
+        (
+            "a1",
+            (
+                "probabilistic_hysteresis",
+                "v1_cumulative",
+                "v1_cumulative",
+                "v1_identity",
+                "none",
+            ),
+        ),
+        (
+            "a2",
+            (
+                "probabilistic_hysteresis",
+                "object_submap",
+                "v1_cumulative",
+                "active_uncertain",
+                "translation",
+            ),
+        ),
+        (
+            "a3",
+            (
+                "probabilistic_hysteresis",
+                "object_submap",
+                "masked_temporal",
+                "active_uncertain",
+                "translation",
+            ),
+        ),
+        (
+            "a4",
+            (
+                "probabilistic_hysteresis",
+                "object_submap",
+                "masked_temporal",
+                "dormant_reid",
+                "gated_icp",
+            ),
+        ),
+    ],
+)
+def test_execution_profiles_have_canonical_derived_axes(
+    valid_config: dict[str, object],
+    profile_id: str,
+    expected_axes: tuple[str, str, str, str, str],
+) -> None:
+    valid_config["temporal_readout"]["execution_profile"] = profile_id  # type: ignore[index]
+
+    profile = temporal_config_from_json(valid_config).execution_profile
+
+    assert profile.profile_id == profile_id
+    assert (
+        profile.lifecycle_mode,
+        profile.geometry_mode,
+        profile.background_mode,
+        profile.association_mode,
+        profile.motion_mode,
+    ) == expected_axes
+    assert ExecutionProfile.from_id(profile_id) is profile
+    with pytest.raises(AttributeError):
+        profile.motion_mode = "custom"  # type: ignore[misc]
+
+
+def test_direct_config_construction_defaults_to_safe_a4(
+    valid_config: dict[str, object],
+) -> None:
+    parsed = temporal_config_from_json(valid_config)
+
+    direct = TemporalReadoutConfig(
+        lifecycle=parsed.lifecycle,
+        association=parsed.association,
+        geometry=parsed.geometry,
+    )
+
+    assert direct.execution_profile is ExecutionProfile.A4
+
+
+@pytest.mark.parametrize("value", ["a5", "A4", 4, None, {"id": "a4"}])
+def test_execution_profile_rejects_unknown_or_non_string_values(
+    valid_config: dict[str, object], value: object
+) -> None:
+    valid_config["temporal_readout"]["execution_profile"] = value  # type: ignore[index]
+
+    expected_error = TypeError if not isinstance(value, str) else ValueError
+    with pytest.raises(expected_error, match="execution_profile"):
+        temporal_config_from_json(valid_config)
+
+
+def test_execution_profile_is_required_in_json(valid_config: dict[str, object]) -> None:
+    del valid_config["temporal_readout"]["execution_profile"]  # type: ignore[index]
+
+    with pytest.raises(ValueError, match="missing.*execution_profile"):
+        temporal_config_from_json(valid_config)
+
+
+def test_execution_profile_serializes_as_canonical_id(
+    valid_config: dict[str, object],
+) -> None:
+    valid_config["temporal_readout"]["execution_profile"] = "a2"  # type: ignore[index]
+
+    serialized = temporal_config_to_json(temporal_config_from_json(valid_config))
+
+    assert serialized["temporal_readout"]["execution_profile"] == "a2"  # type: ignore[index]
 
 
 @pytest.mark.parametrize(
