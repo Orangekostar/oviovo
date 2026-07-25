@@ -1,0 +1,578 @@
+#!/usr/bin/env python3
+"""Package one immutable Apartment A0-A4 dual-readout candidate result."""
+
+from __future__ import annotations
+
+import argparse
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
+import hashlib
+import json
+import math
+import os
+from pathlib import Path
+import secrets
+import stat
+from typing import Any
+
+from scripts.evaluation.evaluate_oviv2_tesse_occlusion import canonical_algorithm_hash
+from scripts.evaluation.run_oviv2_tesse_dual_readout_search import (
+    input_binding_values_sha256,
+    non_temporal_config_sha256,
+)
+
+
+MANIFEST_ID = "oviv2-tesse-dual-readout-candidate-result-v1"
+MAX_JSON_BYTES = 8 * 1024 * 1024
+SOURCE_NAMES = (
+    "search_manifest", "search_status", "candidate_config", "run_manifest",
+    "common_v2_summary", "temporal_occlusion_result", "official_metrics",
+    "t1_exact_evidence", "determinism_evidence",
+)
+METRIC_NAMES = (
+    "current_miou", "object_f1", "ghost_rate", "background_f5_cm",
+    "recovery_frames", "dynamic_f1", "change_f1", "runtime_seconds",
+)
+OPTIONAL_REASONS = {"not_reported_by_official_evaluator", "not_applicable"}
+RESULT_KEYS = {
+    "schema_version", "manifest_id", "candidate_id", "scene", "status",
+    "sources", "bindings", "run_identity", "gates", "metrics",
+}
+
+
+def _canonical(value: object) -> bytes:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
+
+
+def _strict_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON key: {key}")
+        result[key] = value
+    return result
+
+
+def _witness(value: os.stat_result) -> tuple[int, int, int, int, int]:
+    return value.st_dev, value.st_ino, value.st_size, value.st_mtime_ns, value.st_ctime_ns
+
+
+def _reject_symlink_components(path: Path, label: str) -> None:
+    absolute = Path(os.path.abspath(path))
+    current = Path(absolute.anchor)
+    for part in absolute.parts[1:]:
+        current /= part
+        try:
+            mode = os.lstat(current).st_mode
+        except FileNotFoundError:
+            return
+        if stat.S_ISLNK(mode):
+            raise ValueError(f"{label} path contains a symlink: {current}")
+
+
+@dataclass(frozen=True)
+class Snapshot:
+    path: Path
+    payload: dict[str, Any]
+    data: bytes
+    identity: tuple[int, int, int, int, int]
+
+    @property
+    def record(self) -> dict[str, Any]:
+        return {"path": str(self.path), "sha256": hashlib.sha256(self.data).hexdigest(), "byte_count": len(self.data)}
+
+    def revalidate(self) -> None:
+        try:
+            current = os.stat(self.path, follow_symlinks=False)
+        except OSError as exc:
+            raise ValueError(f"source changed before publication: {self.path}") from exc
+        if _witness(current) != self.identity or not stat.S_ISREG(current.st_mode):
+            raise ValueError(f"source changed before publication: {self.path}")
+        descriptor = os.open(self.path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
+        try:
+            data = _read_bounded(descriptor, self.path.name)
+            after = os.fstat(descriptor)
+        finally:
+            os.close(descriptor)
+        if _witness(after) != self.identity or data != self.data:
+            raise ValueError(f"source changed before publication: {self.path}")
+
+
+def _read_bounded(descriptor: int, label: str) -> bytes:
+    chunks: list[bytes] = []
+    total = 0
+    while total <= MAX_JSON_BYTES:
+        chunk = os.read(descriptor, min(1024 * 1024, MAX_JSON_BYTES + 1 - total))
+        if not chunk:
+            break
+        chunks.append(chunk)
+        total += len(chunk)
+    if total > MAX_JSON_BYTES:
+        raise ValueError(f"{label} is too large")
+    return b"".join(chunks)
+
+
+def _snapshot(path: str | Path, label: str, *, parse_json: bool = True) -> Snapshot:
+    absolute = Path(path).absolute()
+    _reject_symlink_components(absolute, label)
+    try:
+        before_path = os.lstat(absolute)
+    except OSError as exc:
+        raise FileNotFoundError(f"missing {label}: {absolute}") from exc
+    if not stat.S_ISREG(before_path.st_mode):
+        raise ValueError(f"{label} must be a regular file")
+    descriptor = os.open(absolute, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
+    try:
+        before = os.fstat(descriptor)
+        if not stat.S_ISREG(before.st_mode):
+            raise ValueError(f"{label} must be a regular file")
+        data = _read_bounded(descriptor, label)
+        after = os.fstat(descriptor)
+    finally:
+        os.close(descriptor)
+    current = os.stat(absolute, follow_symlinks=False)
+    if _witness(before_path) != _witness(before) or _witness(before) != _witness(after) or _witness(after) != _witness(current):
+        raise ValueError(f"{label} changed while it was read")
+    payload: dict[str, Any] = {}
+    if parse_json:
+        try:
+            parsed = json.loads(
+                data.decode("utf-8"), object_pairs_hook=_strict_object,
+                parse_constant=lambda token: (_ for _ in ()).throw(ValueError(f"non-finite JSON constant: {token}")),
+            )
+        except UnicodeDecodeError as exc:
+            raise ValueError(f"{label} is not UTF-8") from exc
+        if not isinstance(parsed, dict):
+            raise ValueError(f"{label} root must be an object")
+        payload = parsed
+    return Snapshot(absolute, payload, data, _witness(after))
+
+
+def _sha(value: object, label: str, lengths: set[int] = {64}) -> str:
+    if not isinstance(value, str) or len(value) not in lengths or any(c not in "0123456789abcdef" for c in value):
+        raise ValueError(f"{label} must be a lowercase hash")
+    return value
+
+
+def _record_matches(record: object, snap: Snapshot, label: str, *, path_required: bool = False, base: Path | None = None) -> None:
+    if not isinstance(record, Mapping):
+        raise ValueError(f"{label} source record is invalid")
+    if record.get("sha256") != hashlib.sha256(snap.data).hexdigest():
+        raise ValueError(f"{label} source record SHA256 mismatch")
+    if "byte_count" in record and record["byte_count"] != len(snap.data):
+        raise ValueError(f"{label} source record byte_count mismatch")
+    if path_required or "path" in record:
+        raw = record.get("path")
+        if not isinstance(raw, str) or not raw:
+            raise ValueError(f"{label} source record path is invalid")
+        resolved = Path(raw) if Path(raw).is_absolute() else (base or snap.path.parent) / raw
+        if resolved.absolute() != snap.path:
+            raise ValueError(f"{label} source record path mismatch")
+
+
+def _finite(value: object, name: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"metric {name} must be numeric")
+    result = float(value)
+    if not math.isfinite(result):
+        raise ValueError(f"metric {name} is non-finite")
+    bounded = name not in {"recovery_frames", "runtime_seconds"}
+    if bounded and not 0.0 <= result <= 1.0:
+        raise ValueError(f"metric {name} must be in [0, 1]")
+    if not bounded and result < 0.0:
+        raise ValueError(f"metric {name} must be nonnegative")
+    return result
+
+
+def _same_content_record(left: object, right: object, label: str) -> None:
+    if not isinstance(left, Mapping) or not isinstance(right, Mapping):
+        raise ValueError(f"{label} record is missing")
+    if {key: left.get(key) for key in ("sha256", "byte_count")} != {
+        key: right.get(key) for key in ("sha256", "byte_count")
+    }:
+        raise ValueError(f"{label} content binding mismatch")
+
+
+def _compare_source_indexes(run_index: Mapping[str, Any], exported: Mapping[str, Any], temporal: Mapping[str, Any]) -> None:
+    for name, expected in (("dataset", "TESSE-CD"), ("method", "OVIV2"), ("scene", "apartment")):
+        if run_index.get(name) != expected or exported.get(name) != expected or temporal.get(name) != expected:
+            raise ValueError("common-v2 temporal source identity differs from candidate run")
+    _same_content_record(run_index.get("schedule"), exported.get("schedule"), "export schedule")
+    run_checkpoints = run_index.get("checkpoints")
+    export_checkpoints = exported.get("checkpoints")
+    temporal_checkpoints = temporal.get("checkpoints")
+    if not isinstance(run_checkpoints, list) or not isinstance(export_checkpoints, list) or not isinstance(temporal_checkpoints, list):
+        raise ValueError("common-v2 temporal checkpoint inventories are missing")
+    if len(run_checkpoints) != len(export_checkpoints) or len(run_checkpoints) != len(temporal_checkpoints):
+        raise ValueError("common-v2 temporal checkpoint inventory differs from candidate run")
+    identity = ("frame_index", "timestamp_ns", "consumed_through_frame", "consumed_through_frame_exclusive")
+    for run_item, export_item, temporal_item in zip(run_checkpoints, export_checkpoints, temporal_checkpoints):
+        if not all(isinstance(item, Mapping) for item in (run_item, export_item, temporal_item)):
+            raise ValueError("common-v2 temporal checkpoint is invalid")
+        values = [tuple(item.get(key) for key in identity) for item in (run_item, export_item, temporal_item)]
+        if values[0] != values[1] or values[0] != values[2]:
+            raise ValueError("common-v2 temporal checkpoint identity differs from candidate run")
+        frame = run_item.get("frame_index")
+        if type(frame) is not int or run_item.get("consumed_through_frame") != frame or run_item.get("consumed_through_frame_exclusive") != frame + 1:
+            raise ValueError("common-v2 temporal checkpoint is non-causal")
+        for role in ("checkpoint_status", "snapshot", "entities"):
+            _same_content_record(run_item.get(role), export_item.get(role), f"export checkpoint {role}")
+        for role in ("snapshot", "entities"):
+            _same_content_record(run_item.get(role), temporal_item.get(role), f"temporal checkpoint {role}")
+
+
+def _metric(value: object, name: str, source: str) -> dict[str, Any]:
+    return {"available": True, "value": _finite(value, name), "reason": "available", "source": source}
+
+
+def _gate_evidence(snapshot: Snapshot, name: str, run: Mapping[str, Any]) -> None:
+    root = snapshot.payload
+    evidence = root.get("deterministic_evidence")
+    if set(root) != {"schema_version", "manifest_id", "deterministic_evidence", "receipt"} or root.get("schema_version") != 1 or root.get("manifest_id") != "oviv2_dual_readout_development_gates_v1" or not isinstance(evidence, Mapping):
+        raise ValueError(f"{name} evidence identity mismatch")
+    if evidence.get("code_commit") != run["code_commit"] or not isinstance(evidence.get("code_tree"), str):
+        raise ValueError(f"{name} evidence commit/tree differs from run code")
+    protected = evidence.get("protected_files")
+    tests = evidence.get("test_sources")
+    gate = evidence.get("gates", {}).get(name) if isinstance(evidence.get("gates"), Mapping) else None
+    if not isinstance(protected, list) or not protected or not isinstance(tests, list) or not tests or not isinstance(gate, Mapping):
+        raise ValueError(f"{name} evidence records are missing")
+    if gate.get("scope") != "shared_code_and_A0-A4_fixture" or gate.get("status") != "PASS":
+        raise ValueError(f"{name} evidence gate did not PASS")
+    if gate.get("code_commit") != evidence["code_commit"] or gate.get("code_tree") != evidence["code_tree"] or gate.get("protected_records") != protected:
+        raise ValueError(f"{name} evidence protected hashes differ from run code evidence")
+    commands = gate.get("test_records")
+    if not isinstance(commands, list) or not commands:
+        raise ValueError(f"{name} evidence has no named test record")
+    for command in commands:
+        if not isinstance(command, Mapping) or command.get("returncode") != 0 or not isinstance(command.get("argv"), list) or not command["argv"]:
+            raise ValueError(f"{name} evidence test did not PASS")
+        _sha(command.get("stdout_sha256"), f"{name} stdout")
+        _sha(command.get("stderr_sha256"), f"{name} stderr")
+        if type(command.get("stdout_bytes")) is not int or type(command.get("stderr_bytes")) is not int:
+            raise ValueError(f"{name} evidence test byte counts are invalid")
+
+
+def _derive(candidate_id: str, snapshots: Mapping[str, Snapshot], *, auxiliary: list[Snapshot] | None = None) -> dict[str, Any]:
+    if set(snapshots) != set(SOURCE_NAMES):
+        raise ValueError("source set is not exact")
+    witnesses = auxiliary if auxiliary is not None else []
+
+    def take(path: str | Path, label: str, *, parse_json: bool = True) -> Snapshot:
+        snapshot = _snapshot(path, label, parse_json=parse_json)
+        witnesses.append(snapshot)
+        return snapshot
+    manifest = snapshots["search_manifest"].payload
+    if not (manifest.get("schema_version") == 1 and manifest.get("manifest_id") == "oviv2-tesse-dual-readout-search-v1"
+            and manifest.get("dataset") == "TESSE-CD" and manifest.get("method_id") == "OVIV2"
+            and manifest.get("protocol_id") == "oviv2-tessecd-v2" and manifest.get("development_scene") == "apartment"):
+        raise ValueError("search manifest identity mismatch")
+    candidates = manifest.get("candidates")
+    if not isinstance(candidates, list) or len({item.get("candidate_id") for item in candidates if isinstance(item, Mapping)}) != len(candidates):
+        raise ValueError("search manifest candidates are invalid")
+    declaration = next((item for item in candidates if isinstance(item, Mapping) and item.get("candidate_id") == candidate_id), None)
+    if declaration is None or candidate_id not in {"a0", "a1", "a2", "a3", "a4"}:
+        raise ValueError("candidate is not declared in A0-A4 manifest")
+
+    status = snapshots["search_status"].payload
+    if status.get("status") != "PASS" or not isinstance(status.get("candidates"), list):
+        raise ValueError("search status is not PASS")
+    manifest_record = status.get("manifest")
+    _record_matches(manifest_record, snapshots["search_manifest"], "search manifest", path_required=True)
+    records = [item for item in status["candidates"] if isinstance(item, Mapping) and item.get("candidate_id") == candidate_id]
+    if len(records) != 1:
+        raise ValueError("candidate is absent or duplicated in search status")
+    record = records[0]
+    if record.get("status") != "PASS" or record.get("exit_code") != 0 or record.get("scene") != "apartment":
+        raise ValueError("candidate search status is not an Apartment PASS")
+    config_snap = snapshots["candidate_config"]
+    if Path(str(record.get("config_path"))).absolute() != config_snap.path:
+        raise ValueError("search status config path mismatch")
+    config = config_snap.payload
+    canonical_config_hash = hashlib.sha256(_canonical(config)).hexdigest()
+    if record.get("config_sha256") != canonical_config_hash:
+        raise ValueError("search status config hash mismatch")
+    _record_matches(record.get("config_file"), config_snap, "search status config", path_required=True)
+    if config.get("scene") != "apartment" or config.get("temporal_readout") != declaration.get("temporal_readout"):
+        raise ValueError("candidate config does not match Apartment manifest declaration")
+    algorithm_hash = config.get("algorithm_hash")
+    if algorithm_hash != canonical_algorithm_hash(config) or record.get("algorithm_hash") != algorithm_hash:
+        raise ValueError("candidate algorithm hash mismatch")
+    non_temporal = non_temporal_config_sha256(config)
+    if record.get("non_temporal_config_sha256") != non_temporal:
+        raise ValueError("candidate non-temporal binding mismatch")
+    if record.get("input_binding_values_sha256") != input_binding_values_sha256(config):
+        raise ValueError("candidate input binding values hash mismatch")
+    for stream in ("stdout", "stderr"):
+        raw_path = record.get(f"{stream}_path")
+        if not isinstance(raw_path, str):
+            raise ValueError(f"search status {stream} path is missing")
+        stream_snap = take(raw_path, f"candidate {stream}", parse_json=False)
+        _record_matches(record.get(f"{stream}_file"), stream_snap, f"candidate {stream}", path_required=True)
+    runtime = _finite(record.get("runtime_seconds"), "runtime_seconds")
+
+    run_snap = snapshots["run_manifest"]
+    run = run_snap.payload
+    run_root = run_snap.path.parent
+    if Path(str(record.get("output_root"))).absolute() != run_root:
+        raise ValueError("search status output root mismatch")
+    if not (run.get("schema_version") == 2 and run.get("protocol_id") == "oviv2-tessecd-v2"
+            and run.get("dataset") == "TESSE-CD" and run.get("method_id") == "OVIV2"
+            and run.get("scene") == "apartment" and run.get("mode") == "dual_readout_causal_checkpoints"):
+        raise ValueError("candidate run manifest identity mismatch")
+    _record_matches(run.get("config"), config_snap, "run config")
+    normalized_record = run.get("normalized_run_config")
+    if not isinstance(normalized_record, Mapping) or not isinstance(normalized_record.get("path"), str):
+        raise ValueError("normalized run config record is invalid")
+    normalized_snap = take(run_root / normalized_record["path"], "normalized run config")
+    _record_matches(normalized_record, normalized_snap, "normalized run config", path_required=True, base=run_root)
+    if normalized_snap.payload != config:
+        raise ValueError("normalized run config differs from candidate config")
+    if run.get("algorithm_hash") != algorithm_hash or not isinstance(run.get("source_bindings"), Mapping) or not run["source_bindings"]:
+        raise ValueError("run algorithm/input/source bindings differ from candidate")
+    _sha(run.get("input_sha256"), "run input_sha256")
+    _sha(run.get("code_commit"), "run code_commit", {40, 64})
+    index_record = run.get("occlusion_checkpoint_index")
+    if not isinstance(index_record, Mapping) or not isinstance(index_record.get("path"), str):
+        raise ValueError("run occlusion index record is invalid")
+    index_snap = take(run_root / index_record["path"], "run occlusion index")
+    _record_matches(index_record, index_snap, "run occlusion index", path_required=True, base=run_root)
+    index = index_snap.payload
+    identity_fields = ("protocol_id", "dataset", "method_id", "scene", "algorithm_hash", "input_sha256", "code_commit", "source_bindings")
+    if any(index.get(name) != run.get(name) for name in identity_fields):
+        raise ValueError("run occlusion index identity mismatch")
+    checkpoints = index.get("checkpoints")
+    if not isinstance(checkpoints, list) or not checkpoints:
+        raise ValueError("run occlusion index has no causal checkpoints")
+    for item in checkpoints:
+        frame = item.get("frame_index") if isinstance(item, Mapping) else None
+        if type(frame) is not int or item.get("consumed_through_frame") != frame or item.get("consumed_through_frame_exclusive") != frame + 1:
+            raise ValueError("run checkpoint violates causal boundary")
+    source_index_record = run.get("source_index")
+    if not isinstance(source_index_record, Mapping) or not isinstance(source_index_record.get("path"), str):
+        raise ValueError("run source_index record is invalid")
+    run_source_snap = take(run_root / source_index_record["path"], "run source index")
+    _record_matches(source_index_record, run_source_snap, "run source index", path_required=True, base=run_root)
+
+    common = snapshots["common_v2_summary"].payload
+    if not (common.get("manifest_id") == "tesse_cd_common_v2_scene_summary" and common.get("status") == "PASS"
+            and common.get("dataset") == "TESSE-CD" and common.get("protocol") == "tesse_cd_common_v2"
+            and common.get("method") == "OVIV2" and common.get("scene") == "apartment"):
+        raise ValueError("common-v2 summary is not a PASS OVIV2 Apartment result")
+    temporal_record = common.get("sources", {}).get("temporal_index") if isinstance(common.get("sources"), Mapping) else None
+    if not isinstance(temporal_record, Mapping) or not isinstance(temporal_record.get("path"), str):
+        raise ValueError("common-v2 temporal source is missing")
+    temporal_snap = take(temporal_record["path"], "common-v2 temporal source")
+    _record_matches(temporal_record, temporal_snap, "common-v2 temporal source", path_required=True)
+    temporal = temporal_snap.payload
+    export_record = temporal.get("sources", {}).get("source_index") if isinstance(temporal.get("sources"), Mapping) else None
+    if not isinstance(export_record, Mapping) or not isinstance(export_record.get("path"), str):
+        raise ValueError("common-v2 temporal export source_index is missing")
+    export_path = Path(export_record["path"])
+    if not export_path.is_absolute():
+        export_path = temporal_snap.path.parent / export_path
+    export_snap = take(export_path, "exported temporal source index")
+    _record_matches(export_record, export_snap, "exported temporal source index", path_required=True, base=temporal_snap.path.parent)
+    _compare_source_indexes(run_source_snap.payload, export_snap.payload, temporal)
+
+    occlusion = snapshots["temporal_occlusion_result"].payload
+    if occlusion.get("format") != "oviv2_temporal_compact_v1":
+        raise ValueError("temporal occlusion result format mismatch")
+    input_bindings = occlusion.get("input_bindings")
+    indexes = input_bindings.get("indexes") if isinstance(input_bindings, Mapping) else None
+    if not isinstance(indexes, list) or len(indexes) != 1:
+        raise ValueError("temporal occlusion input index is not exact")
+    _record_matches(indexes[0], index_snap, "temporal occlusion index")
+    for field in ("scene", "algorithm_hash", "input_sha256", "code_commit", "source_bindings"):
+        if field in occlusion and occlusion[field] != run[field]:
+            raise ValueError(f"temporal occlusion {field} does not link to run")
+
+    official = snapshots["official_metrics"].payload
+    if not (official.get("status") == "PASS" and official.get("dataset") == "TESSE-CD"
+            and official.get("scene") == "apartment" and official.get("method") == "OVIV2"
+            and official.get("mode") == "causal_checkpoints"):
+        raise ValueError("official metrics identity mismatch")
+    official_identity = official.get("run_identity")
+    if not isinstance(official_identity, Mapping) or official_identity.get("config_sha256") != canonical_config_hash:
+        raise ValueError("official metrics run_identity/config mismatch")
+    official_sources = official.get("sources")
+    if not isinstance(official_sources, list) or not official_sources:
+        raise ValueError("official metrics source records are missing")
+    if len({item.get("path") for item in official_sources if isinstance(item, Mapping)}) != len(official_sources):
+        raise ValueError("official metrics source records are duplicated")
+    for position, source_record in enumerate(official_sources):
+        name = str(position)
+        if not isinstance(source_record, Mapping) or not isinstance(source_record.get("path"), str):
+            raise ValueError(f"official source record is invalid: {name}")
+        source_path = Path(source_record["path"])
+        if not source_path.is_absolute():
+            source_path = snapshots["official_metrics"].path.parent / source_path
+        source_snap = take(source_path, f"official source {name}", parse_json=False)
+        _record_matches(source_record, source_snap, f"official source {name}", path_required=True, base=snapshots["official_metrics"].path.parent)
+
+    _gate_evidence(snapshots["t1_exact_evidence"], "t1_exact", run)
+    _gate_evidence(snapshots["determinism_evidence"], "determinism", run)
+    first_evidence = snapshots["t1_exact_evidence"].payload["deterministic_evidence"]
+    second_evidence = snapshots["determinism_evidence"].payload["deterministic_evidence"]
+    for field in ("code_commit", "code_tree", "protected_files", "test_sources"):
+        if first_evidence[field] != second_evidence[field]:
+            raise ValueError("T1 and determinism evidence protected/test hashes differ")
+
+    common_metrics = common.get("metrics")
+    official_metrics = official.get("metrics")
+    if not isinstance(common_metrics, Mapping) or not isinstance(official_metrics, Mapping):
+        raise ValueError("metric source mappings are missing")
+    metrics = {
+        "current_miou": _metric(common_metrics.get("current_miou"), "current_miou", "common_v2_summary"),
+        "object_f1": _metric(official_metrics.get("object_f1"), "object_f1", "official_metrics"),
+        "ghost_rate": _metric(common_metrics.get("ghost_rate"), "ghost_rate", "common_v2_summary"),
+        "background_f5_cm": _metric(common_metrics.get("background_f5"), "background_f5_cm", "common_v2_summary"),
+        "recovery_frames": _metric(common_metrics.get("recovery_frames"), "recovery_frames", "common_v2_summary"),
+        "runtime_seconds": _metric(runtime, "runtime_seconds", "search_status"),
+    }
+    unavailable = official.get("unavailable", {})
+    for name in ("dynamic_f1", "change_f1"):
+        value = official_metrics.get(name)
+        if value is None:
+            reason_value = unavailable.get(name) if isinstance(unavailable, Mapping) else None
+            reason = reason_value.get("reason") if isinstance(reason_value, Mapping) else reason_value
+            if reason not in OPTIONAL_REASONS:
+                raise ValueError(f"optional metric {name} has no enumerated unavailable reason")
+            metrics[name] = {"available": False, "value": None, "reason": reason, "source": "official_metrics"}
+        else:
+            metrics[name] = _metric(value, name, "official_metrics")
+    ordered_metrics = {name: metrics[name] for name in METRIC_NAMES}
+    gates = {
+        "correctness": {"passed": True, "reason": "all_source_and_identity_checks_passed", "source": "derived"},
+        "causality": {"passed": True, "reason": "checkpoint_boundaries_and_temporal_links_validated", "source": "run_manifest"},
+        "determinism": {"passed": True, "reason": "named_determinism_evidence_passed", "source": "determinism_evidence"},
+        "t1_exact": {"passed": True, "reason": "named_t1_exact_evidence_passed", "source": "t1_exact_evidence"},
+    }
+    return {
+        "schema_version": 1, "manifest_id": MANIFEST_ID, "candidate_id": candidate_id,
+        "scene": "apartment", "status": "PASS",
+        "sources": {name: snapshots[name].record for name in SOURCE_NAMES},
+        "bindings": {"candidate": {"declaration": dict(declaration), "config": config},
+            "config_sha256": canonical_config_hash, "non_temporal_config_sha256": non_temporal,
+            "input_hashes": run["source_bindings"]},
+        "run_identity": {name: run[name] for name in ("algorithm_hash", "input_sha256", "code_commit", "source_bindings")},
+        "gates": gates, "metrics": ordered_metrics,
+    }
+
+
+def _publish(path: Path, payload: Mapping[str, Any], snapshots: Sequence[Snapshot]) -> None:
+    output = path.absolute()
+    output.parent.mkdir(parents=True, exist_ok=True)
+    _reject_symlink_components(output.parent, "output parent")
+    parent_fd = os.open(output.parent, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    opened_parent = os.fstat(parent_fd)
+    parent_identity = (opened_parent.st_dev, opened_parent.st_ino)
+
+    def revalidate_parent() -> None:
+        current = os.stat(output.parent, follow_symlinks=False)
+        if stat.S_ISLNK(current.st_mode) or (current.st_dev, current.st_ino) != parent_identity:
+            raise ValueError("output parent changed during publication")
+
+    temporary = f".{output.name}.{secrets.token_hex(12)}.tmp"
+    temp_identity: tuple[int, int] | None = None
+    try:
+        revalidate_parent()
+        try:
+            os.stat(output.name, dir_fd=parent_fd, follow_symlinks=False)
+        except FileNotFoundError:
+            pass
+        else:
+            raise FileExistsError(f"output already exists: {output}")
+        fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644, dir_fd=parent_fd)
+        try:
+            st = os.fstat(fd); temp_identity = (st.st_dev, st.st_ino)
+            data = _canonical(payload) + b"\n"
+            view = memoryview(data)
+            while view:
+                view = view[os.write(fd, view):]
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+        for snapshot in snapshots:
+            snapshot.revalidate()
+        revalidate_parent()
+        os.link(temporary, output.name, src_dir_fd=parent_fd, dst_dir_fd=parent_fd, follow_symlinks=False)
+        os.fsync(parent_fd)
+        revalidate_parent()
+    finally:
+        try:
+            st = os.stat(temporary, dir_fd=parent_fd, follow_symlinks=False)
+            if temp_identity == (st.st_dev, st.st_ino):
+                os.unlink(temporary, dir_fd=parent_fd)
+        except FileNotFoundError:
+            pass
+        os.close(parent_fd)
+
+
+def package_result(*, manifest: str | Path, search_status: str | Path, candidate_id: str,
+                   candidate_config: str | Path, run_manifest: str | Path, common_v2_summary: str | Path,
+                   temporal_occlusion_result: str | Path, official_metrics: str | Path,
+                   t1_exact_evidence: str | Path, determinism_evidence: str | Path,
+                   output: str | Path) -> dict[str, Any]:
+    paths = {"search_manifest": manifest, "search_status": search_status, "candidate_config": candidate_config,
+             "run_manifest": run_manifest, "common_v2_summary": common_v2_summary,
+             "temporal_occlusion_result": temporal_occlusion_result, "official_metrics": official_metrics,
+             "t1_exact_evidence": t1_exact_evidence, "determinism_evidence": determinism_evidence}
+    snapshots = {name: _snapshot(path, name.replace("_", " ")) for name, path in paths.items()}
+    auxiliary: list[Snapshot] = []
+    result = _derive(candidate_id, snapshots, auxiliary=auxiliary)
+    _publish(Path(output), result, [*snapshots.values(), *auxiliary])
+    return result
+
+
+def load_and_revalidate_result(path: str | Path, *, manifest: str | Path | Mapping[str, Any]) -> dict[str, Any]:
+    result_snapshot = _snapshot(path, "candidate result")
+    payload = result_snapshot.payload
+    if set(payload) != RESULT_KEYS or payload.get("manifest_id") != MANIFEST_ID or payload.get("schema_version") != 1:
+        raise ValueError("candidate result schema is not exact")
+    sources = payload.get("sources")
+    if not isinstance(sources, Mapping) or set(sources) != set(SOURCE_NAMES):
+        raise ValueError("candidate result source records are not exact")
+    snapshots: dict[str, Snapshot] = {}
+    for name in SOURCE_NAMES:
+        source_record = sources[name]
+        if not isinstance(source_record, Mapping) or set(source_record) != {"path", "sha256", "byte_count"}:
+            raise ValueError(f"source record is not exact: {name}")
+        snap = _snapshot(source_record.get("path"), f"result source {name}")
+        _record_matches(source_record, snap, name, path_required=True)
+        snapshots[name] = snap
+    if isinstance(manifest, Mapping):
+        if dict(manifest) != snapshots["search_manifest"].payload:
+            raise ValueError("supplied manifest differs from result source")
+    elif Path(manifest).absolute() != snapshots["search_manifest"].path:
+        raise ValueError("supplied manifest path differs from result source")
+    auxiliary: list[Snapshot] = []
+    derived = _derive(str(payload.get("candidate_id")), snapshots, auxiliary=auxiliary)
+    if payload != derived:
+        raise ValueError("candidate result does not match revalidated sources")
+    for snapshot in [*snapshots.values(), *auxiliary]:
+        snapshot.revalidate()
+    result_snapshot.revalidate()
+    return derived
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    for name in SOURCE_NAMES:
+        if name == "search_manifest":
+            parser.add_argument("--manifest", required=True, type=Path)
+        else:
+            parser.add_argument("--" + name.replace("_", "-"), required=True, type=Path)
+    parser.add_argument("--candidate-id", required=True, choices=("a0", "a1", "a2", "a3", "a4"))
+    parser.add_argument("--output", required=True, type=Path)
+    args = parser.parse_args(argv)
+    package_result(manifest=args.manifest, search_status=args.search_status, candidate_id=args.candidate_id,
+                   candidate_config=args.candidate_config, run_manifest=args.run_manifest,
+                   common_v2_summary=args.common_v2_summary, temporal_occlusion_result=args.temporal_occlusion_result,
+                   official_metrics=args.official_metrics, t1_exact_evidence=args.t1_exact_evidence,
+                   determinism_evidence=args.determinism_evidence, output=args.output)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
