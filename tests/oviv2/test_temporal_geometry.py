@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import FrozenInstanceError
 import itertools
+import warnings
 
 import numpy as np
 import pytest
@@ -256,6 +257,27 @@ def test_translation_motion_is_bounded_and_never_calls_icp(
 
     assert not moved.used_icp and moved.object_to_world[0, 3] == 11.0
     assert not rejected.used_icp and rejected.object_to_world[0, 3] == 10.0
+
+
+def test_translation_extreme_finite_centroids_fail_closed_without_warning() -> None:
+    submap = _submap(np.asarray([[0.0, 0.0, 0.0]]))
+    maximum = float(np.finfo(np.float64).max)
+    previous = np.eye(4, dtype=np.float64)
+    previous[0, 3] = -maximum
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        result = estimate_object_translation(
+            submap,
+            np.zeros((1, 3), dtype=np.float64),
+            (maximum, 0.0, 0.0),
+            _config(),
+            previous_object_to_world=previous,
+        )
+
+    np.testing.assert_equal(result.object_to_world, previous)
+    assert not result.used_icp
+
 
 @pytest.mark.parametrize(
     "fitness,rmse,translation",

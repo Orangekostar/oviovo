@@ -455,9 +455,7 @@ def _bounded_translation_motion(
     diagnostic_rmse = float(config.maximum_icp_rmse_m)
     if submap.local_points_xyz.shape[0] == 0 or target.shape[0] == 0:
         return _motion_result(previous_pose, 0.0, diagnostic_rmse, used_icp=False)
-    displacement = float(
-        np.linalg.norm(np.asarray(observed_centroid) - previous_pose[:3, 3])
-    )
+    displacement = math.dist(observed_centroid, previous_pose[:3, 3])
     pose = np.array(previous_pose, dtype=np.float64, copy=True, order="C")
     if math.isfinite(displacement) and displacement <= float(config.maximum_motion_m):
         pose[:3, 3] = observed_centroid
