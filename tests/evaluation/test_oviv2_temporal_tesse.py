@@ -67,6 +67,46 @@ def _snapshot_with_entity(*, semantic_id: int, prototype_dimension: int) -> Temp
     )
 
 
+def _snapshot_with_dormant_entities(count: int) -> TemporalCurrentSnapshot:
+    config = TemporalGeometryConfig(
+        0.1, 4.0, count, 1, 1, max(16, count), 0, 3, 0.5, 0.1, 2.0
+    )
+    empty_submap = ObjectSubmap(
+        reference_centroid_xyz=(0.0, 0.0, 0.0),
+        local_voxel_keys=(),
+        local_points_xyz=np.empty((0, 3), dtype=np.float64),
+        weights=np.empty((0,), dtype=np.float64),
+        last_seen_frame_ids=np.empty((0,), dtype=np.int64),
+    )
+    entities = tuple(
+        TemporalEntityState(
+            lifecycle=TemporalLifecycleState(
+                entity_id=entity_id,
+                lifecycle=TemporalLifecycle.DORMANT,
+                existence_log_odds=-1.0,
+                last_frame_id=0,
+                last_timestamp=0.0,
+                absent_streak=1,
+                absence_view_bins=(0,),
+            ),
+            semantic_probabilities=((1, 1.0),),
+            image_prototype=None,
+            feature_model_id=None,
+            extent_xyz=(1.0, 1.0, 1.0),
+            object_to_world=np.eye(4),
+            submap=empty_submap,
+            first_seen_frame_id=0,
+            last_seen_frame_id=0,
+        )
+        for entity_id in range(1, count + 1)
+    )
+    return TemporalCurrentSnapshot(
+        TemporalSnapshotMetadata("scene", 0, 0.0, 1, 0.1, "b" * 64),
+        entities,
+        TemporalBackgroundVolume(config),
+    )
+
+
 def _files(path: Path) -> set[str]:
     return {item.relative_to(path).as_posix() for item in path.rglob("*") if item.is_file()}
 
@@ -373,4 +413,45 @@ def test_full_publisher_and_loader_reject_oversized_entity_records(tmp_path: Pat
     malicious = b'{"padding":"' + b"x" * (2 * 1024 * 1024) + b'"}\n'
     _rewrite_member(receipt.path, "entities.jsonl", malicious)
     with pytest.raises(ValueError, match="entity record|entities JSON|size limit"):
+        load_temporal_current_checkpoint(receipt.path)
+
+
+def test_full_roundtrip_accepts_large_bounded_diagnostics(tmp_path: Path) -> None:
+    receipt = publish_temporal_current_checkpoint(
+        tmp_path / "checkpoint",
+        _snapshot_with_dormant_entities(400),
+        ("unknown", "chair"),
+        code_commit="c" * 40,
+        input_sha256="d" * 64,
+    )
+    assert (receipt.path / "diagnostics.json").stat().st_size > 64 * 1024
+    loaded, diagnostics = load_temporal_current_checkpoint(receipt.path)
+    assert loaded.entities == []
+    assert len(diagnostics["dormant"]) == 400
+
+
+def test_full_diagnostics_limit_is_symmetric_and_fails_before_publication(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import src.evaluation.oviv2_temporal_tesse as module
+
+    monkeypatch.setattr(module, "_MAX_FULL_DIAGNOSTICS_BYTES", 1024)
+    target = tmp_path / "too-large"
+    with pytest.raises(ValueError, match="diagnostics.*size limit"):
+        publish_temporal_current_checkpoint(
+            target,
+            _snapshot_with_dormant_entities(10),
+            ("unknown", "chair"),
+            code_commit="c" * 40,
+            input_sha256="d" * 64,
+        )
+    assert list(tmp_path.iterdir()) == []
+
+    receipt = publish_temporal_current_checkpoint(
+        tmp_path / "valid", _snapshot(), ("unknown",),
+        code_commit="c" * 40, input_sha256="d" * 64,
+    )
+    malicious = b'{"dormant":[],"uncertain":[],"padding":"' + b"x" * 1024 + b'"}\n'
+    _rewrite_member(receipt.path, "diagnostics.json", malicious)
+    with pytest.raises(ValueError, match="diagnostics.*size limit"):
         load_temporal_current_checkpoint(receipt.path)

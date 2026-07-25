@@ -42,6 +42,7 @@ _MAX_FULL_MEMBER_BYTES = 512 * 1024 * 1024
 _MAX_FULL_JSON_BYTES = 64 * 1024 * 1024
 _MAX_FULL_ENTITY_RECORD_BYTES = 1024 * 1024
 _MAX_FULL_ENTITIES_JSON_BYTES = 64 * 1024 * 1024
+_MAX_FULL_DIAGNOSTICS_BYTES = 64 * 1024 * 1024
 
 
 def _full_capacities(snapshot: TemporalCurrentSnapshot) -> tuple[int, int, int, int]:
@@ -209,6 +210,8 @@ def publish_temporal_current_checkpoint(
     if len(snapshot_bytes) > serialized_byte_limit:
         raise ValueError("full snapshot exceeds serialized byte limit")
     diagnostics_bytes = _diagnostics(snapshot)
+    if len(diagnostics_bytes) > _MAX_FULL_DIAGNOSTICS_BYTES:
+        raise ValueError("full diagnostics exceeds size limit")
     manifest_bytes = _canonical_json({
         "format": TEMPORAL_CURRENT_FORMAT,
         "schema_version": 1,
@@ -490,7 +493,11 @@ def load_temporal_current_checkpoint(checkpoint_dir: str | Path) -> LoadedTempor
             last_seen=last_seen,
             metadata=entity_metadata,
         ))
-    diagnostics = _strict_json(contents["diagnostics.json"], label="diagnostics")
+    diagnostics = _strict_full_json(
+        contents["diagnostics.json"],
+        label="diagnostics",
+        max_bytes=_MAX_FULL_DIAGNOSTICS_BYTES,
+    )
     if set(diagnostics) != {"uncertain", "dormant"}:
         raise ValueError("diagnostics schema is invalid")
     diagnostic_fields = {
