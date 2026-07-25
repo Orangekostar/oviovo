@@ -527,6 +527,64 @@ def test_publication_inventory_rejects_late_empty_directory(
     assert not output.exists()
 
 
+def test_publisher_boundary_empty_directory_is_publication_uncertain(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config = _materialize_config(module, tmp_path)
+    original_publish = module._publish_run
+
+    def inject(staging: Path, destination: Path) -> None:
+        checkpoint = next((staging / "checkpoints").glob("*/temporal_current"))
+        (checkpoint / "late-unexpected-empty-dir").mkdir()
+        original_publish(staging, destination)
+
+    monkeypatch.setattr(module, "_publish_run", inject)
+    output = tmp_path / "published" / "run"
+    with pytest.raises(RunPublicationUncertainError):
+        module.run(config, output, dependencies=_dependencies(module)[0])
+    assert output.is_dir()
+    assert next(output.glob("checkpoints/*/temporal_current/late-unexpected-empty-dir")).is_dir()
+
+
+def test_publisher_boundary_content_change_is_publication_uncertain(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config = _materialize_config(module, tmp_path)
+    original_publish = module._publish_run
+
+    def inject(staging: Path, destination: Path) -> None:
+        (staging / "normalized_run_config.json").write_text(
+            '{"changed":true}\n', encoding="utf-8"
+        )
+        original_publish(staging, destination)
+
+    monkeypatch.setattr(module, "_publish_run", inject)
+    output = tmp_path / "published" / "run"
+    with pytest.raises(RunPublicationUncertainError):
+        module.run(config, output, dependencies=_dependencies(module)[0])
+    published = json.loads((output / "run_manifest.json").read_text())
+    normalized = output / published["normalized_run_config"]["path"]
+    assert published["normalized_run_config"]["sha256"] != _sha256(normalized)
+
+
+def test_publisher_return_without_destination_is_uncertain_and_cleans_staging(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config = _materialize_config(module, tmp_path)
+    monkeypatch.setattr(module, "_publish_run", lambda staging, destination: None)
+    output = tmp_path / "published" / "run"
+    with pytest.raises(RunPublicationUncertainError):
+        module.run(config, output, dependencies=_dependencies(module)[0])
+    assert not output.exists()
+    assert list(output.parent.glob(".run.staging-*")) == []
+
+
 def test_environment_schema_and_production_authority_are_complete(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

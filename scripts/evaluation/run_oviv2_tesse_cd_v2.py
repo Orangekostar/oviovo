@@ -1553,12 +1553,28 @@ def run(
             ) != frozen.repository_state:
                 raise ValueError("repository identity changed during run")
         _assert_staging_identity(staging, staging_identity)
+        if _entry_inventory(staging) != expected_entries:
+            raise ValueError("run publication inventory changed before publication")
+        prepublish_tree = _tree_record(staging, relative_to=staging)
+        _assert_staging_identity(staging, staging_identity)
         _publish_run(staging, destination)
-        published = True
-        if _staging_identity(destination) != staging_identity:
+        try:
+            if _staging_identity(destination) != staging_identity:
+                raise ValueError("published run root identity changed")
+            published = True
+            if _entry_inventory(destination) != expected_entries:
+                raise ValueError("published run inventory changed")
+            if (
+                _tree_record(destination, relative_to=destination)
+                != prepublish_tree
+            ):
+                raise ValueError("published run content changed")
+        except RunPublicationUncertainError:
+            raise
+        except BaseException as exc:
             raise RunPublicationUncertainError(
                 f"published run root identity is uncertain: {destination}"
-            )
+            ) from exc
         return manifest
     except BaseException:
         if not published and staging.exists():
