@@ -482,26 +482,34 @@ def test_a1_neutral_filters_only_dormant_and_preserves_cumulative_background() -
     np.testing.assert_array_equal(result.background_xyz, background)
 
 
-def test_a2_neutral_uses_temporal_objects_and_exact_cumulative_background() -> None:
+@pytest.mark.parametrize(
+    "timestamp_ns", [32354109999, 65304109999, 67804109999]
+)
+def test_a2_neutral_uses_temporal_objects_and_exact_cumulative_background(
+    timestamp_ns: int,
+) -> None:
     import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
 
     background = np.asarray([[1.0, 2.0, 3.0]], dtype=np.float32)
     cumulative = _neutral_fixture(
-        background=background, ids=(1,), timestamp=120_000_000_000.0
+        background=background, ids=(1,), timestamp=float(timestamp_ns)
     )
     temporal = _neutral_fixture(
-        background=np.asarray([[9.0, 9.0, 9.0]], dtype=np.float32), ids=(7,)
+        background=np.asarray([[9.0, 9.0, 9.0]], dtype=np.float32),
+        ids=(7,),
+        timestamp=timestamp_ns / 1_000_000_000,
     )
     result = module._compose_checkpoint_neutral(
         ExecutionProfile.A2,
         cumulative=cumulative,
         reference_state=None,
         temporal=temporal,
+        expected_timestamp_ns=timestamp_ns,
     )
 
     assert [item.metadata["owner_entity_id"] for item in result.entities] == [7]
     np.testing.assert_array_equal(result.background_xyz, background)
-    assert result.timestamp == 120.0
+    assert result.timestamp == timestamp_ns / 1_000_000_000
 
 
 @pytest.mark.parametrize("profile", [ExecutionProfile.A0, ExecutionProfile.A1])

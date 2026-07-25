@@ -1310,6 +1310,7 @@ def _compose_checkpoint_neutral(
     cumulative: MapSnapshot | None,
     reference_state: Any | None,
     temporal: MapSnapshot | None,
+    expected_timestamp_ns: int | None = None,
 ) -> MapSnapshot:
     from src.oviv2.reference_readout import ReferenceReadoutState
     from src.oviv2.temporal_config import ExecutionProfile
@@ -1347,9 +1348,12 @@ def _compose_checkpoint_neutral(
     if profile is ExecutionProfile.A2:
         if not isinstance(cumulative, MapSnapshot):
             raise TypeError("A2 neutral composition requires cumulative snapshot")
+        if type(expected_timestamp_ns) is not int or expected_timestamp_ns <= 0:
+            raise ValueError("A2 neutral composition requires expected_timestamp_ns")
         if (
             temporal.scene_id != cumulative.scene_id
-            or temporal.timestamp * 1_000_000_000 != cumulative.timestamp
+            or cumulative.timestamp != float(expected_timestamp_ns)
+            or temporal.timestamp != expected_timestamp_ns / 1_000_000_000
             or temporal.scope != cumulative.scope
         ):
             raise ValueError("A2 temporal and cumulative neutral snapshots do not match")
@@ -1636,6 +1640,7 @@ def run(
                     cumulative=cumulative_neutral,
                     reference_state=reference_state,
                     temporal=temporal_neutral,
+                    expected_timestamp_ns=checkpoint.timestamp_ns,
                 )
                 neutral_paths = write_map_snapshot(neutral, root / "neutral_current")
                 neutral_snapshot = Path(neutral_paths["snapshot"])
