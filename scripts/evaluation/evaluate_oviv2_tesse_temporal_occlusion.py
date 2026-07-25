@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import hashlib
 import io
 import json
@@ -67,6 +67,7 @@ class _CompactBinding:
     timestamp_ns: int
     relative_timestamp_ns: int
     algorithm_hash: str
+    _source_witness: Any = field(default=None, init=False, repr=False, compare=False)
 
     def load(self) -> TemporalCompactCheckpoint:
         if _tree_record(self.path, self.run_root) != self.tree_record:
@@ -83,10 +84,22 @@ class _CompactBinding:
             or loaded.metadata.config_sha256 != self.algorithm_hash
         ):
             raise ValueError("compact metadata authority mismatch")
-        if _sha((self.path / "checksums.json").read_bytes()) != self.checksums_sha256:
+        checksum_content, _ = _read(
+            self.path / "checksums.json", "compact checksums"
+        )
+        if _sha(checksum_content) != self.checksums_sha256:
             raise ValueError("compact checksum binding mismatch")
         loaded.revalidate_source()
+        object.__setattr__(self, "_source_witness", getattr(loaded, "_source_witness"))
         return loaded
+
+    def revalidate(self) -> None:
+        if self._source_witness is None:
+            raise ValueError("compact artifact was not evaluated")
+        try:
+            self._source_witness.revalidate()
+        except ValueError as error:
+            raise ValueError("compact artifact changed") from error
 
 
 class _LazyCheckpoints(Mapping[tuple[str, int], TemporalCompactCheckpoint]):
@@ -116,9 +129,42 @@ class _LazyCheckpoints(Mapping[tuple[str, int], TemporalCompactCheckpoint]):
         self._cached_key = None
         self._cached_value = None
         for binding in self.bindings.values():
-            value = binding.load()
-            value.revalidate_source()
-            del value
+            binding.revalidate()
+
+
+def _directory_identity_chain(path: Path) -> tuple[tuple[int, int], ...]:
+    absolute = path.absolute()
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
+    descriptor = os.open("/", flags)
+    identities = []
+    try:
+        status = os.fstat(descriptor)
+        identities.append((status.st_dev, status.st_ino))
+        for component in absolute.parts[1:]:
+            child = os.open(component, flags, dir_fd=descriptor)
+            os.close(descriptor)
+            descriptor = child
+            status = os.fstat(descriptor)
+            identities.append((status.st_dev, status.st_ino))
+        return tuple(identities)
+    except OSError as error:
+        raise ValueError("validated directory changed during evaluation") from error
+    finally:
+        os.close(descriptor)
+
+
+@dataclass(frozen=True)
+class _DirectoryIdentityWitness:
+    path: Path
+    identities: tuple[tuple[int, int], ...]
+
+    @classmethod
+    def capture(cls, path: Path) -> "_DirectoryIdentityWitness":
+        return cls(path.absolute(), _directory_identity_chain(path))
+
+    def revalidate(self) -> None:
+        if _directory_identity_chain(self.path) != self.identities:
+            raise ValueError("validated directory changed during evaluation")
 
 
 def _strict_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -254,7 +300,7 @@ def _tree_record(path: Path, root: Path) -> dict[str, Any]:
     return {"path": path.relative_to(root).as_posix(), "sha256": digest.hexdigest(), "byte_count": count}
 
 
-def _load_index(index_path: Path, target_record: Mapping[str, Any], metadata: Mapping[str, Any], sources: Mapping[str, Any], source_frame_times: Mapping[tuple[str, int], tuple[int, int]]) -> tuple[dict[tuple[str, int], _CompactBinding], dict[tuple[str, int], int], dict[str, Any], list[Any]]:
+def _load_index(index_path: Path, target_record: Mapping[str, Any], metadata: Mapping[str, Any], sources: Mapping[str, Any], source_frame_times: Mapping[tuple[str, int], tuple[int, int]]) -> tuple[dict[tuple[str, int], _CompactBinding], dict[tuple[str, int], int], dict[str, Any], dict[str, Any], list[Any]]:
     run_root = index_path.parent
     index_content, index_witness = _read(index_path, "occlusion checkpoint index")
     index = _json(index_content, "occlusion checkpoint index")
@@ -298,7 +344,11 @@ def _load_index(index_path: Path, target_record: Mapping[str, Any], metadata: Ma
     if not isinstance(records, list): raise ValueError("checkpoint inventory is invalid")
     checkpoints: dict[tuple[str, int], _CompactBinding] = {}
     relative_times: dict[tuple[str, int], int] = {}
-    witnesses = [(index_path, index_witness), (run_root / "run_manifest.json", run_witness)]
+    witnesses = [
+        _DirectoryIdentityWitness.capture(run_root),
+        (index_path, index_witness),
+        (run_root / "run_manifest.json", run_witness),
+    ]
     for item in records:
         if not isinstance(item, Mapping) or set(item) != _CHECKPOINT_FIELDS: raise ValueError("checkpoint fields are not exact")
         frame = item["frame_index"]
@@ -340,11 +390,14 @@ def _load_index(index_path: Path, target_record: Mapping[str, Any], metadata: Ma
         relative_times[key] = item["relative_timestamp_ns"]
     if [item["frame_index"] for item in records] != sorted(required):
         raise ValueError("checkpoint frames must exactly match target order")
-    return checkpoints, relative_times, index, witnesses
+    return checkpoints, relative_times, index, _content_record(index_content), witnesses
 
 
-def _revalidate(witnesses: Sequence[tuple[Path, tuple[int, int, int, int, int]]]) -> None:
+def _revalidate(witnesses: Sequence[Any]) -> None:
     for witness in witnesses:
+        if isinstance(witness, _DirectoryIdentityWitness):
+            witness.revalidate()
+            continue
         if not isinstance(witness, tuple):
             _revalidate_witness(witness, label="evaluation input")
             continue
@@ -485,19 +538,30 @@ def evaluate_temporal_occlusion_package(*, targets: str | Path, checkpoints: Seq
     bindings: dict[tuple[str, int], _CompactBinding] = {}
     relative_times: dict[tuple[str, int], int] = {}
     indexes = []
+    index_records = []
+    cross_scene_authority = (
+        "schema_version", "format", "protocol_id", "dataset", "method_id",
+        "algorithm_hash", "schedule", "target_manifest", "input_sha256",
+        "code_commit", "source_bindings",
+    )
     for candidate in checkpoints:
-        values, times, index, index_witnesses = _load_index(
+        values, times, index, index_record, index_witnesses = _load_index(
             Path(candidate).absolute(), target_record, metadata, sources, source_frame_times
         )
+        if indexes and any(
+            indexes[0].get(key) != index.get(key) for key in cross_scene_authority
+        ):
+            raise ValueError("cross-scene authority mismatch")
         if set(bindings) & set(values): raise ValueError("duplicate checkpoint indexes")
-        bindings.update(values); indexes.append(index); witnesses.extend(index_witnesses)
+        bindings.update(values); indexes.append(index); index_records.append(index_record)
+        witnesses.extend(index_witnesses)
         relative_times.update(times)
     loaded = _LazyCheckpoints(bindings)
     results = [evaluate_temporal_occlusion(arrays=arrays, metadata=metadata, checkpoints=loaded,
                checkpoint_relative_timestamp_ns=relative_times, scene=index["scene"]) for index in indexes]
     result = results[0] if len(results) == 1 else {"format": EVALUATION_FORMAT, "scenes": results}
     result["input_bindings"] = {"target_manifest": dict(target_record),
-                                "indexes": [_content_record(Path(item).read_bytes()) for item in checkpoints],
+                                "indexes": index_records,
                                 "maximum_cached_checkpoints": loaded.maximum_cached_checkpoints}
     loaded.revalidate_all()
     _revalidate(witnesses)

@@ -131,6 +131,52 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
     return target_path, index_path, dataset
 
 
+def _office_index_from_fixture(
+    tmp_path: Path, apartment_index: Path
+) -> Path:
+    source = json.loads(apartment_index.read_text())
+    run = tmp_path / "office-run"
+    (run / "checkpoints").mkdir(parents=True)
+    records = []
+    for source_record in source["checkpoints"]:
+        frame = source_record["frame_index"]
+        (run / "checkpoints" / str(frame)).mkdir()
+        checkpoint = TemporalCompactCheckpoint(
+            TemporalSnapshotMetadata(
+                "office", frame, (100 + frame * 100_000_000) / 1e9,
+                frame + 1, 0.05, "a" * 64,
+            ),
+            np.asarray([7], np.int64),
+            np.asarray([0 if frame == 0 else 1], np.uint8),
+            np.asarray([1.0]), np.asarray([0], np.int64), np.asarray([0], np.int64),
+            np.asarray([np.eye(4)]), np.asarray([[0, 0, 0]], np.int64),
+            np.asarray([0, 1], np.int64),
+        ).commit_new(
+            run / "checkpoints" / str(frame) / "temporal_compact",
+            maximum_entities=4,
+            maximum_object_voxels=4,
+        )
+        record = dict(source_record)
+        record["scene"] = "office"
+        record["artifact"] = _tree(checkpoint.path, run)
+        record["checksums_sha256"] = hashlib.sha256(
+            (checkpoint.path / "checksums.json").read_bytes()
+        ).hexdigest()
+        records.append(record)
+    index = dict(source)
+    index["scene"] = "office"
+    index["checkpoints"] = records
+    index_path = run / "occlusion_checkpoint_index.json"
+    _json(index_path, index)
+    manifest = {
+        key: value for key, value in index.items() if key != "checkpoints"
+    }
+    manifest["schema_version"] = 2
+    manifest["occlusion_checkpoint_index"] = _record(index_path, run)
+    _json(run / "run_manifest.json", manifest)
+    return index_path
+
+
 def test_cli_evaluates_overlap_compact_and_publishes_canonical_no_replace(tmp_path: Path) -> None:
     target, index, dataset = _fixture(tmp_path)
     output = tmp_path / "result.json"
@@ -143,6 +189,147 @@ def test_cli_evaluates_overlap_compact_and_publishes_canonical_no_replace(tmp_pa
     with pytest.raises(FileExistsError):
         evaluate_temporal_occlusion_package(
             targets=target, checkpoints=[index], dataset_root=dataset, output=output
+        )
+
+
+def test_package_loads_each_unique_checkpoint_exactly_once(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    target, index, dataset = _fixture(tmp_path)
+    original = TemporalCompactCheckpoint.load.__func__
+    calls = 0
+
+    def counted(cls: type[TemporalCompactCheckpoint], *args: object, **kwargs: object) -> TemporalCompactCheckpoint:
+        nonlocal calls
+        calls += 1
+        return original(cls, *args, **kwargs)
+
+    monkeypatch.setattr(TemporalCompactCheckpoint, "load", classmethod(counted))
+    evaluate_temporal_occlusion_package(
+        targets=target, checkpoints=[index], dataset_root=dataset
+    )
+    assert calls == 2
+
+
+def test_package_rejects_coherent_artifact_tamper_after_first_load_without_reloading(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import scripts.evaluation.evaluate_oviv2_tesse_temporal_occlusion as module
+
+    target, index, dataset = _fixture(tmp_path)
+    payload = json.loads(index.read_text())
+    artifact = index.parent / payload["checkpoints"][0]["artifact"]["path"]
+    original_evaluate = module.evaluate_temporal_occlusion
+    original_load = TemporalCompactCheckpoint.load.__func__
+    loads = 0
+
+    def counted(cls: type[TemporalCompactCheckpoint], *args: object, **kwargs: object) -> TemporalCompactCheckpoint:
+        nonlocal loads
+        loads += 1
+        return original_load(cls, *args, **kwargs)
+
+    def tamper_after_evaluation(*args: object, **kwargs: object) -> dict[str, object]:
+        result = original_evaluate(*args, **kwargs)
+        manifest = artifact / "manifest.json"
+        manifest_payload = json.loads(manifest.read_text())
+        manifest_payload["metadata"]["config_sha256"] = "d" * 64
+        manifest_content = (
+            json.dumps(
+                manifest_payload,
+                sort_keys=True,
+                separators=(",", ":"),
+                allow_nan=False,
+            )
+            + "\n"
+        ).encode()
+        manifest.write_bytes(manifest_content)
+        checksums = artifact / "checksums.json"
+        checksum_payload = json.loads(checksums.read_text())
+        checksum_payload["manifest.json"] = hashlib.sha256(manifest_content).hexdigest()
+        checksums.write_text(
+            json.dumps(
+                checksum_payload,
+                sort_keys=True,
+                separators=(",", ":"),
+                allow_nan=False,
+            )
+            + "\n"
+        )
+        return result
+
+    monkeypatch.setattr(TemporalCompactCheckpoint, "load", classmethod(counted))
+    monkeypatch.setattr(module, "evaluate_temporal_occlusion", tamper_after_evaluation)
+    with pytest.raises(ValueError, match="compact artifact changed"):
+        evaluate_temporal_occlusion_package(
+            targets=target, checkpoints=[index], dataset_root=dataset
+        )
+    assert loads == 2
+
+
+@pytest.mark.parametrize("mutation", ["symlink", "fifo", "parent"])
+def test_validated_index_is_never_path_reread_after_evaluation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, mutation: str,
+) -> None:
+    import scripts.evaluation.evaluate_oviv2_tesse_temporal_occlusion as module
+
+    target, index, dataset = _fixture(tmp_path)
+    original_evaluate = module.evaluate_temporal_occlusion
+    original_read_bytes = Path.read_bytes
+
+    def mutate_after_evaluation(*args: object, **kwargs: object) -> dict[str, object]:
+        result = original_evaluate(*args, **kwargs)
+        if mutation == "parent":
+            displaced = index.parent.with_name("displaced-run")
+            index.parent.rename(displaced)
+            index.parent.mkdir()
+            for child in list(displaced.iterdir()):
+                child.rename(index.parent / child.name)
+        else:
+            index.unlink()
+            if mutation == "symlink":
+                replacement = index.parent / "replacement"
+                replacement.write_bytes(b"replacement")
+                index.symlink_to(replacement)
+            else:
+                os.mkfifo(index)
+        return result
+
+    def forbid_index_reread(path: Path) -> bytes:
+        if path.absolute() == index.absolute():
+            raise AssertionError("validated index was path-reread")
+        return original_read_bytes(path)
+
+    monkeypatch.setattr(module, "evaluate_temporal_occlusion", mutate_after_evaluation)
+    monkeypatch.setattr(Path, "read_bytes", forbid_index_reread)
+    expected = "validated directory changed" if mutation == "parent" else None
+    with pytest.raises((ValueError, FileNotFoundError), match=expected):
+        evaluate_temporal_occlusion_package(
+            targets=target, checkpoints=[index], dataset_root=dataset
+        )
+
+
+@pytest.mark.parametrize("field,replacement", [
+    ("algorithm_hash", "d" * 64),
+    ("code_commit", "e" * 40),
+])
+def test_multi_scene_indexes_require_identical_common_authority(
+    tmp_path: Path, field: str, replacement: object,
+) -> None:
+    target, apartment, dataset = _fixture(tmp_path)
+    office = _office_index_from_fixture(tmp_path, apartment)
+    index = json.loads(office.read_text())
+    index[field] = replacement
+    _json(office, index)
+    manifest_path = office.parent / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest[field] = replacement
+    manifest["occlusion_checkpoint_index"] = _record(office, office.parent)
+    _json(manifest_path, manifest)
+    with pytest.raises(ValueError, match="cross-scene authority mismatch"):
+        evaluate_temporal_occlusion_package(
+            targets=target,
+            checkpoints=[apartment, office],
+            dataset_root=dataset,
         )
 
 
