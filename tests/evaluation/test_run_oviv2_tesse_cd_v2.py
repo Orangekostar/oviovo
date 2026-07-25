@@ -483,6 +483,61 @@ def _formal_fixture(
         for scene, (path, config) in scene_configs.items()
     }
     freeze = tmp_path / "freeze.json"
+    algorithm_hash = scene_configs["apartment"][1]["algorithm_hash"]
+    selected_config_sha256 = module._json_hash(scene_configs["apartment"][1])
+    selection_artifact = tmp_path / "selection.json"
+    _write_json(
+        selection_artifact,
+        {
+            "schema_version": 1,
+            "manifest_id": "oviv2_tesse_cd_v2_selection",
+            "development_scene": "apartment",
+            "selected_config_sha256": selected_config_sha256,
+            "algorithm_hash": algorithm_hash,
+        },
+    )
+    release_files = {
+        "temporal_evaluator": tmp_path / "temporal-evaluator.py",
+        "result_finalizer": tmp_path / "result-finalizer.py",
+    }
+    for role, path in release_files.items():
+        path.write_text(f"{role}\n", encoding="utf-8")
+    mapping = []
+    runner_path = Path(module.__file__).resolve()
+    for scene in ("apartment", "office"):
+        config_path = scene_configs[scene][0].resolve()
+        for repeat in (1, 2):
+            slot = f"{scene}_run{repeat}"
+            mapping.append(
+                {
+                    "scene": scene,
+                    "run_slot": slot,
+                    "output": roots[slot],
+                    "argv": [
+                        "/usr/bin/python3",
+                        str(runner_path),
+                        "--config",
+                        str(config_path),
+                        "--output",
+                        roots[slot],
+                        "--freeze-manifest",
+                        str(freeze.resolve()),
+                        "--run-slot",
+                        slot,
+                    ],
+                }
+            )
+    models = {
+        branch: {
+            scene: {
+                "manifest_sha256": scenes[scene][f"{branch}_manifest"]["sha256"],
+                "model_id": f"fixture-{branch}-model",
+                "model_sha256": ("d" if branch == "dense" else "f") * 64,
+            }
+            for scene in ("apartment", "office")
+        }
+        for branch in ("frontend", "dense")
+    }
     _write_json(
         freeze,
         {
@@ -501,14 +556,45 @@ def _formal_fixture(
                 "stage3_is_ancestor": True,
             },
             "algorithm": {
-                "sha256": scene_configs["apartment"][1]["algorithm_hash"],
+                "sha256": algorithm_hash,
                 "normalized_config": module.algorithm_config(
                     scene_configs["apartment"][1]
                 ),
             },
+            "selection": {
+                "artifact": _record(selection_artifact),
+                "development_scene": "apartment",
+                "selected_config_sha256": selected_config_sha256,
+                "selected_algorithm_hash": algorithm_hash,
+            },
             "scenes": scenes,
             "shared_bindings": {
                 role: _record(path) for role, path in shared_files.items()
+            },
+            "environment": {
+                "python": "3.fixture",
+                "python_implementation": "CPython",
+                "platform": "fixture-platform",
+                "machine": "x86_64",
+                "host": "fixture-host",
+                "cuda": ["fixture-cuda"],
+                "cuda_visible_devices": None,
+                "gpu": ["fixture-gpu"],
+                "libraries": {"numpy": "fixture-numpy"},
+            },
+            "commands": {
+                "cwd": str(Path(module.REPO_ROOT).resolve()),
+                "python": "/usr/bin/python3",
+                "mapping": mapping,
+            },
+            "models": models,
+            "release_bindings": {
+                role: _record(path) for role, path in release_files.items()
+            },
+            "office_pre_freeze_audit": {
+                "selection_scene": "apartment",
+                "metric_sources_found": [],
+                "office_outputs_read": False,
             },
             "output_roots": roots,
         },
@@ -522,6 +608,30 @@ def _clean_repository_state() -> dict[str, str]:
         "repository_tree": "b" * 40,
         "dirty_state_digest": hashlib.sha256(b"").hexdigest(),
     }
+
+
+def test_task14_can_import_the_complete_v2_freeze_contract() -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    assert module.V2_FREEZE_TOP_KEYS == {
+        "schema_version",
+        "freeze_id",
+        "status",
+        "method",
+        "dataset",
+        "repository",
+        "algorithm",
+        "selection",
+        "scenes",
+        "shared_bindings",
+        "environment",
+        "commands",
+        "models",
+        "release_bindings",
+        "output_roots",
+        "office_pre_freeze_audit",
+    }
+    assert callable(module.load_v2_frozen_run_context)
 
 
 def test_complete_v2_formal_freeze_runs_before_publishing(
@@ -539,6 +649,10 @@ def test_complete_v2_formal_freeze_runs_before_publishing(
         dependencies=_dependencies(module)[0],
     )
     assert manifest["frozen_run_identity"]["freeze_id"] == "oviv2-tessecd-v2"
+    freeze_payload = json.loads(freeze.read_text())
+    assert manifest["frozen_run_identity"]["formal_evidence_sha256"] == module._json_hash(
+        freeze_payload
+    )
 
 
 @pytest.mark.parametrize(
@@ -614,6 +728,85 @@ def test_formal_freeze_top_level_objects_are_exact_before_output_creation(
     _write_json(freeze, payload)
     monkeypatch.setattr(module, "_repository_provenance", _clean_repository_state)
     with pytest.raises(ValueError):
+        module.run(
+            config,
+            output,
+            freeze_manifest=freeze,
+            run_slot="apartment_run1",
+            dependencies=_dependencies(module)[0],
+        )
+    assert not output.parent.exists()
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "selection_missing",
+        "selection_path",
+        "selection_hash",
+        "selection_payload_hash",
+        "selection_payload_identity",
+        "selection_algorithm_hash",
+        "environment_missing",
+        "environment_malformed",
+        "commands_empty",
+        "models_missing",
+        "models_empty",
+        "models_manifest",
+        "release_missing",
+        "office_audit",
+    ],
+)
+def test_complete_formal_evidence_is_strict_and_bound_before_output_creation(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    mutation: str,
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config, freeze, output, _ = _formal_fixture(module, tmp_path)
+    payload = json.loads(freeze.read_text())
+    if mutation == "selection_missing":
+        del payload["selection"]
+    elif mutation == "selection_path":
+        payload["selection"]["artifact"]["path"] = str(
+            (tmp_path / "wrong-selection.json").resolve()
+        )
+    elif mutation == "selection_hash":
+        payload["selection"]["artifact"]["sha256"] = "0" * 64
+    elif mutation == "selection_payload_hash":
+        artifact = Path(payload["selection"]["artifact"]["path"])
+        selection = json.loads(artifact.read_text())
+        selection["selected_config_sha256"] = "0" * 64
+        _write_json(artifact, selection)
+        payload["selection"]["artifact"] = _record(artifact)
+    elif mutation == "selection_payload_identity":
+        artifact = Path(payload["selection"]["artifact"]["path"])
+        selection = json.loads(artifact.read_text())
+        selection["manifest_id"] = "other_selection"
+        _write_json(artifact, selection)
+        payload["selection"]["artifact"] = _record(artifact)
+    elif mutation == "selection_algorithm_hash":
+        payload["selection"]["selected_algorithm_hash"] = "0" * 64
+    elif mutation == "environment_missing":
+        del payload["environment"]
+    elif mutation == "environment_malformed":
+        payload["environment"]["cuda"] = []
+    elif mutation == "commands_empty":
+        payload["commands"]["mapping"] = []
+    elif mutation == "models_missing":
+        del payload["models"]["frontend"]["office"]
+    elif mutation == "models_empty":
+        payload["models"]["dense"]["apartment"] = {}
+    elif mutation == "models_manifest":
+        payload["models"]["frontend"]["apartment"]["manifest_sha256"] = "0" * 64
+    elif mutation == "release_missing":
+        del payload["release_bindings"]["result_finalizer"]
+    else:
+        payload["office_pre_freeze_audit"]["office_outputs_read"] = True
+    _write_json(freeze, payload)
+    monkeypatch.setattr(module, "_repository_provenance", _clean_repository_state)
+    with pytest.raises((FileNotFoundError, TypeError, ValueError)):
         module.run(
             config,
             output,

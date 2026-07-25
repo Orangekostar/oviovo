@@ -171,7 +171,7 @@ _V2_CONFIG_KEYS = (
     | {"evaluation_checkpoint_frames", "structure_enabled", "temporal_readout"}
 )
 
-_FREEZE_TOP_KEYS = frozenset(
+V2_FREEZE_TOP_KEYS = frozenset(
     {
         "schema_version",
         "freeze_id",
@@ -183,9 +183,15 @@ _FREEZE_TOP_KEYS = frozenset(
         "scenes",
         "shared_bindings",
         "output_roots",
+        "selection",
+        "environment",
+        "commands",
+        "models",
+        "release_bindings",
+        "office_pre_freeze_audit",
     }
 )
-_FREEZE_REPOSITORY_KEYS = frozenset(
+V2_FREEZE_REPOSITORY_KEYS = frozenset(
     {
         "clean",
         "commit",
@@ -196,7 +202,7 @@ _FREEZE_REPOSITORY_KEYS = frozenset(
         "stage3_is_ancestor",
     }
 )
-_FREEZE_SCENE_KEYS = frozenset(
+V2_FREEZE_SCENE_KEYS = frozenset(
     {
         "frozen_config",
         "export_manifest",
@@ -206,9 +212,46 @@ _FREEZE_SCENE_KEYS = frozenset(
         "vocabulary_txt",
     }
 )
-_FREEZE_SHARED_KEYS = frozenset(
+V2_FREEZE_SHARED_KEYS = frozenset(
     {"input_manifest", "schedule", "occlusion_target_manifest"}
 )
+V2_FREEZE_SELECTION_KEYS = frozenset(
+    {
+        "artifact",
+        "development_scene",
+        "selected_config_sha256",
+        "selected_algorithm_hash",
+    }
+)
+V2_FREEZE_ENVIRONMENT_KEYS = frozenset(
+    {
+        "python",
+        "python_implementation",
+        "platform",
+        "machine",
+        "host",
+        "cuda",
+        "cuda_visible_devices",
+        "gpu",
+        "libraries",
+    }
+)
+V2_FREEZE_COMMAND_KEYS = frozenset({"cwd", "python", "mapping"})
+V2_FREEZE_MODEL_KEYS = frozenset(
+    {"manifest_sha256", "model_id", "model_sha256"}
+)
+V2_FREEZE_RELEASE_KEYS = frozenset(
+    {"temporal_evaluator", "result_finalizer"}
+)
+V2_FREEZE_OFFICE_AUDIT_KEYS = frozenset(
+    {"selection_scene", "metric_sources_found", "office_outputs_read"}
+)
+
+# Backward-compatible private aliases for existing Task 9 tests/importers.
+_FREEZE_TOP_KEYS = V2_FREEZE_TOP_KEYS
+_FREEZE_REPOSITORY_KEYS = V2_FREEZE_REPOSITORY_KEYS
+_FREEZE_SCENE_KEYS = V2_FREEZE_SCENE_KEYS
+_FREEZE_SHARED_KEYS = V2_FREEZE_SHARED_KEYS
 
 
 @dataclass(frozen=True)
@@ -264,6 +307,239 @@ def _verify_exact_frozen_file_binding(
         role=role,
         expected_path=expected_path,
     )
+
+
+def _nonempty_string(value: object, name: str) -> str:
+    if type(value) is not str or not value.strip():
+        raise ValueError(f"{name} must be a non-empty string")
+    return value
+
+
+def _nonempty_string_list(value: object, name: str) -> list[str]:
+    if (
+        type(value) is not list
+        or not value
+        or any(type(item) is not str or not item.strip() for item in value)
+    ):
+        raise ValueError(f"{name} must be a non-empty string list")
+    return list(value)
+
+
+def _validate_environment(value: object) -> dict[str, Any]:
+    if not isinstance(value, Mapping) or set(value) != V2_FREEZE_ENVIRONMENT_KEYS:
+        raise ValueError("freeze environment schema is invalid")
+    result = {
+        key: _nonempty_string(value[key], f"environment.{key}")
+        for key in (
+            "python",
+            "python_implementation",
+            "platform",
+            "machine",
+            "host",
+        )
+    }
+    result["cuda"] = _nonempty_string_list(value["cuda"], "environment.cuda")
+    result["gpu"] = _nonempty_string_list(value["gpu"], "environment.gpu")
+    visible = value["cuda_visible_devices"]
+    if visible is not None:
+        visible = _nonempty_string(visible, "environment.cuda_visible_devices")
+    result["cuda_visible_devices"] = visible
+    libraries = value["libraries"]
+    if (
+        not isinstance(libraries, Mapping)
+        or not libraries
+        or any(
+            type(key) is not str
+            or not key.strip()
+            or type(item) is not str
+            or not item.strip()
+            for key, item in libraries.items()
+        )
+    ):
+        raise ValueError("environment.libraries must be a non-empty string mapping")
+    result["libraries"] = dict(sorted(libraries.items()))
+    return result
+
+
+def _validate_selection(
+    value: object,
+    *,
+    manifest_base: Path,
+    apartment_config: Mapping[str, Any],
+    algorithm_sha256: str,
+) -> dict[str, Any]:
+    if not isinstance(value, Mapping) or set(value) != V2_FREEZE_SELECTION_KEYS:
+        raise ValueError("freeze selection schema is invalid")
+    selected_config_sha256 = _json_hash(apartment_config)
+    if not (
+        value.get("development_scene") == "apartment"
+        and value.get("selected_config_sha256") == selected_config_sha256
+        and value.get("selected_algorithm_hash") == algorithm_sha256
+    ):
+        raise ValueError("freeze selection identity is invalid")
+    artifact = value["artifact"]
+    if not isinstance(artifact, Mapping):
+        raise ValueError("freeze selection artifact binding is invalid")
+    artifact_path = _binding_path(
+        artifact.get("path"), base=manifest_base, role="selection artifact"
+    )
+    _verify_exact_frozen_file_binding(
+        artifact,
+        base=manifest_base,
+        role="selection artifact",
+        expected_path=artifact_path,
+    )
+    payload = _load_json_bytes(artifact_path.read_bytes(), artifact_path)
+    if not (
+        payload.get("schema_version") == 1
+        and payload.get("manifest_id") == "oviv2_tesse_cd_v2_selection"
+        and payload.get("development_scene") == "apartment"
+        and payload.get("selected_config_sha256") == selected_config_sha256
+        and payload.get("algorithm_hash") == algorithm_sha256
+    ):
+        raise ValueError("selection artifact identity differs from the freeze")
+    return {
+        "artifact": dict(artifact),
+        "development_scene": "apartment",
+        "selected_config_sha256": selected_config_sha256,
+        "selected_algorithm_hash": algorithm_sha256,
+    }
+
+
+def _validate_models(
+    value: object,
+    *,
+    scenes: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    if not isinstance(value, Mapping) or set(value) != {"frontend", "dense"}:
+        raise ValueError("freeze models schema is invalid")
+    result: dict[str, Any] = {}
+    for branch in ("frontend", "dense"):
+        per_scene = value[branch]
+        if not isinstance(per_scene, Mapping) or set(per_scene) != {
+            "apartment",
+            "office",
+        }:
+            raise ValueError(f"freeze {branch} model scene schema is invalid")
+        result[branch] = {}
+        for scene in ("apartment", "office"):
+            model = per_scene[scene]
+            if not isinstance(model, Mapping) or set(model) != V2_FREEZE_MODEL_KEYS:
+                raise ValueError(f"freeze {branch} {scene} model schema is invalid")
+            expected_manifest = scenes[scene][f"{branch}_manifest"]["sha256"]
+            if not (
+                model.get("manifest_sha256") == expected_manifest
+                and _is_sha256(model.get("model_sha256"))
+            ):
+                raise ValueError(f"freeze {branch} {scene} model binding is invalid")
+            model_id = _nonempty_string(
+                model.get("model_id"), f"models.{branch}.{scene}.model_id"
+            )
+            result[branch][scene] = {
+                "manifest_sha256": expected_manifest,
+                "model_id": model_id,
+                "model_sha256": model["model_sha256"],
+            }
+    return result
+
+
+def _validate_commands(
+    value: object,
+    *,
+    manifest_path: Path,
+    scenes: Mapping[str, Mapping[str, Any]],
+    output_roots: Mapping[str, str],
+) -> dict[str, Any]:
+    if not isinstance(value, Mapping) or set(value) != V2_FREEZE_COMMAND_KEYS:
+        raise ValueError("freeze commands schema is invalid")
+    cwd = _nonempty_string(value.get("cwd"), "commands.cwd")
+    if not Path(cwd).is_absolute() or _absolute_lexical(cwd) != REPO_ROOT:
+        raise ValueError("freeze command cwd must equal the repository root")
+    python = _nonempty_string(value.get("python"), "commands.python")
+    mapping = value.get("mapping")
+    expected_slots = [
+        f"{scene}_run{repeat}"
+        for scene in ("apartment", "office")
+        for repeat in (1, 2)
+    ]
+    if type(mapping) is not list or len(mapping) != len(expected_slots):
+        raise ValueError("freeze mapping commands must contain four runs")
+    runner_path = Path(__file__).resolve()
+    normalized: list[dict[str, Any]] = []
+    for raw, slot in zip(mapping, expected_slots):
+        if not isinstance(raw, Mapping) or set(raw) != {
+            "scene",
+            "run_slot",
+            "output",
+            "argv",
+        }:
+            raise ValueError("freeze mapping command schema is invalid")
+        scene = slot.split("_", 1)[0]
+        config_path = _binding_path(
+            scenes[scene]["frozen_config"]["path"],
+            base=manifest_path.parent,
+            role=f"{scene} frozen command config",
+        )
+        expected_argv = [
+            python,
+            str(runner_path),
+            "--config",
+            str(config_path),
+            "--output",
+            output_roots[slot],
+            "--freeze-manifest",
+            str(manifest_path),
+            "--run-slot",
+            slot,
+        ]
+        if not (
+            raw.get("scene") == scene
+            and raw.get("run_slot") == slot
+            and raw.get("output") == output_roots[slot]
+            and raw.get("argv") == expected_argv
+        ):
+            raise ValueError("freeze mapping command identity is invalid")
+        normalized.append(dict(raw))
+    return {"cwd": cwd, "python": python, "mapping": normalized}
+
+
+def _validate_release_bindings(
+    value: object, *, manifest_base: Path
+) -> dict[str, Any]:
+    if not isinstance(value, Mapping) or set(value) != V2_FREEZE_RELEASE_KEYS:
+        raise ValueError("freeze release binding schema is invalid")
+    result: dict[str, Any] = {}
+    for role in sorted(V2_FREEZE_RELEASE_KEYS):
+        record = value[role]
+        if not isinstance(record, Mapping):
+            raise ValueError(f"freeze {role} binding is invalid")
+        path = _binding_path(
+            record.get("path"), base=manifest_base, role=f"release {role}"
+        )
+        _verify_exact_frozen_file_binding(
+            record,
+            base=manifest_base,
+            role=f"release {role}",
+            expected_path=path,
+        )
+        result[role] = dict(record)
+    return result
+
+
+def _validate_office_audit(value: object) -> dict[str, Any]:
+    if not isinstance(value, Mapping) or set(value) != V2_FREEZE_OFFICE_AUDIT_KEYS:
+        raise ValueError("freeze Office audit schema is invalid")
+    if not (
+        value.get("selection_scene") == "apartment"
+        and value.get("metric_sources_found") == []
+        and value.get("office_outputs_read") is False
+    ):
+        raise ValueError("freeze Office audit is not fail-closed")
+    return {
+        "selection_scene": "apartment",
+        "metric_sources_found": [],
+        "office_outputs_read": False,
+    }
 
 
 def _positive_integer(value: object, name: str) -> int:
@@ -341,7 +617,7 @@ def _validate_config(
     return str(scene), frame_count, schedule, evaluation_frames, temporal_config
 
 
-def _load_frozen_run_context(
+def load_v2_frozen_run_context(
     freeze_manifest: str | Path,
     *,
     run_slot: str,
@@ -448,6 +724,22 @@ def _load_frozen_run_context(
         )
     ):
         raise ValueError("runner config algorithm differs from the freeze")
+    normalized_selection = _validate_selection(
+        manifest["selection"],
+        manifest_base=manifest_path.parent,
+        apartment_config=loaded_configs["apartment"],
+        algorithm_sha256=algorithm["sha256"],
+    )
+    normalized_environment = _validate_environment(manifest["environment"])
+    normalized_models = _validate_models(
+        manifest["models"], scenes=normalized_scenes
+    )
+    normalized_release = _validate_release_bindings(
+        manifest["release_bindings"], manifest_base=manifest_path.parent
+    )
+    normalized_office_audit = _validate_office_audit(
+        manifest["office_pre_freeze_audit"]
+    )
 
     output_roots = manifest.get("output_roots")
     expected_slots = {
@@ -477,6 +769,12 @@ def _load_frozen_run_context(
     normalized_roots = [_absolute_lexical(str(value)) for value in output_roots.values()]
     if len(set(normalized_roots)) != len(normalized_roots):
         raise ValueError("frozen output roots must be distinct")
+    normalized_commands = _validate_commands(
+        manifest["commands"],
+        manifest_path=manifest_path,
+        scenes=normalized_scenes,
+        output_roots=output_roots,
+    )
 
     shared = manifest.get("shared_bindings")
     if not isinstance(shared, Mapping) or set(shared) != _FREEZE_SHARED_KEYS:
@@ -499,6 +797,15 @@ def _load_frozen_run_context(
             expected_path=next(iter(expected_paths)),
         )
     input_bindings = {
+        "repository": dict(repository),
+        "algorithm": dict(algorithm),
+        "selection": normalized_selection,
+        "environment": normalized_environment,
+        "commands": normalized_commands,
+        "models": normalized_models,
+        "release_bindings": normalized_release,
+        "office_pre_freeze_audit": normalized_office_audit,
+        "output_roots": dict(output_roots),
         "shared_bindings": dict(shared),
         "scenes": normalized_scenes,
     }
@@ -518,6 +825,7 @@ def _load_frozen_run_context(
         "config": selected_config_record,
         "algorithm_hash": algorithm["sha256"],
         "input_bindings_sha256": _json_hash(input_bindings),
+        "formal_evidence_sha256": _json_hash(manifest),
     }
     return FrozenRunContext(
         manifest_path,
@@ -638,7 +946,7 @@ def run(
     scene, frame_count, schedule_path, evaluation_frames, temporal_config = _validate_config(config)
     destination = _absolute_lexical(output)
     frozen = (
-        _load_frozen_run_context(
+        load_v2_frozen_run_context(
             freeze_manifest,
             run_slot=str(run_slot),
             source_config=source_config,
