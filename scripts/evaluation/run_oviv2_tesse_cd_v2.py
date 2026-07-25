@@ -12,7 +12,9 @@ import math
 from numbers import Real
 import os
 from pathlib import Path
+import platform
 import shutil
+import socket
 import sys
 import tempfile
 from typing import Any
@@ -57,6 +59,7 @@ from scripts.evaluation.run_oviv2_tesse_cd import (  # noqa: E402
 )
 from src.evaluation.oviv2_temporal_tesse import (  # noqa: E402
     TEMPORAL_CURRENT_FORMAT,
+    load_temporal_current_checkpoint,
     publish_temporal_current_checkpoint,
 )
 from src.oviv2.temporal_snapshot import (  # noqa: E402
@@ -171,6 +174,71 @@ _V2_CONFIG_KEYS = (
     | {"evaluation_checkpoint_frames", "structure_enabled", "temporal_readout"}
 )
 
+_RUNTIME_CONFIG_KEYS = frozenset(
+    {
+        "scene",
+        "temporal_readout",
+        "semantic_mode",
+        "feature_mode",
+        "dense_semantic_mode",
+        "missing_observation_policy",
+        "voxel_size_m",
+        "block_resolution",
+        "block_count",
+        "depth_max_m",
+        "trunc_voxel_multiplier",
+        "source_stride",
+        "semantic_top_k",
+        "entity_top_k",
+        "track_window_size",
+        "confirm_hits",
+        "max_age_frames",
+        "track_min_voxel_overlap",
+        "track_max_centroid_distance_m",
+        "entity_min_voxel_overlap",
+        "entity_max_centroid_distance_m",
+        "prototype_top_k",
+        "prototype_merge_cosine",
+        "view_top_k",
+        "view_minimum_novelty_cosine",
+        "visibility_depth_tolerance_m",
+        "absence_negative_support",
+        "ownership_min_net_support",
+        "dense_integration_radius_m",
+        "dense_minimum_probability",
+        "dense_minimum_quality",
+        "dense_entropy_power",
+        "dense_view_angle_power",
+        "association_min_directed_overlap",
+        "association_bounds_expansion_m",
+        "association_max_centroid_distance_m",
+        "association_minimum_score",
+        "association_geometry_weight",
+        "association_overlap_weight",
+        "association_visual_weight",
+        "association_semantic_weight",
+        "association_temporal_weight",
+        "semantic_conflict_confidence",
+        "semantic_conflict_visual_override",
+        "ambiguous_edge_score",
+        "third_view_min_score",
+    }
+)
+_CHECKPOINT_MEMBERS = {
+    TEMPORAL_CURRENT_FORMAT: frozenset(
+        {
+            "manifest.json",
+            "snapshot.npz",
+            "entities.jsonl",
+            "diagnostics.json",
+            "checksums.json",
+        }
+    ),
+    TEMPORAL_COMPACT_FORMAT: frozenset(
+        {"manifest.json", "arrays.npz", "checksums.json"}
+    ),
+}
+
 V2_FREEZE_TOP_KEYS = frozenset(
     {
         "schema_version",
@@ -265,6 +333,7 @@ class RunnerDependencies:
     cache_loader_factory: Callable[[Mapping[str, Any], Any], Any]
     runtime_factory: Callable[[Mapping[str, Any], Any], Any]
     provenance_factory: Callable[[], Mapping[str, Any]]
+    environment_factory: Callable[[], Mapping[str, Any]]
 
 
 @dataclass(frozen=True)
@@ -275,6 +344,50 @@ class FrozenRunContext:
     input_bindings: Mapping[str, Any]
     frozen_run_identity: Mapping[str, Any]
     run_slot: str
+
+
+@dataclass(frozen=True)
+class _CheckpointArtifactWitness:
+    path: Path
+    checkpoint_format: str
+    tree_record: Mapping[str, Any]
+    maximum_entities: int
+    maximum_object_voxels: int
+
+
+def _staging_identity(staging: Path) -> tuple[int, int]:
+    status = os.stat(staging, follow_symlinks=False)
+    if not staging.is_dir():
+        raise ValueError("run staging root is not a directory")
+    return status.st_dev, status.st_ino
+
+
+def _assert_staging_identity(staging: Path, expected: tuple[int, int]) -> None:
+    try:
+        current = _staging_identity(staging)
+    except (FileNotFoundError, OSError) as exc:
+        raise ValueError("run staging root identity changed during run") from exc
+    if current != expected:
+        raise ValueError("run staging root identity changed during run")
+
+
+def _revalidate_checkpoint_artifact(
+    witness: _CheckpointArtifactWitness, *, run_root: Path
+) -> None:
+    if witness.checkpoint_format == TEMPORAL_CURRENT_FORMAT:
+        loaded = load_temporal_current_checkpoint(witness.path)
+    elif witness.checkpoint_format == TEMPORAL_COMPACT_FORMAT:
+        loaded = TemporalCompactCheckpoint.load(
+            witness.path,
+            maximum_entities=witness.maximum_entities,
+            maximum_object_voxels=witness.maximum_object_voxels,
+        )
+    else:
+        raise ValueError("checkpoint witness format is invalid")
+    loaded.revalidate_source()
+    del loaded
+    if _tree_record(witness.path, relative_to=run_root) != witness.tree_record:
+        raise ValueError("checkpoint artifact tree changed during run")
 
 
 def algorithm_config(config: Mapping[str, Any]) -> dict[str, Any]:
@@ -618,6 +731,14 @@ def _validate_config(
     for key in _INTEGER_CONFIG_FIELDS:
         if type(config[key]) is not int:
             raise TypeError(f"{key} must be an exact integer")
+    nonnegative_integer_fields = {
+        "structure_min_component_pixels",
+        "structure_object_exclusion_dilation",
+    }
+    for key in _INTEGER_CONFIG_FIELDS - {"schema_version"}:
+        minimum = 0 if key in nonnegative_integer_fields else 1
+        if config[key] < minimum or config[key] > 10_000_000:
+            raise ValueError(f"{key} is outside the supported runner range")
     for key in _FLOAT_CONFIG_FIELDS:
         value = config[key]
         if isinstance(value, bool) or not isinstance(value, Real):
@@ -653,9 +774,15 @@ def _validate_config(
         raise ValueError("temporal voxel_size_m must match cumulative geometry")
     if temporal_config.geometry.depth_max_m != config.get("depth_max_m"):
         raise ValueError("temporal depth_max_m must match cumulative geometry")
-    from src.oviv2.runner_config import runtime_config_from_json
+    from src.oviv2.runner_config import (
+        runtime_config_from_json,
+        semantic_fusion_config_from_json,
+        structure_config_from_json,
+    )
 
     runtime_config_from_json(dict(config))
+    structure_config_from_json(dict(config), voxel_size_m=float(config["voxel_size_m"]))
+    semantic_fusion_config_from_json(dict(config))
     configured_hash = config.get("algorithm_hash")
     if not _is_sha256(configured_hash) or configured_hash != algorithm_hash(config):
         raise ValueError("configured algorithm_hash does not match mapping parameters")
@@ -920,12 +1047,29 @@ def _production_runtime_factory(config: Mapping[str, Any], caches: Any) -> Any:
     return DualReadoutRuntime(cumulative, temporal)
 
 
+def _production_environment() -> Mapping[str, Any]:
+    import numpy as np
+
+    return {
+        "python": platform.python_version(),
+        "python_implementation": platform.python_implementation(),
+        "platform": platform.platform(),
+        "machine": platform.machine() or "unknown",
+        "host": socket.gethostname() or "unknown",
+        "cuda": [os.environ.get("CUDA_VERSION", "unavailable")],
+        "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES"),
+        "gpu": ["unavailable"],
+        "libraries": {"numpy": np.__version__},
+    }
+
+
 def _production_dependencies() -> RunnerDependencies:
     return RunnerDependencies(
         dataset_factory=_production_dataset_factory,
         cache_loader_factory=_production_cache_loader_factory,
         runtime_factory=_production_runtime_factory,
         provenance_factory=_production_provenance,
+        environment_factory=_production_environment,
     )
 
 
@@ -1035,6 +1179,16 @@ def run(
     ):
         raise ValueError("evaluation checkpoint frame binding mismatch")
 
+    dependencies = _production_dependencies() if dependencies is None else dependencies
+    current_environment = _validate_environment(
+        dict(dependencies.environment_factory())
+    )
+    if (
+        frozen is not None
+        and current_environment != frozen.input_bindings["environment"]
+    ):
+        raise ValueError("frozen environment differs from the execution environment")
+
     if destination.exists() or destination.is_symlink():
         raise FileExistsError(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -1042,6 +1196,7 @@ def run(
     staging = Path(
         tempfile.mkdtemp(prefix=f".{destination.name}.staging-", dir=destination.parent)
     )
+    staging_identity = _staging_identity(staging)
     published = False
     execution = (
         _run_execution(run_slot=frozen.run_slot, output=destination, staging=staging)
@@ -1049,7 +1204,6 @@ def run(
         else None
     )
     try:
-        dependencies = _production_dependencies() if dependencies is None else dependencies
         provenance = dict(dependencies.provenance_factory())
         code_commit = provenance.get("repository_commit")
         if not isinstance(code_commit, str) or len(code_commit) not in {40, 64} or any(
@@ -1066,17 +1220,7 @@ def run(
         input_sha256 = _input_sha256(
             source_config_bytes, schedule_bytes, target_bytes, cache_bindings
         )
-        runtime_config = {
-            key: value
-            for key, value in config.items()
-            if key
-            not in {
-                "evaluation_checkpoint_frames",
-                "evaluation_checkpoint_frames_sha256",
-                "occlusion_target_manifest",
-                "occlusion_target_manifest_sha256",
-            }
-        }
+        runtime_config = {key: config[key] for key in _RUNTIME_CONFIG_KEYS}
         runtime = dependencies.runtime_factory(runtime_config, caches)
 
         by_frame = {item.frame_index: item for item in official}
@@ -1103,7 +1247,8 @@ def run(
         checkpoints = tuple(by_frame[index] for index in sorted(by_frame))
         captured: list[int] = []
         records: list[dict[str, Any]] = []
-        witnesses: list[Any] = []
+        witnesses: list[_CheckpointArtifactWitness] = []
+        expected_checkpoint_inventory: set[str] = set()
         for frame_index in range(frame_count):
             frame = dataset[frame_index]
             if int(frame.frame_id) != frame_index:
@@ -1127,6 +1272,7 @@ def run(
                 voxel_size_m=temporal_config.geometry.voxel_size_m,
             )
             root = staging / "checkpoints" / f"{frame_index:08d}-{checkpoint.timestamp_ns}"
+            _assert_staging_identity(staging, staging_identity)
             root.mkdir(parents=True)
             is_full = bool({"official", "common_v2"} & set(checkpoint.roles))
             if is_full:
@@ -1159,7 +1305,28 @@ def run(
                 witness.revalidate_source()
             else:
                 witness.revalidate()
-            witnesses.append(witness)
+            artifact_tree = _tree_record(artifact_root, relative_to=staging)
+            witnesses.append(
+                _CheckpointArtifactWitness(
+                    path=artifact_root,
+                    checkpoint_format=checkpoint_format,
+                    tree_record=artifact_tree,
+                    maximum_entities=temporal_config.geometry.maximum_entities,
+                    maximum_object_voxels=temporal_config.geometry.maximum_object_voxels,
+                )
+            )
+            actual_members = {
+                path.relative_to(artifact_root).as_posix()
+                for path in artifact_root.rglob("*")
+                if path.is_file()
+            }
+            expected_members = _CHECKPOINT_MEMBERS[checkpoint_format]
+            if actual_members != expected_members:
+                raise ValueError("checkpoint artifact inventory is invalid")
+            expected_checkpoint_inventory.update(
+                (artifact_root / name).relative_to(staging).as_posix()
+                for name in expected_members
+            )
             records.append(
                 {
                     "scene": scene,
@@ -1171,11 +1338,17 @@ def run(
                     "event_ids": list(checkpoint.event_ids),
                     "roles": list(checkpoint.roles),
                     "format": checkpoint_format,
-                    "artifact": _tree_record(artifact_root, relative_to=staging),
+                    "artifact": artifact_tree,
                     "checksums_sha256": _sha256(artifact_root / "checksums.json"),
                 }
             )
             captured.append(frame_index)
+            del witness
+            if is_full:
+                del receipt
+            else:
+                del compact
+            _assert_staging_identity(staging, staging_identity)
 
         scheduled = [item.frame_index for item in checkpoints]
         if captured != scheduled:
@@ -1201,21 +1374,17 @@ def run(
         if callable(assert_unchanged):
             assert_unchanged()
         for witness in witnesses:
-            if hasattr(witness, "revalidate_source"):
-                witness.revalidate_source()
-            else:
-                witness.revalidate()
+            _assert_staging_identity(staging, staging_identity)
+            _revalidate_checkpoint_artifact(witness, run_root=staging)
+            _assert_staging_identity(staging, staging_identity)
 
         normalized_config = staging / "normalized_run_config.json"
+        _assert_staging_identity(staging, staging_identity)
         _write_json(normalized_config, config)
-        provenance_path = staging / "run_provenance.json"
-        _write_json(provenance_path, provenance)
+        _assert_staging_identity(staging, staging_identity)
         formal_fields = (
-            {
-                "frozen_run_identity": dict(frozen.frozen_run_identity),
-                "run_execution": dict(execution),
-            }
-            if frozen is not None and execution is not None
+            {"frozen_run_identity": dict(frozen.frozen_run_identity)}
+            if frozen is not None
             else {}
         )
         manifest: dict[str, Any] = {
@@ -1233,7 +1402,6 @@ def run(
             "normalized_run_config": _file_record(
                 normalized_config, relative_to=staging
             ),
-            "run_provenance": _file_record(provenance_path, relative_to=staging),
             "schedule": _byte_record(schedule_bytes),
             "target_manifest": _byte_record(target_bytes),
             "source_bindings": dict(cache_bindings),
@@ -1243,19 +1411,47 @@ def run(
             **formal_fields,
         }
         manifest["artifact_inventory"] = sorted(
+            expected_checkpoint_inventory | {"normalized_run_config.json"}
+        )
+        run_manifest_path = staging / "run_manifest.json"
+        _assert_staging_identity(staging, staging_identity)
+        _write_json(run_manifest_path, manifest)
+        _assert_staging_identity(staging, staging_identity)
+        receipt_path = staging / "execution_receipt.json"
+        _write_json(
+            receipt_path,
+            {
+                "schema_version": 1,
+                "provenance": provenance,
+                "environment": current_environment,
+                **(
+                    {
+                        "frozen_run_identity": dict(frozen.frozen_run_identity),
+                        "run_execution": dict(execution),
+                    }
+                    if frozen is not None and execution is not None
+                    else {}
+                ),
+            },
+        )
+        _assert_staging_identity(staging, staging_identity)
+        deterministic_inventory = sorted(
+            path.relative_to(staging).as_posix()
+            for path in staging.rglob("*")
+            if path.is_file()
+            and path not in {run_manifest_path, receipt_path}
+        )
+        if deterministic_inventory != manifest["artifact_inventory"]:
+            raise ValueError("run artifact inventory changed during manifest publication")
+        publication_inventory = sorted(
             path.relative_to(staging).as_posix()
             for path in staging.rglob("*")
             if path.is_file()
         )
-        run_manifest_path = staging / "run_manifest.json"
-        _write_json(run_manifest_path, manifest)
-        actual_inventory = sorted(
-            path.relative_to(staging).as_posix()
-            for path in staging.rglob("*")
-            if path.is_file() and path != run_manifest_path
-        )
-        if actual_inventory != manifest["artifact_inventory"]:
-            raise ValueError("run artifact inventory changed during manifest publication")
+        if publication_inventory != sorted(
+            [*manifest["artifact_inventory"], "run_manifest.json", "execution_receipt.json"]
+        ):
+            raise ValueError("run publication inventory is invalid")
         if frozen is not None:
             if frozen.manifest_path.read_bytes() != frozen.manifest_bytes:
                 raise ValueError("freeze manifest changed during run")
@@ -1270,12 +1466,22 @@ def run(
                 },
             ) != frozen.repository_state:
                 raise ValueError("repository identity changed during run")
+        _assert_staging_identity(staging, staging_identity)
         _publish_run(staging, destination)
         published = True
+        if _staging_identity(destination) != staging_identity:
+            raise RunPublicationUncertainError(
+                f"published run root identity is uncertain: {destination}"
+            )
         return manifest
     except BaseException:
         if not published and staging.exists():
-            shutil.rmtree(staging)
+            try:
+                unchanged_staging = _staging_identity(staging) == staging_identity
+            except OSError:
+                unchanged_staging = False
+            if unchanged_staging:
+                shutil.rmtree(staging)
         raise
 
 

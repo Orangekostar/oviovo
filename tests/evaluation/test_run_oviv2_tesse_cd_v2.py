@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import hashlib
 import json
 from pathlib import Path
+import gc
 import sys
 from types import SimpleNamespace
 
@@ -20,6 +21,18 @@ V1_FILES = (
     Path("configs/oviv2_tesse_cd_office_v1.json"),
 )
 V1_BYTES = {path: path.read_bytes() for path in V1_FILES}
+
+TEST_ENVIRONMENT = {
+    "python": "3.fixture",
+    "python_implementation": "CPython",
+    "platform": "fixture-platform",
+    "machine": "x86_64",
+    "host": "fixture-host",
+    "cuda": ["fixture-cuda"],
+    "cuda_visible_devices": None,
+    "gpu": ["fixture-gpu"],
+    "libraries": {"numpy": "fixture-numpy"},
+}
 
 
 def _write_json(path: Path, value: object) -> None:
@@ -219,7 +232,13 @@ class _DualRuntime:
         )
 
 
-def _dependencies(module: object, *, fail_frame: int | None = None):
+def _dependencies(
+    module: object,
+    *,
+    fail_frame: int | None = None,
+    provenance: dict[str, object] | None = None,
+    environment: dict[str, object] | None = None,
+):
     holder: dict[str, object] = {}
 
     def caches(config: dict[str, object], dataset: object) -> _Caches:
@@ -228,8 +247,7 @@ def _dependencies(module: object, *, fail_frame: int | None = None):
         return _Caches(parsed, {"stub": "sha256-bound"})
 
     def runtime(config: dict[str, object], cache: _Caches) -> _DualRuntime:
-        assert "occlusion_target_manifest" not in config
-        assert "evaluation_checkpoint_frames" not in config
+        holder["runtime_config"] = dict(config)
         value = _DualRuntime(cache.temporal_config, fail_frame=fail_frame)
         holder["runtime"] = value
         return value
@@ -238,7 +256,8 @@ def _dependencies(module: object, *, fail_frame: int | None = None):
         dataset_factory=lambda config: _Dataset(),
         cache_loader_factory=caches,
         runtime_factory=runtime,
-        provenance_factory=lambda: {"repository_commit": "a" * 40},
+        provenance_factory=lambda: provenance or {"repository_commit": "a" * 40},
+        environment_factory=lambda: environment or TEST_ENVIRONMENT,
     ), holder
 
 
@@ -292,7 +311,7 @@ def test_five_frame_dual_readout_is_causal_role_aware_and_deterministic(tmp_path
     assert _tree_hashes(first) == _tree_hashes(second)
     for root in (first, second):
         published = json.loads((root / "run_manifest.json").read_text())
-        for name in ("normalized_run_config", "run_provenance"):
+        for name in ("normalized_run_config",):
             record = published[name]
             path = root / record["path"]
             assert record == {
@@ -303,10 +322,194 @@ def test_five_frame_dual_readout_is_causal_role_aware_and_deterministic(tmp_path
         expected_inventory = sorted(
             path.relative_to(root).as_posix()
             for path in root.rglob("*")
-            if path.is_file() and path.name != "run_manifest.json"
+            if path.is_file()
+            and path.name not in {"run_manifest.json", "execution_receipt.json"}
         )
         assert published["artifact_inventory"] == expected_inventory
     assert {path: path.read_bytes() for path in V1_FILES} == V1_BYTES
+
+
+def test_runtime_factory_receives_only_explicit_algorithm_whitelist(tmp_path: Path) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config = _materialize_config(module, tmp_path)
+    dependencies, holder = _dependencies(module)
+    module.run(config, tmp_path / "run", dependencies=dependencies)
+    received = holder["runtime_config"]
+    assert set(received) == module._RUNTIME_CONFIG_KEYS
+    forbidden = {
+        "schedule_manifest",
+        "evaluation_checkpoint_frames",
+        "occlusion_target_manifest",
+        "dataset_root",
+        "input_manifest",
+        "frontend_manifest",
+        "dense_manifest",
+        "method_id",
+        "protocol_id",
+        "algorithm_hash",
+        "stage3_lineage_commit",
+    }
+    assert set(received).isdisjoint(forbidden)
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("structure_wall_confidence", 2.0),
+        ("fusion_entity_weight_scale", 2.0),
+        ("dense_sample_stride", 0),
+        ("frame_count", 1_000_000_000),
+    ],
+)
+def test_invalid_runner_ranges_are_rejected_before_output_creation(
+    tmp_path: Path, field: str, value: object
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config_path = _materialize_config(module, tmp_path)
+    config = json.loads(config_path.read_text())
+    config[field] = value
+    config["algorithm_hash"] = module.algorithm_hash(config)
+    _write_json(config_path, config)
+    output = tmp_path / "must-not-exist" / "run"
+    with pytest.raises(ValueError):
+        module.run(config_path, output, dependencies=_dependencies(module)[0])
+    assert not output.parent.exists()
+
+
+def test_volatile_provenance_does_not_change_deterministic_manifest(
+    tmp_path: Path,
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config = _materialize_config(module, tmp_path)
+    first = tmp_path / "first"
+    second = tmp_path / "second"
+    first_manifest = module.run(
+        config,
+        first,
+        dependencies=_dependencies(
+            module, provenance={"repository_commit": "a" * 40, "host": "one"}
+        )[0],
+    )
+    second_manifest = module.run(
+        config,
+        second,
+        dependencies=_dependencies(
+            module, provenance={"repository_commit": "a" * 40, "host": "two"}
+        )[0],
+    )
+    assert first_manifest == second_manifest
+    assert (first / "run_manifest.json").read_bytes() == (
+        second / "run_manifest.json"
+    ).read_bytes()
+    assert first_manifest["artifact_inventory"] == second_manifest["artifact_inventory"]
+    assert (first / "execution_receipt.json").read_bytes() != (
+        second / "execution_receipt.json"
+    ).read_bytes()
+
+
+def test_staging_directory_replacement_is_rejected_without_publication(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config = _materialize_config(module, tmp_path)
+    dependencies, _ = _dependencies(module)
+    captured: dict[str, Path] = {}
+    original_mkdtemp = module.tempfile.mkdtemp
+
+    def recording_mkdtemp(*args, **kwargs) -> str:
+        value = original_mkdtemp(*args, **kwargs)
+        captured["staging"] = Path(value)
+        return value
+
+    class ReplacingRuntime(_DualRuntime):
+        def process_frame(self, frame, observations, dense_semantics) -> None:
+            if frame.frame_id == 0:
+                staging = captured["staging"]
+                staging.rename(staging.with_name(staging.name + "-stolen"))
+                staging.mkdir()
+            super().process_frame(frame, observations, dense_semantics)
+
+    monkeypatch.setattr(module.tempfile, "mkdtemp", recording_mkdtemp)
+    dependencies = module.RunnerDependencies(
+        dataset_factory=dependencies.dataset_factory,
+        cache_loader_factory=dependencies.cache_loader_factory,
+        runtime_factory=lambda config, cache: ReplacingRuntime(cache.temporal_config),
+        provenance_factory=dependencies.provenance_factory,
+        environment_factory=dependencies.environment_factory,
+    )
+    output = tmp_path / "published" / "run"
+    with pytest.raises(ValueError, match="staging root identity"):
+        module.run(config, output, dependencies=dependencies)
+    assert not output.exists()
+
+
+def test_checkpoint_inventory_rejects_late_unexpected_artifact(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config = _materialize_config(module, tmp_path)
+    original_write = module._write_json
+
+    def inject(path: Path, value: object) -> None:
+        original_write(path, value)
+        if path.name == "normalized_run_config.json":
+            checkpoint = next((path.parent / "checkpoints").glob("*/temporal_current"))
+            (checkpoint / "unexpected.bin").write_bytes(b"unexpected")
+
+    monkeypatch.setattr(module, "_write_json", inject)
+    output = tmp_path / "published" / "run"
+    with pytest.raises(ValueError, match="inventory"):
+        module.run(config, output, dependencies=_dependencies(module)[0])
+    assert not output.exists()
+
+
+def test_compact_checkpoint_objects_are_released_between_checkpoints(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config = _materialize_config(module, tmp_path)
+    original_from_snapshot = module.TemporalCompactCheckpoint.from_snapshot
+    live = 0
+    maximum_live = 0
+
+    class Proxy:
+        def __init__(self, value) -> None:
+            nonlocal live, maximum_live
+            self.value = value
+            self.path = value.path
+            live += 1
+            maximum_live = max(maximum_live, live)
+
+        def revalidate_source(self) -> None:
+            self.value.revalidate_source()
+
+        def __del__(self) -> None:
+            nonlocal live
+            live -= 1
+
+    class Builder:
+        def __init__(self, value) -> None:
+            self.value = value
+
+        def commit_new(self, *args, **kwargs):
+            gc.collect()
+            return Proxy(self.value.commit_new(*args, **kwargs))
+
+    monkeypatch.setattr(
+        module.TemporalCompactCheckpoint,
+        "from_snapshot",
+        lambda *args, **kwargs: Builder(original_from_snapshot(*args, **kwargs)),
+    )
+    module.run(config, tmp_path / "run", dependencies=_dependencies(module)[0])
+    gc.collect()
+    assert maximum_live == 1
+    assert live == 0
 
 
 @pytest.mark.parametrize("failure_kind", ["runtime", "checkpoint", "export"])
@@ -595,17 +798,7 @@ def _formal_fixture(
             "shared_bindings": {
                 role: _record(path) for role, path in shared_files.items()
             },
-            "environment": {
-                "python": "3.fixture",
-                "python_implementation": "CPython",
-                "platform": "fixture-platform",
-                "machine": "x86_64",
-                "host": "fixture-host",
-                "cuda": ["fixture-cuda"],
-                "cuda_visible_devices": None,
-                "gpu": ["fixture-gpu"],
-                "libraries": {"numpy": "fixture-numpy"},
-            },
+            "environment": TEST_ENVIRONMENT,
             "commands": {
                 "cwd": str(Path(module.REPO_ROOT).resolve()),
                 "python": str(Path(sys.executable).resolve()),
@@ -786,6 +979,7 @@ def test_formal_freeze_top_level_objects_are_exact_before_output_creation(
         "selection_algorithm_hash",
         "environment_missing",
         "environment_malformed",
+        "environment_mismatch",
         "commands_empty",
         "models_missing",
         "models_empty",
@@ -833,6 +1027,8 @@ def test_complete_formal_evidence_is_strict_and_bound_before_output_creation(
         del payload["environment"]
     elif mutation == "environment_malformed":
         payload["environment"]["cuda"] = []
+    elif mutation == "environment_mismatch":
+        payload["environment"]["libraries"]["numpy"] = "999"
     elif mutation == "commands_empty":
         payload["commands"]["mapping"] = []
     elif mutation == "models_missing":
@@ -897,6 +1093,7 @@ def test_dataset_and_cache_failures_clean_staging(
             cache_loader_factory=dependencies.cache_loader_factory,
             runtime_factory=dependencies.runtime_factory,
             provenance_factory=dependencies.provenance_factory,
+            environment_factory=dependencies.environment_factory,
         )
     else:
         dependencies = module.RunnerDependencies(
@@ -906,6 +1103,7 @@ def test_dataset_and_cache_failures_clean_staging(
             ).throw(RuntimeError("cache")),
             runtime_factory=dependencies.runtime_factory,
             provenance_factory=dependencies.provenance_factory,
+            environment_factory=dependencies.environment_factory,
         )
     output = tmp_path / "published" / "result"
     with pytest.raises(RuntimeError):
@@ -939,6 +1137,7 @@ def test_frame_loading_failures_clean_staging(tmp_path: Path, failure: str) -> N
             cache_loader_factory=dependencies.cache_loader_factory,
             runtime_factory=dependencies.runtime_factory,
             provenance_factory=dependencies.provenance_factory,
+            environment_factory=dependencies.environment_factory,
         )
     else:
         original_cache_factory = dependencies.cache_loader_factory
@@ -957,6 +1156,7 @@ def test_frame_loading_failures_clean_staging(tmp_path: Path, failure: str) -> N
             cache_loader_factory=failing_cache_factory,
             runtime_factory=dependencies.runtime_factory,
             provenance_factory=dependencies.provenance_factory,
+            environment_factory=dependencies.environment_factory,
         )
     output = tmp_path / "published" / "result"
     with pytest.raises(RuntimeError):
