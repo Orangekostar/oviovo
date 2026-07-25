@@ -5,6 +5,7 @@ import gc
 import json
 import os
 from pathlib import Path
+import stat
 import weakref
 
 import numpy as np
@@ -12,6 +13,7 @@ import pytest
 
 from scripts.evaluation.derive_tesse_cd_common_v2 import deterministic_npz_bytes
 from scripts.evaluation.evaluate_oviv2_tesse_temporal_occlusion import (
+    _publish,
     evaluate_temporal_occlusion_package,
 )
 from src.oviv2.temporal_snapshot import TemporalCompactCheckpoint, TemporalSnapshotMetadata
@@ -142,6 +144,75 @@ def test_cli_evaluates_overlap_compact_and_publishes_canonical_no_replace(tmp_pa
         evaluate_temporal_occlusion_package(
             targets=target, checkpoints=[index], dataset_root=dataset, output=output
         )
+
+
+def test_publish_fails_closed_if_parent_is_exchanged(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    parent = tmp_path / "parent"
+    parent.mkdir()
+    output = parent / "result.json"
+    displaced = tmp_path / "displaced"
+    original_link = os.link
+
+    def exchange_parent(*args: object, **kwargs: object) -> None:
+        parent.rename(displaced)
+        parent.mkdir()
+        original_link(*args, **kwargs)
+
+    monkeypatch.setattr(os, "link", exchange_parent)
+    with pytest.raises(ValueError, match="output parent changed"):
+        _publish(output, b"{}\n")
+    assert not output.exists()
+
+
+def test_publish_fails_closed_if_temporary_name_is_substituted(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "result.json"
+    original_link = os.link
+
+    def substitute_temporary(
+        source: str, destination: str, **kwargs: object
+    ) -> None:
+        source_fd = kwargs["src_dir_fd"]
+        os.unlink(source, dir_fd=source_fd)
+        descriptor = os.open(
+            source, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600,
+            dir_fd=source_fd,
+        )
+        os.write(descriptor, b"evil\n")
+        os.close(descriptor)
+        original_link(source, destination, **kwargs)
+
+    monkeypatch.setattr(os, "link", substitute_temporary)
+    with pytest.raises(ValueError, match="temporary output changed"):
+        _publish(output, b"{}\n")
+    assert not output.exists()
+
+
+def test_publish_rechecks_parent_after_directory_fsync(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    parent = tmp_path / "parent"
+    parent.mkdir()
+    output = parent / "result.json"
+    displaced = tmp_path / "displaced-after-fsync"
+    original_fsync = os.fsync
+    exchanged = False
+
+    def exchange_after_directory_fsync(descriptor: int) -> None:
+        nonlocal exchanged
+        original_fsync(descriptor)
+        if not exchanged and stat.S_ISDIR(os.fstat(descriptor).st_mode):
+            exchanged = True
+            parent.rename(displaced)
+            parent.mkdir()
+
+    monkeypatch.setattr(os, "fsync", exchange_after_directory_fsync)
+    with pytest.raises(ValueError, match="output parent changed"):
+        _publish(output, b"{}\n")
+    assert not output.exists()
 
 
 @pytest.mark.parametrize("mutation", [

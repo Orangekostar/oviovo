@@ -11,9 +11,9 @@ import io
 import json
 import os
 from pathlib import Path
+import secrets
 import stat
 import sys
-import tempfile
 from typing import Any, Mapping, Sequence
 import zipfile
 
@@ -354,24 +354,126 @@ def _revalidate(witnesses: Sequence[tuple[Path, tuple[int, int, int, int, int]]]
         if not stat.S_ISREG(status.st_mode) or observed != expected: raise ValueError("validated input changed during evaluation")
 
 
-def _publish(path: Path, content: bytes) -> None:
-    if os.path.lexists(path): raise FileExistsError(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    for component in (path.parent.absolute(), *path.parent.absolute().parents):
-        if stat.S_ISLNK(os.lstat(component).st_mode):
-            raise ValueError("output parent contains a symlink")
-    descriptor, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
-    temporary = Path(temporary_name)
+def _open_output_parent(path: Path) -> int:
+    if not path.is_absolute():
+        raise ValueError("output path must be absolute")
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+    descriptor = os.open("/", flags)
     try:
-        with os.fdopen(descriptor, "wb") as stream:
-            stream.write(content); stream.flush(); os.fsync(stream.fileno())
-        try: os.link(temporary, path)
-        except FileExistsError: raise FileExistsError(path)
-        directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
-        try: os.fsync(directory)
-        finally: os.close(directory)
+        for component in path.parent.parts[1:]:
+            try:
+                os.mkdir(component, mode=0o755, dir_fd=descriptor)
+            except FileExistsError:
+                pass
+            try:
+                child = os.open(component, flags, dir_fd=descriptor)
+            except OSError as error:
+                raise ValueError("output parent is not a stable real directory") from error
+            os.close(descriptor)
+            descriptor = child
+        return descriptor
+    except BaseException:
+        os.close(descriptor)
+        raise
+
+
+def _parent_identity(path: Path) -> tuple[int, int]:
+    descriptor = _open_output_parent(path)
+    try:
+        status = os.fstat(descriptor)
+        return status.st_dev, status.st_ino
     finally:
-        temporary.unlink(missing_ok=True)
+        os.close(descriptor)
+
+
+def _named_identity(parent: int, name: str) -> tuple[int, int] | None:
+    try:
+        status = os.stat(name, dir_fd=parent, follow_symlinks=False)
+    except FileNotFoundError:
+        return None
+    return status.st_dev, status.st_ino
+
+
+def _unlink_if_identity(
+    parent: int, name: str, expected: tuple[int, int] | None
+) -> None:
+    if expected is not None and _named_identity(parent, name) == expected:
+        os.unlink(name, dir_fd=parent)
+
+
+def _publish(path: Path, content: bytes) -> None:
+    path = path.absolute()
+    parent = _open_output_parent(path)
+    parent_identity = (os.fstat(parent).st_dev, os.fstat(parent).st_ino)
+    temporary_name = f".{path.name}.{secrets.token_hex(16)}"
+    temporary_created = False
+    linked = False
+    published = False
+    temporary_identity: tuple[int, int] | None = None
+    destination_identity: tuple[int, int] | None = None
+    descriptor = -1
+    try:
+        try:
+            os.stat(path.name, dir_fd=parent, follow_symlinks=False)
+        except FileNotFoundError:
+            pass
+        else:
+            raise FileExistsError(path)
+        descriptor = os.open(
+            temporary_name,
+            os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+            0o600,
+            dir_fd=parent,
+        )
+        temporary_created = True
+        view = memoryview(content)
+        while view:
+            written = os.write(descriptor, view)
+            view = view[written:]
+        os.fsync(descriptor)
+        temporary_status = os.fstat(descriptor)
+        temporary_identity = (temporary_status.st_dev, temporary_status.st_ino)
+        if _named_identity(parent, temporary_name) != temporary_identity:
+            raise ValueError("temporary output changed during publication")
+        if _parent_identity(path) != parent_identity:
+            raise ValueError("output parent changed during publication")
+        try:
+            os.link(
+                temporary_name,
+                path.name,
+                src_dir_fd=parent,
+                dst_dir_fd=parent,
+                follow_symlinks=False,
+            )
+        except FileExistsError:
+            raise FileExistsError(path)
+        linked = True
+        destination_identity = _named_identity(parent, path.name)
+        if (
+            destination_identity != temporary_identity
+            or _named_identity(parent, temporary_name) != temporary_identity
+        ):
+            raise ValueError("temporary output changed during publication")
+        if _parent_identity(path) != parent_identity:
+            raise ValueError("output parent changed during publication")
+        os.fsync(parent)
+        if _parent_identity(path) != parent_identity:
+            raise ValueError("output parent changed during publication")
+        published = True
+    finally:
+        if descriptor >= 0:
+            os.close(descriptor)
+        if linked and not published:
+            try:
+                _unlink_if_identity(parent, path.name, destination_identity)
+            except FileNotFoundError:
+                pass
+        if temporary_created:
+            try:
+                _unlink_if_identity(parent, temporary_name, temporary_identity)
+            except FileNotFoundError:
+                pass
+        os.close(parent)
 
 
 def evaluate_temporal_occlusion_package(*, targets: str | Path, checkpoints: Sequence[str | Path], dataset_root: str | Path, output: str | Path | None = None) -> dict[str, Any]:
