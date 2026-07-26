@@ -25,6 +25,17 @@ from src.oviv2.reference_readout import (
 )
 from src.oviv2.temporal_config import ExecutionProfile
 from src.oviv2.temporal_lifecycle import TemporalLifecycle, TemporalLifecycleState
+from src.oviv2.temporal_export import (
+    DynamicState,
+    TemporalExportBatch,
+    TemporalExportSample,
+    TemporalLifecycleEvent,
+)
+from src.oviv2.temporal_lifecycle import TemporalEvidenceKind
+from src.oviv2.temporal_snapshot import (
+    TemporalCurrentSnapshot,
+    TemporalSnapshotMetadata,
+)
 
 
 V1_FILES = (
@@ -74,9 +85,14 @@ def _tree_hashes(root: Path) -> dict[str, str]:
     }
 
 
+def _read_jsonl(path: Path) -> list[dict[str, object]]:
+    return [json.loads(line) for line in path.read_text().splitlines() if line]
+
+
 def _temporal_readout() -> dict[str, object]:
     return {
         "execution_profile": "a4",
+        "components": ExecutionProfile.A4.components,
         "lifecycle": {
             "initial_log_odds": 0.0,
             "present_log_likelihood": 1.2,
@@ -117,6 +133,40 @@ def _temporal_readout() -> dict[str, object]:
             "minimum_icp_fitness": 0.5,
             "maximum_icp_rmse_m": 0.2,
             "maximum_motion_m": 2.0,
+        },
+        "proposal": {
+            "minimum_residual_area_px": 32,
+            "maximum_recovered_proposals": 16,
+            "search_region_expansion_m": 0.25,
+            "minimum_depth_residual_m": 0.1,
+        },
+        "identity": {
+            "maximum_identities": 32,
+            "maximum_dormant_frames": 600,
+            "minimum_reid_similarity": 0.8,
+            "maximum_reid_distance_m": 3.0,
+        },
+        "dynamic_state": {
+            "minimum_consecutive_motion_frames": 2,
+            "displacement_floor_m": 0.1,
+            "minimum_motion_confidence": 0.7,
+            "static_off_streak_frames": 10,
+        },
+        "motion": {
+            "minimum_translation_confidence": 0.6,
+            "maximum_translation_residual_m": 0.25,
+            "require_explicit_rejection": True,
+        },
+        "geometry_epoch": {
+            "maximum_epochs_per_identity": 4,
+            "maximum_retained_epochs": 32,
+        },
+        "background_ledger": {
+            "maximum_journal_blocks": 64,
+            "commit_support_frames": 2,
+            "commit_distinct_view_bins": 2,
+            "minimum_commit_frame_gap": 1,
+            "maximum_records_per_block": 8,
         },
     }
 
@@ -222,9 +272,17 @@ class _Dataset:
 
 
 class _DualRuntime:
-    def __init__(self, temporal_config: object, *, fail_frame: int | None = None):
+    def __init__(
+        self,
+        temporal_config: object,
+        *,
+        fail_frame: int | None = None,
+        export_records: bool = False,
+    ):
         self.fail_frame = fail_frame
+        self.export_records = export_records
         self.calls: list[int] = []
+        self.checkpoint_calls: list[int] = []
         self.temporal = SimpleNamespace(
             state=SimpleNamespace(
                 scene_id="apartment",
@@ -236,7 +294,9 @@ class _DualRuntime:
             )
         )
 
-    def process_frame(self, frame: object, observations: object, dense_semantics: object) -> None:
+    def process_frame(
+        self, frame: object, observations: object, dense_semantics: object
+    ) -> SimpleNamespace:
         assert observations == () and dense_semantics is None
         if frame.frame_id == self.fail_frame:
             raise RuntimeError("injected runtime failure")
@@ -249,17 +309,92 @@ class _DualRuntime:
             entities=(),
             background=self.temporal.state.background,
         )
+        states = (
+            DynamicState.STATIC,
+            DynamicState.DYNAMIC,
+            DynamicState.UNKNOWN,
+        )
+        samples = (
+            ()
+            if not self.export_records or frame.frame_id == 1
+            else (
+                TemporalExportSample(
+                    frame.frame_id,
+                    100 + frame.frame_id * 10,
+                    frame.frame_id + 1,
+                    (float(frame.frame_id), 0.0, 0.0),
+                    1,
+                    states[frame.frame_id % len(states)],
+                    0.75,
+                    0,
+                    True,
+                ),
+            )
+        )
+        events = (
+            (
+                TemporalLifecycleEvent(
+                    frame.frame_id,
+                    100 + frame.frame_id * 10,
+                    1,
+                    TemporalLifecycle.ACTIVE,
+                    TemporalLifecycle.UNCERTAIN,
+                    TemporalEvidenceKind.VISIBLE_ABSENT,
+                    0,
+                    False,
+                ),
+            )
+            if self.export_records and frame.frame_id == 1
+            else ()
+        )
+        return SimpleNamespace(
+            export=TemporalExportBatch(
+                frame.frame_id, 100 + frame.frame_id * 10, samples, events
+            )
+        )
+
+    def current_checkpoint(self) -> TemporalCurrentSnapshot:
+        state = self.temporal.state
+        self.checkpoint_calls.append(state.last_frame_id)
+        return TemporalCurrentSnapshot(
+            TemporalSnapshotMetadata(
+                state.scene_id,
+                state.last_frame_id,
+                state.last_timestamp,
+                state.revision,
+                0.05,
+                "a" * 64,
+            ),
+            state.entities,
+            state.background,
+        )
+
+    def cumulative_audit_checkpoint(
+        self, checkpoint: object, caches: object
+    ) -> MapSnapshot:
+        del caches
+        return MapSnapshot(
+            method="OVIV2",
+            scene_id="apartment",
+            timestamp=checkpoint.timestamp_ns / 1_000_000_000,
+            entities=(),
+            background_xyz=None,
+            scope="current",
+        )
 
 
 class _ReferenceDualRuntime:
     def __init__(self, profile: ExecutionProfile):
         self.profile = profile
         self.calls: list[int] = []
+        self.checkpoint_calls: list[int] = []
         self.temporal = SimpleNamespace(
             state=ReferenceReadoutState("apartment", 0, -1, 0.0, (), (), None)
         )
 
-    def process_frame(self, frame: object, observations: object, dense_semantics: object) -> None:
+    def process_frame(
+        self, frame: object, observations: object, dense_semantics: object
+    ) -> SimpleNamespace:
         assert observations == () and dense_semantics is None
         self.calls.append(frame.frame_id)
         entities = (
@@ -327,6 +462,46 @@ class _ReferenceDualRuntime:
             lifecycle_states,
             view,
         )
+        samples = tuple(
+            TemporalExportSample(
+                frame.frame_id,
+                100 + frame.frame_id * 10,
+                entity.entity_id,
+                entity.centroid_xyz,
+                frame.frame_id + 1,
+                DynamicState.STATIC,
+                0.0,
+                0,
+                True,
+            )
+            for entity in entities
+            if self.profile is ExecutionProfile.A0 or entity.entity_id == 1
+        )
+        return SimpleNamespace(
+            export=TemporalExportBatch(
+                frame.frame_id, 100 + frame.frame_id * 10, samples, ()
+            )
+        )
+
+    def current_checkpoint(self) -> CumulativeReadoutView:
+        state = self.temporal.state
+        self.checkpoint_calls.append(state.last_frame_id)
+        if state.cumulative_view is None:
+            raise RuntimeError("fixture has no cumulative checkpoint")
+        return state.cumulative_view
+
+    def cumulative_audit_checkpoint(
+        self, checkpoint: object, caches: object
+    ) -> MapSnapshot:
+        del caches
+        return MapSnapshot(
+            method="OVIV2",
+            scene_id="apartment",
+            timestamp=checkpoint.timestamp_ns / 1_000_000_000,
+            entities=(),
+            background_xyz=None,
+            scope="current",
+        )
 
 
 def _dependencies(
@@ -336,6 +511,7 @@ def _dependencies(
     provenance: dict[str, object] | None = None,
     environment: dict[str, object] | None = None,
     cache_bindings: dict[str, object] | None = None,
+    export_records: bool = False,
 ):
     holder: dict[str, object] = {}
 
@@ -351,7 +527,11 @@ def _dependencies(
 
     def runtime(config: dict[str, object], cache: _Caches) -> _DualRuntime:
         holder["runtime_config"] = dict(config)
-        value = _DualRuntime(cache.temporal_config, fail_frame=fail_frame)
+        value = _DualRuntime(
+            cache.temporal_config,
+            fail_frame=fail_frame,
+            export_records=export_records,
+        )
         holder["runtime"] = value
         return value
 
@@ -399,18 +579,17 @@ def _materialize_overlap_config(module: object, tmp_path: Path) -> Path:
 )
 def test_production_factory_uses_reference_readout_without_temporal_runtime_or_submap(
     tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
     profile: str,
     expected_type: str,
 ) -> None:
     import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
-    import src.oviv2.dual_readout  # bind the real temporal class before the trap
-    import src.oviv2.temporal_geometry as geometry_module
-    import src.oviv2.temporal_runtime as runtime_module
 
     config_path = _materialize_config(module, tmp_path)
     config = json.loads(config_path.read_text())
     config["temporal_readout"]["execution_profile"] = profile
+    config["temporal_readout"]["components"] = ExecutionProfile[
+        profile.upper()
+    ].components
     parsed = temporal_config_from_json(
         {"temporal_readout": config["temporal_readout"]}
     )
@@ -433,12 +612,6 @@ def test_production_factory_uses_reference_readout_without_temporal_runtime_or_s
             language_model_sha256="a" * 64,
         ),
     )
-    trap = lambda *args, **kwargs: (_ for _ in ()).throw(
-        AssertionError("temporal implementation constructed")
-    )
-    monkeypatch.setattr(runtime_module, "TemporalCurrentRuntime", trap)
-    monkeypatch.setattr(geometry_module, "ObjectSubmap", trap)
-
     dual = module._production_runtime_factory(config, caches)
 
     assert type(dual.temporal).__name__ == expected_type
@@ -575,6 +748,7 @@ def test_reference_profiles_publish_real_neutral_and_compact_deterministically(
     config_path = _materialize_config(module, tmp_path)
     config = json.loads(config_path.read_text())
     config["temporal_readout"]["execution_profile"] = profile.profile_id
+    config["temporal_readout"]["components"] = profile.components
     config["algorithm_hash"] = module.algorithm_hash(config)
     _write_json(config_path, config)
 
@@ -630,6 +804,105 @@ def test_reference_profiles_publish_real_neutral_and_compact_deterministically(
         assert '"owner_entity_id":2' not in entities_path.read_text()
 
 
+def test_runner_exports_every_frame_with_explicit_causal_state(tmp_path: Path) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config = _materialize_config(module, tmp_path)
+    root = tmp_path / "causal-export"
+    manifest = module.run(
+        config,
+        root,
+        dependencies=_dependencies(module, export_records=True)[0],
+    )
+
+    coverage = _read_jsonl(root / "temporal_frame_coverage.jsonl")
+    assert coverage == [
+        {
+            "frame_index": frame_index,
+            "timestamp_ns": 100 + frame_index * 10,
+            "record_count": 0 if frame_index == 1 else 1,
+            "event_count": 1 if frame_index == 1 else 0,
+        }
+        for frame_index in range(5)
+    ]
+    trajectories = _read_jsonl(root / "trajectories.jsonl")
+    assert [row["frame_index"] for row in trajectories] == [0, 2, 3, 4]
+    assert {row["dynamic_state"] for row in trajectories} == {
+        "static",
+        "dynamic",
+        "unknown",
+    }
+    transitions = _read_jsonl(root / "lifecycle_transitions.jsonl")
+    assert transitions == [
+        {
+            "after": "uncertain",
+            "before": "active",
+            "entity_id": 1,
+            "evidence": "visible_absent",
+            "frame_index": 1,
+            "geometry_epoch": 0,
+            "readout_valid": False,
+            "timestamp_ns": 110,
+        }
+    ]
+    assert manifest["processed_frame_count"] == 5
+    assert manifest["covered_frame_count"] == 5
+    assert manifest["trajectory_frame_count"] == 4
+    assert manifest["first_frame_index"] == 0
+    assert manifest["last_frame_index"] == 4
+    assert manifest["temporal_export_schema_version"] == 1
+    capture = json.loads((root / "capture_status.json").read_text())
+    source_index = json.loads((root / "source_index.json").read_text())
+    for field, name in (
+        ("frame_coverage", "temporal_frame_coverage.jsonl"),
+        ("lifecycle_transitions", "lifecycle_transitions.jsonl"),
+    ):
+        assert capture[field] == source_index[field]
+        assert capture[field] == {
+            "path": name,
+            "sha256": _sha256(root / name),
+            "byte_count": (root / name).stat().st_size,
+        }
+        assert name in manifest["artifact_inventory"]
+
+
+@pytest.mark.parametrize("mutation", ["frame", "timestamp"])
+def test_runner_rejects_noncausal_export_batch(
+    tmp_path: Path, mutation: str
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    class NoncausalRuntime(_DualRuntime):
+        def process_frame(
+            self, frame: object, observations: object, dense_semantics: object
+        ) -> SimpleNamespace:
+            result = super().process_frame(frame, observations, dense_semantics)
+            export = result.export
+            return SimpleNamespace(
+                export=TemporalExportBatch(
+                    export.frame_index + (mutation == "frame"),
+                    export.timestamp_ns + (mutation == "timestamp"),
+                    (),
+                    (),
+                )
+            )
+
+    config = _materialize_config(module, tmp_path)
+    dependencies, _ = _dependencies(module)
+    dependencies = module.RunnerDependencies(
+        dataset_factory=dependencies.dataset_factory,
+        cache_loader_factory=dependencies.cache_loader_factory,
+        runtime_factory=lambda config, cache: NoncausalRuntime(cache.temporal_config),
+        provenance_factory=dependencies.provenance_factory,
+        environment_factory=dependencies.environment_factory,
+    )
+    output = tmp_path / "published" / "noncausal"
+    with pytest.raises(ValueError, match="export batch"):
+        module.run(config, output, dependencies=dependencies)
+    assert not output.exists()
+    assert not list(output.parent.glob(".noncausal.staging-*"))
+
+
 def test_five_frame_dual_readout_is_causal_role_aware_and_deterministic(tmp_path: Path) -> None:
     import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
     from scripts.evaluation.export_tesse_temporal_artifact import (
@@ -646,9 +919,20 @@ def test_five_frame_dual_readout_is_causal_role_aware_and_deterministic(tmp_path
 
     assert manifest["protocol_id"] == "oviv2-tessecd-v2"
     assert holder["runtime"].calls == [0, 1, 2, 3, 4]
+    assert holder["runtime"].checkpoint_calls == [1, 2, 3, 4]
     assert manifest["scheduled_frame_indices"] == [1, 2, 3, 4]
     assert manifest["captured_frame_indices"] == [1, 2, 3, 4]
     records = {item["frame_index"]: item for item in manifest["checkpoints"]}
+    for record in records.values():
+        assert "cumulative_audit" not in record["artifacts"]
+        audit = record["cumulative_audit"]
+        for field in ("snapshot", "entities"):
+            path = first / audit[field]["path"]
+            assert audit[field] == {
+                "path": audit[field]["path"],
+                "sha256": _sha256(path),
+                "byte_count": path.stat().st_size,
+            }
     assert records[1]["roles"] == ["official"]
     assert records[3]["roles"] == ["common_v2"]
     assert records[1]["format"] == "oviv2_temporal_current_checkpoint"
@@ -698,11 +982,19 @@ def test_five_frame_dual_readout_is_causal_role_aware_and_deterministic(tmp_path
             "schedule",
             "capture_status",
             "trajectories",
+            "frame_coverage",
+            "lifecycle_transitions",
             "checkpoints",
         }
         assert source_index["method"] == "OVIV2"
         assert [item["frame_index"] for item in source_index["checkpoints"]] == [1, 3]
-        for role in ("schedule", "capture_status", "trajectories"):
+        for role in (
+            "schedule",
+            "capture_status",
+            "trajectories",
+            "frame_coverage",
+            "lifecycle_transitions",
+        ):
             assert not Path(source_index[role]["path"]).is_absolute()
         assert all(
             not Path(item[role]["path"]).is_absolute()
@@ -1013,12 +1305,12 @@ def test_staging_directory_replacement_is_rejected_without_publication(
         return value
 
     class ReplacingRuntime(_DualRuntime):
-        def process_frame(self, frame, observations, dense_semantics) -> None:
+        def process_frame(self, frame, observations, dense_semantics) -> SimpleNamespace:
             if frame.frame_id == 0:
                 staging = captured["staging"]
                 staging.rename(staging.with_name(staging.name + "-stolen"))
                 staging.mkdir()
-            super().process_frame(frame, observations, dense_semantics)
+            return super().process_frame(frame, observations, dense_semantics)
 
     monkeypatch.setattr(module.tempfile, "mkdtemp", recording_mkdtemp)
     dependencies = module.RunnerDependencies(
@@ -1628,6 +1920,11 @@ def test_complete_v2_formal_freeze_runs_before_publishing(
         "mode",
         "algorithm_hash",
         "processed_frame_count",
+        "covered_frame_count",
+        "trajectory_frame_count",
+        "first_frame_index",
+        "last_frame_index",
+        "temporal_export_schema_version",
         "scheduled_frame_indices",
         "captured_frame_indices",
         "config",

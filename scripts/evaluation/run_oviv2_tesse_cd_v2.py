@@ -73,9 +73,15 @@ from src.oviv2.temporal_snapshot import (  # noqa: E402
     TemporalCurrentSnapshot,
     TemporalSnapshotMetadata,
 )
+from src.oviv2.temporal_export import (  # noqa: E402
+    TemporalExportBatch,
+    validate_temporal_export_sequence,
+)
+from src.oviv2.reference_readout import CumulativeReadoutView  # noqa: E402
 
 
 PROTOCOL_ID = "oviv2-tessecd-v2"
+TEMPORAL_EXPORT_SCHEMA_VERSION = 1
 SCENE_CONFIG_FIELDS = RUNNER_SCENE_CONFIG_FIELDS
 
 _STRING_CONFIG_FIELDS = frozenset(
@@ -1272,6 +1278,20 @@ def _cumulative_neutral_from_runtime(
     from src.evaluation.oviv2_tesse import build_neutral_current_snapshot
     from src.oviv2.runtime import Oviv2Runtime
 
+    injected_checkpoint = getattr(runtime, "cumulative_audit_checkpoint", None)
+    if callable(injected_checkpoint):
+        injected = injected_checkpoint(checkpoint, caches)
+        if not isinstance(injected, MapSnapshot):
+            raise TypeError("cumulative audit checkpoint must be a MapSnapshot")
+        temporal_state = getattr(getattr(runtime, "temporal", None), "state", None)
+        if not (
+            temporal_state is not None
+            and injected.scene_id == temporal_state.scene_id
+            and injected.timestamp == checkpoint.timestamp_ns / 1_000_000_000
+        ):
+            raise ValueError("cumulative audit checkpoint does not match progress")
+        return injected
+
     cumulative = getattr(runtime, "cumulative", None)
     if not isinstance(cumulative, Oviv2Runtime):
         raise ValueError("dual runtime does not expose cumulative Oviv2Runtime")
@@ -1393,6 +1413,22 @@ def _write_json(path: Path, value: Mapping[str, Any]) -> None:
             json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
             + "\n"
         ).encode("utf-8")
+    )
+
+
+def _write_jsonl(path: Path, rows: Sequence[Mapping[str, Any]]) -> None:
+    path.write_text(
+        "".join(
+            json.dumps(
+                dict(row),
+                sort_keys=True,
+                separators=(",", ":"),
+                allow_nan=False,
+            )
+            + "\n"
+            for row in rows
+        ),
+        encoding="utf-8",
     )
 
 
@@ -1535,24 +1571,50 @@ def run(
         captured: list[int] = []
         records: list[dict[str, Any]] = []
         witnesses: list[_CheckpointArtifactWitness] = []
+        cumulative_audit_witnesses: list[Any] = []
+        cumulative_audit_directories: set[str] = set()
         expected_checkpoint_inventory: set[str] = set()
         official_frames = {item.frame_index for item in official}
         official_sources: dict[int, dict[str, Any]] = {}
         trajectory_rows: list[dict[str, Any]] = []
+        lifecycle_rows: list[dict[str, Any]] = []
+        coverage_rows: list[dict[str, Any]] = []
+        export_batches: list[TemporalExportBatch] = []
         for frame_index in range(frame_count):
             frame = dataset[frame_index]
             if int(frame.frame_id) != frame_index:
                 raise ValueError("dataset frame IDs must equal zero-based frame indices")
             observations, dense_semantics = caches.load(frame_index, frame)
-            runtime.process_frame(
+            dataset_timestamp_ns = _dataset_timestamp_ns(dataset, frame_index)
+            frame_result = runtime.process_frame(
                 frame,
                 observations=observations,
                 dense_semantics=dense_semantics,
             )
+            export = getattr(frame_result, "export", None)
+            if type(export) is not TemporalExportBatch:
+                raise TypeError("dual runtime frame result has no temporal export batch")
+            if (
+                export.frame_index != frame_index
+                or export.timestamp_ns != dataset_timestamp_ns
+            ):
+                raise ValueError("temporal export batch does not match input frame")
+            if export_batches:
+                export.validate_after(export_batches[-1])
+            export_batches.append(export)
+            trajectory_rows.extend(sample.to_json_record() for sample in export.samples)
+            lifecycle_rows.extend(event.to_json_record() for event in export.events)
+            coverage_rows.append(
+                {
+                    "frame_index": frame_index,
+                    "timestamp_ns": dataset_timestamp_ns,
+                    "record_count": len(export.samples),
+                    "event_count": len(export.events),
+                }
+            )
             checkpoint = by_frame.get(frame_index)
             if checkpoint is None:
                 continue
-            dataset_timestamp_ns = _dataset_timestamp_ns(dataset, frame_index)
             if dataset_timestamp_ns != checkpoint.timestamp_ns:
                 raise ValueError("checkpoint timestamp does not match dataset timestamp")
             if checkpoint.relative_timestamp_ns != (
@@ -1563,18 +1625,27 @@ def run(
                 )
             reference_state = None
             snapshot = None
+            checkpoint_api = getattr(runtime, "current_checkpoint", None)
+            if not callable(checkpoint_api):
+                raise TypeError("dual runtime does not expose current_checkpoint")
+            current_checkpoint = checkpoint_api()
+            expected_timestamp = checkpoint.timestamp_ns / 1_000_000_000
             if temporal_config.execution_profile.profile_id not in {"a0", "a1"}:
-                snapshot = _snapshot_from_runtime(
-                    runtime,
-                    checkpoint=checkpoint,
-                    scene=scene,
-                    config_sha256=str(config["algorithm_hash"]),
-                    voxel_size_m=temporal_config.geometry.voxel_size_m,
-                )
+                if type(current_checkpoint) is not TemporalCurrentSnapshot:
+                    raise TypeError("temporal profile checkpoint must be native temporal state")
+                snapshot = current_checkpoint
                 metadata = snapshot.metadata
+                if not (
+                    metadata.scene_id == scene
+                    and metadata.frame_id == checkpoint.frame_index
+                    and metadata.revision == checkpoint.frame_index + 1
+                    and float(metadata.timestamp) == expected_timestamp
+                ):
+                    raise ValueError("temporal checkpoint does not match checkpoint progress")
             else:
+                if type(current_checkpoint) is not CumulativeReadoutView:
+                    raise TypeError("reference profile checkpoint must be native cumulative view")
                 reference_state = getattr(getattr(runtime, "temporal", None), "state", None)
-                expected_timestamp = checkpoint.timestamp_ns / 1_000_000_000
                 if not (
                     reference_state is not None
                     and reference_state.scene_id == scene
@@ -1583,11 +1654,18 @@ def run(
                     and float(reference_state.last_timestamp) == expected_timestamp
                 ):
                     raise ValueError("reference state does not match checkpoint progress")
+                if not (
+                    current_checkpoint.scene_id == scene
+                    and current_checkpoint.last_frame_id == checkpoint.frame_index
+                    and current_checkpoint.revision == checkpoint.frame_index + 1
+                    and current_checkpoint.last_timestamp == expected_timestamp
+                ):
+                    raise ValueError("reference checkpoint does not match checkpoint progress")
                 metadata = TemporalSnapshotMetadata(
-                    scene_id=reference_state.scene_id,
-                    frame_id=reference_state.last_frame_id,
-                    timestamp=reference_state.last_timestamp,
-                    revision=reference_state.revision,
+                    scene_id=current_checkpoint.scene_id,
+                    frame_id=current_checkpoint.last_frame_id,
+                    timestamp=current_checkpoint.last_timestamp,
+                    revision=current_checkpoint.revision,
                     voxel_size_m=temporal_config.geometry.voxel_size_m,
                     config_sha256=str(config["algorithm_hash"]),
                 )
@@ -1600,6 +1678,76 @@ def run(
             if not needs_full and not needs_compact:
                 raise ValueError("checkpoint role combination is invalid")
             artifacts: dict[str, dict[str, Any]] = {}
+            audit_root = root / "cumulative_audit"
+            from src.oviv2.runtime import Oviv2Runtime
+
+            cumulative_runtime = getattr(runtime, "cumulative", None)
+            cumulative_snapshot_record = None
+            if isinstance(cumulative_runtime, Oviv2Runtime):
+                from src.evaluation.oviv2_tesse import build_neutral_current_snapshot
+
+                required = (
+                    "class_names",
+                    "object_semantic_ids",
+                    "semantic_fusion",
+                    "timestamp_ns_by_frame",
+                )
+                if any(not hasattr(caches, name) for name in required):
+                    raise TypeError("cumulative audit requires production cache bindings")
+                cumulative_snapshot = cumulative_runtime.commit_new(
+                    audit_root / "voxel_snapshot"
+                )
+                if not (
+                    cumulative_snapshot.metadata.frame_id == checkpoint.frame_index
+                    and float(cumulative_snapshot.metadata.timestamp)
+                    == checkpoint.timestamp_ns / 1_000_000_000
+                ):
+                    raise ValueError("cumulative audit snapshot does not match progress")
+                cumulative_snapshot.revalidate_source()
+                cumulative_audit_witnesses.append(cumulative_snapshot)
+                cumulative_neutral = build_neutral_current_snapshot(
+                    cumulative_snapshot,
+                    timestamp_ns=checkpoint.timestamp_ns,
+                    class_names=caches.class_names,
+                    object_semantic_ids=caches.object_semantic_ids,
+                    fusion=caches.semantic_fusion,
+                    timestamp_ns_by_frame=caches.timestamp_ns_by_frame,
+                )
+                cumulative_snapshot_record = _tree_record(
+                    audit_root / "voxel_snapshot", relative_to=staging
+                )
+            else:
+                cumulative_neutral = _cumulative_neutral_from_runtime(
+                    runtime, checkpoint=checkpoint, caches=caches
+                )
+            audit_paths = write_map_snapshot(
+                cumulative_neutral, audit_root / "artifact"
+            )
+            audit_snapshot = Path(audit_paths["snapshot"])
+            audit_entities = Path(audit_paths["entities"])
+            for path in (audit_snapshot, audit_entities):
+                if not path.is_file() or path.is_symlink():
+                    raise ValueError("cumulative audit sidecar is invalid")
+                expected_checkpoint_inventory.add(
+                    path.relative_to(staging).as_posix()
+                )
+            for path in audit_root.rglob("*"):
+                relative = path.relative_to(staging).as_posix()
+                if path.is_file():
+                    expected_checkpoint_inventory.add(relative)
+                elif path.is_dir():
+                    cumulative_audit_directories.add(relative)
+            cumulative_audit_directories.add(
+                audit_root.relative_to(staging).as_posix()
+            )
+            cumulative_audit: dict[str, Any] = {
+                "format": "oviv2_cumulative_audit_v1",
+                "artifact": _tree_record(audit_root / "artifact", relative_to=staging),
+                "snapshot": _file_record(audit_snapshot, relative_to=staging),
+                "entities": _file_record(audit_entities, relative_to=staging),
+            }
+            if cumulative_snapshot_record is not None:
+                cumulative_audit["voxel_snapshot"] = cumulative_snapshot_record
             temporal_neutral = None
             if needs_full:
                 if snapshot is not None:
@@ -1630,16 +1778,14 @@ def run(
                         runtime={},
                     )
                     loaded.revalidate_source()
-                cumulative_neutral = (
-                    _cumulative_neutral_from_runtime(
-                        runtime, checkpoint=checkpoint, caches=caches
-                    )
-                    if temporal_config.execution_profile.profile_id in {"a0", "a1", "a2"}
-                    else None
-                )
                 neutral = _compose_checkpoint_neutral(
                     temporal_config.execution_profile,
-                    cumulative=cumulative_neutral,
+                    cumulative=(
+                        cumulative_neutral
+                        if temporal_config.execution_profile.profile_id
+                        in {"a0", "a1", "a2"}
+                        else None
+                    ),
                     reference_state=reference_state,
                     temporal=temporal_neutral,
                     expected_timestamp_ns=checkpoint.timestamp_ns,
@@ -1652,21 +1798,6 @@ def run(
                         raise ValueError("neutral checkpoint sidecar is invalid")
                     expected_checkpoint_inventory.add(
                         path.relative_to(staging).as_posix()
-                    )
-                for entity in neutral.entities:
-                    points = np.asarray(entity.points_xyz, dtype=np.float64)
-                    if points.ndim != 2 or points.shape[1:] != (3,) or not len(points):
-                        raise ValueError("neutral entity has no trajectory centroid")
-                    centroid = points.mean(axis=0)
-                    if not np.isfinite(centroid).all():
-                        raise ValueError("neutral entity trajectory is not finite")
-                    trajectory_rows.append(
-                        {
-                            "frame_index": checkpoint.frame_index,
-                            "timestamp_ns": checkpoint.timestamp_ns,
-                            "entity_id": entity.entity_id,
-                            "centroid_xyz": [float(value) for value in centroid],
-                        }
                     )
                 if snapshot is None:
                     neutral_tree = _tree_record(
@@ -1748,6 +1879,7 @@ def run(
                 "artifact": primary["artifact"],
                 "checksums_sha256": primary["checksums_sha256"],
                 "artifacts": artifacts,
+                "cumulative_audit": cumulative_audit,
                 "checkpoint_status": _file_record(status_path, relative_to=staging),
             }
             if needs_full:
@@ -1778,6 +1910,15 @@ def run(
         scheduled = [item.frame_index for item in checkpoints]
         if captured != scheduled:
             raise ValueError("captured checkpoints do not exactly match the schedule")
+        validate_temporal_export_sequence(tuple(export_batches))
+        if (
+            len(export_batches) != frame_count
+            or [row["frame_index"] for row in coverage_rows]
+            != list(range(frame_count))
+            or [row["timestamp_ns"] for row in coverage_rows]
+            != [_dataset_timestamp_ns(dataset, index) for index in range(frame_count)]
+        ):
+            raise ValueError("temporal frame coverage is not exact")
         expected_dirs = {
             f"{item.frame_index:08d}-{item.timestamp_ns}" for item in checkpoints
         }
@@ -1802,6 +1943,10 @@ def run(
             _assert_staging_identity(staging, staging_identity)
             _revalidate_checkpoint_artifact(witness, run_root=staging)
             _assert_staging_identity(staging, staging_identity)
+        for witness in cumulative_audit_witnesses:
+            _assert_staging_identity(staging, staging_identity)
+            witness.revalidate_source()
+            _assert_staging_identity(staging, staging_identity)
 
         normalized_config = staging / "normalized_run_config.json"
         _assert_staging_identity(staging, staging_identity)
@@ -1813,21 +1958,16 @@ def run(
         schedule_copy.write_bytes(schedule_bytes)
         schedule_source_record = _file_record(schedule_copy, relative_to=staging)
         trajectory_rows.sort(key=lambda row: (row["frame_index"], row["entity_id"]))
+        lifecycle_rows.sort(key=lambda row: (row["frame_index"], row["entity_id"]))
         trajectories_path = staging / "trajectories.jsonl"
-        trajectories_path.write_text(
-            "".join(
-                json.dumps(
-                    row,
-                    sort_keys=True,
-                    separators=(",", ":"),
-                    allow_nan=False,
-                )
-                + "\n"
-                for row in trajectory_rows
-            ),
-            encoding="utf-8",
-        )
+        _write_jsonl(trajectories_path, trajectory_rows)
         trajectories_record = _file_record(trajectories_path, relative_to=staging)
+        lifecycle_path = staging / "lifecycle_transitions.jsonl"
+        _write_jsonl(lifecycle_path, lifecycle_rows)
+        lifecycle_record = _file_record(lifecycle_path, relative_to=staging)
+        coverage_path = staging / "temporal_frame_coverage.jsonl"
+        _write_jsonl(coverage_path, coverage_rows)
+        coverage_record = _file_record(coverage_path, relative_to=staging)
         ordered_official_sources = [
             official_sources[item.frame_index] for item in official
         ]
@@ -1843,6 +1983,8 @@ def run(
                 "captured_frame_indices": [item.frame_index for item in official],
                 "schedule": schedule_source_record,
                 "trajectories": trajectories_record,
+                "frame_coverage": coverage_record,
+                "lifecycle_transitions": lifecycle_record,
                 "checkpoint_statuses": [
                     item["checkpoint_status"] for item in ordered_official_sources
                 ],
@@ -1934,6 +2076,8 @@ def run(
                 "schedule": schedule_source_record,
                 "capture_status": capture_record,
                 "trajectories": trajectories_record,
+                "frame_coverage": coverage_record,
+                "lifecycle_transitions": lifecycle_record,
                 "checkpoints": ordered_official_sources,
                 **(
                     {
@@ -1948,12 +2092,19 @@ def run(
         published_sidecar_records = [
             schedule_source_record,
             trajectories_record,
+            lifecycle_record,
+            coverage_record,
             capture_record,
             source_index_record,
             *(
                 item[role]
                 for item in ordered_official_sources
                 for role in ("checkpoint_status", "snapshot", "entities")
+            ),
+            *(
+                item["cumulative_audit"][role]
+                for item in records
+                for role in ("snapshot", "entities")
             ),
         ]
         for position, sidecar_record in enumerate(published_sidecar_records):
@@ -1969,6 +2120,13 @@ def run(
             "mode": "dual_readout_causal_checkpoints",
             "algorithm_hash": config["algorithm_hash"],
             "processed_frame_count": frame_count,
+            "covered_frame_count": len(coverage_rows),
+            "trajectory_frame_count": len(
+                {row["frame_index"] for row in trajectory_rows}
+            ),
+            "first_frame_index": coverage_rows[0]["frame_index"],
+            "last_frame_index": coverage_rows[-1]["frame_index"],
+            "temporal_export_schema_version": TEMPORAL_EXPORT_SCHEMA_VERSION,
             "scheduled_frame_indices": scheduled,
             "captured_frame_indices": captured,
             "config": _byte_record(source_config_bytes),
@@ -1992,6 +2150,8 @@ def run(
                 "occlusion_checkpoint_index.json",
                 "inputs/schedule.json",
                 "trajectories.jsonl",
+                "lifecycle_transitions.jsonl",
+                "temporal_frame_coverage.jsonl",
                 "capture_status.json",
                 "source_index.json",
             }
@@ -2042,6 +2202,12 @@ def run(
                 expected_directories.add(parent.as_posix())
                 expected_directories.add(parent.parent.as_posix())
                 expected_directories.add(parent.parent.parent.as_posix())
+        for record in records:
+            for role in ("snapshot", "entities"):
+                parent = Path(record["cumulative_audit"][role]["path"]).parent
+                expected_directories.add(parent.as_posix())
+                expected_directories.add(parent.parent.as_posix())
+        expected_directories.update(cumulative_audit_directories)
         expected_entries = {
             **{path: "file" for path in expected_files},
             **{path: "directory" for path in expected_directories},
