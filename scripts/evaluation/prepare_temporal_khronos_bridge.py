@@ -416,7 +416,7 @@ def _explicit_presence_runs(
         if source_id in source_to_entity and source_to_entity[source_id] != entity_id:
             raise ValueError("temporal entity source binding is ambiguous")
         source_to_entity[source_id] = entity_id
-    updates: dict[int, dict[str, bool]] = {}
+    updates: dict[int, dict[str, tuple[bool, int]]] = {}
     records = [sample for samples in trajectories.values() for sample in samples]
     for record in (*records, *transitions):
         frame = int(record["frame_index"])
@@ -425,16 +425,20 @@ def _explicit_presence_runs(
         if entity_id not in states:
             continue
         valid = bool(record["readout_valid"])
+        geometry_epoch = int(record["geometry_epoch"])
         previous = updates.setdefault(frame, {}).get(entity_id)
-        if previous is not None and previous is not valid:
-            raise ValueError("conflicting temporal readout validity")
-        updates[frame][entity_id] = valid
+        current = (valid, geometry_epoch)
+        if previous is not None and previous != current:
+            if previous[0] is not valid:
+                raise ValueError("conflicting temporal readout validity")
+            raise ValueError("conflicting temporal geometry epoch")
+        updates[frame][entity_id] = current
     intervals = {entity_id: [] for entity_id in states}
     starts: dict[str, int | None] = {entity_id: None for entity_id in states}
     for coverage_record in coverage:
         frame = int(coverage_record["frame_index"])
         timestamp = int(coverage_record["timestamp_ns"])
-        for entity_id, valid in updates.get(frame, {}).items():
+        for entity_id, (valid, _) in updates.get(frame, {}).items():
             start = starts[entity_id]
             if valid and start is None:
                 starts[entity_id] = timestamp
@@ -451,6 +455,75 @@ def _explicit_presence_runs(
         if not intervals[entity_id]:
             raise ValueError(f"entity has no explicit presence interval: {entity_id}")
     return intervals
+
+
+def _validate_temporal_consistency_records(payload: object) -> None:
+    if not isinstance(payload, Mapping) or set(payload) != {
+        "schema_version",
+        "samples",
+        "lifecycle_events",
+    }:
+        raise ValueError("temporal consistency record fields are invalid")
+    samples = payload.get("samples")
+    events = payload.get("lifecycle_events")
+    if (
+        payload.get("schema_version") != 1
+        or not isinstance(samples, list)
+        or not isinstance(events, list)
+    ):
+        raise ValueError("temporal consistency records are invalid")
+    sample_states: dict[tuple[str, int], tuple[bool, int]] = {}
+    for sample in samples:
+        if not isinstance(sample, Mapping) or frozenset(sample) != _TRAJECTORY_FIELDS:
+            raise ValueError("temporal consistency sample fields are invalid")
+        entity_id = sample.get("entity_id")
+        frame = sample.get("frame_index")
+        readout_valid = sample.get("readout_valid")
+        geometry_epoch = sample.get("geometry_epoch")
+        if not (
+            isinstance(entity_id, str)
+            and entity_id
+            and type(frame) is int
+            and frame >= 0
+            and type(readout_valid) is bool
+            and type(geometry_epoch) is int
+            and geometry_epoch >= 0
+        ):
+            raise ValueError("temporal consistency sample is invalid")
+        key = (entity_id, frame)
+        if key in sample_states:
+            raise ValueError("duplicate temporal consistency sample")
+        sample_states[key] = (readout_valid, geometry_epoch)
+    event_keys: set[tuple[str, int]] = set()
+    for event in events:
+        if not isinstance(event, Mapping) or frozenset(event) != _LIFECYCLE_FIELDS:
+            raise ValueError("temporal consistency lifecycle event fields are invalid")
+        entity_id = event.get("entity_id")
+        frame = event.get("frame_index")
+        readout_valid = event.get("readout_valid")
+        geometry_epoch = event.get("geometry_epoch")
+        if not (
+            isinstance(entity_id, str)
+            and entity_id
+            and type(frame) is int
+            and frame >= 0
+            and type(readout_valid) is bool
+            and type(geometry_epoch) is int
+            and geometry_epoch >= 0
+        ):
+            raise ValueError("temporal consistency lifecycle event is invalid")
+        key = (entity_id, frame)
+        if key in event_keys:
+            raise ValueError("duplicate temporal consistency lifecycle event")
+        event_keys.add(key)
+        sample_state = sample_states.get(key)
+        if sample_state is not None and sample_state != (
+            readout_valid,
+            geometry_epoch,
+        ):
+            if sample_state[0] is not readout_valid:
+                raise ValueError("sample/event readout validity conflict")
+            raise ValueError("sample/event geometry epoch conflict")
 
 
 def _label_space(path: Path, *, scene: str) -> dict[str, int]:
@@ -533,6 +606,25 @@ def validate_temporal_bridge_manifest(manifest_path: Path) -> dict[str, Any]:
         or audit["missing_frame_count"] != 0
     ):
         raise ValueError("temporal bridge audit counts are invalid")
+    consistency_record = manifest.get("temporal_consistency_json")
+    if not isinstance(consistency_record, Mapping) or set(consistency_record) != {
+        "path",
+        "sha256",
+        "byte_count",
+    }:
+        raise ValueError("temporal bridge consistency record is invalid")
+    consistency_path = _artifact_path(manifest_path, consistency_record["path"])
+    if (
+        not consistency_path.is_file()
+        or consistency_path.stat().st_size != consistency_record["byte_count"]
+        or _sha256(consistency_path) != consistency_record["sha256"]
+    ):
+        raise ValueError("temporal bridge consistency record hash mismatch")
+    consistency_payload = loads_strict(
+        consistency_path.read_text(encoding="utf-8"),
+        label="temporal consistency records",
+    )
+    _validate_temporal_consistency_records(consistency_payload)
     timestamps = [int(value) for value in manifest.get("query_timestamps_ns", ())]
     if not timestamps or any(
         current <= previous for previous, current in zip(timestamps, timestamps[1:])
@@ -1063,6 +1155,43 @@ def prepare_temporal_bridge(
         tempfile.mkdtemp(prefix=f".{output.name}.", dir=output.parent)
     )
     artifact_root = staging
+    normalized_samples = [
+        {
+            **sample,
+            "entity_id": source_to_entity.get(
+                str(sample["entity_id"]), str(sample["entity_id"])
+            ),
+        }
+        for sample in all_samples
+    ]
+    normalized_transitions = [
+        {
+            **transition,
+            "entity_id": source_to_entity.get(
+                str(transition["entity_id"]), str(transition["entity_id"])
+            ),
+        }
+        for transition in transitions
+    ]
+    consistency_payload = {
+        "schema_version": 1,
+        "samples": sorted(
+            normalized_samples,
+            key=lambda record: (int(record["frame_index"]), str(record["entity_id"])),
+        ),
+        "lifecycle_events": sorted(
+            normalized_transitions,
+            key=lambda record: (int(record["frame_index"]), str(record["entity_id"])),
+        ),
+    }
+    _validate_temporal_consistency_records(consistency_payload)
+    consistency_path = artifact_root / "temporal_consistency.json"
+    _write_json(consistency_path, consistency_payload)
+    consistency_record = {
+        "path": str(consistency_path.relative_to(artifact_root)),
+        "sha256": _sha256(consistency_path),
+        "byte_count": consistency_path.stat().st_size,
+    }
     checkpoint_outputs = []
     for position, (checkpoint, snapshot) in enumerate(zip(checkpoints, snapshots)):
         query = timestamps[position]
@@ -1157,6 +1286,7 @@ def prepare_temporal_bridge(
         "query_timestamps_ns": timestamps,
         "symbol_assignments": assignments,
         "checkpoints": checkpoint_outputs,
+        "temporal_consistency_json": consistency_record,
         "hashed_inputs": [_source_record(source) for source in source_paths],
         "protocol": {
             "node_symbol_order": "first_appearance_timestamp_then_entity_id",

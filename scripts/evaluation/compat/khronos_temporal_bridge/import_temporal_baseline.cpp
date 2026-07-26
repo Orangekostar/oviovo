@@ -5,6 +5,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -41,6 +42,97 @@ Json loadJson(const std::string& path) {
   Json payload;
   input >> payload;
   return payload;
+}
+
+void requireExactFields(const Json& value,
+                        const std::set<std::string>& expected,
+                        const std::string& label) {
+  if (!value.is_object() || value.size() != expected.size()) {
+    throw std::runtime_error(label + " fields are invalid");
+  }
+  for (const auto& field : expected) {
+    if (!value.contains(field)) {
+      throw std::runtime_error(label + " fields are invalid");
+    }
+  }
+}
+
+struct ExplicitTemporalState {
+  uint64_t geometry_epoch;
+  bool readout_valid;
+};
+
+void validateTemporalConsistency(const Json& manifest) {
+  const Json& record = manifest.at("temporal_consistency_json");
+  requireExactFields(record, {"path", "sha256", "byte_count"},
+                     "temporal consistency record");
+  const Json payload =
+      loadJson(resolveBridgePath(record.at("path").get<std::string>()));
+  requireExactFields(payload, {"schema_version", "samples", "lifecycle_events"},
+                     "temporal consistency payload");
+  if (payload.at("schema_version").get<uint32_t>() != 1 ||
+      !payload.at("samples").is_array() ||
+      !payload.at("lifecycle_events").is_array()) {
+    throw std::runtime_error("temporal consistency payload is invalid");
+  }
+
+  using TemporalKey = std::pair<std::string, uint64_t>;
+  std::map<TemporalKey, ExplicitTemporalState> sample_states;
+  const std::set<std::string> sample_fields{
+      "frame_index",       "timestamp_ns",     "entity_id",
+      "centroid_xyz",      "observation_count", "dynamic_state",
+      "motion_confidence", "geometry_epoch", "readout_valid"};
+  for (const auto& sample : payload.at("samples")) {
+    requireExactFields(sample, sample_fields, "temporal consistency sample");
+    if (!sample.at("entity_id").is_string() ||
+        !sample.at("frame_index").is_number_unsigned() ||
+        !sample.at("geometry_epoch").is_number_unsigned() ||
+        !sample.at("readout_valid").is_boolean()) {
+      throw std::runtime_error("temporal consistency sample is invalid");
+    }
+    const std::string entity_id = sample.at("entity_id").get<std::string>();
+    const uint64_t frame_index = sample.at("frame_index").get<uint64_t>();
+    const ExplicitTemporalState sample_state{
+        sample.at("geometry_epoch").get<uint64_t>(),
+        sample.at("readout_valid").get<bool>()};
+    if (entity_id.empty() ||
+        !sample_states.emplace(TemporalKey{entity_id, frame_index}, sample_state)
+             .second) {
+      throw std::runtime_error("duplicate or invalid temporal consistency sample");
+    }
+  }
+
+  const std::set<std::string> event_fields{
+      "frame_index", "timestamp_ns", "entity_id",      "before",
+      "after",       "evidence",     "geometry_epoch", "readout_valid"};
+  std::set<TemporalKey> event_keys;
+  for (const auto& event : payload.at("lifecycle_events")) {
+    requireExactFields(event, event_fields, "temporal consistency lifecycle event");
+    if (!event.at("entity_id").is_string() ||
+        !event.at("frame_index").is_number_unsigned() ||
+        !event.at("geometry_epoch").is_number_unsigned() ||
+        !event.at("readout_valid").is_boolean()) {
+      throw std::runtime_error("temporal consistency lifecycle event is invalid");
+    }
+    const std::string entity_id = event.at("entity_id").get<std::string>();
+    const uint64_t frame_index = event.at("frame_index").get<uint64_t>();
+    const uint64_t event_epoch = event.at("geometry_epoch").get<uint64_t>();
+    const bool event_readout_valid = event.at("readout_valid").get<bool>();
+    const TemporalKey key{entity_id, frame_index};
+    if (entity_id.empty() || !event_keys.emplace(key).second) {
+      throw std::runtime_error(
+          "duplicate or invalid temporal consistency lifecycle event");
+    }
+    const auto sample_it = sample_states.find(key);
+    if (sample_it == sample_states.end()) {
+      continue;
+    }
+    const ExplicitTemporalState& sample_state = sample_it->second;
+    if (sample_state.geometry_epoch != event_epoch ||
+        sample_state.readout_valid != event_readout_valid) {
+      throw std::runtime_error("sample/event temporal state conflict");
+    }
+  }
 }
 
 Points loadPoints(const std::string& path) {
@@ -188,6 +280,7 @@ int main(int argc, char** argv) {
     if (manifest.value("mode", "") != "temporal_checkpoints") {
       throw std::runtime_error("bridge manifest is not temporal_checkpoints");
     }
+    validateTemporalConsistency(manifest);
     const std::filesystem::path output(argv[2]);
     if (std::filesystem::exists(output)) {
       throw std::runtime_error("output directory already exists");

@@ -503,16 +503,20 @@ def _explicit_presence_intervals(
         if source_id in source_to_entity and source_to_entity[source_id] != entity_id:
             raise ValueError("explicit temporal entity binding is ambiguous")
         source_to_entity[source_id] = entity_id
-    updates: dict[int, dict[str, bool]] = {}
+    updates: dict[int, dict[str, tuple[bool, int]]] = {}
     for record in (*trajectories, *transitions):
         frame = int(record["frame_index"])
         source_id = str(record["entity_id"])
         entity_id = source_to_entity.get(source_id, source_id)
         readout_valid = bool(record["readout_valid"])
+        geometry_epoch = int(record["geometry_epoch"])
         previous = updates.setdefault(frame, {}).get(entity_id)
-        if previous is not None and previous is not readout_valid:
-            raise ValueError("conflicting readout validity within one frame")
-        updates[frame][entity_id] = readout_valid
+        current = (readout_valid, geometry_epoch)
+        if previous is not None and previous != current:
+            if previous[0] is not readout_valid:
+                raise ValueError("conflicting readout validity within one frame")
+            raise ValueError("conflicting geometry epoch within one frame")
+        updates[frame][entity_id] = current
 
     open_intervals: dict[str, dict[str, int] | None] = {
         entity_id: None for entity_id in states
@@ -523,7 +527,7 @@ def _explicit_presence_intervals(
     latest_valid: dict[str, Mapping[str, int]] = {}
     for frame_record in coverage:
         frame = int(frame_record["frame_index"])
-        for entity_id, readout_valid in updates.get(frame, {}).items():
+        for entity_id, (readout_valid, _) in updates.get(frame, {}).items():
             if entity_id not in states:
                 continue
             current = open_intervals[entity_id]

@@ -352,6 +352,24 @@ def test_prepares_stable_symbols_intervals_and_causal_native_tracks(
     assert manifest["method"] == "OVIV2"
     assert manifest["display_mode"] == "online"
     assert manifest["query_timestamps_ns"] == [100, 300, 500]
+    consistency_record = manifest["temporal_consistency_json"]
+    consistency_path = manifest_path.parent / consistency_record["path"]
+    assert consistency_record == _record(
+        consistency_path, relative_to=manifest_path.parent
+    )
+    consistency = json.loads(consistency_path.read_text(encoding="utf-8"))
+    assert any(
+        sample["frame_index"] == 4
+        and sample["entity_id"] == "r-reappear"
+        and sample["geometry_epoch"] == 0
+        for sample in consistency["samples"]
+    )
+    assert any(
+        event["frame_index"] == 4
+        and event["entity_id"] == "r-reappear"
+        and event["geometry_epoch"] == 0
+        for event in consistency["lifecycle_events"]
+    )
     symbols = {
         entry["entity_id"]: entry["node_symbol"]
         for entry in manifest["symbol_assignments"]
@@ -509,6 +527,40 @@ def test_bridge_rejects_missing_explicit_frame_coverage(tmp_path: Path) -> None:
         prepare_temporal_bridge(temporal, labels, tmp_path / "bridge")
 
 
+def test_bridge_rejects_sample_event_geometry_epoch_conflict(tmp_path: Path) -> None:
+    temporal = _write_temporal_fixture(tmp_path / "temporal")
+    manifest = json.loads(temporal.read_text(encoding="utf-8"))
+    lifecycle_path = temporal.parent / manifest["lifecycle_transitions"]["path"]
+    rows = [
+        json.loads(line)
+        for line in lifecycle_path.read_text(encoding="utf-8").splitlines()
+    ]
+    overlapping = next(
+        row
+        for row in rows
+        if row["frame_index"] == 4 and row["entity_id"] == "r-reappear"
+    )
+    overlapping["geometry_epoch"] = 99
+    lifecycle_path.write_text(
+        "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+    lifecycle_record = _record(lifecycle_path, relative_to=temporal.parent)
+    manifest["lifecycle_transitions"] = lifecycle_record
+    manifest["sources"]["lifecycle_transitions"] = lifecycle_record
+    manifest["temporal_audit_counts"]["geometry_epoch_count"] = 5
+    temporal.write_text(json.dumps(manifest, sort_keys=True) + "\n", encoding="utf-8")
+    labels = tmp_path / "labels.yaml"
+    labels.write_text(
+        "label_names: [{label: 0, name: Unknown}, {label: 5, name: Chair}, "
+        "{label: 7, name: Table}]\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="geometry epoch"):
+        prepare_temporal_bridge(temporal, labels, tmp_path / "bridge")
+
+
 def test_rejects_checkpoint_schedule_mismatch(tmp_path: Path) -> None:
     temporal = _write_temporal_fixture(tmp_path / "temporal")
     payload = json.loads(temporal.read_text(encoding="utf-8"))
@@ -584,6 +636,43 @@ def test_bridge_manifest_rejects_hash_changes(tmp_path: Path) -> None:
     points.write_bytes(changed)
 
     with pytest.raises(ValueError, match="SHA256"):
+        validate_temporal_bridge_manifest(manifest_path)
+
+
+def test_bridge_manifest_rejects_rehashed_sample_event_epoch_conflict(
+    tmp_path: Path,
+) -> None:
+    temporal = _write_temporal_fixture(tmp_path / "temporal")
+    labels = tmp_path / "labels.yaml"
+    labels.write_text(
+        "label_names: [{label: 0, name: Unknown}, {label: 5, name: Chair}]\n",
+        encoding="utf-8",
+    )
+    manifest_path = prepare_temporal_bridge(
+        temporal, labels, tmp_path / "bridge"
+    )
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    consistency_path = (
+        manifest_path.parent / manifest["temporal_consistency_json"]["path"]
+    )
+    consistency = json.loads(consistency_path.read_text(encoding="utf-8"))
+    overlapping = next(
+        event
+        for event in consistency["lifecycle_events"]
+        if event["frame_index"] == 4 and event["entity_id"] == "r-reappear"
+    )
+    overlapping["geometry_epoch"] = 99
+    consistency_path.write_text(
+        json.dumps(consistency, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    manifest["temporal_consistency_json"] = _record(
+        consistency_path, relative_to=manifest_path.parent
+    )
+    manifest_path.write_text(
+        json.dumps(manifest, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+    with pytest.raises(ValueError, match="geometry epoch"):
         validate_temporal_bridge_manifest(manifest_path)
 
 

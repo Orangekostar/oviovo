@@ -153,6 +153,7 @@ def _build_fixture(
         for frame, timestamp, entity_id, before, after, evidence, readout_valid in (
             (1, 200, "entity-a", "active", "uncertain", "visible_absent", False),
             (3, 400, "entity-b", "active", "uncertain", "visible_absent", False),
+            (4, 500, "entity-a", "uncertain", "active", "present", True),
         )
     ]
     lifecycle_path.write_text(
@@ -436,6 +437,22 @@ def _rewrite_trajectories(
     _rewrite_index(index_path, payload)
 
 
+def _rewrite_lifecycle_transitions(
+    index_path: Path,
+    payload: dict[str, Any],
+    content: str,
+) -> None:
+    lifecycle_path = Path(payload["lifecycle_transitions"]["path"])
+    lifecycle_path.write_text(content, encoding="utf-8")
+    payload["lifecycle_transitions"] = _record(lifecycle_path)
+    capture_path = Path(payload["capture_status"]["path"])
+    capture = json.loads(capture_path.read_text(encoding="utf-8"))
+    capture["lifecycle_transitions"] = payload["lifecycle_transitions"]
+    _write_json(capture_path, capture)
+    payload["capture_status"] = _record(capture_path)
+    _rewrite_index(index_path, payload)
+
+
 def _rewrite_checkpoint_entities(
     index_path: Path,
     payload: dict[str, Any],
@@ -588,6 +605,30 @@ def test_rejects_trajectory_without_explicit_dynamic_state(tmp_path: Path) -> No
 
     with pytest.raises(ValueError, match="fields"):
         export_temporal_artifact(index_path, tmp_path / "output")
+
+
+def test_rejects_sample_event_geometry_epoch_conflict(tmp_path: Path) -> None:
+    index_path, payload = _build_fixture(tmp_path / "source")
+    lifecycle_path = Path(payload["lifecycle_transitions"]["path"])
+    rows = [
+        json.loads(line)
+        for line in lifecycle_path.read_text(encoding="utf-8").splitlines()
+    ]
+    overlapping = next(
+        row
+        for row in rows
+        if row["frame_index"] == 4 and row["entity_id"] == "entity-a"
+    )
+    overlapping["geometry_epoch"] = 99
+    _rewrite_lifecycle_transitions(
+        index_path,
+        payload,
+        "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows),
+    )
+
+    with pytest.raises(ValueError, match="geometry epoch"):
+        export_temporal_artifact(index_path, tmp_path / "output")
+
 
 def test_exports_formal_v2_source_without_requiring_execution_in_occlusion_index(
     tmp_path: Path,

@@ -82,6 +82,17 @@ def test_cpp_importer_uses_stable_symbols_intervals_trajectory_and_ordered_updat
     assert "map_timestamps.json" in text
 
 
+def test_cpp_importer_independently_rejects_sample_event_epoch_conflicts() -> None:
+    text = CPP.read_text(encoding="utf-8")
+
+    assert 'manifest.at("temporal_consistency_json")' in text
+    assert 'sample.at("geometry_epoch")' in text
+    assert 'event.at("geometry_epoch")' in text
+    assert "sample_state.geometry_epoch != event_epoch" in text
+    assert "sample_state.readout_valid != event_readout_valid" in text
+    assert "sample/event temporal state conflict" in text
+
+
 def test_stage_and_build_command_target_only_khronos_eval(tmp_path: Path) -> None:
     workspace = _fake_workspace(tmp_path / "ws")
 
