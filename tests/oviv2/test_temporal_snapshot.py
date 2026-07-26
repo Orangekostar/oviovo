@@ -186,7 +186,7 @@ def test_snapshot_excludes_invalid_geometry_epoch_and_keeps_occluded_valid() -> 
     )
     assert build_temporal_snapshot(invalid_state, config_sha256="a" * 64).entities == ()
 
-    with pytest.raises(ValueError, match="complete temporal config|required"):
+    with pytest.raises(TypeError, match="config_sha256"):
         build_temporal_snapshot(state)
     valid = build_temporal_snapshot(state, config_sha256="a" * 64)
     assert len(valid.entities) == 1

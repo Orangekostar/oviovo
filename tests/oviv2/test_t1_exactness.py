@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import copy
 from dataclasses import replace
+import threading
+from types import MethodType
 
 import numpy as np
 import pytest
@@ -563,3 +565,123 @@ def test_transaction_capture_does_not_allocate_geometry_by_capacity(monkeypatch)
     assert dict(snapshot.cumulative_attributes)["geometry"] is cumulative.geometry
     trial = isolated_cumulative_runtime(cumulative)
     assert trial.geometry is cumulative.geometry
+
+
+def test_instance_cumulative_entry_override_is_fully_isolated() -> None:
+    cumulative = _cumulative()
+    temporal = TemporalCurrentRuntime(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+    )
+    visibility = cumulative.visibility
+    before = cumulative_state_sha256(cumulative)
+
+    def poisoned(self, frame, observations, dense_semantics=None):
+        self.visibility.injected = True
+        raise RuntimeError("instance cumulative override")
+
+    cumulative.process_frame = MethodType(poisoned, cumulative)
+    with pytest.raises(RuntimeError, match="instance cumulative override"):
+        DualReadoutRuntime(cumulative, temporal).process_frame(_frame(), ())
+    assert cumulative.visibility is visibility
+    assert not hasattr(visibility, "injected")
+    del cumulative.process_frame
+    assert cumulative_state_sha256(cumulative) == before
+
+
+def test_inherited_cumulative_entry_with_internal_override_is_fully_isolated() -> None:
+    class InternalOverride(Oviv2Runtime):
+        def _apply_visibility_to(self, *args, **kwargs):
+            self.visibility.injected = True
+            raise RuntimeError("internal visibility override")
+
+    cumulative = _cumulative(runtime_type=InternalOverride)
+    temporal = TemporalCurrentRuntime(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+    )
+    external = (cumulative.visibility, vars(cumulative.visibility).copy())
+    before = cumulative_state_sha256(cumulative)
+    with pytest.raises(RuntimeError, match="internal visibility override"):
+        DualReadoutRuntime(cumulative, temporal).process_frame(_frame(), ())
+    assert cumulative.visibility is external[0]
+    assert vars(cumulative.visibility) == external[1]
+    assert cumulative_state_sha256(cumulative) == before
+
+
+def test_instance_temporal_entry_override_is_fully_isolated() -> None:
+    cumulative = _cumulative()
+    temporal = TemporalCurrentRuntime(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+    )
+    state = temporal.state
+    tracker = object.__getattribute__(state, "_tracker_state")
+    before = temporal_state_sha256(temporal)
+
+    def poisoned(self, frame, observations, dense_semantics=None):
+        object.__getattribute__(self.state, "_tracker_state")._next_track_id = 999
+        raise RuntimeError("instance temporal override")
+
+    temporal.process_frame = MethodType(poisoned, temporal)
+    with pytest.raises(RuntimeError, match="instance temporal override"):
+        DualReadoutRuntime(cumulative, temporal).process_frame(_frame(), ())
+    assert temporal.state is state
+    assert object.__getattribute__(state, "_tracker_state") is tracker
+    del temporal.process_frame
+    assert temporal_state_sha256(temporal) == before
+
+
+def test_temporal_publish_hook_override_is_fully_isolated() -> None:
+    class PublishOverride(TemporalCurrentRuntime):
+        def _before_publish(self, next_state):
+            object.__getattribute__(self.state, "_tracker_state")._next_track_id = 999
+            raise RuntimeError("temporal publish override")
+
+    cumulative = _cumulative()
+    temporal = PublishOverride(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+    )
+    state = temporal.state
+    tracker = object.__getattribute__(state, "_tracker_state")
+    before = temporal_state_sha256(temporal)
+    with pytest.raises(RuntimeError, match="temporal publish override"):
+        DualReadoutRuntime(cumulative, temporal).process_frame(_frame(), ())
+    assert temporal.state is state
+    assert object.__getattribute__(state, "_tracker_state") is tracker
+    assert temporal_state_sha256(temporal) == before
+
+
+def test_untrusted_custom_attribute_preserves_input_alias_in_isolated_graph() -> None:
+    class CustomInputAlias(Oviv2Runtime):
+        def process_frame(self, frame, observations, dense_semantics=None):
+            assert self.original_frame is frame
+            self.original_frame.rgb.flags.writeable = True
+            self.original_frame.rgb[0, 0, 0] = 211
+            raise RuntimeError("custom input alias override")
+
+    frame = _frame()
+    original = (frame.rgb, frame.rgb.tobytes(), frame.rgb.flags.writeable)
+    cumulative = _cumulative(runtime_type=CustomInputAlias)
+    cumulative.original_frame = frame
+    temporal = TemporalCurrentRuntime(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+    )
+    with pytest.raises(RuntimeError, match="custom input alias override"):
+        DualReadoutRuntime(cumulative, temporal).process_frame(frame, ())
+    assert frame.rgb is original[0]
+    assert frame.rgb.tobytes() == original[1]
+    assert frame.rgb.flags.writeable is original[2]
+    assert cumulative.original_frame is frame
+
+
+def test_untrusted_unisolatable_attribute_fails_closed_before_branch() -> None:
+    cumulative = _cumulative()
+    cumulative.custom_lock = threading.Lock()
+    temporal = TemporalCurrentRuntime(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+    )
+    frame = _frame()
+    before = (frame.rgb, frame.rgb.tobytes(), cumulative.geometry, temporal.state)
+    with pytest.raises(TypeError, match="cannot be isolated"):
+        DualReadoutRuntime(cumulative, temporal).process_frame(frame, ())
+    assert frame.rgb is before[0] and frame.rgb.tobytes() == before[1]
+    assert cumulative.geometry is before[2]
+    assert temporal.state is before[3]

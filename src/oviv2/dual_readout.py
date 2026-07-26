@@ -151,15 +151,25 @@ class DualReadoutRuntime:
             self.cumulative, self.temporal, frame, observations, dense_semantics
         )
         shared_input_sha256(frame, observations, dense_semantics)
-        isolated_frame, isolated_observations, isolated_dense = clone_shared_inputs(
+        original_input_snapshot = shared_input_snapshot(
             frame, observations, dense_semantics
         )
-        cumulative_trial = isolated_cumulative_runtime(self.cumulative)
-        temporal_trial = isolated_temporal_runtime(self.temporal)
-        reference = _validate_reference_readout(temporal_trial) if _is_reference_readout(
-            temporal_trial
-        ) else None
+        isolation_memo: dict[int, object] = {}
+        isolated_frame, isolated_observations, isolated_dense = clone_shared_inputs(
+            frame, observations, dense_semantics, memo=isolation_memo
+        )
         try:
+            cumulative_trial = isolated_cumulative_runtime(
+                self.cumulative, memo=isolation_memo
+            )
+            temporal_trial = isolated_temporal_runtime(
+                self.temporal, memo=isolation_memo
+            )
+            reference = (
+                _validate_reference_readout(temporal_trial)
+                if _is_reference_readout(temporal_trial)
+                else None
+            )
             with frozen_shared_inputs(
                 isolated_frame, isolated_observations, isolated_dense
             ):
@@ -207,10 +217,18 @@ class DualReadoutRuntime:
                 != timestamp_seconds_to_ns(frame.timestamp)
             ):
                 raise RuntimeError("dual readout frame/revision mismatch")
+            original_input_snapshot.assert_unchanged()
             commit_runtime_state(self.cumulative, cumulative_trial)
             commit_runtime_state(self.temporal, temporal_trial)
             return DualFrameResult(cumulative_result, temporal_result, temporal_result.export)
         except BaseException as error:
+            try:
+                original_input_snapshot.assert_unchanged()
+            except BaseException as mutation_error:
+                self._restore(
+                    self.cumulative, self.temporal, transaction, mutation_error
+                )
+                raise RuntimeError("original shared inputs were mutated") from error
             self._restore(
                 self.cumulative,
                 self.temporal,

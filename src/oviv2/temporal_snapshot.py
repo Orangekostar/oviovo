@@ -1088,14 +1088,12 @@ def build_temporal_map_snapshot(snapshot: TemporalCurrentSnapshot, class_names: 
 def build_temporal_snapshot(
     state: TemporalRuntimeState,
     *,
-    config_sha256: str | None = None,
+    config_sha256: str,
 ) -> TemporalCurrentSnapshot:
     if not isinstance(state, TemporalRuntimeState):
         raise TypeError("state must be a TemporalRuntimeState")
     if state.revision == 0 or state.last_frame_id < 0:
         raise ValueError("cannot checkpoint an unprocessed temporal runtime state")
-    if config_sha256 is None:
-        raise ValueError("config_sha256 for the complete temporal config is required")
     raw_background = object.__getattribute__(state, "_background_state")
     raw_ledger = object.__getattribute__(state, "_ledger_state")
     if raw_ledger is None:

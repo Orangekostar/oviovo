@@ -45,8 +45,21 @@ _TRUSTED_REFERENCE_METHODS = {
     ReferenceCurrentReadout: ReferenceCurrentReadout.process_cumulative_frame,
     LifecycleOverlayReadout: LifecycleOverlayReadout.process_cumulative_frame,
 }
+_TRUSTED_REFERENCE_PUBLISH = {
+    ReferenceCurrentReadout: ReferenceCurrentReadout._before_publish,
+    LifecycleOverlayReadout: LifecycleOverlayReadout._before_publish,
+}
 _TRUSTED_CUMULATIVE_METHOD = Oviv2Runtime.process_frame
 _TRUSTED_TEMPORAL_METHOD = TemporalCurrentRuntime.process_frame
+_TRUSTED_TEMPORAL_PUBLISH = TemporalCurrentRuntime._before_publish
+_CUMULATIVE_FIELDS = frozenset({
+    "scene_id", "config", "dense_semantic_provenance",
+    "dense_semantic_integrator", "geometry", "evidence", "ownership",
+    "tracker", "registry", "visibility", "revision", "last_frame_id",
+    "last_timestamp",
+})
+_TEMPORAL_FIELDS = frozenset({"config", "state", "tracker_config"})
+_REFERENCE_FIELDS = frozenset({"config", "state"})
 
 
 def _pack(tag: bytes, content: bytes) -> bytes:
@@ -277,10 +290,9 @@ class _ObjectSnapshot:
         if type(target) not in {Frame, CameraIntrinsics, FrameObservation, DenseSemanticFrame}:
             raise TypeError("unsupported shared input object")
         values = []
-        for field in fields(target):
-            value = getattr(target, field.name)
+        for name, value in vars(target).items():
             array = _ArraySnapshot.capture(value) if isinstance(value, np.ndarray) else None
-            values.append((field.name, value, array))
+            values.append((name, value, array))
         return cls(target, tuple(values))
 
     def assert_unchanged(self) -> None:
@@ -326,7 +338,11 @@ def clone_shared_inputs(
     frame: Frame,
     observations: tuple[FrameObservation, ...],
     dense_semantics: DenseSemanticFrame | None,
+    *,
+    memo: dict[int, object] | None = None,
 ) -> tuple[Frame, tuple[FrameObservation, ...], DenseSemanticFrame | None]:
+    if memo is None:
+        memo = {}
     arrays: dict[int, np.ndarray] = {}
 
     def clone_array(array: np.ndarray) -> np.ndarray:
@@ -347,19 +363,25 @@ def clone_shared_inputs(
             cloned = np.array(array, copy=True, order="K")
         cloned.flags.writeable = bool(array.flags.writeable)
         arrays[id(array)] = cloned
+        memo[id(array)] = cloned
         return cloned
 
     def clone_object(value: object) -> object:
         cloned = copy.copy(value)
-        for field in fields(value):
-            item = getattr(value, field.name)
-            owned = clone_array(item) if isinstance(item, np.ndarray) else copy.deepcopy(item)
-            object.__setattr__(cloned, field.name, owned)
+        memo[id(value)] = cloned
+        for name, item in vars(value).items():
+            owned = (
+                clone_array(item)
+                if isinstance(item, np.ndarray)
+                else copy.deepcopy(item, memo)
+            )
+            object.__setattr__(cloned, name, owned)
         return cloned
 
     cloned_frame = clone_object(frame)
     assert isinstance(cloned_frame, Frame)
     cloned_observations = tuple(clone_object(item) for item in observations)
+    memo[id(observations)] = cloned_observations
     assert all(isinstance(item, FrameObservation) for item in cloned_observations)
     cloned_dense = None if dense_semantics is None else clone_object(dense_semantics)
     assert cloned_dense is None or isinstance(cloned_dense, DenseSemanticFrame)
@@ -374,33 +396,129 @@ def shared_input_snapshot(
     return _SharedInputSnapshot.capture(frame, observations, dense_semantics)
 
 
-def isolated_cumulative_runtime(runtime: Oviv2Runtime) -> Oviv2Runtime:
-    trial = copy.copy(runtime)
-    trial.__dict__ = dict(runtime.__dict__)
-    if type(runtime).process_frame is _TRUSTED_CUMULATIVE_METHOD:
-        return trial
-    trial.geometry = _clone_geometry(runtime.geometry)
-    for name in (
-        "evidence", "ownership", "tracker", "registry", "visibility",
-        "dense_semantic_integrator",
+def _bind_clone_graph(
+    original: object,
+    cloned: object,
+    memo: dict[int, object],
+) -> None:
+    if type(original) is not type(cloned) or id(original) in memo:
+        return
+    memo[id(original)] = cloned
+    if isinstance(original, np.ndarray):
+        return
+    if isinstance(original, tuple):
+        for left, right in zip(original, cloned, strict=True):
+            _bind_clone_graph(left, right, memo)
+        return
+    if isinstance(original, list):
+        for left, right in zip(original, cloned, strict=True):
+            _bind_clone_graph(left, right, memo)
+        return
+    if isinstance(original, Mapping):
+        for key, value in original.items():
+            if key in cloned:
+                _bind_clone_graph(value, cloned[key], memo)
+        return
+    if isinstance(original, TemporalRuntimeState):
+        for name in original.__slots__:
+            _bind_clone_graph(
+                object.__getattribute__(original, name),
+                object.__getattribute__(cloned, name),
+                memo,
+            )
+        return
+    if is_dataclass(original) and not isinstance(original, type):
+        for field in fields(original):
+            _bind_clone_graph(
+                getattr(original, field.name), getattr(cloned, field.name), memo
+            )
+        return
+    if hasattr(original, "__dict__") and hasattr(cloned, "__dict__"):
+        for name, value in vars(original).items():
+            if name in vars(cloned):
+                _bind_clone_graph(value, vars(cloned)[name], memo)
+
+
+def isolated_cumulative_runtime(
+    runtime: Oviv2Runtime,
+    *,
+    memo: dict[int, object] | None = None,
+) -> Oviv2Runtime:
+    trial = object.__new__(type(runtime))
+    if (
+        type(runtime) is Oviv2Runtime
+        and set(vars(runtime)) == _CUMULATIVE_FIELDS
+        and type(runtime).process_frame is _TRUSTED_CUMULATIVE_METHOD
+        and "process_frame" not in vars(runtime)
     ):
-        setattr(trial, name, copy.deepcopy(getattr(runtime, name)))
+        trial.__dict__ = dict(runtime.__dict__)
+        return trial
+    owned_memo = {} if memo is None else dict(memo)
+    owned_memo[id(runtime)] = trial
+    try:
+        cloned: dict[str, object] = {}
+        geometry = _clone_geometry(runtime.geometry)
+        _bind_clone_graph(runtime.geometry, geometry, owned_memo)
+        cloned["geometry"] = geometry
+        for name in (
+            "evidence", "ownership", "tracker", "registry", "visibility",
+            "dense_semantic_integrator",
+        ):
+            value = getattr(runtime, name)
+            cloned[name] = copy.deepcopy(value, owned_memo)
+        for name, value in vars(runtime).items():
+            if name not in cloned:
+                cloned[name] = copy.deepcopy(value, owned_memo)
+    except Exception as exc:
+        raise TypeError("untrusted cumulative runtime cannot be isolated") from exc
+    trial.__dict__ = cloned
     return trial
 
 
-def isolated_temporal_runtime(runtime: object) -> object:
-    trial = copy.copy(runtime)
-    trial.__dict__ = dict(runtime.__dict__)
+def isolated_temporal_runtime(
+    runtime: object,
+    *,
+    memo: dict[int, object] | None = None,
+) -> object:
+    trial = object.__new__(type(runtime))
     state = getattr(runtime, "state", None)
-    if isinstance(runtime, TemporalCurrentRuntime):
-        if type(runtime).process_frame is not _TRUSTED_TEMPORAL_METHOD:
-            trial.state = _clone_temporal_state(state)
+    if (
+        type(runtime) is TemporalCurrentRuntime
+        and set(vars(runtime)) == _TEMPORAL_FIELDS
+        and type(runtime).process_frame is _TRUSTED_TEMPORAL_METHOD
+        and type(runtime)._before_publish is _TRUSTED_TEMPORAL_PUBLISH
+        and not {"process_frame", "_before_publish"} & set(vars(runtime))
+    ):
+        trial.__dict__ = dict(runtime.__dict__)
         return trial
     expected = _TRUSTED_REFERENCE_METHODS.get(type(runtime))
-    if expected is None:
-        raise TypeError("temporal runtime has an unsupported type")
-    if type(runtime).process_cumulative_frame is not expected:
-        trial.state = copy.deepcopy(state)
+    if (
+        expected is not None
+        and set(vars(runtime)) == _REFERENCE_FIELDS
+        and type(runtime).process_cumulative_frame is expected
+        and type(runtime)._before_publish is _TRUSTED_REFERENCE_PUBLISH[type(runtime)]
+        and not {"process_cumulative_frame", "_before_publish"} & set(vars(runtime))
+    ):
+        trial.__dict__ = dict(runtime.__dict__)
+        return trial
+    if not isinstance(state, (TemporalRuntimeState, ReferenceReadoutState)):
+        raise TypeError("temporal runtime has an unsupported state")
+    owned_memo = {} if memo is None else dict(memo)
+    owned_memo[id(runtime)] = trial
+    try:
+        cloned_state = (
+            _clone_temporal_state(state)
+            if isinstance(state, TemporalRuntimeState)
+            else copy.deepcopy(state, owned_memo)
+        )
+        _bind_clone_graph(state, cloned_state, owned_memo)
+        cloned = {"state": cloned_state}
+        for name, value in vars(runtime).items():
+            if name != "state":
+                cloned[name] = copy.deepcopy(value, owned_memo)
+    except Exception as exc:
+        raise TypeError("untrusted temporal runtime cannot be isolated") from exc
+    trial.__dict__ = cloned
     return trial
 
 
