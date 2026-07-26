@@ -263,6 +263,27 @@ def test_packages_exact_structured_result_and_revalidates(tmp_path: Path) -> Non
     assert load_and_revalidate_result(output, manifest=paths["manifest"]) == result
 
 
+def test_exact_transaction_uses_reference_and_dual_production_receipt_schemas(
+    tmp_path: Path,
+) -> None:
+    paths = _fixture(tmp_path)
+    evidence = json.loads(paths["t1_exact_evidence"].read_text())
+    executions = evidence["deterministic_evidence"]["cumulative_exact"]["executions"]
+
+    assert len(executions) == 9
+    for execution in executions:
+        root = Path(execution["output_root"])
+        manifest = json.loads((root / "run_manifest.json").read_text())
+        if execution["profile"] == "reference":
+            assert manifest["schema_version"] == 1
+            assert (root / "t1_exact_receipt.json").is_file()
+            assert not (root / "execution_receipt.json").exists()
+        else:
+            assert manifest["schema_version"] == 2
+            assert (root / "execution_receipt.json").is_file()
+            assert not (root / "t1_exact_receipt.json").exists()
+
+
 def test_rejects_gate_evidence_with_nonexistent_execution_roots(tmp_path: Path) -> None:
     paths = _fixture(tmp_path)
     evidence = json.loads(paths["t1_exact_evidence"].read_text())
@@ -630,7 +651,7 @@ def _materialize_mutation_transaction(
     *,
     leak_temporal: bool = False,
     commit: str = "a" * 40,
-) -> tuple[dict[str, object], dict[str, object]]:
+) -> dict[str, object]:
     algorithm = canonical_algorithm_hash(config)
     non_temporal = non_temporal_config_sha256(config)
     root.mkdir(parents=True)
@@ -702,28 +723,76 @@ def _materialize_mutation_transaction(
             }
         )
     )
-    audit = compare_cumulative_artifacts(root, root)
-    execution = {
-        "profile": "a0",
-        "argv": [
-            str(Path(sys.executable).resolve()),
-            str((REPO_ROOT / "scripts/evaluation/run_oviv2_tesse_cd_v2.py").resolve()),
-            "--config", str(config_path.resolve()), "--output", str(root.resolve()),
-            "--freeze-manifest", str((root.parent / "freeze.json").resolve()),
-            "--run-slot", "apartment_run1",
-        ],
-        "pid": os.getpid(),
+    return compare_cumulative_artifacts(root, root)
+
+
+def _materialize_reference_transaction(
+    root: Path,
+    config: dict[str, object],
+    *,
+    commit: str,
+    source_manifest: Path,
+) -> dict[str, object]:
+    algorithm = canonical_algorithm_hash(config)
+    cumulative_bytes = non_temporal_config_sha256(config).encode()
+    root.mkdir(parents=True)
+    config_path = root.parent / f"{root.name}.config.json"
+    config_path.write_bytes(_bytes(config))
+    checkpoint = root / "checkpoints/00000002-100"
+    artifact = checkpoint / "artifact"
+    voxel = checkpoint / "voxel_snapshot"
+    artifact.mkdir(parents=True)
+    voxel.mkdir()
+    neutral = artifact / "neutral.bin"
+    entities = artifact / "entities.jsonl"
+    neutral.write_bytes(cumulative_bytes)
+    entities.write_bytes(cumulative_bytes + b"\n")
+    (artifact / "manifest.json").write_bytes(b'{"format":"cumulative-v1"}\n')
+    (artifact / "checkpoint_status.json").write_bytes(b'{"status":"PASS"}\n')
+    (artifact / "final.bin").write_bytes(b"final-cumulative")
+    (voxel / "ownership.bin").write_bytes(cumulative_bytes)
+    status = checkpoint / "checkpoint_status.json"
+    status.write_bytes(_bytes({"algorithm_hash": algorithm, "status": "PASS"}))
+    final = root / "final.bin"
+    final.write_bytes(algorithm.encode())
+    source_manifest = source_manifest.resolve(strict=True)
+    source_data = source_manifest.read_bytes()
+    source_sha = hashlib.sha256(source_data).hexdigest()
+    manifest = {
+        "schema_version": 1,
+        "algorithm_hash": algorithm,
         "code_commit": commit,
-        "source_manifest_sha256": source_sha,
-        "input_fingerprints": {"config": hashlib.sha256(config_path.read_bytes()).hexdigest()},
-        "output_root": str(root.resolve()),
+        "source_bindings": {"source_manifest_sha256": source_sha},
+        "checkpoints": [
+            {
+                "frame_index": 2,
+                "artifact": _tree_binding(artifact, root),
+                "voxel_snapshot": _tree_binding(voxel, root),
+                "checkpoint_status": _file_binding(status, root),
+                "neutral_snapshot": _file_binding(neutral, root),
+                "neutral_entities": _file_binding(entities, root),
+            }
+        ],
+        "final_artifact": _file_binding(final, root),
     }
+    (root / "run_manifest.json").write_bytes(_bytes(manifest))
+    audit = compare_cumulative_artifacts(root, root)
     receipt = {
         "schema_version": 1,
         "format": "oviv2_t1_exact_execution_receipt_v1",
-        "execution": execution,
+        "execution": {
+            "profile": "reference",
+            "argv": ["pending-reference-command"],
+            "pid": os.getpid(),
+            "code_commit": commit,
+            "source_manifest_sha256": source_sha,
+            "input_fingerprints": {
+                "config": hashlib.sha256(config_path.read_bytes()).hexdigest()
+            },
+            "output_root": str(root.resolve()),
+        },
         "source_manifest": {
-            "path": str(source.resolve()),
+            "path": str(source_manifest),
             "sha256": source_sha,
             "byte_count": len(source_data),
         },
@@ -734,7 +803,7 @@ def _materialize_mutation_transaction(
     receipt_path = root / "t1_exact_receipt.json"
     receipt_path.write_bytes(_bytes(receipt))
     assert json.loads(receipt_path.read_text()) == receipt
-    return receipt, audit
+    return audit
 
 
 def _file_binding(path: Path, root: Path) -> dict[str, object]:
@@ -793,7 +862,15 @@ def _materialize_gate_transaction(
     source_manifest = source_manifest.resolve(strict=True)
     for position, profile in enumerate(gates_module.EXACT_PROFILE_SEQUENCE):
         output = transaction / f"run-{position:02d}-{profile}"
-        _materialize_mutation_transaction(output, config, commit=commit)
+        if profile == "reference":
+            _materialize_reference_transaction(
+                output,
+                config,
+                commit=commit,
+                source_manifest=source_manifest,
+            )
+        else:
+            _materialize_mutation_transaction(output, config, commit=commit)
         config_path = (transaction / f"run-{position:02d}-{profile}.config.json").resolve()
         pid = 10_000 + position
         runner = (
@@ -824,16 +901,17 @@ def _materialize_gate_transaction(
             )
             receipt_path = output / "t1_exact_receipt.json"
             receipt = json.loads(receipt_path.read_text())
-            receipt["execution"] = {
-                "profile": profile,
-                "argv": argv,
-                "pid": pid,
-                "code_commit": commit,
-                "output_root": str(output.resolve()),
-            }
+            receipt["execution"].update(
+                {
+                    "profile": profile,
+                    "argv": argv,
+                    "pid": pid,
+                    "code_commit": commit,
+                    "output_root": str(output.resolve()),
+                }
+            )
             receipt_path.write_bytes(_bytes(receipt))
         else:
-            (output / "t1_exact_receipt.json").unlink()
             execution_receipt_path = output / "execution_receipt.json"
             execution_receipt = json.loads(execution_receipt_path.read_text())
             execution_receipt["provenance"]["command"] = argv[1:]
