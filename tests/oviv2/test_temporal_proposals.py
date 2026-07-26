@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from dataclasses import FrozenInstanceError, replace
 from itertools import permutations
+import time
 
 import numpy as np
 import pytest
 
+import src.oviv2.temporal_proposals as temporal_proposals
 from src.oviv2.temporal_config import TemporalProposalConfig
 from src.oviv2.temporal_proposals import (
     ProjectedIdentitySearchRegion,
@@ -153,6 +155,63 @@ def test_metric_expansion_changes_region_at_configured_3d_boundary() -> None:
     assert recover_temporal_proposals(
         value, config(minimum_residual_area_px=1, search_region_expansion_m=1.0)
     ).proposals[0].area_px == 2
+
+
+def test_metric_expansion_matches_exact_fixture_and_uses_one_batched_tree_query(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    rows, columns = np.indices((120, 160))
+    xyz = np.stack((columns * 0.01, rows * 0.01, np.ones_like(rows)), axis=-1)
+    mask = np.zeros((120, 160), dtype=bool)
+    mask[40:80, 55:105] = True
+    calls: list[tuple[tuple[int, ...], tuple[int, ...]]] = []
+    original = temporal_proposals._nearest_metric_distance
+
+    def spy(source_xyz: np.ndarray, query_xyz: np.ndarray) -> np.ndarray:
+        calls.append((source_xyz.shape, query_xyz.shape))
+        return original(source_xyz, query_xyz)
+
+    monkeypatch.setattr(temporal_proposals, "_nearest_metric_distance", spy)
+    started = time.perf_counter()
+    expanded = temporal_proposals._expand_metric_region(mask, xyz.astype(np.float64), 0.02)
+    elapsed = time.perf_counter() - started
+    assert calls == [((2000, 3), (19200, 3))]
+    assert expanded[39, 55] and expanded[80, 104]
+    assert not expanded[37, 55]
+    assert elapsed < 1.0
+
+
+def test_zero_depth_is_invalid_only_for_eligibility_and_expected_depth_is_local() -> None:
+    mask = np.zeros((4, 5), dtype=bool)
+    mask[1, 1:3] = True
+    expected = np.zeros((4, 5), dtype=np.float64)
+    expected[mask] = 4.0
+    depth = np.full((4, 5), 3.0, dtype=np.float32)
+    depth[0, 0] = 0.0
+    value = recovery_input(region(1, mask, expected), depth_m=depth)
+    assert recover_temporal_proposals(value, config()).proposals[0].area_px == 2
+
+    depth[1, 1] = 0.0
+    value = recovery_input(region(1, mask, expected), depth_m=depth)
+    assert recover_temporal_proposals(
+        value, config(minimum_residual_area_px=1)
+    ).proposals[0].area_px == 1
+
+    invalid_outside = expected.copy()
+    invalid_outside[0, 0] = np.nan
+    recovery_input(region(1, mask, invalid_outside))
+    invalid_inside = expected.copy()
+    invalid_inside[1, 1] = np.nan
+    with pytest.raises(ValueError, match="mask"):
+        region(1, mask, invalid_inside)
+
+
+def test_nan_and_inf_current_depth_still_fail_closed() -> None:
+    for invalid in (np.nan, np.inf):
+        depth = np.full((4, 5), 3.0, dtype=np.float32)
+        depth[0, 0] = invalid
+        with pytest.raises(ValueError, match="finite"):
+            recovery_input(depth_m=depth)
 
 
 def test_appearance_provenance_is_component_local() -> None:

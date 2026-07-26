@@ -5,6 +5,7 @@ import math
 from numbers import Real
 
 import numpy as np
+from scipy.spatial import cKDTree
 
 from src.oviv2.temporal_config import TemporalProposalConfig
 
@@ -73,9 +74,19 @@ class ProjectedIdentitySearchRegion:
         object.__setattr__(self, "identity_id", _exact_int(self.identity_id, "identity_id", 1))
         object.__setattr__(self, "source_frame_id", _exact_int(self.source_frame_id, "source_frame_id"))
         mask = _array(self.mask, "mask", ndim=2, dtype_kind="bool")
-        depth = _array(self.expected_depth_m, "expected_depth_m", ndim=2, dtype_kind="float", shape=mask.shape)
-        if np.any(depth <= 0.0):
-            raise ValueError("expected_depth_m must be positive")
+        if not isinstance(self.expected_depth_m, np.ndarray):
+            raise TypeError("expected_depth_m must be an ndarray")
+        if self.expected_depth_m.ndim != 2 or self.expected_depth_m.shape != mask.shape:
+            raise ValueError("expected_depth_m has invalid shape")
+        if self.expected_depth_m.dtype.kind != "f":
+            raise TypeError("expected_depth_m must have floating dtype")
+        depth_values = self.expected_depth_m[mask]
+        if not np.isfinite(depth_values).all() or np.any(depth_values <= 0.0):
+            raise ValueError("expected_depth_m must be finite and positive inside mask")
+        contiguous_depth = np.ascontiguousarray(self.expected_depth_m)
+        depth = np.frombuffer(
+            contiguous_depth.tobytes(), dtype=contiguous_depth.dtype
+        ).reshape(contiguous_depth.shape)
         object.__setattr__(self, "mask", mask)
         object.__setattr__(self, "expected_depth_m", depth)
         object.__setattr__(self, "projection_provenance_hash", _hash(self.projection_provenance_hash, "projection_provenance_hash"))
@@ -107,8 +118,8 @@ class ProposalRecoveryInput:
         object.__setattr__(self, "frame_id", frame_id)
         object.__setattr__(self, "timestamp", _finite(self.timestamp, "timestamp"))
         depth = _array(self.depth_m, "depth_m", ndim=2, dtype_kind="float")
-        if np.any(depth <= 0.0):
-            raise ValueError("depth_m must be positive")
+        if np.any(depth < 0.0):
+            raise ValueError("depth_m must be non-negative")
         shape = depth.shape
         xyz = _array(self.current_xyz, "current_xyz", ndim=3, dtype_kind="float", shape=shape + (3,))
         occupied = _array(self.segmentation_occupied, "segmentation_occupied", ndim=2, dtype_kind="bool", shape=shape)
@@ -295,13 +306,17 @@ def _expand_metric_region(
     if expansion_m == 0.0 or not mask.any():
         return expanded
     flat_xyz = current_xyz.reshape(-1, 3)
-    within = np.zeros(flat_xyz.shape[0], dtype=bool)
-    squared_limit = expansion_m * expansion_m
-    for source_xyz in current_xyz[mask]:
-        delta = flat_xyz - source_xyz
-        squared_distance = np.einsum("ij,ij->i", delta, delta)
-        within |= squared_distance <= squared_limit
-    return within.reshape(mask.shape)
+    distances = _nearest_metric_distance(current_xyz[mask], flat_xyz)
+    return (distances <= expansion_m).reshape(mask.shape)
+
+
+def _nearest_metric_distance(
+    source_xyz: np.ndarray,
+    query_xyz: np.ndarray,
+) -> np.ndarray:
+    tree = cKDTree(source_xyz)
+    distances, _ = tree.query(query_xyz, k=1, workers=1)
+    return np.asarray(distances, dtype=np.float64)
 
 
 def recover_temporal_proposals(value: ProposalRecoveryInput, config: TemporalProposalConfig) -> ProposalRecoveryResult:
@@ -322,11 +337,18 @@ def recover_temporal_proposals(value: ProposalRecoveryInput, config: TemporalPro
         search_mask = _expand_metric_region(
             item.mask, value.current_xyz, config.search_region_expansion_m
         )
+        valid_depth = (
+            (value.depth_m > 0.0)
+            & np.isfinite(item.expected_depth_m)
+            & (item.expected_depth_m > 0.0)
+            & np.isfinite(value.current_xyz).all(axis=2)
+        )
         residual = item.expected_depth_m - value.depth_m >= residual_threshold
         eligible = (
             search_mask
             & value.semantic_support
             & ~value.segmentation_occupied
+            & valid_depth
             & residual
         )
         ownership[eligible] = np.minimum(ownership[eligible], item.identity_id)

@@ -319,42 +319,39 @@ def _distance(
     return float(math.dist(left, right))
 
 
-def _score_edge(
+@dataclass(frozen=True)
+class _IdentityEvidence:
+    appearance_similarity: float | None
+    feature_model_match: bool
+    semantic_score: float | None
+    semantic_qualified: bool
+
+
+def _extract_identity_evidence(
     observation: _PreparedObservation,
     target: TemporalAssociationTarget,
     config: TemporalAssociationConfig,
-) -> CandidateScore | None:
-    maximum_distance = config.maximum_centroid_distance_m
-    predicted_distance = _distance(observation.centroid, target.predicted_centroid_xyz)
-    if predicted_distance > maximum_distance:
-        return None
-    motion = max(0.0, 1.0 - predicted_distance / maximum_distance)
-    current_distance = _distance(observation.centroid, target.centroid_xyz)
-    geometry = max(0.0, 1.0 - current_distance / maximum_distance)
-    size = float(
-        np.mean(
-            [
-                min(observed, stored) / max(observed, stored)
-                for observed, stored in zip(observation.extent, target.extent_xyz)
-            ]
-        )
-    )
-
-    visual: float | None = None
-    if (
+    *,
+    dormant: bool,
+) -> _IdentityEvidence:
+    model_match = bool(
         observation.image_feature is not None
         and target.image_prototype is not None
         and observation.value.feature_model_id == target.feature_model_id
         and observation.image_feature.shape == target.image_prototype.shape
-    ):
+    )
+    cosine: float | None = None
+    if model_match:
+        assert observation.image_feature is not None
+        assert target.image_prototype is not None
         cosine = float(
             np.clip(
                 np.dot(observation.image_feature, target.image_prototype), -1.0, 1.0
             )
         )
-        visual = float(np.clip((cosine + 1.0) / 2.0, 0.0, 1.0))
 
     semantic: float | None = None
+    semantic_qualified = True
     semantic_probabilities = dict(target.semantic_probabilities)
     if semantic_probabilities and observation.value.semantic_id > 0:
         semantic = semantic_probabilities.get(observation.value.semantic_id, 0.0)
@@ -366,18 +363,62 @@ def _score_edge(
             and observation.value.confidence >= config.semantic_conflict_probability
             and top_probability >= config.semantic_conflict_probability
         )
-        if conflict and not (
-            visual is not None
-            and visual >= config.conflict_override_visual
-            and geometry >= config.conflict_override_geometry
-        ):
-            return None
+        if conflict:
+            visual = None if cosine is None else (cosine + 1.0) / 2.0
+            visual_override = bool(
+                visual is not None and visual >= config.conflict_override_visual
+            )
+            if dormant:
+                semantic_qualified = visual_override
+            else:
+                current_distance = _distance(
+                    observation.centroid, target.centroid_xyz
+                )
+                geometry = max(
+                    0.0,
+                    1.0
+                    - current_distance / config.maximum_centroid_distance_m,
+                )
+                semantic_qualified = bool(
+                    visual_override
+                    and geometry >= config.conflict_override_geometry
+                )
+    return _IdentityEvidence(cosine, model_match, semantic, semantic_qualified)
+
+
+def _score_identity_edge(
+    observation: _PreparedObservation,
+    target: TemporalAssociationTarget,
+    config: TemporalAssociationConfig,
+    evidence: _IdentityEvidence,
+    *,
+    gate_distance_m: float,
+) -> CandidateScore | None:
+    current_distance = _distance(observation.centroid, target.centroid_xyz)
+    if current_distance > gate_distance_m or not evidence.semantic_qualified:
+        return None
+    geometry = max(
+        0.0,
+        1.0 - current_distance / config.maximum_centroid_distance_m,
+    )
+    size = float(
+        np.mean(
+            [
+                min(observed, stored) / max(observed, stored)
+                for observed, stored in zip(observation.extent, target.extent_xyz)
+            ]
+        )
+    )
+    visual = (
+        None
+        if evidence.appearance_similarity is None
+        else float(np.clip((evidence.appearance_similarity + 1.0) / 2.0, 0.0, 1.0))
+    )
 
     components = (
         (config.visual_weight, visual),
-        (config.semantic_weight, semantic),
+        (config.semantic_weight, evidence.semantic_score),
         (config.size_weight, size),
-        (config.motion_weight, motion),
         (config.geometry_weight, geometry),
     )
     available = [
@@ -386,7 +427,14 @@ def _score_edge(
         if weight > 0.0 and value is not None
     ]
     if not available:
-        return None
+        if any(weight > 0.0 for weight, _ in components):
+            return None
+        fallback_values = [
+            value
+            for value in (visual, evidence.semantic_score, size, geometry)
+            if value is not None
+        ]
+        available = [(1.0, value) for value in fallback_values]
     scale = max(weight for weight, _ in available)
     scaled = [(weight / scale, value) for weight, value in available]
     denominator = math.fsum(weight for weight, _ in scaled)
@@ -399,10 +447,27 @@ def _score_edge(
         target.entity_id,
         score,
         size,
-        motion,
+        geometry,
         visual,
         False,
         True,
+    )
+
+
+def _score_edge(
+    observation: _PreparedObservation,
+    target: TemporalAssociationTarget,
+    config: TemporalAssociationConfig,
+) -> CandidateScore | None:
+    evidence = _extract_identity_evidence(
+        observation, target, config, dormant=False
+    )
+    return _score_identity_edge(
+        observation,
+        target,
+        config,
+        evidence,
+        gate_distance_m=config.maximum_centroid_distance_m,
     )
 
 
@@ -464,40 +529,15 @@ def _validate_reid_config(config: object) -> TemporalIdentityConfig:
 
 
 def _identity_qualification(
-    observation: _PreparedObservation,
-    target: TemporalAssociationTarget,
-    association_config: TemporalAssociationConfig,
+    evidence: _IdentityEvidence,
     reid_config: TemporalIdentityConfig,
-) -> tuple[bool, float | None, bool, bool]:
-    model_match = bool(
-        observation.image_feature is not None
-        and target.image_prototype is not None
-        and observation.value.feature_model_id == target.feature_model_id
-        and observation.image_feature.shape == target.image_prototype.shape
+) -> bool:
+    return bool(
+        evidence.feature_model_match
+        and evidence.appearance_similarity is not None
+        and evidence.appearance_similarity >= reid_config.minimum_reid_similarity
+        and evidence.semantic_qualified
     )
-    if (
-        not model_match
-    ):
-        return False, None, False, True
-    assert observation.image_feature is not None
-    assert target.image_prototype is not None
-    cosine = float(np.clip(np.dot(observation.image_feature, target.image_prototype), -1.0, 1.0))
-    if cosine < reid_config.minimum_reid_similarity:
-        return False, cosine, True, True
-
-    semantic_qualified = True
-    if target.semantic_probabilities and observation.value.semantic_id > 0:
-        top_class_id, top_probability = max(target.semantic_probabilities, key=lambda item: item[1])
-        conflict = (
-            observation.value.semantic_id != top_class_id
-            and observation.value.confidence >= association_config.semantic_conflict_probability
-            and top_probability >= association_config.semantic_conflict_probability
-        )
-        if conflict:
-            visual = (cosine + 1.0) / 2.0
-            if visual < association_config.conflict_override_visual:
-                semantic_qualified = False
-    return semantic_qualified, cosine, True, semantic_qualified
 
 
 def _score_dormant_edge(
@@ -505,61 +545,14 @@ def _score_dormant_edge(
     target: TemporalAssociationTarget,
     config: TemporalAssociationConfig,
     reid_config: TemporalIdentityConfig,
+    evidence: _IdentityEvidence,
 ) -> CandidateScore | None:
-    current_distance = _distance(observation.centroid, target.centroid_xyz)
-    maximum_distance = reid_config.maximum_reid_distance_m
-    if current_distance > maximum_distance:
-        return None
-    geometry = max(0.0, 1.0 - current_distance / maximum_distance)
-    size = float(
-        np.mean(
-            [
-                min(observed, stored) / max(observed, stored)
-                for observed, stored in zip(observation.extent, target.extent_xyz)
-            ]
-        )
-    )
-    assert observation.image_feature is not None
-    assert target.image_prototype is not None
-    cosine = float(
-        np.clip(np.dot(observation.image_feature, target.image_prototype), -1.0, 1.0)
-    )
-    visual = float(np.clip((cosine + 1.0) / 2.0, 0.0, 1.0))
-    semantic: float | None = None
-    if target.semantic_probabilities and observation.value.semantic_id > 0:
-        semantic = dict(target.semantic_probabilities).get(
-            observation.value.semantic_id, 0.0
-        )
-    components = (
-        (config.visual_weight, visual),
-        (config.semantic_weight, semantic),
-        (config.size_weight, size),
-        (config.geometry_weight, geometry),
-    )
-    available = [
-        (weight, value)
-        for weight, value in components
-        if weight > 0.0 and value is not None
-    ]
-    if not available:
-        available = [(1.0, visual)]
-    scale = max(weight for weight, _ in available)
-    scaled = [(weight / scale, value) for weight, value in available]
-    score = math.fsum(weight * value for weight, value in scaled) / math.fsum(
-        weight for weight, _ in scaled
-    )
-    score = float(np.clip(score, 0.0, 1.0))
-    if score < config.minimum_score:
-        return None
-    return CandidateScore(
-        observation.value.observation_id,
-        target.entity_id,
-        score,
-        size,
-        geometry,
-        visual,
-        False,
-        True,
+    return _score_identity_edge(
+        observation,
+        target,
+        config,
+        evidence,
+        gate_distance_m=reid_config.maximum_reid_distance_m,
     )
 
 
@@ -596,20 +589,25 @@ def associate_temporal_observations(
     )
     reid_opportunities: set[tuple[int, int]] = set()
     edges: dict[tuple[int, int], CandidateScore] = {}
-    identity_qualification: dict[
-        tuple[int, int], tuple[bool, float | None, bool, bool]
-    ] = {}
+    identity_evidence: dict[tuple[int, int], _IdentityEvidence] = {}
+    high_confidence_pairs: set[tuple[int, int]] = set()
     for observation in prepared:
         for target in eligible_targets:
-            edge_config = validated_config
             pair = (observation.value.observation_id, target.entity_id)
-            if reid_config is not None:
-                identity_qualification[pair] = _identity_qualification(
-                    observation, target, validated_config, reid_config
-                )
+            evidence = _extract_identity_evidence(
+                observation,
+                target,
+                validated_config,
+                dormant=target.lifecycle is TemporalLifecycle.DORMANT,
+            )
+            identity_evidence[pair] = evidence
+            if reid_config is not None and _identity_qualification(
+                evidence, reid_config
+            ):
+                high_confidence_pairs.add(pair)
             if target.lifecycle is TemporalLifecycle.DORMANT:
                 assert reid_config is not None
-                if not identity_qualification[pair][0]:
+                if pair not in high_confidence_pairs:
                     continue
                 reid_opportunities.add(pair)
                 candidate = _score_dormant_edge(
@@ -617,9 +615,16 @@ def associate_temporal_observations(
                     target,
                     validated_config,
                     reid_config,
+                    evidence,
                 )
             else:
-                candidate = _score_edge(observation, target, edge_config)
+                candidate = _score_identity_edge(
+                    observation,
+                    target,
+                    validated_config,
+                    evidence,
+                    gate_distance_m=validated_config.maximum_centroid_distance_m,
+                )
             if candidate is not None:
                 edges[pair] = candidate
 
@@ -642,9 +647,7 @@ def associate_temporal_observations(
     diagnostics: list[TemporalAssignmentDiagnostic] = []
     for observation_id, entity_id in assignments:
         pair = (observation_id, entity_id)
-        qualified, similarity, model_match, semantic_qualified = (
-            identity_qualification.get(pair, (False, None, False, True))
-        )
+        evidence = identity_evidence[pair]
         observation = observation_by_id[observation_id]
         target = target_by_id[entity_id]
         diagnostics.append(
@@ -653,13 +656,15 @@ def associate_temporal_observations(
                 entity_id=entity_id,
                 score=edges[pair].score,
                 target_lifecycle=target.lifecycle,
-                appearance_similarity=similarity,
+                appearance_similarity=evidence.appearance_similarity,
                 feature_model_id=(
-                    observation.value.feature_model_id if model_match else None
+                    observation.value.feature_model_id
+                    if evidence.feature_model_match
+                    else None
                 ),
-                feature_model_match=model_match,
-                semantic_qualified=semantic_qualified,
-                high_confidence_identity_match=qualified,
+                feature_model_match=evidence.feature_model_match,
+                semantic_qualified=evidence.semantic_qualified,
+                high_confidence_identity_match=pair in high_confidence_pairs,
             )
         )
 

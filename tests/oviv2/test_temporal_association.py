@@ -175,6 +175,36 @@ def test_a4_active_and_dormant_compete_in_one_global_assignment() -> None:
     )
 
 
+def test_active_dormant_global_identity_selection_ignores_all_predictions_and_motion_weight() -> None:
+    obs = observation(1, centroid=(0.0, 0.0, 0.0), image_feature=np.array([1.0, 0.0]))
+    for active_prediction in ((0.0, 0.0, 0.0), (100.0, 0.0, 0.0)):
+        for dormant_prediction in ((0.0, 0.0, 0.0), (100.0, 0.0, 0.0)):
+            for motion_weight in (0.0, 1000.0):
+                active = target(
+                    20, centroid=(0.0, 0.0, 0.0), predicted=active_prediction,
+                    prototype=np.array([1.0, 0.0]),
+                )
+                dormant = target(
+                    10, lifecycle=TemporalLifecycle.DORMANT,
+                    centroid=(0.8, 0.0, 0.0), predicted=dormant_prediction,
+                    prototype=np.array([1.0, 0.0]),
+                )
+                result = associate_temporal_observations(
+                    (obs,), (active, dormant), config(motion_weight=motion_weight),
+                    dormant_reid=reid_config(),
+                )
+                assert result.assignments == ((1, 20),)
+
+
+def test_a2_a3_active_gate_uses_current_not_predicted_centroid() -> None:
+    obs = observation(1, centroid=(0.0, 0.0, 0.0))
+    currently_near = target(1, centroid=(0.5, 0.0, 0.0), predicted=(100.0, 0.0, 0.0))
+    currently_far = target(2, centroid=(100.0, 0.0, 0.0), predicted=(0.0, 0.0, 0.0))
+    assert associate_temporal_observations(
+        (obs,), (currently_near, currently_far), config(), dormant_reid=None
+    ).assignments == ((1, 1),)
+
+
 def test_assignment_diagnostic_is_frozen_sorted_and_fails_closed() -> None:
     result = associate_temporal_observations(
         (observation(1, image_feature=np.array([1.0, 0.0])),),
@@ -197,6 +227,23 @@ def test_assignment_diagnostic_is_frozen_sorted_and_fails_closed() -> None:
         replace(result, assignments=list(result.assignments))
     with pytest.raises(ValueError, match="sorted"):
         replace(result, assignment_diagnostics=(replace(diagnostic, observation_id=2), diagnostic))
+
+
+def test_active_diagnostic_extracts_current_evidence_without_reid_mode() -> None:
+    result = associate_temporal_observations(
+        (observation(1, image_feature=np.array([1.0, 0.0])),),
+        (target(2, prototype=np.array([1.0, 0.0])),),
+        config(),
+        dormant_reid=None,
+    )
+    diagnostic = result.assignment_diagnostics[0]
+    assert diagnostic.appearance_similarity == pytest.approx(1.0)
+    assert diagnostic.feature_model_id == "clip"
+    assert diagnostic.feature_model_match is True
+    assert diagnostic.semantic_qualified is True
+    assert diagnostic.target_lifecycle is TemporalLifecycle.ACTIVE
+    assert 0.0 <= diagnostic.score <= 1.0
+    assert diagnostic.high_confidence_identity_match is False
 
 
 def test_moved_dormant_reuses_original_entity_id() -> None:
