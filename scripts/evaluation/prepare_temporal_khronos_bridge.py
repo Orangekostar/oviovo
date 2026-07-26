@@ -165,14 +165,47 @@ def _source_record(source: _VerifiedSource) -> dict[str, Any]:
 
 
 def _artifact_path(manifest_path: Path, raw: object) -> Path:
-    path = Path(str(raw))
-    if path.is_absolute():
+    if not isinstance(raw, str) or not raw:
+        raise ValueError("bridge artifact path must stay inside bridge output")
+    path = Path(raw)
+    if path.is_absolute() or any(part in {"", ".", ".."} for part in path.parts):
         raise ValueError("bridge artifact path must stay inside bridge output")
     root = manifest_path.parent.resolve()
-    resolved = (root / path).resolve()
+    candidate = root / path
+    current = root
+    for part in path.parts:
+        current /= part
+        try:
+            status = current.lstat()
+        except FileNotFoundError:
+            break
+        if stat.S_ISLNK(status.st_mode):
+            raise ValueError("bridge artifact path must not contain a symlink")
+    resolved = candidate.resolve()
     if not resolved.is_relative_to(root):
         raise ValueError("bridge artifact path must stay inside bridge output")
     return resolved
+
+
+def _read_artifact_once(path: Path, *, label: str) -> bytes:
+    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        descriptor = os.open(path, flags)
+    except OSError as error:
+        raise ValueError(f"{label} is not a regular file") from error
+    try:
+        status = os.fstat(descriptor)
+        if not stat.S_ISREG(status.st_mode):
+            raise ValueError(f"{label} is not a regular file")
+        chunks: list[bytes] = []
+        while True:
+            chunk = os.read(descriptor, 1024 * 1024)
+            if not chunk:
+                break
+            chunks.append(chunk)
+        return b"".join(chunks)
+    finally:
+        os.close(descriptor)
 
 
 def _normalize_label(value: object) -> str:
@@ -457,34 +490,117 @@ def _explicit_presence_runs(
     return intervals
 
 
-def _validate_temporal_consistency_records(payload: object) -> None:
+def _normalized_consistency_records(
+    records: Sequence[Mapping[str, Any]],
+    source_to_entity: Mapping[str, str],
+) -> list[dict[str, Any]]:
+    normalized = [
+        {
+            **record,
+            "entity_id": source_to_entity.get(
+                str(record["entity_id"]), str(record["entity_id"])
+            ),
+        }
+        for record in records
+    ]
+    return sorted(
+        normalized,
+        key=lambda record: (int(record["frame_index"]), str(record["entity_id"])),
+    )
+
+
+def _validate_temporal_consistency_records(
+    payload: object,
+    *,
+    expected_coverage: Sequence[Mapping[str, int]],
+    expected_audit: Mapping[str, int],
+    expected_query_timestamps: Sequence[int],
+    expected_samples: Sequence[Mapping[str, Any]],
+    expected_events: Sequence[Mapping[str, Any]],
+) -> None:
     if not isinstance(payload, Mapping) or set(payload) != {
         "schema_version",
+        "frame_coverage",
+        "query_timestamps_ns",
+        "temporal_audit_counts",
         "samples",
         "lifecycle_events",
     }:
         raise ValueError("temporal consistency record fields are invalid")
+    coverage = payload.get("frame_coverage")
+    query_timestamps = payload.get("query_timestamps_ns")
+    audit = payload.get("temporal_audit_counts")
     samples = payload.get("samples")
     events = payload.get("lifecycle_events")
     if (
-        payload.get("schema_version") != 1
+        type(payload.get("schema_version")) is not int
+        or payload["schema_version"] != 1
+        or not isinstance(coverage, list)
+        or not isinstance(query_timestamps, list)
+        or not isinstance(audit, Mapping)
         or not isinstance(samples, list)
         or not isinstance(events, list)
     ):
         raise ValueError("temporal consistency records are invalid")
+    if coverage != list(expected_coverage):
+        raise ValueError("temporal consistency coverage mismatch")
+    previous_timestamp = 0
+    for frame, record in enumerate(coverage):
+        if (
+            not isinstance(record, Mapping)
+            or frozenset(record) != _COVERAGE_FIELDS
+            or type(record.get("frame_index")) is not int
+            or record["frame_index"] != frame
+            or type(record.get("timestamp_ns")) is not int
+            or record["timestamp_ns"] <= previous_timestamp
+            or type(record.get("record_count")) is not int
+            or record["record_count"] < 0
+            or type(record.get("event_count")) is not int
+            or record["event_count"] < 0
+        ):
+            raise ValueError("temporal consistency coverage is invalid")
+        previous_timestamp = record["timestamp_ns"]
+    if (
+        query_timestamps != list(expected_query_timestamps)
+        or any(type(timestamp) is not int or timestamp <= 0 for timestamp in query_timestamps)
+        or query_timestamps != sorted(set(query_timestamps))
+    ):
+        raise ValueError("temporal consistency query timestamps mismatch")
+    if dict(audit) != dict(expected_audit):
+        raise ValueError("temporal consistency audit mismatch")
     sample_states: dict[tuple[str, int], tuple[bool, int]] = {}
+    sample_keys: list[tuple[int, str]] = []
+    sample_counts: dict[int, int] = {}
     for sample in samples:
         if not isinstance(sample, Mapping) or frozenset(sample) != _TRAJECTORY_FIELDS:
             raise ValueError("temporal consistency sample fields are invalid")
         entity_id = sample.get("entity_id")
         frame = sample.get("frame_index")
+        timestamp = sample.get("timestamp_ns")
         readout_valid = sample.get("readout_valid")
         geometry_epoch = sample.get("geometry_epoch")
+        observation_count = sample.get("observation_count")
+        confidence = sample.get("motion_confidence")
+        try:
+            centroid = np.asarray(sample.get("centroid_xyz"), dtype=np.float64)
+        except (TypeError, ValueError):
+            centroid = np.empty((0,), dtype=np.float64)
         if not (
             isinstance(entity_id, str)
             and entity_id
             and type(frame) is int
-            and frame >= 0
+            and 0 <= frame < len(coverage)
+            and type(timestamp) is int
+            and timestamp == coverage[frame]["timestamp_ns"]
+            and centroid.shape == (3,)
+            and np.all(np.isfinite(centroid))
+            and type(observation_count) is int
+            and observation_count >= 1
+            and sample.get("dynamic_state") in {"static", "dynamic", "unknown"}
+            and not isinstance(confidence, bool)
+            and isinstance(confidence, (int, float))
+            and math.isfinite(float(confidence))
+            and 0.0 <= float(confidence) <= 1.0
             and type(readout_valid) is bool
             and type(geometry_epoch) is int
             and geometry_epoch >= 0
@@ -494,19 +610,38 @@ def _validate_temporal_consistency_records(payload: object) -> None:
         if key in sample_states:
             raise ValueError("duplicate temporal consistency sample")
         sample_states[key] = (readout_valid, geometry_epoch)
+        sample_keys.append((frame, entity_id))
+        sample_counts[frame] = sample_counts.get(frame, 0) + 1
+    if sample_keys != sorted(sample_keys):
+        raise ValueError("temporal consistency samples are not canonical")
+    if any(
+        sample_counts.get(frame, 0) != record["record_count"]
+        for frame, record in enumerate(coverage)
+    ):
+        raise ValueError("temporal consistency sample coverage mismatch")
+
     event_keys: set[tuple[str, int]] = set()
+    canonical_event_keys: list[tuple[int, str]] = []
+    event_counts: dict[int, int] = {}
     for event in events:
         if not isinstance(event, Mapping) or frozenset(event) != _LIFECYCLE_FIELDS:
             raise ValueError("temporal consistency lifecycle event fields are invalid")
         entity_id = event.get("entity_id")
         frame = event.get("frame_index")
+        timestamp = event.get("timestamp_ns")
         readout_valid = event.get("readout_valid")
         geometry_epoch = event.get("geometry_epoch")
         if not (
             isinstance(entity_id, str)
             and entity_id
             and type(frame) is int
-            and frame >= 0
+            and 0 <= frame < len(coverage)
+            and type(timestamp) is int
+            and timestamp == coverage[frame]["timestamp_ns"]
+            and event.get("before") in {"active", "uncertain", "dormant"}
+            and event.get("after") in {"active", "uncertain", "dormant"}
+            and event.get("evidence")
+            in {"present", "visible_absent", "occluded", "out_of_view", "depth_unknown"}
             and type(readout_valid) is bool
             and type(geometry_epoch) is int
             and geometry_epoch >= 0
@@ -516,6 +651,8 @@ def _validate_temporal_consistency_records(payload: object) -> None:
         if key in event_keys:
             raise ValueError("duplicate temporal consistency lifecycle event")
         event_keys.add(key)
+        canonical_event_keys.append((frame, entity_id))
+        event_counts[frame] = event_counts.get(frame, 0) + 1
         sample_state = sample_states.get(key)
         if sample_state is not None and sample_state != (
             readout_valid,
@@ -524,6 +661,40 @@ def _validate_temporal_consistency_records(payload: object) -> None:
             if sample_state[0] is not readout_valid:
                 raise ValueError("sample/event readout validity conflict")
             raise ValueError("sample/event geometry epoch conflict")
+    if canonical_event_keys != sorted(canonical_event_keys):
+        raise ValueError("temporal consistency lifecycle events are not canonical")
+    if any(
+        event_counts.get(frame, 0) != record["event_count"]
+        for frame, record in enumerate(coverage)
+    ):
+        raise ValueError("temporal consistency lifecycle coverage mismatch")
+
+    computed_audit = {
+        "static_sample_count": sum(
+            sample["dynamic_state"] == "static" for sample in samples
+        ),
+        "dynamic_sample_count": sum(
+            sample["dynamic_state"] == "dynamic" for sample in samples
+        ),
+        "unknown_sample_count": sum(
+            sample["dynamic_state"] == "unknown" for sample in samples
+        ),
+        "missing_frame_count": 0,
+        "lifecycle_transition_count": len(events),
+        "geometry_epoch_count": len(
+            {
+                (record["entity_id"], record["geometry_epoch"])
+                for record in (*samples, *events)
+            }
+        ),
+        "invalid_readout_sample_count": sum(
+            sample["readout_valid"] is False for sample in samples
+        ),
+    }
+    if dict(audit) != computed_audit:
+        raise ValueError("temporal consistency audit counts are invalid")
+    if samples != list(expected_samples) or events != list(expected_events):
+        raise ValueError("temporal consistency source replica mismatch")
 
 
 def _label_space(path: Path, *, scene: str) -> dict[str, int]:
@@ -614,17 +785,24 @@ def validate_temporal_bridge_manifest(manifest_path: Path) -> dict[str, Any]:
     }:
         raise ValueError("temporal bridge consistency record is invalid")
     consistency_path = _artifact_path(manifest_path, consistency_record["path"])
+    consistency_bytes = _read_artifact_once(
+        consistency_path, label="temporal consistency record"
+    )
     if (
-        not consistency_path.is_file()
-        or consistency_path.stat().st_size != consistency_record["byte_count"]
-        or _sha256(consistency_path) != consistency_record["sha256"]
+        type(consistency_record["byte_count"]) is not int
+        or consistency_record["byte_count"] < 0
+        or len(consistency_bytes) != consistency_record["byte_count"]
+        or hashlib.sha256(consistency_bytes).hexdigest()
+        != consistency_record["sha256"]
     ):
         raise ValueError("temporal bridge consistency record hash mismatch")
+    try:
+        consistency_text = consistency_bytes.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ValueError("temporal consistency records are not UTF-8") from error
     consistency_payload = loads_strict(
-        consistency_path.read_text(encoding="utf-8"),
-        label="temporal consistency records",
+        consistency_text, label="temporal consistency records"
     )
-    _validate_temporal_consistency_records(consistency_payload)
     timestamps = [int(value) for value in manifest.get("query_timestamps_ns", ())]
     if not timestamps or any(
         current <= previous for previous, current in zip(timestamps, timestamps[1:])
@@ -751,8 +929,118 @@ def validate_temporal_bridge_manifest(manifest_path: Path) -> dict[str, Any]:
             raise ValueError("temporal bridge semantic history legacy fields mismatch")
         assignments[entity_id] = assignment
 
-    for source in manifest.get("hashed_inputs", ()):
+    raw_hashed_inputs = manifest.get("hashed_inputs")
+    if not isinstance(raw_hashed_inputs, list) or not raw_hashed_inputs:
+        raise ValueError("temporal bridge hashed inputs are invalid")
+    hashed_inputs = [
         _source_path(source, manifest_path.parent, "hashed bridge input")
+        for source in raw_hashed_inputs
+    ]
+    if len({source.path for source in hashed_inputs}) != len(hashed_inputs):
+        raise ValueError("temporal bridge hashed inputs are duplicated")
+
+    temporal_source = hashed_inputs[0]
+    temporal = _read_json(temporal_source, label="hashed temporal manifest")
+    temporal_checkpoints = temporal.get("checkpoints")
+    temporal_sources = temporal.get("sources")
+    if (
+        temporal.get("schema_version") != 1
+        or temporal.get("dataset") != "TESSE-CD"
+        or temporal.get("method") != "OVIV2"
+        or temporal.get("mode") != "causal_checkpoints"
+        or not isinstance(temporal_checkpoints, list)
+        or not temporal_checkpoints
+        or not isinstance(temporal_sources, Mapping)
+        or len(hashed_inputs) != 6 + 2 * len(temporal_checkpoints)
+    ):
+        raise ValueError("hashed temporal manifest is invalid")
+    temporal_base = temporal_source.path.parent
+    schedule_source = _source_path(
+        temporal_sources.get("schedule", {}), temporal_base, "hashed schedule"
+    )
+    coverage_source = _source_path(
+        temporal_sources.get("frame_coverage", {}),
+        temporal_base,
+        "hashed frame coverage",
+    )
+    lifecycle_source = _source_path(
+        temporal_sources.get("lifecycle_transitions", {}),
+        temporal_base,
+        "hashed lifecycle transitions",
+    )
+    trajectory_source = _source_path(
+        temporal.get("trajectories", {}), temporal_base, "hashed trajectories"
+    )
+    expected_order = [
+        temporal_source,
+        hashed_inputs[1],
+        schedule_source,
+        coverage_source,
+        lifecycle_source,
+    ]
+    for position, checkpoint in enumerate(temporal_checkpoints):
+        expected_order.extend(
+            (
+                _source_path(
+                    checkpoint.get("snapshot", {}),
+                    temporal_base,
+                    f"hashed checkpoint {position} snapshot",
+                ),
+                _source_path(
+                    checkpoint.get("entities", {}),
+                    temporal_base,
+                    f"hashed checkpoint {position} entities",
+                ),
+            )
+        )
+    expected_order.append(trajectory_source)
+    if hashed_inputs != expected_order:
+        raise ValueError("temporal bridge hashed input order mismatch")
+
+    coverage = _load_frame_coverage(coverage_source.path)
+    source_events = _load_lifecycle_transitions(lifecycle_source.path, coverage)
+    source_trajectories = _load_trajectories(
+        trajectory_source.path, temporal_checkpoints, coverage
+    )
+    for label, source in (
+        ("frame coverage", coverage_source),
+        ("lifecycle transitions", lifecycle_source),
+        ("trajectories", trajectory_source),
+    ):
+        _assert_unchanged(source, label=f"hashed {label}")
+    source_to_entity = {
+        str(assignment["source_entity_id"]): entity_id
+        for entity_id, assignment in assignments.items()
+    }
+    if len(source_to_entity) != len(assignments):
+        raise ValueError("temporal bridge source entity binding is ambiguous")
+    source_samples = [
+        sample
+        for samples in source_trajectories.values()
+        for sample in samples
+    ]
+    expected_samples = _normalized_consistency_records(
+        source_samples, source_to_entity
+    )
+    expected_events = _normalized_consistency_records(
+        source_events, source_to_entity
+    )
+    temporal_timestamps = [
+        checkpoint.get("timestamp_ns") for checkpoint in temporal_checkpoints
+    ]
+    if temporal_timestamps != timestamps or temporal.get(
+        "temporal_audit_counts"
+    ) != audit:
+        raise ValueError("temporal consistency manifest context mismatch")
+    _validate_temporal_consistency_records(
+        consistency_payload,
+        expected_coverage=coverage,
+        expected_audit=audit,
+        expected_query_timestamps=timestamps,
+        expected_samples=expected_samples,
+        expected_events=expected_events,
+    )
+
     checkpoints = manifest.get("checkpoints")
     if not isinstance(checkpoints, list) or len(checkpoints) != len(timestamps):
         raise ValueError("temporal bridge checkpoint count mismatch")
@@ -1155,36 +1443,28 @@ def prepare_temporal_bridge(
         tempfile.mkdtemp(prefix=f".{output.name}.", dir=output.parent)
     )
     artifact_root = staging
-    normalized_samples = [
-        {
-            **sample,
-            "entity_id": source_to_entity.get(
-                str(sample["entity_id"]), str(sample["entity_id"])
-            ),
-        }
-        for sample in all_samples
-    ]
-    normalized_transitions = [
-        {
-            **transition,
-            "entity_id": source_to_entity.get(
-                str(transition["entity_id"]), str(transition["entity_id"])
-            ),
-        }
-        for transition in transitions
-    ]
+    normalized_samples = _normalized_consistency_records(
+        all_samples, source_to_entity
+    )
+    normalized_transitions = _normalized_consistency_records(
+        transitions, source_to_entity
+    )
     consistency_payload = {
         "schema_version": 1,
-        "samples": sorted(
-            normalized_samples,
-            key=lambda record: (int(record["frame_index"]), str(record["entity_id"])),
-        ),
-        "lifecycle_events": sorted(
-            normalized_transitions,
-            key=lambda record: (int(record["frame_index"]), str(record["entity_id"])),
-        ),
+        "frame_coverage": list(coverage),
+        "query_timestamps_ns": timestamps,
+        "temporal_audit_counts": dict(audit),
+        "samples": normalized_samples,
+        "lifecycle_events": normalized_transitions,
     }
-    _validate_temporal_consistency_records(consistency_payload)
+    _validate_temporal_consistency_records(
+        consistency_payload,
+        expected_coverage=coverage,
+        expected_audit=audit,
+        expected_query_timestamps=timestamps,
+        expected_samples=normalized_samples,
+        expected_events=normalized_transitions,
+    )
     consistency_path = artifact_root / "temporal_consistency.json"
     _write_json(consistency_path, consistency_payload)
     consistency_record = {
@@ -1311,10 +1591,18 @@ def prepare_temporal_bridge(
         shutil.rmtree(staging, ignore_errors=True)
         raise
 
-    output.mkdir()
+    reserved_output = False
     try:
+        output.mkdir()
+        reserved_output = True
         os.rename(staging, output)
     except Exception as error:
+        shutil.rmtree(staging, ignore_errors=True)
+        if reserved_output:
+            try:
+                output.rmdir()
+            except OSError:
+                pass
         raise RuntimeError("temporal bridge publication-uncertain") from error
     return output / "bridge_manifest.json"
 

@@ -78,7 +78,8 @@ def test_cpp_importer_uses_stable_symbols_intervals_trajectory_and_ordered_updat
     assert 'manifest.value("dataset", "") != "TESSE-CD"' in text
     assert 'manifest.value("method", "") != "OVIV2"' in text
     assert "resolveBridgePath" in text
-    assert "map.update(buildGraph(checkpoint), timestamp_ns);" in text
+    assert "result.graphs.push_back(buildGraph(checkpoint));" in text
+    assert "map.update(validated.graphs.at(index), validated.timestamps.at(index));" in text
     assert "map_timestamps.json" in text
 
 
@@ -91,6 +92,48 @@ def test_cpp_importer_independently_rejects_sample_event_epoch_conflicts() -> No
     assert "sample_state.geometry_epoch != event_epoch" in text
     assert "sample_state.readout_valid != event_readout_valid" in text
     assert "sample/event temporal state conflict" in text
+
+
+def test_cpp_importer_reads_declared_sidecar_once_with_path_and_hash_guards() -> None:
+    text = CPP.read_text(encoding="utf-8")
+
+    assert "O_NOFOLLOW" in text
+    assert "openat(" in text
+    assert "declared artifact path must be relative" in text
+    assert "declared artifact path contains a forbidden component" in text
+    assert "declared artifact is not a regular file" in text
+    assert "declared artifact byte count mismatch" in text
+    assert "declared artifact SHA256 mismatch" in text
+    assert "duplicate JSON key" in text
+    assert "sha256Hex(bytes)" in text
+    assert "parseStrictJson(bytes" in text
+
+
+def test_cpp_importer_validates_complete_canonical_consistency_schema() -> None:
+    text = CPP.read_text(encoding="utf-8")
+
+    assert 'payload.at("frame_coverage")' in text
+    assert 'payload.at("query_timestamps_ns")' in text
+    assert 'payload.at("temporal_audit_counts")' in text
+    assert 'sample.at("centroid_xyz")' in text
+    assert 'sample.at("observation_count")' in text
+    assert 'sample.at("dynamic_state")' in text
+    assert 'sample.at("motion_confidence")' in text
+    assert 'event.at("before")' in text
+    assert 'event.at("after")' in text
+    assert 'event.at("evidence")' in text
+    assert "temporal consistency samples are not canonical" in text
+    assert "temporal consistency sample coverage mismatch" in text
+    assert "temporal consistency lifecycle coverage mismatch" in text
+    assert "temporal consistency audit mismatch" in text
+
+
+def test_cpp_importer_delays_output_creation_until_all_inputs_validate() -> None:
+    text = CPP.read_text(encoding="utf-8")
+
+    validate_position = text.index("validateBridgeInputs(manifest)")
+    output_position = text.index("std::filesystem::create_directory(output)")
+    assert validate_position < output_position
 
 
 def test_stage_and_build_command_target_only_khronos_eval(tmp_path: Path) -> None:

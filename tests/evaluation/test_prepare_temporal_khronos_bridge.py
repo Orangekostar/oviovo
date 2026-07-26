@@ -80,6 +80,40 @@ def _record(path: Path, *, relative_to: Path | None = None) -> dict[str, Any]:
     }
 
 
+def _rewrite_consistency(
+    manifest_path: Path,
+    mutate: Any,
+) -> None:
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    consistency_path = (
+        manifest_path.parent / manifest["temporal_consistency_json"]["path"]
+    )
+    consistency = json.loads(consistency_path.read_text(encoding="utf-8"))
+    mutate(consistency)
+    consistency_path.write_text(
+        json.dumps(consistency, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    manifest["temporal_consistency_json"] = _record(
+        consistency_path, relative_to=manifest_path.parent
+    )
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _prepared_bridge(tmp_path: Path) -> Path:
+    temporal = _write_temporal_fixture(tmp_path / "temporal")
+    labels = tmp_path / "labels.yaml"
+    labels.write_text(
+        "label_names: [{label: 0, name: Unknown}, {label: 5, name: Chair}, "
+        "{label: 7, name: Table}]\n",
+        encoding="utf-8",
+    )
+    return prepare_temporal_bridge(temporal, labels, tmp_path / "bridge")
+
+
 def _entity(entity_id: str, x: float, *, label: str = "Chair") -> EntityPrediction:
     return EntityPrediction(
         entity_id=entity_id,
@@ -676,6 +710,89 @@ def test_bridge_manifest_rejects_rehashed_sample_event_epoch_conflict(
         validate_temporal_bridge_manifest(manifest_path)
 
 
+def test_consistency_sidecar_contains_complete_canonical_context(
+    tmp_path: Path,
+) -> None:
+    manifest_path = _prepared_bridge(tmp_path)
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    consistency_path = (
+        manifest_path.parent / manifest["temporal_consistency_json"]["path"]
+    )
+    consistency = json.loads(consistency_path.read_text(encoding="utf-8"))
+
+    assert set(consistency) == {
+        "schema_version",
+        "frame_coverage",
+        "query_timestamps_ns",
+        "temporal_audit_counts",
+        "samples",
+        "lifecycle_events",
+    }
+    assert consistency["frame_coverage"][-1] == {
+        "frame_index": 4,
+        "timestamp_ns": 500,
+        "record_count": 2,
+        "event_count": 1,
+    }
+    assert consistency["query_timestamps_ns"] == [100, 300, 500]
+    assert consistency["temporal_audit_counts"] == manifest[
+        "temporal_audit_counts"
+    ]
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda payload: payload["samples"].clear(),
+        lambda payload: payload["lifecycle_events"].clear(),
+        lambda payload: payload["samples"].reverse(),
+        lambda payload: payload.update(unexpected=[]),
+        lambda payload: payload.update(schema_version=True),
+        lambda payload: payload["frame_coverage"].reverse(),
+        lambda payload: payload["frame_coverage"][0].update(record_count=99),
+        lambda payload: payload["query_timestamps_ns"].reverse(),
+        lambda payload: payload["temporal_audit_counts"].update(
+            static_sample_count=99
+        ),
+        lambda payload: payload["samples"][0].update(motion_confidence=0.5),
+        lambda payload: payload["samples"][0].update(
+            centroid_xyz=["invalid", 0.0, 1.0]
+        ),
+        lambda payload: payload["samples"][0].update(dynamic_state="moving"),
+        lambda payload: payload["samples"][0].update(timestamp_ns=True),
+        lambda payload: payload["lifecycle_events"][0].update(before="missing"),
+        lambda payload: payload["lifecycle_events"].append(
+            dict(payload["lifecycle_events"][0])
+        ),
+    ],
+)
+def test_bridge_manifest_rejects_rehashed_consistency_replica_tampering(
+    tmp_path: Path,
+    mutate: Any,
+) -> None:
+    manifest_path = _prepared_bridge(tmp_path)
+    _rewrite_consistency(manifest_path, mutate)
+
+    with pytest.raises(ValueError, match="consistency|coverage|audit|source"):
+        validate_temporal_bridge_manifest(manifest_path)
+
+
+def test_bridge_manifest_rejects_symlinked_consistency_sidecar(
+    tmp_path: Path,
+) -> None:
+    manifest_path = _prepared_bridge(tmp_path)
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    consistency_path = (
+        manifest_path.parent / manifest["temporal_consistency_json"]["path"]
+    )
+    target = consistency_path.with_name("temporal-consistency-target.json")
+    consistency_path.rename(target)
+    consistency_path.symlink_to(target.name)
+
+    with pytest.raises(ValueError, match="symlink"):
+        validate_temporal_bridge_manifest(manifest_path)
+
+
 @pytest.mark.parametrize(("field", "value"), [("dataset", "other"), ("method", "DUALMAP")])
 def test_bridge_validator_rejects_identity_tampering(
     tmp_path: Path, field: str, value: str
@@ -951,6 +1068,37 @@ def test_source_drift_during_write_leaves_no_published_output(
     with pytest.raises(ValueError, match="changed while reading"):
         prepare_temporal_bridge(temporal, labels, output)
 
+    assert not output.exists()
+
+
+def test_publication_race_cleans_staging_and_reserved_output(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    temporal = _write_temporal_fixture(tmp_path / "temporal")
+    labels = tmp_path / "labels.yaml"
+    labels.write_text(
+        "label_names: [{label: 0, name: Unknown}, {label: 5, name: Chair}]\n",
+        encoding="utf-8",
+    )
+    staging_paths: list[Path] = []
+    original_mkdtemp = bridge_module.tempfile.mkdtemp
+
+    def capture_staging(*args: Any, **kwargs: Any) -> str:
+        staging = original_mkdtemp(*args, **kwargs)
+        staging_paths.append(Path(staging))
+        return staging
+
+    def fail_publication(source: Path, destination: Path) -> None:
+        raise FileExistsError(f"publication race at {destination}")
+
+    monkeypatch.setattr(bridge_module.tempfile, "mkdtemp", capture_staging)
+    monkeypatch.setattr(bridge_module.os, "rename", fail_publication)
+    output = tmp_path / "bridge"
+
+    with pytest.raises(RuntimeError, match="publication-uncertain"):
+        prepare_temporal_bridge(temporal, labels, output)
+
+    assert staging_paths and all(not path.exists() for path in staging_paths)
     assert not output.exists()
 
 
