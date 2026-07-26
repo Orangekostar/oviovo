@@ -297,8 +297,61 @@ def test_new_epoch_accepts_explicit_pose_and_rejects_entity_or_epoch_overflow() 
         )
 
 
+@pytest.mark.parametrize("frame_id", [1, 0])
+def test_new_epoch_rejects_repeated_or_reversed_frame(frame_id: int) -> None:
+    with pytest.raises(ValueError, match="frame_id"):
+        start_new_epoch(
+            _epoch(),
+            _estimate(MotionDecision.REJECTED),
+            np.asarray([[0.1, 0.0, 0.0]]),
+            (0.0, 0.0, 0.0),
+            frame_id,
+            _config(),
+        )
+
+
+@pytest.mark.parametrize(
+    "frame_id,error_type",
+    [
+        (True, TypeError),
+        (np.iinfo(np.int64).max + 1, ValueError),
+    ],
+)
+def test_new_epoch_rejects_invalid_frame_id(
+    frame_id: object, error_type: type[Exception]
+) -> None:
+    with pytest.raises(error_type, match="frame_id"):
+        start_new_epoch(
+            _epoch(),
+            _estimate(MotionDecision.REJECTED),
+            np.asarray([[0.1, 0.0, 0.0]]),
+            (0.0, 0.0, 0.0),
+            frame_id,  # type: ignore[arg-type]
+            _config(),
+        )
+
+
+def test_new_epoch_accepts_increasing_numpy_integer_frame() -> None:
+    new = start_new_epoch(
+        _epoch(),
+        _estimate(MotionDecision.REJECTED),
+        np.asarray([[0.1, 0.0, 0.0]]),
+        (0.0, 0.0, 0.0),
+        np.int64(2),
+        _config(),
+    )
+    assert new.last_processed_frame_id == 2
+
+
 def test_new_epoch_frame_fallback_capacity_and_determinism() -> None:
-    old = _epoch()
+    empty = ObjectSubmap(
+        (0.0, 0.0, 0.0),
+        (),
+        np.empty((0, 3)),
+        np.empty(0),
+        np.empty(0, dtype=np.int64),
+    )
+    old = GeometryEpoch(7, 3, np.eye(4), empty, True)
     points = np.asarray([[2.1, 0.0, 0.0], [0.1, 0.0, 0.0], [1.1, 0.0, 0.0]])
     results = [
         start_new_epoch(

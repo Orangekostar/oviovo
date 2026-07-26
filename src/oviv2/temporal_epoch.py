@@ -204,6 +204,12 @@ def start_new_epoch(
         raise ValueError("entity_id does not match previous geometry epoch")
     if previous_epoch.epoch_id == _MAX_INT64:
         raise OverflowError("epoch_id cannot exceed int64")
+    normalized_frame_id = _identifier(frame_id, "frame_id", minimum=0)
+    if (
+        previous_epoch.last_processed_frame_id is not None
+        and normalized_frame_id <= previous_epoch.last_processed_frame_id
+    ):
+        raise ValueError("frame_id must increase strictly across geometry epochs")
 
     if initial_object_to_world is None:
         centroid = _finite_xyz(observed_centroid_xyz, "observed_centroid_xyz")
@@ -221,7 +227,7 @@ def start_new_epoch(
     submap = integrate_object_submap(
         empty,
         points_world,
-        frame_id,
+        normalized_frame_id,
         config,
         object_to_world=pose,
     )
@@ -234,5 +240,5 @@ def start_new_epoch(
         submap,
         True,
         estimate.decision,
-        frame_id,
+        normalized_frame_id,
     )
