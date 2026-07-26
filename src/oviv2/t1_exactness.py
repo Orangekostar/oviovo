@@ -20,9 +20,16 @@ from src.oviv2.geometry import SparseTsdfVolume
 from src.oviv2.observation_graph import CausalObservationGraph
 from src.oviv2.observations import FrameObservation
 from src.oviv2.ownership import ReversibleOwnershipStore
-from src.oviv2.reference_readout import ReferenceReadoutState
+from src.oviv2.reference_readout import (
+    CumulativeEntityView,
+    CumulativeReadoutView,
+    ReferenceReadoutState,
+    _ReferenceExportTrackerEntry,
+)
 from src.oviv2.runtime import Oviv2Runtime
 from src.oviv2.temporal_runtime import TemporalCurrentRuntime
+from src.oviv2.temporal_export import DynamicEvidenceState
+from src.oviv2.temporal_lifecycle import TemporalLifecycleState
 from src.oviv2.temporal_state import TemporalGeometryState, TemporalRuntimeState
 from src.oviv2.tracking import LocalTracker
 from src.oviv2.visibility import VoxelVisibilityProjector
@@ -36,6 +43,14 @@ _TRUSTED_STATE_OBJECT_TYPES = (
     EntityRegistry,
     VoxelVisibilityProjector,
     DenseSemanticIntegrator,
+)
+_REFERENCE_RESTORABLE_TYPES = (
+    ReferenceReadoutState,
+    CumulativeReadoutView,
+    CumulativeEntityView,
+    _ReferenceExportTrackerEntry,
+    DynamicEvidenceState,
+    TemporalLifecycleState,
 )
 
 
@@ -205,6 +220,39 @@ def _restore_nested_object(target: object, snapshot: object) -> None:
     target.__dict__.update(owned.__dict__)
 
 
+def _restore_reference_value(target: object, snapshot: object) -> object:
+    if type(target) is not type(snapshot):
+        return copy.deepcopy(snapshot)
+    if type(target) in _REFERENCE_RESTORABLE_TYPES:
+        for field in fields(target):
+            restored = _restore_reference_value(
+                getattr(target, field.name), getattr(snapshot, field.name)
+            )
+            object.__setattr__(target, field.name, restored)
+        return target
+    if type(target) is tuple:
+        if len(target) != len(snapshot):
+            return copy.deepcopy(snapshot)
+        for original_item, snapshot_item in zip(target, snapshot, strict=True):
+            restored = _restore_reference_value(original_item, snapshot_item)
+            if restored is not original_item and restored != original_item:
+                return copy.deepcopy(snapshot)
+        return target
+    if isinstance(target, np.ndarray):
+        if target.shape != snapshot.shape or target.dtype != snapshot.dtype:
+            return np.array(snapshot, copy=True)
+        writeable = bool(target.flags.writeable)
+        try:
+            target.flags.writeable = True
+            np.copyto(target, snapshot, casting="no")
+        finally:
+            target.flags.writeable = writeable
+        return target
+    if target == snapshot:
+        return target
+    return copy.deepcopy(snapshot)
+
+
 @dataclass(frozen=True)
 class _CumulativeSnapshot:
     attributes: tuple[tuple[str, object], ...]
@@ -216,19 +264,33 @@ class _CumulativeSnapshot:
 class _ArraySnapshot:
     array: np.ndarray
     content: np.ndarray
-    writeable: bool
+    writeable_chain: tuple[tuple[np.ndarray, bool], ...]
 
     @classmethod
     def capture(cls, array: np.ndarray) -> "_ArraySnapshot":
-        return cls(array, np.array(array, copy=True), bool(array.flags.writeable))
+        chain: list[tuple[np.ndarray, bool]] = []
+        current: object = array
+        seen: set[int] = set()
+        while isinstance(current, np.ndarray) and id(current) not in seen:
+            seen.add(id(current))
+            chain.append((current, bool(current.flags.writeable)))
+            current = current.base
+        return cls(array, np.array(array, copy=True), tuple(chain))
 
     def restore(self) -> None:
-        if self.writeable:
-            self.array.flags.writeable = True
-            np.copyto(self.array, self.content, casting="no")
-        elif not np.array_equal(self.array, self.content):
-            raise RuntimeError("immutable shared input array changed")
-        self.array.flags.writeable = self.writeable
+        changed = (
+            self.array.dtype != self.content.dtype
+            or self.array.shape != self.content.shape
+            or self.array.tobytes(order="C") != self.content.tobytes(order="C")
+        )
+        try:
+            if changed:
+                for array, _ in reversed(self.writeable_chain):
+                    array.flags.writeable = True
+                np.copyto(self.array, self.content, casting="no")
+        finally:
+            for array, writeable in self.writeable_chain:
+                array.flags.writeable = writeable
 
 
 @dataclass(frozen=True)
@@ -322,7 +384,9 @@ class DualTransactionSnapshot:
             )
         elif isinstance(state, ReferenceReadoutState):
             state_snapshot = copy.deepcopy(state)
-            temporal_public = ()
+            temporal_public = tuple(
+                (field.name, getattr(state, field.name)) for field in fields(state)
+            )
         else:
             raise TypeError("temporal runtime has an unsupported state")
         return cls(
@@ -382,10 +446,14 @@ class DualTransactionSnapshot:
         elif isinstance(original_state, ReferenceReadoutState) and isinstance(
             self.temporal_state, ReferenceReadoutState
         ):
+            original_fields = dict(self.temporal_public)
             for field in fields(original_state):
+                target = original_fields[field.name]
                 object.__setattr__(
                     original_state, field.name,
-                    copy.deepcopy(getattr(self.temporal_state, field.name)),
+                    _restore_reference_value(
+                        target, getattr(self.temporal_state, field.name)
+                    ),
                 )
         temporal.__dict__.clear()
         temporal.__dict__.update(temporal_original)
