@@ -892,7 +892,10 @@ def _exact_execution(
     else:
         receipt = {
             "schema_version": 1,
-            "provenance": {"repository_commit": commit},
+            "provenance": {
+                "repository_commit": commit,
+                "command": argv[1:],
+            },
             "environment": {},
         }
         receipt_path = root / "execution_receipt.json"
@@ -915,6 +918,7 @@ def _exact_execution(
         "output_root": str(root.resolve()),
         "root_device": status.st_dev,
         "root_inode": status.st_ino,
+        "trust_model": gates.LOCAL_PROCESS_TRUST_MODEL,
         "run_manifest": gates._absolute_file_record(root / "run_manifest.json"),
         "production_receipt": gates._absolute_file_record(receipt_path),
         "completed_execution": completed,
@@ -952,8 +956,9 @@ def test_exact_profile_gate_requires_interleaved_independent_processes(
         profile["cumulative_root_sha256"] == "e" * 64
         for profile in evidence["profiles"].values()
     )
-    assert len(calls) == 17
-    assert calls[9] == (tmp_path / "run-0", tmp_path / "run-1")
+    assert len(calls) == 9
+    assert all(left == right for left, right in calls)
+    assert len({left for left, _ in calls}) == 9
 
     executions[1]["pid"] = executions[0]["pid"]
     observation_path = Path(executions[1]["observation_receipt"]["path"])
@@ -964,6 +969,54 @@ def test_exact_profile_gate_requires_interleaved_independent_processes(
     executions[1]["observation_receipt"] = gates._absolute_file_record(observation_path)
     with pytest.raises(gates.GateVerificationError, match="PID"):
         gates.verify_exact_profile_runs(executions, compare=compare)
+
+
+def test_dual_receipt_command_must_equal_parent_popen_argv(tmp_path: Path) -> None:
+    execution = _exact_execution("a1", tmp_path / "run-2", 102)
+    root = Path(execution["output_root"])
+    receipt_path = root / "execution_receipt.json"
+    receipt = json.loads(receipt_path.read_text())
+    receipt["provenance"]["command"] = ["different-runner.py"]
+    receipt_path.write_text(json.dumps(receipt) + "\n")
+    observation = json.loads(
+        Path(execution["observation_receipt"]["path"]).read_text()
+    )
+
+    with pytest.raises(gates.GateVerificationError, match="command"):
+        gates._reopen_completed_execution(
+            "a1",
+            root,
+            execution["argv"],
+            execution["pid"],
+            0,
+            Path(observation["source_manifest"]["path"]),
+        )
+
+
+def test_observation_declares_local_unsigned_pid_trust_model(tmp_path: Path) -> None:
+    execution = _exact_execution("a1", tmp_path / "run-2", 102)
+    observation_path = Path(execution["observation_receipt"]["path"])
+    observation = json.loads(observation_path.read_text())
+    assert observation["trust_model"] == {
+        "pid_semantics": "trusted_local_orchestrator_observation",
+        "observation_basis": "parent_popen_and_waitpid",
+        "audit_authentication": "unsigned_local_audit",
+        "stability_scope": "verification_interval_only",
+        "excluded_adversaries": ["same_uid_process", "root"],
+    }
+    observation["trust_model"]["audit_authentication"] = "cryptographic_proof"
+    observation_path.write_text(json.dumps(observation) + "\n")
+    execution["observation_receipt"] = gates._absolute_file_record(observation_path)
+    with pytest.raises(gates.GateVerificationError, match="trust|observation"):
+        gates._bind_exact_receipt(
+            execution,
+            expected_position=2,
+            compare=lambda left, right: {
+                "checkpoint_frames": [2, 7],
+                "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
+                "root_sha256": "e" * 64,
+            },
+        )
 
 
 def test_exact_transaction_uses_popen_pid_argv_and_returncode(
@@ -1036,6 +1089,16 @@ def test_exact_transaction_uses_popen_pid_argv_and_returncode(
         "verify_exact_profile_runs",
         lambda executions, **kwargs: seen.extend(executions) or {"executions": executions},
     )
+    compare_calls: list[tuple[Path, Path]] = []
+
+    def compare(left: Path, right: Path) -> dict[str, object]:
+        compare_calls.append((left, right))
+        return {
+            "format": "oviv2_cumulative_exact_v1",
+            "checkpoint_frames": [2],
+            "inventory": [{"path": "x", "sha256": "2" * 64, "byte_count": 1}],
+            "root_sha256": "3" * 64,
+        }
 
     result = gates.execute_exact_profile_transaction(
         specs,
@@ -1043,23 +1106,26 @@ def test_exact_transaction_uses_popen_pid_argv_and_returncode(
         python_executable="/env/bin/python",
         transaction_dir=tmp_path / "transaction",
         popen_factory=popen,
-        compare=lambda left, right: {
-            "format": "oviv2_cumulative_exact_v1",
-            "checkpoint_frames": [2],
-            "inventory": [{"path": "x", "sha256": "2" * 64, "byte_count": 1}],
-            "root_sha256": "3" * 64,
-        },
+        compare=compare,
     )
 
     assert result["executions"] == seen
     assert [record["pid"] for record in seen] == [pid for _, pid in launched]
     assert all(record["returncode"] == 0 for record in seen)
     assert [record["profile"] for record in seen] == list(gates.EXACT_PROFILE_SEQUENCE)
+    assert len(compare_calls) == 9
+    assert all(left == right for left, right in compare_calls)
+    assert len({left for left, _ in compare_calls}) == 9
     observations = sorted((tmp_path / "transaction/receipts").glob("*.json"))
     assert len(observations) == 9
     assert [json.loads(path.read_text())["pid"] for path in observations] == [
         pid for _, pid in launched
     ]
+    assert all(
+        json.loads(path.read_text())["trust_model"]
+        == gates.LOCAL_PROCESS_TRUST_MODEL
+        for path in observations
+    )
 
 
 def _failure_cleanup_harness(
@@ -1353,6 +1419,51 @@ def test_exact_transaction_preserves_replaced_observation_and_transaction(
     for path, identity in {**root_identities, **observation_identities}.items():
         metadata = os.lstat(path)
         assert (metadata.st_dev, metadata.st_ino, stat.S_IFMT(metadata.st_mode)) == identity
+
+
+@pytest.mark.parametrize("mutation", ["insert", "replace"])
+def test_exact_transaction_nested_root_mutation_preserves_every_owned_path(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, mutation: str
+) -> None:
+    specs, transaction, original_popen, compare = _failure_cleanup_harness(
+        tmp_path, monkeypatch, failure="receipt", position=1
+    )
+
+    def popen(argv: list[str], **kwargs: object) -> object:
+        process = original_popen(argv, **kwargs)
+        nested = Path(argv[5]) / "nested"
+        nested.mkdir()
+        (nested / "known.bin").write_bytes(b"known")
+        return process
+
+    original_reopen = gates._reopen_completed_execution
+
+    def mutate_then_fail(*args: object, **kwargs: object) -> dict[str, object]:
+        root = args[1]
+        assert isinstance(root, Path)
+        if root.name.endswith("-1"):
+            nested = Path(specs[0]["output_root"]) / "nested"
+            target = nested / ("extra.bin" if mutation == "insert" else "known.bin")
+            if mutation == "replace":
+                target.unlink()
+            target.write_bytes(b"attacker")
+        return original_reopen(*args, **kwargs)
+
+    monkeypatch.setattr(gates, "_reopen_completed_execution", mutate_then_fail)
+    with pytest.raises(gates.GateVerificationError, match="cleanup unsafe"):
+        gates.execute_exact_profile_transaction(
+            specs, repo=gates.REPO_ROOT, python_executable="/env/bin/python",
+            transaction_dir=transaction, popen_factory=popen, compare=compare,
+        )
+
+    roots = [Path(specs[index]["output_root"]) for index in (0, 1)]
+    assert sum(root.exists() for root in roots) == 2
+    assert transaction.exists()
+    assert [path.name for path in (transaction / "receipts").iterdir()] == [
+        "000-reference.json"
+    ]
+    nested_files = sorted(path.name for path in (roots[0] / "nested").iterdir())
+    assert nested_files == (["extra.bin", "known.bin"] if mutation == "insert" else ["known.bin"])
 
 
 def test_exact_transaction_popen_start_failure_cleans_and_retry_succeeds(

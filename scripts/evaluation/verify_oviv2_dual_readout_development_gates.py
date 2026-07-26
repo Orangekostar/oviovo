@@ -32,6 +32,13 @@ SCOPE = "shared_code_and_A0-A4_fixture"
 SCHEMA_VERSION = 1
 MANIFEST_ID = "oviv2_dual_readout_development_gates_v1"
 DEFAULT_MAX_INPUT_BYTES = 16 * 1024 * 1024
+LOCAL_PROCESS_TRUST_MODEL = {
+    "pid_semantics": "trusted_local_orchestrator_observation",
+    "observation_basis": "parent_popen_and_waitpid",
+    "audit_authentication": "unsigned_local_audit",
+    "stability_scope": "verification_interval_only",
+    "excluded_adversaries": ["same_uid_process", "root"],
+}
 
 CUMULATIVE_ROOTS = (
     "src/oviv2/runtime.py",
@@ -208,6 +215,7 @@ def _bind_exact_receipt(
     *,
     compare: Callable[[Path, Path], dict[str, Any]],
     expected_position: int | None = None,
+    audit: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     raw_root = record["output_root"]
     try:
@@ -237,7 +245,7 @@ def _bind_exact_receipt(
         "schema_version", "format", "position", "profile", "argv", "pid",
         "returncode", "config", "freeze_manifest", "source_manifest",
         "output_root", "root_device", "root_inode", "run_manifest",
-        "production_receipt", "completed_execution",
+        "production_receipt", "completed_execution", "trust_model",
     }
     root_status = os.stat(root, follow_symlinks=False)
     if (
@@ -256,6 +264,7 @@ def _bind_exact_receipt(
         or observation.get("output_root") != str(root)
         or observation.get("root_device") != root_status.st_dev
         or observation.get("root_inode") != root_status.st_ino
+        or observation.get("trust_model") != LOCAL_PROCESS_TRUST_MODEL
     ):
         raise GateVerificationError("exact execution observation binding mismatch")
     for key in (
@@ -276,10 +285,11 @@ def _bind_exact_receipt(
     expected_record = {**derived, "observation_receipt": observation_record}
     if observation.get("completed_execution") != derived or record != expected_record:
         raise GateVerificationError("exact execution reopened binding mismatch")
-    try:
-        audit = compare(root, root)
-    except (ArtifactMismatch, KeyError, TypeError) as exc:
-        raise GateVerificationError(f"exact execution artifact mismatch: {exc}") from exc
+    if audit is None:
+        try:
+            audit = compare(root, root)
+        except (ArtifactMismatch, KeyError, TypeError) as exc:
+            raise GateVerificationError(f"exact execution artifact mismatch: {exc}") from exc
     if (
         record["profile"] == "reference"
     ):
@@ -298,11 +308,17 @@ def verify_exact_profile_runs(
     executions: list[dict[str, Any]],
     *,
     compare: Callable[[Path, Path], dict[str, Any]] = compare_cumulative_artifacts,
+    audits: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Verify an independently executed, interleaved T1/A0-A4 transaction."""
+    if audits is not None and len(audits) != len(executions):
+        raise GateVerificationError("exact cumulative audit inventory is invalid")
     records_and_audits = [
         _bind_exact_receipt(
-            _exact_execution(record), compare=compare, expected_position=position
+            _exact_execution(record),
+            compare=compare,
+            expected_position=position,
+            audit=None if audits is None else audits[position],
         )
         for position, record in enumerate(executions)
     ]
@@ -335,30 +351,26 @@ def verify_exact_profile_runs(
     ):
         raise GateVerificationError("exact execution binding disagreement")
 
-    reference_root = Path(records[0]["output_root"])
     profiles: dict[str, Any] = {}
     try:
-        for anchor_index, candidate_index in ((1, 2), (3, 4), (5, 6), (7, 8)):
-            anchor = records[anchor_index]
-            candidate = records[candidate_index]
-            reference_audit = compare(
-                reference_root, Path(anchor["output_root"])
-            )
-            profile_audit = compare(
-                Path(anchor["output_root"]), Path(candidate["output_root"])
-            )
-            if reference_audit["root_sha256"] != profile_audit["root_sha256"]:
-                raise GateVerificationError("cumulative audit root disagreement")
-            profiles["a0"] = {
-                "cumulative_root_sha256": reference_audit["root_sha256"],
-                "checkpoint_frames": reference_audit["checkpoint_frames"],
-                "inventory": reference_audit["inventory"],
+        audit_records = [audit for _, audit in records_and_audits]
+        baseline = {
+            "cumulative_root_sha256": audit_records[0]["root_sha256"],
+            "checkpoint_frames": audit_records[0]["checkpoint_frames"],
+            "inventory": audit_records[0]["inventory"],
+        }
+        if any(
+            {
+                "cumulative_root_sha256": audit["root_sha256"],
+                "checkpoint_frames": audit["checkpoint_frames"],
+                "inventory": audit["inventory"],
             }
-            profiles[candidate["profile"]] = {
-                "cumulative_root_sha256": profile_audit["root_sha256"],
-                "checkpoint_frames": profile_audit["checkpoint_frames"],
-                "inventory": profile_audit["inventory"],
-            }
+            != baseline
+            for audit in audit_records[1:]
+        ):
+            raise GateVerificationError("cumulative audit root disagreement")
+        for record in records[1:]:
+            profiles[record["profile"]] = dict(baseline)
     except (ArtifactMismatch, KeyError, TypeError) as exc:
         raise GateVerificationError(f"exact cumulative artifact mismatch: {exc}") from exc
     return {
@@ -432,12 +444,17 @@ def _reopen_completed_execution(
             raise GateVerificationError("reference process receipt binding mismatch")
     else:
         provenance = receipt.get("provenance")
+        command = provenance.get("command") if isinstance(provenance, dict) else None
+        normalized_command = (
+            [argv[0], *command] if isinstance(command, list) else None
+        )
         if (
             receipt.get("schema_version") != 1
             or not isinstance(provenance, dict)
             or provenance.get("repository_commit") != code_commit
+            or normalized_command != argv
         ):
-            raise GateVerificationError("dual process receipt binding mismatch")
+            raise GateVerificationError("dual process receipt command/commit binding mismatch")
     canonical = lambda value: _sha256(
         json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
     )
@@ -482,7 +499,49 @@ def _absolute_file_record(path: Path) -> dict[str, object]:
     }
 
 
-OwnedPath = tuple[Path, int, int, int, int]
+TreeEntry = tuple[str, int, int, int, int, int, int]
+OwnedPath = tuple[Path, int, int, int, int, tuple[TreeEntry, ...] | None]
+
+
+def _tree_inventory(
+    descriptor: int, prefix: str = ""
+) -> tuple[TreeEntry, ...]:
+    entries: list[TreeEntry] = []
+    for name in sorted(os.listdir(descriptor)):
+        metadata = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+        relative = f"{prefix}/{name}" if prefix else name
+        entries.append(
+            (
+                relative,
+                metadata.st_dev,
+                metadata.st_ino,
+                stat.S_IFMT(metadata.st_mode),
+                metadata.st_size,
+                metadata.st_mtime_ns,
+                metadata.st_ctime_ns,
+            )
+        )
+        if stat.S_ISDIR(metadata.st_mode):
+            child = os.open(
+                name,
+                os.O_RDONLY
+                | getattr(os, "O_DIRECTORY", 0)
+                | getattr(os, "O_NOFOLLOW", 0),
+                dir_fd=descriptor,
+            )
+            try:
+                opened = os.fstat(child)
+                if (opened.st_dev, opened.st_ino) != (
+                    metadata.st_dev,
+                    metadata.st_ino,
+                ):
+                    raise GateVerificationError(
+                        "owned tree changed while capturing inventory"
+                    )
+                entries.extend(_tree_inventory(child, relative))
+            finally:
+                os.close(child)
+    return tuple(entries)
 
 
 def _open_parent_directory(path: Path) -> tuple[int, str]:
@@ -504,14 +563,18 @@ def _open_parent_directory(path: Path) -> tuple[int, str]:
         raise
 
 
-def _owned_path(path: Path) -> OwnedPath:
+def _owned_path(path: Path, *, capture_tree: bool = False) -> OwnedPath:
     descriptor, name = _open_parent_directory(path)
     owned_descriptor: int | None = None
     try:
         metadata = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
         owned_descriptor = os.open(
             name,
-            getattr(os, "O_PATH", os.O_RDONLY)
+            (
+                os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+                if stat.S_ISDIR(metadata.st_mode)
+                else getattr(os, "O_PATH", os.O_RDONLY)
+            )
             | getattr(os, "O_NOFOLLOW", 0)
             | getattr(os, "O_CLOEXEC", 0),
             dir_fd=descriptor,
@@ -526,12 +589,18 @@ def _owned_path(path: Path) -> OwnedPath:
         if owned_descriptor is not None:
             os.close(owned_descriptor)
         raise GateVerificationError(f"owned path changed while observing: {path}")
+    inventory = (
+        _tree_inventory(owned_descriptor)
+        if capture_tree and stat.S_ISDIR(metadata.st_mode)
+        else None
+    )
     return (
         Path(os.path.abspath(path)),
         metadata.st_dev,
         metadata.st_ino,
         stat.S_IFMT(metadata.st_mode),
         owned_descriptor,
+        inventory,
     )
 
 
@@ -558,65 +627,12 @@ def _create_owned_directory(path: Path) -> OwnedPath:
         metadata.st_ino,
         stat.S_IFMT(metadata.st_mode),
         owned_descriptor,
+        None,
     )
 
 
-def _clear_directory_descriptor(descriptor: int, label: Path) -> None:
-    try:
-        names = sorted(os.listdir(descriptor))
-    except OSError as exc:
-        raise GateVerificationError(f"cleanup unsafe: cannot list {label}") from exc
-    for name in names:
-        try:
-            before = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
-        except OSError as exc:
-            raise GateVerificationError(f"cleanup unsafe: entry changed in {label}") from exc
-        if stat.S_ISDIR(before.st_mode):
-            flags = (
-                os.O_RDONLY
-                | getattr(os, "O_DIRECTORY", 0)
-                | getattr(os, "O_NOFOLLOW", 0)
-            )
-            try:
-                child = os.open(name, flags, dir_fd=descriptor)
-            except OSError as exc:
-                raise GateVerificationError(
-                    f"cleanup unsafe: directory changed in {label}"
-                ) from exc
-            try:
-                opened = os.fstat(child)
-                if (opened.st_dev, opened.st_ino) != (before.st_dev, before.st_ino):
-                    raise GateVerificationError(
-                        f"cleanup unsafe: directory replaced in {label}"
-                    )
-                _clear_directory_descriptor(child, label / name)
-            finally:
-                os.close(child)
-            current = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
-            if (current.st_dev, current.st_ino) != (before.st_dev, before.st_ino):
-                raise GateVerificationError(
-                    f"cleanup unsafe: directory replaced in {label}"
-                )
-            os.rmdir(name, dir_fd=descriptor)
-        else:
-            current = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
-            if (
-                current.st_dev,
-                current.st_ino,
-                stat.S_IFMT(current.st_mode),
-            ) != (
-                before.st_dev,
-                before.st_ino,
-                stat.S_IFMT(before.st_mode),
-            ):
-                raise GateVerificationError(
-                    f"cleanup unsafe: file replaced in {label}"
-                )
-            os.unlink(name, dir_fd=descriptor)
-
-
 def _owned_path_matches(witness: OwnedPath) -> bool:
-    path, device, inode, kind, owned_descriptor = witness
+    path, device, inode, kind, owned_descriptor, inventory = witness
     try:
         opened = os.fstat(owned_descriptor)
         descriptor, name = _open_parent_directory(path)
@@ -626,17 +642,77 @@ def _owned_path_matches(witness: OwnedPath) -> bool:
             os.close(descriptor)
     except OSError:
         return False
-    return (
+    identity_matches = (
         opened.st_dev,
         opened.st_ino,
         current.st_dev,
         current.st_ino,
         stat.S_IFMT(current.st_mode),
     ) == (device, inode, device, inode, kind)
+    if not identity_matches:
+        return False
+    try:
+        return inventory is None or _tree_inventory(owned_descriptor) == inventory
+    except (GateVerificationError, OSError):
+        return False
+
+
+def _open_inventory_parent(descriptor: int, relative: str) -> tuple[int, str]:
+    parts = relative.split("/")
+    parent = os.dup(descriptor)
+    try:
+        for part in parts[:-1]:
+            child = os.open(
+                part,
+                os.O_RDONLY
+                | getattr(os, "O_DIRECTORY", 0)
+                | getattr(os, "O_NOFOLLOW", 0),
+                dir_fd=parent,
+            )
+            os.close(parent)
+            parent = child
+        return parent, parts[-1]
+    except BaseException:
+        os.close(parent)
+        raise
+
+
+def _remove_owned_inventory(
+    descriptor: int, inventory: tuple[TreeEntry, ...], label: Path
+) -> None:
+    for entry in sorted(
+        inventory,
+        key=lambda item: (item[0].count("/"), stat.S_ISDIR(item[3])),
+        reverse=True,
+    ):
+        relative, device, inode, kind, size, modified, changed = entry
+        parent, name = _open_inventory_parent(descriptor, relative)
+        try:
+            current = os.stat(name, dir_fd=parent, follow_symlinks=False)
+            identity = (
+                current.st_dev,
+                current.st_ino,
+                stat.S_IFMT(current.st_mode),
+            )
+            metadata = (
+                current.st_size, current.st_mtime_ns, current.st_ctime_ns
+            )
+            if identity != (device, inode, kind) or (
+                not stat.S_ISDIR(kind) and metadata != (size, modified, changed)
+            ):
+                raise GateVerificationError(
+                    f"cleanup unsafe: owned tree entry replaced: {label / relative}"
+                )
+            if stat.S_ISDIR(kind):
+                os.rmdir(name, dir_fd=parent)
+            else:
+                os.unlink(name, dir_fd=parent)
+        finally:
+            os.close(parent)
 
 
 def _remove_owned_path(witness: OwnedPath, *, recursive: bool = True) -> None:
-    path, device, inode, kind, owned_descriptor = witness
+    path, device, inode, kind, owned_descriptor, inventory = witness
     opened_owner = os.fstat(owned_descriptor)
     if (opened_owner.st_dev, opened_owner.st_ino) != (device, inode):
         raise GateVerificationError(f"cleanup unsafe: ownership changed: {path}")
@@ -662,7 +738,11 @@ def _remove_owned_path(witness: OwnedPath, *, recursive: bool = True) -> None:
             if (opened.st_dev, opened.st_ino) != (device, inode):
                 raise GateVerificationError(f"cleanup unsafe: owned path replaced: {path}")
             if recursive:
-                _clear_directory_descriptor(child, path)
+                if inventory is None:
+                    raise GateVerificationError(
+                        f"cleanup unsafe: owned tree inventory is missing: {path}"
+                    )
+                _remove_owned_inventory(child, inventory, path)
             elif os.listdir(child):
                 raise GateVerificationError(
                     f"cleanup unsafe: owned directory has unknown entries: {path}"
@@ -784,6 +864,7 @@ def execute_exact_profile_transaction(
     receipts_dir = transaction_dir / "receipts"
     environment = os.environ.copy()
     records: list[dict[str, Any]] = []
+    audits: list[dict[str, Any]] = []
     roots: list[Path] = []
     root_witnesses: list[OwnedPath] = []
     observation_witnesses: list[OwnedPath] = []
@@ -847,7 +928,7 @@ def execute_exact_profile_transaction(
                 stdout, stderr = process.communicate()
             finally:
                 if root.exists() or root.is_symlink():
-                    root_witnesses.append(_owned_path(root))
+                    root_witnesses.append(_owned_path(root, capture_tree=True))
             if process is None:
                 raise GateVerificationError("exact execution process did not start")
             returncode = process.returncode
@@ -886,6 +967,7 @@ def execute_exact_profile_transaction(
                 "output_root": str(root.resolve(strict=True)),
                 "root_device": root_status.st_dev,
                 "root_inode": root_status.st_ino,
+                "trust_model": LOCAL_PROCESS_TRUST_MODEL,
                 "run_manifest": _absolute_file_record(root / "run_manifest.json"),
                 "production_receipt": _absolute_file_record(production_receipt),
                 "completed_execution": record,
@@ -899,13 +981,9 @@ def execute_exact_profile_transaction(
             }
             records.append(dict(record))
             roots.append(root)
-            compare(root, root)
-            if position in {1, 3, 5, 7}:
-                compare(roots[0], root)
-            elif position in {2, 4, 6, 8}:
-                compare(roots[position - 1], root)
+            audits.append(compare(root, root))
             del stdout
-        result = verify_exact_profile_runs(records, compare=compare)
+        result = verify_exact_profile_runs(records, compare=compare, audits=audits)
         _close_owned_paths(
             [
                 *root_witnesses,
