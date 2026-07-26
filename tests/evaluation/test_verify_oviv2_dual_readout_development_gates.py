@@ -1000,6 +1000,7 @@ def test_observation_declares_local_unsigned_pid_trust_model(tmp_path: Path) -> 
     assert observation["trust_model"] == {
         "pid_semantics": "trusted_local_orchestrator_observation",
         "observation_basis": "parent_popen_and_waitpid",
+        "root_ownership": "after_successful_receipt_manifest_observation_reopen_only",
         "audit_authentication": "unsigned_local_audit",
         "stability_scope": "verification_interval_only",
         "excluded_adversaries": ["same_uid_process", "root"],
@@ -1168,6 +1169,10 @@ def _failure_cleanup_harness(
         del kwargs
         current = launches % len(specs)
         launches += 1
+        should_fail = failure == "child" and current == position and not failed
+        if should_fail:
+            failed = True
+            return Process(9, 20_000 + launches)
         output = Path(argv[5])
         output.mkdir()
         (output / "run_manifest.json").write_text("{}\n")
@@ -1175,10 +1180,7 @@ def _failure_cleanup_harness(
             "t1_exact_receipt.json" if len(argv) == 14 else "execution_receipt.json"
         )
         receipt.write_text("{}\n")
-        should_fail = failure == "child" and current == position and not failed
-        if should_fail:
-            failed = True
-        return Process(9 if should_fail else 0, 20_000 + launches)
+        return Process(0, 20_000 + launches)
 
     def reopen(
         profile: str,
@@ -1266,12 +1268,11 @@ def test_exact_transaction_child_failure_cleans_and_retry_succeeds(
     assert len(result["executions"]) == len(specs)
 
 
-@pytest.mark.parametrize("failure", ["compare", "receipt"])
-def test_exact_transaction_validation_failure_cleans_and_retry_succeeds(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str
+def test_exact_transaction_compare_failure_cleans_and_retry_succeeds(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     specs, transaction, popen, compare = _failure_cleanup_harness(
-        tmp_path, monkeypatch, failure=failure, position=4
+        tmp_path, monkeypatch, failure="compare", position=4
     )
     kwargs = {
         "repo": gates.REPO_ROOT,
@@ -1285,6 +1286,22 @@ def test_exact_transaction_validation_failure_cleans_and_retry_succeeds(
     assert not transaction.exists()
     assert all(not Path(spec["output_root"]).exists() for spec in specs)
     assert len(gates.execute_exact_profile_transaction(specs, **kwargs)["executions"]) == 9
+
+
+def test_exact_transaction_receipt_failure_preserves_unproven_root_and_audit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    specs, transaction, popen, compare = _failure_cleanup_harness(
+        tmp_path, monkeypatch, failure="receipt", position=4
+    )
+    with pytest.raises(gates.GateVerificationError, match="cleanup unsafe"):
+        gates.execute_exact_profile_transaction(
+            specs, repo=gates.REPO_ROOT, python_executable="/env/bin/python",
+            transaction_dir=transaction, popen_factory=popen, compare=compare,
+        )
+    assert transaction.exists()
+    assert Path(specs[4]["output_root"]).exists()
+    assert all(Path(specs[index]["output_root"]).exists() for index in range(5))
 
 
 def test_exact_transaction_preserves_preexisting_transaction_and_root(
@@ -1426,7 +1443,7 @@ def test_exact_transaction_nested_root_mutation_preserves_every_owned_path(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, mutation: str
 ) -> None:
     specs, transaction, original_popen, compare = _failure_cleanup_harness(
-        tmp_path, monkeypatch, failure="receipt", position=1
+        tmp_path, monkeypatch, failure="child", position=99
     )
 
     def popen(argv: list[str], **kwargs: object) -> object:
@@ -1436,31 +1453,32 @@ def test_exact_transaction_nested_root_mutation_preserves_every_owned_path(
         (nested / "known.bin").write_bytes(b"known")
         return process
 
-    original_reopen = gates._reopen_completed_execution
+    compare_calls = 0
 
-    def mutate_then_fail(*args: object, **kwargs: object) -> dict[str, object]:
-        root = args[1]
-        assert isinstance(root, Path)
-        if root.name.endswith("-1"):
+    def mutate_then_fail(left: Path, right: Path) -> dict[str, object]:
+        nonlocal compare_calls
+        result = compare(left, right)
+        compare_calls += 1
+        if compare_calls == 2:
             nested = Path(specs[0]["output_root"]) / "nested"
             target = nested / ("extra.bin" if mutation == "insert" else "known.bin")
             if mutation == "replace":
                 target.unlink()
             target.write_bytes(b"attacker")
-        return original_reopen(*args, **kwargs)
+            raise gates.ArtifactMismatch("compare failed after nested mutation")
+        return result
 
-    monkeypatch.setattr(gates, "_reopen_completed_execution", mutate_then_fail)
     with pytest.raises(gates.GateVerificationError, match="cleanup unsafe"):
         gates.execute_exact_profile_transaction(
             specs, repo=gates.REPO_ROOT, python_executable="/env/bin/python",
-            transaction_dir=transaction, popen_factory=popen, compare=compare,
+            transaction_dir=transaction, popen_factory=popen, compare=mutate_then_fail,
         )
 
     roots = [Path(specs[index]["output_root"]) for index in (0, 1)]
     assert sum(root.exists() for root in roots) == 2
     assert transaction.exists()
-    assert [path.name for path in (transaction / "receipts").iterdir()] == [
-        "000-reference.json"
+    assert sorted(path.name for path in (transaction / "receipts").iterdir()) == [
+        "000-reference.json", "001-a0.json",
     ]
     nested_files = sorted(path.name for path in (roots[0] / "nested").iterdir())
     assert nested_files == (["extra.bin", "known.bin"] if mutation == "insert" else ["known.bin"])
@@ -1478,9 +1496,6 @@ def test_exact_transaction_popen_start_failure_cleans_and_retry_succeeds(
         nonlocal failed
         if not failed:
             failed = True
-            output = Path(argv[5])
-            output.mkdir()
-            (output / "partial.txt").write_text("partial")
             raise OSError("popen failed")
         return successful_popen(argv, **kwargs)
 
@@ -1496,6 +1511,42 @@ def test_exact_transaction_popen_start_failure_cleans_and_retry_succeeds(
     assert not transaction.exists()
     assert all(not Path(spec["output_root"]).exists() for spec in specs)
     assert len(gates.execute_exact_profile_transaction(specs, **kwargs)["executions"]) == 9
+
+
+@pytest.mark.parametrize("marker", ["partial-child", "other-owner-race"])
+def test_exact_transaction_nonzero_unproven_root_is_preserved(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, marker: str
+) -> None:
+    specs, transaction, successful_popen, compare = _failure_cleanup_harness(
+        tmp_path, monkeypatch, failure="child", position=99
+    )
+    failed = False
+
+    class FailedProcess:
+        returncode = 9
+        pid = 31_337
+
+        def communicate(self) -> tuple[bytes, bytes]:
+            return b"", b"child failed"
+
+    def popen(argv: list[str], **kwargs: object) -> object:
+        nonlocal failed
+        if not failed:
+            failed = True
+            root = Path(argv[5])
+            root.mkdir()
+            (root / "owner.txt").write_text(marker)
+            return FailedProcess()
+        return successful_popen(argv, **kwargs)
+
+    with pytest.raises(gates.GateVerificationError, match="cleanup unsafe"):
+        gates.execute_exact_profile_transaction(
+            specs, repo=gates.REPO_ROOT, python_executable="/env/bin/python",
+            transaction_dir=transaction, popen_factory=popen, compare=compare,
+        )
+    root = Path(specs[0]["output_root"])
+    assert (root / "owner.txt").read_text() == marker
+    assert transaction.exists()
 
 
 def test_exact_transaction_mid_spec_failure_cleans_and_retry_succeeds(

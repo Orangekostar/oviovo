@@ -35,6 +35,7 @@ DEFAULT_MAX_INPUT_BYTES = 16 * 1024 * 1024
 LOCAL_PROCESS_TRUST_MODEL = {
     "pid_semantics": "trusted_local_orchestrator_observation",
     "observation_basis": "parent_popen_and_waitpid",
+    "root_ownership": "after_successful_receipt_manifest_observation_reopen_only",
     "audit_authentication": "unsigned_local_audit",
     "stability_scope": "verification_interval_only",
     "excluded_adversaries": ["same_uid_process", "root"],
@@ -775,6 +776,7 @@ def _cleanup_exact_transaction(
     observations: list[OwnedPath],
     receipts: OwnedPath | None,
     transaction: OwnedPath | None,
+    unproven_roots: list[Path] | None = None,
 ) -> list[str]:
     problems: list[str] = []
     unsafe_paths: list[Path] = []
@@ -785,6 +787,16 @@ def _cleanup_exact_transaction(
         *([transaction] if transaction else []),
     ]
     try:
+        if unproven_roots:
+            problems.extend(
+                f"cleanup unsafe: preserving unproven output root: {path}"
+                for path in unproven_roots
+            )
+            if transaction is not None:
+                problems.append(
+                    f"cleanup unsafe: preserving transaction with unproven output: {transaction[0]}"
+                )
+            return problems
         mismatched = [
             witness for witness in witnesses if not _owned_path_matches(witness)
         ]
@@ -870,6 +882,7 @@ def execute_exact_profile_transaction(
     observation_witnesses: list[OwnedPath] = []
     transaction_witness: OwnedPath | None = None
     receipts_witness: OwnedPath | None = None
+    unproven_root: Path | None = None
     try:
         try:
             transaction_witness = _create_owned_directory(transaction_dir)
@@ -916,19 +929,16 @@ def execute_exact_profile_transaction(
                         "--source-manifest", str(source),
                     ]
                 )
+            unproven_root = root
             process: subprocess.Popen[bytes] | None = None
-            try:
-                process = popen_factory(
-                    argv,
-                    cwd=repo,
-                    env=environment,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-                stdout, stderr = process.communicate()
-            finally:
-                if root.exists() or root.is_symlink():
-                    root_witnesses.append(_owned_path(root, capture_tree=True))
+            process = popen_factory(
+                argv,
+                cwd=repo,
+                env=environment,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            stdout, stderr = process.communicate()
             if process is None:
                 raise GateVerificationError("exact execution process did not start")
             returncode = process.returncode
@@ -974,7 +984,26 @@ def execute_exact_profile_transaction(
             }
             observation_path = receipts_dir / f"{position:03d}-{profile}.json"
             _atomic_json_no_replace(observation_path, observation)
+            try:
+                reopened_observation = json.loads(
+                    _regular_file_bytes(
+                        observation_path.parent,
+                        observation_path.name,
+                        DEFAULT_MAX_INPUT_BYTES,
+                    ),
+                    object_pairs_hook=_strict_json_object,
+                )
+            except (UnicodeError, json.JSONDecodeError) as exc:
+                raise GateVerificationError(
+                    "exact execution observation receipt is invalid"
+                ) from exc
+            if reopened_observation != observation:
+                raise GateVerificationError(
+                    "exact execution observation receipt changed during reopen"
+                )
             observation_witnesses.append(_owned_path(observation_path))
+            root_witnesses.append(_owned_path(root, capture_tree=True))
+            unproven_root = None
             record = {
                 **record,
                 "observation_receipt": _absolute_file_record(observation_path),
@@ -999,6 +1028,10 @@ def execute_exact_profile_transaction(
             observation_witnesses,
             receipts_witness,
             transaction_witness,
+            [unproven_root]
+            if unproven_root is not None
+            and (unproven_root.exists() or unproven_root.is_symlink())
+            else None,
         )
         if problems:
             raise GateVerificationError(
