@@ -364,6 +364,39 @@ def test_full_loader_preflights_zip_bomb_and_forged_shape_before_np_load(
         load_temporal_current_checkpoint(second.path)
 
 
+@pytest.mark.parametrize(
+    ("background", "present", "message"),
+    [
+        (np.asarray([[1.0, 2.0, 3.0]], dtype=np.float32), 0, "background_present"),
+        (np.empty((0, 3), dtype=np.float32), 1, "background_present"),
+        (np.asarray([[np.nan, 0.0, 0.0]], dtype=np.float32), 1, "finite"),
+    ],
+)
+def test_full_loader_rejects_background_presence_smuggling(
+    tmp_path: Path,
+    background: np.ndarray,
+    present: int,
+    message: str,
+) -> None:
+    import src.evaluation.oviv2_temporal_tesse as module
+
+    receipt = publish_temporal_current_checkpoint(
+        tmp_path / "checkpoint", _snapshot(), ("unknown",),
+        code_commit="c" * 40, input_sha256="d" * 64,
+    )
+    with np.load(receipt.path / "snapshot.npz", allow_pickle=False) as archive:
+        arrays = {name: np.array(archive[name], copy=True) for name in archive.files}
+    arrays["background_xyz"] = background
+    arrays["background_present"] = np.asarray([present], dtype=np.uint8)
+    _rewrite_member(
+        receipt.path,
+        "snapshot.npz",
+        module._canonical_npz(arrays, module._ARRAY_NAMES),
+    )
+    with pytest.raises(ValueError, match=message):
+        load_temporal_current_checkpoint(receipt.path)
+
+
 def test_full_publication_after_rename_failure_is_uncertain(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

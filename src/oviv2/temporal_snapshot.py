@@ -1094,6 +1094,8 @@ def build_temporal_snapshot(
         raise TypeError("state must be a TemporalRuntimeState")
     if state.revision == 0 or state.last_frame_id < 0:
         raise ValueError("cannot checkpoint an unprocessed temporal runtime state")
+    if config_sha256 is None:
+        raise ValueError("config_sha256 for the complete temporal config is required")
     raw_background = object.__getattribute__(state, "_background_state")
     raw_ledger = object.__getattribute__(state, "_ledger_state")
     if raw_ledger is None:
@@ -1111,10 +1113,6 @@ def build_temporal_snapshot(
         ):
             raise ValueError("background must match the ledger committed volume")
     digest = config_sha256
-    if digest is None:
-        digest = hashlib.sha256(
-            _canonical_json(asdict(committed_background.config))
-        ).hexdigest()
     wrappers: list[TemporalSnapshotEntity] = []
     seen_ids: set[int] = set()
     seen_pairs: set[tuple[int, int]] = set()

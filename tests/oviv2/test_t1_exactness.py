@@ -116,6 +116,14 @@ def test_cumulative_failure_restores_externally_held_nested_objects() -> None:
                 self.visibility,
             ):
                 value.injected_transaction_marker = object()
+            self.evidence._blocks[1] = object()
+            self.ownership._blocks[1] = object()
+            self.ownership._entity_voxels[1] = object()
+            self.tracker.tracks[1] = object()
+            self.tracker.graph._nodes[1] = object()
+            self.tracker.graph._frame_ids.append(1)
+            self.tracker.graph._edges[1] = object()
+            self.registry.entities[1] = object()
             raise RuntimeError("injected cumulative failure")
 
     cumulative = _cumulative(runtime_type=NestedFailureCumulative)
@@ -126,6 +134,24 @@ def test_cumulative_failure_restores_externally_held_nested_objects() -> None:
         getattr(cumulative, name)
         for name in ("geometry", "evidence", "ownership", "tracker", "registry", "visibility")
     )
+    secondary = (
+        cumulative.evidence._blocks,
+        cumulative.ownership._blocks,
+        cumulative.ownership._entity_voxels,
+        cumulative.tracker.tracks,
+        cumulative.tracker.graph,
+        cumulative.tracker.graph._nodes,
+        cumulative.tracker.graph._frame_ids,
+        cumulative.tracker.graph._edges,
+        cumulative.registry.entities,
+    )
+    secondary_content = tuple(copy.deepcopy(value) for value in secondary[0:4]) + (
+        copy.deepcopy(vars(secondary[4])),
+        copy.deepcopy(secondary[5]),
+        copy.deepcopy(secondary[6]),
+        copy.deepcopy(secondary[7]),
+        copy.deepcopy(secondary[8]),
+    )
     before = cumulative_state_sha256(cumulative)
     with pytest.raises(RuntimeError, match="injected cumulative failure"):
         DualReadoutRuntime(cumulative, temporal).process_frame(_frame(), ())
@@ -135,6 +161,27 @@ def test_cumulative_failure_restores_externally_held_nested_objects() -> None:
     )
     assert all(left is right for left, right in zip(restored, external))
     assert all(not hasattr(value, "injected_transaction_marker") for value in external)
+    restored_secondary = (
+        cumulative.evidence._blocks,
+        cumulative.ownership._blocks,
+        cumulative.ownership._entity_voxels,
+        cumulative.tracker.tracks,
+        cumulative.tracker.graph,
+        cumulative.tracker.graph._nodes,
+        cumulative.tracker.graph._frame_ids,
+        cumulative.tracker.graph._edges,
+        cumulative.registry.entities,
+    )
+    assert all(
+        left is right for left, right in zip(restored_secondary, secondary, strict=True)
+    )
+    assert tuple(copy.deepcopy(value) for value in restored_secondary[0:4]) + (
+        copy.deepcopy(vars(restored_secondary[4])),
+        copy.deepcopy(restored_secondary[5]),
+        copy.deepcopy(restored_secondary[6]),
+        copy.deepcopy(restored_secondary[7]),
+        copy.deepcopy(restored_secondary[8]),
+    ) == secondary_content
     assert cumulative.geometry.active_block_count == 0
     assert cumulative_state_sha256(cumulative) == before
 
@@ -151,6 +198,14 @@ def test_temporal_failure_restores_externally_held_public_state_objects() -> Non
                 )
                 object.__setattr__(self.state.export_tracker, "entries", ())
                 object.__setattr__(self.state.diagnostics, "processed_frame_count", 999)
+                object.__setattr__(
+                    self.state.geometry.epochs[0], "last_processed_frame_id", 999
+                )
+                object.__setattr__(
+                    self.state.geometry.epochs[0].submap,
+                    "reference_centroid_xyz",
+                    (999.0, 999.0, 999.0),
+                )
                 raise RuntimeError("injected public temporal failure")
             return super().process_frame(frame, observations, dense_semantics)
 
@@ -168,6 +223,9 @@ def test_temporal_failure_restores_externally_held_public_state_objects() -> Non
         state.lifecycle_beliefs[0],
         state.export_tracker,
         state.diagnostics,
+        state.geometry.epochs,
+        state.geometry.epochs[0],
+        state.geometry.epochs[0].submap,
     )
     before = temporal_state_sha256(temporal)
     fail_next[0] = True
@@ -180,6 +238,9 @@ def test_temporal_failure_restores_externally_held_public_state_objects() -> Non
     assert temporal.state.lifecycle_beliefs[0] is external[2]
     assert temporal.state.export_tracker is external[3]
     assert temporal.state.diagnostics is external[4]
+    assert temporal.state.geometry.epochs is external[5]
+    assert temporal.state.geometry.epochs[0] is external[6]
+    assert temporal.state.geometry.epochs[0].submap is external[7]
     assert temporal_state_sha256(temporal) == before
 
 
@@ -312,8 +373,8 @@ def test_reference_failure_restores_nested_external_refs_and_retry_exactness(
         result = original(self, *args, **kwargs)
         if fail_next[0]:
             fail_next[0] = False
-            object.__setattr__(view, "revision", 999)
-            object.__setattr__(entry, "observation_count", 999)
+            object.__setattr__(self.state.cumulative_view, "revision", 999)
+            object.__setattr__(self.state.export_tracker[0], "observation_count", 999)
             raise RuntimeError("injected reference nested failure")
         return result
 
@@ -351,7 +412,9 @@ def test_reference_failure_restores_nested_external_refs_and_retry_exactness(
     assert temporal_state_sha256(reference) == temporal_state_sha256(clean_reference)
 
 
-@pytest.mark.parametrize("mutation", ("resize", "dtype", "resize_dtype"))
+@pytest.mark.parametrize(
+    "mutation", ("resize", "dtype", "resize_dtype", "grow_with_external_alias")
+)
 def test_failure_restores_initially_readonly_owning_array_and_retry_exactness(
     mutation: str,
 ) -> None:
@@ -365,17 +428,23 @@ def test_failure_restores_initially_readonly_owning_array_and_retry_exactness(
                 if mutation == "resize":
                     frame.rgb.resize((1,), refcheck=False)
                 elif mutation == "dtype":
-                    frame.rgb.resize((76,), refcheck=False)
-                    frame.rgb.dtype = np.uint32
+                    frame.rgb.__setstate__(
+                        (1, (19,), np.dtype(np.uint32), False, bytes(76))
+                    )
+                elif mutation == "resize_dtype":
+                    frame.rgb.__setstate__(
+                        (1, (1,), np.dtype(np.uint32), False, bytes(4))
+                    )
                 else:
-                    frame.rgb.resize((76,), refcheck=False)
-                    frame.rgb.dtype = np.uint32
-                    frame.rgb.resize((1,), refcheck=False)
+                    frame.rgb.resize((1_000_000,), refcheck=False)
                 frame.rgb.flat[0] = 255
                 raise RuntimeError("injected readonly input failure")
             return super().process_frame(frame, observations, dense_semantics)
 
     frame = _frame()
+    alias = frame.rgb.view()
+    alias_identity = id(alias)
+    alias_bytes = alias.tobytes()
     frame.rgb.flags.writeable = False
     original_rgb = frame.rgb.tobytes()
     original_structure = (frame.rgb.dtype, frame.rgb.shape, frame.rgb.strides)
@@ -400,6 +469,8 @@ def test_failure_restores_initially_readonly_owning_array_and_retry_exactness(
     assert frame.rgb.tobytes() == original_rgb
     assert (frame.rgb.dtype, frame.rgb.shape, frame.rgb.strides) == original_structure
     assert frame.rgb.flags.writeable is False
+    assert id(alias) == alias_identity
+    assert alias.tobytes() == alias_bytes
     assert temporal.state is state
     assert all(
         getattr(cumulative, name) is value
@@ -427,3 +498,68 @@ def test_failure_restores_initially_readonly_owning_array_and_retry_exactness(
         clean_cumulative
     )
     assert temporal_state_sha256(temporal) == temporal_state_sha256(clean_temporal)
+
+
+@pytest.mark.parametrize("mutation", ("same_bytes", "base_tail", "extra_and_flags"))
+def test_successful_branch_cannot_leak_isolated_object_graph_mutation(
+    mutation: str,
+) -> None:
+    class MutatingSuccess(Oviv2Runtime):
+        def process_frame(self, frame, observations, dense_semantics=None):
+            if mutation == "same_bytes":
+                frame.rgb = np.array(frame.rgb, copy=True)
+            elif mutation == "base_tail":
+                assert isinstance(frame.rgb.base, np.ndarray)
+                frame.rgb.base[-1] = 123
+            else:
+                frame.injected = True
+                assert isinstance(frame.rgb.base, np.ndarray)
+                frame.rgb.base.flags.writeable = False
+            return super().process_frame(frame, observations, dense_semantics)
+
+    base = np.zeros(96, dtype=np.uint8)
+    frame = _frame()
+    frame.rgb = base[:75].reshape(5, 5, 3)
+    alias = frame.rgb.view()
+    before = (
+        frame.rgb,
+        alias,
+        base.tobytes(),
+        frame.rgb.flags.writeable,
+        base.flags.writeable,
+        dict(vars(frame)),
+    )
+    cumulative = _cumulative(runtime_type=MutatingSuccess)
+    temporal = TemporalCurrentRuntime(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+    )
+    with pytest.raises(RuntimeError, match="isolated"):
+        DualReadoutRuntime(cumulative, temporal).process_frame(frame, ())
+    assert frame.rgb is before[0] and alias is before[1]
+    assert base.tobytes() == before[2]
+    assert frame.rgb.flags.writeable is before[3]
+    assert base.flags.writeable is before[4]
+    assert set(vars(frame)) == set(before[5])
+    assert all(vars(frame)[name] is value for name, value in before[5].items())
+
+
+def test_transaction_capture_does_not_allocate_geometry_by_capacity(monkeypatch) -> None:
+    from src.oviv2.geometry import SparseTsdfVolume
+    from src.oviv2.t1_exactness import (
+        DualTransactionSnapshot,
+        isolated_cumulative_runtime,
+    )
+
+    cumulative = _cumulative()
+    temporal = TemporalCurrentRuntime(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+    )
+
+    def reject_allocation(*args, **kwargs):
+        raise AssertionError("transaction capture allocated TSDF geometry")
+
+    monkeypatch.setattr(SparseTsdfVolume, "__init__", reject_allocation)
+    snapshot = DualTransactionSnapshot.capture(cumulative, temporal)
+    assert dict(snapshot.cumulative_attributes)["geometry"] is cumulative.geometry
+    trial = isolated_cumulative_runtime(cumulative)
+    assert trial.geometry is cumulative.geometry

@@ -282,7 +282,7 @@ def test_cumulative_failure_restores_both_shallow_snapshots_and_skips_temporal(
     _assert_exact_identity_snapshot(temporal, before_temporal)
 
 
-def test_temporal_receives_exact_input_objects_without_content_changes() -> None:
+def test_branches_receive_same_isolated_inputs_without_content_changes() -> None:
     from src.oviv2.dual_readout import DualReadoutRuntime
 
     current_frame = _frame()
@@ -317,14 +317,11 @@ def test_temporal_receives_exact_input_objects_without_content_changes() -> None
     result = DualReadoutRuntime(cumulative, temporal).process_frame(
         current_frame, observations, dense
     )
-    assert seen == [
-        (current_frame, observations, dense),
-        (current_frame, observations, dense),
-    ]
-    assert seen[1][0] is current_frame
-    assert seen[1][1] is observations
-    assert seen[1][1][0] is observations[0]
-    assert seen[1][2] is dense
+    assert len(seen) == 2
+    assert all(left is right for left, right in zip(seen[0], seen[1], strict=True))
+    assert seen[0][0] is not current_frame
+    assert seen[0][1] is not observations
+    assert seen[0][2] is not dense
     assert result.cumulative.frame_id == result.temporal.frame_id == 0
     assert current_frame.frame_id == 0
     assert observation_before == (

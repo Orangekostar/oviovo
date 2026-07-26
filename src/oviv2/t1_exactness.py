@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import copy
 from contextlib import contextmanager
-from dataclasses import dataclass, fields, is_dataclass
+from dataclasses import dataclass, fields, is_dataclass, replace
 from enum import Enum
 import hashlib
 import math
@@ -21,15 +21,12 @@ from src.oviv2.observation_graph import CausalObservationGraph
 from src.oviv2.observations import FrameObservation
 from src.oviv2.ownership import ReversibleOwnershipStore
 from src.oviv2.reference_readout import (
-    CumulativeEntityView,
-    CumulativeReadoutView,
+    LifecycleOverlayReadout,
+    ReferenceCurrentReadout,
     ReferenceReadoutState,
-    _ReferenceExportTrackerEntry,
 )
 from src.oviv2.runtime import Oviv2Runtime
 from src.oviv2.temporal_runtime import TemporalCurrentRuntime
-from src.oviv2.temporal_export import DynamicEvidenceState
-from src.oviv2.temporal_lifecycle import TemporalLifecycleState
 from src.oviv2.temporal_state import TemporalGeometryState, TemporalRuntimeState
 from src.oviv2.tracking import LocalTracker
 from src.oviv2.visibility import VoxelVisibilityProjector
@@ -44,14 +41,12 @@ _TRUSTED_STATE_OBJECT_TYPES = (
     VoxelVisibilityProjector,
     DenseSemanticIntegrator,
 )
-_REFERENCE_RESTORABLE_TYPES = (
-    ReferenceReadoutState,
-    CumulativeReadoutView,
-    CumulativeEntityView,
-    _ReferenceExportTrackerEntry,
-    DynamicEvidenceState,
-    TemporalLifecycleState,
-)
+_TRUSTED_REFERENCE_METHODS = {
+    ReferenceCurrentReadout: ReferenceCurrentReadout.process_cumulative_frame,
+    LifecycleOverlayReadout: LifecycleOverlayReadout.process_cumulative_frame,
+}
+_TRUSTED_CUMULATIVE_METHOD = Oviv2Runtime.process_frame
+_TRUSTED_TEMPORAL_METHOD = TemporalCurrentRuntime.process_frame
 
 
 def _pack(tag: bytes, content: bytes) -> bytes:
@@ -184,8 +179,10 @@ def temporal_state_sha256(runtime: TemporalCurrentRuntime | object) -> str:
 
 
 def _clone_geometry(volume: SparseTsdfVolume) -> SparseTsdfVolume:
-    clone = SparseTsdfVolume(volume.config)
     active = volume._grid.hashmap().active_buf_indices()
+    capacity = max(1, int(active.shape[0]))
+    config = replace(volume.config, block_count=capacity)
+    clone = SparseTsdfVolume(config)
     if int(active.shape[0]):
         keys = volume._grid.hashmap().key_tensor()[active]
         destination, activated = clone._grid.hashmap().activate(keys)
@@ -193,6 +190,7 @@ def _clone_geometry(volume: SparseTsdfVolume) -> SparseTsdfVolume:
             raise RuntimeError("failed to snapshot cumulative TSDF blocks")
         for name in volume._ATTRIBUTE_NAMES:
             clone._grid.attribute(name)[destination] = volume._grid.attribute(name)[active]
+    clone._config = volume.config
     return clone
 
 
@@ -211,121 +209,62 @@ def _clone_temporal_state(state: TemporalRuntimeState) -> TemporalRuntimeState:
     )
 
 
-def _restore_nested_object(target: object, snapshot: object) -> None:
-    if not hasattr(target, "__dict__") or not hasattr(snapshot, "__dict__"):
-        raise TypeError("nested transaction state is not restorable")
-    clone_method = getattr(snapshot, "clone", None)
-    owned = clone_method() if callable(clone_method) else copy.deepcopy(snapshot)
-    target.__dict__.clear()
-    target.__dict__.update(owned.__dict__)
-
-
-def _restore_reference_value(target: object, snapshot: object) -> object:
-    if type(target) is not type(snapshot):
-        return copy.deepcopy(snapshot)
-    if type(target) in _REFERENCE_RESTORABLE_TYPES:
-        for field in fields(target):
-            restored = _restore_reference_value(
-                getattr(target, field.name), getattr(snapshot, field.name)
-            )
-            object.__setattr__(target, field.name, restored)
-        return target
-    if type(target) is tuple:
-        if len(target) != len(snapshot):
-            return copy.deepcopy(snapshot)
-        for original_item, snapshot_item in zip(target, snapshot, strict=True):
-            restored = _restore_reference_value(original_item, snapshot_item)
-            if restored is not original_item and restored != original_item:
-                return copy.deepcopy(snapshot)
-        return target
-    if isinstance(target, np.ndarray):
-        if target.shape != snapshot.shape or target.dtype != snapshot.dtype:
-            return np.array(snapshot, copy=True)
-        writeable = bool(target.flags.writeable)
-        try:
-            target.flags.writeable = True
-            np.copyto(target, snapshot, casting="no")
-        finally:
-            target.flags.writeable = writeable
-        return target
-    if target == snapshot:
-        return target
-    return copy.deepcopy(snapshot)
-
-
 @dataclass(frozen=True)
-class _CumulativeSnapshot:
-    attributes: tuple[tuple[str, object], ...]
-    geometry: SparseTsdfVolume
-    nested: tuple[tuple[str, object], ...]
+class _ArrayNodeSnapshot:
+    array: np.ndarray
+    content: bytes
+    dtype: np.dtype
+    shape: tuple[int, ...]
+    strides: tuple[int, ...]
+    writeable: bool
+
+    @classmethod
+    def capture(cls, array: np.ndarray) -> "_ArrayNodeSnapshot":
+        return cls(
+            array,
+            array.tobytes(order="A"),
+            array.dtype,
+            array.shape,
+            array.strides,
+            bool(array.flags.writeable),
+        )
+
+    def assert_unchanged(self) -> None:
+        if (
+            self.array.dtype != self.dtype
+            or self.array.shape != self.shape
+            or self.array.strides != self.strides
+            or bool(self.array.flags.writeable) is not self.writeable
+            or self.array.tobytes(order="A") != self.content
+        ):
+            raise RuntimeError("branch mutated isolated ndarray state")
 
 
 @dataclass(frozen=True)
 class _ArraySnapshot:
     array: np.ndarray
-    content: np.ndarray
-    writeable_chain: tuple[tuple[np.ndarray, bool], ...]
-    dtype: np.dtype
-    shape: tuple[int, ...]
-    strides: tuple[int, ...]
-    owns_data: bool
+    chain: tuple[_ArrayNodeSnapshot, ...]
 
     @classmethod
     def capture(cls, array: np.ndarray) -> "_ArraySnapshot":
-        chain: list[tuple[np.ndarray, bool]] = []
+        chain: list[_ArrayNodeSnapshot] = []
         current: object = array
         seen: set[int] = set()
         while isinstance(current, np.ndarray) and id(current) not in seen:
             seen.add(id(current))
-            chain.append((current, bool(current.flags.writeable)))
+            chain.append(_ArrayNodeSnapshot.capture(current))
             current = current.base
-        return cls(
-            array,
-            np.array(array, copy=True),
-            tuple(chain),
-            array.dtype,
-            array.shape,
-            array.strides,
-            bool(array.flags.owndata),
-        )
+        return cls(array, tuple(chain))
 
-    def restore(self) -> None:
-        changed = (
-            self.array.dtype != self.dtype
-            or self.array.shape != self.shape
-            or self.array.strides != self.strides
-            or self.array.tobytes(order="C") != self.content.tobytes(order="C")
-        )
-        try:
-            if changed:
-                for array, _ in reversed(self.writeable_chain):
-                    array.flags.writeable = True
-                try:
-                    if self.array.dtype != self.dtype or self.array.shape != self.shape:
-                        if self.owns_data:
-                            if not self.array.flags.owndata:
-                                raise RuntimeError("owning ndarray lost data ownership")
-                            self.array.resize((0,), refcheck=False)
-                            if self.array.dtype != self.dtype:
-                                self.array.dtype = self.dtype
-                            self.array.resize(self.shape, refcheck=False)
-                        else:
-                            if self.array.dtype != self.dtype:
-                                self.array.dtype = self.dtype
-                            if self.array.shape != self.shape:
-                                self.array.shape = self.shape
-                    if self.array.strides != self.strides:
-                        self.array.strides = self.strides
-                    if self.array.strides != self.strides:
-                        raise RuntimeError("ndarray strides cannot be restored in place")
-                except (TypeError, ValueError) as exc:
-                    raise RuntimeError(
-                        "ndarray structure cannot be restored in place"
-                    ) from exc
-                np.copyto(self.array, self.content, casting="no")
-        finally:
-            for array, writeable in self.writeable_chain:
-                array.flags.writeable = writeable
+    def assert_unchanged(self) -> None:
+        current: object = self.array
+        for snapshot in self.chain:
+            if current is not snapshot.array:
+                raise RuntimeError("branch replaced isolated ndarray base chain")
+            snapshot.assert_unchanged()
+            current = current.base
+        if isinstance(current, np.ndarray):
+            raise RuntimeError("branch extended isolated ndarray base chain")
 
 
 @dataclass(frozen=True)
@@ -344,16 +283,21 @@ class _ObjectSnapshot:
             values.append((field.name, value, array))
         return cls(target, tuple(values))
 
-    def restore(self) -> None:
+    def assert_unchanged(self) -> None:
         expected = {name for name, _, _ in self.fields}
-        if hasattr(self.target, "__dict__"):
-            for name in set(vars(self.target)) - expected:
-                delattr(self.target, name)
+        if not hasattr(self.target, "__dict__") or set(vars(self.target)) != expected:
+            raise RuntimeError("branch changed isolated input object fields")
         for name, value, array in self.fields:
+            current = getattr(self.target, name)
             if array is not None:
-                array.restore()
-                value = array.array
-            object.__setattr__(self.target, name, value)
+                if current is not value:
+                    raise RuntimeError("branch replaced isolated input array")
+                array.assert_unchanged()
+            elif isinstance(value, CameraIntrinsics):
+                if current is not value:
+                    raise RuntimeError("branch replaced isolated camera intrinsics")
+            elif type(current) is not type(value) or current != value:
+                raise RuntimeError("branch mutated isolated input field")
 
 
 @dataclass(frozen=True)
@@ -373,18 +317,102 @@ class _SharedInputSnapshot:
             objects.append(_ObjectSnapshot.capture(dense_semantics))
         return cls(tuple(objects))
 
-    def restore(self) -> None:
+    def assert_unchanged(self) -> None:
         for snapshot in self.objects:
-            snapshot.restore()
+            snapshot.assert_unchanged()
+
+
+def clone_shared_inputs(
+    frame: Frame,
+    observations: tuple[FrameObservation, ...],
+    dense_semantics: DenseSemanticFrame | None,
+) -> tuple[Frame, tuple[FrameObservation, ...], DenseSemanticFrame | None]:
+    arrays: dict[int, np.ndarray] = {}
+
+    def clone_array(array: np.ndarray) -> np.ndarray:
+        cached = arrays.get(id(array))
+        if cached is not None:
+            return cached
+        if isinstance(array.base, np.ndarray):
+            base = clone_array(array.base)
+            offset = int(array.ctypes.data) - int(array.base.ctypes.data)
+            cloned = np.ndarray(
+                array.shape,
+                dtype=array.dtype,
+                buffer=base,
+                offset=offset,
+                strides=array.strides,
+            )
+        else:
+            cloned = np.array(array, copy=True, order="K")
+        cloned.flags.writeable = bool(array.flags.writeable)
+        arrays[id(array)] = cloned
+        return cloned
+
+    def clone_object(value: object) -> object:
+        cloned = copy.copy(value)
+        for field in fields(value):
+            item = getattr(value, field.name)
+            owned = clone_array(item) if isinstance(item, np.ndarray) else copy.deepcopy(item)
+            object.__setattr__(cloned, field.name, owned)
+        return cloned
+
+    cloned_frame = clone_object(frame)
+    assert isinstance(cloned_frame, Frame)
+    cloned_observations = tuple(clone_object(item) for item in observations)
+    assert all(isinstance(item, FrameObservation) for item in cloned_observations)
+    cloned_dense = None if dense_semantics is None else clone_object(dense_semantics)
+    assert cloned_dense is None or isinstance(cloned_dense, DenseSemanticFrame)
+    return cloned_frame, cloned_observations, cloned_dense
+
+
+def shared_input_snapshot(
+    frame: Frame,
+    observations: tuple[FrameObservation, ...],
+    dense_semantics: DenseSemanticFrame | None,
+) -> _SharedInputSnapshot:
+    return _SharedInputSnapshot.capture(frame, observations, dense_semantics)
+
+
+def isolated_cumulative_runtime(runtime: Oviv2Runtime) -> Oviv2Runtime:
+    trial = copy.copy(runtime)
+    trial.__dict__ = dict(runtime.__dict__)
+    if type(runtime).process_frame is _TRUSTED_CUMULATIVE_METHOD:
+        return trial
+    trial.geometry = _clone_geometry(runtime.geometry)
+    for name in (
+        "evidence", "ownership", "tracker", "registry", "visibility",
+        "dense_semantic_integrator",
+    ):
+        setattr(trial, name, copy.deepcopy(getattr(runtime, name)))
+    return trial
+
+
+def isolated_temporal_runtime(runtime: object) -> object:
+    trial = copy.copy(runtime)
+    trial.__dict__ = dict(runtime.__dict__)
+    state = getattr(runtime, "state", None)
+    if isinstance(runtime, TemporalCurrentRuntime):
+        if type(runtime).process_frame is not _TRUSTED_TEMPORAL_METHOD:
+            trial.state = _clone_temporal_state(state)
+        return trial
+    expected = _TRUSTED_REFERENCE_METHODS.get(type(runtime))
+    if expected is None:
+        raise TypeError("temporal runtime has an unsupported type")
+    if type(runtime).process_cumulative_frame is not expected:
+        trial.state = copy.deepcopy(state)
+    return trial
+
+
+def commit_runtime_state(target: object, trial: object) -> None:
+    target.__dict__.clear()
+    target.__dict__.update(trial.__dict__)
 
 
 @dataclass(frozen=True)
 class DualTransactionSnapshot:
-    cumulative: _CumulativeSnapshot
+    cumulative_attributes: tuple[tuple[str, object], ...]
     temporal_attributes: tuple[tuple[str, object], ...]
-    temporal_state: TemporalRuntimeState | ReferenceReadoutState
-    temporal_public: tuple[tuple[str, object], ...]
-    shared_inputs: _SharedInputSnapshot | None
 
     @classmethod
     def capture(
@@ -397,103 +425,19 @@ class DualTransactionSnapshot:
     ) -> "DualTransactionSnapshot":
         if not isinstance(cumulative, Oviv2Runtime):
             raise TypeError("cumulative must be an Oviv2Runtime")
-        attributes = tuple(cumulative.__dict__.items())
-        nested = tuple(
-            (name, copy.deepcopy(value))
-            for name, value in attributes
-            if name in {
-                "evidence", "ownership", "tracker", "registry", "visibility",
-                "dense_semantic_integrator",
-            }
-        )
         state = getattr(temporal, "state", None)
-        if isinstance(state, TemporalRuntimeState):
-            state_snapshot: TemporalRuntimeState | ReferenceReadoutState = (
-                _clone_temporal_state(state)
-            )
-            temporal_public = tuple(
-                (name, getattr(state, name))
-                for name in (
-                    "geometry", "lifecycle_beliefs", "export_tracker", "diagnostics"
-                )
-            )
-        elif isinstance(state, ReferenceReadoutState):
-            state_snapshot = copy.deepcopy(state)
-            temporal_public = tuple(
-                (field.name, getattr(state, field.name)) for field in fields(state)
-            )
-        else:
+        if not isinstance(state, (TemporalRuntimeState, ReferenceReadoutState)):
             raise TypeError("temporal runtime has an unsupported state")
         return cls(
-            _CumulativeSnapshot(attributes, _clone_geometry(cumulative.geometry), nested),
-            tuple(temporal.__dict__.items()), state_snapshot,
-            temporal_public,
-            None if frame is None else _SharedInputSnapshot.capture(
-                frame, observations, dense_semantics
-            ),
+            tuple(cumulative.__dict__.items()),
+            tuple(temporal.__dict__.items()),
         )
 
     def restore(self, cumulative: Oviv2Runtime, temporal: object) -> None:
-        original = dict(self.cumulative.attributes)
-        geometry = original["geometry"]
-        assert isinstance(geometry, SparseTsdfVolume)
-        geometry.__dict__.clear()
-        geometry.__dict__.update(self.cumulative.geometry.__dict__)
-        for name, clone in self.cumulative.nested:
-            target = original[name]
-            if hasattr(target, "__dict__") and hasattr(clone, "__dict__"):
-                target.__dict__.clear()
-                target.__dict__.update(copy.deepcopy(clone.__dict__))
         cumulative.__dict__.clear()
-        cumulative.__dict__.update(original)
-
-        temporal_original = dict(self.temporal_attributes)
-        original_state = temporal_original["state"]
-        if isinstance(original_state, TemporalRuntimeState) and isinstance(
-            self.temporal_state, TemporalRuntimeState
-        ):
-            for name in original_state.__slots__:
-                original_value = object.__getattribute__(original_state, name)
-                snapshot_value = object.__getattribute__(self.temporal_state, name)
-                if name in {
-                    "_background_state", "_tracker_state", "_identities_state",
-                    "_ledger_state",
-                } and original_value is not None and snapshot_value is not None:
-                    _restore_nested_object(original_value, snapshot_value)
-                    object.__setattr__(original_state, name, original_value)
-                else:
-                    object.__setattr__(original_state, name, snapshot_value)
-            public = dict(self.temporal_public)
-            geometry = public["geometry"]
-            geometry.__dict__.clear()
-            geometry.__dict__.update(self.temporal_state.geometry.__dict__)
-            object.__setattr__(original_state, "geometry", geometry)
-            lifecycle = public["lifecycle_beliefs"]
-            for target, snapshot in zip(
-                lifecycle, self.temporal_state.lifecycle_beliefs, strict=True
-            ):
-                _restore_nested_object(target, snapshot)
-            object.__setattr__(original_state, "lifecycle_beliefs", lifecycle)
-            for name in ("export_tracker", "diagnostics"):
-                target = public[name]
-                _restore_nested_object(target, getattr(self.temporal_state, name))
-                object.__setattr__(original_state, name, target)
-        elif isinstance(original_state, ReferenceReadoutState) and isinstance(
-            self.temporal_state, ReferenceReadoutState
-        ):
-            original_fields = dict(self.temporal_public)
-            for field in fields(original_state):
-                target = original_fields[field.name]
-                object.__setattr__(
-                    original_state, field.name,
-                    _restore_reference_value(
-                        target, getattr(self.temporal_state, field.name)
-                    ),
-                )
+        cumulative.__dict__.update(self.cumulative_attributes)
         temporal.__dict__.clear()
-        temporal.__dict__.update(temporal_original)
-        if self.shared_inputs is not None:
-            self.shared_inputs.restore()
+        temporal.__dict__.update(self.temporal_attributes)
 
 
 def _input_arrays(
@@ -533,10 +477,15 @@ def frozen_shared_inputs(
         yield
     finally:
         for array, writeable in zip(reversed(arrays), reversed(flags)):
-            array.flags.writeable = writeable
+            try:
+                array.flags.writeable = writeable
+            except ValueError:
+                pass
 
 
 __all__ = [
-    "DualTransactionSnapshot", "cumulative_state_sha256", "frozen_shared_inputs",
-    "shared_input_sha256", "temporal_state_sha256",
+    "DualTransactionSnapshot", "clone_shared_inputs", "commit_runtime_state",
+    "cumulative_state_sha256", "frozen_shared_inputs",
+    "isolated_cumulative_runtime", "isolated_temporal_runtime",
+    "shared_input_sha256", "shared_input_snapshot", "temporal_state_sha256",
 ]

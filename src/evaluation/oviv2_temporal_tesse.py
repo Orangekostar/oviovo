@@ -447,6 +447,12 @@ def load_temporal_current_checkpoint(checkpoint_dir: str | Path) -> LoadedTempor
         raise ValueError("background dtype or shape is invalid")
     if present.dtype != np.uint8 or present.shape != (1,) or present[0] not in (0, 1):
         raise ValueError("background_present is invalid")
+    if not np.isfinite(background).all():
+        raise ValueError("background_xyz must be finite")
+    if (present[0] == 0 and len(background) != 0) or (
+        present[0] == 1 and len(background) == 0
+    ):
+        raise ValueError("background_present does not match background_xyz")
     entities = []
     previous_temporal_id = -1
     for index, record in enumerate(records):

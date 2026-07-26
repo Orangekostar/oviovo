@@ -184,9 +184,11 @@ def test_snapshot_excludes_invalid_geometry_epoch_and_keeps_occluded_valid() -> 
         ), state.lifecycle_beliefs, state.background_ledger, invalid_tracker,
         state.diagnostics,
     )
-    assert build_temporal_snapshot(invalid_state).entities == ()
+    assert build_temporal_snapshot(invalid_state, config_sha256="a" * 64).entities == ()
 
-    valid = build_temporal_snapshot(state)
+    with pytest.raises(ValueError, match="complete temporal config|required"):
+        build_temporal_snapshot(state)
+    valid = build_temporal_snapshot(state, config_sha256="a" * 64)
     assert len(valid.entities) == 1
     assert valid.entities[0].geometry_epoch == epoch.epoch_id
     assert valid.entities[0].readout_valid is True
@@ -199,7 +201,12 @@ def test_snapshot_excludes_invalid_geometry_epoch_and_keeps_occluded_valid() -> 
     runtime.process_frame(occluding_frame, ())
     occluded_state = runtime.state
     assert occluded_state.geometry.current(1).readout_valid is True
-    assert [item.lifecycle.entity_id for item in build_temporal_snapshot(occluded_state).entities] == [1]
+    assert [
+        item.lifecycle.entity_id
+        for item in build_temporal_snapshot(
+            occluded_state, config_sha256="a" * 64
+        ).entities
+    ] == [1]
 
 
 def test_build_temporal_map_snapshot_extracts_real_nonempty_background() -> None:
