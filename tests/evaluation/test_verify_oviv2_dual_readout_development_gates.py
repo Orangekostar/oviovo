@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -23,10 +24,23 @@ SPEC.loader.exec_module(gates)
 
 
 def _make_repo(root: Path) -> None:
-    for relative in (*gates.PROTECTED_FILES, *gates.TEST_FILES):
+    for relative in (*gates.CUMULATIVE_ROOTS, *gates.TEST_FILES):
         path = root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes((relative + "\n").encode())
+        path.write_bytes(("# " + relative + "\n").encode())
+    manifest = {
+        "schema_version": 1,
+        "manifest_id": "oviv2_t1_transitive_sources_v1",
+        "base_commit": gates.CUMULATIVE_BASE_COMMIT,
+        "roots": list(gates.CUMULATIVE_ROOTS),
+        "files": {
+            relative: hashlib.sha256((root / relative).read_bytes()).hexdigest()
+            for relative in gates.CUMULATIVE_ROOTS
+        },
+    }
+    manifest_path = root / gates.DEFAULT_SOURCE_MANIFEST
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
 
 class FakeGit:
@@ -35,7 +49,6 @@ class FakeGit:
         self.protected_diff = protected_diff
 
     def __call__(self, argv: tuple[str, ...], cwd: Path) -> bytes:
-        del cwd
         if argv == ("status", "--porcelain", "--untracked-files=all"):
             return b" M dirty\n" if self.dirty else b""
         if argv == ("rev-parse", "HEAD"):
@@ -46,7 +59,125 @@ class FakeGit:
             if self.protected_diff:
                 raise subprocess.CalledProcessError(1, ("git", *argv))
             return b""
+        if argv[0] == "show":
+            relative = argv[1].split(":", 1)[1]
+            path = cwd / relative
+            if not path.is_file():
+                raise gates.GateVerificationError(f"missing git object: {relative}")
+            return path.read_bytes()
         raise AssertionError(argv)
+
+
+class SourceGit:
+    def __init__(self, objects: dict[str, bytes]) -> None:
+        self.objects = objects
+
+    def __call__(self, argv: tuple[str, ...], cwd: Path) -> bytes:
+        del cwd
+        if argv[0] == "show":
+            relative = argv[1].split(":", 1)[1]
+            try:
+                return self.objects[relative]
+            except KeyError as error:
+                raise gates.GateVerificationError(f"missing git object: {relative}") from error
+        if argv[:3] == ("status", "--porcelain", "--"):
+            return b""
+        raise AssertionError(argv)
+
+
+def _source_fixture(tmp_path: Path) -> tuple[Path, SourceGit, tuple[str, ...]]:
+    repo = tmp_path / "source-repo"
+    objects = {
+        "src/__init__.py": b"",
+        "src/pkg/__init__.py": b"",
+        "src/pkg/dep.py": b"VALUE = 1\n",
+        **{relative: ("# " + relative + "\n").encode() for relative in gates.CUMULATIVE_ROOTS},
+    }
+    objects[gates.CUMULATIVE_ROOTS[0]] = b"from src.pkg import dep\n"
+    for relative, payload in objects.items():
+        path = repo / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(payload)
+    return repo, SourceGit(objects), gates.CUMULATIVE_ROOTS
+
+
+def _valid_source_manifest(tmp_path: Path) -> tuple[dict[str, object], Path, SourceGit]:
+    repo, git, roots = _source_fixture(tmp_path)
+    manifest = gates.build_source_manifest(
+        repo=repo,
+        base_commit=gates.CUMULATIVE_BASE_COMMIT,
+        roots=roots,
+        git=git,
+    )
+    return manifest, repo, git
+
+
+@pytest.mark.parametrize("mutation", ["missing", "extra"])
+def test_source_manifest_rejects_path_set_drift(tmp_path: Path, mutation: str) -> None:
+    manifest, repo, git = _valid_source_manifest(tmp_path)
+    files = manifest["files"]
+    assert isinstance(files, dict)
+    if mutation == "missing":
+        files.pop("src/pkg/dep.py")
+    else:
+        files["src/pkg/extra.py"] = "0" * 64
+    with pytest.raises(gates.GateVerificationError, match="source path set"):
+        gates.verify_source_manifest(manifest, repo=repo, git=git)
+
+
+def test_source_manifest_rejects_symlinked_dependency(tmp_path: Path) -> None:
+    manifest, repo, git = _valid_source_manifest(tmp_path)
+    dependency = repo / "src/pkg/dep.py"
+    dependency.unlink()
+    dependency.symlink_to(repo / "src/pkg/root.py")
+    with pytest.raises(gates.GateVerificationError, match="non-symlink"):
+        gates.verify_source_manifest(manifest, repo=repo, git=git)
+
+
+def test_source_manifest_rejects_current_tree_only_dependency(tmp_path: Path) -> None:
+    manifest, repo, git = _valid_source_manifest(tmp_path)
+    (repo / gates.CUMULATIVE_ROOTS[0]).write_text(
+        "from src.pkg import dep, current_only\n", encoding="utf-8"
+    )
+    (repo / "src/pkg/current_only.py").write_text("VALUE = 2\n", encoding="utf-8")
+    with pytest.raises(gates.GateVerificationError, match="current source path set"):
+        gates.verify_source_manifest(manifest, repo=repo, git=git)
+
+
+def test_source_manifest_must_match_trusted_git_objects(tmp_path: Path) -> None:
+    manifest, repo, git = _valid_source_manifest(tmp_path)
+    files = manifest["files"]
+    assert isinstance(files, dict)
+    files["src/pkg/dep.py"] = "0" * 64
+    with pytest.raises(gates.GateVerificationError, match="trusted source hash"):
+        gates.verify_source_manifest(manifest, repo=repo, git=git)
+
+
+def test_source_manifest_rejects_current_hash_mismatch(tmp_path: Path) -> None:
+    manifest, repo, git = _valid_source_manifest(tmp_path)
+    (repo / "src/pkg/dep.py").write_text("VALUE = 9\n", encoding="utf-8")
+    with pytest.raises(gates.GateVerificationError, match="current source hash"):
+        gates.verify_source_manifest(manifest, repo=repo, git=git)
+
+
+def test_source_manifest_fails_closed_on_unresolved_local_import(tmp_path: Path) -> None:
+    repo, git, roots = _source_fixture(tmp_path)
+    git.objects[gates.CUMULATIVE_ROOTS[0]] = b"from src.pkg.missing import VALUE\n"
+    with pytest.raises(gates.GateVerificationError, match="unresolved local import"):
+        gates.build_source_manifest(
+            repo=repo,
+            base_commit=gates.CUMULATIVE_BASE_COMMIT,
+            roots=roots,
+            git=git,
+        )
+
+
+def test_source_manifest_rejects_reduced_cumulative_roots(tmp_path: Path) -> None:
+    manifest, repo, git = _valid_source_manifest(tmp_path)
+    removed = manifest["roots"].pop()
+    manifest["files"].pop(removed)
+    with pytest.raises(gates.GateVerificationError, match="cumulative roots"):
+        gates.verify_source_manifest(manifest, repo=repo, git=git)
 
 
 class PassingRunner:
@@ -72,7 +203,7 @@ def _generate(tmp_path: Path, **overrides: object) -> tuple[Path, PassingRunner]
     kwargs = {
         "repo": repo,
         "output": output,
-        "base_commit": gates.PLANNED_BASE_COMMIT,
+        "base_commit": gates.CUMULATIVE_BASE_COMMIT,
         "python_executable": "/env/bin/python",
         "git": FakeGit(),
         "run": runner,
@@ -90,7 +221,7 @@ def test_generates_packager_shared_exact_and_determinism_evidence(tmp_path: Path
     assert payload["schema_version"] == 1
     assert payload["manifest_id"] == "oviv2_dual_readout_development_gates_v1"
     deterministic = payload["deterministic_evidence"]
-    assert deterministic["base_commit"] == gates.PLANNED_BASE_COMMIT
+    assert deterministic["base_commit"] == gates.CUMULATIVE_BASE_COMMIT
     assert deterministic["code_commit"] == "a" * 40
     assert deterministic["code_tree"] == "b" * 40
     assert len(deterministic["protected_files"]) == 6
@@ -117,9 +248,8 @@ def test_generates_packager_shared_exact_and_determinism_evidence(tmp_path: Path
 @pytest.mark.parametrize(
     ("overrides", "message"),
     [
-        ({"base_commit": "c" * 40}, "planned base"),
+        ({"base_commit": "c" * 40}, "cumulative base"),
         ({"git": FakeGit(dirty=True)}, "clean"),
-        ({"git": FakeGit(protected_diff=True)}, "protected"),
     ],
 )
 def test_fails_closed_before_tests(
@@ -167,7 +297,7 @@ def test_rejects_nonzero_test_and_input_toctou(tmp_path: Path) -> None:
         gates.generate_evidence(
             repo=repo,
             output=tmp_path / "other.json",
-            base_commit=gates.PLANNED_BASE_COMMIT,
+            base_commit=gates.CUMULATIVE_BASE_COMMIT,
             python_executable=sys.executable,
             git=FakeGit(),
             run=runner,
@@ -180,14 +310,14 @@ def test_rejects_symlink_oversize_and_existing_output(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     _make_repo(repo)
-    protected = repo / gates.PROTECTED_FILES[0]
+    protected = repo / gates.CUMULATIVE_ROOTS[0]
     protected.unlink()
-    protected.symlink_to(repo / gates.PROTECTED_FILES[1])
+    protected.symlink_to(repo / gates.CUMULATIVE_ROOTS[1])
     with pytest.raises(gates.GateVerificationError, match="regular non-symlink"):
         gates.generate_evidence(
             repo=repo,
             output=tmp_path / "gate.json",
-            base_commit=gates.PLANNED_BASE_COMMIT,
+            base_commit=gates.CUMULATIVE_BASE_COMMIT,
             python_executable=sys.executable,
             git=FakeGit(),
             run=PassingRunner(repo),
@@ -200,7 +330,7 @@ def test_rejects_symlink_oversize_and_existing_output(tmp_path: Path) -> None:
         gates.generate_evidence(
             repo=repo,
             output=tmp_path / "gate.json",
-            base_commit=gates.PLANNED_BASE_COMMIT,
+            base_commit=gates.CUMULATIVE_BASE_COMMIT,
             python_executable=sys.executable,
             git=FakeGit(),
             run=PassingRunner(repo),
@@ -214,7 +344,7 @@ def test_rejects_symlink_oversize_and_existing_output(tmp_path: Path) -> None:
         gates.generate_evidence(
             repo=repo,
             output=output,
-            base_commit=gates.PLANNED_BASE_COMMIT,
+            base_commit=gates.CUMULATIVE_BASE_COMMIT,
             python_executable=sys.executable,
             git=FakeGit(),
             run=PassingRunner(repo),
