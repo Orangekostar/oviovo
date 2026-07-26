@@ -1289,6 +1289,59 @@ def test_sparse_ledger_rebuild_exception_is_not_downgraded_to_staged(
     assert runtime.state.canonical_dump() == before_dump
 
 
+def test_sparse_background_volume_uses_stable_candidate_validation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import inspect
+    import re
+    import src.oviv2.temporal_runtime as module
+
+    source = inspect.getsource(module)
+    assert re.search(r"candidate_block_keys\s*=", source) is None
+    assert re.search(r"del\s+\w+\.candidate_block_keys", source) is None
+    frame = _frame(2, depth=2.0)
+    depth = np.zeros_like(frame.depth)
+    depth[2, 2] = frame.depth[2, 2]
+    volume = module._SparseBackgroundVolume(_config().geometry)
+    calls = 0
+    original = module._sparse_background_block_keys
+
+    def capture(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(module, "_sparse_background_block_keys", capture)
+    touched = volume.candidate_block_keys(frame, depth)
+    trial = volume.trial_integrate_blocks(frame, depth, touched)
+
+    assert calls >= 2
+    assert trial.active_block_count > 0
+    invalid = ((999, 999, 999),)
+    with pytest.raises(ValueError, match="touched"):
+        volume.trial_integrate_blocks(frame, depth, invalid)
+
+
+def test_sparse_background_rebuild_is_deterministic() -> None:
+    import src.oviv2.temporal_runtime as module
+
+    frame = _frame(2, depth=2.0)
+    depth = np.zeros_like(frame.depth)
+    depth[2, 2] = frame.depth[2, 2]
+    probe = module._SparseBackgroundVolume(_config().geometry)
+    key = probe.candidate_block_keys(frame, depth)[0]
+    observations = (((1, 0, 2), key, frame, depth),)
+
+    left = module._rebuild_sparse_background_blocks(
+        _config().geometry, observations
+    )
+    right = module._rebuild_sparse_background_blocks(
+        _config().geometry, observations
+    )
+
+    assert left.canonical_block_state() == right.canonical_block_state()
+
+
 def test_ledger_rejection_is_staged_once_and_rolls_back(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

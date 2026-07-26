@@ -28,6 +28,7 @@ from src.oviv2.temporal_background import (
 )
 from src.oviv2.temporal_config import (
     ExecutionProfile,
+    TemporalGeometryConfig,
     TemporalReadoutConfig,
     temporal_config_from_json,
     temporal_config_to_json,
@@ -774,7 +775,7 @@ def _absence_evidence_with_release(
 
 
 def _sparse_background_block_keys(
-    frame: Frame, depth_m: np.ndarray, config: object
+    frame: Frame, depth_m: np.ndarray, config: TemporalGeometryConfig
 ) -> tuple[tuple[int, int, int], ...]:
     rows, columns = np.nonzero(depth_m > 0.0)
     if rows.size == 0:
@@ -802,6 +803,20 @@ def _sparse_background_block_keys(
     return tuple(sorted({tuple(int(value) for value in row) for row in keys}))
 
 
+class _SparseBackgroundVolume(TemporalBackgroundVolume):
+    def candidate_block_keys(
+        self, frame: Frame, masked_depth: np.ndarray
+    ) -> tuple[tuple[int, int, int], ...]:
+        try:
+            return super().candidate_block_keys(frame, masked_depth)
+        except RuntimeError as error:
+            if "No block is touched" not in str(error):
+                raise
+            return _sparse_background_block_keys(
+                frame, masked_depth, self.config
+            )
+
+
 def _candidate_keys_with_sparse_fallback(
     volume: TemporalBackgroundVolume,
     frame: Frame,
@@ -826,20 +841,16 @@ def _stage_ledger_evidence(
 
 
 def _rebuild_sparse_background_blocks(
-    cls: type[TemporalBackgroundVolume],
-    config: object,
+    config: TemporalGeometryConfig,
     observations: tuple[tuple[object, tuple[int, int, int], Frame, np.ndarray], ...],
 ) -> TemporalBackgroundVolume:
-    rebuilt = cls(config)
+    rebuilt = _SparseBackgroundVolume(config)
     for _, block_key, frame, depth_m in sorted(
         observations, key=lambda item: (repr(item[0]), item[1])
     ):
-        current = rebuilt
-        try:
-            current.candidate_block_keys = lambda frame, depth_m, key=block_key: (key,)
-            rebuilt = current.trial_integrate_blocks(frame, depth_m, (block_key,))
-        finally:
-            del current.candidate_block_keys
+        rebuilt = rebuilt.trial_integrate_blocks(
+            frame, depth_m, (block_key,)
+        )
     return rebuilt
 
 
@@ -852,7 +863,9 @@ class _SparseBackgroundLedger(ReversibleBackgroundLedger):
         assert evidence.frame is not None
         assert evidence.depth_m is not None
         try:
-            self._volume.candidate_block_keys(evidence.frame, evidence.depth_m)
+            TemporalBackgroundVolume.candidate_block_keys(
+                self._volume, evidence.frame, evidence.depth_m
+            )
         except RuntimeError as error:
             if "No block is touched" not in str(error):
                 raise
@@ -963,7 +976,7 @@ class _SparseBackgroundLedger(ReversibleBackgroundLedger):
             try:
                 observations = self._aggregate_observations(committed)
                 rebuilt = _rebuild_sparse_background_blocks(
-                    TemporalBackgroundVolume, self._volume.config, observations
+                    self._volume.config, observations
                 )
             except Exception:
                 return LedgerDecision.REJECTED_INTEGRATION
