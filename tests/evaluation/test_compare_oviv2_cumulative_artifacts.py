@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
+import tracemalloc
 
 import pytest
 
@@ -397,6 +399,106 @@ def test_rejects_unmanifested_cumulative_file_and_symlinked_ancestor(
         compare_cumulative_artifacts(left, alias / "right")
 
 
+@pytest.mark.parametrize("relative", [False, True])
+def test_opens_root_one_component_at_a_time(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, relative: bool
+) -> None:
+    left, right = _pair(tmp_path)
+    original = compare_module.os.open
+    roots = {os.fspath(left.absolute()), os.fspath(right.absolute())}
+    nondirfd_opens: list[str] = []
+
+    def reject_complete_root(
+        path: object, flags: int, *args: object, **kwargs: object
+    ) -> int:
+        assert os.fspath(path) not in roots
+        if "dir_fd" not in kwargs:
+            nondirfd_opens.append(os.fspath(path))
+        return original(path, flags, *args, **kwargs)
+
+    monkeypatch.setattr(compare_module.os, "open", reject_complete_root)
+    if relative:
+        monkeypatch.chdir(tmp_path)
+        left_arg: Path | str = "left"
+        right_arg: Path | str = "right"
+    else:
+        left_arg = left
+        right_arg = right
+    assert compare_cumulative_artifacts(left_arg, right_arg)[
+        "checkpoint_frames"
+    ] == [2, 7]
+    assert nondirfd_opens == ["/", "/"]
+
+
+def test_rejects_ancestor_exchange_after_component_open(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    container = tmp_path / "container"
+    left, right = _pair(container)
+    original = compare_module.os.open
+    exchanged = False
+    old = tmp_path / "old-container"
+
+    def exchange_after_open(
+        path: object, flags: int, *args: object, **kwargs: object
+    ) -> int:
+        nonlocal exchanged
+        descriptor = original(path, flags, *args, **kwargs)
+        if os.fspath(path) == "container" and not exchanged:
+            exchanged = True
+            container.replace(old)
+            shutil.copytree(old, container)
+        return descriptor
+
+    monkeypatch.setattr(compare_module.os, "open", exchange_after_open)
+    with pytest.raises(ArtifactMismatch, match="changed|replaced|unsafe"):
+        compare_cumulative_artifacts(left, right)
+
+
+def test_allows_unrelated_ancestor_directory_activity(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    left, right = _pair(tmp_path)
+    original = compare_module.os.open
+    changed = False
+
+    def add_unrelated_sibling(
+        path: object, flags: int, *args: object, **kwargs: object
+    ) -> int:
+        nonlocal changed
+        descriptor = original(path, flags, *args, **kwargs)
+        if os.fspath(path) == "left" and not changed:
+            changed = True
+            (tmp_path / "unrelated").mkdir()
+        return descriptor
+
+    monkeypatch.setattr(compare_module.os, "open", add_unrelated_sibling)
+    assert compare_cumulative_artifacts(left, right)["checkpoint_frames"] == [2, 7]
+
+
+def test_scans_each_distinct_root_once_per_comparison(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    left, right = _pair(tmp_path)
+    original = compare_module._all_regular_files
+    scans: list[Path] = []
+
+    def count_scan(
+        root: compare_module._RootHandle,
+    ) -> dict[str, compare_module.FileEntry]:
+        scans.append(root.path)
+        return original(root)
+
+    monkeypatch.setattr(compare_module, "_all_regular_files", count_scan)
+    compare_cumulative_artifacts(left, right)
+    assert scans.count(left.absolute()) == 1
+    assert scans.count(right.absolute()) == 1
+
+    scans.clear()
+    compare_cumulative_artifacts(left, left)
+    assert scans == [left.absolute()]
+
+
 def test_accepts_profile_specific_top_level_manifest_serialization(tmp_path: Path) -> None:
     left, right = _pair(tmp_path)
     manifest = json.loads((right / "run_manifest.json").read_text())
@@ -407,6 +509,7 @@ def test_accepts_profile_specific_top_level_manifest_serialization(tmp_path: Pat
 def test_streams_large_cumulative_file(tmp_path: Path) -> None:
     left, right = _pair(tmp_path)
     payload = b"0123456789abcdef" * (1024 * 1024)
+    payload_size = len(payload)
     for root in (left, right):
         target = next(
             root.glob("checkpoints/*/cumulative_audit/artifact/entities/*.jsonl")
@@ -419,8 +522,15 @@ def test_streams_large_cumulative_file(tmp_path: Path) -> None:
         audit["artifact"] = _tree_record(target.parents[1], root)
         manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
 
-    result = compare_cumulative_artifacts(left, right)
-    assert any(item["byte_count"] == len(payload) for item in result["inventory"])
+    del payload
+    tracemalloc.start()
+    try:
+        result = compare_cumulative_artifacts(left, right)
+        _, peak = tracemalloc.get_traced_memory()
+    finally:
+        tracemalloc.stop()
+    assert any(item["byte_count"] == payload_size for item in result["inventory"])
+    assert peak < 16 * 1024 * 1024
 
 
 def test_rejects_same_byte_inode_replacement_before_comparison(
@@ -431,12 +541,16 @@ def test_rejects_same_byte_inode_replacement_before_comparison(
     replaced = False
 
     def replace_then_open(
-        root: Path, relative: object, label: str
+        root: compare_module._RootHandle, relative: object, label: str
     ) -> int:
         nonlocal replaced
-        if root == right and label.startswith("checkpoint/") and not replaced:
+        if (
+            root.path == right.absolute()
+            and label.startswith("checkpoint/")
+            and not replaced
+        ):
             replaced = True
-            target = root.joinpath(*relative.parts)
+            target = root.path.joinpath(*relative.parts)
             replacement = target.with_name(target.name + ".replacement")
             replacement.write_bytes(target.read_bytes())
             replacement.replace(target)

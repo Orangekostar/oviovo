@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import hashlib
 import json
 import os
@@ -69,6 +69,10 @@ def _identity(value: os.stat_result) -> tuple[int, int, int, int, int]:
     )
 
 
+def _directory_identity(value: os.stat_result) -> tuple[int, int, int]:
+    return value.st_dev, value.st_ino, stat.S_IFMT(value.st_mode)
+
+
 @dataclass(frozen=True)
 class FileEntry:
     root: Path
@@ -76,13 +80,89 @@ class FileEntry:
     sha256: str
     byte_count: int
     identity: tuple[int, int, int, int, int]
+    data: bytes | None = field(default=None, repr=False, compare=False)
 
 
-def _open_regular(root: Path, relative: PurePosixPath, label: str) -> int:
+@dataclass
+class _RootHandle:
+    path: Path
+    descriptors: list[int]
+    components: list[tuple[int, str, int, tuple[int, int, int]]]
+
+    @property
+    def descriptor(self) -> int:
+        return self.descriptors[-1]
+
+    def verify(self) -> None:
+        for parent, name, child, opened_identity in self.components:
+            try:
+                linked = os.stat(name, dir_fd=parent, follow_symlinks=False)
+                current = os.fstat(child)
+            except OSError as exc:
+                raise ArtifactMismatch(
+                    "run root path changed during comparison"
+                ) from exc
+            if (
+                stat.S_ISLNK(linked.st_mode)
+                or not stat.S_ISDIR(linked.st_mode)
+                or _directory_identity(linked) != opened_identity
+                or _directory_identity(current) != opened_identity
+            ):
+                raise ArtifactMismatch("run root path changed during comparison")
+
+    def close(self) -> None:
+        for descriptor in reversed(self.descriptors):
+            try:
+                os.close(descriptor)
+            except OSError:
+                pass
+
+
+def _open_root(root: Path) -> _RootHandle:
+    absolute = Path(os.path.abspath(os.fspath(root)))
+    flags = (
+        os.O_RDONLY
+        | getattr(os, "O_CLOEXEC", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+        | getattr(os, "O_DIRECTORY", 0)
+    )
+    descriptors: list[int] = []
+    components: list[tuple[int, str, int, tuple[int, int, int]]] = []
+    try:
+        descriptor = os.open("/", flags)
+        descriptors.append(descriptor)
+        for part in absolute.parts[1:]:
+            child = os.open(part, flags, dir_fd=descriptor)
+            descriptors.append(child)
+            opened_identity = _directory_identity(os.fstat(child))
+            linked = os.stat(part, dir_fd=descriptor, follow_symlinks=False)
+            if (
+                stat.S_ISLNK(linked.st_mode)
+                or not stat.S_ISDIR(linked.st_mode)
+                or _directory_identity(linked) != opened_identity
+            ):
+                raise ArtifactMismatch("run root path component was replaced")
+            components.append((descriptor, part, child, opened_identity))
+            descriptor = child
+        return _RootHandle(absolute, descriptors, components)
+    except (OSError, ArtifactMismatch) as exc:
+        for descriptor in reversed(descriptors):
+            try:
+                os.close(descriptor)
+            except OSError:
+                pass
+        if isinstance(exc, ArtifactMismatch):
+            raise
+        raise ArtifactMismatch(
+            "run root is missing, unsafe, or contains a symlink"
+        ) from exc
+
+
+def _open_regular(root: _RootHandle, relative: PurePosixPath, label: str) -> int:
     flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
     directory_flags = flags | getattr(os, "O_DIRECTORY", 0)
     try:
-        descriptor = os.open(root, directory_flags)
+        descriptor = os.dup(root.descriptor)
         for part in relative.parts[:-1]:
             next_descriptor = os.open(part, directory_flags, dir_fd=descriptor)
             os.close(descriptor)
@@ -101,16 +181,22 @@ def _open_regular(root: Path, relative: PurePosixPath, label: str) -> int:
     return file_descriptor
 
 
-def _stream_entry(root: Path, relative: PurePosixPath, label: str) -> FileEntry:
+def _stream_entry(root: _RootHandle, relative: PurePosixPath, label: str) -> FileEntry:
     descriptor = _open_regular(root, relative, label)
     return _stream_descriptor(root, relative, descriptor, label)
 
 
 def _stream_descriptor(
-    root: Path, relative: PurePosixPath, descriptor: int, label: str
+    root: _RootHandle, relative: PurePosixPath, descriptor: int, label: str
 ) -> FileEntry:
     digest = hashlib.sha256()
     total = 0
+    capture = relative.as_posix() in {
+        "run_manifest.json",
+        "normalized_run_config.json",
+        "execution_receipt.json",
+    }
+    chunks: list[bytes] = []
     try:
         before = os.fstat(descriptor)
         while True:
@@ -119,15 +205,28 @@ def _stream_descriptor(
                 break
             digest.update(chunk)
             total += len(chunk)
+            if capture:
+                if total > MAX_JSON_BYTES:
+                    raise ArtifactMismatch(f"{label} exceeds JSON size limit")
+                chunks.append(chunk)
         after = os.fstat(descriptor)
     finally:
         os.close(descriptor)
     if _identity(before) != _identity(after) or total != after.st_size:
         raise ArtifactMismatch(f"{label} changed while being read")
-    return FileEntry(root, relative, digest.hexdigest(), total, _identity(after))
+    return FileEntry(
+        root.path,
+        relative,
+        digest.hexdigest(),
+        total,
+        _identity(after),
+        b"".join(chunks) if capture else None,
+    )
 
 
-def _open_directory(root: Path, relative: PurePosixPath | None, label: str) -> int:
+def _open_directory(
+    root: _RootHandle, relative: PurePosixPath | None, label: str
+) -> int:
     flags = (
         os.O_RDONLY
         | getattr(os, "O_CLOEXEC", 0)
@@ -135,7 +234,7 @@ def _open_directory(root: Path, relative: PurePosixPath | None, label: str) -> i
         | getattr(os, "O_DIRECTORY", 0)
     )
     try:
-        descriptor = os.open(root, flags)
+        descriptor = os.dup(root.descriptor)
         for part in (() if relative is None else relative.parts):
             child = os.open(part, flags, dir_fd=descriptor)
             os.close(descriptor)
@@ -150,7 +249,7 @@ def _open_directory(root: Path, relative: PurePosixPath | None, label: str) -> i
 
 
 def _walk_directory(
-    root: Path,
+    root: _RootHandle,
     descriptor: int,
     prefix: PurePosixPath | None,
     label: str,
@@ -229,23 +328,13 @@ def _relative(value: object, label: str) -> PurePosixPath:
     return path
 
 
-def _regular_bytes(root: Path, relative: PurePosixPath, label: str) -> bytes:
-    descriptor = _open_regular(root, relative, label)
-    chunks: list[bytes] = []
-    try:
-        before = os.fstat(descriptor)
-        total = 0
-        while chunk := os.read(descriptor, 1024 * 1024):
-            chunks.append(chunk)
-            total += len(chunk)
-            if total > MAX_JSON_BYTES:
-                raise ArtifactMismatch(f"{label} exceeds JSON size limit")
-        after = os.fstat(descriptor)
-    finally:
-        os.close(descriptor)
-    if _identity(before) != _identity(after):
-        raise ArtifactMismatch(f"{label} changed while being read")
-    return b"".join(chunks)
+def _regular_bytes(
+    all_files: Mapping[str, FileEntry], relative: PurePosixPath, label: str
+) -> bytes:
+    entry = all_files.get(relative.as_posix())
+    if entry is None or entry.data is None:
+        raise ArtifactMismatch(f"{label} is missing or cannot be decoded")
+    return entry.data
 
 
 def _record(record: object, label: str) -> tuple[PurePosixPath, str, int]:
@@ -270,24 +359,28 @@ def _record(record: object, label: str) -> tuple[PurePosixPath, str, int]:
 
 
 def _validate_file_record(
-    root: Path, record: object, label: str
+    all_files: Mapping[str, FileEntry], record: object, label: str
 ) -> tuple[PurePosixPath, FileEntry]:
     path, digest, count = _record(record, label)
-    entry = _stream_entry(root, path, label)
+    entry = all_files.get(path.as_posix())
+    if entry is None:
+        raise ArtifactMismatch(f"{label} manifest record is missing")
     if entry.byte_count != count or entry.sha256 != digest:
         raise ArtifactMismatch(f"{label} manifest record does not match raw bytes")
     return path, entry
 
 
 def _validate_tree_record(
-    root: Path, record: object, label: str
+    all_files: Mapping[str, FileEntry], record: object, label: str
 ) -> list[tuple[PurePosixPath, FileEntry]]:
     path, digest, count = _record(record, label)
-    descriptor = _open_directory(root, path, label)
-    try:
-        files = _walk_directory(root, descriptor, path, label)
-    finally:
-        os.close(descriptor)
+    prefix = path.as_posix() + "/"
+    files = [
+        (PurePosixPath(item), entry)
+        for item, entry in all_files.items()
+        if item.startswith(prefix)
+    ]
+    files.sort(key=lambda item: item[0].as_posix())
     if not files:
         raise ArtifactMismatch(f"{label} tree is empty")
     tree_digest = hashlib.sha256()
@@ -306,7 +399,7 @@ def _validate_tree_record(
     return result
 
 
-def _all_regular_files(root: Path) -> dict[str, FileEntry]:
+def _all_regular_files(root: _RootHandle) -> dict[str, FileEntry]:
     descriptor = _open_directory(root, None, "artifact inventory")
     try:
         entries = _walk_directory(root, descriptor, None, "artifact inventory")
@@ -315,25 +408,23 @@ def _all_regular_files(root: Path) -> dict[str, FileEntry]:
     return {path.as_posix(): entry for path, entry in entries}
 
 
-def _validate_manifest_records(root: Path, value: object, label: str = "manifest") -> None:
+def _validate_manifest_records(
+    all_files: Mapping[str, FileEntry], value: object, label: str = "manifest"
+) -> None:
     if isinstance(value, Mapping):
         if set(value) == {"path", "sha256", "byte_count"}:
             path, _, _ = _record(value, label)
-            target = root.joinpath(*path.parts)
-            try:
-                metadata = os.lstat(target)
-            except OSError as exc:
-                raise ArtifactMismatch(f"{label} manifest record is missing") from exc
-            if stat.S_ISDIR(metadata.st_mode):
-                _validate_tree_record(root, value, label)
+            key = path.as_posix()
+            if any(item.startswith(key + "/") for item in all_files):
+                _validate_tree_record(all_files, value, label)
             else:
-                _validate_file_record(root, value, label)
+                _validate_file_record(all_files, value, label)
             return
         for key, child in value.items():
-            _validate_manifest_records(root, child, f"{label}.{key}")
+            _validate_manifest_records(all_files, child, f"{label}.{key}")
     elif isinstance(value, list):
         for position, child in enumerate(value):
-            _validate_manifest_records(root, child, f"{label}[{position}]")
+            _validate_manifest_records(all_files, child, f"{label}[{position}]")
 
 
 def _json_object(data: bytes, label: str) -> dict[str, Any]:
@@ -399,7 +490,7 @@ def _validate_production_provenance(
 
 
 def _schema2_run_identity(
-    root: Path, manifest: Mapping[str, Any], all_files: Mapping[str, FileEntry]
+    manifest: Mapping[str, Any], all_files: Mapping[str, FileEntry]
 ) -> None:
     algorithm_hash = manifest.get("algorithm_hash")
     if (
@@ -410,12 +501,12 @@ def _schema2_run_identity(
         raise ArtifactMismatch("run algorithm identity is invalid")
     normalized_record = manifest.get("normalized_run_config")
     normalized_path, normalized_data = _validate_file_record(
-        root, normalized_record, "normalized run config"
+        all_files, normalized_record, "normalized run config"
     )
     if normalized_path.as_posix() != "normalized_run_config.json":
         raise ArtifactMismatch("normalized run config path is invalid")
     normalized = _json_object(
-        _regular_bytes(root, normalized_path, "normalized run config"),
+        _regular_bytes(all_files, normalized_path, "normalized run config"),
         "normalized run config",
     )
     try:
@@ -431,7 +522,7 @@ def _schema2_run_identity(
         raise ArtifactMismatch("execution receipt is missing")
     receipt = _json_object(
         _regular_bytes(
-            root, PurePosixPath("execution_receipt.json"), "execution receipt"
+            all_files, PurePosixPath("execution_receipt.json"), "execution receipt"
         ),
         "execution receipt",
     )
@@ -463,7 +554,7 @@ def _schema2_run_identity(
 
 
 def _cumulative_entries(
-    root: Path,
+    all_files: Mapping[str, FileEntry],
     audit: object,
     *,
     logical_prefix: str,
@@ -478,17 +569,23 @@ def _cumulative_entries(
         or audit.get("format") != "oviv2_cumulative_audit_v1"
     ):
         raise ArtifactMismatch("cumulative audit manifest is invalid")
-    entries = _validate_tree_record(root, audit["artifact"], f"{label} artifact")
+    entries = _validate_tree_record(
+        all_files, audit["artifact"], f"{label} artifact"
+    )
     entries.extend(
         (
-            _validate_file_record(root, audit["snapshot"], f"{label} snapshot"),
-            _validate_file_record(root, audit["entities"], f"{label} entities"),
+            _validate_file_record(
+                all_files, audit["snapshot"], f"{label} snapshot"
+            ),
+            _validate_file_record(
+                all_files, audit["entities"], f"{label} entities"
+            ),
         )
     )
     if "voxel_snapshot" in audit:
         entries.extend(
             _validate_tree_record(
-                root, audit["voxel_snapshot"], f"{label} voxel snapshot"
+                all_files, audit["voxel_snapshot"], f"{label} voxel snapshot"
             )
         )
     projection: dict[str, FileEntry] = {}
@@ -513,7 +610,6 @@ def _cumulative_entries(
 
 
 def _schema2_projection(
-    root: Path,
     manifest: Mapping[str, Any],
     all_files: Mapping[str, FileEntry],
 ) -> tuple[list[int], dict[str, FileEntry]]:
@@ -531,7 +627,7 @@ def _schema2_projection(
             raise ArtifactMismatch("checkpoint inventory is invalid")
         frames.append(frame)
         entries, physical = _cumulative_entries(
-            root,
+            all_files,
             checkpoint.get("cumulative_audit"),
             logical_prefix=f"checkpoint/{position:08d}/{frame:08d}",
             label=f"checkpoint {frame} cumulative audit",
@@ -544,7 +640,10 @@ def _schema2_projection(
     final_audit = manifest.get("final_cumulative_audit")
     if final_audit is not None:
         entries, physical = _cumulative_entries(
-            root, final_audit, logical_prefix="final", label="final cumulative audit"
+            all_files,
+            final_audit,
+            logical_prefix="final",
+            label="final cumulative audit",
         )
         for path, data in entries.items():
             if path in projection:
@@ -564,7 +663,7 @@ def _schema2_projection(
 
 
 def _schema1_projection(
-    root: Path, manifest: Mapping[str, Any]
+    manifest: Mapping[str, Any], all_files: Mapping[str, FileEntry]
 ) -> tuple[list[int], dict[str, FileEntry]]:
     checkpoints = manifest.get("checkpoints")
     if not isinstance(checkpoints, list) or not checkpoints:
@@ -588,7 +687,9 @@ def _schema1_projection(
         for role in roles:
             logical_role = "voxel_snapshot" if role == "ownership_checkpoint" else role
             record_path, _, _ = _record(checkpoint[role], f"v1 {role}")
-            for path, data in _validate_tree_record(root, checkpoint[role], f"v1 {role}"):
+            for path, data in _validate_tree_record(
+                all_files, checkpoint[role], f"v1 {role}"
+            ):
                 local = path.relative_to(record_path).as_posix()
                 logical = (
                     f"checkpoint/{position:08d}/{frame:08d}/{logical_role}/{local}"
@@ -601,19 +702,13 @@ def _schema1_projection(
     return frames, projection
 
 
-def _load_inventory(root: Path) -> tuple[list[int], dict[str, FileEntry]]:
-    absolute = root.absolute()
-    current = Path(absolute.anchor)
-    for part in absolute.parts[1:]:
-        current /= part
-        try:
-            if stat.S_ISLNK(os.lstat(current).st_mode):
-                raise ArtifactMismatch("run root contains a symlink path component")
-        except FileNotFoundError:
-            break
-    if root.is_symlink() or not root.is_dir():
-        raise ArtifactMismatch("run root is not a regular directory")
-    manifest_data = _regular_bytes(root, PurePosixPath("run_manifest.json"), "run manifest")
+def _load_inventory(
+    root: _RootHandle,
+) -> tuple[list[int], dict[str, FileEntry]]:
+    all_files = _all_regular_files(root)
+    manifest_data = _regular_bytes(
+        all_files, PurePosixPath("run_manifest.json"), "run manifest"
+    )
     manifest = _json_object(manifest_data, "run manifest")
     if not isinstance(manifest, dict) or manifest.get("schema_version") not in (1, 2):
         raise ArtifactMismatch("run manifest identity is invalid")
@@ -628,7 +723,6 @@ def _load_inventory(root: Path) -> tuple[list[int], dict[str, FileEntry]]:
             raise ArtifactMismatch("artifact inventory is invalid")
         if declared_inventory != sorted(set(declared_inventory)):
             raise ArtifactMismatch("artifact inventory is noncanonical")
-    all_files = _all_regular_files(root)
     if manifest["schema_version"] == 2:
         allowed_root_files = {"run_manifest.json"}
         if "execution_receipt.json" in all_files:
@@ -638,77 +732,79 @@ def _load_inventory(root: Path) -> tuple[list[int], dict[str, FileEntry]]:
         expected_files = set(declared_inventory) | allowed_root_files
         if set(all_files) != expected_files:
             raise ArtifactMismatch("artifact inventory is not exact")
-        _validate_manifest_records(root, manifest)
-        _schema2_run_identity(root, manifest, all_files)
-        return _schema2_projection(root, manifest, all_files)
-    _validate_manifest_records(root, manifest)
-    return _schema1_projection(root, manifest)
+        _validate_manifest_records(all_files, manifest)
+        _schema2_run_identity(manifest, all_files)
+        return _schema2_projection(manifest, all_files)
+    _validate_manifest_records(all_files, manifest)
+    return _schema1_projection(manifest, all_files)
+
+
+def _verify_entry(root: _RootHandle, entry: FileEntry, label: str) -> None:
+    descriptor = _open_regular(root, entry.path, label)
+    try:
+        if _identity(os.fstat(descriptor)) != entry.identity:
+            raise ArtifactMismatch(f"artifact was replaced before comparison: {label}")
+    finally:
+        os.close(descriptor)
 
 
 def compare_cumulative_artifacts(left: str | Path, right: str | Path) -> dict[str, Any]:
     """Compare with O(chunk + directory depth + output inventory) memory."""
-    left_frames, left_inventory = _load_inventory(Path(left))
-    right_frames, right_inventory = _load_inventory(Path(right))
-    if left_frames != right_frames:
-        raise ArtifactMismatch("checkpoint inventory differs")
-    if set(left_inventory) != set(right_inventory):
-        raise ArtifactMismatch("cumulative inventory differs")
-    records: list[dict[str, Any]] = []
-    root_digest = hashlib.sha256()
-    for path in sorted(left_inventory):
-        left_entry = left_inventory[path]
-        right_entry = right_inventory[path]
-        left_fd = _open_regular(left_entry.root, left_entry.path, path)
-        right_fd = _open_regular(right_entry.root, right_entry.path, path)
-        digest = hashlib.sha256()
-        total = 0
-        try:
-            left_before = os.fstat(left_fd)
-            right_before = os.fstat(right_fd)
+    left_path = Path(os.path.abspath(os.fspath(left)))
+    right_path = Path(os.path.abspath(os.fspath(right)))
+    handles: dict[str, _RootHandle] = {}
+    loaded: dict[str, tuple[list[int], dict[str, FileEntry]]] = {}
+
+    def load(value: str | Path) -> tuple[
+        str, _RootHandle, tuple[list[int], dict[str, FileEntry]]
+    ]:
+        key = os.path.abspath(os.fspath(value))
+        if key not in handles:
+            handles[key] = _open_root(Path(value))
+            loaded[key] = _load_inventory(handles[key])
+        return key, handles[key], loaded[key]
+
+    try:
+        left_key, left_root, (left_frames, left_inventory) = load(left_path)
+        right_key, right_root, (right_frames, right_inventory) = load(right_path)
+        if left_frames != right_frames:
+            raise ArtifactMismatch("checkpoint inventory differs")
+        if set(left_inventory) != set(right_inventory):
+            raise ArtifactMismatch("cumulative inventory differs")
+        records: list[dict[str, Any]] = []
+        root_digest = hashlib.sha256()
+        for path in sorted(left_inventory):
+            left_entry = left_inventory[path]
+            right_entry = right_inventory[path]
+            _verify_entry(left_root, left_entry, path)
+            if right_key != left_key:
+                _verify_entry(right_root, right_entry, path)
             if (
-                _identity(left_before) != left_entry.identity
-                or _identity(right_before) != right_entry.identity
+                left_entry.sha256 != right_entry.sha256
+                or left_entry.byte_count != right_entry.byte_count
             ):
-                raise ArtifactMismatch(f"artifact was replaced before comparison: {path}")
-            while True:
-                left_chunk = os.read(left_fd, 1024 * 1024)
-                right_chunk = os.read(right_fd, 1024 * 1024)
-                if left_chunk != right_chunk:
-                    raise ArtifactMismatch(f"raw bytes differ: {path}")
-                if not left_chunk:
-                    break
-                digest.update(left_chunk)
-                total += len(left_chunk)
-            left_after = os.fstat(left_fd)
-            right_after = os.fstat(right_fd)
-        finally:
-            os.close(left_fd)
-            os.close(right_fd)
-        if (
-            _identity(left_before) != _identity(left_after)
-            or _identity(right_before) != _identity(right_after)
-            or digest.hexdigest() != left_entry.sha256
-            or digest.hexdigest() != right_entry.sha256
-            or total != left_entry.byte_count
-            or total != right_entry.byte_count
-        ):
-            raise ArtifactMismatch(f"artifact changed during comparison: {path}")
-        record = {
-            "path": path,
-            "sha256": digest.hexdigest(),
-            "byte_count": total,
+                raise ArtifactMismatch(f"raw bytes differ: {path}")
+            record = {
+                "path": path,
+                "sha256": left_entry.sha256,
+                "byte_count": left_entry.byte_count,
+            }
+            records.append(record)
+            root_digest.update(path.encode("utf-8"))
+            root_digest.update(b"\0")
+            root_digest.update(bytes.fromhex(left_entry.sha256))
+            root_digest.update(b"\n")
+        for handle in handles.values():
+            handle.verify()
+        return {
+            "format": "oviv2_cumulative_exact_v1",
+            "checkpoint_frames": left_frames,
+            "inventory": records,
+            "root_sha256": root_digest.hexdigest(),
         }
-        records.append(record)
-        root_digest.update(path.encode("utf-8"))
-        root_digest.update(b"\0")
-        root_digest.update(bytes.fromhex(digest.hexdigest()))
-        root_digest.update(b"\n")
-    return {
-        "format": "oviv2_cumulative_exact_v1",
-        "checkpoint_frames": left_frames,
-        "inventory": records,
-        "root_sha256": root_digest.hexdigest(),
-    }
+    finally:
+        for handle in handles.values():
+            handle.close()
 
 
 def main(argv: Sequence[str] | None = None) -> int:
