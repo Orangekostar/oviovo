@@ -7,6 +7,7 @@ from enum import Enum
 import hashlib
 import math
 import struct
+from types import FunctionType
 from typing import Any, Iterator, Mapping
 
 import numpy as np
@@ -62,15 +63,93 @@ _CUMULATIVE_FIELDS = frozenset({
 })
 _TEMPORAL_FIELDS = frozenset({"config", "state", "tracker_config"})
 _REFERENCE_FIELDS = frozenset({"config", "state"})
+_TRUSTED_CLASSES = (
+    Oviv2Runtime,
+    TemporalCurrentRuntime,
+    _BaseReferenceReadout,
+    ReferenceCurrentReadout,
+    LifecycleOverlayReadout,
+)
 _TRUSTED_CLASS_NAMESPACES = tuple(
-    (owner, dict(vars(owner)))
-    for owner in (
-        Oviv2Runtime,
-        TemporalCurrentRuntime,
-        _BaseReferenceReadout,
-        ReferenceCurrentReadout,
-        LifecycleOverlayReadout,
+    (owner, tuple(vars(owner).items())) for owner in _TRUSTED_CLASSES
+)
+
+
+@dataclass(frozen=True)
+class _FunctionBehaviorSnapshot:
+    function: FunctionType
+    code: object
+    defaults: tuple[object, ...] | None
+    default_values: tuple[object, ...]
+    kwdefaults: dict[str, object] | None
+    kwdefault_items: tuple[tuple[str, object], ...]
+    closure: tuple[object, ...] | None
+    closure_cells: tuple[tuple[object, object], ...]
+    attributes: dict[str, object]
+    attribute_items: tuple[tuple[str, object], ...]
+    annotations: dict[str, object]
+    annotation_items: tuple[tuple[str, object], ...]
+    globals: dict[str, object]
+    builtins: dict[str, object]
+    name: str
+    qualname: str
+    module: str | None
+    doc: str | None
+    type_params: object
+
+
+_EMPTY_CELL = object()
+_MISSING_METADATA = object()
+
+
+def _cell_content(cell: object) -> object:
+    try:
+        return cell.cell_contents
+    except ValueError:
+        return _EMPTY_CELL
+
+
+def _capture_function_behavior(function: FunctionType) -> _FunctionBehaviorSnapshot:
+    defaults = function.__defaults__
+    kwdefaults = function.__kwdefaults__
+    closure = function.__closure__
+    attributes = function.__dict__
+    annotations = function.__annotations__
+    return _FunctionBehaviorSnapshot(
+        function=function,
+        code=function.__code__,
+        defaults=defaults,
+        default_values=() if defaults is None else tuple(defaults),
+        kwdefaults=kwdefaults,
+        kwdefault_items=() if kwdefaults is None else tuple(kwdefaults.items()),
+        closure=closure,
+        closure_cells=(
+            ()
+            if closure is None
+            else tuple((cell, _cell_content(cell)) for cell in closure)
+        ),
+        attributes=attributes,
+        attribute_items=tuple(attributes.items()),
+        annotations=annotations,
+        annotation_items=tuple(annotations.items()),
+        globals=function.__globals__,
+        builtins=function.__builtins__,
+        name=function.__name__,
+        qualname=function.__qualname__,
+        module=function.__module__,
+        doc=function.__doc__,
+        type_params=getattr(function, "__type_params__", _MISSING_METADATA),
     )
+
+
+_TRUSTED_FUNCTION_BEHAVIORS = tuple(
+    _capture_function_behavior(function)
+    for owner in _TRUSTED_CLASSES
+    for raw in vars(owner).values()
+    for function in (
+        raw.__func__ if isinstance(raw, (classmethod, staticmethod)) else raw,
+    )
+    if type(function) is FunctionType
 )
 
 
@@ -374,13 +453,91 @@ def shared_input_snapshot(
     return _SharedInputSnapshot.capture(frame, observations, dense_semantics)
 
 
+def _identity_mapping_matches(
+    current: dict[str, object] | None,
+    original: dict[str, object] | None,
+    items: tuple[tuple[str, object], ...],
+) -> bool:
+    return current is original and (
+        current is None
+        or (
+            len(current) == len(items)
+            and all(
+                current.get(name, _MISSING_METADATA) is value
+                for name, value in items
+            )
+        )
+    )
+
+
+def _closure_matches(
+    current: tuple[object, ...] | None,
+    original: tuple[object, ...] | None,
+    cells: tuple[tuple[object, object], ...],
+) -> bool:
+    return current is original and (
+        current is None
+        or (
+            len(current) == len(cells)
+            and all(
+                current_cell is original_cell
+                and _cell_content(current_cell) is original_content
+                for current_cell, (original_cell, original_content) in zip(
+                    current, cells, strict=True
+                )
+            )
+        )
+    )
+
+
 def _validate_frozen_class_namespaces() -> None:
-    for owner, expected in _TRUSTED_CLASS_NAMESPACES:
+    for owner, expected_items in _TRUSTED_CLASS_NAMESPACES:
         current = vars(owner)
-        if current.keys() != expected.keys() or any(
-            current[name] is not value for name, value in expected.items()
+        if len(current) != len(expected_items) or any(
+            current.get(name, _MISSING_METADATA) is not value
+            for name, value in expected_items
         ):
             raise TypeError("built-in readout class namespace was modified")
+    for expected in _TRUSTED_FUNCTION_BEHAVIORS:
+        function = expected.function
+        if (
+            function.__code__ is not expected.code
+            or function.__defaults__ is not expected.defaults
+            or (
+                function.__defaults__ is not None
+                and any(
+                    current is not original
+                    for current, original in zip(
+                        function.__defaults__, expected.default_values, strict=True
+                    )
+                )
+            )
+            or not _identity_mapping_matches(
+                function.__kwdefaults__,
+                expected.kwdefaults,
+                expected.kwdefault_items,
+            )
+            or not _closure_matches(
+                function.__closure__, expected.closure, expected.closure_cells
+            )
+            or not _identity_mapping_matches(
+                function.__dict__, expected.attributes, expected.attribute_items
+            )
+            or not _identity_mapping_matches(
+                function.__annotations__,
+                expected.annotations,
+                expected.annotation_items,
+            )
+            or function.__globals__ is not expected.globals
+            or function.__builtins__ is not expected.builtins
+            or function.__name__ is not expected.name
+            or function.__qualname__ is not expected.qualname
+            or function.__module__ is not expected.module
+            or function.__doc__ is not expected.doc
+            or getattr(function, "__type_params__", _MISSING_METADATA)
+            is not expected.type_params
+        ):
+            raise TypeError("built-in readout function behavior was modified")
 
 
 def isolated_cumulative_runtime(runtime: Oviv2Runtime) -> Oviv2Runtime:

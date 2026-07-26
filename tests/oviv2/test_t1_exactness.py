@@ -310,6 +310,75 @@ def test_added_getattribute_fails_before_instance_access(monkeypatch) -> None:
     assert frame.rgb[0, 0, 0] == 0
 
 
+def test_in_place_code_replacement_fails_before_branch(monkeypatch) -> None:
+    import src.oviv2.runtime as runtime_module
+
+    frame = _frame()
+    function = Oviv2Runtime.process_frame
+    original_code = function.__code__
+    monkeypatch.setattr(runtime_module, "_T1_PROBE_CALLED", False, raising=False)
+    monkeypatch.setattr(runtime_module, "_T1_PROBE_FRAME", frame, raising=False)
+
+    def poisoned(self, frame, observations, dense_semantics=None):
+        global _T1_PROBE_CALLED
+        _T1_PROBE_CALLED = True
+        _T1_PROBE_FRAME.rgb[0, 0, 0] = 233
+        raise RuntimeError("in-place code replacement")
+
+    try:
+        function.__code__ = poisoned.__code__
+        with pytest.raises(TypeError, match="function behavior.*modified"):
+            DualReadoutRuntime(
+                _cumulative(),
+                TemporalCurrentRuntime(
+                    "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+                ),
+            ).process_frame(frame, ())
+    finally:
+        function.__code__ = original_code
+    assert runtime_module._T1_PROBE_CALLED is False
+    assert frame.rgb[0, 0, 0] == 0
+
+
+def test_in_place_defaults_replacement_fails_before_branch() -> None:
+    frame = _frame()
+    function = Oviv2Runtime.process_frame
+    original_defaults = function.__defaults__
+    cumulative = _cumulative()
+    temporal = TemporalCurrentRuntime(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+    )
+    try:
+        function.__defaults__ = (object(),)
+        with pytest.raises(TypeError, match="function behavior.*modified"):
+            DualReadoutRuntime(cumulative, temporal)
+    finally:
+        function.__defaults__ = original_defaults
+    assert cumulative.revision == temporal.state.revision == 0
+    assert frame.rgb[0, 0, 0] == 0
+
+
+def test_in_place_kwdefaults_mutation_fails_before_branch() -> None:
+    frame = _frame()
+    function = TemporalCurrentRuntime.process_frame
+    kwdefaults = function.__kwdefaults__
+    assert kwdefaults is not None
+    original = dict(kwdefaults)
+    cumulative = _cumulative()
+    temporal = TemporalCurrentRuntime(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+    )
+    try:
+        kwdefaults["proposal_evidence"] = object()
+        with pytest.raises(TypeError, match="function behavior.*modified"):
+            DualReadoutRuntime(cumulative, temporal)
+    finally:
+        kwdefaults.clear()
+        kwdefaults.update(original)
+    assert cumulative.revision == temporal.state.revision == 0
+    assert frame.rgb[0, 0, 0] == 0
+
+
 def test_cumulative_subclass_helper_override_fails_before_branch() -> None:
     called = False
 
