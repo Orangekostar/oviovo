@@ -381,7 +381,7 @@ def test_schema2_rejects_t1_receipt_as_an_unmanifested_extra(tmp_path: Path) -> 
     manifest["artifact_inventory"].append("t1_exact_receipt.json")
     manifest["artifact_inventory"].sort()
     manifest_path.write_text(json.dumps(manifest) + "\n")
-    with pytest.raises(ArtifactMismatch, match="inventory"):
+    with pytest.raises(ArtifactMismatch, match="inventory|schema|pseudo-record"):
         compare_cumulative_artifacts(left, right)
 
 
@@ -402,7 +402,65 @@ def test_schema2_declared_inventory_cannot_be_extended_by_unknown_records(
     manifest["artifact_inventory"].append("extra.bin")
     manifest["artifact_inventory"].sort()
     manifest_path.write_text(json.dumps(manifest) + "\n")
-    with pytest.raises(ArtifactMismatch, match="inventory"):
+    with pytest.raises(ArtifactMismatch, match="inventory|schema|pseudo-record"):
+        compare_cumulative_artifacts(left, right)
+
+
+@pytest.mark.parametrize("location", ["checkpoint_alias", "deep_artifact_alias"])
+def test_schema2_rejects_unknown_nested_records_that_alias_declared_files(
+    tmp_path: Path, location: str
+) -> None:
+    left, right = _pair(tmp_path)
+    manifest_path = right / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    checkpoint = manifest["checkpoints"][0]
+    alias = checkpoint["checkpoint_status"]
+    if location == "checkpoint_alias":
+        checkpoint["unexpected_alias"] = alias
+    else:
+        checkpoint["artifacts"] = {
+            "temporal_current": {
+                "format": "fixture",
+                "artifact": checkpoint["cumulative_audit"]["artifact"],
+                "checksums_sha256": "a" * 64,
+                "unexpected": {"alias": alias},
+            }
+        }
+    manifest_path.write_text(json.dumps(manifest) + "\n")
+    with pytest.raises(ArtifactMismatch, match="schema|checkpoint"):
+        compare_cumulative_artifacts(left, right)
+
+
+@pytest.mark.parametrize("location", ["manifest_scalar", "source_index_scalar"])
+def test_schema2_rejects_record_alias_in_a_known_scalar_slot(
+    tmp_path: Path, location: str
+) -> None:
+    left, right = _pair(tmp_path)
+    manifest_path = right / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    alias = manifest["normalized_run_config"]
+    if location == "manifest_scalar":
+        manifest["protocol_id"] = alias
+    else:
+        _add_v2_source_index(right)
+        manifest = json.loads(manifest_path.read_text())
+        source_path = right / "source_index.json"
+        source = json.loads(source_path.read_text())
+        source["scene"] = alias
+        source_path.write_text(json.dumps(source) + "\n")
+        manifest["source_index"] = _file_record(source_path, right)
+    manifest_path.write_text(json.dumps(manifest) + "\n")
+    with pytest.raises(ArtifactMismatch, match="schema|identity"):
+        compare_cumulative_artifacts(left, right)
+
+
+def test_schema2_source_index_cannot_alias_an_existing_file(tmp_path: Path) -> None:
+    left, right = _pair(tmp_path)
+    manifest_path = right / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["source_index"] = manifest["final_artifact"]
+    manifest_path.write_text(json.dumps(manifest) + "\n")
+    with pytest.raises(ArtifactMismatch, match="source index|path|schema"):
         compare_cumulative_artifacts(left, right)
 
 

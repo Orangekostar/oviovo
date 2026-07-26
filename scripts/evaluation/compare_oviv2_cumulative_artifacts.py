@@ -40,6 +40,61 @@ PROVENANCE_FIELDS = {
 }
 PROVENANCE_LIBRARY_FIELDS = {"numpy", "open3d", "torch", "scipy", "pillow"}
 MAX_JSON_BYTES = 16 * 1024 * 1024
+SCHEMA2_MINIMAL_FIELDS = {
+    "schema_version",
+    "protocol_id",
+    "algorithm_hash",
+    "code_commit",
+    "source_bindings",
+    "normalized_run_config",
+    "checkpoints",
+    "final_artifact",
+    "artifact_inventory",
+}
+SCHEMA2_PRODUCTION_FIELDS = {
+    "schema_version",
+    "protocol_id",
+    "dataset",
+    "method_id",
+    "scene",
+    "mode",
+    "algorithm_hash",
+    "processed_frame_count",
+    "covered_frame_count",
+    "trajectory_frame_count",
+    "first_frame_index",
+    "last_frame_index",
+    "temporal_export_schema_version",
+    "scheduled_frame_indices",
+    "captured_frame_indices",
+    "config",
+    "normalized_run_config",
+    "schedule",
+    "target_manifest",
+    "source_bindings",
+    "input_sha256",
+    "code_commit",
+    "checkpoints",
+    "occlusion_checkpoint_index",
+    "source_index",
+    "artifact_inventory",
+}
+SCHEMA2_PRODUCTION_CHECKPOINT_FIELDS = {
+    "scene",
+    "frame_index",
+    "timestamp_ns",
+    "relative_timestamp_ns",
+    "consumed_through_frame",
+    "consumed_through_frame_exclusive",
+    "event_ids",
+    "roles",
+    "format",
+    "artifact",
+    "checksums_sha256",
+    "artifacts",
+    "cumulative_audit",
+    "checkpoint_status",
+}
 
 
 class ArtifactMismatch(ValueError):
@@ -457,6 +512,250 @@ def _single_record_inventory(
     return children or {key}
 
 
+def _reject_source_binding_pseudo_records(value: object) -> None:
+    if isinstance(value, Mapping):
+        if set(value) == {"path", "sha256", "byte_count"}:
+            raise ArtifactMismatch("run source binding contains a pseudo-record")
+        for child in value.values():
+            _reject_source_binding_pseudo_records(child)
+    elif isinstance(value, list):
+        for child in value:
+            _reject_source_binding_pseudo_records(child)
+
+
+def _nonempty_string(value: object) -> bool:
+    return isinstance(value, str) and bool(value)
+
+
+def _nonnegative_integer(value: object) -> bool:
+    return type(value) is int and value >= 0
+
+
+def _string_list(value: object, *, nonempty: bool = False) -> bool:
+    return (
+        isinstance(value, list)
+        and (not nonempty or bool(value))
+        and all(_nonempty_string(item) for item in value)
+    )
+
+
+def _index_list(value: object) -> bool:
+    return (
+        isinstance(value, list)
+        and all(_nonnegative_integer(item) for item in value)
+        and value == sorted(set(value))
+    )
+
+
+def _validate_byte_record(value: object, label: str) -> None:
+    if (
+        not isinstance(value, Mapping)
+        or set(value) != {"sha256", "byte_count"}
+        or not _hex_id(value.get("sha256"), (64,))
+        or type(value.get("byte_count")) is not int
+        or value["byte_count"] < 0
+    ):
+        raise ArtifactMismatch(f"{label} schema is invalid")
+
+
+def _validate_frozen_run_identity(value: object, label: str) -> None:
+    expected = {
+        "schema_version",
+        "freeze_id",
+        "protocol_id",
+        "dataset",
+        "method_id",
+        "scene",
+        "freeze_manifest",
+        "repository",
+        "config",
+        "algorithm_hash",
+        "input_bindings_sha256",
+        "formal_evidence_sha256",
+    }
+    if not isinstance(value, Mapping) or set(value) != expected:
+        raise ArtifactMismatch(f"{label} schema is invalid")
+    _validate_byte_record(value["freeze_manifest"], f"{label} freeze manifest")
+    _validate_byte_record(value["config"], f"{label} config")
+    repository = value.get("repository")
+    if (
+        type(value.get("schema_version")) is not int
+        or value["schema_version"] != 1
+        or not isinstance(repository, Mapping)
+        or set(repository) != {"commit", "tree"}
+        or not _hex_id(repository.get("commit"), (40, 64))
+        or not _hex_id(repository.get("tree"), (40, 64))
+        or any(
+            not _hex_id(value.get(key), (64,))
+            for key in (
+                "algorithm_hash",
+                "input_bindings_sha256",
+                "formal_evidence_sha256",
+            )
+        )
+        or any(
+            not isinstance(value.get(key), str) or not value[key]
+            for key in ("freeze_id", "protocol_id", "dataset", "method_id", "scene")
+        )
+    ):
+        raise ArtifactMismatch(f"{label} identity is invalid")
+
+
+def _validate_cumulative_audit_structure(value: object, label: str) -> None:
+    if not isinstance(value, Mapping):
+        raise ArtifactMismatch(f"{label} schema is invalid")
+    expected = {"format", "artifact", "snapshot", "entities"}
+    if "voxel_snapshot" in value:
+        expected.add("voxel_snapshot")
+    if set(value) != expected or value.get("format") != "oviv2_cumulative_audit_v1":
+        raise ArtifactMismatch(f"{label} schema is invalid")
+    for key in expected - {"format"}:
+        _record(value[key], f"{label} {key}")
+
+
+def _validate_schema2_structure(manifest: Mapping[str, Any]) -> None:
+    fields = set(manifest)
+    minimal_variants = {
+        frozenset(SCHEMA2_MINIMAL_FIELDS),
+        frozenset(SCHEMA2_MINIMAL_FIELDS | {"source_index"}),
+        frozenset(SCHEMA2_MINIMAL_FIELDS | {"final_cumulative_audit"}),
+        frozenset(
+            SCHEMA2_MINIMAL_FIELDS | {"source_index", "final_cumulative_audit"}
+        ),
+    }
+    production_variants = {
+        frozenset(SCHEMA2_PRODUCTION_FIELDS),
+        frozenset(SCHEMA2_PRODUCTION_FIELDS | {"frozen_run_identity"}),
+    }
+    if frozenset(fields) not in minimal_variants | production_variants:
+        raise ArtifactMismatch("run manifest schema is invalid")
+    production = frozenset(fields) in production_variants
+    if (
+        type(manifest.get("schema_version")) is not int
+        or manifest["schema_version"] != 2
+        or not _nonempty_string(manifest.get("protocol_id"))
+        or not _hex_id(manifest.get("algorithm_hash"), (64,))
+        or not _hex_id(manifest.get("code_commit"), (40, 64))
+        or not isinstance(manifest.get("source_bindings"), Mapping)
+    ):
+        raise ArtifactMismatch("run manifest identity is invalid")
+    if production:
+        if (
+            any(
+                not _nonempty_string(manifest.get(key))
+                for key in ("dataset", "method_id", "scene", "mode")
+            )
+            or any(
+                not _nonnegative_integer(manifest.get(key))
+                for key in (
+                    "processed_frame_count",
+                    "covered_frame_count",
+                    "trajectory_frame_count",
+                    "first_frame_index",
+                    "last_frame_index",
+                    "temporal_export_schema_version",
+                )
+            )
+            or not _index_list(manifest.get("scheduled_frame_indices"))
+            or not _index_list(manifest.get("captured_frame_indices"))
+            or not _hex_id(manifest.get("input_sha256"), (64,))
+        ):
+            raise ArtifactMismatch("run manifest production schema is invalid")
+        for key in ("config", "schedule", "target_manifest"):
+            _validate_byte_record(manifest[key], f"run manifest {key}")
+        if "frozen_run_identity" in manifest:
+            _validate_frozen_run_identity(
+                manifest["frozen_run_identity"], "frozen run identity"
+            )
+    checkpoints = manifest.get("checkpoints")
+    if not isinstance(checkpoints, list) or not checkpoints:
+        raise ArtifactMismatch("checkpoint inventory is empty")
+    minimal_checkpoint_fields = {
+        "frame_index",
+        "checkpoint_status",
+        "cumulative_audit",
+    }
+    minimal_checkpoint_variants = {
+        frozenset(minimal_checkpoint_fields),
+        frozenset(minimal_checkpoint_fields | {"neutral_entities"}),
+    }
+    for position, checkpoint in enumerate(checkpoints):
+        if not isinstance(checkpoint, Mapping):
+            raise ArtifactMismatch("checkpoint schema is invalid")
+        expected = set(SCHEMA2_PRODUCTION_CHECKPOINT_FIELDS)
+        if production and "neutral_snapshot" in checkpoint:
+            expected.update({"neutral_snapshot", "neutral_entities"})
+        if (production and set(checkpoint) != expected) or (
+            not production
+            and frozenset(checkpoint) not in minimal_checkpoint_variants
+        ):
+            raise ArtifactMismatch("checkpoint schema is invalid")
+        for key in ("checkpoint_status", "neutral_entities"):
+            if key in checkpoint:
+                _record(checkpoint[key], f"checkpoint {position} {key}")
+        if "neutral_snapshot" in checkpoint:
+            _record(
+                checkpoint["neutral_snapshot"],
+                f"checkpoint {position} neutral_snapshot",
+            )
+        _validate_cumulative_audit_structure(
+            checkpoint.get("cumulative_audit"),
+            f"checkpoint {position} cumulative audit",
+        )
+        if not _nonnegative_integer(checkpoint.get("frame_index")):
+            raise ArtifactMismatch("checkpoint schema is invalid")
+        if production:
+            if (
+                not _nonempty_string(checkpoint.get("scene"))
+                or not _nonempty_string(checkpoint.get("format"))
+                or any(
+                    not _nonnegative_integer(checkpoint.get(key))
+                    for key in (
+                        "timestamp_ns",
+                        "relative_timestamp_ns",
+                        "consumed_through_frame",
+                        "consumed_through_frame_exclusive",
+                    )
+                )
+                or not _string_list(checkpoint.get("event_ids"))
+                or not _string_list(checkpoint.get("roles"), nonempty=True)
+                or not _hex_id(checkpoint.get("checksums_sha256"), (64,))
+            ):
+                raise ArtifactMismatch("checkpoint schema is invalid")
+            _record(checkpoint["artifact"], f"checkpoint {position} artifact")
+            artifacts = checkpoint.get("artifacts")
+            if (
+                not isinstance(artifacts, Mapping)
+                or not artifacts
+                or not set(artifacts).issubset(
+                    {"temporal_current", "neutral_current", "temporal_compact"}
+                )
+            ):
+                raise ArtifactMismatch("checkpoint artifacts schema is invalid")
+            for role, artifact in artifacts.items():
+                if (
+                    not isinstance(artifact, Mapping)
+                    or set(artifact) != {"format", "artifact", "checksums_sha256"}
+                    or not isinstance(artifact.get("format"), str)
+                    or not _hex_id(artifact.get("checksums_sha256"), (64,))
+                ):
+                    raise ArtifactMismatch("checkpoint artifact schema is invalid")
+                _record(
+                    artifact["artifact"],
+                    f"checkpoint {position} {role} artifact",
+                )
+    final_audit = manifest.get("final_cumulative_audit")
+    if final_audit is not None:
+        _validate_cumulative_audit_structure(final_audit, "final cumulative audit")
+    if "source_index" in manifest:
+        source_index_path, _, _ = _record(
+            manifest["source_index"], "manifest source index"
+        )
+        if source_index_path != PurePosixPath("source_index.json"):
+            raise ArtifactMismatch("manifest source index path is invalid")
+    _reject_source_binding_pseudo_records(manifest.get("source_bindings"))
+
+
 def _schema2_manifest_inventory(
     all_files: Mapping[str, FileEntry], manifest: Mapping[str, Any]
 ) -> set[str]:
@@ -532,6 +831,20 @@ def _schema2_manifest_inventory(
             expected_index_fields.add("frozen_run_identity")
         if set(source_index) != expected_index_fields:
             raise ArtifactMismatch("source index schema is invalid")
+        if (
+            type(source_index.get("schema_version")) is not int
+            or source_index["schema_version"] != 1
+            or any(
+                not _nonempty_string(source_index.get(key))
+                for key in ("dataset", "mode", "method", "scene")
+            )
+        ):
+            raise ArtifactMismatch("source index identity is invalid")
+        if "frozen_run_identity" in source_index:
+            _validate_frozen_run_identity(
+                source_index["frozen_run_identity"],
+                "source index frozen run identity",
+            )
         for key in (
             "schedule",
             "capture_status",
@@ -558,6 +871,16 @@ def _schema2_manifest_inventory(
                 "entities",
             }:
                 raise ArtifactMismatch("source index checkpoint inventory is invalid")
+            if any(
+                not _nonnegative_integer(checkpoint.get(key))
+                for key in (
+                    "frame_index",
+                    "timestamp_ns",
+                    "consumed_through_frame",
+                    "consumed_through_frame_exclusive",
+                )
+            ):
+                raise ArtifactMismatch("source index checkpoint schema is invalid")
             for key in ("checkpoint_status", "snapshot", "entities"):
                 result.update(
                     _single_record_inventory(
@@ -1006,6 +1329,7 @@ def _load_inventory(
         if declared_inventory != sorted(set(declared_inventory)):
             raise ArtifactMismatch("artifact inventory is noncanonical")
     if manifest["schema_version"] == 2:
+        _validate_schema2_structure(manifest)
         if "t1_exact_receipt.json" in all_files:
             raise ArtifactMismatch("artifact inventory is not exact")
         if set(declared_inventory) != _schema2_manifest_inventory(
