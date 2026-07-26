@@ -615,6 +615,26 @@ def _clear_directory_descriptor(descriptor: int, label: Path) -> None:
             os.unlink(name, dir_fd=descriptor)
 
 
+def _owned_path_matches(witness: OwnedPath) -> bool:
+    path, device, inode, kind, owned_descriptor = witness
+    try:
+        opened = os.fstat(owned_descriptor)
+        descriptor, name = _open_parent_directory(path)
+        try:
+            current = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+        finally:
+            os.close(descriptor)
+    except OSError:
+        return False
+    return (
+        opened.st_dev,
+        opened.st_ino,
+        current.st_dev,
+        current.st_ino,
+        stat.S_IFMT(current.st_mode),
+    ) == (device, inode, device, inode, kind)
+
+
 def _remove_owned_path(witness: OwnedPath, *, recursive: bool = True) -> None:
     path, device, inode, kind, owned_descriptor = witness
     opened_owner = os.fstat(owned_descriptor)
@@ -691,33 +711,36 @@ def _cleanup_exact_transaction(
             except (GateVerificationError, OSError) as exc:
                 problems.append(str(exc))
                 unsafe_paths.append(witness[0])
-        for witness in reversed(observations):
+        if not unsafe_paths:
+            replaced_observations = [
+                witness for witness in observations if not _owned_path_matches(witness)
+            ]
+            if replaced_observations:
+                unsafe_paths.extend(witness[0] for witness in replaced_observations)
+                problems.extend(
+                    f"cleanup unsafe: observation receipt replaced: {witness[0]}"
+                    for witness in replaced_observations
+                )
+            else:
+                for witness in reversed(observations):
+                    try:
+                        _remove_owned_path(witness)
+                    except (GateVerificationError, OSError) as exc:
+                        problems.append(str(exc))
+                        unsafe_paths.append(witness[0])
+                        break
+        if receipts is not None and not unsafe_paths:
+            receipts_path = receipts[0]
             try:
-                _remove_owned_path(witness)
+                _remove_owned_path(receipts, recursive=False)
             except (GateVerificationError, OSError) as exc:
                 problems.append(str(exc))
-                unsafe_paths.append(witness[0])
-        if receipts is not None:
-            receipts_path = receipts[0]
-            receipts_unsafe = any(
-                path == receipts_path or receipts_path in path.parents
-                for path in unsafe_paths
-            )
-            if not receipts_unsafe:
-                try:
-                    _remove_owned_path(receipts, recursive=False)
-                except (GateVerificationError, OSError) as exc:
-                    problems.append(str(exc))
-                    unsafe_paths.append(receipts_path)
+                unsafe_paths.append(receipts_path)
         if transaction is not None:
             transaction_path = transaction[0]
-            contains_unsafe = any(
-                path == transaction_path or transaction_path in path.parents
-                for path in unsafe_paths
-            )
-            if contains_unsafe:
+            if unsafe_paths:
                 problems.append(
-                    f"cleanup unsafe: preserving transaction containing replaced path: {transaction_path}"
+                    f"cleanup unsafe: preserving transaction after ownership mismatch: {transaction_path}"
                 )
             else:
                 try:

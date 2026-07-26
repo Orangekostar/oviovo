@@ -1249,20 +1249,28 @@ def test_exact_transaction_preserves_preexisting_transaction_and_root(
     assert not transaction.exists()
 
 
-def test_exact_transaction_does_not_delete_replaced_root(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+@pytest.mark.parametrize("replacement_kind", ["directory", "symlink"])
+def test_exact_transaction_does_not_delete_replaced_root_and_preserves_audit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, replacement_kind: str
 ) -> None:
     specs, transaction, popen, compare = _failure_cleanup_harness(
-        tmp_path, monkeypatch, failure="receipt", position=0
+        tmp_path, monkeypatch, failure="receipt", position=1
     )
     original_reopen = gates._reopen_completed_execution
 
     def replace_then_fail(*args: object, **kwargs: object) -> dict[str, object]:
         root = args[1]
         assert isinstance(root, Path)
-        shutil.rmtree(root)
-        root.mkdir()
-        (root / "replacement.txt").write_text("keep")
+        if root.name.endswith("-1"):
+            shutil.rmtree(root)
+            if replacement_kind == "directory":
+                root.mkdir()
+                (root / "replacement.txt").write_text("keep")
+            else:
+                outside = tmp_path / "replacement-target"
+                outside.mkdir()
+                (outside / "replacement.txt").write_text("keep")
+                root.symlink_to(outside, target_is_directory=True)
         return original_reopen(*args, **kwargs)
 
     monkeypatch.setattr(gates, "_reopen_completed_execution", replace_then_fail)
@@ -1271,9 +1279,46 @@ def test_exact_transaction_does_not_delete_replaced_root(
             specs, repo=gates.REPO_ROOT, python_executable="/env/bin/python",
             transaction_dir=transaction, popen_factory=popen, compare=compare,
         )
-    replacement = Path(specs[0]["output_root"])
+    replacement = Path(specs[1]["output_root"])
     assert (replacement / "replacement.txt").read_text() == "keep"
-    assert not transaction.exists()
+    assert transaction.exists()
+    observations = sorted((transaction / "receipts").glob("*.json"))
+    assert [path.name for path in observations] == ["000-reference.json"]
+
+
+@pytest.mark.parametrize("replacement_kind", ["file", "symlink"])
+def test_exact_transaction_preserves_replaced_observation_and_transaction(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, replacement_kind: str
+) -> None:
+    specs, transaction, popen, original_compare = _failure_cleanup_harness(
+        tmp_path, monkeypatch, failure="child", position=99
+    )
+    replaced = False
+
+    def compare(left: Path, right: Path) -> dict[str, object]:
+        nonlocal replaced
+        result = original_compare(left, right)
+        observation = transaction / "receipts/000-reference.json"
+        if observation.exists() and not replaced:
+            replaced = True
+            observation.unlink()
+            if replacement_kind == "file":
+                observation.write_text("replacement")
+            else:
+                outside = tmp_path / "outside-observation.json"
+                outside.write_text("outside")
+                observation.symlink_to(outside)
+            raise gates.ArtifactMismatch("compare failed after receipt replacement")
+        return result
+
+    with pytest.raises(gates.GateVerificationError, match="cleanup unsafe"):
+        gates.execute_exact_profile_transaction(
+            specs, repo=gates.REPO_ROOT, python_executable="/env/bin/python",
+            transaction_dir=transaction, popen_factory=popen, compare=compare,
+        )
+    observation = transaction / "receipts/000-reference.json"
+    assert observation.exists()
+    assert observation.read_text() in {"replacement", "outside"}
 
 
 def test_exact_transaction_popen_start_failure_cleans_and_retry_succeeds(
