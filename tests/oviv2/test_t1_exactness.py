@@ -358,6 +358,36 @@ def test_in_place_defaults_replacement_fails_before_branch() -> None:
     assert frame.rgb[0, 0, 0] == 0
 
 
+@pytest.mark.parametrize(
+    ("nested", "field", "poison"),
+    [
+        (False, "missing_observation_policy", "in_place_poison"),
+        (True, "block_count", 1),
+    ],
+)
+def test_in_place_default_config_content_mutation_fails_before_branch(
+    nested: bool, field: str, poison: object
+) -> None:
+    frame = _frame()
+    defaults = Oviv2Runtime.__init__.__defaults__
+    assert defaults is not None
+    config = defaults[0]
+    target = object.__getattribute__(config, "tsdf") if nested else config
+    original = object.__getattribute__(target, field)
+    cumulative = _cumulative()
+    temporal = TemporalCurrentRuntime(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+    )
+    try:
+        object.__setattr__(target, field, poison)
+        with pytest.raises(TypeError, match="function behavior.*modified"):
+            DualReadoutRuntime(cumulative, temporal)
+    finally:
+        object.__setattr__(target, field, original)
+    assert cumulative.revision == temporal.state.revision == 0
+    assert frame.rgb[0, 0, 0] == 0
+
+
 def test_in_place_kwdefaults_mutation_fails_before_branch() -> None:
     frame = _frame()
     function = TemporalCurrentRuntime.process_frame

@@ -76,19 +76,120 @@ _TRUSTED_CLASS_NAMESPACES = tuple(
 
 
 @dataclass(frozen=True)
+class _BehaviorValueSnapshot:
+    kind: str
+    exact_type: type
+    value: object
+    children: tuple[object, ...] = ()
+
+
+def _capture_behavior_value(
+    value: object,
+    seen: set[int] | None = None,
+) -> _BehaviorValueSnapshot:
+    if seen is None:
+        seen = set()
+    value_type = type(value)
+    if value is None or value_type is bool:
+        return _BehaviorValueSnapshot("singleton", value_type, value)
+    if value_type is int:
+        return _BehaviorValueSnapshot("int", value_type, int(value))
+    if value_type is float:
+        return _BehaviorValueSnapshot("float", value_type, struct.pack(">d", value))
+    if value_type is str:
+        return _BehaviorValueSnapshot("str", value_type, str(value))
+    if value_type is bytes:
+        return _BehaviorValueSnapshot("bytes", value_type, bytes(value))
+    if isinstance(value, Enum):
+        return _BehaviorValueSnapshot(
+            "enum",
+            value_type,
+            value,
+            (_capture_behavior_value(object.__getattribute__(value, "_value_"), seen),),
+        )
+    identity = id(value)
+    if identity in seen:
+        return _BehaviorValueSnapshot("identity", value_type, value)
+    if value_type in {tuple, list, frozenset, dict} or (
+        is_dataclass(value) and not isinstance(value, type)
+    ):
+        seen.add(identity)
+    try:
+        if value_type is tuple:
+            return _BehaviorValueSnapshot(
+                "tuple", value_type, value,
+                tuple(_capture_behavior_value(item, seen) for item in tuple.__iter__(value)),
+            )
+        if value_type is list:
+            return _BehaviorValueSnapshot(
+                "list", value_type, value,
+                tuple(_capture_behavior_value(item, seen) for item in list.__iter__(value)),
+            )
+        if value_type is frozenset:
+            return _BehaviorValueSnapshot(
+                "frozenset", value_type, value,
+                tuple(
+                    _capture_behavior_value(item, seen)
+                    for item in frozenset.__iter__(value)
+                ),
+            )
+        if value_type is dict:
+            return _BehaviorValueSnapshot(
+                "mapping", value_type, value,
+                tuple(
+                    (
+                        _capture_behavior_value(key, seen),
+                        _capture_behavior_value(item, seen),
+                    )
+                    for key, item in dict.items(value)
+                ),
+            )
+        if is_dataclass(value) and not isinstance(value, type):
+            field_names = tuple(field.name for field in fields(value))
+            try:
+                attributes = object.__getattribute__(value, "__dict__")
+            except AttributeError:
+                return _BehaviorValueSnapshot(
+                    "dataclass_slots", value_type, value,
+                    tuple(
+                        (
+                            name,
+                            _capture_behavior_value(
+                                object.__getattribute__(value, name), seen
+                            ),
+                        )
+                        for name in field_names
+                    ),
+                )
+            if type(attributes) is not dict or set(attributes) != set(field_names):
+                return _BehaviorValueSnapshot("identity", value_type, value)
+            return _BehaviorValueSnapshot(
+                "dataclass_dict", value_type, value,
+                tuple(
+                    (name, _capture_behavior_value(dict.__getitem__(attributes, name), seen))
+                    for name in field_names
+                ),
+            )
+    finally:
+        seen.discard(identity)
+    # Unsupported metadata is accepted only while the exact object identity is retained.
+    return _BehaviorValueSnapshot("identity", value_type, value)
+
+
+@dataclass(frozen=True)
 class _FunctionBehaviorSnapshot:
     function: FunctionType
     code: object
     defaults: tuple[object, ...] | None
-    default_values: tuple[object, ...]
+    defaults_state: _BehaviorValueSnapshot | None
     kwdefaults: dict[str, object] | None
-    kwdefault_items: tuple[tuple[str, object], ...]
+    kwdefaults_state: _BehaviorValueSnapshot | None
     closure: tuple[object, ...] | None
-    closure_cells: tuple[tuple[object, object], ...]
+    closure_cells: tuple[tuple[object, _BehaviorValueSnapshot], ...]
     attributes: dict[str, object]
-    attribute_items: tuple[tuple[str, object], ...]
+    attributes_state: _BehaviorValueSnapshot
     annotations: dict[str, object]
-    annotation_items: tuple[tuple[str, object], ...]
+    annotations_state: _BehaviorValueSnapshot
     globals: dict[str, object]
     builtins: dict[str, object]
     name: str
@@ -119,19 +220,26 @@ def _capture_function_behavior(function: FunctionType) -> _FunctionBehaviorSnaps
         function=function,
         code=function.__code__,
         defaults=defaults,
-        default_values=() if defaults is None else tuple(defaults),
+        defaults_state=(
+            None if defaults is None else _capture_behavior_value(defaults)
+        ),
         kwdefaults=kwdefaults,
-        kwdefault_items=() if kwdefaults is None else tuple(kwdefaults.items()),
+        kwdefaults_state=(
+            None if kwdefaults is None else _capture_behavior_value(kwdefaults)
+        ),
         closure=closure,
         closure_cells=(
             ()
             if closure is None
-            else tuple((cell, _cell_content(cell)) for cell in closure)
+            else tuple(
+                (cell, _capture_behavior_value(_cell_content(cell)))
+                for cell in closure
+            )
         ),
         attributes=attributes,
-        attribute_items=tuple(attributes.items()),
+        attributes_state=_capture_behavior_value(attributes),
         annotations=annotations,
-        annotation_items=tuple(annotations.items()),
+        annotations_state=_capture_behavior_value(annotations),
         globals=function.__globals__,
         builtins=function.__builtins__,
         name=function.__name__,
@@ -453,27 +561,109 @@ def shared_input_snapshot(
     return _SharedInputSnapshot.capture(frame, observations, dense_semantics)
 
 
+def _unordered_behavior_values_match(
+    snapshots: tuple[_BehaviorValueSnapshot, ...],
+    current: tuple[object, ...],
+) -> bool:
+    if len(snapshots) != len(current):
+        return False
+    used = [False] * len(current)
+    for snapshot in snapshots:
+        for index, value in enumerate(current):
+            if not used[index] and _behavior_value_matches(snapshot, value):
+                used[index] = True
+                break
+        else:
+            return False
+    return True
+
+
+def _behavior_value_matches(snapshot: _BehaviorValueSnapshot, current: object) -> bool:
+    if type(current) is not snapshot.exact_type:
+        return False
+    if snapshot.kind in {"singleton", "identity"}:
+        return current is snapshot.value
+    if snapshot.kind == "int":
+        return int.__eq__(current, snapshot.value) is True
+    if snapshot.kind == "float":
+        return struct.pack(">d", current) == snapshot.value
+    if snapshot.kind == "str":
+        return str.__eq__(current, snapshot.value) is True
+    if snapshot.kind == "bytes":
+        return bytes.__eq__(current, snapshot.value) is True
+    if snapshot.kind == "enum":
+        return current is snapshot.value and _behavior_value_matches(
+            snapshot.children[0], object.__getattribute__(current, "_value_")
+        )
+    if snapshot.kind in {"tuple", "list"}:
+        values = (
+            tuple(tuple.__iter__(current))
+            if snapshot.kind == "tuple"
+            else tuple(list.__iter__(current))
+        )
+        return len(values) == len(snapshot.children) and all(
+            _behavior_value_matches(expected, value)
+            for expected, value in zip(snapshot.children, values, strict=True)
+        )
+    if snapshot.kind == "frozenset":
+        return _unordered_behavior_values_match(
+            snapshot.children, tuple(frozenset.__iter__(current))
+        )
+    if snapshot.kind == "mapping":
+        items = tuple(dict.items(current))
+        if len(items) != len(snapshot.children):
+            return False
+        used = [False] * len(items)
+        for key_snapshot, value_snapshot in snapshot.children:
+            for index, (key, value) in enumerate(items):
+                if (
+                    not used[index]
+                    and _behavior_value_matches(key_snapshot, key)
+                    and _behavior_value_matches(value_snapshot, value)
+                ):
+                    used[index] = True
+                    break
+            else:
+                return False
+        return True
+    if snapshot.kind == "dataclass_dict":
+        try:
+            attributes = object.__getattribute__(current, "__dict__")
+        except AttributeError:
+            return False
+        if type(attributes) is not dict or len(attributes) != len(snapshot.children):
+            return False
+        return all(
+            dict.get(attributes, name, _MISSING_METADATA) is not _MISSING_METADATA
+            and _behavior_value_matches(
+                expected, dict.__getitem__(attributes, name)
+            )
+            for name, expected in snapshot.children
+        )
+    if snapshot.kind == "dataclass_slots":
+        return all(
+            _behavior_value_matches(
+                expected, object.__getattribute__(current, name)
+            )
+            for name, expected in snapshot.children
+        )
+    raise RuntimeError("unknown trusted function metadata snapshot kind")
+
+
 def _identity_mapping_matches(
     current: dict[str, object] | None,
     original: dict[str, object] | None,
-    items: tuple[tuple[str, object], ...],
+    state: _BehaviorValueSnapshot | None,
 ) -> bool:
     return current is original and (
-        current is None
-        or (
-            len(current) == len(items)
-            and all(
-                current.get(name, _MISSING_METADATA) is value
-                for name, value in items
-            )
-        )
+        current is None or (state is not None and _behavior_value_matches(state, current))
     )
 
 
 def _closure_matches(
     current: tuple[object, ...] | None,
     original: tuple[object, ...] | None,
-    cells: tuple[tuple[object, object], ...],
+    cells: tuple[tuple[object, _BehaviorValueSnapshot], ...],
 ) -> bool:
     return current is original and (
         current is None
@@ -481,7 +671,9 @@ def _closure_matches(
             len(current) == len(cells)
             and all(
                 current_cell is original_cell
-                and _cell_content(current_cell) is original_content
+                and _behavior_value_matches(
+                    original_content, _cell_content(current_cell)
+                )
                 for current_cell, (original_cell, original_content) in zip(
                     current, cells, strict=True
                 )
@@ -505,28 +697,28 @@ def _validate_frozen_class_namespaces() -> None:
             or function.__defaults__ is not expected.defaults
             or (
                 function.__defaults__ is not None
-                and any(
-                    current is not original
-                    for current, original in zip(
-                        function.__defaults__, expected.default_values, strict=True
+                and (
+                    expected.defaults_state is None
+                    or not _behavior_value_matches(
+                        expected.defaults_state, function.__defaults__
                     )
                 )
             )
             or not _identity_mapping_matches(
                 function.__kwdefaults__,
                 expected.kwdefaults,
-                expected.kwdefault_items,
+                expected.kwdefaults_state,
             )
             or not _closure_matches(
                 function.__closure__, expected.closure, expected.closure_cells
             )
             or not _identity_mapping_matches(
-                function.__dict__, expected.attributes, expected.attribute_items
+                function.__dict__, expected.attributes, expected.attributes_state
             )
             or not _identity_mapping_matches(
                 function.__annotations__,
                 expected.annotations,
-                expected.annotation_items,
+                expected.annotations_state,
             )
             or function.__globals__ is not expected.globals
             or function.__builtins__ is not expected.builtins
