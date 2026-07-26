@@ -1868,6 +1868,25 @@ def test_sparse_ledger_scopes_view_bins_to_entity_events(
             "abort integration. Please check specified parameters, especially "
             "depth_scale and voxel_size\n\x1b[0;m"
         ),
+        (
+            "[Open3D Error] "
+            "(void open3d::t::geometry::kernel::voxel_grid::DepthTouchCPU()) "
+            "/root/Open3D/cpp/open3d/t/geometry/kernel/"
+            "VoxelBlockGridCPU.cpp:186: No block is touched in TSDF volume, "
+            "abort integration. Please check specified parameters, especially "
+            "depth_scale and voxel_size"
+        ),
+        (
+            "\x1b[1;31m[Open3D Error] (void open3d::t::geometry::kernel::"
+            "voxel_grid::DepthTouchCPU(std::shared_ptr<open3d::core::HashMap>&, "
+            "const open3d::core::Tensor&, const open3d::core::Tensor&, const "
+            "open3d::core::Tensor&, open3d::core::Tensor&, open3d::t::geometry::"
+            "kernel::voxel_grid::index_t, float, float, float, float, open3d::t::"
+            "geometry::kernel::voxel_grid::index_t)) /root/Open3D/cpp/open3d/t/"
+            "geometry/kernel/VoxelBlockGridCPU.cpp:186: No block is touched in "
+            "TSDF volume, abort integration. Please check specified parameters, "
+            "especially depth_scale and voxel_size\n\x1b[0;m"
+        ),
     ),
 )
 def test_sparse_candidate_no_block_error_uses_fallback(
@@ -1939,6 +1958,63 @@ def test_sparse_candidate_no_block_error_uses_fallback(
             "/tmp/Grid.cpp:12: No block is touched in TSDF volume, abort "
             "integration. Please check specified parameters, especially "
             "depth_scale and voxel_size"
+        ),
+        (
+            "[Open3D Error] (void attacker::Fake()) /tmp/Fake.cpp:1: "
+            "No block is touched in TSDF volume, abort integration. Please check "
+            "specified parameters, especially depth_scale and voxel_size"
+        ),
+        (
+            "[Open3D Error] (void open3d::t::geometry::kernel::voxel_grid::"
+            "DepthTouchGPU()) /tmp/VoxelBlockGridCPU.cpp:186: No block is touched "
+            "in TSDF volume, abort integration. Please check specified parameters, "
+            "especially depth_scale and voxel_size"
+        ),
+        (
+            "[Open3D Error] (void open3d::t::geometry::kernel::voxel_grid::"
+            "DepthTouchCPU()) /tmp/VoxelBlockGridGPU.cpp:186: No block is touched "
+            "in TSDF volume, abort integration. Please check specified parameters, "
+            "especially depth_scale and voxel_size"
+        ),
+        (
+            "[Open3D Error] (void open3d::t::geometry::kernel::voxel_grid::"
+            "DepthTouchCPU()) /tmp/VoxelBlockGridCPU.cpp:0: No block is touched in "
+            "TSDF volume, abort integration. Please check specified parameters, "
+            "especially depth_scale and voxel_size"
+        ),
+        (
+            "[Open3D Error] (void open3d::t::geometry::kernel::voxel_grid::"
+            "DepthTouchCPU()) /tmp/VoxelBlockGridCPU.cpp:-1: No block is touched in "
+            "TSDF volume, abort integration. Please check specified parameters, "
+            "especially depth_scale and voxel_size"
+        ),
+        (
+            "\x1b[1;32m[Open3D Error] (void open3d::t::geometry::kernel::"
+            "voxel_grid::DepthTouchCPU()) /tmp/VoxelBlockGridCPU.cpp:186: No block "
+            "is touched in TSDF volume, abort integration. Please check specified "
+            "parameters, especially depth_scale and voxel_size\x1b[0;m"
+        ),
+        (
+            "\x1b[1;31m\x1b[1;31m[Open3D Error] (void open3d::t::geometry::"
+            "kernel::voxel_grid::DepthTouchCPU()) /tmp/VoxelBlockGridCPU.cpp:186: "
+            "No block is touched in TSDF volume, abort integration. Please check "
+            "specified parameters, especially depth_scale and voxel_size\x1b[0;m"
+        ),
+        (
+            "[Open3D Error] (void open3d::t::geometry::kernel::voxel_grid::"
+            "DepthTouchCPU()) /tmp/VoxelBlockGridCPU.cpp:186: No block is touched "
+            "in TSDF volume, abort integration. Please check specified parameters, "
+            "especially depth_scale and voxel_size extra"
+        ),
+        (
+            "[Open3D Error] (void open3d::t::geometry::kernel::voxel_grid::"
+            "DepthTouchCPU(std::shared_ptr<open3d::core::HashMap>&, open3d::core::"
+            "Tensor&, const open3d::core::Tensor&, const open3d::core::Tensor&, "
+            "open3d::core::Tensor&, open3d::t::geometry::kernel::voxel_grid::"
+            "index_t, float, float, float, float, open3d::t::geometry::kernel::"
+            "voxel_grid::index_t)) /tmp/VoxelBlockGridCPU.cpp:186: No block is "
+            "touched in TSDF volume, abort integration. Please check specified "
+            "parameters, especially depth_scale and voxel_size"
         ),
     ),
 )

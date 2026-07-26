@@ -823,13 +823,29 @@ def _is_no_block_candidate_error(error: RuntimeError) -> bool:
         "No block is touched in TSDF volume, abort integration. Please check "
         "specified parameters, especially depth_scale and voxel_size"
     )
-    body = (
-        r"\[Open3D Error\] \([^\r\n]+\) [^\r\n]+\.cpp:\d+: "
-        + re.escape(reason)
+    functions = (
+        "(void open3d::t::geometry::kernel::voxel_grid::DepthTouchCPU())",
+        (
+            "(void open3d::t::geometry::kernel::voxel_grid::DepthTouchCPU("
+            "std::shared_ptr<open3d::core::HashMap>&, const open3d::core::Tensor&, "
+            "const open3d::core::Tensor&, const open3d::core::Tensor&, "
+            "open3d::core::Tensor&, open3d::t::geometry::kernel::voxel_grid::"
+            "index_t, float, float, float, float, open3d::t::geometry::kernel::"
+            "voxel_grid::index_t))"
+        ),
     )
-    return re.fullmatch(body, message) is not None or re.fullmatch(
-        r"\x1b\[1;31m" + body + r"(?:\r?\n)?\x1b\[0;m", message
-    ) is not None
+    for function in functions:
+        body = (
+            r"\[Open3D Error\] "
+            + re.escape(function)
+            + r" (?:[^\r\n]*[\\/])?VoxelBlockGridCPU\.cpp:[1-9][0-9]*: "
+            + re.escape(reason)
+        )
+        if re.fullmatch(body, message) is not None or re.fullmatch(
+            r"\x1b\[1;31m" + body + r"(?:\r?\n)?\x1b\[0;m", message
+        ) is not None:
+            return True
+    return False
 
 
 class _SparseBackgroundVolume(TemporalBackgroundVolume):
