@@ -757,6 +757,45 @@ def test_reachable_project_module_constant_mutation_fails_before_branch(
     assert cumulative.revision == temporal.state.revision == 0
 
 
+def test_reachable_project_module_type_replacement_avoids_dynamic_dispatch() -> None:
+    from dataclasses import replace
+    from types import ModuleType
+
+    import src.oviv2.temporal_lifecycle as lifecycle_module
+    from src.oviv2.reference_readout import LifecycleOverlayReadout
+    from src.oviv2.temporal_config import ExecutionProfile
+
+    cumulative = _cumulative()
+    temporal = LifecycleOverlayReadout(
+        "scene",
+        replace(_temporal_config(), execution_profile=ExecutionProfile.A1),
+    )
+    frame = _frame()
+    called = False
+
+    def poisoned_getattribute(self, name):
+        nonlocal called
+        called = True
+        frame.rgb[0, 0, 0] = 255
+        return ModuleType.__getattribute__(self, name)
+
+    poisoned_type = type(
+        "PoisonedModule",
+        (ModuleType,),
+        {"__getattribute__": poisoned_getattribute},
+    )
+    original_type = type(lifecycle_module)
+    try:
+        ModuleType.__setattr__(lifecycle_module, "__class__", poisoned_type)
+        with pytest.raises(TypeError, match="module namespace.*modified"):
+            DualReadoutRuntime(cumulative, temporal).process_frame(frame, ())
+    finally:
+        ModuleType.__setattr__(lifecycle_module, "__class__", original_type)
+    assert called is False
+    assert frame.rgb[0, 0, 0] == 0
+    assert cumulative.revision == temporal.state.revision == 0
+
+
 def test_cumulative_subclass_helper_override_fails_before_branch() -> None:
     called = False
 

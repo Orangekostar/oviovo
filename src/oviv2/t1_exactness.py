@@ -214,6 +214,7 @@ class _TrustedFunctionSnapshot:
 @dataclass(frozen=True)
 class _ModuleNamespaceSnapshot:
     module: ModuleType
+    exact_type: type
     namespace: dict[str, object]
     bindings: tuple[_GlobalBindingSnapshot, ...]
 
@@ -285,7 +286,8 @@ def _is_project_class(value: object) -> bool:
 def _is_project_module(value: object) -> bool:
     if type(value) is not ModuleType:
         return False
-    module_name = dict.get(value.__dict__, "__name__")
+    namespace = ModuleType.__getattribute__(value, "__dict__")
+    module_name = dict.get(namespace, "__name__")
     return type(module_name) is str and module_name.startswith("src.")
 
 
@@ -379,7 +381,7 @@ def _capture_trusted_behavior_graph() -> tuple[
         if id(module) in visited_modules:
             return
         visited_modules.add(id(module))
-        namespace = module.__dict__
+        namespace = ModuleType.__getattribute__(module, "__dict__")
         module_name = dict.__getitem__(namespace, "__name__")
         bindings = tuple(
             _GlobalBindingSnapshot(
@@ -395,7 +397,7 @@ def _capture_trusted_behavior_graph() -> tuple[
             for name, value in dict.items(namespace)
         )
         module_snapshots.append(
-            _ModuleNamespaceSnapshot(module, namespace, bindings)
+            _ModuleNamespaceSnapshot(module, type(module), namespace, bindings)
         )
         for value in tuple(dict.values(namespace)):
             if (
@@ -850,7 +852,9 @@ def _closure_matches(
 
 def _validate_frozen_class_namespaces() -> None:
     for snapshot in _TRUSTED_MODULE_NAMESPACES:
-        current = snapshot.module.__dict__
+        if type(snapshot.module) is not snapshot.exact_type:
+            raise TypeError("built-in readout module namespace was modified")
+        current = ModuleType.__getattribute__(snapshot.module, "__dict__")
         if current is not snapshot.namespace or len(current) != len(snapshot.bindings):
             raise TypeError("built-in readout module namespace was modified")
         for binding in snapshot.bindings:
