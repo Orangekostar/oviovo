@@ -282,7 +282,7 @@ def _component_index_stream(
     ownership: np.ndarray,
 ) -> Iterator[tuple[int, tuple[int, ...]]]:
     height, width = ownership.shape
-    unowned = np.iinfo(np.int64).max
+    unowned = -1
     flat_ownership = ownership.reshape(-1)
     seen = np.zeros(flat_ownership.shape, dtype=bool)
     for start in np.flatnonzero(flat_ownership != unowned):
@@ -347,44 +347,21 @@ def _nearest_metric_distance(
     return np.asarray(distances, dtype=np.float64)
 
 
-def _regions_by_identity(
-    regions: tuple[ProjectedIdentitySearchRegion, ...],
-) -> tuple[tuple[int, tuple[ProjectedIdentitySearchRegion, ...]], ...]:
-    grouped: dict[int, list[ProjectedIdentitySearchRegion]] = {}
-    for item in sorted(
-        regions,
-        key=lambda value: (
-            value.identity_id,
-            value.source_frame_id,
-            value.projection_provenance_hash,
-        ),
-    ):
-        grouped.setdefault(item.identity_id, []).append(item)
-    return tuple(
-        (identity_id, tuple(grouped[identity_id]))
-        for identity_id in sorted(grouped)
-    )
-
-
-def _group_source_and_candidate_masks(
-    regions: tuple[ProjectedIdentitySearchRegion, ...],
+def _region_source_and_candidate_masks(
+    item: ProjectedIdentitySearchRegion,
     value: ProposalRecoveryInput,
     residual_threshold: float,
 ) -> tuple[np.ndarray, np.ndarray]:
-    source = np.zeros(value.depth_m.shape, dtype=bool)
-    residual = np.zeros(value.depth_m.shape, dtype=bool)
-    for item in regions:
-        source |= item.mask
-        expected_valid = np.isfinite(item.expected_depth_m) & (
-            item.expected_depth_m > 0.0
-        )
-        residual |= expected_valid & (
-            item.expected_depth_m - value.depth_m >= residual_threshold
-        )
+    expected_valid = np.isfinite(item.expected_depth_m) & (
+        item.expected_depth_m > 0.0
+    )
+    residual = expected_valid & (
+        item.expected_depth_m - value.depth_m >= residual_threshold
+    )
     current_valid = (value.depth_m > 0.0) & np.isfinite(value.current_xyz).all(
         axis=2
     )
-    source &= current_valid
+    source = item.mask & current_valid
     candidate = (
         residual
         & current_valid
@@ -392,35 +369,6 @@ def _group_source_and_candidate_masks(
         & ~value.segmentation_occupied
     )
     return source, candidate
-
-
-def _select_projection_provenance(
-    regions: tuple[ProjectedIdentitySearchRegion, ...],
-    indices: tuple[int, ...],
-    value: ProposalRecoveryInput,
-    residual_threshold: float,
-) -> ProjectedIdentitySearchRegion:
-    flat_depth = value.depth_m.reshape(-1)
-    index_array = np.fromiter(indices, dtype=np.int64)
-    contributors = []
-    for item in regions:
-        expected = item.expected_depth_m.reshape(-1)[index_array]
-        contributes = np.any(
-            np.isfinite(expected)
-            & (expected > 0.0)
-            & (expected - flat_depth[index_array] >= residual_threshold)
-        )
-        if contributes:
-            contributors.append(item)
-    if not contributors:
-        raise RuntimeError("component has no causal projection contributor")
-    return max(
-        contributors,
-        key=lambda item: (
-            item.source_frame_id,
-            item.projection_provenance_hash,
-        ),
-    )
 
 
 def recover_temporal_proposals(value: ProposalRecoveryInput, config: TemporalProposalConfig) -> ProposalRecoveryResult:
@@ -435,29 +383,39 @@ def recover_temporal_proposals(value: ProposalRecoveryInput, config: TemporalPro
     if config.search_region_expansion_m < 0.0 or residual_threshold <= 0.0:
         raise ValueError("proposal distances must be positive/non-negative")
 
-    maximum_regions = capacity + minimum_area
+    maximum_regions = capacity * 4
     if len(value.search_regions) > maximum_regions:
         raise OverflowError(
-            "proposal recovery workload exceeds maximum_recovered_proposals + "
-            "minimum_residual_area_px region bound"
+            "proposal recovery region count exceeds four times "
+            "maximum_recovered_proposals"
         )
-    grouped_regions = _regions_by_identity(value.search_regions)
+    canonical_regions = tuple(
+        sorted(
+            value.search_regions,
+            key=lambda item: (
+                item.identity_id,
+                item.source_frame_id,
+                item.projection_provenance_hash,
+            ),
+        )
+    )
     work_units = 0
-    for _, regions in grouped_regions:
-        source, candidate = _group_source_and_candidate_masks(
-            regions, value, residual_threshold
+    for item in canonical_regions:
+        source, candidate = _region_source_and_candidate_masks(
+            item, value, residual_threshold
         )
         work_units += int(source.sum()) + int(candidate.sum())
-    maximum_work_units = (
-        2 * value.depth_m.size * (capacity + minimum_area)
-    )
+    maximum_work_units = 4 * value.depth_m.size
     if work_units > maximum_work_units:
-        raise OverflowError("proposal recovery workload exceeds deterministic pixel bound")
+        raise OverflowError(
+            "proposal recovery workload exceeds four frame-equivalents"
+        )
 
-    ownership = np.full(value.depth_m.shape, np.iinfo(np.int64).max, dtype=np.int64)
-    for identity_id, regions in grouped_regions:
-        source, candidate = _group_source_and_candidate_masks(
-            regions, value, residual_threshold
+    ownership = np.full(value.depth_m.shape, -1, dtype=np.int64)
+    provenance_index = np.full(value.depth_m.shape, -1, dtype=np.int64)
+    for region_index, item in enumerate(canonical_regions):
+        source, candidate = _region_source_and_candidate_masks(
+            item, value, residual_threshold
         )
         if not source.any() or not candidate.any():
             continue
@@ -474,7 +432,14 @@ def recover_temporal_proposals(value: ProposalRecoveryInput, config: TemporalPro
                 distances <= config.search_region_expansion_m
             )
             eligible = eligible.reshape(value.depth_m.shape)
-        ownership[eligible] = np.minimum(ownership[eligible], identity_id)
+        lower_owner = eligible & (
+            (ownership == -1) | (item.identity_id < ownership)
+        )
+        same_owner = eligible & (ownership == item.identity_id)
+        ownership[lower_owner] = item.identity_id
+        provenance_index[lower_owner] = region_index
+        newer_same_owner = same_owner & (region_index > provenance_index)
+        provenance_index[newer_same_owner] = region_index
 
     candidates: list[tuple[tuple[int, int, int], int, tuple[int, ...]]] = []
     opportunity_count = 0
@@ -490,14 +455,20 @@ def recover_temporal_proposals(value: ProposalRecoveryInput, config: TemporalPro
             candidates.pop()
 
     proposals: list[RecoveredTemporalProposal] = []
-    regions_by_id = dict(grouped_regions)
     for proposal_id, (_, identity_id, indices) in enumerate(candidates):
         mask = _full_mask_from_indices(value.depth_m.shape, indices)
         rows, columns = np.nonzero(mask)
         xyz = value.current_xyz[mask]
-        item = _select_projection_provenance(
-            regions_by_id[identity_id], indices, value, residual_threshold
-        )
+        index_array = np.fromiter(indices, dtype=np.int64)
+        component_provenance = provenance_index.reshape(-1)[index_array]
+        selected_provenance = int(component_provenance.max(initial=-1))
+        if selected_provenance < 0:
+            raise RuntimeError("component has no projection provenance")
+        item = canonical_regions[selected_provenance]
+        if item.identity_id != identity_id:
+            raise RuntimeError(
+                "component projection provenance does not match identity owner"
+            )
         appearance_available = bool(
             value.appearance_support is not None
             and np.any(mask & value.appearance_support)

@@ -255,6 +255,50 @@ def test_same_identity_regions_merge_once_and_use_latest_contributing_provenance
     ) == expected
 
 
+def test_same_identity_regions_cannot_cross_join_source_and_residual_evidence() -> None:
+    left = np.zeros((4, 5), dtype=bool)
+    left[0, 0] = True
+    right = np.zeros((4, 5), dtype=bool)
+    right[0, 2] = True
+    expected_left = np.zeros((4, 5), dtype=np.float64)
+    expected_left[0, 0] = 3.1
+    expected_left[0, 2] = 4.0
+    expected_right = np.zeros((4, 5), dtype=np.float64)
+    expected_right[0, 0] = 4.0
+    expected_right[0, 2] = 3.1
+    first = ProjectedIdentitySearchRegion(7, 1, left, expected_left, "1" * 64)
+    second = ProjectedIdentitySearchRegion(7, 2, right, expected_right, "2" * 64)
+    strict = config(
+        minimum_residual_area_px=1,
+        search_region_expansion_m=0.0,
+    )
+    assert recover_temporal_proposals(recovery_input(first), strict).opportunity_count == 0
+    assert recover_temporal_proposals(recovery_input(second), strict).opportunity_count == 0
+    assert recover_temporal_proposals(
+        recovery_input(first, second), strict
+    ).opportunity_count == 0
+
+
+def test_same_identity_atomic_contributions_merge_and_choose_latest_actual_region() -> None:
+    left = np.zeros((4, 5), dtype=bool)
+    left[0, 0:2] = True
+    right = np.zeros((4, 5), dtype=bool)
+    right[0, 1:3] = True
+    expected_left = np.zeros((4, 5), dtype=np.float64)
+    expected_left[left] = 4.0
+    expected_right = np.zeros((4, 5), dtype=np.float64)
+    expected_right[right] = 4.0
+    first = ProjectedIdentitySearchRegion(7, 1, left, expected_left, "1" * 64)
+    second = ProjectedIdentitySearchRegion(7, 2, right, expected_right, "2" * 64)
+    result = recover_temporal_proposals(
+        recovery_input(second, first),
+        config(minimum_residual_area_px=1, search_region_expansion_m=0.0),
+    )
+    assert (result.opportunity_count, result.proposals[0].area_px) == (1, 3)
+    assert result.proposals[0].projection_source_frame_id == 2
+    assert result.proposals[0].projection_provenance_hash == "2" * 64
+
+
 def test_workload_bound_rejects_before_metric_query(monkeypatch: pytest.MonkeyPatch) -> None:
     mask = np.ones((4, 5), dtype=bool)
     regions = tuple(
@@ -273,6 +317,63 @@ def test_workload_bound_rejects_before_metric_query(monkeypatch: pytest.MonkeyPa
 
     monkeypatch.setattr(temporal_proposals, "_nearest_metric_distance", forbidden)
     with pytest.raises(OverflowError, match="workload"):
+        recover_temporal_proposals(
+            recovery_input(*regions),
+            config(
+                minimum_residual_area_px=1,
+                maximum_recovered_proposals=1,
+                search_region_expansion_m=1.0,
+            ),
+        )
+
+
+def test_workload_bound_allows_exactly_four_frame_equivalents(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    mask = np.ones((4, 5), dtype=bool)
+    regions = tuple(
+        ProjectedIdentitySearchRegion(
+            identity_id, 2, mask, np.full((4, 5), 4.0), f"{identity_id:064x}"
+        )
+        for identity_id in (1, 2)
+    )
+    calls = 0
+    original = temporal_proposals._nearest_metric_distance
+
+    def spy(source_xyz: np.ndarray, query_xyz: np.ndarray) -> np.ndarray:
+        nonlocal calls
+        calls += 1
+        return original(source_xyz, query_xyz)
+
+    monkeypatch.setattr(temporal_proposals, "_nearest_metric_distance", spy)
+    recover_temporal_proposals(
+        recovery_input(*regions),
+        config(
+            minimum_residual_area_px=1,
+            maximum_recovered_proposals=1,
+            search_region_expansion_m=1.0,
+        ),
+    )
+    assert calls == 2
+
+
+def test_region_count_bound_is_capacity_times_four_before_metric_query(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    mask = np.zeros((4, 5), dtype=bool)
+    mask[0, 0] = True
+    regions = tuple(
+        ProjectedIdentitySearchRegion(
+            identity_id, 2, mask, np.full((4, 5), 4.0), f"{identity_id:064x}"
+        )
+        for identity_id in range(1, 6)
+    )
+
+    def forbidden(*_args: object) -> np.ndarray:
+        raise AssertionError("metric query ran before region bound rejection")
+
+    monkeypatch.setattr(temporal_proposals, "_nearest_metric_distance", forbidden)
+    with pytest.raises(OverflowError, match="region count"):
         recover_temporal_proposals(
             recovery_input(*regions),
             config(
@@ -321,7 +422,7 @@ def test_noisy_components_allocate_full_masks_only_for_capacity(
 
 
 @pytest.mark.parametrize("region_count", [1, 5, 10])
-def test_same_identity_regions_share_one_metric_query(
+def test_region_specific_metric_queries_are_prefiltered_and_bounded(
     region_count: int,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -338,7 +439,7 @@ def test_same_identity_regions_share_one_metric_query(
         for source in range(1, region_count + 1)
     )
     value = ProposalRecoveryInput(
-        20, 20.0, depth, xyz, np.zeros_like(mask), np.ones_like(mask),
+        20, 20.0, depth, xyz, np.zeros_like(mask), mask.copy(),
         20, "a" * 64, None, None, None, None, regions,
     )
     calls: list[tuple[tuple[int, ...], tuple[int, ...]]] = []
@@ -358,8 +459,29 @@ def test_same_identity_regions_share_one_metric_query(
         ),
     )
     assert result.opportunity_count == 1
-    assert len(calls) == 1
-    assert calls[0][0] == (2000, 3)
+    assert len(calls) == region_count
+    assert all(call == ((2000, 3), (2000, 3)) for call in calls)
+    assert sum(source[0] + query[0] for source, query in calls) <= 4 * height * width
+
+
+def test_int64_max_identity_is_owned_and_lower_identity_still_wins_overlap() -> None:
+    mask = np.zeros((4, 5), dtype=bool)
+    mask[1:3, 1:3] = True
+    maximum = 2**63 - 1
+    max_region = ProjectedIdentitySearchRegion(
+        maximum, 2, mask, np.full((4, 5), 4.0), "f" * 64
+    )
+    only_max = recover_temporal_proposals(recovery_input(max_region), config())
+    assert only_max.proposals[0].identity_hint == maximum
+
+    lower = ProjectedIdentitySearchRegion(
+        1, 2, mask, np.full((4, 5), 4.0), "1" * 64
+    )
+    expected = recover_temporal_proposals(recovery_input(max_region, lower), config())
+    assert expected.proposals[0].identity_hint == 1
+    assert recover_temporal_proposals(
+        recovery_input(lower, max_region), config()
+    ) == expected
 
 
 def test_permutation_overlap_connected_components_and_capacity_have_canonical_order() -> None:
