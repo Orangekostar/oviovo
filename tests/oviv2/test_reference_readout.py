@@ -16,7 +16,11 @@ from src.oviv2.temporal_config import (
     TemporalLifecycleConfig,
     TemporalReadoutConfig,
 )
-from src.oviv2.temporal_lifecycle import TemporalLifecycle
+from src.oviv2.temporal_lifecycle import (
+    TemporalEvidence,
+    TemporalEvidenceKind,
+    TemporalLifecycle,
+)
 from src.oviv2.temporal_export import DynamicState
 from src.oviv2.reference_readout import (
     CumulativeEntityView,
@@ -268,12 +272,51 @@ def test_a1_occlusion_is_neutral_and_uses_before_geometry() -> None:
     # The old voxel is occluded, while the post-frame geometry was moved out of view.
     moved = entity(7, voxel_keys=frozenset({(100, 100, 20)}))
     second = view(2, 1, 1.0, (moved,))
-    process(readout, frame(1, 0.5), first, second, ())
+    result = process(readout, frame(1, 0.5), first, second, ())
     updated = readout.state.lifecycle_states[0]
 
     assert updated.existence_log_odds == old.existence_log_odds
     assert updated.absent_streak == 0
     assert updated.lifecycle is old.lifecycle
+    assert readout.state.export_tracker[0].readout_valid is True
+    assert result.export.events == ()
+
+
+def test_a1_depth_unknown_preserves_validity_without_event() -> None:
+    readout = LifecycleOverlayReadout("room0", config(ExecutionProfile.A1))
+    empty = view(0, -1, 0.0)
+    first = view(1, 0, 0.0, (entity(7),))
+    process(readout, frame(0, 1.025), empty, first, (7,))
+    second = view(2, 1, 1.0, (entity(7),))
+
+    result = process(readout, frame(1, 0.0), first, second, ())
+
+    assert readout.state.export_tracker[0].readout_valid is True
+    assert result.export.events == ()
+
+
+def test_a1_out_of_view_preserves_validity_without_event(monkeypatch) -> None:
+    readout = LifecycleOverlayReadout("room0", config(ExecutionProfile.A1))
+    empty = view(0, -1, 0.0)
+    first = view(1, 0, 0.0, (entity(7),))
+    process(readout, frame(0, 1.025), empty, first, (7,))
+    second = view(2, 1, 1.0, (entity(7),))
+    monkeypatch.setattr(
+        readout,
+        "_absence_evidence",
+        lambda _entity, current_frame, _before: TemporalEvidence(
+            TemporalEvidenceKind.OUT_OF_VIEW,
+            0.0,
+            current_frame.frame_id,
+            current_frame.timestamp,
+            None,
+        ),
+    )
+
+    result = process(readout, frame(1, 0.0), first, second, ())
+
+    assert readout.state.export_tracker[0].readout_valid is True
+    assert result.export.events == ()
 
 
 def test_a1_visible_absence_becomes_dormant_then_same_v1_id_reactivates() -> None:
@@ -288,6 +331,7 @@ def test_a1_visible_absence_becomes_dormant_then_same_v1_id_reactivates() -> Non
     assert len(absent_result.export.events) == 1
     assert absent_result.export.events[0].evidence_kind.value == "visible_absent"
     assert absent_result.export.events[0].readout_valid is False
+    assert readout.state.export_tracker[0].readout_valid is False
     absent2 = view(3, 2, 2.0, (entity(7),))
     dormant = process(readout, frame(2, 2.0), absent1, absent2, ())
     assert dormant.dormant_entity_ids == (7,)
@@ -297,6 +341,23 @@ def test_a1_visible_absence_becomes_dormant_then_same_v1_id_reactivates() -> Non
     assert restored.reactivated_entity_ids == (7,)
     assert restored.active_entity_ids == (7,)
     assert tuple(item.entity_id for item in restored.lifecycle_states) == (7,)
+    assert readout.state.export_tracker[0].readout_valid is True
+    assert len(restored.export.events) == 1
+    assert restored.export.events[0].evidence_kind is TemporalEvidenceKind.PRESENT
+    assert restored.export.events[0].readout_valid is True
+
+
+def test_a1_neutral_present_frame_does_not_emit_lifecycle_event() -> None:
+    readout = LifecycleOverlayReadout("room0", config(ExecutionProfile.A1))
+    empty = view(0, -1, 0.0)
+    first = view(1, 0, 0.0, (entity(7),))
+    process(readout, frame(0, 1.025), empty, first, (7,))
+    second = view(2, 1, 1.0, (entity(7),))
+
+    result = process(readout, frame(1, 1.025), first, second, (7,))
+
+    assert result.export.events == ()
+    assert readout.state.export_tracker[0].readout_valid is True
 
 
 def test_a1_present_authority_is_exactly_cumulative_accepted_ids() -> None:
@@ -309,6 +370,10 @@ def test_a1_present_authority_is_exactly_cumulative_accepted_ids() -> None:
     states = {item.entity_id: item for item in result.lifecycle_states}
     assert set(states) == {4, 9}
     assert states[9].existence_log_odds > states[4].existence_log_odds
+    tracker = {item.entity_id: item for item in readout.state.export_tracker}
+    assert set(tracker) == {4, 9}
+    assert tracker[4].readout_valid is True
+    assert tracker[9].readout_valid is True
 
 
 def test_transactional_publication_keeps_state_identity_on_failure(monkeypatch) -> None:
@@ -330,9 +395,14 @@ def test_transactional_publication_keeps_state_identity_on_failure(monkeypatch) 
 
 def test_transaction_retry_is_byte_identical_including_export_tracker(monkeypatch) -> None:
     readout = LifecycleOverlayReadout("room0", config(ExecutionProfile.A1))
-    before = view(0, -1, 0.0)
-    after = view(1, 0, 0.0, (entity(7),))
+    empty = view(0, -1, 0.0)
+    present = view(1, 0, 0.0, (entity(7),))
+    process(readout, frame(0, 1.025), empty, present, (7,))
+    absent = view(2, 1, 1.0, (entity(7),))
+    process(readout, frame(1, 2.0), present, absent, ())
     snapshot = readout.transaction_snapshot()
+    assert snapshot.export_tracker[0].readout_valid is False
+    restored = view(3, 2, 2.0, (entity(7),))
     original_hook = readout._before_publish
     monkeypatch.setattr(
         readout,
@@ -340,16 +410,19 @@ def test_transaction_retry_is_byte_identical_including_export_tracker(monkeypatc
         lambda _state: (_ for _ in ()).throw(RuntimeError("injected")),
     )
     with pytest.raises(RuntimeError, match="injected"):
-        process(readout, frame(0, 1.025), before, after, (7,))
+        process(readout, frame(2, 1.025), absent, restored, (7,))
     assert readout.transaction_snapshot() is snapshot
+    assert readout.state.export_tracker[0].readout_valid is False
 
     monkeypatch.setattr(readout, "_before_publish", original_hook)
-    retried = process(readout, frame(0, 1.025), before, after, (7,))
+    retried = process(readout, frame(2, 1.025), absent, restored, (7,))
 
     clean = LifecycleOverlayReadout("room0", config(ExecutionProfile.A1))
-    expected = process(clean, frame(0, 1.025), before, after, (7,))
+    clean.restore_transaction(snapshot)
+    expected = process(clean, frame(2, 1.025), absent, restored, (7,))
     assert retried.export.to_canonical_json() == expected.export.to_canonical_json()
-    assert retried.export.samples[0].observation_count == 1
+    assert retried.export.samples[0].observation_count == 2
+    assert readout.state.export_tracker[0].readout_valid is True
 
 
 @pytest.mark.parametrize("kind", ["profile", "scene", "progress", "result", "timestamp"])

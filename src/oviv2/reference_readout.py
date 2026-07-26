@@ -222,22 +222,30 @@ class _ReferenceExportTrackerEntry:
     entity_id: int
     observation_count: int
     dynamic_evidence: DynamicEvidenceState
-    last_centroid_xyz: tuple[float, float, float]
+    last_centroid_xyz: tuple[float, float, float] | None
+    readout_valid: bool
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "entity_id", _integer(self.entity_id, "entity_id", minimum=1))
         object.__setattr__(
             self,
             "observation_count",
-            _integer(self.observation_count, "observation_count", minimum=1),
+            _integer(self.observation_count, "observation_count", minimum=0),
         )
         if type(self.dynamic_evidence) is not DynamicEvidenceState:
             raise TypeError("dynamic_evidence must be a DynamicEvidenceState")
-        object.__setattr__(
-            self,
-            "last_centroid_xyz",
-            _point(self.last_centroid_xyz, "last_centroid_xyz"),
-        )
+        if self.last_centroid_xyz is not None:
+            object.__setattr__(
+                self,
+                "last_centroid_xyz",
+                _point(self.last_centroid_xyz, "last_centroid_xyz"),
+            )
+        if (self.observation_count == 0) != (self.last_centroid_xyz is None):
+            raise ValueError(
+                "last_centroid_xyz is required exactly when observations exist"
+            )
+        if type(self.readout_valid) is not bool:
+            raise TypeError("readout_valid must be an exact bool")
 
 
 class _BaseReferenceReadout:
@@ -391,24 +399,38 @@ class _BaseReferenceReadout:
         after: CumulativeReadoutView,
         accepted: tuple[int, ...] | frozenset[int],
         events: tuple[TemporalLifecycleEvent, ...] = (),
+        readout_valid_by_entity: dict[int, bool] | None = None,
     ) -> tuple[tuple[_ReferenceExportTrackerEntry, ...], TemporalExportBatch]:
         timestamp_ns = timestamp_seconds_to_ns(frame.timestamp)
         accepted_ids = frozenset(accepted)
         old_tracker = {item.entity_id: item for item in self.state.export_tracker}
         after_entities = {item.entity_id: item for item in after.entities}
-        next_tracker = dict(old_tracker)
+        tracked_ids = (
+            accepted_ids
+            if readout_valid_by_entity is None
+            else frozenset(readout_valid_by_entity)
+        )
+        next_tracker = {
+            entity_id: item
+            for entity_id, item in old_tracker.items()
+            if entity_id in after_entities
+        }
         samples: list[TemporalExportSample] = []
         dynamic_config = self.config.dynamic_state
         assert dynamic_config is not None
 
-        for entity_id in sorted(accepted_ids):
+        for entity_id in sorted(tracked_ids):
             centroid = after_entities[entity_id].centroid_xyz
             old = old_tracker.get(entity_id)
-            if old is None:
+            if entity_id in accepted_ids and (
+                old is None or old.last_centroid_xyz is None
+            ):
                 observation_count = 1
                 dynamic_evidence = DynamicEvidenceState(DynamicState.UNKNOWN, 0, 0)
                 motion_confidence = 0.0
-            else:
+                last_centroid = centroid
+            elif entity_id in accepted_ids:
+                assert old is not None and old.last_centroid_xyz is not None
                 observation_count = old.observation_count + 1
                 displacement = float(
                     np.linalg.norm(
@@ -424,25 +446,43 @@ class _BaseReferenceReadout:
                     confidence=motion_confidence,
                     config=dynamic_config,
                 )
+                last_centroid = centroid
+            elif old is None:
+                observation_count = 0
+                dynamic_evidence = DynamicEvidenceState(DynamicState.UNKNOWN, 0, 0)
+                motion_confidence = 0.0
+                last_centroid = None
+            else:
+                observation_count = old.observation_count
+                dynamic_evidence = old.dynamic_evidence
+                motion_confidence = 0.0
+                last_centroid = old.last_centroid_xyz
+            readout_valid = (
+                True
+                if readout_valid_by_entity is None
+                else readout_valid_by_entity[entity_id]
+            )
             next_tracker[entity_id] = _ReferenceExportTrackerEntry(
                 entity_id=entity_id,
                 observation_count=observation_count,
                 dynamic_evidence=dynamic_evidence,
-                last_centroid_xyz=centroid,
+                last_centroid_xyz=last_centroid,
+                readout_valid=readout_valid,
             )
-            samples.append(
-                TemporalExportSample(
-                    frame_index=frame.frame_id,
-                    timestamp_ns=timestamp_ns,
-                    entity_id=entity_id,
-                    centroid_xyz=centroid,
-                    observation_count=observation_count,
-                    dynamic_state=dynamic_evidence.dynamic_state,
-                    motion_confidence=motion_confidence,
-                    geometry_epoch=0,
-                    readout_valid=True,
+            if entity_id in accepted_ids:
+                samples.append(
+                    TemporalExportSample(
+                        frame_index=frame.frame_id,
+                        timestamp_ns=timestamp_ns,
+                        entity_id=entity_id,
+                        centroid_xyz=centroid,
+                        observation_count=observation_count,
+                        dynamic_state=dynamic_evidence.dynamic_state,
+                        motion_confidence=motion_confidence,
+                        geometry_epoch=0,
+                        readout_valid=readout_valid,
+                    )
                 )
-            )
 
         tracker = tuple(sorted(next_tracker.values(), key=lambda item: item.entity_id))
         export = TemporalExportBatch(
@@ -616,15 +656,33 @@ class LifecycleOverlayReadout(_BaseReferenceReadout):
                 raise ValueError("lifecycle IDs do not match before view IDs")
 
         next_states: list[TemporalLifecycleState] = []
-        lifecycle_events: list[tuple[TemporalLifecycleState, TemporalLifecycleState, TemporalEvidenceKind, bool]] = []
+        old_export_tracker = {
+            item.entity_id: item for item in self.state.export_tracker
+        }
+        readout_valid_by_entity: dict[int, bool] = {}
+        lifecycle_events: list[
+            tuple[
+                TemporalLifecycleState,
+                TemporalLifecycleState,
+                TemporalEvidenceKind,
+                bool,
+            ]
+        ] = []
         new_ids: list[int] = []
         reactivated_ids: list[int] = []
         for entity_id in sorted(after_ids):
             old = old_states.get(entity_id)
             if old is None:
                 next_states.append(self._initial_state(entity_id, frame, present=entity_id in accepted))
+                readout_valid_by_entity[entity_id] = True
                 new_ids.append(entity_id)
                 continue
+            old_readout_valid = old_export_tracker.get(entity_id)
+            previous_readout_valid = (
+                True
+                if old_readout_valid is None
+                else old_readout_valid.readout_valid
+            )
             if entity_id in accepted:
                 evidence = TemporalEvidence(
                     TemporalEvidenceKind.PRESENT,
@@ -636,9 +694,20 @@ class LifecycleOverlayReadout(_BaseReferenceReadout):
             else:
                 evidence = self._absence_evidence(before_entities[entity_id], frame, before)
             updated = temporal_lifecycle.advance_lifecycle(old, evidence, self.config.lifecycle)
-            lifecycle_events.append(
-                (old, updated, evidence.kind, entity_id in accepted)
-            )
+            if evidence.kind is TemporalEvidenceKind.PRESENT:
+                readout_valid = True
+            elif evidence.kind is TemporalEvidenceKind.VISIBLE_ABSENT:
+                readout_valid = False
+            else:
+                readout_valid = previous_readout_valid
+            readout_valid_by_entity[entity_id] = readout_valid
+            if (
+                old.lifecycle is not updated.lifecycle
+                or previous_readout_valid is not readout_valid
+            ):
+                lifecycle_events.append(
+                    (old, updated, evidence.kind, readout_valid)
+                )
             if old.lifecycle is TemporalLifecycle.DORMANT and updated.lifecycle is TemporalLifecycle.ACTIVE:
                 reactivated_ids.append(entity_id)
             next_states.append(updated)
@@ -666,6 +735,7 @@ class LifecycleOverlayReadout(_BaseReferenceReadout):
             after=after,
             accepted=accepted,
             events=events,
+            readout_valid_by_entity=readout_valid_by_entity,
         )
         next_state = ReferenceReadoutState(
             scene_id=self.state.scene_id,
