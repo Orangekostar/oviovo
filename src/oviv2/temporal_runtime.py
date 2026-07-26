@@ -814,6 +814,14 @@ def _sparse_background_block_keys(
     return tuple(sorted(touched))
 
 
+def _is_no_block_candidate_error(error: RuntimeError) -> bool:
+    message = str(error)
+    return message.startswith("No block is touched") or (
+        "[Open3D Error]" in message
+        and "No block is touched in TSDF volume, abort integration." in message
+    )
+
+
 class _SparseBackgroundVolume(TemporalBackgroundVolume):
     @classmethod
     def preallocated(
@@ -833,7 +841,7 @@ class _SparseBackgroundVolume(TemporalBackgroundVolume):
         try:
             return super().candidate_block_keys(frame, masked_depth)
         except RuntimeError as error:
-            if "No block is touched" not in str(error):
+            if not _is_no_block_candidate_error(error):
                 raise
             return _sparse_background_block_keys(
                 frame, masked_depth, self.config
@@ -890,7 +898,7 @@ def _candidate_keys_with_sparse_fallback(
     try:
         return volume.candidate_block_keys(frame, depth_m)
     except RuntimeError as error:
-        if "No block is touched" not in str(error):
+        if not _is_no_block_candidate_error(error):
             raise
         return _sparse_background_block_keys(frame, depth_m, config)
 
@@ -1029,31 +1037,65 @@ class _SparseBackgroundLedger(ReversibleBackgroundLedger):
         self, committed: dict[object, object]
     ) -> tuple[_SparseRebuildObservation, ...]:
         grouped: dict[
-            object, tuple[object, Frame, np.ndarray, set[tuple[int, int, int]]]
+            object,
+            tuple[
+                Frame,
+                tuple[object, ...],
+                np.ndarray,
+                set[tuple[int, int, int]],
+                dict[tuple[object, ...], np.ndarray],
+                set[int],
+            ],
         ] = {}
         for record_key in sorted(committed):
             record = committed[record_key]
             if record.observation_canonical is None:
                 raise ValueError("sparse committed record lacks observation provenance")
-            observation_key = (
-                _ledger_module._native_identity(record.frame),
-                record.observation_canonical,
-            )
-            existing = grouped.get(observation_key)
+            native_key = _ledger_module._native_identity(record.frame)
+            existing = grouped.get(native_key)
             if existing is None:
-                grouped[observation_key] = (
-                    observation_key,
+                native_payload = _ledger_module._native_frame_payload(record.frame)
+                merged = np.zeros_like(record.depth_m)
+                existing = (
                     record.frame,
-                    record.depth_m,
-                    {record.contribution.block_key},
+                    native_payload,
+                    merged,
+                    set(),
+                    {},
+                    {id(record.frame)},
                 )
-                continue
-            existing[3].add(record.contribution.block_key)
-        return tuple(
-            _SparseRebuildObservation(key, frame, depth, tuple(sorted(keys)))
-            for key, frame, depth, keys in sorted(
-                grouped.values(), key=lambda item: repr(item[0])
+                grouped[native_key] = existing
+            frame, native_payload, merged, block_keys, observations, frame_ids = (
+                existing
             )
+            block_keys.add(record.contribution.block_key)
+            if id(record.frame) not in frame_ids:
+                if _ledger_module._native_frame_payload(record.frame) != native_payload:
+                    raise ValueError(
+                        "native frame content conflicts during sparse rebuild"
+                    )
+                frame_ids.add(id(record.frame))
+            previous_depth = observations.get(record.observation_canonical)
+            if previous_depth is not None:
+                if previous_depth is not record.depth_m and not np.array_equal(
+                    previous_depth, record.depth_m
+                ):
+                    raise ValueError("masked depth conflict during sparse rebuild")
+                continue
+            positive = record.depth_m > 0.0
+            overlap = positive & (merged > 0.0)
+            if np.any(overlap & (merged != record.depth_m)):
+                raise ValueError("masked depth conflict during sparse rebuild")
+            merged[positive] = record.depth_m[positive]
+            observations[record.observation_canonical] = record.depth_m
+        return tuple(
+            _SparseRebuildObservation(
+                native_key,
+                item[0],
+                _ledger_module._readonly(item[2]),
+                tuple(sorted(item[3])),
+            )
+            for native_key, item in sorted(grouped.items(), key=lambda pair: pair[0])
         )
 
     def stage(self, evidence: BackgroundLedgerEvidence) -> LedgerDecision:
@@ -1061,21 +1103,6 @@ class _SparseBackgroundLedger(ReversibleBackgroundLedger):
             return super().stage(evidence)
         if not evidence.contributions:
             return super().stage(evidence)
-        assert evidence.frame is not None
-        assert evidence.depth_m is not None
-        touched = _candidate_keys_with_sparse_fallback(
-            self._volume,
-            evidence.frame,
-            evidence.depth_m,
-            self._volume.config,
-        )
-        return self._stage_sparse(evidence, touched)
-
-    def _stage_sparse(
-        self,
-        evidence: BackgroundLedgerEvidence,
-        touched: tuple[tuple[int, int, int], ...],
-    ) -> LedgerDecision:
         event_key = (evidence.entity_id, evidence.geometry_epoch, evidence.frame_id)
         digest = self._evidence_digest(evidence)
         previous_digest = self._event_digests.get(event_key)
@@ -1094,11 +1121,32 @@ class _SparseBackgroundLedger(ReversibleBackgroundLedger):
             raise ValueError("evidence.timestamp must agree within one frame")
         event_count = (
             len(self._event_digests)
-            if evidence.frame_id == self._last_frame_id else 0
+            if evidence.frame_id == self._last_frame_id
+            else 0
         )
         if event_count >= self._volume.config.maximum_entities:
             return LedgerDecision.REJECTED_CAPACITY
+        assert evidence.frame is not None
+        assert evidence.depth_m is not None
+        try:
+            touched = _candidate_keys_with_sparse_fallback(
+                self._volume,
+                evidence.frame,
+                evidence.depth_m,
+                self._volume.config,
+            )
+        except (TypeError, ValueError):
+            raise
+        except Exception:
+            return LedgerDecision.REJECTED_INTEGRATION
+        return self._stage_sparse(evidence, touched, digest)
 
+    def _stage_sparse(
+        self,
+        evidence: BackgroundLedgerEvidence,
+        touched: tuple[tuple[int, int, int], ...],
+        digest: str,
+    ) -> LedgerDecision:
         assert evidence.frame is not None
         assert evidence.depth_m is not None
         assert evidence._native_frame_canonical is not None

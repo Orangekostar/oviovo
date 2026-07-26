@@ -1598,10 +1598,206 @@ def test_sparse_ledger_aggregates_one_depth_object_for_many_blocks(
         {record.key: record for record in records}
     )
 
-    assert allocations == 0
+    assert allocations == 1
     assert len(observations) == 1
-    assert observations[0].depth_m is evidence.depth_m
+    assert observations[0].depth_m is not evidence.depth_m
+    assert np.array_equal(observations[0].depth_m, evidence.depth_m)
     assert observations[0].block_keys == keys
+
+
+def test_sparse_two_entity_commit_merges_each_native_frame_once(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_background_ledger as ledger_module
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_background_ledger import (
+        BackgroundContribution,
+        BackgroundLedgerEvidence,
+        LedgerDecision,
+    )
+    from src.oviv2.temporal_config import TemporalBackgroundLedgerConfig
+    from src.oviv2.temporal_lifecycle import TemporalEvidenceKind
+
+    config = _config(ExecutionProfile.A3)
+    ledger = module._SparseBackgroundLedger(
+        config.geometry, TemporalBackgroundLedgerConfig(128, 2, 2, 1, 8)
+    )
+    staged = []
+    merged_by_frame = {}
+    keys_by_frame = {}
+    for frame_id, view_bins in ((2, (3, 7)), (3, (4, 8))):
+        frame = _frame(frame_id, depth=2.0)
+        left = np.zeros_like(frame.depth)
+        right = np.zeros_like(frame.depth)
+        left[2, 1] = frame.depth[2, 1]
+        right[2, 3] = frame.depth[2, 3]
+        merged = left + right
+        frame_keys = set()
+        for entity_id, view_bin, depth in (
+            (1, view_bins[0], left),
+            (2, view_bins[1], right),
+        ):
+            keys = module._candidate_keys_with_sparse_fallback(
+                ledger._volume, frame, depth, config.geometry
+            )
+            frame_keys.update(keys)
+            staged.append(
+                BackgroundLedgerEvidence(
+                    entity_id,
+                    0,
+                    frame_id,
+                    float(frame.timestamp),
+                    TemporalEvidenceKind.VISIBLE_ABSENT,
+                    view_bin,
+                    tuple(BackgroundContribution(key) for key in keys),
+                    frame,
+                    depth,
+                )
+            )
+        merged_by_frame[frame_id] = merged
+        keys_by_frame[frame_id] = tuple(sorted(frame_keys))
+
+    expected = module._SparseBackgroundVolume.preallocated(
+        config.geometry,
+        len({key for keys in keys_by_frame.values() for key in keys}),
+    )
+    for frame_id in (2, 3):
+        expected.integrate_blocks_owned(
+            _frame(frame_id, depth=2.0),
+            merged_by_frame[frame_id],
+            keys_by_frame[frame_id],
+        )
+
+    assert ledger.stage(staged[0]) is LedgerDecision.STAGED
+    assert ledger.stage(staged[1]) is LedgerDecision.STAGED
+    assert ledger.stage(staged[2]) is LedgerDecision.COMMITTED
+    integration_calls = 0
+    readonly_calls = 0
+    original_integrate = module._SparseBackgroundVolume._integrate_owned_blocks
+    original_readonly = ledger_module._readonly
+
+    def counted_integrate(self, *args, **kwargs):
+        nonlocal integration_calls
+        integration_calls += 1
+        return original_integrate(self, *args, **kwargs)
+
+    def counted_readonly(value):
+        nonlocal readonly_calls
+        readonly_calls += 1
+        return original_readonly(value)
+
+    monkeypatch.setattr(
+        module._SparseBackgroundVolume,
+        "_integrate_owned_blocks",
+        counted_integrate,
+    )
+    monkeypatch.setattr(ledger_module, "_readonly", counted_readonly)
+    assert ledger.stage(staged[3]) is LedgerDecision.COMMITTED
+    assert readonly_calls == 2
+
+    aggregated = ledger._aggregate_observations(ledger._committed)
+    assert len(aggregated) == 2
+    assert len({id(item.depth_m) for item in aggregated}) == 2
+    assert integration_calls == 2
+    assert (
+        ledger.committed_volume.canonical_block_state()
+        == expected.canonical_block_state()
+    )
+
+    remaining = {
+        key: record
+        for key, record in ledger._committed.items()
+        if record.entity_id == 1
+    }
+    removal_observations = ledger._aggregate_observations(remaining)
+    removal_rebuild = module._rebuild_sparse_background_blocks(
+        config.geometry, removal_observations
+    )
+    removal_expected = module._SparseBackgroundVolume.preallocated(
+        config.geometry,
+        len({key for item in removal_observations for key in item.block_keys}),
+    )
+    for item in removal_observations:
+        removal_expected.integrate_blocks_owned(
+            item.frame, item.depth_m, item.block_keys
+        )
+    assert (
+        removal_rebuild.canonical_block_state()
+        == removal_expected.canonical_block_state()
+    )
+
+
+def test_sparse_same_value_overlap_merges_one_native_depth() -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_background_ledger import (
+        BackgroundContribution,
+        BackgroundLedgerEvidence,
+        LedgerDecision,
+    )
+    from src.oviv2.temporal_config import TemporalBackgroundLedgerConfig
+    from src.oviv2.temporal_lifecycle import TemporalEvidenceKind
+
+    config = _config(ExecutionProfile.A3)
+    ledger = module._SparseBackgroundLedger(
+        config.geometry, TemporalBackgroundLedgerConfig(128, 2, 2, 1, 8)
+    )
+    frame = _frame(2, depth=2.0)
+    depth = np.zeros_like(frame.depth)
+    depth[2, 2] = frame.depth[2, 2]
+    keys = module._candidate_keys_with_sparse_fallback(
+        ledger._volume, frame, depth, config.geometry
+    )
+    for entity_id, view_bin in ((1, 3), (2, 7)):
+        assert ledger.stage(
+            BackgroundLedgerEvidence(
+                entity_id,
+                0,
+                2,
+                2.0,
+                TemporalEvidenceKind.VISIBLE_ABSENT,
+                view_bin,
+                tuple(BackgroundContribution(key) for key in keys),
+                frame,
+                depth,
+            )
+        ) is LedgerDecision.STAGED
+
+    aggregated = ledger._aggregate_observations(ledger._provisional)
+    assert len(aggregated) == 1
+    assert np.array_equal(aggregated[0].depth_m, depth)
+
+
+def test_sparse_overlap_conflict_fails_closed() -> None:
+    import src.oviv2.temporal_background_ledger as ledger_module
+    import src.oviv2.temporal_runtime as module
+
+    config = _config(ExecutionProfile.A3)
+    ledger = module._SparseBackgroundLedger(
+        config.geometry, config.background_ledger
+    )
+    frame = _frame(2, depth=2.0)
+    first = np.zeros_like(frame.depth)
+    second = np.zeros_like(frame.depth)
+    first[2, 2] = 1.0
+    second[2, 2] = 2.0
+    records = {}
+    for entity_id, depth in ((1, first), (2, second)):
+        contribution = ledger_module.BackgroundContribution((0, 0, 0))
+        record = ledger_module._Record(
+            entity_id,
+            0,
+            2,
+            2.0,
+            entity_id,
+            contribution,
+            frame,
+            depth,
+            (1,),
+        )
+        records[record.key] = record
+
+    with pytest.raises(ValueError, match="masked depth conflict"):
+        ledger._aggregate_observations(records)
 
 
 def test_sparse_ledger_scopes_view_bins_to_entity_events(
@@ -1658,6 +1854,140 @@ def test_sparse_ledger_scopes_view_bins_to_entity_events(
     assert ledger.provisional_count == 2 * len(keys)
     with pytest.raises(ValueError, match="conflicting duplicate"):
         ledger.stage(replace(first, view_bin=9))
+
+
+def test_sparse_candidate_no_block_error_uses_fallback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_background import TemporalBackgroundVolume
+    from src.oviv2.temporal_background_ledger import (
+        BackgroundContribution,
+        BackgroundLedgerEvidence,
+        LedgerDecision,
+    )
+    from src.oviv2.temporal_lifecycle import TemporalEvidenceKind
+
+    config = _config(ExecutionProfile.A3)
+    ledger = module._SparseBackgroundLedger(
+        config.geometry, config.background_ledger
+    )
+    frame = _frame(2, depth=2.0)
+    depth = np.zeros_like(frame.depth)
+    depth[2, 2] = frame.depth[2, 2]
+    keys = module._sparse_background_block_keys(frame, depth, config.geometry)
+    monkeypatch.setattr(
+        TemporalBackgroundVolume,
+        "candidate_block_keys",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            RuntimeError("No block is touched in TSDF volume")
+        ),
+    )
+    decision = ledger.stage(
+        BackgroundLedgerEvidence(
+            1,
+            0,
+            2,
+            2.0,
+            TemporalEvidenceKind.VISIBLE_ABSENT,
+            3,
+            tuple(BackgroundContribution(key) for key in keys),
+            frame,
+            depth,
+        )
+    )
+
+    assert decision is LedgerDecision.STAGED
+
+
+@pytest.mark.parametrize(
+    "message",
+    (
+        "candidate backend failed",
+        "candidate backend failed: No block is touched",
+    ),
+)
+def test_sparse_candidate_backend_failure_is_transactional_and_retryable(
+    monkeypatch: pytest.MonkeyPatch,
+    message: str,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_background import TemporalBackgroundVolume
+    from src.oviv2.temporal_background_ledger import (
+        BackgroundContribution,
+        BackgroundLedgerEvidence,
+        LedgerDecision,
+    )
+    from src.oviv2.temporal_lifecycle import TemporalEvidenceKind
+
+    config = _config(ExecutionProfile.A3)
+    ledger = module._SparseBackgroundLedger(
+        config.geometry, config.background_ledger
+    )
+    reference = module._SparseBackgroundLedger(
+        config.geometry, config.background_ledger
+    )
+    ledger._state = replace(
+        ledger._state,
+        volume=module._SparseBackgroundVolume(config.geometry),
+    )
+    reference._state = replace(
+        reference._state,
+        volume=module._SparseBackgroundVolume(config.geometry),
+    )
+    frame = _frame(2, depth=2.0)
+    depth = np.zeros_like(frame.depth)
+    depth[2, 2] = frame.depth[2, 2]
+    keys = module._sparse_background_block_keys(frame, depth, config.geometry)
+    evidence = BackgroundLedgerEvidence(
+        1,
+        0,
+        2,
+        2.0,
+        TemporalEvidenceKind.VISIBLE_ABSENT,
+        3,
+        tuple(BackgroundContribution(key) for key in keys),
+        frame,
+        depth,
+    )
+
+    def snapshot(value):
+        return (
+            value.journal_digest(),
+            value.committed_digest(),
+            value.provisional_count,
+            value.committed_record_count,
+            value._last_frame_id,
+            value._last_timestamp,
+            value._volume.canonical_block_state(),
+        )
+
+    before = snapshot(ledger)
+    monkeypatch.setattr(
+        TemporalBackgroundVolume,
+        "candidate_block_keys",
+        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError(message)),
+    )
+    assert ledger.stage(evidence) is LedgerDecision.REJECTED_INTEGRATION
+    assert snapshot(ledger) == before
+
+    monkeypatch.setattr(
+        TemporalBackgroundVolume,
+        "candidate_block_keys",
+        lambda *args, **kwargs: keys,
+    )
+    assert ledger.stage(evidence) is LedgerDecision.STAGED
+    assert reference.stage(evidence) is LedgerDecision.STAGED
+    assert snapshot(ledger) == snapshot(reference)
+    monkeypatch.setattr(
+        TemporalBackgroundVolume,
+        "candidate_block_keys",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            RuntimeError("candidate backend failed after publish")
+        ),
+    )
+    assert ledger.stage(evidence) is LedgerDecision.NO_OP
+    assert snapshot(ledger) == snapshot(reference)
 
 
 def test_native_sparse_keys_match_explicit_integrated_blocks() -> None:
