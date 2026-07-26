@@ -119,6 +119,9 @@ def test_transaction_capture_does_not_allocate_geometry_by_capacity(monkeypatch)
     monkeypatch.setattr(SparseTsdfVolume, "__init__", reject_allocation)
     snapshot = DualTransactionSnapshot.capture(cumulative, temporal)
     assert dict(snapshot.cumulative_attributes)["geometry"] is cumulative.geometry
+    with pytest.raises(TypeError, match="class namespace.*modified"):
+        isolated_cumulative_runtime(cumulative)
+    monkeypatch.undo()
     trial = isolated_cumulative_runtime(cumulative)
     assert trial.geometry is cumulative.geometry
 
@@ -476,6 +479,158 @@ def test_reachable_helper_constant_replacement_fails_before_branch(
     monkeypatch.setattr(temporal_module, "_SPARSE_PIXEL_CHUNK_SIZE", 1)
     with pytest.raises(TypeError, match="global binding.*modified"):
         DualReadoutRuntime(cumulative, temporal).process_frame(_frame(), ())
+    assert cumulative.revision == temporal.state.revision == 0
+
+
+def test_reachable_project_class_init_replacement_fails_before_branch(
+    monkeypatch,
+) -> None:
+    from src.oviv2.geometry import SparseTsdfVolume
+
+    called = False
+    cumulative = _cumulative()
+    temporal = TemporalCurrentRuntime(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+    )
+    geometry = cumulative.geometry
+
+    def poisoned(self, config=None):
+        nonlocal called
+        called = True
+        geometry._t1_poison_marker = object()
+        raise RuntimeError("reachable project class init replacement")
+
+    monkeypatch.setattr(SparseTsdfVolume, "__init__", poisoned)
+    with pytest.raises(TypeError, match="class namespace.*modified"):
+        DualReadoutRuntime(cumulative, temporal).process_frame(_frame(), ())
+    assert called is False
+    assert not hasattr(geometry, "_t1_poison_marker")
+
+
+def test_reachable_project_class_init_code_mutation_fails_before_branch(
+    monkeypatch,
+) -> None:
+    import src.oviv2.geometry as geometry_module
+
+    cumulative = _cumulative()
+    temporal = TemporalCurrentRuntime(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+    )
+    geometry = cumulative.geometry
+    function = geometry_module.SparseTsdfVolume.__init__
+    original_code = function.__code__
+    monkeypatch.setattr(geometry_module, "_T1_CLASS_CALLED", False, raising=False)
+    monkeypatch.setattr(
+        geometry_module, "_T1_REAL_GEOMETRY", geometry, raising=False
+    )
+
+    def poisoned(self, config=None):
+        global _T1_CLASS_CALLED, _T1_REAL_GEOMETRY
+        _T1_CLASS_CALLED = True
+        _T1_REAL_GEOMETRY._t1_poison_marker = object()
+        raise RuntimeError("reachable project class init code mutation")
+
+    try:
+        function.__code__ = poisoned.__code__
+        with pytest.raises(TypeError, match="function behavior.*modified"):
+            DualReadoutRuntime(cumulative, temporal).process_frame(_frame(), ())
+    finally:
+        function.__code__ = original_code
+    assert geometry_module._T1_CLASS_CALLED is False
+    assert not hasattr(geometry, "_t1_poison_marker")
+
+
+def test_reachable_project_class_added_descriptor_fails_before_branch(
+    monkeypatch,
+) -> None:
+    from src.oviv2.geometry import SparseTsdfVolume
+
+    cumulative = _cumulative()
+    temporal = TemporalCurrentRuntime(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+    )
+    monkeypatch.setattr(
+        SparseTsdfVolume,
+        "t1_poison_descriptor",
+        property(lambda self: object()),
+        raising=False,
+    )
+    with pytest.raises(TypeError, match="class namespace.*modified"):
+        DualReadoutRuntime(cumulative, temporal)
+    assert cumulative.revision == 0
+
+
+def test_reachable_project_class_method_replacement_fails_before_branch(
+    monkeypatch,
+) -> None:
+    from src.oviv2.geometry import SparseTsdfVolume
+
+    called = False
+    cumulative = _cumulative()
+    temporal = TemporalCurrentRuntime(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+    )
+
+    def poisoned(self, *args, **kwargs):
+        nonlocal called
+        called = True
+        raise RuntimeError("reachable project class method replacement")
+
+    monkeypatch.setattr(SparseTsdfVolume, "integrate", poisoned)
+    with pytest.raises(TypeError, match="class namespace.*modified"):
+        DualReadoutRuntime(cumulative, temporal).process_frame(_frame(), ())
+    assert called is False
+    assert cumulative.revision == 0
+
+
+def test_reachable_project_property_accessor_code_mutation_fails_before_branch(
+    monkeypatch,
+) -> None:
+    import src.oviv2.geometry as geometry_module
+
+    cumulative = _cumulative()
+    temporal = TemporalCurrentRuntime(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+    )
+    geometry = cumulative.geometry
+    function = geometry_module.SparseTsdfVolume.config.fget
+    assert function is not None
+    original_code = function.__code__
+    monkeypatch.setattr(geometry_module, "_T1_PROPERTY_CALLED", False, raising=False)
+
+    def poisoned(self):
+        global _T1_PROPERTY_CALLED
+        _T1_PROPERTY_CALLED = True
+        self._t1_poison_marker = object()
+        raise RuntimeError("reachable project property accessor code mutation")
+
+    try:
+        function.__code__ = poisoned.__code__
+        with pytest.raises(TypeError, match="function behavior.*modified"):
+            DualReadoutRuntime(cumulative, temporal).process_frame(_frame(), ())
+    finally:
+        function.__code__ = original_code
+    assert geometry_module._T1_PROPERTY_CALLED is False
+    assert not hasattr(geometry, "_t1_poison_marker")
+
+
+def test_reachable_project_mro_base_namespace_mutation_fails_before_branch(
+    monkeypatch,
+) -> None:
+    from src.oviv2.temporal_background_ledger import ReversibleBackgroundLedger
+
+    cumulative = _cumulative()
+    temporal = TemporalCurrentRuntime(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+    )
+    monkeypatch.setattr(
+        ReversibleBackgroundLedger,
+        "t1_poison_method",
+        lambda self: object(),
+        raising=False,
+    )
+    with pytest.raises(TypeError, match="class namespace.*modified"):
+        DualReadoutRuntime(cumulative, temporal)
     assert cumulative.revision == temporal.state.revision == 0
 
 

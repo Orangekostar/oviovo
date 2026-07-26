@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import copyreg
 from contextlib import contextmanager
 from dataclasses import dataclass, fields, is_dataclass
 from enum import Enum
@@ -69,9 +70,6 @@ _TRUSTED_CLASSES = (
     _BaseReferenceReadout,
     ReferenceCurrentReadout,
     LifecycleOverlayReadout,
-)
-_TRUSTED_CLASS_NAMESPACES = tuple(
-    (owner, tuple(vars(owner).items())) for owner in _TRUSTED_CLASSES
 )
 
 
@@ -269,16 +267,43 @@ def _is_project_function(function: FunctionType) -> bool:
     return type(module_name) is str and module_name.startswith("src.")
 
 
-def _capture_trusted_function_graph() -> tuple[_TrustedFunctionSnapshot, ...]:
-    snapshots: list[_TrustedFunctionSnapshot] = []
-    visited: set[int] = set()
+def _is_project_class(value: object) -> bool:
+    if not isinstance(value, type):
+        return False
+    module_name = type.__getattribute__(value, "__module__")
+    return type(module_name) is str and module_name.startswith("src.")
 
-    def capture(function: FunctionType) -> None:
-        if id(function) in visited:
+
+def _descriptor_functions(value: object) -> tuple[FunctionType, ...]:
+    if type(value) is FunctionType:
+        return (value,)
+    if type(value) in {classmethod, staticmethod}:
+        return (value.__func__,)
+    if type(value) is property:
+        return tuple(
+            function
+            for function in (value.fget, value.fset, value.fdel)
+            if type(function) is FunctionType
+        )
+    return ()
+
+
+def _capture_trusted_behavior_graph() -> tuple[
+    tuple[_TrustedFunctionSnapshot, ...],
+    tuple[tuple[type, tuple[tuple[str, object], ...]], ...],
+]:
+    function_snapshots: list[_TrustedFunctionSnapshot] = []
+    class_snapshots: list[tuple[type, tuple[tuple[str, object], ...]]] = []
+    visited_functions: set[int] = set()
+    visited_classes: set[int] = set()
+
+    def capture_function(function: FunctionType) -> None:
+        if id(function) in visited_functions:
             return
-        visited.add(id(function))
+        visited_functions.add(id(function))
         global_bindings: list[_GlobalBindingSnapshot] = []
-        reachable: list[FunctionType] = []
+        reachable_functions: list[FunctionType] = []
+        reachable_classes: list[type] = []
         seen_names: set[str] = set()
         namespace = function.__globals__
         for name in function.__code__.co_names:
@@ -300,28 +325,42 @@ def _capture_trusted_function_graph() -> tuple[_TrustedFunctionSnapshot, ...]:
                 )
             )
             if type(value) is FunctionType and _is_project_function(value):
-                reachable.append(value)
-        snapshots.append(
+                reachable_functions.append(value)
+            elif _is_project_class(value):
+                reachable_classes.append(value)
+        function_snapshots.append(
             _TrustedFunctionSnapshot(
                 _capture_function_behavior(function), tuple(global_bindings)
             )
         )
-        for helper in reachable:
-            capture(helper)
+        for helper in reachable_functions:
+            capture_function(helper)
+        for owner in reachable_classes:
+            capture_class(owner)
+
+    def capture_class(owner: type) -> None:
+        if id(owner) in visited_classes:
+            return
+        visited_classes.add(id(owner))
+        copyreg._slotnames(owner)
+        namespace = tuple(vars(owner).items())
+        class_snapshots.append((owner, namespace))
+        for _, value in namespace:
+            for function in _descriptor_functions(value):
+                capture_function(function)
+        for base in type.__getattribute__(owner, "__mro__")[1:]:
+            if _is_project_class(base):
+                capture_class(base)
 
     for owner in _TRUSTED_CLASSES:
-        for raw in vars(owner).values():
-            function = (
-                raw.__func__
-                if isinstance(raw, (classmethod, staticmethod))
-                else raw
-            )
-            if type(function) is FunctionType:
-                capture(function)
-    return tuple(snapshots)
+        capture_class(owner)
+    return tuple(function_snapshots), tuple(class_snapshots)
 
 
-_TRUSTED_FUNCTION_BEHAVIORS = _capture_trusted_function_graph()
+(
+    _TRUSTED_FUNCTION_BEHAVIORS,
+    _TRUSTED_CLASS_NAMESPACES,
+) = _capture_trusted_behavior_graph()
 
 
 def _pack(tag: bytes, content: bytes) -> bytes:

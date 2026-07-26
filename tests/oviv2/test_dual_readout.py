@@ -340,26 +340,37 @@ def test_fresh_temporal_current_checkpoint_fails_closed(profile: ExecutionProfil
         runtime.current_checkpoint()
 
 
-def test_reference_readout_captures_cumulative_only_once_per_frame(monkeypatch) -> None:
+def test_reference_readout_captures_cumulative_only_once_per_frame() -> None:
+    import sys
+
     from src.oviv2.dual_readout import DualReadoutRuntime
     from src.oviv2.reference_readout import CumulativeReadoutView, ReferenceCurrentReadout
 
-    original = CumulativeReadoutView.capture.__func__
+    capture_code = CumulativeReadoutView.capture.__func__.__code__
     revisions: list[int] = []
+    previous_profile = sys.getprofile()
 
-    def capture(cls, cumulative):
-        revisions.append(cumulative.revision)
-        return original(cls, cumulative)
+    def profile(frame, event, arg):
+        if event == "call" and frame.f_code is capture_code:
+            revisions.append(frame.f_locals["runtime"].revision)
+        if previous_profile is not None:
+            previous_profile(frame, event, arg)
 
-    monkeypatch.setattr(CumulativeReadoutView, "capture", classmethod(capture))
-    config = replace(_temporal_config(), execution_profile=ExecutionProfile.A0)
-    runtime = DualReadoutRuntime(_cumulative(), ReferenceCurrentReadout("scene", config))
-    revisions.clear()
+    sys.setprofile(profile)
+    try:
+        config = replace(_temporal_config(), execution_profile=ExecutionProfile.A0)
+        runtime = DualReadoutRuntime(
+            _cumulative(), ReferenceCurrentReadout("scene", config)
+        )
+        revisions.clear()
 
-    runtime.process_frame(_frame(0, 1.0), ())
-    runtime.process_frame(_frame(1, 2.0), ())
+        runtime.process_frame(_frame(0, 1.0), ())
+        runtime.process_frame(_frame(1, 2.0), ())
+    finally:
+        sys.setprofile(previous_profile)
 
     assert revisions == [1, 2]
+    assert sys.getprofile() is previous_profile
 
 
 def test_reference_capture_reuses_registry_voxel_frozenset() -> None:
