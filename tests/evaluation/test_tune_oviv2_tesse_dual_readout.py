@@ -7,46 +7,17 @@ from pathlib import Path
 import pytest
 
 import scripts.evaluation.tune_oviv2_tesse_dual_readout as tuner
-from scripts.evaluation import package_oviv2_tesse_dual_readout_result as package_module
-from scripts.evaluation.evaluate_oviv2_tesse_occlusion import canonical_algorithm_hash
-from scripts.evaluation.package_oviv2_tesse_dual_readout_result import package_result
-from scripts.evaluation.run_oviv2_tesse_dual_readout_search import (
-    input_binding_values_sha256,
-    non_temporal_config_sha256,
+
+
+PROFILES = ("a0", "a1", "a2", "a3", "a4")
+T4_METRICS = (
+    "total_runtime_s_per_frame",
+    "query_mean_ms",
+    "query_p95_ms",
+    "peak_gpu_gb",
+    "peak_ram_gb",
+    "final_map_mb",
 )
-from scripts.evaluation.tune_oviv2_tesse_dual_readout import tune, tune_results_root
-
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
-MANIFEST = (
-    REPO_ROOT
-    / "configs/evaluation/manifests/oviv2_tesse_dual_readout_search_v1.json"
-)
-APARTMENT_CONFIG = REPO_ROOT / "configs/oviv2_tesse_cd_apartment_v2.json"
-
-
-@pytest.fixture(autouse=True)
-def _stub_expensive_metric_replays(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(
-        package_module,
-        "_recompute_common_v2_metrics",
-        lambda snapshot, witnesses: dict(snapshot.payload["metrics"]),
-    )
-    monkeypatch.setattr(
-        package_module,
-        "_recompute_official_metrics",
-        lambda snapshot, witnesses: (
-            dict(snapshot.payload["metrics"]),
-            dict(snapshot.payload.get("unavailable", {})),
-        ),
-    )
-
-
-def _bytes(value: object) -> bytes:
-    return (
-        json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
-        + "\n"
-    ).encode()
 
 
 def _canonical(value: object) -> bytes:
@@ -57,7 +28,7 @@ def _canonical(value: object) -> bytes:
 
 def _write(path: Path, value: object) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(_bytes(value))
+    path.write_bytes(_canonical(value) + b"\n")
     return path
 
 
@@ -70,573 +41,566 @@ def _record(path: Path) -> dict[str, object]:
     }
 
 
-def _metrics(**overrides: float) -> dict[str, float]:
-    values = {
-        "current_miou": 0.25,
-        "object_f1": 0.55,
-        "ghost_rate": 0.15,
-        "background_f5_cm": 0.20,
-        "recovery_frames": 300.0,
-        "dynamic_f1": 0.40,
-        "change_f1": 0.35,
-        "runtime_seconds": 100.0,
+def _manifest() -> dict[str, object]:
+    return {
+        "schema_version": 1,
+        "manifest_id": "oviv2-tesse-dual-readout-search-v1",
+        "dataset": "TESSE-CD",
+        "method_id": "OVIV2",
+        "protocol_id": "oviv2-tessecd-v2",
+        "development_scene": "apartment",
+        "transfer_scene": "office",
+        "profile_fallback_order": ["a4", "a3", "a2"],
+        "metric_gates": {
+            "dynamic_f1": "strictly_increase_from_a0",
+            "change_f1": "strictly_increase_from_a0",
+            "ghost_rate": "strictly_decrease_from_a0",
+            "background_f5_cm": "strictly_increase_from_a0",
+            "recovery_frames": "strictly_decrease_from_a0",
+        },
+        "t4_bounds": {
+            "total_runtime_s_per_frame": 6.42,
+            "query_mean_ms": 11.92,
+            "query_p95_ms": 12.12,
+            "peak_gpu_gb": 12.76,
+            "peak_ram_gb": 9.36,
+            "final_map_mb": 46.77,
+        },
+        "candidates": [
+            {
+                "candidate_id": profile,
+                "components": {"profile": profile},
+                "temporal_readout": {"execution_profile": profile},
+            }
+            for profile in PROFILES
+        ],
+        "diagnostic_candidates": [
+            {
+                "candidate_id": "a4_translation_only",
+                "base_profile": "a4",
+                "diagnostic": True,
+                "selectable": False,
+            }
+        ],
     }
-    values.update(overrides)
-    return values
 
 
-def _write_result(
-    root: Path,
+def _metric(value: float) -> dict[str, object]:
+    return {
+        "available": True,
+        "value": value,
+        "reason": None,
+        "source": "fixture",
+    }
+
+
+def _candidate(
     candidate_id: str,
     *,
-    metrics: dict[str, float],
-    result_name: str | None = None,
-    input_marker: str = "1",
-    non_temporal_variant: bool = False,
-    optional_available: bool = True,
-) -> Path:
-    manifest = json.loads(MANIFEST.read_text())
-    declarations = {item["candidate_id"]: item for item in manifest["candidates"]}
-    declaration = declarations[candidate_id]
-    evidence_root = root / f".{candidate_id}-evidence"
-    evidence_root.mkdir(parents=True)
-    config = json.loads(APARTMENT_CONFIG.read_text())
-    config["temporal_readout"] = declaration["temporal_readout"]
-    if non_temporal_variant:
-        config["source_stride"] += 1
-    config["algorithm_hash"] = canonical_algorithm_hash(config)
-    algorithm_hash = config["algorithm_hash"]
-    config_path = _write(evidence_root / "config.json", config)
-    config_sha256 = hashlib.sha256(_canonical(config)).hexdigest()
-    source_bindings = {
-        "dataset": input_marker * 64,
-        "schedule": "2" * 64,
-        "occlusion_targets": "3" * 64,
-        "aliases": "4" * 64,
+    profile: str | None = None,
+    selectable: bool = True,
+    metrics: dict[str, float] | None = None,
+    opportunities: int = 1,
+    triggers: int = 1,
+) -> dict[str, object]:
+    profile = profile or candidate_id
+    values = {
+        "current_miou": 0.50,
+        "object_f1": 0.60,
+        "dynamic_f1": 0.55,
+        "change_f1": 0.50,
+        "ghost_rate": 0.10,
+        "background_f5_cm": 0.50,
+        "recovery_frames": 80.0,
+        "runtime_seconds": 100.0,
     }
-    code_commit = "c" * 40
-    stdout_path = evidence_root / "stdout.log"
-    stderr_path = evidence_root / "stderr.log"
-    stdout_path.write_text("candidate passed\n")
-    stderr_path.write_text("")
-    run_root = evidence_root / "run"
-    normalized = _write(run_root / "normalized_run_config.json", config)
-    index = _write(
-        run_root / "occlusion_checkpoint_index.json",
-        {
-            "schema_version": 1,
-            "format": "oviv2_temporal_compact_v1",
-            "protocol_id": "oviv2-tessecd-v2",
-            "dataset": "TESSE-CD",
-            "method_id": "OVIV2",
-            "scene": "apartment",
-            "algorithm_hash": algorithm_hash,
-            "schedule": {"sha256": "2" * 64, "byte_count": 10},
-            "target_manifest": {"sha256": "3" * 64, "byte_count": 11},
-            "input_sha256": "5" * 64,
-            "code_commit": code_commit,
-            "source_bindings": source_bindings,
-            "checkpoints": [
-                {
-                    "frame_index": 2,
-                    "consumed_through_frame": 2,
-                    "consumed_through_frame_exclusive": 3,
-                }
-            ],
-        },
-    )
-    schedule_file = evidence_root / "schedule.json"
-    schedule_file.write_text("{}\n")
-    checkpoint_status = _write(run_root / "checkpoint_status.json", {"status": "PASS"})
-    snapshot = evidence_root / "snapshot.npz"
-    snapshot.write_bytes(b"snapshot")
-    entities = evidence_root / "entities.json"
-    entities.write_text("[]\n")
-    checkpoint = {
-        "frame_index": 2,
-        "timestamp_ns": 200,
-        "consumed_through_frame": 2,
-        "consumed_through_frame_exclusive": 3,
-        "checkpoint_status": _record(checkpoint_status),
-        "snapshot": _record(snapshot),
-        "entities": _record(entities),
-    }
-    run_source_index = _write(
-        run_root / "source_index.json",
-        {
-            "schema_version": 1,
-            "dataset": "TESSE-CD",
-            "mode": "causal_checkpoint_exports",
-            "method": "OVIV2",
-            "scene": "apartment",
-            "schedule": _record(schedule_file),
-            "checkpoints": [checkpoint],
-        },
-    )
-    run_manifest = _write(
-        run_root / "run_manifest.json",
-        {
-            "schema_version": 2,
-            "protocol_id": "oviv2-tessecd-v2",
-            "dataset": "TESSE-CD",
-            "method_id": "OVIV2",
-            "scene": "apartment",
-            "mode": "dual_readout_causal_checkpoints",
-            "algorithm_hash": algorithm_hash,
-            "config": {
-                "sha256": hashlib.sha256(config_path.read_bytes()).hexdigest(),
-                "byte_count": config_path.stat().st_size,
-            },
-            "normalized_run_config": {
-                "path": "normalized_run_config.json",
-                "sha256": hashlib.sha256(normalized.read_bytes()).hexdigest(),
-                "byte_count": normalized.stat().st_size,
-            },
-            "schedule": {"sha256": "2" * 64, "byte_count": 10},
-            "target_manifest": {"sha256": "3" * 64, "byte_count": 11},
-            "source_bindings": source_bindings,
-            "input_sha256": "5" * 64,
-            "code_commit": code_commit,
-            "occlusion_checkpoint_index": {
-                "path": "occlusion_checkpoint_index.json",
-                "sha256": hashlib.sha256(index.read_bytes()).hexdigest(),
-                "byte_count": index.stat().st_size,
-            },
-            "source_index": {
-                "path": "source_index.json",
-                "sha256": hashlib.sha256(run_source_index.read_bytes()).hexdigest(),
-                "byte_count": run_source_index.stat().st_size,
-            },
-            "checkpoints": [checkpoint],
-        },
-    )
-    status = _write(
-        evidence_root / "search_status.json",
-        {
-            "schema_version": 1,
-            "status": "PASS",
-            "manifest": _record(MANIFEST),
-            "candidates": [
-                {
-                    "candidate_id": candidate_id,
-                    "scene": "apartment",
-                    "status": "PASS",
-                    "exit_code": 0,
-                    "config_path": str(config_path.resolve()),
-                    "config_file": _record(config_path),
-                    "config_sha256": config_sha256,
-                    "output_root": str(run_root.resolve()),
-                    "algorithm_hash": algorithm_hash,
-                    "non_temporal_config_sha256": non_temporal_config_sha256(config),
-                    "input_binding_values_sha256": input_binding_values_sha256(config),
-                    "input_hashes": source_bindings,
-                    "stdout_path": str(stdout_path.resolve()),
-                    "stdout_file": _record(stdout_path),
-                    "stderr_path": str(stderr_path.resolve()),
-                    "stderr_file": _record(stderr_path),
-                    "runtime_seconds": metrics["runtime_seconds"],
-                }
-            ],
-        },
-    )
-    export_root = evidence_root / "export"
-    export_source_index = _write(
-        export_root / "source_index.json",
-        {
-            "schema_version": 1,
-            "dataset": "TESSE-CD",
-            "mode": "causal_checkpoint_exports",
-            "method": "OVIV2",
-            "scene": "apartment",
-            "schedule": _record(schedule_file),
-            "checkpoints": [checkpoint],
-        },
-    )
-    temporal_manifest = _write(
-        export_root / "temporal_manifest.json",
-        {
-            "schema_version": 1,
-            "dataset": "TESSE-CD",
-            "mode": "causal_checkpoints",
-            "method": "OVIV2",
-            "scene": "apartment",
-            "sources": {"source_index": _record(export_source_index)},
-            "checkpoints": [checkpoint],
-            "entity_lifecycles": [],
-        },
-    )
-    common = _write(
-        evidence_root / "common.json",
-        {
-            "schema_version": 1,
-            "manifest_id": "tesse_cd_common_v2_scene_summary",
-            "dataset": "TESSE-CD",
-            "protocol": "tesse_cd_common_v2",
-            "status": "PASS",
-            "method": "OVIV2",
-            "mode": "causal_checkpoints",
-            "scene": "apartment",
-            "metrics": {
-                "current_miou": metrics["current_miou"],
-                "ghost_rate": metrics["ghost_rate"],
-                "background_f5": metrics["background_f5_cm"],
-                "recovery_frames": metrics["recovery_frames"],
-            },
-            "sources": {"temporal_index": _record(temporal_manifest)},
-        },
-    )
-    occlusion = _write(
-        evidence_root / "occlusion.json",
-        {
-            "format": "oviv2_temporal_compact_v1",
-            "scene": "apartment",
-            "algorithm_hash": algorithm_hash,
-            "input_sha256": "5" * 64,
-            "code_commit": code_commit,
-            "source_bindings": source_bindings,
-            "input_bindings": {"indexes": [_record(index)]},
-        },
-    )
-    official_source = evidence_root / "official-source.csv"
-    official_source.write_text("header\n")
-    official_metrics = {
-        "object_f1": metrics["object_f1"],
-        "dynamic_f1": metrics["dynamic_f1"] if optional_available else None,
-        "change_f1": metrics["change_f1"] if optional_available else None,
-    }
-    official = _write(
-        evidence_root / "official.json",
-        {
-            "status": "PASS",
-            "dataset": "TESSE-CD",
-            "scene": "apartment",
-            "method": "OVIV2",
-            "mode": "causal_checkpoints",
-            "run_identity": {
-                "run_id": f"{candidate_id}-apartment",
-                "config_sha256": config_sha256,
-            },
-            "metrics": official_metrics,
-            "unavailable": (
-                {}
-                if optional_available
-                else {
-                    "dynamic_f1": "not_reported_by_official_evaluator",
-                    "change_f1": "not_reported_by_official_evaluator",
-                }
-            ),
-            "sources": [_record(official_source)],
-        },
-    )
-    protected = [
-        {"path": "src/oviv2/dual_readout.py", "sha256": "7" * 64, "bytes": 123}
-    ]
-    test_sources = [
-        {"path": "tests/oviv2/test_dual_readout.py", "sha256": "8" * 64, "bytes": 456}
-    ]
-
-    def gate(name: str, digest: str) -> dict[str, object]:
-        return {
-            "scope": "shared_code_and_A0-A4_fixture",
-            "status": "PASS",
-            "code_commit": code_commit,
-            "code_tree": "d" * 64,
-            "protected_records": protected,
-            "test_records": [
-                {
-                    "argv": ["pytest", "-q", name],
-                    "returncode": 0,
-                    "stdout_sha256": digest,
-                    "stdout_bytes": 10,
-                    "stderr_sha256": "0" * 64,
-                    "stderr_bytes": 0,
-                }
-            ],
-        }
-
-    evidence = _write(
-        evidence_root / "gates.json",
-        {
-            "schema_version": 1,
-            "manifest_id": "oviv2_dual_readout_development_gates_v1",
-            "deterministic_evidence": {
-                "base_commit": "e" * 40,
-                "code_commit": code_commit,
-                "code_tree": "d" * 64,
-                "protected_files": protected,
-                "test_sources": test_sources,
-                "gates": {
-                    "t1_exact": gate("t1_exact", "9" * 64),
-                    "determinism": gate("determinism", "b" * 64),
-                },
-            },
-            "receipt": {"created_at_utc": "2026-07-25T00:00:00Z"},
-        },
-    )
-    output = root / (result_name or f"{candidate_id}.json")
-    package_result(
-        manifest=MANIFEST,
-        search_status=status,
-        candidate_id=candidate_id,
-        candidate_config=config_path,
-        run_manifest=run_manifest,
-        common_v2_summary=common,
-        temporal_occlusion_result=occlusion,
-        official_metrics=official,
-        t1_exact_evidence=evidence,
-        determinism_evidence=evidence,
-        output=output,
-    )
-    return output
-
-
-def _write_complete_results(
-    root: Path,
-    *,
-    metrics_by_candidate: dict[str, dict[str, float]] | None = None,
-    kwargs_by_candidate: dict[str, dict[str, object]] | None = None,
-) -> list[Path]:
-    metrics_by_candidate = metrics_by_candidate or {}
-    kwargs_by_candidate = kwargs_by_candidate or {}
-    return [
-        _write_result(
-            root,
-            candidate_id,
-            metrics=metrics_by_candidate.get(candidate_id, _metrics()),
-            **kwargs_by_candidate.get(candidate_id, {}),
+    if candidate_id == "a0":
+        values.update(
+            dynamic_f1=0.50,
+            change_f1=0.45,
+            ghost_rate=0.20,
+            background_f5_cm=0.40,
+            recovery_frames=100.0,
         )
-        for candidate_id in ("a0", "a1", "a2", "a3", "a4")
-    ]
-
-
-def test_tuner_uses_source_backed_gates_and_lexicographic_promotion(tmp_path: Path) -> None:
-    results = tmp_path / "results"
-    results.mkdir()
-    paths = [
-        _write_result(
-            results,
-            "a0",
-            metrics=_metrics(current_miou=0.20, object_f1=0.50, ghost_rate=0.459),
-        ),
-        _write_result(results, "a1", metrics=_metrics(ghost_rate=0.22)),
-        _write_result(results, "a2", metrics=_metrics(ghost_rate=0.14, background_f5_cm=0.17)),
-        _write_result(results, "a3", metrics=_metrics(ghost_rate=0.14, background_f5_cm=0.21)),
-        _write_result(results, "a4", metrics=_metrics(current_miou=0.19, ghost_rate=0.01)),
-    ]
-    before = {path: path.read_bytes() for path in paths}
-    selection = tune(MANIFEST, paths, tmp_path / "selection.json")
-
-    assert selection["manifest_id"] == "oviv2_tesse_cd_v2_selection"
-    assert selection["selected_candidate_id"] == "a3"
-    assert selection["algorithm_hash"] == selection["rejection_ledger"][3]["algorithm_hash"]
-    assert selection["selected_config"]["temporal_readout"]["execution_profile"] == "a3"
-    assert selection["selected_config_record"] == selection["rejection_ledger"][3]["sources"]["candidate_config"]
-    ledger = {item["candidate_id"]: item for item in selection["rejection_ledger"]}
-    assert "current_miou_below_a0_floor" in ledger["a4"]["reasons"]
-    assert "lost_lexicographic_promotion" in ledger["a1"]["reasons"]
-    assert all(set(item["sources"]) == {
-        "search_manifest", "search_status", "candidate_config", "run_manifest",
-        "common_v2_summary", "temporal_occlusion_result", "official_metrics",
-        "t1_exact_evidence", "determinism_evidence",
-    } for item in selection["rejection_ledger"])
-    assert {path: path.read_bytes() for path in paths} == before
-
-
-def test_a0_is_an_eligible_fallback_and_no_t1_scalarization(tmp_path: Path) -> None:
-    paths = _write_complete_results(
-        tmp_path,
-        metrics_by_candidate={
-            candidate_id: _metrics(ghost_rate=0.15 + position * 0.01)
-            for position, candidate_id in enumerate(("a0", "a1", "a2", "a3", "a4"))
-        },
-    )
-    selection = tune(MANIFEST, paths, tmp_path / "selection.json")
-    assert selection["selected_candidate_id"] == "a0"
-    assert selection["rejection_ledger"][0]["reasons"] == []
-    assert "score" not in selection
-
-    tampered = json.loads(paths[0].read_text())
-    tampered["gates"]["t1_exact"]["passed"] = False
-    paths[0].write_bytes(_bytes(tampered))
-    with pytest.raises(ValueError, match="does not match revalidated sources"):
-        tune(MANIFEST, paths, tmp_path / "tampered.json")
-
-
-def test_public_tune_requires_every_manifest_candidate(tmp_path: Path) -> None:
-    result = _write_result(tmp_path, "a0", metrics=_metrics())
-    with pytest.raises(ValueError, match=r"missing=.*a1.*a2.*a3.*a4"):
-        tune(MANIFEST, (result,), tmp_path / "selection.json")
-
-
-def test_tuner_revalidates_sources_immediately_before_publish(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    paths = _write_complete_results(tmp_path)
-    packaged = json.loads(paths[0].read_text())
-    common_path = Path(packaged["sources"]["common_v2_summary"]["path"])
-    real_loader = tuner.load_and_revalidate_result
-    calls = 0
-
-    def mutate_after_first_validation(
-        path: str | Path, *, manifest: dict[str, object]
-    ) -> dict[str, object]:
-        nonlocal calls
-        loaded = real_loader(path, manifest=manifest)
-        calls += 1
-        if calls == 1:
-            common_path.write_bytes(common_path.read_bytes() + b" ")
-        return loaded
-
-    monkeypatch.setattr(tuner, "load_and_revalidate_result", mutate_after_first_validation)
-    output = tmp_path / "selection.json"
-    with pytest.raises(ValueError, match=r"source record .*mismatch"):
-        tune(MANIFEST, paths, output)
-    assert calls == 5
-    assert not output.exists()
-
-
-def test_optional_metric_availability_matches_a0_or_fails_closed(tmp_path: Path) -> None:
-    unavailable = _write_complete_results(
-        tmp_path / "unavailable",
-        kwargs_by_candidate={
-            candidate_id: {"optional_available": False}
-            for candidate_id in ("a0", "a1", "a2", "a3", "a4")
-        },
-    )
-    selection = tune(MANIFEST, unavailable, tmp_path / "selection.json")
-    assert selection["skipped_optional_tie_axes"] == {
-        "change_f1": "all_candidates_unavailable_matching_a0",
-        "dynamic_f1": "all_candidates_unavailable_matching_a0",
+    values.update(metrics or {})
+    mechanism = {
+        "mechanism": "profile_claim",
+        "opportunities": opportunities,
+        "triggers": triggers,
+        "available": opportunities > 0,
+        "passed": opportunities > 0 and triggers > 0,
+        "reason": None if opportunities > 0 else "no_opportunity",
+        "source": {"path": "/fixture/telemetry.json", "sha256": "1" * 64, "byte_count": 1},
     }
-    assert all(item["notes"] for item in selection["rejection_ledger"])
+    return {
+        "schema_version": 1,
+        "manifest_id": "oviv2-tesse-dual-readout-candidate-result-v1",
+        "dataset": "TESSE-CD",
+        "method_id": "OVIV2",
+        "protocol_id": "oviv2-tessecd-v2",
+        "scene": "apartment",
+        "status": "PASS",
+        "candidate_id": candidate_id,
+        "profile": {
+            "candidate_id": candidate_id,
+            "kind": "diagnostic" if not selectable else "main",
+            "execution_profile": profile,
+            "selectable": selectable,
+        },
+        "component_map": {"profile": profile},
+        "parameter_values": {},
+        "bindings": {
+            "config_sha256": candidate_id[0] * 63 + candidate_id[-1],
+            "non_temporal_config_sha256": "f" * 64,
+            "input_hashes": {"dataset": "d" * 64},
+            "candidate": {"config": {"temporal_readout": {"execution_profile": profile}}},
+        },
+        "run_identity": {"algorithm_hash": candidate_id[0] * 63 + candidate_id[-1]},
+        "gates": {
+            "correctness": {"passed": True},
+            "causality": {"passed": True},
+            "determinism": {"passed": True},
+            "t1_exact": {"passed": True},
+            "mechanisms": {"profile_claim": mechanism},
+            "anchor_coverage": {
+                "scene": "apartment",
+                "eligible_count": 66,
+                "uniquely_mapped_count": 53,
+                "zero_overlap_count": 13,
+                "ambiguous_count": 0,
+                "required_eligible_count": 66,
+                "required_mapped_count": 53,
+                "available": True,
+                "passed": True,
+                "reason": None,
+            },
+            "t2_metrics": {},
+        },
+        "metrics": {name: _metric(value) for name, value in values.items()},
+        "mechanism_telemetry": {"profile_claim": mechanism},
+        "anchor_coverage_gate": {},
+        "promotion_evidence": {"selectable": selectable},
+        "sources": {"candidate_config": {"path": "/fixture/config.json", "sha256": "2" * 64, "byte_count": 1}},
+    } | {
+        "gates": {
+            "correctness": {"passed": True},
+            "causality": {"passed": True},
+            "determinism": {"passed": True},
+            "t1_exact": {"passed": True},
+            "mechanisms": {"profile_claim": mechanism},
+            "anchor_coverage": {
+                "scene": "apartment",
+                "eligible_count": 66,
+                "uniquely_mapped_count": 53,
+                "zero_overlap_count": 13,
+                "ambiguous_count": 0,
+                "required_eligible_count": 66,
+                "required_mapped_count": 53,
+                "available": True,
+                "passed": True,
+                "reason": None,
+            },
+            "t2_metrics": {
+                name: {
+                    "direction": "maximize_strict" if name in {"dynamic_f1", "change_f1", "background_f5_cm"} else "minimize_strict" if name in {"ghost_rate", "recovery_frames"} else "maximize_noninferior",
+                    "baseline": (0.50 if name == "dynamic_f1" else 0.45 if name == "change_f1" else 0.20 if name == "ghost_rate" else 0.40 if name == "background_f5_cm" else 100.0 if name == "recovery_frames" else 0.50 if name == "current_miou" else 0.60),
+                    "value": values[name],
+                    "available": True,
+                    "passed": (
+                        values[name] >= (0.50 if name == "current_miou" else 0.60)
+                        if name in {"current_miou", "object_f1"}
+                        else values[name] > (0.50 if name == "dynamic_f1" else 0.45 if name == "change_f1" else 0.40)
+                        if name in {"dynamic_f1", "change_f1", "background_f5_cm"}
+                        else values[name] < (0.20 if name == "ghost_rate" else 100.0)
+                    ),
+                    "source": {"path": "/fixture/t2.json", "sha256": "3" * 64, "byte_count": 1},
+                }
+                for name in ("dynamic_f1", "change_f1", "ghost_rate", "background_f5_cm", "recovery_frames", "current_miou", "object_f1")
+            },
+        },
+        "anchor_coverage_gate": {
+            "scene": "apartment", "eligible_count": 66, "uniquely_mapped_count": 53,
+            "zero_overlap_count": 13, "ambiguous_count": 0,
+            "required_eligible_count": 66, "required_mapped_count": 53,
+            "available": True, "passed": True, "reason": None,
+        },
+    }
 
-    partial = _write_complete_results(
-        tmp_path / "partial",
-        kwargs_by_candidate={
-            candidate_id: {"optional_available": candidate_id == "a2"}
-            for candidate_id in ("a0", "a1", "a2", "a3", "a4")
+
+@pytest.fixture
+def bound_inputs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    manifest = _manifest()
+    manifest_path = _write(tmp_path / "manifest.json", manifest)
+    loaded: dict[Path, dict[str, object]] = {}
+
+    def add(candidate: dict[str, object]) -> Path:
+        path = _write(tmp_path / f"{candidate['candidate_id']}.json", {"fixture": candidate["candidate_id"]})
+        loaded[path.resolve()] = candidate
+        return path
+
+    monkeypatch.setattr(tuner, "load_search_manifest", lambda path: manifest)
+    monkeypatch.setattr(
+        tuner,
+        "load_and_revalidate_result",
+        lambda path, *, manifest: loaded[Path(path).resolve()],
+    )
+    return manifest, manifest_path, add
+
+
+def test_shortlist_uses_independent_hard_gates_without_compensation(
+    tmp_path: Path, bound_inputs
+) -> None:
+    _, manifest_path, add = bound_inputs
+    candidates = [_candidate(profile) for profile in PROFILES]
+    candidates[4] = _candidate(
+        "a4",
+        metrics={
+            "dynamic_f1": 0.99,
+            "change_f1": 0.99,
+            "ghost_rate": 0.20,
+            "background_f5_cm": 0.99,
+            "recovery_frames": 1.0,
         },
     )
-    with pytest.raises(ValueError, match="availability differs"):
-        tune(MANIFEST, partial, tmp_path / "partial.json")
+    result = tuner.tune_shortlist(
+        manifest_path,
+        [add(item) for item in candidates],
+        tmp_path / "shortlist.json",
+    )
+
+    assert result["phase"] == "shortlist"
+    assert result["shortlisted_candidate_ids"] == ["a3", "a2"]
+    ledger = {row["candidate_id"]: row for row in result["rejection_ledger"]}
+    assert ledger["a4"]["reasons"] == ["ghost_rate_t2_hard_gate_failed"]
+    assert "score" not in result
+    assert "weighted" not in json.dumps(result).lower()
+
+
+def test_shortlist_requires_exact_t1_anchor_53_of_66_and_a0_floors(
+    tmp_path: Path, bound_inputs
+) -> None:
+    _, manifest_path, add = bound_inputs
+    candidates = [_candidate(profile) for profile in PROFILES]
+    candidates[2]["gates"]["t1_exact"]["passed"] = False
+    candidates[3]["gates"]["anchor_coverage"]["uniquely_mapped_count"] = 52
+    candidates[3]["gates"]["anchor_coverage"]["passed"] = False
+    candidates[4]["metrics"]["object_f1"] = _metric(0.59)
+
+    result = tuner.tune_shortlist(
+        manifest_path,
+        [add(item) for item in candidates],
+        tmp_path / "shortlist.json",
+    )
+
+    assert result["status"] == "NO_ELIGIBLE_CANDIDATE"
+    ledger = {row["candidate_id"]: row for row in result["rejection_ledger"]}
+    assert "t1_exact_gate_failed" in ledger["a2"]["reasons"]
+    assert "anchor_coverage_gate_failed" in ledger["a3"]["reasons"]
+    assert "object_f1_below_a0_floor" in ledger["a4"]["reasons"]
+
+
+def test_zero_opportunity_cannot_support_claim_and_diagnostic_is_never_selectable(
+    tmp_path: Path, bound_inputs
+) -> None:
+    manifest, manifest_path, add = bound_inputs
+    candidates = [_candidate(profile) for profile in PROFILES]
+    candidates[4] = _candidate("a4", opportunities=0, triggers=0)
+    diagnostic = _candidate(
+        "a4_translation_only", profile="a4", selectable=False
+    )
+    result = tuner.tune_shortlist(
+        manifest_path,
+        [add(item) for item in [*candidates, diagnostic]],
+        tmp_path / "shortlist.json",
+    )
+
+    assert result["shortlisted_candidate_ids"] == ["a3", "a2"]
+    ledger = {row["candidate_id"]: row for row in result["rejection_ledger"]}
+    assert "mechanism_profile_claim_no_opportunity" in ledger["a4"]["reasons"]
+    assert ledger["a4_translation_only"]["eligible"] is False
+    assert "diagnostic_candidate_not_selectable" in ledger["a4_translation_only"]["reasons"]
+
+
+def test_shortlist_preserves_fixed_profile_fallback_order(
+    tmp_path: Path, bound_inputs
+) -> None:
+    _, manifest_path, add = bound_inputs
+    candidates = [_candidate(profile) for profile in PROFILES]
+    result = tuner.tune_shortlist(
+        manifest_path,
+        [add(item) for item in reversed(candidates)],
+        tmp_path / "shortlist.json",
+    )
+    assert result["shortlisted_candidate_ids"] == ["a4", "a3", "a2"]
+    assert result["profile_fallback_order"] == ["a4", "a3", "a2"]
+
+
+def test_shortlist_records_unpublished_failed_profile_and_continues_fallback(
+    tmp_path: Path, bound_inputs
+) -> None:
+    _, manifest_path, add = bound_inputs
+    candidates = [_candidate(profile) for profile in PROFILES if profile != "a4"]
+
+    result = tuner.tune_shortlist(
+        manifest_path,
+        [add(item) for item in candidates],
+        tmp_path / "shortlist.json",
+    )
+
+    assert result["shortlisted_candidate_ids"] == ["a3", "a2"]
+    ledger = {row["candidate_id"]: row for row in result["rejection_ledger"]}
+    assert ledger["a4"]["reasons"] == ["candidate_result_unavailable"]
+
+
+def _t4_matrix(
+    tmp_path: Path,
+    manifest: dict[str, object],
+    shortlist_path: Path,
+    shortlisted: list[dict[str, object]],
+    *,
+    failed: set[str] = frozenset(),
+) -> tuple[Path, dict[str, Path]]:
+    sources: dict[str, Path] = {}
+    candidates_matrix = {}
+    protocol_candidates = {}
+    for candidate in shortlisted:
+        candidate_id = str(candidate["candidate_id"])
+        source = _write(
+            tmp_path / f"{candidate_id}-t4-run.json",
+            {
+                "schema_version": 2,
+                "dataset": "TESSE-CD",
+                "method_id": "OVIV2",
+                "protocol_id": "oviv2-tessecd-v2",
+                "scene": "apartment",
+                "candidate_id": candidate_id,
+                "config_sha256": candidate["config_sha256"],
+            },
+        )
+        sources[candidate_id] = source
+        run_sha256 = hashlib.sha256(source.read_bytes()).hexdigest()
+        metrics = {}
+        gates = {}
+        metric_sources = {}
+        for name, bound in manifest["t4_bounds"].items():
+            value = float(bound) + (1.0 if candidate_id in failed and name == "final_map_mb" else -0.01)
+            metrics[name] = value
+            gates[name] = value <= float(bound)
+            metric_source = _write(
+                tmp_path / f"{candidate_id}-{name}.json",
+                {
+                    "schema_version": 1,
+                    "manifest_id": "oviv2_tesse_t4_metric_v1",
+                    "scene": "apartment",
+                    "candidate_id": candidate_id,
+                    "config_sha256": candidate["config_sha256"],
+                    "run_manifest_sha256": run_sha256,
+                    "metric": name,
+                    "value": value,
+                },
+            )
+            sources[f"{candidate_id}:{name}"] = metric_source
+            metric_sources[name] = _record(metric_source)
+        candidates_matrix[candidate_id] = {
+                "config_sha256": candidate["config_sha256"],
+                "run_manifest_sha256": run_sha256,
+                "metrics": metrics,
+                "gates": gates,
+                "status": "FAIL" if candidate_id in failed else "PASS",
+            }
+        protocol_candidates[candidate_id] = {
+            "config_sha256": candidate["config_sha256"],
+            "run_manifest": _record(source),
+            "metric_sources": metric_sources,
+        }
+    protocol_path = _write(
+        tmp_path / "t4-protocol.json",
+        {
+            "schema_version": 1,
+            "manifest_id": "oviv2_tesse_t4_protocol_v1",
+            "dataset": "TESSE-CD",
+            "method_id": "OVIV2",
+            "protocol_id": "oviv2-tessecd-v2",
+            "scene": "apartment",
+            "bounds": manifest["t4_bounds"],
+            "candidates": protocol_candidates,
+        },
+    )
+    matrix = {
+        "schema_version": 1,
+        "manifest_id": "oviv2_tesse_t4_matrix_v1",
+        "status": "PASS",
+        "shortlist": _record(shortlist_path),
+        "protocol": _record(protocol_path),
+        "candidates": candidates_matrix,
+    }
+    matrix["root_sha256"] = hashlib.sha256(_canonical(matrix)).hexdigest()
+    return _write(tmp_path / "t4-matrix.json", matrix), sources
 
 
 @pytest.mark.parametrize(
-    ("candidate_kwargs", "match"),
-    [
-        ({"non_temporal_variant": True}, "non-temporal"),
-        ({"input_marker": "9"}, "input hash"),
-    ],
+    ("failed", "selected"),
+    [({"a4"}, "a3"), ({"a4", "a3"}, "a2")],
 )
-def test_tuner_rejects_non_temporal_or_input_binding_drift(
-    tmp_path: Path, candidate_kwargs: dict[str, object], match: str
+def test_final_uses_whole_profile_t4_fallback(
+    tmp_path: Path, bound_inputs, failed: set[str], selected: str
 ) -> None:
-    paths = _write_complete_results(
-        tmp_path,
-        kwargs_by_candidate={"a1": candidate_kwargs},
+    manifest, manifest_path, add = bound_inputs
+    shortlist_path = tmp_path / "shortlist.json"
+    shortlist = tuner.tune_shortlist(
+        manifest_path,
+        [add(_candidate(profile)) for profile in PROFILES],
+        shortlist_path,
     )
-    with pytest.raises(ValueError, match=match):
-        tune(MANIFEST, paths, tmp_path / "selection.json")
-
-
-def test_stable_read_rejects_oversized_file_before_reading(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    oversized = tmp_path / "oversized.json"
-    oversized.write_bytes(b"123456789")
-    monkeypatch.setattr(
-        tuner.os,
-        "read",
-        lambda descriptor, count: pytest.fail("oversized file content was read"),
+    matrix_path, _ = _t4_matrix(
+        tmp_path, manifest, shortlist_path, shortlist["shortlisted_candidates"], failed=failed
     )
-    with pytest.raises(ValueError, match="exceeds 8 byte limit"):
-        tuner._stable_bytes(oversized, "packaged candidate result", max_bytes=8)
+
+    final = tuner.tune_final(manifest_path, shortlist_path, matrix_path, tmp_path / "final.json")
+
+    assert final["phase"] == "final"
+    assert final["selected_candidate_id"] == selected
+    assert final["office_results_read"] is False
+    assert final["scenes_read"] == ["apartment"]
 
 
-@pytest.mark.parametrize("failure", ["open", "fsync", "close"])
-def test_atomic_publish_removes_destination_after_directory_failure(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str
+def test_final_rejects_cell_splicing_and_unbound_sources(
+    tmp_path: Path, bound_inputs
 ) -> None:
-    output = tmp_path / "selection.json"
-    real_open = tuner.os.open
-    real_fsync = tuner.os.fsync
-    real_close = tuner.os.close
-    fsync_calls = 0
-    close_calls = 0
+    manifest, manifest_path, add = bound_inputs
+    shortlist_path = tmp_path / "shortlist.json"
+    shortlist = tuner.tune_shortlist(
+        manifest_path,
+        [add(_candidate(profile)) for profile in PROFILES],
+        shortlist_path,
+    )
+    matrix_path, sources = _t4_matrix(
+        tmp_path, manifest, shortlist_path, shortlist["shortlisted_candidates"]
+    )
+    matrix = json.loads(matrix_path.read_text())
+    matrix["candidates"]["a4"]["run_manifest_sha256"] = hashlib.sha256(
+        sources["a3"].read_bytes()
+    ).hexdigest()
+    matrix.pop("root_sha256")
+    matrix["root_sha256"] = hashlib.sha256(_canonical(matrix)).hexdigest()
+    matrix_path.write_bytes(_canonical(matrix) + b"\n")
 
-    def failing_open(path: str | Path, flags: int, *args: object) -> int:
-        if failure == "open" and Path(path) == output.parent and flags == tuner.os.O_RDONLY:
-            raise OSError("injected directory open failure")
-        return real_open(path, flags, *args)
-
-    def failing_fsync(descriptor: int) -> None:
-        nonlocal fsync_calls
-        fsync_calls += 1
-        if failure == "fsync" and fsync_calls == 2:
-            raise OSError("injected directory fsync failure")
-        real_fsync(descriptor)
-
-    def failing_close(descriptor: int) -> None:
-        nonlocal close_calls
-        close_calls += 1
-        real_close(descriptor)
-        if failure == "close" and close_calls == 2:
-            raise OSError("injected directory close failure")
-
-    monkeypatch.setattr(tuner.os, "open", failing_open)
-    monkeypatch.setattr(tuner.os, "fsync", failing_fsync)
-    monkeypatch.setattr(tuner.os, "close", failing_close)
-    with pytest.raises(OSError, match=f"directory {failure} failure"):
-        tuner._atomic_write_new(output, {"status": "PASS"})
-    assert not output.exists()
-    assert not list(tmp_path.glob(".selection.json.tmp-*"))
+    with pytest.raises(ValueError, match="whole-profile run"):
+        tuner.tune_final(manifest_path, shortlist_path, matrix_path, tmp_path / "final.json")
 
 
-def test_results_root_uses_exact_bound_paths_and_requires_all_candidates(tmp_path: Path) -> None:
-    root = tmp_path / "search"
-    for candidate_id in ("a0", "a1", "a2", "a3", "a4"):
-        result_dir = root / "candidates" / candidate_id / "apartment"
-        result_dir.mkdir(parents=True)
-        _write_result(
-            result_dir,
-            candidate_id,
-            metrics=_metrics(),
-            result_name="result.json",
-        )
-    selection = tune_results_root(MANIFEST, root, tmp_path / "selection.json")
-    assert selection["result_contract"] == "candidates/<candidate_id>/apartment/result.json"
-    assert [Path(item["path"]).relative_to(root).as_posix() for item in selection["result_files"]] == [
-        f"candidates/{candidate_id}/apartment/result.json"
-        for candidate_id in ("a0", "a1", "a2", "a3", "a4")
-    ]
+def test_final_rejects_shortlist_hash_drift_and_no_clobber(
+    tmp_path: Path, bound_inputs
+) -> None:
+    manifest, manifest_path, add = bound_inputs
+    shortlist_path = tmp_path / "shortlist.json"
+    shortlist = tuner.tune_shortlist(
+        manifest_path,
+        [add(_candidate(profile)) for profile in PROFILES],
+        shortlist_path,
+    )
+    matrix_path, _ = _t4_matrix(
+        tmp_path, manifest, shortlist_path, shortlist["shortlisted_candidates"]
+    )
+    shortlist_path.write_bytes(shortlist_path.read_bytes() + b" ")
+    with pytest.raises(ValueError, match="shortlist source binding mismatch"):
+        tuner.tune_final(manifest_path, shortlist_path, matrix_path, tmp_path / "final.json")
 
-    (root / "candidates/a4/apartment/result.json").unlink()
-    with pytest.raises(FileNotFoundError, match="candidates/a4/apartment/result.json"):
-        tune_results_root(MANIFEST, root, tmp_path / "missing.json")
-
-
-def test_tuner_rejects_naked_duplicate_nonfinite_office_and_overwrite(tmp_path: Path) -> None:
-    valid = _write_result(tmp_path, "a0", metrics=_metrics())
     occupied = tmp_path / "occupied.json"
     occupied.write_text("occupied")
     with pytest.raises(FileExistsError):
-        tune(MANIFEST, (valid,), occupied)
+        tuner.tune_final(manifest_path, shortlist_path, matrix_path, occupied)
 
-    naked = tmp_path / "naked.json"
-    naked.write_text('{"candidate_id":"a0","metrics":{},"gates":{}}\n')
-    with pytest.raises(ValueError, match="schema is not exact"):
-        tune(MANIFEST, (naked,), tmp_path / "naked-selection.json")
-    duplicate = tmp_path / "duplicate.json"
-    duplicate.write_text('{"candidate_id":"a0","candidate_id":"a1"}\n')
-    with pytest.raises(ValueError, match="duplicate JSON key"):
-        tune(MANIFEST, (duplicate,), tmp_path / "duplicate-selection.json")
-    nonfinite = tmp_path / "nonfinite.json"
-    nonfinite.write_text('{"candidate_id":"a0","metric":NaN}\n')
-    with pytest.raises(ValueError, match="non-finite"):
-        tune(MANIFEST, (nonfinite,), tmp_path / "nonfinite-selection.json")
 
-    office = json.loads(valid.read_text())
-    office["scene"] = "office"
-    valid.write_bytes(_bytes(office))
-    with pytest.raises(ValueError, match="does not match revalidated sources"):
-        tune(MANIFEST, (valid,), tmp_path / "office-selection.json")
+def test_final_rejects_nonhex_run_manifest_hash(
+    tmp_path: Path, bound_inputs
+) -> None:
+    manifest, manifest_path, add = bound_inputs
+    shortlist_path = tmp_path / "shortlist.json"
+    shortlist = tuner.tune_shortlist(
+        manifest_path,
+        [add(_candidate(profile)) for profile in PROFILES],
+        shortlist_path,
+    )
+    matrix_path, _ = _t4_matrix(
+        tmp_path, manifest, shortlist_path, shortlist["shortlisted_candidates"]
+    )
+    matrix = json.loads(matrix_path.read_text())
+    matrix["candidates"]["a4"]["run_manifest_sha256"] = "z" * 64
+    matrix.pop("root_sha256")
+    matrix["root_sha256"] = hashlib.sha256(_canonical(matrix)).hexdigest()
+    matrix_path.write_bytes(_canonical(matrix) + b"\n")
+
+    with pytest.raises(ValueError, match="run manifest hash is invalid"):
+        tuner.tune_final(manifest_path, shortlist_path, matrix_path, tmp_path / "final.json")
+
+
+def test_final_rejects_t4_metric_source_drift(
+    tmp_path: Path, bound_inputs
+) -> None:
+    manifest, manifest_path, add = bound_inputs
+    shortlist_path = tmp_path / "shortlist.json"
+    shortlist = tuner.tune_shortlist(
+        manifest_path,
+        [add(_candidate(profile)) for profile in PROFILES],
+        shortlist_path,
+    )
+    matrix_path, sources = _t4_matrix(
+        tmp_path, manifest, shortlist_path, shortlist["shortlisted_candidates"]
+    )
+    sources["a4:query_mean_ms"].write_text('{"tampered":true}\n')
+
+    with pytest.raises(ValueError, match="T4 metric.*source binding mismatch"):
+        tuner.tune_final(manifest_path, shortlist_path, matrix_path, tmp_path / "final.json")
+
+
+def test_phase_cli_has_conditionally_required_inputs() -> None:
+    shortlist = tuner.parse_args(
+        [
+            "--phase", "shortlist", "--manifest", "manifest.json",
+            "--results-root", "results", "--output", "shortlist.json",
+        ]
+    )
+    assert shortlist.phase == "shortlist"
+    final = tuner.parse_args(
+        [
+            "--phase", "final", "--manifest", "manifest.json",
+            "--shortlist", "shortlist.json", "--t4-matrix", "t4.json",
+            "--output", "final.json",
+        ]
+    )
+    assert final.phase == "final"
+    with pytest.raises(SystemExit):
+        tuner.parse_args(
+            ["--phase", "final", "--manifest", "manifest.json", "--output", "final.json"]
+        )
+
+
+def test_atomic_publish_handles_partial_writes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    output = tmp_path / "selection.json"
+    real_write = tuner.os.write
+
+    def partial_write(descriptor: int, data: bytes | memoryview) -> int:
+        return real_write(descriptor, data[:3])
+
+    monkeypatch.setattr(tuner.os, "write", partial_write)
+    tuner._atomic_write_new(output, {"status": "PASS", "candidate": "a4"})
+
+    assert json.loads(output.read_text()) == {"status": "PASS", "candidate": "a4"}
+
+
+def test_atomic_publish_cleans_temporary_file_after_write_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    output = tmp_path / "selection.json"
+    monkeypatch.setattr(
+        tuner.os, "write", lambda descriptor, data: (_ for _ in ()).throw(OSError("write failure"))
+    )
+
+    with pytest.raises(OSError, match="write failure"):
+        tuner._atomic_write_new(output, {"status": "PASS"})
+
+    assert not output.exists()
+    assert not list(tmp_path.glob(".selection.json.tmp-*"))
