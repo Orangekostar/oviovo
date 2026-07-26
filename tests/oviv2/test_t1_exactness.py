@@ -188,7 +188,7 @@ def test_class_helper_override_fails_before_branch(monkeypatch) -> None:
         called = True
 
     monkeypatch.setattr(Oviv2Runtime, "_apply_visibility_to", poisoned)
-    with pytest.raises(TypeError, match="class method.*overridden"):
+    with pytest.raises(TypeError, match="class namespace.*modified"):
         DualReadoutRuntime(
             _cumulative(),
             TemporalCurrentRuntime(
@@ -206,7 +206,7 @@ def test_class_entry_override_fails_before_branch(monkeypatch) -> None:
         called = True
 
     monkeypatch.setattr(Oviv2Runtime, "process_frame", poisoned)
-    with pytest.raises(TypeError, match="class method.*overridden"):
+    with pytest.raises(TypeError, match="class namespace.*modified"):
         DualReadoutRuntime(
             _cumulative(),
             TemporalCurrentRuntime(
@@ -224,7 +224,7 @@ def test_class_publish_hook_override_fails_before_branch(monkeypatch) -> None:
         called = True
 
     monkeypatch.setattr(TemporalCurrentRuntime, "_before_publish", poisoned)
-    with pytest.raises(TypeError, match="class method.*overridden"):
+    with pytest.raises(TypeError, match="class namespace.*modified"):
         DualReadoutRuntime(
             _cumulative(),
             TemporalCurrentRuntime(
@@ -232,6 +232,82 @@ def test_class_publish_hook_override_fails_before_branch(monkeypatch) -> None:
             ),
         )
     assert called is False
+
+
+def test_added_property_fails_before_descriptor_access(monkeypatch) -> None:
+    frame = _frame()
+    cumulative = _cumulative()
+    original_geometry = cumulative.geometry
+    called = False
+
+    def get_geometry(self):
+        nonlocal called
+        called = True
+        frame.rgb[0, 0, 0] = 233
+        return original_geometry
+
+    monkeypatch.setattr(Oviv2Runtime, "geometry", property(get_geometry), raising=False)
+    with pytest.raises(TypeError, match="class namespace.*modified"):
+        DualReadoutRuntime(
+            cumulative,
+            TemporalCurrentRuntime(
+                "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+            ),
+        )
+    assert called is False
+    assert frame.rgb[0, 0, 0] == 0
+
+
+def test_data_descriptor_fails_before_descriptor_access(monkeypatch) -> None:
+    frame = _frame()
+    temporal = TemporalCurrentRuntime(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+    )
+    original_state = temporal.state
+    called = False
+
+    class PoisonDescriptor:
+        def __get__(self, instance, owner):
+            nonlocal called
+            called = True
+            frame.rgb[0, 0, 0] = 233
+            return original_state
+
+        def __set__(self, instance, value):
+            raise AssertionError("descriptor setter must not run")
+
+    monkeypatch.setattr(
+        TemporalCurrentRuntime, "state", PoisonDescriptor(), raising=False
+    )
+    with pytest.raises(TypeError, match="class namespace.*modified"):
+        DualReadoutRuntime(_cumulative(), temporal)
+    assert called is False
+    assert frame.rgb[0, 0, 0] == 0
+
+
+def test_added_getattribute_fails_before_instance_access(monkeypatch) -> None:
+    frame = _frame()
+    cumulative = _cumulative()
+    called = False
+
+    def poisoned(self, name):
+        nonlocal called
+        called = True
+        frame.rgb[0, 0, 0] = 233
+        return object.__getattribute__(self, name)
+
+    monkeypatch.setattr(
+        Oviv2Runtime, "__getattribute__", poisoned, raising=False
+    )
+    with pytest.raises(TypeError, match="class namespace.*modified"):
+        DualReadoutRuntime(
+            cumulative,
+            TemporalCurrentRuntime(
+                "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+            ),
+        )
+    assert called is False
+    assert frame.rgb[0, 0, 0] == 0
 
 
 def test_cumulative_subclass_helper_override_fails_before_branch() -> None:

@@ -236,12 +236,31 @@ def test_dual_result_construction_failure_rolls_back_both_runtimes(monkeypatch) 
     _assert_exact_identity_snapshot(temporal, before_temporal)
 
 
-def test_second_commit_failure_rolls_back_both_and_retry_is_exact(monkeypatch) -> None:
+@pytest.mark.parametrize(
+    "profile", [ExecutionProfile.A0, ExecutionProfile.A1, ExecutionProfile.A2]
+)
+def test_second_commit_failure_rolls_back_both_and_retry_is_exact(
+    monkeypatch, profile: ExecutionProfile
+) -> None:
     import src.oviv2.dual_readout as module
+    from src.oviv2.reference_readout import (
+        LifecycleOverlayReadout,
+        ReferenceCurrentReadout,
+    )
     from src.oviv2.t1_exactness import cumulative_state_sha256, temporal_state_sha256
 
+    def make_temporal():
+        config = replace(_temporal_config(), execution_profile=profile)
+        if profile is ExecutionProfile.A0:
+            return ReferenceCurrentReadout("scene", config)
+        if profile is ExecutionProfile.A1:
+            return LifecycleOverlayReadout("scene", config)
+        return TemporalCurrentRuntime(
+            "scene", config, LocalTrackerConfig(confirm_hits=2)
+        )
+
     cumulative = _cumulative()
-    temporal = _temporal()
+    temporal = make_temporal()
     runtime = module.DualReadoutRuntime(cumulative, temporal)
     before_cumulative = _identity_snapshot(cumulative)
     before_temporal = _identity_snapshot(temporal)
@@ -263,7 +282,7 @@ def test_second_commit_failure_rolls_back_both_and_retry_is_exact(monkeypatch) -
 
     retry = runtime.process_frame(_frame(), ())
     clean_cumulative = _cumulative()
-    clean_temporal = _temporal()
+    clean_temporal = make_temporal()
     clean = module.DualReadoutRuntime(clean_cumulative, clean_temporal).process_frame(
         _frame(), ()
     )

@@ -5,7 +5,6 @@ from contextlib import contextmanager
 from dataclasses import dataclass, fields, is_dataclass
 from enum import Enum
 import hashlib
-import inspect
 import math
 import struct
 from typing import Any, Iterator, Mapping
@@ -63,8 +62,8 @@ _CUMULATIVE_FIELDS = frozenset({
 })
 _TEMPORAL_FIELDS = frozenset({"config", "state", "tracker_config"})
 _REFERENCE_FIELDS = frozenset({"config", "state"})
-_TRUSTED_CLASS_METHODS = tuple(
-    (owner, name, value)
+_TRUSTED_CLASS_NAMESPACES = tuple(
+    (owner, dict(vars(owner)))
     for owner in (
         Oviv2Runtime,
         TemporalCurrentRuntime,
@@ -72,8 +71,6 @@ _TRUSTED_CLASS_METHODS = tuple(
         ReferenceCurrentReadout,
         LifecycleOverlayReadout,
     )
-    for name, value in vars(owner).items()
-    if inspect.isfunction(value) or isinstance(value, (classmethod, staticmethod))
 )
 
 
@@ -377,14 +374,17 @@ def shared_input_snapshot(
     return _SharedInputSnapshot.capture(frame, observations, dense_semantics)
 
 
-def _validate_frozen_class_methods() -> None:
-    for owner, name, expected in _TRUSTED_CLASS_METHODS:
-        if vars(owner).get(name) is not expected:
-            raise TypeError("built-in readout class method was overridden")
+def _validate_frozen_class_namespaces() -> None:
+    for owner, expected in _TRUSTED_CLASS_NAMESPACES:
+        current = vars(owner)
+        if current.keys() != expected.keys() or any(
+            current[name] is not value for name, value in expected.items()
+        ):
+            raise TypeError("built-in readout class namespace was modified")
 
 
 def isolated_cumulative_runtime(runtime: Oviv2Runtime) -> Oviv2Runtime:
-    _validate_frozen_class_methods()
+    _validate_frozen_class_namespaces()
     if (
         type(runtime) is not Oviv2Runtime
         or set(vars(runtime)) != _CUMULATIVE_FIELDS
@@ -412,7 +412,7 @@ def isolated_cumulative_runtime(runtime: Oviv2Runtime) -> Oviv2Runtime:
 
 
 def isolated_temporal_runtime(runtime: object) -> object:
-    _validate_frozen_class_methods()
+    _validate_frozen_class_namespaces()
     if (
         type(runtime) is TemporalCurrentRuntime
         and set(vars(runtime)) == _TEMPORAL_FIELDS
