@@ -61,8 +61,19 @@ def test_epoch_is_strictly_frozen_owned_and_array_safe() -> None:
 
     np.testing.assert_array_equal(epoch.object_to_world, np.eye(4))
     assert not epoch.object_to_world.flags.writeable
-    assert copy.deepcopy(epoch) == epoch
-    assert copy.deepcopy(epoch) is not epoch
+    copied = copy.deepcopy(epoch)
+    assert copied == epoch and copied is not epoch
+    assert copied.last_processed_frame_id == epoch.last_processed_frame_id == 1
+    for original, duplicate in (
+        (epoch.object_to_world, copied.object_to_world),
+        (epoch.submap.local_points_xyz, copied.submap.local_points_xyz),
+        (epoch.submap.weights, copied.submap.weights),
+        (epoch.submap.last_seen_frame_ids, copied.submap.last_seen_frame_ids),
+    ):
+        assert not duplicate.flags.writeable
+        assert not np.shares_memory(original, duplicate)
+        with pytest.raises(ValueError, match="read-only"):
+            duplicate.flat[0] = 99
     with pytest.raises(FrozenInstanceError):
         epoch.readout_valid = False  # type: ignore[misc]
 
@@ -81,6 +92,29 @@ def test_epoch_rejects_invalid_contract(args: tuple[object, ...]) -> None:
         GeometryEpoch(*args)  # type: ignore[arg-type]
 
 
+@pytest.mark.parametrize(
+    "last_frame,error_type",
+    [
+        (True, TypeError),
+        (-1, ValueError),
+        (np.iinfo(np.int64).max + 1, ValueError),
+        (0, ValueError),
+    ],
+)
+def test_epoch_rejects_invalid_last_processed_frame(
+    last_frame: object, error_type: type[Exception]
+) -> None:
+    with pytest.raises(error_type, match="last_processed_frame_id"):
+        GeometryEpoch(
+            7,
+            3,
+            np.eye(4),
+            _submap(),
+            True,
+            last_processed_frame_id=last_frame,  # type: ignore[arg-type]
+        )
+
+
 def test_accepted_estimate_integrates_in_same_epoch_without_mutating_inputs() -> None:
     epoch = _epoch()
     points = np.asarray([[0.3, 0.0, 0.0]])
@@ -92,6 +126,7 @@ def test_accepted_estimate_integrates_in_same_epoch_without_mutating_inputs() ->
 
     assert updated.entity_id == epoch.entity_id and updated.epoch_id == epoch.epoch_id
     assert updated.motion_decision is MotionDecision.TRANSLATION_ACCEPTED
+    assert updated.last_processed_frame_id == 2
     assert updated.readout_valid is True
     assert updated.submap.weights[0] == 2.0
     np.testing.assert_array_equal(points, original)
@@ -109,6 +144,7 @@ def test_invalid_epoch_empty_accepted_integration_does_not_revive_readout() -> N
 
     assert updated.readout_valid is False
     assert updated.submap == epoch.submap
+    assert updated.last_processed_frame_id == 2
 
 
 def test_invalid_epoch_nonempty_accepted_integration_revives_readout() -> None:
@@ -135,6 +171,23 @@ def test_invalid_epoch_does_not_revive_when_capacity_discards_observation() -> N
 
     assert unchanged.submap == invalid.submap
     assert unchanged.readout_valid is False
+    assert unchanged.last_processed_frame_id == 3
+    pose_before = unchanged.object_to_world.tobytes()
+    with pytest.raises(ValueError, match="frame_id"):
+        unchanged.integrate(
+            _estimate(x=2.0),
+            np.asarray([[0.3, 0.0, 0.0]]),
+            frame_id=3,
+            config=config,
+        )
+    with pytest.raises(ValueError, match="frame_id"):
+        unchanged.integrate(
+            _estimate(x=2.0),
+            np.asarray([[0.3, 0.0, 0.0]]),
+            frame_id=2,
+            config=config,
+        )
+    assert unchanged.object_to_world.tobytes() == pose_before
 
 
 def test_rejected_motion_cannot_integrate_into_existing_epoch() -> None:
@@ -191,6 +244,7 @@ def test_visible_absent_then_present_does_not_revive_without_geometry_update() -
     present = invalid.apply_evidence(TemporalEvidenceKind.PRESENT)
 
     assert present.readout_valid is False
+    assert present.last_processed_frame_id == invalid.last_processed_frame_id
 
 
 def test_new_epoch_retains_identity_and_uses_only_current_observation() -> None:
@@ -207,6 +261,7 @@ def test_new_epoch_retains_identity_and_uses_only_current_observation() -> None:
 
     assert new.entity_id == old.entity_id and new.epoch_id == 4
     assert new.motion_decision is MotionDecision.REJECTED
+    assert new.last_processed_frame_id == 8
     np.testing.assert_array_equal(new.object_to_world[:3, 3], [10.0, 0.0, 0.0])
     assert new.submap.local_voxel_keys == ((0, 0, 0), (1, 0, 0))
     np.testing.assert_array_equal(new.submap.weights, [1.0, 1.0])

@@ -41,12 +41,16 @@ def _points(value: object, name: str) -> np.ndarray:
         raise TypeError(f"{name} must contain numeric non-boolean values")
     try:
         raw = np.asarray(value)
+    except OverflowError as exc:
+        raise ValueError(f"{name} cannot be represented as float64") from exc
     except (TypeError, ValueError) as exc:
         raise TypeError(f"{name} must be convertible to a float64 array") from exc
     if raw.dtype.kind == "b":
         raise TypeError(f"{name} must contain numeric non-boolean values")
     try:
         points = np.asarray(raw, dtype=np.float64)
+    except OverflowError as exc:
+        raise ValueError(f"{name} cannot be represented as float64") from exc
     except (TypeError, ValueError) as exc:
         raise TypeError(f"{name} must be convertible to a float64 array") from exc
     if points.ndim != 2 or points.shape[1:] != (3,):
@@ -61,6 +65,8 @@ def _finite_xyz(value: object, name: str) -> tuple[float, float, float]:
         raise TypeError(f"{name} must contain numeric non-boolean values")
     try:
         xyz = np.asarray(value, dtype=np.float64)
+    except OverflowError as exc:
+        raise ValueError(f"{name} cannot be represented as float64") from exc
     except (TypeError, ValueError) as exc:
         raise TypeError(f"{name} must contain numeric values") from exc
     if xyz.shape != (3,):
@@ -75,6 +81,8 @@ def _rigid_transform(value: object, name: str) -> np.ndarray:
         raise TypeError(f"{name} must contain numeric non-boolean values")
     try:
         transform = np.asarray(value, dtype=np.float64)
+    except OverflowError as exc:
+        raise ValueError(f"{name} cannot be represented as float64") from exc
     except (TypeError, ValueError) as exc:
         raise TypeError(f"{name} must be numeric") from exc
     if transform.shape != (4, 4) or not np.all(np.isfinite(transform)):
@@ -208,6 +216,17 @@ class ObjectSubmap:
             and np.array_equal(self.last_seen_frame_ids, other.last_seen_frame_ids)
         )
 
+    def __deepcopy__(self, memo: dict[int, object]) -> ObjectSubmap:
+        copied = ObjectSubmap(
+            self.reference_centroid_xyz,
+            self.local_voxel_keys,
+            self.local_points_xyz,
+            self.weights,
+            self.last_seen_frame_ids,
+        )
+        memo[id(self)] = copied
+        return copied
+
     def world_points(self, object_to_world: np.ndarray | None = None) -> np.ndarray:
         transform = (
             _translation_pose(self.reference_centroid_xyz)
@@ -288,6 +307,16 @@ class ObjectMotionEstimate:
             and self.rmse_m == other.rmse_m
             and np.array_equal(self.object_to_world, other.object_to_world)
         )
+
+    def __deepcopy__(self, memo: dict[int, object]) -> ObjectMotionEstimate:
+        copied = ObjectMotionEstimate(
+            self.object_to_world,
+            self.decision,
+            self.fitness,
+            self.rmse_m,
+        )
+        memo[id(self)] = copied
+        return copied
 
 
 def backproject_observation(

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from dataclasses import dataclass
 from numbers import Integral
 
@@ -39,6 +40,7 @@ class GeometryEpoch:
     submap: ObjectSubmap
     readout_valid: bool
     motion_decision: MotionDecision | None = None
+    last_processed_frame_id: int | None = None
 
     __hash__ = None
 
@@ -52,8 +54,28 @@ class GeometryEpoch:
             raise TypeError("readout_valid must be an exact bool")
         if self.motion_decision is not None and type(self.motion_decision) is not MotionDecision:
             raise TypeError("motion_decision must be a MotionDecision or None")
+        maximum_seen = (
+            int(self.submap.last_seen_frame_ids.max())
+            if self.submap.last_seen_frame_ids.size
+            else None
+        )
+        if self.last_processed_frame_id is None:
+            last_processed_frame_id = maximum_seen
+        else:
+            last_processed_frame_id = _identifier(
+                self.last_processed_frame_id,
+                "last_processed_frame_id",
+                minimum=0,
+            )
+            if maximum_seen is not None and last_processed_frame_id < maximum_seen:
+                raise ValueError(
+                    "last_processed_frame_id cannot precede submap observations"
+                )
         object.__setattr__(self, "entity_id", entity_id)
         object.__setattr__(self, "epoch_id", epoch_id)
+        object.__setattr__(
+            self, "last_processed_frame_id", last_processed_frame_id
+        )
         object.__setattr__(
             self, "object_to_world", _readonly_array(pose, np.dtype(np.float64))
         )
@@ -69,7 +91,21 @@ class GeometryEpoch:
             and self.submap == other.submap
             and self.readout_valid is other.readout_valid
             and self.motion_decision is other.motion_decision
+            and self.last_processed_frame_id == other.last_processed_frame_id
         )
+
+    def __deepcopy__(self, memo: dict[int, object]) -> GeometryEpoch:
+        copied = GeometryEpoch(
+            self.entity_id,
+            self.epoch_id,
+            self.object_to_world,
+            copy.deepcopy(self.submap, memo),
+            self.readout_valid,
+            self.motion_decision,
+            self.last_processed_frame_id,
+        )
+        memo[id(self)] = copied
+        return copied
 
     def integrate(
         self,
@@ -93,10 +129,16 @@ class GeometryEpoch:
             raise ValueError("entity_id does not match geometry epoch")
         if config is None:
             raise TypeError("config must be a TemporalGeometryConfig")
+        normalized_frame_id = _identifier(frame_id, "frame_id", minimum=0)
+        if (
+            self.last_processed_frame_id is not None
+            and normalized_frame_id <= self.last_processed_frame_id
+        ):
+            raise ValueError("frame_id must increase strictly")
         submap = integrate_object_submap(
             self.submap,
             points_world,
-            frame_id,
+            normalized_frame_id,
             config,
             object_to_world=estimate.object_to_world,
         )
@@ -108,6 +150,7 @@ class GeometryEpoch:
             submap,
             readout_valid,
             estimate.decision,
+            normalized_frame_id,
         )
 
     def apply_evidence(self, evidence: TemporalEvidenceKind) -> GeometryEpoch:
@@ -133,6 +176,7 @@ class GeometryEpoch:
             self.submap,
             readout_valid,
             self.motion_decision,
+            self.last_processed_frame_id,
         )
 
 
@@ -190,4 +234,5 @@ def start_new_epoch(
         submap,
         True,
         estimate.decision,
+        frame_id,
     )

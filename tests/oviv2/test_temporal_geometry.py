@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from dataclasses import FrozenInstanceError
 import itertools
 import warnings
@@ -153,6 +154,27 @@ def test_submap_copies_freezes_and_maps_local_points_to_world() -> None:
         assert array.flags.c_contiguous and not array.flags.writeable
     with pytest.raises(FrozenInstanceError):
         submap.weights = np.ones(2)  # type: ignore[misc]
+
+
+def test_geometry_value_deepcopy_preserves_owned_readonly_arrays() -> None:
+    submap = _submap(np.asarray([[0.1, 0.0, 0.0]]), reference=(0.0, 0.0, 0.0))
+    motion = ObjectMotionEstimate(
+        np.eye(4), MotionDecision.TRANSLATION_ACCEPTED, 0.0, 0.2
+    )
+
+    copied_submap = copy.deepcopy(submap)
+    copied_motion = copy.deepcopy(motion)
+
+    for original, copied in (
+        (submap.local_points_xyz, copied_submap.local_points_xyz),
+        (submap.weights, copied_submap.weights),
+        (submap.last_seen_frame_ids, copied_submap.last_seen_frame_ids),
+        (motion.object_to_world, copied_motion.object_to_world),
+    ):
+        assert not copied.flags.writeable
+        assert not np.shares_memory(original, copied)
+        with pytest.raises(ValueError, match="read-only"):
+            copied.flat[0] = 99
 
 
 @pytest.mark.parametrize(
@@ -311,6 +333,70 @@ def test_translation_rejects_empty_or_nonfinite_observation_without_moving(
     assert result.decision is MotionDecision.REJECTED
     np.testing.assert_array_equal(result.object_to_world, previous)
     assert np.isfinite(result.fitness) and np.isfinite(result.rmse_m)
+
+
+@pytest.mark.parametrize(
+    "estimator", [estimate_object_translation, estimate_object_motion]
+)
+@pytest.mark.parametrize("invalid_part", ["points", "centroid"])
+def test_motion_observation_python_integer_overflow_is_rejected_without_mutation(
+    estimator: object, invalid_part: str
+) -> None:
+    huge = 10**400
+    submap = _submap(np.asarray([[0.0, 0.0, 0.0]]))
+    points = np.asarray([[0, 0, 0]], dtype=object)
+    centroid: tuple[object, object, object] = (11.0, 0.0, 0.0)
+    if invalid_part == "points":
+        points[0, 0] = huge
+    else:
+        centroid = (huge, 0.0, 0.0)
+    original_points = points.copy()
+    previous = np.eye(4)
+    previous[0, 3] = 10.0
+
+    result = estimator(  # type: ignore[operator]
+        submap,
+        points,
+        centroid,
+        _config(),
+        previous_object_to_world=previous,
+    )
+
+    assert result.decision is MotionDecision.REJECTED
+    np.testing.assert_array_equal(result.object_to_world, previous)
+    np.testing.assert_array_equal(points, original_points)
+
+
+def test_python_integer_overflow_is_normalized_by_geometry_value_constructors() -> None:
+    huge = 10**400
+    huge_pose = np.asarray(np.eye(4), dtype=object)
+    huge_pose[0, 3] = huge
+    with pytest.raises(ValueError, match="object_to_world"):
+        ObjectMotionEstimate(huge_pose, MotionDecision.REJECTED, 0.0, 0.0)
+    with pytest.raises(ValueError, match="reference_centroid_xyz"):
+        ObjectSubmap(
+            (huge, 0.0, 0.0),
+            (),
+            np.empty((0, 3)),
+            np.empty(0),
+            np.empty(0, dtype=np.int64),
+        )
+    with pytest.raises(ValueError, match="local_points_xyz"):
+        ObjectSubmap(
+            (0.0, 0.0, 0.0),
+            ((0, 0, 0),),
+            np.asarray([[huge, 0, 0]], dtype=object),
+            np.ones(1),
+            np.zeros(1, dtype=np.int64),
+        )
+    with pytest.raises(ValueError, match="previous_object_to_world"):
+        estimate_object_translation(
+            _submap(np.asarray([[0.0, 0.0, 0.0]])),
+            np.zeros((1, 3)),
+            (0.0, 0.0, 0.0),
+            _config(),
+            previous_object_to_world=huge_pose,
+        )
 
 
 def test_motion_rejects_when_source_is_empty_even_with_valid_target() -> None:
