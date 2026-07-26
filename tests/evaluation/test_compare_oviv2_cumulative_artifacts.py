@@ -191,6 +191,19 @@ def _add_v2_source_index(root: Path) -> None:
         path.write_bytes((field + "\n").encode())
         sidecars[field] = _file_record(path, root)
         manifest["artifact_inventory"].append(relative)
+    diagnostics = root / "runtime_diagnostics.json"
+    diagnostics.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "execution_profile": "a2",
+                "counters": {"absence": 1},
+            }
+        )
+        + "\n"
+    )
+    sidecars["runtime_diagnostics"] = _file_record(diagnostics, root)
+    manifest["artifact_inventory"].append("runtime_diagnostics.json")
     source_index = {
         "schema_version": 1,
         "dataset": "TESSE-CD",
@@ -469,6 +482,97 @@ def test_schema2_accepts_exact_production_source_index_sidecars(tmp_path: Path) 
     _add_v2_source_index(left)
     _add_v2_source_index(right)
     assert compare_cumulative_artifacts(left, right)["checkpoint_frames"] == [2, 7]
+
+
+def test_schema2_accepts_legacy_source_index_without_runtime_diagnostics(
+    tmp_path: Path,
+) -> None:
+    left, right = _pair(tmp_path)
+    for root in (left, right):
+        _add_v2_source_index(root)
+        source_path = root / "source_index.json"
+        source = json.loads(source_path.read_text())
+        source.pop("runtime_diagnostics")
+        source_path.write_text(json.dumps(source, sort_keys=True) + "\n")
+        manifest_path = root / "run_manifest.json"
+        manifest = json.loads(manifest_path.read_text())
+        manifest["source_index"] = _file_record(source_path, root)
+        manifest["artifact_inventory"].remove("runtime_diagnostics.json")
+        (root / "runtime_diagnostics.json").unlink()
+        manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
+
+    assert compare_cumulative_artifacts(left, right)["checkpoint_frames"] == [2, 7]
+
+
+def test_schema2_runtime_diagnostics_are_strict_but_not_cumulative(
+    tmp_path: Path,
+) -> None:
+    left, right = _pair(tmp_path)
+    _add_v2_source_index(left)
+    _add_v2_source_index(right)
+    baseline = compare_cumulative_artifacts(left, right)
+
+    diagnostics = right / "runtime_diagnostics.json"
+    diagnostics.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "execution_profile": "a3",
+                "counters": {"absence": 999},
+            }
+        )
+        + "\n"
+    )
+    source_path = right / "source_index.json"
+    source = json.loads(source_path.read_text())
+    source["runtime_diagnostics"] = _file_record(diagnostics, right)
+    source_path.write_text(json.dumps(source, sort_keys=True) + "\n")
+    manifest_path = right / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["source_index"] = _file_record(source_path, right)
+    manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
+
+    assert compare_cumulative_artifacts(left, right) == baseline
+
+    diagnostics.write_text('{"tampered":true}\n')
+    with pytest.raises(ArtifactMismatch, match="runtime diagnostics|content"):
+        compare_cumulative_artifacts(left, right)
+
+
+def test_schema2_rejects_runtime_diagnostics_outside_run_root(tmp_path: Path) -> None:
+    left, right = _pair(tmp_path)
+    _add_v2_source_index(left)
+    _add_v2_source_index(right)
+    source_path = right / "source_index.json"
+    source = json.loads(source_path.read_text())
+    source["runtime_diagnostics"]["path"] = "../runtime_diagnostics.json"
+    source_path.write_text(json.dumps(source, sort_keys=True) + "\n")
+    manifest_path = right / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["source_index"] = _file_record(source_path, right)
+    manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
+
+    with pytest.raises(ArtifactMismatch, match="runtime diagnostics|path"):
+        compare_cumulative_artifacts(left, right)
+
+
+def test_schema2_rejects_runtime_diagnostics_record_alias(tmp_path: Path) -> None:
+    left, right = _pair(tmp_path)
+    _add_v2_source_index(left)
+    _add_v2_source_index(right)
+    source_path = right / "source_index.json"
+    source = json.loads(source_path.read_text())
+    source["runtime_diagnostics"] = source["trajectories"]
+    source_path.write_text(json.dumps(source, sort_keys=True) + "\n")
+    manifest_path = right / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["source_index"] = _file_record(source_path, right)
+    manifest["artifact_inventory"].remove("runtime_diagnostics.json")
+    (right / "runtime_diagnostics.json").unlink()
+    manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
+
+    with pytest.raises(ArtifactMismatch, match="runtime diagnostics path"):
+        compare_cumulative_artifacts(left, right)
 
 
 def test_schema1_accepts_only_a_strictly_bound_optional_t1_receipt(

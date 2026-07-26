@@ -90,6 +90,7 @@ _SOURCE_INDEX_FIELDS = frozenset(
         "schedule",
         "capture_status",
         "trajectories",
+        "runtime_diagnostics",
         "checkpoints",
     }
 ) | _FORMAL_IDENTITY_FIELDS
@@ -671,6 +672,16 @@ def _validate_formal_artifact_contracts(
         _relative_content_record(
             source_index.get(role), label=f"source_index {role}"
         )
+    root_runtime_diagnostics = _relative_content_record(
+        source_index.get("runtime_diagnostics"),
+        label="source_index runtime diagnostics",
+        expected_path="runtime_diagnostics.json",
+    )
+    _same_content_record(
+        root_runtime_diagnostics,
+        records["runtime_diagnostics"],
+        label="runtime diagnostics",
+    )
     source_checkpoints = _checkpoint_entries(
         source_index.get("checkpoints"),
         label="source checkpoints",
@@ -765,6 +776,21 @@ def _validate_formal_artifact_contracts(
             label=f"temporal source_index {role}",
             allow_parent=True,
         )
+    temporal_runtime_diagnostics = _relative_content_record(
+        temporal_index.get("runtime_diagnostics"),
+        label="temporal source_index runtime diagnostics",
+        expected_path="runtime_diagnostics.json",
+    )
+    _same_content_record(
+        temporal_runtime_diagnostics,
+        records["temporal_runtime_diagnostics"],
+        label="temporal runtime diagnostics",
+    )
+    _same_content_record(
+        root_runtime_diagnostics,
+        temporal_runtime_diagnostics,
+        label="root-to-temporal runtime diagnostics",
+    )
     temporal_index_checkpoints = _checkpoint_entries(
         temporal_index.get("checkpoints"),
         label="temporal source checkpoints",
@@ -793,6 +819,7 @@ def _validate_formal_artifact_contracts(
         "schedule",
         "capture_status",
         "trajectories",
+        "runtime_diagnostics",
         "checkpoint_statuses",
     }:
         raise ValueError("temporal source contract mismatch")
@@ -810,6 +837,16 @@ def _validate_formal_artifact_contracts(
         _relative_content_record(
             temporal_sources.get(role), label=f"temporal {role}"
         )
+    temporal_runtime_declaration = _relative_content_record(
+        temporal_sources.get("runtime_diagnostics"),
+        label="temporal runtime diagnostics",
+        expected_path="sidecars/runtime_diagnostics.json",
+    )
+    _same_content_record(
+        temporal_runtime_declaration,
+        records["temporal_runtime_diagnostics"],
+        label="temporal runtime diagnostics",
+    )
     statuses = temporal_sources.get("checkpoint_statuses")
     if not isinstance(statuses, list) or len(statuses) != len(official_frames):
         raise ValueError("temporal checkpoint status coverage mismatch")
@@ -1348,6 +1385,12 @@ def finalize_oviv2_common_v2_release(
         "source_index": Path("source_index.json"),
         "occlusion_checkpoint_index": Path("occlusion_checkpoint_index.json"),
     }
+    runtime_artifact_paths = {
+        "runtime_diagnostics": Path("runtime_diagnostics.json"),
+        "temporal_runtime_diagnostics": Path(
+            "temporal/sidecars/runtime_diagnostics.json"
+        ),
+    }
     for scene in SCENES:
         for repeat in REPEATS:
             key = (scene, repeat)
@@ -1371,6 +1414,19 @@ def finalize_oviv2_common_v2_release(
                 records[role] = {
                     "role": f"{scene}.run{repeat}.{role}",
                     **record,
+                }
+                captured_identities[key][f"formal_{role}"] = identity
+            for role, relative in runtime_artifact_paths.items():
+                digest, byte_count, _, identity = _stable_regular_file_with_identity(
+                    roots[key] / relative,
+                    label=f"{scene}.run{repeat} {role}",
+                    capture=False,
+                    expected_ancestor=(roots[key], root_identities[key]),
+                )
+                records[role] = {
+                    "role": f"{scene}.run{repeat}.{role}",
+                    "sha256": digest,
+                    "byte_count": byte_count,
                 }
                 captured_identities[key][f"formal_{role}"] = identity
             for role, (payload, record) in temporal_artifacts.items():

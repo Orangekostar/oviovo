@@ -827,9 +827,16 @@ def _schema2_manifest_inventory(
             "lifecycle_transitions",
             "checkpoints",
         }
+        expected_index_variants = {
+            frozenset(expected_index_fields),
+            frozenset(expected_index_fields | {"runtime_diagnostics"}),
+        }
         if "frozen_run_identity" in source_index:
-            expected_index_fields.add("frozen_run_identity")
-        if set(source_index) != expected_index_fields:
+            expected_index_variants = {
+                fields | {"frozen_run_identity"}
+                for fields in expected_index_variants
+            }
+        if frozenset(source_index) not in expected_index_variants:
             raise ArtifactMismatch("source index schema is invalid")
         if (
             type(source_index.get("schema_version")) is not int
@@ -855,6 +862,25 @@ def _schema2_manifest_inventory(
             result.update(
                 _single_record_inventory(
                     all_files, source_index[key], f"source index {key}"
+                )
+            )
+        if "runtime_diagnostics" in source_index:
+            diagnostics_path, _, _ = _record(
+                source_index["runtime_diagnostics"],
+                "source index runtime diagnostics",
+            )
+            if diagnostics_path != PurePosixPath("runtime_diagnostics.json"):
+                raise ArtifactMismatch("source index runtime diagnostics path is invalid")
+            _validate_file_record(
+                all_files,
+                source_index["runtime_diagnostics"],
+                "source index runtime diagnostics",
+            )
+            result.update(
+                _single_record_inventory(
+                    all_files,
+                    source_index["runtime_diagnostics"],
+                    "source index runtime diagnostics",
                 )
             )
         indexed_checkpoints = source_index.get("checkpoints")

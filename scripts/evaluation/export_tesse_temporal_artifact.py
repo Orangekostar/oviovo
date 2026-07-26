@@ -49,7 +49,10 @@ _SOURCE_INDEX_BASE_FIELDS = frozenset(
 )
 _FORMAL_RUN_FIELDS = frozenset({"frozen_run_identity", "run_execution"})
 _SOURCE_INDEX_FIELDS = _SOURCE_INDEX_BASE_FIELDS | _FORMAL_RUN_FIELDS
-_V2_SOURCE_INDEX_FIELDS = _SOURCE_INDEX_BASE_FIELDS | {"frozen_run_identity"}
+_V2_SOURCE_INDEX_FIELDS = _SOURCE_INDEX_BASE_FIELDS | {"runtime_diagnostics"}
+_V2_FORMAL_SOURCE_INDEX_FIELDS = _V2_SOURCE_INDEX_FIELDS | {
+    "frozen_run_identity"
+}
 _V2_RUN_MANIFEST_FIELDS = frozenset(
     {
         "schema_version",
@@ -1243,6 +1246,7 @@ def _formal_v2_run_fields(
         index.get("trajectories"),
         index.get("frame_coverage"),
         index.get("lifecycle_transitions"),
+        index.get("runtime_diagnostics"),
     ]
     checkpoints = index.get("checkpoints")
     if not isinstance(checkpoints, list):
@@ -1644,6 +1648,7 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
         _SOURCE_INDEX_BASE_FIELDS,
         _SOURCE_INDEX_FIELDS,
         _V2_SOURCE_INDEX_FIELDS,
+        _V2_FORMAL_SOURCE_INDEX_FIELDS,
     }:
         raise ValueError("source index fields are invalid")
     if (
@@ -1668,6 +1673,15 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
     method = raw_method
     if method not in CAUSAL_SNAPSHOT_METHOD_LABELS:
         raise ValueError(f"unsupported causal snapshot method: {method}")
+    if "runtime_diagnostics" in index:
+        diagnostics_record = index.get("runtime_diagnostics")
+        if not (
+            isinstance(diagnostics_record, Mapping)
+            and diagnostics_record.get("path") == "runtime_diagnostics.json"
+        ):
+            raise ValueError(
+                "runtime diagnostics path must be runtime_diagnostics.json"
+            )
     formal_run_fields, formal_verified = _formal_run_fields(
         index,
         index_source=index_source,
@@ -1691,6 +1705,15 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
         index.get("lifecycle_transitions", {}),
         base=base,
         label="lifecycle transitions",
+    )
+    runtime_diagnostics_source = (
+        _declared_source(
+            index.get("runtime_diagnostics", {}),
+            base=base,
+            label="runtime diagnostics",
+        )
+        if "runtime_diagnostics" in index
+        else None
     )
     capture_source = _declared_source(
         index.get("capture_status", {}), base=base, label="capture status"
@@ -1742,6 +1765,11 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
         (coverage_source, "frame coverage"),
         (lifecycle_source, "lifecycle transitions"),
         (capture_source, "capture status"),
+        *(
+            [(runtime_diagnostics_source, "runtime diagnostics")]
+            if runtime_diagnostics_source is not None
+            else []
+        ),
         *formal_verified,
     ]
     checkpoint_inputs: list[dict[str, Any]] = []
@@ -2015,6 +2043,13 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
             ),
             encoding="utf-8",
         )
+        runtime_diagnostics_path: Path | None = None
+        if runtime_diagnostics_source is not None:
+            runtime_diagnostics_path = sidecar_root / "runtime_diagnostics.json"
+            shutil.copyfile(runtime_diagnostics_source.path, runtime_diagnostics_path)
+            _assert_unchanged(
+                runtime_diagnostics_source, label="runtime diagnostics"
+            )
 
         schedule_path = sidecar_root / "schedule.json"
         _write_schedule_sidecar(
@@ -2114,6 +2149,16 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
             "trajectories": trajectory_sidecar_record,
             "frame_coverage": coverage_sidecar_record,
             "lifecycle_transitions": lifecycle_sidecar_record,
+            **(
+                {
+                    "runtime_diagnostics": _relative_record(
+                        runtime_diagnostics_path,
+                        base=sidecar_root,
+                    )
+                }
+                if runtime_diagnostics_path is not None
+                else {}
+            ),
             "checkpoints": normalized_index_checkpoints,
             **{
                 name: formal_run_fields[name]
@@ -2131,6 +2176,15 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
             "frame_coverage": _output_record(coverage_path, output=staging),
             "lifecycle_transitions": _output_record(
                 lifecycle_path, output=staging
+            ),
+            **(
+                {
+                    "runtime_diagnostics": _output_record(
+                        runtime_diagnostics_path, output=staging
+                    )
+                }
+                if runtime_diagnostics_path is not None
+                else {}
             ),
             "checkpoint_statuses": [
                 _output_record(path, output=staging) for path in status_paths

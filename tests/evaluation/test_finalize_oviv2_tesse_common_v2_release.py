@@ -255,6 +255,15 @@ def _add_formal_run_artifacts(
     runner_schedule.write_text('{"dataset":"TESSE-CD"}\n', encoding="utf-8")
     trajectories = root / "trajectories.jsonl"
     trajectories.write_text("", encoding="utf-8")
+    runtime_diagnostics = root / "runtime_diagnostics.json"
+    _write_json(
+        runtime_diagnostics,
+        {
+            "schema_version": 1,
+            "execution_profile": "a2",
+            "counters": {"absence": 1},
+        },
+    )
     source_checkpoints: list[dict[str, object]] = []
     run_checkpoints: list[dict[str, object]] = []
     checkpoint_statuses: list[dict[str, object]] = []
@@ -367,6 +376,9 @@ def _add_formal_run_artifacts(
             "schedule": _relative_record(runner_schedule, root=root),
             "capture_status": _relative_record(capture_status, root=root),
             "trajectories": _relative_record(trajectories, root=root),
+            "runtime_diagnostics": _relative_record(
+                runtime_diagnostics, root=root
+            ),
             "checkpoints": source_checkpoints,
             **formal,
         },
@@ -460,6 +472,10 @@ def _add_formal_run_artifacts(
     _write_json(sidecar_capture, {"schema_version": 1, "status": "PASS"})
     sidecar_trajectories = root / "temporal/trajectories.jsonl"
     sidecar_trajectories.write_text("", encoding="utf-8")
+    sidecar_runtime_diagnostics = (
+        root / "temporal/sidecars/runtime_diagnostics.json"
+    )
+    sidecar_runtime_diagnostics.write_bytes(runtime_diagnostics.read_bytes())
     sidecar_checkpoints: list[dict[str, object]] = []
     temporal_checkpoints: list[dict[str, object]] = []
     temporal_statuses: list[dict[str, object]] = []
@@ -531,6 +547,9 @@ def _add_formal_run_artifacts(
             "trajectories": _relative_record(
                 sidecar_trajectories, root=temporal_sidecar.parent
             ),
+            "runtime_diagnostics": _relative_record(
+                sidecar_runtime_diagnostics, root=temporal_sidecar.parent
+            ),
             "checkpoints": sidecar_checkpoints,
             **formal,
         },
@@ -556,6 +575,9 @@ def _add_formal_run_artifacts(
                 ),
                 "trajectories": _relative_record(
                     sidecar_trajectories, root=root / "temporal"
+                ),
+                "runtime_diagnostics": _relative_record(
+                    sidecar_runtime_diagnostics, root=root / "temporal"
                 ),
                 "checkpoint_statuses": temporal_statuses,
             },
@@ -773,9 +795,11 @@ def test_release_finalizer_accepts_canonical_repeats_from_independent_roots(
     ) == {
         "run_manifest",
         "source_index",
+        "runtime_diagnostics",
         "occlusion_checkpoint_index",
         "temporal_manifest",
         "temporal_source_index",
+        "temporal_runtime_diagnostics",
     }
     assert payload["frozen_identity"]["scene_run_identities"]["office"][
         "algorithm_hash"
@@ -789,6 +813,19 @@ def test_release_finalizer_rejects_real_repeat_content_drift(tmp_path: Path) -> 
         finalize_oviv2_common_v2_release(
             freeze,
             run_id="drift",
+            output=tmp_path / "result.json",
+        )
+
+
+def test_release_revalidates_runtime_diagnostics_binding(tmp_path: Path) -> None:
+    freeze = _fixture(tmp_path)
+    diagnostics = tmp_path / "apartment/run1/runtime_diagnostics.json"
+    diagnostics.write_text('{"tampered":true}\n', encoding="utf-8")
+
+    with pytest.raises(ValueError, match="runtime diagnostics.*differ"):
+        finalize_oviv2_common_v2_release(
+            freeze,
+            run_id="runtime-diagnostics-drift",
             output=tmp_path / "result.json",
         )
 

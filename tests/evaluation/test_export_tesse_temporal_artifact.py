@@ -297,6 +297,16 @@ def _rewrite_index(index_path: Path, payload: dict[str, Any]) -> None:
 def _make_v2_formal_source(root: Path, *, evidence: str = "7") -> Path:
     index_path, index = _build_fixture(root, method="OVIV2")
     index["method"] = "OVIV2"
+    runtime_diagnostics = root / "runtime_diagnostics.json"
+    _write_json(
+        runtime_diagnostics,
+        {
+            "schema_version": 1,
+            "execution_profile": "a2",
+            "processed_frame_count": 5,
+            "counters": {"absence": 1, "eligible_reid": 2},
+        },
+    )
 
     def relative(record: dict[str, Any]) -> dict[str, Any]:
         return {
@@ -308,6 +318,7 @@ def _make_v2_formal_source(root: Path, *, evidence: str = "7") -> Path:
     index["trajectories"] = relative(index["trajectories"])
     index["frame_coverage"] = relative(index["frame_coverage"])
     index["lifecycle_transitions"] = relative(index["lifecycle_transitions"])
+    index["runtime_diagnostics"] = relative(_record(runtime_diagnostics))
     for checkpoint in index["checkpoints"]:
         for role in ("checkpoint_status", "snapshot", "entities"):
             checkpoint[role] = relative(checkpoint[role])
@@ -640,6 +651,72 @@ def test_exports_formal_v2_source_without_requiring_execution_in_occlusion_index
     manifest = json.loads(manifest_path.read_text())
     assert manifest["frozen_run_identity"]["freeze_id"] == "oviv2-tessecd-v2"
     assert "run_execution" not in manifest
+    diagnostics = (
+        manifest_path.parent / manifest["sources"]["runtime_diagnostics"]["path"]
+    )
+    assert diagnostics.read_bytes() == (
+        index_path.parent / "runtime_diagnostics.json"
+    ).read_bytes()
+    sidecar = json.loads(
+        (manifest_path.parent / "sidecars/source_index.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert sidecar["runtime_diagnostics"] == {
+        "path": "runtime_diagnostics.json",
+        "sha256": hashlib.sha256(diagnostics.read_bytes()).hexdigest(),
+        "byte_count": diagnostics.stat().st_size,
+    }
+
+
+def test_exports_nonformal_v2_runtime_diagnostics_binding(tmp_path: Path) -> None:
+    index_path, index = _build_fixture(tmp_path / "source", method="OVIV2")
+    index["method"] = "OVIV2"
+    diagnostics = index_path.parent / "runtime_diagnostics.json"
+    _write_json(diagnostics, {"schema_version": 1, "counters": {"absence": 1}})
+    index["runtime_diagnostics"] = {
+        **_record(diagnostics),
+        "path": "runtime_diagnostics.json",
+    }
+    _rewrite_index(index_path, index)
+
+    manifest_path = export_temporal_artifact(index_path, tmp_path / "output")
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert manifest["sources"]["runtime_diagnostics"]["path"] == (
+        "sidecars/runtime_diagnostics.json"
+    )
+
+
+def test_formal_v2_rejects_runtime_diagnostics_content_drift(tmp_path: Path) -> None:
+    index_path = _make_v2_formal_source(tmp_path / "source")
+    (index_path.parent / "runtime_diagnostics.json").write_text(
+        '{"changed":true}\n', encoding="utf-8"
+    )
+
+    with pytest.raises(ValueError, match="runtime diagnostics.*mismatch"):
+        export_temporal_artifact(index_path, tmp_path / "output")
+
+
+def test_formal_v2_rejects_runtime_diagnostics_record_alias(tmp_path: Path) -> None:
+    index_path = _make_v2_formal_source(tmp_path / "source")
+    root = index_path.parent
+    index = json.loads(index_path.read_text(encoding="utf-8"))
+    index["runtime_diagnostics"] = index["trajectories"]
+    _rewrite_index(index_path, index)
+    manifest_path = root / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["source_index"] = {
+        "path": "source_index.json",
+        "sha256": hashlib.sha256(index_path.read_bytes()).hexdigest(),
+        "byte_count": index_path.stat().st_size,
+    }
+    manifest["artifact_inventory"].remove("runtime_diagnostics.json")
+    (root / "runtime_diagnostics.json").unlink()
+    _write_json(manifest_path, manifest)
+
+    with pytest.raises(ValueError, match="runtime diagnostics path"):
+        export_temporal_artifact(index_path, tmp_path / "output")
 
 
 def test_formal_v2_exports_are_identical_across_execution_roots(tmp_path: Path) -> None:
