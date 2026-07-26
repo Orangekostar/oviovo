@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Iterator
 from dataclasses import dataclass
 import math
 from numbers import Real
@@ -80,8 +81,12 @@ class ProjectedIdentitySearchRegion:
             raise ValueError("expected_depth_m has invalid shape")
         if self.expected_depth_m.dtype.kind != "f":
             raise TypeError("expected_depth_m must have floating dtype")
+        if not np.isfinite(self.expected_depth_m).all():
+            raise ValueError("expected_depth_m must contain only finite values")
+        if np.any(self.expected_depth_m < 0.0):
+            raise ValueError("expected_depth_m must be non-negative outside mask")
         depth_values = self.expected_depth_m[mask]
-        if not np.isfinite(depth_values).all() or np.any(depth_values <= 0.0):
+        if np.any(depth_values <= 0.0):
             raise ValueError("expected_depth_m must be finite and positive inside mask")
         contiguous_depth = np.ascontiguousarray(self.expected_depth_m)
         depth = np.frombuffer(
@@ -273,28 +278,51 @@ class ProposalRecoveryResult:
         object.__setattr__(self, "trigger_count", trigger)
 
 
-def _components(mask: np.ndarray) -> tuple[np.ndarray, ...]:
-    seen = np.zeros(mask.shape, dtype=bool)
-    output: list[np.ndarray] = []
-    height, width = mask.shape
-    for row, column in zip(*np.nonzero(mask)):
-        if seen[row, column]:
+def _component_index_stream(
+    ownership: np.ndarray,
+) -> Iterator[tuple[int, tuple[int, ...]]]:
+    height, width = ownership.shape
+    unowned = np.iinfo(np.int64).max
+    flat_ownership = ownership.reshape(-1)
+    seen = np.zeros(flat_ownership.shape, dtype=bool)
+    for start in np.flatnonzero(flat_ownership != unowned):
+        start_index = int(start)
+        if seen[start_index]:
             continue
-        stack = [(int(row), int(column))]
-        seen[row, column] = True
-        pixels: list[tuple[int, int]] = []
+        identity_id = int(flat_ownership[start_index])
+        seen[start_index] = True
+        stack = [start_index]
+        component: list[int] = []
         while stack:
-            current = stack.pop()
-            pixels.append(current)
-            for rr, cc in ((current[0] - 1, current[1]), (current[0], current[1] - 1), (current[0], current[1] + 1), (current[0] + 1, current[1])):
-                if 0 <= rr < height and 0 <= cc < width and mask[rr, cc] and not seen[rr, cc]:
-                    seen[rr, cc] = True
-                    stack.append((rr, cc))
-        component = np.zeros(mask.shape, dtype=bool)
-        rows, columns = zip(*pixels)
-        component[rows, columns] = True
-        output.append(component)
-    return tuple(output)
+            index = stack.pop()
+            component.append(index)
+            row, column = divmod(index, width)
+            neighbors = []
+            if row > 0:
+                neighbors.append(index - width)
+            if column > 0:
+                neighbors.append(index - 1)
+            if column + 1 < width:
+                neighbors.append(index + 1)
+            if row + 1 < height:
+                neighbors.append(index + width)
+            for neighbor in neighbors:
+                if (
+                    not seen[neighbor]
+                    and flat_ownership[neighbor] == identity_id
+                ):
+                    seen[neighbor] = True
+                    stack.append(neighbor)
+        yield identity_id, tuple(component)
+
+
+def _full_mask_from_indices(
+    shape: tuple[int, int],
+    indices: tuple[int, ...],
+) -> np.ndarray:
+    mask = np.zeros(shape[0] * shape[1], dtype=bool)
+    mask[np.fromiter(indices, dtype=np.int64)] = True
+    return mask.reshape(shape)
 
 
 def _expand_metric_region(
@@ -319,6 +347,82 @@ def _nearest_metric_distance(
     return np.asarray(distances, dtype=np.float64)
 
 
+def _regions_by_identity(
+    regions: tuple[ProjectedIdentitySearchRegion, ...],
+) -> tuple[tuple[int, tuple[ProjectedIdentitySearchRegion, ...]], ...]:
+    grouped: dict[int, list[ProjectedIdentitySearchRegion]] = {}
+    for item in sorted(
+        regions,
+        key=lambda value: (
+            value.identity_id,
+            value.source_frame_id,
+            value.projection_provenance_hash,
+        ),
+    ):
+        grouped.setdefault(item.identity_id, []).append(item)
+    return tuple(
+        (identity_id, tuple(grouped[identity_id]))
+        for identity_id in sorted(grouped)
+    )
+
+
+def _group_source_and_candidate_masks(
+    regions: tuple[ProjectedIdentitySearchRegion, ...],
+    value: ProposalRecoveryInput,
+    residual_threshold: float,
+) -> tuple[np.ndarray, np.ndarray]:
+    source = np.zeros(value.depth_m.shape, dtype=bool)
+    residual = np.zeros(value.depth_m.shape, dtype=bool)
+    for item in regions:
+        source |= item.mask
+        expected_valid = np.isfinite(item.expected_depth_m) & (
+            item.expected_depth_m > 0.0
+        )
+        residual |= expected_valid & (
+            item.expected_depth_m - value.depth_m >= residual_threshold
+        )
+    current_valid = (value.depth_m > 0.0) & np.isfinite(value.current_xyz).all(
+        axis=2
+    )
+    source &= current_valid
+    candidate = (
+        residual
+        & current_valid
+        & value.semantic_support
+        & ~value.segmentation_occupied
+    )
+    return source, candidate
+
+
+def _select_projection_provenance(
+    regions: tuple[ProjectedIdentitySearchRegion, ...],
+    indices: tuple[int, ...],
+    value: ProposalRecoveryInput,
+    residual_threshold: float,
+) -> ProjectedIdentitySearchRegion:
+    flat_depth = value.depth_m.reshape(-1)
+    index_array = np.fromiter(indices, dtype=np.int64)
+    contributors = []
+    for item in regions:
+        expected = item.expected_depth_m.reshape(-1)[index_array]
+        contributes = np.any(
+            np.isfinite(expected)
+            & (expected > 0.0)
+            & (expected - flat_depth[index_array] >= residual_threshold)
+        )
+        if contributes:
+            contributors.append(item)
+    if not contributors:
+        raise RuntimeError("component has no causal projection contributor")
+    return max(
+        contributors,
+        key=lambda item: (
+            item.source_frame_id,
+            item.projection_provenance_hash,
+        ),
+    )
+
+
 def recover_temporal_proposals(value: ProposalRecoveryInput, config: TemporalProposalConfig) -> ProposalRecoveryResult:
     if not isinstance(value, ProposalRecoveryInput):
         raise TypeError("value must be a ProposalRecoveryInput")
@@ -331,51 +435,75 @@ def recover_temporal_proposals(value: ProposalRecoveryInput, config: TemporalPro
     if config.search_region_expansion_m < 0.0 or residual_threshold <= 0.0:
         raise ValueError("proposal distances must be positive/non-negative")
 
-    ownership = np.full(value.depth_m.shape, np.iinfo(np.int64).max, dtype=np.int64)
-    raw: list[tuple[ProjectedIdentitySearchRegion, np.ndarray]] = []
-    for item in sorted(value.search_regions, key=lambda x: (x.identity_id, x.source_frame_id, x.projection_provenance_hash)):
-        search_mask = _expand_metric_region(
-            item.mask, value.current_xyz, config.search_region_expansion_m
+    maximum_regions = capacity + minimum_area
+    if len(value.search_regions) > maximum_regions:
+        raise OverflowError(
+            "proposal recovery workload exceeds maximum_recovered_proposals + "
+            "minimum_residual_area_px region bound"
         )
-        valid_depth = (
-            (value.depth_m > 0.0)
-            & np.isfinite(item.expected_depth_m)
-            & (item.expected_depth_m > 0.0)
-            & np.isfinite(value.current_xyz).all(axis=2)
+    grouped_regions = _regions_by_identity(value.search_regions)
+    work_units = 0
+    for _, regions in grouped_regions:
+        source, candidate = _group_source_and_candidate_masks(
+            regions, value, residual_threshold
         )
-        residual = item.expected_depth_m - value.depth_m >= residual_threshold
-        eligible = (
-            search_mask
-            & value.semantic_support
-            & ~value.segmentation_occupied
-            & valid_depth
-            & residual
-        )
-        ownership[eligible] = np.minimum(ownership[eligible], item.identity_id)
-        raw.append((item, eligible))
+        work_units += int(source.sum()) + int(candidate.sum())
+    maximum_work_units = (
+        2 * value.depth_m.size * (capacity + minimum_area)
+    )
+    if work_units > maximum_work_units:
+        raise OverflowError("proposal recovery workload exceeds deterministic pixel bound")
 
-    candidates: list[tuple[tuple[object, ...], ProjectedIdentitySearchRegion, np.ndarray]] = []
-    for item, eligible in raw:
-        arbitrated = eligible & (ownership == item.identity_id)
-        for component in _components(arbitrated):
-            area = int(component.sum())
-            if area < minimum_area:
-                continue
-            row, column = np.argwhere(component)[0]
-            candidates.append(((-area, item.identity_id, int(row), int(column), component.tobytes()), item, component))
-    candidates.sort(key=lambda item: item[0])
-    opportunity_count = len(candidates)
+    ownership = np.full(value.depth_m.shape, np.iinfo(np.int64).max, dtype=np.int64)
+    for identity_id, regions in grouped_regions:
+        source, candidate = _group_source_and_candidate_masks(
+            regions, value, residual_threshold
+        )
+        if not source.any() or not candidate.any():
+            continue
+        if config.search_region_expansion_m == 0.0:
+            eligible = candidate & source
+        else:
+            candidate_indices = np.flatnonzero(candidate)
+            distances = _nearest_metric_distance(
+                value.current_xyz[source],
+                value.current_xyz.reshape(-1, 3)[candidate_indices],
+            )
+            eligible = np.zeros(value.depth_m.size, dtype=bool)
+            eligible[candidate_indices] = (
+                distances <= config.search_region_expansion_m
+            )
+            eligible = eligible.reshape(value.depth_m.shape)
+        ownership[eligible] = np.minimum(ownership[eligible], identity_id)
+
+    candidates: list[tuple[tuple[int, int, int], int, tuple[int, ...]]] = []
+    opportunity_count = 0
+    for identity_id, indices in _component_index_stream(ownership):
+        area = len(indices)
+        if area < minimum_area:
+            continue
+        opportunity_count += 1
+        key = (-area, identity_id, min(indices))
+        candidates.append((key, identity_id, indices))
+        candidates.sort(key=lambda item: item[0])
+        if len(candidates) > capacity:
+            candidates.pop()
+
     proposals: list[RecoveredTemporalProposal] = []
-    for proposal_id, (_, item, mask) in enumerate(candidates[:capacity]):
+    regions_by_id = dict(grouped_regions)
+    for proposal_id, (_, identity_id, indices) in enumerate(candidates):
+        mask = _full_mask_from_indices(value.depth_m.shape, indices)
         rows, columns = np.nonzero(mask)
         xyz = value.current_xyz[mask]
-        frozen_mask = np.frombuffer(np.ascontiguousarray(mask).tobytes(), dtype=np.bool_).reshape(mask.shape)
+        item = _select_projection_provenance(
+            regions_by_id[identity_id], indices, value, residual_threshold
+        )
         appearance_available = bool(
             value.appearance_support is not None
             and np.any(mask & value.appearance_support)
         )
         proposals.append(RecoveredTemporalProposal(
-            proposal_id, value.frame_id, value.timestamp, item.identity_id, frozen_mask,
+            proposal_id, value.frame_id, value.timestamp, identity_id, mask,
             int(mask.sum()), (int(columns.min()), int(rows.min()), int(columns.max() + 1), int(rows.max() + 1)),
             tuple(float(x) for x in xyz.mean(axis=0)), tuple(float(x) for x in xyz.min(axis=0)),
             tuple(float(x) for x in xyz.max(axis=0)), float(value.depth_m[mask].mean()),

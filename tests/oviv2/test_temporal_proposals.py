@@ -197,13 +197,18 @@ def test_zero_depth_is_invalid_only_for_eligibility_and_expected_depth_is_local(
         value, config(minimum_residual_area_px=1)
     ).proposals[0].area_px == 1
 
-    invalid_outside = expected.copy()
-    invalid_outside[0, 0] = np.nan
-    recovery_input(region(1, mask, invalid_outside))
-    invalid_inside = expected.copy()
-    invalid_inside[1, 1] = np.nan
-    with pytest.raises(ValueError, match="mask"):
-        region(1, mask, invalid_inside)
+    item = region(1, mask, expected)
+    assert item == item
+    assert item == replace(item, expected_depth_m=expected.copy())
+    for invalid in (np.nan, np.inf):
+        invalid_outside = expected.copy()
+        invalid_outside[0, 0] = invalid
+        with pytest.raises(ValueError, match="finite"):
+            region(1, mask, invalid_outside)
+        invalid_inside = expected.copy()
+        invalid_inside[1, 1] = invalid
+        with pytest.raises(ValueError, match="finite"):
+            region(1, mask, invalid_inside)
 
 
 def test_nan_and_inf_current_depth_still_fail_closed() -> None:
@@ -232,6 +237,129 @@ def test_appearance_provenance_is_component_local() -> None:
     )
     assert tuple(item.appearance_available for item in result.proposals) == (True, False)
     assert result.proposals[1].appearance_provenance_hash is None
+
+
+def test_same_identity_regions_merge_once_and_use_latest_contributing_provenance() -> None:
+    mask = np.zeros((4, 5), dtype=bool)
+    mask[1:3, 1:3] = True
+    regions = (
+        ProjectedIdentitySearchRegion(7, 1, mask, np.full((4, 5), 4.0), "1" * 64),
+        ProjectedIdentitySearchRegion(7, 2, mask, np.full((4, 5), 4.0), "2" * 64),
+    )
+    expected = recover_temporal_proposals(recovery_input(*regions), config())
+    assert (expected.opportunity_count, expected.trigger_count) == (1, 1)
+    assert expected.proposals[0].projection_source_frame_id == 2
+    assert expected.proposals[0].projection_provenance_hash == "2" * 64
+    assert recover_temporal_proposals(
+        recovery_input(*reversed(regions)), config()
+    ) == expected
+
+
+def test_workload_bound_rejects_before_metric_query(monkeypatch: pytest.MonkeyPatch) -> None:
+    mask = np.ones((4, 5), dtype=bool)
+    regions = tuple(
+        ProjectedIdentitySearchRegion(
+            identity_id,
+            2,
+            mask,
+            np.full((4, 5), 4.0),
+            f"{identity_id:064x}",
+        )
+        for identity_id in (1, 2, 3)
+    )
+
+    def forbidden(*_args: object) -> np.ndarray:
+        raise AssertionError("metric query ran before workload rejection")
+
+    monkeypatch.setattr(temporal_proposals, "_nearest_metric_distance", forbidden)
+    with pytest.raises(OverflowError, match="workload"):
+        recover_temporal_proposals(
+            recovery_input(*regions),
+            config(
+                minimum_residual_area_px=1,
+                maximum_recovered_proposals=1,
+                search_region_expansion_m=1.0,
+            ),
+        )
+
+
+def test_noisy_components_allocate_full_masks_only_for_capacity(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    height, width = 64, 64
+    rows, columns = np.indices((height, width))
+    semantic = (rows + columns) % 2 == 0
+    depth = np.full((height, width), 3.0, dtype=np.float32)
+    xyz = np.stack((columns, rows, depth), axis=-1).astype(np.float64)
+    search = np.ones((height, width), dtype=bool)
+    item = ProjectedIdentitySearchRegion(
+        1, 1, search, np.full((height, width), 4.0), "1" * 64
+    )
+    value = ProposalRecoveryInput(
+        2, 2.0, depth, xyz, np.zeros_like(search), semantic, 2, "a" * 64,
+        None, None, None, None, (item,),
+    )
+    calls: list[int] = []
+    original = temporal_proposals._full_mask_from_indices
+
+    def spy(shape: tuple[int, int], indices: tuple[int, ...]) -> np.ndarray:
+        calls.append(len(indices))
+        return original(shape, indices)
+
+    monkeypatch.setattr(temporal_proposals, "_full_mask_from_indices", spy)
+    result = recover_temporal_proposals(
+        value,
+        config(
+            minimum_residual_area_px=1,
+            maximum_recovered_proposals=3,
+            search_region_expansion_m=0.0,
+        ),
+    )
+    assert result.opportunity_count == int(semantic.sum())
+    assert result.trigger_count == 3
+    assert calls == [1, 1, 1]
+
+
+@pytest.mark.parametrize("region_count", [1, 5, 10])
+def test_same_identity_regions_share_one_metric_query(
+    region_count: int,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    height, width = 120, 160
+    rows, columns = np.indices((height, width))
+    depth = np.full((height, width), 3.0, dtype=np.float32)
+    xyz = np.stack((columns * 0.01, rows * 0.01, depth), axis=-1)
+    mask = np.zeros((height, width), dtype=bool)
+    mask[40:80, 55:105] = True
+    regions = tuple(
+        ProjectedIdentitySearchRegion(
+            1, source, mask, np.full((height, width), 4.0), f"{source:064x}"
+        )
+        for source in range(1, region_count + 1)
+    )
+    value = ProposalRecoveryInput(
+        20, 20.0, depth, xyz, np.zeros_like(mask), np.ones_like(mask),
+        20, "a" * 64, None, None, None, None, regions,
+    )
+    calls: list[tuple[tuple[int, ...], tuple[int, ...]]] = []
+    original = temporal_proposals._nearest_metric_distance
+
+    def spy(source_xyz: np.ndarray, query_xyz: np.ndarray) -> np.ndarray:
+        calls.append((source_xyz.shape, query_xyz.shape))
+        return original(source_xyz, query_xyz)
+
+    monkeypatch.setattr(temporal_proposals, "_nearest_metric_distance", spy)
+    result = recover_temporal_proposals(
+        value,
+        config(
+            minimum_residual_area_px=10,
+            maximum_recovered_proposals=4,
+            search_region_expansion_m=0.02,
+        ),
+    )
+    assert result.opportunity_count == 1
+    assert len(calls) == 1
+    assert calls[0][0] == (2000, 3)
 
 
 def test_permutation_overlap_connected_components_and_capacity_have_canonical_order() -> None:
