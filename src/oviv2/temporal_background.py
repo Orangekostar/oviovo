@@ -28,6 +28,23 @@ def _is_bool(value: object) -> bool:
     return isinstance(value, (bool, np.bool_))
 
 
+def _canonical_rebuild_key(value: object) -> object:
+    if _is_bool(value):
+        raise TypeError("observation key must contain only integers and tuples")
+    if isinstance(value, int):
+        return value
+    if isinstance(value, tuple) and value:
+        return tuple(_canonical_rebuild_key(item) for item in value)
+    raise TypeError("observation key must be an integer or non-empty integer tuple")
+
+
+def _rebuild_sort_key(value: object) -> tuple[object, ...]:
+    if isinstance(value, int):
+        return (0, value)
+    assert isinstance(value, tuple)
+    return (1, tuple(_rebuild_sort_key(item) for item in value))
+
+
 def _validate_config(config: object) -> TemporalGeometryConfig:
     if not isinstance(config, TemporalGeometryConfig):
         raise TypeError("config must be a TemporalGeometryConfig")
@@ -106,6 +123,23 @@ def _finite_real(value: object, name: str, *, positive: bool = False) -> float:
     if positive and result <= 0.0:
         raise ValueError(f"{name} must be positive")
     return result
+
+
+def _validate_masked_depth(
+    masked_depth: object,
+    frame_depth: np.ndarray,
+    config: TemporalGeometryConfig,
+) -> np.ndarray:
+    depth = np.asarray(masked_depth)
+    if depth.dtype.kind != "f":
+        raise TypeError("masked_depth must have a floating dtype")
+    if depth.shape != frame_depth.shape:
+        raise ValueError("masked_depth shape must match frame.depth")
+    if not np.isfinite(depth).all():
+        raise ValueError("masked_depth must contain only finite values")
+    if np.any(depth < 0.0) or np.any(depth > config.depth_max_m):
+        raise ValueError("masked_depth must lie in [0, depth_max_m]")
+    return depth
 
 
 def _validate_frame(
@@ -456,9 +490,123 @@ class TemporalBackgroundVolume:
 
     def __deepcopy__(self, memo: dict[int, object]) -> TemporalBackgroundVolume:
         del memo
+        return self.clone()
+
+    def clone(self) -> TemporalBackgroundVolume:
+        """Return an independent exact snapshot without exposing mutable TSDF state."""
         snapshot = self._clone(max(1, self.active_block_count))
         snapshot._last_blocks_touched = self.last_blocks_touched
         return snapshot
+
+    @classmethod
+    def rebuild(
+        cls,
+        config: TemporalGeometryConfig,
+        observations: tuple[tuple[object, Frame, np.ndarray], ...],
+    ) -> TemporalBackgroundVolume:
+        """Build a fresh volume by integrating observations in canonical key order."""
+        _validate_config(config)
+        if not isinstance(observations, tuple):
+            raise TypeError("observations must be a tuple")
+        canonical: list[tuple[object, Frame, np.ndarray]] = []
+        keys: set[object] = set()
+        for item in observations:
+            if not isinstance(item, tuple) or len(item) != 3:
+                raise TypeError("each observation must be a (key, frame, depth) tuple")
+            raw_key, frame, depth = item
+            key = _canonical_rebuild_key(raw_key)
+            if key in keys:
+                raise ValueError("observation keys must be unique")
+            keys.add(key)
+            canonical.append((key, frame, depth))
+        rebuilt = cls(config)
+        for _, frame, depth in sorted(canonical, key=lambda item: _rebuild_sort_key(item[0])):
+            rebuilt = rebuilt.trial_integrate(frame, depth)
+        return rebuilt
+
+    @classmethod
+    def rebuild_blocks(
+        cls,
+        config: TemporalGeometryConfig,
+        observations: tuple[
+            tuple[object, tuple[int, int, int], Frame, np.ndarray], ...
+        ],
+    ) -> TemporalBackgroundVolume:
+        """Rebuild from stable records while integrating only their owned blocks."""
+        _validate_config(config)
+        if not isinstance(observations, tuple):
+            raise TypeError("observations must be a tuple")
+        canonical: list[
+            tuple[object, tuple[int, int, int], Frame, np.ndarray]
+        ] = []
+        keys: set[object] = set()
+        for item in observations:
+            if not isinstance(item, tuple) or len(item) != 4:
+                raise TypeError(
+                    "each block observation must be a (key, block_key, frame, depth) tuple"
+                )
+            raw_key, raw_block_key, frame, depth = item
+            key = _canonical_rebuild_key(raw_key)
+            if key in keys:
+                raise ValueError("observation keys must be unique")
+            if (
+                not isinstance(raw_block_key, tuple)
+                or len(raw_block_key) != 3
+                or any(_is_bool(value) or not isinstance(value, int) for value in raw_block_key)
+            ):
+                raise TypeError("block_key must be a canonical three-integer tuple")
+            keys.add(key)
+            canonical.append((key, raw_block_key, frame, depth))
+        rebuilt = cls(config)
+        for _, block_key, frame, depth in sorted(
+            canonical, key=lambda item: _rebuild_sort_key(item[0])
+        ):
+            rebuilt = rebuilt.trial_integrate_blocks(frame, depth, (block_key,))
+        return rebuilt
+
+    def candidate_block_keys(
+        self, frame: Frame, masked_depth: np.ndarray
+    ) -> tuple[tuple[int, int, int], ...]:
+        """Return the canonical TSDF blocks touched by one validated observation."""
+        _, frame_depth, _, pose, intrinsic = _validate_frame(frame)
+        depth = _validate_masked_depth(masked_depth, frame_depth, self.config)
+        keys = _candidate_block_keys(
+            self._volume, depth, intrinsic, pose, self.config
+        )
+        return tuple(
+            sorted(tuple(int(value) for value in row) for row in keys.tolist())
+        )
+
+    def trial_integrate_blocks(
+        self,
+        frame: Frame,
+        masked_depth: np.ndarray,
+        block_keys: tuple[tuple[int, int, int], ...],
+    ) -> TemporalBackgroundVolume:
+        """Integrate one observation into an explicit subset of its touched blocks."""
+        _, frame_depth, rgb, pose, intrinsic = _validate_frame(frame)
+        depth = _validate_masked_depth(masked_depth, frame_depth, self.config)
+        if not isinstance(block_keys, tuple) or not block_keys:
+            raise TypeError("block_keys must be a non-empty tuple")
+        if any(
+            not isinstance(key, tuple)
+            or len(key) != 3
+            or any(_is_bool(value) or not isinstance(value, int) for value in key)
+            for key in block_keys
+        ):
+            raise TypeError("block_keys must contain canonical three-integer tuples")
+        selected = tuple(sorted(set(block_keys)))
+        if selected != block_keys:
+            raise ValueError("block_keys must be sorted and unique")
+        candidate = self.candidate_block_keys(frame, depth)
+        if not set(selected).issubset(candidate):
+            raise ValueError("block_keys must be touched by the observation")
+        existing = {tuple(int(value) for value in row) for row in _active_block_keys(self._volume)}
+        if len(existing | set(selected)) > self.config.background_block_count:
+            raise ValueError("TSDF block capacity would exceed background_block_count")
+        trial = self._clone(max(1, len(existing | set(selected))))
+        trial._integrate_owned_blocks(depth, rgb, intrinsic, pose, selected)
+        return trial
 
     def _clone(self, physical_capacity: int) -> TemporalBackgroundVolume:
         trial = self.__class__.__new__(self.__class__)
@@ -491,15 +639,7 @@ class TemporalBackgroundVolume:
         self, frame: Frame, masked_depth: np.ndarray
     ) -> TemporalBackgroundVolume:
         frame, frame_depth, rgb, pose, intrinsic = _validate_frame(frame)
-        depth = np.asarray(masked_depth)
-        if depth.dtype.kind != "f":
-            raise TypeError("masked_depth must have a floating dtype")
-        if depth.shape != frame_depth.shape:
-            raise ValueError("masked_depth shape must match frame.depth")
-        if not np.isfinite(depth).all():
-            raise ValueError("masked_depth must contain only finite values")
-        if np.any(depth < 0.0) or np.any(depth > self.config.depth_max_m):
-            raise ValueError("masked_depth must lie in [0, depth_max_m]")
+        depth = _validate_masked_depth(masked_depth, frame_depth, self.config)
 
         candidate_keys = _candidate_block_keys(
             self._volume, depth, intrinsic, pose, self.config
@@ -530,5 +670,40 @@ class TemporalBackgroundVolume:
             intrinsic,
             pose,
         )
+        if self.active_block_count > self.config.background_block_count:
+            raise RuntimeError("TSDF integration exceeded background_block_count")
+
+    def _integrate_owned_blocks(
+        self,
+        depth: np.ndarray,
+        rgb: np.ndarray,
+        intrinsic: np.ndarray,
+        pose: np.ndarray,
+        block_keys: tuple[tuple[int, int, int], ...],
+    ) -> None:
+        clean_depth = np.ascontiguousarray(depth, dtype=np.float32)
+        clean_color = np.ascontiguousarray(rgb, dtype=np.float32)
+        if rgb.dtype == np.uint8:
+            clean_color /= 255.0
+        depth_image = o3d.t.geometry.Image(o3d.core.Tensor(clean_depth))
+        color_image = o3d.t.geometry.Image(o3d.core.Tensor(clean_color))
+        intrinsic_tensor = o3d.core.Tensor(intrinsic, dtype=o3d.core.float64)
+        extrinsic_tensor = o3d.core.Tensor(
+            np.linalg.inv(pose), dtype=o3d.core.float64
+        )
+        block_coords = o3d.core.Tensor(
+            np.asarray(block_keys, dtype=np.int32), dtype=o3d.core.int32
+        )
+        self._volume._grid.integrate(
+            block_coords,
+            depth_image,
+            color_image,
+            intrinsic_tensor,
+            extrinsic_tensor,
+            depth_scale=1.0,
+            depth_max=self._volume.config.depth_max_m,
+            trunc_voxel_multiplier=self._volume.config.trunc_voxel_multiplier,
+        )
+        self._last_blocks_touched = len(block_keys)
         if self.active_block_count > self.config.background_block_count:
             raise RuntimeError("TSDF integration exceeded background_block_count")

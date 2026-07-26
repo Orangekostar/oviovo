@@ -1,0 +1,543 @@
+from __future__ import annotations
+
+from dataclasses import FrozenInstanceError, asdict, dataclass, field
+from enum import Enum
+import hashlib
+import json
+import math
+from numbers import Real
+
+import numpy as np
+
+from src.core.data_structures import CameraIntrinsics, Frame
+from src.oviv2.temporal_background import TemporalBackgroundVolume
+from src.oviv2.temporal_config import TemporalBackgroundLedgerConfig, TemporalGeometryConfig
+from src.oviv2.temporal_lifecycle import TemporalEvidenceKind
+
+
+BlockKey = tuple[int, int, int]
+ContributionKey = tuple[int, int, int, BlockKey]
+
+
+def _integer(value: object, name: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise TypeError(f"{name} must be an integer")
+    if value < 0:
+        raise ValueError(f"{name} must be nonnegative")
+    return value
+
+
+def _timestamp(value: object, name: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, Real):
+        raise TypeError(f"{name} must be numeric")
+    result = float(value)
+    if not math.isfinite(result):
+        raise ValueError(f"{name} must be finite")
+    return result
+
+
+def _block_key(value: object) -> BlockKey:
+    if not isinstance(value, tuple) or len(value) != 3:
+        raise TypeError("block_key must be a canonical three-integer tuple")
+    if any(isinstance(item, bool) or not isinstance(item, int) for item in value):
+        raise TypeError("block_key must contain only integers")
+    return value
+
+
+def _readonly(value: np.ndarray) -> np.ndarray:
+    contiguous = np.array(value, copy=True, order="C")
+    return np.frombuffer(contiguous.tobytes(), dtype=contiguous.dtype).reshape(contiguous.shape)
+
+
+class _FrozenCameraIntrinsics(CameraIntrinsics):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+        object.__setattr__(self, "_ledger_frozen", True)
+
+    def __setattr__(self, name: str, value: object) -> None:
+        if getattr(self, "_ledger_frozen", False):
+            raise FrozenInstanceError(f"cannot assign to field '{name}'")
+        super().__setattr__(name, value)
+
+
+class _FrozenFrame(Frame):
+    def __init__(self, **values: object) -> None:
+        super().__init__(**values)
+        object.__setattr__(self, "_ledger_frozen", True)
+
+    def __setattr__(self, name: str, value: object) -> None:
+        if getattr(self, "_ledger_frozen", False):
+            raise FrozenInstanceError(f"cannot assign to field '{name}'")
+        super().__setattr__(name, value)
+
+
+def _frozen_frame(frame: object) -> Frame:
+    if not isinstance(frame, Frame):
+        raise TypeError("frame must be a Frame")
+    frame_id = _integer(frame.frame_id, "frame.frame_id")
+    timestamp = _timestamp(frame.timestamp, "frame.timestamp")
+    if not isinstance(frame.intrinsics, CameraIntrinsics):
+        raise TypeError("frame.intrinsics must be CameraIntrinsics")
+    intrinsics = _FrozenCameraIntrinsics(
+        frame.intrinsics.fx,
+        frame.intrinsics.fy,
+        frame.intrinsics.cx,
+        frame.intrinsics.cy,
+        frame.intrinsics.width,
+        frame.intrinsics.height,
+    )
+    return _FrozenFrame(
+        frame_id=frame_id,
+        timestamp=timestamp,
+        rgb=_readonly(frame.rgb),
+        depth=_readonly(frame.depth),
+        pose=_readonly(frame.pose),
+        intrinsics=intrinsics,
+        source_frame_id=frame.source_frame_id,
+    )
+
+
+@dataclass(frozen=True, eq=False)
+class BackgroundContribution:
+    block_key: BlockKey
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "block_key", _block_key(self.block_key))
+
+    def canonical_payload(self) -> tuple[object, ...]:
+        return (self.block_key,)
+
+
+def _observation_payload(
+    frame: Frame, depth_m: np.ndarray
+) -> tuple[object, ...]:
+    return (
+        frame.frame_id,
+        float(frame.timestamp),
+        _array_digest(frame.rgb),
+        _array_digest(frame.depth),
+        _array_digest(frame.pose),
+        (
+            frame.intrinsics.fx,
+            frame.intrinsics.fy,
+            frame.intrinsics.cx,
+            frame.intrinsics.cy,
+            frame.intrinsics.width,
+            frame.intrinsics.height,
+        ),
+        _array_digest(depth_m),
+    )
+
+
+@dataclass(frozen=True)
+class BackgroundLedgerEvidence:
+    entity_id: int
+    geometry_epoch: int
+    frame_id: int
+    timestamp: float
+    kind: TemporalEvidenceKind
+    view_bin: int | None
+    contributions: tuple[BackgroundContribution, ...]
+    frame: Frame | None = None
+    depth_m: np.ndarray | None = None
+    _observation_canonical: tuple[object, ...] | None = field(
+        init=False, repr=False
+    )
+
+    def __post_init__(self) -> None:
+        entity_id = _integer(self.entity_id, "entity_id")
+        epoch = _integer(self.geometry_epoch, "geometry_epoch")
+        frame_id = _integer(self.frame_id, "frame_id")
+        timestamp = _timestamp(self.timestamp, "timestamp")
+        if not isinstance(self.kind, TemporalEvidenceKind):
+            raise TypeError("kind must be a TemporalEvidenceKind")
+        if not isinstance(self.contributions, tuple):
+            raise TypeError("contributions must be a tuple")
+        if any(not isinstance(item, BackgroundContribution) for item in self.contributions):
+            raise TypeError("contributions must contain BackgroundContribution values")
+        if self.kind is TemporalEvidenceKind.VISIBLE_ABSENT:
+            view_bin = _integer(self.view_bin, "view_bin")
+            if not self.contributions:
+                raise ValueError("visible-absent evidence requires contributions")
+            frame = _frozen_frame(self.frame)
+            depth = np.asarray(self.depth_m)
+            if depth.dtype.kind != "f":
+                raise TypeError("depth_m must have a floating dtype")
+            if depth.shape != frame.depth.shape:
+                raise ValueError("depth_m shape must match frame.depth")
+            if not np.isfinite(depth).all() or np.any(depth < 0.0):
+                raise ValueError("depth_m must be finite and nonnegative")
+            depth_m = _readonly(depth)
+            if frame.frame_id != frame_id:
+                raise ValueError("observation frame_id must match evidence frame_id")
+            if frame.timestamp != timestamp:
+                raise ValueError("observation timestamp must match evidence timestamp")
+            observation_canonical = _observation_payload(frame, depth_m)
+        else:
+            if self.kind not in (TemporalEvidenceKind.PRESENT, TemporalEvidenceKind.OCCLUDED):
+                raise ValueError("ledger evidence must be visible-absent, present, or occluded")
+            if self.view_bin is not None:
+                raise ValueError("view_bin must be None for present or occluded evidence")
+            if self.contributions:
+                raise ValueError("present or occluded evidence cannot contain contributions")
+            if self.frame is not None or self.depth_m is not None:
+                raise ValueError(
+                    "present or occluded evidence cannot contain an observation"
+                )
+            view_bin = None
+            frame = None
+            depth_m = None
+            observation_canonical = None
+        block_keys = tuple(item.block_key for item in self.contributions)
+        if len(set(block_keys)) != len(block_keys):
+            raise ValueError("contribution block keys must be unique")
+        object.__setattr__(self, "entity_id", entity_id)
+        object.__setattr__(self, "geometry_epoch", epoch)
+        object.__setattr__(self, "frame_id", frame_id)
+        object.__setattr__(self, "timestamp", timestamp)
+        object.__setattr__(self, "view_bin", view_bin)
+        object.__setattr__(self, "frame", frame)
+        object.__setattr__(self, "depth_m", depth_m)
+        object.__setattr__(self, "_observation_canonical", observation_canonical)
+        object.__setattr__(
+            self,
+            "contributions",
+            tuple(sorted(self.contributions, key=lambda item: item.block_key)),
+        )
+
+
+class LedgerDecision(str, Enum):
+    STAGED = "staged"
+    COMMITTED = "committed"
+    CANCELLED = "cancelled"
+    NO_OP = "no_op"
+    REJECTED_CAPACITY = "rejected_capacity"
+    REJECTED_INTEGRATION = "rejected_integration"
+
+
+@dataclass(frozen=True)
+class _Record:
+    entity_id: int
+    geometry_epoch: int
+    frame_id: int
+    timestamp: float
+    view_bin: int
+    contribution: BackgroundContribution
+    frame: Frame
+    depth_m: np.ndarray
+    observation_canonical: tuple[object, ...]
+
+    @property
+    def key(self) -> ContributionKey:
+        return (self.entity_id, self.geometry_epoch, self.frame_id, self.contribution.block_key)
+
+
+def _validate_config(config: object) -> TemporalBackgroundLedgerConfig:
+    if not isinstance(config, TemporalBackgroundLedgerConfig):
+        raise TypeError("config must be a TemporalBackgroundLedgerConfig")
+    for name in (
+        "maximum_journal_blocks",
+        "commit_support_frames",
+        "commit_distinct_view_bins",
+        "minimum_commit_frame_gap",
+        "maximum_records_per_block",
+    ):
+        value = getattr(config, name)
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise TypeError(f"config.{name} must be an integer")
+        if value <= 0:
+            raise ValueError(f"config.{name} must be positive")
+    if config.maximum_records_per_block < config.commit_support_frames:
+        raise ValueError("maximum_records_per_block cannot be below commit_support_frames")
+    if config.commit_support_frames not in {2, 3, 4}:
+        raise ValueError("commit_support_frames must be one of 2, 3, or 4")
+    if config.commit_distinct_view_bins not in {2, 3}:
+        raise ValueError("commit_distinct_view_bins must be 2 or 3")
+    return config
+
+
+def _array_digest(value: np.ndarray) -> tuple[str, tuple[int, ...], str]:
+    array = np.asarray(value)
+    return (array.dtype.str, array.shape, hashlib.sha256(array.tobytes(order="C")).hexdigest())
+
+
+def _record_payload(record: _Record) -> tuple[object, ...]:
+    return (
+        record.entity_id,
+        record.geometry_epoch,
+        record.frame_id,
+        record.timestamp,
+        record.view_bin,
+        record.contribution.canonical_payload(),
+        record.observation_canonical,
+    )
+
+
+def _record_group_key(record: _Record) -> tuple[int, int, BlockKey]:
+    return (record.entity_id, record.geometry_epoch, record.contribution.block_key)
+
+
+def _digest(payload: object) -> str:
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
+
+class ReversibleBackgroundLedger:
+    __hash__ = None
+
+    def __init__(
+        self,
+        geometry_config: TemporalGeometryConfig,
+        config: TemporalBackgroundLedgerConfig,
+    ) -> None:
+        self._config = _validate_config(config)
+        self._volume = TemporalBackgroundVolume(geometry_config)
+        if self.config.maximum_journal_blocks > self._volume.config.background_block_count:
+            raise ValueError(
+                "maximum_journal_blocks cannot exceed geometry background_block_count"
+            )
+        self._provisional: dict[ContributionKey, _Record] = {}
+        self._committed: dict[ContributionKey, _Record] = {}
+        self._event_digests: dict[tuple[int, int, int], str] = {}
+        self._last_frame_id = -1
+        self._last_timestamp = -math.inf
+        self._generation = 0
+
+    @property
+    def config(self) -> TemporalBackgroundLedgerConfig:
+        return self._config
+
+    @property
+    def provisional_count(self) -> int:
+        return len(self._provisional)
+
+    @property
+    def committed_record_count(self) -> int:
+        return len(self._committed)
+
+    @property
+    def committed_generation(self) -> int:
+        return self._generation
+
+    @property
+    def provisional_keys(self) -> tuple[ContributionKey, ...]:
+        return tuple(sorted(self._provisional))
+
+    @property
+    def committed_volume(self) -> TemporalBackgroundVolume:
+        return self._volume.clone()
+
+    def _evidence_digest(self, evidence: BackgroundLedgerEvidence) -> str:
+        return _digest(
+            (
+                evidence.entity_id,
+                evidence.geometry_epoch,
+                evidence.frame_id,
+                evidence.timestamp,
+                evidence.kind.value,
+                evidence.view_bin,
+                tuple(item.canonical_payload() for item in evidence.contributions),
+                evidence._observation_canonical,
+            )
+        )
+
+    def journal_digest(self) -> str:
+        blocks = [
+            (dtype, shape, hashlib.sha256(data).hexdigest())
+            for dtype, shape, data in self._volume.canonical_block_state()
+        ]
+        return _digest(
+            {
+                "geometry_config": asdict(self._volume.config),
+                "ledger_config": asdict(self.config),
+                "generation": self._generation,
+                "last_frame_id": self._last_frame_id,
+                "last_timestamp": (
+                    None if self._last_frame_id < 0 else self._last_timestamp
+                ),
+                "events": [
+                    (key, self._event_digests[key])
+                    for key in sorted(self._event_digests)
+                ],
+                "provisional": [
+                    _record_payload(self._provisional[key])
+                    for key in sorted(self._provisional)
+                ],
+                "committed": [
+                    _record_payload(self._committed[key])
+                    for key in sorted(self._committed)
+                ],
+                "blocks": blocks,
+            }
+        )
+
+    def committed_digest(self) -> str:
+        blocks = [
+            (dtype, shape, hashlib.sha256(data).hexdigest())
+            for dtype, shape, data in self._volume.canonical_block_state()
+        ]
+        return _digest(
+            {
+                "geometry_config": asdict(self._volume.config),
+                "ledger_config": asdict(self.config),
+                "generation": self._generation,
+                "records": [
+                    _record_payload(self._committed[key])
+                    for key in sorted(self._committed)
+                ],
+                "blocks": blocks,
+            }
+        )
+
+    def stage(self, evidence: BackgroundLedgerEvidence) -> LedgerDecision:
+        if not isinstance(evidence, BackgroundLedgerEvidence):
+            raise TypeError("evidence must be BackgroundLedgerEvidence")
+        event_key = (evidence.entity_id, evidence.geometry_epoch, evidence.frame_id)
+        evidence_digest = self._evidence_digest(evidence)
+        previous_digest = self._event_digests.get(event_key)
+        if previous_digest is not None:
+            if previous_digest == evidence_digest:
+                return LedgerDecision.NO_OP
+            raise ValueError("conflicting duplicate ledger evidence")
+        if evidence.frame_id < self._last_frame_id:
+            raise ValueError("evidence.frame_id cannot move backwards")
+        if evidence.timestamp < self._last_timestamp:
+            raise ValueError("evidence.timestamp cannot move backwards")
+        if (
+            evidence.frame_id == self._last_frame_id
+            and evidence.timestamp != self._last_timestamp
+        ):
+            raise ValueError("evidence.timestamp must agree within one frame")
+
+        try:
+            if evidence.contributions:
+                assert evidence.frame is not None
+                assert evidence.depth_m is not None
+                touched = self._volume.candidate_block_keys(
+                    evidence.frame,
+                    evidence.depth_m,
+                )
+                declared = tuple(item.block_key for item in evidence.contributions)
+                if declared != touched:
+                    raise ValueError(
+                        "contribution block_key values must exactly match touched blocks"
+                    )
+        except (TypeError, ValueError):
+            raise
+        except Exception:
+            return LedgerDecision.REJECTED_INTEGRATION
+
+        provisional = dict(self._provisional)
+        committed = dict(self._committed)
+        if evidence.kind in (TemporalEvidenceKind.PRESENT, TemporalEvidenceKind.OCCLUDED):
+            matching = tuple(
+                key for key in provisional
+                if key[:2] == (evidence.entity_id, evidence.geometry_epoch)
+            )
+            if not matching:
+                self._publish_event(evidence, evidence_digest, provisional, committed)
+                return LedgerDecision.NO_OP
+            for key in matching:
+                del provisional[key]
+            self._publish_event(evidence, evidence_digest, provisional, committed)
+            return LedgerDecision.CANCELLED
+
+        assert evidence.view_bin is not None
+        assert evidence.frame is not None
+        assert evidence.depth_m is not None
+        assert evidence._observation_canonical is not None
+        for contribution in evidence.contributions:
+            record = _Record(
+                evidence.entity_id,
+                evidence.geometry_epoch,
+                evidence.frame_id,
+                evidence.timestamp,
+                evidence.view_bin,
+                contribution,
+                evidence.frame,
+                evidence.depth_m,
+                evidence._observation_canonical,
+            )
+            if record.key in provisional or record.key in committed:
+                raise ValueError("duplicate contribution key")
+            provisional[record.key] = record
+        if not self._within_capacity(provisional, committed):
+            return LedgerDecision.REJECTED_CAPACITY
+
+        eligible_groups: set[tuple[int, int, BlockKey]] = set()
+        grouped: dict[tuple[int, int, BlockKey], list[_Record]] = {}
+        for record in provisional.values():
+            group_key = _record_group_key(record)
+            grouped.setdefault(group_key, []).append(record)
+        for group_key, records in grouped.items():
+            frame_ids = {record.frame_id for record in records}
+            view_bins = {record.view_bin for record in records}
+            if (
+                len(frame_ids) >= self.config.commit_support_frames
+                and len(view_bins) >= self.config.commit_distinct_view_bins
+                and max(frame_ids) - min(frame_ids) >= self.config.minimum_commit_frame_gap
+            ):
+                eligible_groups.add(group_key)
+        committing = {
+            key: record
+            for key, record in provisional.items()
+            if _record_group_key(record) in eligible_groups
+        }
+        if committing:
+            committed.update(committing)
+            for key in committing:
+                del provisional[key]
+            observations = tuple(
+                (
+                    key,
+                    committed[key].contribution.block_key,
+                    committed[key].frame,
+                    committed[key].depth_m,
+                )
+                for key in sorted(committed)
+            )
+            try:
+                rebuilt = TemporalBackgroundVolume.rebuild_blocks(
+                    self._volume.config, observations
+                )
+            except Exception:
+                return LedgerDecision.REJECTED_INTEGRATION
+            self._volume = rebuilt
+            self._generation += 1
+            self._publish_event(evidence, evidence_digest, provisional, committed)
+            return LedgerDecision.COMMITTED
+        self._publish_event(evidence, evidence_digest, provisional, committed)
+        return LedgerDecision.STAGED
+
+    def _within_capacity(
+        self,
+        provisional: dict[ContributionKey, _Record],
+        committed: dict[ContributionKey, _Record],
+    ) -> bool:
+        records = (*provisional.values(), *committed.values())
+        blocks = {record.contribution.block_key for record in records}
+        if len(blocks) > self.config.maximum_journal_blocks:
+            return False
+        counts: dict[BlockKey, int] = {}
+        for record in records:
+            key = record.contribution.block_key
+            counts[key] = counts.get(key, 0) + 1
+        return all(
+            count <= self.config.maximum_records_per_block
+            for count in counts.values()
+        )
+
+    def _publish_event(
+        self,
+        evidence: BackgroundLedgerEvidence,
+        evidence_digest: str,
+        provisional: dict[ContributionKey, _Record],
+        committed: dict[ContributionKey, _Record],
+    ) -> None:
+        self._provisional = provisional
+        self._committed = committed
+        self._event_digests[
+            (evidence.entity_id, evidence.geometry_epoch, evidence.frame_id)
+        ] = evidence_digest
+        self._last_frame_id = evidence.frame_id
+        self._last_timestamp = evidence.timestamp

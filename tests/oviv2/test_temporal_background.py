@@ -486,3 +486,44 @@ def test_volume_value_equality_and_repeated_runs_are_deterministic() -> None:
     assert left.canonical_block_state() == right.canonical_block_state()
     with pytest.raises(TypeError):
         hash(left)
+
+
+def test_public_clone_is_independent_and_exact() -> None:
+    frame = _frame(size=16)
+    frame.intrinsics = CameraIntrinsics(8.0, 8.0, 7.5, 7.5, 16, 16)
+    volume = TemporalBackgroundVolume(_config()).trial_integrate(frame, frame.depth)
+    clone = volume.clone()
+    assert clone is not volume
+    assert clone == volume
+    clone = clone.trial_integrate(_frame(8, size=16), np.zeros((16, 16), np.float32))
+    assert clone == volume
+
+
+def test_rebuild_sorts_observations_and_does_not_mutate_inputs() -> None:
+    first = _frame(10, size=16)
+    first.intrinsics = CameraIntrinsics(8.0, 8.0, 7.5, 7.5, 16, 16)
+    second = _frame(12, size=16)
+    second.intrinsics = first.intrinsics
+    second.pose[0, 3] = 0.25
+    first_depth = first.depth.copy()
+    second_depth = second.depth.copy()
+    left = TemporalBackgroundVolume.rebuild(
+        _config(), ((12, second, second_depth), (10, first, first_depth))
+    )
+    right = TemporalBackgroundVolume.rebuild(
+        _config(), ((10, first, first_depth), (12, second, second_depth))
+    )
+    assert left.canonical_block_state() == right.canonical_block_state()
+    np.testing.assert_array_equal(first.depth, first_depth)
+    np.testing.assert_array_equal(second.depth, second_depth)
+
+
+def test_rebuild_rejects_duplicate_or_noncanonical_observation_keys() -> None:
+    frame = _frame(size=16)
+    frame.intrinsics = CameraIntrinsics(8.0, 8.0, 7.5, 7.5, 16, 16)
+    with pytest.raises(ValueError, match="unique"):
+        TemporalBackgroundVolume.rebuild(
+            _config(), ((1, frame, frame.depth), (1, frame, frame.depth))
+        )
+    with pytest.raises(TypeError, match="key"):
+        TemporalBackgroundVolume.rebuild(_config(), ((True, frame, frame.depth),))
