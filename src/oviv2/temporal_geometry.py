@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 import math
 from numbers import Integral, Real
 
@@ -218,39 +219,70 @@ class ObjectSubmap:
         return _readonly_array(world.reshape((-1, 3)), np.dtype(np.float64))
 
 
-@dataclass(frozen=True, eq=False)
+class MotionDecision(str, Enum):
+    ICP_ACCEPTED = "icp_accepted"
+    TRANSLATION_ACCEPTED = "translation_accepted"
+    REJECTED = "rejected"
+
+
+@dataclass(frozen=True, eq=False, init=False)
 class ObjectMotionEstimate:
     object_to_world: np.ndarray
-    used_icp: bool
+    decision: MotionDecision
     fitness: float
     rmse_m: float
 
     __hash__ = None
 
-    def __post_init__(self) -> None:
-        transform = _rigid_transform(self.object_to_world, "object_to_world")
-        if type(self.used_icp) is not bool:
-            raise TypeError("used_icp must be an exact bool")
+    def __init__(
+        self,
+        object_to_world: np.ndarray,
+        decision: MotionDecision | bool | None = None,
+        fitness: float = 0.0,
+        rmse_m: float = 0.0,
+        *,
+        used_icp: bool | None = None,
+    ) -> None:
+        if decision is not None and used_icp is not None:
+            raise TypeError("provide decision or used_icp, not both")
+        boundary_value = used_icp if decision is None else decision
+        if type(boundary_value) is bool:
+            normalized_decision = (
+                MotionDecision.ICP_ACCEPTED
+                if boundary_value
+                else MotionDecision.TRANSLATION_ACCEPTED
+            )
+        elif type(boundary_value) is MotionDecision:
+            normalized_decision = boundary_value
+        else:
+            raise TypeError("decision must be a MotionDecision")
+
+        transform = _rigid_transform(object_to_world, "object_to_world")
         for name in ("fitness", "rmse_m"):
-            value = getattr(self, name)
+            value = fitness if name == "fitness" else rmse_m
             if isinstance(value, (bool, np.bool_)) or not isinstance(value, Real):
                 raise TypeError(f"{name} must be numeric")
             if not math.isfinite(float(value)):
                 raise ValueError(f"{name} must be finite")
-        if not 0.0 <= float(self.fitness) <= 1.0:
+        if not 0.0 <= float(fitness) <= 1.0:
             raise ValueError("fitness must lie in [0, 1]")
-        if float(self.rmse_m) < 0.0:
+        if float(rmse_m) < 0.0:
             raise ValueError("rmse_m must be nonnegative")
         object.__setattr__(self, "object_to_world", _readonly_array(transform, np.dtype(np.float64)))
-        object.__setattr__(self, "fitness", float(self.fitness))
-        object.__setattr__(self, "rmse_m", float(self.rmse_m))
+        object.__setattr__(self, "decision", normalized_decision)
+        object.__setattr__(self, "fitness", float(fitness))
+        object.__setattr__(self, "rmse_m", float(rmse_m))
+
+    @property
+    def used_icp(self) -> bool:
+        return self.decision is MotionDecision.ICP_ACCEPTED
 
     def __eq__(self, other: object) -> bool:
         if type(other) is not ObjectMotionEstimate:
             return False
         assert isinstance(other, ObjectMotionEstimate)
         return bool(
-            self.used_icp == other.used_icp
+            self.decision is other.decision
             and self.fitness == other.fitness
             and self.rmse_m == other.rmse_m
             and np.array_equal(self.object_to_world, other.object_to_world)
@@ -440,9 +472,12 @@ def _run_icp(
 
 
 def _motion_result(
-    transform: np.ndarray, fitness: float, rmse_m: float, *, used_icp: bool
+    transform: np.ndarray,
+    decision: MotionDecision,
+    fitness: float,
+    rmse_m: float,
 ) -> ObjectMotionEstimate:
-    return ObjectMotionEstimate(transform, used_icp, fitness, rmse_m)
+    return ObjectMotionEstimate(transform, decision, fitness, rmse_m)
 
 
 def _bounded_translation_motion(
@@ -454,12 +489,25 @@ def _bounded_translation_motion(
 ) -> ObjectMotionEstimate:
     diagnostic_rmse = float(config.maximum_icp_rmse_m)
     if submap.local_points_xyz.shape[0] == 0 or target.shape[0] == 0:
-        return _motion_result(previous_pose, 0.0, diagnostic_rmse, used_icp=False)
-    displacement = math.dist(observed_centroid, previous_pose[:3, 3])
+        return _motion_result(
+            previous_pose, MotionDecision.REJECTED, 0.0, diagnostic_rmse
+        )
+    with np.errstate(over="ignore", invalid="ignore"):
+        displacement = float(
+            np.linalg.norm(
+                np.asarray(observed_centroid, dtype=np.float64)
+                - previous_pose[:3, 3]
+            )
+        )
     pose = np.array(previous_pose, dtype=np.float64, copy=True, order="C")
     if math.isfinite(displacement) and displacement <= float(config.maximum_motion_m):
         pose[:3, 3] = observed_centroid
-    return _motion_result(pose, 0.0, diagnostic_rmse, used_icp=False)
+        return _motion_result(
+            pose, MotionDecision.TRANSLATION_ACCEPTED, 0.0, diagnostic_rmse
+        )
+    return _motion_result(
+        previous_pose, MotionDecision.REJECTED, 0.0, diagnostic_rmse
+    )
 
 
 def estimate_object_translation(
@@ -473,13 +521,21 @@ def estimate_object_translation(
     if not isinstance(submap, ObjectSubmap):
         raise TypeError("submap must be an ObjectSubmap")
     _validate_config(config)
-    target = _points(points_world, "points_world")
-    observed_centroid = _finite_xyz(observed_centroid_xyz, "observed_centroid_xyz")
     previous_pose = (
         _translation_pose(submap.reference_centroid_xyz)
         if previous_object_to_world is None
         else _rigid_transform(previous_object_to_world, "previous_object_to_world")
     )
+    try:
+        target = _points(points_world, "points_world")
+        observed_centroid = _finite_xyz(observed_centroid_xyz, "observed_centroid_xyz")
+    except ValueError:
+        return _motion_result(
+            previous_pose,
+            MotionDecision.REJECTED,
+            0.0,
+            float(config.maximum_icp_rmse_m),
+        )
     return _bounded_translation_motion(
         submap, target, observed_centroid, config, previous_pose
     )
@@ -496,13 +552,21 @@ def estimate_object_motion(
     if not isinstance(submap, ObjectSubmap):
         raise TypeError("submap must be an ObjectSubmap")
     _validate_config(config)
-    target = _points(points_world, "points_world")
-    observed_centroid = _finite_xyz(observed_centroid_xyz, "observed_centroid_xyz")
     previous_pose = (
         _translation_pose(submap.reference_centroid_xyz)
         if previous_object_to_world is None
         else _rigid_transform(previous_object_to_world, "previous_object_to_world")
     )
+    try:
+        target = _points(points_world, "points_world")
+        observed_centroid = _finite_xyz(observed_centroid_xyz, "observed_centroid_xyz")
+    except ValueError:
+        return _motion_result(
+            previous_pose,
+            MotionDecision.REJECTED,
+            0.0,
+            float(config.maximum_icp_rmse_m),
+        )
     fallback = _bounded_translation_motion(
         submap, target, observed_centroid, config, previous_pose
     )
@@ -513,9 +577,9 @@ def estimate_object_motion(
     minimum_points = int(config.minimum_icp_points)
     source = submap.local_points_xyz
     if source.shape[0] < minimum_points or target.shape[0] < minimum_points:
-        return _motion_result(fallback_pose, 0.0, diagnostic_rmse, used_icp=False)
+        return fallback
     if np.linalg.matrix_rank(source - source.mean(axis=0)) < 2 or np.linalg.matrix_rank(target - target.mean(axis=0)) < 2:
-        return _motion_result(fallback_pose, 0.0, diagnostic_rmse, used_icp=False)
+        return fallback
 
     try:
         icp_result = _run_icp(
@@ -525,7 +589,7 @@ def estimate_object_motion(
             max(2.0 * float(config.voxel_size_m), float(config.maximum_icp_rmse_m)),
         )
     except (RuntimeError, FloatingPointError):
-        return _motion_result(fallback_pose, 0.0, diagnostic_rmse, used_icp=False)
+        return fallback
     try:
         transform, fitness, rmse = icp_result
         transform = _rigid_transform(transform, "ICP transform")
@@ -547,9 +611,9 @@ def estimate_object_motion(
             and icp_displacement <= float(config.maximum_motion_m)
         )
     except (TypeError, ValueError, np.linalg.LinAlgError):
-        return _motion_result(fallback_pose, 0.0, diagnostic_rmse, used_icp=False)
+        return fallback
     if accepted:
-        return _motion_result(transform, fitness, rmse, used_icp=True)
+        return _motion_result(transform, MotionDecision.ICP_ACCEPTED, fitness, rmse)
     safe_fitness = fitness if math.isfinite(fitness) and 0.0 <= fitness <= 1.0 else 0.0
     safe_rmse = rmse if math.isfinite(rmse) and rmse >= 0.0 else diagnostic_rmse
-    return _motion_result(fallback_pose, safe_fitness, safe_rmse, used_icp=False)
+    return _motion_result(fallback_pose, fallback.decision, safe_fitness, safe_rmse)

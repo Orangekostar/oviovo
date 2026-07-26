@@ -11,6 +11,7 @@ from src.core.data_structures import CameraIntrinsics, Frame
 from src.oviv2.observations import FrameObservation, ObservationKind
 from src.oviv2.temporal_config import TemporalGeometryConfig
 from src.oviv2.temporal_geometry import (
+    MotionDecision,
     ObjectMotionEstimate,
     ObjectSubmap,
     backproject_observation,
@@ -223,14 +224,17 @@ def test_integrate_empty_is_identity_and_frame_ids_are_monotonic() -> None:
 def test_motion_empty_returns_reference_pose_and_centroid_fallback_is_bounded(monkeypatch: pytest.MonkeyPatch) -> None:
     empty = _submap()
     result = estimate_object_motion(empty, np.ones((3, 3)), (11.0, 0.0, 0.0), _config())
-    assert not result.used_icp and result.object_to_world[0, 3] == 10.0
+    assert result.decision is MotionDecision.REJECTED
+    assert result.object_to_world[0, 3] == 10.0
 
     submap = _submap(np.asarray([[0, 0, 0], [1, 0, 0], [0, 1, 0]]))
     monkeypatch.setattr("src.oviv2.temporal_geometry._run_icp", lambda *args: (_ for _ in ()).throw(RuntimeError("bad")))
     result = estimate_object_motion(submap, submap.world_points(), (11.0, 0.0, 0.0), _config())
-    assert not result.used_icp and result.object_to_world[0, 3] == 11.0 and np.isfinite(result.rmse_m)
+    assert result.decision is MotionDecision.TRANSLATION_ACCEPTED
+    assert result.object_to_world[0, 3] == 11.0 and np.isfinite(result.rmse_m)
     result = estimate_object_motion(submap, submap.world_points(), (20.0, 0.0, 0.0), _config())
-    assert not result.used_icp and result.object_to_world[0, 3] == 10.0
+    assert result.decision is MotionDecision.REJECTED
+    assert result.object_to_world[0, 3] == 10.0
 
 
 def test_translation_motion_is_bounded_and_never_calls_icp(
@@ -255,8 +259,10 @@ def test_translation_motion_is_bounded_and_never_calls_icp(
         _config(),
     )
 
-    assert not moved.used_icp and moved.object_to_world[0, 3] == 11.0
-    assert not rejected.used_icp and rejected.object_to_world[0, 3] == 10.0
+    assert moved.decision is MotionDecision.TRANSLATION_ACCEPTED
+    assert moved.object_to_world[0, 3] == 11.0
+    assert rejected.decision is MotionDecision.REJECTED
+    assert rejected.object_to_world[0, 3] == 10.0
 
 
 def test_translation_extreme_finite_centroids_fail_closed_without_warning() -> None:
@@ -276,7 +282,49 @@ def test_translation_extreme_finite_centroids_fail_closed_without_warning() -> N
         )
 
     np.testing.assert_equal(result.object_to_world, previous)
-    assert not result.used_icp
+    assert result.decision is MotionDecision.REJECTED
+
+
+@pytest.mark.parametrize(
+    "points,centroid",
+    [
+        (np.empty((0, 3)), (11.0, 0.0, 0.0)),
+        (np.asarray([[np.nan, 0.0, 0.0]]), (11.0, 0.0, 0.0)),
+        (np.ones((1, 3)), (np.inf, 0.0, 0.0)),
+    ],
+)
+def test_translation_rejects_empty_or_nonfinite_observation_without_moving(
+    points: np.ndarray, centroid: tuple[float, float, float]
+) -> None:
+    submap = _submap(np.asarray([[0.0, 0.0, 0.0]]))
+    previous = np.eye(4)
+    previous[0, 3] = 10.0
+
+    result = estimate_object_translation(
+        submap,
+        points,
+        centroid,
+        _config(),
+        previous_object_to_world=previous,
+    )
+
+    assert result.decision is MotionDecision.REJECTED
+    np.testing.assert_array_equal(result.object_to_world, previous)
+    assert np.isfinite(result.fitness) and np.isfinite(result.rmse_m)
+
+
+def test_motion_rejects_when_source_is_empty_even_with_valid_target() -> None:
+    previous = np.eye(4)
+    previous[0, 3] = 10.0
+    result = estimate_object_motion(
+        _submap(),
+        np.ones((3, 3)),
+        (11.0, 0.0, 0.0),
+        _config(),
+        previous_object_to_world=previous,
+    )
+    assert result.decision is MotionDecision.REJECTED
+    np.testing.assert_array_equal(result.object_to_world, previous)
 
 
 @pytest.mark.parametrize(
@@ -291,7 +339,34 @@ def test_motion_rejects_each_icp_quality_gate(
     transform[0, 3] = translation
     monkeypatch.setattr("src.oviv2.temporal_geometry._run_icp", lambda *args: (transform, fitness, rmse))
     result = estimate_object_motion(submap, submap.world_points(), (11.0, 0.0, 0.0), _config())
-    assert not result.used_icp and result.object_to_world[0, 3] == 11.0
+    assert result.decision is MotionDecision.TRANSLATION_ACCEPTED
+    assert result.object_to_world[0, 3] == 11.0
+
+
+def test_motion_rejects_when_icp_and_translation_both_fail_quality_gates(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    submap = _submap(np.asarray([[0, 0, 0], [1, 0, 0], [0, 1, 0]]))
+    previous = np.eye(4)
+    previous[0, 3] = 10.0
+    invalid_icp = np.eye(4)
+    invalid_icp[0, 3] = 20.0
+    monkeypatch.setattr(
+        "src.oviv2.temporal_geometry._run_icp",
+        lambda *args: (invalid_icp, 0.1, np.inf),
+    )
+
+    result = estimate_object_motion(
+        submap,
+        submap.world_points(previous),
+        (20.0, 0.0, 0.0),
+        _config(),
+        previous_object_to_world=previous,
+    )
+
+    assert result.decision is MotionDecision.REJECTED
+    np.testing.assert_array_equal(result.object_to_world, previous)
+    assert np.isfinite(result.fitness) and np.isfinite(result.rmse_m)
 
 
 def test_motion_accepts_valid_runner_result_and_freezes_matrix(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -300,8 +375,19 @@ def test_motion_accepts_valid_runner_result_and_freezes_matrix(monkeypatch: pyte
     transform[0, 3] = 11.0
     monkeypatch.setattr("src.oviv2.temporal_geometry._run_icp", lambda *args: (transform, 0.9, 0.1))
     result = estimate_object_motion(submap, submap.world_points(), (11.0, 0.0, 0.0), _config())
-    assert result.used_icp and result.fitness == 0.9 and result.rmse_m == 0.1
+    assert result.decision is MotionDecision.ICP_ACCEPTED
+    assert result.fitness == 0.9 and result.rmse_m == 0.1
     assert not result.object_to_world.flags.writeable
+
+
+def test_legacy_four_position_bool_constructor_normalizes_at_boundary() -> None:
+    icp = ObjectMotionEstimate(np.eye(4), True, 0.9, 0.1)
+    translation = ObjectMotionEstimate(np.eye(4), False, 0.0, 0.2)
+
+    assert icp.decision is MotionDecision.ICP_ACCEPTED and icp.used_icp is True
+    assert translation.decision is MotionDecision.TRANSLATION_ACCEPTED
+    assert translation.used_icp is False
+    assert "used_icp" not in vars(translation)
 
 
 def test_motion_point_count_degeneracy_and_invalid_icp_transform_fall_back(
@@ -311,13 +397,14 @@ def test_motion_point_count_degeneracy_and_invalid_icp_transform_fall_back(
     result = estimate_object_motion(
         too_small, too_small.world_points(), (11.0, 0.0, 0.0), _config()
     )
-    assert not result.used_icp and result.object_to_world[0, 3] == 11.0
+    assert result.decision is MotionDecision.TRANSLATION_ACCEPTED
+    assert result.object_to_world[0, 3] == 11.0
 
     degenerate = _submap(np.asarray([[0, 0, 0], [1, 0, 0], [2, 0, 0]]))
     result = estimate_object_motion(
         degenerate, degenerate.world_points(), (11.0, 0.0, 0.0), _config()
     )
-    assert not result.used_icp
+    assert result.decision is MotionDecision.TRANSLATION_ACCEPTED
 
     valid = _submap(np.asarray([[0, 0, 0], [1, 0, 0], [0, 1, 0]]))
     invalid = np.eye(4)
@@ -328,7 +415,8 @@ def test_motion_point_count_degeneracy_and_invalid_icp_transform_fall_back(
     result = estimate_object_motion(
         valid, valid.world_points(), (11.0, 0.0, 0.0), _config()
     )
-    assert not result.used_icp and result.object_to_world[0, 3] == 11.0
+    assert result.decision is MotionDecision.TRANSLATION_ACCEPTED
+    assert result.object_to_world[0, 3] == 11.0
 
 
 def test_motion_uses_configured_correspondence_distance(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -377,7 +465,7 @@ def test_real_open3d_icp_recovers_translation() -> None:
     )
     target = local + np.asarray([0.1, -0.05, 0.02])
     result = estimate_object_motion(submap, target, (0.1, -0.05, 0.02), _config(voxel_size_m=0.1, minimum_icp_points=20))
-    assert result.used_icp
+    assert result.decision is MotionDecision.ICP_ACCEPTED
     np.testing.assert_allclose(result.object_to_world[:3, 3], [0.1, -0.05, 0.02], atol=1e-3)
 
 
@@ -385,7 +473,7 @@ def test_motion_estimate_and_config_fail_closed() -> None:
     bad = np.eye(4)
     bad[0, 0] = 2.0
     with pytest.raises(ValueError):
-        ObjectMotionEstimate(bad, False, 0.0, 0.0)
+        ObjectMotionEstimate(bad, MotionDecision.REJECTED, 0.0, 0.0)
     submap = _submap(np.asarray([[0, 0, 0], [1, 0, 0], [0, 1, 0]]))
     with pytest.raises(ValueError, match="voxel_size_m"):
         estimate_object_motion(submap, submap.world_points(), (10.0, 0.0, 0.0), _config(voxel_size_m=np.nan))
@@ -440,7 +528,7 @@ def test_bool_geometry_inputs_are_rejected() -> None:
         ObjectSubmap(**values)
 
     with pytest.raises(TypeError, match="object_to_world"):
-        ObjectMotionEstimate(np.eye(4, dtype=bool), False, 0.0, 0.0)
+        ObjectMotionEstimate(np.eye(4, dtype=bool), MotionDecision.REJECTED, 0.0, 0.0)
     submap = _submap(np.asarray([[0, 0, 0], [1, 0, 0], [0, 1, 0]]))
     with pytest.raises(TypeError, match="observed_centroid_xyz"):
         estimate_object_motion(
@@ -470,7 +558,8 @@ def test_expected_icp_runtime_failures_fall_back(
     result = estimate_object_motion(
         submap, submap.world_points(), (11.0, 0.0, 0.0), _config()
     )
-    assert not result.used_icp and result.object_to_world[0, 3] == 11.0
+    assert result.decision is MotionDecision.TRANSLATION_ACCEPTED
+    assert result.object_to_world[0, 3] == 11.0
 
 
 @pytest.mark.parametrize("error_type", [TypeError, MemoryError])
@@ -498,7 +587,8 @@ def test_invalid_icp_return_values_fail_closed(monkeypatch: pytest.MonkeyPatch) 
     result = estimate_object_motion(
         submap, submap.world_points(), (11.0, 0.0, 0.0), _config()
     )
-    assert not result.used_icp and result.object_to_world[0, 3] == 11.0
+    assert result.decision is MotionDecision.TRANSLATION_ACCEPTED
+    assert result.object_to_world[0, 3] == 11.0
 
 
 def test_integrate_with_current_pose_returns_points_to_canonical_local_frame() -> None:
@@ -601,9 +691,9 @@ def test_temporal_geometry_value_equality_is_array_aware() -> None:
         submap, np.asarray([[0.2, 0.0, 0.0]]), 1, _config()
     )
     pose = np.eye(4)
-    motion = ObjectMotionEstimate(pose, False, 0.0, 0.2)
-    same_motion = ObjectMotionEstimate(pose.copy(), False, 0.0, 0.2)
-    other_motion = ObjectMotionEstimate(pose.copy(), False, 0.1, 0.2)
+    motion = ObjectMotionEstimate(pose, MotionDecision.REJECTED, 0.0, 0.2)
+    same_motion = ObjectMotionEstimate(pose.copy(), MotionDecision.REJECTED, 0.0, 0.2)
+    other_motion = ObjectMotionEstimate(pose.copy(), MotionDecision.REJECTED, 0.1, 0.2)
 
     assert (submap == same_submap) is True
     assert (submap == different_submap) is False
