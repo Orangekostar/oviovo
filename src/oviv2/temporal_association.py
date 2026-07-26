@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 import math
 from numbers import Real
 
@@ -17,6 +17,9 @@ from src.oviv2.temporal_config import TemporalAssociationConfig, TemporalIdentit
 from src.oviv2.temporal_lifecycle import TemporalLifecycle
 
 
+_INT64_MAX = 2**63 - 1
+
+
 def _integer(value: object, name: str, *, positive: bool = False) -> int:
     if isinstance(value, bool) or not isinstance(value, (int, np.integer)):
         raise TypeError(f"{name} must be an integer")
@@ -24,6 +27,8 @@ def _integer(value: object, name: str, *, positive: bool = False) -> int:
     if result < (1 if positive else 0):
         qualifier = "positive" if positive else "non-negative"
         raise ValueError(f"{name} must be {qualifier}")
+    if result > _INT64_MAX:
+        raise ValueError(f"{name} must fit signed int64")
     return result
 
 
@@ -148,9 +153,9 @@ class TemporalAssignmentDiagnostic:
     high_confidence_identity_match: bool
 
     def __post_init__(self) -> None:
-        if type(self.observation_id) is not int or self.observation_id < 0:
+        if type(self.observation_id) is not int or not 0 <= self.observation_id <= _INT64_MAX:
             raise TypeError("observation_id must be an exact non-negative integer")
-        if type(self.entity_id) is not int or self.entity_id < 0:
+        if type(self.entity_id) is not int or not 0 <= self.entity_id <= _INT64_MAX:
             raise TypeError("entity_id must be an exact non-negative integer")
         score = _finite(self.score, "score")
         if not 0.0 <= score <= 1.0:
@@ -202,7 +207,7 @@ class TemporalAssociationResult:
             if (
                 type(item) is not tuple
                 or len(item) != 2
-                or any(type(value) is not int or value < 0 for value in item)
+                or any(type(value) is not int or not 0 <= value <= _INT64_MAX for value in item)
             ):
                 raise TypeError("assignments must contain exact non-negative integer pairs")
         if self.assignments != tuple(sorted(set(self.assignments))):
@@ -214,7 +219,7 @@ class TemporalAssociationResult:
         for name in ("unmatched_observation_ids", "unmatched_entity_ids"):
             values = getattr(self, name)
             if type(values) is not tuple or any(
-                type(value) is not int or value < 0 for value in values
+                type(value) is not int or not 0 <= value <= _INT64_MAX for value in values
             ):
                 raise TypeError(f"{name} must be an exact tuple of non-negative integers")
             if values != tuple(sorted(set(values))):
@@ -241,8 +246,8 @@ class TemporalAssociationResult:
         )
         if diagnostic_pairs != tuple(sorted(set(diagnostic_pairs))):
             raise ValueError("assignment_diagnostics must be sorted and unique")
-        if diagnostic_pairs and diagnostic_pairs != self.assignments:
-            raise ValueError("assignment_diagnostics must cover sorted assignments")
+        if diagnostic_pairs != self.assignments:
+            raise ValueError("assignment_diagnostics must completely cover sorted assignments")
 
 
 def _validate_config(config: object) -> TemporalAssociationConfig:
@@ -490,17 +495,72 @@ def _identity_qualification(
         )
         if conflict:
             visual = (cosine + 1.0) / 2.0
-            current_distance = _distance(observation.centroid, target.centroid_xyz)
-            geometry = max(
-                0.0,
-                1.0 - current_distance / association_config.maximum_centroid_distance_m,
-            )
-            if not (
-                visual >= association_config.conflict_override_visual
-                and geometry >= association_config.conflict_override_geometry
-            ):
+            if visual < association_config.conflict_override_visual:
                 semantic_qualified = False
     return semantic_qualified, cosine, True, semantic_qualified
+
+
+def _score_dormant_edge(
+    observation: _PreparedObservation,
+    target: TemporalAssociationTarget,
+    config: TemporalAssociationConfig,
+    reid_config: TemporalIdentityConfig,
+) -> CandidateScore | None:
+    current_distance = _distance(observation.centroid, target.centroid_xyz)
+    maximum_distance = reid_config.maximum_reid_distance_m
+    if current_distance > maximum_distance:
+        return None
+    geometry = max(0.0, 1.0 - current_distance / maximum_distance)
+    size = float(
+        np.mean(
+            [
+                min(observed, stored) / max(observed, stored)
+                for observed, stored in zip(observation.extent, target.extent_xyz)
+            ]
+        )
+    )
+    assert observation.image_feature is not None
+    assert target.image_prototype is not None
+    cosine = float(
+        np.clip(np.dot(observation.image_feature, target.image_prototype), -1.0, 1.0)
+    )
+    visual = float(np.clip((cosine + 1.0) / 2.0, 0.0, 1.0))
+    semantic: float | None = None
+    if target.semantic_probabilities and observation.value.semantic_id > 0:
+        semantic = dict(target.semantic_probabilities).get(
+            observation.value.semantic_id, 0.0
+        )
+    components = (
+        (config.visual_weight, visual),
+        (config.semantic_weight, semantic),
+        (config.size_weight, size),
+        (config.geometry_weight, geometry),
+    )
+    available = [
+        (weight, value)
+        for weight, value in components
+        if weight > 0.0 and value is not None
+    ]
+    if not available:
+        available = [(1.0, visual)]
+    scale = max(weight for weight, _ in available)
+    scaled = [(weight / scale, value) for weight, value in available]
+    score = math.fsum(weight * value for weight, value in scaled) / math.fsum(
+        weight for weight, _ in scaled
+    )
+    score = float(np.clip(score, 0.0, 1.0))
+    if score < config.minimum_score:
+        return None
+    return CandidateScore(
+        observation.value.observation_id,
+        target.entity_id,
+        score,
+        size,
+        geometry,
+        visual,
+        False,
+        True,
+    )
 
 
 def associate_temporal_observations(
@@ -552,11 +612,14 @@ def associate_temporal_observations(
                 if not identity_qualification[pair][0]:
                     continue
                 reid_opportunities.add(pair)
-                edge_config = replace(
+                candidate = _score_dormant_edge(
+                    observation,
+                    target,
                     validated_config,
-                    maximum_centroid_distance_m=reid_config.maximum_reid_distance_m,
+                    reid_config,
                 )
-            candidate = _score_edge(observation, target, edge_config)
+            else:
+                candidate = _score_edge(observation, target, edge_config)
             if candidate is not None:
                 edges[pair] = candidate
 

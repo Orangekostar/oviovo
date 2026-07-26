@@ -25,19 +25,27 @@ def config(**changes: object) -> TemporalProposalConfig:
     return TemporalProposalConfig(**values)  # type: ignore[arg-type]
 
 
+SEMANTIC_HASH = "a" * 64
+
+
+def projection_hash(identity_id: int) -> str:
+    return f"{identity_id:064x}"
+
+
 def region(identity_id: int, mask: np.ndarray, expected: np.ndarray, source: int = 2):
     return ProjectedIdentitySearchRegion(
         identity_id=identity_id,
         source_frame_id=source,
         mask=mask,
         expected_depth_m=expected,
-        projection_provenance_hash=f"projection-{identity_id}",
+        projection_provenance_hash=projection_hash(identity_id),
     )
 
 
 def recovery_input(*regions: ProjectedIdentitySearchRegion, **changes: object):
     depth = np.full((4, 5), 3.0, dtype=np.float32)
-    xyz = np.dstack(np.meshgrid(np.arange(5), np.arange(4))[::-1] + [depth]).astype(np.float64)
+    rows, columns = np.indices(depth.shape)
+    xyz = np.stack((columns, rows, depth), axis=-1).astype(np.float64)
     values: dict[str, object] = {
         "frame_id": 3,
         "timestamp": 3.0,
@@ -46,7 +54,7 @@ def recovery_input(*regions: ProjectedIdentitySearchRegion, **changes: object):
         "segmentation_occupied": np.zeros((4, 5), dtype=bool),
         "semantic_support": np.ones((4, 5), dtype=bool),
         "semantic_source_frame_id": 3,
-        "semantic_provenance_hash": "semantic-current-hash",
+        "semantic_provenance_hash": SEMANTIC_HASH,
         "appearance_support": None,
         "appearance_source_frame_id": None,
         "appearance_model_id": None,
@@ -66,7 +74,7 @@ def test_current_depth_residual_recovers_component_without_fake_appearance() -> 
     assert result.trigger_count == 1
     proposal = result.proposals[0]
     assert (proposal.identity_hint, proposal.area_px) == (7, 4)
-    assert proposal.semantic_provenance_hash == "semantic-current-hash"
+    assert proposal.semantic_provenance_hash == SEMANTIC_HASH
     assert proposal.appearance_available is False
     assert proposal.appearance_model_id is None
     assert proposal.centroid_xyz == pytest.approx((1.5, 1.5, 3.0))
@@ -96,6 +104,75 @@ def test_future_sources_are_rejected_and_later_data_does_not_change_current_resu
         recovery_input(region(1, future_mask, np.full((4, 5), 4.0), source=4))
     with pytest.raises(ValueError, match="future"):
         replace(current, semantic_source_frame_id=4)
+
+
+def test_support_sources_enforce_current_and_projected_region_enforces_past() -> None:
+    mask = np.ones((4, 5), dtype=bool)
+    with pytest.raises(ValueError, match="current frame"):
+        recovery_input(region(1, mask, np.full((4, 5), 4.0)), semantic_source_frame_id=2)
+    with pytest.raises(ValueError, match="strictly past"):
+        recovery_input(region(1, mask, np.full((4, 5), 4.0), source=3))
+    with pytest.raises(ValueError, match="current frame"):
+        recovery_input(
+            region(1, mask, np.full((4, 5), 4.0)),
+            appearance_support=mask,
+            appearance_source_frame_id=2,
+            appearance_model_id="clip",
+            appearance_provenance_hash="b" * 64,
+        )
+
+
+def test_only_currently_nearer_semantic_foreground_can_form_proposals() -> None:
+    mask = np.zeros((4, 5), dtype=bool)
+    mask[0, :2] = True
+    behind = recovery_input(region(1, mask, np.full((4, 5), 2.0)))
+    assert recover_temporal_proposals(behind, config()).proposals == ()
+
+    appearance_only = recovery_input(
+        region(1, mask, np.full((4, 5), 4.0)),
+        semantic_support=np.zeros((4, 5), dtype=bool),
+        appearance_support=mask,
+        appearance_source_frame_id=3,
+        appearance_model_id="clip",
+        appearance_provenance_hash="b" * 64,
+    )
+    assert recover_temporal_proposals(appearance_only, config()).opportunity_count == 0
+
+
+def test_metric_expansion_changes_region_at_configured_3d_boundary() -> None:
+    mask = np.zeros((4, 5), dtype=bool)
+    mask[1, 1] = True
+    semantic = np.zeros((4, 5), dtype=bool)
+    semantic[1, 1:3] = True
+    value = recovery_input(
+        region(1, mask, np.full((4, 5), 4.0)), semantic_support=semantic
+    )
+    assert recover_temporal_proposals(
+        value, config(minimum_residual_area_px=1, search_region_expansion_m=0.0)
+    ).proposals[0].area_px == 1
+    assert recover_temporal_proposals(
+        value, config(minimum_residual_area_px=1, search_region_expansion_m=1.0)
+    ).proposals[0].area_px == 2
+
+
+def test_appearance_provenance_is_component_local() -> None:
+    mask = np.zeros((4, 5), dtype=bool)
+    mask[0, :2] = True
+    mask[3, 3:5] = True
+    appearance = np.zeros((4, 5), dtype=bool)
+    appearance[0, 0] = True
+    result = recover_temporal_proposals(
+        recovery_input(
+            region(1, mask, np.full((4, 5), 4.0)),
+            appearance_support=appearance,
+            appearance_source_frame_id=3,
+            appearance_model_id="clip",
+            appearance_provenance_hash="b" * 64,
+        ),
+        config(),
+    )
+    assert tuple(item.appearance_available for item in result.proposals) == (True, False)
+    assert result.proposals[1].appearance_provenance_hash is None
 
 
 def test_permutation_overlap_connected_components_and_capacity_have_canonical_order() -> None:
@@ -155,6 +232,7 @@ def test_inputs_are_owned_readonly_and_invalid_input_does_not_publish_partial_ou
         {"segmentation_occupied": np.zeros((2, 2), dtype=bool)},
         {"semantic_support": np.ones((4, 5), dtype=np.uint8)},
         {"search_regions": []},
+        {"semantic_provenance_hash": "../not-a-hash"},
     ],
 )
 def test_recovery_input_exact_validation(change: dict[str, object]) -> None:

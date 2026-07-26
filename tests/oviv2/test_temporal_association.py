@@ -222,19 +222,66 @@ def test_moved_dormant_reuses_original_entity_id() -> None:
 
 def test_dormant_requires_appearance_semantic_qualification_before_wide_gate() -> None:
     far = observation(1, centroid=(5.0, 0.0, 0.0), semantic_id=2, image_feature=np.array([1.0, 0.0]))
-    semantic_conflict = target(
-        1, lifecycle=TemporalLifecycle.DORMANT, prototype=np.array([1.0, 0.0]), semantics=((1, 1.0),)
+    weak_similarity = target(
+        1, lifecycle=TemporalLifecycle.DORMANT, prototype=np.array([0.0, 1.0]), semantics=((1, 1.0),)
     )
     wrong_model = target(
         2, lifecycle=TemporalLifecycle.DORMANT, centroid=(5.0, 0.0, 0.0),
         prototype=np.array([1.0, 0.0]), feature_model_id="other", semantics=((2, 1.0),)
     )
     result = associate_temporal_observations(
-        (far,), (semantic_conflict, wrong_model), config(maximum_centroid_distance_m=1.0),
+        (far,), (weak_similarity, wrong_model), config(maximum_centroid_distance_m=1.0),
         dormant_reid=reid_config(maximum_reid_distance_m=10.0),
     )
     assert result.assignments == ()
     assert (result.reid_opportunity_count, result.reid_trigger_count) == (0, 0)
+
+
+def test_dormant_semantic_conflict_uses_strong_appearance_before_wide_gate() -> None:
+    obs = observation(
+        1, centroid=(5.0, 0.0, 0.0), semantic_id=2,
+        image_feature=np.array([1.0, 0.0]),
+    )
+    dormant = target(
+        7, lifecycle=TemporalLifecycle.DORMANT, centroid=(0.0, 0.0, 0.0),
+        predicted=(100.0, 0.0, 0.0), prototype=np.array([1.0, 0.0]),
+        semantics=((1, 0.9), (2, 0.1)),
+    )
+    result = associate_temporal_observations(
+        (obs,), (dormant,),
+        config(maximum_centroid_distance_m=1.0, conflict_override_visual=0.9),
+        dormant_reid=reid_config(maximum_reid_distance_m=6.0),
+    )
+    assert result.assignments == ((1, 7),)
+    assert result.assignment_diagnostics[0].semantic_qualified is True
+
+
+def test_dormant_identity_selection_ignores_motion_weight_and_predicted_centroid() -> None:
+    obs = observation(1, centroid=(1.0, 0.0, 0.0), image_feature=np.array([1.0, 0.0]))
+    left = target(
+        7, lifecycle=TemporalLifecycle.DORMANT, centroid=(0.9, 0.0, 0.0),
+        predicted=(100.0, 0.0, 0.0), prototype=np.array([1.0, 0.0]),
+    )
+    right = target(
+        8, lifecycle=TemporalLifecycle.DORMANT, centroid=(1.5, 0.0, 0.0),
+        predicted=(1.0, 0.0, 0.0), prototype=np.array([1.0, 0.0]),
+    )
+    for motion_weight in (0.0, 1000.0):
+        result = associate_temporal_observations(
+            (obs,), (left, right), config(motion_weight=motion_weight),
+            dormant_reid=reid_config(),
+        )
+        assert result.assignments == ((1, 7),)
+    motion_only = config(
+        visual_weight=0.0,
+        semantic_weight=0.0,
+        size_weight=0.0,
+        geometry_weight=0.0,
+        motion_weight=1.0,
+    )
+    assert associate_temporal_observations(
+        (obs,), (left, right), motion_only, dormant_reid=reid_config()
+    ).assignments == ((1, 7),)
 
 
 def test_a4_dormant_ties_and_permutations_are_canonical() -> None:
@@ -476,3 +523,10 @@ def test_empty_inputs_return_complete_sorted_unmatched_sets() -> None:
     assert associate_temporal_observations(
         (observation(3), observation(1)), (), config()
     ) == TemporalAssociationResult((), (1, 3), ())
+
+
+def test_nonempty_result_requires_complete_diagnostics_and_signed_int64_ids() -> None:
+    with pytest.raises(ValueError, match="diagnostics"):
+        TemporalAssociationResult(((1, 2),), (), ())
+    with pytest.raises((TypeError, ValueError)):
+        TemporalAssociationResult(((1, 2**63),), (), (), assignment_diagnostics=())

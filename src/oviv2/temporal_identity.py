@@ -10,11 +10,16 @@ from src.oviv2.temporal_config import TemporalIdentityConfig
 from src.oviv2.temporal_lifecycle import TemporalLifecycle
 
 
+_INT64_MAX = 2**63 - 1
+
+
 def _exact_int(value: object, name: str, *, minimum: int = 0) -> int:
     if type(value) is not int:
         raise TypeError(f"{name} must be an exact integer")
     if value < minimum:
         raise ValueError(f"{name} must be at least {minimum}")
+    if value > _INT64_MAX:
+        raise ValueError(f"{name} must fit signed int64")
     return value
 
 
@@ -115,6 +120,10 @@ class IdentityMemoryRecord:
         last_time = _finite(self.last_timestamp, "last_timestamp")
         if last_frame < first_frame or last_time < first_time:
             raise ValueError("last observation cannot precede first observation")
+        if last_frame > first_frame and last_time <= first_time:
+            raise ValueError("last_timestamp must increase strictly with last_frame_id")
+        if last_frame == first_frame and last_time != first_time:
+            raise ValueError("one frame cannot have two observation timestamps")
         object.__setattr__(self, "first_frame_id", first_frame)
         object.__setattr__(self, "last_frame_id", last_frame)
         object.__setattr__(self, "first_timestamp", first_time)
@@ -167,6 +176,22 @@ class IdentityMemoryRecord:
 class IdentityExpiryDiagnostics:
     current_frame_id: int
     expired_identity_ids: tuple[int, ...]
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "current_frame_id",
+            _exact_int(self.current_frame_id, "current_frame_id"),
+        )
+        if type(self.expired_identity_ids) is not tuple:
+            raise TypeError("expired_identity_ids must be an exact tuple")
+        normalized = tuple(
+            _exact_int(value, "expired identity_id", minimum=1)
+            for value in self.expired_identity_ids
+        )
+        if normalized != tuple(sorted(set(normalized))):
+            raise ValueError("expired_identity_ids must be sorted and unique")
+        object.__setattr__(self, "expired_identity_ids", normalized)
 
 
 class IdentityMemoryBank:

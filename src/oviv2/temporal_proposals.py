@@ -9,11 +9,16 @@ import numpy as np
 from src.oviv2.temporal_config import TemporalProposalConfig
 
 
+_INT64_MAX = 2**63 - 1
+
+
 def _exact_int(value: object, name: str, minimum: int = 0) -> int:
     if type(value) is not int:
         raise TypeError(f"{name} must be an exact integer")
     if value < minimum:
         raise ValueError(f"{name} must be at least {minimum}")
+    if value > _INT64_MAX:
+        raise ValueError(f"{name} must fit signed int64")
     return value
 
 
@@ -27,8 +32,17 @@ def _finite(value: object, name: str) -> float:
 
 
 def _hash(value: object, name: str) -> str:
+    if not isinstance(value, str):
+        raise TypeError(f"{name} must be a string")
+    normalized = value.strip().lower()
+    if len(normalized) != 64 or any(character not in "0123456789abcdef" for character in normalized):
+        raise ValueError(f"{name} must be a 64-character hexadecimal digest")
+    return normalized
+
+
+def _model_id(value: object) -> str:
     if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"{name} must be a non-empty string")
+        raise ValueError("appearance_model_id must be a non-empty string")
     return value.strip()
 
 
@@ -100,8 +114,8 @@ class ProposalRecoveryInput:
         occupied = _array(self.segmentation_occupied, "segmentation_occupied", ndim=2, dtype_kind="bool", shape=shape)
         semantic = _array(self.semantic_support, "semantic_support", ndim=2, dtype_kind="bool", shape=shape)
         source = _exact_int(self.semantic_source_frame_id, "semantic_source_frame_id")
-        if source > frame_id:
-            raise ValueError("semantic support cannot come from a future frame")
+        if source != frame_id:
+            raise ValueError("semantic support must come from the current frame, not a historical or future frame")
         object.__setattr__(self, "depth_m", depth)
         object.__setattr__(self, "current_xyz", xyz)
         object.__setattr__(self, "segmentation_occupied", occupied)
@@ -114,11 +128,11 @@ class ProposalRecoveryInput:
         else:
             appearance = _array(self.appearance_support, "appearance_support", ndim=2, dtype_kind="bool", shape=shape)
             appearance_source = _exact_int(self.appearance_source_frame_id, "appearance_source_frame_id")
-            if appearance_source > frame_id:
-                raise ValueError("appearance support cannot come from a future frame")
+            if appearance_source != frame_id:
+                raise ValueError("appearance support must come from the current frame, not a historical or future frame")
             object.__setattr__(self, "appearance_support", appearance)
             object.__setattr__(self, "appearance_source_frame_id", appearance_source)
-            object.__setattr__(self, "appearance_model_id", _hash(self.appearance_model_id, "appearance_model_id"))
+            object.__setattr__(self, "appearance_model_id", _model_id(self.appearance_model_id))
             object.__setattr__(self, "appearance_provenance_hash", _hash(self.appearance_provenance_hash, "appearance_provenance_hash"))
         if type(self.search_regions) is not tuple:
             raise TypeError("search_regions must be an exact tuple")
@@ -130,8 +144,8 @@ class ProposalRecoveryInput:
         for item in self.search_regions:
             if item.mask.shape != shape:
                 raise ValueError("search region shape mismatch")
-            if item.source_frame_id > frame_id:
-                raise ValueError("search region cannot come from a future frame")
+            if item.source_frame_id >= frame_id:
+                raise ValueError("search region must come from a strictly past frame, not the same or a future frame")
 
 
 @dataclass(frozen=True, eq=False)
@@ -193,8 +207,10 @@ class RecoveredTemporalProposal:
         object.__setattr__(self, "mean_depth_m", mean_depth)
         object.__setattr__(self, "projection_source_frame_id", _exact_int(self.projection_source_frame_id, "projection_source_frame_id"))
         object.__setattr__(self, "semantic_source_frame_id", _exact_int(self.semantic_source_frame_id, "semantic_source_frame_id"))
-        if self.projection_source_frame_id > self.frame_id or self.semantic_source_frame_id > self.frame_id:
-            raise ValueError("proposal provenance cannot come from a future frame")
+        if self.projection_source_frame_id >= self.frame_id:
+            raise ValueError("projection provenance must come from a strictly past frame")
+        if self.semantic_source_frame_id != self.frame_id:
+            raise ValueError("semantic provenance must come from the current frame")
         object.__setattr__(self, "projection_provenance_hash", _hash(self.projection_provenance_hash, "projection_provenance_hash"))
         object.__setattr__(self, "semantic_provenance_hash", _hash(self.semantic_provenance_hash, "semantic_provenance_hash"))
         if type(self.appearance_available) is not bool:
@@ -209,10 +225,10 @@ class RecoveredTemporalProposal:
                 raise ValueError("unavailable appearance cannot have provenance")
         else:
             source = _exact_int(self.appearance_source_frame_id, "appearance_source_frame_id")
-            if source > self.frame_id:
-                raise ValueError("appearance provenance cannot come from a future frame")
+            if source != self.frame_id:
+                raise ValueError("appearance provenance must come from the current frame")
             object.__setattr__(self, "appearance_source_frame_id", source)
-            object.__setattr__(self, "appearance_model_id", _hash(self.appearance_model_id, "appearance_model_id"))
+            object.__setattr__(self, "appearance_model_id", _model_id(self.appearance_model_id))
             object.__setattr__(self, "appearance_provenance_hash", _hash(self.appearance_provenance_hash, "appearance_provenance_hash"))
 
     def __eq__(self, other: object) -> bool:
@@ -270,6 +286,24 @@ def _components(mask: np.ndarray) -> tuple[np.ndarray, ...]:
     return tuple(output)
 
 
+def _expand_metric_region(
+    mask: np.ndarray,
+    current_xyz: np.ndarray,
+    expansion_m: float,
+) -> np.ndarray:
+    expanded = mask.copy()
+    if expansion_m == 0.0 or not mask.any():
+        return expanded
+    flat_xyz = current_xyz.reshape(-1, 3)
+    within = np.zeros(flat_xyz.shape[0], dtype=bool)
+    squared_limit = expansion_m * expansion_m
+    for source_xyz in current_xyz[mask]:
+        delta = flat_xyz - source_xyz
+        squared_distance = np.einsum("ij,ij->i", delta, delta)
+        within |= squared_distance <= squared_limit
+    return within.reshape(mask.shape)
+
+
 def recover_temporal_proposals(value: ProposalRecoveryInput, config: TemporalProposalConfig) -> ProposalRecoveryResult:
     if not isinstance(value, ProposalRecoveryInput):
         raise TypeError("value must be a ProposalRecoveryInput")
@@ -282,14 +316,19 @@ def recover_temporal_proposals(value: ProposalRecoveryInput, config: TemporalPro
     if config.search_region_expansion_m < 0.0 or residual_threshold <= 0.0:
         raise ValueError("proposal distances must be positive/non-negative")
 
-    support = value.semantic_support.copy()
-    if value.appearance_support is not None:
-        support |= value.appearance_support
     ownership = np.full(value.depth_m.shape, np.iinfo(np.int64).max, dtype=np.int64)
     raw: list[tuple[ProjectedIdentitySearchRegion, np.ndarray]] = []
     for item in sorted(value.search_regions, key=lambda x: (x.identity_id, x.source_frame_id, x.projection_provenance_hash)):
-        residual = np.abs(value.depth_m - item.expected_depth_m) >= residual_threshold
-        eligible = item.mask & support & ~value.segmentation_occupied & residual
+        search_mask = _expand_metric_region(
+            item.mask, value.current_xyz, config.search_region_expansion_m
+        )
+        residual = item.expected_depth_m - value.depth_m >= residual_threshold
+        eligible = (
+            search_mask
+            & value.semantic_support
+            & ~value.segmentation_occupied
+            & residual
+        )
         ownership[eligible] = np.minimum(ownership[eligible], item.identity_id)
         raw.append((item, eligible))
 
@@ -309,6 +348,10 @@ def recover_temporal_proposals(value: ProposalRecoveryInput, config: TemporalPro
         rows, columns = np.nonzero(mask)
         xyz = value.current_xyz[mask]
         frozen_mask = np.frombuffer(np.ascontiguousarray(mask).tobytes(), dtype=np.bool_).reshape(mask.shape)
+        appearance_available = bool(
+            value.appearance_support is not None
+            and np.any(mask & value.appearance_support)
+        )
         proposals.append(RecoveredTemporalProposal(
             proposal_id, value.frame_id, value.timestamp, item.identity_id, frozen_mask,
             int(mask.sum()), (int(columns.min()), int(rows.min()), int(columns.max() + 1), int(rows.max() + 1)),
@@ -316,7 +359,9 @@ def recover_temporal_proposals(value: ProposalRecoveryInput, config: TemporalPro
             tuple(float(x) for x in xyz.max(axis=0)), float(value.depth_m[mask].mean()),
             item.source_frame_id, item.projection_provenance_hash,
             value.semantic_source_frame_id, value.semantic_provenance_hash,
-            value.appearance_support is not None, value.appearance_source_frame_id,
-            value.appearance_model_id, value.appearance_provenance_hash,
+            appearance_available,
+            value.appearance_source_frame_id if appearance_available else None,
+            value.appearance_model_id if appearance_available else None,
+            value.appearance_provenance_hash if appearance_available else None,
         ))
     return ProposalRecoveryResult(tuple(proposals), opportunity_count, len(proposals))

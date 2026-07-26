@@ -114,6 +114,30 @@ def test_expiry_is_deterministic_and_geometry_eviction_is_irrelevant() -> None:
     assert bank.get(second.identity_id) is not None
 
 
+def test_expiry_diagnostics_and_record_causal_pairs_fail_closed() -> None:
+    bank = IdentityMemoryBank(config())
+    record = bank.insert(**fields())
+    with pytest.raises(ValueError, match="strictly"):
+        replace(record, last_frame_id=2, last_timestamp=1.0)
+    diagnostics = bank.expire_dormant(current_frame_id=1)
+    with pytest.raises((TypeError, ValueError)):
+        replace(diagnostics, current_frame_id=np.int64(1))
+    with pytest.raises((TypeError, ValueError)):
+        replace(diagnostics, expired_identity_ids=[1])
+    with pytest.raises((TypeError, ValueError)):
+        replace(diagnostics, expired_identity_ids=(2, 1))
+
+
+@pytest.mark.parametrize("value", [2**63, -1, True, np.int64(1)])
+def test_identity_ids_and_frames_require_signed_int64_exact_values(value: object) -> None:
+    bank = IdentityMemoryBank(config())
+    record = bank.insert(**fields())
+    with pytest.raises((TypeError, ValueError)):
+        replace(record, identity_id=value)
+    with pytest.raises((TypeError, ValueError)):
+        replace(record, last_frame_id=value)
+
+
 @pytest.mark.parametrize(
     "changes",
     [
