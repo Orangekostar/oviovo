@@ -13,7 +13,6 @@ from src.oviv2.runtime import Oviv2Runtime, RuntimeFrameResult
 from src.oviv2.temporal_config import ExecutionProfile, TemporalReadoutConfig
 from src.oviv2.temporal_export import (
     DynamicEvidenceState,
-    DynamicState,
     TemporalExportBatch,
     TemporalExportSample,
     TemporalLifecycleEvent,
@@ -185,7 +184,7 @@ class ReferenceFrameResult:
     entity_lifecycles: tuple[tuple[int, str], ...]
     lifecycle_states: tuple[TemporalLifecycleState, ...]
     cumulative_view: CumulativeReadoutView
-    export: TemporalExportBatch
+    export: TemporalExportBatch | None = None
 
     @property
     def latest_cumulative_view(self) -> CumulativeReadoutView:
@@ -200,6 +199,20 @@ class ReferenceFrameResult:
             raise ValueError("result revision must match cumulative_view")
         if self.timestamp != self.cumulative_view.last_timestamp:
             raise ValueError("result timestamp must match cumulative_view")
+        if self.export is None:
+            object.__setattr__(
+                self,
+                "export",
+                TemporalExportBatch(
+                    self.frame_id,
+                    timestamp_seconds_to_ns(self.timestamp),
+                    (),
+                    (),
+                ),
+            )
+        elif type(self.export) is not TemporalExportBatch:
+            raise TypeError("export must be a TemporalExportBatch or None")
+        assert self.export is not None
         if self.export.frame_index != self.frame_id:
             raise ValueError("export frame must match result")
         if self.export.timestamp_ns != timestamp_seconds_to_ns(self.timestamp):
@@ -426,7 +439,7 @@ class _BaseReferenceReadout:
                 old is None or old.last_centroid_xyz is None
             ):
                 observation_count = 1
-                dynamic_evidence = DynamicEvidenceState(DynamicState.UNKNOWN, 0, 0)
+                dynamic_evidence = DynamicEvidenceState.static()
                 motion_confidence = 0.0
                 last_centroid = centroid
             elif entity_id in accepted_ids:
@@ -449,7 +462,7 @@ class _BaseReferenceReadout:
                 last_centroid = centroid
             elif old is None:
                 observation_count = 0
-                dynamic_evidence = DynamicEvidenceState(DynamicState.UNKNOWN, 0, 0)
+                dynamic_evidence = DynamicEvidenceState.static()
                 motion_confidence = 0.0
                 last_centroid = None
             else:
@@ -722,9 +735,9 @@ class LifecycleOverlayReadout(_BaseReferenceReadout):
                 frame_index=frame.frame_id,
                 timestamp_ns=timestamp_ns,
                 entity_id=old.entity_id,
-                before_lifecycle=old.lifecycle,
-                after_lifecycle=updated.lifecycle,
-                evidence_kind=evidence_kind,
+                before=old.lifecycle,
+                after=updated.lifecycle,
+                evidence=evidence_kind,
                 geometry_epoch=0,
                 readout_valid=readout_valid,
             )

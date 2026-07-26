@@ -68,7 +68,7 @@ def timestamp_seconds_to_ns(value: object) -> int:
     return timestamp_ns
 
 
-class DynamicState(Enum):
+class DynamicState(str, Enum):
     STATIC = "static"
     DYNAMIC = "dynamic"
     UNKNOWN = "unknown"
@@ -87,6 +87,14 @@ class DynamicEvidenceState:
         object.__setattr__(self, "static_streak", _integer(self.static_streak, "static_streak", minimum=0))
         if self.motion_streak and self.static_streak:
             raise ValueError("motion_streak and static_streak cannot both be positive")
+
+    @classmethod
+    def static(cls) -> DynamicEvidenceState:
+        return cls(DynamicState.STATIC, 0, 0)
+
+    @property
+    def state(self) -> DynamicState:
+        return self.dynamic_state
 
 
 def _validate_dynamic_config(config: object) -> TemporalDynamicConfig:
@@ -188,9 +196,9 @@ class TemporalLifecycleEvent:
     frame_index: int
     timestamp_ns: int
     entity_id: int
-    before_lifecycle: TemporalLifecycle
-    after_lifecycle: TemporalLifecycle
-    evidence_kind: TemporalEvidenceKind
+    before: TemporalLifecycle
+    after: TemporalLifecycle
+    evidence: TemporalEvidenceKind
     geometry_epoch: int
     readout_valid: bool
 
@@ -198,23 +206,35 @@ class TemporalLifecycleEvent:
         object.__setattr__(self, "frame_index", _integer(self.frame_index, "frame_index", minimum=0))
         object.__setattr__(self, "timestamp_ns", _integer(self.timestamp_ns, "timestamp_ns", minimum=0))
         object.__setattr__(self, "entity_id", _integer(self.entity_id, "entity_id", minimum=1))
-        if type(self.before_lifecycle) is not TemporalLifecycle:
-            raise TypeError("before_lifecycle must be a TemporalLifecycle")
-        if type(self.after_lifecycle) is not TemporalLifecycle:
-            raise TypeError("after_lifecycle must be a TemporalLifecycle")
-        if type(self.evidence_kind) is not TemporalEvidenceKind:
-            raise TypeError("evidence_kind must be a TemporalEvidenceKind")
+        if type(self.before) is not TemporalLifecycle:
+            raise TypeError("before must be a TemporalLifecycle")
+        if type(self.after) is not TemporalLifecycle:
+            raise TypeError("after must be a TemporalLifecycle")
+        if type(self.evidence) is not TemporalEvidenceKind:
+            raise TypeError("evidence must be a TemporalEvidenceKind")
         object.__setattr__(self, "geometry_epoch", _integer(self.geometry_epoch, "geometry_epoch", minimum=0))
         object.__setattr__(self, "readout_valid", _exact_bool(self.readout_valid, "readout_valid"))
+
+    @property
+    def before_lifecycle(self) -> TemporalLifecycle:
+        return self.before
+
+    @property
+    def after_lifecycle(self) -> TemporalLifecycle:
+        return self.after
+
+    @property
+    def evidence_kind(self) -> TemporalEvidenceKind:
+        return self.evidence
 
     def to_json_record(self) -> dict[str, Any]:
         return {
             "frame_index": self.frame_index,
             "timestamp_ns": self.timestamp_ns,
             "entity_id": self.entity_id,
-            "before_lifecycle": self.before_lifecycle.value,
-            "after_lifecycle": self.after_lifecycle.value,
-            "evidence_kind": self.evidence_kind.value,
+            "before": self.before.value,
+            "after": self.after.value,
+            "evidence": self.evidence.value,
             "geometry_epoch": self.geometry_epoch,
             "readout_valid": self.readout_valid,
         }
@@ -254,6 +274,26 @@ class TemporalExportBatch:
             "events": [item.to_json_record() for item in self.events],
         }
 
+    def to_json_records(self) -> tuple[dict[str, Any], ...]:
+        return tuple(item.to_json_record() for item in (*self.samples, *self.events))
+
+    def validate_after(self, previous: TemporalExportBatch) -> None:
+        if type(previous) is not TemporalExportBatch:
+            raise TypeError("previous must be a TemporalExportBatch")
+        if self.frame_index <= previous.frame_index:
+            raise ValueError("frame_index must increase strictly across batches")
+        if self.timestamp_ns <= previous.timestamp_ns:
+            raise ValueError("timestamp_ns must increase strictly across batches")
+        previous_counts = {
+            item.entity_id: item.observation_count for item in previous.samples
+        }
+        for item in self.samples:
+            previous_count = previous_counts.get(item.entity_id)
+            if previous_count is not None and item.observation_count <= previous_count:
+                raise ValueError(
+                    "observation_count must increase strictly for repeated entities"
+                )
+
     def to_canonical_json(self) -> bytes:
         return (
             json.dumps(
@@ -264,3 +304,25 @@ class TemporalExportBatch:
             )
             + "\n"
         ).encode("utf-8")
+
+
+def validate_temporal_export_sequence(
+    batches: tuple[TemporalExportBatch, ...],
+) -> None:
+    if type(batches) is not tuple or any(
+        type(item) is not TemporalExportBatch for item in batches
+    ):
+        raise TypeError("batches must be an exact tuple of TemporalExportBatch values")
+    latest_observation_counts: dict[int, int] = {}
+    previous: TemporalExportBatch | None = None
+    for batch in batches:
+        if previous is not None:
+            batch.validate_after(previous)
+        for sample in batch.samples:
+            previous_count = latest_observation_counts.get(sample.entity_id)
+            if previous_count is not None and sample.observation_count <= previous_count:
+                raise ValueError(
+                    "observation_count must increase strictly across the sequence"
+                )
+            latest_observation_counts[sample.entity_id] = sample.observation_count
+        previous = batch

@@ -21,11 +21,12 @@ from src.oviv2.temporal_lifecycle import (
     TemporalEvidenceKind,
     TemporalLifecycle,
 )
-from src.oviv2.temporal_export import DynamicState
+from src.oviv2.temporal_export import DynamicState, TemporalExportBatch
 from src.oviv2.reference_readout import (
     CumulativeEntityView,
     CumulativeReadoutView,
     LifecycleOverlayReadout,
+    ReferenceFrameResult,
     ReferenceCurrentReadout,
 )
 
@@ -242,7 +243,7 @@ def test_a0_exports_only_accepted_samples_and_does_not_mutate_cumulative_view() 
     assert result.export.samples[0].entity_id == 7
     assert result.export.samples[0].centroid_xyz == (1.0, 2.0, 3.0)
     assert result.export.samples[0].observation_count == 1
-    assert result.export.samples[0].dynamic_state is DynamicState.UNKNOWN
+    assert result.export.samples[0].dynamic_state is DynamicState.STATIC
 
 
 def test_a0_exports_each_accepted_observation_and_skips_unobserved_frames() -> None:
@@ -259,7 +260,45 @@ def test_a0_exports_each_accepted_observation_and_skips_unobserved_frames() -> N
     assert missing.export.samples == ()
     assert observed.export.samples[0].observation_count == 2
     assert observed.export.samples[0].motion_confidence == 1.0
-    assert observed.export.samples[0].dynamic_state is DynamicState.UNKNOWN
+    assert observed.export.samples[0].dynamic_state is DynamicState.STATIC
+
+
+def test_reference_frame_result_old_constructor_defaults_to_empty_export() -> None:
+    cumulative_view = view(1, 0, 0.0)
+
+    result = ReferenceFrameResult(
+        "room0",
+        0,
+        0.0,
+        1,
+        (),
+        (),
+        (),
+        (),
+        0,
+        (),
+        (),
+        cumulative_view,
+    )
+
+    assert result.export is not None
+    assert result.export == TemporalExportBatch(0, 0, (), ())
+
+    keyword_result = ReferenceFrameResult(
+        scene_id="room0",
+        frame_id=0,
+        timestamp=0.0,
+        revision=1,
+        active_entity_ids=(),
+        dormant_entity_ids=(),
+        new_entity_ids=(),
+        reactivated_entity_ids=(),
+        background_blocks_touched=0,
+        entity_lifecycles=(),
+        lifecycle_states=(),
+        cumulative_view=cumulative_view,
+    )
+    assert keyword_result.export == TemporalExportBatch(0, 0, (), ())
 
 
 def test_a1_occlusion_is_neutral_and_uses_before_geometry() -> None:
