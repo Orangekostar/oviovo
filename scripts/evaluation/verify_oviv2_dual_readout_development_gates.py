@@ -357,7 +357,11 @@ def verify_source_manifest(
 ) -> list[dict[str, Any]]:
     if set(manifest) != {"schema_version", "manifest_id", "base_commit", "roots", "files"}:
         raise GateVerificationError("source manifest has invalid fields")
-    if manifest["schema_version"] != 1 or manifest["manifest_id"] != SOURCE_MANIFEST_ID:
+    if (
+        type(manifest["schema_version"]) is not int
+        or manifest["schema_version"] != 1
+        or manifest["manifest_id"] != SOURCE_MANIFEST_ID
+    ):
         raise GateVerificationError("source manifest identity is invalid")
     if manifest["base_commit"] != CUMULATIVE_BASE_COMMIT:
         raise GateVerificationError("source manifest cumulative base is invalid")
@@ -452,23 +456,65 @@ def _is_canonical_repo_path(path: str) -> bool:
 
 
 def _regular_file_bytes(repo: Path, relative: str, maximum: int) -> bytes:
-    path = repo / relative
-    try:
-        before = path.lstat()
-    except FileNotFoundError as error:
-        raise GateVerificationError(f"required file is missing: {relative}") from error
-    if stat.S_ISLNK(before.st_mode) or not stat.S_ISREG(before.st_mode):
-        raise GateVerificationError(f"required file must be a regular non-symlink: {relative}")
-    if before.st_size > maximum:
+    if not _is_canonical_repo_path(relative):
         raise GateVerificationError(
-            f"required file exceeds maximum {maximum} bytes: {relative}"
+            f"required file path must be canonical relative POSIX: {relative!r}"
         )
-    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
-    descriptor = os.open(path, flags)
+    parts = relative.split("/")
+    directory_flags = (
+        os.O_RDONLY
+        | getattr(os, "O_DIRECTORY", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+    )
+    file_flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
     try:
-        opened = os.fstat(descriptor)
-        if (opened.st_dev, opened.st_ino) != (before.st_dev, before.st_ino):
-            raise GateVerificationError(f"required file changed while opening: {relative}")
+        root_descriptor = os.open(repo, directory_flags)
+    except FileNotFoundError as error:
+        raise GateVerificationError(f"repository root is missing: {repo}") from error
+    except OSError as error:
+        raise GateVerificationError(
+            f"repository root must be a regular non-symlink directory: {repo}"
+        ) from error
+    directory_descriptor = root_descriptor
+    descriptor: int | None = None
+    try:
+        for part in parts[:-1]:
+            try:
+                next_descriptor = os.open(
+                    part, directory_flags, dir_fd=directory_descriptor
+                )
+            except FileNotFoundError as error:
+                raise GateVerificationError(
+                    f"required file is missing: {relative}"
+                ) from error
+            except OSError as error:
+                raise GateVerificationError(
+                    f"required file ancestors must be regular non-symlink directories: {relative}"
+                ) from error
+            if directory_descriptor != root_descriptor:
+                os.close(directory_descriptor)
+            directory_descriptor = next_descriptor
+        try:
+            descriptor = os.open(
+                parts[-1], file_flags, dir_fd=directory_descriptor
+            )
+        except FileNotFoundError as error:
+            raise GateVerificationError(
+                f"required file is missing: {relative}"
+            ) from error
+        except OSError as error:
+            raise GateVerificationError(
+                f"required file must be a regular non-symlink: {relative}"
+            ) from error
+        before = os.fstat(descriptor)
+        if not stat.S_ISREG(before.st_mode):
+            raise GateVerificationError(
+                f"required file must be a regular non-symlink: {relative}"
+            )
+        if before.st_size > maximum:
+            raise GateVerificationError(
+                f"required file exceeds maximum {maximum} bytes: {relative}"
+            )
         chunks: list[bytes] = []
         total = 0
         while True:
@@ -483,7 +529,11 @@ def _regular_file_bytes(repo: Path, relative: str, maximum: int) -> bytes:
                 )
         after = os.fstat(descriptor)
     finally:
-        os.close(descriptor)
+        if descriptor is not None:
+            os.close(descriptor)
+        if directory_descriptor != root_descriptor:
+            os.close(directory_descriptor)
+        os.close(root_descriptor)
     if (
         (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns)
         != (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns)

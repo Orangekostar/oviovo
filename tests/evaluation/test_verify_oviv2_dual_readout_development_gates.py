@@ -156,6 +156,18 @@ def test_source_manifest_rejects_symlinked_dependency(tmp_path: Path) -> None:
         gates.verify_source_manifest(manifest, repo=repo, git=git)
 
 
+def test_source_manifest_rejects_symlinked_dependency_ancestor(
+    tmp_path: Path,
+) -> None:
+    manifest, repo, git = _valid_source_manifest(tmp_path)
+    package = repo / "src/pkg"
+    outside = tmp_path / "outside-pkg"
+    package.rename(outside)
+    package.symlink_to(outside, target_is_directory=True)
+    with pytest.raises(gates.GateVerificationError, match="non-symlink"):
+        gates.verify_source_manifest(manifest, repo=repo, git=git)
+
+
 def test_source_manifest_rejects_current_tree_only_dependency(tmp_path: Path) -> None:
     manifest, repo, git = _valid_source_manifest(tmp_path)
     (repo / gates.CUMULATIVE_ROOTS[0]).write_text(
@@ -336,6 +348,16 @@ def test_source_manifest_rejects_reduced_cumulative_roots(tmp_path: Path) -> Non
     removed = manifest["roots"].pop()
     manifest["files"].pop(removed)
     with pytest.raises(gates.GateVerificationError, match="cumulative roots"):
+        gates.verify_source_manifest(manifest, repo=repo, git=git)
+
+
+@pytest.mark.parametrize("schema_version", [True, 1.0])
+def test_source_manifest_requires_integer_schema_version(
+    tmp_path: Path, schema_version: object
+) -> None:
+    manifest, repo, git = _valid_source_manifest(tmp_path)
+    manifest["schema_version"] = schema_version
+    with pytest.raises(gates.GateVerificationError, match="identity"):
         gates.verify_source_manifest(manifest, repo=repo, git=git)
 
 
