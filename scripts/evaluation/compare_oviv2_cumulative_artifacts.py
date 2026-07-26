@@ -195,6 +195,8 @@ def _stream_descriptor(
         "run_manifest.json",
         "normalized_run_config.json",
         "execution_receipt.json",
+        "t1_exact_receipt.json",
+        "source_index.json",
     }
     chunks: list[bytes] = []
     try:
@@ -425,6 +427,176 @@ def _validate_manifest_records(
     elif isinstance(value, list):
         for position, child in enumerate(value):
             _validate_manifest_records(all_files, child, f"{label}[{position}]")
+
+
+def _record_inventory(
+    all_files: Mapping[str, FileEntry], value: object
+) -> set[str]:
+    result: set[str] = set()
+    if isinstance(value, Mapping):
+        if set(value) == {"path", "sha256", "byte_count"}:
+            path, _, _ = _record(value, "manifest")
+            key = path.as_posix()
+            children = {item for item in all_files if item.startswith(key + "/")}
+            result.update(children or {key})
+        else:
+            for child in value.values():
+                result.update(_record_inventory(all_files, child))
+    elif isinstance(value, list):
+        for child in value:
+            result.update(_record_inventory(all_files, child))
+    return result
+
+
+def _single_record_inventory(
+    all_files: Mapping[str, FileEntry], value: object, label: str
+) -> set[str]:
+    path, _, _ = _record(value, label)
+    key = path.as_posix()
+    children = {item for item in all_files if item.startswith(key + "/")}
+    return children or {key}
+
+
+def _schema2_manifest_inventory(
+    all_files: Mapping[str, FileEntry], manifest: Mapping[str, Any]
+) -> set[str]:
+    result: set[str] = set()
+    for key in (
+        "normalized_run_config",
+        "final_artifact",
+        "occlusion_checkpoint_index",
+        "source_index",
+    ):
+        if key in manifest:
+            result.update(
+                _single_record_inventory(all_files, manifest[key], f"manifest {key}")
+            )
+    checkpoints = manifest.get("checkpoints")
+    if isinstance(checkpoints, list):
+        for checkpoint in checkpoints:
+            if not isinstance(checkpoint, Mapping):
+                continue
+            for key in (
+                "artifact",
+                "checkpoint_status",
+                "neutral_snapshot",
+                "neutral_entities",
+            ):
+                if key in checkpoint:
+                    result.update(
+                        _single_record_inventory(
+                            all_files, checkpoint[key], f"checkpoint {key}"
+                        )
+                    )
+            if "cumulative_audit" in checkpoint:
+                result.update(
+                    _record_inventory(all_files, checkpoint["cumulative_audit"])
+                )
+            artifacts = checkpoint.get("artifacts")
+            if isinstance(artifacts, Mapping):
+                for role in ("temporal_current", "neutral_current", "temporal_compact"):
+                    artifact = artifacts.get(role)
+                    if isinstance(artifact, Mapping) and "artifact" in artifact:
+                        result.update(
+                            _single_record_inventory(
+                                all_files,
+                                artifact["artifact"],
+                                f"checkpoint {role} artifact",
+                            )
+                        )
+    if "final_cumulative_audit" in manifest:
+        result.update(
+            _record_inventory(all_files, manifest["final_cumulative_audit"])
+        )
+    if "source_index.json" in all_files:
+        source_index = _json_object(
+            _regular_bytes(
+                all_files, PurePosixPath("source_index.json"), "source index"
+            ),
+            "source index",
+        )
+        expected_index_fields = {
+            "schema_version",
+            "dataset",
+            "mode",
+            "method",
+            "scene",
+            "schedule",
+            "capture_status",
+            "trajectories",
+            "frame_coverage",
+            "lifecycle_transitions",
+            "checkpoints",
+        }
+        if "frozen_run_identity" in source_index:
+            expected_index_fields.add("frozen_run_identity")
+        if set(source_index) != expected_index_fields:
+            raise ArtifactMismatch("source index schema is invalid")
+        for key in (
+            "schedule",
+            "capture_status",
+            "trajectories",
+            "frame_coverage",
+            "lifecycle_transitions",
+        ):
+            result.update(
+                _single_record_inventory(
+                    all_files, source_index[key], f"source index {key}"
+                )
+            )
+        indexed_checkpoints = source_index.get("checkpoints")
+        if not isinstance(indexed_checkpoints, list):
+            raise ArtifactMismatch("source index checkpoint inventory is invalid")
+        for checkpoint in indexed_checkpoints:
+            if not isinstance(checkpoint, Mapping) or set(checkpoint) != {
+                "frame_index",
+                "timestamp_ns",
+                "consumed_through_frame",
+                "consumed_through_frame_exclusive",
+                "checkpoint_status",
+                "snapshot",
+                "entities",
+            }:
+                raise ArtifactMismatch("source index checkpoint inventory is invalid")
+            for key in ("checkpoint_status", "snapshot", "entities"):
+                result.update(
+                    _single_record_inventory(
+                        all_files, checkpoint[key], f"source index {key}"
+                    )
+                )
+    return result
+
+
+def _schema1_manifest_inventory(
+    all_files: Mapping[str, FileEntry], manifest: Mapping[str, Any]
+) -> set[str]:
+    result: set[str] = set()
+    checkpoints = manifest.get("checkpoints")
+    if isinstance(checkpoints, list):
+        for checkpoint in checkpoints:
+            if not isinstance(checkpoint, Mapping):
+                continue
+            for key in (
+                "artifact",
+                "voxel_snapshot",
+                "ownership_checkpoint",
+                "checkpoint_status",
+                "neutral_snapshot",
+                "neutral_entities",
+            ):
+                if key in checkpoint:
+                    result.update(
+                        _single_record_inventory(
+                            all_files, checkpoint[key], f"v1 checkpoint {key}"
+                        )
+                    )
+    if "final_artifact" in manifest:
+        result.update(
+            _single_record_inventory(
+                all_files, manifest["final_artifact"], "v1 final artifact"
+            )
+        )
+    return result
 
 
 def _json_object(data: bytes, label: str) -> dict[str, Any]:
@@ -702,6 +874,116 @@ def _schema1_projection(
     return frames, projection
 
 
+def _projection_summary(
+    frames: list[int], projection: Mapping[str, FileEntry]
+) -> tuple[list[dict[str, Any]], str]:
+    records: list[dict[str, Any]] = []
+    root_digest = hashlib.sha256()
+    for path in sorted(projection):
+        entry = projection[path]
+        records.append(
+            {"path": path, "sha256": entry.sha256, "byte_count": entry.byte_count}
+        )
+        root_digest.update(path.encode("utf-8"))
+        root_digest.update(b"\0")
+        root_digest.update(bytes.fromhex(entry.sha256))
+        root_digest.update(b"\n")
+    return records, root_digest.hexdigest()
+
+
+def _valid_receipt_inventory(value: object) -> bool:
+    if not isinstance(value, list):
+        return False
+    try:
+        for position, record in enumerate(value):
+            _record(record, f"T1 exact receipt inventory[{position}]")
+    except ArtifactMismatch:
+        return False
+    return True
+
+
+def _validate_t1_receipt(
+    root: _RootHandle,
+    all_files: Mapping[str, FileEntry],
+    frames: list[int],
+    projection: Mapping[str, FileEntry],
+) -> None:
+    receipt = _json_object(
+        _regular_bytes(
+            all_files, PurePosixPath("t1_exact_receipt.json"), "T1 exact receipt"
+        ),
+        "T1 exact receipt",
+    )
+    expected_fields = {
+        "schema_version",
+        "format",
+        "execution",
+        "source_manifest",
+        "artifact_inventory",
+        "checkpoint_frames",
+        "cumulative_root_sha256",
+    }
+    execution = receipt.get("execution")
+    source = receipt.get("source_manifest")
+    execution_fields = {
+        "profile",
+        "argv",
+        "pid",
+        "code_commit",
+        "source_manifest_sha256",
+        "input_fingerprints",
+        "output_root",
+    }
+    source_fields = {"path", "sha256", "byte_count"}
+    records, root_digest = _projection_summary(frames, projection)
+    fingerprints = (
+        execution.get("input_fingerprints")
+        if isinstance(execution, Mapping)
+        else None
+    )
+    receipt_inventory = receipt.get("artifact_inventory")
+    receipt_frames = receipt.get("checkpoint_frames")
+    if (
+        set(receipt) != expected_fields
+        or type(receipt.get("schema_version")) is not int
+        or receipt["schema_version"] != 1
+        or receipt.get("format") != "oviv2_t1_exact_execution_receipt_v1"
+        or not isinstance(execution, Mapping)
+        or set(execution) != execution_fields
+        or execution.get("profile") != "reference"
+        or not isinstance(execution.get("argv"), list)
+        or not execution["argv"]
+        or any(not isinstance(item, str) or not item for item in execution["argv"])
+        or type(execution.get("pid")) is not int
+        or execution["pid"] <= 0
+        or not _hex_id(execution.get("code_commit"), (40,))
+        or not _hex_id(execution.get("source_manifest_sha256"), (64,))
+        or not isinstance(fingerprints, Mapping)
+        or not fingerprints
+        or any(
+            not isinstance(key, str)
+            or not key
+            or not _hex_id(value, (64,))
+            for key, value in fingerprints.items()
+        )
+        or execution.get("output_root") != str(root.path)
+        or not isinstance(source, Mapping)
+        or set(source) != source_fields
+        or not isinstance(source.get("path"), str)
+        or not Path(source["path"]).is_absolute()
+        or source.get("sha256") != execution.get("source_manifest_sha256")
+        or type(source.get("byte_count")) is not int
+        or source["byte_count"] < 0
+        or not _valid_receipt_inventory(receipt_inventory)
+        or receipt_inventory != records
+        or not isinstance(receipt_frames, list)
+        or any(type(frame) is not int or frame < 0 for frame in receipt_frames)
+        or receipt_frames != frames
+        or receipt.get("cumulative_root_sha256") != root_digest
+    ):
+        raise ArtifactMismatch("T1 exact receipt binding is invalid")
+
+
 def _load_inventory(
     root: _RootHandle,
 ) -> tuple[list[int], dict[str, FileEntry]]:
@@ -724,11 +1006,13 @@ def _load_inventory(
         if declared_inventory != sorted(set(declared_inventory)):
             raise ArtifactMismatch("artifact inventory is noncanonical")
     if manifest["schema_version"] == 2:
-        allowed_root_files = {"run_manifest.json"}
-        if "execution_receipt.json" in all_files:
-            allowed_root_files.add("execution_receipt.json")
         if "t1_exact_receipt.json" in all_files:
-            allowed_root_files.add("t1_exact_receipt.json")
+            raise ArtifactMismatch("artifact inventory is not exact")
+        if set(declared_inventory) != _schema2_manifest_inventory(
+            all_files, manifest
+        ):
+            raise ArtifactMismatch("artifact inventory is not exact")
+        allowed_root_files = {"run_manifest.json", "execution_receipt.json"}
         expected_files = set(declared_inventory) | allowed_root_files
         if set(all_files) != expected_files:
             raise ArtifactMismatch("artifact inventory is not exact")
@@ -736,7 +1020,18 @@ def _load_inventory(
         _schema2_run_identity(manifest, all_files)
         return _schema2_projection(manifest, all_files)
     _validate_manifest_records(all_files, manifest)
-    return _schema1_projection(manifest, all_files)
+    allowed_root_files = {"run_manifest.json"}
+    if "t1_exact_receipt.json" in all_files:
+        allowed_root_files.add("t1_exact_receipt.json")
+    expected_files = _schema1_manifest_inventory(
+        all_files, manifest
+    ) | allowed_root_files
+    if set(all_files) != expected_files:
+        raise ArtifactMismatch("artifact inventory is not exact")
+    frames, projection = _schema1_projection(manifest, all_files)
+    if "t1_exact_receipt.json" in all_files:
+        _validate_t1_receipt(root, all_files, frames, projection)
+    return frames, projection
 
 
 def _verify_entry(root: _RootHandle, entry: FileEntry, label: str) -> None:
@@ -807,6 +1102,74 @@ def compare_cumulative_artifacts(left: str | Path, right: str | Path) -> dict[st
             handle.close()
 
 
+def _write_all(descriptor: int, data: bytes) -> None:
+    view = memoryview(data)
+    while view:
+        written = os.write(descriptor, view)
+        if written <= 0:
+            raise OSError("comparison output write made no progress")
+        view = view[written:]
+
+
+def _publish_output(path: Path, payload: bytes) -> None:
+    absolute = Path(os.path.abspath(os.fspath(path)))
+    if not absolute.name:
+        raise ValueError("comparison output path is invalid")
+    parent = _open_root(absolute.parent)
+    descriptor: int | None = None
+    owned_identity: tuple[int, int, int] | None = None
+    try:
+        flags = (
+            os.O_WRONLY
+            | os.O_CREAT
+            | os.O_EXCL
+            | getattr(os, "O_NOFOLLOW", 0)
+            | getattr(os, "O_CLOEXEC", 0)
+        )
+        descriptor = os.open(
+            absolute.name, flags, 0o644, dir_fd=parent.descriptor
+        )
+        opened = os.fstat(descriptor)
+        if not stat.S_ISREG(opened.st_mode):
+            raise RuntimeError("comparison output temporary is not regular")
+        owned_identity = _directory_identity(opened)
+        _write_all(descriptor, payload)
+        os.fsync(descriptor)
+        linked = os.stat(
+            absolute.name, dir_fd=parent.descriptor, follow_symlinks=False
+        )
+        if (
+            not stat.S_ISREG(linked.st_mode)
+            or _directory_identity(linked) != owned_identity
+        ):
+            raise RuntimeError(
+                "comparison output publication state is uncertain: owner changed"
+            )
+        os.fsync(parent.descriptor)
+        parent.verify()
+        linked = os.stat(
+            absolute.name, dir_fd=parent.descriptor, follow_symlinks=False
+        )
+        if _directory_identity(linked) != owned_identity:
+            raise RuntimeError(
+                "comparison output publication state is uncertain: owner changed"
+            )
+    except FileExistsError:
+        raise
+    except Exception as exc:
+        if descriptor is None:
+            raise
+        raise RuntimeError(
+            "comparison output publication state is uncertain; output was preserved"
+        ) from exc
+    finally:
+        try:
+            if descriptor is not None:
+                os.close(descriptor)
+        finally:
+            parent.close()
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("left", type=Path)
@@ -818,9 +1181,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.output is None:
         print(payload, end="")
     else:
-        if args.output.exists() or args.output.is_symlink():
-            raise FileExistsError(args.output)
-        args.output.write_text(payload)
+        _publish_output(args.output, payload.encode("utf-8"))
     return 0
 
 

@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import stat
 import tracemalloc
 
 import pytest
@@ -173,6 +174,50 @@ def _pair(tmp_path: Path) -> tuple[Path, Path]:
     return left, right
 
 
+def _add_v2_source_index(root: Path) -> None:
+    manifest_path = root / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    checkpoint = manifest["checkpoints"][0]
+    sidecars: dict[str, dict[str, object]] = {}
+    for field, relative in (
+        ("schedule", "inputs/schedule.json"),
+        ("capture_status", "capture_status.json"),
+        ("trajectories", "trajectories.jsonl"),
+        ("frame_coverage", "temporal_frame_coverage.jsonl"),
+        ("lifecycle_transitions", "lifecycle_transitions.jsonl"),
+    ):
+        path = root / relative
+        path.parent.mkdir(exist_ok=True)
+        path.write_bytes((field + "\n").encode())
+        sidecars[field] = _file_record(path, root)
+        manifest["artifact_inventory"].append(relative)
+    source_index = {
+        "schema_version": 1,
+        "dataset": "TESSE-CD",
+        "mode": "causal_checkpoint_exports",
+        "method": "OVIV2",
+        "scene": "fixture",
+        **sidecars,
+        "checkpoints": [
+            {
+                "frame_index": checkpoint["frame_index"],
+                "timestamp_ns": 100,
+                "consumed_through_frame": checkpoint["frame_index"],
+                "consumed_through_frame_exclusive": checkpoint["frame_index"] + 1,
+                "checkpoint_status": checkpoint["checkpoint_status"],
+                "snapshot": checkpoint["cumulative_audit"]["snapshot"],
+                "entities": checkpoint["neutral_entities"],
+            }
+        ],
+    }
+    source_path = root / "source_index.json"
+    source_path.write_text(json.dumps(source_index, sort_keys=True) + "\n")
+    manifest["source_index"] = _file_record(source_path, root)
+    manifest["artifact_inventory"].append("source_index.json")
+    manifest["artifact_inventory"].sort()
+    manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
+
+
 def _v1_run(root: Path) -> Path:
     checkpoint_root = root / "checkpoints/00000002-100"
     artifact = checkpoint_root / "artifact"
@@ -204,6 +249,40 @@ def _v1_run(root: Path) -> Path:
         json.dumps(manifest, sort_keys=True, separators=(",", ":")) + "\n"
     )
     return root
+
+
+def _add_t1_receipt(root: Path) -> Path:
+    audit = compare_cumulative_artifacts(root, root)
+    receipt = root / "t1_exact_receipt.json"
+    receipt.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "format": "oviv2_t1_exact_execution_receipt_v1",
+                "execution": {
+                    "profile": "reference",
+                    "argv": ["/usr/bin/python3", "/repo/run_reference.py"],
+                    "pid": 1234,
+                    "code_commit": "a" * 40,
+                    "source_manifest_sha256": "b" * 64,
+                    "input_fingerprints": {"config": "c" * 64},
+                    "output_root": str(root.absolute()),
+                },
+                "source_manifest": {
+                    "path": str((root.parent / "sources.json").absolute()),
+                    "sha256": "b" * 64,
+                    "byte_count": 10,
+                },
+                "artifact_inventory": audit["inventory"],
+                "checkpoint_frames": audit["checkpoint_frames"],
+                "cumulative_root_sha256": audit["root_sha256"],
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        + "\n"
+    )
+    return receipt
 
 
 def _v1_projection_of_schema2(root: Path, schema2: Path) -> Path:
@@ -291,6 +370,82 @@ def test_schema2_strictly_self_validates_identity_and_full_inventory(
     else:
         (right / "profile-only-extra.bin").write_bytes(b"undeclared")
     with pytest.raises(ArtifactMismatch, match="identity|receipt|source|inventory"):
+        compare_cumulative_artifacts(left, right)
+
+
+def test_schema2_rejects_t1_receipt_as_an_unmanifested_extra(tmp_path: Path) -> None:
+    left, right = _pair(tmp_path)
+    (right / "t1_exact_receipt.json").write_text("{}\n")
+    manifest_path = right / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["artifact_inventory"].append("t1_exact_receipt.json")
+    manifest["artifact_inventory"].sort()
+    manifest_path.write_text(json.dumps(manifest) + "\n")
+    with pytest.raises(ArtifactMismatch, match="inventory"):
+        compare_cumulative_artifacts(left, right)
+
+
+@pytest.mark.parametrize("location", ["checkpoint", "source_bindings"])
+def test_schema2_declared_inventory_cannot_be_extended_by_unknown_records(
+    tmp_path: Path, location: str
+) -> None:
+    left, right = _pair(tmp_path)
+    extra = right / "extra.bin"
+    extra.write_bytes(b"extra")
+    manifest_path = right / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    record = _file_record(extra, right)
+    if location == "checkpoint":
+        manifest["checkpoints"][0]["unexpected_extra"] = record
+    else:
+        manifest["source_bindings"]["unexpected_extra"] = record
+    manifest["artifact_inventory"].append("extra.bin")
+    manifest["artifact_inventory"].sort()
+    manifest_path.write_text(json.dumps(manifest) + "\n")
+    with pytest.raises(ArtifactMismatch, match="inventory"):
+        compare_cumulative_artifacts(left, right)
+
+
+def test_schema2_accepts_exact_production_source_index_sidecars(tmp_path: Path) -> None:
+    left, right = _pair(tmp_path)
+    _add_v2_source_index(left)
+    _add_v2_source_index(right)
+    assert compare_cumulative_artifacts(left, right)["checkpoint_frames"] == [2, 7]
+
+
+def test_schema1_accepts_only_a_strictly_bound_optional_t1_receipt(
+    tmp_path: Path,
+) -> None:
+    left = _v1_run(tmp_path / "left")
+    right = tmp_path / "right"
+    shutil.copytree(left, right)
+    left_receipt = _add_t1_receipt(left)
+    right_receipt = _add_t1_receipt(right)
+
+    assert compare_cumulative_artifacts(left, right)["checkpoint_frames"] == [2]
+
+    value = json.loads(right_receipt.read_text())
+    valid_root = value["cumulative_root_sha256"]
+    value["cumulative_root_sha256"] = "f" * 64
+    right_receipt.write_text(json.dumps(value) + "\n")
+    with pytest.raises(ArtifactMismatch, match="T1 exact receipt"):
+        compare_cumulative_artifacts(left, right)
+
+    value["cumulative_root_sha256"] = valid_root
+    value["schema_version"] = True
+    right_receipt.write_text(json.dumps(value) + "\n")
+    with pytest.raises(ArtifactMismatch, match="T1 exact receipt"):
+        compare_cumulative_artifacts(left, right)
+
+    right_receipt.unlink()
+    left_receipt.unlink()
+    extra = right / "undeclared.bin"
+    extra.write_bytes(b"extra")
+    manifest_path = right / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["unexpected_extra"] = _file_record(extra, right)
+    manifest_path.write_text(json.dumps(manifest) + "\n")
+    with pytest.raises(ArtifactMismatch, match="inventory"):
         compare_cumulative_artifacts(left, right)
 
 
@@ -634,3 +789,96 @@ def test_v1_inventory_includes_status_neutral_and_final(tmp_path: Path, name: st
     target.write_bytes(target.read_bytes() + b"changed")
     with pytest.raises(ArtifactMismatch, match="manifest record|raw bytes"):
         compare_cumulative_artifacts(left, right)
+
+
+def test_cli_atomically_publishes_without_clobbering_owner(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    left, right = _pair(tmp_path)
+    output = tmp_path / "comparison.json"
+    original = compare_module.os.open
+    owner = b"owner-created-during-publication\n"
+    created = False
+
+    def create_owner_then_open(
+        path: object, flags: int, mode: int = 0o777, *, dir_fd: int | None = None
+    ) -> int:
+        nonlocal created
+        if os.fspath(path) != output.name or created:
+            return original(path, flags, mode, dir_fd=dir_fd)
+        created = True
+        descriptor = original(path, flags, mode, dir_fd=dir_fd)
+        try:
+            os.write(descriptor, owner)
+        finally:
+            os.close(descriptor)
+        return original(path, flags, mode, dir_fd=dir_fd)
+
+    monkeypatch.setattr(compare_module.os, "open", create_owner_then_open)
+    with pytest.raises(FileExistsError):
+        compare_module.main([str(left), str(right), "--output", str(output)])
+    assert output.read_bytes() == owner
+
+
+def test_cli_rejects_existing_symlink_and_symlinked_parent(tmp_path: Path) -> None:
+    left, right = _pair(tmp_path)
+    owner = tmp_path / "owner.json"
+    owner.write_bytes(b"owner\n")
+    output = tmp_path / "comparison.json"
+    output.symlink_to(owner)
+    with pytest.raises(FileExistsError):
+        compare_module.main([str(left), str(right), "--output", str(output)])
+    assert output.is_symlink()
+    assert owner.read_bytes() == b"owner\n"
+
+    alias = tmp_path / "alias"
+    alias.symlink_to(tmp_path, target_is_directory=True)
+    with pytest.raises(ArtifactMismatch, match="symlink|unsafe"):
+        compare_module.main(
+            [str(left), str(right), "--output", str(alias / "new.json")]
+        )
+
+
+def test_cli_publishes_complete_output_and_fsyncs_parent(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    left, right = _pair(tmp_path)
+    output = tmp_path / "comparison.json"
+    original = compare_module.os.fsync
+    directory_fsyncs = 0
+
+    def count_fsync(descriptor: int) -> None:
+        nonlocal directory_fsyncs
+        if stat.S_ISDIR(os.fstat(descriptor).st_mode):
+            directory_fsyncs += 1
+        original(descriptor)
+
+    monkeypatch.setattr(compare_module.os, "fsync", count_fsync)
+    assert compare_module.main([str(left), str(right), "--output", str(output)]) == 0
+    assert json.loads(output.read_text())["checkpoint_frames"] == [2, 7]
+    assert directory_fsyncs >= 1
+
+
+def test_cli_preserves_a_replacement_after_output_name_swap(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    left, right = _pair(tmp_path)
+    output = tmp_path / "comparison.json"
+    original = compare_module.os.fsync
+    attacker = b"not-owned-by-comparator\n"
+    saved = tmp_path / "saved-comparator-output.json"
+    swapped = False
+
+    def swap_after_file_fsync(descriptor: int) -> None:
+        nonlocal swapped
+        original(descriptor)
+        if stat.S_ISREG(os.fstat(descriptor).st_mode) and not swapped:
+            swapped = True
+            output.replace(saved)
+            output.write_bytes(attacker)
+
+    monkeypatch.setattr(compare_module.os, "fsync", swap_after_file_fsync)
+    with pytest.raises(RuntimeError, match="publication state is uncertain"):
+        compare_module.main([str(left), str(right), "--output", str(output)])
+    assert output.read_bytes() == attacker
+    assert json.loads(saved.read_text())["checkpoint_frames"] == [2, 7]
