@@ -31,13 +31,13 @@ from src.oviv2.reference_readout import ReferenceReadoutState
 from src.oviv2.temporal_background import TemporalBackgroundVolume
 from src.oviv2.temporal_geometry import ObjectSubmap
 from src.oviv2.temporal_lifecycle import TemporalLifecycle, TemporalLifecycleState
-from src.oviv2.temporal_state import TemporalEntityState
+from src.oviv2.temporal_state import TemporalEntityState, TemporalRuntimeState
 
 
 TEMPORAL_COMPACT_FORMAT = "oviv2_temporal_compact_checkpoint"
-_COMPACT_SCHEMA_VERSION = 1
+_COMPACT_SCHEMA_VERSION = 2
 _COMPACT_INVENTORY = frozenset({"manifest.json", "arrays.npz", "checksums.json"})
-_COMPACT_ARRAY_NAMES = (
+_COMPACT_ARRAY_NAMES_V1 = (
     "entity_ids",
     "lifecycle_codes",
     "existence_log_odds",
@@ -46,6 +46,10 @@ _COMPACT_ARRAY_NAMES = (
     "object_to_world",
     "voxel_keys",
     "voxel_offsets",
+)
+_COMPACT_ARRAY_NAMES = _COMPACT_ARRAY_NAMES_V1 + (
+    "geometry_epochs",
+    "readout_valid",
 )
 _LIFECYCLE_TO_CODE = {
     TemporalLifecycle.ACTIVE: 0,
@@ -212,9 +216,27 @@ class TemporalSnapshotMetadata:
 
 
 @dataclass(frozen=True)
+class TemporalSnapshotEntity:
+    entity: TemporalEntityState
+    geometry_epoch: int
+    readout_valid: bool
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.entity, TemporalEntityState):
+            raise TypeError("entity must be a TemporalEntityState")
+        if type(self.geometry_epoch) is not int or self.geometry_epoch < 0:
+            raise ValueError("geometry_epoch must be a non-negative integer")
+        if type(self.readout_valid) is not bool:
+            raise TypeError("readout_valid must be an exact bool")
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self.entity, name)
+
+
+@dataclass(frozen=True)
 class TemporalCurrentSnapshot:
     metadata: TemporalSnapshotMetadata
-    entities: tuple[TemporalEntityState, ...]
+    entities: tuple[TemporalSnapshotEntity | TemporalEntityState, ...]
     background: TemporalBackgroundVolume
 
     def __post_init__(self) -> None:
@@ -228,11 +250,25 @@ class TemporalCurrentSnapshot:
             voxel_size_m=self.metadata.voxel_size_m,
             config_sha256=self.metadata.config_sha256,
         )
-        if type(self.entities) is not tuple or any(not isinstance(item, TemporalEntityState) for item in self.entities):
-            raise TypeError("entities must be an exact tuple of TemporalEntityState")
-        validated_entities: list[TemporalEntityState] = []
-        for entity in self.entities:
-            lifecycle = entity.lifecycle
+        if type(self.entities) is not tuple or any(
+            type(item) not in {TemporalSnapshotEntity, TemporalEntityState}
+            for item in self.entities
+        ):
+            raise TypeError("entities must contain temporal snapshot entities")
+        validated_entities: list[TemporalSnapshotEntity] = []
+        for item in self.entities:
+            if type(item) is TemporalSnapshotEntity:
+                unexpected = set(vars(item)) - {
+                    "entity", "geometry_epoch", "readout_valid", "lifecycle"
+                }
+                if unexpected:
+                    raise ValueError(
+                        f"snapshot entity has unexpected field: {sorted(unexpected)[0]}"
+                    )
+            entity = item.entity if type(item) is TemporalSnapshotEntity else item
+            geometry_epoch = item.geometry_epoch if type(item) is TemporalSnapshotEntity else 0
+            readout_valid = item.readout_valid if type(item) is TemporalSnapshotEntity else True
+            lifecycle = vars(item).get("lifecycle", entity.lifecycle)
             if type(lifecycle.entity_id) is not int or not 0 <= lifecycle.entity_id <= np.iinfo(np.int64).max:
                 raise ValueError("lifecycle entity_id must be a non-negative int64 integer")
             if not isinstance(lifecycle.lifecycle, TemporalLifecycle):
@@ -284,7 +320,9 @@ class TemporalCurrentSnapshot:
                 last_seen_frame_id=entity.last_seen_frame_id,
                 feature_model_id=entity.feature_model_id,
             )
-            validated_entities.append(validated)
+            validated_entities.append(
+                TemporalSnapshotEntity(validated, geometry_epoch, readout_valid)
+            )
         ids = tuple(item.lifecycle.entity_id for item in validated_entities)
         if ids != tuple(sorted(set(ids))):
             raise ValueError("entities must be sorted by unique temporal entity ID")
@@ -467,13 +505,21 @@ def _canonical_npz(arrays: Mapping[str, np.ndarray], order: Sequence[str]) -> by
     return destination.getvalue()
 
 
-def _compact_byte_limit(maximum_entities: int, maximum_object_voxels: int) -> int:
+def _compact_byte_limit(
+    maximum_entities: int,
+    maximum_object_voxels: int,
+    *,
+    schema_version: int = _COMPACT_SCHEMA_VERSION,
+) -> int:
     if type(maximum_entities) is not int or maximum_entities <= 0:
         raise ValueError("maximum_entities capacity must be positive")
     if type(maximum_object_voxels) is not int or maximum_object_voxels <= 0:
         raise ValueError("maximum_object_voxels capacity must be positive")
     voxels = maximum_entities * maximum_object_voxels
-    raw = maximum_entities * (8 + 1 + 8 + 8 + 8 + 16 * 8 + 8) + voxels * 3 * 8
+    if type(schema_version) is not int or schema_version not in {1, 2}:
+        raise ValueError("compact schema_version must be integer 1 or 2")
+    epoch_bytes = 0 if schema_version == 1 else 8 + 1
+    raw = maximum_entities * (8 + 1 + 8 + 8 + 8 + 16 * 8 + 8 + epoch_bytes) + voxels * 3 * 8
     return min(_MAX_ARCHIVE_BYTES, raw * 2 + 128 * 1024)
 
 
@@ -513,6 +559,7 @@ def _preflight_compact_archive(
     maximum_entities: int,
     maximum_object_voxels: int,
     byte_limit: int,
+    array_names: tuple[str, ...],
 ) -> None:
     try:
         archive_context = zipfile.ZipFile(io.BytesIO(content), "r")
@@ -520,7 +567,7 @@ def _preflight_compact_archive(
         raise ValueError("compact array archive is invalid") from exc
     with archive_context as archive:
         infos = archive.infolist()
-        expected = {f"{name}.npy" for name in _COMPACT_ARRAY_NAMES}
+        expected = {f"{name}.npy" for name in array_names}
         counts = Counter(info.filename for info in infos)
         if set(counts) != expected or any(count != 1 for count in counts.values()) or len(infos) != len(expected):
             raise ValueError("compact array inventory is invalid")
@@ -541,7 +588,7 @@ def _preflight_compact_archive(
             by_name[info.filename.removesuffix(".npy")] = info
         contracts = {
             name: _read_npy_contract(archive, by_name[name], name)
-            for name in _COMPACT_ARRAY_NAMES
+            for name in array_names
         }
         entity_shape, entity_dtype = contracts["entity_ids"]
         if entity_dtype != np.dtype(np.int64) or len(entity_shape) != 1:
@@ -563,6 +610,13 @@ def _preflight_compact_archive(
             "object_to_world": ((entity_count, 4, 4), np.dtype(np.float64)),
             "voxel_offsets": ((entity_count + 1,), np.dtype(np.int64)),
         }
+        if "geometry_epochs" in contracts:
+            expected_contracts["geometry_epochs"] = (
+                (entity_count,), np.dtype(np.int64)
+            )
+            expected_contracts["readout_valid"] = (
+                (entity_count,), np.dtype(np.uint8)
+            )
         for name, expected_contract in expected_contracts.items():
             if contracts[name] != expected_contract:
                 raise ValueError(f"compact {name} dtype or shape is invalid")
@@ -579,10 +633,17 @@ class TemporalCompactCheckpoint:
     object_to_world: np.ndarray
     voxel_keys: np.ndarray
     voxel_offsets: np.ndarray
+    geometry_epochs: np.ndarray | None = None
+    readout_valid: np.ndarray | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.metadata, TemporalSnapshotMetadata):
             raise TypeError("metadata must be TemporalSnapshotMetadata")
+        count_hint = len(np.asarray(self.entity_ids))
+        if self.geometry_epochs is None:
+            object.__setattr__(self, "geometry_epochs", np.zeros(count_hint, dtype=np.int64))
+        if self.readout_valid is None:
+            object.__setattr__(self, "readout_valid", np.ones(count_hint, dtype=np.uint8))
         contracts = {
             "entity_ids": (np.dtype(np.int64), ()),
             "lifecycle_codes": (np.dtype(np.uint8), ()),
@@ -592,16 +653,22 @@ class TemporalCompactCheckpoint:
             "object_to_world": (np.dtype(np.float64), (4, 4)),
             "voxel_keys": (np.dtype(np.int64), (3,)),
             "voxel_offsets": (np.dtype(np.int64), ()),
+            "geometry_epochs": (np.dtype(np.int64), ()),
+            "readout_valid": (np.dtype(np.uint8), ()),
         }
         for name, (dtype, tail) in contracts.items():
             object.__setattr__(self, name, _readonly(getattr(self, name), dtype=dtype, shape_tail=tail, name=name))
         count = len(self.entity_ids)
-        if any(len(getattr(self, name)) != count for name in ("lifecycle_codes", "existence_log_odds", "absent_streaks", "distinct_view_bin_counts", "object_to_world")):
+        if any(len(getattr(self, name)) != count for name in ("lifecycle_codes", "existence_log_odds", "absent_streaks", "distinct_view_bin_counts", "object_to_world", "geometry_epochs", "readout_valid")):
             raise ValueError("compact entity arrays must have matching lengths")
         if self.entity_ids.tolist() != sorted(set(self.entity_ids.tolist())) or np.any(self.entity_ids < 0):
             raise ValueError("entity_ids must be sorted, unique, and nonnegative")
         if np.any(self.lifecycle_codes > 2):
             raise ValueError("lifecycle_codes are invalid")
+        if np.any(self.geometry_epochs < 0):
+            raise ValueError("geometry_epochs must be nonnegative")
+        if np.any(self.readout_valid > 1):
+            raise ValueError("readout_valid values must be zero or one")
         if np.any(self.absent_streaks < 0) or np.any(self.distinct_view_bin_counts < 0):
             raise ValueError("evidence counters must be nonnegative")
         if len(self.voxel_offsets) != count + 1 or self.voxel_offsets[0] != 0 or self.voxel_offsets[-1] != len(self.voxel_keys) or np.any(np.diff(self.voxel_offsets) < 0):
@@ -666,6 +733,8 @@ class TemporalCompactCheckpoint:
             np.asarray([item.object_to_world for item in snapshot.entities], dtype=np.float64).reshape((-1, 4, 4)),
             np.asarray(chunks, dtype=np.int64).reshape((-1, 3)),
             np.asarray(offsets, dtype=np.int64),
+            np.asarray([item.geometry_epoch for item in snapshot.entities], dtype=np.int64),
+            np.asarray([item.readout_valid for item in snapshot.entities], dtype=np.uint8),
         )
 
     @classmethod
@@ -779,6 +848,11 @@ class TemporalCompactCheckpoint:
             np.repeat(identity[None, :, :], len(ordered), axis=0),
             np.asarray(keys, dtype=np.int64).reshape((-1, 3)),
             np.asarray(offsets, dtype=np.int64),
+            np.zeros(len(ordered), dtype=np.int64),
+            np.asarray(
+                [item is not TemporalLifecycle.DORMANT for item in lifecycles],
+                dtype=np.uint8,
+            ),
         )
 
     def commit_new(
@@ -864,7 +938,7 @@ class TemporalCompactCheckpoint:
         if (
             manifest["format"] != TEMPORAL_COMPACT_FORMAT
             or type(manifest["schema_version"]) is not int
-            or manifest["schema_version"] != 1
+            or manifest["schema_version"] not in {1, 2}
         ):
             raise ValueError("compact checkpoint schema is invalid")
         stored_entities = manifest["maximum_entities"]
@@ -873,7 +947,10 @@ class TemporalCompactCheckpoint:
             raise ValueError("maximum_entities capacity mismatch")
         if maximum_object_voxels is not None and maximum_object_voxels != stored_voxels:
             raise ValueError("maximum_object_voxels capacity mismatch")
-        expected_limit = _compact_byte_limit(stored_entities, stored_voxels)
+        schema_version = manifest["schema_version"]
+        expected_limit = _compact_byte_limit(
+            stored_entities, stored_voxels, schema_version=schema_version
+        )
         if manifest["serialized_byte_limit"] != expected_limit or len(contents["arrays.npz"]) > expected_limit:
             raise ValueError("compact checkpoint serialized capacity is invalid")
         _preflight_compact_archive(
@@ -881,17 +958,32 @@ class TemporalCompactCheckpoint:
             maximum_entities=stored_entities,
             maximum_object_voxels=stored_voxels,
             byte_limit=expected_limit,
+            array_names=(
+                _COMPACT_ARRAY_NAMES_V1
+                if schema_version == 1
+                else _COMPACT_ARRAY_NAMES
+            ),
+        )
+        array_names = (
+            _COMPACT_ARRAY_NAMES_V1
+            if schema_version == 1
+            else _COMPACT_ARRAY_NAMES
         )
         with np.load(io.BytesIO(contents["arrays.npz"]), allow_pickle=False) as payload:
-            if set(payload.files) != set(_COMPACT_ARRAY_NAMES):
+            if set(payload.files) != set(array_names):
                 raise ValueError("compact array schema is invalid")
-            arrays = {name: np.array(payload[name], copy=True) for name in _COMPACT_ARRAY_NAMES}
+            arrays = {name: np.array(payload[name], copy=True) for name in array_names}
         expected_dtypes = {
             "entity_ids": np.dtype(np.int64), "lifecycle_codes": np.dtype(np.uint8),
             "existence_log_odds": np.dtype(np.float64), "absent_streaks": np.dtype(np.int64),
             "distinct_view_bin_counts": np.dtype(np.int64), "object_to_world": np.dtype(np.float64),
             "voxel_keys": np.dtype(np.int64), "voxel_offsets": np.dtype(np.int64),
         }
+        if schema_version == 2:
+            expected_dtypes.update(
+                geometry_epochs=np.dtype(np.int64),
+                readout_valid=np.dtype(np.uint8),
+            )
         if any(arrays[name].dtype != dtype for name, dtype in expected_dtypes.items()):
             raise ValueError("compact array dtype is invalid")
         metadata_payload = manifest["metadata"]
@@ -941,7 +1033,12 @@ def build_temporal_map_snapshot(snapshot: TemporalCurrentSnapshot, class_names: 
             lifecycle_state=entity.lifecycle.lifecycle.value,
             first_seen=float(entity.first_seen_frame_id),
             last_seen=float(entity.last_seen_frame_id),
-            metadata={"temporal_entity_id": entity.lifecycle.entity_id, "semantic_id": class_id},
+            metadata={
+                "temporal_entity_id": entity.lifecycle.entity_id,
+                "semantic_id": class_id,
+                "geometry_epoch": entity.geometry_epoch,
+                "readout_valid": entity.readout_valid,
+            },
         ))
     background = _background_points(snapshot.background)
     return MapSnapshot(
@@ -955,10 +1052,92 @@ def build_temporal_map_snapshot(snapshot: TemporalCurrentSnapshot, class_names: 
     )
 
 
+def build_temporal_snapshot(
+    state: TemporalRuntimeState,
+    *,
+    config_sha256: str | None = None,
+) -> TemporalCurrentSnapshot:
+    if not isinstance(state, TemporalRuntimeState):
+        raise TypeError("state must be a TemporalRuntimeState")
+    raw_background = object.__getattribute__(state, "_background_state")
+    raw_ledger = object.__getattribute__(state, "_ledger_state")
+    if raw_ledger is None:
+        if raw_background.active_block_count or raw_background.last_blocks_touched:
+            raise ValueError("background without a ledger must remain empty")
+        committed_background = raw_background
+    else:
+        committed_background = raw_ledger._volume
+        if (
+            raw_background.config != committed_background.config
+            or raw_background.canonical_block_state()
+            != committed_background.canonical_block_state()
+            or raw_background.last_blocks_touched
+            != committed_background.last_blocks_touched
+        ):
+            raise ValueError("background must match the ledger committed volume")
+    digest = config_sha256
+    if digest is None:
+        digest = hashlib.sha256(
+            _canonical_json(asdict(committed_background.config))
+        ).hexdigest()
+    wrappers: list[TemporalSnapshotEntity] = []
+    seen_ids: set[int] = set()
+    seen_pairs: set[tuple[int, int]] = set()
+    assert state.geometry is not None
+    for wrapper in state.entities:
+        entity_id = wrapper.lifecycle.entity_id
+        if entity_id in seen_ids:
+            raise ValueError("duplicate temporal entity ID")
+        seen_ids.add(entity_id)
+        try:
+            epoch = state.geometry.current(entity_id)
+        except KeyError as exc:
+            raise ValueError("temporal entity is missing a current geometry epoch") from exc
+        pair = (entity_id, epoch.epoch_id)
+        if pair in seen_pairs:
+            raise ValueError("duplicate entity/current-epoch pair")
+        seen_pairs.add(pair)
+        if epoch.entity_id != entity_id:
+            raise ValueError("wrapper and geometry epoch entity IDs do not match")
+        if (
+            not np.array_equal(wrapper.object_to_world, epoch.object_to_world)
+            or wrapper.submap != epoch.submap
+        ):
+            raise ValueError("wrapper geometry does not match its current epoch")
+        if not epoch.readout_valid:
+            continue
+        authority = TemporalEntityState(
+            lifecycle=wrapper.lifecycle,
+            semantic_probabilities=wrapper.semantic_probabilities,
+            image_prototype=wrapper.image_prototype,
+            extent_xyz=wrapper.extent_xyz,
+            object_to_world=epoch.object_to_world,
+            submap=epoch.submap,
+            first_seen_frame_id=wrapper.first_seen_frame_id,
+            last_seen_frame_id=wrapper.last_seen_frame_id,
+            feature_model_id=wrapper.feature_model_id,
+        )
+        wrappers.append(TemporalSnapshotEntity(authority, epoch.epoch_id, True))
+    return TemporalCurrentSnapshot(
+        TemporalSnapshotMetadata(
+            state.scene_id,
+            max(state.last_frame_id, 0),
+            state.last_timestamp,
+            state.revision,
+            committed_background.config.voxel_size_m,
+            digest,
+        ),
+        tuple(wrappers),
+        committed_background,
+    )
+
+
 __all__ = [
     "TemporalCheckpointPublicationUncertainError",
     "TemporalSnapshotMetadata",
     "TemporalCurrentSnapshot",
+    "TemporalSnapshotEntity",
     "TemporalCompactCheckpoint",
     "build_temporal_map_snapshot",
+    "build_temporal_snapshot",
 ]

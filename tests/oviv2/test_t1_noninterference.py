@@ -23,6 +23,7 @@ from src.oviv2.temporal_config import (
     TemporalReadoutConfig,
 )
 from src.oviv2.temporal_runtime import TemporalCurrentRuntime
+from src.oviv2.t1_exactness import cumulative_state_sha256
 from src.oviv2.tracking import LocalTrackerConfig
 
 
@@ -160,6 +161,7 @@ def test_dual_readout_is_exactly_noninterfering_for_cumulative_t1(
     assert before_frames == tuple((frame.rgb.tobytes(), frame.depth.tobytes(), frame.pose.tobytes()) for frame in frames)
     assert before_batches == tuple(tuple(id(item) for item in batch) for batch in batches)
     assert _cumulative_fingerprint(direct, tmp_path / "direct-registry.jsonl") == _cumulative_fingerprint(cumulative, tmp_path / "dual-registry.jsonl")
+    assert cumulative_state_sha256(direct) == cumulative_state_sha256(cumulative)
 
     direct_dir = tmp_path / "direct"
     dual_dir = tmp_path / "dual"

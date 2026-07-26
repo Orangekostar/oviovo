@@ -12,16 +12,31 @@ import pytest
 
 from src.core.data_structures import CameraIntrinsics, Frame
 from src.oviv2.temporal_background import TemporalBackgroundVolume
-from src.oviv2.temporal_config import TemporalGeometryConfig
+from src.oviv2.temporal_config import (
+    TemporalAssociationConfig,
+    TemporalGeometryConfig,
+    TemporalLifecycleConfig,
+    TemporalReadoutConfig,
+)
 from src.oviv2.temporal_geometry import ObjectSubmap
 from src.oviv2.temporal_lifecycle import TemporalLifecycle, TemporalLifecycleState
+from src.oviv2.observations import FrameObservation, ObservationKind
 from src.oviv2.temporal_snapshot import (
     TemporalCompactCheckpoint,
     TemporalCurrentSnapshot,
     TemporalSnapshotMetadata,
     build_temporal_map_snapshot,
+    build_temporal_snapshot,
 )
-from src.oviv2.temporal_state import TemporalEntityState
+from src.oviv2.temporal_state import (
+    TemporalEntityState,
+    TemporalExportTracker,
+    TemporalGeometryState,
+    TemporalRuntimeState,
+)
+from src.oviv2.temporal_epoch import GeometryEpoch
+from src.oviv2.temporal_runtime import TemporalCurrentRuntime
+from src.oviv2.tracking import LocalTrackerConfig
 
 
 def _geometry_config(**changes: object) -> TemporalGeometryConfig:
@@ -129,6 +144,61 @@ def test_build_temporal_map_snapshot_selects_and_sorts_causally() -> None:
     assert [entity.lifecycle_state for entity in result.entities] == ["active", "uncertain"]
     np.testing.assert_allclose(result.entities[0].points_xyz[:, 0], [1.05, 1.15])
     assert all(entity.last_seen <= 3.0 for entity in result.entities)
+
+
+def test_snapshot_excludes_invalid_geometry_epoch_and_keeps_occluded_valid() -> None:
+    config = TemporalReadoutConfig(
+        TemporalLifecycleConfig(0.0, 4.0, -5.0, 12.0, 100.0, 0.7, 0.3, 2, 1, 0.1, 1, 0.5, 8, 4),
+        TemporalAssociationConfig(1.0, 1.0, 1.0, 1.0, 1.0, 0.2, 2.0, 0.9, 0.9, 0.9),
+        _geometry_config(),
+    )
+    runtime = TemporalCurrentRuntime("scene", config, LocalTrackerConfig(confirm_hits=1))
+    frame = Frame(
+        0, np.zeros((5, 5, 3), dtype=np.uint8), np.ones((5, 5), dtype=np.float32),
+        np.eye(4), CameraIntrinsics(5.0, 5.0, 2.0, 2.0, 5, 5), 0.0,
+    )
+    observation = FrameObservation(
+        1, 0, 0.0, ObservationKind.OBJECT, "chair", 1, 0.9,
+        np.ones((5, 5), dtype=bool), (0.0, 0.0, 5.0, 5.0),
+        frozenset({(0, 0, 1)}), (0.0, 0.0, 1.0),
+        (-0.1, -0.1, 0.9), (0.1, 0.1, 1.1), visible_pixel_count=25,
+    )
+    runtime.process_frame(frame, (observation,))
+    state = runtime.state
+    epoch = state.geometry.current(1)
+    invalid = GeometryEpoch(
+        epoch.entity_id, epoch.epoch_id, epoch.object_to_world, epoch.submap,
+        False, epoch.motion_decision, epoch.last_processed_frame_id,
+    )
+    invalid_tracker = TemporalExportTracker(
+        tuple(replace(item, readout_valid=False) for item in state.export_tracker.entries),
+        state.export_tracker.last_batch,
+    )
+    invalid_state = TemporalRuntimeState(
+        state.scene_id, state.revision, state.last_frame_id, state.last_timestamp,
+        state.next_entity_id, state.entities, state.background, state.tracker,
+        state.identities, TemporalGeometryState(
+            (invalid,), state.geometry.maximum_epochs_per_identity,
+            state.geometry.maximum_retained_epochs, state.geometry.next_epoch_ids,
+        ), state.lifecycle_beliefs, state.background_ledger, invalid_tracker,
+        state.diagnostics,
+    )
+    assert build_temporal_snapshot(invalid_state).entities == ()
+
+    valid = build_temporal_snapshot(state)
+    assert len(valid.entities) == 1
+    assert valid.entities[0].geometry_epoch == epoch.epoch_id
+    assert valid.entities[0].readout_valid is True
+
+    occluding_frame = Frame(
+        1, np.zeros((5, 5, 3), dtype=np.uint8),
+        np.full((5, 5), 0.5, dtype=np.float32), np.eye(4),
+        CameraIntrinsics(5.0, 5.0, 2.0, 2.0, 5, 5), 1.0,
+    )
+    runtime.process_frame(occluding_frame, ())
+    occluded_state = runtime.state
+    assert occluded_state.geometry.current(1).readout_valid is True
+    assert [item.lifecycle.entity_id for item in build_temporal_snapshot(occluded_state).entities] == [1]
 
 
 def test_build_temporal_map_snapshot_extracts_real_nonempty_background() -> None:
@@ -266,6 +336,8 @@ def test_compact_from_snapshot_contains_only_bounded_current_state() -> None:
     assert compact.lifecycle_codes.tolist() == [0, 1, 2]
     assert compact.voxel_offsets.tolist() == [0, 2, 4, 6]
     assert compact.voxel_keys.tolist() == [[0, 0, 0], [1, 0, 0]] * 3
+    assert compact.geometry_epochs.tolist() == [0, 0, 0]
+    assert compact.readout_valid.tolist() == [1, 1, 1]
     assert not hasattr(compact, "background")
     assert not hasattr(compact, "semantic_probabilities")
     with pytest.raises(ValueError, match="capacity"):
@@ -482,11 +554,17 @@ def _tree_hashes(path: Path) -> dict[str, str]:
 
 
 def test_compact_commit_load_is_deterministic_no_replace_and_witnessed(tmp_path: Path) -> None:
+    import src.oviv2.temporal_snapshot as module
+
     compact = TemporalCompactCheckpoint.from_snapshot(_snapshot(), maximum_entities=4, maximum_object_voxels=8)
     first = compact.commit_new(tmp_path / "first", maximum_entities=4, maximum_object_voxels=8)
     second = compact.commit_new(tmp_path / "second", maximum_entities=4, maximum_object_voxels=8)
     assert _tree_hashes(first.path) == _tree_hashes(second.path)
     assert set(_tree_hashes(first.path)) == {"arrays.npz", "checksums.json", "manifest.json"}
+    manifest = json.loads((first.path / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["schema_version"] == 2
+    with np.load(first.path / "arrays.npz", allow_pickle=False) as arrays:
+        assert set(arrays.files) == set(module._COMPACT_ARRAY_NAMES)
     first.revalidate_source()
     restored = TemporalCompactCheckpoint.load(first.path, maximum_entities=4, maximum_object_voxels=8)
     np.testing.assert_array_equal(restored.voxel_keys, compact.voxel_keys)
@@ -659,6 +737,56 @@ def test_compact_load_rejects_boolean_schema_version(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="schema"):
         TemporalCompactCheckpoint.load(
             target, maximum_entities=4, maximum_object_voxels=8
+        )
+
+
+def test_compact_loader_strictly_separates_v1_and_v2_arrays(tmp_path: Path) -> None:
+    import src.oviv2.temporal_snapshot as module
+
+    compact = TemporalCompactCheckpoint.from_snapshot(_snapshot())
+    target = compact.commit_new(
+        tmp_path / "legacy", maximum_entities=4, maximum_object_voxels=8
+    ).path
+    legacy_arrays = {
+        name: getattr(compact, name) for name in module._COMPACT_ARRAY_NAMES_V1
+    }
+    legacy_archive = module._canonical_npz(
+        legacy_arrays, module._COMPACT_ARRAY_NAMES_V1
+    )
+    manifest = json.loads((target / "manifest.json").read_text(encoding="utf-8"))
+    manifest["schema_version"] = 1
+    manifest["serialized_byte_limit"] = module._compact_byte_limit(
+        4, 8, schema_version=1
+    )
+    manifest_bytes = module._canonical_json(manifest)
+    (target / "arrays.npz").write_bytes(legacy_archive)
+    (target / "manifest.json").write_bytes(manifest_bytes)
+    (target / "checksums.json").write_bytes(module._canonical_json({
+        "arrays.npz": hashlib.sha256(legacy_archive).hexdigest(),
+        "manifest.json": hashlib.sha256(manifest_bytes).hexdigest(),
+    }))
+    loaded = TemporalCompactCheckpoint.load(
+        target, maximum_entities=4, maximum_object_voxels=8
+    )
+    assert loaded.geometry_epochs.tolist() == [0, 0, 0]
+    assert loaded.readout_valid.tolist() == [1, 1, 1]
+
+    smuggled = compact.commit_new(
+        tmp_path / "smuggled", maximum_entities=4, maximum_object_voxels=8
+    ).path
+    manifest = json.loads((smuggled / "manifest.json").read_text(encoding="utf-8"))
+    manifest["schema_version"] = 1
+    manifest["serialized_byte_limit"] = module._compact_byte_limit(
+        4, 8, schema_version=1
+    )
+    manifest_bytes = module._canonical_json(manifest)
+    (smuggled / "manifest.json").write_bytes(manifest_bytes)
+    checksums = json.loads((smuggled / "checksums.json").read_text(encoding="utf-8"))
+    checksums["manifest.json"] = hashlib.sha256(manifest_bytes).hexdigest()
+    (smuggled / "checksums.json").write_bytes(module._canonical_json(checksums))
+    with pytest.raises(ValueError, match="inventory|schema"):
+        TemporalCompactCheckpoint.load(
+            smuggled, maximum_entities=4, maximum_object_voxels=8
         )
 
 

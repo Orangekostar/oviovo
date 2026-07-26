@@ -129,11 +129,11 @@ def _rewrite_manifest(path: Path, **changes: object) -> None:
 
 def test_full_publication_is_atomic_deterministic_and_has_diagnostics(tmp_path: Path) -> None:
     first = publish_temporal_current_checkpoint(
-        tmp_path / "first", _snapshot(), ("unknown", "chair"),
+        tmp_path / "first", _snapshot_with_entity(semantic_id=1, prototype_dimension=2), ("unknown", "chair"),
         code_commit="c" * 40, input_sha256="d" * 64,
     )
     second = publish_temporal_current_checkpoint(
-        tmp_path / "second", _snapshot(), ("unknown", "chair"),
+        tmp_path / "second", _snapshot_with_entity(semantic_id=1, prototype_dimension=2), ("unknown", "chair"),
         code_commit="c" * 40, input_sha256="d" * 64,
     )
     assert _files(first.path) == {
@@ -144,6 +144,7 @@ def test_full_publication_is_atomic_deterministic_and_has_diagnostics(tmp_path: 
     assert manifest["consumed_through_frame"] == 0
     assert manifest["code_commit"] == "c" * 40
     assert manifest["input_sha256"] == "d" * 64
+    assert manifest["schema_version"] == 2
     assert json.loads((first.path / "diagnostics.json").read_text(encoding="utf-8")) == {
         "dormant": [], "uncertain": []
     }
@@ -152,6 +153,8 @@ def test_full_publication_is_atomic_deterministic_and_has_diagnostics(tmp_path: 
     prediction, diagnostics = loaded
     assert prediction.scene_id == "scene"
     assert diagnostics == {"dormant": [], "uncertain": []}
+    assert loaded.snapshot.entities[0].metadata["geometry_epoch"] == 0
+    assert loaded.snapshot.entities[0].metadata["readout_valid"] is True
     loaded.revalidate_source()
     with pytest.raises(FileExistsError):
         publish_temporal_current_checkpoint(
@@ -199,7 +202,12 @@ def test_full_loader_uses_numeric_temporal_id_order(tmp_path: Path) -> None:
             entity_id=f"temporal:{entity_id}", points_xyz=np.empty((0, 3)),
             semantic_embedding=None, semantic_label="unknown", semantic_score=0.0,
             lifecycle_state="active", first_seen=0.0, last_seen=0.0,
-            metadata={"temporal_entity_id": entity_id, "semantic_id": 0},
+            metadata={
+                "temporal_entity_id": entity_id,
+                "semantic_id": 0,
+                "geometry_epoch": 0,
+                "readout_valid": True,
+            },
         )
         for entity_id in (2, 10)
     ]
@@ -239,6 +247,54 @@ def test_full_loader_strictly_validates_manifest(
     )
     _rewrite_manifest(receipt.path, **changes)
     with pytest.raises((TypeError, ValueError), match=message):
+        load_temporal_current_checkpoint(receipt.path)
+
+
+def test_full_loader_strictly_separates_v1_and_v2_entity_fields(tmp_path: Path) -> None:
+    snapshot = _snapshot_with_entity(semantic_id=1, prototype_dimension=2)
+
+    legacy = publish_temporal_current_checkpoint(
+        tmp_path / "legacy", snapshot, ("unknown", "chair"),
+        code_commit="c" * 40, input_sha256="d" * 64,
+    )
+    _rewrite_manifest(legacy.path, schema_version=1)
+    record = json.loads((legacy.path / "entities.jsonl").read_text(encoding="utf-8"))
+    del record["metadata"]["geometry_epoch"]
+    del record["metadata"]["readout_valid"]
+    import src.evaluation.oviv2_temporal_tesse as module
+    _rewrite_member(legacy.path, "entities.jsonl", module._canonical_json(record))
+    loaded, _ = load_temporal_current_checkpoint(legacy.path)
+    assert loaded.entities[0].metadata == {"temporal_entity_id": 1, "semantic_id": 1}
+
+    smuggled = publish_temporal_current_checkpoint(
+        tmp_path / "smuggled", snapshot, ("unknown", "chair"),
+        code_commit="c" * 40, input_sha256="d" * 64,
+    )
+    _rewrite_manifest(smuggled.path, schema_version=1)
+    with pytest.raises(ValueError, match="metadata schema"):
+        load_temporal_current_checkpoint(smuggled.path)
+
+    missing = publish_temporal_current_checkpoint(
+        tmp_path / "missing", snapshot, ("unknown", "chair"),
+        code_commit="c" * 40, input_sha256="d" * 64,
+    )
+    record = json.loads((missing.path / "entities.jsonl").read_text(encoding="utf-8"))
+    del record["metadata"]["geometry_epoch"]
+    _rewrite_member(missing.path, "entities.jsonl", module._canonical_json(record))
+    with pytest.raises(ValueError, match="metadata schema"):
+        load_temporal_current_checkpoint(missing.path)
+
+
+@pytest.mark.parametrize("version", [True, 0, 3])
+def test_full_loader_rejects_boolean_or_unknown_schema_version(
+    tmp_path: Path, version: object
+) -> None:
+    receipt = publish_temporal_current_checkpoint(
+        tmp_path / str(version), _snapshot(), ("unknown",),
+        code_commit="c" * 40, input_sha256="d" * 64,
+    )
+    _rewrite_manifest(receipt.path, schema_version=version)
+    with pytest.raises(ValueError, match="schema_version"):
         load_temporal_current_checkpoint(receipt.path)
 
 

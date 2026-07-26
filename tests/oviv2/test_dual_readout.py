@@ -146,6 +146,7 @@ def test_result_requires_exact_component_types_and_is_frozen() -> None:
     result = DualFrameResult(cumulative, temporal)
     assert result.cumulative is cumulative
     assert result.temporal is temporal
+    assert result.export is temporal.export
     with pytest.raises(TypeError, match="cumulative"):
         DualFrameResult(object(), temporal)  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="temporal"):
@@ -333,6 +334,27 @@ def test_temporal_receives_exact_input_objects_without_content_changes() -> None
     )
 
 
+def test_branch_inputs_are_read_only_and_writeability_is_restored() -> None:
+    from src.oviv2.dual_readout import DualReadoutRuntime
+
+    current_frame = _frame()
+    observations = (_observation(current_frame),)
+    flags = (current_frame.rgb.flags.writeable, current_frame.depth.flags.writeable)
+
+    class ReadonlyCumulative(Oviv2Runtime):
+        def process_frame(self, frame, observations, dense_semantics=None):
+            assert not frame.rgb.flags.writeable
+            assert not frame.depth.flags.writeable
+            assert not frame.pose.flags.writeable
+            assert not observations[0].mask.flags.writeable
+            return super().process_frame(frame, observations, dense_semantics)
+
+    DualReadoutRuntime(
+        _cumulative(runtime_type=ReadonlyCumulative), _temporal()
+    ).process_frame(current_frame, observations)
+    assert (current_frame.rgb.flags.writeable, current_frame.depth.flags.writeable) == flags
+
+
 def test_temporal_entry_failure_restores_both_shallow_snapshots() -> None:
     from src.oviv2.dual_readout import DualReadoutRuntime
 
@@ -469,6 +491,20 @@ def test_temporal_runtime_has_no_cumulative_component_reference() -> None:
         for name in temporal.state.__slots__
         if not name.startswith("_")
     )
+
+
+def test_current_checkpoint_keeps_reference_and_temporal_geometry_native() -> None:
+    from src.oviv2.dual_readout import DualReadoutRuntime
+    from src.oviv2.reference_readout import CumulativeReadoutView, ReferenceCurrentReadout
+    from src.oviv2.temporal_snapshot import TemporalCurrentSnapshot
+
+    temporal = DualReadoutRuntime(_cumulative(), _temporal())
+    temporal.process_frame(_frame(), ())
+    assert isinstance(temporal.current_checkpoint(), TemporalCurrentSnapshot)
+
+    config = replace(_temporal_config(), execution_profile=ExecutionProfile.A0)
+    reference = DualReadoutRuntime(_cumulative(), ReferenceCurrentReadout("scene", config))
+    assert isinstance(reference.current_checkpoint(), CumulativeReadoutView)
 
 
 def test_reference_readout_captures_before_and_after_cumulative_in_order(

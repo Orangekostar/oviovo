@@ -231,7 +231,7 @@ def publish_temporal_current_checkpoint(
         raise ValueError("full diagnostics exceeds size limit")
     manifest_bytes = _canonical_json({
         "format": TEMPORAL_CURRENT_FORMAT,
-        "schema_version": 1,
+        "schema_version": 2,
         "scene_id": snapshot.metadata.scene_id,
         "consumed_through_frame": snapshot.metadata.frame_id,
         "consumed_through_timestamp": snapshot.metadata.timestamp,
@@ -302,7 +302,7 @@ def _read_checkpoint_directory(source: Path) -> dict[str, bytes]:
         _close_best_effort(descriptor)
 
 
-def _validate_manifest(payload: dict[str, Any]) -> tuple[TemporalSnapshotMetadata, tuple[str, ...], tuple[int, int, int, int]]:
+def _validate_manifest(payload: dict[str, Any]) -> tuple[TemporalSnapshotMetadata, tuple[str, ...], tuple[int, int, int, int], int]:
     required = {
         "format", "schema_version", "scene_id", "consumed_through_frame", "consumed_through_timestamp",
         "revision", "voxel_size_m", "config_sha256", "code_commit", "input_sha256", "method", "scope", "class_names",
@@ -310,8 +310,9 @@ def _validate_manifest(payload: dict[str, Any]) -> tuple[TemporalSnapshotMetadat
     }
     if set(payload) != required or payload["format"] != TEMPORAL_CURRENT_FORMAT:
         raise ValueError("temporal current manifest schema is invalid")
-    if type(payload["schema_version"]) is not int or payload["schema_version"] != 1:
-        raise ValueError("schema_version must be integer 1")
+    if type(payload["schema_version"]) is not int or payload["schema_version"] not in {1, 2}:
+        raise ValueError("schema_version must be integer 1 or 2")
+    schema_version = payload["schema_version"]
     metadata = TemporalSnapshotMetadata(
         scene_id=payload["scene_id"],
         frame_id=payload["consumed_through_frame"],
@@ -342,7 +343,7 @@ def _validate_manifest(payload: dict[str, Any]) -> tuple[TemporalSnapshotMetadat
     raw = maximum_entity_points * 12 + (maximum_entities + 1) * 8 + maximum_background_points * 12 + 1
     if serialized_byte_limit != min(_MAX_FULL_MEMBER_BYTES, raw * 2 + 256 * 1024):
         raise ValueError("serialized_byte_limit does not match full capacities")
-    return metadata, class_names, capacities
+    return metadata, class_names, capacities, schema_version
 
 
 def _preflight_full_archive(content: bytes, capacities: tuple[int, int, int, int]) -> None:
@@ -415,7 +416,7 @@ def load_temporal_current_checkpoint(checkpoint_dir: str | Path) -> LoadedTempor
         if not isinstance(digest, str) or _sha256(contents[name]) != digest:
             raise ValueError(f"temporal current checksum mismatch for {name}")
     manifest = _strict_json(contents["manifest.json"], label="manifest")
-    metadata, class_names, capacities = _validate_manifest(manifest)
+    metadata, class_names, capacities, schema_version = _validate_manifest(manifest)
     entities_content = contents["entities.jsonl"]
     if len(entities_content) > _MAX_FULL_ENTITIES_JSON_BYTES:
         raise ValueError("full entities JSON exceeds total size limit")
@@ -462,7 +463,12 @@ def load_temporal_current_checkpoint(checkpoint_dir: str | Path) -> LoadedTempor
             raise ValueError("entity record point range is invalid")
         entity_id = str(record["entity_id"])
         entity_metadata = record["metadata"]
-        if not isinstance(entity_metadata, dict) or set(entity_metadata) != {"temporal_entity_id", "semantic_id"}:
+        metadata_fields = (
+            {"temporal_entity_id", "semantic_id"}
+            if schema_version == 1
+            else {"temporal_entity_id", "semantic_id", "geometry_epoch", "readout_valid"}
+        )
+        if not isinstance(entity_metadata, dict) or set(entity_metadata) != metadata_fields:
             raise ValueError("entity metadata schema is invalid")
         temporal_id = entity_metadata["temporal_entity_id"]
         if type(temporal_id) is not int or temporal_id < 0 or entity_id != f"temporal:{temporal_id}":
@@ -473,6 +479,13 @@ def load_temporal_current_checkpoint(checkpoint_dir: str | Path) -> LoadedTempor
         semantic_id = entity_metadata["semantic_id"]
         if type(semantic_id) is not int or semantic_id < 0:
             raise ValueError("entity semantic ID is invalid")
+        if schema_version == 2:
+            geometry_epoch = entity_metadata["geometry_epoch"]
+            readout_valid = entity_metadata["readout_valid"]
+            if type(geometry_epoch) is not int or geometry_epoch < 0:
+                raise ValueError("entity geometry_epoch is invalid")
+            if type(readout_valid) is not bool or readout_valid is not True:
+                raise ValueError("entity readout_valid must be true")
         semantic_label = record["semantic_label"]
         if semantic_id < len(class_names):
             if semantic_label != class_names[semantic_id]:

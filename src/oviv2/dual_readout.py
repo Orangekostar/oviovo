@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
+import json
 
 from src.core.data_structures import Frame
 from src.oviv2.dense_semantics import DenseSemanticFrame
@@ -14,6 +16,14 @@ from src.oviv2.reference_readout import (
     ReferenceReadoutState,
 )
 from src.oviv2.temporal_runtime import TemporalCurrentRuntime, TemporalFrameResult
+from src.oviv2.temporal_config import temporal_config_to_json
+from src.oviv2.temporal_snapshot import TemporalCurrentSnapshot, build_temporal_snapshot
+from src.oviv2.temporal_export import TemporalExportBatch, timestamp_seconds_to_ns
+from src.oviv2.t1_exactness import (
+    DualTransactionSnapshot,
+    frozen_shared_inputs,
+    shared_input_sha256,
+)
 
 
 ReferenceReadout = ReferenceCurrentReadout | LifecycleOverlayReadout
@@ -35,12 +45,20 @@ def _validate_reference_readout(value: object) -> ReferenceReadout:
 class DualFrameResult:
     cumulative: RuntimeFrameResult
     temporal: TemporalFrameResult | ReferenceFrameResult
+    export: TemporalExportBatch | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.cumulative, RuntimeFrameResult):
             raise TypeError("cumulative must be a RuntimeFrameResult")
         if not isinstance(self.temporal, (TemporalFrameResult, ReferenceFrameResult)):
             raise TypeError("temporal must be a temporal or reference frame result")
+        expected = self.temporal.export
+        if self.export is None:
+            object.__setattr__(self, "export", expected)
+        elif type(self.export) is not TemporalExportBatch:
+            raise TypeError("export must be a TemporalExportBatch")
+        elif self.export != expected:
+            raise ValueError("export must be the temporal causal export batch")
 
 
 class DualReadoutRuntime:
@@ -79,30 +97,38 @@ class DualReadoutRuntime:
                 CumulativeReadoutView.capture(cumulative)
             )
 
+    def current_checkpoint(self) -> TemporalCurrentSnapshot | CumulativeReadoutView:
+        if _is_reference_readout(self.temporal):
+            view = self.temporal.state.cumulative_view
+            if view is None:
+                raise RuntimeError("reference readout has no cumulative checkpoint")
+            return view
+        config_bytes = (
+            json.dumps(
+                temporal_config_to_json(self.temporal.config),
+                sort_keys=True,
+                separators=(",", ":"),
+                allow_nan=False,
+            )
+            + "\n"
+        ).encode("utf-8")
+        return build_temporal_snapshot(
+            self.temporal.state,
+            config_sha256=hashlib.sha256(config_bytes).hexdigest(),
+        )
+
     @staticmethod
     def _restore(
         cumulative: Oviv2Runtime,
         temporal: TemporalCurrentRuntime | ReferenceReadout,
-        cumulative_snapshot: dict[str, object],
-        temporal_snapshot: dict[str, object] | ReferenceReadoutState,
+        snapshot: DualTransactionSnapshot,
         original_error: BaseException,
     ) -> None:
         failures: list[tuple[str, BaseException]] = []
         try:
-            cumulative.__dict__.clear()
-            cumulative.__dict__.update(cumulative_snapshot)
+            snapshot.restore(cumulative, temporal)
         except BaseException as error:
-            failures.append(("cumulative", error))
-        try:
-            if _is_reference_readout(temporal):
-                assert isinstance(temporal_snapshot, ReferenceReadoutState)
-                temporal.restore_transaction(temporal_snapshot)
-            else:
-                assert isinstance(temporal_snapshot, dict)
-                temporal.__dict__.clear()
-                temporal.__dict__.update(temporal_snapshot)
-        except BaseException as error:
-            failures.append(("temporal", error))
+            failures.append(("transaction", error))
         if failures:
             detail = ", ".join(
                 f"{name}: {type(error).__name__}: {error}"
@@ -116,40 +142,40 @@ class DualReadoutRuntime:
         observations: tuple[FrameObservation, ...],
         dense_semantics: DenseSemanticFrame | None = None,
     ) -> DualFrameResult:
-        cumulative_snapshot = dict(self.cumulative.__dict__)
+        transaction = DualTransactionSnapshot.capture(self.cumulative, self.temporal)
+        input_digest = shared_input_sha256(frame, observations, dense_semantics)
         reference = (
             _validate_reference_readout(self.temporal)
             if _is_reference_readout(self.temporal)
             else None
         )
-        temporal_snapshot = (
-            reference.transaction_snapshot()
-            if reference is not None
-            else dict(self.temporal.__dict__)
-        )
-
         try:
-            cumulative_result = self.cumulative.process_frame(
-                frame,
-                observations,
-                dense_semantics,
-            )
-            if reference is not None:
-                before = reference.state.cumulative_view
-                if before is None:
-                    raise RuntimeError("reference readout has no previous cumulative view")
-                temporal_result = reference.process_cumulative_frame(
-                    frame,
-                    before=before,
-                    after=CumulativeReadoutView.capture(self.cumulative),
-                    cumulative_result=cumulative_result,
-                )
-            else:
-                temporal_result = self.temporal.process_frame(
+            with frozen_shared_inputs(frame, observations, dense_semantics):
+                cumulative_result = self.cumulative.process_frame(
                     frame,
                     observations,
                     dense_semantics,
                 )
+                if shared_input_sha256(frame, observations, dense_semantics) != input_digest:
+                    raise RuntimeError("cumulative branch mutated shared inputs")
+                if reference is not None:
+                    before = reference.state.cumulative_view
+                    if before is None:
+                        raise RuntimeError("reference readout has no previous cumulative view")
+                    temporal_result = reference.process_cumulative_frame(
+                        frame,
+                        before=before,
+                        after=CumulativeReadoutView.capture(self.cumulative),
+                        cumulative_result=cumulative_result,
+                    )
+                else:
+                    temporal_result = self.temporal.process_frame(
+                        frame,
+                        observations,
+                        dense_semantics,
+                    )
+                if shared_input_sha256(frame, observations, dense_semantics) != input_digest:
+                    raise RuntimeError("temporal branch mutated shared inputs")
             temporal_state = self.temporal.state
             expected_progress = (
                 cumulative_result.frame_id,
@@ -164,15 +190,16 @@ class DualReadoutRuntime:
                 or (temporal_state.last_frame_id, temporal_state.revision)
                 != expected_progress
                 or self.cumulative.last_timestamp != temporal_state.last_timestamp
+                or temporal_result.export.timestamp_ns
+                != timestamp_seconds_to_ns(frame.timestamp)
             ):
                 raise RuntimeError("dual readout frame/revision mismatch")
-            return DualFrameResult(cumulative_result, temporal_result)
+            return DualFrameResult(cumulative_result, temporal_result, temporal_result.export)
         except BaseException as error:
             self._restore(
                 self.cumulative,
                 self.temporal,
-                cumulative_snapshot,
-                temporal_snapshot,
+                transaction,
                 error,
             )
             raise
