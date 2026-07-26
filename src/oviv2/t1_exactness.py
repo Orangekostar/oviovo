@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import copy
 from contextlib import contextmanager
-from dataclasses import dataclass, fields, is_dataclass, replace
+from dataclasses import dataclass, fields, is_dataclass
 from enum import Enum
 import hashlib
+import inspect
 import math
 import struct
 from typing import Any, Iterator, Mapping
@@ -12,7 +13,7 @@ from typing import Any, Iterator, Mapping
 import numpy as np
 
 from src.core.data_structures import CameraIntrinsics, Frame
-from src.oviv2.dense_semantics import DenseSemanticFrame
+from src.oviv2.dense_semantics import DenseSemanticFrame, DenseSemanticProvenance
 from src.oviv2.dense_projection import DenseSemanticIntegrator
 from src.oviv2.entities import EntityRegistry
 from src.oviv2.evidence import SparseEvidenceStore
@@ -21,13 +22,15 @@ from src.oviv2.observation_graph import CausalObservationGraph
 from src.oviv2.observations import FrameObservation
 from src.oviv2.ownership import ReversibleOwnershipStore
 from src.oviv2.reference_readout import (
+    _BaseReferenceReadout,
     LifecycleOverlayReadout,
     ReferenceCurrentReadout,
     ReferenceReadoutState,
 )
-from src.oviv2.runtime import Oviv2Runtime
+from src.oviv2.runtime import Oviv2Runtime, Oviv2RuntimeConfig
+from src.oviv2.temporal_config import TemporalReadoutConfig
 from src.oviv2.temporal_runtime import TemporalCurrentRuntime
-from src.oviv2.temporal_state import TemporalGeometryState, TemporalRuntimeState
+from src.oviv2.temporal_state import TemporalRuntimeState
 from src.oviv2.tracking import LocalTracker
 from src.oviv2.visibility import VoxelVisibilityProjector
 
@@ -60,6 +63,18 @@ _CUMULATIVE_FIELDS = frozenset({
 })
 _TEMPORAL_FIELDS = frozenset({"config", "state", "tracker_config"})
 _REFERENCE_FIELDS = frozenset({"config", "state"})
+_TRUSTED_CLASS_METHODS = tuple(
+    (owner, name, value)
+    for owner in (
+        Oviv2Runtime,
+        TemporalCurrentRuntime,
+        _BaseReferenceReadout,
+        ReferenceCurrentReadout,
+        LifecycleOverlayReadout,
+    )
+    for name, value in vars(owner).items()
+    if inspect.isfunction(value) or isinstance(value, (classmethod, staticmethod))
+)
 
 
 def _pack(tag: bytes, content: bytes) -> bytes:
@@ -191,37 +206,6 @@ def temporal_state_sha256(runtime: TemporalCurrentRuntime | object) -> str:
     raise TypeError("runtime must expose a supported temporal state")
 
 
-def _clone_geometry(volume: SparseTsdfVolume) -> SparseTsdfVolume:
-    active = volume._grid.hashmap().active_buf_indices()
-    capacity = max(1, int(active.shape[0]))
-    config = replace(volume.config, block_count=capacity)
-    clone = SparseTsdfVolume(config)
-    if int(active.shape[0]):
-        keys = volume._grid.hashmap().key_tensor()[active]
-        destination, activated = clone._grid.hashmap().activate(keys)
-        if not np.all(activated.numpy()):
-            raise RuntimeError("failed to snapshot cumulative TSDF blocks")
-        for name in volume._ATTRIBUTE_NAMES:
-            clone._grid.attribute(name)[destination] = volume._grid.attribute(name)[active]
-    clone._config = volume.config
-    return clone
-
-
-def _clone_temporal_state(state: TemporalRuntimeState) -> TemporalRuntimeState:
-    geometry = TemporalGeometryState(
-        copy.deepcopy(state.geometry.epochs),
-        state.geometry.maximum_epochs_per_identity,
-        state.geometry.maximum_retained_epochs,
-        state.geometry.next_epoch_ids,
-    )
-    return TemporalRuntimeState(
-        state.scene_id, state.revision, state.last_frame_id, state.last_timestamp,
-        state.next_entity_id, state.entities, state.background, state.tracker,
-        state.identities, geometry, state.lifecycle_beliefs,
-        state.background_ledger, state.export_tracker, copy.deepcopy(state.diagnostics),
-    )
-
-
 @dataclass(frozen=True)
 class _ArrayNodeSnapshot:
     array: np.ndarray
@@ -338,11 +322,8 @@ def clone_shared_inputs(
     frame: Frame,
     observations: tuple[FrameObservation, ...],
     dense_semantics: DenseSemanticFrame | None,
-    *,
-    memo: dict[int, object] | None = None,
 ) -> tuple[Frame, tuple[FrameObservation, ...], DenseSemanticFrame | None]:
-    if memo is None:
-        memo = {}
+    memo: dict[int, object] = {}
     arrays: dict[int, np.ndarray] = {}
 
     def clone_array(array: np.ndarray) -> np.ndarray:
@@ -396,99 +377,51 @@ def shared_input_snapshot(
     return _SharedInputSnapshot.capture(frame, observations, dense_semantics)
 
 
-def _bind_clone_graph(
-    original: object,
-    cloned: object,
-    memo: dict[int, object],
-) -> None:
-    if type(original) is not type(cloned) or id(original) in memo:
-        return
-    memo[id(original)] = cloned
-    if isinstance(original, np.ndarray):
-        return
-    if isinstance(original, tuple):
-        for left, right in zip(original, cloned, strict=True):
-            _bind_clone_graph(left, right, memo)
-        return
-    if isinstance(original, list):
-        for left, right in zip(original, cloned, strict=True):
-            _bind_clone_graph(left, right, memo)
-        return
-    if isinstance(original, Mapping):
-        for key, value in original.items():
-            if key in cloned:
-                _bind_clone_graph(value, cloned[key], memo)
-        return
-    if isinstance(original, TemporalRuntimeState):
-        for name in original.__slots__:
-            _bind_clone_graph(
-                object.__getattribute__(original, name),
-                object.__getattribute__(cloned, name),
-                memo,
-            )
-        return
-    if is_dataclass(original) and not isinstance(original, type):
-        for field in fields(original):
-            _bind_clone_graph(
-                getattr(original, field.name), getattr(cloned, field.name), memo
-            )
-        return
-    if hasattr(original, "__dict__") and hasattr(cloned, "__dict__"):
-        for name, value in vars(original).items():
-            if name in vars(cloned):
-                _bind_clone_graph(value, vars(cloned)[name], memo)
+def _validate_frozen_class_methods() -> None:
+    for owner, name, expected in _TRUSTED_CLASS_METHODS:
+        if vars(owner).get(name) is not expected:
+            raise TypeError("built-in readout class method was overridden")
 
 
-def isolated_cumulative_runtime(
-    runtime: Oviv2Runtime,
-    *,
-    memo: dict[int, object] | None = None,
-) -> Oviv2Runtime:
-    trial = object.__new__(type(runtime))
+def isolated_cumulative_runtime(runtime: Oviv2Runtime) -> Oviv2Runtime:
+    _validate_frozen_class_methods()
     if (
-        type(runtime) is Oviv2Runtime
-        and set(vars(runtime)) == _CUMULATIVE_FIELDS
-        and type(runtime).process_frame is _TRUSTED_CUMULATIVE_METHOD
-        and "process_frame" not in vars(runtime)
+        type(runtime) is not Oviv2Runtime
+        or set(vars(runtime)) != _CUMULATIVE_FIELDS
+        or type(runtime).process_frame is not _TRUSTED_CUMULATIVE_METHOD
+        or type(runtime.config) is not Oviv2RuntimeConfig
+        or type(runtime.geometry) is not SparseTsdfVolume
+        or type(runtime.evidence) is not SparseEvidenceStore
+        or type(runtime.ownership) is not ReversibleOwnershipStore
+        or type(runtime.tracker) is not LocalTracker
+        or type(runtime.registry) is not EntityRegistry
+        or type(runtime.visibility) is not VoxelVisibilityProjector
+        or (
+            runtime.dense_semantic_integrator is not None
+            and type(runtime.dense_semantic_integrator) is not DenseSemanticIntegrator
+        )
+        or (
+            runtime.dense_semantic_provenance is not None
+            and type(runtime.dense_semantic_provenance) is not DenseSemanticProvenance
+        )
     ):
-        trial.__dict__ = dict(runtime.__dict__)
-        return trial
-    owned_memo = {} if memo is None else dict(memo)
-    owned_memo[id(runtime)] = trial
-    try:
-        cloned: dict[str, object] = {}
-        geometry = _clone_geometry(runtime.geometry)
-        _bind_clone_graph(runtime.geometry, geometry, owned_memo)
-        cloned["geometry"] = geometry
-        for name in (
-            "evidence", "ownership", "tracker", "registry", "visibility",
-            "dense_semantic_integrator",
-        ):
-            value = getattr(runtime, name)
-            cloned[name] = copy.deepcopy(value, owned_memo)
-        for name, value in vars(runtime).items():
-            if name not in cloned:
-                cloned[name] = copy.deepcopy(value, owned_memo)
-    except Exception as exc:
-        raise TypeError("untrusted cumulative runtime cannot be isolated") from exc
-    trial.__dict__ = cloned
+        raise TypeError("cumulative runtime must be an exact built-in without overrides")
+    trial = object.__new__(Oviv2Runtime)
+    trial.__dict__ = dict(runtime.__dict__)
     return trial
 
 
-def isolated_temporal_runtime(
-    runtime: object,
-    *,
-    memo: dict[int, object] | None = None,
-) -> object:
-    trial = object.__new__(type(runtime))
-    state = getattr(runtime, "state", None)
+def isolated_temporal_runtime(runtime: object) -> object:
+    _validate_frozen_class_methods()
     if (
         type(runtime) is TemporalCurrentRuntime
         and set(vars(runtime)) == _TEMPORAL_FIELDS
         and type(runtime).process_frame is _TRUSTED_TEMPORAL_METHOD
         and type(runtime)._before_publish is _TRUSTED_TEMPORAL_PUBLISH
-        and not {"process_frame", "_before_publish"} & set(vars(runtime))
+        and type(runtime.config) is TemporalReadoutConfig
+        and type(runtime.state) is TemporalRuntimeState
     ):
+        trial = object.__new__(TemporalCurrentRuntime)
         trial.__dict__ = dict(runtime.__dict__)
         return trial
     expected = _TRUSTED_REFERENCE_METHODS.get(type(runtime))
@@ -497,29 +430,13 @@ def isolated_temporal_runtime(
         and set(vars(runtime)) == _REFERENCE_FIELDS
         and type(runtime).process_cumulative_frame is expected
         and type(runtime)._before_publish is _TRUSTED_REFERENCE_PUBLISH[type(runtime)]
-        and not {"process_cumulative_frame", "_before_publish"} & set(vars(runtime))
+        and type(runtime.config) is TemporalReadoutConfig
+        and type(runtime.state) is ReferenceReadoutState
     ):
+        trial = object.__new__(type(runtime))
         trial.__dict__ = dict(runtime.__dict__)
         return trial
-    if not isinstance(state, (TemporalRuntimeState, ReferenceReadoutState)):
-        raise TypeError("temporal runtime has an unsupported state")
-    owned_memo = {} if memo is None else dict(memo)
-    owned_memo[id(runtime)] = trial
-    try:
-        cloned_state = (
-            _clone_temporal_state(state)
-            if isinstance(state, TemporalRuntimeState)
-            else copy.deepcopy(state, owned_memo)
-        )
-        _bind_clone_graph(state, cloned_state, owned_memo)
-        cloned = {"state": cloned_state}
-        for name, value in vars(runtime).items():
-            if name != "state":
-                cloned[name] = copy.deepcopy(value, owned_memo)
-    except Exception as exc:
-        raise TypeError("untrusted temporal runtime cannot be isolated") from exc
-    trial.__dict__ = cloned
-    return trial
+    raise TypeError("temporal runtime must be an exact built-in without overrides")
 
 
 def commit_runtime_state(target: object, trial: object) -> None:

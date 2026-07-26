@@ -72,12 +72,8 @@ class DualReadoutRuntime:
         cumulative: Oviv2Runtime,
         temporal: TemporalCurrentRuntime | ReferenceReadout,
     ) -> None:
-        if not isinstance(cumulative, Oviv2Runtime):
-            raise TypeError("cumulative must be an Oviv2Runtime")
-        if not isinstance(temporal, TemporalCurrentRuntime) and not _is_reference_readout(
-            temporal
-        ):
-            raise TypeError("temporal must be a temporal runtime or reference readout")
+        isolated_cumulative_runtime(cumulative)
+        isolated_temporal_runtime(temporal)
         reference = (
             _validate_reference_readout(temporal)
             if _is_reference_readout(temporal)
@@ -147,6 +143,8 @@ class DualReadoutRuntime:
         observations: tuple[FrameObservation, ...],
         dense_semantics: DenseSemanticFrame | None = None,
     ) -> DualFrameResult:
+        cumulative_trial = isolated_cumulative_runtime(self.cumulative)
+        temporal_trial = isolated_temporal_runtime(self.temporal)
         transaction = DualTransactionSnapshot.capture(
             self.cumulative, self.temporal, frame, observations, dense_semantics
         )
@@ -154,17 +152,10 @@ class DualReadoutRuntime:
         original_input_snapshot = shared_input_snapshot(
             frame, observations, dense_semantics
         )
-        isolation_memo: dict[int, object] = {}
         isolated_frame, isolated_observations, isolated_dense = clone_shared_inputs(
-            frame, observations, dense_semantics, memo=isolation_memo
+            frame, observations, dense_semantics
         )
         try:
-            cumulative_trial = isolated_cumulative_runtime(
-                self.cumulative, memo=isolation_memo
-            )
-            temporal_trial = isolated_temporal_runtime(
-                self.temporal, memo=isolation_memo
-            )
             reference = (
                 _validate_reference_readout(temporal_trial)
                 if _is_reference_readout(temporal_trial)
