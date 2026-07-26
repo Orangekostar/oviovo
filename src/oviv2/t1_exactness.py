@@ -8,7 +8,7 @@ from enum import Enum
 import hashlib
 import math
 import struct
-from types import FunctionType
+from types import FunctionType, ModuleType
 from typing import Any, Iterator, Mapping
 
 import numpy as np
@@ -211,6 +211,13 @@ class _TrustedFunctionSnapshot:
     global_bindings: tuple[_GlobalBindingSnapshot, ...]
 
 
+@dataclass(frozen=True)
+class _ModuleNamespaceSnapshot:
+    module: ModuleType
+    namespace: dict[str, object]
+    bindings: tuple[_GlobalBindingSnapshot, ...]
+
+
 _EMPTY_CELL = object()
 _MISSING_METADATA = object()
 
@@ -274,6 +281,13 @@ def _is_project_class(value: object) -> bool:
     return type(module_name) is str and module_name.startswith("src.")
 
 
+def _is_project_module(value: object) -> bool:
+    if type(value) is not ModuleType:
+        return False
+    module_name = dict.get(value.__dict__, "__name__")
+    return type(module_name) is str and module_name.startswith("src.")
+
+
 def _descriptor_functions(value: object) -> tuple[FunctionType, ...]:
     if type(value) is FunctionType:
         return (value,)
@@ -291,11 +305,14 @@ def _descriptor_functions(value: object) -> tuple[FunctionType, ...]:
 def _capture_trusted_behavior_graph() -> tuple[
     tuple[_TrustedFunctionSnapshot, ...],
     tuple[tuple[type, tuple[tuple[str, object], ...]], ...],
+    tuple[_ModuleNamespaceSnapshot, ...],
 ]:
     function_snapshots: list[_TrustedFunctionSnapshot] = []
     class_snapshots: list[tuple[type, tuple[tuple[str, object], ...]]] = []
+    module_snapshots: list[_ModuleNamespaceSnapshot] = []
     visited_functions: set[int] = set()
     visited_classes: set[int] = set()
+    visited_modules: set[int] = set()
 
     def capture_function(function: FunctionType) -> None:
         if id(function) in visited_functions:
@@ -304,6 +321,7 @@ def _capture_trusted_behavior_graph() -> tuple[
         global_bindings: list[_GlobalBindingSnapshot] = []
         reachable_functions: list[FunctionType] = []
         reachable_classes: list[type] = []
+        reachable_modules: list[ModuleType] = []
         seen_names: set[str] = set()
         namespace = function.__globals__
         for name in function.__code__.co_names:
@@ -328,6 +346,8 @@ def _capture_trusted_behavior_graph() -> tuple[
                 reachable_functions.append(value)
             elif _is_project_class(value):
                 reachable_classes.append(value)
+            elif _is_project_module(value):
+                reachable_modules.append(value)
         function_snapshots.append(
             _TrustedFunctionSnapshot(
                 _capture_function_behavior(function), tuple(global_bindings)
@@ -337,6 +357,8 @@ def _capture_trusted_behavior_graph() -> tuple[
             capture_function(helper)
         for owner in reachable_classes:
             capture_class(owner)
+        for module in reachable_modules:
+            capture_module(module)
 
     def capture_class(owner: type) -> None:
         if id(owner) in visited_classes:
@@ -352,14 +374,55 @@ def _capture_trusted_behavior_graph() -> tuple[
             if _is_project_class(base):
                 capture_class(base)
 
+    def capture_module(module: ModuleType) -> None:
+        if id(module) in visited_modules:
+            return
+        visited_modules.add(id(module))
+        namespace = module.__dict__
+        module_name = dict.__getitem__(namespace, "__name__")
+        bindings = tuple(
+            _GlobalBindingSnapshot(
+                name,
+                True,
+                value,
+                (
+                    _BehaviorValueSnapshot("identity", type(value), value)
+                    if name == "__builtins__"
+                    else _capture_behavior_value(value)
+                ),
+            )
+            for name, value in dict.items(namespace)
+        )
+        module_snapshots.append(
+            _ModuleNamespaceSnapshot(module, namespace, bindings)
+        )
+        for value in tuple(dict.values(namespace)):
+            if (
+                type(value) is FunctionType
+                and dict.get(value.__globals__, "__name__") == module_name
+            ):
+                capture_function(value)
+            elif (
+                _is_project_class(value)
+                and type.__getattribute__(value, "__module__") == module_name
+            ):
+                capture_class(value)
+            elif _is_project_module(value):
+                capture_module(value)
+
     for owner in _TRUSTED_CLASSES:
         capture_class(owner)
-    return tuple(function_snapshots), tuple(class_snapshots)
+    return (
+        tuple(function_snapshots),
+        tuple(class_snapshots),
+        tuple(module_snapshots),
+    )
 
 
 (
     _TRUSTED_FUNCTION_BEHAVIORS,
     _TRUSTED_CLASS_NAMESPACES,
+    _TRUSTED_MODULE_NAMESPACES,
 ) = _capture_trusted_behavior_graph()
 
 
@@ -785,6 +848,18 @@ def _closure_matches(
 
 
 def _validate_frozen_class_namespaces() -> None:
+    for snapshot in _TRUSTED_MODULE_NAMESPACES:
+        current = snapshot.module.__dict__
+        if current is not snapshot.namespace or len(current) != len(snapshot.bindings):
+            raise TypeError("built-in readout module namespace was modified")
+        for binding in snapshot.bindings:
+            value = dict.get(current, binding.name, _MISSING_METADATA)
+            if (
+                value is not binding.value
+                or binding.state is None
+                or not _behavior_value_matches(binding.state, value)
+            ):
+                raise TypeError("built-in readout module namespace was modified")
     for owner, expected_items in _TRUSTED_CLASS_NAMESPACES:
         current = vars(owner)
         if len(current) != len(expected_items) or any(

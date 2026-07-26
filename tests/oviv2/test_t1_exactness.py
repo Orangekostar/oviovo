@@ -634,6 +634,112 @@ def test_reachable_project_mro_base_namespace_mutation_fails_before_branch(
     assert cumulative.revision == temporal.state.revision == 0
 
 
+def test_reachable_project_module_helper_replacement_fails_before_branch(
+    monkeypatch,
+) -> None:
+    from dataclasses import replace
+
+    import src.oviv2.temporal_lifecycle as lifecycle_module
+    from src.oviv2.reference_readout import LifecycleOverlayReadout
+    from src.oviv2.temporal_config import ExecutionProfile
+    from tests.oviv2.test_dual_readout import _observation
+
+    cumulative = _cumulative()
+    temporal = LifecycleOverlayReadout(
+        "scene",
+        replace(_temporal_config(), execution_profile=ExecutionProfile.A1),
+    )
+    runtime = DualReadoutRuntime(cumulative, temporal)
+    first = _frame(0, 1.0)
+    runtime.process_frame(first, (_observation(first),))
+    geometry = cumulative.geometry
+    called = False
+
+    def poisoned(*args, **kwargs):
+        nonlocal called
+        called = True
+        geometry._t1_poison_marker = object()
+        raise RuntimeError("reachable project module helper replacement")
+
+    monkeypatch.setattr(lifecycle_module, "advance_lifecycle", poisoned)
+    second = _frame(1, 2.0)
+    second_observation = replace(_observation(second), observation_id=11)
+    with pytest.raises(TypeError, match="module namespace.*modified"):
+        runtime.process_frame(second, (second_observation,))
+    assert called is False
+    assert not hasattr(geometry, "_t1_poison_marker")
+    assert cumulative.revision == temporal.state.revision == 1
+
+
+def test_reachable_project_module_added_attribute_fails_before_branch(
+    monkeypatch,
+) -> None:
+    from dataclasses import replace
+
+    import src.oviv2.temporal_lifecycle as lifecycle_module
+    from src.oviv2.reference_readout import LifecycleOverlayReadout
+    from src.oviv2.temporal_config import ExecutionProfile
+
+    cumulative = _cumulative()
+    temporal = LifecycleOverlayReadout(
+        "scene",
+        replace(_temporal_config(), execution_profile=ExecutionProfile.A1),
+    )
+    monkeypatch.setattr(
+        lifecycle_module, "_T1_ADDED_MODULE_ATTRIBUTE", object(), raising=False
+    )
+    with pytest.raises(TypeError, match="module namespace.*modified"):
+        DualReadoutRuntime(cumulative, temporal)
+    assert cumulative.revision == temporal.state.revision == 0
+
+
+def test_reachable_project_module_helper_code_mutation_fails_before_branch() -> None:
+    from dataclasses import replace
+
+    import src.oviv2.temporal_lifecycle as lifecycle_module
+    from src.oviv2.reference_readout import LifecycleOverlayReadout
+    from src.oviv2.temporal_config import ExecutionProfile
+
+    cumulative = _cumulative()
+    temporal = LifecycleOverlayReadout(
+        "scene",
+        replace(_temporal_config(), execution_profile=ExecutionProfile.A1),
+    )
+    function = lifecycle_module.advance_lifecycle
+    original_code = function.__code__
+
+    def poisoned(state, evidence, config):
+        raise RuntimeError("reachable project module helper code mutation")
+
+    try:
+        function.__code__ = poisoned.__code__
+        with pytest.raises(TypeError, match="function behavior.*modified"):
+            DualReadoutRuntime(cumulative, temporal).process_frame(_frame(), ())
+    finally:
+        function.__code__ = original_code
+    assert cumulative.revision == temporal.state.revision == 0
+
+
+def test_reachable_project_module_constant_mutation_fails_before_branch(
+    monkeypatch,
+) -> None:
+    from dataclasses import replace
+
+    import src.oviv2.temporal_background as background_module
+    from src.oviv2.reference_readout import LifecycleOverlayReadout
+    from src.oviv2.temporal_config import ExecutionProfile
+
+    cumulative = _cumulative()
+    temporal = LifecycleOverlayReadout(
+        "scene",
+        replace(_temporal_config(), execution_profile=ExecutionProfile.A1),
+    )
+    monkeypatch.setattr(background_module, "_RIGID_ATOL", 2e-6)
+    with pytest.raises(TypeError, match="module namespace.*modified"):
+        DualReadoutRuntime(cumulative, temporal)
+    assert cumulative.revision == temporal.state.revision == 0
+
+
 def test_cumulative_subclass_helper_override_fails_before_branch() -> None:
     called = False
 
