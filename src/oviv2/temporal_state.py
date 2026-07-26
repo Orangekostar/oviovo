@@ -10,7 +10,16 @@ from typing import Any
 import numpy as np
 
 from src.oviv2.temporal_background import TemporalBackgroundVolume
+from src.oviv2.temporal_association import TemporalAssignmentDiagnostic
+from src.oviv2.temporal_background_ledger import ReversibleBackgroundLedger
+from src.oviv2.temporal_config import (
+    TemporalBackgroundLedgerConfig,
+    TemporalIdentityConfig,
+)
+from src.oviv2.temporal_epoch import GeometryEpoch
+from src.oviv2.temporal_export import DynamicEvidenceState, TemporalExportBatch
 from src.oviv2.temporal_geometry import ObjectSubmap
+from src.oviv2.temporal_identity import IdentityMemoryBank
 from src.oviv2.temporal_lifecycle import TemporalLifecycleState
 from src.oviv2.tracking import LocalTracker
 
@@ -204,7 +213,165 @@ class TemporalEntityState:
         return _canonical(self)
 
 
-@dataclass(frozen=True, eq=False, repr=False)
+@dataclass(frozen=True)
+class TemporalGeometryState:
+    epochs: tuple[GeometryEpoch, ...]
+    maximum_epochs_per_identity: int
+    maximum_retained_epochs: int
+
+    def __post_init__(self) -> None:
+        if type(self.epochs) is not tuple or any(type(item) is not GeometryEpoch for item in self.epochs):
+            raise TypeError("epochs must be an exact tuple of GeometryEpoch values")
+        for name in ("maximum_epochs_per_identity", "maximum_retained_epochs"):
+            value = getattr(self, name)
+            if isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral):
+                raise TypeError(f"{name} must be an integer")
+            if int(value) <= 0:
+                raise ValueError(f"{name} must be positive")
+            object.__setattr__(self, name, int(value))
+        ordered = tuple(sorted((copy.deepcopy(item) for item in self.epochs), key=lambda item: (item.entity_id, item.epoch_id)))
+        keys = tuple((item.entity_id, item.epoch_id) for item in ordered)
+        if keys != tuple(sorted(set(keys))):
+            raise ValueError("geometry epochs must have unique identity/epoch keys")
+        for entity_id in sorted({item.entity_id for item in ordered}):
+            ids = tuple(item.epoch_id for item in ordered if item.entity_id == entity_id)
+            if ids != tuple(sorted(set(ids))) or len(ids) > self.maximum_epochs_per_identity:
+                raise ValueError("geometry epoch IDs must be monotonic, unique, and bounded")
+        if len(ordered) > self.maximum_retained_epochs:
+            raise ValueError("geometry epochs exceed maximum_retained_epochs")
+        object.__setattr__(self, "epochs", ordered)
+
+    def current(self, identity_id: int) -> GeometryEpoch:
+        matches = tuple(item for item in self.epochs if item.entity_id == identity_id)
+        if not matches:
+            raise KeyError(identity_id)
+        return matches[-1]
+
+    def replace_current(self, epoch: GeometryEpoch) -> TemporalGeometryState:
+        current = self.current(epoch.entity_id)
+        if epoch.epoch_id != current.epoch_id:
+            raise ValueError("replacement must preserve current epoch ID")
+        return TemporalGeometryState(
+            tuple(item for item in self.epochs if (item.entity_id, item.epoch_id) != (epoch.entity_id, epoch.epoch_id)) + (epoch,),
+            self.maximum_epochs_per_identity,
+            self.maximum_retained_epochs,
+        )
+
+    def append(self, epoch: GeometryEpoch) -> TemporalGeometryState:
+        retained = list(self.epochs)
+        same = [item for item in retained if item.entity_id == epoch.entity_id]
+        if same and epoch.epoch_id != same[-1].epoch_id + 1:
+            raise ValueError("new geometry epoch must advance monotonically")
+        if not same and epoch.epoch_id != 0:
+            raise ValueError("first geometry epoch must be epoch zero")
+        retained.append(epoch)
+        while sum(item.entity_id == epoch.entity_id for item in retained) > self.maximum_epochs_per_identity:
+            victim = next(item for item in retained if item.entity_id == epoch.entity_id)
+            retained.remove(victim)
+        while len(retained) > self.maximum_retained_epochs:
+            current_keys = {(item.entity_id, max(e.epoch_id for e in retained if e.entity_id == item.entity_id)) for item in retained}
+            victim = next((item for item in retained if (item.entity_id, item.epoch_id) not in current_keys), None)
+            if victim is None:
+                raise OverflowError("current geometry epochs exceed retention capacity")
+            retained.remove(victim)
+        return TemporalGeometryState(
+            tuple(retained),
+            self.maximum_epochs_per_identity,
+            self.maximum_retained_epochs,
+        )
+
+    def canonical_dump(self) -> tuple[object, ...]:
+        return (self.maximum_epochs_per_identity, self.maximum_retained_epochs, _canonical(self.epochs))
+
+
+@dataclass(frozen=True)
+class TemporalExportTrackerEntry:
+    entity_id: int
+    observation_count: int
+    dynamic_evidence: DynamicEvidenceState
+    last_centroid_xyz: tuple[float, float, float] | None
+    readout_valid: bool
+    geometry_epoch: int
+
+    def __post_init__(self) -> None:
+        for name, minimum in (("entity_id", 1), ("observation_count", 0), ("geometry_epoch", 0)):
+            value = getattr(self, name)
+            if isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral):
+                raise TypeError(f"{name} must be an integer")
+            if int(value) < minimum:
+                raise ValueError(f"{name} must be at least {minimum}")
+            object.__setattr__(self, name, int(value))
+        if type(self.dynamic_evidence) is not DynamicEvidenceState:
+            raise TypeError("dynamic_evidence must be DynamicEvidenceState")
+        if self.last_centroid_xyz is not None:
+            centroid = np.asarray(self.last_centroid_xyz, dtype=np.float64)
+            if centroid.shape != (3,) or not np.isfinite(centroid).all():
+                raise ValueError("last_centroid_xyz must contain three finite values")
+            object.__setattr__(self, "last_centroid_xyz", tuple(float(item) for item in centroid))
+        if type(self.readout_valid) is not bool:
+            raise TypeError("readout_valid must be an exact bool")
+
+
+@dataclass(frozen=True)
+class TemporalExportTracker:
+    entries: tuple[TemporalExportTrackerEntry, ...] = ()
+    last_batch: TemporalExportBatch | None = None
+
+    def __post_init__(self) -> None:
+        if type(self.entries) is not tuple or any(type(item) is not TemporalExportTrackerEntry for item in self.entries):
+            raise TypeError("entries must contain TemporalExportTrackerEntry values")
+        ordered = tuple(sorted(self.entries, key=lambda item: item.entity_id))
+        if tuple(item.entity_id for item in ordered) != tuple(sorted({item.entity_id for item in ordered})):
+            raise ValueError("export tracker entity IDs must be unique")
+        if self.last_batch is not None and type(self.last_batch) is not TemporalExportBatch:
+            raise TypeError("last_batch must be a TemporalExportBatch or None")
+        object.__setattr__(self, "entries", ordered)
+
+    def get(self, entity_id: int) -> TemporalExportTrackerEntry | None:
+        return next((item for item in self.entries if item.entity_id == entity_id), None)
+
+    def canonical_dump(self) -> tuple[object, ...]:
+        return _canonical(self)
+
+
+@dataclass(frozen=True)
+class TemporalDiagnostics:
+    processed_frame_count: int = 0
+    proposal_opportunity_count: int = 0
+    proposal_trigger_count: int = 0
+    reid_opportunity_count: int = 0
+    reid_trigger_count: int = 0
+    motion_rejection_count: int = 0
+    ledger_rejection_count: int = 0
+    assignment_diagnostics: tuple[TemporalAssignmentDiagnostic, ...] = ()
+
+    def __post_init__(self) -> None:
+        for name in (
+            "processed_frame_count", "proposal_opportunity_count",
+            "proposal_trigger_count", "reid_opportunity_count",
+            "reid_trigger_count", "motion_rejection_count",
+            "ledger_rejection_count",
+        ):
+            value = getattr(self, name)
+            if isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral):
+                raise TypeError(f"{name} must be an integer")
+            if int(value) < 0:
+                raise ValueError(f"{name} must be nonnegative")
+            object.__setattr__(self, name, int(value))
+        if type(self.assignment_diagnostics) is not tuple or any(
+            type(item) is not TemporalAssignmentDiagnostic
+            for item in self.assignment_diagnostics
+        ):
+            raise TypeError("assignment_diagnostics must contain exact diagnostics")
+        pairs = tuple(
+            (item.observation_id, item.entity_id)
+            for item in self.assignment_diagnostics
+        )
+        if pairs != tuple(sorted(set(pairs))):
+            raise ValueError("assignment diagnostics must be sorted and unique")
+
+
+@dataclass(frozen=True, eq=False, repr=False, init=False)
 class TemporalRuntimeState:
     __slots__ = (
         "scene_id",
@@ -215,8 +382,16 @@ class TemporalRuntimeState:
         "entities",
         "background",
         "tracker",
+        "identities",
+        "geometry",
+        "lifecycle_beliefs",
+        "background_ledger",
+        "export_tracker",
+        "diagnostics",
         "_background_state",
         "_tracker_state",
+        "_identities_state",
+        "_ledger_state",
     )
 
     scene_id: str
@@ -227,8 +402,36 @@ class TemporalRuntimeState:
     entities: tuple[TemporalEntityState, ...]
     background: TemporalBackgroundVolume
     tracker: LocalTracker
+    identities: IdentityMemoryBank | None
+    geometry: TemporalGeometryState | None
+    lifecycle_beliefs: tuple[TemporalLifecycleState, ...] | None
+    background_ledger: ReversibleBackgroundLedger | None
+    export_tracker: TemporalExportTracker | None
+    diagnostics: TemporalDiagnostics | None
 
     __hash__ = None
+
+    def __init__(
+        self,
+        scene_id: str,
+        revision: int,
+        last_frame_id: int,
+        last_timestamp: float,
+        next_entity_id: int,
+        entities: tuple[TemporalEntityState, ...],
+        background: TemporalBackgroundVolume,
+        tracker: LocalTracker,
+        identities: IdentityMemoryBank | None = None,
+        geometry: TemporalGeometryState | None = None,
+        lifecycle_beliefs: tuple[TemporalLifecycleState, ...] | None = None,
+        background_ledger: ReversibleBackgroundLedger | None = None,
+        export_tracker: TemporalExportTracker | None = None,
+        diagnostics: TemporalDiagnostics | None = None,
+    ) -> None:
+        for name, value in locals().copy().items():
+            if name != "self":
+                object.__setattr__(self, name, value)
+        self._initialize_owned(adopt=False)
 
     def __getattribute__(self, name: str) -> Any:
         if name == "tracker":
@@ -243,10 +446,19 @@ class TemporalRuntimeState:
             except AttributeError:
                 return object.__getattribute__(self, name)
             return _background_snapshot(raw)
+        if name == "identities":
+            try:
+                raw = object.__getattribute__(self, "_identities_state")
+            except AttributeError:
+                return object.__getattribute__(self, name)
+            return raw.clone()
+        if name == "background_ledger":
+            try:
+                raw = object.__getattribute__(self, "_ledger_state")
+            except AttributeError:
+                return object.__getattribute__(self, name)
+            return raw.clone()
         return object.__getattribute__(self, name)
-
-    def __post_init__(self) -> None:
-        self._initialize_owned(adopt=False)
 
     def _initialize_owned(self, *, adopt: bool) -> None:
         if not isinstance(self.scene_id, str) or not self.scene_id.strip():
@@ -286,10 +498,95 @@ class TemporalRuntimeState:
             raise TypeError("tracker must be a LocalTracker")
         background_state = background if adopt else _background_snapshot(background)
         tracker_state = tracker if adopt else copy.deepcopy(tracker)
+        identities = object.__getattribute__(self, "identities")
+        geometry = object.__getattribute__(self, "geometry")
+        lifecycle_beliefs = object.__getattribute__(self, "lifecycle_beliefs")
+        ledger = object.__getattribute__(self, "background_ledger")
+        export_tracker = object.__getattribute__(self, "export_tracker")
+        diagnostics = object.__getattribute__(self, "diagnostics")
+        if identities is None:
+            identities = IdentityMemoryBank(
+                TemporalIdentityConfig(
+                    max(self.next_entity_id, background.config.maximum_entities),
+                    1, 0.0, 1.0,
+                )
+            )
+            for entity in self.entities:
+                record = IdentityMemoryBank._new_record(
+                    entity.lifecycle.entity_id,
+                    {
+                        "frame_id": entity.last_seen_frame_id,
+                        "timestamp": entity.lifecycle.last_timestamp,
+                        "semantic_probabilities": entity.semantic_probabilities,
+                        "appearance_prototype": entity.image_prototype,
+                        "feature_model_id": entity.feature_model_id,
+                        "lifecycle": entity.lifecycle.lifecycle,
+                        "centroid_xyz": tuple(float(item) for item in entity.object_to_world[:3, 3]),
+                        "extent_xyz": entity.extent_xyz,
+                        "motion_velocity_xyz": (0.0, 0.0, 0.0),
+                        "motion_uncertainty_m": 0.0,
+                    },
+                )
+                identities._records[record.identity_id] = record
+            identities._next_identity_id = self.next_entity_id
+        if geometry is None:
+            geometry = TemporalGeometryState(
+                tuple(
+                    GeometryEpoch(
+                        entity.lifecycle.entity_id, 0, entity.object_to_world,
+                        entity.submap, True, None, entity.last_seen_frame_id,
+                    )
+                    for entity in self.entities
+                ),
+                1,
+                max(1, background.config.maximum_entities),
+            )
+        if lifecycle_beliefs is None:
+            lifecycle_beliefs = tuple(entity.lifecycle for entity in self.entities)
+        if ledger is None:
+            ledger = ReversibleBackgroundLedger(
+                background.config,
+                TemporalBackgroundLedgerConfig(
+                    background.config.background_block_count, 2, 2, 1, 8
+                ),
+            )
+        if export_tracker is None:
+            export_tracker = TemporalExportTracker()
+        if diagnostics is None:
+            diagnostics = TemporalDiagnostics(processed_frame_count=self.revision)
+        if not isinstance(identities, IdentityMemoryBank):
+            raise TypeError("identities must be an IdentityMemoryBank")
+        if type(geometry) is not TemporalGeometryState:
+            raise TypeError("geometry must be a TemporalGeometryState")
+        if type(lifecycle_beliefs) is not tuple or any(type(item) is not TemporalLifecycleState for item in lifecycle_beliefs):
+            raise TypeError("lifecycle_beliefs must contain TemporalLifecycleState values")
+        if not isinstance(ledger, ReversibleBackgroundLedger):
+            raise TypeError("background_ledger must be a ReversibleBackgroundLedger")
+        if type(export_tracker) is not TemporalExportTracker:
+            raise TypeError("export_tracker must be a TemporalExportTracker")
+        if type(diagnostics) is not TemporalDiagnostics:
+            raise TypeError("diagnostics must be TemporalDiagnostics")
+        identity_ids = tuple(item.identity_id for item in identities.records)
+        lifecycle_ids = tuple(item.entity_id for item in lifecycle_beliefs)
+        geometry_ids = tuple(sorted({item.entity_id for item in geometry.epochs}))
+        if identity_ids != ids or lifecycle_ids != ids or geometry_ids != ids:
+            raise ValueError("identity, geometry, lifecycle, and legacy entity IDs must agree")
+        if any(identities.get(item.entity_id).lifecycle is not item.lifecycle for item in lifecycle_beliefs):
+            raise ValueError("identity and lifecycle states must agree")
+        if any(item.last_frame_id != self.last_frame_id for item in lifecycle_beliefs):
+            raise ValueError("lifecycle belief frame must equal runtime last_frame_id")
         object.__setattr__(self, "background", None)
         object.__setattr__(self, "tracker", None)
+        object.__setattr__(self, "identities", None)
+        object.__setattr__(self, "background_ledger", None)
+        object.__setattr__(self, "geometry", geometry)
+        object.__setattr__(self, "lifecycle_beliefs", tuple(copy.deepcopy(item) for item in lifecycle_beliefs))
+        object.__setattr__(self, "export_tracker", copy.deepcopy(export_tracker))
+        object.__setattr__(self, "diagnostics", diagnostics)
         object.__setattr__(self, "_background_state", background_state)
         object.__setattr__(self, "_tracker_state", tracker_state)
+        object.__setattr__(self, "_identities_state", identities if adopt else identities.clone())
+        object.__setattr__(self, "_ledger_state", ledger if adopt else ledger.clone())
 
         if (self.revision == 0) != (self.last_frame_id == -1):
             raise ValueError("revision zero must identify the initial state")
@@ -332,6 +629,12 @@ class TemporalRuntimeState:
     def _mutable_tracker_snapshot(self) -> LocalTracker:
         return copy.deepcopy(object.__getattribute__(self, "_tracker_state"))
 
+    def _mutable_identities_snapshot(self) -> IdentityMemoryBank:
+        return object.__getattribute__(self, "_identities_state").clone()
+
+    def _mutable_ledger_snapshot(self) -> ReversibleBackgroundLedger:
+        return object.__getattribute__(self, "_ledger_state").clone()
+
     @classmethod
     def _adopt_owned(
         cls,
@@ -344,6 +647,12 @@ class TemporalRuntimeState:
         entities: tuple[TemporalEntityState, ...],
         background: TemporalBackgroundVolume,
         tracker: LocalTracker,
+        identities: IdentityMemoryBank,
+        geometry: TemporalGeometryState,
+        lifecycle_beliefs: tuple[TemporalLifecycleState, ...],
+        background_ledger: ReversibleBackgroundLedger,
+        export_tracker: TemporalExportTracker,
+        diagnostics: TemporalDiagnostics,
     ) -> TemporalRuntimeState:
         state = object.__new__(cls)
         for name, value in (
@@ -355,6 +664,12 @@ class TemporalRuntimeState:
             ("entities", entities),
             ("background", background),
             ("tracker", tracker),
+            ("identities", identities),
+            ("geometry", geometry),
+            ("lifecycle_beliefs", lifecycle_beliefs),
+            ("background_ledger", background_ledger),
+            ("export_tracker", export_tracker),
+            ("diagnostics", diagnostics),
         ):
             object.__setattr__(state, name, value)
         state._initialize_owned(adopt=True)
@@ -363,6 +678,8 @@ class TemporalRuntimeState:
     def canonical_dump(self) -> tuple[object, ...]:
         background = object.__getattribute__(self, "_background_state")
         tracker = object.__getattribute__(self, "_tracker_state")
+        identities = object.__getattribute__(self, "_identities_state")
+        ledger = object.__getattribute__(self, "_ledger_state")
         return (
             self.scene_id,
             self.revision,
@@ -374,6 +691,12 @@ class TemporalRuntimeState:
             background.canonical_block_state(),
             background.last_blocks_touched,
             _tracker_dump(tracker),
+            identities.canonical_dump(),
+            self.geometry.canonical_dump(),
+            _canonical(self.lifecycle_beliefs),
+            ledger.journal_digest(),
+            self.export_tracker.canonical_dump(),
+            _canonical(self.diagnostics),
         )
 
     def __eq__(self, other: object) -> bool:

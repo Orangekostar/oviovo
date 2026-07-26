@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import math
 from numbers import Integral, Real
 
@@ -13,6 +13,12 @@ from src.oviv2.temporal_association import (
     TemporalAssociationTarget,
     associate_temporal_observations,
 )
+from src.oviv2.temporal_background_ledger import (
+    BackgroundContribution,
+    BackgroundLedgerEvidence,
+    LedgerDecision,
+    ReversibleBackgroundLedger,
+)
 from src.oviv2.temporal_background import (
     TemporalBackgroundVolume,
     build_background_depth,
@@ -24,11 +30,26 @@ from src.oviv2.temporal_config import (
     temporal_config_to_json,
 )
 from src.oviv2.temporal_geometry import (
+    MotionDecision,
     ObjectSubmap,
     backproject_observation,
     estimate_object_motion,
     estimate_object_translation,
     integrate_object_submap,
+)
+from src.oviv2.temporal_epoch import GeometryEpoch, start_new_epoch
+from src.oviv2.temporal_export import (
+    DynamicEvidenceState,
+    TemporalExportBatch,
+    TemporalExportSample,
+    TemporalLifecycleEvent,
+    advance_dynamic_state,
+    timestamp_seconds_to_ns,
+)
+from src.oviv2.temporal_identity import IdentityMemoryBank
+from src.oviv2.temporal_proposals import (
+    ProposalRecoveryInput,
+    recover_temporal_proposals,
 )
 from src.oviv2.temporal_lifecycle import (
     TemporalEvidence,
@@ -37,7 +58,14 @@ from src.oviv2.temporal_lifecycle import (
     TemporalLifecycleState,
     advance_lifecycle,
 )
-from src.oviv2.temporal_state import TemporalEntityState, TemporalRuntimeState
+from src.oviv2.temporal_state import (
+    TemporalDiagnostics,
+    TemporalEntityState,
+    TemporalExportTracker,
+    TemporalExportTrackerEntry,
+    TemporalGeometryState,
+    TemporalRuntimeState,
+)
 from src.oviv2.tracking import LocalTracker, LocalTrackerConfig
 
 
@@ -50,6 +78,11 @@ class TemporalFrameResult:
     new_entity_ids: tuple[int, ...]
     reactivated_entity_ids: tuple[int, ...]
     background_blocks_touched: int
+    export: TemporalExportBatch | None = None
+    proposal_opportunity_count: int = 0
+    proposal_trigger_count: int = 0
+    reid_opportunity_count: int = 0
+    reid_trigger_count: int = 0
 
     def __post_init__(self) -> None:
         for name in ("frame_id", "revision", "background_blocks_touched"):
@@ -87,6 +120,27 @@ class TemporalFrameResult:
             raise ValueError("new and reactivated entity IDs must be active subsets")
         if set(self.new_entity_ids) & set(self.reactivated_entity_ids):
             raise ValueError("new and reactivated entity IDs must be disjoint")
+        if self.export is None:
+            object.__setattr__(self, "export", TemporalExportBatch(self.frame_id, 0, (), ()))
+        elif type(self.export) is not TemporalExportBatch:
+            raise TypeError("export must be a TemporalExportBatch")
+        assert self.export is not None
+        if self.export.frame_index != self.frame_id:
+            raise ValueError("export frame must match result")
+        for name in (
+            "proposal_opportunity_count", "proposal_trigger_count",
+            "reid_opportunity_count", "reid_trigger_count",
+        ):
+            value = getattr(self, name)
+            if isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral):
+                raise TypeError(f"{name} must be an integer")
+            if int(value) < 0:
+                raise ValueError(f"{name} must be nonnegative")
+            object.__setattr__(self, name, int(value))
+        if self.proposal_trigger_count > self.proposal_opportunity_count:
+            raise ValueError("proposal triggers cannot exceed opportunities")
+        if self.reid_trigger_count > self.reid_opportunity_count:
+            raise ValueError("re-ID triggers cannot exceed opportunities")
 
 
 def _finite_float64(value: object, name: str) -> float:
@@ -127,7 +181,8 @@ def _validate_frame(frame: object) -> Frame:
         raise TypeError("frame.frame_id must be an integer")
     if int(frame.frame_id) < 0:
         raise ValueError("frame.frame_id must be nonnegative")
-    _finite_float64(frame.timestamp, "frame.timestamp")
+    if _finite_float64(frame.timestamp, "frame.timestamp") < 0.0:
+        raise ValueError("frame.timestamp must be nonnegative for native export")
     depth = np.asarray(frame.depth)
     rgb = np.asarray(frame.rgb)
     pose = np.asarray(frame.pose)
@@ -446,6 +501,64 @@ def _empty_submap(reference: tuple[float, float, float]) -> ObjectSubmap:
     )
 
 
+def _proposal_observation(
+    proposal: object,
+    identities: IdentityMemoryBank,
+    voxel_size_m: float,
+    capacity: int,
+) -> FrameObservation:
+    from src.oviv2.temporal_proposals import RecoveredTemporalProposal
+
+    if type(proposal) is not RecoveredTemporalProposal:
+        raise TypeError("proposal must be a RecoveredTemporalProposal")
+    record = identities.get(proposal.identity_hint)
+    semantic_id = 0
+    confidence = 1.0
+    prototype = None
+    model_id = None
+    if record is not None:
+        if record.semantic_probabilities:
+            semantic_id, confidence = max(record.semantic_probabilities, key=lambda item: (item[1], -item[0]))
+        prototype = record.appearance_prototype if proposal.appearance_available else None
+        model_id = record.feature_model_id if prototype is not None else None
+    key = tuple(int(math.floor(value / voxel_size_m)) for value in proposal.centroid_xyz)
+    observation_id = (1 << 62) + proposal.frame_id * capacity + proposal.proposal_id
+    if observation_id > np.iinfo(np.int64).max:
+        raise OverflowError("recovered proposal observation ID exceeds int64")
+    return FrameObservation(
+        observation_id=observation_id,
+        frame_id=proposal.frame_id,
+        timestamp=proposal.timestamp,
+        kind=ObservationKind.OBJECT,
+        label=(
+            f"temporal-recovery:{proposal.identity_hint}:"
+            f"{proposal.projection_provenance_hash}:{proposal.semantic_provenance_hash}"
+        ),
+        semantic_id=semantic_id,
+        confidence=float(confidence),
+        mask=proposal.mask,
+        bbox_xyxy=tuple(float(value) for value in proposal.bbox_xyxy),
+        voxel_keys=frozenset({key}),
+        centroid_xyz=proposal.centroid_xyz,
+        bounds_min_xyz=proposal.bounds_min_xyz,
+        bounds_max_xyz=proposal.bounds_max_xyz,
+        image_feature=prototype,
+        feature_model_id=model_id,
+        visible_pixel_count=proposal.area_px,
+    )
+
+
+def _motion_confidence(motion: object, config: TemporalReadoutConfig) -> float:
+    if motion.decision is MotionDecision.REJECTED:
+        return 0.0
+    if motion.decision is MotionDecision.ICP_ACCEPTED:
+        return float(motion.fitness)
+    assert config.motion is not None
+    residual_limit = float(config.motion.maximum_translation_residual_m)
+    confidence = max(0.0, min(1.0, 1.0 - float(motion.rmse_m) / residual_limit))
+    return confidence if confidence >= config.motion.minimum_translation_confidence else 0.0
+
+
 class TemporalCurrentRuntime:
     def __init__(
         self,
@@ -467,6 +580,18 @@ class TemporalCurrentRuntime:
             )
         self.config = temporal_config_from_json(temporal_config_to_json(config))
         self.tracker_config = tracker_config
+        assert self.config.identity is not None
+        assert self.config.geometry_epoch is not None
+        assert self.config.background_ledger is not None
+        identities = IdentityMemoryBank(self.config.identity)
+        geometry = TemporalGeometryState(
+            (),
+            self.config.geometry_epoch.maximum_epochs_per_identity,
+            self.config.geometry_epoch.maximum_retained_epochs,
+        )
+        ledger = ReversibleBackgroundLedger(
+            self.config.geometry, self.config.background_ledger
+        )
         self.state = TemporalRuntimeState(
             scene_id=scene_id,
             revision=0,
@@ -476,6 +601,12 @@ class TemporalCurrentRuntime:
             entities=(),
             background=TemporalBackgroundVolume(self.config.geometry),
             tracker=LocalTracker(tracker_config),
+            identities=identities,
+            geometry=geometry,
+            lifecycle_beliefs=(),
+            background_ledger=ledger,
+            export_tracker=TemporalExportTracker(),
+            diagnostics=TemporalDiagnostics(),
         )
 
     def _before_publish(self, next_state: TemporalRuntimeState) -> None:
@@ -486,11 +617,39 @@ class TemporalCurrentRuntime:
         frame: Frame,
         observations: tuple[FrameObservation, ...],
         dense_semantics: DenseSemanticFrame | None = None,
+        *,
+        proposal_evidence: ProposalRecoveryInput | None = None,
     ) -> TemporalFrameResult:
         current = self.state
         frame, observations, _ = _validate_inputs(
             frame, observations, dense_semantics, current
         )
+        trial_identities = current._mutable_identities_snapshot()
+        trial_geometry = current.geometry
+        trial_ledger = current._mutable_ledger_snapshot()
+        proposal_opportunities = proposal_triggers = 0
+        if proposal_evidence is not None:
+            if not isinstance(proposal_evidence, ProposalRecoveryInput):
+                raise TypeError("proposal_evidence must be ProposalRecoveryInput or None")
+            if proposal_evidence.frame_id != frame.frame_id or proposal_evidence.timestamp != frame.timestamp:
+                raise ValueError("proposal evidence must match the current frame")
+            assert self.config.proposal is not None
+            recovery = recover_temporal_proposals(proposal_evidence, self.config.proposal)
+            proposal_opportunities = recovery.opportunity_count
+            proposal_triggers = recovery.trigger_count
+            recovered = tuple(
+                _proposal_observation(
+                    item,
+                    trial_identities,
+                    self.config.geometry.voxel_size_m,
+                    self.config.proposal.maximum_recovered_proposals,
+                )
+                for item in recovery.proposals
+            )
+            existing_ids = {item.observation_id for item in observations}
+            if existing_ids & {item.observation_id for item in recovered}:
+                raise ValueError("recovered proposal observation IDs collide")
+            observations = observations + recovered
         trial_tracker = current._mutable_tracker_snapshot()
         batch = trial_tracker.update(observations, frame.frame_id)
         confirmed = tuple(
@@ -513,19 +672,40 @@ class TemporalCurrentRuntime:
             and not allow_dormant_reid
         )
         targets = tuple(_association_target(entity) for entity in association_entities)
-        association = associate_temporal_observations(
-            confirmed, targets, self.config.association
-        )
+        if allow_dormant_reid:
+            association = associate_temporal_observations(
+                confirmed, targets, self.config.association,
+                dormant_reid=self.config.identity,
+            )
+        else:
+            association = associate_temporal_observations(
+                confirmed, targets, self.config.association
+            )
         observations_by_id = {item.observation_id: item for item in confirmed}
         entities_by_id = {item.lifecycle.entity_id: item for item in current.entities}
         next_entities: dict[int, TemporalEntityState] = {}
         reactivated: list[int] = []
+        forced_new_observation_ids: list[int] = []
+        motion_by_entity: dict[int, tuple[float, float]] = {}
+        evidence_by_entity: dict[int, TemporalEvidenceKind] = {}
+        old_lifecycle_by_entity = {
+            item.lifecycle.entity_id: item.lifecycle for item in current.entities
+        }
+        diagnostic_by_pair = {
+            (item.observation_id, item.entity_id): item
+            for item in association.assignment_diagnostics
+        }
 
         for old in excluded_dormant:
+            absence = _absence_evidence(old, frame, self.config)
             lifecycle = advance_lifecycle(
                 old.lifecycle,
-                _absence_evidence(old, frame, self.config),
+                absence,
                 self.config.lifecycle,
+            )
+            evidence_by_entity[old.lifecycle.entity_id] = absence.kind
+            trial_geometry = trial_geometry.replace_current(
+                trial_geometry.current(old.lifecycle.entity_id).apply_evidence(absence.kind)
             )
             next_entities[old.lifecycle.entity_id] = TemporalEntityState(
                 lifecycle=lifecycle,
@@ -555,13 +735,46 @@ class TemporalCurrentRuntime:
                 self.config.geometry,
                 previous_object_to_world=old.object_to_world,
             )
-            submap = integrate_object_submap(
-                old.submap,
-                points,
-                frame.frame_id,
-                self.config.geometry,
-                object_to_world=motion.object_to_world,
+            epoch = trial_geometry.current(entity_id)
+            diagnostic = diagnostic_by_pair[(observation_id, entity_id)]
+            if motion.decision is MotionDecision.REJECTED:
+                if not diagnostic.high_confidence_identity_match:
+                    forced_new_observation_ids.append(observation_id)
+                    evidence_by_entity[entity_id] = TemporalEvidenceKind.OCCLUDED
+                    lifecycle = advance_lifecycle(
+                        old.lifecycle,
+                        TemporalEvidence(
+                            TemporalEvidenceKind.OCCLUDED, 0.0, frame.frame_id,
+                            float(frame.timestamp), None,
+                        ),
+                        self.config.lifecycle,
+                    )
+                    next_entities[entity_id] = replace(old, lifecycle=lifecycle)
+                    continue
+                epoch = start_new_epoch(
+                    epoch,
+                    motion,
+                    points,
+                    observation.centroid_xyz,
+                    frame.frame_id,
+                    self.config.geometry,
+                )
+                trial_geometry = trial_geometry.append(epoch)
+            else:
+                epoch = epoch.integrate(
+                    motion, points, frame.frame_id, self.config.geometry
+                )
+                trial_geometry = trial_geometry.replace_current(epoch)
+            submap = epoch.submap
+            motion_confidence = _motion_confidence(motion, self.config)
+            displacement = float(
+                np.linalg.norm(
+                    np.asarray(epoch.object_to_world[:3, 3], dtype=np.float64)
+                    - np.asarray(old.object_to_world[:3, 3], dtype=np.float64)
+                )
             )
+            motion_by_entity[entity_id] = (displacement, motion_confidence)
+            evidence_by_entity[entity_id] = TemporalEvidenceKind.PRESENT
             lifecycle = advance_lifecycle(
                 old.lifecycle,
                 TemporalEvidence(
@@ -588,7 +801,7 @@ class TemporalCurrentRuntime:
                 semantic_probabilities=_semantic_update(old.semantic_probabilities, observation),
                 image_prototype=prototype,
                 extent_xyz=extent,
-                object_to_world=motion.object_to_world,
+                object_to_world=epoch.object_to_world,
                 submap=submap,
                 first_seen_frame_id=old.first_seen_frame_id,
                 last_seen_frame_id=frame.frame_id,
@@ -597,10 +810,15 @@ class TemporalCurrentRuntime:
 
         for entity_id in association.unmatched_entity_ids:
             old = entities_by_id[entity_id]
+            absence = _absence_evidence(old, frame, self.config)
             lifecycle = advance_lifecycle(
                 old.lifecycle,
-                _absence_evidence(old, frame, self.config),
+                absence,
                 self.config.lifecycle,
+            )
+            evidence_by_entity[entity_id] = absence.kind
+            trial_geometry = trial_geometry.replace_current(
+                trial_geometry.current(entity_id).apply_evidence(absence.kind)
             )
             next_entities[entity_id] = TemporalEntityState(
                 lifecycle=lifecycle,
@@ -616,25 +834,13 @@ class TemporalCurrentRuntime:
 
         next_entity_id = current.next_entity_id
         new_ids: list[int] = []
-        for observation_id in association.unmatched_observation_ids:
+        for observation_id in tuple(sorted((*association.unmatched_observation_ids, *forced_new_observation_ids))):
             observation = observations_by_id[observation_id]
             points = backproject_observation(frame, observation, self.config.geometry)
             if points.shape[0] == 0:
                 continue
             if len(next_entities) >= self.config.geometry.maximum_entities:
-                if not allow_dormant_reid:
-                    continue
-                dormant = sorted(
-                    (
-                        entity
-                        for entity in next_entities.values()
-                        if entity.lifecycle.lifecycle is TemporalLifecycle.DORMANT
-                    ),
-                    key=lambda item: (item.last_seen_frame_id, item.lifecycle.entity_id),
-                )
-                if not dormant:
-                    continue
-                del next_entities[dormant[0].lifecycle.entity_id]
+                continue
             entity_id = next_entity_id
             pose = np.eye(4, dtype=np.float64)
             pose[:3, 3] = observation.centroid_xyz
@@ -684,6 +890,13 @@ class TemporalCurrentRuntime:
                 last_seen_frame_id=frame.frame_id,
                 feature_model_id=feature_model_id,
             )
+            trial_geometry = trial_geometry.append(
+                GeometryEpoch(
+                    entity_id, 0, pose, submap, True, None, frame.frame_id
+                )
+            )
+            evidence_by_entity[entity_id] = TemporalEvidenceKind.PRESENT
+            motion_by_entity[entity_id] = (0.0, 0.0)
             new_ids.append(entity_id)
             next_entity_id += 1
 
@@ -693,6 +906,7 @@ class TemporalCurrentRuntime:
             if trial_background.active_block_count:
                 raise RuntimeError("A2 temporal background must remain empty")
             trial_background._last_blocks_touched = 0
+            background_blocks_touched = 0
         else:
             protected = tuple(
                 entity.submap.world_points(entity.object_to_world)[
@@ -700,13 +914,174 @@ class TemporalCurrentRuntime:
                 ]
                 for entity in ordered_entities
                 if entity.lifecycle.lifecycle in (TemporalLifecycle.ACTIVE, TemporalLifecycle.UNCERTAIN)
+                and trial_geometry.current(entity.lifecycle.entity_id).readout_valid
             )
             background_depth = build_background_depth(
                 frame, observations, protected, self.config.geometry
             )
-            trial_background = current._integrate_background_owned(
-                frame, background_depth.depth_m
+            for entity in ordered_entities:
+                entity_id = entity.lifecycle.entity_id
+                kind = evidence_by_entity.get(entity_id)
+                if kind not in (
+                    TemporalEvidenceKind.PRESENT,
+                    TemporalEvidenceKind.OCCLUDED,
+                    TemporalEvidenceKind.VISIBLE_ABSENT,
+                ):
+                    continue
+                epoch = trial_geometry.current(entity_id)
+                if kind is TemporalEvidenceKind.VISIBLE_ABSENT:
+                    block_keys = trial_ledger.committed_volume.candidate_block_keys(
+                        frame, background_depth.depth_m
+                    )
+                    if not block_keys:
+                        continue
+                    evidence = BackgroundLedgerEvidence(
+                        entity_id=entity_id,
+                        geometry_epoch=epoch.epoch_id,
+                        frame_id=frame.frame_id,
+                        timestamp=float(frame.timestamp),
+                        kind=kind,
+                        view_bin=_view_bin(frame, _centroid(entity), self.config),
+                        contributions=tuple(BackgroundContribution(key) for key in block_keys),
+                        frame=frame,
+                        depth_m=background_depth.depth_m,
+                    )
+                else:
+                    evidence = BackgroundLedgerEvidence(
+                        entity_id=entity_id,
+                        geometry_epoch=epoch.epoch_id,
+                        frame_id=frame.frame_id,
+                        timestamp=float(frame.timestamp),
+                        kind=kind,
+                        view_bin=None,
+                        contributions=(),
+                    )
+                decision = trial_ledger.stage(evidence)
+                if decision in (
+                    LedgerDecision.REJECTED_CAPACITY,
+                    LedgerDecision.REJECTED_INTEGRATION,
+                ):
+                    raise RuntimeError(f"background ledger rejected frame: {decision.value}")
+            trial_background = trial_ledger.committed_volume
+            background_blocks_touched = trial_background.last_blocks_touched
+        for entity in ordered_entities:
+            entity_id = entity.lifecycle.entity_id
+            centroid = _centroid(entity)
+            record = trial_identities.get(entity_id)
+            values = dict(
+                frame_id=entity.last_seen_frame_id,
+                timestamp=entity.lifecycle.last_timestamp if entity.last_seen_frame_id == frame.frame_id else (
+                    record.last_timestamp if record is not None else entity.lifecycle.last_timestamp
+                ),
+                semantic_probabilities=entity.semantic_probabilities,
+                appearance_prototype=entity.image_prototype,
+                feature_model_id=entity.feature_model_id,
+                lifecycle=entity.lifecycle.lifecycle,
+                centroid_xyz=centroid,
+                extent_xyz=entity.extent_xyz,
+                motion_velocity_xyz=(0.0, 0.0, 0.0),
+                motion_uncertainty_m=0.0,
             )
+            if record is None:
+                inserted = trial_identities.insert(**values)
+                if inserted.identity_id != entity_id:
+                    raise RuntimeError("identity allocation diverged from runtime entity IDs")
+            elif entity.last_seen_frame_id > record.last_frame_id:
+                dt = float(frame.timestamp) - record.last_timestamp
+                velocity = tuple(
+                    (new - old) / dt
+                    for new, old in zip(centroid, record.last_centroid_xyz)
+                )
+                values["motion_velocity_xyz"] = velocity
+                trial_identities.update(entity_id, **values)
+            elif record.lifecycle is not entity.lifecycle.lifecycle:
+                trial_identities._records[entity_id] = replace(
+                    record, lifecycle=entity.lifecycle.lifecycle
+                )
+
+        timestamp_ns = timestamp_seconds_to_ns(frame.timestamp)
+        old_export = {item.entity_id: item for item in current.export_tracker.entries}
+        export_entries: list[TemporalExportTrackerEntry] = []
+        samples: list[TemporalExportSample] = []
+        events: list[TemporalLifecycleEvent] = []
+        assert self.config.dynamic_state is not None
+        for entity in ordered_entities:
+            entity_id = entity.lifecycle.entity_id
+            epoch = trial_geometry.current(entity_id)
+            previous = old_export.get(entity_id)
+            observed = entity.last_seen_frame_id == frame.frame_id
+            if previous is None:
+                count = 1 if observed else 0
+                dynamic = DynamicEvidenceState.static()
+            else:
+                count = previous.observation_count + (1 if observed else 0)
+                displacement, confidence = motion_by_entity.get(entity_id, (0.0, 0.0))
+                dynamic = (
+                    advance_dynamic_state(
+                        previous.dynamic_evidence,
+                        accepted_motion=observed and confidence > 0.0,
+                        displacement_m=displacement,
+                        confidence=confidence,
+                        config=self.config.dynamic_state,
+                    )
+                    if observed else previous.dynamic_evidence
+                )
+            centroid = _centroid(entity)
+            export_entries.append(
+                TemporalExportTrackerEntry(
+                    entity_id, count, dynamic,
+                    centroid if observed else (previous.last_centroid_xyz if previous else None),
+                    epoch.readout_valid, epoch.epoch_id,
+                )
+            )
+            if observed:
+                _, confidence = motion_by_entity.get(entity_id, (0.0, 0.0))
+                samples.append(
+                    TemporalExportSample(
+                        frame.frame_id, timestamp_ns, entity_id, centroid, count,
+                        dynamic.dynamic_state, confidence, epoch.epoch_id,
+                        epoch.readout_valid,
+                    )
+                )
+            old_lifecycle = old_lifecycle_by_entity.get(entity_id)
+            old_epoch = None
+            try:
+                old_epoch = current.geometry.current(entity_id)
+            except KeyError:
+                pass
+            lifecycle_changed = (
+                old_lifecycle is not None
+                and old_lifecycle.lifecycle is not entity.lifecycle.lifecycle
+            )
+            readout_changed = old_epoch is not None and old_epoch.readout_valid is not epoch.readout_valid
+            if lifecycle_changed or readout_changed:
+                assert old_lifecycle is not None
+                events.append(
+                    TemporalLifecycleEvent(
+                        frame.frame_id, timestamp_ns, entity_id,
+                        old_lifecycle.lifecycle, entity.lifecycle.lifecycle,
+                        evidence_by_entity[entity_id], epoch.epoch_id,
+                        epoch.readout_valid,
+                    )
+                )
+        export = TemporalExportBatch(
+            frame.frame_id, timestamp_ns, tuple(samples), tuple(events)
+        )
+        export_tracker = TemporalExportTracker(tuple(export_entries), export)
+        diagnostics = replace(
+            current.diagnostics,
+            processed_frame_count=current.diagnostics.processed_frame_count + 1,
+            proposal_opportunity_count=current.diagnostics.proposal_opportunity_count + proposal_opportunities,
+            proposal_trigger_count=current.diagnostics.proposal_trigger_count + proposal_triggers,
+            reid_opportunity_count=current.diagnostics.reid_opportunity_count + association.reid_opportunity_count,
+            reid_trigger_count=current.diagnostics.reid_trigger_count + association.reid_trigger_count,
+            motion_rejection_count=current.diagnostics.motion_rejection_count + sum(
+                1 for observation_id, entity_id in association.assignments
+                if observation_id in forced_new_observation_ids
+                or trial_geometry.current(entity_id).motion_decision is MotionDecision.REJECTED
+            ),
+            assignment_diagnostics=association.assignment_diagnostics,
+        )
         next_state = TemporalRuntimeState._adopt_owned(
             scene_id=current.scene_id,
             revision=current.revision + 1,
@@ -716,6 +1091,12 @@ class TemporalCurrentRuntime:
             entities=ordered_entities,
             background=trial_background,
             tracker=trial_tracker,
+            identities=trial_identities,
+            geometry=trial_geometry,
+            lifecycle_beliefs=tuple(entity.lifecycle for entity in ordered_entities),
+            background_ledger=trial_ledger,
+            export_tracker=export_tracker,
+            diagnostics=diagnostics,
         )
         result = TemporalFrameResult(
             frame_id=frame.frame_id,
@@ -732,7 +1113,12 @@ class TemporalCurrentRuntime:
             ),
             new_entity_ids=tuple(sorted(new_ids)),
             reactivated_entity_ids=tuple(sorted(reactivated)),
-            background_blocks_touched=trial_background.last_blocks_touched,
+            background_blocks_touched=background_blocks_touched,
+            export=export,
+            proposal_opportunity_count=proposal_opportunities,
+            proposal_trigger_count=proposal_triggers,
+            reid_opportunity_count=association.reid_opportunity_count,
+            reid_trigger_count=association.reid_trigger_count,
         )
         self._before_publish(next_state)
         self.state = next_state
