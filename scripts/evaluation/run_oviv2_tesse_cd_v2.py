@@ -13,6 +13,8 @@ from numbers import Integral, Real
 import os
 from pathlib import Path
 import platform
+import random
+import secrets
 import shutil
 import socket
 import stat
@@ -308,6 +310,10 @@ V2_FREEZE_TOP_KEYS = frozenset(
         "models",
         "release_bindings",
         "office_pre_freeze_audit",
+        "evidence",
+        "seed_policy",
+        "frozen_hashes",
+        "office_authorizations",
     }
 )
 V2_FREEZE_REPOSITORY_KEYS = frozenset(
@@ -369,6 +375,62 @@ V2_RELEASE_EXPECTED_PATHS = {
 }
 V2_FREEZE_OFFICE_AUDIT_KEYS = frozenset(
     {"selection_scene", "metric_sources_found", "office_outputs_read"}
+)
+V2_T4_METRIC_KEYS = frozenset(
+    {
+        "total_runtime_s_per_frame",
+        "query_mean_ms",
+        "query_p95_ms",
+        "peak_gpu_gb",
+        "peak_ram_gb",
+        "final_map_mb",
+    }
+)
+V2_T4_BOUNDS = {
+    "total_runtime_s_per_frame": 6.42,
+    "query_mean_ms": 11.92,
+    "query_p95_ms": 12.12,
+    "peak_gpu_gb": 12.76,
+    "peak_ram_gb": 9.36,
+    "final_map_mb": 46.77,
+}
+V2_SHORTLIST_KEYS = frozenset(
+    {
+        "schema_version", "manifest_id", "phase", "dataset", "method_id",
+        "protocol_id", "status", "development_scene", "transfer_scene",
+        "office_results_read", "scenes_read", "result_contract", "results_root",
+        "manifest", "result_files", "profile_fallback_order", "floors",
+        "shortlisted_candidate_ids", "shortlisted_candidates", "rejection_ledger",
+    }
+)
+V2_FINAL_SELECTION_KEYS = frozenset(
+    {
+        "schema_version", "manifest_id", "phase", "dataset", "method_id",
+        "protocol_id", "status", "development_scene", "transfer_scene",
+        "office_results_read", "scenes_read", "manifest", "shortlist",
+        "t4_matrix", "t4_protocol", "t4_root_sha256",
+        "profile_fallback_order", "selected_candidate_id", "selected_config",
+        "selected_config_record", "selected_config_sha256", "algorithm_hash",
+        "t4_ledger",
+    }
+)
+V2_RUNTIME_DIAGNOSTIC_KEYS = (
+    "proposal_opportunity_count",
+    "proposal_trigger_count",
+    "reid_opportunity_count",
+    "reid_trigger_count",
+    "identity_expiry_count",
+    "geometry_reclaim_count",
+    "motion_rejection_count",
+    "ledger_rejection_count",
+    "epoch_reset_opportunity_count",
+    "epoch_reset_trigger_count",
+    "icp_opportunity_count",
+    "icp_accept_count",
+    "icp_reject_count",
+    "ledger_stage_count",
+    "ledger_commit_count",
+    "ledger_reclaim_count",
 )
 
 # Backward-compatible private aliases for existing Task 9 tests/importers.
@@ -742,9 +804,14 @@ def _validate_selection(
     )
     payload = _load_json_bytes(artifact_path.read_bytes(), artifact_path)
     if not (
-        payload.get("schema_version") == 1
-        and payload.get("manifest_id") == "oviv2_tesse_cd_v2_selection"
+        set(payload) == V2_FINAL_SELECTION_KEYS
+        and payload.get("schema_version") == 1
+        and payload.get("manifest_id") == "oviv2_tesse_dual_readout_selection_v2"
+        and payload.get("phase") == "final"
+        and payload.get("status") == "PASS"
         and payload.get("development_scene") == "apartment"
+        and payload.get("office_results_read") is False
+        and payload.get("scenes_read") == ["apartment"]
         and payload.get("selected_config_sha256") == selected_config_sha256
         and payload.get("algorithm_hash") == algorithm_sha256
     ):
@@ -859,13 +926,11 @@ def _validate_commands(
     if not os.access(python_path, os.X_OK):
         raise ValueError("freeze command python must be executable")
     mapping = value.get("mapping")
-    expected_slots = [
-        f"{scene}_run{repeat}"
-        for scene in ("apartment", "office")
-        for repeat in (1, 2)
-    ]
+    expected_slots = ["apartment_run1", "apartment_run2"] + sorted(
+        slot for slot in output_roots if slot.startswith("office_seed_")
+    )
     if type(mapping) is not list or len(mapping) != len(expected_slots):
-        raise ValueError("freeze mapping commands must contain four runs")
+        raise ValueError("freeze mapping commands do not match authorized runs")
     runner_path = Path(__file__).resolve()
     normalized: list[dict[str, Any]] = []
     for raw, slot in zip(mapping, expected_slots):
@@ -940,6 +1005,362 @@ def _validate_office_audit(value: object) -> dict[str, Any]:
         "metric_sources_found": [],
         "office_outputs_read": False,
     }
+
+
+def _validate_seed_policy(value: object) -> dict[str, Any]:
+    if not isinstance(value, Mapping) or set(value) != {
+        "behavior",
+        "seeds",
+        "sha256",
+    }:
+        raise ValueError("freeze seed policy schema is invalid")
+    behavior = value.get("behavior")
+    seeds = value.get("seeds")
+    expected = [0] if behavior == "deterministic" else [17, 29, 43, 71, 101]
+    if behavior not in {"deterministic", "stochastic"} or seeds != expected:
+        raise ValueError("freeze seed policy is not pre-registered")
+    policy = {"behavior": behavior, "seeds": list(seeds)}
+    if value.get("sha256") != _json_hash(policy):
+        raise ValueError("freeze seed policy hash is stale")
+    return {**policy, "sha256": value["sha256"]}
+
+
+def _validate_frozen_evidence(
+    value: object, *, manifest_base: Path, selection_artifact: Mapping[str, Any]
+) -> tuple[dict[str, Any], str]:
+    if not isinstance(value, Mapping) or set(value) != {"t1", "t4"}:
+        raise ValueError("freeze T1/T4 evidence schema is invalid")
+    selection_path = _binding_path(
+        selection_artifact.get("path"), base=manifest_base, role="selection artifact"
+    )
+    selection = _load_json_bytes(selection_path.read_bytes(), selection_path)
+    selected_candidate = selection.get("selected_candidate_id")
+    if selected_candidate not in {f"a{index}" for index in range(5)}:
+        raise ValueError("freeze selected candidate identity is invalid")
+    result: dict[str, Any] = {}
+    for kind, source_roles in (("t1", ("source_manifest",)), ("t4", ("shortlist", "protocol"))):
+        frozen = value.get(kind)
+        expected_keys = {"artifact", "root_sha256", *source_roles}
+        if not isinstance(frozen, Mapping) or set(frozen) != expected_keys:
+            raise ValueError(f"freeze {kind.upper()} evidence binding is invalid")
+        artifact_path = _binding_path(
+            frozen["artifact"].get("path"), base=manifest_base, role=f"{kind} artifact"
+        )
+        artifact = _verify_exact_frozen_file_binding(
+            frozen["artifact"], base=manifest_base, role=f"{kind} artifact",
+            expected_path=artifact_path,
+        )
+        source_paths: dict[str, Path] = {}
+        for role in source_roles:
+            source_path = _binding_path(
+                frozen[role].get("path"), base=manifest_base, role=f"{kind} {role}"
+            )
+            _verify_exact_frozen_file_binding(
+                frozen[role], base=manifest_base, role=f"{kind} {role}",
+                expected_path=source_path,
+            )
+            source_paths[role] = source_path
+        payload = _load_json_bytes(artifact_path.read_bytes(), artifact_path)
+        if kind == "t1":
+            deterministic = payload.get("deterministic_evidence")
+            exact = (
+                deterministic.get("cumulative_exact")
+                if isinstance(deterministic, Mapping)
+                else None
+            )
+            profiles = exact.get("profiles") if isinstance(exact, Mapping) else None
+            gates = deterministic.get("gates") if isinstance(deterministic, Mapping) else None
+            roots = {
+                profile.get("cumulative_root_sha256")
+                for profile in profiles.values()
+                if isinstance(profile, Mapping)
+            } if isinstance(profiles, Mapping) else set()
+            if not (
+                payload.get("manifest_id") == "oviv2_dual_readout_development_gates_v1"
+                and isinstance(exact, Mapping)
+                and exact.get("format") == "oviv2_t1_exact_transaction_v1"
+                and set(profiles or {}) == {f"a{index}" for index in range(5)}
+                and len(roots) == 1
+                and next(iter(roots), None) == frozen["root_sha256"]
+                and isinstance(gates, Mapping)
+                and set(gates) == {"t1_exact", "determinism"}
+                and all(
+                    isinstance(gate, Mapping) and gate.get("status") == "PASS"
+                    for gate in gates.values()
+                )
+                and deterministic.get("source_manifest") == frozen["source_manifest"]
+            ):
+                raise ValueError("frozen T1 evidence no longer proves exactness")
+        else:
+            claimed = payload.get("root_sha256")
+            unhashed = dict(payload)
+            unhashed.pop("root_sha256", None)
+            shortlist = _load_json_bytes(
+                source_paths["shortlist"].read_bytes(), source_paths["shortlist"]
+            )
+            shortlist_ids = shortlist.get("shortlisted_candidate_ids")
+            if not (
+                set(shortlist) == V2_SHORTLIST_KEYS
+                and shortlist.get("schema_version") == 1
+                and shortlist.get("manifest_id") == "oviv2_tesse_dual_readout_shortlist_v1"
+                and shortlist.get("phase") == "shortlist"
+                and shortlist.get("dataset") == "TESSE-CD"
+                and shortlist.get("method_id") == "OVIV2"
+                and shortlist.get("protocol_id") == PROTOCOL_ID
+                and shortlist.get("status") == "PASS"
+                and shortlist.get("development_scene") == "apartment"
+                and shortlist.get("transfer_scene") == "office"
+                and shortlist.get("office_results_read") is False
+                and shortlist.get("scenes_read") == ["apartment"]
+                and shortlist.get("profile_fallback_order") == ["a4", "a3", "a2"]
+                and isinstance(shortlist_ids, list)
+                and bool(shortlist_ids)
+                and len(shortlist_ids) == len(set(shortlist_ids))
+                and shortlist_ids == [
+                    candidate
+                    for candidate in ("a4", "a3", "a2")
+                    if candidate in shortlist_ids
+                ]
+            ):
+                raise ValueError("frozen T4 shortlist identity is invalid")
+            shortlist_candidates = shortlist.get("shortlisted_candidates")
+            if not (
+                isinstance(shortlist_candidates, list)
+                and len(shortlist_candidates) == len(shortlist_ids)
+                and all(
+                    isinstance(item, Mapping)
+                    and set(item) == {
+                        "candidate_id", "profile", "config_sha256", "algorithm_hash",
+                        "result", "selected_config", "selected_config_record",
+                    }
+                    and item.get("candidate_id") == candidate
+                    and item.get("profile") == candidate
+                    and _is_sha256(item.get("config_sha256"))
+                    and _is_sha256(item.get("algorithm_hash"))
+                    for candidate, item in zip(
+                        shortlist_ids, shortlist_candidates, strict=True
+                    )
+                )
+            ):
+                raise ValueError("frozen T4 shortlist candidates are invalid")
+            candidates = payload.get("candidates")
+            if not isinstance(candidates, Mapping) or set(candidates) != set(shortlist_ids):
+                raise ValueError("frozen T4 candidate inventory is invalid")
+            for candidate, candidate_row in candidates.items():
+                if not (
+                    isinstance(candidate_row, Mapping)
+                    and set(candidate_row) == {
+                        "status", "config_sha256", "run_manifest_sha256", "metrics", "gates"
+                    }
+                    and _is_sha256(candidate_row.get("config_sha256"))
+                    and _is_sha256(candidate_row.get("run_manifest_sha256"))
+                    and isinstance(candidate_row.get("metrics"), Mapping)
+                    and set(candidate_row["metrics"]) == V2_T4_METRIC_KEYS
+                    and all(
+                        type(metric_value) in {int, float} and math.isfinite(metric_value)
+                        for metric_value in candidate_row["metrics"].values()
+                    )
+                    and isinstance(candidate_row.get("gates"), Mapping)
+                    and set(candidate_row["gates"]) == V2_T4_METRIC_KEYS
+                ):
+                    raise ValueError(f"frozen T4 matrix row {candidate} is invalid")
+                expected_gates = {
+                    metric: candidate_row["metrics"][metric] <= V2_T4_BOUNDS[metric]
+                    for metric in V2_T4_METRIC_KEYS
+                }
+                expected_status = "PASS" if all(expected_gates.values()) else "FAIL"
+                if candidate_row["gates"] != expected_gates or candidate_row["status"] != expected_status:
+                    raise ValueError(f"frozen T4 matrix row {candidate} has stale gates or status")
+            aggregate_status = (
+                "PASS" if any(item["status"] == "PASS" for item in candidates.values()) else "FAIL"
+            )
+            expected_ledger: list[dict[str, Any]] = []
+            first_passed: str | None = None
+            shortlisted_by_id = {
+                item["candidate_id"]: item for item in shortlist_candidates
+            }
+            for candidate in shortlist_ids:
+                candidate_row = candidates[candidate]
+                failures = [
+                    metric
+                    for metric, bound in V2_T4_BOUNDS.items()
+                    if candidate_row["metrics"][metric] > bound
+                ]
+                if first_passed is None and not failures:
+                    first_passed = candidate
+                shortlist_item = shortlisted_by_id[candidate]
+                expected_ledger.append(
+                    {
+                        "candidate_id": candidate,
+                        "profile": shortlist_item["profile"],
+                        "passed": not failures,
+                        "selected": candidate == first_passed and not failures,
+                        "failed_gates": failures,
+                        "config_sha256": candidate_row["config_sha256"],
+                        "run_manifest_sha256": candidate_row["run_manifest_sha256"],
+                    }
+                )
+            selected_item = shortlisted_by_id.get(first_passed)
+            if not (
+                first_passed == selected_candidate
+                and selection.get("t4_ledger") == expected_ledger
+                and selection.get("shortlist") == frozen["shortlist"]
+                and selection.get("t4_matrix") == frozen["artifact"]
+                and selection.get("t4_protocol") == frozen["protocol"]
+                and selection.get("t4_root_sha256") == frozen["root_sha256"]
+                and selected_item is not None
+                and selection.get("selected_config") == selected_item["selected_config"]
+                and selection.get("selected_config_record")
+                == selected_item["selected_config_record"]
+                and selection.get("selected_config_sha256")
+                == selected_item["config_sha256"]
+                and selection.get("algorithm_hash") == selected_item["algorithm_hash"]
+            ):
+                raise ValueError("frozen final selection is not derived from T4 fallback")
+            row = (
+                payload.get("candidates", {}).get(selected_candidate)
+                if isinstance(payload.get("candidates"), Mapping)
+                else None
+            )
+            if not (
+                payload.get("manifest_id") == "oviv2_tesse_t4_matrix_v1"
+                and payload.get("status") == aggregate_status == "PASS"
+                and claimed == frozen["root_sha256"] == _json_hash(unhashed)
+                and payload.get("shortlist") == frozen["shortlist"]
+                and payload.get("protocol") == frozen["protocol"]
+                and isinstance(row, Mapping)
+                and row.get("status") == "PASS"
+                and isinstance(row.get("gates"), Mapping)
+                and set(row["gates"]) == V2_T4_METRIC_KEYS
+                and all(item is True for item in row["gates"].values())
+            ):
+                raise ValueError("frozen selected candidate no longer has a T4 PASS")
+            protocol_path = _binding_path(
+                frozen["protocol"].get("path"),
+                base=manifest_base,
+                role="T4 protocol",
+            )
+            protocol = _load_json_bytes(protocol_path.read_bytes(), protocol_path)
+            if set(protocol) != {
+                "schema_version", "manifest_id", "dataset", "method_id",
+                "protocol_id", "scene", "bounds", "candidates",
+            } or not (
+                protocol.get("schema_version") == 1
+                and protocol.get("manifest_id") == "oviv2_tesse_t4_protocol_v1"
+                and protocol.get("dataset") == "TESSE-CD"
+                and protocol.get("method_id") == "OVIV2"
+                and protocol.get("protocol_id") == PROTOCOL_ID
+                and protocol.get("scene") == "apartment"
+                and protocol.get("bounds") == V2_T4_BOUNDS
+                and isinstance(protocol.get("candidates"), Mapping)
+                and set(protocol["candidates"]) == set(payload.get("candidates", {}))
+            ):
+                raise ValueError("frozen T4 protocol identity is invalid")
+            seen_sources: set[Path] = set()
+            for candidate, matrix_row in payload["candidates"].items():
+                protocol_row = protocol["candidates"][candidate]
+                if not isinstance(matrix_row, Mapping) or not (
+                    isinstance(protocol_row, Mapping)
+                    and set(protocol_row) == {
+                        "config_sha256", "run_manifest", "metric_sources"
+                    }
+                    and protocol_row.get("config_sha256")
+                    == matrix_row.get("config_sha256")
+                ):
+                    raise ValueError("frozen T4 candidate source binding is invalid")
+                run_path = _binding_path(
+                    protocol_row["run_manifest"].get("path"),
+                    base=manifest_base,
+                    role=f"T4 {candidate} run manifest",
+                )
+                run_record = _verify_exact_frozen_file_binding(
+                    protocol_row["run_manifest"],
+                    base=manifest_base,
+                    role=f"T4 {candidate} run manifest",
+                    expected_path=run_path,
+                )
+                run_payload = _load_json_bytes(run_path.read_bytes(), run_path)
+                if run_path in seen_sources or not (
+                    run_record["sha256"] == matrix_row.get("run_manifest_sha256")
+                    and run_payload.get("dataset") == "TESSE-CD"
+                    and run_payload.get("method_id") == "OVIV2"
+                    and run_payload.get("protocol_id") == PROTOCOL_ID
+                    and run_payload.get("scene") == "apartment"
+                    and run_payload.get("candidate_id") == candidate
+                    and run_payload.get("config_sha256")
+                    == matrix_row.get("config_sha256")
+                ):
+                    raise ValueError("frozen T4 whole-profile run binding is invalid")
+                seen_sources.add(run_path)
+                metric_sources = protocol_row.get("metric_sources")
+                if not isinstance(metric_sources, Mapping) or set(metric_sources) != V2_T4_METRIC_KEYS:
+                    raise ValueError("frozen T4 metric source inventory is invalid")
+                for metric, source_record in metric_sources.items():
+                    metric_path = _binding_path(
+                        source_record.get("path"),
+                        base=manifest_base,
+                        role=f"T4 {candidate} {metric}",
+                    )
+                    normalized_source = _verify_exact_frozen_file_binding(
+                        source_record,
+                        base=manifest_base,
+                        role=f"T4 {candidate} {metric}",
+                        expected_path=metric_path,
+                    )
+                    metric_payload = _load_json_bytes(
+                        metric_path.read_bytes(), metric_path
+                    )
+                    if metric_path in seen_sources or set(metric_payload) != {
+                        "schema_version", "manifest_id", "scene", "candidate_id",
+                        "config_sha256", "run_manifest_sha256", "metric", "value",
+                    } or not (
+                        metric_payload.get("schema_version") == 1
+                        and metric_payload.get("manifest_id")
+                        == "oviv2_tesse_t4_metric_v1"
+                        and metric_payload.get("scene") == "apartment"
+                        and metric_payload.get("candidate_id") == candidate
+                        and metric_payload.get("config_sha256")
+                        == matrix_row.get("config_sha256")
+                        and metric_payload.get("run_manifest_sha256")
+                        == run_record["sha256"]
+                        and metric_payload.get("metric") == metric
+                        and type(metric_payload.get("value")) in {int, float}
+                        and math.isfinite(metric_payload["value"])
+                        and metric_payload.get("value")
+                        == matrix_row["metrics"][metric]
+                    ):
+                        raise ValueError("frozen T4 metric source binding is invalid")
+                    seen_sources.add(metric_path)
+        result[kind] = dict(frozen)
+        result[kind]["artifact"] = artifact
+        if kind == "t4":
+            result[kind]["protocol_payload"] = protocol
+    return result, selected_candidate
+
+
+def _validate_frozen_hashes(
+    value: object,
+    *,
+    repository: Mapping[str, Any],
+    scenes: Mapping[str, Mapping[str, Any]],
+    shared: Mapping[str, Any],
+    release: Mapping[str, Any],
+    seed_policy: Mapping[str, Any],
+) -> dict[str, Any]:
+    expected = {
+        "code_sha256": _json_hash({"commit": repository["commit"], "tree": repository["tree"]}),
+        "config_sha256": {
+            scene: scenes[scene]["frozen_config"]["sha256"]
+            for scene in ("apartment", "office")
+        },
+        "evaluator_sha256": {role: record["sha256"] for role, record in release.items()},
+        "ground_truth_sha256": shared["occlusion_target_manifest"]["sha256"],
+        "schedule_sha256": shared["schedule"]["sha256"],
+        "seed_policy_sha256": seed_policy["sha256"],
+    }
+    if value != expected:
+        raise ValueError("freeze code/config/evaluator/GT/schedule/seed hashes differ")
+    return expected
 
 
 def _positive_integer(value: object, name: str) -> int:
@@ -1166,12 +1587,16 @@ def load_v2_frozen_run_context(
     normalized_office_audit = _validate_office_audit(
         manifest["office_pre_freeze_audit"]
     )
+    normalized_seed_policy = _validate_seed_policy(manifest["seed_policy"])
+    normalized_evidence, selected_candidate = _validate_frozen_evidence(
+        manifest["evidence"],
+        manifest_base=manifest_path.parent,
+        selection_artifact=normalized_selection["artifact"],
+    )
 
     output_roots = manifest.get("output_roots")
-    expected_slots = {
-        f"{slot_scene}_run{repeat}"
-        for slot_scene in ("apartment", "office")
-        for repeat in (1, 2)
+    expected_slots = {"apartment_run1", "apartment_run2"} | {
+        f"office_seed_{seed}" for seed in normalized_seed_policy["seeds"]
     }
     if not isinstance(output_roots, Mapping) or set(output_roots) != expected_slots:
         raise ValueError("freeze output slots are incomplete")
@@ -1182,7 +1607,12 @@ def load_v2_frozen_run_context(
         for value in output_roots.values()
     ):
         raise ValueError("frozen run slot output roots are invalid")
-    if run_slot not in expected_slots or not run_slot.startswith(f"{scene}_run"):
+    expected_scene_slots = (
+        {"apartment_run1", "apartment_run2"}
+        if scene == "apartment"
+        else {f"office_seed_{seed}" for seed in normalized_seed_policy["seeds"]}
+    )
+    if run_slot not in expected_scene_slots:
         raise ValueError("run slot does not match the frozen scene")
     raw_output = output_roots.get(run_slot)
     if not isinstance(raw_output, str) or not Path(raw_output).is_absolute():
@@ -1210,18 +1640,59 @@ def load_v2_frozen_run_context(
         "schedule": "schedule_manifest",
         "occlusion_target_manifest": "occlusion_target_manifest",
     }
+    normalized_shared: dict[str, Any] = {}
     for role, config_field in shared_config_fields.items():
         expected_paths = {
             _resolve_path(frozen[config_field]) for frozen in loaded_configs.values()
         }
         if len(expected_paths) != 1:
             raise ValueError(f"freeze shared {role} config paths differ across scenes")
-        _verify_exact_frozen_file_binding(
+        normalized_shared[role] = _verify_exact_frozen_file_binding(
             shared[role],
             base=manifest_path.parent,
             role=f"shared {role}",
             expected_path=next(iter(expected_paths)),
         )
+    normalized_hashes = _validate_frozen_hashes(
+        manifest["frozen_hashes"],
+        repository=repository,
+        scenes=normalized_scenes,
+        shared=normalized_shared,
+        release=normalized_release,
+        seed_policy=normalized_seed_policy,
+    )
+    authorizations = manifest.get("office_authorizations")
+    office_slots = {f"office_seed_{seed}" for seed in normalized_seed_policy["seeds"]}
+    if not isinstance(authorizations, Mapping) or set(authorizations) != office_slots:
+        raise ValueError("freeze Office authorizations are incomplete")
+    normalized_authorizations: dict[str, Any] = {}
+    for slot in sorted(office_slots):
+        authorization = authorizations[slot]
+        expected_seed = int(slot.removeprefix("office_seed_"))
+        if not isinstance(authorization, Mapping) or set(authorization) != {
+            "authorization_id", "scene", "seed", "config_sha256", "algorithm_hash", "output_root",
+            "t1_root_sha256", "t4_root_sha256", "frozen_hashes_sha256",
+            "authorization_sha256",
+        }:
+            raise ValueError("freeze Office authorization schema is invalid")
+        body = dict(authorization)
+        claimed = body.pop("authorization_sha256")
+        if not (
+            authorization.get("authorization_id") == slot
+            and authorization.get("scene") == "office"
+            and authorization.get("seed") == expected_seed
+            and authorization.get("config_sha256") == _json_hash(loaded_configs["office"])
+            and authorization.get("algorithm_hash") == algorithm["sha256"]
+            and authorization.get("output_root") == output_roots[slot]
+            and authorization.get("t1_root_sha256") == normalized_evidence["t1"]["root_sha256"]
+            and authorization.get("t4_root_sha256") == normalized_evidence["t4"]["root_sha256"]
+            and authorization.get("frozen_hashes_sha256") == _json_hash(normalized_hashes)
+            and claimed == _json_hash(body)
+        ):
+            raise ValueError("freeze Office authorization hash binding is invalid")
+        normalized_authorizations[slot] = dict(authorization)
+    if scene == "office" and run_slot not in normalized_authorizations:
+        raise ValueError("Office requires frozen authorization")
     input_bindings = {
         "repository": dict(repository),
         "algorithm": dict(algorithm),
@@ -1234,6 +1705,10 @@ def load_v2_frozen_run_context(
         "output_roots": dict(output_roots),
         "shared_bindings": dict(shared),
         "scenes": normalized_scenes,
+        "evidence": normalized_evidence,
+        "seed_policy": normalized_seed_policy,
+        "frozen_hashes": normalized_hashes,
+        "office_authorizations": normalized_authorizations,
     }
     _revalidate_frozen_bindings(input_bindings, base=manifest_path.parent)
     identity = {
@@ -1250,6 +1725,12 @@ def load_v2_frozen_run_context(
         },
         "config": selected_config_record,
         "algorithm_hash": algorithm["sha256"],
+        "selected_candidate_id": selected_candidate,
+        **(
+            {"office_authorization": normalized_authorizations[run_slot]}
+            if scene == "office"
+            else {}
+        ),
         "input_bindings_sha256": _json_hash(input_bindings),
         "formal_evidence_sha256": _json_hash(manifest),
     }
@@ -1526,6 +2007,13 @@ def _write_json(path: Path, value: Mapping[str, Any]) -> None:
     )
 
 
+def _canonical_json_bytes(value: object) -> bytes:
+    return (
+        json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
+        + "\n"
+    ).encode("utf-8")
+
+
 def _write_jsonl(path: Path, rows: Sequence[Mapping[str, Any]]) -> None:
     path.write_text(
         "".join(
@@ -1542,6 +2030,350 @@ def _write_jsonl(path: Path, rows: Sequence[Mapping[str, Any]]) -> None:
     )
 
 
+def _runtime_diagnostics_payload(
+    runtime: Any, *, config: Mapping[str, Any], processed_frame_count: int
+) -> dict[str, Any]:
+    temporal_readout = config.get("temporal_readout")
+    profile = (
+        temporal_readout.get("execution_profile")
+        if isinstance(temporal_readout, Mapping)
+        else None
+    )
+    if profile not in {f"a{index}" for index in range(5)}:
+        raise ValueError("runtime diagnostics execution profile is invalid")
+    temporal = getattr(runtime, "temporal", None)
+    state = getattr(temporal, "state", None)
+    diagnostics = getattr(state, "diagnostics", None)
+    counters: dict[str, int] = {}
+    for name in V2_RUNTIME_DIAGNOSTIC_KEYS:
+        value = getattr(diagnostics, name, 0) if diagnostics is not None else 0
+        if isinstance(value, bool) or not isinstance(value, Integral) or int(value) < 0:
+            raise ValueError(f"runtime diagnostic {name} must be a nonnegative integer")
+        counters[name] = int(value)
+    diagnostic_frames = getattr(diagnostics, "processed_frame_count", processed_frame_count)
+    if diagnostic_frames != processed_frame_count:
+        raise ValueError("runtime diagnostics frame count differs from the run")
+    return {
+        "schema_version": 1,
+        "execution_profile": profile,
+        "processed_frame_count": processed_frame_count,
+        "counters": counters,
+    }
+
+
+def _office_attempt_root(destination: Path) -> Path:
+    return destination.parent / f".{destination.name}.attempts"
+
+
+def _office_claim_root(destination: Path) -> Path:
+    return destination.parent / f".{destination.name}.claim"
+
+
+def _open_directory_nofollow(path: Path) -> int:
+    absolute = _absolute_lexical(path)
+    flags = (
+        os.O_RDONLY
+        | getattr(os, "O_DIRECTORY", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+        | getattr(os, "O_CLOEXEC", 0)
+    )
+    descriptor = os.open(os.sep, flags)
+    try:
+        for component in absolute.parts[1:]:
+            child = os.open(component, flags, dir_fd=descriptor)
+            os.close(descriptor)
+            descriptor = child
+        return descriptor
+    except BaseException:
+        os.close(descriptor)
+        raise
+
+
+def _read_regular_file_at(directory_fd: int, name: str, *, role: str) -> bytes:
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_CLOEXEC", 0)
+    descriptor = os.open(name, flags, dir_fd=directory_fd)
+    try:
+        if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+            raise ValueError(f"{role} must be a regular file")
+        chunks: list[bytes] = []
+        while True:
+            chunk = os.read(descriptor, 1024 * 1024)
+            if not chunk:
+                return b"".join(chunks)
+            chunks.append(chunk)
+    finally:
+        os.close(descriptor)
+
+
+@dataclass
+class _OfficeClaim:
+    path: Path
+    parent_fd: int
+    root_fd: int
+    content: bytes
+
+
+def _verify_directory_entry(parent_fd: int, name: str, directory_fd: int) -> None:
+    expected = os.fstat(directory_fd)
+    current = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+    if not stat.S_ISDIR(current.st_mode) or (current.st_dev, current.st_ino) != (
+        expected.st_dev,
+        expected.st_ino,
+    ):
+        raise ValueError(f"trusted directory entry changed: {name}")
+
+
+def _verify_directory_path(path: Path, directory_fd: int) -> None:
+    current_fd = _open_directory_nofollow(path)
+    try:
+        expected = os.fstat(directory_fd)
+        current = os.fstat(current_fd)
+        if (current.st_dev, current.st_ino) != (expected.st_dev, expected.st_ino):
+            raise ValueError(f"trusted directory path changed: {path}")
+    finally:
+        os.close(current_fd)
+
+
+def _office_attempt_binding(frozen: FrozenRunContext, destination: Path) -> dict[str, Any]:
+    authorization = frozen.frozen_run_identity.get("office_authorization")
+    if not isinstance(authorization, Mapping):
+        raise ValueError("Office requires frozen authorization")
+    return {
+        "run_slot": frozen.run_slot,
+        "frozen_run_identity_sha256": _json_hash(frozen.frozen_run_identity),
+        "authorization_sha256": authorization["authorization_sha256"],
+        "config_sha256": frozen.frozen_run_identity["config"]["sha256"],
+        "output_root": str(destination),
+    }
+
+
+def _next_office_attempt(
+    frozen: FrozenRunContext, destination: Path, *, parent_fd: int
+) -> int:
+    root_fd: int | None = None
+    root_name = f".{destination.name}.attempts"
+    flags = (
+        os.O_RDONLY
+        | getattr(os, "O_DIRECTORY", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+        | getattr(os, "O_CLOEXEC", 0)
+    )
+    try:
+        try:
+            root_fd = os.open(root_name, flags, dir_fd=parent_fd)
+        except FileNotFoundError:
+            return 1
+        except OSError as exc:
+            raise ValueError("Office attempt ledger must be a real directory") from exc
+        expected_binding = _office_attempt_binding(frozen, destination)
+        records = sorted(os.listdir(root_fd))
+        expected_names = [f"attempt_{index:04d}.json" for index in range(1, len(records) + 1)]
+        if records != expected_names:
+            raise ValueError("Office attempt ledger inventory is invalid")
+        for index, name in enumerate(records, 1):
+            receipt = _load_json_bytes(
+                _read_regular_file_at(root_fd, name, role="Office failure receipt"),
+                _office_attempt_root(destination) / name,
+            )
+            if not isinstance(receipt, Mapping) or set(receipt) != {
+                "schema_version", "status", "attempt", *expected_binding,
+                "staging_published", "metric_artifact_present", "failure", "receipt_sha256",
+            }:
+                raise ValueError("Office failure receipt schema is invalid")
+            body = dict(receipt)
+            claimed = body.pop("receipt_sha256")
+            if not (
+                receipt.get("schema_version") == 1
+                and receipt.get("status") == "INFRASTRUCTURE_FAILURE"
+                and receipt.get("attempt") == index
+                and all(receipt.get(key) == value for key, value in expected_binding.items())
+                and receipt.get("staging_published") is False
+                and receipt.get("metric_artifact_present") is False
+                and isinstance(receipt.get("failure"), Mapping)
+                and claimed == _json_hash(body)
+            ):
+                raise ValueError("Office retry receipt does not match frozen hashes")
+        _verify_directory_entry(parent_fd, root_name, root_fd)
+        return len(records) + 1
+    finally:
+        if root_fd is not None:
+            os.close(root_fd)
+
+
+def _atomic_write_new_at(directory_fd: int, name: str, content: bytes) -> None:
+    temporary = f".{name}.tmp-{secrets.token_hex(12)}"
+    descriptor = os.open(
+        temporary,
+        os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_CLOEXEC", 0),
+        0o600,
+        dir_fd=directory_fd,
+    )
+    try:
+        view = memoryview(content)
+        while view:
+            written = os.write(descriptor, view)
+            if written <= 0:
+                raise OSError(f"short write while publishing {name}")
+            view = view[written:]
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+    try:
+        os.link(
+            temporary,
+            name,
+            src_dir_fd=directory_fd,
+            dst_dir_fd=directory_fd,
+            follow_symlinks=False,
+        )
+        os.fsync(directory_fd)
+    finally:
+        try:
+            os.unlink(temporary, dir_fd=directory_fd)
+        except FileNotFoundError:
+            pass
+
+
+def _claim_office_authorization(
+    frozen: FrozenRunContext, destination: Path, *, attempt: int, parent_fd: int
+) -> _OfficeClaim:
+    root = _office_claim_root(destination)
+    root_name = root.name
+    try:
+        os.mkdir(root_name, 0o700, dir_fd=parent_fd)
+    except FileExistsError:
+        raise FileExistsError(f"Office authorization is already claimed: {root}")
+    flags = (
+        os.O_RDONLY
+        | getattr(os, "O_DIRECTORY", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+        | getattr(os, "O_CLOEXEC", 0)
+    )
+    root_fd: int | None = None
+    try:
+        root_fd = os.open(root_name, flags, dir_fd=parent_fd)
+        body = {
+            "schema_version": 1,
+            "status": "CLAIMED",
+            "attempt": attempt,
+            **_office_attempt_binding(frozen, destination),
+        }
+        content = _canonical_json_bytes({**body, "claim_sha256": _json_hash(body)})
+        _atomic_write_new_at(
+            root_fd,
+            "claim.json",
+            content,
+        )
+        _verify_directory_entry(parent_fd, root_name, root_fd)
+        _verify_directory_path(destination.parent, parent_fd)
+        return _OfficeClaim(
+            path=root, parent_fd=parent_fd, root_fd=root_fd, content=content
+        )
+    except BaseException:
+        if root_fd is not None:
+            os.close(root_fd)
+        raise
+
+
+def _release_office_claim(claim: _OfficeClaim) -> None:
+    try:
+        _verify_directory_path(claim.path.parent, claim.parent_fd)
+        _verify_directory_entry(claim.parent_fd, claim.path.name, claim.root_fd)
+        if _read_regular_file_at(
+            claim.root_fd, "claim.json", role="Office authorization claim"
+        ) != claim.content:
+            raise ValueError("Office authorization claim changed during execution")
+        os.unlink("claim.json", dir_fd=claim.root_fd)
+        os.fsync(claim.root_fd)
+        _verify_directory_entry(claim.parent_fd, claim.path.name, claim.root_fd)
+        os.rmdir(claim.path.name, dir_fd=claim.parent_fd)
+        os.fsync(claim.parent_fd)
+    finally:
+        os.close(claim.root_fd)
+        os.close(claim.parent_fd)
+
+
+def _close_office_claim(claim: _OfficeClaim) -> None:
+    try:
+        _verify_directory_path(claim.path.parent, claim.parent_fd)
+    finally:
+        os.close(claim.root_fd)
+        os.close(claim.parent_fd)
+
+
+def _apply_office_seed(seed: object) -> int:
+    if isinstance(seed, bool) or not isinstance(seed, Integral) or int(seed) < 0:
+        raise ValueError("Office authorization seed is invalid")
+    normalized = int(seed)
+    random.seed(normalized)
+    np.random.seed(normalized)
+    torch = sys.modules.get("torch")
+    if torch is not None:
+        torch.manual_seed(normalized)
+        cuda = getattr(torch, "cuda", None)
+        if cuda is not None and hasattr(cuda, "manual_seed_all"):
+            cuda.manual_seed_all(normalized)
+    return normalized
+
+
+def _publish_office_failure_receipt(
+    frozen: FrozenRunContext,
+    destination: Path,
+    *,
+    attempt: int,
+    failure: BaseException,
+    staging: Path,
+    claim: _OfficeClaim,
+) -> bool:
+    metric_artifact_present = any(
+        any(token in path.name.lower() for token in ("metric", "evaluation", "summary"))
+        for path in staging.rglob("*")
+        if path.is_file()
+    )
+    staging_is_empty = not any(staging.iterdir())
+    root = _office_attempt_root(destination)
+    retryable = (
+        isinstance(failure, OSError)
+        and staging_is_empty
+        and not metric_artifact_present
+    )
+    body = {
+        "schema_version": 1,
+        "status": "INFRASTRUCTURE_FAILURE" if retryable else "NON_RETRYABLE_FAILURE",
+        "attempt": attempt,
+        **_office_attempt_binding(frozen, destination),
+        "staging_published": False,
+        "metric_artifact_present": metric_artifact_present,
+        "failure": {"type": type(failure).__name__, "message": str(failure)},
+    }
+    parent_fd = claim.parent_fd
+    _verify_directory_path(destination.parent, parent_fd)
+    root_fd: int | None = None
+    root_name = root.name
+    flags = (
+        os.O_RDONLY
+        | getattr(os, "O_DIRECTORY", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+        | getattr(os, "O_CLOEXEC", 0)
+    )
+    try:
+        try:
+            os.mkdir(root_name, 0o700, dir_fd=parent_fd)
+        except FileExistsError:
+            pass
+        root_fd = os.open(root_name, flags, dir_fd=parent_fd)
+        _atomic_write_new_at(
+            root_fd,
+            f"attempt_{attempt:04d}.json",
+            _canonical_json_bytes({**body, "receipt_sha256": _json_hash(body)}),
+        )
+        _verify_directory_entry(parent_fd, root_name, root_fd)
+    finally:
+        if root_fd is not None:
+            os.close(root_fd)
+    return retryable
+
+
 def run(
     config_path: str | Path,
     output: str | Path,
@@ -1556,7 +2388,11 @@ def run(
     _require_regular_file(source_config, "runner config")
     source_config_bytes = source_config.read_bytes()
     config = _load_json_bytes(source_config_bytes, source_config)
-    scene, frame_count, schedule_path, evaluation_frames, temporal_config = _validate_config(config)
+    scene, frame_count, schedule_path, evaluation_frames, temporal_config = (
+        _validate_config(config)
+    )
+    if scene == "office" and freeze_manifest is None:
+        raise ValueError("Office requires frozen authorization")
     destination = _absolute_lexical(output)
     frozen = (
         load_v2_frozen_run_context(
@@ -1606,10 +2442,45 @@ def run(
         raise FileExistsError(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
     _reject_symlink_components(destination.parent, "output parent")
-    staging = Path(
-        tempfile.mkdtemp(prefix=f".{destination.name}.staging-", dir=destination.parent)
+    office_parent_fd = (
+        _open_directory_nofollow(destination.parent)
+        if scene == "office" and frozen is not None
+        else None
     )
+    try:
+        office_attempt = (
+            _next_office_attempt(
+                frozen, destination, parent_fd=office_parent_fd
+            )
+            if office_parent_fd is not None and frozen is not None
+            else None
+        )
+        staging = Path(
+            tempfile.mkdtemp(
+                prefix=f".{destination.name}.staging-", dir=destination.parent
+            )
+        )
+    except BaseException:
+        if office_parent_fd is not None:
+            os.close(office_parent_fd)
+        raise
     staging_identity = _staging_identity(staging)
+    try:
+        office_claim = (
+            _claim_office_authorization(
+                frozen,
+                destination,
+                attempt=office_attempt,
+                parent_fd=office_parent_fd,
+            )
+            if office_attempt is not None and frozen is not None
+            else None
+        )
+    except BaseException:
+        shutil.rmtree(staging)
+        if office_parent_fd is not None:
+            os.close(office_parent_fd)
+        raise
     published = False
     execution = (
         _run_execution(run_slot=frozen.run_slot, output=destination, staging=staging)
@@ -1617,6 +2488,11 @@ def run(
         else None
     )
     try:
+        if scene == "office" and frozen is not None:
+            authorization = frozen.frozen_run_identity.get("office_authorization")
+            if not isinstance(authorization, Mapping):
+                raise ValueError("Office requires frozen authorization")
+            _apply_office_seed(authorization.get("seed"))
         provenance = dict(dependencies.provenance_factory())
         code_commit = provenance.get("repository_commit")
         if not isinstance(code_commit, str) or len(code_commit) not in {40, 64} or any(
@@ -1654,6 +2530,10 @@ def run(
             canonical_source_bindings,
         )
         runtime_config = {key: config[key] for key in _RUNTIME_CONFIG_KEYS}
+        if scene == "office" and frozen is not None:
+            _apply_office_seed(
+                frozen.frozen_run_identity["office_authorization"]["seed"]
+            )
         runtime = dependencies.runtime_factory(runtime_config, caches)
 
         by_frame = {item.frame_index: item for item in official}
@@ -2184,6 +3064,16 @@ def run(
             if frozen is not None
             else {}
         )
+        runtime_diagnostics_path = staging / "runtime_diagnostics.json"
+        _write_json(
+            runtime_diagnostics_path,
+            _runtime_diagnostics_payload(
+                runtime, config=config, processed_frame_count=frame_count
+            ),
+        )
+        runtime_diagnostics_record = _file_record(
+            runtime_diagnostics_path, relative_to=staging
+        )
         source_index_path = staging / "source_index.json"
         _write_json(
             source_index_path,
@@ -2198,6 +3088,7 @@ def run(
                 "trajectories": trajectories_record,
                 "frame_coverage": coverage_record,
                 "lifecycle_transitions": lifecycle_record,
+                "runtime_diagnostics": runtime_diagnostics_record,
                 "checkpoints": ordered_official_sources,
                 **(
                     {
@@ -2215,6 +3106,7 @@ def run(
             lifecycle_record,
             coverage_record,
             capture_record,
+            runtime_diagnostics_record,
             source_index_record,
             *(
                 item[role]
@@ -2274,6 +3166,7 @@ def run(
                 "temporal_frame_coverage.jsonl",
                 "capture_status.json",
                 "source_index.json",
+                "runtime_diagnostics.json",
             }
         )
         run_manifest_path = staging / "run_manifest.json"
@@ -2371,6 +3264,8 @@ def run(
             raise ValueError("run publication inventory changed before publication")
         prepublish_tree = _tree_record(staging, relative_to=staging)
         _assert_staging_identity(staging, staging_identity)
+        if office_claim is not None:
+            _verify_directory_path(destination.parent, office_claim.parent_fd)
         _publish_run(staging, destination)
         try:
             if _staging_identity(destination) != staging_identity:
@@ -2403,8 +3298,33 @@ def run(
             raise RunPublicationUncertainError(
                 f"published run root identity is uncertain: {destination}"
             ) from exc
+        if office_claim is not None:
+            _verify_directory_path(destination.parent, office_claim.parent_fd)
+            _close_office_claim(office_claim)
+            office_claim = None
         return manifest
-    except BaseException:
+    except BaseException as exc:
+        retryable_office_failure = False
+        if (
+            office_attempt is not None
+            and frozen is not None
+            and not published
+            and staging.exists()
+        ):
+            try:
+                retryable_office_failure = _publish_office_failure_receipt(
+                    frozen,
+                    destination,
+                    attempt=office_attempt,
+                    failure=exc,
+                    staging=staging,
+                    claim=office_claim,
+                )
+            except BaseException:
+                if office_claim is not None:
+                    _close_office_claim(office_claim)
+                    office_claim = None
+                raise
         if not published and staging.exists():
             try:
                 unchanged_staging = _staging_identity(staging) == staging_identity
@@ -2412,6 +3332,12 @@ def run(
                 unchanged_staging = False
             if unchanged_staging:
                 shutil.rmtree(staging)
+                if retryable_office_failure and office_claim is not None:
+                    _release_office_claim(office_claim)
+                    office_claim = None
+        if office_claim is not None:
+            _close_office_claim(office_claim)
+            office_claim = None
         raise
 
 
@@ -2425,8 +3351,12 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         choices=(
             "apartment_run1",
             "apartment_run2",
-            "office_run1",
-            "office_run2",
+            "office_seed_0",
+            "office_seed_17",
+            "office_seed_29",
+            "office_seed_43",
+            "office_seed_71",
+            "office_seed_101",
         ),
     )
     args = parser.parse_args(argv)

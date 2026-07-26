@@ -276,16 +276,18 @@ class _DualRuntime:
         self,
         temporal_config: object,
         *,
+        scene: str = "apartment",
         fail_frame: int | None = None,
         export_records: bool = False,
     ):
         self.fail_frame = fail_frame
+        self.scene = scene
         self.export_records = export_records
         self.calls: list[int] = []
         self.checkpoint_calls: list[int] = []
         self.temporal = SimpleNamespace(
             state=SimpleNamespace(
-                scene_id="apartment",
+                scene_id=scene,
                 revision=0,
                 last_frame_id=-1,
                 last_timestamp=-1.0,
@@ -302,7 +304,7 @@ class _DualRuntime:
             raise RuntimeError("injected runtime failure")
         self.calls.append(frame.frame_id)
         self.temporal.state = SimpleNamespace(
-            scene_id="apartment",
+            scene_id=self.scene,
             revision=frame.frame_id + 1,
             last_frame_id=frame.frame_id,
             last_timestamp=frame.timestamp,
@@ -375,7 +377,7 @@ class _DualRuntime:
         del caches
         return MapSnapshot(
             method="OVIV2",
-            scene_id="apartment",
+            scene_id=self.scene,
             timestamp=checkpoint.timestamp_ns / 1_000_000_000,
             entities=(),
             background_xyz=None,
@@ -529,6 +531,7 @@ def _dependencies(
         holder["runtime_config"] = dict(config)
         value = _DualRuntime(
             cache.temporal_config,
+            scene=str(config["scene"]),
             fail_frame=fail_frame,
             export_records=export_records,
         )
@@ -984,7 +987,37 @@ def test_five_frame_dual_readout_is_causal_role_aware_and_deterministic(tmp_path
             "trajectories",
             "frame_coverage",
             "lifecycle_transitions",
+            "runtime_diagnostics",
             "checkpoints",
+        }
+        diagnostics_path = root / "runtime_diagnostics.json"
+        assert source_index["runtime_diagnostics"] == {
+            "path": "runtime_diagnostics.json",
+            "sha256": _sha256(diagnostics_path),
+            "byte_count": diagnostics_path.stat().st_size,
+        }
+        assert json.loads(diagnostics_path.read_text()) == {
+            "schema_version": 1,
+            "execution_profile": "a4",
+            "processed_frame_count": 5,
+            "counters": {
+                "proposal_opportunity_count": 0,
+                "proposal_trigger_count": 0,
+                "reid_opportunity_count": 0,
+                "reid_trigger_count": 0,
+                "identity_expiry_count": 0,
+                "geometry_reclaim_count": 0,
+                "motion_rejection_count": 0,
+                "ledger_rejection_count": 0,
+                "epoch_reset_opportunity_count": 0,
+                "epoch_reset_trigger_count": 0,
+                "icp_opportunity_count": 0,
+                "icp_accept_count": 0,
+                "icp_reject_count": 0,
+                "ledger_stage_count": 0,
+                "ledger_commit_count": 0,
+                "ledger_reclaim_count": 0,
+            },
         }
         assert source_index["method"] == "OVIV2"
         assert [item["frame_index"] for item in source_index["checkpoints"]] == [1, 3]
@@ -1010,6 +1043,24 @@ def test_five_frame_dual_readout_is_causal_role_aware_and_deterministic(tmp_path
     assert json.loads(first_temporal.read_text())["method"] == "OVIV2"
     assert _tree_hashes(first_temporal.parent) == _tree_hashes(second_temporal.parent)
     assert {path: path.read_bytes() for path in V1_FILES} == V1_BYTES
+
+
+def test_direct_office_runner_requires_frozen_authorization_before_output_creation(
+    tmp_path: Path,
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config_path = _materialize_config(module, tmp_path)
+    config = json.loads(config_path.read_text())
+    config["scene"] = "office"
+    config["algorithm_hash"] = module.algorithm_hash(config)
+    _write_json(config_path, config)
+    output = tmp_path / "must-not-exist" / "office_seed_0"
+
+    with pytest.raises(ValueError, match="Office requires frozen authorization"):
+        module.run(config_path, output, dependencies=_dependencies(module)[0])
+
+    assert not output.parent.exists()
 
 
 def test_overlap_checkpoint_publishes_full_and_compact_with_exact_index(
@@ -1851,11 +1902,9 @@ def _formal_fixture(
     )
     output = tmp_path / "formal" / "apartment" / "run1"
     roots = {
-        f"{scene}_run{repeat}": str(
-            (tmp_path / "formal" / scene / f"run{repeat}").resolve()
-        )
-        for scene in ("apartment", "office")
-        for repeat in (1, 2)
+        "apartment_run1": str((tmp_path / "formal/apartment/run1").resolve()),
+        "apartment_run2": str((tmp_path / "formal/apartment/run2").resolve()),
+        "office_seed_0": str((tmp_path / "formal/office_seed_0").resolve()),
     }
     scenes = {
         scene: {
@@ -1876,6 +1925,7 @@ def _formal_fixture(
             "development_scene": "apartment",
             "selected_config_sha256": selected_config_sha256,
             "algorithm_hash": algorithm_hash,
+            "selected_candidate_id": "a4",
         },
     )
     release_files = {
@@ -1888,8 +1938,12 @@ def _formal_fixture(
     runner_path = Path(module.__file__).resolve()
     for scene in ("apartment", "office"):
         config_path = scene_configs[scene][0].resolve()
-        for repeat in (1, 2):
-            slot = f"{scene}_run{repeat}"
+        slots = (
+            ("apartment_run1", "apartment_run2")
+            if scene == "apartment"
+            else ("office_seed_0",)
+        )
+        for slot in slots:
             mapping.append(
                 {
                     "scene": scene,
@@ -1924,6 +1978,252 @@ def _formal_fixture(
         }
         for branch in ("frontend", "dense")
     }
+    t1_source = tmp_path / "t1-source.json"
+    _write_json(t1_source, {"manifest_id": "sources"})
+    t1_root = "e" * 64
+    t1_evidence = tmp_path / "t1-evidence.json"
+    _write_json(
+        t1_evidence,
+        {
+            "schema_version": 1,
+            "manifest_id": "oviv2_dual_readout_development_gates_v1",
+            "deterministic_evidence": {
+                "source_manifest": _record(t1_source),
+                "cumulative_exact": {
+                    "format": "oviv2_t1_exact_transaction_v1",
+                    "sequence": [
+                        "reference", "a0", "a1", "a0", "a2",
+                        "a0", "a3", "a0", "a4",
+                    ],
+                    "executions": [{"profile": "reference"}],
+                    "profiles": {
+                        profile: {
+                            "cumulative_root_sha256": t1_root,
+                            "checkpoint_frames": [2, 4],
+                            "inventory": [],
+                        }
+                        for profile in ("a0", "a1", "a2", "a3", "a4")
+                    },
+                },
+                "gates": {
+                    "t1_exact": {"status": "PASS"},
+                    "determinism": {"status": "PASS"},
+                },
+            },
+            "receipt": {"created_at_utc": "2026-07-26T00:00:00Z"},
+        },
+    )
+    shortlist = tmp_path / "shortlist.json"
+    protocol = tmp_path / "t4-protocol.json"
+    search_manifest = tmp_path / "search-manifest.json"
+    _write_json(search_manifest, {"manifest_id": "oviv2-tesse-dual-readout-search-v1"})
+    _write_json(
+        shortlist,
+        {
+            "schema_version": 1,
+            "manifest_id": "oviv2_tesse_dual_readout_shortlist_v1",
+            "phase": "shortlist",
+            "dataset": "TESSE-CD",
+            "method_id": "OVIV2",
+            "protocol_id": "oviv2-tessecd-v2",
+            "status": "PASS",
+            "development_scene": "apartment",
+            "transfer_scene": "office",
+            "office_results_read": False,
+            "scenes_read": ["apartment"],
+            "result_contract": "candidates/<candidate_id>/apartment/result.json",
+            "results_root": str(tmp_path.resolve()),
+            "manifest": _record(search_manifest),
+            "result_files": [],
+            "profile_fallback_order": ["a4", "a3", "a2"],
+            "floors": {"current_miou_from_a0": 0.0, "object_f1_from_a0": 0.0},
+            "shortlisted_candidate_ids": ["a4"],
+            "shortlisted_candidates": [
+                {
+                    "candidate_id": "a4",
+                    "profile": "a4",
+                    "config_sha256": selected_config_sha256,
+                    "algorithm_hash": algorithm_hash,
+                    "result": _record(search_manifest),
+                    "selected_config": scene_configs["apartment"][1],
+                    "selected_config_record": _record(scene_configs["apartment"][0]),
+                }
+            ],
+            "rejection_ledger": [],
+        },
+    )
+    metric_keys = (
+        "total_runtime_s_per_frame", "query_mean_ms", "query_p95_ms",
+        "peak_gpu_gb", "peak_ram_gb", "final_map_mb",
+    )
+    metrics = {key: 1.0 for key in metric_keys}
+    t4_run = tmp_path / "a4-t4-run.json"
+    _write_json(
+        t4_run,
+        {
+            "schema_version": 2,
+            "dataset": "TESSE-CD",
+            "method_id": "OVIV2",
+            "protocol_id": "oviv2-tessecd-v2",
+            "scene": "apartment",
+            "candidate_id": "a4",
+            "config_sha256": selected_config_sha256,
+        },
+    )
+    metric_sources = {}
+    for key in metric_keys:
+        source = tmp_path / f"a4-{key}.json"
+        _write_json(
+            source,
+            {
+                "schema_version": 1,
+                "manifest_id": "oviv2_tesse_t4_metric_v1",
+                "scene": "apartment",
+                "candidate_id": "a4",
+                "config_sha256": selected_config_sha256,
+                "run_manifest_sha256": _sha256(t4_run),
+                "metric": key,
+                "value": metrics[key],
+            },
+        )
+        metric_sources[key] = _record(source)
+    _write_json(
+        protocol,
+        {
+            "schema_version": 1,
+            "manifest_id": "oviv2_tesse_t4_protocol_v1",
+            "dataset": "TESSE-CD",
+            "method_id": "OVIV2",
+            "protocol_id": "oviv2-tessecd-v2",
+            "scene": "apartment",
+            "bounds": {
+                "total_runtime_s_per_frame": 6.42,
+                "query_mean_ms": 11.92,
+                "query_p95_ms": 12.12,
+                "peak_gpu_gb": 12.76,
+                "peak_ram_gb": 9.36,
+                "final_map_mb": 46.77,
+            },
+            "candidates": {
+                "a4": {
+                    "config_sha256": selected_config_sha256,
+                    "run_manifest": _record(t4_run),
+                    "metric_sources": metric_sources,
+                }
+            },
+        },
+    )
+    t4_body = {
+        "schema_version": 1,
+        "manifest_id": "oviv2_tesse_t4_matrix_v1",
+        "status": "PASS",
+        "shortlist": _record(shortlist),
+        "protocol": _record(protocol),
+        "candidates": {
+            "a4": {
+                "status": "PASS",
+                "config_sha256": selected_config_sha256,
+                "run_manifest_sha256": _sha256(t4_run),
+                "metrics": metrics,
+                "gates": {key: True for key in metric_keys},
+            }
+        },
+    }
+    t4_evidence = tmp_path / "t4-evidence.json"
+    _write_json(t4_evidence, {**t4_body, "root_sha256": module._json_hash(t4_body)})
+    _write_json(
+        selection_artifact,
+        {
+            "schema_version": 1,
+            "manifest_id": "oviv2_tesse_dual_readout_selection_v2",
+            "phase": "final",
+            "dataset": "TESSE-CD",
+            "method_id": "OVIV2",
+            "protocol_id": "oviv2-tessecd-v2",
+            "status": "PASS",
+            "development_scene": "apartment",
+            "transfer_scene": "office",
+            "office_results_read": False,
+            "scenes_read": ["apartment"],
+            "manifest": _record(search_manifest),
+            "shortlist": _record(shortlist),
+            "t4_matrix": _record(t4_evidence),
+            "t4_protocol": _record(protocol),
+            "t4_root_sha256": module._json_hash(t4_body),
+            "profile_fallback_order": ["a4", "a3", "a2"],
+            "selected_candidate_id": "a4",
+            "selected_config": scene_configs["apartment"][1],
+            "selected_config_record": _record(scene_configs["apartment"][0]),
+            "selected_config_sha256": selected_config_sha256,
+            "algorithm_hash": algorithm_hash,
+            "t4_ledger": [
+                {
+                    "candidate_id": "a4",
+                    "profile": "a4",
+                    "passed": True,
+                    "selected": True,
+                    "failed_gates": [],
+                    "config_sha256": selected_config_sha256,
+                    "run_manifest_sha256": _sha256(t4_run),
+                }
+            ],
+        },
+    )
+    evidence = {
+        "t1": {
+            "artifact": _record(t1_evidence),
+            "source_manifest": _record(t1_source),
+            "root_sha256": t1_root,
+        },
+        "t4": {
+            "artifact": _record(t4_evidence),
+            "shortlist": _record(shortlist),
+            "protocol": _record(protocol),
+            "root_sha256": module._json_hash(t4_body),
+        },
+    }
+    seed_policy = {
+        "behavior": "deterministic",
+        "seeds": [0],
+        "sha256": module._json_hash(
+            {"behavior": "deterministic", "seeds": [0]}
+        ),
+    }
+    repository = {
+        "clean": True,
+        "commit": "a" * 40,
+        "parents": ["c" * 40],
+        "tree": "b" * 40,
+        "commit_time_utc": "2026-07-25T00:00:00+00:00",
+        "stage3_lineage_commit": "47962fbd9f363c0696cc5016f8ab42f83a3bf7e5",
+        "stage3_is_ancestor": True,
+    }
+    release_bindings = {role: _record(path) for role, path in release_files.items()}
+    shared_bindings = {role: _record(path) for role, path in shared_files.items()}
+    frozen_hashes = {
+        "code_sha256": module._json_hash({"commit": "a" * 40, "tree": "b" * 40}),
+        "config_sha256": {
+            scene: scenes[scene]["frozen_config"]["sha256"]
+            for scene in ("apartment", "office")
+        },
+        "evaluator_sha256": {
+            role: record["sha256"] for role, record in release_bindings.items()
+        },
+        "ground_truth_sha256": shared_bindings["occlusion_target_manifest"]["sha256"],
+        "schedule_sha256": shared_bindings["schedule"]["sha256"],
+        "seed_policy_sha256": seed_policy["sha256"],
+    }
+    authorization_body = {
+        "authorization_id": "office_seed_0",
+        "scene": "office",
+        "seed": 0,
+        "config_sha256": module._json_hash(scene_configs["office"][1]),
+        "algorithm_hash": algorithm_hash,
+        "output_root": roots["office_seed_0"],
+        "t1_root_sha256": t1_root,
+        "t4_root_sha256": evidence["t4"]["root_sha256"],
+        "frozen_hashes_sha256": module._json_hash(frozen_hashes),
+    }
     _write_json(
         freeze,
         {
@@ -1932,15 +2232,7 @@ def _formal_fixture(
             "status": "FROZEN",
             "method": "OVIV2",
             "dataset": "TESSE-CD",
-            "repository": {
-                "clean": True,
-                "commit": "a" * 40,
-                "parents": ["c" * 40],
-                "tree": "b" * 40,
-                "commit_time_utc": "2026-07-25T00:00:00+00:00",
-                "stage3_lineage_commit": "47962fbd9f363c0696cc5016f8ab42f83a3bf7e5",
-                "stage3_is_ancestor": True,
-            },
+            "repository": repository,
             "algorithm": {
                 "sha256": algorithm_hash,
                 "normalized_config": module.algorithm_config(
@@ -1954,9 +2246,7 @@ def _formal_fixture(
                 "selected_algorithm_hash": algorithm_hash,
             },
             "scenes": scenes,
-            "shared_bindings": {
-                role: _record(path) for role, path in shared_files.items()
-            },
+            "shared_bindings": shared_bindings,
             "environment": TEST_ENVIRONMENT,
             "commands": {
                 "cwd": str(Path(module.REPO_ROOT).resolve()),
@@ -1964,15 +2254,22 @@ def _formal_fixture(
                 "mapping": mapping,
             },
             "models": models,
-            "release_bindings": {
-                role: _record(path) for role, path in release_files.items()
-            },
+            "release_bindings": release_bindings,
             "office_pre_freeze_audit": {
                 "selection_scene": "apartment",
                 "metric_sources_found": [],
                 "office_outputs_read": False,
             },
             "output_roots": roots,
+            "evidence": evidence,
+            "seed_policy": seed_policy,
+            "frozen_hashes": frozen_hashes,
+            "office_authorizations": {
+                "office_seed_0": {
+                    **authorization_body,
+                    "authorization_sha256": module._json_hash(authorization_body),
+                }
+            },
         },
     )
     return apartment_path, freeze, output, roots
@@ -2019,6 +2316,10 @@ def test_task14_can_import_the_complete_v2_freeze_contract() -> None:
         "release_bindings",
         "output_roots",
         "office_pre_freeze_audit",
+        "evidence",
+        "seed_policy",
+        "frozen_hashes",
+        "office_authorizations",
     }
     assert callable(module.load_v2_frozen_run_context)
 
@@ -2100,6 +2401,250 @@ def test_complete_v2_formal_freeze_runs_before_publishing(
     assert second_manifest["source_index"] == manifest["source_index"]
 
 
+def test_office_authorization_is_one_shot_and_allows_only_bound_infrastructure_retry(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    _, freeze, _, roots = _formal_fixture(module, tmp_path)
+    payload = json.loads(freeze.read_text())
+    _patch_formal_authorities(module, monkeypatch, payload)
+    office_config = Path(payload["scenes"]["office"]["frozen_config"]["path"])
+    output = Path(roots["office_seed_0"])
+    dependencies, _ = _dependencies(module)
+    failing = module.RunnerDependencies(
+        dataset_factory=lambda _: (_ for _ in ()).throw(OSError("node unavailable")),
+        cache_loader_factory=dependencies.cache_loader_factory,
+        runtime_factory=dependencies.runtime_factory,
+        provenance_factory=dependencies.provenance_factory,
+        environment_factory=dependencies.environment_factory,
+    )
+
+    with pytest.raises(OSError, match="node unavailable"):
+        module.run(
+            office_config,
+            output,
+            freeze_manifest=freeze,
+            run_slot="office_seed_0",
+            dependencies=failing,
+        )
+
+    receipt_path = output.parent / ".office_seed_0.attempts/attempt_0001.json"
+    receipt = json.loads(receipt_path.read_text())
+    assert receipt["status"] == "INFRASTRUCTURE_FAILURE"
+    assert receipt["staging_published"] is False
+    assert receipt["metric_artifact_present"] is False
+    body = dict(receipt)
+    claimed = body.pop("receipt_sha256")
+    assert claimed == module._json_hash(body)
+    assert not list(receipt_path.parent.glob(".*.tmp-*"))
+
+    manifest = module.run(
+        office_config,
+        output,
+        freeze_manifest=freeze,
+        run_slot="office_seed_0",
+        dependencies=_dependencies(module)[0],
+    )
+    assert manifest["scene"] == "office"
+    assert manifest["frozen_run_identity"]["office_authorization"] == payload[
+        "office_authorizations"
+    ]["office_seed_0"]
+    with pytest.raises(FileExistsError):
+        module.run(
+            office_config,
+            output,
+            freeze_manifest=freeze,
+            run_slot="office_seed_0",
+            dependencies=_dependencies(module)[0],
+        )
+
+
+def test_office_retry_rejects_tampered_failure_receipt(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    _, freeze, _, roots = _formal_fixture(module, tmp_path)
+    payload = json.loads(freeze.read_text())
+    _patch_formal_authorities(module, monkeypatch, payload)
+    office_config = Path(payload["scenes"]["office"]["frozen_config"]["path"])
+    output = Path(roots["office_seed_0"])
+    dependencies, _ = _dependencies(module)
+    failing = module.RunnerDependencies(
+        dataset_factory=lambda _: (_ for _ in ()).throw(OSError("node unavailable")),
+        cache_loader_factory=dependencies.cache_loader_factory,
+        runtime_factory=dependencies.runtime_factory,
+        provenance_factory=dependencies.provenance_factory,
+        environment_factory=dependencies.environment_factory,
+    )
+    with pytest.raises(OSError):
+        module.run(
+            office_config,
+            output,
+            freeze_manifest=freeze,
+            run_slot="office_seed_0",
+            dependencies=failing,
+        )
+    receipt = output.parent / ".office_seed_0.attempts/attempt_0001.json"
+    value = json.loads(receipt.read_text())
+    value["config_sha256"] = "0" * 64
+    _write_json(receipt, value)
+
+    with pytest.raises(ValueError, match="retry receipt"):
+        module.run(
+            office_config,
+            output,
+            freeze_manifest=freeze,
+            run_slot="office_seed_0",
+            dependencies=_dependencies(module)[0],
+        )
+    assert not output.exists()
+
+
+def test_office_non_infrastructure_failure_consumes_authorization(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    _, freeze, _, roots = _formal_fixture(module, tmp_path)
+    payload = json.loads(freeze.read_text())
+    _patch_formal_authorities(module, monkeypatch, payload)
+    office_config = Path(payload["scenes"]["office"]["frozen_config"]["path"])
+    output = Path(roots["office_seed_0"])
+    dependencies, _ = _dependencies(module)
+    failing = module.RunnerDependencies(
+        dataset_factory=lambda _: (_ for _ in ()).throw(RuntimeError("algorithm failure")),
+        cache_loader_factory=dependencies.cache_loader_factory,
+        runtime_factory=dependencies.runtime_factory,
+        provenance_factory=dependencies.provenance_factory,
+        environment_factory=dependencies.environment_factory,
+    )
+
+    with pytest.raises(RuntimeError, match="algorithm failure"):
+        module.run(
+            office_config,
+            output,
+            freeze_manifest=freeze,
+            run_slot="office_seed_0",
+            dependencies=failing,
+        )
+
+    receipt = json.loads(
+        (output.parent / ".office_seed_0.attempts/attempt_0001.json").read_text()
+    )
+    assert receipt["status"] == "NON_RETRYABLE_FAILURE"
+    assert (output.parent / ".office_seed_0.claim/claim.json").is_file()
+    with pytest.raises(ValueError, match="retry receipt"):
+        module.run(
+            office_config,
+            output,
+            freeze_manifest=freeze,
+            run_slot="office_seed_0",
+            dependencies=_dependencies(module)[0],
+        )
+
+
+def test_office_claim_is_acquired_before_dataset_access(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    _, freeze, _, roots = _formal_fixture(module, tmp_path)
+    payload = json.loads(freeze.read_text())
+    _patch_formal_authorities(module, monkeypatch, payload)
+    office_config = Path(payload["scenes"]["office"]["frozen_config"]["path"])
+    output = Path(roots["office_seed_0"])
+    dependencies, _ = _dependencies(module)
+
+    def reenter(_: dict[str, object]) -> object:
+        with pytest.raises(FileExistsError, match="already claimed"):
+            module.run(
+                office_config,
+                output,
+                freeze_manifest=freeze,
+                run_slot="office_seed_0",
+                dependencies=dependencies,
+            )
+        raise OSError("retryable node loss")
+
+    outer = module.RunnerDependencies(
+        dataset_factory=reenter,
+        cache_loader_factory=dependencies.cache_loader_factory,
+        runtime_factory=dependencies.runtime_factory,
+        provenance_factory=dependencies.provenance_factory,
+        environment_factory=dependencies.environment_factory,
+    )
+    with pytest.raises(OSError, match="retryable node loss"):
+        module.run(
+            office_config,
+            output,
+            freeze_manifest=freeze,
+            run_slot="office_seed_0",
+            dependencies=outer,
+        )
+    assert not (output.parent / ".office_seed_0.claim").exists()
+
+
+def test_office_seed_initializes_python_numpy_and_loaded_torch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    calls: list[tuple[str, int]] = []
+    monkeypatch.setattr(module.random, "seed", lambda value: calls.append(("python", value)))
+    monkeypatch.setattr(module.np.random, "seed", lambda value: calls.append(("numpy", value)))
+    fake_torch = SimpleNamespace(
+        manual_seed=lambda value: calls.append(("torch", value)),
+        cuda=SimpleNamespace(
+            manual_seed_all=lambda value: calls.append(("cuda", value))
+        ),
+    )
+    monkeypatch.setitem(sys.modules, "torch", fake_torch)
+
+    assert module._apply_office_seed(43) == 43
+    assert calls == [
+        ("python", 43), ("numpy", 43), ("torch", 43), ("cuda", 43)
+    ]
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        lambda value: value["office_authorizations"]["office_seed_0"].__setitem__(
+            "config_sha256", "0" * 64
+        ),
+        lambda value: value["office_authorizations"]["office_seed_0"].__setitem__(
+            "output_root", str(Path(value["output_roots"]["office_seed_0"]).with_name("other"))
+        ),
+        lambda value: value["evidence"]["t4"].__setitem__("root_sha256", "0" * 64),
+        lambda value: value["seed_policy"].__setitem__("seeds", [17, 29, 43, 71, 101]),
+    ],
+)
+def test_office_rejects_authorization_evidence_seed_or_output_tampering(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, mutation
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    _, freeze, _, roots = _formal_fixture(module, tmp_path)
+    payload = json.loads(freeze.read_text())
+    office_config = Path(payload["scenes"]["office"]["frozen_config"]["path"])
+    mutation(payload)
+    _write_json(freeze, payload)
+    _patch_formal_authorities(module, monkeypatch, payload)
+    output = Path(roots["office_seed_0"])
+
+    with pytest.raises(ValueError):
+        module.run(
+            office_config,
+            output,
+            freeze_manifest=freeze,
+            run_slot="office_seed_0",
+            dependencies=_dependencies(module)[0],
+        )
+    assert not output.exists()
+
+
 @pytest.mark.parametrize(
     "scope,role,mutation",
     [
@@ -2159,7 +2704,7 @@ def test_formal_freeze_requires_every_exact_input_binding_before_output_creation
         lambda value: value.__setitem__("unknown", {}),
         lambda value: value["repository"].pop("parents"),
         lambda value: value["algorithm"].__setitem__("unknown", 1),
-        lambda value: value["output_roots"].pop("office_run2"),
+        lambda value: value["output_roots"].pop("office_seed_0"),
     ],
 )
 def test_formal_freeze_top_level_objects_are_exact_before_output_creation(
