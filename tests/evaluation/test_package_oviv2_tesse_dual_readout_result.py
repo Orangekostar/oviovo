@@ -284,6 +284,63 @@ def test_exact_transaction_uses_reference_and_dual_production_receipt_schemas(
             assert not (root / "t1_exact_receipt.json").exists()
 
 
+def _observe_exact_verifications(
+    monkeypatch: pytest.MonkeyPatch,
+) -> list[int]:
+    calls: list[int] = []
+    original = package_module.verify_exact_profile_runs
+
+    def observe(executions: list[dict[str, object]]) -> dict[str, object]:
+        calls.append(len(executions))
+        return original(executions)
+
+    monkeypatch.setattr(package_module, "verify_exact_profile_runs", observe)
+    return calls
+
+
+def test_shared_exact_transaction_is_verified_once_per_publication_boundary(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    paths = _fixture(tmp_path / "evidence")
+    calls = _observe_exact_verifications(monkeypatch)
+
+    result = _package(paths, tmp_path / "publication/result.json")
+
+    assert result["status"] == "PASS"
+    assert calls == [9, 9, 9]
+    assert sum(calls) == 27
+
+
+def test_distinct_exact_transactions_are_never_deduplicated(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    paths = _fixture(tmp_path / "evidence")
+    determinism = json.loads(paths["determinism_evidence"].read_text())
+    config = json.loads(paths["candidate_config"].read_text())
+    source_manifest = (
+        REPO_ROOT
+        / "configs/evaluation/manifests/oviv2_t1_transitive_sources_v1.json"
+    )
+    determinism["deterministic_evidence"]["cumulative_exact"] = (
+        _materialize_gate_transaction(
+            tmp_path / "distinct-exact-transaction",
+            config,
+            "c" * 40,
+            source_manifest,
+        )
+    )
+    paths["determinism_evidence"] = _write(
+        tmp_path / "distinct-determinism-evidence.json", determinism
+    )
+    calls = _observe_exact_verifications(monkeypatch)
+
+    with pytest.raises(ValueError, match="evidence transactions differ"):
+        _package(paths, tmp_path / "publication/result.json")
+
+    assert calls == [9, 9]
+    assert sum(calls) == 18
+
+
 def test_rejects_gate_evidence_with_nonexistent_execution_roots(tmp_path: Path) -> None:
     paths = _fixture(tmp_path)
     evidence = json.loads(paths["t1_exact_evidence"].read_text())
@@ -708,6 +765,7 @@ def _materialize_mutation_transaction(
         "checkpoints": [{
             "frame_index": 2,
             "checkpoint_status": _file_binding(status, root),
+            "neutral_entities": _file_binding(artifact / "entities.jsonl", root),
             "cumulative_audit": cumulative_audit,
         }],
         "final_artifact": _file_binding(final, root),

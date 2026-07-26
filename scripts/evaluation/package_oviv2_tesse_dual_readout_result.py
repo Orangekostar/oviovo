@@ -188,8 +188,12 @@ class MissingPathWitness:
         raise ValueError(f"source changed before publication: {self.path}")
 
 
+ExactTransactionKey = tuple[str, tuple[tuple[str, str], ...]]
+
+
 @dataclass(frozen=True)
 class ExactGateWitness:
+    key: ExactTransactionKey
     executions: tuple[dict[str, Any], ...]
     expected: bytes
 
@@ -203,6 +207,21 @@ class ExactGateWitness:
 
 
 PublicationWitness = Snapshot | FileIdentityWitness | MissingPathWitness | ExactGateWitness
+
+
+def _exact_transaction_key(
+    exact: Mapping[str, Any], executions: Sequence[Mapping[str, Any]]
+) -> ExactTransactionKey:
+    bindings: list[tuple[str, str]] = []
+    for execution in executions:
+        root = execution.get("output_root")
+        observation = execution.get("observation_receipt")
+        if not isinstance(root, str) or not isinstance(observation, Mapping):
+            raise ValueError("cumulative execution observation/root binding is invalid")
+        bindings.append(
+            (root, hashlib.sha256(_canonical(dict(observation))).hexdigest())
+        )
+    return hashlib.sha256(_canonical(dict(exact))).hexdigest(), tuple(bindings)
 
 
 def _identity_witness(path: Path, label: str) -> FileIdentityWitness:
@@ -579,6 +598,7 @@ def _gate_evidence(
     name: str,
     run: Mapping[str, Any],
     witnesses: list[PublicationWitness],
+    exact_transactions: dict[ExactTransactionKey, ExactGateWitness],
 ) -> None:
     root = snapshot.payload
     evidence = root.get("deterministic_evidence")
@@ -696,14 +716,9 @@ def _gate_evidence(
     executions = exact.get("executions")
     if not isinstance(executions, list) or len(executions) != len(EXACT_PROFILE_SEQUENCE):
         raise ValueError(f"{name} cumulative execution inventory is invalid")
-    try:
-        reopened = verify_exact_profile_runs([dict(item) for item in executions])
-    except (GateVerificationError, OSError) as exc:
-        raise ValueError(
-            f"{name} exact execution root/receipt/manifest is invalid: {exc}"
-        ) from exc
-    if reopened != exact:
-        raise ValueError(f"{name} cumulative evidence differs from reopened executions")
+    if any(not isinstance(item, Mapping) for item in executions):
+        raise ValueError(f"{name} cumulative execution inventory is invalid")
+    copied_executions = tuple(dict(item) for item in executions)
     source_sha = str(source_record["sha256"])
     if any(
         execution.get("code_commit") != evidence["code_commit"]
@@ -711,9 +726,24 @@ def _gate_evidence(
         for execution in executions
     ):
         raise ValueError(f"{name} cumulative execution binding mismatch")
-    witnesses.append(
-        ExactGateWitness(tuple(dict(item) for item in executions), _canonical(exact))
-    )
+    key = _exact_transaction_key(exact, copied_executions)
+    witness = exact_transactions.get(key)
+    if witness is None:
+        try:
+            reopened = verify_exact_profile_runs(
+                [dict(item) for item in copied_executions]
+            )
+        except (GateVerificationError, OSError) as exc:
+            raise ValueError(
+                f"{name} exact execution root/receipt/manifest is invalid: {exc}"
+            ) from exc
+        if reopened != exact:
+            raise ValueError(
+                f"{name} cumulative evidence differs from reopened executions"
+            )
+        witness = ExactGateWitness(key, copied_executions, _canonical(exact))
+        exact_transactions[key] = witness
+        witnesses.append(witness)
 
 
 def _derive(
@@ -725,6 +755,7 @@ def _derive(
     if set(snapshots) != set(SOURCE_NAMES):
         raise ValueError("source set is not exact")
     witnesses = auxiliary if auxiliary is not None else []
+    exact_transactions: dict[ExactTransactionKey, ExactGateWitness] = {}
 
     def take(path: str | Path, label: str, *, parse_json: bool = True) -> Snapshot:
         snapshot = _snapshot(path, label, parse_json=parse_json)
@@ -877,8 +908,20 @@ def _derive(
         snapshots["official_metrics"], witnesses
     )
 
-    _gate_evidence(snapshots["t1_exact_evidence"], "t1_exact", run, witnesses)
-    _gate_evidence(snapshots["determinism_evidence"], "determinism", run, witnesses)
+    _gate_evidence(
+        snapshots["t1_exact_evidence"],
+        "t1_exact",
+        run,
+        witnesses,
+        exact_transactions,
+    )
+    _gate_evidence(
+        snapshots["determinism_evidence"],
+        "determinism",
+        run,
+        witnesses,
+        exact_transactions,
+    )
     first_evidence = snapshots["t1_exact_evidence"].payload["deterministic_evidence"]
     second_evidence = snapshots["determinism_evidence"].payload["deterministic_evidence"]
     if first_evidence != second_evidence:
