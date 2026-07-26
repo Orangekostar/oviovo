@@ -8,11 +8,12 @@ import pytest
 
 from src.oviv2.observations import FrameObservation, ObservationKind
 from src.oviv2.temporal_association import (
+    TemporalAssignmentDiagnostic,
     TemporalAssociationResult,
     TemporalAssociationTarget,
     associate_temporal_observations,
 )
-from src.oviv2.temporal_config import TemporalAssociationConfig
+from src.oviv2.temporal_config import TemporalAssociationConfig, TemporalIdentityConfig
 from src.oviv2.temporal_lifecycle import TemporalLifecycle
 
 
@@ -31,6 +32,17 @@ def config(**changes: object) -> TemporalAssociationConfig:
     }
     values.update(changes)
     return TemporalAssociationConfig(**values)  # type: ignore[arg-type]
+
+
+def reid_config(**changes: object) -> TemporalIdentityConfig:
+    values: dict[str, object] = {
+        "maximum_identities": 100,
+        "maximum_dormant_frames": 30,
+        "minimum_reid_similarity": 0.8,
+        "maximum_reid_distance_m": 8.0,
+    }
+    values.update(changes)
+    return TemporalIdentityConfig(**values)  # type: ignore[arg-type]
 
 
 def observation(
@@ -124,7 +136,7 @@ def test_legacy_prototype_without_model_is_valid_but_visual_is_unavailable() -> 
         replace(legacy, image_prototype=None, feature_model_id="clip")
 
 
-def test_active_and_uncertain_stage_precedes_better_dormant_candidate() -> None:
+def test_a2_a3_exclude_dormant_candidates() -> None:
     obs = observation(1, image_feature=np.array([1.0, 0.0]))
     active = target(20, centroid=(0.6, 0.0, 0.0), prototype=np.array([1.0, 0.0]))
     dormant = target(
@@ -133,10 +145,58 @@ def test_active_and_uncertain_stage_precedes_better_dormant_candidate() -> None:
         prototype=np.array([1.0, 0.0]),
     )
 
-    result = associate_temporal_observations((obs,), (dormant, active), config())
+    result = associate_temporal_observations((obs,), (dormant, active), config(), dormant_reid=None)
 
     assert result.assignments == ((1, 20),)
     assert result.unmatched_entity_ids == (10,)
+
+
+def test_a4_active_and_dormant_compete_in_one_global_assignment() -> None:
+    obs = observation(1, image_feature=np.array([1.0, 0.0]))
+    active = target(20, centroid=(0.8, 0.0, 0.0), prototype=np.array([1.0, 0.0]))
+    dormant = target(10, lifecycle=TemporalLifecycle.DORMANT, prototype=np.array([1.0, 0.0]))
+    result = associate_temporal_observations(
+        (obs,), (active, dormant), config(), dormant_reid=reid_config()
+    )
+    assert result.assignments == ((1, 10),)
+    assert (result.reid_opportunity_count, result.reid_trigger_count) == (1, 1)
+    assert result.assignment_diagnostics == (
+        TemporalAssignmentDiagnostic(
+            observation_id=1,
+            entity_id=10,
+            score=result.assignment_diagnostics[0].score,
+            target_lifecycle=TemporalLifecycle.DORMANT,
+            appearance_similarity=1.0,
+            feature_model_id="clip",
+            feature_model_match=True,
+            semantic_qualified=True,
+            high_confidence_identity_match=True,
+        ),
+    )
+
+
+def test_assignment_diagnostic_is_frozen_sorted_and_fails_closed() -> None:
+    result = associate_temporal_observations(
+        (observation(1, image_feature=np.array([1.0, 0.0])),),
+        (target(2, prototype=np.array([1.0, 0.0])),),
+        config(),
+        dormant_reid=reid_config(),
+    )
+    diagnostic = result.assignment_diagnostics[0]
+    assert diagnostic.target_lifecycle is TemporalLifecycle.ACTIVE
+    assert diagnostic.high_confidence_identity_match is True
+    with pytest.raises(FrozenInstanceError):
+        diagnostic.score = 0.0  # type: ignore[misc]
+    with pytest.raises((TypeError, ValueError)):
+        replace(diagnostic, semantic_qualified=np.bool_(True))
+    with pytest.raises((TypeError, ValueError)):
+        replace(diagnostic, observation_id=np.int64(1))
+    with pytest.raises(ValueError, match="provenance"):
+        replace(diagnostic, feature_model_id=None)
+    with pytest.raises(TypeError, match="assignments"):
+        replace(result, assignments=list(result.assignments))
+    with pytest.raises(ValueError, match="sorted"):
+        replace(result, assignment_diagnostics=(replace(diagnostic, observation_id=2), diagnostic))
 
 
 def test_moved_dormant_reuses_original_entity_id() -> None:
@@ -149,9 +209,52 @@ def test_moved_dormant_reuses_original_entity_id() -> None:
         prototype=np.array([1.0, 0.0]),
     )
 
-    result = associate_temporal_observations((obs,), (dormant,), config(minimum_score=0.6))
+    result = associate_temporal_observations(
+        (obs,), (dormant,), config(minimum_score=0.6), dormant_reid=reid_config()
+    )
 
-    assert result == TemporalAssociationResult(((2, 7),), (), ())
+    assert result.assignments == ((2, 7),)
+    assert result.unmatched_observation_ids == ()
+    assert result.unmatched_entity_ids == ()
+    assert (result.reid_opportunity_count, result.reid_trigger_count) == (1, 1)
+    assert result.assignment_diagnostics[0].high_confidence_identity_match is True
+
+
+def test_dormant_requires_appearance_semantic_qualification_before_wide_gate() -> None:
+    far = observation(1, centroid=(5.0, 0.0, 0.0), semantic_id=2, image_feature=np.array([1.0, 0.0]))
+    semantic_conflict = target(
+        1, lifecycle=TemporalLifecycle.DORMANT, prototype=np.array([1.0, 0.0]), semantics=((1, 1.0),)
+    )
+    wrong_model = target(
+        2, lifecycle=TemporalLifecycle.DORMANT, centroid=(5.0, 0.0, 0.0),
+        prototype=np.array([1.0, 0.0]), feature_model_id="other", semantics=((2, 1.0),)
+    )
+    result = associate_temporal_observations(
+        (far,), (semantic_conflict, wrong_model), config(maximum_centroid_distance_m=1.0),
+        dormant_reid=reid_config(maximum_reid_distance_m=10.0),
+    )
+    assert result.assignments == ()
+    assert (result.reid_opportunity_count, result.reid_trigger_count) == (0, 0)
+
+
+def test_a4_dormant_ties_and_permutations_are_canonical() -> None:
+    observations = (
+        observation(2, image_feature=np.array([1.0, 0.0])),
+        observation(1, image_feature=np.array([1.0, 0.0])),
+    )
+    targets = (
+        target(8, lifecycle=TemporalLifecycle.DORMANT, prototype=np.array([1.0, 0.0])),
+        target(7, lifecycle=TemporalLifecycle.DORMANT, prototype=np.array([1.0, 0.0])),
+    )
+    first = associate_temporal_observations(
+        observations, targets, config(), dormant_reid=reid_config()
+    )
+    expected = first
+    for observation_order in permutations(observations):
+        for target_order in permutations(targets):
+            assert associate_temporal_observations(
+                observation_order, target_order, config(), dormant_reid=reid_config()
+            ) == expected
 
 
 @pytest.mark.parametrize(
@@ -231,7 +334,7 @@ def test_exact_score_ties_use_entity_id_then_observation_id() -> None:
 def test_input_permutations_produce_identical_result() -> None:
     observations = (observation(2, centroid=(1.0, 0.0, 0.0)), observation(1))
     targets = (target(11, centroid=(1.0, 0.0, 0.0)), target(10))
-    expected = TemporalAssociationResult(((1, 10), (2, 11)), (), ())
+    expected = associate_temporal_observations(observations, targets, config())
 
     for observation_order in permutations(observations):
         for target_order in permutations(targets):

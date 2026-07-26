@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import math
 from numbers import Real
 
@@ -13,7 +13,7 @@ from src.oviv2.association import (
     solve_assignment,
 )
 from src.oviv2.observations import FrameObservation, ObservationKind
-from src.oviv2.temporal_config import TemporalAssociationConfig
+from src.oviv2.temporal_config import TemporalAssociationConfig, TemporalIdentityConfig
 from src.oviv2.temporal_lifecycle import TemporalLifecycle
 
 
@@ -136,10 +136,113 @@ class TemporalAssociationTarget:
 
 
 @dataclass(frozen=True)
+class TemporalAssignmentDiagnostic:
+    observation_id: int
+    entity_id: int
+    score: float
+    target_lifecycle: TemporalLifecycle
+    appearance_similarity: float | None
+    feature_model_id: str | None
+    feature_model_match: bool
+    semantic_qualified: bool
+    high_confidence_identity_match: bool
+
+    def __post_init__(self) -> None:
+        if type(self.observation_id) is not int or self.observation_id < 0:
+            raise TypeError("observation_id must be an exact non-negative integer")
+        if type(self.entity_id) is not int or self.entity_id < 0:
+            raise TypeError("entity_id must be an exact non-negative integer")
+        score = _finite(self.score, "score")
+        if not 0.0 <= score <= 1.0:
+            raise ValueError("score must lie in [0, 1]")
+        object.__setattr__(self, "score", score)
+        if not isinstance(self.target_lifecycle, TemporalLifecycle):
+            raise TypeError("target_lifecycle must be a TemporalLifecycle")
+        if self.appearance_similarity is not None:
+            similarity = _finite(self.appearance_similarity, "appearance_similarity")
+            if not -1.0 <= similarity <= 1.0:
+                raise ValueError("appearance_similarity must lie in [-1, 1]")
+            object.__setattr__(self, "appearance_similarity", similarity)
+        if self.feature_model_id is not None:
+            if not isinstance(self.feature_model_id, str) or not self.feature_model_id.strip():
+                raise ValueError("feature_model_id must be a non-empty string or None")
+            object.__setattr__(self, "feature_model_id", self.feature_model_id.strip())
+        for name in (
+            "feature_model_match",
+            "semantic_qualified",
+            "high_confidence_identity_match",
+        ):
+            if type(getattr(self, name)) is not bool:
+                raise TypeError(f"{name} must be an exact bool")
+        if self.feature_model_match != (
+            self.feature_model_id is not None and self.appearance_similarity is not None
+        ):
+            raise ValueError("feature model match must agree with appearance provenance")
+        if self.high_confidence_identity_match and not (
+            self.feature_model_match
+            and self.appearance_similarity is not None
+            and self.semantic_qualified
+        ):
+            raise ValueError("high confidence identity match requires qualified evidence")
+
+
+@dataclass(frozen=True)
 class TemporalAssociationResult:
     assignments: tuple[tuple[int, int], ...]
     unmatched_observation_ids: tuple[int, ...]
     unmatched_entity_ids: tuple[int, ...]
+    reid_opportunity_count: int = 0
+    reid_trigger_count: int = 0
+    assignment_diagnostics: tuple[TemporalAssignmentDiagnostic, ...] = ()
+
+    def __post_init__(self) -> None:
+        if type(self.assignments) is not tuple:
+            raise TypeError("assignments must be an exact tuple")
+        for item in self.assignments:
+            if (
+                type(item) is not tuple
+                or len(item) != 2
+                or any(type(value) is not int or value < 0 for value in item)
+            ):
+                raise TypeError("assignments must contain exact non-negative integer pairs")
+        if self.assignments != tuple(sorted(set(self.assignments))):
+            raise ValueError("assignments must be sorted and unique")
+        if len({item[0] for item in self.assignments}) != len(self.assignments) or len(
+            {item[1] for item in self.assignments}
+        ) != len(self.assignments):
+            raise ValueError("assignments must be one-to-one")
+        for name in ("unmatched_observation_ids", "unmatched_entity_ids"):
+            values = getattr(self, name)
+            if type(values) is not tuple or any(
+                type(value) is not int or value < 0 for value in values
+            ):
+                raise TypeError(f"{name} must be an exact tuple of non-negative integers")
+            if values != tuple(sorted(set(values))):
+                raise ValueError(f"{name} must be sorted and unique")
+        object.__setattr__(
+            self,
+            "reid_opportunity_count",
+            _integer(self.reid_opportunity_count, "reid_opportunity_count"),
+        )
+        object.__setattr__(
+            self,
+            "reid_trigger_count",
+            _integer(self.reid_trigger_count, "reid_trigger_count"),
+        )
+        if self.reid_trigger_count > self.reid_opportunity_count:
+            raise ValueError("reid_trigger_count cannot exceed reid_opportunity_count")
+        if type(self.assignment_diagnostics) is not tuple or any(
+            not isinstance(item, TemporalAssignmentDiagnostic)
+            for item in self.assignment_diagnostics
+        ):
+            raise TypeError("assignment_diagnostics must be an exact tuple of diagnostics")
+        diagnostic_pairs = tuple(
+            (item.observation_id, item.entity_id) for item in self.assignment_diagnostics
+        )
+        if diagnostic_pairs != tuple(sorted(set(diagnostic_pairs))):
+            raise ValueError("assignment_diagnostics must be sorted and unique")
+        if diagnostic_pairs and diagnostic_pairs != self.assignments:
+            raise ValueError("assignment_diagnostics must cover sorted assignments")
 
 
 def _validate_config(config: object) -> TemporalAssociationConfig:
@@ -341,10 +444,71 @@ def _assign_stage(
     return tuple((item.left_id, item.right_id) for item in assignments)
 
 
+def _validate_reid_config(config: object) -> TemporalIdentityConfig:
+    if not isinstance(config, TemporalIdentityConfig):
+        raise TypeError("dormant_reid must be a TemporalIdentityConfig or None")
+    _integer(config.maximum_identities, "dormant_reid.maximum_identities", positive=True)
+    _integer(config.maximum_dormant_frames, "dormant_reid.maximum_dormant_frames", positive=True)
+    similarity = _finite(config.minimum_reid_similarity, "dormant_reid.minimum_reid_similarity")
+    if not 0.0 <= similarity <= 1.0:
+        raise ValueError("dormant_reid.minimum_reid_similarity must lie in [0, 1]")
+    distance = _finite(config.maximum_reid_distance_m, "dormant_reid.maximum_reid_distance_m")
+    if distance <= 0.0:
+        raise ValueError("dormant_reid.maximum_reid_distance_m must be positive")
+    return config
+
+
+def _identity_qualification(
+    observation: _PreparedObservation,
+    target: TemporalAssociationTarget,
+    association_config: TemporalAssociationConfig,
+    reid_config: TemporalIdentityConfig,
+) -> tuple[bool, float | None, bool, bool]:
+    model_match = bool(
+        observation.image_feature is not None
+        and target.image_prototype is not None
+        and observation.value.feature_model_id == target.feature_model_id
+        and observation.image_feature.shape == target.image_prototype.shape
+    )
+    if (
+        not model_match
+    ):
+        return False, None, False, True
+    assert observation.image_feature is not None
+    assert target.image_prototype is not None
+    cosine = float(np.clip(np.dot(observation.image_feature, target.image_prototype), -1.0, 1.0))
+    if cosine < reid_config.minimum_reid_similarity:
+        return False, cosine, True, True
+
+    semantic_qualified = True
+    if target.semantic_probabilities and observation.value.semantic_id > 0:
+        top_class_id, top_probability = max(target.semantic_probabilities, key=lambda item: item[1])
+        conflict = (
+            observation.value.semantic_id != top_class_id
+            and observation.value.confidence >= association_config.semantic_conflict_probability
+            and top_probability >= association_config.semantic_conflict_probability
+        )
+        if conflict:
+            visual = (cosine + 1.0) / 2.0
+            current_distance = _distance(observation.centroid, target.centroid_xyz)
+            geometry = max(
+                0.0,
+                1.0 - current_distance / association_config.maximum_centroid_distance_m,
+            )
+            if not (
+                visual >= association_config.conflict_override_visual
+                and geometry >= association_config.conflict_override_geometry
+            ):
+                semantic_qualified = False
+    return semantic_qualified, cosine, True, semantic_qualified
+
+
 def associate_temporal_observations(
     observations: tuple[FrameObservation, ...],
     targets: tuple[TemporalAssociationTarget, ...],
     config: TemporalAssociationConfig,
+    *,
+    dormant_reid: TemporalIdentityConfig | None = None,
 ) -> TemporalAssociationResult:
     if type(observations) is not tuple or type(targets) is not tuple:
         raise TypeError("observations and targets must be exact tuples")
@@ -364,24 +528,77 @@ def associate_temporal_observations(
     prepared = tuple(sorted(prepared, key=lambda item: item.value.observation_id))
     sorted_targets = tuple(sorted(targets, key=lambda item: item.entity_id))
 
-    primary_targets = tuple(
-        item
-        for item in sorted_targets
+    reid_config = None if dormant_reid is None else _validate_reid_config(dormant_reid)
+    eligible_targets = tuple(
+        item for item in sorted_targets
         if item.lifecycle in (TemporalLifecycle.ACTIVE, TemporalLifecycle.UNCERTAIN)
+        or (item.lifecycle is TemporalLifecycle.DORMANT and reid_config is not None)
     )
-    assignments = list(_assign_stage(prepared, primary_targets, validated_config))
-    matched_observations = {observation_id for observation_id, _ in assignments}
-    remaining_observations = tuple(
-        item
-        for item in prepared
-        if item.value.observation_id not in matched_observations
-    )
-    dormant_targets = tuple(
-        item for item in sorted_targets if item.lifecycle is TemporalLifecycle.DORMANT
-    )
-    assignments.extend(
-        _assign_stage(remaining_observations, dormant_targets, validated_config)
-    )
+    reid_opportunities: set[tuple[int, int]] = set()
+    edges: dict[tuple[int, int], CandidateScore] = {}
+    identity_qualification: dict[
+        tuple[int, int], tuple[bool, float | None, bool, bool]
+    ] = {}
+    for observation in prepared:
+        for target in eligible_targets:
+            edge_config = validated_config
+            pair = (observation.value.observation_id, target.entity_id)
+            if reid_config is not None:
+                identity_qualification[pair] = _identity_qualification(
+                    observation, target, validated_config, reid_config
+                )
+            if target.lifecycle is TemporalLifecycle.DORMANT:
+                assert reid_config is not None
+                if not identity_qualification[pair][0]:
+                    continue
+                reid_opportunities.add(pair)
+                edge_config = replace(
+                    validated_config,
+                    maximum_centroid_distance_m=reid_config.maximum_reid_distance_m,
+                )
+            candidate = _score_edge(observation, target, edge_config)
+            if candidate is not None:
+                edges[pair] = candidate
+
+    def precomputed_scorer(
+        left: AssociationTarget,
+        right: AssociationTarget,
+        _config: AssociationConfig,
+    ) -> CandidateScore | None:
+        return edges.get((left.target_id, right.target_id))
+
+    solved = solve_assignment(
+        tuple(_placeholder(item.value.observation_id) for item in prepared),
+        tuple(_placeholder(item.entity_id) for item in eligible_targets),
+        _ASSIGNMENT_CONFIG,
+        candidate_scorer=precomputed_scorer,
+    ) if prepared and eligible_targets else ()
+    assignments = [(item.left_id, item.right_id) for item in solved]
+    target_by_id = {item.entity_id: item for item in eligible_targets}
+    observation_by_id = {item.value.observation_id: item for item in prepared}
+    diagnostics: list[TemporalAssignmentDiagnostic] = []
+    for observation_id, entity_id in assignments:
+        pair = (observation_id, entity_id)
+        qualified, similarity, model_match, semantic_qualified = (
+            identity_qualification.get(pair, (False, None, False, True))
+        )
+        observation = observation_by_id[observation_id]
+        target = target_by_id[entity_id]
+        diagnostics.append(
+            TemporalAssignmentDiagnostic(
+                observation_id=observation_id,
+                entity_id=entity_id,
+                score=edges[pair].score,
+                target_lifecycle=target.lifecycle,
+                appearance_similarity=similarity,
+                feature_model_id=(
+                    observation.value.feature_model_id if model_match else None
+                ),
+                feature_model_match=model_match,
+                semantic_qualified=semantic_qualified,
+                high_confidence_identity_match=qualified,
+            )
+        )
 
     matched_observations = {observation_id for observation_id, _ in assignments}
     matched_entities = {entity_id for _, entity_id in assignments}
@@ -391,4 +608,10 @@ def associate_temporal_observations(
             sorted(set(observation_ids) - matched_observations)
         ),
         unmatched_entity_ids=tuple(sorted(set(entity_ids) - matched_entities)),
+        reid_opportunity_count=len(reid_opportunities),
+        reid_trigger_count=sum(
+            (observation_id, entity_id) in reid_opportunities
+            for observation_id, entity_id in assignments
+        ),
+        assignment_diagnostics=tuple(diagnostics),
     )
