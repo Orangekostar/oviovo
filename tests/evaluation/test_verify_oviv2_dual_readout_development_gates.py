@@ -512,6 +512,7 @@ def _generate(tmp_path: Path, **overrides: object) -> tuple[Path, PassingRunner]
             tmp_path / f"exact-{position}",
             100 + position,
             source_sha=source_sha,
+            source_path=repo / gates.DEFAULT_SOURCE_MANIFEST,
         )
         for position, profile in enumerate(sequence)
     ]
@@ -791,10 +792,20 @@ def _exact_execution(
     pid: int,
     *,
     commit: str = "a" * 40,
-    source_sha: str = "b" * 64,
+    source_sha: str | None = None,
+    source_path: Path | None = None,
     inputs: dict[str, str] | None = None,
 ) -> dict[str, object]:
     root.mkdir(parents=True, exist_ok=True)
+    source_path = (
+        source_path
+        if source_path is not None
+        else Path(__file__).parents[2] / gates.DEFAULT_SOURCE_MANIFEST
+    ).resolve()
+    source_data = source_path.read_bytes()
+    actual_source_sha = hashlib.sha256(source_data).hexdigest()
+    if source_sha is not None and source_sha != actual_source_sha:
+        raise ValueError("test source digest does not match canonical source manifest")
     runner = (
         Path(reference_worker.__file__).resolve()
         if profile == "reference"
@@ -807,13 +818,13 @@ def _exact_execution(
     ]
     if profile == "reference":
         argv += ["--receipt", str((root / "t1_exact_receipt.json").resolve()),
-                 "--source-manifest", str((root.parent / "sources.json").resolve())]
+                 "--source-manifest", str(source_path)]
     execution = {
         "profile": profile,
         "argv": argv,
         "pid": pid,
         "code_commit": commit,
-        "source_manifest_sha256": source_sha,
+        "source_manifest_sha256": actual_source_sha,
         "input_fingerprints": inputs or {"dataset": "c" * 64},
         "output_root": str(root.resolve()),
     }
@@ -826,6 +837,11 @@ def _exact_execution(
         "schema_version": 1,
         "format": "oviv2_t1_exact_execution_receipt_v1",
         "execution": execution,
+        "source_manifest": {
+            "path": str(source_path),
+            "sha256": actual_source_sha,
+            "byte_count": len(source_data),
+        },
         "artifact_inventory": audit["inventory"],
         "checkpoint_frames": audit["checkpoint_frames"],
         "cumulative_root_sha256": audit["root_sha256"],
@@ -960,9 +976,9 @@ def test_reference_worker_records_exact_process_and_artifact_receipt(
         "compare_cumulative_artifacts",
         lambda left, right: {
             "format": "oviv2_cumulative_exact_v1",
-            "checkpoint_frames": [2],
-            "inventory": [{"path": "x", "sha256": "b" * 64, "byte_count": 1}],
-            "root_sha256": "c" * 64,
+            "checkpoint_frames": [2, 7],
+            "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
+            "root_sha256": "e" * 64,
         },
     )
     argv = [
@@ -991,5 +1007,70 @@ def test_reference_worker_records_exact_process_and_artifact_receipt(
         "schedule_sha256": "1" * 64,
     }
     assert payload["format"] == "oviv2_t1_exact_execution_receipt_v1"
-    assert payload["cumulative_root_sha256"] == "c" * 64
+    assert payload["cumulative_root_sha256"] == "e" * 64
     assert json.loads(receipt.read_text()) == payload
+    record = {
+        **payload["execution"],
+        "receipt_sha256": hashlib.sha256(receipt.read_bytes()).hexdigest(),
+    }
+    bound, audit = gates._bind_exact_receipt(
+        record,
+        compare=lambda left, right: {
+            "format": "oviv2_cumulative_exact_v1",
+            "checkpoint_frames": [2, 7],
+            "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
+            "root_sha256": "e" * 64,
+        },
+    )
+    assert bound == record
+    assert audit["root_sha256"] == "e" * 64
+    executions = [record]
+    for position, profile in enumerate(gates.EXACT_PROFILE_SEQUENCE[1:], start=1):
+        executions.append(
+            _exact_execution(
+                profile,
+                tmp_path / f"run-{position}",
+                5000 + position,
+                commit="a" * 40,
+                source_sha=hashlib.sha256(source.read_bytes()).hexdigest(),
+                source_path=source,
+                inputs=payload["execution"]["input_fingerprints"],
+            )
+        )
+    evidence = gates.verify_exact_profile_runs(
+        executions,
+        compare=lambda left, right: {
+            "format": "oviv2_cumulative_exact_v1",
+            "checkpoint_frames": [2, 7],
+            "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
+            "root_sha256": "e" * 64,
+        },
+    )
+    assert evidence["sequence"] == list(gates.EXACT_PROFILE_SEQUENCE)
+
+
+@pytest.mark.parametrize("field", ["path", "sha256", "byte_count"])
+def test_exact_receipt_rejects_source_manifest_record_drift(
+    tmp_path: Path, field: str
+) -> None:
+    record = _exact_execution("reference", tmp_path / "run", 101)
+    receipt_path = Path(record["output_root"]) / "t1_exact_receipt.json"
+    receipt = json.loads(receipt_path.read_text())
+    if field == "path":
+        receipt["source_manifest"][field] = str((tmp_path / "other.json").resolve())
+    elif field == "sha256":
+        receipt["source_manifest"][field] = "f" * 64
+    else:
+        receipt["source_manifest"][field] += 1
+    receipt_path.write_text(json.dumps(receipt, sort_keys=True, separators=(",", ":")) + "\n")
+    record["receipt_sha256"] = hashlib.sha256(receipt_path.read_bytes()).hexdigest()
+    with pytest.raises(gates.GateVerificationError, match="source manifest"):
+        gates._bind_exact_receipt(
+            record,
+            compare=lambda left, right: {
+                "format": "oviv2_cumulative_exact_v1",
+                "checkpoint_frames": [2, 7],
+                "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
+                "root_sha256": "e" * 64,
+            },
+        )

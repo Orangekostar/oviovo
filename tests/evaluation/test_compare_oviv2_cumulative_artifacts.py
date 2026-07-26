@@ -44,7 +44,9 @@ def _file_record(path: Path, root: Path) -> dict[str, object]:
     }
 
 
-def _run(root: Path, frames: tuple[int, ...] = (2, 7)) -> Path:
+def _run(
+    root: Path, frames: tuple[int, ...] = (2, 7), *, profile: str = "a0"
+) -> Path:
     checkpoints = []
     inventory = []
     for frame in frames:
@@ -59,15 +61,21 @@ def _run(root: Path, frames: tuple[int, ...] = (2, 7)) -> Path:
         ownership = voxel / "ownership.npz"
         geometry = voxel / "geometry.npz"
         metadata = voxel / "metadata.json"
+        cumulative_manifest = artifact / "manifest.json"
+        cumulative_status = artifact / "checkpoint_status.json"
+        cumulative_final = artifact / "final.bin"
         snapshot.write_bytes(b"points-and-mesh")
         entities.write_bytes(b'{"entity_id":1,"metadata":{"x":1}}\n')
         ownership.write_bytes(b"ownership")
         geometry.write_bytes(b"geometry")
         metadata.write_bytes(b'{"frame_id":%d}\n' % frame)
+        cumulative_manifest.write_bytes(b'{"format":"cumulative-v1"}\n')
+        cumulative_status.write_bytes(b'{"status":"PASS"}\n')
+        cumulative_final.write_bytes(b"final-cumulative")
         status = audit.parent / "checkpoint_status.json"
         neutral = audit.parent / "neutral.jsonl"
-        status.write_bytes(b'{"status":"PASS"}\n')
-        neutral.write_bytes(b'{"entity_id":1}\n')
+        status.write_bytes(f'{{"profile":"{profile}","status":"PASS"}}\n'.encode())
+        neutral.write_bytes(f'{{"entity_id":1,"profile":"{profile}"}}\n'.encode())
         record = {
             "format": "oviv2_cumulative_audit_v1",
             "artifact": _tree_record(artifact, root),
@@ -88,17 +96,39 @@ def _run(root: Path, frames: tuple[int, ...] = (2, 7)) -> Path:
         )
         inventory.extend((status.relative_to(root).as_posix(), neutral.relative_to(root).as_posix()))
     final = root / "final.bin"
-    final.write_bytes(b"final-cumulative")
+    final.write_bytes(f"profile-final:{profile}".encode())
     inventory.append(final.relative_to(root).as_posix())
+    normalized = root / "normalized_run_config.json"
+    normalized.write_bytes(
+        json.dumps({"algorithm_hash": _sha(profile.encode()), "profile": profile}, sort_keys=True).encode()
+        + b"\n"
+    )
+    inventory.append(normalized.relative_to(root).as_posix())
     manifest = {
         "schema_version": 2,
         "protocol_id": "oviv2-tessecd-v2",
+        "algorithm_hash": _sha(profile.encode()),
+        "code_commit": "a" * 40,
+        "source_bindings": {"dataset": "fixture"},
+        "normalized_run_config": _file_record(normalized, root),
         "checkpoints": checkpoints,
         "final_artifact": _file_record(final, root),
         "artifact_inventory": sorted(inventory),
     }
     (root / "run_manifest.json").write_text(
         json.dumps(manifest, sort_keys=True, separators=(",", ":")) + "\n"
+    )
+    (root / "execution_receipt.json").write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "provenance": {"code_commit": "a" * 40, "profile": profile},
+                "environment": {"pid": len(profile)},
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        + "\n"
     )
     return root
 
@@ -143,6 +173,34 @@ def _v1_run(root: Path) -> Path:
     return root
 
 
+def _v1_projection_of_schema2(root: Path, schema2: Path) -> Path:
+    checkpoints = []
+    for audit in sorted(schema2.glob("checkpoints/*/cumulative_audit")):
+        source_checkpoint = audit.parent
+        frame = int(source_checkpoint.name.split("-", 1)[0])
+        checkpoint = root / "checkpoints" / source_checkpoint.name
+        artifact = checkpoint / "artifact"
+        voxel = checkpoint / "voxel_snapshot"
+        shutil.copytree(audit / "artifact", artifact)
+        shutil.copytree(audit / "voxel_snapshot", voxel)
+        status = checkpoint / "checkpoint_status.json"
+        status.write_bytes(b'{"status":"PASS"}\n')
+        checkpoints.append(
+            {
+                "frame_index": frame,
+                "artifact": _tree_record(artifact, root),
+                "voxel_snapshot": _tree_record(voxel, root),
+                "neutral_snapshot": _file_record(artifact / "snapshots/neutral.npz", root),
+                "neutral_entities": _file_record(artifact / "entities/neutral.jsonl", root),
+                "checkpoint_status": _file_record(status, root),
+            }
+        )
+    (root / "run_manifest.json").write_text(
+        json.dumps({"schema_version": 1, "checkpoints": checkpoints}, sort_keys=True) + "\n"
+    )
+    return root
+
+
 def test_identical_cumulative_artifacts_have_stable_root(tmp_path: Path) -> None:
     left, right = _pair(tmp_path)
     result = compare_cumulative_artifacts(left, right)
@@ -151,6 +209,56 @@ def test_identical_cumulative_artifacts_have_stable_root(tmp_path: Path) -> None
     assert result["checkpoint_frames"] == [2, 7]
     assert len(result["root_sha256"]) == 64
     assert any(item["path"].endswith("ownership.npz") for item in result["inventory"])
+
+
+def test_schema2_projects_only_cumulative_audit_across_profiles(tmp_path: Path) -> None:
+    left = _run(tmp_path / "a0", profile="a0")
+    right = _run(tmp_path / "a1", profile="a1")
+
+    result = compare_cumulative_artifacts(left, right)
+
+    assert result["checkpoint_frames"] == [2, 7]
+    assert all(item["path"].startswith("checkpoint/") for item in result["inventory"])
+    assert not any(
+        item["path"].endswith(("run_manifest.json", "execution_receipt.json", "normalized_run_config.json"))
+        for item in result["inventory"]
+    )
+
+
+def test_reference_v1_projects_to_schema2_cumulative_audit(tmp_path: Path) -> None:
+    schema2 = _run(tmp_path / "a0", profile="a0")
+    reference = _v1_projection_of_schema2(tmp_path / "reference", schema2)
+
+    cross = compare_cumulative_artifacts(reference, schema2)
+
+    assert cross == compare_cumulative_artifacts(schema2, schema2)
+
+
+@pytest.mark.parametrize("mutation", ["normalized", "receipt", "source", "extra"])
+def test_schema2_strictly_self_validates_identity_and_full_inventory(
+    tmp_path: Path, mutation: str
+) -> None:
+    left, right = _pair(tmp_path)
+    manifest_path = right / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    if mutation == "normalized":
+        normalized = right / "normalized_run_config.json"
+        payload = json.loads(normalized.read_text())
+        payload["algorithm_hash"] = "f" * 64
+        normalized.write_text(json.dumps(payload, sort_keys=True) + "\n")
+        manifest["normalized_run_config"] = _file_record(normalized, right)
+        manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
+    elif mutation == "receipt":
+        receipt = json.loads((right / "execution_receipt.json").read_text())
+        del receipt["environment"]
+        (right / "execution_receipt.json").write_text(json.dumps(receipt) + "\n")
+    elif mutation == "source":
+        manifest["source_bindings"] = []
+        manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
+    else:
+        (right / "profile-only-extra.bin").write_bytes(b"undeclared")
+    with pytest.raises(ArtifactMismatch, match="identity|receipt|source|inventory"):
+        compare_cumulative_artifacts(left, right)
 
 
 def test_rejects_missing_or_extra_checkpoint(tmp_path: Path) -> None:
@@ -221,22 +329,29 @@ def test_rejects_unmanifested_cumulative_file_and_symlinked_ancestor(
         compare_cumulative_artifacts(left, alias / "right")
 
 
-@pytest.mark.parametrize("mutation", ["manifest_indent", "final", "neutral", "status"])
-def test_rejects_every_raw_manifest_final_and_checkpoint_difference(
-    tmp_path: Path, mutation: str
+def test_accepts_profile_specific_top_level_manifest_serialization(tmp_path: Path) -> None:
+    left, right = _pair(tmp_path)
+    manifest = json.loads((right / "run_manifest.json").read_text())
+    (right / "run_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    assert compare_cumulative_artifacts(left, right)["checkpoint_frames"] == [2, 7]
+
+
+@pytest.mark.parametrize(
+    "relative",
+    [
+        "artifact/manifest.json",
+        "artifact/entities/neutral.jsonl",
+        "artifact/checkpoint_status.json",
+        "artifact/final.bin",
+        "voxel_snapshot/ownership.npz",
+    ],
+)
+def test_rejects_every_cumulative_manifest_neutral_status_final_and_file_difference(
+    tmp_path: Path, relative: str
 ) -> None:
     left, right = _pair(tmp_path)
-    if mutation == "manifest_indent":
-        manifest = json.loads((right / "run_manifest.json").read_text())
-        (right / "run_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
-    elif mutation == "final":
-        (right / "final.bin").write_bytes(b"other-final")
-    elif mutation == "neutral":
-        next(right.glob("checkpoints/*/neutral.jsonl")).write_bytes(b'{"entity_id":2}\n')
-    else:
-        next(right.glob("checkpoints/*/checkpoint_status.json")).write_bytes(
-            b'{"status": "PASS"}\n'
-        )
+    target = next(right.glob("checkpoints/*/cumulative_audit")) / relative
+    target.write_bytes(target.read_bytes() + b"changed")
     with pytest.raises(ArtifactMismatch, match="raw bytes|manifest record|inventory"):
         compare_cumulative_artifacts(left, right)
 

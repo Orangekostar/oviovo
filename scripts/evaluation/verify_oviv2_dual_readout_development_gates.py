@@ -203,13 +203,42 @@ def _bind_exact_receipt(
         not isinstance(receipt, dict)
         or set(receipt) != {
             "schema_version", "format", "execution", "artifact_inventory",
-            "checkpoint_frames", "cumulative_root_sha256",
+            "checkpoint_frames", "cumulative_root_sha256", "source_manifest",
         }
         or receipt.get("schema_version") != 1
         or receipt.get("format") != "oviv2_t1_exact_execution_receipt_v1"
         or receipt.get("execution") != expected_execution
     ):
         raise GateVerificationError("exact execution receipt binding mismatch")
+    source_record = receipt.get("source_manifest")
+    if not isinstance(source_record, dict):
+        raise GateVerificationError("exact execution source manifest binding mismatch")
+    source_path = Path(
+        record["argv"][13]
+        if record["profile"] == "reference"
+        else source_record.get("path", "")
+    )
+    try:
+        canonical_source = source_path.resolve(strict=True)
+    except OSError as exc:
+        raise GateVerificationError("exact execution source manifest is missing") from exc
+    if (
+        set(source_record) != {"path", "sha256", "byte_count"}
+        or str(canonical_source) != str(source_path)
+        or source_record.get("path") != str(source_path)
+        or source_record.get("sha256") != record["source_manifest_sha256"]
+        or type(source_record.get("byte_count")) is not int
+        or source_record["byte_count"] < 0
+    ):
+        raise GateVerificationError("exact execution source manifest binding mismatch")
+    source_data = _regular_file_bytes(
+        canonical_source.parent, canonical_source.name, DEFAULT_MAX_INPUT_BYTES
+    )
+    if (
+        len(source_data) != source_record["byte_count"]
+        or _sha256(source_data) != source_record["sha256"]
+    ):
+        raise GateVerificationError("exact execution source manifest hash mismatch")
     try:
         audit = compare(root, root)
     except (ArtifactMismatch, KeyError, TypeError) as exc:

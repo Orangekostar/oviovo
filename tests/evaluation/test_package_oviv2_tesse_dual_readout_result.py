@@ -620,44 +620,118 @@ def _materialize_mutation_transaction(
 ) -> tuple[dict[str, object], dict[str, object]]:
     algorithm = canonical_algorithm_hash(config)
     non_temporal = non_temporal_config_sha256(config)
+    root.mkdir(parents=True)
+    config_path = root.parent / f"{root.name}.config.json"
+    config_path.write_bytes(_bytes(config))
+    normalized = root / "normalized_run_config.json"
+    normalized.write_bytes(
+        _bytes(
+            {
+                **config,
+                "algorithm_hash": algorithm,
+                "non_temporal_config_sha256": non_temporal,
+            }
+        )
+    )
     checkpoint = root / "checkpoints/00000002-100"
-    artifact = checkpoint / "artifact"
-    voxel = checkpoint / "voxel_snapshot"
+    audit_root = checkpoint / "cumulative_audit"
+    artifact = audit_root / "artifact"
+    voxel = audit_root / "voxel_snapshot"
     artifact.mkdir(parents=True)
     voxel.mkdir()
     cumulative_bytes = (algorithm if leak_temporal else non_temporal).encode()
     (artifact / "neutral.bin").write_bytes(cumulative_bytes)
+    (artifact / "entities.jsonl").write_bytes(cumulative_bytes + b"\n")
+    (artifact / "manifest.json").write_bytes(b'{"format":"cumulative-v1"}\n')
+    (artifact / "checkpoint_status.json").write_bytes(b'{"status":"PASS"}\n')
+    (artifact / "final.bin").write_bytes(b"final-cumulative")
     (voxel / "ownership.bin").write_bytes(cumulative_bytes)
     status = checkpoint / "checkpoint_status.json"
-    status.write_text('{"status":"PASS"}\n')
+    status.write_bytes(_bytes({"algorithm_hash": algorithm, "status": "PASS"}))
     final = root / "final.bin"
-    final.write_bytes(cumulative_bytes)
+    final.write_bytes(algorithm.encode())
+    source = REPO_ROOT / "configs/evaluation/manifests/oviv2_t1_transitive_sources_v1.json"
+    source_data = source.read_bytes()
+    source_sha = hashlib.sha256(source_data).hexdigest()
+    cumulative_audit = {
+        "format": "oviv2_cumulative_audit_v1",
+        "artifact": _tree_binding(artifact, root),
+        "snapshot": _file_binding(artifact / "neutral.bin", root),
+        "entities": _file_binding(artifact / "entities.jsonl", root),
+        "voxel_snapshot": _tree_binding(voxel, root),
+    }
+    inventory = sorted(
+        path.relative_to(root).as_posix()
+        for path in root.rglob("*")
+        if path.is_file()
+    )
     manifest = {
-        "schema_version": 1,
+        "schema_version": 2,
+        "protocol_id": "oviv2-tessecd-v2",
+        "algorithm_hash": algorithm,
+        "code_commit": "a" * 40,
+        "source_bindings": {"source_manifest_sha256": source_sha},
+        "normalized_run_config": _file_binding(normalized, root),
         "checkpoints": [{
             "frame_index": 2,
-            "artifact": _tree_binding(artifact, root),
-            "voxel_snapshot": _tree_binding(voxel, root),
-            "checkpoint_status": _record(status),
+            "checkpoint_status": _file_binding(status, root),
+            "cumulative_audit": cumulative_audit,
         }],
-        "final_artifact": _record(final),
+        "final_artifact": _file_binding(final, root),
+        "artifact_inventory": inventory,
     }
-    for record in (manifest["checkpoints"][0]["checkpoint_status"], manifest["final_artifact"]):
-        record["path"] = Path(record["path"]).relative_to(root).as_posix()
     (root / "run_manifest.json").write_bytes(_bytes(manifest))
+    (root / "execution_receipt.json").write_bytes(
+        _bytes(
+            {
+                "schema_version": 1,
+                "provenance": {"code_commit": "a" * 40, "algorithm_hash": algorithm},
+                "environment": {"pid": os.getpid()},
+            }
+        )
+    )
     audit = compare_cumulative_artifacts(root, root)
+    execution = {
+        "profile": "a0",
+        "argv": [
+            str(Path(sys.executable).resolve()),
+            str((REPO_ROOT / "scripts/evaluation/run_oviv2_tesse_cd_v2.py").resolve()),
+            "--config", str(config_path.resolve()), "--output", str(root.resolve()),
+            "--freeze-manifest", str((root.parent / "freeze.json").resolve()),
+            "--run-slot", "apartment_run1",
+        ],
+        "pid": os.getpid(),
+        "code_commit": "a" * 40,
+        "source_manifest_sha256": source_sha,
+        "input_fingerprints": {"config": hashlib.sha256(config_path.read_bytes()).hexdigest()},
+        "output_root": str(root.resolve()),
+    }
     receipt = {
         "schema_version": 1,
-        "config_sha256": hashlib.sha256(_bytes(config)).hexdigest(),
-        "algorithm_hash": algorithm,
-        "non_temporal_config_sha256": non_temporal,
+        "format": "oviv2_t1_exact_execution_receipt_v1",
+        "execution": execution,
+        "source_manifest": {
+            "path": str(source.resolve()),
+            "sha256": source_sha,
+            "byte_count": len(source_data),
+        },
         "artifact_inventory": audit["inventory"],
+        "checkpoint_frames": audit["checkpoint_frames"],
         "cumulative_root_sha256": audit["root_sha256"],
     }
-    receipt_path = root.parent / f"{root.name}.receipt.json"
+    receipt_path = root / "t1_exact_receipt.json"
     receipt_path.write_bytes(_bytes(receipt))
     assert json.loads(receipt_path.read_text()) == receipt
     return receipt, audit
+
+
+def _file_binding(path: Path, root: Path) -> dict[str, object]:
+    data = path.read_bytes()
+    return {
+        "path": path.relative_to(root).as_posix(),
+        "sha256": hashlib.sha256(data).hexdigest(),
+        "byte_count": len(data),
+    }
 
 
 def test_every_temporal_scalar_runs_exact_cumulative_transaction(tmp_path: Path) -> None:
@@ -668,6 +742,21 @@ def test_every_temporal_scalar_runs_exact_cumulative_transaction(tmp_path: Path)
     baseline_receipt, baseline_audit = _materialize_mutation_transaction(
         tmp_path / "baseline", config
     )
+    baseline_manifest = json.loads(
+        (tmp_path / "baseline/run_manifest.json").read_text()
+    )
+    assert baseline_manifest["schema_version"] == 2
+    assert baseline_manifest["normalized_run_config"]["path"] == "normalized_run_config.json"
+    baseline_normalized = json.loads(
+        (tmp_path / "baseline/normalized_run_config.json").read_text()
+    )
+    assert baseline_normalized["algorithm_hash"] == baseline_algorithm
+    assert baseline_normalized["non_temporal_config_sha256"] == baseline_non_temporal
+    assert json.loads(
+        (tmp_path / "baseline/t1_exact_receipt.json").read_text()
+    )["source_manifest"]["sha256"] == hashlib.sha256(
+        (REPO_ROOT / "configs/evaluation/manifests/oviv2_t1_transitive_sources_v1.json").read_bytes()
+    ).hexdigest()
 
     leaves: list[tuple[tuple[str, ...], object]] = []
 
@@ -695,9 +784,12 @@ def test_every_temporal_scalar_runs_exact_cumulative_transaction(tmp_path: Path)
         receipt, audit = _materialize_mutation_transaction(
             tmp_path / f"mutation-{position:03d}", mutated
         )
-        assert receipt["config_sha256"] == hashlib.sha256(_bytes(mutated)).hexdigest(), path
-        assert receipt["algorithm_hash"] != baseline_algorithm, path
-        assert receipt["non_temporal_config_sha256"] == baseline_non_temporal, path
+        normalized = json.loads(
+            (tmp_path / f"mutation-{position:03d}/normalized_run_config.json").read_text()
+        )
+        assert receipt["execution"]["input_fingerprints"]["config"] == hashlib.sha256(_bytes(mutated)).hexdigest(), path
+        assert normalized["algorithm_hash"] != baseline_algorithm, path
+        assert normalized["non_temporal_config_sha256"] == baseline_non_temporal, path
         assert receipt["cumulative_root_sha256"] == baseline_receipt["cumulative_root_sha256"], path
         assert audit == compare_cumulative_artifacts(tmp_path / "baseline", tmp_path / f"mutation-{position:03d}")
 
@@ -705,7 +797,9 @@ def test_every_temporal_scalar_runs_exact_cumulative_transaction(tmp_path: Path)
         tmp_path / "leaked", {**config, "temporal_readout": {**config["temporal_readout"], "execution_profile": "leaked"}},
         leak_temporal=True,
     )
-    assert leaked["non_temporal_config_sha256"] == baseline_non_temporal
+    assert json.loads(
+        (tmp_path / "leaked/normalized_run_config.json").read_text()
+    )["non_temporal_config_sha256"] == baseline_non_temporal
     with pytest.raises(ArtifactMismatch, match="raw bytes"):
         compare_cumulative_artifacts(tmp_path / "baseline", tmp_path / "leaked")
 

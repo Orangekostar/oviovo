@@ -165,6 +165,204 @@ def _validate_manifest_records(root: Path, value: object, label: str = "manifest
             _validate_manifest_records(root, child, f"{label}[{position}]")
 
 
+def _json_object(data: bytes, label: str) -> dict[str, Any]:
+    try:
+        value = json.loads(
+            data.decode("utf-8"),
+            object_pairs_hook=_strict_object,
+            parse_constant=lambda item: (_ for _ in ()).throw(
+                ArtifactMismatch(f"non-finite {label} value: {item}")
+            ),
+        )
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ArtifactMismatch(f"{label} is invalid JSON") from exc
+    if not isinstance(value, dict):
+        raise ArtifactMismatch(f"{label} root is invalid")
+    return value
+
+
+def _schema2_run_identity(
+    root: Path, manifest: Mapping[str, Any], all_files: Mapping[str, bytes]
+) -> None:
+    algorithm_hash = manifest.get("algorithm_hash")
+    if (
+        not isinstance(algorithm_hash, str)
+        or len(algorithm_hash) != 64
+        or any(character not in "0123456789abcdef" for character in algorithm_hash)
+    ):
+        raise ArtifactMismatch("run algorithm identity is invalid")
+    normalized_record = manifest.get("normalized_run_config")
+    normalized_path, normalized_data = _validate_file_record(
+        root, normalized_record, "normalized run config"
+    )
+    if normalized_path.as_posix() != "normalized_run_config.json":
+        raise ArtifactMismatch("normalized run config path is invalid")
+    normalized = _json_object(normalized_data, "normalized run config")
+    if normalized.get("algorithm_hash") != algorithm_hash:
+        raise ArtifactMismatch("normalized run config algorithm identity mismatch")
+    receipt = _json_object(
+        all_files.get("execution_receipt.json", b""), "execution receipt"
+    )
+    base_fields = {"schema_version", "provenance", "environment"}
+    frozen_fields = base_fields | {"frozen_run_identity", "run_execution"}
+    if (
+        set(receipt) not in (base_fields, frozen_fields)
+        or receipt.get("schema_version") != 1
+        or not isinstance(receipt.get("provenance"), Mapping)
+        or not isinstance(receipt.get("environment"), Mapping)
+    ):
+        raise ArtifactMismatch("execution receipt schema is invalid")
+    manifest_commit = manifest.get("code_commit")
+    receipt_commit = receipt["provenance"].get("code_commit")
+    if receipt_commit is not None and receipt_commit != manifest_commit:
+        raise ArtifactMismatch("execution receipt code identity mismatch")
+    if set(receipt) == frozen_fields and (
+        not isinstance(receipt["frozen_run_identity"], Mapping)
+        or not isinstance(receipt["run_execution"], Mapping)
+        or manifest.get("frozen_run_identity") != receipt["frozen_run_identity"]
+    ):
+        raise ArtifactMismatch("execution receipt frozen identity mismatch")
+    source_bindings = manifest.get("source_bindings")
+    if source_bindings is not None and not isinstance(source_bindings, Mapping):
+        raise ArtifactMismatch("run source binding is invalid")
+
+
+def _cumulative_entries(
+    root: Path,
+    audit: object,
+    *,
+    logical_prefix: str,
+    label: str,
+) -> tuple[dict[str, bytes], set[str]]:
+    if (
+        not isinstance(audit, Mapping)
+        or set(audit) not in (
+            {"format", "artifact", "snapshot", "entities"},
+            {"format", "artifact", "snapshot", "entities", "voxel_snapshot"},
+        )
+        or audit.get("format") != "oviv2_cumulative_audit_v1"
+    ):
+        raise ArtifactMismatch("cumulative audit manifest is invalid")
+    entries = _validate_tree_record(root, audit["artifact"], f"{label} artifact")
+    entries.extend(
+        (
+            _validate_file_record(root, audit["snapshot"], f"{label} snapshot"),
+            _validate_file_record(root, audit["entities"], f"{label} entities"),
+        )
+    )
+    if "voxel_snapshot" in audit:
+        entries.extend(
+            _validate_tree_record(
+                root, audit["voxel_snapshot"], f"{label} voxel snapshot"
+            )
+        )
+    projection: dict[str, bytes] = {}
+    physical: set[str] = set()
+    for path, data in entries:
+        parts = path.parts
+        if parts.count("cumulative_audit") != 1:
+            raise ArtifactMismatch("cumulative audit path is outside its audit root")
+        offset = parts.index("cumulative_audit") + 1
+        if offset == len(parts):
+            raise ArtifactMismatch("cumulative audit file path is invalid")
+        local = PurePosixPath(*parts[offset:]).as_posix()
+        logical = f"{logical_prefix}/{local}"
+        previous = projection.setdefault(logical, data)
+        if previous != data:
+            raise ArtifactMismatch("cumulative inventory aliases unequal raw bytes")
+        physical.add(path.as_posix())
+    return projection, physical
+
+
+def _schema2_projection(
+    root: Path,
+    manifest: Mapping[str, Any],
+    all_files: Mapping[str, bytes],
+) -> tuple[list[int], dict[str, bytes]]:
+    checkpoints = manifest.get("checkpoints")
+    if not isinstance(checkpoints, list) or not checkpoints:
+        raise ArtifactMismatch("checkpoint inventory is empty")
+    frames: list[int] = []
+    projection: dict[str, bytes] = {}
+    projected_files: set[str] = set()
+    for position, checkpoint in enumerate(checkpoints):
+        if not isinstance(checkpoint, Mapping):
+            raise ArtifactMismatch("checkpoint inventory record is invalid")
+        frame = checkpoint.get("frame_index")
+        if type(frame) is not int or frame < 0 or frame in frames:
+            raise ArtifactMismatch("checkpoint inventory is invalid")
+        frames.append(frame)
+        entries, physical = _cumulative_entries(
+            root,
+            checkpoint.get("cumulative_audit"),
+            logical_prefix=f"checkpoint/{position:08d}/{frame:08d}",
+            label=f"checkpoint {frame} cumulative audit",
+        )
+        for path, data in entries.items():
+            if path in projection:
+                raise ArtifactMismatch("cumulative projection contains duplicate paths")
+            projection[path] = data
+        projected_files.update(physical)
+    final_audit = manifest.get("final_cumulative_audit")
+    if final_audit is not None:
+        entries, physical = _cumulative_entries(
+            root, final_audit, logical_prefix="final", label="final cumulative audit"
+        )
+        for path, data in entries.items():
+            if path in projection:
+                raise ArtifactMismatch("cumulative projection contains duplicate paths")
+            projection[path] = data
+        projected_files.update(physical)
+    actual_cumulative = {
+        path
+        for path in all_files
+        if "cumulative_audit" in PurePosixPath(path).parts
+    }
+    if actual_cumulative != projected_files:
+        raise ArtifactMismatch("cumulative artifact inventory is not exact")
+    if frames != sorted(frames):
+        raise ArtifactMismatch("checkpoint inventory is not ordered")
+    return frames, projection
+
+
+def _schema1_projection(
+    root: Path, manifest: Mapping[str, Any]
+) -> tuple[list[int], dict[str, bytes]]:
+    checkpoints = manifest.get("checkpoints")
+    if not isinstance(checkpoints, list) or not checkpoints:
+        raise ArtifactMismatch("checkpoint inventory is empty")
+    frames: list[int] = []
+    projection: dict[str, bytes] = {}
+    for position, checkpoint in enumerate(checkpoints):
+        if not isinstance(checkpoint, Mapping):
+            raise ArtifactMismatch("checkpoint inventory record is invalid")
+        frame = checkpoint.get("frame_index")
+        if type(frame) is not int or frame < 0 or frame in frames:
+            raise ArtifactMismatch("checkpoint inventory is invalid")
+        frames.append(frame)
+        roles = [
+            role
+            for role in ("artifact", "voxel_snapshot", "ownership_checkpoint")
+            if role in checkpoint
+        ]
+        if not roles or ("voxel_snapshot" in roles and "artifact" not in roles):
+            raise ArtifactMismatch("v1 cumulative checkpoint manifest is incomplete")
+        for role in roles:
+            logical_role = "voxel_snapshot" if role == "ownership_checkpoint" else role
+            record_path, _, _ = _record(checkpoint[role], f"v1 {role}")
+            for path, data in _validate_tree_record(root, checkpoint[role], f"v1 {role}"):
+                local = path.relative_to(record_path).as_posix()
+                logical = (
+                    f"checkpoint/{position:08d}/{frame:08d}/{logical_role}/{local}"
+                )
+                if logical in projection:
+                    raise ArtifactMismatch("cumulative projection contains duplicate paths")
+                projection[logical] = data
+    if frames != sorted(frames):
+        raise ArtifactMismatch("checkpoint inventory is not ordered")
+    return frames, projection
+
+
 def _load_inventory(root: Path) -> tuple[list[int], dict[str, bytes]]:
     absolute = root.absolute()
     current = Path(absolute.anchor)
@@ -178,16 +376,7 @@ def _load_inventory(root: Path) -> tuple[list[int], dict[str, bytes]]:
     if root.is_symlink() or not root.is_dir():
         raise ArtifactMismatch("run root is not a regular directory")
     manifest_data = _regular_bytes(root, PurePosixPath("run_manifest.json"), "run manifest")
-    try:
-        manifest = json.loads(
-            manifest_data.decode("utf-8"),
-            object_pairs_hook=_strict_object,
-            parse_constant=lambda value: (_ for _ in ()).throw(
-                ArtifactMismatch(f"non-finite manifest value: {value}")
-            ),
-        )
-    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise ArtifactMismatch("run manifest is invalid JSON") from exc
+    manifest = _json_object(manifest_data, "run manifest")
     if not isinstance(manifest, dict) or manifest.get("schema_version") not in (1, 2):
         raise ArtifactMismatch("run manifest identity is invalid")
     checkpoints = manifest.get("checkpoints")
@@ -211,41 +400,11 @@ def _load_inventory(root: Path) -> tuple[list[int], dict[str, bytes]]:
         expected_files = set(declared_inventory) | allowed_root_files
         if set(all_files) != expected_files:
             raise ArtifactMismatch("artifact inventory is not exact")
-        selected_paths = sorted(expected_files - {"t1_exact_receipt.json"})
-    else:
-        selected_paths = sorted(
-            path
-            for path in all_files
-            if path not in {"run_provenance.json", "timing.json", "t1_exact_receipt.json"}
-        )
+        _validate_manifest_records(root, manifest)
+        _schema2_run_identity(root, manifest, all_files)
+        return _schema2_projection(root, manifest, all_files)
     _validate_manifest_records(root, manifest)
-
-    frames: list[int] = []
-    for checkpoint in checkpoints:
-        if not isinstance(checkpoint, Mapping):
-            raise ArtifactMismatch("checkpoint inventory record is invalid")
-        frame = checkpoint.get("frame_index")
-        audit = checkpoint.get("cumulative_audit")
-        if type(frame) is not int or frame < 0 or frame in frames:
-            raise ArtifactMismatch("checkpoint inventory is invalid")
-        frames.append(frame)
-        if manifest["schema_version"] == 2:
-            if (
-                not isinstance(audit, Mapping)
-                or set(audit) not in (
-                    {"format", "artifact", "snapshot", "entities"},
-                    {"format", "artifact", "snapshot", "entities", "voxel_snapshot"},
-                )
-                or audit.get("format") != "oviv2_cumulative_audit_v1"
-            ):
-                raise ArtifactMismatch("cumulative audit manifest is invalid")
-        else:
-            roles = [name for name in ("artifact", "voxel_snapshot", "ownership_checkpoint") if name in checkpoint]
-            if not roles or ("voxel_snapshot" in roles and "artifact" not in roles):
-                raise ArtifactMismatch("v1 cumulative checkpoint manifest is incomplete")
-    if frames != sorted(frames):
-        raise ArtifactMismatch("checkpoint inventory is not ordered")
-    return frames, {path: all_files[path] for path in selected_paths}
+    return _schema1_projection(root, manifest)
 
 
 def compare_cumulative_artifacts(left: str | Path, right: str | Path) -> dict[str, Any]:
