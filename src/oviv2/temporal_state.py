@@ -5,6 +5,7 @@ from dataclasses import dataclass, fields, is_dataclass
 from enum import Enum
 import math
 from numbers import Integral, Real
+from types import MappingProxyType
 from typing import Any
 
 import numpy as np
@@ -13,7 +14,6 @@ from src.oviv2.temporal_background import TemporalBackgroundVolume
 from src.oviv2.temporal_association import TemporalAssignmentDiagnostic
 from src.oviv2.temporal_background_ledger import ReversibleBackgroundLedger
 from src.oviv2.temporal_config import (
-    TemporalBackgroundLedgerConfig,
     TemporalIdentityConfig,
 )
 from src.oviv2.temporal_epoch import GeometryEpoch
@@ -230,12 +230,17 @@ class TemporalGeometryState:
             if int(value) <= 0:
                 raise ValueError(f"{name} must be positive")
             object.__setattr__(self, name, int(value))
-        ordered = tuple(sorted((copy.deepcopy(item) for item in self.epochs), key=lambda item: (item.entity_id, item.epoch_id)))
+        ordered = tuple(sorted(self.epochs, key=lambda item: (item.entity_id, item.epoch_id)))
         keys = tuple((item.entity_id, item.epoch_id) for item in ordered)
         if keys != tuple(sorted(set(keys))):
             raise ValueError("geometry epochs must have unique identity/epoch keys")
-        for entity_id in sorted({item.entity_id for item in ordered}):
-            ids = tuple(item.epoch_id for item in ordered if item.entity_id == entity_id)
+        epoch_ids_by_identity: dict[int, list[int]] = {}
+        current_by_identity: dict[int, GeometryEpoch] = {}
+        for item in ordered:
+            epoch_ids_by_identity.setdefault(item.entity_id, []).append(item.epoch_id)
+            current_by_identity[item.entity_id] = item
+        for ids_list in epoch_ids_by_identity.values():
+            ids = tuple(ids_list)
             if ids != tuple(sorted(set(ids))) or len(ids) > self.maximum_epochs_per_identity:
                 raise ValueError("geometry epoch IDs must be monotonic, unique, and bounded")
         if len(ordered) > self.maximum_retained_epochs:
@@ -258,70 +263,51 @@ class TemporalGeometryState:
         next_ids = sorted(next_ids)
         if tuple(item[0] for item in next_ids) != tuple(sorted({item[0] for item in next_ids})):
             raise ValueError("next_epoch_ids identity IDs must be unique")
-        for identity_id in sorted({item.entity_id for item in ordered}):
-            required = max(item.epoch_id for item in ordered if item.entity_id == identity_id) + 1
-            declared = dict(next_ids).get(identity_id)
+        next_ids_by_identity = dict(next_ids)
+        for identity_id, ids in epoch_ids_by_identity.items():
+            required = ids[-1] + 1
+            declared = next_ids_by_identity.get(identity_id)
             if declared is not None and declared < required:
                 raise ValueError("next epoch ID cannot precede retained geometry")
             if declared is None:
                 next_ids.append((identity_id, required))
         object.__setattr__(self, "epochs", ordered)
         object.__setattr__(self, "next_epoch_ids", tuple(sorted(next_ids)))
+        object.__setattr__(
+            self,
+            "_current_by_identity",
+            MappingProxyType(current_by_identity),
+        )
+        object.__setattr__(
+            self, "_next_epoch_by_identity", MappingProxyType(dict(next_ids))
+        )
 
     def current(self, identity_id: int) -> GeometryEpoch:
-        matches = tuple(item for item in self.epochs if item.entity_id == identity_id)
-        if not matches:
-            raise KeyError(identity_id)
-        return matches[-1]
+        try:
+            return self._current_by_identity[identity_id]
+        except KeyError:
+            raise KeyError(identity_id) from None
+
+    def transaction(self) -> TemporalGeometryTransaction:
+        return TemporalGeometryTransaction(self)
 
     def replace_current(self, epoch: GeometryEpoch) -> TemporalGeometryState:
-        current = self.current(epoch.entity_id)
-        if epoch.epoch_id != current.epoch_id:
-            raise ValueError("replacement must preserve current epoch ID")
-        return TemporalGeometryState(
-            tuple(item for item in self.epochs if (item.entity_id, item.epoch_id) != (epoch.entity_id, epoch.epoch_id)) + (epoch,),
-            self.maximum_epochs_per_identity,
-            self.maximum_retained_epochs,
-            self.next_epoch_ids,
-        )
+        transaction = self.transaction()
+        transaction.replace_current(epoch)
+        return transaction.finalize()
 
     def append(self, epoch: GeometryEpoch) -> TemporalGeometryState:
-        retained = list(self.epochs)
-        next_ids = dict(self.next_epoch_ids)
-        expected = next_ids.get(epoch.entity_id, 0)
-        if epoch.epoch_id != expected:
-            raise ValueError("new geometry epoch must use the reserved next epoch ID")
-        next_ids[epoch.entity_id] = epoch.epoch_id + 1
-        retained.append(epoch)
-        while sum(item.entity_id == epoch.entity_id for item in retained) > self.maximum_epochs_per_identity:
-            victim = next(item for item in retained if item.entity_id == epoch.entity_id)
-            retained.remove(victim)
-        while len(retained) > self.maximum_retained_epochs:
-            current_keys = {(item.entity_id, max(e.epoch_id for e in retained if e.entity_id == item.entity_id)) for item in retained}
-            victim = next((item for item in retained if (item.entity_id, item.epoch_id) not in current_keys), None)
-            if victim is None:
-                raise OverflowError("current geometry epochs exceed retention capacity")
-            retained.remove(victim)
-        return TemporalGeometryState(
-            tuple(retained),
-            self.maximum_epochs_per_identity,
-            self.maximum_retained_epochs,
-            tuple(sorted(next_ids.items())),
-        )
+        transaction = self.transaction()
+        transaction.append(epoch)
+        return transaction.finalize()
 
     def remove_identity(self, identity_id: int, *, forget: bool = False) -> TemporalGeometryState:
-        next_ids = dict(self.next_epoch_ids)
-        if forget:
-            next_ids.pop(identity_id, None)
-        return TemporalGeometryState(
-            tuple(item for item in self.epochs if item.entity_id != identity_id),
-            self.maximum_epochs_per_identity,
-            self.maximum_retained_epochs,
-            tuple(sorted(next_ids.items())),
-        )
+        transaction = self.transaction()
+        transaction.remove_identity(identity_id, forget=forget)
+        return transaction.finalize()
 
     def next_epoch_id(self, identity_id: int) -> int:
-        return dict(self.next_epoch_ids).get(identity_id, 0)
+        return self._next_epoch_by_identity.get(identity_id, 0)
 
     def canonical_dump(self) -> tuple[object, ...]:
         return (
@@ -329,6 +315,87 @@ class TemporalGeometryState:
             self.maximum_retained_epochs,
             self.next_epoch_ids,
             _canonical(self.epochs),
+        )
+
+
+class TemporalGeometryTransaction:
+    def __init__(self, state: TemporalGeometryState) -> None:
+        if type(state) is not TemporalGeometryState:
+            raise TypeError("state must be a TemporalGeometryState")
+        self._state = state
+        self._epochs = {
+            (item.entity_id, item.epoch_id): item for item in state.epochs
+        }
+        self._epoch_ids_by_identity: dict[int, list[int]] = {}
+        for item in state.epochs:
+            self._epoch_ids_by_identity.setdefault(item.entity_id, []).append(
+                item.epoch_id
+            )
+        self._next_epoch_ids = dict(state.next_epoch_ids)
+        self._finalized = False
+
+    def _require_open(self) -> None:
+        if self._finalized:
+            raise RuntimeError("geometry transaction is already finalized")
+
+    def current(self, identity_id: int) -> GeometryEpoch:
+        ids = self._epoch_ids_by_identity.get(identity_id)
+        if not ids:
+            raise KeyError(identity_id)
+        return self._epochs[(identity_id, ids[-1])]
+
+    def next_epoch_id(self, identity_id: int) -> int:
+        return self._next_epoch_ids.get(identity_id, 0)
+
+    def replace_current(self, epoch: GeometryEpoch) -> None:
+        self._require_open()
+        current = self.current(epoch.entity_id)
+        if epoch.epoch_id != current.epoch_id:
+            raise ValueError("replacement must preserve current epoch ID")
+        self._epochs[(epoch.entity_id, epoch.epoch_id)] = epoch
+
+    def append(self, epoch: GeometryEpoch) -> None:
+        self._require_open()
+        expected = self._next_epoch_ids.get(epoch.entity_id, 0)
+        if epoch.epoch_id != expected:
+            raise ValueError("new geometry epoch must use the reserved next epoch ID")
+        self._next_epoch_ids[epoch.entity_id] = epoch.epoch_id + 1
+        ids = self._epoch_ids_by_identity.setdefault(epoch.entity_id, [])
+        ids.append(epoch.epoch_id)
+        self._epochs[(epoch.entity_id, epoch.epoch_id)] = epoch
+        while len(ids) > self._state.maximum_epochs_per_identity:
+            victim_id = ids.pop(0)
+            del self._epochs[(epoch.entity_id, victim_id)]
+        while len(self._epochs) > self._state.maximum_retained_epochs:
+            current_keys = {
+                (identity_id, epoch_ids[-1])
+                for identity_id, epoch_ids in self._epoch_ids_by_identity.items()
+                if epoch_ids
+            }
+            victim = next(
+                (key for key in sorted(self._epochs) if key not in current_keys),
+                None,
+            )
+            if victim is None:
+                raise OverflowError("current geometry epochs exceed retention capacity")
+            del self._epochs[victim]
+            self._epoch_ids_by_identity[victim[0]].remove(victim[1])
+
+    def remove_identity(self, identity_id: int, *, forget: bool = False) -> None:
+        self._require_open()
+        for epoch_id in self._epoch_ids_by_identity.pop(identity_id, ()):
+            del self._epochs[(identity_id, epoch_id)]
+        if forget:
+            self._next_epoch_ids.pop(identity_id, None)
+
+    def finalize(self) -> TemporalGeometryState:
+        self._require_open()
+        self._finalized = True
+        return TemporalGeometryState(
+            tuple(self._epochs.values()),
+            self._state.maximum_epochs_per_identity,
+            self._state.maximum_retained_epochs,
+            tuple(sorted(self._next_epoch_ids.items())),
         )
 
 
@@ -648,13 +715,6 @@ class TemporalRuntimeState:
             )
         if lifecycle_beliefs is None:
             lifecycle_beliefs = tuple(entity.lifecycle for entity in self.entities)
-        if ledger is None and identities is None:
-            ledger = ReversibleBackgroundLedger(
-                background.config,
-                TemporalBackgroundLedgerConfig(
-                    background.config.background_block_count, 2, 2, 1, 8
-                ),
-            )
         if export_tracker is None:
             export_tracker = TemporalExportTracker()
         if diagnostics is None:
@@ -667,6 +727,19 @@ class TemporalRuntimeState:
             raise TypeError("lifecycle_beliefs must contain TemporalLifecycleState values")
         if ledger is not None and not isinstance(ledger, ReversibleBackgroundLedger):
             raise TypeError("background_ledger must be a ReversibleBackgroundLedger or None")
+        if ledger is None:
+            if background.active_block_count != 0 or background.last_blocks_touched != 0:
+                raise ValueError("background without a ledger must remain empty")
+        else:
+            committed_background = ledger._volume
+            if (
+                background.config != committed_background.config
+                or background.canonical_block_state()
+                != committed_background.canonical_block_state()
+                or background.last_blocks_touched
+                != committed_background.last_blocks_touched
+            ):
+                raise ValueError("background must match the ledger committed volume")
         if type(export_tracker) is not TemporalExportTracker:
             raise TypeError("export_tracker must be a TemporalExportTracker")
         if type(diagnostics) is not TemporalDiagnostics:

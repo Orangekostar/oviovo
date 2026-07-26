@@ -5,7 +5,7 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
-from tests.oviv2.test_temporal_runtime import _config, _confirm, _runtime
+from tests.oviv2.test_temporal_runtime import _config, _confirm, _frame, _runtime
 
 
 def test_runtime_state_owns_decoupled_temporal_components() -> None:
@@ -78,6 +78,94 @@ def test_geometry_epoch_eviction_is_canonical_and_keeps_identity() -> None:
     assert geometry.canonical_dump() == geometry.canonical_dump()
 
 
+def test_geometry_state_shares_frozen_epochs_without_deepcopy(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from src.oviv2.temporal_epoch import GeometryEpoch
+    from src.oviv2.temporal_state import TemporalGeometryState
+
+    runtime = _runtime()
+    entity_id = _confirm(runtime)
+    epoch = runtime.state.geometry.current(entity_id)
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("GeometryEpoch must not be deep-copied")
+
+    monkeypatch.setattr(GeometryEpoch, "__deepcopy__", forbidden, raising=False)
+    geometry = TemporalGeometryState((epoch,), 3, 8)
+    updated = geometry.transaction().finalize()
+
+    assert geometry.epochs[0] is epoch
+    assert updated.epochs[0] is epoch
+
+
+def test_geometry_transaction_finalizes_once_and_shares_unchanged_epochs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from src.oviv2.temporal_epoch import GeometryEpoch
+    from src.oviv2.temporal_state import TemporalGeometryState
+
+    runtime = _runtime()
+    entity_id = _confirm(runtime)
+    first = runtime.state.geometry.current(entity_id)
+    second = GeometryEpoch(
+        entity_id + 1, 0, first.object_to_world, first.submap, True,
+        first.motion_decision, first.last_processed_frame_id,
+    )
+    geometry = TemporalGeometryState((first, second), 3, 8)
+    calls = 0
+    original = TemporalGeometryState.__post_init__
+
+    def counted(self):
+        nonlocal calls
+        calls += 1
+        original(self)
+
+    monkeypatch.setattr(TemporalGeometryState, "__post_init__", counted)
+    replacement = replace(
+        first, last_processed_frame_id=first.last_processed_frame_id + 1
+    )
+    transaction = geometry.transaction()
+    transaction.replace_current(replacement)
+    transaction.append(
+        GeometryEpoch(
+            second.entity_id, 1, second.object_to_world, second.submap, True,
+            second.motion_decision, second.last_processed_frame_id + 1,
+        )
+    )
+    updated = transaction.finalize()
+
+    assert calls == 1
+    assert updated.current(first.entity_id) is replacement
+    assert updated.epochs[1] is second
+
+
+@pytest.mark.parametrize("operation_count", (64, 128))
+def test_geometry_transaction_construction_count_is_constant(
+    monkeypatch: pytest.MonkeyPatch, operation_count: int
+) -> None:
+    from src.oviv2.temporal_state import TemporalGeometryState
+
+    runtime = _runtime()
+    entity_id = _confirm(runtime)
+    geometry = runtime.state.geometry
+    calls = 0
+    original = TemporalGeometryState.__post_init__
+
+    def counted(self):
+        nonlocal calls
+        calls += 1
+        original(self)
+
+    monkeypatch.setattr(TemporalGeometryState, "__post_init__", counted)
+    transaction = geometry.transaction()
+    for _ in range(operation_count):
+        transaction.replace_current(transaction.current(entity_id))
+    transaction.finalize()
+
+    assert calls == 1
+
+
 def test_legacy_runtime_state_constructor_migrates_components() -> None:
     from src.oviv2.temporal_state import TemporalRuntimeState
 
@@ -92,6 +180,47 @@ def test_legacy_runtime_state_constructor_migrates_components() -> None:
     assert migrated.identities.get(entity_id) is not None
     assert migrated.geometry.current(entity_id).epoch_id == 0
     assert migrated.lifecycle_beliefs[0].entity_id == entity_id
+    assert migrated.background_ledger is None
+
+
+def test_state_rejects_background_that_disagrees_with_ledger() -> None:
+    from src.oviv2.temporal_background import TemporalBackgroundVolume
+    from src.oviv2.temporal_runtime import _SparseBackgroundVolume
+
+    runtime = _runtime()
+    _confirm(runtime)
+    state = runtime.state
+    committed = state.background_ledger.committed_volume
+
+    wrong_touch = committed.clone()
+    wrong_touch._last_blocks_touched += 1
+    with pytest.raises(ValueError, match="background.*ledger"):
+        _rebuild_state(state, background=wrong_touch)
+
+    wrong_config = TemporalBackgroundVolume(
+        replace(committed.config, depth_max_m=committed.config.depth_max_m / 2.0)
+    )
+    with pytest.raises(ValueError, match="background.*ledger"):
+        _rebuild_state(state, background=wrong_config)
+
+    frame = _frame(2, depth=2.0)
+    depth = np.zeros_like(frame.depth)
+    depth[2, 2] = frame.depth[2, 2]
+    wrong_blocks = _SparseBackgroundVolume(committed.config)
+    keys = wrong_blocks.candidate_block_keys(frame, depth)
+    wrong_blocks = wrong_blocks.trial_integrate_blocks(frame, depth, keys)
+    with pytest.raises(ValueError, match="background.*ledger"):
+        _rebuild_state(state, background=wrong_blocks)
+
+
+def test_state_without_ledger_requires_empty_background() -> None:
+    runtime = _runtime()
+    state = runtime.state
+    background = state.background
+    background._last_blocks_touched = 1
+
+    with pytest.raises(ValueError, match="without.*ledger|empty"):
+        _rebuild_state(state, background=background, background_ledger=None)
 
 
 def _rebuild_state(state, **changes):

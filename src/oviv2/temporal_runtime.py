@@ -26,6 +26,7 @@ from src.oviv2.temporal_background import (
     TemporalBackgroundVolume,
     build_background_depth,
 )
+import src.oviv2.temporal_background as _background_module
 from src.oviv2.temporal_config import (
     ExecutionProfile,
     TemporalGeometryConfig,
@@ -76,6 +77,7 @@ from src.oviv2.tracking import LocalTracker, LocalTrackerConfig
 
 
 _NEAREST_QUERY_CHUNK_SIZE = 1024
+_SPARSE_PIXEL_CHUNK_SIZE = 4096
 
 
 @dataclass(frozen=True)
@@ -138,7 +140,7 @@ class TemporalFrameResult:
             raise TypeError("export must be a TemporalExportBatch")
         assert self.export is not None
         if self.export.frame_index != self.frame_id:
-            raise ValueError("export frame must match result")
+            raise RuntimeError("dual runtime frame mismatch between result and export")
         for name in (
             "proposal_opportunity_count", "proposal_trigger_count",
             "reid_opportunity_count", "reid_trigger_count",
@@ -777,33 +779,54 @@ def _absence_evidence_with_release(
 def _sparse_background_block_keys(
     frame: Frame, depth_m: np.ndarray, config: TemporalGeometryConfig
 ) -> tuple[tuple[int, int, int], ...]:
-    rows, columns = np.nonzero(depth_m > 0.0)
-    if rows.size == 0:
-        return ()
-    depth = depth_m[rows, columns].astype(np.float64)
-    camera = np.column_stack(
-        (
-            (columns - frame.intrinsics.cx) * depth / frame.intrinsics.fx,
-            (rows - frame.intrinsics.cy) * depth / frame.intrinsics.fy,
-            depth,
-        )
-    )
-    world = camera @ np.asarray(frame.pose[:3, :3], dtype=np.float64).T + np.asarray(
-        frame.pose[:3, 3], dtype=np.float64
-    )
-    origins = np.broadcast_to(np.asarray(frame.pose[:3, 3], dtype=np.float64), world.shape)
-    rays = world - origins
-    norms = np.linalg.norm(rays, axis=1)
-    rays = rays / norms[:, None]
+    flat_depth = np.asarray(depth_m).reshape(-1)
+    width = int(depth_m.shape[1])
+    rotation = np.asarray(frame.pose[:3, :3], dtype=np.float64)
+    origin = np.asarray(frame.pose[:3, 3], dtype=np.float64)
     truncation = 4.0 * config.voxel_size_m
     offsets = np.linspace(-truncation, truncation, 9, dtype=np.float64)
-    samples = world[:, None, :] + rays[:, None, :] * offsets[None, :, None]
     block_size = 8.0 * config.voxel_size_m
-    keys = np.floor(samples.reshape(-1, 3) / block_size).astype(np.int64)
-    return tuple(sorted({tuple(int(value) for value in row) for row in keys}))
+    touched: set[tuple[int, int, int]] = set()
+    for start in range(0, flat_depth.size, _SPARSE_PIXEL_CHUNK_SIZE):
+        chunk = flat_depth[start : start + _SPARSE_PIXEL_CHUNK_SIZE]
+        indices = np.flatnonzero(chunk > 0.0) + start
+        if indices.size == 0:
+            continue
+        rows, columns = np.divmod(indices, width)
+        depth = flat_depth[indices].astype(np.float64)
+        camera = np.column_stack(
+            (
+                (columns - frame.intrinsics.cx) * depth / frame.intrinsics.fx,
+                (rows - frame.intrinsics.cy) * depth / frame.intrinsics.fy,
+                depth,
+            )
+        )
+        world = camera @ rotation.T + origin
+        rays = world - origin
+        rays /= np.linalg.norm(rays, axis=1)[:, None]
+        samples = world[:, None, :] + rays[:, None, :] * offsets[None, :, None]
+        keys = np.floor(samples.reshape(-1, 3) / block_size).astype(np.int64)
+        touched.update(tuple(int(value) for value in row) for row in keys)
+        if len(touched) > config.background_block_count:
+            raise ValueError(
+                "sparse background keys exceed background_block_count capacity"
+            )
+    return tuple(sorted(touched))
 
 
 class _SparseBackgroundVolume(TemporalBackgroundVolume):
+    @classmethod
+    def preallocated(
+        cls, config: TemporalGeometryConfig, capacity: int
+    ) -> _SparseBackgroundVolume:
+        volume = cls.__new__(cls)
+        volume._config = _background_module._validate_config(config)
+        volume._volume = _background_module._new_sparse_volume(
+            volume._config, max(1, capacity)
+        )
+        volume._last_blocks_touched = 0
+        return volume
+
     def candidate_block_keys(
         self, frame: Frame, masked_depth: np.ndarray
     ) -> tuple[tuple[int, int, int], ...]:
@@ -815,6 +838,47 @@ class _SparseBackgroundVolume(TemporalBackgroundVolume):
             return _sparse_background_block_keys(
                 frame, masked_depth, self.config
             )
+
+    def integrate_blocks_owned(
+        self,
+        frame: Frame,
+        masked_depth: np.ndarray,
+        block_keys: tuple[tuple[int, int, int], ...],
+    ) -> None:
+        _, frame_depth, rgb, pose, intrinsic = _background_module._validate_frame(
+            frame
+        )
+        depth = _background_module._validate_masked_depth(
+            masked_depth, frame_depth, self.config
+        )
+        if not isinstance(block_keys, tuple) or not block_keys:
+            raise TypeError("block_keys must be a non-empty tuple")
+        if any(
+            not isinstance(key, tuple)
+            or len(key) != 3
+            or any(
+                isinstance(value, (bool, np.bool_))
+                or not isinstance(value, Integral)
+                for value in key
+            )
+            for key in block_keys
+        ):
+            raise TypeError("block_keys must contain canonical three-integer tuples")
+        normalized = tuple(tuple(int(value) for value in key) for key in block_keys)
+        if normalized != tuple(sorted(set(normalized))):
+            raise ValueError("block_keys must be sorted and unique")
+        candidate = self.candidate_block_keys(frame, depth)
+        if not set(normalized).issubset(candidate):
+            raise ValueError("block_keys must be touched by the observation")
+        existing = {
+            tuple(int(value) for value in row)
+            for row in _background_module._active_block_keys(self._volume)
+        }
+        if len(existing | set(normalized)) > self.config.background_block_count:
+            raise ValueError(
+                "TSDF block capacity would exceed background_block_count"
+            )
+        self._integrate_owned_blocks(depth, rgb, intrinsic, pose, normalized)
 
 
 def _candidate_keys_with_sparse_fallback(
@@ -844,13 +908,48 @@ def _rebuild_sparse_background_blocks(
     config: TemporalGeometryConfig,
     observations: tuple[tuple[object, tuple[int, int, int], Frame, np.ndarray], ...],
 ) -> TemporalBackgroundVolume:
-    rebuilt = _SparseBackgroundVolume(config)
-    for _, block_key, frame, depth_m in sorted(
+    if not isinstance(observations, tuple):
+        raise TypeError("observations must be a tuple")
+    grouped: dict[
+        object, tuple[object, Frame, np.ndarray, set[tuple[int, int, int]]]
+    ] = {}
+    for observation_key, block_key, frame, depth_m in sorted(
         observations, key=lambda item: (repr(item[0]), item[1])
     ):
-        rebuilt = rebuilt.trial_integrate_blocks(
-            frame, depth_m, (block_key,)
+        _, frame_depth, _, _, _ = _background_module._validate_frame(frame)
+        depth = _background_module._validate_masked_depth(
+            depth_m, frame_depth, config
         )
+        native_key = _ledger_module._native_identity(frame)
+        existing = grouped.get(native_key)
+        if existing is None:
+            grouped[native_key] = (
+                observation_key,
+                frame,
+                np.array(depth, copy=True),
+                {block_key},
+            )
+            continue
+        first_key, first_frame, merged, block_keys = existing
+        if (
+            _ledger_module._native_frame_payload(first_frame)
+            != _ledger_module._native_frame_payload(frame)
+        ):
+            raise ValueError("native frame content conflicts during sparse rebuild")
+        positive = depth > 0.0
+        overlap = positive & (merged > 0.0)
+        if np.any(overlap & (merged != depth)):
+            raise ValueError("masked depth conflict during sparse rebuild")
+        merged[positive] = depth[positive]
+        block_keys.add(block_key)
+    all_keys = {key for _, _, _, keys in grouped.values() for key in keys}
+    if len(all_keys) > config.background_block_count:
+        raise ValueError("TSDF block capacity would exceed background_block_count")
+    rebuilt = _SparseBackgroundVolume.preallocated(config, len(all_keys))
+    for _, frame, depth, keys in sorted(
+        grouped.values(), key=lambda item: repr(item[0])
+    ):
+        rebuilt.integrate_blocks_owned(frame, depth, tuple(sorted(keys)))
     return rebuilt
 
 
@@ -1193,7 +1292,7 @@ class TemporalCurrentRuntime:
             self.config, current,
         )
         trial_identities = current._mutable_identities_snapshot()
-        trial_geometry = current.geometry
+        geometry_transaction = current.geometry.transaction()
         trial_ledger = (
             None
             if self.config.execution_profile is ExecutionProfile.A2
@@ -1208,9 +1307,7 @@ class TemporalCurrentRuntime:
         expired_ids = set(expiry.expired_identity_ids)
         for identity_id in expired_ids:
             lifecycle_by_id.pop(identity_id, None)
-            trial_geometry = trial_geometry.remove_identity(
-                identity_id, forget=True
-            )
+            geometry_transaction.remove_identity(identity_id, forget=True)
         retained_current_entities = tuple(
             item for item in current.entities
             if item.lifecycle.entity_id not in expired_ids
@@ -1304,8 +1401,8 @@ class TemporalCurrentRuntime:
             )
             lifecycle_by_id[old.lifecycle.entity_id] = lifecycle
             evidence_by_entity[old.lifecycle.entity_id] = absence.kind
-            trial_geometry = trial_geometry.replace_current(
-                trial_geometry.current(old.lifecycle.entity_id).apply_evidence(absence.kind)
+            geometry_transaction.replace_current(
+                geometry_transaction.current(old.lifecycle.entity_id).apply_evidence(absence.kind)
             )
             next_entities[old.lifecycle.entity_id] = TemporalEntityState(
                 lifecycle=lifecycle,
@@ -1335,12 +1432,12 @@ class TemporalCurrentRuntime:
                     frame.frame_id, self.config.geometry,
                     object_to_world=pose,
                 )
-                epoch_id = trial_geometry.next_epoch_id(entity_id)
+                epoch_id = geometry_transaction.next_epoch_id(entity_id)
                 epoch = GeometryEpoch(
                     entity_id, epoch_id, pose, submap, True, None,
                     frame.frame_id,
                 )
-                trial_geometry = trial_geometry.append(epoch)
+                geometry_transaction.append(epoch)
                 lifecycle = advance_lifecycle(
                     belief,
                     TemporalEvidence(
@@ -1391,7 +1488,7 @@ class TemporalCurrentRuntime:
                 previous_object_to_world=old.object_to_world,
             )
             motion_decisions.append(motion.decision)
-            epoch = trial_geometry.current(entity_id)
+            epoch = geometry_transaction.current(entity_id)
             diagnostic = diagnostic_by_pair[(observation_id, entity_id)]
             if motion.decision is MotionDecision.REJECTED:
                 if not diagnostic.high_confidence_identity_match:
@@ -1417,12 +1514,12 @@ class TemporalCurrentRuntime:
                     self.config.geometry,
                 )
                 epoch_reset_triggers += 1
-                trial_geometry = trial_geometry.append(epoch)
+                geometry_transaction.append(epoch)
             else:
                 epoch = epoch.integrate(
                     motion, points, frame.frame_id, self.config.geometry
                 )
-                trial_geometry = trial_geometry.replace_current(epoch)
+                geometry_transaction.replace_current(epoch)
             submap = epoch.submap
             motion_confidence = _motion_confidence(
                 motion, self.config, old.submap, points
@@ -1493,8 +1590,8 @@ class TemporalCurrentRuntime:
             )
             lifecycle_by_id[entity_id] = lifecycle
             evidence_by_entity[entity_id] = absence.kind
-            trial_geometry = trial_geometry.replace_current(
-                trial_geometry.current(entity_id).apply_evidence(absence.kind)
+            geometry_transaction.replace_current(
+                geometry_transaction.current(entity_id).apply_evidence(absence.kind)
             )
             next_entities[entity_id] = TemporalEntityState(
                 lifecycle=lifecycle,
@@ -1525,8 +1622,7 @@ class TemporalCurrentRuntime:
                 return False
             victim_id = candidates[0].lifecycle.entity_id
             del next_entities[victim_id]
-            nonlocal trial_geometry
-            trial_geometry = trial_geometry.remove_identity(victim_id)
+            geometry_transaction.remove_identity(victim_id)
             reclaimed_ids.append(victim_id)
             return True
 
@@ -1600,7 +1696,7 @@ class TemporalCurrentRuntime:
                 last_seen_frame_id=frame.frame_id,
                 feature_model_id=feature_model_id,
             )
-            trial_geometry = trial_geometry.append(
+            geometry_transaction.append(
                 GeometryEpoch(
                     entity_id, 0, pose, submap, True, None, frame.frame_id
                 )
@@ -1610,11 +1706,12 @@ class TemporalCurrentRuntime:
             new_ids.append(entity_id)
             next_entity_id += 1
 
+        trial_geometry = geometry_transaction.finalize()
         ordered_entities = tuple(next_entities[key] for key in sorted(next_entities))
         if self.config.execution_profile is ExecutionProfile.A2:
             if trial_ledger is not None:
                 raise RuntimeError("A2 must not own a background ledger")
-            trial_background = current._owned_background()
+            trial_background = current._mutable_background_snapshot()
             if trial_background.active_block_count:
                 raise RuntimeError("A2 temporal background must remain empty")
             trial_background._last_blocks_touched = 0

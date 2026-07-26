@@ -806,6 +806,43 @@ def test_a2_skips_masked_background_and_reports_zero(
     assert runtime.state.background.active_block_count == 0
 
 
+def test_a2_background_is_isolated_across_revisions() -> None:
+    runtime = _runtime(_config(ExecutionProfile.A2))
+    previous = runtime.state
+    previous_background = previous._owned_background()
+    previous_dump = previous.canonical_dump()
+    frame = _frame(0, timestamp=0.0)
+
+    runtime.process_frame(frame, (_observation(frame),))
+
+    current_background = runtime.state._owned_background()
+    assert current_background is not previous_background
+    current_background._last_blocks_touched = 7
+    assert previous.canonical_dump() == previous_dump
+
+
+def test_runtime_finalizes_geometry_once_per_frame(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from src.oviv2.temporal_state import TemporalGeometryState
+
+    runtime = _runtime(_config(ExecutionProfile.A2))
+    _confirm(runtime)
+    calls = 0
+    original = TemporalGeometryState.__post_init__
+
+    def counted(self):
+        nonlocal calls
+        calls += 1
+        original(self)
+
+    monkeypatch.setattr(TemporalGeometryState, "__post_init__", counted)
+    frame = _frame(2)
+    runtime.process_frame(frame, (_observation(frame),))
+
+    assert calls == 1
+
+
 def test_a2_never_constructs_clones_or_stages_ledger(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1342,6 +1379,92 @@ def test_sparse_background_rebuild_is_deterministic() -> None:
     assert left.canonical_block_state() == right.canonical_block_state()
 
 
+def test_sparse_block_key_scan_uses_bounded_pixel_chunks(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+
+    width = module._SPARSE_PIXEL_CHUNK_SIZE * 3 + 17
+    frame = Frame(
+        frame_id=0,
+        timestamp=0.0,
+        source_frame_id=100,
+        rgb=np.zeros((1, width, 3), dtype=np.uint8),
+        depth=np.full((1, width), 2.0, dtype=np.float32),
+        pose=np.eye(4, dtype=np.float64),
+        intrinsics=CameraIntrinsics(4.0, 4.0, width / 2.0, 0.0, width, 1),
+    )
+    maximum_seen = 0
+    original = module.np.flatnonzero
+
+    def capture(values):
+        nonlocal maximum_seen
+        maximum_seen = max(maximum_seen, values.size)
+        return original(values)
+
+    monkeypatch.setattr(module.np, "flatnonzero", capture)
+    module._sparse_background_block_keys(
+        frame,
+        frame.depth,
+        replace(_config().geometry, background_block_count=100_000),
+    )
+
+    assert maximum_seen <= module._SPARSE_PIXEL_CHUNK_SIZE
+
+
+def test_sparse_block_key_scan_fails_at_configured_capacity() -> None:
+    import src.oviv2.temporal_runtime as module
+
+    frame = _frame(0, depth=2.0)
+    with pytest.raises(ValueError, match="background_block_count|capacity"):
+        module._sparse_background_block_keys(
+            frame,
+            frame.depth,
+            replace(_config().geometry, background_block_count=1),
+        )
+
+
+def test_sparse_rebuild_batches_all_blocks_for_one_native_frame(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+
+    frame = _frame(2, depth=2.0)
+    depth = np.zeros_like(frame.depth)
+    depth[2, 2] = frame.depth[2, 2]
+    probe = module._SparseBackgroundVolume(_config().geometry)
+    keys = probe.candidate_block_keys(frame, depth)
+    expected = probe.trial_integrate_blocks(frame, depth, keys)
+    observations = tuple(
+        (((frame.frame_id, frame.source_frame_id, key)), key, frame, depth)
+        for key in keys
+    )
+    integrate_calls = 0
+    original_integrate = module._SparseBackgroundVolume._integrate_owned_blocks
+
+    def counted(self, *args, **kwargs):
+        nonlocal integrate_calls
+        integrate_calls += 1
+        return original_integrate(self, *args, **kwargs)
+
+    monkeypatch.setattr(
+        module._SparseBackgroundVolume, "_integrate_owned_blocks", counted
+    )
+    monkeypatch.setattr(
+        module._SparseBackgroundVolume,
+        "_clone",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("sparse rebuild must not clone per block")
+        ),
+    )
+    rebuilt = module._rebuild_sparse_background_blocks(
+        _config().geometry, observations
+    )
+
+    assert integrate_calls == 1
+    assert rebuilt.canonical_block_state() == expected.canonical_block_state()
+
+
 def test_ledger_rejection_is_staged_once_and_rolls_back(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1672,6 +1795,9 @@ def test_frame_result_and_runtime_state_reject_cross_field_invariants() -> None:
         TemporalFrameResult(0, 1, (1,), (1,), (), (), 0)
     with pytest.raises(ValueError, match="subset"):
         TemporalFrameResult(0, 1, (), (), (1,), (), 0)
+    result = TemporalFrameResult(0, 1, (), (), (), (), 0)
+    with pytest.raises(RuntimeError, match="dual.*frame|mismatch"):
+        replace(result, frame_id=1)
     runtime = _runtime()
     with pytest.raises(ValueError, match="revision"):
         replace(runtime.state, revision=1)
