@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import FrozenInstanceError, asdict, dataclass, field
+from dataclasses import FrozenInstanceError, asdict, dataclass, field, replace
 from enum import Enum
 import hashlib
 import json
 import math
-from numbers import Real
+from numbers import Integral, Real
 
 import numpy as np
 
@@ -22,11 +22,12 @@ PhysicalObservationKey = tuple[int, int, BlockKey]
 
 
 def _integer(value: object, name: str) -> int:
-    if isinstance(value, bool) or not isinstance(value, int):
+    if isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral):
         raise TypeError(f"{name} must be an integer")
-    if value < 0:
+    result = int(value)
+    if result < 0:
         raise ValueError(f"{name} must be nonnegative")
-    return value
+    return result
 
 
 def _timestamp(value: object, name: str) -> float:
@@ -41,9 +42,12 @@ def _timestamp(value: object, name: str) -> float:
 def _block_key(value: object) -> BlockKey:
     if not isinstance(value, tuple) or len(value) != 3:
         raise TypeError("block_key must be a canonical three-integer tuple")
-    if any(isinstance(item, bool) or not isinstance(item, int) for item in value):
+    if any(
+        isinstance(item, (bool, np.bool_)) or not isinstance(item, Integral)
+        for item in value
+    ):
         raise TypeError("block_key must contain only integers")
-    return value
+    return tuple(int(item) for item in value)
 
 
 def _readonly(value: np.ndarray) -> np.ndarray:
@@ -61,6 +65,10 @@ class _FrozenCameraIntrinsics(CameraIntrinsics):
             raise FrozenInstanceError(f"cannot assign to field '{name}'")
         super().__setattr__(name, value)
 
+    def __deepcopy__(self, memo: dict[int, object]) -> _FrozenCameraIntrinsics:
+        memo[id(self)] = self
+        return self
+
 
 class _FrozenFrame(Frame):
     def __init__(self, **values: object) -> None:
@@ -72,6 +80,13 @@ class _FrozenFrame(Frame):
             raise FrozenInstanceError(f"cannot assign to field '{name}'")
         super().__setattr__(name, value)
 
+    def __eq__(self, other: object) -> bool:
+        return self is other
+
+    def __deepcopy__(self, memo: dict[int, object]) -> _FrozenFrame:
+        memo[id(self)] = self
+        return self
+
 
 def _frozen_frame(frame: object) -> Frame:
     if not isinstance(frame, Frame):
@@ -81,12 +96,12 @@ def _frozen_frame(frame: object) -> Frame:
     if not isinstance(frame.intrinsics, CameraIntrinsics):
         raise TypeError("frame.intrinsics must be CameraIntrinsics")
     intrinsics = _FrozenCameraIntrinsics(
-        frame.intrinsics.fx,
-        frame.intrinsics.fy,
-        frame.intrinsics.cx,
-        frame.intrinsics.cy,
-        frame.intrinsics.width,
-        frame.intrinsics.height,
+        _timestamp(frame.intrinsics.fx, "frame.intrinsics.fx"),
+        _timestamp(frame.intrinsics.fy, "frame.intrinsics.fy"),
+        _timestamp(frame.intrinsics.cx, "frame.intrinsics.cx"),
+        _timestamp(frame.intrinsics.cy, "frame.intrinsics.cy"),
+        _integer(frame.intrinsics.width, "frame.intrinsics.width"),
+        _integer(frame.intrinsics.height, "frame.intrinsics.height"),
     )
     source_frame_id = (
         None
@@ -113,6 +128,10 @@ class BackgroundContribution:
 
     def canonical_payload(self) -> tuple[object, ...]:
         return (self.block_key,)
+
+    def __deepcopy__(self, memo: dict[int, object]) -> BackgroundContribution:
+        memo[id(self)] = self
+        return self
 
 
 def _native_identity(frame: Frame) -> NativeIdentity:
@@ -155,7 +174,7 @@ def _observation_payload(
     return (_native_frame_payload(frame), _array_digest(depth_m))
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class BackgroundLedgerEvidence:
     entity_id: int
     geometry_epoch: int
@@ -258,6 +277,10 @@ class BackgroundLedgerEvidence:
             tuple(sorted(self.contributions, key=lambda item: item.block_key)),
         )
 
+    def __deepcopy__(self, memo: dict[int, object]) -> BackgroundLedgerEvidence:
+        memo[id(self)] = self
+        return self
+
 
 class LedgerDecision(str, Enum):
     STAGED = "staged"
@@ -268,7 +291,7 @@ class LedgerDecision(str, Enum):
     REJECTED_INTEGRATION = "rejected_integration"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class _Record:
     entity_id: int
     geometry_epoch: int
@@ -284,22 +307,30 @@ class _Record:
     def key(self) -> ContributionKey:
         return (self.entity_id, self.geometry_epoch, self.frame_id, self.contribution.block_key)
 
+    def __deepcopy__(self, memo: dict[int, object]) -> _Record:
+        memo[id(self)] = self
+        return self
+
 
 def _validate_config(config: object) -> TemporalBackgroundLedgerConfig:
     if not isinstance(config, TemporalBackgroundLedgerConfig):
         raise TypeError("config must be a TemporalBackgroundLedgerConfig")
-    for name in (
+    names = (
         "maximum_journal_blocks",
         "commit_support_frames",
         "commit_distinct_view_bins",
         "minimum_commit_frame_gap",
         "maximum_records_per_block",
-    ):
+    )
+    normalized: dict[str, int] = {}
+    for name in names:
         value = getattr(config, name)
-        if isinstance(value, bool) or not isinstance(value, int):
+        if isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral):
             raise TypeError(f"config.{name} must be an integer")
-        if value <= 0:
+        normalized[name] = int(value)
+        if normalized[name] <= 0:
             raise ValueError(f"config.{name} must be positive")
+    config = replace(config, **normalized)
     if config.maximum_records_per_block < config.commit_support_frames:
         raise ValueError("maximum_records_per_block cannot be below commit_support_frames")
     if config.commit_support_frames not in {2, 3, 4}:
@@ -340,6 +371,20 @@ def _digest(payload: object) -> str:
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
+@dataclass(frozen=True)
+class _LedgerState:
+    volume: TemporalBackgroundVolume
+    generation: int
+    provisional: dict[ContributionKey, _Record]
+    committed: dict[ContributionKey, _Record]
+    event_digests: dict[tuple[int, int, int], str]
+    native_frames: dict[NativeIdentity, tuple[object, ...]]
+    native_view_bins: dict[NativeIdentity, int]
+    processed_frames: dict[int, tuple[object, ...]]
+    last_frame_id: int
+    last_timestamp: float
+
+
 class ReversibleBackgroundLedger:
     __hash__ = None
 
@@ -349,23 +394,91 @@ class ReversibleBackgroundLedger:
         config: TemporalBackgroundLedgerConfig,
     ) -> None:
         self._config = _validate_config(config)
-        self._volume = TemporalBackgroundVolume(geometry_config)
-        if self.config.maximum_journal_blocks > self._volume.config.background_block_count:
+        volume = TemporalBackgroundVolume(geometry_config)
+        if self.config.maximum_journal_blocks > volume.config.background_block_count:
             raise ValueError(
                 "maximum_journal_blocks cannot exceed geometry background_block_count"
             )
-        self._provisional: dict[ContributionKey, _Record] = {}
-        self._committed: dict[ContributionKey, _Record] = {}
-        self._event_digests: dict[tuple[int, int, int], str] = {}
-        self._native_frames: dict[NativeIdentity, tuple[object, ...]] = {}
-        self._native_view_bins: dict[NativeIdentity, int] = {}
-        self._processed_frames: dict[int, tuple[object, ...]] = {}
         self._maximum_ownership_records_per_observation = (
-            self._volume.config.maximum_entities
+            volume.config.maximum_entities
         )
-        self._last_frame_id = -1
-        self._last_timestamp = -math.inf
-        self._generation = 0
+        self._state = _LedgerState(
+            volume=volume,
+            generation=0,
+            provisional={},
+            committed={},
+            event_digests={},
+            native_frames={},
+            native_view_bins={},
+            processed_frames={},
+            last_frame_id=-1,
+            last_timestamp=-math.inf,
+        )
+
+    @property
+    def _volume(self) -> TemporalBackgroundVolume:
+        return self._state.volume
+
+    @property
+    def _generation(self) -> int:
+        return self._state.generation
+
+    @property
+    def _provisional(self) -> dict[ContributionKey, _Record]:
+        return self._state.provisional
+
+    @property
+    def _committed(self) -> dict[ContributionKey, _Record]:
+        return self._state.committed
+
+    @property
+    def _event_digests(self) -> dict[tuple[int, int, int], str]:
+        return self._state.event_digests
+
+    @property
+    def _native_frames(self) -> dict[NativeIdentity, tuple[object, ...]]:
+        return self._state.native_frames
+
+    @property
+    def _native_view_bins(self) -> dict[NativeIdentity, int]:
+        return self._state.native_view_bins
+
+    @property
+    def _processed_frames(self) -> dict[int, tuple[object, ...]]:
+        return self._state.processed_frames
+
+    @property
+    def _last_frame_id(self) -> int:
+        return self._state.last_frame_id
+
+    @property
+    def _last_timestamp(self) -> float:
+        return self._state.last_timestamp
+
+    def __deepcopy__(self, memo: dict[int, object]) -> ReversibleBackgroundLedger:
+        clone = self.clone()
+        memo[id(self)] = clone
+        return clone
+
+    def clone(self) -> ReversibleBackgroundLedger:
+        clone = object.__new__(type(self))
+        clone._config = self._config
+        clone._maximum_ownership_records_per_observation = (
+            self._maximum_ownership_records_per_observation
+        )
+        clone._state = _LedgerState(
+            volume=self._volume.clone(),
+            generation=self._generation,
+            provisional=dict(self._provisional),
+            committed=dict(self._committed),
+            event_digests=dict(self._event_digests),
+            native_frames=dict(self._native_frames),
+            native_view_bins=dict(self._native_view_bins),
+            processed_frames=dict(self._processed_frames),
+            last_frame_id=self._last_frame_id,
+            last_timestamp=self._last_timestamp,
+        )
+        return clone
 
     @property
     def config(self) -> TemporalBackgroundLedgerConfig:
@@ -484,6 +597,13 @@ class ReversibleBackgroundLedger:
             and evidence.timestamp != self._last_timestamp
         ):
             raise ValueError("evidence.timestamp must agree within one frame")
+        current_event_count = (
+            len(self._event_digests)
+            if evidence.frame_id == self._last_frame_id
+            else 0
+        )
+        if current_event_count >= self._volume.config.maximum_entities:
+            return LedgerDecision.REJECTED_CAPACITY
 
         try:
             if evidence.contributions:
@@ -618,9 +738,14 @@ class ReversibleBackgroundLedger:
                 )
             except Exception:
                 return LedgerDecision.REJECTED_INTEGRATION
-            self._volume = rebuilt
-            self._generation += 1
-            self._publish_event(evidence, evidence_digest, provisional, committed)
+            self._publish_event(
+                evidence,
+                evidence_digest,
+                provisional,
+                committed,
+                volume=rebuilt,
+                generation=self._generation + 1,
+            )
             return LedgerDecision.COMMITTED
         self._publish_event(evidence, evidence_digest, provisional, committed)
         return LedgerDecision.STAGED
@@ -696,24 +821,71 @@ class ReversibleBackgroundLedger:
         evidence_digest: str,
         provisional: dict[ContributionKey, _Record],
         committed: dict[ContributionKey, _Record],
+        *,
+        volume: TemporalBackgroundVolume | None = None,
+        generation: int | None = None,
     ) -> None:
-        self._provisional = provisional
-        self._committed = committed
-        self._event_digests[
-            (evidence.entity_id, evidence.geometry_epoch, evidence.frame_id)
-        ] = evidence_digest
-        if evidence._native_frame_canonical is not None:
-            assert evidence.frame is not None
-            self._native_frames.setdefault(
-                _native_identity(evidence.frame), evidence._native_frame_canonical
-            )
-            assert evidence.view_bin is not None
-            self._native_view_bins.setdefault(
-                _native_identity(evidence.frame), evidence.view_bin
-            )
-            assert evidence._processed_frame_canonical is not None
-            self._processed_frames.setdefault(
-                evidence.frame_id, evidence._processed_frame_canonical
-            )
-        self._last_frame_id = evidence.frame_id
-        self._last_timestamp = evidence.timestamp
+        events = (
+            dict(self._event_digests)
+            if evidence.frame_id == self._last_frame_id
+            else {}
+        )
+        events[(evidence.entity_id, evidence.geometry_epoch, evidence.frame_id)] = (
+            evidence_digest
+        )
+        native_frames, native_view_bins, processed_frames = self._record_indexes(
+            provisional, committed, evidence.frame_id
+        )
+        next_state = _LedgerState(
+            volume=self._volume if volume is None else volume,
+            generation=self._generation if generation is None else generation,
+            provisional=provisional,
+            committed=committed,
+            event_digests=events,
+            native_frames=native_frames,
+            native_view_bins=native_view_bins,
+            processed_frames=processed_frames,
+            last_frame_id=evidence.frame_id,
+            last_timestamp=evidence.timestamp,
+        )
+        self._before_publish(next_state)
+        self._state = next_state
+
+    @staticmethod
+    def _record_indexes(
+        provisional: dict[ContributionKey, _Record],
+        committed: dict[ContributionKey, _Record],
+        current_frame_id: int,
+    ) -> tuple[
+        dict[NativeIdentity, tuple[object, ...]],
+        dict[NativeIdentity, int],
+        dict[int, tuple[object, ...]],
+    ]:
+        native_frames: dict[NativeIdentity, tuple[object, ...]] = {}
+        native_view_bins: dict[NativeIdentity, int] = {}
+        processed_frames: dict[int, tuple[object, ...]] = {}
+        for record in (*provisional.values(), *committed.values()):
+            native = _native_identity(record.frame)
+            native_payload = _native_frame_payload(record.frame)
+            previous_native = native_frames.setdefault(native, native_payload)
+            if previous_native != native_payload:
+                raise ValueError("native frame content conflicts while indexing records")
+            previous_view = native_view_bins.setdefault(native, record.view_bin)
+            if previous_view != record.view_bin:
+                raise ValueError("native frame view_bin conflicts while indexing records")
+            if record.frame_id == current_frame_id:
+                processed_payload = (
+                    record.frame_id,
+                    _native_frame_payload(record.frame),
+                )
+                previous_processed = processed_frames.setdefault(
+                    record.frame_id, processed_payload
+                )
+                if previous_processed != processed_payload:
+                    raise ValueError(
+                        "processed frame content conflicts while indexing records"
+                    )
+        return native_frames, native_view_bins, processed_frames
+
+    def _before_publish(self, next_state: _LedgerState) -> None:
+        del next_state

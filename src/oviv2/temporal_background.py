@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import math
 from numbers import Integral, Real
 
@@ -31,8 +31,8 @@ def _is_bool(value: object) -> bool:
 def _canonical_rebuild_key(value: object) -> object:
     if _is_bool(value):
         raise TypeError("observation key must contain only integers and tuples")
-    if isinstance(value, int):
-        return value
+    if isinstance(value, Integral):
+        return int(value)
     if isinstance(value, tuple) and value:
         return tuple(_canonical_rebuild_key(item) for item in value)
     raise TypeError("observation key must be an integer or non-empty integer tuple")
@@ -59,23 +59,28 @@ def _validate_config(config: object) -> TemporalGeometryConfig:
             raise TypeError(f"{name} must be numeric")
         if not math.isfinite(float(value)) or float(value) <= 0.0:
             raise ValueError(f"{name} must be finite and positive")
-    for name in (
+    integer_names = (
         "maximum_entities",
         "maximum_object_voxels",
         "maximum_visibility_points_per_entity",
         "background_block_count",
         "minimum_icp_points",
-    ):
+    )
+    normalized: dict[str, int] = {}
+    for name in integer_names:
         value = getattr(config, name)
-        if _is_bool(value) or not isinstance(value, int):
+        if _is_bool(value) or not isinstance(value, Integral):
             raise TypeError(f"{name} must be an integer")
-        if value <= 0:
+        normalized[name] = int(value)
+        if normalized[name] <= 0:
             raise ValueError(f"{name} must be positive")
     dilation = config.background_mask_dilation_px
-    if _is_bool(dilation) or not isinstance(dilation, int):
+    if _is_bool(dilation) or not isinstance(dilation, Integral):
         raise TypeError("background_mask_dilation_px must be an integer")
-    if dilation < 0:
+    normalized["background_mask_dilation_px"] = int(dilation)
+    if normalized["background_mask_dilation_px"] < 0:
         raise ValueError("background_mask_dilation_px must be nonnegative")
+    config = replace(config, **normalized)
     fitness = config.minimum_icp_fitness
     if _is_bool(fitness) or not isinstance(fitness, Real):
         raise TypeError("minimum_icp_fitness must be numeric")
@@ -552,11 +557,15 @@ class TemporalBackgroundVolume:
             if (
                 not isinstance(raw_block_key, tuple)
                 or len(raw_block_key) != 3
-                or any(_is_bool(value) or not isinstance(value, int) for value in raw_block_key)
+                or any(
+                    _is_bool(value) or not isinstance(value, Integral)
+                    for value in raw_block_key
+                )
             ):
                 raise TypeError("block_key must be a canonical three-integer tuple")
             keys.add(key)
-            canonical.append((key, raw_block_key, frame, depth))
+            block_key = tuple(int(value) for value in raw_block_key)
+            canonical.append((key, block_key, frame, depth))
         rebuilt = cls(config)
         for _, block_key, frame, depth in sorted(
             canonical, key=lambda item: _rebuild_sort_key(item[0])
@@ -591,12 +600,15 @@ class TemporalBackgroundVolume:
         if any(
             not isinstance(key, tuple)
             or len(key) != 3
-            or any(_is_bool(value) or not isinstance(value, int) for value in key)
+            or any(
+                _is_bool(value) or not isinstance(value, Integral) for value in key
+            )
             for key in block_keys
         ):
             raise TypeError("block_keys must contain canonical three-integer tuples")
-        selected = tuple(sorted(set(block_keys)))
-        if selected != block_keys:
+        normalized = tuple(tuple(int(value) for value in key) for key in block_keys)
+        selected = tuple(sorted(set(normalized)))
+        if selected != normalized:
             raise ValueError("block_keys must be sorted and unique")
         candidate = self.candidate_block_keys(frame, depth)
         if not set(selected).issubset(candidate):

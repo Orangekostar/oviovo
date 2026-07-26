@@ -499,6 +499,48 @@ def test_public_clone_is_independent_and_exact() -> None:
     assert clone == volume
 
 
+def test_numpy_integral_rebuild_keys_and_geometry_config_are_normalized() -> None:
+    config = replace(
+        _config(),
+        maximum_entities=np.int64(4),
+        background_block_count=np.int64(16),
+        background_mask_dilation_px=np.int64(0),
+    )
+    frame = _frame(np.int64(8), size=16)
+    rebuilt = TemporalBackgroundVolume.rebuild(
+        config,
+        (
+            (
+                (np.int64(8),),
+                frame,
+                np.zeros_like(frame.depth),
+            ),
+        ),
+    )
+    assert type(rebuilt.config.maximum_entities) is int
+    assert type(rebuilt.config.background_block_count) is int
+    assert type(rebuilt.config.background_mask_dilation_px) is int
+
+
+def test_trial_integrate_blocks_accepts_numpy_integral_block_keys() -> None:
+    frame = _frame(8, size=16)
+    volume = TemporalBackgroundVolume(_config())
+    touched = volume.candidate_block_keys(frame, frame.depth)
+    numpy_key = tuple(np.int64(value) for value in touched[0])
+    integrated = volume.trial_integrate_blocks(frame, frame.depth, (numpy_key,))
+    assert integrated.active_block_count == 1
+
+
+@pytest.mark.parametrize("bad", [True, np.bool_(True)])
+def test_rebuild_keys_and_geometry_config_reject_boolean_integrals(bad: object) -> None:
+    with pytest.raises(TypeError):
+        TemporalBackgroundVolume(replace(_config(), maximum_entities=bad))
+    with pytest.raises(TypeError):
+        TemporalBackgroundVolume.rebuild(
+            _config(), ((bad, _frame(8, size=16), np.zeros((16, 16), np.float32)),)
+        )
+
+
 def test_rebuild_sorts_observations_and_does_not_mutate_inputs() -> None:
     first = _frame(10, size=16)
     first.intrinsics = CameraIntrinsics(8.0, 8.0, 7.5, 7.5, 16, 16)

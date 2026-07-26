@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from dataclasses import FrozenInstanceError, replace
 
 import numpy as np
@@ -690,6 +691,40 @@ def test_same_source_same_view_replay_cannot_increase_support_or_native_gap() ->
     assert ledger.committed_record_count == 0
 
 
+def test_replayed_native_frame_keeps_the_current_processed_frame_identity() -> None:
+    ledger = _ledger()
+    first = _frame(10)
+    first.source_frame_id = 77
+    replay = _frame(12)
+    replay.source_frame_id = 77
+    replay.timestamp = first.timestamp
+    assert ledger.stage(
+        _masked_evidence(
+            entity_id=1,
+            frame=first,
+            view_bin=0,
+            masked_depth=first.depth,
+        )
+    ) is LedgerDecision.STAGED
+    assert ledger.stage(
+        _masked_evidence(
+            entity_id=1,
+            frame=replay,
+            view_bin=0,
+            masked_depth=replay.depth,
+        )
+    ) is LedgerDecision.STAGED
+    assert ledger._processed_frames[12][0] == 12
+    assert ledger.stage(
+        _masked_evidence(
+            entity_id=2,
+            frame=replay,
+            view_bin=0,
+            masked_depth=replay.depth,
+        )
+    ) is LedgerDecision.STAGED
+
+
 @pytest.mark.parametrize(
     ("support_frames", "sources"),
     [
@@ -721,3 +756,210 @@ def test_only_distinct_native_sources_can_satisfy_all_commit_thresholds(
             assert last_decision is LedgerDecision.STAGED
     assert last_decision is LedgerDecision.COMMITTED
     assert ledger.committed_record_count == support_frames
+
+
+def _private_state_snapshot(ledger: ReversibleBackgroundLedger) -> tuple[object, ...]:
+    return (
+        ledger.journal_digest(),
+        ledger.committed_digest(),
+        ledger.provisional_count,
+        ledger.committed_record_count,
+        ledger.committed_generation,
+        len(ledger._event_digests),
+        len(ledger._native_frames),
+        len(ledger._native_view_bins),
+        len(ledger._processed_frames),
+        ledger._last_frame_id,
+        ledger._last_timestamp,
+        ledger._volume.canonical_block_state(),
+    )
+
+
+def test_event_idempotence_history_is_bounded_to_the_current_frame() -> None:
+    ledger = _ledger()
+    for frame_id in range(128):
+        assert ledger.stage(
+            _evidence(
+                entity_id=frame_id % _geometry().maximum_entities,
+                frame_id=frame_id,
+                kind=TemporalEvidenceKind.PRESENT,
+            )
+        ) is LedgerDecision.NO_OP
+        assert len(ledger._event_digests) == 1
+        assert len(ledger._processed_frames) <= 1
+
+
+def test_same_frame_event_capacity_is_geometry_bounded_and_transactional() -> None:
+    ledger = _ledger()
+    for entity_id in range(_geometry().maximum_entities):
+        assert ledger.stage(
+            _evidence(
+                entity_id=entity_id,
+                frame_id=10,
+                kind=TemporalEvidenceKind.PRESENT,
+            )
+        ) is LedgerDecision.NO_OP
+    before = _private_state_snapshot(ledger)
+    assert ledger.stage(
+        _evidence(
+            entity_id=_geometry().maximum_entities,
+            frame_id=10,
+            kind=TemporalEvidenceKind.PRESENT,
+        )
+    ) is LedgerDecision.REJECTED_CAPACITY
+    assert _private_state_snapshot(ledger) == before
+
+
+def test_cancel_prunes_orphan_native_and_processed_frame_indexes() -> None:
+    ledger = _ledger()
+    assert ledger.stage(_evidence(frame_id=10)) is LedgerDecision.STAGED
+    assert len(ledger._native_frames) == len(ledger._native_view_bins) == 1
+    assert len(ledger._processed_frames) == 1
+    assert ledger.stage(
+        _evidence(frame_id=11, kind=TemporalEvidenceKind.PRESENT)
+    ) is LedgerDecision.CANCELLED
+    assert ledger.provisional_count == 0
+    assert ledger._native_frames == {}
+    assert ledger._native_view_bins == {}
+    assert ledger._processed_frames == {}
+
+
+def test_frozen_evidence_records_and_frames_are_deepcopy_safe() -> None:
+    evidence = _evidence(frame_id=10)
+    ledger = _ledger()
+    ledger.stage(evidence)
+    record = next(iter(ledger._provisional.values()))
+    assert copy.deepcopy(evidence) is evidence
+    assert evidence.frame is not None
+    assert copy.deepcopy(evidence.frame) is evidence.frame
+    assert copy.deepcopy(evidence.frame.intrinsics) is evidence.frame.intrinsics
+    assert copy.deepcopy(record) is record
+    assert not evidence.frame.depth.flags.writeable
+    assert evidence.depth_m is not None and not evidence.depth_m.flags.writeable
+    assert (evidence == replace(evidence)) is False
+    assert (record == copy.copy(record)) is False
+
+
+def test_frozen_intrinsics_do_not_retain_mutable_scalar_arrays() -> None:
+    frame = _frame(10)
+    mutable_fx = np.array(2.0)
+    frame.intrinsics.fx = mutable_fx
+    with pytest.raises(TypeError, match="intrinsics.fx"):
+        _masked_evidence(
+            entity_id=1,
+            frame=frame,
+            view_bin=0,
+            masked_depth=frame.depth,
+        )
+
+
+def test_ledger_clone_has_independent_volume_and_mutable_indexes() -> None:
+    ledger = _ledger()
+    ledger.stage(_evidence(frame_id=10, view_bin=0))
+    clone = copy.deepcopy(ledger)
+    assert clone is not ledger
+    assert clone.journal_digest() == ledger.journal_digest()
+    assert clone._volume is not ledger._volume
+    assert clone._provisional is not ledger._provisional
+    assert next(iter(clone._provisional.values())) is next(
+        iter(ledger._provisional.values())
+    )
+    original = _private_state_snapshot(ledger)
+    assert clone.stage(_evidence(frame_id=12, view_bin=1)) is LedgerDecision.COMMITTED
+    assert _private_state_snapshot(ledger) == original
+    assert clone.committed_record_count == 2
+
+
+def test_publish_hook_failure_preserves_complete_ledger_state(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    ledger = _ledger()
+    ledger.stage(_evidence(frame_id=10, view_bin=0))
+    before = _private_state_snapshot(ledger)
+    snapshot = ledger.clone()
+
+    def fail_publish(next_state: object) -> None:
+        del next_state
+        raise RuntimeError("publish")
+
+    monkeypatch.setattr(ledger, "_before_publish", fail_publish, raising=False)
+    with pytest.raises(RuntimeError, match="publish"):
+        ledger.stage(_evidence(frame_id=12, view_bin=1))
+    assert _private_state_snapshot(ledger) == before
+    assert ledger.journal_digest() == snapshot.journal_digest()
+    assert ledger.committed_digest() == snapshot.committed_digest()
+
+
+def test_index_build_failure_preserves_complete_ledger_state(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    ledger = _ledger()
+    ledger.stage(_evidence(frame_id=10, view_bin=0))
+    before = _private_state_snapshot(ledger)
+
+    def fail_indexes(*args: object, **kwargs: object) -> object:
+        del args, kwargs
+        raise RuntimeError("indexes")
+
+    monkeypatch.setattr(ledger, "_record_indexes", fail_indexes)
+    with pytest.raises(RuntimeError, match="indexes"):
+        ledger.stage(_evidence(frame_id=12, view_bin=1))
+    assert _private_state_snapshot(ledger) == before
+
+
+def test_numpy_integral_keys_are_normalized_to_python_ints() -> None:
+    geometry = replace(
+        _geometry(),
+        maximum_entities=np.int64(4),
+        background_block_count=np.int64(16),
+    )
+    config = replace(
+        _ledger_config(),
+        maximum_journal_blocks=np.int64(8),
+        commit_support_frames=np.int64(2),
+        commit_distinct_view_bins=np.int64(2),
+        minimum_commit_frame_gap=np.int64(2),
+        maximum_records_per_block=np.int64(4),
+    )
+    ledger = ReversibleBackgroundLedger(geometry, config)
+    frame = _frame(np.int64(10))
+    frame.source_frame_id = np.int64(77)
+    evidence = BackgroundLedgerEvidence(
+        entity_id=np.int64(1),
+        geometry_epoch=np.int64(2),
+        frame_id=np.int64(10),
+        timestamp=10.0,
+        kind=TemporalEvidenceKind.VISIBLE_ABSENT,
+        view_bin=np.int64(0),
+        contributions=(
+            BackgroundContribution((np.int64(0), np.int64(0), np.int64(0))),
+        ),
+        frame=frame,
+        depth_m=frame.depth,
+    )
+    assert ledger.stage(evidence) is LedgerDecision.STAGED
+    assert evidence.entity_id is int(evidence.entity_id)
+    assert evidence.geometry_epoch is int(evidence.geometry_epoch)
+    assert evidence.frame_id is int(evidence.frame_id)
+    assert evidence.view_bin is int(evidence.view_bin)
+    assert evidence.contributions[0].block_key == (0, 0, 0)
+    assert all(type(value) is int for value in evidence.contributions[0].block_key)
+    assert evidence.frame is not None
+    assert type(evidence.frame.frame_id) is int
+    assert type(evidence.frame.source_frame_id) is int
+    assert type(evidence.frame.intrinsics.width) is int
+    assert type(evidence.frame.intrinsics.height) is int
+    assert type(ledger.config.maximum_journal_blocks) is int
+    assert type(ledger._volume.config.maximum_entities) is int
+
+
+@pytest.mark.parametrize("bad", [True, np.bool_(True)])
+def test_python_and_numpy_boolean_integer_fields_are_rejected(bad: object) -> None:
+    with pytest.raises(TypeError):
+        BackgroundContribution((bad, 0, 0))  # type: ignore[arg-type]
+    with pytest.raises(TypeError):
+        replace(_evidence(), entity_id=bad)
+    with pytest.raises(TypeError):
+        ReversibleBackgroundLedger(
+            _geometry(), replace(_ledger_config(), maximum_journal_blocks=bad)
+        )
