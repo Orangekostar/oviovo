@@ -22,6 +22,7 @@ from scripts.evaluation.package_oviv2_tesse_dual_readout_result import (
 from src.evaluation.baselines.tesse_cd import (
     summarize_khronos_official_metrics_partial,
 )
+from src.oviv2.temporal_config import ExecutionProfile
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -66,8 +67,18 @@ def _record(path: Path) -> dict[str, object]:
 def _fixture(root: Path) -> dict[str, Path]:
     h = lambda character: character * 64
     commit = "c" * 40
-    manifest = PRODUCTION_MANIFEST
-    manifest_payload = json.loads(manifest.read_text())
+    manifest_payload = json.loads(PRODUCTION_MANIFEST.read_text())
+    base_temporal = json.loads(
+        (REPO_ROOT / "configs/oviv2_tesse_cd_apartment_v2.json").read_text()
+    )["temporal_readout"]
+    for declaration in manifest_payload["candidates"]:
+        profile = ExecutionProfile.from_id(declaration["candidate_id"])
+        declaration["temporal_readout"] = {
+            **base_temporal,
+            "execution_profile": profile.profile_id,
+            "components": profile.components,
+        }
+    manifest = _write(root / "search_manifest.json", manifest_payload)
     candidate = next(
         item for item in manifest_payload["candidates"] if item["candidate_id"] == "a2"
     )
@@ -144,17 +155,19 @@ def _fixture(root: Path) -> dict[str, Path]:
         "input_sha256": h("5"), "code_commit": commit, "source_bindings": input_hashes,
         "input_bindings": {"indexes": [_record(index)]},
     })
-    static_source = root / "static_objects.csv"
+    official_results = root / "khronos/map/results"
+    static_source = official_results / "static_objects.csv"
+    static_source.parent.mkdir(parents=True, exist_ok=True)
     static_source.write_text(
         "Name,Query,NumObjDetected,NumObjHallucinated,NumObjMissed,"
         "AppearedTP,AppearedFP,AppearedFN,DisappearedTP,DisappearedFP,"
         "DisappearedFN\n0,0,4,1,1,3,1,1,2,1,1\n"
     )
-    background_source = root / "background_mesh.csv"
+    background_source = official_results / "background_mesh.csv"
     background_source.write_text("Name,Accuracy@0.2,Completeness@0.2\n0,0.5,0.5\n")
-    official_partial = summarize_khronos_official_metrics_partial(root)
-    missing_dynamic = root / "dynamic_objects.csv"
-    official = _write(root / "official_metrics.json", {
+    official_partial = summarize_khronos_official_metrics_partial(official_results)
+    missing_dynamic = official_results / "dynamic_objects.csv"
+    official = _write(root / "khronos/evaluation/official_metrics.json", {
         "status": "PARTIAL", "dataset": "TESSE-CD", "scene": "apartment", "split": "apartment_test",
         "method": "OVIV2", "mode": "causal_checkpoints", "display_mode": "online",
         "aggregation": "upstream online 4D plotting aggregation",
@@ -172,15 +185,40 @@ def _fixture(root: Path) -> dict[str, Path]:
     })
     protected = [{"path": "src/oviv2/dual_readout.py", "sha256": h("7"), "bytes": 123}]
     tests = [{"path": "tests/oviv2/test_dual_readout.py", "sha256": h("8"), "bytes": 456}]
-    def gate(name: str, digest: str) -> dict[str, object]:
+    def gate(files: tuple[str, ...], digest: str) -> dict[str, object]:
         return {"scope": "shared_code_and_A0-A4_fixture", "status": "PASS", "code_commit": commit,
-            "code_tree": h("d"), "protected_records": protected, "test_records": [{"argv": ["python", "-m", "pytest", "-q", name],
+            "code_tree": h("d"), "protected_records": protected, "test_records": [{"argv": ["python", "-m", "pytest", "-q", "-rA", "-o", "addopts=", *files],
                 "returncode": 0, "stdout_sha256": digest, "stdout_bytes": 10, "stderr_sha256": h("0"), "stderr_bytes": 0}]}
+    t1_files = ("tests/oviv2/test_t1_noninterference.py",)
+    determinism_files = (
+        "tests/oviv2/test_temporal_config.py", "tests/oviv2/test_temporal_lifecycle.py",
+        "tests/oviv2/test_temporal_association.py", "tests/oviv2/test_temporal_geometry.py",
+        "tests/oviv2/test_temporal_background.py", "tests/oviv2/test_temporal_runtime.py",
+        "tests/oviv2/test_temporal_snapshot.py", "tests/oviv2/test_dual_readout.py",
+        "tests/oviv2/test_reference_readout.py", "tests/evaluation/test_oviv2_temporal_tesse.py",
+        "tests/evaluation/test_run_oviv2_tesse_cd_v2.py",
+    )
+    source_manifest = REPO_ROOT / "configs/evaluation/manifests/oviv2_t1_transitive_sources_v1.json"
+    source_digest = hashlib.sha256(source_manifest.read_bytes()).hexdigest()
+    sequence = ["reference", "a0", "a1", "a0", "a2", "a0", "a3", "a0", "a4"]
+    executions = [{
+        "profile": profile, "argv": ["python", "runner.py", "--profile", profile],
+        "pid": 100 + position, "code_commit": commit,
+        "source_manifest_sha256": source_digest, "input_fingerprints": input_hashes,
+        "output_root": str(run_root.resolve()),
+    } for position, profile in enumerate(sequence)]
+    profiles = {profile: {"cumulative_root_sha256": h("6"), "checkpoint_frames": [2],
+                          "inventory": [{"path": "checkpoint/00000000/00000002/artifact/entities/neutral.jsonl",
+                                         "sha256": h("a"), "byte_count": 3}]}
+                for profile in ("a0", "a1", "a2", "a3", "a4")}
     evidence = _write(root / "development_gates.json", {
         "schema_version": 1, "manifest_id": "oviv2_dual_readout_development_gates_v1",
-        "deterministic_evidence": {"base_commit": "e" * 40, "code_commit": commit, "code_tree": h("d"),
+        "deterministic_evidence": {"base_commit": package_module.CUMULATIVE_BASE_COMMIT, "code_commit": commit, "code_tree": h("d"),
             "protected_files": protected, "test_sources": tests,
-            "gates": {"t1_exact": gate("test_t1_exact", h("9")), "determinism": gate("test_repeat_byte_identical", h("b"))}},
+            "source_manifest": _record(source_manifest),
+            "cumulative_exact": {"format": "oviv2_t1_exact_transaction_v1", "sequence": sequence,
+                "executions": executions, "profiles": profiles},
+            "gates": {"t1_exact": gate(t1_files, h("9")), "determinism": gate(determinism_files, h("b"))}},
         "receipt": {"created_at_utc": "2026-07-25T00:00:00Z"},
     })
     return {"manifest": manifest, "search_status": status, "candidate_config": config_path, "run_manifest": run_manifest,
@@ -221,6 +259,114 @@ def test_rejects_metrics_that_do_not_match_recomputed_sources(tmp_path: Path) ->
     _write(paths["common_v2_summary"], summary)
     with pytest.raises(ValueError, match="common-v2 metrics differ from replay"):
         _package(paths, tmp_path / "common-tamper.json")
+
+
+def test_rejects_unavailable_reason_that_does_not_match_recomputed_sources(
+    tmp_path: Path,
+) -> None:
+    paths = _fixture(tmp_path)
+    official = json.loads(paths["official_metrics"].read_text())
+    official["unavailable"]["dynamic_f1"] = "forged unavailable reason"
+    _write(paths["official_metrics"], official)
+
+    with pytest.raises(
+        ValueError, match="official unavailable metrics differ from recomputed CSV"
+    ):
+        _package(paths, tmp_path / "official-unavailable-tamper.json")
+
+
+def test_rejects_official_sources_outside_khronos_results_directory(
+    tmp_path: Path,
+) -> None:
+    paths = _fixture(tmp_path)
+    official = json.loads(paths["official_metrics"].read_text())
+    official["sources"][0]["path"] = str(
+        (tmp_path / "unrelated" / "static_objects.csv").resolve()
+    )
+    _write(paths["official_metrics"], official)
+    with pytest.raises(ValueError, match="official source path is not canonical"):
+        _package(paths, tmp_path / "result.json")
+
+
+def test_rejects_noncanonical_official_metrics_path(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    moved = paths["official_metrics"].with_name("not_official_metrics.json")
+    paths["official_metrics"].rename(moved)
+    paths["official_metrics"] = moved
+
+    with pytest.raises(ValueError, match="official metrics path is not canonical"):
+        _package(paths, tmp_path / "result.json")
+
+
+def test_rejects_existing_official_source_without_byte_count(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    official = json.loads(paths["official_metrics"].read_text())
+    del official["sources"][0]["byte_count"]
+    _write(paths["official_metrics"], official)
+    with pytest.raises(ValueError, match="official source record is not exact"):
+        _package(paths, tmp_path / "result.json")
+
+
+def test_accepts_production_relative_official_source_paths(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    official = json.loads(paths["official_metrics"].read_text())
+    for record, name in zip(
+        official["sources"],
+        ("static_objects.csv", "dynamic_objects.csv", "background_mesh.csv"),
+    ):
+        record["path"] = f"../map/results/{name}"
+    _write(paths["official_metrics"], official)
+
+    result = _package(paths, tmp_path / "result.json")
+
+    assert result["status"] == "PASS"
+
+
+def test_official_metrics_recompute_uses_snapshotted_csv_bytes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    paths = _fixture(tmp_path)
+    results_dir = tmp_path / "khronos/map/results"
+    attack_dir = tmp_path / "khronos/map/attack-results"
+    attack_dir.mkdir()
+    (attack_dir / "static_objects.csv").write_text(
+        "Name,Query,NumObjDetected,NumObjHallucinated,NumObjMissed,"
+        "AppearedTP,AppearedFP,AppearedFN,DisappearedTP,DisappearedFP,"
+        "DisappearedFN\n0,0,1,0,0,1,0,0,1,0,0\n"
+    )
+    (attack_dir / "background_mesh.csv").write_bytes(
+        (results_dir / "background_mesh.csv").read_bytes()
+    )
+    attack_metrics = summarize_khronos_official_metrics_partial(attack_dir)
+    official = json.loads(paths["official_metrics"].read_text())
+    official["metrics"] = {
+        "state_count": attack_metrics["state_count"],
+        **attack_metrics["metrics"],
+    }
+    _write(paths["official_metrics"], official)
+    original_summarizer = package_module.summarize_khronos_official_metrics_partial
+    parked_dir = tmp_path / "khronos/map/parked-results"
+
+    def summarize_during_directory_swap(source_dir: Path) -> dict[str, object]:
+        results_dir.rename(parked_dir)
+        attack_dir.rename(results_dir)
+        try:
+            return original_summarizer(source_dir)
+        finally:
+            results_dir.rename(attack_dir)
+            parked_dir.rename(results_dir)
+
+    monkeypatch.setattr(
+        package_module,
+        "summarize_khronos_official_metrics_partial",
+        summarize_during_directory_swap,
+    )
+    output = tmp_path / "result.json"
+
+    with pytest.raises(ValueError, match="official metrics differ from recomputed CSV"):
+        _package(paths, output)
+
+    assert not output.exists()
 
 
 def test_direct_cli_help_works_from_repo_root() -> None:
@@ -350,6 +496,77 @@ def test_rejects_broken_cross_source_chain(tmp_path: Path, source: str, field: s
         _package(paths, tmp_path / "result.json")
 
 
+@pytest.mark.parametrize(
+    ("mutation", "match"),
+    [
+        ("a4_drift", "cumulative"),
+        ("missing_profile", "profile"),
+        ("wrong_argv", "argv"),
+        ("wrong_base", "base commit"),
+    ],
+)
+def test_rejects_inexact_cumulative_development_evidence(
+    tmp_path: Path, mutation: str, match: str
+) -> None:
+    paths = _fixture(tmp_path)
+    payload = json.loads(paths["t1_exact_evidence"].read_text())
+    evidence = payload["deterministic_evidence"]
+    if mutation == "a4_drift":
+        evidence["cumulative_exact"]["profiles"]["a4"]["cumulative_root_sha256"] = "f" * 64
+    elif mutation == "missing_profile":
+        del evidence["cumulative_exact"]["profiles"]["a3"]
+    elif mutation == "wrong_argv":
+        evidence["gates"]["t1_exact"]["test_records"][0]["argv"].append("-k")
+    else:
+        evidence["base_commit"] = "f" * 40
+    _write(paths["t1_exact_evidence"], payload)
+    with pytest.raises(ValueError, match=match):
+        _package(paths, tmp_path / "result.json")
+
+
+def test_every_temporal_scalar_changes_only_algorithm_identity(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    config = json.loads(paths["candidate_config"].read_text())
+    baseline_algorithm = canonical_algorithm_hash(config)
+    baseline_non_temporal = non_temporal_config_sha256(config)
+    evidence = json.loads(paths["t1_exact_evidence"].read_text())
+    roots = {
+        record["cumulative_root_sha256"]
+        for record in evidence["deterministic_evidence"]["cumulative_exact"]["profiles"].values()
+    }
+    assert len(roots) == 1
+
+    leaves: list[tuple[tuple[str, ...], object]] = []
+
+    def visit(value: object, path: tuple[str, ...]) -> None:
+        if isinstance(value, dict):
+            for key, child in value.items():
+                visit(child, (*path, key))
+        else:
+            leaves.append((path, value))
+
+    visit(config["temporal_readout"], ())
+    for path, original in leaves:
+        mutated = json.loads(json.dumps(config))
+        target = mutated["temporal_readout"]
+        for key in path[:-1]:
+            target = target[key]
+        if isinstance(original, bool):
+            target[path[-1]] = not original
+        elif isinstance(original, int):
+            target[path[-1]] = original + 1
+        elif isinstance(original, float):
+            target[path[-1]] = original + 0.000001
+        else:
+            target[path[-1]] = f"{original}-mutated"
+        assert canonical_algorithm_hash(mutated) != baseline_algorithm, path
+        assert non_temporal_config_sha256(mutated) == baseline_non_temporal, path
+        assert {
+            record["cumulative_root_sha256"]
+            for record in evidence["deterministic_evidence"]["cumulative_exact"]["profiles"].values()
+        } == roots
+
+
 def test_rejects_another_apartment_oviv2_temporal_artifact(tmp_path: Path) -> None:
     paths = _fixture(tmp_path)
     common = json.loads(paths["common_v2_summary"].read_text())
@@ -412,5 +629,30 @@ def test_publication_revalidates_indirect_sources_and_cleans_temporary(tmp_path:
     monkeypatch.setattr(package_module.Snapshot, "revalidate", change_once)
     with pytest.raises(ValueError, match="changed before publication"):
         _package(paths, output)
+    assert not output.exists()
+    assert not list(tmp_path.glob(".result.json.*"))
+
+
+def test_publication_rejects_missing_official_source_that_appears(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    paths = _fixture(tmp_path)
+    output = tmp_path / "result.json"
+    missing = tmp_path / "khronos/map/results/dynamic_objects.csv"
+    original = package_module.Snapshot.revalidate
+    created = False
+
+    def create_missing_once(snapshot: package_module.Snapshot) -> None:
+        nonlocal created
+        if not created:
+            created = True
+            missing.write_text("Name,Query,NumObjDetected\n0,0,1\n")
+        original(snapshot)
+
+    monkeypatch.setattr(package_module.Snapshot, "revalidate", create_missing_once)
+
+    with pytest.raises(ValueError, match="changed before publication"):
+        _package(paths, output)
+
     assert not output.exists()
     assert not list(tmp_path.glob(".result.json.*"))

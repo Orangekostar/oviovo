@@ -11,6 +11,8 @@ import sys
 
 import pytest
 
+from scripts.evaluation import run_oviv2_t1_reference as reference_worker
+
 
 SCRIPT = (
     Path(__file__).parents[2]
@@ -502,6 +504,16 @@ def _generate(tmp_path: Path, **overrides: object) -> tuple[Path, PassingRunner]
     _make_repo(repo)
     output = tmp_path / "gate.json"
     runner = PassingRunner(repo)
+    sequence = gates.EXACT_PROFILE_SEQUENCE
+    exact_runs = [
+        _exact_execution(profile, tmp_path / f"exact-{position}", 100 + position)
+        for position, profile in enumerate(sequence)
+    ]
+    for record in exact_runs:
+        record["code_commit"] = "a" * 40
+        source = (repo / gates.DEFAULT_SOURCE_MANIFEST).read_bytes()
+        record["source_manifest_sha256"] = hashlib.sha256(source).hexdigest()
+        record["input_fingerprints"] = {"dataset": "c" * 64}
     kwargs = {
         "repo": repo,
         "output": output,
@@ -510,6 +522,13 @@ def _generate(tmp_path: Path, **overrides: object) -> tuple[Path, PassingRunner]
         "git": FakeGit(),
         "run": runner,
         "now_utc": lambda: "2026-07-25T00:00:00Z",
+        "exact_profile_runs": exact_runs,
+        "compare": lambda left, right: {
+            "format": "oviv2_cumulative_exact_v1",
+            "checkpoint_frames": [2, 7],
+            "inventory": [],
+            "root_sha256": "e" * 64,
+        },
     }
     kwargs.update(overrides)
     gates.generate_evidence(**kwargs)
@@ -763,3 +782,131 @@ def test_publication_boundary_validation_runs_before_staging_creation(
 
     gates._atomic_json_no_replace(tmp_path / "gate.json", {"ok": True}, validate)
     assert seen_staging == []
+
+
+def _exact_execution(profile: str, root: Path, pid: int) -> dict[str, object]:
+    return {
+        "profile": profile,
+        "argv": ["/env/bin/python", "runner.py", "--profile", profile],
+        "pid": pid,
+        "code_commit": "a" * 40,
+        "source_manifest_sha256": "b" * 64,
+        "input_fingerprints": {"dataset": "c" * 64},
+        "output_root": str(root.resolve()),
+    }
+
+
+def test_exact_profile_gate_requires_interleaved_independent_processes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    profiles = ("reference", "a0", "a1", "a0", "a2", "a0", "a3", "a0", "a4")
+    executions = [
+        _exact_execution(profile, tmp_path / f"run-{index}", 100 + index)
+        for index, profile in enumerate(profiles)
+    ]
+    calls: list[tuple[Path, Path]] = []
+
+    def compare(left: Path, right: Path) -> dict[str, object]:
+        calls.append((left, right))
+        return {
+            "format": "oviv2_cumulative_exact_v1",
+            "checkpoint_frames": [2, 7],
+            "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
+            "root_sha256": "e" * 64,
+        }
+
+    evidence = gates.verify_exact_profile_runs(executions, compare=compare)
+    assert evidence["sequence"] == list(profiles)
+    assert set(evidence["profiles"]) == {"a0", "a1", "a2", "a3", "a4"}
+    assert all(
+        profile["cumulative_root_sha256"] == "e" * 64
+        for profile in evidence["profiles"].values()
+    )
+    assert len(calls) == 8
+    assert calls[0] == (tmp_path / "run-0", tmp_path / "run-1")
+
+    executions[1]["pid"] = executions[0]["pid"]
+    with pytest.raises(gates.GateVerificationError, match="PID"):
+        gates.verify_exact_profile_runs(executions, compare=compare)
+
+
+@pytest.mark.parametrize("field", ["argv", "code_commit", "source_manifest_sha256", "input_fingerprints"])
+def test_exact_profile_gate_rejects_incomplete_or_disagreeing_bindings(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, field: str
+) -> None:
+    profiles = ("reference", "a0", "a1", "a0", "a2", "a0", "a3", "a0", "a4")
+    executions = [
+        _exact_execution(profile, tmp_path / f"run-{index}", 100 + index)
+        for index, profile in enumerate(profiles)
+    ]
+    compare = lambda left, right: {
+            "format": "oviv2_cumulative_exact_v1",
+            "checkpoint_frames": [2],
+            "inventory": [],
+            "root_sha256": "e" * 64,
+        }
+    if field == "argv":
+        executions[3][field] = []
+    elif field == "input_fingerprints":
+        executions[3][field] = {"dataset": "f" * 64}
+    else:
+        executions[3][field] = "f" * (40 if field == "code_commit" else 64)
+    with pytest.raises(gates.GateVerificationError, match="binding|argv"):
+        gates.verify_exact_profile_runs(executions, compare=compare)
+
+
+def test_reference_worker_records_exact_process_and_artifact_receipt(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config = tmp_path / "config.json"
+    config.write_text(json.dumps({"schedule_sha256": "1" * 64}))
+    source = tmp_path / "sources.json"
+    source.write_text("{}\n")
+    output = tmp_path / "run"
+    receipt = tmp_path / "receipt.json"
+    calls: list[tuple[Path, Path, Path, str]] = []
+
+    def runner(
+        config_path: Path,
+        output_path: Path,
+        *,
+        freeze_manifest: Path,
+        run_slot: str,
+    ) -> dict[str, object]:
+        calls.append((config_path, output_path, freeze_manifest, run_slot))
+        output_path.mkdir()
+        return {}
+
+    monkeypatch.setattr(reference_worker, "_commit", lambda repo: "a" * 40)
+    monkeypatch.setattr(reference_worker.os, "getpid", lambda: 4321)
+    monkeypatch.setattr(
+        reference_worker,
+        "compare_cumulative_artifacts",
+        lambda left, right: {
+            "format": "oviv2_cumulative_exact_v1",
+            "checkpoint_frames": [2],
+            "inventory": [{"path": "x", "sha256": "b" * 64, "byte_count": 1}],
+            "root_sha256": "c" * 64,
+        },
+    )
+    argv = ["/env/bin/python", "run_oviv2_t1_reference.py", "--config", str(config)]
+    payload = reference_worker.run_reference(
+        config=config,
+        output=output,
+        freeze_manifest=tmp_path / "freeze.json",
+        run_slot="apartment_run1",
+        receipt=receipt,
+        argv=argv,
+        repo=tmp_path,
+        source_manifest=source,
+        runner=runner,
+    )
+    assert calls == [(config, output, tmp_path / "freeze.json", "apartment_run1")]
+    assert payload["execution"]["argv"] == argv
+    assert payload["execution"]["pid"] == 4321
+    assert payload["execution"]["input_fingerprints"] == {
+        "config": hashlib.sha256(config.read_bytes()).hexdigest(),
+        "schedule_sha256": "1" * 64,
+    }
+    assert payload["cumulative_root_sha256"] == "c" * 64
+    assert json.loads(receipt.read_text()) == payload

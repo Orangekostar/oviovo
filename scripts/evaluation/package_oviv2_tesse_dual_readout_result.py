@@ -39,6 +39,24 @@ from src.evaluation.baselines.tesse_cd import (  # noqa: E402
 
 
 MANIFEST_ID = "oviv2-tesse-dual-readout-candidate-result-v1"
+CUMULATIVE_BASE_COMMIT = "8034e79d9cb853166222610981a7e6893f6cca70"
+T1_TEST_FILES = ("tests/oviv2/test_t1_noninterference.py",)
+DETERMINISM_TEST_FILES = (
+    "tests/oviv2/test_temporal_config.py",
+    "tests/oviv2/test_temporal_lifecycle.py",
+    "tests/oviv2/test_temporal_association.py",
+    "tests/oviv2/test_temporal_geometry.py",
+    "tests/oviv2/test_temporal_background.py",
+    "tests/oviv2/test_temporal_runtime.py",
+    "tests/oviv2/test_temporal_snapshot.py",
+    "tests/oviv2/test_dual_readout.py",
+    "tests/oviv2/test_reference_readout.py",
+    "tests/evaluation/test_oviv2_temporal_tesse.py",
+    "tests/evaluation/test_run_oviv2_tesse_cd_v2.py",
+)
+EXACT_PROFILE_SEQUENCE = (
+    "reference", "a0", "a1", "a0", "a2", "a0", "a3", "a0", "a4",
+)
 MAX_JSON_BYTES = 8 * 1024 * 1024
 SOURCE_NAMES = (
     "search_manifest", "search_status", "candidate_config", "run_manifest",
@@ -131,6 +149,26 @@ class FileIdentityWitness:
             raise ValueError(f"source changed before publication: {self.path}")
 
 
+@dataclass(frozen=True)
+class MissingPathWitness:
+    path: Path
+
+    def revalidate(self) -> None:
+        try:
+            _reject_symlink_components(self.path, "missing official source")
+            os.lstat(self.path)
+        except FileNotFoundError:
+            return
+        except OSError as exc:
+            raise ValueError(f"source changed before publication: {self.path}") from exc
+        except ValueError as exc:
+            raise ValueError(f"source changed before publication: {self.path}") from exc
+        raise ValueError(f"source changed before publication: {self.path}")
+
+
+PublicationWitness = Snapshot | FileIdentityWitness | MissingPathWitness
+
+
 def _identity_witness(path: Path, label: str) -> FileIdentityWitness:
     absolute = path.absolute()
     _reject_symlink_components(absolute, label)
@@ -211,7 +249,7 @@ def _record_matches(record: object, snap: Snapshot, label: str, *, path_required
         if not isinstance(raw, str) or not raw:
             raise ValueError(f"{label} source record path is invalid")
         resolved = Path(raw) if Path(raw).is_absolute() else (base or snap.path.parent) / raw
-        if resolved.absolute() != snap.path:
+        if Path(os.path.abspath(resolved)) != snap.path:
             raise ValueError(f"{label} source record path mismatch")
 
 
@@ -290,7 +328,7 @@ def _source_record_path(
 
 def _recompute_common_v2_metrics(
     common_snapshot: Snapshot,
-    witnesses: list[Snapshot | FileIdentityWitness],
+    witnesses: list[PublicationWitness],
 ) -> dict[str, Any]:
     cache_key = (common_snapshot.path, common_snapshot.identity)
     cached = _COMMON_REPLAY_CACHE.get(cache_key)
@@ -368,13 +406,21 @@ def _recompute_common_v2_metrics(
 
 def _recompute_official_metrics(
     official_snapshot: Snapshot,
-    witnesses: list[Snapshot | FileIdentityWitness],
+    witnesses: list[PublicationWitness],
 ) -> tuple[dict[str, Any], dict[str, str]]:
     official = official_snapshot.payload
     sources = official.get("sources")
     names = ("static_objects.csv", "dynamic_objects.csv", "background_mesh.csv")
     if not isinstance(sources, list) or len(sources) != len(names):
         raise ValueError("official metrics must declare the exact three CSV sources")
+    if (
+        official_snapshot.path.name != "official_metrics.json"
+        or official_snapshot.path.parent.name != "evaluation"
+        or official_snapshot.path.parent.parent.name != "khronos"
+    ):
+        raise ValueError("official metrics path is not canonical")
+    results_dir = official_snapshot.path.parent.parent / "map" / "results"
+    source_snapshots: dict[str, Snapshot] = {}
     for name, record in zip(names, sources):
         if not isinstance(record, Mapping) or not isinstance(record.get("path"), str):
             raise ValueError(f"official source record is invalid: {name}")
@@ -383,15 +429,24 @@ def _recompute_official_metrics(
             raw_path
             if raw_path.is_absolute()
             else official_snapshot.path.parent / raw_path
-        ).absolute()
-        if path != (official_snapshot.path.parent / name).absolute():
+        )
+        path = Path(os.path.abspath(path))
+        if path != Path(os.path.abspath(results_dir / name)):
             raise ValueError(f"official source path is not canonical: {name}")
         if record.get("status") == "MISSING":
             if set(record) != {"path", "status"}:
                 raise ValueError(f"missing official source record is not exact: {name}")
-            if path.exists() or path.is_symlink():
-                raise ValueError(f"official source declared missing but exists: {name}")
+            missing = MissingPathWitness(path)
+            try:
+                missing.revalidate()
+            except ValueError as exc:
+                raise ValueError(
+                    f"official source declared missing but exists: {name}"
+                ) from exc
+            witnesses.append(missing)
             continue
+        if set(record) != {"path", "sha256", "byte_count"}:
+            raise ValueError(f"official source record is not exact: {name}")
         source = _snapshot(path, f"official source {name}", parse_json=False)
         _record_matches(
             record,
@@ -401,10 +456,15 @@ def _recompute_official_metrics(
             base=official_snapshot.path.parent,
         )
         witnesses.append(source)
+        source_snapshots[name] = source
 
-    recomputed = summarize_khronos_official_metrics_partial(
-        official_snapshot.path.parent
-    )
+    with tempfile.TemporaryDirectory(prefix="oviv2-official-metrics-") as directory:
+        # Keep source filenames and rebase path-bearing diagnostics after replay.
+        snapshot_results = Path(directory) / results_dir.name
+        snapshot_results.mkdir()
+        for name, source in source_snapshots.items():
+            (snapshot_results / name).write_bytes(source.data)
+        recomputed = summarize_khronos_official_metrics_partial(snapshot_results)
     metrics = {
         "state_count": recomputed["state_count"],
         **recomputed["metrics"],
@@ -413,8 +473,17 @@ def _recompute_official_metrics(
     declared_unavailable = official.get("unavailable", {})
     if not isinstance(metrics, dict) or not isinstance(recomputed_unavailable, dict):
         raise ValueError("recomputed official metrics are invalid")
-    if not isinstance(declared_unavailable, dict) or set(declared_unavailable) != set(
-        recomputed_unavailable
+    recomputed_unavailable = {
+        name: (
+            reason.replace(str(snapshot_results), str(results_dir))
+            if isinstance(reason, str)
+            else reason
+        )
+        for name, reason in recomputed_unavailable.items()
+    }
+    if (
+        not isinstance(declared_unavailable, dict)
+        or declared_unavailable != recomputed_unavailable
     ):
         raise ValueError("official unavailable metrics differ from recomputed CSV")
     if any(
@@ -434,11 +503,23 @@ def _metric(value: object, name: str, source: str) -> dict[str, Any]:
     return {"available": True, "value": _finite(value, name), "reason": "available", "source": source}
 
 
-def _gate_evidence(snapshot: Snapshot, name: str, run: Mapping[str, Any]) -> None:
+def _gate_evidence(
+    snapshot: Snapshot,
+    name: str,
+    run: Mapping[str, Any],
+    witnesses: list[PublicationWitness],
+) -> None:
     root = snapshot.payload
     evidence = root.get("deterministic_evidence")
     if set(root) != {"schema_version", "manifest_id", "deterministic_evidence", "receipt"} or root.get("schema_version") != 1 or root.get("manifest_id") != "oviv2_dual_readout_development_gates_v1" or not isinstance(evidence, Mapping):
         raise ValueError(f"{name} evidence identity mismatch")
+    if set(evidence) != {
+        "base_commit", "code_commit", "code_tree", "protected_files",
+        "test_sources", "source_manifest", "cumulative_exact", "gates",
+    }:
+        raise ValueError(f"{name} evidence schema is not exact")
+    if evidence.get("base_commit") != CUMULATIVE_BASE_COMMIT:
+        raise ValueError(f"{name} evidence base commit is invalid")
     if evidence.get("code_commit") != run["code_commit"] or not isinstance(evidence.get("code_tree"), str):
         raise ValueError(f"{name} evidence commit/tree differs from run code")
     protected = evidence.get("protected_files")
@@ -446,6 +527,8 @@ def _gate_evidence(snapshot: Snapshot, name: str, run: Mapping[str, Any]) -> Non
     gate = evidence.get("gates", {}).get(name) if isinstance(evidence.get("gates"), Mapping) else None
     if not isinstance(protected, list) or not protected or not isinstance(tests, list) or not tests or not isinstance(gate, Mapping):
         raise ValueError(f"{name} evidence records are missing")
+    if set(gate) != {"scope", "status", "code_commit", "code_tree", "protected_records", "test_records"}:
+        raise ValueError(f"{name} evidence gate schema is not exact")
     if gate.get("scope") != "shared_code_and_A0-A4_fixture" or gate.get("status") != "PASS":
         raise ValueError(f"{name} evidence gate did not PASS")
     if gate.get("code_commit") != evidence["code_commit"] or gate.get("code_tree") != evidence["code_tree"] or gate.get("protected_records") != protected:
@@ -453,20 +536,100 @@ def _gate_evidence(snapshot: Snapshot, name: str, run: Mapping[str, Any]) -> Non
     commands = gate.get("test_records")
     if not isinstance(commands, list) or not commands:
         raise ValueError(f"{name} evidence has no named test record")
+    if len(commands) != 1:
+        raise ValueError(f"{name} evidence has an inexact test command list")
+    expected_files = T1_TEST_FILES if name == "t1_exact" else DETERMINISM_TEST_FILES
+    expected_tail = ["-m", "pytest", "-q", "-rA", "-o", "addopts=", *expected_files]
     for command in commands:
-        if not isinstance(command, Mapping) or command.get("returncode") != 0 or not isinstance(command.get("argv"), list) or not command["argv"]:
+        if (
+            not isinstance(command, Mapping)
+            or set(command) != {"argv", "returncode", "stdout_sha256", "stdout_bytes", "stderr_sha256", "stderr_bytes"}
+            or command.get("returncode") != 0
+            or not isinstance(command.get("argv"), list)
+            or len(command["argv"]) != len(expected_tail) + 1
+            or command["argv"][1:] != expected_tail
+            or not isinstance(command["argv"][0], str)
+            or not command["argv"][0]
+        ):
+            raise ValueError(f"{name} evidence pytest argv is invalid")
+        if command.get("returncode") != 0:
             raise ValueError(f"{name} evidence test did not PASS")
         _sha(command.get("stdout_sha256"), f"{name} stdout")
         _sha(command.get("stderr_sha256"), f"{name} stderr")
         if type(command.get("stdout_bytes")) is not int or type(command.get("stderr_bytes")) is not int:
             raise ValueError(f"{name} evidence test byte counts are invalid")
 
+    source_record = evidence["source_manifest"]
+    trusted_path = REPO_ROOT / "configs/evaluation/manifests/oviv2_t1_transitive_sources_v1.json"
+    trusted = _snapshot(trusted_path, "trusted T1 source manifest")
+    _record_matches(source_record, trusted, "trusted T1 source manifest", path_required=True)
+    witnesses.append(trusted)
+    exact = evidence["cumulative_exact"]
+    if (
+        not isinstance(exact, Mapping)
+        or set(exact) != {"format", "sequence", "executions", "profiles"}
+        or exact.get("format") != "oviv2_t1_exact_transaction_v1"
+        or exact.get("sequence") != list(EXACT_PROFILE_SEQUENCE)
+    ):
+        raise ValueError(f"{name} cumulative exact schema is invalid")
+    profiles = exact.get("profiles")
+    if not isinstance(profiles, Mapping) or set(profiles) != {"a0", "a1", "a2", "a3", "a4"}:
+        raise ValueError(f"{name} cumulative profile inventory is incomplete")
+    roots: set[str] = set()
+    frames: set[tuple[int, ...]] = set()
+    inventories: set[bytes] = set()
+    for profile, audit in profiles.items():
+        if not isinstance(audit, Mapping) or set(audit) != {"cumulative_root_sha256", "checkpoint_frames", "inventory"}:
+            raise ValueError(f"{name} cumulative profile schema is invalid: {profile}")
+        roots.add(_sha(audit.get("cumulative_root_sha256"), f"{name} cumulative root"))
+        raw_frames = audit.get("checkpoint_frames")
+        if not isinstance(raw_frames, list) or not raw_frames or raw_frames != sorted(set(raw_frames)) or any(type(frame) is not int or frame < 0 for frame in raw_frames):
+            raise ValueError(f"{name} cumulative checkpoint inventory is invalid")
+        frames.add(tuple(raw_frames))
+        inventory = audit.get("inventory")
+        if not isinstance(inventory, list) or not inventory:
+            raise ValueError(f"{name} cumulative artifact inventory is empty")
+        previous_path = ""
+        for item in inventory:
+            if not isinstance(item, Mapping) or set(item) != {"path", "sha256", "byte_count"}:
+                raise ValueError(f"{name} cumulative artifact inventory schema is invalid")
+            path = item.get("path")
+            if not isinstance(path, str) or not path or path <= previous_path or Path(path).is_absolute() or ".." in Path(path).parts:
+                raise ValueError(f"{name} cumulative artifact inventory path is invalid")
+            previous_path = path
+            _sha(item.get("sha256"), f"{name} cumulative artifact")
+            if type(item.get("byte_count")) is not int or item["byte_count"] < 0:
+                raise ValueError(f"{name} cumulative artifact byte count is invalid")
+        inventories.add(_canonical(inventory))
+    if len(roots) != 1 or len(frames) != 1 or len(inventories) != 1:
+        raise ValueError(f"{name} cumulative profile roots disagree")
+    executions = exact.get("executions")
+    if not isinstance(executions, list) or len(executions) != len(EXACT_PROFILE_SEQUENCE):
+        raise ValueError(f"{name} cumulative execution inventory is invalid")
+    pids: set[int] = set()
+    source_sha = str(source_record["sha256"])
+    for profile, execution in zip(EXACT_PROFILE_SEQUENCE, executions, strict=True):
+        if not isinstance(execution, Mapping) or set(execution) != {"profile", "argv", "pid", "code_commit", "source_manifest_sha256", "input_fingerprints", "output_root"}:
+            raise ValueError(f"{name} cumulative execution schema is invalid")
+        if execution.get("profile") != profile or execution.get("code_commit") != evidence["code_commit"] or execution.get("source_manifest_sha256") != source_sha or execution.get("input_fingerprints") != run["source_bindings"]:
+            raise ValueError(f"{name} cumulative execution binding mismatch")
+        argv = execution.get("argv")
+        pid = execution.get("pid")
+        if not isinstance(argv, list) or not argv or any(not isinstance(item, str) or not item for item in argv):
+            raise ValueError(f"{name} cumulative execution argv is invalid")
+        if type(pid) is not int or pid <= 0 or pid in pids:
+            raise ValueError(f"{name} cumulative execution PID is invalid")
+        pids.add(pid)
+        output_root = execution.get("output_root")
+        if not isinstance(output_root, str) or not Path(output_root).is_absolute():
+            raise ValueError(f"{name} cumulative execution root is invalid")
+
 
 def _derive(
     candidate_id: str,
     snapshots: Mapping[str, Snapshot],
     *,
-    auxiliary: list[Snapshot | FileIdentityWitness] | None = None,
+    auxiliary: list[PublicationWitness] | None = None,
 ) -> dict[str, Any]:
     if set(snapshots) != set(SOURCE_NAMES):
         raise ValueError("source set is not exact")
@@ -621,13 +784,12 @@ def _derive(
         snapshots["official_metrics"], witnesses
     )
 
-    _gate_evidence(snapshots["t1_exact_evidence"], "t1_exact", run)
-    _gate_evidence(snapshots["determinism_evidence"], "determinism", run)
+    _gate_evidence(snapshots["t1_exact_evidence"], "t1_exact", run, witnesses)
+    _gate_evidence(snapshots["determinism_evidence"], "determinism", run, witnesses)
     first_evidence = snapshots["t1_exact_evidence"].payload["deterministic_evidence"]
     second_evidence = snapshots["determinism_evidence"].payload["deterministic_evidence"]
-    for field in ("code_commit", "code_tree", "protected_files", "test_sources"):
-        if first_evidence[field] != second_evidence[field]:
-            raise ValueError("T1 and determinism evidence protected/test hashes differ")
+    if first_evidence != second_evidence:
+        raise ValueError("T1 and determinism evidence transactions differ")
 
     if not isinstance(common_metrics, Mapping) or not isinstance(official_metrics, Mapping):
         raise ValueError("metric source mappings are missing")
@@ -671,7 +833,7 @@ def _derive(
 def _publish(
     path: Path,
     payload: Mapping[str, Any],
-    snapshots: Sequence[Snapshot | FileIdentityWitness],
+    snapshots: Sequence[PublicationWitness],
 ) -> None:
     output = path.absolute()
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -731,7 +893,7 @@ def package_result(*, manifest: str | Path, search_status: str | Path, candidate
              "temporal_occlusion_result": temporal_occlusion_result, "official_metrics": official_metrics,
              "t1_exact_evidence": t1_exact_evidence, "determinism_evidence": determinism_evidence}
     snapshots = {name: _snapshot(path, name.replace("_", " ")) for name, path in paths.items()}
-    auxiliary: list[Snapshot | FileIdentityWitness] = []
+    auxiliary: list[PublicationWitness] = []
     result = _derive(candidate_id, snapshots, auxiliary=auxiliary)
     _publish(Path(output), result, [*snapshots.values(), *auxiliary])
     return result
@@ -758,7 +920,7 @@ def load_and_revalidate_result(path: str | Path, *, manifest: str | Path | Mappi
             raise ValueError("supplied manifest differs from result source")
     elif Path(manifest).absolute() != snapshots["search_manifest"].path:
         raise ValueError("supplied manifest path differs from result source")
-    auxiliary: list[Snapshot | FileIdentityWitness] = []
+    auxiliary: list[PublicationWitness] = []
     derived = _derive(str(payload.get("candidate_id")), snapshots, auxiliary=auxiliary)
     if payload != derived:
         raise ValueError("candidate result does not match revalidated sources")

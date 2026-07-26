@@ -17,6 +17,15 @@ import sys
 import tempfile
 from typing import Any
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.evaluation.compare_oviv2_cumulative_artifacts import (
+    ArtifactMismatch,
+    compare_cumulative_artifacts,
+)
+
 
 CUMULATIVE_BASE_COMMIT = "8034e79d9cb853166222610981a7e6893f6cca70"
 SCOPE = "shared_code_and_A0-A4_fixture"
@@ -63,6 +72,127 @@ CommandRunner = Callable[
 
 class GateVerificationError(RuntimeError):
     """Raised when evidence cannot be established without ambiguity."""
+
+
+EXACT_PROFILE_SEQUENCE = (
+    "reference",
+    "a0",
+    "a1",
+    "a0",
+    "a2",
+    "a0",
+    "a3",
+    "a0",
+    "a4",
+)
+EXACT_EXECUTION_FIELDS = {
+    "profile",
+    "argv",
+    "pid",
+    "code_commit",
+    "source_manifest_sha256",
+    "input_fingerprints",
+    "output_root",
+}
+
+
+def _exact_execution(record: object) -> dict[str, Any]:
+    if not isinstance(record, dict) or set(record) != EXACT_EXECUTION_FIELDS:
+        raise GateVerificationError("exact execution binding fields are invalid")
+    argv = record.get("argv")
+    pid = record.get("pid")
+    commit = record.get("code_commit")
+    source = record.get("source_manifest_sha256")
+    inputs = record.get("input_fingerprints")
+    output = record.get("output_root")
+    if not isinstance(argv, list) or not argv or any(
+        not isinstance(item, str) or not item for item in argv
+    ):
+        raise GateVerificationError("exact execution argv is invalid")
+    if type(pid) is not int or pid <= 0:
+        raise GateVerificationError("exact execution PID is invalid")
+    if (
+        not isinstance(commit, str)
+        or len(commit) != 40
+        or any(character not in "0123456789abcdef" for character in commit)
+        or not isinstance(source, str)
+        or len(source) != 64
+        or any(character not in "0123456789abcdef" for character in source)
+    ):
+        raise GateVerificationError("exact execution binding is invalid")
+    if not isinstance(inputs, dict) or not inputs or any(
+        not isinstance(key, str)
+        or not isinstance(value, str)
+        or len(value) != 64
+        or any(character not in "0123456789abcdef" for character in value)
+        for key, value in inputs.items()
+    ):
+        raise GateVerificationError("exact execution input binding is invalid")
+    if not isinstance(output, str) or not Path(output).is_absolute():
+        raise GateVerificationError("exact execution output binding is invalid")
+    return dict(record)
+
+
+def verify_exact_profile_runs(
+    executions: list[dict[str, Any]],
+    *,
+    compare: Callable[[Path, Path], dict[str, Any]] = compare_cumulative_artifacts,
+) -> dict[str, Any]:
+    """Verify an independently executed, interleaved T1/A0-A4 transaction."""
+    records = [_exact_execution(record) for record in executions]
+    sequence = tuple(record["profile"] for record in records)
+    if sequence != EXACT_PROFILE_SEQUENCE:
+        raise GateVerificationError("exact execution profile sequence is invalid")
+    if len({record["pid"] for record in records}) != len(records):
+        raise GateVerificationError("exact executions must use independent PIDs")
+    binding = (
+        records[0]["code_commit"],
+        records[0]["source_manifest_sha256"],
+        records[0]["input_fingerprints"],
+    )
+    if any(
+        (
+            record["code_commit"],
+            record["source_manifest_sha256"],
+            record["input_fingerprints"],
+        )
+        != binding
+        for record in records[1:]
+    ):
+        raise GateVerificationError("exact execution binding disagreement")
+
+    reference_root = Path(records[0]["output_root"])
+    profiles: dict[str, Any] = {}
+    try:
+        for anchor_index, candidate_index in ((1, 2), (3, 4), (5, 6), (7, 8)):
+            anchor = records[anchor_index]
+            candidate = records[candidate_index]
+            reference_audit = compare(
+                reference_root, Path(anchor["output_root"])
+            )
+            profile_audit = compare(
+                Path(anchor["output_root"]), Path(candidate["output_root"])
+            )
+            if reference_audit["root_sha256"] != profile_audit["root_sha256"]:
+                raise GateVerificationError("cumulative audit root disagreement")
+            profiles["a0"] = {
+                "cumulative_root_sha256": reference_audit["root_sha256"],
+                "checkpoint_frames": reference_audit["checkpoint_frames"],
+                "inventory": reference_audit["inventory"],
+            }
+            profiles[candidate["profile"]] = {
+                "cumulative_root_sha256": profile_audit["root_sha256"],
+                "checkpoint_frames": profile_audit["checkpoint_frames"],
+                "inventory": profile_audit["inventory"],
+            }
+    except (ArtifactMismatch, KeyError, TypeError) as exc:
+        raise GateVerificationError(f"exact cumulative artifact mismatch: {exc}") from exc
+    return {
+        "format": "oviv2_t1_exact_transaction_v1",
+        "sequence": list(sequence),
+        "executions": records,
+        "profiles": profiles,
+    }
 
 
 def _default_git(argv: tuple[str, ...], cwd: Path) -> bytes:
@@ -770,6 +900,8 @@ def generate_evidence(
         "+00:00", "Z"
     ),
     max_input_bytes: int = DEFAULT_MAX_INPUT_BYTES,
+    exact_profile_runs: list[dict[str, Any]] | None = None,
+    compare: Callable[[Path, Path], dict[str, Any]] = compare_cumulative_artifacts,
 ) -> Path:
     repo = repo.resolve(strict=True)
     if base_commit != CUMULATIVE_BASE_COMMIT:
@@ -781,6 +913,14 @@ def generate_evidence(
 
     code_commit, code_tree = _git_state(repo, git)
     source_manifest = _load_source_manifest(repo / DEFAULT_SOURCE_MANIFEST)
+    source_manifest_bytes = _regular_file_bytes(
+        repo, DEFAULT_SOURCE_MANIFEST.as_posix(), max_input_bytes
+    )
+    source_manifest_record = {
+        "path": str((repo / DEFAULT_SOURCE_MANIFEST).resolve()),
+        "sha256": _sha256(source_manifest_bytes),
+        "byte_count": len(source_manifest_bytes),
+    }
     protected = verify_source_manifest(
         source_manifest, repo=repo, git=git, max_input_bytes=max_input_bytes
     )
@@ -812,6 +952,11 @@ def generate_evidence(
         raise GateVerificationError("git commit or tree changed during verification")
     if final_protected != protected or final_tests != test_sources:
         raise GateVerificationError("protected or test source file changed during verification")
+    if exact_profile_runs is None:
+        raise GateVerificationError("exact profile run transaction is required")
+    cumulative_exact = verify_exact_profile_runs(
+        exact_profile_runs, compare=compare
+    )
 
     common = {
         "scope": SCOPE,
@@ -826,6 +971,8 @@ def generate_evidence(
         "code_tree": code_tree,
         "protected_files": protected,
         "test_sources": test_sources,
+        "source_manifest": source_manifest_record,
+        "cumulative_exact": cumulative_exact,
         "gates": {
             "t1_exact": {**common, "test_records": [t1_record]},
             "determinism": {**common, "test_records": [determinism_record]},
@@ -874,6 +1021,7 @@ def main() -> int:
     mode.add_argument("--verify-source-manifest", type=Path)
     parser.add_argument("--base-commit", default=CUMULATIVE_BASE_COMMIT)
     parser.add_argument("--repo", type=Path, default=Path.cwd())
+    parser.add_argument("--exact-profile-runs", type=Path)
     args = parser.parse_args()
     try:
         repo = args.repo.resolve(strict=True)
@@ -890,11 +1038,19 @@ def main() -> int:
                 source = repo / source
             verify_source_manifest(_load_source_manifest(source), repo=repo)
         else:
+            if args.exact_profile_runs is None:
+                raise GateVerificationError(
+                    "--exact-profile-runs is required for development evidence"
+                )
+            executions = _load_source_manifest(args.exact_profile_runs)
+            if not isinstance(executions, dict) or set(executions) != {"executions"} or not isinstance(executions["executions"], list):
+                raise GateVerificationError("exact profile run transaction is invalid")
             generate_evidence(
                 repo=repo,
                 output=args.output,
                 base_commit=args.base_commit,
                 python_executable=sys.executable,
+                exact_profile_runs=executions["executions"],
             )
     except (GateVerificationError, FileExistsError, OSError) as error:
         parser.error(str(error))
