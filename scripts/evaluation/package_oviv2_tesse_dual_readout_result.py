@@ -40,6 +40,10 @@ from scripts.evaluation.verify_oviv2_dual_readout_development_gates import (  # 
 from src.evaluation.baselines.tesse_cd import (  # noqa: E402
     summarize_khronos_official_metrics_partial,
 )
+from src.evaluation.oviv2_temporal_occlusion import (  # noqa: E402
+    mechanism_telemetry_from_sources,
+)
+from src.oviv2.temporal_config import ExecutionProfile  # noqa: E402
 
 
 MANIFEST_ID = "oviv2-tesse-dual-readout-candidate-result-v1"
@@ -75,7 +79,8 @@ MAX_JSON_BYTES = 8 * 1024 * 1024
 SOURCE_NAMES = (
     "search_manifest", "search_status", "candidate_config", "run_manifest",
     "common_v2_summary", "temporal_occlusion_result", "official_metrics",
-    "t1_exact_evidence", "determinism_evidence",
+    "t1_exact_evidence", "determinism_evidence", "short_gate_evidence",
+    "anchor_evidence", "baseline_evidence",
 )
 METRIC_NAMES = (
     "current_miou", "object_f1", "ghost_rate", "background_f5_cm",
@@ -84,10 +89,37 @@ METRIC_NAMES = (
 RESULT_KEYS = {
     "schema_version", "manifest_id", "candidate_id", "scene", "status",
     "evidence_scope", "sources", "bindings", "run_identity", "gates", "metrics",
+    "profile", "component_map", "parameter_values", "mechanism_telemetry",
+    "anchor_coverage_gate", "promotion_evidence",
 }
 EVIDENCE_SCOPE = {
     "publication": "pre_and_post_link_revalidated",
     "snapshot": "point_in_time_not_permanent",
+}
+T2_DIRECTIONS = {
+    "dynamic_f1": "maximize_strict",
+    "change_f1": "maximize_strict",
+    "ghost_rate": "minimize_strict",
+    "background_f5_cm": "maximize_strict",
+    "recovery_frames": "minimize_strict",
+    "current_miou": "maximize_noninferior",
+    "object_f1": "maximize_noninferior",
+}
+MECHANISMS_BY_PROFILE = {
+    "a0": (),
+    "a1": ("absence", "readout_invalidation"),
+    "a2": (
+        "absence", "readout_invalidation", "proposal_recovery", "epoch_reset",
+    ),
+    "a3": (
+        "absence", "readout_invalidation", "proposal_recovery", "epoch_reset",
+        "background_release", "background_reclaim",
+    ),
+    "a4": (
+        "absence", "readout_invalidation", "proposal_recovery", "epoch_reset",
+        "background_release", "background_reclaim", "eligible_reid",
+        "icp_attempt", "icp_accept", "motion_rejection",
+    ),
 }
 _COMMON_REPLAY_CACHE: dict[
     tuple[Path, tuple[int, int, int, int, int]],
@@ -746,6 +778,313 @@ def _gate_evidence(
         witnesses.append(witness)
 
 
+def _nested_value(value: Mapping[str, Any], dotted: str) -> Any:
+    current: Any = value
+    for part in dotted.split("."):
+        if not isinstance(current, Mapping) or part not in current:
+            raise ValueError(f"candidate parameter is absent: {dotted}")
+        current = current[part]
+    return current
+
+
+def _parameter_values(
+    manifest: Mapping[str, Any], profile: str, temporal: Mapping[str, Any]
+) -> dict[str, Any]:
+    spaces = manifest.get("parameter_spaces")
+    if not isinstance(spaces, Mapping):
+        raise ValueError("search manifest parameter_spaces are missing")
+    result: dict[str, Any] = {}
+    for name, space in spaces.items():
+        if (
+            not isinstance(name, str)
+            or not isinstance(space, Mapping)
+            or set(space) != {"profiles", "values"}
+            or not isinstance(space.get("profiles"), list)
+            or not isinstance(space.get("values"), list)
+        ):
+            raise ValueError("search manifest parameter space schema is invalid")
+        if profile not in space["profiles"]:
+            continue
+        selected = _nested_value(temporal, name)
+        if selected not in space["values"]:
+            raise ValueError(f"candidate parameter is outside its declared space: {name}")
+        result[name] = selected
+    return result
+
+
+def _bound_source_snapshot(
+    record: object,
+    *,
+    base: Path,
+    label: str,
+    witnesses: list[PublicationWitness],
+    parse_json: bool = True,
+) -> Snapshot:
+    path = _source_record_path(record, base=base, label=label)
+    snapshot = _snapshot(path, label, parse_json=parse_json)
+    _record_matches(record, snapshot, label, path_required=True, base=base)
+    witnesses.append(snapshot)
+    return snapshot
+
+
+def _parse_jsonl(snapshot: Snapshot, label: str) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for line_number, raw in enumerate(snapshot.data.splitlines(), 1):
+        if not raw:
+            raise ValueError(f"{label} contains a blank line")
+        try:
+            value = json.loads(
+                raw.decode("utf-8"),
+                object_pairs_hook=_strict_object,
+                parse_constant=lambda token: (_ for _ in ()).throw(
+                    ValueError(f"non-finite JSON constant: {token}")
+                ),
+            )
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ValueError(f"{label} line {line_number} is invalid") from exc
+        if not isinstance(value, dict):
+            raise ValueError(f"{label} line {line_number} is not an object")
+        rows.append(value)
+    return rows
+
+
+def _mechanism_telemetry(
+    artifact: Mapping[str, Any],
+    *,
+    profile: str,
+    run_root: Path,
+    run_source_index: Mapping[str, Any],
+    witnesses: list[PublicationWitness],
+) -> dict[str, Any]:
+    declared = artifact.get("mechanism_telemetry")
+    macro = artifact.get("macro")
+    if (
+        not isinstance(declared, Mapping)
+        or not isinstance(macro, Mapping)
+        or macro.get("mechanism_telemetry") != declared
+        or set(declared) != set(MECHANISMS_BY_PROFILE[profile])
+    ):
+        raise ValueError("mechanism telemetry inventory is not exact")
+    roles = (
+        "trajectories", "lifecycle_transitions", "frame_coverage",
+        "runtime_diagnostics",
+    )
+    source_records: dict[str, dict[str, Any]] = {}
+    payloads: dict[str, Any] = {}
+    for role in roles:
+        record = run_source_index.get(role)
+        if not isinstance(record, Mapping):
+            raise ValueError(f"{role} mechanism source is missing")
+        snapshot = _bound_source_snapshot(
+            record, base=run_root, label=f"{role} mechanism source",
+            witnesses=witnesses, parse_json=role == "runtime_diagnostics",
+        )
+        source_records[role] = dict(record)
+        payloads[role] = (
+            snapshot.payload
+            if role == "runtime_diagnostics"
+            else _parse_jsonl(snapshot, role)
+        )
+    derived = mechanism_telemetry_from_sources(
+        trajectories=payloads["trajectories"],
+        lifecycle_transitions=payloads["lifecycle_transitions"],
+        frame_coverage=payloads["frame_coverage"],
+        runtime_diagnostics=payloads["runtime_diagnostics"],
+        source_records=source_records,
+    )
+    if derived != declared:
+        differences = sorted(
+            name
+            for name in set(derived) | set(declared)
+            if derived.get(name) != declared.get(name)
+        )
+        raise ValueError(
+            ",".join(differences)
+            + " mechanism telemetry differs from source-backed evaluator replay"
+        )
+    failed = [name for name, item in derived.items() if item["passed"] is not True]
+    if failed:
+        raise ValueError(
+            "mechanism has no usable opportunity/trigger: " + ",".join(failed)
+        )
+    return derived
+
+
+def _anchor_coverage_gate(artifact: Mapping[str, Any]) -> dict[str, Any]:
+    mappings = artifact.get("anchor_mappings")
+    macro = artifact.get("macro")
+    declared = macro.get("anchor_coverage_gate") if isinstance(macro, Mapping) else None
+    expected_mapping_fields = {
+        "scene", "object_id", "lifecycle_index", "anchor_frame_index",
+        "anchor_relative_timestamp_ns", "eligible", "target_voxel_count",
+        "mapped_temporal_id", "overlap_voxel_count", "ambiguous",
+    }
+    if not isinstance(mappings, list) or not isinstance(declared, Mapping):
+        raise ValueError("anchor mapping evidence is missing")
+    identities: set[tuple[str, int]] = set()
+    eligible: list[Mapping[str, Any]] = []
+    for mapping in mappings:
+        if not isinstance(mapping, Mapping) or set(mapping) != expected_mapping_fields:
+            raise ValueError("anchor mapping schema is not exact")
+        object_id = mapping.get("object_id")
+        lifecycle_index = mapping.get("lifecycle_index")
+        if not (
+            mapping.get("scene") == "apartment"
+            and isinstance(object_id, (str, int))
+            and type(lifecycle_index) is int
+            and type(mapping.get("anchor_frame_index")) is int
+            and mapping["anchor_frame_index"] >= 0
+            and type(mapping.get("anchor_relative_timestamp_ns")) is int
+            and mapping["anchor_relative_timestamp_ns"] >= 0
+            and type(mapping.get("target_voxel_count")) is int
+            and mapping["target_voxel_count"] >= 0
+        ):
+            raise ValueError("anchor mapping identity is invalid")
+        identity = (str(object_id), lifecycle_index)
+        if identity in identities:
+            raise ValueError("anchor mapping identity is duplicated")
+        identities.add(identity)
+        if mapping.get("eligible") is True:
+            eligible.append(mapping)
+        elif mapping.get("eligible") is not False:
+            raise ValueError("anchor mapping eligible flag is invalid")
+    mapped = 0
+    zero_overlap = 0
+    ambiguous = 0
+    for mapping in eligible:
+        overlap = mapping.get("overlap_voxel_count")
+        is_ambiguous = mapping.get("ambiguous")
+        if type(overlap) is not int or overlap < 0 or type(is_ambiguous) is not bool:
+            raise ValueError("anchor mapping evidence value is invalid")
+        temporal_id = mapping.get("mapped_temporal_id")
+        if temporal_id is not None and (type(temporal_id) is not int or temporal_id < 0):
+            raise ValueError("anchor temporal ID is invalid")
+        unique = temporal_id is not None and overlap > 0 and not is_ambiguous
+        mapped += int(unique)
+        zero_overlap += int(overlap == 0)
+        ambiguous += int(is_ambiguous)
+    eligible_count = len(eligible)
+    available = eligible_count > 0
+    passed = available and eligible_count >= 66 and mapped >= 53
+    if not available:
+        reason = "no_eligible_anchor_mappings"
+    elif eligible_count < 66:
+        reason = "insufficient_eligible_anchor_mappings"
+    elif mapped < 53:
+        reason = "insufficient_unique_anchor_mappings"
+    else:
+        reason = None
+    result = {
+        "scene": "apartment",
+        "eligible_count": eligible_count,
+        "uniquely_mapped_count": mapped,
+        "zero_overlap_count": zero_overlap,
+        "ambiguous_count": ambiguous,
+        "required_eligible_count": 66,
+        "required_mapped_count": 53,
+        "available": available,
+        "passed": passed,
+        "reason": reason,
+    }
+    if set(declared) != set(result) or dict(declared) != result:
+        raise ValueError("anchor coverage gate differs from source mappings")
+    if not passed:
+        raise ValueError("Apartment anchor coverage requires at least 53/66")
+    return result
+
+
+def _baseline_values(
+    snapshot: Snapshot, witnesses: list[PublicationWitness]
+) -> dict[str, float]:
+    root = snapshot.payload
+    if set(root) != {
+        "schema_version", "manifest_id", "dataset", "protocol_id", "scene",
+        "baselines",
+    } or not (
+        root.get("schema_version") == 1
+        and root.get("manifest_id")
+        == "oviv2-tesse-dual-readout-baseline-evidence-v1"
+        and root.get("dataset") == "TESSE-CD"
+        and root.get("protocol_id") == "oviv2-tessecd-v2"
+        and root.get("scene") == "apartment"
+    ):
+        raise ValueError("baseline evidence identity/schema is invalid")
+    baselines = root.get("baselines")
+    if not isinstance(baselines, Mapping) or set(baselines) != set(T2_DIRECTIONS):
+        raise ValueError("baseline metric inventory is not exact")
+    result: dict[str, float] = {}
+    cache: dict[Path, Snapshot] = {}
+    expected_package_fields = {
+        "schema_version", "manifest_id", "dataset", "protocol_id", "scene",
+        "status", "method_id", "oracle", "metrics",
+    }
+    for name in T2_DIRECTIONS:
+        entry = baselines[name]
+        if not isinstance(entry, Mapping) or set(entry) != {"metric", "source"} or entry.get("metric") != name:
+            raise ValueError(f"baseline evidence entry is invalid: {name}")
+        path = _source_record_path(
+            entry["source"], base=snapshot.path.parent, label=f"{name} baseline"
+        )
+        package = cache.get(path)
+        if package is None:
+            package = _bound_source_snapshot(
+                entry["source"], base=snapshot.path.parent,
+                label=f"{name} baseline", witnesses=witnesses,
+            )
+            cache[path] = package
+        else:
+            _record_matches(
+                entry["source"], package, f"{name} baseline", path_required=True,
+                base=snapshot.path.parent,
+            )
+        payload = package.payload
+        if set(payload) != expected_package_fields or not (
+            payload.get("schema_version") == 1
+            and payload.get("manifest_id") == "tesse-cd-frozen-baseline-scene-result-v1"
+            and payload.get("dataset") == "TESSE-CD"
+            and payload.get("protocol_id") == "oviv2-tessecd-v2"
+            and payload.get("scene") == "apartment"
+            and payload.get("status") == "PASS"
+            and payload.get("oracle") is False
+        ):
+            raise ValueError(f"baseline package identity/schema is invalid: {name}")
+        metrics = payload.get("metrics")
+        if not isinstance(metrics, Mapping) or name not in metrics:
+            raise ValueError(f"baseline package metric is missing: {name}")
+        result[name] = _finite(metrics[name], name)
+    return result
+
+
+def _t2_gates(
+    metrics: Mapping[str, Mapping[str, Any]], baselines: Mapping[str, float]
+) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for name, direction in T2_DIRECTIONS.items():
+        metric = metrics[name]
+        available = metric.get("available") is True
+        value = metric.get("value") if available else None
+        baseline = baselines[name]
+        passed = False
+        if available:
+            numeric = _finite(value, name)
+            if direction == "maximize_strict":
+                passed = numeric > baseline
+            elif direction == "minimize_strict":
+                passed = numeric < baseline
+            else:
+                passed = numeric >= baseline
+            value = numeric
+        result[name] = {
+            "direction": direction,
+            "baseline": baseline,
+            "value": value,
+            "available": available,
+            "passed": passed,
+            "source": metric.get("source"),
+        }
+    return result
+
+
 def _derive(
     candidate_id: str,
     snapshots: Mapping[str, Snapshot],
@@ -774,6 +1113,9 @@ def _derive(
     declaration = next((item for item in candidates if isinstance(item, Mapping) and item.get("candidate_id") == candidate_id), None)
     if declaration is None or candidate_id not in {"a0", "a1", "a2", "a3", "a4"}:
         raise ValueError("candidate is not declared in A0-A4 manifest")
+    profile = ExecutionProfile.from_id(candidate_id)
+    if declaration.get("components") != profile.components:
+        raise ValueError("candidate manifest component map is profile-incompatible")
 
     status = snapshots["search_status"].payload
     if status.get("status") != "PASS" or not isinstance(status.get("candidates"), list):
@@ -796,6 +1138,14 @@ def _derive(
     _record_matches(record.get("config_file"), config_snap, "search status config", path_required=True)
     if config.get("scene") != "apartment" or config.get("temporal_readout") != declaration.get("temporal_readout"):
         raise ValueError("candidate config does not match Apartment manifest declaration")
+    temporal_config = config.get("temporal_readout")
+    if (
+        not isinstance(temporal_config, Mapping)
+        or temporal_config.get("execution_profile") != candidate_id
+        or temporal_config.get("components") != profile.components
+    ):
+        raise ValueError("candidate profile/components are incompatible")
+    parameter_values = _parameter_values(manifest, candidate_id, temporal_config)
     algorithm_hash = config.get("algorithm_hash")
     if algorithm_hash != canonical_algorithm_hash(config) or record.get("algorithm_hash") != algorithm_hash:
         raise ValueError("candidate algorithm hash mismatch")
@@ -885,16 +1235,76 @@ def _derive(
         raise ValueError("common-v2 metrics differ from replay")
 
     occlusion = snapshots["temporal_occlusion_result"].payload
-    if occlusion.get("format") != "oviv2_temporal_compact_v1":
+    if set(occlusion) != {
+        "format", "mapping_rule", "anchor_mappings", "events", "macro",
+        "mechanism_telemetry", "input_bindings",
+    } or not (
+        occlusion.get("format") == "oviv2_temporal_compact_v1"
+        and occlusion.get("mapping_rule")
+        == "maximum_world_voxel_overlap_unique_winner_minimum_one_voxel"
+        and isinstance(occlusion.get("events"), list)
+    ):
         raise ValueError("temporal occlusion result format mismatch")
+    occlusion_macro = occlusion.get("macro")
+    if not isinstance(occlusion_macro, Mapping) or set(occlusion_macro) != {
+        "anchor_coverage_gate", "anchor_mapping_coverage",
+        "occluded_retention_rate", "stale_removal_accuracy",
+        "reactivation_identity_accuracy", "mechanism_telemetry",
+    }:
+        raise ValueError("temporal occlusion macro schema is not exact")
     input_bindings = occlusion.get("input_bindings")
     indexes = input_bindings.get("indexes") if isinstance(input_bindings, Mapping) else None
-    if not isinstance(indexes, list) or len(indexes) != 1:
+    source_indexes = (
+        input_bindings.get("source_indexes")
+        if isinstance(input_bindings, Mapping)
+        else None
+    )
+    if (
+        not isinstance(input_bindings, Mapping)
+        or set(input_bindings) != {
+            "target_manifest", "indexes", "source_indexes",
+            "maximum_cached_checkpoints",
+        }
+        or not isinstance(indexes, list)
+        or len(indexes) != 1
+        or not isinstance(source_indexes, list)
+        or len(source_indexes) != 1
+        or input_bindings.get("maximum_cached_checkpoints") != 1
+    ):
         raise ValueError("temporal occlusion input index is not exact")
+    if not isinstance(indexes[0], Mapping) or set(indexes[0]) != {
+        "sha256", "byte_count"
+    }:
+        raise ValueError("temporal occlusion checkpoint index binding is invalid")
     _record_matches(indexes[0], index_snap, "temporal occlusion index")
-    for field in ("scene", "algorithm_hash", "input_sha256", "code_commit", "source_bindings"):
-        if field in occlusion and occlusion[field] != run[field]:
-            raise ValueError(f"temporal occlusion {field} does not link to run")
+    if input_bindings.get("target_manifest") != run.get("target_manifest"):
+        raise ValueError("temporal occlusion target binding differs from run")
+    source_index_binding = source_indexes[0]
+    if (
+        not isinstance(source_index_binding, Mapping)
+        or set(source_index_binding) != {"scene", "path", "sha256", "byte_count"}
+        or source_index_binding.get("scene") != "apartment"
+    ):
+        raise ValueError("temporal occlusion source-index binding is invalid")
+    _record_matches(
+        {name: source_index_binding[name] for name in ("path", "sha256", "byte_count")},
+        run_source_snap,
+        "temporal occlusion run source index", path_required=True, base=run_root,
+    )
+    for evidence_name in ("short_gate_evidence", "anchor_evidence"):
+        evidence_snapshot = snapshots[evidence_name]
+        if (
+            evidence_snapshot.path != snapshots["temporal_occlusion_result"].path
+            or evidence_snapshot.data != snapshots["temporal_occlusion_result"].data
+        ):
+            raise ValueError(
+                f"{evidence_name} must bind the formal temporal occlusion evaluator artifact"
+            )
+    mechanism_telemetry = _mechanism_telemetry(
+        occlusion, profile=candidate_id, run_root=run_root,
+        run_source_index=run_source_snap.payload, witnesses=witnesses
+    )
+    anchor_coverage = _anchor_coverage_gate(occlusion)
 
     official = snapshots["official_metrics"].payload
     if not (official.get("status") in {"PASS", "PARTIAL"} and official.get("dataset") == "TESSE-CD"
@@ -948,11 +1358,21 @@ def _derive(
         else:
             metrics[name] = _metric(value, name, "official_metrics")
     ordered_metrics = {name: metrics[name] for name in METRIC_NAMES}
+    baseline_values = _baseline_values(snapshots["baseline_evidence"], witnesses)
+    t2_metrics = _t2_gates(ordered_metrics, baseline_values)
+    failed_promotion_gates = [
+        f"t2_metrics.{name}"
+        for name, gate in t2_metrics.items()
+        if gate["passed"] is not True
+    ]
     gates = {
         "correctness": {"passed": True, "reason": "all_source_and_identity_checks_passed", "source": "derived"},
         "causality": {"passed": True, "reason": "checkpoint_boundaries_and_temporal_links_validated", "source": "run_manifest"},
         "determinism": {"passed": True, "reason": "named_determinism_evidence_passed", "source": "determinism_evidence"},
         "t1_exact": {"passed": True, "reason": "named_t1_exact_evidence_passed", "source": "t1_exact_evidence"},
+        "mechanisms": mechanism_telemetry,
+        "anchor_coverage": anchor_coverage,
+        "t2_metrics": t2_metrics,
     }
     return {
         "schema_version": 1, "manifest_id": MANIFEST_ID, "candidate_id": candidate_id,
@@ -963,6 +1383,22 @@ def _derive(
             "config_sha256": canonical_config_hash, "non_temporal_config_sha256": non_temporal,
             "input_hashes": run["source_bindings"]},
         "run_identity": {name: run[name] for name in ("algorithm_hash", "input_sha256", "code_commit", "source_bindings")},
+        "profile": {
+            "candidate_id": candidate_id,
+            "kind": "main",
+            "execution_profile": candidate_id,
+            "selectable": True,
+        },
+        "component_map": dict(profile.components),
+        "parameter_values": parameter_values,
+        "mechanism_telemetry": mechanism_telemetry,
+        "anchor_coverage_gate": anchor_coverage,
+        "promotion_evidence": {
+            "selectable": True,
+            "passed": not failed_promotion_gates,
+            "failed_gates": failed_promotion_gates,
+            "source": "derived_from_source_backed_gates",
+        },
         "gates": gates, "metrics": ordered_metrics,
     }
 
@@ -1084,11 +1520,15 @@ def package_result(*, manifest: str | Path, search_status: str | Path, candidate
                    candidate_config: str | Path, run_manifest: str | Path, common_v2_summary: str | Path,
                    temporal_occlusion_result: str | Path, official_metrics: str | Path,
                    t1_exact_evidence: str | Path, determinism_evidence: str | Path,
+                   short_gate_evidence: str | Path, anchor_evidence: str | Path,
+                   baseline_evidence: str | Path,
                    output: str | Path) -> dict[str, Any]:
     paths = {"search_manifest": manifest, "search_status": search_status, "candidate_config": candidate_config,
              "run_manifest": run_manifest, "common_v2_summary": common_v2_summary,
              "temporal_occlusion_result": temporal_occlusion_result, "official_metrics": official_metrics,
-             "t1_exact_evidence": t1_exact_evidence, "determinism_evidence": determinism_evidence}
+             "t1_exact_evidence": t1_exact_evidence, "determinism_evidence": determinism_evidence,
+             "short_gate_evidence": short_gate_evidence, "anchor_evidence": anchor_evidence,
+             "baseline_evidence": baseline_evidence}
     snapshots = {name: _snapshot(path, name.replace("_", " ")) for name, path in paths.items()}
     auxiliary: list[PublicationWitness] = []
     result = _derive(candidate_id, snapshots, auxiliary=auxiliary)
@@ -1141,7 +1581,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                    candidate_config=args.candidate_config, run_manifest=args.run_manifest,
                    common_v2_summary=args.common_v2_summary, temporal_occlusion_result=args.temporal_occlusion_result,
                    official_metrics=args.official_metrics, t1_exact_evidence=args.t1_exact_evidence,
-                   determinism_evidence=args.determinism_evidence, output=args.output)
+                   determinism_evidence=args.determinism_evidence,
+                   short_gate_evidence=args.short_gate_evidence,
+                   anchor_evidence=args.anchor_evidence,
+                   baseline_evidence=args.baseline_evidence, output=args.output)
     return 0
 
 

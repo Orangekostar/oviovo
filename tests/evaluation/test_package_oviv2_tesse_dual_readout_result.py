@@ -44,6 +44,15 @@ COMMON_METRICS = {
     "background_f5": 0.3,
     "recovery_frames": 100.0,
 }
+T2_DIRECTIONS = {
+    "dynamic_f1": "maximize_strict",
+    "change_f1": "maximize_strict",
+    "ghost_rate": "minimize_strict",
+    "background_f5_cm": "maximize_strict",
+    "recovery_frames": "minimize_strict",
+    "current_miou": "maximize_noninferior",
+    "object_f1": "maximize_noninferior",
+}
 ORIGINAL_COMMON_REPLAY = package_module._recompute_common_v2_metrics
 
 
@@ -70,6 +79,176 @@ def _write(path: Path, value: object) -> Path:
 def _record(path: Path) -> dict[str, object]:
     data = path.read_bytes()
     return {"path": str(path.resolve()), "sha256": hashlib.sha256(data).hexdigest(), "byte_count": len(data)}
+
+
+def _relative_record(path: Path, root: Path) -> dict[str, object]:
+    record = _record(path)
+    record["path"] = path.relative_to(root).as_posix()
+    return record
+
+
+def _baseline_evidence(root: Path) -> Path:
+    release = _write(
+        root / "baselines/oviv2_release.json",
+        {
+            "schema_version": 1,
+            "manifest_id": "tesse-cd-frozen-baseline-scene-result-v1",
+            "dataset": "TESSE-CD",
+            "protocol_id": "oviv2-tessecd-v2",
+            "scene": "apartment",
+            "status": "PASS",
+            "method_id": "OVIV2_RELEASE",
+            "oracle": False,
+            "metrics": {"current_miou": 0.3, "object_f1": 0.7},
+        },
+    )
+    strongest = _write(
+        root / "baselines/strongest_non_oracle.json",
+        {
+            "schema_version": 1,
+            "manifest_id": "tesse-cd-frozen-baseline-scene-result-v1",
+            "dataset": "TESSE-CD",
+            "protocol_id": "oviv2-tessecd-v2",
+            "scene": "apartment",
+            "status": "PASS",
+            "method_id": "STRONGEST_NON_ORACLE",
+            "oracle": False,
+            "metrics": {
+                "dynamic_f1": 0.7,
+                "change_f1": 0.5,
+                "ghost_rate": 0.2,
+                "background_f5_cm": 0.2,
+                "recovery_frames": 200.0,
+            },
+        },
+    )
+    return _write(
+        root / "baseline_evidence.json",
+        {
+            "schema_version": 1,
+            "manifest_id": "oviv2-tesse-dual-readout-baseline-evidence-v1",
+            "dataset": "TESSE-CD",
+            "protocol_id": "oviv2-tessecd-v2",
+            "scene": "apartment",
+            "baselines": {
+                name: {
+                    "metric": name,
+                    "source": _record(
+                        release
+                        if name in {"current_miou", "object_f1"}
+                        else strongest
+                    ),
+                }
+                for name in T2_DIRECTIONS
+            },
+        },
+    )
+
+
+def _mechanism_sources(
+    root: Path,
+) -> tuple[dict[str, dict[str, object]], dict[str, object]]:
+    trajectories = root / "run/trajectories.jsonl"
+    trajectories.write_bytes(b"")
+    lifecycle = root / "run/lifecycle_transitions.jsonl"
+    lifecycle.write_bytes(
+        _bytes(
+            {
+                "frame_index": 1,
+                "timestamp_ns": 200,
+                "entity_id": 7,
+                "before": "active",
+                "after": "uncertain",
+                "evidence": "visible_absent",
+                "geometry_epoch": 1,
+                "readout_valid": False,
+            }
+        )
+    )
+    frame_coverage = root / "run/temporal_frame_coverage.jsonl"
+    frame_coverage.write_bytes(
+        b"".join(
+            _bytes(
+                {
+                    "frame_index": frame,
+                    "timestamp_ns": (frame + 1) * 100,
+                    "record_count": 0,
+                    "event_count": int(frame == 1),
+                }
+            )
+            for frame in range(3)
+        )
+    )
+    diagnostics = _write(
+        root / "run/runtime_diagnostics.json",
+        {
+            "schema_version": 1,
+            "execution_profile": "a2",
+            "processed_frame_count": 3,
+            "counters": {
+                "proposal_opportunity_count": 2,
+                "proposal_trigger_count": 1,
+                "reid_opportunity_count": 0,
+                "reid_trigger_count": 0,
+                "identity_expiry_count": 0,
+                "geometry_reclaim_count": 0,
+                "motion_rejection_count": 0,
+                "ledger_rejection_count": 0,
+                "epoch_reset_opportunity_count": 1,
+                "epoch_reset_trigger_count": 1,
+                "icp_opportunity_count": 0,
+                "icp_accept_count": 0,
+                "icp_reject_count": 0,
+                "ledger_stage_count": 0,
+                "ledger_commit_count": 0,
+                "ledger_reclaim_count": 0,
+            },
+        },
+    )
+    run_root = root / "run"
+    source_records = {
+        "trajectories": _relative_record(trajectories, run_root),
+        "lifecycle_transitions": _relative_record(lifecycle, run_root),
+        "frame_coverage": _relative_record(frame_coverage, run_root),
+        "runtime_diagnostics": _relative_record(diagnostics, run_root),
+    }
+    lifecycle_record = source_records["lifecycle_transitions"]
+    diagnostics_record = source_records["runtime_diagnostics"]
+    telemetry = {
+        "absence": {
+            "opportunities": 1,
+            "triggers": 1,
+            "available": True,
+            "passed": True,
+            "reason": None,
+            "source": lifecycle_record,
+        },
+        "readout_invalidation": {
+            "opportunities": 1,
+            "triggers": 1,
+            "available": True,
+            "passed": True,
+            "reason": None,
+            "source": lifecycle_record,
+        },
+        "proposal_recovery": {
+            "opportunities": 2,
+            "triggers": 1,
+            "available": True,
+            "passed": True,
+            "reason": None,
+            "source": diagnostics_record,
+        },
+        "epoch_reset": {
+            "opportunities": 1,
+            "triggers": 1,
+            "available": True,
+            "passed": True,
+            "reason": None,
+            "source": diagnostics_record,
+        },
+    }
+    return source_records, telemetry
 
 
 def _fixture(root: Path) -> dict[str, Path]:
@@ -119,9 +298,12 @@ def _fixture(root: Path) -> dict[str, Path]:
     checkpoint = {"frame_index": 2, "timestamp_ns": 200, "consumed_through_frame": 2,
         "consumed_through_frame_exclusive": 3, "checkpoint_status": _record(checkpoint_status),
         "snapshot": _record(snapshot), "entities": _record(entities)}
+    mechanism_sources, mechanism_telemetry = _mechanism_sources(root)
     run_source_index = _write(run_root / "source_index.json", {"schema_version": 1, "dataset": "TESSE-CD",
         "mode": "causal_checkpoint_exports", "method": "OVIV2", "scene": "apartment",
-        "schedule": _record(schedule_file), "checkpoints": [checkpoint]})
+        "schedule": _record(schedule_file),
+        **mechanism_sources,
+        "checkpoints": [checkpoint]})
     run_manifest = _write(run_root / "run_manifest.json", {
         "schema_version": 2, "protocol_id": "oviv2-tessecd-v2", "dataset": "TESSE-CD", "method_id": "OVIV2",
         "scene": "apartment", "mode": "dual_readout_causal_checkpoints", "algorithm_hash": algorithm,
@@ -163,10 +345,77 @@ def _fixture(root: Path) -> dict[str, Path]:
         "metrics": COMMON_METRICS,
         "sources": {"temporal_index": _record(temporal_manifest)},
     })
+    anchor_mappings = [
+        {
+            "scene": "apartment",
+            "object_id": f"object-{position}",
+            "lifecycle_index": 0,
+            "anchor_frame_index": 2,
+            "anchor_relative_timestamp_ns": 200,
+            "eligible": True,
+            "target_voxel_count": 1,
+            "mapped_temporal_id": position if position < 53 else None,
+            "overlap_voxel_count": 1 if position < 53 else 0,
+            "ambiguous": False,
+        }
+        for position in range(66)
+    ]
+    anchor_gate = {
+        "scene": "apartment",
+        "eligible_count": 66,
+        "uniquely_mapped_count": 53,
+        "zero_overlap_count": 13,
+        "ambiguous_count": 0,
+        "required_eligible_count": 66,
+        "required_mapped_count": 53,
+        "available": True,
+        "passed": True,
+        "reason": None,
+    }
     occlusion = _write(root / "occlusion.json", {
-        "format": "oviv2_temporal_compact_v1", "scene": "apartment", "algorithm_hash": algorithm,
-        "input_sha256": h("5"), "code_commit": commit, "source_bindings": input_hashes,
-        "input_bindings": {"indexes": [_record(index)]},
+        "format": "oviv2_temporal_compact_v1",
+        "mapping_rule": "maximum_world_voxel_overlap_unique_winner_minimum_one_voxel",
+        "anchor_mappings": anchor_mappings,
+        "events": [],
+        "mechanism_telemetry": mechanism_telemetry,
+        "input_bindings": {
+            "target_manifest": {"sha256": h("3"), "byte_count": 11},
+            "indexes": [
+                {
+                    "sha256": hashlib.sha256(index.read_bytes()).hexdigest(),
+                    "byte_count": index.stat().st_size,
+                }
+            ],
+            "source_indexes": [
+                {
+                    "scene": "apartment",
+                    **_relative_record(run_source_index, run_root),
+                }
+            ],
+            "maximum_cached_checkpoints": 1,
+        },
+        "macro": {
+            "anchor_coverage_gate": anchor_gate,
+            "anchor_mapping_coverage": {
+                "available": True,
+                "mapped": 53,
+                "total": 66,
+                "value": 53 / 66,
+            },
+            "occluded_retention_rate": {
+                "available": False, "denominator": 0, "value": None,
+                "unavailable_reason": "no_eligible_occluded_events",
+            },
+            "stale_removal_accuracy": {
+                "available": False, "denominator": 0, "value": None,
+                "unavailable_reason": "no_eligible_absent_events",
+            },
+            "reactivation_identity_accuracy": {
+                "available": False, "denominator": 0, "value": None,
+                "unavailable_reason": "no_eligible_reactivation_events",
+            },
+            "mechanism_telemetry": mechanism_telemetry,
+        },
     })
     official_results = root / "khronos/map/results"
     static_source = official_results / "static_objects.csv"
@@ -178,10 +427,14 @@ def _fixture(root: Path) -> dict[str, Path]:
     )
     background_source = official_results / "background_mesh.csv"
     background_source.write_text("Name,Accuracy@0.2,Completeness@0.2\n0,0.5,0.5\n")
+    dynamic_source = official_results / "dynamic_objects.csv"
+    dynamic_source.write_text(
+        "Name,Query,NumObjDetected,NumObjHallucinated,NumObjMissed\n"
+        "0,0,4,1,1\n"
+    )
     official_partial = summarize_khronos_official_metrics_partial(official_results)
-    missing_dynamic = official_results / "dynamic_objects.csv"
     official = _write(root / "khronos/evaluation/official_metrics.json", {
-        "status": "PARTIAL", "dataset": "TESSE-CD", "scene": "apartment", "split": "apartment_test",
+        "status": "PASS", "dataset": "TESSE-CD", "scene": "apartment", "split": "apartment_test",
         "method": "OVIV2", "mode": "causal_checkpoints", "display_mode": "online",
         "aggregation": "upstream online 4D plotting aggregation",
         "run_identity": {"run_id": "a2-apartment", "config_sha256": config_sha},
@@ -192,7 +445,7 @@ def _fixture(root: Path) -> dict[str, Path]:
         "unavailable": official_partial["unavailable"],
         "sources": [
             _record(static_source),
-            {"path": str(missing_dynamic), "status": "MISSING"},
+            _record(dynamic_source),
             _record(background_source),
         ],
     })
@@ -235,9 +488,12 @@ def _fixture(root: Path) -> dict[str, Path]:
             "gates": {"t1_exact": gate(t1_files, h("9")), "determinism": gate(determinism_files, h("b"))}},
         "receipt": {"created_at_utc": "2026-07-25T00:00:00Z"},
     })
+    baseline_evidence = _baseline_evidence(root)
     return {"manifest": manifest, "search_status": status, "candidate_config": config_path, "run_manifest": run_manifest,
             "common_v2_summary": common, "temporal_occlusion_result": occlusion, "official_metrics": official,
-            "t1_exact_evidence": evidence, "determinism_evidence": evidence}
+            "t1_exact_evidence": evidence, "determinism_evidence": evidence,
+            "short_gate_evidence": occlusion, "anchor_evidence": occlusion,
+            "baseline_evidence": baseline_evidence}
 
 
 def _package(paths: dict[str, Path], output: Path) -> dict[str, object]:
@@ -248,19 +504,220 @@ def test_packages_exact_structured_result_and_revalidates(tmp_path: Path) -> Non
     paths = _fixture(tmp_path)
     output = tmp_path / "result.json"
     result = _package(paths, output)
-    assert set(result) == {"schema_version", "manifest_id", "candidate_id", "scene", "status", "evidence_scope", "sources", "bindings", "run_identity", "gates", "metrics"}
+    assert set(result) == {
+        "schema_version", "manifest_id", "candidate_id", "scene", "status",
+        "evidence_scope", "sources", "bindings", "run_identity", "gates",
+        "metrics", "profile", "component_map", "parameter_values",
+        "mechanism_telemetry", "anchor_coverage_gate", "promotion_evidence",
+    }
     assert result["evidence_scope"] == {
         "publication": "pre_and_post_link_revalidated",
         "snapshot": "point_in_time_not_permanent",
     }
     assert set(result["sources"]) == ({*paths} - {"manifest"}) | {"search_manifest"}
     assert all(set(record) == {"path", "sha256", "byte_count"} for record in result["sources"].values())
-    assert all(set(gate) == {"passed", "reason", "source"} and gate["passed"] for gate in result["gates"].values())
+    assert set(result["gates"]) == {
+        "correctness", "causality", "determinism", "t1_exact",
+        "mechanisms", "anchor_coverage", "t2_metrics",
+    }
+    assert all(
+        set(result["gates"][name]) == {"passed", "reason", "source"}
+        and result["gates"][name]["passed"]
+        for name in ("correctness", "causality", "determinism", "t1_exact")
+    )
+    assert result["profile"] == {
+        "candidate_id": "a2",
+        "kind": "main",
+        "execution_profile": "a2",
+        "selectable": True,
+    }
+    assert result["component_map"] == ExecutionProfile.A2.components
+    assert result["parameter_values"] == {
+        "lifecycle.minimum_absent_streak": 2,
+        "proposal.minimum_depth_residual_m": 0.1,
+        "dynamic_state.minimum_motion_confidence": 0.7,
+        "motion.minimum_translation_confidence": 0.6,
+        "motion.maximum_translation_residual_m": 0.25,
+    }
+    assert result["mechanism_telemetry"] == result["gates"]["mechanisms"]
+    assert result["anchor_coverage_gate"] == result["gates"]["anchor_coverage"]
+    assert result["anchor_coverage_gate"]["uniquely_mapped_count"] == 53
+    assert set(result["gates"]["t2_metrics"]) == set(T2_DIRECTIONS)
+    for name, gate in result["gates"]["t2_metrics"].items():
+        assert set(gate) == {
+            "direction", "baseline", "value", "available", "passed", "source"
+        }
+        assert gate["direction"] == T2_DIRECTIONS[name]
+        assert gate["available"] is True
+        assert gate["passed"] is True
+    assert result["promotion_evidence"] == {
+        "selectable": True,
+        "passed": True,
+        "failed_gates": [],
+        "source": "derived_from_source_backed_gates",
+    }
+    assert "t4" not in json.dumps(result).lower()
     assert result["metrics"]["background_f5_cm"]["value"] == 0.3
     assert result["metrics"]["runtime_seconds"]["value"] == 12.5
-    assert result["metrics"]["dynamic_f1"]["available"] is False
-    assert "dynamic_objects.csv" in result["metrics"]["dynamic_f1"]["reason"]
+    assert result["metrics"]["dynamic_f1"]["available"] is True
     assert load_and_revalidate_result(output, manifest=paths["manifest"]) == result
+
+
+def test_recomputes_mechanism_telemetry_and_fails_closed_on_empty_opportunity(
+    tmp_path: Path,
+) -> None:
+    paths = _fixture(tmp_path)
+    occlusion = json.loads(paths["temporal_occlusion_result"].read_text())
+    telemetry = occlusion["mechanism_telemetry"]["proposal_recovery"]
+    diagnostics_path = paths["run_manifest"].parent / telemetry["source"]["path"]
+    diagnostics = json.loads(diagnostics_path.read_text())
+    diagnostics["counters"]["proposal_opportunity_count"] = 0
+    diagnostics["counters"]["proposal_trigger_count"] = 0
+    _write(diagnostics_path, diagnostics)
+    diagnostics_record = _relative_record(diagnostics_path, paths["run_manifest"].parent)
+    source_index_path = paths["run_manifest"].parent / "source_index.json"
+    source_index = json.loads(source_index_path.read_text())
+    source_index["runtime_diagnostics"] = diagnostics_record
+    _write(source_index_path, source_index)
+    run_manifest = json.loads(paths["run_manifest"].read_text())
+    run_manifest["source_index"] = _relative_record(
+        source_index_path, paths["run_manifest"].parent
+    )
+    _write(paths["run_manifest"], run_manifest)
+    for name in ("proposal_recovery", "epoch_reset"):
+        occlusion["mechanism_telemetry"][name]["source"] = diagnostics_record
+    telemetry.update(opportunities=1, triggers=1, available=True, passed=True)
+    occlusion["macro"]["mechanism_telemetry"] = occlusion["mechanism_telemetry"]
+    occlusion["input_bindings"]["source_indexes"][0] = {
+        "scene": "apartment",
+        **run_manifest["source_index"],
+    }
+    _write(paths["temporal_occlusion_result"], occlusion)
+
+    with pytest.raises(ValueError, match="proposal_recovery.*source|opportunit"):
+        _package(paths, tmp_path / "result.json")
+
+
+def test_rejects_manual_pass_boolean_in_formal_evaluator_artifact(
+    tmp_path: Path,
+) -> None:
+    paths = _fixture(tmp_path)
+    occlusion = json.loads(paths["temporal_occlusion_result"].read_text())
+    occlusion["cached_short_gate_passed"] = True
+    _write(paths["temporal_occlusion_result"], occlusion)
+
+    with pytest.raises(ValueError, match="format|schema|exact"):
+        _package(paths, tmp_path / "manual-pass.json")
+
+
+@pytest.mark.parametrize(("mapped", "eligible"), [(52, 66), (0, 0)])
+def test_recomputes_anchor_mapping_gate_and_requires_53_of_66(
+    tmp_path: Path, mapped: int, eligible: int
+) -> None:
+    paths = _fixture(tmp_path)
+    occlusion = json.loads(paths["temporal_occlusion_result"].read_text())
+    mappings = occlusion["anchor_mappings"]
+    if eligible == 0:
+        mappings.clear()
+    else:
+        mappings[52]["mapped_temporal_id"] = None
+        mappings[52]["overlap_voxel_count"] = 0
+    occlusion["macro"]["anchor_coverage_gate"].update(
+        eligible_count=66,
+        uniquely_mapped_count=53,
+        available=True,
+        passed=True,
+        reason=None,
+    )
+    _write(paths["temporal_occlusion_result"], occlusion)
+
+    with pytest.raises(ValueError, match="anchor.*(source|coverage|eligible|53)"):
+        _package(paths, tmp_path / f"anchor-{mapped}-{eligible}.json")
+
+
+@pytest.mark.parametrize("metric", list(T2_DIRECTIONS))
+def test_each_t2_metric_is_an_independent_source_backed_gate(
+    tmp_path: Path, metric: str
+) -> None:
+    paths = _fixture(tmp_path)
+    baseline = json.loads(paths["baseline_evidence"].read_text())
+    source_path = Path(baseline["baselines"][metric]["source"]["path"])
+    source = json.loads(source_path.read_text())
+    if metric in {"ghost_rate", "recovery_frames"}:
+        source["metrics"][metric] = 0.0
+    else:
+        source["metrics"][metric] = 1.0
+    _write(source_path, source)
+    for entry in baseline["baselines"].values():
+        if Path(entry["source"]["path"]) == source_path:
+            entry["source"] = _record(source_path)
+    _write(paths["baseline_evidence"], baseline)
+
+    result = _package(paths, tmp_path / f"failed-{metric}.json")
+
+    assert result["gates"]["t2_metrics"][metric]["passed"] is False
+    assert result["promotion_evidence"] == {
+        "selectable": True,
+        "passed": False,
+        "failed_gates": [f"t2_metrics.{metric}"],
+        "source": "derived_from_source_backed_gates",
+    }
+
+
+def test_current_and_object_noninferiority_accept_equality(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    baseline = json.loads(paths["baseline_evidence"].read_text())
+    release_path = Path(baseline["baselines"]["object_f1"]["source"]["path"])
+    release = json.loads(release_path.read_text())
+    official = json.loads(paths["official_metrics"].read_text())
+    common = json.loads(paths["common_v2_summary"].read_text())
+    release["metrics"]["object_f1"] = official["metrics"]["object_f1"]
+    release["metrics"]["current_miou"] = common["metrics"]["current_miou"]
+    _write(release_path, release)
+    for entry in baseline["baselines"].values():
+        if Path(entry["source"]["path"]) == release_path:
+            entry["source"] = _record(release_path)
+    _write(paths["baseline_evidence"], baseline)
+
+    result = _package(paths, tmp_path / "equal-noninferior.json")
+
+    assert result["gates"]["t2_metrics"]["object_f1"]["passed"] is True
+    assert result["gates"]["t2_metrics"]["current_miou"]["passed"] is True
+
+
+def test_rejects_unknown_or_profile_incompatible_parameter(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    manifest = json.loads(paths["manifest"].read_text())
+    declaration = next(
+        item for item in manifest["candidates"] if item["candidate_id"] == "a2"
+    )
+    declaration["tunable_parameters"] = ["unknown.axis"]
+    _write(paths["manifest"], manifest)
+    status = json.loads(paths["search_status"].read_text())
+    status["manifest"] = _record(paths["manifest"])
+    _write(paths["search_status"], status)
+
+    with pytest.raises(ValueError, match="manifest|parameter|keys"):
+        _package(paths, tmp_path / "unknown-parameter.json")
+
+
+def test_revalidation_rejects_micro_diagnostic_masquerading_as_main(
+    tmp_path: Path,
+) -> None:
+    paths = _fixture(tmp_path)
+    output = tmp_path / "result.json"
+    result = _package(paths, output)
+    result["profile"] = {
+        "candidate_id": "a2_no_proposal",
+        "kind": "main",
+        "execution_profile": "a2",
+        "selectable": True,
+    }
+    result["candidate_id"] = "a2_no_proposal"
+    output.write_bytes(_bytes(result))
+
+    with pytest.raises(ValueError, match="candidate|A0-A4|manifest|revalidated"):
+        load_and_revalidate_result(output, manifest=paths["manifest"])
 
 
 def test_exact_transaction_uses_reference_and_dual_production_receipt_schemas(
