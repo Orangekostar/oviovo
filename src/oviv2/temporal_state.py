@@ -291,6 +291,13 @@ class TemporalGeometryState:
     def transaction(self) -> TemporalGeometryTransaction:
         return TemporalGeometryTransaction(self)
 
+    def __copy__(self) -> TemporalGeometryState:
+        return self
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> TemporalGeometryState:
+        memo[id(self)] = self
+        return self
+
     def replace_current(self, epoch: GeometryEpoch) -> TemporalGeometryState:
         transaction = self.transaction()
         transaction.replace_current(epoch)

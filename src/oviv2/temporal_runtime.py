@@ -885,14 +885,14 @@ def _candidate_keys_with_sparse_fallback(
     volume: TemporalBackgroundVolume,
     frame: Frame,
     depth_m: np.ndarray,
-    config: TemporalReadoutConfig,
+    config: TemporalGeometryConfig,
 ) -> tuple[tuple[int, int, int], ...]:
     try:
         return volume.candidate_block_keys(frame, depth_m)
     except RuntimeError as error:
         if "No block is touched" not in str(error):
             raise
-        return _sparse_background_block_keys(frame, depth_m, config.geometry)
+        return _sparse_background_block_keys(frame, depth_m, config)
 
 
 def _stage_ledger_evidence(
@@ -904,56 +904,158 @@ def _stage_ledger_evidence(
     return ledger.stage(evidence)
 
 
+@dataclass(frozen=True)
+class _SparseRebuildObservation:
+    key: object
+    frame: Frame
+    depth_m: np.ndarray
+    block_keys: tuple[tuple[int, int, int], ...]
+
+
 def _rebuild_sparse_background_blocks(
     config: TemporalGeometryConfig,
-    observations: tuple[tuple[object, tuple[int, int, int], Frame, np.ndarray], ...],
+    observations: tuple[
+        _SparseRebuildObservation
+        | tuple[object, tuple[int, int, int], Frame, np.ndarray],
+        ...,
+    ],
 ) -> TemporalBackgroundVolume:
     if not isinstance(observations, tuple):
         raise TypeError("observations must be a tuple")
-    grouped: dict[
-        object, tuple[object, Frame, np.ndarray, set[tuple[int, int, int]]]
-    ] = {}
-    for observation_key, block_key, frame, depth_m in sorted(
-        observations, key=lambda item: (repr(item[0]), item[1])
-    ):
-        _, frame_depth, _, _, _ = _background_module._validate_frame(frame)
-        depth = _background_module._validate_masked_depth(
-            depth_m, frame_depth, config
-        )
-        native_key = _ledger_module._native_identity(frame)
-        existing = grouped.get(native_key)
-        if existing is None:
-            grouped[native_key] = (
-                observation_key,
-                frame,
-                np.array(depth, copy=True),
-                {block_key},
-            )
-            continue
-        first_key, first_frame, merged, block_keys = existing
-        if (
-            _ledger_module._native_frame_payload(first_frame)
-            != _ledger_module._native_frame_payload(frame)
+    if all(type(item) is _SparseRebuildObservation for item in observations):
+        grouped_observations = observations
+    else:
+        if any(type(item) is _SparseRebuildObservation for item in observations):
+            raise TypeError("sparse rebuild observation formats cannot be mixed")
+        grouped: dict[
+            object, tuple[object, Frame, np.ndarray, set[tuple[int, int, int]]]
+        ] = {}
+        for observation_key, block_key, frame, depth_m in sorted(
+            observations, key=lambda item: (repr(item[0]), item[1])
         ):
-            raise ValueError("native frame content conflicts during sparse rebuild")
-        positive = depth > 0.0
-        overlap = positive & (merged > 0.0)
-        if np.any(overlap & (merged != depth)):
-            raise ValueError("masked depth conflict during sparse rebuild")
-        merged[positive] = depth[positive]
-        block_keys.add(block_key)
-    all_keys = {key for _, _, _, keys in grouped.values() for key in keys}
+            _, frame_depth, _, _, _ = _background_module._validate_frame(frame)
+            depth = _background_module._validate_masked_depth(
+                depth_m, frame_depth, config
+            )
+            native_key = _ledger_module._native_identity(frame)
+            existing = grouped.get(native_key)
+            if existing is None:
+                grouped[native_key] = (
+                    observation_key,
+                    frame,
+                    np.array(depth, copy=True),
+                    {block_key},
+                )
+                continue
+            _, first_frame, merged, block_keys = existing
+            if (
+                _ledger_module._native_frame_payload(first_frame)
+                != _ledger_module._native_frame_payload(frame)
+            ):
+                raise ValueError("native frame content conflicts during sparse rebuild")
+            positive = depth > 0.0
+            overlap = positive & (merged > 0.0)
+            if np.any(overlap & (merged != depth)):
+                raise ValueError("masked depth conflict during sparse rebuild")
+            merged[positive] = depth[positive]
+            block_keys.add(block_key)
+        grouped_observations = tuple(
+            _SparseRebuildObservation(key, frame, depth, tuple(sorted(keys)))
+            for key, frame, depth, keys in grouped.values()
+        )
+    all_keys = {
+        key for item in grouped_observations for key in item.block_keys
+    }
     if len(all_keys) > config.background_block_count:
         raise ValueError("TSDF block capacity would exceed background_block_count")
     rebuilt = _SparseBackgroundVolume.preallocated(config, len(all_keys))
-    for _, frame, depth, keys in sorted(
-        grouped.values(), key=lambda item: repr(item[0])
+    for item in sorted(
+        grouped_observations, key=lambda observation: repr(observation.key)
     ):
-        rebuilt.integrate_blocks_owned(frame, depth, tuple(sorted(keys)))
+        rebuilt.integrate_blocks_owned(
+            item.frame, item.depth_m, item.block_keys
+        )
     return rebuilt
 
 
 class _SparseBackgroundLedger(ReversibleBackgroundLedger):
+    @staticmethod
+    def _record_indexes(
+        provisional: dict[object, object],
+        committed: dict[object, object],
+        current_frame_id: int,
+    ) -> tuple[
+        dict[object, tuple[object, ...]],
+        dict[object, int],
+        dict[int, tuple[object, ...]],
+    ]:
+        native_frames: dict[object, tuple[object, ...]] = {}
+        processed_frames: dict[int, tuple[object, ...]] = {}
+        event_view_bins: dict[tuple[int, int, int], int] = {}
+        for record in (*provisional.values(), *committed.values()):
+            native = _ledger_module._native_identity(record.frame)
+            native_payload = _ledger_module._native_frame_payload(record.frame)
+            previous_native = native_frames.setdefault(native, native_payload)
+            if previous_native != native_payload:
+                raise ValueError(
+                    "native frame content conflicts while indexing sparse records"
+                )
+            event_key = (
+                record.entity_id,
+                record.geometry_epoch,
+                record.frame_id,
+            )
+            previous_view_bin = event_view_bins.setdefault(
+                event_key, record.view_bin
+            )
+            if previous_view_bin != record.view_bin:
+                raise ValueError(
+                    "entity event view_bin conflicts while indexing sparse records"
+                )
+            if record.frame_id == current_frame_id:
+                processed_payload = (record.frame_id, native_payload)
+                previous_processed = processed_frames.setdefault(
+                    record.frame_id, processed_payload
+                )
+                if previous_processed != processed_payload:
+                    raise ValueError(
+                        "processed frame content conflicts while indexing sparse records"
+                    )
+        # The shared index schema is native-frame scoped; entity-scoped bins are
+        # validated above and consumed directly from committed records.
+        return native_frames, {}, processed_frames
+
+    def _aggregate_observations(
+        self, committed: dict[object, object]
+    ) -> tuple[_SparseRebuildObservation, ...]:
+        grouped: dict[
+            object, tuple[object, Frame, np.ndarray, set[tuple[int, int, int]]]
+        ] = {}
+        for record_key in sorted(committed):
+            record = committed[record_key]
+            if record.observation_canonical is None:
+                raise ValueError("sparse committed record lacks observation provenance")
+            observation_key = (
+                _ledger_module._native_identity(record.frame),
+                record.observation_canonical,
+            )
+            existing = grouped.get(observation_key)
+            if existing is None:
+                grouped[observation_key] = (
+                    observation_key,
+                    record.frame,
+                    record.depth_m,
+                    {record.contribution.block_key},
+                )
+                continue
+            existing[3].add(record.contribution.block_key)
+        return tuple(
+            _SparseRebuildObservation(key, frame, depth, tuple(sorted(keys)))
+            for key, frame, depth, keys in sorted(
+                grouped.values(), key=lambda item: repr(item[0])
+            )
+        )
+
     def stage(self, evidence: BackgroundLedgerEvidence) -> LedgerDecision:
         if not isinstance(evidence, BackgroundLedgerEvidence):
             return super().stage(evidence)
@@ -961,17 +1063,19 @@ class _SparseBackgroundLedger(ReversibleBackgroundLedger):
             return super().stage(evidence)
         assert evidence.frame is not None
         assert evidence.depth_m is not None
-        try:
-            TemporalBackgroundVolume.candidate_block_keys(
-                self._volume, evidence.frame, evidence.depth_m
-            )
-        except RuntimeError as error:
-            if "No block is touched" not in str(error):
-                raise
-            return self._stage_sparse(evidence)
-        return super().stage(evidence)
+        touched = _candidate_keys_with_sparse_fallback(
+            self._volume,
+            evidence.frame,
+            evidence.depth_m,
+            self._volume.config,
+        )
+        return self._stage_sparse(evidence, touched)
 
-    def _stage_sparse(self, evidence: BackgroundLedgerEvidence) -> LedgerDecision:
+    def _stage_sparse(
+        self,
+        evidence: BackgroundLedgerEvidence,
+        touched: tuple[tuple[int, int, int], ...],
+    ) -> LedgerDecision:
         event_key = (evidence.entity_id, evidence.geometry_epoch, evidence.frame_id)
         digest = self._evidence_digest(evidence)
         previous_digest = self._event_digests.get(event_key)
@@ -1015,9 +1119,6 @@ class _SparseBackgroundLedger(ReversibleBackgroundLedger):
             and existing_processed != evidence._processed_frame_canonical
         ):
             raise ValueError("processed frame_id maps to conflicting native frame content")
-        touched = _sparse_background_block_keys(
-            evidence.frame, evidence.depth_m, self._volume.config
-        )
         declared = tuple(item.block_key for item in evidence.contributions)
         if declared != touched:
             raise ValueError("contribution block_key values must exactly match touched blocks")
@@ -1375,7 +1476,7 @@ class TemporalCurrentRuntime:
         reactivated: list[int] = []
         forced_new_observation_ids: list[int] = []
         motion_by_entity: dict[int, tuple[float, float]] = {}
-        evidence_by_entity: dict[int, TemporalEvidenceKind] = {}
+        evidence_by_entity: dict[int, TemporalEvidence] = {}
         released_pixels_by_entity: dict[int, np.ndarray] = {}
         motion_decisions: list[MotionDecision] = []
         epoch_reset_triggers = 0
@@ -1400,7 +1501,7 @@ class TemporalCurrentRuntime:
                 self.config.lifecycle,
             )
             lifecycle_by_id[old.lifecycle.entity_id] = lifecycle
-            evidence_by_entity[old.lifecycle.entity_id] = absence.kind
+            evidence_by_entity[old.lifecycle.entity_id] = absence
             geometry_transaction.replace_current(
                 geometry_transaction.current(old.lifecycle.entity_id).apply_evidence(absence.kind)
             )
@@ -1438,14 +1539,13 @@ class TemporalCurrentRuntime:
                     frame.frame_id,
                 )
                 geometry_transaction.append(epoch)
+                present = TemporalEvidence(
+                    TemporalEvidenceKind.PRESENT,
+                    float(observation.confidence), frame.frame_id,
+                    float(frame.timestamp), None,
+                )
                 lifecycle = advance_lifecycle(
-                    belief,
-                    TemporalEvidence(
-                        TemporalEvidenceKind.PRESENT,
-                        float(observation.confidence), frame.frame_id,
-                        float(frame.timestamp), None,
-                    ),
-                    self.config.lifecycle,
+                    belief, present, self.config.lifecycle,
                 )
                 lifecycle_by_id[entity_id] = lifecycle
                 if belief.lifecycle is TemporalLifecycle.DORMANT and lifecycle.lifecycle is TemporalLifecycle.ACTIVE:
@@ -1472,7 +1572,7 @@ class TemporalCurrentRuntime:
                     last_seen_frame_id=frame.frame_id,
                     feature_model_id=feature_model_id,
                 )
-                evidence_by_entity[entity_id] = TemporalEvidenceKind.PRESENT
+                evidence_by_entity[entity_id] = present
                 motion_by_entity[entity_id] = (0.0, 0.0)
                 continue
             motion_estimator = (
@@ -1493,14 +1593,13 @@ class TemporalCurrentRuntime:
             if motion.decision is MotionDecision.REJECTED:
                 if not diagnostic.high_confidence_identity_match:
                     forced_new_observation_ids.append(observation_id)
-                    evidence_by_entity[entity_id] = TemporalEvidenceKind.OCCLUDED
+                    occluded = TemporalEvidence(
+                        TemporalEvidenceKind.OCCLUDED, 0.0, frame.frame_id,
+                        float(frame.timestamp), None,
+                    )
+                    evidence_by_entity[entity_id] = occluded
                     lifecycle = advance_lifecycle(
-                        old.lifecycle,
-                        TemporalEvidence(
-                            TemporalEvidenceKind.OCCLUDED, 0.0, frame.frame_id,
-                            float(frame.timestamp), None,
-                        ),
-                        self.config.lifecycle,
+                        old.lifecycle, occluded, self.config.lifecycle,
                     )
                     lifecycle_by_id[entity_id] = lifecycle
                     next_entities[entity_id] = replace(old, lifecycle=lifecycle)
@@ -1531,17 +1630,16 @@ class TemporalCurrentRuntime:
                 )
             )
             motion_by_entity[entity_id] = (displacement, motion_confidence)
-            evidence_by_entity[entity_id] = TemporalEvidenceKind.PRESENT
+            present = TemporalEvidence(
+                TemporalEvidenceKind.PRESENT,
+                float(observation.confidence),
+                frame.frame_id,
+                float(frame.timestamp),
+                None,
+            )
+            evidence_by_entity[entity_id] = present
             lifecycle = advance_lifecycle(
-                old.lifecycle,
-                TemporalEvidence(
-                    TemporalEvidenceKind.PRESENT,
-                    float(observation.confidence),
-                    frame.frame_id,
-                    float(frame.timestamp),
-                    None,
-                ),
-                self.config.lifecycle,
+                old.lifecycle, present, self.config.lifecycle,
             )
             lifecycle_by_id[entity_id] = lifecycle
             if old.lifecycle.lifecycle is TemporalLifecycle.DORMANT and lifecycle.lifecycle is TemporalLifecycle.ACTIVE:
@@ -1570,14 +1668,14 @@ class TemporalCurrentRuntime:
             old = entities_by_id.get(entity_id)
             if old is None:
                 belief = lifecycle_by_id[entity_id]
-                lifecycle_by_id[entity_id] = advance_lifecycle(
-                    belief,
-                    TemporalEvidence(
-                        TemporalEvidenceKind.OUT_OF_VIEW, 0.0,
-                        frame.frame_id, float(frame.timestamp), None,
-                    ),
-                    self.config.lifecycle,
+                out_of_view = TemporalEvidence(
+                    TemporalEvidenceKind.OUT_OF_VIEW, 0.0,
+                    frame.frame_id, float(frame.timestamp), None,
                 )
+                lifecycle_by_id[entity_id] = advance_lifecycle(
+                    belief, out_of_view, self.config.lifecycle,
+                )
+                evidence_by_entity[entity_id] = out_of_view
                 continue
             absence, released = _absence_evidence_with_release(
                 old, frame, self.config
@@ -1589,7 +1687,7 @@ class TemporalCurrentRuntime:
                 self.config.lifecycle,
             )
             lifecycle_by_id[entity_id] = lifecycle
-            evidence_by_entity[entity_id] = absence.kind
+            evidence_by_entity[entity_id] = absence
             geometry_transaction.replace_current(
                 geometry_transaction.current(entity_id).apply_evidence(absence.kind)
             )
@@ -1656,6 +1754,13 @@ class TemporalCurrentRuntime:
                 self.config.geometry,
                 object_to_world=pose,
             )
+            present = TemporalEvidence(
+                TemporalEvidenceKind.PRESENT,
+                float(observation.confidence),
+                frame.frame_id,
+                float(frame.timestamp),
+                None,
+            )
             if current.last_frame_id >= 0:
                 seed = TemporalLifecycleState(
                     entity_id=entity_id,
@@ -1667,15 +1772,7 @@ class TemporalCurrentRuntime:
                     absence_view_bins=(),
                 )
                 lifecycle = advance_lifecycle(
-                    seed,
-                    TemporalEvidence(
-                        TemporalEvidenceKind.PRESENT,
-                        float(observation.confidence),
-                        frame.frame_id,
-                        float(frame.timestamp),
-                        None,
-                    ),
-                    self.config.lifecycle,
+                    seed, present, self.config.lifecycle,
                 )
             else:
                 lifecycle = _initial_lifecycle(
@@ -1701,7 +1798,7 @@ class TemporalCurrentRuntime:
                     entity_id, 0, pose, submap, True, None, frame.frame_id
                 )
             )
-            evidence_by_entity[entity_id] = TemporalEvidenceKind.PRESENT
+            evidence_by_entity[entity_id] = present
             motion_by_entity[entity_id] = (0.0, 0.0)
             new_ids.append(entity_id)
             next_entity_id += 1
@@ -1733,7 +1830,10 @@ class TemporalCurrentRuntime:
             ledger_decisions: list[LedgerDecision] = []
             for entity in ordered_entities:
                 entity_id = entity.lifecycle.entity_id
-                kind = evidence_by_entity.get(entity_id)
+                temporal_evidence = evidence_by_entity.get(entity_id)
+                kind = (
+                    None if temporal_evidence is None else temporal_evidence.kind
+                )
                 if kind not in (
                     TemporalEvidenceKind.PRESENT,
                     TemporalEvidenceKind.OCCLUDED,
@@ -1742,14 +1842,21 @@ class TemporalCurrentRuntime:
                     continue
                 epoch = trial_geometry.current(entity_id)
                 if kind is TemporalEvidenceKind.VISIBLE_ABSENT:
+                    assert temporal_evidence is not None
+                    if temporal_evidence.view_bin is None:
+                        raise RuntimeError(
+                            "visible-absent lifecycle evidence lacks view_bin"
+                        )
                     released_mask = released_pixels_by_entity[entity_id]
                     released_depth = np.where(
                         released_mask, background_depth.depth_m, 0.0
                     ).astype(background_depth.depth_m.dtype, copy=False)
                     ledger_frame = frame
                     block_keys = _candidate_keys_with_sparse_fallback(
-                        trial_ledger._volume, ledger_frame, released_depth,
-                        self.config,
+                        trial_ledger._volume,
+                        ledger_frame,
+                        released_depth,
+                        self.config.geometry,
                     )
                     if not block_keys:
                         continue
@@ -1759,7 +1866,7 @@ class TemporalCurrentRuntime:
                         frame_id=frame.frame_id,
                         timestamp=float(frame.timestamp),
                         kind=kind,
-                        view_bin=_view_bin(frame, (0.0, 0.0, 0.0), self.config),
+                        view_bin=temporal_evidence.view_bin,
                         contributions=tuple(BackgroundContribution(key) for key in block_keys),
                         frame=ledger_frame,
                         depth_m=released_depth,
@@ -1904,7 +2011,7 @@ class TemporalCurrentRuntime:
                     TemporalLifecycleEvent(
                         frame.frame_id, timestamp_ns, entity_id,
                         old_lifecycle.lifecycle, entity.lifecycle.lifecycle,
-                        evidence_by_entity[entity_id], epoch.epoch_id,
+                        evidence_by_entity[entity_id].kind, epoch.epoch_id,
                         epoch.readout_valid,
                     )
                 )

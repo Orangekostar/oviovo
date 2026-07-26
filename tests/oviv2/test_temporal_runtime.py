@@ -906,6 +906,81 @@ def test_a3_ledger_owns_only_each_entities_released_pixels(
     assert first_keys.isdisjoint(second_keys)
 
 
+def test_ledger_reuses_lifecycle_view_bins_and_commits_two_views(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_lifecycle import TemporalEvidenceKind
+
+    base = _config(ExecutionProfile.A3)
+    config = replace(
+        base,
+        background_ledger=replace(
+            base.background_ledger,
+            commit_support_frames=2,
+            commit_distinct_view_bins=2,
+            minimum_commit_frame_gap=1,
+        ),
+    )
+    runtime = _runtime(config)
+    captured = []
+    original = module._stage_ledger_evidence
+
+    def capture(ledger, evidence, block_keys=None):
+        captured.append(evidence)
+        return original(ledger, evidence, block_keys)
+
+    monkeypatch.setattr(module, "_stage_ledger_evidence", capture)
+    entity_id = 1
+    for frame_id in (0, 1):
+        frame = _frame(frame_id)
+        result = runtime.process_frame(
+            frame,
+            (
+                _pixel_observation(
+                    frame,
+                    10 + frame_id,
+                    2,
+                    3,
+                    semantic_id=1,
+                    image_feature=np.array([1.0, 0.0]),
+                ),
+            ),
+        )
+    assert result.new_entity_ids == (entity_id,)
+    expected_bins = []
+    visible_evidence = []
+    for frame_id, camera_x in ((2, 0.20), (3, 0.30)):
+        frame = _frame(frame_id, depth=2.0, camera_x=camera_x)
+        centroid = tuple(runtime.state.entities[0].object_to_world[:3, 3])
+        expected = module._view_bin(frame, centroid, config)
+        expected_bins.append(expected)
+        runtime.process_frame(frame, ())
+        visible = [
+            item
+            for item in captured
+            if item.entity_id == entity_id
+            and item.kind is TemporalEvidenceKind.VISIBLE_ABSENT
+            and item.frame_id == frame_id
+        ]
+        assert len(visible) == 1
+        visible_evidence.append(visible[0])
+        assert visible[0].view_bin == expected
+        assert expected in runtime.state.lifecycle_beliefs[0].absence_view_bins
+
+    assert len(set(expected_bins)) == 2
+    assert tuple(
+        item.block_key for item in visible_evidence[0].contributions
+    ) == tuple(item.block_key for item in visible_evidence[1].contributions)
+    assert runtime.state.background_ledger.committed_record_count > 0
+    assert runtime.state.background.active_block_count > 0
+    assert all(
+        item.view_bin is None
+        for item in captured
+        if item.kind is not TemporalEvidenceKind.VISIBLE_ABSENT
+    )
+
+
 def test_a3_uses_masked_background_without_icp_or_dormant_targets(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1463,6 +1538,196 @@ def test_sparse_rebuild_batches_all_blocks_for_one_native_frame(
 
     assert integrate_calls == 1
     assert rebuilt.canonical_block_state() == expected.canonical_block_state()
+
+
+def test_sparse_ledger_aggregates_one_depth_object_for_many_blocks(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_background_ledger as ledger_module
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_background_ledger import (
+        BackgroundContribution,
+        BackgroundLedgerEvidence,
+    )
+    from src.oviv2.temporal_config import TemporalBackgroundLedgerConfig
+    from src.oviv2.temporal_lifecycle import TemporalEvidenceKind
+
+    geometry = replace(_config().geometry, background_block_count=128)
+    ledger = module._SparseBackgroundLedger(
+        geometry, TemporalBackgroundLedgerConfig(128, 2, 2, 1, 8)
+    )
+    frame = _frame(2, depth=2.0)
+    depth = np.zeros_like(frame.depth)
+    depth[2, 2] = frame.depth[2, 2]
+    keys = tuple((index, 0, 0) for index in range(100))
+    evidence = BackgroundLedgerEvidence(
+        entity_id=1,
+        geometry_epoch=0,
+        frame_id=frame.frame_id,
+        timestamp=float(frame.timestamp),
+        kind=TemporalEvidenceKind.VISIBLE_ABSENT,
+        view_bin=1,
+        contributions=tuple(BackgroundContribution(key) for key in keys),
+        frame=frame,
+        depth_m=depth,
+    )
+    records = tuple(
+        ledger_module._Record(
+            evidence.entity_id,
+            evidence.geometry_epoch,
+            evidence.frame_id,
+            evidence.timestamp,
+            evidence.view_bin,
+            contribution,
+            evidence.frame,
+            evidence.depth_m,
+            evidence._observation_canonical,
+        )
+        for contribution in evidence.contributions
+    )
+    allocations = 0
+    original = ledger_module.np.zeros_like
+
+    def counted(*args, **kwargs):
+        nonlocal allocations
+        allocations += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(ledger_module.np, "zeros_like", counted)
+    observations = ledger._aggregate_observations(
+        {record.key: record for record in records}
+    )
+
+    assert allocations == 0
+    assert len(observations) == 1
+    assert observations[0].depth_m is evidence.depth_m
+    assert observations[0].block_keys == keys
+
+
+def test_sparse_ledger_scopes_view_bins_to_entity_events(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_background import TemporalBackgroundVolume
+    from src.oviv2.temporal_background_ledger import (
+        BackgroundContribution,
+        BackgroundLedgerEvidence,
+        LedgerDecision,
+    )
+    from src.oviv2.temporal_config import TemporalBackgroundLedgerConfig
+    from src.oviv2.temporal_lifecycle import TemporalEvidenceKind
+
+    config = _config(ExecutionProfile.A3)
+    ledger = module._SparseBackgroundLedger(
+        config.geometry, TemporalBackgroundLedgerConfig(128, 2, 2, 1, 8)
+    )
+    frame = _frame(2, depth=2.0)
+    depth = np.zeros_like(frame.depth)
+    depth[2, 2] = frame.depth[2, 2]
+    keys = module._sparse_background_block_keys(frame, depth, config.geometry)
+
+    def evidence(entity_id: int, view_bin: int):
+        return BackgroundLedgerEvidence(
+            entity_id=entity_id,
+            geometry_epoch=0,
+            frame_id=frame.frame_id,
+            timestamp=float(frame.timestamp),
+            kind=TemporalEvidenceKind.VISIBLE_ABSENT,
+            view_bin=view_bin,
+            contributions=tuple(BackgroundContribution(key) for key in keys),
+            frame=frame,
+            depth_m=depth,
+        )
+
+    candidate_calls = 0
+
+    def native_candidate(*args, **kwargs):
+        nonlocal candidate_calls
+        candidate_calls += 1
+        return keys
+
+    monkeypatch.setattr(
+        TemporalBackgroundVolume,
+        "candidate_block_keys",
+        native_candidate,
+    )
+    first = evidence(1, 3)
+    assert ledger.stage(first) is LedgerDecision.STAGED
+    assert ledger.stage(evidence(2, 7)) is LedgerDecision.STAGED
+    assert candidate_calls == 2
+    assert ledger.provisional_count == 2 * len(keys)
+    with pytest.raises(ValueError, match="conflicting duplicate"):
+        ledger.stage(replace(first, view_bin=9))
+
+
+def test_native_sparse_keys_match_explicit_integrated_blocks() -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_background import TemporalBackgroundVolume
+
+    config = _config(ExecutionProfile.A3)
+    frame = _frame(2, depth=2.0)
+    native_volume = TemporalBackgroundVolume(config.geometry)
+    native_keys = native_volume.candidate_block_keys(frame, frame.depth)
+    assert native_keys
+    declared = module._candidate_keys_with_sparse_fallback(
+        native_volume, frame, frame.depth, config.geometry
+    )
+    rebuilt = module._SparseBackgroundVolume.preallocated(
+        config.geometry, len(declared)
+    )
+    rebuilt.integrate_blocks_owned(frame, frame.depth, declared)
+    active = {
+        tuple(int(value) for value in row)
+        for row in module._background_module._active_block_keys(rebuilt._volume)
+    }
+
+    assert declared == native_keys
+    assert active == set(declared)
+    assert rebuilt.last_blocks_touched == len(declared)
+    assert rebuilt.canonical_block_state()
+
+
+@pytest.mark.parametrize(
+    "kind",
+    (
+        pytest.param("present", id="present"),
+        pytest.param("occluded", id="occluded"),
+    ),
+)
+def test_sparse_nonabsence_cancels_provisional_without_view_index(
+    kind: str,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_background_ledger import (
+        BackgroundContribution,
+        BackgroundLedgerEvidence,
+        LedgerDecision,
+    )
+    from src.oviv2.temporal_config import TemporalBackgroundLedgerConfig
+    from src.oviv2.temporal_lifecycle import TemporalEvidenceKind
+
+    config = _config(ExecutionProfile.A3)
+    ledger = module._SparseBackgroundLedger(
+        config.geometry, TemporalBackgroundLedgerConfig(128, 2, 2, 1, 8)
+    )
+    frame = _frame(2, depth=2.0)
+    depth = np.zeros_like(frame.depth)
+    depth[2, 2] = frame.depth[2, 2]
+    keys = module._sparse_background_block_keys(frame, depth, config.geometry)
+    absent = BackgroundLedgerEvidence(
+        1, 0, 2, 2.0, TemporalEvidenceKind.VISIBLE_ABSENT, 3,
+        tuple(BackgroundContribution(key) for key in keys), frame, depth,
+    )
+    assert ledger.stage(absent) is LedgerDecision.STAGED
+    decision = ledger.stage(
+        BackgroundLedgerEvidence(
+            1, 0, 3, 3.0, TemporalEvidenceKind(kind), None, ()
+        )
+    )
+
+    assert decision is LedgerDecision.CANCELLED
+    assert ledger.provisional_count == 0
+    assert ledger._native_view_bins == {}
 
 
 def test_ledger_rejection_is_staged_once_and_rolls_back(

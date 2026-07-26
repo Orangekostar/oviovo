@@ -99,6 +99,17 @@ def test_geometry_state_shares_frozen_epochs_without_deepcopy(
     assert updated.epochs[0] is epoch
 
 
+def test_geometry_state_copy_and_deepcopy_return_self() -> None:
+    import copy
+
+    runtime = _runtime()
+    _confirm(runtime)
+    geometry = runtime.state.geometry
+
+    assert copy.copy(geometry) is geometry
+    assert copy.deepcopy(geometry) is geometry
+
+
 def test_geometry_transaction_finalizes_once_and_shares_unchanged_epochs(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
