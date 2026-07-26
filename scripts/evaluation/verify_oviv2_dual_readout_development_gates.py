@@ -154,6 +154,21 @@ def _top_level_exports(payload: bytes, *, path: str) -> tuple[set[str], set[str]
     return exports, explicit_all
 
 
+def _dynamic_import_aliases(tree: ast.AST) -> tuple[set[str], set[str]]:
+    functions = {"__import__"}
+    modules: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name == "importlib":
+                    modules.add(alias.asname or "importlib")
+        elif isinstance(node, ast.ImportFrom) and node.module == "importlib":
+            for alias in node.names:
+                if alias.name == "import_module":
+                    functions.add(alias.asname or alias.name)
+    return functions, modules
+
+
 def _local_import_closure(
     roots: tuple[str, ...], read: Callable[[str], bytes | None]
 ) -> dict[str, bytes]:
@@ -191,9 +206,37 @@ def _local_import_closure(
             tree = ast.parse(payload, filename=relative)
         except (SyntaxError, ValueError) as error:
             raise GateVerificationError(f"cannot parse source imports: {relative}") from error
+        dynamic_functions, importlib_modules = _dynamic_import_aliases(tree)
         package = module if is_package else module.rpartition(".")[0]
         for node in ast.walk(tree):
-            if isinstance(node, ast.Import):
+            if isinstance(node, ast.Call):
+                recognized = (
+                    isinstance(node.func, ast.Name)
+                    and node.func.id in dynamic_functions
+                ) or (
+                    isinstance(node.func, ast.Attribute)
+                    and node.func.attr == "import_module"
+                    and isinstance(node.func.value, ast.Name)
+                    and node.func.value.id in importlib_modules
+                )
+                if not recognized:
+                    continue
+                if (
+                    not node.args
+                    or not isinstance(node.args[0], ast.Constant)
+                    or not isinstance(node.args[0].value, str)
+                ):
+                    raise GateVerificationError(
+                        f"non-literal dynamic import in {relative}"
+                    )
+                target = node.args[0].value
+                if target.startswith("."):
+                    raise GateVerificationError(
+                        f"unresolved dynamic import in {relative}: {target}"
+                    )
+                if target.split(".", 1)[0] in LOCAL_IMPORT_PREFIXES:
+                    resolve(target, required=True)
+            elif isinstance(node, ast.Import):
                 for alias in node.names:
                     resolve(alias.name, required=True)
             elif isinstance(node, ast.ImportFrom):
@@ -248,13 +291,21 @@ def _git_source_reader(
     *, repo: Path, base_commit: str, git: GitRunner
 ) -> Callable[[str], bytes | None]:
     cache: dict[str, bytes | None] = {}
+    raw_paths = git(("ls-tree", "-rz", "--name-only", base_commit), repo)
+    try:
+        paths = {
+            item.decode("utf-8")
+            for item in raw_paths.split(b"\0")
+            if item
+        }
+    except UnicodeDecodeError as error:
+        raise GateVerificationError("git tree contains a non-UTF-8 path") from error
 
     def read(relative: str) -> bytes | None:
+        if relative not in paths:
+            return None
         if relative not in cache:
-            try:
-                cache[relative] = git(("show", f"{base_commit}:{relative}"), repo)
-            except (GateVerificationError, subprocess.CalledProcessError):
-                cache[relative] = None
+            cache[relative] = git(("show", f"{base_commit}:{relative}"), repo)
         return cache[relative]
 
     return read
@@ -314,6 +365,10 @@ def verify_source_manifest(
     files_value = manifest["files"]
     if not isinstance(roots_value, list) or not all(isinstance(item, str) for item in roots_value):
         raise GateVerificationError("source manifest roots are invalid")
+    if not all(_is_canonical_repo_path(path) for path in roots_value):
+        raise GateVerificationError(
+            "source manifest paths must be canonical relative POSIX paths"
+        )
     if tuple(roots_value) != CUMULATIVE_ROOTS:
         raise GateVerificationError("source manifest cumulative roots are invalid")
     if not isinstance(files_value, dict) or not all(
@@ -324,6 +379,10 @@ def verify_source_manifest(
         for path, digest in files_value.items()
     ):
         raise GateVerificationError("source manifest hashes are invalid")
+    if not all(_is_canonical_repo_path(path) for path in files_value):
+        raise GateVerificationError(
+            "source manifest paths must be canonical relative POSIX paths"
+        )
     for path in files_value:
         current_path = repo / path
         try:
@@ -366,12 +425,30 @@ def verify_source_manifest(
 
 def _load_source_manifest(path: Path) -> dict[str, Any]:
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload = json.loads(
+            path.read_text(encoding="utf-8"), object_pairs_hook=_strict_json_object
+        )
     except (OSError, UnicodeError, json.JSONDecodeError) as error:
         raise GateVerificationError(f"cannot read source manifest: {path}") from error
     if not isinstance(payload, dict):
         raise GateVerificationError("source manifest root must be an object")
     return payload
+
+
+def _strict_json_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise GateVerificationError(f"duplicate JSON key: {key}")
+        result[key] = value
+    return result
+
+
+def _is_canonical_repo_path(path: str) -> bool:
+    if not path or path.startswith("/") or "\\" in path:
+        return False
+    parts = path.split("/")
+    return all(part not in {"", ".", ".."} for part in parts)
 
 
 def _regular_file_bytes(repo: Path, relative: str, maximum: int) -> bytes:
@@ -538,6 +615,61 @@ def _canonical_json_bytes(payload: dict[str, Any]) -> bytes:
     ).encode("utf-8")
 
 
+def _atomic_json_replace(
+    path: Path,
+    payload: dict[str, Any],
+    validate_before_replace: Callable[[], None],
+) -> None:
+    encoded = _canonical_json_bytes(payload)
+    destination_mode = stat.S_IMODE(path.stat(follow_symlinks=False).st_mode)
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{path.name}.", suffix=".tmp", dir=path.parent
+    )
+    temporary = Path(temporary_name)
+    directory_descriptor: int | None = None
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            os.fchmod(handle.fileno(), destination_mode)
+            handle.write(encoded)
+            handle.flush()
+            os.fsync(handle.fileno())
+        validate_before_replace()
+        os.replace(temporary, path)
+        directory_descriptor = os.open(
+            path.parent, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+        )
+        os.fsync(directory_descriptor)
+        os.close(directory_descriptor)
+        directory_descriptor = None
+    finally:
+        if directory_descriptor is not None:
+            os.close(directory_descriptor)
+        temporary.unlink(missing_ok=True)
+
+
+def _checked_manifest_destination(repo: Path, destination: Path) -> tuple[Path, str]:
+    raw = destination if destination.is_absolute() else repo / destination
+    if raw.is_symlink():
+        raise GateVerificationError("source manifest destination must not be a symlink")
+    try:
+        lexical_relative = raw.relative_to(repo)
+    except ValueError as error:
+        raise GateVerificationError("source manifest destination must be inside repo") from error
+    current = repo
+    for part in lexical_relative.parts[:-1]:
+        current = current / part
+        if current.is_symlink():
+            raise GateVerificationError(
+                "source manifest destination ancestor must not be a symlink"
+            )
+    resolved = raw.resolve(strict=False)
+    try:
+        relative = resolved.relative_to(repo).as_posix()
+    except ValueError as error:
+        raise GateVerificationError("source manifest destination must be inside repo") from error
+    return resolved, relative
+
+
 def write_source_manifest(
     *,
     repo: Path,
@@ -546,14 +678,7 @@ def write_source_manifest(
     git: GitRunner = _default_git,
 ) -> Path:
     repo = repo.resolve(strict=True)
-    if not destination.is_absolute():
-        destination = repo / destination
-    try:
-        relative = destination.relative_to(repo).as_posix()
-    except ValueError as error:
-        raise GateVerificationError("source manifest destination must be inside repo") from error
-    if destination.is_symlink():
-        raise GateVerificationError("source manifest destination must not be a symlink")
+    destination, relative = _checked_manifest_destination(repo, destination)
     if git(("status", "--porcelain", "--", relative), repo):
         raise GateVerificationError("source manifest destination is dirty")
     encoded = _canonical_json_bytes(payload)
@@ -561,10 +686,23 @@ def write_source_manifest(
         current = _regular_file_bytes(
             destination.parent, destination.name, DEFAULT_MAX_INPUT_BYTES
         )
-        if current != encoded:
-            raise GateVerificationError(
-                "clean source manifest destination conflicts with generated content"
-            )
+        if current == encoded:
+            return destination
+
+        def validate_before_replace() -> None:
+            if git(("status", "--porcelain", "--", relative), repo):
+                raise GateVerificationError("source manifest destination became dirty")
+            if (
+                _regular_file_bytes(
+                    destination.parent, destination.name, DEFAULT_MAX_INPUT_BYTES
+                )
+                != current
+            ):
+                raise GateVerificationError(
+                    "source manifest destination changed before replacement"
+                )
+
+        _atomic_json_replace(destination, payload, validate_before_replace)
         return destination
     _atomic_json_no_replace(destination, payload)
     return destination

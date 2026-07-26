@@ -55,6 +55,12 @@ class FakeGit:
             return ("a" * 40 + "\n").encode()
         if argv == ("rev-parse", "HEAD^{tree}"):
             return ("b" * 40 + "\n").encode()
+        if argv[:3] == ("ls-tree", "-rz", "--name-only"):
+            return b"\0".join(
+                str(path.relative_to(cwd)).encode()
+                for path in sorted(cwd.rglob("*"))
+                if path.is_file()
+            ) + b"\0"
         if argv[:2] == ("diff", "--quiet"):
             if self.protected_diff:
                 raise subprocess.CalledProcessError(1, ("git", *argv))
@@ -69,14 +75,29 @@ class FakeGit:
 
 
 class SourceGit:
-    def __init__(self, objects: dict[str, bytes], *, dirty: bool = False) -> None:
+    def __init__(
+        self,
+        objects: dict[str, bytes],
+        *,
+        dirty: bool = False,
+        fail_show: set[str] | None = None,
+    ) -> None:
         self.objects = objects
         self.dirty = dirty
+        self.fail_show = fail_show or set()
+        self.show_calls: list[str] = []
 
     def __call__(self, argv: tuple[str, ...], cwd: Path) -> bytes:
         del cwd
+        if argv[:3] == ("ls-tree", "-rz", "--name-only"):
+            return b"\0".join(path.encode() for path in sorted(self.objects)) + b"\0"
         if argv[0] == "show":
             relative = argv[1].split(":", 1)[1]
+            self.show_calls.append(relative)
+            if relative in self.fail_show:
+                raise gates.GateVerificationError(
+                    f"operational show failure: {relative}"
+                )
             try:
                 return self.objects[relative]
             except KeyError as error:
@@ -241,6 +262,75 @@ def test_source_manifest_accepts_package_reexport_and_child_module(
     assert {"src/pkg/__init__.py", "src/pkg/dep.py"} <= set(manifest["files"])
 
 
+@pytest.mark.parametrize(
+    "source",
+    [
+        "from importlib import import_module\nimport_module('src.pkg.dynamic')\n",
+        "from importlib import import_module as load\nload('src.pkg.dynamic')\n",
+        "import importlib as loader\nloader.import_module('src.pkg.dynamic')\n",
+        "__import__('src.pkg.dynamic')\n",
+    ],
+)
+def test_source_manifest_follows_literal_dynamic_local_import(
+    tmp_path: Path, source: str
+) -> None:
+    repo, git, roots = _source_fixture(tmp_path)
+    git.objects[gates.CUMULATIVE_ROOTS[0]] = source.encode()
+    git.objects["src/pkg/dynamic.py"] = b"from src.pkg import dep\n"
+    manifest = gates.build_source_manifest(
+        repo=repo,
+        base_commit=gates.CUMULATIVE_BASE_COMMIT,
+        roots=roots,
+        git=git,
+    )
+    assert {"src/pkg/dynamic.py", "src/pkg/dep.py"} <= set(manifest["files"])
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "from importlib import import_module\nimport_module(module_name)\n",
+        "import importlib\nimportlib.import_module(module_name)\n",
+        "__import__(module_name)\n",
+    ],
+)
+def test_source_manifest_rejects_nonliteral_dynamic_import(
+    tmp_path: Path, source: str
+) -> None:
+    repo, git, roots = _source_fixture(tmp_path)
+    git.objects[gates.CUMULATIVE_ROOTS[0]] = source.encode()
+    with pytest.raises(gates.GateVerificationError, match="non-literal dynamic import"):
+        gates.build_source_manifest(
+            repo=repo,
+            base_commit=gates.CUMULATIVE_BASE_COMMIT,
+            roots=roots,
+            git=git,
+        )
+
+
+def test_git_reader_distinguishes_absent_path_from_show_failure(tmp_path: Path) -> None:
+    repo, git, roots = _source_fixture(tmp_path)
+    git.objects[gates.CUMULATIVE_ROOTS[0]] = b"import src.pkg.absent\n"
+    with pytest.raises(gates.GateVerificationError, match="unresolved local import"):
+        gates.build_source_manifest(
+            repo=repo,
+            base_commit=gates.CUMULATIVE_BASE_COMMIT,
+            roots=roots,
+            git=git,
+        )
+    assert "src/pkg/absent.py" not in git.show_calls
+
+    repo, git, roots = _source_fixture(tmp_path / "failure")
+    git.fail_show.add("src/pkg/dep.py")
+    with pytest.raises(gates.GateVerificationError, match="operational show failure"):
+        gates.build_source_manifest(
+            repo=repo,
+            base_commit=gates.CUMULATIVE_BASE_COMMIT,
+            roots=roots,
+            git=git,
+        )
+
+
 def test_source_manifest_rejects_reduced_cumulative_roots(tmp_path: Path) -> None:
     manifest, repo, git = _valid_source_manifest(tmp_path)
     removed = manifest["roots"].pop()
@@ -261,6 +351,22 @@ def test_write_source_manifest_existing_clean_same_is_noop(tmp_path: Path) -> No
 
     after = destination.stat()
     assert (after.st_ino, after.st_mtime_ns) == (before.st_ino, before.st_mtime_ns)
+
+
+def test_write_source_manifest_atomically_replaces_clean_different(
+    tmp_path: Path,
+) -> None:
+    destination = tmp_path / "manifest.json"
+    destination.write_text("old\n", encoding="utf-8")
+    destination.chmod(0o640)
+    original_mode = stat.S_IMODE(destination.stat().st_mode)
+    payload = {"schema_version": 2}
+    gates.write_source_manifest(
+        repo=tmp_path, destination=destination, payload=payload, git=SourceGit({})
+    )
+    assert destination.read_bytes() == gates._canonical_json_bytes(payload)
+    assert stat.S_IMODE(destination.stat().st_mode) == original_mode
+    assert not list(tmp_path.glob(".manifest.json.*.tmp"))
 
 
 def test_write_source_manifest_rejects_dirty_destination(tmp_path: Path) -> None:
@@ -299,6 +405,51 @@ def test_write_source_manifest_rejects_symlink(tmp_path: Path) -> None:
             git=SourceGit({}),
         )
     assert target.read_text(encoding="utf-8") == "keep\n"
+
+
+@pytest.mark.parametrize("kind", ["parent", "absolute", "nested_symlink"])
+def test_write_source_manifest_rejects_destination_escape(
+    tmp_path: Path, kind: str
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    if kind == "parent":
+        destination = repo / ".." / "escaped.json"
+    elif kind == "absolute":
+        destination = outside / "escaped.json"
+    else:
+        (repo / "linked").symlink_to(outside, target_is_directory=True)
+        destination = repo / "linked/escaped.json"
+    with pytest.raises(gates.GateVerificationError, match="inside repo|symlink"):
+        gates.write_source_manifest(
+            repo=repo,
+            destination=destination,
+            payload={"ok": True},
+            git=SourceGit({}),
+        )
+    assert not (outside / "escaped.json").exists()
+
+
+def test_load_source_manifest_rejects_recursive_duplicate_keys(tmp_path: Path) -> None:
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text('{"files": {"a.py": "one", "a.py": "two"}}\n')
+    with pytest.raises(gates.GateVerificationError, match="duplicate JSON key"):
+        gates._load_source_manifest(manifest)
+
+
+@pytest.mark.parametrize(
+    "invalid",
+    ["/absolute.py", "../escape.py", "src/../escape.py", "./src/a.py", "src\\a.py", "src//a.py"],
+)
+def test_source_manifest_rejects_noncanonical_paths(
+    tmp_path: Path, invalid: str
+) -> None:
+    manifest, repo, git = _valid_source_manifest(tmp_path)
+    manifest["files"][invalid] = "0" * 64
+    with pytest.raises(gates.GateVerificationError, match="canonical relative POSIX"):
+        gates.verify_source_manifest(manifest, repo=repo, git=git)
 
 
 class PassingRunner:
