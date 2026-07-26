@@ -83,12 +83,20 @@ METRIC_NAMES = (
 )
 RESULT_KEYS = {
     "schema_version", "manifest_id", "candidate_id", "scene", "status",
-    "sources", "bindings", "run_identity", "gates", "metrics",
+    "evidence_scope", "sources", "bindings", "run_identity", "gates", "metrics",
+}
+EVIDENCE_SCOPE = {
+    "publication": "pre_and_post_link_revalidated",
+    "snapshot": "point_in_time_not_permanent",
 }
 _COMMON_REPLAY_CACHE: dict[
     tuple[Path, tuple[int, int, int, int, int]],
     tuple[dict[str, Any], tuple[FileIdentityWitness, ...]],
 ] = {}
+
+
+class PublicationUncertainError(RuntimeError):
+    """Publication may not have been rolled back to a known absent state."""
 
 
 def _canonical(value: object) -> bytes:
@@ -906,6 +914,7 @@ def _derive(
     return {
         "schema_version": 1, "manifest_id": MANIFEST_ID, "candidate_id": candidate_id,
         "scene": "apartment", "status": "PASS",
+        "evidence_scope": dict(EVIDENCE_SCOPE),
         "sources": {name: snapshots[name].record for name in SOURCE_NAMES},
         "bindings": {"candidate": {"declaration": dict(declaration), "config": config},
             "config_sha256": canonical_config_hash, "non_temporal_config_sha256": non_temporal,
@@ -934,6 +943,51 @@ def _publish(
 
     temporary = f".{output.name}.{secrets.token_hex(12)}.tmp"
     temp_identity: tuple[int, int] | None = None
+
+    def name_identity(name: str) -> tuple[int, int]:
+        current = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+        return current.st_dev, current.st_ino
+
+    def unlink_known(name: str, identity: tuple[int, int]) -> None:
+        try:
+            current = name_identity(name)
+        except FileNotFoundError:
+            return
+        if current != identity:
+            raise PublicationUncertainError(
+                f"publication state is uncertain: {name} no longer identifies the published inode"
+            )
+        os.unlink(name, dir_fd=parent_fd)
+
+    def rollback_publication() -> None:
+        if temp_identity is None:
+            raise PublicationUncertainError(
+                "publication state is uncertain: published inode identity is unavailable"
+            )
+        try:
+            unlink_known(output.name, temp_identity)
+            unlink_known(temporary, temp_identity)
+            os.fsync(parent_fd)
+            try:
+                revalidate_parent()
+            except ValueError as exc:
+                raise PublicationUncertainError(
+                    "publication state is uncertain: output parent changed during rollback"
+                ) from exc
+            try:
+                name_identity(output.name)
+            except FileNotFoundError:
+                return
+            raise PublicationUncertainError(
+                "publication state is uncertain: output name was recreated during rollback"
+            )
+        except PublicationUncertainError:
+            raise
+        except OSError as exc:
+            raise PublicationUncertainError(
+                "publication state is uncertain: rollback could not be persisted"
+            ) from exc
+
     try:
         revalidate_parent()
         try:
@@ -956,8 +1010,23 @@ def _publish(
             snapshot.revalidate()
         revalidate_parent()
         os.link(temporary, output.name, src_dir_fd=parent_fd, dst_dir_fd=parent_fd, follow_symlinks=False)
-        os.fsync(parent_fd)
-        revalidate_parent()
+        try:
+            if temp_identity != name_identity(output.name):
+                raise ValueError("output changed after publication link")
+            os.fsync(parent_fd)
+            for snapshot in snapshots:
+                snapshot.revalidate()
+            revalidate_parent()
+            if temp_identity != name_identity(output.name):
+                raise ValueError("output changed after publication link")
+            unlink_known(temporary, temp_identity)
+            os.fsync(parent_fd)
+        except BaseException as exc:
+            try:
+                rollback_publication()
+            except PublicationUncertainError as uncertain:
+                raise uncertain from exc
+            raise
     finally:
         try:
             st = os.stat(temporary, dir_fd=parent_fd, follow_symlinks=False)

@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import stat
 import subprocess
 import sys
 
@@ -28,7 +29,7 @@ from scripts.evaluation.compare_oviv2_cumulative_artifacts import (
 from src.evaluation.baselines.tesse_cd import (
     summarize_khronos_official_metrics_partial,
 )
-from src.oviv2.temporal_config import ExecutionProfile
+from src.oviv2.temporal_config import ExecutionProfile, temporal_config_from_json
 from tests.evaluation import test_run_oviv2_tesse_cd_v2 as runner_fixture
 
 
@@ -247,7 +248,11 @@ def test_packages_exact_structured_result_and_revalidates(tmp_path: Path) -> Non
     paths = _fixture(tmp_path)
     output = tmp_path / "result.json"
     result = _package(paths, output)
-    assert set(result) == {"schema_version", "manifest_id", "candidate_id", "scene", "status", "sources", "bindings", "run_identity", "gates", "metrics"}
+    assert set(result) == {"schema_version", "manifest_id", "candidate_id", "scene", "status", "evidence_scope", "sources", "bindings", "run_identity", "gates", "metrics"}
+    assert result["evidence_scope"] == {
+        "publication": "pre_and_post_link_revalidated",
+        "snapshot": "point_in_time_not_permanent",
+    }
     assert set(result["sources"]) == ({*paths} - {"manifest"}) | {"search_manifest"}
     assert all(set(record) == {"path", "sha256", "byte_count"} for record in result["sources"].values())
     assert all(set(gate) == {"passed", "reason", "source"} and gate["passed"] for gate in result["gates"].values())
@@ -829,6 +834,10 @@ def _materialize_gate_transaction(
             receipt_path.write_bytes(_bytes(receipt))
         else:
             (output / "t1_exact_receipt.json").unlink()
+            execution_receipt_path = output / "execution_receipt.json"
+            execution_receipt = json.loads(execution_receipt_path.read_text())
+            execution_receipt["provenance"]["command"] = argv[1:]
+            execution_receipt_path.write_bytes(_bytes(execution_receipt))
         derived = gates_module._reopen_completed_execution(
             profile, output.resolve(), argv, pid, 0, source_manifest
         )
@@ -853,6 +862,7 @@ def _materialize_gate_transaction(
             "run_manifest": gates_module._absolute_file_record(output / "run_manifest.json"),
             "production_receipt": gates_module._absolute_file_record(production_receipt),
             "completed_execution": derived,
+            "trust_model": gates_module.LOCAL_PROCESS_TRUST_MODEL,
         }
         observation_path = _write(
             receipts / f"{position:03d}-{profile}.json", observation
@@ -868,45 +878,254 @@ def _materialize_gate_transaction(
     return gates_module.verify_exact_profile_runs(executions)
 
 
-def test_temporal_scalar_mutation_runs_production_cumulative_transaction(
-    tmp_path: Path,
-) -> None:
+_TEMPORAL_IDENTITY_BOUND_LEAVES = {
+    ("geometry", "voxel_size_m"),
+    ("geometry", "depth_max_m"),
+}
+_TEMPORAL_FIXED_LEAVES = {
+    ("motion", "require_explicit_rejection"),
+}
+_TEMPORAL_DISCRETE_REPLACEMENTS = {
+    ("dynamic_state", "displacement_floor_m"): 0.15,
+    ("dynamic_state", "minimum_motion_confidence"): 0.8,
+    ("dynamic_state", "static_off_streak_frames"): 20,
+}
+
+
+def _temporal_mutation_cases() -> tuple[tuple[tuple[str, ...], object], ...]:
+    temporal = runner_fixture._temporal_readout()
+    cases: list[tuple[tuple[str, ...], object]] = [
+        (
+            ("execution_profile", "components"),
+            (ExecutionProfile.A3.profile_id, ExecutionProfile.A3.components),
+        )
+    ]
+    for section, values in temporal.items():
+        if section in {"execution_profile", "components"}:
+            continue
+        assert isinstance(values, dict)
+        for leaf, value in values.items():
+            if (section, leaf) in (
+                _TEMPORAL_IDENTITY_BOUND_LEAVES | _TEMPORAL_FIXED_LEAVES
+            ):
+                continue
+            if (section, leaf) in _TEMPORAL_DISCRETE_REPLACEMENTS:
+                replacement = _TEMPORAL_DISCRETE_REPLACEMENTS[(section, leaf)]
+            elif isinstance(value, bool):
+                replacement: object = not value
+            elif isinstance(value, int):
+                replacement = value + 1
+                if (section, leaf) in {
+                    ("proposal", "maximum_recovered_proposals"),
+                    ("background_ledger", "maximum_journal_blocks"),
+                }:
+                    replacement = value - 1
+            else:
+                assert isinstance(value, float)
+                replacement = value - 0.000001 if value < 0.0 else value + 0.000001
+            cases.append(((section, leaf), replacement))
+    return tuple(cases)
+
+
+TEMPORAL_MUTATION_CASES = _temporal_mutation_cases()
+
+
+class _TwoFrameDataset(runner_fixture._Dataset):
+    def __len__(self) -> int:
+        return 2
+
+
+def _two_frame_config(tmp_path: Path) -> Path:
     baseline_config = runner_fixture._materialize_config(
-        production_runner, tmp_path / "baseline-input"
+        production_runner, tmp_path
     )
     config = json.loads(baseline_config.read_text())
+    config["frame_count"] = 2
+    config["evaluation_checkpoint_frames"] = [0, 1]
+    schedule_path = Path(config["schedule_manifest"])
+    schedule = json.loads(schedule_path.read_text())
+    for scene in ("apartment", "office"):
+        schedule["scenes"][scene]["frame_count"] = 2
+        schedule["scenes"][scene]["entries"] = [
+            {
+                "event_ids": ["event-official", "event-common"],
+                "frame_index": 1,
+                "relative_timestamp_ns": 10,
+                "roles": ["official", "common_v2"],
+                "timestamp_ns": 110,
+            }
+        ]
+    _write(schedule_path, schedule)
+    target_path = Path(config["occlusion_target_manifest"])
+    target = json.loads(target_path.read_text())
+    target["metadata"]["scene_frame_indices"] = {
+        "apartment": [0, 1],
+        "office": [0, 1],
+    }
+    target["metadata"]["episodes"] = [
+        {
+            "scene": scene,
+            "anchor": {"frame_index": 0, "relative_timestamp_ns": 0},
+            "checkpoints": [{"frame_index": 1, "relative_timestamp_ns": 10}],
+        }
+        for scene in ("apartment", "office")
+    ]
+    _write(target_path, target)
+    config["occlusion_target_manifest_sha256"] = hashlib.sha256(
+        target_path.read_bytes()
+    ).hexdigest()
+    evaluation_plan = {
+        "schema_version": 1,
+        "manifest_id": "tesse_cd_occlusion_v1_checkpoint_frames",
+        "evaluation_checkpoint_frames": {
+            "apartment": [0, 1],
+            "office": [0, 1],
+        },
+    }
+    config["evaluation_checkpoint_frames_sha256"] = hashlib.sha256(
+        json.dumps(
+            evaluation_plan,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode()
+    ).hexdigest()
+    config["algorithm_hash"] = production_runner.algorithm_hash(config)
+    return _write(baseline_config, config)
+
+
+def _two_frame_dependencies(config: dict[str, object]):
     baseline_non_temporal = non_temporal_config_sha256(config)
     provenance = _production_receipt_provenance(
         config["algorithm_hash"], "a" * 40
     )
-    baseline_dependencies, _ = runner_fixture._dependencies(
+    dependencies, _ = runner_fixture._dependencies(
         production_runner, provenance=provenance
     )
-    baseline = tmp_path / "baseline"
+
+    def load_caches(runtime_config: object, dataset: object):
+        caches = dependencies.cache_loader_factory(runtime_config, dataset)
+        caches.temporal_config = temporal_config_from_json(
+            {"temporal_readout": config["temporal_readout"]}
+        )
+        return caches
+
+    return (
+        production_runner.RunnerDependencies(
+            dataset_factory=lambda unused: _TwoFrameDataset(),
+            cache_loader_factory=load_caches,
+            runtime_factory=dependencies.runtime_factory,
+            provenance_factory=dependencies.provenance_factory,
+            environment_factory=dependencies.environment_factory,
+        ),
+        baseline_non_temporal,
+    )
+
+
+@pytest.fixture(scope="module")
+def _temporal_mutation_baseline(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> tuple[dict[str, object], Path, dict[str, object]]:
+    root = tmp_path_factory.mktemp("temporal-mutation-baseline")
+    baseline_config = _two_frame_config(root / "input")
+    config = json.loads(baseline_config.read_text())
+    baseline_dependencies, baseline_non_temporal = _two_frame_dependencies(config)
+    baseline = root / "baseline"
     production_runner.run(
         baseline_config, baseline, dependencies=baseline_dependencies
     )
+    baseline_audit = compare_cumulative_artifacts(baseline, baseline)
+    assert json.loads((baseline / "run_manifest.json").read_text())["processed_frame_count"] == 2
+    return config, baseline, {
+        "non_temporal": baseline_non_temporal,
+        "audit": baseline_audit,
+    }
 
+
+@pytest.mark.parametrize(
+    ("leaf_path", "replacement"),
+    TEMPORAL_MUTATION_CASES,
+    ids=lambda value: ".".join(value) if isinstance(value, tuple) and all(isinstance(item, str) for item in value) else None,
+)
+def test_every_independently_configurable_temporal_leaf_runs_exact_cumulative_transaction(
+    tmp_path: Path,
+    _temporal_mutation_baseline: tuple[dict[str, object], Path, dict[str, object]],
+    leaf_path: tuple[str, ...],
+    replacement: object,
+) -> None:
+    config, baseline, expected = _temporal_mutation_baseline
     mutated = json.loads(json.dumps(config))
-    mutated["temporal_readout"]["lifecycle"]["initial_log_odds"] += 0.000001
+    if leaf_path == ("execution_profile", "components"):
+        profile, components = replacement
+        mutated["temporal_readout"]["execution_profile"] = profile
+        mutated["temporal_readout"]["components"] = components
+    else:
+        section, leaf = leaf_path
+        mutated["temporal_readout"][section][leaf] = replacement
     mutated["algorithm_hash"] = production_runner.algorithm_hash(mutated)
     mutation_config = _write(tmp_path / "mutation-input/config.json", mutated)
-    mutation_dependencies, _ = runner_fixture._dependencies(
-        production_runner,
-        provenance=_production_receipt_provenance(
-            mutated["algorithm_hash"], "a" * 40
-        ),
-    )
+    mutation_dependencies, _ = _two_frame_dependencies(mutated)
     mutation = tmp_path / "mutation"
     production_runner.run(
         mutation_config, mutation, dependencies=mutation_dependencies
     )
 
     assert mutated["algorithm_hash"] != config["algorithm_hash"]
-    assert non_temporal_config_sha256(mutated) == baseline_non_temporal
-    assert compare_cumulative_artifacts(baseline, mutation) == (
-        compare_cumulative_artifacts(baseline, baseline)
-    )
+    assert non_temporal_config_sha256(mutated) == expected["non_temporal"]
+    assert compare_cumulative_artifacts(baseline, mutation) == expected["audit"]
+    assert json.loads((mutation / "run_manifest.json").read_text())["processed_frame_count"] == 2
+
+
+@pytest.mark.parametrize("leaf", ["voxel_size_m", "depth_max_m"])
+def test_temporal_cumulative_geometry_identity_leaf_rejects_independent_mutation(
+    tmp_path: Path, leaf: str
+) -> None:
+    config_path = _two_frame_config(tmp_path / "input")
+    config = json.loads(config_path.read_text())
+    config["temporal_readout"]["geometry"][leaf] += 0.000001
+    config["algorithm_hash"] = production_runner.algorithm_hash(config)
+    dependencies, _ = _two_frame_dependencies(config)
+
+    with pytest.raises(ValueError, match=f"temporal {leaf} must match cumulative geometry"):
+        production_runner.run(
+            _write(tmp_path / "mutated.json", config),
+            tmp_path / "output",
+            dependencies=dependencies,
+        )
+
+
+def test_rejects_invalid_execution_profile_component_combination(tmp_path: Path) -> None:
+    config_path = _two_frame_config(tmp_path / "input")
+    config = json.loads(config_path.read_text())
+    config["temporal_readout"]["execution_profile"] = "a3"
+    config["algorithm_hash"] = production_runner.algorithm_hash(config)
+    dependencies, _ = _two_frame_dependencies(config)
+
+    with pytest.raises(ValueError, match="components do not match execution_profile"):
+        production_runner.run(
+            _write(tmp_path / "invalid.json", config),
+            tmp_path / "output",
+            dependencies=dependencies,
+        )
+
+
+def test_temporal_fixed_rejection_leaf_rejects_mutation(tmp_path: Path) -> None:
+    config_path = _two_frame_config(tmp_path / "input")
+    config = json.loads(config_path.read_text())
+    original_algorithm = config["algorithm_hash"]
+    original_non_temporal = non_temporal_config_sha256(config)
+    config["temporal_readout"]["motion"]["require_explicit_rejection"] = False
+    config["algorithm_hash"] = production_runner.algorithm_hash(config)
+    dependencies, _ = _two_frame_dependencies(config)
+
+    assert config["algorithm_hash"] != original_algorithm
+    assert non_temporal_config_sha256(config) == original_non_temporal
+    with pytest.raises(ValueError, match="require_explicit_rejection must be true"):
+        production_runner.run(
+            _write(tmp_path / "invalid.json", config),
+            tmp_path / "output",
+            dependencies=dependencies,
+        )
 
 
 def test_rejects_another_apartment_oviv2_temporal_artifact(tmp_path: Path) -> None:
@@ -998,3 +1217,111 @@ def test_publication_rejects_missing_official_source_that_appears(
 
     assert not output.exists()
     assert not list(tmp_path.glob(".result.json.*"))
+
+
+def test_publication_revalidates_all_exact_roots_after_link_and_is_retryable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    paths = _fixture(tmp_path / "evidence")
+    output = tmp_path / "publication" / "result.json"
+    evidence = json.loads(paths["t1_exact_evidence"].read_text())
+    ninth_root = Path(
+        evidence["deterministic_evidence"]["cumulative_exact"]["executions"][-1][
+            "output_root"
+        ]
+    )
+    source = ninth_root / "final.bin"
+    original_data = source.read_bytes()
+    original_link = package_module.os.link
+    changed = False
+
+    def mutate_after_link(*args: object, **kwargs: object) -> None:
+        nonlocal changed
+        original_link(*args, **kwargs)
+        if not changed:
+            changed = True
+            source.write_bytes(original_data + b"changed-after-link")
+
+    monkeypatch.setattr(package_module.os, "link", mutate_after_link)
+
+    with pytest.raises(ValueError, match="changed before publication|exact execution"):
+        _package(paths, output)
+
+    assert not output.exists()
+    assert not list(output.parent.glob(".result.json.*"))
+    source.write_bytes(original_data)
+    monkeypatch.setattr(package_module.os, "link", original_link)
+    assert _package(paths, output)["status"] == "PASS"
+
+
+def test_publication_rolls_back_parent_fsync_failure_and_is_retryable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    paths = _fixture(tmp_path / "evidence")
+    output = tmp_path / "publication" / "result.json"
+    original_fsync = package_module.os.fsync
+    failed = False
+
+    def fail_first_parent_fsync(descriptor: int) -> None:
+        nonlocal failed
+        mode = os.fstat(descriptor).st_mode
+        if stat.S_ISDIR(mode) and not failed:
+            failed = True
+            raise OSError("injected parent fsync failure")
+        original_fsync(descriptor)
+
+    monkeypatch.setattr(package_module.os, "fsync", fail_first_parent_fsync)
+
+    with pytest.raises(OSError, match="injected parent fsync failure"):
+        _package(paths, output)
+
+    assert not output.exists()
+    assert not list(output.parent.glob(".result.json.*"))
+    monkeypatch.setattr(package_module.os, "fsync", original_fsync)
+    assert _package(paths, output)["status"] == "PASS"
+
+
+def test_publication_name_swap_is_uncertain_and_does_not_delete_replacement(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    paths = _fixture(tmp_path / "evidence")
+    output = tmp_path / "publication" / "result.json"
+    replacement = b"replacement-owned-by-another-writer\n"
+    original_link = package_module.os.link
+
+    def swap_after_link(
+        source: object,
+        destination: object,
+        *,
+        src_dir_fd: int,
+        dst_dir_fd: int,
+        follow_symlinks: bool,
+    ) -> None:
+        original_link(
+            source,
+            destination,
+            src_dir_fd=src_dir_fd,
+            dst_dir_fd=dst_dir_fd,
+            follow_symlinks=follow_symlinks,
+        )
+        os.unlink(destination, dir_fd=dst_dir_fd)
+        descriptor = os.open(
+            destination,
+            os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+            0o644,
+            dir_fd=dst_dir_fd,
+        )
+        try:
+            os.write(descriptor, replacement)
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
+
+    monkeypatch.setattr(package_module.os, "link", swap_after_link)
+
+    with pytest.raises(RuntimeError, match="publication state is uncertain") as caught:
+        _package(paths, output)
+
+    assert type(caught.value) is package_module.PublicationUncertainError
+    assert output.read_bytes() == replacement
+    assert not list(output.parent.glob(".result.json.*"))
