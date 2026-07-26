@@ -445,7 +445,7 @@ def _strict_json_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
 
 
 def _is_canonical_repo_path(path: str) -> bool:
-    if not path or path.startswith("/") or "\\" in path:
+    if not path or path.startswith("/") or "\\" in path or "\0" in path:
         return False
     parts = path.split("/")
     return all(part not in {"", ".", ".."} for part in parts)

@@ -441,7 +441,15 @@ def test_load_source_manifest_rejects_recursive_duplicate_keys(tmp_path: Path) -
 
 @pytest.mark.parametrize(
     "invalid",
-    ["/absolute.py", "../escape.py", "src/../escape.py", "./src/a.py", "src\\a.py", "src//a.py"],
+    [
+        "/absolute.py",
+        "../escape.py",
+        "src/../escape.py",
+        "./src/a.py",
+        "src\\a.py",
+        "src//a.py",
+        "src/a\0.py",
+    ],
 )
 def test_source_manifest_rejects_noncanonical_paths(
     tmp_path: Path, invalid: str
