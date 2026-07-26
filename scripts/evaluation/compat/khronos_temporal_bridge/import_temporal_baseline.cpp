@@ -73,14 +73,20 @@ void loadTrajectory(const Json& entry,
   const Json trajectory =
       loadJson(resolveBridgePath(entry.at("trajectory_json").get<std::string>()));
   const bool eligible = entry.at("dynamic_track_eligible").get<bool>();
+  const Json state = entry.at("dynamic_state_at_query");
+  const bool explicit_dynamic = state.is_string() && state.get<std::string>() == "dynamic";
+  if (eligible != explicit_dynamic) {
+    throw std::runtime_error("bridge dynamic eligibility disagrees with explicit state");
+  }
   if (!eligible) {
     if (!trajectory.empty()) {
       throw std::runtime_error("ineligible object has a synthesized trajectory");
     }
     return;
   }
-  if (trajectory.size() < 2) {
-    throw std::runtime_error("eligible dynamic track has fewer than two native samples");
+  if (trajectory.empty() ||
+      trajectory.back().at("dynamic_state").get<std::string>() != "dynamic") {
+    throw std::runtime_error("eligible trajectory does not end in explicit dynamic state");
   }
 
   uint64_t previous = 0;

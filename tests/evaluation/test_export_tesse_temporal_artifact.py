@@ -118,6 +118,10 @@ def _build_fixture(
                 "entity_id": entity_id,
                 "centroid_xyz": [float(frame), 0.0, 1.0],
                 "observation_count": frame + 1,
+                "dynamic_state": "static",
+                "motion_confidence": 0.0,
+                "geometry_epoch": 0,
+                "readout_valid": True,
             }
             for frame, timestamp, entity_id in (
                 (0, 100, "entity-a"),
@@ -131,6 +135,54 @@ def _build_fixture(
         "".join(
             json.dumps(row, sort_keys=True, allow_nan=False) + "\n"
             for row in trajectory_rows
+        ),
+        encoding="utf-8",
+    )
+    lifecycle_path = root / "lifecycle_transitions.jsonl"
+    lifecycle_rows = [] if panoptic else [
+        {
+            "frame_index": frame,
+            "timestamp_ns": timestamp,
+            "entity_id": entity_id,
+            "before": before,
+            "after": after,
+            "evidence": evidence,
+            "geometry_epoch": 0,
+            "readout_valid": readout_valid,
+        }
+        for frame, timestamp, entity_id, before, after, evidence, readout_valid in (
+            (1, 200, "entity-a", "active", "uncertain", "visible_absent", False),
+            (3, 400, "entity-b", "active", "uncertain", "visible_absent", False),
+        )
+    ]
+    lifecycle_path.write_text(
+        "".join(json.dumps(row, sort_keys=True) + "\n" for row in lifecycle_rows),
+        encoding="utf-8",
+    )
+    records_by_frame: dict[int, int] = {}
+    for row in trajectory_rows:
+        frame = int(row["frame_index"])
+        records_by_frame[frame] = records_by_frame.get(frame, 0) + (
+            len(row["entities"]) if "entities" in row else 1
+        )
+    events_by_frame: dict[int, int] = {}
+    for row in lifecycle_rows:
+        frame = int(row["frame_index"])
+        events_by_frame[frame] = events_by_frame.get(frame, 0) + 1
+    coverage_path = root / "temporal_frame_coverage.jsonl"
+    coverage_path.write_text(
+        "".join(
+            json.dumps(
+                {
+                    "frame_index": frame,
+                    "timestamp_ns": timestamp,
+                    "record_count": records_by_frame.get(frame, 0),
+                    "event_count": events_by_frame.get(frame, 0),
+                },
+                sort_keys=True,
+            )
+            + "\n"
+            for frame, timestamp in enumerate((100, 200, 300, 400, 500))
         ),
         encoding="utf-8",
     )
@@ -214,6 +266,8 @@ def _build_fixture(
             "captured_frame_indices": [frame for frame, _ in checkpoints],
             "schedule": _record(schedule_path),
             "trajectories": _record(trajectory_path),
+            "frame_coverage": _record(coverage_path),
+            "lifecycle_transitions": _record(lifecycle_path),
             "checkpoint_statuses": checkpoint_status_records,
         },
     )
@@ -226,6 +280,8 @@ def _build_fixture(
         "schedule": _record(schedule_path),
         "capture_status": _record(capture_status_path),
         "trajectories": _record(trajectory_path),
+        "frame_coverage": _record(coverage_path),
+        "lifecycle_transitions": _record(lifecycle_path),
         "checkpoints": checkpoint_records,
     }
     index_path = root / "source_index.json"
@@ -249,6 +305,8 @@ def _make_v2_formal_source(root: Path, *, evidence: str = "7") -> Path:
 
     index["schedule"] = relative(index["schedule"])
     index["trajectories"] = relative(index["trajectories"])
+    index["frame_coverage"] = relative(index["frame_coverage"])
+    index["lifecycle_transitions"] = relative(index["lifecycle_transitions"])
     for checkpoint in index["checkpoints"]:
         for role in ("checkpoint_status", "snapshot", "entities"):
             checkpoint[role] = relative(checkpoint[role])
@@ -256,6 +314,8 @@ def _make_v2_formal_source(root: Path, *, evidence: str = "7") -> Path:
     capture = json.loads(capture_path.read_text())
     capture["schedule"] = index["schedule"]
     capture["trajectories"] = index["trajectories"]
+    capture["frame_coverage"] = index["frame_coverage"]
+    capture["lifecycle_transitions"] = index["lifecycle_transitions"]
     capture["checkpoint_statuses"] = [
         checkpoint["checkpoint_status"] for checkpoint in index["checkpoints"]
     ]
@@ -306,6 +366,11 @@ def _make_v2_formal_source(root: Path, *, evidence: str = "7") -> Path:
             "mode": "dual_readout_causal_checkpoints",
             "algorithm_hash": frozen["algorithm_hash"],
             "processed_frame_count": 5,
+            "covered_frame_count": 5,
+            "trajectory_frame_count": 4,
+            "first_frame_index": 0,
+            "last_frame_index": 4,
+            "temporal_export_schema_version": 1,
             "scheduled_frame_indices": [0, 2, 4],
             "captured_frame_indices": [0, 2, 4],
             "config": {"sha256": "8" * 64, "byte_count": 1},
@@ -473,7 +538,6 @@ def test_exports_presence_intervals_and_byte_identical_repeat(tmp_path: Path) ->
         if path.is_file()
     }
     assert first_files == second_files
-
     assert first.read_bytes().endswith(b"\n")
     assert not first.read_bytes().endswith(b"\n\n")
     assert b"\n " not in first.read_bytes()
@@ -493,6 +557,37 @@ def test_exports_presence_intervals_and_byte_identical_repeat(tmp_path: Path) ->
         assert hashlib.sha256(copied.read_bytes()).hexdigest() == source["sha256"]
         assert copied.stat().st_size == source["byte_count"]
 
+
+def test_rejects_missing_explicit_frame_coverage(tmp_path: Path) -> None:
+    index_path, payload = _build_fixture(tmp_path / "source")
+    payload.pop("frame_coverage")
+    capture_path = Path(payload["capture_status"]["path"])
+    capture = json.loads(capture_path.read_text(encoding="utf-8"))
+    capture.pop("frame_coverage")
+    _write_json(capture_path, capture)
+    payload["capture_status"] = _record(capture_path)
+    _rewrite_index(index_path, payload)
+
+    with pytest.raises(ValueError, match="frame coverage"):
+        export_temporal_artifact(index_path, tmp_path / "output")
+
+
+def test_rejects_trajectory_without_explicit_dynamic_state(tmp_path: Path) -> None:
+    index_path, payload = _build_fixture(tmp_path / "source")
+    trajectory_path = Path(payload["trajectories"]["path"])
+    rows = [
+        json.loads(line)
+        for line in trajectory_path.read_text(encoding="utf-8").splitlines()
+    ]
+    rows[0].pop("dynamic_state")
+    _rewrite_trajectories(
+        index_path,
+        payload,
+        "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows),
+    )
+
+    with pytest.raises(ValueError, match="fields"):
+        export_temporal_artifact(index_path, tmp_path / "output")
 
 def test_exports_formal_v2_source_without_requiring_execution_in_occlusion_index(
     tmp_path: Path,
@@ -930,6 +1025,10 @@ def test_rejects_invalid_trajectory_entity_after_last_checkpoint(
         "entity_id": "entity-a",
         "centroid_xyz": [False, 0.0, 1.0],
         "observation_count": 1,
+        "dynamic_state": "static",
+        "motion_confidence": 0.0,
+        "geometry_epoch": 0,
+        "readout_valid": True,
     }
     _rewrite_trajectories(
         index_path,
@@ -941,22 +1040,13 @@ def test_rejects_invalid_trajectory_entity_after_last_checkpoint(
         export_temporal_artifact(index_path, tmp_path / "output")
 
 
-def test_accepts_panoptic_checkpoint_and_trajectory_fixture(tmp_path: Path) -> None:
+def test_rejects_panoptic_trajectory_without_explicit_dynamic_state(
+    tmp_path: Path,
+) -> None:
     index_path, _ = _build_fixture(tmp_path / "panoptic", panoptic=True)
 
-    manifest_path = export_temporal_artifact(index_path, tmp_path / "output")
-
-    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-    assert payload["method"] == "PANOPTIC_SHARED"
-    assert payload["entity_lifecycles"][0]["entity_id"] == "panoptic:41"
-    rows = [
-        json.loads(line)
-        for line in (manifest_path.parent / payload["trajectories"]["path"])
-        .read_text(encoding="utf-8")
-        .splitlines()
-    ]
-    assert rows[0]["entity_id"] == "panoptic:41"
-    assert rows[-1]["timestamp_ns"] == 500
+    with pytest.raises(ValueError, match="fields"):
+        export_temporal_artifact(index_path, tmp_path / "output")
 
 
 def test_rejects_missing_schedule_checkpoint_without_final_fallback(
@@ -1036,23 +1126,13 @@ def test_rejects_checkpoint_outside_declared_frame_count(tmp_path: Path) -> None
         export_temporal_artifact(index_path, tmp_path / "output")
 
 
-@pytest.mark.parametrize(
-    ("field", "value", "message"),
-    [
-        ("semantic_label", "sofa", "semantic conflict"),
-        ("entity_type", "region", "type conflict"),
-    ],
-)
-def test_rejects_stable_id_semantic_or_type_conflict(
-    tmp_path: Path, field: str, value: str, message: str
+def test_allows_stable_id_semantic_evolution_and_keeps_first_lifecycle_label(
+    tmp_path: Path,
 ) -> None:
     index_path, payload = _build_fixture(tmp_path / "source")
     entities_path = Path(payload["checkpoints"][2]["entities"]["path"])
     record = json.loads(entities_path.read_text(encoding="utf-8"))
-    if field == "semantic_label":
-        record["semantic_label"] = value
-    else:
-        record["metadata"]["entity_type"] = value
+    record["semantic_label"] = "sofa"
     entities_path.write_text(
         json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n",
         encoding="utf-8",
@@ -1060,7 +1140,34 @@ def test_rejects_stable_id_semantic_or_type_conflict(
     payload["checkpoints"][2]["entities"] = _record(entities_path)
     _rewrite_index(index_path, payload)
 
-    with pytest.raises(ValueError, match=message):
+    manifest_path = export_temporal_artifact(index_path, tmp_path / "output")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    lifecycle = next(
+        item
+        for item in manifest["entity_lifecycles"]
+        if item["entity_id"] == "entity-a"
+    )
+    assert lifecycle["semantic_label"] == "chair"
+    final_entities = (
+        manifest_path.parent / manifest["checkpoints"][2]["entities"]["path"]
+    )
+    final_record = json.loads(final_entities.read_text(encoding="utf-8"))
+    assert final_record["semantic_label"] == "sofa"
+
+
+def test_rejects_stable_id_type_conflict(tmp_path: Path) -> None:
+    index_path, payload = _build_fixture(tmp_path / "source")
+    entities_path = Path(payload["checkpoints"][2]["entities"]["path"])
+    record = json.loads(entities_path.read_text(encoding="utf-8"))
+    record["metadata"]["entity_type"] = "region"
+    entities_path.write_text(
+        json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+    payload["checkpoints"][2]["entities"] = _record(entities_path)
+    _rewrite_index(index_path, payload)
+
+    with pytest.raises(ValueError, match="type conflict"):
         export_temporal_artifact(index_path, tmp_path / "output")
 
 

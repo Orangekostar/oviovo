@@ -42,6 +42,8 @@ _SOURCE_INDEX_BASE_FIELDS = frozenset(
         "schedule",
         "capture_status",
         "trajectories",
+        "frame_coverage",
+        "lifecycle_transitions",
         "checkpoints",
     }
 )
@@ -58,6 +60,11 @@ _V2_RUN_MANIFEST_FIELDS = frozenset(
         "mode",
         "algorithm_hash",
         "processed_frame_count",
+        "covered_frame_count",
+        "trajectory_frame_count",
+        "first_frame_index",
+        "last_frame_index",
+        "temporal_export_schema_version",
         "scheduled_frame_indices",
         "captured_frame_indices",
         "config",
@@ -125,6 +132,8 @@ _CAPTURE_STATUS_FIELDS = frozenset(
         "captured_frame_indices",
         "schedule",
         "trajectories",
+        "frame_coverage",
+        "lifecycle_transitions",
         "checkpoint_statuses",
     }
 )
@@ -204,7 +213,32 @@ _PANOPTIC_CHECKPOINT_STATUS_FIELDS = frozenset(
     }
 )
 _GENERIC_TRAJECTORY_FIELDS = frozenset(
-    {"frame_index", "timestamp_ns", "entity_id", "centroid_xyz"}
+    {
+        "frame_index",
+        "timestamp_ns",
+        "entity_id",
+        "centroid_xyz",
+        "observation_count",
+        "dynamic_state",
+        "motion_confidence",
+        "geometry_epoch",
+        "readout_valid",
+    }
+)
+_FRAME_COVERAGE_FIELDS = frozenset(
+    {"frame_index", "timestamp_ns", "record_count", "event_count"}
+)
+_LIFECYCLE_TRANSITION_FIELDS = frozenset(
+    {
+        "frame_index",
+        "timestamp_ns",
+        "entity_id",
+        "before",
+        "after",
+        "evidence",
+        "geometry_epoch",
+        "readout_valid",
+    }
 )
 _PANOPTIC_TRAJECTORY_FIELDS = frozenset(
     {"frame_index", "source_timestamp_ns", "entities"}
@@ -457,6 +491,93 @@ def _presence_intervals(
     return lifecycles
 
 
+def _explicit_presence_intervals(
+    states: Mapping[str, dict[str, Any]],
+    coverage: Sequence[Mapping[str, int]],
+    trajectories: Sequence[Mapping[str, Any]],
+    transitions: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    source_to_entity: dict[str, str] = {}
+    for entity_id, state in states.items():
+        source_id = str(state.get("source_entity_id", entity_id))
+        if source_id in source_to_entity and source_to_entity[source_id] != entity_id:
+            raise ValueError("explicit temporal entity binding is ambiguous")
+        source_to_entity[source_id] = entity_id
+    updates: dict[int, dict[str, bool]] = {}
+    for record in (*trajectories, *transitions):
+        frame = int(record["frame_index"])
+        source_id = str(record["entity_id"])
+        entity_id = source_to_entity.get(source_id, source_id)
+        readout_valid = bool(record["readout_valid"])
+        previous = updates.setdefault(frame, {}).get(entity_id)
+        if previous is not None and previous is not readout_valid:
+            raise ValueError("conflicting readout validity within one frame")
+        updates[frame][entity_id] = readout_valid
+
+    open_intervals: dict[str, dict[str, int] | None] = {
+        entity_id: None for entity_id in states
+    }
+    intervals_by_id: dict[str, list[dict[str, int]]] = {
+        entity_id: [] for entity_id in states
+    }
+    latest_valid: dict[str, Mapping[str, int]] = {}
+    for frame_record in coverage:
+        frame = int(frame_record["frame_index"])
+        for entity_id, readout_valid in updates.get(frame, {}).items():
+            if entity_id not in states:
+                continue
+            current = open_intervals[entity_id]
+            if readout_valid and current is None:
+                open_intervals[entity_id] = {
+                    "first_frame_index": frame,
+                    "first_timestamp_ns": int(frame_record["timestamp_ns"]),
+                }
+            elif not readout_valid and current is not None:
+                last = latest_valid.get(entity_id)
+                if last is None:
+                    raise ValueError("presence interval has no valid readout frame")
+                intervals_by_id[entity_id].append(
+                    {
+                        **current,
+                        "last_frame_index": int(last["frame_index"]),
+                        "last_timestamp_ns": int(last["timestamp_ns"]),
+                    }
+                )
+                open_intervals[entity_id] = None
+        for entity_id, current in open_intervals.items():
+            if current is not None:
+                latest_valid[entity_id] = frame_record
+
+    for entity_id, current in open_intervals.items():
+        if current is None:
+            continue
+        last = latest_valid.get(entity_id)
+        if last is None:
+            raise ValueError("presence interval has no valid readout frame")
+        intervals_by_id[entity_id].append(
+            {
+                **current,
+                "last_frame_index": int(last["frame_index"]),
+                "last_timestamp_ns": int(last["timestamp_ns"]),
+            }
+        )
+
+    lifecycles: list[dict[str, Any]] = []
+    for entity_id in sorted(states):
+        intervals = intervals_by_id[entity_id]
+        if not intervals:
+            raise ValueError(f"entity has no explicit valid readout: {entity_id}")
+        lifecycles.append(
+            {
+                "entity_id": entity_id,
+                "semantic_label": states[entity_id]["semantic_label"],
+                "entity_type": states[entity_id]["entity_type"],
+                "presence_intervals": intervals,
+            }
+        )
+    return lifecycles
+
+
 def _validate_metadata_value(value: Any, *, label: str) -> None:
     if value is None or type(value) in {bool, int, str}:
         if isinstance(value, str) and Path(value).is_absolute():
@@ -594,8 +715,93 @@ def _canonical_entity_jsonl(snapshot: Any, records: Sequence[Mapping[str, Any]])
     return "\n".join(output) + ("\n" if output else "")
 
 
+def _normalize_frame_coverage(source: _VerifiedSource) -> list[dict[str, int]]:
+    records: list[dict[str, int]] = []
+    for line_number, line in enumerate(
+        source.path.read_text(encoding="utf-8").splitlines(), start=1
+    ):
+        if not line.strip():
+            continue
+        raw = _loads_json(line, label=f"frame coverage line {line_number}")
+        if not isinstance(raw, Mapping) or frozenset(raw) != _FRAME_COVERAGE_FIELDS:
+            raise ValueError("frame coverage fields are invalid")
+        frame = raw.get("frame_index")
+        timestamp = raw.get("timestamp_ns")
+        record_count = raw.get("record_count")
+        event_count = raw.get("event_count")
+        if not (
+            type(frame) is int
+            and frame == len(records)
+            and type(timestamp) is int
+            and timestamp > 0
+            and (not records or timestamp > records[-1]["timestamp_ns"])
+            and type(record_count) is int
+            and record_count >= 0
+            and type(event_count) is int
+            and event_count >= 0
+        ):
+            raise ValueError("frame coverage must be complete, causal, and zero-based")
+        records.append(dict(raw))
+    _assert_unchanged(source, label="frame coverage")
+    if not records:
+        raise ValueError("frame coverage must not be empty")
+    return records
+
+
+def _normalize_lifecycle_transitions(
+    source: _VerifiedSource, coverage: Sequence[Mapping[str, int]]
+) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    seen: set[tuple[int, str]] = set()
+    valid_lifecycles = {"active", "uncertain", "dormant"}
+    valid_evidence = {
+        "present",
+        "visible_absent",
+        "occluded",
+        "out_of_view",
+        "depth_unknown",
+    }
+    for line_number, line in enumerate(
+        source.path.read_text(encoding="utf-8").splitlines(), start=1
+    ):
+        if not line.strip():
+            continue
+        raw = _loads_json(line, label=f"lifecycle transition line {line_number}")
+        if not isinstance(raw, Mapping) or frozenset(raw) != _LIFECYCLE_TRANSITION_FIELDS:
+            raise ValueError("lifecycle transition fields are invalid")
+        frame = raw.get("frame_index")
+        timestamp = raw.get("timestamp_ns")
+        identifier = raw.get("entity_id")
+        if isinstance(identifier, bool) or not isinstance(identifier, (int, str)):
+            raise ValueError("lifecycle transition entity ID is invalid")
+        entity_id = str(identifier).strip()
+        if not (
+            type(frame) is int
+            and 0 <= frame < len(coverage)
+            and type(timestamp) is int
+            and timestamp == coverage[frame]["timestamp_ns"]
+            and entity_id
+            and raw.get("before") in valid_lifecycles
+            and raw.get("after") in valid_lifecycles
+            and raw.get("evidence") in valid_evidence
+            and type(raw.get("geometry_epoch")) is int
+            and raw["geometry_epoch"] >= 0
+            and type(raw.get("readout_valid")) is bool
+        ):
+            raise ValueError("lifecycle transition record is invalid")
+        key = (frame, entity_id)
+        if key in seen:
+            raise ValueError("duplicate entity lifecycle transition within one frame")
+        seen.add(key)
+        records.append({**raw, "entity_id": entity_id})
+    _assert_unchanged(source, label="lifecycle transitions")
+    return records
+
+
 def _normalize_trajectories(
-    source: _VerifiedSource, schedule: Sequence[Mapping[str, int]]
+    source: _VerifiedSource,
+    schedule: Sequence[Mapping[str, int]],
+    coverage: Sequence[Mapping[str, int]],
 ) -> list[dict[str, Any]]:
     checkpoint_frames = [int(item["frame_index"]) for item in schedule]
     records: list[dict[str, Any]] = []
@@ -612,18 +818,9 @@ def _normalize_trajectories(
         if not isinstance(raw, Mapping):
             raise ValueError(f"{label} must be an object")
         fields = frozenset(raw)
-        generic_fields = {
-            _GENERIC_TRAJECTORY_FIELDS,
-            _GENERIC_TRAJECTORY_FIELDS | {"observation_count"},
-        }
-        if "entities" in raw:
-            if fields != _PANOPTIC_TRAJECTORY_FIELDS:
-                raise ValueError(f"{label} fields are invalid")
-            timestamp_field = "source_timestamp_ns"
-        else:
-            if fields not in generic_fields:
-                raise ValueError(f"{label} fields are invalid")
-            timestamp_field = "timestamp_ns"
+        if fields != _GENERIC_TRAJECTORY_FIELDS:
+            raise ValueError(f"{label} fields are invalid")
+        timestamp_field = "timestamp_ns"
         _reject_absolute_path_strings(raw, label=label)
         frame = raw.get("frame_index")
         timestamp = raw.get(timestamp_field)
@@ -668,11 +865,10 @@ def _normalize_trajectories(
                 if type(native_id) is not int or native_id < 0:
                     raise ValueError("trajectory native_submap_id must be non-negative")
                 identifier = f"panoptic:{native_id}"
-            if (
-                not isinstance(identifier, str)
-                or not identifier
-                or identifier != identifier.strip()
-            ):
+            if isinstance(identifier, bool) or not isinstance(identifier, (int, str)):
+                raise ValueError("trajectory entity ID must be non-empty")
+            identifier = str(identifier)
+            if not identifier or identifier != identifier.strip():
                 raise ValueError("trajectory entity ID must be non-empty")
             entity_id = identifier
             key = (frame, entity_id)
@@ -699,14 +895,45 @@ def _normalize_trajectories(
                 "entity_id": entity_id,
                 "centroid_xyz": centroid,
             }
-            if "observation_count" in raw_entity:
+            if "entities" not in raw:
                 count = raw_entity["observation_count"]
-                if type(count) is not int or count < 0:
-                    raise ValueError("trajectory observation count must be non-negative")
+                dynamic_state = raw_entity.get("dynamic_state")
+                confidence = raw_entity.get("motion_confidence")
+                geometry_epoch = raw_entity.get("geometry_epoch")
+                readout_valid = raw_entity.get("readout_valid")
+                if type(count) is not int or count < 1:
+                    raise ValueError("trajectory observation count must be positive")
+                if dynamic_state not in {"static", "dynamic", "unknown"}:
+                    raise ValueError("trajectory dynamic state is invalid")
+                if (
+                    isinstance(confidence, bool)
+                    or not isinstance(confidence, (int, float))
+                    or not math.isfinite(float(confidence))
+                    or not 0.0 <= float(confidence) <= 1.0
+                ):
+                    raise ValueError("trajectory motion confidence is invalid")
+                if type(geometry_epoch) is not int or geometry_epoch < 0:
+                    raise ValueError("trajectory geometry epoch is invalid")
+                if type(readout_valid) is not bool:
+                    raise ValueError("trajectory readout validity is invalid")
                 normalized["observation_count"] = count
-            if included:
-                records.append(normalized)
+                normalized["dynamic_state"] = dynamic_state
+                normalized["motion_confidence"] = float(confidence)
+                normalized["geometry_epoch"] = geometry_epoch
+                normalized["readout_valid"] = readout_valid
+            records.append(normalized)
     _assert_unchanged(source, label="trajectories")
+    counts_by_frame: dict[int, int] = {}
+    for record in records:
+        frame = int(record["frame_index"])
+        if frame >= len(coverage) or record["timestamp_ns"] != coverage[frame]["timestamp_ns"]:
+            raise ValueError("trajectory does not match explicit frame coverage")
+        counts_by_frame[frame] = counts_by_frame.get(frame, 0) + 1
+    if any(
+        counts_by_frame.get(int(item["frame_index"]), 0) != int(item["record_count"])
+        for item in coverage
+    ):
+        raise ValueError("trajectory counts do not match explicit frame coverage")
     return records
 
 
@@ -980,6 +1207,13 @@ def _formal_v2_run_fields(
         and manifest.get("method_id") == "OVIV2"
         and manifest.get("scene") == index.get("scene")
         and manifest.get("mode") == "dual_readout_causal_checkpoints"
+        and manifest.get("temporal_export_schema_version") == 1
+        and type(manifest.get("processed_frame_count")) is int
+        and manifest.get("processed_frame_count") == manifest.get("covered_frame_count")
+        and type(manifest.get("trajectory_frame_count")) is int
+        and 0 <= manifest["trajectory_frame_count"] <= manifest["processed_frame_count"]
+        and manifest.get("first_frame_index") == 0
+        and manifest.get("last_frame_index") == manifest["processed_frame_count"] - 1
     ):
         raise ValueError("v2 run manifest identity is invalid")
     if manifest.get("frozen_run_identity") != frozen:
@@ -1003,6 +1237,8 @@ def _formal_v2_run_fields(
         index.get("schedule"),
         index.get("capture_status"),
         index.get("trajectories"),
+        index.get("frame_coverage"),
+        index.get("lifecycle_transitions"),
     ]
     checkpoints = index.get("checkpoints")
     if not isinstance(checkpoints, list):
@@ -1396,6 +1632,10 @@ def _fsync_tree(root: Path) -> None:
 def export_temporal_artifact(source_index: Path, output: Path) -> Path:
     index_source = _direct_source(source_index, label="source index")
     index = _read_json(index_source, label="source index")
+    if "frame_coverage" not in index:
+        raise ValueError("source index requires explicit frame coverage")
+    if "lifecycle_transitions" not in index:
+        raise ValueError("source index requires explicit lifecycle transitions")
     if set(index) not in {
         _SOURCE_INDEX_BASE_FIELDS,
         _SOURCE_INDEX_FIELDS,
@@ -1440,6 +1680,14 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
     trajectory_source = _declared_source(
         index.get("trajectories", {}), base=base, label="trajectories"
     )
+    coverage_source = _declared_source(
+        index.get("frame_coverage", {}), base=base, label="frame coverage"
+    )
+    lifecycle_source = _declared_source(
+        index.get("lifecycle_transitions", {}),
+        base=base,
+        label="lifecycle transitions",
+    )
     capture_source = _declared_source(
         index.get("capture_status", {}), base=base, label="capture status"
     )
@@ -1463,6 +1711,14 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
         capture.get("trajectories", {}), trajectory_source, base=base
     ):
         raise ValueError("capture status trajectory source mismatch")
+    if not _same_source(
+        capture.get("frame_coverage", {}), coverage_source, base=base
+    ):
+        raise ValueError("capture status frame coverage source mismatch")
+    if not _same_source(
+        capture.get("lifecycle_transitions", {}), lifecycle_source, base=base
+    ):
+        raise ValueError("capture status lifecycle transition source mismatch")
 
     raw_checkpoints = index.get("checkpoints")
     if not isinstance(raw_checkpoints, list):
@@ -1479,6 +1735,8 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
         (index_source, "source index"),
         (schedule_source, "schedule"),
         (trajectory_source, "trajectories"),
+        (coverage_source, "frame coverage"),
+        (lifecycle_source, "lifecycle transitions"),
         (capture_source, "capture status"),
         *formal_verified,
     ]
@@ -1552,13 +1810,25 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
                 states[entity_id] = {
                     "semantic_label": label,
                     "entity_type": entity_type,
+                    "source_entity_id": str(
+                        entity.metadata.get(
+                            "temporal_entity_id",
+                            entity.metadata.get("owner_entity_id", entity_id),
+                        )
+                    ),
                     "positions": [position],
                 }
                 continue
-            if state["semantic_label"] != label:
-                raise ValueError(f"stable entity ID semantic conflict: {entity_id}")
             if state["entity_type"] != entity_type:
                 raise ValueError(f"stable entity ID type conflict: {entity_id}")
+            source_entity_id = str(
+                entity.metadata.get(
+                    "temporal_entity_id",
+                    entity.metadata.get("owner_entity_id", entity_id),
+                )
+            )
+            if state["source_entity_id"] != source_entity_id:
+                raise ValueError(f"stable entity ID temporal binding conflict: {entity_id}")
             state["positions"].append(position)
         checkpoint_status_sources.append(status_source)
         verified.extend(
@@ -1592,8 +1862,55 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
         ):
             raise ValueError("capture status checkpoint source mismatch")
 
-    trajectory_records = _normalize_trajectories(trajectory_source, schedule)
-    lifecycles = _presence_intervals(states, schedule)
+    coverage_records = _normalize_frame_coverage(coverage_source)
+    lifecycle_records = _normalize_lifecycle_transitions(
+        lifecycle_source, coverage_records
+    )
+    trajectory_records = _normalize_trajectories(
+        trajectory_source, schedule, coverage_records
+    )
+    events_by_frame: dict[int, int] = {}
+    for record in lifecycle_records:
+        frame = int(record["frame_index"])
+        events_by_frame[frame] = events_by_frame.get(frame, 0) + 1
+    if any(
+        events_by_frame.get(int(item["frame_index"]), 0) != int(item["event_count"])
+        for item in coverage_records
+    ):
+        raise ValueError("lifecycle transition counts do not match frame coverage")
+    checkpoint_coverage = [
+        (coverage_records[frame]["frame_index"], coverage_records[frame]["timestamp_ns"])
+        for frame, _ in expected
+        if frame < len(coverage_records)
+    ]
+    if checkpoint_coverage != expected:
+        raise ValueError("checkpoint timestamps do not match frame coverage")
+    lifecycles = _explicit_presence_intervals(
+        states, coverage_records, trajectory_records, lifecycle_records
+    )
+    temporal_audit_counts = {
+        "static_sample_count": sum(
+            record.get("dynamic_state") == "static" for record in trajectory_records
+        ),
+        "dynamic_sample_count": sum(
+            record.get("dynamic_state") == "dynamic" for record in trajectory_records
+        ),
+        "unknown_sample_count": sum(
+            record.get("dynamic_state") == "unknown" for record in trajectory_records
+        ),
+        "missing_frame_count": 0,
+        "lifecycle_transition_count": len(lifecycle_records),
+        "geometry_epoch_count": len(
+            {
+                (str(record["entity_id"]), int(record["geometry_epoch"]))
+                for record in (*trajectory_records, *lifecycle_records)
+                if "geometry_epoch" in record
+            }
+        ),
+        "invalid_readout_sample_count": sum(
+            record.get("readout_valid") is False for record in trajectory_records
+        ),
+    }
     for source, label in verified:
         _assert_unchanged(source, label=label)
 
@@ -1666,6 +1983,34 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
             ),
             encoding="utf-8",
         )
+        coverage_path = staging / "temporal_frame_coverage.jsonl"
+        coverage_path.write_text(
+            "".join(
+                json.dumps(
+                    record,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    allow_nan=False,
+                )
+                + "\n"
+                for record in coverage_records
+            ),
+            encoding="utf-8",
+        )
+        lifecycle_path = staging / "lifecycle_transitions.jsonl"
+        lifecycle_path.write_text(
+            "".join(
+                json.dumps(
+                    record,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    allow_nan=False,
+                )
+                + "\n"
+                for record in lifecycle_records
+            ),
+            encoding="utf-8",
+        )
 
         schedule_path = sidecar_root / "schedule.json"
         _write_schedule_sidecar(
@@ -1697,6 +2042,14 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
             trajectories_path,
             base=sidecar_root,
         )
+        coverage_sidecar_record = _relative_record(
+            coverage_path,
+            base=sidecar_root,
+        )
+        lifecycle_sidecar_record = _relative_record(
+            lifecycle_path,
+            base=sidecar_root,
+        )
         status_sidecar_records = [
             _relative_record(path, base=sidecar_root) for path in status_paths
         ]
@@ -1710,6 +2063,8 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
             "captured_frame_indices": capture["captured_frame_indices"],
             "schedule": schedule_sidecar_record,
             "trajectories": trajectory_sidecar_record,
+            "frame_coverage": coverage_sidecar_record,
+            "lifecycle_transitions": lifecycle_sidecar_record,
             "checkpoint_statuses": status_sidecar_records,
         }
         _write_json(capture_path, normalized_capture)
@@ -1753,6 +2108,8 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
                 base=sidecar_root,
             ),
             "trajectories": trajectory_sidecar_record,
+            "frame_coverage": coverage_sidecar_record,
+            "lifecycle_transitions": lifecycle_sidecar_record,
             "checkpoints": normalized_index_checkpoints,
             **{
                 name: formal_run_fields[name]
@@ -1767,6 +2124,10 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
             "schedule": _output_record(schedule_path, output=staging),
             "capture_status": _output_record(capture_path, output=staging),
             "trajectories": _output_record(trajectories_path, output=staging),
+            "frame_coverage": _output_record(coverage_path, output=staging),
+            "lifecycle_transitions": _output_record(
+                lifecycle_path, output=staging
+            ),
             "checkpoint_statuses": [
                 _output_record(path, output=staging) for path in status_paths
             ],
@@ -1792,8 +2153,14 @@ def export_temporal_artifact(source_index: Path, output: Path) -> Path:
             "sources": normalized_sources,
             "checkpoints": output_checkpoints,
             "entity_lifecycles": lifecycles,
+            "temporal_export_schema_version": 1,
+            "temporal_audit_counts": temporal_audit_counts,
             "trajectories": _output_record(
                 trajectories_path, output=staging
+            ),
+            "frame_coverage": _output_record(coverage_path, output=staging),
+            "lifecycle_transitions": _output_record(
+                lifecycle_path, output=staging
             ),
             **output_formal_fields,
         }

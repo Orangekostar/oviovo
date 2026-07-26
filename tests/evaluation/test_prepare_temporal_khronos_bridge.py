@@ -46,7 +46,11 @@ _FIXTURE_SCHEDULE_BYTES = (
 def _bind_fixture_label_space(monkeypatch: pytest.MonkeyPatch) -> None:
     fixture_contents = (
         "label_names:\n  - {label: 0, name: Unknown}\n  - {label: 5, name: Chair}\n",
+        "label_names:\n  - {label: 0, name: Unknown}\n"
+        "  - {label: 5, name: Chair}\n  - {label: 7, name: Table}\n",
         "label_names: [{label: 0, name: Unknown}, {label: 5, name: Chair}]\n",
+        "label_names: [{label: 0, name: Unknown}, {label: 5, name: Chair}, "
+        "{label: 7, name: Table}]\n",
     )
     monkeypatch.setattr(
         bridge_module,
@@ -76,12 +80,12 @@ def _record(path: Path, *, relative_to: Path | None = None) -> dict[str, Any]:
     }
 
 
-def _entity(entity_id: str, x: float) -> EntityPrediction:
+def _entity(entity_id: str, x: float, *, label: str = "Chair") -> EntityPrediction:
     return EntityPrediction(
         entity_id=entity_id,
         points_xyz=np.asarray([[x, 0.0, 1.0], [x + 0.1, 0.0, 1.0]], dtype=np.float32),
         semantic_embedding=None,
-        semantic_label="Chair",
+        semantic_label=label,
         semantic_score=0.9,
         lifecycle_state="active",
         first_seen=0.0,
@@ -111,8 +115,22 @@ def _write_temporal_fixture(root: Path) -> Path:
     schedule.write_bytes(_FIXTURE_SCHEDULE_BYTES)
     checkpoints = [
         (100, [_entity("r-reappear", 1), _entity("sparse", 2), _entity("z-first", 3)]),
-        (300, [_entity("a-later", 4), _entity("sparse", 5), _entity("z-first", 6)]),
-        (500, [_entity("a-later", 7), _entity("r-reappear", 8), _entity("sparse", 9)]),
+        (
+            300,
+            [
+                _entity("a-later", 4),
+                _entity("sparse", 5, label="Table"),
+                _entity("z-first", 6),
+            ],
+        ),
+        (
+            500,
+            [
+                _entity("a-later", 7),
+                _entity("r-reappear", 8),
+                _entity("sparse", 9, label="Table"),
+            ],
+        ),
     ]
     checkpoint_records = []
     for frame, (timestamp, entities) in enumerate(checkpoints):
@@ -139,15 +157,15 @@ def _write_temporal_fixture(root: Path) -> Path:
 
     trajectories = root / "trajectories.jsonl"
     trajectory_rows = [
-        (0, 100, "r-reappear", [1.0, 0.0, 1.0]),
-        (0, 100, "sparse", [2.0, 0.0, 1.0]),
-        (0, 100, "z-first", [3.0, 0.0, 1.0]),
-        (3, 200, "z-first", [3.5, 0.0, 1.0]),
-        (2, 300, "a-later", [4.0, 0.0, 1.0]),
-        (2, 300, "z-first", [6.0, 0.0, 1.0]),
-        (3, 400, "a-later", [5.5, 0.0, 1.0]),
-        (4, 500, "a-later", [7.0, 0.0, 1.0]),
-        (4, 500, "r-reappear", [8.0, 0.0, 1.0]),
+        (0, 100, "r-reappear", [1.0, 0.0, 1.0], "dynamic", True),
+        (0, 100, "sparse", [2.0, 0.0, 1.0], "static", True),
+        (0, 100, "z-first", [3.0, 0.0, 1.0], "static", True),
+        (1, 200, "z-first", [3.5, 0.0, 1.0], "dynamic", True),
+        (2, 300, "a-later", [4.0, 0.0, 1.0], "dynamic", True),
+        (2, 300, "z-first", [6.0, 0.0, 1.0], "dynamic", True),
+        (3, 400, "a-later", [5.5, 0.0, 1.0], "dynamic", True),
+        (4, 500, "a-later", [7.0, 0.0, 1.0], "static", True),
+        (4, 500, "r-reappear", [8.0, 0.0, 1.0], "dynamic", True),
     ]
     trajectories.write_text(
         "".join(
@@ -157,11 +175,66 @@ def _write_temporal_fixture(root: Path) -> Path:
                     "timestamp_ns": timestamp,
                     "entity_id": entity_id,
                     "centroid_xyz": centroid,
+                    "observation_count": index + 1,
+                    "dynamic_state": dynamic_state,
+                    "motion_confidence": 0.9,
+                    "geometry_epoch": 0,
+                    "readout_valid": readout_valid,
                 },
                 sort_keys=True,
             )
             + "\n"
-            for frame, timestamp, entity_id, centroid in trajectory_rows
+            for index, (
+                frame,
+                timestamp,
+                entity_id,
+                centroid,
+                dynamic_state,
+                readout_valid,
+            ) in enumerate(trajectory_rows)
+        ),
+        encoding="utf-8",
+    )
+    lifecycle = root / "lifecycle_transitions.jsonl"
+    lifecycle_rows = [
+        (1, 200, "r-reappear", False),
+        (3, 400, "z-first", False),
+        (4, 500, "r-reappear", True),
+    ]
+    lifecycle.write_text(
+        "".join(
+            json.dumps(
+                {
+                    "frame_index": frame,
+                    "timestamp_ns": timestamp,
+                    "entity_id": entity_id,
+                    "before": "active" if readout_valid else "active",
+                    "after": "active" if readout_valid else "uncertain",
+                    "evidence": "present" if readout_valid else "visible_absent",
+                    "geometry_epoch": 0,
+                    "readout_valid": readout_valid,
+                },
+                sort_keys=True,
+            )
+            + "\n"
+            for frame, timestamp, entity_id, readout_valid in lifecycle_rows
+        ),
+        encoding="utf-8",
+    )
+    coverage = root / "temporal_frame_coverage.jsonl"
+    coverage.write_text(
+        "".join(
+            json.dumps(
+                {
+                    "frame_index": frame,
+                    "timestamp_ns": timestamp,
+                    "record_count": sum(row[0] == frame for row in trajectory_rows),
+                    "event_count": sum(row[0] == frame for row in lifecycle_rows),
+                },
+                sort_keys=True,
+            )
+            + "\n"
+            for frame, timestamp in enumerate((100, 200, 300, 400, 500))
         ),
         encoding="utf-8",
     )
@@ -171,7 +244,11 @@ def _write_temporal_fixture(root: Path) -> Path:
         "mode": "causal_checkpoints",
         "method": "OVIV2",
         "scene": "apartment",
-        "sources": {"schedule": _record(schedule, relative_to=root)},
+        "sources": {
+            "schedule": _record(schedule, relative_to=root),
+            "frame_coverage": _record(coverage, relative_to=root),
+            "lifecycle_transitions": _record(lifecycle, relative_to=root),
+        },
         "checkpoints": checkpoint_records,
         "entity_lifecycles": [
             {
@@ -234,6 +311,18 @@ def _write_temporal_fixture(root: Path) -> Path:
             },
         ],
         "trajectories": _record(trajectories, relative_to=root),
+        "frame_coverage": _record(coverage, relative_to=root),
+        "lifecycle_transitions": _record(lifecycle, relative_to=root),
+        "temporal_export_schema_version": 1,
+        "temporal_audit_counts": {
+            "static_sample_count": 3,
+            "dynamic_sample_count": 6,
+            "unknown_sample_count": 0,
+            "missing_frame_count": 0,
+            "lifecycle_transition_count": 3,
+            "geometry_epoch_count": 4,
+            "invalid_readout_sample_count": 0,
+        },
     }
     manifest_path = root / "temporal_manifest.json"
     manifest_path.write_text(
@@ -248,7 +337,8 @@ def test_prepares_stable_symbols_intervals_and_causal_native_tracks(
     temporal = _write_temporal_fixture(tmp_path / "temporal")
     labels = tmp_path / "labels.yaml"
     labels.write_text(
-        "label_names:\n  - {label: 0, name: Unknown}\n  - {label: 5, name: Chair}\n",
+        "label_names:\n  - {label: 0, name: Unknown}\n"
+        "  - {label: 5, name: Chair}\n  - {label: 7, name: Table}\n",
         encoding="utf-8",
     )
 
@@ -276,33 +366,63 @@ def test_prepares_stable_symbols_intervals_and_causal_native_tracks(
         entry["entity_id"]: entry for entry in manifest["symbol_assignments"]
     }
     assert assignments["r-reappear"]["first_observed_ns"] == [100, 500]
-    assert assignments["r-reappear"]["last_observed_ns"] == [300, None]
     assert assignments["r-reappear"]["presence_intervals"] == [
-        {"start_ns": 100, "end_ns_exclusive": 300},
+        {"start_ns": 100, "end_ns_exclusive": 200},
         {"start_ns": 500, "end_ns_exclusive": None},
     ]
-    assert assignments["z-first"]["last_observed_ns"] == [500]
+    assert assignments["r-reappear"]["last_observed_ns"] == [200, None]
+    assert assignments["z-first"]["last_observed_ns"] == [400]
     assert assignments["a-later"]["first_observed_ns"] == [300]
+    assert assignments["sparse"]["node_symbol"] == "O1"
+    assert assignments["sparse"]["semantic_label_name"] == "Chair"
+    assert assignments["sparse"]["semantic_label"] == 5
+    assert assignments["sparse"]["semantic_observations"] == [
+        {
+            "timestamp_ns": 100,
+            "semantic_label_name": "Chair",
+            "semantic_label": 5,
+            "label_matched": True,
+        },
+        {
+            "timestamp_ns": 300,
+            "semantic_label_name": "Table",
+            "semantic_label": 7,
+            "label_matched": True,
+        },
+        {
+            "timestamp_ns": 500,
+            "semantic_label_name": "Table",
+            "semantic_label": 7,
+            "label_matched": True,
+        },
+    ]
 
     first_objects = {
         entry["entity_id"]: entry for entry in manifest["checkpoints"][0]["objects"]
     }
     assert first_objects["r-reappear"]["node_symbol"] == "O0"
-    assert first_objects["r-reappear"]["trajectory_sample_count"] == 0
+    assert first_objects["r-reappear"]["trajectory_sample_count"] == 1
+    assert first_objects["r-reappear"]["dynamic_track_eligible"] is True
     middle_objects = {
         entry["entity_id"]: entry for entry in manifest["checkpoints"][1]["objects"]
     }
     assert "r-reappear" not in middle_objects
-    assert middle_objects["z-first"]["trajectory_sample_count"] == 2
-    assert middle_objects["a-later"]["trajectory_sample_count"] == 0
+    assert middle_objects["z-first"]["trajectory_sample_count"] == 3
+    assert middle_objects["a-later"]["trajectory_sample_count"] == 1
+    assert middle_objects["a-later"]["dynamic_track_eligible"] is True
+    assert middle_objects["sparse"]["node_symbol"] == "O1"
+    assert middle_objects["sparse"]["semantic_label_name"] == "Table"
+    assert middle_objects["sparse"]["semantic_label"] == 7
     final_objects = {
         entry["entity_id"]: entry for entry in manifest["checkpoints"][2]["objects"]
     }
     assert final_objects["r-reappear"]["node_symbol"] == "O0"
     assert final_objects["r-reappear"]["first_observed_ns"] == [100, 500]
-    assert final_objects["r-reappear"]["last_observed_ns"] == [300, 501]
+    assert final_objects["r-reappear"]["last_observed_ns"] == [200, 501]
     assert final_objects["sparse"]["dynamic_track_eligible"] is False
     assert final_objects["sparse"]["trajectory_sample_count"] == 0
+    assert final_objects["a-later"]["dynamic_track_eligible"] is False
+    assert final_objects["a-later"]["trajectory_sample_count"] == 0
 
     for checkpoint in manifest["checkpoints"]:
         query = checkpoint["timestamp_ns"]
@@ -332,6 +452,61 @@ def test_prepares_stable_symbols_intervals_and_causal_native_tracks(
             "background_sha256"
         ]
     validate_temporal_bridge_manifest(manifest_path)
+
+
+def test_bridge_never_promotes_static_track_from_sample_count(tmp_path: Path) -> None:
+    temporal = _write_temporal_fixture(tmp_path / "temporal")
+    manifest = json.loads(temporal.read_text(encoding="utf-8"))
+    trajectory_path = temporal.parent / manifest["trajectories"]["path"]
+    rows = [
+        json.loads(line)
+        for line in trajectory_path.read_text(encoding="utf-8").splitlines()
+    ]
+    for row in rows:
+        if row["entity_id"] == "z-first":
+            row["dynamic_state"] = "static"
+    trajectory_path.write_text(
+        "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+    manifest["trajectories"] = _record(
+        trajectory_path, relative_to=temporal.parent
+    )
+    manifest["temporal_audit_counts"]["static_sample_count"] += 2
+    manifest["temporal_audit_counts"]["dynamic_sample_count"] -= 2
+    temporal.write_text(json.dumps(manifest, sort_keys=True) + "\n", encoding="utf-8")
+    labels = tmp_path / "labels.yaml"
+    labels.write_text(
+        "label_names: [{label: 0, name: Unknown}, {label: 5, name: Chair}, "
+        "{label: 7, name: Table}]\n",
+        encoding="utf-8",
+    )
+
+    manifest_path = prepare_temporal_bridge(temporal, labels, tmp_path / "bridge")
+    bridge = json.loads(manifest_path.read_text(encoding="utf-8"))
+    middle = next(
+        item
+        for item in bridge["checkpoints"][1]["objects"]
+        if item["entity_id"] == "z-first"
+    )
+    assert middle["dynamic_track_eligible"] is False
+    assert middle["trajectory_sample_count"] == 0
+
+
+def test_bridge_rejects_missing_explicit_frame_coverage(tmp_path: Path) -> None:
+    temporal = _write_temporal_fixture(tmp_path / "temporal")
+    manifest = json.loads(temporal.read_text(encoding="utf-8"))
+    manifest["sources"].pop("frame_coverage")
+    manifest.pop("frame_coverage")
+    temporal.write_text(json.dumps(manifest, sort_keys=True) + "\n", encoding="utf-8")
+    labels = tmp_path / "labels.yaml"
+    labels.write_text(
+        "label_names: [{label: 0, name: Unknown}, {label: 5, name: Chair}]\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="frame coverage"):
+        prepare_temporal_bridge(temporal, labels, tmp_path / "bridge")
 
 
 def test_rejects_checkpoint_schedule_mismatch(tmp_path: Path) -> None:
@@ -473,6 +648,66 @@ def test_bridge_validator_rejects_object_assignment_tampering(
         validate_temporal_bridge_manifest(manifest_path)
 
 
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda assignment: assignment["semantic_observations"].reverse(),
+        lambda assignment: assignment["semantic_observations"].pop(),
+        lambda assignment: assignment["semantic_observations"][0].update(
+            semantic_label_name="Table", semantic_label=7
+        ),
+    ],
+)
+def test_bridge_validator_rejects_semantic_history_tampering(
+    tmp_path: Path, mutate: Any
+) -> None:
+    temporal = _write_temporal_fixture(tmp_path / "temporal")
+    labels = tmp_path / "labels.yaml"
+    labels.write_text(
+        "label_names: [{label: 0, name: Unknown}, {label: 5, name: Chair}, "
+        "{label: 7, name: Table}]\n",
+        encoding="utf-8",
+    )
+    manifest_path = prepare_temporal_bridge(temporal, labels, tmp_path / "bridge")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assignment = next(
+        item for item in manifest["symbol_assignments"] if item["entity_id"] == "sparse"
+    )
+    mutate(assignment)
+    manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="semantic history"):
+        validate_temporal_bridge_manifest(manifest_path)
+
+
+def test_bridge_rejects_stable_id_type_conflict(tmp_path: Path) -> None:
+    temporal = _write_temporal_fixture(tmp_path / "temporal")
+    manifest = json.loads(temporal.read_text(encoding="utf-8"))
+    entities_path = temporal.parent / manifest["checkpoints"][2]["entities"]["path"]
+    records = [
+        json.loads(line)
+        for line in entities_path.read_text(encoding="utf-8").splitlines()
+    ]
+    sparse = next(record for record in records if record["entity_id"] == "sparse")
+    sparse["metadata"]["entity_type"] = "region"
+    entities_path.write_text(
+        "".join(json.dumps(record, sort_keys=True) + "\n" for record in records),
+        encoding="utf-8",
+    )
+    manifest["checkpoints"][2]["entities"] = _record(
+        entities_path, relative_to=temporal.parent
+    )
+    temporal.write_text(json.dumps(manifest, sort_keys=True) + "\n", encoding="utf-8")
+    labels = tmp_path / "labels.yaml"
+    labels.write_text(
+        "label_names: [{label: 0, name: Unknown}, {label: 5, name: Chair}]\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="type conflict"):
+        prepare_temporal_bridge(temporal, labels, tmp_path / "bridge")
+
+
 def test_rejects_temporal_trajectory_later_than_query(tmp_path: Path) -> None:
     temporal = _write_temporal_fixture(tmp_path / "temporal")
     manifest = json.loads(temporal.read_text(encoding="utf-8"))
@@ -492,7 +727,7 @@ def test_rejects_temporal_trajectory_later_than_query(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    with pytest.raises(ValueError, match="later than query"):
+    with pytest.raises(ValueError, match="frame coverage"):
         prepare_temporal_bridge(temporal, labels, tmp_path / "bridge")
 
 
@@ -517,7 +752,9 @@ def test_rejects_unknown_trajectory_fields(tmp_path: Path) -> None:
         prepare_temporal_bridge(temporal, labels, tmp_path / "bridge")
 
 
-def test_validator_rejects_single_sample_declared_as_dynamic(tmp_path: Path) -> None:
+def test_validator_rejects_trajectory_whose_last_sample_is_not_dynamic(
+    tmp_path: Path,
+) -> None:
     temporal = _write_temporal_fixture(tmp_path / "temporal")
     labels = tmp_path / "labels.yaml"
     labels.write_text(
@@ -543,7 +780,38 @@ def test_validator_rejects_single_sample_declared_as_dynamic(tmp_path: Path) -> 
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
 
-    with pytest.raises(ValueError, match="at least two native samples"):
+    with pytest.raises(ValueError, match="explicit|dynamic state"):
+        validate_temporal_bridge_manifest(manifest_path)
+
+
+def test_validator_rejects_implicit_state_in_earlier_trajectory_sample(
+    tmp_path: Path,
+) -> None:
+    temporal = _write_temporal_fixture(tmp_path / "temporal")
+    labels = tmp_path / "labels.yaml"
+    labels.write_text(
+        "label_names: [{label: 0, name: Unknown}, {label: 5, name: Chair}, "
+        "{label: 7, name: Table}]\n",
+        encoding="utf-8",
+    )
+    manifest_path = prepare_temporal_bridge(temporal, labels, tmp_path / "bridge")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    obj = next(
+        item
+        for item in manifest["checkpoints"][1]["objects"]
+        if item["entity_id"] == "z-first"
+    )
+    trajectory = manifest_path.parent / obj["trajectory_json"]
+    samples = json.loads(trajectory.read_text(encoding="utf-8"))
+    samples[0].pop("dynamic_state")
+    trajectory.write_text(json.dumps(samples) + "\n", encoding="utf-8")
+    obj["trajectory_sha256"] = hashlib.sha256(trajectory.read_bytes()).hexdigest()
+    obj["trajectory_byte_count"] = trajectory.stat().st_size
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+    with pytest.raises(ValueError, match="fields"):
         validate_temporal_bridge_manifest(manifest_path)
 
 

@@ -72,6 +72,9 @@ def test_cpp_importer_uses_stable_symbols_intervals_trajectory_and_ordered_updat
     assert "trajectory_timestamps" in text
     assert "trajectory_positions" in text
     assert "dynamic_track_eligible" in text
+    assert "dynamic_state_at_query" in text
+    assert "eligible != explicit_dynamic" in text
+    assert "trajectory.size() < 2" not in text
     assert 'manifest.value("dataset", "") != "TESSE-CD"' in text
     assert 'manifest.value("method", "") != "OVIV2"' in text
     assert "resolveBridgePath" in text
