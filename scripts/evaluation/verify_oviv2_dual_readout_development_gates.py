@@ -482,6 +482,262 @@ def _absolute_file_record(path: Path) -> dict[str, object]:
     }
 
 
+OwnedPath = tuple[Path, int, int, int, int]
+
+
+def _open_parent_directory(path: Path) -> tuple[int, str]:
+    absolute = Path(os.path.abspath(path))
+    flags = (
+        os.O_RDONLY
+        | getattr(os, "O_DIRECTORY", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+    )
+    descriptor = os.open(absolute.anchor, flags)
+    try:
+        for part in absolute.parts[1:-1]:
+            child = os.open(part, flags, dir_fd=descriptor)
+            os.close(descriptor)
+            descriptor = child
+        return descriptor, absolute.name
+    except BaseException:
+        os.close(descriptor)
+        raise
+
+
+def _owned_path(path: Path) -> OwnedPath:
+    descriptor, name = _open_parent_directory(path)
+    owned_descriptor: int | None = None
+    try:
+        metadata = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+        owned_descriptor = os.open(
+            name,
+            getattr(os, "O_PATH", os.O_RDONLY)
+            | getattr(os, "O_NOFOLLOW", 0)
+            | getattr(os, "O_CLOEXEC", 0),
+            dir_fd=descriptor,
+        )
+        opened = os.fstat(owned_descriptor)
+    finally:
+        os.close(descriptor)
+    if owned_descriptor is None or (opened.st_dev, opened.st_ino) != (
+        metadata.st_dev,
+        metadata.st_ino,
+    ):
+        if owned_descriptor is not None:
+            os.close(owned_descriptor)
+        raise GateVerificationError(f"owned path changed while observing: {path}")
+    return (
+        Path(os.path.abspath(path)),
+        metadata.st_dev,
+        metadata.st_ino,
+        stat.S_IFMT(metadata.st_mode),
+        owned_descriptor,
+    )
+
+
+def _create_owned_directory(path: Path) -> OwnedPath:
+    absolute = Path(os.path.abspath(path))
+    descriptor, name = _open_parent_directory(absolute)
+    try:
+        os.mkdir(name, dir_fd=descriptor)
+        metadata = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+        owned_descriptor = os.open(
+            name,
+            getattr(os, "O_PATH", os.O_RDONLY)
+            | getattr(os, "O_NOFOLLOW", 0)
+            | getattr(os, "O_CLOEXEC", 0),
+            dir_fd=descriptor,
+        )
+    finally:
+        os.close(descriptor)
+    if not stat.S_ISDIR(metadata.st_mode):
+        raise GateVerificationError(f"created path is not a directory: {absolute}")
+    return (
+        absolute,
+        metadata.st_dev,
+        metadata.st_ino,
+        stat.S_IFMT(metadata.st_mode),
+        owned_descriptor,
+    )
+
+
+def _clear_directory_descriptor(descriptor: int, label: Path) -> None:
+    try:
+        names = sorted(os.listdir(descriptor))
+    except OSError as exc:
+        raise GateVerificationError(f"cleanup unsafe: cannot list {label}") from exc
+    for name in names:
+        try:
+            before = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+        except OSError as exc:
+            raise GateVerificationError(f"cleanup unsafe: entry changed in {label}") from exc
+        if stat.S_ISDIR(before.st_mode):
+            flags = (
+                os.O_RDONLY
+                | getattr(os, "O_DIRECTORY", 0)
+                | getattr(os, "O_NOFOLLOW", 0)
+            )
+            try:
+                child = os.open(name, flags, dir_fd=descriptor)
+            except OSError as exc:
+                raise GateVerificationError(
+                    f"cleanup unsafe: directory changed in {label}"
+                ) from exc
+            try:
+                opened = os.fstat(child)
+                if (opened.st_dev, opened.st_ino) != (before.st_dev, before.st_ino):
+                    raise GateVerificationError(
+                        f"cleanup unsafe: directory replaced in {label}"
+                    )
+                _clear_directory_descriptor(child, label / name)
+            finally:
+                os.close(child)
+            current = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+            if (current.st_dev, current.st_ino) != (before.st_dev, before.st_ino):
+                raise GateVerificationError(
+                    f"cleanup unsafe: directory replaced in {label}"
+                )
+            os.rmdir(name, dir_fd=descriptor)
+        else:
+            current = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+            if (
+                current.st_dev,
+                current.st_ino,
+                stat.S_IFMT(current.st_mode),
+            ) != (
+                before.st_dev,
+                before.st_ino,
+                stat.S_IFMT(before.st_mode),
+            ):
+                raise GateVerificationError(
+                    f"cleanup unsafe: file replaced in {label}"
+                )
+            os.unlink(name, dir_fd=descriptor)
+
+
+def _remove_owned_path(witness: OwnedPath, *, recursive: bool = True) -> None:
+    path, device, inode, kind, owned_descriptor = witness
+    opened_owner = os.fstat(owned_descriptor)
+    if (opened_owner.st_dev, opened_owner.st_ino) != (device, inode):
+        raise GateVerificationError(f"cleanup unsafe: ownership changed: {path}")
+    descriptor, name = _open_parent_directory(path)
+    child: int | None = None
+    try:
+        current = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+        if (
+            current.st_dev,
+            current.st_ino,
+            stat.S_IFMT(current.st_mode),
+        ) != (device, inode, kind):
+            raise GateVerificationError(f"cleanup unsafe: owned path replaced: {path}")
+        if stat.S_ISDIR(current.st_mode):
+            child = os.open(
+                name,
+                os.O_RDONLY
+                | getattr(os, "O_DIRECTORY", 0)
+                | getattr(os, "O_NOFOLLOW", 0),
+                dir_fd=descriptor,
+            )
+            opened = os.fstat(child)
+            if (opened.st_dev, opened.st_ino) != (device, inode):
+                raise GateVerificationError(f"cleanup unsafe: owned path replaced: {path}")
+            if recursive:
+                _clear_directory_descriptor(child, path)
+            elif os.listdir(child):
+                raise GateVerificationError(
+                    f"cleanup unsafe: owned directory has unknown entries: {path}"
+                )
+            os.close(child)
+            child = None
+            current = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+            if (current.st_dev, current.st_ino) != (device, inode):
+                raise GateVerificationError(f"cleanup unsafe: owned path replaced: {path}")
+            os.rmdir(name, dir_fd=descriptor)
+        else:
+            current = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+            if (
+                current.st_dev,
+                current.st_ino,
+                stat.S_IFMT(current.st_mode),
+            ) != (device, inode, kind):
+                raise GateVerificationError(f"cleanup unsafe: owned path replaced: {path}")
+            os.unlink(name, dir_fd=descriptor)
+    except FileNotFoundError as exc:
+        raise GateVerificationError(f"cleanup unsafe: owned path disappeared: {path}") from exc
+    finally:
+        if child is not None:
+            os.close(child)
+        os.close(descriptor)
+
+
+def _cleanup_exact_transaction(
+    roots: list[OwnedPath],
+    observations: list[OwnedPath],
+    receipts: OwnedPath | None,
+    transaction: OwnedPath | None,
+) -> list[str]:
+    problems: list[str] = []
+    unsafe_paths: list[Path] = []
+    witnesses = [
+        *roots,
+        *observations,
+        *([receipts] if receipts else []),
+        *([transaction] if transaction else []),
+    ]
+    try:
+        for witness in reversed(roots):
+            try:
+                _remove_owned_path(witness)
+            except (GateVerificationError, OSError) as exc:
+                problems.append(str(exc))
+                unsafe_paths.append(witness[0])
+        for witness in reversed(observations):
+            try:
+                _remove_owned_path(witness)
+            except (GateVerificationError, OSError) as exc:
+                problems.append(str(exc))
+                unsafe_paths.append(witness[0])
+        if receipts is not None:
+            receipts_path = receipts[0]
+            receipts_unsafe = any(
+                path == receipts_path or receipts_path in path.parents
+                for path in unsafe_paths
+            )
+            if not receipts_unsafe:
+                try:
+                    _remove_owned_path(receipts, recursive=False)
+                except (GateVerificationError, OSError) as exc:
+                    problems.append(str(exc))
+                    unsafe_paths.append(receipts_path)
+        if transaction is not None:
+            transaction_path = transaction[0]
+            contains_unsafe = any(
+                path == transaction_path or transaction_path in path.parents
+                for path in unsafe_paths
+            )
+            if contains_unsafe:
+                problems.append(
+                    f"cleanup unsafe: preserving transaction containing replaced path: {transaction_path}"
+                )
+            else:
+                try:
+                    _remove_owned_path(transaction, recursive=False)
+                except (GateVerificationError, OSError) as exc:
+                    problems.append(str(exc))
+    finally:
+        for witness in witnesses:
+            try:
+                os.close(witness[4])
+            except OSError:
+                pass
+    return problems
+
+
+def _close_owned_paths(witnesses: list[OwnedPath]) -> None:
+    for witness in witnesses:
+        os.close(witness[4])
+
+
 def execute_exact_profile_transaction(
     specs: list[dict[str, object]],
     *,
@@ -496,112 +752,153 @@ def execute_exact_profile_transaction(
         raise GateVerificationError("exact execution spec inventory is invalid")
     if transaction_dir.exists() or transaction_dir.is_symlink():
         raise GateVerificationError("exact transaction directory would clobber data")
+    transaction_dir = Path(os.path.abspath(transaction_dir))
     receipts_dir = transaction_dir / "receipts"
-    receipts_dir.mkdir(parents=True)
     environment = os.environ.copy()
     records: list[dict[str, Any]] = []
     roots: list[Path] = []
-    for position, (profile, spec) in enumerate(
-        zip(EXACT_PROFILE_SEQUENCE, specs, strict=True)
-    ):
-        expected_fields = {
-            "profile", "config", "output_root", "freeze_manifest", "run_slot",
-            "source_manifest",
-        }
-        if not isinstance(spec, dict) or set(spec) != expected_fields:
-            raise GateVerificationError("exact execution spec fields are invalid")
-        if spec.get("profile") != profile:
-            raise GateVerificationError("exact execution spec sequence is invalid")
-        config = Path(str(spec["config"]))
-        root = Path(str(spec["output_root"]))
-        freeze = Path(str(spec["freeze_manifest"]))
-        source = Path(str(spec["source_manifest"]))
-        if any(not path.is_absolute() for path in (config, root, freeze, source)):
-            raise GateVerificationError("exact execution spec paths must be absolute")
-        if root.exists() or root.is_symlink():
-            raise GateVerificationError("exact execution output root would clobber data")
-        if any(root == previous or root in previous.parents or previous in root.parents for previous in roots):
-            raise GateVerificationError("exact execution output roots are not independent")
-        runner = (
-            repo / "scripts/evaluation/run_oviv2_t1_reference.py"
-            if profile == "reference"
-            else repo / "scripts/evaluation/run_oviv2_tesse_cd_v2.py"
-        ).resolve()
-        argv = [
-            python_executable, str(runner), "--config", str(config), "--output",
-            str(root), "--freeze-manifest", str(freeze), "--run-slot",
-            str(spec["run_slot"]),
-        ]
-        if profile == "reference":
-            argv.extend(
-                [
-                    "--receipt", str(root / "t1_exact_receipt.json"),
-                    "--source-manifest", str(source),
-                ]
-            )
-        process = popen_factory(
-            argv,
-            cwd=repo,
-            env=environment,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        stdout, stderr = process.communicate()
-        returncode = process.returncode
-        if returncode != 0:
-            detail = stderr.decode("utf-8", errors="replace").strip()
+    root_witnesses: list[OwnedPath] = []
+    observation_witnesses: list[OwnedPath] = []
+    transaction_witness: OwnedPath | None = None
+    receipts_witness: OwnedPath | None = None
+    try:
+        try:
+            transaction_witness = _create_owned_directory(transaction_dir)
+            receipts_witness = _create_owned_directory(receipts_dir)
+        except FileExistsError as exc:
             raise GateVerificationError(
-                f"exact execution failed ({profile}, {returncode}): {detail}"
+                "exact transaction directory would clobber data"
+            ) from exc
+        for position, (profile, spec) in enumerate(
+            zip(EXACT_PROFILE_SEQUENCE, specs, strict=True)
+        ):
+            expected_fields = {
+                "profile", "config", "output_root", "freeze_manifest", "run_slot",
+                "source_manifest",
+            }
+            if not isinstance(spec, dict) or set(spec) != expected_fields:
+                raise GateVerificationError("exact execution spec fields are invalid")
+            if spec.get("profile") != profile:
+                raise GateVerificationError("exact execution spec sequence is invalid")
+            config = Path(str(spec["config"]))
+            root = Path(str(spec["output_root"]))
+            freeze = Path(str(spec["freeze_manifest"]))
+            source = Path(str(spec["source_manifest"]))
+            if any(not path.is_absolute() for path in (config, root, freeze, source)):
+                raise GateVerificationError("exact execution spec paths must be absolute")
+            if root.exists() or root.is_symlink():
+                raise GateVerificationError("exact execution output root would clobber data")
+            if any(root == previous or root in previous.parents or previous in root.parents for previous in roots):
+                raise GateVerificationError("exact execution output roots are not independent")
+            runner = (
+                repo / "scripts/evaluation/run_oviv2_t1_reference.py"
+                if profile == "reference"
+                else repo / "scripts/evaluation/run_oviv2_tesse_cd_v2.py"
+            ).resolve()
+            argv = [
+                python_executable, str(runner), "--config", str(config), "--output",
+                str(root), "--freeze-manifest", str(freeze), "--run-slot",
+                str(spec["run_slot"]),
+            ]
+            if profile == "reference":
+                argv.extend(
+                    [
+                        "--receipt", str(root / "t1_exact_receipt.json"),
+                        "--source-manifest", str(source),
+                    ]
+                )
+            process: subprocess.Popen[bytes] | None = None
+            try:
+                process = popen_factory(
+                    argv,
+                    cwd=repo,
+                    env=environment,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+                stdout, stderr = process.communicate()
+            finally:
+                if root.exists() or root.is_symlink():
+                    root_witnesses.append(_owned_path(root))
+            if process is None:
+                raise GateVerificationError("exact execution process did not start")
+            returncode = process.returncode
+            if returncode != 0:
+                detail = stderr.decode("utf-8", errors="replace").strip()
+                raise GateVerificationError(
+                    f"exact execution failed ({profile}, {returncode}): {detail}"
+                )
+            if not root.is_dir() or root.is_symlink():
+                raise GateVerificationError("exact execution did not publish its output root")
+            record = _reopen_completed_execution(
+                profile,
+                root.resolve(strict=True),
+                argv,
+                process.pid,
+                returncode,
+                source,
             )
-        if not root.is_dir() or root.is_symlink():
-            raise GateVerificationError("exact execution did not publish its output root")
-        record = _reopen_completed_execution(
-            profile,
-            root.resolve(strict=True),
-            argv,
-            process.pid,
-            returncode,
-            source,
+            root_status = os.stat(root, follow_symlinks=False)
+            production_receipt = root / (
+                "t1_exact_receipt.json"
+                if profile == "reference"
+                else "execution_receipt.json"
+            )
+            observation = {
+                "schema_version": 1,
+                "format": "oviv2_exact_process_observation_v1",
+                "position": position,
+                "profile": profile,
+                "argv": argv,
+                "pid": process.pid,
+                "returncode": returncode,
+                "config": _absolute_file_record(config),
+                "freeze_manifest": _absolute_file_record(freeze),
+                "source_manifest": _absolute_file_record(source),
+                "output_root": str(root.resolve(strict=True)),
+                "root_device": root_status.st_dev,
+                "root_inode": root_status.st_ino,
+                "run_manifest": _absolute_file_record(root / "run_manifest.json"),
+                "production_receipt": _absolute_file_record(production_receipt),
+                "completed_execution": record,
+            }
+            observation_path = receipts_dir / f"{position:03d}-{profile}.json"
+            _atomic_json_no_replace(observation_path, observation)
+            observation_witnesses.append(_owned_path(observation_path))
+            record = {
+                **record,
+                "observation_receipt": _absolute_file_record(observation_path),
+            }
+            records.append(dict(record))
+            roots.append(root)
+            compare(root, root)
+            if position in {1, 3, 5, 7}:
+                compare(roots[0], root)
+            elif position in {2, 4, 6, 8}:
+                compare(roots[position - 1], root)
+            del stdout
+        result = verify_exact_profile_runs(records, compare=compare)
+        _close_owned_paths(
+            [
+                *root_witnesses,
+                *observation_witnesses,
+                receipts_witness,
+                transaction_witness,
+            ]
         )
-        root_status = os.stat(root, follow_symlinks=False)
-        production_receipt = root / (
-            "t1_exact_receipt.json"
-            if profile == "reference"
-            else "execution_receipt.json"
+        return result
+    except BaseException as error:
+        problems = _cleanup_exact_transaction(
+            root_witnesses,
+            observation_witnesses,
+            receipts_witness,
+            transaction_witness,
         )
-        observation = {
-            "schema_version": 1,
-            "format": "oviv2_exact_process_observation_v1",
-            "position": position,
-            "profile": profile,
-            "argv": argv,
-            "pid": process.pid,
-            "returncode": returncode,
-            "config": _absolute_file_record(config),
-            "freeze_manifest": _absolute_file_record(freeze),
-            "source_manifest": _absolute_file_record(source),
-            "output_root": str(root.resolve(strict=True)),
-            "root_device": root_status.st_dev,
-            "root_inode": root_status.st_ino,
-            "run_manifest": _absolute_file_record(root / "run_manifest.json"),
-            "production_receipt": _absolute_file_record(production_receipt),
-            "completed_execution": record,
-        }
-        observation_path = receipts_dir / f"{position:03d}-{profile}.json"
-        _atomic_json_no_replace(observation_path, observation)
-        record = {
-            **record,
-            "observation_receipt": _absolute_file_record(observation_path),
-        }
-        records.append(dict(record))
-        roots.append(root)
-        compare(root, root)
-        if position in {1, 3, 5, 7}:
-            compare(roots[0], root)
-        elif position in {2, 4, 6, 8}:
-            compare(roots[position - 1], root)
-        del stdout
-    return verify_exact_profile_runs(records, compare=compare)
+        if problems:
+            raise GateVerificationError(
+                f"{error}; cleanup unsafe: {'; '.join(problems)}"
+            ) from error
+        raise
 
 
 def _default_git(argv: tuple[str, ...], cwd: Path) -> bytes:

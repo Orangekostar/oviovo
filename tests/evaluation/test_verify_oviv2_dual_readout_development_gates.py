@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import stat
 import subprocess
 import sys
@@ -1059,6 +1060,274 @@ def test_exact_transaction_uses_popen_pid_argv_and_returncode(
     assert [json.loads(path.read_text())["pid"] for path in observations] == [
         pid for _, pid in launched
     ]
+
+
+def _failure_cleanup_harness(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    failure: str,
+    position: int,
+) -> tuple[list[dict[str, object]], Path, object, object]:
+    config = tmp_path / "config.json"
+    freeze = tmp_path / "freeze.json"
+    source = tmp_path / "source.json"
+    for path in (config, freeze, source):
+        path.write_text("{}\n")
+    specs = [
+        {
+            "profile": profile,
+            "config": str(config.resolve()),
+            "output_root": str((tmp_path / f"cleanup-run-{index}").resolve()),
+            "freeze_manifest": str(freeze.resolve()),
+            "run_slot": "apartment_run1",
+            "source_manifest": str(source.resolve()),
+        }
+        for index, profile in enumerate(gates.EXACT_PROFILE_SEQUENCE)
+    ]
+    transaction = tmp_path / "cleanup-transaction"
+    failed = False
+    launches = 0
+
+    class Process:
+        def __init__(self, returncode: int, pid: int) -> None:
+            self.returncode = returncode
+            self.pid = pid
+
+        def communicate(self) -> tuple[bytes, bytes]:
+            return b"", b"child failed" if self.returncode else b""
+
+    def popen(argv: list[str], **kwargs: object) -> Process:
+        nonlocal failed, launches
+        del kwargs
+        current = launches % len(specs)
+        launches += 1
+        output = Path(argv[5])
+        output.mkdir()
+        (output / "run_manifest.json").write_text("{}\n")
+        receipt = output / (
+            "t1_exact_receipt.json" if len(argv) == 14 else "execution_receipt.json"
+        )
+        receipt.write_text("{}\n")
+        should_fail = failure == "child" and current == position and not failed
+        if should_fail:
+            failed = True
+        return Process(9 if should_fail else 0, 20_000 + launches)
+
+    def reopen(
+        profile: str,
+        root: Path,
+        argv: list[str],
+        pid: int,
+        returncode: int,
+        source_manifest: Path,
+    ) -> dict[str, object]:
+        nonlocal failed
+        del source_manifest
+        current = int(root.name.rsplit("-", 1)[1])
+        if failure == "receipt" and current == position and not failed:
+            failed = True
+            raise gates.GateVerificationError("receipt failed")
+        return {
+            "profile": profile,
+            "argv": argv,
+            "pid": pid,
+            "returncode": returncode,
+            "code_commit": "a" * 40,
+            "source_manifest_sha256": "b" * 64,
+            "profile_config_binding": {
+                "config_sha256": "c" * 64,
+                "freeze_manifest_sha256": "d" * 64,
+                "algorithm_hash": "e" * 64,
+                "profile_sha256": "f" * 64,
+            },
+            "common_input_fingerprints": {
+                "source_manifest_sha256": "1" * 64,
+                "input_manifest_sha256": "2" * 64,
+                "schedule_sha256": "3" * 64,
+                "ground_truth_sha256": "4" * 64,
+                "source_bindings_sha256": "5" * 64,
+            },
+            "output_root": str(root),
+            "receipt_sha256": "6" * 64,
+            "run_manifest_sha256": "7" * 64,
+        }
+
+    compare_calls = 0
+
+    def compare(left: Path, right: Path) -> dict[str, object]:
+        nonlocal failed, compare_calls
+        compare_calls += 1
+        if failure == "compare" and compare_calls > position and not failed:
+            failed = True
+            raise gates.ArtifactMismatch("compare failed")
+        return {
+            "format": "oviv2_cumulative_exact_v1",
+            "checkpoint_frames": [2],
+            "inventory": [{"path": "x", "sha256": "8" * 64, "byte_count": 1}],
+            "root_sha256": "9" * 64,
+        }
+
+    monkeypatch.setattr(gates, "_reopen_completed_execution", reopen)
+    monkeypatch.setattr(
+        gates,
+        "verify_exact_profile_runs",
+        lambda executions, **kwargs: {"executions": executions},
+    )
+    return specs, transaction, popen, compare
+
+
+@pytest.mark.parametrize("position", [0, 4, 8])
+def test_exact_transaction_child_failure_cleans_and_retry_succeeds(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, position: int
+) -> None:
+    specs, transaction, popen, compare = _failure_cleanup_harness(
+        tmp_path, monkeypatch, failure="child", position=position
+    )
+    kwargs = {
+        "repo": gates.REPO_ROOT,
+        "python_executable": "/env/bin/python",
+        "transaction_dir": transaction,
+        "popen_factory": popen,
+        "compare": compare,
+    }
+    with pytest.raises(gates.GateVerificationError, match="child failed"):
+        gates.execute_exact_profile_transaction(specs, **kwargs)
+    assert not transaction.exists()
+    assert all(not Path(spec["output_root"]).exists() for spec in specs)
+
+    result = gates.execute_exact_profile_transaction(specs, **kwargs)
+    assert len(result["executions"]) == len(specs)
+
+
+@pytest.mark.parametrize("failure", ["compare", "receipt"])
+def test_exact_transaction_validation_failure_cleans_and_retry_succeeds(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str
+) -> None:
+    specs, transaction, popen, compare = _failure_cleanup_harness(
+        tmp_path, monkeypatch, failure=failure, position=4
+    )
+    kwargs = {
+        "repo": gates.REPO_ROOT,
+        "python_executable": "/env/bin/python",
+        "transaction_dir": transaction,
+        "popen_factory": popen,
+        "compare": compare,
+    }
+    with pytest.raises((gates.GateVerificationError, gates.ArtifactMismatch)):
+        gates.execute_exact_profile_transaction(specs, **kwargs)
+    assert not transaction.exists()
+    assert all(not Path(spec["output_root"]).exists() for spec in specs)
+    assert len(gates.execute_exact_profile_transaction(specs, **kwargs)["executions"]) == 9
+
+
+def test_exact_transaction_preserves_preexisting_transaction_and_root(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    specs, transaction, popen, compare = _failure_cleanup_harness(
+        tmp_path, monkeypatch, failure="child", position=0
+    )
+    transaction.mkdir()
+    (transaction / "owner.txt").write_text("keep")
+    with pytest.raises(gates.GateVerificationError, match="clobber"):
+        gates.execute_exact_profile_transaction(
+            specs, repo=gates.REPO_ROOT, python_executable="/env/bin/python",
+            transaction_dir=transaction, popen_factory=popen, compare=compare,
+        )
+    assert (transaction / "owner.txt").read_text() == "keep"
+
+    shutil.rmtree(transaction)
+    root = Path(specs[0]["output_root"])
+    root.mkdir()
+    (root / "owner.txt").write_text("keep")
+    with pytest.raises(gates.GateVerificationError, match="clobber"):
+        gates.execute_exact_profile_transaction(
+            specs, repo=gates.REPO_ROOT, python_executable="/env/bin/python",
+            transaction_dir=transaction, popen_factory=popen, compare=compare,
+        )
+    assert (root / "owner.txt").read_text() == "keep"
+    assert not transaction.exists()
+
+
+def test_exact_transaction_does_not_delete_replaced_root(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    specs, transaction, popen, compare = _failure_cleanup_harness(
+        tmp_path, monkeypatch, failure="receipt", position=0
+    )
+    original_reopen = gates._reopen_completed_execution
+
+    def replace_then_fail(*args: object, **kwargs: object) -> dict[str, object]:
+        root = args[1]
+        assert isinstance(root, Path)
+        shutil.rmtree(root)
+        root.mkdir()
+        (root / "replacement.txt").write_text("keep")
+        return original_reopen(*args, **kwargs)
+
+    monkeypatch.setattr(gates, "_reopen_completed_execution", replace_then_fail)
+    with pytest.raises(gates.GateVerificationError, match="cleanup unsafe"):
+        gates.execute_exact_profile_transaction(
+            specs, repo=gates.REPO_ROOT, python_executable="/env/bin/python",
+            transaction_dir=transaction, popen_factory=popen, compare=compare,
+        )
+    replacement = Path(specs[0]["output_root"])
+    assert (replacement / "replacement.txt").read_text() == "keep"
+    assert not transaction.exists()
+
+
+def test_exact_transaction_popen_start_failure_cleans_and_retry_succeeds(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    specs, transaction, successful_popen, compare = _failure_cleanup_harness(
+        tmp_path, monkeypatch, failure="child", position=99
+    )
+    failed = False
+
+    def popen(argv: list[str], **kwargs: object) -> object:
+        nonlocal failed
+        if not failed:
+            failed = True
+            output = Path(argv[5])
+            output.mkdir()
+            (output / "partial.txt").write_text("partial")
+            raise OSError("popen failed")
+        return successful_popen(argv, **kwargs)
+
+    kwargs = {
+        "repo": gates.REPO_ROOT,
+        "python_executable": "/env/bin/python",
+        "transaction_dir": transaction,
+        "popen_factory": popen,
+        "compare": compare,
+    }
+    with pytest.raises(OSError, match="popen failed"):
+        gates.execute_exact_profile_transaction(specs, **kwargs)
+    assert not transaction.exists()
+    assert all(not Path(spec["output_root"]).exists() for spec in specs)
+    assert len(gates.execute_exact_profile_transaction(specs, **kwargs)["executions"]) == 9
+
+
+def test_exact_transaction_mid_spec_failure_cleans_and_retry_succeeds(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    specs, transaction, popen, compare = _failure_cleanup_harness(
+        tmp_path, monkeypatch, failure="child", position=99
+    )
+    source = specs[4].pop("source_manifest")
+    kwargs = {
+        "repo": gates.REPO_ROOT,
+        "python_executable": "/env/bin/python",
+        "transaction_dir": transaction,
+        "popen_factory": popen,
+        "compare": compare,
+    }
+    with pytest.raises(gates.GateVerificationError, match="spec fields"):
+        gates.execute_exact_profile_transaction(specs, **kwargs)
+    assert not transaction.exists()
+    assert all(not Path(spec["output_root"]).exists() for spec in specs)
+    specs[4]["source_manifest"] = source
+    assert len(gates.execute_exact_profile_transaction(specs, **kwargs)["executions"]) == 9
 
 
 @pytest.mark.parametrize("mutation", ["duplicate_root", "ancestor_root", "argv", "receipt"])
