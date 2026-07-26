@@ -629,7 +629,6 @@ def _materialize_mutation_transaction(
             {
                 **config,
                 "algorithm_hash": algorithm,
-                "non_temporal_config_sha256": non_temporal,
             }
         )
     )
@@ -685,7 +684,7 @@ def _materialize_mutation_transaction(
         _bytes(
             {
                 "schema_version": 1,
-                "provenance": {"code_commit": "a" * 40, "algorithm_hash": algorithm},
+                "provenance": _production_receipt_provenance(algorithm),
                 "environment": {"pid": os.getpid()},
             }
         )
@@ -734,6 +733,27 @@ def _file_binding(path: Path, root: Path) -> dict[str, object]:
     }
 
 
+def _production_receipt_provenance(algorithm: str) -> dict[str, object]:
+    return {
+        "repository_commit": "a" * 40,
+        "repository_tree": "b" * 40,
+        "dirty_state_digest": hashlib.sha256(b"").hexdigest(),
+        "command": ["python", "run_oviv2_tesse_cd_v2.py", algorithm],
+        "hostname": "fixture-host",
+        "platform": "fixture-platform",
+        "machine": "x86_64",
+        "cuda_visible_devices": None,
+        "torch_cuda_version": "unavailable",
+        "cudnn_version": None,
+        "nvcc_version": [],
+        "gpu_inventory": [],
+        "library_versions": {
+            name: "fixture"
+            for name in ("numpy", "open3d", "torch", "scipy", "pillow")
+        },
+    }
+
+
 def test_every_temporal_scalar_runs_exact_cumulative_transaction(tmp_path: Path) -> None:
     paths = _fixture(tmp_path / "fixture")
     config = json.loads(paths["candidate_config"].read_text())
@@ -751,7 +771,7 @@ def test_every_temporal_scalar_runs_exact_cumulative_transaction(tmp_path: Path)
         (tmp_path / "baseline/normalized_run_config.json").read_text()
     )
     assert baseline_normalized["algorithm_hash"] == baseline_algorithm
-    assert baseline_normalized["non_temporal_config_sha256"] == baseline_non_temporal
+    assert non_temporal_config_sha256(baseline_normalized) == baseline_non_temporal
     assert json.loads(
         (tmp_path / "baseline/t1_exact_receipt.json").read_text()
     )["source_manifest"]["sha256"] == hashlib.sha256(
@@ -789,7 +809,7 @@ def test_every_temporal_scalar_runs_exact_cumulative_transaction(tmp_path: Path)
         )
         assert receipt["execution"]["input_fingerprints"]["config"] == hashlib.sha256(_bytes(mutated)).hexdigest(), path
         assert normalized["algorithm_hash"] != baseline_algorithm, path
-        assert normalized["non_temporal_config_sha256"] == baseline_non_temporal, path
+        assert non_temporal_config_sha256(normalized) == baseline_non_temporal, path
         assert receipt["cumulative_root_sha256"] == baseline_receipt["cumulative_root_sha256"], path
         assert audit == compare_cumulative_artifacts(tmp_path / "baseline", tmp_path / f"mutation-{position:03d}")
 
@@ -797,9 +817,9 @@ def test_every_temporal_scalar_runs_exact_cumulative_transaction(tmp_path: Path)
         tmp_path / "leaked", {**config, "temporal_readout": {**config["temporal_readout"], "execution_profile": "leaked"}},
         leak_temporal=True,
     )
-    assert json.loads(
-        (tmp_path / "leaked/normalized_run_config.json").read_text()
-    )["non_temporal_config_sha256"] == baseline_non_temporal
+    assert non_temporal_config_sha256(
+        json.loads((tmp_path / "leaked/normalized_run_config.json").read_text())
+    ) == baseline_non_temporal
     with pytest.raises(ArtifactMismatch, match="raw bytes"):
         compare_cumulative_artifacts(tmp_path / "baseline", tmp_path / "leaked")
 

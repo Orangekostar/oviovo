@@ -11,6 +11,9 @@ from scripts.evaluation.compare_oviv2_cumulative_artifacts import (
     ArtifactMismatch,
     compare_cumulative_artifacts,
 )
+from scripts.evaluation.evaluate_oviv2_tesse_occlusion import (
+    canonical_algorithm_hash,
+)
 
 
 def _sha(data: bytes) -> str:
@@ -41,6 +44,27 @@ def _file_record(path: Path, root: Path) -> dict[str, object]:
         "path": path.relative_to(root).as_posix(),
         "sha256": _sha(data),
         "byte_count": len(data),
+    }
+
+
+def _production_provenance(profile: str, *, commit: str = "a" * 40) -> dict[str, object]:
+    return {
+        "repository_commit": commit,
+        "repository_tree": "b" * 40,
+        "dirty_state_digest": _sha(b""),
+        "command": ["python", "run_oviv2_tesse_cd_v2.py", profile],
+        "hostname": "fixture-host",
+        "platform": "fixture-platform",
+        "machine": "x86_64",
+        "cuda_visible_devices": None,
+        "torch_cuda_version": "unavailable",
+        "cudnn_version": None,
+        "nvcc_version": [],
+        "gpu_inventory": [],
+        "library_versions": {
+            name: "fixture"
+            for name in ("numpy", "open3d", "torch", "scipy", "pillow")
+        },
     }
 
 
@@ -99,15 +123,21 @@ def _run(
     final.write_bytes(f"profile-final:{profile}".encode())
     inventory.append(final.relative_to(root).as_posix())
     normalized = root / "normalized_run_config.json"
-    normalized.write_bytes(
-        json.dumps({"algorithm_hash": _sha(profile.encode()), "profile": profile}, sort_keys=True).encode()
-        + b"\n"
-    )
+    normalized_config = {
+        "missing_observation_policy": "signed_depth",
+        "temporal_readout": {
+            "execution_profile": profile,
+            "lifecycle": {"confirm_hits": 2},
+        },
+    }
+    algorithm_hash = canonical_algorithm_hash(normalized_config)
+    normalized_config["algorithm_hash"] = algorithm_hash
+    normalized.write_bytes(json.dumps(normalized_config, sort_keys=True).encode() + b"\n")
     inventory.append(normalized.relative_to(root).as_posix())
     manifest = {
         "schema_version": 2,
         "protocol_id": "oviv2-tessecd-v2",
-        "algorithm_hash": _sha(profile.encode()),
+        "algorithm_hash": algorithm_hash,
         "code_commit": "a" * 40,
         "source_bindings": {"dataset": "fixture"},
         "normalized_run_config": _file_record(normalized, root),
@@ -122,7 +152,7 @@ def _run(
         json.dumps(
             {
                 "schema_version": 1,
-                "provenance": {"code_commit": "a" * 40, "profile": profile},
+                "provenance": _production_provenance(profile),
                 "environment": {"pid": len(profile)},
             },
             sort_keys=True,
@@ -259,6 +289,43 @@ def test_schema2_strictly_self_validates_identity_and_full_inventory(
         (right / "profile-only-extra.bin").write_bytes(b"undeclared")
     with pytest.raises(ArtifactMismatch, match="identity|receipt|source|inventory"):
         compare_cumulative_artifacts(left, right)
+
+
+@pytest.mark.parametrize("mode", ["root_schema", "self", "cross_profile"])
+def test_schema2_rejects_production_repository_commit_drift(
+    tmp_path: Path, mode: str
+) -> None:
+    left = _run(tmp_path / "a0", profile="a0")
+    right = _run(tmp_path / "a1", profile="a1")
+    receipt_path = right / "execution_receipt.json"
+    receipt = json.loads(receipt_path.read_text())
+    if mode == "root_schema":
+        receipt["provenance"]["unexpected"] = "field"
+    else:
+        receipt["provenance"]["repository_commit"] = "f" * 40
+    receipt_path.write_text(json.dumps(receipt, sort_keys=True) + "\n")
+    with pytest.raises(ArtifactMismatch, match="receipt.*identity|provenance"):
+        compare_cumulative_artifacts(
+            right if mode in {"root_schema", "self"} else left,
+            right,
+        )
+
+
+def test_schema2_recomputes_algorithm_hash_from_normalized_config(tmp_path: Path) -> None:
+    run = _run(tmp_path / "run", profile="a1")
+    normalized_path = run / "normalized_run_config.json"
+    normalized = json.loads(normalized_path.read_text())
+    stale_hash = normalized["algorithm_hash"]
+    normalized["temporal_readout"]["lifecycle"]["confirm_hits"] += 1
+    normalized_path.write_text(json.dumps(normalized, sort_keys=True) + "\n")
+    manifest_path = run / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["normalized_run_config"] = _file_record(normalized_path, run)
+    assert manifest["algorithm_hash"] == stale_hash
+    manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
+
+    with pytest.raises(ArtifactMismatch, match="algorithm identity"):
+        compare_cumulative_artifacts(run, run)
 
 
 def test_rejects_missing_or_extra_checkpoint(tmp_path: Path) -> None:

@@ -9,7 +9,35 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import stat
+import sys
 from typing import Any, Mapping, Sequence
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.evaluation.evaluate_oviv2_tesse_occlusion import (  # noqa: E402
+    canonical_algorithm_hash,
+)
+
+
+PROVENANCE_FIELDS = {
+    "repository_commit",
+    "repository_tree",
+    "dirty_state_digest",
+    "command",
+    "hostname",
+    "platform",
+    "machine",
+    "cuda_visible_devices",
+    "torch_cuda_version",
+    "cudnn_version",
+    "nvcc_version",
+    "gpu_inventory",
+    "library_versions",
+}
+PROVENANCE_LIBRARY_FIELDS = {"numpy", "open3d", "torch", "scipy", "pillow"}
 
 
 class ArtifactMismatch(ValueError):
@@ -181,6 +209,52 @@ def _json_object(data: bytes, label: str) -> dict[str, Any]:
     return value
 
 
+def _hex_id(value: object, lengths: tuple[int, ...]) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) in lengths
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
+def _validate_production_provenance(
+    value: object, *, manifest_commit: object
+) -> None:
+    if not isinstance(value, Mapping) or set(value) != PROVENANCE_FIELDS:
+        raise ArtifactMismatch("execution receipt provenance schema is invalid")
+    libraries = value.get("library_versions")
+    if (
+        not _hex_id(value.get("repository_commit"), (40, 64))
+        or value.get("repository_commit") != manifest_commit
+        or not _hex_id(value.get("repository_tree"), (40, 64))
+        or not _hex_id(value.get("dirty_state_digest"), (64,))
+        or not isinstance(value.get("command"), list)
+        or not value["command"]
+        or any(not isinstance(item, str) for item in value["command"])
+        or any(
+            not isinstance(value.get(field), str)
+            for field in ("hostname", "platform", "machine", "torch_cuda_version")
+        )
+        or (
+            value.get("cuda_visible_devices") is not None
+            and not isinstance(value["cuda_visible_devices"], str)
+        )
+        or (
+            value.get("cudnn_version") is not None
+            and type(value["cudnn_version"]) is not int
+        )
+        or any(
+            not isinstance(value.get(field), list)
+            or any(not isinstance(item, str) for item in value[field])
+            for field in ("nvcc_version", "gpu_inventory")
+        )
+        or not isinstance(libraries, Mapping)
+        or set(libraries) != PROVENANCE_LIBRARY_FIELDS
+        or any(not isinstance(item, str) for item in libraries.values())
+    ):
+        raise ArtifactMismatch("execution receipt provenance identity is invalid")
+
+
 def _schema2_run_identity(
     root: Path, manifest: Mapping[str, Any], all_files: Mapping[str, bytes]
 ) -> None:
@@ -198,7 +272,14 @@ def _schema2_run_identity(
     if normalized_path.as_posix() != "normalized_run_config.json":
         raise ArtifactMismatch("normalized run config path is invalid")
     normalized = _json_object(normalized_data, "normalized run config")
-    if normalized.get("algorithm_hash") != algorithm_hash:
+    try:
+        recomputed_algorithm_hash = canonical_algorithm_hash(normalized)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ArtifactMismatch("normalized run config algorithm identity is invalid") from exc
+    if (
+        normalized.get("algorithm_hash") != recomputed_algorithm_hash
+        or algorithm_hash != recomputed_algorithm_hash
+    ):
         raise ArtifactMismatch("normalized run config algorithm identity mismatch")
     receipt = _json_object(
         all_files.get("execution_receipt.json", b""), "execution receipt"
@@ -208,18 +289,21 @@ def _schema2_run_identity(
     if (
         set(receipt) not in (base_fields, frozen_fields)
         or receipt.get("schema_version") != 1
-        or not isinstance(receipt.get("provenance"), Mapping)
         or not isinstance(receipt.get("environment"), Mapping)
     ):
         raise ArtifactMismatch("execution receipt schema is invalid")
     manifest_commit = manifest.get("code_commit")
-    receipt_commit = receipt["provenance"].get("code_commit")
-    if receipt_commit is not None and receipt_commit != manifest_commit:
-        raise ArtifactMismatch("execution receipt code identity mismatch")
+    if not _hex_id(manifest_commit, (40, 64)):
+        raise ArtifactMismatch("run code identity is invalid")
+    _validate_production_provenance(
+        receipt.get("provenance"), manifest_commit=manifest_commit
+    )
     if set(receipt) == frozen_fields and (
         not isinstance(receipt["frozen_run_identity"], Mapping)
         or not isinstance(receipt["run_execution"], Mapping)
         or manifest.get("frozen_run_identity") != receipt["frozen_run_identity"]
+        or receipt["frozen_run_identity"].get("algorithm_hash")
+        != recomputed_algorithm_hash
     ):
         raise ArtifactMismatch("execution receipt frozen identity mismatch")
     source_bindings = manifest.get("source_bindings")
