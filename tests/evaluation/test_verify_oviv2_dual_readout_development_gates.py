@@ -69,8 +69,9 @@ class FakeGit:
 
 
 class SourceGit:
-    def __init__(self, objects: dict[str, bytes]) -> None:
+    def __init__(self, objects: dict[str, bytes], *, dirty: bool = False) -> None:
         self.objects = objects
+        self.dirty = dirty
 
     def __call__(self, argv: tuple[str, ...], cwd: Path) -> bytes:
         del cwd
@@ -81,7 +82,7 @@ class SourceGit:
             except KeyError as error:
                 raise gates.GateVerificationError(f"missing git object: {relative}") from error
         if argv[:3] == ("status", "--porcelain", "--"):
-            return b""
+            return b" M destination\n" if self.dirty else b""
         raise AssertionError(argv)
 
 
@@ -172,12 +173,132 @@ def test_source_manifest_fails_closed_on_unresolved_local_import(tmp_path: Path)
         )
 
 
+def test_source_manifest_rejects_missing_symbol_from_existing_package(
+    tmp_path: Path,
+) -> None:
+    repo, git, roots = _source_fixture(tmp_path)
+    git.objects[gates.CUMULATIVE_ROOTS[0]] = (
+        b"from src.pkg import definitely_missing\n"
+    )
+    with pytest.raises(gates.GateVerificationError, match="unresolved local import"):
+        gates.build_source_manifest(
+            repo=repo,
+            base_commit=gates.CUMULATIVE_BASE_COMMIT,
+            roots=roots,
+            git=git,
+        )
+
+
+@pytest.mark.parametrize(
+    ("symbol", "raises"),
+    [("ExportedClass", False), ("EXPORTED_VALUE", False), ("MissingClass", True)],
+)
+def test_source_manifest_proves_symbols_exported_by_regular_module(
+    tmp_path: Path, symbol: str, raises: bool
+) -> None:
+    repo, git, roots = _source_fixture(tmp_path)
+    git.objects["src/pkg/dep.py"] = (
+        b"class ExportedClass:\n    pass\n\nEXPORTED_VALUE = 1\n"
+    )
+    git.objects[gates.CUMULATIVE_ROOTS[0]] = (
+        f"from src.pkg.dep import {symbol}\n".encode()
+    )
+    if raises:
+        with pytest.raises(gates.GateVerificationError, match="unresolved local import"):
+            gates.build_source_manifest(
+                repo=repo,
+                base_commit=gates.CUMULATIVE_BASE_COMMIT,
+                roots=roots,
+                git=git,
+            )
+    else:
+        manifest = gates.build_source_manifest(
+            repo=repo,
+            base_commit=gates.CUMULATIVE_BASE_COMMIT,
+            roots=roots,
+            git=git,
+        )
+        assert "src/pkg/dep.py" in manifest["files"]
+
+
+def test_source_manifest_accepts_package_reexport_and_child_module(
+    tmp_path: Path,
+) -> None:
+    repo, git, roots = _source_fixture(tmp_path)
+    git.objects["src/pkg/dep.py"] = b"class ExportedClass:\n    pass\n"
+    git.objects["src/pkg/__init__.py"] = (
+        b"from src.pkg.dep import ExportedClass\n__all__ = ['ExportedClass']\n"
+    )
+    git.objects[gates.CUMULATIVE_ROOTS[0]] = (
+        b"from src.pkg import ExportedClass, dep\n"
+    )
+    manifest = gates.build_source_manifest(
+        repo=repo,
+        base_commit=gates.CUMULATIVE_BASE_COMMIT,
+        roots=roots,
+        git=git,
+    )
+    assert {"src/pkg/__init__.py", "src/pkg/dep.py"} <= set(manifest["files"])
+
+
 def test_source_manifest_rejects_reduced_cumulative_roots(tmp_path: Path) -> None:
     manifest, repo, git = _valid_source_manifest(tmp_path)
     removed = manifest["roots"].pop()
     manifest["files"].pop(removed)
     with pytest.raises(gates.GateVerificationError, match="cumulative roots"):
         gates.verify_source_manifest(manifest, repo=repo, git=git)
+
+
+def test_write_source_manifest_existing_clean_same_is_noop(tmp_path: Path) -> None:
+    destination = tmp_path / "manifest.json"
+    payload = {"schema_version": 1, "files": {"a.py": "0" * 64}}
+    destination.write_bytes(gates._canonical_json_bytes(payload))
+    before = destination.stat()
+
+    gates.write_source_manifest(
+        repo=tmp_path, destination=destination, payload=payload, git=SourceGit({})
+    )
+
+    after = destination.stat()
+    assert (after.st_ino, after.st_mtime_ns) == (before.st_ino, before.st_mtime_ns)
+
+
+def test_write_source_manifest_rejects_dirty_destination(tmp_path: Path) -> None:
+    destination = tmp_path / "manifest.json"
+    destination.write_text("keep\n", encoding="utf-8")
+    with pytest.raises(gates.GateVerificationError, match="dirty"):
+        gates.write_source_manifest(
+            repo=tmp_path,
+            destination=destination,
+            payload={"ok": True},
+            git=SourceGit({}, dirty=True),
+        )
+    assert destination.read_text(encoding="utf-8") == "keep\n"
+
+
+def test_write_source_manifest_creates_new_file_atomically(tmp_path: Path) -> None:
+    destination = tmp_path / "nested/manifest.json"
+    payload = {"ok": True}
+    gates.write_source_manifest(
+        repo=tmp_path, destination=destination, payload=payload, git=SourceGit({})
+    )
+    assert destination.read_bytes() == gates._canonical_json_bytes(payload)
+    assert not list(destination.parent.glob(".manifest.json.*.tmp"))
+
+
+def test_write_source_manifest_rejects_symlink(tmp_path: Path) -> None:
+    target = tmp_path / "target.json"
+    target.write_text("keep\n", encoding="utf-8")
+    destination = tmp_path / "manifest.json"
+    destination.symlink_to(target)
+    with pytest.raises((gates.GateVerificationError, FileExistsError), match="symlink"):
+        gates.write_source_manifest(
+            repo=tmp_path,
+            destination=destination,
+            payload={"ok": True},
+            git=SourceGit({}),
+        )
+    assert target.read_text(encoding="utf-8") == "keep\n"
 
 
 class PassingRunner:

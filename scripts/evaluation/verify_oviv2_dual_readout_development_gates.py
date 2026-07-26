@@ -115,6 +115,45 @@ def _module_for_path(path: str) -> tuple[str, bool]:
     return "", False
 
 
+def _assigned_names(target: ast.expr) -> set[str]:
+    if isinstance(target, ast.Name):
+        return {target.id}
+    if isinstance(target, (ast.Tuple, ast.List)):
+        return set().union(*(_assigned_names(item) for item in target.elts))
+    return set()
+
+
+def _top_level_exports(payload: bytes, *, path: str) -> tuple[set[str], set[str] | None]:
+    try:
+        tree = ast.parse(payload, filename=path)
+    except (SyntaxError, ValueError) as error:
+        raise GateVerificationError(f"cannot parse source imports: {path}") from error
+    exports: set[str] = set()
+    explicit_all: set[str] | None = None
+    for node in tree.body:
+        if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            exports.add(node.name)
+        elif isinstance(node, ast.Assign):
+            for target in node.targets:
+                exports.update(_assigned_names(target))
+            if any(isinstance(target, ast.Name) and target.id == "__all__" for target in node.targets):
+                if isinstance(node.value, (ast.List, ast.Tuple, ast.Set)) and all(
+                    isinstance(item, ast.Constant) and isinstance(item.value, str)
+                    for item in node.value.elts
+                ):
+                    explicit_all = {item.value for item in node.value.elts}
+        elif isinstance(node, ast.AnnAssign):
+            exports.update(_assigned_names(node.target))
+        elif isinstance(node, ast.Import):
+            for alias in node.names:
+                exports.add(alias.asname or alias.name.split(".", 1)[0])
+        elif isinstance(node, ast.ImportFrom):
+            for alias in node.names:
+                if alias.name != "*":
+                    exports.add(alias.asname or alias.name)
+    return exports, explicit_all
+
+
 def _local_import_closure(
     roots: tuple[str, ...], read: Callable[[str], bytes | None]
 ) -> dict[str, bytes]:
@@ -171,14 +210,37 @@ def _local_import_closure(
                 if not base or base.split(".", 1)[0] not in LOCAL_IMPORT_PREFIXES:
                     continue
                 base_found = resolve(base, required=False)
-                child_found = False
+                base_exports: set[str] = set()
+                explicit_all: set[str] | None = None
+                if base_found is not None:
+                    base_payload = read(base_found)
+                    if base_payload is None:
+                        raise GateVerificationError(
+                            f"source disappeared while resolving import: {base}"
+                        )
+                    base_exports, explicit_all = _top_level_exports(
+                        base_payload, path=base_found
+                    )
                 for alias in node.names:
-                    if alias.name != "*":
-                        child_found = resolve(
-                            f"{base}.{alias.name}", required=False
-                        ) is not None or child_found
-                if base_found is None and not child_found:
-                    raise GateVerificationError(f"unresolved local import: {base}")
+                    if alias.name == "*":
+                        if (
+                            base_found is None
+                            or explicit_all is None
+                            or not explicit_all <= base_exports
+                        ):
+                            raise GateVerificationError(
+                                f"unresolved local import: {base}.*"
+                            )
+                        continue
+                    child_found = resolve(
+                        f"{base}.{alias.name}", required=False
+                    )
+                    if child_found is None and (
+                        base_found is None or alias.name not in base_exports
+                    ):
+                        raise GateVerificationError(
+                            f"unresolved local import: {base}.{alias.name}"
+                        )
     return dict(sorted(closure.items()))
 
 
@@ -426,9 +488,7 @@ def _atomic_json_no_replace(
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.parent.is_symlink() or not path.parent.is_dir():
         raise GateVerificationError("output parent must be a regular directory")
-    encoded = (
-        json.dumps(payload, indent=2, sort_keys=True, allow_nan=False) + "\n"
-    ).encode("utf-8")
+    encoded = _canonical_json_bytes(payload)
     validate_before_publish()
     descriptor, temporary_name = tempfile.mkstemp(
         prefix=f".{path.name}.", suffix=".tmp", dir=path.parent
@@ -470,6 +530,44 @@ def _atomic_json_no_replace(
             except OSError:
                 continue
         raise
+
+
+def _canonical_json_bytes(payload: dict[str, Any]) -> bytes:
+    return (
+        json.dumps(payload, indent=2, sort_keys=True, allow_nan=False) + "\n"
+    ).encode("utf-8")
+
+
+def write_source_manifest(
+    *,
+    repo: Path,
+    destination: Path,
+    payload: dict[str, Any],
+    git: GitRunner = _default_git,
+) -> Path:
+    repo = repo.resolve(strict=True)
+    if not destination.is_absolute():
+        destination = repo / destination
+    try:
+        relative = destination.relative_to(repo).as_posix()
+    except ValueError as error:
+        raise GateVerificationError("source manifest destination must be inside repo") from error
+    if destination.is_symlink():
+        raise GateVerificationError("source manifest destination must not be a symlink")
+    if git(("status", "--porcelain", "--", relative), repo):
+        raise GateVerificationError("source manifest destination is dirty")
+    encoded = _canonical_json_bytes(payload)
+    if destination.exists():
+        current = _regular_file_bytes(
+            destination.parent, destination.name, DEFAULT_MAX_INPUT_BYTES
+        )
+        if current != encoded:
+            raise GateVerificationError(
+                "clean source manifest destination conflicts with generated content"
+            )
+        return destination
+    _atomic_json_no_replace(destination, payload)
+    return destination
 
 
 def generate_evidence(
@@ -592,14 +690,12 @@ def main() -> int:
     try:
         repo = args.repo.resolve(strict=True)
         if args.write_source_manifest is not None:
-            destination = args.write_source_manifest
-            if not destination.is_absolute():
-                destination = repo / destination
-            relative = destination.relative_to(repo).as_posix()
-            if _default_git(("status", "--porcelain", "--", relative), repo):
-                raise GateVerificationError("source manifest destination is dirty")
             manifest = build_source_manifest(repo=repo, base_commit=args.base_commit)
-            _atomic_json_no_replace(destination, manifest)
+            write_source_manifest(
+                repo=repo,
+                destination=args.write_source_manifest,
+                payload=manifest,
+            )
         elif args.verify_source_manifest is not None:
             source = args.verify_source_manifest
             if not source.is_absolute():
