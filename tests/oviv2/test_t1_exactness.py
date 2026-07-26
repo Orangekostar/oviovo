@@ -17,6 +17,23 @@ from tests.oviv2.test_dual_readout import _cumulative, _frame, _temporal_config
 from src.oviv2.tracking import LocalTrackerConfig
 
 
+def test_project_class_detection_rejects_generic_and_typing_aliases() -> None:
+    from types import GenericAlias
+    import typing
+
+    from src.oviv2.t1_exactness import _is_project_class
+
+    project_meta = type("ProjectMeta", (type,), {})
+    project_class = project_meta(
+        "ProjectClass", (), {"__module__": "src.oviv2.alias_probe"}
+    )
+    assert _is_project_class(project_class) is True
+    assert _is_project_class(list[int]) is False
+    assert _is_project_class(GenericAlias(dict, (str, int))) is False
+    assert _is_project_class(typing.Optional[int]) is False
+    assert _is_project_class(typing.List[int]) is False
+
+
 def _inputs() -> tuple[Frame, tuple[FrameObservation, ...]]:
     frame = Frame(
         frame_id=0, timestamp=1.0,

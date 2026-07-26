@@ -275,7 +275,8 @@ def _is_project_function(function: FunctionType) -> bool:
 
 
 def _is_project_class(value: object) -> bool:
-    if not isinstance(value, type):
+    value_type = type(value)
+    if type not in type.__getattribute__(value_type, "__mro__"):
         return False
     module_name = type.__getattribute__(value, "__module__")
     return type(module_name) is str and module_name.startswith("src.")
