@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
-from dataclasses import FrozenInstanceError
+from dataclasses import FrozenInstanceError, replace
 
 import pytest
 
@@ -237,6 +237,60 @@ def test_direct_config_construction_defaults_to_safe_a4(
     )
 
     assert direct.execution_profile is ExecutionProfile.A4
+
+
+def test_execution_profile_remains_the_fourth_positional_argument(
+    valid_config: dict[str, object],
+) -> None:
+    parsed = temporal_config_from_json(valid_config)
+
+    direct = TemporalReadoutConfig(
+        parsed.lifecycle,
+        parsed.association,
+        parsed.geometry,
+        ExecutionProfile.A2,
+    )
+
+    assert direct.execution_profile is ExecutionProfile.A2
+
+
+def test_small_direct_config_round_trips_and_runtime_normalizes(
+    valid_config: dict[str, object],
+) -> None:
+    from src.oviv2.temporal_runtime import TemporalCurrentRuntime
+    from src.oviv2.tracking import LocalTrackerConfig
+
+    parsed = temporal_config_from_json(valid_config)
+    small_geometry = replace(
+        parsed.geometry,
+        maximum_entities=4,
+        maximum_object_voxels=32,
+        maximum_visibility_points_per_entity=32,
+        background_block_count=128,
+    )
+    direct = TemporalReadoutConfig(
+        parsed.lifecycle,
+        parsed.association,
+        small_geometry,
+        execution_profile=ExecutionProfile.A2,
+    )
+
+    normalized = temporal_config_from_json(temporal_config_to_json(direct))
+    runtime = TemporalCurrentRuntime(
+        "scene",
+        direct,
+        LocalTrackerConfig(
+            confirm_hits=2,
+            max_age_frames=3,
+            min_voxel_overlap=0.0,
+            max_centroid_distance_m=1.0,
+        ),
+    )
+
+    assert normalized == direct
+    assert runtime.config == direct
+    assert direct.proposal.maximum_recovered_proposals == 4
+    assert direct.background_ledger.maximum_journal_blocks == 128
 
 
 @pytest.mark.parametrize("value", ["a5", "A4", 4, None, {"id": "a4"}])

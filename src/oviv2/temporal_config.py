@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Mapping
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass, fields
 from enum import Enum
 from numbers import Real
 
@@ -217,29 +217,58 @@ class TemporalReadoutConfig:
     lifecycle: TemporalLifecycleConfig
     association: TemporalAssociationConfig
     geometry: TemporalGeometryConfig
-    proposal: TemporalProposalConfig = field(
-        default_factory=lambda: TemporalProposalConfig(32, 16, 0.25, 0.1)
-    )
-    identity: TemporalIdentityConfig = field(
-        default_factory=lambda: TemporalIdentityConfig(1000, 600, 0.8, 3.0)
-    )
-    dynamic_state: TemporalDynamicConfig = field(
-        default_factory=lambda: TemporalDynamicConfig(2, 0.1, 0.7, 10)
-    )
-    motion: TemporalMotionConfig = field(
-        default_factory=lambda: TemporalMotionConfig(0.6, 0.25, True)
-    )
-    geometry_epoch: TemporalGeometryEpochConfig = field(
-        default_factory=lambda: TemporalGeometryEpochConfig(4, 1000)
-    )
-    background_ledger: TemporalBackgroundLedgerConfig = field(
-        default_factory=lambda: TemporalBackgroundLedgerConfig(50000, 2, 2, 1, 8)
-    )
     execution_profile: ExecutionProfile = ExecutionProfile.A4
+    proposal: TemporalProposalConfig | None = None
+    identity: TemporalIdentityConfig | None = None
+    dynamic_state: TemporalDynamicConfig | None = None
+    motion: TemporalMotionConfig | None = None
+    geometry_epoch: TemporalGeometryEpochConfig | None = None
+    background_ledger: TemporalBackgroundLedgerConfig | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.execution_profile, ExecutionProfile):
             raise TypeError("execution_profile must be an ExecutionProfile")
+        if self.proposal is None:
+            object.__setattr__(
+                self,
+                "proposal",
+                TemporalProposalConfig(
+                    32, min(16, self.geometry.maximum_entities), 0.25, 0.1
+                ),
+            )
+        if self.identity is None:
+            object.__setattr__(
+                self,
+                "identity",
+                TemporalIdentityConfig(
+                    max(1000, self.geometry.maximum_entities), 600, 0.8, 3.0
+                ),
+            )
+        if self.dynamic_state is None:
+            object.__setattr__(
+                self, "dynamic_state", TemporalDynamicConfig(2, 0.1, 0.7, 10)
+            )
+        if self.motion is None:
+            object.__setattr__(
+                self, "motion", TemporalMotionConfig(0.6, 0.25, True)
+            )
+        if self.geometry_epoch is None:
+            assert self.identity is not None
+            object.__setattr__(
+                self,
+                "geometry_epoch",
+                TemporalGeometryEpochConfig(
+                    4, min(1000, self.identity.maximum_identities * 4)
+                ),
+            )
+        if self.background_ledger is None:
+            object.__setattr__(
+                self,
+                "background_ledger",
+                TemporalBackgroundLedgerConfig(
+                    min(50000, self.geometry.background_block_count), 2, 2, 1, 8
+                ),
+            )
 
 
 def _require_mapping(value: object, path: str) -> Mapping[str, object]:
