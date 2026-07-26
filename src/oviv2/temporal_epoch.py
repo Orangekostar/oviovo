@@ -100,12 +100,13 @@ class GeometryEpoch:
             config,
             object_to_world=estimate.object_to_world,
         )
+        readout_valid = self.readout_valid or submap != self.submap
         return GeometryEpoch(
             self.entity_id,
             self.epoch_id,
             estimate.object_to_world,
             submap,
-            True,
+            readout_valid,
             estimate.decision,
         )
 
@@ -114,9 +115,8 @@ class GeometryEpoch:
             raise TypeError("evidence must be a TemporalEvidenceKind")
         if evidence is TemporalEvidenceKind.VISIBLE_ABSENT:
             readout_valid = False
-        elif evidence is TemporalEvidenceKind.PRESENT:
-            readout_valid = True
         elif evidence in (
+            TemporalEvidenceKind.PRESENT,
             TemporalEvidenceKind.OCCLUDED,
             TemporalEvidenceKind.OUT_OF_VIEW,
             TemporalEvidenceKind.DEPTH_UNKNOWN,

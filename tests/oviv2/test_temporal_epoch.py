@@ -97,6 +97,46 @@ def test_accepted_estimate_integrates_in_same_epoch_without_mutating_inputs() ->
     np.testing.assert_array_equal(points, original)
 
 
+def test_invalid_epoch_empty_accepted_integration_does_not_revive_readout() -> None:
+    epoch = _epoch(readout_valid=False)
+
+    updated = epoch.integrate(
+        _estimate(MotionDecision.TRANSLATION_ACCEPTED),
+        np.empty((0, 3)),
+        frame_id=2,
+        config=_config(),
+    )
+
+    assert updated.readout_valid is False
+    assert updated.submap == epoch.submap
+
+
+def test_invalid_epoch_nonempty_accepted_integration_revives_readout() -> None:
+    updated = _epoch(readout_valid=False).integrate(
+        _estimate(MotionDecision.TRANSLATION_ACCEPTED),
+        np.asarray([[0.3, 0.0, 0.0]]),
+        frame_id=2,
+        config=_config(),
+    )
+
+    assert updated.readout_valid is True
+
+
+def test_invalid_epoch_does_not_revive_when_capacity_discards_observation() -> None:
+    config = _config(maximum_object_voxels=1)
+    established = _epoch().integrate(
+        _estimate(), np.asarray([[0.3, 0.0, 0.0]]), frame_id=2, config=config
+    )
+    invalid = established.apply_evidence(TemporalEvidenceKind.VISIBLE_ABSENT)
+
+    unchanged = invalid.integrate(
+        _estimate(), np.asarray([[1.3, 0.0, 0.0]]), frame_id=3, config=config
+    )
+
+    assert unchanged.submap == invalid.submap
+    assert unchanged.readout_valid is False
+
+
 def test_rejected_motion_cannot_integrate_into_existing_epoch() -> None:
     epoch = _epoch()
     before = epoch.submap.local_points_xyz.tobytes(), epoch.submap.weights.tobytes()
@@ -123,7 +163,7 @@ def test_epoch_rejects_integration_for_different_entity() -> None:
         (TemporalEvidenceKind.OCCLUDED, True),
         (TemporalEvidenceKind.OUT_OF_VIEW, True),
         (TemporalEvidenceKind.DEPTH_UNKNOWN, True),
-        (TemporalEvidenceKind.PRESENT, True),
+        (TemporalEvidenceKind.PRESENT, False),
     ],
 )
 def test_evidence_updates_readout_fail_closed(
@@ -143,6 +183,14 @@ def test_neutral_evidence_does_not_revive_invalid_epoch_and_unknown_is_rejected(
         assert invalid.apply_evidence(evidence).readout_valid is False
     with pytest.raises(TypeError, match="evidence"):
         invalid.apply_evidence("occluded")  # type: ignore[arg-type]
+
+
+def test_visible_absent_then_present_does_not_revive_without_geometry_update() -> None:
+    invalid = _epoch().apply_evidence(TemporalEvidenceKind.VISIBLE_ABSENT)
+
+    present = invalid.apply_evidence(TemporalEvidenceKind.PRESENT)
+
+    assert present.readout_valid is False
 
 
 def test_new_epoch_retains_identity_and_uses_only_current_observation() -> None:

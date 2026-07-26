@@ -541,6 +541,24 @@ def estimate_object_translation(
     )
 
 
+def _stable_centered_rank(points: np.ndarray) -> int | None:
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+        centered = points - points[0]
+        if not np.all(np.isfinite(centered)):
+            return None
+        scale = float(np.max(np.abs(centered)))
+        if scale == 0.0:
+            return 0
+        normalized = centered / scale
+    if not np.all(np.isfinite(normalized)):
+        return None
+    try:
+        with np.errstate(over="raise", invalid="raise", divide="raise"):
+            return int(np.linalg.matrix_rank(normalized))
+    except (FloatingPointError, ValueError, np.linalg.LinAlgError):
+        return None
+
+
 def estimate_object_motion(
     submap: ObjectSubmap,
     points_world: np.ndarray,
@@ -578,7 +596,13 @@ def estimate_object_motion(
     source = submap.local_points_xyz
     if source.shape[0] < minimum_points or target.shape[0] < minimum_points:
         return fallback
-    if np.linalg.matrix_rank(source - source.mean(axis=0)) < 2 or np.linalg.matrix_rank(target - target.mean(axis=0)) < 2:
+    source_rank = _stable_centered_rank(source)
+    target_rank = _stable_centered_rank(target)
+    if source_rank is None or target_rank is None:
+        return _motion_result(
+            previous_pose, MotionDecision.REJECTED, 0.0, diagnostic_rmse
+        )
+    if source_rank < 2 or target_rank < 2:
         return fallback
 
     try:

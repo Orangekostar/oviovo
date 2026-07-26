@@ -419,6 +419,35 @@ def test_motion_point_count_degeneracy_and_invalid_icp_transform_fall_back(
     assert result.object_to_world[0, 3] == 11.0
 
 
+def test_extreme_finite_geometry_is_rejected_without_numeric_warning() -> None:
+    maximum = float(np.finfo(np.float64).max)
+    points = np.asarray(
+        [[maximum, 0.0, 0.0], [maximum, 1.0, 0.0], [-maximum, 0.0, 1.0]]
+    )
+    submap = ObjectSubmap(
+        (0.0, 0.0, 0.0),
+        ((-1, 0, 1), (1, 0, 0), (1, 1, 0)),
+        points[[2, 0, 1]],
+        np.ones(3),
+        np.zeros(3, dtype=np.int64),
+    )
+    previous = np.eye(4)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        result = estimate_object_motion(
+            submap,
+            points,
+            (0.1, 0.0, 0.0),
+            _config(),
+            previous_object_to_world=previous,
+        )
+
+    assert result.decision is MotionDecision.REJECTED
+    np.testing.assert_array_equal(result.object_to_world, previous)
+    assert np.isfinite(result.fitness) and np.isfinite(result.rmse_m)
+
+
 def test_motion_uses_configured_correspondence_distance(monkeypatch: pytest.MonkeyPatch) -> None:
     submap = _submap(np.asarray([[0, 0, 0], [1, 0, 0], [0, 1, 0]]))
     captured: list[float] = []
