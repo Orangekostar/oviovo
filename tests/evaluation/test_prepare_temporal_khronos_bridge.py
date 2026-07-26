@@ -758,6 +758,9 @@ def test_consistency_sidecar_contains_complete_canonical_context(
         lambda payload: payload["samples"][0].update(
             centroid_xyz=["invalid", 0.0, 1.0]
         ),
+        lambda payload: payload["samples"][0].update(
+            centroid_xyz=[True, 0.0, 1.0]
+        ),
         lambda payload: payload["samples"][0].update(dynamic_state="moving"),
         lambda payload: payload["samples"][0].update(timestamp_ns=True),
         lambda payload: payload["lifecycle_events"][0].update(before="missing"),
@@ -791,6 +794,20 @@ def test_bridge_manifest_rejects_symlinked_consistency_sidecar(
 
     with pytest.raises(ValueError, match="symlink"):
         validate_temporal_bridge_manifest(manifest_path)
+
+
+def test_consistency_replica_normalizes_integer_and_float_centroid_numbers(
+    tmp_path: Path,
+) -> None:
+    manifest_path = _prepared_bridge(tmp_path)
+
+    def use_integer_coordinate(payload: dict[str, Any]) -> None:
+        coordinate = payload["samples"][0]["centroid_xyz"][0]
+        assert coordinate == 1.0
+        payload["samples"][0]["centroid_xyz"][0] = int(coordinate)
+
+    _rewrite_consistency(manifest_path, use_integer_coordinate)
+    validate_temporal_bridge_manifest(manifest_path)
 
 
 @pytest.mark.parametrize(("field", "value"), [("dataset", "other"), ("method", "DUALMAP")])
@@ -956,6 +973,88 @@ def test_rejects_unknown_trajectory_fields(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="trajectory fields"):
         prepare_temporal_bridge(temporal, labels, tmp_path / "bridge")
+
+
+def test_rejects_bool_centroid_in_resigned_source_trajectory(
+    tmp_path: Path,
+) -> None:
+    temporal = _write_temporal_fixture(tmp_path / "temporal")
+    manifest = json.loads(temporal.read_text(encoding="utf-8"))
+    trajectory = temporal.parent / manifest["trajectories"]["path"]
+    rows = trajectory.read_text(encoding="utf-8").splitlines()
+    sample = json.loads(rows[0])
+    assert sample["centroid_xyz"][0] == 1.0
+    sample["centroid_xyz"][0] = True
+    rows[0] = json.dumps(sample, sort_keys=True)
+    trajectory.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    manifest["trajectories"] = _record(
+        trajectory, relative_to=temporal.parent
+    )
+    temporal.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    labels = tmp_path / "labels.yaml"
+    labels.write_text(
+        "label_names: [{label: 0, name: Unknown}, {label: 5, name: Chair}]\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="centroid"):
+        prepare_temporal_bridge(temporal, labels, tmp_path / "bridge")
+
+
+def test_validator_rejects_bool_centroid_in_rehashed_bridge_trajectory(
+    tmp_path: Path,
+) -> None:
+    manifest_path = _prepared_bridge(tmp_path)
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    obj = manifest["checkpoints"][0]["objects"][0]
+    trajectory = manifest_path.parent / obj["trajectory_json"]
+    samples = json.loads(trajectory.read_text(encoding="utf-8"))
+    assert samples[0]["centroid_xyz"][0] == 1.0
+    samples[0]["centroid_xyz"][0] = True
+    trajectory.write_text(
+        json.dumps(samples, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    obj["trajectory_sha256"] = hashlib.sha256(trajectory.read_bytes()).hexdigest()
+    obj["trajectory_byte_count"] = trajectory.stat().st_size
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="trajectory sample"):
+        validate_temporal_bridge_manifest(manifest_path)
+
+
+@pytest.mark.parametrize("first_coordinate", [1, 1.0])
+def test_accepts_integer_or_float_centroid_numbers(
+    tmp_path: Path,
+    first_coordinate: int | float,
+) -> None:
+    temporal = _write_temporal_fixture(tmp_path / "temporal")
+    manifest = json.loads(temporal.read_text(encoding="utf-8"))
+    trajectory = temporal.parent / manifest["trajectories"]["path"]
+    rows = trajectory.read_text(encoding="utf-8").splitlines()
+    sample = json.loads(rows[0])
+    sample["centroid_xyz"][0] = first_coordinate
+    rows[0] = json.dumps(sample, sort_keys=True)
+    trajectory.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    manifest["trajectories"] = _record(
+        trajectory, relative_to=temporal.parent
+    )
+    temporal.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    labels = tmp_path / "labels.yaml"
+    labels.write_text(
+        "label_names: [{label: 0, name: Unknown}, {label: 5, name: Chair}]\n",
+        encoding="utf-8",
+    )
+
+    output = prepare_temporal_bridge(temporal, labels, tmp_path / "bridge")
+    validate_temporal_bridge_manifest(output)
 
 
 def test_validator_rejects_trajectory_whose_last_sample_is_not_dynamic(

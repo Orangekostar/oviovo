@@ -83,8 +83,7 @@ std::string readDescriptorOnce(int descriptor, const std::string& label) {
   return bytes;
 }
 
-std::string readRelativeFileOnce(const std::string& value,
-                                 const std::string& label) {
+int openRelativeFile(const std::string& value, const std::string& label) {
   const auto components = relativeComponents(value);
   int directory = dup(bridge_root_fd);
   if (directory < 0) {
@@ -111,14 +110,12 @@ std::string readRelativeFileOnce(const std::string& value,
     }
     close(directory);
     directory = -1;
-    try {
-      const std::string bytes = readDescriptorOnce(descriptor, label);
+    struct stat status {};
+    if (fstat(descriptor, &status) != 0 || !S_ISREG(status.st_mode)) {
       close(descriptor);
-      return bytes;
-    } catch (...) {
-      close(descriptor);
-      throw;
+      throw std::runtime_error(label + " is not a regular file");
     }
+    return descriptor;
   } catch (...) {
     if (directory >= 0) {
       close(directory);
@@ -127,10 +124,21 @@ std::string readRelativeFileOnce(const std::string& value,
   }
 }
 
-std::string resolveBridgePath(const std::string& value) {
-  const std::string ignored = readRelativeFileOnce(value, "declared artifact");
-  static_cast<void>(ignored);
-  return (bridge_root / std::filesystem::path(value)).string();
+std::string readRelativeFileOnce(const std::string& value,
+                                 const std::string& label) {
+  const int descriptor = openRelativeFile(value, label);
+  try {
+    const std::string bytes = readDescriptorOnce(descriptor, label);
+    close(descriptor);
+    return bytes;
+  } catch (...) {
+    close(descriptor);
+    throw;
+  }
+}
+
+std::string resolveBridgePath(int descriptor) {
+  return "/proc/self/fd/" + std::to_string(descriptor);
 }
 
 Json parseStrictJson(const std::string& bytes, const std::string& label) {
@@ -506,7 +514,11 @@ void validateTemporalConsistency(const Json& manifest) {
   }
 }
 
-Points loadPoints(const std::string& path) {
+Points loadPointsFromDescriptor(int descriptor, const std::string& label) {
+  if (lseek(descriptor, 0, SEEK_SET) < 0) {
+    throw std::runtime_error("failed to rewind " + label);
+  }
+  const std::string path = resolveBridgePath(descriptor);
   pcl::PointCloud<pcl::PointXYZ> cloud;
   if (pcl::io::loadPLYFile(path, cloud) != 0) {
     throw std::runtime_error("failed to load PLY: " + path);
@@ -520,6 +532,18 @@ Points loadPoints(const std::string& path) {
     points.emplace_back(point.x, point.y, point.z);
   }
   return points;
+}
+
+Points loadPoints(const std::string& relative_path, const std::string& label) {
+  const int descriptor = openRelativeFile(relative_path, label);
+  try {
+    Points points = loadPointsFromDescriptor(descriptor, label);
+    close(descriptor);
+    return points;
+  } catch (...) {
+    close(descriptor);
+    throw;
+  }
 }
 
 Point centroid(const Points& points) {
@@ -563,7 +587,8 @@ void loadTrajectory(const Json& entry,
       throw std::runtime_error("trajectory timestamps are not causal and increasing");
     }
     const auto xyz = sample.at("centroid_xyz");
-    if (xyz.size() != 3) {
+    if (!xyz.is_array() || xyz.size() != 3 || !isFiniteNumber(xyz.at(0)) ||
+        !isFiniteNumber(xyz.at(1)) || !isFiniteNumber(xyz.at(2))) {
       throw std::runtime_error("trajectory centroid is not xyz");
     }
     attributes.trajectory_timestamps.push_back(timestamp_ns);
@@ -583,8 +608,8 @@ DynamicSceneGraph::Ptr buildGraph(const Json& checkpoint) {
   auto graph = DynamicSceneGraph::fromNames(layers);
   const uint64_t timestamp_ns = checkpoint.at("timestamp_ns").get<uint64_t>();
 
-  const Points background =
-      loadPoints(resolveBridgePath(checkpoint.at("background_ply").get<std::string>()));
+  const Points background = loadPoints(
+      checkpoint.at("background_ply").get<std::string>(), "bridge background PLY");
   auto mesh = std::make_shared<spark_dsg::Mesh>();
   mesh->resizeVertices(background.size());
   for (size_t index = 0; index < background.size(); ++index) {
@@ -593,8 +618,8 @@ DynamicSceneGraph::Ptr buildGraph(const Json& checkpoint) {
   graph->setMesh(mesh);
 
   for (const auto& entry : checkpoint.at("objects")) {
-    const Points points =
-        loadPoints(resolveBridgePath(entry.at("points_ply").get<std::string>()));
+    const Points points = loadPoints(
+        entry.at("points_ply").get<std::string>(), "bridge object PLY");
     if (points.empty()) {
       throw std::runtime_error("current object has no points");
     }

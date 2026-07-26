@@ -136,6 +136,16 @@ def test_cpp_importer_delays_output_creation_until_all_inputs_validate() -> None
     assert validate_position < output_position
 
 
+def test_cpp_importer_binds_ply_consumption_to_verified_descriptor() -> None:
+    text = CPP.read_text(encoding="utf-8")
+
+    assert "openRelativeFile(" in text
+    assert '"/proc/self/fd/" + std::to_string(descriptor)' in text
+    assert "lseek(descriptor, 0, SEEK_SET)" in text
+    assert "loadPointsFromDescriptor" in text
+    assert "close(descriptor);" in text
+
+
 def test_stage_and_build_command_target_only_khronos_eval(tmp_path: Path) -> None:
     workspace = _fake_workspace(tmp_path / "ws")
 

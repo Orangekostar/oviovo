@@ -241,6 +241,38 @@ def _timestamp_matches(value: float, timestamp_ns: int) -> bool:
     )
 
 
+def _strict_centroid_xyz(value: object, *, label: str) -> list[float]:
+    if not isinstance(value, list) or len(value) != 3:
+        raise ValueError(f"{label} centroid is invalid")
+    centroid: list[float] = []
+    for component in value:
+        if isinstance(component, bool) or not isinstance(component, (int, float)):
+            raise ValueError(f"{label} centroid is invalid")
+        try:
+            normalized = float(component)
+        except (OverflowError, ValueError) as error:
+            raise ValueError(f"{label} centroid is invalid") from error
+        if not math.isfinite(normalized):
+            raise ValueError(f"{label} centroid is invalid")
+        centroid.append(normalized)
+    return centroid
+
+
+def _typed_json_equal(left: object, right: object) -> bool:
+    if type(left) is not type(right):
+        return False
+    if isinstance(left, dict):
+        return left.keys() == right.keys() and all(
+            _typed_json_equal(left[key], right[key]) for key in left
+        )
+    if isinstance(left, list):
+        return len(left) == len(right) and all(
+            _typed_json_equal(left_item, right_item)
+            for left_item, right_item in zip(left, right)
+        )
+    return left == right
+
+
 def _presence_runs(
     positions: Sequence[int], checkpoints: Sequence[Mapping[str, Any]]
 ) -> list[dict[str, int | None]]:
@@ -410,14 +442,14 @@ def _load_trajectories(
         if key in seen:
             raise ValueError("duplicate temporal trajectory sample")
         seen.add(key)
-        centroid = np.asarray(record.get("centroid_xyz"), dtype=np.float64)
-        if centroid.shape != (3,) or not np.all(np.isfinite(centroid)):
-            raise ValueError("temporal trajectory centroid is invalid")
+        centroid = _strict_centroid_xyz(
+            record.get("centroid_xyz"), label="temporal trajectory"
+        )
         trajectories.setdefault(entity_id, []).append(
             {
                 **record,
                 "entity_id": entity_id,
-                "centroid_xyz": centroid.tolist(),
+                "centroid_xyz": centroid,
             }
         )
     for entity_id, samples in trajectories.items():
@@ -494,15 +526,20 @@ def _normalized_consistency_records(
     records: Sequence[Mapping[str, Any]],
     source_to_entity: Mapping[str, str],
 ) -> list[dict[str, Any]]:
-    normalized = [
-        {
+    normalized = []
+    for record in records:
+        item = {
             **record,
             "entity_id": source_to_entity.get(
                 str(record["entity_id"]), str(record["entity_id"])
             ),
         }
-        for record in records
-    ]
+        if "centroid_xyz" in item:
+            item["centroid_xyz"] = _strict_centroid_xyz(
+                item["centroid_xyz"], label="temporal consistency"
+            )
+            item["motion_confidence"] = float(item["motion_confidence"])
+        normalized.append(item)
     return sorted(
         normalized,
         key=lambda record: (int(record["frame_index"]), str(record["entity_id"])),
@@ -542,7 +579,7 @@ def _validate_temporal_consistency_records(
         or not isinstance(events, list)
     ):
         raise ValueError("temporal consistency records are invalid")
-    if coverage != list(expected_coverage):
+    if not _typed_json_equal(coverage, list(expected_coverage)):
         raise ValueError("temporal consistency coverage mismatch")
     previous_timestamp = 0
     for frame, record in enumerate(coverage):
@@ -561,12 +598,12 @@ def _validate_temporal_consistency_records(
             raise ValueError("temporal consistency coverage is invalid")
         previous_timestamp = record["timestamp_ns"]
     if (
-        query_timestamps != list(expected_query_timestamps)
+        not _typed_json_equal(query_timestamps, list(expected_query_timestamps))
         or any(type(timestamp) is not int or timestamp <= 0 for timestamp in query_timestamps)
         or query_timestamps != sorted(set(query_timestamps))
     ):
         raise ValueError("temporal consistency query timestamps mismatch")
-    if dict(audit) != dict(expected_audit):
+    if not _typed_json_equal(dict(audit), dict(expected_audit)):
         raise ValueError("temporal consistency audit mismatch")
     sample_states: dict[tuple[str, int], tuple[bool, int]] = {}
     sample_keys: list[tuple[int, str]] = []
@@ -581,10 +618,9 @@ def _validate_temporal_consistency_records(
         geometry_epoch = sample.get("geometry_epoch")
         observation_count = sample.get("observation_count")
         confidence = sample.get("motion_confidence")
-        try:
-            centroid = np.asarray(sample.get("centroid_xyz"), dtype=np.float64)
-        except (TypeError, ValueError):
-            centroid = np.empty((0,), dtype=np.float64)
+        _strict_centroid_xyz(
+            sample.get("centroid_xyz"), label="temporal consistency sample"
+        )
         if not (
             isinstance(entity_id, str)
             and entity_id
@@ -592,8 +628,6 @@ def _validate_temporal_consistency_records(
             and 0 <= frame < len(coverage)
             and type(timestamp) is int
             and timestamp == coverage[frame]["timestamp_ns"]
-            and centroid.shape == (3,)
-            and np.all(np.isfinite(centroid))
             and type(observation_count) is int
             and observation_count >= 1
             and sample.get("dynamic_state") in {"static", "dynamic", "unknown"}
@@ -691,9 +725,21 @@ def _validate_temporal_consistency_records(
             sample["readout_valid"] is False for sample in samples
         ),
     }
-    if dict(audit) != computed_audit:
+    if not _typed_json_equal(dict(audit), computed_audit):
         raise ValueError("temporal consistency audit counts are invalid")
-    if samples != list(expected_samples) or events != list(expected_events):
+    canonical_samples = []
+    for sample in samples:
+        canonical_sample = dict(sample)
+        canonical_sample["centroid_xyz"] = _strict_centroid_xyz(
+            sample["centroid_xyz"], label="temporal consistency sample"
+        )
+        canonical_sample["motion_confidence"] = float(
+            sample["motion_confidence"]
+        )
+        canonical_samples.append(canonical_sample)
+    if not _typed_json_equal(canonical_samples, list(expected_samples)) or not (
+        _typed_json_equal(events, list(expected_events))
+    ):
         raise ValueError("temporal consistency source replica mismatch")
 
 
@@ -1125,15 +1171,15 @@ def validate_temporal_bridge_manifest(manifest_path: Path) -> dict[str, Any]:
             for sample in trajectory:
                 if not isinstance(sample, Mapping) or frozenset(sample) != _TRAJECTORY_FIELDS:
                     raise ValueError("bridge trajectory sample fields are invalid")
-                centroid = np.asarray(sample.get("centroid_xyz"), dtype=np.float64)
+                centroid = _strict_centroid_xyz(
+                    sample.get("centroid_xyz"), label="bridge trajectory sample"
+                )
                 sample_timestamp = sample.get("timestamp_ns")
                 if not (
                     sample.get("entity_id") == assignment["source_entity_id"]
                     and type(sample.get("frame_index")) is int
                     and type(sample_timestamp) is int
                     and sample_timestamp > previous_sample_timestamp
-                    and centroid.shape == (3,)
-                    and np.all(np.isfinite(centroid))
                     and type(sample.get("observation_count")) is int
                     and sample["observation_count"] >= 1
                     and sample.get("dynamic_state") in {"static", "dynamic", "unknown"}
