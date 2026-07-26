@@ -93,6 +93,7 @@ EXACT_EXECUTION_FIELDS = {
     "source_manifest_sha256",
     "input_fingerprints",
     "output_root",
+    "receipt_sha256",
 }
 
 
@@ -105,6 +106,7 @@ def _exact_execution(record: object) -> dict[str, Any]:
     source = record.get("source_manifest_sha256")
     inputs = record.get("input_fingerprints")
     output = record.get("output_root")
+    receipt_sha256 = record.get("receipt_sha256")
     if not isinstance(argv, list) or not argv or any(
         not isinstance(item, str) or not item for item in argv
     ):
@@ -130,7 +132,95 @@ def _exact_execution(record: object) -> dict[str, Any]:
         raise GateVerificationError("exact execution input binding is invalid")
     if not isinstance(output, str) or not Path(output).is_absolute():
         raise GateVerificationError("exact execution output binding is invalid")
+    if (
+        not isinstance(receipt_sha256, str)
+        or len(receipt_sha256) != 64
+        or any(character not in "0123456789abcdef" for character in receipt_sha256)
+    ):
+        raise GateVerificationError("exact execution receipt binding is invalid")
     return dict(record)
+
+
+def _validate_exact_argv(record: Mapping[str, Any], root: Path) -> None:
+    profile = str(record["profile"])
+    argv = record["argv"]
+    expected_runner = (
+        REPO_ROOT / "scripts/evaluation/run_oviv2_t1_reference.py"
+        if profile == "reference"
+        else REPO_ROOT / "scripts/evaluation/run_oviv2_tesse_cd_v2.py"
+    ).resolve()
+    expected_flags = ("--config", "--output", "--freeze-manifest", "--run-slot")
+    expected_length = 14 if profile == "reference" else 10
+    if (
+        len(argv) != expected_length
+        or not Path(argv[0]).is_absolute()
+        or Path(argv[1]) != expected_runner
+        or tuple(argv[2:10:2]) != expected_flags
+        or argv[5] != str(root)
+        or any(not Path(argv[index]).is_absolute() for index in (3, 5, 7))
+        or argv[9] not in {
+            "apartment_run1", "apartment_run2", "office_run1", "office_run2"
+        }
+    ):
+        raise GateVerificationError("exact execution argv is not canonical")
+    if profile == "reference" and (
+        tuple(argv[10:14:2]) != ("--receipt", "--source-manifest")
+        or argv[11] != str(root / "t1_exact_receipt.json")
+        or not Path(argv[13]).is_absolute()
+    ):
+        raise GateVerificationError("reference execution argv is not canonical")
+
+
+def _bind_exact_receipt(
+    record: dict[str, Any],
+    *,
+    compare: Callable[[Path, Path], dict[str, Any]],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    raw_root = record["output_root"]
+    try:
+        root = Path(raw_root).resolve(strict=True)
+    except OSError as exc:
+        raise GateVerificationError("exact execution root is missing") from exc
+    if str(root) != raw_root or not root.is_dir():
+        raise GateVerificationError("exact execution root is not canonical")
+    _validate_exact_argv(record, root)
+    receipt_path = root / "t1_exact_receipt.json"
+    try:
+        receipt_data = _regular_file_bytes(
+            root, receipt_path.name, DEFAULT_MAX_INPUT_BYTES
+        )
+        receipt = json.loads(
+            receipt_data.decode("utf-8"), object_pairs_hook=_strict_json_object
+        )
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise GateVerificationError("exact execution receipt is invalid") from exc
+    if _sha256(receipt_data) != record["receipt_sha256"]:
+        raise GateVerificationError("exact execution receipt hash mismatch")
+    expected_execution = {
+        key: value for key, value in record.items() if key != "receipt_sha256"
+    }
+    if (
+        not isinstance(receipt, dict)
+        or set(receipt) != {
+            "schema_version", "format", "execution", "artifact_inventory",
+            "checkpoint_frames", "cumulative_root_sha256",
+        }
+        or receipt.get("schema_version") != 1
+        or receipt.get("format") != "oviv2_t1_exact_execution_receipt_v1"
+        or receipt.get("execution") != expected_execution
+    ):
+        raise GateVerificationError("exact execution receipt binding mismatch")
+    try:
+        audit = compare(root, root)
+    except (ArtifactMismatch, KeyError, TypeError) as exc:
+        raise GateVerificationError(f"exact execution artifact mismatch: {exc}") from exc
+    if (
+        receipt.get("artifact_inventory") != audit.get("inventory")
+        or receipt.get("checkpoint_frames") != audit.get("checkpoint_frames")
+        or receipt.get("cumulative_root_sha256") != audit.get("root_sha256")
+    ):
+        raise GateVerificationError("exact execution receipt artifact mismatch")
+    return record, audit
 
 
 def verify_exact_profile_runs(
@@ -139,12 +229,23 @@ def verify_exact_profile_runs(
     compare: Callable[[Path, Path], dict[str, Any]] = compare_cumulative_artifacts,
 ) -> dict[str, Any]:
     """Verify an independently executed, interleaved T1/A0-A4 transaction."""
-    records = [_exact_execution(record) for record in executions]
+    records_and_audits = [
+        _bind_exact_receipt(_exact_execution(record), compare=compare)
+        for record in executions
+    ]
+    records = [record for record, _ in records_and_audits]
     sequence = tuple(record["profile"] for record in records)
     if sequence != EXACT_PROFILE_SEQUENCE:
         raise GateVerificationError("exact execution profile sequence is invalid")
     if len({record["pid"] for record in records}) != len(records):
         raise GateVerificationError("exact executions must use independent PIDs")
+    roots = [Path(record["output_root"]) for record in records]
+    if len(set(roots)) != len(roots) or any(
+        left in right.parents or right in left.parents
+        for position, left in enumerate(roots)
+        for right in roots[position + 1 :]
+    ):
+        raise GateVerificationError("exact execution roots must be independent")
     binding = (
         records[0]["code_commit"],
         records[0]["source_manifest_sha256"],

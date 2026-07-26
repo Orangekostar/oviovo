@@ -503,6 +503,41 @@ def _metric(value: object, name: str, source: str) -> dict[str, Any]:
     return {"available": True, "value": _finite(value, name), "reason": "available", "source": source}
 
 
+def _validate_evidence_file_records(
+    records: object,
+    expected_paths: Sequence[str],
+    label: str,
+    witnesses: list[PublicationWitness],
+    *,
+    expected_hashes: Mapping[str, str] | None = None,
+) -> None:
+    if not isinstance(records, list) or len(records) != len(expected_paths):
+        raise ValueError(f"{label} inventory is not exact")
+    paths: list[str] = []
+    for record in records:
+        if not isinstance(record, Mapping) or set(record) != {"path", "sha256", "bytes"}:
+            raise ValueError(f"{label} record schema is not exact")
+        path = record.get("path")
+        if not isinstance(path, str):
+            raise ValueError(f"{label} path is invalid")
+        paths.append(path)
+    if paths != list(expected_paths) or len(paths) != len(set(paths)):
+        raise ValueError(f"{label} path inventory is not canonical")
+    for record, relative in zip(records, expected_paths, strict=True):
+        snapshot = _snapshot(REPO_ROOT / relative, label, parse_json=False)
+        digest = hashlib.sha256(snapshot.data).hexdigest()
+        if (
+            record["sha256"] != digest
+            or record["bytes"] != len(snapshot.data)
+            or (
+                expected_hashes is not None
+                and digest != expected_hashes[relative]
+            )
+        ):
+            raise ValueError(f"{label} hash/byte binding mismatch")
+        witnesses.append(snapshot)
+
+
 def _gate_evidence(
     snapshot: Snapshot,
     name: str,
@@ -564,6 +599,25 @@ def _gate_evidence(
     trusted = _snapshot(trusted_path, "trusted T1 source manifest")
     _record_matches(source_record, trusted, "trusted T1 source manifest", path_required=True)
     witnesses.append(trusted)
+    trusted_files = trusted.payload.get("files")
+    if not isinstance(trusted_files, Mapping) or any(
+        not isinstance(path, str) or not isinstance(digest, str)
+        for path, digest in trusted_files.items()
+    ):
+        raise ValueError("trusted source manifest files are invalid")
+    _validate_evidence_file_records(
+        protected,
+        tuple(trusted_files),
+        f"{name} protected files",
+        witnesses,
+        expected_hashes=trusted_files,
+    )
+    _validate_evidence_file_records(
+        tests,
+        (*T1_TEST_FILES, *DETERMINISM_TEST_FILES),
+        f"{name} test sources",
+        witnesses,
+    )
     exact = evidence["cumulative_exact"]
     if (
         not isinstance(exact, Mapping)
@@ -607,9 +661,10 @@ def _gate_evidence(
     if not isinstance(executions, list) or len(executions) != len(EXACT_PROFILE_SEQUENCE):
         raise ValueError(f"{name} cumulative execution inventory is invalid")
     pids: set[int] = set()
+    execution_roots: list[Path] = []
     source_sha = str(source_record["sha256"])
     for profile, execution in zip(EXACT_PROFILE_SEQUENCE, executions, strict=True):
-        if not isinstance(execution, Mapping) or set(execution) != {"profile", "argv", "pid", "code_commit", "source_manifest_sha256", "input_fingerprints", "output_root"}:
+        if not isinstance(execution, Mapping) or set(execution) != {"profile", "argv", "pid", "code_commit", "source_manifest_sha256", "input_fingerprints", "output_root", "receipt_sha256"}:
             raise ValueError(f"{name} cumulative execution schema is invalid")
         if execution.get("profile") != profile or execution.get("code_commit") != evidence["code_commit"] or execution.get("source_manifest_sha256") != source_sha or execution.get("input_fingerprints") != run["source_bindings"]:
             raise ValueError(f"{name} cumulative execution binding mismatch")
@@ -620,9 +675,45 @@ def _gate_evidence(
         if type(pid) is not int or pid <= 0 or pid in pids:
             raise ValueError(f"{name} cumulative execution PID is invalid")
         pids.add(pid)
+        _sha(execution.get("receipt_sha256"), f"{name} cumulative receipt")
         output_root = execution.get("output_root")
         if not isinstance(output_root, str) or not Path(output_root).is_absolute():
             raise ValueError(f"{name} cumulative execution root is invalid")
+        root = Path(output_root)
+        if str(root.resolve()) != output_root or any(
+            root == previous
+            or root.is_relative_to(previous)
+            or previous.is_relative_to(root)
+            for previous in execution_roots
+        ):
+            raise ValueError(f"{name} cumulative execution root is not independent")
+        execution_roots.append(root)
+        runner = (
+            REPO_ROOT / "scripts/evaluation/run_oviv2_t1_reference.py"
+            if profile == "reference"
+            else REPO_ROOT / "scripts/evaluation/run_oviv2_tesse_cd_v2.py"
+        ).resolve()
+        expected_length = 14 if profile == "reference" else 10
+        if (
+            len(argv) != expected_length
+            or not Path(argv[0]).is_absolute()
+            or Path(argv[1]) != runner
+            or tuple(argv[2:10:2]) != (
+                "--config", "--output", "--freeze-manifest", "--run-slot"
+            )
+            or any(not Path(argv[index]).is_absolute() for index in (3, 5, 7))
+            or argv[5] != output_root
+            or argv[9] not in {
+                "apartment_run1", "apartment_run2", "office_run1", "office_run2"
+            }
+        ):
+            raise ValueError(f"{name} cumulative execution argv is invalid")
+        if profile == "reference" and (
+            tuple(argv[10:14:2]) != ("--receipt", "--source-manifest")
+            or argv[11] != str(root / "t1_exact_receipt.json")
+            or not Path(argv[13]).is_absolute()
+        ):
+            raise ValueError(f"{name} cumulative execution argv is invalid")
 
 
 def _derive(

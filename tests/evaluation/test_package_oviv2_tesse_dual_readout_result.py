@@ -19,6 +19,10 @@ from scripts.evaluation.package_oviv2_tesse_dual_readout_result import (
     load_and_revalidate_result,
     package_result,
 )
+from scripts.evaluation.compare_oviv2_cumulative_artifacts import (
+    ArtifactMismatch,
+    compare_cumulative_artifacts,
+)
 from src.evaluation.baselines.tesse_cd import (
     summarize_khronos_official_metrics_partial,
 )
@@ -183,8 +187,19 @@ def _fixture(root: Path) -> dict[str, Path]:
             _record(background_source),
         ],
     })
-    protected = [{"path": "src/oviv2/dual_readout.py", "sha256": h("7"), "bytes": 123}]
-    tests = [{"path": "tests/oviv2/test_dual_readout.py", "sha256": h("8"), "bytes": 456}]
+    trusted_sources = json.loads(
+        (REPO_ROOT / "configs/evaluation/manifests/oviv2_t1_transitive_sources_v1.json").read_text()
+    )["files"]
+    protected = [
+        {"path": path, "sha256": digest, "bytes": (REPO_ROOT / path).stat().st_size}
+        for path, digest in trusted_sources.items()
+    ]
+    test_paths = (*package_module.T1_TEST_FILES, *package_module.DETERMINISM_TEST_FILES)
+    tests = [
+        {"path": path, "sha256": hashlib.sha256((REPO_ROOT / path).read_bytes()).hexdigest(),
+         "bytes": (REPO_ROOT / path).stat().st_size}
+        for path in test_paths
+    ]
     def gate(files: tuple[str, ...], digest: str) -> dict[str, object]:
         return {"scope": "shared_code_and_A0-A4_fixture", "status": "PASS", "code_commit": commit,
             "code_tree": h("d"), "protected_records": protected, "test_records": [{"argv": ["python", "-m", "pytest", "-q", "-rA", "-o", "addopts=", *files],
@@ -201,11 +216,28 @@ def _fixture(root: Path) -> dict[str, Path]:
     source_manifest = REPO_ROOT / "configs/evaluation/manifests/oviv2_t1_transitive_sources_v1.json"
     source_digest = hashlib.sha256(source_manifest.read_bytes()).hexdigest()
     sequence = ["reference", "a0", "a1", "a0", "a2", "a0", "a3", "a0", "a4"]
+    execution_roots = [str((root / f"exact-run-{position}").resolve()) for position in range(len(sequence))]
     executions = [{
-        "profile": profile, "argv": ["python", "runner.py", "--profile", profile],
+        "profile": profile, "argv": [
+            str(Path(sys.executable).resolve()),
+            str((REPO_ROOT / "scripts/evaluation" / (
+                "run_oviv2_t1_reference.py"
+                if profile == "reference"
+                else "run_oviv2_tesse_cd_v2.py"
+            )).resolve()),
+            "--config", str((root / f"{profile}.json").resolve()),
+            "--output", execution_roots[position],
+            "--freeze-manifest", str((root / "freeze.json").resolve()),
+            "--run-slot", "apartment_run1",
+            *(
+                ["--receipt", str((Path(execution_roots[position]) / "t1_exact_receipt.json").resolve()),
+                 "--source-manifest", str(source_manifest.resolve())]
+                if profile == "reference" else []
+            ),
+        ],
         "pid": 100 + position, "code_commit": commit,
         "source_manifest_sha256": source_digest, "input_fingerprints": input_hashes,
-        "output_root": str(run_root.resolve()),
+        "output_root": execution_roots[position], "receipt_sha256": h("b"),
     } for position, profile in enumerate(sequence)]
     profiles = {profile: {"cumulative_root_sha256": h("6"), "checkpoint_frames": [2],
                           "inventory": [{"path": "checkpoint/00000000/00000002/artifact/entities/neutral.jsonl",
@@ -502,6 +534,9 @@ def test_rejects_broken_cross_source_chain(tmp_path: Path, source: str, field: s
         ("a4_drift", "cumulative"),
         ("missing_profile", "profile"),
         ("wrong_argv", "argv"),
+        ("wrong_exact_argv", "argv"),
+        ("duplicate_root", "root"),
+        ("ancestor_root", "root"),
         ("wrong_base", "base commit"),
     ],
 )
@@ -517,6 +552,16 @@ def test_rejects_inexact_cumulative_development_evidence(
         del evidence["cumulative_exact"]["profiles"]["a3"]
     elif mutation == "wrong_argv":
         evidence["gates"]["t1_exact"]["test_records"][0]["argv"].append("-k")
+    elif mutation == "wrong_exact_argv":
+        evidence["cumulative_exact"]["executions"][2]["argv"] = ["python", "runner.py"]
+    elif mutation == "duplicate_root":
+        evidence["cumulative_exact"]["executions"][2]["output_root"] = evidence["cumulative_exact"]["executions"][1]["output_root"]
+    elif mutation == "ancestor_root":
+        parent = Path(evidence["cumulative_exact"]["executions"][1]["output_root"])
+        child = str((parent / "child").resolve())
+        record = evidence["cumulative_exact"]["executions"][2]
+        record["output_root"] = child
+        record["argv"][5] = child
     else:
         evidence["base_commit"] = "f" * 40
     _write(paths["t1_exact_evidence"], payload)
@@ -524,17 +569,105 @@ def test_rejects_inexact_cumulative_development_evidence(
         _package(paths, tmp_path / "result.json")
 
 
-def test_every_temporal_scalar_changes_only_algorithm_identity(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    ("collection", "mutation"),
+    [
+        ("protected_files", "missing"),
+        ("protected_files", "extra"),
+        ("protected_files", "duplicate"),
+        ("protected_files", "path"),
+        ("test_sources", "missing"),
+        ("test_sources", "extra"),
+        ("test_sources", "duplicate"),
+        ("test_sources", "path"),
+    ],
+)
+def test_rejects_noncanonical_protected_and_test_source_sets(
+    tmp_path: Path, collection: str, mutation: str
+) -> None:
     paths = _fixture(tmp_path)
+    payload = json.loads(paths["t1_exact_evidence"].read_text())
+    records = payload["deterministic_evidence"][collection]
+    if mutation == "missing":
+        records.pop()
+    elif mutation == "extra":
+        records.append({"path": "arbitrary.py", "sha256": "f" * 64, "bytes": 1})
+    elif mutation == "duplicate":
+        records.append(dict(records[0]))
+    else:
+        records[0]["path"] = "arbitrary.py"
+    _write(paths["t1_exact_evidence"], payload)
+    with pytest.raises(ValueError, match="protected|test source"):
+        _package(paths, tmp_path / "result.json")
+
+
+def _tree_binding(path: Path, root: Path) -> dict[str, object]:
+    digest = hashlib.sha256()
+    byte_count = 0
+    for item in sorted(candidate for candidate in path.rglob("*") if candidate.is_file()):
+        data = item.read_bytes()
+        relative = item.relative_to(path).as_posix()
+        byte_count += len(data)
+        digest.update(relative.encode())
+        digest.update(b"\0")
+        digest.update(bytes.fromhex(hashlib.sha256(data).hexdigest()))
+        digest.update(b"\n")
+    return {"path": path.relative_to(root).as_posix(), "sha256": digest.hexdigest(), "byte_count": byte_count}
+
+
+def _materialize_mutation_transaction(
+    root: Path, config: dict[str, object], *, leak_temporal: bool = False
+) -> tuple[dict[str, object], dict[str, object]]:
+    algorithm = canonical_algorithm_hash(config)
+    non_temporal = non_temporal_config_sha256(config)
+    checkpoint = root / "checkpoints/00000002-100"
+    artifact = checkpoint / "artifact"
+    voxel = checkpoint / "voxel_snapshot"
+    artifact.mkdir(parents=True)
+    voxel.mkdir()
+    cumulative_bytes = (algorithm if leak_temporal else non_temporal).encode()
+    (artifact / "neutral.bin").write_bytes(cumulative_bytes)
+    (voxel / "ownership.bin").write_bytes(cumulative_bytes)
+    status = checkpoint / "checkpoint_status.json"
+    status.write_text('{"status":"PASS"}\n')
+    final = root / "final.bin"
+    final.write_bytes(cumulative_bytes)
+    manifest = {
+        "schema_version": 1,
+        "checkpoints": [{
+            "frame_index": 2,
+            "artifact": _tree_binding(artifact, root),
+            "voxel_snapshot": _tree_binding(voxel, root),
+            "checkpoint_status": _record(status),
+        }],
+        "final_artifact": _record(final),
+    }
+    for record in (manifest["checkpoints"][0]["checkpoint_status"], manifest["final_artifact"]):
+        record["path"] = Path(record["path"]).relative_to(root).as_posix()
+    (root / "run_manifest.json").write_bytes(_bytes(manifest))
+    audit = compare_cumulative_artifacts(root, root)
+    receipt = {
+        "schema_version": 1,
+        "config_sha256": hashlib.sha256(_bytes(config)).hexdigest(),
+        "algorithm_hash": algorithm,
+        "non_temporal_config_sha256": non_temporal,
+        "artifact_inventory": audit["inventory"],
+        "cumulative_root_sha256": audit["root_sha256"],
+    }
+    receipt_path = root.parent / f"{root.name}.receipt.json"
+    receipt_path.write_bytes(_bytes(receipt))
+    assert json.loads(receipt_path.read_text()) == receipt
+    return receipt, audit
+
+
+def test_every_temporal_scalar_runs_exact_cumulative_transaction(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path / "fixture")
     config = json.loads(paths["candidate_config"].read_text())
     baseline_algorithm = canonical_algorithm_hash(config)
     baseline_non_temporal = non_temporal_config_sha256(config)
-    evidence = json.loads(paths["t1_exact_evidence"].read_text())
-    roots = {
-        record["cumulative_root_sha256"]
-        for record in evidence["deterministic_evidence"]["cumulative_exact"]["profiles"].values()
-    }
-    assert len(roots) == 1
+    baseline_receipt, baseline_audit = _materialize_mutation_transaction(
+        tmp_path / "baseline", config
+    )
 
     leaves: list[tuple[tuple[str, ...], object]] = []
 
@@ -546,7 +679,7 @@ def test_every_temporal_scalar_changes_only_algorithm_identity(tmp_path: Path) -
             leaves.append((path, value))
 
     visit(config["temporal_readout"], ())
-    for path, original in leaves:
+    for position, (path, original) in enumerate(leaves):
         mutated = json.loads(json.dumps(config))
         target = mutated["temporal_readout"]
         for key in path[:-1]:
@@ -559,12 +692,22 @@ def test_every_temporal_scalar_changes_only_algorithm_identity(tmp_path: Path) -
             target[path[-1]] = original + 0.000001
         else:
             target[path[-1]] = f"{original}-mutated"
-        assert canonical_algorithm_hash(mutated) != baseline_algorithm, path
-        assert non_temporal_config_sha256(mutated) == baseline_non_temporal, path
-        assert {
-            record["cumulative_root_sha256"]
-            for record in evidence["deterministic_evidence"]["cumulative_exact"]["profiles"].values()
-        } == roots
+        receipt, audit = _materialize_mutation_transaction(
+            tmp_path / f"mutation-{position:03d}", mutated
+        )
+        assert receipt["config_sha256"] == hashlib.sha256(_bytes(mutated)).hexdigest(), path
+        assert receipt["algorithm_hash"] != baseline_algorithm, path
+        assert receipt["non_temporal_config_sha256"] == baseline_non_temporal, path
+        assert receipt["cumulative_root_sha256"] == baseline_receipt["cumulative_root_sha256"], path
+        assert audit == compare_cumulative_artifacts(tmp_path / "baseline", tmp_path / f"mutation-{position:03d}")
+
+    leaked, _ = _materialize_mutation_transaction(
+        tmp_path / "leaked", {**config, "temporal_readout": {**config["temporal_readout"], "execution_profile": "leaked"}},
+        leak_temporal=True,
+    )
+    assert leaked["non_temporal_config_sha256"] == baseline_non_temporal
+    with pytest.raises(ArtifactMismatch, match="raw bytes"):
+        compare_cumulative_artifacts(tmp_path / "baseline", tmp_path / "leaked")
 
 
 def test_rejects_another_apartment_oviv2_temporal_artifact(tmp_path: Path) -> None:

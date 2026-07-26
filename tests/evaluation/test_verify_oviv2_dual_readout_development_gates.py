@@ -505,15 +505,16 @@ def _generate(tmp_path: Path, **overrides: object) -> tuple[Path, PassingRunner]
     output = tmp_path / "gate.json"
     runner = PassingRunner(repo)
     sequence = gates.EXACT_PROFILE_SEQUENCE
+    source_sha = hashlib.sha256((repo / gates.DEFAULT_SOURCE_MANIFEST).read_bytes()).hexdigest()
     exact_runs = [
-        _exact_execution(profile, tmp_path / f"exact-{position}", 100 + position)
+        _exact_execution(
+            profile,
+            tmp_path / f"exact-{position}",
+            100 + position,
+            source_sha=source_sha,
+        )
         for position, profile in enumerate(sequence)
     ]
-    for record in exact_runs:
-        record["code_commit"] = "a" * 40
-        source = (repo / gates.DEFAULT_SOURCE_MANIFEST).read_bytes()
-        record["source_manifest_sha256"] = hashlib.sha256(source).hexdigest()
-        record["input_fingerprints"] = {"dataset": "c" * 64}
     kwargs = {
         "repo": repo,
         "output": output,
@@ -526,7 +527,7 @@ def _generate(tmp_path: Path, **overrides: object) -> tuple[Path, PassingRunner]
         "compare": lambda left, right: {
             "format": "oviv2_cumulative_exact_v1",
             "checkpoint_frames": [2, 7],
-            "inventory": [],
+            "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
             "root_sha256": "e" * 64,
         },
     }
@@ -784,15 +785,56 @@ def test_publication_boundary_validation_runs_before_staging_creation(
     assert seen_staging == []
 
 
-def _exact_execution(profile: str, root: Path, pid: int) -> dict[str, object]:
-    return {
+def _exact_execution(
+    profile: str,
+    root: Path,
+    pid: int,
+    *,
+    commit: str = "a" * 40,
+    source_sha: str = "b" * 64,
+    inputs: dict[str, str] | None = None,
+) -> dict[str, object]:
+    root.mkdir(parents=True, exist_ok=True)
+    runner = (
+        Path(reference_worker.__file__).resolve()
+        if profile == "reference"
+        else (Path(__file__).parents[2] / "scripts/evaluation/run_oviv2_tesse_cd_v2.py").resolve()
+    )
+    argv = [
+        "/env/bin/python", str(runner), "--config", str((root.parent / f"{profile}.json").resolve()),
+        "--output", str(root.resolve()), "--freeze-manifest", str((root.parent / "freeze.json").resolve()),
+        "--run-slot", "apartment_run1",
+    ]
+    if profile == "reference":
+        argv += ["--receipt", str((root / "t1_exact_receipt.json").resolve()),
+                 "--source-manifest", str((root.parent / "sources.json").resolve())]
+    execution = {
         "profile": profile,
-        "argv": ["/env/bin/python", "runner.py", "--profile", profile],
+        "argv": argv,
         "pid": pid,
-        "code_commit": "a" * 40,
-        "source_manifest_sha256": "b" * 64,
-        "input_fingerprints": {"dataset": "c" * 64},
+        "code_commit": commit,
+        "source_manifest_sha256": source_sha,
+        "input_fingerprints": inputs or {"dataset": "c" * 64},
         "output_root": str(root.resolve()),
+    }
+    audit = {
+        "checkpoint_frames": [2, 7],
+        "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
+        "root_sha256": "e" * 64,
+    }
+    receipt = {
+        "schema_version": 1,
+        "format": "oviv2_t1_exact_execution_receipt_v1",
+        "execution": execution,
+        "artifact_inventory": audit["inventory"],
+        "checkpoint_frames": audit["checkpoint_frames"],
+        "cumulative_root_sha256": audit["root_sha256"],
+    }
+    receipt_path = root / "t1_exact_receipt.json"
+    receipt_path.write_text(json.dumps(receipt, sort_keys=True, separators=(",", ":")) + "\n")
+    return {
+        **execution,
+        "receipt_sha256": hashlib.sha256(receipt_path.read_bytes()).hexdigest(),
     }
 
 
@@ -822,11 +864,45 @@ def test_exact_profile_gate_requires_interleaved_independent_processes(
         profile["cumulative_root_sha256"] == "e" * 64
         for profile in evidence["profiles"].values()
     )
-    assert len(calls) == 8
-    assert calls[0] == (tmp_path / "run-0", tmp_path / "run-1")
+    assert len(calls) == 17
+    assert calls[9] == (tmp_path / "run-0", tmp_path / "run-1")
 
     executions[1]["pid"] = executions[0]["pid"]
+    receipt_path = Path(executions[1]["output_root"]) / "t1_exact_receipt.json"
+    receipt = json.loads(receipt_path.read_text())
+    receipt["execution"]["pid"] = executions[1]["pid"]
+    receipt_path.write_text(json.dumps(receipt, sort_keys=True, separators=(",", ":")) + "\n")
+    executions[1]["receipt_sha256"] = hashlib.sha256(receipt_path.read_bytes()).hexdigest()
     with pytest.raises(gates.GateVerificationError, match="PID"):
+        gates.verify_exact_profile_runs(executions, compare=compare)
+
+
+@pytest.mark.parametrize("mutation", ["duplicate_root", "ancestor_root", "argv", "receipt"])
+def test_exact_profile_gate_rejects_root_alias_argv_and_receipt_mismatch(
+    tmp_path: Path, mutation: str
+) -> None:
+    executions = [
+        _exact_execution(profile, tmp_path / f"run-{index}", 100 + index)
+        for index, profile in enumerate(gates.EXACT_PROFILE_SEQUENCE)
+    ]
+    compare = lambda left, right: {
+        "format": "oviv2_cumulative_exact_v1",
+        "checkpoint_frames": [2, 7],
+        "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
+        "root_sha256": "e" * 64,
+    }
+    if mutation == "duplicate_root":
+        executions[2]["output_root"] = executions[1]["output_root"]
+    elif mutation == "ancestor_root":
+        executions[2]["output_root"] = str(
+            (Path(executions[1]["output_root"]) / "child").resolve()
+        )
+    elif mutation == "argv":
+        executions[2]["argv"] = ["python", "runner.py"]
+    else:
+        receipt = Path(executions[2]["output_root"]) / "t1_exact_receipt.json"
+        receipt.write_bytes(receipt.read_bytes() + b" ")
+    with pytest.raises(gates.GateVerificationError, match="root|argv|receipt"):
         gates.verify_exact_profile_runs(executions, compare=compare)
 
 
@@ -841,8 +917,8 @@ def test_exact_profile_gate_rejects_incomplete_or_disagreeing_bindings(
     ]
     compare = lambda left, right: {
             "format": "oviv2_cumulative_exact_v1",
-            "checkpoint_frames": [2],
-            "inventory": [],
+            "checkpoint_frames": [2, 7],
+            "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
             "root_sha256": "e" * 64,
         }
     if field == "argv":
@@ -863,7 +939,7 @@ def test_reference_worker_records_exact_process_and_artifact_receipt(
     source = tmp_path / "sources.json"
     source.write_text("{}\n")
     output = tmp_path / "run"
-    receipt = tmp_path / "receipt.json"
+    receipt = output / "t1_exact_receipt.json"
     calls: list[tuple[Path, Path, Path, str]] = []
 
     def runner(
@@ -889,7 +965,13 @@ def test_reference_worker_records_exact_process_and_artifact_receipt(
             "root_sha256": "c" * 64,
         },
     )
-    argv = ["/env/bin/python", "run_oviv2_t1_reference.py", "--config", str(config)]
+    argv = [
+        "/env/bin/python", str(Path(reference_worker.__file__).resolve()),
+        "--config", str(config.resolve()), "--output", str(output.resolve()),
+        "--freeze-manifest", str((tmp_path / "freeze.json").resolve()),
+        "--run-slot", "apartment_run1", "--receipt", str(receipt.resolve()),
+        "--source-manifest", str(source.resolve()),
+    ]
     payload = reference_worker.run_reference(
         config=config,
         output=output,
@@ -908,5 +990,6 @@ def test_reference_worker_records_exact_process_and_artifact_receipt(
         "config": hashlib.sha256(config.read_bytes()).hexdigest(),
         "schedule_sha256": "1" * 64,
     }
+    assert payload["format"] == "oviv2_t1_exact_execution_receipt_v1"
     assert payload["cumulative_root_sha256"] == "c" * 64
     assert json.loads(receipt.read_text()) == payload

@@ -130,6 +130,41 @@ def _validate_tree_record(
     return result
 
 
+def _all_regular_files(root: Path) -> dict[str, bytes]:
+    result: dict[str, bytes] = {}
+    for path in sorted(root.rglob("*")):
+        metadata = os.lstat(path)
+        relative = path.relative_to(root).as_posix()
+        if stat.S_ISLNK(metadata.st_mode):
+            raise ArtifactMismatch("artifact inventory contains a symlink")
+        if stat.S_ISREG(metadata.st_mode):
+            result[relative] = path.read_bytes()
+        elif not stat.S_ISDIR(metadata.st_mode):
+            raise ArtifactMismatch("artifact inventory contains a forbidden entry")
+    return result
+
+
+def _validate_manifest_records(root: Path, value: object, label: str = "manifest") -> None:
+    if isinstance(value, Mapping):
+        if set(value) == {"path", "sha256", "byte_count"}:
+            path, _, _ = _record(value, label)
+            target = root.joinpath(*path.parts)
+            try:
+                metadata = os.lstat(target)
+            except OSError as exc:
+                raise ArtifactMismatch(f"{label} manifest record is missing") from exc
+            if stat.S_ISDIR(metadata.st_mode):
+                _validate_tree_record(root, value, label)
+            else:
+                _validate_file_record(root, value, label)
+            return
+        for key, child in value.items():
+            _validate_manifest_records(root, child, f"{label}.{key}")
+    elif isinstance(value, list):
+        for position, child in enumerate(value):
+            _validate_manifest_records(root, child, f"{label}[{position}]")
+
+
 def _load_inventory(root: Path) -> tuple[list[int], dict[str, bytes]]:
     absolute = root.absolute()
     current = Path(absolute.anchor)
@@ -166,42 +201,27 @@ def _load_inventory(root: Path) -> tuple[list[int], dict[str, bytes]]:
             raise ArtifactMismatch("artifact inventory is invalid")
         if declared_inventory != sorted(set(declared_inventory)):
             raise ArtifactMismatch("artifact inventory is noncanonical")
-        checkpoint_root = root / "checkpoints"
-        try:
-            if not stat.S_ISDIR(os.lstat(checkpoint_root).st_mode):
-                raise ArtifactMismatch("checkpoint inventory root is invalid")
-        except OSError as exc:
-            raise ArtifactMismatch("checkpoint inventory root is missing") from exc
-        actual_checkpoint_files: set[str] = set()
-        actual_checkpoint_dirs: set[str] = set()
-        for path in checkpoint_root.rglob("*"):
-            metadata = os.lstat(path)
-            relative = path.relative_to(root).as_posix()
-            if stat.S_ISLNK(metadata.st_mode):
-                raise ArtifactMismatch("checkpoint inventory contains a symlink")
-            if stat.S_ISREG(metadata.st_mode):
-                actual_checkpoint_files.add(relative)
-            elif stat.S_ISDIR(metadata.st_mode):
-                if path.parent == checkpoint_root:
-                    actual_checkpoint_dirs.add(path.name)
-            else:
-                raise ArtifactMismatch("checkpoint inventory contains a forbidden entry")
-        declared_checkpoint_files = {
-            item for item in declared_inventory if item.startswith("checkpoints/")
-        }
-        declared_checkpoint_dirs = {
-            PurePosixPath(item).parts[1] for item in declared_checkpoint_files
-        }
-        if (
-            actual_checkpoint_files != declared_checkpoint_files
-            or actual_checkpoint_dirs != declared_checkpoint_dirs
-        ):
-            raise ArtifactMismatch("checkpoint artifact inventory is not exact")
+    all_files = _all_regular_files(root)
+    if manifest["schema_version"] == 2:
+        allowed_root_files = {"run_manifest.json"}
+        if "execution_receipt.json" in all_files:
+            allowed_root_files.add("execution_receipt.json")
+        if "t1_exact_receipt.json" in all_files:
+            allowed_root_files.add("t1_exact_receipt.json")
+        expected_files = set(declared_inventory) | allowed_root_files
+        if set(all_files) != expected_files:
+            raise ArtifactMismatch("artifact inventory is not exact")
+        selected_paths = sorted(expected_files - {"t1_exact_receipt.json"})
+    else:
+        selected_paths = sorted(
+            path
+            for path in all_files
+            if path not in {"run_provenance.json", "timing.json", "t1_exact_receipt.json"}
+        )
+    _validate_manifest_records(root, manifest)
 
     frames: list[int] = []
-    logical: dict[str, bytes] = {}
-    actual_paths: set[str] = set()
-    for position, checkpoint in enumerate(checkpoints):
+    for checkpoint in checkpoints:
         if not isinstance(checkpoint, Mapping):
             raise ArtifactMismatch("checkpoint inventory record is invalid")
         frame = checkpoint.get("frame_index")
@@ -219,44 +239,13 @@ def _load_inventory(root: Path) -> tuple[list[int], dict[str, bytes]]:
                 or audit.get("format") != "oviv2_cumulative_audit_v1"
             ):
                 raise ArtifactMismatch("cumulative audit manifest is invalid")
-            entries = _validate_tree_record(root, audit["artifact"], "cumulative artifact")
-            if "voxel_snapshot" in audit:
-                entries += _validate_tree_record(
-                    root, audit["voxel_snapshot"], "cumulative voxel snapshot"
-                )
-            snapshot = _validate_file_record(root, audit["snapshot"], "neutral snapshot")
-            entities = _validate_file_record(root, audit["entities"], "neutral entities")
-            entries += [snapshot, entities]
         else:
             roles = [name for name in ("artifact", "voxel_snapshot", "ownership_checkpoint") if name in checkpoint]
             if not roles or ("voxel_snapshot" in roles and "artifact" not in roles):
                 raise ArtifactMismatch("v1 cumulative checkpoint manifest is incomplete")
-            entries = []
-            for role in roles:
-                entries += _validate_tree_record(root, checkpoint[role], f"v1 {role}")
-        for path, data in entries:
-            actual_paths.add(path.as_posix())
-            if manifest["schema_version"] == 2:
-                audit_root = path.parts.index("cumulative_audit")
-                local = PurePosixPath(*path.parts[audit_root + 1 :]).as_posix()
-            else:
-                checkpoint_root = path.parts.index("checkpoints") + 2
-                local = PurePosixPath(*path.parts[checkpoint_root:]).as_posix()
-            key = f"checkpoint/{position:08d}/{frame:08d}/{local}"
-            previous = logical.setdefault(key, data)
-            if previous != data:
-                raise ArtifactMismatch("cumulative inventory aliases unequal raw bytes")
     if frames != sorted(frames):
         raise ArtifactMismatch("checkpoint inventory is not ordered")
-    if manifest["schema_version"] == 2:
-        declared_audit = {
-            item
-            for item in declared_inventory
-            if "/cumulative_audit/" in item
-        }
-        if declared_audit != actual_paths:
-            raise ArtifactMismatch("cumulative artifact inventory differs from manifest")
-    return frames, logical
+    return frames, {path: all_files[path] for path in selected_paths}
 
 
 def compare_cumulative_artifacts(left: str | Path, right: str | Path) -> dict[str, Any]:

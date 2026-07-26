@@ -113,6 +113,7 @@ def run_reference(
     repo = repo.resolve(strict=True)
     config_path = Path(config).absolute()
     output_path = Path(output).absolute()
+    receipt_path = Path(receipt).absolute()
     source_path = Path(source_manifest)
     if not source_path.is_absolute():
         source_path = repo / source_path
@@ -121,6 +122,19 @@ def run_reference(
     exact_argv = list(argv)
     if not exact_argv or any(not isinstance(item, str) or not item for item in exact_argv):
         raise ValueError("reference argv is invalid")
+    expected_argv = [
+        exact_argv[0], str(Path(__file__).resolve()),
+        "--config", str(config_path), "--output", str(output_path),
+        "--freeze-manifest", str(Path(freeze_manifest).absolute()),
+        "--run-slot", run_slot, "--receipt", str(receipt_path),
+        "--source-manifest", str(source_path.absolute()),
+    ]
+    if (
+        not Path(exact_argv[0]).is_absolute()
+        or exact_argv != expected_argv
+        or receipt_path != output_path / "t1_exact_receipt.json"
+    ):
+        raise ValueError("reference argv/receipt binding is not canonical")
     code_commit = _commit(repo)
     input_fingerprints = _input_fingerprints(config_data)
     runner(
@@ -147,7 +161,7 @@ def run_reference(
     }
     payload = {
         "schema_version": 1,
-        "format": "oviv2_t1_reference_receipt_v1",
+        "format": "oviv2_t1_exact_execution_receipt_v1",
         "execution": execution,
         "source_manifest": {
             "path": str(source_path.resolve()),
@@ -158,7 +172,7 @@ def run_reference(
         "checkpoint_frames": audit["checkpoint_frames"],
         "cumulative_root_sha256": audit["root_sha256"],
     }
-    _atomic_receipt(Path(receipt), payload)
+    _atomic_receipt(receipt_path, payload)
     return payload
 
 
@@ -169,7 +183,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--freeze-manifest", required=True, type=Path)
     parser.add_argument("--run-slot", required=True)
     parser.add_argument("--receipt", required=True, type=Path)
-    parser.add_argument("--source-manifest", type=Path, default=DEFAULT_SOURCE_MANIFEST)
+    parser.add_argument("--source-manifest", required=True, type=Path)
     return parser.parse_args(argv)
 
 
