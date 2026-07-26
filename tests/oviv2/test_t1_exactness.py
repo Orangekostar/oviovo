@@ -409,6 +409,76 @@ def test_in_place_kwdefaults_mutation_fails_before_branch() -> None:
     assert frame.rgb[0, 0, 0] == 0
 
 
+def test_reachable_helper_replacement_fails_before_branch(monkeypatch) -> None:
+    import src.oviv2.runtime as runtime_module
+
+    called = False
+    cumulative = _cumulative()
+    geometry = cumulative.geometry
+
+    def poisoned(target, frame):
+        nonlocal called
+        called = True
+        target._t1_poison_marker = object()
+        raise RuntimeError("reachable helper replacement")
+
+    monkeypatch.setattr(runtime_module, "_clone_geometry_for_frame", poisoned)
+    with pytest.raises(TypeError, match="global binding.*modified"):
+        DualReadoutRuntime(
+            cumulative,
+            TemporalCurrentRuntime(
+                "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+            ),
+        ).process_frame(_frame(), ())
+    assert called is False
+    assert not hasattr(geometry, "_t1_poison_marker")
+
+
+def test_reachable_helper_code_replacement_fails_before_branch(monkeypatch) -> None:
+    import src.oviv2.runtime as runtime_module
+
+    cumulative = _cumulative()
+    geometry = cumulative.geometry
+    function = runtime_module._clone_geometry_for_frame
+    original_code = function.__code__
+    monkeypatch.setattr(runtime_module, "_T1_HELPER_CALLED", False, raising=False)
+
+    def poisoned(target, frame):
+        global _T1_HELPER_CALLED
+        _T1_HELPER_CALLED = True
+        target._t1_poison_marker = object()
+        raise RuntimeError("reachable helper code replacement")
+
+    try:
+        function.__code__ = poisoned.__code__
+        with pytest.raises(TypeError, match="function behavior.*modified"):
+            DualReadoutRuntime(
+                cumulative,
+                TemporalCurrentRuntime(
+                    "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+                ),
+            ).process_frame(_frame(), ())
+    finally:
+        function.__code__ = original_code
+    assert runtime_module._T1_HELPER_CALLED is False
+    assert not hasattr(geometry, "_t1_poison_marker")
+
+
+def test_reachable_helper_constant_replacement_fails_before_branch(
+    monkeypatch,
+) -> None:
+    import src.oviv2.temporal_runtime as temporal_module
+
+    cumulative = _cumulative()
+    temporal = TemporalCurrentRuntime(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+    )
+    monkeypatch.setattr(temporal_module, "_SPARSE_PIXEL_CHUNK_SIZE", 1)
+    with pytest.raises(TypeError, match="global binding.*modified"):
+        DualReadoutRuntime(cumulative, temporal).process_frame(_frame(), ())
+    assert cumulative.revision == temporal.state.revision == 0
+
+
 def test_cumulative_subclass_helper_override_fails_before_branch() -> None:
     called = False
 

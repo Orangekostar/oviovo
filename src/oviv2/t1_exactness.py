@@ -199,6 +199,20 @@ class _FunctionBehaviorSnapshot:
     type_params: object
 
 
+@dataclass(frozen=True)
+class _GlobalBindingSnapshot:
+    name: str
+    present: bool
+    value: object
+    state: _BehaviorValueSnapshot | None
+
+
+@dataclass(frozen=True)
+class _TrustedFunctionSnapshot:
+    behavior: _FunctionBehaviorSnapshot
+    global_bindings: tuple[_GlobalBindingSnapshot, ...]
+
+
 _EMPTY_CELL = object()
 _MISSING_METADATA = object()
 
@@ -250,15 +264,64 @@ def _capture_function_behavior(function: FunctionType) -> _FunctionBehaviorSnaps
     )
 
 
-_TRUSTED_FUNCTION_BEHAVIORS = tuple(
-    _capture_function_behavior(function)
-    for owner in _TRUSTED_CLASSES
-    for raw in vars(owner).values()
-    for function in (
-        raw.__func__ if isinstance(raw, (classmethod, staticmethod)) else raw,
-    )
-    if type(function) is FunctionType
-)
+def _is_project_function(function: FunctionType) -> bool:
+    module_name = dict.get(function.__globals__, "__name__")
+    return type(module_name) is str and module_name.startswith("src.")
+
+
+def _capture_trusted_function_graph() -> tuple[_TrustedFunctionSnapshot, ...]:
+    snapshots: list[_TrustedFunctionSnapshot] = []
+    visited: set[int] = set()
+
+    def capture(function: FunctionType) -> None:
+        if id(function) in visited:
+            return
+        visited.add(id(function))
+        global_bindings: list[_GlobalBindingSnapshot] = []
+        reachable: list[FunctionType] = []
+        seen_names: set[str] = set()
+        namespace = function.__globals__
+        for name in function.__code__.co_names:
+            if name in seen_names:
+                continue
+            seen_names.add(name)
+            if not dict.__contains__(namespace, name):
+                global_bindings.append(
+                    _GlobalBindingSnapshot(name, False, _MISSING_METADATA, None)
+                )
+                continue
+            value = dict.__getitem__(namespace, name)
+            global_bindings.append(
+                _GlobalBindingSnapshot(
+                    name,
+                    True,
+                    value,
+                    _capture_behavior_value(value),
+                )
+            )
+            if type(value) is FunctionType and _is_project_function(value):
+                reachable.append(value)
+        snapshots.append(
+            _TrustedFunctionSnapshot(
+                _capture_function_behavior(function), tuple(global_bindings)
+            )
+        )
+        for helper in reachable:
+            capture(helper)
+
+    for owner in _TRUSTED_CLASSES:
+        for raw in vars(owner).values():
+            function = (
+                raw.__func__
+                if isinstance(raw, (classmethod, staticmethod))
+                else raw
+            )
+            if type(function) is FunctionType:
+                capture(function)
+    return tuple(snapshots)
+
+
+_TRUSTED_FUNCTION_BEHAVIORS = _capture_trusted_function_graph()
 
 
 def _pack(tag: bytes, content: bytes) -> bytes:
@@ -690,7 +753,8 @@ def _validate_frozen_class_namespaces() -> None:
             for name, value in expected_items
         ):
             raise TypeError("built-in readout class namespace was modified")
-    for expected in _TRUSTED_FUNCTION_BEHAVIORS:
+    for trusted in _TRUSTED_FUNCTION_BEHAVIORS:
+        expected = trusted.behavior
         function = expected.function
         if (
             function.__code__ is not expected.code
@@ -730,6 +794,20 @@ def _validate_frozen_class_namespaces() -> None:
             is not expected.type_params
         ):
             raise TypeError("built-in readout function behavior was modified")
+        namespace = function.__globals__
+        for binding in trusted.global_bindings:
+            present = dict.__contains__(namespace, binding.name)
+            if present is not binding.present:
+                raise TypeError("built-in readout global binding was modified")
+            if not present:
+                continue
+            current = dict.__getitem__(namespace, binding.name)
+            if (
+                current is not binding.value
+                or binding.state is None
+                or not _behavior_value_matches(binding.state, current)
+            ):
+                raise TypeError("built-in readout global binding was modified")
 
 
 def isolated_cumulative_runtime(runtime: Oviv2Runtime) -> Oviv2Runtime:
