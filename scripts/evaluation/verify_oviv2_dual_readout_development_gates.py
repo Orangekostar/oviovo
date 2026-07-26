@@ -705,30 +705,35 @@ def _cleanup_exact_transaction(
         *([transaction] if transaction else []),
     ]
     try:
-        for witness in reversed(roots):
+        mismatched = [
+            witness for witness in witnesses if not _owned_path_matches(witness)
+        ]
+        if mismatched:
+            unsafe_paths.extend(witness[0] for witness in mismatched)
+            problems.extend(
+                f"cleanup unsafe: owned path replaced: {witness[0]}"
+                for witness in mismatched
+            )
+            if transaction is not None:
+                problems.append(
+                    f"cleanup unsafe: preserving transaction after ownership mismatch: {transaction[0]}"
+                )
+            return problems
+        for witness in reversed(observations):
             try:
                 _remove_owned_path(witness)
             except (GateVerificationError, OSError) as exc:
                 problems.append(str(exc))
                 unsafe_paths.append(witness[0])
+                break
         if not unsafe_paths:
-            replaced_observations = [
-                witness for witness in observations if not _owned_path_matches(witness)
-            ]
-            if replaced_observations:
-                unsafe_paths.extend(witness[0] for witness in replaced_observations)
-                problems.extend(
-                    f"cleanup unsafe: observation receipt replaced: {witness[0]}"
-                    for witness in replaced_observations
-                )
-            else:
-                for witness in reversed(observations):
-                    try:
-                        _remove_owned_path(witness)
-                    except (GateVerificationError, OSError) as exc:
-                        problems.append(str(exc))
-                        unsafe_paths.append(witness[0])
-                        break
+            for witness in reversed(roots):
+                try:
+                    _remove_owned_path(witness)
+                except (GateVerificationError, OSError) as exc:
+                    problems.append(str(exc))
+                    unsafe_paths.append(witness[0])
+                    break
         if receipts is not None and not unsafe_paths:
             receipts_path = receipts[0]
             try:

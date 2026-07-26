@@ -1257,6 +1257,7 @@ def test_exact_transaction_does_not_delete_replaced_root_and_preserves_audit(
         tmp_path, monkeypatch, failure="receipt", position=1
     )
     original_reopen = gates._reopen_completed_execution
+    identities: dict[str, tuple[int, int, int]] = {}
 
     def replace_then_fail(*args: object, **kwargs: object) -> dict[str, object]:
         root = args[1]
@@ -1271,6 +1272,15 @@ def test_exact_transaction_does_not_delete_replaced_root_and_preserves_audit(
                 outside.mkdir()
                 (outside / "replacement.txt").write_text("keep")
                 root.symlink_to(outside, target_is_directory=True)
+            metadata = os.lstat(root)
+            identities["replacement"] = (
+                metadata.st_dev, metadata.st_ino, stat.S_IFMT(metadata.st_mode)
+            )
+        else:
+            metadata = os.lstat(root)
+            identities["earlier"] = (
+                metadata.st_dev, metadata.st_ino, stat.S_IFMT(metadata.st_mode)
+            )
         return original_reopen(*args, **kwargs)
 
     monkeypatch.setattr(gates, "_reopen_completed_execution", replace_then_fail)
@@ -1281,6 +1291,12 @@ def test_exact_transaction_does_not_delete_replaced_root_and_preserves_audit(
         )
     replacement = Path(specs[1]["output_root"])
     assert (replacement / "replacement.txt").read_text() == "keep"
+    roots = [Path(specs[index]["output_root"]) for index in (0, 1)]
+    assert all(root.exists() for root in roots)
+    assert tuple(
+        (item.st_dev, item.st_ino, stat.S_IFMT(item.st_mode))
+        for item in map(os.lstat, roots)
+    ) == (identities["earlier"], identities["replacement"])
     assert transaction.exists()
     observations = sorted((transaction / "receipts").glob("*.json"))
     assert [path.name for path in observations] == ["000-reference.json"]
@@ -1294,12 +1310,15 @@ def test_exact_transaction_preserves_replaced_observation_and_transaction(
         tmp_path, monkeypatch, failure="child", position=99
     )
     replaced = False
+    root_identities: dict[Path, tuple[int, int, int]] = {}
+    observation_identities: dict[Path, tuple[int, int, int]] = {}
 
     def compare(left: Path, right: Path) -> dict[str, object]:
         nonlocal replaced
         result = original_compare(left, right)
         observation = transaction / "receipts/000-reference.json"
-        if observation.exists() and not replaced:
+        later_observation = transaction / "receipts/001-a0.json"
+        if later_observation.exists() and not replaced:
             replaced = True
             observation.unlink()
             if replacement_kind == "file":
@@ -1308,6 +1327,16 @@ def test_exact_transaction_preserves_replaced_observation_and_transaction(
                 outside = tmp_path / "outside-observation.json"
                 outside.write_text("outside")
                 observation.symlink_to(outside)
+            for root in (Path(specs[0]["output_root"]), Path(specs[1]["output_root"])):
+                metadata = os.lstat(root)
+                root_identities[root] = (
+                    metadata.st_dev, metadata.st_ino, stat.S_IFMT(metadata.st_mode)
+                )
+            for receipt in (observation, later_observation):
+                metadata = os.lstat(receipt)
+                observation_identities[receipt] = (
+                    metadata.st_dev, metadata.st_ino, stat.S_IFMT(metadata.st_mode)
+                )
             raise gates.ArtifactMismatch("compare failed after receipt replacement")
         return result
 
@@ -1319,6 +1348,11 @@ def test_exact_transaction_preserves_replaced_observation_and_transaction(
     observation = transaction / "receipts/000-reference.json"
     assert observation.exists()
     assert observation.read_text() in {"replacement", "outside"}
+    assert transaction.exists()
+    assert len(list((transaction / "receipts").iterdir())) == 2
+    for path, identity in {**root_identities, **observation_identities}.items():
+        metadata = os.lstat(path)
+        assert (metadata.st_dev, metadata.st_ino, stat.S_IFMT(metadata.st_mode)) == identity
 
 
 def test_exact_transaction_popen_start_failure_cleans_and_retry_succeeds(
