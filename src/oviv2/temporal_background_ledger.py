@@ -17,6 +17,8 @@ from src.oviv2.temporal_lifecycle import TemporalEvidenceKind
 
 BlockKey = tuple[int, int, int]
 ContributionKey = tuple[int, int, int, BlockKey]
+NativeIdentity = tuple[int, int]
+PhysicalObservationKey = tuple[int, int, BlockKey]
 
 
 def _integer(value: object, name: str) -> int:
@@ -86,6 +88,11 @@ def _frozen_frame(frame: object) -> Frame:
         frame.intrinsics.width,
         frame.intrinsics.height,
     )
+    source_frame_id = (
+        None
+        if frame.source_frame_id is None
+        else _integer(frame.source_frame_id, "frame.source_frame_id")
+    )
     return _FrozenFrame(
         frame_id=frame_id,
         timestamp=timestamp,
@@ -93,7 +100,7 @@ def _frozen_frame(frame: object) -> Frame:
         depth=_readonly(frame.depth),
         pose=_readonly(frame.pose),
         intrinsics=intrinsics,
-        source_frame_id=frame.source_frame_id,
+        source_frame_id=source_frame_id,
     )
 
 
@@ -108,11 +115,15 @@ class BackgroundContribution:
         return (self.block_key,)
 
 
-def _observation_payload(
-    frame: Frame, depth_m: np.ndarray
-) -> tuple[object, ...]:
+def _native_identity(frame: Frame) -> NativeIdentity:
+    if frame.source_frame_id is not None:
+        return (1, frame.source_frame_id)
+    return (0, frame.frame_id)
+
+
+def _native_frame_payload(frame: Frame) -> tuple[object, ...]:
     return (
-        frame.frame_id,
+        frame.source_frame_id,
         float(frame.timestamp),
         _array_digest(frame.rgb),
         _array_digest(frame.depth),
@@ -125,8 +136,17 @@ def _observation_payload(
             frame.intrinsics.width,
             frame.intrinsics.height,
         ),
-        _array_digest(depth_m),
     )
+
+
+def _processed_frame_payload(frame: Frame) -> tuple[object, ...]:
+    return (frame.frame_id, _native_frame_payload(frame))
+
+
+def _observation_payload(
+    frame: Frame, depth_m: np.ndarray
+) -> tuple[object, ...]:
+    return (_native_frame_payload(frame), _array_digest(depth_m))
 
 
 @dataclass(frozen=True)
@@ -141,6 +161,12 @@ class BackgroundLedgerEvidence:
     frame: Frame | None = None
     depth_m: np.ndarray | None = None
     _observation_canonical: tuple[object, ...] | None = field(
+        init=False, repr=False
+    )
+    _native_frame_canonical: tuple[object, ...] | None = field(
+        init=False, repr=False
+    )
+    _processed_frame_canonical: tuple[object, ...] | None = field(
         init=False, repr=False
     )
 
@@ -172,6 +198,21 @@ class BackgroundLedgerEvidence:
                 raise ValueError("observation frame_id must match evidence frame_id")
             if frame.timestamp != timestamp:
                 raise ValueError("observation timestamp must match evidence timestamp")
+            positive = depth_m > 0.0
+            native_depth = np.asarray(frame.depth)
+            if np.any(
+                positive
+                & (
+                    ~np.isfinite(native_depth)
+                    | (native_depth <= 0.0)
+                    | (depth_m != native_depth)
+                )
+            ):
+                raise ValueError(
+                    "nonzero masked depth must equal valid native frame.depth"
+                )
+            native_frame_canonical = _native_frame_payload(frame)
+            processed_frame_canonical = _processed_frame_payload(frame)
             observation_canonical = _observation_payload(frame, depth_m)
         else:
             if self.kind not in (TemporalEvidenceKind.PRESENT, TemporalEvidenceKind.OCCLUDED):
@@ -187,6 +228,8 @@ class BackgroundLedgerEvidence:
             view_bin = None
             frame = None
             depth_m = None
+            native_frame_canonical = None
+            processed_frame_canonical = None
             observation_canonical = None
         block_keys = tuple(item.block_key for item in self.contributions)
         if len(set(block_keys)) != len(block_keys):
@@ -198,6 +241,10 @@ class BackgroundLedgerEvidence:
         object.__setattr__(self, "view_bin", view_bin)
         object.__setattr__(self, "frame", frame)
         object.__setattr__(self, "depth_m", depth_m)
+        object.__setattr__(self, "_native_frame_canonical", native_frame_canonical)
+        object.__setattr__(
+            self, "_processed_frame_canonical", processed_frame_canonical
+        )
         object.__setattr__(self, "_observation_canonical", observation_canonical)
         object.__setattr__(
             self,
@@ -277,6 +324,11 @@ def _record_group_key(record: _Record) -> tuple[int, int, BlockKey]:
     return (record.entity_id, record.geometry_epoch, record.contribution.block_key)
 
 
+def _physical_observation_key(record: _Record) -> PhysicalObservationKey:
+    native = _native_identity(record.frame)
+    return (native[0], native[1], record.contribution.block_key)
+
+
 def _digest(payload: object) -> str:
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False)
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
@@ -299,6 +351,11 @@ class ReversibleBackgroundLedger:
         self._provisional: dict[ContributionKey, _Record] = {}
         self._committed: dict[ContributionKey, _Record] = {}
         self._event_digests: dict[tuple[int, int, int], str] = {}
+        self._native_frames: dict[NativeIdentity, tuple[object, ...]] = {}
+        self._processed_frames: dict[int, tuple[object, ...]] = {}
+        self._maximum_ownership_records_per_observation = (
+            self._volume.config.maximum_entities
+        )
         self._last_frame_id = -1
         self._last_timestamp = -math.inf
         self._generation = 0
@@ -359,6 +416,14 @@ class ReversibleBackgroundLedger:
                     (key, self._event_digests[key])
                     for key in sorted(self._event_digests)
                 ],
+                "native_frames": [
+                    (identity, self._native_frames[identity])
+                    for identity in sorted(self._native_frames)
+                ],
+                "processed_frames": [
+                    (frame_id, self._processed_frames[frame_id])
+                    for frame_id in sorted(self._processed_frames)
+                ],
                 "provisional": [
                     _record_payload(self._provisional[key])
                     for key in sorted(self._provisional)
@@ -413,6 +478,25 @@ class ReversibleBackgroundLedger:
             if evidence.contributions:
                 assert evidence.frame is not None
                 assert evidence.depth_m is not None
+                assert evidence._native_frame_canonical is not None
+                assert evidence._processed_frame_canonical is not None
+                native_identity = _native_identity(evidence.frame)
+                existing_native = self._native_frames.get(native_identity)
+                if (
+                    existing_native is not None
+                    and existing_native != evidence._native_frame_canonical
+                ):
+                    raise ValueError(
+                        "native frame content conflicts for the same identity"
+                    )
+                existing_processed = self._processed_frames.get(evidence.frame_id)
+                if (
+                    existing_processed is not None
+                    and existing_processed != evidence._processed_frame_canonical
+                ):
+                    raise ValueError(
+                        "processed frame_id maps to conflicting native frame content"
+                    )
                 touched = self._volume.candidate_block_keys(
                     evidence.frame,
                     evidence.depth_m,
@@ -446,6 +530,17 @@ class ReversibleBackgroundLedger:
         assert evidence.frame is not None
         assert evidence.depth_m is not None
         assert evidence._observation_canonical is not None
+        shared_frames: dict[NativeIdentity, Frame] = {}
+        shared_depths: dict[tuple[NativeIdentity, tuple[object, ...]], np.ndarray] = {}
+        for existing_record in (*provisional.values(), *committed.values()):
+            native = _native_identity(existing_record.frame)
+            shared_frames.setdefault(native, existing_record.frame)
+            depth_key = (native, existing_record.observation_canonical[1])
+            shared_depths.setdefault(depth_key, existing_record.depth_m)
+        native = _native_identity(evidence.frame)
+        record_frame = shared_frames.get(native, evidence.frame)
+        depth_key = (native, evidence._observation_canonical[1])
+        record_depth = shared_depths.get(depth_key, evidence.depth_m)
         for contribution in evidence.contributions:
             record = _Record(
                 evidence.entity_id,
@@ -454,8 +549,8 @@ class ReversibleBackgroundLedger:
                 evidence.timestamp,
                 evidence.view_bin,
                 contribution,
-                evidence.frame,
-                evidence.depth_m,
+                record_frame,
+                record_depth,
                 evidence._observation_canonical,
             )
             if record.key in provisional or record.key in committed:
@@ -470,12 +565,14 @@ class ReversibleBackgroundLedger:
             group_key = _record_group_key(record)
             grouped.setdefault(group_key, []).append(record)
         for group_key, records in grouped.items():
-            frame_ids = {record.frame_id for record in records}
+            native_frames = {_native_identity(record.frame) for record in records}
             view_bins = {record.view_bin for record in records}
             if (
-                len(frame_ids) >= self.config.commit_support_frames
+                len(native_frames) >= self.config.commit_support_frames
                 and len(view_bins) >= self.config.commit_distinct_view_bins
-                and max(frame_ids) - min(frame_ids) >= self.config.minimum_commit_frame_gap
+                and max(record.frame_id for record in records)
+                - min(record.frame_id for record in records)
+                >= self.config.minimum_commit_frame_gap
             ):
                 eligible_groups.add(group_key)
         committing = {
@@ -487,15 +584,10 @@ class ReversibleBackgroundLedger:
             committed.update(committing)
             for key in committing:
                 del provisional[key]
-            observations = tuple(
-                (
-                    key,
-                    committed[key].contribution.block_key,
-                    committed[key].frame,
-                    committed[key].depth_m,
-                )
-                for key in sorted(committed)
-            )
+            try:
+                observations = self._aggregate_observations(committed)
+            except (TypeError, ValueError):
+                return LedgerDecision.REJECTED_INTEGRATION
             try:
                 rebuilt = TemporalBackgroundVolume.rebuild_blocks(
                     self._volume.config, observations
@@ -518,14 +610,61 @@ class ReversibleBackgroundLedger:
         blocks = {record.contribution.block_key for record in records}
         if len(blocks) > self.config.maximum_journal_blocks:
             return False
-        counts: dict[BlockKey, int] = {}
+        observation_counts: dict[BlockKey, set[PhysicalObservationKey]] = {}
+        ownership_counts: dict[PhysicalObservationKey, int] = {}
         for record in records:
-            key = record.contribution.block_key
-            counts[key] = counts.get(key, 0) + 1
-        return all(
-            count <= self.config.maximum_records_per_block
-            for count in counts.values()
+            observation_key = _physical_observation_key(record)
+            block_key = record.contribution.block_key
+            observation_counts.setdefault(block_key, set()).add(observation_key)
+            ownership_counts[observation_key] = (
+                ownership_counts.get(observation_key, 0) + 1
+            )
+        return (
+            all(
+                len(observations) <= self.config.maximum_records_per_block
+                for observations in observation_counts.values()
+            )
+            and all(
+                count <= self._maximum_ownership_records_per_observation
+                for count in ownership_counts.values()
+            )
         )
+
+    def _aggregate_observations(
+        self,
+        committed: dict[ContributionKey, _Record],
+    ) -> tuple[
+        tuple[PhysicalObservationKey, BlockKey, Frame, np.ndarray], ...
+    ]:
+        grouped: dict[PhysicalObservationKey, list[_Record]] = {}
+        for key in sorted(committed):
+            record = committed[key]
+            grouped.setdefault(_physical_observation_key(record), []).append(record)
+        observations: list[
+            tuple[PhysicalObservationKey, BlockKey, Frame, np.ndarray]
+        ] = []
+        for observation_key in sorted(grouped):
+            records = grouped[observation_key]
+            first = records[0]
+            native_payload = _native_frame_payload(first.frame)
+            merged = np.zeros_like(first.frame.depth)
+            for record in records:
+                if _native_frame_payload(record.frame) != native_payload:
+                    raise ValueError("native frame content conflicts during rebuild")
+                positive = record.depth_m > 0.0
+                overlap = positive & (merged > 0.0)
+                if np.any(overlap & (merged != record.depth_m)):
+                    raise ValueError("masked depth conflict during rebuild")
+                merged[positive] = record.depth_m[positive]
+            observations.append(
+                (
+                    observation_key,
+                    first.contribution.block_key,
+                    first.frame,
+                    _readonly(merged),
+                )
+            )
+        return tuple(observations)
 
     def _publish_event(
         self,
@@ -539,5 +678,14 @@ class ReversibleBackgroundLedger:
         self._event_digests[
             (evidence.entity_id, evidence.geometry_epoch, evidence.frame_id)
         ] = evidence_digest
+        if evidence._native_frame_canonical is not None:
+            assert evidence.frame is not None
+            self._native_frames.setdefault(
+                _native_identity(evidence.frame), evidence._native_frame_canonical
+            )
+            assert evidence._processed_frame_canonical is not None
+            self._processed_frames.setdefault(
+                evidence.frame_id, evidence._processed_frame_canonical
+            )
         self._last_frame_id = evidence.frame_id
         self._last_timestamp = evidence.timestamp

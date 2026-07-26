@@ -100,6 +100,26 @@ def _ledger(**changes: int) -> ReversibleBackgroundLedger:
     return ReversibleBackgroundLedger(_geometry(), _ledger_config(**changes))
 
 
+def _masked_evidence(
+    *,
+    entity_id: int,
+    frame: Frame,
+    view_bin: int,
+    masked_depth: np.ndarray,
+) -> BackgroundLedgerEvidence:
+    return BackgroundLedgerEvidence(
+        entity_id=entity_id,
+        geometry_epoch=2,
+        frame_id=frame.frame_id,
+        timestamp=frame.timestamp,
+        kind=TemporalEvidenceKind.VISIBLE_ABSENT,
+        view_bin=view_bin,
+        contributions=(BackgroundContribution((0, 0, 0)),),
+        frame=frame,
+        depth_m=masked_depth,
+    )
+
+
 def test_visible_absent_is_provisional_until_all_three_thresholds_hold() -> None:
     ledger = _ledger(commit_support_frames=3, minimum_commit_frame_gap=3)
     assert ledger.stage(_evidence(frame_id=10, view_bin=0)) is LedgerDecision.STAGED
@@ -329,21 +349,22 @@ def test_bad_contribution_geometry_is_rejected_before_provisional_publication(
         frame.pose[3, 3] = 2.0
     else:
         depth[:] = 5.0
-    evidence = BackgroundLedgerEvidence(
-        entity_id=1,
-        geometry_epoch=2,
-        frame_id=10,
-        timestamp=10.0,
-        kind=TemporalEvidenceKind.VISIBLE_ABSENT,
-        view_bin=0,
-        contributions=(BackgroundContribution((0, 0, 0)),),
-        frame=frame,
-        depth_m=depth,
-    )
     ledger = _ledger()
     before = ledger.journal_digest()
     with pytest.raises((TypeError, ValueError)):
-        ledger.stage(evidence)
+        ledger.stage(
+            BackgroundLedgerEvidence(
+                entity_id=1,
+                geometry_epoch=2,
+                frame_id=10,
+                timestamp=10.0,
+                kind=TemporalEvidenceKind.VISIBLE_ABSENT,
+                view_bin=0,
+                contributions=(BackgroundContribution((0, 0, 0)),),
+                frame=frame,
+                depth_m=depth,
+            )
+        )
     assert ledger.journal_digest() == before
     assert ledger.provisional_count == 0
 
@@ -418,3 +439,218 @@ def test_journal_digest_covers_accepted_event_watermark() -> None:
     right.stage(_evidence(frame_id=10))
     right.stage(_evidence(entity_id=9, frame_id=11, kind=TemporalEvidenceKind.PRESENT))
     assert left.journal_digest() != right.journal_digest()
+
+
+def test_cross_entity_duplicate_native_observations_integrate_once_per_frame_block() -> None:
+    ledger = _ledger(maximum_records_per_block=2)
+    evidence: dict[tuple[int, int], BackgroundLedgerEvidence] = {}
+    for frame_id, view_bin in ((10, 0), (12, 1)):
+        frame = _frame(frame_id)
+        for entity_id in (1, 2):
+            item = _masked_evidence(
+                entity_id=entity_id,
+                frame=frame,
+                view_bin=view_bin,
+                masked_depth=frame.depth,
+            )
+            evidence[(entity_id, frame_id)] = item
+            assert ledger.stage(item) is not LedgerDecision.REJECTED_CAPACITY
+
+    expected = TemporalBackgroundVolume.rebuild_blocks(
+        _geometry(),
+        tuple(
+            (
+                (0, frame_id, (0, 0, 0)),
+                (0, 0, 0),
+                evidence[(1, frame_id)].frame,
+                evidence[(1, frame_id)].depth_m,
+            )
+            for frame_id in (10, 12)
+        ),
+    )
+    assert ledger.committed_record_count == 4
+    assert ledger.committed_volume.canonical_block_state() == expected.canonical_block_state()
+
+
+def test_cross_entity_complementary_masks_union_then_integrate_once() -> None:
+    ledger = _ledger(maximum_records_per_block=2)
+    full_observations: list[tuple[object, tuple[int, int, int], Frame, np.ndarray]] = []
+    for frame_id, view_bin in ((10, 0), (12, 1)):
+        frame = _frame(frame_id)
+        frame.rgb = np.zeros((16, 16, 3), dtype=np.uint8)
+        frame.depth = np.ones((16, 16), dtype=np.float32)
+        frame.intrinsics = CameraIntrinsics(8.0, 8.0, 7.5, 7.5, 16, 16)
+        left = np.zeros_like(frame.depth)
+        right = np.zeros_like(frame.depth)
+        left[:, :8] = frame.depth[:, :8]
+        right[:, 8:] = frame.depth[:, 8:]
+        ledger.stage(
+            _masked_evidence(
+                entity_id=1,
+                frame=frame,
+                view_bin=view_bin,
+                masked_depth=left,
+            )
+        )
+        ledger.stage(
+            _masked_evidence(
+                entity_id=2,
+                frame=frame,
+                view_bin=view_bin,
+                masked_depth=right,
+            )
+        )
+        full_observations.append(
+            (
+                (0, frame_id, (0, 0, 0)),
+                (0, 0, 0),
+                frame,
+                frame.depth,
+            )
+        )
+    expected = TemporalBackgroundVolume.rebuild_blocks(
+        _geometry(), tuple(full_observations)
+    )
+    assert ledger.committed_volume.canonical_block_state() == expected.canonical_block_state()
+
+
+@pytest.mark.parametrize(
+    "damage", ["rgb", "depth", "pose", "intrinsics", "timestamp", "source"]
+)
+def test_native_frame_conflict_rejects_without_any_state_change(
+    damage: str,
+) -> None:
+    ledger = _ledger()
+    ledger.stage(_evidence(entity_id=1, frame_id=10))
+    conflicting = _frame(10)
+    if damage == "rgb":
+        conflicting.rgb[0, 0] = (1, 2, 3)
+    elif damage == "depth":
+        conflicting.depth[0, 0] = 2.0
+    elif damage == "pose":
+        conflicting.pose[0, 3] += 0.25
+    elif damage == "intrinsics":
+        conflicting.intrinsics.fx += 0.25
+    elif damage == "timestamp":
+        conflicting.timestamp += 0.25
+    else:
+        conflicting.source_frame_id = 99
+    evidence = _masked_evidence(
+        entity_id=2,
+        frame=conflicting,
+        view_bin=0,
+        masked_depth=conflicting.depth,
+    )
+    before = (ledger.journal_digest(), ledger.committed_digest())
+    with pytest.raises(ValueError, match="native frame|frame content|timestamp"):
+        ledger.stage(evidence)
+    assert (ledger.journal_digest(), ledger.committed_digest()) == before
+
+
+def test_masked_nonzero_depth_must_equal_valid_native_depth() -> None:
+    frame = _frame(10)
+    forged = frame.depth.copy()
+    forged[0, 0] = 2.0
+    with pytest.raises(ValueError, match="native frame.depth|masked depth"):
+        _masked_evidence(
+            entity_id=1,
+            frame=frame,
+            view_bin=0,
+            masked_depth=forged,
+        )
+
+
+def test_duplicate_ownership_does_not_consume_observation_capacity_early() -> None:
+    ledger = _ledger(maximum_records_per_block=2)
+    for frame_id, view_bin in ((10, 0), (12, 1)):
+        frame = _frame(frame_id)
+        for entity_id in range(1, _geometry().maximum_entities + 1):
+            decision = ledger.stage(
+                _masked_evidence(
+                    entity_id=entity_id,
+                    frame=frame,
+                    view_bin=view_bin,
+                    masked_depth=frame.depth,
+                )
+            )
+            assert decision is not LedgerDecision.REJECTED_CAPACITY
+    assert ledger.committed_record_count == 8
+
+
+def test_ownership_records_per_native_observation_are_geometry_bounded() -> None:
+    ledger = _ledger()
+    frame = _frame(10)
+    for entity_id in range(1, _geometry().maximum_entities + 1):
+        assert ledger.stage(
+            _masked_evidence(
+                entity_id=entity_id,
+                frame=frame,
+                view_bin=0,
+                masked_depth=frame.depth,
+            )
+        ) is LedgerDecision.STAGED
+    before = ledger.journal_digest()
+    assert ledger.stage(
+        _masked_evidence(
+            entity_id=_geometry().maximum_entities + 1,
+            frame=frame,
+            view_bin=0,
+            masked_depth=frame.depth,
+        )
+    ) is LedgerDecision.REJECTED_CAPACITY
+    assert ledger.journal_digest() == before
+
+
+def test_same_source_frame_under_new_internal_id_does_not_add_support() -> None:
+    ledger = _ledger()
+    first = _frame(10)
+    first.source_frame_id = 77
+    second = _frame(12)
+    second.source_frame_id = 77
+    second.timestamp = first.timestamp
+    assert ledger.stage(
+        _masked_evidence(
+            entity_id=1,
+            frame=first,
+            view_bin=0,
+            masked_depth=first.depth,
+        )
+    ) is LedgerDecision.STAGED
+    assert ledger.stage(
+        _masked_evidence(
+            entity_id=1,
+            frame=second,
+            view_bin=1,
+            masked_depth=second.depth,
+        )
+    ) is LedgerDecision.STAGED
+    assert ledger.committed_record_count == 0
+
+
+def test_same_source_frame_content_conflict_across_internal_ids_rolls_back() -> None:
+    ledger = _ledger()
+    first = _frame(10)
+    first.source_frame_id = 77
+    ledger.stage(
+        _masked_evidence(
+            entity_id=1,
+            frame=first,
+            view_bin=0,
+            masked_depth=first.depth,
+        )
+    )
+    conflicting = _frame(12)
+    conflicting.source_frame_id = 77
+    conflicting.timestamp = first.timestamp
+    conflicting.rgb[0, 0] = (1, 2, 3)
+    before = ledger.journal_digest()
+    with pytest.raises(ValueError, match="native frame|frame content"):
+        ledger.stage(
+            _masked_evidence(
+                entity_id=2,
+                frame=conflicting,
+                view_bin=0,
+                masked_depth=conflicting.depth,
+            )
+        )
+    assert ledger.journal_digest() == before
