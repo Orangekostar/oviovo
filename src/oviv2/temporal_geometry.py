@@ -597,16 +597,16 @@ def estimate_object_motion(
     diagnostic_rmse = float(config.maximum_icp_rmse_m)
     if submap.local_points_xyz.shape[0] == 0 or target.shape[0] == 0:
         return fallback
-    minimum_points = int(config.minimum_icp_points)
     source = submap.local_points_xyz
-    if source.shape[0] < minimum_points or target.shape[0] < minimum_points:
-        return fallback
     source_rank = _stable_centered_rank(source)
     target_rank = _stable_centered_rank(target)
     if source_rank is None or target_rank is None:
         return _motion_result(
             previous_pose, MotionDecision.REJECTED, 0.0, diagnostic_rmse
         )
+    minimum_points = int(config.minimum_icp_points)
+    if source.shape[0] < minimum_points or target.shape[0] < minimum_points:
+        return fallback
     if source_rank < 2 or target_rank < 2:
         return fallback
 

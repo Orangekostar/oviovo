@@ -450,8 +450,9 @@ def test_extreme_finite_geometry_is_rejected_without_numeric_warning() -> None:
 
 @pytest.mark.parametrize("extreme_side", ["source", "target", "both"])
 @pytest.mark.parametrize("order", [(0, 1, 2), (2, 0, 1), (2, 1, 0)])
+@pytest.mark.parametrize("minimum_icp_points", [3, 4])
 def test_unrepresentable_finite_euclidean_geometry_is_rejected_for_all_orders(
-    extreme_side: str, order: tuple[int, int, int]
+    extreme_side: str, order: tuple[int, int, int], minimum_icp_points: int
 ) -> None:
     maximum = float(np.finfo(np.float64).max)
     extreme = np.asarray(
@@ -479,7 +480,10 @@ def test_unrepresentable_finite_euclidean_geometry_is_rejected_for_all_orders(
             submap,
             target,
             (0.0, 0.0, 0.0),
-            _config(depth_max_m=maximum),
+            _config(
+                depth_max_m=maximum,
+                minimum_icp_points=minimum_icp_points,
+            ),
             previous_object_to_world=previous,
         )
 
