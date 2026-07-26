@@ -14,6 +14,7 @@ from src.oviv2.temporal_config import TemporalGeometryConfig
 
 
 _RIGID_ATOL = 1e-6
+_EUCLIDEAN_COMPONENT_LIMIT = math.sqrt(float(np.finfo(np.float64).max) / 3.0)
 
 
 def _contains_bool(value: object) -> bool:
@@ -542,9 +543,13 @@ def estimate_object_translation(
 
 
 def _stable_centered_rank(points: np.ndarray) -> int | None:
+    if np.any(np.abs(points) > _EUCLIDEAN_COMPONENT_LIMIT):
+        return None
     with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
         centered = points - points[0]
         if not np.all(np.isfinite(centered)):
+            return None
+        if np.any(np.abs(centered) > _EUCLIDEAN_COMPONENT_LIMIT):
             return None
         scale = float(np.max(np.abs(centered)))
         if scale == 0.0:

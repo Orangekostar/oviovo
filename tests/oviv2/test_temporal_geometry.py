@@ -448,6 +448,46 @@ def test_extreme_finite_geometry_is_rejected_without_numeric_warning() -> None:
     assert np.isfinite(result.fitness) and np.isfinite(result.rmse_m)
 
 
+@pytest.mark.parametrize("extreme_side", ["source", "target", "both"])
+@pytest.mark.parametrize("order", [(0, 1, 2), (2, 0, 1), (2, 1, 0)])
+def test_unrepresentable_finite_euclidean_geometry_is_rejected_for_all_orders(
+    extreme_side: str, order: tuple[int, int, int]
+) -> None:
+    maximum = float(np.finfo(np.float64).max)
+    extreme = np.asarray(
+        [
+            [maximum, maximum, 0.0],
+            [maximum, maximum, 1.0],
+            [maximum, maximum - 1.0, 2.0],
+        ]
+    )[list(order)]
+    ordinary = np.asarray([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+    source = extreme if extreme_side in ("source", "both") else ordinary
+    target = extreme.copy() if extreme_side in ("target", "both") else ordinary.copy()
+    submap = ObjectSubmap(
+        (0.0, 0.0, 0.0),
+        ((0, 0, 0), (1, 0, 0), (2, 0, 0)),
+        source,
+        np.ones(3),
+        np.zeros(3, dtype=np.int64),
+    )
+    previous = np.eye(4)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        result = estimate_object_motion(
+            submap,
+            target,
+            (0.0, 0.0, 0.0),
+            _config(depth_max_m=maximum),
+            previous_object_to_world=previous,
+        )
+
+    assert result.decision is MotionDecision.REJECTED
+    np.testing.assert_array_equal(result.object_to_world, previous)
+    assert np.isfinite(result.fitness) and np.isfinite(result.rmse_m)
+
+
 def test_motion_uses_configured_correspondence_distance(monkeypatch: pytest.MonkeyPatch) -> None:
     submap = _submap(np.asarray([[0, 0, 0], [1, 0, 0], [0, 1, 0]]))
     captured: list[float] = []
