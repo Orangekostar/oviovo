@@ -516,6 +516,17 @@ def _generate(tmp_path: Path, **overrides: object) -> tuple[Path, PassingRunner]
         )
         for position, profile in enumerate(sequence)
     ]
+    exact_specs = [{"profile": profile} for profile in sequence]
+
+    def execute_transaction(
+        specs: list[dict[str, object]], **kwargs: object
+    ) -> dict[str, object]:
+        assert specs == exact_specs
+        assert kwargs["repo"] == repo.resolve()
+        return gates.verify_exact_profile_runs(
+            exact_runs, compare=kwargs["compare"]
+        )
+
     kwargs = {
         "repo": repo,
         "output": output,
@@ -524,7 +535,9 @@ def _generate(tmp_path: Path, **overrides: object) -> tuple[Path, PassingRunner]
         "git": FakeGit(),
         "run": runner,
         "now_utc": lambda: "2026-07-25T00:00:00Z",
-        "exact_profile_runs": exact_runs,
+        "exact_profile_specs": exact_specs,
+        "transaction_dir": tmp_path / "transaction",
+        "execute_transaction": execute_transaction,
         "compare": lambda left, right: {
             "format": "oviv2_cumulative_exact_v1",
             "checkpoint_frames": [2, 7],
@@ -811,47 +824,105 @@ def _exact_execution(
         if profile == "reference"
         else (Path(__file__).parents[2] / "scripts/evaluation/run_oviv2_tesse_cd_v2.py").resolve()
     )
+    config_path = (root.parent / f"{profile}.json").resolve()
+    config_path.write_text(json.dumps({"algorithm_hash": "d" * 64, "profile": profile}) + "\n")
+    freeze_path = (root.parent / "freeze.json").resolve()
+    if not freeze_path.exists():
+        freeze_path.write_text(
+            json.dumps(
+                {
+                    "shared_bindings": {
+                        "input_manifest": {"sha256": "1" * 64},
+                        "schedule": {"sha256": "2" * 64},
+                        "occlusion_target_manifest": {"sha256": "3" * 64},
+                    }
+                },
+                sort_keys=True,
+            )
+            + "\n"
+        )
     argv = [
-        "/env/bin/python", str(runner), "--config", str((root.parent / f"{profile}.json").resolve()),
-        "--output", str(root.resolve()), "--freeze-manifest", str((root.parent / "freeze.json").resolve()),
+        "/env/bin/python", str(runner), "--config", str(config_path),
+        "--output", str(root.resolve()), "--freeze-manifest", str(freeze_path),
         "--run-slot", "apartment_run1",
     ]
     if profile == "reference":
         argv += ["--receipt", str((root / "t1_exact_receipt.json").resolve()),
                  "--source-manifest", str(source_path)]
-    execution = {
-        "profile": profile,
-        "argv": argv,
-        "pid": pid,
+    run_manifest = {
+        "schema_version": 1 if profile == "reference" else 2,
+        "algorithm_hash": "d" * 64,
         "code_commit": commit,
-        "source_manifest_sha256": actual_source_sha,
-        "input_fingerprints": inputs or {"dataset": "c" * 64},
-        "output_root": str(root.resolve()),
+        "source_bindings": {"dataset": "fixture", "cache": "shared"},
+        "checkpoints": [{"frame_index": 2}],
     }
+    (root / "run_manifest.json").write_text(
+        json.dumps(run_manifest, sort_keys=True, separators=(",", ":")) + "\n"
+    )
     audit = {
         "checkpoint_frames": [2, 7],
         "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
         "root_sha256": "e" * 64,
     }
-    receipt = {
-        "schema_version": 1,
-        "format": "oviv2_t1_exact_execution_receipt_v1",
-        "execution": execution,
-        "source_manifest": {
-            "path": str(source_path),
-            "sha256": actual_source_sha,
-            "byte_count": len(source_data),
-        },
-        "artifact_inventory": audit["inventory"],
-        "checkpoint_frames": audit["checkpoint_frames"],
-        "cumulative_root_sha256": audit["root_sha256"],
-    }
-    receipt_path = root / "t1_exact_receipt.json"
+    if profile == "reference":
+        worker_execution = {
+            "profile": profile,
+            "argv": argv,
+            "pid": pid,
+            "code_commit": commit,
+            "source_manifest_sha256": actual_source_sha,
+            "input_fingerprints": inputs or {"dataset": "c" * 64},
+            "output_root": str(root.resolve()),
+        }
+        receipt = {
+            "schema_version": 1,
+            "format": "oviv2_t1_exact_execution_receipt_v1",
+            "execution": worker_execution,
+            "source_manifest": {
+                "path": str(source_path),
+                "sha256": actual_source_sha,
+                "byte_count": len(source_data),
+            },
+            "artifact_inventory": audit["inventory"],
+            "checkpoint_frames": audit["checkpoint_frames"],
+            "cumulative_root_sha256": audit["root_sha256"],
+        }
+        receipt_path = root / "t1_exact_receipt.json"
+    else:
+        receipt = {
+            "schema_version": 1,
+            "provenance": {"repository_commit": commit},
+            "environment": {},
+        }
+        receipt_path = root / "execution_receipt.json"
     receipt_path.write_text(json.dumps(receipt, sort_keys=True, separators=(",", ":")) + "\n")
-    return {
-        **execution,
-        "receipt_sha256": hashlib.sha256(receipt_path.read_bytes()).hexdigest(),
+    completed = gates._reopen_completed_execution(
+        profile, root.resolve(), argv, pid, 0, source_path
+    )
+    status = root.stat()
+    observation = {
+        "schema_version": 1,
+        "format": "oviv2_exact_process_observation_v1",
+        "position": int(root.name.rsplit("-", 1)[-1]) if root.name.rsplit("-", 1)[-1].isdigit() else pid,
+        "profile": profile,
+        "argv": argv,
+        "pid": pid,
+        "returncode": 0,
+        "config": gates._absolute_file_record(config_path),
+        "freeze_manifest": gates._absolute_file_record(freeze_path),
+        "source_manifest": gates._absolute_file_record(source_path),
+        "output_root": str(root.resolve()),
+        "root_device": status.st_dev,
+        "root_inode": status.st_ino,
+        "run_manifest": gates._absolute_file_record(root / "run_manifest.json"),
+        "production_receipt": gates._absolute_file_record(receipt_path),
+        "completed_execution": completed,
     }
+    observation_dir = root.parent / "observations"
+    observation_dir.mkdir(exist_ok=True)
+    observation_path = observation_dir / f"{root.name}.json"
+    observation_path.write_text(json.dumps(observation, sort_keys=True, separators=(",", ":")) + "\n")
+    return {**completed, "observation_receipt": gates._absolute_file_record(observation_path)}
 
 
 def test_exact_profile_gate_requires_interleaved_independent_processes(
@@ -884,13 +955,110 @@ def test_exact_profile_gate_requires_interleaved_independent_processes(
     assert calls[9] == (tmp_path / "run-0", tmp_path / "run-1")
 
     executions[1]["pid"] = executions[0]["pid"]
-    receipt_path = Path(executions[1]["output_root"]) / "t1_exact_receipt.json"
-    receipt = json.loads(receipt_path.read_text())
-    receipt["execution"]["pid"] = executions[1]["pid"]
-    receipt_path.write_text(json.dumps(receipt, sort_keys=True, separators=(",", ":")) + "\n")
-    executions[1]["receipt_sha256"] = hashlib.sha256(receipt_path.read_bytes()).hexdigest()
+    observation_path = Path(executions[1]["observation_receipt"]["path"])
+    observation = json.loads(observation_path.read_text())
+    observation["pid"] = executions[1]["pid"]
+    observation["completed_execution"]["pid"] = executions[1]["pid"]
+    observation_path.write_text(json.dumps(observation, sort_keys=True, separators=(",", ":")) + "\n")
+    executions[1]["observation_receipt"] = gates._absolute_file_record(observation_path)
     with pytest.raises(gates.GateVerificationError, match="PID"):
         gates.verify_exact_profile_runs(executions, compare=compare)
+
+
+def test_exact_transaction_uses_popen_pid_argv_and_returncode(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config = tmp_path / "config.json"
+    freeze = tmp_path / "freeze.json"
+    source = tmp_path / "source.json"
+    for path in (config, freeze, source):
+        path.write_text("{}\n")
+    specs = [
+        {
+            "profile": profile,
+            "config": str(config.resolve()),
+            "output_root": str((tmp_path / f"run-{position}").resolve()),
+            "freeze_manifest": str(freeze.resolve()),
+            "run_slot": "apartment_run1",
+            "source_manifest": str(source.resolve()),
+        }
+        for position, profile in enumerate(gates.EXACT_PROFILE_SEQUENCE)
+    ]
+    launched: list[tuple[list[str], int]] = []
+
+    class Process:
+        def __init__(self, argv: list[str], pid: int) -> None:
+            self.args = argv
+            self.pid = pid
+            self.returncode = 0
+
+        def communicate(self) -> tuple[bytes, bytes]:
+            return b"ok\n", b""
+
+    def popen(argv: list[str], **kwargs: object) -> Process:
+        assert kwargs["cwd"] == gates.REPO_ROOT
+        pid = 7000 + len(launched)
+        launched.append((argv, pid))
+        output = Path(argv[5])
+        output.mkdir()
+        (output / "run_manifest.json").write_text("{}\n")
+        receipt_name = "t1_exact_receipt.json" if len(argv) == 14 else "execution_receipt.json"
+        (output / receipt_name).write_text("{}\n")
+        return Process(argv, pid)
+
+    def reopen(
+        profile: str,
+        root: Path,
+        argv: list[str],
+        pid: int,
+        returncode: int,
+        source_manifest: Path,
+    ) -> dict[str, object]:
+        assert source_manifest == source.resolve()
+        return {
+            "profile": profile,
+            "argv": argv,
+            "pid": pid,
+            "returncode": returncode,
+            "code_commit": "a" * 40,
+            "source_manifest_sha256": "b" * 64,
+            "per_run_fingerprints": {"config": "c" * 64, "algorithm": "d" * 64, "profile": "e" * 64},
+            "common_input_fingerprints": {"dataset": "f" * 64},
+            "output_root": str(root),
+            "receipt_sha256": "1" * 64,
+        }
+
+    seen: list[dict[str, object]] = []
+    monkeypatch.setattr(gates, "_reopen_completed_execution", reopen)
+    monkeypatch.setattr(
+        gates,
+        "verify_exact_profile_runs",
+        lambda executions, **kwargs: seen.extend(executions) or {"executions": executions},
+    )
+
+    result = gates.execute_exact_profile_transaction(
+        specs,
+        repo=gates.REPO_ROOT,
+        python_executable="/env/bin/python",
+        transaction_dir=tmp_path / "transaction",
+        popen_factory=popen,
+        compare=lambda left, right: {
+            "format": "oviv2_cumulative_exact_v1",
+            "checkpoint_frames": [2],
+            "inventory": [{"path": "x", "sha256": "2" * 64, "byte_count": 1}],
+            "root_sha256": "3" * 64,
+        },
+    )
+
+    assert result["executions"] == seen
+    assert [record["pid"] for record in seen] == [pid for _, pid in launched]
+    assert all(record["returncode"] == 0 for record in seen)
+    assert [record["profile"] for record in seen] == list(gates.EXACT_PROFILE_SEQUENCE)
+    observations = sorted((tmp_path / "transaction/receipts").glob("*.json"))
+    assert len(observations) == 9
+    assert [json.loads(path.read_text())["pid"] for path in observations] == [
+        pid for _, pid in launched
+    ]
 
 
 @pytest.mark.parametrize("mutation", ["duplicate_root", "ancestor_root", "argv", "receipt"])
@@ -916,7 +1084,7 @@ def test_exact_profile_gate_rejects_root_alias_argv_and_receipt_mismatch(
     elif mutation == "argv":
         executions[2]["argv"] = ["python", "runner.py"]
     else:
-        receipt = Path(executions[2]["output_root"]) / "t1_exact_receipt.json"
+        receipt = Path(executions[2]["output_root"]) / "execution_receipt.json"
         receipt.write_bytes(receipt.read_bytes() + b" ")
     with pytest.raises(gates.GateVerificationError, match="root|argv|receipt"):
         gates.verify_exact_profile_runs(executions, compare=compare)
@@ -1009,44 +1177,6 @@ def test_reference_worker_records_exact_process_and_artifact_receipt(
     assert payload["format"] == "oviv2_t1_exact_execution_receipt_v1"
     assert payload["cumulative_root_sha256"] == "e" * 64
     assert json.loads(receipt.read_text()) == payload
-    record = {
-        **payload["execution"],
-        "receipt_sha256": hashlib.sha256(receipt.read_bytes()).hexdigest(),
-    }
-    bound, audit = gates._bind_exact_receipt(
-        record,
-        compare=lambda left, right: {
-            "format": "oviv2_cumulative_exact_v1",
-            "checkpoint_frames": [2, 7],
-            "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
-            "root_sha256": "e" * 64,
-        },
-    )
-    assert bound == record
-    assert audit["root_sha256"] == "e" * 64
-    executions = [record]
-    for position, profile in enumerate(gates.EXACT_PROFILE_SEQUENCE[1:], start=1):
-        executions.append(
-            _exact_execution(
-                profile,
-                tmp_path / f"run-{position}",
-                5000 + position,
-                commit="a" * 40,
-                source_sha=hashlib.sha256(source.read_bytes()).hexdigest(),
-                source_path=source,
-                inputs=payload["execution"]["input_fingerprints"],
-            )
-        )
-    evidence = gates.verify_exact_profile_runs(
-        executions,
-        compare=lambda left, right: {
-            "format": "oviv2_cumulative_exact_v1",
-            "checkpoint_frames": [2, 7],
-            "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
-            "root_sha256": "e" * 64,
-        },
-    )
-    assert evidence["sequence"] == list(gates.EXACT_PROFILE_SEQUENCE)
 
 
 @pytest.mark.parametrize("field", ["path", "sha256", "byte_count"])
@@ -1064,7 +1194,9 @@ def test_exact_receipt_rejects_source_manifest_record_drift(
         receipt["source_manifest"][field] += 1
     receipt_path.write_text(json.dumps(receipt, sort_keys=True, separators=(",", ":")) + "\n")
     record["receipt_sha256"] = hashlib.sha256(receipt_path.read_bytes()).hexdigest()
-    with pytest.raises(gates.GateVerificationError, match="source manifest"):
+    with pytest.raises(
+        gates.GateVerificationError, match="source manifest|production_receipt"
+    ):
         gates._bind_exact_receipt(
             record,
             compare=lambda left, right: {

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
 import hashlib
 import json
 import os
@@ -38,6 +39,7 @@ PROVENANCE_FIELDS = {
     "library_versions",
 }
 PROVENANCE_LIBRARY_FIELDS = {"numpy", "open3d", "torch", "scipy", "pillow"}
+MAX_JSON_BYTES = 16 * 1024 * 1024
 
 
 class ArtifactMismatch(ValueError):
@@ -57,6 +59,165 @@ def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def _identity(value: os.stat_result) -> tuple[int, int, int, int, int]:
+    return (
+        value.st_dev,
+        value.st_ino,
+        value.st_size,
+        value.st_mtime_ns,
+        value.st_ctime_ns,
+    )
+
+
+@dataclass(frozen=True)
+class FileEntry:
+    root: Path
+    path: PurePosixPath
+    sha256: str
+    byte_count: int
+    identity: tuple[int, int, int, int, int]
+
+
+def _open_regular(root: Path, relative: PurePosixPath, label: str) -> int:
+    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    directory_flags = flags | getattr(os, "O_DIRECTORY", 0)
+    try:
+        descriptor = os.open(root, directory_flags)
+        for part in relative.parts[:-1]:
+            next_descriptor = os.open(part, directory_flags, dir_fd=descriptor)
+            os.close(descriptor)
+            descriptor = next_descriptor
+        file_descriptor = os.open(relative.parts[-1], flags, dir_fd=descriptor)
+        os.close(descriptor)
+    except OSError as exc:
+        try:
+            os.close(descriptor)
+        except (OSError, UnboundLocalError):
+            pass
+        raise ArtifactMismatch(f"{label} is missing, unsafe, or contains a symlink") from exc
+    if not stat.S_ISREG(os.fstat(file_descriptor).st_mode):
+        os.close(file_descriptor)
+        raise ArtifactMismatch(f"{label} is not a regular file")
+    return file_descriptor
+
+
+def _stream_entry(root: Path, relative: PurePosixPath, label: str) -> FileEntry:
+    descriptor = _open_regular(root, relative, label)
+    return _stream_descriptor(root, relative, descriptor, label)
+
+
+def _stream_descriptor(
+    root: Path, relative: PurePosixPath, descriptor: int, label: str
+) -> FileEntry:
+    digest = hashlib.sha256()
+    total = 0
+    try:
+        before = os.fstat(descriptor)
+        while True:
+            chunk = os.read(descriptor, 1024 * 1024)
+            if not chunk:
+                break
+            digest.update(chunk)
+            total += len(chunk)
+        after = os.fstat(descriptor)
+    finally:
+        os.close(descriptor)
+    if _identity(before) != _identity(after) or total != after.st_size:
+        raise ArtifactMismatch(f"{label} changed while being read")
+    return FileEntry(root, relative, digest.hexdigest(), total, _identity(after))
+
+
+def _open_directory(root: Path, relative: PurePosixPath | None, label: str) -> int:
+    flags = (
+        os.O_RDONLY
+        | getattr(os, "O_CLOEXEC", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+        | getattr(os, "O_DIRECTORY", 0)
+    )
+    try:
+        descriptor = os.open(root, flags)
+        for part in (() if relative is None else relative.parts):
+            child = os.open(part, flags, dir_fd=descriptor)
+            os.close(descriptor)
+            descriptor = child
+        return descriptor
+    except OSError as exc:
+        try:
+            os.close(descriptor)
+        except (OSError, UnboundLocalError):
+            pass
+        raise ArtifactMismatch(f"{label} tree is missing, unsafe, or contains a symlink") from exc
+
+
+def _walk_directory(
+    root: Path,
+    descriptor: int,
+    prefix: PurePosixPath | None,
+    label: str,
+) -> list[tuple[PurePosixPath, FileEntry]]:
+    before = os.fstat(descriptor)
+    try:
+        names = sorted(os.listdir(descriptor))
+    except OSError as exc:
+        raise ArtifactMismatch(f"{label} tree cannot be listed") from exc
+    result: list[tuple[PurePosixPath, FileEntry]] = []
+    for name in names:
+        if not name or name in {".", ".."} or "/" in name:
+            raise ArtifactMismatch(f"{label} tree contains a noncanonical entry")
+        path = PurePosixPath(name) if prefix is None else prefix / name
+        try:
+            metadata = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+        except OSError as exc:
+            raise ArtifactMismatch(f"{label} tree changed during traversal") from exc
+        if stat.S_ISLNK(metadata.st_mode):
+            raise ArtifactMismatch(f"{label} tree contains a symlink")
+        if stat.S_ISREG(metadata.st_mode):
+            try:
+                file_descriptor = os.open(
+                    name,
+                    os.O_RDONLY
+                    | getattr(os, "O_CLOEXEC", 0)
+                    | getattr(os, "O_NOFOLLOW", 0),
+                    dir_fd=descriptor,
+                )
+            except OSError as exc:
+                raise ArtifactMismatch(f"{label} tree changed during traversal") from exc
+            if _identity(os.fstat(file_descriptor)) != _identity(metadata):
+                os.close(file_descriptor)
+                raise ArtifactMismatch(f"{label} tree entry was replaced")
+            result.append(
+                (path, _stream_descriptor(root, path, file_descriptor, label))
+            )
+        elif stat.S_ISDIR(metadata.st_mode):
+            try:
+                child = os.open(
+                    name,
+                    os.O_RDONLY
+                    | getattr(os, "O_CLOEXEC", 0)
+                    | getattr(os, "O_NOFOLLOW", 0)
+                    | getattr(os, "O_DIRECTORY", 0),
+                    dir_fd=descriptor,
+                )
+            except OSError as exc:
+                raise ArtifactMismatch(f"{label} tree changed during traversal") from exc
+            try:
+                if _identity(os.fstat(child)) != _identity(metadata):
+                    raise ArtifactMismatch(f"{label} tree directory was replaced")
+                result.extend(_walk_directory(root, child, path, label))
+            finally:
+                os.close(child)
+        else:
+            raise ArtifactMismatch(f"{label} tree contains a forbidden entry")
+    after = os.fstat(descriptor)
+    try:
+        final_names = sorted(os.listdir(descriptor))
+    except OSError as exc:
+        raise ArtifactMismatch(f"{label} tree changed during traversal") from exc
+    if _identity(before) != _identity(after) or names != final_names:
+        raise ArtifactMismatch(f"{label} tree changed during traversal")
+    return result
+
+
 def _relative(value: object, label: str) -> PurePosixPath:
     if not isinstance(value, str) or not value or "\\" in value:
         raise ArtifactMismatch(f"{label} path is invalid")
@@ -69,18 +230,22 @@ def _relative(value: object, label: str) -> PurePosixPath:
 
 
 def _regular_bytes(root: Path, relative: PurePosixPath, label: str) -> bytes:
-    current = root
-    for part in relative.parts:
-        current = current / part
-        try:
-            metadata = os.lstat(current)
-        except OSError as exc:
-            raise ArtifactMismatch(f"{label} is missing") from exc
-        if stat.S_ISLNK(metadata.st_mode):
-            raise ArtifactMismatch(f"{label} contains a symlink")
-    if not stat.S_ISREG(os.lstat(current).st_mode):
-        raise ArtifactMismatch(f"{label} is not a regular file")
-    return current.read_bytes()
+    descriptor = _open_regular(root, relative, label)
+    chunks: list[bytes] = []
+    try:
+        before = os.fstat(descriptor)
+        total = 0
+        while chunk := os.read(descriptor, 1024 * 1024):
+            chunks.append(chunk)
+            total += len(chunk)
+            if total > MAX_JSON_BYTES:
+                raise ArtifactMismatch(f"{label} exceeds JSON size limit")
+        after = os.fstat(descriptor)
+    finally:
+        os.close(descriptor)
+    if _identity(before) != _identity(after):
+        raise ArtifactMismatch(f"{label} changed while being read")
+    return b"".join(chunks)
 
 
 def _record(record: object, label: str) -> tuple[PurePosixPath, str, int]:
@@ -104,72 +269,50 @@ def _record(record: object, label: str) -> tuple[PurePosixPath, str, int]:
     return path, digest, count
 
 
-def _files_below(root: Path, relative: PurePosixPath, label: str) -> list[PurePosixPath]:
-    directory = root.joinpath(*relative.parts)
-    try:
-        metadata = os.lstat(directory)
-    except OSError as exc:
-        raise ArtifactMismatch(f"{label} tree is missing") from exc
-    if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISDIR(metadata.st_mode):
-        raise ArtifactMismatch(f"{label} tree is not a regular directory")
-    files: list[PurePosixPath] = []
-    for path in sorted(directory.rglob("*")):
-        entry = os.lstat(path)
-        if stat.S_ISLNK(entry.st_mode):
-            raise ArtifactMismatch(f"{label} tree contains a symlink")
-        if stat.S_ISREG(entry.st_mode):
-            files.append(PurePosixPath(path.relative_to(root).as_posix()))
-        elif not stat.S_ISDIR(entry.st_mode):
-            raise ArtifactMismatch(f"{label} tree contains a forbidden entry")
-    if not files:
-        raise ArtifactMismatch(f"{label} tree is empty")
-    return files
-
-
 def _validate_file_record(
     root: Path, record: object, label: str
-) -> tuple[PurePosixPath, bytes]:
+) -> tuple[PurePosixPath, FileEntry]:
     path, digest, count = _record(record, label)
-    data = _regular_bytes(root, path, label)
-    if len(data) != count or _sha256(data) != digest:
+    entry = _stream_entry(root, path, label)
+    if entry.byte_count != count or entry.sha256 != digest:
         raise ArtifactMismatch(f"{label} manifest record does not match raw bytes")
-    return path, data
+    return path, entry
 
 
 def _validate_tree_record(
     root: Path, record: object, label: str
-) -> list[tuple[PurePosixPath, bytes]]:
+) -> list[tuple[PurePosixPath, FileEntry]]:
     path, digest, count = _record(record, label)
-    files = _files_below(root, path, label)
+    descriptor = _open_directory(root, path, label)
+    try:
+        files = _walk_directory(root, descriptor, path, label)
+    finally:
+        os.close(descriptor)
+    if not files:
+        raise ArtifactMismatch(f"{label} tree is empty")
     tree_digest = hashlib.sha256()
     total = 0
-    result: list[tuple[PurePosixPath, bytes]] = []
-    for item in files:
-        data = _regular_bytes(root, item, label)
+    result: list[tuple[PurePosixPath, FileEntry]] = []
+    for item, entry in files:
         local = item.relative_to(path).as_posix()
-        total += len(data)
+        total += entry.byte_count
         tree_digest.update(local.encode("utf-8"))
         tree_digest.update(b"\0")
-        tree_digest.update(bytes.fromhex(_sha256(data)))
+        tree_digest.update(bytes.fromhex(entry.sha256))
         tree_digest.update(b"\n")
-        result.append((item, data))
+        result.append((item, entry))
     if total != count or tree_digest.hexdigest() != digest:
         raise ArtifactMismatch(f"{label} manifest record does not match raw bytes")
     return result
 
 
-def _all_regular_files(root: Path) -> dict[str, bytes]:
-    result: dict[str, bytes] = {}
-    for path in sorted(root.rglob("*")):
-        metadata = os.lstat(path)
-        relative = path.relative_to(root).as_posix()
-        if stat.S_ISLNK(metadata.st_mode):
-            raise ArtifactMismatch("artifact inventory contains a symlink")
-        if stat.S_ISREG(metadata.st_mode):
-            result[relative] = path.read_bytes()
-        elif not stat.S_ISDIR(metadata.st_mode):
-            raise ArtifactMismatch("artifact inventory contains a forbidden entry")
-    return result
+def _all_regular_files(root: Path) -> dict[str, FileEntry]:
+    descriptor = _open_directory(root, None, "artifact inventory")
+    try:
+        entries = _walk_directory(root, descriptor, None, "artifact inventory")
+    finally:
+        os.close(descriptor)
+    return {path.as_posix(): entry for path, entry in entries}
 
 
 def _validate_manifest_records(root: Path, value: object, label: str = "manifest") -> None:
@@ -256,7 +399,7 @@ def _validate_production_provenance(
 
 
 def _schema2_run_identity(
-    root: Path, manifest: Mapping[str, Any], all_files: Mapping[str, bytes]
+    root: Path, manifest: Mapping[str, Any], all_files: Mapping[str, FileEntry]
 ) -> None:
     algorithm_hash = manifest.get("algorithm_hash")
     if (
@@ -271,7 +414,10 @@ def _schema2_run_identity(
     )
     if normalized_path.as_posix() != "normalized_run_config.json":
         raise ArtifactMismatch("normalized run config path is invalid")
-    normalized = _json_object(normalized_data, "normalized run config")
+    normalized = _json_object(
+        _regular_bytes(root, normalized_path, "normalized run config"),
+        "normalized run config",
+    )
     try:
         recomputed_algorithm_hash = canonical_algorithm_hash(normalized)
     except (KeyError, TypeError, ValueError) as exc:
@@ -281,8 +427,13 @@ def _schema2_run_identity(
         or algorithm_hash != recomputed_algorithm_hash
     ):
         raise ArtifactMismatch("normalized run config algorithm identity mismatch")
+    if "execution_receipt.json" not in all_files:
+        raise ArtifactMismatch("execution receipt is missing")
     receipt = _json_object(
-        all_files.get("execution_receipt.json", b""), "execution receipt"
+        _regular_bytes(
+            root, PurePosixPath("execution_receipt.json"), "execution receipt"
+        ),
+        "execution receipt",
     )
     base_fields = {"schema_version", "provenance", "environment"}
     frozen_fields = base_fields | {"frozen_run_identity", "run_execution"}
@@ -317,7 +468,7 @@ def _cumulative_entries(
     *,
     logical_prefix: str,
     label: str,
-) -> tuple[dict[str, bytes], set[str]]:
+) -> tuple[dict[str, FileEntry], set[str]]:
     if (
         not isinstance(audit, Mapping)
         or set(audit) not in (
@@ -340,9 +491,9 @@ def _cumulative_entries(
                 root, audit["voxel_snapshot"], f"{label} voxel snapshot"
             )
         )
-    projection: dict[str, bytes] = {}
+    projection: dict[str, FileEntry] = {}
     physical: set[str] = set()
-    for path, data in entries:
+    for path, entry in entries:
         parts = path.parts
         if parts.count("cumulative_audit") != 1:
             raise ArtifactMismatch("cumulative audit path is outside its audit root")
@@ -351,8 +502,11 @@ def _cumulative_entries(
             raise ArtifactMismatch("cumulative audit file path is invalid")
         local = PurePosixPath(*parts[offset:]).as_posix()
         logical = f"{logical_prefix}/{local}"
-        previous = projection.setdefault(logical, data)
-        if previous != data:
+        previous = projection.setdefault(logical, entry)
+        if (
+            previous.sha256,
+            previous.byte_count,
+        ) != (entry.sha256, entry.byte_count):
             raise ArtifactMismatch("cumulative inventory aliases unequal raw bytes")
         physical.add(path.as_posix())
     return projection, physical
@@ -361,13 +515,13 @@ def _cumulative_entries(
 def _schema2_projection(
     root: Path,
     manifest: Mapping[str, Any],
-    all_files: Mapping[str, bytes],
-) -> tuple[list[int], dict[str, bytes]]:
+    all_files: Mapping[str, FileEntry],
+) -> tuple[list[int], dict[str, FileEntry]]:
     checkpoints = manifest.get("checkpoints")
     if not isinstance(checkpoints, list) or not checkpoints:
         raise ArtifactMismatch("checkpoint inventory is empty")
     frames: list[int] = []
-    projection: dict[str, bytes] = {}
+    projection: dict[str, FileEntry] = {}
     projected_files: set[str] = set()
     for position, checkpoint in enumerate(checkpoints):
         if not isinstance(checkpoint, Mapping):
@@ -411,12 +565,12 @@ def _schema2_projection(
 
 def _schema1_projection(
     root: Path, manifest: Mapping[str, Any]
-) -> tuple[list[int], dict[str, bytes]]:
+) -> tuple[list[int], dict[str, FileEntry]]:
     checkpoints = manifest.get("checkpoints")
     if not isinstance(checkpoints, list) or not checkpoints:
         raise ArtifactMismatch("checkpoint inventory is empty")
     frames: list[int] = []
-    projection: dict[str, bytes] = {}
+    projection: dict[str, FileEntry] = {}
     for position, checkpoint in enumerate(checkpoints):
         if not isinstance(checkpoint, Mapping):
             raise ArtifactMismatch("checkpoint inventory record is invalid")
@@ -447,7 +601,7 @@ def _schema1_projection(
     return frames, projection
 
 
-def _load_inventory(root: Path) -> tuple[list[int], dict[str, bytes]]:
+def _load_inventory(root: Path) -> tuple[list[int], dict[str, FileEntry]]:
     absolute = root.absolute()
     current = Path(absolute.anchor)
     for part in absolute.parts[1:]:
@@ -492,7 +646,7 @@ def _load_inventory(root: Path) -> tuple[list[int], dict[str, bytes]]:
 
 
 def compare_cumulative_artifacts(left: str | Path, right: str | Path) -> dict[str, Any]:
-    """Validate and compare every cumulative audit file with no normalization."""
+    """Compare with O(chunk + directory depth + output inventory) memory."""
     left_frames, left_inventory = _load_inventory(Path(left))
     right_frames, right_inventory = _load_inventory(Path(right))
     if left_frames != right_frames:
@@ -502,16 +656,52 @@ def compare_cumulative_artifacts(left: str | Path, right: str | Path) -> dict[st
     records: list[dict[str, Any]] = []
     root_digest = hashlib.sha256()
     for path in sorted(left_inventory):
-        left_data = left_inventory[path]
-        right_data = right_inventory[path]
-        if left_data != right_data:
-            raise ArtifactMismatch(f"raw bytes differ: {path}")
-        digest = _sha256(left_data)
-        record = {"path": path, "sha256": digest, "byte_count": len(left_data)}
+        left_entry = left_inventory[path]
+        right_entry = right_inventory[path]
+        left_fd = _open_regular(left_entry.root, left_entry.path, path)
+        right_fd = _open_regular(right_entry.root, right_entry.path, path)
+        digest = hashlib.sha256()
+        total = 0
+        try:
+            left_before = os.fstat(left_fd)
+            right_before = os.fstat(right_fd)
+            if (
+                _identity(left_before) != left_entry.identity
+                or _identity(right_before) != right_entry.identity
+            ):
+                raise ArtifactMismatch(f"artifact was replaced before comparison: {path}")
+            while True:
+                left_chunk = os.read(left_fd, 1024 * 1024)
+                right_chunk = os.read(right_fd, 1024 * 1024)
+                if left_chunk != right_chunk:
+                    raise ArtifactMismatch(f"raw bytes differ: {path}")
+                if not left_chunk:
+                    break
+                digest.update(left_chunk)
+                total += len(left_chunk)
+            left_after = os.fstat(left_fd)
+            right_after = os.fstat(right_fd)
+        finally:
+            os.close(left_fd)
+            os.close(right_fd)
+        if (
+            _identity(left_before) != _identity(left_after)
+            or _identity(right_before) != _identity(right_after)
+            or digest.hexdigest() != left_entry.sha256
+            or digest.hexdigest() != right_entry.sha256
+            or total != left_entry.byte_count
+            or total != right_entry.byte_count
+        ):
+            raise ArtifactMismatch(f"artifact changed during comparison: {path}")
+        record = {
+            "path": path,
+            "sha256": digest.hexdigest(),
+            "byte_count": total,
+        }
         records.append(record)
         root_digest.update(path.encode("utf-8"))
         root_digest.update(b"\0")
-        root_digest.update(bytes.fromhex(digest))
+        root_digest.update(bytes.fromhex(digest.hexdigest()))
         root_digest.update(b"\n")
     return {
         "format": "oviv2_cumulative_exact_v1",

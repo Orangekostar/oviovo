@@ -33,6 +33,10 @@ from scripts.evaluation.run_oviv2_tesse_dual_readout_search import (  # noqa: E4
     load_search_manifest,
     non_temporal_config_sha256,
 )
+from scripts.evaluation.verify_oviv2_dual_readout_development_gates import (  # noqa: E402
+    GateVerificationError,
+    verify_exact_profile_runs,
+)
 from src.evaluation.baselines.tesse_cd import (  # noqa: E402
     summarize_khronos_official_metrics_partial,
 )
@@ -57,6 +61,16 @@ DETERMINISM_TEST_FILES = (
 EXACT_PROFILE_SEQUENCE = (
     "reference", "a0", "a1", "a0", "a2", "a0", "a3", "a0", "a4",
 )
+RUN_MANIFEST_FIELDS = {
+    "schema_version", "protocol_id", "dataset", "method_id", "scene", "mode",
+    "algorithm_hash", "processed_frame_count", "covered_frame_count",
+    "trajectory_frame_count", "first_frame_index", "last_frame_index",
+    "temporal_export_schema_version", "scheduled_frame_indices",
+    "captured_frame_indices", "config", "normalized_run_config", "schedule",
+    "target_manifest", "source_bindings", "input_sha256", "code_commit",
+    "checkpoints", "occlusion_checkpoint_index", "source_index",
+    "artifact_inventory",
+}
 MAX_JSON_BYTES = 8 * 1024 * 1024
 SOURCE_NAMES = (
     "search_manifest", "search_status", "candidate_config", "run_manifest",
@@ -166,7 +180,21 @@ class MissingPathWitness:
         raise ValueError(f"source changed before publication: {self.path}")
 
 
-PublicationWitness = Snapshot | FileIdentityWitness | MissingPathWitness
+@dataclass(frozen=True)
+class ExactGateWitness:
+    executions: tuple[dict[str, Any], ...]
+    expected: bytes
+
+    def revalidate(self) -> None:
+        try:
+            current = verify_exact_profile_runs([dict(item) for item in self.executions])
+        except (GateVerificationError, OSError) as exc:
+            raise ValueError("exact execution changed before publication") from exc
+        if _canonical(current) != self.expected:
+            raise ValueError("exact execution changed before publication")
+
+
+PublicationWitness = Snapshot | FileIdentityWitness | MissingPathWitness | ExactGateWitness
 
 
 def _identity_witness(path: Path, label: str) -> FileIdentityWitness:
@@ -660,60 +688,24 @@ def _gate_evidence(
     executions = exact.get("executions")
     if not isinstance(executions, list) or len(executions) != len(EXACT_PROFILE_SEQUENCE):
         raise ValueError(f"{name} cumulative execution inventory is invalid")
-    pids: set[int] = set()
-    execution_roots: list[Path] = []
+    try:
+        reopened = verify_exact_profile_runs([dict(item) for item in executions])
+    except (GateVerificationError, OSError) as exc:
+        raise ValueError(
+            f"{name} exact execution root/receipt/manifest is invalid: {exc}"
+        ) from exc
+    if reopened != exact:
+        raise ValueError(f"{name} cumulative evidence differs from reopened executions")
     source_sha = str(source_record["sha256"])
-    for profile, execution in zip(EXACT_PROFILE_SEQUENCE, executions, strict=True):
-        if not isinstance(execution, Mapping) or set(execution) != {"profile", "argv", "pid", "code_commit", "source_manifest_sha256", "input_fingerprints", "output_root", "receipt_sha256"}:
-            raise ValueError(f"{name} cumulative execution schema is invalid")
-        if execution.get("profile") != profile or execution.get("code_commit") != evidence["code_commit"] or execution.get("source_manifest_sha256") != source_sha or execution.get("input_fingerprints") != run["source_bindings"]:
-            raise ValueError(f"{name} cumulative execution binding mismatch")
-        argv = execution.get("argv")
-        pid = execution.get("pid")
-        if not isinstance(argv, list) or not argv or any(not isinstance(item, str) or not item for item in argv):
-            raise ValueError(f"{name} cumulative execution argv is invalid")
-        if type(pid) is not int or pid <= 0 or pid in pids:
-            raise ValueError(f"{name} cumulative execution PID is invalid")
-        pids.add(pid)
-        _sha(execution.get("receipt_sha256"), f"{name} cumulative receipt")
-        output_root = execution.get("output_root")
-        if not isinstance(output_root, str) or not Path(output_root).is_absolute():
-            raise ValueError(f"{name} cumulative execution root is invalid")
-        root = Path(output_root)
-        if str(root.resolve()) != output_root or any(
-            root == previous
-            or root.is_relative_to(previous)
-            or previous.is_relative_to(root)
-            for previous in execution_roots
-        ):
-            raise ValueError(f"{name} cumulative execution root is not independent")
-        execution_roots.append(root)
-        runner = (
-            REPO_ROOT / "scripts/evaluation/run_oviv2_t1_reference.py"
-            if profile == "reference"
-            else REPO_ROOT / "scripts/evaluation/run_oviv2_tesse_cd_v2.py"
-        ).resolve()
-        expected_length = 14 if profile == "reference" else 10
-        if (
-            len(argv) != expected_length
-            or not Path(argv[0]).is_absolute()
-            or Path(argv[1]) != runner
-            or tuple(argv[2:10:2]) != (
-                "--config", "--output", "--freeze-manifest", "--run-slot"
-            )
-            or any(not Path(argv[index]).is_absolute() for index in (3, 5, 7))
-            or argv[5] != output_root
-            or argv[9] not in {
-                "apartment_run1", "apartment_run2", "office_run1", "office_run2"
-            }
-        ):
-            raise ValueError(f"{name} cumulative execution argv is invalid")
-        if profile == "reference" and (
-            tuple(argv[10:14:2]) != ("--receipt", "--source-manifest")
-            or argv[11] != str(root / "t1_exact_receipt.json")
-            or not Path(argv[13]).is_absolute()
-        ):
-            raise ValueError(f"{name} cumulative execution argv is invalid")
+    if any(
+        execution.get("code_commit") != evidence["code_commit"]
+        or execution.get("source_manifest_sha256") != source_sha
+        for execution in executions
+    ):
+        raise ValueError(f"{name} cumulative execution binding mismatch")
+    witnesses.append(
+        ExactGateWitness(tuple(dict(item) for item in executions), _canonical(exact))
+    )
 
 
 def _derive(
@@ -784,6 +776,8 @@ def _derive(
     run_snap = snapshots["run_manifest"]
     run = run_snap.payload
     run_root = run_snap.path.parent
+    if set(run) not in (RUN_MANIFEST_FIELDS, RUN_MANIFEST_FIELDS | {"frozen_run_identity"}):
+        raise ValueError("candidate run manifest field inventory is not exact")
     if Path(str(record.get("output_root"))).absolute() != run_root:
         raise ValueError("search status output root mismatch")
     if not (run.get("schema_version") == 2 and run.get("protocol_id") == "oviv2-tessecd-v2"

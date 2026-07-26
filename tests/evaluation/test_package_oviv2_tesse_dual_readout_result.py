@@ -10,6 +10,8 @@ import sys
 import pytest
 
 from scripts.evaluation import package_oviv2_tesse_dual_readout_result as package_module
+from scripts.evaluation import run_oviv2_tesse_cd_v2 as production_runner
+from scripts.evaluation import verify_oviv2_dual_readout_development_gates as gates_module
 from scripts.evaluation.evaluate_oviv2_tesse_occlusion import canonical_algorithm_hash
 from scripts.evaluation.run_oviv2_tesse_dual_readout_search import (
     input_binding_values_sha256,
@@ -27,6 +29,7 @@ from src.evaluation.baselines.tesse_cd import (
     summarize_khronos_official_metrics_partial,
 )
 from src.oviv2.temporal_config import ExecutionProfile
+from tests.evaluation import test_run_oviv2_tesse_cd_v2 as runner_fixture
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -121,6 +124,10 @@ def _fixture(root: Path) -> dict[str, Path]:
     run_manifest = _write(run_root / "run_manifest.json", {
         "schema_version": 2, "protocol_id": "oviv2-tessecd-v2", "dataset": "TESSE-CD", "method_id": "OVIV2",
         "scene": "apartment", "mode": "dual_readout_causal_checkpoints", "algorithm_hash": algorithm,
+        "processed_frame_count": 3, "covered_frame_count": 3,
+        "trajectory_frame_count": 3, "first_frame_index": 0,
+        "last_frame_index": 2, "temporal_export_schema_version": 1,
+        "scheduled_frame_indices": [2], "captured_frame_indices": [2],
         "config": {"sha256": hashlib.sha256(config_path.read_bytes()).hexdigest(), "byte_count": config_path.stat().st_size},
         "normalized_run_config": {"path": "normalized_run_config.json", "sha256": hashlib.sha256(normalized.read_bytes()).hexdigest(), "byte_count": normalized.stat().st_size},
         "schedule": {"sha256": h("2"), "byte_count": 10}, "target_manifest": {"sha256": h("3"), "byte_count": 11},
@@ -128,6 +135,7 @@ def _fixture(root: Path) -> dict[str, Path]:
         "occlusion_checkpoint_index": {"path": "occlusion_checkpoint_index.json", "sha256": hashlib.sha256(index.read_bytes()).hexdigest(), "byte_count": index.stat().st_size},
         "source_index": {"path": "source_index.json", "sha256": hashlib.sha256(run_source_index.read_bytes()).hexdigest(), "byte_count": run_source_index.stat().st_size},
         "checkpoints": [{"frame_index": 2, "consumed_through_frame": 2, "consumed_through_frame_exclusive": 3}],
+        "artifact_inventory": ["normalized_run_config.json", "occlusion_checkpoint_index.json", "source_index.json"],
     })
     stdout = root / "stdout.log"; stdout.write_text("ok\n")
     stderr = root / "stderr.log"; stderr.write_text("")
@@ -214,42 +222,15 @@ def _fixture(root: Path) -> dict[str, Path]:
         "tests/evaluation/test_run_oviv2_tesse_cd_v2.py",
     )
     source_manifest = REPO_ROOT / "configs/evaluation/manifests/oviv2_t1_transitive_sources_v1.json"
-    source_digest = hashlib.sha256(source_manifest.read_bytes()).hexdigest()
-    sequence = ["reference", "a0", "a1", "a0", "a2", "a0", "a3", "a0", "a4"]
-    execution_roots = [str((root / f"exact-run-{position}").resolve()) for position in range(len(sequence))]
-    executions = [{
-        "profile": profile, "argv": [
-            str(Path(sys.executable).resolve()),
-            str((REPO_ROOT / "scripts/evaluation" / (
-                "run_oviv2_t1_reference.py"
-                if profile == "reference"
-                else "run_oviv2_tesse_cd_v2.py"
-            )).resolve()),
-            "--config", str((root / f"{profile}.json").resolve()),
-            "--output", execution_roots[position],
-            "--freeze-manifest", str((root / "freeze.json").resolve()),
-            "--run-slot", "apartment_run1",
-            *(
-                ["--receipt", str((Path(execution_roots[position]) / "t1_exact_receipt.json").resolve()),
-                 "--source-manifest", str(source_manifest.resolve())]
-                if profile == "reference" else []
-            ),
-        ],
-        "pid": 100 + position, "code_commit": commit,
-        "source_manifest_sha256": source_digest, "input_fingerprints": input_hashes,
-        "output_root": execution_roots[position], "receipt_sha256": h("b"),
-    } for position, profile in enumerate(sequence)]
-    profiles = {profile: {"cumulative_root_sha256": h("6"), "checkpoint_frames": [2],
-                          "inventory": [{"path": "checkpoint/00000000/00000002/artifact/entities/neutral.jsonl",
-                                         "sha256": h("a"), "byte_count": 3}]}
-                for profile in ("a0", "a1", "a2", "a3", "a4")}
+    cumulative_exact = _materialize_gate_transaction(
+        root / "exact-transaction", config, commit, source_manifest
+    )
     evidence = _write(root / "development_gates.json", {
         "schema_version": 1, "manifest_id": "oviv2_dual_readout_development_gates_v1",
         "deterministic_evidence": {"base_commit": package_module.CUMULATIVE_BASE_COMMIT, "code_commit": commit, "code_tree": h("d"),
             "protected_files": protected, "test_sources": tests,
             "source_manifest": _record(source_manifest),
-            "cumulative_exact": {"format": "oviv2_t1_exact_transaction_v1", "sequence": sequence,
-                "executions": executions, "profiles": profiles},
+            "cumulative_exact": cumulative_exact,
             "gates": {"t1_exact": gate(t1_files, h("9")), "determinism": gate(determinism_files, h("b"))}},
         "receipt": {"created_at_utc": "2026-07-25T00:00:00Z"},
     })
@@ -275,6 +256,29 @@ def test_packages_exact_structured_result_and_revalidates(tmp_path: Path) -> Non
     assert result["metrics"]["dynamic_f1"]["available"] is False
     assert "dynamic_objects.csv" in result["metrics"]["dynamic_f1"]["reason"]
     assert load_and_revalidate_result(output, manifest=paths["manifest"]) == result
+
+
+def test_rejects_gate_evidence_with_nonexistent_execution_roots(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    evidence = json.loads(paths["t1_exact_evidence"].read_text())
+    exact = evidence["deterministic_evidence"]["cumulative_exact"]
+    exact["executions"][0]["output_root"] = str(
+        (tmp_path / "missing-execution-root").resolve()
+    )
+    _write(paths["t1_exact_evidence"], evidence)
+
+    with pytest.raises(ValueError, match="execution root|receipt|manifest"):
+        _package(paths, tmp_path / "result.json")
+
+
+def test_rejects_run_manifest_with_extra_field(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    manifest = json.loads(paths["run_manifest"].read_text())
+    manifest["untrusted_extension"] = True
+    _write(paths["run_manifest"], manifest)
+
+    with pytest.raises(ValueError, match="field inventory"):
+        _package(paths, tmp_path / "result.json")
 
 
 def test_rejects_metrics_that_do_not_match_recomputed_sources(tmp_path: Path) -> None:
@@ -616,7 +620,11 @@ def _tree_binding(path: Path, root: Path) -> dict[str, object]:
 
 
 def _materialize_mutation_transaction(
-    root: Path, config: dict[str, object], *, leak_temporal: bool = False
+    root: Path,
+    config: dict[str, object],
+    *,
+    leak_temporal: bool = False,
+    commit: str = "a" * 40,
 ) -> tuple[dict[str, object], dict[str, object]]:
     algorithm = canonical_algorithm_hash(config)
     non_temporal = non_temporal_config_sha256(config)
@@ -668,7 +676,7 @@ def _materialize_mutation_transaction(
         "schema_version": 2,
         "protocol_id": "oviv2-tessecd-v2",
         "algorithm_hash": algorithm,
-        "code_commit": "a" * 40,
+        "code_commit": commit,
         "source_bindings": {"source_manifest_sha256": source_sha},
         "normalized_run_config": _file_binding(normalized, root),
         "checkpoints": [{
@@ -684,7 +692,7 @@ def _materialize_mutation_transaction(
         _bytes(
             {
                 "schema_version": 1,
-                "provenance": _production_receipt_provenance(algorithm),
+                "provenance": _production_receipt_provenance(algorithm, commit),
                 "environment": {"pid": os.getpid()},
             }
         )
@@ -700,7 +708,7 @@ def _materialize_mutation_transaction(
             "--run-slot", "apartment_run1",
         ],
         "pid": os.getpid(),
-        "code_commit": "a" * 40,
+        "code_commit": commit,
         "source_manifest_sha256": source_sha,
         "input_fingerprints": {"config": hashlib.sha256(config_path.read_bytes()).hexdigest()},
         "output_root": str(root.resolve()),
@@ -733,9 +741,11 @@ def _file_binding(path: Path, root: Path) -> dict[str, object]:
     }
 
 
-def _production_receipt_provenance(algorithm: str) -> dict[str, object]:
+def _production_receipt_provenance(
+    algorithm: str, commit: str = "a" * 40
+) -> dict[str, object]:
     return {
-        "repository_commit": "a" * 40,
+        "repository_commit": commit,
         "repository_tree": "b" * 40,
         "dirty_state_digest": hashlib.sha256(b"").hexdigest(),
         "command": ["python", "run_oviv2_tesse_cd_v2.py", algorithm],
@@ -754,74 +764,149 @@ def _production_receipt_provenance(algorithm: str) -> dict[str, object]:
     }
 
 
-def test_every_temporal_scalar_runs_exact_cumulative_transaction(tmp_path: Path) -> None:
-    paths = _fixture(tmp_path / "fixture")
-    config = json.loads(paths["candidate_config"].read_text())
-    baseline_algorithm = canonical_algorithm_hash(config)
+def _materialize_gate_transaction(
+    transaction: Path,
+    config: dict[str, object],
+    commit: str,
+    source_manifest: Path,
+) -> dict[str, object]:
+    transaction.mkdir(parents=True)
+    freeze = _write(
+        transaction / "freeze.json",
+        {
+            "shared_bindings": {
+                "input_manifest": {"sha256": "1" * 64},
+                "schedule": {"sha256": "2" * 64},
+                "occlusion_target_manifest": {"sha256": "3" * 64},
+            }
+        },
+    )
+    receipts = transaction / "receipts"
+    receipts.mkdir()
+    executions: list[dict[str, object]] = []
+    python = str(Path(sys.executable).resolve())
+    source_manifest = source_manifest.resolve(strict=True)
+    for position, profile in enumerate(gates_module.EXACT_PROFILE_SEQUENCE):
+        output = transaction / f"run-{position:02d}-{profile}"
+        _materialize_mutation_transaction(output, config, commit=commit)
+        config_path = (transaction / f"run-{position:02d}-{profile}.config.json").resolve()
+        pid = 10_000 + position
+        runner = (
+            REPO_ROOT / "scripts/evaluation/run_oviv2_t1_reference.py"
+            if profile == "reference"
+            else REPO_ROOT / "scripts/evaluation/run_oviv2_tesse_cd_v2.py"
+        ).resolve()
+        argv = [
+            python,
+            str(runner),
+            "--config",
+            str(config_path),
+            "--output",
+            str(output.resolve()),
+            "--freeze-manifest",
+            str(freeze.resolve()),
+            "--run-slot",
+            "apartment_run1",
+        ]
+        if profile == "reference":
+            argv.extend(
+                [
+                    "--receipt",
+                    str((output / "t1_exact_receipt.json").resolve()),
+                    "--source-manifest",
+                    str(source_manifest),
+                ]
+            )
+            receipt_path = output / "t1_exact_receipt.json"
+            receipt = json.loads(receipt_path.read_text())
+            receipt["execution"] = {
+                "profile": profile,
+                "argv": argv,
+                "pid": pid,
+                "code_commit": commit,
+                "output_root": str(output.resolve()),
+            }
+            receipt_path.write_bytes(_bytes(receipt))
+        else:
+            (output / "t1_exact_receipt.json").unlink()
+        derived = gates_module._reopen_completed_execution(
+            profile, output.resolve(), argv, pid, 0, source_manifest
+        )
+        root_status = os.stat(output, follow_symlinks=False)
+        production_receipt = output / (
+            "t1_exact_receipt.json" if profile == "reference" else "execution_receipt.json"
+        )
+        observation = {
+            "schema_version": 1,
+            "format": "oviv2_exact_process_observation_v1",
+            "position": position,
+            "profile": profile,
+            "argv": argv,
+            "pid": pid,
+            "returncode": 0,
+            "config": gates_module._absolute_file_record(config_path),
+            "freeze_manifest": gates_module._absolute_file_record(freeze.resolve()),
+            "source_manifest": gates_module._absolute_file_record(source_manifest),
+            "output_root": str(output.resolve()),
+            "root_device": root_status.st_dev,
+            "root_inode": root_status.st_ino,
+            "run_manifest": gates_module._absolute_file_record(output / "run_manifest.json"),
+            "production_receipt": gates_module._absolute_file_record(production_receipt),
+            "completed_execution": derived,
+        }
+        observation_path = _write(
+            receipts / f"{position:03d}-{profile}.json", observation
+        )
+        executions.append(
+            {
+                **derived,
+                "observation_receipt": gates_module._absolute_file_record(
+                    observation_path.resolve()
+                ),
+            }
+        )
+    return gates_module.verify_exact_profile_runs(executions)
+
+
+def test_temporal_scalar_mutation_runs_production_cumulative_transaction(
+    tmp_path: Path,
+) -> None:
+    baseline_config = runner_fixture._materialize_config(
+        production_runner, tmp_path / "baseline-input"
+    )
+    config = json.loads(baseline_config.read_text())
     baseline_non_temporal = non_temporal_config_sha256(config)
-    baseline_receipt, baseline_audit = _materialize_mutation_transaction(
-        tmp_path / "baseline", config
+    provenance = _production_receipt_provenance(
+        config["algorithm_hash"], "a" * 40
     )
-    baseline_manifest = json.loads(
-        (tmp_path / "baseline/run_manifest.json").read_text()
+    baseline_dependencies, _ = runner_fixture._dependencies(
+        production_runner, provenance=provenance
     )
-    assert baseline_manifest["schema_version"] == 2
-    assert baseline_manifest["normalized_run_config"]["path"] == "normalized_run_config.json"
-    baseline_normalized = json.loads(
-        (tmp_path / "baseline/normalized_run_config.json").read_text()
+    baseline = tmp_path / "baseline"
+    production_runner.run(
+        baseline_config, baseline, dependencies=baseline_dependencies
     )
-    assert baseline_normalized["algorithm_hash"] == baseline_algorithm
-    assert non_temporal_config_sha256(baseline_normalized) == baseline_non_temporal
-    assert json.loads(
-        (tmp_path / "baseline/t1_exact_receipt.json").read_text()
-    )["source_manifest"]["sha256"] == hashlib.sha256(
-        (REPO_ROOT / "configs/evaluation/manifests/oviv2_t1_transitive_sources_v1.json").read_bytes()
-    ).hexdigest()
 
-    leaves: list[tuple[tuple[str, ...], object]] = []
-
-    def visit(value: object, path: tuple[str, ...]) -> None:
-        if isinstance(value, dict):
-            for key, child in value.items():
-                visit(child, (*path, key))
-        else:
-            leaves.append((path, value))
-
-    visit(config["temporal_readout"], ())
-    for position, (path, original) in enumerate(leaves):
-        mutated = json.loads(json.dumps(config))
-        target = mutated["temporal_readout"]
-        for key in path[:-1]:
-            target = target[key]
-        if isinstance(original, bool):
-            target[path[-1]] = not original
-        elif isinstance(original, int):
-            target[path[-1]] = original + 1
-        elif isinstance(original, float):
-            target[path[-1]] = original + 0.000001
-        else:
-            target[path[-1]] = f"{original}-mutated"
-        receipt, audit = _materialize_mutation_transaction(
-            tmp_path / f"mutation-{position:03d}", mutated
-        )
-        normalized = json.loads(
-            (tmp_path / f"mutation-{position:03d}/normalized_run_config.json").read_text()
-        )
-        assert receipt["execution"]["input_fingerprints"]["config"] == hashlib.sha256(_bytes(mutated)).hexdigest(), path
-        assert normalized["algorithm_hash"] != baseline_algorithm, path
-        assert non_temporal_config_sha256(normalized) == baseline_non_temporal, path
-        assert receipt["cumulative_root_sha256"] == baseline_receipt["cumulative_root_sha256"], path
-        assert audit == compare_cumulative_artifacts(tmp_path / "baseline", tmp_path / f"mutation-{position:03d}")
-
-    leaked, _ = _materialize_mutation_transaction(
-        tmp_path / "leaked", {**config, "temporal_readout": {**config["temporal_readout"], "execution_profile": "leaked"}},
-        leak_temporal=True,
+    mutated = json.loads(json.dumps(config))
+    mutated["temporal_readout"]["lifecycle"]["initial_log_odds"] += 0.000001
+    mutated["algorithm_hash"] = production_runner.algorithm_hash(mutated)
+    mutation_config = _write(tmp_path / "mutation-input/config.json", mutated)
+    mutation_dependencies, _ = runner_fixture._dependencies(
+        production_runner,
+        provenance=_production_receipt_provenance(
+            mutated["algorithm_hash"], "a" * 40
+        ),
     )
-    assert non_temporal_config_sha256(
-        json.loads((tmp_path / "leaked/normalized_run_config.json").read_text())
-    ) == baseline_non_temporal
-    with pytest.raises(ArtifactMismatch, match="raw bytes"):
-        compare_cumulative_artifacts(tmp_path / "baseline", tmp_path / "leaked")
+    mutation = tmp_path / "mutation"
+    production_runner.run(
+        mutation_config, mutation, dependencies=mutation_dependencies
+    )
+
+    assert mutated["algorithm_hash"] != config["algorithm_hash"]
+    assert non_temporal_config_sha256(mutated) == baseline_non_temporal
+    assert compare_cumulative_artifacts(baseline, mutation) == (
+        compare_cumulative_artifacts(baseline, baseline)
+    )
 
 
 def test_rejects_another_apartment_oviv2_temporal_artifact(tmp_path: Path) -> None:

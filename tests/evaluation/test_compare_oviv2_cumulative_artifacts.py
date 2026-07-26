@@ -7,6 +7,7 @@ import shutil
 
 import pytest
 
+from scripts.evaluation import compare_oviv2_cumulative_artifacts as compare_module
 from scripts.evaluation.compare_oviv2_cumulative_artifacts import (
     ArtifactMismatch,
     compare_cumulative_artifacts,
@@ -401,6 +402,93 @@ def test_accepts_profile_specific_top_level_manifest_serialization(tmp_path: Pat
     manifest = json.loads((right / "run_manifest.json").read_text())
     (right / "run_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     assert compare_cumulative_artifacts(left, right)["checkpoint_frames"] == [2, 7]
+
+
+def test_streams_large_cumulative_file(tmp_path: Path) -> None:
+    left, right = _pair(tmp_path)
+    payload = b"0123456789abcdef" * (1024 * 1024)
+    for root in (left, right):
+        target = next(
+            root.glob("checkpoints/*/cumulative_audit/artifact/entities/*.jsonl")
+        )
+        target.write_bytes(payload)
+        manifest_path = root / "run_manifest.json"
+        manifest = json.loads(manifest_path.read_text())
+        audit = manifest["checkpoints"][0]["cumulative_audit"]
+        audit["entities"] = _file_record(target, root)
+        audit["artifact"] = _tree_record(target.parents[1], root)
+        manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
+
+    result = compare_cumulative_artifacts(left, right)
+    assert any(item["byte_count"] == len(payload) for item in result["inventory"])
+
+
+def test_rejects_same_byte_inode_replacement_before_comparison(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    left, right = _pair(tmp_path)
+    original = compare_module._open_regular
+    replaced = False
+
+    def replace_then_open(
+        root: Path, relative: object, label: str
+    ) -> int:
+        nonlocal replaced
+        if root == right and label.startswith("checkpoint/") and not replaced:
+            replaced = True
+            target = root.joinpath(*relative.parts)
+            replacement = target.with_name(target.name + ".replacement")
+            replacement.write_bytes(target.read_bytes())
+            replacement.replace(target)
+        return original(root, relative, label)
+
+    monkeypatch.setattr(compare_module, "_open_regular", replace_then_open)
+    with pytest.raises(ArtifactMismatch, match="replaced"):
+        compare_cumulative_artifacts(left, right)
+
+
+def test_rejects_intermediate_directory_exchange_during_walk(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    left, right = _pair(tmp_path)
+    original = compare_module.os.listdir
+    exchanged = False
+
+    def exchange_after_listing(descriptor: int) -> list[str]:
+        nonlocal exchanged
+        names = original(descriptor)
+        current = Path(compare_module.os.readlink(f"/proc/self/fd/{descriptor}"))
+        if current == right and not exchanged:
+            exchanged = True
+            old = tmp_path / "old-checkpoints"
+            (right / "checkpoints").replace(old)
+            shutil.copytree(old, right / "checkpoints")
+        return names
+
+    monkeypatch.setattr(compare_module.os, "listdir", exchange_after_listing)
+    with pytest.raises(ArtifactMismatch, match="changed"):
+        compare_cumulative_artifacts(left, right)
+
+
+def test_rejects_directory_entry_addition_during_walk(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    left, right = _pair(tmp_path)
+    original = compare_module.os.listdir
+    added = False
+
+    def add_after_listing(descriptor: int) -> list[str]:
+        nonlocal added
+        names = original(descriptor)
+        current = Path(compare_module.os.readlink(f"/proc/self/fd/{descriptor}"))
+        if current.name == "artifact" and str(current).startswith(str(right)) and not added:
+            added = True
+            (current / "late.bin").write_bytes(b"late")
+        return names
+
+    monkeypatch.setattr(compare_module.os, "listdir", add_after_listing)
+    with pytest.raises(ArtifactMismatch, match="changed"):
+        compare_cumulative_artifacts(left, right)
 
 
 @pytest.mark.parametrize(
