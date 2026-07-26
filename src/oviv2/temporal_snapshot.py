@@ -228,9 +228,44 @@ class TemporalSnapshotEntity:
             raise ValueError("geometry_epoch must be a non-negative integer")
         if type(self.readout_valid) is not bool:
             raise TypeError("readout_valid must be an exact bool")
+        if not self.readout_valid:
+            raise ValueError("snapshot entity readout_valid must be true")
 
-    def __getattr__(self, name: str) -> Any:
-        return getattr(self.entity, name)
+    @property
+    def lifecycle(self) -> TemporalLifecycleState:
+        return self.entity.lifecycle
+
+    @property
+    def semantic_probabilities(self) -> tuple[float, ...]:
+        return self.entity.semantic_probabilities
+
+    @property
+    def image_prototype(self) -> np.ndarray | None:
+        return self.entity.image_prototype
+
+    @property
+    def extent_xyz(self) -> tuple[float, float, float]:
+        return self.entity.extent_xyz
+
+    @property
+    def object_to_world(self) -> np.ndarray:
+        return self.entity.object_to_world
+
+    @property
+    def submap(self) -> ObjectSubmap:
+        return self.entity.submap
+
+    @property
+    def first_seen_frame_id(self) -> int:
+        return self.entity.first_seen_frame_id
+
+    @property
+    def last_seen_frame_id(self) -> int:
+        return self.entity.last_seen_frame_id
+
+    @property
+    def feature_model_id(self) -> str | None:
+        return self.entity.feature_model_id
 
 
 @dataclass(frozen=True)
@@ -258,17 +293,15 @@ class TemporalCurrentSnapshot:
         validated_entities: list[TemporalSnapshotEntity] = []
         for item in self.entities:
             if type(item) is TemporalSnapshotEntity:
-                unexpected = set(vars(item)) - {
-                    "entity", "geometry_epoch", "readout_valid", "lifecycle"
-                }
-                if unexpected:
+                expected = {"entity", "geometry_epoch", "readout_valid"}
+                if set(vars(item)) != expected:
                     raise ValueError(
-                        f"snapshot entity has unexpected field: {sorted(unexpected)[0]}"
+                        "snapshot entity has unexpected or missing mutable fields"
                     )
             entity = item.entity if type(item) is TemporalSnapshotEntity else item
             geometry_epoch = item.geometry_epoch if type(item) is TemporalSnapshotEntity else 0
             readout_valid = item.readout_valid if type(item) is TemporalSnapshotEntity else True
-            lifecycle = vars(item).get("lifecycle", entity.lifecycle)
+            lifecycle = entity.lifecycle
             if type(lifecycle.entity_id) is not int or not 0 <= lifecycle.entity_id <= np.iinfo(np.int64).max:
                 raise ValueError("lifecycle entity_id must be a non-negative int64 integer")
             if not isinstance(lifecycle.lifecycle, TemporalLifecycle):
@@ -1059,6 +1092,8 @@ def build_temporal_snapshot(
 ) -> TemporalCurrentSnapshot:
     if not isinstance(state, TemporalRuntimeState):
         raise TypeError("state must be a TemporalRuntimeState")
+    if state.revision == 0 or state.last_frame_id < 0:
+        raise ValueError("cannot checkpoint an unprocessed temporal runtime state")
     raw_background = object.__getattribute__(state, "_background_state")
     raw_ledger = object.__getattribute__(state, "_ledger_state")
     if raw_ledger is None:
@@ -1121,7 +1156,7 @@ def build_temporal_snapshot(
     return TemporalCurrentSnapshot(
         TemporalSnapshotMetadata(
             state.scene_id,
-            max(state.last_frame_id, 0),
+            state.last_frame_id,
             state.last_timestamp,
             state.revision,
             committed_background.config.voxel_size_m,

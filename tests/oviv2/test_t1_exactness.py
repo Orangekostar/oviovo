@@ -5,12 +5,14 @@ import pytest
 
 from src.core.data_structures import CameraIntrinsics, Frame
 from src.oviv2.observations import FrameObservation, ObservationKind
+from src.oviv2.dense_projection import DenseSemanticConfig, DenseSemanticIntegrator
 from src.oviv2.t1_exactness import shared_input_sha256
 from src.oviv2.t1_exactness import cumulative_state_sha256, temporal_state_sha256
 from src.oviv2.dual_readout import DualReadoutRuntime
 from src.oviv2.runtime import Oviv2Runtime
 from src.oviv2.temporal_runtime import TemporalCurrentRuntime
-from tests.oviv2.test_dual_readout import _cumulative, _frame, _temporal_config
+from tests.oviv2.test_dense_projection import make_dense_frame
+from tests.oviv2.test_dual_readout import _cumulative, _frame, _observation, _temporal_config
 from src.oviv2.tracking import LocalTrackerConfig
 
 
@@ -130,3 +132,145 @@ def test_cumulative_failure_restores_externally_held_nested_objects() -> None:
     assert all(not hasattr(value, "injected_transaction_marker") for value in external)
     assert cumulative.geometry.active_block_count == 0
     assert cumulative_state_sha256(cumulative) == before
+
+
+def test_temporal_failure_restores_externally_held_public_state_objects() -> None:
+    fail_next = [False]
+
+    class PublicStateFailure(TemporalCurrentRuntime):
+        def process_frame(self, frame, observations, dense_semantics=None):
+            if fail_next[0]:
+                object.__setattr__(self.state.geometry, "maximum_retained_epochs", 999)
+                object.__setattr__(
+                    self.state.lifecycle_beliefs[0], "existence_log_odds", 999.0
+                )
+                object.__setattr__(self.state.export_tracker, "entries", ())
+                object.__setattr__(self.state.diagnostics, "processed_frame_count", 999)
+                raise RuntimeError("injected public temporal failure")
+            return super().process_frame(frame, observations, dense_semantics)
+
+    cumulative = _cumulative()
+    temporal = PublicStateFailure(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=1)
+    )
+    runtime = DualReadoutRuntime(cumulative, temporal)
+    first_frame = _frame()
+    runtime.process_frame(first_frame, (_observation(first_frame),))
+    state = temporal.state
+    external = (
+        state.geometry,
+        state.lifecycle_beliefs,
+        state.lifecycle_beliefs[0],
+        state.export_tracker,
+        state.diagnostics,
+    )
+    before = temporal_state_sha256(temporal)
+    fail_next[0] = True
+    second_frame = _frame(1, timestamp=2.0)
+    with pytest.raises(RuntimeError, match="injected public temporal failure"):
+        runtime.process_frame(second_frame, ())
+    assert temporal.state is state
+    assert temporal.state.geometry is external[0]
+    assert temporal.state.lifecycle_beliefs is external[1]
+    assert temporal.state.lifecycle_beliefs[0] is external[2]
+    assert temporal.state.export_tracker is external[3]
+    assert temporal.state.diagnostics is external[4]
+    assert temporal_state_sha256(temporal) == before
+
+
+def test_failure_restores_all_shared_input_values_and_retry_is_clean() -> None:
+    fail_next = [True]
+
+    class InputFailureCumulative(Oviv2Runtime):
+        def process_frame(self, frame, observations, dense_semantics=None):
+            if fail_next[0]:
+                fail_next[0] = False
+                frame.frame_id = 99
+                frame.timestamp = 99.0
+                frame.source_frame_id = 99
+                frame.intrinsics.fx = 99.0
+                object.__setattr__(observations[0], "confidence", 0.1)
+                object.__setattr__(observations[0], "mask", np.zeros((5, 5), dtype=bool))
+                object.__setattr__(dense_semantics, "cache_frame_id", 99)
+                object.__setattr__(
+                    dense_semantics, "class_ids", np.full((5, 5, 1), 2, dtype=np.int64)
+                )
+                raise RuntimeError("injected shared input failure")
+            return super().process_frame(frame, observations, None)
+
+    class IgnoreDenseTemporal(TemporalCurrentRuntime):
+        def process_frame(self, frame, observations, dense_semantics=None):
+            return super().process_frame(frame, observations, None)
+
+    frame = _frame()
+    observations = (_observation(frame),)
+    dense = make_dense_frame(image_shape=(5, 5), source_frame_id=0)
+    identities = (
+        frame,
+        frame.intrinsics,
+        frame.rgb,
+        frame.depth,
+        frame.pose,
+        observations[0],
+        observations[0].mask,
+        dense,
+        dense.class_ids,
+    )
+    before = shared_input_sha256(frame, observations, dense)
+    cumulative = _cumulative(runtime_type=InputFailureCumulative)
+    temporal = IgnoreDenseTemporal(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+    )
+    runtime = DualReadoutRuntime(cumulative, temporal)
+    with pytest.raises(RuntimeError, match="injected shared input failure"):
+        runtime.process_frame(frame, observations, dense)
+    assert shared_input_sha256(frame, observations, dense) == before
+    assert frame.frame_id == 0 and frame.timestamp == 0.0 and frame.source_frame_id is None
+    assert frame.intrinsics.fx == 4.0 and observations[0].confidence == 0.9
+    assert dense.cache_frame_id == 2
+    restored_identities = (
+        frame,
+        frame.intrinsics,
+        frame.rgb,
+        frame.depth,
+        frame.pose,
+        observations[0],
+        observations[0].mask,
+        dense,
+        dense.class_ids,
+    )
+    assert all(left is right for left, right in zip(restored_identities, identities))
+
+    retry = runtime.process_frame(frame, observations, dense)
+    clean_cumulative = _cumulative()
+    clean_temporal = TemporalCurrentRuntime(
+        "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
+    )
+    clean_frame = _frame()
+    clean = DualReadoutRuntime(clean_cumulative, clean_temporal).process_frame(
+        clean_frame, (_observation(clean_frame),)
+    )
+    assert retry == clean
+    assert cumulative_state_sha256(cumulative) == cumulative_state_sha256(clean_cumulative)
+    assert temporal_state_sha256(temporal) == temporal_state_sha256(clean_temporal)
+
+
+def test_cumulative_hash_covers_dense_semantic_integrator() -> None:
+    runtime = _cumulative()
+    before = cumulative_state_sha256(runtime)
+    runtime.dense_semantic_integrator = DenseSemanticIntegrator(DenseSemanticConfig(0.1))
+    assert cumulative_state_sha256(runtime) != before
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        type("Custom", (), {"canonical_dump": lambda self: ()})(),
+        type("Mutable", (), {})(),
+    ],
+)
+def test_shared_input_hash_rejects_unwhitelisted_custom_objects(value: object) -> None:
+    frame, observations = _inputs()
+    frame.source_frame_id = value  # type: ignore[assignment]
+    with pytest.raises(TypeError, match="unsupported deterministic hash value"):
+        shared_input_sha256(frame, observations, None)

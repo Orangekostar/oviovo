@@ -11,14 +11,32 @@ from typing import Any, Iterator, Mapping
 
 import numpy as np
 
-from src.core.data_structures import Frame
+from src.core.data_structures import CameraIntrinsics, Frame
 from src.oviv2.dense_semantics import DenseSemanticFrame
+from src.oviv2.dense_projection import DenseSemanticIntegrator
+from src.oviv2.entities import EntityRegistry
+from src.oviv2.evidence import SparseEvidenceStore
 from src.oviv2.geometry import SparseTsdfVolume
+from src.oviv2.observation_graph import CausalObservationGraph
 from src.oviv2.observations import FrameObservation
+from src.oviv2.ownership import ReversibleOwnershipStore
 from src.oviv2.reference_readout import ReferenceReadoutState
 from src.oviv2.runtime import Oviv2Runtime
 from src.oviv2.temporal_runtime import TemporalCurrentRuntime
-from src.oviv2.temporal_state import TemporalRuntimeState
+from src.oviv2.temporal_state import TemporalGeometryState, TemporalRuntimeState
+from src.oviv2.tracking import LocalTracker
+from src.oviv2.visibility import VoxelVisibilityProjector
+
+
+_TRUSTED_STATE_OBJECT_TYPES = (
+    SparseEvidenceStore,
+    ReversibleOwnershipStore,
+    LocalTracker,
+    CausalObservationGraph,
+    EntityRegistry,
+    VoxelVisibilityProjector,
+    DenseSemanticIntegrator,
+)
 
 
 def _pack(tag: bytes, content: bytes) -> bytes:
@@ -66,22 +84,42 @@ def _canonical_bytes(value: Any) -> bytes:
         if len(set(items)) != len(items):
             raise ValueError("set values have ambiguous canonical encodings")
         return _pack(b"q", b"".join(_pack(b"x", item) for item in items))
-    canonical_dump = getattr(value, "canonical_dump", None)
-    if callable(canonical_dump):
-        return _pack(b"c", _canonical_bytes(canonical_dump()))
+    raise TypeError(f"unsupported deterministic hash value: {type(value).__name__}")
+
+
+def _trusted_dump(value: Any) -> Any:
+    if value is None or type(value) in {bool, int, float, str, bytes}:
+        return value
+    if isinstance(value, (np.integer, np.floating, np.ndarray, Enum)):
+        return value
+    if isinstance(value, Mapping):
+        return {_trusted_dump(key): _trusted_dump(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return tuple(_trusted_dump(item) for item in value)
+    if isinstance(value, list):
+        return [_trusted_dump(item) for item in value]
+    if isinstance(value, (set, frozenset)):
+        return frozenset(_trusted_dump(item) for item in value)
     if is_dataclass(value) and not isinstance(value, type):
-        payload = tuple((field.name, getattr(value, field.name)) for field in fields(value))
-        return _pack(b"d", _canonical_bytes((type(value).__module__, type(value).__qualname__, payload)))
-    if hasattr(value, "__dict__"):
-        return _pack(
-            b"o",
-            _canonical_bytes((type(value).__module__, type(value).__qualname__, vars(value))),
+        if not type(value).__module__.startswith("src."):
+            raise TypeError(
+                f"unsupported deterministic hash value: {type(value).__name__}"
+            )
+        payload = tuple(
+            (field.name, _trusted_dump(getattr(value, field.name)))
+            for field in fields(value)
         )
+        return ("dataclass", type(value).__module__, type(value).__qualname__, payload)
+    if type(value) in _TRUSTED_STATE_OBJECT_TYPES:
+        payload = tuple(
+            (name, _trusted_dump(item)) for name, item in sorted(vars(value).items())
+        )
+        return ("state", type(value).__module__, type(value).__qualname__, payload)
     raise TypeError(f"unsupported deterministic hash value: {type(value).__name__}")
 
 
 def _digest(value: Any) -> str:
-    return hashlib.sha256(_canonical_bytes(value)).hexdigest()
+    return hashlib.sha256(_canonical_bytes(_trusted_dump(value))).hexdigest()
 
 
 def shared_input_sha256(
@@ -116,6 +154,7 @@ def cumulative_state_sha256(runtime: Oviv2Runtime) -> str:
         runtime.scene_id, runtime.config, runtime.dense_semantic_provenance,
         _geometry_dump(runtime.geometry), runtime.evidence, runtime.ownership,
         runtime.tracker, runtime.registry, runtime.visibility,
+        runtime.dense_semantic_integrator,
         runtime.revision, runtime.last_frame_id, runtime.last_timestamp,
     ))
 
@@ -143,11 +182,17 @@ def _clone_geometry(volume: SparseTsdfVolume) -> SparseTsdfVolume:
 
 
 def _clone_temporal_state(state: TemporalRuntimeState) -> TemporalRuntimeState:
+    geometry = TemporalGeometryState(
+        copy.deepcopy(state.geometry.epochs),
+        state.geometry.maximum_epochs_per_identity,
+        state.geometry.maximum_retained_epochs,
+        state.geometry.next_epoch_ids,
+    )
     return TemporalRuntimeState(
         state.scene_id, state.revision, state.last_frame_id, state.last_timestamp,
         state.next_entity_id, state.entities, state.background, state.tracker,
-        state.identities, state.geometry, state.lifecycle_beliefs,
-        state.background_ledger, state.export_tracker, state.diagnostics,
+        state.identities, geometry, state.lifecycle_beliefs,
+        state.background_ledger, state.export_tracker, copy.deepcopy(state.diagnostics),
     )
 
 
@@ -168,31 +213,125 @@ class _CumulativeSnapshot:
 
 
 @dataclass(frozen=True)
+class _ArraySnapshot:
+    array: np.ndarray
+    content: np.ndarray
+    writeable: bool
+
+    @classmethod
+    def capture(cls, array: np.ndarray) -> "_ArraySnapshot":
+        return cls(array, np.array(array, copy=True), bool(array.flags.writeable))
+
+    def restore(self) -> None:
+        if self.writeable:
+            self.array.flags.writeable = True
+            np.copyto(self.array, self.content, casting="no")
+        elif not np.array_equal(self.array, self.content):
+            raise RuntimeError("immutable shared input array changed")
+        self.array.flags.writeable = self.writeable
+
+
+@dataclass(frozen=True)
+class _ObjectSnapshot:
+    target: object
+    fields: tuple[tuple[str, object, _ArraySnapshot | None], ...]
+
+    @classmethod
+    def capture(cls, target: object) -> "_ObjectSnapshot":
+        if type(target) not in {Frame, CameraIntrinsics, FrameObservation, DenseSemanticFrame}:
+            raise TypeError("unsupported shared input object")
+        values = []
+        for field in fields(target):
+            value = getattr(target, field.name)
+            array = _ArraySnapshot.capture(value) if isinstance(value, np.ndarray) else None
+            values.append((field.name, value, array))
+        return cls(target, tuple(values))
+
+    def restore(self) -> None:
+        expected = {name for name, _, _ in self.fields}
+        if hasattr(self.target, "__dict__"):
+            for name in set(vars(self.target)) - expected:
+                delattr(self.target, name)
+        for name, value, array in self.fields:
+            if array is not None:
+                array.restore()
+                value = array.array
+            object.__setattr__(self.target, name, value)
+
+
+@dataclass(frozen=True)
+class _SharedInputSnapshot:
+    objects: tuple[_ObjectSnapshot, ...]
+
+    @classmethod
+    def capture(
+        cls,
+        frame: Frame,
+        observations: tuple[FrameObservation, ...],
+        dense_semantics: DenseSemanticFrame | None,
+    ) -> "_SharedInputSnapshot":
+        objects = [_ObjectSnapshot.capture(frame), _ObjectSnapshot.capture(frame.intrinsics)]
+        objects.extend(_ObjectSnapshot.capture(item) for item in observations)
+        if dense_semantics is not None:
+            objects.append(_ObjectSnapshot.capture(dense_semantics))
+        return cls(tuple(objects))
+
+    def restore(self) -> None:
+        for snapshot in self.objects:
+            snapshot.restore()
+
+
+@dataclass(frozen=True)
 class DualTransactionSnapshot:
     cumulative: _CumulativeSnapshot
     temporal_attributes: tuple[tuple[str, object], ...]
     temporal_state: TemporalRuntimeState | ReferenceReadoutState
+    temporal_public: tuple[tuple[str, object], ...]
+    shared_inputs: _SharedInputSnapshot | None
 
     @classmethod
-    def capture(cls, cumulative: Oviv2Runtime, temporal: object) -> "DualTransactionSnapshot":
+    def capture(
+        cls,
+        cumulative: Oviv2Runtime,
+        temporal: object,
+        frame: Frame | None = None,
+        observations: tuple[FrameObservation, ...] = (),
+        dense_semantics: DenseSemanticFrame | None = None,
+    ) -> "DualTransactionSnapshot":
         if not isinstance(cumulative, Oviv2Runtime):
             raise TypeError("cumulative must be an Oviv2Runtime")
         attributes = tuple(cumulative.__dict__.items())
         nested = tuple(
             (name, copy.deepcopy(value))
             for name, value in attributes
-            if name in {"evidence", "ownership", "tracker", "registry", "visibility", "dense_semantic_integrator"}
+            if name in {
+                "evidence", "ownership", "tracker", "registry", "visibility",
+                "dense_semantic_integrator",
+            }
         )
         state = getattr(temporal, "state", None)
         if isinstance(state, TemporalRuntimeState):
-            state_snapshot: TemporalRuntimeState | ReferenceReadoutState = _clone_temporal_state(state)
+            state_snapshot: TemporalRuntimeState | ReferenceReadoutState = (
+                _clone_temporal_state(state)
+            )
+            temporal_public = tuple(
+                (name, getattr(state, name))
+                for name in (
+                    "geometry", "lifecycle_beliefs", "export_tracker", "diagnostics"
+                )
+            )
         elif isinstance(state, ReferenceReadoutState):
-            state_snapshot = state
+            state_snapshot = copy.deepcopy(state)
+            temporal_public = ()
         else:
             raise TypeError("temporal runtime has an unsupported state")
         return cls(
             _CumulativeSnapshot(attributes, _clone_geometry(cumulative.geometry), nested),
             tuple(temporal.__dict__.items()), state_snapshot,
+            temporal_public,
+            None if frame is None else _SharedInputSnapshot.capture(
+                frame, observations, dense_semantics
+            ),
         )
 
     def restore(self, cumulative: Oviv2Runtime, temporal: object) -> None:
@@ -211,7 +350,9 @@ class DualTransactionSnapshot:
 
         temporal_original = dict(self.temporal_attributes)
         original_state = temporal_original["state"]
-        if isinstance(original_state, TemporalRuntimeState) and isinstance(self.temporal_state, TemporalRuntimeState):
+        if isinstance(original_state, TemporalRuntimeState) and isinstance(
+            self.temporal_state, TemporalRuntimeState
+        ):
             for name in original_state.__slots__:
                 original_value = object.__getattribute__(original_state, name)
                 snapshot_value = object.__getattribute__(self.temporal_state, name)
@@ -223,8 +364,33 @@ class DualTransactionSnapshot:
                     object.__setattr__(original_state, name, original_value)
                 else:
                     object.__setattr__(original_state, name, snapshot_value)
+            public = dict(self.temporal_public)
+            geometry = public["geometry"]
+            geometry.__dict__.clear()
+            geometry.__dict__.update(self.temporal_state.geometry.__dict__)
+            object.__setattr__(original_state, "geometry", geometry)
+            lifecycle = public["lifecycle_beliefs"]
+            for target, snapshot in zip(
+                lifecycle, self.temporal_state.lifecycle_beliefs, strict=True
+            ):
+                _restore_nested_object(target, snapshot)
+            object.__setattr__(original_state, "lifecycle_beliefs", lifecycle)
+            for name in ("export_tracker", "diagnostics"):
+                target = public[name]
+                _restore_nested_object(target, getattr(self.temporal_state, name))
+                object.__setattr__(original_state, name, target)
+        elif isinstance(original_state, ReferenceReadoutState) and isinstance(
+            self.temporal_state, ReferenceReadoutState
+        ):
+            for field in fields(original_state):
+                object.__setattr__(
+                    original_state, field.name,
+                    copy.deepcopy(getattr(self.temporal_state, field.name)),
+                )
         temporal.__dict__.clear()
         temporal.__dict__.update(temporal_original)
+        if self.shared_inputs is not None:
+            self.shared_inputs.restore()
 
 
 def _input_arrays(

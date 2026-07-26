@@ -142,7 +142,9 @@ class DualReadoutRuntime:
         observations: tuple[FrameObservation, ...],
         dense_semantics: DenseSemanticFrame | None = None,
     ) -> DualFrameResult:
-        transaction = DualTransactionSnapshot.capture(self.cumulative, self.temporal)
+        transaction = DualTransactionSnapshot.capture(
+            self.cumulative, self.temporal, frame, observations, dense_semantics
+        )
         input_digest = shared_input_sha256(frame, observations, dense_semantics)
         reference = (
             _validate_reference_readout(self.temporal)

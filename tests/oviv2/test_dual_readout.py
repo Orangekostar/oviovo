@@ -507,6 +507,43 @@ def test_current_checkpoint_keeps_reference_and_temporal_geometry_native() -> No
     assert isinstance(reference.current_checkpoint(), CumulativeReadoutView)
 
 
+@pytest.mark.parametrize(
+    "profile", (ExecutionProfile.A2, ExecutionProfile.A3, ExecutionProfile.A4)
+)
+def test_fresh_temporal_current_checkpoint_fails_closed(profile: ExecutionProfile) -> None:
+    from src.oviv2.dual_readout import DualReadoutRuntime
+
+    config = replace(_temporal_config(), execution_profile=profile)
+    runtime = DualReadoutRuntime(
+        _cumulative(),
+        TemporalCurrentRuntime("scene", config, LocalTrackerConfig(confirm_hits=2)),
+    )
+    with pytest.raises(ValueError, match="unprocessed|frame|fresh"):
+        runtime.current_checkpoint()
+
+
+def test_reference_failure_restores_mutated_state_in_place(monkeypatch) -> None:
+    from src.oviv2.dual_readout import DualReadoutRuntime
+    from src.oviv2.reference_readout import ReferenceCurrentReadout
+
+    config = replace(_temporal_config(), execution_profile=ExecutionProfile.A0)
+    reference = ReferenceCurrentReadout("scene", config)
+    runtime = DualReadoutRuntime(_cumulative(), reference)
+    state = reference.state
+
+    def fail_in_place(self, *args, **kwargs):
+        object.__setattr__(self.state, "revision", 999)
+        object.__setattr__(self.state, "last_frame_id", 999)
+        raise RuntimeError("injected reference state failure")
+
+    monkeypatch.setattr(ReferenceCurrentReadout, "process_cumulative_frame", fail_in_place)
+    with pytest.raises(RuntimeError, match="injected reference state failure"):
+        runtime.process_frame(_frame(), ())
+    assert reference.state is state
+    assert reference.state.revision == 0
+    assert reference.state.last_frame_id == -1
+
+
 def test_reference_readout_captures_before_and_after_cumulative_in_order(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

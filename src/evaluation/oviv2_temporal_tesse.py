@@ -486,6 +486,13 @@ def load_temporal_current_checkpoint(checkpoint_dir: str | Path) -> LoadedTempor
                 raise ValueError("entity geometry_epoch is invalid")
             if type(readout_valid) is not bool or readout_valid is not True:
                 raise ValueError("entity readout_valid must be true")
+        else:
+            entity_metadata = {
+                "temporal_entity_id": temporal_id,
+                "semantic_id": semantic_id,
+                "geometry_epoch": 0,
+                "readout_valid": True,
+            }
         semantic_label = record["semantic_label"]
         if semantic_id < len(class_names):
             if semantic_label != class_names[semantic_id]:

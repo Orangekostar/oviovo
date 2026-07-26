@@ -24,6 +24,7 @@ from src.oviv2.observations import FrameObservation, ObservationKind
 from src.oviv2.temporal_snapshot import (
     TemporalCompactCheckpoint,
     TemporalCurrentSnapshot,
+    TemporalSnapshotEntity,
     TemporalSnapshotMetadata,
     build_temporal_map_snapshot,
     build_temporal_snapshot,
@@ -264,7 +265,7 @@ def test_current_snapshot_strictly_validates_nested_lifecycle(
     lifecycle = replace(entity.lifecycle)
     for name, value in changes.items():
         object.__setattr__(lifecycle, name, value)
-    object.__setattr__(entity, "lifecycle", lifecycle)
+    object.__setattr__(entity.entity, "lifecycle", lifecycle)
     with pytest.raises((TypeError, ValueError), match=message):
         TemporalCurrentSnapshot(snapshot.metadata, (entity,), snapshot.background)
 
@@ -278,6 +279,17 @@ def test_current_snapshot_does_not_alias_input_lifecycle() -> None:
     )
     object.__setattr__(entity.lifecycle, "entity_id", 99)
     assert snapshot.entities[0].lifecycle.entity_id == 1
+
+
+def test_current_snapshot_rejects_wrapper_shadow_and_invalid_readout() -> None:
+    snapshot = _snapshot()
+    wrapper = snapshot.entities[0]
+    object.__setattr__(wrapper, "lifecycle_shadow", wrapper.lifecycle)
+    with pytest.raises(ValueError, match="unexpected|shadow"):
+        TemporalCurrentSnapshot(snapshot.metadata, (wrapper,), snapshot.background)
+
+    with pytest.raises(ValueError, match="readout_valid|invalid"):
+        TemporalSnapshotEntity(wrapper.entity, wrapper.geometry_epoch, False)
 
 
 def test_current_snapshot_deeply_owns_metadata_and_submap() -> None:

@@ -264,7 +264,12 @@ def test_full_loader_strictly_separates_v1_and_v2_entity_fields(tmp_path: Path) 
     import src.evaluation.oviv2_temporal_tesse as module
     _rewrite_member(legacy.path, "entities.jsonl", module._canonical_json(record))
     loaded, _ = load_temporal_current_checkpoint(legacy.path)
-    assert loaded.entities[0].metadata == {"temporal_entity_id": 1, "semantic_id": 1}
+    assert loaded.entities[0].metadata == {
+        "temporal_entity_id": 1,
+        "semantic_id": 1,
+        "geometry_epoch": 0,
+        "readout_valid": True,
+    }
 
     smuggled = publish_temporal_current_checkpoint(
         tmp_path / "smuggled", snapshot, ("unknown", "chair"),
