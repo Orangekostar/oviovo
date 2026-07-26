@@ -4339,10 +4339,18 @@
   "occlusion_target_manifest": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/occlusion_v1_targets/20260722-stage3-fb97-a/manifest.json",
   "occlusion_target_manifest_sha256": "0ce990a32af971be52f4b2a1d1bf8e8862cf18bb9d22362091411b4210b35361",
   "evaluation_checkpoint_frames_sha256": "03dd2f35becf5bd5fcc4a9fdceb2e459d28e1eb2729eb1622090337dba02d9fa",
-  "algorithm_hash": "f2111d2e9c4697ea739dec82037ffb2381e120ac2029f018af3e0c171c44350e",
+  "algorithm_hash": "2464a4a888efa5494ca5d72f56299f118018913a7acca993fac79097ede5a212",
   "protocol_id": "oviv2-tessecd-v2",
   "temporal_readout": {
     "execution_profile": "a4",
+    "components": {
+      "lifecycle": "probabilistic_hysteresis",
+      "proposal": "temporal_recovery",
+      "identity": "dormant_reid",
+      "geometry": "object_submap_epoch",
+      "background": "reversible_ledger",
+      "motion": "gated_icp"
+    },
     "lifecycle": {
       "initial_log_odds": 0.0,
       "present_log_likelihood": 1.2,
@@ -4383,6 +4391,40 @@
       "minimum_icp_fitness": 0.5,
       "maximum_icp_rmse_m": 0.2,
       "maximum_motion_m": 2.0
+    },
+    "proposal": {
+      "minimum_residual_area_px": 32,
+      "maximum_recovered_proposals": 16,
+      "search_region_expansion_m": 0.25,
+      "minimum_depth_residual_m": 0.1
+    },
+    "identity": {
+      "maximum_identities": 1000,
+      "maximum_dormant_frames": 600,
+      "minimum_reid_similarity": 0.8,
+      "maximum_reid_distance_m": 3.0
+    },
+    "dynamic_state": {
+      "minimum_consecutive_motion_frames": 2,
+      "displacement_floor_m": 0.1,
+      "minimum_motion_confidence": 0.7,
+      "static_off_streak_frames": 10
+    },
+    "motion": {
+      "minimum_translation_confidence": 0.6,
+      "maximum_translation_residual_m": 0.25,
+      "require_explicit_rejection": true
+    },
+    "geometry_epoch": {
+      "maximum_epochs_per_identity": 4,
+      "maximum_retained_epochs": 1000
+    },
+    "background_ledger": {
+      "maximum_journal_blocks": 50000,
+      "commit_support_frames": 2,
+      "commit_distinct_view_bins": 2,
+      "minimum_commit_frame_gap": 1,
+      "maximum_records_per_block": 8
     }
   }
 }

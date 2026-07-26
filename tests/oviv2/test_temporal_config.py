@@ -8,6 +8,12 @@ import pytest
 
 from src.oviv2.temporal_config import (
     ExecutionProfile,
+    TemporalBackgroundLedgerConfig,
+    TemporalDynamicConfig,
+    TemporalGeometryEpochConfig,
+    TemporalIdentityConfig,
+    TemporalMotionConfig,
+    TemporalProposalConfig,
     TemporalReadoutConfig,
     temporal_config_from_json,
     temporal_config_to_json,
@@ -19,6 +25,14 @@ def valid_config() -> dict[str, object]:
     return {
         "temporal_readout": {
             "execution_profile": "a4",
+            "components": {
+                "lifecycle": "probabilistic_hysteresis",
+                "proposal": "temporal_recovery",
+                "identity": "dormant_reid",
+                "geometry": "object_submap_epoch",
+                "background": "reversible_ledger",
+                "motion": "gated_icp",
+            },
             "lifecycle": {
                 "initial_log_odds": 0.0,
                 "present_log_likelihood": 1.2,
@@ -60,6 +74,40 @@ def valid_config() -> dict[str, object]:
                 "maximum_icp_rmse_m": 0.2,
                 "maximum_motion_m": 2.0,
             },
+            "proposal": {
+                "minimum_residual_area_px": 32,
+                "maximum_recovered_proposals": 16,
+                "search_region_expansion_m": 0.25,
+                "minimum_depth_residual_m": 0.1,
+            },
+            "identity": {
+                "maximum_identities": 1000,
+                "maximum_dormant_frames": 600,
+                "minimum_reid_similarity": 0.8,
+                "maximum_reid_distance_m": 3.0,
+            },
+            "dynamic_state": {
+                "minimum_consecutive_motion_frames": 2,
+                "displacement_floor_m": 0.1,
+                "minimum_motion_confidence": 0.7,
+                "static_off_streak_frames": 10,
+            },
+            "motion": {
+                "minimum_translation_confidence": 0.6,
+                "maximum_translation_residual_m": 0.25,
+                "require_explicit_rejection": True,
+            },
+            "geometry_epoch": {
+                "maximum_epochs_per_identity": 4,
+                "maximum_retained_epochs": 1000,
+            },
+            "background_ledger": {
+                "maximum_journal_blocks": 50000,
+                "commit_support_frames": 2,
+                "commit_distinct_view_bins": 2,
+                "minimum_commit_frame_gap": 1,
+                "maximum_records_per_block": 8,
+            },
         }
     }
 
@@ -72,87 +120,100 @@ def _set(
     return changed
 
 
-def test_valid_config_round_trips_and_is_frozen(valid_config: dict[str, object]) -> None:
+def test_valid_config_round_trips_and_is_frozen(
+    valid_config: dict[str, object],
+) -> None:
     parsed = temporal_config_from_json(valid_config)
 
     assert isinstance(parsed, TemporalReadoutConfig)
     assert temporal_config_from_json(temporal_config_to_json(parsed)) == parsed
     with pytest.raises(FrozenInstanceError):
         parsed.lifecycle.initial_log_odds = 1.0  # type: ignore[misc]
+    for group in (
+        parsed.proposal,
+        parsed.identity,
+        parsed.dynamic_state,
+        parsed.motion,
+        parsed.geometry_epoch,
+        parsed.background_ledger,
+    ):
+        with pytest.raises(FrozenInstanceError):
+            setattr(group, next(iter(group.__dict__)), 0)
 
 
 @pytest.mark.parametrize(
-    "profile_id,expected_axes",
+    "profile_id,expected_components",
     [
         (
             "a0",
-            (
-                "v1_native",
-                "v1_cumulative",
-                "v1_cumulative",
-                "v1_native",
-                "none",
-            ),
+            {
+                "lifecycle": "v1_native",
+                "proposal": "v1_native",
+                "identity": "v1_native",
+                "geometry": "v1_cumulative",
+                "background": "v1_cumulative",
+                "motion": "none",
+            },
         ),
         (
             "a1",
-            (
-                "probabilistic_hysteresis",
-                "v1_cumulative",
-                "v1_cumulative",
-                "v1_identity",
-                "none",
-            ),
+            {
+                "lifecycle": "probabilistic_hysteresis",
+                "proposal": "v1_native",
+                "identity": "v1_identity",
+                "geometry": "v1_cumulative",
+                "background": "v1_cumulative",
+                "motion": "none",
+            },
         ),
         (
             "a2",
-            (
-                "probabilistic_hysteresis",
-                "object_submap",
-                "v1_cumulative",
-                "active_uncertain",
-                "translation",
-            ),
+            {
+                "lifecycle": "probabilistic_hysteresis",
+                "proposal": "temporal_recovery",
+                "identity": "active_uncertain",
+                "geometry": "object_submap_epoch",
+                "background": "v1_cumulative",
+                "motion": "translation",
+            },
         ),
         (
             "a3",
-            (
-                "probabilistic_hysteresis",
-                "object_submap",
-                "masked_temporal",
-                "active_uncertain",
-                "translation",
-            ),
+            {
+                "lifecycle": "probabilistic_hysteresis",
+                "proposal": "temporal_recovery",
+                "identity": "active_uncertain",
+                "geometry": "object_submap_epoch",
+                "background": "reversible_ledger",
+                "motion": "translation",
+            },
         ),
         (
             "a4",
-            (
-                "probabilistic_hysteresis",
-                "object_submap",
-                "masked_temporal",
-                "dormant_reid",
-                "gated_icp",
-            ),
+            {
+                "lifecycle": "probabilistic_hysteresis",
+                "proposal": "temporal_recovery",
+                "identity": "dormant_reid",
+                "geometry": "object_submap_epoch",
+                "background": "reversible_ledger",
+                "motion": "gated_icp",
+            },
         ),
     ],
 )
 def test_execution_profiles_have_canonical_derived_axes(
     valid_config: dict[str, object],
     profile_id: str,
-    expected_axes: tuple[str, str, str, str, str],
+    expected_components: dict[str, str],
 ) -> None:
-    valid_config["temporal_readout"]["execution_profile"] = profile_id  # type: ignore[index]
+    temporal = valid_config["temporal_readout"]
+    temporal["execution_profile"] = profile_id  # type: ignore[index]
+    temporal["components"] = expected_components  # type: ignore[index]
 
     profile = temporal_config_from_json(valid_config).execution_profile
 
     assert profile.profile_id == profile_id
-    assert (
-        profile.lifecycle_mode,
-        profile.geometry_mode,
-        profile.background_mode,
-        profile.association_mode,
-        profile.motion_mode,
-    ) == expected_axes
+    assert profile.components == expected_components
     assert ExecutionProfile.from_id(profile_id) is profile
     with pytest.raises(AttributeError):
         profile.motion_mode = "custom"  # type: ignore[misc]
@@ -167,6 +228,12 @@ def test_direct_config_construction_defaults_to_safe_a4(
         lifecycle=parsed.lifecycle,
         association=parsed.association,
         geometry=parsed.geometry,
+        proposal=parsed.proposal,
+        identity=parsed.identity,
+        dynamic_state=parsed.dynamic_state,
+        motion=parsed.motion,
+        geometry_epoch=parsed.geometry_epoch,
+        background_ledger=parsed.background_ledger,
     )
 
     assert direct.execution_profile is ExecutionProfile.A4
@@ -194,10 +261,41 @@ def test_execution_profile_serializes_as_canonical_id(
     valid_config: dict[str, object],
 ) -> None:
     valid_config["temporal_readout"]["execution_profile"] = "a2"  # type: ignore[index]
+    valid_config["temporal_readout"]["components"] = dict(  # type: ignore[index]
+        ExecutionProfile.A2.components
+    )
 
     serialized = temporal_config_to_json(temporal_config_from_json(valid_config))
 
-    assert serialized["temporal_readout"]["execution_profile"] == "a2"  # type: ignore[index]
+    assert (
+        serialized["temporal_readout"]["execution_profile"]  # type: ignore[index]
+        == "a2"
+    )
+
+
+def test_profile_component_override_is_rejected(
+    valid_config: dict[str, object],
+) -> None:
+    valid_config["temporal_readout"]["execution_profile"] = "a2"  # type: ignore[index]
+    temporal = valid_config["temporal_readout"]
+    temporal["components"] = dict(ExecutionProfile.A2.components)  # type: ignore[index]
+    temporal["components"]["identity"] = "dormant_reid"  # type: ignore[index]
+
+    with pytest.raises(ValueError, match="profile components"):
+        temporal_config_from_json(valid_config)
+
+
+def test_new_groups_parse_as_frozen_contract_types(
+    valid_config: dict[str, object],
+) -> None:
+    parsed = temporal_config_from_json(valid_config)
+
+    assert isinstance(parsed.proposal, TemporalProposalConfig)
+    assert isinstance(parsed.identity, TemporalIdentityConfig)
+    assert isinstance(parsed.dynamic_state, TemporalDynamicConfig)
+    assert isinstance(parsed.motion, TemporalMotionConfig)
+    assert isinstance(parsed.geometry_epoch, TemporalGeometryEpochConfig)
+    assert isinstance(parsed.background_ledger, TemporalBackgroundLedgerConfig)
 
 
 @pytest.mark.parametrize(
@@ -214,6 +312,27 @@ def test_execution_profile_serializes_as_canonical_id(
         lambda config: config["temporal_readout"]["geometry"].update(
             {"unexpected": 1}
         ),
+        lambda config: config["temporal_readout"]["components"].update(
+            {"unexpected": "none"}
+        ),
+        lambda config: config["temporal_readout"]["proposal"].update(
+            {"unexpected": 1}
+        ),
+        lambda config: config["temporal_readout"]["identity"].update(
+            {"unexpected": 1}
+        ),
+        lambda config: config["temporal_readout"]["dynamic_state"].update(
+            {"unexpected": 1}
+        ),
+        lambda config: config["temporal_readout"]["motion"].update(
+            {"unexpected": 1}
+        ),
+        lambda config: config["temporal_readout"]["geometry_epoch"].update(
+            {"unexpected": 1}
+        ),
+        lambda config: config["temporal_readout"]["background_ledger"].update(
+            {"unexpected": 1}
+        ),
     ],
 )
 def test_unknown_keys_are_rejected(valid_config: dict[str, object], mutate) -> None:
@@ -222,7 +341,20 @@ def test_unknown_keys_are_rejected(valid_config: dict[str, object], mutate) -> N
         temporal_config_from_json(valid_config)
 
 
-@pytest.mark.parametrize("group,field", [("lifecycle", "initial_log_odds"), ("association", "visual_weight"), ("geometry", "voxel_size_m")])
+@pytest.mark.parametrize(
+    "group,field",
+    [
+        ("lifecycle", "initial_log_odds"),
+        ("association", "visual_weight"),
+        ("geometry", "voxel_size_m"),
+        ("proposal", "minimum_residual_area_px"),
+        ("identity", "maximum_identities"),
+        ("dynamic_state", "minimum_consecutive_motion_frames"),
+        ("motion", "require_explicit_rejection"),
+        ("geometry_epoch", "maximum_epochs_per_identity"),
+        ("background_ledger", "commit_support_frames"),
+    ],
+)
 def test_missing_fields_are_rejected(
     valid_config: dict[str, object], group: str, field: str
 ) -> None:
@@ -239,6 +371,12 @@ def test_missing_fields_are_rejected(
         ("association", "visual_weight"),
         ("geometry", "maximum_entities"),
         ("geometry", "voxel_size_m"),
+        ("proposal", "maximum_recovered_proposals"),
+        ("identity", "minimum_reid_similarity"),
+        ("dynamic_state", "minimum_motion_confidence"),
+        ("motion", "minimum_translation_confidence"),
+        ("geometry_epoch", "maximum_epochs_per_identity"),
+        ("background_ledger", "commit_support_frames"),
     ],
 )
 def test_bool_cannot_masquerade_as_a_number(
@@ -255,6 +393,71 @@ def test_non_finite_numbers_are_rejected(
     with pytest.raises(ValueError, match="finite"):
         temporal_config_from_json(
             _set(valid_config, "association", "minimum_score", value)
+        )
+
+
+def test_boolean_fields_require_exact_bool(valid_config: dict[str, object]) -> None:
+    with pytest.raises(TypeError, match="require_explicit_rejection"):
+        temporal_config_from_json(
+            _set(valid_config, "motion", "require_explicit_rejection", 1)
+        )
+
+
+@pytest.mark.parametrize(
+    "field,values",
+    [
+        ("minimum_consecutive_motion_frames", (2, 3, 4)),
+        ("displacement_floor_m", (0.05, 0.10, 0.15)),
+        ("minimum_motion_confidence", (0.6, 0.7, 0.8)),
+        ("static_off_streak_frames", (5, 10, 20)),
+    ],
+)
+def test_dynamic_search_grid_is_exact(
+    valid_config: dict[str, object], field: str, values: tuple[object, ...]
+) -> None:
+    for value in values:
+        temporal_config_from_json(_set(valid_config, "dynamic_state", field, value))
+    rejected = (
+        5
+        if field in {"minimum_consecutive_motion_frames", "static_off_streak_frames"}
+        else 0.11
+    )
+    if field == "static_off_streak_frames":
+        rejected = 6
+    with pytest.raises(ValueError, match=field):
+        temporal_config_from_json(_set(valid_config, "dynamic_state", field, rejected))
+
+
+@pytest.mark.parametrize(
+    "field,values",
+    [
+        ("commit_support_frames", (2, 3, 4)),
+        ("commit_distinct_view_bins", (2, 3)),
+    ],
+)
+def test_background_ledger_search_grid_is_exact(
+    valid_config: dict[str, object], field: str, values: tuple[int, ...]
+) -> None:
+    for value in values:
+        temporal_config_from_json(
+            _set(valid_config, "background_ledger", field, value)
+        )
+    with pytest.raises(ValueError, match=field):
+        temporal_config_from_json(_set(valid_config, "background_ledger", field, 5))
+
+
+def test_capacity_relationships_are_enforced(valid_config: dict[str, object]) -> None:
+    with pytest.raises(ValueError, match="maximum_identities"):
+        temporal_config_from_json(
+            _set(valid_config, "identity", "maximum_identities", 499)
+        )
+    with pytest.raises(ValueError, match="maximum_retained_epochs"):
+        temporal_config_from_json(
+            _set(valid_config, "geometry_epoch", "maximum_retained_epochs", 3)
+        )
+    with pytest.raises(ValueError, match="maximum_journal_blocks"):
+        temporal_config_from_json(
+            _set(valid_config, "background_ledger", "maximum_journal_blocks", 100001)
         )
 
 
