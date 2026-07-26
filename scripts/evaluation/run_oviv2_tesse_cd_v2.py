@@ -406,6 +406,81 @@ class _CheckpointArtifactWitness:
     maximum_object_voxels: int
 
 
+@dataclass(frozen=True)
+class _RelativeArtifactRecord:
+    path: str
+    sha256: str
+    byte_count: int
+
+    @classmethod
+    def bind(
+        cls, record: Mapping[str, Any], *, label: str
+    ) -> _RelativeArtifactRecord:
+        if set(record) != {"path", "sha256", "byte_count"}:
+            raise ValueError(f"{label} record fields are invalid")
+        path = record.get("path")
+        sha256 = record.get("sha256")
+        byte_count = record.get("byte_count")
+        relative = Path(path) if isinstance(path, str) else Path()
+        if (
+            not isinstance(path, str)
+            or relative.is_absolute()
+            or not relative.parts
+            or ".." in relative.parts
+            or not _is_sha256(sha256)
+            or type(byte_count) is not int
+            or byte_count < 0
+        ):
+            raise ValueError(f"{label} record is invalid")
+        return cls(path, str(sha256), byte_count)
+
+    def to_record(self) -> dict[str, Any]:
+        return {
+            "path": self.path,
+            "sha256": self.sha256,
+            "byte_count": self.byte_count,
+        }
+
+
+@dataclass(frozen=True)
+class _CumulativeAuditWitness:
+    artifact: _RelativeArtifactRecord
+    snapshot: _RelativeArtifactRecord
+    entities: _RelativeArtifactRecord
+    voxel_snapshot: _RelativeArtifactRecord | None
+
+    @classmethod
+    def bind(
+        cls, record: Mapping[str, Any]
+    ) -> _CumulativeAuditWitness:
+        expected = {"format", "artifact", "snapshot", "entities"}
+        if "voxel_snapshot" in record:
+            expected.add("voxel_snapshot")
+        if set(record) != expected or record.get("format") != "oviv2_cumulative_audit_v1":
+            raise ValueError("cumulative audit manifest record is invalid")
+        voxel = record.get("voxel_snapshot")
+        if "voxel_snapshot" in record and not isinstance(voxel, Mapping):
+            raise ValueError("cumulative audit voxel snapshot record is invalid")
+        return cls(
+            artifact=_RelativeArtifactRecord.bind(
+                record["artifact"], label="cumulative audit artifact"
+            ),
+            snapshot=_RelativeArtifactRecord.bind(
+                record["snapshot"], label="cumulative audit snapshot"
+            ),
+            entities=_RelativeArtifactRecord.bind(
+                record["entities"], label="cumulative audit entities"
+            ),
+            voxel_snapshot=(
+                _RelativeArtifactRecord.bind(
+                    voxel, label="cumulative audit voxel snapshot"
+                )
+                if isinstance(voxel, Mapping)
+                else None
+            ),
+        )
+
+
 def _staging_identity(staging: Path) -> tuple[int, int]:
     status = os.stat(staging, follow_symlinks=False)
     if not staging.is_dir():
@@ -450,6 +525,41 @@ def _revalidate_relative_file_record(
         raise ValueError(f"{label} is not a regular file")
     if _file_record(path, relative_to=root) != dict(record):
         raise ValueError(f"{label} content changed")
+
+
+def _revalidate_relative_tree_record(
+    root: Path, record: _RelativeArtifactRecord, *, label: str
+) -> None:
+    path = root / record.path
+    metadata = os.lstat(path)
+    if not stat.S_ISDIR(metadata.st_mode):
+        raise ValueError(f"{label} is not a directory")
+    if _tree_record(path, relative_to=root) != record.to_record():
+        raise ValueError(f"{label} content changed")
+
+
+def _revalidate_cumulative_audit_witness(
+    root: Path,
+    witness: _CumulativeAuditWitness,
+    manifest_record: Mapping[str, Any],
+) -> None:
+    if _CumulativeAuditWitness.bind(manifest_record) != witness:
+        raise ValueError("cumulative audit manifest binding changed")
+    _revalidate_relative_tree_record(
+        root, witness.artifact, label="cumulative audit artifact"
+    )
+    _revalidate_relative_file_record(
+        root, witness.snapshot.to_record(), label="cumulative audit snapshot"
+    )
+    _revalidate_relative_file_record(
+        root, witness.entities.to_record(), label="cumulative audit entities"
+    )
+    if witness.voxel_snapshot is not None:
+        _revalidate_relative_tree_record(
+            root,
+            witness.voxel_snapshot,
+            label="cumulative audit voxel snapshot",
+        )
 
 
 def _revalidate_checkpoint_artifact(
@@ -1571,7 +1681,7 @@ def run(
         captured: list[int] = []
         records: list[dict[str, Any]] = []
         witnesses: list[_CheckpointArtifactWitness] = []
-        cumulative_audit_witnesses: list[Any] = []
+        cumulative_audit_witnesses: list[_CumulativeAuditWitness] = []
         cumulative_audit_directories: set[str] = set()
         expected_checkpoint_inventory: set[str] = set()
         official_frames = {item.frame_index for item in official}
@@ -1704,7 +1814,6 @@ def run(
                 ):
                     raise ValueError("cumulative audit snapshot does not match progress")
                 cumulative_snapshot.revalidate_source()
-                cumulative_audit_witnesses.append(cumulative_snapshot)
                 cumulative_neutral = build_neutral_current_snapshot(
                     cumulative_snapshot,
                     timestamp_ns=checkpoint.timestamp_ns,
@@ -1716,6 +1825,8 @@ def run(
                 cumulative_snapshot_record = _tree_record(
                     audit_root / "voxel_snapshot", relative_to=staging
                 )
+                cumulative_snapshot.revalidate_source()
+                del cumulative_snapshot
             else:
                 cumulative_neutral = _cumulative_neutral_from_runtime(
                     runtime, checkpoint=checkpoint, caches=caches
@@ -1748,6 +1859,13 @@ def run(
             }
             if cumulative_snapshot_record is not None:
                 cumulative_audit["voxel_snapshot"] = cumulative_snapshot_record
+            cumulative_audit_witness = _CumulativeAuditWitness.bind(
+                cumulative_audit
+            )
+            _revalidate_cumulative_audit_witness(
+                staging, cumulative_audit_witness, cumulative_audit
+            )
+            cumulative_audit_witnesses.append(cumulative_audit_witness)
             temporal_neutral = None
             if needs_full:
                 if snapshot is not None:
@@ -1943,9 +2061,11 @@ def run(
             _assert_staging_identity(staging, staging_identity)
             _revalidate_checkpoint_artifact(witness, run_root=staging)
             _assert_staging_identity(staging, staging_identity)
-        for witness in cumulative_audit_witnesses:
+        for witness, record in zip(cumulative_audit_witnesses, records, strict=True):
             _assert_staging_identity(staging, staging_identity)
-            witness.revalidate_source()
+            _revalidate_cumulative_audit_witness(
+                staging, witness, record["cumulative_audit"]
+            )
             _assert_staging_identity(staging, staging_identity)
 
         normalized_config = staging / "normalized_run_config.json"
@@ -2240,6 +2360,12 @@ def run(
             != occlusion_index_record
         ):
             raise ValueError("occlusion checkpoint index changed during run")
+        for witness, record in zip(
+            cumulative_audit_witnesses, manifest["checkpoints"], strict=True
+        ):
+            _revalidate_cumulative_audit_witness(
+                staging, witness, record["cumulative_audit"]
+            )
         _assert_staging_identity(staging, staging_identity)
         if _entry_inventory(staging) != expected_entries:
             raise ValueError("run publication inventory changed before publication")
@@ -2262,6 +2388,14 @@ def run(
                     destination,
                     sidecar_record,
                     label=f"published sidecar {position}",
+                )
+            for witness, record in zip(
+                cumulative_audit_witnesses,
+                manifest["checkpoints"],
+                strict=True,
+            ):
+                _revalidate_cumulative_audit_witness(
+                    destination, witness, record["cumulative_audit"]
                 )
         except RunPublicationUncertainError:
             raise

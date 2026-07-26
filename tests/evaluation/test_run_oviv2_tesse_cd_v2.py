@@ -1368,6 +1368,29 @@ def test_publication_inventory_rejects_late_empty_directory(
     assert not output.exists()
 
 
+def test_cumulative_audit_rejects_payload_changed_after_manifest_write(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config = _materialize_config(module, tmp_path)
+    original_write = module._write_json
+
+    def inject(path: Path, value: object) -> None:
+        original_write(path, value)
+        if path.name == "run_manifest.json":
+            audit = value["checkpoints"][0]["cumulative_audit"]
+            payload = path.parent / audit["snapshot"]["path"]
+            payload.write_bytes(payload.read_bytes() + b"changed")
+
+    monkeypatch.setattr(module, "_write_json", inject)
+    output = tmp_path / "published" / "run"
+    with pytest.raises(ValueError, match="cumulative audit"):
+        module.run(config, output, dependencies=_dependencies(module)[0])
+    assert not output.exists()
+    assert not list(output.parent.glob(".run.staging-*"))
+
+
 def test_publisher_boundary_empty_directory_is_publication_uncertain(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -1410,6 +1433,26 @@ def test_publisher_boundary_content_change_is_publication_uncertain(
     published = json.loads((output / "run_manifest.json").read_text())
     normalized = output / published["normalized_run_config"]["path"]
     assert published["normalized_run_config"]["sha256"] != _sha256(normalized)
+
+
+def test_publisher_boundary_cumulative_audit_change_is_uncertain(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config = _materialize_config(module, tmp_path)
+    original_publish = module._publish_run
+
+    def inject(staging: Path, destination: Path) -> None:
+        payload = next(staging.glob("checkpoints/*/cumulative_audit/artifact/**/*.npz"))
+        payload.write_bytes(payload.read_bytes() + b"changed")
+        original_publish(staging, destination)
+
+    monkeypatch.setattr(module, "_publish_run", inject)
+    output = tmp_path / "published" / "run"
+    with pytest.raises(RunPublicationUncertainError):
+        module.run(config, output, dependencies=_dependencies(module)[0])
+    assert output.is_dir()
 
 
 def test_publisher_return_without_destination_is_uncertain_and_cleans_staging(
@@ -1525,6 +1568,104 @@ def test_compact_checkpoint_objects_are_released_between_checkpoints(
         lambda *args, **kwargs: Builder(original_from_snapshot(*args, **kwargs)),
     )
     module.run(config, tmp_path / "run", dependencies=_dependencies(module)[0])
+    gc.collect()
+    assert maximum_live == 1
+    assert live == 0
+
+
+def test_cumulative_snapshot_objects_are_released_between_checkpoints(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+    import src.evaluation.oviv2_tesse as oviv2_tesse
+    import src.oviv2.runtime as runtime_module
+
+    config = _materialize_config(module, tmp_path)
+    dependencies, _ = _dependencies(module)
+    live = 0
+    maximum_live = 0
+
+    class Snapshot:
+        def __init__(self, path: Path, frame_id: int, timestamp: float) -> None:
+            nonlocal live, maximum_live
+            self.path = path
+            self.metadata = SimpleNamespace(frame_id=frame_id, timestamp=timestamp)
+            live += 1
+            maximum_live = max(maximum_live, live)
+
+        def revalidate_source(self) -> None:
+            assert (self.path / "payload.bin").read_bytes() == b"snapshot"
+
+        def __del__(self) -> None:
+            nonlocal live
+            live -= 1
+
+    class CumulativeRuntime:
+        def __init__(self) -> None:
+            self.frame_id = -1
+            self.timestamp = 0.0
+
+        def commit_new(self, target: Path) -> Snapshot:
+            gc.collect()
+            target.mkdir(parents=True)
+            (target / "payload.bin").write_bytes(b"snapshot")
+            return Snapshot(target, self.frame_id, self.timestamp)
+
+    monkeypatch.setattr(runtime_module, "Oviv2Runtime", CumulativeRuntime)
+    monkeypatch.setattr(
+        oviv2_tesse,
+        "build_neutral_current_snapshot",
+        lambda snapshot, *, timestamp_ns, **kwargs: MapSnapshot(
+            method="OVIV2",
+            scene_id="apartment",
+            timestamp=timestamp_ns / 1_000_000_000,
+            entities=(),
+            background_xyz=None,
+            scope="current",
+        ),
+    )
+
+    def runtime_factory(config: object, cache: object) -> _DualRuntime:
+        cache.object_semantic_ids = ()
+        cache.semantic_fusion = None
+        cache.timestamp_ns_by_frame = {}
+        value = _DualRuntime(cache.temporal_config)
+        value.cumulative = CumulativeRuntime()
+        original_process = value.process_frame
+
+        def process(frame: object, observations: object, dense_semantics: object):
+            result = original_process(frame, observations, dense_semantics)
+            value.cumulative.frame_id = frame.frame_id
+            value.cumulative.timestamp = frame.timestamp
+            return result
+
+        value.process_frame = process
+        return value
+
+    dependencies = module.RunnerDependencies(
+        dataset_factory=dependencies.dataset_factory,
+        cache_loader_factory=dependencies.cache_loader_factory,
+        runtime_factory=runtime_factory,
+        provenance_factory=dependencies.provenance_factory,
+        environment_factory=dependencies.environment_factory,
+    )
+    original_revalidate = module._revalidate_cumulative_audit_witness
+
+    def revalidate(root: Path, witness: object, manifest_record: object) -> None:
+        assert type(witness) is module._CumulativeAuditWitness
+        for record in (
+            witness.artifact,
+            witness.snapshot,
+            witness.entities,
+            witness.voxel_snapshot,
+        ):
+            if record is not None:
+                assert type(record) is module._RelativeArtifactRecord
+                assert set(vars(record)) == {"path", "sha256", "byte_count"}
+        original_revalidate(root, witness, manifest_record)
+
+    monkeypatch.setattr(module, "_revalidate_cumulative_audit_witness", revalidate)
+    module.run(config, tmp_path / "run", dependencies=dependencies)
     gc.collect()
     assert maximum_live == 1
     assert live == 0
