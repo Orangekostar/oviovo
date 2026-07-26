@@ -121,6 +121,12 @@ def _native_identity(frame: Frame) -> NativeIdentity:
     return (0, frame.frame_id)
 
 
+def _native_frame_index(frame: Frame) -> int:
+    if frame.source_frame_id is not None:
+        return frame.source_frame_id
+    return frame.frame_id
+
+
 def _native_frame_payload(frame: Frame) -> tuple[object, ...]:
     return (
         frame.source_frame_id,
@@ -352,6 +358,7 @@ class ReversibleBackgroundLedger:
         self._committed: dict[ContributionKey, _Record] = {}
         self._event_digests: dict[tuple[int, int, int], str] = {}
         self._native_frames: dict[NativeIdentity, tuple[object, ...]] = {}
+        self._native_view_bins: dict[NativeIdentity, int] = {}
         self._processed_frames: dict[int, tuple[object, ...]] = {}
         self._maximum_ownership_records_per_observation = (
             self._volume.config.maximum_entities
@@ -419,6 +426,10 @@ class ReversibleBackgroundLedger:
                 "native_frames": [
                     (identity, self._native_frames[identity])
                     for identity in sorted(self._native_frames)
+                ],
+                "native_view_bins": [
+                    (identity, self._native_view_bins[identity])
+                    for identity in sorted(self._native_view_bins)
                 ],
                 "processed_frames": [
                     (frame_id, self._processed_frames[frame_id])
@@ -488,6 +499,14 @@ class ReversibleBackgroundLedger:
                 ):
                     raise ValueError(
                         "native frame content conflicts for the same identity"
+                    )
+                existing_view_bin = self._native_view_bins.get(native_identity)
+                if (
+                    existing_view_bin is not None
+                    and existing_view_bin != evidence.view_bin
+                ):
+                    raise ValueError(
+                        "native frame identity is already bound to another view_bin"
                     )
                 existing_processed = self._processed_frames.get(evidence.frame_id)
                 if (
@@ -565,13 +584,18 @@ class ReversibleBackgroundLedger:
             group_key = _record_group_key(record)
             grouped.setdefault(group_key, []).append(record)
         for group_key, records in grouped.items():
-            native_frames = {_native_identity(record.frame) for record in records}
-            view_bins = {record.view_bin for record in records}
+            physical: dict[NativeIdentity, _Record] = {}
+            for record in sorted(records, key=lambda item: item.key):
+                physical.setdefault(_native_identity(record.frame), record)
+            observations = tuple(physical.values())
+            view_bins = {record.view_bin for record in observations}
+            native_indices = {
+                _native_frame_index(record.frame) for record in observations
+            }
             if (
-                len(native_frames) >= self.config.commit_support_frames
+                len(observations) >= self.config.commit_support_frames
                 and len(view_bins) >= self.config.commit_distinct_view_bins
-                and max(record.frame_id for record in records)
-                - min(record.frame_id for record in records)
+                and max(native_indices) - min(native_indices)
                 >= self.config.minimum_commit_frame_gap
             ):
                 eligible_groups.add(group_key)
@@ -682,6 +706,10 @@ class ReversibleBackgroundLedger:
             assert evidence.frame is not None
             self._native_frames.setdefault(
                 _native_identity(evidence.frame), evidence._native_frame_canonical
+            )
+            assert evidence.view_bin is not None
+            self._native_view_bins.setdefault(
+                _native_identity(evidence.frame), evidence.view_bin
             )
             assert evidence._processed_frame_canonical is not None
             self._processed_frames.setdefault(

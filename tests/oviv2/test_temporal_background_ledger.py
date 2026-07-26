@@ -601,7 +601,7 @@ def test_ownership_records_per_native_observation_are_geometry_bounded() -> None
     assert ledger.journal_digest() == before
 
 
-def test_same_source_frame_under_new_internal_id_does_not_add_support() -> None:
+def test_same_source_frame_cannot_replay_a_new_view_bin() -> None:
     ledger = _ledger()
     first = _frame(10)
     first.source_frame_id = 77
@@ -616,12 +616,25 @@ def test_same_source_frame_under_new_internal_id_does_not_add_support() -> None:
             masked_depth=first.depth,
         )
     ) is LedgerDecision.STAGED
+    before = ledger.journal_digest()
+    with pytest.raises(ValueError, match="native.*view_bin|view_bin.*native"):
+        ledger.stage(
+            _masked_evidence(
+                entity_id=1,
+                frame=second,
+                view_bin=1,
+                masked_depth=second.depth,
+            )
+        )
+    assert ledger.journal_digest() == before
+    third = _frame(14)
+    third.source_frame_id = 78
     assert ledger.stage(
         _masked_evidence(
             entity_id=1,
-            frame=second,
-            view_bin=1,
-            masked_depth=second.depth,
+            frame=third,
+            view_bin=0,
+            masked_depth=third.depth,
         )
     ) is LedgerDecision.STAGED
     assert ledger.committed_record_count == 0
@@ -654,3 +667,57 @@ def test_same_source_frame_content_conflict_across_internal_ids_rolls_back() -> 
             )
         )
     assert ledger.journal_digest() == before
+
+
+def test_same_source_same_view_replay_cannot_increase_support_or_native_gap() -> None:
+    ledger = _ledger()
+    first = _frame(10)
+    first.source_frame_id = 77
+    replay = _frame(12)
+    replay.source_frame_id = 77
+    replay.timestamp = first.timestamp
+    near = _frame(14)
+    near.source_frame_id = 78
+    for frame, view_bin in ((first, 0), (replay, 0), (near, 1)):
+        assert ledger.stage(
+            _masked_evidence(
+                entity_id=1,
+                frame=frame,
+                view_bin=view_bin,
+                masked_depth=frame.depth,
+            )
+        ) is LedgerDecision.STAGED
+    assert ledger.committed_record_count == 0
+
+
+@pytest.mark.parametrize(
+    ("support_frames", "sources"),
+    [
+        (2, ((77, 0), (79, 1))),
+        (3, ((77, 0), (78, 1), (80, 1))),
+    ],
+)
+def test_only_distinct_native_sources_can_satisfy_all_commit_thresholds(
+    support_frames: int,
+    sources: tuple[tuple[int, int], ...],
+) -> None:
+    ledger = _ledger(
+        commit_support_frames=support_frames,
+        minimum_commit_frame_gap=sources[-1][0] - sources[0][0],
+    )
+    last_decision = LedgerDecision.STAGED
+    for offset, (source_frame_id, view_bin) in enumerate(sources):
+        frame = _frame(10 + offset * 2)
+        frame.source_frame_id = source_frame_id
+        last_decision = ledger.stage(
+            _masked_evidence(
+                entity_id=1,
+                frame=frame,
+                view_bin=view_bin,
+                masked_depth=frame.depth,
+            )
+        )
+        if offset + 1 < len(sources):
+            assert last_decision is LedgerDecision.STAGED
+    assert last_decision is LedgerDecision.COMMITTED
+    assert ledger.committed_record_count == support_frames
