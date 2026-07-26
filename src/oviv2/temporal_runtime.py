@@ -6,6 +6,7 @@ import math
 from numbers import Integral, Real
 
 import numpy as np
+from scipy.spatial import cKDTree
 
 from src.core.data_structures import CameraIntrinsics, Frame
 from src.oviv2.dense_semantics import DenseSemanticFrame
@@ -20,6 +21,7 @@ from src.oviv2.temporal_background_ledger import (
     LedgerDecision,
     ReversibleBackgroundLedger,
 )
+import src.oviv2.temporal_background_ledger as _ledger_module
 from src.oviv2.temporal_background import (
     TemporalBackgroundVolume,
     build_background_depth,
@@ -49,6 +51,7 @@ from src.oviv2.temporal_export import (
 )
 from src.oviv2.temporal_identity import IdentityMemoryBank, IdentityMemoryRecord
 from src.oviv2.temporal_proposals import (
+    ProjectedIdentitySearchRegion,
     ProposalRecoveryInput,
     recover_temporal_proposals,
 )
@@ -71,7 +74,7 @@ from src.oviv2.temporal_state import (
 from src.oviv2.tracking import LocalTracker, LocalTrackerConfig
 
 
-_DEFAULT_REBUILD_BLOCKS = TemporalBackgroundVolume.__dict__["rebuild_blocks"]
+_NEAREST_QUERY_CHUNK_SIZE = 1024
 
 
 @dataclass(frozen=True)
@@ -368,11 +371,115 @@ def _current_world_xyz(frame: Frame, depth_m: np.ndarray) -> np.ndarray:
     )
 
 
+def _proposal_appearance_provenance_hash(
+    frame: Frame,
+    observations: tuple[FrameObservation, ...],
+    model_id: str,
+) -> str:
+    digest = hashlib.sha256()
+    digest.update(
+        repr((frame.frame_id, frame.source_frame_id, float(frame.timestamp), model_id)).encode(
+            "ascii"
+        )
+    )
+    for observation in observations:
+        if (
+            observation.kind not in (ObservationKind.OBJECT, ObservationKind.UNKNOWN)
+            or observation.image_feature is None
+            or observation.feature_model_id != model_id
+        ):
+            continue
+        digest.update(repr(observation.observation_id).encode("ascii"))
+        for value in (observation.mask, observation.image_feature):
+            array = np.asarray(value)
+            digest.update(array.dtype.str.encode("ascii"))
+            digest.update(repr(array.shape).encode("ascii"))
+            digest.update(np.ascontiguousarray(array).tobytes())
+    return digest.hexdigest()
+
+
+def _projected_identity_search_region(
+    frame: Frame,
+    state: TemporalRuntimeState,
+    identity_id: int,
+    config: TemporalReadoutConfig,
+) -> ProjectedIdentitySearchRegion:
+    entity = next(
+        (
+            item for item in state.entities
+            if item.lifecycle.entity_id == identity_id
+        ),
+        None,
+    )
+    record = state.identities.get(identity_id)
+    if entity is None or record is None:
+        raise ValueError("search region identity lacks retained authoritative geometry")
+    points = entity.submap.world_points(entity.object_to_world)[
+        : config.geometry.maximum_visibility_points_per_entity
+    ]
+    mask = np.zeros(frame.depth.shape, dtype=bool)
+    expected_depth = np.zeros(frame.depth.shape, dtype=np.float32)
+    if points.shape[0]:
+        world_to_camera = np.linalg.inv(np.asarray(frame.pose, dtype=np.float64))
+        camera = points @ world_to_camera[:3, :3].T + world_to_camera[:3, 3]
+        z = camera[:, 2]
+        valid = np.isfinite(camera).all(axis=1) & (z > 0.0)
+        camera = camera[valid]
+        z = z[valid]
+        if z.size:
+            columns = np.rint(
+                frame.intrinsics.fx * camera[:, 0] / z + frame.intrinsics.cx
+            ).astype(np.int64)
+            rows = np.rint(
+                frame.intrinsics.fy * camera[:, 1] / z + frame.intrinsics.cy
+            ).astype(np.int64)
+            inside = (
+                (rows >= 0)
+                & (rows < frame.depth.shape[0])
+                & (columns >= 0)
+                & (columns < frame.depth.shape[1])
+            )
+            for row, column, depth in zip(rows[inside], columns[inside], z[inside]):
+                previous = expected_depth[row, column]
+                if previous == 0.0 or depth < previous:
+                    expected_depth[row, column] = depth
+                    mask[row, column] = True
+    if not mask.any():
+        raise ValueError("search region identity has no projectable retained geometry")
+    epoch = state.geometry.current(identity_id)
+    digest = hashlib.sha256()
+    digest.update(
+        repr(
+            (
+                identity_id,
+                record.last_frame_id,
+                frame.frame_id,
+                frame.source_frame_id,
+                epoch.epoch_id,
+            )
+        ).encode("ascii")
+    )
+    for value in (frame.pose, mask, expected_depth):
+        array = np.asarray(value)
+        digest.update(array.dtype.str.encode("ascii"))
+        digest.update(repr(array.shape).encode("ascii"))
+        digest.update(np.ascontiguousarray(array).tobytes())
+    return ProjectedIdentitySearchRegion(
+        identity_id,
+        record.last_frame_id,
+        mask,
+        expected_depth,
+        digest.hexdigest(),
+    )
+
+
 def _validate_proposal_evidence(
     frame: Frame,
+    observations: tuple[FrameObservation, ...],
     dense: DenseSemanticFrame | None,
     evidence: ProposalRecoveryInput | None,
     config: TemporalReadoutConfig,
+    state: TemporalRuntimeState,
 ) -> None:
     if evidence is None:
         return
@@ -401,6 +508,35 @@ def _validate_proposal_evidence(
         raise ValueError("proposal semantic source must be the current frame")
     if evidence.semantic_provenance_hash != _proposal_semantic_provenance_hash(frame, dense):
         raise ValueError("proposal semantic provenance does not bind current inputs")
+    occupied = np.zeros(frame.depth.shape, dtype=bool)
+    for observation in observations:
+        if observation.kind in (ObservationKind.OBJECT, ObservationKind.UNKNOWN):
+            occupied |= observation.mask
+    if np.any(occupied & ~evidence.segmentation_occupied):
+        raise ValueError("proposal segmentation does not cover current observations")
+    if evidence.appearance_support is not None:
+        assert evidence.appearance_model_id is not None
+        expected_appearance = np.zeros(frame.depth.shape, dtype=bool)
+        for observation in observations:
+            if (
+                observation.kind in (ObservationKind.OBJECT, ObservationKind.UNKNOWN)
+                and observation.image_feature is not None
+                and observation.feature_model_id == evidence.appearance_model_id
+            ):
+                expected_appearance |= observation.mask
+        if not np.array_equal(evidence.appearance_support, expected_appearance):
+            raise ValueError("proposal appearance support is not bound to current features")
+        expected_hash = _proposal_appearance_provenance_hash(
+            frame, observations, evidence.appearance_model_id
+        )
+        if evidence.appearance_provenance_hash != expected_hash:
+            raise ValueError("proposal appearance provenance is not bound to current features")
+    for region in evidence.search_regions:
+        expected_region = _projected_identity_search_region(
+            frame, state, region.identity_id, config
+        )
+        if region != expected_region:
+            raise ValueError("proposal search region is not bound to retained identity geometry")
 
 
 def _centroid(entity: TemporalEntityState) -> tuple[float, float, float]:
@@ -638,7 +774,7 @@ def _absence_evidence_with_release(
 
 
 def _sparse_background_block_keys(
-    frame: Frame, depth_m: np.ndarray, config: TemporalReadoutConfig
+    frame: Frame, depth_m: np.ndarray, config: object
 ) -> tuple[tuple[int, int, int], ...]:
     rows, columns = np.nonzero(depth_m > 0.0)
     if rows.size == 0:
@@ -658,10 +794,10 @@ def _sparse_background_block_keys(
     rays = world - origins
     norms = np.linalg.norm(rays, axis=1)
     rays = rays / norms[:, None]
-    truncation = 4.0 * config.geometry.voxel_size_m
+    truncation = 4.0 * config.voxel_size_m
     offsets = np.linspace(-truncation, truncation, 9, dtype=np.float64)
     samples = world[:, None, :] + rays[:, None, :] * offsets[None, :, None]
-    block_size = 8.0 * config.geometry.voxel_size_m
+    block_size = 8.0 * config.voxel_size_m
     keys = np.floor(samples.reshape(-1, 3) / block_size).astype(np.int64)
     return tuple(sorted({tuple(int(value) for value in row) for row in keys}))
 
@@ -677,7 +813,7 @@ def _candidate_keys_with_sparse_fallback(
     except RuntimeError as error:
         if "No block is touched" not in str(error):
             raise
-        return _sparse_background_block_keys(frame, depth_m, config)
+        return _sparse_background_block_keys(frame, depth_m, config.geometry)
 
 
 def _stage_ledger_evidence(
@@ -685,27 +821,8 @@ def _stage_ledger_evidence(
     evidence: BackgroundLedgerEvidence,
     block_keys: tuple[tuple[int, int, int], ...] | None = None,
 ) -> LedgerDecision:
-    if block_keys is None:
-        return ledger.stage(evidence)
-    volume = ledger._volume
-    original = volume.candidate_block_keys
-    try:
-        volume.candidate_block_keys = lambda frame, depth_m: block_keys
-        decision = ledger.stage(evidence)
-        if decision is not LedgerDecision.REJECTED_INTEGRATION:
-            return decision
-        original_rebuild = TemporalBackgroundVolume.__dict__["rebuild_blocks"]
-        if original_rebuild is not _DEFAULT_REBUILD_BLOCKS:
-            return decision
-        try:
-            TemporalBackgroundVolume.rebuild_blocks = classmethod(
-                _rebuild_sparse_background_blocks
-            )
-            return ledger.stage(evidence)
-        finally:
-            TemporalBackgroundVolume.rebuild_blocks = original_rebuild
-    finally:
-        del volume.candidate_block_keys
+    del block_keys
+    return ledger.stage(evidence)
 
 
 def _rebuild_sparse_background_blocks(
@@ -724,6 +841,143 @@ def _rebuild_sparse_background_blocks(
         finally:
             del current.candidate_block_keys
     return rebuilt
+
+
+class _SparseBackgroundLedger(ReversibleBackgroundLedger):
+    def stage(self, evidence: BackgroundLedgerEvidence) -> LedgerDecision:
+        if not isinstance(evidence, BackgroundLedgerEvidence):
+            return super().stage(evidence)
+        if not evidence.contributions:
+            return super().stage(evidence)
+        assert evidence.frame is not None
+        assert evidence.depth_m is not None
+        try:
+            self._volume.candidate_block_keys(evidence.frame, evidence.depth_m)
+        except RuntimeError as error:
+            if "No block is touched" not in str(error):
+                raise
+            return self._stage_sparse(evidence)
+        return super().stage(evidence)
+
+    def _stage_sparse(self, evidence: BackgroundLedgerEvidence) -> LedgerDecision:
+        event_key = (evidence.entity_id, evidence.geometry_epoch, evidence.frame_id)
+        digest = self._evidence_digest(evidence)
+        previous_digest = self._event_digests.get(event_key)
+        if previous_digest is not None:
+            if previous_digest == digest:
+                return LedgerDecision.NO_OP
+            raise ValueError("conflicting duplicate ledger evidence")
+        if evidence.frame_id < self._last_frame_id:
+            raise ValueError("evidence.frame_id cannot move backwards")
+        if evidence.timestamp < self._last_timestamp:
+            raise ValueError("evidence.timestamp cannot move backwards")
+        if (
+            evidence.frame_id == self._last_frame_id
+            and evidence.timestamp != self._last_timestamp
+        ):
+            raise ValueError("evidence.timestamp must agree within one frame")
+        event_count = (
+            len(self._event_digests)
+            if evidence.frame_id == self._last_frame_id else 0
+        )
+        if event_count >= self._volume.config.maximum_entities:
+            return LedgerDecision.REJECTED_CAPACITY
+
+        assert evidence.frame is not None
+        assert evidence.depth_m is not None
+        assert evidence._native_frame_canonical is not None
+        assert evidence._processed_frame_canonical is not None
+        native = _ledger_module._native_identity(evidence.frame)
+        existing_native = self._native_frames.get(native)
+        if (
+            existing_native is not None
+            and existing_native != evidence._native_frame_canonical
+        ):
+            raise ValueError("native frame content conflicts for the same identity")
+        existing_view_bin = self._native_view_bins.get(native)
+        if existing_view_bin is not None and existing_view_bin != evidence.view_bin:
+            raise ValueError("native frame identity is already bound to another view_bin")
+        existing_processed = self._processed_frames.get(evidence.frame_id)
+        if (
+            existing_processed is not None
+            and existing_processed != evidence._processed_frame_canonical
+        ):
+            raise ValueError("processed frame_id maps to conflicting native frame content")
+        touched = _sparse_background_block_keys(
+            evidence.frame, evidence.depth_m, self._volume.config
+        )
+        declared = tuple(item.block_key for item in evidence.contributions)
+        if declared != touched:
+            raise ValueError("contribution block_key values must exactly match touched blocks")
+
+        provisional = dict(self._provisional)
+        committed = dict(self._committed)
+        assert evidence.view_bin is not None
+        assert evidence._observation_canonical is not None
+        for contribution in evidence.contributions:
+            record = _ledger_module._Record(
+                evidence.entity_id,
+                evidence.geometry_epoch,
+                evidence.frame_id,
+                evidence.timestamp,
+                evidence.view_bin,
+                contribution,
+                evidence.frame,
+                evidence.depth_m,
+                evidence._observation_canonical,
+            )
+            if record.key in provisional or record.key in committed:
+                raise ValueError("duplicate contribution key")
+            provisional[record.key] = record
+        if not self._within_capacity(provisional, committed):
+            return LedgerDecision.REJECTED_CAPACITY
+
+        grouped: dict[tuple[object, ...], list[object]] = {}
+        for record in provisional.values():
+            grouped.setdefault(_ledger_module._record_group_key(record), []).append(record)
+        eligible: set[tuple[object, ...]] = set()
+        for group_key, records in grouped.items():
+            physical: dict[object, object] = {}
+            for record in sorted(records, key=lambda item: item.key):
+                physical.setdefault(_ledger_module._native_identity(record.frame), record)
+            observations = tuple(physical.values())
+            view_bins = {record.view_bin for record in observations}
+            indices = {
+                _ledger_module._native_frame_index(record.frame)
+                for record in observations
+            }
+            if (
+                len(observations) >= self.config.commit_support_frames
+                and len(view_bins) >= self.config.commit_distinct_view_bins
+                and max(indices) - min(indices) >= self.config.minimum_commit_frame_gap
+            ):
+                eligible.add(group_key)
+        committing = {
+            key: record for key, record in provisional.items()
+            if _ledger_module._record_group_key(record) in eligible
+        }
+        if committing:
+            committed.update(committing)
+            for key in committing:
+                del provisional[key]
+            try:
+                observations = self._aggregate_observations(committed)
+                rebuilt = _rebuild_sparse_background_blocks(
+                    TemporalBackgroundVolume, self._volume.config, observations
+                )
+            except Exception:
+                return LedgerDecision.REJECTED_INTEGRATION
+            self._publish_event(
+                evidence,
+                digest,
+                provisional,
+                committed,
+                volume=rebuilt,
+                generation=self._generation + 1,
+            )
+            return LedgerDecision.COMMITTED
+        self._publish_event(evidence, digest, provisional, committed)
+        return LedgerDecision.STAGED
 
 
 def _empty_submap(reference: tuple[float, float, float]) -> ObjectSubmap:
@@ -810,22 +1064,45 @@ def _motion_confidence(
         or not np.isfinite(current).all()
     ):
         return 0.0
-    squared = np.sum(
-        (previous[:, None, :] - current[None, :, :]) ** 2,
-        axis=2,
-    )
-    residual = math.sqrt(
-        0.5
-        * (
-            float(np.min(squared, axis=1).mean(dtype=np.float64))
-            + float(np.min(squared, axis=0).mean(dtype=np.float64))
-        )
-    )
+    residual = _symmetric_nearest_residual(previous, current)
     residual_limit = float(config.motion.maximum_translation_residual_m)
     confidence = max(0.0, min(1.0, 1.0 - residual / residual_limit))
     return (
         confidence
         if confidence >= config.motion.minimum_translation_confidence else 0.0
+    )
+
+
+def _symmetric_nearest_residual(left: np.ndarray, right: np.ndarray) -> float:
+    left = np.asarray(left, dtype=np.float64)
+    right = np.asarray(right, dtype=np.float64)
+    if (
+        left.ndim != 2
+        or right.ndim != 2
+        or left.shape[1:] != (3,)
+        or right.shape[1:] != (3,)
+        or left.shape[0] == 0
+        or right.shape[0] == 0
+        or not np.isfinite(left).all()
+        or not np.isfinite(right).all()
+    ):
+        raise ValueError("nearest residual requires finite nonempty (N, 3) arrays")
+
+    def mean_minimum_squared(source: np.ndarray, target: np.ndarray) -> float:
+        tree = cKDTree(target)
+        total = 0.0
+        for start in range(0, source.shape[0], _NEAREST_QUERY_CHUNK_SIZE):
+            query = source[start : start + _NEAREST_QUERY_CHUNK_SIZE]
+            distances, _ = tree.query(query, k=1, workers=1)
+            total += float(np.dot(distances, distances))
+        return total / source.shape[0]
+
+    return math.sqrt(
+        0.5
+        * (
+            mean_minimum_squared(left, right)
+            + mean_minimum_squared(right, left)
+        )
     )
 
 
@@ -862,7 +1139,7 @@ class TemporalCurrentRuntime:
         ledger = (
             None
             if self.config.execution_profile is ExecutionProfile.A2
-            else ReversibleBackgroundLedger(
+            else _SparseBackgroundLedger(
                 self.config.geometry, self.config.background_ledger
             )
         )
@@ -899,7 +1176,8 @@ class TemporalCurrentRuntime:
             frame, observations, dense_semantics, current
         )
         _validate_proposal_evidence(
-            frame, dense_semantics, proposal_evidence, self.config
+            frame, observations, dense_semantics, proposal_evidence,
+            self.config, current,
         )
         trial_identities = current._mutable_identities_snapshot()
         trial_geometry = current.geometry

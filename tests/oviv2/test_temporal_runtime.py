@@ -190,7 +190,11 @@ def _dense_semantics(frame: Frame) -> DenseSemanticFrame:
     )
 
 
-def _proposal_evidence(frame: Frame, dense: DenseSemanticFrame):
+def _proposal_evidence(
+    frame: Frame,
+    dense: DenseSemanticFrame,
+    observations: tuple[FrameObservation, ...] = (),
+):
     from src.oviv2.temporal_runtime import _proposal_semantic_provenance_hash
     from src.oviv2.temporal_proposals import ProposalRecoveryInput
 
@@ -204,12 +208,16 @@ def _proposal_evidence(frame: Frame, dense: DenseSemanticFrame):
         ),
         axis=-1,
     ).astype(np.float32)
+    occupied = np.zeros(depth.shape, dtype=bool)
+    for observation in observations:
+        if observation.kind in (ObservationKind.OBJECT, ObservationKind.UNKNOWN):
+            occupied |= observation.mask
     return ProposalRecoveryInput(
         frame_id=frame.frame_id,
         timestamp=frame.timestamp,
         depth_m=depth,
         current_xyz=xyz,
-        segmentation_occupied=np.zeros(depth.shape, dtype=bool),
+        segmentation_occupied=occupied,
         semantic_support=np.ones(depth.shape, dtype=bool),
         semantic_source_frame_id=frame.frame_id,
         semantic_provenance_hash=_proposal_semantic_provenance_hash(frame, dense),
@@ -636,6 +644,56 @@ def test_translation_confidence_uses_verifiable_geometry_residual() -> None:
     ) == 0.0
 
 
+def test_chunked_chamfer_matches_exact_and_bounds_query_batch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+
+    rng = np.random.default_rng(7)
+    left = rng.normal(size=(19, 3))
+    right = rng.normal(size=(23, 3))
+    exact_squared = np.sum(
+        (left[:, None, :] - right[None, :, :]) ** 2, axis=2
+    )
+    exact = np.sqrt(
+        0.5
+        * (
+            np.min(exact_squared, axis=1).mean()
+            + np.min(exact_squared, axis=0).mean()
+        )
+    )
+    batch_sizes: list[int] = []
+    original_tree = module.cKDTree
+
+    class CapturingTree:
+        def __init__(self, values):
+            self._tree = original_tree(values)
+
+        def query(self, query, *args, **kwargs):
+            batch_sizes.append(np.asarray(query).shape[0])
+            return self._tree.query(query, *args, **kwargs)
+
+    monkeypatch.setattr(module, "cKDTree", CapturingTree)
+    actual = module._symmetric_nearest_residual(left, right)
+    large = rng.normal(size=(10_000, 3))
+    assert np.isfinite(module._symmetric_nearest_residual(large, large[::-1]))
+
+    assert actual == pytest.approx(exact, rel=1e-12, abs=1e-12)
+    assert module._symmetric_nearest_residual(
+        np.array([[0.0, 0.0, 0.0]]), np.array([[3.0, 0.0, 0.0]])
+    ) == 3.0
+    with pytest.raises(ValueError, match="finite nonempty"):
+        module._symmetric_nearest_residual(
+            np.empty((0, 3)), np.ones((1, 3))
+        )
+    with pytest.raises(ValueError, match="finite nonempty"):
+        module._symmetric_nearest_residual(
+            np.array([[np.nan, 0.0, 0.0]]), np.ones((1, 3))
+        )
+    assert max(batch_sizes) <= module._NEAREST_QUERY_CHUNK_SIZE
+    assert module._NEAREST_QUERY_CHUNK_SIZE < 10_000
+
+
 def test_frame_diagnostics_partition_icp_and_track_ledger_lifecycle(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -790,14 +848,15 @@ def test_a3_ledger_owns_only_each_entities_released_pixels(
         runtime.process_frame(frame, observations)
 
     captured = []
-    original = ReversibleBackgroundLedger.stage
+    ledger_type = type(runtime.state.background_ledger)
+    original = ledger_type.stage
 
     def capture(self, evidence):
         if evidence.kind is TemporalEvidenceKind.VISIBLE_ABSENT:
             captured.append(evidence)
         return original(self, evidence)
 
-    monkeypatch.setattr(ReversibleBackgroundLedger, "stage", capture)
+    monkeypatch.setattr(ledger_type, "stage", capture)
     runtime.process_frame(_frame(2, depth=2.0), ())
 
     assert len(captured) == 2
@@ -918,7 +977,7 @@ def test_proposal_and_export_exceptions_deeply_roll_back_state_and_inputs(
     observation = _observation(frame)
     observations = (observation,)
     dense = _dense_semantics(frame)
-    proposal = _proposal_evidence(frame, dense)
+    proposal = _proposal_evidence(frame, dense, observations)
     before_state = runtime.state
     before_dump = before_state.canonical_dump()
     frame_fingerprint = (
@@ -1001,6 +1060,177 @@ def test_proposal_evidence_requires_current_dense_semantics() -> None:
     assert runtime.state.revision == 0
 
 
+def test_proposal_segmentation_must_cover_current_object_masks() -> None:
+    runtime = _runtime()
+    frame = _frame(0, timestamp=0.0)
+    observation = _observation(frame)
+    dense = _dense_semantics(frame)
+    evidence = _proposal_evidence(frame, dense)
+
+    with pytest.raises(ValueError, match="segmentation"):
+        runtime.process_frame(
+            frame, (observation,), dense, proposal_evidence=evidence
+        )
+
+    assert runtime.state.revision == 0
+
+
+def test_proposal_appearance_support_binds_current_features() -> None:
+    from src.oviv2.temporal_proposals import ProposalRecoveryInput
+
+    runtime = _runtime()
+    frame = _frame(0, timestamp=0.0)
+    observation = _observation(frame)
+    dense = _dense_semantics(frame)
+    base = _proposal_evidence(frame, dense, (observation,))
+    evidence = ProposalRecoveryInput(
+        **{
+            **base.__dict__,
+            "appearance_support": np.zeros(frame.depth.shape, dtype=bool),
+            "appearance_source_frame_id": frame.frame_id,
+            "appearance_model_id": observation.feature_model_id,
+            "appearance_provenance_hash": "a" * 64,
+        }
+    )
+
+    with pytest.raises(ValueError, match="appearance"):
+        runtime.process_frame(
+            frame, (observation,), dense, proposal_evidence=evidence
+        )
+
+    assert runtime.state.revision == 0
+
+
+def test_proposal_appearance_support_accepts_authoritative_current_features() -> None:
+    from src.oviv2.temporal_runtime import _proposal_appearance_provenance_hash
+
+    runtime = _runtime()
+    frame = _frame(0, timestamp=0.0)
+    observation = _observation(frame)
+    observations = (observation,)
+    dense = _dense_semantics(frame)
+    evidence = replace(
+        _proposal_evidence(frame, dense, observations),
+        appearance_support=observation.mask,
+        appearance_source_frame_id=frame.frame_id,
+        appearance_model_id=observation.feature_model_id,
+        appearance_provenance_hash=_proposal_appearance_provenance_hash(
+            frame, observations, observation.feature_model_id
+        ),
+    )
+
+    result = runtime.process_frame(
+        frame, observations, dense, proposal_evidence=evidence
+    )
+
+    assert result.revision == 1
+
+
+def test_proposal_appearance_provenance_rejects_hash_tampering() -> None:
+    from src.oviv2.temporal_runtime import _proposal_appearance_provenance_hash
+
+    runtime = _runtime()
+    frame = _frame(0, timestamp=0.0)
+    observation = _observation(frame)
+    observations = (observation,)
+    dense = _dense_semantics(frame)
+    evidence = replace(
+        _proposal_evidence(frame, dense, observations),
+        appearance_support=observation.mask,
+        appearance_source_frame_id=frame.frame_id,
+        appearance_model_id=observation.feature_model_id,
+        appearance_provenance_hash=_proposal_appearance_provenance_hash(
+            frame, observations, observation.feature_model_id
+        ),
+    )
+    evidence = replace(evidence, appearance_provenance_hash="d" * 64)
+
+    with pytest.raises(ValueError, match="appearance provenance"):
+        runtime.process_frame(
+            frame, observations, dense, proposal_evidence=evidence
+        )
+
+    assert runtime.state.revision == 0
+
+
+def test_proposal_search_region_must_bind_retained_identity() -> None:
+    from src.oviv2.temporal_proposals import ProjectedIdentitySearchRegion
+
+    runtime = _runtime()
+    _confirm(runtime)
+    frame = _frame(2)
+    dense = _dense_semantics(frame)
+    mask = np.zeros(frame.depth.shape, dtype=bool)
+    mask[2, 2] = True
+    region = ProjectedIdentitySearchRegion(
+        999, 1, mask, np.where(mask, 1.0, 0.0).astype(np.float32), "b" * 64
+    )
+    evidence = replace(
+        _proposal_evidence(frame, dense), search_regions=(region,)
+    )
+    before = runtime.state
+    before_dump = before.canonical_dump()
+
+    with pytest.raises(ValueError, match="identity|search region"):
+        runtime.process_frame(frame, (), dense, proposal_evidence=evidence)
+
+    assert runtime.state is before
+    assert runtime.state.canonical_dump() == before_dump
+
+
+@pytest.mark.parametrize("field", ("source", "hash", "depth"))
+def test_proposal_search_region_rejects_authoritative_field_tampering(
+    field: str,
+) -> None:
+    from src.oviv2.temporal_runtime import _projected_identity_search_region
+
+    runtime = _runtime()
+    entity_id = _confirm(runtime)
+    frame = _frame(2)
+    dense = _dense_semantics(frame)
+    region = _projected_identity_search_region(
+        frame, runtime.state, entity_id, runtime.config
+    )
+    if field == "source":
+        region = replace(region, source_frame_id=0)
+    elif field == "hash":
+        region = replace(region, projection_provenance_hash="c" * 64)
+    else:
+        depth = np.array(region.expected_depth_m, copy=True)
+        depth[region.mask] += np.float32(0.01)
+        region = replace(region, expected_depth_m=depth)
+    evidence = replace(
+        _proposal_evidence(frame, dense), search_regions=(region,)
+    )
+    before = runtime.state
+    before_dump = before.canonical_dump()
+
+    with pytest.raises(ValueError, match="search region"):
+        runtime.process_frame(frame, (), dense, proposal_evidence=evidence)
+
+    assert runtime.state is before
+    assert runtime.state.canonical_dump() == before_dump
+
+
+def test_proposal_search_region_accepts_authoritative_projection() -> None:
+    from src.oviv2.temporal_runtime import _projected_identity_search_region
+
+    runtime = _runtime()
+    entity_id = _confirm(runtime)
+    frame = _frame(2)
+    dense = _dense_semantics(frame)
+    region = _projected_identity_search_region(
+        frame, runtime.state, entity_id, runtime.config
+    )
+    evidence = replace(
+        _proposal_evidence(frame, dense), search_regions=(region,)
+    )
+
+    result = runtime.process_frame(frame, (), dense, proposal_evidence=evidence)
+
+    assert result.revision == 3
+
+
 def test_proposal_xyz_binding_rejects_sub_tolerance_tampering() -> None:
     runtime = _runtime()
     frame = _frame(0, timestamp=0.0)
@@ -1020,8 +1250,6 @@ def test_proposal_xyz_binding_rejects_sub_tolerance_tampering() -> None:
 def test_ledger_exception_rolls_back_state(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    from src.oviv2.temporal_background_ledger import ReversibleBackgroundLedger
-
     runtime = _runtime()
     _confirm(runtime)
     before = runtime.state
@@ -1030,7 +1258,7 @@ def test_ledger_exception_rolls_back_state(
     def fail(self, evidence):
         raise RuntimeError("ledger")
 
-    monkeypatch.setattr(ReversibleBackgroundLedger, "stage", fail)
+    monkeypatch.setattr(type(runtime.state.background_ledger), "stage", fail)
     frame = _frame(2)
     with pytest.raises(RuntimeError, match="ledger"):
         runtime.process_frame(frame, (_observation(frame),))
@@ -1041,7 +1269,7 @@ def test_ledger_exception_rolls_back_state(
 def test_sparse_ledger_rebuild_exception_is_not_downgraded_to_staged(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    from src.oviv2.temporal_background import TemporalBackgroundVolume
+    import src.oviv2.temporal_runtime as module
 
     runtime = _runtime()
     _confirm(runtime)
@@ -1049,14 +1277,44 @@ def test_sparse_ledger_rebuild_exception_is_not_downgraded_to_staged(
     before = runtime.state
     before_dump = before.canonical_dump()
     monkeypatch.setattr(
-        TemporalBackgroundVolume,
-        "rebuild_blocks",
+        module,
+        "_rebuild_sparse_background_blocks",
         lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("rebuild")),
     )
 
     with pytest.raises(RuntimeError, match="background ledger rejected"):
         runtime.process_frame(_frame(3, depth=2.0, camera_x=0.05), ())
 
+    assert runtime.state is before
+    assert runtime.state.canonical_dump() == before_dump
+
+
+def test_ledger_rejection_is_staged_once_and_rolls_back(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runtime = _runtime()
+    _confirm(runtime)
+    before = runtime.state
+    before_dump = before.canonical_dump()
+    calls = 0
+
+    def reject_then_stage(self, evidence):
+        nonlocal calls
+        calls += 1
+        return (
+            LedgerDecision.REJECTED_INTEGRATION
+            if calls == 1 else LedgerDecision.STAGED
+        )
+
+    from src.oviv2.temporal_background_ledger import LedgerDecision
+
+    ledger_type = type(runtime.state.background_ledger)
+    monkeypatch.setattr(ledger_type, "stage", reject_then_stage)
+
+    with pytest.raises(RuntimeError, match="background ledger rejected"):
+        runtime.process_frame(_frame(2, depth=2.0), ())
+
+    assert calls == 1
     assert runtime.state is before
     assert runtime.state.canonical_dump() == before_dump
 
