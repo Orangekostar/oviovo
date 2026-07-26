@@ -218,6 +218,7 @@ class TemporalGeometryState:
     epochs: tuple[GeometryEpoch, ...]
     maximum_epochs_per_identity: int
     maximum_retained_epochs: int
+    next_epoch_ids: tuple[tuple[int, int], ...] = ()
 
     def __post_init__(self) -> None:
         if type(self.epochs) is not tuple or any(type(item) is not GeometryEpoch for item in self.epochs):
@@ -239,7 +240,33 @@ class TemporalGeometryState:
                 raise ValueError("geometry epoch IDs must be monotonic, unique, and bounded")
         if len(ordered) > self.maximum_retained_epochs:
             raise ValueError("geometry epochs exceed maximum_retained_epochs")
+        if type(self.next_epoch_ids) is not tuple:
+            raise TypeError("next_epoch_ids must be an exact tuple")
+        next_ids: list[tuple[int, int]] = []
+        for item in self.next_epoch_ids:
+            if type(item) is not tuple or len(item) != 2:
+                raise TypeError("next_epoch_ids must contain exact pairs")
+            identity_id, next_epoch_id = item
+            if any(
+                isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral)
+                for value in item
+            ):
+                raise TypeError("next_epoch_ids must contain integers")
+            if int(identity_id) <= 0 or int(next_epoch_id) <= 0:
+                raise ValueError("next_epoch_ids must contain positive values")
+            next_ids.append((int(identity_id), int(next_epoch_id)))
+        next_ids = sorted(next_ids)
+        if tuple(item[0] for item in next_ids) != tuple(sorted({item[0] for item in next_ids})):
+            raise ValueError("next_epoch_ids identity IDs must be unique")
+        for identity_id in sorted({item.entity_id for item in ordered}):
+            required = max(item.epoch_id for item in ordered if item.entity_id == identity_id) + 1
+            declared = dict(next_ids).get(identity_id)
+            if declared is not None and declared < required:
+                raise ValueError("next epoch ID cannot precede retained geometry")
+            if declared is None:
+                next_ids.append((identity_id, required))
         object.__setattr__(self, "epochs", ordered)
+        object.__setattr__(self, "next_epoch_ids", tuple(sorted(next_ids)))
 
     def current(self, identity_id: int) -> GeometryEpoch:
         matches = tuple(item for item in self.epochs if item.entity_id == identity_id)
@@ -255,15 +282,16 @@ class TemporalGeometryState:
             tuple(item for item in self.epochs if (item.entity_id, item.epoch_id) != (epoch.entity_id, epoch.epoch_id)) + (epoch,),
             self.maximum_epochs_per_identity,
             self.maximum_retained_epochs,
+            self.next_epoch_ids,
         )
 
     def append(self, epoch: GeometryEpoch) -> TemporalGeometryState:
         retained = list(self.epochs)
-        same = [item for item in retained if item.entity_id == epoch.entity_id]
-        if same and epoch.epoch_id != same[-1].epoch_id + 1:
-            raise ValueError("new geometry epoch must advance monotonically")
-        if not same and epoch.epoch_id != 0:
-            raise ValueError("first geometry epoch must be epoch zero")
+        next_ids = dict(self.next_epoch_ids)
+        expected = next_ids.get(epoch.entity_id, 0)
+        if epoch.epoch_id != expected:
+            raise ValueError("new geometry epoch must use the reserved next epoch ID")
+        next_ids[epoch.entity_id] = epoch.epoch_id + 1
         retained.append(epoch)
         while sum(item.entity_id == epoch.entity_id for item in retained) > self.maximum_epochs_per_identity:
             victim = next(item for item in retained if item.entity_id == epoch.entity_id)
@@ -278,10 +306,30 @@ class TemporalGeometryState:
             tuple(retained),
             self.maximum_epochs_per_identity,
             self.maximum_retained_epochs,
+            tuple(sorted(next_ids.items())),
         )
 
+    def remove_identity(self, identity_id: int, *, forget: bool = False) -> TemporalGeometryState:
+        next_ids = dict(self.next_epoch_ids)
+        if forget:
+            next_ids.pop(identity_id, None)
+        return TemporalGeometryState(
+            tuple(item for item in self.epochs if item.entity_id != identity_id),
+            self.maximum_epochs_per_identity,
+            self.maximum_retained_epochs,
+            tuple(sorted(next_ids.items())),
+        )
+
+    def next_epoch_id(self, identity_id: int) -> int:
+        return dict(self.next_epoch_ids).get(identity_id, 0)
+
     def canonical_dump(self) -> tuple[object, ...]:
-        return (self.maximum_epochs_per_identity, self.maximum_retained_epochs, _canonical(self.epochs))
+        return (
+            self.maximum_epochs_per_identity,
+            self.maximum_retained_epochs,
+            self.next_epoch_ids,
+            _canonical(self.epochs),
+        )
 
 
 @dataclass(frozen=True)
@@ -335,6 +383,44 @@ class TemporalExportTracker:
 
 
 @dataclass(frozen=True)
+class TemporalFrameDiagnostics:
+    frame_id: int
+    proposal_opportunity_count: int = 0
+    proposal_trigger_count: int = 0
+    reid_opportunity_count: int = 0
+    reid_trigger_count: int = 0
+    epoch_reset_opportunity_count: int = 0
+    epoch_reset_trigger_count: int = 0
+    icp_opportunity_count: int = 0
+    icp_accept_count: int = 0
+    icp_reject_count: int = 0
+    motion_rejection_count: int = 0
+    ledger_stage_count: int = 0
+    ledger_commit_count: int = 0
+    ledger_reclaim_count: int = 0
+    ledger_rejection_count: int = 0
+    identity_expiry_count: int = 0
+    geometry_reclaim_count: int = 0
+
+    def __post_init__(self) -> None:
+        for name in self.__dataclass_fields__:
+            value = getattr(self, name)
+            if isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral):
+                raise TypeError(f"{name} must be an integer")
+            if int(value) < 0:
+                raise ValueError(f"{name} must be nonnegative")
+            object.__setattr__(self, name, int(value))
+        if self.proposal_trigger_count > self.proposal_opportunity_count:
+            raise ValueError("proposal triggers cannot exceed opportunities")
+        if self.reid_trigger_count > self.reid_opportunity_count:
+            raise ValueError("re-ID triggers cannot exceed opportunities")
+        if self.epoch_reset_trigger_count > self.epoch_reset_opportunity_count:
+            raise ValueError("epoch reset triggers cannot exceed opportunities")
+        if self.icp_accept_count + self.icp_reject_count != self.icp_opportunity_count:
+            raise ValueError("ICP accept/reject counts must partition opportunities")
+
+
+@dataclass(frozen=True)
 class TemporalDiagnostics:
     processed_frame_count: int = 0
     proposal_opportunity_count: int = 0
@@ -343,6 +429,17 @@ class TemporalDiagnostics:
     reid_trigger_count: int = 0
     motion_rejection_count: int = 0
     ledger_rejection_count: int = 0
+    identity_expiry_count: int = 0
+    geometry_reclaim_count: int = 0
+    epoch_reset_opportunity_count: int = 0
+    epoch_reset_trigger_count: int = 0
+    icp_opportunity_count: int = 0
+    icp_accept_count: int = 0
+    icp_reject_count: int = 0
+    ledger_stage_count: int = 0
+    ledger_commit_count: int = 0
+    ledger_reclaim_count: int = 0
+    last_frame: TemporalFrameDiagnostics | None = None
     assignment_diagnostics: tuple[TemporalAssignmentDiagnostic, ...] = ()
 
     def __post_init__(self) -> None:
@@ -351,6 +448,10 @@ class TemporalDiagnostics:
             "proposal_trigger_count", "reid_opportunity_count",
             "reid_trigger_count", "motion_rejection_count",
             "ledger_rejection_count",
+            "identity_expiry_count", "geometry_reclaim_count",
+            "epoch_reset_opportunity_count", "epoch_reset_trigger_count",
+            "icp_opportunity_count", "icp_accept_count", "icp_reject_count",
+            "ledger_stage_count", "ledger_commit_count", "ledger_reclaim_count",
         ):
             value = getattr(self, name)
             if isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral):
@@ -358,6 +459,10 @@ class TemporalDiagnostics:
             if int(value) < 0:
                 raise ValueError(f"{name} must be nonnegative")
             object.__setattr__(self, name, int(value))
+        if self.last_frame is not None and type(self.last_frame) is not TemporalFrameDiagnostics:
+            raise TypeError("last_frame must be TemporalFrameDiagnostics or None")
+        if self.last_frame is not None and self.processed_frame_count == 0:
+            raise ValueError("initial diagnostics cannot have a last frame")
         if type(self.assignment_diagnostics) is not tuple or any(
             type(item) is not TemporalAssignmentDiagnostic
             for item in self.assignment_diagnostics
@@ -457,7 +562,7 @@ class TemporalRuntimeState:
                 raw = object.__getattribute__(self, "_ledger_state")
             except AttributeError:
                 return object.__getattribute__(self, name)
-            return raw.clone()
+            return None if raw is None else raw.clone()
         return object.__getattribute__(self, name)
 
     def _initialize_owned(self, *, adopt: bool) -> None:
@@ -543,7 +648,7 @@ class TemporalRuntimeState:
             )
         if lifecycle_beliefs is None:
             lifecycle_beliefs = tuple(entity.lifecycle for entity in self.entities)
-        if ledger is None:
+        if ledger is None and identities is None:
             ledger = ReversibleBackgroundLedger(
                 background.config,
                 TemporalBackgroundLedgerConfig(
@@ -560,21 +665,106 @@ class TemporalRuntimeState:
             raise TypeError("geometry must be a TemporalGeometryState")
         if type(lifecycle_beliefs) is not tuple or any(type(item) is not TemporalLifecycleState for item in lifecycle_beliefs):
             raise TypeError("lifecycle_beliefs must contain TemporalLifecycleState values")
-        if not isinstance(ledger, ReversibleBackgroundLedger):
-            raise TypeError("background_ledger must be a ReversibleBackgroundLedger")
+        if ledger is not None and not isinstance(ledger, ReversibleBackgroundLedger):
+            raise TypeError("background_ledger must be a ReversibleBackgroundLedger or None")
         if type(export_tracker) is not TemporalExportTracker:
             raise TypeError("export_tracker must be a TemporalExportTracker")
         if type(diagnostics) is not TemporalDiagnostics:
             raise TypeError("diagnostics must be TemporalDiagnostics")
+        if diagnostics.processed_frame_count != self.revision:
+            raise ValueError("diagnostics processed frame count must match revision")
+        if diagnostics.last_frame is not None and (
+            diagnostics.last_frame.frame_id != self.last_frame_id
+        ):
+            raise ValueError("diagnostics last frame must match runtime progress")
+        if (
+            diagnostics.proposal_trigger_count > diagnostics.proposal_opportunity_count
+            or diagnostics.reid_trigger_count > diagnostics.reid_opportunity_count
+            or diagnostics.epoch_reset_trigger_count
+            > diagnostics.epoch_reset_opportunity_count
+        ):
+            raise ValueError("diagnostic triggers cannot exceed opportunities")
+        if (
+            diagnostics.icp_accept_count + diagnostics.icp_reject_count
+            != diagnostics.icp_opportunity_count
+        ):
+            raise ValueError("diagnostic ICP outcomes must partition opportunities")
         identity_ids = tuple(item.identity_id for item in identities.records)
         lifecycle_ids = tuple(item.entity_id for item in lifecycle_beliefs)
         geometry_ids = tuple(sorted({item.entity_id for item in geometry.epochs}))
-        if identity_ids != ids or lifecycle_ids != ids or geometry_ids != ids:
-            raise ValueError("identity, geometry, lifecycle, and legacy entity IDs must agree")
+        if identities._next_identity_id != self.next_entity_id:
+            raise ValueError("bank next identity ID must match runtime next_entity_id")
+        if lifecycle_ids != identity_ids:
+            raise ValueError("lifecycle beliefs must exactly cover identity memory")
+        if not set(ids).issubset(identity_ids) or geometry_ids != ids:
+            raise ValueError("geometry and legacy wrappers must be an identity subset")
+        if any(
+            item.last_frame_id > self.last_frame_id
+            or item.last_timestamp > self.last_timestamp
+            for item in identities.records
+        ):
+            raise ValueError("identity observation cannot be in the future of runtime progress")
         if any(identities.get(item.entity_id).lifecycle is not item.lifecycle for item in lifecycle_beliefs):
             raise ValueError("identity and lifecycle states must agree")
-        if any(item.last_frame_id != self.last_frame_id for item in lifecycle_beliefs):
-            raise ValueError("lifecycle belief frame must equal runtime last_frame_id")
+        if any(
+            item.last_frame_id != self.last_frame_id
+            or item.last_timestamp != self.last_timestamp
+            for item in lifecycle_beliefs
+        ):
+            raise ValueError("lifecycle belief progress must equal runtime progress")
+        lifecycle_by_id = {item.entity_id: item for item in lifecycle_beliefs}
+        export_by_id = {item.entity_id: item for item in export_tracker.entries}
+        if not set(export_by_id).issubset(identity_ids):
+            raise ValueError("export tracker IDs must belong to identity memory")
+        for entity in self.entities:
+            entity_id = entity.lifecycle.entity_id
+            record = identities.get(entity_id)
+            assert record is not None
+            belief = lifecycle_by_id[entity_id]
+            if entity.lifecycle != belief or record.lifecycle is not belief.lifecycle:
+                raise ValueError("wrapper, identity, and lifecycle values must agree")
+            if entity.semantic_probabilities != record.semantic_probabilities:
+                raise ValueError("wrapper and identity semantic probabilities must agree")
+            if (
+                entity.extent_xyz != record.extent_xyz
+                or entity.first_seen_frame_id != record.first_frame_id
+                or entity.last_seen_frame_id != record.last_frame_id
+            ):
+                raise ValueError("wrapper and identity extent/frame history must agree")
+            if entity.feature_model_id != record.feature_model_id or not (
+                (entity.image_prototype is None and record.appearance_prototype is None)
+                or (
+                    entity.image_prototype is not None
+                    and record.appearance_prototype is not None
+                    and np.array_equal(entity.image_prototype, record.appearance_prototype)
+                )
+            ):
+                raise ValueError("wrapper and identity appearance provenance must agree")
+            epoch = geometry.current(entity_id)
+            if (
+                not np.array_equal(epoch.object_to_world, entity.object_to_world)
+                or epoch.submap != entity.submap
+            ):
+                raise ValueError("current geometry epoch pose/submap must match wrapper")
+            points = entity.submap.world_points(entity.object_to_world)
+            centroid = (
+                tuple(float(value) for value in points.mean(axis=0, dtype=np.float64))
+                if points.shape[0]
+                else tuple(float(value) for value in entity.object_to_world[:3, 3])
+            )
+            if centroid != record.last_centroid_xyz:
+                raise ValueError("wrapper geometry centroid and identity memory must agree")
+            tracked = export_by_id.get(entity_id)
+            if tracked is not None and (
+                tracked.geometry_epoch != epoch.epoch_id
+                or tracked.readout_valid is not epoch.readout_valid
+            ):
+                raise ValueError("export tracker must match current geometry epoch/readout")
+        if export_tracker.last_batch is not None and (
+            export_tracker.last_batch.frame_index != self.last_frame_id
+            or export_tracker.last_batch.timestamp_ns < 0
+        ):
+            raise ValueError("export tracker batch must match runtime progress")
         object.__setattr__(self, "background", None)
         object.__setattr__(self, "tracker", None)
         object.__setattr__(self, "identities", None)
@@ -586,7 +776,10 @@ class TemporalRuntimeState:
         object.__setattr__(self, "_background_state", background_state)
         object.__setattr__(self, "_tracker_state", tracker_state)
         object.__setattr__(self, "_identities_state", identities if adopt else identities.clone())
-        object.__setattr__(self, "_ledger_state", ledger if adopt else ledger.clone())
+        object.__setattr__(
+            self, "_ledger_state",
+            ledger if adopt or ledger is None else ledger.clone(),
+        )
 
         if (self.revision == 0) != (self.last_frame_id == -1):
             raise ValueError("revision zero must identify the initial state")
@@ -633,7 +826,13 @@ class TemporalRuntimeState:
         return object.__getattribute__(self, "_identities_state").clone()
 
     def _mutable_ledger_snapshot(self) -> ReversibleBackgroundLedger:
-        return object.__getattribute__(self, "_ledger_state").clone()
+        ledger = object.__getattribute__(self, "_ledger_state")
+        if ledger is None:
+            raise RuntimeError("background ledger is disabled for this profile")
+        return ledger.clone()
+
+    def _owned_background(self) -> TemporalBackgroundVolume:
+        return object.__getattribute__(self, "_background_state")
 
     @classmethod
     def _adopt_owned(
@@ -650,7 +849,7 @@ class TemporalRuntimeState:
         identities: IdentityMemoryBank,
         geometry: TemporalGeometryState,
         lifecycle_beliefs: tuple[TemporalLifecycleState, ...],
-        background_ledger: ReversibleBackgroundLedger,
+        background_ledger: ReversibleBackgroundLedger | None,
         export_tracker: TemporalExportTracker,
         diagnostics: TemporalDiagnostics,
     ) -> TemporalRuntimeState:
@@ -694,7 +893,7 @@ class TemporalRuntimeState:
             identities.canonical_dump(),
             self.geometry.canonical_dump(),
             _canonical(self.lifecycle_beliefs),
-            ledger.journal_digest(),
+            None if ledger is None else ledger.journal_digest(),
             self.export_tracker.canonical_dump(),
             _canonical(self.diagnostics),
         )

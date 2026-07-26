@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
+import numpy as np
+import pytest
+
 from tests.oviv2.test_temporal_runtime import _config, _confirm, _runtime
 
 
@@ -87,3 +92,98 @@ def test_legacy_runtime_state_constructor_migrates_components() -> None:
     assert migrated.identities.get(entity_id) is not None
     assert migrated.geometry.current(entity_id).epoch_id == 0
     assert migrated.lifecycle_beliefs[0].entity_id == entity_id
+
+
+def _rebuild_state(state, **changes):
+    from src.oviv2.temporal_state import TemporalRuntimeState
+
+    values = dict(
+        scene_id=state.scene_id,
+        revision=state.revision,
+        last_frame_id=state.last_frame_id,
+        last_timestamp=state.last_timestamp,
+        next_entity_id=state.next_entity_id,
+        entities=state.entities,
+        background=state.background,
+        tracker=state.tracker,
+        identities=state.identities,
+        geometry=state.geometry,
+        lifecycle_beliefs=state.lifecycle_beliefs,
+        background_ledger=state.background_ledger,
+        export_tracker=state.export_tracker,
+        diagnostics=state.diagnostics,
+    )
+    values.update(changes)
+    return TemporalRuntimeState(**values)
+
+
+def test_state_rejects_future_identity_without_changing_source_state() -> None:
+    runtime = _runtime()
+    entity_id = _confirm(runtime)
+    state = runtime.state
+    before = state.canonical_dump()
+    identities = state.identities
+    record = identities.get(entity_id)
+    identities._records[entity_id] = replace(record, last_frame_id=99, last_timestamp=99.0)
+
+    with pytest.raises(ValueError, match="identity.*runtime|future"):
+        _rebuild_state(state, identities=identities)
+    assert state.canonical_dump() == before
+
+
+def test_state_rejects_bank_next_identity_mismatch() -> None:
+    runtime = _runtime()
+    _confirm(runtime)
+    state = runtime.state
+    identities = state.identities
+    identities._next_identity_id += 1
+
+    with pytest.raises(ValueError, match="next.*identity"):
+        _rebuild_state(state, identities=identities)
+
+
+def test_state_rejects_wrapper_identity_semantic_mismatch() -> None:
+    runtime = _runtime()
+    entity_id = _confirm(runtime)
+    state = runtime.state
+    identities = state.identities
+    record = identities.get(entity_id)
+    identities._records[entity_id] = replace(record, semantic_probabilities=((2, 1.0),))
+
+    with pytest.raises(ValueError, match="semantic"):
+        _rebuild_state(state, identities=identities)
+
+
+def test_state_rejects_wrapper_identity_extent_history_mismatch() -> None:
+    runtime = _runtime()
+    entity_id = _confirm(runtime)
+    state = runtime.state
+    identities = state.identities
+    record = identities.get(entity_id)
+    identities._records[entity_id] = replace(
+        record, extent_xyz=(9.0, 9.0, 9.0)
+    )
+
+    with pytest.raises(ValueError, match="extent|history"):
+        _rebuild_state(state, identities=identities)
+
+
+def test_state_rejects_current_epoch_wrapper_mismatch() -> None:
+    from src.oviv2.temporal_epoch import GeometryEpoch
+
+    runtime = _runtime()
+    entity_id = _confirm(runtime)
+    state = runtime.state
+    geometry = state.geometry
+    epoch = geometry.current(entity_id)
+    pose = np.array(epoch.object_to_world, copy=True)
+    pose[0, 3] += 1.0
+    geometry = geometry.replace_current(
+        GeometryEpoch(
+            epoch.entity_id, epoch.epoch_id, pose, epoch.submap,
+            epoch.readout_valid, epoch.motion_decision, epoch.last_processed_frame_id,
+        )
+    )
+
+    with pytest.raises(ValueError, match="epoch|geometry|pose"):
+        _rebuild_state(state, geometry=geometry)

@@ -141,7 +141,57 @@ def _observation(
     )
 
 
-def _proposal_evidence(frame: Frame):
+def _pixel_observation(
+    frame: Frame,
+    observation_id: int,
+    row: int,
+    column: int,
+    *,
+    semantic_id: int,
+    image_feature: np.ndarray,
+) -> FrameObservation:
+    depth = float(frame.depth[row, column])
+    x = (column - frame.intrinsics.cx) * depth / frame.intrinsics.fx
+    y = (row - frame.intrinsics.cy) * depth / frame.intrinsics.fy
+    mask = np.zeros(frame.depth.shape, dtype=bool)
+    mask[row, column] = True
+    return FrameObservation(
+        observation_id=observation_id,
+        frame_id=frame.frame_id,
+        timestamp=frame.timestamp,
+        kind=ObservationKind.OBJECT,
+        label=f"pixel-{semantic_id}",
+        semantic_id=semantic_id,
+        confidence=1.0,
+        mask=mask,
+        bbox_xyxy=(float(column), float(row), float(column + 1), float(row + 1)),
+        voxel_keys=frozenset({(int(x * 10), int(y * 10), int(depth * 10))}),
+        centroid_xyz=(x, y, depth),
+        bounds_min_xyz=(x - 0.05, y - 0.05, depth - 0.05),
+        bounds_max_xyz=(x + 0.05, y + 0.05, depth + 0.05),
+        image_feature=image_feature,
+        feature_model_id="test",
+        visible_pixel_count=1,
+    )
+
+
+def _dense_semantics(frame: Frame) -> DenseSemanticFrame:
+    source = frame.frame_id if frame.source_frame_id is None else frame.source_frame_id
+    return DenseSemanticFrame(
+        cache_frame_id=frame.frame_id,
+        source_frame_id=source,
+        image_shape=frame.depth.shape,
+        sample_stride=1,
+        class_count=1,
+        class_ids=np.ones((*frame.depth.shape, 1), dtype=np.int64),
+        probabilities=np.ones((*frame.depth.shape, 1), dtype=np.float32),
+        entropy=np.zeros(frame.depth.shape, dtype=np.float32),
+        margin=np.ones(frame.depth.shape, dtype=np.float32),
+    )
+
+
+def _proposal_evidence(frame: Frame, dense: DenseSemanticFrame):
+    from src.oviv2.temporal_runtime import _proposal_semantic_provenance_hash
     from src.oviv2.temporal_proposals import ProposalRecoveryInput
 
     depth = np.asarray(frame.depth, dtype=np.float32)
@@ -162,7 +212,7 @@ def _proposal_evidence(frame: Frame):
         segmentation_occupied=np.zeros(depth.shape, dtype=bool),
         semantic_support=np.ones(depth.shape, dtype=bool),
         semantic_source_frame_id=frame.frame_id,
-        semantic_provenance_hash="0" * 64,
+        semantic_provenance_hash=_proposal_semantic_provenance_hash(frame, dense),
         appearance_support=None,
         appearance_source_frame_id=None,
         appearance_model_id=None,
@@ -218,6 +268,8 @@ def test_occlusion_is_neutral_but_valid_signed_depth_absence_retires() -> None:
     assert removed.process_frame(_frame(2, depth=2.0), ()).dormant_entity_ids == ()
     result = removed.process_frame(_frame(3, depth=2.0, camera_x=0.05), ())
     assert result.dormant_entity_ids == (entity_id,)
+    assert result.diagnostics.ledger_commit_count == 1
+    assert removed.state.background.active_block_count > 0
 
 
 def test_visible_absent_invalidates_geometry_before_identity_is_dormant() -> None:
@@ -377,6 +429,79 @@ def test_rejected_low_confidence_match_creates_new_identity(
     assert runtime.state.geometry.current(old_id + 1).epoch_id == 0
 
 
+@pytest.mark.parametrize("profile", (ExecutionProfile.A2, ExecutionProfile.A3))
+def test_translation_rejection_with_high_identity_confidence_starts_new_epoch(
+    monkeypatch: pytest.MonkeyPatch, profile: ExecutionProfile
+) -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_geometry import MotionDecision, ObjectMotionEstimate
+
+    runtime = _runtime(_config(profile))
+    entity_id = _confirm(runtime)
+    monkeypatch.setattr(
+        module,
+        "estimate_object_translation",
+        lambda *args, **kwargs: ObjectMotionEstimate(
+            kwargs["previous_object_to_world"],
+            MotionDecision.REJECTED,
+            0.0,
+            0.1,
+        ),
+    )
+    frame = _frame(2)
+
+    result = runtime.process_frame(frame, (_observation(frame),))
+
+    assert result.new_entity_ids == ()
+    assert result.reid_opportunity_count == result.reid_trigger_count == 0
+    assert runtime.state.geometry.current(entity_id).epoch_id == 1
+    assert result.diagnostics.epoch_reset_opportunity_count == 1
+    assert result.diagnostics.epoch_reset_trigger_count == 1
+    assert result.diagnostics.motion_rejection_count == 1
+    assert result.diagnostics.icp_opportunity_count == 0
+
+
+@pytest.mark.parametrize("profile", (ExecutionProfile.A2, ExecutionProfile.A3))
+def test_translation_rejection_with_low_identity_confidence_creates_new_id(
+    monkeypatch: pytest.MonkeyPatch, profile: ExecutionProfile
+) -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_geometry import MotionDecision, ObjectMotionEstimate
+
+    runtime = _runtime(_config(profile))
+    old_id = _confirm(runtime)
+    original = module.associate_temporal_observations
+
+    def low_confidence(*args, **kwargs):
+        result = original(*args, **kwargs)
+        return replace(
+            result,
+            assignment_diagnostics=tuple(
+                replace(item, high_confidence_identity_match=False)
+                for item in result.assignment_diagnostics
+            ),
+        )
+
+    monkeypatch.setattr(module, "associate_temporal_observations", low_confidence)
+    monkeypatch.setattr(
+        module,
+        "estimate_object_translation",
+        lambda *args, **kwargs: ObjectMotionEstimate(
+            kwargs["previous_object_to_world"],
+            MotionDecision.REJECTED,
+            0.0,
+            0.1,
+        ),
+    )
+    frame = _frame(2)
+
+    result = runtime.process_frame(frame, (_observation(frame),))
+
+    assert result.new_entity_ids == (old_id + 1,)
+    assert result.reid_opportunity_count == result.reid_trigger_count == 0
+    assert runtime.state.geometry.current(old_id).epoch_id == 0
+
+
 @pytest.mark.parametrize("profile", (ExecutionProfile.A0, ExecutionProfile.A1))
 def test_current_runtime_rejects_adapter_profiles(profile: ExecutionProfile) -> None:
     from src.oviv2.temporal_runtime import TemporalCurrentRuntime
@@ -474,6 +599,78 @@ def test_a4_runtime_routes_icp_accepted_and_fallback_motion(
     assert runtime.state.entities[0].object_to_world[2, 3] == 1.2
 
 
+def test_translation_confidence_uses_verifiable_geometry_residual() -> None:
+    from src.oviv2.temporal_geometry import MotionDecision, ObjectMotionEstimate
+    from src.oviv2.temporal_runtime import _motion_confidence
+
+    config = _config(ExecutionProfile.A2)
+    runtime = _runtime(config)
+    _confirm(runtime)
+    entity = runtime.state.entities[0]
+    pose = np.array(entity.object_to_world, copy=True)
+    pose[0, 3] += 0.2
+    motion = ObjectMotionEstimate(
+        pose, MotionDecision.TRANSLATION_ACCEPTED, 0.0,
+        config.geometry.maximum_icp_rmse_m,
+    )
+    aligned = entity.submap.world_points(pose)
+    moderate = np.array(aligned, copy=True)
+    moderate[:, 0] += config.motion.maximum_translation_residual_m / 4.0
+    poor = np.array(aligned, copy=True)
+    poor[:, 0] += config.motion.maximum_translation_residual_m * 2.0
+
+    high = _motion_confidence(motion, config, entity.submap, aligned)
+    middle = _motion_confidence(motion, config, entity.submap, moderate)
+    low = _motion_confidence(motion, config, entity.submap, poor)
+
+    assert high == 1.0
+    assert 0.0 < middle < high
+    assert low == 0.0
+    below_threshold = np.array(aligned, copy=True)
+    below_threshold[:, 0] += config.motion.maximum_translation_residual_m / 2.0
+    assert _motion_confidence(
+        motion, config, entity.submap, below_threshold
+    ) == 0.0
+    assert _motion_confidence(
+        motion, config, entity.submap, np.empty((0, 3), dtype=np.float64)
+    ) == 0.0
+
+
+def test_frame_diagnostics_partition_icp_and_track_ledger_lifecycle(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_geometry import MotionDecision, ObjectMotionEstimate
+
+    runtime = _runtime()
+    entity_id = _confirm(runtime)
+    staged = runtime.process_frame(_frame(2, depth=2.0), ())
+    assert staged.diagnostics.ledger_stage_count == 1
+    assert staged.diagnostics.ledger_commit_count == 0
+    returned = _frame(3)
+    monkeypatch.setattr(
+        module,
+        "estimate_object_motion",
+        lambda *args, **kwargs: ObjectMotionEstimate(
+            kwargs["previous_object_to_world"],
+            MotionDecision.ICP_ACCEPTED,
+            0.8,
+            0.01,
+        ),
+    )
+
+    result = runtime.process_frame(returned, (_observation(returned),))
+
+    assert result.active_entity_ids == (entity_id,)
+    assert result.diagnostics.icp_opportunity_count == 1
+    assert result.diagnostics.icp_accept_count == 1
+    assert result.diagnostics.icp_reject_count == 0
+    assert result.diagnostics.ledger_reclaim_count == 1
+    assert runtime.state.diagnostics.last_frame == result.diagnostics
+    assert runtime.state.diagnostics.ledger_stage_count == 1
+    assert runtime.state.diagnostics.ledger_reclaim_count == 1
+
+
 @pytest.mark.parametrize("profile", (ExecutionProfile.A2, ExecutionProfile.A3))
 def test_translation_profiles_exclude_and_retain_dormant_entities(
     monkeypatch: pytest.MonkeyPatch, profile: ExecutionProfile
@@ -487,9 +684,9 @@ def test_translation_profiles_exclude_and_retain_dormant_entities(
     original = module.associate_temporal_observations
     target_ids: list[tuple[int, ...]] = []
 
-    def capture(observations, targets, config):
+    def capture(observations, targets, config, **kwargs):
         target_ids.append(tuple(target.entity_id for target in targets))
-        return original(observations, targets, config)
+        return original(observations, targets, config, **kwargs)
 
     monkeypatch.setattr(module, "associate_temporal_observations", capture)
     new_ids: list[int] = []
@@ -505,7 +702,7 @@ def test_translation_profiles_exclude_and_retain_dormant_entities(
 
 
 @pytest.mark.parametrize("profile", (ExecutionProfile.A2, ExecutionProfile.A3))
-def test_translation_profiles_do_not_evict_excluded_dormant_at_capacity(
+def test_translation_profiles_reclaim_geometry_but_keep_dormant_identity_at_capacity(
     profile: ExecutionProfile,
 ) -> None:
     runtime = _runtime(_config(profile, maximum_entities=1))
@@ -513,15 +710,17 @@ def test_translation_profiles_do_not_evict_excluded_dormant_at_capacity(
     runtime.process_frame(_frame(2, depth=2.0), ())
     assert runtime.process_frame(_frame(3, depth=2.0), ()).dormant_entity_ids == (old_id,)
 
+    new_ids = []
     for frame_id in (4, 5):
         frame = _frame(frame_id, depth=1.8)
         result = runtime.process_frame(
             frame, (_observation(frame, centroid_z=1.8, semantic_id=2),)
         )
+        new_ids.extend(result.new_entity_ids)
 
-    assert result.new_entity_ids == ()
-    assert tuple(entity.lifecycle.entity_id for entity in runtime.state.entities) == (old_id,)
-    assert runtime.state.next_entity_id == old_id + 1
+    assert tuple(new_ids) == (old_id + 1,)
+    assert tuple(entity.lifecycle.entity_id for entity in runtime.state.entities) == (old_id + 1,)
+    assert runtime.state.identities.get(old_id) is not None
 
 
 def test_a2_skips_masked_background_and_reports_zero(
@@ -547,6 +746,68 @@ def test_a2_skips_masked_background_and_reports_zero(
 
     assert result.background_blocks_touched == 0
     assert runtime.state.background.active_block_count == 0
+
+
+def test_a2_never_constructs_clones_or_stages_ledger(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_background import TemporalBackgroundVolume
+    from src.oviv2.temporal_background_ledger import ReversibleBackgroundLedger
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("forbidden A2 background path")
+
+    monkeypatch.setattr(ReversibleBackgroundLedger, "__init__", forbidden)
+    monkeypatch.setattr(ReversibleBackgroundLedger, "clone", forbidden)
+    monkeypatch.setattr(ReversibleBackgroundLedger, "stage", forbidden)
+    monkeypatch.setattr(module, "build_background_depth", forbidden)
+    monkeypatch.setattr(TemporalBackgroundVolume, "_integrate_owned", forbidden)
+    runtime = _runtime(_config(ExecutionProfile.A2))
+    frame = _frame(0, timestamp=0.0)
+
+    result = runtime.process_frame(frame, (_observation(frame),))
+
+    assert result.background_blocks_touched == 0
+    assert runtime.state.background_ledger is None
+
+
+def test_a3_ledger_owns_only_each_entities_released_pixels(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from src.oviv2.temporal_background_ledger import (
+        ReversibleBackgroundLedger,
+    )
+    from src.oviv2.temporal_lifecycle import TemporalEvidenceKind
+
+    runtime = _runtime(_config(ExecutionProfile.A3, maximum_entities=2))
+    for frame_id in (0, 1):
+        frame = _frame(frame_id, timestamp=float(frame_id), depth=1.0)
+        observations = (
+            _pixel_observation(frame, 10 + frame_id, 1, 1, semantic_id=1, image_feature=np.array([1.0, 0.0])),
+            _pixel_observation(frame, 20 + frame_id, 3, 3, semantic_id=2, image_feature=np.array([0.0, 1.0])),
+        )
+        runtime.process_frame(frame, observations)
+
+    captured = []
+    original = ReversibleBackgroundLedger.stage
+
+    def capture(self, evidence):
+        if evidence.kind is TemporalEvidenceKind.VISIBLE_ABSENT:
+            captured.append(evidence)
+        return original(self, evidence)
+
+    monkeypatch.setattr(ReversibleBackgroundLedger, "stage", capture)
+    runtime.process_frame(_frame(2, depth=2.0), ())
+
+    assert len(captured) == 2
+    positive_masks = tuple(evidence.depth_m > 0.0 for evidence in captured)
+    assert all(int(mask.sum()) == 1 for mask in positive_masks)
+    assert not np.any(positive_masks[0] & positive_masks[1])
+    assert not any(mask[0, 0] for mask in positive_masks)
+    first_keys = {item.block_key for item in captured[0].contributions}
+    second_keys = {item.block_key for item in captured[1].contributions}
+    assert first_keys.isdisjoint(second_keys)
 
 
 def test_a3_uses_masked_background_without_icp_or_dormant_targets(
@@ -656,7 +917,8 @@ def test_proposal_and_export_exceptions_deeply_roll_back_state_and_inputs(
     frame = _frame(2)
     observation = _observation(frame)
     observations = (observation,)
-    proposal = _proposal_evidence(frame)
+    dense = _dense_semantics(frame)
+    proposal = _proposal_evidence(frame, dense)
     before_state = runtime.state
     before_dump = before_state.canonical_dump()
     frame_fingerprint = (
@@ -679,7 +941,9 @@ def test_proposal_and_export_exceptions_deeply_roll_back_state_and_inputs(
         fail,
     )
     with pytest.raises(RuntimeError, match=boundary):
-        runtime.process_frame(frame, observations, proposal_evidence=proposal)
+        runtime.process_frame(
+            frame, observations, dense, proposal_evidence=proposal
+        )
 
     assert runtime.state is before_state
     assert runtime.state.canonical_dump() == before_dump
@@ -689,6 +953,68 @@ def test_proposal_and_export_exceptions_deeply_roll_back_state_and_inputs(
         proposal.depth_m.tobytes(), proposal.current_xyz.tobytes(),
         proposal.semantic_support.tobytes(),
     ) == proposal_fingerprint
+
+
+@pytest.mark.parametrize(
+    ("field", "message"),
+    (
+        ("depth_m", "depth"),
+        ("current_xyz", "XYZ"),
+        ("semantic_support", "semantic support"),
+        ("semantic_provenance_hash", "provenance"),
+    ),
+)
+def test_proposal_evidence_must_bind_validated_current_inputs(
+    field: str, message: str
+) -> None:
+    runtime = _runtime()
+    frame = _frame(0, timestamp=0.0)
+    dense = _dense_semantics(frame)
+    evidence = _proposal_evidence(frame, dense)
+    if field == "depth_m":
+        value = np.array(evidence.depth_m, copy=True)
+        value[0, 0] += 1.0
+    elif field == "current_xyz":
+        value = np.array(evidence.current_xyz, copy=True)
+        value[0, 0, 0] += 1.0
+    elif field == "semantic_support":
+        value = np.array(evidence.semantic_support, copy=True)
+        value[0, 0] = False
+    else:
+        value = "f" * 64
+    tampered = replace(evidence, **{field: value})
+
+    with pytest.raises(ValueError, match=message):
+        runtime.process_frame(frame, (), dense, proposal_evidence=tampered)
+
+    assert runtime.state.revision == 0
+
+
+def test_proposal_evidence_requires_current_dense_semantics() -> None:
+    runtime = _runtime()
+    frame = _frame(0, timestamp=0.0)
+    evidence = _proposal_evidence(frame, _dense_semantics(frame))
+
+    with pytest.raises(ValueError, match="dense semantics"):
+        runtime.process_frame(frame, (), proposal_evidence=evidence)
+
+    assert runtime.state.revision == 0
+
+
+def test_proposal_xyz_binding_rejects_sub_tolerance_tampering() -> None:
+    runtime = _runtime()
+    frame = _frame(0, timestamp=0.0)
+    dense = _dense_semantics(frame)
+    evidence = _proposal_evidence(frame, dense)
+    xyz = np.array(evidence.current_xyz, copy=True)
+    xyz[0, 0, 0] += np.float32(5e-7)
+
+    with pytest.raises(ValueError, match="XYZ"):
+        runtime.process_frame(
+            frame, (), dense, proposal_evidence=replace(evidence, current_xyz=xyz)
+        )
+
+    assert runtime.state.revision == 0
 
 
 def test_ledger_exception_rolls_back_state(
@@ -708,6 +1034,29 @@ def test_ledger_exception_rolls_back_state(
     frame = _frame(2)
     with pytest.raises(RuntimeError, match="ledger"):
         runtime.process_frame(frame, (_observation(frame),))
+    assert runtime.state is before
+    assert runtime.state.canonical_dump() == before_dump
+
+
+def test_sparse_ledger_rebuild_exception_is_not_downgraded_to_staged(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from src.oviv2.temporal_background import TemporalBackgroundVolume
+
+    runtime = _runtime()
+    _confirm(runtime)
+    runtime.process_frame(_frame(2, depth=2.0), ())
+    before = runtime.state
+    before_dump = before.canonical_dump()
+    monkeypatch.setattr(
+        TemporalBackgroundVolume,
+        "rebuild_blocks",
+        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("rebuild")),
+    )
+
+    with pytest.raises(RuntimeError, match="background ledger rejected"):
+        runtime.process_frame(_frame(3, depth=2.0, camera_x=0.05), ())
+
     assert runtime.state is before
     assert runtime.state.canonical_dump() == before_dump
 
@@ -1074,7 +1423,7 @@ def test_capacity_rejects_new_entity_without_consuming_id_when_no_dormant() -> N
     assert runtime.state.next_entity_id == first_id + 1
 
 
-def test_geometry_capacity_never_evicts_dormant_identity() -> None:
+def test_geometry_capacity_reclaims_dormant_wrapper_but_keeps_identity() -> None:
     runtime = _runtime(_config(maximum_entities=1))
     old_id = _confirm(runtime)
     runtime.process_frame(_frame(2, depth=2.0), ())
@@ -1083,17 +1432,104 @@ def test_geometry_capacity_never_evicts_dormant_identity() -> None:
     )
     first = _frame(4, depth=1.8)
     first_result = runtime.process_frame(
-        first, (_observation(first, 40, centroid_z=1.8, semantic_id=2),)
+        first, (_observation(
+            first, 40, centroid_z=1.8, semantic_id=2,
+            image_feature=np.array([0.0, 1.0]),
+        ),)
     )
     second = _frame(5, depth=1.8)
     result = runtime.process_frame(
-        second, (_observation(second, 41, centroid_z=1.8, semantic_id=2),)
+        second, (_observation(
+            second, 41, centroid_z=1.8, semantic_id=2,
+            image_feature=np.array([0.0, 1.0]),
+        ),)
     )
-    assert first_result.new_entity_ids + result.new_entity_ids == ()
+    assert first_result.new_entity_ids + result.new_entity_ids == (old_id + 1,)
     assert tuple(item.lifecycle.entity_id for item in runtime.state.entities) == (
-        old_id,
+        old_id + 1,
     )
     assert runtime.state.identities.get(old_id) is not None
+    with pytest.raises(KeyError):
+        runtime.state.geometry.current(old_id)
+
+
+def test_full_identity_bank_does_not_reclaim_dormant_wrapper_for_new_id() -> None:
+    base = _config(maximum_entities=1)
+    runtime = _runtime(replace(
+        base,
+        identity=replace(base.identity, maximum_identities=1),
+        geometry_epoch=replace(base.geometry_epoch, maximum_retained_epochs=4),
+    ))
+    old_id = _confirm(runtime)
+    runtime.process_frame(_frame(2, depth=2.0), ())
+    runtime.process_frame(_frame(3, depth=2.0), ())
+
+    for frame_id in (4, 5):
+        frame = _frame(frame_id, depth=1.8)
+        result = runtime.process_frame(
+            frame,
+            (_observation(
+                frame,
+                40 + frame_id,
+                centroid_z=1.8,
+                semantic_id=2,
+                image_feature=np.array([0.0, 1.0]),
+            ),),
+        )
+
+    assert result.new_entity_ids == ()
+    assert tuple(
+        item.lifecycle.entity_id for item in runtime.state.entities
+    ) == (old_id,)
+    assert runtime.state.geometry.current(old_id).epoch_id == 0
+
+
+def test_a4_reidentifies_bank_only_dormant_identity_with_new_epoch() -> None:
+    runtime = _runtime(_config(maximum_entities=1))
+    old_id = _confirm(runtime)
+    runtime.process_frame(_frame(2, depth=2.0), ())
+    runtime.process_frame(_frame(3, depth=2.0), ())
+    for frame_id in (4, 5):
+        frame = _frame(frame_id, depth=1.8)
+        runtime.process_frame(
+            frame, (_observation(
+                frame, 40 + frame_id, centroid_z=1.8, semantic_id=2,
+                image_feature=np.array([0.0, 1.0]),
+            ),)
+        )
+    assert runtime.state.identities.get(old_id) is not None
+    with pytest.raises(KeyError):
+        runtime.state.geometry.current(old_id)
+
+    runtime.process_frame(_frame(6, depth=2.4), ())
+    runtime.process_frame(_frame(7, depth=2.4), ())
+    for frame_id in (8, 9):
+        frame = _frame(frame_id)
+        result = runtime.process_frame(frame, (_observation(frame, 80 + frame_id),))
+
+    assert result.reid_trigger_count == 1
+    assert runtime.state.geometry.current(old_id).epoch_id == 1
+    assert runtime.state.identities.get(old_id + 1) is not None
+
+
+def test_dormant_identity_expiry_boundary_is_explicit_and_counted() -> None:
+    base = _config()
+    config = replace(
+        base,
+        identity=replace(base.identity, maximum_dormant_frames=1),
+    )
+    runtime = _runtime(config)
+    entity_id = _confirm(runtime)
+    runtime.process_frame(_frame(2, depth=2.0), ())
+    runtime.process_frame(_frame(3, depth=2.0), ())
+
+    assert runtime.state.identities.get(entity_id) is not None
+    result = runtime.process_frame(_frame(4, depth=0.5), ())
+
+    assert runtime.state.identities.get(entity_id) is None
+    assert result.expired_identity_ids == (entity_id,)
+    assert result.diagnostics.identity_expiry_count == 1
+    assert runtime.state.diagnostics.identity_expiry_count == 1
 
 
 def test_frame_result_tuples_are_sorted_and_revision_advances_on_empty_frame() -> None:
