@@ -11,6 +11,15 @@ from src.oviv2.addressing import VoxelKey
 from src.oviv2.entities import PersistentEntity
 from src.oviv2.runtime import Oviv2Runtime, RuntimeFrameResult
 from src.oviv2.temporal_config import ExecutionProfile, TemporalReadoutConfig
+from src.oviv2.temporal_export import (
+    DynamicEvidenceState,
+    DynamicState,
+    TemporalExportBatch,
+    TemporalExportSample,
+    TemporalLifecycleEvent,
+    advance_dynamic_state,
+    timestamp_seconds_to_ns,
+)
 from src.oviv2 import temporal_lifecycle
 from src.oviv2.temporal_lifecycle import (
     TemporalEvidence,
@@ -155,6 +164,7 @@ class ReferenceReadoutState:
     entity_lifecycles: tuple[tuple[int, str], ...]
     lifecycle_states: tuple[TemporalLifecycleState, ...]
     cumulative_view: CumulativeReadoutView | None
+    export_tracker: tuple[_ReferenceExportTrackerEntry, ...] = ()
 
     @property
     def latest_cumulative_view(self) -> CumulativeReadoutView | None:
@@ -175,6 +185,7 @@ class ReferenceFrameResult:
     entity_lifecycles: tuple[tuple[int, str], ...]
     lifecycle_states: tuple[TemporalLifecycleState, ...]
     cumulative_view: CumulativeReadoutView
+    export: TemporalExportBatch
 
     @property
     def latest_cumulative_view(self) -> CumulativeReadoutView:
@@ -189,6 +200,10 @@ class ReferenceFrameResult:
             raise ValueError("result revision must match cumulative_view")
         if self.timestamp != self.cumulative_view.last_timestamp:
             raise ValueError("result timestamp must match cumulative_view")
+        if self.export.frame_index != self.frame_id:
+            raise ValueError("export frame must match result")
+        if self.export.timestamp_ns != timestamp_seconds_to_ns(self.timestamp):
+            raise ValueError("export timestamp must match result")
         for name in (
             "active_entity_ids",
             "dormant_entity_ids",
@@ -200,6 +215,29 @@ class ReferenceFrameResult:
                 raise ValueError(f"{name} must be a sorted unique tuple")
         if set(self.active_entity_ids) & set(self.dormant_entity_ids):
             raise ValueError("active and dormant entity IDs must be disjoint")
+
+
+@dataclass(frozen=True)
+class _ReferenceExportTrackerEntry:
+    entity_id: int
+    observation_count: int
+    dynamic_evidence: DynamicEvidenceState
+    last_centroid_xyz: tuple[float, float, float]
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "entity_id", _integer(self.entity_id, "entity_id", minimum=1))
+        object.__setattr__(
+            self,
+            "observation_count",
+            _integer(self.observation_count, "observation_count", minimum=1),
+        )
+        if type(self.dynamic_evidence) is not DynamicEvidenceState:
+            raise TypeError("dynamic_evidence must be a DynamicEvidenceState")
+        object.__setattr__(
+            self,
+            "last_centroid_xyz",
+            _point(self.last_centroid_xyz, "last_centroid_xyz"),
+        )
 
 
 class _BaseReferenceReadout:
@@ -220,6 +258,7 @@ class _BaseReferenceReadout:
             last_timestamp=0.0,
             entity_lifecycles=(),
             lifecycle_states=(),
+            export_tracker=(),
             cumulative_view=None,
         )
 
@@ -243,6 +282,7 @@ class _BaseReferenceReadout:
             last_timestamp=view.last_timestamp,
             entity_lifecycles=(),
             lifecycle_states=(),
+            export_tracker=(),
             cumulative_view=view,
         )
 
@@ -315,6 +355,7 @@ class _BaseReferenceReadout:
         *,
         new_ids: tuple[int, ...],
         reactivated_ids: tuple[int, ...],
+        export: TemporalExportBatch,
     ) -> ReferenceFrameResult:
         assert state.cumulative_view is not None
         active = tuple(
@@ -340,7 +381,77 @@ class _BaseReferenceReadout:
             entity_lifecycles=state.entity_lifecycles,
             lifecycle_states=state.lifecycle_states,
             cumulative_view=state.cumulative_view,
+            export=export,
         )
+
+    def _advance_export_tracker(
+        self,
+        *,
+        frame: Frame,
+        after: CumulativeReadoutView,
+        accepted: tuple[int, ...] | frozenset[int],
+        events: tuple[TemporalLifecycleEvent, ...] = (),
+    ) -> tuple[tuple[_ReferenceExportTrackerEntry, ...], TemporalExportBatch]:
+        timestamp_ns = timestamp_seconds_to_ns(frame.timestamp)
+        accepted_ids = frozenset(accepted)
+        old_tracker = {item.entity_id: item for item in self.state.export_tracker}
+        after_entities = {item.entity_id: item for item in after.entities}
+        next_tracker = dict(old_tracker)
+        samples: list[TemporalExportSample] = []
+        dynamic_config = self.config.dynamic_state
+        assert dynamic_config is not None
+
+        for entity_id in sorted(accepted_ids):
+            centroid = after_entities[entity_id].centroid_xyz
+            old = old_tracker.get(entity_id)
+            if old is None:
+                observation_count = 1
+                dynamic_evidence = DynamicEvidenceState(DynamicState.UNKNOWN, 0, 0)
+                motion_confidence = 0.0
+            else:
+                observation_count = old.observation_count + 1
+                displacement = float(
+                    np.linalg.norm(
+                        np.asarray(centroid, dtype=np.float64)
+                        - np.asarray(old.last_centroid_xyz, dtype=np.float64)
+                    )
+                )
+                motion_confidence = 1.0
+                dynamic_evidence = advance_dynamic_state(
+                    old.dynamic_evidence,
+                    accepted_motion=True,
+                    displacement_m=displacement,
+                    confidence=motion_confidence,
+                    config=dynamic_config,
+                )
+            next_tracker[entity_id] = _ReferenceExportTrackerEntry(
+                entity_id=entity_id,
+                observation_count=observation_count,
+                dynamic_evidence=dynamic_evidence,
+                last_centroid_xyz=centroid,
+            )
+            samples.append(
+                TemporalExportSample(
+                    frame_index=frame.frame_id,
+                    timestamp_ns=timestamp_ns,
+                    entity_id=entity_id,
+                    centroid_xyz=centroid,
+                    observation_count=observation_count,
+                    dynamic_state=dynamic_evidence.dynamic_state,
+                    motion_confidence=motion_confidence,
+                    geometry_epoch=0,
+                    readout_valid=True,
+                )
+            )
+
+        tracker = tuple(sorted(next_tracker.values(), key=lambda item: item.entity_id))
+        export = TemporalExportBatch(
+            frame_index=frame.frame_id,
+            timestamp_ns=timestamp_ns,
+            samples=tuple(samples),
+            events=events,
+        )
+        return tracker, export
 
 
 class ReferenceCurrentReadout(_BaseReferenceReadout):
@@ -354,10 +465,15 @@ class ReferenceCurrentReadout(_BaseReferenceReadout):
         after: CumulativeReadoutView,
         cumulative_result: RuntimeFrameResult,
     ) -> ReferenceFrameResult:
-        self._validate_binding(frame, before, after, cumulative_result)
+        accepted = self._validate_binding(frame, before, after, cumulative_result)
         before_ids = {item.entity_id for item in before.entities}
         lifecycles = tuple(
             (item.entity_id, item.lifecycle_state) for item in after.entities
+        )
+        export_tracker, export = self._advance_export_tracker(
+            frame=frame,
+            after=after,
+            accepted=accepted,
         )
         next_state = ReferenceReadoutState(
             scene_id=self.state.scene_id,
@@ -366,12 +482,14 @@ class ReferenceCurrentReadout(_BaseReferenceReadout):
             last_timestamp=after.last_timestamp,
             entity_lifecycles=lifecycles,
             lifecycle_states=(),
+            export_tracker=export_tracker,
             cumulative_view=after,
         )
         result = self._result(
             next_state,
             new_ids=tuple(item.entity_id for item in after.entities if item.entity_id not in before_ids),
             reactivated_ids=(),
+            export=export,
         )
         self._before_publish(next_state)
         self.state = next_state
@@ -498,6 +616,7 @@ class LifecycleOverlayReadout(_BaseReferenceReadout):
                 raise ValueError("lifecycle IDs do not match before view IDs")
 
         next_states: list[TemporalLifecycleState] = []
+        lifecycle_events: list[tuple[TemporalLifecycleState, TemporalLifecycleState, TemporalEvidenceKind, bool]] = []
         new_ids: list[int] = []
         reactivated_ids: list[int] = []
         for entity_id in sorted(after_ids):
@@ -517,6 +636,9 @@ class LifecycleOverlayReadout(_BaseReferenceReadout):
             else:
                 evidence = self._absence_evidence(before_entities[entity_id], frame, before)
             updated = temporal_lifecycle.advance_lifecycle(old, evidence, self.config.lifecycle)
+            lifecycle_events.append(
+                (old, updated, evidence.kind, entity_id in accepted)
+            )
             if old.lifecycle is TemporalLifecycle.DORMANT and updated.lifecycle is TemporalLifecycle.ACTIVE:
                 reactivated_ids.append(entity_id)
             next_states.append(updated)
@@ -525,6 +647,26 @@ class LifecycleOverlayReadout(_BaseReferenceReadout):
         lifecycles = tuple(
             (item.entity_id, item.lifecycle.value) for item in lifecycle_states
         )
+        timestamp_ns = timestamp_seconds_to_ns(frame.timestamp)
+        events = tuple(
+            TemporalLifecycleEvent(
+                frame_index=frame.frame_id,
+                timestamp_ns=timestamp_ns,
+                entity_id=old.entity_id,
+                before_lifecycle=old.lifecycle,
+                after_lifecycle=updated.lifecycle,
+                evidence_kind=evidence_kind,
+                geometry_epoch=0,
+                readout_valid=readout_valid,
+            )
+            for old, updated, evidence_kind, readout_valid in lifecycle_events
+        )
+        export_tracker, export = self._advance_export_tracker(
+            frame=frame,
+            after=after,
+            accepted=accepted,
+            events=events,
+        )
         next_state = ReferenceReadoutState(
             scene_id=self.state.scene_id,
             revision=after.revision,
@@ -532,12 +674,14 @@ class LifecycleOverlayReadout(_BaseReferenceReadout):
             last_timestamp=after.last_timestamp,
             entity_lifecycles=lifecycles,
             lifecycle_states=lifecycle_states,
+            export_tracker=export_tracker,
             cumulative_view=after,
         )
         result = self._result(
             next_state,
             new_ids=tuple(new_ids),
             reactivated_ids=tuple(reactivated_ids),
+            export=export,
         )
         self._before_publish(next_state)
         self.state = next_state

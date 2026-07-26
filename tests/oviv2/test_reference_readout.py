@@ -17,6 +17,7 @@ from src.oviv2.temporal_config import (
     TemporalReadoutConfig,
 )
 from src.oviv2.temporal_lifecycle import TemporalLifecycle
+from src.oviv2.temporal_export import DynamicState
 from src.oviv2.reference_readout import (
     CumulativeEntityView,
     CumulativeReadoutView,
@@ -88,12 +89,13 @@ def entity(
     *,
     lifecycle: str = "active",
     voxel_keys: frozenset[tuple[int, int, int]] = frozenset({(0, 0, 20)}),
+    centroid_xyz: tuple[float, float, float] = (0.025, 0.025, 1.025),
 ) -> CumulativeEntityView:
     return CumulativeEntityView(
         entity_id=entity_id,
         lifecycle_state=lifecycle,
         voxel_keys=voxel_keys,
-        centroid_xyz=(0.025, 0.025, 1.025),
+        centroid_xyz=centroid_xyz,
         bounds_min_xyz=(0.0, 0.0, 1.0),
         bounds_max_xyz=(0.05, 0.05, 1.05),
     )
@@ -221,6 +223,41 @@ def test_a0_mirrors_exact_v1_ids_native_lifecycle_and_current_geometry(monkeypat
     )
 
 
+def test_a0_exports_only_accepted_samples_and_does_not_mutate_cumulative_view() -> None:
+    readout = ReferenceCurrentReadout("room0", config(ExecutionProfile.A0))
+    before = view(0, -1, 0.0)
+    accepted_entity = entity(7, centroid_xyz=(1.0, 2.0, 3.0))
+    after = view(1, 0, 0.0, (entity(2), accepted_entity))
+
+    result = process(readout, frame(0, 1.0), before, after, (7,))
+
+    assert result.cumulative_view is after
+    assert after.entities[1] is accepted_entity
+    assert result.export.events == ()
+    assert len(result.export.samples) == 1
+    assert result.export.samples[0].entity_id == 7
+    assert result.export.samples[0].centroid_xyz == (1.0, 2.0, 3.0)
+    assert result.export.samples[0].observation_count == 1
+    assert result.export.samples[0].dynamic_state is DynamicState.UNKNOWN
+
+
+def test_a0_exports_each_accepted_observation_and_skips_unobserved_frames() -> None:
+    readout = ReferenceCurrentReadout("room0", config(ExecutionProfile.A0))
+    empty = view(0, -1, 0.0)
+    first = view(1, 0, 0.0, (entity(7, centroid_xyz=(0.0, 0.0, 1.0)),))
+    first_result = process(readout, frame(0, 1.0), empty, first, (7,))
+    second = view(2, 1, 1.0, (entity(7, centroid_xyz=(10.0, 0.0, 1.0)),))
+    missing = process(readout, frame(1, 1.0), first, second, ())
+    third = view(3, 2, 2.0, (entity(7, centroid_xyz=(0.2, 0.0, 1.0)),))
+    observed = process(readout, frame(2, 1.0), second, third, (7,))
+
+    assert first_result.export.samples[0].observation_count == 1
+    assert missing.export.samples == ()
+    assert observed.export.samples[0].observation_count == 2
+    assert observed.export.samples[0].motion_confidence == 1.0
+    assert observed.export.samples[0].dynamic_state is DynamicState.UNKNOWN
+
+
 def test_a1_occlusion_is_neutral_and_uses_before_geometry() -> None:
     readout = LifecycleOverlayReadout("room0", config(ExecutionProfile.A1))
     empty = view(0, -1, 0.0)
@@ -246,7 +283,11 @@ def test_a1_visible_absence_becomes_dormant_then_same_v1_id_reactivates() -> Non
     process(readout, frame(0, 1.025), empty, present0, (7,))
 
     absent1 = view(2, 1, 1.0, (entity(7),))
-    process(readout, frame(1, 2.0), present0, absent1, ())
+    absent_result = process(readout, frame(1, 2.0), present0, absent1, ())
+    assert absent_result.export.samples == ()
+    assert len(absent_result.export.events) == 1
+    assert absent_result.export.events[0].evidence_kind.value == "visible_absent"
+    assert absent_result.export.events[0].readout_valid is False
     absent2 = view(3, 2, 2.0, (entity(7),))
     dormant = process(readout, frame(2, 2.0), absent1, absent2, ())
     assert dormant.dormant_entity_ids == (7,)
@@ -285,6 +326,30 @@ def test_transactional_publication_keeps_state_identity_on_failure(monkeypatch) 
         process(readout, frame(0, 1.025), before, after, (7,))
 
     assert readout.state is old_state
+
+
+def test_transaction_retry_is_byte_identical_including_export_tracker(monkeypatch) -> None:
+    readout = LifecycleOverlayReadout("room0", config(ExecutionProfile.A1))
+    before = view(0, -1, 0.0)
+    after = view(1, 0, 0.0, (entity(7),))
+    snapshot = readout.transaction_snapshot()
+    original_hook = readout._before_publish
+    monkeypatch.setattr(
+        readout,
+        "_before_publish",
+        lambda _state: (_ for _ in ()).throw(RuntimeError("injected")),
+    )
+    with pytest.raises(RuntimeError, match="injected"):
+        process(readout, frame(0, 1.025), before, after, (7,))
+    assert readout.transaction_snapshot() is snapshot
+
+    monkeypatch.setattr(readout, "_before_publish", original_hook)
+    retried = process(readout, frame(0, 1.025), before, after, (7,))
+
+    clean = LifecycleOverlayReadout("room0", config(ExecutionProfile.A1))
+    expected = process(clean, frame(0, 1.025), before, after, (7,))
+    assert retried.export.to_canonical_json() == expected.export.to_canonical_json()
+    assert retried.export.samples[0].observation_count == 1
 
 
 @pytest.mark.parametrize("kind", ["profile", "scene", "progress", "result", "timestamp"])
