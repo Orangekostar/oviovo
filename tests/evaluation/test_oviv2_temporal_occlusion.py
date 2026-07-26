@@ -1,6 +1,7 @@
 from collections.abc import Iterator, Mapping
 
 import numpy as np
+import pytest
 
 from src.evaluation.oviv2_temporal_occlusion import evaluate_temporal_occlusion
 from src.oviv2.temporal_snapshot import (
@@ -247,6 +248,103 @@ def test_unmapped_anchor_counts_as_miss_and_remains_in_macro_denominator() -> No
     }
 
 
+def test_apartment_anchor_coverage_gate_requires_53_of_66_unique_mappings() -> None:
+    arrays: dict[str, np.ndarray] = {}
+    episodes: list[dict[str, object]] = []
+    for index in range(66):
+        key = index if index < 53 else 100 if index == 53 else 200 + index
+        name = f"anchor-{index}"
+        arrays[name] = np.asarray([[key, 0, 0]], dtype=np.int64)
+        episodes.append(
+            {
+                "episode_id": name,
+                "scene": "apartment",
+                "object_id": index + 1,
+                "lifecycle": {
+                    "index": 0,
+                    "first_timestamp_ns": 0,
+                    "last_timestamp_ns": 2**64 - 1,
+                },
+                "anchor": {
+                    "frame_index": 0,
+                    "relative_timestamp_ns": 0,
+                    "array": name,
+                },
+                "checkpoints": [],
+            }
+        )
+    checkpoint = TemporalCompactCheckpoint(
+        metadata=TemporalSnapshotMetadata(
+            "apartment", 0, 0.0, 1, 0.05, "a" * 64
+        ),
+        entity_ids=np.arange(1, 56, dtype=np.int64),
+        lifecycle_codes=np.zeros(55, dtype=np.uint8),
+        existence_log_odds=np.ones(55, dtype=np.float64),
+        absent_streaks=np.zeros(55, dtype=np.int64),
+        distinct_view_bin_counts=np.zeros(55, dtype=np.int64),
+        object_to_world=np.repeat(np.eye(4)[None, :, :], 55, axis=0),
+        voxel_keys=np.asarray(
+            [[index, 0, 0] for index in range(53)]
+            + [[100, 0, 0], [100, 0, 0]],
+            dtype=np.int64,
+        ),
+        voxel_offsets=np.arange(56, dtype=np.int64),
+    )
+
+    result = evaluate_temporal_occlusion(
+        arrays=arrays,
+        metadata={"parameters": {"voxel_size_m": 0.05}, "episodes": episodes},
+        checkpoints={("apartment", 0): checkpoint},
+        scene="apartment",
+    )
+
+    assert result["macro"]["anchor_coverage_gate"] == {
+        "scene": "apartment",
+        "eligible_count": 66,
+        "uniquely_mapped_count": 53,
+        "zero_overlap_count": 12,
+        "ambiguous_count": 1,
+        "required_eligible_count": 66,
+        "required_mapped_count": 53,
+        "available": True,
+        "passed": True,
+        "reason": None,
+    }
+    assert len(result["anchor_mappings"]) == 66
+    assert sum(item["eligible"] for item in result["anchor_mappings"]) == 66
+    assert sum(
+        item["mapped_temporal_id"] is not None
+        for item in result["anchor_mappings"]
+    ) == 53
+
+
+def test_anchor_coverage_gate_is_unavailable_without_eligible_anchor_voxels() -> None:
+    arrays, metadata = _target()
+    arrays["probe.anchor"] = np.empty((0, 3), dtype=np.int64)
+    metadata = dict(metadata)
+    metadata["episodes"] = [metadata["episodes"][1]]
+
+    result = evaluate_temporal_occlusion(
+        arrays=arrays,
+        metadata=metadata,
+        checkpoints={("apartment", 2): _checkpoint(2, 2)},
+        scene="apartment",
+    )
+
+    assert result["macro"]["anchor_coverage_gate"] == {
+        "scene": "apartment",
+        "eligible_count": 0,
+        "uniquely_mapped_count": 0,
+        "zero_overlap_count": 0,
+        "ambiguous_count": 0,
+        "required_eligible_count": 66,
+        "required_mapped_count": 53,
+        "available": False,
+        "passed": False,
+        "reason": "no_eligible_anchor_mappings",
+    }
+
+
 def test_multiple_occlusion_episodes_share_one_lifecycle_anchor() -> None:
     arrays, metadata = _target()
     repeated = dict(metadata["episodes"][0])
@@ -262,6 +360,55 @@ def test_multiple_occlusion_episodes_share_one_lifecycle_anchor() -> None:
     assert len([item for item in result["events"] if item["kind"] == "occluded"]) == 2
     assert len([item for item in result["events"] if item["kind"] == "absent"]) == 1
     assert result["macro"]["anchor_mapping_coverage"]["total"] == 1
+
+
+def test_lifecycle_anchor_accepts_different_array_names_with_same_voxels() -> None:
+    arrays, metadata = _target()
+    arrays["life0.anchor"] = np.asarray([[0, 0, 0], [1, 0, 0]], dtype=np.int64)
+    arrays["life0-repeat.anchor"] = arrays["life0.anchor"][::-1].copy()
+    repeated = dict(metadata["episodes"][0])
+    repeated["episode_id"] = "life0-repeat"
+    repeated["anchor"] = dict(
+        repeated["anchor"], array="life0-repeat.anchor"
+    )
+    metadata = dict(metadata)
+    metadata["episodes"] = [metadata["episodes"][0], repeated]
+
+    result = evaluate_temporal_occlusion(
+        arrays=arrays,
+        metadata=metadata,
+        checkpoints={
+            ("apartment", 0): _checkpoint(0, 0),
+            ("apartment", 1): _checkpoint(1, 1),
+        },
+        scene="apartment",
+    )
+
+    assert len([item for item in result["events"] if item["kind"] == "occluded"]) == 2
+    assert result["macro"]["anchor_mapping_coverage"]["total"] == 1
+
+
+def test_lifecycle_anchor_rejects_different_voxels_across_episodes() -> None:
+    arrays, metadata = _target()
+    arrays["life0-repeat.anchor"] = np.asarray([[1, 0, 0]], dtype=np.int64)
+    repeated = dict(metadata["episodes"][0])
+    repeated["episode_id"] = "life0-repeat"
+    repeated["anchor"] = dict(
+        repeated["anchor"], array="life0-repeat.anchor"
+    )
+    metadata = dict(metadata)
+    metadata["episodes"] = [metadata["episodes"][0], repeated]
+
+    with pytest.raises(
+        ValueError,
+        match="target lifecycle anchor is inconsistent across episodes",
+    ):
+        evaluate_temporal_occlusion(
+            arrays=arrays,
+            metadata=metadata,
+            checkpoints={},
+            scene="apartment",
+        )
 
 
 def test_finite_lifecycle_without_reappearance_gets_absent_probe_not_reactivation() -> None:

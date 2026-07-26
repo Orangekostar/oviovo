@@ -39,6 +39,111 @@ def _tree(path: Path, root: Path) -> dict[str, object]:
     return {"path": path.relative_to(root).as_posix(), "sha256": digest.hexdigest(), "byte_count": size}
 
 
+def _install_mechanism_sources(
+    run: Path, *, profile: str = "a4", scene: str = "apartment"
+) -> dict[str, object]:
+    trajectories = run / "trajectories.jsonl"
+    trajectories.write_text(
+        "\n".join(
+            json.dumps(
+                {
+                    "frame_index": frame,
+                    "timestamp_ns": 100 + frame * 100_000_000,
+                    "entity_id": "7",
+                    "centroid_xyz": [0.0, 0.0, 0.0],
+                    "observation_count": frame + 1,
+                    "dynamic_state": "dynamic",
+                    "motion_confidence": 1.0,
+                    "geometry_epoch": frame,
+                    "readout_valid": frame == 0,
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+            for frame in (0, 1)
+        )
+        + "\n"
+    )
+    lifecycle = run / "lifecycle_transitions.jsonl"
+    lifecycle.write_text(
+        json.dumps(
+            {
+                "frame_index": 1,
+                "timestamp_ns": 100_000_100,
+                "entity_id": "7",
+                "before": "active",
+                "after": "uncertain",
+                "evidence": "visible_absent",
+                "geometry_epoch": 1,
+                "readout_valid": False,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        + "\n"
+    )
+    coverage = run / "temporal_frame_coverage.jsonl"
+    coverage.write_text(
+        "\n".join(
+            json.dumps(
+                {
+                    "frame_index": frame,
+                    "timestamp_ns": 100 + frame * 100_000_000,
+                    "record_count": 1,
+                    "event_count": frame,
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+            for frame in (0, 1)
+        )
+        + "\n"
+    )
+    counters = {
+        "proposal_opportunity_count": 3,
+        "proposal_trigger_count": 2,
+        "reid_opportunity_count": 4,
+        "reid_trigger_count": 3,
+        "motion_rejection_count": 1,
+        "ledger_rejection_count": 0,
+        "identity_expiry_count": 1,
+        "geometry_reclaim_count": 1,
+        "epoch_reset_opportunity_count": 2,
+        "epoch_reset_trigger_count": 1,
+        "icp_opportunity_count": 2,
+        "icp_accept_count": 1,
+        "icp_reject_count": 1,
+        "ledger_stage_count": 2,
+        "ledger_commit_count": 2,
+        "ledger_reclaim_count": 1,
+    }
+    diagnostics = run / "runtime_diagnostics.json"
+    _json(
+        diagnostics,
+        {
+            "schema_version": 1,
+            "execution_profile": profile,
+            "processed_frame_count": 2,
+            "counters": counters,
+        },
+    )
+    source_index = run / "source_index.json"
+    payload = {
+        "schema_version": 1,
+        "dataset": "TESSE-CD",
+        "mode": "causal_checkpoint_exports",
+        "method": "OVIV2",
+        "scene": scene,
+        "trajectories": _record(trajectories, run),
+        "frame_coverage": _record(coverage, run),
+        "lifecycle_transitions": _record(lifecycle, run),
+        "runtime_diagnostics": _record(diagnostics, run),
+        "cached_mechanism_passed": True,
+    }
+    _json(source_index, payload)
+    return _record(source_index, run)
+
+
 def _fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
     dataset = tmp_path / "dataset"; dataset.mkdir()
     schedule = dataset / "schedule.json"; _json(schedule, {"schedule": "fixture"})
@@ -126,7 +231,8 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
     index_path = run / "occlusion_checkpoint_index.json"; _json(index_path, index)
     manifest = {"schema_version": 2, "protocol_id": "oviv2-tessecd-v2", "dataset": "TESSE-CD",
                 "method_id": "OVIV2", "scene": "apartment", **common,
-                "occlusion_checkpoint_index": _record(index_path, run)}
+                "occlusion_checkpoint_index": _record(index_path, run),
+                "source_index": _install_mechanism_sources(run)}
     _json(run / "run_manifest.json", manifest)
     return target_path, index_path, dataset
 
@@ -173,6 +279,7 @@ def _office_index_from_fixture(
     }
     manifest["schema_version"] = 2
     manifest["occlusion_checkpoint_index"] = _record(index_path, run)
+    manifest["source_index"] = _install_mechanism_sources(run, scene="office")
     _json(run / "run_manifest.json", manifest)
     return index_path
 
@@ -185,10 +292,76 @@ def test_cli_evaluates_overlap_compact_and_publishes_canonical_no_replace(tmp_pa
     )
     assert result["events"][0]["counts"]["retained"] == 1
     assert result["input_bindings"]["maximum_cached_checkpoints"] == 1
+    assert result["mechanism_telemetry"] == result["macro"]["mechanism_telemetry"]
+    assert result["mechanism_telemetry"]["readout_invalidation"] == {
+        "opportunities": 1,
+        "triggers": 1,
+        "available": True,
+        "passed": True,
+        "reason": None,
+        "source": _record(index.parent / "lifecycle_transitions.jsonl", index.parent),
+    }
+    assert set(result["mechanism_telemetry"]) == {
+        "absence",
+        "readout_invalidation",
+        "proposal_recovery",
+        "epoch_reset",
+        "background_release",
+        "background_reclaim",
+        "eligible_reid",
+        "icp_attempt",
+        "icp_accept",
+        "motion_rejection",
+    }
     assert json.loads(output.read_text()) == result
     with pytest.raises(FileExistsError):
         evaluate_temporal_occlusion_package(
             targets=target, checkpoints=[index], dataset_root=dataset, output=output
+        )
+
+
+def test_mechanism_zero_opportunity_is_unavailable_and_cannot_pass(
+    tmp_path: Path,
+) -> None:
+    target, index, dataset = _fixture(tmp_path)
+    run = index.parent
+    diagnostics_path = run / "runtime_diagnostics.json"
+    diagnostics = json.loads(diagnostics_path.read_text())
+    diagnostics["counters"] = {
+        key: 0 for key in diagnostics["counters"]
+    }
+    _json(diagnostics_path, diagnostics)
+    source_index_path = run / "source_index.json"
+    source_index = json.loads(source_index_path.read_text())
+    source_index["runtime_diagnostics"] = _record(diagnostics_path, run)
+    source_index["cached_mechanism_passed"] = True
+    _json(source_index_path, source_index)
+    manifest_path = run / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["source_index"] = _record(source_index_path, run)
+    _json(manifest_path, manifest)
+
+    result = evaluate_temporal_occlusion_package(
+        targets=target, checkpoints=[index], dataset_root=dataset
+    )
+
+    assert result["mechanism_telemetry"]["proposal_recovery"] == {
+        "opportunities": 0,
+        "triggers": 0,
+        "available": False,
+        "passed": False,
+        "reason": "no_opportunity",
+        "source": _record(diagnostics_path, run),
+    }
+
+
+def test_package_rejects_runtime_diagnostics_hash_drift(tmp_path: Path) -> None:
+    target, index, dataset = _fixture(tmp_path)
+    (index.parent / "runtime_diagnostics.json").write_bytes(b"{}\n")
+
+    with pytest.raises(ValueError, match="runtime_diagnostics source binding mismatch"):
+        evaluate_temporal_occlusion_package(
+            targets=target, checkpoints=[index], dataset_root=dataset
         )
 
 

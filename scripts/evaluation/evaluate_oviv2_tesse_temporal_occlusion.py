@@ -26,6 +26,7 @@ if str(REPO_ROOT) not in sys.path:
 from src.evaluation.oviv2_temporal_occlusion import (  # noqa: E402
     EVALUATION_FORMAT,
     evaluate_temporal_occlusion,
+    mechanism_telemetry_from_sources,
 )
 from src.oviv2.temporal_snapshot import (  # noqa: E402
     TEMPORAL_COMPACT_FORMAT,
@@ -300,7 +301,82 @@ def _tree_record(path: Path, root: Path) -> dict[str, Any]:
     return {"path": path.relative_to(root).as_posix(), "sha256": digest.hexdigest(), "byte_count": count}
 
 
-def _load_index(index_path: Path, target_record: Mapping[str, Any], metadata: Mapping[str, Any], sources: Mapping[str, Any], source_frame_times: Mapping[tuple[str, int], tuple[int, int]]) -> tuple[dict[tuple[str, int], _CompactBinding], dict[tuple[str, int], int], dict[str, Any], dict[str, Any], list[Any]]:
+def _json_lines(content: bytes, label: str) -> list[dict[str, Any]]:
+    try:
+        lines = content.decode().splitlines()
+    except UnicodeDecodeError as error:
+        raise ValueError(f"invalid {label}") from error
+    records = []
+    for number, line in enumerate(lines, start=1):
+        if not line.strip():
+            continue
+        value = _json(line.encode(), f"{label} line {number}")
+        records.append(value)
+    return records
+
+
+def _load_mechanism_sources(
+    run_root: Path,
+    run: Mapping[str, Any],
+    scene: str,
+) -> tuple[dict[str, dict[str, Any]], list[Any]]:
+    source_index_record = run.get("source_index")
+    if not isinstance(source_index_record, Mapping) or set(source_index_record) != {
+        "path", "sha256", "byte_count"
+    }:
+        raise ValueError("run manifest mechanism source index is missing")
+    source_index_path = run_root / _relative(
+        source_index_record["path"], "mechanism source index"
+    )
+    source_index_content, source_index_witness = _read(
+        source_index_path, "mechanism source index"
+    )
+    if not _valid_record(source_index_record, source_index_content):
+        raise ValueError("mechanism source index binding mismatch")
+    source_index = _json(source_index_content, "mechanism source index")
+    if not (
+        source_index.get("schema_version") == 1
+        and source_index.get("dataset") == "TESSE-CD"
+        and source_index.get("method") == "OVIV2"
+        and source_index.get("scene") == scene
+    ):
+        raise ValueError("mechanism source index identity mismatch")
+    contents: dict[str, bytes] = {}
+    records: dict[str, dict[str, Any]] = {}
+    witnesses: list[Any] = [(source_index_path, source_index_witness)]
+    for role in (
+        "trajectories", "lifecycle_transitions", "frame_coverage",
+        "runtime_diagnostics",
+    ):
+        record = source_index.get(role)
+        if not isinstance(record, Mapping) or set(record) != {
+            "path", "sha256", "byte_count"
+        }:
+            raise ValueError(f"{role} source record is not exact")
+        path = run_root / _relative(record["path"], role)
+        content, witness = _read(path, role)
+        if not _valid_record(record, content):
+            raise ValueError(f"{role} source binding mismatch")
+        contents[role] = content
+        records[role] = dict(record)
+        witnesses.append((path, witness))
+    telemetry = mechanism_telemetry_from_sources(
+        trajectories=_json_lines(contents["trajectories"], "trajectories"),
+        lifecycle_transitions=_json_lines(
+            contents["lifecycle_transitions"], "lifecycle transitions"
+        ),
+        frame_coverage=_json_lines(
+            contents["frame_coverage"], "frame coverage"
+        ),
+        runtime_diagnostics=_json(
+            contents["runtime_diagnostics"], "runtime diagnostics"
+        ),
+        source_records=records,
+    )
+    return telemetry, witnesses
+
+
+def _load_index(index_path: Path, target_record: Mapping[str, Any], metadata: Mapping[str, Any], sources: Mapping[str, Any], source_frame_times: Mapping[tuple[str, int], tuple[int, int]]) -> tuple[dict[tuple[str, int], _CompactBinding], dict[tuple[str, int], int], dict[str, Any], dict[str, Any], dict[str, dict[str, Any]], list[Any]]:
     run_root = index_path.parent
     index_content, index_witness = _read(index_path, "occlusion checkpoint index")
     index = _json(index_content, "occlusion checkpoint index")
@@ -323,6 +399,9 @@ def _load_index(index_path: Path, target_record: Mapping[str, Any], metadata: Ma
         and run.get("scene") == index["scene"]
     ):
         raise ValueError("sibling run manifest identity mismatch")
+    mechanism_telemetry, mechanism_witnesses = _load_mechanism_sources(
+        run_root, run, index["scene"]
+    )
     record = run.get("occlusion_checkpoint_index")
     if not isinstance(record, Mapping) or set(record) != {"path", "sha256", "byte_count"} or record["path"] != index_path.name or not _valid_record(record, index_content):
         raise ValueError("run manifest index binding mismatch")
@@ -348,6 +427,7 @@ def _load_index(index_path: Path, target_record: Mapping[str, Any], metadata: Ma
         _DirectoryIdentityWitness.capture(run_root),
         (index_path, index_witness),
         (run_root / "run_manifest.json", run_witness),
+        *mechanism_witnesses,
     ]
     for item in records:
         if not isinstance(item, Mapping) or set(item) != _CHECKPOINT_FIELDS: raise ValueError("checkpoint fields are not exact")
@@ -390,7 +470,10 @@ def _load_index(index_path: Path, target_record: Mapping[str, Any], metadata: Ma
         relative_times[key] = item["relative_timestamp_ns"]
     if [item["frame_index"] for item in records] != sorted(required):
         raise ValueError("checkpoint frames must exactly match target order")
-    return checkpoints, relative_times, index, _content_record(index_content), witnesses
+    return (
+        checkpoints, relative_times, index, _content_record(index_content),
+        mechanism_telemetry, witnesses,
+    )
 
 
 def _revalidate(witnesses: Sequence[Any]) -> None:
@@ -539,13 +622,14 @@ def evaluate_temporal_occlusion_package(*, targets: str | Path, checkpoints: Seq
     relative_times: dict[tuple[str, int], int] = {}
     indexes = []
     index_records = []
+    telemetry_by_scene: dict[str, dict[str, dict[str, Any]]] = {}
     cross_scene_authority = (
         "schema_version", "format", "protocol_id", "dataset", "method_id",
         "algorithm_hash", "schedule", "target_manifest", "input_sha256",
         "code_commit", "source_bindings",
     )
     for candidate in checkpoints:
-        values, times, index, index_record, index_witnesses = _load_index(
+        values, times, index, index_record, mechanism_telemetry, index_witnesses = _load_index(
             Path(candidate).absolute(), target_record, metadata, sources, source_frame_times
         )
         if indexes and any(
@@ -554,11 +638,13 @@ def evaluate_temporal_occlusion_package(*, targets: str | Path, checkpoints: Seq
             raise ValueError("cross-scene authority mismatch")
         if set(bindings) & set(values): raise ValueError("duplicate checkpoint indexes")
         bindings.update(values); indexes.append(index); index_records.append(index_record)
+        telemetry_by_scene[index["scene"]] = mechanism_telemetry
         witnesses.extend(index_witnesses)
         relative_times.update(times)
     loaded = _LazyCheckpoints(bindings)
     results = [evaluate_temporal_occlusion(arrays=arrays, metadata=metadata, checkpoints=loaded,
-               checkpoint_relative_timestamp_ns=relative_times, scene=index["scene"]) for index in indexes]
+               checkpoint_relative_timestamp_ns=relative_times, scene=index["scene"],
+               mechanism_telemetry=telemetry_by_scene[index["scene"]]) for index in indexes]
     result = results[0] if len(results) == 1 else {"format": EVALUATION_FORMAT, "scenes": results}
     result["input_bindings"] = {"target_manifest": dict(target_record),
                                 "indexes": index_records,
