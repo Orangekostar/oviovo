@@ -351,7 +351,10 @@ def test_reference_failure_restores_nested_external_refs_and_retry_exactness(
     assert temporal_state_sha256(reference) == temporal_state_sha256(clean_reference)
 
 
-def test_failure_restores_initially_readonly_owning_array_and_retry_exactness() -> None:
+@pytest.mark.parametrize("mutation", ("resize", "dtype", "resize_dtype"))
+def test_failure_restores_initially_readonly_owning_array_and_retry_exactness(
+    mutation: str,
+) -> None:
     fail_next = [True]
 
     class ReadonlyInputFailure(Oviv2Runtime):
@@ -359,13 +362,23 @@ def test_failure_restores_initially_readonly_owning_array_and_retry_exactness() 
             if fail_next[0]:
                 fail_next[0] = False
                 frame.rgb.flags.writeable = True
-                frame.rgb[0, 0, 0] = 255
+                if mutation == "resize":
+                    frame.rgb.resize((1,), refcheck=False)
+                elif mutation == "dtype":
+                    frame.rgb.resize((76,), refcheck=False)
+                    frame.rgb.dtype = np.uint32
+                else:
+                    frame.rgb.resize((76,), refcheck=False)
+                    frame.rgb.dtype = np.uint32
+                    frame.rgb.resize((1,), refcheck=False)
+                frame.rgb.flat[0] = 255
                 raise RuntimeError("injected readonly input failure")
             return super().process_frame(frame, observations, dense_semantics)
 
     frame = _frame()
     frame.rgb.flags.writeable = False
     original_rgb = frame.rgb.tobytes()
+    original_structure = (frame.rgb.dtype, frame.rgb.shape, frame.rgb.strides)
     cumulative = _cumulative(runtime_type=ReadonlyInputFailure)
     temporal = TemporalCurrentRuntime(
         "scene", _temporal_config(), LocalTrackerConfig(confirm_hits=2)
@@ -385,6 +398,7 @@ def test_failure_restores_initially_readonly_owning_array_and_retry_exactness() 
     with pytest.raises(RuntimeError, match="injected readonly input failure"):
         runtime.process_frame(frame, ())
     assert frame.rgb.tobytes() == original_rgb
+    assert (frame.rgb.dtype, frame.rgb.shape, frame.rgb.strides) == original_structure
     assert frame.rgb.flags.writeable is False
     assert temporal.state is state
     assert all(

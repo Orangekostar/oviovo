@@ -265,6 +265,10 @@ class _ArraySnapshot:
     array: np.ndarray
     content: np.ndarray
     writeable_chain: tuple[tuple[np.ndarray, bool], ...]
+    dtype: np.dtype
+    shape: tuple[int, ...]
+    strides: tuple[int, ...]
+    owns_data: bool
 
     @classmethod
     def capture(cls, array: np.ndarray) -> "_ArraySnapshot":
@@ -275,18 +279,49 @@ class _ArraySnapshot:
             seen.add(id(current))
             chain.append((current, bool(current.flags.writeable)))
             current = current.base
-        return cls(array, np.array(array, copy=True), tuple(chain))
+        return cls(
+            array,
+            np.array(array, copy=True),
+            tuple(chain),
+            array.dtype,
+            array.shape,
+            array.strides,
+            bool(array.flags.owndata),
+        )
 
     def restore(self) -> None:
         changed = (
-            self.array.dtype != self.content.dtype
-            or self.array.shape != self.content.shape
+            self.array.dtype != self.dtype
+            or self.array.shape != self.shape
+            or self.array.strides != self.strides
             or self.array.tobytes(order="C") != self.content.tobytes(order="C")
         )
         try:
             if changed:
                 for array, _ in reversed(self.writeable_chain):
                     array.flags.writeable = True
+                try:
+                    if self.array.dtype != self.dtype or self.array.shape != self.shape:
+                        if self.owns_data:
+                            if not self.array.flags.owndata:
+                                raise RuntimeError("owning ndarray lost data ownership")
+                            self.array.resize((0,), refcheck=False)
+                            if self.array.dtype != self.dtype:
+                                self.array.dtype = self.dtype
+                            self.array.resize(self.shape, refcheck=False)
+                        else:
+                            if self.array.dtype != self.dtype:
+                                self.array.dtype = self.dtype
+                            if self.array.shape != self.shape:
+                                self.array.shape = self.shape
+                    if self.array.strides != self.strides:
+                        self.array.strides = self.strides
+                    if self.array.strides != self.strides:
+                        raise RuntimeError("ndarray strides cannot be restored in place")
+                except (TypeError, ValueError) as exc:
+                    raise RuntimeError(
+                        "ndarray structure cannot be restored in place"
+                    ) from exc
                 np.copyto(self.array, self.content, casting="no")
         finally:
             for array, writeable in self.writeable_chain:
