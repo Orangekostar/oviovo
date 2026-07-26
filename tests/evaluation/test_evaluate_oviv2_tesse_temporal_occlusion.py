@@ -292,6 +292,12 @@ def test_cli_evaluates_overlap_compact_and_publishes_canonical_no_replace(tmp_pa
     )
     assert result["events"][0]["counts"]["retained"] == 1
     assert result["input_bindings"]["maximum_cached_checkpoints"] == 1
+    assert result["input_bindings"]["source_indexes"] == [
+        {
+            "scene": "apartment",
+            **_record(index.parent / "source_index.json", index.parent),
+        }
+    ]
     assert result["mechanism_telemetry"] == result["macro"]["mechanism_telemetry"]
     assert result["mechanism_telemetry"]["readout_invalidation"] == {
         "opportunities": 1,

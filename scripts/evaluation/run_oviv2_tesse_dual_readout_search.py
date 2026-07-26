@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Callable, Mapping, Sequence
+import copy
 import hashlib
 import json
 import math
@@ -35,6 +36,58 @@ from src.oviv2.temporal_config import (  # noqa: E402
 
 CommandBuilder = Callable[[Path, Path, str], tuple[str, ...]]
 _CANDIDATE_IDS = ("a0", "a1", "a2", "a3", "a4")
+_GPU_LANES = {
+    "lane0": ["a0", "a1"],
+    "lane1": ["a2"],
+    "lane2": ["a3", "a4"],
+}
+_LANE_BY_CANDIDATE = {
+    candidate_id: lane
+    for lane, candidate_ids in enumerate(_GPU_LANES.values())
+    for candidate_id in candidate_ids
+}
+_PARAMETER_SPACE_PROFILES = {
+    "lifecycle.minimum_absent_streak": ("a1", "a2", "a3", "a4"),
+    "proposal.minimum_depth_residual_m": ("a2", "a3", "a4"),
+    "dynamic_state.minimum_motion_confidence": ("a2", "a3", "a4"),
+    "identity.minimum_reid_similarity": ("a4",),
+    "identity.maximum_reid_distance_m": ("a4",),
+    "motion.minimum_translation_confidence": ("a2", "a3", "a4"),
+    "motion.maximum_translation_residual_m": ("a2", "a3", "a4"),
+    "background_ledger.commit_support_frames": ("a3", "a4"),
+    "background_ledger.commit_distinct_view_bins": ("a3", "a4"),
+}
+_MECHANISMS_BY_PROFILE = {
+    "a0": (),
+    "a1": ("absence", "readout_invalidation"),
+    "a2": (
+        "absence",
+        "readout_invalidation",
+        "proposal_recovery",
+        "epoch_reset",
+        "motion_rejection",
+    ),
+    "a3": (
+        "absence",
+        "readout_invalidation",
+        "proposal_recovery",
+        "epoch_reset",
+        "motion_rejection",
+        "background_release",
+        "background_reclaim",
+    ),
+    "a4": (
+        "absence",
+        "readout_invalidation",
+        "proposal_recovery",
+        "epoch_reset",
+        "motion_rejection",
+        "background_release",
+        "background_reclaim",
+        "eligible_reid",
+        "icp",
+    ),
+}
 _METRIC_DIRECTIONS = {
     "background_f5_cm": "maximize",
     "change_f1": "maximize",
@@ -56,6 +109,82 @@ _PROMOTION_ORDER = [
     "change_f1",
     "runtime_seconds",
     "config_sha256",
+]
+_METRIC_GATES = {
+    "apartment_anchor_coverage": {
+        "minimum_mapped_anchors": 53,
+        "eligible_anchors": 66,
+    },
+    "non_inferiority": ["object_f1", "current_miou"],
+    "strict_improvement": [
+        "dynamic_f1",
+        "change_f1",
+        "ghost_rate",
+        "background_f5_cm",
+        "recovery_frames",
+    ],
+    "weighted_compensation_allowed": False,
+}
+_T4_BOUNDS = {
+    "total_runtime_s_per_frame": 6.42,
+    "query_mean_ms": 11.92,
+    "query_p95_ms": 12.12,
+    "peak_gpu_gb": 12.76,
+    "peak_ram_gb": 9.36,
+    "final_map_mb": 46.77,
+}
+_LAUNCH_GATES = {
+    "preflight_manifest_id": "oviv2_dual_readout_search_preflight_v1",
+    "short_prefix_required": True,
+    "required_evidence": [
+        "frame_coverage",
+        "future_leakage",
+        "anchor_coverage",
+        "mechanisms",
+    ],
+    "future_leakage_max_count": 0,
+}
+_DIAGNOSTIC_CANDIDATES = [
+    {
+        "candidate_id": "diag_a2_no_proposal_recovery",
+        "base_profile": "a2",
+        "ablation": "without_proposal_recovery",
+        "diagnostic": True,
+        "selectable": False,
+        "runnable": False,
+        "reason": "unsupported_runtime_control",
+        "required_runtime_control": "proposal_recovery_enabled",
+    },
+    {
+        "candidate_id": "diag_a3_masking_only_no_ledger",
+        "base_profile": "a3",
+        "ablation": "masking_only_without_reversible_ledger",
+        "diagnostic": True,
+        "selectable": False,
+        "runnable": False,
+        "reason": "unsupported_runtime_control",
+        "required_runtime_control": "background_mode_masking_only",
+    },
+    {
+        "candidate_id": "diag_a4_no_dormant_candidates",
+        "base_profile": "a4",
+        "ablation": "without_dormant_candidates",
+        "diagnostic": True,
+        "selectable": False,
+        "runnable": False,
+        "reason": "unsupported_runtime_control",
+        "required_runtime_control": "dormant_reid_enabled",
+    },
+    {
+        "candidate_id": "diag_a4_translation_only_no_icp",
+        "base_profile": "a4",
+        "ablation": "translation_only_without_icp",
+        "diagnostic": True,
+        "selectable": False,
+        "runnable": False,
+        "reason": "unsupported_runtime_control",
+        "required_runtime_control": "icp_enabled",
+    },
 ]
 _INPUT_BINDING_FIELDS = (
     "dense_manifest",
@@ -167,36 +296,47 @@ def _exact_keys(value: Mapping[str, Any], expected: set[str], label: str) -> Non
 
 
 def _profile_components(profile: ExecutionProfile) -> dict[str, str]:
-    return {
-        "association_mode": profile.association_mode,
-        "background_mode": profile.background_mode,
-        "geometry_mode": profile.geometry_mode,
-        "lifecycle_mode": profile.lifecycle_mode,
-        "motion_mode": profile.motion_mode,
-    }
+    return profile.components
 
 
-def _validate_bounds(bounds: object) -> dict[str, list[float | int]]:
-    if not isinstance(bounds, dict) or not bounds:
-        raise ValueError("parameter_bounds must be a non-empty object")
-    result: dict[str, list[float | int]] = {}
-    for name, interval in bounds.items():
-        if not isinstance(name, str) or "." not in name:
-            raise ValueError("parameter bound names must be group.field strings")
-        if not isinstance(interval, list) or len(interval) != 2:
-            raise ValueError(f"parameter bound must have two endpoints: {name}")
-        lower, upper = interval
-        if any(
-            isinstance(value, bool)
-            or not isinstance(value, (int, float))
-            or not math.isfinite(float(value))
-            for value in interval
+def _validate_parameter_spaces(spaces: object) -> dict[str, dict[str, Any]]:
+    if not isinstance(spaces, dict) or set(spaces) != set(_PARAMETER_SPACE_PROFILES):
+        unknown = (
+            sorted(set(spaces) - set(_PARAMETER_SPACE_PROFILES))
+            if isinstance(spaces, dict)
+            else []
+        )
+        missing = (
+            sorted(set(_PARAMETER_SPACE_PROFILES) - set(spaces))
+            if isinstance(spaces, dict)
+            else []
+        )
+        raise ValueError(
+            f"parameter_spaces keys mismatch; missing={missing}, unknown={unknown}"
+        )
+    for name, space in spaces.items():
+        if not isinstance(space, dict):
+            raise ValueError(f"parameter_spaces entry must be an object: {name}")
+        _exact_keys(space, {"profiles", "values"}, f"parameter_spaces.{name}")
+        expected_profiles = list(_PARAMETER_SPACE_PROFILES[name])
+        if space["profiles"] != expected_profiles:
+            raise ValueError(f"parameter_spaces field is profile-incompatible: {name}")
+        values = space["values"]
+        if (
+            not isinstance(values, list)
+            or not 1 <= len(values) <= 3
+            or len({_canonical_json(value) for value in values}) != len(values)
+            or any(
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not math.isfinite(float(value))
+                for value in values
+            )
         ):
-            raise ValueError(f"parameter bounds must be finite numbers: {name}")
-        if lower > upper:
-            raise ValueError(f"parameter bound is reversed: {name}")
-        result[name] = interval
-    return result
+            raise ValueError(
+                f"parameter_spaces values are not narrow finite discrete values: {name}"
+            )
+    return spaces
 
 
 def _validate_manifest(payload: dict[str, Any]) -> dict[str, Any]:
@@ -212,11 +352,17 @@ def _validate_manifest(payload: dict[str, Any]) -> dict[str, Any]:
             "transfer_scene",
             "transfer_policy",
             "minimum_available_ram_bytes_per_candidate",
-            "parameter_bounds",
+            "parameter_spaces",
             "metric_directions",
             "metric_policy",
+            "metric_gates",
+            "t4_bounds",
+            "profile_fallback_order",
             "promotion_order",
             "hard_gates",
+            "launch_gates",
+            "gpu_lanes",
+            "diagnostic_candidates",
             "candidates",
         },
         "search manifest",
@@ -256,6 +402,18 @@ def _validate_manifest(payload: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("metric_policy does not match the frozen contract")
     if payload["promotion_order"] != _PROMOTION_ORDER:
         raise ValueError("promotion_order does not match the frozen contract")
+    if payload["metric_gates"] != _METRIC_GATES:
+        raise ValueError("metric_gates do not match the frozen contract")
+    if payload["t4_bounds"] != _T4_BOUNDS:
+        raise ValueError("t4_bounds do not match the frozen contract")
+    if payload["profile_fallback_order"] != ["a4", "a3", "a2"]:
+        raise ValueError("profile_fallback_order does not match the frozen contract")
+    if payload["launch_gates"] != _LAUNCH_GATES:
+        raise ValueError("launch_gates do not match the frozen contract")
+    if payload["gpu_lanes"] != _GPU_LANES:
+        raise ValueError("gpu_lanes do not match the frozen contract")
+    if payload["diagnostic_candidates"] != _DIAGNOSTIC_CANDIDATES:
+        raise ValueError("diagnostic_candidates do not match the fail-closed contract")
     hard_gates = payload["hard_gates"]
     if not isinstance(hard_gates, dict):
         raise ValueError("hard_gates must be an object")
@@ -275,14 +433,14 @@ def _validate_manifest(payload: dict[str, Any]) -> dict[str, Any]:
         != ["correctness", "causality", "determinism", "t1_exact"]
     ):
         raise ValueError("hard_gates do not match the frozen promotion contract")
-    bounds = _validate_bounds(payload["parameter_bounds"])
+    spaces = _validate_parameter_spaces(payload["parameter_spaces"])
     candidates = payload["candidates"]
     if not isinstance(candidates, list) or [
         item.get("candidate_id") if isinstance(item, dict) else None
         for item in candidates
     ] != list(_CANDIDATE_IDS):
         raise ValueError("candidates must predeclare exactly a0 through a4 in order")
-    expected_bound_names: set[str] | None = None
+    declarations: dict[str, dict[str, Any]] = {}
     for candidate in candidates:
         _exact_keys(
             candidate,
@@ -290,6 +448,7 @@ def _validate_manifest(payload: dict[str, Any]) -> dict[str, Any]:
             f"candidate {candidate['candidate_id']}",
         )
         profile = ExecutionProfile.from_id(candidate["candidate_id"])
+        declarations[profile.profile_id] = candidate
         if candidate["components"] != _profile_components(profile):
             raise ValueError(f"candidate {profile.profile_id} components are not canonical")
         parsed = temporal_config_from_json(
@@ -300,23 +459,25 @@ def _validate_manifest(payload: dict[str, Any]) -> dict[str, Any]:
         canonical_temporal = temporal_config_to_json(parsed)["temporal_readout"]
         if candidate["temporal_readout"] != canonical_temporal:
             raise ValueError(f"candidate {profile.profile_id} temporal config is not canonical")
-        candidate_bound_names: set[str] = set()
-        for group in ("lifecycle", "association", "geometry"):
-            values = candidate["temporal_readout"][group]
-            for name, value in values.items():
-                bound_name = f"{group}.{name}"
-                candidate_bound_names.add(bound_name)
-                if bound_name not in bounds:
-                    raise ValueError(f"candidate parameter has no bound: {bound_name}")
-                lower, upper = bounds[bound_name]
-                if not lower <= value <= upper:
-                    raise ValueError(f"candidate parameter is outside bounds: {bound_name}")
-        if expected_bound_names is None:
-            expected_bound_names = candidate_bound_names
-        elif candidate_bound_names != expected_bound_names:
-            raise ValueError("candidate parameter sets differ")
-    if set(bounds) != expected_bound_names:
-        raise ValueError("parameter_bounds must cover exactly all temporal numeric fields")
+    for field_name, space in spaces.items():
+        group, name = field_name.split(".", 1)
+        for profile_id in space["profiles"]:
+            declaration = declarations[profile_id]
+            value = declaration["temporal_readout"][group][name]
+            if value not in space["values"]:
+                raise ValueError(
+                    f"candidate parameter is outside discrete space: {profile_id}.{field_name}"
+                )
+            for alternative in space["values"]:
+                temporal = copy.deepcopy(declaration["temporal_readout"])
+                temporal[group][name] = alternative
+                try:
+                    temporal_config_from_json({"temporal_readout": temporal})
+                except (TypeError, ValueError) as exc:
+                    raise ValueError(
+                        f"parameter_spaces value is not a legal production config: "
+                        f"{profile_id}.{field_name}={alternative!r}"
+                    ) from exc
     return payload
 
 
@@ -377,6 +538,203 @@ def _materialize_config(
     if input_binding_values_sha256(config) != input_binding_values_sha256(base):
         raise ValueError("candidate changed input binding values")
     return config
+
+
+def _exact_integer_list(value: object, label: str) -> list[int]:
+    if (
+        not isinstance(value, list)
+        or any(isinstance(item, bool) or not isinstance(item, int) or item < 0 for item in value)
+        or len(value) != len(set(value))
+        or value != sorted(value)
+    ):
+        raise ValueError(f"{label} must be unique sorted nonnegative integers")
+    return value
+
+
+def _validate_mechanism_record(value: object, label: str) -> None:
+    if not isinstance(value, dict):
+        raise ValueError(f"{label} must be an object")
+    _exact_keys(
+        value,
+        {"opportunity_count", "trigger_count", "opportunity_records", "trigger_records"},
+        label,
+    )
+    for count_name, records_name in (
+        ("opportunity_count", "opportunity_records"),
+        ("trigger_count", "trigger_records"),
+    ):
+        count = value[count_name]
+        records = value[records_name]
+        if (
+            isinstance(count, bool)
+            or not isinstance(count, int)
+            or count <= 0
+            or not isinstance(records, list)
+            or len(records) != count
+            or len(records) != len(set(records))
+            or any(not isinstance(item, str) or not item for item in records)
+        ):
+            raise ValueError(f"{label}.{count_name} does not match nonempty records")
+    if value["trigger_count"] > value["opportunity_count"]:
+        raise ValueError(f"{label}.trigger_count exceeds opportunity_count")
+
+
+def _validate_preflight_gate_evidence(
+    path: Path,
+    *,
+    manifest_bytes: bytes,
+    apartment_bytes: bytes,
+    apartment: Mapping[str, Any],
+    declarations: Mapping[str, Mapping[str, Any]],
+    selected_ids: tuple[str, ...],
+) -> dict[str, Any]:
+    evidence, evidence_bytes = _load_json(path.absolute(), "preflight gate evidence")
+    _exact_keys(
+        evidence,
+        {"schema_version", "manifest_id", "scene", "bindings", "candidates"},
+        "preflight gate evidence",
+    )
+    if (
+        evidence["schema_version"] != 1
+        or evidence["manifest_id"] != _LAUNCH_GATES["preflight_manifest_id"]
+        or evidence["scene"] != "apartment"
+    ):
+        raise ValueError("preflight gate evidence identity mismatch")
+    bindings = evidence["bindings"]
+    if not isinstance(bindings, dict):
+        raise ValueError("preflight gate evidence bindings must be an object")
+    _exact_keys(
+        bindings,
+        {"search_manifest_sha256", "apartment_base_config_file_sha256"},
+        "preflight gate evidence bindings",
+    )
+    expected_bindings = {
+        "search_manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
+        "apartment_base_config_file_sha256": hashlib.sha256(apartment_bytes).hexdigest(),
+    }
+    if bindings != expected_bindings:
+        raise ValueError("preflight gate evidence source bindings mismatch")
+    candidates = evidence["candidates"]
+    if not isinstance(candidates, list) or [
+        item.get("candidate_id") if isinstance(item, dict) else None for item in candidates
+    ] != list(selected_ids):
+        raise ValueError("preflight gate evidence candidate order mismatch")
+    for candidate in candidates:
+        candidate_id = candidate["candidate_id"]
+        _exact_keys(
+            candidate,
+            {
+                "candidate_id",
+                "candidate_config_sha256",
+                "frame_coverage",
+                "future_leakage",
+                "anchor_coverage",
+                "mechanisms",
+            },
+            f"preflight candidate {candidate_id}",
+        )
+        materialized = _materialize_config(apartment, declarations[candidate_id])
+        expected_config_sha256 = hashlib.sha256(_canonical_json(materialized)).hexdigest()
+        if candidate["candidate_config_sha256"] != expected_config_sha256:
+            raise ValueError(f"preflight candidate {candidate_id} config binding mismatch")
+        coverage = candidate["frame_coverage"]
+        if not isinstance(coverage, dict):
+            raise ValueError(f"preflight candidate {candidate_id} frame_coverage is invalid")
+        _exact_keys(
+            coverage,
+            {
+                "expected_frame_indices",
+                "observed_frame_indices",
+                "expected_count",
+                "observed_count",
+            },
+            f"preflight candidate {candidate_id} frame_coverage",
+        )
+        expected_frames = _exact_integer_list(
+            coverage["expected_frame_indices"],
+            f"preflight candidate {candidate_id} expected frame coverage",
+        )
+        observed_frames = _exact_integer_list(
+            coverage["observed_frame_indices"],
+            f"preflight candidate {candidate_id} observed frame coverage",
+        )
+        if (
+            not expected_frames
+            or isinstance(coverage["expected_count"], bool)
+            or not isinstance(coverage["expected_count"], int)
+            or isinstance(coverage["observed_count"], bool)
+            or not isinstance(coverage["observed_count"], int)
+            or coverage["expected_count"] != len(expected_frames)
+            or coverage["observed_count"] != len(observed_frames)
+            or observed_frames != expected_frames
+        ):
+            raise ValueError(
+                f"preflight candidate {candidate_id} frame_coverage did not PASS"
+            )
+        leakage = candidate["future_leakage"]
+        if not isinstance(leakage, dict):
+            raise ValueError(f"preflight candidate {candidate_id} future_leakage is invalid")
+        _exact_keys(
+            leakage,
+            {"count", "records"},
+            f"preflight candidate {candidate_id} future_leakage",
+        )
+        if (
+            isinstance(leakage["count"], bool)
+            or not isinstance(leakage["count"], int)
+            or not isinstance(leakage["records"], list)
+            or leakage["count"] != len(leakage["records"])
+            or leakage["count"] != 0
+        ):
+            raise ValueError(
+                f"preflight candidate {candidate_id} future_leakage must PASS with zero records"
+            )
+        anchor = candidate["anchor_coverage"]
+        if not isinstance(anchor, dict):
+            raise ValueError(f"preflight candidate {candidate_id} anchor_coverage is invalid")
+        _exact_keys(
+            anchor,
+            {"eligible_anchor_ids", "mapped_anchor_ids", "eligible_count", "mapped_count"},
+            f"preflight candidate {candidate_id} anchor_coverage",
+        )
+        eligible = _exact_integer_list(
+            anchor["eligible_anchor_ids"],
+            f"preflight candidate {candidate_id} eligible anchors",
+        )
+        mapped = _exact_integer_list(
+            anchor["mapped_anchor_ids"],
+            f"preflight candidate {candidate_id} mapped anchors",
+        )
+        if (
+            isinstance(anchor["eligible_count"], bool)
+            or not isinstance(anchor["eligible_count"], int)
+            or isinstance(anchor["mapped_count"], bool)
+            or not isinstance(anchor["mapped_count"], int)
+            or anchor["eligible_count"] != len(eligible)
+            or anchor["mapped_count"] != len(mapped)
+            or not set(mapped) <= set(eligible)
+            or len(eligible) != 66
+            or len(mapped) < 53
+        ):
+            raise ValueError(
+                f"preflight candidate {candidate_id} anchor coverage did not meet 53/66"
+            )
+        mechanisms = candidate["mechanisms"]
+        if not isinstance(mechanisms, dict) or set(mechanisms) != set(
+            _MECHANISMS_BY_PROFILE[candidate_id]
+        ):
+            raise ValueError(
+                f"preflight candidate {candidate_id} mechanisms do not match profile"
+            )
+        for name, record in mechanisms.items():
+            _validate_mechanism_record(
+                record, f"preflight candidate {candidate_id} mechanism {name}"
+            )
+    return {
+        "path": str(path.absolute()),
+        "sha256": hashlib.sha256(evidence_bytes).hexdigest(),
+        "byte_count": len(evidence_bytes),
+    }
 
 
 def _available_ram_bytes(
@@ -444,7 +802,7 @@ def _default_command(config: Path, output: Path, candidate_id: str) -> tuple[str
     )
 
 
-def _validate_gpu_ids(gpu_ids: Sequence[str], max_parallel: int) -> tuple[str, ...]:
+def _validate_gpu_ids(gpu_ids: Sequence[str]) -> tuple[str, ...]:
     if isinstance(gpu_ids, (str, bytes)):
         raise ValueError("gpu_ids must be a sequence of individual GPU identifiers")
     values = tuple(gpu_ids)
@@ -454,8 +812,6 @@ def _validate_gpu_ids(gpu_ids: Sequence[str], max_parallel: int) -> tuple[str, .
         or any(not isinstance(value, str) or not value or "," in value for value in values)
     ):
         raise ValueError("gpu_ids must be unique non-empty identifiers without commas")
-    if len(values) < max_parallel:
-        raise ValueError("gpu_ids must provide at least max_parallel devices")
     return values
 
 
@@ -468,6 +824,9 @@ def run_search(
     gpu_ids: Sequence[str],
     max_parallel: int = 1,
     candidate_ids: Sequence[str] | None = None,
+    scene: str = "apartment",
+    office_freeze_authorization: str | Path | None = None,
+    preflight_gate_evidence: str | Path | None = None,
     available_ram_bytes: int | None = None,
     command_builder: CommandBuilder | None = None,
 ) -> Path:
@@ -475,7 +834,15 @@ def run_search(
         raise ValueError("max_parallel must be an integer")
     if not 1 <= max_parallel <= 3:
         raise ValueError("max_parallel must be in 1..3")
-    gpus = _validate_gpu_ids(gpu_ids, max_parallel)
+    if scene != "apartment":
+        if scene == "office" and office_freeze_authorization is None:
+            raise ValueError("Office search requires frozen authorization")
+        if scene == "office":
+            raise ValueError("Office search is not supported by the development search runner")
+        raise ValueError(f"search scene is unsupported: {scene!r}")
+    if office_freeze_authorization is not None:
+        raise ValueError("Office freeze authorization is invalid for Apartment development")
+    gpus = _validate_gpu_ids(gpu_ids)
     manifest_file = Path(manifest_path).absolute()
     manifest, manifest_bytes = _load_json(manifest_file, "search manifest")
     manifest = _validate_manifest(manifest)
@@ -492,11 +859,27 @@ def run_search(
     selected_ids = tuple(candidate_ids) if candidate_ids is not None else _CANDIDATE_IDS
     if len(selected_ids) != len(set(selected_ids)):
         raise ValueError("candidate_ids contain duplicates")
+    diagnostics = {
+        item["candidate_id"]: item for item in manifest["diagnostic_candidates"]
+    }
+    requested_diagnostics = [name for name in selected_ids if name in diagnostics]
+    if requested_diagnostics:
+        raise ValueError(
+            f"diagnostic candidate is not runnable: {requested_diagnostics[0]} "
+            f"({diagnostics[requested_diagnostics[0]]['reason']})"
+        )
     undeclared = [name for name in selected_ids if name not in declared]
     if undeclared:
         raise ValueError(f"undeclared candidate: {undeclared[0]}")
     if not selected_ids:
         raise ValueError("candidate_ids cannot be empty")
+    if selected_ids != tuple(name for name in _CANDIDATE_IDS if name in selected_ids):
+        raise ValueError("candidate_ids must preserve canonical A0-A4 order")
+    required_lane = max(_LANE_BY_CANDIDATE[name] for name in selected_ids)
+    if len(gpus) <= required_lane:
+        raise ValueError(
+            f"gpu_ids must bind fixed lane {required_lane} for selected candidates"
+        )
 
     supplied_ram = (
         _available_ram_bytes() if available_ram_bytes is None else available_ram_bytes
@@ -510,6 +893,17 @@ def run_search(
         raise RuntimeError(
             f"available RAM gate failed: need {required_ram} bytes, have {supplied_ram}"
         )
+
+    if preflight_gate_evidence is None:
+        raise ValueError("preflight gate evidence is required before full launch")
+    preflight_record = _validate_preflight_gate_evidence(
+        Path(preflight_gate_evidence),
+        manifest_bytes=manifest_bytes,
+        apartment_bytes=apartment_bytes,
+        apartment=apartment,
+        declarations=declared,
+        selected_ids=selected_ids,
+    )
 
     destination = Path(output_root).absolute()
     _reject_symlink_components(destination.parent, "output parent")
@@ -541,6 +935,7 @@ def run_search(
             "file_sha256": hashlib.sha256(apartment_bytes).hexdigest(),
         },
         "office_binding": office_binding,
+        "preflight_gate_evidence": preflight_record,
         "max_parallel": max_parallel,
         "gpu_ids": list(gpus),
         "required_available_ram_bytes": required_ram,
@@ -558,11 +953,25 @@ def run_search(
     fatal_error: Exception | None = None
     requires_run_manifest = command_builder is None
     builder = command_builder or _default_command
-    available_gpus = list(gpus)
     while pending or active:
         while pending and not failed and len(active) < max_parallel:
-            candidate_id = pending.pop(0)
-            gpu = available_gpus.pop(0)
+            active_lanes = {
+                int(item["lane"])
+                for item in active
+            }
+            launch_position = next(
+                (
+                    position
+                    for position, name in enumerate(pending)
+                    if _LANE_BY_CANDIDATE[name] not in active_lanes
+                ),
+                None,
+            )
+            if launch_position is None:
+                break
+            candidate_id = pending.pop(launch_position)
+            lane = _LANE_BY_CANDIDATE[candidate_id]
+            gpu = gpus[lane]
             candidate_root = destination / "candidates" / candidate_id / "apartment"
             candidate_root.mkdir(parents=True)
             config_path = candidate_root / "config.json"
@@ -628,6 +1037,7 @@ def run_search(
                     "stdout": stdout,
                     "stderr": stderr,
                     "gpu": gpu,
+                    "lane": lane,
                     "started_monotonic": time.monotonic(),
                 }
             )
@@ -690,14 +1100,13 @@ def run_search(
                     failed = True
                     if fatal_error is None:
                         fatal_error = exc
-            available_gpus.append(item["gpu"])
-            available_gpus.sort(key=gpus.index)
             active.remove(item)
             if exit_code != 0:
                 failed = True
         status["unscheduled_candidate_ids"] = list(pending)
         _write_status(status_path, status)
 
+    records.sort(key=lambda item: _CANDIDATE_IDS.index(item["candidate_id"]))
     status["status"] = "FAIL" if failed else "PASS"
     status["unscheduled_candidate_ids"] = list(pending)
     _write_status(status_path, status)
@@ -711,6 +1120,9 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--manifest", required=True, type=Path)
     parser.add_argument("--apartment-config", required=True, type=Path)
     parser.add_argument("--office-config", required=True, type=Path)
+    parser.add_argument("--scene", choices=("apartment", "office"), default="apartment")
+    parser.add_argument("--office-freeze-authorization", type=Path)
+    parser.add_argument("--preflight-gate-evidence", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--gpu", action="append", required=True)
     parser.add_argument("--max-parallel", type=int, default=1)
@@ -726,6 +1138,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         output_root=args.output,
         gpu_ids=tuple(args.gpu),
         max_parallel=args.max_parallel,
+        scene=args.scene,
+        office_freeze_authorization=args.office_freeze_authorization,
+        preflight_gate_evidence=args.preflight_gate_evidence,
     )
     print(json.dumps({"status_path": str(result)}, sort_keys=True))
     return 0

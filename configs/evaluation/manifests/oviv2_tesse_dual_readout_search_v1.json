@@ -8,42 +8,16 @@
   "transfer_scene": "office",
   "transfer_policy": "bind_only_never_execute",
   "minimum_available_ram_bytes_per_candidate": 8589934592,
-  "parameter_bounds": {
-    "association.conflict_override_geometry": [0.0, 1.0],
-    "association.conflict_override_visual": [0.0, 1.0],
-    "association.geometry_weight": [0.0, 1.0],
-    "association.maximum_centroid_distance_m": [0.01, 100.0],
-    "association.minimum_score": [0.0, 1.0],
-    "association.motion_weight": [0.0, 1.0],
-    "association.semantic_conflict_probability": [0.0, 1.0],
-    "association.semantic_weight": [0.0, 1.0],
-    "association.size_weight": [0.0, 1.0],
-    "association.visual_weight": [0.0, 1.0],
-    "geometry.background_block_count": [1, 1000000],
-    "geometry.background_mask_dilation_px": [0, 64],
-    "geometry.depth_max_m": [0.01, 100.0],
-    "geometry.maximum_entities": [1, 10000],
-    "geometry.maximum_icp_rmse_m": [0.0001, 10.0],
-    "geometry.maximum_motion_m": [0.0001, 100.0],
-    "geometry.maximum_object_voxels": [1, 1000000],
-    "geometry.maximum_visibility_points_per_entity": [1, 1000000],
-    "geometry.minimum_icp_fitness": [0.0, 1.0],
-    "geometry.minimum_icp_points": [1, 1000000],
-    "geometry.voxel_size_m": [0.0001, 1.0],
-    "lifecycle.absent_log_likelihood": [-20.0, -0.0001],
-    "lifecycle.active_on_probability": [0.0, 1.0],
-    "lifecycle.decay_half_life_seconds": [0.0001, 86400.0],
-    "lifecycle.dormant_off_probability": [0.0, 1.0],
-    "lifecycle.initial_log_odds": [-20.0, 20.0],
-    "lifecycle.log_odds_limit": [0.0001, 20.0],
-    "lifecycle.minimum_absent_streak": [1, 10000],
-    "lifecycle.minimum_distinct_view_bins": [1, 10000],
-    "lifecycle.minimum_visible_fraction": [0.0, 1.0],
-    "lifecycle.minimum_visible_pixel_count": [0, 10000000],
-    "lifecycle.present_log_likelihood": [0.0001, 20.0],
-    "lifecycle.view_bin_azimuth_count": [1, 10000],
-    "lifecycle.view_bin_elevation_count": [1, 10000],
-    "lifecycle.visibility_depth_tolerance_m": [0.0001, 10.0]
+  "parameter_spaces": {
+    "lifecycle.minimum_absent_streak": {"profiles": ["a1", "a2", "a3", "a4"], "values": [2, 3, 4]},
+    "proposal.minimum_depth_residual_m": {"profiles": ["a2", "a3", "a4"], "values": [0.05, 0.1, 0.15]},
+    "dynamic_state.minimum_motion_confidence": {"profiles": ["a2", "a3", "a4"], "values": [0.6, 0.7, 0.8]},
+    "identity.minimum_reid_similarity": {"profiles": ["a4"], "values": [0.75, 0.8, 0.85]},
+    "identity.maximum_reid_distance_m": {"profiles": ["a4"], "values": [2.0, 3.0, 4.0]},
+    "motion.minimum_translation_confidence": {"profiles": ["a2", "a3", "a4"], "values": [0.5, 0.6, 0.7]},
+    "motion.maximum_translation_residual_m": {"profiles": ["a2", "a3", "a4"], "values": [0.2, 0.25, 0.3]},
+    "background_ledger.commit_support_frames": {"profiles": ["a3", "a4"], "values": [2, 3, 4]},
+    "background_ledger.commit_distinct_view_bins": {"profiles": ["a3", "a4"], "values": [2, 3]}
   },
   "metric_directions": {
     "background_f5_cm": "maximize",
@@ -61,6 +35,21 @@
     "optional_tie_axes": ["dynamic_f1", "change_f1"],
     "optional_availability": "must_match_a0_all_candidates;skip_axis_if_all_unavailable;reject_partial_availability"
   },
+  "metric_gates": {
+    "apartment_anchor_coverage": {"minimum_mapped_anchors": 53, "eligible_anchors": 66},
+    "non_inferiority": ["object_f1", "current_miou"],
+    "strict_improvement": ["dynamic_f1", "change_f1", "ghost_rate", "background_f5_cm", "recovery_frames"],
+    "weighted_compensation_allowed": false
+  },
+  "t4_bounds": {
+    "total_runtime_s_per_frame": 6.42,
+    "query_mean_ms": 11.92,
+    "query_p95_ms": 12.12,
+    "peak_gpu_gb": 12.76,
+    "peak_ram_gb": 9.36,
+    "final_map_mb": 46.77
+  },
+  "profile_fallback_order": ["a4", "a3", "a2"],
   "promotion_order": [
     "t1_exact_gate",
     "current_miou_floor",
@@ -76,92 +65,145 @@
   "hard_gates": {
     "current_miou_not_below_a0": true,
     "object_f1_not_below_a0": true,
-    "required_result_gates": [
-      "correctness",
-      "causality",
-      "determinism",
-      "t1_exact"
-    ]
+    "required_result_gates": ["correctness", "causality", "determinism", "t1_exact"]
   },
+  "launch_gates": {
+    "preflight_manifest_id": "oviv2_dual_readout_search_preflight_v1",
+    "short_prefix_required": true,
+    "required_evidence": ["frame_coverage", "future_leakage", "anchor_coverage", "mechanisms"],
+    "future_leakage_max_count": 0
+  },
+  "gpu_lanes": {
+    "lane0": ["a0", "a1"],
+    "lane1": ["a2"],
+    "lane2": ["a3", "a4"]
+  },
+  "diagnostic_candidates": [
+    {
+      "candidate_id": "diag_a2_no_proposal_recovery",
+      "base_profile": "a2",
+      "ablation": "without_proposal_recovery",
+      "diagnostic": true,
+      "selectable": false,
+      "runnable": false,
+      "reason": "unsupported_runtime_control",
+      "required_runtime_control": "proposal_recovery_enabled"
+    },
+    {
+      "candidate_id": "diag_a3_masking_only_no_ledger",
+      "base_profile": "a3",
+      "ablation": "masking_only_without_reversible_ledger",
+      "diagnostic": true,
+      "selectable": false,
+      "runnable": false,
+      "reason": "unsupported_runtime_control",
+      "required_runtime_control": "background_mode_masking_only"
+    },
+    {
+      "candidate_id": "diag_a4_no_dormant_candidates",
+      "base_profile": "a4",
+      "ablation": "without_dormant_candidates",
+      "diagnostic": true,
+      "selectable": false,
+      "runnable": false,
+      "reason": "unsupported_runtime_control",
+      "required_runtime_control": "dormant_reid_enabled"
+    },
+    {
+      "candidate_id": "diag_a4_translation_only_no_icp",
+      "base_profile": "a4",
+      "ablation": "translation_only_without_icp",
+      "diagnostic": true,
+      "selectable": false,
+      "runnable": false,
+      "reason": "unsupported_runtime_control",
+      "required_runtime_control": "icp_enabled"
+    }
+  ],
   "candidates": [
     {
       "candidate_id": "a0",
-      "components": {
-        "association_mode": "v1_native",
-        "background_mode": "v1_cumulative",
-        "geometry_mode": "v1_cumulative",
-        "lifecycle_mode": "v1_native",
-        "motion_mode": "none"
-      },
+      "components": {"lifecycle": "v1_native", "proposal": "v1_native", "identity": "v1_native", "geometry": "v1_cumulative", "background": "v1_cumulative", "motion": "none"},
       "temporal_readout": {
         "execution_profile": "a0",
+        "components": {"lifecycle": "v1_native", "proposal": "v1_native", "identity": "v1_native", "geometry": "v1_cumulative", "background": "v1_cumulative", "motion": "none"},
         "lifecycle": {"initial_log_odds": 0.0, "present_log_likelihood": 1.2, "absent_log_likelihood": -0.8, "log_odds_limit": 6.0, "decay_half_life_seconds": 30.0, "active_on_probability": 0.75, "dormant_off_probability": 0.35, "minimum_absent_streak": 2, "minimum_distinct_view_bins": 3, "visibility_depth_tolerance_m": 0.1, "minimum_visible_pixel_count": 10, "minimum_visible_fraction": 0.05, "view_bin_azimuth_count": 8, "view_bin_elevation_count": 4},
         "association": {"visual_weight": 0.35, "semantic_weight": 0.25, "size_weight": 0.1, "motion_weight": 0.1, "geometry_weight": 0.2, "minimum_score": 0.55, "maximum_centroid_distance_m": 1.5, "semantic_conflict_probability": 0.9, "conflict_override_visual": 0.95, "conflict_override_geometry": 0.85},
-        "geometry": {"voxel_size_m": 0.05, "depth_max_m": 10.0, "maximum_entities": 500, "maximum_object_voxels": 20000, "maximum_visibility_points_per_entity": 10000, "background_block_count": 100000, "background_mask_dilation_px": 2, "minimum_icp_points": 20, "minimum_icp_fitness": 0.5, "maximum_icp_rmse_m": 0.2, "maximum_motion_m": 2.0}
+        "geometry": {"voxel_size_m": 0.05, "depth_max_m": 10.0, "maximum_entities": 500, "maximum_object_voxels": 20000, "maximum_visibility_points_per_entity": 10000, "background_block_count": 100000, "background_mask_dilation_px": 2, "minimum_icp_points": 20, "minimum_icp_fitness": 0.5, "maximum_icp_rmse_m": 0.2, "maximum_motion_m": 2.0},
+        "proposal": {"minimum_residual_area_px": 32, "maximum_recovered_proposals": 16, "search_region_expansion_m": 0.25, "minimum_depth_residual_m": 0.1},
+        "identity": {"maximum_identities": 1000, "maximum_dormant_frames": 600, "minimum_reid_similarity": 0.8, "maximum_reid_distance_m": 3.0},
+        "dynamic_state": {"minimum_consecutive_motion_frames": 2, "displacement_floor_m": 0.1, "minimum_motion_confidence": 0.7, "static_off_streak_frames": 10},
+        "motion": {"minimum_translation_confidence": 0.6, "maximum_translation_residual_m": 0.25, "require_explicit_rejection": true},
+        "geometry_epoch": {"maximum_epochs_per_identity": 4, "maximum_retained_epochs": 1000},
+        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 8}
       }
     },
     {
       "candidate_id": "a1",
-      "components": {
-        "association_mode": "v1_identity",
-        "background_mode": "v1_cumulative",
-        "geometry_mode": "v1_cumulative",
-        "lifecycle_mode": "probabilistic_hysteresis",
-        "motion_mode": "none"
-      },
+      "components": {"lifecycle": "probabilistic_hysteresis", "proposal": "v1_native", "identity": "v1_identity", "geometry": "v1_cumulative", "background": "v1_cumulative", "motion": "none"},
       "temporal_readout": {
         "execution_profile": "a1",
+        "components": {"lifecycle": "probabilistic_hysteresis", "proposal": "v1_native", "identity": "v1_identity", "geometry": "v1_cumulative", "background": "v1_cumulative", "motion": "none"},
         "lifecycle": {"initial_log_odds": 0.0, "present_log_likelihood": 1.2, "absent_log_likelihood": -0.8, "log_odds_limit": 6.0, "decay_half_life_seconds": 30.0, "active_on_probability": 0.75, "dormant_off_probability": 0.35, "minimum_absent_streak": 2, "minimum_distinct_view_bins": 3, "visibility_depth_tolerance_m": 0.1, "minimum_visible_pixel_count": 10, "minimum_visible_fraction": 0.05, "view_bin_azimuth_count": 8, "view_bin_elevation_count": 4},
         "association": {"visual_weight": 0.35, "semantic_weight": 0.25, "size_weight": 0.1, "motion_weight": 0.1, "geometry_weight": 0.2, "minimum_score": 0.55, "maximum_centroid_distance_m": 1.5, "semantic_conflict_probability": 0.9, "conflict_override_visual": 0.95, "conflict_override_geometry": 0.85},
-        "geometry": {"voxel_size_m": 0.05, "depth_max_m": 10.0, "maximum_entities": 500, "maximum_object_voxels": 20000, "maximum_visibility_points_per_entity": 10000, "background_block_count": 100000, "background_mask_dilation_px": 2, "minimum_icp_points": 20, "minimum_icp_fitness": 0.5, "maximum_icp_rmse_m": 0.2, "maximum_motion_m": 2.0}
+        "geometry": {"voxel_size_m": 0.05, "depth_max_m": 10.0, "maximum_entities": 500, "maximum_object_voxels": 20000, "maximum_visibility_points_per_entity": 10000, "background_block_count": 100000, "background_mask_dilation_px": 2, "minimum_icp_points": 20, "minimum_icp_fitness": 0.5, "maximum_icp_rmse_m": 0.2, "maximum_motion_m": 2.0},
+        "proposal": {"minimum_residual_area_px": 32, "maximum_recovered_proposals": 16, "search_region_expansion_m": 0.25, "minimum_depth_residual_m": 0.1},
+        "identity": {"maximum_identities": 1000, "maximum_dormant_frames": 600, "minimum_reid_similarity": 0.8, "maximum_reid_distance_m": 3.0},
+        "dynamic_state": {"minimum_consecutive_motion_frames": 2, "displacement_floor_m": 0.1, "minimum_motion_confidence": 0.7, "static_off_streak_frames": 10},
+        "motion": {"minimum_translation_confidence": 0.6, "maximum_translation_residual_m": 0.25, "require_explicit_rejection": true},
+        "geometry_epoch": {"maximum_epochs_per_identity": 4, "maximum_retained_epochs": 1000},
+        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 8}
       }
     },
     {
       "candidate_id": "a2",
-      "components": {
-        "association_mode": "active_uncertain",
-        "background_mode": "v1_cumulative",
-        "geometry_mode": "object_submap",
-        "lifecycle_mode": "probabilistic_hysteresis",
-        "motion_mode": "translation"
-      },
+      "components": {"lifecycle": "probabilistic_hysteresis", "proposal": "temporal_recovery", "identity": "active_uncertain", "geometry": "object_submap_epoch", "background": "v1_cumulative", "motion": "translation"},
       "temporal_readout": {
         "execution_profile": "a2",
+        "components": {"lifecycle": "probabilistic_hysteresis", "proposal": "temporal_recovery", "identity": "active_uncertain", "geometry": "object_submap_epoch", "background": "v1_cumulative", "motion": "translation"},
         "lifecycle": {"initial_log_odds": 0.0, "present_log_likelihood": 1.2, "absent_log_likelihood": -0.8, "log_odds_limit": 6.0, "decay_half_life_seconds": 30.0, "active_on_probability": 0.75, "dormant_off_probability": 0.35, "minimum_absent_streak": 2, "minimum_distinct_view_bins": 3, "visibility_depth_tolerance_m": 0.1, "minimum_visible_pixel_count": 10, "minimum_visible_fraction": 0.05, "view_bin_azimuth_count": 8, "view_bin_elevation_count": 4},
         "association": {"visual_weight": 0.35, "semantic_weight": 0.25, "size_weight": 0.1, "motion_weight": 0.1, "geometry_weight": 0.2, "minimum_score": 0.55, "maximum_centroid_distance_m": 1.5, "semantic_conflict_probability": 0.9, "conflict_override_visual": 0.95, "conflict_override_geometry": 0.85},
-        "geometry": {"voxel_size_m": 0.05, "depth_max_m": 10.0, "maximum_entities": 500, "maximum_object_voxels": 20000, "maximum_visibility_points_per_entity": 10000, "background_block_count": 100000, "background_mask_dilation_px": 2, "minimum_icp_points": 20, "minimum_icp_fitness": 0.5, "maximum_icp_rmse_m": 0.2, "maximum_motion_m": 2.0}
+        "geometry": {"voxel_size_m": 0.05, "depth_max_m": 10.0, "maximum_entities": 500, "maximum_object_voxels": 20000, "maximum_visibility_points_per_entity": 10000, "background_block_count": 100000, "background_mask_dilation_px": 2, "minimum_icp_points": 20, "minimum_icp_fitness": 0.5, "maximum_icp_rmse_m": 0.2, "maximum_motion_m": 2.0},
+        "proposal": {"minimum_residual_area_px": 32, "maximum_recovered_proposals": 16, "search_region_expansion_m": 0.25, "minimum_depth_residual_m": 0.1},
+        "identity": {"maximum_identities": 1000, "maximum_dormant_frames": 600, "minimum_reid_similarity": 0.8, "maximum_reid_distance_m": 3.0},
+        "dynamic_state": {"minimum_consecutive_motion_frames": 2, "displacement_floor_m": 0.1, "minimum_motion_confidence": 0.7, "static_off_streak_frames": 10},
+        "motion": {"minimum_translation_confidence": 0.6, "maximum_translation_residual_m": 0.25, "require_explicit_rejection": true},
+        "geometry_epoch": {"maximum_epochs_per_identity": 4, "maximum_retained_epochs": 1000},
+        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 8}
       }
     },
     {
       "candidate_id": "a3",
-      "components": {
-        "association_mode": "active_uncertain",
-        "background_mode": "masked_temporal",
-        "geometry_mode": "object_submap",
-        "lifecycle_mode": "probabilistic_hysteresis",
-        "motion_mode": "translation"
-      },
+      "components": {"lifecycle": "probabilistic_hysteresis", "proposal": "temporal_recovery", "identity": "active_uncertain", "geometry": "object_submap_epoch", "background": "reversible_ledger", "motion": "translation"},
       "temporal_readout": {
         "execution_profile": "a3",
+        "components": {"lifecycle": "probabilistic_hysteresis", "proposal": "temporal_recovery", "identity": "active_uncertain", "geometry": "object_submap_epoch", "background": "reversible_ledger", "motion": "translation"},
         "lifecycle": {"initial_log_odds": 0.0, "present_log_likelihood": 1.2, "absent_log_likelihood": -0.8, "log_odds_limit": 6.0, "decay_half_life_seconds": 30.0, "active_on_probability": 0.75, "dormant_off_probability": 0.35, "minimum_absent_streak": 2, "minimum_distinct_view_bins": 3, "visibility_depth_tolerance_m": 0.1, "minimum_visible_pixel_count": 10, "minimum_visible_fraction": 0.05, "view_bin_azimuth_count": 8, "view_bin_elevation_count": 4},
         "association": {"visual_weight": 0.35, "semantic_weight": 0.25, "size_weight": 0.1, "motion_weight": 0.1, "geometry_weight": 0.2, "minimum_score": 0.55, "maximum_centroid_distance_m": 1.5, "semantic_conflict_probability": 0.9, "conflict_override_visual": 0.95, "conflict_override_geometry": 0.85},
-        "geometry": {"voxel_size_m": 0.05, "depth_max_m": 10.0, "maximum_entities": 500, "maximum_object_voxels": 20000, "maximum_visibility_points_per_entity": 10000, "background_block_count": 100000, "background_mask_dilation_px": 2, "minimum_icp_points": 20, "minimum_icp_fitness": 0.5, "maximum_icp_rmse_m": 0.2, "maximum_motion_m": 2.0}
+        "geometry": {"voxel_size_m": 0.05, "depth_max_m": 10.0, "maximum_entities": 500, "maximum_object_voxels": 20000, "maximum_visibility_points_per_entity": 10000, "background_block_count": 100000, "background_mask_dilation_px": 2, "minimum_icp_points": 20, "minimum_icp_fitness": 0.5, "maximum_icp_rmse_m": 0.2, "maximum_motion_m": 2.0},
+        "proposal": {"minimum_residual_area_px": 32, "maximum_recovered_proposals": 16, "search_region_expansion_m": 0.25, "minimum_depth_residual_m": 0.1},
+        "identity": {"maximum_identities": 1000, "maximum_dormant_frames": 600, "minimum_reid_similarity": 0.8, "maximum_reid_distance_m": 3.0},
+        "dynamic_state": {"minimum_consecutive_motion_frames": 2, "displacement_floor_m": 0.1, "minimum_motion_confidence": 0.7, "static_off_streak_frames": 10},
+        "motion": {"minimum_translation_confidence": 0.6, "maximum_translation_residual_m": 0.25, "require_explicit_rejection": true},
+        "geometry_epoch": {"maximum_epochs_per_identity": 4, "maximum_retained_epochs": 1000},
+        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 8}
       }
     },
     {
       "candidate_id": "a4",
-      "components": {
-        "association_mode": "dormant_reid",
-        "background_mode": "masked_temporal",
-        "geometry_mode": "object_submap",
-        "lifecycle_mode": "probabilistic_hysteresis",
-        "motion_mode": "gated_icp"
-      },
+      "components": {"lifecycle": "probabilistic_hysteresis", "proposal": "temporal_recovery", "identity": "dormant_reid", "geometry": "object_submap_epoch", "background": "reversible_ledger", "motion": "gated_icp"},
       "temporal_readout": {
         "execution_profile": "a4",
+        "components": {"lifecycle": "probabilistic_hysteresis", "proposal": "temporal_recovery", "identity": "dormant_reid", "geometry": "object_submap_epoch", "background": "reversible_ledger", "motion": "gated_icp"},
         "lifecycle": {"initial_log_odds": 0.0, "present_log_likelihood": 1.2, "absent_log_likelihood": -0.8, "log_odds_limit": 6.0, "decay_half_life_seconds": 30.0, "active_on_probability": 0.75, "dormant_off_probability": 0.35, "minimum_absent_streak": 2, "minimum_distinct_view_bins": 3, "visibility_depth_tolerance_m": 0.1, "minimum_visible_pixel_count": 10, "minimum_visible_fraction": 0.05, "view_bin_azimuth_count": 8, "view_bin_elevation_count": 4},
         "association": {"visual_weight": 0.35, "semantic_weight": 0.25, "size_weight": 0.1, "motion_weight": 0.1, "geometry_weight": 0.2, "minimum_score": 0.55, "maximum_centroid_distance_m": 1.5, "semantic_conflict_probability": 0.9, "conflict_override_visual": 0.95, "conflict_override_geometry": 0.85},
-        "geometry": {"voxel_size_m": 0.05, "depth_max_m": 10.0, "maximum_entities": 500, "maximum_object_voxels": 20000, "maximum_visibility_points_per_entity": 10000, "background_block_count": 100000, "background_mask_dilation_px": 2, "minimum_icp_points": 20, "minimum_icp_fitness": 0.5, "maximum_icp_rmse_m": 0.2, "maximum_motion_m": 2.0}
+        "geometry": {"voxel_size_m": 0.05, "depth_max_m": 10.0, "maximum_entities": 500, "maximum_object_voxels": 20000, "maximum_visibility_points_per_entity": 10000, "background_block_count": 100000, "background_mask_dilation_px": 2, "minimum_icp_points": 20, "minimum_icp_fitness": 0.5, "maximum_icp_rmse_m": 0.2, "maximum_motion_m": 2.0},
+        "proposal": {"minimum_residual_area_px": 32, "maximum_recovered_proposals": 16, "search_region_expansion_m": 0.25, "minimum_depth_residual_m": 0.1},
+        "identity": {"maximum_identities": 1000, "maximum_dormant_frames": 600, "minimum_reid_similarity": 0.8, "maximum_reid_distance_m": 3.0},
+        "dynamic_state": {"minimum_consecutive_motion_frames": 2, "displacement_floor_m": 0.1, "minimum_motion_confidence": 0.7, "static_off_streak_frames": 10},
+        "motion": {"minimum_translation_confidence": 0.6, "maximum_translation_residual_m": 0.25, "require_explicit_rejection": true},
+        "geometry_epoch": {"maximum_epochs_per_identity": 4, "maximum_retained_epochs": 1000},
+        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 8}
       }
     }
   ]

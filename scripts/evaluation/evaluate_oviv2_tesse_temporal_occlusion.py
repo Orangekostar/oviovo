@@ -319,7 +319,7 @@ def _load_mechanism_sources(
     run_root: Path,
     run: Mapping[str, Any],
     scene: str,
-) -> tuple[dict[str, dict[str, Any]], list[Any]]:
+) -> tuple[dict[str, dict[str, Any]], dict[str, Any], list[Any]]:
     source_index_record = run.get("source_index")
     if not isinstance(source_index_record, Mapping) or set(source_index_record) != {
         "path", "sha256", "byte_count"
@@ -373,10 +373,10 @@ def _load_mechanism_sources(
         ),
         source_records=records,
     )
-    return telemetry, witnesses
+    return telemetry, {"scene": scene, **dict(source_index_record)}, witnesses
 
 
-def _load_index(index_path: Path, target_record: Mapping[str, Any], metadata: Mapping[str, Any], sources: Mapping[str, Any], source_frame_times: Mapping[tuple[str, int], tuple[int, int]]) -> tuple[dict[tuple[str, int], _CompactBinding], dict[tuple[str, int], int], dict[str, Any], dict[str, Any], dict[str, dict[str, Any]], list[Any]]:
+def _load_index(index_path: Path, target_record: Mapping[str, Any], metadata: Mapping[str, Any], sources: Mapping[str, Any], source_frame_times: Mapping[tuple[str, int], tuple[int, int]]) -> tuple[dict[tuple[str, int], _CompactBinding], dict[tuple[str, int], int], dict[str, Any], dict[str, Any], dict[str, dict[str, Any]], dict[str, Any], list[Any]]:
     run_root = index_path.parent
     index_content, index_witness = _read(index_path, "occlusion checkpoint index")
     index = _json(index_content, "occlusion checkpoint index")
@@ -399,7 +399,7 @@ def _load_index(index_path: Path, target_record: Mapping[str, Any], metadata: Ma
         and run.get("scene") == index["scene"]
     ):
         raise ValueError("sibling run manifest identity mismatch")
-    mechanism_telemetry, mechanism_witnesses = _load_mechanism_sources(
+    mechanism_telemetry, mechanism_source_index, mechanism_witnesses = _load_mechanism_sources(
         run_root, run, index["scene"]
     )
     record = run.get("occlusion_checkpoint_index")
@@ -472,7 +472,7 @@ def _load_index(index_path: Path, target_record: Mapping[str, Any], metadata: Ma
         raise ValueError("checkpoint frames must exactly match target order")
     return (
         checkpoints, relative_times, index, _content_record(index_content),
-        mechanism_telemetry, witnesses,
+        mechanism_telemetry, mechanism_source_index, witnesses,
     )
 
 
@@ -623,13 +623,14 @@ def evaluate_temporal_occlusion_package(*, targets: str | Path, checkpoints: Seq
     indexes = []
     index_records = []
     telemetry_by_scene: dict[str, dict[str, dict[str, Any]]] = {}
+    mechanism_source_indexes: list[dict[str, Any]] = []
     cross_scene_authority = (
         "schema_version", "format", "protocol_id", "dataset", "method_id",
         "algorithm_hash", "schedule", "target_manifest", "input_sha256",
         "code_commit", "source_bindings",
     )
     for candidate in checkpoints:
-        values, times, index, index_record, mechanism_telemetry, index_witnesses = _load_index(
+        values, times, index, index_record, mechanism_telemetry, mechanism_source_index, index_witnesses = _load_index(
             Path(candidate).absolute(), target_record, metadata, sources, source_frame_times
         )
         if indexes and any(
@@ -639,6 +640,7 @@ def evaluate_temporal_occlusion_package(*, targets: str | Path, checkpoints: Seq
         if set(bindings) & set(values): raise ValueError("duplicate checkpoint indexes")
         bindings.update(values); indexes.append(index); index_records.append(index_record)
         telemetry_by_scene[index["scene"]] = mechanism_telemetry
+        mechanism_source_indexes.append(mechanism_source_index)
         witnesses.extend(index_witnesses)
         relative_times.update(times)
     loaded = _LazyCheckpoints(bindings)
@@ -648,6 +650,7 @@ def evaluate_temporal_occlusion_package(*, targets: str | Path, checkpoints: Seq
     result = results[0] if len(results) == 1 else {"format": EVALUATION_FORMAT, "scenes": results}
     result["input_bindings"] = {"target_manifest": dict(target_record),
                                 "indexes": index_records,
+                                "source_indexes": mechanism_source_indexes,
                                 "maximum_cached_checkpoints": loaded.maximum_cached_checkpoints}
     loaded.revalidate_all()
     _revalidate(witnesses)
