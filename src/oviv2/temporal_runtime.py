@@ -4,6 +4,7 @@ from dataclasses import dataclass, replace
 import hashlib
 import math
 from numbers import Integral, Real
+import re
 
 import numpy as np
 from scipy.spatial import cKDTree
@@ -816,10 +817,19 @@ def _sparse_background_block_keys(
 
 def _is_no_block_candidate_error(error: RuntimeError) -> bool:
     message = str(error)
-    return message.startswith("No block is touched") or (
-        "[Open3D Error]" in message
-        and "No block is touched in TSDF volume, abort integration." in message
+    if message == "No block is touched in TSDF volume":
+        return True
+    reason = (
+        "No block is touched in TSDF volume, abort integration. Please check "
+        "specified parameters, especially depth_scale and voxel_size"
     )
+    body = (
+        r"\[Open3D Error\] \([^\r\n]+\) [^\r\n]+\.cpp:\d+: "
+        + re.escape(reason)
+    )
+    return re.fullmatch(body, message) is not None or re.fullmatch(
+        r"\x1b\[1;31m" + body + r"(?:\r?\n)?\x1b\[0;m", message
+    ) is not None
 
 
 class _SparseBackgroundVolume(TemporalBackgroundVolume):

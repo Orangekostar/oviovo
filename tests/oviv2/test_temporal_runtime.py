@@ -1856,8 +1856,23 @@ def test_sparse_ledger_scopes_view_bins_to_entity_events(
         ledger.stage(replace(first, view_bin=9))
 
 
+@pytest.mark.parametrize(
+    "message",
+    (
+        "No block is touched in TSDF volume",
+        (
+            "\x1b[1;31m[Open3D Error] "
+            "(void open3d::t::geometry::kernel::voxel_grid::DepthTouchCPU()) "
+            "/root/Open3D/cpp/open3d/t/geometry/kernel/"
+            "VoxelBlockGridCPU.cpp:186: No block is touched in TSDF volume, "
+            "abort integration. Please check specified parameters, especially "
+            "depth_scale and voxel_size\n\x1b[0;m"
+        ),
+    ),
+)
 def test_sparse_candidate_no_block_error_uses_fallback(
     monkeypatch: pytest.MonkeyPatch,
+    message: str,
 ) -> None:
     import src.oviv2.temporal_runtime as module
     from src.oviv2.temporal_background import TemporalBackgroundVolume
@@ -1880,7 +1895,7 @@ def test_sparse_candidate_no_block_error_uses_fallback(
         TemporalBackgroundVolume,
         "candidate_block_keys",
         lambda *args, **kwargs: (_ for _ in ()).throw(
-            RuntimeError("No block is touched in TSDF volume")
+            RuntimeError(message)
         ),
     )
     decision = ledger.stage(
@@ -1905,6 +1920,26 @@ def test_sparse_candidate_no_block_error_uses_fallback(
     (
         "candidate backend failed",
         "candidate backend failed: No block is touched",
+        "No block is touched because candidate backend failed",
+        "No block is touched in TSDF volume because state is corrupted",
+        "No block is touched",
+        "corruption: No block is touched in TSDF volume",
+        (
+            "[Open3D Error] fake: No block is touched in TSDF volume, abort "
+            "integration. Please check specified parameters, especially "
+            "depth_scale and voxel_size"
+        ),
+        (
+            "[Open3D Error] (void open3d::DepthTouchCPU()) /tmp/Grid.cpp:12: "
+            "No block is touched in TSDF volume, abort integration. Please check "
+            "specified parameters, especially depth_scale and voxel_size corruption"
+        ),
+        (
+            "corruption: [Open3D Error] (void open3d::DepthTouchCPU()) "
+            "/tmp/Grid.cpp:12: No block is touched in TSDF volume, abort "
+            "integration. Please check specified parameters, especially "
+            "depth_scale and voxel_size"
+        ),
     ),
 )
 def test_sparse_candidate_backend_failure_is_transactional_and_retryable(
