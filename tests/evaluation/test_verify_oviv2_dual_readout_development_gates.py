@@ -1042,6 +1042,102 @@ def test_exact_profile_gate_requires_strict_caller_variant_mapping(
         gates.verify_exact_profile_runs([], schema1_variants=variants)
 
 
+def _exact_audits() -> list[dict[str, object]]:
+    return [
+        {
+            "format": "oviv2_cumulative_exact_v1",
+            "checkpoint_frames": [2, 7],
+            "inventory": [
+                {"path": "x", "sha256": "d" * 64, "byte_count": 1}
+            ],
+            "root_sha256": "e" * 64,
+        }
+        for _ in gates.EXACT_PROFILE_SEQUENCE
+    ]
+
+
+def test_preinjected_audits_cannot_bypass_caller_variant_revalidation(
+    tmp_path: Path,
+) -> None:
+    executions = [
+        _exact_execution(profile, tmp_path / f"run-{position}", 100 + position)
+        for position, profile in enumerate(gates.EXACT_PROFILE_SEQUENCE)
+    ]
+    calls = 0
+
+    def compare(left: Path, right: Path, **kwargs: object) -> dict[str, object]:
+        nonlocal calls
+        del left, right
+        calls += 1
+        if kwargs["left_schema1_variant"] != "production":
+            raise gates.ArtifactMismatch("wrong caller-trusted variant")
+        return _exact_audits()[0]
+
+    wrong = {**PRODUCTION_SCHEMA1_VARIANTS, "reference": "t1_transaction"}
+    with pytest.raises(gates.GateVerificationError, match="wrong caller-trusted"):
+        gates.verify_exact_profile_runs(
+            executions,
+            compare=compare,
+            audits=_exact_audits(),
+            schema1_variants=wrong,
+        )
+    assert calls == 1
+
+
+@pytest.mark.parametrize("mutation", ("root", "inventory", "extra", "type"))
+def test_preinjected_audits_must_exactly_match_recomputed_roots(
+    tmp_path: Path, mutation: str
+) -> None:
+    executions = [
+        _exact_execution(profile, tmp_path / f"run-{position}", 100 + position)
+        for position, profile in enumerate(gates.EXACT_PROFILE_SEQUENCE)
+    ]
+    expected = _exact_audits()[0]
+    audits = _exact_audits()
+    if mutation == "root":
+        audits[0]["root_sha256"] = "f" * 64
+    elif mutation == "inventory":
+        audits[0]["inventory"] = []
+    elif mutation == "extra":
+        audits[0]["unexpected"] = True
+    else:
+        audits[0]["inventory"][0]["byte_count"] = True
+
+    with pytest.raises(gates.GateVerificationError, match="audit.*recomputed"):
+        gates.verify_exact_profile_runs(
+            executions,
+            compare=lambda left, right, **kwargs: dict(expected),
+            audits=audits,
+            schema1_variants=PRODUCTION_SCHEMA1_VARIANTS,
+        )
+
+
+def test_matching_preinjected_audits_are_recomputed_and_accepted(
+    tmp_path: Path,
+) -> None:
+    executions = [
+        _exact_execution(profile, tmp_path / f"run-{position}", 100 + position)
+        for position, profile in enumerate(gates.EXACT_PROFILE_SEQUENCE)
+    ]
+    calls = 0
+    expected = _exact_audits()[0]
+
+    def compare(left: Path, right: Path, **kwargs: object) -> dict[str, object]:
+        nonlocal calls
+        del left, right, kwargs
+        calls += 1
+        return dict(expected)
+
+    result = gates.verify_exact_profile_runs(
+        executions,
+        compare=compare,
+        audits=_exact_audits(),
+        schema1_variants=PRODUCTION_SCHEMA1_VARIANTS,
+    )
+    assert result["sequence"] == list(gates.EXACT_PROFILE_SEQUENCE)
+    assert calls == len(gates.EXACT_PROFILE_SEQUENCE)
+
+
 def test_dual_receipt_command_must_equal_parent_popen_argv(tmp_path: Path) -> None:
     execution = _exact_execution("a1", tmp_path / "run-2", 102)
     root = Path(execution["output_root"])

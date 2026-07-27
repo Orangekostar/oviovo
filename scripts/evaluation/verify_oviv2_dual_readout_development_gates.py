@@ -316,16 +316,30 @@ def _bind_exact_receipt(
     expected_record = {**derived, "observation_receipt": observation_record}
     if observation.get("completed_execution") != derived or record != expected_record:
         raise GateVerificationError("exact execution reopened binding mismatch")
-    if audit is None:
+    try:
+        recomputed_audit = compare(
+            root,
+            root,
+            left_schema1_variant=schema1_variant,
+            right_schema1_variant=schema1_variant,
+        )
+    except (ArtifactMismatch, KeyError, TypeError) as exc:
+        raise GateVerificationError(f"exact execution artifact mismatch: {exc}") from exc
+    if audit is not None:
         try:
-            audit = compare(
-                root,
-                root,
-                left_schema1_variant=schema1_variant,
-                right_schema1_variant=schema1_variant,
+            audit_differs = (
+                type(audit) is not dict
+                or type(recomputed_audit) is not dict
+                or _canonical_json_bytes(audit)
+                != _canonical_json_bytes(recomputed_audit)
             )
-        except (ArtifactMismatch, KeyError, TypeError) as exc:
-            raise GateVerificationError(f"exact execution artifact mismatch: {exc}") from exc
+        except (TypeError, ValueError):
+            audit_differs = True
+        if audit_differs:
+            raise GateVerificationError(
+                "preinjected exact audit differs from recomputed root audit"
+            )
+    audit = recomputed_audit
     if (
         record["profile"] == "reference"
     ):
