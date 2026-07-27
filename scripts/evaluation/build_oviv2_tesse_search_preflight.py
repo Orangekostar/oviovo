@@ -18,7 +18,9 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.evaluation.run_oviv2_tesse_dual_readout_search import (  # noqa: E402
+    _DISABLED_MECHANISMS_BY_DIAGNOSTIC,
     _MECHANISMS_BY_PROFILE,
+    _diagnostic_recompute_payloads,
     _materialize_config,
 )
 from src.evaluation.oviv2_temporal_occlusion import (  # noqa: E402
@@ -448,9 +450,22 @@ def build_preflight(
         and sources["candidates"]
     ):
         raise ValueError("candidate source index identity/schema is invalid")
-    declarations = {
+    main_declarations = {
         item["candidate_id"]: item for item in manifest.get("candidates", [])
     }
+    diagnostic_declarations = {
+        item["candidate_id"]: item
+        for item in manifest.get("diagnostic_candidates", [])
+    }
+    declarations = dict(main_declarations)
+    for candidate_id, diagnostic in diagnostic_declarations.items():
+        base_profile = diagnostic.get("base_profile")
+        if base_profile not in main_declarations:
+            raise ValueError(f"diagnostic base profile is invalid: {candidate_id}")
+        declarations[candidate_id] = {
+            **main_declarations[base_profile],
+            **diagnostic,
+        }
     candidates: list[dict[str, Any]] = []
     seen: set[str] = set()
     for entry in sources["candidates"]:
@@ -469,7 +484,9 @@ def build_preflight(
             entry["run_manifest"], base=sources_path.parent, label=f"{candidate_id} run manifest"
         )
         assert run is not None and isinstance(candidate_id, str)
-        materialized = _materialize_config(base, declarations[candidate_id])
+        declaration = declarations[candidate_id]
+        base_profile = declaration.get("base_profile", candidate_id)
+        materialized = _materialize_config(base, declaration)
         if not (
             run.get("dataset") == "TESSE-CD"
             and run.get("protocol_id") == "oviv2-tessecd-v2"
@@ -506,7 +523,7 @@ def build_preflight(
             payloads[role] = (
                 role_json if role == "runtime_diagnostics" else _jsonl(role_content, role)
             )
-        if payloads["runtime_diagnostics"].get("execution_profile") != candidate_id:
+        if payloads["runtime_diagnostics"].get("execution_profile") != base_profile:
             raise ValueError(f"{candidate_id} runtime diagnostics profile mismatch")
         expected_frames = run.get("scheduled_frame_indices")
         observed_frames = [row.get("frame_index") for row in payloads["frame_coverage"]]
@@ -565,6 +582,25 @@ def build_preflight(
             raise ValueError(f"{candidate_id} future leakage evidence is invalid")
         if leakage["records"]:
             raise ValueError(f"{candidate_id} future leakage detected")
+        disabled_mechanisms = set(
+            _DISABLED_MECHANISMS_BY_DIAGNOSTIC.get(candidate_id, ())
+        )
+        mechanism_payloads = (
+            _diagnostic_recompute_payloads(
+                payloads,
+                disabled_mechanisms,
+                f"preflight candidate {candidate_id}",
+            )
+            if disabled_mechanisms
+            else payloads
+        )
+        mechanisms = _mechanisms(
+            candidate_id=base_profile,
+            source_records=source_records,
+            payloads=mechanism_payloads,
+        )
+        for disabled in disabled_mechanisms:
+            mechanisms.pop(disabled, None)
         candidates.append(
             {
                 "candidate_id": candidate_id,
@@ -582,15 +618,18 @@ def build_preflight(
                     "records": leakage["records"],
                 },
                 "anchor_coverage": _anchor_coverage(occlusion),
-                "mechanisms": _mechanisms(
-                    candidate_id=candidate_id,
-                    source_records=source_records,
-                    payloads=payloads,
-                ),
+                "mechanisms": mechanisms,
                 "source_evidence": source_evidence,
             }
         )
-    canonical_order = [item["candidate_id"] for item in manifest["candidates"]]
+    canonical_order = [
+        item["candidate_id"]
+        for inventory in (
+            manifest["candidates"],
+            manifest.get("diagnostic_candidates", []),
+        )
+        for item in inventory
+    ]
     if [item["candidate_id"] for item in candidates] != [
         name for name in canonical_order if name in seen
     ]:

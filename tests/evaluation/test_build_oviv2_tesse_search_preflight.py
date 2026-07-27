@@ -42,6 +42,19 @@ def _record(path: Path, root: Path) -> dict[str, object]:
 
 
 def _candidate_sources(tmp_path: Path, candidate_id: str = "a1") -> Path:
+    manifest = json.loads(SEARCH_MANIFEST.read_text())
+    base = json.loads(BASE_CONFIG.read_text())
+    main = {item["candidate_id"]: item for item in manifest["candidates"]}
+    diagnostics_by_id = {
+        item["candidate_id"]: item for item in manifest["diagnostic_candidates"]
+    }
+    diagnostic = diagnostics_by_id.get(candidate_id)
+    base_profile = diagnostic["base_profile"] if diagnostic else candidate_id
+    declaration = (
+        {**main[base_profile], **diagnostic}
+        if diagnostic is not None
+        else main[candidate_id]
+    )
     root = tmp_path / candidate_id
     coverage = _write(
         root / "temporal_frame_coverage.jsonl",
@@ -121,31 +134,74 @@ def _candidate_sources(tmp_path: Path, candidate_id: str = "a1") -> Path:
         "ledger_commit_count": 1,
         "ledger_reclaim_count": 1,
     }
+    disabled_counters = {
+        "diag_a2_no_proposal_recovery": {
+            "proposal_opportunity_count", "proposal_trigger_count",
+        },
+        "diag_a3_masking_only_no_ledger": {
+            "ledger_stage_count", "ledger_commit_count", "ledger_reclaim_count",
+        },
+        "diag_a4_no_dormant_candidates": {
+            "reid_opportunity_count", "reid_trigger_count",
+        },
+        "diag_a4_translation_only_no_icp": {
+            "icp_opportunity_count", "icp_accept_count", "icp_reject_count",
+        },
+    }.get(candidate_id, set())
+    counters.update({name: 0 for name in disabled_counters})
+    mechanism_records = {
+        "proposal_opportunity_count": ["proposal:0"],
+        "proposal_trigger_count": ["proposal:0"],
+        "reid_opportunity_count": ["reid:0"],
+        "reid_trigger_count": ["reid:0"],
+        "motion_rejection_count": [
+            "motion:0" if candidate_id == "diag_a4_translation_only_no_icp" else "icp:0"
+        ],
+        "ledger_rejection_count": [],
+        "identity_expiry_count": ["identity:0"],
+        "geometry_reclaim_count": ["geometry:0"],
+        "epoch_reset_opportunity_count": ["epoch:0"],
+        "epoch_reset_trigger_count": ["epoch:0"],
+        "icp_opportunity_count": ["icp:0"],
+        "icp_accept_count": [],
+        "icp_reject_count": ["icp:0"],
+        "ledger_stage_count": ["ledger:0"],
+        "ledger_commit_count": ["ledger:0"],
+        "ledger_reclaim_count": ["ledger:0"],
+    }
+    for name in disabled_counters:
+        mechanism_records[name] = []
+    diagnostic_payload = None
+    if diagnostic is not None:
+        enabled = {
+            "proposal_recovery": base_profile in {"a2", "a3", "a4"},
+            "background_masking": base_profile in {"a3", "a4"},
+            "background_ledger": base_profile in {"a3", "a4"},
+            "dormant_reid": base_profile == "a4",
+            "icp": base_profile == "a4",
+        }
+        disabled_component = {
+            "diag_a2_no_proposal_recovery": "proposal_recovery",
+            "diag_a3_masking_only_no_ledger": "background_ledger",
+            "diag_a4_no_dormant_candidates": "dormant_reid",
+            "diag_a4_translation_only_no_icp": "icp",
+        }[candidate_id]
+        enabled[disabled_component] = False
+        diagnostic_payload = {
+            "identity": candidate_id,
+            "controls": diagnostic["diagnostic_controls"],
+            "component_enabled": enabled,
+            "positive_claim_available": {disabled_component: False},
+        }
     diagnostics = _write(
         root / "runtime_diagnostics.json",
         {
             "schema_version": 1,
-            "execution_profile": candidate_id,
+            "execution_profile": base_profile,
             "processed_frame_count": 2,
             "counters": counters,
-            "mechanism_records": {
-                "proposal_opportunity_count": ["proposal:0"],
-                "proposal_trigger_count": ["proposal:0"],
-                "reid_opportunity_count": ["reid:0"],
-                "reid_trigger_count": ["reid:0"],
-                "motion_rejection_count": ["icp:0"],
-                "ledger_rejection_count": [],
-                "identity_expiry_count": ["identity:0"],
-                "geometry_reclaim_count": ["geometry:0"],
-                "epoch_reset_opportunity_count": ["epoch:0"],
-                "epoch_reset_trigger_count": ["epoch:0"],
-                "icp_opportunity_count": ["icp:0"],
-                "icp_accept_count": [],
-                "icp_reject_count": ["icp:0"],
-                "ledger_stage_count": ["ledger:0"],
-                "ledger_commit_count": ["ledger:0"],
-                "ledger_reclaim_count": ["ledger:0"],
-            },
+            "mechanism_records": mechanism_records,
+            **({"diagnostic": diagnostic_payload} if diagnostic_payload else {}),
         },
     )
     source_index = _write(
@@ -162,9 +218,6 @@ def _candidate_sources(tmp_path: Path, candidate_id: str = "a1") -> Path:
             "runtime_diagnostics": _record(diagnostics, root),
         },
     )
-    manifest = json.loads(SEARCH_MANIFEST.read_text())
-    base = json.loads(BASE_CONFIG.read_text())
-    declaration = next(item for item in manifest["candidates"] if item["candidate_id"] == candidate_id)
     materialized = _materialize_config(base, declaration)
     run_manifest = _write(
         root / "run_manifest.json",
@@ -297,6 +350,73 @@ def test_builds_source_recomputed_preflight_consumable_by_search(tmp_path: Path)
     assert hashlib.sha256(
         (tmp_path / "a1/lifecycle_transitions.jsonl").read_bytes()
     ).hexdigest() in invalidation["trigger_records"][0]
+
+
+@pytest.mark.parametrize(
+    ("candidate_id", "disabled_counters", "disabled_mechanisms"),
+    (
+        (
+            "diag_a2_no_proposal_recovery",
+            {"proposal_opportunity_count", "proposal_trigger_count"},
+            {"proposal_recovery"},
+        ),
+        (
+            "diag_a3_masking_only_no_ledger",
+            {"ledger_stage_count", "ledger_commit_count", "ledger_reclaim_count"},
+            {"background_release", "background_reclaim"},
+        ),
+        (
+            "diag_a4_no_dormant_candidates",
+            {"reid_opportunity_count", "reid_trigger_count"},
+            {"eligible_reid"},
+        ),
+        (
+            "diag_a4_translation_only_no_icp",
+            {"icp_opportunity_count", "icp_accept_count", "icp_reject_count"},
+            {"icp"},
+        ),
+    ),
+)
+def test_builds_diagnostic_preflight_from_raw_sources_for_search_consumer(
+    tmp_path: Path,
+    candidate_id: str,
+    disabled_counters: set[str],
+    disabled_mechanisms: set[str],
+) -> None:
+    sources = _candidate_sources(tmp_path, candidate_id)
+    output = tmp_path / "preflight.json"
+
+    result = build_preflight(
+        search_manifest=SEARCH_MANIFEST,
+        apartment_base_config=BASE_CONFIG,
+        candidate_sources=sources,
+        output=output,
+    )
+
+    runtime = json.loads(
+        (tmp_path / candidate_id / "runtime_diagnostics.json").read_text()
+    )
+    assert all(runtime["counters"][name] == 0 for name in disabled_counters)
+    assert all(runtime["mechanism_records"][name] == [] for name in disabled_counters)
+    assert disabled_mechanisms.isdisjoint(result["candidates"][0]["mechanisms"])
+
+    manifest = json.loads(SEARCH_MANIFEST.read_text())
+    base = json.loads(BASE_CONFIG.read_text())
+    declarations = {item["candidate_id"]: item for item in manifest["candidates"]}
+    for diagnostic in manifest["diagnostic_candidates"]:
+        declarations[diagnostic["candidate_id"]] = {
+            **declarations[diagnostic["base_profile"]],
+            **diagnostic,
+        }
+    validated = _validate_preflight_gate_evidence(
+        output,
+        manifest_bytes=SEARCH_MANIFEST.read_bytes(),
+        apartment_bytes=BASE_CONFIG.read_bytes(),
+        apartment=base,
+        declarations=declarations,
+        selected_ids=(candidate_id,),
+    )
+    assert validated["sha256"] == hashlib.sha256(output.read_bytes()).hexdigest()
 
 
 def test_rejects_spliced_occlusion_source_index(tmp_path: Path) -> None:

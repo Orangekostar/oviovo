@@ -2767,6 +2767,67 @@ def test_geometry_capacity_reclaims_dormant_wrapper_but_keeps_identity() -> None
         runtime.state.geometry.current(old_id)
 
 
+def test_geometry_reclaim_records_are_unique_across_epochs_for_runner() -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as runner
+
+    runtime = _runtime(_config(maximum_entities=1))
+    old_id = _confirm(runtime)
+    results = []
+
+    def process(frame_id: int, observations: tuple[FrameObservation, ...] = ()) -> None:
+        results.append(runtime.process_frame(_frame(frame_id), observations))
+
+    process(2)
+    process(3)
+    for frame_id in (4, 5):
+        frame = _frame(frame_id, depth=1.8)
+        results.append(runtime.process_frame(
+            frame,
+            (_observation(
+                frame,
+                40 + frame_id,
+                centroid_z=1.8,
+                semantic_id=2,
+                image_feature=np.array([0.0, 1.0]),
+            ),),
+        ))
+    results.append(runtime.process_frame(_frame(6, depth=2.4), ()))
+    results.append(runtime.process_frame(_frame(7, depth=2.4), ()))
+    for frame_id in (8, 9):
+        frame = _frame(frame_id)
+        results.append(runtime.process_frame(
+            frame, (_observation(frame, 80 + frame_id),)
+        ))
+    results.append(runtime.process_frame(_frame(10, depth=2.0), ()))
+    results.append(runtime.process_frame(_frame(11, depth=2.0), ()))
+    for frame_id in (12, 13):
+        frame = _frame(frame_id, depth=1.6)
+        results.append(runtime.process_frame(
+            frame,
+            (_observation(
+                frame,
+                120 + frame_id,
+                centroid_z=1.6,
+                semantic_id=3,
+                image_feature=np.array([-1.0, 0.0]),
+            ),),
+        ))
+
+    accumulated = {name: [] for name in runner.V2_RUNTIME_DIAGNOSTIC_KEYS}
+    for result in results:
+        runner._accumulate_runtime_mechanism_records(accumulated, result)
+
+    old_reclaims = [
+        record
+        for record in accumulated["geometry_reclaim_count"]
+        if record.startswith(f"geometry:{old_id}:")
+    ]
+    assert old_reclaims == [
+        f"geometry:{old_id}:0:5",
+        f"geometry:{old_id}:1:13",
+    ]
+
+
 def test_full_identity_bank_does_not_reclaim_dormant_wrapper_for_new_id() -> None:
     base = _config(maximum_entities=1)
     runtime = _runtime(replace(

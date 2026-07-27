@@ -1828,6 +1828,7 @@ class TemporalCurrentRuntime:
             )
 
         reclaimed_ids: list[int] = []
+        geometry_reclaim_records: list[str] = []
 
         def reclaim_dormant_wrapper(*, protected_ids: set[int]) -> bool:
             candidates = sorted(
@@ -1843,9 +1844,13 @@ class TemporalCurrentRuntime:
             if not candidates:
                 return False
             victim_id = candidates[0].lifecycle.entity_id
+            epoch_id = geometry_transaction.current(victim_id).epoch_id
             del next_entities[victim_id]
             geometry_transaction.remove_identity(victim_id)
             reclaimed_ids.append(victim_id)
+            geometry_reclaim_records.append(
+                f"geometry:{victim_id}:{epoch_id}:{frame.frame_id}"
+            )
             return True
 
         assigned_entity_ids = {entity_id for _, entity_id in association.assignments}
@@ -2255,7 +2260,7 @@ class TemporalCurrentRuntime:
             "reid_opportunity_count": reid_opportunity_records,
             "reid_trigger_count": reid_trigger_records,
             "identity_expiry_count": tuple(f"identity:{item}" for item in sorted(expired_ids)),
-            "geometry_reclaim_count": tuple(f"geometry:{item}" for item in sorted(reclaimed_ids)),
+            "geometry_reclaim_count": tuple(sorted(geometry_reclaim_records)),
             "motion_rejection_count": motion_records,
             "ledger_rejection_count": (),
             "epoch_reset_opportunity_count": epoch_reset_records,
