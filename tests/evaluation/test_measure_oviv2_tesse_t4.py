@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib
 import json
 import os
 import signal
@@ -565,7 +566,7 @@ def test_fake_collector_covers_mapping_and_query_process_groups(tmp_path: Path, 
     assert evidence["sources"]["protocol"]["path"] != frozen["protocol"]["path"]
 
 
-def test_collector_staging_failure_is_invisible_and_retryable(
+def test_collector_staging_failure_preserves_artifacts_and_uses_new_staging(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     import scripts.evaluation.measure_oviv2_tesse_t4 as collector
@@ -581,11 +582,22 @@ def test_collector_staging_failure_is_invisible_and_retryable(
         raise OSError("injected collection failure")
 
     monkeypatch.setattr(collector, "_collect_shortlist_unpublished", fail)
-    for _ in range(2):
-        with pytest.raises(OSError, match="injected"):
+    preserved_inodes = []
+    for expected_count in (1, 2):
+        before_fds = len(list(Path("/proc/self/fd").iterdir()))
+        with pytest.raises(collector.T4PublicationUncertain, match="preserved") as raised:
             collect_shortlist(Path("protocol"), Path("shortlist"), "0", destination)
+        assert isinstance(raised.value.__cause__, OSError)
         assert not destination.exists()
-        assert not list(tmp_path.glob(".collected.staging-*"))
+        staging = sorted(tmp_path.glob(".collected.staging-*"))
+        assert len(staging) == expected_count
+        newest = next(path for path in staging if path.stat().st_ino not in preserved_inodes)
+        preserved_inodes.append(newest.stat().st_ino)
+        assert (newest / "partial").read_text(encoding="utf-8") == "partial"
+        record = next(item for item in raised.value.preserved if item.inode == newest.stat().st_ino)
+        assert record.name == newest.name
+        assert record.ownership == "owned"
+        assert len(list(Path("/proc/self/fd").iterdir())) == before_fds
     assert calls == 2
 
 
@@ -681,7 +693,7 @@ def test_sample_collector_cleans_group_when_starttime_probe_fails(
     assert process.returncode == -signal.SIGTERM
 
 
-def test_collector_cleanup_preserves_replacement_and_removes_owned_renamed_staging(
+def test_collector_failure_preserves_replacement_and_owned_renamed_staging(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     import scripts.evaluation.measure_oviv2_tesse_t4 as collector
@@ -698,57 +710,20 @@ def test_collector_cleanup_preserves_replacement_and_removes_owned_renamed_stagi
         raise OSError("injected replacement")
 
     monkeypatch.setattr(collector, "_collect_shortlist_unpublished", replace_then_fail)
-    with pytest.raises(OSError, match="replacement"):
+    with pytest.raises(collector.T4PublicationUncertain, match="preserved") as raised:
         collect_shortlist(Path("protocol"), Path("shortlist"), "0", destination)
+    assert isinstance(raised.value.__cause__, OSError)
     replacements = list(tmp_path.glob(".collected.staging-*/replacement"))
     assert len(replacements) == 1
     assert replacements[0].read_text(encoding="utf-8") == "replacement"
-    assert not moved.exists()
-
-
-def test_collector_owned_tree_cleanup_does_not_remove_racing_replacement(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    import scripts.evaluation.measure_oviv2_tesse_t4 as collector
-
-    owned = tmp_path / "owned"
-    moved = tmp_path / "owned-moved"
-    external = tmp_path / "external"
-    external.mkdir()
-    (external / "marker").write_text("external", encoding="utf-8")
-    owned.mkdir()
-    (owned / "payload").write_text("owned", encoding="utf-8")
-    (owned / "external-link").symlink_to(external, target_is_directory=True)
-    parent_fd = os.open(tmp_path, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
-    status = os.stat(owned)
-    original_stat = collector.os.stat
-    raced = False
-
-    def replace_after_stat(path, *args, **kwargs):
-        nonlocal raced
-        result = original_stat(path, *args, **kwargs)
-        if path == owned.name and kwargs.get("dir_fd") == parent_fd and not raced:
-            raced = True
-            owned.rename(moved)
-            owned.mkdir()
-            (owned / "replacement").write_text("replacement", encoding="utf-8")
-        return result
-
-    try:
-        with monkeypatch.context() as patch:
-            patch.setattr(collector.os, "stat", replace_after_stat)
-            collector._remove_owned(
-                parent_fd, owned.name, (status.st_dev, status.st_ino), tree=True
-            )
-    finally:
-        os.close(parent_fd)
-    assert (owned / "replacement").read_text(encoding="utf-8") == "replacement"
-    assert not moved.exists()
-    assert (external / "marker").read_text(encoding="utf-8") == "external"
+    assert (moved / "owned").read_text(encoding="utf-8") == "owned"
+    identities = {(item.name, item.ownership, item.inode) for item in raised.value.preserved}
+    assert (moved.name, "owned", moved.stat().st_ino) in identities
+    assert (replacements[0].parent.name, "unknown", replacements[0].parent.stat().st_ino) in identities
 
 
 @pytest.mark.parametrize("failure", ["mkdir", "stat", "open"])
-def test_collector_staging_initialization_failure_closes_fds_and_removes_staging(
+def test_collector_staging_initialization_failure_closes_fds_and_preserves_if_created(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str
 ) -> None:
     import scripts.evaluation.measure_oviv2_tesse_t4 as collector
@@ -791,11 +766,70 @@ def test_collector_staging_initialization_failure_closes_fds_and_removes_staging
     monkeypatch.setattr(collector.os, "mkdir", fail_mkdir)
     monkeypatch.setattr(collector.os, "stat", fail_stat)
     monkeypatch.setattr(collector.os, "open", fail_open)
-    with pytest.raises(OSError, match=f"injected {failure} failure"):
-        collect_shortlist(Path("protocol"), Path("shortlist"), "0", destination)
+    if failure == "mkdir":
+        with pytest.raises(OSError, match="injected mkdir failure"):
+            collect_shortlist(Path("protocol"), Path("shortlist"), "0", destination)
+    else:
+        with pytest.raises(collector.T4PublicationUncertain, match="preserved") as raised:
+            collect_shortlist(Path("protocol"), Path("shortlist"), "0", destination)
+        assert isinstance(raised.value.__cause__, OSError)
+        staging = list(tmp_path.glob(".collected.staging-*"))
+        assert len(staging) == 1
+        record = next(item for item in raised.value.preserved if item.name == staging[0].name)
+        assert record.inode == staging[0].stat().st_ino
+        assert record.ownership == ("unbound" if failure == "stat" else "owned")
     assert injected
     assert len(list(Path("/proc/self/fd").iterdir())) == before_fds
-    assert not list(tmp_path.glob(".collected.staging-*"))
+    if failure == "mkdir":
+        assert not list(tmp_path.glob(".collected.staging-*"))
+
+
+@pytest.mark.parametrize(
+    "module_name",
+    [
+        "scripts.evaluation.measure_oviv2_tesse_t4",
+        "scripts.evaluation.verify_oviv2_tesse_t4_gate",
+    ],
+)
+def test_directory_publication_parent_swap_preserves_published_artifact(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, module_name: str
+) -> None:
+    module = importlib.import_module(module_name)
+    parent = tmp_path / module_name.rsplit(".", 1)[-1]
+    moved = parent.with_name(f"{parent.name}-moved")
+    parent.mkdir()
+    source = parent / "staging"
+    destination = parent / "published"
+    source.mkdir()
+    (source / "payload").write_text("owned", encoding="utf-8")
+    original_stat = module.os.stat
+    swapped = False
+
+    def swap_after_destination_stat(path, *args, **kwargs):
+        nonlocal swapped
+        result = original_stat(path, *args, **kwargs)
+        if path == destination.name and kwargs.get("dir_fd") is not None and not swapped:
+            swapped = True
+            parent.rename(moved)
+            parent.mkdir()
+            (parent / "replacement").write_text("replacement", encoding="utf-8")
+        return result
+
+    before_fds = len(list(Path("/proc/self/fd").iterdir()))
+    with monkeypatch.context() as patch:
+        patch.setattr(module.os, "stat", swap_after_destination_stat)
+        with pytest.raises(module.T4PublicationUncertain, match="preserved") as raised:
+            module._rename_directory_new(source, destination)
+    published = moved / destination.name
+    assert (published / "payload").read_text(encoding="utf-8") == "owned"
+    assert (parent / "replacement").read_text(encoding="utf-8") == "replacement"
+    record = next(item for item in raised.value.preserved if item.inode == published.stat().st_ino)
+    assert record.name == destination.name and record.ownership == "owned"
+    assert (record.parent_device, record.parent_inode) == (
+        moved.stat().st_dev,
+        moved.stat().st_ino,
+    )
+    assert len(list(Path("/proc/self/fd").iterdir())) == before_fds
 
 
 def test_collector_parent_swap_fails_without_publishing_to_replacement(
@@ -814,11 +848,15 @@ def test_collector_parent_swap_fails_without_publishing_to_replacement(
         return []
 
     monkeypatch.setattr(collector, "_collect_shortlist_unpublished", swap_parent)
-    with pytest.raises(T4CollectionError, match="parent changed"):
+    before_fds = len(list(Path("/proc/self/fd").iterdir()))
+    with pytest.raises(collector.T4PublicationUncertain, match="preserved") as raised:
         collect_shortlist(Path("protocol"), Path("shortlist"), "0", destination)
     assert (parent / "replacement").read_text(encoding="utf-8") == "replacement"
     assert not destination.exists()
-    assert not list(moved.glob(".collected.staging-*"))
+    staging = list(moved.glob(".collected.staging-*"))
+    assert len(staging) == 1
+    assert next(item for item in raised.value.preserved if item.inode == staging[0].stat().st_ino)
+    assert len(list(Path("/proc/self/fd").iterdir())) == before_fds
 
 
 def test_time_wrapper_child_and_cuda_startup_gap_produce_continuous_samples(

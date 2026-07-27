@@ -2,13 +2,18 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 
 import numpy as np
 import pytest
 
 from scripts.evaluation.measure_oviv2_tesse_t4 import measure_t4
-from scripts.evaluation.verify_oviv2_tesse_t4_gate import T4GateError, verify_t4_gate
+from scripts.evaluation.verify_oviv2_tesse_t4_gate import (
+    T4GateError,
+    T4PublicationUncertain,
+    verify_t4_gate,
+)
 from tests.evaluation.test_measure_oviv2_tesse_t4 import _fixture, _sha256
 
 
@@ -20,6 +25,14 @@ BOUNDS = {
     "peak_ram_gb": 9.36,
     "final_map_mb": 46.77,
 }
+
+
+def _assert_uncertain_cause(call, match: str) -> None:
+    with pytest.raises(T4PublicationUncertain, match="preserved") as raised:
+        call()
+    assert isinstance(raised.value.__cause__, T4GateError)
+    assert re.search(match, str(raised.value.__cause__))
+    assert raised.value.preserved
 
 
 def _record(path: Path) -> dict[str, object]:
@@ -80,25 +93,28 @@ def test_verifier_rejects_metric_without_raw_source(tmp_path: Path) -> None:
     evidence, fixture = _valid_t4_evidence(tmp_path)
     evidence["sources"].pop("gpu_samples")
     Path(fixture["output"]).write_text(json.dumps(evidence, sort_keys=True) + "\n", encoding="utf-8")
-    with pytest.raises(T4GateError, match="gpu samples"):
-        verify_t4_gate(evidence)
+    _assert_uncertain_cause(lambda: verify_t4_gate(evidence), "gpu samples")
 
 
 def test_verifier_requires_every_flat_source_hash(tmp_path: Path) -> None:
     evidence, fixture = _valid_t4_evidence(tmp_path)
     evidence["sources"].pop("time_log_sha256")
     Path(fixture["output"]).write_text(json.dumps(evidence), encoding="utf-8")
-    with pytest.raises(T4GateError, match="time log hash binding"):
-        verify_t4_gate(
+    _assert_uncertain_cause(
+        lambda: verify_t4_gate(
             [Path(fixture["output"])], Path(fixture["shortlist"]), tmp_path / "matrix.json"
-        )
+        ),
+        "time log hash binding",
+    )
 
 
 def test_verifier_rejects_raw_source_drift_and_cross_run_splice(tmp_path: Path) -> None:
     evidence, fixture = _valid_t4_evidence(tmp_path / "drift")
     Path(fixture["time_log"]).write_text("changed", encoding="utf-8")
-    with pytest.raises(T4GateError, match="time log.*binding"):
-        verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), tmp_path / "drift-matrix.json")
+    _assert_uncertain_cause(
+        lambda: verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), tmp_path / "drift-matrix.json"),
+        "time log.*binding",
+    )
 
     evidence, fixture = _valid_t4_evidence(tmp_path / "splice")
     run = json.loads(Path(fixture["run_manifest"]).read_text())
@@ -113,8 +129,10 @@ def test_verifier_rejects_raw_source_drift_and_cross_run_splice(tmp_path: Path) 
     evidence["sources"]["run_manifest"] = _record(Path(fixture["run_manifest"]))
     evidence["sources"]["run_manifest_sha256"] = _sha256(Path(fixture["run_manifest"]))
     Path(fixture["output"]).write_text(json.dumps(evidence, sort_keys=True) + "\n", encoding="utf-8")
-    with pytest.raises(T4GateError, match="whole-profile"):
-        verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), tmp_path / "splice-matrix.json")
+    _assert_uncertain_cause(
+        lambda: verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), tmp_path / "splice-matrix.json"),
+        "whole-profile",
+    )
 
 
 def test_verifier_rejects_shortlist_config_and_final_map_splice(tmp_path: Path) -> None:
@@ -125,8 +143,10 @@ def test_verifier_rejects_shortlist_config_and_final_map_splice(tmp_path: Path) 
     evidence["sources"]["shortlist"] = _record(Path(fixture["shortlist"]))
     evidence["sources"]["shortlist_sha256"] = _sha256(Path(fixture["shortlist"]))
     Path(fixture["output"]).write_text(json.dumps(evidence), encoding="utf-8")
-    with pytest.raises(T4GateError, match="shortlist config"):
-        verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), tmp_path / "config-matrix.json")
+    _assert_uncertain_cause(
+        lambda: verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), tmp_path / "config-matrix.json"),
+        "shortlist config",
+    )
 
     evidence, fixture = _valid_t4_evidence(tmp_path / "profile")
     shortlist = json.loads(Path(fixture["shortlist"]).read_text())
@@ -136,11 +156,13 @@ def test_verifier_rejects_shortlist_config_and_final_map_splice(tmp_path: Path) 
     evidence["sources"]["shortlist"] = _record(Path(fixture["shortlist"]))
     evidence["sources"]["shortlist_sha256"] = _sha256(Path(fixture["shortlist"]))
     Path(fixture["output"]).write_text(json.dumps(evidence), encoding="utf-8")
-    with pytest.raises(T4GateError, match="shortlist config candidate identity"):
-        verify_t4_gate(
+    _assert_uncertain_cause(
+        lambda: verify_t4_gate(
             [Path(fixture["output"])], Path(fixture["shortlist"]),
             tmp_path / "profile-matrix.json",
-        )
+        ),
+        "shortlist config candidate identity",
+    )
 
     evidence, fixture = _valid_t4_evidence(tmp_path / "map")
     run_manifest = Path(fixture["run_manifest"])
@@ -164,8 +186,10 @@ def test_verifier_rejects_shortlist_config_and_final_map_splice(tmp_path: Path) 
     evidence["sources"]["final_map_inventory"] = _record(inventory_path)
     evidence["sources"]["final_map_inventory_sha256"] = _sha256(inventory_path)
     Path(fixture["output"]).write_text(json.dumps(evidence), encoding="utf-8")
-    with pytest.raises(T4GateError, match="final current map"):
-        verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), tmp_path / "map-matrix.json")
+    _assert_uncertain_cause(
+        lambda: verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), tmp_path / "map-matrix.json"),
+        "final current map",
+    )
 
 
 def test_verifier_requires_full_gpu_and_query_raw_identity(tmp_path: Path) -> None:
@@ -176,8 +200,10 @@ def test_verifier_requires_full_gpu_and_query_raw_identity(tmp_path: Path) -> No
     evidence["sources"]["gpu_samples"] = _record(Path(fixture["gpu_samples"]))
     evidence["sources"]["gpu_samples_sha256"] = _sha256(Path(fixture["gpu_samples"]))
     Path(fixture["output"]).write_text(json.dumps(evidence), encoding="utf-8")
-    with pytest.raises(T4GateError, match="process inventory"):
-        verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), tmp_path / "gpu-matrix.json")
+    _assert_uncertain_cause(
+        lambda: verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), tmp_path / "gpu-matrix.json"),
+        "process inventory",
+    )
 
     evidence, fixture = _valid_t4_evidence(tmp_path / "query")
     query = json.loads(Path(fixture["query_measurements"]).read_text())
@@ -186,8 +212,10 @@ def test_verifier_requires_full_gpu_and_query_raw_identity(tmp_path: Path) -> No
     evidence["sources"]["query_measurements"] = _record(Path(fixture["query_measurements"]))
     evidence["sources"]["query_measurements_sha256"] = _sha256(Path(fixture["query_measurements"]))
     Path(fixture["output"]).write_text(json.dumps(evidence), encoding="utf-8")
-    with pytest.raises(T4GateError, match="query evidence"):
-        verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), tmp_path / "query-matrix.json")
+    _assert_uncertain_cause(
+        lambda: verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), tmp_path / "query-matrix.json"),
+        "query evidence",
+    )
 
 
 def test_verifier_rejects_nested_runner_identity_and_hardlink_alias(tmp_path: Path) -> None:
@@ -219,8 +247,10 @@ def test_verifier_rejects_nested_runner_identity_and_hardlink_alias(tmp_path: Pa
     evidence["sources"]["run_manifest"] = _record(wrapper_path)
     evidence["sources"]["run_manifest_sha256"] = _sha256(wrapper_path)
     Path(fixture["output"]).write_text(json.dumps(evidence), encoding="utf-8")
-    with pytest.raises(T4GateError, match="whole-profile"):
-        verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), tmp_path / "nested-matrix.json")
+    _assert_uncertain_cause(
+        lambda: verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), tmp_path / "nested-matrix.json"),
+        "whole-profile",
+    )
 
     evidence, fixture = _valid_t4_evidence(tmp_path / "alias")
     inventory_path = Path(evidence["sources"]["final_map_inventory"]["path"])
@@ -247,8 +277,10 @@ def test_verifier_rejects_nested_runner_identity_and_hardlink_alias(tmp_path: Pa
     evidence["sources"]["query_measurements"] = _record(Path(fixture["query_measurements"]))
     evidence["sources"]["query_measurements_sha256"] = _sha256(Path(fixture["query_measurements"]))
     Path(fixture["output"]).write_text(json.dumps(evidence), encoding="utf-8")
-    with pytest.raises(T4GateError, match="same inode"):
-        verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), tmp_path / "alias-matrix.json")
+    _assert_uncertain_cause(
+        lambda: verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), tmp_path / "alias-matrix.json"),
+        "same inode",
+    )
 
 
 @pytest.mark.parametrize("metric", list(BOUNDS))
@@ -314,7 +346,7 @@ def test_verifier_no_clobber(tmp_path: Path) -> None:
         verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), output)
 
 
-def test_verifier_staging_failure_is_invisible_and_retryable(
+def test_verifier_staging_failure_preserves_artifact_and_retry_uses_new_staging(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     import scripts.evaluation.verify_oviv2_tesse_t4_gate as verifier
@@ -332,16 +364,24 @@ def test_verifier_staging_failure_is_invisible_and_retryable(
             raise OSError("injected staging failure")
 
     monkeypatch.setattr(verifier, "_write_staged_bytes", fail_once)
-    with pytest.raises(OSError, match="injected"):
+    before_fds = len(list(Path("/proc/self/fd").iterdir()))
+    with pytest.raises(verifier.T4PublicationUncertain, match="preserved") as raised:
         verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), output)
+    assert isinstance(raised.value.__cause__, OSError)
     assert not output.exists()
     assert not (tmp_path / "matrix.protocol.json").exists()
     assert not (tmp_path / "matrix.sources").exists()
-    assert not list(tmp_path.glob(".matrix.sources.staging-*"))
+    staging = list(tmp_path.glob(".matrix.sources.staging-*"))
+    assert len(staging) == 1
+    original_inode = staging[0].stat().st_ino
+    record = next(item for item in raised.value.preserved if item.inode == original_inode)
+    assert record.name == staging[0].name and record.ownership == "owned"
+    assert len(list(Path("/proc/self/fd").iterdir())) == before_fds
 
     monkeypatch.setattr(verifier, "_write_staged_bytes", original)
     verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), output)
     assert output.is_file()
+    assert staging[0].stat().st_ino == original_inode
 
 
 def test_verifier_does_not_unlink_racing_output(
@@ -359,12 +399,13 @@ def test_verifier_does_not_unlink_racing_output(
         original(path, value, parent_fd=parent_fd)
 
     monkeypatch.setattr(verifier, "_write_new", race)
-    with pytest.raises(FileExistsError):
+    with pytest.raises(verifier.T4PublicationUncertain) as raised:
         verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), output)
+    assert isinstance(raised.value.__cause__, FileExistsError)
     assert output.read_text(encoding="utf-8") == "racer-owned\n"
 
 
-def test_verifier_cleanup_preserves_replacement_and_removes_owned_renamed_sources(
+def test_verifier_failure_preserves_replacement_and_owned_renamed_sources(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     import scripts.evaluation.verify_oviv2_tesse_t4_gate as verifier
@@ -384,53 +425,14 @@ def test_verifier_cleanup_preserves_replacement_and_removes_owned_renamed_source
         return original(path, value, parent_fd=parent_fd)
 
     monkeypatch.setattr(verifier, "_write_new", replace_then_fail)
-    with pytest.raises(OSError, match="replacement"):
+    with pytest.raises(verifier.T4PublicationUncertain, match="preserved") as raised:
         verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), output)
     assert (source_dir / "replacement").read_text(encoding="utf-8") == "replacement"
-    assert not moved.exists()
+    assert moved.is_dir()
     assert not output.exists()
-
-
-def test_verifier_owned_tree_cleanup_does_not_remove_racing_replacement(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    import os
-    import scripts.evaluation.verify_oviv2_tesse_t4_gate as verifier
-
-    owned = tmp_path / "owned"
-    moved = tmp_path / "owned-moved"
-    external = tmp_path / "external"
-    external.mkdir()
-    (external / "marker").write_text("external", encoding="utf-8")
-    owned.mkdir()
-    (owned / "payload").write_text("owned", encoding="utf-8")
-    (owned / "external-link").symlink_to(external, target_is_directory=True)
-    parent_fd = os.open(tmp_path, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
-    status = os.stat(owned)
-    original_stat = verifier.os.stat
-    raced = False
-
-    def replace_after_stat(path, *args, **kwargs):
-        nonlocal raced
-        result = original_stat(path, *args, **kwargs)
-        if path == owned.name and kwargs.get("dir_fd") == parent_fd and not raced:
-            raced = True
-            owned.rename(moved)
-            owned.mkdir()
-            (owned / "replacement").write_text("replacement", encoding="utf-8")
-        return result
-
-    try:
-        with monkeypatch.context() as patch:
-            patch.setattr(verifier.os, "stat", replace_after_stat)
-            verifier._remove_owned(
-                parent_fd, owned.name, (status.st_dev, status.st_ino), tree=True
-            )
-    finally:
-        os.close(parent_fd)
-    assert (owned / "replacement").read_text(encoding="utf-8") == "replacement"
-    assert not moved.exists()
-    assert (external / "marker").read_text(encoding="utf-8") == "external"
+    identities = {(item.name, item.ownership, item.inode) for item in raised.value.preserved}
+    assert (moved.name, "owned", moved.stat().st_ino) in identities
+    assert (source_dir.name, "unknown", source_dir.stat().st_ino) in identities
 
 
 def test_verifier_parent_swap_fails_without_publishing_to_replacement(
@@ -456,8 +458,12 @@ def test_verifier_parent_swap_fails_without_publishing_to_replacement(
             (parent / "replacement").write_text("replacement", encoding="utf-8")
 
     monkeypatch.setattr(verifier, "_write_staged_bytes", swap_parent)
-    with pytest.raises((T4GateError, FileNotFoundError), match="parent|No such file"):
+    before_fds = len(list(Path("/proc/self/fd").iterdir()))
+    with pytest.raises(verifier.T4PublicationUncertain, match="preserved") as raised:
         verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), output)
     assert (parent / "replacement").read_text(encoding="utf-8") == "replacement"
     assert not output.exists()
-    assert not list(moved.glob(".matrix.sources.staging-*"))
+    staging = list(moved.glob(".matrix.sources.staging-*"))
+    assert len(staging) == 1
+    assert next(item for item in raised.value.preserved if item.inode == staging[0].stat().st_ino)
+    assert len(list(Path("/proc/self/fd").iterdir())) == before_fds

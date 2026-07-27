@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import argparse
-from collections.abc import Iterator, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 import contextvars
 import ctypes
 import errno
@@ -52,6 +52,16 @@ _READ_SNAPSHOT: contextvars.ContextVar[dict[Path, bytes] | None] = contextvars.C
 
 class T4GateError(ValueError):
     pass
+
+
+class T4PublicationUncertain(RuntimeError):
+    def __init__(self, preserved: Sequence[_collector.PreservedArtifact]):
+        self.preserved = tuple(preserved)
+        details = ", ".join(
+            f"{item.name}[{item.ownership},dev={item.device},ino={item.inode}]"
+            for item in self.preserved
+        ) or "identity unavailable"
+        super().__init__(f"T4 verification publication failed; preserved artifacts: {details}")
 
 
 def _canonical(value: object) -> bytes:
@@ -154,17 +164,27 @@ def _write_new(
     else:
         directory = os.dup(parent_fd)
     data = _canonical(value) + b"\n"
-    parent_status = os.fstat(directory)
     temporary = f".{path.name}.tmp-{os.getpid()}-{time.time_ns()}"
     descriptor = -1
+    temporary_created = False
     published = False
+    file_witness: tuple[int, int] | None = None
     try:
+        parent_status = os.fstat(directory)
+        try:
+            os.stat(path.name, dir_fd=directory, follow_symlinks=False)
+        except FileNotFoundError:
+            pass
+        else:
+            raise FileExistsError(path)
         descriptor = os.open(
             temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
             0o644, dir_fd=directory,
         )
+        temporary_created = True
         try:
             file_status = os.fstat(descriptor)
+            file_witness = (file_status.st_dev, file_status.st_ino)
             remaining = memoryview(data)
             while remaining:
                 written = os.write(descriptor, remaining)
@@ -186,19 +206,22 @@ def _write_new(
         if (parent_status.st_dev, parent_status.st_ino) != (current_parent.st_dev, current_parent.st_ino):
             raise T4GateError("T4 output parent changed during publication")
         return file_status.st_dev, file_status.st_ino
-    except BaseException:
+    except T4PublicationUncertain:
+        raise
+    except BaseException as exc:
         if descriptor >= 0:
             os.close(descriptor)
-        try:
-            os.unlink(temporary, dir_fd=directory)
-        except FileNotFoundError:
-            pass
-        if published:
-            try:
-                os.unlink(path.name, dir_fd=directory)
-                os.fsync(directory)
-            except FileNotFoundError:
-                pass
+        if temporary_created:
+            raise T4PublicationUncertain(
+                _collector._preserved_artifacts(
+                    directory,
+                    path.parent,
+                    [
+                        (temporary, file_witness, True),
+                        (path.name, file_witness, published),
+                    ],
+                )
+            ) from exc
         raise
     finally:
         os.close(directory)
@@ -214,16 +237,19 @@ def _rename_directory_new(
         os.open(source.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
         if parent_fd is None else os.dup(parent_fd)
     )
-    parent_status = os.fstat(directory)
-    libc = ctypes.CDLL(None, use_errno=True)
-    renameat2 = getattr(libc, "renameat2", None)
-    if renameat2 is None:
-        os.close(directory)
-        raise T4GateError("atomic no-clobber directory publication is unavailable")
+    renamed = False
+    source_witness: tuple[int, int] | None = None
     try:
+        parent_status = os.fstat(directory)
+        libc = ctypes.CDLL(None, use_errno=True)
+        renameat2 = getattr(libc, "renameat2", None)
+        if renameat2 is None:
+            raise T4GateError("atomic no-clobber directory publication is unavailable")
         current_parent = os.lstat(destination.parent)
         if (parent_status.st_dev, parent_status.st_ino) != (current_parent.st_dev, current_parent.st_ino):
             raise T4GateError("T4 output parent changed during publication")
+        source_status = os.stat(source.name, dir_fd=directory, follow_symlinks=False)
+        source_witness = (source_status.st_dev, source_status.st_ino)
         result = renameat2(
             ctypes.c_int(directory), os.fsencode(source.name), ctypes.c_int(directory),
             os.fsencode(destination.name), ctypes.c_uint(1),
@@ -233,148 +259,34 @@ def _rename_directory_new(
             if error == errno.EEXIST:
                 raise FileExistsError(destination)
             raise OSError(error, os.strerror(error), destination)
+        renamed = True
         os.fsync(directory)
         destination_status = os.stat(destination.name, dir_fd=directory, follow_symlinks=False)
         current_parent = os.lstat(destination.parent)
         if (parent_status.st_dev, parent_status.st_ino) != (current_parent.st_dev, current_parent.st_ino):
-            shutil.rmtree(Path(f"/proc/self/fd/{directory}") / destination.name)
-            os.fsync(directory)
-            raise T4GateError("T4 output parent changed during publication")
+            cause = T4GateError("T4 output parent changed during publication")
+            raise T4PublicationUncertain(
+                _collector._preserved_artifacts(
+                    directory,
+                    destination.parent,
+                    [(destination.name, (destination_status.st_dev, destination_status.st_ino), True)],
+                )
+            ) from cause
         return destination_status.st_dev, destination_status.st_ino
+    except T4PublicationUncertain:
+        raise
+    except BaseException as exc:
+        if renamed:
+            raise T4PublicationUncertain(
+                _collector._preserved_artifacts(
+                    directory,
+                    destination.parent,
+                    [(destination.name, source_witness, True)],
+                )
+            ) from exc
+        raise
     finally:
         os.close(directory)
-
-
-def _entry_names(parent_fd: int, preferred: str) -> Iterator[str]:
-    yield preferred
-    yield from (item for item in os.listdir(parent_fd) if item != preferred)
-
-
-def _open_owned_directory(
-    parent_fd: int, preferred: str, witness: tuple[int, int]
-) -> tuple[str, int] | None:
-    for candidate in _entry_names(parent_fd, preferred):
-        try:
-            status = os.stat(candidate, dir_fd=parent_fd, follow_symlinks=False)
-        except FileNotFoundError:
-            continue
-        if not stat.S_ISDIR(status.st_mode) or (status.st_dev, status.st_ino) != witness:
-            continue
-        try:
-            descriptor = os.open(
-                candidate,
-                os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
-                dir_fd=parent_fd,
-            )
-        except OSError as exc:
-            if exc.errno in {errno.ENOENT, errno.ENOTDIR, errno.ELOOP}:
-                continue
-            raise
-        try:
-            opened = os.fstat(descriptor)
-            if stat.S_ISDIR(opened.st_mode) and (opened.st_dev, opened.st_ino) == witness:
-                return candidate, descriptor
-        except BaseException:
-            os.close(descriptor)
-            raise
-        os.close(descriptor)
-    return None
-
-
-def _remove_directory_contents_fd(descriptor: int) -> None:
-    for name in os.listdir(descriptor):
-        try:
-            before = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
-        except FileNotFoundError:
-            continue
-        identity = (before.st_dev, before.st_ino)
-        if stat.S_ISDIR(before.st_mode):
-            opened = _open_owned_directory(descriptor, name, identity)
-            if opened is None:
-                raise T4GateError("cleanup unsafe: owned directory entry changed")
-            _, child = opened
-            try:
-                _remove_directory_contents_fd(child)
-            finally:
-                os.close(child)
-            current = _open_owned_directory(descriptor, name, identity)
-            if current is None:
-                continue
-            current_name, current_fd = current
-            os.close(current_fd)
-            final = os.stat(current_name, dir_fd=descriptor, follow_symlinks=False)
-            if (final.st_dev, final.st_ino) != identity:
-                raise T4GateError("cleanup unsafe: owned directory entry replaced")
-            os.rmdir(current_name, dir_fd=descriptor)
-            continue
-        if stat.S_ISLNK(before.st_mode):
-            final = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
-            if (final.st_dev, final.st_ino) != identity:
-                raise T4GateError("cleanup unsafe: owned symlink entry replaced")
-            os.unlink(name, dir_fd=descriptor)
-            continue
-        try:
-            child = os.open(
-                name, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW, dir_fd=descriptor
-            )
-        except FileNotFoundError:
-            continue
-        try:
-            opened = os.fstat(child)
-            if (opened.st_dev, opened.st_ino) != identity:
-                raise T4GateError("cleanup unsafe: owned file entry changed")
-        finally:
-            os.close(child)
-        final = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
-        if (final.st_dev, final.st_ino) != identity:
-            raise T4GateError("cleanup unsafe: owned file entry replaced")
-        os.unlink(name, dir_fd=descriptor)
-    os.fsync(descriptor)
-
-
-def _remove_owned(parent_fd: int, name: str, witness: tuple[int, int], *, tree: bool) -> None:
-    if tree:
-        opened = _open_owned_directory(parent_fd, name, witness)
-        if opened is None:
-            return
-        _, descriptor = opened
-        try:
-            _remove_directory_contents_fd(descriptor)
-        finally:
-            os.close(descriptor)
-        current = _open_owned_directory(parent_fd, name, witness)
-        if current is None:
-            return
-        owned_name, descriptor = current
-        os.close(descriptor)
-        final = os.stat(owned_name, dir_fd=parent_fd, follow_symlinks=False)
-        if (final.st_dev, final.st_ino) != witness:
-            raise T4GateError("cleanup unsafe: owned directory replaced")
-        os.rmdir(owned_name, dir_fd=parent_fd)
-    else:
-        for owned_name in _entry_names(parent_fd, name):
-            try:
-                before = os.stat(owned_name, dir_fd=parent_fd, follow_symlinks=False)
-            except FileNotFoundError:
-                continue
-            if (before.st_dev, before.st_ino) != witness:
-                continue
-            descriptor = os.open(
-                owned_name, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW,
-                dir_fd=parent_fd,
-            )
-            try:
-                opened = os.fstat(descriptor)
-                if (opened.st_dev, opened.st_ino) != witness:
-                    continue
-            finally:
-                os.close(descriptor)
-            final = os.stat(owned_name, dir_fd=parent_fd, follow_symlinks=False)
-            if (final.st_dev, final.st_ino) != witness:
-                raise T4GateError("cleanup unsafe: owned file replaced")
-            os.unlink(owned_name, dir_fd=parent_fd)
-            break
-    os.fsync(parent_fd)
 
 
 def _write_staged_bytes(path: Path, data: bytes, *, parent_fd: int | None = None) -> None:
@@ -603,11 +515,18 @@ def verify_t4_gate(evidence_paths: Sequence[Path] | Mapping[str, Any], shortlist
             shortlist_path = Path(sources.get("shortlist", {}).get("path", ""))
         if shortlist_path is None or not shortlist_path.is_file():
             raise T4GateError("evidence mapping lacks a bound shortlist")
-        with tempfile.TemporaryDirectory(prefix="oviv2-t4-verify-") as temporary:
-            evidence_path = Path(temporary) / "evidence.json"
+        temporary = Path(tempfile.mkdtemp(prefix="oviv2-t4-verify-"))
+        succeeded = False
+        try:
+            evidence_path = temporary / "evidence.json"
             _write_new(evidence_path, evidence_paths)
-            destination = output or Path(temporary) / "matrix.json"
-            return verify_t4_gate([evidence_path], shortlist_path, destination)
+            destination = output or temporary / "matrix.json"
+            result = verify_t4_gate([evidence_path], shortlist_path, destination)
+            succeeded = True
+            return result
+        finally:
+            if succeeded:
+                shutil.rmtree(temporary)
     paths = [Path(path).absolute() for path in evidence_paths]
     if shortlist_path is None or output is None:
         raise T4GateError("shortlist and matrix output are required")
@@ -656,12 +575,14 @@ def verify_t4_gate(evidence_paths: Sequence[Path] | Mapping[str, Any], shortlist
         output.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
     )
     staging_directory = -1
+    staging_created = False
     staging_witness: tuple[int, int] | None = None
     source_witness: tuple[int, int] | None = None
     protocol_witness: tuple[int, int] | None = None
     output_witness: tuple[int, int] | None = None
     try:
         os.mkdir(staging_dir.name, dir_fd=publication_directory)
+        staging_created = True
         staging_directory = os.open(
             staging_dir.name,
             os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
@@ -791,19 +712,30 @@ def verify_t4_gate(evidence_paths: Sequence[Path] | Mapping[str, Any], shortlist
         output_witness = _write_new(output, matrix, parent_fd=publication_directory)
         output_published = True
         return matrix
-    except BaseException:
-        if output_published and output_witness is not None:
-            _remove_owned(publication_directory, output.name, output_witness, tree=False)
-        if protocol_published and protocol_witness is not None:
-            _remove_owned(
-                publication_directory, protocol_path.name, protocol_witness, tree=False
+    except BaseException as exc:
+        if staging_created:
+            directory_name = source_dir.name if source_published else staging_dir.name
+            directory_witness = source_witness if source_published else staging_witness
+            preserved = _collector._preserved_artifacts(
+                publication_directory,
+                output.parent,
+                [
+                    (directory_name, directory_witness, True),
+                    (protocol_path.name, protocol_witness, protocol_published),
+                    (output.name, output_witness, output_published),
+                ],
             )
-        directory_name = source_dir.name if source_published else staging_dir.name
-        directory_witness = source_witness if source_published else staging_witness
-        if directory_witness is not None:
-            _remove_owned(
-                publication_directory, directory_name, directory_witness, tree=True
+            if isinstance(exc, T4PublicationUncertain):
+                preserved = (*exc.preserved, *preserved)
+            raise T4PublicationUncertain(
+                preserved
+            ) from (
+                exc.__cause__
+                if isinstance(exc, T4PublicationUncertain) and exc.__cause__ is not None
+                else exc
             )
+        if isinstance(exc, T4PublicationUncertain):
+            raise
         raise
     finally:
         if staging_directory >= 0:
