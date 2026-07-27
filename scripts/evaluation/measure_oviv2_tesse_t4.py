@@ -167,6 +167,7 @@ def _write_new(
     path: Path, value: object, *, parent_fd: int | None = None
 ) -> tuple[int, int]:
     path = path.absolute()
+    data = _canonical(value) + b"\n"
     if parent_fd is None:
         path.parent.mkdir(parents=True, exist_ok=True)
         trusted_root = _trusted_fd_root(path)
@@ -178,7 +179,6 @@ def _write_new(
         directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
     else:
         directory = os.dup(parent_fd)
-    data = _canonical(value) + b"\n"
     temporary = f".{path.name}.tmp-{os.getpid()}-{time.time_ns()}"
     descriptor = -1
     temporary_created = False
@@ -1324,6 +1324,12 @@ def collect_shortlist(
             raise T4CollectionError("T4 output parent changed during publication")
         return [destination / path.relative_to(stable_staging) for path in staged_paths]
     except BaseException as exc:
+        if (
+            not staging_created
+            and isinstance(exc, FileExistsError)
+            and exc.errno == errno.EEXIST
+        ):
+            raise
         if publication_directory >= 0:
             preferred = destination.name if published else staging.name
             preserved = _preserved_artifacts(

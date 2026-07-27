@@ -814,6 +814,61 @@ def test_collector_mkdir_wrapper_failure_reports_unbound_preserved_directory(
     assert len(list(Path("/proc/self/fd").iterdir())) == before_fds
 
 
+def test_collector_mkdir_eexist_preserves_competitor_and_propagates(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.measure_oviv2_tesse_t4 as collector
+
+    destination = tmp_path / "collected"
+    original_mkdir = collector.os.mkdir
+    competitor_inode = None
+
+    def competitor_wins(path, *args, **kwargs):
+        nonlocal competitor_inode
+        if isinstance(path, str) and path.startswith(".collected.staging-"):
+            original_mkdir(path, *args, **kwargs)
+            competitor = Path(f"/proc/self/fd/{kwargs['dir_fd']}") / path
+            (competitor / "marker").write_text("competitor", encoding="utf-8")
+            competitor_inode = competitor.stat().st_ino
+            raise FileExistsError(collector.errno.EEXIST, "injected competitor", path)
+        return original_mkdir(path, *args, **kwargs)
+
+    monkeypatch.setattr(collector.os, "mkdir", competitor_wins)
+    before_fds = len(list(Path("/proc/self/fd").iterdir()))
+    with pytest.raises(FileExistsError, match="competitor") as raised:
+        collect_shortlist(Path("protocol"), Path("shortlist"), "0", destination)
+    assert raised.value.__cause__ is None
+    staging = list(tmp_path.glob(".collected.staging-*"))
+    assert len(staging) == 1
+    assert (staging[0] / "marker").read_text(encoding="utf-8") == "competitor"
+    assert staging[0].stat().st_ino == competitor_inode
+    assert len(list(Path("/proc/self/fd").iterdir())) == before_fds
+
+
+@pytest.mark.parametrize(
+    "module_name",
+    [
+        "scripts.evaluation.measure_oviv2_tesse_t4",
+        "scripts.evaluation.verify_oviv2_tesse_t4_gate",
+    ],
+)
+@pytest.mark.parametrize("value", [object(), float("nan")], ids=["object", "nan"])
+def test_write_new_serialization_failure_precedes_fd_open(
+    tmp_path: Path, module_name: str, value: object
+) -> None:
+    module = importlib.import_module(module_name)
+    parent = tmp_path / module_name.rsplit(".", 1)[-1]
+    parent.mkdir()
+    output = parent / "output.json"
+    before_fds = len(list(Path("/proc/self/fd").iterdir()))
+    with pytest.raises((TypeError, ValueError)) as raised:
+        module._write_new(output, value)
+    assert raised.value.__cause__ is None
+    assert not output.exists()
+    assert not list(parent.glob(".output.json.tmp-*"))
+    assert len(list(Path("/proc/self/fd").iterdir())) == before_fds
+
+
 @pytest.mark.parametrize(
     "module_name",
     [

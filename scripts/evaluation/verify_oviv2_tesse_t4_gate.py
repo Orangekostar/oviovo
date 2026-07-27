@@ -155,6 +155,7 @@ def _write_new(
     path: Path, value: object, *, parent_fd: int | None = None
 ) -> tuple[int, int]:
     path = path.absolute()
+    data = _canonical(value) + b"\n"
     if parent_fd is None:
         path.parent.mkdir(parents=True, exist_ok=True)
         for component in (path.parent, *path.parent.parents):
@@ -163,7 +164,6 @@ def _write_new(
         directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
     else:
         directory = os.dup(parent_fd)
-    data = _canonical(value) + b"\n"
     temporary = f".{path.name}.tmp-{os.getpid()}-{time.time_ns()}"
     descriptor = -1
     temporary_created = False
@@ -713,6 +713,12 @@ def verify_t4_gate(evidence_paths: Sequence[Path] | Mapping[str, Any], shortlist
         output_published = True
         return matrix
     except BaseException as exc:
+        if (
+            not staging_created
+            and isinstance(exc, FileExistsError)
+            and exc.errno == errno.EEXIST
+        ):
+            raise
         if staging_created:
             directory_name = source_dir.name if source_published else staging_dir.name
             directory_witness = source_witness if source_published else staging_witness

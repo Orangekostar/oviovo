@@ -415,6 +415,38 @@ def test_verifier_mkdir_wrapper_failure_reports_unbound_preserved_directory(
     assert len(list(Path("/proc/self/fd").iterdir())) == before_fds
 
 
+def test_verifier_mkdir_eexist_preserves_competitor_and_propagates(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.verify_oviv2_tesse_t4_gate as verifier
+
+    _, fixture = _valid_t4_evidence(tmp_path / "evidence")
+    output = tmp_path / "matrix.json"
+    original_mkdir = verifier.os.mkdir
+    competitor_inode = None
+
+    def competitor_wins(path, *args, **kwargs):
+        nonlocal competitor_inode
+        if isinstance(path, str) and path.startswith(".matrix.sources.staging-"):
+            original_mkdir(path, *args, **kwargs)
+            competitor = Path(f"/proc/self/fd/{kwargs['dir_fd']}") / path
+            (competitor / "marker").write_text("competitor", encoding="utf-8")
+            competitor_inode = competitor.stat().st_ino
+            raise FileExistsError(verifier.errno.EEXIST, "injected competitor", path)
+        return original_mkdir(path, *args, **kwargs)
+
+    monkeypatch.setattr(verifier.os, "mkdir", competitor_wins)
+    before_fds = len(list(Path("/proc/self/fd").iterdir()))
+    with pytest.raises(FileExistsError, match="competitor") as raised:
+        verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), output)
+    assert raised.value.__cause__ is None
+    staging = list(tmp_path.glob(".matrix.sources.staging-*"))
+    assert len(staging) == 1
+    assert (staging[0] / "marker").read_text(encoding="utf-8") == "competitor"
+    assert staging[0].stat().st_ino == competitor_inode
+    assert len(list(Path("/proc/self/fd").iterdir())) == before_fds
+
+
 def test_verifier_does_not_unlink_racing_output(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
