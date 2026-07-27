@@ -825,27 +825,29 @@ def _exact_execution(
         if profile == "reference"
         else (Path(__file__).parents[2] / "scripts/evaluation/run_oviv2_tesse_cd_v2.py").resolve()
     )
+    input_path = (root.parent / "input.json").resolve()
+    schedule_path = (root.parent / "schedule.json").resolve()
+    target_path = (root.parent / "target.json").resolve()
+    for path, payload in (
+        (input_path, {"input": "shared"}),
+        (schedule_path, {"schedule": "shared"}),
+        (target_path, {"target": "shared"}),
+    ):
+        if not path.exists():
+            path.write_text(json.dumps(payload, sort_keys=True) + "\n")
     config_path = (root.parent / f"{profile}.json").resolve()
-    config_path.write_text(json.dumps({"algorithm_hash": "d" * 64, "profile": profile}) + "\n")
-    freeze_path = (root.parent / "freeze.json").resolve()
-    if not freeze_path.exists():
-        freeze_path.write_text(
-            json.dumps(
-                {
-                    "shared_bindings": {
-                        "input_manifest": {"sha256": "1" * 64},
-                        "schedule": {"sha256": "2" * 64},
-                        "occlusion_target_manifest": {"sha256": "3" * 64},
-                    }
-                },
-                sort_keys=True,
-            )
-            + "\n"
-        )
+    config_payload = {
+        "scene": "apartment",
+        "algorithm_hash": "d" * 64,
+        "input_manifest": str(input_path),
+        "schedule_manifest": str(schedule_path),
+        "occlusion_target_manifest": str(target_path),
+        "occlusion_target_manifest_sha256": hashlib.sha256(target_path.read_bytes()).hexdigest(),
+    }
+    config_path.write_text(json.dumps(config_payload, sort_keys=True) + "\n")
     argv = [
         "/env/bin/python", str(runner), "--config", str(config_path),
-        "--output", str(root.resolve()), "--freeze-manifest", str(freeze_path),
-        "--run-slot", "apartment_run1",
+        "--output", str(root.resolve()),
     ]
     if profile == "reference":
         argv += ["--receipt", str((root / "t1_exact_receipt.json").resolve()),
@@ -854,6 +856,20 @@ def _exact_execution(
         "schema_version": 1 if profile == "reference" else 2,
         "algorithm_hash": "d" * 64,
         "code_commit": commit,
+        "scene": "apartment",
+        "mode": "dual_readout_causal_checkpoints",
+        "config": {
+            "sha256": hashlib.sha256(config_path.read_bytes()).hexdigest(),
+            "byte_count": len(config_path.read_bytes()),
+        },
+        "schedule": {
+            "sha256": hashlib.sha256(schedule_path.read_bytes()).hexdigest(),
+            "byte_count": len(schedule_path.read_bytes()),
+        },
+        "target_manifest": {
+            "sha256": hashlib.sha256(target_path.read_bytes()).hexdigest(),
+            "byte_count": len(target_path.read_bytes()),
+        },
         "source_bindings": {"dataset": "fixture", "cache": "shared"},
         "checkpoints": [{"frame_index": 2}],
     }
@@ -868,11 +884,14 @@ def _exact_execution(
     if profile == "reference":
         worker_execution = {
             "profile": profile,
+            "mode": gates.DEVELOPMENT_MODE,
             "argv": argv,
             "pid": pid,
             "code_commit": commit,
             "source_manifest_sha256": actual_source_sha,
-            "input_fingerprints": inputs or {"dataset": "c" * 64},
+            "input_fingerprints": inputs or {
+                "config": hashlib.sha256(config_path.read_bytes()).hexdigest()
+            },
             "output_root": str(root.resolve()),
         }
         receipt = {
@@ -913,12 +932,12 @@ def _exact_execution(
         "pid": pid,
         "returncode": 0,
         "config": gates._absolute_file_record(config_path),
-        "freeze_manifest": gates._absolute_file_record(freeze_path),
         "source_manifest": gates._absolute_file_record(source_path),
         "output_root": str(root.resolve()),
         "root_device": status.st_dev,
         "root_inode": status.st_ino,
         "trust_model": gates.LOCAL_PROCESS_TRUST_MODEL,
+        "execution_context": gates.DEVELOPMENT_EXECUTION_CONTEXT,
         "run_manifest": gates._absolute_file_record(root / "run_manifest.json"),
         "production_receipt": gates._absolute_file_record(receipt_path),
         "completed_execution": completed,
@@ -1024,17 +1043,14 @@ def test_exact_transaction_uses_popen_pid_argv_and_returncode(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     config = tmp_path / "config.json"
-    freeze = tmp_path / "freeze.json"
     source = tmp_path / "source.json"
-    for path in (config, freeze, source):
-        path.write_text("{}\n")
+    config.write_text('{"scene":"apartment"}\n')
+    source.write_text("{}\n")
     specs = [
         {
             "profile": profile,
             "config": str(config.resolve()),
             "output_root": str((tmp_path / f"run-{position}").resolve()),
-            "freeze_manifest": str(freeze.resolve()),
-            "run_slot": "apartment_run1",
             "source_manifest": str(source.resolve()),
         }
         for position, profile in enumerate(gates.EXACT_PROFILE_SEQUENCE)
@@ -1057,7 +1073,11 @@ def test_exact_transaction_uses_popen_pid_argv_and_returncode(
         output = Path(argv[5])
         output.mkdir()
         (output / "run_manifest.json").write_text("{}\n")
-        receipt_name = "t1_exact_receipt.json" if len(argv) == 14 else "execution_receipt.json"
+        receipt_name = (
+            "t1_exact_receipt.json"
+            if Path(argv[1]).name == "run_oviv2_t1_reference.py"
+            else "execution_receipt.json"
+        )
         (output / receipt_name).write_text("{}\n")
         return Process(argv, pid)
 
@@ -1127,6 +1147,125 @@ def test_exact_transaction_uses_popen_pid_argv_and_returncode(
         == gates.LOCAL_PROCESS_TRUST_MODEL
         for path in observations
     )
+    assert all("freeze_manifest" not in json.loads(path.read_text()) for path in observations)
+    assert all(
+        json.loads(path.read_text())["execution_context"]
+        == gates.DEVELOPMENT_EXECUTION_CONTEXT
+        for path in observations
+    )
+    assert launched[0][0] == [
+        "/env/bin/python",
+        str((gates.REPO_ROOT / "scripts/evaluation/run_oviv2_t1_reference.py").resolve()),
+        "--config", str(config.resolve()),
+        "--output", str((tmp_path / "run-0").resolve()),
+        "--receipt", str((tmp_path / "run-0/t1_exact_receipt.json").resolve()),
+        "--source-manifest", str(source.resolve()),
+    ]
+    assert all(len(argv) == 6 for argv, _ in launched[1:])
+
+
+@pytest.mark.parametrize("case", ["old_fields", "office"])
+def test_exact_transaction_rejects_frozen_or_office_specs_before_popen(
+    tmp_path: Path, case: str
+) -> None:
+    source = tmp_path / "source.json"
+    source.write_text("{}\n")
+    specs: list[dict[str, object]] = []
+    for position, profile in enumerate(gates.EXACT_PROFILE_SEQUENCE):
+        config = tmp_path / f"config-{position}.json"
+        config.write_text(
+            json.dumps({"scene": "office" if case == "office" else "apartment"}) + "\n"
+        )
+        spec: dict[str, object] = {
+            "profile": profile,
+            "config": str(config.resolve()),
+            "output_root": str((tmp_path / f"rejected-{position}").resolve()),
+            "source_manifest": str(source.resolve()),
+        }
+        if case == "old_fields":
+            spec.update(
+                freeze_manifest=str((tmp_path / "freeze.json").resolve()),
+                run_slot="apartment_run1",
+            )
+        specs.append(spec)
+    called = False
+
+    def popen(*args: object, **kwargs: object) -> object:
+        nonlocal called
+        called = True
+        raise AssertionError((args, kwargs))
+
+    with pytest.raises(gates.GateVerificationError, match="fields|Apartment|apartment"):
+        gates.execute_exact_profile_transaction(
+            specs,
+            repo=gates.REPO_ROOT,
+            python_executable="/env/bin/python",
+            transaction_dir=tmp_path / "rejected-transaction",
+            popen_factory=popen,
+        )
+    assert not called
+
+
+def test_exact_argv_rejects_injected_freeze_flag(tmp_path: Path) -> None:
+    execution = _exact_execution("a1", tmp_path / "run-2", 102)
+    execution["argv"] = [
+        *execution["argv"],
+        "--freeze-manifest",
+        str((tmp_path / "freeze.json").resolve()),
+    ]
+    with pytest.raises(gates.GateVerificationError, match="canonical"):
+        gates._validate_exact_argv(execution, Path(execution["output_root"]))
+
+
+@pytest.mark.parametrize("mutation", ["missing_source", "mode"])
+def test_exact_execution_rejects_missing_source_hash_or_mode_mismatch(
+    tmp_path: Path, mutation: str
+) -> None:
+    execution = _exact_execution("a1", tmp_path / "run-2", 102)
+    if mutation == "missing_source":
+        execution["source_manifest_sha256"] = None
+    else:
+        execution["profile_config_binding"]["mode"] = "formal_final_freeze"
+    with pytest.raises(gates.GateVerificationError, match="binding|mode"):
+        gates._exact_execution(execution)
+
+
+def test_completed_execution_rejects_source_bindings_mismatch(tmp_path: Path) -> None:
+    execution = _exact_execution("a1", tmp_path / "run-2", 102)
+    root = Path(execution["output_root"])
+    manifest_path = root / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["source_bindings"]["dataset"] = "different"
+    manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
+    with pytest.raises(gates.GateVerificationError, match="source bindings|reopened|changed"):
+        gates._bind_exact_receipt(
+            execution,
+            expected_position=2,
+            compare=lambda left, right: {
+                "checkpoint_frames": [2, 7],
+                "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
+                "root_sha256": "e" * 64,
+            },
+        )
+
+
+def test_exact_receipt_rejects_config_changed_after_run(tmp_path: Path) -> None:
+    execution = _exact_execution("a1", tmp_path / "run-2", 102)
+    config_path = Path(execution["argv"][3])
+    config = json.loads(config_path.read_text())
+    config["algorithm_hash"] = "f" * 64
+    config_path.write_text(json.dumps(config, sort_keys=True) + "\n")
+
+    with pytest.raises(gates.GateVerificationError, match="config.*changed|observed config"):
+        gates._bind_exact_receipt(
+            execution,
+            expected_position=2,
+            compare=lambda left, right: {
+                "checkpoint_frames": [2, 7],
+                "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
+                "root_sha256": "e" * 64,
+            },
+        )
 
 
 def _failure_cleanup_harness(
@@ -1137,17 +1276,14 @@ def _failure_cleanup_harness(
     position: int,
 ) -> tuple[list[dict[str, object]], Path, object, object]:
     config = tmp_path / "config.json"
-    freeze = tmp_path / "freeze.json"
     source = tmp_path / "source.json"
-    for path in (config, freeze, source):
-        path.write_text("{}\n")
+    config.write_text('{"scene":"apartment"}\n')
+    source.write_text("{}\n")
     specs = [
         {
             "profile": profile,
             "config": str(config.resolve()),
             "output_root": str((tmp_path / f"cleanup-run-{index}").resolve()),
-            "freeze_manifest": str(freeze.resolve()),
-            "run_slot": "apartment_run1",
             "source_manifest": str(source.resolve()),
         }
         for index, profile in enumerate(gates.EXACT_PROFILE_SEQUENCE)
@@ -1177,7 +1313,9 @@ def _failure_cleanup_harness(
         output.mkdir()
         (output / "run_manifest.json").write_text("{}\n")
         receipt = output / (
-            "t1_exact_receipt.json" if len(argv) == 14 else "execution_receipt.json"
+            "t1_exact_receipt.json"
+            if Path(argv[1]).name == "run_oviv2_t1_reference.py"
+            else "execution_receipt.json"
         )
         receipt.write_text("{}\n")
         return Process(0, 20_000 + launches)
@@ -1204,16 +1342,16 @@ def _failure_cleanup_harness(
             "code_commit": "a" * 40,
             "source_manifest_sha256": "b" * 64,
             "profile_config_binding": {
+                "mode": gates.DEVELOPMENT_MODE,
                 "config_sha256": "c" * 64,
-                "freeze_manifest_sha256": "d" * 64,
                 "algorithm_hash": "e" * 64,
                 "profile_sha256": "f" * 64,
             },
             "common_input_fingerprints": {
                 "source_manifest_sha256": "1" * 64,
                 "input_manifest_sha256": "2" * 64,
-                "schedule_sha256": "3" * 64,
-                "ground_truth_sha256": "4" * 64,
+                "schedule_manifest_sha256": "3" * 64,
+                "occlusion_target_manifest_sha256": "4" * 64,
                 "source_bindings_sha256": "5" * 64,
             },
             "output_root": str(root),
@@ -1600,9 +1738,12 @@ def test_exact_profile_gate_rejects_root_alias_argv_and_receipt_mismatch(
         gates.verify_exact_profile_runs(executions, compare=compare)
 
 
-@pytest.mark.parametrize("field", ["argv", "code_commit", "source_manifest_sha256", "input_fingerprints"])
+@pytest.mark.parametrize(
+    "field",
+    ["argv", "code_commit", "source_manifest_sha256", "common_input_fingerprints"],
+)
 def test_exact_profile_gate_rejects_incomplete_or_disagreeing_bindings(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, field: str
+    tmp_path: Path, field: str
 ) -> None:
     profiles = ("reference", "a0", "a1", "a0", "a2", "a0", "a3", "a0", "a4")
     executions = [
@@ -1617,8 +1758,8 @@ def test_exact_profile_gate_rejects_incomplete_or_disagreeing_bindings(
         }
     if field == "argv":
         executions[3][field] = []
-    elif field == "input_fingerprints":
-        executions[3][field] = {"dataset": "f" * 64}
+    elif field == "common_input_fingerprints":
+        executions[3][field] = {"source_manifest_sha256": "f" * 64}
     else:
         executions[3][field] = "f" * (40 if field == "code_commit" else 64)
     with pytest.raises(gates.GateVerificationError, match="binding|argv"):
