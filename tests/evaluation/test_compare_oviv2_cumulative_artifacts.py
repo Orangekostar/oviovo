@@ -16,6 +16,7 @@ from scripts.evaluation.compare_oviv2_cumulative_artifacts import (
     compare_cumulative_artifacts,
 )
 from scripts.evaluation.evaluate_oviv2_tesse_occlusion import (
+    canonical_algorithm_config,
     canonical_algorithm_hash,
 )
 
@@ -264,6 +265,154 @@ def _v1_run(root: Path) -> Path:
     return root
 
 
+def _v1_production_run(root: Path) -> Path:
+    _v1_run(root)
+    manifest_path = root / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    checkpoint = manifest["checkpoints"][0]
+    voxel_root = root / checkpoint["voxel_snapshot"]["path"]
+    checksums = voxel_root / "checksums.json"
+    checksums.write_text('{"ownership.npz":"fixture"}\n')
+    checkpoint["voxel_snapshot"] = _tree_record(voxel_root, root)
+
+    schedule = root / "inputs/schedule.json"
+    schedule.parent.mkdir()
+    schedule.write_text('{"frames":[2]}\n')
+    trajectories = root / "trajectories.jsonl"
+    trajectories.write_text('{"frame_index":2,"timestamp_ns":100}\n')
+    schedule_record = _file_record(schedule, root)
+    trajectories_record = _file_record(trajectories, root)
+    checkpoint_status = checkpoint["checkpoint_status"]
+
+    capture = root / "capture_status.json"
+    capture.write_text(json.dumps({
+        "schema_version": 1,
+        "status": "PASS",
+        "scene": "apartment",
+        "mode": "causal_checkpoints",
+        "scheduled_frame_indices": [2],
+        "captured_frame_indices": [2],
+        "schedule": schedule_record,
+        "trajectories": trajectories_record,
+        "checkpoint_statuses": [checkpoint_status],
+    }, sort_keys=True, separators=(",", ":")) + "\n")
+
+    source_index = root / "source_index.json"
+    source_index.write_text(json.dumps({
+        "schema_version": 1,
+        "dataset": "TESSE-CD",
+        "method": "OVIV2",
+        "mode": "causal_checkpoint_exports",
+        "scene": "apartment",
+        "schedule": schedule_record,
+        "capture_status": _file_record(capture, root),
+        "trajectories": trajectories_record,
+        "checkpoints": [{
+            "frame_index": 2,
+            "timestamp_ns": 100,
+            "consumed_through_frame": 2,
+            "consumed_through_frame_exclusive": 3,
+            "checkpoint_status": checkpoint_status,
+            "snapshot": checkpoint["neutral_snapshot"],
+            "entities": checkpoint["neutral_entities"],
+        }],
+    }, sort_keys=True, separators=(",", ":")) + "\n")
+
+    normalized = root / "normalized_run_config.json"
+    normalized_value = {
+        "schema_version": 1,
+        "dataset": "TESSE-CD",
+        "method_id": "OVIV2",
+        "scene": "apartment",
+        "dataset_root": "/dataset/apartment",
+        "confirm_hits": 2,
+    }
+    algorithm_hash = canonical_algorithm_hash(normalized_value)
+    normalized_value["algorithm_hash"] = algorithm_hash
+    normalized.write_text(
+        json.dumps(normalized_value, sort_keys=True, separators=(",", ":")) + "\n"
+    )
+
+    occlusion = root / "occlusion_checkpoint_index.json"
+    occlusion.write_text(json.dumps({
+        "schema_version": 2,
+        "manifest_id": "oviv2_tesse_cd_occlusion_checkpoints_v1",
+        "dataset": "TESSE-CD",
+        "method_id": "OVIV2",
+        "scene": "apartment",
+        "algorithm_hash": algorithm_hash,
+        "evaluation_checkpoint_frames_sha256": _sha(b"2"),
+        "run_config": _file_record(normalized, root),
+        "target_manifest": {"sha256": "c" * 64, "byte_count": 1},
+        "snapshots": [{
+            "scene": "apartment",
+            "frame_index": 2,
+            "timestamp_ns": 100,
+            "relative_timestamp_ns": 0,
+            "consumed_through_frame": 2,
+            "consumed_through_frame_exclusive": 3,
+            "format": "oviv2_voxel_map_snapshot",
+            "path": checkpoint["voxel_snapshot"]["path"],
+            "checksums_sha256": _sha(checksums.read_bytes()),
+        }],
+    }, sort_keys=True, separators=(",", ":")) + "\n")
+
+    provenance = root / "run_provenance.json"
+    provenance.write_text(json.dumps({
+        "repository_commit": "a" * 40,
+        "repository_tree": "b" * 40,
+        "dirty_state_digest": _sha(b""),
+        "command": ["python", "run_oviv2_t1_reference.py"],
+        "config_path": "/repo/config.json",
+        "output": str(root.absolute()),
+        "hostname": "fixture-host",
+        "platform": "fixture-platform",
+        "machine": "x86_64",
+        "python": "3.10.20",
+        "cuda_visible_devices": None,
+        "torch_cuda_version": "unavailable",
+        "cudnn_version": None,
+        "nvcc_version": [],
+        "gpu_inventory": [],
+        "input_paths": {"dataset_root": "/dataset/apartment"},
+        "library_versions": {
+            name: "fixture"
+            for name in ("numpy", "open3d", "torch", "scipy", "pillow")
+        },
+    }, sort_keys=True, separators=(",", ":")) + "\n")
+    (root / "timing.json").write_text(
+        '{"elapsed_sec":1.25,"processed_frame_count":8}\n'
+    )
+
+    manifest.update({
+        "dataset": "TESSE-CD",
+        "method_id": "OVIV2",
+        "scene": "apartment",
+        "mode": "causal_checkpoints",
+        "processed_frame_count": 8,
+        "scheduled_frame_indices": [2],
+        "captured_frame_indices": [2],
+        "official_schedule_frame_indices": [2],
+        "evaluation_checkpoint_frames": [2],
+        "algorithm_hash": algorithm_hash,
+        "normalized_algorithm_config": canonical_algorithm_config(normalized_value),
+        "occlusion_checkpoint_index": _file_record(occlusion, root),
+    })
+    manifest_path.write_text(
+        json.dumps(manifest, sort_keys=True, separators=(",", ":")) + "\n"
+    )
+    return root
+
+
+def _refresh_v1_occlusion_binding(root: Path) -> None:
+    manifest_path = root / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["occlusion_checkpoint_index"] = _file_record(
+        root / "occlusion_checkpoint_index.json", root
+    )
+    manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
+
+
 def _add_t1_receipt(root: Path) -> Path:
     audit = compare_cumulative_artifacts(root, root)
     receipt = root / "t1_exact_receipt.json"
@@ -334,6 +483,103 @@ def test_identical_cumulative_artifacts_have_stable_root(tmp_path: Path) -> None
     assert result["checkpoint_frames"] == [2, 7]
     assert len(result["root_sha256"]) == 64
     assert any(item["path"].endswith("ownership.npz") for item in result["inventory"])
+
+
+def test_schema1_production_support_inventory_self_compares_and_ignores_timing(
+    tmp_path: Path,
+) -> None:
+    left = _v1_production_run(tmp_path / "left")
+    right = tmp_path / "right"
+    shutil.copytree(left, right)
+    provenance = json.loads((right / "run_provenance.json").read_text())
+    provenance["output"] = str(right.absolute())
+    (right / "run_provenance.json").write_text(
+        json.dumps(provenance, sort_keys=True) + "\n"
+    )
+    (right / "timing.json").write_text(
+        '{"elapsed_sec":99.5,"processed_frame_count":8}\n'
+    )
+
+    assert compare_cumulative_artifacts(left, left)["checkpoint_frames"] == [2]
+    assert compare_cumulative_artifacts(left, right)["checkpoint_frames"] == [2]
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    (
+        ("extra", "inventory"),
+        ("missing", "inventory"),
+        ("record_path", "source index schedule"),
+        ("record_hash", "manifest record"),
+        ("record_bytes", "manifest record"),
+        ("source_semantics", "source index"),
+        ("capture_semantics", "capture status"),
+        ("timing_semantics", "timing"),
+        ("provenance_semantics", "provenance"),
+        ("normalized_semantics", "algorithm"),
+        ("occlusion_semantics", "occlusion"),
+    ),
+)
+def test_schema1_production_support_inventory_fails_closed(
+    tmp_path: Path, mutation: str, message: str,
+) -> None:
+    root = _v1_production_run(tmp_path / mutation)
+    if mutation == "extra":
+        (root / "unexpected.bin").write_bytes(b"unexpected")
+    elif mutation == "missing":
+        (root / "timing.json").unlink()
+    elif mutation.startswith("record_"):
+        source_path = root / "source_index.json"
+        source = json.loads(source_path.read_text())
+        if mutation == "record_path":
+            source["schedule"]["path"] = "normalized_run_config.json"
+        elif mutation == "record_hash":
+            source["schedule"]["sha256"] = "f" * 64
+        else:
+            source["schedule"]["byte_count"] += 1
+        source_path.write_text(json.dumps(source, sort_keys=True) + "\n")
+    elif mutation == "source_semantics":
+        source_path = root / "source_index.json"
+        source = json.loads(source_path.read_text())
+        source["mode"] = "future_exports"
+        source_path.write_text(json.dumps(source, sort_keys=True) + "\n")
+    elif mutation == "capture_semantics":
+        capture_path = root / "capture_status.json"
+        capture = json.loads(capture_path.read_text())
+        capture["captured_frame_indices"] = []
+        capture_path.write_text(json.dumps(capture, sort_keys=True) + "\n")
+        source_path = root / "source_index.json"
+        source = json.loads(source_path.read_text())
+        source["capture_status"] = _file_record(capture_path, root)
+        source_path.write_text(json.dumps(source, sort_keys=True) + "\n")
+    elif mutation == "timing_semantics":
+        (root / "timing.json").write_text(
+            '{"elapsed_sec":-1,"processed_frame_count":8}\n'
+        )
+    elif mutation == "provenance_semantics":
+        provenance_path = root / "run_provenance.json"
+        provenance = json.loads(provenance_path.read_text())
+        provenance["repository_tree"] = "not-a-tree"
+        provenance_path.write_text(json.dumps(provenance, sort_keys=True) + "\n")
+    elif mutation == "normalized_semantics":
+        normalized_path = root / "normalized_run_config.json"
+        normalized = json.loads(normalized_path.read_text())
+        normalized["confirm_hits"] = 9
+        normalized_path.write_text(json.dumps(normalized, sort_keys=True) + "\n")
+        occlusion_path = root / "occlusion_checkpoint_index.json"
+        occlusion = json.loads(occlusion_path.read_text())
+        occlusion["run_config"] = _file_record(normalized_path, root)
+        occlusion_path.write_text(json.dumps(occlusion, sort_keys=True) + "\n")
+        _refresh_v1_occlusion_binding(root)
+    else:
+        occlusion_path = root / "occlusion_checkpoint_index.json"
+        occlusion = json.loads(occlusion_path.read_text())
+        occlusion["scene"] = "office"
+        occlusion_path.write_text(json.dumps(occlusion, sort_keys=True) + "\n")
+        _refresh_v1_occlusion_binding(root)
+
+    with pytest.raises(ArtifactMismatch, match=message):
+        compare_cumulative_artifacts(root, root)
 
 
 def test_schema2_projects_only_cumulative_audit_across_profiles(tmp_path: Path) -> None:

@@ -7,6 +7,7 @@ import argparse
 from dataclasses import dataclass, field
 import hashlib
 import json
+import math
 import os
 from pathlib import Path, PurePosixPath
 import stat
@@ -19,6 +20,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.evaluation.evaluate_oviv2_tesse_occlusion import (  # noqa: E402
+    canonical_algorithm_config,
     canonical_algorithm_hash,
 )
 
@@ -39,6 +41,16 @@ PROVENANCE_FIELDS = {
     "library_versions",
 }
 PROVENANCE_LIBRARY_FIELDS = {"numpy", "open3d", "torch", "scipy", "pillow"}
+SCHEMA1_SUPPORT_FILES = {
+    "capture_status.json",
+    "inputs/schedule.json",
+    "normalized_run_config.json",
+    "occlusion_checkpoint_index.json",
+    "run_provenance.json",
+    "source_index.json",
+    "timing.json",
+    "trajectories.jsonl",
+}
 MAX_JSON_BYTES = 16 * 1024 * 1024
 SCHEMA2_MINIMAL_FIELDS = {
     "schema_version",
@@ -252,6 +264,13 @@ def _stream_descriptor(
         "execution_receipt.json",
         "t1_exact_receipt.json",
         "source_index.json",
+        "capture_status.json",
+        "occlusion_checkpoint_index.json",
+        "run_provenance.json",
+        "timing.json",
+        "temporal/temporal_manifest.json",
+        "evaluation/summary.json",
+        "evaluation/summary.canonical.json",
     }
     chunks: list[bytes] = []
     try:
@@ -972,6 +991,576 @@ def _hex_id(value: object, lengths: tuple[int, ...]) -> bool:
     )
 
 
+def _schema_version(value: Mapping[str, Any], expected: int) -> bool:
+    return (
+        type(value.get("schema_version")) is int
+        and value["schema_version"] == expected
+    )
+
+
+def _support_json(
+    all_files: Mapping[str, FileEntry], path: str, label: str
+) -> dict[str, Any]:
+    return _json_object(
+        _regular_bytes(all_files, PurePosixPath(path), label), label
+    )
+
+
+def _validate_fixed_file_record(
+    all_files: Mapping[str, FileEntry], record: object, path: str, label: str
+) -> None:
+    record_path, _ = _validate_file_record(all_files, record, label)
+    if record_path != PurePosixPath(path):
+        raise ArtifactMismatch(f"{label} path is invalid")
+
+
+def _validate_schema1_frozen_identity(value: object, label: str) -> None:
+    expected = {
+        "schema_version",
+        "freeze_id",
+        "dataset",
+        "method_id",
+        "scene",
+        "freeze_manifest",
+        "repository",
+        "config",
+        "algorithm_hash",
+        "input_bindings_sha256",
+        "missing_observation_policy",
+    }
+    repository = value.get("repository") if isinstance(value, Mapping) else None
+    if (
+        not isinstance(value, Mapping)
+        or set(value) != expected
+        or not _schema_version(value, 1)
+        or any(
+            not _nonempty_string(value.get(key))
+            for key in (
+                "freeze_id",
+                "dataset",
+                "method_id",
+                "scene",
+                "missing_observation_policy",
+            )
+        )
+        or not _hex_id(value.get("algorithm_hash"), (64,))
+        or not _hex_id(value.get("input_bindings_sha256"), (64,))
+        or not isinstance(repository, Mapping)
+        or set(repository) != {"commit", "tree"}
+        or not _hex_id(repository.get("commit"), (40, 64))
+        or not _hex_id(repository.get("tree"), (40, 64))
+    ):
+        raise ArtifactMismatch(f"{label} schema is invalid")
+    _validate_byte_record(value["freeze_manifest"], f"{label} freeze manifest")
+    _validate_byte_record(value["config"], f"{label} config")
+
+
+def _validate_schema1_run_execution(
+    value: object, root: Path, label: str
+) -> None:
+    expected = {
+        "schema_version",
+        "run_slot",
+        "output_root",
+        "root_device",
+        "root_inode",
+        "execution_id",
+    }
+    if (
+        not isinstance(value, Mapping)
+        or set(value) != expected
+        or not _schema_version(value, 1)
+        or not _nonempty_string(value.get("run_slot"))
+        or value.get("output_root") != str(root)
+        or not _nonnegative_integer(value.get("root_device"))
+        or not _nonnegative_integer(value.get("root_inode"))
+        or not _hex_id(value.get("execution_id"), (64,))
+    ):
+        raise ArtifactMismatch(f"{label} schema is invalid")
+
+
+def _validate_schema1_source_index(
+    all_files: Mapping[str, FileEntry],
+    manifest: Mapping[str, Any],
+    source: Mapping[str, Any],
+) -> list[Mapping[str, Any]]:
+    base_fields = {
+        "schema_version",
+        "dataset",
+        "method",
+        "mode",
+        "scene",
+        "schedule",
+        "capture_status",
+        "trajectories",
+        "checkpoints",
+    }
+    frozen_fields = base_fields | {"frozen_run_identity", "run_execution"}
+    if set(source) not in (base_fields, frozen_fields):
+        raise ArtifactMismatch("source index schema is invalid")
+    if (
+        not _schema_version(source, 1)
+        or source.get("dataset") != manifest.get("dataset")
+        or source.get("method") != manifest.get("method_id")
+        or source.get("scene") != manifest.get("scene")
+        or source.get("mode") != "causal_checkpoint_exports"
+    ):
+        raise ArtifactMismatch("source index identity is invalid")
+    if set(source) == frozen_fields:
+        if (
+            source["frozen_run_identity"] != manifest.get("frozen_run_identity")
+            or source["run_execution"] != manifest.get("run_execution")
+        ):
+            raise ArtifactMismatch("source index frozen identity mismatch")
+        _validate_schema1_frozen_identity(
+            source["frozen_run_identity"], "source index frozen identity"
+        )
+        root = all_files["source_index.json"].root
+        _validate_schema1_run_execution(
+            source["run_execution"], root, "source index run execution"
+        )
+    _validate_fixed_file_record(
+        all_files, source["schedule"], "inputs/schedule.json", "source index schedule"
+    )
+    _validate_fixed_file_record(
+        all_files,
+        source["capture_status"],
+        "capture_status.json",
+        "source index capture status",
+    )
+    _validate_fixed_file_record(
+        all_files,
+        source["trajectories"],
+        "trajectories.jsonl",
+        "source index trajectories",
+    )
+    checkpoints = source.get("checkpoints")
+    if not isinstance(checkpoints, list) or not checkpoints:
+        raise ArtifactMismatch("source index checkpoint inventory is invalid")
+    manifest_checkpoints = {
+        checkpoint.get("frame_index"): checkpoint
+        for checkpoint in manifest.get("checkpoints", [])
+        if isinstance(checkpoint, Mapping)
+    }
+    frames: list[int] = []
+    for position, checkpoint in enumerate(checkpoints):
+        if not isinstance(checkpoint, Mapping) or set(checkpoint) != {
+            "frame_index",
+            "timestamp_ns",
+            "consumed_through_frame",
+            "consumed_through_frame_exclusive",
+            "checkpoint_status",
+            "snapshot",
+            "entities",
+        }:
+            raise ArtifactMismatch("source index checkpoint schema is invalid")
+        frame = checkpoint.get("frame_index")
+        if (
+            not _nonnegative_integer(frame)
+            or frame in frames
+            or not _nonnegative_integer(checkpoint.get("timestamp_ns"))
+            or checkpoint.get("consumed_through_frame") != frame
+            or checkpoint.get("consumed_through_frame_exclusive") != frame + 1
+        ):
+            raise ArtifactMismatch("source index checkpoint identity is invalid")
+        frames.append(frame)
+        target = manifest_checkpoints.get(frame)
+        if (
+            target is None
+            or checkpoint["checkpoint_status"] != target.get("checkpoint_status")
+            or checkpoint["snapshot"] != target.get("neutral_snapshot")
+            or checkpoint["entities"] != target.get("neutral_entities")
+        ):
+            raise ArtifactMismatch("source index checkpoint binding is invalid")
+        for key in ("checkpoint_status", "snapshot", "entities"):
+            _validate_file_record(
+                all_files, checkpoint[key], f"source index checkpoint {position} {key}"
+            )
+    if frames != sorted(frames) or frames != manifest.get(
+        "official_schedule_frame_indices"
+    ):
+        raise ArtifactMismatch("source index checkpoint inventory is invalid")
+    return checkpoints
+
+
+def _validate_schema1_capture_status(
+    all_files: Mapping[str, FileEntry],
+    manifest: Mapping[str, Any],
+    source: Mapping[str, Any],
+    source_checkpoints: Sequence[Mapping[str, Any]],
+    capture: Mapping[str, Any],
+) -> None:
+    expected = {
+        "schema_version",
+        "status",
+        "scene",
+        "mode",
+        "scheduled_frame_indices",
+        "captured_frame_indices",
+        "schedule",
+        "trajectories",
+        "checkpoint_statuses",
+    }
+    scheduled = capture.get("scheduled_frame_indices")
+    captured = capture.get("captured_frame_indices")
+    if (
+        set(capture) != expected
+        or not _schema_version(capture, 1)
+        or capture.get("status") != "PASS"
+        or capture.get("scene") != manifest.get("scene")
+        or capture.get("mode") != "causal_checkpoints"
+        or not _index_list(scheduled)
+        or captured != scheduled
+        or scheduled != manifest.get("official_schedule_frame_indices")
+        or capture.get("schedule") != source.get("schedule")
+        or capture.get("trajectories") != source.get("trajectories")
+        or capture.get("checkpoint_statuses")
+        != [checkpoint["checkpoint_status"] for checkpoint in source_checkpoints]
+    ):
+        raise ArtifactMismatch("capture status schema or binding is invalid")
+    for position, record in enumerate(capture["checkpoint_statuses"]):
+        _validate_file_record(
+            all_files, record, f"capture status checkpoint {position}"
+        )
+
+
+def _validate_schema1_normalized_config(
+    all_files: Mapping[str, FileEntry], manifest: Mapping[str, Any]
+) -> dict[str, Any]:
+    normalized = _support_json(
+        all_files, "normalized_run_config.json", "normalized run config"
+    )
+    try:
+        algorithm_hash = canonical_algorithm_hash(normalized)
+        canonical = canonical_algorithm_config(normalized)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ArtifactMismatch("normalized run config algorithm identity is invalid") from exc
+    if (
+        normalized.get("algorithm_hash") != algorithm_hash
+        or manifest.get("algorithm_hash") != algorithm_hash
+        or manifest.get("normalized_algorithm_config") != canonical
+    ):
+        raise ArtifactMismatch("normalized run config algorithm identity mismatch")
+    return normalized
+
+
+def _validate_schema1_provenance(
+    all_files: Mapping[str, FileEntry], manifest: Mapping[str, Any]
+) -> None:
+    provenance = _support_json(all_files, "run_provenance.json", "run provenance")
+    expected = PROVENANCE_FIELDS | {"config_path", "output", "python", "input_paths"}
+    libraries = provenance.get("library_versions")
+    inputs = provenance.get("input_paths")
+    output = provenance.get("output")
+    if (
+        set(provenance) != expected
+        or not _hex_id(provenance.get("repository_commit"), (40, 64))
+        or not _hex_id(provenance.get("repository_tree"), (40, 64))
+        or not _hex_id(provenance.get("dirty_state_digest"), (64,))
+        or not _string_list(provenance.get("command"), nonempty=True)
+        or not isinstance(provenance.get("config_path"), str)
+        or not Path(provenance["config_path"]).is_absolute()
+        or not isinstance(output, str)
+        or output != str(all_files["run_provenance.json"].root)
+        or any(
+            not isinstance(provenance.get(key), str)
+            for key in ("hostname", "platform", "machine", "python", "torch_cuda_version")
+        )
+        or (
+            provenance.get("cuda_visible_devices") is not None
+            and not isinstance(provenance["cuda_visible_devices"], str)
+        )
+        or (
+            provenance.get("cudnn_version") is not None
+            and type(provenance["cudnn_version"]) is not int
+        )
+        or not _string_list(provenance.get("nvcc_version"))
+        or not _string_list(provenance.get("gpu_inventory"))
+        or not isinstance(inputs, Mapping)
+        or not inputs
+        or any(not _nonempty_string(key) or not _nonempty_string(value) for key, value in inputs.items())
+        or not isinstance(libraries, Mapping)
+        or set(libraries) != PROVENANCE_LIBRARY_FIELDS
+        or any(not isinstance(value, str) for value in libraries.values())
+    ):
+        raise ArtifactMismatch("run provenance schema or identity is invalid")
+    frozen = manifest.get("frozen_run_identity")
+    if isinstance(frozen, Mapping) and (
+        provenance["repository_commit"] != frozen["repository"]["commit"]
+        or provenance["repository_tree"] != frozen["repository"]["tree"]
+    ):
+        raise ArtifactMismatch("run provenance frozen identity mismatch")
+
+
+def _validate_schema1_occlusion_index(
+    all_files: Mapping[str, FileEntry], manifest: Mapping[str, Any]
+) -> None:
+    _validate_fixed_file_record(
+        all_files,
+        manifest.get("occlusion_checkpoint_index"),
+        "occlusion_checkpoint_index.json",
+        "manifest occlusion checkpoint index",
+    )
+    index = _support_json(
+        all_files, "occlusion_checkpoint_index.json", "occlusion checkpoint index"
+    )
+    base_fields = {
+        "schema_version",
+        "manifest_id",
+        "dataset",
+        "method_id",
+        "scene",
+        "algorithm_hash",
+        "evaluation_checkpoint_frames_sha256",
+        "run_config",
+        "target_manifest",
+        "snapshots",
+    }
+    frozen_fields = base_fields | {"frozen_run_identity", "run_execution"}
+    if set(index) not in (base_fields, frozen_fields):
+        raise ArtifactMismatch("occlusion checkpoint index schema is invalid")
+    if (
+        not _schema_version(index, 2)
+        or index.get("manifest_id") != "oviv2_tesse_cd_occlusion_checkpoints_v1"
+        or index.get("dataset") != manifest.get("dataset")
+        or index.get("method_id") != manifest.get("method_id")
+        or index.get("scene") != manifest.get("scene")
+        or index.get("algorithm_hash") != manifest.get("algorithm_hash")
+        or not _hex_id(index.get("evaluation_checkpoint_frames_sha256"), (64,))
+    ):
+        raise ArtifactMismatch("occlusion checkpoint index identity is invalid")
+    if set(index) == frozen_fields and (
+        index["frozen_run_identity"] != manifest.get("frozen_run_identity")
+        or index["run_execution"] != manifest.get("run_execution")
+    ):
+        raise ArtifactMismatch("occlusion checkpoint index frozen identity mismatch")
+    _validate_fixed_file_record(
+        all_files,
+        index["run_config"],
+        "normalized_run_config.json",
+        "occlusion checkpoint index run config",
+    )
+    _validate_byte_record(index["target_manifest"], "occlusion target manifest")
+    snapshots = index.get("snapshots")
+    if not isinstance(snapshots, list) or not snapshots:
+        raise ArtifactMismatch("occlusion checkpoint inventory is invalid")
+    manifest_checkpoints = {
+        checkpoint.get("frame_index"): checkpoint
+        for checkpoint in manifest.get("checkpoints", [])
+        if isinstance(checkpoint, Mapping)
+    }
+    frames: list[int] = []
+    expected_snapshot_fields = {
+        "scene",
+        "frame_index",
+        "timestamp_ns",
+        "relative_timestamp_ns",
+        "consumed_through_frame",
+        "consumed_through_frame_exclusive",
+        "format",
+        "path",
+        "checksums_sha256",
+    }
+    for snapshot in snapshots:
+        frame = snapshot.get("frame_index") if isinstance(snapshot, Mapping) else None
+        target = manifest_checkpoints.get(frame)
+        target_record = None
+        if isinstance(target, Mapping):
+            if snapshot.get("format") == "oviv2_compact_ownership_checkpoint":
+                target_record = target.get("ownership_checkpoint")
+            elif snapshot.get("format") == "oviv2_voxel_map_snapshot":
+                target_record = target.get("voxel_snapshot")
+        if (
+            not isinstance(snapshot, Mapping)
+            or set(snapshot) != expected_snapshot_fields
+            or not _nonnegative_integer(frame)
+            or frame in frames
+            or snapshot.get("scene") != manifest.get("scene")
+            or snapshot.get("format") not in {
+                "oviv2_compact_ownership_checkpoint",
+                "oviv2_voxel_map_snapshot",
+            }
+            or any(
+                not _nonnegative_integer(snapshot.get(key))
+                for key in ("timestamp_ns", "relative_timestamp_ns")
+            )
+            or snapshot.get("consumed_through_frame") != frame
+            or snapshot.get("consumed_through_frame_exclusive") != frame + 1
+            or not _hex_id(snapshot.get("checksums_sha256"), (64,))
+            or target is None
+            or not isinstance(target_record, Mapping)
+            or snapshot.get("path") != target_record.get("path")
+        ):
+            raise ArtifactMismatch("occlusion checkpoint snapshot binding is invalid")
+        path = _relative(snapshot["path"], "occlusion checkpoint snapshot")
+        checksums = all_files.get((path / "checksums.json").as_posix())
+        if checksums is None or checksums.sha256 != snapshot["checksums_sha256"]:
+            raise ArtifactMismatch("occlusion checkpoint checksum binding is invalid")
+        frames.append(frame)
+    if frames != manifest.get("evaluation_checkpoint_frames"):
+        raise ArtifactMismatch("occlusion checkpoint inventory is invalid")
+
+
+def _schema1_support_inventory(
+    all_files: Mapping[str, FileEntry], manifest: Mapping[str, Any]
+) -> set[str]:
+    present = SCHEMA1_SUPPORT_FILES & set(all_files)
+    if not present and "occlusion_checkpoint_index" not in manifest:
+        return set()
+    if present != SCHEMA1_SUPPORT_FILES:
+        raise ArtifactMismatch("schema1 support inventory is not exact")
+    if (
+        any(
+            not _nonempty_string(manifest.get(key))
+            for key in ("dataset", "method_id", "scene", "mode")
+        )
+        or manifest.get("mode") != "causal_checkpoints"
+        or not _nonnegative_integer(manifest.get("processed_frame_count"))
+        or any(
+            not _index_list(manifest.get(key))
+            for key in (
+                "scheduled_frame_indices",
+                "captured_frame_indices",
+                "official_schedule_frame_indices",
+                "evaluation_checkpoint_frames",
+            )
+        )
+    ):
+        raise ArtifactMismatch("schema1 production manifest is invalid")
+    frozen = manifest.get("frozen_run_identity")
+    execution = manifest.get("run_execution")
+    if (frozen is None) != (execution is None):
+        raise ArtifactMismatch("schema1 frozen run identity is incomplete")
+    if frozen is not None:
+        _validate_schema1_frozen_identity(frozen, "frozen run identity")
+        _validate_schema1_run_execution(
+            execution, all_files["run_manifest.json"].root, "run execution"
+        )
+    source = _support_json(all_files, "source_index.json", "source index")
+    source_checkpoints = _validate_schema1_source_index(all_files, manifest, source)
+    capture = _support_json(all_files, "capture_status.json", "capture status")
+    _validate_schema1_capture_status(
+        all_files, manifest, source, source_checkpoints, capture
+    )
+    _validate_schema1_normalized_config(all_files, manifest)
+    _validate_schema1_provenance(all_files, manifest)
+    timing = _support_json(all_files, "timing.json", "timing")
+    elapsed = timing.get("elapsed_sec")
+    if (
+        set(timing) != {"elapsed_sec", "processed_frame_count"}
+        or isinstance(elapsed, bool)
+        or not isinstance(elapsed, (int, float))
+        or not math.isfinite(elapsed)
+        or elapsed < 0
+        or timing.get("processed_frame_count") != manifest.get("processed_frame_count")
+    ):
+        raise ArtifactMismatch("timing schema or binding is invalid")
+    _validate_schema1_occlusion_index(all_files, manifest)
+    return set(SCHEMA1_SUPPORT_FILES)
+
+
+def _validate_prefixed_records(
+    all_files: Mapping[str, FileEntry],
+    value: object,
+    prefix: PurePosixPath,
+    label: str,
+) -> set[str]:
+    result: set[str] = set()
+    if isinstance(value, Mapping):
+        if set(value) == {"path", "sha256", "byte_count"}:
+            path, digest, count = _record(value, label)
+            prefixed = prefix / path
+            entry = all_files.get(prefixed.as_posix())
+            if entry is None or entry.sha256 != digest or entry.byte_count != count:
+                raise ArtifactMismatch(f"{label} manifest record does not match raw bytes")
+            result.add(prefixed.as_posix())
+        else:
+            for key, child in value.items():
+                result.update(
+                    _validate_prefixed_records(
+                        all_files, child, prefix, f"{label}.{key}"
+                    )
+                )
+    elif isinstance(value, list):
+        for position, child in enumerate(value):
+            result.update(
+                _validate_prefixed_records(
+                    all_files, child, prefix, f"{label}[{position}]"
+                )
+            )
+    return result
+
+
+def _schema1_frozen_legacy_inventory(
+    all_files: Mapping[str, FileEntry], manifest: Mapping[str, Any]
+) -> set[str]:
+    actual = {
+        path
+        for path in all_files
+        if path.startswith("temporal/") or path.startswith("evaluation/")
+    }
+    if not actual:
+        return set()
+    if "frozen_run_identity" not in manifest:
+        raise ArtifactMismatch("schema1 legacy inventory requires frozen identity")
+    temporal = _support_json(
+        all_files, "temporal/temporal_manifest.json", "temporal manifest"
+    )
+    expected_temporal_fields = {
+        "schema_version",
+        "dataset",
+        "method",
+        "mode",
+        "scene",
+        "sources",
+        "trajectories",
+        "checkpoints",
+        "entity_lifecycles",
+        "frozen_run_identity",
+        "run_execution",
+    }
+    if (
+        set(temporal) != expected_temporal_fields
+        or not _schema_version(temporal, 1)
+        or temporal.get("dataset") != manifest.get("dataset")
+        or temporal.get("method") != manifest.get("method_id")
+        or temporal.get("scene") != manifest.get("scene")
+        or temporal.get("frozen_run_identity") != manifest.get("frozen_run_identity")
+        or temporal.get("run_execution") != manifest.get("run_execution")
+    ):
+        raise ArtifactMismatch("temporal manifest identity is invalid")
+    expected = _validate_prefixed_records(
+        all_files, temporal, PurePosixPath("temporal"), "temporal manifest"
+    )
+    expected.add("temporal/temporal_manifest.json")
+    evaluation_files = {
+        "evaluation/summary.json",
+        "evaluation/summary.canonical.json",
+    }
+    summary = _support_json(all_files, "evaluation/summary.json", "evaluation summary")
+    canonical = _support_json(
+        all_files,
+        "evaluation/summary.canonical.json",
+        "canonical evaluation summary",
+    )
+    if (
+        any(
+            not _schema_version(value, 1)
+            or value.get("dataset") != manifest.get("dataset")
+            or value.get("method") != manifest.get("method_id")
+            or value.get("scene") != manifest.get("scene")
+            or value.get("status") != "PASS"
+            for value in (summary, canonical)
+        )
+        or canonical.get("source_manifest_id") != summary.get("manifest_id")
+    ):
+        raise ArtifactMismatch("evaluation summary identity is invalid")
+    expected.update(evaluation_files)
+    if actual != expected:
+        raise ArtifactMismatch("schema1 frozen legacy inventory is not exact")
+    return expected
+
+
 def _validate_production_provenance(
     value: object, *, manifest_commit: object
 ) -> None:
@@ -1381,9 +1970,14 @@ def _load_inventory(
     allowed_root_files = {"run_manifest.json"}
     if "t1_exact_receipt.json" in all_files:
         allowed_root_files.add("t1_exact_receipt.json")
-    expected_files = _schema1_manifest_inventory(
-        all_files, manifest
-    ) | allowed_root_files
+    support_files = _schema1_support_inventory(all_files, manifest)
+    legacy_files = _schema1_frozen_legacy_inventory(all_files, manifest)
+    expected_files = (
+        _schema1_manifest_inventory(all_files, manifest)
+        | support_files
+        | legacy_files
+        | allowed_root_files
+    )
     if set(all_files) != expected_files:
         raise ArtifactMismatch("artifact inventory is not exact")
     frames, projection = _schema1_projection(manifest, all_files)
