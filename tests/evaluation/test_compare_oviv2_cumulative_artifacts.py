@@ -309,7 +309,10 @@ def _v1_production_run(root: Path) -> Path:
             "events": [],
             "first_depth_timestamp_ns": 100,
             "last_depth_timestamp_ns": 100,
-            "sources": {},
+            "sources": {
+                "database": {"path": "/fixture/data.db3", "sha256": "6" * 64, "byte_count": 1},
+                "gt_changes": {"path": "/fixture/gt.csv", "sha256": "7" * 64, "byte_count": 1},
+            },
         }},
     }, sort_keys=True) + "\n")
     trajectories = root / "trajectories.jsonl"
@@ -603,11 +606,13 @@ def test_schema1_production_support_inventory_self_compares_and_ignores_timing(
         ("provenance_semantics", "provenance"),
         ("normalized_semantics", "algorithm"),
         ("occlusion_semantics", "occlusion"),
-        ("all_support_removed", "schema1 run manifest schema"),
-        ("manifest_field_removed", "schema1 run manifest schema"),
+        ("all_support_removed", "production manifest cannot be downgraded"),
+        ("manifest_field_removed", "production manifest cannot be downgraded"),
         ("schedule_relation", "production manifest identity"),
         ("schedule_invalid", "schedule"),
         ("schedule_drift", "schedule"),
+        ("schedule_events_invalid", "schedule"),
+        ("schedule_sources_invalid", "schedule"),
         ("trajectory_invalid", "trajector"),
         ("trajectory_reordered", "trajector"),
         ("trajectory_gap", "trajector"),
@@ -692,9 +697,17 @@ def test_schema1_production_support_inventory_fails_closed(
         schedule_path = root / "inputs/schedule.json"
         if mutation == "schedule_invalid":
             schedule_path.write_text("not-json\n")
-        else:
+        elif mutation == "schedule_drift":
             schedule = json.loads(schedule_path.read_text())
             schedule["scenes"]["apartment"]["entries"][0]["frame_index"] = 3
+            schedule_path.write_text(json.dumps(schedule, sort_keys=True) + "\n")
+        else:
+            schedule = json.loads(schedule_path.read_text())
+            scene = schedule["scenes"]["apartment"]
+            if mutation == "schedule_events_invalid":
+                scene["events"] = ["not-an-event"]
+            else:
+                scene["sources"] = {"bad": 1}
             schedule_path.write_text(json.dumps(schedule, sort_keys=True) + "\n")
         record = _file_record(schedule_path, root)
         capture_path = root / "capture_status.json"
@@ -778,6 +791,47 @@ def test_schema1_frozen_production_cannot_be_downgraded(
         compare_cumulative_artifacts(root, root)
 
 
+@pytest.mark.parametrize("variant", ("minimal", "t1"))
+def test_schema1_production_checkpoint_signature_blocks_manifest_downgrade(
+    tmp_path: Path, variant: str,
+) -> None:
+    root = _v1_production_run(tmp_path / variant)
+    manifest_path = root / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    for relative in compare_module.SCHEMA1_SUPPORT_FILES:
+        (root / relative).unlink()
+    downgraded = {
+        "schema_version": 1,
+        "checkpoints": manifest["checkpoints"],
+    }
+    if variant == "t1":
+        checkpoint_file = manifest["checkpoints"][0]["neutral_snapshot"]
+        downgraded.update({
+            "scene": "apartment",
+            "mode": "causal_checkpoints",
+            "algorithm_hash": "a" * 64,
+            "code_commit": "b" * 40,
+            "config": {"sha256": "c" * 64, "byte_count": 1},
+            "schedule": {"sha256": "d" * 64, "byte_count": 1},
+            "target_manifest": {"sha256": "e" * 64, "byte_count": 1},
+            "source_bindings": {"input_sha256": "f" * 64},
+            "final_artifact": checkpoint_file,
+        })
+    manifest_path.write_text(json.dumps(downgraded, sort_keys=True) + "\n")
+    with pytest.raises(ArtifactMismatch, match="production"):
+        compare_cumulative_artifacts(root, root)
+
+
+def test_schema1_frozen_prelegacy_requires_explicit_external_stage(tmp_path: Path) -> None:
+    root = _v1_production_run(tmp_path / "frozen")
+    _freeze_v1_production(root)
+    with pytest.raises(ArtifactMismatch, match="legacy inventory is missing"):
+        compare_cumulative_artifacts(root, root)
+    assert compare_cumulative_artifacts(
+        root, root, validation_stage="pre_legacy"
+    )["checkpoint_frames"] == [2]
+
+
 def test_schema1_legacy_evaluation_summary_rejects_minimal_forgery() -> None:
     with pytest.raises(ArtifactMismatch, match="evaluation summary"):
         compare_module._validate_legacy_evaluation_summary(
@@ -785,6 +839,64 @@ def test_schema1_legacy_evaluation_summary_rejects_minimal_forgery() -> None:
             {"schema_version": 1},
             {"dataset": "TESSE-CD", "method_id": "OVIV2", "scene": "apartment"},
             {"role": "temporal_index", "sha256": "a" * 64, "byte_count": 1},
+        )
+
+
+@pytest.mark.parametrize("mutation", ("null_frame", "empty_metrics", "arbitrary_count"))
+def test_schema1_legacy_evaluation_summary_rejects_nested_forgery(
+    mutation: str,
+) -> None:
+    frame = {
+        "background_f5": 0.5, "background_precision_match_count": 1,
+        "background_recall_match_count": 1, "current_miou": 0.5,
+        "event_id": "event-1", "frame_id": 2, "ghost_count": 0,
+        "ghost_rate": 0.0, "ground_truth_revealed_background_count": 1,
+        "intervention_frame_id": 2, "predicted_changed_object_count": 1,
+        "predicted_revealed_background_count": 1,
+    }
+    event = {
+        "background_observable": True, "censor_frame": None,
+        "censor_reason": None, "frame_ids": [2], "intervention_frame_id": 2,
+        "overlapping_intervention": False, "recovered": True,
+        "recovery_frames": 0, "right_censored": False,
+    }
+    metrics = {
+        "background_f5": 0.5, "background_observable_event_count": 1,
+        "censored_event_count": 0, "checkpoint_step_frames": 50,
+        "current_miou": 0.5, "event_count": 1, "events": {"event-1": event},
+        "ghost_rate": 0.0, "recovered_event_count": 1,
+        "recovery_background_f5": 0.9, "recovery_consecutive": 3,
+        "recovery_frames": 0.0, "recovery_horizon_frames": 450,
+        "unobservable_revealed_target_event_count": 0,
+    }
+    shared = {
+        "schema_version": 1, "dataset": "TESSE-CD", "method": "OVIV2",
+        "mode": "causal_checkpoints", "scene": "apartment",
+        "protocol": "tesse_cd_common_v2", "status": "PASS",
+        "sources": {"temporal_index": {"path": "/raw", "sha256": "a" * 64, "byte_count": 1}},
+        "frames": [frame], "metrics": metrics,
+        "event_background_prediction_counts": {"event-1": {"2": 1}},
+        "event_region_prediction_counts": {"event-1": {"2": 1}},
+    }
+    raw = {**shared, "manifest_id": "tesse_cd_common_v2_scene_summary"}
+    canonical = {
+        **shared, "manifest_id": "tesse_cd_common_v2_canonical_scene_summary_v1",
+        "source_manifest_id": raw["manifest_id"],
+        "canonicalization": {"schema_version": 1, "source_identity": "stable_role_sha256_byte_count", "physical_paths_serialized": False},
+        "sources": {"temporal_index": {"role": "temporal_index", "sha256": "b" * 64, "byte_count": 2}},
+    }
+    if mutation == "null_frame":
+        raw["frames"][0]["current_miou"] = None
+        canonical["frames"] = raw["frames"]
+    elif mutation == "empty_metrics":
+        raw["metrics"] = canonical["metrics"] = {}
+    else:
+        raw["event_region_prediction_counts"] = canonical["event_region_prediction_counts"] = {"event-1": {"2": 999}}
+    with pytest.raises(ArtifactMismatch, match="evaluation"):
+        compare_module._validate_legacy_evaluation_summary(
+            raw, canonical,
+            {"dataset": "TESSE-CD", "method_id": "OVIV2", "scene": "apartment"},
+            canonical["sources"]["temporal_index"],
         )
 
 

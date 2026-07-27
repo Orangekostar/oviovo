@@ -2174,15 +2174,20 @@ def test_reference_worker_records_exact_process_and_artifact_receipt(
 
     monkeypatch.setattr(reference_worker, "_commit", lambda repo: "a" * 40)
     monkeypatch.setattr(reference_worker.os, "getpid", lambda: 4321)
+    def compare_reference(
+        left: Path, right: Path, **kwargs: object
+    ) -> dict[str, object]:
+        assert (left, right) == (output.resolve(), output.resolve())
+        assert kwargs == {"validation_stage": "pre_legacy"}
+        return {
+                "format": "oviv2_cumulative_exact_v1",
+                "checkpoint_frames": [2, 7],
+                "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
+                "root_sha256": "e" * 64,
+        }
+
     monkeypatch.setattr(
-        reference_worker,
-        "compare_cumulative_artifacts",
-        lambda left, right: {
-            "format": "oviv2_cumulative_exact_v1",
-            "checkpoint_frames": [2, 7],
-            "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
-            "root_sha256": "e" * 64,
-        },
+        reference_worker, "compare_cumulative_artifacts", compare_reference
     )
     argv = [
         "/env/bin/python", str(Path(reference_worker.__file__).resolve()),

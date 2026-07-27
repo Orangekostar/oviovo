@@ -186,7 +186,12 @@ def test_frozen_run_reference_contract_remains_available(
         return {}
 
     monkeypatch.setattr(worker, "_commit", lambda repo: "b" * 40)
-    monkeypatch.setattr(worker, "compare_cumulative_artifacts", lambda left, right: _audit())
+    def compare(left: Path, right: Path, **kwargs: object) -> dict[str, object]:
+        assert (left, right) == (output, output)
+        assert kwargs == {"validation_stage": "pre_legacy"}
+        return _audit()
+
+    monkeypatch.setattr(worker, "compare_cumulative_artifacts", compare)
     worker.run_reference(
         config=config, output=output, freeze_manifest=freeze,
         run_slot="apartment_run1", receipt=receipt, argv=argv,

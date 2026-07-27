@@ -144,7 +144,9 @@ def run_reference(
         freeze_manifest=Path(freeze_manifest),
         run_slot=run_slot,
     )
-    audit = compare_cumulative_artifacts(output_path, output_path)
+    audit = compare_cumulative_artifacts(
+        output_path, output_path, validation_stage="pre_legacy"
+    )
     if _commit(repo) != code_commit:
         raise ValueError("repository commit changed during reference run")
     if _regular_bytes(config_path, "reference config") != config_data:
