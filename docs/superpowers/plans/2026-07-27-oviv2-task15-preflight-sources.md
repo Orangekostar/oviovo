@@ -178,6 +178,14 @@ strict development-evidence schema validation. Reuse
 `verify_exact_profile_runs()` before selecting any execution. Do not trust a
 cached `status: PASS` field.
 
+Update the existing preflight builder and search consumer to derive expected
+frame coverage as `list(range(run["processed_frame_count"]))`. Require
+`covered_frame_count == processed_frame_count`, `first_frame_index == 0`, and
+`last_frame_index == processed_frame_count - 1`. Keep
+`scheduled_frame_indices` exclusively for checkpoint-plan validation. Add a
+real-shaped five-frame regression where coverage is `[0,1,2,3,4]` and the
+checkpoint schedule is `[1,2,3,4]`.
+
 - [ ] **Step 4: Write RED tests for causal leakage**
 
 Add one test per causal invariant from this exact inventory:

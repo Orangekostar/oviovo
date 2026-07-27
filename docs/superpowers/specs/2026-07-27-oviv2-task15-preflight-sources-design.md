@@ -123,9 +123,11 @@ whole staging bundle is renamed to its final no-clobber destination.
 ## Future-Leakage Audit
 
 An empty `records` list is published only after all causal checks pass. For
-each scheduled frame and checkpoint, the audit verifies:
+each processed frame and scheduled checkpoint, the audit verifies:
 
-- exact frame coverage, unique increasing frame indices, and dataset timestamps;
+- exact processed-frame coverage `0..processed_frame_count-1`, agreement with
+  `covered_frame_count`, `first_frame_index`, and `last_frame_index`, unique
+  increasing frame indices, and dataset timestamps;
 - cache entries identify the same source and dataset frame and never a later frame;
 - checkpoint `consumed_through_frame` equals its frame and the exclusive bound
   equals `frame + 1`;
@@ -138,6 +140,10 @@ each scheduled frame and checkpoint, the audit verifies:
 Any violation is emitted as a deterministic structured record and causes the
 producer to fail before publication. It is never converted into a passing
 preflight.
+
+`scheduled_frame_indices` remains the checkpoint schedule and is validated
+against the checkpoint index; it is never used as the expected per-frame
+coverage inventory.
 
 ## Occlusion And Anchor Gate
 
