@@ -1274,7 +1274,7 @@ def _validate_t1_receipt(
     }
     execution = receipt.get("execution")
     source = receipt.get("source_manifest")
-    execution_fields = {
+    frozen_execution_fields = {
         "profile",
         "argv",
         "pid",
@@ -1283,6 +1283,7 @@ def _validate_t1_receipt(
         "input_fingerprints",
         "output_root",
     }
+    development_execution_fields = frozen_execution_fields | {"mode"}
     source_fields = {"path", "sha256", "byte_count"}
     records, root_digest = _projection_summary(frames, projection)
     fingerprints = (
@@ -1298,7 +1299,14 @@ def _validate_t1_receipt(
         or receipt["schema_version"] != 1
         or receipt.get("format") != "oviv2_t1_exact_execution_receipt_v1"
         or not isinstance(execution, Mapping)
-        or set(execution) != execution_fields
+        or frozenset(execution) not in {
+            frozenset(frozen_execution_fields),
+            frozenset(development_execution_fields),
+        }
+        or (
+            "mode" in execution
+            and execution.get("mode") != "apartment_development_unfrozen"
+        )
         or execution.get("profile") != "reference"
         or not isinstance(execution.get("argv"), list)
         or not execution["argv"]

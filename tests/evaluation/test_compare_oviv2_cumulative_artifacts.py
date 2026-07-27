@@ -359,6 +359,33 @@ def test_reference_v1_projects_to_schema2_cumulative_audit(tmp_path: Path) -> No
     assert cross == compare_cumulative_artifacts(schema2, schema2)
 
 
+@pytest.mark.parametrize(
+    ("mode", "extra", "accepted"),
+    [
+        ("apartment_development_unfrozen", False, True),
+        ("formal_final_freeze", False, False),
+        ("apartment_development_unfrozen", True, False),
+    ],
+)
+def test_t1_receipt_accepts_only_exact_development_mode_extension(
+    tmp_path: Path, mode: str, extra: bool, accepted: bool
+) -> None:
+    schema2 = _run(tmp_path / "a0", profile="a0")
+    reference = _v1_projection_of_schema2(tmp_path / "reference", schema2)
+    receipt_path = _add_t1_receipt(reference)
+    receipt = json.loads(receipt_path.read_text())
+    receipt["execution"]["mode"] = mode
+    if extra:
+        receipt["execution"]["unexpected"] = "value"
+    receipt_path.write_text(json.dumps(receipt, sort_keys=True) + "\n")
+
+    if accepted:
+        assert compare_cumulative_artifacts(reference, schema2)["checkpoint_frames"] == [2, 7]
+    else:
+        with pytest.raises(ArtifactMismatch, match="receipt binding"):
+            compare_cumulative_artifacts(reference, schema2)
+
+
 @pytest.mark.parametrize("mutation", ["normalized", "receipt", "source", "extra"])
 def test_schema2_strictly_self_validates_identity_and_full_inventory(
     tmp_path: Path, mutation: str
