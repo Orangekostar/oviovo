@@ -1303,6 +1303,13 @@ def _materialize_mutation_transaction(
     root.mkdir(parents=True)
     config_path = root.parent / f"{root.name}.config.json"
     config_path.write_bytes(_bytes(config))
+    input_path = Path(str(config["input_manifest"]))
+    schedule_path = Path(str(config["schedule_manifest"]))
+    target_path = Path(str(config["occlusion_target_manifest"]))
+    content_record = lambda path: {
+        "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        "byte_count": path.stat().st_size,
+    }
     normalized = root / "normalized_run_config.json"
     normalized.write_bytes(
         _bytes(
@@ -1327,8 +1334,6 @@ def _materialize_mutation_transaction(
     (voxel / "ownership.bin").write_bytes(cumulative_bytes)
     status = checkpoint / "checkpoint_status.json"
     status.write_bytes(_bytes({"algorithm_hash": algorithm, "status": "PASS"}))
-    final = root / "final.bin"
-    final.write_bytes(algorithm.encode())
     source = REPO_ROOT / "configs/evaluation/manifests/oviv2_t1_transitive_sources_v1.json"
     source_data = source.read_bytes()
     source_sha = hashlib.sha256(source_data).hexdigest()
@@ -1339,27 +1344,104 @@ def _materialize_mutation_transaction(
         "entities": _file_binding(artifact / "entities.jsonl", root),
         "voxel_snapshot": _tree_binding(voxel, root),
     }
-    inventory = sorted(
+    schedule_copy = root / "inputs/schedule.json"
+    schedule_copy.parent.mkdir()
+    schedule_copy.write_bytes(schedule_path.read_bytes())
+    capture_status = _write(root / "capture_status.json", {"status": "PASS"})
+    trajectories = root / "trajectories.jsonl"
+    trajectories.write_bytes(b"")
+    frame_coverage = root / "temporal_frame_coverage.jsonl"
+    frame_coverage.write_bytes(b"")
+    lifecycle = root / "lifecycle_transitions.jsonl"
+    lifecycle.write_bytes(b"")
+    source_index = _write(
+        root / "source_index.json",
+        {
+            "schema_version": 1,
+            "dataset": "TESSE-CD",
+            "mode": "causal_checkpoint_exports",
+            "method": "OVIV2",
+            "scene": "apartment",
+            "schedule": _file_binding(schedule_copy, root),
+            "capture_status": _file_binding(capture_status, root),
+            "trajectories": _file_binding(trajectories, root),
+            "frame_coverage": _file_binding(frame_coverage, root),
+            "lifecycle_transitions": _file_binding(lifecycle, root),
+            "checkpoints": [
+                {
+                    "frame_index": 2,
+                    "timestamp_ns": 100,
+                    "consumed_through_frame": 2,
+                    "consumed_through_frame_exclusive": 3,
+                    "checkpoint_status": _file_binding(status, root),
+                    "snapshot": _file_binding(artifact / "neutral.bin", root),
+                    "entities": _file_binding(artifact / "entities.jsonl", root),
+                }
+            ],
+        },
+    )
+    occlusion_index = _write(
+        root / "occlusion_checkpoint_index.json", {"status": "PASS"}
+    )
+    artifact_record = _tree_binding(artifact, root)
+    checksum = hashlib.sha256(b"fixture-checkpoint").hexdigest()
+    checkpoint_record = {
+        "scene": "apartment",
+        "frame_index": 2,
+        "timestamp_ns": 100,
+        "relative_timestamp_ns": 0,
+        "consumed_through_frame": 2,
+        "consumed_through_frame_exclusive": 3,
+        "event_ids": [],
+        "roles": ["cumulative"],
+        "format": "fixture",
+        "artifact": artifact_record,
+        "checksums_sha256": checksum,
+        "artifacts": {
+            "neutral_current": {
+                "format": "fixture",
+                "artifact": artifact_record,
+                "checksums_sha256": checksum,
+            }
+        },
+        "cumulative_audit": cumulative_audit,
+        "checkpoint_status": _file_binding(status, root),
+    }
+    manifest = {
+        "schema_version": 2,
+        "protocol_id": "oviv2-tessecd-v2",
+        "dataset": "TESSE-CD",
+        "method_id": "OVIV2",
+        "scene": "apartment",
+        "mode": "dual_readout_causal_checkpoints",
+        "algorithm_hash": algorithm,
+        "processed_frame_count": 3,
+        "covered_frame_count": 3,
+        "trajectory_frame_count": 0,
+        "first_frame_index": 0,
+        "last_frame_index": 2,
+        "temporal_export_schema_version": 1,
+        "scheduled_frame_indices": [2],
+        "captured_frame_indices": [2],
+        "code_commit": commit,
+        "config": content_record(config_path),
+        "schedule": content_record(schedule_path),
+        "target_manifest": content_record(target_path),
+        "source_bindings": {
+            "source_manifest_sha256": source_sha,
+            "input_manifest": content_record(input_path),
+        },
+        "input_sha256": hashlib.sha256(b"fixture-inputs").hexdigest(),
+        "normalized_run_config": _file_binding(normalized, root),
+        "checkpoints": [checkpoint_record],
+        "occlusion_checkpoint_index": _file_binding(occlusion_index, root),
+        "source_index": _file_binding(source_index, root),
+    }
+    manifest["artifact_inventory"] = sorted(
         path.relative_to(root).as_posix()
         for path in root.rglob("*")
         if path.is_file()
     )
-    manifest = {
-        "schema_version": 2,
-        "protocol_id": "oviv2-tessecd-v2",
-        "algorithm_hash": algorithm,
-        "code_commit": commit,
-        "source_bindings": {"source_manifest_sha256": source_sha},
-        "normalized_run_config": _file_binding(normalized, root),
-        "checkpoints": [{
-            "frame_index": 2,
-            "checkpoint_status": _file_binding(status, root),
-            "neutral_entities": _file_binding(artifact / "entities.jsonl", root),
-            "cumulative_audit": cumulative_audit,
-        }],
-        "final_artifact": _file_binding(final, root),
-        "artifact_inventory": inventory,
-    }
     (root / "run_manifest.json").write_bytes(_bytes(manifest))
     (root / "execution_receipt.json").write_bytes(
         _bytes(
@@ -1385,6 +1467,13 @@ def _materialize_reference_transaction(
     root.mkdir(parents=True)
     config_path = root.parent / f"{root.name}.config.json"
     config_path.write_bytes(_bytes(config))
+    input_path = Path(str(config["input_manifest"]))
+    schedule_path = Path(str(config["schedule_manifest"]))
+    target_path = Path(str(config["occlusion_target_manifest"]))
+    content_record = lambda path: {
+        "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        "byte_count": path.stat().st_size,
+    }
     checkpoint = root / "checkpoints/00000002-100"
     artifact = checkpoint / "artifact"
     voxel = checkpoint / "voxel_snapshot"
@@ -1407,9 +1496,17 @@ def _materialize_reference_transaction(
     source_sha = hashlib.sha256(source_data).hexdigest()
     manifest = {
         "schema_version": 1,
+        "scene": "apartment",
+        "mode": "causal_checkpoints",
         "algorithm_hash": algorithm,
         "code_commit": commit,
-        "source_bindings": {"source_manifest_sha256": source_sha},
+        "config": content_record(config_path),
+        "schedule": content_record(schedule_path),
+        "target_manifest": content_record(target_path),
+        "source_bindings": {
+            "source_manifest_sha256": source_sha,
+            "input_manifest": content_record(input_path),
+        },
         "checkpoints": [
             {
                 "frame_index": 2,
@@ -1429,6 +1526,7 @@ def _materialize_reference_transaction(
         "format": "oviv2_t1_exact_execution_receipt_v1",
         "execution": {
             "profile": "reference",
+            "mode": gates_module.DEVELOPMENT_MODE,
             "argv": ["pending-reference-command"],
             "pid": os.getpid(),
             "code_commit": commit,
@@ -1492,15 +1590,21 @@ def _materialize_gate_transaction(
     source_manifest: Path,
 ) -> dict[str, object]:
     transaction.mkdir(parents=True)
-    freeze = _write(
-        transaction / "freeze.json",
-        {
-            "shared_bindings": {
-                "input_manifest": {"sha256": "1" * 64},
-                "schedule": {"sha256": "2" * 64},
-                "occlusion_target_manifest": {"sha256": "3" * 64},
-            }
-        },
+    input_manifest = _write(transaction / "input_manifest.json", {"fixture": "input"})
+    schedule_manifest = _write(transaction / "schedule_manifest.json", {"fixture": "schedule"})
+    target_manifest = _write(transaction / "target_manifest.json", {"fixture": "target"})
+    transaction_config = {
+        **config,
+        "scene": "apartment",
+        "input_manifest": str(input_manifest.resolve()),
+        "schedule_manifest": str(schedule_manifest.resolve()),
+        "occlusion_target_manifest": str(target_manifest.resolve()),
+        "occlusion_target_manifest_sha256": hashlib.sha256(
+            target_manifest.read_bytes()
+        ).hexdigest(),
+    }
+    transaction_config["algorithm_hash"] = canonical_algorithm_hash(
+        transaction_config
     )
     receipts = transaction / "receipts"
     receipts.mkdir()
@@ -1512,12 +1616,14 @@ def _materialize_gate_transaction(
         if profile == "reference":
             _materialize_reference_transaction(
                 output,
-                config,
+                transaction_config,
                 commit=commit,
                 source_manifest=source_manifest,
             )
         else:
-            _materialize_mutation_transaction(output, config, commit=commit)
+            _materialize_mutation_transaction(
+                output, transaction_config, commit=commit
+            )
         config_path = (transaction / f"run-{position:02d}-{profile}.config.json").resolve()
         pid = 10_000 + position
         runner = (
@@ -1532,10 +1638,6 @@ def _materialize_gate_transaction(
             str(config_path),
             "--output",
             str(output.resolve()),
-            "--freeze-manifest",
-            str(freeze.resolve()),
-            "--run-slot",
-            "apartment_run1",
         ]
         if profile == "reference":
             argv.extend(
@@ -1579,7 +1681,6 @@ def _materialize_gate_transaction(
             "pid": pid,
             "returncode": 0,
             "config": gates_module._absolute_file_record(config_path),
-            "freeze_manifest": gates_module._absolute_file_record(freeze.resolve()),
             "source_manifest": gates_module._absolute_file_record(source_manifest),
             "output_root": str(output.resolve()),
             "root_device": root_status.st_dev,
@@ -1588,6 +1689,7 @@ def _materialize_gate_transaction(
             "production_receipt": gates_module._absolute_file_record(production_receipt),
             "completed_execution": derived,
             "trust_model": gates_module.LOCAL_PROCESS_TRUST_MODEL,
+            "execution_context": gates_module.DEVELOPMENT_EXECUTION_CONTEXT,
         }
         observation_path = _write(
             receipts / f"{position:03d}-{profile}.json", observation
@@ -1981,7 +2083,7 @@ def test_publication_revalidates_all_exact_roots_after_link_and_is_retryable(
             "output_root"
         ]
     )
-    source = ninth_root / "final.bin"
+    source = ninth_root / "normalized_run_config.json"
     original_data = source.read_bytes()
     original_link = package_module.os.link
     changed = False
