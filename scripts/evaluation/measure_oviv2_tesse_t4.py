@@ -292,7 +292,7 @@ def _preserved_artifacts(
                 parent_inode=parent.st_ino,
                 device=status.st_dev,
                 inode=status.st_ino,
-                mode=stat.S_IFMT(status.st_mode),
+                mode=status.st_mode,
                 ownership=ownership,
             )
             if key not in records or priority[ownership] > priority[records[key].ownership]:
@@ -1324,22 +1324,23 @@ def collect_shortlist(
             raise T4CollectionError("T4 output parent changed during publication")
         return [destination / path.relative_to(stable_staging) for path in staged_paths]
     except BaseException as exc:
-        if publication_directory >= 0 and staging_created:
+        if publication_directory >= 0:
             preferred = destination.name if published else staging.name
             preserved = _preserved_artifacts(
                 publication_directory,
                 destination.parent,
                 [(preferred, owned_witness, True)],
             )
-            if isinstance(exc, T4PublicationUncertain):
-                preserved = (*exc.preserved, *preserved)
-            raise T4PublicationUncertain(
-                preserved
-            ) from (
-                exc.__cause__
-                if isinstance(exc, T4PublicationUncertain) and exc.__cause__ is not None
-                else exc
-            )
+            if staging_created or preserved:
+                if isinstance(exc, T4PublicationUncertain):
+                    preserved = (*exc.preserved, *preserved)
+                raise T4PublicationUncertain(
+                    preserved
+                ) from (
+                    exc.__cause__
+                    if isinstance(exc, T4PublicationUncertain) and exc.__cause__ is not None
+                    else exc
+                )
         if isinstance(exc, T4PublicationUncertain):
             raise
         raise

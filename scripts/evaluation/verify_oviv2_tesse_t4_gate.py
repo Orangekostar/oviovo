@@ -734,6 +734,13 @@ def verify_t4_gate(evidence_paths: Sequence[Path] | Mapping[str, Any], shortlist
                 if isinstance(exc, T4PublicationUncertain) and exc.__cause__ is not None
                 else exc
             )
+        preserved = _collector._preserved_artifacts(
+            publication_directory,
+            output.parent,
+            [(staging_dir.name, None, True)],
+        )
+        if preserved:
+            raise T4PublicationUncertain(preserved) from exc
         if isinstance(exc, T4PublicationUncertain):
             raise
         raise

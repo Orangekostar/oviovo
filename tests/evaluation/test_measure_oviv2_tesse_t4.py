@@ -784,6 +784,36 @@ def test_collector_staging_initialization_failure_closes_fds_and_preserves_if_cr
         assert not list(tmp_path.glob(".collected.staging-*"))
 
 
+def test_collector_mkdir_wrapper_failure_reports_unbound_preserved_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.measure_oviv2_tesse_t4 as collector
+
+    destination = tmp_path / "collected"
+    original_mkdir = collector.os.mkdir
+
+    def create_then_fail(path, *args, **kwargs):
+        original_mkdir(path, *args, **kwargs)
+        if isinstance(path, str) and path.startswith(".collected.staging-"):
+            collector.os.chmod(path, 0o750, dir_fd=kwargs["dir_fd"])
+            raise OSError("injected post-mkdir failure")
+
+    monkeypatch.setattr(collector.os, "mkdir", create_then_fail)
+    before_fds = len(list(Path("/proc/self/fd").iterdir()))
+    with pytest.raises(collector.T4PublicationUncertain, match="preserved") as raised:
+        collect_shortlist(Path("protocol"), Path("shortlist"), "0", destination)
+    assert isinstance(raised.value.__cause__, OSError)
+    assert "post-mkdir" in str(raised.value.__cause__)
+    staging = list(tmp_path.glob(".collected.staging-*"))
+    assert len(staging) == 1
+    record = next(item for item in raised.value.preserved if item.name == staging[0].name)
+    assert record.ownership == "unbound"
+    assert record.inode == staging[0].stat().st_ino
+    assert record.mode == 0o40750
+    assert staging[0].is_dir()
+    assert len(list(Path("/proc/self/fd").iterdir())) == before_fds
+
+
 @pytest.mark.parametrize(
     "module_name",
     [

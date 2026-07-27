@@ -384,6 +384,37 @@ def test_verifier_staging_failure_preserves_artifact_and_retry_uses_new_staging(
     assert staging[0].stat().st_ino == original_inode
 
 
+def test_verifier_mkdir_wrapper_failure_reports_unbound_preserved_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.verify_oviv2_tesse_t4_gate as verifier
+
+    _, fixture = _valid_t4_evidence(tmp_path / "evidence")
+    output = tmp_path / "matrix.json"
+    original_mkdir = verifier.os.mkdir
+
+    def create_then_fail(path, *args, **kwargs):
+        original_mkdir(path, *args, **kwargs)
+        if isinstance(path, str) and path.startswith(".matrix.sources.staging-"):
+            verifier.os.chmod(path, 0o750, dir_fd=kwargs["dir_fd"])
+            raise OSError("injected post-mkdir failure")
+
+    monkeypatch.setattr(verifier.os, "mkdir", create_then_fail)
+    before_fds = len(list(Path("/proc/self/fd").iterdir()))
+    with pytest.raises(verifier.T4PublicationUncertain, match="preserved") as raised:
+        verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), output)
+    assert isinstance(raised.value.__cause__, OSError)
+    assert "post-mkdir" in str(raised.value.__cause__)
+    staging = list(tmp_path.glob(".matrix.sources.staging-*"))
+    assert len(staging) == 1
+    record = next(item for item in raised.value.preserved if item.name == staging[0].name)
+    assert record.ownership == "unbound"
+    assert record.inode == staging[0].stat().st_ino
+    assert record.mode == 0o40750
+    assert staging[0].is_dir()
+    assert len(list(Path("/proc/self/fd").iterdir())) == before_fds
+
+
 def test_verifier_does_not_unlink_racing_output(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
