@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import ast
 from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -120,9 +121,17 @@ PROFILE_CONFIG_BINDING_FIELDS = {
 }
 COMMON_INPUT_FINGERPRINT_FIELDS = {
     "source_manifest_sha256", "input_manifest_sha256",
-    "schedule_manifest_sha256", "occlusion_target_manifest_sha256",
-    "source_bindings_sha256",
+    "schedule_sha256", "ground_truth_sha256", "source_bindings_sha256",
 }
+
+
+@dataclass(frozen=True)
+class _ExactProfileSpec:
+    profile: str
+    config: Path
+    output_root: Path
+    source_manifest: Path
+    argv: tuple[str, ...]
 
 
 def _exact_execution(record: object) -> dict[str, Any]:
@@ -444,22 +453,64 @@ def _reopen_completed_execution(
     manifest_config = manifest.get("config")
     manifest_schedule = manifest.get("schedule")
     manifest_target = manifest.get("target_manifest")
+
     def byte_binding(record: Mapping[str, object]) -> dict[str, object]:
         return {
             "sha256": record["sha256"],
             "byte_count": record["byte_count"],
         }
+
+    if manifest_target is None and profile == "reference":
+        index_record = manifest.get("occlusion_checkpoint_index")
+        index_path_value = (
+            index_record.get("path") if isinstance(index_record, dict) else None
+        )
+        if not isinstance(index_path_value, str) or not index_path_value:
+            raise GateVerificationError(
+                "completed execution target manifest binding is invalid"
+            )
+        index_path = root / index_path_value
+        if index_path.resolve(strict=False) != index_path or root not in index_path.parents:
+            raise GateVerificationError(
+                "completed execution target manifest binding is invalid"
+            )
+        index_file = _absolute_file_record(index_path)
+        if index_record != {
+            "path": index_path_value,
+            "sha256": index_file["sha256"],
+            "byte_count": index_file["byte_count"],
+        }:
+            raise GateVerificationError(
+                "completed execution target manifest index changed"
+            )
+        try:
+            index_value = json.loads(
+                _regular_file_bytes(
+                    index_path.parent, index_path.name, DEFAULT_MAX_INPUT_BYTES
+                ),
+                object_pairs_hook=_strict_json_object,
+            )
+        except (UnicodeError, json.JSONDecodeError) as exc:
+            raise GateVerificationError(
+                "completed execution target manifest index is invalid"
+            ) from exc
+        manifest_target = (
+            index_value.get("target_manifest")
+            if isinstance(index_value, dict)
+            else None
+        )
     if (
         not _is_sha256(algorithm_hash)
         or config.get("algorithm_hash") != algorithm_hash
         or manifest_config != byte_binding(config_record)
         or manifest_schedule != byte_binding(schedule_record)
-        or (
-            manifest_target is not None
-            and manifest_target != byte_binding(target_record)
-        )
+        or manifest_target != byte_binding(target_record)
     ):
         raise GateVerificationError("completed execution identity is invalid")
+    if source_bindings.get("input_manifest") != byte_binding(input_record):
+        raise GateVerificationError(
+            "production input source binding does not match verified config"
+        )
     receipt_name = (
         "t1_exact_receipt.json" if profile == "reference" else "execution_receipt.json"
     )
@@ -523,8 +574,8 @@ def _reopen_completed_execution(
         "common_input_fingerprints": {
             "source_manifest_sha256": source_record["sha256"],
             "input_manifest_sha256": input_record["sha256"],
-            "schedule_manifest_sha256": schedule_record["sha256"],
-            "occlusion_target_manifest_sha256": target_record["sha256"],
+            "schedule_sha256": schedule_record["sha256"],
+            "ground_truth_sha256": target_record["sha256"],
             "source_bindings_sha256": canonical(source_bindings),
         },
         "output_root": str(root),
@@ -906,6 +957,85 @@ def _close_owned_paths(witnesses: list[OwnedPath]) -> None:
         os.close(witness[4])
 
 
+def _preflight_exact_profile_specs(
+    specs: list[dict[str, object]],
+    *,
+    repo: Path,
+    python_executable: str,
+) -> tuple[_ExactProfileSpec, ...]:
+    if len(specs) != len(EXACT_PROFILE_SEQUENCE):
+        raise GateVerificationError("exact execution spec inventory is invalid")
+    if not Path(python_executable).is_absolute():
+        raise GateVerificationError("exact execution Python path must be absolute")
+    expected_fields = {"profile", "config", "output_root", "source_manifest"}
+    prepared: list[_ExactProfileSpec] = []
+    roots: list[Path] = []
+    for profile, spec in zip(EXACT_PROFILE_SEQUENCE, specs, strict=True):
+        if not isinstance(spec, dict) or set(spec) != expected_fields:
+            raise GateVerificationError("exact execution spec fields are invalid")
+        if spec.get("profile") != profile:
+            raise GateVerificationError("exact execution spec sequence is invalid")
+        config = Path(str(spec["config"]))
+        root = Path(str(spec["output_root"]))
+        source = Path(str(spec["source_manifest"]))
+        if any(not path.is_absolute() for path in (config, root, source)):
+            raise GateVerificationError("exact execution spec paths must be absolute")
+        _absolute_file_record(config)
+        _absolute_file_record(source)
+        try:
+            config_value = json.loads(
+                _regular_file_bytes(
+                    config.parent, config.name, DEFAULT_MAX_INPUT_BYTES
+                ),
+                object_pairs_hook=_strict_json_object,
+            )
+        except (UnicodeError, json.JSONDecodeError) as exc:
+            raise GateVerificationError("exact execution config is invalid") from exc
+        if not isinstance(config_value, dict) or config_value.get("scene") != "apartment":
+            raise GateVerificationError(
+                "exact development transaction requires Apartment config"
+            )
+        if str(root.resolve(strict=False)) != str(root):
+            raise GateVerificationError("exact execution output root is not canonical")
+        if root.exists() or root.is_symlink():
+            raise GateVerificationError("exact execution output root would clobber data")
+        if any(
+            root == previous
+            or root in previous.parents
+            or previous in root.parents
+            for previous in roots
+        ):
+            raise GateVerificationError("exact execution output roots are not independent")
+        runner = (
+            repo / "scripts/evaluation/run_oviv2_t1_reference.py"
+            if profile == "reference"
+            else repo / "scripts/evaluation/run_oviv2_tesse_cd_v2.py"
+        ).resolve()
+        argv = (
+            python_executable,
+            str(runner),
+            "--config",
+            str(config),
+            "--output",
+            str(root),
+            *(
+                (
+                    "--receipt",
+                    str(root / "t1_exact_receipt.json"),
+                    "--source-manifest",
+                    str(source),
+                )
+                if profile == "reference"
+                else ()
+            ),
+        )
+        prepared.append(
+            _ExactProfileSpec(profile, config, root, source, argv)
+        )
+        roots.append(root)
+    return tuple(prepared)
+
+
 def execute_exact_profile_transaction(
     specs: list[dict[str, object]],
     *,
@@ -916,12 +1046,11 @@ def execute_exact_profile_transaction(
     compare: Callable[[Path, Path], dict[str, Any]] = compare_cumulative_artifacts,
 ) -> dict[str, Any]:
     """Launch and immediately verify the interleaved exact-profile transaction."""
-    if len(specs) != len(EXACT_PROFILE_SEQUENCE):
-        raise GateVerificationError("exact execution spec inventory is invalid")
-    if not Path(python_executable).is_absolute():
-        raise GateVerificationError("exact execution Python path must be absolute")
     if transaction_dir.exists() or transaction_dir.is_symlink():
         raise GateVerificationError("exact transaction directory would clobber data")
+    prepared_specs = _preflight_exact_profile_specs(
+        specs, repo=repo, python_executable=python_executable
+    )
     transaction_dir = Path(os.path.abspath(transaction_dir))
     receipts_dir = transaction_dir / "receipts"
     environment = os.environ.copy()
@@ -941,55 +1070,12 @@ def execute_exact_profile_transaction(
             raise GateVerificationError(
                 "exact transaction directory would clobber data"
             ) from exc
-        for position, (profile, spec) in enumerate(
-            zip(EXACT_PROFILE_SEQUENCE, specs, strict=True)
-        ):
-            expected_fields = {
-                "profile", "config", "output_root", "source_manifest",
-            }
-            if not isinstance(spec, dict) or set(spec) != expected_fields:
-                raise GateVerificationError("exact execution spec fields are invalid")
-            if spec.get("profile") != profile:
-                raise GateVerificationError("exact execution spec sequence is invalid")
-            config = Path(str(spec["config"]))
-            root = Path(str(spec["output_root"]))
-            source = Path(str(spec["source_manifest"]))
-            if any(not path.is_absolute() for path in (config, root, source)):
-                raise GateVerificationError("exact execution spec paths must be absolute")
-            try:
-                config_value = json.loads(
-                    _regular_file_bytes(
-                        config.parent, config.name, DEFAULT_MAX_INPUT_BYTES
-                    ),
-                    object_pairs_hook=_strict_json_object,
-                )
-            except (UnicodeError, json.JSONDecodeError) as exc:
-                raise GateVerificationError("exact execution config is invalid") from exc
-            if not isinstance(config_value, dict) or config_value.get("scene") != "apartment":
-                raise GateVerificationError(
-                    "exact development transaction requires Apartment config"
-                )
-            _absolute_file_record(source)
-            if root.exists() or root.is_symlink():
-                raise GateVerificationError("exact execution output root would clobber data")
-            if any(root == previous or root in previous.parents or previous in root.parents for previous in roots):
-                raise GateVerificationError("exact execution output roots are not independent")
-            runner = (
-                repo / "scripts/evaluation/run_oviv2_t1_reference.py"
-                if profile == "reference"
-                else repo / "scripts/evaluation/run_oviv2_tesse_cd_v2.py"
-            ).resolve()
-            argv = [
-                python_executable, str(runner), "--config", str(config), "--output",
-                str(root),
-            ]
-            if profile == "reference":
-                argv.extend(
-                    [
-                        "--receipt", str(root / "t1_exact_receipt.json"),
-                        "--source-manifest", str(source),
-                    ]
-                )
+        for position, prepared in enumerate(prepared_specs):
+            profile = prepared.profile
+            config = prepared.config
+            root = prepared.output_root
+            source = prepared.source_manifest
+            argv = list(prepared.argv)
             unproven_root = root
             process: subprocess.Popen[bytes] | None = None
             process = popen_factory(

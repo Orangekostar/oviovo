@@ -870,7 +870,14 @@ def _exact_execution(
             "sha256": hashlib.sha256(target_path.read_bytes()).hexdigest(),
             "byte_count": len(target_path.read_bytes()),
         },
-        "source_bindings": {"dataset": "fixture", "cache": "shared"},
+        "source_bindings": {
+            "input_manifest": {
+                "sha256": hashlib.sha256(input_path.read_bytes()).hexdigest(),
+                "byte_count": len(input_path.read_bytes()),
+            },
+            "dataset": "fixture",
+            "cache": "shared",
+        },
         "checkpoints": [{"frame_index": 2}],
     }
     (root / "run_manifest.json").write_text(
@@ -1164,8 +1171,8 @@ def test_exact_transaction_uses_popen_pid_argv_and_returncode(
     assert all(len(argv) == 6 for argv, _ in launched[1:])
 
 
-@pytest.mark.parametrize("case", ["old_fields", "office"])
-def test_exact_transaction_rejects_frozen_or_office_specs_before_popen(
+@pytest.mark.parametrize("case", ["old_fields", "office", "duplicate_root", "existing_root"])
+def test_exact_transaction_preflights_all_specs_before_creating_or_launching(
     tmp_path: Path, case: str
 ) -> None:
     source = tmp_path / "source.json"
@@ -1173,37 +1180,46 @@ def test_exact_transaction_rejects_frozen_or_office_specs_before_popen(
     specs: list[dict[str, object]] = []
     for position, profile in enumerate(gates.EXACT_PROFILE_SEQUENCE):
         config = tmp_path / f"config-{position}.json"
-        config.write_text(
-            json.dumps({"scene": "office" if case == "office" else "apartment"}) + "\n"
-        )
+        config.write_text(json.dumps({"scene": "apartment"}) + "\n")
         spec: dict[str, object] = {
             "profile": profile,
             "config": str(config.resolve()),
             "output_root": str((tmp_path / f"rejected-{position}").resolve()),
             "source_manifest": str(source.resolve()),
         }
-        if case == "old_fields":
+        if position == 4 and case == "old_fields":
             spec.update(
                 freeze_manifest=str((tmp_path / "freeze.json").resolve()),
                 run_slot="apartment_run1",
             )
         specs.append(spec)
-    called = False
+    if case == "office":
+        Path(specs[4]["config"]).write_text('{"scene":"office"}\n')
+    elif case == "duplicate_root":
+        specs[4]["output_root"] = specs[1]["output_root"]
+    elif case == "existing_root":
+        Path(specs[4]["output_root"]).mkdir()
+    popen_calls = 0
 
     def popen(*args: object, **kwargs: object) -> object:
-        nonlocal called
-        called = True
-        raise AssertionError((args, kwargs))
+        nonlocal popen_calls
+        popen_calls += 1
+        raise RuntimeError((args, kwargs))
 
-    with pytest.raises(gates.GateVerificationError, match="fields|Apartment|apartment"):
+    transaction = tmp_path / "rejected-transaction"
+    with pytest.raises(
+        gates.GateVerificationError,
+        match="fields|Apartment|apartment|independent|clobber",
+    ):
         gates.execute_exact_profile_transaction(
             specs,
             repo=gates.REPO_ROOT,
             python_executable="/env/bin/python",
-            transaction_dir=tmp_path / "rejected-transaction",
+            transaction_dir=transaction,
             popen_factory=popen,
         )
-    assert not called
+    assert popen_calls == 0
+    assert not transaction.exists()
 
 
 def test_exact_argv_rejects_injected_freeze_flag(tmp_path: Path) -> None:
@@ -1247,6 +1263,62 @@ def test_completed_execution_rejects_source_bindings_mismatch(tmp_path: Path) ->
                 "root_sha256": "e" * 64,
             },
         )
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ["missing_input_binding", "forged_input_binding", "schedule", "target"],
+)
+def test_completed_execution_cross_checks_common_input_content_records(
+    tmp_path: Path, mutation: str
+) -> None:
+    execution = _exact_execution("a1", tmp_path / "run-2", 102)
+    root = Path(execution["output_root"])
+    manifest_path = root / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    if mutation == "missing_input_binding":
+        manifest["source_bindings"].pop("input_manifest")
+    elif mutation == "forged_input_binding":
+        manifest["source_bindings"]["input_manifest"]["sha256"] = "f" * 64
+    elif mutation == "schedule":
+        manifest["schedule"]["sha256"] = "f" * 64
+    else:
+        manifest["target_manifest"]["sha256"] = "f" * 64
+    manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
+
+    observation = json.loads(Path(execution["observation_receipt"]["path"]).read_text())
+    with pytest.raises(gates.GateVerificationError, match="input|identity|schedule|target"):
+        gates._reopen_completed_execution(
+            "a1",
+            root,
+            execution["argv"],
+            execution["pid"],
+            0,
+            Path(observation["source_manifest"]["path"]),
+        )
+
+
+def test_common_input_fingerprint_schema_and_values_are_exact(tmp_path: Path) -> None:
+    execution = _exact_execution("a1", tmp_path / "run-2", 102)
+    common = execution["common_input_fingerprints"]
+    assert set(common) == {
+        "source_manifest_sha256",
+        "input_manifest_sha256",
+        "schedule_sha256",
+        "ground_truth_sha256",
+        "source_bindings_sha256",
+    }
+    assert gates.COMMON_INPUT_FINGERPRINT_FIELDS == set(common)
+    config = json.loads(Path(execution["argv"][3]).read_text())
+    assert common["input_manifest_sha256"] == hashlib.sha256(
+        Path(config["input_manifest"]).read_bytes()
+    ).hexdigest()
+    assert common["schedule_sha256"] == hashlib.sha256(
+        Path(config["schedule_manifest"]).read_bytes()
+    ).hexdigest()
+    assert common["ground_truth_sha256"] == hashlib.sha256(
+        Path(config["occlusion_target_manifest"]).read_bytes()
+    ).hexdigest()
 
 
 def test_exact_receipt_rejects_config_changed_after_run(tmp_path: Path) -> None:
@@ -1350,8 +1422,8 @@ def _failure_cleanup_harness(
             "common_input_fingerprints": {
                 "source_manifest_sha256": "1" * 64,
                 "input_manifest_sha256": "2" * 64,
-                "schedule_manifest_sha256": "3" * 64,
-                "occlusion_target_manifest_sha256": "4" * 64,
+                "schedule_sha256": "3" * 64,
+                "ground_truth_sha256": "4" * 64,
                 "source_bindings_sha256": "5" * 64,
             },
             "output_root": str(root),
