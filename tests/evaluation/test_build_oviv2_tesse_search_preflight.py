@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 import hashlib
 import json
 from pathlib import Path
@@ -279,30 +278,17 @@ def test_builds_source_recomputed_preflight_consumable_by_search(tmp_path: Path)
             "byte_count": len(content),
         }
 
-    # Pending consumer integration: its exact candidate schema predates source_evidence.
     manifest = json.loads(SEARCH_MANIFEST.read_text())
     base = json.loads(BASE_CONFIG.read_text())
-    with pytest.raises(ValueError, match="keys mismatch"):
-        _validate_preflight_gate_evidence(
-            output,
-            manifest_bytes=SEARCH_MANIFEST.read_bytes(),
-            apartment_bytes=BASE_CONFIG.read_bytes(),
-            apartment=base,
-            declarations={item["candidate_id"]: item for item in manifest["candidates"]},
-            selected_ids=("a1",),
-        )
-    compatible = copy.deepcopy(result)
-    compatible["candidates"][0].pop("source_evidence")
-    compatible_path = _write(tmp_path / "consumer-compatible.json", compatible)
     validated = _validate_preflight_gate_evidence(
-        compatible_path,
+        output,
         manifest_bytes=SEARCH_MANIFEST.read_bytes(),
         apartment_bytes=BASE_CONFIG.read_bytes(),
         apartment=base,
         declarations={item["candidate_id"]: item for item in manifest["candidates"]},
         selected_ids=("a1",),
     )
-    assert validated["sha256"] == hashlib.sha256(compatible_path.read_bytes()).hexdigest()
+    assert validated["sha256"] == hashlib.sha256(output.read_bytes()).hexdigest()
     assert result["candidates"][0]["frame_coverage"]["observed_frame_indices"] == [0, 1]
     assert result["candidates"][0]["anchor_coverage"]["mapped_count"] == 53
     invalidation = result["candidates"][0]["mechanisms"]["readout_invalidation"]

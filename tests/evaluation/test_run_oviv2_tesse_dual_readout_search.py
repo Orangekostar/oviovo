@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 import sys
 
@@ -28,6 +29,31 @@ def _canonical(value: object) -> bytes:
     return json.dumps(
         value, sort_keys=True, separators=(",", ":"), allow_nan=False
     ).encode()
+
+
+def _write_json(path: Path, value: object) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(_canonical(value) + b"\n")
+    return path
+
+
+def _write_jsonl(path: Path, values: list[dict[str, object]]) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(b"".join(_canonical(value) + b"\n" for value in values))
+    return path
+
+
+def _record(path: Path, *, relative_to: Path | None = None) -> dict[str, object]:
+    content = path.read_bytes()
+    return {
+        "path": (
+            path.relative_to(relative_to).as_posix()
+            if relative_to is not None
+            else str(path.absolute())
+        ),
+        "sha256": hashlib.sha256(content).hexdigest(),
+        "byte_count": len(content),
+    }
 
 
 def _preflight(tmp_path: Path, candidate_ids: tuple[str, ...]) -> Path:
@@ -70,6 +96,7 @@ def _preflight(tmp_path: Path, candidate_ids: tuple[str, ...]) -> Path:
         ],
     }
     candidates = []
+    evidence_root = tmp_path / f"preflight-sources-{'-'.join(candidate_ids)}"
     for candidate_id in candidate_ids:
         declaration = declarations.get(candidate_id)
         if declaration is None:
@@ -85,8 +112,223 @@ def _preflight(tmp_path: Path, candidate_ids: tuple[str, ...]) -> Path:
             "diag_a2_no_proposal_recovery": {"proposal_recovery"},
             "diag_a3_masking_only_no_ledger": {"background_release", "background_reclaim"},
             "diag_a4_no_dormant_candidates": {"eligible_reid"},
-            "diag_a4_translation_only_no_icp": {"icp"},
+            "diag_a4_translation_only_no_icp": {"icp", "motion_rejection"},
         }.get(candidate_id, set())
+        source_root = evidence_root / candidate_id
+        coverage_rows = [
+            {
+                "frame_index": frame,
+                "timestamp_ns": 100 + frame,
+                "record_count": 1,
+                "event_count": int(frame == 1),
+            }
+            for frame in range(3)
+        ]
+        trajectories = _write_jsonl(
+            source_root / "trajectories.jsonl",
+            [
+                {
+                    "frame_index": frame,
+                    "timestamp_ns": 100 + frame,
+                    "entity_id": "7",
+                    "centroid_xyz": [0.0, 0.0, 0.0],
+                    "observation_count": frame + 1,
+                    "dynamic_state": "dynamic",
+                    "motion_confidence": 1.0,
+                    "geometry_epoch": frame,
+                    "readout_valid": frame != 1,
+                }
+                for frame in range(3)
+            ],
+        )
+        lifecycle = _write_jsonl(
+            source_root / "lifecycle_transitions.jsonl",
+            [
+                {
+                    "frame_index": 1,
+                    "timestamp_ns": 101,
+                    "entity_id": "7",
+                    "before": "active",
+                    "after": "uncertain",
+                    "evidence": "visible_absent",
+                    "geometry_epoch": 1,
+                    "readout_valid": False,
+                }
+            ],
+        )
+        coverage = _write_jsonl(source_root / "frame_coverage.jsonl", coverage_rows)
+        counter_names = (
+            "proposal_opportunity_count",
+            "proposal_trigger_count",
+            "reid_opportunity_count",
+            "reid_trigger_count",
+            "motion_rejection_count",
+            "ledger_rejection_count",
+            "identity_expiry_count",
+            "geometry_reclaim_count",
+            "epoch_reset_opportunity_count",
+            "epoch_reset_trigger_count",
+            "icp_opportunity_count",
+            "icp_accept_count",
+            "icp_reject_count",
+            "ledger_stage_count",
+            "ledger_commit_count",
+            "ledger_reclaim_count",
+        )
+        zero_counters = {"ledger_rejection_count", "icp_accept_count"}
+        zero_counters |= {
+            "diag_a2_no_proposal_recovery": {
+                "proposal_opportunity_count",
+                "proposal_trigger_count",
+            },
+            "diag_a3_masking_only_no_ledger": {
+                "ledger_stage_count",
+                "ledger_commit_count",
+                "ledger_reclaim_count",
+            },
+            "diag_a4_no_dormant_candidates": {
+                "reid_opportunity_count",
+                "reid_trigger_count",
+            },
+            "diag_a4_translation_only_no_icp": {
+                "icp_opportunity_count",
+                "icp_accept_count",
+                "icp_reject_count",
+                "motion_rejection_count",
+            },
+        }.get(candidate_id, set())
+        counters = {name: int(name not in zero_counters) for name in counter_names}
+        record_id = {
+            "proposal_opportunity_count": "proposal:0",
+            "proposal_trigger_count": "proposal:0",
+            "reid_opportunity_count": "reid:0",
+            "reid_trigger_count": "reid:0",
+            "motion_rejection_count": "icp:0",
+            "identity_expiry_count": "identity:0",
+            "geometry_reclaim_count": "geometry:0",
+            "epoch_reset_opportunity_count": "epoch:0",
+            "epoch_reset_trigger_count": "epoch:0",
+            "icp_opportunity_count": "icp:0",
+            "icp_reject_count": "icp:0",
+            "ledger_stage_count": "ledger:0",
+            "ledger_commit_count": "ledger:0",
+            "ledger_reclaim_count": "ledger:0",
+        }
+        runtime = _write_json(
+            source_root / "runtime_diagnostics.json",
+            {
+                "schema_version": 1,
+                "execution_profile": base_profile,
+                "processed_frame_count": 3,
+                "counters": counters,
+                "mechanism_records": {
+                    name: ([] if counters[name] == 0 else [record_id[name]])
+                    for name in counter_names
+                },
+            },
+        )
+        source_index = _write_json(
+            source_root / "source_index.json",
+            {
+                "schema_version": 1,
+                "dataset": "TESSE-CD",
+                "mode": "causal_checkpoint_exports",
+                "method": "OVIV2",
+                "scene": "apartment",
+                "trajectories": _record(trajectories, relative_to=source_root),
+                "lifecycle_transitions": _record(lifecycle, relative_to=source_root),
+                "frame_coverage": _record(coverage, relative_to=source_root),
+                "runtime_diagnostics": _record(runtime, relative_to=source_root),
+            },
+        )
+        run_manifest = _write_json(
+            source_root / "run_manifest.json",
+            {
+                "schema_version": 2,
+                "dataset": "TESSE-CD",
+                "protocol_id": "oviv2-tessecd-v2",
+                "scene": "apartment",
+                "method_id": "OVIV2",
+                "algorithm_hash": materialized["algorithm_hash"],
+                "scheduled_frame_indices": [0, 1, 2],
+                "source_index": _record(source_index, relative_to=source_root),
+            },
+        )
+        mappings = [
+            {
+                "scene": "apartment",
+                "object_id": index,
+                "lifecycle_index": 0,
+                "anchor_frame_index": 0,
+                "anchor_relative_timestamp_ns": 100,
+                "eligible": True,
+                "target_voxel_count": 1,
+                "mapped_temporal_id": index if index < 53 else None,
+                "overlap_voxel_count": 1 if index < 53 else 0,
+                "ambiguous": False,
+            }
+            for index in range(66)
+        ]
+        occlusion = _write_json(
+            source_root / "temporal_occlusion_result.json",
+            {
+                "format": "oviv2_temporal_compact_v1",
+                "anchor_mappings": mappings,
+                "macro": {
+                    "anchor_coverage_gate": {
+                        "scene": "apartment",
+                        "eligible_count": 66,
+                        "uniquely_mapped_count": 53,
+                        "zero_overlap_count": 13,
+                        "ambiguous_count": 0,
+                        "required_eligible_count": 66,
+                        "required_mapped_count": 53,
+                        "available": True,
+                        "passed": True,
+                        "reason": None,
+                    }
+                },
+                "input_bindings": {
+                    "source_indexes": [
+                        {"scene": "apartment", **_record(source_index, relative_to=source_root)}
+                    ]
+                },
+            },
+        )
+        leakage = _write_json(
+            source_root / "future_leakage.json",
+            {
+                "schema_version": 1,
+                "manifest_id": "oviv2_tesse_future_leakage_evidence_v1",
+                "scene": "apartment",
+                "candidate_id": candidate_id,
+                "source_index": _record(source_index, relative_to=source_root),
+                "records": [],
+            },
+        )
+        source_evidence = {
+            "run_manifest": _record(run_manifest),
+            "source_index": _record(source_index),
+            "trajectories": _record(trajectories),
+            "lifecycle_transitions": _record(lifecycle),
+            "frame_coverage": _record(coverage),
+            "runtime_diagnostics": _record(runtime),
+            "temporal_occlusion_result": _record(occlusion),
+            "future_leakage_evidence": _record(leakage),
+        }
+        runtime_hash = source_evidence["runtime_diagnostics"]["sha256"]
+        lifecycle_hash = source_evidence["lifecycle_transitions"]["sha256"]
+        mechanism_records = {
+            "absence": ([0], [0], lifecycle_hash),
+            "readout_invalidation": ([0], [0], lifecycle_hash),
+            "proposal_recovery": (["proposal:0"], ["proposal:0"], runtime_hash),
+            "epoch_reset": (["epoch:0"], ["epoch:0"], runtime_hash),
+            "motion_rejection": (["icp:0"], ["icp:0"], runtime_hash),
+            "background_release": (["ledger:0"], ["ledger:0"], runtime_hash),
+            "background_reclaim": (["ledger:0"], ["ledger:0"], runtime_hash),
+            "eligible_reid": (["reid:0"], ["reid:0"], runtime_hash),
+            "icp": (["icp:0"], ["icp:0"], runtime_hash),
+        }
         candidates.append(
             {
                 "candidate_id": candidate_id,
@@ -110,12 +352,19 @@ def _preflight(tmp_path: Path, candidate_ids: tuple[str, ...]) -> Path:
                     name: {
                         "opportunity_count": 1,
                         "trigger_count": 1,
-                        "opportunity_records": [f"{candidate_id}:{name}:opportunity"],
-                        "trigger_records": [f"{candidate_id}:{name}:trigger"],
+                        "opportunity_records": [
+                            f"{name}:opportunity:{mechanism_records[name][2]}:"
+                            f"{mechanism_records[name][0][0]}"
+                        ],
+                        "trigger_records": [
+                            f"{name}:trigger:{mechanism_records[name][2]}:"
+                            f"{mechanism_records[name][1][0]}"
+                        ],
                     }
                     for name in candidate_mechanisms
                     if name not in disabled
                 },
+                "source_evidence": source_evidence,
             }
         )
     path.write_text(
@@ -263,10 +512,55 @@ def test_manifest_registers_runnable_nonselectable_micro_ablations() -> None:
     )
 
 
+@pytest.mark.parametrize(
+    ("candidate_id", "gpu", "control", "zero_names"),
+    [
+        (
+            "diag_a2_no_proposal_recovery",
+            "1",
+            {"proposal_recovery_enabled": False},
+            {"proposal_opportunity_count", "proposal_trigger_count"},
+        ),
+        (
+            "diag_a3_masking_only_no_ledger",
+            "2",
+            {"background_mode": "masking_only"},
+            {"ledger_stage_count", "ledger_commit_count", "ledger_reclaim_count"},
+        ),
+        (
+            "diag_a4_no_dormant_candidates",
+            "2",
+            {"dormant_reid_enabled": False},
+            {"reid_opportunity_count", "reid_trigger_count"},
+        ),
+        (
+            "diag_a4_translation_only_no_icp",
+            "2",
+            {"icp_enabled": False},
+            {
+                "icp_opportunity_count",
+                "icp_accept_count",
+                "icp_reject_count",
+                "motion_rejection_count",
+            },
+        ),
+    ],
+)
 def test_runner_executes_diagnostic_on_fixed_lane_outside_main_inventory(
     tmp_path: Path,
+    candidate_id: str,
+    gpu: str,
+    control: dict[str, object],
+    zero_names: set[str],
 ) -> None:
-    candidate_id = "diag_a3_masking_only_no_ledger"
+    preflight = _preflight(tmp_path, (candidate_id,))
+    preflight_payload = json.loads(preflight.read_text())
+    runtime_path = Path(
+        preflight_payload["candidates"][0]["source_evidence"]["runtime_diagnostics"]["path"]
+    )
+    runtime = json.loads(runtime_path.read_text())
+    assert all(runtime["counters"][name] == 0 for name in zero_names)
+    assert all(runtime["mechanism_records"][name] == [] for name in zero_names)
     status_path = run_search(
         manifest_path=MANIFEST,
         apartment_base_config=APARTMENT_CONFIG,
@@ -275,7 +569,7 @@ def test_runner_executes_diagnostic_on_fixed_lane_outside_main_inventory(
         gpu_ids=("0", "1", "2"),
         max_parallel=1,
         candidate_ids=(candidate_id,),
-        preflight_gate_evidence=_preflight(tmp_path, (candidate_id,)),
+        preflight_gate_evidence=preflight,
         available_ram_bytes=10**15,
         command_builder=lambda config, output, identity: (
             sys.executable,
@@ -289,12 +583,34 @@ def test_runner_executes_diagnostic_on_fixed_lane_outside_main_inventory(
     assert [item["candidate_id"] for item in status["diagnostic_candidates"]] == [candidate_id]
     record = status["diagnostic_candidates"][0]
     assert record["selectable"] is False
-    assert record["cuda_visible_devices"] == "2"
+    assert record["cuda_visible_devices"] == gpu
     config = json.loads(Path(record["config_path"]).read_text())
-    assert config["temporal_readout"]["execution_profile"] == "a3"
-    assert config["temporal_readout"]["diagnostic_controls"] == {
-        "background_mode": "masking_only"
-    }
+    assert config["temporal_readout"]["execution_profile"] == status[
+        "diagnostic_candidates"
+    ][0]["base_profile"]
+    assert config["temporal_readout"]["diagnostic_controls"] == control
+
+
+def test_diagnostic_rejects_nonzero_disabled_mechanism_self_report(
+    tmp_path: Path,
+) -> None:
+    preflight = _preflight(tmp_path, ("diag_a2_no_proposal_recovery",))
+    payload = json.loads(preflight.read_text())
+    runtime_path = Path(
+        payload["candidates"][0]["source_evidence"]["runtime_diagnostics"]["path"]
+    )
+    runtime = json.loads(runtime_path.read_text())
+    runtime["counters"]["proposal_opportunity_count"] = 1
+    runtime["counters"]["proposal_trigger_count"] = 1
+    runtime["mechanism_records"]["proposal_opportunity_count"] = ["proposal:0"]
+    runtime["mechanism_records"]["proposal_trigger_count"] = ["proposal:0"]
+
+    with pytest.raises(ValueError, match="disabled mechanism counters/records must be zero"):
+        search_runner._diagnostic_recompute_payloads(
+            {"runtime_diagnostics": runtime},
+            {"proposal_recovery"},
+            "diagnostic",
+        )
 
 
 def test_manifest_rejects_unknown_and_profile_incompatible_parameter_spaces(
@@ -568,7 +884,7 @@ def test_preflight_recomputes_source_coverage_and_mechanism_records(
     payload["candidates"][0]["frame_coverage"]["observed_frame_indices"] = [0, 1]
     payload["candidates"][0]["frame_coverage"]["observed_count"] = 2
     gate_path.write_text(json.dumps(payload))
-    with pytest.raises(ValueError, match="frame_coverage did not PASS"):
+    with pytest.raises(ValueError, match="frame_coverage differs from raw source"):
         run_search(
             manifest_path=MANIFEST,
             apartment_base_config=APARTMENT_CONFIG,
@@ -586,7 +902,7 @@ def test_preflight_recomputes_source_coverage_and_mechanism_records(
         "opportunity_count"
     ] = 2
     gate_path.write_text(json.dumps(payload))
-    with pytest.raises(ValueError, match="opportunity_count does not match"):
+    with pytest.raises(ValueError, match="mechanism records/counts differ from raw source"):
         run_search(
             manifest_path=MANIFEST,
             apartment_base_config=APARTMENT_CONFIG,
@@ -596,6 +912,230 @@ def test_preflight_recomputes_source_coverage_and_mechanism_records(
             candidate_ids=("a2",),
             preflight_gate_evidence=gate_path,
             available_ram_bytes=10**15,
+        )
+
+
+def test_runner_accepts_producer_source_evidence_end_to_end(tmp_path: Path) -> None:
+    from scripts.evaluation.build_oviv2_tesse_search_preflight import build_preflight
+
+    fixture = _preflight(tmp_path, ("a1",))
+    fixture_payload = json.loads(fixture.read_text())
+    evidence = fixture_payload["candidates"][0]["source_evidence"]
+    candidate_sources = _write_json(
+        tmp_path / "producer-input.json",
+        {
+            "schema_version": 1,
+            "manifest_id": "oviv2_tesse_search_preflight_sources_v1",
+            "candidates": [
+                {
+                    "candidate_id": "a1",
+                    "run_manifest": evidence["run_manifest"],
+                    "temporal_occlusion_result": evidence["temporal_occlusion_result"],
+                    "future_leakage_evidence": evidence["future_leakage_evidence"],
+                }
+            ],
+        },
+    )
+    produced = tmp_path / "producer-preflight.json"
+    build_preflight(
+        search_manifest=MANIFEST,
+        apartment_base_config=APARTMENT_CONFIG,
+        candidate_sources=candidate_sources,
+        output=produced,
+    )
+
+    status = run_search(
+        manifest_path=MANIFEST,
+        apartment_base_config=APARTMENT_CONFIG,
+        office_base_config=OFFICE_CONFIG,
+        output_root=tmp_path / "producer-consumer",
+        gpu_ids=("0",),
+        candidate_ids=("a1",),
+        preflight_gate_evidence=produced,
+        available_ram_bytes=10**15,
+        command_builder=lambda config, output, identity: (
+            sys.executable,
+            "-c",
+            "raise SystemExit(0)",
+        ),
+    )
+
+    assert json.loads(status.read_text())["status"] == "PASS"
+
+
+def test_runner_rejects_raw_hash_drift_even_when_summary_still_passes(
+    tmp_path: Path,
+) -> None:
+    gate = _preflight(tmp_path, ("a1",))
+    payload = json.loads(gate.read_text())
+    raw = Path(payload["candidates"][0]["source_evidence"]["frame_coverage"]["path"])
+    raw.write_bytes(raw.read_bytes() + b"\n")
+
+    with pytest.raises(ValueError, match="frame_coverage source binding mismatch"):
+        run_search(
+            manifest_path=MANIFEST,
+            apartment_base_config=APARTMENT_CONFIG,
+            office_base_config=OFFICE_CONFIG,
+            output_root=tmp_path / "hash-drift",
+            gpu_ids=("0",),
+            candidate_ids=("a1",),
+            preflight_gate_evidence=gate,
+            available_ram_bytes=10**15,
+        )
+
+
+@pytest.mark.parametrize("attack", ["dotdot", "symlink"])
+def test_runner_rejects_source_path_aliases_and_symlinks(
+    tmp_path: Path, attack: str
+) -> None:
+    gate = _preflight(tmp_path, ("a1",))
+    payload = json.loads(gate.read_text())
+    record = payload["candidates"][0]["source_evidence"]["trajectories"]
+    original = Path(record["path"])
+    if attack == "dotdot":
+        record["path"] = str(original.parent / "nested" / ".." / original.name)
+    else:
+        alias = original.with_name("trajectories-alias.jsonl")
+        alias.symlink_to(original)
+        record["path"] = str(alias)
+    gate.write_text(json.dumps(payload))
+
+    with pytest.raises(ValueError, match="alias|symlink"):
+        run_search(
+            manifest_path=MANIFEST,
+            apartment_base_config=APARTMENT_CONFIG,
+            office_base_config=OFFICE_CONFIG,
+            output_root=tmp_path / f"path-{attack}",
+            gpu_ids=("0",),
+            candidate_ids=("a1",),
+            preflight_gate_evidence=gate,
+            available_ram_bytes=10**15,
+        )
+
+
+def test_runner_rejects_source_inventory_inode_alias(tmp_path: Path) -> None:
+    gate = _preflight(tmp_path, ("a1",))
+    payload = json.loads(gate.read_text())
+    evidence = payload["candidates"][0]["source_evidence"]
+    original = Path(evidence["trajectories"]["path"])
+    alias = original.with_name("trajectories-hardlink.jsonl")
+    os.link(original, alias)
+    evidence["trajectories"]["path"] = str(alias)
+    evidence["lifecycle_transitions"] = dict(evidence["trajectories"])
+    gate.write_text(json.dumps(payload))
+
+    with pytest.raises(ValueError, match="same inode"):
+        run_search(
+            manifest_path=MANIFEST,
+            apartment_base_config=APARTMENT_CONFIG,
+            office_base_config=OFFICE_CONFIG,
+            output_root=tmp_path / "inode-alias",
+            gpu_ids=("0",),
+            candidate_ids=("a1",),
+            preflight_gate_evidence=gate,
+            available_ram_bytes=10**15,
+        )
+
+
+def test_runner_rejects_nested_source_record_path_alias(tmp_path: Path) -> None:
+    gate = _preflight(tmp_path, ("a1",))
+    payload = json.loads(gate.read_text())
+    evidence = payload["candidates"][0]["source_evidence"]
+    source_index_path = Path(evidence["source_index"]["path"])
+    source_index = json.loads(source_index_path.read_text())
+    source_index["trajectories"]["path"] = str(
+        source_index_path.parent / "nested" / ".." / "trajectories.jsonl"
+    )
+    _write_json(source_index_path, source_index)
+    evidence["source_index"] = _record(source_index_path)
+    run_path = Path(evidence["run_manifest"]["path"])
+    run = json.loads(run_path.read_text())
+    run["source_index"] = _record(source_index_path, relative_to=source_index_path.parent)
+    _write_json(run_path, run)
+    evidence["run_manifest"] = _record(run_path)
+    gate.write_text(json.dumps(payload))
+
+    with pytest.raises(ValueError, match="source path is an alias"):
+        run_search(
+            manifest_path=MANIFEST,
+            apartment_base_config=APARTMENT_CONFIG,
+            office_base_config=OFFICE_CONFIG,
+            output_root=tmp_path / "nested-path-alias",
+            gpu_ids=("0",),
+            candidate_ids=("a1",),
+            preflight_gate_evidence=gate,
+            available_ram_bytes=10**15,
+        )
+
+
+def test_runner_rejects_raw_occlusion_source_index_splice(tmp_path: Path) -> None:
+    gate = _preflight(tmp_path, ("a1",))
+    payload = json.loads(gate.read_text())
+    evidence = payload["candidates"][0]["source_evidence"]
+    original_index = Path(evidence["source_index"]["path"])
+    spliced_index = original_index.with_name("spliced_source_index.json")
+    spliced_index.write_bytes(original_index.read_bytes())
+    occlusion_path = Path(evidence["temporal_occlusion_result"]["path"])
+    occlusion = json.loads(occlusion_path.read_text())
+    occlusion["input_bindings"]["source_indexes"][0] = {
+        "scene": "apartment",
+        **_record(spliced_index, relative_to=original_index.parent),
+    }
+    _write_json(occlusion_path, occlusion)
+    evidence["temporal_occlusion_result"] = _record(occlusion_path)
+    gate.write_text(json.dumps(payload))
+
+    with pytest.raises(ValueError, match="occlusion source_index binding"):
+        run_search(
+            manifest_path=MANIFEST,
+            apartment_base_config=APARTMENT_CONFIG,
+            office_base_config=OFFICE_CONFIG,
+            output_root=tmp_path / "raw-splice",
+            gpu_ids=("0",),
+            candidate_ids=("a1",),
+            preflight_gate_evidence=gate,
+            available_ram_bytes=10**15,
+        )
+
+
+def test_runner_revalidates_all_raw_witnesses_immediately_before_launch(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    gate = _preflight(tmp_path, ("a1",))
+    payload = json.loads(gate.read_text())
+    raw = Path(payload["candidates"][0]["source_evidence"]["runtime_diagnostics"]["path"])
+    original_content = raw.read_bytes()
+    original_status = os.stat(raw, follow_symlinks=False)
+    original_stat = search_runner.os.stat
+
+    def pinned_stat(path: object, *args: object, **kwargs: object) -> os.stat_result:
+        if Path(path) == raw:
+            return original_status
+        return original_stat(path, *args, **kwargs)
+
+    monkeypatch.setattr(search_runner.os, "stat", pinned_stat)
+
+    def mutate_during_command_build(
+        config: Path, output: Path, candidate_id: str
+    ) -> tuple[str, ...]:
+        del config, output, candidate_id
+        replacement = bytearray(original_content)
+        replacement[-2] = ord(" ") if replacement[-2] != ord(" ") else ord("x")
+        raw.write_bytes(replacement)
+        assert len(raw.read_bytes()) == len(original_content)
+        return (sys.executable, "-c", "raise SystemExit(0)")
+
+    with pytest.raises(ValueError, match="changed before launch"):
+        run_search(
+            manifest_path=MANIFEST,
+            apartment_base_config=APARTMENT_CONFIG,
+            office_base_config=OFFICE_CONFIG,
+            output_root=tmp_path / "toctou",
+            gpu_ids=("0",),
+            candidate_ids=("a1",),
+            preflight_gate_evidence=gate,
+            available_ram_bytes=10**15,
+            command_builder=mutate_during_command_build,
         )
 
 

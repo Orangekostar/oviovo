@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 from collections.abc import Callable, Mapping, Sequence
 import copy
+from dataclasses import dataclass
 import hashlib
 import json
 import math
@@ -190,7 +191,7 @@ _DISABLED_MECHANISMS_BY_DIAGNOSTIC = {
     "diag_a2_no_proposal_recovery": {"proposal_recovery"},
     "diag_a3_masking_only_no_ledger": {"background_release", "background_reclaim"},
     "diag_a4_no_dormant_candidates": {"eligible_reid"},
-    "diag_a4_translation_only_no_icp": {"icp"},
+    "diag_a4_translation_only_no_icp": {"icp", "motion_rejection"},
 }
 _INPUT_BINDING_FIELDS = (
     "dense_manifest",
@@ -200,6 +201,16 @@ _INPUT_BINDING_FIELDS = (
     "input_manifest",
     "occlusion_target_manifest_sha256",
     "schedule_manifest",
+)
+_SOURCE_EVIDENCE_ROLES = (
+    "run_manifest",
+    "source_index",
+    "trajectories",
+    "lifecycle_transitions",
+    "frame_coverage",
+    "runtime_diagnostics",
+    "temporal_occlusion_result",
+    "future_leakage_evidence",
 )
 
 
@@ -290,6 +301,132 @@ def _decode_json(data: bytes, path: Path) -> dict[str, Any]:
 def _load_json(path: Path, label: str) -> tuple[dict[str, Any], bytes]:
     data = _read_regular_bytes(path, label)
     return _decode_json(data, path), data
+
+
+def _file_identity(value: os.stat_result) -> tuple[int, int, int, int, int]:
+    return (
+        value.st_dev,
+        value.st_ino,
+        value.st_size,
+        value.st_mtime_ns,
+        value.st_ctime_ns,
+    )
+
+
+@dataclass(frozen=True)
+class _EvidenceWitness:
+    path: Path
+    data: bytes
+    identity: tuple[int, int, int, int, int]
+
+    @property
+    def record(self) -> dict[str, Any]:
+        return {
+            "path": str(self.path),
+            "sha256": hashlib.sha256(self.data).hexdigest(),
+            "byte_count": len(self.data),
+        }
+
+    def revalidate(self, label: str) -> None:
+        try:
+            current = _read_evidence_witness(self.path, label)
+        except (OSError, ValueError) as exc:
+            raise ValueError(f"{label} changed before launch") from exc
+        if current.identity != self.identity or current.record != self.record:
+            raise ValueError(f"{label} changed before launch")
+
+
+class _PreflightRecord(dict[str, Any]):
+    def __init__(self, value: Mapping[str, Any], witnesses: Sequence[_EvidenceWitness]):
+        super().__init__(value)
+        self.witnesses = tuple(witnesses)
+
+
+def _read_evidence_witness(path: Path, label: str) -> _EvidenceWitness:
+    _reject_symlink_components(path, label)
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_CLOEXEC", 0)
+    try:
+        descriptor = os.open(path, flags)
+    except OSError as exc:
+        raise ValueError(f"{label} must be a readable regular file") from exc
+    try:
+        before = os.fstat(descriptor)
+        if not stat.S_ISREG(before.st_mode):
+            raise ValueError(f"{label} must be a regular file")
+        chunks: list[bytes] = []
+        while chunk := os.read(descriptor, 1024 * 1024):
+            chunks.append(chunk)
+        after = os.fstat(descriptor)
+    finally:
+        os.close(descriptor)
+    current = os.stat(path, follow_symlinks=False)
+    if (
+        _file_identity(before) != _file_identity(after)
+        or _file_identity(after) != _file_identity(current)
+    ):
+        raise ValueError(f"{label} changed while it was read")
+    data = b"".join(chunks)
+    if len(data) != after.st_size:
+        raise ValueError(f"{label} size changed while it was read")
+    return _EvidenceWitness(path, data, _file_identity(after))
+
+
+def _source_witness(record: object, label: str) -> _EvidenceWitness:
+    if not isinstance(record, Mapping):
+        raise ValueError(f"{label} source record must be an object")
+    _exact_keys(record, {"path", "sha256", "byte_count"}, f"{label} source record")
+    raw_path = record.get("path")
+    if not isinstance(raw_path, str) or not raw_path or not Path(raw_path).is_absolute():
+        raise ValueError(f"{label} source path must be absolute")
+    path = Path(raw_path)
+    if raw_path != str(path.absolute()) or ".." in path.parts or path == Path(path.anchor):
+        raise ValueError(f"{label} source path is an alias")
+    witness = _read_evidence_witness(path, label)
+    if dict(record) != witness.record:
+        raise ValueError(f"{label} source binding mismatch")
+    return witness
+
+
+def _jsonl(data: bytes, label: str) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for line_number, line in enumerate(data.splitlines(), start=1):
+        if not line.strip():
+            continue
+        rows.append(_decode_json(line, Path(f"{label} line {line_number}")))
+    return rows
+
+
+def _require_nested_source_record(
+    record: object,
+    *,
+    base: Path,
+    witness: _EvidenceWitness,
+    label: str,
+) -> None:
+    if not isinstance(record, Mapping):
+        raise ValueError(f"{label} source record must be an object")
+    _exact_keys(record, {"path", "sha256", "byte_count"}, f"{label} source record")
+    raw = record.get("path")
+    if not isinstance(raw, str) or not raw:
+        raise ValueError(f"{label} source path is invalid")
+    relative = Path(raw)
+    if (
+        raw != str(relative)
+        or ".." in relative.parts
+        or (not relative.is_absolute() and relative == Path("."))
+        or (relative.is_absolute() and raw != str(relative.absolute()))
+    ):
+        raise ValueError(f"{label} source path is an alias")
+    path = (relative if relative.is_absolute() else base / relative).absolute()
+    if path != witness.path or record.get("sha256") != witness.record["sha256"] or record.get(
+        "byte_count"
+    ) != witness.record["byte_count"]:
+        raise ValueError(f"{label} source binding mismatch")
+
+
+def _revalidate_preflight_witnesses(record: _PreflightRecord) -> None:
+    for witness in record.witnesses:
+        witness.revalidate(f"preflight witness {witness.path}")
 
 
 def _exact_keys(value: Mapping[str, Any], expected: set[str], label: str) -> None:
@@ -597,6 +734,99 @@ def _validate_mechanism_record(value: object, label: str) -> None:
         raise ValueError(f"{label}.trigger_count exceeds opportunity_count")
 
 
+def _validate_runtime_mechanism_records(
+    runtime: Mapping[str, Any], label: str
+) -> None:
+    if set(runtime) != {
+        "schema_version",
+        "execution_profile",
+        "processed_frame_count",
+        "counters",
+        "mechanism_records",
+    }:
+        raise ValueError(f"{label} mechanism_records are required")
+    counters = runtime["counters"]
+    records = runtime["mechanism_records"]
+    if not isinstance(counters, Mapping) or not isinstance(records, Mapping) or set(
+        counters
+    ) != set(records):
+        raise ValueError(f"{label} mechanism_records inventory mismatch")
+    for name, count in counters.items():
+        values = records[name]
+        if (
+            type(count) is not int
+            or count < 0
+            or not isinstance(values, list)
+            or len(values) != count
+            or len(values) != len(set(values))
+            or any(not isinstance(value, str) or not value for value in values)
+        ):
+            raise ValueError(f"{label} mechanism_records do not match counter: {name}")
+    subset_pairs = (
+        ("proposal_trigger_count", "proposal_opportunity_count"),
+        ("reid_trigger_count", "reid_opportunity_count"),
+        ("epoch_reset_trigger_count", "epoch_reset_opportunity_count"),
+        ("icp_accept_count", "icp_opportunity_count"),
+        ("icp_reject_count", "icp_opportunity_count"),
+        ("motion_rejection_count", "icp_opportunity_count"),
+        ("ledger_commit_count", "ledger_stage_count"),
+        ("ledger_reclaim_count", "ledger_commit_count"),
+    )
+    if any(not set(records[child]) <= set(records[parent]) for child, parent in subset_pairs):
+        raise ValueError(f"{label} mechanism_records relation mismatch")
+    accepts = set(records["icp_accept_count"])
+    rejects = set(records["icp_reject_count"])
+    opportunities = set(records["icp_opportunity_count"])
+    if accepts & rejects or accepts | rejects != opportunities:
+        raise ValueError(f"{label} ICP mechanism_records are not a partition")
+
+
+def _diagnostic_recompute_payloads(
+    payloads: Mapping[str, Any],
+    disabled: set[str],
+    label: str,
+) -> dict[str, Any]:
+    runtime = payloads["runtime_diagnostics"]
+    if not isinstance(runtime, Mapping):
+        raise ValueError(f"{label} runtime diagnostics are invalid")
+    _validate_runtime_mechanism_records(runtime, label)
+    disabled_counters = {
+        "proposal_recovery": {
+            "proposal_opportunity_count",
+            "proposal_trigger_count",
+        },
+        "background_release": {"ledger_stage_count", "ledger_commit_count"},
+        "background_reclaim": {"ledger_commit_count", "ledger_reclaim_count"},
+        "eligible_reid": {"reid_opportunity_count", "reid_trigger_count"},
+        "icp": {
+            "icp_opportunity_count",
+            "icp_accept_count",
+            "icp_reject_count",
+        },
+        "motion_rejection": {"icp_opportunity_count", "motion_rejection_count"},
+    }
+    names = set().union(*(disabled_counters[name] for name in disabled))
+    counters = runtime["counters"]
+    records = runtime["mechanism_records"]
+    if any(counters[name] != 0 or records[name] != [] for name in names):
+        raise ValueError(f"{label} disabled mechanism counters/records must be zero")
+
+    prepared = copy.deepcopy(dict(payloads))
+    prepared_runtime = prepared["runtime_diagnostics"]
+    prepared_counters = prepared_runtime["counters"]
+    prepared_records = prepared_runtime["mechanism_records"]
+    synthetic = "diagnostic-disabled:0"
+    for name in names:
+        prepared_counters[name] = 1
+        prepared_records[name] = [synthetic]
+    if "icp" in disabled or "motion_rejection" in disabled:
+        prepared_counters["icp_accept_count"] = 0
+        prepared_records["icp_accept_count"] = []
+        prepared_counters["icp_reject_count"] = 1
+        prepared_records["icp_reject_count"] = [synthetic]
+    return prepared
+
+
 def _validate_preflight_gate_evidence(
     path: Path,
     *,
@@ -606,7 +836,16 @@ def _validate_preflight_gate_evidence(
     declarations: Mapping[str, Mapping[str, Any]],
     selected_ids: tuple[str, ...],
 ) -> dict[str, Any]:
-    evidence, evidence_bytes = _load_json(path.absolute(), "preflight gate evidence")
+    from scripts.evaluation.build_oviv2_tesse_search_preflight import (
+        _anchor_coverage as recompute_anchor_coverage,
+        _mechanisms as recompute_mechanisms,
+    )
+
+    evidence_witness = _read_evidence_witness(
+        path.absolute(), "preflight gate evidence"
+    )
+    evidence_bytes = evidence_witness.data
+    evidence = _decode_json(evidence_bytes, evidence_witness.path)
     _exact_keys(
         evidence,
         {"schema_version", "manifest_id", "scene", "bindings", "candidates"},
@@ -637,6 +876,8 @@ def _validate_preflight_gate_evidence(
         item.get("candidate_id") if isinstance(item, dict) else None for item in candidates
     ] != list(selected_ids):
         raise ValueError("preflight gate evidence candidate order mismatch")
+    witnesses: list[_EvidenceWitness] = [evidence_witness]
+    inventory_inodes: set[tuple[int, int]] = set()
     for candidate in candidates:
         candidate_id = candidate["candidate_id"]
         _exact_keys(
@@ -648,6 +889,7 @@ def _validate_preflight_gate_evidence(
                 "future_leakage",
                 "anchor_coverage",
                 "mechanisms",
+                "source_evidence",
             },
             f"preflight candidate {candidate_id}",
         )
@@ -655,107 +897,197 @@ def _validate_preflight_gate_evidence(
         expected_config_sha256 = hashlib.sha256(_canonical_json(materialized)).hexdigest()
         if candidate["candidate_config_sha256"] != expected_config_sha256:
             raise ValueError(f"preflight candidate {candidate_id} config binding mismatch")
-        coverage = candidate["frame_coverage"]
-        if not isinstance(coverage, dict):
-            raise ValueError(f"preflight candidate {candidate_id} frame_coverage is invalid")
-        _exact_keys(
-            coverage,
-            {
-                "expected_frame_indices",
-                "observed_frame_indices",
-                "expected_count",
-                "observed_count",
-            },
-            f"preflight candidate {candidate_id} frame_coverage",
-        )
-        expected_frames = _exact_integer_list(
-            coverage["expected_frame_indices"],
-            f"preflight candidate {candidate_id} expected frame coverage",
-        )
-        observed_frames = _exact_integer_list(
-            coverage["observed_frame_indices"],
-            f"preflight candidate {candidate_id} observed frame coverage",
-        )
-        if (
-            not expected_frames
-            or isinstance(coverage["expected_count"], bool)
-            or not isinstance(coverage["expected_count"], int)
-            or isinstance(coverage["observed_count"], bool)
-            or not isinstance(coverage["observed_count"], int)
-            or coverage["expected_count"] != len(expected_frames)
-            or coverage["observed_count"] != len(observed_frames)
-            or observed_frames != expected_frames
-        ):
-            raise ValueError(
-                f"preflight candidate {candidate_id} frame_coverage did not PASS"
-            )
-        leakage = candidate["future_leakage"]
-        if not isinstance(leakage, dict):
-            raise ValueError(f"preflight candidate {candidate_id} future_leakage is invalid")
-        _exact_keys(
-            leakage,
-            {"count", "records"},
-            f"preflight candidate {candidate_id} future_leakage",
-        )
-        if (
-            isinstance(leakage["count"], bool)
-            or not isinstance(leakage["count"], int)
-            or not isinstance(leakage["records"], list)
-            or leakage["count"] != len(leakage["records"])
-            or leakage["count"] != 0
-        ):
-            raise ValueError(
-                f"preflight candidate {candidate_id} future_leakage must PASS with zero records"
-            )
-        anchor = candidate["anchor_coverage"]
-        if not isinstance(anchor, dict):
-            raise ValueError(f"preflight candidate {candidate_id} anchor_coverage is invalid")
-        _exact_keys(
-            anchor,
-            {"eligible_anchor_ids", "mapped_anchor_ids", "eligible_count", "mapped_count"},
-            f"preflight candidate {candidate_id} anchor_coverage",
-        )
-        eligible = _exact_integer_list(
-            anchor["eligible_anchor_ids"],
-            f"preflight candidate {candidate_id} eligible anchors",
-        )
-        mapped = _exact_integer_list(
-            anchor["mapped_anchor_ids"],
-            f"preflight candidate {candidate_id} mapped anchors",
-        )
-        if (
-            isinstance(anchor["eligible_count"], bool)
-            or not isinstance(anchor["eligible_count"], int)
-            or isinstance(anchor["mapped_count"], bool)
-            or not isinstance(anchor["mapped_count"], int)
-            or anchor["eligible_count"] != len(eligible)
-            or anchor["mapped_count"] != len(mapped)
-            or not set(mapped) <= set(eligible)
-            or len(eligible) != 66
-            or len(mapped) < 53
-        ):
-            raise ValueError(
-                f"preflight candidate {candidate_id} anchor coverage did not meet 53/66"
-            )
-        mechanisms = candidate["mechanisms"]
         declaration = declarations[candidate_id]
         base_profile = declaration.get("base_profile", candidate_id)
-        expected_mechanisms = set(_MECHANISMS_BY_PROFILE[base_profile]) - set(
+        source_evidence = candidate["source_evidence"]
+        if not isinstance(source_evidence, Mapping):
+            raise ValueError(f"preflight candidate {candidate_id} source_evidence is invalid")
+        _exact_keys(
+            source_evidence,
+            set(_SOURCE_EVIDENCE_ROLES),
+            f"preflight candidate {candidate_id} source_evidence",
+        )
+        source_witnesses = {
+            role: _source_witness(
+                source_evidence[role], f"preflight candidate {candidate_id} {role}"
+            )
+            for role in _SOURCE_EVIDENCE_ROLES
+        }
+        source_root = source_witnesses["run_manifest"].path.parent
+        for role, witness in source_witnesses.items():
+            try:
+                witness.path.relative_to(source_root)
+            except ValueError as exc:
+                raise ValueError(
+                    f"preflight candidate {candidate_id} {role} escapes source root"
+                ) from exc
+            inode = witness.identity[:2]
+            if inode in inventory_inodes:
+                raise ValueError("preflight source evidence roles alias the same inode")
+            inventory_inodes.add(inode)
+            witnesses.append(witness)
+
+        run = _decode_json(
+            source_witnesses["run_manifest"].data,
+            source_witnesses["run_manifest"].path,
+        )
+        if not (
+            run.get("dataset") == "TESSE-CD"
+            and run.get("protocol_id") == "oviv2-tessecd-v2"
+            and run.get("scene") == "apartment"
+            and run.get("method_id") == "OVIV2"
+            and run.get("algorithm_hash") == materialized["algorithm_hash"]
+        ):
+            raise ValueError(f"preflight candidate {candidate_id} run identity mismatch")
+        _require_nested_source_record(
+            run.get("source_index"),
+            base=source_witnesses["run_manifest"].path.parent,
+            witness=source_witnesses["source_index"],
+            label=f"preflight candidate {candidate_id} source_index",
+        )
+        source_index = _decode_json(
+            source_witnesses["source_index"].data,
+            source_witnesses["source_index"].path,
+        )
+        if not (
+            source_index.get("dataset") == "TESSE-CD"
+            and source_index.get("method") == "OVIV2"
+            and source_index.get("scene") == "apartment"
+        ):
+            raise ValueError(f"preflight candidate {candidate_id} source_index identity mismatch")
+        for role in (
+            "trajectories",
+            "lifecycle_transitions",
+            "frame_coverage",
+            "runtime_diagnostics",
+        ):
+            _require_nested_source_record(
+                source_index.get(role),
+                base=source_witnesses["source_index"].path.parent,
+                witness=source_witnesses[role],
+                label=f"preflight candidate {candidate_id} {role}",
+            )
+
+        payloads: dict[str, Any] = {
+            role: _jsonl(
+                source_witnesses[role].data,
+                f"preflight candidate {candidate_id} {role}",
+            )
+            for role in ("trajectories", "lifecycle_transitions", "frame_coverage")
+        }
+        payloads["runtime_diagnostics"] = _decode_json(
+            source_witnesses["runtime_diagnostics"].data,
+            source_witnesses["runtime_diagnostics"].path,
+        )
+        if payloads["runtime_diagnostics"].get("execution_profile") != base_profile:
+            raise ValueError(f"preflight candidate {candidate_id} profile binding mismatch")
+        expected_frames = run.get("scheduled_frame_indices")
+        observed_frames = [row.get("frame_index") for row in payloads["frame_coverage"]]
+        if not (
+            isinstance(expected_frames, list)
+            and expected_frames
+            and all(type(frame) is int and frame >= 0 for frame in expected_frames)
+            and expected_frames == sorted(set(expected_frames))
+            and observed_frames == expected_frames
+        ):
+            raise ValueError(
+                f"preflight candidate {candidate_id} raw frame_coverage did not PASS"
+            )
+        recomputed_coverage = {
+            "expected_frame_indices": expected_frames,
+            "observed_frame_indices": observed_frames,
+            "expected_count": len(expected_frames),
+            "observed_count": len(observed_frames),
+        }
+        if candidate["frame_coverage"] != recomputed_coverage:
+            raise ValueError(
+                f"preflight candidate {candidate_id} frame_coverage differs from raw source"
+            )
+
+        occlusion = _decode_json(
+            source_witnesses["temporal_occlusion_result"].data,
+            source_witnesses["temporal_occlusion_result"].path,
+        )
+        bindings = occlusion.get("input_bindings")
+        bound_indexes = bindings.get("source_indexes") if isinstance(bindings, Mapping) else None
+        if bound_indexes != [{"scene": "apartment", **run["source_index"]}]:
+            raise ValueError(
+                f"preflight candidate {candidate_id} occlusion source_index binding mismatch"
+            )
+        recomputed_anchor = recompute_anchor_coverage(occlusion)
+        if candidate["anchor_coverage"] != recomputed_anchor:
+            raise ValueError(
+                f"preflight candidate {candidate_id} anchor coverage differs from "
+                "raw source; 53/66 required"
+            )
+
+        leakage = _decode_json(
+            source_witnesses["future_leakage_evidence"].data,
+            source_witnesses["future_leakage_evidence"].path,
+        )
+        if set(leakage) != {
+            "schema_version",
+            "manifest_id",
+            "scene",
+            "candidate_id",
+            "source_index",
+            "records",
+        } or not (
+            leakage.get("schema_version") == 1
+            and leakage.get("manifest_id") == "oviv2_tesse_future_leakage_evidence_v1"
+            and leakage.get("scene") == "apartment"
+            and leakage.get("candidate_id") == candidate_id
+            and leakage.get("source_index") == run.get("source_index")
+            and isinstance(leakage.get("records"), list)
+        ):
+            raise ValueError(f"preflight candidate {candidate_id} future_leakage source is invalid")
+        recomputed_leakage = {
+            "count": len(leakage["records"]),
+            "records": leakage["records"],
+        }
+        if candidate["future_leakage"] != recomputed_leakage or leakage["records"]:
+            raise ValueError(
+                f"preflight candidate {candidate_id} future_leakage must PASS with zero raw records"
+            )
+
+        source_records = {
+            role: source_index[role]
+            for role in (
+                "trajectories",
+                "lifecycle_transitions",
+                "frame_coverage",
+                "runtime_diagnostics",
+            )
+        }
+        disabled_mechanisms = set(
             _DISABLED_MECHANISMS_BY_DIAGNOSTIC.get(candidate_id, ())
         )
-        if not isinstance(mechanisms, dict) or set(mechanisms) != expected_mechanisms:
+        recompute_payloads = (
+            _diagnostic_recompute_payloads(
+                payloads,
+                disabled_mechanisms,
+                f"preflight candidate {candidate_id}",
+            )
+            if disabled_mechanisms
+            else payloads
+        )
+        recomputed_mechanisms = recompute_mechanisms(
+            candidate_id=base_profile,
+            source_records=source_records,
+            payloads=recompute_payloads,
+        )
+        for disabled in disabled_mechanisms:
+            recomputed_mechanisms.pop(disabled, None)
+        if candidate["mechanisms"] != recomputed_mechanisms:
             raise ValueError(
-                f"preflight candidate {candidate_id} mechanisms do not match profile"
+                f"preflight candidate {candidate_id} mechanism records/counts "
+                "differ from raw source"
             )
-        for name, record in mechanisms.items():
-            _validate_mechanism_record(
-                record, f"preflight candidate {candidate_id} mechanism {name}"
-            )
-    return {
-        "path": str(path.absolute()),
+    return _PreflightRecord({
+        "path": str(evidence_witness.path),
         "sha256": hashlib.sha256(evidence_bytes).hexdigest(),
         "byte_count": len(evidence_bytes),
-    }
+    }, witnesses)
 
 
 def _available_ram_bytes(
@@ -943,6 +1275,7 @@ def run_search(
     )
 
     destination = Path(output_root).absolute()
+    _revalidate_preflight_witnesses(preflight_record)
     _reject_symlink_components(destination.parent, "output parent")
     destination.parent.mkdir(parents=True, exist_ok=True)
     _reject_symlink_components(destination.parent, "output parent")
@@ -1024,6 +1357,7 @@ def run_search(
             command = tuple(builder(config_path, run_root, candidate_id))
             if not command or any(not isinstance(value, str) or not value for value in command):
                 raise ValueError("candidate command must be non-empty strings")
+            _revalidate_preflight_witnesses(preflight_record)
             stdout_path = candidate_root / "stdout.log"
             stderr_path = candidate_root / "stderr.log"
             stdout = stdout_path.open("xb")
