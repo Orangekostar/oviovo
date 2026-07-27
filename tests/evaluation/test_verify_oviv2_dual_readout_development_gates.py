@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import gc
 import importlib.util
 import hashlib
 import json
@@ -1668,6 +1669,102 @@ def test_exact_transaction_reports_termination_failure_with_original_cause(
     assert events == ["communicate", "poll", "terminate", "kill", "wait", "cleanup"]
     assert process.reaped
     assert not transaction.exists()
+
+
+def test_exact_transaction_reap_failure_preserves_paths_and_closes_all_witness_fds(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    specs, transaction, successful_popen, compare = _failure_cleanup_harness(
+        tmp_path, monkeypatch, failure="child", position=99
+    )
+    baseline_fds = len(os.listdir("/proc/self/fd"))
+    launches = 0
+    owned_fds: set[int] = set()
+    close_calls: list[int] = []
+    original_close = os.close
+    preserved_paths = {
+        str(transaction),
+        str(transaction / "receipts"),
+        str(Path(specs[0]["output_root"])),
+        str(transaction / "receipts/000-reference.json"),
+    }
+
+    class StopSignal(BaseException):
+        pass
+
+    class UnreapableProcess:
+        pid = 31_340
+        returncode = None
+
+        def communicate(self) -> tuple[bytes, bytes]:
+            raise StopSignal("communication interrupted")
+
+        def poll(self) -> int | None:
+            return None
+
+        def terminate(self) -> None:
+            raise OSError("terminate denied")
+
+        def kill(self) -> None:
+            for entry in os.listdir("/proc/self/fd"):
+                try:
+                    target = os.readlink(f"/proc/self/fd/{entry}")
+                except OSError:
+                    continue
+                if target in preserved_paths:
+                    owned_fds.add(int(entry))
+            assert len(owned_fds) == len(preserved_paths)
+            injected_failure_fd = min(owned_fds)
+
+            def close_with_one_reported_failure(descriptor: int) -> None:
+                close_calls.append(descriptor)
+                original_close(descriptor)
+                if descriptor == injected_failure_fd:
+                    raise OSError("injected witness close failure")
+
+            monkeypatch.setattr(gates.os, "close", close_with_one_reported_failure)
+            raise OSError("kill denied")
+
+    def popen(argv: list[str], **kwargs: object) -> object:
+        nonlocal launches
+        launches += 1
+        if launches == 1:
+            return successful_popen(argv, **kwargs)
+        return UnreapableProcess()
+
+    try:
+        with pytest.raises(
+            gates.GateVerificationError,
+            match="process.*reap|witness close.*injected witness close failure",
+        ) as caught:
+            gates.execute_exact_profile_transaction(
+                specs,
+                repo=gates.REPO_ROOT,
+                python_executable="/env/bin/python",
+                transaction_dir=transaction,
+                popen_factory=popen,
+                compare=compare,
+            )
+
+        assert "injected witness close failure" in str(caught.value)
+        assert isinstance(caught.value.__cause__, StopSignal)
+        assert len(close_calls) == len(owned_fds) == 4
+        assert set(close_calls) == owned_fds
+        assert transaction.is_dir()
+        assert (transaction / "receipts").is_dir()
+        assert Path(specs[0]["output_root"]).is_dir()
+        assert (transaction / "receipts/000-reference.json").is_file()
+        gc.collect()
+        assert len(os.listdir("/proc/self/fd")) - baseline_fds == 0
+    finally:
+        monkeypatch.setattr(gates.os, "close", original_close)
+        for descriptor in owned_fds:
+            try:
+                target = os.readlink(f"/proc/self/fd/{descriptor}")
+            except OSError:
+                continue
+            if target in preserved_paths:
+                original_close(descriptor)
 
 
 @pytest.mark.parametrize("position", [0, 4, 8])

@@ -958,6 +958,16 @@ def _close_owned_paths(witnesses: list[OwnedPath]) -> None:
         os.close(witness[4])
 
 
+def _close_owned_path_descriptors(witnesses: list[OwnedPath]) -> list[str]:
+    problems: list[str] = []
+    for witness in witnesses:
+        try:
+            os.close(witness[4])
+        except OSError as exc:
+            problems.append(f"witness close failed ({witness[0]}): {exc}")
+    return problems
+
+
 def _preflight_exact_profile_specs(
     specs: list[dict[str, object]],
     *,
@@ -1246,6 +1256,18 @@ def execute_exact_profile_transaction(
         return result
     except BaseException as error:
         if process_reap_failed:
+            close_problems = _close_owned_path_descriptors(
+                [
+                    *root_witnesses,
+                    *observation_witnesses,
+                    *([receipts_witness] if receipts_witness is not None else []),
+                    *([transaction_witness] if transaction_witness is not None else []),
+                ]
+            )
+            if close_problems:
+                raise GateVerificationError(
+                    f"{error}; {'; '.join(close_problems)}"
+                ) from (error.__cause__ or error)
             raise
         problems = _cleanup_exact_transaction(
             root_witnesses,
