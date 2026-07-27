@@ -96,10 +96,12 @@ The bundle is independent of the exact-run roots:
   publication_receipt.json
 ```
 
-Source files are copied by verified descriptor into a staging bundle and
-rebound with bundle-relative `{path,sha256,byte_count}` records. The copied run
-manifest and source index are canonical rewrites whose nested records point to
-the copied files. No file is created under an exact-run root.
+Source files are copied byte-for-byte by verified descriptor into the same
+relative layout under each candidate staging directory. The copied run
+manifest and source index therefore retain their original nested
+`{path,sha256,byte_count}` records without a derived rewrite. Every record the
+preflight consumer needs must resolve inside that candidate directory and
+match the copied bytes. No file is created under an exact-run root.
 
 `candidate_sources.json` has exact top-level keys
 `{schema_version,manifest_id,candidates}`. Each candidate has exact keys
