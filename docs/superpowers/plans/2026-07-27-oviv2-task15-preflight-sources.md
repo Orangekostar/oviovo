@@ -143,6 +143,10 @@ git commit -m "fix: decouple Apartment development evidence from freeze"
 **Files:**
 - Create: `scripts/evaluation/build_oviv2_tesse_search_preflight_sources.py`
 - Create: `tests/evaluation/test_build_oviv2_tesse_search_preflight_sources.py`
+- Modify: `scripts/evaluation/build_oviv2_tesse_search_preflight.py`
+- Modify: `tests/evaluation/test_build_oviv2_tesse_search_preflight.py`
+- Modify: `scripts/evaluation/run_oviv2_tesse_dual_readout_search.py`
+- Modify: `tests/evaluation/test_run_oviv2_tesse_dual_readout_search.py`
 
 - [ ] **Step 1: Write the fixture and fixed-position RED test**
 
@@ -231,6 +235,15 @@ Call existing `build_preflight()` using the staged sources and write staged
 `preflight.json`. Finally call the search runner's
 `_validate_preflight_gate_evidence()` against A0-A4 before publication.
 
+Change `build_preflight()` to serialize each `source_evidence.path` relative
+to the preflight output parent and reject any source outside that parent.
+Change the search consumer to resolve these exact nonempty relative paths from
+the preflight witness parent; reject absolute paths, `.`, `..`, aliases, and
+escapes before reading. Retain all existing hash, inode, common-source-root,
+and before-launch witness revalidation. Add a regression that validates the
+staged preflight, renames the entire bundle, and validates it again without
+rewriting a byte.
+
 - [ ] **Step 8: Add publication RED tests**
 
 Cover existing output, post-mkdir wrapper failure, EEXIST/no-create,
@@ -268,11 +281,15 @@ Run:
 git diff --check
 ```
 
-Commit only the new producer and its test:
+Commit the producer, consumer path contract, and their tests:
 
 ```bash
 git add scripts/evaluation/build_oviv2_tesse_search_preflight_sources.py \
-  tests/evaluation/test_build_oviv2_tesse_search_preflight_sources.py
+  tests/evaluation/test_build_oviv2_tesse_search_preflight_sources.py \
+  scripts/evaluation/build_oviv2_tesse_search_preflight.py \
+  tests/evaluation/test_build_oviv2_tesse_search_preflight.py \
+  scripts/evaluation/run_oviv2_tesse_dual_readout_search.py \
+  tests/evaluation/test_run_oviv2_tesse_dual_readout_search.py
 git commit -m "feat: build source-backed Apartment preflight bundles"
 ```
 

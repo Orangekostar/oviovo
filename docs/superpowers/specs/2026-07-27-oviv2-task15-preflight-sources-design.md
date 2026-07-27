@@ -113,6 +113,13 @@ and preserves A0-A4 canonical order. The producer invokes the existing
 `build_preflight()` on the staged candidate-source index, so the final
 `preflight.json` is validated by the same code used by the search runner.
 
+Every `preflight.json` `source_evidence.path` is a canonical relative path
+from the preflight file's parent. Absolute paths, `.`, and any `..` component
+are rejected. The search consumer resolves the record from its already-opened
+preflight witness directory and then applies the existing hash, inode, source
+root, and pre-launch revalidation. Relative records remain valid when the
+whole staging bundle is renamed to its final no-clobber destination.
+
 ## Future-Leakage Audit
 
 An empty `records` list is published only after all causal checks pass. For
