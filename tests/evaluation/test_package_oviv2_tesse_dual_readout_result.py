@@ -8,6 +8,7 @@ import stat
 import subprocess
 import sys
 
+import numpy as np
 import pytest
 
 from scripts.evaluation import package_oviv2_tesse_dual_readout_result as package_module
@@ -304,6 +305,22 @@ def _fixture(root: Path) -> dict[str, Path]:
         "schedule": _record(schedule_file),
         **mechanism_sources,
         "checkpoints": [checkpoint]})
+    final_snapshot = run_root / "final_current_map" / "snapshot.npz"
+    final_snapshot.parent.mkdir(parents=True)
+    np.savez_compressed(
+        final_snapshot,
+        background_xyz=np.asarray([[1.0, 2.0, 3.0]]),
+        timestamp=np.asarray(300.0),
+        scope=np.asarray("current"),
+        scene_id=np.asarray("apartment"),
+    )
+    final_entities = run_root / "final_current_map" / "entities.jsonl"
+    final_entities.write_text("", encoding="utf-8")
+    run_artifact_inventory = sorted(
+        path.relative_to(run_root).as_posix()
+        for path in run_root.rglob("*")
+        if path.is_file()
+    )
     run_manifest = _write(run_root / "run_manifest.json", {
         "schema_version": 2, "protocol_id": "oviv2-tessecd-v2", "dataset": "TESSE-CD", "method_id": "OVIV2",
         "scene": "apartment", "mode": "dual_readout_causal_checkpoints", "algorithm_hash": algorithm,
@@ -318,7 +335,13 @@ def _fixture(root: Path) -> dict[str, Path]:
         "occlusion_checkpoint_index": {"path": "occlusion_checkpoint_index.json", "sha256": hashlib.sha256(index.read_bytes()).hexdigest(), "byte_count": index.stat().st_size},
         "source_index": {"path": "source_index.json", "sha256": hashlib.sha256(run_source_index.read_bytes()).hexdigest(), "byte_count": run_source_index.stat().st_size},
         "checkpoints": [{"frame_index": 2, "consumed_through_frame": 2, "consumed_through_frame_exclusive": 3}],
-        "artifact_inventory": ["normalized_run_config.json", "occlusion_checkpoint_index.json", "source_index.json"],
+        "artifact_inventory": run_artifact_inventory,
+        "final_current_map": {
+            "frame_index": 2, "timestamp_ns": 300, "scope": "current",
+            "snapshot": _relative_record(final_snapshot, run_root),
+            "entities": _relative_record(final_entities, run_root),
+            "background_storage": "snapshot.npz:background_xyz",
+        },
     })
     stdout = root / "stdout.log"; stdout.write_text("ok\n")
     stderr = root / "stderr.log"; stderr.write_text("")
@@ -819,6 +842,88 @@ def test_rejects_run_manifest_with_extra_field(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="field inventory"):
         _package(paths, tmp_path / "result.json")
+
+
+def test_rejects_stale_final_current_map_record(tmp_path: Path) -> None:
+    paths = _fixture(tmp_path)
+    manifest = json.loads(paths["run_manifest"].read_text())
+    snapshot = paths["run_manifest"].parent / manifest["final_current_map"]["snapshot"]["path"]
+    snapshot.write_bytes(b"tampered")
+
+    with pytest.raises(ValueError, match="final current map snapshot"):
+        _package(paths, tmp_path / "result.json")
+
+
+def test_new_runner_artifacts_cannot_omit_final_current_map_binding(
+    tmp_path: Path,
+) -> None:
+    paths = _fixture(tmp_path)
+    manifest = json.loads(paths["run_manifest"].read_text())
+    manifest.pop("final_current_map")
+    _write(paths["run_manifest"], manifest)
+
+    with pytest.raises(ValueError, match="lacks final current map"):
+        _package(paths, tmp_path / "result.json")
+
+
+def test_rejects_stale_final_map_metadata_and_undeclared_directory(
+    tmp_path: Path,
+) -> None:
+    paths = _fixture(tmp_path / "metadata")
+    manifest = json.loads(paths["run_manifest"].read_text())
+    snapshot = paths["run_manifest"].parent / manifest["final_current_map"]["snapshot"]["path"]
+    np.savez_compressed(
+        snapshot,
+        background_xyz=np.asarray([[1.0, 2.0, 3.0]]),
+        timestamp=np.asarray(100.0),
+        scope=np.asarray("current"),
+        scene_id=np.asarray("apartment"),
+    )
+    manifest["final_current_map"]["snapshot"] = _relative_record(
+        snapshot, paths["run_manifest"].parent
+    )
+    _write(paths["run_manifest"], manifest)
+    with pytest.raises(ValueError, match="snapshot metadata is stale"):
+        _package(paths, tmp_path / "metadata-result.json")
+
+    paths = _fixture(tmp_path / "coverage")
+    manifest = json.loads(paths["run_manifest"].read_text())
+    snapshot = paths["run_manifest"].parent / manifest["final_current_map"]["snapshot"]["path"]
+    np.savez_compressed(
+        snapshot,
+        background_xyz=np.asarray([[1.0, 2.0, 3.0]]),
+        timestamp=np.asarray(200.0),
+        scope=np.asarray("current"),
+        scene_id=np.asarray("apartment"),
+    )
+    manifest["final_current_map"]["timestamp_ns"] = 200
+    manifest["final_current_map"]["snapshot"] = _relative_record(
+        snapshot, paths["run_manifest"].parent
+    )
+    _write(paths["run_manifest"], manifest)
+    with pytest.raises(ValueError, match="run-end frame coverage"):
+        _package(paths, tmp_path / "coverage-result.json")
+
+    paths = _fixture(tmp_path / "external")
+    manifest = json.loads(paths["run_manifest"].read_text())
+    outside_coverage = tmp_path / "external-coverage.jsonl"
+    outside_coverage.write_text(
+        json.dumps({"frame_index": 2, "timestamp_ns": 300}) + "\n",
+        encoding="utf-8",
+    )
+    outside_index = _write(tmp_path / "external-source-index.json", {
+        "frame_coverage": _relative_record(outside_coverage, tmp_path),
+    })
+    manifest["source_index"] = _relative_record(outside_index, tmp_path)
+    manifest["source_index"]["path"] = str(outside_index.absolute())
+    _write(paths["run_manifest"], manifest)
+    with pytest.raises(ValueError, match="canonical run artifact"):
+        _package(paths, tmp_path / "external-result.json")
+
+    paths = _fixture(tmp_path / "directory")
+    (paths["run_manifest"].parent / "undeclared-empty").mkdir()
+    with pytest.raises(ValueError, match="directory inventory"):
+        _package(paths, tmp_path / "directory-result.json")
 
 
 def test_rejects_metrics_that_do_not_match_recomputed_sources(tmp_path: Path) -> None:
@@ -1615,6 +1720,32 @@ def _two_frame_dependencies(config: dict[str, object]):
     )
 
 
+def _compare_cumulative_with_run_end_map(left: Path, right: Path) -> dict[str, object]:
+    saved: dict[Path, bytes] = {}
+    moved: dict[Path, Path] = {}
+    try:
+        for root in {left, right}:
+            manifest_path = root / "run_manifest.json"
+            saved[manifest_path] = manifest_path.read_bytes()
+            manifest = json.loads(saved[manifest_path])
+            manifest.pop("final_current_map")
+            manifest["artifact_inventory"] = [
+                item for item in manifest["artifact_inventory"]
+                if not item.startswith("final_current_map/")
+            ]
+            _write(manifest_path, manifest)
+            final_root = root / "final_current_map"
+            hidden = root.parent / f".{root.name}-final-current-map"
+            final_root.rename(hidden)
+            moved[final_root] = hidden
+        return compare_cumulative_artifacts(left, right)
+    finally:
+        for original, hidden in moved.items():
+            hidden.rename(original)
+        for path, data in saved.items():
+            path.write_bytes(data)
+
+
 @pytest.fixture(scope="module")
 def _temporal_mutation_baseline(
     tmp_path_factory: pytest.TempPathFactory,
@@ -1627,7 +1758,7 @@ def _temporal_mutation_baseline(
     production_runner.run(
         baseline_config, baseline, dependencies=baseline_dependencies
     )
-    baseline_audit = compare_cumulative_artifacts(baseline, baseline)
+    baseline_audit = _compare_cumulative_with_run_end_map(baseline, baseline)
     assert json.loads((baseline / "run_manifest.json").read_text())["processed_frame_count"] == 2
     return config, baseline, {
         "non_temporal": baseline_non_temporal,
@@ -1665,7 +1796,7 @@ def test_every_independently_configurable_temporal_leaf_runs_exact_cumulative_tr
 
     assert mutated["algorithm_hash"] != config["algorithm_hash"]
     assert non_temporal_config_sha256(mutated) == expected["non_temporal"]
-    assert compare_cumulative_artifacts(baseline, mutation) == expected["audit"]
+    assert _compare_cumulative_with_run_end_map(baseline, mutation) == expected["audit"]
     assert json.loads((mutation / "run_manifest.json").read_text())["processed_frame_count"] == 2
 
 

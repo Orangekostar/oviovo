@@ -17,6 +17,8 @@ import sys
 import tempfile
 from typing import Any
 
+import numpy as np
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
@@ -73,8 +75,9 @@ RUN_MANIFEST_FIELDS = {
     "captured_frame_indices", "config", "normalized_run_config", "schedule",
     "target_manifest", "source_bindings", "input_sha256", "code_commit",
     "checkpoints", "occlusion_checkpoint_index", "source_index",
-    "artifact_inventory",
+    "artifact_inventory", "final_current_map",
 }
+LEGACY_RUN_MANIFEST_FIELDS = RUN_MANIFEST_FIELDS - {"final_current_map"}
 MAX_JSON_BYTES = 8 * 1024 * 1024
 SOURCE_NAMES = (
     "search_manifest", "search_status", "candidate_config", "run_manifest",
@@ -1165,7 +1168,12 @@ def _derive(
     run_snap = snapshots["run_manifest"]
     run = run_snap.payload
     run_root = run_snap.path.parent
-    if set(run) not in (RUN_MANIFEST_FIELDS, RUN_MANIFEST_FIELDS | {"frozen_run_identity"}):
+    if set(run) not in (
+        LEGACY_RUN_MANIFEST_FIELDS,
+        LEGACY_RUN_MANIFEST_FIELDS | {"frozen_run_identity"},
+        RUN_MANIFEST_FIELDS,
+        RUN_MANIFEST_FIELDS | {"frozen_run_identity"},
+    ):
         raise ValueError("candidate run manifest field inventory is not exact")
     if Path(str(record.get("output_root"))).absolute() != run_root:
         raise ValueError("search status output root mismatch")
@@ -1181,6 +1189,146 @@ def _derive(
     _record_matches(normalized_record, normalized_snap, "normalized run config", path_required=True, base=run_root)
     if normalized_snap.payload != config:
         raise ValueError("normalized run config differs from candidate config")
+    final_current = run.get("final_current_map")
+    if final_current is None and any(
+        isinstance(item, str) and item.startswith("final_current_map/")
+        for item in run.get("artifact_inventory", ())
+    ):
+        raise ValueError("new runner artifact lacks final current map binding")
+    if final_current is not None:
+        if not isinstance(final_current, Mapping) or set(final_current) != {
+            "frame_index", "timestamp_ns", "scope", "snapshot", "entities",
+            "background_storage",
+        }:
+            raise ValueError("final current map schema is not exact")
+        if not (
+            final_current.get("frame_index") == run.get("last_frame_index")
+            and isinstance(final_current.get("timestamp_ns"), int)
+            and not isinstance(final_current.get("timestamp_ns"), bool)
+            and final_current.get("scope") == "current"
+            and final_current.get("background_storage")
+            == "snapshot.npz:background_xyz"
+        ):
+            raise ValueError("final current map progress binding is invalid")
+        artifact_inventory = run.get("artifact_inventory")
+        if (
+            not isinstance(artifact_inventory, list)
+            or artifact_inventory != sorted(set(artifact_inventory))
+            or any(not isinstance(item, str) or not item for item in artifact_inventory)
+        ):
+            raise ValueError("run artifact inventory is invalid")
+
+        def internal_artifact(record: Mapping[str, Any], label: str) -> Path:
+            raw_path = record.get("path")
+            if not (
+                isinstance(raw_path, str)
+                and raw_path not in {"", "."}
+                and not Path(raw_path).is_absolute()
+                and Path(raw_path).as_posix() == raw_path
+                and ".." not in Path(raw_path).parts
+                and raw_path in artifact_inventory
+            ):
+                raise ValueError(f"{label} path is not a canonical run artifact")
+            path = Path(os.path.abspath(run_root / raw_path))
+            if Path(os.path.abspath(run_root)) not in path.parents:
+                raise ValueError(f"{label} is outside the run")
+            return path
+
+        source_index_record = run.get("source_index")
+        if not isinstance(source_index_record, Mapping) or not isinstance(
+            source_index_record.get("path"), str
+        ):
+            raise ValueError("run source index record is invalid")
+        final_source_index = take(
+            internal_artifact(source_index_record, "run source index for final map"),
+            "run source index for final map",
+        )
+        _record_matches(
+            source_index_record, final_source_index, "run source index for final map",
+            path_required=True, base=run_root,
+        )
+        coverage_record = final_source_index.payload.get("frame_coverage")
+        if not isinstance(coverage_record, Mapping) or not isinstance(
+            coverage_record.get("path"), str
+        ):
+            raise ValueError("run frame coverage record is invalid")
+        coverage_snapshot = take(
+            internal_artifact(coverage_record, "run frame coverage for final map"),
+            "run frame coverage for final map",
+            parse_json=False,
+        )
+        _record_matches(
+            coverage_record, coverage_snapshot, "run frame coverage for final map",
+            path_required=True, base=run_root,
+        )
+        coverage_rows = _parse_jsonl(coverage_snapshot, "run frame coverage for final map")
+        if not coverage_rows or (
+            coverage_rows[-1].get("frame_index"), coverage_rows[-1].get("timestamp_ns")
+        ) != (final_current["frame_index"], final_current["timestamp_ns"]):
+            raise ValueError("final current map does not match run-end frame coverage")
+        actual_inventory = []
+        actual_directories = []
+        for path in run_root.rglob("*"):
+            relative = path.relative_to(run_root).as_posix()
+            if path.is_symlink():
+                raise ValueError("run artifact inventory contains a symlink")
+            if path.is_file():
+                if relative not in {"run_manifest.json", "execution_receipt.json"}:
+                    actual_inventory.append(relative)
+            elif path.is_dir():
+                actual_directories.append(relative)
+            else:
+                raise ValueError("run artifact inventory contains a non-file entry")
+        actual_inventory.sort()
+        if artifact_inventory != actual_inventory:
+            raise ValueError("run artifact inventory differs from run directory")
+        expected_directories = sorted({
+            parent.as_posix()
+            for item in artifact_inventory
+            for parent in Path(item).parents
+            if parent.as_posix() != "."
+        })
+        if sorted(actual_directories) != expected_directories:
+            raise ValueError("run directory inventory differs from artifact paths")
+        final_snaps = []
+        for role in ("snapshot", "entities"):
+            record = final_current.get(role)
+            if not isinstance(record, Mapping) or set(record) != {
+                "path", "sha256", "byte_count"
+            }:
+                raise ValueError(f"final current map {role} record is invalid")
+            raw_path = record.get("path")
+            if not isinstance(raw_path, str) or raw_path not in artifact_inventory:
+                raise ValueError(f"final current map {role} is absent from artifact inventory")
+            path = run_root / raw_path
+            if run_root not in path.absolute().parents:
+                raise ValueError(f"final current map {role} is outside the run")
+            snap = take(path, f"final current map {role}", parse_json=False)
+            _record_matches(
+                record, snap, f"final current map {role}",
+                path_required=True, base=run_root,
+            )
+            final_snaps.append(snap)
+        if final_snaps[0].path == final_snaps[1].path or (
+            final_snaps[0].identity[0], final_snaps[0].identity[1]
+        ) == (final_snaps[1].identity[0], final_snaps[1].identity[1]):
+            raise ValueError("final current map files alias")
+        try:
+            with np.load(final_snaps[0].path, allow_pickle=False) as arrays:
+                if not {"background_xyz", "timestamp", "scope", "scene_id"} <= set(arrays.files):
+                    raise ValueError("final current map snapshot metadata is incomplete")
+                metadata = tuple(
+                    (arrays[name].shape, arrays[name].item())
+                    for name in ("timestamp", "scope", "scene_id")
+                )
+        except (OSError, ValueError) as exc:
+            raise ValueError("final current map snapshot is invalid") from exc
+        if metadata != (
+            ((), final_current["timestamp_ns"]),
+            ((), "current"),
+            ((), "apartment"),
+        ):
+            raise ValueError("final current map snapshot metadata is stale")
     if run.get("algorithm_hash") != algorithm_hash or not isinstance(run.get("source_bindings"), Mapping) or not run["source_bindings"]:
         raise ValueError("run algorithm/input/source bindings differ from candidate")
     _sha(run.get("input_sha256"), "run input_sha256")

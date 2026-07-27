@@ -20,7 +20,10 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.evaluation.measure_oviv2_tesse_t4 import (
-    METRICS, UNITS, _percentile, _validate_protocol, parse_time_v,
+    METRICS, UNITS, T4CollectionError, _actual_runner, _bind_shortlist_candidate,
+    _percentile,
+    _resolve_final_map, _validate_protocol, build_final_map_inventory,
+    parse_time_v,
 )
 
 
@@ -162,14 +165,21 @@ def _raw_metrics(evidence: Mapping[str, Any]) -> tuple[dict[str, float], dict[st
     candidate = evidence.get("candidate_id")
     config_sha = evidence.get("config_sha256")
     run, _ = _load(bound["run_manifest"][0], "run manifest")
-    if not (
-        run.get("dataset") == "TESSE-CD" and run.get("method_id") == "OVIV2"
-        and run.get("protocol_id") == "oviv2-tessecd-v2" and run.get("scene") == "apartment"
-        and run.get("candidate_id") == candidate and run.get("config_sha256") == config_sha
-    ):
-        raise T4GateError("evidence is not bound to one whole-profile run")
-    actual_runner = run
-    actual_runner_path = bound["run_manifest"][0]
+    config, config_data = _load(bound["config"][0], "candidate config")
+    if not isinstance(candidate, str) or not isinstance(config_sha, str):
+        raise T4GateError("evidence candidate identity is invalid")
+    try:
+        actual_runner, actual_runner_path = _actual_runner(
+            run,
+            bound["run_manifest"][0],
+            bound["config"][0],
+            config,
+            config_data,
+            candidate,
+            config_sha,
+        )
+    except (T4CollectionError, OSError) as exc:
+        raise T4GateError("evidence is not bound to one whole-profile run") from exc
     if run.get("manifest_id") == "oviv2_tesse_t4_measurement_run_v1":
         if run.get("candidate_config") != sources["config"]:
             raise T4GateError("measurement run candidate config binding mismatch")
@@ -181,19 +191,7 @@ def _raw_metrics(evidence: Mapping[str, Any]) -> tuple[dict[str, float], dict[st
         ):
             if run.get(role) != sources[source_key]:
                 raise T4GateError(f"measurement run {role} binding mismatch")
-        runner_path, _ = _bound(run.get("runner_manifest"), "actual runner manifest")
-        runner, _ = _load(runner_path, "actual runner manifest")
-        if not (
-            runner.get("dataset") == "TESSE-CD" and runner.get("method_id") == "OVIV2"
-            and runner.get("protocol_id") == "oviv2-tessecd-v2" and runner.get("scene") == "apartment"
-            and runner.get("processed_frame_count") == run.get("processed_frame_count")
-            and runner.get("candidate_id") == candidate
-            and runner.get("config_sha256") == config_sha
-        ):
-            raise T4GateError("actual runner manifest scope mismatch")
-        actual_runner = runner
-        actual_runner_path = runner_path
-    frames = run.get("processed_frame_count")
+    frames = actual_runner.get("processed_frame_count")
     if isinstance(frames, bool) or not isinstance(frames, int) or frames <= 0:
         raise T4GateError("run manifest processed-frame count is invalid")
     elapsed, peak_ram = parse_time_v(bound["time_log"][0])
@@ -315,8 +313,8 @@ def _raw_metrics(evidence: Mapping[str, Any]) -> tuple[dict[str, float], dict[st
     files = inventory.get("files")
     if inventory.get("manifest_id") != "oviv2_tesse_t4_final_map_inventory_v1" or not isinstance(files, list):
         raise T4GateError("final map inventory schema is invalid")
-    if [item.get("role") for item in files if isinstance(item, Mapping)] != ["snapshot", "entities", "background"]:
-        raise T4GateError("final map inventory must contain exact snapshot/entities/background")
+    if [item.get("role") for item in files if isinstance(item, Mapping)] != ["snapshot", "entities"]:
+        raise T4GateError("final map inventory must contain exact snapshot/entities")
     total_bytes = 0
     source_paths = set()
     source_identities = set()
@@ -333,19 +331,15 @@ def _raw_metrics(evidence: Mapping[str, Any]) -> tuple[dict[str, float], dict[st
     if inventory.get("total_bytes") != total_bytes:
         raise T4GateError("final map inventory byte total is stale")
     by_role = {item["role"]: {key: item[key] for key in ("path", "sha256", "byte_count")} for item in files}
-    declared_final = actual_runner.get("final_current_map")
-    if not isinstance(declared_final, Mapping):
-        raise T4GateError("actual runner lacks final current map binding")
-    for role in ("snapshot", "entities", "background"):
-        declared = declared_final.get(role)
-        if not isinstance(declared, Mapping) or set(declared) != {"path", "sha256", "byte_count"}:
-            raise T4GateError("actual runner final current map schema is invalid")
-        declared_path = Path(str(declared["path"]))
-        if not declared_path.is_absolute():
-            declared_path = actual_runner_path.parent / declared_path
-        expected = {**declared, "path": str(Path(os.path.abspath(declared_path)))}
-        if expected != by_role[role]:
-            raise T4GateError("final current map is not bound to the actual runner")
+    try:
+        final_files = _resolve_final_map(actual_runner, actual_runner_path.parent)
+        expected_inventory = build_final_map_inventory(
+            actual_runner_path.parent, final_files
+        )
+    except (T4CollectionError, OSError) as exc:
+        raise T4GateError("actual runner final current map is invalid") from exc
+    if inventory != expected_inventory:
+        raise T4GateError("final current map is not bound to the actual runner")
     if query["sources"]["snapshot"] != by_role["snapshot"] or query["sources"]["entities"] != by_role["entities"]:
         raise T4GateError("query evidence is not bound to the final current map")
     collection_protocol, _ = _load(bound["protocol"][0], "collection protocol")
@@ -396,7 +390,6 @@ def verify_t4_gate(evidence_paths: Sequence[Path] | Mapping[str, Any], shortlist
         row.get("candidate_id") for row in shortlist_rows if isinstance(row, Mapping)
     ] != ids:
         raise T4GateError("shortlist candidate bindings are invalid")
-    shortlisted = {row["candidate_id"]: row for row in shortlist_rows}
     if len(paths) != len(ids):
         raise T4GateError("evidence must exactly cover shortlist")
     loaded: dict[str, tuple[dict[str, Any], bytes, Path]] = {}
@@ -421,19 +414,24 @@ def verify_t4_gate(evidence_paths: Sequence[Path] | Mapping[str, Any], shortlist
         source_dir.mkdir(parents=True)
         for candidate in ids:
             evidence, _, _ = loaded[candidate]
-            shortlist_row = shortlisted[candidate]
-            if evidence.get("config_sha256") != shortlist_row.get("config_sha256"):
-                raise T4GateError(f"{candidate} shortlist config hash binding mismatch")
             sources = evidence.get("sources")
-            if not isinstance(sources, Mapping) or sources.get("config") != shortlist_row.get("selected_config_record"):
+            if not isinstance(sources, Mapping):
                 raise T4GateError(f"{candidate} shortlist config source binding mismatch")
-            selected_config = shortlist_row.get("selected_config")
-            if not isinstance(selected_config, Mapping):
-                raise T4GateError(f"{candidate} shortlist canonical config is missing")
-            from scripts.evaluation.evaluate_oviv2_tesse_occlusion import canonical_algorithm_hash
-
-            if canonical_algorithm_hash(selected_config) != evidence.get("config_sha256"):
-                raise T4GateError(f"{candidate} shortlist config canonical hash mismatch")
+            config_path, config_data = _bound(sources.get("config"), "candidate config")
+            selected_config, _ = _load(config_path, "candidate config")
+            try:
+                _bind_shortlist_candidate(
+                    shortlist_path,
+                    candidate_id=candidate,
+                    config_path=config_path,
+                    config=selected_config,
+                    config_data=config_data,
+                    config_sha=str(evidence.get("config_sha256")),
+                )
+            except (T4CollectionError, OSError) as exc:
+                raise T4GateError(
+                    f"{candidate} shortlist config candidate identity binding mismatch"
+                ) from exc
             if evidence.get("units") != UNITS:
                 raise T4GateError(f"{candidate} units are not exact")
             source_records = evidence.get("sources")

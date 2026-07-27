@@ -75,6 +75,7 @@ from src.oviv2.temporal_snapshot import (  # noqa: E402
     TemporalCompactCheckpoint,
     TemporalCurrentSnapshot,
     TemporalSnapshotMetadata,
+    build_temporal_map_snapshot,
 )
 from src.oviv2.temporal_export import (  # noqa: E402
     TemporalExportBatch,
@@ -1983,6 +1984,66 @@ def _compose_checkpoint_neutral(
     )
 
 
+def _final_current_neutral_from_runtime(
+    runtime: Any,
+    *,
+    checkpoint: TesseCausalCheckpoint,
+    caches: Any,
+    profile: Any,
+    scene: str,
+) -> MapSnapshot:
+    from src.oviv2.temporal_config import ExecutionProfile
+
+    checkpoint_api = getattr(runtime, "current_checkpoint", None)
+    if not callable(checkpoint_api):
+        raise TypeError("dual runtime does not expose current_checkpoint")
+    current = checkpoint_api()
+    expected_timestamp = checkpoint.timestamp_ns / 1_000_000_000
+    reference_state = None
+    temporal_neutral = None
+    if profile in {ExecutionProfile.A0, ExecutionProfile.A1}:
+        if type(current) is not CumulativeReadoutView:
+            raise TypeError("reference profile final checkpoint must be cumulative")
+        reference_state = getattr(getattr(runtime, "temporal", None), "state", None)
+        if not (
+            reference_state is not None
+            and reference_state.scene_id == current.scene_id == scene
+            and reference_state.last_frame_id == checkpoint.frame_index
+            and reference_state.revision == checkpoint.frame_index + 1
+            and float(reference_state.last_timestamp) == expected_timestamp
+            and current.last_frame_id == checkpoint.frame_index
+            and current.revision == checkpoint.frame_index + 1
+            and float(current.last_timestamp) == expected_timestamp
+        ):
+            raise ValueError("reference final checkpoint does not match run end")
+    else:
+        if type(current) is not TemporalCurrentSnapshot:
+            raise TypeError("temporal profile final checkpoint must be temporal")
+        metadata = current.metadata
+        if not (
+            metadata.scene_id == scene
+            and metadata.frame_id == checkpoint.frame_index
+            and metadata.revision == checkpoint.frame_index + 1
+            and float(metadata.timestamp) == expected_timestamp
+        ):
+            raise ValueError("temporal final checkpoint does not match run end")
+        temporal_neutral = build_temporal_map_snapshot(current, caches.class_names)
+    cumulative = (
+        _cumulative_neutral_from_runtime(
+            runtime, checkpoint=checkpoint, caches=caches
+        )
+        if profile in {ExecutionProfile.A0, ExecutionProfile.A1, ExecutionProfile.A2}
+        else None
+    )
+    return _compose_checkpoint_neutral(
+        profile,
+        cumulative=cumulative,
+        reference_state=reference_state,
+        temporal=temporal_neutral,
+        expected_timestamp_ns=checkpoint.timestamp_ns,
+    )
+
+
 def _input_sha256(
     source_config_bytes: bytes,
     schedule_bytes: bytes,
@@ -3108,6 +3169,39 @@ def run(
             != [_dataset_timestamp_ns(dataset, index) for index in range(frame_count)]
         ):
             raise ValueError("temporal frame coverage is not exact")
+        final_frame_index = coverage_rows[-1]["frame_index"]
+        final_timestamp_ns = coverage_rows[-1]["timestamp_ns"]
+        final_checkpoint = TesseCausalCheckpoint(
+            final_frame_index,
+            final_timestamp_ns,
+            final_timestamp_ns - first_timestamp_ns,
+            (),
+            ("run_end",),
+        )
+        final_neutral = _final_current_neutral_from_runtime(
+            runtime,
+            checkpoint=final_checkpoint,
+            caches=caches,
+            profile=temporal_config.execution_profile,
+            scene=scene,
+        )
+        final_paths = write_map_snapshot(
+            final_neutral, staging / "final_current_map"
+        )
+        final_snapshot = Path(final_paths["snapshot"])
+        final_entities = Path(final_paths["entities"])
+        for path in (final_snapshot, final_entities):
+            if not path.is_file() or path.is_symlink():
+                raise ValueError("final current map sidecar is invalid")
+            expected_checkpoint_inventory.add(path.relative_to(staging).as_posix())
+        final_current_map = {
+            "frame_index": final_frame_index,
+            "timestamp_ns": final_timestamp_ns,
+            "scope": final_neutral.scope,
+            "snapshot": _file_record(final_snapshot, relative_to=staging),
+            "entities": _file_record(final_entities, relative_to=staging),
+            "background_storage": "snapshot.npz:background_xyz",
+        }
         expected_dirs = {
             f"{item.frame_index:08d}-{item.timestamp_ns}" for item in checkpoints
         }
@@ -3311,6 +3405,8 @@ def run(
                 for item in records
                 for role in ("snapshot", "entities")
             ),
+            final_current_map["snapshot"],
+            final_current_map["entities"],
         ]
         for position, sidecar_record in enumerate(published_sidecar_records):
             _revalidate_relative_file_record(
@@ -3346,6 +3442,7 @@ def run(
             "checkpoints": records,
             "occlusion_checkpoint_index": occlusion_index_record,
             "source_index": source_index_record,
+            "final_current_map": final_current_map,
             **formal_fields,
         }
         manifest["artifact_inventory"] = sorted(
@@ -3413,6 +3510,10 @@ def run(
                 parent = Path(record["cumulative_audit"][role]["path"]).parent
                 expected_directories.add(parent.as_posix())
                 expected_directories.add(parent.parent.as_posix())
+        for role in ("snapshot", "entities"):
+            parent = Path(final_current_map[role]["path"]).parent
+            expected_directories.add(parent.as_posix())
+            expected_directories.add(parent.parent.as_posix())
         expected_directories.update(cumulative_audit_directories)
         expected_entries = {
             **{path: "file" for path in expected_files},

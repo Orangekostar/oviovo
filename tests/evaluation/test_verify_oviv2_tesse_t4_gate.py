@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 from scripts.evaluation.measure_oviv2_tesse_t4 import measure_t4
@@ -24,6 +25,13 @@ BOUNDS = {
 def _record(path: Path) -> dict[str, object]:
     data = path.read_bytes()
     return {"path": str(path.absolute()), "sha256": hashlib.sha256(data).hexdigest(), "byte_count": len(data)}
+
+
+def _run_record(path: Path, run_manifest: Path) -> dict[str, object]:
+    return {
+        **_record(path),
+        "path": path.relative_to(run_manifest.parent).as_posix(),
+    }
 
 
 def _valid_t4_evidence(tmp_path: Path) -> tuple[dict[str, object], dict[str, object]]:
@@ -77,7 +85,13 @@ def test_verifier_rejects_raw_source_drift_and_cross_run_splice(tmp_path: Path) 
 
     evidence, fixture = _valid_t4_evidence(tmp_path / "splice")
     run = json.loads(Path(fixture["run_manifest"]).read_text())
-    run["candidate_id"] = "a3"
+    normalized_path = Path(fixture["run_manifest"]).parent / run["normalized_run_config"]["path"]
+    normalized = json.loads(normalized_path.read_text())
+    normalized["temporal_readout"]["execution_profile"] = "a3"
+    normalized_path.write_text(json.dumps(normalized), encoding="utf-8")
+    run["normalized_run_config"] = {
+        "path": normalized_path.name, **{key: _record(normalized_path)[key] for key in ("sha256", "byte_count")}
+    }
     Path(fixture["run_manifest"]).write_text(json.dumps(run), encoding="utf-8")
     evidence["sources"]["run_manifest"] = _record(Path(fixture["run_manifest"]))
     evidence["sources"]["run_manifest_sha256"] = _sha256(Path(fixture["run_manifest"]))
@@ -97,14 +111,41 @@ def test_verifier_rejects_shortlist_config_and_final_map_splice(tmp_path: Path) 
     with pytest.raises(T4GateError, match="shortlist config"):
         verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), tmp_path / "config-matrix.json")
 
+    evidence, fixture = _valid_t4_evidence(tmp_path / "profile")
+    shortlist = json.loads(Path(fixture["shortlist"]).read_text())
+    shortlist["shortlisted_candidates"][0]["profile"] = "a3"
+    shortlist["shortlisted_candidates"][0]["algorithm_hash"] = "f" * 64
+    Path(fixture["shortlist"]).write_text(json.dumps(shortlist), encoding="utf-8")
+    evidence["sources"]["shortlist"] = _record(Path(fixture["shortlist"]))
+    evidence["sources"]["shortlist_sha256"] = _sha256(Path(fixture["shortlist"]))
+    Path(fixture["output"]).write_text(json.dumps(evidence), encoding="utf-8")
+    with pytest.raises(T4GateError, match="shortlist config candidate identity"):
+        verify_t4_gate(
+            [Path(fixture["output"])], Path(fixture["shortlist"]),
+            tmp_path / "profile-matrix.json",
+        )
+
     evidence, fixture = _valid_t4_evidence(tmp_path / "map")
-    alternate = Path(fixture["run_manifest"]).parent / "other-snapshot"
-    alternate.write_bytes(b"other")
-    run = json.loads(Path(fixture["run_manifest"]).read_text())
-    run["final_current_map"]["snapshot"] = _record(alternate)
+    run_manifest = Path(fixture["run_manifest"])
+    run = json.loads(run_manifest.read_text())
+    snapshot = run_manifest.parent / run["final_current_map"]["snapshot"]["path"]
+    snapshot.write_bytes(b"not-an-npz")
+    run["final_current_map"]["snapshot"] = _run_record(snapshot, run_manifest)
+    query = json.loads(Path(fixture["query_measurements"]).read_text())
+    query["sources"]["snapshot"] = _record(snapshot)
+    Path(fixture["query_measurements"]).write_text(json.dumps(query), encoding="utf-8")
+    inventory_path = Path(evidence["sources"]["final_map_inventory"]["path"])
+    inventory = json.loads(inventory_path.read_text())
+    inventory["files"][0] = {"role": "snapshot", **_record(snapshot)}
+    inventory["total_bytes"] = sum(item["byte_count"] for item in inventory["files"])
+    inventory_path.write_text(json.dumps(inventory), encoding="utf-8")
     Path(fixture["run_manifest"]).write_text(json.dumps(run), encoding="utf-8")
     evidence["sources"]["run_manifest"] = _record(Path(fixture["run_manifest"]))
     evidence["sources"]["run_manifest_sha256"] = _sha256(Path(fixture["run_manifest"]))
+    evidence["sources"]["query_measurements"] = _record(Path(fixture["query_measurements"]))
+    evidence["sources"]["query_measurements_sha256"] = _sha256(Path(fixture["query_measurements"]))
+    evidence["sources"]["final_map_inventory"] = _record(inventory_path)
+    evidence["sources"]["final_map_inventory_sha256"] = _sha256(inventory_path)
     Path(fixture["output"]).write_text(json.dumps(evidence), encoding="utf-8")
     with pytest.raises(T4GateError, match="final current map"):
         verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), tmp_path / "map-matrix.json")
@@ -136,7 +177,14 @@ def test_verifier_rejects_nested_runner_identity_and_hardlink_alias(tmp_path: Pa
     evidence, fixture = _valid_t4_evidence(tmp_path / "nested")
     actual_path = Path(fixture["run_manifest"])
     actual = json.loads(actual_path.read_text())
-    actual["candidate_id"] = "a3"
+    normalized_path = actual_path.parent / actual["normalized_run_config"]["path"]
+    normalized = json.loads(normalized_path.read_text())
+    normalized["temporal_readout"]["execution_profile"] = "a3"
+    normalized_path.write_text(json.dumps(normalized), encoding="utf-8")
+    actual["normalized_run_config"] = {
+        "path": normalized_path.name,
+        **{key: _record(normalized_path)[key] for key in ("sha256", "byte_count")},
+    }
     actual_path.write_text(json.dumps(actual), encoding="utf-8")
     wrapper_path = actual_path.parent.parent / "measurement-run.json"
     wrapper = {
@@ -154,25 +202,33 @@ def test_verifier_rejects_nested_runner_identity_and_hardlink_alias(tmp_path: Pa
     evidence["sources"]["run_manifest"] = _record(wrapper_path)
     evidence["sources"]["run_manifest_sha256"] = _sha256(wrapper_path)
     Path(fixture["output"]).write_text(json.dumps(evidence), encoding="utf-8")
-    with pytest.raises(T4GateError, match="actual runner manifest scope"):
+    with pytest.raises(T4GateError, match="whole-profile"):
         verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), tmp_path / "nested-matrix.json")
 
     evidence, fixture = _valid_t4_evidence(tmp_path / "alias")
     inventory_path = Path(evidence["sources"]["final_map_inventory"]["path"])
     inventory = json.loads(inventory_path.read_text())
+    snapshot = Path(inventory["files"][0]["path"])
     entities = Path(inventory["files"][1]["path"])
-    background = entities.with_name("background-hardlink")
-    background.hardlink_to(entities)
-    inventory["files"][2] = {"role": "background", **_record(background)}
+    entities.unlink()
+    entities.hardlink_to(snapshot)
+    inventory["files"][1] = {"role": "entities", **_record(entities)}
     inventory["total_bytes"] = sum(item["byte_count"] for item in inventory["files"])
     inventory_path.write_text(json.dumps(inventory), encoding="utf-8")
     run = json.loads(Path(fixture["run_manifest"]).read_text())
-    run["final_current_map"]["background"] = _record(background)
+    run["final_current_map"]["entities"] = _run_record(
+        entities, Path(fixture["run_manifest"])
+    )
+    query = json.loads(Path(fixture["query_measurements"]).read_text())
+    query["sources"]["entities"] = _record(entities)
+    Path(fixture["query_measurements"]).write_text(json.dumps(query), encoding="utf-8")
     Path(fixture["run_manifest"]).write_text(json.dumps(run), encoding="utf-8")
     evidence["sources"]["final_map_inventory"] = _record(inventory_path)
     evidence["sources"]["final_map_inventory_sha256"] = _sha256(inventory_path)
     evidence["sources"]["run_manifest"] = _record(Path(fixture["run_manifest"]))
     evidence["sources"]["run_manifest_sha256"] = _sha256(Path(fixture["run_manifest"]))
+    evidence["sources"]["query_measurements"] = _record(Path(fixture["query_measurements"]))
+    evidence["sources"]["query_measurements_sha256"] = _sha256(Path(fixture["query_measurements"]))
     Path(fixture["output"]).write_text(json.dumps(evidence), encoding="utf-8")
     with pytest.raises(T4GateError, match="same inode"):
         verify_t4_gate([Path(fixture["output"])], Path(fixture["shortlist"]), tmp_path / "alias-matrix.json")
@@ -201,7 +257,13 @@ def test_every_upper_bound_is_enforced_from_raw_source(tmp_path: Path, metric: s
     else:
         inventory = json.loads(Path(evidence["sources"]["final_map_inventory"]["path"]).read_text())
         snapshot = Path(inventory["files"][0]["path"])
-        snapshot.write_bytes(b"x" * 47_000_000)
+        np.savez(
+            snapshot,
+            background_xyz=np.arange(47_000_000, dtype=np.uint8),
+            timestamp=np.asarray(4_000_000_000.0),
+            scope=np.asarray("current"),
+            scene_id=np.asarray("apartment"),
+        )
         inventory["files"][0] = {"role": "snapshot", **_record(snapshot)}
         inventory["total_bytes"] = sum(item["byte_count"] for item in inventory["files"])
         Path(evidence["sources"]["final_map_inventory"]["path"]).write_text(json.dumps(inventory), encoding="utf-8")
@@ -209,7 +271,9 @@ def test_every_upper_bound_is_enforced_from_raw_source(tmp_path: Path, metric: s
         query["sources"]["snapshot"] = _record(snapshot)
         Path(fixture["query_measurements"]).write_text(json.dumps(query), encoding="utf-8")
         run = json.loads(Path(fixture["run_manifest"]).read_text())
-        run["final_current_map"]["snapshot"] = _record(snapshot)
+        run["final_current_map"]["snapshot"] = _run_record(
+            snapshot, Path(fixture["run_manifest"])
+        )
         Path(fixture["run_manifest"]).write_text(json.dumps(run), encoding="utf-8")
         evidence["sources"]["query_measurements"] = _record(Path(fixture["query_measurements"]))
         evidence["sources"]["query_measurements_sha256"] = _sha256(Path(fixture["query_measurements"]))

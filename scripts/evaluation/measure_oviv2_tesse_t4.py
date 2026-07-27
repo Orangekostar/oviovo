@@ -16,6 +16,8 @@ import subprocess
 import time
 from typing import Any
 
+import numpy as np
+
 
 METRICS = (
     "total_runtime_s_per_frame", "query_mean_ms", "query_p95_ms",
@@ -183,13 +185,13 @@ def collect_gpu_sample(
 
 
 def build_final_map_inventory(run_root: Path, files: Mapping[str, Path]) -> dict[str, Any]:
-    if set(files) != {"snapshot", "entities", "background"}:
-        raise T4CollectionError("final-map inventory roles must be snapshot, entities, background")
-    root = run_root.absolute()
+    if set(files) != {"snapshot", "entities"}:
+        raise T4CollectionError("final-map inventory roles must be snapshot and entities")
+    root = Path(os.path.abspath(run_root))
     records = []
     identities = set()
-    for role in ("snapshot", "entities", "background"):
-        path = Path(files[role]).absolute()
+    for role in ("snapshot", "entities"):
+        path = Path(os.path.abspath(files[role]))
         if path != root and root not in path.parents:
             raise T4CollectionError(f"final-map {role} is outside the whole-profile run")
         data = _read(path, f"final-map {role}")
@@ -204,20 +206,267 @@ def build_final_map_inventory(run_root: Path, files: Mapping[str, Path]) -> dict
     }
 
 
+def _internal_artifact_path(
+    raw_path: object, run_root: Path, inventory: list[object], label: str
+) -> Path:
+    if not (
+        isinstance(raw_path, str)
+        and raw_path not in {"", "."}
+        and not Path(raw_path).is_absolute()
+        and Path(raw_path).as_posix() == raw_path
+        and ".." not in Path(raw_path).parts
+        and raw_path in inventory
+    ):
+        raise T4CollectionError(f"runner {label} path is invalid")
+    root = Path(os.path.abspath(run_root))
+    path = Path(os.path.abspath(root / raw_path))
+    if root not in path.parents:
+        raise T4CollectionError(f"runner {label} is outside the run directory")
+    return path
+
+
+def _run_end_coverage(run_manifest: Mapping[str, Any], run_root: Path) -> tuple[int, int]:
+    inventory = run_manifest.get("artifact_inventory")
+    if not isinstance(inventory, list):
+        raise T4CollectionError("runner artifact inventory is invalid")
+
+    def bound_path(record: object, label: str) -> Path:
+        if not isinstance(record, Mapping) or set(record) != {"path", "sha256", "byte_count"}:
+            raise T4CollectionError(f"runner {label} record is invalid")
+        path = _internal_artifact_path(record.get("path"), run_root, inventory, label)
+        if _record(path) != {**record, "path": str(path)}:
+            raise T4CollectionError(f"runner {label} binding is stale")
+        return path
+
+    source_path = bound_path(run_manifest.get("source_index"), "source index")
+    source_index, _ = _json(source_path, "runner source index")
+    coverage_path = bound_path(source_index.get("frame_coverage"), "frame coverage")
+    data = _read(coverage_path, "runner frame coverage")
+    rows: list[dict[str, Any]] = []
+    try:
+        def strict(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+            row: dict[str, Any] = {}
+            for key, value in pairs:
+                if key in row:
+                    raise ValueError(f"duplicate frame coverage key: {key}")
+                row[key] = value
+            return row
+
+        for raw in data.splitlines():
+            if not raw:
+                raise ValueError("blank frame coverage line")
+            row = json.loads(
+                raw,
+                object_pairs_hook=strict,
+                parse_constant=lambda token: (_ for _ in ()).throw(ValueError(token)),
+            )
+            if not isinstance(row, dict):
+                raise ValueError("frame coverage row is not an object")
+            rows.append(row)
+    except (UnicodeError, json.JSONDecodeError, ValueError) as exc:
+        raise T4CollectionError("runner frame coverage is invalid") from exc
+    if not rows:
+        raise T4CollectionError("runner frame coverage is empty")
+    last = rows[-1]
+    frame_index = last.get("frame_index")
+    timestamp_ns = last.get("timestamp_ns")
+    if type(frame_index) is not int or type(timestamp_ns) is not int:
+        raise T4CollectionError("runner frame coverage run-end identity is invalid")
+    return frame_index, timestamp_ns
+
+
 def _resolve_final_map(run_manifest: Mapping[str, Any], run_root: Path) -> dict[str, Path]:
     declared = run_manifest.get("final_current_map")
-    if isinstance(declared, Mapping):
-        result = {}
-        for role in ("snapshot", "entities", "background"):
-            value = declared.get(role)
-            if isinstance(value, Mapping):
-                value = value.get("path")
-            if not isinstance(value, str):
-                raise T4CollectionError(f"run manifest final current-map {role} is invalid")
-            path = Path(value)
-            result[role] = path if path.is_absolute() else run_root / path
-        return result
-    raise T4CollectionError("run manifest lacks explicit run-end final current-map inventory")
+    if not isinstance(declared, Mapping) or set(declared) != {
+        "frame_index", "timestamp_ns", "scope", "snapshot", "entities",
+        "background_storage",
+    }:
+        raise T4CollectionError("run manifest lacks exact run-end final current-map inventory")
+    if not (
+        declared.get("frame_index") == run_manifest.get("last_frame_index")
+        and isinstance(declared.get("timestamp_ns"), int)
+        and not isinstance(declared.get("timestamp_ns"), bool)
+        and declared.get("scope") == "current"
+        and declared.get("background_storage") == "snapshot.npz:background_xyz"
+    ):
+        raise T4CollectionError("run manifest final current-map progress is invalid")
+    if (declared["frame_index"], declared["timestamp_ns"]) != _run_end_coverage(
+        run_manifest, run_root
+    ):
+        raise T4CollectionError("final current-map does not match run-end frame coverage")
+    inventory = run_manifest.get("artifact_inventory")
+    if not isinstance(inventory, list):
+        raise T4CollectionError("runner artifact inventory is invalid")
+    result = {}
+    for role in ("snapshot", "entities"):
+        record = declared.get(role)
+        if not isinstance(record, Mapping) or set(record) != {"path", "sha256", "byte_count"}:
+            raise T4CollectionError(f"run manifest final current-map {role} is invalid")
+        path = _internal_artifact_path(
+            record.get("path"), run_root, inventory, f"final current-map {role}"
+        )
+        if _record(path) != {**record, "path": str(path.absolute())}:
+            raise T4CollectionError(f"run manifest final current-map {role} binding is stale")
+        result[role] = path
+    try:
+        with np.load(result["snapshot"], allow_pickle=False) as arrays:
+            if not {"background_xyz", "timestamp", "scope", "scene_id"} <= set(arrays.files):
+                raise T4CollectionError("final current-map snapshot metadata is incomplete")
+            metadata = tuple(
+                (arrays[name].shape, arrays[name].item())
+                for name in ("timestamp", "scope", "scene_id")
+            )
+    except T4CollectionError:
+        raise
+    except (OSError, ValueError) as exc:
+        raise T4CollectionError("final current-map snapshot is not a valid NPZ") from exc
+    if metadata != (
+        ((), declared["timestamp_ns"]),
+        ((), "current"),
+        ((), "apartment"),
+    ):
+        raise T4CollectionError("final current-map snapshot metadata is stale")
+    return result
+
+
+def _validate_run_inventory(root: Path, inventory: object) -> None:
+    if not isinstance(inventory, list) or inventory != sorted(set(inventory)) or any(
+        not isinstance(item, str) or not item for item in inventory
+    ):
+        raise T4CollectionError("runner artifact inventory is invalid")
+    actual_files: list[str] = []
+    actual_directories: list[str] = []
+    for path in root.rglob("*"):
+        relative = path.relative_to(root).as_posix()
+        if path.is_symlink():
+            raise T4CollectionError("runner artifact inventory contains a symlink")
+        if path.is_file():
+            if relative not in {"run_manifest.json", "execution_receipt.json"}:
+                actual_files.append(relative)
+        elif path.is_dir():
+            actual_directories.append(relative)
+        else:
+            raise T4CollectionError("runner artifact inventory contains a non-file entry")
+    if inventory != sorted(actual_files):
+        raise T4CollectionError("runner artifact inventory differs from run directory")
+    expected_directories = sorted({
+        parent.as_posix()
+        for item in inventory
+        for parent in Path(item).parents
+        if parent.as_posix() != "."
+    })
+    if sorted(actual_directories) != expected_directories:
+        raise T4CollectionError("runner directory inventory differs from artifact paths")
+
+
+def _actual_runner(
+    run: Mapping[str, Any], run_path: Path, config_path: Path,
+    config: Mapping[str, Any], config_data: bytes,
+    candidate_id: str, config_sha: str,
+) -> tuple[dict[str, Any], Path]:
+    actual = dict(run)
+    actual_path = run_path
+    if run.get("manifest_id") == "oviv2_tesse_t4_measurement_run_v1":
+        if run.get("candidate_config") != _record(config_path, config_data):
+            raise T4CollectionError("measurement run candidate config binding mismatch")
+        runner_record = run.get("runner_manifest")
+        if not isinstance(runner_record, Mapping) or not isinstance(runner_record.get("path"), str):
+            raise T4CollectionError("measurement run runner manifest binding is invalid")
+        actual_path = Path(runner_record["path"])
+        actual, actual_data = _json(actual_path, "actual runner manifest")
+        if dict(runner_record) != _record(actual_path, actual_data):
+            raise T4CollectionError("measurement run runner manifest binding is stale")
+        if run.get("processed_frame_count") != actual.get("processed_frame_count"):
+            raise T4CollectionError("measurement run processed-frame binding mismatch")
+    if not (
+        actual.get("schema_version") == 2
+        and actual.get("dataset") == "TESSE-CD"
+        and actual.get("method_id") == "OVIV2"
+        and actual.get("protocol_id") == "oviv2-tessecd-v2"
+        and actual.get("scene") == "apartment"
+    ):
+        raise T4CollectionError("run manifest is not an Apartment OVIV2 runner output")
+    from scripts.evaluation.evaluate_oviv2_tesse_occlusion import canonical_algorithm_hash
+
+    algorithm_hash = canonical_algorithm_hash(config)
+    canonical_config_sha = _sha256(_canonical(config))
+    temporal = config.get("temporal_readout")
+    if not (
+        canonical_config_sha == config_sha
+        and config.get("algorithm_hash") == algorithm_hash
+        and isinstance(temporal, Mapping)
+        and temporal.get("execution_profile") == candidate_id
+        and actual.get("algorithm_hash") == algorithm_hash
+    ):
+        raise T4CollectionError("candidate identity does not match normalized runner config")
+    source_record = actual.get("config")
+    if not isinstance(source_record, Mapping) or {
+        "sha256": _sha256(config_data), "byte_count": len(config_data)
+    } != {key: source_record.get(key) for key in ("sha256", "byte_count")}:
+        raise T4CollectionError("runner source config binding mismatch")
+    normalized_record = actual.get("normalized_run_config")
+    if not isinstance(normalized_record, Mapping) or set(normalized_record) != {"path", "sha256", "byte_count"}:
+        raise T4CollectionError("runner normalized config record is invalid")
+    normalized_path = Path(str(normalized_record["path"]))
+    normalized_path = (
+        normalized_path if normalized_path.is_absolute()
+        else actual_path.parent / normalized_path
+    ).absolute()
+    if actual_path.parent.absolute() not in normalized_path.parents:
+        raise T4CollectionError("runner normalized config is outside the run directory")
+    normalized, normalized_data = _json(normalized_path, "normalized runner config")
+    if normalized != dict(config) or _record(normalized_path, normalized_data) != {
+        **normalized_record, "path": str(normalized_path.absolute())
+    }:
+        raise T4CollectionError("normalized runner config differs from requested config")
+    _validate_run_inventory(actual_path.parent, actual.get("artifact_inventory"))
+    return actual, actual_path
+
+
+def _bind_shortlist_candidate(
+    shortlist_path: Path,
+    *,
+    candidate_id: str,
+    config_path: Path,
+    config: Mapping[str, Any],
+    config_data: bytes,
+    config_sha: str,
+) -> dict[str, Any]:
+    shortlist, _ = _json(shortlist_path, "shortlist")
+    rows = shortlist.get("shortlisted_candidates")
+    if not isinstance(rows, list):
+        raise T4CollectionError("shortlist candidate inventory is invalid")
+    matched = [
+        row for row in rows
+        if isinstance(row, Mapping) and row.get("candidate_id") == candidate_id
+    ]
+    if len(matched) != 1:
+        raise T4CollectionError("shortlist does not bind exactly one requested candidate")
+    row = matched[0]
+    if set(row) != {
+        "candidate_id", "profile", "config_sha256", "algorithm_hash", "result",
+        "selected_config", "selected_config_record",
+    }:
+        raise T4CollectionError("shortlist candidate schema is not exact")
+    from scripts.evaluation.evaluate_oviv2_tesse_occlusion import canonical_algorithm_hash
+
+    selected = row.get("selected_config")
+    result_record = row.get("result")
+    if not (
+        row.get("profile") == candidate_id
+        and row.get("config_sha256") == config_sha
+        and row.get("algorithm_hash") == canonical_algorithm_hash(config)
+        and isinstance(selected, Mapping)
+        and dict(selected) == dict(config)
+        and row.get("selected_config_record") == _record(config_path, config_data)
+        and isinstance(result_record, Mapping)
+        and isinstance(result_record.get("path"), str)
+    ):
+        raise T4CollectionError("shortlist candidate identity binding is invalid")
+    result_path = Path(result_record["path"])
+    if dict(result_record) != _record(result_path):
+        raise T4CollectionError("shortlist candidate result binding is stale")
+    return dict(row)
 
 
 def _validate_protocol(protocol: Mapping[str, Any], path: Path) -> None:
@@ -268,22 +517,25 @@ def measure_t4(request: Mapping[str, object]) -> dict[str, Any]:
     if not isinstance(candidate_id, str) or not candidate_id:
         raise T4CollectionError("candidate ID is invalid")
     config_path = Path(request["config"])
-    config_data = _read(config_path, "candidate config")
+    config, config_data = _json(config_path, "candidate config")
     config_sha = request["config_sha256"]
     source_config_sha = request.get("config_source_sha256", config_sha)
     if not isinstance(config_sha, str) or _sha256(config_data) != source_config_sha:
         raise T4CollectionError("candidate config hash mismatch")
     run_path = Path(request["run_manifest"])
     run, run_data = _json(run_path, "run manifest")
-    if run.get("config_sha256") != config_sha:
-        raise T4CollectionError("run manifest config hash mismatch")
-    if not (
-        run.get("dataset") == "TESSE-CD" and run.get("method_id") == "OVIV2"
-        and run.get("protocol_id") == "oviv2-tessecd-v2" and run.get("scene") == "apartment"
-        and run.get("candidate_id") == candidate_id
-    ):
-        raise T4CollectionError("run manifest is not the requested whole-profile run")
-    frames = run.get("processed_frame_count")
+    actual_runner, actual_runner_path = _actual_runner(
+        run, run_path, config_path, config, config_data, candidate_id, config_sha
+    )
+    _bind_shortlist_candidate(
+        Path(request["shortlist"]),
+        candidate_id=candidate_id,
+        config_path=config_path,
+        config=config,
+        config_data=config_data,
+        config_sha=config_sha,
+    )
+    frames = actual_runner.get("processed_frame_count")
     if isinstance(frames, bool) or not isinstance(frames, int) or frames <= 0:
         raise T4CollectionError("processed-frame count is invalid")
     elapsed, peak_ram = parse_time_v(Path(request["time_log"]))
@@ -345,8 +597,10 @@ def measure_t4(request: Mapping[str, object]) -> dict[str, Any]:
     if output.exists() or output.is_symlink():
         raise FileExistsError(output)
     supplied_inventory = request.get("final_map_inventory")
+    final_files = _resolve_final_map(actual_runner, actual_runner_path.parent)
+    expected_inventory = build_final_map_inventory(actual_runner_path.parent, final_files)
     if supplied_inventory is None:
-        inventory = build_final_map_inventory(run_path.parent, _resolve_final_map(run, run_path.parent))
+        inventory = expected_inventory
         inventory_path = output.with_name(f"{candidate_id}-final-map-inventory.json")
         _write_new(inventory_path, inventory)
         created_inventory = True
@@ -354,6 +608,8 @@ def measure_t4(request: Mapping[str, object]) -> dict[str, Any]:
         inventory_path = Path(supplied_inventory)
         inventory, _ = _json(inventory_path, "final map inventory")
         created_inventory = False
+        if inventory != expected_inventory:
+            raise T4CollectionError("final map inventory differs from the actual runner")
     inventory_by_role = {
         item.get("role"): {key: item.get(key) for key in ("path", "sha256", "byte_count")}
         for item in inventory.get("files", []) if isinstance(item, Mapping)
@@ -461,12 +717,14 @@ def collect_shortlist(protocol_path: Path, shortlist_path: Path, gpu: str, outpu
         config_payload, config_data = _json(config_path, "candidate config")
         if dict(config_record) != _record(config_path, config_data):
             raise T4CollectionError("shortlist candidate config source binding mismatch")
-        selected_config = candidate.get("selected_config")
-        if isinstance(selected_config, Mapping):
-            from scripts.evaluation.evaluate_oviv2_tesse_occlusion import canonical_algorithm_hash
-
-            if canonical_algorithm_hash(selected_config) != candidate.get("config_sha256"):
-                raise T4CollectionError("shortlist canonical config hash mismatch")
+        _bind_shortlist_candidate(
+            shortlist_path,
+            candidate_id=candidate_id,
+            config_path=config_path,
+            config=config_payload,
+            config_data=config_data,
+            config_sha=str(candidate.get("config_sha256")),
+        )
         query_protocol = protocol.get("query")
         checkpoint = config_payload.get("clip_pretrained_path")
         vocabulary = query_protocol.get("vocabulary_path") if isinstance(query_protocol, Mapping) else None

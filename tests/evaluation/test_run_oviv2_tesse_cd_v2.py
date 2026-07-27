@@ -923,9 +923,27 @@ def test_five_frame_dual_readout_is_causal_role_aware_and_deterministic(tmp_path
 
     assert manifest["protocol_id"] == "oviv2-tessecd-v2"
     assert holder["runtime"].calls == [0, 1, 2, 3, 4]
-    assert holder["runtime"].checkpoint_calls == [1, 2, 3, 4]
+    assert holder["runtime"].checkpoint_calls == [1, 2, 3, 4, 4]
     assert manifest["scheduled_frame_indices"] == [1, 2, 3, 4]
     assert manifest["captured_frame_indices"] == [1, 2, 3, 4]
+    final_map = manifest["final_current_map"]
+    assert set(final_map) == {
+        "frame_index",
+        "timestamp_ns",
+        "scope",
+        "snapshot",
+        "entities",
+        "background_storage",
+    }
+    assert final_map["frame_index"] == manifest["last_frame_index"] == 4
+    assert final_map["timestamp_ns"] == 140
+    assert final_map["scope"] == "current"
+    assert final_map["background_storage"] == "snapshot.npz:background_xyz"
+    assert final_map["snapshot"]["path"] != final_map["entities"]["path"]
+    with np.load(first / final_map["snapshot"]["path"], allow_pickle=False) as arrays:
+        assert "background_xyz" in arrays.files
+        assert arrays["timestamp"].item() == 140.0
+        assert arrays["scope"].item() == "current"
     records = {item["frame_index"]: item for item in manifest["checkpoints"]}
     for record in records.values():
         assert "cumulative_audit" not in record["artifacts"]
@@ -2598,6 +2616,7 @@ def test_complete_v2_formal_freeze_runs_before_publishing(
         "checkpoints",
         "occlusion_checkpoint_index",
         "source_index",
+        "final_current_map",
         "frozen_run_identity",
         "artifact_inventory",
     }
