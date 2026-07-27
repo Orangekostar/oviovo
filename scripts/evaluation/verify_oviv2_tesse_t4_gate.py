@@ -265,7 +265,7 @@ def _remove_owned(parent_fd: int, name: str, witness: tuple[int, int], *, tree: 
     if owned_name is None:
         return
     if tree:
-        shutil.rmtree(owned_name, dir_fd=parent_fd)
+        shutil.rmtree(Path(f"/proc/self/fd/{parent_fd}") / owned_name)
     else:
         os.unlink(owned_name, dir_fd=parent_fd)
     os.fsync(parent_fd)
