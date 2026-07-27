@@ -369,6 +369,17 @@ class Fixture:
             )
             for name, value in t4_metrics.items()
         }
+        raw_records = {
+            name: (_record(self.t4_shortlist) if name == "shortlist" else _record(t4_run))
+            for name in (
+                "config", "run_manifest", "time_log", "gpu_samples",
+                "query_measurements", "final_map_inventory", "protocol", "shortlist",
+            )
+        }
+        t4_raw_sources = {
+            **raw_records,
+            **{f"{name}_sha256": record["sha256"] for name, record in raw_records.items()},
+        }
         self.t4_protocol = _write_json(
             self.repo / "development/t4/protocol.json",
             {
@@ -391,6 +402,7 @@ class Fixture:
                         "config_sha256": _json_hash(self.configs["apartment"]),
                         "run_manifest": _record(t4_run),
                         "metric_sources": t4_metric_sources,
+                        "raw_sources": t4_raw_sources,
                     }
                 },
             },

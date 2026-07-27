@@ -5,14 +5,19 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Mapping, Sequence
+import contextvars
+import ctypes
+import errno
 import hashlib
 import json
 import math
 import os
 from pathlib import Path
 import stat
+import shutil
 import sys
 import tempfile
+import time
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -21,10 +26,11 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts.evaluation.measure_oviv2_tesse_t4 import (
     METRICS, UNITS, T4CollectionError, _actual_runner, _bind_shortlist_candidate,
-    _percentile,
+    _percentile, _validate_gpu_evidence,
     _resolve_final_map, _validate_protocol, build_final_map_inventory,
     parse_time_v,
 )
+import scripts.evaluation.measure_oviv2_tesse_t4 as _collector
 
 
 BOUNDS = {
@@ -35,6 +41,13 @@ BOUNDS = {
     "peak_ram_gb": 9.36,
     "final_map_mb": 46.77,
 }
+RAW_SOURCE_NAMES = (
+    "config", "run_manifest", "time_log", "gpu_samples", "query_measurements",
+    "final_map_inventory", "protocol", "shortlist",
+)
+_READ_SNAPSHOT: contextvars.ContextVar[dict[Path, bytes] | None] = contextvars.ContextVar(
+    "oviv2_t4_verify_read_snapshot", default=None
+)
 
 
 class T4GateError(ValueError):
@@ -47,6 +60,9 @@ def _canonical(value: object) -> bytes:
 
 def _read(path: Path, label: str) -> bytes:
     path = path.absolute()
+    snapshot = _READ_SNAPSHOT.get()
+    if snapshot is not None and path in snapshot:
+        return snapshot[path]
     for component in (path, *path.parents):
         try:
             if stat.S_ISLNK(os.lstat(component).st_mode):
@@ -59,12 +75,29 @@ def _read(path: Path, label: str) -> bytes:
         raise T4GateError(f"missing {label}: {path}") from exc
     if stat.S_ISLNK(before.st_mode) or not stat.S_ISREG(before.st_mode):
         raise T4GateError(f"{label} must be a regular non-symlink file")
-    data = path.read_bytes()
+    descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    try:
+        opened = os.fstat(descriptor)
+        if (before.st_dev, before.st_ino) != (opened.st_dev, opened.st_ino):
+            raise T4GateError(f"{label} changed before it was opened")
+        chunks = []
+        while True:
+            chunk = os.read(descriptor, 1024 * 1024)
+            if not chunk:
+                break
+            chunks.append(chunk)
+        finished = os.fstat(descriptor)
+    finally:
+        os.close(descriptor)
     after = os.lstat(path)
-    if (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns) != (
-        after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns
-    ):
+    witness = lambda value: (value.st_dev, value.st_ino, value.st_size, value.st_mtime_ns, value.st_ctime_ns)
+    if witness(before) != witness(opened) or witness(opened) != witness(finished) or witness(finished) != witness(after):
         raise T4GateError(f"{label} changed while being read")
+    data = b"".join(chunks)
+    if len(data) != finished.st_size:
+        raise T4GateError(f"{label} changed size while being read")
+    if snapshot is not None:
+        snapshot[path] = data
     return data
 
 
@@ -108,15 +141,30 @@ def _bound(record: object, label: str) -> tuple[Path, bytes]:
     return path, data
 
 
-def _write_new(path: Path, value: object) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    for component in (path.parent, *path.parent.parents):
-        if stat.S_ISLNK(os.lstat(component).st_mode):
-            raise T4GateError("T4 output parent contains a symlink")
+def _write_new(
+    path: Path, value: object, *, parent_fd: int | None = None
+) -> tuple[int, int]:
+    path = path.absolute()
+    if parent_fd is None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        for component in (path.parent, *path.parent.parents):
+            if stat.S_ISLNK(os.lstat(component).st_mode):
+                raise T4GateError("T4 output parent contains a symlink")
+        directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    else:
+        directory = os.dup(parent_fd)
     data = _canonical(value) + b"\n"
-    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+    parent_status = os.fstat(directory)
+    temporary = f".{path.name}.tmp-{os.getpid()}-{time.time_ns()}"
+    descriptor = -1
+    published = False
     try:
+        descriptor = os.open(
+            temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+            0o644, dir_fd=directory,
+        )
         try:
+            file_status = os.fstat(descriptor)
             remaining = memoryview(data)
             while remaining:
                 written = os.write(descriptor, remaining)
@@ -124,9 +172,120 @@ def _write_new(path: Path, value: object) -> None:
                     raise OSError("T4 output write made no progress")
                 remaining = remaining[written:]
             os.fsync(descriptor)
-        except BaseException:
-            path.unlink(missing_ok=True)
-            raise
+        finally:
+            os.close(descriptor)
+            descriptor = -1
+        current_parent = os.lstat(path.parent)
+        if (parent_status.st_dev, parent_status.st_ino) != (current_parent.st_dev, current_parent.st_ino):
+            raise T4GateError("T4 output parent changed during publication")
+        os.link(temporary, path.name, src_dir_fd=directory, dst_dir_fd=directory, follow_symlinks=False)
+        published = True
+        os.unlink(temporary, dir_fd=directory)
+        os.fsync(directory)
+        current_parent = os.lstat(path.parent)
+        if (parent_status.st_dev, parent_status.st_ino) != (current_parent.st_dev, current_parent.st_ino):
+            raise T4GateError("T4 output parent changed during publication")
+        return file_status.st_dev, file_status.st_ino
+    except BaseException:
+        if descriptor >= 0:
+            os.close(descriptor)
+        try:
+            os.unlink(temporary, dir_fd=directory)
+        except FileNotFoundError:
+            pass
+        if published:
+            try:
+                os.unlink(path.name, dir_fd=directory)
+                os.fsync(directory)
+            except FileNotFoundError:
+                pass
+        raise
+    finally:
+        os.close(directory)
+
+
+def _rename_directory_new(
+    source: Path, destination: Path, *, parent_fd: int | None = None
+) -> tuple[int, int]:
+    source, destination = source.absolute(), destination.absolute()
+    if parent_fd is None and source.parent != destination.parent:
+        raise T4GateError("staging and destination must share a parent")
+    directory = (
+        os.open(source.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+        if parent_fd is None else os.dup(parent_fd)
+    )
+    parent_status = os.fstat(directory)
+    libc = ctypes.CDLL(None, use_errno=True)
+    renameat2 = getattr(libc, "renameat2", None)
+    if renameat2 is None:
+        os.close(directory)
+        raise T4GateError("atomic no-clobber directory publication is unavailable")
+    try:
+        current_parent = os.lstat(destination.parent)
+        if (parent_status.st_dev, parent_status.st_ino) != (current_parent.st_dev, current_parent.st_ino):
+            raise T4GateError("T4 output parent changed during publication")
+        result = renameat2(
+            ctypes.c_int(directory), os.fsencode(source.name), ctypes.c_int(directory),
+            os.fsencode(destination.name), ctypes.c_uint(1),
+        )
+        if result != 0:
+            error = ctypes.get_errno()
+            if error == errno.EEXIST:
+                raise FileExistsError(destination)
+            raise OSError(error, os.strerror(error), destination)
+        os.fsync(directory)
+        destination_status = os.stat(destination.name, dir_fd=directory, follow_symlinks=False)
+        current_parent = os.lstat(destination.parent)
+        if (parent_status.st_dev, parent_status.st_ino) != (current_parent.st_dev, current_parent.st_ino):
+            shutil.rmtree(Path(f"/proc/self/fd/{directory}") / destination.name)
+            os.fsync(directory)
+            raise T4GateError("T4 output parent changed during publication")
+        return destination_status.st_dev, destination_status.st_ino
+    finally:
+        os.close(directory)
+
+
+def _remove_owned(parent_fd: int, name: str, witness: tuple[int, int], *, tree: bool) -> None:
+    owned_name: str | None = None
+    try:
+        status = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+    except FileNotFoundError:
+        status = None
+    if status is not None and (status.st_dev, status.st_ino) == witness:
+        owned_name = name
+    else:
+        for candidate in os.listdir(parent_fd):
+            try:
+                candidate_status = os.stat(candidate, dir_fd=parent_fd, follow_symlinks=False)
+            except FileNotFoundError:
+                continue
+            if (candidate_status.st_dev, candidate_status.st_ino) == witness:
+                owned_name = candidate
+                break
+    if owned_name is None:
+        return
+    if tree:
+        shutil.rmtree(owned_name, dir_fd=parent_fd)
+    else:
+        os.unlink(owned_name, dir_fd=parent_fd)
+    os.fsync(parent_fd)
+
+
+def _write_staged_bytes(path: Path, data: bytes, *, parent_fd: int | None = None) -> None:
+    descriptor = os.open(
+        path.name if parent_fd is not None else path,
+        os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+        0o644,
+        dir_fd=parent_fd,
+    )
+    try:
+        remaining = memoryview(data)
+        while remaining:
+            written = os.write(descriptor, remaining)
+            if written <= 0:
+                raise OSError("T4 staged source write made no progress")
+            remaining = remaining[written:]
+        os.fsync(descriptor)
     finally:
         os.close(descriptor)
 
@@ -144,11 +303,11 @@ def _nonnegative(value: object, label: str) -> float:
     return converted
 
 
-def _raw_metrics(evidence: Mapping[str, Any]) -> tuple[dict[str, float], dict[str, Any]]:
+def _raw_metrics_uncached(evidence: Mapping[str, Any]) -> tuple[dict[str, float], dict[str, Any]]:
     sources = evidence.get("sources")
     if not isinstance(sources, Mapping):
         raise T4GateError("raw sources are missing")
-    required = ("config", "run_manifest", "time_log", "gpu_samples", "query_measurements", "final_map_inventory", "protocol", "shortlist")
+    required = RAW_SOURCE_NAMES
     labels = {
         "config": "candidate config", "run_manifest": "run manifest", "time_log": "time log",
         "gpu_samples": "gpu samples", "query_measurements": "query measurements",
@@ -160,8 +319,11 @@ def _raw_metrics(evidence: Mapping[str, Any]) -> tuple[dict[str, float], dict[st
             raise T4GateError(f"{labels[key]} raw source is missing")
         bound[key] = _bound(sources[key], labels[key])
         flat_hash = sources.get(f"{key}_sha256")
-        if flat_hash is not None and flat_hash != sources[key]["sha256"]:
+        if flat_hash != sources[key]["sha256"]:
             raise T4GateError(f"{labels[key]} hash binding mismatch")
+    expected_source_keys = set(required) | {f"{key}_sha256" for key in required}
+    if set(sources) != expected_source_keys:
+        raise T4GateError("raw source inventory is not exact")
     candidate = evidence.get("candidate_id")
     config_sha = evidence.get("config_sha256")
     run, _ = _load(bound["run_manifest"][0], "run manifest")
@@ -197,56 +359,10 @@ def _raw_metrics(evidence: Mapping[str, Any]) -> tuple[dict[str, float], dict[st
     elapsed, peak_ram = parse_time_v(bound["time_log"][0])
 
     gpu, _ = _load(bound["gpu_samples"][0], "gpu samples")
-    samples = gpu.get("samples")
-    pgid = gpu.get("process_group_id")
-    if gpu.get("sample_interval_ms") != 200 or not isinstance(samples, list) or not samples:
-        raise T4GateError("gpu samples violate sampling protocol")
-    phases, memories = set(), []
-    timestamps: list[int] = []
-    permitted_pgids = set(gpu.get("process_group_ids", [pgid]))
-    for sample in samples:
-        if not isinstance(sample, Mapping) or sample.get("process_group_id") not in permitted_pgids:
-            raise T4GateError("gpu samples are not PID/process-group bound")
-        pid = sample.get("pid")
-        if isinstance(pid, bool) or not isinstance(pid, int) or pid <= 0:
-            raise T4GateError("gpu samples contain invalid PID")
-        timestamp = sample.get("timestamp_ns")
-        if isinstance(timestamp, bool) or not isinstance(timestamp, int) or timestamp <= 0:
-            raise T4GateError("gpu sample timestamp is invalid")
-        timestamps.append(timestamp)
-        phases.add(sample.get("phase"))
-        sample_memory = _nonnegative(sample.get("used_memory_mib"), "gpu memory")
-        processes = sample.get("processes")
-        if not isinstance(processes, list) or not processes:
-            raise T4GateError("gpu sample process inventory is invalid")
-        process_memory = 0.0
-        for process in processes:
-            if not isinstance(process, Mapping) or set(process) != {
-                "gpu_uuid", "pid", "proc_starttime_ticks", "process_group_id", "used_memory_mib"
-            }:
-                raise T4GateError("gpu process identity schema is invalid")
-            if (
-                not isinstance(process.get("gpu_uuid"), str) or not process["gpu_uuid"]
-                or isinstance(process.get("proc_starttime_ticks"), bool)
-                or not isinstance(process.get("proc_starttime_ticks"), int)
-                or process.get("proc_starttime_ticks") <= 0
-                or process.get("process_group_id") != sample.get("process_group_id")
-                or isinstance(process.get("pid"), bool)
-                or not isinstance(process.get("pid"), int) or process.get("pid") <= 0
-            ):
-                raise T4GateError("gpu process identity is invalid")
-            process_memory += _nonnegative(process.get("used_memory_mib"), "gpu process memory")
-        if process_memory != sample_memory:
-            raise T4GateError("gpu process memory aggregate is stale")
-        memories.append(sample_memory)
-    if not {"mapping", "queries"} <= phases:
-        raise T4GateError("gpu samples do not cover mapping and queries")
-    if timestamps != sorted(set(timestamps)):
-        raise T4GateError("gpu sample timestamps are not strictly monotonic")
-    for phase in ("mapping", "queries"):
-        phase_times = [sample["timestamp_ns"] for sample in samples if sample["phase"] == phase]
-        if any(right - left > 400_000_000 for left, right in zip(phase_times, phase_times[1:])):
-            raise T4GateError("gpu sampling interval exceeds the 200 ms protocol tolerance")
+    try:
+        _, memories = _validate_gpu_evidence(gpu)
+    except T4CollectionError as exc:
+        raise T4GateError(str(exc).replace("GPU", "gpu")) from exc
 
     query, _ = _load(bound["query_measurements"][0], "query measurements")
     expected_query_keys = {
@@ -363,6 +479,17 @@ def _raw_metrics(evidence: Mapping[str, Any]) -> tuple[dict[str, float], dict[st
     return metrics, {"bound": bound, "run": run}
 
 
+def _raw_metrics(evidence: Mapping[str, Any]) -> tuple[dict[str, float], dict[str, Any]]:
+    snapshot: dict[Path, bytes] = {}
+    local_token = _READ_SNAPSHOT.set(snapshot)
+    collector_token = _collector._READ_SNAPSHOT.set(snapshot)
+    try:
+        return _raw_metrics_uncached(evidence)
+    finally:
+        _collector._READ_SNAPSHOT.reset(collector_token)
+        _READ_SNAPSHOT.reset(local_token)
+
+
 def verify_t4_gate(evidence_paths: Sequence[Path] | Mapping[str, Any], shortlist_path: Path | None = None, output: Path | None = None) -> dict[str, Any]:
     if isinstance(evidence_paths, Mapping):
         sources = evidence_paths.get("sources", {})
@@ -379,6 +506,10 @@ def verify_t4_gate(evidence_paths: Sequence[Path] | Mapping[str, Any], shortlist
     if shortlist_path is None or output is None:
         raise T4GateError("shortlist and matrix output are required")
     shortlist_path, output = shortlist_path.absolute(), output.absolute()
+    output.parent.mkdir(parents=True, exist_ok=True)
+    for component in (output.parent, *output.parent.parents):
+        if stat.S_ISLNK(os.lstat(component).st_mode):
+            raise T4GateError("T4 output parent contains a symlink")
     if output.exists() or output.is_symlink():
         raise FileExistsError(output)
     shortlist, shortlist_data = _load(shortlist_path, "shortlist")
@@ -405,13 +536,33 @@ def verify_t4_gate(evidence_paths: Sequence[Path] | Mapping[str, Any], shortlist
     protocol_hash = None
     rows, protocol_candidates = {}, {}
     seen_run_sources: set[tuple[str, str]] = set()
-    created: list[Path] = []
     source_dir = output.with_name(f"{output.stem}.sources")
+    staging_dir = output.with_name(
+        f".{output.stem}.sources.staging-{os.getpid()}-{time.time_ns()}"
+    )
     protocol_path = output.with_name(f"{output.stem}.protocol.json")
-    if source_dir.exists() or source_dir.is_symlink() or protocol_path.exists() or protocol_path.is_symlink():
+    if source_dir.exists() or source_dir.is_symlink() or protocol_path.exists() or protocol_path.is_symlink() or staging_dir.exists():
         raise FileExistsError(source_dir if source_dir.exists() else protocol_path)
+    source_published = False
+    protocol_published = False
+    output_published = False
+    publication_directory = os.open(
+        output.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+    )
+    staging_directory = -1
+    staging_witness: tuple[int, int] | None = None
+    source_witness: tuple[int, int] | None = None
+    protocol_witness: tuple[int, int] | None = None
+    output_witness: tuple[int, int] | None = None
     try:
-        source_dir.mkdir(parents=True)
+        os.mkdir(staging_dir.name, dir_fd=publication_directory)
+        staging_directory = os.open(
+            staging_dir.name,
+            os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
+            dir_fd=publication_directory,
+        )
+        status = os.stat(staging_dir.name, dir_fd=publication_directory, follow_symlinks=False)
+        staging_witness = (status.st_dev, status.st_ino)
         for candidate in ids:
             evidence, _, _ = loaded[candidate]
             sources = evidence.get("sources")
@@ -462,9 +613,26 @@ def verify_t4_gate(evidence_paths: Sequence[Path] | Mapping[str, Any], shortlist
                 and collection_protocol.get("bounds") == BOUNDS
             ):
                 raise T4GateError("collection protocol is not the frozen Apartment protocol")
-            metrics, _ = _raw_metrics(evidence)
+            metrics, raw_context = _raw_metrics(evidence)
             config_sha = evidence["config_sha256"]
-            run_record = dict(evidence["sources"]["run_manifest"])
+            raw_records: dict[str, Any] = {}
+            for raw_name in RAW_SOURCE_NAMES:
+                if raw_name == "shortlist":
+                    raw_records[raw_name] = _record(shortlist_path, shortlist_data)
+                    continue
+                raw_data = raw_context["bound"][raw_name][1]
+                staged_raw = staging_dir / f"{candidate}-raw-{raw_name}"
+                logical_raw = source_dir / staged_raw.name
+                _write_staged_bytes(staged_raw, raw_data, parent_fd=staging_directory)
+                raw_records[raw_name] = _record(logical_raw, raw_data)
+            raw_sources = {
+                **raw_records,
+                **{
+                    f"{name}_sha256": record["sha256"]
+                    for name, record in raw_records.items()
+                },
+            }
+            run_record = dict(raw_sources["run_manifest"])
             run_hash = run_record["sha256"]
             run_identity = (run_record["path"], run_hash)
             if run_identity in seen_run_sources:
@@ -473,15 +641,16 @@ def verify_t4_gate(evidence_paths: Sequence[Path] | Mapping[str, Any], shortlist
             metric_records = {}
             for metric in METRICS:
                 metric_path = source_dir / f"{candidate}-{metric}.json"
+                staging_path = staging_dir / metric_path.name
                 payload = {
                     "schema_version": 1, "manifest_id": "oviv2_tesse_t4_metric_v1",
                     "scene": "apartment", "candidate_id": candidate,
                     "config_sha256": config_sha, "run_manifest_sha256": run_hash,
                     "metric": metric, "value": metrics[metric],
                 }
-                _write_new(metric_path, payload)
-                created.append(metric_path)
-                metric_records[metric] = _record(metric_path)
+                metric_data = _canonical(payload) + b"\n"
+                _write_new(staging_path, payload, parent_fd=staging_directory)
+                metric_records[metric] = _record(metric_path, metric_data)
             gates = {metric: metrics[metric] <= BOUNDS[metric] for metric in METRICS}
             rows[candidate] = {
                 "status": "PASS" if all(gates.values()) else "FAIL",
@@ -491,21 +660,21 @@ def verify_t4_gate(evidence_paths: Sequence[Path] | Mapping[str, Any], shortlist
             protocol_candidates[candidate] = {
                 "config_sha256": config_sha, "run_manifest": run_record,
                 "metric_sources": metric_records,
+                "raw_sources": raw_sources,
             }
-        for candidate in ids:
-            evidence, original_data, evidence_path = loaded[candidate]
-            if _read(evidence_path, "T4 evidence") != original_data:
-                raise T4GateError(f"{candidate} evidence changed during verification")
-            recomputed, _ = _raw_metrics(evidence)
-            if recomputed != rows[candidate]["metrics"]:
-                raise T4GateError(f"{candidate} raw sources changed during verification")
         protocol_payload = {
             "schema_version": 1, "manifest_id": "oviv2_tesse_t4_protocol_v1",
             "dataset": "TESSE-CD", "method_id": "OVIV2", "protocol_id": "oviv2-tessecd-v2",
             "scene": "apartment", "bounds": BOUNDS, "candidates": protocol_candidates,
         }
-        _write_new(protocol_path, protocol_payload)
-        created.append(protocol_path)
+        source_witness = _rename_directory_new(
+            staging_dir, source_dir, parent_fd=publication_directory
+        )
+        source_published = True
+        protocol_witness = _write_new(
+            protocol_path, protocol_payload, parent_fd=publication_directory
+        )
+        protocol_published = True
         matrix = {
             "schema_version": 1, "manifest_id": "oviv2_tesse_t4_matrix_v1",
             "status": "PASS" if any(row["status"] == "PASS" for row in rows.values()) else "FAIL",
@@ -513,16 +682,27 @@ def verify_t4_gate(evidence_paths: Sequence[Path] | Mapping[str, Any], shortlist
             "candidates": rows,
         }
         matrix["root_sha256"] = hashlib.sha256(_canonical(matrix)).hexdigest()
-        _write_new(output, matrix)
+        output_witness = _write_new(output, matrix, parent_fd=publication_directory)
+        output_published = True
         return matrix
     except BaseException:
-        for path in reversed(created):
-            path.unlink(missing_ok=True)
-        try:
-            source_dir.rmdir()
-        except OSError:
-            pass
+        if output_published and output_witness is not None:
+            _remove_owned(publication_directory, output.name, output_witness, tree=False)
+        if protocol_published and protocol_witness is not None:
+            _remove_owned(
+                publication_directory, protocol_path.name, protocol_witness, tree=False
+            )
+        directory_name = source_dir.name if source_published else staging_dir.name
+        directory_witness = source_witness if source_published else staging_witness
+        if directory_witness is not None:
+            _remove_owned(
+                publication_directory, directory_name, directory_witness, tree=True
+            )
         raise
+    finally:
+        if staging_directory >= 0:
+            os.close(staging_directory)
+        os.close(publication_directory)
 
 
 def main(argv: Sequence[str] | None = None) -> int:

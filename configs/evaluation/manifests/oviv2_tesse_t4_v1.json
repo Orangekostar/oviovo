@@ -34,8 +34,9 @@
   },
   "final_map_inventory": {
     "scope": "final_current_map_after_all_processed_frames",
-    "roles": ["snapshot", "entities", "background"],
-    "include": "only_unique_regular_source_files_for_the_three_roles",
+    "roles": ["snapshot", "entities"],
+    "background_storage": "snapshot.npz:background_xyz",
+    "include": "only_unique_regular_source_files_for_snapshot_and_entities",
     "exclude": ["cumulative", "checkpoints", "diagnostics", "logs", "metrics", "office"]
   },
   "units": {
@@ -55,16 +56,16 @@
     "final_map_mb": 46.77
   },
   "mapping_argv": [
-    "python",
-    "scripts/evaluation/run_oviv2_tesse_cd_v2.py",
+    "{python}",
+    "{repo_root}/scripts/evaluation/run_oviv2_tesse_cd_v2.py",
     "--config",
     "{config}",
     "--output",
     "{run}"
   ],
   "query_argv": [
-    "python",
-    "scripts/evaluation/measure_baseline_queries.py",
+    "{python}",
+    "{repo_root}/scripts/evaluation/measure_baseline_queries.py",
     "--baseline",
     "oviv2",
     "--snapshot",

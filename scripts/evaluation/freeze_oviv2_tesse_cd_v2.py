@@ -54,6 +54,12 @@ FREEZE_ID = "oviv2-tessecd-v2"
 STAGE3_LINEAGE_COMMIT = "47962fbd9f363c0696cc5016f8ab42f83a3bf7e5"
 SCENES = ("apartment", "office")
 CANDIDATES = tuple(f"a{index}" for index in range(5))
+T4_RAW_SOURCE_NAMES = frozenset(
+    {
+        "config", "run_manifest", "time_log", "gpu_samples", "query_measurements",
+        "final_map_inventory", "protocol", "shortlist",
+    }
+)
 _OFFICE_PATH_TOKEN = re.compile(r"(^|[^a-z0-9])office([^a-z0-9]|$)")
 SELECTION_KEYS = frozenset(
     {
@@ -1092,7 +1098,7 @@ def _freeze_t4_evidence(
     for candidate, matrix_row in candidates.items():
         protocol_row = protocol["candidates"][candidate]
         if not isinstance(protocol_row, Mapping) or set(protocol_row) != {
-            "config_sha256", "run_manifest", "metric_sources"
+            "config_sha256", "run_manifest", "metric_sources", "raw_sources"
         } or protocol_row.get("config_sha256") != matrix_row.get("config_sha256"):
             raise ValueError("T4 protocol candidate binding is invalid")
         run_record, run_snapshot = _verify_record(
@@ -1114,6 +1120,24 @@ def _freeze_t4_evidence(
         ):
             raise ValueError("T4 whole-profile run manifest binding is invalid")
         source_paths.add(run_path)
+        raw_sources = protocol_row.get("raw_sources")
+        if not isinstance(raw_sources, Mapping) or set(raw_sources) != (
+            T4_RAW_SOURCE_NAMES | {f"{name}_sha256" for name in T4_RAW_SOURCE_NAMES}
+        ):
+            raise ValueError("T4 raw source inventory is invalid")
+        if raw_sources.get("run_manifest") != protocol_row.get("run_manifest"):
+            raise ValueError("T4 raw run manifest binding is invalid")
+        if raw_sources.get("shortlist") != payload.get("shortlist"):
+            raise ValueError("T4 raw shortlist binding is invalid")
+        for raw_name in sorted(T4_RAW_SOURCE_NAMES):
+            raw_record, _ = _verify_record(
+                raw_sources.get(raw_name),
+                repo_root=repo_root,
+                role=f"T4 {candidate} raw {raw_name}",
+                snapshots=snapshots,
+            )
+            if raw_sources.get(f"{raw_name}_sha256") != raw_record["sha256"]:
+                raise ValueError("T4 raw source flat hash is invalid")
         metric_sources = protocol_row.get("metric_sources")
         if not isinstance(metric_sources, Mapping) or set(metric_sources) != V2_T4_METRIC_KEYS:
             raise ValueError("T4 metric source inventory is invalid")

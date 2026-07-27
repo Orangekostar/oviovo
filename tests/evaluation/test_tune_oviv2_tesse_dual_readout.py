@@ -412,6 +412,24 @@ def _t4_matrix(
             "config_sha256": candidate["config_sha256"],
             "run_manifest": _record(source),
             "metric_sources": metric_sources,
+            "raw_sources": {
+                **{
+                    name: (_record(shortlist_path) if name == "shortlist" else _record(source))
+                    for name in (
+                        "config", "run_manifest", "time_log", "gpu_samples",
+                        "query_measurements", "final_map_inventory", "protocol", "shortlist",
+                    )
+                },
+                **{
+                    f"{name}_sha256": (
+                        _record(shortlist_path)["sha256"] if name == "shortlist" else _record(source)["sha256"]
+                    )
+                    for name in (
+                        "config", "run_manifest", "time_log", "gpu_samples",
+                        "query_measurements", "final_map_inventory", "protocol", "shortlist",
+                    )
+                },
+            },
         }
     protocol_path = _write(
         tmp_path / "t4-protocol.json",

@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import signal
 from pathlib import Path
+import sys
 
 import numpy as np
 import pytest
@@ -122,11 +125,23 @@ def _fixture(tmp_path: Path) -> dict[str, object]:
         {
             "sample_interval_ms": 200,
             "process_group_id": 17,
+            "phase_events": [
+                {"phase": "mapping", "event": "start", "timestamp_ns": 900_000_000, "pid": 20, "process_group_id": 17, "proc_starttime_ticks": 200},
+                {"phase": "mapping", "event": "end", "timestamp_ns": 1_200_000_000, "pid": 20, "process_group_id": 17, "proc_starttime_ticks": 200},
+                {"phase": "queries", "event": "start", "timestamp_ns": 1_300_000_000, "pid": 21, "process_group_id": 17, "proc_starttime_ticks": 210},
+                {"phase": "queries", "event": "end", "timestamp_ns": 1_600_000_000, "pid": 21, "process_group_id": 17, "proc_starttime_ticks": 210},
+            ],
             "samples": [
                 {"timestamp_ns": 1_000_000_000, "phase": "mapping", "pid": 20, "process_group_id": 17, "used_memory_mib": 3000,
                  "processes": [{"gpu_uuid": "GPU-fixture", "pid": 20, "proc_starttime_ticks": 200,
                                 "process_group_id": 17, "used_memory_mib": 3000}]},
-                {"timestamp_ns": 1_200_000_000, "phase": "queries", "pid": 21, "process_group_id": 17, "used_memory_mib": 4000,
+                {"timestamp_ns": 1_100_000_000, "phase": "mapping", "pid": 20, "process_group_id": 17, "used_memory_mib": 3000,
+                 "processes": [{"gpu_uuid": "GPU-fixture", "pid": 20, "proc_starttime_ticks": 200,
+                                "process_group_id": 17, "used_memory_mib": 3000}]},
+                {"timestamp_ns": 1_400_000_000, "phase": "queries", "pid": 21, "process_group_id": 17, "used_memory_mib": 4000,
+                 "processes": [{"gpu_uuid": "GPU-fixture", "pid": 21, "proc_starttime_ticks": 210,
+                                "process_group_id": 17, "used_memory_mib": 4000}]},
+                {"timestamp_ns": 1_500_000_000, "phase": "queries", "pid": 21, "process_group_id": 17, "used_memory_mib": 4000,
                  "processes": [{"gpu_uuid": "GPU-fixture", "pid": 21, "proc_starttime_ticks": 210,
                                 "process_group_id": 17, "used_memory_mib": 4000}]},
             ],
@@ -312,8 +327,38 @@ def test_frozen_protocol_pins_query_resources_units_and_bounds() -> None:
         "peak_ram_gb": "GB (decimal)", "final_map_mb": "MB (decimal)",
     }
     assert set(protocol["bounds"]) == set(protocol["units"])
+    assert protocol["final_map_inventory"] == {
+        "scope": "final_current_map_after_all_processed_frames",
+        "roles": ["snapshot", "entities"],
+        "background_storage": "snapshot.npz:background_xyz",
+        "include": "only_unique_regular_source_files_for_snapshot_and_entities",
+        "exclude": ["cumulative", "checkpoints", "diagnostics", "logs", "metrics", "office"],
+    }
+    assert protocol["mapping_argv"][:2] == [
+        "{python}", "{repo_root}/scripts/evaluation/run_oviv2_tesse_cd_v2.py",
+    ]
+    assert protocol["query_argv"][:2] == [
+        "{python}", "{repo_root}/scripts/evaluation/measure_baseline_queries.py",
+    ]
     vocabulary = REPO_ROOT / protocol["query"]["vocabulary_path"]
     assert _sha256(vocabulary) == protocol["query"]["vocabulary_sha256"]
+
+
+def test_gpu_phase_events_reject_single_sparse_foreign_and_reused_pid(tmp_path: Path) -> None:
+    cases = (
+        ("single", lambda gpu: gpu["samples"].pop(1), "at least two"),
+        ("sparse", lambda gpu: gpu["samples"][1].update(timestamp_ns=1_300_000_001), "sampling interval"),
+        ("foreign", lambda gpu: gpu["samples"][0]["processes"][0].update(process_group_id=999), "foreign process"),
+        ("reuse", lambda gpu: gpu["samples"][0]["processes"][0].update(proc_starttime_ticks=999), "starttime"),
+    )
+    for name, mutate, match in cases:
+        fixture = _fixture(tmp_path / name)
+        path = Path(fixture["gpu_samples"])
+        gpu = json.loads(path.read_text())
+        mutate(gpu)
+        _write(path, gpu)
+        with pytest.raises(T4CollectionError, match=match):
+            measure_t4(fixture)
 
 
 def test_protocol_copy_is_not_a_controlled_trust_anchor(tmp_path: Path, monkeypatch) -> None:
@@ -386,6 +431,9 @@ def test_fake_collector_covers_mapping_and_query_process_groups(tmp_path: Path, 
     shortlist_path = _write(tmp_path / "shortlist.json", shortlist)
 
     def fake_run(argv, *, gpu, phase, time_log=None):
+        assert argv[0] == str(Path(sys.executable).resolve())
+        assert Path(argv[1]).is_absolute()
+        assert Path(argv[1]).is_relative_to(REPO_ROOT)
         del gpu
         if phase == "mapping":
             run_root = Path(argv[argv.index("--output") + 1])
@@ -439,9 +487,18 @@ def test_fake_collector_covers_mapping_and_query_process_groups(tmp_path: Path, 
                 "Elapsed (wall clock) time (h:mm:ss or m:ss): 0:04.00\n"
                 "Maximum resident set size (kbytes): 1000000\n", encoding="utf-8"
             )
-            return 0, [{"timestamp_ns": 1_000_000_000, "phase": "mapping", "pid": 101, "process_group_id": 101, "used_memory_mib": 2000,
-                        "processes": [{"gpu_uuid": "GPU-fake", "pid": 101, "proc_starttime_ticks": 1,
-                                       "process_group_id": 101, "used_memory_mib": 2000}]}]
+            samples = [
+                {"timestamp_ns": timestamp, "phase": "mapping", "pid": 101, "process_group_id": 101, "used_memory_mib": 2000,
+                 "processes": [{"gpu_uuid": "GPU-fake", "pid": 101, "proc_starttime_ticks": 1,
+                                "process_group_id": 101, "used_memory_mib": 2000}]}
+                for timestamp in (1_000_000_000, 1_100_000_000)
+            ]
+            events = [
+                {"phase": "mapping", "event": event, "timestamp_ns": timestamp, "pid": 101,
+                 "process_group_id": 101, "proc_starttime_ticks": 1}
+                for event, timestamp in (("start", 900_000_000), ("end", 1_200_000_000))
+            ]
+            return 0, samples, events
         query_output = Path(argv[argv.index("--output") + 1])
         snapshot = Path(argv[argv.index("--snapshot") + 1])
         entities = Path(argv[argv.index("--entities") + 1])
@@ -465,11 +522,23 @@ def test_fake_collector_covers_mapping_and_query_process_groups(tmp_path: Path, 
                         "queries": _record(queries), "checkpoint": _record(clip)},
             "protocol": "full tokenization, text encoding, and entity ranking",
         })
-        return 0, [{"timestamp_ns": 1_200_000_000, "phase": "queries", "pid": 202, "process_group_id": 202, "used_memory_mib": 3000,
-                    "processes": [{"gpu_uuid": "GPU-fake", "pid": 202, "proc_starttime_ticks": 2,
-                                   "process_group_id": 202, "used_memory_mib": 3000}]}]
+        samples = [
+            {"timestamp_ns": timestamp, "phase": "queries", "pid": 202, "process_group_id": 202, "used_memory_mib": 3000,
+             "processes": [{"gpu_uuid": "GPU-fake", "pid": 202, "proc_starttime_ticks": 2,
+                            "process_group_id": 202, "used_memory_mib": 3000}]}
+            for timestamp in (1_400_000_000, 1_500_000_000)
+        ]
+        events = [
+            {"phase": "queries", "event": event, "timestamp_ns": timestamp, "pid": 202,
+             "process_group_id": 202, "proc_starttime_ticks": 2}
+            for event, timestamp in (("start", 1_300_000_000), ("end", 1_600_000_000))
+        ]
+        return 0, samples, events
 
     monkeypatch.setattr("scripts.evaluation.measure_oviv2_tesse_t4._run_sampled", fake_run)
+    outside = tmp_path / "outside-cwd"
+    outside.mkdir()
+    monkeypatch.chdir(outside)
     paths = collect_shortlist(protocol_path, shortlist_path, "0", tmp_path / "collected")
 
     assert len(paths) == 1
@@ -494,3 +563,232 @@ def test_fake_collector_covers_mapping_and_query_process_groups(tmp_path: Path, 
     assert frozen["root_sha256"] == matrix["root_sha256"]
     assert frozen["artifact"]["path"] != frozen["protocol"]["path"]
     assert evidence["sources"]["protocol"]["path"] != frozen["protocol"]["path"]
+
+
+def test_collector_staging_failure_is_invisible_and_retryable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.measure_oviv2_tesse_t4 as collector
+
+    destination = tmp_path / "collected"
+    calls = 0
+
+    def fail(protocol_path, shortlist_path, gpu, staging):
+        nonlocal calls
+        calls += 1
+        assert staging.is_dir()
+        (staging / "partial").write_text("partial", encoding="utf-8")
+        raise OSError("injected collection failure")
+
+    monkeypatch.setattr(collector, "_collect_shortlist_unpublished", fail)
+    for _ in range(2):
+        with pytest.raises(OSError, match="injected"):
+            collect_shortlist(Path("protocol"), Path("shortlist"), "0", destination)
+        assert not destination.exists()
+        assert not list(tmp_path.glob(".collected.staging-*"))
+    assert calls == 2
+
+
+def test_collector_fsyncs_staging_root_before_publication(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.measure_oviv2_tesse_t4 as collector
+
+    events: list[tuple[str, int | None]] = []
+    staging_fd = -1
+    original_fsync = collector.os.fsync
+    original_rename = collector._rename_directory_new
+
+    def collect_empty(protocol_path, shortlist_path, gpu, staging):
+        nonlocal staging_fd
+        staging_fd = int(staging.name)
+        return []
+
+    def record_fsync(fd: int) -> None:
+        events.append(("fsync", fd))
+        original_fsync(fd)
+
+    def record_rename(source, destination, *, parent_fd=None):
+        events.append(("rename", None))
+        return original_rename(source, destination, parent_fd=parent_fd)
+
+    monkeypatch.setattr(collector, "_collect_shortlist_unpublished", collect_empty)
+    monkeypatch.setattr(collector.os, "fsync", record_fsync)
+    monkeypatch.setattr(collector, "_rename_directory_new", record_rename)
+
+    collect_shortlist(Path("protocol"), Path("shortlist"), "0", tmp_path / "collected")
+
+    assert events.index(("fsync", staging_fd)) < events.index(("rename", None))
+
+
+def test_sample_collector_terminates_and_waits_for_process_group_on_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import scripts.evaluation.measure_oviv2_tesse_t4 as collector
+
+    class Process:
+        pid = 321
+        returncode = None
+
+        def poll(self):
+            return self.returncode
+
+        def wait(self, timeout=None):
+            self.returncode = -signal.SIGTERM
+            return self.returncode
+
+    process = Process()
+    killed = []
+    monkeypatch.setattr(collector.subprocess, "Popen", lambda *args, **kwargs: process)
+    monkeypatch.setattr(collector.os, "getpgid", lambda pid: 321)
+    monkeypatch.setattr(collector, "_proc_starttime", lambda pid: 7)
+    monkeypatch.setattr(collector, "_gpu_rows", lambda gpu: (_ for _ in ()).throw(OSError("nvidia failed")))
+    monkeypatch.setattr(collector.os, "killpg", lambda pgid, sig: killed.append((pgid, sig)))
+    monkeypatch.setattr(collector, "_process_group_exists", lambda pgid: False)
+
+    with pytest.raises(OSError, match="nvidia failed"):
+        collector._run_sampled([sys.executable, "-c", "pass"], gpu="0", phase="mapping")
+    assert killed == [(321, signal.SIGTERM)]
+    assert process.returncode == -signal.SIGTERM
+
+
+def test_sample_collector_cleans_group_when_starttime_probe_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import scripts.evaluation.measure_oviv2_tesse_t4 as collector
+
+    class Process:
+        pid = 654
+        returncode = None
+
+        def poll(self):
+            return self.returncode
+
+        def wait(self, timeout=None):
+            self.returncode = -signal.SIGTERM
+            return self.returncode
+
+    process = Process()
+    killed = []
+    monkeypatch.setattr(collector.subprocess, "Popen", lambda *args, **kwargs: process)
+    monkeypatch.setattr(collector, "_proc_starttime", lambda pid: (_ for _ in ()).throw(OSError("proc failed")))
+    monkeypatch.setattr(collector.os, "killpg", lambda pgid, sig: killed.append((pgid, sig)))
+    monkeypatch.setattr(collector, "_process_group_exists", lambda pgid: False)
+
+    with pytest.raises(OSError, match="proc failed"):
+        collector._run_sampled([sys.executable, "-c", "pass"], gpu="0", phase="mapping")
+    assert killed == [(654, signal.SIGTERM)]
+    assert process.returncode == -signal.SIGTERM
+
+
+def test_collector_cleanup_preserves_replacement_and_removes_owned_renamed_staging(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.measure_oviv2_tesse_t4 as collector
+
+    destination = tmp_path / "collected"
+    moved = tmp_path / "owned-moved"
+
+    def replace_then_fail(protocol_path, shortlist_path, gpu, staging):
+        actual_staging = Path(os.readlink(staging))
+        (actual_staging / "owned").write_text("owned", encoding="utf-8")
+        actual_staging.rename(moved)
+        actual_staging.mkdir()
+        (actual_staging / "replacement").write_text("replacement", encoding="utf-8")
+        raise OSError("injected replacement")
+
+    monkeypatch.setattr(collector, "_collect_shortlist_unpublished", replace_then_fail)
+    with pytest.raises(OSError, match="replacement"):
+        collect_shortlist(Path("protocol"), Path("shortlist"), "0", destination)
+    replacements = list(tmp_path.glob(".collected.staging-*/replacement"))
+    assert len(replacements) == 1
+    assert replacements[0].read_text(encoding="utf-8") == "replacement"
+    assert not moved.exists()
+
+
+def test_collector_parent_swap_fails_without_publishing_to_replacement(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.measure_oviv2_tesse_t4 as collector
+
+    parent = tmp_path / "publish"
+    moved = tmp_path / "publish-moved"
+    destination = parent / "collected"
+
+    def swap_parent(protocol_path, shortlist_path, gpu, staging):
+        parent.rename(moved)
+        parent.mkdir()
+        (parent / "replacement").write_text("replacement", encoding="utf-8")
+        return []
+
+    monkeypatch.setattr(collector, "_collect_shortlist_unpublished", swap_parent)
+    with pytest.raises(T4CollectionError, match="parent changed"):
+        collect_shortlist(Path("protocol"), Path("shortlist"), "0", destination)
+    assert (parent / "replacement").read_text(encoding="utf-8") == "replacement"
+    assert not destination.exists()
+    assert not list(moved.glob(".collected.staging-*"))
+
+
+def test_time_wrapper_child_and_cuda_startup_gap_produce_continuous_samples(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.measure_oviv2_tesse_t4 as collector
+
+    leader = None
+    original_popen = collector.subprocess.Popen
+
+    def start(*args, **kwargs):
+        nonlocal leader
+        leader = original_popen(*args, **kwargs)
+        return leader
+
+    calls = 0
+
+    def rows(gpu):
+        nonlocal calls
+        calls += 1
+        if calls == 1 or leader is None:
+            return []
+        children_path = Path(f"/proc/{leader.pid}/task/{leader.pid}/children")
+        try:
+            children = children_path.read_text(encoding="ascii").split()
+        except FileNotFoundError:
+            return []
+        if not children:
+            return []
+        child = int(children[0])
+        return [{
+            "gpu_uuid": "GPU-test", "pid": child,
+            "proc_starttime_ticks": collector._proc_starttime(child),
+            "process_group_id": os.getpgid(child), "used_memory_mib": 128.0,
+        }]
+
+    monkeypatch.setattr(collector.subprocess, "Popen", start)
+    monkeypatch.setattr(collector, "_gpu_rows", rows)
+    code, samples, events = collector._run_sampled(
+        [sys.executable, "-c", "import time; time.sleep(0.45)"],
+        gpu="0", phase="mapping", time_log=tmp_path / "time.txt",
+    )
+
+    assert code == 0
+    assert any(not sample["processes"] for sample in samples)
+    assert any(
+        process["pid"] != events[0]["pid"]
+        for sample in samples for process in sample["processes"]
+    )
+    _, peaks = collector._validate_gpu_evidence({
+        "sample_interval_ms": 200,
+        "process_group_id": events[0]["process_group_id"],
+        "process_group_ids": [events[0]["process_group_id"]],
+        "phase_events": [
+            *events,
+            {**events[0], "phase": "queries", "timestamp_ns": events[-1]["timestamp_ns"] + 1},
+            {**events[-1], "phase": "queries", "timestamp_ns": events[-1]["timestamp_ns"] + 200_000_000},
+        ],
+        "samples": [
+            *samples,
+            {**samples[-2], "phase": "queries", "timestamp_ns": events[-1]["timestamp_ns"] + 50_000_000},
+            {**samples[-1], "phase": "queries", "timestamp_ns": events[-1]["timestamp_ns"] + 150_000_000},
+        ],
+    })
+    assert max(peaks) == 128.0

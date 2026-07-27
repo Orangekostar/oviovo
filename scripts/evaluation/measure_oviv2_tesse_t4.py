@@ -5,14 +5,21 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Mapping, Sequence
+import contextvars
+import ctypes
+import errno
 import hashlib
+import io
 import json
 import math
 import os
 from pathlib import Path
 import re
+import signal
+import shutil
 import stat
 import subprocess
+import sys
 import time
 from typing import Any
 
@@ -32,9 +39,16 @@ UNITS = {
     "final_map_mb": "MB (decimal)",
 }
 _TIME = Path("/usr/bin/time")
-FROZEN_PROTOCOL_PATH = Path(__file__).resolve().parents[2] / "configs/evaluation/manifests/oviv2_tesse_t4_v1.json"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+FROZEN_PROTOCOL_PATH = REPO_ROOT / "configs/evaluation/manifests/oviv2_tesse_t4_v1.json"
 _ELAPSED_RE = re.compile(r"Elapsed \(wall clock\) time.*?:\s*([0-9:.]+)\s*$", re.MULTILINE)
 _RSS_RE = re.compile(r"Maximum resident set size \(kbytes\):\s*(\d+)\s*$", re.MULTILINE)
+_READ_SNAPSHOT: contextvars.ContextVar[dict[Path, bytes] | None] = contextvars.ContextVar(
+    "oviv2_t4_read_snapshot", default=None
+)
+_TRUSTED_FD_ROOTS: contextvars.ContextVar[tuple[Path, ...]] = contextvars.ContextVar(
+    "oviv2_t4_trusted_fd_roots", default=()
+)
 
 
 class T4CollectionError(ValueError):
@@ -49,9 +63,22 @@ def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def _trusted_fd_root(path: Path) -> Path | None:
+    return next(
+        (root for root in _TRUSTED_FD_ROOTS.get() if path == root or root in path.parents),
+        None,
+    )
+
+
 def _read(path: Path, label: str) -> bytes:
     path = path.absolute()
+    snapshot = _READ_SNAPSHOT.get()
+    if snapshot is not None and path in snapshot:
+        return snapshot[path]
+    trusted_root = _trusted_fd_root(path)
     for component in (path, *path.parents):
+        if component == trusted_root:
+            break
         try:
             if stat.S_ISLNK(os.lstat(component).st_mode):
                 raise T4CollectionError(f"{label} path contains a symlink")
@@ -63,12 +90,29 @@ def _read(path: Path, label: str) -> bytes:
         raise T4CollectionError(f"missing {label}: {path}") from exc
     if stat.S_ISLNK(status.st_mode) or not stat.S_ISREG(status.st_mode):
         raise T4CollectionError(f"{label} must be a regular non-symlink file")
-    data = path.read_bytes()
+    descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    try:
+        opened = os.fstat(descriptor)
+        if (status.st_dev, status.st_ino) != (opened.st_dev, opened.st_ino):
+            raise T4CollectionError(f"{label} changed before it was opened")
+        chunks = []
+        while True:
+            chunk = os.read(descriptor, 1024 * 1024)
+            if not chunk:
+                break
+            chunks.append(chunk)
+        finished = os.fstat(descriptor)
+    finally:
+        os.close(descriptor)
     current = os.lstat(path)
-    if (status.st_dev, status.st_ino, status.st_size, status.st_mtime_ns) != (
-        current.st_dev, current.st_ino, current.st_size, current.st_mtime_ns
-    ):
+    witness = lambda value: (value.st_dev, value.st_ino, value.st_size, value.st_mtime_ns, value.st_ctime_ns)
+    if witness(status) != witness(opened) or witness(opened) != witness(finished) or witness(finished) != witness(current):
         raise T4CollectionError(f"{label} changed while being read")
+    data = b"".join(chunks)
+    if len(data) != finished.st_size:
+        raise T4CollectionError(f"{label} changed size while being read")
+    if snapshot is not None:
+        snapshot[path] = data
     return data
 
 
@@ -97,16 +141,33 @@ def _record(path: Path, data: bytes | None = None) -> dict[str, Any]:
     return {"path": str(absolute), "sha256": _sha256(payload), "byte_count": len(payload)}
 
 
-def _write_new(path: Path, value: object) -> None:
+def _write_new(
+    path: Path, value: object, *, parent_fd: int | None = None
+) -> tuple[int, int]:
     path = path.absolute()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    for component in (path.parent, *path.parent.parents):
-        if stat.S_ISLNK(os.lstat(component).st_mode):
-            raise T4CollectionError("T4 output parent contains a symlink")
+    if parent_fd is None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        trusted_root = _trusted_fd_root(path)
+        for component in (path.parent, *path.parent.parents):
+            if component == trusted_root:
+                break
+            if stat.S_ISLNK(os.lstat(component).st_mode):
+                raise T4CollectionError("T4 output parent contains a symlink")
+        directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    else:
+        directory = os.dup(parent_fd)
     data = _canonical(value) + b"\n"
-    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+    parent_status = os.fstat(directory)
+    temporary = f".{path.name}.tmp-{os.getpid()}-{time.time_ns()}"
+    descriptor = -1
+    published = False
     try:
+        descriptor = os.open(
+            temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+            0o644, dir_fd=directory,
+        )
         try:
+            file_status = os.fstat(descriptor)
             remaining = memoryview(data)
             while remaining:
                 written = os.write(descriptor, remaining)
@@ -114,11 +175,129 @@ def _write_new(path: Path, value: object) -> None:
                     raise OSError("T4 output write made no progress")
                 remaining = remaining[written:]
             os.fsync(descriptor)
-        except BaseException:
-            path.unlink(missing_ok=True)
-            raise
+        finally:
+            os.close(descriptor)
+            descriptor = -1
+        current_parent = os.lstat(path.parent)
+        if (parent_status.st_dev, parent_status.st_ino) != (current_parent.st_dev, current_parent.st_ino):
+            raise T4CollectionError("T4 output parent changed during publication")
+        os.link(
+            temporary, path.name, src_dir_fd=directory, dst_dir_fd=directory,
+            follow_symlinks=False,
+        )
+        published = True
+        os.unlink(temporary, dir_fd=directory)
+        os.fsync(directory)
+        current_parent = os.lstat(path.parent)
+        if (parent_status.st_dev, parent_status.st_ino) != (current_parent.st_dev, current_parent.st_ino):
+            raise T4CollectionError("T4 output parent changed during publication")
+        return file_status.st_dev, file_status.st_ino
+    except BaseException:
+        if descriptor >= 0:
+            os.close(descriptor)
+        try:
+            os.unlink(temporary, dir_fd=directory)
+        except FileNotFoundError:
+            pass
+        if published:
+            try:
+                os.unlink(path.name, dir_fd=directory)
+                os.fsync(directory)
+            except FileNotFoundError:
+                pass
+        raise
     finally:
-        os.close(descriptor)
+        os.close(directory)
+
+
+def _replace_staged(path: Path, value: object) -> None:
+    temporary = path.with_name(f".{path.name}.rewrite-{os.getpid()}-{time.time_ns()}")
+    _write_new(temporary, value)
+    try:
+        os.replace(temporary, path)
+        directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _rename_directory_new(
+    source: Path, destination: Path, *, parent_fd: int | None = None
+) -> tuple[int, int]:
+    source, destination = source.absolute(), destination.absolute()
+    if parent_fd is None and source.parent != destination.parent:
+        raise T4CollectionError("staging and destination must share a parent")
+    directory = (
+        os.open(source.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+        if parent_fd is None else os.dup(parent_fd)
+    )
+    parent_status = os.fstat(directory)
+    libc = ctypes.CDLL(None, use_errno=True)
+    renameat2 = getattr(libc, "renameat2", None)
+    if renameat2 is None:
+        os.close(directory)
+        raise T4CollectionError("atomic no-clobber directory publication is unavailable")
+    try:
+        current_parent = os.lstat(destination.parent)
+        if (parent_status.st_dev, parent_status.st_ino) != (current_parent.st_dev, current_parent.st_ino):
+            raise T4CollectionError("T4 output parent changed during publication")
+        result = renameat2(
+            ctypes.c_int(directory), os.fsencode(source.name), ctypes.c_int(directory),
+            os.fsencode(destination.name), ctypes.c_uint(1),
+        )
+        if result != 0:
+            error = ctypes.get_errno()
+            if error == errno.EEXIST:
+                raise FileExistsError(destination)
+            raise OSError(error, os.strerror(error), destination)
+        os.fsync(directory)
+        destination_status = os.stat(destination.name, dir_fd=directory, follow_symlinks=False)
+        current_parent = os.lstat(destination.parent)
+        if (parent_status.st_dev, parent_status.st_ino) != (current_parent.st_dev, current_parent.st_ino):
+            shutil.rmtree(Path(f"/proc/self/fd/{directory}") / destination.name)
+            os.fsync(directory)
+            raise T4CollectionError("T4 output parent changed during publication")
+        return destination_status.st_dev, destination_status.st_ino
+    finally:
+        os.close(directory)
+
+
+def _remove_owned(parent_fd: int, name: str, witness: tuple[int, int], *, tree: bool) -> None:
+    owned_name: str | None = None
+    try:
+        status = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+    except FileNotFoundError:
+        status = None
+    if status is not None and (status.st_dev, status.st_ino) == witness:
+        owned_name = name
+    else:
+        for candidate in os.listdir(parent_fd):
+            try:
+                candidate_status = os.stat(candidate, dir_fd=parent_fd, follow_symlinks=False)
+            except FileNotFoundError:
+                continue
+            if (candidate_status.st_dev, candidate_status.st_ino) == witness:
+                owned_name = candidate
+                break
+    if owned_name is None:
+        return
+    if tree:
+        shutil.rmtree(owned_name, dir_fd=parent_fd)
+    else:
+        os.unlink(owned_name, dir_fd=parent_fd)
+    os.fsync(parent_fd)
+
+
+def _parent_matches(path: Path, parent_fd: int) -> bool:
+    try:
+        current = os.lstat(path)
+    except FileNotFoundError:
+        return False
+    opened = os.fstat(parent_fd)
+    return (current.st_dev, current.st_ino) == (opened.st_dev, opened.st_ino)
 
 
 def _finite(value: object, label: str) -> float:
@@ -309,7 +488,10 @@ def _resolve_final_map(run_manifest: Mapping[str, Any], run_root: Path) -> dict[
             raise T4CollectionError(f"run manifest final current-map {role} binding is stale")
         result[role] = path
     try:
-        with np.load(result["snapshot"], allow_pickle=False) as arrays:
+        with np.load(
+            io.BytesIO(_read(result["snapshot"], "final current-map snapshot")),
+            allow_pickle=False,
+        ) as arrays:
             if not {"background_xyz", "timestamp", "scope", "scene_id"} <= set(arrays.files):
                 raise T4CollectionError("final current-map snapshot metadata is incomplete")
             metadata = tuple(
@@ -473,7 +655,12 @@ def _validate_protocol(protocol: Mapping[str, Any], path: Path) -> None:
     frozen_path = FROZEN_PROTOCOL_PATH.absolute()
     if path.absolute() != frozen_path or _read(path, "collection protocol") != _read(frozen_path, "frozen collection protocol"):
         raise T4CollectionError("collection protocol is not the controlled frozen manifest")
-    if not (
+    if set(protocol) != {
+        "schema_version", "manifest_id", "dataset", "method_id", "protocol_id",
+        "scene", "office_data_permitted", "sample_interval_ms", "time_collector",
+        "gpu_collector", "query", "final_map_inventory", "units", "bounds",
+        "mapping_argv", "query_argv",
+    } or not (
         protocol.get("schema_version") == 1
         and protocol.get("manifest_id") == "oviv2_tesse_t4_collection_protocol_v1"
         and protocol.get("dataset") == "TESSE-CD" and protocol.get("method_id") == "OVIV2"
@@ -482,8 +669,42 @@ def _validate_protocol(protocol: Mapping[str, Any], path: Path) -> None:
         and protocol.get("units") == UNITS
     ):
         raise T4CollectionError("collection protocol identity, scope, or units are invalid")
+    if protocol.get("final_map_inventory") != {
+        "scope": "final_current_map_after_all_processed_frames",
+        "roles": ["snapshot", "entities"],
+        "background_storage": "snapshot.npz:background_xyz",
+        "include": "only_unique_regular_source_files_for_snapshot_and_entities",
+        "exclude": ["cumulative", "checkpoints", "diagnostics", "logs", "metrics", "office"],
+    }:
+        raise T4CollectionError("collection final-map inventory schema is invalid")
+    if protocol.get("time_collector") != "/usr/bin/time -v" or protocol.get("gpu_collector") != {
+        "command": "nvidia-smi",
+        "identity_fields": ["gpu_uuid", "pid", "proc_starttime_ticks", "process_group_id"],
+        "aggregation": "sum_pid_memory_per_sample_then_peak_across_mapping_and_queries",
+        "source_unit": "MiB", "output_unit": "GB (decimal)", "conversion_divisor": 1000.0,
+    }:
+        raise T4CollectionError("collection resource collectors are not frozen")
+    expected_commands = {
+        "mapping_argv": [
+            "{python}", "{repo_root}/scripts/evaluation/run_oviv2_tesse_cd_v2.py",
+            "--config", "{config}", "--output", "{run}",
+        ],
+        "query_argv": [
+            "{python}", "{repo_root}/scripts/evaluation/measure_baseline_queries.py",
+            "--baseline", "oviv2", "--snapshot", "{snapshot}", "--entities",
+            "{entities}", "--queries", "{queries}", "--clip-weight", "{checkpoint}",
+            "--device", "cuda:{gpu}", "--warmup", "10", "--repeats", "5",
+            "--protocol", "{protocol}", "--output", "{query_output}",
+        ],
+    }
+    if any(protocol.get(key) != value for key, value in expected_commands.items()):
+        raise T4CollectionError("collection command templates are not frozen")
     query = protocol.get("query")
-    if not isinstance(query, Mapping) or not (
+    if not isinstance(query, Mapping) or set(query) != {
+        "vocabulary_path", "vocabulary_sha256", "text_model_id", "checkpoint_sha256",
+        "operation_order", "warmup_count", "measured_repeats",
+        "cuda_synchronize_each_query", "precomputed_query_embeddings",
+    } or not (
         query.get("text_model_id") == "ViT-H-14" and query.get("warmup_count") == 10
         and query.get("measured_repeats") == 5
         and query.get("operation_order") == [
@@ -506,6 +727,97 @@ def _validate_protocol(protocol: Mapping[str, Any], path: Path) -> None:
         "peak_ram_gb": 9.36, "final_map_mb": 46.77,
     }:
         raise T4CollectionError("collection bounds are not frozen")
+
+
+def _validate_gpu_evidence(gpu: Mapping[str, Any]) -> tuple[object, list[float]]:
+    samples = gpu.get("samples")
+    events = gpu.get("phase_events")
+    if gpu.get("sample_interval_ms") != 200 or not isinstance(samples, list):
+        raise T4CollectionError("GPU samples violate the 200 ms protocol")
+    if not isinstance(events, list) or len(events) != 4:
+        raise T4CollectionError("GPU phase-event sidecar is invalid")
+    expected = [("mapping", "start"), ("mapping", "end"), ("queries", "start"), ("queries", "end")]
+    identities: dict[str, tuple[int, int, int]] = {}
+    bounds: dict[str, tuple[int, int]] = {}
+    for event, identity in zip(events, expected):
+        if not isinstance(event, Mapping) or set(event) != {
+            "phase", "event", "timestamp_ns", "pid", "process_group_id",
+            "proc_starttime_ticks",
+        } or (event.get("phase"), event.get("event")) != identity:
+            raise T4CollectionError("GPU phase-event sidecar schema is invalid")
+        values = tuple(event.get(key) for key in ("pid", "process_group_id", "proc_starttime_ticks"))
+        timestamp = event.get("timestamp_ns")
+        if any(type(value) is not int or value <= 0 for value in (*values, timestamp)):
+            raise T4CollectionError("GPU phase-event process identity is invalid")
+        phase = identity[0]
+        if identity[1] == "start":
+            identities[phase] = values
+            bounds[phase] = (timestamp, -1)
+        elif values != identities.get(phase) or timestamp <= bounds[phase][0]:
+            raise T4CollectionError("GPU phase-event PID starttime changed")
+        else:
+            bounds[phase] = (bounds[phase][0], timestamp)
+    event_timestamps = [event["timestamp_ns"] for event in events]
+    if event_timestamps != sorted(event_timestamps):
+        raise T4CollectionError("GPU phase-event timestamps are not ordered")
+    peaks: list[float] = []
+    for phase in ("mapping", "queries"):
+        phase_samples = [sample for sample in samples if isinstance(sample, Mapping) and sample.get("phase") == phase]
+        if len(phase_samples) < 2:
+            raise T4CollectionError(f"GPU {phase} phase requires at least two samples")
+        timestamps = [sample.get("timestamp_ns") for sample in phase_samples]
+        if any(type(value) is not int or value <= 0 for value in timestamps) or timestamps != sorted(set(timestamps)):
+            raise T4CollectionError("GPU sample timestamps are not strictly monotonic")
+        start, end = bounds[phase]
+        if timestamps[0] - start > 200_000_000 or end - timestamps[-1] > 200_000_000 or any(
+            right - left > 200_000_000 for left, right in zip(timestamps, timestamps[1:])
+        ):
+            raise T4CollectionError("GPU sampling interval or phase endpoint coverage exceeds 200 ms")
+        pid, pgid, _starttime = identities[phase]
+        process_starttimes: dict[int, int] = {}
+        for sample in phase_samples:
+            if sample.get("pid") != pid or sample.get("process_group_id") != pgid:
+                raise T4CollectionError("GPU sample is not bound to the phase process")
+            processes = sample.get("processes")
+            if not isinstance(processes, list):
+                raise T4CollectionError("GPU sample process inventory is missing")
+            memory = 0.0
+            for process in processes:
+                if not isinstance(process, Mapping) or set(process) != {
+                    "gpu_uuid", "pid", "proc_starttime_ticks", "process_group_id", "used_memory_mib"
+                }:
+                    raise T4CollectionError("GPU process identity schema is invalid")
+                if process.get("process_group_id") != pgid:
+                    raise T4CollectionError("GPU sample contains a foreign process group")
+                process_pid = process.get("pid")
+                process_starttime = process.get("proc_starttime_ticks")
+                if (
+                    not isinstance(process.get("gpu_uuid"), str) or not process["gpu_uuid"]
+                    or type(process_pid) is not int or process_pid <= 0
+                    or type(process_starttime) is not int or process_starttime <= 0
+                ):
+                    raise T4CollectionError("GPU process identity is invalid")
+                if process_pid in process_starttimes and process_starttimes[process_pid] != process_starttime:
+                    raise T4CollectionError("GPU process starttime indicates PID reuse")
+                process_starttimes[process_pid] = process_starttime
+                memory += _nonnegative(process.get("used_memory_mib"), "GPU process memory")
+            if memory != _nonnegative(sample.get("used_memory_mib"), "GPU sample memory"):
+                raise T4CollectionError("GPU process memory aggregate is stale")
+            peaks.append(memory)
+    all_timestamps = [sample["timestamp_ns"] for sample in samples if isinstance(sample, Mapping)]
+    if len(all_timestamps) != len(samples) or any(
+        sample.get("phase") not in {"mapping", "queries"}
+        for sample in samples if isinstance(sample, Mapping)
+    ):
+        raise T4CollectionError("GPU sample phase inventory is not exact")
+    if all_timestamps != sorted(set(all_timestamps)):
+        raise T4CollectionError("GPU sample timestamps are not globally monotonic")
+    pgids = [identities[phase][1] for phase in ("mapping", "queries")]
+    if gpu.get("process_group_ids", sorted(set(pgids))) != sorted(set(pgids)):
+        raise T4CollectionError("GPU process-group inventory is stale")
+    if gpu.get("process_group_id") != min(pgids):
+        raise T4CollectionError("GPU primary process group is stale")
+    return gpu.get("process_group_id"), peaks
 
 
 def measure_t4(request: Mapping[str, object]) -> dict[str, Any]:
@@ -540,42 +852,7 @@ def measure_t4(request: Mapping[str, object]) -> dict[str, Any]:
         raise T4CollectionError("processed-frame count is invalid")
     elapsed, peak_ram = parse_time_v(Path(request["time_log"]))
     gpu, _ = _json(Path(request["gpu_samples"]), "gpu samples")
-    if gpu.get("sample_interval_ms") != 200 or not isinstance(gpu.get("samples"), list) or not gpu["samples"]:
-        raise T4CollectionError("GPU samples violate the 200 ms protocol")
-    pgid = gpu.get("process_group_id")
-    permitted_pgids = set(gpu.get("process_group_ids", [pgid]))
-    peaks = []
-    phases = set()
-    for sample in gpu["samples"]:
-        if not isinstance(sample, Mapping) or sample.get("process_group_id") not in permitted_pgids:
-            raise T4CollectionError("GPU samples are not PID/process-group bound")
-        if isinstance(sample.get("pid"), bool) or not isinstance(sample.get("pid"), int):
-            raise T4CollectionError("GPU sample PID is invalid")
-        sample_memory = _nonnegative(sample.get("used_memory_mib"), "GPU sample memory")
-        processes = sample.get("processes")
-        if not isinstance(processes, list) or not processes:
-            raise T4CollectionError("GPU sample process inventory is missing")
-        process_memory = 0.0
-        for process in processes:
-            if not isinstance(process, Mapping) or set(process) != {
-                "gpu_uuid", "pid", "proc_starttime_ticks", "process_group_id", "used_memory_mib"
-            }:
-                raise T4CollectionError("GPU process identity schema is invalid")
-            if (
-                not isinstance(process.get("gpu_uuid"), str) or not process["gpu_uuid"]
-                or isinstance(process.get("pid"), bool) or not isinstance(process.get("pid"), int) or process["pid"] <= 0
-                or isinstance(process.get("proc_starttime_ticks"), bool)
-                or not isinstance(process.get("proc_starttime_ticks"), int) or process["proc_starttime_ticks"] <= 0
-                or process.get("process_group_id") != sample.get("process_group_id")
-            ):
-                raise T4CollectionError("GPU process identity is invalid")
-            process_memory += _nonnegative(process.get("used_memory_mib"), "GPU process memory")
-        if process_memory != sample_memory:
-            raise T4CollectionError("GPU process memory aggregate is stale")
-        peaks.append(sample_memory)
-        phases.add(sample.get("phase"))
-    if not {"mapping", "queries"} <= phases:
-        raise T4CollectionError("GPU samples must cover mapping and queries")
+    pgid, peaks = _validate_gpu_evidence(gpu)
     query, _ = _json(Path(request["query_measurements"]), "query measurements")
     latencies = query.get("latencies_ms")
     if not isinstance(latencies, list) or not latencies:
@@ -594,8 +871,6 @@ def measure_t4(request: Mapping[str, object]) -> dict[str, Any]:
     if query.get("query_protocol") != _record(Path(request["protocol"])):
         raise T4CollectionError("query measurements use a different frozen protocol")
     output = Path(request["output"]).absolute()
-    if output.exists() or output.is_symlink():
-        raise FileExistsError(output)
     supplied_inventory = request.get("final_map_inventory")
     final_files = _resolve_final_map(actual_runner, actual_runner_path.parent)
     expected_inventory = build_final_map_inventory(actual_runner_path.parent, final_files)
@@ -675,36 +950,93 @@ def _gpu_rows(gpu: str) -> list[dict[str, object]]:
     return rows
 
 
-def _run_sampled(argv: Sequence[str], *, gpu: str, phase: str, time_log: Path | None = None) -> tuple[int, list[dict[str, object]]]:
+def _process_group_exists(pgid: int) -> bool:
+    try:
+        os.killpg(pgid, 0)
+    except ProcessLookupError:
+        return False
+    return True
+
+
+def _terminate_process_group(process: subprocess.Popen[Any], pgid: int) -> None:
+    try:
+        os.killpg(pgid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    if process.poll() is None:
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            pass
+    deadline = time.monotonic() + 5.0
+    while _process_group_exists(pgid) and time.monotonic() < deadline:
+        time.sleep(0.05)
+    if _process_group_exists(pgid):
+        try:
+            os.killpg(pgid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+    if process.poll() is None:
+        process.wait()
+
+
+def _run_sampled(
+    argv: Sequence[str], *, gpu: str, phase: str, time_log: Path | None = None
+) -> tuple[int, list[dict[str, object]], list[dict[str, object]]]:
     command = [str(_TIME), "-v", "-o", str(time_log), *argv] if time_log else list(argv)
-    process = subprocess.Popen(command, start_new_session=True)
-    pgid = os.getpgid(process.pid)
-    samples: list[dict[str, object]] = []
-    while process.poll() is None:
-        iteration_started = time.monotonic()
-        rows = [row for row in _gpu_rows(gpu) if row["process_group_id"] == pgid]
-        if rows:
+    process = subprocess.Popen(command, start_new_session=True, cwd=REPO_ROOT)
+    # start_new_session makes the child PID the process-group ID before exec.
+    pgid = process.pid
+    try:
+        starttime = _proc_starttime(process.pid)
+        events = [{
+            "phase": phase, "event": "start", "timestamp_ns": time.time_ns(),
+            "pid": process.pid, "process_group_id": pgid,
+            "proc_starttime_ticks": starttime,
+        }]
+        samples: list[dict[str, object]] = []
+        while process.poll() is None:
+            iteration_started = time.monotonic()
+            rows = [row for row in _gpu_rows(gpu) if row["process_group_id"] == pgid]
             samples.append({
                 "timestamp_ns": time.time_ns(), "phase": phase, "pid": process.pid,
                 "process_group_id": pgid, "used_memory_mib": sum(float(row["used_memory_mib"]) for row in rows),
                 "processes": rows,
             })
-        time.sleep(max(0.0, 0.2 - (time.monotonic() - iteration_started)))
-    return process.returncode, samples
+            # Leave headroom for scheduler jitter while enforcing a 200 ms maximum gap.
+            time.sleep(max(0.0, 0.18 - (time.monotonic() - iteration_started)))
+        process.wait()
+        final_timestamp = time.time_ns()
+        if not samples or samples[-1]["timestamp_ns"] < final_timestamp:
+            samples.append({
+                "timestamp_ns": final_timestamp, "phase": phase, "pid": process.pid,
+                "process_group_id": pgid, "used_memory_mib": 0.0, "processes": [],
+        })
+        if _process_group_exists(pgid):
+            raise T4CollectionError(f"{phase} process group remained alive after leader exit")
+        events.append({
+            "phase": phase, "event": "end",
+            "timestamp_ns": max(time.time_ns(), final_timestamp + 1),
+            "pid": process.pid, "process_group_id": pgid,
+            "proc_starttime_ticks": starttime,
+        })
+        return process.returncode, samples, events
+    except BaseException:
+        _terminate_process_group(process, pgid)
+        raise
 
 
-def collect_shortlist(protocol_path: Path, shortlist_path: Path, gpu: str, output: Path) -> list[Path]:
+def _collect_shortlist_unpublished(
+    protocol_path: Path, shortlist_path: Path, gpu: str, output: Path
+) -> list[Path]:
     protocol, _ = _json(protocol_path, "T4 protocol")
     _validate_protocol(protocol, protocol_path)
     shortlist, _ = _json(shortlist_path, "shortlist")
-    if output.exists() or output.is_symlink():
-        raise FileExistsError(output)
     if shortlist.get("office_results_read") not in (None, False) or shortlist.get("scenes_read") not in (None, ["apartment"]):
         raise T4CollectionError("Office evidence is forbidden")
     candidates = shortlist.get("shortlisted_candidates")
     if not isinstance(candidates, list) or not candidates:
         raise T4CollectionError("shortlist contains no candidates")
-    output.mkdir(parents=True)
     evidence_paths = []
     for candidate in candidates:
         if not isinstance(candidate, Mapping):
@@ -740,9 +1072,20 @@ def collect_shortlist(protocol_path: Path, shortlist_path: Path, gpu: str, outpu
         query_template = protocol.get("query_argv")
         if not isinstance(mapping_template, list) or not isinstance(query_template, list):
             raise T4CollectionError("protocol command templates are invalid")
-        replacements = {"{config}": config_record["path"], "{run}": str(run_root), "{gpu}": gpu, "{protocol}": str(protocol_path), "{query_output}": str(candidate_root / "query.json")}
-        expand = lambda values: [replacements.get(str(value), str(value)) for value in values]
-        code, mapping_samples = _run_sampled(expand(mapping_template), gpu=gpu, phase="mapping", time_log=candidate_root / "time.txt")
+        repo_root = REPO_ROOT
+        replacements = {
+            "{python}": str(Path(sys.executable).resolve()), "{repo_root}": str(repo_root),
+            "{config}": config_record["path"], "{run}": str(run_root), "{gpu}": gpu,
+            "{protocol}": str(protocol_path), "{query_output}": str(candidate_root / "query.json"),
+        }
+        def expand(values: Sequence[object]) -> list[str]:
+            return [
+                replacements.get(str(value), str(value).replace("{repo_root}", str(repo_root)))
+                for value in values
+            ]
+        code, mapping_samples, mapping_events = _run_sampled(
+            expand(mapping_template), gpu=gpu, phase="mapping", time_log=candidate_root / "time.txt"
+        )
         if code:
             raise subprocess.CalledProcessError(code, expand(mapping_template))
         runner_manifest_path = run_root / "run_manifest.json"
@@ -755,7 +1098,9 @@ def collect_shortlist(protocol_path: Path, shortlist_path: Path, gpu: str, outpu
             "{queries}": str((Path(__file__).resolve().parents[2] / vocabulary).absolute()),
             "{checkpoint}": checkpoint,
         })
-        code, query_samples = _run_sampled(expand(query_template), gpu=gpu, phase="queries")
+        code, query_samples, query_events = _run_sampled(
+            expand(query_template), gpu=gpu, phase="queries"
+        )
         if code:
             raise subprocess.CalledProcessError(code, expand(query_template))
         all_samples = mapping_samples + query_samples
@@ -763,7 +1108,11 @@ def collect_shortlist(protocol_path: Path, shortlist_path: Path, gpu: str, outpu
             raise T4CollectionError("no PID-bound GPU samples collected")
         pgids = {sample["process_group_id"] for sample in all_samples}
         gpu_path = candidate_root / "gpu.json"
-        _write_new(gpu_path, {"sample_interval_ms": 200, "process_group_id": min(pgids), "process_group_ids": sorted(pgids), "samples": all_samples})
+        _write_new(gpu_path, {
+            "sample_interval_ms": 200, "process_group_id": min(pgids),
+            "process_group_ids": sorted(pgids),
+            "phase_events": [*mapping_events, *query_events], "samples": all_samples,
+        })
         wrapper_path = candidate_root / "measurement-run.json"
         wrapper = {
             "schema_version": 1, "manifest_id": "oviv2_tesse_t4_measurement_run_v1",
@@ -790,6 +1139,120 @@ def collect_shortlist(protocol_path: Path, shortlist_path: Path, gpu: str, outpu
         })
         evidence_paths.append(evidence_path)
     return evidence_paths
+
+
+def _rebase_candidate(candidate_root: Path, staging: Path, destination: Path) -> None:
+    def final_path(path: str) -> str:
+        source = Path(path)
+        try:
+            relative = source.relative_to(staging)
+        except ValueError:
+            return path
+        return str(destination / relative)
+
+    inventory_path = candidate_root / "final-map-inventory.json"
+    inventory, _ = _json(inventory_path, "staged final map inventory")
+    for item in inventory["files"]:
+        item["path"] = final_path(item["path"])
+    _replace_staged(inventory_path, inventory)
+
+    query_path = candidate_root / "query.json"
+    query, _ = _json(query_path, "staged query measurements")
+    for role in ("snapshot", "entities"):
+        query["sources"][role]["path"] = final_path(query["sources"][role]["path"])
+    _replace_staged(query_path, query)
+
+    wrapper_path = candidate_root / "measurement-run.json"
+    wrapper, _ = _json(wrapper_path, "staged measurement run")
+    final_candidate = destination / candidate_root.relative_to(staging)
+    staged_files = {
+        "runner_manifest": candidate_root / "run" / "run_manifest.json",
+        "time_log": candidate_root / "time.txt",
+        "gpu_samples": candidate_root / "gpu.json",
+        "query_measurements": query_path,
+        "final_map_inventory": inventory_path,
+    }
+    for role, staged_path in staged_files.items():
+        wrapper[role] = _record(staged_path)
+        wrapper[role]["path"] = str(final_candidate / staged_path.relative_to(candidate_root))
+    _replace_staged(wrapper_path, wrapper)
+
+    evidence_path = candidate_root / "evidence.json"
+    evidence, _ = _json(evidence_path, "staged T4 evidence")
+    evidence_files = {
+        "run_manifest": wrapper_path,
+        "time_log": candidate_root / "time.txt",
+        "gpu_samples": candidate_root / "gpu.json",
+        "query_measurements": query_path,
+        "final_map_inventory": inventory_path,
+    }
+    for role, staged_path in evidence_files.items():
+        record = _record(staged_path)
+        record["path"] = str(final_candidate / staged_path.relative_to(candidate_root))
+        evidence["sources"][role] = record
+        evidence["sources"][f"{role}_sha256"] = record["sha256"]
+    _replace_staged(evidence_path, evidence)
+
+
+def collect_shortlist(
+    protocol_path: Path, shortlist_path: Path, gpu: str, output: Path
+) -> list[Path]:
+    destination = output.absolute()
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    for component in (destination.parent, *destination.parent.parents):
+        if stat.S_ISLNK(os.lstat(component).st_mode):
+            raise T4CollectionError("T4 output parent contains a symlink")
+    if destination.exists() or destination.is_symlink():
+        raise FileExistsError(destination)
+    staging = destination.with_name(
+        f".{destination.name}.staging-{os.getpid()}-{time.time_ns()}"
+    )
+    publication_directory = os.open(
+        destination.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+    )
+    os.mkdir(staging.name, dir_fd=publication_directory)
+    status = os.stat(staging.name, dir_fd=publication_directory, follow_symlinks=False)
+    owned_witness = (status.st_dev, status.st_ino)
+    staging_directory = os.open(
+        staging.name,
+        os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
+        dir_fd=publication_directory,
+    )
+    stable_staging = Path(f"/proc/self/fd/{staging_directory}")
+    published = False
+    try:
+        if not _parent_matches(destination.parent, publication_directory):
+            raise T4CollectionError("T4 output parent changed before collection")
+        trusted_token = _TRUSTED_FD_ROOTS.set((stable_staging,))
+        try:
+            staged_paths = _collect_shortlist_unpublished(
+                protocol_path, shortlist_path, gpu, stable_staging
+            )
+            for staged_path in staged_paths:
+                _rebase_candidate(staged_path.parent, stable_staging, destination)
+        finally:
+            _TRUSTED_FD_ROOTS.reset(trusted_token)
+        os.fsync(staging_directory)
+        if not _parent_matches(destination.parent, publication_directory):
+            raise T4CollectionError("T4 output parent changed during collection")
+        owned_witness = _rename_directory_new(
+            staging, destination, parent_fd=publication_directory
+        )
+        published = True
+        if not _parent_matches(destination.parent, publication_directory):
+            raise T4CollectionError("T4 output parent changed during publication")
+        return [destination / path.relative_to(stable_staging) for path in staged_paths]
+    except BaseException:
+        _remove_owned(
+            publication_directory,
+            destination.name if published else staging.name,
+            owned_witness,
+            tree=True,
+        )
+        raise
+    finally:
+        os.close(staging_directory)
+        os.close(publication_directory)
 
 
 def main(argv: Sequence[str] | None = None) -> int:

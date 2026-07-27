@@ -388,6 +388,12 @@ V2_T4_METRIC_KEYS = frozenset(
         "final_map_mb",
     }
 )
+V2_T4_RAW_SOURCE_KEYS = frozenset(
+    {
+        "config", "run_manifest", "time_log", "gpu_samples", "query_measurements",
+        "final_map_inventory", "protocol", "shortlist",
+    }
+)
 V2_T4_BOUNDS = {
     "total_runtime_s_per_frame": 6.42,
     "query_mean_ms": 11.92,
@@ -1264,7 +1270,7 @@ def _validate_frozen_evidence(
                 if not isinstance(matrix_row, Mapping) or not (
                     isinstance(protocol_row, Mapping)
                     and set(protocol_row) == {
-                        "config_sha256", "run_manifest", "metric_sources"
+                        "config_sha256", "run_manifest", "metric_sources", "raw_sources"
                     }
                     and protocol_row.get("config_sha256")
                     == matrix_row.get("config_sha256")
@@ -1294,6 +1300,33 @@ def _validate_frozen_evidence(
                 ):
                     raise ValueError("frozen T4 whole-profile run binding is invalid")
                 seen_sources.add(run_path)
+                raw_sources = protocol_row.get("raw_sources")
+                if not isinstance(raw_sources, Mapping) or set(raw_sources) != (
+                    V2_T4_RAW_SOURCE_KEYS
+                    | {f"{name}_sha256" for name in V2_T4_RAW_SOURCE_KEYS}
+                ):
+                    raise ValueError("frozen T4 raw source inventory is invalid")
+                if raw_sources.get("run_manifest") != protocol_row.get("run_manifest"):
+                    raise ValueError("frozen T4 raw run manifest binding is invalid")
+                if raw_sources.get("shortlist") != payload.get("shortlist"):
+                    raise ValueError("frozen T4 raw shortlist binding is invalid")
+                for raw_name in sorted(V2_T4_RAW_SOURCE_KEYS):
+                    source_record = raw_sources.get(raw_name)
+                    if not isinstance(source_record, Mapping):
+                        raise ValueError("frozen T4 raw source record is invalid")
+                    raw_path = _binding_path(
+                        source_record.get("path"),
+                        base=manifest_base,
+                        role=f"T4 {candidate} raw {raw_name}",
+                    )
+                    normalized_raw = _verify_exact_frozen_file_binding(
+                        source_record,
+                        base=manifest_base,
+                        role=f"T4 {candidate} raw {raw_name}",
+                        expected_path=raw_path,
+                    )
+                    if raw_sources.get(f"{raw_name}_sha256") != normalized_raw["sha256"]:
+                        raise ValueError("frozen T4 raw source flat hash is invalid")
                 metric_sources = protocol_row.get("metric_sources")
                 if not isinstance(metric_sources, Mapping) or set(metric_sources) != V2_T4_METRIC_KEYS:
                     raise ValueError("frozen T4 metric source inventory is invalid")

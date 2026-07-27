@@ -2361,6 +2361,17 @@ def _formal_fixture(
             },
         )
         metric_sources[key] = _record(source)
+    raw_records = {
+        name: (_record(shortlist) if name == "shortlist" else _record(t4_run))
+        for name in (
+            "config", "run_manifest", "time_log", "gpu_samples",
+            "query_measurements", "final_map_inventory", "protocol", "shortlist",
+        )
+    }
+    raw_sources = {
+        **raw_records,
+        **{f"{name}_sha256": record["sha256"] for name, record in raw_records.items()},
+    }
     _write_json(
         protocol,
         {
@@ -2383,6 +2394,7 @@ def _formal_fixture(
                     "config_sha256": selected_config_sha256,
                     "run_manifest": _record(t4_run),
                     "metric_sources": metric_sources,
+                    "raw_sources": raw_sources,
                 }
             },
         },

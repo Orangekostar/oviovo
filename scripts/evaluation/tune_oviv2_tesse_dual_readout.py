@@ -46,6 +46,10 @@ _T4_BOUNDS = {
     "peak_ram_gb": 9.36,
     "final_map_mb": 46.77,
 }
+_T4_RAW_SOURCE_NAMES = {
+    "config", "run_manifest", "time_log", "gpu_samples", "query_measurements",
+    "final_map_inventory", "protocol", "shortlist",
+}
 _MAX_MANIFEST_BYTES = 1024 * 1024
 _MAX_RESULT_BYTES = 4 * 1024 * 1024
 _MAX_SELECTION_BYTES = 4 * 1024 * 1024
@@ -685,7 +689,7 @@ def tune_final(
         seen_run_manifests.add(run_hash)
         protocol_row = _exact_keys(
             protocol_candidates[candidate_id],
-            {"config_sha256", "run_manifest", "metric_sources"},
+            {"config_sha256", "run_manifest", "metric_sources", "raw_sources"},
             f"T4 protocol candidate {candidate_id}",
         )
         if protocol_row["config_sha256"] != row["config_sha256"]:
@@ -710,6 +714,24 @@ def tune_final(
         ):
             raise ValueError(f"T4 run manifest scope mismatch for {candidate_id}")
         source_witnesses.append((run_path, run_bytes, f"T4 run manifest {candidate_id}"))
+        raw_sources = _exact_keys(
+            protocol_row["raw_sources"],
+            _T4_RAW_SOURCE_NAMES | {f"{name}_sha256" for name in _T4_RAW_SOURCE_NAMES},
+            f"T4 raw sources {candidate_id}",
+        )
+        if raw_sources["run_manifest"] != protocol_row["run_manifest"]:
+            raise ValueError(f"T4 raw run manifest binding mismatch for {candidate_id}")
+        if raw_sources["shortlist"] != matrix["shortlist"]:
+            raise ValueError(f"T4 raw shortlist binding mismatch for {candidate_id}")
+        for raw_name in sorted(_T4_RAW_SOURCE_NAMES):
+            raw_path, raw_bytes = _source_binding(
+                raw_sources[raw_name], f"T4 raw {candidate_id} {raw_name}"
+            )
+            if raw_sources[f"{raw_name}_sha256"] != raw_sources[raw_name]["sha256"]:
+                raise ValueError(f"T4 raw {raw_name} flat hash mismatch for {candidate_id}")
+            source_witnesses.append(
+                (raw_path, raw_bytes, f"T4 raw {candidate_id} {raw_name}")
+            )
         metrics = _exact_keys(row["metrics"], set(_T4_BOUNDS), f"T4 metrics {candidate_id}")
         gates = _exact_keys(row["gates"], set(_T4_BOUNDS), f"T4 gates {candidate_id}")
         metric_sources = _exact_keys(
