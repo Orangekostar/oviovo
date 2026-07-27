@@ -64,6 +64,8 @@ def _causal_fixture(root: Path) -> tuple[dict[str, Any], dict[str, Any], dict[st
         json.dumps({"frame_index": frame, "timestamp_ns": 100 + frame}, sort_keys=True, separators=(",", ":")) + "\n"
         for frame in range(5)
     ))
+    lifecycle = root / "lifecycle_transitions.jsonl"
+    lifecycle.write_text('{"entity_id":1,"frame_index":1,"timestamp_ns":101}\n')
     frontend = root / "frontend"
     dense = root / "dense"
     frontend.mkdir(); dense.mkdir()
@@ -95,6 +97,33 @@ def _causal_fixture(root: Path) -> tuple[dict[str, Any], dict[str, Any], dict[st
         "timestamp_ns": 104, "event_ids": [], "roles": ["occlusion_v1"],
         "consumed_through_frame": 4, "consumed_through_frame_exclusive": 5,
     })
+    official_status = _write_json(root / "checkpoints/00000001-101/checkpoint_status.json", {
+        "schema_version": 1, "status": "PASS", "checkpoint_frame": 1,
+        "timestamp_ns": 101, "event_ids": ["official"], "roles": ["official_v1"],
+        "consumed_through_frame": 1, "consumed_through_frame_exclusive": 2,
+    })
+    official_snapshot = root / "checkpoints/00000001-101/neutral_snapshot.npz"
+    official_snapshot.write_bytes(b"official-snapshot")
+    official_entities = root / "checkpoints/00000001-101/neutral_entities.jsonl"
+    official_entities.write_bytes(b'{"entity_id":1}\n')
+    schedule_copy = root / "inputs/schedule.json"
+    schedule_copy.parent.mkdir()
+    schedule_copy.write_bytes(b"x")
+    schedule_record = _record(schedule_copy, root)
+    official_source = {"frame_index": 1, "timestamp_ns": 101,
+        "consumed_through_frame": 1, "consumed_through_frame_exclusive": 2,
+        "checkpoint_status": _record(official_status, root),
+        "snapshot": _record(official_snapshot, root),
+        "entities": _record(official_entities, root)}
+    capture_status = _write_json(root / "capture_status.json", {
+        "schema_version": 1, "status": "PASS", "scene": "apartment",
+        "mode": "causal_checkpoints", "scheduled_frame_indices": [1],
+        "captured_frame_indices": [1], "schedule": schedule_record,
+        "trajectories": _record(trajectories, root),
+        "frame_coverage": _record(coverage, root),
+        "lifecycle_transitions": _record(lifecycle, root),
+        "checkpoint_statuses": [official_source["checkpoint_status"]],
+    })
     compact = root / "checkpoints/00000004-104/temporal_compact"
     metadata = _write_json(compact / "metadata.json", {
         "frame_id": 4, "revision": 5, "timestamp": 104 / 1e9,
@@ -109,15 +138,15 @@ def _causal_fixture(root: Path) -> tuple[dict[str, Any], dict[str, Any], dict[st
         "schema_version": 1, "dataset": "TESSE-CD", "mode": "causal_checkpoint_exports",
         "method": "OVIV2", "scene": "apartment", "frame_coverage": _record(coverage, root),
         "trajectories": _record(trajectories, root),
-        "checkpoints": [{"frame_index": 4, "timestamp_ns": 104,
-            "consumed_through_frame": 4, "consumed_through_frame_exclusive": 5,
-            "checkpoint_status": _record(status, root)}],
+        "lifecycle_transitions": _record(lifecycle, root),
+        "schedule": schedule_record, "capture_status": _record(capture_status, root),
+        "checkpoints": [official_source],
     }
     _write_json(source_index_path, source_index)
     checkpoint_index: dict[str, Any] = {
         "schema_version": 1, "format": "oviv2_temporal_compact_v1", "protocol_id": "oviv2-tessecd-v2",
         "dataset": "TESSE-CD", "method_id": "OVIV2", "scene": "apartment", "algorithm_hash": "a" * 64,
-        "schedule": {"sha256": "b" * 64, "byte_count": 1}, "target_manifest": {"sha256": "c" * 64, "byte_count": 1},
+        "schedule": {"sha256": schedule_record["sha256"], "byte_count": 1}, "target_manifest": {"sha256": "c" * 64, "byte_count": 1},
         "input_sha256": "d" * 64, "code_commit": "e" * 40, "source_bindings": source_bindings,
         "checkpoints": [{"scene": "apartment", "frame_index": 4, "timestamp_ns": 104,
             "relative_timestamp_ns": 4, "consumed_through_frame": 4,
@@ -129,13 +158,18 @@ def _causal_fixture(root: Path) -> tuple[dict[str, Any], dict[str, Any], dict[st
     checkpoint_path = _write_json(root / "occlusion_checkpoint_index.json", checkpoint_index)
     run: dict[str, Any] = {
         "processed_frame_count": 5, "covered_frame_count": 5, "first_frame_index": 0,
-        "last_frame_index": 4, "scheduled_frame_indices": [4], "captured_frame_indices": [4],
+        "last_frame_index": 4, "scheduled_frame_indices": [1, 4], "captured_frame_indices": [1, 4],
         "algorithm_hash": "a" * 64, "schedule": checkpoint_index["schedule"],
         "target_manifest": checkpoint_index["target_manifest"], "input_sha256": "d" * 64,
         "code_commit": "e" * 40, "source_bindings": source_bindings,
         "normalized_run_config": _record(config, root), "source_index": _record(source_index_path, root),
         "occlusion_checkpoint_index": _record(checkpoint_path, root),
-        "checkpoints": [{"frame_index": 4, "timestamp_ns": 104,
+        "checkpoints": [{"frame_index": 1, "timestamp_ns": 101,
+            "consumed_through_frame": 1, "consumed_through_frame_exclusive": 2,
+            "checkpoint_status": _record(official_status, root),
+            "neutral_snapshot": _record(official_snapshot, root),
+            "neutral_entities": _record(official_entities, root)},
+            {"frame_index": 4, "timestamp_ns": 104,
             "consumed_through_frame": 4, "consumed_through_frame_exclusive": 5,
             "checkpoint_status": _record(status, root), "artifacts": {
                 "temporal_compact": {"artifact": _tree_record(compact, root),
@@ -238,9 +272,10 @@ def test_future_leakage_accepts_distinct_evaluation_schedule_and_official_invent
     tmp_path: Path,
 ) -> None:
     run, source_index, checkpoint_index = _causal_fixture(tmp_path)
-    run["scheduled_frame_indices"] = [1, 2, 3, 4]
-    run["captured_frame_indices"] = [1, 2, 3, 4]
-    source_index["checkpoints"] = []
+
+    assert [item["frame_index"] for item in checkpoint_index["checkpoints"]] == [4]
+    assert [item["frame_index"] for item in source_index["checkpoints"]] == [1]
+    assert [item["frame_index"] for item in run["checkpoints"]] == [1, 4]
 
     result = _audit_future_leakage(
         candidate_id="a4", run_root=tmp_path, run=run,
@@ -248,6 +283,39 @@ def test_future_leakage_accepts_distinct_evaluation_schedule_and_official_invent
     )
 
     assert result["records"] == []
+
+
+@pytest.mark.parametrize(
+    "violation",
+    (
+        "empty_official", "missing_official_snapshot", "official_sidecar_tamper",
+        "run_union_gap", "schedule_union_gap",
+    ),
+)
+def test_future_leakage_rejects_incomplete_three_inventory_transaction(
+    tmp_path: Path, violation: str,
+) -> None:
+    run, source_index, checkpoint_index = _causal_fixture(tmp_path)
+    if violation == "empty_official":
+        source_index["checkpoints"] = []
+        run["checkpoints"] = run["checkpoints"][1:]
+        run["scheduled_frame_indices"] = [4]
+        run["captured_frame_indices"] = [4]
+    elif violation == "missing_official_snapshot":
+        source_index["checkpoints"][0].pop("snapshot")
+    elif violation == "official_sidecar_tamper":
+        path = tmp_path / source_index["checkpoints"][0]["entities"]["path"]
+        path.write_bytes(b'{"entity_id":2}\n')
+    elif violation == "run_union_gap":
+        run["checkpoints"] = run["checkpoints"][1:]
+    else:
+        run["scheduled_frame_indices"] = [4]
+
+    with pytest.raises(ValueError, match="future leakage violation"):
+        _audit_future_leakage(
+            candidate_id="a4", run_root=tmp_path, run=run,
+            source_index=source_index, checkpoint_index=checkpoint_index,
+        )
 
 
 def test_audit_witnesses_retain_only_file_identity(tmp_path: Path) -> None:
@@ -263,6 +331,31 @@ def test_audit_witnesses_retain_only_file_identity(tmp_path: Path) -> None:
     assert snapshot.data == source.read_bytes()
     assert len(captured) == 1
     assert not hasattr(captured[0], "data")
+
+
+@pytest.mark.parametrize(
+    ("role", "renamed"),
+    (("frontend_manifest", "renamed_frontend.json"),
+     ("dense_manifest", "renamed_dense.json")),
+)
+def test_future_leakage_rejects_renamed_cache_manifest_with_updated_bindings(
+    tmp_path: Path, role: str, renamed: str,
+) -> None:
+    run, source_index, checkpoint_index = _causal_fixture(tmp_path)
+    config_path = tmp_path / run["normalized_run_config"]["path"]
+    config = json.loads(config_path.read_text())
+    original = Path(config[role])
+    replacement = original.with_name(renamed)
+    original.rename(replacement)
+    config[role] = str(replacement)
+    _write_json(config_path, config)
+    run["normalized_run_config"] = _record(config_path, tmp_path)
+
+    with pytest.raises(ValueError, match=role):
+        _audit_future_leakage(
+            candidate_id="a4", run_root=tmp_path, run=run,
+            source_index=source_index, checkpoint_index=checkpoint_index,
+        )
 
 
 def test_development_source_witness_rejects_protected_or_commit_drift(
@@ -313,6 +406,100 @@ def test_staging_tree_witness_rejects_member_rewrite(tmp_path: Path) -> None:
         os.close(descriptor)
 
 
+def test_fd_relative_tree_stays_on_owned_inode_after_stage_name_swap(
+    tmp_path: Path,
+) -> None:
+    stage = tmp_path / ".bundle.staging"
+    stage.mkdir()
+    descriptor = os.open(stage, os.O_RDONLY | os.O_DIRECTORY)
+    parent_fd = os.open(tmp_path, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        module._write_bytes_at(descriptor, Path("owned/data.bin"), b"owned")
+        witness = module._StagingTreeWitness.capture_at(
+            descriptor, parent_fd, stage.name
+        )
+        stage.rename(tmp_path / ".owned-preserved")
+        stage.mkdir()
+        (stage / "attacker").write_bytes(b"attacker")
+
+        inventory, _ = module._root_inventory_at(descriptor)
+        assert [item["path"] for item in inventory] == ["owned/data.bin"]
+        assert module._read_bytes_at(
+            descriptor, Path("owned/data.bin"), "owned member"
+        ) == b"owned"
+        with pytest.raises(ValueError, match="staged bundle changed"):
+            witness.revalidate()
+    finally:
+        os.close(parent_fd)
+        os.close(descriptor)
+
+
+def test_fd_relative_write_handles_partial_os_write(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    descriptor = os.open(tmp_path, os.O_RDONLY | os.O_DIRECTORY)
+    real_write = module.os.write
+    try:
+        monkeypatch.setattr(
+            module.os, "write",
+            lambda fd, data: real_write(fd, data[: max(1, len(data) // 3)]),
+        )
+        module._write_bytes_at(descriptor, Path("partial.bin"), b"0123456789")
+    finally:
+        os.close(descriptor)
+    assert (tmp_path / "partial.bin").read_bytes() == b"0123456789"
+
+
+def test_fd_relative_write_holds_parent_directory_across_file_open(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root = tmp_path / "root"
+    root.mkdir()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    displaced = tmp_path / "displaced"
+    original_open_directory = module._open_directory_at
+    swapped = False
+
+    def swap_parent(root_fd: int, relative: Path, *, create: bool) -> int:
+        nonlocal swapped
+        parent_fd = original_open_directory(root_fd, relative, create=create)
+        if create and relative == Path("candidate") and not swapped:
+            (root / "candidate").rename(displaced)
+            (root / "candidate").symlink_to(outside, target_is_directory=True)
+            swapped = True
+        return parent_fd
+
+    monkeypatch.setattr(module, "_open_directory_at", swap_parent)
+    baseline_fds = len(list(Path("/proc/self/fd").iterdir()))
+    descriptor = os.open(root, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        module._write_bytes_at(
+            descriptor, Path("candidate/result.json"), b'{"safe":true}\n'
+        )
+    finally:
+        os.close(descriptor)
+
+    assert swapped
+    assert not (outside / "result.json").exists()
+    assert not (root / "candidate/result.json").exists()
+    assert (displaced / "result.json").read_bytes() == b'{"safe":true}\n'
+    assert len(list(Path("/proc/self/fd").iterdir())) == baseline_fds
+
+
+def test_evaluator_input_witness_rejects_member_replacement(tmp_path: Path) -> None:
+    member = tmp_path / "depth.npy"
+    member.write_bytes(b"original")
+    witness = module._EvaluatorInputsWitness(
+        (module._FileWitness(member, module._identity(os.stat(member))),)
+    )
+    member.replace(tmp_path / "old-depth.npy")
+    member.write_bytes(b"replacement")
+
+    with pytest.raises(ValueError, match="evaluator input changed"):
+        witness.revalidate()
+
+
 @pytest.mark.parametrize(
     "violation",
     (
@@ -343,15 +530,13 @@ def test_future_leakage_audit_reports_deterministic_causal_detail(
         source_index["frame_coverage"] = _record(coverage_path, tmp_path)
     elif violation == "checkpoint_consumed_boundary":
         checkpoint_index["checkpoints"][0]["consumed_through_frame"] = 3
-        run["checkpoints"][0]["consumed_through_frame"] = 3
-        source_index["checkpoints"][0]["consumed_through_frame"] = 3
-        status_path = tmp_path / source_index["checkpoints"][0]["checkpoint_status"]["path"]
+        run["checkpoints"][1]["consumed_through_frame"] = 3
+        status_path = tmp_path / run["checkpoints"][1]["checkpoint_status"]["path"]
         status = json.loads(status_path.read_text())
         status["consumed_through_frame"] = 3
         _write_json(status_path, status)
         record = _record(status_path, tmp_path)
-        run["checkpoints"][0]["checkpoint_status"] = record
-        source_index["checkpoints"][0]["checkpoint_status"] = record
+        run["checkpoints"][1]["checkpoint_status"] = record
     elif violation.startswith("compact_"):
         metadata_path = tmp_path / "checkpoints/00000004-104/temporal_compact/metadata.json"
         metadata = json.loads(metadata_path.read_text())
@@ -367,7 +552,7 @@ def test_future_leakage_audit_reports_deterministic_causal_detail(
         digest = hashlib.sha256(checksums_path.read_bytes()).hexdigest()
         checkpoint_index["checkpoints"][0]["artifact"] = artifact
         checkpoint_index["checkpoints"][0]["checksums_sha256"] = digest
-        run["checkpoints"][0]["artifacts"]["temporal_compact"] = {
+        run["checkpoints"][1]["artifacts"]["temporal_compact"] = {
             "artifact": artifact, "checksums_sha256": digest,
         }
     else:
@@ -454,6 +639,8 @@ def test_builds_byte_identical_independent_a0_a4_bundle(
     base = _write_json(tmp_path / "base.json", {"scene": "apartment"})
     targets = _write_json(tmp_path / "targets.json", {"scene": "apartment"})
     dataset = tmp_path / "dataset"; dataset.mkdir()
+    dataset_member = dataset / "depth.npy"
+    dataset_member.write_bytes(b"dataset-original")
 
     monkeypatch.setattr(module, "verify_exact_profile_runs", lambda records: exact)
     monkeypatch.setattr(module, "_TRUSTED_SOURCE_MANIFEST", source_manifest)
@@ -463,28 +650,47 @@ def test_builds_byte_identical_independent_a0_a4_bundle(
             source_manifest, module._identity(os.stat(source_manifest))
         ),
     )
+    monkeypatch.setattr(
+        module, "_capture_evaluator_inputs",
+        lambda *args, **kwargs: module._EvaluatorInputsWitness((
+            module._FileWitness(
+                dataset_member, module._identity(os.stat(dataset_member))
+            ),
+        )),
+    )
     monkeypatch.setattr(module, "_materialize_config", lambda base, declaration: {"scene": "apartment", "algorithm_hash": "a" * 64})
     monkeypatch.setattr(module, "_audit_future_leakage", lambda **kwargs: {
         "schema_version": 1, "manifest_id": "oviv2_tesse_future_leakage_evidence_v1",
         "scene": "apartment", "candidate_id": kwargs["candidate_id"],
         "source_index": kwargs["run"]["source_index"], "records": [],
     })
-    def evaluate(*, output: Path, **_: object) -> dict[str, Any]:
+    def evaluate(*, output: Path | None, **_: object) -> dict[str, Any]:
+        assert output is None
         result = {"anchor_mappings": [], "macro": {"anchor_coverage_gate": {
             "eligible_count": 66, "uniquely_mapped_count": 53,
         }}}
-        _write_json(output, result)
         return result
     monkeypatch.setattr(module, "evaluate_temporal_occlusion_package", evaluate)
     monkeypatch.setattr(module, "_anchor_coverage", lambda result: {"eligible_count": 66, "mapped_count": 53})
-    def preflight(*, candidate_sources: Path, output: Path, **_: object) -> dict[str, Any]:
-        sources = json.loads(candidate_sources.read_text())
+    def preflight_at(
+        *, root_fd: int, candidate_sources: Path, output: Path, **_: object,
+    ) -> dict[str, Any]:
+        source_bytes = os.open(
+            candidate_sources.as_posix(), os.O_RDONLY, dir_fd=root_fd
+        )
+        try:
+            sources = json.loads(os.read(source_bytes, 1024 * 1024))
+        finally:
+            os.close(source_bytes)
         assert [item["candidate_id"] for item in sources["candidates"]] == list(selected)
         result = {"candidates": []}
-        _write_json(output, result)
+        module._write_json_at(root_fd, output, result)
         return result
-    monkeypatch.setattr(module, "build_preflight", preflight)
-    monkeypatch.setattr(module, "_validate_preflight_gate_evidence", lambda *args, **kwargs: {})
+    monkeypatch.setattr(module, "_build_preflight_at", preflight_at)
+    monkeypatch.setattr(
+        module, "_validate_preflight_gate_evidence_at",
+        lambda *args, **kwargs: {},
+    )
     monkeypatch.setattr(module, "_revalidate_preflight_witnesses", lambda record: None)
     output = tmp_path / "bundle"
 
@@ -502,6 +708,109 @@ def test_builds_byte_identical_independent_a0_a4_bundle(
     assert (output / "candidate_sources.json").is_file()
     assert (output / "preflight.json").is_file()
     assert (output / "publication_receipt.json").is_file()
+
+    for hook_name in ("builder", "validator"):
+        race_output = tmp_path / f"{hook_name}-stage-swap"
+        with monkeypatch.context() as patcher:
+            def swap_stage(root_fd: int) -> Path:
+                stage = Path(os.readlink(f"/proc/self/fd/{root_fd}"))
+                owned = stage.with_name(stage.name + ".owned")
+                stage.rename(owned)
+                stage.mkdir()
+                (stage / "competitor").write_bytes(b"untouched")
+                return owned
+            if hook_name == "builder":
+                def swap_in_builder(**call: object) -> dict[str, Any]:
+                    owned = swap_stage(int(call["root_fd"]))
+                    result = preflight_at(**call)
+                    assert (owned / "preflight.json").is_file()
+                    return result
+                patcher.setattr(module, "_build_preflight_at", swap_in_builder)
+            else:
+                def swap_in_validator(root_fd: int, *args: object, **kwargs: object) -> dict[str, Any]:
+                    owned = swap_stage(root_fd)
+                    assert (owned / "preflight.json").is_file()
+                    return {}
+                patcher.setattr(
+                    module, "_validate_preflight_gate_evidence_at",
+                    swap_in_validator,
+                )
+            with pytest.raises(module.PreflightPublicationUncertain) as raised:
+                build_preflight_sources(
+                    development_evidence=evidence, search_manifest=search,
+                    apartment_base_config=base, targets=targets,
+                    dataset_root=dataset, output=race_output,
+                )
+        assert raised.value.preserved[0].ownership == "owned"
+        assert raised.value.preserved[0].name.endswith(".owned")
+        assert not race_output.exists()
+
+    evaluator_parent = tmp_path / "evaluator-parent"
+    evaluator_parent.mkdir()
+    evaluator_parent_old = tmp_path / "evaluator-parent-old"
+    swapped_parent = False
+    with monkeypatch.context() as patcher:
+        def evaluate_then_swap_parent(**call: object) -> dict[str, Any]:
+            nonlocal swapped_parent
+            result = evaluate(**call)
+            if not swapped_parent:
+                evaluator_parent.rename(evaluator_parent_old)
+                evaluator_parent.mkdir()
+                swapped_parent = True
+            return result
+        patcher.setattr(
+            module, "evaluate_temporal_occlusion_package", evaluate_then_swap_parent
+        )
+        with pytest.raises(module.PreflightPublicationUncertain) as raised:
+            build_preflight_sources(
+                development_evidence=evidence, search_manifest=search,
+                apartment_base_config=base, targets=targets,
+                dataset_root=dataset, output=evaluator_parent / "bundle",
+            )
+    assert raised.value.preserved[0].ownership == "owned"
+    assert not (evaluator_parent / "bundle").exists()
+    assert any(evaluator_parent_old.glob(".bundle.staging-*"))
+
+    with monkeypatch.context() as patcher:
+        def evaluate_then_replace(**call: object) -> dict[str, Any]:
+            result = evaluate(**call)
+            dataset_member.replace(dataset / "old-depth.npy")
+            dataset_member.write_bytes(b"dataset-replacement")
+            return result
+        patcher.setattr(module, "evaluate_temporal_occlusion_package", evaluate_then_replace)
+        with pytest.raises(module.PreflightPublicationUncertain) as raised:
+            build_preflight_sources(
+                development_evidence=evidence, search_manifest=search,
+                apartment_base_config=base, targets=targets,
+                dataset_root=dataset, output=tmp_path / "dataset-replaced",
+            )
+        assert "evaluator input changed" in str(raised.value.__cause__)
+    dataset_member.write_bytes(b"dataset-original")
+
+    checkpoint_member = roots["a0"] / "records/coverage.jsonl"
+    checkpoint_member_old = roots["a0"] / "records/coverage-old.jsonl"
+    with monkeypatch.context() as patcher:
+        changed = False
+        def evaluate_then_replace_checkpoint(**call: object) -> dict[str, Any]:
+            nonlocal changed
+            result = evaluate(**call)
+            if not changed:
+                checkpoint_member.replace(checkpoint_member_old)
+                checkpoint_member.write_bytes(b"replacement-checkpoint-source")
+                changed = True
+            return result
+        patcher.setattr(
+            module, "evaluate_temporal_occlusion_package",
+            evaluate_then_replace_checkpoint,
+        )
+        with pytest.raises(module.PreflightPublicationUncertain):
+            build_preflight_sources(
+                development_evidence=evidence, search_manifest=search,
+                apartment_base_config=base, targets=targets,
+                dataset_root=dataset, output=tmp_path / "checkpoint-source-replaced",
+            )
+    checkpoint_member.unlink()
+    checkpoint_member_old.rename(checkpoint_member)
 
     kwargs = {
         "development_evidence": evidence, "search_manifest": search,
@@ -548,11 +857,48 @@ def test_builds_byte_identical_independent_a0_a4_bundle(
     with monkeypatch.context() as patcher:
         def collide(parent_fd: int, source: str, destination: str) -> None:
             os.mkdir(destination, dir_fd=parent_fd)
+            destination_fd = os.open(destination, os.O_RDONLY | os.O_DIRECTORY, dir_fd=parent_fd)
+            try:
+                marker_fd = os.open(
+                    "competitor", os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+                    0o600, dir_fd=destination_fd,
+                )
+                os.write(marker_fd, b"untouched")
+                os.close(marker_fd)
+            finally:
+                os.close(destination_fd)
             raise FileExistsError(destination)
         patcher.setattr(module, "_rename_noreplace", collide)
-        with pytest.raises(FileExistsError):
+        with pytest.raises(module.PreflightPublicationUncertain) as raised:
             build_preflight_sources(**kwargs, output=collision)
     assert collision.is_dir()
+    assert (collision / "competitor").read_bytes() == b"untouched"
+    assert raised.value.preserved[0].ownership == "owned"
+    assert Path(raised.value.preserved[0].logical_path).is_dir()
+    assert len(list(Path("/proc/self/fd").iterdir())) == baseline_fds
+
+    rename_member = tmp_path / "rename-member-tamper"
+    with monkeypatch.context() as patcher:
+        real_rename = module._rename_noreplace
+        def tamper_during_rename(parent_fd: int, source: str, destination: str) -> None:
+            source_fd = os.open(source, os.O_RDONLY | os.O_DIRECTORY, dir_fd=parent_fd)
+            try:
+                member_fd = os.open(
+                    "preflight.json", os.O_WRONLY | os.O_TRUNC, dir_fd=source_fd
+                )
+                try:
+                    os.write(member_fd, b'{"tampered":true}\n')
+                    os.fsync(member_fd)
+                finally:
+                    os.close(member_fd)
+            finally:
+                os.close(source_fd)
+            real_rename(parent_fd, source, destination)
+        patcher.setattr(module, "_rename_noreplace", tamper_during_rename)
+        with pytest.raises(module.PreflightPublicationUncertain) as raised:
+            build_preflight_sources(**kwargs, output=rename_member)
+    assert rename_member.is_dir()
+    assert raised.value.preserved[0].ownership == "owned"
     assert len(list(Path("/proc/self/fd").iterdir())) == baseline_fds
 
     post_rename = tmp_path / "post-rename-fsync"
@@ -574,4 +920,21 @@ def test_builds_byte_identical_independent_a0_a4_bundle(
         assert raised.value.preserved[0].logical_path == str(post_rename)
         assert raised.value.preserved[0].ownership == "owned"
     assert post_rename.is_dir()
+    assert len(list(Path("/proc/self/fd").iterdir())) == baseline_fds
+
+    parent_swap = tmp_path / "rename-parent"
+    parent_swap.mkdir()
+    parent_swap_old = tmp_path / "rename-parent-old"
+    with monkeypatch.context() as patcher:
+        real_rename = module._rename_noreplace
+        def rename_then_swap_parent(parent_fd: int, source: str, destination: str) -> None:
+            real_rename(parent_fd, source, destination)
+            parent_swap.rename(parent_swap_old)
+            parent_swap.mkdir()
+        patcher.setattr(module, "_rename_noreplace", rename_then_swap_parent)
+        with pytest.raises(module.PreflightPublicationUncertain) as raised:
+            build_preflight_sources(**kwargs, output=parent_swap / "bundle")
+    assert raised.value.preserved[0].ownership == "owned"
+    assert (parent_swap_old / "bundle").is_dir()
+    assert not (parent_swap / "bundle").exists()
     assert len(list(Path("/proc/self/fd").iterdir())) == baseline_fds

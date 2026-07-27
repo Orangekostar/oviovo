@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
+import contextvars
 import hashlib
 import json
 import os
@@ -34,6 +36,9 @@ _SOURCE_INDEX_ROLES = (
     "frame_coverage",
     "runtime_diagnostics",
 )
+_TRUSTED_FD_ROOT: contextvars.ContextVar[tuple[Path, int, tuple[int, int]] | None] = (
+    contextvars.ContextVar("oviv2_preflight_trusted_fd_root", default=None)
+)
 
 
 def _strict_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -46,13 +51,48 @@ def _strict_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
 
 
 def _reject_symlinks(path: Path, label: str) -> None:
-    for component in (path.absolute(), *path.absolute().parents):
+    trusted = _TRUSTED_FD_ROOT.get()
+    absolute = path.absolute()
+    if trusted is not None:
+        prefix, descriptor, identity = trusted
+        try:
+            relative = absolute.relative_to(prefix)
+        except ValueError:
+            pass
+        else:
+            opened = os.fstat(descriptor)
+            if (opened.st_dev, opened.st_ino) != identity:
+                raise ValueError(f"{label} trusted directory changed")
+            current = prefix
+            for part in relative.parts:
+                current /= part
+                try:
+                    status = os.lstat(current)
+                except FileNotFoundError:
+                    return
+                if stat.S_ISLNK(status.st_mode):
+                    raise ValueError(f"{label} contains a symlink")
+            return
+    for component in (absolute, *absolute.parents):
         try:
             status = os.lstat(component)
         except FileNotFoundError:
             continue
         if stat.S_ISLNK(status.st_mode):
             raise ValueError(f"{label} contains a symlink")
+
+
+@contextmanager
+def _trusted_directory_fd(descriptor: int):
+    status = os.fstat(descriptor)
+    if not stat.S_ISDIR(status.st_mode):
+        raise ValueError("preflight root fd must name a directory")
+    prefix = Path(f"/proc/self/fd/{descriptor}")
+    token = _TRUSTED_FD_ROOT.set((prefix, descriptor, (status.st_dev, status.st_ino)))
+    try:
+        yield prefix
+    finally:
+        _TRUSTED_FD_ROOT.reset(token)
 
 
 def _read_bytes(path: Path, label: str) -> bytes:
@@ -706,6 +746,31 @@ def build_preflight(
             )
     _publish(output_path, evidence)
     return evidence
+
+
+def _build_preflight_at(
+    *,
+    root_fd: int,
+    search_manifest: str | Path,
+    apartment_base_config: str | Path,
+    candidate_sources: Path,
+    output: Path,
+) -> dict[str, Any]:
+    for relative, label in (
+        (candidate_sources, "candidate sources"), (output, "preflight output")
+    ):
+        if (
+            relative.is_absolute() or relative == Path(".")
+            or ".." in relative.parts or relative.as_posix() != str(relative)
+        ):
+            raise ValueError(f"{label} must be a canonical relative path")
+    with _trusted_directory_fd(root_fd) as root:
+        return build_preflight(
+            search_manifest=search_manifest,
+            apartment_base_config=apartment_base_config,
+            candidate_sources=root / candidate_sources,
+            output=root / output,
+        )
 
 
 def main(argv: Sequence[str] | None = None) -> int:

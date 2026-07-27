@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Callable, Mapping, Sequence
+from contextlib import contextmanager
+import contextvars
 import copy
 from dataclasses import dataclass
 import hashlib
@@ -22,6 +24,10 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
+
+_TRUSTED_PREFLIGHT_FD_ROOT: contextvars.ContextVar[
+    tuple[Path, int, tuple[int, int]] | None
+] = contextvars.ContextVar("oviv2_search_trusted_preflight_fd_root", default=None)
 
 from scripts.evaluation.evaluate_oviv2_tesse_occlusion import (  # noqa: E402
     RUNNER_SCENE_CONFIG_FIELDS,
@@ -237,6 +243,27 @@ def _strict_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
 
 def _reject_symlink_components(path: Path, label: str) -> None:
     absolute = Path(os.path.abspath(path))
+    trusted = _TRUSTED_PREFLIGHT_FD_ROOT.get()
+    if trusted is not None:
+        prefix, descriptor, identity = trusted
+        try:
+            relative = absolute.relative_to(prefix)
+        except ValueError:
+            pass
+        else:
+            opened = os.fstat(descriptor)
+            if (opened.st_dev, opened.st_ino) != identity:
+                raise ValueError(f"{label} trusted directory changed")
+            current = prefix
+            for part in relative.parts:
+                current /= part
+                try:
+                    status = os.lstat(current)
+                except FileNotFoundError:
+                    return
+                if stat.S_ISLNK(status.st_mode):
+                    raise ValueError(f"{label} path contains a symlink: {current}")
+            return
     current = Path(absolute.anchor)
     for part in absolute.parts[1:]:
         current /= part
@@ -246,6 +273,21 @@ def _reject_symlink_components(path: Path, label: str) -> None:
             return
         if stat.S_ISLNK(status.st_mode):
             raise ValueError(f"{label} path contains a symlink: {current}")
+
+
+@contextmanager
+def _trusted_preflight_directory_fd(descriptor: int):
+    status = os.fstat(descriptor)
+    if not stat.S_ISDIR(status.st_mode):
+        raise ValueError("preflight root fd must name a directory")
+    prefix = Path(f"/proc/self/fd/{descriptor}")
+    token = _TRUSTED_PREFLIGHT_FD_ROOT.set(
+        (prefix, descriptor, (status.st_dev, status.st_ino))
+    )
+    try:
+        yield prefix
+    finally:
+        _TRUSTED_PREFLIGHT_FD_ROOT.reset(token)
 
 
 def _read_regular_bytes(path: Path, label: str) -> bytes:
@@ -1080,6 +1122,20 @@ def _validate_preflight_gate_evidence(
         "sha256": hashlib.sha256(evidence_bytes).hexdigest(),
         "byte_count": len(evidence_bytes),
     }, witnesses)
+
+
+def _validate_preflight_gate_evidence_at(
+    root_fd: int,
+    path: Path,
+    **kwargs: Any,
+) -> dict[str, Any]:
+    if (
+        path.is_absolute() or path == Path(".") or ".." in path.parts
+        or path.as_posix() != str(path)
+    ):
+        raise ValueError("preflight evidence must be a canonical relative path")
+    with _trusted_preflight_directory_fd(root_fd) as root:
+        return _validate_preflight_gate_evidence(root / path, **kwargs)
 
 
 def _available_ram_bytes(

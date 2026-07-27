@@ -2,18 +2,21 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 
 import pytest
 
 from scripts.evaluation.build_oviv2_tesse_search_preflight import (
     _anchor_coverage,
+    _build_preflight_at,
     _mechanisms,
     build_preflight,
 )
 from scripts.evaluation.run_oviv2_tesse_dual_readout_search import (
     _materialize_config,
     _validate_preflight_gate_evidence,
+    _validate_preflight_gate_evidence_at,
 )
 
 
@@ -386,6 +389,38 @@ def test_builds_source_recomputed_preflight_consumable_by_search(tmp_path: Path)
     assert hashlib.sha256(
         (tmp_path / "a1/lifecycle_transitions.jsonl").read_bytes()
     ).hexdigest() in invalidation["trigger_records"][0]
+
+
+def test_fd_backed_builder_and_validator_use_held_bundle_directory(
+    tmp_path: Path,
+) -> None:
+    sources = _candidate_sources(tmp_path)
+    manifest = json.loads(SEARCH_MANIFEST.read_text())
+    base = json.loads(BASE_CONFIG.read_text())
+    descriptor = os.open(tmp_path, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        result = _build_preflight_at(
+            root_fd=descriptor,
+            search_manifest=SEARCH_MANIFEST,
+            apartment_base_config=BASE_CONFIG,
+            candidate_sources=sources.relative_to(tmp_path),
+            output=Path("preflight-fd.json"),
+        )
+        validated = _validate_preflight_gate_evidence_at(
+            descriptor,
+            Path("preflight-fd.json"),
+            manifest_bytes=SEARCH_MANIFEST.read_bytes(),
+            apartment_bytes=BASE_CONFIG.read_bytes(),
+            apartment=base,
+            declarations={item["candidate_id"]: item for item in manifest["candidates"]},
+            selected_ids=("a1",),
+        )
+    finally:
+        os.close(descriptor)
+
+    output = tmp_path / "preflight-fd.json"
+    assert result["manifest_id"] == "oviv2_dual_readout_search_preflight_v1"
+    assert validated["sha256"] == hashlib.sha256(output.read_bytes()).hexdigest()
 
 
 def test_relative_source_evidence_survives_whole_bundle_rename_without_rewrite(

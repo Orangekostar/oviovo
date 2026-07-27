@@ -27,16 +27,18 @@ from scripts.evaluation.verify_oviv2_dual_readout_development_gates import (
     verify_source_manifest,
 )
 from scripts.evaluation.evaluate_oviv2_tesse_temporal_occlusion import (
+    _load_target as _load_evaluator_target,
+    _revalidate as _revalidate_evaluator_witnesses,
     evaluate_temporal_occlusion_package,
 )
 from scripts.evaluation.build_oviv2_tesse_search_preflight import (
     _anchor_coverage,
-    build_preflight,
+    _build_preflight_at,
 )
 from scripts.evaluation.run_oviv2_tesse_dual_readout_search import (
     _materialize_config,
     _revalidate_preflight_witnesses,
-    _validate_preflight_gate_evidence,
+    _validate_preflight_gate_evidence_at,
 )
 
 
@@ -89,6 +91,41 @@ class _FileWitness:
         current = os.stat(self.path, follow_symlinks=False)
         if not stat.S_ISREG(current.st_mode) or _identity(current) != self.identity:
             raise ValueError(f"source changed before publication: {self.path}")
+
+
+@dataclass(frozen=True)
+class _EvaluatorInputsWitness:
+    witnesses: tuple[Any, ...]
+    revalidator: Callable[[Sequence[Any]], None] | None = None
+
+    def revalidate(self) -> None:
+        if self.revalidator is not None:
+            try:
+                self.revalidator(self.witnesses)
+            except (OSError, ValueError) as exc:
+                raise ValueError("evaluator input changed before publication") from exc
+            return
+        for witness in self.witnesses:
+            try:
+                witness.revalidate()
+            except (OSError, ValueError) as exc:
+                raise ValueError("evaluator input changed before publication") from exc
+
+
+def _capture_evaluator_inputs(
+    targets: Path, dataset_root: Path,
+    *,
+    loader: Callable[..., tuple[Any, ...]] = _load_evaluator_target,
+    revalidator: Callable[[Sequence[Any]], None] = _revalidate_evaluator_witnesses,
+) -> _EvaluatorInputsWitness:
+    loaded = loader(targets.absolute(), dataset_root.absolute())
+    if len(loaded) != 6 or not isinstance(loaded[3], list):
+        raise ValueError("evaluator target witness inventory is invalid")
+    witnesses = tuple(loaded[3])
+    del loaded
+    result = _EvaluatorInputsWitness(witnesses, revalidator)
+    result.revalidate()
+    return result
 
 
 @dataclass(frozen=True)
@@ -308,40 +345,102 @@ def _record(path: Path, data: bytes, *, relative_to: Path) -> dict[str, Any]:
     return {"path": relative.as_posix(), "sha256": hashlib.sha256(data).hexdigest(), "byte_count": len(data)}
 
 
-def _mkdirs_at(root_fd: int, relative: Path) -> None:
+def _record_relative(relative: Path, data: bytes) -> dict[str, Any]:
+    if (
+        relative.is_absolute() or relative == Path(".") or ".." in relative.parts
+        or relative.as_posix() != str(relative)
+    ):
+        raise ValueError("output record path is unsafe")
+    return {
+        "path": relative.as_posix(),
+        "sha256": hashlib.sha256(data).hexdigest(),
+        "byte_count": len(data),
+    }
+
+
+def _open_directory_at(root_fd: int, relative: Path, *, create: bool) -> int:
     current = os.dup(root_fd)
     try:
         for part in relative.parts:
-            try:
-                os.mkdir(part, 0o755, dir_fd=current)
-            except FileExistsError:
-                pass
+            if create:
+                try:
+                    os.mkdir(part, 0o755, dir_fd=current)
+                except FileExistsError:
+                    pass
             next_fd = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=current)
             os.close(current)
             current = next_fd
-        os.fsync(current)
-    finally:
+        return current
+    except BaseException:
         os.close(current)
+        raise
+
+
+def _mkdirs_at(root_fd: int, relative: Path) -> None:
+    descriptor = _open_directory_at(root_fd, relative, create=True)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
 
 
 def _write_bytes_at(root_fd: int, relative: Path, data: bytes) -> None:
     if relative.is_absolute() or relative == Path(".") or ".." in relative.parts:
         raise ValueError("staged output path is unsafe")
-    _mkdirs_at(root_fd, relative.parent)
-    descriptor = os.open(
-        relative.as_posix(), os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
-        0o644, dir_fd=root_fd,
-    )
+    parent_fd = _open_directory_at(root_fd, relative.parent, create=True)
     try:
-        remaining = memoryview(data)
-        while remaining:
-            written = os.write(descriptor, remaining)
-            if written <= 0:
-                raise OSError("staged output write made no progress")
-            remaining = remaining[written:]
-        os.fsync(descriptor)
+        os.fsync(parent_fd)
+        descriptor = os.open(
+            relative.name,
+            os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
+            0o644,
+            dir_fd=parent_fd,
+        )
+        try:
+            remaining = memoryview(data)
+            while remaining:
+                written = os.write(descriptor, remaining)
+                if written <= 0:
+                    raise OSError("staged output write made no progress")
+                remaining = remaining[written:]
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
     finally:
-        os.close(descriptor)
+        os.close(parent_fd)
+
+
+def _read_bytes_at(root_fd: int, relative: Path, label: str) -> bytes:
+    if (
+        relative.is_absolute() or relative == Path(".") or ".." in relative.parts
+        or relative.as_posix() != str(relative)
+    ):
+        raise ValueError(f"{label} path is unsafe")
+    current = _open_directory_at(root_fd, relative.parent, create=False)
+    try:
+        descriptor = os.open(
+            relative.name, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC,
+            dir_fd=current,
+        )
+        try:
+            opened = os.fstat(descriptor)
+            if not stat.S_ISREG(opened.st_mode):
+                raise ValueError(f"{label} must be a regular file")
+            chunks: list[bytes] = []
+            byte_count = 0
+            while chunk := os.read(descriptor, 1024 * 1024):
+                chunks.append(chunk)
+                byte_count += len(chunk)
+                if byte_count > _MAX_SOURCE_BYTES:
+                    raise ValueError(f"{label} exceeds size limit")
+            finished = os.fstat(descriptor)
+        finally:
+            os.close(descriptor)
+    finally:
+        os.close(current)
+    if _identity(opened) != _identity(finished) or byte_count != finished.st_size:
+        raise ValueError(f"{label} changed while reading")
+    return b"".join(chunks)
 
 
 def _write_json_at(root_fd: int, relative: Path, value: object) -> bytes:
@@ -363,6 +462,32 @@ def _preserved(parent_fd: int, parent: Path, name: str, logical: str, expected: 
         return PreservedArtifact(name, logical, parent_identity[0], parent_identity[1], status.st_dev, status.st_ino, status.st_mode, ownership)
     except OSError:
         return PreservedArtifact(name, logical, parent_identity[0], parent_identity[1], None, None, None, "unbound")
+
+
+def _preserved_owned(
+    parent_fd: int, parent: Path, preferred_name: str, logical: str,
+    expected: tuple[int, int],
+) -> PreservedArtifact:
+    name = preferred_name
+    try:
+        status = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+    except OSError:
+        status = None
+    if status is None or (status.st_dev, status.st_ino) != expected:
+        matches: list[str] = []
+        for candidate in os.listdir(parent_fd):
+            try:
+                candidate_status = os.stat(
+                    candidate, dir_fd=parent_fd, follow_symlinks=False
+                )
+            except OSError:
+                continue
+            if (candidate_status.st_dev, candidate_status.st_ino) == expected:
+                matches.append(candidate)
+        if len(matches) == 1:
+            name = matches[0]
+            logical = str(parent / name)
+    return _preserved(parent_fd, parent, name, logical, expected, True)
 
 
 def _rename_noreplace(parent_fd: int, source: str, destination: str) -> None:
@@ -389,6 +514,53 @@ def _root_inventory(root: Path) -> tuple[list[dict[str, Any]], str]:
     return records, hashlib.sha256(_canonical(records)).hexdigest()
 
 
+def _root_inventory_at(root_fd: int) -> tuple[list[dict[str, Any]], str]:
+    records: list[dict[str, Any]] = []
+
+    def visit(directory_fd: int, prefix: Path) -> None:
+        for name in sorted(os.listdir(directory_fd)):
+            status = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+            relative = prefix / name
+            if stat.S_ISLNK(status.st_mode):
+                raise ValueError("staged bundle contains a symlink")
+            if stat.S_ISDIR(status.st_mode):
+                child = os.open(
+                    name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+                    dir_fd=directory_fd,
+                )
+                try:
+                    visit(child, relative)
+                finally:
+                    os.close(child)
+                continue
+            if not stat.S_ISREG(status.st_mode):
+                raise ValueError("staged bundle member must be a regular file")
+            descriptor = os.open(
+                name, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC,
+                dir_fd=directory_fd,
+            )
+            try:
+                opened = os.fstat(descriptor)
+                digest = hashlib.sha256()
+                byte_count = 0
+                while chunk := os.read(descriptor, 1024 * 1024):
+                    digest.update(chunk)
+                    byte_count += len(chunk)
+                finished = os.fstat(descriptor)
+            finally:
+                os.close(descriptor)
+            if _identity(opened) != _identity(finished) or byte_count != finished.st_size:
+                raise ValueError("staged bundle member changed while reading")
+            records.append({
+                "path": relative.as_posix(),
+                "sha256": digest.hexdigest(),
+                "byte_count": byte_count,
+            })
+
+    visit(root_fd, Path("."))
+    return records, hashlib.sha256(_canonical(records)).hexdigest()
+
+
 @dataclass(frozen=True)
 class _StagingTreeWitness:
     path: Path
@@ -396,6 +568,8 @@ class _StagingTreeWitness:
     identity: tuple[int, int]
     inventory: tuple[dict[str, Any], ...]
     root_sha256: str
+    parent_descriptor: int | None = None
+    name: str | None = None
 
     @classmethod
     def capture(cls, path: Path, descriptor: int) -> _StagingTreeWitness:
@@ -409,9 +583,34 @@ class _StagingTreeWitness:
         inventory, digest = _root_inventory(path)
         return cls(path, descriptor, identity, tuple(inventory), digest)
 
-    def revalidate(self) -> None:
+    @classmethod
+    def capture_at(
+        cls, descriptor: int, parent_descriptor: int, name: str,
+    ) -> _StagingTreeWitness:
+        opened = os.fstat(descriptor)
+        named = os.stat(name, dir_fd=parent_descriptor, follow_symlinks=False)
+        if not stat.S_ISDIR(opened.st_mode) or not stat.S_ISDIR(named.st_mode):
+            raise ValueError("staged bundle must be a directory")
+        identity = (opened.st_dev, opened.st_ino)
+        if identity != (named.st_dev, named.st_ino):
+            raise ValueError("staged bundle directory changed")
+        inventory, digest = _root_inventory_at(descriptor)
+        return cls(
+            Path(name), descriptor, identity, tuple(inventory), digest,
+            parent_descriptor, name,
+        )
+
+    def revalidate(self, name: str | None = None) -> None:
         opened = os.fstat(self.descriptor)
-        current = os.stat(self.path, follow_symlinks=False)
+        current = (
+            os.stat(
+                name if name is not None else self.name,
+                dir_fd=self.parent_descriptor,
+                follow_symlinks=False,
+            )
+            if self.parent_descriptor is not None and self.name is not None
+            else os.stat(self.path, follow_symlinks=False)
+        )
         if (
             not stat.S_ISDIR(opened.st_mode)
             or not stat.S_ISDIR(current.st_mode)
@@ -419,7 +618,11 @@ class _StagingTreeWitness:
             or (current.st_dev, current.st_ino) != self.identity
         ):
             raise ValueError("staged bundle changed before publication")
-        inventory, digest = _root_inventory(self.path)
+        inventory, digest = (
+            _root_inventory_at(self.descriptor)
+            if self.parent_descriptor is not None
+            else _root_inventory(self.path)
+        )
         if inventory != list(self.inventory) or digest != self.root_sha256:
             raise ValueError("staged bundle changed before publication")
 
@@ -445,6 +648,37 @@ def _fsync_staged_tree(root: Path) -> None:
             os.fsync(descriptor)
         finally:
             os.close(descriptor)
+
+
+def _fsync_staged_tree_at(root_fd: int) -> None:
+    def sync(directory_fd: int) -> None:
+        for name in sorted(os.listdir(directory_fd)):
+            status = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+            if stat.S_ISLNK(status.st_mode):
+                raise ValueError("staged bundle contains a symlink")
+            if stat.S_ISDIR(status.st_mode):
+                child = os.open(
+                    name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+                    dir_fd=directory_fd,
+                )
+                try:
+                    sync(child)
+                finally:
+                    os.close(child)
+                continue
+            if not stat.S_ISREG(status.st_mode):
+                raise ValueError("staged bundle member must be a regular file")
+            descriptor = os.open(
+                name, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC,
+                dir_fd=directory_fd,
+            )
+            try:
+                os.fsync(descriptor)
+            finally:
+                os.close(descriptor)
+        os.fsync(directory_fd)
+
+    sync(root_fd)
 
 
 def _tree_binding(path: Path, root: Path) -> dict[str, Any]:
@@ -535,11 +769,16 @@ def _audit_future_leakage(
         for frame, timestamp in enumerate(timestamps):
             if timestamp != dataset_timestamps[frame]:
                 raise _violation(candidate_id, frame, "frame_coverage.timestamp_ns", timestamp, dataset_timestamps[frame])
-    for role, suffix in (("frontend_manifest", "pkl.gz"), ("dense_manifest", "npz")):
+    for role, manifest_name, suffix in (
+        ("frontend_manifest", "frontend_manifest.json", "pkl.gz"),
+        ("dense_manifest", "dense_manifest.json", "npz"),
+    ):
         raw_manifest = config.get(role)
         if not isinstance(raw_manifest, str) or not Path(raw_manifest).is_absolute():
             raise _violation(candidate_id, None, role, raw_manifest, "absolute manifest path")
         manifest_path = Path(raw_manifest)
+        if manifest_path.name != manifest_name:
+            raise _violation(candidate_id, None, role, manifest_path.name, manifest_name)
         manifest_snapshot = _snapshot(manifest_path, role)
         manifest = _decode_json(manifest_snapshot.data, role)
         source_binding = run.get("source_bindings", {}).get(role) if isinstance(run.get("source_bindings"), Mapping) else None
@@ -583,8 +822,107 @@ def _audit_future_leakage(
         or checkpoint_frames != sorted(set(checkpoint_frames))
     ):
         raise _violation(candidate_id, None, "checkpoint_index.frames", checkpoint_frames, "unique increasing processed frames")
-    run_checkpoints = {item.get("frame_index"): item for item in run.get("checkpoints", []) if isinstance(item, Mapping)}
-    source_checkpoints = {item.get("frame_index"): item for item in source_index.get("checkpoints", []) if isinstance(item, Mapping)}
+    official_records = source_index.get("checkpoints")
+    run_records = run.get("checkpoints")
+    if (
+        not isinstance(official_records, list) or not official_records
+        or any(not isinstance(item, Mapping) for item in official_records)
+        or not isinstance(run_records, list)
+        or any(not isinstance(item, Mapping) for item in run_records)
+    ):
+        raise _violation(candidate_id, None, "checkpoint_inventories", (official_records, run_records), "nonempty official and run records")
+    official_frames = [item.get("frame_index") for item in official_records]
+    run_frames = [item.get("frame_index") for item in run_records]
+    union_frames = sorted(set(checkpoint_frames) | set(official_frames))
+    if (
+        any(type(frame) is not int or frame not in expected for frame in official_frames)
+        or official_frames != sorted(set(official_frames))
+        or run_frames != union_frames
+        or run.get("scheduled_frame_indices") != union_frames
+        or run.get("captured_frame_indices") != union_frames
+    ):
+        raise _violation(
+            candidate_id, None, "checkpoint_inventories.frames",
+            {"evaluation": checkpoint_frames, "official": official_frames, "run": run_frames,
+             "scheduled": run.get("scheduled_frame_indices"), "captured": run.get("captured_frame_indices")},
+            {"run/scheduled/captured": union_frames},
+        )
+    run_checkpoints = {item["frame_index"]: item for item in run_records}
+    source_checkpoints = {item["frame_index"]: item for item in official_records}
+
+    schedule_snapshot = _bound_snapshot(source_index.get("schedule"), run_root, "official schedule")
+    schedule_record = source_index["schedule"]
+    assert isinstance(schedule_record, Mapping)
+    if {
+        "sha256": schedule_record.get("sha256"),
+        "byte_count": schedule_record.get("byte_count"),
+    } != run.get("schedule"):
+        raise _violation(candidate_id, None, "source_index.schedule", schedule_record, run.get("schedule"))
+    capture_snapshot = _bound_snapshot(source_index.get("capture_status"), run_root, "capture status")
+    capture = _decode_json(capture_snapshot.data, "capture status")
+    capture_fields = {
+        "schema_version", "status", "scene", "mode", "scheduled_frame_indices",
+        "captured_frame_indices", "schedule", "trajectories", "frame_coverage",
+        "lifecycle_transitions", "checkpoint_statuses",
+    }
+    if set(capture) != capture_fields or not (
+        capture.get("schema_version") == 1
+        and capture.get("status") == "PASS"
+        and capture.get("scene") == "apartment"
+        and capture.get("mode") == "causal_checkpoints"
+        and capture.get("scheduled_frame_indices") == official_frames
+        and capture.get("captured_frame_indices") == official_frames
+        and capture.get("schedule") == source_index.get("schedule")
+        and capture.get("trajectories") == source_index.get("trajectories")
+        and capture.get("frame_coverage") == source_index.get("frame_coverage")
+        and capture.get("lifecycle_transitions") == source_index.get("lifecycle_transitions")
+        and capture.get("checkpoint_statuses")
+        == [item.get("checkpoint_status") for item in official_records]
+    ):
+        raise _violation(candidate_id, None, "capture_status", capture, "official inventory binding")
+
+    official_fields = {
+        "frame_index", "timestamp_ns", "consumed_through_frame",
+        "consumed_through_frame_exclusive", "checkpoint_status", "snapshot", "entities",
+    }
+    for official in official_records:
+        frame = official["frame_index"]
+        run_record = run_checkpoints[frame]
+        if set(official) != official_fields:
+            raise _violation(candidate_id, frame, "source_index.checkpoint.fields", set(official), official_fields)
+        for field, bound in (
+            ("timestamp_ns", timestamps[frame]),
+            ("consumed_through_frame", frame),
+            ("consumed_through_frame_exclusive", frame + 1),
+        ):
+            if official.get(field) != bound or run_record.get(field) != bound:
+                raise _violation(candidate_id, frame, f"official.{field}", (official.get(field), run_record.get(field)), bound)
+        for source_role, run_role in (
+            ("checkpoint_status", "checkpoint_status"),
+            ("snapshot", "neutral_snapshot"),
+            ("entities", "neutral_entities"),
+        ):
+            if official.get(source_role) != run_record.get(run_role):
+                raise _violation(candidate_id, frame, f"official.{source_role}", official.get(source_role), run_record.get(run_role))
+            try:
+                sidecar = _bound_snapshot(
+                    official.get(source_role), run_root, f"official {source_role}"
+                )
+            except (OSError, ValueError) as exc:
+                raise _violation(
+                    candidate_id, frame, f"official.{source_role}.binding",
+                    type(exc).__name__, "bound regular file",
+                ) from exc
+            if source_role == "checkpoint_status":
+                status_payload = _decode_json(sidecar.data, "official checkpoint status")
+                for field, bound in (
+                    ("schema_version", 1), ("status", "PASS"),
+                    ("checkpoint_frame", frame), ("timestamp_ns", timestamps[frame]),
+                    ("consumed_through_frame", frame),
+                    ("consumed_through_frame_exclusive", frame + 1),
+                ):
+                    if status_payload.get(field) != bound:
+                        raise _violation(candidate_id, frame, f"official.checkpoint_status.{field}", status_payload.get(field), bound)
     for checkpoint in checkpoints:
         frame = checkpoint.get("frame_index")
         timestamp = checkpoint.get("timestamp_ns")
@@ -687,10 +1025,9 @@ def build_preflight_sources(
     stage_path = parent / stage_name
     stage_identity: tuple[int, int] | None = None
     renamed = False
-    rename_collision = False
     witnesses: list[
         _Snapshot | _FileWitness | _DirectoryWitness | _ExactTransactionWitness
-        | _DevelopmentSourcesWitness
+        | _DevelopmentSourcesWitness | _EvaluatorInputsWitness
     ] = []
     try:
         parent_status = os.fstat(parent_fd)
@@ -712,6 +1049,7 @@ def build_preflight_sources(
             raise ValueError("dataset root must be a directory")
         witnesses.extend((evidence_snapshot, manifest_snapshot, base_snapshot, targets_snapshot))
         witnesses.append(_DirectoryWitness(dataset_path, (dataset_status.st_dev, dataset_status.st_ino)))
+        witnesses.append(_capture_evaluator_inputs(targets_snapshot.path, dataset_path))
         evidence = _decode_json(evidence_snapshot.data, "development evidence")
         manifest = _decode_json(manifest_snapshot.data, "search manifest")
         base_config = _decode_json(base_snapshot.data, "Apartment base config")
@@ -815,9 +1153,12 @@ def build_preflight_sources(
                     raise ValueError("required source paths alias the same inode")
                 source_inodes.add(inode)
             for relative, snapshot in required_snapshots:
-                _write_bytes_at(stage_fd, Path(candidate_id) / relative, snapshot.data)
-                copied = _snapshot(stage_path / candidate_id / relative, f"copied {candidate_id} source")
-                if copied.data != snapshot.data:
+                copied_relative = Path(candidate_id) / relative
+                _write_bytes_at(stage_fd, copied_relative, snapshot.data)
+                copied = _read_bytes_at(
+                    stage_fd, copied_relative, f"copied {candidate_id} source"
+                )
+                if copied != snapshot.data:
                     raise ValueError(f"{candidate_id} copied source digest mismatch")
 
             checkpoint_snapshot = _bound_snapshot(run.get("occlusion_checkpoint_index"), run_root, f"{candidate_id} occlusion checkpoint index")
@@ -841,32 +1182,39 @@ def build_preflight_sources(
             occlusion_relative = Path(candidate_id) / "temporal_occlusion_result.json"
             occlusion_result = evaluate_temporal_occlusion_package(
                 targets=targets_snapshot.path, checkpoints=[checkpoint_snapshot.path],
-                dataset_root=dataset_path, output=stage_path / occlusion_relative,
+                dataset_root=dataset_path, output=None,
             )
             anchor = _anchor_coverage(occlusion_result)
             if anchor.get("eligible_count") != 66 or anchor.get("mapped_count", 0) < 53:
                 raise ValueError(f"{candidate_id} Apartment anchor coverage requires at least 53/66")
-            occlusion_data = _snapshot(stage_path / occlusion_relative, f"{candidate_id} temporal occlusion result").data
-            run_copy = stage_path / candidate_id / run_relative
+            occlusion_data = _write_json_at(stage_fd, occlusion_relative, occlusion_result)
             candidate_sources.append({
                 "candidate_id": candidate_id,
-                "run_manifest": _record(run_copy, run_snapshot.data, relative_to=stage_path),
-                "temporal_occlusion_result": _record(stage_path / occlusion_relative, occlusion_data, relative_to=stage_path),
-                "future_leakage_evidence": _record(stage_path / leakage_relative, leakage_data, relative_to=stage_path),
+                "run_manifest": _record_relative(
+                    Path(candidate_id) / run_relative, run_snapshot.data
+                ),
+                "temporal_occlusion_result": _record_relative(
+                    occlusion_relative, occlusion_data
+                ),
+                "future_leakage_evidence": _record_relative(
+                    leakage_relative, leakage_data
+                ),
             })
 
         sources_payload = {"schema_version": 1, "manifest_id": "oviv2_tesse_search_preflight_sources_v1", "candidates": candidate_sources}
         _write_json_at(stage_fd, Path("candidate_sources.json"), sources_payload)
-        preflight_path = stage_path / "preflight.json"
-        build_preflight(
+        preflight_relative = Path("preflight.json")
+        _build_preflight_at(
+            root_fd=stage_fd,
             search_manifest=manifest_snapshot.path, apartment_base_config=base_snapshot.path,
-            candidate_sources=stage_path / "candidate_sources.json", output=preflight_path,
+            candidate_sources=Path("candidate_sources.json"), output=preflight_relative,
         )
-        preflight_record = _validate_preflight_gate_evidence(
-            preflight_path, manifest_bytes=manifest_snapshot.data, apartment_bytes=base_snapshot.data,
+        preflight_record = _validate_preflight_gate_evidence_at(
+            stage_fd, preflight_relative,
+            manifest_bytes=manifest_snapshot.data, apartment_bytes=base_snapshot.data,
             apartment=base_config, declarations=declarations, selected_ids=tuple(_CANDIDATE_POSITIONS),
         )
-        inventory, root_digest = _root_inventory(stage_path)
+        inventory, root_digest = _root_inventory_at(stage_fd)
         receipt = {
             "schema_version": 1, "manifest_id": "oviv2_tesse_search_preflight_publication_receipt_v1",
             "inputs": {
@@ -879,8 +1227,10 @@ def build_preflight_sources(
             "output_inventory": inventory, "output_root_sha256": root_digest,
         }
         _write_json_at(stage_fd, Path("publication_receipt.json"), receipt)
-        _fsync_staged_tree(stage_path)
-        staging_witness = _StagingTreeWitness.capture(stage_path, stage_fd)
+        _fsync_staged_tree_at(stage_fd)
+        staging_witness = _StagingTreeWitness.capture_at(
+            stage_fd, parent_fd, stage_name
+        )
         current_parent = os.stat(parent, follow_symlinks=False)
         if (current_parent.st_dev, current_parent.st_ino) != (parent_status.st_dev, parent_status.st_ino):
             raise ValueError("output parent changed before publication")
@@ -891,10 +1241,11 @@ def build_preflight_sources(
         try:
             _rename_noreplace(parent_fd, stage_name, output_path.name)
         except FileExistsError:
-            rename_collision = True
             raise
         renamed = True
+        staging_witness.revalidate(output_path.name)
         os.fsync(parent_fd)
+        staging_witness.revalidate(output_path.name)
         published_status = os.stat(output_path.name, dir_fd=parent_fd, follow_symlinks=False)
         if stage_identity != (published_status.st_dev, published_status.st_ino):
             raise ValueError("published bundle inode differs from staging bundle")
@@ -903,19 +1254,17 @@ def build_preflight_sources(
             raise ValueError("output parent changed after publication")
         return sources_payload
     except FileExistsError as exc:
-        if stage_identity is None or rename_collision:
-            if stage_identity is None and not rename_collision:
-                try:
-                    os.stat(stage_name, dir_fd=parent_fd, follow_symlinks=False)
-                except OSError:
-                    raise exc
-                raise PreflightPublicationUncertain(
-                    (_preserved(parent_fd, parent, stage_name, str(stage_path), None, False),)
-                )
-            raise
+        if stage_identity is None:
+            try:
+                os.stat(stage_name, dir_fd=parent_fd, follow_symlinks=False)
+            except OSError:
+                raise exc
+            raise PreflightPublicationUncertain(
+                (_preserved(parent_fd, parent, stage_name, str(stage_path), None, False),)
+            )
         raise PreflightPublicationUncertain(
-            (_preserved(parent_fd, parent, stage_name, str(stage_path), stage_identity, True),)
-        )
+            (_preserved_owned(parent_fd, parent, stage_name, str(stage_path), stage_identity),)
+        ) from exc
     except PreflightPublicationUncertain:
         raise
     except BaseException as exc:
@@ -930,7 +1279,7 @@ def build_preflight_sources(
         name = output_path.name if renamed else stage_name
         logical = str(output_path if renamed else stage_path)
         raise PreflightPublicationUncertain(
-            (_preserved(parent_fd, parent, name, logical, stage_identity, True),)
+            (_preserved_owned(parent_fd, parent, name, logical, stage_identity),)
         ) from exc
     finally:
         if stage_fd >= 0:
