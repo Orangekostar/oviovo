@@ -126,6 +126,36 @@ def test_runtime_diagnostics_identifies_disabled_component_without_positive_clai
     }
 
 
+def test_runtime_diagnostic_producer_is_consumable_by_search_validator() -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as producer
+    import scripts.evaluation.run_oviv2_tesse_dual_readout_search as consumer
+
+    temporal = _temporal_readout()
+    temporal["execution_profile"] = "a3"
+    temporal["components"] = ExecutionProfile.A3.components
+    temporal["diagnostic_controls"] = {"background_mode": "masking_only"}
+    runtime = SimpleNamespace(
+        temporal=SimpleNamespace(
+            state=SimpleNamespace(
+                diagnostics=SimpleNamespace(processed_frame_count=3)
+            )
+        )
+    )
+
+    payload = producer._runtime_diagnostics_payload(
+        runtime,
+        config={"temporal_readout": temporal},
+        processed_frame_count=3,
+    )
+
+    consumer._validate_runtime_mechanism_records(
+        payload,
+        "producer output",
+        expected_temporal_readout=temporal,
+        expected_candidate_id="diag_a3_masking_only_no_ledger",
+    )
+
+
 def test_runtime_diagnostics_rejects_missing_source_records_for_positive_counters() -> None:
     import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
 
@@ -163,6 +193,48 @@ def test_runtime_diagnostics_rejects_a4_motion_record_outside_icp() -> None:
         module._runtime_diagnostics_payload(
             runtime,
             config={"temporal_readout": _temporal_readout()},
+            processed_frame_count=1,
+            mechanism_records=records,
+        )
+
+
+@pytest.mark.parametrize(
+    ("profile", "positive_records"),
+    (
+        ("a1", {"reid_opportunity_count": ["reid:0"]}),
+        ("a2", {"reid_opportunity_count": ["reid:0"]}),
+        (
+            "a2",
+            {
+                "icp_opportunity_count": ["motion:0"],
+                "icp_reject_count": ["motion:0"],
+            },
+        ),
+        ("a2", {"ledger_stage_count": ["ledger:0"]}),
+    ),
+)
+def test_runtime_diagnostics_rejects_profile_impossible_counters(
+    profile: str, positive_records: dict[str, list[str]]
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    diagnostics = SimpleNamespace(
+        processed_frame_count=1,
+        **{name: len(records) for name, records in positive_records.items()},
+    )
+    runtime = SimpleNamespace(
+        temporal=SimpleNamespace(state=SimpleNamespace(diagnostics=diagnostics))
+    )
+    records = {name: [] for name in module.V2_RUNTIME_DIAGNOSTIC_KEYS}
+    records.update(positive_records)
+    temporal = _temporal_readout()
+    temporal["execution_profile"] = profile
+    temporal["components"] = ExecutionProfile.from_id(profile).components
+
+    with pytest.raises(ValueError, match="profile.*counter"):
+        module._runtime_diagnostics_payload(
+            runtime,
+            config={"temporal_readout": temporal},
             processed_frame_count=1,
             mechanism_records=records,
         )
@@ -1101,6 +1173,7 @@ def test_five_frame_dual_readout_is_causal_role_aware_and_deterministic(tmp_path
             "schema_version": 1,
             "execution_profile": "a4",
             "processed_frame_count": 5,
+            "diagnostic": None,
             "counters": {
                 "proposal_opportunity_count": 0,
                 "proposal_trigger_count": 0,

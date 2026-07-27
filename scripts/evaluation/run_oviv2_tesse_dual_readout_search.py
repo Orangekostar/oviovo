@@ -33,6 +33,9 @@ from src.oviv2.temporal_config import (  # noqa: E402
     temporal_config_from_json,
     temporal_config_to_json,
 )
+from src.evaluation.oviv2_runtime_diagnostics import (  # noqa: E402
+    validate_runtime_diagnostics,
+)
 
 
 CommandBuilder = Callable[[Path, Path, str], tuple[str, ...]]
@@ -735,68 +738,37 @@ def _validate_mechanism_record(value: object, label: str) -> None:
 
 
 def _validate_runtime_mechanism_records(
-    runtime: Mapping[str, Any], label: str, disabled: set[str] | None = None
+    runtime: Mapping[str, Any],
+    label: str,
+    *,
+    expected_temporal_readout: Mapping[str, Any] | None = None,
+    expected_candidate_id: str | None = None,
 ) -> None:
-    required = {
-        "schema_version",
-        "execution_profile",
-        "processed_frame_count",
-        "counters",
-        "mechanism_records",
-    }
-    if set(runtime) not in (required, required | {"diagnostic"}):
-        raise ValueError(f"{label} mechanism_records are required")
-    counters = runtime["counters"]
-    records = runtime["mechanism_records"]
-    if not isinstance(counters, Mapping) or not isinstance(records, Mapping) or set(
-        counters
-    ) != set(records):
-        raise ValueError(f"{label} mechanism_records inventory mismatch")
-    for name, count in counters.items():
-        values = records[name]
-        if (
-            type(count) is not int
-            or count < 0
-            or not isinstance(values, list)
-            or len(values) != count
-            or len(values) != len(set(values))
-            or any(not isinstance(value, str) or not value for value in values)
-        ):
-            raise ValueError(f"{label} mechanism_records do not match counter: {name}")
-    subset_pairs = (
-        ("proposal_trigger_count", "proposal_opportunity_count"),
-        ("reid_trigger_count", "reid_opportunity_count"),
-        ("epoch_reset_trigger_count", "epoch_reset_opportunity_count"),
-        ("icp_accept_count", "icp_opportunity_count"),
-        ("icp_reject_count", "icp_opportunity_count"),
-        ("ledger_commit_count", "ledger_stage_count"),
-        ("ledger_reclaim_count", "ledger_commit_count"),
+    validate_runtime_diagnostics(
+        runtime,
+        label=label,
+        expected_temporal_readout=expected_temporal_readout,
+        expected_candidate_id=expected_candidate_id,
     )
-    if any(not set(records[child]) <= set(records[parent]) for child, parent in subset_pairs):
-        raise ValueError(f"{label} mechanism_records relation mismatch")
-    accepts = set(records["icp_accept_count"])
-    rejects = set(records["icp_reject_count"])
-    opportunities = set(records["icp_opportunity_count"])
-    if accepts & rejects or accepts | rejects != opportunities:
-        raise ValueError(f"{label} ICP mechanism_records are not a partition")
-    diagnostic = runtime.get("diagnostic")
-    icp_enabled = runtime.get("execution_profile") == "a4" and "icp" not in (disabled or set()) and not (
-        isinstance(diagnostic, Mapping)
-        and diagnostic.get("controls") == {"icp_enabled": False}
-    )
-    if icp_enabled and not set(records["motion_rejection_count"]) <= opportunities:
-        raise ValueError(f"{label} mechanism_records relation mismatch")
 
 
 def _diagnostic_recompute_payloads(
     payloads: Mapping[str, Any],
     disabled: set[str],
     label: str,
+    *,
+    expected_temporal_readout: Mapping[str, Any] | None = None,
+    expected_candidate_id: str | None = None,
 ) -> dict[str, Any]:
     runtime = payloads["runtime_diagnostics"]
     if not isinstance(runtime, Mapping):
         raise ValueError(f"{label} runtime diagnostics are invalid")
-    _validate_runtime_mechanism_records(runtime, label, disabled)
+    _validate_runtime_mechanism_records(
+        runtime,
+        label,
+        expected_temporal_readout=expected_temporal_readout,
+        expected_candidate_id=expected_candidate_id,
+    )
     disabled_counters = {
         "proposal_recovery": {
             "proposal_opportunity_count",
@@ -818,24 +790,7 @@ def _diagnostic_recompute_payloads(
     if any(counters[name] != 0 or records[name] != [] for name in names):
         raise ValueError(f"{label} disabled mechanism counters/records must be zero")
 
-    prepared = copy.deepcopy(dict(payloads))
-    prepared_runtime = prepared["runtime_diagnostics"]
-    prepared_counters = prepared_runtime["counters"]
-    prepared_records = prepared_runtime["mechanism_records"]
-    if "icp" in disabled:
-        prepared_runtime["diagnostic"] = {
-            "controls": {"icp_enabled": False}
-        }
-    synthetic = "diagnostic-disabled:0"
-    for name in names:
-        prepared_counters[name] = 1
-        prepared_records[name] = [synthetic]
-    if "icp" in disabled:
-        prepared_counters["icp_accept_count"] = 0
-        prepared_records["icp_accept_count"] = []
-        prepared_counters["icp_reject_count"] = 1
-        prepared_records["icp_reject_count"] = [synthetic]
-    return prepared
+    return copy.deepcopy(dict(payloads))
 
 
 def _validate_preflight_gate_evidence(
@@ -1078,6 +1033,8 @@ def _validate_preflight_gate_evidence(
                 payloads,
                 disabled_mechanisms,
                 f"preflight candidate {candidate_id}",
+                expected_temporal_readout=materialized["temporal_readout"],
+                expected_candidate_id=candidate_id,
             )
             if disabled_mechanisms
             else payloads
@@ -1086,9 +1043,10 @@ def _validate_preflight_gate_evidence(
             candidate_id=base_profile,
             source_records=source_records,
             payloads=recompute_payloads,
+            expected_temporal_readout=materialized["temporal_readout"],
+            expected_candidate_id=candidate_id,
+            disabled_mechanisms=disabled_mechanisms,
         )
-        for disabled in disabled_mechanisms:
-            recomputed_mechanisms.pop(disabled, None)
         if candidate["mechanisms"] != recomputed_mechanisms:
             raise ValueError(
                 f"preflight candidate {candidate_id} mechanism records/counts "

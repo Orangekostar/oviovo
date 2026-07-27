@@ -36,7 +36,21 @@ def _record(path: Path, root: Path | None = None) -> dict[str, object]:
     (
         ("a2", None),
         ("a3", None),
-        ("a4", {"controls": {"icp_enabled": False}}),
+        (
+            "a4",
+            {
+                "identity": "diag_a4_translation_only_no_icp",
+                "controls": {"icp_enabled": False},
+                "component_enabled": {
+                    "proposal_recovery": True,
+                    "background_masking": True,
+                    "background_ledger": True,
+                    "dormant_reid": True,
+                    "icp": False,
+                },
+                "positive_claim_available": {"icp": False},
+            },
+        ),
     ),
 )
 def test_translation_profiles_report_motion_rejection_without_icp(
@@ -72,7 +86,7 @@ def test_translation_profiles_report_motion_rejection_without_icp(
             "processed_frame_count": 1,
             "counters": counters,
             "mechanism_records": mechanism_records,
-            **({} if diagnostic is None else {"diagnostic": diagnostic}),
+            "diagnostic": diagnostic,
         },
         source_records={name: source for name in (
             "trajectories", "lifecycle_transitions", "frame_coverage", "runtime_diagnostics"
@@ -81,6 +95,90 @@ def test_translation_profiles_report_motion_rejection_without_icp(
 
     assert telemetry["motion_rejection"]["opportunities"] == 1
     assert telemetry["motion_rejection"]["triggers"] == 1
+
+
+def test_occlusion_rejects_nonexact_diagnostic_claim() -> None:
+    counters = {
+        name: 0
+        for name in (
+            "proposal_opportunity_count", "proposal_trigger_count",
+            "reid_opportunity_count", "reid_trigger_count",
+            "motion_rejection_count", "ledger_rejection_count",
+            "identity_expiry_count", "geometry_reclaim_count",
+            "epoch_reset_opportunity_count", "epoch_reset_trigger_count",
+            "icp_opportunity_count", "icp_accept_count", "icp_reject_count",
+            "ledger_stage_count", "ledger_commit_count", "ledger_reclaim_count",
+        )
+    }
+    source = {"path": "source", "sha256": "a" * 64, "byte_count": 1}
+
+    with pytest.raises(ValueError, match="diagnostic"):
+        mechanism_telemetry_from_sources(
+            trajectories=[],
+            lifecycle_transitions=[],
+            frame_coverage=[{
+                "frame_index": 0, "timestamp_ns": 1,
+                "record_count": 0, "event_count": 0,
+            }],
+            runtime_diagnostics={
+                "schema_version": 1,
+                "execution_profile": "a4",
+                "processed_frame_count": 1,
+                "counters": counters,
+                "mechanism_records": {name: [] for name in counters},
+                "diagnostic": {"controls": {"icp_enabled": False}},
+            },
+            source_records={name: source for name in (
+                "trajectories", "lifecycle_transitions", "frame_coverage",
+                "runtime_diagnostics",
+            )},
+        )
+
+
+@pytest.mark.parametrize(
+    ("profile", "name"),
+    (("a1", "reid_opportunity_count"), ("a2", "ledger_stage_count")),
+)
+def test_occlusion_rejects_profile_impossible_counter(
+    profile: str, name: str
+) -> None:
+    counters = {
+        field: 0
+        for field in (
+            "proposal_opportunity_count", "proposal_trigger_count",
+            "reid_opportunity_count", "reid_trigger_count",
+            "motion_rejection_count", "ledger_rejection_count",
+            "identity_expiry_count", "geometry_reclaim_count",
+            "epoch_reset_opportunity_count", "epoch_reset_trigger_count",
+            "icp_opportunity_count", "icp_accept_count", "icp_reject_count",
+            "ledger_stage_count", "ledger_commit_count", "ledger_reclaim_count",
+        )
+    }
+    counters[name] = 1
+    records = {field: [] for field in counters}
+    records[name] = ["impossible:0"]
+    source = {"path": "source", "sha256": "a" * 64, "byte_count": 1}
+
+    with pytest.raises(ValueError, match="profile.*counter"):
+        mechanism_telemetry_from_sources(
+            trajectories=[], lifecycle_transitions=[],
+            frame_coverage=[{
+                "frame_index": 0, "timestamp_ns": 1,
+                "record_count": 0, "event_count": 0,
+            }],
+            runtime_diagnostics={
+                "schema_version": 1,
+                "execution_profile": profile,
+                "processed_frame_count": 1,
+                "counters": counters,
+                "mechanism_records": records,
+                "diagnostic": None,
+            },
+            source_records={name: source for name in (
+                "trajectories", "lifecycle_transitions", "frame_coverage",
+                "runtime_diagnostics",
+            )},
+        )
 
 
 def _tree(path: Path, root: Path) -> dict[str, object]:
@@ -197,6 +295,7 @@ def _install_mechanism_sources(
             "processed_frame_count": 2,
             "counters": counters,
             "mechanism_records": records,
+            "diagnostic": None,
         },
     )
     source_index = run / "source_index.json"

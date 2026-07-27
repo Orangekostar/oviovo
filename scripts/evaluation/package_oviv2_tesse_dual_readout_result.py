@@ -113,10 +113,11 @@ MECHANISMS_BY_PROFILE = {
     "a1": ("absence", "readout_invalidation"),
     "a2": (
         "absence", "readout_invalidation", "proposal_recovery", "epoch_reset",
+        "motion_rejection",
     ),
     "a3": (
         "absence", "readout_invalidation", "proposal_recovery", "epoch_reset",
-        "background_release", "background_reclaim",
+        "motion_rejection", "background_release", "background_reclaim",
     ),
     "a4": (
         "absence", "readout_invalidation", "proposal_recovery", "epoch_reset",

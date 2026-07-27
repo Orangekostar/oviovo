@@ -5,6 +5,7 @@ from typing import Any
 
 import numpy as np
 
+from src.evaluation.oviv2_runtime_diagnostics import validate_runtime_diagnostics
 from src.oviv2.temporal_snapshot import TemporalCompactCheckpoint
 
 
@@ -28,17 +29,6 @@ _LIFECYCLE_FIELDS = frozenset(
 )
 _COVERAGE_FIELDS = frozenset(
     {"frame_index", "timestamp_ns", "record_count", "event_count"}
-)
-_RUNTIME_COUNTER_FIELDS = frozenset(
-    {
-        "proposal_opportunity_count", "proposal_trigger_count",
-        "reid_opportunity_count", "reid_trigger_count",
-        "motion_rejection_count", "ledger_rejection_count",
-        "identity_expiry_count", "geometry_reclaim_count",
-        "epoch_reset_opportunity_count", "epoch_reset_trigger_count",
-        "icp_opportunity_count", "icp_accept_count", "icp_reject_count",
-        "ledger_stage_count", "ledger_commit_count", "ledger_reclaim_count",
-    }
 )
 _MECHANISMS_BY_PROFILE = {
     "a0": (),
@@ -253,6 +243,8 @@ def mechanism_telemetry_from_sources(
     frame_coverage: list[Mapping[str, Any]],
     runtime_diagnostics: Mapping[str, Any],
     source_records: Mapping[str, Mapping[str, Any]],
+    expected_temporal_readout: Mapping[str, Any] | None = None,
+    expected_candidate_id: str | None = None,
 ) -> dict[str, dict[str, Any]]:
     required_sources = {
         "trajectories", "lifecycle_transitions", "frame_coverage",
@@ -365,73 +357,24 @@ def mechanism_telemetry_from_sources(
         for index, row in enumerate(frame_coverage)
     ):
         raise ValueError("mechanism sources disagree with frame coverage")
-    required_runtime_fields = {
-        "schema_version", "execution_profile", "processed_frame_count", "counters"
-    } | {"mechanism_records"}
-    if set(runtime_diagnostics) not in (
-        required_runtime_fields,
-        required_runtime_fields | {"diagnostic"},
-    ):
-        raise ValueError("runtime diagnostics fields are not exact")
-    profile = runtime_diagnostics.get("execution_profile")
-    counters = runtime_diagnostics.get("counters")
-    records = runtime_diagnostics.get("mechanism_records")
-    diagnostic = runtime_diagnostics.get("diagnostic")
+    validate_runtime_diagnostics(
+        runtime_diagnostics,
+        label="runtime diagnostics",
+        expected_temporal_readout=expected_temporal_readout,
+        expected_candidate_id=expected_candidate_id,
+        expected_processed_frame_count=len(frame_coverage),
+    )
+    profile = runtime_diagnostics["execution_profile"]
+    counters = runtime_diagnostics["counters"]
+    records = runtime_diagnostics["mechanism_records"]
+    diagnostic = runtime_diagnostics["diagnostic"]
+    assert isinstance(profile, str)
+    assert isinstance(counters, Mapping)
+    assert isinstance(records, Mapping)
     icp_enabled = profile == "a4" and not (
         isinstance(diagnostic, Mapping)
         and diagnostic.get("controls") == {"icp_enabled": False}
     )
-    if not (
-        runtime_diagnostics.get("schema_version") == 1
-        and profile in _MECHANISMS_BY_PROFILE
-        and type(runtime_diagnostics.get("processed_frame_count")) is int
-        and runtime_diagnostics["processed_frame_count"] == len(frame_coverage)
-        and isinstance(counters, Mapping)
-        and set(counters) == _RUNTIME_COUNTER_FIELDS
-        and all(type(value) is int and value >= 0 for value in counters.values())
-        and isinstance(records, Mapping)
-        and set(records) == _RUNTIME_COUNTER_FIELDS
-        and all(
-            isinstance(records[name], list)
-            and len(records[name]) == counters[name]
-            and len(records[name]) == len(set(records[name]))
-            and all(isinstance(value, str) and value for value in records[name])
-            for name in _RUNTIME_COUNTER_FIELDS
-        )
-        and counters["proposal_trigger_count"]
-        <= counters["proposal_opportunity_count"]
-        and counters["reid_trigger_count"] <= counters["reid_opportunity_count"]
-        and counters["epoch_reset_trigger_count"]
-        <= counters["epoch_reset_opportunity_count"]
-        and counters["icp_accept_count"] + counters["icp_reject_count"]
-        == counters["icp_opportunity_count"]
-        and (
-            not icp_enabled
-            or counters["motion_rejection_count"] <= counters["icp_opportunity_count"]
-        )
-        and counters["ledger_commit_count"] <= counters["ledger_stage_count"]
-        and counters["ledger_reclaim_count"] <= counters["ledger_commit_count"]
-    ):
-        raise ValueError("runtime diagnostics are invalid")
-    assert isinstance(profile, str) and isinstance(counters, Mapping) and isinstance(records, Mapping)
-    subset_pairs = (
-        ("proposal_trigger_count", "proposal_opportunity_count"),
-        ("reid_trigger_count", "reid_opportunity_count"),
-        ("epoch_reset_trigger_count", "epoch_reset_opportunity_count"),
-        ("icp_accept_count", "icp_opportunity_count"),
-        ("icp_reject_count", "icp_opportunity_count"),
-        ("ledger_commit_count", "ledger_stage_count"),
-        ("ledger_reclaim_count", "ledger_commit_count"),
-    )
-    if any(not set(records[child]) <= set(records[parent]) for child, parent in subset_pairs):
-        raise ValueError("runtime diagnostics mechanism record relation is invalid")
-    accepts = set(records["icp_accept_count"])
-    rejects = set(records["icp_reject_count"])
-    opportunities = set(records["icp_opportunity_count"])
-    if accepts & rejects or accepts | rejects != opportunities:
-        raise ValueError("runtime diagnostics ICP mechanism records are invalid")
-    if icp_enabled and not set(records["motion_rejection_count"]) <= opportunities:
-        raise ValueError("runtime diagnostics motion records are invalid")
     lifecycle_source = source_records["lifecycle_transitions"]
     runtime_source = source_records["runtime_diagnostics"]
     values = {

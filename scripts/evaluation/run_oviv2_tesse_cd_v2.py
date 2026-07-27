@@ -68,6 +68,11 @@ from src.evaluation.oviv2_temporal_tesse import (  # noqa: E402
     load_temporal_current_checkpoint,
     publish_temporal_current_checkpoint,
 )
+from src.evaluation.oviv2_runtime_diagnostics import (  # noqa: E402
+    RUNTIME_DIAGNOSTIC_KEYS,
+    canonical_diagnostic_claim,
+    validate_runtime_diagnostics,
+)
 from src.evaluation.contracts import MapSnapshot  # noqa: E402
 from src.evaluation.exporters.oviovo import write_map_snapshot  # noqa: E402
 from src.oviv2.temporal_snapshot import (  # noqa: E402
@@ -422,24 +427,7 @@ V2_FINAL_SELECTION_KEYS = frozenset(
         "t4_ledger",
     }
 )
-V2_RUNTIME_DIAGNOSTIC_KEYS = (
-    "proposal_opportunity_count",
-    "proposal_trigger_count",
-    "reid_opportunity_count",
-    "reid_trigger_count",
-    "identity_expiry_count",
-    "geometry_reclaim_count",
-    "motion_rejection_count",
-    "ledger_rejection_count",
-    "epoch_reset_opportunity_count",
-    "epoch_reset_trigger_count",
-    "icp_opportunity_count",
-    "icp_accept_count",
-    "icp_reject_count",
-    "ledger_stage_count",
-    "ledger_commit_count",
-    "ledger_reclaim_count",
-)
+V2_RUNTIME_DIAGNOSTIC_KEYS = RUNTIME_DIAGNOSTIC_KEYS
 
 # Backward-compatible private aliases for existing Task 9 tests/importers.
 _FREEZE_TOP_KEYS = V2_FREEZE_TOP_KEYS
@@ -2283,14 +2271,15 @@ def _runtime_diagnostics_payload(
     processed_frame_count: int,
     mechanism_records: Mapping[str, Sequence[str]] | None = None,
 ) -> dict[str, Any]:
+    from src.oviv2.temporal_config import temporal_config_from_json
+
     temporal_readout = config.get("temporal_readout")
-    profile = (
-        temporal_readout.get("execution_profile")
-        if isinstance(temporal_readout, Mapping)
-        else None
-    )
-    if profile not in {f"a{index}" for index in range(5)}:
+    if not isinstance(temporal_readout, Mapping):
         raise ValueError("runtime diagnostics execution profile is invalid")
+    parsed = temporal_config_from_json(
+        {"temporal_readout": dict(temporal_readout)}
+    )
+    profile = parsed.execution_profile.profile_id
     temporal = getattr(runtime, "temporal", None)
     state = getattr(temporal, "state", None)
     diagnostics = getattr(state, "diagnostics", None)
@@ -2350,43 +2339,15 @@ def _runtime_diagnostics_payload(
         "processed_frame_count": processed_frame_count,
         "counters": counters,
         "mechanism_records": serialized_records,
+        "diagnostic": canonical_diagnostic_claim(parsed),
     }
-    if controls is not None:
-        from src.oviv2.temporal_config import temporal_config_from_json
-
-        parsed = temporal_config_from_json(
-            {"temporal_readout": dict(temporal_readout)}
-        )
-        disabled_claim = {
-            "proposal_recovery_enabled": "proposal_recovery",
-            "background_mode": "background_ledger",
-            "dormant_reid_enabled": "dormant_reid",
-            "icp_enabled": "icp",
-        }[next(iter(controls))]
-        payload["diagnostic"] = {
-            "identity": parsed.diagnostic_identity,
-            "controls": dict(controls),
-            "component_enabled": {
-                "proposal_recovery": (
-                    parsed.execution_profile.profile_id in {"a2", "a3", "a4"}
-                    and parsed.proposal_recovery_enabled
-                ),
-                "background_masking": parsed.execution_profile.profile_id in {"a3", "a4"},
-                "background_ledger": (
-                    parsed.execution_profile.profile_id in {"a3", "a4"}
-                    and parsed.background_ledger_enabled
-                ),
-                "dormant_reid": (
-                    parsed.execution_profile.profile_id == "a4"
-                    and parsed.dormant_reid_enabled
-                ),
-                "icp": (
-                    parsed.execution_profile.profile_id == "a4"
-                    and parsed.icp_enabled
-                ),
-            },
-            "positive_claim_available": {disabled_claim: False},
-        }
+    validate_runtime_diagnostics(
+        payload,
+        label="runtime diagnostics",
+        expected_temporal_readout=temporal_readout,
+        expected_candidate_id=parsed.diagnostic_identity or profile,
+        expected_processed_frame_count=processed_frame_count,
+    )
     return payload
 
 

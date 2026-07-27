@@ -159,6 +159,9 @@ def _mechanisms(
     candidate_id: str,
     source_records: Mapping[str, Mapping[str, Any]],
     payloads: Mapping[str, Any],
+    expected_temporal_readout: Mapping[str, Any] | None = None,
+    expected_candidate_id: str | None = None,
+    disabled_mechanisms: set[str] | None = None,
 ) -> dict[str, Any]:
     runtime = payloads["runtime_diagnostics"]
     required_runtime_fields = {
@@ -217,6 +220,8 @@ def _mechanisms(
         frame_coverage=payloads["frame_coverage"],
         runtime_diagnostics=runtime,
         source_records=source_records,
+        expected_temporal_readout=expected_temporal_readout,
+        expected_candidate_id=expected_candidate_id,
     )
     lifecycle = payloads["lifecycle_transitions"]
     visible_absent = [
@@ -266,6 +271,8 @@ def _mechanisms(
     }
     result: dict[str, Any] = {}
     for name in _MECHANISMS_BY_PROFILE[candidate_id]:
+        if name in (disabled_mechanisms or set()):
+            continue
         if name in {"absence", "readout_invalidation"}:
             opportunities = visible_absent
             triggers = visible_absent if name == "absence" else invalidated
@@ -287,7 +294,12 @@ def _mechanisms(
         if not opportunities or not triggers:
             raise ValueError(f"{name} mechanism has no usable opportunity/trigger")
     # Force validation of the evaluator-owned profile projection as well.
-    if set(telemetry) - {"icp_attempt", "icp_accept"} - set(result):
+    if (
+        set(telemetry)
+        - {"icp_attempt", "icp_accept"}
+        - set(result)
+        - (disabled_mechanisms or set())
+    ):
         raise ValueError("mechanism telemetry profile differs from candidate")
     return result
 
@@ -590,6 +602,8 @@ def build_preflight(
                 payloads,
                 disabled_mechanisms,
                 f"preflight candidate {candidate_id}",
+                expected_temporal_readout=materialized["temporal_readout"],
+                expected_candidate_id=candidate_id,
             )
             if disabled_mechanisms
             else payloads
@@ -598,9 +612,10 @@ def build_preflight(
             candidate_id=base_profile,
             source_records=source_records,
             payloads=mechanism_payloads,
+            expected_temporal_readout=materialized["temporal_readout"],
+            expected_candidate_id=candidate_id,
+            disabled_mechanisms=disabled_mechanisms,
         )
-        for disabled in disabled_mechanisms:
-            mechanisms.pop(disabled, None)
         candidates.append(
             {
                 "candidate_id": candidate_id,

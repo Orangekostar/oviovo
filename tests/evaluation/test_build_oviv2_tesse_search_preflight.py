@@ -148,6 +148,25 @@ def _candidate_sources(tmp_path: Path, candidate_id: str = "a1") -> Path:
             "icp_opportunity_count", "icp_accept_count", "icp_reject_count",
         },
     }.get(candidate_id, set())
+    allowed_by_profile = {
+        "a0": set(),
+        "a1": set(),
+        "a2": {
+            "proposal_opportunity_count", "proposal_trigger_count",
+            "identity_expiry_count", "geometry_reclaim_count",
+            "motion_rejection_count", "epoch_reset_opportunity_count",
+            "epoch_reset_trigger_count",
+        },
+        "a3": {
+            "proposal_opportunity_count", "proposal_trigger_count",
+            "identity_expiry_count", "geometry_reclaim_count",
+            "motion_rejection_count", "epoch_reset_opportunity_count",
+            "epoch_reset_trigger_count", "ledger_rejection_count",
+            "ledger_stage_count", "ledger_commit_count", "ledger_reclaim_count",
+        },
+        "a4": set(counters),
+    }
+    disabled_counters |= set(counters) - allowed_by_profile[base_profile]
     counters.update({name: 0 for name in disabled_counters})
     mechanism_records = {
         "proposal_opportunity_count": ["proposal:0"],
@@ -155,7 +174,10 @@ def _candidate_sources(tmp_path: Path, candidate_id: str = "a1") -> Path:
         "reid_opportunity_count": ["reid:0"],
         "reid_trigger_count": ["reid:0"],
         "motion_rejection_count": [
-            "motion:0" if candidate_id == "diag_a4_translation_only_no_icp" else "icp:0"
+            "motion:0"
+            if candidate_id == "diag_a4_translation_only_no_icp"
+            or base_profile in {"a2", "a3"}
+            else "icp:0"
         ],
         "ledger_rejection_count": [],
         "identity_expiry_count": ["identity:0"],
@@ -201,7 +223,7 @@ def _candidate_sources(tmp_path: Path, candidate_id: str = "a1") -> Path:
             "processed_frame_count": 2,
             "counters": counters,
             "mechanism_records": mechanism_records,
-            **({"diagnostic": diagnostic_payload} if diagnostic_payload else {}),
+            "diagnostic": diagnostic_payload,
         },
     )
     source_index = _write(
@@ -521,8 +543,8 @@ def test_rejects_required_mechanism_without_opportunity(tmp_path: Path) -> None:
 
 
 def test_rejects_runtime_counter_without_explicit_event_records(tmp_path: Path) -> None:
-    _candidate_sources(tmp_path)
-    root = tmp_path / "a1"
+    _candidate_sources(tmp_path, "a2")
+    root = tmp_path / "a2"
     source_index = json.loads((root / "source_index.json").read_text())
     diagnostics = json.loads((root / "runtime_diagnostics.json").read_text())
     diagnostics["mechanism_records"]["proposal_trigger_count"] = []

@@ -14,6 +14,7 @@ from scripts.evaluation.run_oviv2_tesse_dual_readout_search import (
     run_search,
 )
 from src.oviv2.temporal_config import ExecutionProfile, temporal_config_from_json
+from src.evaluation.oviv2_runtime_diagnostics import canonical_diagnostic_claim
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -176,6 +177,26 @@ def _preflight(tmp_path: Path, candidate_ids: tuple[str, ...]) -> Path:
             "ledger_reclaim_count",
         )
         zero_counters = {"ledger_rejection_count", "icp_accept_count"}
+        allowed_by_profile = {
+            "a0": set(),
+            "a1": set(),
+            "a2": {
+                "proposal_opportunity_count", "proposal_trigger_count",
+                "identity_expiry_count", "geometry_reclaim_count",
+                "motion_rejection_count", "epoch_reset_opportunity_count",
+                "epoch_reset_trigger_count",
+            },
+            "a3": {
+                "proposal_opportunity_count", "proposal_trigger_count",
+                "identity_expiry_count", "geometry_reclaim_count",
+                "motion_rejection_count", "epoch_reset_opportunity_count",
+                "epoch_reset_trigger_count", "ledger_rejection_count",
+                "ledger_stage_count", "ledger_commit_count",
+                "ledger_reclaim_count",
+            },
+            "a4": set(counter_names),
+        }
+        zero_counters |= set(counter_names) - allowed_by_profile[base_profile]
         zero_counters |= {
             "diag_a2_no_proposal_recovery": {
                 "proposal_opportunity_count",
@@ -202,7 +223,12 @@ def _preflight(tmp_path: Path, candidate_ids: tuple[str, ...]) -> Path:
             "proposal_trigger_count": "proposal:0",
             "reid_opportunity_count": "reid:0",
             "reid_trigger_count": "reid:0",
-            "motion_rejection_count": "icp:0",
+            "motion_rejection_count": (
+                "motion:0"
+                if candidate_id == "diag_a4_translation_only_no_icp"
+                or base_profile in {"a2", "a3"}
+                else "icp:0"
+            ),
             "identity_expiry_count": "identity:0",
             "geometry_reclaim_count": "geometry:0",
             "epoch_reset_opportunity_count": "epoch:0",
@@ -224,6 +250,11 @@ def _preflight(tmp_path: Path, candidate_ids: tuple[str, ...]) -> Path:
                     name: ([] if counters[name] == 0 else [record_id[name]])
                     for name in counter_names
                 },
+                "diagnostic": canonical_diagnostic_claim(
+                    temporal_config_from_json({
+                        "temporal_readout": materialized["temporal_readout"]
+                    })
+                ),
             },
         )
         source_index = _write_json(
@@ -322,7 +353,11 @@ def _preflight(tmp_path: Path, candidate_ids: tuple[str, ...]) -> Path:
             "readout_invalidation": ([0], [0], lifecycle_hash),
             "proposal_recovery": (["proposal:0"], ["proposal:0"], runtime_hash),
             "epoch_reset": (["epoch:0"], ["epoch:0"], runtime_hash),
-            "motion_rejection": (["icp:0"], ["icp:0"], runtime_hash),
+            "motion_rejection": (
+                [record_id["motion_rejection_count"]],
+                [record_id["motion_rejection_count"]],
+                runtime_hash,
+            ),
             "background_release": (["ledger:0"], ["ledger:0"], runtime_hash),
             "background_reclaim": (["ledger:0"], ["ledger:0"], runtime_hash),
             "eligible_reid": (["reid:0"], ["reid:0"], runtime_hash),
@@ -603,7 +638,7 @@ def test_diagnostic_rejects_nonzero_disabled_mechanism_self_report(
     runtime["mechanism_records"]["proposal_opportunity_count"] = ["proposal:0"]
     runtime["mechanism_records"]["proposal_trigger_count"] = ["proposal:0"]
 
-    with pytest.raises(ValueError, match="disabled mechanism counters/records must be zero"):
+    with pytest.raises(ValueError, match="disabled mechanism|profile-impossible"):
         search_runner._diagnostic_recompute_payloads(
             {"runtime_diagnostics": runtime},
             {"proposal_recovery"},
@@ -628,6 +663,106 @@ def test_translation_only_diagnostic_disables_icp_but_retains_motion_evidence(
     )
 
     assert prepared["runtime_diagnostics"]["counters"]["motion_rejection_count"] == 1
+
+
+def _a2_diagnostic_claim() -> dict[str, object]:
+    return {
+        "identity": "diag_a2_no_proposal_recovery",
+        "controls": {"proposal_recovery_enabled": False},
+        "component_enabled": {
+            "proposal_recovery": False,
+            "background_masking": False,
+            "background_ledger": False,
+            "dormant_reid": False,
+            "icp": False,
+        },
+        "positive_claim_available": {"proposal_recovery": False},
+    }
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ("missing", "identity", "controls", "component_enabled", "claim"),
+)
+def test_search_rejects_noncanonical_diagnostic_claim(
+    tmp_path: Path, mutation: str
+) -> None:
+    preflight = _preflight(tmp_path, ("diag_a2_no_proposal_recovery",))
+    payload = json.loads(preflight.read_text())
+    runtime = json.loads(Path(
+        payload["candidates"][0]["source_evidence"]["runtime_diagnostics"]["path"]
+    ).read_text())
+    runtime["diagnostic"] = _a2_diagnostic_claim()
+    if mutation == "missing":
+        runtime.pop("diagnostic")
+    elif mutation == "identity":
+        runtime["diagnostic"]["identity"] = "diag_a4_no_dormant_candidates"
+    elif mutation == "controls":
+        runtime["diagnostic"]["controls"] = {"icp_enabled": False}
+    elif mutation == "component_enabled":
+        runtime["diagnostic"]["component_enabled"]["proposal_recovery"] = True
+    else:
+        runtime["diagnostic"]["positive_claim_available"] = {"icp": False}
+    manifest = json.loads(MANIFEST.read_text())
+    base = json.loads(APARTMENT_CONFIG.read_text())
+    main = {item["candidate_id"]: item for item in manifest["candidates"]}
+    diagnostic = next(
+        item for item in manifest["diagnostic_candidates"]
+        if item["candidate_id"] == "diag_a2_no_proposal_recovery"
+    )
+    declaration = {**main["a2"], **diagnostic}
+    temporal = search_runner._materialize_config(base, declaration)["temporal_readout"]
+
+    with pytest.raises(ValueError, match="diagnostic"):
+        search_runner._validate_runtime_mechanism_records(
+            runtime,
+            "diagnostic",
+            expected_temporal_readout=temporal,
+            expected_candidate_id=diagnostic["candidate_id"],
+        )
+
+
+def test_search_rejects_main_profile_with_diagnostic_claim(tmp_path: Path) -> None:
+    preflight = _preflight(tmp_path, ("a2",))
+    payload = json.loads(preflight.read_text())
+    runtime = json.loads(Path(
+        payload["candidates"][0]["source_evidence"]["runtime_diagnostics"]["path"]
+    ).read_text())
+    runtime["diagnostic"] = _a2_diagnostic_claim()
+    manifest = json.loads(MANIFEST.read_text())
+    declaration = next(
+        item for item in manifest["candidates"] if item["candidate_id"] == "a2"
+    )
+
+    with pytest.raises(ValueError, match="diagnostic"):
+        search_runner._validate_runtime_mechanism_records(
+            runtime,
+            "main",
+            expected_temporal_readout=declaration["temporal_readout"],
+            expected_candidate_id="a2",
+        )
+
+
+def test_search_rejects_main_profile_impossible_counter(tmp_path: Path) -> None:
+    preflight = _preflight(tmp_path, ("a2",))
+    payload = json.loads(preflight.read_text())
+    runtime = json.loads(Path(
+        payload["candidates"][0]["source_evidence"]["runtime_diagnostics"]["path"]
+    ).read_text())
+    runtime["counters"]["ledger_stage_count"] = 1
+    runtime["mechanism_records"]["ledger_stage_count"] = ["ledger:0"]
+    manifest = json.loads(MANIFEST.read_text())
+    declaration = next(
+        item for item in manifest["candidates"] if item["candidate_id"] == "a2"
+    )
+
+    with pytest.raises(ValueError, match="profile-impossible"):
+        search_runner._validate_runtime_mechanism_records(
+            runtime,
+            "main",
+            expected_temporal_readout=declaration["temporal_readout"],
+            expected_candidate_id="a2",
+        )
 
 
 def test_manifest_rejects_unknown_and_profile_incompatible_parameter_spaces(
