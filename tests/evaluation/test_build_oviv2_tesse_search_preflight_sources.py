@@ -692,6 +692,28 @@ def test_open_directory_at_closes_duplicate_when_child_open_fails(
     assert len(list(Path("/proc/self/fd").iterdir())) == baseline_fds - 1
 
 
+def test_open_directory_at_does_not_depend_on_raw_fstat(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    (tmp_path / "child").mkdir()
+    root_fd = os.open(tmp_path, os.O_RDONLY | os.O_DIRECTORY)
+    baseline_fds = len(list(Path("/proc/self/fd").iterdir()))
+    descriptor = -1
+    monkeypatch.setattr(
+        module, "_RAW_FSTAT",
+        lambda fd: (_ for _ in ()).throw(OSError("raw fstat unavailable")),
+    )
+    try:
+        descriptor = module._open_directory_at(
+            root_fd, Path("child"), create=False
+        )
+    finally:
+        if descriptor >= 0:
+            os.close(descriptor)
+        os.close(root_fd)
+    assert len(list(Path("/proc/self/fd").iterdir())) == baseline_fds - 1
+
+
 def test_open_directory_at_preserves_fstat_error_and_closes_all_fds(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -806,6 +828,68 @@ def test_staging_creation_existing_name_propagates_file_exists(
     finally:
         os.close(parent_fd)
     assert not isinstance(raised.value, module._StagingCreationError)
+
+
+def test_staging_creation_propagates_proven_no_create_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    parent_fd = os.open(tmp_path, os.O_RDONLY | os.O_DIRECTORY)
+    real_mkdir = module.os.mkdir
+
+    def deny_create(path: object, *args: object, **kwargs: object) -> None:
+        if os.fspath(path) == "stage":
+            raise PermissionError("mkdir denied")
+        real_mkdir(path, *args, **kwargs)
+
+    monkeypatch.setattr(module.os, "mkdir", deny_create)
+    try:
+        with pytest.raises(PermissionError, match="mkdir denied"):
+            module._create_staging_directory_at(parent_fd, "stage")
+    finally:
+        monkeypatch.setattr(module.os, "mkdir", real_mkdir)
+        os.close(parent_fd)
+    assert not (tmp_path / "stage").exists()
+
+
+def test_staging_fstat_failure_closes_fd_without_raw_fstat(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    parent_fd = os.open(tmp_path, os.O_RDONLY | os.O_DIRECTORY)
+    baseline_fds = len(list(Path("/proc/self/fd").iterdir()))
+    real_open = module.os.open
+    real_fstat = module.os.fstat
+    real_raw_fstat = module._RAW_FSTAT
+    stage_fd: int | None = None
+
+    def record_open(path: object, flags: int, *args: object, **kwargs: object) -> int:
+        nonlocal stage_fd
+        descriptor = real_open(path, flags, *args, **kwargs)
+        if os.fspath(path) == "stage":
+            stage_fd = descriptor
+        return descriptor
+
+    def fail_stage_fstat(descriptor: int) -> os.stat_result:
+        if descriptor == stage_fd:
+            raise OSError("stage fstat failed")
+        return real_fstat(descriptor)
+
+    def fail_stage_raw_fstat(descriptor: int) -> os.stat_result:
+        if descriptor == stage_fd:
+            raise OSError("stage raw fstat failed")
+        return real_raw_fstat(descriptor)
+
+    monkeypatch.setattr(module.os, "open", record_open)
+    monkeypatch.setattr(module.os, "fstat", fail_stage_fstat)
+    monkeypatch.setattr(module, "_RAW_FSTAT", fail_stage_raw_fstat)
+    try:
+        with pytest.raises(module._StagingCreationError):
+            module._create_staging_directory_at(parent_fd, "stage")
+    finally:
+        monkeypatch.setattr(module.os, "open", real_open)
+        monkeypatch.setattr(module.os, "fstat", real_fstat)
+        monkeypatch.setattr(module, "_RAW_FSTAT", real_raw_fstat)
+        os.close(parent_fd)
+    assert len(list(Path("/proc/self/fd").iterdir())) == baseline_fds - 1
 
 
 def test_staging_creation_detects_name_swap_before_first_stat(

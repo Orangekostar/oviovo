@@ -392,11 +392,6 @@ def _record_relative(relative: Path, data: bytes) -> dict[str, Any]:
     }
 
 
-def _fd_object_identity(descriptor: int) -> tuple[int, int, int]:
-    status = _RAW_FSTAT(descriptor)
-    return status.st_dev, status.st_ino, status.st_mode
-
-
 def _close_owned_fd(descriptor: int) -> BaseException | None:
     try:
         _RAW_CLOSE(descriptor)
@@ -407,7 +402,6 @@ def _close_owned_fd(descriptor: int) -> BaseException | None:
 
 def _open_directory_at(root_fd: int, relative: Path, *, create: bool) -> int:
     current = os.dup(root_fd)
-    _fd_object_identity(current)
     try:
         for part in relative.parts:
             next_fd = -1
@@ -422,7 +416,6 @@ def _open_directory_at(root_fd: int, relative: Path, *, create: bool) -> int:
                     os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
                     dir_fd=current,
                 )
-                _fd_object_identity(next_fd)
                 opened = os.fstat(next_fd)
                 if not stat.S_ISDIR(opened.st_mode):
                     raise ValueError("staged output parent must be a directory")
@@ -728,13 +721,22 @@ def _validate_staging_creation_events(descriptor: int, name: str) -> None:
         raise ValueError("staging directory creation event sequence is invalid")
 
 
+def _watch_proves_name_was_not_created(descriptor: int, name: str) -> bool:
+    events = _read_parent_watch(descriptor)
+    if any(
+        mask & (_IN_Q_OVERFLOW | _IN_DELETE_SELF | _IN_MOVE_SELF)
+        for mask, _ in events
+    ):
+        return False
+    return not any(event_name == name for _, event_name in events)
+
+
 def _create_staging_directory_at(
     parent_fd: int, name: str,
 ) -> tuple[int, os.stat_result]:
     created: os.stat_result | None = None
     observed: os.stat_result | None = None
     descriptor = -1
-    descriptor_identity: tuple[int, int, int] | None = None
     watch_fd = _begin_parent_watch(parent_fd)
     watch_checked = False
     try:
@@ -745,9 +747,23 @@ def _create_staging_directory_at(
     except BaseException as exc:
         try:
             named = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+            named_absent = False
+        except FileNotFoundError:
+            named = None
+            named_absent = True
         except OSError:
             named = None
+            named_absent = False
+        try:
+            no_create = (
+                named_absent
+                and _watch_proves_name_was_not_created(watch_fd, name)
+            )
+        except (OSError, ValueError):
+            no_create = False
         _close_owned_fd(watch_fd)
+        if no_create:
+            raise
         raise _StagingCreationError(None, named) from exc
     try:
         observed = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
@@ -756,7 +772,6 @@ def _create_staging_directory_at(
             os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
             dir_fd=parent_fd,
         )
-        descriptor_identity = _fd_object_identity(descriptor)
         opened = os.fstat(descriptor)
         if (
             (opened.st_dev, opened.st_ino, opened.st_mode)
@@ -791,13 +806,7 @@ def _create_staging_directory_at(
         if descriptor >= 0:
             closing = descriptor
             descriptor = -1
-            if descriptor_identity is None:
-                try:
-                    descriptor_identity = _fd_object_identity(closing)
-                except OSError:
-                    descriptor_identity = None
-            if descriptor_identity is not None:
-                _close_owned_fd(closing)
+            _close_owned_fd(closing)
         try:
             named = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
         except OSError:
