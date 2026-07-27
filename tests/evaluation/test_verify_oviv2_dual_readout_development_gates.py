@@ -1222,6 +1222,61 @@ def test_exact_transaction_preflights_all_specs_before_creating_or_launching(
     assert not transaction.exists()
 
 
+@pytest.mark.parametrize(
+    "relationship",
+    ["root_equals_transaction", "root_inside_transaction", "transaction_inside_root"],
+)
+def test_exact_transaction_rejects_output_root_overlapping_transaction_before_launch(
+    tmp_path: Path, relationship: str
+) -> None:
+    source = tmp_path / "source.json"
+    config = tmp_path / "config.json"
+    source.write_text("{}\n")
+    config.write_text('{"scene":"apartment"}\n')
+    overlap_root = (tmp_path / "overlap").resolve()
+    transaction = (
+        overlap_root / "transaction"
+        if relationship == "transaction_inside_root"
+        else overlap_root
+    )
+    first_root = {
+        "root_equals_transaction": transaction,
+        "root_inside_transaction": transaction / "receipts" / "run",
+        "transaction_inside_root": overlap_root,
+    }[relationship]
+    specs = [
+        {
+            "profile": profile,
+            "config": str(config.resolve()),
+            "output_root": str(
+                first_root
+                if position == 0
+                else (tmp_path / f"independent-run-{position}").resolve()
+            ),
+            "source_manifest": str(source.resolve()),
+        }
+        for position, profile in enumerate(gates.EXACT_PROFILE_SEQUENCE)
+    ]
+    popen_calls = 0
+
+    def popen(*args: object, **kwargs: object) -> object:
+        nonlocal popen_calls
+        popen_calls += 1
+        raise AssertionError((args, kwargs))
+
+    with pytest.raises(gates.GateVerificationError, match="transaction|receipt|overlap"):
+        gates.execute_exact_profile_transaction(
+            specs,
+            repo=gates.REPO_ROOT,
+            python_executable="/env/bin/python",
+            transaction_dir=transaction,
+            popen_factory=popen,
+        )
+
+    assert popen_calls == 0
+    assert not transaction.exists()
+
+
 def test_exact_argv_rejects_injected_freeze_flag(tmp_path: Path) -> None:
     execution = _exact_execution("a1", tmp_path / "run-2", 102)
     execution["argv"] = [
@@ -1453,6 +1508,166 @@ def _failure_cleanup_harness(
         lambda executions, **kwargs: {"executions": executions},
     )
     return specs, transaction, popen, compare
+
+
+@pytest.mark.parametrize(
+    ("recovery", "expected_events"),
+    [
+        (
+            "terminate",
+            ["communicate", "poll", "terminate", "wait", "cleanup"],
+        ),
+        (
+            "kill",
+            [
+                "communicate", "poll", "terminate", "wait", "kill", "wait",
+                "cleanup",
+            ],
+        ),
+        ("exited", ["communicate", "poll", "wait", "cleanup"]),
+    ],
+)
+def test_exact_transaction_reaps_interrupted_process_before_cleanup(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    recovery: str,
+    expected_events: list[str],
+) -> None:
+    specs, transaction, _, compare = _failure_cleanup_harness(
+        tmp_path, monkeypatch, failure="child", position=99
+    )
+    events: list[str] = []
+
+    class InterruptedProcess:
+        pid = 31_338
+        returncode = None
+
+        def __init__(self) -> None:
+            self.running = recovery != "exited"
+            self.reaped = False
+            self.wait_calls = 0
+
+        def communicate(self) -> tuple[bytes, bytes]:
+            events.append("communicate")
+            raise KeyboardInterrupt("stop requested")
+
+        def poll(self) -> int | None:
+            events.append("poll")
+            return None if self.running else 0
+
+        def terminate(self) -> None:
+            events.append("terminate")
+            if recovery == "terminate":
+                self.running = False
+
+        def kill(self) -> None:
+            events.append("kill")
+            self.running = False
+
+        def wait(self, timeout: float | None = None) -> int:
+            events.append("wait")
+            assert timeout is not None
+            self.wait_calls += 1
+            if recovery == "kill" and self.wait_calls == 1:
+                raise subprocess.TimeoutExpired(["worker"], timeout)
+            assert not self.running
+            self.reaped = True
+            self.returncode = 0
+            return 0
+
+    process = InterruptedProcess()
+    original_cleanup = gates._cleanup_exact_transaction
+
+    def cleanup(*args: object, **kwargs: object) -> list[str]:
+        events.append("cleanup")
+        assert process.reaped
+        assert not process.running
+        return original_cleanup(*args, **kwargs)
+
+    monkeypatch.setattr(gates, "_cleanup_exact_transaction", cleanup)
+    with pytest.raises(KeyboardInterrupt, match="stop requested"):
+        gates.execute_exact_profile_transaction(
+            specs,
+            repo=gates.REPO_ROOT,
+            python_executable="/env/bin/python",
+            transaction_dir=transaction,
+            popen_factory=lambda *args, **kwargs: process,
+            compare=compare,
+        )
+
+    assert events == expected_events
+    assert process.reaped
+    assert not transaction.exists()
+
+
+def test_exact_transaction_reports_termination_failure_with_original_cause(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    specs, transaction, _, compare = _failure_cleanup_harness(
+        tmp_path, monkeypatch, failure="child", position=99
+    )
+    events: list[str] = []
+
+    class StopSignal(BaseException):
+        pass
+
+    class TerminateFailureProcess:
+        pid = 31_339
+        returncode = None
+
+        def __init__(self) -> None:
+            self.running = True
+            self.reaped = False
+
+        def communicate(self) -> tuple[bytes, bytes]:
+            events.append("communicate")
+            raise StopSignal("original interrupt")
+
+        def poll(self) -> int | None:
+            events.append("poll")
+            return None if self.running else 0
+
+        def terminate(self) -> None:
+            events.append("terminate")
+            raise OSError("terminate denied")
+
+        def kill(self) -> None:
+            events.append("kill")
+            self.running = False
+
+        def wait(self, timeout: float | None = None) -> int:
+            events.append("wait")
+            assert timeout is not None
+            assert not self.running
+            self.reaped = True
+            self.returncode = 0
+            return 0
+
+    process = TerminateFailureProcess()
+    original_cleanup = gates._cleanup_exact_transaction
+
+    def cleanup(*args: object, **kwargs: object) -> list[str]:
+        events.append("cleanup")
+        assert process.reaped
+        return original_cleanup(*args, **kwargs)
+
+    monkeypatch.setattr(gates, "_cleanup_exact_transaction", cleanup)
+    with pytest.raises(
+        gates.GateVerificationError, match="process.*recovery|terminate denied"
+    ) as caught:
+        gates.execute_exact_profile_transaction(
+            specs,
+            repo=gates.REPO_ROOT,
+            python_executable="/env/bin/python",
+            transaction_dir=transaction,
+            popen_factory=lambda *args, **kwargs: process,
+            compare=compare,
+        )
+
+    assert isinstance(caught.value.__cause__, StopSignal)
+    assert events == ["communicate", "poll", "terminate", "kill", "wait", "cleanup"]
+    assert process.reaped
+    assert not transaction.exists()
 
 
 @pytest.mark.parametrize("position", [0, 4, 8])

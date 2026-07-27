@@ -39,6 +39,7 @@ DEVELOPMENT_EXECUTION_CONTEXT = {
     "scene": "apartment",
 }
 DEFAULT_MAX_INPUT_BYTES = 16 * 1024 * 1024
+PROCESS_REAP_TIMEOUT_SECONDS = 5.0
 LOCAL_PROCESS_TRUST_MODEL = {
     "pid_semantics": "trusted_local_orchestrator_observation",
     "observation_basis": "parent_popen_and_waitpid",
@@ -962,11 +963,18 @@ def _preflight_exact_profile_specs(
     *,
     repo: Path,
     python_executable: str,
+    transaction_dir: Path,
 ) -> tuple[_ExactProfileSpec, ...]:
     if len(specs) != len(EXACT_PROFILE_SEQUENCE):
         raise GateVerificationError("exact execution spec inventory is invalid")
     if not Path(python_executable).is_absolute():
         raise GateVerificationError("exact execution Python path must be absolute")
+    if (
+        not transaction_dir.is_absolute()
+        or str(transaction_dir.resolve(strict=False)) != str(transaction_dir)
+    ):
+        raise GateVerificationError("exact transaction directory is not canonical")
+    reserved_transaction_paths = (transaction_dir, transaction_dir / "receipts")
     expected_fields = {"profile", "config", "output_root", "source_manifest"}
     prepared: list[_ExactProfileSpec] = []
     roots: list[Path] = []
@@ -999,6 +1007,15 @@ def _preflight_exact_profile_specs(
             raise GateVerificationError("exact execution output root is not canonical")
         if root.exists() or root.is_symlink():
             raise GateVerificationError("exact execution output root would clobber data")
+        if any(
+            root == reserved
+            or root in reserved.parents
+            or reserved in root.parents
+            for reserved in reserved_transaction_paths
+        ):
+            raise GateVerificationError(
+                "exact execution output root overlaps transaction or receipts"
+            )
         if any(
             root == previous
             or root in previous.parents
@@ -1036,6 +1053,46 @@ def _preflight_exact_profile_specs(
     return tuple(prepared)
 
 
+def _reap_process_after_interruption(
+    process: subprocess.Popen[bytes],
+) -> str | None:
+    try:
+        running = process.poll() is None
+    except BaseException as exc:
+        raise GateVerificationError(f"process poll failed: {exc}") from exc
+    if not running:
+        try:
+            process.wait(timeout=PROCESS_REAP_TIMEOUT_SECONDS)
+        except BaseException as exc:
+            raise GateVerificationError(f"process wait/reap failed: {exc}") from exc
+        return None
+
+    try:
+        process.terminate()
+    except BaseException as terminate_error:
+        try:
+            process.kill()
+            process.wait(timeout=PROCESS_REAP_TIMEOUT_SECONDS)
+        except BaseException as kill_error:
+            raise GateVerificationError(
+                f"process terminate failed: {terminate_error}; "
+                f"process kill/reap failed: {kill_error}"
+            ) from kill_error
+        return f"process terminate failed: {terminate_error}"
+
+    try:
+        process.wait(timeout=PROCESS_REAP_TIMEOUT_SECONDS)
+    except subprocess.TimeoutExpired:
+        try:
+            process.kill()
+            process.wait(timeout=PROCESS_REAP_TIMEOUT_SECONDS)
+        except BaseException as exc:
+            raise GateVerificationError(f"process kill/reap failed: {exc}") from exc
+    except BaseException as exc:
+        raise GateVerificationError(f"process wait/reap failed: {exc}") from exc
+    return None
+
+
 def execute_exact_profile_transaction(
     specs: list[dict[str, object]],
     *,
@@ -1046,12 +1103,15 @@ def execute_exact_profile_transaction(
     compare: Callable[[Path, Path], dict[str, Any]] = compare_cumulative_artifacts,
 ) -> dict[str, Any]:
     """Launch and immediately verify the interleaved exact-profile transaction."""
+    transaction_dir = Path(os.path.abspath(transaction_dir))
     if transaction_dir.exists() or transaction_dir.is_symlink():
         raise GateVerificationError("exact transaction directory would clobber data")
     prepared_specs = _preflight_exact_profile_specs(
-        specs, repo=repo, python_executable=python_executable
+        specs,
+        repo=repo,
+        python_executable=python_executable,
+        transaction_dir=transaction_dir,
     )
-    transaction_dir = Path(os.path.abspath(transaction_dir))
     receipts_dir = transaction_dir / "receipts"
     environment = os.environ.copy()
     records: list[dict[str, Any]] = []
@@ -1062,6 +1122,7 @@ def execute_exact_profile_transaction(
     transaction_witness: OwnedPath | None = None
     receipts_witness: OwnedPath | None = None
     unproven_root: Path | None = None
+    process_reap_failed = False
     try:
         try:
             transaction_witness = _create_owned_directory(transaction_dir)
@@ -1085,9 +1146,23 @@ def execute_exact_profile_transaction(
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-            stdout, stderr = process.communicate()
-            if process is None:
-                raise GateVerificationError("exact execution process did not start")
+            try:
+                stdout, stderr = process.communicate()
+            except BaseException as communication_error:
+                try:
+                    recovery_problem = _reap_process_after_interruption(process)
+                except BaseException as recovery_error:
+                    process_reap_failed = True
+                    raise GateVerificationError(
+                        f"exact execution process reap failed after "
+                        f"{type(communication_error).__name__}: {recovery_error}"
+                    ) from communication_error
+                if recovery_problem is not None:
+                    raise GateVerificationError(
+                        f"exact execution process recovery failed after "
+                        f"{type(communication_error).__name__}: {recovery_problem}"
+                    ) from communication_error
+                raise
             returncode = process.returncode
             if returncode != 0:
                 detail = stderr.decode("utf-8", errors="replace").strip()
@@ -1170,6 +1245,8 @@ def execute_exact_profile_transaction(
         )
         return result
     except BaseException as error:
+        if process_reap_failed:
+            raise
         problems = _cleanup_exact_transaction(
             root_witnesses,
             observation_witnesses,
