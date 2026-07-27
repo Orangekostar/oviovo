@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import ctypes
 from dataclasses import dataclass, field
 import hashlib
 import json
@@ -44,6 +45,19 @@ PROVENANCE_FIELDS = {
     "gpu_inventory",
     "library_versions",
 }
+SCHEMA1_VARIANTS = {"production", "t1_transaction", "minimal"}
+_MUTATION_MASK = (
+    0x00000002  # IN_MODIFY
+    | 0x00000004  # IN_ATTRIB
+    | 0x00000008  # IN_CLOSE_WRITE
+    | 0x00000040  # IN_MOVED_FROM
+    | 0x00000080  # IN_MOVED_TO
+    | 0x00000100  # IN_CREATE
+    | 0x00000200  # IN_DELETE
+    | 0x00000400  # IN_DELETE_SELF
+    | 0x00000800  # IN_MOVE_SELF
+    | 0x00002000  # IN_UNMOUNT
+)
 PROVENANCE_LIBRARY_FIELDS = {"numpy", "open3d", "torch", "scipy", "pillow"}
 SCHEMA1_SUPPORT_FILES = {
     "capture_status.json",
@@ -366,6 +380,74 @@ def _open_directory(
         except (OSError, UnboundLocalError):
             pass
         raise ArtifactMismatch(f"{label} tree is missing, unsafe, or contains a symlink") from exc
+
+
+def _add_mutation_watches(descriptor: int, directory: int) -> None:
+    libc = ctypes.CDLL(None, use_errno=True)
+    add = libc.inotify_add_watch
+    add.argtypes = (ctypes.c_int, ctypes.c_char_p, ctypes.c_uint32)
+    add.restype = ctypes.c_int
+    if add(descriptor, os.fsencode(f"/proc/self/fd/{directory}"), _MUTATION_MASK) < 0:
+        error = ctypes.get_errno()
+        raise OSError(error, os.strerror(error))
+    before = os.fstat(directory)
+    names = sorted(os.listdir(directory))
+    for name in names:
+        metadata = os.stat(name, dir_fd=directory, follow_symlinks=False)
+        if stat.S_ISDIR(metadata.st_mode):
+            child = os.open(
+                name,
+                os.O_RDONLY | getattr(os, "O_CLOEXEC", 0)
+                | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_DIRECTORY", 0),
+                dir_fd=directory,
+            )
+            try:
+                if _identity(os.fstat(child)) != _identity(metadata):
+                    raise ArtifactMismatch(
+                        "artifact tree changed while mutation watches were installed"
+                    )
+                _add_mutation_watches(descriptor, child)
+            finally:
+                os.close(child)
+        elif stat.S_ISLNK(metadata.st_mode):
+            raise ArtifactMismatch("artifact tree contains a symlink")
+        elif not stat.S_ISREG(metadata.st_mode):
+            raise ArtifactMismatch("artifact tree contains a forbidden entry")
+    if _identity(before) != _identity(os.fstat(directory)) or names != sorted(
+        os.listdir(directory)
+    ):
+        raise ArtifactMismatch("artifact tree changed while mutation watches were installed")
+
+
+def _begin_mutation_watch(root: _RootHandle) -> int:
+    libc = ctypes.CDLL(None, use_errno=True)
+    init = libc.inotify_init1
+    init.argtypes = (ctypes.c_int,)
+    init.restype = ctypes.c_int
+    descriptor = init(os.O_NONBLOCK | getattr(os, "O_CLOEXEC", 0))
+    if descriptor < 0:
+        error = ctypes.get_errno()
+        raise ArtifactMismatch("artifact mutation witness is unavailable") from OSError(
+            error, os.strerror(error)
+        )
+    directory = _open_directory(root, None, "artifact mutation witness")
+    try:
+        _add_mutation_watches(descriptor, directory)
+        return descriptor
+    except BaseException:
+        os.close(descriptor)
+        raise
+    finally:
+        os.close(directory)
+
+
+def _verify_mutation_watch(descriptor: int) -> None:
+    try:
+        data = os.read(descriptor, 64 * 1024)
+    except BlockingIOError:
+        return
+    if data:
+        raise ArtifactMismatch("artifact tree changed during comparison")
 
 
 def _walk_directory(
@@ -1093,46 +1175,6 @@ def _schema_version(value: Mapping[str, Any], expected: int) -> bool:
     )
 
 
-def _schema1_production_signature(
-    all_files: Mapping[str, FileEntry], manifest: Mapping[str, Any]
-) -> bool:
-    checkpoint_fields = {
-        "checkpoint_status",
-        "consumed_through_frame",
-        "consumed_through_frame_exclusive",
-        "event_ids",
-        "format",
-        "frame_index",
-        "ownership_checkpoint",
-        "relative_timestamp_ns",
-        "roles",
-        "scene",
-        "timestamp_ns",
-    }
-    checkpoints = manifest.get("checkpoints")
-    causal_markers = {
-        "timestamp_ns", "relative_timestamp_ns", "consumed_through_frame",
-        "consumed_through_frame_exclusive", "event_ids", "roles", "format",
-        "ownership_checkpoint",
-    }
-    return (
-        isinstance(checkpoints, list)
-        and any(
-            isinstance(checkpoint, Mapping)
-            and (
-                checkpoint_fields.issubset(checkpoint)
-                or bool(causal_markers & set(checkpoint))
-            )
-            for checkpoint in checkpoints
-        )
-    ) or any(
-        len(path.parts) >= 3
-        and path.parts[0] == "checkpoints"
-        and path.name == "checksums.json"
-        for path in map(PurePosixPath, all_files)
-    )
-
-
 def _schema1_checkpoint_variant(manifest: Mapping[str, Any]) -> str:
     minimal = {
         "frame_index", "artifact", "voxel_snapshot", "checkpoint_status",
@@ -1188,9 +1230,7 @@ def _schema1_checkpoint_variant(manifest: Mapping[str, Any]) -> str:
     return variant
 
 
-def _validate_schema1_structure(
-    all_files: Mapping[str, FileEntry], manifest: Mapping[str, Any]
-) -> bool:
+def _validate_schema1_structure(manifest: Mapping[str, Any], variant: str) -> bool:
     fields = frozenset(manifest)
     minimal_variants = {
         frozenset({"schema_version", "checkpoints"}),
@@ -1200,17 +1240,18 @@ def _validate_schema1_structure(
         frozenset(SCHEMA1_PRODUCTION_FIELDS),
         frozenset(SCHEMA1_PRODUCTION_FIELDS | {"frozen_run_identity", "run_execution"}),
     }
-    production_signature = _schema1_production_signature(all_files, manifest)
     checkpoint_variant = _schema1_checkpoint_variant(manifest)
-    if production_signature and fields not in production_variants:
-        raise ArtifactMismatch("schema1 production manifest cannot be downgraded")
     if fields in minimal_variants:
-        if checkpoint_variant != "minimal" or production_signature:
-            raise ArtifactMismatch("schema1 production manifest cannot be downgraded")
+        if variant != "minimal":
+            raise ArtifactMismatch("schema1 manifest does not match caller-trusted variant")
+        if checkpoint_variant != "minimal":
+            raise ArtifactMismatch("schema1 minimal checkpoint schema is invalid")
         return False
     if fields == frozenset(SCHEMA1_T1_TRANSACTION_FIELDS):
-        if checkpoint_variant != "minimal" or production_signature:
-            raise ArtifactMismatch("schema1 production manifest cannot be downgraded")
+        if variant != "t1_transaction":
+            raise ArtifactMismatch("schema1 manifest does not match caller-trusted variant")
+        if checkpoint_variant != "minimal":
+            raise ArtifactMismatch("schema1 T1 checkpoint schema is invalid")
         if (
             not _schema_version(manifest, 1)
             or not _nonempty_string(manifest.get("scene"))
@@ -1228,6 +1269,8 @@ def _validate_schema1_structure(
         raise ArtifactMismatch(
             "schema1 run manifest schema is invalid; artifact inventory is not exact"
         )
+    if variant != "production":
+        raise ArtifactMismatch("schema1 manifest does not match caller-trusted variant")
     if checkpoint_variant != "production":
         raise ArtifactMismatch("schema1 production checkpoint schema is invalid")
     checkpoints = manifest.get("checkpoints")
@@ -1563,6 +1606,11 @@ def _validate_schema1_schedule(
             not _nonnegative_integer(parameters.get(key))
             for key in parameter_fields - {"frame_indexing", "event_frame_rule"}
         )
+        or parameters.get("common_event_step_frames", 0) <= 0
+        or parameters.get("common_checkpoints_per_event", 0) <= 0
+        or parameters.get("common_event_horizon_frames")
+        != parameters.get("common_event_step_frames")
+        * (parameters.get("common_checkpoints_per_event") - 1)
         or not _nonempty_string(parameters.get("event_frame_rule"))
         or not isinstance(scene, Mapping)
         or set(scene) != scene_fields
@@ -1603,8 +1651,16 @@ def _validate_schema1_schedule(
             or not _index_list(event.get("common_checkpoint_frame_indices"))
             or len(event["common_checkpoint_frame_indices"])
             != parameters["common_checkpoints_per_event"]
-            or event["intervention_frame_index"]
-            != event["common_checkpoint_frame_indices"][0]
+            or event["common_checkpoint_frame_indices"]
+            != list(
+                range(
+                    event["intervention_frame_index"],
+                    event["intervention_frame_index"]
+                    + parameters["common_event_horizon_frames"]
+                    + 1,
+                    parameters["common_event_step_frames"],
+                )
+            )
             or event["event_relative_timestamp_ns"]
             > event["intervention_relative_timestamp_ns"]
         ):
@@ -1641,6 +1697,17 @@ def _validate_schema1_schedule(
             entry["frame_index"] for entry in entries if event_id in entry["event_ids"]
         ] != frames:
             raise ArtifactMismatch("causal schedule event frame binding mismatch")
+        event = next(item for item in events if item["event_id"] == event_id)
+        intervention_entry = next(
+            item for item in entries
+            if item["frame_index"] == event["intervention_frame_index"]
+        )
+        if (
+            intervention_entry["timestamp_ns"] != event["intervention_timestamp_ns"]
+            or intervention_entry["relative_timestamp_ns"]
+            != event["intervention_relative_timestamp_ns"]
+        ):
+            raise ArtifactMismatch("causal schedule event intervention binding mismatch")
     if list(timestamps) != manifest.get("official_schedule_frame_indices"):
         raise ArtifactMismatch("causal schedule frame inventory mismatch")
     manifest_checkpoints = {
@@ -1971,6 +2038,7 @@ def _validate_legacy_evaluation_summary(
     canonical: Mapping[str, Any],
     manifest: Mapping[str, Any],
     temporal_source: Mapping[str, Any],
+    schedule_events: Mapping[str, Mapping[str, Any]],
 ) -> None:
     shared_fields = {
         "schema_version",
@@ -2138,8 +2206,11 @@ def _validate_legacy_evaluation_summary(
         )
     ):
         raise ArtifactMismatch("evaluation metrics evidence is invalid")
+    if set(schedule_events) != event_ids:
+        raise ArtifactMismatch("evaluation event inventory does not match root schedule")
     for event_id, event in metric_events.items():
         expected_frames = sorted(frame for current, frame in frame_keys if current == event_id)
+        schedule_event = schedule_events[event_id]
         if (
             not isinstance(event, Mapping)
             or set(event) != event_fields
@@ -2152,6 +2223,9 @@ def _validate_legacy_evaluation_summary(
             )
             or not _nonnegative_integer(event.get("intervention_frame_id"))
             or event.get("frame_ids") != expected_frames
+            or expected_frames != schedule_event.get("common_checkpoint_frame_indices")
+            or event.get("intervention_frame_id")
+            != schedule_event.get("intervention_frame_index")
             or event.get("censor_frame") is not None
             and not _nonnegative_integer(event.get("censor_frame"))
             or event.get("recovery_frames") is not None
@@ -2522,7 +2596,16 @@ def _schema1_frozen_legacy_inventory(
         "canonical evaluation summary",
     )
     _validate_legacy_evaluation_summary(
-        summary, canonical, manifest, temporal_source
+        summary,
+        canonical,
+        manifest,
+        temporal_source,
+        {
+            event["event_id"]: event
+            for event in _support_json(
+                all_files, "inputs/schedule.json", "root causal schedule"
+            )["scenes"][manifest["scene"]]["events"]
+        },
     )
     expected.update(evaluation_files)
     if actual != expected:
@@ -2900,7 +2983,7 @@ def _validate_t1_receipt(
 
 
 def _load_inventory(
-    root: _RootHandle, validation_stage: str,
+    root: _RootHandle, validation_stage: str, schema1_variant: str | None,
 ) -> tuple[list[int], dict[str, FileEntry], dict[str, FileEntry]]:
     all_files = _all_regular_files(root)
     manifest_data = _regular_bytes(
@@ -2938,7 +3021,9 @@ def _load_inventory(
         _schema2_run_identity(manifest, all_files)
         frames, projection = _schema2_projection(manifest, all_files)
         return frames, projection, all_files
-    production = _validate_schema1_structure(all_files, manifest)
+    if schema1_variant is None:
+        raise ArtifactMismatch("schema1 variant must be supplied by the caller")
+    production = _validate_schema1_structure(manifest, schema1_variant)
     if validation_stage == "pre_legacy" and not production:
         raise ArtifactMismatch("pre-legacy validation requires schema1 production")
     _validate_manifest_records(all_files, manifest)
@@ -2979,27 +3064,47 @@ def compare_cumulative_artifacts(
     right: str | Path,
     *,
     validation_stage: str = "final",
+    left_schema1_variant: str | None = None,
+    right_schema1_variant: str | None = None,
 ) -> dict[str, Any]:
     """Compare with O(chunk + directory depth + output inventory) memory."""
     if validation_stage not in {"final", "pre_legacy"}:
         raise ValueError("validation_stage must be 'final' or 'pre_legacy'")
+    if (
+        left_schema1_variant not in SCHEMA1_VARIANTS | {None}
+        or right_schema1_variant not in SCHEMA1_VARIANTS | {None}
+    ):
+        raise ValueError("schema1 variant is invalid")
     left_path = Path(os.path.abspath(os.fspath(left)))
     right_path = Path(os.path.abspath(os.fspath(right)))
     handles: dict[str, _RootHandle] = {}
-    loaded: dict[str, tuple[list[int], dict[str, FileEntry], dict[str, FileEntry]]] = {}
+    watches: dict[str, int] = {}
+    loaded: dict[
+        tuple[str, str | None],
+        tuple[list[int], dict[str, FileEntry], dict[str, FileEntry]],
+    ] = {}
 
-    def load(value: str | Path) -> tuple[
+    def load(value: str | Path, variant: str | None) -> tuple[
         str, _RootHandle, tuple[list[int], dict[str, FileEntry], dict[str, FileEntry]]
     ]:
         key = os.path.abspath(os.fspath(value))
         if key not in handles:
             handles[key] = _open_root(Path(value))
-            loaded[key] = _load_inventory(handles[key], validation_stage)
-        return key, handles[key], loaded[key]
+            watches[key] = _begin_mutation_watch(handles[key])
+        cache_key = (key, variant)
+        if cache_key not in loaded:
+            loaded[cache_key] = _load_inventory(handles[key], validation_stage, variant)
+        return key, handles[key], loaded[cache_key]
 
     try:
-        left_key, left_root, (left_frames, left_inventory, left_all) = load(left_path)
-        right_key, right_root, (right_frames, right_inventory, right_all) = load(right_path)
+        if left_path == right_path and left_schema1_variant != right_schema1_variant:
+            raise ValueError("the same root must use the same schema1 variant")
+        left_key, left_root, (left_frames, left_inventory, left_all) = load(
+            left_path, left_schema1_variant
+        )
+        right_key, right_root, (right_frames, right_inventory, right_all) = load(
+            right_path, right_schema1_variant
+        )
         if left_frames != right_frames:
             raise ArtifactMismatch("checkpoint inventory differs")
         if set(left_inventory) != set(right_inventory):
@@ -3032,6 +3137,8 @@ def compare_cumulative_artifacts(
             _verify_full_inventory(right_root, right_all)
         for handle in handles.values():
             handle.verify()
+        for descriptor in watches.values():
+            _verify_mutation_watch(descriptor)
         return {
             "format": "oviv2_cumulative_exact_v1",
             "checkpoint_frames": left_frames,
@@ -3039,8 +3146,12 @@ def compare_cumulative_artifacts(
             "root_sha256": root_digest.hexdigest(),
         }
     finally:
-        for handle in handles.values():
-            handle.close()
+        try:
+            for descriptor in watches.values():
+                os.close(descriptor)
+        finally:
+            for handle in handles.values():
+                handle.close()
 
 
 def _write_all(descriptor: int, data: bytes) -> None:
@@ -3116,8 +3227,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("left", type=Path)
     parser.add_argument("right", type=Path)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--left-schema1-variant", choices=sorted(SCHEMA1_VARIANTS))
+    parser.add_argument("--right-schema1-variant", choices=sorted(SCHEMA1_VARIANTS))
     args = parser.parse_args(argv)
-    result = compare_cumulative_artifacts(args.left, args.right)
+    result = compare_cumulative_artifacts(
+        args.left,
+        args.right,
+        left_schema1_variant=args.left_schema1_variant,
+        right_schema1_variant=args.right_schema1_variant,
+    )
     payload = json.dumps(result, sort_keys=True, separators=(",", ":")) + "\n"
     if args.output is None:
         print(payload, end="")

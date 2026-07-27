@@ -235,7 +235,7 @@ def _validate_exact_argv(record: Mapping[str, Any], root: Path) -> None:
 def _bind_exact_receipt(
     record: dict[str, Any],
     *,
-    compare: Callable[[Path, Path], dict[str, Any]],
+    compare: Callable[..., dict[str, Any]],
     expected_position: int | None = None,
     audit: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -311,7 +311,15 @@ def _bind_exact_receipt(
         raise GateVerificationError("exact execution reopened binding mismatch")
     if audit is None:
         try:
-            audit = compare(root, root)
+            schema1_variant = (
+                "t1_transaction" if record["profile"] == "reference" else "production"
+            )
+            audit = compare(
+                root,
+                root,
+                left_schema1_variant=schema1_variant,
+                right_schema1_variant=schema1_variant,
+            )
         except (ArtifactMismatch, KeyError, TypeError) as exc:
             raise GateVerificationError(f"exact execution artifact mismatch: {exc}") from exc
     if (
@@ -331,7 +339,7 @@ def _bind_exact_receipt(
 def verify_exact_profile_runs(
     executions: list[dict[str, Any]],
     *,
-    compare: Callable[[Path, Path], dict[str, Any]] = compare_cumulative_artifacts,
+    compare: Callable[..., dict[str, Any]] = compare_cumulative_artifacts,
     audits: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Verify an independently executed, interleaved T1/A0-A4 transaction."""
@@ -1110,7 +1118,7 @@ def execute_exact_profile_transaction(
     python_executable: str,
     transaction_dir: Path,
     popen_factory: PopenFactory = subprocess.Popen,
-    compare: Callable[[Path, Path], dict[str, Any]] = compare_cumulative_artifacts,
+    compare: Callable[..., dict[str, Any]] = compare_cumulative_artifacts,
 ) -> dict[str, Any]:
     """Launch and immediately verify the interleaved exact-profile transaction."""
     transaction_dir = Path(os.path.abspath(transaction_dir))
@@ -1242,7 +1250,14 @@ def execute_exact_profile_transaction(
             }
             records.append(dict(record))
             roots.append(root)
-            audits.append(compare(root, root))
+            audits.append(
+                compare(
+                    root,
+                    root,
+                    left_schema1_variant="production",
+                    right_schema1_variant="production",
+                )
+            )
             del stdout
         result = verify_exact_profile_runs(records, compare=compare, audits=audits)
         _close_owned_paths(

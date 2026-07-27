@@ -145,7 +145,11 @@ def run_reference(
         run_slot=run_slot,
     )
     audit = compare_cumulative_artifacts(
-        output_path, output_path, validation_stage="pre_legacy"
+        output_path,
+        output_path,
+        validation_stage="pre_legacy",
+        left_schema1_variant="production",
+        right_schema1_variant="production",
     )
     if _commit(repo) != code_commit:
         raise ValueError("repository commit changed during reference run")
@@ -222,7 +226,12 @@ def run_development_reference(
     code_commit = _commit(repo)
     input_fingerprints = _input_fingerprints(config_data)
     runner(config_path, output_path, freeze_manifest=None, run_slot=None)
-    audit = compare_cumulative_artifacts(output_path, output_path)
+    audit = compare_cumulative_artifacts(
+        output_path,
+        output_path,
+        left_schema1_variant="production",
+        right_schema1_variant="production",
+    )
     if _commit(repo) != code_commit:
         raise ValueError("repository commit changed during reference run")
     if _regular_bytes(config_path, "reference config") != config_data:

@@ -21,6 +21,16 @@ from scripts.evaluation.evaluate_oviv2_tesse_occlusion import (
 )
 
 
+SCHEMA1_PRODUCTION = {
+    "left_schema1_variant": "production",
+    "right_schema1_variant": "production",
+}
+SCHEMA1_MINIMAL = {
+    "left_schema1_variant": "minimal",
+    "right_schema1_variant": "minimal",
+}
+
+
 def _sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
@@ -276,8 +286,8 @@ def _v1_production_run(root: Path) -> Path:
         "relative_timestamp_ns": 0,
         "consumed_through_frame": 2,
         "consumed_through_frame_exclusive": 3,
-        "event_ids": [],
-        "roles": ["official"],
+        "event_ids": ["event-1"],
+        "roles": ["common_v2", "official"],
         "scene": "apartment",
     })
     voxel_root = root / checkpoint["voxel_snapshot"]["path"]
@@ -301,8 +311,8 @@ def _v1_production_run(root: Path) -> Path:
             "frame_indexing": "zero_based",
             "official_stride_frames": 450,
             "common_event_step_frames": 50,
-            "common_event_horizon_frames": 450,
-            "common_checkpoints_per_event": 10,
+            "common_event_horizon_frames": 0,
+            "common_checkpoints_per_event": 1,
             "event_frame_rule": "first relative_timestamp_ns >= event timestamp",
         },
         "scenes": {"apartment": {
@@ -311,10 +321,17 @@ def _v1_production_run(root: Path) -> Path:
                 "frame_index": 2,
                 "timestamp_ns": 100,
                 "relative_timestamp_ns": 0,
-                "event_ids": [],
-                "roles": ["official"],
+                "event_ids": ["event-1"],
+                "roles": ["common_v2", "official"],
             }],
-            "events": [],
+            "events": [{
+                "common_checkpoint_frame_indices": [2],
+                "event_id": "event-1",
+                "event_relative_timestamp_ns": 0,
+                "intervention_frame_index": 2,
+                "intervention_relative_timestamp_ns": 0,
+                "intervention_timestamp_ns": 100,
+            }],
             "first_depth_timestamp_ns": 100,
             "last_depth_timestamp_ns": 100,
             "sources": {
@@ -510,7 +527,7 @@ def _freeze_v1_production(root: Path) -> None:
 
 
 def _add_t1_receipt(root: Path) -> Path:
-    audit = compare_cumulative_artifacts(root, root)
+    audit = compare_cumulative_artifacts(root, root, **SCHEMA1_MINIMAL)
     receipt = root / "t1_exact_receipt.json"
     receipt.write_text(
         json.dumps(
@@ -596,8 +613,8 @@ def test_schema1_production_support_inventory_self_compares_and_ignores_timing(
         '{"elapsed_sec":99.5,"processed_frame_count":8}\n'
     )
 
-    assert compare_cumulative_artifacts(left, left)["checkpoint_frames"] == [2]
-    assert compare_cumulative_artifacts(left, right)["checkpoint_frames"] == [2]
+    assert compare_cumulative_artifacts(left, left, **SCHEMA1_PRODUCTION)["checkpoint_frames"] == [2]
+    assert compare_cumulative_artifacts(left, right, **SCHEMA1_PRODUCTION)["checkpoint_frames"] == [2]
 
 
 @pytest.mark.parametrize(
@@ -614,14 +631,16 @@ def test_schema1_production_support_inventory_self_compares_and_ignores_timing(
         ("provenance_semantics", "provenance"),
         ("normalized_semantics", "algorithm"),
         ("occlusion_semantics", "occlusion"),
-        ("all_support_removed", "production manifest cannot be downgraded"),
-        ("manifest_field_removed", "production manifest cannot be downgraded"),
+        ("all_support_removed", "schema|caller-trusted"),
+        ("manifest_field_removed", "schema|caller-trusted"),
         ("schedule_relation", "production manifest identity"),
         ("schedule_invalid", "schedule"),
         ("schedule_drift", "schedule"),
         ("schedule_events_invalid", "schedule"),
         ("schedule_sources_invalid", "schedule"),
         ("schedule_role_drift", "schedule"),
+        ("schedule_grid_drift", "schedule"),
+        ("schedule_zero_step", "schedule"),
         ("trajectory_invalid", "trajector"),
         ("trajectory_reordered", "trajector"),
         ("trajectory_gap", "trajector"),
@@ -715,6 +734,10 @@ def test_schema1_production_support_inventory_fails_closed(
             scene = schedule["scenes"]["apartment"]
             if mutation == "schedule_events_invalid":
                 scene["events"] = ["not-an-event"]
+            elif mutation == "schedule_grid_drift":
+                schedule["parameters"]["common_event_horizon_frames"] = 50
+            elif mutation == "schedule_zero_step":
+                schedule["parameters"]["common_event_step_frames"] = 0
             elif mutation == "schedule_role_drift":
                 schedule = json.loads(schedule_path.read_text())
                 schedule["scenes"]["apartment"]["entries"][0]["roles"] = ["common_v2"]
@@ -765,7 +788,7 @@ def test_schema1_production_support_inventory_fails_closed(
         source_path.write_text(json.dumps(source, sort_keys=True) + "\n")
 
     with pytest.raises(ArtifactMismatch, match=message):
-        compare_cumulative_artifacts(root, root)
+        compare_cumulative_artifacts(root, root, **SCHEMA1_PRODUCTION)
 
 
 @pytest.mark.parametrize(
@@ -801,11 +824,12 @@ def test_schema1_frozen_production_cannot_be_downgraded(
         manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
 
     with pytest.raises(ArtifactMismatch, match=message):
-        compare_cumulative_artifacts(root, root)
+        compare_cumulative_artifacts(root, root, **SCHEMA1_PRODUCTION)
 
 
 @pytest.mark.parametrize(
-    "variant", ("minimal", "t1", "renamed_snapshot", "markers_removed", "mixed")
+    "variant",
+    ("minimal", "t1", "renamed_snapshot", "markers_removed", "fully_stripped", "mixed"),
 )
 def test_schema1_production_checkpoint_signature_blocks_manifest_downgrade(
     tmp_path: Path, variant: str,
@@ -820,13 +844,17 @@ def test_schema1_production_checkpoint_signature_blocks_manifest_downgrade(
         old.rename(new)
         checkpoint["voxel_snapshot"] = _tree_record(new, root)
         checkpoint["extension"] = "must-not-hide-production"
-    elif variant == "markers_removed":
+    elif variant in {"markers_removed", "fully_stripped"}:
         checkpoint = manifest["checkpoints"][0]
         for key in (
             "timestamp_ns", "relative_timestamp_ns", "consumed_through_frame",
             "consumed_through_frame_exclusive", "event_ids", "roles", "scene",
         ):
             checkpoint.pop(key)
+        if variant == "fully_stripped":
+            voxel = root / checkpoint["voxel_snapshot"]["path"]
+            (voxel / "checksums.json").unlink()
+            checkpoint["voxel_snapshot"] = _tree_record(voxel, root)
     elif variant == "mixed":
         checkpoint = dict(manifest["checkpoints"][0])
         for key in (
@@ -855,18 +883,33 @@ def test_schema1_production_checkpoint_signature_blocks_manifest_downgrade(
             "final_artifact": checkpoint_file,
         })
     manifest_path.write_text(json.dumps(downgraded, sort_keys=True) + "\n")
-    with pytest.raises(ArtifactMismatch, match="schema1 (production|checkpoint)"):
-        compare_cumulative_artifacts(root, root)
+    with pytest.raises(ArtifactMismatch, match="schema1 (caller|manifest|checkpoint)"):
+        compare_cumulative_artifacts(root, root, **SCHEMA1_PRODUCTION)
 
 
 def test_schema1_frozen_prelegacy_requires_explicit_external_stage(tmp_path: Path) -> None:
     root = _v1_production_run(tmp_path / "frozen")
     _freeze_v1_production(root)
     with pytest.raises(ArtifactMismatch, match="legacy inventory is missing"):
-        compare_cumulative_artifacts(root, root)
+        compare_cumulative_artifacts(root, root, **SCHEMA1_PRODUCTION)
     assert compare_cumulative_artifacts(
-        root, root, validation_stage="pre_legacy"
+        root, root, validation_stage="pre_legacy", **SCHEMA1_PRODUCTION
     )["checkpoint_frames"] == [2]
+
+
+def test_schema1_requires_an_explicit_caller_trusted_variant(tmp_path: Path) -> None:
+    root = _v1_run(tmp_path / "minimal")
+    with pytest.raises(ArtifactMismatch, match="variant must be supplied"):
+        compare_cumulative_artifacts(root, root)
+    with pytest.raises(ArtifactMismatch, match="caller-trusted variant"):
+        compare_cumulative_artifacts(root, root, **SCHEMA1_PRODUCTION)
+    with pytest.raises(ValueError, match="same root"):
+        compare_cumulative_artifacts(
+            root,
+            root,
+            left_schema1_variant="minimal",
+            right_schema1_variant="production",
+        )
 
 
 def test_comparison_revalidates_manifest_identity_before_return(
@@ -887,7 +930,26 @@ def test_comparison_revalidates_manifest_identity_before_return(
 
     monkeypatch.setattr(compare_module, "_verify_entry", replace_manifest_on_first_projection_check)
     with pytest.raises(ArtifactMismatch, match="replaced|changed"):
-        compare_cumulative_artifacts(root, root)
+        compare_cumulative_artifacts(root, root, **SCHEMA1_MINIMAL)
+
+
+def test_mutation_witness_rejects_manifest_replacement_after_identity_check(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _v1_run(tmp_path / "run")
+    original = compare_module._verify_entry
+    replaced = False
+
+    def replace_manifest_after_check(handle: object, entry: object, label: str) -> None:
+        nonlocal replaced
+        original(handle, entry, label)
+        if label == "run_manifest.json" and not replaced:
+            replaced = True
+            (root / "run_manifest.json").write_text("{}\n")
+
+    monkeypatch.setattr(compare_module, "_verify_entry", replace_manifest_after_check)
+    with pytest.raises(ArtifactMismatch, match="changed during comparison"):
+        compare_cumulative_artifacts(root, root, **SCHEMA1_MINIMAL)
 
 
 def test_schema1_legacy_evaluation_summary_rejects_minimal_forgery() -> None:
@@ -897,11 +959,19 @@ def test_schema1_legacy_evaluation_summary_rejects_minimal_forgery() -> None:
             {"schema_version": 1},
             {"dataset": "TESSE-CD", "method_id": "OVIV2", "scene": "apartment"},
             {"role": "temporal_index", "sha256": "a" * 64, "byte_count": 1},
+            {},
         )
 
 
 @pytest.mark.parametrize(
-    "mutation", ("null_frame", "empty_metrics", "arbitrary_count", "aggregate_out_of_range")
+    "mutation",
+    (
+        "null_frame",
+        "empty_metrics",
+        "arbitrary_count",
+        "aggregate_out_of_range",
+        "renamed_event",
+    ),
 )
 def test_schema1_legacy_evaluation_summary_rejects_nested_forgery(
     mutation: str,
@@ -952,6 +1022,17 @@ def test_schema1_legacy_evaluation_summary_rejects_nested_forgery(
         raw["metrics"] = canonical["metrics"] = {}
     elif mutation == "arbitrary_count":
         raw["event_region_prediction_counts"] = canonical["event_region_prediction_counts"] = {"event-1": {"2": 999}}
+    elif mutation == "renamed_event":
+        raw["frames"][0]["event_id"] = "event-2"
+        raw["metrics"]["events"] = {"event-2": event}
+        raw["event_background_prediction_counts"] = {"event-2": {"2": 1}}
+        raw["event_region_prediction_counts"] = {"event-2": {"2": 1}}
+        canonical.update({key: raw[key] for key in (
+            "frames",
+            "metrics",
+            "event_background_prediction_counts",
+            "event_region_prediction_counts",
+        )})
     else:
         raw["metrics"]["current_miou"] = 999.0
         canonical["metrics"] = raw["metrics"]
@@ -960,6 +1041,12 @@ def test_schema1_legacy_evaluation_summary_rejects_nested_forgery(
             raw, canonical,
             {"dataset": "TESSE-CD", "method_id": "OVIV2", "scene": "apartment"},
             canonical["sources"]["temporal_index"],
+            {
+                "event-1": {
+                    "common_checkpoint_frame_indices": [2],
+                    "intervention_frame_index": 2,
+                }
+            },
         )
 
 
@@ -981,7 +1068,9 @@ def test_reference_v1_projects_to_schema2_cumulative_audit(tmp_path: Path) -> No
     schema2 = _run(tmp_path / "a0", profile="a0")
     reference = _v1_projection_of_schema2(tmp_path / "reference", schema2)
 
-    cross = compare_cumulative_artifacts(reference, schema2)
+    cross = compare_cumulative_artifacts(
+        reference, schema2, left_schema1_variant="minimal"
+    )
 
     assert cross == compare_cumulative_artifacts(schema2, schema2)
 
@@ -1007,10 +1096,14 @@ def test_t1_receipt_accepts_only_exact_development_mode_extension(
     receipt_path.write_text(json.dumps(receipt, sort_keys=True) + "\n")
 
     if accepted:
-        assert compare_cumulative_artifacts(reference, schema2)["checkpoint_frames"] == [2, 7]
+        assert compare_cumulative_artifacts(
+            reference, schema2, left_schema1_variant="minimal"
+        )["checkpoint_frames"] == [2, 7]
     else:
         with pytest.raises(ArtifactMismatch, match="receipt binding"):
-            compare_cumulative_artifacts(reference, schema2)
+            compare_cumulative_artifacts(
+                reference, schema2, left_schema1_variant="minimal"
+            )
 
 
 @pytest.mark.parametrize("mutation", ["normalized", "receipt", "source", "extra"])
@@ -1238,20 +1331,22 @@ def test_schema1_accepts_only_a_strictly_bound_optional_t1_receipt(
     left_receipt = _add_t1_receipt(left)
     right_receipt = _add_t1_receipt(right)
 
-    assert compare_cumulative_artifacts(left, right)["checkpoint_frames"] == [2]
+    assert compare_cumulative_artifacts(
+        left, right, **SCHEMA1_MINIMAL
+    )["checkpoint_frames"] == [2]
 
     value = json.loads(right_receipt.read_text())
     valid_root = value["cumulative_root_sha256"]
     value["cumulative_root_sha256"] = "f" * 64
     right_receipt.write_text(json.dumps(value) + "\n")
     with pytest.raises(ArtifactMismatch, match="T1 exact receipt"):
-        compare_cumulative_artifacts(left, right)
+        compare_cumulative_artifacts(left, right, **SCHEMA1_MINIMAL)
 
     value["cumulative_root_sha256"] = valid_root
     value["schema_version"] = True
     right_receipt.write_text(json.dumps(value) + "\n")
     with pytest.raises(ArtifactMismatch, match="T1 exact receipt"):
-        compare_cumulative_artifacts(left, right)
+        compare_cumulative_artifacts(left, right, **SCHEMA1_MINIMAL)
 
     right_receipt.unlink()
     left_receipt.unlink()
@@ -1262,7 +1357,7 @@ def test_schema1_accepts_only_a_strictly_bound_optional_t1_receipt(
     manifest["unexpected_extra"] = _file_record(extra, right)
     manifest_path.write_text(json.dumps(manifest) + "\n")
     with pytest.raises(ArtifactMismatch, match="inventory"):
-        compare_cumulative_artifacts(left, right)
+        compare_cumulative_artifacts(left, right, **SCHEMA1_MINIMAL)
 
 
 @pytest.mark.parametrize("mode", ["root_schema", "self", "cross_profile"])
@@ -1604,7 +1699,40 @@ def test_v1_inventory_includes_status_neutral_and_final(tmp_path: Path, name: st
     target = next(right.rglob(name))
     target.write_bytes(target.read_bytes() + b"changed")
     with pytest.raises(ArtifactMismatch, match="manifest record|raw bytes"):
+        compare_cumulative_artifacts(left, right, **SCHEMA1_MINIMAL)
+
+
+def test_mutation_watch_setup_failure_closes_every_descriptor(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    left, right = _pair(tmp_path)
+    before = len(os.listdir("/proc/self/fd"))
+
+    def fail_watch(descriptor: int, directory: int) -> None:
+        del descriptor, directory
+        raise OSError("watch setup failed")
+
+    monkeypatch.setattr(compare_module, "_add_mutation_watches", fail_watch)
+    with pytest.raises(OSError, match="watch setup failed"):
         compare_cumulative_artifacts(left, right)
+    assert len(os.listdir("/proc/self/fd")) == before
+
+
+def test_cli_requires_explicit_schema1_variants(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    root = _v1_run(tmp_path / "run")
+    with pytest.raises(ArtifactMismatch, match="variant must be supplied"):
+        compare_module.main([str(root), str(root)])
+    assert compare_module.main([
+        str(root),
+        str(root),
+        "--left-schema1-variant",
+        "minimal",
+        "--right-schema1-variant",
+        "minimal",
+    ]) == 0
+    assert json.loads(capsys.readouterr().out)["checkpoint_frames"] == [2]
 
 
 def test_cli_atomically_publishes_without_clobbering_owner(

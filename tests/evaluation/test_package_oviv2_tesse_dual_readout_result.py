@@ -1520,7 +1520,12 @@ def _materialize_reference_transaction(
         "final_artifact": _file_binding(final, root),
     }
     (root / "run_manifest.json").write_bytes(_bytes(manifest))
-    audit = compare_cumulative_artifacts(root, root)
+    audit = compare_cumulative_artifacts(
+        root,
+        root,
+        left_schema1_variant="t1_transaction",
+        right_schema1_variant="t1_transaction",
+    )
     receipt = {
         "schema_version": 1,
         "format": "oviv2_t1_exact_execution_receipt_v1",

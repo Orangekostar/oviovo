@@ -540,7 +540,7 @@ def _generate(tmp_path: Path, **overrides: object) -> tuple[Path, PassingRunner]
         "exact_profile_specs": exact_specs,
         "transaction_dir": tmp_path / "transaction",
         "execute_transaction": execute_transaction,
-        "compare": lambda left, right: {
+        "compare": lambda left, right, **kwargs: {
             "format": "oviv2_cumulative_exact_v1",
             "checkpoint_frames": [2, 7],
             "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
@@ -967,7 +967,7 @@ def test_exact_profile_gate_requires_interleaved_independent_processes(
     ]
     calls: list[tuple[Path, Path]] = []
 
-    def compare(left: Path, right: Path) -> dict[str, object]:
+    def compare(left: Path, right: Path, **kwargs: object) -> dict[str, object]:
         calls.append((left, right))
         return {
             "format": "oviv2_cumulative_exact_v1",
@@ -1039,7 +1039,7 @@ def test_observation_declares_local_unsigned_pid_trust_model(tmp_path: Path) -> 
         gates._bind_exact_receipt(
             execution,
             expected_position=2,
-            compare=lambda left, right: {
+            compare=lambda left, right, **kwargs: {
                 "checkpoint_frames": [2, 7],
                 "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
                 "root_sha256": "e" * 64,
@@ -1120,7 +1120,7 @@ def test_exact_transaction_uses_popen_pid_argv_and_returncode(
     )
     compare_calls: list[tuple[Path, Path]] = []
 
-    def compare(left: Path, right: Path) -> dict[str, object]:
+    def compare(left: Path, right: Path, **kwargs: object) -> dict[str, object]:
         compare_calls.append((left, right))
         return {
             "format": "oviv2_cumulative_exact_v1",
@@ -1313,7 +1313,7 @@ def test_completed_execution_rejects_source_bindings_mismatch(tmp_path: Path) ->
         gates._bind_exact_receipt(
             execution,
             expected_position=2,
-            compare=lambda left, right: {
+            compare=lambda left, right, **kwargs: {
                 "checkpoint_frames": [2, 7],
                 "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
                 "root_sha256": "e" * 64,
@@ -1388,7 +1388,7 @@ def test_exact_receipt_rejects_config_changed_after_run(tmp_path: Path) -> None:
         gates._bind_exact_receipt(
             execution,
             expected_position=2,
-            compare=lambda left, right: {
+            compare=lambda left, right, **kwargs: {
                 "checkpoint_frames": [2, 7],
                 "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
                 "root_sha256": "e" * 64,
@@ -1489,7 +1489,7 @@ def _failure_cleanup_harness(
 
     compare_calls = 0
 
-    def compare(left: Path, right: Path) -> dict[str, object]:
+    def compare(left: Path, right: Path, **kwargs: object) -> dict[str, object]:
         nonlocal failed, compare_calls
         compare_calls += 1
         if failure == "compare" and compare_calls > position and not failed:
@@ -1918,7 +1918,7 @@ def test_exact_transaction_preserves_replaced_observation_and_transaction(
     root_identities: dict[Path, tuple[int, int, int]] = {}
     observation_identities: dict[Path, tuple[int, int, int]] = {}
 
-    def compare(left: Path, right: Path) -> dict[str, object]:
+    def compare(left: Path, right: Path, **kwargs: object) -> dict[str, object]:
         nonlocal replaced
         result = original_compare(left, right)
         observation = transaction / "receipts/000-reference.json"
@@ -1977,9 +1977,11 @@ def test_exact_transaction_nested_root_mutation_preserves_every_owned_path(
 
     compare_calls = 0
 
-    def mutate_then_fail(left: Path, right: Path) -> dict[str, object]:
+    def mutate_then_fail(
+        left: Path, right: Path, **kwargs: object
+    ) -> dict[str, object]:
         nonlocal compare_calls
-        result = compare(left, right)
+        result = compare(left, right, **kwargs)
         compare_calls += 1
         if compare_calls == 2:
             nested = Path(specs[0]["output_root"]) / "nested"
@@ -2101,7 +2103,7 @@ def test_exact_profile_gate_rejects_root_alias_argv_and_receipt_mismatch(
         _exact_execution(profile, tmp_path / f"run-{index}", 100 + index)
         for index, profile in enumerate(gates.EXACT_PROFILE_SEQUENCE)
     ]
-    compare = lambda left, right: {
+    compare = lambda left, right, **kwargs: {
         "format": "oviv2_cumulative_exact_v1",
         "checkpoint_frames": [2, 7],
         "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
@@ -2134,7 +2136,7 @@ def test_exact_profile_gate_rejects_incomplete_or_disagreeing_bindings(
         _exact_execution(profile, tmp_path / f"run-{index}", 100 + index)
         for index, profile in enumerate(profiles)
     ]
-    compare = lambda left, right: {
+    compare = lambda left, right, **kwargs: {
             "format": "oviv2_cumulative_exact_v1",
             "checkpoint_frames": [2, 7],
             "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
@@ -2178,7 +2180,11 @@ def test_reference_worker_records_exact_process_and_artifact_receipt(
         left: Path, right: Path, **kwargs: object
     ) -> dict[str, object]:
         assert (left, right) == (output.resolve(), output.resolve())
-        assert kwargs == {"validation_stage": "pre_legacy"}
+        assert kwargs == {
+            "validation_stage": "pre_legacy",
+            "left_schema1_variant": "production",
+            "right_schema1_variant": "production",
+        }
         return {
                 "format": "oviv2_cumulative_exact_v1",
                 "checkpoint_frames": [2, 7],
@@ -2239,7 +2245,7 @@ def test_exact_receipt_rejects_source_manifest_record_drift(
     ):
         gates._bind_exact_receipt(
             record,
-            compare=lambda left, right: {
+            compare=lambda left, right, **kwargs: {
                 "format": "oviv2_cumulative_exact_v1",
                 "checkpoint_frames": [2, 7],
                 "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
