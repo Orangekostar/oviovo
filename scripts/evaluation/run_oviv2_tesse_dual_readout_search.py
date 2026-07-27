@@ -374,18 +374,33 @@ def _read_evidence_witness(path: Path, label: str) -> _EvidenceWitness:
     return _EvidenceWitness(path, data, _file_identity(after))
 
 
-def _source_witness(record: object, label: str) -> _EvidenceWitness:
+def _source_witness(
+    record: object, label: str, *, preflight_parent: Path
+) -> _EvidenceWitness:
     if not isinstance(record, Mapping):
         raise ValueError(f"{label} source record must be an object")
     _exact_keys(record, {"path", "sha256", "byte_count"}, f"{label} source record")
     raw_path = record.get("path")
-    if not isinstance(raw_path, str) or not raw_path or not Path(raw_path).is_absolute():
-        raise ValueError(f"{label} source path must be absolute")
-    path = Path(raw_path)
-    if raw_path != str(path.absolute()) or ".." in path.parts or path == Path(path.anchor):
+    relative = Path(raw_path) if isinstance(raw_path, str) else Path(".")
+    if (
+        not isinstance(raw_path, str)
+        or not raw_path
+        or relative.is_absolute()
+        or relative == Path(".")
+        or ".." in relative.parts
+        or raw_path != relative.as_posix()
+    ):
         raise ValueError(f"{label} source path is an alias")
+    path = (preflight_parent / relative).absolute()
+    try:
+        path.relative_to(preflight_parent.absolute())
+    except ValueError as exc:
+        raise ValueError(f"{label} source path escapes preflight bundle") from exc
     witness = _read_evidence_witness(path, label)
-    if dict(record) != witness.record:
+    if (
+        record.get("sha256") != witness.record["sha256"]
+        or record.get("byte_count") != witness.record["byte_count"]
+    ):
         raise ValueError(f"{label} source binding mismatch")
     return witness
 
@@ -415,12 +430,12 @@ def _require_nested_source_record(
     relative = Path(raw)
     if (
         raw != str(relative)
+        or relative.is_absolute()
         or ".." in relative.parts
-        or (not relative.is_absolute() and relative == Path("."))
-        or (relative.is_absolute() and raw != str(relative.absolute()))
+        or relative == Path(".")
     ):
         raise ValueError(f"{label} source path is an alias")
-    path = (relative if relative.is_absolute() else base / relative).absolute()
+    path = (base / relative).absolute()
     if path != witness.path or record.get("sha256") != witness.record["sha256"] or record.get(
         "byte_count"
     ) != witness.record["byte_count"]:
@@ -875,7 +890,9 @@ def _validate_preflight_gate_evidence(
         )
         source_witnesses = {
             role: _source_witness(
-                source_evidence[role], f"preflight candidate {candidate_id} {role}"
+                source_evidence[role],
+                f"preflight candidate {candidate_id} {role}",
+                preflight_parent=evidence_witness.path.parent,
             )
             for role in _SOURCE_EVIDENCE_ROLES
         }
@@ -947,14 +964,20 @@ def _validate_preflight_gate_evidence(
         )
         if payloads["runtime_diagnostics"].get("execution_profile") != base_profile:
             raise ValueError(f"preflight candidate {candidate_id} profile binding mismatch")
-        expected_frames = run.get("scheduled_frame_indices")
+        processed_frame_count = run.get("processed_frame_count")
+        expected_frames = (
+            list(range(processed_frame_count))
+            if type(processed_frame_count) is int and processed_frame_count > 0
+            else None
+        )
         observed_frames = [row.get("frame_index") for row in payloads["frame_coverage"]]
         if not (
             isinstance(expected_frames, list)
             and expected_frames
-            and all(type(frame) is int and frame >= 0 for frame in expected_frames)
-            and expected_frames == sorted(set(expected_frames))
             and observed_frames == expected_frames
+            and run.get("covered_frame_count") == processed_frame_count
+            and run.get("first_frame_index") == 0
+            and run.get("last_frame_index") == processed_frame_count - 1
         ):
             raise ValueError(
                 f"preflight candidate {candidate_id} raw frame_coverage did not PASS"

@@ -65,7 +65,7 @@ def _candidate_sources(tmp_path: Path, candidate_id: str = "a1") -> Path:
                 "record_count": 1,
                 "event_count": int(frame == 1),
             }
-            for frame in range(2)
+            for frame in range(5)
         ],
     )
     # Convert the JSON array helper output into canonical JSONL.
@@ -79,7 +79,7 @@ def _candidate_sources(tmp_path: Path, candidate_id: str = "a1") -> Path:
                     "event_count": int(frame == 1),
                 }
             )
-            for frame in range(2)
+            for frame in range(5)
         )
     )
     trajectories = root / "trajectories.jsonl"
@@ -98,7 +98,7 @@ def _candidate_sources(tmp_path: Path, candidate_id: str = "a1") -> Path:
                     "readout_valid": frame == 0,
                 }
             )
-            for frame in range(2)
+            for frame in range(5)
         )
     )
     lifecycle = root / "lifecycle_transitions.jsonl"
@@ -230,7 +230,7 @@ def _candidate_sources(tmp_path: Path, candidate_id: str = "a1") -> Path:
         {
             "schema_version": 1,
             "execution_profile": base_profile,
-            "processed_frame_count": 2,
+            "processed_frame_count": 5,
             "counters": counters,
             "mechanism_records": mechanism_records,
             "diagnostic": diagnostic_payload,
@@ -260,7 +260,11 @@ def _candidate_sources(tmp_path: Path, candidate_id: str = "a1") -> Path:
             "scene": "apartment",
             "method_id": "OVIV2",
             "algorithm_hash": materialized["algorithm_hash"],
-            "scheduled_frame_indices": [0, 1],
+            "processed_frame_count": 5,
+            "covered_frame_count": 5,
+            "first_frame_index": 0,
+            "last_frame_index": 4,
+            "scheduled_frame_indices": [1, 2, 3, 4],
             "source_index": _record(source_index, root),
         },
     )
@@ -355,10 +359,10 @@ def test_builds_source_recomputed_preflight_consumable_by_search(tmp_path: Path)
         "future_leakage_evidence",
     }
     for record in source_evidence.values():
-        source = Path(record["path"])
+        source = output.parent / record["path"]
         content = source.read_bytes()
         assert record == {
-            "path": str(source.absolute()),
+            "path": source.relative_to(output.parent).as_posix(),
             "sha256": hashlib.sha256(content).hexdigest(),
             "byte_count": len(content),
         }
@@ -374,7 +378,7 @@ def test_builds_source_recomputed_preflight_consumable_by_search(tmp_path: Path)
         selected_ids=("a1",),
     )
     assert validated["sha256"] == hashlib.sha256(output.read_bytes()).hexdigest()
-    assert result["candidates"][0]["frame_coverage"]["observed_frame_indices"] == [0, 1]
+    assert result["candidates"][0]["frame_coverage"]["observed_frame_indices"] == [0, 1, 2, 3, 4]
     assert result["candidates"][0]["anchor_coverage"]["mapped_count"] == 53
     invalidation = result["candidates"][0]["mechanisms"]["readout_invalidation"]
     assert invalidation["opportunity_count"] == 1
@@ -382,6 +386,38 @@ def test_builds_source_recomputed_preflight_consumable_by_search(tmp_path: Path)
     assert hashlib.sha256(
         (tmp_path / "a1/lifecycle_transitions.jsonl").read_bytes()
     ).hexdigest() in invalidation["trigger_records"][0]
+
+
+def test_relative_source_evidence_survives_whole_bundle_rename_without_rewrite(
+    tmp_path: Path,
+) -> None:
+    staging = tmp_path / "staging-bundle"
+    sources = _candidate_sources(staging)
+    preflight = staging / "preflight.json"
+    build_preflight(
+        search_manifest=SEARCH_MANIFEST,
+        apartment_base_config=BASE_CONFIG,
+        candidate_sources=sources,
+        output=preflight,
+    )
+    manifest = json.loads(SEARCH_MANIFEST.read_text())
+    base = json.loads(BASE_CONFIG.read_text())
+    kwargs = {
+        "manifest_bytes": SEARCH_MANIFEST.read_bytes(),
+        "apartment_bytes": BASE_CONFIG.read_bytes(),
+        "apartment": base,
+        "declarations": {item["candidate_id"]: item for item in manifest["candidates"]},
+        "selected_ids": ("a1",),
+    }
+    _validate_preflight_gate_evidence(preflight, **kwargs)
+    original = preflight.read_bytes()
+
+    published = tmp_path / "published-bundle"
+    staging.rename(published)
+
+    moved = published / "preflight.json"
+    assert moved.read_bytes() == original
+    _validate_preflight_gate_evidence(moved, **kwargs)
 
 
 @pytest.mark.parametrize(

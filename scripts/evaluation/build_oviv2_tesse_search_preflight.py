@@ -123,9 +123,18 @@ def _bound_source(
     if not isinstance(raw, str) or not raw:
         raise ValueError(f"{label} source path is invalid")
     relative = Path(raw)
-    if not relative.is_absolute() and (".." in relative.parts or relative == Path(".")):
+    if (
+        relative.is_absolute()
+        or relative == Path(".")
+        or ".." in relative.parts
+        or raw != relative.as_posix()
+    ):
         raise ValueError(f"{label} source path is unsafe")
-    path = (relative if relative.is_absolute() else base / relative).absolute()
+    path = (base / relative).absolute()
+    try:
+        path.relative_to(base.absolute())
+    except ValueError as exc:
+        raise ValueError(f"{label} source path escapes source root") from exc
     content = _read_bytes(path, label)
     if (
         record.get("sha256") != hashlib.sha256(content).hexdigest()
@@ -142,9 +151,20 @@ def _canonical(value: object) -> bytes:
     ).encode("utf-8")
 
 
-def _file_record(path: Path, content: bytes) -> dict[str, object]:
+def _file_record(
+    path: Path, content: bytes, *, relative_to: Path | None = None
+) -> dict[str, object]:
+    rendered = str(path.absolute())
+    if relative_to is not None:
+        try:
+            relative = path.absolute().relative_to(relative_to.absolute())
+        except ValueError as exc:
+            raise ValueError("preflight source evidence escapes output directory") from exc
+        if relative == Path(".") or ".." in relative.parts:
+            raise ValueError("preflight source evidence path is unsafe")
+        rendered = relative.as_posix()
     return {
-        "path": str(path.absolute()),
+        "path": rendered,
         "sha256": hashlib.sha256(content).hexdigest(),
         "byte_count": len(content),
     }
@@ -424,8 +444,12 @@ def _publish(path: Path, payload: Mapping[str, Any]) -> None:
         temporary.unlink(missing_ok=True)
 
 
-def _revalidate_record(record: Mapping[str, Any], label: str) -> None:
+def _revalidate_record(
+    record: Mapping[str, Any], label: str, *, base: Path | None = None
+) -> None:
     path = Path(record["path"])
+    if base is not None and not path.is_absolute():
+        path = base / path
     content = _read_bytes(path, label)
     if (
         hashlib.sha256(content).hexdigest() != record["sha256"]
@@ -441,6 +465,7 @@ def build_preflight(
     candidate_sources: str | Path,
     output: str | Path,
 ) -> dict[str, Any]:
+    output_path = Path(output).absolute()
     manifest_path = Path(search_manifest).absolute()
     base_path = Path(apartment_base_config).absolute()
     sources_path = Path(candidate_sources).absolute()
@@ -520,8 +545,12 @@ def build_preflight(
         source_records: dict[str, Mapping[str, Any]] = {}
         payloads: dict[str, Any] = {}
         source_evidence: dict[str, dict[str, object]] = {
-            "run_manifest": _file_record(run_path, run_content),
-            "source_index": _file_record(source_path, source_content),
+            "run_manifest": _file_record(
+                run_path, run_content, relative_to=output_path.parent
+            ),
+            "source_index": _file_record(
+                source_path, source_content, relative_to=output_path.parent
+            ),
         }
         for role in _SOURCE_INDEX_ROLES:
             role_path, role_content, role_json = _bound_source(
@@ -531,23 +560,30 @@ def build_preflight(
                 parse_json=role == "runtime_diagnostics",
             )
             source_records[role] = source_index[role]
-            source_evidence[role] = _file_record(role_path, role_content)
+            source_evidence[role] = _file_record(
+                role_path, role_content, relative_to=output_path.parent
+            )
             payloads[role] = (
                 role_json if role == "runtime_diagnostics" else _jsonl(role_content, role)
             )
         if payloads["runtime_diagnostics"].get("execution_profile") != base_profile:
             raise ValueError(f"{candidate_id} runtime diagnostics profile mismatch")
-        expected_frames = run.get("scheduled_frame_indices")
+        processed_frame_count = run.get("processed_frame_count")
+        expected_frames = (
+            list(range(processed_frame_count))
+            if type(processed_frame_count) is int and processed_frame_count > 0
+            else None
+        )
         observed_frames = [row.get("frame_index") for row in payloads["frame_coverage"]]
         if not (
             isinstance(expected_frames, list)
             and expected_frames
-            and all(type(item) is int and item >= 0 for item in expected_frames)
-            and len(expected_frames) == len(set(expected_frames))
-            and expected_frames == sorted(expected_frames)
             and observed_frames == expected_frames
+            and run.get("covered_frame_count") == processed_frame_count
+            and run.get("first_frame_index") == 0
+            and run.get("last_frame_index") == processed_frame_count - 1
         ):
-            raise ValueError(f"{candidate_id} frame coverage differs from run schedule")
+            raise ValueError(f"{candidate_id} frame coverage differs from processed frames")
         occlusion_path, occlusion_content, occlusion = _bound_source(
             entry["temporal_occlusion_result"],
             base=sources_path.parent,
@@ -555,7 +591,7 @@ def build_preflight(
         )
         assert occlusion is not None
         source_evidence["temporal_occlusion_result"] = _file_record(
-            occlusion_path, occlusion_content
+            occlusion_path, occlusion_content, relative_to=output_path.parent
         )
         bindings = occlusion.get("input_bindings")
         bound_indexes = bindings.get("source_indexes") if isinstance(bindings, Mapping) else None
@@ -574,7 +610,7 @@ def build_preflight(
         )
         assert leakage is not None
         source_evidence["future_leakage_evidence"] = _file_record(
-            leakage_path, leakage_content
+            leakage_path, leakage_content, relative_to=output_path.parent
         )
         if set(leakage) != {
             "schema_version",
@@ -663,8 +699,12 @@ def build_preflight(
         _revalidate_record(record, label)
     for candidate in candidates:
         for role, record in candidate["source_evidence"].items():
-            _revalidate_record(record, f"{candidate['candidate_id']} {role}")
-    _publish(Path(output), evidence)
+            _revalidate_record(
+                record,
+                f"{candidate['candidate_id']} {role}",
+                base=output_path.parent,
+            )
+    _publish(output_path, evidence)
     return evidence
 
 

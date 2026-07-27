@@ -57,6 +57,10 @@ def _record(path: Path, *, relative_to: Path | None = None) -> dict[str, object]
     }
 
 
+def _source_path(preflight: Path, record: dict[str, object]) -> Path:
+    return preflight.parent / str(record["path"])
+
+
 def _preflight(tmp_path: Path, candidate_ids: tuple[str, ...]) -> Path:
     path = tmp_path / f"preflight-{'-'.join(candidate_ids)}.json"
     manifest = json.loads(MANIFEST.read_text())
@@ -290,7 +294,11 @@ def _preflight(tmp_path: Path, candidate_ids: tuple[str, ...]) -> Path:
                 "scene": "apartment",
                 "method_id": "OVIV2",
                 "algorithm_hash": materialized["algorithm_hash"],
-                "scheduled_frame_indices": [0, 1, 2],
+                "processed_frame_count": 3,
+                "covered_frame_count": 3,
+                "first_frame_index": 0,
+                "last_frame_index": 2,
+                "scheduled_frame_indices": [1, 2],
                 "source_index": _record(source_index, relative_to=source_root),
             },
         )
@@ -347,14 +355,14 @@ def _preflight(tmp_path: Path, candidate_ids: tuple[str, ...]) -> Path:
             },
         )
         source_evidence = {
-            "run_manifest": _record(run_manifest),
-            "source_index": _record(source_index),
-            "trajectories": _record(trajectories),
-            "lifecycle_transitions": _record(lifecycle),
-            "frame_coverage": _record(coverage),
-            "runtime_diagnostics": _record(runtime),
-            "temporal_occlusion_result": _record(occlusion),
-            "future_leakage_evidence": _record(leakage),
+            "run_manifest": _record(run_manifest, relative_to=path.parent),
+            "source_index": _record(source_index, relative_to=path.parent),
+            "trajectories": _record(trajectories, relative_to=path.parent),
+            "lifecycle_transitions": _record(lifecycle, relative_to=path.parent),
+            "frame_coverage": _record(coverage, relative_to=path.parent),
+            "runtime_diagnostics": _record(runtime, relative_to=path.parent),
+            "temporal_occlusion_result": _record(occlusion, relative_to=path.parent),
+            "future_leakage_evidence": _record(leakage, relative_to=path.parent),
         }
         runtime_hash = source_evidence["runtime_diagnostics"]["sha256"]
         lifecycle_hash = source_evidence["lifecycle_transitions"]["sha256"]
@@ -602,8 +610,8 @@ def test_runner_executes_diagnostic_on_fixed_lane_outside_main_inventory(
 ) -> None:
     preflight = _preflight(tmp_path, (candidate_id,))
     preflight_payload = json.loads(preflight.read_text())
-    runtime_path = Path(
-        preflight_payload["candidates"][0]["source_evidence"]["runtime_diagnostics"]["path"]
+    runtime_path = _source_path(
+        preflight, preflight_payload["candidates"][0]["source_evidence"]["runtime_diagnostics"]
     )
     runtime = json.loads(runtime_path.read_text())
     assert all(runtime["counters"][name] == 0 for name in zero_names)
@@ -643,8 +651,8 @@ def test_diagnostic_rejects_nonzero_disabled_mechanism_self_report(
 ) -> None:
     preflight = _preflight(tmp_path, ("diag_a2_no_proposal_recovery",))
     payload = json.loads(preflight.read_text())
-    runtime_path = Path(
-        payload["candidates"][0]["source_evidence"]["runtime_diagnostics"]["path"]
+    runtime_path = _source_path(
+        preflight, payload["candidates"][0]["source_evidence"]["runtime_diagnostics"]
     )
     runtime = json.loads(runtime_path.read_text())
     runtime["counters"]["proposal_opportunity_count"] = 1
@@ -665,8 +673,8 @@ def test_translation_only_diagnostic_disables_icp_but_retains_motion_evidence(
 ) -> None:
     preflight = _preflight(tmp_path, ("diag_a4_translation_only_no_icp",))
     payload = json.loads(preflight.read_text())
-    runtime_path = Path(
-        payload["candidates"][0]["source_evidence"]["runtime_diagnostics"]["path"]
+    runtime_path = _source_path(
+        preflight, payload["candidates"][0]["source_evidence"]["runtime_diagnostics"]
     )
     runtime = json.loads(runtime_path.read_text())
     runtime["counters"]["motion_rejection_count"] = 1
@@ -707,8 +715,8 @@ def test_search_rejects_noncanonical_diagnostic_claim(
 ) -> None:
     preflight = _preflight(tmp_path, ("diag_a2_no_proposal_recovery",))
     payload = json.loads(preflight.read_text())
-    runtime = json.loads(Path(
-        payload["candidates"][0]["source_evidence"]["runtime_diagnostics"]["path"]
+    runtime = json.loads(_source_path(
+        preflight, payload["candidates"][0]["source_evidence"]["runtime_diagnostics"]
     ).read_text())
     runtime["diagnostic"] = _a2_diagnostic_claim()
     if mutation == "missing":
@@ -743,8 +751,8 @@ def test_search_rejects_noncanonical_diagnostic_claim(
 def test_search_rejects_main_profile_with_diagnostic_claim(tmp_path: Path) -> None:
     preflight = _preflight(tmp_path, ("a2",))
     payload = json.loads(preflight.read_text())
-    runtime = json.loads(Path(
-        payload["candidates"][0]["source_evidence"]["runtime_diagnostics"]["path"]
+    runtime = json.loads(_source_path(
+        preflight, payload["candidates"][0]["source_evidence"]["runtime_diagnostics"]
     ).read_text())
     runtime["diagnostic"] = _a2_diagnostic_claim()
     manifest = json.loads(MANIFEST.read_text())
@@ -764,8 +772,8 @@ def test_search_rejects_main_profile_with_diagnostic_claim(tmp_path: Path) -> No
 def test_search_rejects_main_profile_impossible_counter(tmp_path: Path) -> None:
     preflight = _preflight(tmp_path, ("a2",))
     payload = json.loads(preflight.read_text())
-    runtime = json.loads(Path(
-        payload["candidates"][0]["source_evidence"]["runtime_diagnostics"]["path"]
+    runtime = json.loads(_source_path(
+        preflight, payload["candidates"][0]["source_evidence"]["runtime_diagnostics"]
     ).read_text())
     runtime["counters"]["ledger_stage_count"] = 1
     runtime["mechanism_records"]["ledger_stage_count"] = ["ledger:0"]
@@ -1138,7 +1146,7 @@ def test_runner_rejects_raw_hash_drift_even_when_summary_still_passes(
 ) -> None:
     gate = _preflight(tmp_path, ("a1",))
     payload = json.loads(gate.read_text())
-    raw = Path(payload["candidates"][0]["source_evidence"]["frame_coverage"]["path"])
+    raw = _source_path(gate, payload["candidates"][0]["source_evidence"]["frame_coverage"])
     raw.write_bytes(raw.read_bytes() + b"\n")
 
     with pytest.raises(ValueError, match="frame_coverage source binding mismatch"):
@@ -1154,20 +1162,22 @@ def test_runner_rejects_raw_hash_drift_even_when_summary_still_passes(
         )
 
 
-@pytest.mark.parametrize("attack", ["dotdot", "symlink"])
+@pytest.mark.parametrize("attack", ["absolute", "dotdot", "symlink"])
 def test_runner_rejects_source_path_aliases_and_symlinks(
     tmp_path: Path, attack: str
 ) -> None:
     gate = _preflight(tmp_path, ("a1",))
     payload = json.loads(gate.read_text())
     record = payload["candidates"][0]["source_evidence"]["trajectories"]
-    original = Path(record["path"])
-    if attack == "dotdot":
-        record["path"] = str(original.parent / "nested" / ".." / original.name)
+    original = _source_path(gate, record)
+    if attack == "absolute":
+        record["path"] = str(original)
+    elif attack == "dotdot":
+        record["path"] = str(Path(record["path"]).parent / "nested" / ".." / original.name)
     else:
         alias = original.with_name("trajectories-alias.jsonl")
         alias.symlink_to(original)
-        record["path"] = str(alias)
+        record["path"] = alias.relative_to(gate.parent).as_posix()
     gate.write_text(json.dumps(payload))
 
     with pytest.raises(ValueError, match="alias|symlink"):
@@ -1187,10 +1197,10 @@ def test_runner_rejects_source_inventory_inode_alias(tmp_path: Path) -> None:
     gate = _preflight(tmp_path, ("a1",))
     payload = json.loads(gate.read_text())
     evidence = payload["candidates"][0]["source_evidence"]
-    original = Path(evidence["trajectories"]["path"])
+    original = _source_path(gate, evidence["trajectories"])
     alias = original.with_name("trajectories-hardlink.jsonl")
     os.link(original, alias)
-    evidence["trajectories"]["path"] = str(alias)
+    evidence["trajectories"]["path"] = alias.relative_to(gate.parent).as_posix()
     evidence["lifecycle_transitions"] = dict(evidence["trajectories"])
     gate.write_text(json.dumps(payload))
 
@@ -1211,18 +1221,18 @@ def test_runner_rejects_nested_source_record_path_alias(tmp_path: Path) -> None:
     gate = _preflight(tmp_path, ("a1",))
     payload = json.loads(gate.read_text())
     evidence = payload["candidates"][0]["source_evidence"]
-    source_index_path = Path(evidence["source_index"]["path"])
+    source_index_path = _source_path(gate, evidence["source_index"])
     source_index = json.loads(source_index_path.read_text())
     source_index["trajectories"]["path"] = str(
         source_index_path.parent / "nested" / ".." / "trajectories.jsonl"
     )
     _write_json(source_index_path, source_index)
-    evidence["source_index"] = _record(source_index_path)
-    run_path = Path(evidence["run_manifest"]["path"])
+    evidence["source_index"] = _record(source_index_path, relative_to=gate.parent)
+    run_path = _source_path(gate, evidence["run_manifest"])
     run = json.loads(run_path.read_text())
     run["source_index"] = _record(source_index_path, relative_to=source_index_path.parent)
     _write_json(run_path, run)
-    evidence["run_manifest"] = _record(run_path)
+    evidence["run_manifest"] = _record(run_path, relative_to=gate.parent)
     gate.write_text(json.dumps(payload))
 
     with pytest.raises(ValueError, match="source path is an alias"):
@@ -1242,17 +1252,17 @@ def test_runner_rejects_raw_occlusion_source_index_splice(tmp_path: Path) -> Non
     gate = _preflight(tmp_path, ("a1",))
     payload = json.loads(gate.read_text())
     evidence = payload["candidates"][0]["source_evidence"]
-    original_index = Path(evidence["source_index"]["path"])
+    original_index = _source_path(gate, evidence["source_index"])
     spliced_index = original_index.with_name("spliced_source_index.json")
     spliced_index.write_bytes(original_index.read_bytes())
-    occlusion_path = Path(evidence["temporal_occlusion_result"]["path"])
+    occlusion_path = _source_path(gate, evidence["temporal_occlusion_result"])
     occlusion = json.loads(occlusion_path.read_text())
     occlusion["input_bindings"]["source_indexes"][0] = {
         "scene": "apartment",
         **_record(spliced_index, relative_to=original_index.parent),
     }
     _write_json(occlusion_path, occlusion)
-    evidence["temporal_occlusion_result"] = _record(occlusion_path)
+    evidence["temporal_occlusion_result"] = _record(occlusion_path, relative_to=gate.parent)
     gate.write_text(json.dumps(payload))
 
     with pytest.raises(ValueError, match="occlusion source_index binding"):
@@ -1273,7 +1283,7 @@ def test_runner_revalidates_all_raw_witnesses_immediately_before_launch(
 ) -> None:
     gate = _preflight(tmp_path, ("a1",))
     payload = json.loads(gate.read_text())
-    raw = Path(payload["candidates"][0]["source_evidence"]["runtime_diagnostics"]["path"])
+    raw = _source_path(gate, payload["candidates"][0]["source_evidence"]["runtime_diagnostics"])
     original_content = raw.read_bytes()
     original_status = os.stat(raw, follow_symlinks=False)
     original_stat = search_runner.os.stat
