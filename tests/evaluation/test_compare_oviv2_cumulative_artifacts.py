@@ -270,6 +270,8 @@ def _v1_production_run(root: Path) -> Path:
     manifest_path = root / "run_manifest.json"
     manifest = json.loads(manifest_path.read_text())
     checkpoint = manifest["checkpoints"][0]
+    (root / manifest.pop("final_artifact")["path"]).unlink()
+    checkpoint["timestamp_ns"] = 100
     voxel_root = root / checkpoint["voxel_snapshot"]["path"]
     checksums = voxel_root / "checksums.json"
     checksums.write_text('{"ownership.npz":"fixture"}\n')
@@ -277,9 +279,44 @@ def _v1_production_run(root: Path) -> Path:
 
     schedule = root / "inputs/schedule.json"
     schedule.parent.mkdir()
-    schedule.write_text('{"frames":[2]}\n')
+    schedule.write_text(json.dumps({
+        "schema_version": 2,
+        "manifest_id": "tesse_cd_causal_schedule_v2",
+        "dataset": "TESSE-CD",
+        "method_predictions_used": False,
+        "source_manifest": {
+            "path": "configs/evaluation/manifests/tesse_cd.json",
+            "sha256": "d" * 64,
+            "byte_count": 1,
+        },
+        "parameters": {
+            "frame_indexing": "zero_based",
+            "official_stride_frames": 450,
+            "common_event_step_frames": 50,
+            "common_event_horizon_frames": 450,
+            "common_checkpoints_per_event": 10,
+            "event_frame_rule": "first relative_timestamp_ns >= event timestamp",
+        },
+        "scenes": {"apartment": {
+            "frame_count": 8,
+            "entries": [{
+                "frame_index": 2,
+                "timestamp_ns": 100,
+                "relative_timestamp_ns": 0,
+                "event_ids": [],
+                "roles": ["official"],
+            }],
+            "events": [],
+            "first_depth_timestamp_ns": 100,
+            "last_depth_timestamp_ns": 100,
+            "sources": {},
+        }},
+    }, sort_keys=True) + "\n")
     trajectories = root / "trajectories.jsonl"
-    trajectories.write_text('{"frame_index":2,"timestamp_ns":100}\n')
+    trajectories.write_text(
+        '{"centroid_xyz":[1.0,2.0,3.0],"entity_id":"oviv2:1",'
+        '"frame_index":2,"timestamp_ns":100}\n'
+    )
     schedule_record = _file_record(schedule, root)
     trajectories_record = _file_record(trajectories, root)
     checkpoint_status = checkpoint["checkpoint_status"]
@@ -396,6 +433,15 @@ def _v1_production_run(root: Path) -> Path:
         "evaluation_checkpoint_frames": [2],
         "algorithm_hash": algorithm_hash,
         "normalized_algorithm_config": canonical_algorithm_config(normalized_value),
+        "config": {"sha256": "e" * 64, "byte_count": 1},
+        "schedule": {
+            "sha256": schedule_record["sha256"],
+            "byte_count": schedule_record["byte_count"],
+        },
+        "source_bindings": {"input_sha256": "f" * 64},
+        "maintenance_parameters": {},
+        "missing_observation_policy": "signed_depth",
+        "stage3_lineage_commit": "a" * 40,
         "occlusion_checkpoint_index": _file_record(occlusion, root),
     })
     manifest_path.write_text(
@@ -407,6 +453,45 @@ def _v1_production_run(root: Path) -> Path:
 def _refresh_v1_occlusion_binding(root: Path) -> None:
     manifest_path = root / "run_manifest.json"
     manifest = json.loads(manifest_path.read_text())
+    manifest["occlusion_checkpoint_index"] = _file_record(
+        root / "occlusion_checkpoint_index.json", root
+    )
+    manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
+
+
+def _freeze_v1_production(root: Path) -> None:
+    manifest_path = root / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    metadata = root.stat()
+    identity = {
+        "schema_version": 1,
+        "freeze_id": "fixture-freeze",
+        "dataset": "TESSE-CD",
+        "method_id": "OVIV2",
+        "scene": "apartment",
+        "freeze_manifest": {"sha256": "1" * 64, "byte_count": 1},
+        "repository": {"commit": "a" * 40, "tree": "b" * 40},
+        "config": {"sha256": "2" * 64, "byte_count": 1},
+        "algorithm_hash": manifest["algorithm_hash"],
+        "input_bindings_sha256": "3" * 64,
+        "missing_observation_policy": "signed_depth",
+    }
+    execution = {
+        "schema_version": 1,
+        "run_slot": "fixture_run1",
+        "output_root": str(root.absolute()),
+        "root_device": metadata.st_dev,
+        "root_inode": metadata.st_ino,
+        "execution_id": "4" * 64,
+    }
+    manifest["frozen_run_identity"] = identity
+    manifest["run_execution"] = execution
+    for relative in ("source_index.json", "occlusion_checkpoint_index.json"):
+        path = root / relative
+        payload = json.loads(path.read_text())
+        payload["frozen_run_identity"] = identity
+        payload["run_execution"] = execution
+        path.write_text(json.dumps(payload, sort_keys=True) + "\n")
     manifest["occlusion_checkpoint_index"] = _file_record(
         root / "occlusion_checkpoint_index.json", root
     )
@@ -518,6 +603,15 @@ def test_schema1_production_support_inventory_self_compares_and_ignores_timing(
         ("provenance_semantics", "provenance"),
         ("normalized_semantics", "algorithm"),
         ("occlusion_semantics", "occlusion"),
+        ("all_support_removed", "schema1 run manifest schema"),
+        ("manifest_field_removed", "schema1 run manifest schema"),
+        ("schedule_relation", "production manifest identity"),
+        ("schedule_invalid", "schedule"),
+        ("schedule_drift", "schedule"),
+        ("trajectory_invalid", "trajector"),
+        ("trajectory_reordered", "trajector"),
+        ("trajectory_gap", "trajector"),
+        ("trajectory_blank", "trajector"),
     ),
 )
 def test_schema1_production_support_inventory_fails_closed(
@@ -571,15 +665,127 @@ def test_schema1_production_support_inventory_fails_closed(
         occlusion["run_config"] = _file_record(normalized_path, root)
         occlusion_path.write_text(json.dumps(occlusion, sort_keys=True) + "\n")
         _refresh_v1_occlusion_binding(root)
-    else:
+    elif mutation == "occlusion_semantics":
         occlusion_path = root / "occlusion_checkpoint_index.json"
         occlusion = json.loads(occlusion_path.read_text())
         occlusion["scene"] = "office"
         occlusion_path.write_text(json.dumps(occlusion, sort_keys=True) + "\n")
         _refresh_v1_occlusion_binding(root)
+    elif mutation == "all_support_removed":
+        manifest_path = root / "run_manifest.json"
+        manifest = json.loads(manifest_path.read_text())
+        manifest.pop("occlusion_checkpoint_index")
+        manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
+        for relative in compare_module.SCHEMA1_SUPPORT_FILES:
+            (root / relative).unlink()
+    elif mutation == "manifest_field_removed":
+        manifest_path = root / "run_manifest.json"
+        manifest = json.loads(manifest_path.read_text())
+        manifest.pop("config")
+        manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
+    elif mutation == "schedule_relation":
+        manifest_path = root / "run_manifest.json"
+        manifest = json.loads(manifest_path.read_text())
+        manifest["scheduled_frame_indices"] = []
+        manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
+    elif mutation.startswith("schedule_"):
+        schedule_path = root / "inputs/schedule.json"
+        if mutation == "schedule_invalid":
+            schedule_path.write_text("not-json\n")
+        else:
+            schedule = json.loads(schedule_path.read_text())
+            schedule["scenes"]["apartment"]["entries"][0]["frame_index"] = 3
+            schedule_path.write_text(json.dumps(schedule, sort_keys=True) + "\n")
+        record = _file_record(schedule_path, root)
+        capture_path = root / "capture_status.json"
+        capture = json.loads(capture_path.read_text())
+        capture["schedule"] = record
+        capture_path.write_text(json.dumps(capture, sort_keys=True) + "\n")
+        source_path = root / "source_index.json"
+        source = json.loads(source_path.read_text())
+        source["schedule"] = record
+        source["capture_status"] = _file_record(capture_path, root)
+        source_path.write_text(json.dumps(source, sort_keys=True) + "\n")
+        manifest_path = root / "run_manifest.json"
+        manifest = json.loads(manifest_path.read_text())
+        manifest["schedule"] = {
+            "sha256": record["sha256"],
+            "byte_count": record["byte_count"],
+        }
+        manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
+    elif mutation.startswith("trajectory_"):
+        trajectory_path = root / "trajectories.jsonl"
+        if mutation == "trajectory_invalid":
+            trajectory_path.write_text("not-json\n")
+        elif mutation == "trajectory_gap":
+            trajectory_path.write_text("")
+        elif mutation == "trajectory_blank":
+            trajectory_path.write_text(trajectory_path.read_text() + "\n")
+        else:
+            trajectory_path.write_text(
+                trajectory_path.read_text()
+                + '{"centroid_xyz":[0,0,0],"entity_id":"late",'
+                '"frame_index":1,"timestamp_ns":50}\n'
+            )
+        record = _file_record(trajectory_path, root)
+        capture_path = root / "capture_status.json"
+        capture = json.loads(capture_path.read_text())
+        capture["trajectories"] = record
+        capture_path.write_text(json.dumps(capture, sort_keys=True) + "\n")
+        source_path = root / "source_index.json"
+        source = json.loads(source_path.read_text())
+        source["trajectories"] = record
+        source["capture_status"] = _file_record(capture_path, root)
+        source_path.write_text(json.dumps(source, sort_keys=True) + "\n")
 
     with pytest.raises(ArtifactMismatch, match=message):
         compare_cumulative_artifacts(root, root)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    (
+        ("legacy_removed", "frozen legacy inventory is missing"),
+        ("identity_drift", "frozen run identity does not match manifest"),
+        ("inode_drift", "run execution schema"),
+    ),
+)
+def test_schema1_frozen_production_cannot_be_downgraded(
+    tmp_path: Path, mutation: str, message: str,
+) -> None:
+    root = _v1_production_run(tmp_path / mutation)
+    _freeze_v1_production(root)
+    if mutation != "legacy_removed":
+        manifest_path = root / "run_manifest.json"
+        manifest = json.loads(manifest_path.read_text())
+        if mutation == "identity_drift":
+            manifest["frozen_run_identity"]["dataset"] = "OTHER"
+            key = "frozen_run_identity"
+        else:
+            manifest["run_execution"]["root_inode"] += 1
+            key = "run_execution"
+        for relative in ("source_index.json", "occlusion_checkpoint_index.json"):
+            path = root / relative
+            payload = json.loads(path.read_text())
+            payload[key] = manifest[key]
+            path.write_text(json.dumps(payload, sort_keys=True) + "\n")
+        manifest["occlusion_checkpoint_index"] = _file_record(
+            root / "occlusion_checkpoint_index.json", root
+        )
+        manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
+
+    with pytest.raises(ArtifactMismatch, match=message):
+        compare_cumulative_artifacts(root, root)
+
+
+def test_schema1_legacy_evaluation_summary_rejects_minimal_forgery() -> None:
+    with pytest.raises(ArtifactMismatch, match="evaluation summary"):
+        compare_module._validate_legacy_evaluation_summary(
+            {"schema_version": 1},
+            {"schema_version": 1},
+            {"dataset": "TESSE-CD", "method_id": "OVIV2", "scene": "apartment"},
+            {"role": "temporal_index", "sha256": "a" * 64, "byte_count": 1},
+        )
 
 
 def test_schema2_projects_only_cumulative_audit_across_profiles(tmp_path: Path) -> None:

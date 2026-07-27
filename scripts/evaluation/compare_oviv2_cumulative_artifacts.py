@@ -51,6 +51,41 @@ SCHEMA1_SUPPORT_FILES = {
     "timing.json",
     "trajectories.jsonl",
 }
+SCHEMA1_PRODUCTION_FIELDS = {
+    "schema_version",
+    "dataset",
+    "method_id",
+    "scene",
+    "mode",
+    "processed_frame_count",
+    "scheduled_frame_indices",
+    "captured_frame_indices",
+    "official_schedule_frame_indices",
+    "evaluation_checkpoint_frames",
+    "algorithm_hash",
+    "normalized_algorithm_config",
+    "config",
+    "schedule",
+    "source_bindings",
+    "maintenance_parameters",
+    "missing_observation_policy",
+    "stage3_lineage_commit",
+    "checkpoints",
+    "occlusion_checkpoint_index",
+}
+SCHEMA1_T1_TRANSACTION_FIELDS = {
+    "schema_version",
+    "scene",
+    "mode",
+    "algorithm_hash",
+    "code_commit",
+    "config",
+    "schedule",
+    "target_manifest",
+    "source_bindings",
+    "checkpoints",
+    "final_artifact",
+}
 MAX_JSON_BYTES = 16 * 1024 * 1024
 SCHEMA2_MINIMAL_FIELDS = {
     "schema_version",
@@ -269,8 +304,11 @@ def _stream_descriptor(
         "run_provenance.json",
         "timing.json",
         "temporal/temporal_manifest.json",
+        "temporal/sidecars/source_index.json",
         "evaluation/summary.json",
         "evaluation/summary.canonical.json",
+        "inputs/schedule.json",
+        "trajectories.jsonl",
     }
     chunks: list[bytes] = []
     try:
@@ -998,6 +1036,82 @@ def _schema_version(value: Mapping[str, Any], expected: int) -> bool:
     )
 
 
+def _validate_schema1_structure(manifest: Mapping[str, Any]) -> bool:
+    fields = frozenset(manifest)
+    minimal_variants = {
+        frozenset({"schema_version", "checkpoints"}),
+        frozenset({"schema_version", "checkpoints", "final_artifact"}),
+    }
+    production_variants = {
+        frozenset(SCHEMA1_PRODUCTION_FIELDS),
+        frozenset(SCHEMA1_PRODUCTION_FIELDS | {"frozen_run_identity", "run_execution"}),
+    }
+    if fields in minimal_variants:
+        return False
+    if fields == frozenset(SCHEMA1_T1_TRANSACTION_FIELDS):
+        if (
+            not _schema_version(manifest, 1)
+            or not _nonempty_string(manifest.get("scene"))
+            or manifest.get("mode") != "causal_checkpoints"
+            or not _hex_id(manifest.get("algorithm_hash"), (64,))
+            or not _hex_id(manifest.get("code_commit"), (40, 64))
+            or not isinstance(manifest.get("source_bindings"), Mapping)
+            or not manifest["source_bindings"]
+        ):
+            raise ArtifactMismatch("schema1 T1 transaction identity is invalid")
+        for key in ("config", "schedule", "target_manifest"):
+            _validate_byte_record(manifest[key], f"schema1 T1 transaction {key}")
+        return False
+    if fields not in production_variants:
+        raise ArtifactMismatch(
+            "schema1 run manifest schema is invalid; artifact inventory is not exact"
+        )
+    checkpoints = manifest.get("checkpoints")
+    checkpoint_frames = (
+        [checkpoint.get("frame_index") for checkpoint in checkpoints]
+        if isinstance(checkpoints, list)
+        and all(isinstance(checkpoint, Mapping) for checkpoint in checkpoints)
+        else None
+    )
+    scheduled = manifest.get("scheduled_frame_indices")
+    captured = manifest.get("captured_frame_indices")
+    official = manifest.get("official_schedule_frame_indices")
+    evaluation = manifest.get("evaluation_checkpoint_frames")
+    if (
+        not _schema_version(manifest, 1)
+        or any(
+            not _nonempty_string(manifest.get(key))
+            for key in (
+                "dataset",
+                "method_id",
+                "scene",
+                "mode",
+                "missing_observation_policy",
+            )
+        )
+        or manifest.get("mode") != "causal_checkpoints"
+        or not _nonnegative_integer(manifest.get("processed_frame_count"))
+        or any(
+            not _index_list(value)
+            for value in (scheduled, captured, official, evaluation)
+        )
+        or scheduled != captured
+        or checkpoint_frames != scheduled
+        or checkpoint_frames != sorted(set(official) | set(evaluation))
+        or not _hex_id(manifest.get("algorithm_hash"), (64,))
+        or not _hex_id(manifest.get("stage3_lineage_commit"), (40, 64))
+        or not isinstance(manifest.get("normalized_algorithm_config"), Mapping)
+        or not isinstance(manifest.get("source_bindings"), Mapping)
+        or not manifest["source_bindings"]
+        or not isinstance(manifest.get("maintenance_parameters"), Mapping)
+    ):
+        raise ArtifactMismatch("schema1 production manifest identity is invalid")
+    _validate_byte_record(manifest["config"], "schema1 run config")
+    _validate_byte_record(manifest["schedule"], "schema1 run schedule")
+    _reject_source_binding_pseudo_records(manifest["source_bindings"])
+    return True
+
+
 def _support_json(
     all_files: Mapping[str, FileEntry], path: str, label: str
 ) -> dict[str, Any]:
@@ -1056,7 +1170,7 @@ def _validate_schema1_frozen_identity(value: object, label: str) -> None:
 
 
 def _validate_schema1_run_execution(
-    value: object, root: Path, label: str
+    value: object, root: _RootHandle, label: str
 ) -> None:
     expected = {
         "schema_version",
@@ -1066,20 +1180,22 @@ def _validate_schema1_run_execution(
         "root_inode",
         "execution_id",
     }
+    root_metadata = os.fstat(root.descriptor)
     if (
         not isinstance(value, Mapping)
         or set(value) != expected
         or not _schema_version(value, 1)
         or not _nonempty_string(value.get("run_slot"))
-        or value.get("output_root") != str(root)
-        or not _nonnegative_integer(value.get("root_device"))
-        or not _nonnegative_integer(value.get("root_inode"))
+        or value.get("output_root") != str(root.path)
+        or value.get("root_device") != root_metadata.st_dev
+        or value.get("root_inode") != root_metadata.st_ino
         or not _hex_id(value.get("execution_id"), (64,))
     ):
         raise ArtifactMismatch(f"{label} schema is invalid")
 
 
 def _validate_schema1_source_index(
+    root: _RootHandle,
     all_files: Mapping[str, FileEntry],
     manifest: Mapping[str, Any],
     source: Mapping[str, Any],
@@ -1115,7 +1231,6 @@ def _validate_schema1_source_index(
         _validate_schema1_frozen_identity(
             source["frozen_run_identity"], "source index frozen identity"
         )
-        root = all_files["source_index.json"].root
         _validate_schema1_run_execution(
             source["run_execution"], root, "source index run execution"
         )
@@ -1222,6 +1337,158 @@ def _validate_schema1_capture_status(
         _validate_file_record(
             all_files, record, f"capture status checkpoint {position}"
         )
+
+
+def _validate_schema1_schedule(
+    all_files: Mapping[str, FileEntry], manifest: Mapping[str, Any]
+) -> dict[int, int]:
+    schedule = _support_json(all_files, "inputs/schedule.json", "causal schedule")
+    expected_fields = {
+        "schema_version",
+        "manifest_id",
+        "dataset",
+        "method_predictions_used",
+        "source_manifest",
+        "parameters",
+        "scenes",
+    }
+    parameter_fields = {
+        "frame_indexing",
+        "official_stride_frames",
+        "common_event_step_frames",
+        "common_event_horizon_frames",
+        "common_checkpoints_per_event",
+        "event_frame_rule",
+    }
+    scene_fields = {
+        "frame_count",
+        "entries",
+        "events",
+        "first_depth_timestamp_ns",
+        "last_depth_timestamp_ns",
+        "sources",
+    }
+    entry_fields = {
+        "frame_index",
+        "timestamp_ns",
+        "relative_timestamp_ns",
+        "event_ids",
+        "roles",
+    }
+    parameters = schedule.get("parameters")
+    scenes = schedule.get("scenes")
+    scene = scenes.get(manifest.get("scene")) if isinstance(scenes, Mapping) else None
+    if (
+        set(schedule) != expected_fields
+        or not _schema_version(schedule, 2)
+        or schedule.get("manifest_id") != "tesse_cd_causal_schedule_v2"
+        or schedule.get("dataset") != manifest.get("dataset")
+        or schedule.get("method_predictions_used") is not False
+        or not isinstance(parameters, Mapping)
+        or set(parameters) != parameter_fields
+        or parameters.get("frame_indexing") != "zero_based"
+        or any(
+            not _nonnegative_integer(parameters.get(key))
+            for key in parameter_fields - {"frame_indexing", "event_frame_rule"}
+        )
+        or not _nonempty_string(parameters.get("event_frame_rule"))
+        or not isinstance(scene, Mapping)
+        or set(scene) != scene_fields
+        or scene.get("frame_count") != manifest.get("processed_frame_count")
+        or not isinstance(scene.get("events"), list)
+        or not isinstance(scene.get("sources"), Mapping)
+        or not _nonnegative_integer(scene.get("first_depth_timestamp_ns"))
+        or not _nonnegative_integer(scene.get("last_depth_timestamp_ns"))
+    ):
+        raise ArtifactMismatch("causal schedule schema or identity is invalid")
+    _record(schedule["source_manifest"], "causal schedule source manifest")
+    entries = scene.get("entries")
+    if not isinstance(entries, list) or not entries:
+        raise ArtifactMismatch("causal schedule entries are invalid")
+    timestamps: dict[int, int] = {}
+    previous_frame = -1
+    previous_timestamp = -1
+    for entry in entries:
+        if (
+            not isinstance(entry, Mapping)
+            or set(entry) != entry_fields
+            or not _nonnegative_integer(entry.get("frame_index"))
+            or not _nonnegative_integer(entry.get("timestamp_ns"))
+            or not _nonnegative_integer(entry.get("relative_timestamp_ns"))
+            or entry["frame_index"] <= previous_frame
+            or entry["timestamp_ns"] <= previous_timestamp
+            or entry["frame_index"] >= scene["frame_count"]
+            or not _string_list(entry.get("event_ids"))
+            or not _string_list(entry.get("roles"), nonempty=True)
+            or not set(entry["roles"]).issubset({"official", "common_v2"})
+        ):
+            raise ArtifactMismatch("causal schedule entry is invalid")
+        timestamps[entry["frame_index"]] = entry["timestamp_ns"]
+        previous_frame = entry["frame_index"]
+        previous_timestamp = entry["timestamp_ns"]
+    if list(timestamps) != manifest.get("official_schedule_frame_indices"):
+        raise ArtifactMismatch("causal schedule frame inventory mismatch")
+    checkpoint_timestamps = {
+        checkpoint.get("frame_index"): checkpoint.get("timestamp_ns")
+        for checkpoint in manifest["checkpoints"]
+    }
+    if any(checkpoint_timestamps.get(frame) != timestamp for frame, timestamp in timestamps.items()):
+        raise ArtifactMismatch("causal schedule checkpoint binding mismatch")
+    return timestamps
+
+
+def _validate_schema1_trajectories(
+    all_files: Mapping[str, FileEntry], schedule_timestamps: Mapping[int, int]
+) -> None:
+    data = _regular_bytes(
+        all_files, PurePosixPath("trajectories.jsonl"), "trajectories"
+    )
+    try:
+        lines = data.decode("utf-8").splitlines()
+    except UnicodeDecodeError as exc:
+        raise ArtifactMismatch("trajectories are not UTF-8") from exc
+    if not lines or any(not line for line in lines):
+        raise ArtifactMismatch("trajectories contain a blank line")
+    expected_fields = {"frame_index", "timestamp_ns", "entity_id", "centroid_xyz"}
+    seen: set[tuple[int, str]] = set()
+    frames: list[int] = []
+    previous_frame = -1
+    previous_timestamp = -1
+    for position, line in enumerate(lines, start=1):
+        record = _json_object(line.encode("utf-8"), f"trajectory line {position}")
+        frame = record.get("frame_index")
+        timestamp = record.get("timestamp_ns")
+        entity_id = record.get("entity_id")
+        centroid = record.get("centroid_xyz")
+        if (
+            set(record) != expected_fields
+            or not _nonnegative_integer(frame)
+            or not _nonnegative_integer(timestamp)
+            or not _nonempty_string(entity_id)
+            or entity_id != entity_id.strip()
+            or frame < previous_frame
+            or timestamp < previous_timestamp
+            or (frame == previous_frame and timestamp != previous_timestamp)
+            or (frame > previous_frame and timestamp <= previous_timestamp)
+            or schedule_timestamps.get(frame) != timestamp
+            or (frame, entity_id) in seen
+            or not isinstance(centroid, list)
+            or len(centroid) != 3
+            or any(
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not math.isfinite(value)
+                for value in centroid
+            )
+        ):
+            raise ArtifactMismatch("trajectory record is invalid")
+        if frame != previous_frame:
+            frames.append(frame)
+        seen.add((frame, entity_id))
+        previous_frame = frame
+        previous_timestamp = timestamp
+    if frames != list(schedule_timestamps):
+        raise ArtifactMismatch("trajectory frame inventory mismatch")
 
 
 def _validate_schema1_normalized_config(
@@ -1402,46 +1669,47 @@ def _validate_schema1_occlusion_index(
 
 
 def _schema1_support_inventory(
-    all_files: Mapping[str, FileEntry], manifest: Mapping[str, Any]
+    root: _RootHandle,
+    all_files: Mapping[str, FileEntry],
+    manifest: Mapping[str, Any],
+    *,
+    production: bool,
 ) -> set[str]:
     present = SCHEMA1_SUPPORT_FILES & set(all_files)
-    if not present and "occlusion_checkpoint_index" not in manifest:
+    if not production:
+        if present:
+            raise ArtifactMismatch("schema1 support inventory is not exact")
         return set()
     if present != SCHEMA1_SUPPORT_FILES:
         raise ArtifactMismatch("schema1 support inventory is not exact")
-    if (
-        any(
-            not _nonempty_string(manifest.get(key))
-            for key in ("dataset", "method_id", "scene", "mode")
-        )
-        or manifest.get("mode") != "causal_checkpoints"
-        or not _nonnegative_integer(manifest.get("processed_frame_count"))
-        or any(
-            not _index_list(manifest.get(key))
-            for key in (
-                "scheduled_frame_indices",
-                "captured_frame_indices",
-                "official_schedule_frame_indices",
-                "evaluation_checkpoint_frames",
-            )
-        )
-    ):
-        raise ArtifactMismatch("schema1 production manifest is invalid")
     frozen = manifest.get("frozen_run_identity")
     execution = manifest.get("run_execution")
     if (frozen is None) != (execution is None):
         raise ArtifactMismatch("schema1 frozen run identity is incomplete")
     if frozen is not None:
         _validate_schema1_frozen_identity(frozen, "frozen run identity")
+        if (
+            frozen.get("dataset") != manifest.get("dataset")
+            or frozen.get("method_id") != manifest.get("method_id")
+            or frozen.get("scene") != manifest.get("scene")
+            or frozen.get("algorithm_hash") != manifest.get("algorithm_hash")
+            or frozen.get("missing_observation_policy")
+            != manifest.get("missing_observation_policy")
+        ):
+            raise ArtifactMismatch("frozen run identity does not match manifest")
         _validate_schema1_run_execution(
-            execution, all_files["run_manifest.json"].root, "run execution"
+            execution, root, "run execution"
         )
     source = _support_json(all_files, "source_index.json", "source index")
-    source_checkpoints = _validate_schema1_source_index(all_files, manifest, source)
+    source_checkpoints = _validate_schema1_source_index(
+        root, all_files, manifest, source
+    )
     capture = _support_json(all_files, "capture_status.json", "capture status")
     _validate_schema1_capture_status(
         all_files, manifest, source, source_checkpoints, capture
     )
+    schedule_timestamps = _validate_schema1_schedule(all_files, manifest)
+    _validate_schema1_trajectories(all_files, schedule_timestamps)
     _validate_schema1_normalized_config(all_files, manifest)
     _validate_schema1_provenance(all_files, manifest)
     timing = _support_json(all_files, "timing.json", "timing")
@@ -1459,36 +1727,128 @@ def _schema1_support_inventory(
     return set(SCHEMA1_SUPPORT_FILES)
 
 
-def _validate_prefixed_records(
+def _validate_prefixed_record(
     all_files: Mapping[str, FileEntry],
     value: object,
     prefix: PurePosixPath,
     label: str,
-) -> set[str]:
-    result: set[str] = set()
-    if isinstance(value, Mapping):
-        if set(value) == {"path", "sha256", "byte_count"}:
-            path, digest, count = _record(value, label)
-            prefixed = prefix / path
-            entry = all_files.get(prefixed.as_posix())
-            if entry is None or entry.sha256 != digest or entry.byte_count != count:
-                raise ArtifactMismatch(f"{label} manifest record does not match raw bytes")
-            result.add(prefixed.as_posix())
-        else:
-            for key, child in value.items():
-                result.update(
-                    _validate_prefixed_records(
-                        all_files, child, prefix, f"{label}.{key}"
-                    )
-                )
-    elif isinstance(value, list):
-        for position, child in enumerate(value):
-            result.update(
-                _validate_prefixed_records(
-                    all_files, child, prefix, f"{label}[{position}]"
+) -> str:
+    path, digest, count = _record(value, label)
+    prefixed = prefix / path
+    entry = all_files.get(prefixed.as_posix())
+    if entry is None or entry.sha256 != digest or entry.byte_count != count:
+        raise ArtifactMismatch(f"{label} manifest record does not match raw bytes")
+    return prefixed.as_posix()
+
+
+def _validate_legacy_evaluation_summary(
+    summary: Mapping[str, Any],
+    canonical: Mapping[str, Any],
+    manifest: Mapping[str, Any],
+    temporal_source: Mapping[str, Any],
+) -> None:
+    shared_fields = {
+        "schema_version",
+        "dataset",
+        "method",
+        "mode",
+        "scene",
+        "protocol",
+        "status",
+        "sources",
+        "frames",
+        "metrics",
+        "event_background_prediction_counts",
+        "event_region_prediction_counts",
+    }
+    summary_fields = shared_fields | {"manifest_id"}
+    canonical_fields = summary_fields | {"canonicalization", "source_manifest_id"}
+    if (
+        set(summary) != summary_fields
+        or set(canonical) != canonical_fields
+        or summary.get("manifest_id") != "tesse_cd_common_v2_scene_summary"
+        or canonical.get("manifest_id")
+        != "tesse_cd_common_v2_canonical_scene_summary_v1"
+        or canonical.get("source_manifest_id") != summary.get("manifest_id")
+        or any(
+            not _schema_version(value, 1)
+            or value.get("dataset") != manifest.get("dataset")
+            or value.get("method") != manifest.get("method_id")
+            or value.get("scene") != manifest.get("scene")
+            or value.get("mode") != "causal_checkpoints"
+            or value.get("protocol") != "tesse_cd_common_v2"
+            or value.get("status") != "PASS"
+            for value in (summary, canonical)
+        )
+        or any(summary.get(key) != canonical.get(key) for key in shared_fields - {"sources"})
+    ):
+        raise ArtifactMismatch("evaluation summary identity or schema is invalid")
+    canonicalization = canonical.get("canonicalization")
+    if (
+        not isinstance(canonicalization, Mapping)
+        or set(canonicalization)
+        != {"schema_version", "source_identity", "physical_paths_serialized"}
+        or not _schema_version(canonicalization, 1)
+        or canonicalization.get("source_identity")
+        != "stable_role_sha256_byte_count"
+        or canonicalization.get("physical_paths_serialized") is not False
+    ):
+        raise ArtifactMismatch("canonical evaluation summary schema is invalid")
+    raw_sources = summary.get("sources")
+    canonical_sources = canonical.get("sources")
+    if (
+        not isinstance(raw_sources, Mapping)
+        or not raw_sources
+        or not isinstance(canonical_sources, Mapping)
+        or set(raw_sources) != set(canonical_sources)
+    ):
+        raise ArtifactMismatch("evaluation summary sources are invalid")
+    for role, raw in raw_sources.items():
+        stable = canonical_sources[role]
+        if (
+            not isinstance(raw, Mapping)
+            or set(raw) != {"path", "sha256", "byte_count"}
+            or not _nonempty_string(raw.get("path"))
+            or not _hex_id(raw.get("sha256"), (64,))
+            or not _nonnegative_integer(raw.get("byte_count"))
+            or not isinstance(stable, Mapping)
+            or set(stable) != {"role", "sha256", "byte_count"}
+            or stable.get("role") != role
+            or (
+                role != "temporal_index"
+                and (
+                    stable.get("sha256") != raw.get("sha256")
+                    or stable.get("byte_count") != raw.get("byte_count")
                 )
             )
-    return result
+            or (role == "temporal_index" and stable != temporal_source)
+        ):
+            raise ArtifactMismatch("canonical evaluation source binding is invalid")
+    frame_fields = {
+        "background_f5",
+        "background_precision_match_count",
+        "background_recall_match_count",
+        "current_miou",
+        "event_id",
+        "frame_id",
+        "ghost_count",
+        "ghost_rate",
+        "ground_truth_revealed_background_count",
+        "intervention_frame_id",
+        "predicted_changed_object_count",
+        "predicted_revealed_background_count",
+    }
+    frames = summary.get("frames")
+    if (
+        not isinstance(frames, list)
+        or not frames
+        or any(not isinstance(frame, Mapping) or set(frame) != frame_fields for frame in frames)
+        or not isinstance(summary.get("metrics"), Mapping)
+        or not summary["metrics"]
+        or not isinstance(summary.get("event_background_prediction_counts"), Mapping)
+        or not isinstance(summary.get("event_region_prediction_counts"), Mapping)
+    ):
+        raise ArtifactMismatch("evaluation summary evidence schema is invalid")
 
 
 def _schema1_frozen_legacy_inventory(
@@ -1500,6 +1860,8 @@ def _schema1_frozen_legacy_inventory(
         if path.startswith("temporal/") or path.startswith("evaluation/")
     }
     if not actual:
+        if "frozen_run_identity" in manifest:
+            raise ArtifactMismatch("schema1 frozen legacy inventory is missing")
         return set()
     if "frozen_run_identity" not in manifest:
         raise ArtifactMismatch("schema1 legacy inventory requires frozen identity")
@@ -1524,15 +1886,168 @@ def _schema1_frozen_legacy_inventory(
         or not _schema_version(temporal, 1)
         or temporal.get("dataset") != manifest.get("dataset")
         or temporal.get("method") != manifest.get("method_id")
+        or temporal.get("mode") != "causal_checkpoints"
         or temporal.get("scene") != manifest.get("scene")
         or temporal.get("frozen_run_identity") != manifest.get("frozen_run_identity")
         or temporal.get("run_execution") != manifest.get("run_execution")
     ):
         raise ArtifactMismatch("temporal manifest identity is invalid")
-    expected = _validate_prefixed_records(
-        all_files, temporal, PurePosixPath("temporal"), "temporal manifest"
+    prefix = PurePosixPath("temporal")
+    expected = {"temporal/temporal_manifest.json"}
+    sources = temporal.get("sources")
+    source_fields = {
+        "capture_status",
+        "checkpoint_statuses",
+        "schedule",
+        "source_index",
+        "trajectories",
+    }
+    if not isinstance(sources, Mapping) or set(sources) != source_fields:
+        raise ArtifactMismatch("temporal manifest sources schema is invalid")
+    for key, path in (
+        ("capture_status", "sidecars/capture_status.json"),
+        ("schedule", "sidecars/schedule.json"),
+        ("source_index", "sidecars/source_index.json"),
+        ("trajectories", "trajectories.jsonl"),
+    ):
+        record_path, _, _ = _record(sources[key], f"temporal source {key}")
+        if record_path != PurePosixPath(path):
+            raise ArtifactMismatch(f"temporal source {key} path is invalid")
+        expected.add(
+            _validate_prefixed_record(all_files, sources[key], prefix, f"temporal source {key}")
+        )
+    if temporal.get("trajectories") != sources["trajectories"]:
+        raise ArtifactMismatch("temporal trajectory binding is invalid")
+    temporal_trajectory = all_files["temporal/trajectories.jsonl"]
+    root_trajectory = all_files["trajectories.jsonl"]
+    if (
+        temporal_trajectory.sha256 != root_trajectory.sha256
+        or temporal_trajectory.byte_count != root_trajectory.byte_count
+    ):
+        raise ArtifactMismatch("temporal trajectory content binding is invalid")
+    checkpoints = temporal.get("checkpoints")
+    statuses = sources.get("checkpoint_statuses")
+    checkpoint_fields = {
+        "frame_index",
+        "timestamp_ns",
+        "consumed_through_frame",
+        "consumed_through_frame_exclusive",
+        "snapshot",
+        "entities",
+    }
+    if (
+        not isinstance(checkpoints, list)
+        or not checkpoints
+        or not isinstance(statuses, list)
+        or len(statuses) != len(checkpoints)
+    ):
+        raise ArtifactMismatch("temporal checkpoint inventory is invalid")
+    frames: list[int] = []
+    for position, checkpoint in enumerate(checkpoints):
+        frame = checkpoint.get("frame_index") if isinstance(checkpoint, Mapping) else None
+        if (
+            not isinstance(checkpoint, Mapping)
+            or set(checkpoint) != checkpoint_fields
+            or not _nonnegative_integer(frame)
+            or frame in frames
+            or not _nonnegative_integer(checkpoint.get("timestamp_ns"))
+            or checkpoint.get("consumed_through_frame") != frame
+            or checkpoint.get("consumed_through_frame_exclusive") != frame + 1
+        ):
+            raise ArtifactMismatch("temporal checkpoint schema is invalid")
+        frames.append(frame)
+        for key, suffix in (("snapshot", "snapshot.npz"), ("entities", "entities.jsonl")):
+            expected_path = PurePosixPath(f"checkpoints/{frame:08d}/{suffix}")
+            path, _, _ = _record(checkpoint[key], f"temporal checkpoint {position} {key}")
+            if path != expected_path:
+                raise ArtifactMismatch("temporal checkpoint path is invalid")
+            expected.add(
+                _validate_prefixed_record(
+                    all_files, checkpoint[key], prefix, f"temporal checkpoint {position} {key}"
+                )
+            )
+        status_path = PurePosixPath(f"sidecars/checkpoint_statuses/{frame:08d}.json")
+        path, _, _ = _record(statuses[position], f"temporal checkpoint status {position}")
+        if path != status_path:
+            raise ArtifactMismatch("temporal checkpoint status path is invalid")
+        expected.add(
+            _validate_prefixed_record(
+                all_files, statuses[position], prefix, f"temporal checkpoint status {position}"
+            )
+        )
+    if frames != manifest.get("official_schedule_frame_indices"):
+        raise ArtifactMismatch("temporal checkpoint frame inventory mismatch")
+    checkpoint_timestamps = {
+        checkpoint["frame_index"]: checkpoint["timestamp_ns"]
+        for checkpoint in checkpoints
+    }
+    lifecycles = temporal.get("entity_lifecycles")
+    lifecycle_fields = {"entity_id", "semantic_label", "entity_type", "presence_intervals"}
+    interval_fields = {
+        "first_frame_index",
+        "first_timestamp_ns",
+        "last_frame_index",
+        "last_timestamp_ns",
+    }
+    if not isinstance(lifecycles, list):
+        raise ArtifactMismatch("temporal lifecycle inventory is invalid")
+    entity_ids: list[str] = []
+    for lifecycle in lifecycles:
+        intervals = lifecycle.get("presence_intervals") if isinstance(lifecycle, Mapping) else None
+        if (
+            not isinstance(lifecycle, Mapping)
+            or set(lifecycle) != lifecycle_fields
+            or not _nonempty_string(lifecycle.get("entity_id"))
+            or lifecycle["entity_id"] in entity_ids
+            or not _nonempty_string(lifecycle.get("semantic_label"))
+            or not _nonempty_string(lifecycle.get("entity_type"))
+            or not isinstance(intervals, list)
+            or not intervals
+            or any(
+                not isinstance(interval, Mapping)
+                or set(interval) != interval_fields
+                or any(not _nonnegative_integer(interval.get(key)) for key in interval_fields)
+                or interval["first_frame_index"] > interval["last_frame_index"]
+                or interval["first_timestamp_ns"] > interval["last_timestamp_ns"]
+                or checkpoint_timestamps.get(interval["first_frame_index"])
+                != interval["first_timestamp_ns"]
+                or checkpoint_timestamps.get(interval["last_frame_index"])
+                != interval["last_timestamp_ns"]
+                for interval in intervals
+            )
+        ):
+            raise ArtifactMismatch("temporal lifecycle schema is invalid")
+        entity_ids.append(lifecycle["entity_id"])
+    sidecar = _support_json(
+        all_files, "temporal/sidecars/source_index.json", "temporal source index"
     )
-    expected.add("temporal/temporal_manifest.json")
+    if (
+        sidecar.get("frozen_run_identity") != manifest.get("frozen_run_identity")
+        or sidecar.get("run_execution") != manifest.get("run_execution")
+    ):
+        raise ArtifactMismatch("temporal source index identity mismatch")
+    projected_sidecar = dict(sidecar)
+    projected_sidecar.pop("run_execution")
+    projected_sidecar_bytes = (
+        json.dumps(projected_sidecar, sort_keys=True, separators=(",", ":")) + "\n"
+    ).encode("utf-8")
+    projected_temporal = dict(temporal)
+    projected_temporal.pop("run_execution")
+    projected_sources = dict(sources)
+    projected_sources["source_index"] = {
+        "path": "sidecars/source_index.json",
+        "sha256": _sha256(projected_sidecar_bytes),
+        "byte_count": len(projected_sidecar_bytes),
+    }
+    projected_temporal["sources"] = projected_sources
+    projected_temporal_bytes = (
+        json.dumps(projected_temporal, sort_keys=True, separators=(",", ":")) + "\n"
+    ).encode("utf-8")
+    temporal_source = {
+        "role": "temporal_index",
+        "sha256": _sha256(projected_temporal_bytes),
+        "byte_count": len(projected_temporal_bytes),
+    }
     evaluation_files = {
         "evaluation/summary.json",
         "evaluation/summary.canonical.json",
@@ -1543,18 +2058,9 @@ def _schema1_frozen_legacy_inventory(
         "evaluation/summary.canonical.json",
         "canonical evaluation summary",
     )
-    if (
-        any(
-            not _schema_version(value, 1)
-            or value.get("dataset") != manifest.get("dataset")
-            or value.get("method") != manifest.get("method_id")
-            or value.get("scene") != manifest.get("scene")
-            or value.get("status") != "PASS"
-            for value in (summary, canonical)
-        )
-        or canonical.get("source_manifest_id") != summary.get("manifest_id")
-    ):
-        raise ArtifactMismatch("evaluation summary identity is invalid")
+    _validate_legacy_evaluation_summary(
+        summary, canonical, manifest, temporal_source
+    )
     expected.update(evaluation_files)
     if actual != expected:
         raise ArtifactMismatch("schema1 frozen legacy inventory is not exact")
@@ -1966,11 +2472,14 @@ def _load_inventory(
         _validate_manifest_records(all_files, manifest)
         _schema2_run_identity(manifest, all_files)
         return _schema2_projection(manifest, all_files)
+    production = _validate_schema1_structure(manifest)
     _validate_manifest_records(all_files, manifest)
     allowed_root_files = {"run_manifest.json"}
     if "t1_exact_receipt.json" in all_files:
         allowed_root_files.add("t1_exact_receipt.json")
-    support_files = _schema1_support_inventory(all_files, manifest)
+    support_files = _schema1_support_inventory(
+        root, all_files, manifest, production=production
+    )
     legacy_files = _schema1_frozen_legacy_inventory(all_files, manifest)
     expected_files = (
         _schema1_manifest_inventory(all_files, manifest)
