@@ -5,6 +5,8 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import subprocess
+import sys
 from typing import Any
 
 import numpy as np
@@ -358,6 +360,76 @@ def test_future_leakage_rejects_renamed_cache_manifest_with_updated_bindings(
         )
 
 
+def test_future_leakage_accepts_reordered_exact_cache_hash_inventory(
+    tmp_path: Path,
+) -> None:
+    run, source_index, checkpoint_index = _causal_fixture(tmp_path)
+    for role in ("frontend_manifest", "dense_manifest"):
+        config_path = tmp_path / run["normalized_run_config"]["path"]
+        config = json.loads(config_path.read_text())
+        manifest_path = Path(config[role])
+        manifest = json.loads(manifest_path.read_text())
+        manifest["cache_files_sha256"] = dict(
+            reversed(list(manifest["cache_files_sha256"].items()))
+        )
+        manifest_path.write_text(
+            json.dumps(manifest, sort_keys=False, separators=(",", ":")) + "\n"
+        )
+        run["source_bindings"][role] = {
+            "sha256": hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
+            "byte_count": manifest_path.stat().st_size,
+        }
+
+    _audit_future_leakage(
+        candidate_id="a4", run_root=tmp_path, run=run,
+        source_index=source_index, checkpoint_index=checkpoint_index,
+    )
+
+
+@pytest.mark.parametrize("mutation", ("missing", "extra", "wrong"))
+def test_future_leakage_rejects_nonexact_cache_hash_inventory(
+    tmp_path: Path, mutation: str,
+) -> None:
+    run, source_index, checkpoint_index = _causal_fixture(tmp_path)
+    config_path = tmp_path / run["normalized_run_config"]["path"]
+    config = json.loads(config_path.read_text())
+    manifest_path = Path(config["frontend_manifest"])
+    manifest = json.loads(manifest_path.read_text())
+    hashes = manifest["cache_files_sha256"]
+    removed = hashes.pop("frame000004.pkl.gz")
+    if mutation == "extra":
+        hashes["frame000004.pkl.gz"] = removed
+        hashes["extra.pkl.gz"] = "f" * 64
+    elif mutation == "wrong":
+        hashes["wrong.pkl.gz"] = removed
+    _write_json(manifest_path, manifest)
+    run["source_bindings"]["frontend_manifest"] = {
+        "sha256": hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
+        "byte_count": manifest_path.stat().st_size,
+    }
+
+    with pytest.raises(ValueError, match="cache_inventory"):
+        _audit_future_leakage(
+            candidate_id="a4", run_root=tmp_path, run=run,
+            source_index=source_index, checkpoint_index=checkpoint_index,
+        )
+
+
+def test_producer_cli_help_runs_from_repo_root() -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/evaluation/build_oviv2_tesse_search_preflight_sources.py",
+            "--help",
+        ],
+        cwd=Path(__file__).resolve().parents[2],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    assert completed.returncode == 0, completed.stderr
+
+
 def test_development_source_witness_rejects_protected_or_commit_drift(
     tmp_path: Path,
 ) -> None:
@@ -485,6 +557,249 @@ def test_fd_relative_write_holds_parent_directory_across_file_open(
     assert not (root / "candidate/result.json").exists()
     assert (displaced / "result.json").read_bytes() == b'{"safe":true}\n'
     assert len(list(Path("/proc/self/fd").iterdir())) == baseline_fds
+
+
+def test_open_directory_at_closes_each_owned_fd_once_when_close_raises(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    (tmp_path / "child").mkdir()
+    root_fd = os.open(tmp_path, os.O_RDONLY | os.O_DIRECTORY)
+    baseline = {int(path.name) for path in Path("/proc/self/fd").iterdir()}
+    real_close = module.os.close
+    closed: list[int] = []
+
+    def close_then_raise(descriptor: int) -> None:
+        if descriptor in closed:
+            raise AssertionError(f"descriptor closed twice: {descriptor}")
+        closed.append(descriptor)
+        real_close(descriptor)
+        if len(closed) == 1:
+            raise OSError("close current failed")
+
+    monkeypatch.setattr(module.os, "close", close_then_raise)
+    try:
+        with pytest.raises(OSError, match="close current failed"):
+            module._open_directory_at(root_fd, Path("child"), create=False)
+        after_failure_fds = len(list(Path("/proc/self/fd").iterdir()))
+    finally:
+        monkeypatch.setattr(module.os, "close", real_close)
+        for path in Path("/proc/self/fd").iterdir():
+            descriptor = int(path.name)
+            if descriptor not in baseline and descriptor != root_fd:
+                try:
+                    real_close(descriptor)
+                except OSError:
+                    pass
+        real_close(root_fd)
+    assert len(closed) == len(set(closed)) == 2
+    assert after_failure_fds == len(baseline)
+    assert len(list(Path("/proc/self/fd").iterdir())) == len(baseline) - 1
+
+
+def test_open_directory_at_raw_closes_same_fd_when_close_raises_before_syscall(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    (tmp_path / "child").mkdir()
+    root_fd = os.open(tmp_path, os.O_RDONLY | os.O_DIRECTORY)
+    baseline_fds = len(list(Path("/proc/self/fd").iterdir()))
+    real_close = module.os.close
+    attempts: list[int] = []
+
+    def fail_before_close(descriptor: int) -> None:
+        if descriptor in attempts:
+            raise AssertionError(f"descriptor close retried through os.close: {descriptor}")
+        attempts.append(descriptor)
+        if len(attempts) == 1:
+            raise OSError("close failed before syscall")
+        real_close(descriptor)
+
+    monkeypatch.setattr(module.os, "close", fail_before_close)
+    try:
+        with pytest.raises(OSError, match="before syscall"):
+            module._open_directory_at(root_fd, Path("child"), create=False)
+    finally:
+        monkeypatch.setattr(module.os, "close", real_close)
+        real_close(root_fd)
+
+    assert len(attempts) == len(set(attempts)) == 2
+    assert len(list(Path("/proc/self/fd").iterdir())) == baseline_fds - 1
+
+
+def test_open_directory_at_does_not_close_reused_fd_after_close_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    (tmp_path / "child").mkdir()
+    root_fd = os.open(tmp_path, os.O_RDONLY | os.O_DIRECTORY)
+    baseline_fds = len(list(Path("/proc/self/fd").iterdir()))
+    real_close = module.os.close
+    real_open = module.os.open
+    reused_fd: int | None = None
+    first = True
+
+    def close_reuse_then_raise(descriptor: int) -> None:
+        nonlocal first, reused_fd
+        if first:
+            first = False
+            real_close(descriptor)
+            reused_fd = real_open("/dev/null", os.O_RDONLY)
+            assert reused_fd == descriptor
+            raise OSError("close failed after fd reuse")
+        real_close(descriptor)
+
+    monkeypatch.setattr(module.os, "close", close_reuse_then_raise)
+    try:
+        with pytest.raises(OSError, match="after fd reuse"):
+            module._open_directory_at(root_fd, Path("child"), create=False)
+        assert reused_fd is not None
+        os.fstat(reused_fd)
+        assert len(list(Path("/proc/self/fd").iterdir())) == baseline_fds + 1
+    finally:
+        monkeypatch.setattr(module.os, "close", real_close)
+        if reused_fd is not None:
+            real_close(reused_fd)
+        real_close(root_fd)
+
+    assert len(list(Path("/proc/self/fd").iterdir())) == baseline_fds - 1
+
+
+def test_open_directory_at_closes_duplicate_when_child_open_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    (tmp_path / "child").mkdir()
+    root_fd = os.open(tmp_path, os.O_RDONLY | os.O_DIRECTORY)
+    baseline_fds = len(list(Path("/proc/self/fd").iterdir()))
+    real_open = module.os.open
+
+    def fail_open(path: object, *args: object, **kwargs: object) -> int:
+        if os.fspath(path) == "child":
+            raise OSError("child open failed")
+        return real_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(module.os, "open", fail_open)
+    try:
+        with pytest.raises(OSError, match="child open failed"):
+            module._open_directory_at(root_fd, Path("child"), create=False)
+    finally:
+        monkeypatch.setattr(module.os, "open", real_open)
+        os.close(root_fd)
+
+    assert len(list(Path("/proc/self/fd").iterdir())) == baseline_fds - 1
+
+
+def test_open_directory_at_preserves_fstat_error_and_closes_all_fds(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    (tmp_path / "child").mkdir()
+    root_fd = os.open(tmp_path, os.O_RDONLY | os.O_DIRECTORY)
+    baseline = {int(path.name) for path in Path("/proc/self/fd").iterdir()}
+    real_close = module.os.close
+    real_fstat = module.os.fstat
+    opened: list[int] = []
+    closed: list[int] = []
+    real_open = module.os.open
+
+    def record_open(*args: object, **kwargs: object) -> int:
+        descriptor = real_open(*args, **kwargs)
+        opened.append(descriptor)
+        return descriptor
+
+    def fail_fstat(descriptor: int) -> os.stat_result:
+        if descriptor in opened:
+            raise OSError("fstat failed")
+        return real_fstat(descriptor)
+
+    def close_after_error(descriptor: int) -> None:
+        if descriptor in closed:
+            raise AssertionError(f"descriptor closed twice: {descriptor}")
+        closed.append(descriptor)
+        real_close(descriptor)
+        if descriptor == opened[-1]:
+            raise OSError("cleanup close failed")
+
+    monkeypatch.setattr(module.os, "open", record_open)
+    monkeypatch.setattr(module.os, "fstat", fail_fstat)
+    monkeypatch.setattr(module.os, "close", close_after_error)
+    try:
+        with pytest.raises(OSError, match="fstat failed"):
+            module._open_directory_at(root_fd, Path("child"), create=False)
+        after_failure_fds = len(list(Path("/proc/self/fd").iterdir()))
+    finally:
+        monkeypatch.setattr(module.os, "open", real_open)
+        monkeypatch.setattr(module.os, "fstat", real_fstat)
+        monkeypatch.setattr(module.os, "close", real_close)
+        for path in Path("/proc/self/fd").iterdir():
+            descriptor = int(path.name)
+            if descriptor not in baseline and descriptor != root_fd:
+                try:
+                    real_close(descriptor)
+                except OSError:
+                    pass
+        real_close(root_fd)
+    assert len(closed) == len(set(closed)) == 2
+    assert after_failure_fds == len(baseline)
+    assert len(list(Path("/proc/self/fd").iterdir())) == len(baseline) - 1
+
+
+@pytest.mark.parametrize("fault", ("stat", "open", "fstat"))
+def test_staging_creation_failures_preserve_identity_and_close_fd(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, fault: str,
+) -> None:
+    parent_fd = os.open(tmp_path, os.O_RDONLY | os.O_DIRECTORY)
+    baseline_fds = len(list(Path("/proc/self/fd").iterdir()))
+    real_stat = module.os.stat
+    real_open = module.os.open
+    real_fstat = module.os.fstat
+    stage_fd: int | None = None
+
+    def fail_stat(path: object, *args: object, **kwargs: object) -> os.stat_result:
+        if fault == "stat" and os.fspath(path) == "stage":
+            raise OSError("stat failed")
+        return real_stat(path, *args, **kwargs)
+
+    def fail_open(path: object, flags: int, *args: object, **kwargs: object) -> int:
+        nonlocal stage_fd
+        if fault == "open" and os.fspath(path) == "stage":
+            raise OSError("open failed")
+        descriptor = real_open(path, flags, *args, **kwargs)
+        if os.fspath(path) == "stage":
+            stage_fd = descriptor
+        return descriptor
+
+    def fail_fstat(descriptor: int) -> os.stat_result:
+        if fault == "fstat" and descriptor == stage_fd:
+            raise OSError("fstat failed")
+        return real_fstat(descriptor)
+
+    monkeypatch.setattr(module.os, "stat", fail_stat)
+    monkeypatch.setattr(module.os, "open", fail_open)
+    monkeypatch.setattr(module.os, "fstat", fail_fstat)
+    try:
+        with pytest.raises(module._StagingCreationError) as raised:
+            module._create_staging_directory_at(parent_fd, "stage")
+    finally:
+        monkeypatch.setattr(module.os, "stat", real_stat)
+        monkeypatch.setattr(module.os, "open", real_open)
+        monkeypatch.setattr(module.os, "fstat", real_fstat)
+        os.close(parent_fd)
+
+    if fault == "stat":
+        assert raised.value.created is None
+    else:
+        assert raised.value.created is not None
+    assert len(list(Path("/proc/self/fd").iterdir())) == baseline_fds - 1
+
+
+def test_staging_creation_existing_name_propagates_file_exists(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "stage").mkdir()
+    parent_fd = os.open(tmp_path, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        with pytest.raises(FileExistsError) as raised:
+            module._create_staging_directory_at(parent_fd, "stage")
+    finally:
+        os.close(parent_fd)
+    assert not isinstance(raised.value, module._StagingCreationError)
 
 
 def test_evaluator_input_witness_rejects_member_replacement(tmp_path: Path) -> None:
@@ -851,6 +1166,59 @@ def test_builds_byte_identical_independent_a0_a4_bundle(
         with pytest.raises(module.PreflightPublicationUncertain) as raised:
             build_preflight_sources(**kwargs, output=tmp_path / "post-mkdir")
         assert raised.value.preserved[0].ownership == "unknown"
+    assert len(list(Path("/proc/self/fd").iterdir())) == baseline_fds
+
+    stage_race = tmp_path / "stage-create-race"
+    with monkeypatch.context() as patcher:
+        real_open = module.os.open
+        created_identity: tuple[int, int] | None = None
+        replacement_identity: tuple[int, int] | None = None
+        swapped = False
+
+        def swap_created_stage_before_open(
+            path: object, flags: int, *args: object, **kwargs: object,
+        ) -> int:
+            nonlocal created_identity, replacement_identity, swapped
+            name = os.fspath(path)
+            parent_descriptor = kwargs.get("dir_fd")
+            if (
+                not swapped
+                and isinstance(name, str)
+                and name.startswith(".stage-create-race.staging-")
+                and isinstance(parent_descriptor, int)
+                and flags & os.O_DIRECTORY
+            ):
+                created = os.stat(
+                    name, dir_fd=parent_descriptor, follow_symlinks=False
+                )
+                created_identity = (created.st_dev, created.st_ino)
+                os.rename(
+                    name, name + ".displaced",
+                    src_dir_fd=parent_descriptor, dst_dir_fd=parent_descriptor,
+                )
+                os.mkdir(name, 0o700, dir_fd=parent_descriptor)
+                replacement = os.stat(
+                    name, dir_fd=parent_descriptor, follow_symlinks=False
+                )
+                replacement_identity = (replacement.st_dev, replacement.st_ino)
+                swapped = True
+            return real_open(path, flags, *args, **kwargs)
+
+        patcher.setattr(module.os, "open", swap_created_stage_before_open)
+        with pytest.raises(module.PreflightPublicationUncertain) as raised:
+            build_preflight_sources(**kwargs, output=stage_race)
+
+    assert swapped
+    assert created_identity is not None
+    assert replacement_identity is not None
+    reported = {
+        (item.artifact_device, item.artifact_inode): item.ownership
+        for item in raised.value.preserved
+    }
+    assert created_identity in reported
+    assert replacement_identity in reported
+    assert reported[replacement_identity] == "unknown"
+    assert not stage_race.exists()
     assert len(list(Path("/proc/self/fd").iterdir())) == baseline_fds
 
     collision = tmp_path / "collision"

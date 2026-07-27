@@ -18,24 +18,29 @@ from pathlib import Path
 import secrets
 import stat
 import subprocess
+import sys
 from typing import Any, Sequence
 
 import numpy as np
 
-from scripts.evaluation.verify_oviv2_dual_readout_development_gates import (
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.evaluation.verify_oviv2_dual_readout_development_gates import (  # noqa: E402
     verify_exact_profile_runs,
     verify_source_manifest,
 )
-from scripts.evaluation.evaluate_oviv2_tesse_temporal_occlusion import (
+from scripts.evaluation.evaluate_oviv2_tesse_temporal_occlusion import (  # noqa: E402
     _load_target as _load_evaluator_target,
     _revalidate as _revalidate_evaluator_witnesses,
     evaluate_temporal_occlusion_package,
 )
-from scripts.evaluation.build_oviv2_tesse_search_preflight import (
+from scripts.evaluation.build_oviv2_tesse_search_preflight import (  # noqa: E402
     _anchor_coverage,
     _build_preflight_at,
 )
-from scripts.evaluation.run_oviv2_tesse_dual_readout_search import (
+from scripts.evaluation.run_oviv2_tesse_dual_readout_search import (  # noqa: E402
     _materialize_config,
     _revalidate_preflight_witnesses,
     _validate_preflight_gate_evidence_at,
@@ -45,7 +50,7 @@ from scripts.evaluation.run_oviv2_tesse_dual_readout_search import (
 _EXACT_SEQUENCE = ("reference", "a0", "a1", "a0", "a2", "a0", "a3", "a0", "a4")
 _CANDIDATE_POSITIONS = {"a0": 1, "a1": 2, "a2": 4, "a3": 6, "a4": 8}
 _MAX_SOURCE_BYTES = 128 * 1024 * 1024
-_REPO_ROOT = Path(__file__).resolve().parents[2]
+_REPO_ROOT = REPO_ROOT
 _TRUSTED_SOURCE_MANIFEST = (
     Path(__file__).resolve().parents[2]
     / "configs/evaluation/manifests/oviv2_t1_transitive_sources_v1.json"
@@ -53,6 +58,8 @@ _TRUSTED_SOURCE_MANIFEST = (
 _AUDIT_WITNESSES: contextvars.ContextVar[list[_FileWitness] | None] = contextvars.ContextVar(
     "oviv2_preflight_audit_witnesses", default=None
 )
+_RAW_CLOSE = os.close
+_RAW_FSTAT = os.fstat
 
 
 def _canonical(value: object) -> bytes:
@@ -228,6 +235,21 @@ class PreflightPublicationUncertain(RuntimeError):
         super().__init__(f"preflight publication uncertain; preserved: {detail}")
 
 
+class _StagingCreationError(RuntimeError):
+    def __init__(
+        self,
+        created: os.stat_result | None,
+        named: os.stat_result | None,
+    ) -> None:
+        self.created = created
+        self.named = named
+        super().__init__("staging directory identity changed during creation")
+
+
+class _StagingAlreadyExists(FileExistsError):
+    pass
+
+
 def _identity(value: os.stat_result) -> tuple[int, int, int, int, int]:
     return value.st_dev, value.st_ino, value.st_size, value.st_mtime_ns, value.st_ctime_ns
 
@@ -358,21 +380,75 @@ def _record_relative(relative: Path, data: bytes) -> dict[str, Any]:
     }
 
 
+def _fd_object_identity(descriptor: int) -> tuple[int, int, int]:
+    status = _RAW_FSTAT(descriptor)
+    return status.st_dev, status.st_ino, status.st_mode
+
+
+def _close_owned_fd(
+    descriptor: int, identity: tuple[int, int, int],
+) -> BaseException | None:
+    try:
+        os.close(descriptor)
+        return None
+    except BaseException as exc:
+        try:
+            current = _fd_object_identity(descriptor)
+        except OSError:
+            return exc
+        if current == identity:
+            try:
+                _RAW_CLOSE(descriptor)
+            except OSError:
+                pass
+        return exc
+
+
 def _open_directory_at(root_fd: int, relative: Path, *, create: bool) -> int:
     current = os.dup(root_fd)
+    current_identity = _fd_object_identity(current)
     try:
         for part in relative.parts:
+            next_fd = -1
+            next_identity: tuple[int, int, int] | None = None
             if create:
                 try:
                     os.mkdir(part, 0o755, dir_fd=current)
                 except FileExistsError:
                     pass
-            next_fd = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=current)
-            os.close(current)
+            try:
+                next_fd = os.open(
+                    part,
+                    os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+                    dir_fd=current,
+                )
+                next_identity = _fd_object_identity(next_fd)
+                opened = os.fstat(next_fd)
+                if not stat.S_ISDIR(opened.st_mode):
+                    raise ValueError("staged output parent must be a directory")
+            except BaseException:
+                if next_fd >= 0 and next_identity is not None:
+                    descriptor = next_fd
+                    next_fd = -1
+                    _close_owned_fd(descriptor, next_identity)
+                raise
+            previous = current
+            previous_identity = current_identity
             current = next_fd
-        return current
+            assert next_identity is not None
+            current_identity = next_identity
+            next_fd = -1
+            close_error = _close_owned_fd(previous, previous_identity)
+            if close_error is not None:
+                raise close_error
+        result = current
+        current = -1
+        return result
     except BaseException:
-        os.close(current)
+        if current >= 0:
+            descriptor = current
+            current = -1
+            _close_owned_fd(descriptor, current_identity)
         raise
 
 
@@ -488,6 +564,137 @@ def _preserved_owned(
             name = matches[0]
             logical = str(parent / name)
     return _preserved(parent_fd, parent, name, logical, expected, True)
+
+
+def _artifact_from_status(
+    parent_fd: int,
+    parent: Path,
+    name: str,
+    status: os.stat_result,
+    ownership: str,
+) -> PreservedArtifact:
+    try:
+        parent_status = os.fstat(parent_fd)
+        parent_identity: tuple[int | None, int | None] = (
+            parent_status.st_dev, parent_status.st_ino,
+        )
+    except OSError:
+        parent_identity = (None, None)
+    return PreservedArtifact(
+        name, str(parent / name), parent_identity[0], parent_identity[1],
+        status.st_dev, status.st_ino, status.st_mode, ownership,
+    )
+
+
+def _staging_creation_preserved(
+    parent_fd: int,
+    parent: Path,
+    stage_name: str,
+    error: _StagingCreationError,
+) -> tuple[PreservedArtifact, ...]:
+    result: list[PreservedArtifact] = []
+    created = error.created
+    named = error.named
+    created_identity = (
+        (created.st_dev, created.st_ino) if created is not None else None
+    )
+    named_identity = (named.st_dev, named.st_ino) if named is not None else None
+    if created is not None:
+        matches: list[str] = []
+        try:
+            names = os.listdir(parent_fd)
+        except OSError:
+            names = []
+        for candidate in names:
+            try:
+                status = os.stat(
+                    candidate, dir_fd=parent_fd, follow_symlinks=False
+                )
+            except OSError:
+                continue
+            if (status.st_dev, status.st_ino) == created_identity:
+                matches.append(candidate)
+        if len(matches) == 1:
+            result.append(
+                _artifact_from_status(
+                    parent_fd, parent, matches[0], created, "owned"
+                )
+            )
+        else:
+            result.append(
+                _artifact_from_status(
+                    parent_fd, parent, stage_name, created, "unbound"
+                )
+            )
+    if named is not None and named_identity != created_identity:
+        result.append(
+            _artifact_from_status(
+                parent_fd, parent, stage_name, named, "unknown"
+            )
+        )
+    if not result and named is not None:
+        result.append(
+            _artifact_from_status(
+                parent_fd, parent, stage_name, named, "unknown"
+            )
+        )
+    return tuple(result)
+
+
+def _create_staging_directory_at(
+    parent_fd: int, name: str,
+) -> tuple[int, os.stat_result]:
+    created: os.stat_result | None = None
+    descriptor = -1
+    descriptor_identity: tuple[int, int, int] | None = None
+    try:
+        os.mkdir(name, 0o700, dir_fd=parent_fd)
+    except FileExistsError as exc:
+        raise _StagingAlreadyExists(*exc.args) from exc
+    except BaseException as exc:
+        try:
+            named = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+        except OSError:
+            named = None
+        raise _StagingCreationError(None, named) from exc
+    try:
+        created = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+        if (
+            not stat.S_ISDIR(created.st_mode)
+            or stat.S_IMODE(created.st_mode) != 0o700
+        ):
+            raise ValueError("created staging directory mode is invalid")
+        descriptor = os.open(
+            name,
+            os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+            dir_fd=parent_fd,
+        )
+        descriptor_identity = _fd_object_identity(descriptor)
+        opened = os.fstat(descriptor)
+        if (
+            (opened.st_dev, opened.st_ino, opened.st_mode)
+            != (created.st_dev, created.st_ino, created.st_mode)
+        ):
+            raise ValueError("created staging directory identity changed")
+        result = descriptor
+        descriptor = -1
+        return result, created
+    except BaseException as exc:
+        if descriptor >= 0:
+            closing = descriptor
+            descriptor = -1
+            if descriptor_identity is None:
+                try:
+                    descriptor_identity = _fd_object_identity(closing)
+                except OSError:
+                    descriptor_identity = None
+            if descriptor_identity is not None:
+                _close_owned_fd(closing, descriptor_identity)
+        try:
+            named = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+        except OSError:
+            named = None
+        raise _StagingCreationError(created, named) from exc
 
 
 def _rename_noreplace(parent_fd: int, source: str, destination: str) -> None:
@@ -792,7 +999,11 @@ def _audit_future_leakage(
             raise _violation(candidate_id, None, f"{role}.source_frame_ids", manifest.get("source_frame_ids"), expected)
         hashes = manifest.get("cache_files_sha256")
         expected_names = [f"frame{frame:06d}.{suffix}" for frame in expected]
-        if not isinstance(hashes, Mapping) or list(hashes) != expected_names:
+        if (
+            not isinstance(hashes, Mapping)
+            or len(hashes) != len(expected_names)
+            or set(hashes) != set(expected_names)
+        ):
             raise _violation(candidate_id, None, f"{role}.cache_inventory", list(hashes) if isinstance(hashes, Mapping) else hashes, expected_names)
         for frame, name in enumerate(expected_names):
             cache = _snapshot(manifest_path.parent / name, f"{role} cache frame {frame}")
@@ -1088,9 +1299,9 @@ def build_preflight_sources(
 
         candidate_sources: list[dict[str, Any]] = []
         source_inodes: set[tuple[int, int]] = set()
-        os.mkdir(stage_name, 0o755, dir_fd=parent_fd)
-        stage_fd = os.open(stage_name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=parent_fd)
-        stage_status = os.fstat(stage_fd)
+        stage_fd, stage_status = _create_staging_directory_at(
+            parent_fd, stage_name
+        )
         stage_identity = (stage_status.st_dev, stage_status.st_ino)
         os.fsync(parent_fd)
 
@@ -1253,6 +1464,12 @@ def build_preflight_sources(
         if (current_parent.st_dev, current_parent.st_ino) != (parent_status.st_dev, parent_status.st_ino):
             raise ValueError("output parent changed after publication")
         return sources_payload
+    except _StagingAlreadyExists:
+        raise
+    except _StagingCreationError as exc:
+        raise PreflightPublicationUncertain(
+            _staging_creation_preserved(parent_fd, parent, stage_name, exc)
+        ) from exc.__cause__
     except FileExistsError as exc:
         if stage_identity is None:
             try:
