@@ -23,6 +23,10 @@ from scripts.evaluation.evaluate_oviv2_tesse_occlusion import (  # noqa: E402
     canonical_algorithm_config,
     canonical_algorithm_hash,
 )
+from src.evaluation.baselines.dynamic_metrics import (  # noqa: E402
+    DynamicFrameMetrics,
+    aggregate_dynamic_metrics,
+)
 
 
 PROVENANCE_FIELDS = {
@@ -522,6 +526,57 @@ def _all_regular_files(root: _RootHandle) -> dict[str, FileEntry]:
     finally:
         os.close(descriptor)
     return {path.as_posix(): entry for path, entry in entries}
+
+
+def _walk_inventory_paths(
+    root: _RootHandle, descriptor: int, prefix: PurePosixPath | None
+) -> set[str]:
+    before = os.fstat(descriptor)
+    try:
+        names = sorted(os.listdir(descriptor))
+    except OSError as exc:
+        raise ArtifactMismatch("artifact inventory cannot be listed") from exc
+    result: set[str] = set()
+    for name in names:
+        if not name or name in {".", ".."} or "/" in name:
+            raise ArtifactMismatch("artifact inventory contains a noncanonical entry")
+        path = PurePosixPath(name) if prefix is None else prefix / name
+        try:
+            metadata = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+        except OSError as exc:
+            raise ArtifactMismatch("artifact inventory changed during verification") from exc
+        if stat.S_ISREG(metadata.st_mode):
+            result.add(path.as_posix())
+        elif stat.S_ISDIR(metadata.st_mode):
+            child = _open_directory(root, path, "artifact inventory verification")
+            try:
+                result.update(_walk_inventory_paths(root, child, path))
+            finally:
+                os.close(child)
+        else:
+            raise ArtifactMismatch("artifact inventory contains a forbidden entry")
+    after = os.fstat(descriptor)
+    try:
+        final_names = sorted(os.listdir(descriptor))
+    except OSError as exc:
+        raise ArtifactMismatch("artifact inventory changed during verification") from exc
+    if _identity(before) != _identity(after) or names != final_names:
+        raise ArtifactMismatch("artifact inventory changed during verification")
+    return result
+
+
+def _verify_full_inventory(
+    root: _RootHandle, original: Mapping[str, FileEntry]
+) -> None:
+    descriptor = _open_directory(root, None, "artifact inventory verification")
+    try:
+        current_paths = _walk_inventory_paths(root, descriptor, None)
+    finally:
+        os.close(descriptor)
+    if current_paths != set(original):
+        raise ArtifactMismatch("artifact inventory changed before comparison completed")
+    for path, entry in original.items():
+        _verify_entry(root, entry, path)
 
 
 def _validate_manifest_records(
@@ -1055,19 +1110,82 @@ def _schema1_production_signature(
         "timestamp_ns",
     }
     checkpoints = manifest.get("checkpoints")
+    causal_markers = {
+        "timestamp_ns", "relative_timestamp_ns", "consumed_through_frame",
+        "consumed_through_frame_exclusive", "event_ids", "roles", "format",
+        "ownership_checkpoint",
+    }
     return (
         isinstance(checkpoints, list)
         and any(
-            isinstance(checkpoint, Mapping) and set(checkpoint) == checkpoint_fields
+            isinstance(checkpoint, Mapping)
+            and (
+                checkpoint_fields.issubset(checkpoint)
+                or bool(causal_markers & set(checkpoint))
+            )
             for checkpoint in checkpoints
         )
     ) or any(
-        len(path.parts) >= 4
+        len(path.parts) >= 3
         and path.parts[0] == "checkpoints"
-        and path.parts[-2] in {"ownership_checkpoint", "voxel_snapshot"}
         and path.name == "checksums.json"
         for path in map(PurePosixPath, all_files)
     )
+
+
+def _schema1_checkpoint_variant(manifest: Mapping[str, Any]) -> str:
+    minimal = {
+        "frame_index", "artifact", "voxel_snapshot", "checkpoint_status",
+        "neutral_snapshot", "neutral_entities",
+    }
+    production_compact = {
+        "checkpoint_status", "consumed_through_frame",
+        "consumed_through_frame_exclusive", "event_ids", "format", "frame_index",
+        "ownership_checkpoint", "relative_timestamp_ns", "roles", "scene",
+        "timestamp_ns",
+    }
+    production_voxel = (minimal | {
+        "consumed_through_frame", "consumed_through_frame_exclusive", "event_ids",
+        "relative_timestamp_ns", "roles", "scene", "timestamp_ns",
+    })
+    checkpoints = manifest.get("checkpoints")
+    if not isinstance(checkpoints, list) or not checkpoints:
+        raise ArtifactMismatch("schema1 checkpoint inventory is invalid")
+    shapes = [frozenset(checkpoint) if isinstance(checkpoint, Mapping) else frozenset() for checkpoint in checkpoints]
+    if all(shape == minimal for shape in shapes):
+        variant = "minimal"
+    elif all(shape in {frozenset(production_compact), frozenset(production_voxel)} for shape in shapes):
+        variant = "production"
+    else:
+        raise ArtifactMismatch("schema1 checkpoint schema is not a known closed-world variant")
+    for checkpoint in checkpoints:
+        frame = checkpoint["frame_index"]
+        status_path, _, _ = _record(checkpoint["checkpoint_status"], "schema1 checkpoint status")
+        parent = status_path.parent
+        parts = parent.name.split("-", 1)
+        if (
+            len(parent.parts) != 2
+            or parent.parts[0] != "checkpoints"
+            or len(parts) != 2
+            or len(parts[0]) != 8
+            or not all(part.isdigit() for part in parts)
+            or not _nonnegative_integer(frame)
+            or int(parts[0]) != frame
+            or status_path != parent / "checkpoint_status.json"
+        ):
+            raise ArtifactMismatch("schema1 checkpoint physical path is invalid")
+        for key, child in (
+            ("artifact", "artifact"), ("voxel_snapshot", "voxel_snapshot"),
+            ("ownership_checkpoint", "ownership_checkpoint"),
+        ):
+            if key in checkpoint and _record(checkpoint[key], f"schema1 checkpoint {key}")[0] != parent / child:
+                raise ArtifactMismatch("schema1 checkpoint physical path is invalid")
+        for key in ("neutral_snapshot", "neutral_entities"):
+            if key in checkpoint:
+                path, _, _ = _record(checkpoint[key], f"schema1 checkpoint {key}")
+                if not path.is_relative_to(parent / "artifact"):
+                    raise ArtifactMismatch("schema1 checkpoint physical path is invalid")
+    return variant
 
 
 def _validate_schema1_structure(
@@ -1083,11 +1201,16 @@ def _validate_schema1_structure(
         frozenset(SCHEMA1_PRODUCTION_FIELDS | {"frozen_run_identity", "run_execution"}),
     }
     production_signature = _schema1_production_signature(all_files, manifest)
+    checkpoint_variant = _schema1_checkpoint_variant(manifest)
     if production_signature and fields not in production_variants:
         raise ArtifactMismatch("schema1 production manifest cannot be downgraded")
     if fields in minimal_variants:
+        if checkpoint_variant != "minimal" or production_signature:
+            raise ArtifactMismatch("schema1 production manifest cannot be downgraded")
         return False
     if fields == frozenset(SCHEMA1_T1_TRANSACTION_FIELDS):
+        if checkpoint_variant != "minimal" or production_signature:
+            raise ArtifactMismatch("schema1 production manifest cannot be downgraded")
         if (
             not _schema_version(manifest, 1)
             or not _nonempty_string(manifest.get("scene"))
@@ -1105,6 +1228,8 @@ def _validate_schema1_structure(
         raise ArtifactMismatch(
             "schema1 run manifest schema is invalid; artifact inventory is not exact"
         )
+    if checkpoint_variant != "production":
+        raise ArtifactMismatch("schema1 production checkpoint schema is invalid")
     checkpoints = manifest.get("checkpoints")
     checkpoint_frames = (
         [checkpoint.get("frame_index") for checkpoint in checkpoints]
@@ -1518,12 +1643,22 @@ def _validate_schema1_schedule(
             raise ArtifactMismatch("causal schedule event frame binding mismatch")
     if list(timestamps) != manifest.get("official_schedule_frame_indices"):
         raise ArtifactMismatch("causal schedule frame inventory mismatch")
-    checkpoint_timestamps = {
-        checkpoint.get("frame_index"): checkpoint.get("timestamp_ns")
+    manifest_checkpoints = {
+        checkpoint.get("frame_index"): checkpoint
         for checkpoint in manifest["checkpoints"]
     }
-    if any(checkpoint_timestamps.get(frame) != timestamp for frame, timestamp in timestamps.items()):
+    if any(
+        manifest_checkpoints.get(frame, {}).get("timestamp_ns") != timestamp
+        for frame, timestamp in timestamps.items()
+    ):
         raise ArtifactMismatch("causal schedule checkpoint binding mismatch")
+    for entry in entries:
+        checkpoint = manifest_checkpoints[entry["frame_index"]]
+        if any(
+            checkpoint.get(key) != entry[key]
+            for key in ("relative_timestamp_ns", "event_ids", "roles")
+        ):
+            raise ArtifactMismatch("causal schedule checkpoint semantics mismatch")
     return timestamps
 
 
@@ -2025,6 +2160,35 @@ def _validate_legacy_evaluation_summary(
             and not _nonempty_string(event.get("censor_reason"))
         ):
             raise ArtifactMismatch("evaluation event evidence is invalid")
+    try:
+        evaluations = [DynamicFrameMetrics(**frame) for frame in frames]
+        ordered_events = sorted(
+            metric_events.items(), key=lambda item: item[1]["intervention_frame_id"]
+        )
+        overlap_censors = {
+            event_id: next_event["intervention_frame_id"]
+            for (event_id, event), (_, next_event) in zip(
+                ordered_events, ordered_events[1:]
+            )
+            if event["overlapping_intervention"]
+        }
+        unobservable = {
+            event_id for event_id, event in metric_events.items()
+            if not event["background_observable"]
+        }
+        recomputed = aggregate_dynamic_metrics(
+            evaluations,
+            recovery_background_f5=metrics["recovery_background_f5"],
+            recovery_consecutive=metrics["recovery_consecutive"],
+            checkpoint_step_frames=metrics["checkpoint_step_frames"],
+            recovery_horizon_frames=metrics["recovery_horizon_frames"],
+            overlap_censor_frames=overlap_censors,
+            background_unobservable_events=unobservable,
+        )
+    except (TypeError, ValueError) as exc:
+        raise ArtifactMismatch("evaluation aggregate evidence is invalid") from exc
+    if recomputed != metrics:
+        raise ArtifactMismatch("evaluation aggregate evidence binding mismatch")
     for key, frame_field in (
         ("event_background_prediction_counts", "predicted_revealed_background_count"),
         ("event_region_prediction_counts", "predicted_changed_object_count"),
@@ -2303,6 +2467,28 @@ def _schema1_frozen_legacy_inventory(
         }
         if indexed != expected_indexed:
             raise ArtifactMismatch("temporal source index checkpoint binding mismatch")
+    root_source = _support_json(all_files, "source_index.json", "root source index")
+    root_checkpoints = {
+        checkpoint.get("frame_index"): checkpoint
+        for checkpoint in root_source.get("checkpoints", [])
+        if isinstance(checkpoint, Mapping)
+    }
+    for position, (indexed, checkpoint) in enumerate(zip(sidecar["checkpoints"], checkpoints)):
+        root_checkpoint = root_checkpoints.get(checkpoint["frame_index"])
+        if root_checkpoint is None or any(
+            indexed.get(key) != root_checkpoint.get(key)
+            for key in (
+                "frame_index", "timestamp_ns", "consumed_through_frame",
+                "consumed_through_frame_exclusive",
+            )
+        ):
+            raise ArtifactMismatch("temporal checkpoint root identity mismatch")
+        for key in ("checkpoint_status", "snapshot", "entities"):
+            if any(
+                indexed[key].get(field) != root_checkpoint[key].get(field)
+                for field in ("sha256", "byte_count")
+            ):
+                raise ArtifactMismatch("temporal checkpoint root content mismatch")
     projected_sidecar = dict(sidecar)
     projected_sidecar.pop("run_execution")
     projected_sidecar_bytes = (
@@ -2715,7 +2901,7 @@ def _validate_t1_receipt(
 
 def _load_inventory(
     root: _RootHandle, validation_stage: str,
-) -> tuple[list[int], dict[str, FileEntry]]:
+) -> tuple[list[int], dict[str, FileEntry], dict[str, FileEntry]]:
     all_files = _all_regular_files(root)
     manifest_data = _regular_bytes(
         all_files, PurePosixPath("run_manifest.json"), "run manifest"
@@ -2750,7 +2936,8 @@ def _load_inventory(
             raise ArtifactMismatch("artifact inventory is not exact")
         _validate_manifest_records(all_files, manifest)
         _schema2_run_identity(manifest, all_files)
-        return _schema2_projection(manifest, all_files)
+        frames, projection = _schema2_projection(manifest, all_files)
+        return frames, projection, all_files
     production = _validate_schema1_structure(all_files, manifest)
     if validation_stage == "pre_legacy" and not production:
         raise ArtifactMismatch("pre-legacy validation requires schema1 production")
@@ -2775,7 +2962,7 @@ def _load_inventory(
     frames, projection = _schema1_projection(manifest, all_files)
     if "t1_exact_receipt.json" in all_files:
         _validate_t1_receipt(root, all_files, frames, projection)
-    return frames, projection
+    return frames, projection, all_files
 
 
 def _verify_entry(root: _RootHandle, entry: FileEntry, label: str) -> None:
@@ -2799,10 +2986,10 @@ def compare_cumulative_artifacts(
     left_path = Path(os.path.abspath(os.fspath(left)))
     right_path = Path(os.path.abspath(os.fspath(right)))
     handles: dict[str, _RootHandle] = {}
-    loaded: dict[str, tuple[list[int], dict[str, FileEntry]]] = {}
+    loaded: dict[str, tuple[list[int], dict[str, FileEntry], dict[str, FileEntry]]] = {}
 
     def load(value: str | Path) -> tuple[
-        str, _RootHandle, tuple[list[int], dict[str, FileEntry]]
+        str, _RootHandle, tuple[list[int], dict[str, FileEntry], dict[str, FileEntry]]
     ]:
         key = os.path.abspath(os.fspath(value))
         if key not in handles:
@@ -2811,8 +2998,8 @@ def compare_cumulative_artifacts(
         return key, handles[key], loaded[key]
 
     try:
-        left_key, left_root, (left_frames, left_inventory) = load(left_path)
-        right_key, right_root, (right_frames, right_inventory) = load(right_path)
+        left_key, left_root, (left_frames, left_inventory, left_all) = load(left_path)
+        right_key, right_root, (right_frames, right_inventory, right_all) = load(right_path)
         if left_frames != right_frames:
             raise ArtifactMismatch("checkpoint inventory differs")
         if set(left_inventory) != set(right_inventory):
@@ -2840,6 +3027,9 @@ def compare_cumulative_artifacts(
             root_digest.update(b"\0")
             root_digest.update(bytes.fromhex(left_entry.sha256))
             root_digest.update(b"\n")
+        _verify_full_inventory(left_root, left_all)
+        if right_key != left_key:
+            _verify_full_inventory(right_root, right_all)
         for handle in handles.values():
             handle.verify()
         return {

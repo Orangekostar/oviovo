@@ -271,7 +271,15 @@ def _v1_production_run(root: Path) -> Path:
     manifest = json.loads(manifest_path.read_text())
     checkpoint = manifest["checkpoints"][0]
     (root / manifest.pop("final_artifact")["path"]).unlink()
-    checkpoint["timestamp_ns"] = 100
+    checkpoint.update({
+        "timestamp_ns": 100,
+        "relative_timestamp_ns": 0,
+        "consumed_through_frame": 2,
+        "consumed_through_frame_exclusive": 3,
+        "event_ids": [],
+        "roles": ["official"],
+        "scene": "apartment",
+    })
     voxel_root = root / checkpoint["voxel_snapshot"]["path"]
     checksums = voxel_root / "checksums.json"
     checksums.write_text('{"ownership.npz":"fixture"}\n')
@@ -613,6 +621,7 @@ def test_schema1_production_support_inventory_self_compares_and_ignores_timing(
         ("schedule_drift", "schedule"),
         ("schedule_events_invalid", "schedule"),
         ("schedule_sources_invalid", "schedule"),
+        ("schedule_role_drift", "schedule"),
         ("trajectory_invalid", "trajector"),
         ("trajectory_reordered", "trajector"),
         ("trajectory_gap", "trajector"),
@@ -706,6 +715,10 @@ def test_schema1_production_support_inventory_fails_closed(
             scene = schedule["scenes"]["apartment"]
             if mutation == "schedule_events_invalid":
                 scene["events"] = ["not-an-event"]
+            elif mutation == "schedule_role_drift":
+                schedule = json.loads(schedule_path.read_text())
+                schedule["scenes"]["apartment"]["entries"][0]["roles"] = ["common_v2"]
+                schedule_path.write_text(json.dumps(schedule, sort_keys=True) + "\n")
             else:
                 scene["sources"] = {"bad": 1}
             schedule_path.write_text(json.dumps(schedule, sort_keys=True) + "\n")
@@ -791,13 +804,37 @@ def test_schema1_frozen_production_cannot_be_downgraded(
         compare_cumulative_artifacts(root, root)
 
 
-@pytest.mark.parametrize("variant", ("minimal", "t1"))
+@pytest.mark.parametrize(
+    "variant", ("minimal", "t1", "renamed_snapshot", "markers_removed", "mixed")
+)
 def test_schema1_production_checkpoint_signature_blocks_manifest_downgrade(
     tmp_path: Path, variant: str,
 ) -> None:
     root = _v1_production_run(tmp_path / variant)
     manifest_path = root / "run_manifest.json"
     manifest = json.loads(manifest_path.read_text())
+    if variant == "renamed_snapshot":
+        checkpoint = manifest["checkpoints"][0]
+        old = root / checkpoint["voxel_snapshot"]["path"]
+        new = old.parent / "v"
+        old.rename(new)
+        checkpoint["voxel_snapshot"] = _tree_record(new, root)
+        checkpoint["extension"] = "must-not-hide-production"
+    elif variant == "markers_removed":
+        checkpoint = manifest["checkpoints"][0]
+        for key in (
+            "timestamp_ns", "relative_timestamp_ns", "consumed_through_frame",
+            "consumed_through_frame_exclusive", "event_ids", "roles", "scene",
+        ):
+            checkpoint.pop(key)
+    elif variant == "mixed":
+        checkpoint = dict(manifest["checkpoints"][0])
+        for key in (
+            "timestamp_ns", "relative_timestamp_ns", "consumed_through_frame",
+            "consumed_through_frame_exclusive", "event_ids", "roles", "scene",
+        ):
+            checkpoint.pop(key)
+        manifest["checkpoints"].append(checkpoint)
     for relative in compare_module.SCHEMA1_SUPPORT_FILES:
         (root / relative).unlink()
     downgraded = {
@@ -818,7 +855,7 @@ def test_schema1_production_checkpoint_signature_blocks_manifest_downgrade(
             "final_artifact": checkpoint_file,
         })
     manifest_path.write_text(json.dumps(downgraded, sort_keys=True) + "\n")
-    with pytest.raises(ArtifactMismatch, match="production"):
+    with pytest.raises(ArtifactMismatch, match="schema1 (production|checkpoint)"):
         compare_cumulative_artifacts(root, root)
 
 
@@ -832,6 +869,27 @@ def test_schema1_frozen_prelegacy_requires_explicit_external_stage(tmp_path: Pat
     )["checkpoint_frames"] == [2]
 
 
+def test_comparison_revalidates_manifest_identity_before_return(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _v1_run(tmp_path / "run")
+    original = compare_module._verify_entry
+    replaced = False
+
+    def replace_manifest_on_first_projection_check(
+        handle: object, entry: object, label: str
+    ) -> None:
+        nonlocal replaced
+        if not replaced:
+            replaced = True
+            (root / "run_manifest.json").write_text("{}\n")
+        original(handle, entry, label)
+
+    monkeypatch.setattr(compare_module, "_verify_entry", replace_manifest_on_first_projection_check)
+    with pytest.raises(ArtifactMismatch, match="replaced|changed"):
+        compare_cumulative_artifacts(root, root)
+
+
 def test_schema1_legacy_evaluation_summary_rejects_minimal_forgery() -> None:
     with pytest.raises(ArtifactMismatch, match="evaluation summary"):
         compare_module._validate_legacy_evaluation_summary(
@@ -842,12 +900,14 @@ def test_schema1_legacy_evaluation_summary_rejects_minimal_forgery() -> None:
         )
 
 
-@pytest.mark.parametrize("mutation", ("null_frame", "empty_metrics", "arbitrary_count"))
+@pytest.mark.parametrize(
+    "mutation", ("null_frame", "empty_metrics", "arbitrary_count", "aggregate_out_of_range")
+)
 def test_schema1_legacy_evaluation_summary_rejects_nested_forgery(
     mutation: str,
 ) -> None:
     frame = {
-        "background_f5": 0.5, "background_precision_match_count": 1,
+        "background_f5": 1.0, "background_precision_match_count": 1,
         "background_recall_match_count": 1, "current_miou": 0.5,
         "event_id": "event-1", "frame_id": 2, "ghost_count": 0,
         "ghost_rate": 0.0, "ground_truth_revealed_background_count": 1,
@@ -861,7 +921,7 @@ def test_schema1_legacy_evaluation_summary_rejects_nested_forgery(
         "recovery_frames": 0, "right_censored": False,
     }
     metrics = {
-        "background_f5": 0.5, "background_observable_event_count": 1,
+        "background_f5": 1.0, "background_observable_event_count": 1,
         "censored_event_count": 0, "checkpoint_step_frames": 50,
         "current_miou": 0.5, "event_count": 1, "events": {"event-1": event},
         "ghost_rate": 0.0, "recovered_event_count": 1,
@@ -890,8 +950,11 @@ def test_schema1_legacy_evaluation_summary_rejects_nested_forgery(
         canonical["frames"] = raw["frames"]
     elif mutation == "empty_metrics":
         raw["metrics"] = canonical["metrics"] = {}
-    else:
+    elif mutation == "arbitrary_count":
         raw["event_region_prediction_counts"] = canonical["event_region_prediction_counts"] = {"event-1": {"2": 999}}
+    else:
+        raw["metrics"]["current_miou"] = 999.0
+        canonical["metrics"] = raw["metrics"]
     with pytest.raises(ArtifactMismatch, match="evaluation"):
         compare_module._validate_legacy_evaluation_summary(
             raw, canonical,
