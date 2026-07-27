@@ -20,6 +20,7 @@ import socket
 import stat
 import sys
 import tempfile
+import time
 from typing import Any
 
 import numpy as np
@@ -2030,8 +2031,162 @@ def _write_jsonl(path: Path, rows: Sequence[Mapping[str, Any]]) -> None:
     )
 
 
+_PHASE_EVENT_KEYS = {
+    "schema_version",
+    "sequence",
+    "monotonic_ns",
+    "phase",
+    "frame_index",
+    "run_sha256",
+    "config_sha256",
+    "input_sha256",
+    "process_id",
+    "process_group_id",
+    "run_manifest_sha256",
+    "previous_event_sha256",
+    "event_sha256",
+}
+
+
+def _validate_phase_events(
+    events: Sequence[Mapping[str, Any]],
+    *,
+    run_sha256: str,
+    config_sha256: str,
+    input_sha256: str,
+    processed_frame_count: int,
+    run_manifest_sha256: str,
+) -> None:
+    expected_phases = [
+        "initialization",
+        *("frame_processed" for _ in range(processed_frame_count)),
+        "finalization",
+        "artifact_publication",
+    ]
+    expected_frames = [None, *range(processed_frame_count), None, None]
+    if len(events) != len(expected_phases):
+        raise ValueError("phase event coverage is invalid")
+    if not all(
+        _is_sha256(value)
+        for value in (
+            run_sha256,
+            config_sha256,
+            input_sha256,
+            run_manifest_sha256,
+        )
+    ):
+        raise ValueError("phase event binding is invalid")
+    expected_manifest_hashes = [
+        *(None for _ in range(processed_frame_count + 1)),
+        run_manifest_sha256,
+        run_manifest_sha256,
+    ]
+    previous_hash: str | None = None
+    previous_clock: int | None = None
+    process_id = events[0].get("process_id") if events else None
+    process_group_id = events[0].get("process_group_id") if events else None
+    for sequence, (event, phase, frame_index, manifest_sha256) in enumerate(
+        zip(
+            events,
+            expected_phases,
+            expected_frames,
+            expected_manifest_hashes,
+            strict=True,
+        )
+    ):
+        if not isinstance(event, Mapping) or set(event) != _PHASE_EVENT_KEYS:
+            raise ValueError("phase event schema is invalid")
+        clock = event.get("monotonic_ns")
+        if (
+            event.get("schema_version") != 1
+            or isinstance(event.get("sequence"), bool)
+            or event.get("sequence") != sequence
+            or isinstance(clock, bool)
+            or not isinstance(clock, Integral)
+            or int(clock) < 0
+            or (previous_clock is not None and int(clock) <= previous_clock)
+            or event.get("phase") != phase
+            or event.get("frame_index") != frame_index
+        ):
+            raise ValueError("phase event order is invalid")
+        if not (
+            event.get("run_sha256") == run_sha256
+            and event.get("config_sha256") == config_sha256
+            and event.get("input_sha256") == input_sha256
+            and isinstance(process_id, int)
+            and not isinstance(process_id, bool)
+            and process_id > 0
+            and event.get("process_id") == process_id
+            and isinstance(process_group_id, int)
+            and not isinstance(process_group_id, bool)
+            and process_group_id > 0
+            and event.get("process_group_id") == process_group_id
+            and event.get("run_manifest_sha256") == manifest_sha256
+            and event.get("previous_event_sha256") == previous_hash
+        ):
+            raise ValueError("phase event binding is invalid")
+        body = dict(event)
+        claimed = body.pop("event_sha256")
+        if not _is_sha256(claimed) or claimed != _json_hash(body):
+            raise ValueError("phase event hash chain is invalid")
+        previous_hash = str(claimed)
+        previous_clock = int(clock)
+
+
+@dataclass
+class _PhaseEventJournal:
+    run_sha256: str
+    config_sha256: str
+    input_sha256: str
+    process_id: int
+    process_group_id: int
+    events: list[dict[str, Any]]
+    last_monotonic_ns: int | None = None
+
+    def emit(
+        self,
+        phase: str,
+        *,
+        frame_index: int | None = None,
+        run_manifest_sha256: str | None = None,
+    ) -> None:
+        current = time.monotonic_ns()
+        if self.last_monotonic_ns is not None:
+            current = max(current, self.last_monotonic_ns + 1)
+        body = {
+            "schema_version": 1,
+            "sequence": len(self.events),
+            "monotonic_ns": current,
+            "phase": phase,
+            "frame_index": frame_index,
+            "run_sha256": self.run_sha256,
+            "config_sha256": self.config_sha256,
+            "input_sha256": self.input_sha256,
+            "process_id": self.process_id,
+            "process_group_id": self.process_group_id,
+            "run_manifest_sha256": run_manifest_sha256,
+            "previous_event_sha256": (
+                self.events[-1]["event_sha256"] if self.events else None
+            ),
+        }
+        self.events.append({**body, "event_sha256": _json_hash(body)})
+        self.last_monotonic_ns = current
+
+
+def _atomic_write_jsonl(path: Path, rows: Sequence[Mapping[str, Any]]) -> None:
+    content = b"".join(_canonical_json_bytes(dict(row)) for row in rows)
+    directory_fd = _open_directory_nofollow(path.parent)
+    try:
+        _atomic_write_new_at(directory_fd, path.name, content)
+    finally:
+        os.close(directory_fd)
+
+
 def _runtime_diagnostics_payload(
-    runtime: Any, *, config: Mapping[str, Any], processed_frame_count: int
+    runtime: Any,
+    *,
+    config: Mapping[str, Any],
+    processed_frame_count: int,
 ) -> dict[str, Any]:
     temporal_readout = config.get("temporal_readout")
     profile = (
@@ -2067,6 +2222,10 @@ def _office_attempt_root(destination: Path) -> Path:
 
 def _office_claim_root(destination: Path) -> Path:
     return destination.parent / f".{destination.name}.claim"
+
+
+def _phase_events_path(destination: Path) -> Path:
+    return destination.parent / f".{destination.name}.phase_events.jsonl"
 
 
 def _open_directory_nofollow(path: Path) -> int:
@@ -2440,6 +2599,9 @@ def run(
 
     if destination.exists() or destination.is_symlink():
         raise FileExistsError(destination)
+    phase_events_output = _phase_events_path(destination)
+    if phase_events_output.exists() or phase_events_output.is_symlink():
+        raise FileExistsError(phase_events_output)
     destination.parent.mkdir(parents=True, exist_ok=True)
     _reject_symlink_components(destination.parent, "output parent")
     office_parent_fd = (
@@ -2529,12 +2691,39 @@ def run(
             target_bytes,
             canonical_source_bindings,
         )
+        config_sha256 = _sha256_bytes(source_config_bytes)
+        process_id = os.getpid()
+        process_group_id = os.getpgid(0)
+        run_sha256 = _json_hash(
+            {
+                "protocol_id": PROTOCOL_ID,
+                "dataset": "TESSE-CD",
+                "method_id": "OVIV2",
+                "scene": scene,
+                "config_sha256": config_sha256,
+                "input_sha256": input_sha256,
+                "code_commit": code_commit,
+                "output_root": str(destination),
+                "run_slot": run_slot,
+                "process_id": process_id,
+                "process_group_id": process_group_id,
+            }
+        )
+        phase_events = _PhaseEventJournal(
+            run_sha256=run_sha256,
+            config_sha256=config_sha256,
+            input_sha256=input_sha256,
+            process_id=process_id,
+            process_group_id=process_group_id,
+            events=[],
+        )
         runtime_config = {key: config[key] for key in _RUNTIME_CONFIG_KEYS}
         if scene == "office" and frozen is not None:
             _apply_office_seed(
                 frozen.frozen_run_identity["office_authorization"]["seed"]
             )
         runtime = dependencies.runtime_factory(runtime_config, caches)
+        phase_events.emit("initialization")
 
         by_frame = {item.frame_index: item for item in official}
         first_timestamp_ns = _dataset_timestamp_ns(dataset, 0)
@@ -2604,6 +2793,7 @@ def run(
             )
             checkpoint = by_frame.get(frame_index)
             if checkpoint is None:
+                phase_events.emit("frame_processed", frame_index=frame_index)
                 continue
             if dataset_timestamp_ns != checkpoint.timestamp_ns:
                 raise ValueError("checkpoint timestamp does not match dataset timestamp")
@@ -2904,6 +3094,7 @@ def run(
                 }
             captured.append(frame_index)
             _assert_staging_identity(staging, staging_identity)
+            phase_events.emit("frame_processed", frame_index=frame_index)
 
         scheduled = [item.frame_index for item in checkpoints]
         if captured != scheduled:
@@ -3068,7 +3259,9 @@ def run(
         _write_json(
             runtime_diagnostics_path,
             _runtime_diagnostics_payload(
-                runtime, config=config, processed_frame_count=frame_count
+                runtime,
+                config=config,
+                processed_frame_count=frame_count,
             ),
         )
         runtime_diagnostics_record = _file_record(
@@ -3264,6 +3457,10 @@ def run(
             raise ValueError("run publication inventory changed before publication")
         prepublish_tree = _tree_record(staging, relative_to=staging)
         _assert_staging_identity(staging, staging_identity)
+        run_manifest_sha256 = _sha256(run_manifest_path)
+        phase_events.emit(
+            "finalization", run_manifest_sha256=run_manifest_sha256
+        )
         if office_claim is not None:
             _verify_directory_path(destination.parent, office_claim.parent_fd)
         _publish_run(staging, destination)
@@ -3297,6 +3494,25 @@ def run(
         except BaseException as exc:
             raise RunPublicationUncertainError(
                 f"published run root identity is uncertain: {destination}"
+            ) from exc
+        phase_events.emit(
+            "artifact_publication", run_manifest_sha256=run_manifest_sha256
+        )
+        _validate_phase_events(
+            phase_events.events,
+            run_sha256=run_sha256,
+            config_sha256=config_sha256,
+            input_sha256=input_sha256,
+            processed_frame_count=frame_count,
+            run_manifest_sha256=run_manifest_sha256,
+        )
+        if office_claim is not None:
+            _verify_directory_path(destination.parent, office_claim.parent_fd)
+        try:
+            _atomic_write_jsonl(phase_events_output, phase_events.events)
+        except BaseException as exc:
+            raise RunPublicationUncertainError(
+                f"phase event publication is uncertain: {phase_events_output}"
             ) from exc
         if office_claim is not None:
             _verify_directory_path(destination.parent, office_claim.parent_fd)

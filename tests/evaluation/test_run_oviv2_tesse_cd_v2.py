@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 import json
+import os
 from pathlib import Path
 import gc
 import shutil
@@ -1043,6 +1044,224 @@ def test_five_frame_dual_readout_is_causal_role_aware_and_deterministic(tmp_path
     assert json.loads(first_temporal.read_text())["method"] == "OVIV2"
     assert _tree_hashes(first_temporal.parent) == _tree_hashes(second_temporal.parent)
     assert {path: path.read_bytes() for path in V1_FILES} == V1_BYTES
+
+
+def test_phase_events_are_strict_hash_bound_and_cover_every_processed_frame(
+    tmp_path: Path,
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config_path = _materialize_config(module, tmp_path)
+    output = tmp_path / "phase-events"
+    manifest = module.run(config_path, output, dependencies=_dependencies(module)[0])
+
+    events_path = output.parent / f".{output.name}.phase_events.jsonl"
+    events = _read_jsonl(events_path)
+    assert [event["phase"] for event in events] == [
+        "initialization",
+        *("frame_processed" for _ in range(5)),
+        "finalization",
+        "artifact_publication",
+    ]
+    assert [event["frame_index"] for event in events] == [
+        None,
+        0,
+        1,
+        2,
+        3,
+        4,
+        None,
+        None,
+    ]
+    assert [event["sequence"] for event in events] == list(range(len(events)))
+    monotonic_ns = [event["monotonic_ns"] for event in events]
+    assert all(left < right for left, right in zip(monotonic_ns, monotonic_ns[1:]))
+    assert all(
+        set(event)
+        == {
+            "schema_version",
+            "sequence",
+            "monotonic_ns",
+            "phase",
+            "frame_index",
+            "run_sha256",
+            "config_sha256",
+            "input_sha256",
+            "process_id",
+            "process_group_id",
+            "run_manifest_sha256",
+            "previous_event_sha256",
+            "event_sha256",
+        }
+        for event in events
+    )
+    config_sha256 = hashlib.sha256(config_path.read_bytes()).hexdigest()
+    assert {event["config_sha256"] for event in events} == {config_sha256}
+    assert {event["input_sha256"] for event in events} == {manifest["input_sha256"]}
+    assert len({event["run_sha256"] for event in events}) == 1
+    assert {event["process_id"] for event in events} == {os.getpid()}
+    assert {event["process_group_id"] for event in events} == {os.getpgid(0)}
+    run_manifest_sha256 = _sha256(output / "run_manifest.json")
+    assert [event["run_manifest_sha256"] for event in events] == [
+        *(None for _ in range(6)),
+        run_manifest_sha256,
+        run_manifest_sha256,
+    ]
+    previous = None
+    for event in events:
+        assert event["previous_event_sha256"] == previous
+        body = dict(event)
+        claimed = body.pop("event_sha256")
+        assert claimed == module._json_hash(body)
+        previous = claimed
+    module._validate_phase_events(
+        events,
+        run_sha256=events[0]["run_sha256"],
+        config_sha256=config_sha256,
+        input_sha256=manifest["input_sha256"],
+        processed_frame_count=5,
+        run_manifest_sha256=run_manifest_sha256,
+    )
+    assert "phase_events.jsonl" not in manifest["artifact_inventory"]
+    assert not list(output.parent.glob(f"..{output.name}.phase_events.jsonl.tmp-*"))
+
+
+def test_phase_event_validation_rejects_hash_binding_drift(tmp_path: Path) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config_path = _materialize_config(module, tmp_path)
+    output = tmp_path / "phase-drift"
+    manifest = module.run(config_path, output, dependencies=_dependencies(module)[0])
+    events = _read_jsonl(output.parent / f".{output.name}.phase_events.jsonl")
+    events[2]["input_sha256"] = "0" * 64
+
+    with pytest.raises(ValueError, match="phase event binding"):
+        module._validate_phase_events(
+            events,
+            run_sha256=events[0]["run_sha256"],
+            config_sha256=hashlib.sha256(config_path.read_bytes()).hexdigest(),
+            input_sha256=manifest["input_sha256"],
+            processed_frame_count=5,
+            run_manifest_sha256=_sha256(output / "run_manifest.json"),
+        )
+
+
+def test_phase_event_clock_remains_strict_when_clock_resolution_repeats(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    monkeypatch.setattr(module.time, "monotonic_ns", lambda: 7)
+    journal = module._PhaseEventJournal(
+        run_sha256="1" * 64,
+        config_sha256="2" * 64,
+        input_sha256="3" * 64,
+        process_id=11,
+        process_group_id=12,
+        events=[],
+    )
+    journal.emit("initialization")
+    journal.emit("finalization", run_manifest_sha256="4" * 64)
+    journal.emit("artifact_publication", run_manifest_sha256="4" * 64)
+
+    assert [event["monotonic_ns"] for event in journal.events] == [7, 8, 9]
+    module._validate_phase_events(
+        journal.events,
+        run_sha256="1" * 64,
+        config_sha256="2" * 64,
+        input_sha256="3" * 64,
+        processed_frame_count=0,
+        run_manifest_sha256="4" * 64,
+    )
+
+
+def test_failed_publication_exposes_no_phase_publication_event(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config_path = _materialize_config(module, tmp_path)
+    output = tmp_path / "failed-publication"
+    monkeypatch.setattr(
+        module,
+        "_publish_run",
+        lambda staging, destination: (_ for _ in ()).throw(OSError("rename failed")),
+    )
+
+    with pytest.raises(OSError, match="rename failed"):
+        module.run(config_path, output, dependencies=_dependencies(module)[0])
+
+    assert not output.exists()
+    assert not list(output.parent.glob(".failed-publication.staging-*"))
+    assert not list(output.parent.glob(".failed-publication.phase_events.jsonl"))
+
+
+def test_phase_events_reject_published_manifest_hash_drift(tmp_path: Path) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config_path = _materialize_config(module, tmp_path)
+    output = tmp_path / "manifest-drift"
+    manifest = module.run(config_path, output, dependencies=_dependencies(module)[0])
+    events = _read_jsonl(output.parent / f".{output.name}.phase_events.jsonl")
+    run_manifest = output / "run_manifest.json"
+    value = json.loads(run_manifest.read_text())
+    value["mode"] = "tampered"
+    _write_json(run_manifest, value)
+
+    with pytest.raises(ValueError, match="phase event binding"):
+        module._validate_phase_events(
+            events,
+            run_sha256=events[0]["run_sha256"],
+            config_sha256=hashlib.sha256(config_path.read_bytes()).hexdigest(),
+            input_sha256=manifest["input_sha256"],
+            processed_frame_count=5,
+            run_manifest_sha256=_sha256(run_manifest),
+        )
+
+
+def test_postpublish_phase_sidecar_failure_is_publication_uncertain_and_not_retryable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config_path = _materialize_config(module, tmp_path)
+    output = tmp_path / "sidecar-failure"
+    monkeypatch.setattr(
+        module,
+        "_atomic_write_jsonl",
+        lambda path, rows: (_ for _ in ()).throw(OSError("sidecar fsync failed")),
+    )
+
+    with pytest.raises(RunPublicationUncertainError, match="phase event publication"):
+        module.run(config_path, output, dependencies=_dependencies(module)[0])
+
+    assert output.is_dir()
+    assert not (output.parent / f".{output.name}.phase_events.jsonl").exists()
+    with pytest.raises(FileExistsError):
+        module.run(config_path, output, dependencies=_dependencies(module)[0])
+
+
+def test_phase_diagnostics_do_not_change_cumulative_artifact_bytes(tmp_path: Path) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config_path = _materialize_config(module, tmp_path)
+    first = tmp_path / "cumulative-a"
+    second = tmp_path / "cumulative-b"
+    module.run(config_path, first, dependencies=_dependencies(module)[0])
+    module.run(config_path, second, dependencies=_dependencies(module)[0])
+
+    def cumulative_bytes(root: Path) -> dict[str, bytes]:
+        return {
+            path.relative_to(root).as_posix(): path.read_bytes()
+            for path in root.glob("checkpoints/*/cumulative_audit/**/*")
+            if path.is_file()
+        }
+
+    assert cumulative_bytes(first)
+    assert cumulative_bytes(first) == cumulative_bytes(second)
+    first_events = _read_jsonl(first.parent / f".{first.name}.phase_events.jsonl")
+    second_events = _read_jsonl(second.parent / f".{second.name}.phase_events.jsonl")
+    assert first_events[0]["run_sha256"] != second_events[0]["run_sha256"]
 
 
 def test_direct_office_runner_requires_frozen_authorization_before_output_creation(
