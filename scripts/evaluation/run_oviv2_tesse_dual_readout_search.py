@@ -151,9 +151,9 @@ _DIAGNOSTIC_CANDIDATES = [
         "ablation": "without_proposal_recovery",
         "diagnostic": True,
         "selectable": False,
-        "runnable": False,
-        "reason": "unsupported_runtime_control",
-        "required_runtime_control": "proposal_recovery_enabled",
+        "runnable": True,
+        "lane": "lane1",
+        "diagnostic_controls": {"proposal_recovery_enabled": False},
     },
     {
         "candidate_id": "diag_a3_masking_only_no_ledger",
@@ -161,9 +161,9 @@ _DIAGNOSTIC_CANDIDATES = [
         "ablation": "masking_only_without_reversible_ledger",
         "diagnostic": True,
         "selectable": False,
-        "runnable": False,
-        "reason": "unsupported_runtime_control",
-        "required_runtime_control": "background_mode_masking_only",
+        "runnable": True,
+        "lane": "lane2",
+        "diagnostic_controls": {"background_mode": "masking_only"},
     },
     {
         "candidate_id": "diag_a4_no_dormant_candidates",
@@ -171,9 +171,9 @@ _DIAGNOSTIC_CANDIDATES = [
         "ablation": "without_dormant_candidates",
         "diagnostic": True,
         "selectable": False,
-        "runnable": False,
-        "reason": "unsupported_runtime_control",
-        "required_runtime_control": "dormant_reid_enabled",
+        "runnable": True,
+        "lane": "lane2",
+        "diagnostic_controls": {"dormant_reid_enabled": False},
     },
     {
         "candidate_id": "diag_a4_translation_only_no_icp",
@@ -181,11 +181,17 @@ _DIAGNOSTIC_CANDIDATES = [
         "ablation": "translation_only_without_icp",
         "diagnostic": True,
         "selectable": False,
-        "runnable": False,
-        "reason": "unsupported_runtime_control",
-        "required_runtime_control": "icp_enabled",
+        "runnable": True,
+        "lane": "lane2",
+        "diagnostic_controls": {"icp_enabled": False},
     },
 ]
+_DISABLED_MECHANISMS_BY_DIAGNOSTIC = {
+    "diag_a2_no_proposal_recovery": {"proposal_recovery"},
+    "diag_a3_masking_only_no_ledger": {"background_release", "background_reclaim"},
+    "diag_a4_no_dormant_candidates": {"eligible_reid"},
+    "diag_a4_translation_only_no_icp": {"icp"},
+}
 _INPUT_BINDING_FIELDS = (
     "dense_manifest",
     "evaluation_checkpoint_frames_sha256",
@@ -413,7 +419,7 @@ def _validate_manifest(payload: dict[str, Any]) -> dict[str, Any]:
     if payload["gpu_lanes"] != _GPU_LANES:
         raise ValueError("gpu_lanes do not match the frozen contract")
     if payload["diagnostic_candidates"] != _DIAGNOSTIC_CANDIDATES:
-        raise ValueError("diagnostic_candidates do not match the fail-closed contract")
+        raise ValueError("diagnostic_candidates do not match the preregistered contract")
     hard_gates = payload["hard_gates"]
     if not isinstance(hard_gates, dict):
         raise ValueError("hard_gates must be an object")
@@ -459,6 +465,13 @@ def _validate_manifest(payload: dict[str, Any]) -> dict[str, Any]:
         canonical_temporal = temporal_config_to_json(parsed)["temporal_readout"]
         if candidate["temporal_readout"] != canonical_temporal:
             raise ValueError(f"candidate {profile.profile_id} temporal config is not canonical")
+    for diagnostic in payload["diagnostic_candidates"]:
+        base = declarations[diagnostic["base_profile"]]
+        temporal = copy.deepcopy(base["temporal_readout"])
+        temporal["diagnostic_controls"] = diagnostic["diagnostic_controls"]
+        parsed = temporal_config_from_json({"temporal_readout": temporal})
+        if parsed.diagnostic_identity != diagnostic["candidate_id"]:
+            raise ValueError("diagnostic candidate identity/control mismatch")
     for field_name, space in spaces.items():
         group, name = field_name.split(".", 1)
         for profile_id in space["profiles"]:
@@ -530,7 +543,12 @@ def _materialize_config(
     base: Mapping[str, Any], candidate: Mapping[str, Any]
 ) -> dict[str, Any]:
     config = dict(base)
-    config["temporal_readout"] = candidate["temporal_readout"]
+    temporal = copy.deepcopy(candidate["temporal_readout"])
+    if "diagnostic_controls" in candidate:
+        temporal["diagnostic_controls"] = copy.deepcopy(
+            candidate["diagnostic_controls"]
+        )
+    config["temporal_readout"] = temporal
     config["algorithm_hash"] = canonical_algorithm_hash(config)
     temporal_config_from_json({"temporal_readout": config["temporal_readout"]})
     if _non_temporal_algorithm(config) != _non_temporal_algorithm(base):
@@ -720,9 +738,12 @@ def _validate_preflight_gate_evidence(
                 f"preflight candidate {candidate_id} anchor coverage did not meet 53/66"
             )
         mechanisms = candidate["mechanisms"]
-        if not isinstance(mechanisms, dict) or set(mechanisms) != set(
-            _MECHANISMS_BY_PROFILE[candidate_id]
-        ):
+        declaration = declarations[candidate_id]
+        base_profile = declaration.get("base_profile", candidate_id)
+        expected_mechanisms = set(_MECHANISMS_BY_PROFILE[base_profile]) - set(
+            _DISABLED_MECHANISMS_BY_DIAGNOSTIC.get(candidate_id, ())
+        )
+        if not isinstance(mechanisms, dict) or set(mechanisms) != expected_mechanisms:
             raise ValueError(
                 f"preflight candidate {candidate_id} mechanisms do not match profile"
             )
@@ -855,27 +876,43 @@ def run_search(
     if _non_temporal_algorithm(apartment) != _non_temporal_algorithm(office):
         raise ValueError("Apartment and Office non-temporal algorithm configs differ")
 
-    declared = {item["candidate_id"]: item for item in manifest["candidates"]}
+    main_declared = {item["candidate_id"]: item for item in manifest["candidates"]}
     selected_ids = tuple(candidate_ids) if candidate_ids is not None else _CANDIDATE_IDS
     if len(selected_ids) != len(set(selected_ids)):
         raise ValueError("candidate_ids contain duplicates")
     diagnostics = {
         item["candidate_id"]: item for item in manifest["diagnostic_candidates"]
     }
-    requested_diagnostics = [name for name in selected_ids if name in diagnostics]
-    if requested_diagnostics:
-        raise ValueError(
-            f"diagnostic candidate is not runnable: {requested_diagnostics[0]} "
-            f"({diagnostics[requested_diagnostics[0]]['reason']})"
-        )
-    undeclared = [name for name in selected_ids if name not in declared]
+    requested_diagnostics = tuple(name for name in selected_ids if name in diagnostics)
+    requested_main = tuple(name for name in selected_ids if name in main_declared)
+    if requested_diagnostics and requested_main:
+        raise ValueError("main and diagnostic candidates cannot run in one search")
+    undeclared = [
+        name for name in selected_ids
+        if name not in main_declared and name not in diagnostics
+    ]
     if undeclared:
         raise ValueError(f"undeclared candidate: {undeclared[0]}")
     if not selected_ids:
         raise ValueError("candidate_ids cannot be empty")
-    if selected_ids != tuple(name for name in _CANDIDATE_IDS if name in selected_ids):
-        raise ValueError("candidate_ids must preserve canonical A0-A4 order")
-    required_lane = max(_LANE_BY_CANDIDATE[name] for name in selected_ids)
+    diagnostic_ids = tuple(item["candidate_id"] for item in _DIAGNOSTIC_CANDIDATES)
+    canonical_order = diagnostic_ids if requested_diagnostics else _CANDIDATE_IDS
+    if selected_ids != tuple(name for name in canonical_order if name in selected_ids):
+        raise ValueError("candidate_ids must preserve canonical candidate order")
+    declared = dict(main_declared)
+    for candidate_id, diagnostic in diagnostics.items():
+        declared[candidate_id] = {
+            **main_declared[diagnostic["base_profile"]],
+            **diagnostic,
+        }
+    lane_by_candidate = dict(_LANE_BY_CANDIDATE)
+    lane_by_candidate.update(
+        {
+            item["candidate_id"]: int(item["lane"].removeprefix("lane"))
+            for item in diagnostics.values()
+        }
+    )
+    required_lane = max(lane_by_candidate[name] for name in selected_ids)
     if len(gpus) <= required_lane:
         raise ValueError(
             f"gpu_ids must bind fixed lane {required_lane} for selected candidates"
@@ -941,9 +978,11 @@ def run_search(
         "required_available_ram_bytes": required_ram,
         "observed_available_ram_bytes": supplied_ram,
         "status": "RUNNING",
-        "candidates": records,
+        "candidates": records if not requested_diagnostics else [],
         "unscheduled_candidate_ids": list(selected_ids),
     }
+    if requested_diagnostics:
+        status["diagnostic_candidates"] = records
     status_path = destination / "search_status.json"
     _write_status(status_path, status)
 
@@ -963,16 +1002,18 @@ def run_search(
                 (
                     position
                     for position, name in enumerate(pending)
-                    if _LANE_BY_CANDIDATE[name] not in active_lanes
+                    if lane_by_candidate[name] not in active_lanes
                 ),
                 None,
             )
             if launch_position is None:
                 break
             candidate_id = pending.pop(launch_position)
-            lane = _LANE_BY_CANDIDATE[candidate_id]
+            lane = lane_by_candidate[candidate_id]
             gpu = gpus[lane]
-            candidate_root = destination / "candidates" / candidate_id / "apartment"
+            inventory = "diagnostics" if requested_diagnostics else "candidates"
+            candidate_root = destination / inventory / candidate_id / "apartment"
+            candidate_root.parent.parent.mkdir(exist_ok=True)
             candidate_root.mkdir(parents=True)
             config_path = candidate_root / "config.json"
             run_root = candidate_root / "run"
@@ -1029,6 +1070,10 @@ def run_search(
                 "runtime_seconds": None,
                 "failure_reason": None,
             }
+            if requested_diagnostics:
+                record["diagnostic_identity"] = candidate_id
+                record["base_profile"] = declared[candidate_id]["base_profile"]
+                record["selectable"] = False
             records.append(record)
             active.append(
                 {
@@ -1106,7 +1151,7 @@ def run_search(
         status["unscheduled_candidate_ids"] = list(pending)
         _write_status(status_path, status)
 
-    records.sort(key=lambda item: _CANDIDATE_IDS.index(item["candidate_id"]))
+    records.sort(key=lambda item: canonical_order.index(item["candidate_id"]))
     status["status"] = "FAIL" if failed else "PASS"
     status["unscheduled_candidate_ids"] = list(pending)
     _write_status(status_path, status)

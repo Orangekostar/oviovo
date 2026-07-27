@@ -212,6 +212,57 @@ class ExecutionProfile(Enum):
         raise ValueError(f"execution_profile has unknown value: {profile_id!r}")
 
 
+class DiagnosticControl(Enum):
+    A2_NO_PROPOSAL_RECOVERY = (
+        "diag_a2_no_proposal_recovery",
+        ExecutionProfile.A2,
+        "proposal_recovery_enabled",
+        False,
+    )
+    A3_MASKING_ONLY_NO_LEDGER = (
+        "diag_a3_masking_only_no_ledger",
+        ExecutionProfile.A3,
+        "background_mode",
+        "masking_only",
+    )
+    A4_NO_DORMANT_CANDIDATES = (
+        "diag_a4_no_dormant_candidates",
+        ExecutionProfile.A4,
+        "dormant_reid_enabled",
+        False,
+    )
+    A4_TRANSLATION_ONLY_NO_ICP = (
+        "diag_a4_translation_only_no_icp",
+        ExecutionProfile.A4,
+        "icp_enabled",
+        False,
+    )
+
+    @property
+    def diagnostic_identity(self) -> str:
+        return self.value[0]
+
+    @property
+    def execution_profile(self) -> ExecutionProfile:
+        return self.value[1]
+
+    @property
+    def controls(self) -> dict[str, object]:
+        return {self.value[2]: self.value[3]}
+
+    @classmethod
+    def from_controls(
+        cls, profile: ExecutionProfile, controls: Mapping[str, object]
+    ) -> DiagnosticControl:
+        for control in cls:
+            if control.execution_profile is profile and dict(controls) == control.controls:
+                return control
+        raise ValueError(
+            "temporal_readout.diagnostic_controls is not a preregistered "
+            "execution_profile/control combination"
+        )
+
+
 @dataclass(frozen=True)
 class TemporalReadoutConfig:
     lifecycle: TemporalLifecycleConfig
@@ -224,10 +275,18 @@ class TemporalReadoutConfig:
     motion: TemporalMotionConfig | None = None
     geometry_epoch: TemporalGeometryEpochConfig | None = None
     background_ledger: TemporalBackgroundLedgerConfig | None = None
+    diagnostic_control: DiagnosticControl | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.execution_profile, ExecutionProfile):
             raise TypeError("execution_profile must be an ExecutionProfile")
+        if self.diagnostic_control is not None:
+            if not isinstance(self.diagnostic_control, DiagnosticControl):
+                raise TypeError("diagnostic_control must be a DiagnosticControl or None")
+            if self.diagnostic_control.execution_profile is not self.execution_profile:
+                raise ValueError(
+                    "diagnostic_control does not match execution_profile"
+                )
         if self.proposal is None:
             object.__setattr__(
                 self,
@@ -236,6 +295,7 @@ class TemporalReadoutConfig:
                     32, min(16, self.geometry.maximum_entities), 0.25, 0.1
                 ),
             )
+
         if self.identity is None:
             object.__setattr__(
                 self,
@@ -269,6 +329,30 @@ class TemporalReadoutConfig:
                     min(50000, self.geometry.background_block_count), 2, 2, 1, 8
                 ),
             )
+
+    @property
+    def diagnostic_identity(self) -> str | None:
+        return (
+            None
+            if self.diagnostic_control is None
+            else self.diagnostic_control.diagnostic_identity
+        )
+
+    @property
+    def proposal_recovery_enabled(self) -> bool:
+        return self.diagnostic_control is not DiagnosticControl.A2_NO_PROPOSAL_RECOVERY
+
+    @property
+    def background_ledger_enabled(self) -> bool:
+        return self.diagnostic_control is not DiagnosticControl.A3_MASKING_ONLY_NO_LEDGER
+
+    @property
+    def dormant_reid_enabled(self) -> bool:
+        return self.diagnostic_control is not DiagnosticControl.A4_NO_DORMANT_CANDIDATES
+
+    @property
+    def icp_enabled(self) -> bool:
+        return self.diagnostic_control is not DiagnosticControl.A4_TRANSLATION_ONLY_NO_ICP
 
 
 def _require_mapping(value: object, path: str) -> Mapping[str, object]:
@@ -698,9 +782,7 @@ def temporal_config_from_json(config: Mapping[str, object]) -> TemporalReadoutCo
     raw = _require_mapping(config, "config")
     _require_exact_keys(raw, {"temporal_readout"}, "config")
     temporal = _require_mapping(raw["temporal_readout"], "temporal_readout")
-    _require_exact_keys(
-        temporal,
-        {
+    required_keys = {
             "execution_profile",
             "components",
             "lifecycle",
@@ -712,11 +794,24 @@ def temporal_config_from_json(config: Mapping[str, object]) -> TemporalReadoutCo
             "motion",
             "geometry_epoch",
             "background_ledger",
-        },
-        "temporal_readout",
-    )
+        }
+    allowed_keys = required_keys | {"diagnostic_controls"}
+    actual_keys = set(temporal)
+    missing = required_keys - actual_keys
+    unknown = actual_keys - allowed_keys
+    if missing:
+        raise ValueError(f"temporal_readout has missing keys: {sorted(missing)}")
+    if unknown:
+        raise ValueError(f"temporal_readout has unknown keys: {sorted(unknown)}")
     profile = ExecutionProfile.from_id(temporal["execution_profile"])
     _parse_components(temporal["components"], profile)
+    diagnostic_control = None
+    if "diagnostic_controls" in temporal:
+        controls = _require_mapping(
+            temporal["diagnostic_controls"],
+            "temporal_readout.diagnostic_controls",
+        )
+        diagnostic_control = DiagnosticControl.from_controls(profile, controls)
     result = TemporalReadoutConfig(
         lifecycle=_parse_lifecycle(temporal["lifecycle"]),
         association=_parse_association(temporal["association"]),
@@ -728,6 +823,7 @@ def temporal_config_from_json(config: Mapping[str, object]) -> TemporalReadoutCo
         geometry_epoch=_parse_geometry_epoch(temporal["geometry_epoch"]),
         background_ledger=_parse_background_ledger(temporal["background_ledger"]),
         execution_profile=profile,
+        diagnostic_control=diagnostic_control,
     )
     if (
         result.lifecycle.visibility_depth_tolerance_m
@@ -791,8 +887,7 @@ def _dataclass_mapping(config: object) -> dict[str, object]:
 def temporal_config_to_json(config: TemporalReadoutConfig) -> dict[str, object]:
     if not isinstance(config, TemporalReadoutConfig):
         raise TypeError("config must be a TemporalReadoutConfig")
-    return {
-        "temporal_readout": {
+    temporal: dict[str, object] = {
             "execution_profile": config.execution_profile.profile_id,
             "components": config.execution_profile.components,
             "lifecycle": _dataclass_mapping(config.lifecycle),
@@ -804,5 +899,7 @@ def temporal_config_to_json(config: TemporalReadoutConfig) -> dict[str, object]:
             "motion": _dataclass_mapping(config.motion),
             "geometry_epoch": _dataclass_mapping(config.geometry_epoch),
             "background_ledger": _dataclass_mapping(config.background_ledger),
-        }
     }
+    if config.diagnostic_control is not None:
+        temporal["diagnostic_controls"] = config.diagnostic_control.controls
+    return {"temporal_readout": temporal}

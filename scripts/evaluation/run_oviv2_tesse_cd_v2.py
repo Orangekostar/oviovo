@@ -2269,12 +2269,50 @@ def _runtime_diagnostics_payload(
     diagnostic_frames = getattr(diagnostics, "processed_frame_count", processed_frame_count)
     if diagnostic_frames != processed_frame_count:
         raise ValueError("runtime diagnostics frame count differs from the run")
-    return {
+    payload = {
         "schema_version": 1,
         "execution_profile": profile,
         "processed_frame_count": processed_frame_count,
         "counters": counters,
     }
+    controls = temporal_readout.get("diagnostic_controls")
+    if controls is not None:
+        from src.oviv2.temporal_config import temporal_config_from_json
+
+        parsed = temporal_config_from_json(
+            {"temporal_readout": dict(temporal_readout)}
+        )
+        disabled_claim = {
+            "proposal_recovery_enabled": "proposal_recovery",
+            "background_mode": "background_ledger",
+            "dormant_reid_enabled": "dormant_reid",
+            "icp_enabled": "icp",
+        }[next(iter(controls))]
+        payload["diagnostic"] = {
+            "identity": parsed.diagnostic_identity,
+            "controls": dict(controls),
+            "component_enabled": {
+                "proposal_recovery": (
+                    parsed.execution_profile.profile_id in {"a2", "a3", "a4"}
+                    and parsed.proposal_recovery_enabled
+                ),
+                "background_masking": parsed.execution_profile.profile_id in {"a3", "a4"},
+                "background_ledger": (
+                    parsed.execution_profile.profile_id in {"a3", "a4"}
+                    and parsed.background_ledger_enabled
+                ),
+                "dormant_reid": (
+                    parsed.execution_profile.profile_id == "a4"
+                    and parsed.dormant_reid_enabled
+                ),
+                "icp": (
+                    parsed.execution_profile.profile_id == "a4"
+                    and parsed.icp_enabled
+                ),
+            },
+            "positive_claim_available": {disabled_claim: False},
+        }
+    return payload
 
 
 def _office_attempt_root(destination: Path) -> Path:

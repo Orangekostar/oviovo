@@ -85,9 +85,9 @@
       "ablation": "without_proposal_recovery",
       "diagnostic": true,
       "selectable": false,
-      "runnable": false,
-      "reason": "unsupported_runtime_control",
-      "required_runtime_control": "proposal_recovery_enabled"
+      "runnable": true,
+      "lane": "lane1",
+      "diagnostic_controls": {"proposal_recovery_enabled": false}
     },
     {
       "candidate_id": "diag_a3_masking_only_no_ledger",
@@ -95,9 +95,9 @@
       "ablation": "masking_only_without_reversible_ledger",
       "diagnostic": true,
       "selectable": false,
-      "runnable": false,
-      "reason": "unsupported_runtime_control",
-      "required_runtime_control": "background_mode_masking_only"
+      "runnable": true,
+      "lane": "lane2",
+      "diagnostic_controls": {"background_mode": "masking_only"}
     },
     {
       "candidate_id": "diag_a4_no_dormant_candidates",
@@ -105,9 +105,9 @@
       "ablation": "without_dormant_candidates",
       "diagnostic": true,
       "selectable": false,
-      "runnable": false,
-      "reason": "unsupported_runtime_control",
-      "required_runtime_control": "dormant_reid_enabled"
+      "runnable": true,
+      "lane": "lane2",
+      "diagnostic_controls": {"dormant_reid_enabled": false}
     },
     {
       "candidate_id": "diag_a4_translation_only_no_icp",
@@ -115,9 +115,9 @@
       "ablation": "translation_only_without_icp",
       "diagnostic": true,
       "selectable": false,
-      "runnable": false,
-      "reason": "unsupported_runtime_control",
-      "required_runtime_control": "icp_enabled"
+      "runnable": true,
+      "lane": "lane2",
+      "diagnostic_controls": {"icp_enabled": false}
     }
   ],
   "candidates": [

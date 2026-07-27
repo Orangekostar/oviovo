@@ -7,6 +7,7 @@ from dataclasses import FrozenInstanceError, replace
 import pytest
 
 from src.oviv2.temporal_config import (
+    DiagnosticControl,
     ExecutionProfile,
     TemporalBackgroundLedgerConfig,
     TemporalDynamicConfig,
@@ -139,6 +140,68 @@ def test_valid_config_round_trips_and_is_frozen(
     ):
         with pytest.raises(FrozenInstanceError):
             setattr(group, next(iter(group.__dict__)), 0)
+
+
+@pytest.mark.parametrize(
+    "profile,controls,identity",
+    [
+        ("a2", {"proposal_recovery_enabled": False}, "diag_a2_no_proposal_recovery"),
+        ("a3", {"background_mode": "masking_only"}, "diag_a3_masking_only_no_ledger"),
+        ("a4", {"dormant_reid_enabled": False}, "diag_a4_no_dormant_candidates"),
+        ("a4", {"icp_enabled": False}, "diag_a4_translation_only_no_icp"),
+    ],
+)
+def test_only_preregistered_diagnostic_controls_round_trip(
+    valid_config: dict[str, object],
+    profile: str,
+    controls: dict[str, object],
+    identity: str,
+) -> None:
+    temporal = valid_config["temporal_readout"]
+    temporal["execution_profile"] = profile  # type: ignore[index]
+    temporal["components"] = dict(ExecutionProfile.from_id(profile).components)  # type: ignore[index]
+    temporal["diagnostic_controls"] = controls  # type: ignore[index]
+
+    parsed = temporal_config_from_json(valid_config)
+    serialized = temporal_config_to_json(parsed)
+
+    assert isinstance(parsed.diagnostic_control, DiagnosticControl)
+    assert parsed.diagnostic_identity == identity
+    assert serialized["temporal_readout"]["diagnostic_controls"] == controls  # type: ignore[index]
+    assert temporal_config_from_json(serialized) == parsed
+
+
+def test_main_profile_serialization_has_no_diagnostic_controls(
+    valid_config: dict[str, object],
+) -> None:
+    parsed = temporal_config_from_json(valid_config)
+
+    assert parsed.diagnostic_control is None
+    assert parsed.diagnostic_identity is None
+    assert "diagnostic_controls" not in temporal_config_to_json(parsed)["temporal_readout"]  # type: ignore[operator]
+
+
+@pytest.mark.parametrize(
+    "profile,controls",
+    [
+        ("a2", {"proposal_recovery_enabled": True}),
+        ("a3", {"proposal_recovery_enabled": False}),
+        ("a4", {"background_mode": "masking_only"}),
+        ("a4", {"dormant_reid_enabled": False, "icp_enabled": False}),
+        ("a4", {"unknown": False}),
+        ("a4", {}),
+    ],
+)
+def test_diagnostic_controls_fail_closed_for_illegal_combinations(
+    valid_config: dict[str, object], profile: str, controls: dict[str, object]
+) -> None:
+    temporal = valid_config["temporal_readout"]
+    temporal["execution_profile"] = profile  # type: ignore[index]
+    temporal["components"] = dict(ExecutionProfile.from_id(profile).components)  # type: ignore[index]
+    temporal["diagnostic_controls"] = controls  # type: ignore[index]
+
+    with pytest.raises(ValueError, match="diagnostic_controls"):
+        temporal_config_from_json(valid_config)
 
 
 @pytest.mark.parametrize(

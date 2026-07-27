@@ -86,6 +86,43 @@ def _tree_hashes(root: Path) -> dict[str, str]:
     }
 
 
+def test_runtime_diagnostics_identifies_disabled_component_without_positive_claim() -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    temporal = _temporal_readout()
+    temporal["execution_profile"] = "a3"
+    temporal["components"] = ExecutionProfile.A3.components
+    temporal["diagnostic_controls"] = {"background_mode": "masking_only"}
+    runtime = SimpleNamespace(
+        temporal=SimpleNamespace(
+            state=SimpleNamespace(
+                diagnostics=SimpleNamespace(processed_frame_count=3)
+            )
+        )
+    )
+
+    payload = module._runtime_diagnostics_payload(
+        runtime,
+        config={"temporal_readout": temporal},
+        processed_frame_count=3,
+    )
+
+    assert payload["diagnostic"] == {
+        "identity": "diag_a3_masking_only_no_ledger",
+        "controls": {"background_mode": "masking_only"},
+        "component_enabled": {
+            "proposal_recovery": True,
+            "background_masking": True,
+            "background_ledger": False,
+            "dormant_reid": False,
+            "icp": False,
+        },
+        "positive_claim_available": {
+            "background_ledger": False,
+        },
+    }
+
+
 def _read_jsonl(path: Path) -> list[dict[str, object]]:
     return [json.loads(line) for line in path.read_text().splitlines() if line]
 

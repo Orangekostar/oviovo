@@ -234,6 +234,33 @@ def test_state_without_ledger_requires_empty_background() -> None:
         _rebuild_state(state, background=background, background_ledger=None)
 
 
+def test_masking_only_state_explicitly_allows_ledgerless_background() -> None:
+    runtime = _runtime()
+    state = runtime.state
+    background = state.background
+    background._last_blocks_touched = 1
+
+    diagnostic = _rebuild_state(
+        state,
+        background=background,
+        background_ledger=None,
+        background_mode="masking_only",
+    )
+
+    assert diagnostic.background_mode == "masking_only"
+    assert diagnostic.background_ledger is None
+    assert diagnostic.background.last_blocks_touched == 1
+    assert diagnostic.canonical_dump()[-1] == ("background_mode", "masking_only")
+
+
+@pytest.mark.parametrize("mode", ["unknown", "reversible_ledger", None, 1])
+def test_state_rejects_invalid_background_mode(mode: object) -> None:
+    state = _runtime().state
+
+    with pytest.raises((TypeError, ValueError), match="background_mode"):
+        _rebuild_state(state, background_mode=mode)
+
+
 def _rebuild_state(state, **changes):
     from src.oviv2.temporal_state import TemporalRuntimeState
 
@@ -252,6 +279,7 @@ def _rebuild_state(state, **changes):
         background_ledger=state.background_ledger,
         export_tracker=state.export_tracker,
         diagnostics=state.diagnostics,
+        background_mode=state.background_mode,
     )
     values.update(changes)
     return TemporalRuntimeState(**values)

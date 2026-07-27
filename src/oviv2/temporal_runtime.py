@@ -1426,6 +1426,7 @@ class TemporalCurrentRuntime:
         ledger = (
             None
             if self.config.execution_profile is ExecutionProfile.A2
+            or not self.config.background_ledger_enabled
             else _SparseBackgroundLedger(
                 self.config.geometry, self.config.background_ledger
             )
@@ -1443,6 +1444,11 @@ class TemporalCurrentRuntime:
             geometry=geometry,
             lifecycle_beliefs=(),
             background_ledger=ledger,
+            background_mode=(
+                "profile_locked"
+                if self.config.background_ledger_enabled
+                else "masking_only"
+            ),
             export_tracker=TemporalExportTracker(),
             diagnostics=TemporalDiagnostics(),
         )
@@ -1471,6 +1477,7 @@ class TemporalCurrentRuntime:
         trial_ledger = (
             None
             if self.config.execution_profile is ExecutionProfile.A2
+            or not self.config.background_ledger_enabled
             else current._mutable_ledger_snapshot()
         )
         lifecycle_by_id = {
@@ -1488,7 +1495,7 @@ class TemporalCurrentRuntime:
             if item.lifecycle.entity_id not in expired_ids
         )
         proposal_opportunities = proposal_triggers = 0
-        if proposal_evidence is not None:
+        if proposal_evidence is not None and self.config.proposal_recovery_enabled:
             assert self.config.proposal is not None
             recovery = recover_temporal_proposals(proposal_evidence, self.config.proposal)
             proposal_opportunities = recovery.opportunity_count
@@ -1514,7 +1521,10 @@ class TemporalCurrentRuntime:
                 key=lambda item: item.observation_id,
             )
         )
-        allow_dormant_reid = self.config.execution_profile is ExecutionProfile.A4
+        allow_dormant_reid = (
+            self.config.execution_profile is ExecutionProfile.A4
+            and self.config.dormant_reid_enabled
+        )
         association_entities = tuple(
             entity
             for entity in retained_current_entities
@@ -1540,7 +1550,11 @@ class TemporalCurrentRuntime:
         targets = tuple(targets_by_id[key] for key in sorted(targets_by_id))
         association = associate_temporal_observations(
             confirmed, targets, self.config.association,
-            dormant_reid=self.config.identity,
+            dormant_reid=(
+                self.config.identity
+                if self.config.dormant_reid_enabled
+                else None
+            ),
         )
         observations_by_id = {item.observation_id: item for item in confirmed}
         entities_by_id = {
@@ -1652,6 +1666,7 @@ class TemporalCurrentRuntime:
             motion_estimator = (
                 estimate_object_motion
                 if self.config.execution_profile is ExecutionProfile.A4
+                and self.config.icp_enabled
                 else estimate_object_translation
             )
             motion = motion_estimator(
@@ -1887,6 +1902,26 @@ class TemporalCurrentRuntime:
                 raise RuntimeError("A2 temporal background must remain empty")
             trial_background._last_blocks_touched = 0
             background_blocks_touched = 0
+        elif not self.config.background_ledger_enabled:
+            if trial_ledger is not None:
+                raise RuntimeError("masking-only control must not own a background ledger")
+            protected = tuple(
+                entity.submap.world_points(entity.object_to_world)[
+                    : self.config.geometry.maximum_visibility_points_per_entity
+                ]
+                for entity in ordered_entities
+                if entity.lifecycle.lifecycle
+                in (TemporalLifecycle.ACTIVE, TemporalLifecycle.UNCERTAIN)
+                and trial_geometry.current(entity.lifecycle.entity_id).readout_valid
+            )
+            background_depth = build_background_depth(
+                frame, observations, protected, self.config.geometry
+            )
+            trial_background = current.background.trial_integrate(
+                frame, background_depth.depth_m
+            )
+            background_blocks_touched = trial_background.last_blocks_touched
+            ledger_decisions = []
         else:
             if trial_ledger is None:
                 raise RuntimeError("A3/A4 require a background ledger")
@@ -2152,15 +2187,18 @@ class TemporalCurrentRuntime:
             epoch_reset_trigger_count=epoch_reset_triggers,
             icp_opportunity_count=(
                 len(motion_decisions)
-                if self.config.execution_profile is ExecutionProfile.A4 else 0
+                if self.config.execution_profile is ExecutionProfile.A4
+                and self.config.icp_enabled else 0
             ),
             icp_accept_count=(
                 sum(item is MotionDecision.ICP_ACCEPTED for item in motion_decisions)
-                if self.config.execution_profile is ExecutionProfile.A4 else 0
+                if self.config.execution_profile is ExecutionProfile.A4
+                and self.config.icp_enabled else 0
             ),
             icp_reject_count=(
                 sum(item is not MotionDecision.ICP_ACCEPTED for item in motion_decisions)
-                if self.config.execution_profile is ExecutionProfile.A4 else 0
+                if self.config.execution_profile is ExecutionProfile.A4
+                and self.config.icp_enabled else 0
             ),
             motion_rejection_count=sum(
                 item is MotionDecision.REJECTED for item in motion_decisions
@@ -2256,6 +2294,7 @@ class TemporalCurrentRuntime:
                 if key not in expired_ids
             ),
             background_ledger=trial_ledger,
+            background_mode=current.background_mode,
             export_tracker=export_tracker,
             diagnostics=diagnostics,
         )

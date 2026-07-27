@@ -565,6 +565,7 @@ class TemporalRuntimeState:
         "geometry",
         "lifecycle_beliefs",
         "background_ledger",
+        "background_mode",
         "export_tracker",
         "diagnostics",
         "_background_state",
@@ -585,6 +586,7 @@ class TemporalRuntimeState:
     geometry: TemporalGeometryState | None
     lifecycle_beliefs: tuple[TemporalLifecycleState, ...] | None
     background_ledger: ReversibleBackgroundLedger | None
+    background_mode: str
     export_tracker: TemporalExportTracker | None
     diagnostics: TemporalDiagnostics | None
 
@@ -606,6 +608,7 @@ class TemporalRuntimeState:
         background_ledger: ReversibleBackgroundLedger | None = None,
         export_tracker: TemporalExportTracker | None = None,
         diagnostics: TemporalDiagnostics | None = None,
+        background_mode: str = "profile_locked",
     ) -> None:
         for name, value in locals().copy().items():
             if name != "self":
@@ -681,6 +684,7 @@ class TemporalRuntimeState:
         geometry = object.__getattribute__(self, "geometry")
         lifecycle_beliefs = object.__getattribute__(self, "lifecycle_beliefs")
         ledger = object.__getattribute__(self, "background_ledger")
+        background_mode = object.__getattribute__(self, "background_mode")
         export_tracker = object.__getattribute__(self, "export_tracker")
         diagnostics = object.__getattribute__(self, "diagnostics")
         if identities is None:
@@ -734,7 +738,14 @@ class TemporalRuntimeState:
             raise TypeError("lifecycle_beliefs must contain TemporalLifecycleState values")
         if ledger is not None and not isinstance(ledger, ReversibleBackgroundLedger):
             raise TypeError("background_ledger must be a ReversibleBackgroundLedger or None")
-        if ledger is None:
+        if not isinstance(background_mode, str):
+            raise TypeError("background_mode must be a string")
+        if background_mode not in {"profile_locked", "masking_only"}:
+            raise ValueError("background_mode is invalid")
+        if background_mode == "masking_only":
+            if ledger is not None:
+                raise ValueError("masking_only background_mode must not own a ledger")
+        elif ledger is None:
             if background.active_block_count != 0 or background.last_blocks_touched != 0:
                 raise ValueError("background without a ledger must remain empty")
         else:
@@ -932,6 +943,7 @@ class TemporalRuntimeState:
         background_ledger: ReversibleBackgroundLedger | None,
         export_tracker: TemporalExportTracker,
         diagnostics: TemporalDiagnostics,
+        background_mode: str = "profile_locked",
     ) -> TemporalRuntimeState:
         state = object.__new__(cls)
         for name, value in (
@@ -947,6 +959,7 @@ class TemporalRuntimeState:
             ("geometry", geometry),
             ("lifecycle_beliefs", lifecycle_beliefs),
             ("background_ledger", background_ledger),
+            ("background_mode", background_mode),
             ("export_tracker", export_tracker),
             ("diagnostics", diagnostics),
         ):
@@ -959,7 +972,7 @@ class TemporalRuntimeState:
         tracker = object.__getattribute__(self, "_tracker_state")
         identities = object.__getattribute__(self, "_identities_state")
         ledger = object.__getattribute__(self, "_ledger_state")
-        return (
+        payload = (
             self.scene_id,
             self.revision,
             self.last_frame_id,
@@ -977,6 +990,9 @@ class TemporalRuntimeState:
             self.export_tracker.canonical_dump(),
             _canonical(self.diagnostics),
         )
+        if self.background_mode == "masking_only":
+            return payload + (("background_mode", "masking_only"),)
+        return payload
 
     def __eq__(self, other: object) -> bool:
         return type(other) is TemporalRuntimeState and self.canonical_dump() == other.canonical_dump()

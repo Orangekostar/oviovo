@@ -35,6 +35,9 @@ def _preflight(tmp_path: Path, candidate_ids: tuple[str, ...]) -> Path:
     manifest = json.loads(MANIFEST.read_text())
     base = json.loads(APARTMENT_CONFIG.read_text())
     declarations = {item["candidate_id"]: item for item in manifest["candidates"]}
+    diagnostics = {
+        item["candidate_id"]: item for item in manifest["diagnostic_candidates"]
+    }
     mechanisms = {
         "a0": [],
         "a1": ["absence", "readout_invalidation"],
@@ -68,7 +71,22 @@ def _preflight(tmp_path: Path, candidate_ids: tuple[str, ...]) -> Path:
     }
     candidates = []
     for candidate_id in candidate_ids:
-        materialized = search_runner._materialize_config(base, declarations[candidate_id])
+        declaration = declarations.get(candidate_id)
+        if declaration is None:
+            diagnostic = diagnostics[candidate_id]
+            declaration = {
+                **declarations[diagnostic["base_profile"]],
+                "diagnostic_controls": diagnostic["diagnostic_controls"],
+            }
+        materialized = search_runner._materialize_config(base, declaration)
+        base_profile = diagnostics.get(candidate_id, {}).get("base_profile", candidate_id)
+        candidate_mechanisms = list(mechanisms[base_profile])
+        disabled = {
+            "diag_a2_no_proposal_recovery": {"proposal_recovery"},
+            "diag_a3_masking_only_no_ledger": {"background_release", "background_reclaim"},
+            "diag_a4_no_dormant_candidates": {"eligible_reid"},
+            "diag_a4_translation_only_no_icp": {"icp"},
+        }.get(candidate_id, set())
         candidates.append(
             {
                 "candidate_id": candidate_id,
@@ -95,7 +113,8 @@ def _preflight(tmp_path: Path, candidate_ids: tuple[str, ...]) -> Path:
                         "opportunity_records": [f"{candidate_id}:{name}:opportunity"],
                         "trigger_records": [f"{candidate_id}:{name}:trigger"],
                     }
-                    for name in mechanisms[candidate_id]
+                    for name in candidate_mechanisms
+                    if name not in disabled
                 },
             }
         )
@@ -218,7 +237,7 @@ def test_manifest_predeclares_exact_bounded_causal_matrix_and_gates() -> None:
     }
 
 
-def test_manifest_registers_micro_ablations_as_fail_closed_diagnostics() -> None:
+def test_manifest_registers_runnable_nonselectable_micro_ablations() -> None:
     manifest = load_search_manifest(MANIFEST)
     diagnostics = manifest["diagnostic_candidates"]
     assert [item["candidate_id"] for item in diagnostics] == [
@@ -230,13 +249,52 @@ def test_manifest_registers_micro_ablations_as_fail_closed_diagnostics() -> None
     assert [item["base_profile"] for item in diagnostics] == ["a2", "a3", "a4", "a4"]
     assert all(item["diagnostic"] is True for item in diagnostics)
     assert all(item["selectable"] is False for item in diagnostics)
-    assert all(item["runnable"] is False for item in diagnostics)
-    assert all(item["reason"] == "unsupported_runtime_control" for item in diagnostics)
-    assert all(item["required_runtime_control"] for item in diagnostics)
+    assert all(item["runnable"] is True for item in diagnostics)
+    assert [item["lane"] for item in diagnostics] == ["lane1", "lane2", "lane2", "lane2"]
+    assert [item["diagnostic_controls"] for item in diagnostics] == [
+        {"proposal_recovery_enabled": False},
+        {"background_mode": "masking_only"},
+        {"dormant_reid_enabled": False},
+        {"icp_enabled": False},
+    ]
     assert not (
         {item["candidate_id"] for item in diagnostics}
         & {item["candidate_id"] for item in manifest["candidates"]}
     )
+
+
+def test_runner_executes_diagnostic_on_fixed_lane_outside_main_inventory(
+    tmp_path: Path,
+) -> None:
+    candidate_id = "diag_a3_masking_only_no_ledger"
+    status_path = run_search(
+        manifest_path=MANIFEST,
+        apartment_base_config=APARTMENT_CONFIG,
+        office_base_config=OFFICE_CONFIG,
+        output_root=tmp_path / "diagnostic",
+        gpu_ids=("0", "1", "2"),
+        max_parallel=1,
+        candidate_ids=(candidate_id,),
+        preflight_gate_evidence=_preflight(tmp_path, (candidate_id,)),
+        available_ram_bytes=10**15,
+        command_builder=lambda config, output, identity: (
+            sys.executable,
+            "-c",
+            "raise SystemExit(0)",
+        ),
+    )
+
+    status = json.loads(status_path.read_text())
+    assert status["candidates"] == []
+    assert [item["candidate_id"] for item in status["diagnostic_candidates"]] == [candidate_id]
+    record = status["diagnostic_candidates"][0]
+    assert record["selectable"] is False
+    assert record["cuda_visible_devices"] == "2"
+    config = json.loads(Path(record["config_path"]).read_text())
+    assert config["temporal_readout"]["execution_profile"] == "a3"
+    assert config["temporal_readout"]["diagnostic_controls"] == {
+        "background_mode": "masking_only"
+    }
 
 
 def test_manifest_rejects_unknown_and_profile_incompatible_parameter_spaces(
@@ -622,15 +680,15 @@ def test_runner_enforces_apartment_anchor_53_of_66_before_launch(tmp_path: Path)
         )
 
 
-def test_runner_rejects_diagnostic_candidates_and_office_search(tmp_path: Path) -> None:
-    with pytest.raises(ValueError, match="diagnostic candidate.*not runnable"):
+def test_runner_rejects_mixed_main_diagnostic_and_office_search(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="main and diagnostic candidates"):
         run_search(
             manifest_path=MANIFEST,
             apartment_base_config=APARTMENT_CONFIG,
             office_base_config=OFFICE_CONFIG,
             output_root=tmp_path / "diagnostic",
-            gpu_ids=("0", "1"),
-            candidate_ids=("diag_a2_no_proposal_recovery",),
+            gpu_ids=("0", "1", "2"),
+            candidate_ids=("a2", "diag_a2_no_proposal_recovery"),
             available_ram_bytes=10**15,
         )
     with pytest.raises(ValueError, match="Office search requires frozen authorization"):

@@ -12,6 +12,7 @@ from src.core.data_structures import CameraIntrinsics, Frame
 from src.oviv2.observations import FrameObservation, ObservationKind
 from src.oviv2.dense_semantics import DenseSemanticFrame
 from src.oviv2.temporal_config import (
+    DiagnosticControl,
     ExecutionProfile,
     TemporalAssociationConfig,
     TemporalGeometryConfig,
@@ -804,6 +805,142 @@ def test_a2_skips_masked_background_and_reports_zero(
 
     assert result.background_blocks_touched == 0
     assert runtime.state.background.active_block_count == 0
+
+
+def test_a2_proposal_control_never_calls_recovery(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+
+    runtime = _runtime(
+        replace(
+            _config(ExecutionProfile.A2),
+            diagnostic_control=DiagnosticControl.A2_NO_PROPOSAL_RECOVERY,
+        )
+    )
+    frame = _frame(0, timestamp=0.0)
+    dense = _dense_semantics(frame)
+    monkeypatch.setattr(
+        module,
+        "recover_temporal_proposals",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("proposal recovery must be disabled")
+        ),
+    )
+
+    result = runtime.process_frame(
+        frame, (), dense, proposal_evidence=_proposal_evidence(frame, dense)
+    )
+
+    assert result.proposal_opportunity_count == 0
+    assert result.proposal_trigger_count == 0
+
+
+def test_a3_masking_only_calls_protection_but_never_ledger(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_background import TemporalBackgroundVolume
+    from src.oviv2.temporal_background_ledger import ReversibleBackgroundLedger
+
+    calls = 0
+    integrations = 0
+    original = module.build_background_depth
+
+    def protected(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return original(*args, **kwargs)
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("ledger path must be disabled")
+
+    def integrate(self, frame, masked_depth):
+        nonlocal integrations
+        integrations += 1
+        trial = self.clone()
+        trial._last_blocks_touched = 7
+        return trial
+
+    monkeypatch.setattr(module, "build_background_depth", protected)
+    monkeypatch.setattr(ReversibleBackgroundLedger, "__init__", forbidden)
+    monkeypatch.setattr(ReversibleBackgroundLedger, "clone", forbidden)
+    monkeypatch.setattr(ReversibleBackgroundLedger, "stage", forbidden)
+    monkeypatch.setattr(TemporalBackgroundVolume, "trial_integrate", integrate)
+    runtime = _runtime(
+        replace(
+            _config(ExecutionProfile.A3),
+            diagnostic_control=DiagnosticControl.A3_MASKING_ONLY_NO_LEDGER,
+        )
+    )
+
+    result = runtime.process_frame(_frame(0, timestamp=0.0), ())
+
+    assert calls == 1
+    assert integrations == 1
+    assert result.background_blocks_touched == 7
+    assert runtime.state.background_ledger is None
+
+
+def test_a4_dormant_control_disables_only_dormant_reid(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+
+    observed: list[object] = []
+    original = module.associate_temporal_observations
+
+    def capture(*args, **kwargs):
+        observed.append(kwargs.get("dormant_reid"))
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(module, "associate_temporal_observations", capture)
+    runtime = _runtime(
+        replace(
+            _config(ExecutionProfile.A4),
+            diagnostic_control=DiagnosticControl.A4_NO_DORMANT_CANDIDATES,
+        )
+    )
+
+    runtime.process_frame(_frame(0, timestamp=0.0), ())
+
+    assert observed == [None]
+    assert runtime.state.background_ledger is not None
+
+
+def test_a4_icp_control_forces_translation_only(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+
+    runtime = _runtime(
+        replace(
+            _config(ExecutionProfile.A4),
+            diagnostic_control=DiagnosticControl.A4_TRANSLATION_ONLY_NO_ICP,
+        )
+    )
+    _confirm(runtime)
+    calls = 0
+    original = module.estimate_object_translation
+
+    def translation(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(module, "estimate_object_translation", translation)
+    monkeypatch.setattr(
+        module,
+        "estimate_object_motion",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("ICP must be disabled")
+        ),
+    )
+
+    result = runtime.process_frame(_frame(2), (_observation(_frame(2)),))
+
+    assert calls == 1
+    assert result.diagnostics.icp_opportunity_count == 0
 
 
 def test_a2_background_is_isolated_across_revisions() -> None:
