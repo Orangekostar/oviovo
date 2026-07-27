@@ -55,6 +55,10 @@ T2_DIRECTIONS = {
     "object_f1": "maximize_noninferior",
 }
 ORIGINAL_COMMON_REPLAY = package_module._recompute_common_v2_metrics
+T1_TRANSACTION_SCHEMA1_VARIANTS = {
+    **gates_module.PRODUCTION_SCHEMA1_VARIANTS,
+    "reference": "t1_transaction",
+}
 
 
 @pytest.fixture(autouse=True)
@@ -547,7 +551,12 @@ def _fixture(root: Path) -> dict[str, Path]:
 
 
 def _package(paths: dict[str, Path], output: Path) -> dict[str, object]:
-    return package_result(candidate_id="a2", output=output, **paths)
+    return package_result(
+        candidate_id="a2",
+        output=output,
+        schema1_variants=T1_TRANSACTION_SCHEMA1_VARIANTS,
+        **paths,
+    )
 
 
 def test_packages_exact_structured_result_and_revalidates(tmp_path: Path) -> None:
@@ -610,7 +619,11 @@ def test_packages_exact_structured_result_and_revalidates(tmp_path: Path) -> Non
     assert result["metrics"]["background_f5_cm"]["value"] == 0.3
     assert result["metrics"]["runtime_seconds"]["value"] == 12.5
     assert result["metrics"]["dynamic_f1"]["available"] is True
-    assert load_and_revalidate_result(output, manifest=paths["manifest"]) == result
+    assert load_and_revalidate_result(
+        output,
+        manifest=paths["manifest"],
+        schema1_variants=T1_TRANSACTION_SCHEMA1_VARIANTS,
+    ) == result
 
 
 def test_recomputes_mechanism_telemetry_and_fails_closed_on_empty_opportunity(
@@ -767,7 +780,11 @@ def test_revalidation_rejects_micro_diagnostic_masquerading_as_main(
     output.write_bytes(_bytes(result))
 
     with pytest.raises(ValueError, match="candidate|A0-A4|manifest|revalidated"):
-        load_and_revalidate_result(output, manifest=paths["manifest"])
+        load_and_revalidate_result(
+            output,
+            manifest=paths["manifest"],
+            schema1_variants=T1_TRANSACTION_SCHEMA1_VARIANTS,
+        )
 
 
 def test_exact_transaction_uses_reference_and_dual_production_receipt_schemas(
@@ -797,9 +814,11 @@ def _observe_exact_verifications(
     calls: list[int] = []
     original = package_module.verify_exact_profile_runs
 
-    def observe(executions: list[dict[str, object]]) -> dict[str, object]:
+    def observe(
+        executions: list[dict[str, object]], **kwargs: object
+    ) -> dict[str, object]:
         calls.append(len(executions))
-        return original(executions)
+        return original(executions, **kwargs)
 
     monkeypatch.setattr(package_module, "verify_exact_profile_runs", observe)
     return calls
@@ -1185,7 +1204,11 @@ def test_reload_rejects_result_tampering(tmp_path: Path, mutation: str) -> None:
                 result["metrics"][name]["value"] = 0.5
     output.write_bytes(_bytes(result))
     with pytest.raises(ValueError, match="does not match revalidated sources|source record"):
-        load_and_revalidate_result(output, manifest=paths["manifest"])
+        load_and_revalidate_result(
+            output,
+            manifest=paths["manifest"],
+            schema1_variants=T1_TRANSACTION_SCHEMA1_VARIANTS,
+        )
 
 
 @pytest.mark.parametrize("source,field,value,match", [
@@ -1707,7 +1730,13 @@ def _materialize_gate_transaction(
                 ),
             }
         )
-    return gates_module.verify_exact_profile_runs(executions)
+    return gates_module.verify_exact_profile_runs(
+        executions,
+        schema1_variants={
+            **gates_module.PRODUCTION_SCHEMA1_VARIANTS,
+            "reference": "t1_transaction",
+        },
+    )
 
 
 _TEMPORAL_IDENTITY_BOUND_LEAVES = {

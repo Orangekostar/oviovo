@@ -214,7 +214,10 @@ def test_reverifies_exact_transaction_and_selects_fixed_candidate_positions() ->
     }
     calls: list[list[dict[str, object]]] = []
 
-    def verify(records: list[dict[str, object]]) -> dict[str, object]:
+    def verify(
+        records: list[dict[str, object]], **kwargs: object
+    ) -> dict[str, object]:
+        assert kwargs["schema1_variants"] == module.PRODUCTION_SCHEMA1_VARIANTS
         calls.append(records)
         return exact
 
@@ -245,7 +248,7 @@ def test_rejects_drifted_exact_transaction(drift: str) -> None:
     if drift == "position":
         executions[4]["profile"] = "a3"
 
-    def verify(_: list[dict[str, object]]) -> dict[str, Any]:
+    def verify(_: list[dict[str, object]], **kwargs: object) -> dict[str, Any]:
         return {**exact, "profiles": {"changed": {}}} if drift == "reverified" else exact
 
     with pytest.raises(ValueError, match="exact transaction"):
@@ -1091,7 +1094,9 @@ def test_builds_byte_identical_independent_a0_a4_bundle(
     dataset_member = dataset / "depth.npy"
     dataset_member.write_bytes(b"dataset-original")
 
-    monkeypatch.setattr(module, "verify_exact_profile_runs", lambda records: exact)
+    monkeypatch.setattr(
+        module, "verify_exact_profile_runs", lambda records, **kwargs: exact
+    )
     monkeypatch.setattr(module, "_TRUSTED_SOURCE_MANIFEST", source_manifest)
     monkeypatch.setattr(
         module, "_verify_development_sources",

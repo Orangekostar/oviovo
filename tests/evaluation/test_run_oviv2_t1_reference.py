@@ -48,11 +48,15 @@ def _development_call(
         str(source),
     ]
     monkeypatch.setattr(worker, "_commit", lambda repo: "b" * 40)
-    monkeypatch.setattr(
-        worker,
-        "compare_cumulative_artifacts",
-        lambda left, right, **kwargs: _audit(),
-    )
+    def compare(left: Path, right: Path, **kwargs: object) -> dict[str, object]:
+        assert (left, right) == (output, output)
+        assert kwargs == {
+            "left_schema1_variant": "production",
+            "right_schema1_variant": "production",
+        }
+        return _audit()
+
+    monkeypatch.setattr(worker, "compare_cumulative_artifacts", compare)
 
     if runner is None:
         def runner(config_path: Path, output_path: Path, **kwargs: object) -> dict[str, object]:

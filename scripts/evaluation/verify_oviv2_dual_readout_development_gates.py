@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import argparse
 import ast
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
@@ -16,6 +16,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+from types import MappingProxyType
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -103,6 +104,11 @@ EXACT_PROFILE_SEQUENCE = (
     "a0",
     "a4",
 )
+EXACT_PROFILE_NAMES = frozenset(EXACT_PROFILE_SEQUENCE)
+PRODUCTION_SCHEMA1_VARIANTS: Mapping[str, str] = MappingProxyType(
+    {profile: "production" for profile in EXACT_PROFILE_NAMES}
+)
+_EXACT_SCHEMA1_VARIANTS = {"production", "t1_transaction"}
 EXACT_EXECUTION_FIELDS = {
     "profile",
     "argv",
@@ -238,6 +244,7 @@ def _bind_exact_receipt(
     compare: Callable[..., dict[str, Any]],
     expected_position: int | None = None,
     audit: dict[str, Any] | None = None,
+    schema1_variant: str,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     raw_root = record["output_root"]
     try:
@@ -311,9 +318,6 @@ def _bind_exact_receipt(
         raise GateVerificationError("exact execution reopened binding mismatch")
     if audit is None:
         try:
-            schema1_variant = (
-                "t1_transaction" if record["profile"] == "reference" else "production"
-            )
             audit = compare(
                 root,
                 root,
@@ -341,8 +345,20 @@ def verify_exact_profile_runs(
     *,
     compare: Callable[..., dict[str, Any]] = compare_cumulative_artifacts,
     audits: list[dict[str, Any]] | None = None,
+    schema1_variants: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
     """Verify an independently executed, interleaved T1/A0-A4 transaction."""
+    if (
+        not isinstance(schema1_variants, Mapping)
+        or set(schema1_variants) != EXACT_PROFILE_NAMES
+        or any(
+            variant not in _EXACT_SCHEMA1_VARIANTS
+            for variant in schema1_variants.values()
+        )
+    ):
+        raise GateVerificationError(
+            "caller-trusted exact schema1 variant mapping is invalid"
+        )
     if audits is not None and len(audits) != len(executions):
         raise GateVerificationError("exact cumulative audit inventory is invalid")
     records_and_audits = [
@@ -351,6 +367,7 @@ def verify_exact_profile_runs(
             compare=compare,
             expected_position=position,
             audit=None if audits is None else audits[position],
+            schema1_variant=schema1_variants[record["profile"]],
         )
         for position, record in enumerate(executions)
     ]
@@ -1259,7 +1276,12 @@ def execute_exact_profile_transaction(
                 )
             )
             del stdout
-        result = verify_exact_profile_runs(records, compare=compare, audits=audits)
+        result = verify_exact_profile_runs(
+            records,
+            compare=compare,
+            audits=audits,
+            schema1_variants=PRODUCTION_SCHEMA1_VARIANTS,
+        )
         _close_owned_paths(
             [
                 *root_witnesses,
@@ -2079,7 +2101,9 @@ def generate_evidence(
     ):
         raise GateVerificationError("exact profile transaction result is invalid")
     if verify_exact_profile_runs(
-        cumulative_exact["executions"], compare=compare
+        cumulative_exact["executions"],
+        compare=compare,
+        schema1_variants=PRODUCTION_SCHEMA1_VARIANTS,
     ) != cumulative_exact:
         raise GateVerificationError("exact profile transaction verification disagrees")
 
@@ -2135,7 +2159,9 @@ def generate_evidence(
                 "protected or test source file changed before publication"
             )
         if verify_exact_profile_runs(
-            cumulative_exact["executions"], compare=compare
+            cumulative_exact["executions"],
+            compare=compare,
+            schema1_variants=PRODUCTION_SCHEMA1_VARIANTS,
         ) != cumulative_exact:
             raise GateVerificationError(
                 "exact profile transaction changed before publication"

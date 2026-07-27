@@ -46,6 +46,7 @@ from scripts.evaluation.run_oviv2_tesse_cd_v2 import (  # noqa: E402
     _validate_config,
 )
 from scripts.evaluation.verify_oviv2_dual_readout_development_gates import (  # noqa: E402
+    PRODUCTION_SCHEMA1_VARIANTS,
     verify_exact_profile_runs,
 )
 
@@ -145,7 +146,7 @@ class FreezeDependencies:
     environment_collector: Callable[[], Mapping[str, Any]]
     release_paths: Mapping[str, Path]
     python_executable: Path
-    t1_transaction_verifier: Callable[[Sequence[Mapping[str, Any]]], Mapping[str, Any]]
+    t1_transaction_verifier: Callable[..., Mapping[str, Any]]
 
 
 @dataclass(frozen=True)
@@ -919,7 +920,7 @@ def _freeze_t1_evidence(
     repo_root: Path,
     snapshots: dict[Path, _Snapshot],
     transaction_verifier: Callable[
-        [Sequence[Mapping[str, Any]]], Mapping[str, Any]
+        ..., Mapping[str, Any]
     ],
 ) -> dict[str, Any]:
     artifact = _snapshot(path, "T1 evidence")
@@ -962,7 +963,10 @@ def _freeze_t1_evidence(
     ):
         raise ValueError("T1 cumulative exact transaction is invalid")
     try:
-        recomputed_exact = transaction_verifier(exact["executions"])
+        recomputed_exact = transaction_verifier(
+            exact["executions"],
+            schema1_variants=PRODUCTION_SCHEMA1_VARIANTS,
+        )
     except Exception as exc:
         raise ValueError("T1 exact transaction recomputation failed") from exc
     if recomputed_exact != exact:

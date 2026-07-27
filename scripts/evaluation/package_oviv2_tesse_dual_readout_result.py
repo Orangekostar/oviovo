@@ -37,6 +37,7 @@ from scripts.evaluation.run_oviv2_tesse_dual_readout_search import (  # noqa: E4
 )
 from scripts.evaluation.verify_oviv2_dual_readout_development_gates import (  # noqa: E402
     GateVerificationError,
+    PRODUCTION_SCHEMA1_VARIANTS,
     verify_exact_profile_runs,
 )
 from src.evaluation.baselines.tesse_cd import (  # noqa: E402
@@ -232,10 +233,14 @@ class ExactGateWitness:
     key: ExactTransactionKey
     executions: tuple[dict[str, Any], ...]
     expected: bytes
+    schema1_variants: tuple[tuple[str, str], ...]
 
     def revalidate(self) -> None:
         try:
-            current = verify_exact_profile_runs([dict(item) for item in self.executions])
+            current = verify_exact_profile_runs(
+                [dict(item) for item in self.executions],
+                schema1_variants=dict(self.schema1_variants),
+            )
         except (GateVerificationError, OSError) as exc:
             raise ValueError("exact execution changed before publication") from exc
         if _canonical(current) != self.expected:
@@ -635,6 +640,7 @@ def _gate_evidence(
     run: Mapping[str, Any],
     witnesses: list[PublicationWitness],
     exact_transactions: dict[ExactTransactionKey, ExactGateWitness],
+    schema1_variants: Mapping[str, str],
 ) -> None:
     root = snapshot.payload
     evidence = root.get("deterministic_evidence")
@@ -767,7 +773,8 @@ def _gate_evidence(
     if witness is None:
         try:
             reopened = verify_exact_profile_runs(
-                [dict(item) for item in copied_executions]
+                [dict(item) for item in copied_executions],
+                schema1_variants=schema1_variants,
             )
         except (GateVerificationError, OSError) as exc:
             raise ValueError(
@@ -777,7 +784,12 @@ def _gate_evidence(
             raise ValueError(
                 f"{name} cumulative evidence differs from reopened executions"
             )
-        witness = ExactGateWitness(key, copied_executions, _canonical(exact))
+        witness = ExactGateWitness(
+            key,
+            copied_executions,
+            _canonical(exact),
+            tuple(sorted(schema1_variants.items())),
+        )
         exact_transactions[key] = witness
         witnesses.append(witness)
 
@@ -1094,6 +1106,7 @@ def _derive(
     snapshots: Mapping[str, Snapshot],
     *,
     auxiliary: list[PublicationWitness] | None = None,
+    schema1_variants: Mapping[str, str] = PRODUCTION_SCHEMA1_VARIANTS,
 ) -> dict[str, Any]:
     if set(snapshots) != set(SOURCE_NAMES):
         raise ValueError("source set is not exact")
@@ -1473,6 +1486,7 @@ def _derive(
         run,
         witnesses,
         exact_transactions,
+        schema1_variants,
     )
     _gate_evidence(
         snapshots["determinism_evidence"],
@@ -1480,6 +1494,7 @@ def _derive(
         run,
         witnesses,
         exact_transactions,
+        schema1_variants,
     )
     first_evidence = snapshots["t1_exact_evidence"].payload["deterministic_evidence"]
     second_evidence = snapshots["determinism_evidence"].payload["deterministic_evidence"]
@@ -1671,6 +1686,7 @@ def package_result(*, manifest: str | Path, search_status: str | Path, candidate
                    t1_exact_evidence: str | Path, determinism_evidence: str | Path,
                    short_gate_evidence: str | Path, anchor_evidence: str | Path,
                    baseline_evidence: str | Path,
+                   schema1_variants: Mapping[str, str] = PRODUCTION_SCHEMA1_VARIANTS,
                    output: str | Path) -> dict[str, Any]:
     paths = {"search_manifest": manifest, "search_status": search_status, "candidate_config": candidate_config,
              "run_manifest": run_manifest, "common_v2_summary": common_v2_summary,
@@ -1680,12 +1696,22 @@ def package_result(*, manifest: str | Path, search_status: str | Path, candidate
              "baseline_evidence": baseline_evidence}
     snapshots = {name: _snapshot(path, name.replace("_", " ")) for name, path in paths.items()}
     auxiliary: list[PublicationWitness] = []
-    result = _derive(candidate_id, snapshots, auxiliary=auxiliary)
+    result = _derive(
+        candidate_id,
+        snapshots,
+        auxiliary=auxiliary,
+        schema1_variants=schema1_variants,
+    )
     _publish(Path(output), result, [*snapshots.values(), *auxiliary])
     return result
 
 
-def load_and_revalidate_result(path: str | Path, *, manifest: str | Path | Mapping[str, Any]) -> dict[str, Any]:
+def load_and_revalidate_result(
+    path: str | Path,
+    *,
+    manifest: str | Path | Mapping[str, Any],
+    schema1_variants: Mapping[str, str] = PRODUCTION_SCHEMA1_VARIANTS,
+) -> dict[str, Any]:
     result_snapshot = _snapshot(path, "candidate result")
     payload = result_snapshot.payload
     if set(payload) != RESULT_KEYS or payload.get("manifest_id") != MANIFEST_ID or payload.get("schema_version") != 1:
@@ -1707,7 +1733,12 @@ def load_and_revalidate_result(path: str | Path, *, manifest: str | Path | Mappi
     elif Path(manifest).absolute() != snapshots["search_manifest"].path:
         raise ValueError("supplied manifest path differs from result source")
     auxiliary: list[PublicationWitness] = []
-    derived = _derive(str(payload.get("candidate_id")), snapshots, auxiliary=auxiliary)
+    derived = _derive(
+        str(payload.get("candidate_id")),
+        snapshots,
+        auxiliary=auxiliary,
+        schema1_variants=schema1_variants,
+    )
     if payload != derived:
         raise ValueError("candidate result does not match revalidated sources")
     for snapshot in [*snapshots.values(), *auxiliary]:
@@ -1733,7 +1764,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                    determinism_evidence=args.determinism_evidence,
                    short_gate_evidence=args.short_gate_evidence,
                    anchor_evidence=args.anchor_evidence,
-                   baseline_evidence=args.baseline_evidence, output=args.output)
+                   baseline_evidence=args.baseline_evidence,
+                   schema1_variants=PRODUCTION_SCHEMA1_VARIANTS,
+                   output=args.output)
     return 0
 
 

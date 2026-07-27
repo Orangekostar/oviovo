@@ -29,6 +29,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.evaluation.verify_oviv2_dual_readout_development_gates import (  # noqa: E402
+    PRODUCTION_SCHEMA1_VARIANTS,
     verify_exact_profile_runs,
     verify_source_manifest,
 )
@@ -164,7 +165,10 @@ class _ExactTransactionWitness:
     expected: bytes
 
     def revalidate(self) -> None:
-        reopened = verify_exact_profile_runs([dict(item) for item in self.executions])
+        reopened = verify_exact_profile_runs(
+            [dict(item) for item in self.executions],
+            schema1_variants=PRODUCTION_SCHEMA1_VARIANTS,
+        )
         if _canonical(reopened) != self.expected:
             raise ValueError("development exact transaction changed before publication")
 
@@ -1314,7 +1318,7 @@ def _audit_future_leakage(
 def _select_candidate_executions(
     exact: Mapping[str, Any],
     *,
-    verifier: Callable[[list[dict[str, object]]], Mapping[str, Any]] = verify_exact_profile_runs,
+    verifier: Callable[..., Mapping[str, Any]] = verify_exact_profile_runs,
 ) -> dict[str, Mapping[str, Any]]:
     executions = exact.get("executions")
     if (
@@ -1327,7 +1331,9 @@ def _select_candidate_executions(
     ):
         raise ValueError("development exact transaction identity is invalid")
     copied = [dict(item) for item in executions]
-    reopened = verifier(copied)
+    reopened = verifier(
+        copied, schema1_variants=PRODUCTION_SCHEMA1_VARIANTS
+    )
     if _canonical(reopened) != _canonical(dict(exact)):
         raise ValueError("development exact transaction differs after re-verification")
     return {

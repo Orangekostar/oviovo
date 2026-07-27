@@ -26,6 +26,10 @@ gates = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = gates
 SPEC.loader.exec_module(gates)
 
+PRODUCTION_SCHEMA1_VARIANTS = {
+    profile: "production" for profile in set(gates.EXACT_PROFILE_SEQUENCE)
+}
+
 
 def _make_repo(root: Path) -> None:
     for relative in (*gates.CUMULATIVE_ROOTS, *gates.TEST_FILES):
@@ -526,7 +530,9 @@ def _generate(tmp_path: Path, **overrides: object) -> tuple[Path, PassingRunner]
         assert specs == exact_specs
         assert kwargs["repo"] == repo.resolve()
         return gates.verify_exact_profile_runs(
-            exact_runs, compare=kwargs["compare"]
+            exact_runs,
+            compare=kwargs["compare"],
+            schema1_variants=PRODUCTION_SCHEMA1_VARIANTS,
         )
 
     kwargs = {
@@ -965,10 +971,15 @@ def test_exact_profile_gate_requires_interleaved_independent_processes(
         _exact_execution(profile, tmp_path / f"run-{index}", 100 + index)
         for index, profile in enumerate(profiles)
     ]
-    calls: list[tuple[Path, Path]] = []
+    calls: list[tuple[Path, Path, dict[str, object]]] = []
 
     def compare(left: Path, right: Path, **kwargs: object) -> dict[str, object]:
-        calls.append((left, right))
+        calls.append((left, right, kwargs))
+        if kwargs != {
+            "left_schema1_variant": "production",
+            "right_schema1_variant": "production",
+        }:
+            raise gates.ArtifactMismatch("wrong caller-trusted variant")
         return {
             "format": "oviv2_cumulative_exact_v1",
             "checkpoint_frames": [2, 7],
@@ -976,7 +987,13 @@ def test_exact_profile_gate_requires_interleaved_independent_processes(
             "root_sha256": "e" * 64,
         }
 
-    evidence = gates.verify_exact_profile_runs(executions, compare=compare)
+    with pytest.raises(gates.GateVerificationError, match="schema1 variant"):
+        gates.verify_exact_profile_runs(executions, compare=compare)
+    evidence = gates.verify_exact_profile_runs(
+        executions,
+        compare=compare,
+        schema1_variants=PRODUCTION_SCHEMA1_VARIANTS,
+    )
     assert evidence["sequence"] == list(profiles)
     assert set(evidence["profiles"]) == {"a0", "a1", "a2", "a3", "a4"}
     assert all(
@@ -984,8 +1001,16 @@ def test_exact_profile_gate_requires_interleaved_independent_processes(
         for profile in evidence["profiles"].values()
     )
     assert len(calls) == 9
-    assert all(left == right for left, right in calls)
-    assert len({left for left, _ in calls}) == 9
+    assert all(left == right for left, right, _ in calls)
+    assert len({left for left, _, _ in calls}) == 9
+
+    wrong = {**PRODUCTION_SCHEMA1_VARIANTS, "reference": "t1_transaction"}
+    with pytest.raises(gates.GateVerificationError, match="wrong caller-trusted"):
+        gates.verify_exact_profile_runs(
+            executions,
+            compare=compare,
+            schema1_variants=wrong,
+        )
 
     executions[1]["pid"] = executions[0]["pid"]
     observation_path = Path(executions[1]["observation_receipt"]["path"])
@@ -995,7 +1020,26 @@ def test_exact_profile_gate_requires_interleaved_independent_processes(
     observation_path.write_text(json.dumps(observation, sort_keys=True, separators=(",", ":")) + "\n")
     executions[1]["observation_receipt"] = gates._absolute_file_record(observation_path)
     with pytest.raises(gates.GateVerificationError, match="PID"):
-        gates.verify_exact_profile_runs(executions, compare=compare)
+        gates.verify_exact_profile_runs(
+            executions,
+            compare=compare,
+            schema1_variants=PRODUCTION_SCHEMA1_VARIANTS,
+        )
+
+
+@pytest.mark.parametrize("mutation", ("missing", "extra", "minimal"))
+def test_exact_profile_gate_requires_strict_caller_variant_mapping(
+    mutation: str,
+) -> None:
+    variants = dict(PRODUCTION_SCHEMA1_VARIANTS)
+    if mutation == "missing":
+        variants.pop("a4")
+    elif mutation == "extra":
+        variants["unexpected"] = "production"
+    else:
+        variants["reference"] = "minimal"
+    with pytest.raises(gates.GateVerificationError, match="schema1 variant mapping"):
+        gates.verify_exact_profile_runs([], schema1_variants=variants)
 
 
 def test_dual_receipt_command_must_equal_parent_popen_argv(tmp_path: Path) -> None:
@@ -1036,9 +1080,10 @@ def test_observation_declares_local_unsigned_pid_trust_model(tmp_path: Path) -> 
     observation_path.write_text(json.dumps(observation) + "\n")
     execution["observation_receipt"] = gates._absolute_file_record(observation_path)
     with pytest.raises(gates.GateVerificationError, match="trust|observation"):
-        gates._bind_exact_receipt(
-            execution,
-            expected_position=2,
+            gates._bind_exact_receipt(
+                execution,
+                expected_position=2,
+                schema1_variant="production",
             compare=lambda left, right, **kwargs: {
                 "checkpoint_frames": [2, 7],
                 "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
@@ -1310,9 +1355,10 @@ def test_completed_execution_rejects_source_bindings_mismatch(tmp_path: Path) ->
     manifest["source_bindings"]["dataset"] = "different"
     manifest_path.write_text(json.dumps(manifest, sort_keys=True) + "\n")
     with pytest.raises(gates.GateVerificationError, match="source bindings|reopened|changed"):
-        gates._bind_exact_receipt(
-            execution,
-            expected_position=2,
+            gates._bind_exact_receipt(
+                execution,
+                expected_position=2,
+                schema1_variant="production",
             compare=lambda left, right, **kwargs: {
                 "checkpoint_frames": [2, 7],
                 "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
@@ -1385,9 +1431,10 @@ def test_exact_receipt_rejects_config_changed_after_run(tmp_path: Path) -> None:
     config_path.write_text(json.dumps(config, sort_keys=True) + "\n")
 
     with pytest.raises(gates.GateVerificationError, match="config.*changed|observed config"):
-        gates._bind_exact_receipt(
-            execution,
-            expected_position=2,
+            gates._bind_exact_receipt(
+                execution,
+                expected_position=2,
+                schema1_variant="production",
             compare=lambda left, right, **kwargs: {
                 "checkpoint_frames": [2, 7],
                 "inventory": [{"path": "x", "sha256": "d" * 64, "byte_count": 1}],
@@ -2121,7 +2168,11 @@ def test_exact_profile_gate_rejects_root_alias_argv_and_receipt_mismatch(
         receipt = Path(executions[2]["output_root"]) / "execution_receipt.json"
         receipt.write_bytes(receipt.read_bytes() + b" ")
     with pytest.raises(gates.GateVerificationError, match="root|argv|receipt"):
-        gates.verify_exact_profile_runs(executions, compare=compare)
+        gates.verify_exact_profile_runs(
+            executions,
+            compare=compare,
+            schema1_variants=PRODUCTION_SCHEMA1_VARIANTS,
+        )
 
 
 @pytest.mark.parametrize(
@@ -2149,7 +2200,11 @@ def test_exact_profile_gate_rejects_incomplete_or_disagreeing_bindings(
     else:
         executions[3][field] = "f" * (40 if field == "code_commit" else 64)
     with pytest.raises(gates.GateVerificationError, match="binding|argv"):
-        gates.verify_exact_profile_runs(executions, compare=compare)
+        gates.verify_exact_profile_runs(
+            executions,
+            compare=compare,
+            schema1_variants=PRODUCTION_SCHEMA1_VARIANTS,
+        )
 
 
 def test_reference_worker_records_exact_process_and_artifact_receipt(
@@ -2243,8 +2298,9 @@ def test_exact_receipt_rejects_source_manifest_record_drift(
     with pytest.raises(
         gates.GateVerificationError, match="source manifest|production_receipt"
     ):
-        gates._bind_exact_receipt(
-            record,
+            gates._bind_exact_receipt(
+                record,
+                schema1_variant="t1_transaction",
             compare=lambda left, right, **kwargs: {
                 "format": "oviv2_cumulative_exact_v1",
                 "checkpoint_frames": [2, 7],

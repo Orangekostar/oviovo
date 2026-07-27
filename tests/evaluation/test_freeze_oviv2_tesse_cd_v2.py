@@ -517,7 +517,7 @@ class Fixture:
             release_paths=dict(self.release_paths),
             python_executable=Path(sys.executable).resolve(),
             t1_transaction_verifier=t1_transaction_verifier
-            or (lambda executions: json.loads(self.t1_evidence.read_text())[
+            or (lambda executions, **kwargs: json.loads(self.t1_evidence.read_text())[
                 "deterministic_evidence"
             ]["cumulative_exact"]),
         )
@@ -618,7 +618,9 @@ def test_freeze_requires_t1_and_t4_evidence(fixture: Fixture) -> None:
 
 def test_freeze_recomputes_task11_exact_transaction(fixture: Fixture) -> None:
     with pytest.raises(ValueError, match="T1 exact transaction recomputation"):
-        fixture.run(t1_transaction_verifier=lambda _: {"format": "forged"})
+        fixture.run(
+            t1_transaction_verifier=lambda _, **kwargs: {"format": "forged"}
+        )
 
 
 @pytest.mark.parametrize("kind", ["t1_gate", "t1_root", "t4_gate", "t4_root", "t4_source"])
