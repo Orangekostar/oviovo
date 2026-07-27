@@ -182,8 +182,18 @@ def _candidate_sources(tmp_path: Path, candidate_id: str = "a1") -> Path:
         "ledger_rejection_count": [],
         "identity_expiry_count": ["identity:0"],
         "geometry_reclaim_count": ["geometry:0"],
-        "epoch_reset_opportunity_count": ["epoch:0"],
-        "epoch_reset_trigger_count": ["epoch:0"],
+        "epoch_reset_opportunity_count": [
+            "motion:0"
+            if candidate_id == "diag_a4_translation_only_no_icp"
+            or base_profile in {"a2", "a3"}
+            else "icp:0"
+        ],
+        "epoch_reset_trigger_count": [
+            "motion:0"
+            if candidate_id == "diag_a4_translation_only_no_icp"
+            or base_profile in {"a2", "a3"}
+            else "icp:0"
+        ],
         "icp_opportunity_count": ["icp:0"],
         "icp_accept_count": [],
         "icp_reject_count": ["icp:0"],
@@ -577,6 +587,12 @@ def test_translation_motion_records_do_not_require_icp_records(
         diagnostics["mechanism_records"][name] = []
     diagnostics["counters"]["motion_rejection_count"] = 1
     diagnostics["mechanism_records"]["motion_rejection_count"] = ["motion:1:2:7"]
+    diagnostics["mechanism_records"]["epoch_reset_opportunity_count"] = [
+        "motion:1:2:7"
+    ]
+    diagnostics["mechanism_records"]["epoch_reset_trigger_count"] = [
+        "motion:1:2:7"
+    ]
     payloads = {
         "trajectories": [json.loads(line) for line in (root / "trajectories.jsonl").read_text().splitlines()],
         "lifecycle_transitions": [json.loads(line) for line in (root / "lifecycle_transitions.jsonl").read_text().splitlines()],

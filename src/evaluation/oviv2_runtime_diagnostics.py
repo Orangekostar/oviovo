@@ -147,9 +147,10 @@ def validate_runtime_diagnostics(
         profile = ExecutionProfile.from_id(runtime.get("execution_profile"))
     except (TypeError, ValueError) as error:
         raise ValueError(f"{label} execution profile is invalid") from error
+    if type(runtime.get("schema_version")) is not int or runtime["schema_version"] != 1:
+        raise ValueError(f"{label} schema_version is invalid")
     if (
-        runtime.get("schema_version") != 1
-        or type(runtime.get("processed_frame_count")) is not int
+        type(runtime.get("processed_frame_count")) is not int
         or runtime["processed_frame_count"] < 0
         or (
             expected_processed_frame_count is not None
@@ -209,6 +210,13 @@ def validate_runtime_diagnostics(
     impossible = names - allowed
     if any(counters[name] != 0 or records[name] != [] for name in impossible):
         raise ValueError(f"{label} profile-impossible counters/records must be zero")
+    if profile in {ExecutionProfile.A2, ExecutionProfile.A3, ExecutionProfile.A4} and (
+        records["epoch_reset_opportunity_count"]
+        != records["motion_rejection_count"]
+    ):
+        raise ValueError(
+            f"{label} epoch reset and motion rejection records must be identical"
+        )
 
     subset_pairs = (
         ("proposal_trigger_count", "proposal_opportunity_count"),

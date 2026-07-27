@@ -231,8 +231,18 @@ def _preflight(tmp_path: Path, candidate_ids: tuple[str, ...]) -> Path:
             ),
             "identity_expiry_count": "identity:0",
             "geometry_reclaim_count": "geometry:0",
-            "epoch_reset_opportunity_count": "epoch:0",
-            "epoch_reset_trigger_count": "epoch:0",
+            "epoch_reset_opportunity_count": (
+                "motion:0"
+                if candidate_id == "diag_a4_translation_only_no_icp"
+                or base_profile in {"a2", "a3"}
+                else "icp:0"
+            ),
+            "epoch_reset_trigger_count": (
+                "motion:0"
+                if candidate_id == "diag_a4_translation_only_no_icp"
+                or base_profile in {"a2", "a3"}
+                else "icp:0"
+            ),
             "icp_opportunity_count": "icp:0",
             "icp_reject_count": "icp:0",
             "ledger_stage_count": "ledger:0",
@@ -352,7 +362,11 @@ def _preflight(tmp_path: Path, candidate_ids: tuple[str, ...]) -> Path:
             "absence": ([0], [0], lifecycle_hash),
             "readout_invalidation": ([0], [0], lifecycle_hash),
             "proposal_recovery": (["proposal:0"], ["proposal:0"], runtime_hash),
-            "epoch_reset": (["epoch:0"], ["epoch:0"], runtime_hash),
+            "epoch_reset": (
+                [record_id["epoch_reset_opportunity_count"]],
+                [record_id["epoch_reset_trigger_count"]],
+                runtime_hash,
+            ),
             "motion_rejection": (
                 [record_id["motion_rejection_count"]],
                 [record_id["motion_rejection_count"]],
@@ -657,6 +671,10 @@ def test_translation_only_diagnostic_disables_icp_but_retains_motion_evidence(
     runtime = json.loads(runtime_path.read_text())
     runtime["counters"]["motion_rejection_count"] = 1
     runtime["mechanism_records"]["motion_rejection_count"] = ["motion:1:2:7"]
+    runtime["mechanism_records"]["epoch_reset_opportunity_count"] = [
+        "motion:1:2:7"
+    ]
+    runtime["mechanism_records"]["epoch_reset_trigger_count"] = ["motion:1:2:7"]
 
     prepared = search_runner._diagnostic_recompute_payloads(
         {"runtime_diagnostics": runtime}, {"icp"}, "diagnostic"

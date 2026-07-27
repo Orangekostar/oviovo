@@ -156,6 +156,140 @@ def test_runtime_diagnostic_producer_is_consumable_by_search_validator() -> None
     )
 
 
+@pytest.mark.parametrize(
+    ("profile", "controls"),
+    (
+        ("a2", None),
+        ("a3", None),
+        ("a4", None),
+        ("a2", {"proposal_recovery_enabled": False}),
+        ("a3", {"background_mode": "masking_only"}),
+        ("a4", {"dormant_reid_enabled": False}),
+        ("a4", {"icp_enabled": False}),
+    ),
+)
+def test_runtime_diagnostics_rejects_distinct_epoch_and_motion_event_ids(
+    profile: str, controls: dict[str, object] | None
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    icp_enabled = profile == "a4" and controls != {"icp_enabled": False}
+    diagnostics = SimpleNamespace(
+        processed_frame_count=1,
+        motion_rejection_count=1,
+        epoch_reset_opportunity_count=1,
+        icp_opportunity_count=int(icp_enabled),
+        icp_reject_count=int(icp_enabled),
+    )
+    runtime = SimpleNamespace(
+        temporal=SimpleNamespace(state=SimpleNamespace(diagnostics=diagnostics))
+    )
+    records = {name: [] for name in module.V2_RUNTIME_DIAGNOSTIC_KEYS}
+    records["motion_rejection_count"] = ["motion:0"]
+    records["epoch_reset_opportunity_count"] = ["unrelated:0"]
+    if icp_enabled:
+        records["icp_opportunity_count"] = ["motion:0"]
+        records["icp_reject_count"] = ["motion:0"]
+    temporal = _temporal_readout()
+    temporal["execution_profile"] = profile
+    temporal["components"] = ExecutionProfile.from_id(profile).components
+    if controls is not None:
+        temporal["diagnostic_controls"] = controls
+
+    with pytest.raises(ValueError, match="epoch.*motion.*identical"):
+        module._runtime_diagnostics_payload(
+            runtime,
+            config={"temporal_readout": temporal},
+            processed_frame_count=1,
+            mechanism_records=records,
+        )
+
+
+def test_runtime_diagnostics_rejects_boolean_schema_version() -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as producer
+    import scripts.evaluation.run_oviv2_tesse_dual_readout_search as consumer
+
+    temporal = _temporal_readout()
+    runtime = SimpleNamespace(
+        temporal=SimpleNamespace(
+            state=SimpleNamespace(
+                diagnostics=SimpleNamespace(processed_frame_count=1)
+            )
+        )
+    )
+    payload = producer._runtime_diagnostics_payload(
+        runtime,
+        config={"temporal_readout": temporal},
+        processed_frame_count=1,
+    )
+    payload["schema_version"] = True
+
+    with pytest.raises(ValueError, match="schema_version"):
+        consumer._validate_runtime_mechanism_records(
+            payload,
+            "producer output",
+            expected_temporal_readout=temporal,
+            expected_candidate_id="a4",
+        )
+
+
+class _NoHistoryScanList(list[str]):
+    def __iter__(self):  # type: ignore[override]
+        raise AssertionError("accumulator history was rescanned")
+
+
+def _frame_mechanism_result(
+    module: object, name: str, record: str
+) -> SimpleNamespace:
+    keys = getattr(module, "V2_RUNTIME_DIAGNOSTIC_KEYS")
+    records = {key: () for key in keys}
+    records[name] = (record,)
+    return SimpleNamespace(
+        diagnostics=SimpleNamespace(mechanism_records=tuple(records.items()))
+    )
+
+
+def test_runtime_mechanism_accumulator_reuses_persistent_seen_sets() -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    name = "geometry_reclaim_count"
+    accumulated = {
+        key: (_NoHistoryScanList() if key == name else [])
+        for key in module.V2_RUNTIME_DIAGNOSTIC_KEYS
+    }
+    seen = {key: set() for key in module.V2_RUNTIME_DIAGNOSTIC_KEYS}
+    identities = {key: id(values) for key, values in seen.items()}
+
+    for index in range(256):
+        module._accumulate_runtime_mechanism_records(
+            accumulated,
+            _frame_mechanism_result(module, name, f"geometry:{index}:0:{index}"),
+            seen_by_name=seen,
+        )
+
+    assert len(accumulated[name]) == 256
+    assert accumulated[name][0] == "geometry:0:0:0"
+    assert accumulated[name][-1] == "geometry:255:0:255"
+    assert all(id(seen[key]) == identities[key] for key in seen)
+
+
+def test_runtime_mechanism_accumulator_rejects_cross_frame_duplicate() -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    name = "geometry_reclaim_count"
+    accumulated = {key: [] for key in module.V2_RUNTIME_DIAGNOSTIC_KEYS}
+    seen = {key: set() for key in module.V2_RUNTIME_DIAGNOSTIC_KEYS}
+    result = _frame_mechanism_result(module, name, "geometry:1:0:2")
+    module._accumulate_runtime_mechanism_records(
+        accumulated, result, seen_by_name=seen
+    )
+
+    with pytest.raises(ValueError, match="not unique"):
+        module._accumulate_runtime_mechanism_records(
+            accumulated, result, seen_by_name=seen
+        )
+
+
 def test_runtime_diagnostics_rejects_missing_source_records_for_positive_counters() -> None:
     import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
 
@@ -181,13 +315,16 @@ def test_runtime_diagnostics_rejects_a4_motion_record_outside_icp() -> None:
     import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
 
     diagnostics = SimpleNamespace(
-        processed_frame_count=1, motion_rejection_count=1
+        processed_frame_count=1,
+        motion_rejection_count=1,
+        epoch_reset_opportunity_count=1,
     )
     runtime = SimpleNamespace(
         temporal=SimpleNamespace(state=SimpleNamespace(diagnostics=diagnostics))
     )
     records = {name: [] for name in module.V2_RUNTIME_DIAGNOSTIC_KEYS}
     records["motion_rejection_count"] = ["motion:0:1:1"]
+    records["epoch_reset_opportunity_count"] = ["motion:0:1:1"]
 
     with pytest.raises(ValueError, match="relation"):
         module._runtime_diagnostics_payload(

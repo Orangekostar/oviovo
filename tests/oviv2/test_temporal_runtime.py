@@ -2814,8 +2814,11 @@ def test_geometry_reclaim_records_are_unique_across_epochs_for_runner() -> None:
         ))
 
     accumulated = {name: [] for name in runner.V2_RUNTIME_DIAGNOSTIC_KEYS}
+    seen = {name: set() for name in runner.V2_RUNTIME_DIAGNOSTIC_KEYS}
     for result in results:
-        runner._accumulate_runtime_mechanism_records(accumulated, result)
+        runner._accumulate_runtime_mechanism_records(
+            accumulated, result, seen_by_name=seen
+        )
 
     old_reclaims = [
         record

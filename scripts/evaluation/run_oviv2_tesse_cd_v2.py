@@ -2352,8 +2352,18 @@ def _runtime_diagnostics_payload(
 
 
 def _accumulate_runtime_mechanism_records(
-    accumulated: dict[str, list[str]], frame_result: Any
+    accumulated: dict[str, list[str]],
+    frame_result: Any,
+    *,
+    seen_by_name: dict[str, set[str]],
 ) -> None:
+    names = set(V2_RUNTIME_DIAGNOSTIC_KEYS)
+    if (
+        set(accumulated) != names
+        or set(seen_by_name) != names
+        or any(type(seen_by_name[name]) is not set for name in names)
+    ):
+        raise ValueError("runtime mechanism accumulator inventory is invalid")
     diagnostics = getattr(frame_result, "diagnostics", None)
     raw = getattr(diagnostics, "mechanism_records", None)
     if raw is None:
@@ -2362,18 +2372,19 @@ def _accumulate_runtime_mechanism_records(
         records = dict(raw)
     except (TypeError, ValueError) as error:
         raise ValueError("frame mechanism records are invalid") from error
-    if set(records) != set(V2_RUNTIME_DIAGNOSTIC_KEYS):
+    if set(records) != names:
         raise ValueError("frame mechanism records inventory is invalid")
     for name in V2_RUNTIME_DIAGNOSTIC_KEYS:
         values = records[name]
-        if (
-            type(values) is not tuple
-            or any(not isinstance(value, str) or not value for value in values)
-            or len(values) != len(set(values))
-            or set(values) & set(accumulated[name])
+        if type(values) is not tuple or any(
+            not isinstance(value, str) or not value for value in values
         ):
             raise ValueError(f"frame mechanism records are not unique: {name}")
+        value_set = set(values)
+        if len(values) != len(value_set) or value_set & seen_by_name[name]:
+            raise ValueError(f"frame mechanism records are not unique: {name}")
         accumulated[name].extend(values)
+        seen_by_name[name].update(value_set)
 
 
 def _office_attempt_root(destination: Path) -> Path:
@@ -2922,6 +2933,9 @@ def run(
         runtime_mechanism_records = {
             name: [] for name in V2_RUNTIME_DIAGNOSTIC_KEYS
         }
+        runtime_mechanism_seen = {
+            name: set() for name in V2_RUNTIME_DIAGNOSTIC_KEYS
+        }
         for frame_index in range(frame_count):
             frame = dataset[frame_index]
             if int(frame.frame_id) != frame_index:
@@ -2934,7 +2948,9 @@ def run(
                 dense_semantics=dense_semantics,
             )
             _accumulate_runtime_mechanism_records(
-                runtime_mechanism_records, frame_result
+                runtime_mechanism_records,
+                frame_result,
+                seen_by_name=runtime_mechanism_seen,
             )
             export = getattr(frame_result, "export", None)
             if type(export) is not TemporalExportBatch:

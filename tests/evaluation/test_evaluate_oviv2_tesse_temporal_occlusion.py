@@ -69,8 +69,10 @@ def test_translation_profiles_report_motion_rejection_without_icp(
         )
     }
     counters["motion_rejection_count"] = 1
+    counters["epoch_reset_opportunity_count"] = 1
     mechanism_records = {name: [] for name in counters}
     mechanism_records["motion_rejection_count"] = ["motion:0:1:1"]
+    mechanism_records["epoch_reset_opportunity_count"] = ["motion:0:1:1"]
     source = {"path": "source", "sha256": "a" * 64, "byte_count": 1}
 
     telemetry = mechanism_telemetry_from_sources(
@@ -255,7 +257,7 @@ def _install_mechanism_sources(
         "proposal_trigger_count": 2,
         "reid_opportunity_count": 4,
         "reid_trigger_count": 3,
-        "motion_rejection_count": 1,
+        "motion_rejection_count": 2,
         "ledger_rejection_count": 0,
         "identity_expiry_count": 1,
         "geometry_reclaim_count": 1,
@@ -273,12 +275,12 @@ def _install_mechanism_sources(
         "proposal_trigger_count": ["proposal:0", "proposal:1"],
         "reid_opportunity_count": ["reid:0", "reid:1", "reid:2", "reid:3"],
         "reid_trigger_count": ["reid:0", "reid:1", "reid:2"],
-        "motion_rejection_count": ["motion:1"],
+        "motion_rejection_count": ["motion:0", "motion:1"],
         "ledger_rejection_count": [],
         "identity_expiry_count": ["identity:1"],
         "geometry_reclaim_count": ["geometry:1"],
-        "epoch_reset_opportunity_count": ["epoch:0", "epoch:1"],
-        "epoch_reset_trigger_count": ["epoch:0"],
+        "epoch_reset_opportunity_count": ["motion:0", "motion:1"],
+        "epoch_reset_trigger_count": ["motion:0"],
         "icp_opportunity_count": ["motion:0", "motion:1"],
         "icp_accept_count": ["motion:0"],
         "icp_reject_count": ["motion:1"],
