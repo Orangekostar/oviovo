@@ -81,6 +81,8 @@ def test_current_depth_residual_recovers_component_without_fake_appearance() -> 
     assert proposal.appearance_model_id is None
     assert proposal.centroid_xyz == pytest.approx((1.5, 1.5, 3.0))
     assert not proposal.mask.flags.writeable
+    assert result.opportunity_records == ("proposal:3:7:6",)
+    assert result.trigger_records == result.opportunity_records
 
 
 def test_segmentation_occupied_pixels_are_never_recovered_and_zero_opportunity_stays_zero() -> None:

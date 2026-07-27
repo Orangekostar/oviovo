@@ -112,7 +112,7 @@ def _preflight(tmp_path: Path, candidate_ids: tuple[str, ...]) -> Path:
             "diag_a2_no_proposal_recovery": {"proposal_recovery"},
             "diag_a3_masking_only_no_ledger": {"background_release", "background_reclaim"},
             "diag_a4_no_dormant_candidates": {"eligible_reid"},
-            "diag_a4_translation_only_no_icp": {"icp", "motion_rejection"},
+            "diag_a4_translation_only_no_icp": {"icp"},
         }.get(candidate_id, set())
         source_root = evidence_root / candidate_id
         coverage_rows = [
@@ -194,7 +194,6 @@ def _preflight(tmp_path: Path, candidate_ids: tuple[str, ...]) -> Path:
                 "icp_opportunity_count",
                 "icp_accept_count",
                 "icp_reject_count",
-                "motion_rejection_count",
             },
         }.get(candidate_id, set())
         counters = {name: int(name not in zero_counters) for name in counter_names}
@@ -541,7 +540,6 @@ def test_manifest_registers_runnable_nonselectable_micro_ablations() -> None:
                 "icp_opportunity_count",
                 "icp_accept_count",
                 "icp_reject_count",
-                "motion_rejection_count",
             },
         ),
     ],
@@ -611,6 +609,25 @@ def test_diagnostic_rejects_nonzero_disabled_mechanism_self_report(
             {"proposal_recovery"},
             "diagnostic",
         )
+
+
+def test_translation_only_diagnostic_disables_icp_but_retains_motion_evidence(
+    tmp_path: Path,
+) -> None:
+    preflight = _preflight(tmp_path, ("diag_a4_translation_only_no_icp",))
+    payload = json.loads(preflight.read_text())
+    runtime_path = Path(
+        payload["candidates"][0]["source_evidence"]["runtime_diagnostics"]["path"]
+    )
+    runtime = json.loads(runtime_path.read_text())
+    runtime["counters"]["motion_rejection_count"] = 1
+    runtime["mechanism_records"]["motion_rejection_count"] = ["motion:1:2:7"]
+
+    prepared = search_runner._diagnostic_recompute_payloads(
+        {"runtime_diagnostics": runtime}, {"icp"}, "diagnostic"
+    )
+
+    assert prepared["runtime_diagnostics"]["counters"]["motion_rejection_count"] == 1
 
 
 def test_manifest_rejects_unknown_and_profile_incompatible_parameter_spaces(

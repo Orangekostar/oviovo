@@ -24,6 +24,17 @@ from src.oviv2.temporal_lifecycle import TemporalLifecycleState
 from src.oviv2.tracking import LocalTracker
 
 
+TEMPORAL_MECHANISM_RECORD_KEYS = (
+    "proposal_opportunity_count", "proposal_trigger_count",
+    "reid_opportunity_count", "reid_trigger_count",
+    "identity_expiry_count", "geometry_reclaim_count",
+    "motion_rejection_count", "ledger_rejection_count",
+    "epoch_reset_opportunity_count", "epoch_reset_trigger_count",
+    "icp_opportunity_count", "icp_accept_count", "icp_reject_count",
+    "ledger_stage_count", "ledger_commit_count", "ledger_reclaim_count",
+)
+
+
 def _readonly_float_array(value: object, shape: tuple[int, ...], name: str) -> np.ndarray:
     try:
         raw = np.asarray(value)
@@ -475,9 +486,12 @@ class TemporalFrameDiagnostics:
     ledger_rejection_count: int = 0
     identity_expiry_count: int = 0
     geometry_reclaim_count: int = 0
+    mechanism_records: tuple[tuple[str, tuple[str, ...]], ...] = ()
 
     def __post_init__(self) -> None:
         for name in self.__dataclass_fields__:
+            if name == "mechanism_records":
+                continue
             value = getattr(self, name)
             if isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral):
                 raise TypeError(f"{name} must be an integer")
@@ -492,6 +506,23 @@ class TemporalFrameDiagnostics:
             raise ValueError("epoch reset triggers cannot exceed opportunities")
         if self.icp_accept_count + self.icp_reject_count != self.icp_opportunity_count:
             raise ValueError("ICP accept/reject counts must partition opportunities")
+        records = self.mechanism_records
+        if records == () and all(getattr(self, name) == 0 for name in TEMPORAL_MECHANISM_RECORD_KEYS):
+            records = tuple((name, ()) for name in TEMPORAL_MECHANISM_RECORD_KEYS)
+        if (
+            type(records) is not tuple
+            or tuple(name for name, _ in records) != TEMPORAL_MECHANISM_RECORD_KEYS
+        ):
+            raise ValueError("mechanism_records must have the exact counter inventory")
+        for name, values in records:
+            if (
+                type(values) is not tuple
+                or len(values) != getattr(self, name)
+                or len(values) != len(set(values))
+                or any(not isinstance(value, str) or not value for value in values)
+            ):
+                raise ValueError(f"mechanism_records do not match {name}")
+        object.__setattr__(self, "mechanism_records", records)
 
 
 @dataclass(frozen=True)

@@ -260,6 +260,8 @@ class ProposalRecoveryResult:
     proposals: tuple[RecoveredTemporalProposal, ...]
     opportunity_count: int
     trigger_count: int
+    opportunity_records: tuple[str, ...] = ()
+    trigger_records: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if type(self.proposals) is not tuple or any(
@@ -274,6 +276,19 @@ class ProposalRecoveryResult:
             raise ValueError("opportunity_count cannot be below trigger_count")
         if tuple(item.proposal_id for item in self.proposals) != tuple(range(trigger)):
             raise ValueError("proposal IDs must be canonical and contiguous")
+        for name, records, count in (
+            ("opportunity_records", self.opportunity_records, opportunity),
+            ("trigger_records", self.trigger_records, trigger),
+        ):
+            if (
+                type(records) is not tuple
+                or len(records) != count
+                or any(not isinstance(item, str) or not item for item in records)
+                or len(records) != len(set(records))
+            ):
+                raise ValueError(f"{name} must uniquely identify every counted event")
+        if not set(self.trigger_records) <= set(self.opportunity_records):
+            raise ValueError("proposal trigger records must be opportunity records")
         object.__setattr__(self, "opportunity_count", opportunity)
         object.__setattr__(self, "trigger_count", trigger)
 
@@ -441,21 +456,24 @@ def recover_temporal_proposals(value: ProposalRecoveryInput, config: TemporalPro
         newer_same_owner = same_owner & (region_index > provenance_index)
         provenance_index[newer_same_owner] = region_index
 
-    candidates: list[tuple[tuple[int, int, int], int, tuple[int, ...]]] = []
-    opportunity_count = 0
+    candidates: list[tuple[tuple[int, int, int], int, tuple[int, ...], str]] = []
+    opportunity_records: list[str] = []
     for identity_id, indices in _component_index_stream(ownership):
         area = len(indices)
         if area < minimum_area:
             continue
-        opportunity_count += 1
+        record = f"proposal:{value.frame_id}:{identity_id}:{min(indices)}"
+        opportunity_records.append(record)
         key = (-area, identity_id, min(indices))
-        candidates.append((key, identity_id, indices))
+        candidates.append((key, identity_id, indices, record))
         candidates.sort(key=lambda item: item[0])
         if len(candidates) > capacity:
             candidates.pop()
 
     proposals: list[RecoveredTemporalProposal] = []
-    for proposal_id, (_, identity_id, indices) in enumerate(candidates):
+    trigger_records: list[str] = []
+    for proposal_id, (_, identity_id, indices, record) in enumerate(candidates):
+        trigger_records.append(record)
         mask = _full_mask_from_indices(value.depth_m.shape, indices)
         rows, columns = np.nonzero(mask)
         xyz = value.current_xyz[mask]
@@ -485,4 +503,10 @@ def recover_temporal_proposals(value: ProposalRecoveryInput, config: TemporalPro
             value.appearance_model_id if appearance_available else None,
             value.appearance_provenance_hash if appearance_available else None,
         ))
-    return ProposalRecoveryResult(tuple(proposals), opportunity_count, len(proposals))
+    return ProposalRecoveryResult(
+        tuple(proposals),
+        len(opportunity_records),
+        len(proposals),
+        tuple(sorted(opportunity_records)),
+        tuple(trigger_records),
+    )

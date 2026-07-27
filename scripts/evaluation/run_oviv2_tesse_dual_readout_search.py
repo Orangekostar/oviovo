@@ -191,7 +191,7 @@ _DISABLED_MECHANISMS_BY_DIAGNOSTIC = {
     "diag_a2_no_proposal_recovery": {"proposal_recovery"},
     "diag_a3_masking_only_no_ledger": {"background_release", "background_reclaim"},
     "diag_a4_no_dormant_candidates": {"eligible_reid"},
-    "diag_a4_translation_only_no_icp": {"icp", "motion_rejection"},
+    "diag_a4_translation_only_no_icp": {"icp"},
 }
 _INPUT_BINDING_FIELDS = (
     "dense_manifest",
@@ -735,15 +735,16 @@ def _validate_mechanism_record(value: object, label: str) -> None:
 
 
 def _validate_runtime_mechanism_records(
-    runtime: Mapping[str, Any], label: str
+    runtime: Mapping[str, Any], label: str, disabled: set[str] | None = None
 ) -> None:
-    if set(runtime) != {
+    required = {
         "schema_version",
         "execution_profile",
         "processed_frame_count",
         "counters",
         "mechanism_records",
-    }:
+    }
+    if set(runtime) not in (required, required | {"diagnostic"}):
         raise ValueError(f"{label} mechanism_records are required")
     counters = runtime["counters"]
     records = runtime["mechanism_records"]
@@ -768,7 +769,6 @@ def _validate_runtime_mechanism_records(
         ("epoch_reset_trigger_count", "epoch_reset_opportunity_count"),
         ("icp_accept_count", "icp_opportunity_count"),
         ("icp_reject_count", "icp_opportunity_count"),
-        ("motion_rejection_count", "icp_opportunity_count"),
         ("ledger_commit_count", "ledger_stage_count"),
         ("ledger_reclaim_count", "ledger_commit_count"),
     )
@@ -779,6 +779,13 @@ def _validate_runtime_mechanism_records(
     opportunities = set(records["icp_opportunity_count"])
     if accepts & rejects or accepts | rejects != opportunities:
         raise ValueError(f"{label} ICP mechanism_records are not a partition")
+    diagnostic = runtime.get("diagnostic")
+    icp_enabled = runtime.get("execution_profile") == "a4" and "icp" not in (disabled or set()) and not (
+        isinstance(diagnostic, Mapping)
+        and diagnostic.get("controls") == {"icp_enabled": False}
+    )
+    if icp_enabled and not set(records["motion_rejection_count"]) <= opportunities:
+        raise ValueError(f"{label} mechanism_records relation mismatch")
 
 
 def _diagnostic_recompute_payloads(
@@ -789,7 +796,7 @@ def _diagnostic_recompute_payloads(
     runtime = payloads["runtime_diagnostics"]
     if not isinstance(runtime, Mapping):
         raise ValueError(f"{label} runtime diagnostics are invalid")
-    _validate_runtime_mechanism_records(runtime, label)
+    _validate_runtime_mechanism_records(runtime, label, disabled)
     disabled_counters = {
         "proposal_recovery": {
             "proposal_opportunity_count",
@@ -803,7 +810,7 @@ def _diagnostic_recompute_payloads(
             "icp_accept_count",
             "icp_reject_count",
         },
-        "motion_rejection": {"icp_opportunity_count", "motion_rejection_count"},
+        "motion_rejection": {"motion_rejection_count"},
     }
     names = set().union(*(disabled_counters[name] for name in disabled))
     counters = runtime["counters"]
@@ -815,11 +822,15 @@ def _diagnostic_recompute_payloads(
     prepared_runtime = prepared["runtime_diagnostics"]
     prepared_counters = prepared_runtime["counters"]
     prepared_records = prepared_runtime["mechanism_records"]
+    if "icp" in disabled:
+        prepared_runtime["diagnostic"] = {
+            "controls": {"icp_enabled": False}
+        }
     synthetic = "diagnostic-disabled:0"
     for name in names:
         prepared_counters[name] = 1
         prepared_records[name] = [synthetic]
-    if "icp" in disabled or "motion_rejection" in disabled:
+    if "icp" in disabled:
         prepared_counters["icp_accept_count"] = 0
         prepared_records["icp_accept_count"] = []
         prepared_counters["icp_reject_count"] = 1

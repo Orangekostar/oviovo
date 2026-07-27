@@ -2281,6 +2281,7 @@ def _runtime_diagnostics_payload(
     *,
     config: Mapping[str, Any],
     processed_frame_count: int,
+    mechanism_records: Mapping[str, Sequence[str]] | None = None,
 ) -> dict[str, Any]:
     temporal_readout = config.get("temporal_readout")
     profile = (
@@ -2302,13 +2303,54 @@ def _runtime_diagnostics_payload(
     diagnostic_frames = getattr(diagnostics, "processed_frame_count", processed_frame_count)
     if diagnostic_frames != processed_frame_count:
         raise ValueError("runtime diagnostics frame count differs from the run")
+    supplied = (
+        {name: [] for name in V2_RUNTIME_DIAGNOSTIC_KEYS}
+        if mechanism_records is None
+        else mechanism_records
+    )
+    if not isinstance(supplied, Mapping) or set(supplied) != set(V2_RUNTIME_DIAGNOSTIC_KEYS):
+        raise ValueError("runtime mechanism records inventory is invalid")
+    serialized_records: dict[str, list[str]] = {}
+    for name in V2_RUNTIME_DIAGNOSTIC_KEYS:
+        values = supplied[name]
+        if (
+            not isinstance(values, (tuple, list))
+            or len(values) != counters[name]
+            or len(values) != len(set(values))
+            or any(not isinstance(value, str) or not value for value in values)
+        ):
+            raise ValueError(f"runtime mechanism records do not match counter: {name}")
+        serialized_records[name] = list(values)
+    subset_pairs = (
+        ("proposal_trigger_count", "proposal_opportunity_count"),
+        ("reid_trigger_count", "reid_opportunity_count"),
+        ("epoch_reset_trigger_count", "epoch_reset_opportunity_count"),
+        ("icp_accept_count", "icp_opportunity_count"),
+        ("icp_reject_count", "icp_opportunity_count"),
+        ("ledger_commit_count", "ledger_stage_count"),
+        ("ledger_reclaim_count", "ledger_commit_count"),
+    )
+    if any(
+        not set(serialized_records[child]) <= set(serialized_records[parent])
+        for child, parent in subset_pairs
+    ):
+        raise ValueError("runtime mechanism records relation mismatch")
+    icp_opportunities = set(serialized_records["icp_opportunity_count"])
+    icp_accepts = set(serialized_records["icp_accept_count"])
+    icp_rejects = set(serialized_records["icp_reject_count"])
+    if icp_accepts & icp_rejects or icp_accepts | icp_rejects != icp_opportunities:
+        raise ValueError("runtime mechanism records ICP partition mismatch")
+    controls = temporal_readout.get("diagnostic_controls")
+    icp_enabled = profile == "a4" and controls != {"icp_enabled": False}
+    if icp_enabled and not set(serialized_records["motion_rejection_count"]) <= icp_opportunities:
+        raise ValueError("runtime mechanism records relation mismatch")
     payload = {
         "schema_version": 1,
         "execution_profile": profile,
         "processed_frame_count": processed_frame_count,
         "counters": counters,
+        "mechanism_records": serialized_records,
     }
-    controls = temporal_readout.get("diagnostic_controls")
     if controls is not None:
         from src.oviv2.temporal_config import temporal_config_from_json
 
@@ -2346,6 +2388,31 @@ def _runtime_diagnostics_payload(
             "positive_claim_available": {disabled_claim: False},
         }
     return payload
+
+
+def _accumulate_runtime_mechanism_records(
+    accumulated: dict[str, list[str]], frame_result: Any
+) -> None:
+    diagnostics = getattr(frame_result, "diagnostics", None)
+    raw = getattr(diagnostics, "mechanism_records", None)
+    if raw is None:
+        return
+    try:
+        records = dict(raw)
+    except (TypeError, ValueError) as error:
+        raise ValueError("frame mechanism records are invalid") from error
+    if set(records) != set(V2_RUNTIME_DIAGNOSTIC_KEYS):
+        raise ValueError("frame mechanism records inventory is invalid")
+    for name in V2_RUNTIME_DIAGNOSTIC_KEYS:
+        values = records[name]
+        if (
+            type(values) is not tuple
+            or any(not isinstance(value, str) or not value for value in values)
+            or len(values) != len(set(values))
+            or set(values) & set(accumulated[name])
+        ):
+            raise ValueError(f"frame mechanism records are not unique: {name}")
+        accumulated[name].extend(values)
 
 
 def _office_attempt_root(destination: Path) -> Path:
@@ -2891,6 +2958,9 @@ def run(
         lifecycle_rows: list[dict[str, Any]] = []
         coverage_rows: list[dict[str, Any]] = []
         export_batches: list[TemporalExportBatch] = []
+        runtime_mechanism_records = {
+            name: [] for name in V2_RUNTIME_DIAGNOSTIC_KEYS
+        }
         for frame_index in range(frame_count):
             frame = dataset[frame_index]
             if int(frame.frame_id) != frame_index:
@@ -2901,6 +2971,9 @@ def run(
                 frame,
                 observations=observations,
                 dense_semantics=dense_semantics,
+            )
+            _accumulate_runtime_mechanism_records(
+                runtime_mechanism_records, frame_result
             )
             export = getattr(frame_result, "export", None)
             if type(export) is not TemporalExportBatch:
@@ -3427,6 +3500,7 @@ def run(
                 runtime,
                 config=config,
                 processed_frame_count=frame_count,
+                mechanism_records=runtime_mechanism_records,
             ),
         )
         runtime_diagnostics_record = _file_record(

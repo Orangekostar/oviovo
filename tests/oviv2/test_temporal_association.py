@@ -158,6 +158,9 @@ def test_a4_active_and_dormant_compete_in_one_global_assignment() -> None:
     result = associate_temporal_observations(
         (obs,), (active, dormant), config(), dormant_reid=reid_config()
     )
+    assert result.reid_opportunity_count == len(result.reid_opportunity_pairs)
+    assert result.reid_trigger_count == len(result.reid_trigger_pairs)
+    assert set(result.reid_trigger_pairs) <= set(result.reid_opportunity_pairs)
     assert result.assignments == ((1, 10),)
     assert (result.reid_opportunity_count, result.reid_trigger_count) == (1, 1)
     assert result.assignment_diagnostics == (

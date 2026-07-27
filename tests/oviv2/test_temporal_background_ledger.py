@@ -148,16 +148,18 @@ def test_present_or_occluded_cancels_only_matching_entity_epoch_provisional(
     )
 
 
-def test_cancel_does_not_roll_back_already_committed_background() -> None:
+def test_present_evidence_reclaims_committed_background() -> None:
     ledger = _ledger()
     ledger.stage(_evidence(frame_id=10, view_bin=0))
     ledger.stage(_evidence(frame_id=12, view_bin=1))
     before = ledger.committed_digest()
     assert ledger.stage(
         _evidence(frame_id=13, kind=TemporalEvidenceKind.PRESENT)
-    ) is LedgerDecision.NO_OP
-    assert ledger.committed_digest() == before
-    assert ledger.committed_generation == 1
+    ) is LedgerDecision.CANCELLED
+    assert ledger.committed_digest() != before
+    assert ledger.committed_generation == 2
+    assert ledger.committed_record_count == 0
+    assert ledger.committed_volume.active_block_count == 0
 
 
 def test_duplicate_is_idempotent_but_conflicting_duplicate_is_rejected() -> None:
@@ -406,8 +408,9 @@ def test_provisional_block_never_leaks_through_partially_committed_observation()
     assert ledger.stage(
         _evidence(frame_id=13, kind=TemporalEvidenceKind.PRESENT)
     ) is LedgerDecision.CANCELLED
-    assert ledger.committed_digest() == before
-    assert ledger.committed_volume.active_block_count == 1
+    assert ledger.committed_digest() != before
+    assert ledger.committed_volume.active_block_count == 0
+    assert ledger.provisional_keys == ()
 
 
 def test_multiblock_records_share_one_frozen_observation() -> None:

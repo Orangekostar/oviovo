@@ -159,13 +159,14 @@ def _mechanisms(
     payloads: Mapping[str, Any],
 ) -> dict[str, Any]:
     runtime = payloads["runtime_diagnostics"]
-    if set(runtime) != {
+    required_runtime_fields = {
         "schema_version",
         "execution_profile",
         "processed_frame_count",
         "counters",
         "mechanism_records",
-    }:
+    }
+    if set(runtime) not in (required_runtime_fields, required_runtime_fields | {"diagnostic"}):
         raise ValueError("runtime diagnostics mechanism_records are required")
     counters = runtime["counters"]
     explicit = runtime["mechanism_records"]
@@ -190,7 +191,6 @@ def _mechanisms(
         ("epoch_reset_trigger_count", "epoch_reset_opportunity_count"),
         ("icp_accept_count", "icp_opportunity_count"),
         ("icp_reject_count", "icp_opportunity_count"),
-        ("motion_rejection_count", "icp_opportunity_count"),
         ("ledger_commit_count", "ledger_stage_count"),
         ("ledger_reclaim_count", "ledger_commit_count"),
     )
@@ -200,14 +200,20 @@ def _mechanisms(
         explicit["icp_accept_count"]
     ) | set(explicit["icp_reject_count"]) != set(explicit["icp_opportunity_count"]):
         raise ValueError("runtime diagnostics ICP mechanism_records are not a partition")
-    legacy_runtime = {key: runtime[key] for key in (
-        "schema_version", "execution_profile", "processed_frame_count", "counters"
-    )}
+    diagnostic = runtime.get("diagnostic")
+    icp_enabled = runtime.get("execution_profile") == "a4" and not (
+        isinstance(diagnostic, Mapping)
+        and diagnostic.get("controls") == {"icp_enabled": False}
+    )
+    if icp_enabled and not set(explicit["motion_rejection_count"]) <= set(
+        explicit["icp_opportunity_count"]
+    ):
+        raise ValueError("runtime diagnostics mechanism_records relation mismatch")
     telemetry = mechanism_telemetry_from_sources(
         trajectories=payloads["trajectories"],
         lifecycle_transitions=payloads["lifecycle_transitions"],
         frame_coverage=payloads["frame_coverage"],
-        runtime_diagnostics=legacy_runtime,
+        runtime_diagnostics=runtime,
         source_records=source_records,
     )
     lifecycle = payloads["lifecycle_transitions"]
@@ -247,7 +253,11 @@ def _mechanisms(
             "runtime_diagnostics",
         ),
         "motion_rejection": (
-            explicit["icp_opportunity_count"],
+            explicit[
+                "icp_opportunity_count"
+                if runtime["execution_profile"] == "a4" and icp_enabled
+                else "motion_rejection_count"
+            ],
             explicit["motion_rejection_count"],
             "runtime_diagnostics",
         ),

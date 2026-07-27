@@ -66,6 +66,7 @@ from src.oviv2.temporal_lifecycle import (
     advance_lifecycle,
 )
 from src.oviv2.temporal_state import (
+    TEMPORAL_MECHANISM_RECORD_KEYS,
     TemporalDiagnostics,
     TemporalEntityState,
     TemporalExportTracker,
@@ -78,6 +79,26 @@ from src.oviv2.tracking import LocalTracker, LocalTrackerConfig
 
 
 _NEAREST_QUERY_CHUNK_SIZE = 1024
+
+
+def _ledger_group_records(
+    ledger: ReversibleBackgroundLedger | None,
+    *,
+    committed: bool,
+) -> set[str]:
+    if ledger is None:
+        return set()
+    records = ledger._committed if committed else ledger._provisional
+    first_frames: dict[tuple[int, int, tuple[int, int, int]], int] = {}
+    for entity_id, epoch_id, frame_id, block in records:
+        key = (entity_id, epoch_id, block)
+        first_frames[key] = min(frame_id, first_frames.get(key, frame_id))
+    return {
+        f"ledger:{entity_id}:{epoch_id}:{block[0]},{block[1]},{block[2]}:{first_frame}"
+        for (entity_id, epoch_id, block), first_frame in first_frames.items()
+    }
+
+
 _SPARSE_PIXEL_CHUNK_SIZE = 4096
 
 
@@ -1124,6 +1145,13 @@ class _SparseBackgroundLedger(ReversibleBackgroundLedger):
             for native_key, item in sorted(grouped.items(), key=lambda pair: pair[0])
         )
 
+    def _rebuild_committed_volume(
+        self, committed: dict[object, object]
+    ) -> TemporalBackgroundVolume:
+        return _rebuild_sparse_background_blocks(
+            self._volume.config, self._aggregate_observations(committed)
+        )
+
     def stage(self, evidence: BackgroundLedgerEvidence) -> LedgerDecision:
         if not isinstance(evidence, BackgroundLedgerEvidence):
             return super().stage(evidence)
@@ -1248,10 +1276,7 @@ class _SparseBackgroundLedger(ReversibleBackgroundLedger):
             for key in committing:
                 del provisional[key]
             try:
-                observations = self._aggregate_observations(committed)
-                rebuilt = _rebuild_sparse_background_blocks(
-                    self._volume.config, observations
-                )
+                rebuilt = self._rebuild_committed_volume(committed)
             except Exception:
                 return LedgerDecision.REJECTED_INTEGRATION
             self._publish_event(
@@ -1480,6 +1505,8 @@ class TemporalCurrentRuntime:
             or not self.config.background_ledger_enabled
             else current._mutable_ledger_snapshot()
         )
+        ledger_before_staged = _ledger_group_records(trial_ledger, committed=False)
+        ledger_before_committed = _ledger_group_records(trial_ledger, committed=True)
         lifecycle_by_id = {
             item.entity_id: item for item in current.lifecycle_beliefs
         }
@@ -1495,11 +1522,15 @@ class TemporalCurrentRuntime:
             if item.lifecycle.entity_id not in expired_ids
         )
         proposal_opportunities = proposal_triggers = 0
+        proposal_opportunity_records: tuple[str, ...] = ()
+        proposal_trigger_records: tuple[str, ...] = ()
         if proposal_evidence is not None and self.config.proposal_recovery_enabled:
             assert self.config.proposal is not None
             recovery = recover_temporal_proposals(proposal_evidence, self.config.proposal)
             proposal_opportunities = recovery.opportunity_count
             proposal_triggers = recovery.trigger_count
+            proposal_opportunity_records = recovery.opportunity_records
+            proposal_trigger_records = recovery.trigger_records
             recovered = tuple(
                 _proposal_observation(
                     item,
@@ -1566,8 +1597,9 @@ class TemporalCurrentRuntime:
         motion_by_entity: dict[int, tuple[float, float]] = {}
         evidence_by_entity: dict[int, TemporalEvidence] = {}
         released_pixels_by_entity: dict[int, np.ndarray] = {}
-        motion_decisions: list[MotionDecision] = []
+        motion_events: list[tuple[int, int, MotionDecision]] = []
         epoch_reset_triggers = 0
+        epoch_reset_trigger_records: list[str] = []
         old_lifecycle_by_entity = {
             item.entity_id: item
             for item in current.lifecycle_beliefs
@@ -1676,7 +1708,7 @@ class TemporalCurrentRuntime:
                 self.config.geometry,
                 previous_object_to_world=old.object_to_world,
             )
-            motion_decisions.append(motion.decision)
+            motion_events.append((observation_id, entity_id, motion.decision))
             epoch = geometry_transaction.current(entity_id)
             diagnostic = diagnostic_by_pair[(observation_id, entity_id)]
             if motion.decision is MotionDecision.REJECTED:
@@ -1702,6 +1734,9 @@ class TemporalCurrentRuntime:
                     self.config.geometry,
                 )
                 epoch_reset_triggers += 1
+                epoch_reset_trigger_records.append(
+                    f"motion:{frame.frame_id}:{observation_id}:{entity_id}"
+                )
                 geometry_transaction.append(epoch)
             else:
                 epoch = epoch.integrate(
@@ -2005,6 +2040,18 @@ class TemporalCurrentRuntime:
             background_blocks_touched = trial_background.last_blocks_touched
         if self.config.execution_profile is ExecutionProfile.A2:
             ledger_decisions = []
+        ledger_after_staged = _ledger_group_records(trial_ledger, committed=False)
+        ledger_after_committed = _ledger_group_records(trial_ledger, committed=True)
+        ledger_stage_records = tuple(sorted(
+            (ledger_after_staged | ledger_after_committed)
+            - (ledger_before_staged | ledger_before_committed)
+        ))
+        ledger_commit_records = tuple(sorted(
+            ledger_after_committed - ledger_before_committed
+        ))
+        ledger_reclaim_records = tuple(sorted(
+            ledger_before_committed - ledger_after_committed
+        ))
         for entity in ordered_entities:
             entity_id = entity.lifecycle.entity_id
             centroid = _centroid(entity)
@@ -2175,6 +2222,51 @@ class TemporalCurrentRuntime:
             frame.frame_id, timestamp_ns, tuple(samples), tuple(events)
         )
         export_tracker = TemporalExportTracker(tuple(export_entries), export)
+        motion_records = tuple(
+            f"motion:{frame.frame_id}:{observation_id}:{entity_id}"
+            for observation_id, entity_id, decision in motion_events
+            if decision is MotionDecision.REJECTED
+        )
+        icp_records = tuple(
+            f"motion:{frame.frame_id}:{observation_id}:{entity_id}"
+            for observation_id, entity_id, _decision in motion_events
+        ) if (
+            self.config.execution_profile is ExecutionProfile.A4
+            and self.config.icp_enabled
+        ) else ()
+        icp_accept_records = tuple(
+            f"motion:{frame.frame_id}:{observation_id}:{entity_id}"
+            for observation_id, entity_id, decision in motion_events
+            if decision is MotionDecision.ICP_ACCEPTED
+        ) if icp_records else ()
+        icp_reject_records = tuple(record for record in icp_records if record not in set(icp_accept_records))
+        reid_opportunity_records = tuple(
+            f"reid:{frame.frame_id}:{observation_id}:{entity_id}"
+            for observation_id, entity_id in association.reid_opportunity_pairs
+        )
+        reid_trigger_records = tuple(
+            f"reid:{frame.frame_id}:{observation_id}:{entity_id}"
+            for observation_id, entity_id in association.reid_trigger_pairs
+        )
+        epoch_reset_records = motion_records
+        mechanism_records = {
+            "proposal_opportunity_count": proposal_opportunity_records,
+            "proposal_trigger_count": proposal_trigger_records,
+            "reid_opportunity_count": reid_opportunity_records,
+            "reid_trigger_count": reid_trigger_records,
+            "identity_expiry_count": tuple(f"identity:{item}" for item in sorted(expired_ids)),
+            "geometry_reclaim_count": tuple(f"geometry:{item}" for item in sorted(reclaimed_ids)),
+            "motion_rejection_count": motion_records,
+            "ledger_rejection_count": (),
+            "epoch_reset_opportunity_count": epoch_reset_records,
+            "epoch_reset_trigger_count": tuple(epoch_reset_trigger_records),
+            "icp_opportunity_count": icp_records,
+            "icp_accept_count": icp_accept_records,
+            "icp_reject_count": icp_reject_records,
+            "ledger_stage_count": ledger_stage_records,
+            "ledger_commit_count": ledger_commit_records,
+            "ledger_reclaim_count": ledger_reclaim_records,
+        }
         frame_diagnostics = TemporalFrameDiagnostics(
             frame_id=frame.frame_id,
             proposal_opportunity_count=proposal_opportunities,
@@ -2182,36 +2274,30 @@ class TemporalCurrentRuntime:
             reid_opportunity_count=association.reid_opportunity_count,
             reid_trigger_count=association.reid_trigger_count,
             epoch_reset_opportunity_count=sum(
-                item is MotionDecision.REJECTED for item in motion_decisions
+                item is MotionDecision.REJECTED for _, _, item in motion_events
             ),
             epoch_reset_trigger_count=epoch_reset_triggers,
             icp_opportunity_count=(
-                len(motion_decisions)
+                len(motion_events)
                 if self.config.execution_profile is ExecutionProfile.A4
                 and self.config.icp_enabled else 0
             ),
             icp_accept_count=(
-                sum(item is MotionDecision.ICP_ACCEPTED for item in motion_decisions)
+                sum(item is MotionDecision.ICP_ACCEPTED for _, _, item in motion_events)
                 if self.config.execution_profile is ExecutionProfile.A4
                 and self.config.icp_enabled else 0
             ),
             icp_reject_count=(
-                sum(item is not MotionDecision.ICP_ACCEPTED for item in motion_decisions)
+                sum(item is not MotionDecision.ICP_ACCEPTED for _, _, item in motion_events)
                 if self.config.execution_profile is ExecutionProfile.A4
                 and self.config.icp_enabled else 0
             ),
             motion_rejection_count=sum(
-                item is MotionDecision.REJECTED for item in motion_decisions
+                item is MotionDecision.REJECTED for _, _, item in motion_events
             ),
-            ledger_stage_count=sum(
-                item is LedgerDecision.STAGED for item in ledger_decisions
-            ),
-            ledger_commit_count=sum(
-                item is LedgerDecision.COMMITTED for item in ledger_decisions
-            ),
-            ledger_reclaim_count=sum(
-                item is LedgerDecision.CANCELLED for item in ledger_decisions
-            ),
+            ledger_stage_count=len(ledger_stage_records),
+            ledger_commit_count=len(ledger_commit_records),
+            ledger_reclaim_count=len(ledger_reclaim_records),
             ledger_rejection_count=sum(
                 item in (
                     LedgerDecision.REJECTED_CAPACITY,
@@ -2221,6 +2307,10 @@ class TemporalCurrentRuntime:
             ),
             identity_expiry_count=len(expired_ids),
             geometry_reclaim_count=len(reclaimed_ids),
+            mechanism_records=tuple(
+                (name, mechanism_records[name])
+                for name in TEMPORAL_MECHANISM_RECORD_KEYS
+            ),
         )
         diagnostics = replace(
             current.diagnostics,

@@ -653,16 +653,39 @@ class ReversibleBackgroundLedger:
         provisional = dict(self._provisional)
         committed = dict(self._committed)
         if evidence.kind in (TemporalEvidenceKind.PRESENT, TemporalEvidenceKind.OCCLUDED):
-            matching = tuple(
+            matching_provisional = tuple(
                 key for key in provisional
                 if key[:2] == (evidence.entity_id, evidence.geometry_epoch)
             )
-            if not matching:
+            matching_committed = tuple(
+                key for key in committed
+                if key[:2] == (evidence.entity_id, evidence.geometry_epoch)
+            )
+            if not matching_provisional and not matching_committed:
                 self._publish_event(evidence, evidence_digest, provisional, committed)
                 return LedgerDecision.NO_OP
-            for key in matching:
+            for key in matching_provisional:
                 del provisional[key]
-            self._publish_event(evidence, evidence_digest, provisional, committed)
+            for key in matching_committed:
+                del committed[key]
+            rebuilt = None
+            generation = None
+            if matching_committed:
+                try:
+                    rebuilt = self._rebuild_committed_volume(committed)
+                except (TypeError, ValueError):
+                    raise
+                except Exception:
+                    return LedgerDecision.REJECTED_INTEGRATION
+                generation = self._generation + 1
+            self._publish_event(
+                evidence,
+                evidence_digest,
+                provisional,
+                committed,
+                volume=rebuilt,
+                generation=generation,
+            )
             return LedgerDecision.CANCELLED
 
         assert evidence.view_bin is not None
@@ -729,13 +752,7 @@ class ReversibleBackgroundLedger:
             for key in committing:
                 del provisional[key]
             try:
-                observations = self._aggregate_observations(committed)
-            except (TypeError, ValueError):
-                return LedgerDecision.REJECTED_INTEGRATION
-            try:
-                rebuilt = TemporalBackgroundVolume.rebuild_blocks(
-                    self._volume.config, observations
-                )
+                rebuilt = self._rebuild_committed_volume(committed)
             except Exception:
                 return LedgerDecision.REJECTED_INTEGRATION
             self._publish_event(
@@ -814,6 +831,13 @@ class ReversibleBackgroundLedger:
                 )
             )
         return tuple(observations)
+
+    def _rebuild_committed_volume(
+        self, committed: dict[ContributionKey, _Record]
+    ) -> TemporalBackgroundVolume:
+        return TemporalBackgroundVolume.rebuild_blocks(
+            self._volume.config, self._aggregate_observations(committed)
+        )
 
     def _publish_event(
         self,

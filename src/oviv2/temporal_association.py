@@ -199,6 +199,8 @@ class TemporalAssociationResult:
     reid_opportunity_count: int = 0
     reid_trigger_count: int = 0
     assignment_diagnostics: tuple[TemporalAssignmentDiagnostic, ...] = ()
+    reid_opportunity_pairs: tuple[tuple[int, int], ...] = ()
+    reid_trigger_pairs: tuple[tuple[int, int], ...] = ()
 
     def __post_init__(self) -> None:
         if type(self.assignments) is not tuple:
@@ -236,6 +238,24 @@ class TemporalAssociationResult:
         )
         if self.reid_trigger_count > self.reid_opportunity_count:
             raise ValueError("reid_trigger_count cannot exceed reid_opportunity_count")
+        for name, pairs, count in (
+            ("reid_opportunity_pairs", self.reid_opportunity_pairs, self.reid_opportunity_count),
+            ("reid_trigger_pairs", self.reid_trigger_pairs, self.reid_trigger_count),
+        ):
+            if (
+                type(pairs) is not tuple
+                or pairs != tuple(sorted(set(pairs)))
+                or len(pairs) != count
+                or any(
+                    type(item) is not tuple
+                    or len(item) != 2
+                    or any(type(value) is not int or not 0 <= value <= _INT64_MAX for value in item)
+                    for item in pairs
+                )
+            ):
+                raise ValueError(f"{name} must uniquely identify every counted pair")
+        if not set(self.reid_trigger_pairs) <= set(self.reid_opportunity_pairs):
+            raise ValueError("re-ID trigger pairs must be opportunity pairs")
         if type(self.assignment_diagnostics) is not tuple or any(
             not isinstance(item, TemporalAssignmentDiagnostic)
             for item in self.assignment_diagnostics
@@ -682,4 +702,8 @@ def associate_temporal_observations(
             for observation_id, entity_id in assignments
         ),
         assignment_diagnostics=tuple(diagnostics),
+        reid_opportunity_pairs=tuple(sorted(reid_opportunities)),
+        reid_trigger_pairs=tuple(
+            sorted(set(assignments) & reid_opportunities)
+        ),
     )

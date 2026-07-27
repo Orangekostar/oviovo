@@ -17,6 +17,7 @@ from scripts.evaluation.evaluate_oviv2_tesse_temporal_occlusion import (
     evaluate_temporal_occlusion_package,
 )
 from src.oviv2.temporal_snapshot import TemporalCompactCheckpoint, TemporalSnapshotMetadata
+from src.evaluation.oviv2_temporal_occlusion import mechanism_telemetry_from_sources
 
 
 def _json(path: Path, value: object) -> None:
@@ -28,6 +29,58 @@ def _record(path: Path, root: Path | None = None) -> dict[str, object]:
     data = path.read_bytes()
     return {"path": str(path if root is None else path.relative_to(root)),
             "sha256": hashlib.sha256(data).hexdigest(), "byte_count": len(data)}
+
+
+@pytest.mark.parametrize(
+    ("profile", "diagnostic"),
+    (
+        ("a2", None),
+        ("a3", None),
+        ("a4", {"controls": {"icp_enabled": False}}),
+    ),
+)
+def test_translation_profiles_report_motion_rejection_without_icp(
+    profile: str, diagnostic: dict[str, object] | None
+) -> None:
+    counters = {
+        name: 0
+        for name in (
+            "proposal_opportunity_count", "proposal_trigger_count",
+            "reid_opportunity_count", "reid_trigger_count",
+            "motion_rejection_count", "ledger_rejection_count",
+            "identity_expiry_count", "geometry_reclaim_count",
+            "epoch_reset_opportunity_count", "epoch_reset_trigger_count",
+            "icp_opportunity_count", "icp_accept_count", "icp_reject_count",
+            "ledger_stage_count", "ledger_commit_count", "ledger_reclaim_count",
+        )
+    }
+    counters["motion_rejection_count"] = 1
+    mechanism_records = {name: [] for name in counters}
+    mechanism_records["motion_rejection_count"] = ["motion:0:1:1"]
+    source = {"path": "source", "sha256": "a" * 64, "byte_count": 1}
+
+    telemetry = mechanism_telemetry_from_sources(
+        trajectories=[],
+        lifecycle_transitions=[],
+        frame_coverage=[{
+            "frame_index": 0, "timestamp_ns": 1,
+            "record_count": 0, "event_count": 0,
+        }],
+        runtime_diagnostics={
+            "schema_version": 1,
+            "execution_profile": profile,
+            "processed_frame_count": 1,
+            "counters": counters,
+            "mechanism_records": mechanism_records,
+            **({} if diagnostic is None else {"diagnostic": diagnostic}),
+        },
+        source_records={name: source for name in (
+            "trajectories", "lifecycle_transitions", "frame_coverage", "runtime_diagnostics"
+        )},
+    )
+
+    assert telemetry["motion_rejection"]["opportunities"] == 1
+    assert telemetry["motion_rejection"]["triggers"] == 1
 
 
 def _tree(path: Path, root: Path) -> dict[str, object]:
@@ -117,6 +170,24 @@ def _install_mechanism_sources(
         "ledger_commit_count": 2,
         "ledger_reclaim_count": 1,
     }
+    records = {
+        "proposal_opportunity_count": ["proposal:0", "proposal:1", "proposal:2"],
+        "proposal_trigger_count": ["proposal:0", "proposal:1"],
+        "reid_opportunity_count": ["reid:0", "reid:1", "reid:2", "reid:3"],
+        "reid_trigger_count": ["reid:0", "reid:1", "reid:2"],
+        "motion_rejection_count": ["motion:1"],
+        "ledger_rejection_count": [],
+        "identity_expiry_count": ["identity:1"],
+        "geometry_reclaim_count": ["geometry:1"],
+        "epoch_reset_opportunity_count": ["epoch:0", "epoch:1"],
+        "epoch_reset_trigger_count": ["epoch:0"],
+        "icp_opportunity_count": ["motion:0", "motion:1"],
+        "icp_accept_count": ["motion:0"],
+        "icp_reject_count": ["motion:1"],
+        "ledger_stage_count": ["ledger:0", "ledger:1"],
+        "ledger_commit_count": ["ledger:0", "ledger:1"],
+        "ledger_reclaim_count": ["ledger:0"],
+    }
     diagnostics = run / "runtime_diagnostics.json"
     _json(
         diagnostics,
@@ -125,6 +196,7 @@ def _install_mechanism_sources(
             "execution_profile": profile,
             "processed_frame_count": 2,
             "counters": counters,
+            "mechanism_records": records,
         },
     )
     source_index = run / "source_index.json"
@@ -335,6 +407,9 @@ def test_mechanism_zero_opportunity_is_unavailable_and_cannot_pass(
     diagnostics = json.loads(diagnostics_path.read_text())
     diagnostics["counters"] = {
         key: 0 for key in diagnostics["counters"]
+    }
+    diagnostics["mechanism_records"] = {
+        key: [] for key in diagnostics["mechanism_records"]
     }
     _json(diagnostics_path, diagnostics)
     source_index_path = run / "source_index.json"

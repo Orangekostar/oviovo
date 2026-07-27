@@ -121,6 +121,51 @@ def test_runtime_diagnostics_identifies_disabled_component_without_positive_clai
             "background_ledger": False,
         },
     }
+    assert payload["mechanism_records"] == {
+        name: [] for name in module.V2_RUNTIME_DIAGNOSTIC_KEYS
+    }
+
+
+def test_runtime_diagnostics_rejects_missing_source_records_for_positive_counters() -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    runtime = SimpleNamespace(
+        temporal=SimpleNamespace(
+            state=SimpleNamespace(
+                diagnostics=SimpleNamespace(
+                    processed_frame_count=1, motion_rejection_count=1
+                )
+            )
+        )
+    )
+    with pytest.raises(ValueError, match="mechanism records"):
+        module._runtime_diagnostics_payload(
+            runtime,
+            config={"temporal_readout": _temporal_readout()},
+            processed_frame_count=1,
+            mechanism_records={},
+        )
+
+
+def test_runtime_diagnostics_rejects_a4_motion_record_outside_icp() -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    diagnostics = SimpleNamespace(
+        processed_frame_count=1, motion_rejection_count=1
+    )
+    runtime = SimpleNamespace(
+        temporal=SimpleNamespace(state=SimpleNamespace(diagnostics=diagnostics))
+    )
+    records = {name: [] for name in module.V2_RUNTIME_DIAGNOSTIC_KEYS}
+    records["motion_rejection_count"] = ["motion:0:1:1"]
+
+    with pytest.raises(ValueError, match="relation"):
+        module._runtime_diagnostics_payload(
+            runtime,
+            config={"temporal_readout": _temporal_readout()},
+            processed_frame_count=1,
+            mechanism_records=records,
+        )
 
 
 def _read_jsonl(path: Path) -> list[dict[str, object]]:
@@ -1073,6 +1118,9 @@ def test_five_frame_dual_readout_is_causal_role_aware_and_deterministic(tmp_path
                 "ledger_stage_count": 0,
                 "ledger_commit_count": 0,
                 "ledger_reclaim_count": 0,
+            },
+            "mechanism_records": {
+                name: [] for name in module.V2_RUNTIME_DIAGNOSTIC_KEYS
             },
         }
         assert source_index["method"] == "OVIV2"

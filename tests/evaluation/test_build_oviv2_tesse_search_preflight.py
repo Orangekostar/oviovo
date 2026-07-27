@@ -422,6 +422,38 @@ def test_rejects_runtime_counter_without_explicit_event_records(tmp_path: Path) 
         )
 
 
+@pytest.mark.parametrize("candidate_id", ("a2", "a3"))
+def test_translation_motion_records_do_not_require_icp_records(
+    tmp_path: Path, candidate_id: str
+) -> None:
+    _candidate_sources(tmp_path, candidate_id)
+    root = tmp_path / candidate_id
+    source_index = json.loads((root / "source_index.json").read_text())
+    diagnostics = json.loads((root / "runtime_diagnostics.json").read_text())
+    for name in ("icp_opportunity_count", "icp_accept_count", "icp_reject_count"):
+        diagnostics["counters"][name] = 0
+        diagnostics["mechanism_records"][name] = []
+    diagnostics["counters"]["motion_rejection_count"] = 1
+    diagnostics["mechanism_records"]["motion_rejection_count"] = ["motion:1:2:7"]
+    payloads = {
+        "trajectories": [json.loads(line) for line in (root / "trajectories.jsonl").read_text().splitlines()],
+        "lifecycle_transitions": [json.loads(line) for line in (root / "lifecycle_transitions.jsonl").read_text().splitlines()],
+        "frame_coverage": [json.loads(line) for line in (root / "temporal_frame_coverage.jsonl").read_text().splitlines()],
+        "runtime_diagnostics": diagnostics,
+    }
+
+    mechanisms = _mechanisms(
+        candidate_id=candidate_id,
+        source_records={name: source_index[name] for name in (
+            "trajectories", "lifecycle_transitions", "frame_coverage", "runtime_diagnostics"
+        )},
+        payloads=payloads,
+    )
+
+    assert mechanisms["motion_rejection"]["opportunity_count"] == 1
+    assert mechanisms["motion_rejection"]["trigger_count"] == 1
+
+
 def test_rejects_drifted_runtime_diagnostics_and_no_clobber(tmp_path: Path) -> None:
     sources = _candidate_sources(tmp_path)
     (tmp_path / "a1/runtime_diagnostics.json").write_bytes(b"{}\n")

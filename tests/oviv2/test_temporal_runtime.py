@@ -468,6 +468,10 @@ def test_translation_rejection_with_high_identity_confidence_starts_new_epoch(
     assert result.diagnostics.epoch_reset_trigger_count == 1
     assert result.diagnostics.motion_rejection_count == 1
     assert result.diagnostics.icp_opportunity_count == 0
+    records = dict(result.diagnostics.mechanism_records)
+    assert len(records["motion_rejection_count"]) == 1
+    assert records["icp_opportunity_count"] == ()
+    assert records["motion_rejection_count"][0].startswith("motion:2:")
 
 
 @pytest.mark.parametrize("profile", (ExecutionProfile.A2, ExecutionProfile.A3))
@@ -724,10 +728,40 @@ def test_frame_diagnostics_partition_icp_and_track_ledger_lifecycle(
     assert result.diagnostics.icp_opportunity_count == 1
     assert result.diagnostics.icp_accept_count == 1
     assert result.diagnostics.icp_reject_count == 0
-    assert result.diagnostics.ledger_reclaim_count == 1
+    # Returning present evidence cancels a provisional group; it is not a
+    # reclaim of committed background and therefore cannot support that claim.
+    assert result.diagnostics.ledger_reclaim_count == 0
     assert runtime.state.diagnostics.last_frame == result.diagnostics
     assert runtime.state.diagnostics.ledger_stage_count == 1
-    assert runtime.state.diagnostics.ledger_reclaim_count == 1
+    assert runtime.state.diagnostics.ledger_reclaim_count == 0
+
+
+def test_ledger_restage_uses_a_new_lineage_record() -> None:
+    runtime = _runtime()
+    _confirm(runtime)
+    first = runtime.process_frame(_frame(2, depth=2.0), ())
+    runtime.process_frame(_frame(3), (_observation(_frame(3)),))
+    second = runtime.process_frame(_frame(4, depth=2.0), ())
+
+    first_record = dict(first.diagnostics.mechanism_records)["ledger_stage_count"]
+    second_record = dict(second.diagnostics.mechanism_records)["ledger_stage_count"]
+    assert first_record and second_record and first_record != second_record
+
+
+def test_committed_ledger_group_is_reclaimed_when_object_returns() -> None:
+    runtime = _runtime()
+    _confirm(runtime)
+    runtime.process_frame(_frame(2, depth=2.0), ())
+    committed = runtime.process_frame(_frame(3, depth=2.0, camera_x=0.05), ())
+    commit_records = dict(committed.diagnostics.mechanism_records)["ledger_commit_count"]
+    assert commit_records
+
+    returned = _frame(4)
+    reclaimed = runtime.process_frame(returned, (_observation(returned),))
+
+    reclaim_records = dict(reclaimed.diagnostics.mechanism_records)["ledger_reclaim_count"]
+    assert reclaim_records == commit_records
+    assert reclaimed.diagnostics.ledger_reclaim_count == len(commit_records)
 
 
 @pytest.mark.parametrize("profile", (ExecutionProfile.A2, ExecutionProfile.A3))
@@ -2567,7 +2601,7 @@ def test_runtime_state_slots_copy_repr_and_pickle_contract() -> None:
         "scene_id", "revision", "last_frame_id", "last_timestamp",
         "next_entity_id", "entities", "background", "tracker",
         "identities", "geometry", "lifecycle_beliefs", "background_ledger",
-        "export_tracker", "diagnostics",
+        "background_mode", "export_tracker", "diagnostics",
     )
 
 
