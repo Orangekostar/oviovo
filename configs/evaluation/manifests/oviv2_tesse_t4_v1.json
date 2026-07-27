@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "manifest_id": "oviv2_tesse_t4_collection_protocol_v1",
+  "dataset": "TESSE-CD",
+  "method_id": "OVIV2",
+  "protocol_id": "oviv2-tessecd-v2",
+  "scene": "apartment",
+  "office_data_permitted": false,
+  "sample_interval_ms": 200,
+  "time_collector": "/usr/bin/time -v",
+  "gpu_collector": {
+    "command": "nvidia-smi",
+    "identity_fields": ["gpu_uuid", "pid", "proc_starttime_ticks", "process_group_id"],
+    "aggregation": "sum_pid_memory_per_sample_then_peak_across_mapping_and_queries",
+    "source_unit": "MiB",
+    "output_unit": "GB (decimal)",
+    "conversion_divisor": 1000.0
+  },
+  "query": {
+    "vocabulary_path": "configs/evaluation/vocabularies/tesse_cd_apartment.json",
+    "vocabulary_sha256": "dea3a2e0508c887c6c701ee5250374e2a06c63eefbf2e185110462b81f4ccbcf",
+    "text_model_id": "ViT-H-14",
+    "checkpoint_sha256": "9a78ef8e8c73fd0df621682e7a8e8eb36c6916cb3c16b291a082ecd52ab79cc4",
+    "operation_order": [
+      "full_tokenization",
+      "text_encoding",
+      "l2_normalization",
+      "current_map_entity_ranking"
+    ],
+    "warmup_count": 10,
+    "measured_repeats": 5,
+    "cuda_synchronize_each_query": true,
+    "precomputed_query_embeddings": false
+  },
+  "final_map_inventory": {
+    "scope": "final_current_map_after_all_processed_frames",
+    "roles": ["snapshot", "entities", "background"],
+    "include": "only_unique_regular_source_files_for_the_three_roles",
+    "exclude": ["cumulative", "checkpoints", "diagnostics", "logs", "metrics", "office"]
+  },
+  "units": {
+    "total_runtime_s_per_frame": "seconds/frame",
+    "query_mean_ms": "milliseconds",
+    "query_p95_ms": "milliseconds",
+    "peak_gpu_gb": "GB (decimal)",
+    "peak_ram_gb": "GB (decimal)",
+    "final_map_mb": "MB (decimal)"
+  },
+  "bounds": {
+    "total_runtime_s_per_frame": 6.42,
+    "query_mean_ms": 11.92,
+    "query_p95_ms": 12.12,
+    "peak_gpu_gb": 12.76,
+    "peak_ram_gb": 9.36,
+    "final_map_mb": 46.77
+  },
+  "mapping_argv": [
+    "python",
+    "scripts/evaluation/run_oviv2_tesse_cd_v2.py",
+    "--config",
+    "{config}",
+    "--output",
+    "{run}"
+  ],
+  "query_argv": [
+    "python",
+    "scripts/evaluation/measure_baseline_queries.py",
+    "--baseline",
+    "oviv2",
+    "--snapshot",
+    "{snapshot}",
+    "--entities",
+    "{entities}",
+    "--queries",
+    "{queries}",
+    "--clip-weight",
+    "{checkpoint}",
+    "--device",
+    "cuda:{gpu}",
+    "--warmup",
+    "10",
+    "--repeats",
+    "5",
+    "--protocol",
+    "{protocol}",
+    "--output",
+    "{query_output}"
+  ]
+}
