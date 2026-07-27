@@ -17,6 +17,7 @@ import os
 from pathlib import Path
 import secrets
 import stat
+import struct
 import subprocess
 import sys
 from typing import Any, Sequence
@@ -60,6 +61,17 @@ _AUDIT_WITNESSES: contextvars.ContextVar[list[_FileWitness] | None] = contextvar
 )
 _RAW_CLOSE = os.close
 _RAW_FSTAT = os.fstat
+_IN_CREATE = 0x00000100
+_IN_DELETE = 0x00000200
+_IN_MOVED_FROM = 0x00000040
+_IN_MOVED_TO = 0x00000080
+_IN_DELETE_SELF = 0x00000400
+_IN_MOVE_SELF = 0x00000800
+_IN_Q_OVERFLOW = 0x00004000
+_IN_ISDIR = 0x40000000
+_IN_NONBLOCK = 0x00000800
+_IN_CLOEXEC = 0x00080000
+_INOTIFY_EVENT_HEADER = struct.Struct("iIII")
 
 
 def _canonical(value: object) -> bytes:
@@ -385,32 +397,20 @@ def _fd_object_identity(descriptor: int) -> tuple[int, int, int]:
     return status.st_dev, status.st_ino, status.st_mode
 
 
-def _close_owned_fd(
-    descriptor: int, identity: tuple[int, int, int],
-) -> BaseException | None:
+def _close_owned_fd(descriptor: int) -> BaseException | None:
     try:
-        os.close(descriptor)
+        _RAW_CLOSE(descriptor)
         return None
     except BaseException as exc:
-        try:
-            current = _fd_object_identity(descriptor)
-        except OSError:
-            return exc
-        if current == identity:
-            try:
-                _RAW_CLOSE(descriptor)
-            except OSError:
-                pass
         return exc
 
 
 def _open_directory_at(root_fd: int, relative: Path, *, create: bool) -> int:
     current = os.dup(root_fd)
-    current_identity = _fd_object_identity(current)
+    _fd_object_identity(current)
     try:
         for part in relative.parts:
             next_fd = -1
-            next_identity: tuple[int, int, int] | None = None
             if create:
                 try:
                     os.mkdir(part, 0o755, dir_fd=current)
@@ -422,23 +422,20 @@ def _open_directory_at(root_fd: int, relative: Path, *, create: bool) -> int:
                     os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
                     dir_fd=current,
                 )
-                next_identity = _fd_object_identity(next_fd)
+                _fd_object_identity(next_fd)
                 opened = os.fstat(next_fd)
                 if not stat.S_ISDIR(opened.st_mode):
                     raise ValueError("staged output parent must be a directory")
             except BaseException:
-                if next_fd >= 0 and next_identity is not None:
+                if next_fd >= 0:
                     descriptor = next_fd
                     next_fd = -1
-                    _close_owned_fd(descriptor, next_identity)
+                    _close_owned_fd(descriptor)
                 raise
             previous = current
-            previous_identity = current_identity
             current = next_fd
-            assert next_identity is not None
-            current_identity = next_identity
             next_fd = -1
-            close_error = _close_owned_fd(previous, previous_identity)
+            close_error = _close_owned_fd(previous)
             if close_error is not None:
                 raise close_error
         result = current
@@ -448,7 +445,7 @@ def _open_directory_at(root_fd: int, relative: Path, *, create: bool) -> int:
         if current >= 0:
             descriptor = current
             current = -1
-            _close_owned_fd(descriptor, current_identity)
+            _close_owned_fd(descriptor)
         raise
 
 
@@ -599,7 +596,20 @@ def _staging_creation_preserved(
         (created.st_dev, created.st_ino) if created is not None else None
     )
     named_identity = (named.st_dev, named.st_ino) if named is not None else None
-    if created is not None:
+    if created is None:
+        try:
+            parent_status = os.fstat(parent_fd)
+            parent_identity: tuple[int | None, int | None] = (
+                parent_status.st_dev, parent_status.st_ino,
+            )
+        except OSError:
+            parent_identity = (None, None)
+        result.append(PreservedArtifact(
+            stage_name, str(parent / stage_name),
+            parent_identity[0], parent_identity[1],
+            None, None, None, "unbound",
+        ))
+    else:
         matches: list[str] = []
         try:
             names = os.listdir(parent_fd)
@@ -632,38 +642,115 @@ def _staging_creation_preserved(
                 parent_fd, parent, stage_name, named, "unknown"
             )
         )
-    if not result and named is not None:
-        result.append(
-            _artifact_from_status(
-                parent_fd, parent, stage_name, named, "unknown"
-            )
-        )
     return tuple(result)
+
+
+def _begin_parent_watch(parent_fd: int) -> int:
+    libc = ctypes.CDLL(None, use_errno=True)
+    init = libc.inotify_init1
+    init.argtypes = (ctypes.c_int,)
+    init.restype = ctypes.c_int
+    descriptor = init(os.O_NONBLOCK | os.O_CLOEXEC)
+    if descriptor < 0:
+        error = ctypes.get_errno()
+        raise OSError(error, os.strerror(error))
+    try:
+        add = libc.inotify_add_watch
+        add.argtypes = (ctypes.c_int, ctypes.c_char_p, ctypes.c_uint32)
+        add.restype = ctypes.c_int
+        mask = (
+            _IN_CREATE | _IN_DELETE | _IN_MOVED_FROM | _IN_MOVED_TO
+            | _IN_DELETE_SELF | _IN_MOVE_SELF
+        )
+        watched = add(
+            descriptor, os.fsencode(f"/proc/self/fd/{parent_fd}"), mask
+        )
+        if watched < 0:
+            error = ctypes.get_errno()
+            raise OSError(error, os.strerror(error))
+        parent = _RAW_FSTAT(parent_fd)
+        proc_parent = os.stat(
+            f"/proc/self/fd/{parent_fd}", follow_symlinks=True
+        )
+        if (parent.st_dev, parent.st_ino) != (proc_parent.st_dev, proc_parent.st_ino):
+            raise ValueError("inotify parent identity mismatch")
+        try:
+            os.read(descriptor, 4096)
+        except BlockingIOError:
+            pass
+        return descriptor
+    except BaseException:
+        _close_owned_fd(descriptor)
+        raise
+
+
+def _read_parent_watch(descriptor: int) -> list[tuple[int, str]]:
+    events: list[tuple[int, str]] = []
+    total = 0
+    while True:
+        try:
+            data = os.read(descriptor, 64 * 1024)
+        except BlockingIOError:
+            break
+        if not data:
+            break
+        total += len(data)
+        if total > 1024 * 1024:
+            raise ValueError("staging parent event stream exceeds limit")
+        offset = 0
+        while offset < len(data):
+            if len(data) - offset < _INOTIFY_EVENT_HEADER.size:
+                raise ValueError("truncated staging parent event")
+            _, mask, _, name_length = _INOTIFY_EVENT_HEADER.unpack_from(
+                data, offset
+            )
+            offset += _INOTIFY_EVENT_HEADER.size
+            end = offset + name_length
+            if end > len(data):
+                raise ValueError("truncated staging parent event name")
+            raw_name = data[offset:end].split(b"\0", 1)[0]
+            events.append((mask, os.fsdecode(raw_name)))
+            offset = end
+    return events
+
+
+def _validate_staging_creation_events(descriptor: int, name: str) -> None:
+    events = _read_parent_watch(descriptor)
+    if any(mask & (_IN_Q_OVERFLOW | _IN_DELETE_SELF | _IN_MOVE_SELF) for mask, _ in events):
+        raise ValueError("staging parent event stream is unreliable")
+    target = [mask for mask, event_name in events if event_name == name]
+    disallowed = _IN_DELETE | _IN_MOVED_FROM | _IN_MOVED_TO
+    if (
+        len(target) != 1
+        or target[0] & disallowed
+        or target[0] & (_IN_CREATE | _IN_ISDIR) != (_IN_CREATE | _IN_ISDIR)
+    ):
+        raise ValueError("staging directory creation event sequence is invalid")
 
 
 def _create_staging_directory_at(
     parent_fd: int, name: str,
 ) -> tuple[int, os.stat_result]:
     created: os.stat_result | None = None
+    observed: os.stat_result | None = None
     descriptor = -1
     descriptor_identity: tuple[int, int, int] | None = None
+    watch_fd = _begin_parent_watch(parent_fd)
+    watch_checked = False
     try:
         os.mkdir(name, 0o700, dir_fd=parent_fd)
     except FileExistsError as exc:
+        _close_owned_fd(watch_fd)
         raise _StagingAlreadyExists(*exc.args) from exc
     except BaseException as exc:
         try:
             named = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
         except OSError:
             named = None
+        _close_owned_fd(watch_fd)
         raise _StagingCreationError(None, named) from exc
     try:
-        created = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
-        if (
-            not stat.S_ISDIR(created.st_mode)
-            or stat.S_IMODE(created.st_mode) != 0o700
-        ):
-            raise ValueError("created staging directory mode is invalid")
+        observed = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
         descriptor = os.open(
             name,
             os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
@@ -673,13 +760,34 @@ def _create_staging_directory_at(
         opened = os.fstat(descriptor)
         if (
             (opened.st_dev, opened.st_ino, opened.st_mode)
-            != (created.st_dev, created.st_ino, created.st_mode)
+            != (observed.st_dev, observed.st_ino, observed.st_mode)
         ):
+            created = observed
             raise ValueError("created staging directory identity changed")
+        _validate_staging_creation_events(watch_fd, name)
+        watch_checked = True
+        created = observed
+        if (
+            not stat.S_ISDIR(created.st_mode)
+            or stat.S_IMODE(created.st_mode) != 0o700
+        ):
+            raise ValueError("created staging directory mode is invalid")
+        watch_close_error = _close_owned_fd(watch_fd)
+        watch_fd = -1
+        if watch_close_error is not None:
+            raise watch_close_error
         result = descriptor
         descriptor = -1
         return result, created
     except BaseException as exc:
+        if observed is not None and created is None and not watch_checked:
+            try:
+                _validate_staging_creation_events(watch_fd, name)
+            except (OSError, ValueError):
+                pass
+            else:
+                created = observed
+                watch_checked = True
         if descriptor >= 0:
             closing = descriptor
             descriptor = -1
@@ -689,12 +797,15 @@ def _create_staging_directory_at(
                 except OSError:
                     descriptor_identity = None
             if descriptor_identity is not None:
-                _close_owned_fd(closing, descriptor_identity)
+                _close_owned_fd(closing)
         try:
             named = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
         except OSError:
             named = None
         raise _StagingCreationError(created, named) from exc
+    finally:
+        if watch_fd >= 0:
+            _close_owned_fd(watch_fd)
 
 
 def _rename_noreplace(parent_fd: int, source: str, destination: str) -> None:
