@@ -89,15 +89,19 @@ PROFILE_CONFIG_BINDING_FIELDS = {
 }
 ```
 
-with `mode == "apartment_development_unfrozen"`. Derive common fingerprints
-from the verified config fields:
+with `mode == "apartment_development_unfrozen"`. Read the bytes at the
+config-declared input-manifest, schedule, and target paths. Require the input
+record to equal `run_manifest.source_bindings.input_manifest`, the schedule
+record to equal `run_manifest.schedule`, the target record to equal
+`run_manifest.target_manifest`, and the target SHA to equal the config's
+existing `occlusion_target_manifest_sha256`. Then derive:
 
 ```python
 {
     "source_manifest_sha256": source_record["sha256"],
-    "input_manifest_sha256": config["input_manifest_sha256"],
-    "schedule_sha256": config["schedule_manifest_sha256"],
-    "ground_truth_sha256": config["occlusion_target_manifest_sha256"],
+    "input_manifest_sha256": input_record["sha256"],
+    "schedule_sha256": schedule_record["sha256"],
+    "ground_truth_sha256": target_record["sha256"],
     "source_bindings_sha256": canonical_sha256(run_manifest["source_bindings"]),
 }
 ```

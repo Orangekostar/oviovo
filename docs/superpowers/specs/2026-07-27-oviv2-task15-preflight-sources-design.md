@@ -55,11 +55,14 @@ Every execution receipt records an exact execution-context binding:
 }
 ```
 
-Common input fingerprints are derived from the verified config hashes and the
-published run manifest's source bindings. The verifier rejects Office configs,
-freeze flags, noncanonical argv, changed config/source files, PID reuse,
-aliased roots, or any disagreement in common inputs. Final freeze validation
-continues consuming and independently revalidating this exact T1 transaction.
+Common input fingerprints are derived from the bytes at the config-declared
+input-manifest, schedule, and target paths. The verifier cross-checks those
+records against `run_manifest.source_bindings.input_manifest`, the run
+manifest schedule/target records, and the config's existing target SHA before
+accepting them. It rejects Office configs, freeze flags, noncanonical argv,
+changed config/source files, PID reuse, aliased roots, or any disagreement in
+common inputs. Final freeze validation continues consuming and independently
+revalidating this exact T1 transaction.
 
 ## Preflight Source Bundle
 
