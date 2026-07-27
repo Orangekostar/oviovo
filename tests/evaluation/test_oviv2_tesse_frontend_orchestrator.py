@@ -656,6 +656,11 @@ def test_preflight_hashes_each_unique_upstream_file_once_per_process(
         "_gpu_inventory",
         lambda: {0: "NVIDIA A40", 1: "NVIDIA A40", 2: "NVIDIA A40"},
     )
+    monkeypatch.setattr(
+        frontend_module.shutil,
+        "disk_usage",
+        lambda _path: SimpleNamespace(free=config["required_free_bytes"]),
+    )
     provenance_paths = {
         Path(config["frontend"][path_key])
         for path_key in (
@@ -970,6 +975,11 @@ def test_preflight_only_validates_selected_gpus_without_creating_outputs(
         frontend_module,
         "_gpu_inventory",
         lambda: {0: "NVIDIA A40", 1: "NVIDIA A40", 2: "NVIDIA A40"},
+    )
+    monkeypatch.setattr(
+        frontend_module.shutil,
+        "disk_usage",
+        lambda _path: SimpleNamespace(free=config["required_free_bytes"]),
     )
 
     assert main(
