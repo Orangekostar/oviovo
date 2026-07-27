@@ -391,6 +391,48 @@ def test_verifier_cleanup_preserves_replacement_and_removes_owned_renamed_source
     assert not output.exists()
 
 
+def test_verifier_owned_tree_cleanup_does_not_remove_racing_replacement(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import os
+    import scripts.evaluation.verify_oviv2_tesse_t4_gate as verifier
+
+    owned = tmp_path / "owned"
+    moved = tmp_path / "owned-moved"
+    external = tmp_path / "external"
+    external.mkdir()
+    (external / "marker").write_text("external", encoding="utf-8")
+    owned.mkdir()
+    (owned / "payload").write_text("owned", encoding="utf-8")
+    (owned / "external-link").symlink_to(external, target_is_directory=True)
+    parent_fd = os.open(tmp_path, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    status = os.stat(owned)
+    original_stat = verifier.os.stat
+    raced = False
+
+    def replace_after_stat(path, *args, **kwargs):
+        nonlocal raced
+        result = original_stat(path, *args, **kwargs)
+        if path == owned.name and kwargs.get("dir_fd") == parent_fd and not raced:
+            raced = True
+            owned.rename(moved)
+            owned.mkdir()
+            (owned / "replacement").write_text("replacement", encoding="utf-8")
+        return result
+
+    try:
+        with monkeypatch.context() as patch:
+            patch.setattr(verifier.os, "stat", replace_after_stat)
+            verifier._remove_owned(
+                parent_fd, owned.name, (status.st_dev, status.st_ino), tree=True
+            )
+    finally:
+        os.close(parent_fd)
+    assert (owned / "replacement").read_text(encoding="utf-8") == "replacement"
+    assert not moved.exists()
+    assert (external / "marker").read_text(encoding="utf-8") == "external"
+
+
 def test_verifier_parent_swap_fails_without_publishing_to_replacement(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

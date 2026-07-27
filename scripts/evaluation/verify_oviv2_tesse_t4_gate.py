@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import argparse
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterator, Mapping, Sequence
 import contextvars
 import ctypes
 import errno
@@ -245,29 +245,135 @@ def _rename_directory_new(
         os.close(directory)
 
 
-def _remove_owned(parent_fd: int, name: str, witness: tuple[int, int], *, tree: bool) -> None:
-    owned_name: str | None = None
-    try:
-        status = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
-    except FileNotFoundError:
-        status = None
-    if status is not None and (status.st_dev, status.st_ino) == witness:
-        owned_name = name
-    else:
-        for candidate in os.listdir(parent_fd):
+def _entry_names(parent_fd: int, preferred: str) -> Iterator[str]:
+    yield preferred
+    yield from (item for item in os.listdir(parent_fd) if item != preferred)
+
+
+def _open_owned_directory(
+    parent_fd: int, preferred: str, witness: tuple[int, int]
+) -> tuple[str, int] | None:
+    for candidate in _entry_names(parent_fd, preferred):
+        try:
+            status = os.stat(candidate, dir_fd=parent_fd, follow_symlinks=False)
+        except FileNotFoundError:
+            continue
+        if not stat.S_ISDIR(status.st_mode) or (status.st_dev, status.st_ino) != witness:
+            continue
+        try:
+            descriptor = os.open(
+                candidate,
+                os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
+                dir_fd=parent_fd,
+            )
+        except OSError as exc:
+            if exc.errno in {errno.ENOENT, errno.ENOTDIR, errno.ELOOP}:
+                continue
+            raise
+        try:
+            opened = os.fstat(descriptor)
+            if stat.S_ISDIR(opened.st_mode) and (opened.st_dev, opened.st_ino) == witness:
+                return candidate, descriptor
+        except BaseException:
+            os.close(descriptor)
+            raise
+        os.close(descriptor)
+    return None
+
+
+def _remove_directory_contents_fd(descriptor: int) -> None:
+    for name in os.listdir(descriptor):
+        try:
+            before = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+        except FileNotFoundError:
+            continue
+        identity = (before.st_dev, before.st_ino)
+        if stat.S_ISDIR(before.st_mode):
+            opened = _open_owned_directory(descriptor, name, identity)
+            if opened is None:
+                raise T4GateError("cleanup unsafe: owned directory entry changed")
+            _, child = opened
             try:
-                candidate_status = os.stat(candidate, dir_fd=parent_fd, follow_symlinks=False)
+                _remove_directory_contents_fd(child)
+            finally:
+                os.close(child)
+            current = _open_owned_directory(descriptor, name, identity)
+            if current is None:
+                continue
+            current_name, current_fd = current
+            os.close(current_fd)
+            final = os.stat(current_name, dir_fd=descriptor, follow_symlinks=False)
+            if (final.st_dev, final.st_ino) != identity:
+                raise T4GateError("cleanup unsafe: owned directory entry replaced")
+            os.rmdir(current_name, dir_fd=descriptor)
+            continue
+        if stat.S_ISLNK(before.st_mode):
+            final = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+            if (final.st_dev, final.st_ino) != identity:
+                raise T4GateError("cleanup unsafe: owned symlink entry replaced")
+            os.unlink(name, dir_fd=descriptor)
+            continue
+        try:
+            child = os.open(
+                name, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW, dir_fd=descriptor
+            )
+        except FileNotFoundError:
+            continue
+        try:
+            opened = os.fstat(child)
+            if (opened.st_dev, opened.st_ino) != identity:
+                raise T4GateError("cleanup unsafe: owned file entry changed")
+        finally:
+            os.close(child)
+        final = os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+        if (final.st_dev, final.st_ino) != identity:
+            raise T4GateError("cleanup unsafe: owned file entry replaced")
+        os.unlink(name, dir_fd=descriptor)
+    os.fsync(descriptor)
+
+
+def _remove_owned(parent_fd: int, name: str, witness: tuple[int, int], *, tree: bool) -> None:
+    if tree:
+        opened = _open_owned_directory(parent_fd, name, witness)
+        if opened is None:
+            return
+        _, descriptor = opened
+        try:
+            _remove_directory_contents_fd(descriptor)
+        finally:
+            os.close(descriptor)
+        current = _open_owned_directory(parent_fd, name, witness)
+        if current is None:
+            return
+        owned_name, descriptor = current
+        os.close(descriptor)
+        final = os.stat(owned_name, dir_fd=parent_fd, follow_symlinks=False)
+        if (final.st_dev, final.st_ino) != witness:
+            raise T4GateError("cleanup unsafe: owned directory replaced")
+        os.rmdir(owned_name, dir_fd=parent_fd)
+    else:
+        for owned_name in _entry_names(parent_fd, name):
+            try:
+                before = os.stat(owned_name, dir_fd=parent_fd, follow_symlinks=False)
             except FileNotFoundError:
                 continue
-            if (candidate_status.st_dev, candidate_status.st_ino) == witness:
-                owned_name = candidate
-                break
-    if owned_name is None:
-        return
-    if tree:
-        shutil.rmtree(Path(f"/proc/self/fd/{parent_fd}") / owned_name)
-    else:
-        os.unlink(owned_name, dir_fd=parent_fd)
+            if (before.st_dev, before.st_ino) != witness:
+                continue
+            descriptor = os.open(
+                owned_name, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW,
+                dir_fd=parent_fd,
+            )
+            try:
+                opened = os.fstat(descriptor)
+                if (opened.st_dev, opened.st_ino) != witness:
+                    continue
+            finally:
+                os.close(descriptor)
+            final = os.stat(owned_name, dir_fd=parent_fd, follow_symlinks=False)
+            if (final.st_dev, final.st_ino) != witness:
+                raise T4GateError("cleanup unsafe: owned file replaced")
+            os.unlink(owned_name, dir_fd=parent_fd)
+            break
     os.fsync(parent_fd)
 
 
