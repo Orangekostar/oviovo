@@ -27,7 +27,7 @@ Do not touch the five user-owned untracked files listed by the root task.
 **Files:**
 - Modify: `scripts/evaluation/run_oviv2_t1_reference.py`
 - Modify: `scripts/evaluation/verify_oviv2_dual_readout_development_gates.py`
-- Modify: `tests/evaluation/test_run_oviv2_t1_reference.py`
+- Create: `tests/evaluation/test_run_oviv2_t1_reference.py`
 - Modify: `tests/evaluation/test_verify_oviv2_dual_readout_development_gates.py`
 
 - [ ] **Step 1: Write failing tests for the new exact spec and argv**
