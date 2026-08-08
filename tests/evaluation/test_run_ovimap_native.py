@@ -209,6 +209,8 @@ def test_gxx_wrapper_only_removes_broken_python_sysroot(tmp_path: Path) -> None:
 
 
 def test_cropformer_patch_applies_to_frozen_entity_source() -> None:
+    if not ENTITY_ROOT.exists():
+        pytest.skip("frozen CropFormer source is unavailable")
     completed = subprocess.run(
         ["git", "-C", str(ENTITY_ROOT), "apply", "--check", str(CROPFORMER_PATCH)],
         check=False,
@@ -266,6 +268,8 @@ def test_cropformer_patch_exports_auditable_instance_id_png() -> None:
 
 
 def test_ovimap_patch_applies_to_frozen_source() -> None:
+    if not OVIMAP_ROOT.exists():
+        pytest.skip("frozen OVI-MAP source is unavailable")
     completed = subprocess.run(
         ["git", "-C", str(OVIMAP_ROOT), "apply", "--check", str(OVIMAP_PATCH)],
         check=False,

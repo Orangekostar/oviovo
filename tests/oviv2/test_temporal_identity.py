@@ -58,6 +58,18 @@ def test_insert_get_owns_normalized_data_and_has_stable_canonical_dump() -> None
         record.identity_id = 9  # type: ignore[misc]
 
 
+def test_pre_normalized_prototype_is_byte_stable() -> None:
+    raw = np.array([-0.7452943516631282, 0.2677252628411601])
+    prototype = raw / np.linalg.norm(raw)
+    assert np.linalg.norm(prototype) != 1.0
+
+    record = IdentityMemoryBank(config()).insert(
+        **fields(appearance_prototype=prototype)
+    )
+
+    assert np.array_equal(record.appearance_prototype, prototype)
+
+
 def test_update_is_strictly_causal_and_preserves_first_observation() -> None:
     bank = IdentityMemoryBank(config())
     first = bank.insert(**fields())

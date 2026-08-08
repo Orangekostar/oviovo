@@ -29,6 +29,19 @@ FROZEN_SCHEDULE = (
 )
 
 
+def _require_real_schedule_assets(source: dict[str, object]) -> None:
+    required = []
+    for sequence in source["sequences"].values():
+        required.extend(
+            (
+                Path(sequence["bag"]["database"]["path"]),
+                Path(sequence["ground_truth"]["files"]["changes"]["path"]),
+            )
+        )
+    if not all(path.exists() for path in required):
+        pytest.skip("formal TESSE-CD schedule assets are unavailable")
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     digest.update(path.read_bytes())
@@ -117,6 +130,7 @@ def _write_manifest(
 
 def test_real_assets_derive_interventions_official_stride_and_common_horizons() -> None:
     source = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    _require_real_schedule_assets(source)
     expected_interventions = {
         "apartment": [263, 711, 858, 1022],
         "office": [2001, 2401, 2601, 3601],
@@ -344,6 +358,7 @@ def test_public_build_and_run_do_not_expose_source_identity_bypasses() -> None:
 
 def test_checked_in_schedule_matches_real_derivation_and_canonical_sources() -> None:
     source = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    _require_real_schedule_assets(source)
     frozen = json.loads(FROZEN_SCHEDULE.read_text(encoding="utf-8"))
     assert render_schedule(build_schedule(MANIFEST)) == FROZEN_SCHEDULE.read_bytes()
 

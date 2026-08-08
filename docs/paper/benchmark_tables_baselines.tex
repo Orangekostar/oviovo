@@ -14,7 +14,7 @@ OpenFusion & native & 0.271 & 0.345 & 0.479 & 0.270 & \verb|{{T1_OPENFUSION_SCAN
 OVI-MAP & native & \verb|{{T1_OVIMAP_REPLICA8_MIOU}}| & \verb|{{T1_OVIMAP_REPLICA8_MACC}}| & \verb|{{T1_OVIMAP_REPLICA8_FMIOU}}| & \verb|{{T1_OVIMAP_REPLICA7_MIOU}}| & \verb|{{T1_OVIMAP_SCANNET5_MIOU}}| \\
 ConceptGraphs & native & 0.118 & 0.212 & 0.106 & 0.118 & \verb|{{T1_CONCEPTGRAPHS_SCANNET5_MIOU}}| \\
 DualMap & native & 0.156 & 0.204 & 0.129 & 0.155 & \verb|{{T1_DUALMAP_SCANNET5_MIOU}}| \\
-OVIV2 & online & 0.338 & 0.414 & 0.580 & 0.332 & 0.317 \\
+CROVE & online & 0.338 & 0.414 & 0.580 & 0.332 & 0.317 \\
 \bottomrule
 \end{tabular}
 \par
@@ -28,7 +28,7 @@ OpenFusion & native & -- & -- & 0.895 & -- & -- & -- & \verb|{{T1_OPENFUSION_SCA
 OVI-MAP & native & \verb|{{T1_OVIMAP_REPLICA8_AP25}}| & \verb|{{T1_OVIMAP_REPLICA8_AP50}}| & \verb|{{T1_OVIMAP_REPLICA8_F5}}| & \verb|{{T1_OVIMAP_REPLICA7_AP50}}| & \verb|{{T1_OVIMAP_SCANNET5_AP25}}| & \verb|{{T1_OVIMAP_SCANNET5_AP50}}| & \verb|{{T1_OVIMAP_SCANNET5_F5}}| \\
 ConceptGraphs & native & 0.401 & 0.238 & 0.897 & 0.220 & \verb|{{T1_CONCEPTGRAPHS_SCANNET5_AP25}}| & \verb|{{T1_CONCEPTGRAPHS_SCANNET5_AP50}}| & \verb|{{T1_CONCEPTGRAPHS_SCANNET5_F5}}| \\
 DualMap & native & 0.384 & 0.164 & 0.887 & 0.147 & \verb|{{T1_DUALMAP_SCANNET5_AP25}}| & \verb|{{T1_DUALMAP_SCANNET5_AP50}}| & \verb|{{T1_DUALMAP_SCANNET5_F5}}| \\
-OVIV2 & online & 0.371 & 0.125 & 0.886 & 0.124 & 0.281 & 0.081 & 0.760 \\
+CROVE & online & 0.371 & 0.125 & 0.886 & 0.124 & 0.281 & 0.081 & 0.760 \\
 \bottomrule
 \end{tabular}
 \par
@@ -52,7 +52,7 @@ DualMap & native & \verb|{{T2_DUALMAP_APARTMENT_OBJECT_F1}}| & \verb|{{T2_DUALMA
 Panoptic Mapping + shared masks & composed & \verb|{{T2_PANOPTIC_SHARED_APARTMENT_OBJECT_F1}}| & \verb|{{T2_PANOPTIC_SHARED_APARTMENT_DYNAMIC_F1}}| & \verb|{{T2_PANOPTIC_SHARED_APARTMENT_CHANGE_F1}}| & \verb|{{T2_PANOPTIC_SHARED_OFFICE_OBJECT_F1}}| & \verb|{{T2_PANOPTIC_SHARED_OFFICE_DYNAMIC_F1}}| & \verb|{{T2_PANOPTIC_SHARED_OFFICE_CHANGE_F1}}| \\
 Khronos (open-set) & online & \verb|{{T2_KHRONOS_OPEN_APARTMENT_OBJECT_F1}}| & \verb|{{T2_KHRONOS_OPEN_APARTMENT_DYNAMIC_F1}}| & \verb|{{T2_KHRONOS_OPEN_APARTMENT_CHANGE_F1}}| & \verb|{{T2_KHRONOS_OPEN_OFFICE_OBJECT_F1}}| & \verb|{{T2_KHRONOS_OPEN_OFFICE_DYNAMIC_F1}}| & \verb|{{T2_KHRONOS_OPEN_OFFICE_CHANGE_F1}}| \\
 Khronos (GT semantics) & oracle & \verb|{{T2_KHRONOS_ORACLE_APARTMENT_OBJECT_F1}}| & \verb|{{T2_KHRONOS_ORACLE_APARTMENT_DYNAMIC_F1}}| & \verb|{{T2_KHRONOS_ORACLE_APARTMENT_CHANGE_F1}}| & \verb|{{T2_KHRONOS_ORACLE_OFFICE_OBJECT_F1}}| & \verb|{{T2_KHRONOS_ORACLE_OFFICE_DYNAMIC_F1}}| & \verb|{{T2_KHRONOS_ORACLE_OFFICE_CHANGE_F1}}| \\
-OVIV2 & online & \verb|{{T2_OVIV2_APARTMENT_OBJECT_F1}}| & \verb|{{T2_OVIV2_APARTMENT_DYNAMIC_F1}}| & \verb|{{T2_OVIV2_APARTMENT_CHANGE_F1}}| & \verb|{{T2_OVIV2_OFFICE_OBJECT_F1}}| & \verb|{{T2_OVIV2_OFFICE_DYNAMIC_F1}}| & \verb|{{T2_OVIV2_OFFICE_CHANGE_F1}}| \\
+CROVE & online & \verb|{{T2_OVIV2_APARTMENT_OBJECT_F1}}| & \verb|{{T2_OVIV2_APARTMENT_DYNAMIC_F1}}| & \verb|{{T2_OVIV2_APARTMENT_CHANGE_F1}}| & \verb|{{T2_OVIV2_OFFICE_OBJECT_F1}}| & \verb|{{T2_OVIV2_OFFICE_DYNAMIC_F1}}| & \verb|{{T2_OVIV2_OFFICE_CHANGE_F1}}| \\
 \bottomrule
 \end{tabular}
 \par
@@ -68,7 +68,7 @@ DualMap & native & \verb|{{T2_DUALMAP_CURRENT_MIOU}}| & \verb|{{T2_DUALMAP_GHOST
 Panoptic Mapping + shared masks & composed & \verb|{{T2_PANOPTIC_SHARED_CURRENT_MIOU}}| & \verb|{{T2_PANOPTIC_SHARED_GHOST_RATE}}| & \verb|{{T2_PANOPTIC_SHARED_BG_F5}}| & \verb|{{T2_PANOPTIC_SHARED_RECOVERY_FRAMES}}| \\
 Khronos (open-set) & online & \verb|{{T2_KHRONOS_OPEN_CURRENT_MIOU}}| & \verb|{{T2_KHRONOS_OPEN_GHOST_RATE}}| & \verb|{{T2_KHRONOS_OPEN_BG_F5}}| & \verb|{{T2_KHRONOS_OPEN_RECOVERY_FRAMES}}| \\
 Khronos (GT semantics) & oracle & \verb|{{T2_KHRONOS_ORACLE_CURRENT_MIOU}}| & \verb|{{T2_KHRONOS_ORACLE_GHOST_RATE}}| & \verb|{{T2_KHRONOS_ORACLE_BG_F5}}| & \verb|{{T2_KHRONOS_ORACLE_RECOVERY_FRAMES}}| \\
-OVIV2 & online & \verb|{{T2_OVIV2_CURRENT_MIOU}}| & \verb|{{T2_OVIV2_GHOST_RATE}}| & \verb|{{T2_OVIV2_BG_F5}}| & \verb|{{T2_OVIV2_RECOVERY_FRAMES}}| \\
+CROVE & online & \verb|{{T2_OVIV2_CURRENT_MIOU}}| & \verb|{{T2_OVIV2_GHOST_RATE}}| & \verb|{{T2_OVIV2_BG_F5}}| & \verb|{{T2_OVIV2_RECOVERY_FRAMES}}| \\
 \bottomrule
 \end{tabular}
 \par
@@ -113,8 +113,8 @@ OVI-MAP & native & 1.63 & 6.23 & 0.00 & 7.86 & 0.13 & 0.00 & 7.70 & 7.74 \\
 ConceptGraphs & native & 3.52 & 0.50 & 0.00 & 4.02 & 0.25 & 22.98 & 8.77 & 8.81 \\
 DualMap & native & 1.66 & 0.07 & 0.00 & 1.73 & 0.58 & 12.52 & 6.37 & 6.45 \\
 Khronos & online & \verb|{{T4_KHRONOS_FRONTEND_SPF}}| & \verb|{{T4_KHRONOS_BACKEND_SPF}}| & \verb|{{T4_KHRONOS_MAINT_SPF}}| & \verb|{{T4_KHRONOS_TOTAL_SPF}}| & \verb|{{T4_KHRONOS_HZ}}| & \verb|{{T4_KHRONOS_FINAL_S}}| & \verb|{{T4_KHRONOS_QUERY_P50_MS}}| & \verb|{{T4_KHRONOS_QUERY_P95_MS}}| \\
-OVIV2 (maintenance off) & maintenance-off & \verb|{{T4_OVIV2_STATIC_FRONTEND_SPF}}| & \verb|{{T4_OVIV2_STATIC_BACKEND_SPF}}| & \verb|{{T4_OVIV2_STATIC_MAINT_SPF}}| & \verb|{{T4_OVIV2_STATIC_TOTAL_SPF}}| & \verb|{{T4_OVIV2_STATIC_HZ}}| & \verb|{{T4_OVIV2_STATIC_FINAL_S}}| & \verb|{{T4_OVIV2_STATIC_QUERY_P50_MS}}| & \verb|{{T4_OVIV2_STATIC_QUERY_P95_MS}}| \\
-OVIV2 & online & \verb|{{T4_OVIV2_FRONTEND_SPF}}| & \verb|{{T4_OVIV2_BACKEND_SPF}}| & \verb|{{T4_OVIV2_MAINT_SPF}}| & \verb|{{T4_OVIV2_TOTAL_SPF}}| & \verb|{{T4_OVIV2_HZ}}| & \verb|{{T4_OVIV2_FINAL_S}}| & \verb|{{T4_OVIV2_QUERY_P50_MS}}| & \verb|{{T4_OVIV2_QUERY_P95_MS}}| \\
+CROVE (maintenance off) & maintenance-off & \verb|{{T4_OVIV2_STATIC_FRONTEND_SPF}}| & \verb|{{T4_OVIV2_STATIC_BACKEND_SPF}}| & \verb|{{T4_OVIV2_STATIC_MAINT_SPF}}| & \verb|{{T4_OVIV2_STATIC_TOTAL_SPF}}| & \verb|{{T4_OVIV2_STATIC_HZ}}| & \verb|{{T4_OVIV2_STATIC_FINAL_S}}| & \verb|{{T4_OVIV2_STATIC_QUERY_P50_MS}}| & \verb|{{T4_OVIV2_STATIC_QUERY_P95_MS}}| \\
+CROVE & online & \verb|{{T4_OVIV2_FRONTEND_SPF}}| & \verb|{{T4_OVIV2_BACKEND_SPF}}| & \verb|{{T4_OVIV2_MAINT_SPF}}| & \verb|{{T4_OVIV2_TOTAL_SPF}}| & \verb|{{T4_OVIV2_HZ}}| & \verb|{{T4_OVIV2_FINAL_S}}| & \verb|{{T4_OVIV2_QUERY_P50_MS}}| & \verb|{{T4_OVIV2_QUERY_P95_MS}}| \\
 \bottomrule
 \end{tabular}
 \par
@@ -128,8 +128,8 @@ OVI-MAP & native & 26.14 & 20.71 & 699.43 & 194.89 \\
 ConceptGraphs & native & 24.01 & 9.09 & 5.80 & 32.01 \\
 DualMap & native & 23.80 & 6.73 & 17.97 & 37.52 \\
 Khronos & online & \verb|{{T4_KHRONOS_GPU_GB}}| & \verb|{{T4_KHRONOS_RAM_GB}}| & \verb|{{T4_KHRONOS_MAP_MB}}| & \verb|{{T4_KHRONOS_EVAL_IO_S}}| \\
-OVIV2 (maintenance off) & maintenance-off & \verb|{{T4_OVIV2_STATIC_GPU_GB}}| & \verb|{{T4_OVIV2_STATIC_RAM_GB}}| & \verb|{{T4_OVIV2_STATIC_MAP_MB}}| & \verb|{{T4_OVIV2_STATIC_EVAL_IO_S}}| \\
-OVIV2 & online & \verb|{{T4_OVIV2_GPU_GB}}| & \verb|{{T4_OVIV2_RAM_GB}}| & \verb|{{T4_OVIV2_MAP_MB}}| & \verb|{{T4_OVIV2_EVAL_IO_S}}| \\
+CROVE (maintenance off) & maintenance-off & \verb|{{T4_OVIV2_STATIC_GPU_GB}}| & \verb|{{T4_OVIV2_STATIC_RAM_GB}}| & \verb|{{T4_OVIV2_STATIC_MAP_MB}}| & \verb|{{T4_OVIV2_STATIC_EVAL_IO_S}}| \\
+CROVE & online & \verb|{{T4_OVIV2_GPU_GB}}| & \verb|{{T4_OVIV2_RAM_GB}}| & \verb|{{T4_OVIV2_MAP_MB}}| & \verb|{{T4_OVIV2_EVAL_IO_S}}| \\
 \bottomrule
 \end{tabular}
 \par
@@ -151,7 +151,7 @@ OVI-MAP (frozen) & frozen & \verb|{{S1_OVIMAP_FROZEN_VALIDATION_PRESENT_R1}}| & 
 ConceptGraphs (frozen) & frozen & \verb|{{S1_CONCEPTGRAPHS_FROZEN_VALIDATION_PRESENT_R1}}| & \verb|{{S1_CONCEPTGRAPHS_FROZEN_VALIDATION_MOVED_R1}}| & \verb|{{S1_CONCEPTGRAPHS_FROZEN_VALIDATION_NEW_R1}}| & \verb|{{S1_CONCEPTGRAPHS_FROZEN_VALIDATION_NOT_FOUND_F1}}| & \verb|{{S1_CONCEPTGRAPHS_FROZEN_VALIDATION_STALE_FP}}| & \verb|{{S1_CONCEPTGRAPHS_FROZEN_VALIDATION_LOC_ERROR_M}}| & \verb|{{S1_CONCEPTGRAPHS_FROZEN_VALIDATION_RECOVERY_FRAMES}}| \\
 DualMap & native & \verb|{{S1_DUALMAP_VALIDATION_PRESENT_R1}}| & \verb|{{S1_DUALMAP_VALIDATION_MOVED_R1}}| & \verb|{{S1_DUALMAP_VALIDATION_NEW_R1}}| & \verb|{{S1_DUALMAP_VALIDATION_NOT_FOUND_F1}}| & \verb|{{S1_DUALMAP_VALIDATION_STALE_FP}}| & \verb|{{S1_DUALMAP_VALIDATION_LOC_ERROR_M}}| & \verb|{{S1_DUALMAP_VALIDATION_RECOVERY_FRAMES}}| \\
 Khronos + shared text head & composed & \verb|{{S1_KHRONOS_SHARED_VALIDATION_PRESENT_R1}}| & \verb|{{S1_KHRONOS_SHARED_VALIDATION_MOVED_R1}}| & \verb|{{S1_KHRONOS_SHARED_VALIDATION_NEW_R1}}| & \verb|{{S1_KHRONOS_SHARED_VALIDATION_NOT_FOUND_F1}}| & \verb|{{S1_KHRONOS_SHARED_VALIDATION_STALE_FP}}| & \verb|{{S1_KHRONOS_SHARED_VALIDATION_LOC_ERROR_M}}| & \verb|{{S1_KHRONOS_SHARED_VALIDATION_RECOVERY_FRAMES}}| \\
-OVIV2 & online & \verb|{{S1_OVIV2_VALIDATION_PRESENT_R1}}| & \verb|{{S1_OVIV2_VALIDATION_MOVED_R1}}| & \verb|{{S1_OVIV2_VALIDATION_NEW_R1}}| & \verb|{{S1_OVIV2_VALIDATION_NOT_FOUND_F1}}| & \verb|{{S1_OVIV2_VALIDATION_STALE_FP}}| & \verb|{{S1_OVIV2_VALIDATION_LOC_ERROR_M}}| & \verb|{{S1_OVIV2_VALIDATION_RECOVERY_FRAMES}}| \\
+CROVE & online & \verb|{{S1_OVIV2_VALIDATION_PRESENT_R1}}| & \verb|{{S1_OVIV2_VALIDATION_MOVED_R1}}| & \verb|{{S1_OVIV2_VALIDATION_NEW_R1}}| & \verb|{{S1_OVIV2_VALIDATION_NOT_FOUND_F1}}| & \verb|{{S1_OVIV2_VALIDATION_STALE_FP}}| & \verb|{{S1_OVIV2_VALIDATION_LOC_ERROR_M}}| & \verb|{{S1_OVIV2_VALIDATION_RECOVERY_FRAMES}}| \\
 \bottomrule
 \end{tabular}
 \par
@@ -165,7 +165,7 @@ OVI-MAP (frozen) & frozen & \verb|{{S1_OVIMAP_FROZEN_TEST_PRESENT_R1}}| & \verb|
 ConceptGraphs (frozen) & frozen & \verb|{{S1_CONCEPTGRAPHS_FROZEN_TEST_PRESENT_R1}}| & \verb|{{S1_CONCEPTGRAPHS_FROZEN_TEST_MOVED_R1}}| & \verb|{{S1_CONCEPTGRAPHS_FROZEN_TEST_NEW_R1}}| & \verb|{{S1_CONCEPTGRAPHS_FROZEN_TEST_NOT_FOUND_F1}}| & \verb|{{S1_CONCEPTGRAPHS_FROZEN_TEST_STALE_FP}}| & \verb|{{S1_CONCEPTGRAPHS_FROZEN_TEST_LOC_ERROR_M}}| & \verb|{{S1_CONCEPTGRAPHS_FROZEN_TEST_RECOVERY_FRAMES}}| \\
 DualMap & native & \verb|{{S1_DUALMAP_TEST_PRESENT_R1}}| & \verb|{{S1_DUALMAP_TEST_MOVED_R1}}| & \verb|{{S1_DUALMAP_TEST_NEW_R1}}| & \verb|{{S1_DUALMAP_TEST_NOT_FOUND_F1}}| & \verb|{{S1_DUALMAP_TEST_STALE_FP}}| & \verb|{{S1_DUALMAP_TEST_LOC_ERROR_M}}| & \verb|{{S1_DUALMAP_TEST_RECOVERY_FRAMES}}| \\
 Khronos + shared text head & composed & \verb|{{S1_KHRONOS_SHARED_TEST_PRESENT_R1}}| & \verb|{{S1_KHRONOS_SHARED_TEST_MOVED_R1}}| & \verb|{{S1_KHRONOS_SHARED_TEST_NEW_R1}}| & \verb|{{S1_KHRONOS_SHARED_TEST_NOT_FOUND_F1}}| & \verb|{{S1_KHRONOS_SHARED_TEST_STALE_FP}}| & \verb|{{S1_KHRONOS_SHARED_TEST_LOC_ERROR_M}}| & \verb|{{S1_KHRONOS_SHARED_TEST_RECOVERY_FRAMES}}| \\
-OVIV2 & online & \verb|{{S1_OVIV2_TEST_PRESENT_R1}}| & \verb|{{S1_OVIV2_TEST_MOVED_R1}}| & \verb|{{S1_OVIV2_TEST_NEW_R1}}| & \verb|{{S1_OVIV2_TEST_NOT_FOUND_F1}}| & \verb|{{S1_OVIV2_TEST_STALE_FP}}| & \verb|{{S1_OVIV2_TEST_LOC_ERROR_M}}| & \verb|{{S1_OVIV2_TEST_RECOVERY_FRAMES}}| \\
+CROVE & online & \verb|{{S1_OVIV2_TEST_PRESENT_R1}}| & \verb|{{S1_OVIV2_TEST_MOVED_R1}}| & \verb|{{S1_OVIV2_TEST_NEW_R1}}| & \verb|{{S1_OVIV2_TEST_NOT_FOUND_F1}}| & \verb|{{S1_OVIV2_TEST_STALE_FP}}| & \verb|{{S1_OVIV2_TEST_LOC_ERROR_M}}| & \verb|{{S1_OVIV2_TEST_RECOVERY_FRAMES}}| \\
 \bottomrule
 \end{tabular}
 \par
@@ -186,8 +186,8 @@ Method & Mode & Per-stage AP50 $\uparrow$ & t-AP $\uparrow$ & t-REC $\uparrow$ &
 ESAM (per-visit) & per-visit & \verb|{{S2_ESAM_VISIT_STAGE_AP50}}| & \verb|{{S2_ESAM_VISIT_T_AP}}| & \verb|{{S2_ESAM_VISIT_T_REC}}| & \verb|{{S2_ESAM_VISIT_IDSW}}| & \verb|{{S2_ESAM_VISIT_REACT_R1}}| & \verb|{{S2_ESAM_VISIT_FALSE_REID}}| \\
 Khronos (adapted stream) & online-adapted & \verb|{{S2_KHRONOS_ADAPTED_STAGE_AP50}}| & \verb|{{S2_KHRONOS_ADAPTED_T_AP}}| & \verb|{{S2_KHRONOS_ADAPTED_T_REC}}| & \verb|{{S2_KHRONOS_ADAPTED_IDSW}}| & \verb|{{S2_KHRONOS_ADAPTED_REACT_R1}}| & \verb|{{S2_KHRONOS_ADAPTED_FALSE_REID}}| \\
 ReScene4D & offline & \verb|{{S2_RESCENE4D_STAGE_AP50}}| & \verb|{{S2_RESCENE4D_T_AP}}| & \verb|{{S2_RESCENE4D_T_REC}}| & \verb|{{S2_RESCENE4D_IDSW}}| & \verb|{{S2_RESCENE4D_REACT_R1}}| & \verb|{{S2_RESCENE4D_FALSE_REID}}| \\
-OVIV2 (no re-ID) & online & \verb|{{S2_OVIV2_NO_REID_STAGE_AP50}}| & \verb|{{S2_OVIV2_NO_REID_T_AP}}| & \verb|{{S2_OVIV2_NO_REID_T_REC}}| & \verb|{{S2_OVIV2_NO_REID_IDSW}}| & \verb|{{S2_OVIV2_NO_REID_REACT_R1}}| & \verb|{{S2_OVIV2_NO_REID_FALSE_REID}}| \\
-OVIV2 & online & \verb|{{S2_OVIV2_STAGE_AP50}}| & \verb|{{S2_OVIV2_T_AP}}| & \verb|{{S2_OVIV2_T_REC}}| & \verb|{{S2_OVIV2_IDSW}}| & \verb|{{S2_OVIV2_REACT_R1}}| & \verb|{{S2_OVIV2_FALSE_REID}}| \\
+CROVE (no re-ID) & online & \verb|{{S2_OVIV2_NO_REID_STAGE_AP50}}| & \verb|{{S2_OVIV2_NO_REID_T_AP}}| & \verb|{{S2_OVIV2_NO_REID_T_REC}}| & \verb|{{S2_OVIV2_NO_REID_IDSW}}| & \verb|{{S2_OVIV2_NO_REID_REACT_R1}}| & \verb|{{S2_OVIV2_NO_REID_FALSE_REID}}| \\
+CROVE & online & \verb|{{S2_OVIV2_STAGE_AP50}}| & \verb|{{S2_OVIV2_T_AP}}| & \verb|{{S2_OVIV2_T_REC}}| & \verb|{{S2_OVIV2_IDSW}}| & \verb|{{S2_OVIV2_REACT_R1}}| & \verb|{{S2_OVIV2_FALSE_REID}}| \\
 \bottomrule
 \end{tabular}
 \par
@@ -197,7 +197,7 @@ OVIV2 & online & \verb|{{S2_OVIV2_STAGE_AP50}}| & \verb|{{S2_OVIV2_T_AP}}| & \ve
 
 \begin{table*}[t]
 \centering
-\caption{Presence and absence reliability on held-out queries. Composed baseline rejectors and OVIV2 use one validation-only calibration policy serialized before test execution.}
+\caption{Presence and absence reliability on held-out queries. Composed baseline rejectors and CROVE use one validation-only calibration policy serialized before test execution.}
 \label{tab:supp_reliability}
 \small
 \textbf{Presence and rejection reliability}\\
@@ -208,8 +208,8 @@ Method & Mode & Presence AUROC $\uparrow$ & NOT\_FOUND precision $\uparrow$ & NO
 DualMap + calibrated rejector & composed & \verb|{{S3_DUALMAP_CAL_PRESENCE_AUROC}}| & \verb|{{S3_DUALMAP_CAL_NOT_FOUND_PREC}}| & \verb|{{S3_DUALMAP_CAL_NOT_FOUND_REC}}| & \verb|{{S3_DUALMAP_CAL_NOT_FOUND_F1}}| & \verb|{{S3_DUALMAP_CAL_BINARY_ECE}}| & \verb|{{S3_DUALMAP_CAL_RISK_COVERAGE_AUC}}| \\
 ConceptGraphs + calibrated rejector & composed & \verb|{{S3_CONCEPTGRAPHS_CAL_PRESENCE_AUROC}}| & \verb|{{S3_CONCEPTGRAPHS_CAL_NOT_FOUND_PREC}}| & \verb|{{S3_CONCEPTGRAPHS_CAL_NOT_FOUND_REC}}| & \verb|{{S3_CONCEPTGRAPHS_CAL_NOT_FOUND_F1}}| & \verb|{{S3_CONCEPTGRAPHS_CAL_BINARY_ECE}}| & \verb|{{S3_CONCEPTGRAPHS_CAL_RISK_COVERAGE_AUC}}| \\
 Khronos shared head + rejector & composed & \verb|{{S3_KHRONOS_SHARED_CAL_PRESENCE_AUROC}}| & \verb|{{S3_KHRONOS_SHARED_CAL_NOT_FOUND_PREC}}| & \verb|{{S3_KHRONOS_SHARED_CAL_NOT_FOUND_REC}}| & \verb|{{S3_KHRONOS_SHARED_CAL_NOT_FOUND_F1}}| & \verb|{{S3_KHRONOS_SHARED_CAL_BINARY_ECE}}| & \verb|{{S3_KHRONOS_SHARED_CAL_RISK_COVERAGE_AUC}}| \\
-OVIV2 (uncalibrated) & online & \verb|{{S3_OVIV2_UNCAL_PRESENCE_AUROC}}| & \verb|{{S3_OVIV2_UNCAL_NOT_FOUND_PREC}}| & \verb|{{S3_OVIV2_UNCAL_NOT_FOUND_REC}}| & \verb|{{S3_OVIV2_UNCAL_NOT_FOUND_F1}}| & \verb|{{S3_OVIV2_UNCAL_BINARY_ECE}}| & \verb|{{S3_OVIV2_UNCAL_RISK_COVERAGE_AUC}}| \\
-OVIV2 & calibrated & \verb|{{S3_OVIV2_PRESENCE_AUROC}}| & \verb|{{S3_OVIV2_NOT_FOUND_PREC}}| & \verb|{{S3_OVIV2_NOT_FOUND_REC}}| & \verb|{{S3_OVIV2_NOT_FOUND_F1}}| & \verb|{{S3_OVIV2_BINARY_ECE}}| & \verb|{{S3_OVIV2_RISK_COVERAGE_AUC}}| \\
+CROVE (uncalibrated) & online & \verb|{{S3_OVIV2_UNCAL_PRESENCE_AUROC}}| & \verb|{{S3_OVIV2_UNCAL_NOT_FOUND_PREC}}| & \verb|{{S3_OVIV2_UNCAL_NOT_FOUND_REC}}| & \verb|{{S3_OVIV2_UNCAL_NOT_FOUND_F1}}| & \verb|{{S3_OVIV2_UNCAL_BINARY_ECE}}| & \verb|{{S3_OVIV2_UNCAL_RISK_COVERAGE_AUC}}| \\
+CROVE & calibrated & \verb|{{S3_OVIV2_PRESENCE_AUROC}}| & \verb|{{S3_OVIV2_NOT_FOUND_PREC}}| & \verb|{{S3_OVIV2_NOT_FOUND_REC}}| & \verb|{{S3_OVIV2_NOT_FOUND_F1}}| & \verb|{{S3_OVIV2_BINARY_ECE}}| & \verb|{{S3_OVIV2_RISK_COVERAGE_AUC}}| \\
 \bottomrule
 \end{tabular}
 \par

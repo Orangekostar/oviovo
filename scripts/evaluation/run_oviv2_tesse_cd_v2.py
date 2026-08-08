@@ -5,18 +5,16 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import hashlib
 import json
 import math
 from numbers import Integral, Real
 import os
 from pathlib import Path
-import platform
 import random
 import secrets
 import shutil
-import socket
 import stat
 import sys
 import tempfile
@@ -31,8 +29,15 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts.evaluation.evaluate_oviv2_tesse_occlusion import (  # noqa: E402
     RUNNER_SCENE_CONFIG_FIELDS,
+)
+from scripts.evaluation.oviv2_tesse_cd_v2_config import (  # noqa: E402
+    V2_ONLY_SCENE_CONFIG_FIELDS,
     canonical_algorithm_config,
     canonical_algorithm_hash,
+)
+from scripts.evaluation.oviv2_tesse_cd_v2_provenance import (  # noqa: E402
+    collect_formal_environment as _collect_formal_environment,
+    repository_provenance as _repository_provenance,
 )
 from scripts.evaluation.run_oviv2_tesse_cd import (  # noqa: E402
     RunPublicationUncertainError,
@@ -40,6 +45,7 @@ from scripts.evaluation.run_oviv2_tesse_cd import (  # noqa: E402
     _absolute_lexical,
     _binding_path,
     _byte_record,
+    _cache_prefix_sha256,
     _checkpoint_plan_from_target_manifest,
     _file_record,
     _is_sha256,
@@ -52,7 +58,6 @@ from scripts.evaluation.run_oviv2_tesse_cd import (  # noqa: E402
     _publish_run,
     _revalidate_frozen_bindings,
     _reject_symlink_components,
-    _repository_provenance,
     _require_regular_file,
     _resolve_path,
     _run_execution,
@@ -91,7 +96,8 @@ from src.oviv2.reference_readout import CumulativeReadoutView  # noqa: E402
 
 PROTOCOL_ID = "oviv2-tessecd-v2"
 TEMPORAL_EXPORT_SCHEMA_VERSION = 1
-SCENE_CONFIG_FIELDS = RUNNER_SCENE_CONFIG_FIELDS
+TABLE_ONLY_KEYFRAME_STRIDE = 5
+SCENE_CONFIG_FIELDS = RUNNER_SCENE_CONFIG_FIELDS | V2_ONLY_SCENE_CONFIG_FIELDS
 
 _STRING_CONFIG_FIELDS = frozenset(
     {
@@ -106,6 +112,8 @@ _STRING_CONFIG_FIELDS = frozenset(
         "feature_mode",
         "frontend_cache_dir",
         "frontend_manifest",
+        "temporal_frontend_cache_dir",
+        "temporal_frontend_manifest",
         "fusion_semantic_mode",
         "input_manifest",
         "method_id",
@@ -143,6 +151,17 @@ _INTEGER_CONFIG_FIELDS = frozenset(
         "structure_object_exclusion_dilation",
         "structure_pixel_stride",
         "track_window_size",
+        "temporal_dense_maximum_area_px",
+        "temporal_dense_maximum_observations",
+        "temporal_dense_minimum_area_px",
+        "temporal_depth_maximum_area_px",
+        "temporal_depth_maximum_observations",
+        "temporal_depth_maximum_unknown_observations",
+        "temporal_depth_minimum_area_px",
+        "temporal_depth_plane_minimum_area_px",
+        "temporal_depth_semantic_minimum_votes",
+        "temporal_proposal_min_valid_points",
+        "temporal_proposal_pixel_stride",
         "view_top_k",
     }
 )
@@ -179,6 +198,12 @@ _FLOAT_CONFIG_FIELDS = frozenset(
         "structure_wall_confidence",
         "structure_wall_vertical_threshold",
         "third_view_min_score",
+        "temporal_depth_edge_threshold_m",
+        "temporal_depth_planar_rmse_threshold_m",
+        "temporal_depth_semantic_minimum_fraction",
+        "temporal_depth_semantic_minimum_probability",
+        "temporal_merge_same_semantic_iou",
+        "temporal_merge_supplement_containment",
         "track_max_centroid_distance_m",
         "track_min_voxel_overlap",
         "trunc_voxel_multiplier",
@@ -256,12 +281,16 @@ _CACHE_CONFIG_KEYS = frozenset(
         "vocabulary_txt",
         "frontend_cache_dir",
         "frontend_manifest",
+        "temporal_frontend_cache_dir",
+        "temporal_frontend_manifest",
+        "temporal_readout",
         "dense_cache_dir",
         "dense_manifest",
         "stage3_lineage_commit",
         "dense_sample_stride",
         "dense_top_k",
         "dense_semantic_mode",
+        "depth_max_m",
         "voxel_size_m",
         "pixel_stride",
         "min_valid_points",
@@ -279,6 +308,23 @@ _CACHE_CONFIG_KEYS = frozenset(
         "structure_ceiling_confidence",
         "fusion_semantic_mode",
         "fusion_entity_weight_scale",
+        "temporal_dense_minimum_area_px",
+        "temporal_dense_maximum_area_px",
+        "temporal_dense_maximum_observations",
+        "temporal_depth_edge_threshold_m",
+        "temporal_depth_minimum_area_px",
+        "temporal_depth_maximum_area_px",
+        "temporal_depth_plane_minimum_area_px",
+        "temporal_depth_planar_rmse_threshold_m",
+        "temporal_depth_semantic_minimum_votes",
+        "temporal_depth_semantic_minimum_fraction",
+        "temporal_depth_semantic_minimum_probability",
+        "temporal_depth_maximum_observations",
+        "temporal_depth_maximum_unknown_observations",
+        "temporal_proposal_pixel_stride",
+        "temporal_proposal_min_valid_points",
+        "temporal_merge_same_semantic_iou",
+        "temporal_merge_supplement_containment",
     }
 )
 _ENVIRONMENT_LIBRARY_KEYS = frozenset(
@@ -339,6 +385,7 @@ V2_FREEZE_SCENE_KEYS = frozenset(
         "frozen_config",
         "export_manifest",
         "frontend_manifest",
+        "temporal_frontend_manifest",
         "dense_manifest",
         "vocabulary_json",
         "vocabulary_txt",
@@ -768,6 +815,42 @@ def _validate_environment(value: object) -> dict[str, Any]:
         raise ValueError("environment.libraries must be a non-empty string mapping")
     result["libraries"] = dict(sorted(libraries.items()))
     return result
+
+
+def _formal_environment_compatibility(value: object) -> dict[str, Any]:
+    environment = _validate_environment(value)
+    visible = environment["cuda_visible_devices"]
+    visible_lanes = (
+        {item.strip() for item in visible.split(",") if item.strip()}
+        if isinstance(visible, str)
+        else set()
+    )
+    gpu_signatures: set[str] = set()
+    for item in environment["gpu"]:
+        parts = [part.strip() for part in item.split(",")]
+        lane_ids: set[str] = set()
+        identity = item.strip()
+        if len(parts) >= 4 and parts[0].isdigit() and parts[1].startswith("GPU-"):
+            lane_ids = {parts[0], parts[1]}
+            identity = ", ".join(parts[2:])
+        elif len(parts) >= 3 and parts[0].isdigit():
+            lane_ids = {parts[0]}
+            identity = ", ".join(parts[1:])
+        if visible_lanes and lane_ids:
+            if lane_ids.isdisjoint(visible_lanes):
+                continue
+        gpu_signatures.add(identity)
+    return {
+        key: environment[key]
+        for key in (
+            "python",
+            "python_implementation",
+            "platform",
+            "machine",
+            "cuda",
+            "libraries",
+        )
+    } | {"gpu": sorted(gpu_signatures)}
 
 
 def _validate_selection(
@@ -1470,6 +1553,44 @@ def _validate_config(
     runtime_config_from_json(dict(config))
     structure_config_from_json(dict(config), voxel_size_m=float(config["voxel_size_m"]))
     semantic_fusion_config_from_json(dict(config))
+    from src.oviv2.temporal_dense_observations import TemporalDenseObservationConfig
+    from src.oviv2.temporal_depth_observations import TemporalDepthObservationConfig
+    from src.oviv2.temporal_observation_merge import TemporalObservationMergeConfig
+
+    TemporalDenseObservationConfig(
+        sample_stride=config["dense_sample_stride"],
+        depth_max_m=config["depth_max_m"],
+        minimum_area_px=config["temporal_dense_minimum_area_px"],
+        maximum_area_px=config["temporal_dense_maximum_area_px"],
+        maximum_observations=config["temporal_dense_maximum_observations"],
+        voxel_size_m=config["voxel_size_m"],
+        pixel_stride=config["temporal_proposal_pixel_stride"],
+        min_valid_points=config["temporal_proposal_min_valid_points"],
+    )
+    TemporalDepthObservationConfig(
+        edge_threshold_m=config["temporal_depth_edge_threshold_m"],
+        minimum_area_px=config["temporal_depth_minimum_area_px"],
+        maximum_area_px=config["temporal_depth_maximum_area_px"],
+        plane_minimum_area_px=config["temporal_depth_plane_minimum_area_px"],
+        planar_rmse_threshold_m=config["temporal_depth_planar_rmse_threshold_m"],
+        semantic_minimum_votes=config["temporal_depth_semantic_minimum_votes"],
+        semantic_minimum_fraction=config["temporal_depth_semantic_minimum_fraction"],
+        semantic_minimum_probability=config["temporal_depth_semantic_minimum_probability"],
+        maximum_observations=config["temporal_depth_maximum_observations"],
+        maximum_unknown_observations=config[
+            "temporal_depth_maximum_unknown_observations"
+        ],
+        depth_max_m=config["depth_max_m"],
+        voxel_size_m=config["voxel_size_m"],
+        pixel_stride=config["temporal_proposal_pixel_stride"],
+        min_valid_points=config["temporal_proposal_min_valid_points"],
+    )
+    TemporalObservationMergeConfig(
+        same_semantic_iou_threshold=config["temporal_merge_same_semantic_iou"],
+        supplement_containment_threshold=config[
+            "temporal_merge_supplement_containment"
+        ],
+    )
     configured_hash = config.get("algorithm_hash")
     if not _is_sha256(configured_hash) or configured_hash != algorithm_hash(config):
         raise ValueError("configured algorithm_hash does not match mapping parameters")
@@ -1552,7 +1673,7 @@ def load_v2_frozen_run_context(
         )
         frozen_bytes = frozen_path.read_bytes()
         frozen_payload = _load_json_bytes(frozen_bytes, frozen_path)
-        parsed_scene, *_ = _validate_config(frozen_payload)
+        parsed_scene, _, _, _, temporal_config = _validate_config(frozen_payload)
         if parsed_scene != bound_scene:
             raise ValueError("freeze scene config identity mismatch")
         loaded_configs[bound_scene] = frozen_payload
@@ -1571,6 +1692,30 @@ def load_v2_frozen_run_context(
                 expected_path=_resolve_path(frozen_payload[role]),
             )
             normalized_scenes[bound_scene][role] = dict(selected[role])
+        from src.oviv2.temporal_config import ExecutionProfile
+
+        temporal_binding = selected["temporal_frontend_manifest"]
+        if temporal_config.execution_profile in {
+            ExecutionProfile.A0,
+            ExecutionProfile.A1,
+        }:
+            if temporal_binding is not None:
+                raise ValueError(
+                    f"freeze {bound_scene} reference profile cannot bind temporal frontend"
+                )
+            normalized_scenes[bound_scene]["temporal_frontend_manifest"] = None
+        else:
+            _verify_exact_frozen_file_binding(
+                temporal_binding,
+                base=manifest_path.parent,
+                role=f"{bound_scene} temporal_frontend_manifest",
+                expected_path=_resolve_path(
+                    frozen_payload["temporal_frontend_manifest"]
+                ),
+            )
+            normalized_scenes[bound_scene]["temporal_frontend_manifest"] = dict(
+                temporal_binding
+            )
         if bound_scene == scene:
             selected_config_record = config_record
     if selected_config_record is None:
@@ -1795,61 +1940,383 @@ def _production_runtime_factory(config: Mapping[str, Any], caches: Any) -> Any:
     elif temporal_config.execution_profile is ExecutionProfile.A1:
         temporal = LifecycleOverlayReadout(str(config["scene"]), temporal_config)
     else:
+        temporal_tracker_config = replace(
+            runtime_config.tracker,
+            confirm_hits=temporal_config.confirm_hits,
+        )
         temporal = TemporalCurrentRuntime(
             str(config["scene"]),
             temporal_config,
-            tracker_config=runtime_config.tracker,
+            tracker_config=temporal_tracker_config,
         )
     return DualReadoutRuntime(cumulative, temporal)
 
 
-def _production_environment() -> Mapping[str, Any]:
-    provenance = dict(_production_provenance())
-    gpu = provenance.get("gpu_inventory")
-    nvcc = provenance.get("nvcc_version")
-    libraries = provenance.get("library_versions")
-    if type(gpu) is not list or any(type(item) is not str for item in gpu):
-        gpu = []
-    if type(nvcc) is not list or any(type(item) is not str for item in nvcc):
-        nvcc = []
-    if not isinstance(libraries, Mapping):
-        libraries = {}
-    torch_cuda = provenance.get("torch_cuda_version", "unavailable")
-    cudnn = provenance.get("cudnn_version")
-    cuda = [
-        f"torch_cuda={torch_cuda if torch_cuda is not None else 'unavailable'}",
-        f"cudnn={cudnn if cudnn is not None else 'unavailable'}",
-        *(
-            [f"nvcc={line}" for line in nvcc]
-            if nvcc
-            else ["nvcc=unavailable"]
-        ),
-    ]
+_production_environment = _collect_formal_environment
 
-    return {
-        "python": platform.python_version(),
-        "python_implementation": platform.python_implementation(),
-        "platform": str(provenance.get("platform") or platform.platform()),
-        "machine": str(provenance.get("machine") or platform.machine() or "unknown"),
-        "host": str(provenance.get("hostname") or socket.gethostname() or "unknown"),
-        "cuda": cuda,
-        "cuda_visible_devices": provenance.get("cuda_visible_devices"),
-        "gpu": gpu or ["unavailable"],
-        "libraries": {
-            key: str(libraries.get(key, "unavailable"))
-            for key in sorted(_ENVIRONMENT_LIBRARY_KEYS)
-        },
+
+_TEMPORAL_FRONTEND_REQUIRED_KEYS = frozenset(
+    {
+        "schema_version",
+        "method",
+        "dataset",
+        "scene",
+        "frame_count",
+        "source_frame_ids",
+        "source_frame_ids_hash",
+        "image_shape",
+        "class_count",
+        "classes",
+        "vocabulary_sha256",
+        "algorithm_hash",
+        "feature_model_id",
+        "cache_files_sha256",
+        "cache_prefix_sha256",
+        "temporal_only",
+        "alias_map_sha256",
+        "merge_algorithm",
+        "merge_policy",
+        "diagnostics",
+        "temporal_frontend_sources",
     }
+)
+_TEMPORAL_FRONTEND_OPTIONAL_KEYS = frozenset(
+    {"input_manifest_sha256", "input_witness", "provenance_sha256"}
+)
+
+
+def _validate_temporal_frontend_manifest(
+    manifest: object,
+    *,
+    scene: str,
+    frame_count: int,
+    classes: tuple[str, ...],
+    vocabulary_sha256: str,
+    feature_model_id: str,
+) -> dict[str, str]:
+    if not isinstance(manifest, dict):
+        raise ValueError("temporal frontend manifest must be an object")
+    keys = set(manifest)
+    if not (
+        _TEMPORAL_FRONTEND_REQUIRED_KEYS <= keys
+        and keys <= _TEMPORAL_FRONTEND_REQUIRED_KEYS | _TEMPORAL_FRONTEND_OPTIONAL_KEYS
+    ):
+        raise ValueError("temporal frontend manifest fields are not exact")
+    source_frame_ids = list(range(frame_count))
+    if not (
+        manifest.get("schema_version") == 1
+        and manifest.get("method") == "OVIV2"
+        and manifest.get("dataset") == "TESSE-CD"
+        and manifest.get("scene") == scene
+        and manifest.get("frame_count") == frame_count
+        and manifest.get("source_frame_ids") == source_frame_ids
+        and manifest.get("source_frame_ids_hash") == _json_hash(source_frame_ids)
+        and manifest.get("image_shape") == [480, 720]
+        and manifest.get("class_count") == len(classes)
+        and manifest.get("classes") == list(classes)
+        and manifest.get("vocabulary_sha256") == vocabulary_sha256
+        and manifest.get("feature_model_id") == feature_model_id
+        and manifest.get("temporal_only") is True
+        and _is_sha256(manifest.get("algorithm_hash"))
+        and _is_sha256(manifest.get("alias_map_sha256"))
+        and isinstance(manifest.get("merge_algorithm"), Mapping)
+        and manifest["merge_algorithm"].get("sha256")
+        == manifest.get("algorithm_hash")
+        and isinstance(manifest.get("merge_policy"), Mapping)
+        and isinstance(manifest.get("diagnostics"), Mapping)
+        and isinstance(manifest.get("temporal_frontend_sources"), Mapping)
+    ):
+        raise ValueError("temporal frontend manifest identity mismatch")
+    raw_hashes = manifest.get("cache_files_sha256")
+    if not isinstance(raw_hashes, dict):
+        raise ValueError("temporal frontend cache_files_sha256 must be an object")
+    expected_names = [f"frame{index:06d}.pkl.gz" for index in range(frame_count)]
+    if list(raw_hashes) != expected_names:
+        raise ValueError("temporal frontend checksum keys are not canonical")
+    hashes: dict[str, str] = {}
+    for name in expected_names:
+        checksum = raw_hashes[name]
+        if not _is_sha256(checksum):
+            raise ValueError(f"temporal frontend checksum is invalid: {name}")
+        hashes[name] = checksum
+    if manifest.get("cache_prefix_sha256") != _cache_prefix_sha256(hashes):
+        raise ValueError("temporal frontend cache prefix checksum mismatch")
+    return hashes
+
+
+@dataclass
+class _TemporalProductionCaches:
+    base: Any
+    temporal_frontend: Any
+    temporal_cache_dir: Path
+    temporal_manifest_path: Path
+    temporal_hashes: dict[str, str]
+    temporal_manifest_sha256: str
+    dense_config: Any
+    depth_config: Any
+    merge_config: Any
+    bindings: dict[str, Any]
+    input_hashes: dict[Path, str]
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self.base, name)
+
+    def load(self, frame_index: int, frame: Any) -> tuple[tuple[Any, ...], Any]:
+        return self.base.load(frame_index, frame)
+
+    def load_temporal(
+        self, frame_index: int, frame: Any, dense: Any
+    ) -> tuple[Any, ...]:
+        from src.oviv2.temporal_dense_observations import (
+            generate_temporal_dense_observations,
+        )
+        from src.oviv2.temporal_depth_observations import (
+            generate_temporal_depth_observations,
+        )
+        from src.oviv2.temporal_observation_merge import (
+            merge_temporal_object_observations,
+            regularize_temporal_object_extents,
+        )
+
+        if dense is None:
+            raise ValueError("temporal proposal generation requires dense semantics")
+        primary = self.temporal_frontend.observe(frame, frame_index)
+        class_names = tuple(self.base.class_names[1 : 1 + dense.class_count])
+        dense_observations = generate_temporal_dense_observations(
+            frame, dense, class_names, self.dense_config
+        )
+        depth_observations = generate_temporal_depth_observations(
+            frame, dense, class_names, self.depth_config
+        )
+        merged_objects = merge_temporal_object_observations(
+            primary,
+            (dense_observations, depth_observations),
+            self.merge_config,
+        )
+        merged_objects = regularize_temporal_object_extents(
+            merged_objects,
+            self.dense_config.voxel_size_m,
+        )
+        structure = self.base.structure.observe(
+            frame, object_observations=merged_objects
+        )
+        return (*merged_objects, *structure)
+
+    def assert_inputs_unchanged(self) -> None:
+        self.base.assert_inputs_unchanged()
+        _reject_symlink_components(
+            self.temporal_cache_dir, "temporal frontend cache directory"
+        )
+        expected = set(self.temporal_hashes) | {self.temporal_manifest_path.name}
+        entries = list(self.temporal_cache_dir.iterdir())
+        if {path.name for path in entries} != expected or any(
+            not stat.S_ISREG(os.lstat(path).st_mode) for path in entries
+        ):
+            raise ValueError("temporal frontend cache directory changed during run")
+        _require_regular_file(self.temporal_manifest_path, "temporal frontend manifest")
+        if _sha256(self.temporal_manifest_path) != self.temporal_manifest_sha256:
+            raise ValueError("temporal frontend manifest changed during run")
+        for name, checksum in self.temporal_hashes.items():
+            path = self.temporal_cache_dir / name
+            _require_regular_file(path, "temporal frontend cache frame")
+            if _sha256(path) != checksum:
+                raise ValueError(f"temporal frontend cache changed during run: {name}")
+
+
+def _production_v2_cache_loader_factory(
+    config: Mapping[str, Any], dataset: Any
+) -> Any:
+    from scripts.precompute_oviv2_tesse_frontend import (
+        _read_cache_snapshot,
+        _validate_cache_payload,
+    )
+    from src.oviv2.observations import CachedFrontendAdapter
+    from src.oviv2.temporal_dense_observations import TemporalDenseObservationConfig
+    from src.oviv2.temporal_depth_observations import TemporalDepthObservationConfig
+    from src.oviv2.temporal_observation_merge import TemporalObservationMergeConfig
+    from src.oviv2.temporal_config import ExecutionProfile, temporal_config_from_json
+
+    base = _production_cache_loader_factory(config, dataset)
+    profile = temporal_config_from_json(
+        {"temporal_readout": config.get("temporal_readout")}
+    ).execution_profile
+    if profile in {ExecutionProfile.A0, ExecutionProfile.A1}:
+        return base
+    cache_dir = _resolve_path(config["temporal_frontend_cache_dir"])
+    manifest_path = _resolve_path(config["temporal_frontend_manifest"])
+    _reject_symlink_components(cache_dir, "temporal frontend cache directory")
+    if not cache_dir.is_dir():
+        raise FileNotFoundError(cache_dir)
+    if manifest_path.parent.resolve() != cache_dir.resolve() or manifest_path.name != "frontend_manifest.json":
+        raise ValueError("temporal frontend manifest must be inside its cache directory")
+    _require_regular_file(manifest_path, "temporal frontend manifest")
+    manifest_bytes = manifest_path.read_bytes()
+    manifest = _load_json_bytes(manifest_bytes, manifest_path)
+    object_count = len(base.object_semantic_ids)
+    classes = tuple(base.class_names[1 : 1 + object_count])
+    feature_model_id = base.frontend.feature_model_id
+    if not isinstance(feature_model_id, str):
+        raise ValueError("base frontend feature model identity is missing")
+    vocabulary_sha256 = _sha256(_resolve_path(config["vocabulary_txt"]))
+    hashes = _validate_temporal_frontend_manifest(
+        manifest,
+        scene=str(config["scene"]),
+        frame_count=int(config["frame_count"]),
+        classes=classes,
+        vocabulary_sha256=vocabulary_sha256,
+        feature_model_id=feature_model_id,
+    )
+    expected_entries = set(hashes) | {manifest_path.name}
+    entries = list(cache_dir.iterdir())
+    if {path.name for path in entries} != expected_entries or any(
+        not stat.S_ISREG(os.lstat(path).st_mode) for path in entries
+    ):
+        raise ValueError("temporal frontend cache has missing, extra, or symlink entries")
+
+    canonical_manifest_path = _resolve_path(config["frontend_manifest"])
+    canonical_manifest_bytes = canonical_manifest_path.read_bytes()
+    canonical_manifest = _load_json_bytes(
+        canonical_manifest_bytes, canonical_manifest_path
+    )
+    for optional in _TEMPORAL_FRONTEND_OPTIONAL_KEYS:
+        if optional in manifest and manifest[optional] != canonical_manifest.get(optional):
+            raise ValueError(f"temporal frontend {optional} differs from canonical source")
+    sources = manifest["temporal_frontend_sources"]
+    canonical_source = sources.get("canonical")
+    if not (
+        isinstance(canonical_source, Mapping)
+        and canonical_source.get("manifest_sha256")
+        == _sha256_bytes(canonical_manifest_bytes)
+        and canonical_source.get("algorithm_hash")
+        == canonical_manifest.get("algorithm_hash")
+        and canonical_source.get("cache_prefix_sha256")
+        == canonical_manifest.get("cache_prefix_sha256")
+        and isinstance(sources.get("alias_shards"), list)
+        and bool(sources["alias_shards"])
+        and sources.get("alias_map", {}).get("sha256")
+        == manifest.get("alias_map_sha256")
+    ):
+        raise ValueError("temporal frontend source bindings are invalid")
+
+    vocabulary = base.frontend.vocabulary
+
+    class BoundTemporalFrontendAdapter(CachedFrontendAdapter):
+        def _load(self, cache_frame_id: int) -> tuple[Any, ...]:
+            name = f"frame{cache_frame_id:06d}.pkl.gz"
+            path = cache_dir / name
+            payload, binding = _read_cache_snapshot(path)
+            if binding.sha256 != hashes[name]:
+                raise ValueError("temporal frontend cache checksum mismatch")
+            _validate_cache_payload(
+                payload, classes=classes, image_shape=(480, 720), path=path
+            )
+            assert isinstance(payload, dict)
+            masks = np.asarray(payload["mask"], dtype=bool)
+            boxes = np.asarray(payload["xyxy"], dtype=np.float32)
+            confidences = np.asarray(payload["confidence"], dtype=np.float32)
+            class_ids = np.asarray(payload["class_id"], dtype=np.int64)
+            image_features = np.asarray(payload["image_feats"], dtype=np.float64)
+            text_features = np.asarray(payload["text_feats"], dtype=np.float64)
+            return (
+                masks,
+                boxes,
+                confidences,
+                [classes[int(index)] for index in class_ids],
+                image_features,
+                text_features,
+            )
+
+    temporal_frontend = BoundTemporalFrontendAdapter(
+        cache_dir,
+        vocabulary,
+        voxel_size_m=float(config["voxel_size_m"]),
+        pixel_stride=int(config["temporal_proposal_pixel_stride"]),
+        min_valid_points=int(config["temporal_proposal_min_valid_points"]),
+        feature_model_id=feature_model_id,
+    )
+    dense_config = TemporalDenseObservationConfig(
+        sample_stride=int(config["dense_sample_stride"]),
+        depth_max_m=float(config["depth_max_m"]),
+        minimum_area_px=int(config["temporal_dense_minimum_area_px"]),
+        maximum_area_px=int(config["temporal_dense_maximum_area_px"]),
+        maximum_observations=int(config["temporal_dense_maximum_observations"]),
+        voxel_size_m=float(config["voxel_size_m"]),
+        pixel_stride=int(config["temporal_proposal_pixel_stride"]),
+        min_valid_points=int(config["temporal_proposal_min_valid_points"]),
+    )
+    depth_config = TemporalDepthObservationConfig(
+        edge_threshold_m=float(config["temporal_depth_edge_threshold_m"]),
+        minimum_area_px=int(config["temporal_depth_minimum_area_px"]),
+        maximum_area_px=int(config["temporal_depth_maximum_area_px"]),
+        plane_minimum_area_px=int(config["temporal_depth_plane_minimum_area_px"]),
+        planar_rmse_threshold_m=float(config["temporal_depth_planar_rmse_threshold_m"]),
+        semantic_minimum_votes=int(config["temporal_depth_semantic_minimum_votes"]),
+        semantic_minimum_fraction=float(config["temporal_depth_semantic_minimum_fraction"]),
+        semantic_minimum_probability=float(config["temporal_depth_semantic_minimum_probability"]),
+        maximum_observations=int(config["temporal_depth_maximum_observations"]),
+        maximum_unknown_observations=int(
+            config["temporal_depth_maximum_unknown_observations"]
+        ),
+        depth_max_m=float(config["depth_max_m"]),
+        voxel_size_m=float(config["voxel_size_m"]),
+        pixel_stride=int(config["temporal_proposal_pixel_stride"]),
+        min_valid_points=int(config["temporal_proposal_min_valid_points"]),
+    )
+    merge_config = TemporalObservationMergeConfig(
+        same_semantic_iou_threshold=float(config["temporal_merge_same_semantic_iou"]),
+        supplement_containment_threshold=float(config["temporal_merge_supplement_containment"]),
+    )
+    manifest_sha256 = _sha256_bytes(manifest_bytes)
+    bindings = dict(base.bindings)
+    bindings["temporal_frontend_manifest"] = _byte_record(manifest_bytes)
+    input_hashes = dict(base.input_hashes)
+    input_hashes[manifest_path] = manifest_sha256
+    input_hashes.update({cache_dir / name: digest for name, digest in hashes.items()})
+    return _TemporalProductionCaches(
+        base=base,
+        temporal_frontend=temporal_frontend,
+        temporal_cache_dir=cache_dir,
+        temporal_manifest_path=manifest_path,
+        temporal_hashes=hashes,
+        temporal_manifest_sha256=manifest_sha256,
+        dense_config=dense_config,
+        depth_config=depth_config,
+        merge_config=merge_config,
+        bindings=bindings,
+        input_hashes=input_hashes,
+    )
 
 
 def _production_dependencies() -> RunnerDependencies:
     return RunnerDependencies(
         dataset_factory=_production_dataset_factory,
-        cache_loader_factory=_production_cache_loader_factory,
+        cache_loader_factory=_production_v2_cache_loader_factory,
         runtime_factory=_production_runtime_factory,
         provenance_factory=_production_provenance,
         environment_factory=_production_environment,
     )
+
+
+def _load_temporal_observations(
+    profile: Any,
+    caches: Any,
+    frame_index: int,
+    frame: Any,
+    dense_semantics: Any,
+) -> tuple[Any, ...] | None:
+    from src.oviv2.temporal_config import ExecutionProfile
+
+    if profile in {ExecutionProfile.A0, ExecutionProfile.A1}:
+        return None
+    if profile not in {ExecutionProfile.A2, ExecutionProfile.A3, ExecutionProfile.A4}:
+        raise TypeError("profile must be an ExecutionProfile")
+    loader = getattr(caches, "load_temporal", None)
+    if not callable(loader):
+        raise ValueError("temporal profile requires a callable temporal cache loader")
+    observations = loader(frame_index, frame, dense_semantics)
+    if type(observations) is not tuple:
+        raise TypeError("temporal cache loader must return an exact tuple")
+    return observations
 
 
 def _snapshot_from_runtime(
@@ -2710,6 +3177,8 @@ def run(
     *,
     freeze_manifest: str | Path | None = None,
     run_slot: str | None = None,
+    allow_unfrozen_office: bool = False,
+    table_only: bool = False,
     dependencies: RunnerDependencies | None = None,
 ) -> dict[str, Any]:
     if (freeze_manifest is None) != (run_slot is None):
@@ -2721,7 +3190,9 @@ def run(
     scene, frame_count, schedule_path, evaluation_frames, temporal_config = (
         _validate_config(config)
     )
-    if scene == "office" and freeze_manifest is None:
+    if allow_unfrozen_office and (scene != "office" or freeze_manifest is not None):
+        raise ValueError("unfrozen Office opt-in is only valid for an unfrozen Office run")
+    if scene == "office" and freeze_manifest is None and not allow_unfrozen_office:
         raise ValueError("Office requires frozen authorization")
     destination = _absolute_lexical(output)
     frozen = (
@@ -2757,6 +3228,7 @@ def run(
         or plan_hash != plan["evaluation_checkpoint_frames_sha256"]
     ):
         raise ValueError("evaluation checkpoint frame binding mismatch")
+    capture_evaluation_frames = () if table_only else evaluation_frames
 
     dependencies = _production_dependencies() if dependencies is None else dependencies
     current_environment = _validate_environment(
@@ -2764,9 +3236,12 @@ def run(
     )
     if (
         frozen is not None
-        and current_environment != frozen.input_bindings["environment"]
+        and _formal_environment_compatibility(current_environment)
+        != _formal_environment_compatibility(
+            frozen.input_bindings["environment"]
+        )
     ):
-        raise ValueError("frozen environment differs from the execution environment")
+        raise ValueError("frozen environment is incompatible with the execution environment")
 
     if destination.exists() or destination.is_symlink():
         raise FileExistsError(destination)
@@ -2898,7 +3373,7 @@ def run(
 
         by_frame = {item.frame_index: item for item in official}
         first_timestamp_ns = _dataset_timestamp_ns(dataset, 0)
-        for frame_index in evaluation_frames:
+        for frame_index in capture_evaluation_frames:
             timestamp_ns = _dataset_timestamp_ns(dataset, frame_index)
             existing = by_frame.get(frame_index)
             if existing is None:
@@ -2921,7 +3396,7 @@ def run(
         captured: list[int] = []
         records: list[dict[str, Any]] = []
         witnesses: list[_CheckpointArtifactWitness] = []
-        cumulative_audit_witnesses: list[_CumulativeAuditWitness] = []
+        cumulative_audit_witnesses: list[_CumulativeAuditWitness | None] = []
         cumulative_audit_directories: set[str] = set()
         expected_checkpoint_inventory: set[str] = set()
         official_frames = {item.frame_index for item in official}
@@ -2936,17 +3411,67 @@ def run(
         runtime_mechanism_seen = {
             name: set() for name in V2_RUNTIME_DIAGNOSTIC_KEYS
         }
+        temporal_table_only = (
+            table_only
+            and temporal_config.execution_profile.profile_id in {"a3", "a4"}
+        )
         for frame_index in range(frame_count):
             frame = dataset[frame_index]
             if int(frame.frame_id) != frame_index:
                 raise ValueError("dataset frame IDs must equal zero-based frame indices")
-            observations, dense_semantics = caches.load(frame_index, frame)
-            dataset_timestamp_ns = _dataset_timestamp_ns(dataset, frame_index)
-            frame_result = runtime.process_frame(
-                frame,
-                observations=observations,
-                dense_semantics=dense_semantics,
+            table_keyframe = (
+                not temporal_table_only
+                or frame_index % TABLE_ONLY_KEYFRAME_STRIDE == 0
+                or frame_index in by_frame
+                or frame_index == frame_count - 1
             )
+            dataset_timestamp_ns = _dataset_timestamp_ns(dataset, frame_index)
+            if temporal_table_only and not table_keyframe:
+                advance_api = getattr(
+                    runtime, "advance_temporal_only_frame", None
+                )
+                if not callable(advance_api):
+                    raise TypeError(
+                        "table-only temporal profile requires temporal advance API"
+                    )
+                frame_result = advance_api(frame)
+            else:
+                observations, dense_semantics = caches.load(frame_index, frame)
+                temporal_observations = _load_temporal_observations(
+                    temporal_config.execution_profile,
+                    caches,
+                    frame_index,
+                    frame,
+                    dense_semantics,
+                )
+            if temporal_table_only and table_keyframe:
+                temporal_only_api = getattr(
+                    runtime, "process_temporal_only_frame", None
+                )
+                if not callable(temporal_only_api):
+                    raise TypeError(
+                        "table-only temporal profile requires temporal-only runtime API"
+                    )
+                if temporal_observations is None:
+                    raise ValueError(
+                        "table-only temporal profile requires temporal observations"
+                    )
+                frame_result = temporal_only_api(
+                    frame, temporal_observations, dense_semantics
+                )
+            elif not temporal_table_only and temporal_observations is None:
+                frame_result = runtime.process_frame(
+                    frame,
+                    observations=observations,
+                    dense_semantics=dense_semantics,
+                )
+            elif not temporal_table_only:
+                frame_result = runtime.process_frame(
+                    frame,
+                    observations=observations,
+                    dense_semantics=dense_semantics,
+                    temporal_observations=temporal_observations,
+                )
             _accumulate_runtime_mechanism_records(
                 runtime_mechanism_records,
                 frame_result,
@@ -3040,114 +3565,139 @@ def run(
             if not needs_full and not needs_compact:
                 raise ValueError("checkpoint role combination is invalid")
             artifacts: dict[str, dict[str, Any]] = {}
-            audit_root = root / "cumulative_audit"
-            from src.oviv2.runtime import Oviv2Runtime
+            cumulative_neutral = None
+            cumulative_audit: dict[str, Any] | None = None
+            cumulative_audit_witness: _CumulativeAuditWitness | None = None
+            skip_cumulative_audit = (
+                table_only
+                and temporal_config.execution_profile.profile_id in {"a3", "a4"}
+            )
+            if not skip_cumulative_audit:
+                audit_root = root / "cumulative_audit"
+                audit_root.mkdir()
+                from src.oviv2.runtime import Oviv2Runtime
 
-            cumulative_runtime = getattr(runtime, "cumulative", None)
-            cumulative_snapshot_record = None
-            if isinstance(cumulative_runtime, Oviv2Runtime):
-                from src.evaluation.oviv2_tesse import build_neutral_current_snapshot
+                cumulative_runtime = getattr(runtime, "cumulative", None)
+                cumulative_snapshot_record = None
+                if isinstance(cumulative_runtime, Oviv2Runtime):
+                    from src.evaluation.oviv2_tesse import build_neutral_current_snapshot
 
-                required = (
-                    "class_names",
-                    "object_semantic_ids",
-                    "semantic_fusion",
-                    "timestamp_ns_by_frame",
+                    required = (
+                        "class_names",
+                        "object_semantic_ids",
+                        "semantic_fusion",
+                        "timestamp_ns_by_frame",
+                    )
+                    if any(not hasattr(caches, name) for name in required):
+                        raise TypeError("cumulative audit requires production cache bindings")
+                    cumulative_snapshot = cumulative_runtime.commit_new(
+                        audit_root / "voxel_snapshot"
+                    )
+                    if not (
+                        cumulative_snapshot.metadata.frame_id == checkpoint.frame_index
+                        and float(cumulative_snapshot.metadata.timestamp)
+                        == checkpoint.timestamp_ns / 1_000_000_000
+                    ):
+                        raise ValueError("cumulative audit snapshot does not match progress")
+                    cumulative_snapshot.revalidate_source()
+                    cumulative_neutral = build_neutral_current_snapshot(
+                        cumulative_snapshot,
+                        timestamp_ns=checkpoint.timestamp_ns,
+                        class_names=caches.class_names,
+                        object_semantic_ids=caches.object_semantic_ids,
+                        fusion=caches.semantic_fusion,
+                        timestamp_ns_by_frame=caches.timestamp_ns_by_frame,
+                    )
+                    cumulative_snapshot_record = _tree_record(
+                        audit_root / "voxel_snapshot", relative_to=staging
+                    )
+                    cumulative_snapshot.revalidate_source()
+                    del cumulative_snapshot
+                else:
+                    cumulative_neutral = _cumulative_neutral_from_runtime(
+                        runtime, checkpoint=checkpoint, caches=caches
+                    )
+                audit_paths = write_map_snapshot(
+                    cumulative_neutral, audit_root / "artifact"
                 )
-                if any(not hasattr(caches, name) for name in required):
-                    raise TypeError("cumulative audit requires production cache bindings")
-                cumulative_snapshot = cumulative_runtime.commit_new(
-                    audit_root / "voxel_snapshot"
+                audit_snapshot = Path(audit_paths["snapshot"])
+                audit_entities = Path(audit_paths["entities"])
+                for path in (audit_snapshot, audit_entities):
+                    if not path.is_file() or path.is_symlink():
+                        raise ValueError("cumulative audit sidecar is invalid")
+                    expected_checkpoint_inventory.add(
+                        path.relative_to(staging).as_posix()
+                    )
+                for path in audit_root.rglob("*"):
+                    relative = path.relative_to(staging).as_posix()
+                    if path.is_file():
+                        expected_checkpoint_inventory.add(relative)
+                    elif path.is_dir():
+                        cumulative_audit_directories.add(relative)
+                cumulative_audit_directories.add(
+                    audit_root.relative_to(staging).as_posix()
                 )
-                if not (
-                    cumulative_snapshot.metadata.frame_id == checkpoint.frame_index
-                    and float(cumulative_snapshot.metadata.timestamp)
-                    == checkpoint.timestamp_ns / 1_000_000_000
-                ):
-                    raise ValueError("cumulative audit snapshot does not match progress")
-                cumulative_snapshot.revalidate_source()
-                cumulative_neutral = build_neutral_current_snapshot(
-                    cumulative_snapshot,
-                    timestamp_ns=checkpoint.timestamp_ns,
-                    class_names=caches.class_names,
-                    object_semantic_ids=caches.object_semantic_ids,
-                    fusion=caches.semantic_fusion,
-                    timestamp_ns_by_frame=caches.timestamp_ns_by_frame,
+                cumulative_audit = {
+                    "format": "oviv2_cumulative_audit_v1",
+                    "artifact": _tree_record(
+                        audit_root / "artifact", relative_to=staging
+                    ),
+                    "snapshot": _file_record(audit_snapshot, relative_to=staging),
+                    "entities": _file_record(audit_entities, relative_to=staging),
+                }
+                if cumulative_snapshot_record is not None:
+                    cumulative_audit["voxel_snapshot"] = cumulative_snapshot_record
+                cumulative_audit_witness = _CumulativeAuditWitness.bind(
+                    cumulative_audit
                 )
-                cumulative_snapshot_record = _tree_record(
-                    audit_root / "voxel_snapshot", relative_to=staging
+                _revalidate_cumulative_audit_witness(
+                    staging, cumulative_audit_witness, cumulative_audit
                 )
-                cumulative_snapshot.revalidate_source()
-                del cumulative_snapshot
-            else:
-                cumulative_neutral = _cumulative_neutral_from_runtime(
-                    runtime, checkpoint=checkpoint, caches=caches
-                )
-            audit_paths = write_map_snapshot(
-                cumulative_neutral, audit_root / "artifact"
-            )
-            audit_snapshot = Path(audit_paths["snapshot"])
-            audit_entities = Path(audit_paths["entities"])
-            for path in (audit_snapshot, audit_entities):
-                if not path.is_file() or path.is_symlink():
-                    raise ValueError("cumulative audit sidecar is invalid")
-                expected_checkpoint_inventory.add(
-                    path.relative_to(staging).as_posix()
-                )
-            for path in audit_root.rglob("*"):
-                relative = path.relative_to(staging).as_posix()
-                if path.is_file():
-                    expected_checkpoint_inventory.add(relative)
-                elif path.is_dir():
-                    cumulative_audit_directories.add(relative)
-            cumulative_audit_directories.add(
-                audit_root.relative_to(staging).as_posix()
-            )
-            cumulative_audit: dict[str, Any] = {
-                "format": "oviv2_cumulative_audit_v1",
-                "artifact": _tree_record(audit_root / "artifact", relative_to=staging),
-                "snapshot": _file_record(audit_snapshot, relative_to=staging),
-                "entities": _file_record(audit_entities, relative_to=staging),
-            }
-            if cumulative_snapshot_record is not None:
-                cumulative_audit["voxel_snapshot"] = cumulative_snapshot_record
-            cumulative_audit_witness = _CumulativeAuditWitness.bind(
-                cumulative_audit
-            )
-            _revalidate_cumulative_audit_witness(
-                staging, cumulative_audit_witness, cumulative_audit
-            )
             cumulative_audit_witnesses.append(cumulative_audit_witness)
             temporal_neutral = None
             if needs_full:
                 if snapshot is not None:
-                    receipt = publish_temporal_current_checkpoint(
-                        root / "temporal_current",
-                        snapshot,
-                        caches.class_names,
-                        code_commit=code_commit,
-                        input_sha256=input_sha256,
-                    )
-                    artifacts["temporal_current"] = _bind_checkpoint_artifact(
-                        artifact_root=receipt.path,
-                        source_witness=receipt.source_witness,
-                        checkpoint_format=TEMPORAL_CURRENT_FORMAT,
-                        staging=staging,
-                        temporal_config=temporal_config,
-                        witnesses=witnesses,
-                        expected_inventory=expected_checkpoint_inventory,
-                    )
-                    loaded = load_temporal_current_checkpoint(receipt.path)
-                    temporal_neutral = MapSnapshot(
-                        method="OVIV2",
-                        scene_id=loaded.snapshot.scene_id,
-                        timestamp=loaded.snapshot.timestamp,
-                        entities=loaded.snapshot.entities,
-                        background_xyz=loaded.snapshot.background_xyz,
-                        scope=loaded.snapshot.scope,
-                        runtime={},
-                    )
-                    loaded.revalidate_source()
+                    if table_only:
+                        direct_temporal = build_temporal_map_snapshot(
+                            snapshot, caches.class_names
+                        )
+                        temporal_neutral = MapSnapshot(
+                            method="OVIV2",
+                            scene_id=direct_temporal.scene_id,
+                            timestamp=direct_temporal.timestamp,
+                            entities=direct_temporal.entities,
+                            background_xyz=direct_temporal.background_xyz,
+                            scope=direct_temporal.scope,
+                            runtime={},
+                        )
+                    else:
+                        receipt = publish_temporal_current_checkpoint(
+                            root / "temporal_current",
+                            snapshot,
+                            caches.class_names,
+                            code_commit=code_commit,
+                            input_sha256=input_sha256,
+                        )
+                        artifacts["temporal_current"] = _bind_checkpoint_artifact(
+                            artifact_root=receipt.path,
+                            source_witness=receipt.source_witness,
+                            checkpoint_format=TEMPORAL_CURRENT_FORMAT,
+                            staging=staging,
+                            temporal_config=temporal_config,
+                            witnesses=witnesses,
+                            expected_inventory=expected_checkpoint_inventory,
+                        )
+                        loaded = load_temporal_current_checkpoint(receipt.path)
+                        temporal_neutral = MapSnapshot(
+                            method="OVIV2",
+                            scene_id=loaded.snapshot.scene_id,
+                            timestamp=loaded.snapshot.timestamp,
+                            entities=loaded.snapshot.entities,
+                            background_xyz=loaded.snapshot.background_xyz,
+                            scope=loaded.snapshot.scope,
+                            runtime={},
+                        )
+                        loaded.revalidate_source()
                 neutral = _compose_checkpoint_neutral(
                     temporal_config.execution_profile,
                     cumulative=(
@@ -3169,7 +3719,7 @@ def run(
                     expected_checkpoint_inventory.add(
                         path.relative_to(staging).as_posix()
                     )
-                if snapshot is None:
+                if snapshot is None or table_only:
                     neutral_tree = _tree_record(
                         root / "neutral_current", relative_to=staging
                     )
@@ -3178,7 +3728,7 @@ def run(
                         "artifact": neutral_tree,
                         "checksums_sha256": neutral_tree["sha256"],
                     }
-                else:
+                elif not table_only:
                     del receipt
             if needs_compact:
                 compact_checkpoint = (
@@ -3213,7 +3763,7 @@ def run(
             primary = artifacts[
                 (
                     "temporal_current"
-                    if needs_full and snapshot is not None
+                    if "temporal_current" in artifacts
                     else "neutral_current"
                     if needs_full
                     else "temporal_compact"
@@ -3348,6 +3898,8 @@ def run(
             _revalidate_checkpoint_artifact(witness, run_root=staging)
             _assert_staging_identity(staging, staging_identity)
         for witness, record in zip(cumulative_audit_witnesses, records, strict=True):
+            if witness is None:
+                continue
             _assert_staging_identity(staging, staging_identity)
             _revalidate_cumulative_audit_witness(
                 staging, witness, record["cumulative_audit"]
@@ -3401,7 +3953,7 @@ def run(
         if len(records_by_frame) != len(records):
             raise ValueError("checkpoint records contain duplicate frames")
         occlusion_records: list[dict[str, Any]] = []
-        for frame_index in evaluation_frames:
+        for frame_index in capture_evaluation_frames:
             record = records_by_frame.get(frame_index)
             compact_artifact = (
                 record.get("artifacts", {}).get("temporal_compact")
@@ -3435,7 +3987,7 @@ def run(
                 }
             )
         if [item["frame_index"] for item in occlusion_records] != list(
-            evaluation_frames
+            capture_evaluation_frames
         ):
             raise ValueError("occlusion checkpoint index coverage is invalid")
         occlusion_index = {
@@ -3468,8 +4020,25 @@ def run(
         formal_fields = (
             {"frozen_run_identity": dict(frozen.frozen_run_identity)}
             if frozen is not None
-            else {}
+            else (
+                {
+                    "nonformal_authorization": {
+                        "status": "unfrozen_office_opt_in",
+                        "publication_eligible": False,
+                    }
+                }
+                if allow_unfrozen_office
+                else {}
+            )
         )
+        if table_only:
+            formal_fields["capture_mode"] = {
+                "mode": "official_common_only",
+                "occlusion_evaluation_available": False,
+                "publication_eligible": False,
+                "runtime_mode": "temporal_only_unchecked",
+                "keyframe_stride": TABLE_ONLY_KEYFRAME_STRIDE,
+            }
         runtime_diagnostics_path = staging / "runtime_diagnostics.json"
         _write_json(
             runtime_diagnostics_path,
@@ -3525,6 +4094,7 @@ def run(
             *(
                 item["cumulative_audit"][role]
                 for item in records
+                if item["cumulative_audit"] is not None
                 for role in ("snapshot", "entities")
             ),
             final_current_map["snapshot"],
@@ -3628,6 +4198,8 @@ def run(
                 expected_directories.add(parent.parent.as_posix())
                 expected_directories.add(parent.parent.parent.as_posix())
         for record in records:
+            if record["cumulative_audit"] is None:
+                continue
             for role in ("snapshot", "entities"):
                 parent = Path(record["cumulative_audit"][role]["path"]).parent
                 expected_directories.add(parent.as_posix())
@@ -3672,6 +4244,8 @@ def run(
         for witness, record in zip(
             cumulative_audit_witnesses, manifest["checkpoints"], strict=True
         ):
+            if witness is None:
+                continue
             _revalidate_cumulative_audit_witness(
                 staging, witness, record["cumulative_audit"]
             )
@@ -3709,6 +4283,8 @@ def run(
                 manifest["checkpoints"],
                 strict=True,
             ):
+                if witness is None:
+                    continue
                 _revalidate_cumulative_audit_witness(
                     destination, witness, record["cumulative_audit"]
                 )
@@ -3785,6 +4361,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--config", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--freeze-manifest", type=Path)
+    parser.add_argument("--allow-unfrozen-office", action="store_true")
+    parser.add_argument("--table-only", action="store_true")
     parser.add_argument(
         "--run-slot",
         choices=(
@@ -3811,6 +4389,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.output,
         freeze_manifest=args.freeze_manifest,
         run_slot=args.run_slot,
+        allow_unfrozen_office=args.allow_unfrozen_office,
+        table_only=args.table_only,
     )
     print(
         json.dumps(

@@ -22,8 +22,10 @@ MANIFEST = (
     REPO_ROOT
     / "configs/evaluation/manifests/oviv2_tesse_dual_readout_search_v1.json"
 )
-APARTMENT_CONFIG = REPO_ROOT / "configs/oviv2_tesse_cd_apartment_v2.json"
-OFFICE_CONFIG = REPO_ROOT / "configs/oviv2_tesse_cd_office_v2.json"
+SOURCE_APARTMENT_CONFIG = REPO_ROOT / "configs/oviv2_tesse_cd_apartment_v2.json"
+SOURCE_OFFICE_CONFIG = REPO_ROOT / "configs/oviv2_tesse_cd_office_v2.json"
+APARTMENT_CONFIG = SOURCE_APARTMENT_CONFIG
+OFFICE_CONFIG = SOURCE_OFFICE_CONFIG
 
 
 def _canonical(value: object) -> bytes:
@@ -59,6 +61,27 @@ def _record(path: Path, *, relative_to: Path | None = None) -> dict[str, object]
 
 def _source_path(preflight: Path, record: dict[str, object]) -> Path:
     return preflight.parent / str(record["path"])
+
+
+@pytest.fixture(autouse=True)
+def _hermetic_scene_configs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    temporal_manifest = _write_json(
+        tmp_path / "scene-inputs/temporal-frontend.json",
+        {"schema_version": 1, "cache": "temporal"},
+    )
+    paths: dict[str, Path] = {}
+    for scene, source in (
+        ("apartment", SOURCE_APARTMENT_CONFIG),
+        ("office", SOURCE_OFFICE_CONFIG),
+    ):
+        config = json.loads(source.read_text(encoding="utf-8"))
+        config["temporal_frontend_manifest"] = str(temporal_manifest)
+        config["algorithm_hash"] = search_runner.canonical_algorithm_hash(config)
+        paths[scene] = _write_json(tmp_path / f"scene-inputs/{scene}.json", config)
+    monkeypatch.setattr(sys.modules[__name__], "APARTMENT_CONFIG", paths["apartment"])
+    monkeypatch.setattr(sys.modules[__name__], "OFFICE_CONFIG", paths["office"])
 
 
 def _preflight(tmp_path: Path, candidate_ids: tuple[str, ...]) -> Path:
@@ -300,6 +323,14 @@ def _preflight(tmp_path: Path, candidate_ids: tuple[str, ...]) -> Path:
                 "last_frame_index": 2,
                 "scheduled_frame_indices": [1, 2],
                 "source_index": _record(source_index, relative_to=source_root),
+                "source_bindings": (
+                    {}
+                    if base_profile in {"a0", "a1"}
+                    else {
+                        "temporal_frontend_manifest":
+                            search_runner._temporal_frontend_manifest_binding(materialized)
+                    }
+                ),
             },
         )
         mappings = [
@@ -495,6 +526,7 @@ def test_manifest_predeclares_exact_bounded_causal_matrix_and_gates() -> None:
         assert parsed.execution_profile is profile
         assert candidate["components"] == profile.components
         assert set(candidate["temporal_readout"]) == {
+            "confirm_hits",
             "execution_profile",
             "components",
             "lifecycle",
@@ -540,6 +572,106 @@ def test_manifest_predeclares_exact_bounded_causal_matrix_and_gates() -> None:
         "minimum_mapped_anchors": 53,
         "eligible_anchors": 66,
     }
+
+
+def test_temporal_frontend_path_binding_is_profile_stable(
+    tmp_path: Path,
+) -> None:
+    manifest = load_search_manifest(MANIFEST)
+    declarations = {
+        item["candidate_id"]: item for item in manifest["candidates"]
+    }
+    base = json.loads(APARTMENT_CONFIG.read_text(encoding="utf-8"))
+    temporal_manifest = _write_json(
+        tmp_path / "temporal-frontend.json", {"cache": "temporal"}
+    )
+    base["temporal_frontend_manifest"] = str(temporal_manifest)
+
+    a0 = search_runner._materialize_config(base, declarations["a0"])
+    a2 = search_runner._materialize_config(base, declarations["a2"])
+    a0_before = search_runner.input_binding_values_sha256(a0)
+    a2_before = search_runner.input_binding_values_sha256(a2)
+    assert a0_before == a2_before
+    a0["temporal_frontend_manifest"] = str(tmp_path / "absent-a0.json")
+    a2["temporal_frontend_manifest"] = str(tmp_path / "changed-a2.json")
+
+    assert search_runner.input_binding_values_sha256(a0) != a0_before
+    assert search_runner.input_binding_values_sha256(a2) != a2_before
+
+
+def test_temporal_frontend_content_binding_fails_closed_only_for_a2_a4(
+    tmp_path: Path,
+) -> None:
+    manifest = load_search_manifest(MANIFEST)
+    declarations = {
+        item["candidate_id"]: item for item in manifest["candidates"]
+    }
+    base = json.loads(APARTMENT_CONFIG.read_text(encoding="utf-8"))
+    missing = tmp_path / "missing-temporal-frontend.json"
+    base["temporal_frontend_manifest"] = str(missing)
+
+    for profile in ("a0", "a1"):
+        config = search_runner._materialize_config(base, declarations[profile])
+        assert search_runner._temporal_frontend_manifest_binding(config) is None
+        search_runner._validate_temporal_frontend_source_binding(config, {})
+        with pytest.raises(ValueError, match="unexpectedly consumed"):
+            search_runner._validate_temporal_frontend_source_binding(
+                config,
+                {"temporal_frontend_manifest": {"sha256": "0" * 64}},
+            )
+
+    for profile in ("a2", "a3", "a4"):
+        config = search_runner._materialize_config(base, declarations[profile])
+        with pytest.raises(FileNotFoundError):
+            search_runner._temporal_frontend_manifest_binding(config)
+
+    temporal_manifest = _write_json(missing, {"cache": "temporal"})
+    config = search_runner._materialize_config(base, declarations["a2"])
+    binding = {
+        "sha256": hashlib.sha256(temporal_manifest.read_bytes()).hexdigest(),
+        "byte_count": temporal_manifest.stat().st_size,
+    }
+    assert search_runner._temporal_frontend_manifest_binding(config) == binding
+    search_runner._validate_temporal_frontend_source_binding(
+        config, {"temporal_frontend_manifest": binding}
+    )
+    with pytest.raises(ValueError, match="source binding mismatch"):
+        search_runner._validate_temporal_frontend_source_binding(config, {})
+
+
+@pytest.mark.parametrize("candidate_id", ("a0", "a2"))
+def test_preflight_revalidates_profile_conditional_temporal_content_binding(
+    tmp_path: Path, candidate_id: str
+) -> None:
+    gate = _preflight(tmp_path, (candidate_id,))
+    payload = json.loads(gate.read_text(encoding="utf-8"))
+    evidence = payload["candidates"][0]["source_evidence"]
+    run_path = _source_path(gate, evidence["run_manifest"])
+    run = json.loads(run_path.read_text(encoding="utf-8"))
+    run["source_bindings"]["temporal_frontend_manifest"] = {
+        "sha256": "0" * 64,
+        "byte_count": 1,
+    }
+    _write_json(run_path, run)
+    evidence["run_manifest"] = _record(run_path, relative_to=gate.parent)
+    gate.write_text(json.dumps(payload, sort_keys=True) + "\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="temporal frontend"):
+        run_search(
+            manifest_path=MANIFEST,
+            apartment_base_config=APARTMENT_CONFIG,
+            office_base_config=OFFICE_CONFIG,
+            output_root=tmp_path / f"preflight-temporal-{candidate_id}",
+            gpu_ids=("0", "1"),
+            candidate_ids=(candidate_id,),
+            preflight_gate_evidence=gate,
+            available_ram_bytes=10**15,
+            command_builder=lambda config, output, identity: (
+                sys.executable,
+                "-c",
+                "raise SystemExit(0)",
+            ),
+        )
 
 
 def test_manifest_registers_runnable_nonselectable_micro_ablations() -> None:
@@ -995,6 +1127,55 @@ def test_parallel_runtime_has_no_head_of_line_wait_inflation(tmp_path: Path) -> 
     }
     assert records["a2"]["runtime_seconds"] < 0.25
     assert records["a2"]["runtime_seconds"] < records["a0"]["runtime_seconds"]
+
+
+def test_parallel_completion_validates_each_candidate_with_its_own_config(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    child = (
+        "import hashlib,json,pathlib,sys,time;"
+        "config=json.loads(pathlib.Path(sys.argv[1]).read_text());"
+        "output=pathlib.Path(sys.argv[2]);candidate=sys.argv[3];"
+        "time.sleep(.20 if candidate=='a0' else .01);"
+        "bindings={};"
+        "temporal=config['temporal_readout']['execution_profile'] not in ('a0','a1');"
+        "data=pathlib.Path(config['temporal_frontend_manifest']).read_bytes() "
+        "if temporal else b'';"
+        "bindings.update({'temporal_frontend_manifest':"
+        "{'sha256':hashlib.sha256(data).hexdigest(),'byte_count':len(data)}} "
+        "if temporal else {});"
+        "output.mkdir(parents=True);"
+        "(output/'run_manifest.json').write_text(json.dumps("
+        "{'source_bindings':bindings},sort_keys=True)+'\\n')"
+    )
+    monkeypatch.setattr(
+        search_runner,
+        "_default_command",
+        lambda config, output, candidate_id: (
+            sys.executable,
+            "-c",
+            child,
+            str(config),
+            str(output),
+            candidate_id,
+        ),
+    )
+
+    status_path = run_search(
+        manifest_path=MANIFEST,
+        apartment_base_config=APARTMENT_CONFIG,
+        office_base_config=OFFICE_CONFIG,
+        output_root=tmp_path / "out-of-order-bindings",
+        gpu_ids=("0", "1"),
+        max_parallel=2,
+        candidate_ids=("a0", "a2"),
+        preflight_gate_evidence=_preflight(tmp_path, ("a0", "a2")),
+        available_ram_bytes=10**15,
+    )
+
+    status = json.loads(status_path.read_text(encoding="utf-8"))
+    assert status["status"] == "PASS"
+    assert [item["candidate_id"] for item in status["candidates"]] == ["a0", "a2"]
 
 
 def test_fixed_gpu_lanes_serialize_a0_a1_and_a3_a4(tmp_path: Path) -> None:

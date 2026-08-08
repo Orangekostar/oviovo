@@ -856,8 +856,41 @@ class RuntimeVisModule:
             else:
                 reason = rejected_reasons.get(pair, "semantic_blocked_residual")
                 fi, fj = pair
+                feature_a = features[fi]
+                feature_b = features[fj]
+                breakdown: Dict[str, float | int | bool | str] = {
+                    "edge_admitted": False,
+                    "base_score_floor": round(self.base_score_floor, 4),
+                    "effective_merge_threshold": round(self.merge_score_threshold, 4),
+                    "raw_whole_prior_score": 0.0,
+                    "small_object_protection_score": 0.0,
+                    "small_object_candidate": min(
+                        feature_a.proposal.area,
+                        feature_b.proposal.area,
+                    )
+                    <= self.small_object_area_threshold,
+                    "missing_required_anchor_label": reason == "missing_anchor_label",
+                    "required_anchor_labels_mismatch": reason == "anchor_label_mismatch",
+                    "required_anchor_identity_mismatch": reason == "anchor_identity_mismatch",
+                    "semantic_blocked_residual_merge": reason == "semantic_blocked_residual",
+                    "cross_class_anchor_conflict": False,
+                    "anchor_class_a": labels[fi],
+                    "anchor_class_b": labels[fj],
+                    "anchor_id_a": anchor_ids[fi],
+                    "anchor_id_b": anchor_ids[fj],
+                    "same_best_prior_object": (
+                        feature_a.best_prior_object_id is not None
+                        and feature_a.best_prior_object_id == feature_b.best_prior_object_id
+                    ),
+                    "mask_a_class": "background_like"
+                    if feature_a.is_background_like
+                    else ("object_like" if feature_a.is_object_like else "uncertain"),
+                    "mask_b_class": "background_like"
+                    if feature_b.is_background_like
+                    else ("object_like" if feature_b.is_object_like else "uncertain"),
+                }
                 decisions.append(RuntimeMergeDecision(
-                    mask_id_a=features[fi].proposal_id, mask_id_b=features[fj].proposal_id,
+                    mask_id_a=feature_a.proposal_id, mask_id_b=feature_b.proposal_id,
                     adjacency_score=0.0, depth_continuity_score=0.0, plane_similarity_score=0.0,
                     bbox_plausibility_score=0.0, containment_score=0.0, median_depth_gap=0.0,
                     boundary_depth_continuity=0.0, plane_compatibility=0.0,
@@ -866,6 +899,7 @@ class RuntimeVisModule:
                     accepted=False, accepted_reason=reason,
                     boosted_by_whole_prior=False, linked_object_id=None,
                     rejected_due_to_background_conflict=False,
+                    reason_breakdown=breakdown,
                 ))
         return decisions
 

@@ -34,6 +34,8 @@ TEMPORAL_MECHANISM_RECORD_KEYS = (
     "ledger_stage_count", "ledger_commit_count", "ledger_reclaim_count",
 )
 
+_BACKGROUND_MODE_UNSET = object()
+
 
 def _readonly_float_array(value: object, shape: tuple[int, ...], name: str) -> np.ndarray:
     try:
@@ -160,7 +162,11 @@ class TemporalEntityState:
             norm = float(np.linalg.norm(prototype))
             if norm == 0.0:
                 raise ValueError("image_prototype must be nonzero")
-            prototype = np.ascontiguousarray(prototype / norm)
+            prototype = np.ascontiguousarray(
+                prototype
+                if math.isclose(norm, 1.0, rel_tol=0.0, abs_tol=1e-12)
+                else prototype / norm
+            )
             object.__setattr__(
                 self,
                 "image_prototype",
@@ -639,12 +645,18 @@ class TemporalRuntimeState:
         background_ledger: ReversibleBackgroundLedger | None = None,
         export_tracker: TemporalExportTracker | None = None,
         diagnostics: TemporalDiagnostics | None = None,
-        background_mode: str = "profile_locked",
+        background_mode: object = _BACKGROUND_MODE_UNSET,
     ) -> None:
+        legacy_background_mode_omitted = background_mode is _BACKGROUND_MODE_UNSET
+        if legacy_background_mode_omitted:
+            background_mode = "profile_locked"
         for name, value in locals().copy().items():
-            if name != "self":
+            if name not in {"self", "legacy_background_mode_omitted"}:
                 object.__setattr__(self, name, value)
-        self._initialize_owned(adopt=False)
+        self._initialize_owned(
+            adopt=False,
+            legacy_background_mode_omitted=legacy_background_mode_omitted,
+        )
 
     def __getattribute__(self, name: str) -> Any:
         if name == "tracker":
@@ -673,7 +685,12 @@ class TemporalRuntimeState:
             return None if raw is None else raw.clone()
         return object.__getattribute__(self, name)
 
-    def _initialize_owned(self, *, adopt: bool) -> None:
+    def _initialize_owned(
+        self,
+        *,
+        adopt: bool,
+        legacy_background_mode_omitted: bool = False,
+    ) -> None:
         if not isinstance(self.scene_id, str) or not self.scene_id.strip():
             raise ValueError("scene_id must be a non-empty string")
         object.__setattr__(self, "scene_id", self.scene_id.strip())
@@ -718,6 +735,24 @@ class TemporalRuntimeState:
         background_mode = object.__getattribute__(self, "background_mode")
         export_tracker = object.__getattribute__(self, "export_tracker")
         diagnostics = object.__getattribute__(self, "diagnostics")
+        legacy_component_migration = all(
+            value is None
+            for value in (
+                identities,
+                geometry,
+                lifecycle_beliefs,
+                ledger,
+                export_tracker,
+                diagnostics,
+            )
+        )
+        if (
+            legacy_component_migration
+            and legacy_background_mode_omitted
+            and background_mode == "profile_locked"
+            and background.active_block_count > 0
+        ):
+            background_mode = "masking_only"
         if identities is None:
             identities = IdentityMemoryBank(
                 TemporalIdentityConfig(
@@ -780,15 +815,17 @@ class TemporalRuntimeState:
             if background.active_block_count != 0 or background.last_blocks_touched != 0:
                 raise ValueError("background without a ledger must remain empty")
         else:
-            committed_background = ledger._volume
-            if (
-                background.config != committed_background.config
-                or background.canonical_block_state()
-                != committed_background.canonical_block_state()
-                or background.last_blocks_touched
-                != committed_background.last_blocks_touched
-            ):
-                raise ValueError("background must match the ledger committed volume")
+            committed_background = ledger._published_volume
+            ledger.validate_combined_volume(rebuild=False)
+            if not (adopt and background is committed_background):
+                if (
+                    background.config != committed_background.config
+                    or background.canonical_block_state()
+                    != committed_background.canonical_block_state()
+                    or background.last_blocks_touched
+                    != committed_background.last_blocks_touched
+                ):
+                    raise ValueError("background must match the ledger combined volume")
         if type(export_tracker) is not TemporalExportTracker:
             raise TypeError("export_tracker must be a TemporalExportTracker")
         if type(diagnostics) is not TemporalDiagnostics:
@@ -895,6 +932,7 @@ class TemporalRuntimeState:
         object.__setattr__(self, "lifecycle_beliefs", tuple(copy.deepcopy(item) for item in lifecycle_beliefs))
         object.__setattr__(self, "export_tracker", copy.deepcopy(export_tracker))
         object.__setattr__(self, "diagnostics", diagnostics)
+        object.__setattr__(self, "background_mode", background_mode)
         object.__setattr__(self, "_background_state", background_state)
         object.__setattr__(self, "_tracker_state", tracker_state)
         object.__setattr__(self, "_identities_state", identities if adopt else identities.clone())
@@ -943,6 +981,11 @@ class TemporalRuntimeState:
 
     def _mutable_tracker_snapshot(self) -> LocalTracker:
         return copy.deepcopy(object.__getattribute__(self, "_tracker_state"))
+
+    def _advanced_tracker_snapshot(self, frame_id: int) -> LocalTracker:
+        tracker = copy.copy(object.__getattribute__(self, "_tracker_state"))
+        tracker._last_frame_id = frame_id
+        return tracker
 
     def _mutable_identities_snapshot(self) -> IdentityMemoryBank:
         return object.__getattribute__(self, "_identities_state").clone()

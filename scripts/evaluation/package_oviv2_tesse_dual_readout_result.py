@@ -24,7 +24,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.evaluation.evaluate_oviv2_tesse_occlusion import (  # noqa: E402
+from scripts.evaluation.oviv2_tesse_cd_v2_config import (  # noqa: E402
     canonical_algorithm_hash,
 )
 from scripts.evaluation.evaluate_tesse_cd_common_v2 import (  # noqa: E402

@@ -729,16 +729,24 @@ def test_checked_in_manifest_is_explicitly_contract_only_and_hash_bound() -> Non
     ).encode("utf-8")
     assert payload["input_binding_sha256"] == hashlib.sha256(canonical).hexdigest()
     assert CONTRACT_MANIFEST.read_bytes() == render_manifest(payload)
+
+
+def test_checked_in_manifest_rebuild_matches_when_ground_truth_assets_available() -> None:
+    source = json.loads(SOURCE_MANIFEST.read_text(encoding="utf-8"))
+    ground_truth_sources = {
+        f"{scene}.{name}": Path(declaration["path"])
+        for scene in ("apartment", "office")
+        for name, declaration in source["sequences"][scene]["ground_truth"][
+            "files"
+        ].items()
+    }
+    if not all(path.exists() for path in ground_truth_sources.values()):
+        pytest.skip("formal TESSE-CD ground-truth assets are unavailable")
+
     rebuilt = build_contract_manifest(
         source_manifest=SOURCE_MANIFEST,
         schedule=SCHEDULE,
-        ground_truth_sources={
-            f"{scene}.{name}": Path(declaration["path"])
-            for scene in ("apartment", "office")
-            for name, declaration in source["sequences"][scene]["ground_truth"][
-                "files"
-            ].items()
-        },
+        ground_truth_sources=ground_truth_sources,
     )
     assert render_manifest(rebuilt) == CONTRACT_MANIFEST.read_bytes()
 

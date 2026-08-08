@@ -399,7 +399,7 @@ class DepthRefinementModule:
         if backend == "auto":
             try:
                 return self._split_connected_components_opencv(mask)
-            except ImportError:
+            except (ImportError, AttributeError):
                 return self._split_connected_components_python(mask)
         if backend in {"opencv", "cv2"}:
             return self._split_connected_components_opencv(mask)

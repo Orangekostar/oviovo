@@ -30,6 +30,7 @@ from src.oviv2.temporal_background import (
 import src.oviv2.temporal_background as _background_module
 from src.oviv2.temporal_config import (
     ExecutionProfile,
+    TemporalBackgroundLedgerConfig,
     TemporalGeometryConfig,
     TemporalReadoutConfig,
     temporal_config_from_json,
@@ -65,6 +66,7 @@ from src.oviv2.temporal_lifecycle import (
     TemporalLifecycleState,
     advance_lifecycle,
 )
+from src.oviv2.temporal_observation_merge import regularize_temporal_object_extents
 from src.oviv2.temporal_state import (
     TEMPORAL_MECHANISM_RECORD_KEYS,
     TemporalDiagnostics,
@@ -423,11 +425,17 @@ def _proposal_appearance_provenance_hash(
     return digest.hexdigest()
 
 
+class _UnprojectableIdentitySearchRegion(ValueError):
+    pass
+
+
 def _projected_identity_search_region(
     frame: Frame,
     state: TemporalRuntimeState,
     identity_id: int,
     config: TemporalReadoutConfig,
+    *,
+    record: IdentityMemoryRecord | None = None,
 ) -> ProjectedIdentitySearchRegion:
     entity = next(
         (
@@ -436,12 +444,19 @@ def _projected_identity_search_region(
         ),
         None,
     )
-    record = state.identities.get(identity_id)
+    if record is None:
+        record = state.identities.get(identity_id)
+    elif record.identity_id != identity_id:
+        raise ValueError("search region identity record does not match identity_id")
     if entity is None or record is None:
         raise ValueError("search region identity lacks retained authoritative geometry")
-    points = entity.submap.world_points(entity.object_to_world)[
+    local_points = entity.submap.local_points_xyz[
         : config.geometry.maximum_visibility_points_per_entity
     ]
+    points = (
+        local_points @ entity.object_to_world[:3, :3].T
+        + entity.object_to_world[:3, 3]
+    )
     mask = np.zeros(frame.depth.shape, dtype=bool)
     expected_depth = np.zeros(frame.depth.shape, dtype=np.float32)
     if points.shape[0]:
@@ -470,7 +485,9 @@ def _projected_identity_search_region(
                     expected_depth[row, column] = depth
                     mask[row, column] = True
     if not mask.any():
-        raise ValueError("search region identity has no projectable retained geometry")
+        raise _UnprojectableIdentitySearchRegion(
+            "search region identity has no projectable retained geometry"
+        )
     epoch = state.geometry.current(identity_id)
     digest = hashlib.sha256()
     digest.update(
@@ -498,6 +515,93 @@ def _projected_identity_search_region(
     )
 
 
+def _canonical_projected_identity_search_regions(
+    frame: Frame,
+    state: TemporalRuntimeState,
+    config: TemporalReadoutConfig,
+) -> tuple[ProjectedIdentitySearchRegion, ...]:
+    records_by_id = {
+        record.identity_id: record for record in state.identities.records
+    }
+    candidates: list[IdentityMemoryRecord] = []
+    for entity in state.entities:
+        identity_id = entity.lifecycle.entity_id
+        record = records_by_id.get(identity_id)
+        if record is None:
+            raise ValueError("retained entity lacks identity provenance")
+        state.geometry.current(identity_id)
+        candidates.append(record)
+    candidates.sort(key=lambda record: (-record.last_frame_id, record.identity_id))
+
+    assert config.proposal is not None
+    capacity = 4 * config.proposal.maximum_recovered_proposals
+    search_regions: list[ProjectedIdentitySearchRegion] = []
+    for record in candidates:
+        try:
+            region = _projected_identity_search_region(
+                frame,
+                state,
+                record.identity_id,
+                config,
+                record=record,
+            )
+        except _UnprojectableIdentitySearchRegion:
+            continue
+        search_regions.append(region)
+        if len(search_regions) == capacity:
+            break
+    return tuple(search_regions)
+
+
+def build_proposal_recovery_evidence(
+    frame: Frame,
+    observations: tuple[FrameObservation, ...],
+    dense_semantics: DenseSemanticFrame,
+    config: TemporalReadoutConfig,
+    state: TemporalRuntimeState,
+) -> ProposalRecoveryInput:
+    if not isinstance(config, TemporalReadoutConfig):
+        raise TypeError("config must be a TemporalReadoutConfig")
+    frame, observations, validated_dense = _validate_inputs(
+        frame, observations, dense_semantics, state
+    )
+    if validated_dense is None:
+        raise TypeError("dense_semantics must be a DenseSemanticFrame")
+    dense_semantics = validated_dense
+
+    depth_m = np.where(
+        np.isfinite(frame.depth)
+        & (frame.depth > 0.0)
+        & (frame.depth <= config.geometry.depth_max_m),
+        frame.depth,
+        0.0,
+    )
+    segmentation_occupied = np.zeros(frame.depth.shape, dtype=bool)
+    for observation in observations:
+        if observation.kind in (ObservationKind.OBJECT, ObservationKind.UNKNOWN):
+            segmentation_occupied |= observation.mask
+
+    return ProposalRecoveryInput(
+        frame_id=frame.frame_id,
+        timestamp=frame.timestamp,
+        depth_m=depth_m,
+        current_xyz=_current_world_xyz(frame, depth_m),
+        segmentation_occupied=segmentation_occupied,
+        semantic_support=_dense_semantic_support(dense_semantics),
+        semantic_source_frame_id=frame.frame_id,
+        semantic_provenance_hash=_proposal_semantic_provenance_hash(
+            frame, dense_semantics
+        ),
+        appearance_support=None,
+        appearance_source_frame_id=None,
+        appearance_model_id=None,
+        appearance_provenance_hash=None,
+        search_regions=_canonical_projected_identity_search_regions(
+            frame, state, config
+        ),
+    )
+
+
 def _validate_proposal_evidence(
     frame: Frame,
     observations: tuple[FrameObservation, ...],
@@ -521,10 +625,13 @@ def _validate_proposal_evidence(
         frame.depth,
         0.0,
     )
+    if evidence.depth_m.dtype != expected_depth.dtype:
+        raise ValueError("proposal depth evidence dtype is not canonical")
     if not np.array_equal(evidence.depth_m, expected_depth):
         raise ValueError("proposal depth evidence is not bound to the current frame")
     expected_xyz = _current_world_xyz(frame, expected_depth)
-    expected_xyz = expected_xyz.astype(evidence.current_xyz.dtype, copy=False)
+    if evidence.current_xyz.dtype != expected_xyz.dtype:
+        raise ValueError("proposal XYZ evidence dtype is not canonical")
     if not np.array_equal(evidence.current_xyz, expected_xyz):
         raise ValueError("proposal XYZ evidence is not bound to current geometry")
     if not np.array_equal(evidence.semantic_support, _dense_semantic_support(dense)):
@@ -556,20 +663,49 @@ def _validate_proposal_evidence(
         )
         if evidence.appearance_provenance_hash != expected_hash:
             raise ValueError("proposal appearance provenance is not bound to current features")
-    for region in evidence.search_regions:
-        expected_region = _projected_identity_search_region(
-            frame, state, region.identity_id, config
+    assert config.proposal is not None
+    capacity = 4 * config.proposal.maximum_recovered_proposals
+    if len(evidence.search_regions) > capacity:
+        raise ValueError("proposal search region count exceeds configured capacity")
+    expected_regions = _canonical_projected_identity_search_regions(
+        frame, state, config
+    )
+    if len(evidence.search_regions) != len(expected_regions):
+        raise ValueError("proposal search regions are not canonical")
+    for region, expected_region in zip(
+        evidence.search_regions, expected_regions, strict=True
+    ):
+        observed_key = (
+            region.identity_id,
+            region.source_frame_id,
+            region.projection_provenance_hash,
         )
+        expected_key = (
+            expected_region.identity_id,
+            expected_region.source_frame_id,
+            expected_region.projection_provenance_hash,
+        )
+        if observed_key != expected_key:
+            raise ValueError("proposal search region order is not canonical")
+        if region.expected_depth_m.dtype != expected_region.expected_depth_m.dtype:
+            raise ValueError("proposal search region depth dtype is not canonical")
         if region != expected_region:
             raise ValueError("proposal search region is not bound to retained identity geometry")
 
 
 def _centroid(entity: TemporalEntityState) -> tuple[float, float, float]:
-    points = entity.submap.world_points(entity.object_to_world)
-    if points.shape[0]:
-        mean = points.mean(axis=0, dtype=np.float64)
+    transform = entity.object_to_world
+    local_points = entity.submap.local_points_xyz
+    if local_points.shape[0]:
+        world_points = (
+            transform[:3, :3] @ local_points.T
+        ).T + transform[:3, 3]
+        world_points = np.ascontiguousarray(world_points, dtype=np.float64)
+        if not np.all(np.isfinite(world_points)):
+            raise ValueError("world point transformation produced non-finite values")
+        mean = world_points.mean(axis=0, dtype=np.float64)
         return tuple(float(value) for value in mean)
-    return tuple(float(value) for value in entity.object_to_world[:3, 3])
+    return tuple(float(value) for value in transform[:3, 3])
 
 
 def _association_target(entity: TemporalEntityState) -> TemporalAssociationTarget:
@@ -854,6 +990,12 @@ def _is_no_block_candidate_error(error: RuntimeError) -> bool:
             "index_t, float, float, float, float, open3d::t::geometry::kernel::"
             "voxel_grid::index_t))"
         ),
+        (
+            "(void open3d::t::geometry::kernel::voxel_grid::DepthTouchCPU("
+            "std::shared_ptr<open3d::core::HashMap>&, const open3d::core::Tensor&, "
+            "const open3d::core::Tensor&, const open3d::core::Tensor&, "
+            "open3d::core::Tensor&, index_t, float, float, float, float, index_t))"
+        ),
     )
     for function in functions:
         body = (
@@ -880,7 +1022,44 @@ class _SparseBackgroundVolume(TemporalBackgroundVolume):
             volume._config, max(1, capacity)
         )
         volume._last_blocks_touched = 0
+        volume._ledger_volume_digest = None
+        volume._ledger_active_block_keys = None
         return volume
+
+    def _integrate_owned(
+        self,
+        depth: np.ndarray,
+        rgb: np.ndarray,
+        intrinsic: np.ndarray,
+        pose: np.ndarray,
+    ) -> None:
+        self._ledger_volume_digest = None
+        self._ledger_active_block_keys = None
+        super()._integrate_owned(depth, rgb, intrinsic, pose)
+
+    def _integrate_owned_blocks(
+        self,
+        depth: np.ndarray,
+        rgb: np.ndarray,
+        intrinsic: np.ndarray,
+        pose: np.ndarray,
+        block_keys: tuple[tuple[int, int, int], ...],
+    ) -> None:
+        self._ledger_volume_digest = None
+        self._ledger_active_block_keys = None
+        super()._integrate_owned_blocks(
+            depth, rgb, intrinsic, pose, block_keys
+        )
+
+    def active_block_key_set(self) -> frozenset[tuple[int, int, int]]:
+        cached = getattr(self, "_ledger_active_block_keys", None)
+        if cached is None:
+            cached = frozenset(
+                tuple(int(value) for value in row)
+                for row in _background_module._active_block_keys(self._volume)
+            )
+            self._ledger_active_block_keys = cached
+        return cached
 
     def candidate_block_keys(
         self, frame: Frame, masked_depth: np.ndarray
@@ -899,6 +1078,28 @@ class _SparseBackgroundVolume(TemporalBackgroundVolume):
         frame: Frame,
         masked_depth: np.ndarray,
         block_keys: tuple[tuple[int, int, int], ...],
+    ) -> None:
+        self._integrate_blocks_owned(
+            frame, masked_depth, block_keys, validate_touched=True
+        )
+
+    def _integrate_prevalidated_blocks_owned(
+        self,
+        frame: Frame,
+        masked_depth: np.ndarray,
+        block_keys: tuple[tuple[int, int, int], ...],
+    ) -> None:
+        self._integrate_blocks_owned(
+            frame, masked_depth, block_keys, validate_touched=False
+        )
+
+    def _integrate_blocks_owned(
+        self,
+        frame: Frame,
+        masked_depth: np.ndarray,
+        block_keys: tuple[tuple[int, int, int], ...],
+        *,
+        validate_touched: bool,
     ) -> None:
         _, frame_depth, rgb, pose, intrinsic = _background_module._validate_frame(
             frame
@@ -922,13 +1123,11 @@ class _SparseBackgroundVolume(TemporalBackgroundVolume):
         normalized = tuple(tuple(int(value) for value in key) for key in block_keys)
         if normalized != tuple(sorted(set(normalized))):
             raise ValueError("block_keys must be sorted and unique")
-        candidate = self.candidate_block_keys(frame, depth)
-        if not set(normalized).issubset(candidate):
-            raise ValueError("block_keys must be touched by the observation")
-        existing = {
-            tuple(int(value) for value in row)
-            for row in _background_module._active_block_keys(self._volume)
-        }
+        if validate_touched:
+            candidate = self.candidate_block_keys(frame, depth)
+            if not set(normalized).issubset(candidate):
+                raise ValueError("block_keys must be touched by the observation")
+        existing = self.active_block_key_set()
         if len(existing | set(normalized)) > self.config.background_block_count:
             raise ValueError(
                 "TSDF block capacity would exceed background_block_count"
@@ -1034,6 +1233,132 @@ def _rebuild_sparse_background_blocks(
 
 
 class _SparseBackgroundLedger(ReversibleBackgroundLedger):
+    def __init__(
+        self,
+        geometry_config: TemporalGeometryConfig,
+        config: TemporalBackgroundLedgerConfig,
+    ) -> None:
+        super().__init__(geometry_config, config)
+        release_volume = _SparseBackgroundVolume.preallocated(
+            geometry_config, 1
+        )
+        base_volume = _SparseBackgroundVolume.preallocated(
+            geometry_config, 1
+        )
+        self._state = replace(
+            self._state,
+            volume=release_volume,
+            base_volume=base_volume,
+            combined_volume=base_volume,
+            derivation_digest=self._derivation_digest(
+                base_volume, {}, base_volume
+            ),
+        )
+
+    def clone(self) -> _SparseBackgroundLedger:
+        clone = object.__new__(type(self))
+        clone._config = self._config
+        clone._maximum_ownership_records_per_observation = (
+            self._maximum_ownership_records_per_observation
+        )
+        clone._state = replace(
+            self._state,
+            provisional=dict(self._provisional),
+            committed=dict(self._committed),
+            event_digests=dict(self._event_digests),
+            native_frames=dict(self._native_frames),
+            native_view_bins=dict(self._native_view_bins),
+            processed_frames=dict(self._processed_frames),
+        )
+        return clone
+
+    @staticmethod
+    def _volume_digest(volume: TemporalBackgroundVolume) -> str:
+        cached = getattr(volume, "_ledger_volume_digest", None)
+        if isinstance(cached, str):
+            return cached
+        payload = tuple(
+            (dtype, shape, hashlib.sha256(data).hexdigest())
+            for dtype, shape, data in volume.canonical_block_state()
+        )
+        digest = _ledger_module._digest(payload)
+        if isinstance(volume, _SparseBackgroundVolume):
+            volume._ledger_volume_digest = digest
+        return digest
+
+    @classmethod
+    def _derivation_digest(
+        cls,
+        base_volume: TemporalBackgroundVolume,
+        committed: dict[object, object],
+        combined_volume: TemporalBackgroundVolume,
+    ) -> str:
+        return _ledger_module._digest(
+            (
+                cls._volume_digest(base_volume),
+                tuple(
+                    _ledger_module._record_payload(committed[key])
+                    for key in sorted(committed)
+                ),
+                cls._volume_digest(combined_volume),
+            )
+        )
+
+    @property
+    def _base_volume(self) -> TemporalBackgroundVolume:
+        value = self._state.base_volume
+        if not isinstance(value, _SparseBackgroundVolume):
+            raise RuntimeError("sparse ledger base volume is unavailable")
+        return value
+
+    def integrate_base(self, frame: Frame, masked_depth: np.ndarray) -> int:
+        current_base = self._base_volume
+        block_keys = current_base.candidate_block_keys(frame, masked_depth)
+        native_identity = _ledger_module._native_identity(frame)
+        watermark = (
+            int(frame.frame_id),
+            native_identity,
+            _ledger_module._native_frame_index(frame),
+            _ledger_module._observation_payload(frame, masked_depth),
+        )
+        previous = self._state.base_observation_watermark
+        if previous is not None:
+            if frame.frame_id == previous[0] or native_identity == previous[1]:
+                if watermark == previous:
+                    return 0
+                raise ValueError("conflicting duplicate base observation")
+            if frame.frame_id <= previous[0] or watermark[2] <= previous[2]:
+                raise ValueError("base observation cannot move backwards")
+        journal_blocks = {
+            record.contribution.block_key
+            for record in (*self._provisional.values(), *self._committed.values())
+        }
+        active_base = current_base.active_block_key_set()
+        if (
+            len(active_base | set(block_keys) | journal_blocks)
+            > current_base.config.background_block_count
+        ):
+            raise ValueError(
+                "combined TSDF block capacity would exceed background_block_count"
+            )
+        base_volume = current_base.clone()
+        if not isinstance(base_volume, _SparseBackgroundVolume):
+            raise TypeError("sparse ledger base volume has an invalid type")
+        if block_keys:
+            base_volume.integrate_blocks_owned(frame, masked_depth, block_keys)
+        else:
+            base_volume._last_blocks_touched = 0
+        next_state = self._finalize_state(
+            replace(
+                self._state,
+                base_volume=base_volume,
+                base_observation_watermark=watermark,
+            )
+        )
+        self._before_publish(next_state)
+        self._state = next_state
+        return base_volume.last_blocks_touched
+
     @staticmethod
     def _record_indexes(
         provisional: dict[object, object],
@@ -1148,8 +1473,104 @@ class _SparseBackgroundLedger(ReversibleBackgroundLedger):
     def _rebuild_committed_volume(
         self, committed: dict[object, object]
     ) -> TemporalBackgroundVolume:
-        return _rebuild_sparse_background_blocks(
-            self._volume.config, self._aggregate_observations(committed)
+        observations = self._aggregate_observations(committed)
+        all_keys = {
+            key for observation in observations for key in observation.block_keys
+        }
+        if len(all_keys) > self._volume.config.background_block_count:
+            raise ValueError(
+                "TSDF block capacity would exceed background_block_count"
+            )
+        rebuilt = _SparseBackgroundVolume.preallocated(
+            self._volume.config, len(all_keys)
+        )
+        for observation in sorted(observations, key=lambda item: repr(item.key)):
+            rebuilt._integrate_prevalidated_blocks_owned(
+                observation.frame,
+                observation.depth_m,
+                observation.block_keys,
+            )
+        return rebuilt
+
+    def _compose_combined_volume(
+        self,
+        base_volume: TemporalBackgroundVolume,
+        committed: dict[object, object],
+    ) -> TemporalBackgroundVolume:
+        if not committed:
+            return base_volume
+        rebuilt = base_volume.clone()
+        if not isinstance(rebuilt, _SparseBackgroundVolume):
+            raise TypeError("sparse ledger base volume has an invalid type")
+        for observation in self._aggregate_observations(committed):
+            rebuilt._integrate_prevalidated_blocks_owned(
+                observation.frame,
+                observation.depth_m,
+                observation.block_keys,
+            )
+        return rebuilt
+
+    def _finalize_state(self, next_state):
+        base_volume = next_state.base_volume
+        if not isinstance(base_volume, _SparseBackgroundVolume):
+            raise TypeError("sparse ledger state requires a base volume")
+        if (
+            base_volume is self._state.base_volume
+            and next_state.volume is self._state.volume
+            and self._state.combined_volume is not None
+        ):
+            return next_state
+        if not next_state.committed:
+            combined = base_volume
+        elif base_volume.active_block_count == 0:
+            combined = next_state.volume
+        else:
+            combined = self._compose_combined_volume(
+                base_volume, next_state.committed
+            )
+        return replace(
+            next_state,
+            combined_volume=combined,
+            derivation_digest=self._derivation_digest(
+                base_volume, next_state.committed, combined
+            ),
+        )
+
+    def validate_combined_volume(self, *, rebuild: bool = True) -> None:
+        combined = self._state.combined_volume
+        base = self._state.base_volume
+        if not isinstance(combined, _SparseBackgroundVolume) or not isinstance(
+            base, _SparseBackgroundVolume
+        ):
+            raise ValueError("sparse ledger combined volume state is incomplete")
+        digest = self._derivation_digest(base, self._committed, combined)
+        if digest != self._state.derivation_digest:
+            raise ValueError("ledger combined volume derivation is invalid")
+        if not rebuild:
+            return
+        expected = self._compose_combined_volume(base, self._committed)
+        if (
+            expected.config != combined.config
+            or expected.canonical_block_state() != combined.canonical_block_state()
+            or expected.last_blocks_touched != combined.last_blocks_touched
+        ):
+            raise ValueError("ledger combined volume derivation is invalid")
+
+    def _within_capacity(
+        self,
+        provisional: dict[object, object],
+        committed: dict[object, object],
+    ) -> bool:
+        if not super()._within_capacity(provisional, committed):
+            return False
+        base_blocks = self._base_volume.active_block_key_set()
+        journal_blocks = {
+            record.contribution.block_key
+            for record in (*provisional.values(), *committed.values())
+        }
+        return (
+            len(base_blocks | journal_blocks)
+            <= self._base_volume.config.background_block_count
         )
 
     def stage(self, evidence: BackgroundLedgerEvidence) -> LedgerDecision:
@@ -1324,9 +1745,11 @@ def _proposal_observation(
         model_id = record.feature_model_id if prototype is not None else None
     key = tuple(int(math.floor(value / voxel_size_m)) for value in proposal.centroid_xyz)
     observation_id = (1 << 62) + proposal.frame_id * capacity + proposal.proposal_id
-    if observation_id > np.iinfo(np.int64).max:
-        raise OverflowError("recovered proposal observation ID exceeds int64")
-    return FrameObservation(
+    if observation_id >= 3 * (1 << 61):
+        raise OverflowError(
+            "recovered proposal observation ID exceeds reserved tag10 namespace"
+        )
+    observation = FrameObservation(
         observation_id=observation_id,
         frame_id=proposal.frame_id,
         timestamp=proposal.timestamp,
@@ -1347,6 +1770,30 @@ def _proposal_observation(
         feature_model_id=model_id,
         visible_pixel_count=proposal.area_px,
     )
+    regularized = regularize_temporal_object_extents(
+        (observation,), voxel_size_m
+    )[0]
+    if regularized is observation:
+        return observation
+    lower = np.asarray(observation.bounds_min_xyz, dtype=np.float64)
+    upper = np.asarray(observation.bounds_max_xyz, dtype=np.float64)
+    centroid = np.asarray(observation.centroid_xyz, dtype=np.float64)
+    cell_lower = np.asarray(regularized.bounds_min_xyz, dtype=np.float64)
+    cell_upper = np.asarray(regularized.bounds_max_xyz, dtype=np.float64)
+    positive = upper > lower
+    adjusted_lower = np.minimum(np.where(positive, lower, cell_lower), centroid)
+    adjusted_upper = np.maximum(np.where(positive, upper, cell_upper), centroid)
+    object.__setattr__(
+        regularized,
+        "bounds_min_xyz",
+        tuple(float(value) for value in adjusted_lower),
+    )
+    object.__setattr__(
+        regularized,
+        "bounds_max_xyz",
+        tuple(float(value) for value in adjusted_upper),
+    )
+    return regularized
 
 
 def _motion_confidence(
@@ -1481,6 +1928,90 @@ class TemporalCurrentRuntime:
     def _before_publish(self, next_state: TemporalRuntimeState) -> None:
         del next_state
 
+    def advance_frame_without_update(self, frame: Frame) -> TemporalFrameResult:
+        current = self.state
+        frame = _validate_frame(frame)
+        if frame.frame_id != current.last_frame_id + 1:
+            raise ValueError("advance frame_id must immediately follow runtime progress")
+        if current.last_frame_id != -1 and float(frame.timestamp) <= current.last_timestamp:
+            raise ValueError("frame.timestamp must increase strictly")
+        timestamp = float(frame.timestamp)
+        timestamp_ns = timestamp_seconds_to_ns(timestamp)
+        assert current.lifecycle_beliefs is not None
+        lifecycle_beliefs = tuple(
+            replace(
+                belief,
+                last_frame_id=frame.frame_id,
+                last_timestamp=timestamp,
+            )
+            for belief in current.lifecycle_beliefs
+        )
+        lifecycle_by_id = {
+            belief.entity_id: belief for belief in lifecycle_beliefs
+        }
+        entities = tuple(
+            replace(
+                entity,
+                lifecycle=lifecycle_by_id[entity.lifecycle.entity_id],
+            )
+            for entity in current.entities
+        )
+        tracker = current._advanced_tracker_snapshot(frame.frame_id)
+        export = TemporalExportBatch(frame.frame_id, timestamp_ns, (), ())
+        assert current.export_tracker is not None
+        export_tracker = TemporalExportTracker(
+            current.export_tracker.entries, export
+        )
+        frame_diagnostics = TemporalFrameDiagnostics(frame_id=frame.frame_id)
+        assert current.diagnostics is not None
+        diagnostics = replace(
+            current.diagnostics,
+            processed_frame_count=current.diagnostics.processed_frame_count + 1,
+            last_frame=frame_diagnostics,
+            assignment_diagnostics=(),
+        )
+        assert current.geometry is not None
+        next_state = TemporalRuntimeState._adopt_owned(
+            scene_id=current.scene_id,
+            revision=current.revision + 1,
+            last_frame_id=frame.frame_id,
+            last_timestamp=timestamp,
+            next_entity_id=current.next_entity_id,
+            entities=entities,
+            background=current._owned_background(),
+            tracker=tracker,
+            identities=object.__getattribute__(current, "_identities_state"),
+            geometry=current.geometry,
+            lifecycle_beliefs=lifecycle_beliefs,
+            background_ledger=object.__getattribute__(current, "_ledger_state"),
+            background_mode=current.background_mode,
+            export_tracker=export_tracker,
+            diagnostics=diagnostics,
+        )
+        result = TemporalFrameResult(
+            frame_id=frame.frame_id,
+            revision=next_state.revision,
+            active_entity_ids=tuple(
+                entity.lifecycle.entity_id
+                for entity in entities
+                if entity.lifecycle.lifecycle
+                in (TemporalLifecycle.ACTIVE, TemporalLifecycle.UNCERTAIN)
+            ),
+            dormant_entity_ids=tuple(
+                entity.lifecycle.entity_id
+                for entity in entities
+                if entity.lifecycle.lifecycle is TemporalLifecycle.DORMANT
+            ),
+            new_entity_ids=(),
+            reactivated_entity_ids=(),
+            background_blocks_touched=0,
+            export=export,
+            diagnostics=frame_diagnostics,
+        )
+        self._before_publish(next_state)
+        self.state = next_state
+        return result
+
     def process_frame(
         self,
         frame: Frame,
@@ -1587,10 +2118,70 @@ class TemporalCurrentRuntime:
                 else None
             ),
         )
-        observations_by_id = {item.observation_id: item for item in confirmed}
         entities_by_id = {
             item.lifecycle.entity_id: item for item in retained_current_entities
         }
+        bank_only_assignments = tuple(
+            pair for pair in association.assignments
+            if pair[1] not in entities_by_id
+        )
+        matched_current_ids = {
+            entity_id for _, entity_id in association.assignments
+            if entity_id in entities_by_id
+        }
+        reclaimable_dormant_count = sum(
+            entity.lifecycle.lifecycle is TemporalLifecycle.DORMANT
+            and entity.lifecycle.entity_id not in matched_current_ids
+            for entity in retained_current_entities
+        )
+        maximum_bank_reactivations = (
+            self.config.geometry.maximum_entities
+            - len(retained_current_entities)
+            + reclaimable_dormant_count
+        )
+        if len(bank_only_assignments) > maximum_bank_reactivations:
+            diagnostic_by_pair = {
+                (item.observation_id, item.entity_id): item
+                for item in association.assignment_diagnostics
+            }
+            retained_bank_assignments = set(sorted(
+                bank_only_assignments,
+                key=lambda pair: (
+                    -diagnostic_by_pair[pair].score,
+                    pair[0],
+                    pair[1],
+                ),
+            )[:maximum_bank_reactivations])
+            dropped_assignments = set(bank_only_assignments) - retained_bank_assignments
+            retained_assignments = tuple(
+                pair for pair in association.assignments
+                if pair not in dropped_assignments
+            )
+            retained_assignment_set = set(retained_assignments)
+            retained_reid_triggers = tuple(
+                pair for pair in association.reid_trigger_pairs
+                if pair in retained_assignment_set
+            )
+            association = replace(
+                association,
+                assignments=retained_assignments,
+                unmatched_observation_ids=tuple(sorted({
+                    *association.unmatched_observation_ids,
+                    *(pair[0] for pair in dropped_assignments),
+                })),
+                unmatched_entity_ids=tuple(sorted({
+                    *association.unmatched_entity_ids,
+                    *(pair[1] for pair in dropped_assignments),
+                })),
+                reid_trigger_count=len(retained_reid_triggers),
+                assignment_diagnostics=tuple(
+                    item for item in association.assignment_diagnostics
+                    if (item.observation_id, item.entity_id)
+                    in retained_assignment_set
+                ),
+                reid_trigger_pairs=retained_reid_triggers,
+            )
+        observations_by_id = {item.observation_id: item for item in confirmed}
         next_entities: dict[int, TemporalEntityState] = {}
         reactivated: list[int] = []
         forced_new_observation_ids: list[int] = []
@@ -1609,6 +2200,7 @@ class TemporalCurrentRuntime:
             (item.observation_id, item.entity_id): item
             for item in association.assignment_diagnostics
         }
+        suppressed_reid_trigger_pairs: set[tuple[int, int]] = set()
 
         for old in excluded_dormant:
             absence, released = _absence_evidence_with_release(
@@ -1641,6 +2233,35 @@ class TemporalCurrentRuntime:
             observation = observations_by_id[observation_id]
             points = backproject_observation(frame, observation, self.config.geometry)
             old = entities_by_id.get(entity_id)
+            if points.shape[0] == 0:
+                pair = (observation_id, entity_id)
+                if pair in association.reid_trigger_pairs:
+                    suppressed_reid_trigger_pairs.add(pair)
+                evidence_kind = (
+                    TemporalEvidenceKind.OUT_OF_VIEW
+                    if old is None
+                    else TemporalEvidenceKind.OCCLUDED
+                )
+                evidence = TemporalEvidence(
+                    evidence_kind,
+                    0.0,
+                    frame.frame_id,
+                    float(frame.timestamp),
+                    None,
+                )
+                belief = (
+                    lifecycle_by_id[entity_id]
+                    if old is None
+                    else old.lifecycle
+                )
+                lifecycle = advance_lifecycle(
+                    belief, evidence, self.config.lifecycle,
+                )
+                lifecycle_by_id[entity_id] = lifecycle
+                evidence_by_entity[entity_id] = evidence
+                if old is not None:
+                    next_entities[entity_id] = replace(old, lifecycle=lifecycle)
+                continue
             if old is None:
                 record = trial_identities.get(entity_id)
                 if record is None:
@@ -1786,6 +2407,17 @@ class TemporalCurrentRuntime:
                 first_seen_frame_id=old.first_seen_frame_id,
                 last_seen_frame_id=frame.frame_id,
                 feature_model_id=feature_model_id,
+            )
+
+        if suppressed_reid_trigger_pairs:
+            retained_reid_triggers = tuple(
+                pair for pair in association.reid_trigger_pairs
+                if pair not in suppressed_reid_trigger_pairs
+            )
+            association = replace(
+                association,
+                reid_trigger_count=len(retained_reid_triggers),
+                reid_trigger_pairs=retained_reid_triggers,
             )
 
         for entity_id in association.unmatched_entity_ids:
@@ -1976,7 +2608,16 @@ class TemporalCurrentRuntime:
             background_depth = build_background_depth(
                 frame, observations, protected, self.config.geometry
             )
+            released_mask = np.zeros(background_depth.depth_m.shape, dtype=bool)
+            for entity_id, temporal_evidence in evidence_by_entity.items():
+                if temporal_evidence.kind is TemporalEvidenceKind.VISIBLE_ABSENT:
+                    released_mask |= released_pixels_by_entity[entity_id]
+            base_depth = np.where(
+                released_mask, 0.0, background_depth.depth_m
+            ).astype(background_depth.depth_m.dtype, copy=False)
+            base_blocks_touched = trial_ledger.integrate_base(frame, base_depth)
             ledger_decisions: list[LedgerDecision] = []
+            ledger_frame: Frame | None = None
             for entity in ordered_entities:
                 entity_id = entity.lifecycle.entity_id
                 temporal_evidence = evidence_by_entity.get(entity_id)
@@ -2000,7 +2641,8 @@ class TemporalCurrentRuntime:
                     released_depth = np.where(
                         released_mask, background_depth.depth_m, 0.0
                     ).astype(background_depth.depth_m.dtype, copy=False)
-                    ledger_frame = frame
+                    if ledger_frame is None:
+                        ledger_frame = _ledger_module._frozen_frame(frame)
                     block_keys = _candidate_keys_with_sparse_fallback(
                         trial_ledger._volume,
                         ledger_frame,
@@ -2041,8 +2683,12 @@ class TemporalCurrentRuntime:
                     LedgerDecision.REJECTED_INTEGRATION,
                 ):
                     raise RuntimeError(f"background ledger rejected frame: {decision.value}")
-            trial_background = trial_ledger.committed_volume
-            background_blocks_touched = trial_background.last_blocks_touched
+            # The trial ledger owns this freshly finalized volume. Runtime state
+            # adopts it immutably, while public ledger access still returns a clone.
+            trial_background = trial_ledger._published_volume
+            background_blocks_touched = max(
+                base_blocks_touched, trial_background.last_blocks_touched
+            )
         if self.config.execution_profile is ExecutionProfile.A2:
             ledger_decisions = []
         ledger_after_staged = _ledger_group_records(trial_ledger, committed=False)

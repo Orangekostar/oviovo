@@ -72,7 +72,7 @@ def _write_required_run_status(
         official_eval, "validate_temporal_bridge_manifest", lambda _: {}
     )
     monkeypatch.setattr(
-        official_eval, "validate_build_manifest", lambda _: {}
+        official_eval, "validate_build_manifest", lambda _, **__: {}
     )
     status = root / "run_status.json"
     config = _source_record(required["config"])
@@ -347,6 +347,28 @@ def test_khronos_run_status_revalidates_hashed_sources(
     required["final"].write_bytes(b"changed")
     with pytest.raises(ValueError, match="source"):
         validate_khronos_run_status(status, scene="apartment")
+
+
+def test_khronos_run_status_uses_explicit_workspace_for_build_validation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    status, required = _write_required_run_status(tmp_path / "run", monkeypatch)
+    workspace = tmp_path / "canonical-workspace"
+    calls: list[tuple[Path, Path]] = []
+
+    def validate(path: Path, *, expected_workspace: Path) -> dict[str, object]:
+        calls.append((path, expected_workspace))
+        return {}
+
+    monkeypatch.setattr(official_eval, "validate_build_manifest", validate)
+
+    validate_khronos_run_status(
+        status,
+        scene="apartment",
+        workspace=workspace,
+    )
+
+    assert calls == [(required["build"], workspace)]
 
 
 def test_khronos_run_status_normalizes_bound_identity(

@@ -1190,6 +1190,7 @@ def _collect_shortlist_unpublished(
             "dataset": "TESSE-CD", "method_id": "OVIV2", "protocol_id": "oviv2-tessecd-v2",
             "scene": "apartment", "candidate_id": candidate_id,
             "config_sha256": candidate.get("config_sha256"),
+            "source_bindings": runner_manifest.get("source_bindings"),
             "processed_frame_count": runner_manifest.get("processed_frame_count"),
             "collection_protocol": _record(protocol_path), "shortlist": _record(shortlist_path),
             "candidate_config": _record(config_path, config_data),

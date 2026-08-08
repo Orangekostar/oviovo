@@ -21,6 +21,23 @@ def test_runtime_state_owns_decoupled_temporal_components() -> None:
     assert state.diagnostics.processed_frame_count == 2
 
 
+def test_pre_normalized_entity_prototype_is_byte_stable() -> None:
+    runtime = _runtime()
+    _confirm(runtime)
+    entity = runtime.state.entities[0]
+    raw = np.array([-0.7452943516631282, 0.2677252628411601])
+    prototype = raw / np.linalg.norm(raw)
+    assert np.linalg.norm(prototype) != 1.0
+
+    updated = replace(
+        entity,
+        image_prototype=prototype,
+        feature_model_id="clip-byte-stable",
+    )
+
+    assert np.array_equal(updated.image_prototype, prototype)
+
+
 def test_decoupled_component_access_is_defensive_and_canonical() -> None:
     runtime = _runtime()
     entity_id = _confirm(runtime)
@@ -192,6 +209,29 @@ def test_legacy_runtime_state_constructor_migrates_components() -> None:
     assert migrated.geometry.current(entity_id).epoch_id == 0
     assert migrated.lifecycle_beliefs[0].entity_id == entity_id
     assert migrated.background_ledger is None
+    assert migrated.background_mode == "masking_only"
+
+
+def test_explicit_profile_locked_legacy_state_does_not_silently_migrate() -> None:
+    from src.oviv2.temporal_state import TemporalRuntimeState
+
+    runtime = _runtime()
+    _confirm(runtime)
+    old = runtime.state
+    assert old.background.active_block_count > 0
+
+    with pytest.raises(ValueError, match="without.*ledger|empty"):
+        TemporalRuntimeState(
+            old.scene_id,
+            old.revision,
+            old.last_frame_id,
+            old.last_timestamp,
+            old.next_entity_id,
+            old.entities,
+            old.background,
+            old.tracker,
+            background_mode="profile_locked",
+        )
 
 
 def test_state_rejects_background_that_disagrees_with_ledger() -> None:
@@ -201,7 +241,7 @@ def test_state_rejects_background_that_disagrees_with_ledger() -> None:
     runtime = _runtime()
     _confirm(runtime)
     state = runtime.state
-    committed = state.background_ledger.committed_volume
+    committed = state.background_ledger.combined_volume
 
     wrong_touch = committed.clone()
     wrong_touch._last_blocks_touched += 1

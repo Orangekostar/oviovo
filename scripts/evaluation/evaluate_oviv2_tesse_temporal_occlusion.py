@@ -32,6 +32,10 @@ from src.oviv2.temporal_snapshot import (  # noqa: E402
     TEMPORAL_COMPACT_FORMAT,
     TemporalCompactCheckpoint,
 )
+from src.oviv2.temporal_config import (  # noqa: E402
+    temporal_config_from_json,
+    temporal_config_to_json,
+)
 from scripts.evaluation.evaluate_oviv2_tesse_occlusion import (  # noqa: E402
     _expected_source_roles,
     _load_target_package,
@@ -67,7 +71,7 @@ class _CompactBinding:
     maximum_object_voxels: int
     timestamp_ns: int
     relative_timestamp_ns: int
-    algorithm_hash: str
+    config_sha256: str
     _source_witness: Any = field(default=None, init=False, repr=False, compare=False)
 
     def load(self) -> TemporalCompactCheckpoint:
@@ -82,7 +86,7 @@ class _CompactBinding:
             loaded.metadata.frame_id != self.key[1]
             or loaded.metadata.scene_id != self.key[0]
             or round(loaded.metadata.timestamp * 1e9) != self.timestamp_ns
-            or loaded.metadata.config_sha256 != self.algorithm_hash
+            or loaded.metadata.config_sha256 != self.config_sha256
         ):
             raise ValueError("compact metadata authority mismatch")
         checksum_content, _ = _read(
@@ -399,6 +403,33 @@ def _load_index(index_path: Path, target_record: Mapping[str, Any], metadata: Ma
         and run.get("scene") == index["scene"]
     ):
         raise ValueError("sibling run manifest identity mismatch")
+    config_record = run.get("normalized_run_config")
+    if not isinstance(config_record, Mapping) or set(config_record) != {
+        "path", "sha256", "byte_count"
+    }:
+        raise ValueError("normalized run config binding is invalid")
+    config_path = run_root / _relative(
+        config_record["path"], "normalized run config"
+    )
+    config_content, config_witness = _read(
+        config_path, "normalized run config"
+    )
+    if not _valid_record(config_record, config_content):
+        raise ValueError("normalized run config binding mismatch")
+    config_payload = _json(config_content, "normalized run config")
+    temporal_config = temporal_config_from_json(
+        {"temporal_readout": config_payload.get("temporal_readout")}
+    )
+    temporal_config_content = (
+        json.dumps(
+            temporal_config_to_json(temporal_config),
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        )
+        + "\n"
+    ).encode("utf-8")
+    temporal_config_sha256 = _sha(temporal_config_content)
     mechanism_telemetry, mechanism_source_index, mechanism_witnesses = _load_mechanism_sources(
         run_root, run, index["scene"]
     )
@@ -427,6 +458,7 @@ def _load_index(index_path: Path, target_record: Mapping[str, Any], metadata: Ma
         _DirectoryIdentityWitness.capture(run_root),
         (index_path, index_witness),
         (run_root / "run_manifest.json", run_witness),
+        (config_path, config_witness),
         *mechanism_witnesses,
     ]
     for item in records:
@@ -465,7 +497,8 @@ def _load_index(index_path: Path, target_record: Mapping[str, Any], metadata: Ma
             key=key, path=artifact, run_root=run_root, tree_record=dict(artifact_record),
             checksums_sha256=item["checksums_sha256"], maximum_entities=maximum_entities,
             maximum_object_voxels=maximum_voxels, timestamp_ns=item["timestamp_ns"],
-            relative_timestamp_ns=item["relative_timestamp_ns"], algorithm_hash=index["algorithm_hash"],
+            relative_timestamp_ns=item["relative_timestamp_ns"],
+            config_sha256=temporal_config_sha256,
         )
         relative_times[key] = item["relative_timestamp_ns"]
     if [item["frame_index"] for item in records] != sorted(required):

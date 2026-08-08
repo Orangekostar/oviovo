@@ -149,6 +149,7 @@ class Pipeline:
         )
         self.yoloworld_sam_mode = str(pipeline_cfg.get("yoloworld_sam_mode", "anchor_guided_sam") or "")
         self.object_anchor.collect_generation_timings = self.collect_stage_timings
+        self.object_update.collect_stage_timings = self.collect_stage_timings
         self._stage_timings: dict[str, float] = {}
         self.last_raw_proposals = []
         self.last_source_proposals = []
@@ -775,7 +776,7 @@ class Pipeline:
                 if depth_proposals:
                     proposals = list(proposals) + list(depth_proposals)
                     depth_structure_summary = {"enabled": True, "count": len(depth_proposals)}
-        elif self.object_anchor.depth_structure_enabled:
+        elif getattr(self.object_anchor, "depth_structure_enabled", False):
             with self._timed_stage("depth_structure"):
                 depth_proposals = self._build_depth_structure_proposals(frame, proposals, anchors)
                 if depth_proposals:

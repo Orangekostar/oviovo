@@ -186,5 +186,66 @@ def test_dual_readout_is_exactly_noninterfering_for_cumulative_t1(
         assert left.dtype == right.dtype
         assert left.shape == right.shape
         assert left.tobytes() == right.tobytes()
-
     assert not any(item.is_dir() for item in tmp_path.iterdir() if item.name not in {"direct", "dual"})
+
+
+@pytest.mark.parametrize(
+    "profile", (ExecutionProfile.A2, ExecutionProfile.A3, ExecutionProfile.A4)
+)
+def test_temporal_only_observations_preserve_exact_cumulative_state(
+    profile: ExecutionProfile,
+) -> None:
+    tracker = LocalTrackerConfig(
+        confirm_hits=1,
+        min_voxel_overlap=0.0,
+        max_centroid_distance_m=2.0,
+    )
+    config = Oviv2RuntimeConfig(
+        tsdf=TsdfConfig(
+            voxel_size_m=0.05,
+            block_resolution=32,
+            block_count=64,
+        ),
+        evidence=EvidenceConfig(block_resolution=32),
+        tracker=tracker,
+    )
+    direct = Oviv2Runtime("scene", config)
+    cumulative = Oviv2Runtime("scene", config)
+    temporal = _readout(profile, tracker)
+    dual = DualReadoutRuntime(cumulative, temporal)
+    frame = _frame(0)
+    temporal_observations = (
+        _observation(frame, ObservationKind.OBJECT, 1),
+    )
+    before_frame = (
+        frame.rgb.tobytes(),
+        frame.depth.tobytes(),
+        frame.pose.tobytes(),
+    )
+    before_observation = (
+        temporal_observations[0].label,
+        temporal_observations[0].mask.tobytes(),
+        temporal_observations[0].image_feature.tobytes(),
+    )
+
+    direct_result = direct.process_frame(frame, ())
+    dual_result = dual.process_frame(
+        frame,
+        (),
+        temporal_observations=temporal_observations,
+    )
+
+    assert dual_result.cumulative == direct_result
+    assert dual_result.temporal.active_entity_ids
+    assert cumulative_state_sha256(cumulative) == cumulative_state_sha256(direct)
+    assert cumulative.registry.entities == direct.registry.entities == {}
+    assert before_frame == (
+        frame.rgb.tobytes(),
+        frame.depth.tobytes(),
+        frame.pose.tobytes(),
+    )
+    assert before_observation == (
+        temporal_observations[0].label,
+        temporal_observations[0].mask.tobytes(),
+        temporal_observations[0].image_feature.tobytes(),
+    )

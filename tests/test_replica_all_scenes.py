@@ -698,6 +698,8 @@ def test_export_checkpoint_reconstructs_scene_specific_layout(
         fmacc = 0.0
         final_object_count = 0
         dense_geometry_point_count = 0
+        finalization_sec = 0.0
+        largest_export_size_bytes = 0
 
     def fake_export_room0_outputs(**kwargs):
         captured["layout"] = kwargs["layout"]

@@ -7,15 +7,12 @@ import argparse
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 import hashlib
-import importlib.metadata
 import json
 import math
 import os
 from pathlib import Path
-import platform
 import re
 import secrets
-import socket
 import stat
 import subprocess
 import sys
@@ -26,10 +23,6 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from scripts.evaluation.evaluate_oviv2_tesse_occlusion import (  # noqa: E402
-    canonical_algorithm_config,
-    canonical_algorithm_hash,
-)
 from scripts.evaluation.run_oviv2_tesse_cd_v2 import (  # noqa: E402
     V2_FREEZE_COMMAND_KEYS,
     V2_FREEZE_ENVIRONMENT_KEYS,
@@ -44,6 +37,9 @@ from scripts.evaluation.run_oviv2_tesse_cd_v2 import (  # noqa: E402
     V2_T4_METRIC_KEYS,
     _V2_CONFIG_KEYS,
     _validate_config,
+    algorithm_config,
+    algorithm_hash,
+    _collect_formal_environment,
 )
 from scripts.evaluation.verify_oviv2_dual_readout_development_gates import (  # noqa: E402
     PRODUCTION_SCHEMA1_VARIANTS,
@@ -110,6 +106,7 @@ SCENE_FILE_FIELDS = (
     "vocabulary_json",
     "vocabulary_txt",
 )
+TEMPORAL_SCENE_FILE_FIELD = "temporal_frontend_manifest"
 SHARED_CONFIG_FIELDS = {
     "input_manifest": "input_manifest",
     "schedule": "schedule_manifest",
@@ -339,16 +336,28 @@ def _verify_record(
 
 
 def _git(repo_root: Path, *arguments: str) -> str:
-    completed = subprocess.run(
-        ["git", "-C", str(repo_root), *arguments],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    try:
+        completed = subprocess.run(
+            ["git", "-C", str(repo_root), *arguments],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError, UnicodeError) as exc:
+        raise ValueError(
+            "repository provenance unavailable; freeze requires a deployed "
+            "Git worktree"
+        ) from exc
     return completed.stdout.strip()
 
 
 def _inspect_repository(repo_root: Path) -> dict[str, Any]:
+    top_level = Path(_git(repo_root, "rev-parse", "--show-toplevel")).resolve()
+    if top_level != repo_root.resolve():
+        raise ValueError(
+            "repository root mismatch; freeze repository must be the Git "
+            "worktree root"
+        )
     commit = _git(repo_root, "rev-parse", "HEAD")
     ancestor = subprocess.run(
         [
@@ -393,47 +402,7 @@ def _validate_repository(value: Mapping[str, Any]) -> dict[str, Any]:
     return dict(value)
 
 
-def _version(distribution: str) -> str:
-    try:
-        return importlib.metadata.version(distribution)
-    except importlib.metadata.PackageNotFoundError:
-        return "unavailable"
-
-
-def _default_environment() -> dict[str, Any]:
-    cuda_visible = os.environ.get("CUDA_VISIBLE_DEVICES")
-    cuda: list[str] = []
-    gpu: list[str] = []
-    try:
-        completed = subprocess.run(
-            ["nvidia-smi", "--query-gpu=name,driver_version", "--format=csv,noheader"],
-            check=False,
-            capture_output=True,
-            text=True,
-        )
-        for line in completed.stdout.splitlines():
-            if line.strip():
-                gpu.append(line.split(",", 1)[0].strip())
-                cuda.append(line.strip())
-    except OSError:
-        pass
-    return {
-        "python": platform.python_version(),
-        "python_implementation": platform.python_implementation(),
-        "platform": platform.platform(),
-        "machine": platform.machine() or "unknown",
-        "host": socket.gethostname(),
-        "cuda": cuda or ["unavailable"],
-        "cuda_visible_devices": cuda_visible,
-        "gpu": gpu or ["unavailable"],
-        "libraries": {
-            "numpy": _version("numpy"),
-            "open3d": _version("open3d"),
-            "scipy": _version("scipy"),
-            "torch": _version("torch"),
-            "pillow": _version("pillow"),
-        },
-    }
+_default_environment = _collect_formal_environment
 
 
 def _validate_environment(value: Mapping[str, Any]) -> dict[str, Any]:
@@ -474,10 +443,10 @@ def _load_configs(
         config = _load_json(snapshot, f"{scene} frozen config")
         if set(config) != _V2_CONFIG_KEYS:
             raise ValueError(f"{scene} config schema has missing or surplus fields")
-        parsed_scene, *_ = _validate_config(config)
+        parsed_scene, _, _, _, temporal_config = _validate_config(config)
         if parsed_scene != scene or config.get("protocol_id") != FREEZE_ID:
             raise ValueError(f"{scene} config is not a {FREEZE_ID} config")
-        if config.get("algorithm_hash") != canonical_algorithm_hash(config):
+        if config.get("algorithm_hash") != algorithm_hash(config):
             raise ValueError(f"{scene} config algorithm_hash is stale")
         scene_bindings = {"frozen_config": snapshot.record}
         for field in SCENE_FILE_FIELDS:
@@ -487,10 +456,23 @@ def _load_configs(
                 role=f"{scene} {field}",
                 snapshots=snapshots,
             )
+        from src.oviv2.temporal_config import ExecutionProfile
+
+        scene_bindings[TEMPORAL_SCENE_FILE_FIELD] = (
+            None
+            if temporal_config.execution_profile
+            in {ExecutionProfile.A0, ExecutionProfile.A1}
+            else _binding(
+                config.get(TEMPORAL_SCENE_FILE_FIELD),
+                repo_root=repo_root,
+                role=f"{scene} {TEMPORAL_SCENE_FILE_FIELD}",
+                snapshots=snapshots,
+            )
+        )
         configs[scene] = config
         scenes[scene] = scene_bindings
     algorithm_hashes = {config["algorithm_hash"] for config in configs.values()}
-    normalized = [canonical_algorithm_config(config) for config in configs.values()]
+    normalized = [algorithm_config(config) for config in configs.values()]
     if len(algorithm_hashes) != 1 or normalized[0] != normalized[1]:
         raise ValueError("Apartment and Office normalized algorithm configs differ")
     return configs, scenes
@@ -991,11 +973,39 @@ def _freeze_t1_evidence(
     }
 
 
+def _validate_t4_temporal_frontend_binding(
+    run_manifest: Mapping[str, Any],
+    frozen_scene_record: Mapping[str, Any] | None,
+    candidate_id: str,
+) -> None:
+    source_bindings = run_manifest.get("source_bindings")
+    if not isinstance(source_bindings, Mapping):
+        raise ValueError(f"T4 {candidate_id} temporal frontend source bindings are invalid")
+    field = TEMPORAL_SCENE_FILE_FIELD
+    if frozen_scene_record is None:
+        if field in source_bindings:
+            raise ValueError(
+                f"T4 {candidate_id} temporal frontend input is unexpected"
+            )
+        return
+    if set(frozen_scene_record) != {"path", "sha256", "byte_count"}:
+        raise ValueError("frozen Apartment temporal frontend record is invalid")
+    expected = {
+        "sha256": frozen_scene_record["sha256"],
+        "byte_count": frozen_scene_record["byte_count"],
+    }
+    if source_bindings.get(field) != expected:
+        raise ValueError(
+            f"T4 {candidate_id} temporal frontend source binding mismatch"
+        )
+
+
 def _freeze_t4_evidence(
     path: Path,
     *,
     selected_candidate: str,
     selected_config_sha256: str,
+    temporal_frontend_manifest: Mapping[str, Any] | None,
     repo_root: Path,
     snapshots: dict[Path, _Snapshot],
 ) -> dict[str, Any]:
@@ -1123,6 +1133,9 @@ def _freeze_t4_evidence(
             and run_manifest.get("config_sha256") == matrix_row.get("config_sha256")
         ):
             raise ValueError("T4 whole-profile run manifest binding is invalid")
+        _validate_t4_temporal_frontend_binding(
+            run_manifest, temporal_frontend_manifest, candidate
+        )
         source_paths.add(run_path)
         raw_sources = protocol_row.get("raw_sources")
         if not isinstance(raw_sources, Mapping) or set(raw_sources) != (
@@ -1328,6 +1341,9 @@ def freeze(
         _required_evidence_path(args, "t4_evidence", root),
         selected_candidate=selection_payload["selected_candidate_id"],
         selected_config_sha256=selection["selected_config_sha256"],
+        temporal_frontend_manifest=scenes["apartment"][
+            TEMPORAL_SCENE_FILE_FIELD
+        ],
         repo_root=root,
         snapshots=snapshots,
     )
@@ -1396,7 +1412,7 @@ def freeze(
         "repository": repository,
         "algorithm": {
             "sha256": algorithm_hash,
-            "normalized_config": canonical_algorithm_config(configs["apartment"]),
+            "normalized_config": algorithm_config(configs["apartment"]),
         },
         "scenes": scenes,
         "shared_bindings": shared,

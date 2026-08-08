@@ -24,6 +24,7 @@ from scripts.evaluation.run_oviv2_tesse_dual_readout_search import (  # noqa: E4
     _MECHANISMS_BY_PROFILE,
     _diagnostic_recompute_payloads,
     _materialize_config,
+    _validate_temporal_frontend_source_binding,
 )
 from src.evaluation.oviv2_temporal_occlusion import (  # noqa: E402
     mechanism_telemetry_from_sources,
@@ -572,6 +573,10 @@ def build_preflight(
             and run.get("algorithm_hash") == materialized["algorithm_hash"]
         ):
             raise ValueError(f"{candidate_id} run identity mismatch")
+        source_bindings = run.get("source_bindings")
+        if not isinstance(source_bindings, Mapping):
+            raise ValueError(f"{candidate_id} run source_bindings are invalid")
+        _validate_temporal_frontend_source_binding(materialized, source_bindings)
         source_path, source_content, source_index = _bound_source(
             run.get("source_index"), base=run_path.parent, label=f"{candidate_id} source_index"
         )

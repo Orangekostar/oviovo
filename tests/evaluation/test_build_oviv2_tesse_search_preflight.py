@@ -4,9 +4,11 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import sys
 
 import pytest
 
+from scripts.evaluation.evaluate_oviv2_tesse_occlusion import canonical_algorithm_hash
 from scripts.evaluation.build_oviv2_tesse_search_preflight import (
     _anchor_coverage,
     _build_preflight_at,
@@ -15,6 +17,7 @@ from scripts.evaluation.build_oviv2_tesse_search_preflight import (
 )
 from scripts.evaluation.run_oviv2_tesse_dual_readout_search import (
     _materialize_config,
+    _temporal_frontend_manifest_binding,
     _validate_preflight_gate_evidence,
     _validate_preflight_gate_evidence_at,
 )
@@ -35,6 +38,21 @@ def _write(path: Path, value: object) -> Path:
     return path
 
 
+@pytest.fixture(autouse=True)
+def _hermetic_base_config(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    temporal_manifest = _write(
+        tmp_path / "scene-inputs/temporal-frontend.json",
+        {"schema_version": 1, "cache": "temporal"},
+    )
+    config = json.loads(BASE_CONFIG.read_text(encoding="utf-8"))
+    config["temporal_frontend_manifest"] = str(temporal_manifest)
+    config["algorithm_hash"] = canonical_algorithm_hash(config)
+    hermetic_config = _write(tmp_path / "scene-inputs/apartment.json", config)
+    monkeypatch.setattr(sys.modules[__name__], "BASE_CONFIG", hermetic_config)
+
+
 def _record(path: Path, root: Path) -> dict[str, object]:
     content = path.read_bytes()
     return {
@@ -44,7 +62,12 @@ def _record(path: Path, root: Path) -> dict[str, object]:
     }
 
 
-def _candidate_sources(tmp_path: Path, candidate_id: str = "a1") -> Path:
+def _candidate_sources(
+    tmp_path: Path,
+    candidate_id: str = "a1",
+    *,
+    include_source_bindings: bool = True,
+) -> Path:
     manifest = json.loads(SEARCH_MANIFEST.read_text())
     base = json.loads(BASE_CONFIG.read_text())
     main = {item["candidate_id"]: item for item in manifest["candidates"]}
@@ -254,23 +277,28 @@ def _candidate_sources(tmp_path: Path, candidate_id: str = "a1") -> Path:
         },
     )
     materialized = _materialize_config(base, declaration)
-    run_manifest = _write(
-        root / "run_manifest.json",
-        {
-            "schema_version": 2,
-            "dataset": "TESSE-CD",
-            "protocol_id": "oviv2-tessecd-v2",
-            "scene": "apartment",
-            "method_id": "OVIV2",
-            "algorithm_hash": materialized["algorithm_hash"],
-            "processed_frame_count": 5,
-            "covered_frame_count": 5,
-            "first_frame_index": 0,
-            "last_frame_index": 4,
-            "scheduled_frame_indices": [1, 2, 3, 4],
-            "source_index": _record(source_index, root),
-        },
-    )
+    run_payload = {
+        "schema_version": 2,
+        "dataset": "TESSE-CD",
+        "protocol_id": "oviv2-tessecd-v2",
+        "scene": "apartment",
+        "method_id": "OVIV2",
+        "algorithm_hash": materialized["algorithm_hash"],
+        "processed_frame_count": 5,
+        "covered_frame_count": 5,
+        "first_frame_index": 0,
+        "last_frame_index": 4,
+        "scheduled_frame_indices": [1, 2, 3, 4],
+        "source_index": _record(source_index, root),
+    }
+    if include_source_bindings:
+        temporal_binding = _temporal_frontend_manifest_binding(materialized)
+        run_payload["source_bindings"] = (
+            {}
+            if temporal_binding is None
+            else {"temporal_frontend_manifest": temporal_binding}
+        )
+    run_manifest = _write(root / "run_manifest.json", run_payload)
     mappings = [
         {
             "scene": "apartment",
@@ -389,6 +417,42 @@ def test_builds_source_recomputed_preflight_consumable_by_search(tmp_path: Path)
     assert hashlib.sha256(
         (tmp_path / "a1/lifecycle_transitions.jsonl").read_bytes()
     ).hexdigest() in invalidation["trigger_records"][0]
+
+
+def test_builder_rejects_run_manifest_without_source_bindings(tmp_path: Path) -> None:
+    sources = _candidate_sources(tmp_path, include_source_bindings=False)
+
+    with pytest.raises(ValueError, match="source_bindings"):
+        build_preflight(
+            search_manifest=SEARCH_MANIFEST,
+            apartment_base_config=BASE_CONFIG,
+            candidate_sources=sources,
+            output=tmp_path / "preflight.json",
+        )
+
+
+def test_builder_rejects_wrong_temporal_frontend_source_binding(
+    tmp_path: Path,
+) -> None:
+    sources = _candidate_sources(tmp_path, "a2")
+    source_index = json.loads(sources.read_text(encoding="utf-8"))
+    run_record = source_index["candidates"][0]["run_manifest"]
+    run_path = sources.parent / run_record["path"]
+    run = json.loads(run_path.read_text(encoding="utf-8"))
+    run["source_bindings"]["temporal_frontend_manifest"]["sha256"] = "0" * 64
+    _write(run_path, run)
+    source_index["candidates"][0]["run_manifest"] = _record(
+        run_path, sources.parent
+    )
+    _write(sources, source_index)
+
+    with pytest.raises(ValueError, match="temporal frontend"):
+        build_preflight(
+            search_manifest=SEARCH_MANIFEST,
+            apartment_base_config=BASE_CONFIG,
+            candidate_sources=sources,
+            output=tmp_path / "preflight.json",
+        )
 
 
 def test_fd_backed_builder_and_validator_use_held_bundle_directory(

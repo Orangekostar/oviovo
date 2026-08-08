@@ -1097,11 +1097,14 @@ def build_temporal_snapshot(
     raw_background = object.__getattribute__(state, "_background_state")
     raw_ledger = object.__getattribute__(state, "_ledger_state")
     if raw_ledger is None:
-        if raw_background.active_block_count or raw_background.last_blocks_touched:
+        if state.background_mode != "masking_only" and (
+            raw_background.active_block_count or raw_background.last_blocks_touched
+        ):
             raise ValueError("background without a ledger must remain empty")
         committed_background = raw_background
     else:
-        committed_background = raw_ledger._volume
+        raw_ledger.validate_combined_volume(rebuild=True)
+        committed_background = raw_ledger._published_volume
         if (
             raw_background.config != committed_background.config
             or raw_background.canonical_block_state()
@@ -1109,7 +1112,7 @@ def build_temporal_snapshot(
             or raw_background.last_blocks_touched
             != committed_background.last_blocks_touched
         ):
-            raise ValueError("background must match the ledger committed volume")
+            raise ValueError("background must match the ledger combined volume")
     digest = config_sha256
     wrappers: list[TemporalSnapshotEntity] = []
     seen_ids: set[int] = set()

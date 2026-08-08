@@ -269,6 +269,7 @@ class TemporalReadoutConfig:
     association: TemporalAssociationConfig
     geometry: TemporalGeometryConfig
     execution_profile: ExecutionProfile = ExecutionProfile.A4
+    confirm_hits: int = 1
     proposal: TemporalProposalConfig | None = None
     identity: TemporalIdentityConfig | None = None
     dynamic_state: TemporalDynamicConfig | None = None
@@ -280,6 +281,12 @@ class TemporalReadoutConfig:
     def __post_init__(self) -> None:
         if not isinstance(self.execution_profile, ExecutionProfile):
             raise TypeError("execution_profile must be an ExecutionProfile")
+        if isinstance(self.confirm_hits, bool) or not isinstance(
+            self.confirm_hits, int
+        ):
+            raise TypeError("confirm_hits must be an integer")
+        if self.confirm_hits <= 0:
+            raise ValueError("confirm_hits must be positive")
         if self.diagnostic_control is not None:
             if not isinstance(self.diagnostic_control, DiagnosticControl):
                 raise TypeError("diagnostic_control must be a DiagnosticControl or None")
@@ -783,6 +790,7 @@ def temporal_config_from_json(config: Mapping[str, object]) -> TemporalReadoutCo
     _require_exact_keys(raw, {"temporal_readout"}, "config")
     temporal = _require_mapping(raw["temporal_readout"], "temporal_readout")
     required_keys = {
+            "confirm_hits",
             "execution_profile",
             "components",
             "lifecycle",
@@ -823,6 +831,9 @@ def temporal_config_from_json(config: Mapping[str, object]) -> TemporalReadoutCo
         geometry_epoch=_parse_geometry_epoch(temporal["geometry_epoch"]),
         background_ledger=_parse_background_ledger(temporal["background_ledger"]),
         execution_profile=profile,
+        confirm_hits=_positive_int(
+            temporal["confirm_hits"], "temporal_readout.confirm_hits"
+        ),
         diagnostic_control=diagnostic_control,
     )
     if (
@@ -888,6 +899,7 @@ def temporal_config_to_json(config: TemporalReadoutConfig) -> dict[str, object]:
     if not isinstance(config, TemporalReadoutConfig):
         raise TypeError("config must be a TemporalReadoutConfig")
     temporal: dict[str, object] = {
+            "confirm_hits": config.confirm_hits,
             "execution_profile": config.execution_profile.profile_id,
             "components": config.execution_profile.components,
             "lifecycle": _dataclass_mapping(config.lifecycle),

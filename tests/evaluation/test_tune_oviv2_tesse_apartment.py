@@ -11,6 +11,7 @@ import time
 
 import pytest
 
+import scripts.evaluation.tune_oviv2_tesse_apartment as tuning_module
 from scripts.evaluation.tune_oviv2_tesse_apartment import (
     CandidateExecution,
     TUNABLE_FIELDS,
@@ -51,6 +52,22 @@ def _write_json(path: Path, payload: object) -> None:
 def _write_base_config(path: Path) -> Path:
     _write_json(path, _base_config())
     return path
+
+
+@pytest.fixture
+def isolated_freeze_bindings(monkeypatch: pytest.MonkeyPatch) -> None:
+    bindings = {
+        "shared": {"input_manifest": {"sha256": "a" * 64}},
+        "scenes": {
+            "apartment": {"database": {"sha256": "b" * 64}},
+            "office": {"database": {"sha256": "c" * 64}},
+        },
+    }
+    monkeypatch.setattr(
+        tuning_module,
+        "_build_freeze_bindings",
+        lambda *args, **kwargs: bindings,
+    )
 
 
 def _fake_executor(
@@ -325,6 +342,7 @@ def test_direct_script_dry_run_and_commands_work_outside_repository(
 
 def test_run_batches_at_most_three_and_writes_deterministic_selection(
     tmp_path: Path,
+    isolated_freeze_bindings: None,
 ) -> None:
     concurrency: dict[str, object] = {
         "lock": threading.Lock(),
@@ -409,6 +427,7 @@ def test_run_batches_at_most_three_and_writes_deterministic_selection(
 def test_evaluator_summary_is_parsed_and_hashed_from_one_snapshot(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    isolated_freeze_bindings: None,
 ) -> None:
     original_read_bytes = Path.read_bytes
     read_counts: dict[Path, int] = {}
@@ -439,7 +458,10 @@ def test_evaluator_summary_is_parsed_and_hashed_from_one_snapshot(
         ).hexdigest()
 
 
-def test_final_output_is_not_visible_until_sweep_succeeds(tmp_path: Path) -> None:
+def test_final_output_is_not_visible_until_sweep_succeeds(
+    tmp_path: Path,
+    isolated_freeze_bindings: None,
+) -> None:
     output = tmp_path / "run"
     fake = _fake_executor()
 
@@ -463,6 +485,7 @@ def test_final_output_is_not_visible_until_sweep_succeeds(tmp_path: Path) -> Non
 
 def test_rejects_candidate_directory_symlink_without_writing_outside(
     tmp_path: Path,
+    isolated_freeze_bindings: None,
 ) -> None:
     output = tmp_path / "run"
     outside = tmp_path / "outside"
@@ -502,6 +525,7 @@ def test_rejects_invalid_or_incomplete_candidate_results_atomically(
     tmp_path: Path,
     bad_kind: str,
     match: str,
+    isolated_freeze_bindings: None,
 ) -> None:
     output = tmp_path / "run"
 

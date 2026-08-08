@@ -1,8 +1,14 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from collections.abc import Mapping
+from contextlib import nullcontext
+from dataclasses import dataclass, fields, is_dataclass
+from enum import Enum
 import hashlib
 import json
+import struct
+
+import numpy as np
 
 from src.core.data_structures import Frame
 from src.oviv2.dense_semantics import DenseSemanticFrame
@@ -15,7 +21,11 @@ from src.oviv2.reference_readout import (
     ReferenceCurrentReadout,
     ReferenceReadoutState,
 )
-from src.oviv2.temporal_runtime import TemporalCurrentRuntime, TemporalFrameResult
+from src.oviv2.temporal_runtime import (
+    TemporalCurrentRuntime,
+    TemporalFrameResult,
+    build_proposal_recovery_evidence,
+)
 from src.oviv2.temporal_config import temporal_config_to_json
 from src.oviv2.temporal_snapshot import TemporalCurrentSnapshot, build_temporal_snapshot
 from src.oviv2.temporal_export import TemporalExportBatch, timestamp_seconds_to_ns
@@ -32,6 +42,78 @@ from src.oviv2.t1_exactness import (
 
 
 ReferenceReadout = ReferenceCurrentReadout | LifecycleOverlayReadout
+
+
+def _exact_value_signature(value: object) -> tuple[object, ...]:
+    value_type = type(value)
+    if value is None or value_type in {bool, int, str, bytes}:
+        return ("scalar", value_type, value)
+    if value_type is float:
+        return ("float", value_type, struct.pack(">d", value))
+    if isinstance(value, np.generic):
+        return ("numpy_scalar", value_type, value.dtype.str, value.tobytes())
+    if isinstance(value, np.ndarray):
+        return (
+            "array",
+            value_type,
+            value.dtype.str,
+            value.shape,
+            value.strides,
+            bool(value.flags.writeable),
+            hashlib.sha256(value.tobytes(order="A")).digest(),
+        )
+    if isinstance(value, Enum):
+        return ("enum", value_type, _exact_value_signature(value.value))
+    if isinstance(value, Mapping):
+        items = tuple(
+            sorted(
+                (
+                    (_exact_value_signature(key), _exact_value_signature(item))
+                    for key, item in value.items()
+                ),
+                key=repr,
+            )
+        )
+        return ("mapping", value_type, items)
+    if isinstance(value, tuple):
+        return (
+            "tuple",
+            value_type,
+            tuple(_exact_value_signature(item) for item in tuple.__iter__(value)),
+        )
+    if isinstance(value, list):
+        return (
+            "list",
+            value_type,
+            tuple(_exact_value_signature(item) for item in list.__iter__(value)),
+        )
+    if isinstance(value, (set, frozenset)):
+        iterator = (
+            set.__iter__(value) if isinstance(value, set) else frozenset.__iter__(value)
+        )
+        return (
+            "set",
+            value_type,
+            tuple(sorted((_exact_value_signature(item) for item in iterator), key=repr)),
+        )
+    if is_dataclass(value) and not isinstance(value, type):
+        return (
+            "dataclass",
+            value_type,
+            tuple(
+                (field.name, _exact_value_signature(getattr(value, field.name)))
+                for field in fields(value)
+            ),
+        )
+    return ("identity", value_type, id(value))
+
+
+def _shared_input_exact_signature(
+    frame: Frame,
+    observations: tuple[FrameObservation, ...],
+    dense_semantics: DenseSemanticFrame | None,
+) -> tuple[object, ...]:
+    return _exact_value_signature((frame, observations, dense_semantics))
 
 
 def _is_reference_readout(value: object) -> bool:
@@ -118,6 +200,123 @@ class DualReadoutRuntime:
             config_sha256=hashlib.sha256(config_bytes).hexdigest(),
         )
 
+    def process_temporal_only_frame(
+        self,
+        frame: Frame,
+        observations: tuple[FrameObservation, ...],
+        dense_semantics: DenseSemanticFrame | None = None,
+    ) -> TemporalFrameResult:
+        if type(self.temporal) is not TemporalCurrentRuntime:
+            raise TypeError("temporal-only processing requires TemporalCurrentRuntime")
+        temporal_trial = isolated_temporal_runtime(self.temporal)
+        original_snapshot = shared_input_snapshot(
+            frame, observations, dense_semantics
+        )
+        original_exact = _shared_input_exact_signature(
+            frame, observations, dense_semantics
+        )
+        temporal_frame: Frame | None = None
+        isolated_temporal_observations: tuple[FrameObservation, ...] | None = None
+        temporal_dense: DenseSemanticFrame | None = None
+        temporal_clone_exact: tuple[object, ...] | None = None
+        try:
+            (
+                temporal_frame,
+                isolated_temporal_observations,
+                temporal_dense,
+            ) = clone_shared_inputs(frame, observations, dense_semantics)
+            temporal_clone_exact = _shared_input_exact_signature(
+                temporal_frame, isolated_temporal_observations, temporal_dense
+            )
+            if temporal_clone_exact != original_exact:
+                raise ValueError("shared input clone is not equivalent")
+            original_snapshot.assert_unchanged()
+            with frozen_shared_inputs(
+                temporal_frame, isolated_temporal_observations, temporal_dense
+            ):
+                temporal_snapshot = shared_input_snapshot(
+                    temporal_frame, isolated_temporal_observations, temporal_dense
+                )
+                temporal_trial_exact = _shared_input_exact_signature(
+                    temporal_frame, isolated_temporal_observations, temporal_dense
+                )
+                try:
+                    proposal_evidence = (
+                        build_proposal_recovery_evidence(
+                            temporal_frame,
+                            isolated_temporal_observations,
+                            temporal_dense,
+                            temporal_trial.config,
+                            temporal_trial.state,
+                        )
+                        if temporal_trial.config.proposal_recovery_enabled
+                        and temporal_dense is not None
+                        else None
+                    )
+                    if temporal_dense is None:
+                        result = temporal_trial.process_frame(
+                            temporal_frame,
+                            isolated_temporal_observations,
+                            temporal_dense,
+                        )
+                    else:
+                        result = temporal_trial.process_frame(
+                            temporal_frame,
+                            isolated_temporal_observations,
+                            temporal_dense,
+                            proposal_evidence=proposal_evidence,
+                        )
+                finally:
+                    temporal_snapshot.assert_unchanged()
+                    if _shared_input_exact_signature(
+                        temporal_frame, isolated_temporal_observations, temporal_dense
+                    ) != temporal_trial_exact:
+                        raise RuntimeError(
+                            "temporal branch mutated isolated shared inputs"
+                        )
+        finally:
+            caller_changed = False
+            try:
+                original_snapshot.assert_unchanged()
+                caller_changed = (
+                    _shared_input_exact_signature(
+                        frame, observations, dense_semantics
+                    )
+                    != original_exact
+                )
+            except BaseException:
+                caller_changed = True
+            clone_changed = False
+            if (
+                temporal_frame is not None
+                and isolated_temporal_observations is not None
+                and temporal_clone_exact is not None
+            ):
+                try:
+                    clone_changed = (
+                        _shared_input_exact_signature(
+                            temporal_frame,
+                            isolated_temporal_observations,
+                            temporal_dense,
+                        )
+                        != temporal_clone_exact
+                    )
+                except BaseException:
+                    clone_changed = True
+            if caller_changed:
+                raise RuntimeError(
+                    "original caller inputs changed during temporal-only processing"
+                )
+            if clone_changed:
+                raise RuntimeError("temporal branch mutated isolated shared inputs")
+        commit_runtime_state(self.temporal, temporal_trial)
+        return result
+
+    def advance_temporal_only_frame(self, frame: Frame) -> TemporalFrameResult:
+        if type(self.temporal) is not TemporalCurrentRuntime:
+            raise TypeError("temporal-only advance requires TemporalCurrentRuntime")
+        return self.temporal.advance_frame_without_update(frame)
+
     @staticmethod
     def _restore(
         cumulative: Oviv2Runtime,
@@ -142,54 +341,280 @@ class DualReadoutRuntime:
         frame: Frame,
         observations: tuple[FrameObservation, ...],
         dense_semantics: DenseSemanticFrame | None = None,
+        *,
+        temporal_observations: tuple[FrameObservation, ...] | None = None,
     ) -> DualFrameResult:
         cumulative_trial = isolated_cumulative_runtime(self.cumulative)
         temporal_trial = isolated_temporal_runtime(self.temporal)
         transaction = DualTransactionSnapshot.capture(
             self.cumulative, self.temporal, frame, observations, dense_semantics
         )
-        shared_input_sha256(frame, observations, dense_semantics)
+        original_input_sha256 = shared_input_sha256(
+            frame, observations, dense_semantics
+        )
+        original_input_exact = _shared_input_exact_signature(
+            frame, observations, dense_semantics
+        )
         original_input_snapshot = shared_input_snapshot(
             frame, observations, dense_semantics
         )
-        isolated_frame, isolated_observations, isolated_dense = clone_shared_inputs(
-            frame, observations, dense_semantics
+        temporal_input_sha256 = (
+            original_input_sha256
+            if temporal_observations is None
+            else shared_input_sha256(frame, temporal_observations, dense_semantics)
         )
+        temporal_input_exact = (
+            original_input_exact
+            if temporal_observations is None
+            else _shared_input_exact_signature(
+                frame, temporal_observations, dense_semantics
+            )
+        )
+        temporal_original_snapshot = (
+            None
+            if temporal_observations is None
+            else shared_input_snapshot(
+                frame, temporal_observations, dense_semantics
+            )
+        )
+
+        original_validation_attempted = False
+        original_validation_error: BaseException | None = None
+
+        def assert_original_inputs_unchanged() -> None:
+            nonlocal original_validation_attempted, original_validation_error
+            if original_validation_attempted:
+                if original_validation_error is not None:
+                    raise original_validation_error
+                return
+            original_validation_attempted = True
+            failures: list[BaseException] = []
+            try:
+                original_input_snapshot.assert_unchanged()
+            except BaseException as error:
+                failures.append(error)
+            try:
+                if (
+                    shared_input_sha256(frame, observations, dense_semantics)
+                    != original_input_sha256
+                    or _shared_input_exact_signature(
+                        frame, observations, dense_semantics
+                    )
+                    != original_input_exact
+                ):
+                    failures.append(
+                        RuntimeError("original shared inputs changed during cloning")
+                    )
+            except BaseException as error:
+                failures.append(error)
+            if temporal_original_snapshot is not None:
+                assert temporal_observations is not None
+                try:
+                    temporal_original_snapshot.assert_unchanged()
+                except BaseException as error:
+                    failures.append(error)
+                try:
+                    if (
+                        shared_input_sha256(
+                            frame, temporal_observations, dense_semantics
+                        )
+                        != temporal_input_sha256
+                        or _shared_input_exact_signature(
+                            frame, temporal_observations, dense_semantics
+                        )
+                        != temporal_input_exact
+                    ):
+                        failures.append(
+                            RuntimeError(
+                                "original temporal inputs changed during cloning"
+                            )
+                        )
+                except BaseException as error:
+                    failures.append(error)
+            if failures:
+                original_validation_error = RuntimeError(
+                    "original caller inputs changed during cloning"
+                )
+                raise original_validation_error from failures[0]
+
+        def assert_equivalent_clone(
+            expected_sha256: str,
+            expected_exact: tuple[object, ...],
+            cloned_frame: Frame,
+            cloned_observations: tuple[FrameObservation, ...],
+            cloned_dense: DenseSemanticFrame | None,
+        ) -> None:
+            try:
+                observed_sha256 = shared_input_sha256(
+                    cloned_frame, cloned_observations, cloned_dense
+                )
+                observed_exact = _shared_input_exact_signature(
+                    cloned_frame, cloned_observations, cloned_dense
+                )
+            except (TypeError, ValueError) as error:
+                raise ValueError("shared input clone is not equivalent") from error
+            if (
+                observed_sha256 != expected_sha256
+                or observed_exact != expected_exact
+            ):
+                raise ValueError("shared input clone is not equivalent")
+
         try:
             reference = (
                 _validate_reference_readout(temporal_trial)
                 if _is_reference_readout(temporal_trial)
                 else None
             )
+            if (
+                reference is not None
+                and temporal_observations is not None
+                and (
+                    temporal_input_sha256 != original_input_sha256
+                    or temporal_input_exact != original_input_exact
+                )
+            ):
+                raise ValueError(
+                    "reference readout cannot consume different temporal observations"
+                )
+            isolated_frame, isolated_observations, isolated_dense = (
+                clone_shared_inputs(frame, observations, dense_semantics)
+            )
+            assert_equivalent_clone(
+                original_input_sha256,
+                original_input_exact,
+                isolated_frame,
+                isolated_observations,
+                isolated_dense,
+            )
+            if temporal_observations is not None and reference is None:
+                (
+                    temporal_frame,
+                    isolated_temporal_observations,
+                    temporal_dense,
+                ) = clone_shared_inputs(
+                    frame, temporal_observations, dense_semantics
+                )
+                assert_equivalent_clone(
+                    temporal_input_sha256,
+                    temporal_input_exact,
+                    temporal_frame,
+                    isolated_temporal_observations,
+                    temporal_dense,
+                )
+                temporal_freeze = frozen_shared_inputs(
+                    temporal_frame,
+                    isolated_temporal_observations,
+                    temporal_dense,
+                )
+            else:
+                temporal_frame = isolated_frame
+                isolated_temporal_observations = isolated_observations
+                temporal_dense = isolated_dense
+                temporal_freeze = nullcontext()
             with frozen_shared_inputs(
                 isolated_frame, isolated_observations, isolated_dense
-            ):
+            ), temporal_freeze:
                 input_snapshot = shared_input_snapshot(
                     isolated_frame, isolated_observations, isolated_dense
                 )
-                cumulative_result = cumulative_trial.process_frame(
-                    isolated_frame,
-                    isolated_observations,
-                    isolated_dense,
-                )
-                input_snapshot.assert_unchanged()
-                if reference is not None:
-                    before = reference.state.cumulative_view
-                    if before is None:
-                        raise RuntimeError("reference readout has no previous cumulative view")
-                    temporal_result = reference.process_cumulative_frame(
-                        isolated_frame,
-                        before=before,
-                        after=CumulativeReadoutView.capture(cumulative_trial),
-                        cumulative_result=cumulative_result,
+                temporal_input_snapshot = (
+                    input_snapshot
+                    if temporal_frame is isolated_frame
+                    else shared_input_snapshot(
+                        temporal_frame,
+                        isolated_temporal_observations,
+                        temporal_dense,
                     )
-                else:
-                    temporal_result = temporal_trial.process_frame(
+                )
+                isolated_trial_exact = _shared_input_exact_signature(
+                    isolated_frame, isolated_observations, isolated_dense
+                )
+                temporal_trial_exact = (
+                    isolated_trial_exact
+                    if temporal_frame is isolated_frame
+                    else _shared_input_exact_signature(
+                        temporal_frame,
+                        isolated_temporal_observations,
+                        temporal_dense,
+                    )
+                )
+                try:
+                    cumulative_result = cumulative_trial.process_frame(
                         isolated_frame,
                         isolated_observations,
                         isolated_dense,
                     )
-                input_snapshot.assert_unchanged()
+                    input_snapshot.assert_unchanged()
+                    if reference is not None:
+                        before = reference.state.cumulative_view
+                        if before is None:
+                            raise RuntimeError(
+                                "reference readout has no previous cumulative view"
+                            )
+                        temporal_result = reference.process_cumulative_frame(
+                            isolated_frame,
+                            before=before,
+                            after=CumulativeReadoutView.capture(cumulative_trial),
+                            cumulative_result=cumulative_result,
+                        )
+                    else:
+                        proposal_evidence = (
+                            build_proposal_recovery_evidence(
+                                temporal_frame,
+                                isolated_temporal_observations,
+                                temporal_dense,
+                                temporal_trial.config,
+                                temporal_trial.state,
+                            )
+                            if temporal_trial.config.proposal_recovery_enabled
+                            and temporal_dense is not None
+                            else None
+                        )
+                        temporal_result = temporal_trial.process_frame(
+                            temporal_frame,
+                            isolated_temporal_observations,
+                            temporal_dense,
+                            proposal_evidence=proposal_evidence,
+                        )
+                finally:
+                    trial_input_failures: list[BaseException] = []
+                    try:
+                        input_snapshot.assert_unchanged()
+                    except BaseException as error:
+                        trial_input_failures.append(error)
+                    try:
+                        if _shared_input_exact_signature(
+                            isolated_frame, isolated_observations, isolated_dense
+                        ) != isolated_trial_exact:
+                            trial_input_failures.append(
+                                RuntimeError(
+                                    "cumulative branch mutated isolated shared inputs"
+                                )
+                            )
+                    except BaseException as error:
+                        trial_input_failures.append(error)
+                    if temporal_input_snapshot is not input_snapshot:
+                        try:
+                            temporal_input_snapshot.assert_unchanged()
+                        except BaseException as error:
+                            trial_input_failures.append(error)
+                        try:
+                            if _shared_input_exact_signature(
+                                temporal_frame,
+                                isolated_temporal_observations,
+                                temporal_dense,
+                            ) != temporal_trial_exact:
+                                trial_input_failures.append(
+                                    RuntimeError(
+                                        "temporal branch mutated isolated shared inputs"
+                                    )
+                                )
+                        except BaseException as error:
+                            trial_input_failures.append(error)
+                    if trial_input_failures:
+                        raise RuntimeError(
+                            "dual readout branch mutated isolated shared inputs"
+                        ) from trial_input_failures[0]
             temporal_state = temporal_trial.state
             expected_progress = (
                 cumulative_result.frame_id,
@@ -208,13 +633,13 @@ class DualReadoutRuntime:
                 != timestamp_seconds_to_ns(frame.timestamp)
             ):
                 raise RuntimeError("dual readout frame/revision mismatch")
-            original_input_snapshot.assert_unchanged()
+            assert_original_inputs_unchanged()
             commit_runtime_state(self.cumulative, cumulative_trial)
             commit_runtime_state(self.temporal, temporal_trial)
             return DualFrameResult(cumulative_result, temporal_result, temporal_result.export)
         except BaseException as error:
             try:
-                original_input_snapshot.assert_unchanged()
+                assert_original_inputs_unchanged()
             except BaseException as mutation_error:
                 self._restore(
                     self.cumulative, self.temporal, transaction, mutation_error

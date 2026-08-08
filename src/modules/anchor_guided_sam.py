@@ -374,7 +374,7 @@ class AnchorGuidedSAMModule:
         )
 
     def _build_anchor_box_fallback(self, anchor: Anchor2D, anchor_bbox: np.ndarray, frame_h: int, frame_w: int) -> Proposal2D:
-        ax1, ay1, ax2, ay2 = [int(math.floor(float(v))) for v in anchor_bbox]
+        ax1, ay1, ax2, ay2 = self._clipped_bbox(anchor_bbox, frame_w, frame_h)
         fb_mask = np.zeros((frame_h, frame_w), dtype=bool)
         fb_mask[ay1:ay2, ax1:ax2] = True
         metadata = self._anchor_metadata(anchor)

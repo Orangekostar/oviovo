@@ -464,6 +464,7 @@ def test_fake_collector_covers_mapping_and_query_process_groups(tmp_path: Path, 
                 "schema_version": 2, "dataset": "TESSE-CD", "method_id": "OVIV2",
                 "protocol_id": "oviv2-tessecd-v2", "scene": "apartment",
                 "algorithm_hash": algorithm_hash,
+                "source_bindings": {},
                 "processed_frame_count": 2,
                 "first_frame_index": 0, "last_frame_index": 1,
                 "config": {"sha256": _sha256(config), "byte_count": config.stat().st_size},
@@ -548,6 +549,7 @@ def test_fake_collector_covers_mapping_and_query_process_groups(tmp_path: Path, 
     wrapper = json.loads((paths[0].parent / "measurement-run.json").read_text())
     assert wrapper["collection_protocol"]["sha256"] == _sha256(protocol_path)
     assert wrapper["runner_manifest"]["sha256"] == _sha256(paths[0].parent / "run" / "run_manifest.json")
+    assert wrapper["source_bindings"] == {}
     matrix_path = tmp_path / "matrix.json"
     matrix = verify_t4_gate(paths, shortlist_path, matrix_path)
     assert matrix["candidates"]["a4"]["status"] == "PASS"
@@ -558,6 +560,7 @@ def test_fake_collector_covers_mapping_and_query_process_groups(tmp_path: Path, 
         matrix_path,
         selected_candidate="a4",
         selected_config_sha256=config_sha,
+        temporal_frontend_manifest=None,
         repo_root=tmp_path,
         snapshots={},
     )

@@ -126,7 +126,7 @@ def validate_ground_truth_files(
 
 
 def validate_khronos_run_status(
-    path: Path, *, scene: str
+    path: Path, *, scene: str, workspace: Path | None = None
 ) -> dict[str, Any]:
     payload = loads_strict(path.read_text(encoding="utf-8"), label="Khronos run status")
     if (
@@ -178,7 +178,13 @@ def validate_khronos_run_status(
             f"Khronos run required artifact is missing: {sorted(map(str, missing))}"
         )
     validate_temporal_bridge_manifest(run_root / "bridge_input/bridge_manifest.json")
-    validate_build_manifest(run_root / "build_manifest.json")
+    if workspace is None:
+        validate_build_manifest(run_root / "build_manifest.json")
+    else:
+        validate_build_manifest(
+            run_root / "build_manifest.json",
+            expected_workspace=workspace,
+        )
     normalized = dict(payload)
     normalized["run_identity"] = identity
     return normalized
@@ -373,6 +379,7 @@ def write_repeated_metrics(
     metrics_path: Path,
     repeat_path: Path,
     run_status_path: Path,
+    workspace: Path | None = None,
 ) -> dict[str, Any]:
     if method != "OVIV2" or mode != "causal_checkpoints":
         raise ValueError("official metrics require OVIV2 causal identity")
@@ -382,7 +389,11 @@ def write_repeated_metrics(
         repeat_path=repeat_path,
         run_status_path=run_status_path,
     )
-    run_status = validate_khronos_run_status(status_path, scene=scene)
+    run_status = validate_khronos_run_status(
+        status_path,
+        scene=scene,
+        workspace=workspace,
+    )
     run_identity = dict(run_status["run_identity"])
     if (
         run_status.get("method") != method
@@ -468,7 +479,11 @@ def run(args: argparse.Namespace) -> Path:
     if args.method != "OVIV2" or args.mode != "causal_checkpoints":
         raise ValueError("official evaluation requires OVIV2 causal identity")
     status_path = args.run_root / "run_status.json"
-    validate_khronos_run_status(status_path, scene=args.scene)
+    validate_khronos_run_status(
+        status_path,
+        scene=args.scene,
+        workspace=args.workspace,
+    )
 
     manifest = validate_tesse_manifest(args.manifest, scene=args.scene)
     sequence = manifest["sequences"][args.scene]
@@ -555,6 +570,7 @@ def run(args: argparse.Namespace) -> Path:
         metrics_path=metrics_path,
         repeat_path=repeat_path,
         run_status_path=status_path,
+        workspace=args.workspace,
     )
     if metric_summary["status"] == "PASS":
         evaluation_status.update(

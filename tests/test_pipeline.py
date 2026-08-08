@@ -1431,7 +1431,9 @@ class TestPipeline:
                     "  verbose: false",
                     "  collect_stage_timings: true",
                     "anchor_frontend:",
-                    "  enabled: false",
+                    "  enabled: true",
+                    "  anchor_primary_mode: false",
+                    "  use_sam_intersection_proposals: false",
                     "proposal:",
                     "  backend: placeholder",
                 ]
@@ -1793,7 +1795,7 @@ class TestPipeline:
             active_backend_name = "yoloworld"
             last_generation_timings = {}
 
-            def generate_anchor_box_proposals(self, input_rgb):
+            def generate_anchor_box_proposals(self, input_rgb, *, depth=None, intrinsics=None):
                 events.append("yolo_start")
                 self.last_generation_timings = {"yoloworld_primary": 0.12, "anchor_merge": 0.0}
                 events.append("yolo_end")
@@ -1870,7 +1872,7 @@ class TestPipeline:
         class FakeAnchorFrontend:
             last_generation_timings = {}
 
-            def generate_anchor_box_proposals(self, input_rgb):
+            def generate_anchor_box_proposals(self, input_rgb, *, depth=None, intrinsics=None):
                 return [anchor], [anchor_proposal], [anchor_assignment]
 
         class FakeProposal:
@@ -1931,7 +1933,7 @@ class TestPipeline:
             active_backend_name = "yoloworld"
             last_generation_timings = {}
 
-            def generate_anchor_box_proposals(self, input_rgb):
+            def generate_anchor_box_proposals(self, input_rgb, *, depth=None, intrinsics=None):
                 events.append("yolo")
                 self.last_generation_timings = {"yoloworld_primary": 0.05}
                 return [anchor], [anchor_proposal], [anchor_assignment]
@@ -2042,10 +2044,11 @@ semantic_memory:
             enabled = True
             anchor_primary_mode = True
             use_sam_intersection_proposals = False
+            depth_structure_enabled = False
             last_generation_timings = {}
             collect_generation_timings = False
 
-            def generate_anchor_box_proposals(self, rgb):
+            def generate_anchor_box_proposals(self, rgb, *, depth=None, intrinsics=None):
                 anchor = Anchor2D(4, np.array([1, 1, 7, 7], dtype=np.float32), "sofa", 0.9)
                 mask = np.zeros((8, 8), dtype=bool)
                 mask[1:7, 1:7] = True
@@ -2152,7 +2155,7 @@ semantic_memory:
             last_generation_timings = {}
             active_backend_name = "yoloworld"
 
-            def generate_anchor_box_proposals(self, rgb):
+            def generate_anchor_box_proposals(self, rgb, *, depth=None, intrinsics=None):
                 events.append("yolo")
                 self.last_generation_timings = {"yoloworld_primary": 0.01, "anchor_merge": 0.0}
                 anchor = Anchor2D(1, np.array([1, 1, 7, 7], dtype=np.float32), "sofa", 0.95)
@@ -2255,7 +2258,7 @@ semantic_memory:
             last_generation_timings = {}
             active_backend_name = "yoloworld"
 
-            def generate_anchor_box_proposals(self, rgb):
+            def generate_anchor_box_proposals(self, rgb, *, depth=None, intrinsics=None):
                 events.append("yolo")
                 self.last_generation_timings = {"yoloworld_primary": 0.01}
                 anchor = Anchor2D(1, np.array([1, 1, 7, 7], dtype=np.float32), "sofa", 0.95)
@@ -2396,7 +2399,7 @@ semantic_memory:
             active_backend_name = "yoloworld"
             last_generation_timings = {"yoloworld_primary": 0.01}
 
-            def generate_anchor_box_proposals(self, rgb):
+            def generate_anchor_box_proposals(self, rgb, *, depth=None, intrinsics=None):
                 return [anchor], [anchor_proposal], [anchor_assignment]
 
         class FakeSAM:
@@ -2533,7 +2536,7 @@ semantic_memory:
             last_generation_timings = {}
             active_backend_name = "yoloworld"
 
-            def generate_anchor_box_proposals(self, rgb):
+            def generate_anchor_box_proposals(self, rgb, *, depth=None, intrinsics=None):
                 self.last_generation_timings = {"yoloworld_primary": 0.01}
                 anchor = Anchor2D(1, np.array([1, 1, 7, 7], dtype=np.float32), "sofa", 0.95)
                 proposal = Proposal2D(
@@ -2646,7 +2649,7 @@ semantic_memory:
             last_generation_timings = {}
             active_backend_name = anchor_backend
 
-            def generate_anchor_box_proposals(self, rgb):
+            def generate_anchor_box_proposals(self, rgb, *, depth=None, intrinsics=None):
                 events.append("serial_anchor")
                 anchor = Anchor2D(1, np.array([1, 1, 7, 7], dtype=np.float32), "sofa", 0.95)
                 proposal = Proposal2D(
@@ -2739,7 +2742,7 @@ semantic_memory:
             last_generation_timings = {}
             collect_generation_timings = False
 
-            def generate_anchor_box_proposals(self, rgb):
+            def generate_anchor_box_proposals(self, rgb, *, depth=None, intrinsics=None):
                 anchor = Anchor2D(4, np.array([1, 1, 7, 7], dtype=np.float32), "sofa", 0.9)
                 mask = np.zeros((8, 8), dtype=bool)
                 mask[1:7, 1:7] = True
@@ -2826,7 +2829,7 @@ semantic_memory:
             last_generation_timings = {}
             collect_generation_timings = False
 
-            def generate_anchor_box_proposals(self, rgb):
+            def generate_anchor_box_proposals(self, rgb, *, depth=None, intrinsics=None):
                 anchor = Anchor2D(4, np.array([1, 1, 7, 7], dtype=np.float32), "wall", 0.9)
                 mask = np.zeros((8, 8), dtype=bool)
                 mask[1:7, 1:7] = True
@@ -2954,7 +2957,7 @@ semantic_memory:
             last_generation_timings = {}
             collect_generation_timings = False
 
-            def generate_anchor_box_proposals(self, rgb):
+            def generate_anchor_box_proposals(self, rgb, *, depth=None, intrinsics=None):
                 anchor = Anchor2D(4, np.array([1, 1, 7, 7], dtype=np.float32), "chair", 0.9)
                 mask = np.zeros((8, 8), dtype=bool)
                 mask[1:7, 1:7] = True
@@ -3040,7 +3043,7 @@ semantic_memory:
         from src.pipelines.main_pipeline import Pipeline
 
         pipe = Pipeline(config_path=str(config_path))
-        pipe.object_anchor.generate_anchor_box_proposals = lambda rgb: (
+        pipe.object_anchor.generate_anchor_box_proposals = lambda rgb, *, depth=None, intrinsics=None: (
             [
                 Anchor2D(
                     anchor_id=4,
@@ -3177,7 +3180,9 @@ semantic_memory:
         from src.pipelines.main_pipeline import Pipeline
 
         pipe = Pipeline(config_path=str(config_path))
-        pipe.object_anchor.generate_anchor_box_proposals = lambda rgb: ([], [], [])
+        pipe.object_anchor.generate_anchor_box_proposals = (
+            lambda rgb, *, depth=None, intrinsics=None: ([], [], [])
+        )
         pipe.proposal.active_backend_name = "cropformer"
 
         def _unexpected_proposals(*args, **kwargs):
@@ -3309,7 +3314,7 @@ semantic_memory:
         pipe.object_anchor.enabled = True
         pipe.object_anchor.anchor_primary_mode = True
 
-        def _fake_generate_anchor_box_proposals(rgb):
+        def _fake_generate_anchor_box_proposals(rgb, *, depth=None, intrinsics=None):
             pipe.object_anchor.last_generation_timings = {
                 "yoloworld_primary": 0.12,
                 "yoloe_supplemental": 0.34,
@@ -4129,7 +4134,9 @@ semantic_memory:
         assert obj == [patch]
 
     def test_depth_refinement_opencv_components_match_python_backend(self):
-        pytest.importorskip("cv2")
+        cv2 = pytest.importorskip("cv2")
+        if not hasattr(cv2, "connectedComponentsWithStats"):
+            pytest.skip("OpenCV connected-components API is unavailable")
         depth = np.full((12, 12), 2.0, dtype=np.float32)
         mask = np.zeros((12, 12), dtype=bool)
         mask[1:4, 1:4] = True

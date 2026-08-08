@@ -218,24 +218,29 @@ def test_all_active_user_facing_method_tokens_use_oviv2() -> None:
     assert not any("OVIOVO" in row["token"] or "OVIOVO" in row["method"] for row in active_rows)
 
 
-def test_all_active_table_views_display_oviv2_with_online_t2_mode() -> None:
-    views = (MARKDOWN, LATEX, BASELINE_MARKDOWN, BASELINE_LATEX)
-    for path in views:
+def test_all_active_table_views_display_expected_method_name_with_online_t2_mode() -> None:
+    for path, method in (
+        (MARKDOWN, "OVIV2"),
+        (LATEX, "OVIV2"),
+        (BASELINE_MARKDOWN, "CROVE"),
+        (BASELINE_LATEX, "CROVE"),
+    ):
         rendered = path.read_text(encoding="utf-8")
-        assert "OVIV2" in rendered
+        assert method in rendered
         assert "OVIOVO" not in rendered
-    for path in (MARKDOWN, BASELINE_MARKDOWN):
+
+    for path, method in ((MARKDOWN, "OVIV2"), (BASELINE_MARKDOWN, "CROVE")):
         rendered = path.read_text(encoding="utf-8")
         table2 = rendered.split("## Table 2:", 1)[1].split("## Table 3:", 1)[0]
-        assert "| OVIV2 | online |" in table2
-    for path in (LATEX, BASELINE_LATEX):
+        assert f"| {method} | online |" in table2
+    for path, method in ((LATEX, "OVIV2"), (BASELINE_LATEX, "CROVE")):
         rendered = path.read_text(encoding="utf-8")
         table2 = next(
             table
             for table in re.findall(r"\\begin\{table\*\}.*?\\end\{table\*\}", rendered, re.DOTALL)
             if r"\label{tab:dynamic_current_map}" in table
         )
-        assert "OVIV2 & online &" in table2
+        assert f"{method} & online &" in table2
 
 
 def test_ovimap_table1_stays_unfilled_until_paper_parity_passes():

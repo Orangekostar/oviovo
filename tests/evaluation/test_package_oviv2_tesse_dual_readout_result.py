@@ -14,7 +14,7 @@ import pytest
 from scripts.evaluation import package_oviv2_tesse_dual_readout_result as package_module
 from scripts.evaluation import run_oviv2_tesse_cd_v2 as production_runner
 from scripts.evaluation import verify_oviv2_dual_readout_development_gates as gates_module
-from scripts.evaluation.evaluate_oviv2_tesse_occlusion import canonical_algorithm_hash
+from scripts.evaluation.oviv2_tesse_cd_v2_config import canonical_algorithm_hash
 from scripts.evaluation.run_oviv2_tesse_dual_readout_search import (
     input_binding_values_sha256,
     non_temporal_config_sha256,
@@ -306,6 +306,7 @@ def _fixture(root: Path) -> dict[str, Path]:
         "temporal_readout": candidate["temporal_readout"], "dataset_root": "/frozen/tesse",
         "dense_manifest": "/frozen/dense.json", "evaluation_checkpoint_frames_sha256": h("e"),
         "export_manifest": "/frozen/export.json", "frontend_manifest": "/frozen/frontend.json",
+        "temporal_frontend_manifest": "/frozen/temporal_frontend.json",
         "input_manifest": "/frozen/input.json", "occlusion_target_manifest_sha256": h("3"),
         "schedule_manifest": "/frozen/schedule.json", "occlusion_target_manifest": "/frozen/targets.json",
     }
@@ -313,7 +314,13 @@ def _fixture(root: Path) -> dict[str, Path]:
     algorithm = config["algorithm_hash"]
     config_path = _write(root / "config.json", config)
     config_sha = hashlib.sha256(json.dumps(config, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
-    input_hashes = {"dataset": h("1"), "schedule": h("2"), "occlusion_targets": h("3"), "aliases": h("4")}
+    input_hashes = {
+        "dataset": h("1"),
+        "schedule": h("2"),
+        "occlusion_targets": h("3"),
+        "aliases": h("4"),
+        "temporal_frontend_manifest": {"sha256": h("6"), "byte_count": 12},
+    }
     run_root = root / "run"
     normalized = _write(run_root / "normalized_run_config.json", config)
     index = _write(run_root / "occlusion_checkpoint_index.json", {
@@ -1756,13 +1763,14 @@ _TEMPORAL_DISCRETE_REPLACEMENTS = {
 def _temporal_mutation_cases() -> tuple[tuple[tuple[str, ...], object], ...]:
     temporal = runner_fixture._temporal_readout()
     cases: list[tuple[tuple[str, ...], object]] = [
+        (("confirm_hits",), 2),
         (
             ("execution_profile", "components"),
             (ExecutionProfile.A3.profile_id, ExecutionProfile.A3.components),
         )
     ]
     for section, values in temporal.items():
-        if section in {"execution_profile", "components"}:
+        if section in {"confirm_hits", "execution_profile", "components"}:
             continue
         assert isinstance(values, dict)
         for leaf, value in values.items():
@@ -1946,6 +1954,8 @@ def test_every_independently_configurable_temporal_leaf_runs_exact_cumulative_tr
         profile, components = replacement
         mutated["temporal_readout"]["execution_profile"] = profile
         mutated["temporal_readout"]["components"] = components
+    elif leaf_path == ("confirm_hits",):
+        mutated["temporal_readout"]["confirm_hits"] = replacement
     else:
         section, leaf = leaf_path
         mutated["temporal_readout"][section][leaf] = replacement

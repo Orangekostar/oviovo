@@ -7,16 +7,20 @@ import pytest
 
 from src.core.data_structures import CameraIntrinsics, Frame
 from src.oviv2.evidence import EvidenceConfig
+from src.oviv2.dense_projection import DenseSemanticConfig
 from src.oviv2.geometry import TsdfConfig
 from src.oviv2.observations import FrameObservation, ObservationKind
 from src.oviv2.runtime import Oviv2Runtime, Oviv2RuntimeConfig, RuntimeFrameResult
 from src.oviv2.temporal_config import (
+    DiagnosticControl,
     ExecutionProfile,
     TemporalAssociationConfig,
     TemporalGeometryConfig,
     TemporalLifecycleConfig,
+    TemporalProposalConfig,
     TemporalReadoutConfig,
 )
+from src.oviv2.dense_semantics import DenseSemanticFrame, DenseSemanticProvenance
 from src.oviv2.temporal_runtime import TemporalCurrentRuntime, TemporalFrameResult
 from src.oviv2.tracking import LocalTrackerConfig
 
@@ -78,13 +82,37 @@ def _temporal(scene_id: str = "scene") -> TemporalCurrentRuntime:
 def _cumulative(
     scene_id: str = "scene",
     runtime_type: type[Oviv2Runtime] = Oviv2Runtime,
+    *,
+    dense: bool = False,
 ) -> Oviv2Runtime:
+    dense_config = DenseSemanticConfig(voxel_size_m=0.05) if dense else None
+    provenance = (
+        DenseSemanticProvenance(
+            backend="radseg",
+            source_commit="a" * 40,
+            radio_commit="b" * 40,
+            model_id="fixture/model",
+            model_sha256="c" * 64,
+            auxiliary_model_sha256="d" * 64,
+            vocabulary_sha256="e" * 64,
+            prompt_sha256="f" * 64,
+            inference_config_sha256="1" * 64,
+            cache_prefix_sha256="2" * 64,
+            language_model_id="fixture/language-model",
+            language_model_revision="3" * 40,
+            language_model_sha256="4" * 64,
+        )
+        if dense
+        else None
+    )
     return runtime_type(
         scene_id,
         Oviv2RuntimeConfig(
             tsdf=TsdfConfig(block_count=64),
             evidence=EvidenceConfig(),
+            dense_semantics=dense_config,
         ),
+        dense_semantic_provenance=provenance,
     )
 
 
@@ -117,6 +145,21 @@ def _observation(frame: Frame) -> FrameObservation:
         image_feature=np.asarray((1.0, 0.0), dtype=np.float32),
         feature_model_id="fixture",
         visible_pixel_count=25,
+    )
+
+
+def _dense_semantics(frame: Frame) -> DenseSemanticFrame:
+    source = frame.frame_id if frame.source_frame_id is None else frame.source_frame_id
+    return DenseSemanticFrame(
+        cache_frame_id=frame.frame_id,
+        source_frame_id=source,
+        image_shape=frame.depth.shape,
+        sample_stride=1,
+        class_count=1,
+        class_ids=np.ones((*frame.depth.shape, 1), dtype=np.int64),
+        probabilities=np.ones((*frame.depth.shape, 1), dtype=np.float32),
+        entropy=np.zeros(frame.depth.shape, dtype=np.float32),
+        margin=np.ones(frame.depth.shape, dtype=np.float32),
     )
 
 
@@ -390,3 +433,789 @@ def test_reference_capture_reuses_registry_voxel_frozenset() -> None:
     captured = reference.state.cumulative_view
     assert captured is not None
     assert captured.entities[0].voxel_keys is cumulative.registry.entities[entity_id].voxel_keys
+
+
+@pytest.mark.parametrize("profile", (ExecutionProfile.A0, ExecutionProfile.A1))
+def test_reference_readouts_reject_different_temporal_observations(
+    profile: ExecutionProfile,
+) -> None:
+    from src.oviv2.dual_readout import DualReadoutRuntime
+    from src.oviv2.reference_readout import (
+        LifecycleOverlayReadout,
+        ReferenceCurrentReadout,
+    )
+
+    config = replace(_temporal_config(), execution_profile=profile)
+    temporal = (
+        ReferenceCurrentReadout("scene", config)
+        if profile is ExecutionProfile.A0
+        else LifecycleOverlayReadout("scene", config)
+    )
+    cumulative = _cumulative()
+    runtime = DualReadoutRuntime(cumulative, temporal)
+    frame = _frame()
+    temporal_observations = (_observation(frame),)
+    before_cumulative = _identity_snapshot(cumulative)
+    before_temporal = _identity_snapshot(temporal)
+    before_mask = temporal_observations[0].mask.tobytes()
+
+    with pytest.raises(ValueError, match="reference.*temporal observations"):
+        runtime.process_frame(
+            frame,
+            (),
+            temporal_observations=temporal_observations,
+        )
+
+    _assert_exact_identity_snapshot(cumulative, before_cumulative)
+    _assert_exact_identity_snapshot(temporal, before_temporal)
+    assert temporal_observations[0].mask.tobytes() == before_mask
+
+
+@pytest.mark.parametrize("profile", (ExecutionProfile.A0, ExecutionProfile.A1))
+def test_reference_readouts_accept_content_identical_temporal_observations(
+    profile: ExecutionProfile,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.dual_readout as module
+    from src.oviv2.reference_readout import (
+        LifecycleOverlayReadout,
+        ReferenceCurrentReadout,
+    )
+
+    config = replace(_temporal_config(), execution_profile=profile)
+    temporal = (
+        ReferenceCurrentReadout("scene", config)
+        if profile is ExecutionProfile.A0
+        else LifecycleOverlayReadout("scene", config)
+    )
+    clone_calls = []
+    original_clone = module.clone_shared_inputs
+
+    def recording_clone(*args):
+        result = original_clone(*args)
+        clone_calls.append(result)
+        return result
+
+    monkeypatch.setattr(module, "clone_shared_inputs", recording_clone)
+    runtime = module.DualReadoutRuntime(_cumulative(), temporal)
+    frame = _frame()
+    observations = (_observation(frame),)
+    equivalent = (replace(observations[0]),)
+
+    result = runtime.process_frame(
+        frame,
+        observations,
+        temporal_observations=equivalent,
+    )
+
+    assert result.cumulative.observation_count == 1
+    assert result.temporal.frame_id == frame.frame_id
+    assert len(clone_calls) == 1
+
+
+def test_temporal_branch_independently_clones_aliased_caller_inputs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.dual_readout as module
+
+    clone_calls = []
+    original_clone = module.clone_shared_inputs
+
+    def recording_clone(*args):
+        result = original_clone(*args)
+        clone_calls.append(result)
+        return result
+
+    monkeypatch.setattr(module, "clone_shared_inputs", recording_clone)
+    frame = _frame()
+    observations = (_observation(frame),)
+    temporal = TemporalCurrentRuntime(
+        "scene",
+        replace(_temporal_config(), execution_profile=ExecutionProfile.A2),
+        LocalTrackerConfig(confirm_hits=1, min_voxel_overlap=0.0),
+    )
+
+    module.DualReadoutRuntime(_cumulative(), temporal).process_frame(
+        frame,
+        observations,
+        temporal_observations=observations,
+    )
+
+    assert len(clone_calls) == 2
+    cumulative_inputs, temporal_inputs = clone_calls
+    assert cumulative_inputs[0] is not temporal_inputs[0]
+    assert cumulative_inputs[1] is not temporal_inputs[1]
+    assert cumulative_inputs[1][0] is not temporal_inputs[1][0]
+    assert not np.shares_memory(
+        cumulative_inputs[0].rgb,
+        temporal_inputs[0].rgb,
+    )
+    assert not np.shares_memory(
+        cumulative_inputs[1][0].mask,
+        temporal_inputs[1][0].mask,
+    )
+
+
+def test_process_frame_rejects_clone_with_modified_observation_content(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.dual_readout as module
+
+    cumulative = _cumulative()
+    temporal = TemporalCurrentRuntime(
+        "scene",
+        replace(_temporal_config(), execution_profile=ExecutionProfile.A2),
+        LocalTrackerConfig(confirm_hits=1, min_voxel_overlap=0.0),
+    )
+    runtime = module.DualReadoutRuntime(cumulative, temporal)
+    frame = _frame()
+    observations = (_observation(frame),)
+    before_cumulative = _identity_snapshot(cumulative)
+    before_temporal = _identity_snapshot(temporal)
+    original_clone = module.clone_shared_inputs
+
+    def modified_clone(*args):
+        cloned_frame, cloned_observations, cloned_dense = original_clone(*args)
+        object.__setattr__(cloned_observations[0], "label", "tampered")
+        return cloned_frame, cloned_observations, cloned_dense
+
+    monkeypatch.setattr(module, "clone_shared_inputs", modified_clone)
+
+    with pytest.raises(ValueError, match="clone|equivalent"):
+        runtime.process_frame(frame, observations)
+
+    _assert_exact_identity_snapshot(cumulative, before_cumulative)
+    _assert_exact_identity_snapshot(temporal, before_temporal)
+    assert observations[0].label == "chair"
+
+
+def test_process_frame_rejects_clone_with_frame_subclass(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.dual_readout as module
+
+    class CompatibleFrameSubclass(Frame):
+        pass
+
+    cumulative = _cumulative()
+    temporal = TemporalCurrentRuntime(
+        "scene",
+        replace(_temporal_config(), execution_profile=ExecutionProfile.A2),
+        LocalTrackerConfig(confirm_hits=1, min_voxel_overlap=0.0),
+    )
+    runtime = module.DualReadoutRuntime(cumulative, temporal)
+    frame = _frame()
+    before_cumulative = _identity_snapshot(cumulative)
+    before_temporal = _identity_snapshot(temporal)
+    original_clone = module.clone_shared_inputs
+
+    def subclassed_clone(*args):
+        cloned_frame, cloned_observations, cloned_dense = original_clone(*args)
+        subclassed_frame = CompatibleFrameSubclass(**vars(cloned_frame))
+        return subclassed_frame, cloned_observations, cloned_dense
+
+    monkeypatch.setattr(module, "clone_shared_inputs", subclassed_clone)
+
+    with pytest.raises(ValueError, match="clone|equivalent"):
+        runtime.process_frame(frame, ())
+
+    _assert_exact_identity_snapshot(cumulative, before_cumulative)
+    _assert_exact_identity_snapshot(temporal, before_temporal)
+
+
+def test_process_frame_rejects_clone_with_nested_scalar_type_change(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.dual_readout as module
+
+    cumulative = _cumulative()
+    temporal = TemporalCurrentRuntime(
+        "scene",
+        replace(_temporal_config(), execution_profile=ExecutionProfile.A2),
+        LocalTrackerConfig(confirm_hits=1, min_voxel_overlap=0.0),
+    )
+    runtime = module.DualReadoutRuntime(cumulative, temporal)
+    frame = _frame()
+    observation = replace(
+        _observation(frame),
+        bbox_xyxy=tuple(np.float64(value) for value in (0.0, 0.0, 5.0, 5.0)),
+    )
+    observations = (observation,)
+    before_cumulative = _identity_snapshot(cumulative)
+    before_temporal = _identity_snapshot(temporal)
+    original_clone = module.clone_shared_inputs
+
+    def scalar_type_changed_clone(*args):
+        cloned_frame, cloned_observations, cloned_dense = original_clone(*args)
+        object.__setattr__(
+            cloned_observations[0],
+            "bbox_xyxy",
+            tuple(float(value) for value in cloned_observations[0].bbox_xyxy),
+        )
+        return cloned_frame, cloned_observations, cloned_dense
+
+    monkeypatch.setattr(module, "clone_shared_inputs", scalar_type_changed_clone)
+
+    with pytest.raises(ValueError, match="clone|equivalent"):
+        runtime.process_frame(frame, observations)
+
+    _assert_exact_identity_snapshot(cumulative, before_cumulative)
+    _assert_exact_identity_snapshot(temporal, before_temporal)
+
+
+@pytest.mark.parametrize("profile", (ExecutionProfile.A0, ExecutionProfile.A1))
+def test_reference_readouts_reject_nested_scalar_type_difference(
+    profile: ExecutionProfile,
+) -> None:
+    from src.oviv2.dual_readout import DualReadoutRuntime
+    from src.oviv2.reference_readout import (
+        LifecycleOverlayReadout,
+        ReferenceCurrentReadout,
+    )
+
+    config = replace(_temporal_config(), execution_profile=profile)
+    temporal = (
+        ReferenceCurrentReadout("scene", config)
+        if profile is ExecutionProfile.A0
+        else LifecycleOverlayReadout("scene", config)
+    )
+    cumulative = _cumulative()
+    runtime = DualReadoutRuntime(cumulative, temporal)
+    frame = _frame()
+    observations = (_observation(frame),)
+    temporal_observations = (
+        replace(
+            observations[0],
+            bbox_xyxy=tuple(
+                np.float64(value) for value in observations[0].bbox_xyxy
+            ),
+        ),
+    )
+    before_cumulative = _identity_snapshot(cumulative)
+    before_temporal = _identity_snapshot(temporal)
+
+    with pytest.raises(ValueError, match="reference.*temporal observations"):
+        runtime.process_frame(
+            frame,
+            observations,
+            temporal_observations=temporal_observations,
+        )
+
+    _assert_exact_identity_snapshot(cumulative, before_cumulative)
+    _assert_exact_identity_snapshot(temporal, before_temporal)
+
+
+def test_process_frame_detects_clone_side_effect_on_caller_input(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.dual_readout as module
+
+    bbox = [0.0, 0.0, 5.0, 5.0]
+
+    class MutatingVoxelKeys(frozenset):
+        deepcopy_calls = 0
+
+        def __deepcopy__(self, memo):
+            del memo
+            type(self).deepcopy_calls += 1
+            if type(self).deepcopy_calls == 2:
+                bbox.append(99.0)
+            return type(self)(self)
+
+    cumulative = _cumulative()
+    temporal = TemporalCurrentRuntime(
+        "scene",
+        replace(_temporal_config(), execution_profile=ExecutionProfile.A2),
+        LocalTrackerConfig(confirm_hits=1, min_voxel_overlap=0.0),
+    )
+    runtime = module.DualReadoutRuntime(cumulative, temporal)
+    frame = _frame()
+    observation = replace(
+        _observation(frame),
+        bbox_xyxy=bbox,
+        voxel_keys=MutatingVoxelKeys({(0, 0, 10)}),
+    )
+    observations = (observation,)
+    before_cumulative = _identity_snapshot(cumulative)
+    before_temporal = _identity_snapshot(temporal)
+
+    with pytest.raises(RuntimeError, match="original shared inputs were mutated"):
+        runtime.process_frame(
+            frame,
+            observations,
+            temporal_observations=observations,
+        )
+
+    _assert_exact_identity_snapshot(cumulative, before_cumulative)
+    _assert_exact_identity_snapshot(temporal, before_temporal)
+    assert bbox == [0.0, 0.0, 5.0, 5.0, 99.0]
+
+
+@pytest.mark.parametrize("separate_temporal_inputs", (False, True))
+def test_process_frame_hashes_each_caller_and_clone_input_set_once(
+    monkeypatch: pytest.MonkeyPatch,
+    separate_temporal_inputs: bool,
+) -> None:
+    import src.oviv2.dual_readout as module
+
+    original_hash = module.shared_input_sha256
+    calls: list[tuple[object, ...]] = []
+
+    def counted_hash(*args: object) -> str:
+        calls.append(args)
+        return original_hash(*args)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(module, "shared_input_sha256", counted_hash)
+    frame = _frame()
+    observations = (_observation(frame),)
+    temporal = TemporalCurrentRuntime(
+        "scene",
+        replace(_temporal_config(), execution_profile=ExecutionProfile.A2),
+        LocalTrackerConfig(confirm_hits=1, min_voxel_overlap=0.0),
+    )
+
+    module.DualReadoutRuntime(_cumulative(), temporal).process_frame(
+        frame,
+        observations,
+        temporal_observations=(
+            (replace(observations[0], observation_id=11),)
+            if separate_temporal_inputs
+            else None
+        ),
+    )
+
+    assert len(calls) == (6 if separate_temporal_inputs else 3)
+    assert calls[0] == (frame, observations, None)
+
+
+def test_process_frame_rechecks_every_caller_digest_when_snapshot_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.dual_readout as module
+
+    cumulative = _cumulative()
+    temporal = TemporalCurrentRuntime(
+        "scene",
+        replace(_temporal_config(), execution_profile=ExecutionProfile.A2),
+        LocalTrackerConfig(confirm_hits=1, min_voxel_overlap=0.0),
+    )
+    runtime = module.DualReadoutRuntime(cumulative, temporal)
+    frame = _frame()
+    observations = (_observation(frame),)
+    temporal_observations = (replace(observations[0], observation_id=11),)
+    before_cumulative = _identity_snapshot(cumulative)
+    before_temporal = _identity_snapshot(temporal)
+    original_hash = module.shared_input_sha256
+    original_snapshot = module.shared_input_snapshot
+    hash_calls: list[tuple[object, ...]] = []
+
+    def counted_hash(*args: object) -> str:
+        hash_calls.append(args)
+        return original_hash(*args)  # type: ignore[arg-type]
+
+    class FailingSnapshot:
+        def __init__(self, wrapped: object) -> None:
+            self.wrapped = wrapped
+
+        def assert_unchanged(self) -> None:
+            self.wrapped.assert_unchanged()  # type: ignore[attr-defined]
+            raise RuntimeError("forced caller snapshot failure")
+
+    def snapshot_with_failure(*args):
+        snapshot = original_snapshot(*args)
+        return FailingSnapshot(snapshot) if args[1] is observations else snapshot
+
+    monkeypatch.setattr(module, "shared_input_sha256", counted_hash)
+    monkeypatch.setattr(module, "shared_input_snapshot", snapshot_with_failure)
+
+    with pytest.raises(RuntimeError, match="original shared inputs were mutated"):
+        runtime.process_frame(
+            frame,
+            observations,
+            temporal_observations=temporal_observations,
+        )
+
+    assert sum(call[1] is observations for call in hash_calls) == 2
+    assert sum(call[1] is temporal_observations for call in hash_calls) == 2
+    _assert_exact_identity_snapshot(cumulative, before_cumulative)
+    _assert_exact_identity_snapshot(temporal, before_temporal)
+
+
+def test_temporal_observation_failure_rolls_back_both_runtimes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from types import MethodType
+
+    import src.oviv2.dual_readout as module
+    from src.oviv2.t1_exactness import cumulative_state_sha256, temporal_state_sha256
+
+    cumulative = _cumulative()
+    temporal = TemporalCurrentRuntime(
+        "scene",
+        replace(_temporal_config(), execution_profile=ExecutionProfile.A2),
+        LocalTrackerConfig(confirm_hits=1, min_voxel_overlap=0.0),
+    )
+    runtime = module.DualReadoutRuntime(cumulative, temporal)
+    frame = _frame()
+    temporal_observations = (_observation(frame),)
+    before_cumulative = cumulative_state_sha256(cumulative)
+    before_temporal = temporal_state_sha256(temporal)
+    before_mask = temporal_observations[0].mask.tobytes()
+    original_isolate = module.isolated_temporal_runtime
+    error = RuntimeError("temporal trial failed")
+
+    def fail_after_processing(self, *args, **kwargs):
+        TemporalCurrentRuntime.process_frame(self, *args, **kwargs)
+        raise error
+
+    def isolate_with_failure(value):
+        trial = original_isolate(value)
+        trial.process_frame = MethodType(fail_after_processing, trial)
+        return trial
+
+    monkeypatch.setattr(module, "isolated_temporal_runtime", isolate_with_failure)
+    with pytest.raises(RuntimeError) as caught:
+        runtime.process_frame(
+            frame,
+            (),
+            temporal_observations=temporal_observations,
+        )
+
+    assert caught.value is error
+    assert cumulative_state_sha256(cumulative) == before_cumulative
+    assert temporal_state_sha256(temporal) == before_temporal
+    assert temporal_observations[0].mask.tobytes() == before_mask
+
+
+@pytest.mark.parametrize("raise_after_mutation", (False, True))
+def test_temporal_trial_input_mutation_is_detected_on_success_and_exception(
+    monkeypatch: pytest.MonkeyPatch,
+    raise_after_mutation: bool,
+) -> None:
+    from types import MethodType
+
+    import src.oviv2.dual_readout as module
+    from src.oviv2.t1_exactness import cumulative_state_sha256, temporal_state_sha256
+
+    cumulative = _cumulative()
+    temporal = TemporalCurrentRuntime(
+        "scene",
+        replace(_temporal_config(), execution_profile=ExecutionProfile.A2),
+        LocalTrackerConfig(confirm_hits=1, min_voxel_overlap=0.0),
+    )
+    runtime = module.DualReadoutRuntime(cumulative, temporal)
+    frame = _frame()
+    temporal_observations = (_observation(frame),)
+    before_cumulative = cumulative_state_sha256(cumulative)
+    before_temporal = temporal_state_sha256(temporal)
+    original_isolate = module.isolated_temporal_runtime
+
+    def mutate_trial_input(
+        self,
+        trial_frame,
+        trial_observations,
+        dense=None,
+        *,
+        proposal_evidence=None,
+    ):
+        result = TemporalCurrentRuntime.process_frame(
+            self,
+            trial_frame,
+            trial_observations,
+            dense,
+            proposal_evidence=proposal_evidence,
+        )
+        object.__setattr__(trial_observations[0], "label", "tampered")
+        if raise_after_mutation:
+            raise RuntimeError("failed after mutation")
+        return result
+
+    def isolate_with_mutation(value):
+        trial = original_isolate(value)
+        trial.process_frame = MethodType(mutate_trial_input, trial)
+        return trial
+
+    monkeypatch.setattr(module, "isolated_temporal_runtime", isolate_with_mutation)
+    with pytest.raises(RuntimeError, match="shared inputs|branch mutated isolated"):
+        runtime.process_frame(
+            frame,
+            (),
+            temporal_observations=temporal_observations,
+        )
+
+    assert cumulative_state_sha256(cumulative) == before_cumulative
+    assert temporal_state_sha256(temporal) == before_temporal
+    assert temporal_observations[0].label == "chair"
+
+
+def test_process_frame_detects_trial_mutation_of_cloned_mutable_field(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from types import MethodType
+
+    import src.oviv2.dual_readout as module
+    from src.oviv2.t1_exactness import cumulative_state_sha256, temporal_state_sha256
+
+    cumulative = _cumulative()
+    temporal = _temporal()
+    runtime = module.DualReadoutRuntime(cumulative, temporal)
+    frame = _frame()
+    bbox = [0.0, 0.0, 5.0, 5.0]
+    observations = (replace(_observation(frame), bbox_xyxy=bbox),)
+    before_cumulative = cumulative_state_sha256(cumulative)
+    before_temporal = temporal_state_sha256(temporal)
+    original_isolate = module.isolated_cumulative_runtime
+
+    def mutate_trial_input(self, trial_frame, trial_observations, dense=None):
+        result = Oviv2Runtime.process_frame(
+            self, trial_frame, trial_observations, dense
+        )
+        trial_observations[0].bbox_xyxy.append(99.0)
+        return result
+
+    def isolate_with_mutation(value):
+        trial = original_isolate(value)
+        trial.process_frame = MethodType(mutate_trial_input, trial)
+        return trial
+
+    monkeypatch.setattr(module, "isolated_cumulative_runtime", isolate_with_mutation)
+
+    with pytest.raises(RuntimeError, match="shared inputs|branch mutated isolated"):
+        runtime.process_frame(frame, observations)
+
+    assert cumulative_state_sha256(cumulative) == before_cumulative
+    assert temporal_state_sha256(temporal) == before_temporal
+    assert bbox == [0.0, 0.0, 5.0, 5.0]
+
+
+def test_temporal_observations_is_keyword_only() -> None:
+    from src.oviv2.dual_readout import DualReadoutRuntime
+
+    runtime = DualReadoutRuntime(_cumulative(), _temporal())
+    with pytest.raises(TypeError):
+        runtime.process_frame(_frame(), (), None, ())  # type: ignore[misc]
+
+
+def test_temporal_only_frame_matches_temporal_branch_and_leaves_cumulative_untouched(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.dual_readout as module
+    from src.oviv2.t1_exactness import (
+        cumulative_state_sha256,
+        temporal_state_sha256,
+    )
+
+    standard = module.DualReadoutRuntime(_cumulative(), _temporal())
+    accelerated = module.DualReadoutRuntime(_cumulative(), _temporal())
+    frame = _frame()
+    observations = (_observation(frame),)
+    expected = standard.process_frame(
+        frame, (), temporal_observations=observations
+    ).temporal
+    before_cumulative = cumulative_state_sha256(accelerated.cumulative)
+
+    monkeypatch.setattr(
+        module,
+        "shared_input_sha256",
+        lambda *_: (_ for _ in ()).throw(
+            AssertionError("temporal-only path hashed dual inputs")
+        ),
+    )
+    observed = accelerated.process_temporal_only_frame(frame, observations)
+
+    assert observed == expected
+    assert temporal_state_sha256(accelerated.temporal) == temporal_state_sha256(
+        standard.temporal
+    )
+    assert cumulative_state_sha256(accelerated.cumulative) == before_cumulative
+
+
+def test_temporal_only_rejects_clone_with_modified_depth_content_and_rolls_back(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.dual_readout as module
+    from src.oviv2.t1_exactness import (
+        cumulative_state_sha256,
+        temporal_state_sha256,
+    )
+
+    runtime = module.DualReadoutRuntime(_cumulative(), _temporal())
+    frame = _frame()
+    observations = (_observation(frame),)
+    original_depth = frame.depth.tobytes()
+    before_cumulative = cumulative_state_sha256(runtime.cumulative)
+    before_temporal = temporal_state_sha256(runtime.temporal)
+    original_clone = module.clone_shared_inputs
+
+    def modified_clone(*args):
+        cloned_frame, cloned_observations, cloned_dense = original_clone(*args)
+        cloned_frame.depth[0, 0] = np.float32(2.0)
+        return cloned_frame, cloned_observations, cloned_dense
+
+    monkeypatch.setattr(module, "clone_shared_inputs", modified_clone)
+
+    with pytest.raises(ValueError, match="clone|equivalent"):
+        runtime.process_temporal_only_frame(frame, observations)
+
+    assert cumulative_state_sha256(runtime.cumulative) == before_cumulative
+    assert temporal_state_sha256(runtime.temporal) == before_temporal
+    assert frame.depth.tobytes() == original_depth
+
+
+def test_temporal_only_detects_clone_side_effect_on_caller_mutable_field(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.dual_readout as module
+    from src.oviv2.t1_exactness import (
+        cumulative_state_sha256,
+        temporal_state_sha256,
+    )
+
+    bbox = [0.0, 0.0, 5.0, 5.0]
+
+    class MutatingVoxelKeys(frozenset):
+        def __deepcopy__(self, memo):
+            del memo
+            bbox.append(99.0)
+            return type(self)(self)
+
+    runtime = module.DualReadoutRuntime(_cumulative(), _temporal())
+    frame = _frame()
+    observations = (
+        replace(
+            _observation(frame),
+            bbox_xyxy=bbox,
+            voxel_keys=MutatingVoxelKeys({(0, 0, 10)}),
+        ),
+    )
+    before_cumulative = cumulative_state_sha256(runtime.cumulative)
+    before_temporal = temporal_state_sha256(runtime.temporal)
+
+    with pytest.raises(RuntimeError, match="original.*inputs|caller inputs"):
+        runtime.process_temporal_only_frame(frame, observations)
+
+    assert cumulative_state_sha256(runtime.cumulative) == before_cumulative
+    assert temporal_state_sha256(runtime.temporal) == before_temporal
+    assert bbox == [0.0, 0.0, 5.0, 5.0, 99.0]
+
+
+@pytest.mark.parametrize("temporal_only", (False, True))
+def test_proposal_recovery_evidence_is_built_from_cloned_temporal_inputs_and_passed(
+    monkeypatch: pytest.MonkeyPatch,
+    temporal_only: bool,
+) -> None:
+    import src.oviv2.dual_readout as module
+
+    config = replace(
+        _temporal_config(), proposal=TemporalProposalConfig(1, 4, 0.25, 0.1)
+    )
+    temporal = TemporalCurrentRuntime(
+        "scene", config, LocalTrackerConfig(confirm_hits=2, min_voxel_overlap=0.0)
+    )
+    runtime = module.DualReadoutRuntime(_cumulative(dense=True), temporal)
+    built_from: list[tuple[Frame, tuple[FrameObservation, ...], DenseSemanticFrame]] = []
+    original_observations: list[tuple[FrameObservation, ...]] = []
+    original_builder = module.build_proposal_recovery_evidence
+
+    def capture_builder(trial_frame, trial_observations, trial_dense, config, state):
+        built_from.append((trial_frame, trial_observations, trial_dense))
+        return original_builder(
+            trial_frame, trial_observations, trial_dense, config, state
+        )
+
+    monkeypatch.setattr(module, "build_proposal_recovery_evidence", capture_builder)
+    for frame_id in (0, 1):
+        frame = _frame(frame_id)
+        observations = (
+            replace(_observation(frame), observation_id=10 + frame_id),
+        )
+        original_observations.append(observations)
+        dense = _dense_semantics(frame)
+        if temporal_only:
+            runtime.process_temporal_only_frame(frame, observations, dense)
+        else:
+            runtime.process_frame(
+                frame, (), dense, temporal_observations=observations
+            )
+    frame = _frame(2)
+    frame = replace(frame, depth=np.full(frame.depth.shape, 0.5, dtype=np.float32))
+    dense = _dense_semantics(frame)
+    if temporal_only:
+        result = runtime.process_temporal_only_frame(frame, (), dense)
+    else:
+        result = runtime.process_frame(frame, (), dense).temporal
+
+    assert result.proposal_opportunity_count > 0
+    assert len(built_from) == 3
+    assert built_from[0][1][0] is not original_observations[0][0]
+    assert built_from[-1][0] is not frame
+    assert built_from[-1][2] is not dense
+
+
+@pytest.mark.parametrize("temporal_only", (False, True))
+def test_proposal_recovery_control_does_not_build_and_passes_none(
+    monkeypatch: pytest.MonkeyPatch,
+    temporal_only: bool,
+) -> None:
+    import src.oviv2.dual_readout as module
+
+    config = replace(
+        _temporal_config(),
+        execution_profile=ExecutionProfile.A2,
+        diagnostic_control=DiagnosticControl.A2_NO_PROPOSAL_RECOVERY,
+    )
+    temporal = TemporalCurrentRuntime(
+        "scene", config, LocalTrackerConfig(confirm_hits=2, min_voxel_overlap=0.0)
+    )
+    runtime = module.DualReadoutRuntime(_cumulative(dense=True), temporal)
+    frame = _frame()
+    observations = (_observation(frame),)
+    dense = _dense_semantics(frame)
+    passed_evidence = []
+    original_isolate = module.isolated_temporal_runtime
+    original_process = TemporalCurrentRuntime.process_frame
+
+    def capture_process(self, *args, **kwargs):
+        assert "proposal_evidence" in kwargs
+        passed_evidence.append(kwargs["proposal_evidence"])
+        monkeypatch.setattr(
+            TemporalCurrentRuntime, "process_frame", original_process
+        )
+        return original_process(self, *args, **kwargs)
+
+    def isolate_with_capture(value):
+        trial = original_isolate(value)
+        monkeypatch.setattr(
+            TemporalCurrentRuntime, "process_frame", capture_process
+        )
+        return trial
+
+    monkeypatch.setattr(module, "isolated_temporal_runtime", isolate_with_capture)
+    monkeypatch.setattr(
+        module,
+        "build_proposal_recovery_evidence",
+        lambda *_: (_ for _ in ()).throw(AssertionError("control built evidence")),
+    )
+
+    if temporal_only:
+        result = runtime.process_temporal_only_frame(frame, observations, dense)
+    else:
+        result = runtime.process_frame(frame, observations, dense).temporal
+
+    assert passed_evidence == [None]
+    assert result.proposal_opportunity_count == 0
+    assert result.proposal_trigger_count == 0
+
+
+def test_temporal_only_advance_leaves_cumulative_untouched() -> None:
+    from src.oviv2.dual_readout import DualReadoutRuntime
+    from src.oviv2.t1_exactness import cumulative_state_sha256
+
+    runtime = DualReadoutRuntime(_cumulative(), _temporal())
+    before = cumulative_state_sha256(runtime.cumulative)
+
+    result = runtime.advance_temporal_only_frame(_frame())
+
+    assert result.frame_id == 0
+    assert result.export is not None and result.export.samples == ()
+    assert cumulative_state_sha256(runtime.cumulative) == before

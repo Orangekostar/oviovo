@@ -125,6 +125,7 @@
       "candidate_id": "a0",
       "components": {"lifecycle": "v1_native", "proposal": "v1_native", "identity": "v1_native", "geometry": "v1_cumulative", "background": "v1_cumulative", "motion": "none"},
       "temporal_readout": {
+        "confirm_hits": 1,
         "execution_profile": "a0",
         "components": {"lifecycle": "v1_native", "proposal": "v1_native", "identity": "v1_native", "geometry": "v1_cumulative", "background": "v1_cumulative", "motion": "none"},
         "lifecycle": {"initial_log_odds": 0.0, "present_log_likelihood": 1.2, "absent_log_likelihood": -0.8, "log_odds_limit": 6.0, "decay_half_life_seconds": 30.0, "active_on_probability": 0.75, "dormant_off_probability": 0.35, "minimum_absent_streak": 2, "minimum_distinct_view_bins": 3, "visibility_depth_tolerance_m": 0.1, "minimum_visible_pixel_count": 10, "minimum_visible_fraction": 0.05, "view_bin_azimuth_count": 8, "view_bin_elevation_count": 4},
@@ -135,13 +136,14 @@
         "dynamic_state": {"minimum_consecutive_motion_frames": 2, "displacement_floor_m": 0.1, "minimum_motion_confidence": 0.7, "static_off_streak_frames": 10},
         "motion": {"minimum_translation_confidence": 0.6, "maximum_translation_residual_m": 0.25, "require_explicit_rejection": true},
         "geometry_epoch": {"maximum_epochs_per_identity": 4, "maximum_retained_epochs": 1000},
-        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 8}
+        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 128}
       }
     },
     {
       "candidate_id": "a1",
       "components": {"lifecycle": "probabilistic_hysteresis", "proposal": "v1_native", "identity": "v1_identity", "geometry": "v1_cumulative", "background": "v1_cumulative", "motion": "none"},
       "temporal_readout": {
+        "confirm_hits": 1,
         "execution_profile": "a1",
         "components": {"lifecycle": "probabilistic_hysteresis", "proposal": "v1_native", "identity": "v1_identity", "geometry": "v1_cumulative", "background": "v1_cumulative", "motion": "none"},
         "lifecycle": {"initial_log_odds": 0.0, "present_log_likelihood": 1.2, "absent_log_likelihood": -0.8, "log_odds_limit": 6.0, "decay_half_life_seconds": 30.0, "active_on_probability": 0.75, "dormant_off_probability": 0.35, "minimum_absent_streak": 2, "minimum_distinct_view_bins": 3, "visibility_depth_tolerance_m": 0.1, "minimum_visible_pixel_count": 10, "minimum_visible_fraction": 0.05, "view_bin_azimuth_count": 8, "view_bin_elevation_count": 4},
@@ -152,13 +154,14 @@
         "dynamic_state": {"minimum_consecutive_motion_frames": 2, "displacement_floor_m": 0.1, "minimum_motion_confidence": 0.7, "static_off_streak_frames": 10},
         "motion": {"minimum_translation_confidence": 0.6, "maximum_translation_residual_m": 0.25, "require_explicit_rejection": true},
         "geometry_epoch": {"maximum_epochs_per_identity": 4, "maximum_retained_epochs": 1000},
-        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 8}
+        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 128}
       }
     },
     {
       "candidate_id": "a2",
       "components": {"lifecycle": "probabilistic_hysteresis", "proposal": "temporal_recovery", "identity": "active_uncertain", "geometry": "object_submap_epoch", "background": "v1_cumulative", "motion": "translation"},
       "temporal_readout": {
+        "confirm_hits": 1,
         "execution_profile": "a2",
         "components": {"lifecycle": "probabilistic_hysteresis", "proposal": "temporal_recovery", "identity": "active_uncertain", "geometry": "object_submap_epoch", "background": "v1_cumulative", "motion": "translation"},
         "lifecycle": {"initial_log_odds": 0.0, "present_log_likelihood": 1.2, "absent_log_likelihood": -0.8, "log_odds_limit": 6.0, "decay_half_life_seconds": 30.0, "active_on_probability": 0.75, "dormant_off_probability": 0.35, "minimum_absent_streak": 2, "minimum_distinct_view_bins": 3, "visibility_depth_tolerance_m": 0.1, "minimum_visible_pixel_count": 10, "minimum_visible_fraction": 0.05, "view_bin_azimuth_count": 8, "view_bin_elevation_count": 4},
@@ -169,13 +172,14 @@
         "dynamic_state": {"minimum_consecutive_motion_frames": 2, "displacement_floor_m": 0.1, "minimum_motion_confidence": 0.7, "static_off_streak_frames": 10},
         "motion": {"minimum_translation_confidence": 0.6, "maximum_translation_residual_m": 0.25, "require_explicit_rejection": true},
         "geometry_epoch": {"maximum_epochs_per_identity": 4, "maximum_retained_epochs": 1000},
-        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 8}
+        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 128}
       }
     },
     {
       "candidate_id": "a3",
       "components": {"lifecycle": "probabilistic_hysteresis", "proposal": "temporal_recovery", "identity": "active_uncertain", "geometry": "object_submap_epoch", "background": "reversible_ledger", "motion": "translation"},
       "temporal_readout": {
+        "confirm_hits": 1,
         "execution_profile": "a3",
         "components": {"lifecycle": "probabilistic_hysteresis", "proposal": "temporal_recovery", "identity": "active_uncertain", "geometry": "object_submap_epoch", "background": "reversible_ledger", "motion": "translation"},
         "lifecycle": {"initial_log_odds": 0.0, "present_log_likelihood": 1.2, "absent_log_likelihood": -0.8, "log_odds_limit": 6.0, "decay_half_life_seconds": 30.0, "active_on_probability": 0.75, "dormant_off_probability": 0.35, "minimum_absent_streak": 2, "minimum_distinct_view_bins": 3, "visibility_depth_tolerance_m": 0.1, "minimum_visible_pixel_count": 10, "minimum_visible_fraction": 0.05, "view_bin_azimuth_count": 8, "view_bin_elevation_count": 4},
@@ -186,13 +190,14 @@
         "dynamic_state": {"minimum_consecutive_motion_frames": 2, "displacement_floor_m": 0.1, "minimum_motion_confidence": 0.7, "static_off_streak_frames": 10},
         "motion": {"minimum_translation_confidence": 0.6, "maximum_translation_residual_m": 0.25, "require_explicit_rejection": true},
         "geometry_epoch": {"maximum_epochs_per_identity": 4, "maximum_retained_epochs": 1000},
-        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 8}
+        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 128}
       }
     },
     {
       "candidate_id": "a4",
       "components": {"lifecycle": "probabilistic_hysteresis", "proposal": "temporal_recovery", "identity": "dormant_reid", "geometry": "object_submap_epoch", "background": "reversible_ledger", "motion": "gated_icp"},
       "temporal_readout": {
+        "confirm_hits": 1,
         "execution_profile": "a4",
         "components": {"lifecycle": "probabilistic_hysteresis", "proposal": "temporal_recovery", "identity": "dormant_reid", "geometry": "object_submap_epoch", "background": "reversible_ledger", "motion": "gated_icp"},
         "lifecycle": {"initial_log_odds": 0.0, "present_log_likelihood": 1.2, "absent_log_likelihood": -0.8, "log_odds_limit": 6.0, "decay_half_life_seconds": 30.0, "active_on_probability": 0.75, "dormant_off_probability": 0.35, "minimum_absent_streak": 2, "minimum_distinct_view_bins": 3, "visibility_depth_tolerance_m": 0.1, "minimum_visible_pixel_count": 10, "minimum_visible_fraction": 0.05, "view_bin_azimuth_count": 8, "view_bin_elevation_count": 4},
@@ -203,7 +208,7 @@
         "dynamic_state": {"minimum_consecutive_motion_frames": 2, "displacement_floor_m": 0.1, "minimum_motion_confidence": 0.7, "static_off_streak_frames": 10},
         "motion": {"minimum_translation_confidence": 0.6, "maximum_translation_residual_m": 0.25, "require_explicit_rejection": true},
         "geometry_epoch": {"maximum_epochs_per_identity": 4, "maximum_retained_epochs": 1000},
-        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 8}
+        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 128}
       }
     }
   ]

@@ -10,13 +10,13 @@ from typing import Any, Callable
 
 import pytest
 
-from scripts.evaluation.evaluate_oviv2_tesse_occlusion import (
-    canonical_algorithm_hash,
-)
 from scripts.evaluation.freeze_oviv2_tesse_cd_v2 import (
     FreezeDependencies,
     _canonical_json_bytes,
     freeze,
+)
+from scripts.evaluation.run_oviv2_tesse_cd_v2 import (
+    algorithm_hash as canonical_algorithm_hash,
 )
 
 
@@ -102,6 +102,10 @@ class Fixture:
                     "provenance_sha256": {"clip_model": "f" * 64},
                 },
             )
+            temporal_frontend = _write_json(
+                scene_dir / "temporal_frontend.json",
+                {"scene": scene, "temporal_only": True},
+            )
             dense = _write_json(
                 scene_dir / "dense.json",
                 {
@@ -131,6 +135,7 @@ class Fixture:
                     ),
                     "export_manifest": str(export),
                     "frontend_manifest": str(frontend),
+                    "temporal_frontend_manifest": str(temporal_frontend),
                     "dense_manifest": str(dense),
                     "vocabulary_json": str(vocabulary_json),
                     "vocabulary_txt": str(vocabulary_txt),
@@ -339,7 +344,10 @@ class Fixture:
                 "peak_gpu_gb", "peak_ram_gb", "final_map_mb",
             )
         }
-        t4_run = _write_json(
+        apartment_temporal_record = _record(
+            Path(self.configs["apartment"]["temporal_frontend_manifest"])
+        )
+        self.t4_run = _write_json(
             self.repo / "development/t4/a3-run.json",
             {
                 "schema_version": 2,
@@ -349,8 +357,15 @@ class Fixture:
                 "scene": "apartment",
                 "candidate_id": "a3",
                 "config_sha256": _json_hash(self.configs["apartment"]),
+                "source_bindings": {
+                    "temporal_frontend_manifest": {
+                        "sha256": apartment_temporal_record["sha256"],
+                        "byte_count": apartment_temporal_record["byte_count"],
+                    }
+                },
             },
         )
+        t4_run = self.t4_run
         t4_metric_sources = {
             name: _record(
                 _write_json(
@@ -569,6 +584,11 @@ def test_freeze_publishes_complete_runner_compatible_v2_contract(
         "selected_algorithm_hash": fixture.configs["apartment"]["algorithm_hash"],
     }
     assert set(manifest["scenes"]) == set(SCENES)
+    for scene in SCENES:
+        temporal = Path(fixture.configs[scene]["temporal_frontend_manifest"])
+        assert manifest["scenes"][scene]["temporal_frontend_manifest"] == _record(
+            temporal
+        )
     assert set(manifest["shared_bindings"]) == {
         "input_manifest",
         "schedule",
@@ -605,6 +625,24 @@ def test_freeze_publishes_complete_runner_compatible_v2_contract(
     assert set(manifest["release_bindings"]) == set(fixture.release_paths)
     assert json.loads(fixture.output.read_text(encoding="utf-8")) == manifest
     assert not list(fixture.output.parent.glob(".*.tmp-*"))
+
+
+def test_freeze_and_runner_share_the_same_real_environment_collector() -> None:
+    import scripts.evaluation.freeze_oviv2_tesse_cd_v2 as freezer
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as runner
+
+    freeze_collector = freezer._default_dependencies().environment_collector
+    runner_collector = runner._production_dependencies().environment_factory
+    frozen_environment = freezer._validate_environment(
+        freeze_collector()
+    )
+    runner_environment = runner._validate_environment(
+        runner_collector()
+    )
+
+    assert freezer._default_environment is runner._production_environment
+    assert freeze_collector is runner_collector
+    assert frozen_environment == runner_environment
 
 
 def test_freeze_requires_t1_and_t4_evidence(fixture: Fixture) -> None:
@@ -809,6 +847,78 @@ def test_freeze_rejects_config_drift_and_surplus(fixture: Fixture, scene: str) -
 
     with pytest.raises(ValueError):
         fixture.run()
+
+
+@pytest.mark.parametrize("scene", SCENES)
+def test_freeze_requires_temporal_frontend_manifest_content(
+    fixture: Fixture, scene: str
+) -> None:
+    Path(fixture.configs[scene]["temporal_frontend_manifest"]).unlink()
+
+    with pytest.raises(ValueError, match="temporal_frontend_manifest"):
+        fixture.run()
+
+
+def test_t4_run_must_bind_frozen_apartment_temporal_frontend_content(
+    fixture: Fixture,
+) -> None:
+    import scripts.evaluation.freeze_oviv2_tesse_cd_v2 as freezer
+
+    run = json.loads(fixture.t4_run.read_text(encoding="utf-8"))
+    run["source_bindings"]["temporal_frontend_manifest"]["sha256"] = "0" * 64
+    expected = _record(
+        Path(fixture.configs["apartment"]["temporal_frontend_manifest"])
+    )
+
+    with pytest.raises(ValueError, match="T4.*temporal frontend"):
+        freezer._validate_t4_temporal_frontend_binding(run, expected, "a3")
+
+
+def test_t4_reference_profile_forbids_temporal_frontend_binding() -> None:
+    import scripts.evaluation.freeze_oviv2_tesse_cd_v2 as freezer
+
+    freezer._validate_t4_temporal_frontend_binding(
+        {"source_bindings": {}}, None, "a0"
+    )
+
+    with pytest.raises(ValueError, match="T4.*temporal frontend.*unexpected"):
+        freezer._validate_t4_temporal_frontend_binding(
+            {"source_bindings": {"temporal_frontend_manifest": {}}}, None, "a0"
+        )
+
+
+@pytest.mark.parametrize("profile", ("a0", "a1"))
+def test_reference_profile_freeze_does_not_read_temporal_frontend_manifest(
+    fixture: Fixture, profile: str
+) -> None:
+    import scripts.evaluation.freeze_oviv2_tesse_cd_v2 as freezer
+
+    search_manifest = json.loads(
+        Path(
+            "configs/evaluation/manifests/"
+            "oviv2_tesse_dual_readout_search_v1.json"
+        ).read_text(encoding="utf-8")
+    )
+    temporal = next(
+        item["temporal_readout"]
+        for item in search_manifest["candidates"]
+        if item["candidate_id"] == profile
+    )
+    for scene in SCENES:
+        config = fixture.configs[scene]
+        config["temporal_readout"] = json.loads(json.dumps(temporal))
+        config["algorithm_hash"] = canonical_algorithm_hash(config)
+        _write_json(fixture.config_paths[scene], config)
+        Path(config["temporal_frontend_manifest"]).unlink()
+
+    _, scene_bindings = freezer._load_configs(
+        fixture.args(), repo_root=fixture.repo, snapshots={}
+    )
+
+    assert all(
+        scene_bindings[scene]["temporal_frontend_manifest"] is None
+        for scene in SCENES
+    )
 
 
 def test_freeze_rejects_algorithm_or_cross_scene_config_drift(fixture: Fixture) -> None:

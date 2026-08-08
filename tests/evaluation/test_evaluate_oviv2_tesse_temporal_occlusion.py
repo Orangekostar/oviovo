@@ -17,6 +17,7 @@ from scripts.evaluation.evaluate_oviv2_tesse_temporal_occlusion import (
     evaluate_temporal_occlusion_package,
 )
 from src.oviv2.temporal_snapshot import TemporalCompactCheckpoint, TemporalSnapshotMetadata
+from src.oviv2.temporal_config import temporal_config_from_json, temporal_config_to_json
 from src.evaluation.oviv2_temporal_occlusion import mechanism_telemetry_from_sources
 
 
@@ -29,6 +30,31 @@ def _record(path: Path, root: Path | None = None) -> dict[str, object]:
     data = path.read_bytes()
     return {"path": str(path if root is None else path.relative_to(root)),
             "sha256": hashlib.sha256(data).hexdigest(), "byte_count": len(data)}
+
+
+def _fixture_temporal_config() -> tuple[dict[str, object], str]:
+    manifest = json.loads(
+        Path(
+            "configs/evaluation/manifests/oviv2_tesse_dual_readout_search_v1.json"
+        ).read_text()
+    )
+    temporal = next(
+        item["temporal_readout"]
+        for item in manifest["candidates"]
+        if item["candidate_id"] == "a4"
+    )
+    parsed = temporal_config_from_json({"temporal_readout": temporal})
+    canonical = temporal_config_to_json(parsed)
+    content = (
+        json.dumps(
+            canonical,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        )
+        + "\n"
+    ).encode()
+    return temporal, hashlib.sha256(content).hexdigest()
 
 
 @pytest.mark.parametrize(
@@ -372,12 +398,15 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
                   for name, value in arrays.items()}}}
     target_path = target_dir / "manifest.json"; _json(target_path, target)
     run = tmp_path / "run"; (run / "checkpoints").mkdir(parents=True)
+    temporal_readout, temporal_config_sha256 = _fixture_temporal_config()
+    normalized_config = run / "normalized_run_config.json"
+    _json(normalized_config, {"temporal_readout": temporal_readout})
     records = []
     for frame in (0, 1):
         (run / "checkpoints" / str(frame)).mkdir()
         checkpoint = TemporalCompactCheckpoint(
             TemporalSnapshotMetadata("apartment", frame, (100 + frame * 100_000_000) / 1e9,
-                                     frame + 1, 0.05, "a" * 64),
+                                     frame + 1, 0.05, temporal_config_sha256),
             np.asarray([7], np.int64), np.asarray([0 if frame == 0 else 1], np.uint8),
             np.asarray([1.0]), np.asarray([0], np.int64), np.asarray([0], np.int64),
             np.asarray([np.eye(4)]), np.asarray([[0, 0, 0]], np.int64), np.asarray([0, 1], np.int64),
@@ -405,6 +434,7 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
     manifest = {"schema_version": 2, "protocol_id": "oviv2-tessecd-v2", "dataset": "TESSE-CD",
                 "method_id": "OVIV2", "scene": "apartment", **common,
                 "occlusion_checkpoint_index": _record(index_path, run),
+                "normalized_run_config": _record(normalized_config, run),
                 "source_index": _install_mechanism_sources(run)}
     _json(run / "run_manifest.json", manifest)
     return target_path, index_path, dataset
@@ -416,6 +446,9 @@ def _office_index_from_fixture(
     source = json.loads(apartment_index.read_text())
     run = tmp_path / "office-run"
     (run / "checkpoints").mkdir(parents=True)
+    temporal_readout, temporal_config_sha256 = _fixture_temporal_config()
+    normalized_config = run / "normalized_run_config.json"
+    _json(normalized_config, {"temporal_readout": temporal_readout})
     records = []
     for source_record in source["checkpoints"]:
         frame = source_record["frame_index"]
@@ -423,7 +456,7 @@ def _office_index_from_fixture(
         checkpoint = TemporalCompactCheckpoint(
             TemporalSnapshotMetadata(
                 "office", frame, (100 + frame * 100_000_000) / 1e9,
-                frame + 1, 0.05, "a" * 64,
+                frame + 1, 0.05, temporal_config_sha256,
             ),
             np.asarray([7], np.int64),
             np.asarray([0 if frame == 0 else 1], np.uint8),
@@ -452,6 +485,7 @@ def _office_index_from_fixture(
     }
     manifest["schema_version"] = 2
     manifest["occlusion_checkpoint_index"] = _record(index_path, run)
+    manifest["normalized_run_config"] = _record(normalized_config, run)
     manifest["source_index"] = _install_mechanism_sources(run, scene="office")
     _json(run / "run_manifest.json", manifest)
     return index_path
@@ -496,6 +530,28 @@ def test_cli_evaluates_overlap_compact_and_publishes_canonical_no_replace(tmp_pa
     with pytest.raises(FileExistsError):
         evaluate_temporal_occlusion_package(
             targets=target, checkpoints=[index], dataset_root=dataset, output=output
+        )
+
+
+def test_package_rejects_compact_temporal_config_authority_mismatch(
+    tmp_path: Path,
+) -> None:
+    target, index, dataset = _fixture(tmp_path)
+    run = index.parent
+    config_path = run / "normalized_run_config.json"
+    config = json.loads(config_path.read_text())
+    config["temporal_readout"]["lifecycle"]["present_log_likelihood"] = 1.1
+    _json(config_path, config)
+    manifest_path = run / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text())
+    manifest["normalized_run_config"] = _record(config_path, run)
+    _json(manifest_path, manifest)
+
+    with pytest.raises(ValueError, match="compact metadata authority mismatch"):
+        evaluate_temporal_occlusion_package(
+            targets=target,
+            checkpoints=[index],
+            dataset_root=dataset,
         )
 
 

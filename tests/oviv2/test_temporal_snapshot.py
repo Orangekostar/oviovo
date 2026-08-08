@@ -209,6 +209,30 @@ def test_snapshot_excludes_invalid_geometry_epoch_and_keeps_occluded_valid() -> 
     ] == [1]
 
 
+def test_snapshot_rebuild_validates_combined_background_derivation() -> None:
+    from tests.oviv2.test_temporal_runtime import _frame, _runtime
+
+    runtime = _runtime()
+    runtime.process_frame(_frame(0), ())
+    state = runtime.state
+    raw_ledger = object.__getattribute__(state, "_ledger_state")
+    assert raw_ledger is not None
+    base = raw_ledger._base_volume.clone()
+    extra_frame = _frame(1, depth=2.0, camera_x=1.0)
+    keys = base.candidate_block_keys(extra_frame, extra_frame.depth)
+    base.integrate_blocks_owned(extra_frame, extra_frame.depth, keys)
+    raw_ledger._state = replace(
+        raw_ledger._state,
+        base_volume=base,
+        derivation_digest=raw_ledger._derivation_digest(
+            base, raw_ledger._committed, raw_ledger._published_volume
+        ),
+    )
+
+    with pytest.raises(ValueError, match="derivation"):
+        build_temporal_snapshot(state, config_sha256="a" * 64)
+
+
 def test_build_temporal_map_snapshot_extracts_real_nonempty_background() -> None:
     background = TemporalBackgroundVolume(_geometry_config(background_block_count=32))
     frame = Frame(

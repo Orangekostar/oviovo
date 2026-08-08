@@ -1799,8 +1799,12 @@ def test_formal_config_binds_real_inputs_and_contains_no_evaluation_paths() -> N
     for forbidden in ("ground_truth", "target", "prediction"):
         assert forbidden not in serialized
 
-    commands = build_commands(config, manifest)
-    assert [(value.scene, value.gpu_id) for value in commands] == [
-        ("apartment", 0),
-        ("office", 1),
-    ]
+    assert manifest["input_policy"] == "rgbd_pose_timestamp_only"
+    assert {
+        scene: record["root"] for scene, record in manifest["scenes"].items()
+    } == {
+        "apartment": (
+            "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/apartment"
+        ),
+        "office": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/office",
+    }

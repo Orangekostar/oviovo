@@ -163,6 +163,7 @@ class ObjectUpdateModule:
         self.last_structural_reject_patches: list[Patch3D] = []
         self.last_surface_gate_records: list[dict[str, Any]] = []
         self.last_surface_gate_stats: dict[str, Any] = {}
+        self.collect_stage_timings = bool(config.get("collect_stage_timings", False))
         self.last_stage_timings: dict[str, float] = {}
         self.last_updated_object_ids: list[int] = []
         self.last_created_object_ids: list[int] = []
@@ -218,6 +219,9 @@ class ObjectUpdateModule:
 
     @contextmanager
     def _timed_substage(self, name: str):
+        if not self.collect_stage_timings:
+            yield
+            return
         start = time.perf_counter()
         try:
             yield
@@ -2191,7 +2195,7 @@ class ObjectUpdateModule:
                 for point in sketch_points
             }
         self._association_geometry_sketches[int(obj.object_id)] = point_by_key
-        obj.association_pcd = np.asarray(sketch_points, dtype=np.float32, copy=False)
+        obj.association_pcd = np.asarray(sketch_points, dtype=np.float32)
         previous_revision = int(
             association_debug.get(
                 "association_geometry_revision",

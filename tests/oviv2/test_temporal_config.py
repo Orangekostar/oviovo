@@ -25,6 +25,7 @@ from src.oviv2.temporal_config import (
 def valid_config() -> dict[str, object]:
     return {
         "temporal_readout": {
+            "confirm_hits": 1,
             "execution_profile": "a4",
             "components": {
                 "lifecycle": "probabilistic_hysteresis",
@@ -127,6 +128,7 @@ def test_valid_config_round_trips_and_is_frozen(
     parsed = temporal_config_from_json(valid_config)
 
     assert isinstance(parsed, TemporalReadoutConfig)
+    assert parsed.confirm_hits == 1
     assert temporal_config_from_json(temporal_config_to_json(parsed)) == parsed
     with pytest.raises(FrozenInstanceError):
         parsed.lifecycle.initial_log_odds = 1.0  # type: ignore[misc]
@@ -140,6 +142,33 @@ def test_valid_config_round_trips_and_is_frozen(
     ):
         with pytest.raises(FrozenInstanceError):
             setattr(group, next(iter(group.__dict__)), 0)
+
+
+@pytest.mark.parametrize("value", [True, 0, -1, 1.0, "1"])
+def test_confirm_hits_must_be_a_positive_integer(
+    valid_config: dict[str, object], value: object
+) -> None:
+    valid_config["temporal_readout"]["confirm_hits"] = value  # type: ignore[index]
+
+    with pytest.raises((TypeError, ValueError), match="confirm_hits"):
+        temporal_config_from_json(valid_config)
+
+
+def test_confirm_hits_is_required(valid_config: dict[str, object]) -> None:
+    del valid_config["temporal_readout"]["confirm_hits"]  # type: ignore[index]
+
+    with pytest.raises(ValueError, match="missing.*confirm_hits"):
+        temporal_config_from_json(valid_config)
+
+
+@pytest.mark.parametrize("value", [True, 0, -1, 1.0, "1"])
+def test_direct_config_rejects_invalid_confirm_hits(
+    valid_config: dict[str, object], value: object
+) -> None:
+    parsed = temporal_config_from_json(valid_config)
+
+    with pytest.raises((TypeError, ValueError), match="confirm_hits"):
+        replace(parsed, confirm_hits=value)
 
 
 @pytest.mark.parametrize(

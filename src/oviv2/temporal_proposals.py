@@ -340,6 +340,40 @@ def _full_mask_from_indices(
     return mask.reshape(shape)
 
 
+def _point_set_geometry(
+    xyz: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    points = np.asarray(xyz, dtype=np.float64)
+    if points.ndim != 2 or points.shape[0] == 0 or points.shape[1] != 3:
+        raise ValueError("proposal point set must be a non-empty Nx3 array")
+    if not np.isfinite(points).all():
+        raise ValueError("proposal point set must contain only finite values")
+    bounds_min = points.min(axis=0)
+    bounds_max = points.max(axis=0)
+    count = points.shape[0]
+    centroid = np.empty(3, dtype=np.float64)
+    for axis in range(3):
+        try:
+            total = math.fsum(points[:, axis])
+            if not math.isfinite(total):
+                raise OverflowError("proposal point sum overflowed")
+            centroid[axis] = total / count
+        except OverflowError:
+            scale = float(1 << (count - 1).bit_length())
+            scaled_total = math.fsum(value / scale for value in points[:, axis])
+            centroid[axis] = (scaled_total / count) * scale
+    if not np.isfinite(centroid).all():
+        raise ArithmeticError("proposal centroid calculation produced a non-finite value")
+    with np.errstate(over="ignore"):
+        lower_guard = np.nextafter(bounds_min, -np.inf)
+        upper_guard = np.nextafter(bounds_max, np.inf)
+    if np.any(centroid < lower_guard) or np.any(centroid > upper_guard):
+        raise ArithmeticError("proposal centroid exceeded point-set bounds by more than one ULP")
+    # The exact mean is bounded; correct only its final one-ULP rounding error.
+    centroid = np.minimum(np.maximum(centroid, bounds_min), bounds_max)
+    return centroid, bounds_min, bounds_max
+
+
 def _expand_metric_region(
     mask: np.ndarray,
     current_xyz: np.ndarray,
@@ -477,6 +511,7 @@ def recover_temporal_proposals(value: ProposalRecoveryInput, config: TemporalPro
         mask = _full_mask_from_indices(value.depth_m.shape, indices)
         rows, columns = np.nonzero(mask)
         xyz = value.current_xyz[mask]
+        centroid, bounds_min, bounds_max = _point_set_geometry(xyz)
         index_array = np.fromiter(indices, dtype=np.int64)
         component_provenance = provenance_index.reshape(-1)[index_array]
         selected_provenance = int(component_provenance.max(initial=-1))
@@ -494,8 +529,8 @@ def recover_temporal_proposals(value: ProposalRecoveryInput, config: TemporalPro
         proposals.append(RecoveredTemporalProposal(
             proposal_id, value.frame_id, value.timestamp, identity_id, mask,
             int(mask.sum()), (int(columns.min()), int(rows.min()), int(columns.max() + 1), int(rows.max() + 1)),
-            tuple(float(x) for x in xyz.mean(axis=0)), tuple(float(x) for x in xyz.min(axis=0)),
-            tuple(float(x) for x in xyz.max(axis=0)), float(value.depth_m[mask].mean()),
+            tuple(float(x) for x in centroid), tuple(float(x) for x in bounds_min),
+            tuple(float(x) for x in bounds_max), float(value.depth_m[mask].mean()),
             item.source_frame_id, item.projection_provenance_hash,
             value.semantic_source_frame_id, value.semantic_provenance_hash,
             appearance_available,

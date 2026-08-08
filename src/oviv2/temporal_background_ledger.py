@@ -91,6 +91,8 @@ class _FrozenFrame(Frame):
 def _frozen_frame(frame: object) -> Frame:
     if not isinstance(frame, Frame):
         raise TypeError("frame must be a Frame")
+    if type(frame) is _FrozenFrame:
+        return frame
     frame_id = _integer(frame.frame_id, "frame.frame_id")
     timestamp = _timestamp(frame.timestamp, "frame.timestamp")
     if not isinstance(frame.intrinsics, CameraIntrinsics):
@@ -147,7 +149,11 @@ def _native_frame_index(frame: Frame) -> int:
 
 
 def _native_frame_payload(frame: Frame) -> tuple[object, ...]:
-    return (
+    if type(frame) is _FrozenFrame:
+        cached = getattr(frame, "_ledger_native_payload", None)
+        if cached is not None:
+            return cached
+    payload = (
         frame.source_frame_id,
         float(frame.timestamp),
         _array_digest(frame.rgb),
@@ -162,6 +168,9 @@ def _native_frame_payload(frame: Frame) -> tuple[object, ...]:
             frame.intrinsics.height,
         ),
     )
+    if type(frame) is _FrozenFrame:
+        object.__setattr__(frame, "_ledger_native_payload", payload)
+    return payload
 
 
 def _processed_frame_payload(frame: Frame) -> tuple[object, ...]:
@@ -383,6 +392,10 @@ class _LedgerState:
     processed_frames: dict[int, tuple[object, ...]]
     last_frame_id: int
     last_timestamp: float
+    base_volume: TemporalBackgroundVolume | None = None
+    combined_volume: TemporalBackgroundVolume | None = None
+    derivation_digest: str | None = None
+    base_observation_watermark: tuple[object, ...] | None = None
 
 
 class ReversibleBackgroundLedger:
@@ -477,6 +490,18 @@ class ReversibleBackgroundLedger:
             processed_frames=dict(self._processed_frames),
             last_frame_id=self._last_frame_id,
             last_timestamp=self._last_timestamp,
+            base_volume=(
+                None
+                if self._state.base_volume is None
+                else self._state.base_volume.clone()
+            ),
+            combined_volume=(
+                None
+                if self._state.combined_volume is None
+                else self._state.combined_volume.clone()
+            ),
+            derivation_digest=self._state.derivation_digest,
+            base_observation_watermark=self._state.base_observation_watermark,
         )
         return clone
 
@@ -503,6 +528,22 @@ class ReversibleBackgroundLedger:
     @property
     def committed_volume(self) -> TemporalBackgroundVolume:
         return self._volume.clone()
+
+    @property
+    def _published_volume(self) -> TemporalBackgroundVolume:
+        value = self._state.combined_volume
+        return self._volume if value is None else value
+
+    @property
+    def combined_volume(self) -> TemporalBackgroundVolume:
+        return self._published_volume.clone()
+
+    def validate_combined_volume(self, *, rebuild: bool = True) -> None:
+        del rebuild
+        if self._state.combined_volume is not None:
+            raise RuntimeError(
+                "ledger subclass must validate its combined volume derivation"
+            )
 
     def _evidence_digest(self, evidence: BackgroundLedgerEvidence) -> str:
         return _digest(
@@ -557,6 +598,28 @@ class ReversibleBackgroundLedger:
                     for key in sorted(self._committed)
                 ],
                 "blocks": blocks,
+                "base_blocks": (
+                    None
+                    if self._state.base_volume is None
+                    else [
+                        (dtype, shape, hashlib.sha256(data).hexdigest())
+                        for dtype, shape, data
+                        in self._state.base_volume.canonical_block_state()
+                    ]
+                ),
+                "combined_blocks": (
+                    None
+                    if self._state.combined_volume is None
+                    else [
+                        (dtype, shape, hashlib.sha256(data).hexdigest())
+                        for dtype, shape, data
+                        in self._state.combined_volume.canonical_block_state()
+                    ]
+                ),
+                "derivation_digest": self._state.derivation_digest,
+                "base_observation_watermark": (
+                    self._state.base_observation_watermark
+                ),
             }
         )
 
@@ -871,9 +934,19 @@ class ReversibleBackgroundLedger:
             processed_frames=processed_frames,
             last_frame_id=evidence.frame_id,
             last_timestamp=evidence.timestamp,
+            base_volume=self._state.base_volume,
+            combined_volume=self._state.combined_volume,
+            derivation_digest=self._state.derivation_digest,
+            base_observation_watermark=(
+                self._state.base_observation_watermark
+            ),
         )
+        next_state = self._finalize_state(next_state)
         self._before_publish(next_state)
         self._state = next_state
+
+    def _finalize_state(self, next_state: _LedgerState) -> _LedgerState:
+        return next_state
 
     @staticmethod
     def _record_indexes(

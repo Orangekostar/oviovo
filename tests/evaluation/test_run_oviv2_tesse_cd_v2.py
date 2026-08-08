@@ -383,6 +383,7 @@ def _read_jsonl(path: Path) -> list[dict[str, object]]:
 
 def _temporal_readout() -> dict[str, object]:
     return {
+        "confirm_hits": 1,
         "execution_profile": "a4",
         "components": ExecutionProfile.A4.components,
         "lifecycle": {
@@ -548,6 +549,12 @@ class _Caches:
         assert frame_index == frame.frame_id
         return (), None
 
+    def load_temporal(
+        self, frame_index: int, frame: object, dense: object
+    ) -> tuple[()]:
+        assert dense is None and frame_index == frame.frame_id
+        return ()
+
     def assert_inputs_unchanged(self) -> None:
         return None
 
@@ -576,6 +583,8 @@ class _DualRuntime:
         self.scene = scene
         self.export_records = export_records
         self.calls: list[int] = []
+        self.fast_calls: list[int] = []
+        self.advance_calls: list[int] = []
         self.checkpoint_calls: list[int] = []
         self.temporal = SimpleNamespace(
             state=SimpleNamespace(
@@ -589,9 +598,15 @@ class _DualRuntime:
         )
 
     def process_frame(
-        self, frame: object, observations: object, dense_semantics: object
+        self,
+        frame: object,
+        observations: object,
+        dense_semantics: object,
+        *,
+        temporal_observations: object = None,
     ) -> SimpleNamespace:
         assert observations == () and dense_semantics is None
+        assert temporal_observations in {None, ()}
         if frame.frame_id == self.fail_frame:
             raise RuntimeError("injected runtime failure")
         self.calls.append(frame.frame_id)
@@ -646,6 +661,24 @@ class _DualRuntime:
                 frame.frame_id, 100 + frame.frame_id * 10, samples, events
             )
         )
+
+    def process_temporal_only_frame(
+        self,
+        frame: object,
+        observations: object,
+        dense_semantics: object,
+    ) -> SimpleNamespace:
+        self.fast_calls.append(frame.frame_id)
+        return self.process_frame(
+            frame,
+            observations=(),
+            dense_semantics=dense_semantics,
+            temporal_observations=observations,
+        )
+
+    def advance_temporal_only_frame(self, frame: object) -> SimpleNamespace:
+        self.advance_calls.append(frame.frame_id)
+        return self.process_frame(frame, (), None)
 
     def current_checkpoint(self) -> TemporalCurrentSnapshot:
         state = self.temporal.state
@@ -914,6 +947,44 @@ def test_production_factory_uses_reference_readout_without_temporal_runtime_or_s
     assert not hasattr(dual.temporal.state, "entities")
 
 
+def test_production_factory_confirms_current_tracks_immediately_without_changing_cumulative(
+    tmp_path: Path,
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config_path = _materialize_config(module, tmp_path)
+    config = json.loads(config_path.read_text())
+    config["temporal_readout"]["confirm_hits"] = 3
+    parsed = temporal_config_from_json(
+        {"temporal_readout": config["temporal_readout"]}
+    )
+    provenance = DenseSemanticProvenance(
+        backend="fixture",
+        source_commit="1" * 40,
+        radio_commit="2" * 40,
+        model_id="fixture",
+        model_sha256="3" * 64,
+        auxiliary_model_sha256="4" * 64,
+        vocabulary_sha256="5" * 64,
+        prompt_sha256="6" * 64,
+        inference_config_sha256="7" * 64,
+        cache_prefix_sha256="8" * 64,
+        language_model_id="fixture",
+        language_model_revision="9" * 40,
+        language_model_sha256="a" * 64,
+    )
+
+    dual = module._production_runtime_factory(
+        config,
+        _Caches(parsed, {}, dense_provenance=provenance),
+    )
+
+    assert config["confirm_hits"] == 2
+    assert dual.cumulative.config.tracker.confirm_hits == 2
+    assert dual.temporal.tracker_config.confirm_hits == 3
+    assert dual.temporal.state.tracker.config.confirm_hits == 3
+
+
 def _neutral_fixture(
     *, background: np.ndarray, ids: tuple[int, ...], timestamp: float = 120.0
 ) -> MapSnapshot:
@@ -1169,9 +1240,19 @@ def test_runner_rejects_noncausal_export_batch(
 
     class NoncausalRuntime(_DualRuntime):
         def process_frame(
-            self, frame: object, observations: object, dense_semantics: object
+            self,
+            frame: object,
+            observations: object,
+            dense_semantics: object,
+            *,
+            temporal_observations: object = None,
         ) -> SimpleNamespace:
-            result = super().process_frame(frame, observations, dense_semantics)
+            result = super().process_frame(
+                frame,
+                observations,
+                dense_semantics,
+                temporal_observations=temporal_observations,
+            )
             export = result.export
             return SimpleNamespace(
                 export=TemporalExportBatch(
@@ -1595,6 +1676,31 @@ def test_direct_office_runner_requires_frozen_authorization_before_output_creati
     assert not output.parent.exists()
 
 
+def test_direct_office_runner_allows_explicit_nonformal_opt_in(
+    tmp_path: Path,
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config_path = _materialize_config(module, tmp_path)
+    config = json.loads(config_path.read_text())
+    config["scene"] = "office"
+    config["algorithm_hash"] = module.algorithm_hash(config)
+    _write_json(config_path, config)
+    output = tmp_path / "office-nonformal"
+
+    manifest = module.run(
+        config_path,
+        output,
+        allow_unfrozen_office=True,
+        dependencies=_dependencies(module)[0],
+    )
+
+    assert manifest["nonformal_authorization"] == {
+        "status": "unfrozen_office_opt_in",
+        "publication_eligible": False,
+    }
+
+
 def test_overlap_checkpoint_publishes_full_and_compact_with_exact_index(
     tmp_path: Path,
 ) -> None:
@@ -1641,6 +1747,69 @@ def test_overlap_checkpoint_publishes_full_and_compact_with_exact_index(
     assert "occlusion_checkpoint_index.json" in first_manifest["artifact_inventory"]
     assert first_manifest == second_manifest
     assert index_path.read_bytes() == (second / "occlusion_checkpoint_index.json").read_bytes()
+
+
+def test_table_only_captures_official_common_checkpoints_without_occlusion_exports(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config = _materialize_overlap_config(module, tmp_path)
+    output = tmp_path / "table-only"
+    dependencies, holder = _dependencies(module)
+
+    def reject_redundant_export(*_: object, **__: object) -> object:
+        raise AssertionError("table-only used a redundant checkpoint export")
+
+    monkeypatch.setattr(
+        module, "_cumulative_neutral_from_runtime", reject_redundant_export
+    )
+    monkeypatch.setattr(
+        module, "publish_temporal_current_checkpoint", reject_redundant_export
+    )
+
+    manifest = module.run(
+        config,
+        output,
+        table_only=True,
+        dependencies=dependencies,
+    )
+
+    assert manifest["capture_mode"] == {
+        "mode": "official_common_only",
+        "occlusion_evaluation_available": False,
+        "publication_eligible": False,
+        "runtime_mode": "temporal_only_unchecked",
+        "keyframe_stride": 5,
+    }
+    materialized = json.loads(config.read_text())
+    schedule = json.loads(Path(materialized["schedule_manifest"]).read_text())
+    official_frames = [
+        item["frame_index"] for item in schedule["scenes"]["apartment"]["entries"]
+    ]
+    assert manifest["scheduled_frame_indices"] == official_frames
+    assert holder["runtime"].checkpoint_calls[: len(official_frames)] == official_frames
+    assert holder["runtime"].fast_calls == [0, 2, 3, 4]
+    assert holder["runtime"].advance_calls == [1]
+    index_record = manifest["occlusion_checkpoint_index"]
+    index = json.loads((output / index_record["path"]).read_text())
+    assert index["checkpoints"] == []
+    assert not list(output.glob("checkpoints/*/cumulative_audit"))
+    for checkpoint in manifest["checkpoints"]:
+        assert checkpoint["cumulative_audit"] is None
+        assert set(checkpoint["artifacts"]) == {"neutral_current"}
+
+    from scripts.evaluation.export_tesse_temporal_artifact import (
+        export_temporal_artifact,
+    )
+
+    temporal_manifest = export_temporal_artifact(
+        output / "source_index.json", tmp_path / "temporal"
+    )
+    exported = json.loads(temporal_manifest.read_text())
+    assert exported["method"] == "OVIV2"
+    assert [item["frame_index"] for item in exported["checkpoints"]] == official_frames
 
 
 def test_checkpoint_relative_timestamp_must_match_dataset_origin(
@@ -1750,6 +1919,8 @@ def test_checked_in_manifests_have_coverable_full_compact_overlap() -> None:
             frame_count=config["frame_count"],
         )
         target_path = module._resolve_path(config["occlusion_target_manifest"])
+        if not target_path.exists():
+            pytest.skip("formal TESSE-CD occlusion target manifest is unavailable")
         plan = module._checkpoint_plan_from_target_manifest(
             target_path.read_bytes(), target_path
         )
@@ -1822,6 +1993,8 @@ def test_dataset_and_cache_factories_receive_only_exact_allowlist_views(
         ("fusion_entity_weight_scale", 2.0),
         ("dense_sample_stride", 0),
         ("frame_count", 1_000_000_000),
+        ("temporal_merge_same_semantic_iou", 2.0),
+        ("temporal_depth_semantic_minimum_fraction", -0.1),
     ],
 )
 def test_invalid_runner_ranges_are_rejected_before_output_creation(
@@ -1888,12 +2061,24 @@ def test_staging_directory_replacement_is_rejected_without_publication(
         return value
 
     class ReplacingRuntime(_DualRuntime):
-        def process_frame(self, frame, observations, dense_semantics) -> SimpleNamespace:
+        def process_frame(
+            self,
+            frame,
+            observations,
+            dense_semantics,
+            *,
+            temporal_observations=None,
+        ) -> SimpleNamespace:
             if frame.frame_id == 0:
                 staging = captured["staging"]
                 staging.rename(staging.with_name(staging.name + "-stolen"))
                 staging.mkdir()
-            return super().process_frame(frame, observations, dense_semantics)
+            return super().process_frame(
+                frame,
+                observations,
+                dense_semantics,
+                temporal_observations=temporal_observations,
+            )
 
     monkeypatch.setattr(module.tempfile, "mkdtemp", recording_mkdtemp)
     dependencies = module.RunnerDependencies(
@@ -2052,36 +2237,14 @@ def test_publisher_return_without_destination_is_uncertain_and_cleans_staging(
     assert list(output.parent.glob(".run.staging-*")) == []
 
 
-def test_environment_schema_and_production_authority_are_complete(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+def test_environment_schema_and_shared_authority_are_complete() -> None:
     import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
 
     invalid = json.loads(json.dumps(TEST_ENVIRONMENT))
     invalid["libraries"]["extra"] = "1"
     with pytest.raises(ValueError):
         module._validate_environment(invalid)
-    monkeypatch.setattr(
-        module,
-        "_production_provenance",
-        lambda: {
-            "hostname": "host",
-            "platform": "platform",
-            "machine": "machine",
-            "cuda_visible_devices": "2",
-            "torch_cuda_version": "12.4",
-            "cudnn_version": 90100,
-            "nvcc_version": ["Cuda compilation tools, release 12.4"],
-            "gpu_inventory": ["2, NVIDIA H100, 550.54"],
-            "library_versions": {
-                "numpy": "2.0",
-                "open3d": "0.18",
-                "scipy": "1.14",
-                "torch": "2.5",
-                "pillow": "11.0",
-            },
-        },
-    )
+    assert module._production_environment is module._collect_formal_environment
     environment = module._production_environment()
     assert set(environment) == module.V2_FREEZE_ENVIRONMENT_KEYS
     assert set(environment["libraries"]) == {
@@ -2091,13 +2254,6 @@ def test_environment_schema_and_production_authority_are_complete(
         "torch",
         "pillow",
     }
-    assert environment["gpu"] == ["2, NVIDIA H100, 550.54"]
-    assert environment["cuda_visible_devices"] == "2"
-    assert environment["cuda"] == [
-        "torch_cuda=12.4",
-        "cudnn=90100",
-        "nvcc=Cuda compilation tools, release 12.4",
-    ]
 
 
 def test_production_environment_smoke_has_complete_current_schema() -> None:
@@ -2110,6 +2266,176 @@ def test_production_environment_smoke_has_complete_current_schema() -> None:
     assert environment["cuda"][0].startswith("torch_cuda=")
     assert environment["cuda"][1].startswith("cudnn=")
     assert all(item.startswith("nvcc=") for item in environment["cuda"][2:])
+
+
+def test_formal_environment_compatibility_allows_host_and_gpu_lane_changes() -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    frozen = json.loads(json.dumps(TEST_ENVIRONMENT))
+    frozen.update(
+        {
+            "host": "freeze-node",
+            "cuda_visible_devices": None,
+            "gpu": [
+                "0, NVIDIA A40, 550.54",
+                "1, NVIDIA A40, 550.54",
+            ],
+        }
+    )
+    current = json.loads(json.dumps(frozen))
+    current.update(
+        {
+            "host": "office-node",
+            "cuda_visible_devices": "1",
+            "gpu": [
+                "0, NVIDIA A40, 550.54",
+                "1, NVIDIA A40, 550.54",
+            ],
+        }
+    )
+
+    assert module._formal_environment_compatibility(frozen) == (
+        module._formal_environment_compatibility(current)
+    )
+    current["gpu"][1] = "1, NVIDIA H100, 550.54"
+    assert module._formal_environment_compatibility(frozen) != (
+        module._formal_environment_compatibility(current)
+    )
+
+
+def test_formal_environment_compatibility_resolves_gpu_uuid_lanes() -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    frozen = json.loads(json.dumps(TEST_ENVIRONMENT))
+    frozen.update(
+        {
+            "cuda_visible_devices": "GPU-aaaaaaaa",
+            "gpu": [
+                "0, GPU-aaaaaaaa, NVIDIA A40, 550.54",
+                "1, GPU-bbbbbbbb, NVIDIA H100, 550.54",
+            ],
+        }
+    )
+    current = json.loads(json.dumps(frozen))
+    current.update(
+        {
+            "cuda_visible_devices": "GPU-dddddddd",
+            "gpu": [
+                "0, GPU-cccccccc, NVIDIA H100, 550.54",
+                "1, GPU-dddddddd, NVIDIA A40, 550.54",
+            ],
+        }
+    )
+
+    assert module._formal_environment_compatibility(frozen) == (
+        module._formal_environment_compatibility(current)
+    )
+    current["gpu"][1] = "1, GPU-dddddddd, NVIDIA A40, 551.00"
+    assert module._formal_environment_compatibility(frozen) != (
+        module._formal_environment_compatibility(current)
+    )
+
+
+@pytest.mark.parametrize(
+    "field", ("driver", "python", "platform", "cuda", "libraries")
+)
+def test_formal_environment_compatibility_rejects_single_field_drift(
+    field: str,
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    frozen = json.loads(json.dumps(TEST_ENVIRONMENT))
+    frozen.update(
+        {
+            "cuda_visible_devices": "GPU-aaaaaaaa",
+            "gpu": ["0, GPU-aaaaaaaa, NVIDIA A40, 550.54"],
+        }
+    )
+    current = json.loads(json.dumps(frozen))
+    if field == "driver":
+        current["gpu"][0] = "0, GPU-aaaaaaaa, NVIDIA A40, 551.00"
+    elif field == "libraries":
+        current["libraries"]["torch"] = "drifted-torch"
+    elif field == "cuda":
+        current["cuda"] = ["drifted-cuda"]
+    else:
+        current[field] = f"drifted-{field}"
+
+    assert module._formal_environment_compatibility(frozen) != (
+        module._formal_environment_compatibility(current)
+    )
+
+
+def test_formal_environment_inventory_records_gpu_uuid(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import scripts.evaluation.oviv2_tesse_cd_v2_provenance as provenance
+
+    commands: list[list[str]] = []
+
+    def fake_run(command: list[str], **_: object) -> SimpleNamespace:
+        commands.append(command)
+        if command[0] == "nvidia-smi":
+            return SimpleNamespace(
+                stdout="0, GPU-aaaaaaaa, NVIDIA A40, 550.54\n"
+            )
+        return SimpleNamespace(stdout="Cuda compilation tools, release 12.4\n")
+
+    monkeypatch.setattr(provenance.subprocess, "run", fake_run)
+
+    environment = provenance.collect_formal_environment()
+
+    assert commands[0][1] == "--query-gpu=index,uuid,name,driver_version"
+    assert environment["gpu"] == ["0, GPU-aaaaaaaa, NVIDIA A40, 550.54"]
+
+
+def test_repository_provenance_without_git_fails_as_formal_precondition(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.oviv2_tesse_cd_v2_provenance as provenance
+
+    monkeypatch.setattr(provenance, "REPO_ROOT", tmp_path)
+
+    with pytest.raises(ValueError, match="deployed Git worktree"):
+        provenance.repository_provenance()
+
+
+def test_nested_parent_git_worktree_is_not_accepted_as_deployment_repo(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import subprocess
+
+    import scripts.evaluation.freeze_oviv2_tesse_cd_v2 as freezer
+    import scripts.evaluation.oviv2_tesse_cd_v2_provenance as provenance
+
+    parent = tmp_path / "parent-repo"
+    subprocess.run(["git", "init", str(parent)], check=True, capture_output=True)
+    (parent / "tracked.txt").write_text("tracked\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(parent), "add", "tracked.txt"], check=True)
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(parent),
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.com",
+            "commit",
+            "-m",
+            "fixture",
+        ],
+        check=True,
+        capture_output=True,
+    )
+    deployment = parent / "deployment"
+    deployment.mkdir()
+    monkeypatch.setattr(provenance, "REPO_ROOT", deployment)
+
+    with pytest.raises(ValueError, match="repository root"):
+        provenance.repository_provenance()
+    with pytest.raises(ValueError, match="repository root"):
+        freezer._inspect_repository(deployment)
 
 
 def test_compact_checkpoint_objects_are_released_between_checkpoints(
@@ -2190,7 +2516,8 @@ def test_cumulative_snapshot_objects_are_released_between_checkpoints(
 
         def commit_new(self, target: Path) -> Snapshot:
             gc.collect()
-            target.mkdir(parents=True)
+            assert target.parent.is_dir()
+            target.mkdir()
             (target / "payload.bin").write_bytes(b"snapshot")
             return Snapshot(target, self.frame_id, self.timestamp)
 
@@ -2216,8 +2543,19 @@ def test_cumulative_snapshot_objects_are_released_between_checkpoints(
         value.cumulative = CumulativeRuntime()
         original_process = value.process_frame
 
-        def process(frame: object, observations: object, dense_semantics: object):
-            result = original_process(frame, observations, dense_semantics)
+        def process(
+            frame: object,
+            observations: object,
+            dense_semantics: object,
+            *,
+            temporal_observations: object = None,
+        ):
+            result = original_process(
+                frame,
+                observations,
+                dense_semantics,
+                temporal_observations=temporal_observations,
+            )
             value.cumulative.frame_id = frame.frame_id
             value.cumulative.timestamp = frame.timestamp
             return result
@@ -2393,6 +2731,7 @@ def _formal_fixture(
     scene_fields = (
         "export_manifest",
         "frontend_manifest",
+        "temporal_frontend_manifest",
         "dense_manifest",
         "vocabulary_json",
         "vocabulary_txt",
@@ -2411,6 +2750,8 @@ def _formal_fixture(
                         "provenance_sha256": {"clip_model": "f" * 64},
                     },
                 )
+            elif field == "temporal_frontend_manifest":
+                _write_json(source, {"scene": scene, "temporal_only": True})
             elif field == "dense_manifest":
                 _write_json(
                     source,
@@ -3196,12 +3537,14 @@ def test_office_rejects_authorization_evidence_seed_or_output_tampering(
         ("apartment", "frozen_config", "delete"),
         ("apartment", "export_manifest", "delete"),
         ("apartment", "frontend_manifest", "path"),
+        ("apartment", "temporal_frontend_manifest", "hash"),
         ("apartment", "dense_manifest", "hash"),
         ("apartment", "vocabulary_json", "delete"),
         ("apartment", "vocabulary_txt", "path"),
         ("office", "frozen_config", "hash"),
         ("office", "export_manifest", "path"),
         ("office", "frontend_manifest", "delete"),
+        ("office", "temporal_frontend_manifest", "path"),
         ("office", "dense_manifest", "path"),
         ("office", "vocabulary_json", "hash"),
         ("office", "vocabulary_txt", "delete"),
@@ -3552,6 +3895,28 @@ def test_cli_requires_config_output_and_pairs_optional_formal_arguments() -> Non
         module.parse_args([])
     args = module.parse_args(["--config", "config.json", "--output", "output"])
     assert args.freeze_manifest is None and args.run_slot is None
+    assert args.allow_unfrozen_office is False
+    assert args.table_only is False
+    opted_in = module.parse_args(
+        [
+            "--config",
+            "config.json",
+            "--output",
+            "output",
+            "--allow-unfrozen-office",
+        ]
+    )
+    assert opted_in.allow_unfrozen_office is True
+    table_only = module.parse_args(
+        [
+            "--config",
+            "config.json",
+            "--output",
+            "output",
+            "--table-only",
+        ]
+    )
+    assert table_only.table_only is True
     with pytest.raises(SystemExit):
         module.parse_args(
             [
@@ -3573,12 +3938,14 @@ def test_checked_in_v2_configs_share_algorithm_and_preserve_v1_bindings() -> Non
         v1 = json.loads(Path(f"configs/oviv2_tesse_cd_{scene}_v1.json").read_text())
         v2 = json.loads(Path(f"configs/oviv2_tesse_cd_{scene}_v2.json").read_text())
         assert v2["protocol_id"] == "oviv2-tessecd-v2"
-        assert len(v2) == 85
+        assert len(v2) == 104
         assert set(v2) == module._V2_CONFIG_KEYS
         assert v2["schema_version"] == 2
         assert v2["method_id"] == "OVIV2"
         assert v2["algorithm_hash"] == module.algorithm_hash(v2)
         temporal_config_from_json({"temporal_readout": v2["temporal_readout"]})
+        assert v2["confirm_hits"] == 2
+        assert v2["temporal_readout"]["confirm_hits"] == 1
         assert v2["temporal_readout"]["geometry"]["voxel_size_m"] == v1["voxel_size_m"]
         assert v2["temporal_readout"]["geometry"]["depth_max_m"] == v1["depth_max_m"]
         for key in module.SCENE_CONFIG_FIELDS - {"algorithm_hash"}:
@@ -3588,3 +3955,313 @@ def test_checked_in_v2_configs_share_algorithm_and_preserve_v1_bindings() -> Non
     assert module.algorithm_config(configs[0]) == module.algorithm_config(configs[1])
     assert configs[0]["algorithm_hash"] == configs[1]["algorithm_hash"]
     assert {path: path.read_bytes() for path in V1_FILES} == V1_BYTES
+
+
+def test_temporal_frontend_locations_do_not_change_v2_algorithm_hash() -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config = json.loads(Path("configs/oviv2_tesse_cd_apartment_v2.json").read_text())
+    relocated = dict(config)
+    relocated["temporal_frontend_cache_dir"] = "/deployment/cache"
+    relocated["temporal_frontend_manifest"] = "/deployment/cache/manifest.json"
+
+    assert module.algorithm_config(relocated) == module.algorithm_config(config)
+    assert module.algorithm_hash(relocated) == module.algorithm_hash(config)
+
+
+def test_checked_in_v2_configs_bind_temporal_frontend_and_proposal_algorithm() -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    configs = [
+        json.loads(Path(f"configs/oviv2_tesse_cd_{scene}_v2.json").read_text())
+        for scene in ("apartment", "office")
+    ]
+    expected_algorithm = {
+        "temporal_dense_minimum_area_px": 10,
+        "temporal_dense_maximum_area_px": 62208,
+        "temporal_dense_maximum_observations": 32,
+        "temporal_depth_edge_threshold_m": 0.05,
+        "temporal_depth_minimum_area_px": 50,
+        "temporal_depth_maximum_area_px": 62208,
+        "temporal_depth_plane_minimum_area_px": 500,
+        "temporal_depth_planar_rmse_threshold_m": 0.02,
+        "temporal_depth_semantic_minimum_votes": 3,
+        "temporal_depth_semantic_minimum_fraction": 0.67,
+        "temporal_depth_semantic_minimum_probability": 0.5,
+        "temporal_depth_maximum_observations": 54,
+        "temporal_depth_maximum_unknown_observations": 18,
+        "temporal_proposal_pixel_stride": 1,
+        "temporal_proposal_min_valid_points": 10,
+        "temporal_merge_same_semantic_iou": 0.5,
+        "temporal_merge_supplement_containment": 0.8,
+    }
+    for config in configs:
+        assert config["temporal_frontend_manifest"] == str(
+            Path(config["temporal_frontend_cache_dir"]) / "frontend_manifest.json"
+        )
+        assert {
+            key: config[key] for key in expected_algorithm
+        } == expected_algorithm
+        assert config["algorithm_hash"] == module.algorithm_hash(config)
+    assert module.algorithm_config(configs[0]) == module.algorithm_config(configs[1])
+
+
+@pytest.mark.parametrize(
+    ("profile", "expected"),
+    ((ExecutionProfile.A0, None), (ExecutionProfile.A1, None)),
+)
+def test_reference_profiles_never_load_temporal_observations(
+    profile: ExecutionProfile, expected: object
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    class Cache:
+        def load_temporal(self, *args: object) -> tuple[str, ...]:
+            raise AssertionError("reference profile loaded temporal inputs")
+
+    assert module._load_temporal_observations(
+        profile, Cache(), 0, object(), object()
+    ) is expected
+
+
+@pytest.mark.parametrize(
+    "profile", (ExecutionProfile.A2, ExecutionProfile.A3, ExecutionProfile.A4)
+)
+def test_temporal_profiles_load_enriched_observations_once(
+    profile: ExecutionProfile,
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    calls: list[tuple[object, ...]] = []
+
+    class Cache:
+        def load_temporal(self, *args: object) -> tuple[str, ...]:
+            calls.append(args)
+            return ("enriched",)
+
+    frame = object()
+    dense = object()
+    assert module._load_temporal_observations(
+        profile, Cache(), 7, frame, dense
+    ) == ("enriched",)
+    assert calls == [(7, frame, dense)]
+
+
+@pytest.mark.parametrize("cache", (object(), SimpleNamespace(load_temporal=None)))
+def test_temporal_profiles_fail_closed_without_callable_loader(cache: object) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    with pytest.raises(ValueError, match="requires a callable temporal cache loader"):
+        module._load_temporal_observations(
+            ExecutionProfile.A4, cache, 0, object(), object()
+        )
+
+
+def test_temporal_frontend_manifest_rejects_noncanonical_top_level_fields() -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    frame_hashes = {"frame000000.pkl.gz": "1" * 64}
+    manifest = {
+        "schema_version": 1,
+        "method": "OVIV2",
+        "dataset": "TESSE-CD",
+        "scene": "apartment",
+        "frame_count": 1,
+        "source_frame_ids": [0],
+        "source_frame_ids_hash": module._json_hash([0]),
+        "image_shape": [480, 720],
+        "class_count": 1,
+        "classes": ["Chair"],
+        "vocabulary_sha256": "2" * 64,
+        "algorithm_hash": "3" * 64,
+        "feature_model_id": "clip-sha256:" + "4" * 64,
+        "cache_files_sha256": frame_hashes,
+        "cache_prefix_sha256": module._cache_prefix_sha256(frame_hashes),
+        "temporal_only": True,
+        "alias_map_sha256": "5" * 64,
+        "merge_algorithm": {"sha256": "3" * 64},
+        "merge_policy": {},
+        "diagnostics": {},
+        "temporal_frontend_sources": {},
+    }
+    assert module._validate_temporal_frontend_manifest(
+        manifest,
+        scene="apartment",
+        frame_count=1,
+        classes=("Chair",),
+        vocabulary_sha256="2" * 64,
+        feature_model_id="clip-sha256:" + "4" * 64,
+    ) == frame_hashes
+    with pytest.raises(ValueError, match="fields are not exact"):
+        module._validate_temporal_frontend_manifest(
+            {**manifest, "unexpected": True},
+            scene="apartment",
+            frame_count=1,
+            classes=("Chair",),
+            vocabulary_sha256="2" * 64,
+            feature_model_id="clip-sha256:" + "4" * 64,
+        )
+
+
+def test_temporal_cache_factory_binds_loaded_manifest_bytes_without_second_read(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+    from src.oviv2.observations import ReplicaVocabulary
+
+    cache_dir = tmp_path / "temporal-cache"
+    cache_dir.mkdir()
+    frame = cache_dir / "frame000000.pkl.gz"
+    frame.write_bytes(b"fixture-frame")
+    frame_hashes = {frame.name: _sha256(frame)}
+    vocabulary = tmp_path / "vocabulary.txt"
+    vocabulary.write_text("Chair\n", encoding="utf-8")
+    feature_model_id = "clip-sha256:" + "4" * 64
+    canonical_manifest = tmp_path / "canonical-frontend.json"
+    canonical_payload = {
+        "algorithm_hash": "3" * 64,
+        "cache_prefix_sha256": module._cache_prefix_sha256(frame_hashes),
+    }
+    _write_json(canonical_manifest, canonical_payload)
+    alias_sha256 = "5" * 64
+    temporal_payload = {
+        "schema_version": 1,
+        "method": "OVIV2",
+        "dataset": "TESSE-CD",
+        "scene": "apartment",
+        "frame_count": 1,
+        "source_frame_ids": [0],
+        "source_frame_ids_hash": module._json_hash([0]),
+        "image_shape": [480, 720],
+        "class_count": 1,
+        "classes": ["Chair"],
+        "vocabulary_sha256": _sha256(vocabulary),
+        "algorithm_hash": "3" * 64,
+        "feature_model_id": feature_model_id,
+        "cache_files_sha256": frame_hashes,
+        "cache_prefix_sha256": module._cache_prefix_sha256(frame_hashes),
+        "temporal_only": True,
+        "alias_map_sha256": alias_sha256,
+        "merge_algorithm": {"sha256": "3" * 64},
+        "merge_policy": {},
+        "diagnostics": {},
+        "temporal_frontend_sources": {
+            "canonical": {
+                "manifest_sha256": _sha256(canonical_manifest),
+                "algorithm_hash": canonical_payload["algorithm_hash"],
+                "cache_prefix_sha256": canonical_payload["cache_prefix_sha256"],
+            },
+            "alias_shards": [{"sha256": "6" * 64}],
+            "alias_map": {"sha256": alias_sha256},
+        },
+    }
+    temporal_manifest = cache_dir / "frontend_manifest.json"
+    _write_json(temporal_manifest, temporal_payload)
+    temporal_bytes = temporal_manifest.read_bytes()
+    config = json.loads(Path("configs/oviv2_tesse_cd_apartment_v2.json").read_text())
+    config.update(
+        {
+            "scene": "apartment",
+            "frame_count": 1,
+            "temporal_frontend_cache_dir": str(cache_dir),
+            "temporal_frontend_manifest": str(temporal_manifest),
+            "frontend_manifest": str(canonical_manifest),
+            "vocabulary_txt": str(vocabulary),
+        }
+    )
+    base = SimpleNamespace(
+        object_semantic_ids=(1,),
+        class_names=("background", "Chair"),
+        frontend=SimpleNamespace(
+            feature_model_id=feature_model_id,
+            vocabulary=ReplicaVocabulary(("Chair",), {}),
+        ),
+        bindings={},
+        input_hashes={},
+    )
+    monkeypatch.setattr(
+        module, "_production_cache_loader_factory", lambda value, dataset: base
+    )
+    real_sha256 = module._sha256
+
+    def reject_canonical_second_read(path: Path) -> str:
+        if Path(path) == canonical_manifest:
+            raise AssertionError("canonical manifest was read again for its binding")
+        return real_sha256(Path(path))
+
+    monkeypatch.setattr(module, "_sha256", reject_canonical_second_read)
+    monkeypatch.setattr(
+        module,
+        "_content_record",
+        lambda path: (_ for _ in ()).throw(
+            AssertionError("temporal manifest was read again for its binding")
+        ),
+        raising=False,
+    )
+
+    caches = module._production_v2_cache_loader_factory(config, object())
+
+    assert caches.bindings["temporal_frontend_manifest"] == {
+        "sha256": hashlib.sha256(temporal_bytes).hexdigest(),
+        "byte_count": len(temporal_bytes),
+    }
+
+
+def test_run_routes_enriched_inputs_only_to_temporal_keyword(tmp_path: Path) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config_path = _materialize_config(module, tmp_path)
+    dependencies, _ = _dependencies(module)
+    temporal_calls: list[int] = []
+
+    class EnrichedCache(_Caches):
+        def load_temporal(
+            self, frame_index: int, frame: object, dense: object
+        ) -> tuple[str, ...]:
+            assert dense is None and frame.frame_id == frame_index
+            temporal_calls.append(frame_index)
+            return (f"temporal-{frame_index}",)
+
+    class EnrichedRuntime(_DualRuntime):
+        def process_frame(
+            self,
+            frame: object,
+            observations: object,
+            dense_semantics: object,
+            *,
+            temporal_observations: object = None,
+        ) -> SimpleNamespace:
+            assert observations == ()
+            assert temporal_observations == (f"temporal-{frame.frame_id}",)
+            return super().process_frame(frame, observations, dense_semantics)
+
+    parsed = temporal_config_from_json({"temporal_readout": _temporal_readout()})
+    dependencies = module.RunnerDependencies(
+        dataset_factory=dependencies.dataset_factory,
+        cache_loader_factory=lambda config, dataset: EnrichedCache(
+            parsed, {"stub": "sha256-bound"}
+        ),
+        runtime_factory=lambda config, caches: EnrichedRuntime(parsed),
+        provenance_factory=dependencies.provenance_factory,
+        environment_factory=dependencies.environment_factory,
+    )
+    module.run(config_path, tmp_path / "run", dependencies=dependencies)
+    assert temporal_calls == list(range(5))
+
+
+@pytest.mark.parametrize("profile", (ExecutionProfile.A0, ExecutionProfile.A1))
+def test_production_reference_profiles_do_not_open_temporal_cache(
+    monkeypatch: pytest.MonkeyPatch, profile: ExecutionProfile
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    base = object()
+    monkeypatch.setattr(
+        module, "_production_cache_loader_factory", lambda config, dataset: base
+    )
+    temporal = _temporal_readout()
+    temporal["execution_profile"] = profile.profile_id
+    temporal["components"] = profile.components
+    assert module._production_v2_cache_loader_factory(
+        {"temporal_readout": temporal}, object()
+    ) is base

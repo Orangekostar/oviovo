@@ -289,6 +289,30 @@ def test_inputs_are_deep_copied_readonly_and_frozen() -> None:
         evidence.frame.intrinsics.fx = 3.0
 
 
+def test_frozen_frame_reuse_caches_native_payload(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_background_ledger as module
+
+    calls = 0
+    original = module._array_digest
+
+    def counted(array: np.ndarray) -> str:
+        nonlocal calls
+        calls += 1
+        return original(array)
+
+    monkeypatch.setattr(module, "_array_digest", counted)
+    frozen = module._frozen_frame(_frame(10))
+
+    first = module._native_frame_payload(frozen)
+    second = module._native_frame_payload(frozen)
+
+    assert module._frozen_frame(frozen) is frozen
+    assert first is second
+    assert calls == 3
+
+
 @pytest.mark.parametrize(
     "bad",
     [

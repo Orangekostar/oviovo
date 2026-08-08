@@ -31,6 +31,8 @@ _TRUSTED_PREFLIGHT_FD_ROOT: contextvars.ContextVar[
 
 from scripts.evaluation.evaluate_oviv2_tesse_occlusion import (  # noqa: E402
     RUNNER_SCENE_CONFIG_FIELDS,
+)
+from scripts.evaluation.oviv2_tesse_cd_v2_config import (  # noqa: E402
     canonical_algorithm_config,
     canonical_algorithm_hash,
 )
@@ -210,7 +212,9 @@ _INPUT_BINDING_FIELDS = (
     "input_manifest",
     "occlusion_target_manifest_sha256",
     "schedule_manifest",
+    "temporal_frontend_manifest",
 )
+_TEMPORAL_FRONTEND_BINDING_FIELD = "temporal_frontend_manifest"
 _SOURCE_EVIDENCE_ROLES = (
     "run_manifest",
     "source_index",
@@ -729,11 +733,48 @@ def non_temporal_config_sha256(config: Mapping[str, Any]) -> str:
 
 
 def input_binding_values_sha256(config: Mapping[str, Any]) -> str:
-    missing = [name for name in _INPUT_BINDING_FIELDS if name not in config]
+    fields = _INPUT_BINDING_FIELDS
+    missing = [name for name in fields if name not in config]
     if missing:
         raise ValueError(f"base config is missing input bindings: {missing}")
-    bindings = {name: config[name] for name in _INPUT_BINDING_FIELDS}
+    bindings = {name: config[name] for name in fields}
     return hashlib.sha256(_canonical_json(bindings)).hexdigest()
+
+
+def _temporal_frontend_manifest_binding(
+    config: Mapping[str, Any],
+) -> dict[str, Any] | None:
+    profile = temporal_config_from_json(
+        {"temporal_readout": config.get("temporal_readout")}
+    ).execution_profile
+    if profile in {ExecutionProfile.A0, ExecutionProfile.A1}:
+        return None
+    raw_path = config.get(_TEMPORAL_FRONTEND_BINDING_FIELD)
+    if not isinstance(raw_path, str) or not raw_path.strip():
+        raise ValueError("temporal_frontend_manifest must be a non-empty path")
+    path = Path(raw_path)
+    if not path.is_absolute():
+        path = REPO_ROOT / path
+    data = _read_regular_bytes(path, "temporal frontend manifest")
+    return {
+        "sha256": hashlib.sha256(data).hexdigest(),
+        "byte_count": len(data),
+    }
+
+
+def _validate_temporal_frontend_source_binding(
+    config: Mapping[str, Any], source_bindings: Mapping[str, Any]
+) -> None:
+    expected = _temporal_frontend_manifest_binding(config)
+    present = _TEMPORAL_FRONTEND_BINDING_FIELD in source_bindings
+    if expected is None:
+        if present:
+            raise ValueError(
+                "reference profile unexpectedly consumed temporal frontend input"
+            )
+        return
+    if source_bindings.get(_TEMPORAL_FRONTEND_BINDING_FIELD) != expected:
+        raise ValueError("candidate temporal frontend source binding mismatch")
 
 
 def _materialize_config(
@@ -750,7 +791,8 @@ def _materialize_config(
     temporal_config_from_json({"temporal_readout": config["temporal_readout"]})
     if _non_temporal_algorithm(config) != _non_temporal_algorithm(base):
         raise ValueError("candidate changed non-temporal algorithm fields")
-    if input_binding_values_sha256(config) != input_binding_values_sha256(base):
+    fields = _INPUT_BINDING_FIELDS
+    if any(config.get(name) != base.get(name) for name in fields):
         raise ValueError("candidate changed input binding values")
     return config
 
@@ -964,6 +1006,12 @@ def _validate_preflight_gate_evidence(
             and run.get("algorithm_hash") == materialized["algorithm_hash"]
         ):
             raise ValueError(f"preflight candidate {candidate_id} run identity mismatch")
+        source_bindings = run.get("source_bindings")
+        if not isinstance(source_bindings, Mapping):
+            raise ValueError(
+                f"preflight candidate {candidate_id} source_bindings are invalid"
+            )
+        _validate_temporal_frontend_source_binding(materialized, source_bindings)
         _require_nested_source_record(
             run.get("source_index"),
             base=source_witnesses["run_manifest"].path.parent,
@@ -1465,6 +1513,7 @@ def run_search(
                     "stderr": stderr,
                     "gpu": gpu,
                     "lane": lane,
+                    "config": config,
                     "started_monotonic": time.monotonic(),
                 }
             )
@@ -1511,6 +1560,9 @@ def run_search(
                             raise ValueError(
                                 "candidate run manifest source_bindings are invalid"
                             )
+                        _validate_temporal_frontend_source_binding(
+                            item["config"], source_bindings
+                        )
                         record["input_hashes"] = source_bindings
                         record["run_identity"] = {
                             name: run_manifest.get(name)

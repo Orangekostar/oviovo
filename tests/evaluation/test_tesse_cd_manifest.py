@@ -4,6 +4,8 @@ import hashlib
 import json
 from pathlib import Path
 
+import pytest
+
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "configs/evaluation/manifests/tesse_cd.json"
@@ -83,6 +85,12 @@ def test_tesse_cd_rgbd_lock_binds_checked_source_and_exports() -> None:
         "byte_count": len(source_bytes),
     }
     assert set(lock["scenes"]) == {"apartment", "office"}
+    export_paths = [
+        Path(binding["export_manifest"]["path"])
+        for binding in lock["scenes"].values()
+    ]
+    if not all(path.exists() for path in export_paths):
+        pytest.skip("formal TESSE-CD RGB-D exports are unavailable")
     for scene, binding in lock["scenes"].items():
         export_path = Path(binding["export_manifest"]["path"])
         export_bytes = export_path.read_bytes()

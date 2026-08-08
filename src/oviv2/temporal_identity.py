@@ -84,7 +84,11 @@ def _prototype(value: object, model_id: object) -> tuple[np.ndarray | None, str 
     norm = float(np.linalg.norm(vector))
     if norm == 0.0 or not math.isfinite(norm):
         raise ValueError("appearance_prototype must be a finite non-zero vector")
-    normalized = np.ascontiguousarray(vector / norm)
+    normalized = np.ascontiguousarray(
+        vector
+        if math.isclose(norm, 1.0, rel_tol=0.0, abs_tol=1e-12)
+        else vector / norm
+    )
     frozen = np.frombuffer(normalized.tobytes(), dtype=normalized.dtype)
     return frozen, model_id.strip()
 

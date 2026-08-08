@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import FrozenInstanceError, replace
 from itertools import permutations
+import math
 import time
 
 import numpy as np
@@ -83,6 +84,129 @@ def test_current_depth_residual_recovers_component_without_fake_appearance() -> 
     assert not proposal.mask.flags.writeable
     assert result.opportunity_records == ("proposal:3:7:6",)
     assert result.trigger_records == result.opportunity_records
+
+
+def test_component_centroid_stays_within_bounds_when_float64_sum_rounds_outward() -> None:
+    mask = np.zeros((4, 5), dtype=bool)
+    mask[0, :3] = True
+    xyz = np.full((4, 5, 3), 0.1, dtype=np.float64)
+
+    result = recover_temporal_proposals(
+        recovery_input(
+            region(7, mask, np.full((4, 5), 4.0)),
+            current_xyz=xyz,
+        ),
+        config(),
+    )
+
+    proposal = result.proposals[0]
+    assert proposal.centroid_xyz == (0.1, 0.1, 0.1)
+    assert proposal.bounds_min_xyz == (0.1, 0.1, 0.1)
+    assert proposal.bounds_max_xyz == (0.1, 0.1, 0.1)
+
+
+def test_point_set_geometry_centroid_is_permutation_invariant_under_cancellation() -> None:
+    centroids = []
+    for values in permutations((1.0e16, 1.0, -1.0e16)):
+        xyz = np.zeros((3, 3), dtype=np.float64)
+        xyz[:, 0] = values
+        centroid, _, _ = temporal_proposals._point_set_geometry(xyz)
+        centroids.append(centroid)
+
+    assert all(item.dtype == np.float64 for item in centroids)
+    assert all(np.array_equal(item, centroids[0]) for item in centroids)
+    assert centroids[0][0] == 1.0 / 3.0
+
+
+def test_point_set_geometry_preserves_tiny_residual_when_extremes_cancel() -> None:
+    maximum = np.finfo(np.float64).max
+    xyz = np.zeros((3, 3), dtype=np.float64)
+    xyz[:, 0] = (maximum, -maximum, 1.0e-100)
+
+    centroid, _, _ = temporal_proposals._point_set_geometry(xyz)
+
+    assert centroid[0] == math.fsum((maximum, -maximum, 1.0e-100)) / 3.0
+    assert centroid[0] > 0.0
+
+
+@pytest.mark.parametrize(
+    "value",
+    (np.finfo(np.float64).max, -np.finfo(np.float64).max),
+)
+def test_point_set_geometry_fallback_averages_many_same_sign_maxima(
+    value: float,
+) -> None:
+    xyz = np.full((105, 3), value, dtype=np.float64)
+
+    centroid, bounds_min, bounds_max = temporal_proposals._point_set_geometry(xyz)
+
+    assert np.array_equal(centroid, np.full(3, value, dtype=np.float64))
+    assert np.array_equal(bounds_min, centroid)
+    assert np.array_equal(bounds_max, centroid)
+
+
+@pytest.mark.parametrize(
+    ("values", "expected"),
+    (
+        ((0.0, 0.0, 0.0), 0.0),
+        ((np.nextafter(0.0, 1.0),), np.nextafter(0.0, 1.0)),
+        ((np.finfo(np.float64).max, np.finfo(np.float64).max), np.finfo(np.float64).max),
+        ((0.0, 0.0, 8.0), 8.0 / 3.0),
+    ),
+)
+def test_point_set_geometry_handles_finite_boundaries_and_uses_arithmetic_mean(
+    values: tuple[float, ...],
+    expected: float,
+) -> None:
+    xyz = np.zeros((len(values), 3), dtype=np.float64)
+    xyz[:, 0] = values
+
+    centroid, bounds_min, bounds_max = temporal_proposals._point_set_geometry(xyz)
+
+    assert centroid.dtype == bounds_min.dtype == bounds_max.dtype == np.float64
+    assert np.isfinite(centroid).all()
+    assert centroid[0] == expected
+    assert centroid[1:].tolist() == [0.0, 0.0]
+
+
+def test_point_set_geometry_only_corrects_one_ulp_of_mean_rounding(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    xyz = np.ones((1, 3), dtype=np.float64)
+    one_ulp_high = np.nextafter(1.0, np.inf)
+    monkeypatch.setattr(temporal_proposals.math, "fsum", lambda _values: one_ulp_high)
+    centroid, _, _ = temporal_proposals._point_set_geometry(xyz)
+    assert np.array_equal(centroid, np.ones(3, dtype=np.float64))
+
+    two_ulps_high = np.nextafter(one_ulp_high, np.inf)
+    monkeypatch.setattr(temporal_proposals.math, "fsum", lambda _values: two_ulps_high)
+    with pytest.raises(ArithmeticError, match="one ULP"):
+        temporal_proposals._point_set_geometry(xyz)
+
+
+@pytest.mark.parametrize(
+    "xyz",
+    (
+        np.empty((0, 3), dtype=np.float64),
+        np.zeros(3, dtype=np.float64),
+        np.zeros((2, 2), dtype=np.float64),
+        np.zeros((2, 3, 1), dtype=np.float64),
+    ),
+)
+def test_point_set_geometry_rejects_empty_or_non_nx3_arrays(
+    xyz: np.ndarray,
+) -> None:
+    with pytest.raises(ValueError, match="non-empty Nx3"):
+        temporal_proposals._point_set_geometry(xyz)
+
+
+@pytest.mark.parametrize("invalid", (np.nan, np.inf, -np.inf))
+def test_point_set_geometry_rejects_nonfinite_points_directly(invalid: float) -> None:
+    xyz = np.zeros((2, 3), dtype=np.float64)
+    xyz[1, 2] = invalid
+
+    with pytest.raises(ValueError, match="only finite"):
+        temporal_proposals._point_set_geometry(xyz)
 
 
 def test_segmentation_occupied_pixels_are_never_recovered_and_zero_opportunity_stays_zero() -> None:
@@ -524,6 +648,21 @@ def test_inputs_are_owned_readonly_and_invalid_input_does_not_publish_partial_ou
     result = recover_temporal_proposals(value, config())
     assert result.trigger_count == 1
     proposal = result.proposals[0]
+    assert replace(
+        proposal,
+        centroid_xyz=proposal.bounds_max_xyz,
+    ).centroid_xyz == proposal.bounds_max_xyz
+    with pytest.raises(ValueError, match="finite"):
+        replace(proposal, centroid_xyz=(np.nan, 0.0, 0.0))
+    with pytest.raises(ValueError, match="ordered bounds"):
+        replace(
+            proposal,
+            centroid_xyz=(
+                proposal.bounds_max_xyz[0] + 1.0,
+                proposal.centroid_xyz[1],
+                proposal.centroid_xyz[2],
+            ),
+        )
     with pytest.raises((TypeError, ValueError)):
         replace(proposal, mask=proposal.mask.astype(np.uint8))
     with pytest.raises((TypeError, ValueError)):
