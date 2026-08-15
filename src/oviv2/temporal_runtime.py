@@ -47,6 +47,7 @@ from src.oviv2.temporal_geometry import (
 from src.oviv2.temporal_epoch import GeometryEpoch, start_new_epoch
 from src.oviv2.temporal_export import (
     DynamicEvidenceState,
+    DynamicState,
     TemporalExportBatch,
     TemporalExportSample,
     TemporalLifecycleEvent,
@@ -2189,13 +2190,16 @@ class TemporalCurrentRuntime:
         evidence_by_entity: dict[int, TemporalEvidence] = {}
         released_pixels_by_entity: dict[int, np.ndarray] = {}
         motion_events: list[tuple[int, int, MotionDecision]] = []
+        dynamic_by_entity: dict[int, DynamicEvidenceState] = {}
         epoch_reset_triggers = 0
         epoch_reset_trigger_records: list[str] = []
+        epoch_reset_opportunity_records: list[str] = []
         old_lifecycle_by_entity = {
             item.entity_id: item
             for item in current.lifecycle_beliefs
             if item.entity_id not in expired_ids
         }
+        old_export = {item.entity_id: item for item in current.export_tracker.entries}
         diagnostic_by_pair = {
             (item.observation_id, item.entity_id): item
             for item in association.assignment_diagnostics
@@ -2332,7 +2336,44 @@ class TemporalCurrentRuntime:
             motion_events.append((observation_id, entity_id, motion.decision))
             epoch = geometry_transaction.current(entity_id)
             diagnostic = diagnostic_by_pair[(observation_id, entity_id)]
+            motion_confidence = _motion_confidence(
+                motion, self.config, old.submap, points
+            )
+            displacement = float(
+                np.linalg.norm(
+                    np.asarray(motion.object_to_world[:3, 3], dtype=np.float64)
+                    - np.asarray(old.object_to_world[:3, 3], dtype=np.float64)
+                )
+            )
+            previous_export = old_export.get(entity_id)
+            previous_dynamic = (
+                DynamicEvidenceState.static()
+                if previous_export is None
+                else previous_export.dynamic_evidence
+            )
+            accepted_motion = (
+                motion.decision is not MotionDecision.REJECTED
+                and motion_confidence > 0.0
+            )
+            assert self.config.dynamic_state is not None
+            dynamic = advance_dynamic_state(
+                previous_dynamic,
+                accepted_motion=accepted_motion,
+                displacement_m=displacement,
+                confidence=motion_confidence,
+                config=self.config.dynamic_state,
+            )
+            dynamic_by_entity[entity_id] = dynamic
+            qualifies_as_motion = (
+                accepted_motion
+                and displacement >= self.config.dynamic_state.displacement_floor_m
+                and motion_confidence
+                >= self.config.dynamic_state.minimum_motion_confidence
+            )
             if motion.decision is MotionDecision.REJECTED:
+                epoch_reset_opportunity_records.append(
+                    f"motion:{frame.frame_id}:{observation_id}:{entity_id}"
+                )
                 if not diagnostic.high_confidence_identity_match:
                     forced_new_observation_ids.append(observation_id)
                     occluded = TemporalEvidence(
@@ -2359,21 +2400,44 @@ class TemporalCurrentRuntime:
                     f"motion:{frame.frame_id}:{observation_id}:{entity_id}"
                 )
                 geometry_transaction.append(epoch)
-            else:
-                epoch = epoch.integrate(
-                    motion, points, frame.frame_id, self.config.geometry
+            elif qualifies_as_motion:
+                if previous_dynamic.dynamic_state is DynamicState.DYNAMIC:
+                    epoch = epoch.integrate(
+                        motion, points, frame.frame_id, self.config.geometry
+                    )
+                    geometry_transaction.replace_current(epoch)
+                elif dynamic.dynamic_state is DynamicState.DYNAMIC:
+                    epoch_reset_opportunity_records.append(
+                        f"dynamic:{frame.frame_id}:{observation_id}:{entity_id}"
+                    )
+                    epoch = start_new_epoch(
+                        epoch,
+                        motion,
+                        points,
+                        observation.centroid_xyz,
+                        frame.frame_id,
+                        self.config.geometry,
+                        initial_object_to_world=motion.object_to_world,
+                    )
+                    epoch_reset_triggers += 1
+                    epoch_reset_trigger_records.append(
+                        f"dynamic:{frame.frame_id}:{observation_id}:{entity_id}"
+                    )
+                    geometry_transaction.append(epoch)
+                else:
+                    epoch_reset_opportunity_records.append(
+                        f"dynamic:{frame.frame_id}:{observation_id}:{entity_id}"
+                    )
+            elif displacement < self.config.dynamic_state.displacement_floor_m:
+                epoch = epoch.integrate_stationary(
+                    points, frame.frame_id, self.config.geometry
                 )
                 geometry_transaction.replace_current(epoch)
+            else:
+                # A large but weak motion estimate is evidence neither for a
+                # new epoch nor for contaminating the retained static geometry.
+                pass
             submap = epoch.submap
-            motion_confidence = _motion_confidence(
-                motion, self.config, old.submap, points
-            )
-            displacement = float(
-                np.linalg.norm(
-                    np.asarray(epoch.object_to_world[:3, 3], dtype=np.float64)
-                    - np.asarray(old.object_to_world[:3, 3], dtype=np.float64)
-                )
-            )
             motion_by_entity[entity_id] = (displacement, motion_confidence)
             present = TemporalEvidence(
                 TemporalEvidenceKind.PRESENT,
@@ -2758,7 +2822,6 @@ class TemporalCurrentRuntime:
             raise RuntimeError("identity allocator and runtime next ID diverged")
 
         timestamp_ns = timestamp_seconds_to_ns(frame.timestamp)
-        old_export = {item.entity_id: item for item in current.export_tracker.entries}
         export_entries: list[TemporalExportTrackerEntry] = []
         samples: list[TemporalExportSample] = []
         events: list[TemporalLifecycleEvent] = []
@@ -2774,16 +2837,18 @@ class TemporalCurrentRuntime:
             else:
                 count = previous.observation_count + (1 if observed else 0)
                 displacement, confidence = motion_by_entity.get(entity_id, (0.0, 0.0))
-                dynamic = (
-                    advance_dynamic_state(
-                        previous.dynamic_evidence,
-                        accepted_motion=observed and confidence > 0.0,
-                        displacement_m=displacement,
-                        confidence=confidence,
-                        config=self.config.dynamic_state,
-                    )
-                    if observed else previous.dynamic_evidence
-                )
+                if not observed:
+                    dynamic = previous.dynamic_evidence
+                else:
+                    dynamic = dynamic_by_entity.get(entity_id)
+                    if dynamic is None:
+                        dynamic = advance_dynamic_state(
+                            previous.dynamic_evidence,
+                            accepted_motion=observed and confidence > 0.0,
+                            displacement_m=displacement,
+                            confidence=confidence,
+                            config=self.config.dynamic_state,
+                        )
             centroid = _centroid(entity)
             export_entries.append(
                 TemporalExportTrackerEntry(
@@ -2899,7 +2964,7 @@ class TemporalCurrentRuntime:
             f"reid:{frame.frame_id}:{observation_id}:{entity_id}"
             for observation_id, entity_id in association.reid_trigger_pairs
         )
-        epoch_reset_records = motion_records
+        epoch_reset_records = tuple(epoch_reset_opportunity_records)
         mechanism_records = {
             "proposal_opportunity_count": proposal_opportunity_records,
             "proposal_trigger_count": proposal_trigger_records,
@@ -2924,9 +2989,7 @@ class TemporalCurrentRuntime:
             proposal_trigger_count=proposal_triggers,
             reid_opportunity_count=association.reid_opportunity_count,
             reid_trigger_count=association.reid_trigger_count,
-            epoch_reset_opportunity_count=sum(
-                item is MotionDecision.REJECTED for _, _, item in motion_events
-            ),
+            epoch_reset_opportunity_count=len(epoch_reset_opportunity_records),
             epoch_reset_trigger_count=epoch_reset_triggers,
             icp_opportunity_count=(
                 len(motion_events)

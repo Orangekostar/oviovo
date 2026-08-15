@@ -153,6 +153,38 @@ class GeometryEpoch:
             normalized_frame_id,
         )
 
+    def integrate_stationary(
+        self,
+        points_world: np.ndarray,
+        frame_id: int,
+        config: TemporalGeometryConfig,
+    ) -> GeometryEpoch:
+        if not isinstance(config, TemporalGeometryConfig):
+            raise TypeError("config must be a TemporalGeometryConfig")
+        normalized_frame_id = _identifier(frame_id, "frame_id", minimum=0)
+        if (
+            self.last_processed_frame_id is not None
+            and normalized_frame_id <= self.last_processed_frame_id
+        ):
+            raise ValueError("frame_id must increase strictly")
+        submap = integrate_object_submap(
+            self.submap,
+            points_world,
+            normalized_frame_id,
+            config,
+            object_to_world=self.object_to_world,
+        )
+        readout_valid = self.readout_valid or submap != self.submap
+        return GeometryEpoch(
+            self.entity_id,
+            self.epoch_id,
+            self.object_to_world,
+            submap,
+            readout_valid,
+            self.motion_decision,
+            normalized_frame_id,
+        )
+
     def apply_evidence(self, evidence: TemporalEvidenceKind) -> GeometryEpoch:
         if type(evidence) is not TemporalEvidenceKind:
             raise TypeError("evidence must be a TemporalEvidenceKind")

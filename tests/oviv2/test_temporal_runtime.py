@@ -721,19 +721,30 @@ def test_every_successful_frame_returns_an_export_batch_and_exact_counters() -> 
     assert first.reid_trigger_count == 0
 
 
-def test_moved_object_keeps_id_and_moves_old_geometry() -> None:
+def test_moved_object_keeps_id_and_starts_new_geometry_after_confirmation() -> None:
     runtime = _runtime()
     entity_id = _confirm(runtime)
+    initial_epoch = runtime.state.geometry.current(entity_id).epoch_id
     before = runtime.state.entities[0].submap.world_points(
         runtime.state.entities[0].object_to_world
     )
     frame = _frame(2, depth=1.4)
+    staged = runtime.process_frame(frame, (_observation(frame, centroid_z=1.4),))
+    np.testing.assert_array_equal(
+        runtime.state.entities[0].submap.world_points(
+            runtime.state.entities[0].object_to_world
+        ),
+        before,
+    )
+    frame = _frame(3, depth=1.4)
     result = runtime.process_frame(frame, (_observation(frame, centroid_z=1.4),))
     after = runtime.state.entities[0].submap.world_points(
         runtime.state.entities[0].object_to_world
     )
+    assert staged.active_entity_ids == (entity_id,)
     assert result.active_entity_ids == (entity_id,)
     assert result.new_entity_ids == ()
+    assert runtime.state.geometry.current(entity_id).epoch_id == initial_epoch + 1
     assert float(after[:, 2].min()) > float(before[:, 2].max()) + 0.2
 
 
@@ -1012,7 +1023,7 @@ def test_current_runtime_rejects_adapter_profiles(profile: ExecutionProfile) -> 
 
 
 @pytest.mark.parametrize("profile", (ExecutionProfile.A2, ExecutionProfile.A3))
-def test_translation_profiles_never_call_icp_runtime_path(
+def test_translation_profiles_stage_motion_without_calling_icp_runtime_path(
     monkeypatch: pytest.MonkeyPatch, profile: ExecutionProfile
 ) -> None:
     import src.oviv2.temporal_runtime as module
@@ -1040,7 +1051,8 @@ def test_translation_profiles_never_call_icp_runtime_path(
 
     assert result.new_entity_ids == ()
     assert calls == 1
-    assert float(runtime.state.entities[0].submap.weights.sum()) > weight_before
+    assert float(runtime.state.entities[0].submap.weights.sum()) == weight_before
+    assert runtime.state.geometry.current(result.active_entity_ids[0]).epoch_id == 0
 
 
 def test_a2_translation_failure_rolls_back_state_identity_and_value(
@@ -1098,6 +1110,111 @@ def test_a4_runtime_routes_icp_accepted_and_fallback_motion(
     assert calls == 2
     assert result.active_entity_ids == (entity_id,)
     assert runtime.state.entities[0].object_to_world[2, 3] == 1.2
+
+
+def test_static_motion_jitter_fuses_without_moving_the_object_frame(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_geometry import MotionDecision, ObjectMotionEstimate
+
+    runtime = _runtime(_config(ExecutionProfile.A4))
+    entity_id = _confirm(runtime)
+    before = runtime.state.geometry.current(entity_id)
+
+    def jitter(*args, **kwargs):
+        pose = np.array(kwargs["previous_object_to_world"], copy=True)
+        pose[0, 3] += 0.05
+        return ObjectMotionEstimate(
+            pose, MotionDecision.ICP_ACCEPTED, 0.9, 0.01
+        )
+
+    monkeypatch.setattr(module, "estimate_object_motion", jitter)
+    frame = _frame(2)
+    result = runtime.process_frame(frame, (_observation(frame),))
+    after = runtime.state.geometry.current(entity_id)
+
+    np.testing.assert_array_equal(after.object_to_world, before.object_to_world)
+    assert after.epoch_id == before.epoch_id
+    assert float(after.submap.weights.sum()) > float(before.submap.weights.sum())
+    assert result.export.samples[0].dynamic_state.value == "static"
+
+
+def test_low_confidence_large_motion_does_not_contaminate_geometry(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_geometry import MotionDecision, ObjectMotionEstimate
+
+    runtime = _runtime(_config(ExecutionProfile.A4))
+    entity_id = _confirm(runtime)
+    before = runtime.state.geometry.current(entity_id)
+
+    def unreliable(*args, **kwargs):
+        pose = np.array(kwargs["previous_object_to_world"], copy=True)
+        pose[0, 3] += 0.5
+        return ObjectMotionEstimate(
+            pose, MotionDecision.ICP_ACCEPTED, 0.2, 0.01
+        )
+
+    monkeypatch.setattr(module, "estimate_object_motion", unreliable)
+    frame = _frame(2)
+    result = runtime.process_frame(frame, (_observation(frame),))
+    after = runtime.state.geometry.current(entity_id)
+
+    assert after == before
+    assert result.export.samples[0].motion_confidence == 0.2
+    assert result.export.samples[0].dynamic_state.value == "static"
+
+
+def test_geometry_epoch_changes_only_after_consecutive_confirmed_motion(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_export import DynamicState
+    from src.oviv2.temporal_geometry import MotionDecision, ObjectMotionEstimate
+
+    runtime = _runtime(_config(ExecutionProfile.A4))
+    entity_id = _confirm(runtime)
+    initial = runtime.state.geometry.current(entity_id)
+
+    def moving(*args, **kwargs):
+        pose = np.array(kwargs["previous_object_to_world"], copy=True)
+        pose[0, 3] += 0.2
+        return ObjectMotionEstimate(
+            pose, MotionDecision.ICP_ACCEPTED, 0.9, 0.01
+        )
+
+    monkeypatch.setattr(module, "estimate_object_motion", moving)
+    first_frame = _frame(2)
+    first = runtime.process_frame(first_frame, (_observation(first_frame),))
+    staged = runtime.state.geometry.current(entity_id)
+
+    assert staged == initial
+    assert first.export.samples[0].dynamic_state is DynamicState.STATIC
+    assert first.diagnostics.epoch_reset_opportunity_count == 1
+    assert first.diagnostics.epoch_reset_trigger_count == 0
+    assert dict(first.diagnostics.mechanism_records)[
+        "epoch_reset_opportunity_count"
+    ][0].startswith("dynamic:2:")
+
+    second_frame = _frame(3)
+    second = runtime.process_frame(second_frame, (_observation(second_frame),))
+    confirmed = runtime.state.geometry.current(entity_id)
+
+    assert confirmed.epoch_id == initial.epoch_id + 1
+    assert confirmed.object_to_world[0, 3] == pytest.approx(0.2)
+    assert second.export.samples[0].dynamic_state is DynamicState.DYNAMIC
+    assert second.diagnostics.epoch_reset_opportunity_count == 1
+    assert second.diagnostics.epoch_reset_trigger_count == 1
+
+    third_frame = _frame(4)
+    third = runtime.process_frame(third_frame, (_observation(third_frame),))
+    continued = runtime.state.geometry.current(entity_id)
+    assert continued.epoch_id == confirmed.epoch_id
+    assert continued.object_to_world[0, 3] == pytest.approx(0.4)
+    assert third.diagnostics.epoch_reset_opportunity_count == 0
+    assert third.diagnostics.epoch_reset_trigger_count == 0
 
 
 def test_translation_confidence_uses_verifiable_geometry_residual() -> None:

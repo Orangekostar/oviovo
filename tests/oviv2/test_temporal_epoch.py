@@ -132,6 +132,20 @@ def test_accepted_estimate_integrates_in_same_epoch_without_mutating_inputs() ->
     np.testing.assert_array_equal(points, original)
 
 
+def test_stationary_integration_keeps_object_frame_while_fusing_current_points() -> None:
+    epoch = _epoch()
+    points = np.asarray([[0.3, 0.0, 0.0]])
+
+    updated = epoch.integrate_stationary(points, frame_id=2, config=_config())
+
+    np.testing.assert_array_equal(updated.object_to_world, epoch.object_to_world)
+    assert updated.entity_id == epoch.entity_id
+    assert updated.epoch_id == epoch.epoch_id
+    assert updated.motion_decision is epoch.motion_decision
+    assert updated.last_processed_frame_id == 2
+    assert updated.submap.weights[0] == 2.0
+
+
 def test_invalid_epoch_empty_accepted_integration_does_not_revive_readout() -> None:
     epoch = _epoch(readout_valid=False)
 
