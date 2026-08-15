@@ -321,3 +321,18 @@ def merge_temporal_object_observations(
                 )
         higher_priority += tuple(staged_matches)
     return tuple(merged)
+
+
+def merge_primary_authoritative_observations(
+    primary: tuple[FrameObservation, ...],
+    supplements: tuple[tuple[FrameObservation, ...], ...],
+    config: TemporalObservationMergeConfig = _DEFAULT_MERGE_CONFIG,
+) -> tuple[FrameObservation, ...]:
+    """Enrich primary proposals without granting supplements identity authority."""
+    merged = merge_temporal_object_observations(primary, supplements, config)
+    primary_ids = {observation.observation_id for observation in primary}
+    return tuple(
+        observation
+        for observation in merged
+        if observation.observation_id in primary_ids
+    )

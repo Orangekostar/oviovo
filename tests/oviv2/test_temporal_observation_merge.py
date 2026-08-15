@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 from src.oviv2.observations import FrameObservation, ObservationKind
+import src.oviv2.temporal_observation_merge as observation_merge
 from src.oviv2.temporal_observation_merge import (
     TemporalObservationMergeConfig,
     merge_temporal_object_observations,
@@ -225,6 +226,20 @@ def test_primary_has_priority_and_does_not_suppress_itself() -> None:
     )
 
     assert _ids(merged) == (1, 2)
+
+
+def test_primary_authority_absorbs_matches_without_promoting_supplements() -> None:
+    primary = _observation(1, _mask((1, 1), (1, 2)))
+    matched = _observation(2, _mask((1, 1), (1, 2), (2, 1)))
+    unmatched = _observation(3, _mask((4, 6)), semantic_id=3)
+
+    result = observation_merge.merge_primary_authoritative_observations(
+        (primary,), ((matched, unmatched),)
+    )
+
+    assert _ids(result) == (1,)
+    assert np.array_equal(result[0].mask, primary.mask | matched.mask)
+    assert result[0].voxel_keys == primary.voxel_keys | matched.voxel_keys
 
 
 def test_iou_threshold_is_inclusive() -> None:

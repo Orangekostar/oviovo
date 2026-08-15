@@ -4207,6 +4207,83 @@ def test_temporal_cache_factory_binds_loaded_manifest_bytes_without_second_read(
     }
 
 
+def test_temporal_cache_grants_identity_authority_only_to_primary_proposals(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+    from src.oviv2.observations import FrameObservation, ObservationKind
+    from src.oviv2.temporal_observation_merge import TemporalObservationMergeConfig
+    import src.oviv2.temporal_dense_observations as dense_module
+    import src.oviv2.temporal_depth_observations as depth_module
+
+    def observation(
+        observation_id: int, mask: np.ndarray, semantic_id: int
+    ) -> FrameObservation:
+        rows, columns = np.nonzero(mask)
+        return FrameObservation(
+            observation_id=observation_id,
+            frame_id=0,
+            timestamp=0.0,
+            kind=ObservationKind.OBJECT,
+            label="chair" if semantic_id == 1 else "table",
+            semantic_id=semantic_id,
+            confidence=0.9,
+            mask=mask,
+            bbox_xyxy=(
+                float(columns.min()),
+                float(rows.min()),
+                float(columns.max() + 1),
+                float(rows.max() + 1),
+            ),
+            voxel_keys=frozenset({(observation_id, 0, 20)}),
+            centroid_xyz=(0.0, 0.0, 1.0),
+            bounds_min_xyz=(0.0, 0.0, 1.0),
+            bounds_max_xyz=(0.1, 0.1, 1.1),
+        )
+
+    primary_mask = np.zeros((4, 4), dtype=bool)
+    primary_mask[1, 1] = True
+    matched_mask = np.array(primary_mask, copy=True)
+    matched_mask[1, 2] = True
+    unmatched_mask = np.zeros((4, 4), dtype=bool)
+    unmatched_mask[3, 3] = True
+    primary = observation(1, primary_mask, 1)
+    matched = observation(2, matched_mask, 1)
+    unmatched = observation(3, unmatched_mask, 2)
+    monkeypatch.setattr(
+        dense_module,
+        "generate_temporal_dense_observations",
+        lambda *args: (matched,),
+    )
+    monkeypatch.setattr(
+        depth_module,
+        "generate_temporal_depth_observations",
+        lambda *args: (unmatched,),
+    )
+    base = SimpleNamespace(
+        class_names=("background", "chair", "table"),
+        structure=SimpleNamespace(observe=lambda *args, **kwargs: ()),
+    )
+    caches = module._TemporalProductionCaches(
+        base=base,
+        temporal_frontend=SimpleNamespace(observe=lambda *args: (primary,)),
+        temporal_cache_dir=Path("unused"),
+        temporal_manifest_path=Path("unused/manifest.json"),
+        temporal_hashes={},
+        temporal_manifest_sha256="0" * 64,
+        dense_config=SimpleNamespace(voxel_size_m=0.05),
+        depth_config=object(),
+        merge_config=TemporalObservationMergeConfig(),
+        bindings={},
+        input_hashes={},
+    )
+
+    result = caches.load_temporal(0, object(), SimpleNamespace(class_count=2))
+
+    assert tuple(item.observation_id for item in result) == (1,)
+    assert np.array_equal(result[0].mask, primary_mask | matched_mask)
+
+
 def test_run_routes_enriched_inputs_only_to_temporal_keyword(tmp_path: Path) -> None:
     import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
 

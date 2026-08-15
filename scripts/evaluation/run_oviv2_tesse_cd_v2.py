@@ -2074,7 +2074,7 @@ class _TemporalProductionCaches:
             generate_temporal_depth_observations,
         )
         from src.oviv2.temporal_observation_merge import (
-            merge_temporal_object_observations,
+            merge_primary_authoritative_observations,
             regularize_temporal_object_extents,
         )
 
@@ -2088,7 +2088,7 @@ class _TemporalProductionCaches:
         depth_observations = generate_temporal_depth_observations(
             frame, dense, class_names, self.depth_config
         )
-        merged_objects = merge_temporal_object_observations(
+        merged_objects = merge_primary_authoritative_observations(
             primary,
             (dense_observations, depth_observations),
             self.merge_config,
