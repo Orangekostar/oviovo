@@ -10,9 +10,9 @@ import struct
 
 import numpy as np
 
-from src.core.data_structures import Frame
+from src.core.data_structures import CameraIntrinsics, Frame
 from src.oviv2.dense_semantics import DenseSemanticFrame
-from src.oviv2.observations import FrameObservation
+from src.oviv2.observations import FrameObservation, ObservationKind
 from src.oviv2.runtime import Oviv2Runtime, RuntimeFrameResult
 from src.oviv2.reference_readout import (
     CumulativeReadoutView,
@@ -42,6 +42,104 @@ from src.oviv2.t1_exactness import (
 
 
 ReferenceReadout = ReferenceCurrentReadout | LifecycleOverlayReadout
+
+
+_STRUCTURAL_WITNESS_OBJECT_TYPES = {
+    CameraIntrinsics,
+    DenseSemanticFrame,
+    Frame,
+    FrameObservation,
+}
+
+
+def _supports_structural_witness(value: object) -> bool:
+    value_type = type(value)
+    if value is None or value_type in {bool, int, float, str, bytes}:
+        return True
+    if value_type is np.ndarray:
+        return not value.dtype.hasobject
+    if value_type is ObservationKind:
+        return True
+    if value_type is tuple:
+        return all(_supports_structural_witness(item) for item in value)
+    if value_type is frozenset:
+        return all(
+            type(item) is tuple
+            and len(item) == 3
+            and all(type(coordinate) is int for coordinate in item)
+            for item in frozenset.__iter__(value)
+        )
+    if value_type in _STRUCTURAL_WITNESS_OBJECT_TYPES:
+        expected = tuple(field.name for field in fields(value))
+        attributes = vars(value)
+        return tuple(attributes) == expected and all(
+            _supports_structural_witness(attributes[name]) for name in expected
+        )
+    return False
+
+
+def _structural_witness_equal(left: object, right: object) -> bool:
+    if left is right:
+        return True
+    if type(left) is not type(right):
+        return False
+    value_type = type(left)
+    if left is None or value_type in {bool, int, str, bytes}:
+        return left == right
+    if value_type is float:
+        return struct.pack(">d", left) == struct.pack(">d", right)
+    if value_type is np.ndarray:
+        assert isinstance(left, np.ndarray) and isinstance(right, np.ndarray)
+        return (
+            left.dtype == right.dtype
+            and left.shape == right.shape
+            and left.strides == right.strides
+            and bool(left.flags.writeable) is bool(right.flags.writeable)
+            and left.tobytes(order="A") == right.tobytes(order="A")
+        )
+    if value_type is ObservationKind:
+        return left is right
+    if value_type is tuple:
+        assert isinstance(left, tuple) and isinstance(right, tuple)
+        return len(left) == len(right) and all(
+            _structural_witness_equal(a, b)
+            for a, b in zip(left, right, strict=True)
+        )
+    if value_type is frozenset:
+        return frozenset.__eq__(left, right) is True
+    if value_type in _STRUCTURAL_WITNESS_OBJECT_TYPES:
+        left_attributes = vars(left)
+        right_attributes = vars(right)
+        return tuple(left_attributes) == tuple(right_attributes) and all(
+            _structural_witness_equal(
+                left_attributes[name], right_attributes[name]
+            )
+            for name in left_attributes
+        )
+    return False
+
+
+def _shared_inputs_support_structural_witness(
+    frame: Frame,
+    observations: tuple[FrameObservation, ...],
+    dense_semantics: DenseSemanticFrame | None,
+) -> bool:
+    return _supports_structural_witness((frame, observations, dense_semantics))
+
+
+def _shared_inputs_structurally_equal(
+    expected: tuple[
+        Frame,
+        tuple[FrameObservation, ...],
+        DenseSemanticFrame | None,
+    ],
+    observed: tuple[
+        Frame,
+        tuple[FrameObservation, ...],
+        DenseSemanticFrame | None,
+    ],
+) -> bool:
+    return _structural_witness_equal(expected, observed)
 
 
 def _exact_value_signature(value: object) -> tuple[object, ...]:
@@ -349,11 +447,25 @@ class DualReadoutRuntime:
         transaction = DualTransactionSnapshot.capture(
             self.cumulative, self.temporal, frame, observations, dense_semantics
         )
-        original_input_sha256 = shared_input_sha256(
-            frame, observations, dense_semantics
+        original_inputs = (frame, observations, dense_semantics)
+        temporal_inputs = (
+            original_inputs
+            if temporal_observations is None
+            else (frame, temporal_observations, dense_semantics)
         )
-        original_input_exact = _shared_input_exact_signature(
-            frame, observations, dense_semantics
+        use_structural_witness = (
+            _shared_inputs_support_structural_witness(*original_inputs)
+            and _shared_inputs_support_structural_witness(*temporal_inputs)
+        )
+        original_input_sha256 = (
+            None
+            if use_structural_witness
+            else shared_input_sha256(*original_inputs)
+        )
+        original_input_exact = (
+            None
+            if use_structural_witness
+            else _shared_input_exact_signature(*original_inputs)
         )
         original_input_snapshot = shared_input_snapshot(
             frame, observations, dense_semantics
@@ -361,13 +473,19 @@ class DualReadoutRuntime:
         temporal_input_sha256 = (
             original_input_sha256
             if temporal_observations is None
-            else shared_input_sha256(frame, temporal_observations, dense_semantics)
+            else (
+                None
+                if use_structural_witness
+                else shared_input_sha256(*temporal_inputs)
+            )
         )
         temporal_input_exact = (
             original_input_exact
             if temporal_observations is None
-            else _shared_input_exact_signature(
-                frame, temporal_observations, dense_semantics
+            else (
+                None
+                if use_structural_witness
+                else _shared_input_exact_signature(*temporal_inputs)
             )
         )
         temporal_original_snapshot = (
@@ -393,44 +511,40 @@ class DualReadoutRuntime:
                 original_input_snapshot.assert_unchanged()
             except BaseException as error:
                 failures.append(error)
-            try:
-                if (
-                    shared_input_sha256(frame, observations, dense_semantics)
-                    != original_input_sha256
-                    or _shared_input_exact_signature(
-                        frame, observations, dense_semantics
-                    )
-                    != original_input_exact
-                ):
-                    failures.append(
-                        RuntimeError("original shared inputs changed during cloning")
-                    )
-            except BaseException as error:
-                failures.append(error)
+            if not use_structural_witness:
+                try:
+                    if (
+                        shared_input_sha256(*original_inputs)
+                        != original_input_sha256
+                        or _shared_input_exact_signature(*original_inputs)
+                        != original_input_exact
+                    ):
+                        failures.append(
+                            RuntimeError("original shared inputs changed during cloning")
+                        )
+                except BaseException as error:
+                    failures.append(error)
             if temporal_original_snapshot is not None:
                 assert temporal_observations is not None
                 try:
                     temporal_original_snapshot.assert_unchanged()
                 except BaseException as error:
                     failures.append(error)
-                try:
-                    if (
-                        shared_input_sha256(
-                            frame, temporal_observations, dense_semantics
-                        )
-                        != temporal_input_sha256
-                        or _shared_input_exact_signature(
-                            frame, temporal_observations, dense_semantics
-                        )
-                        != temporal_input_exact
-                    ):
-                        failures.append(
-                            RuntimeError(
-                                "original temporal inputs changed during cloning"
+                if not use_structural_witness:
+                    try:
+                        if (
+                            shared_input_sha256(*temporal_inputs)
+                            != temporal_input_sha256
+                            or _shared_input_exact_signature(*temporal_inputs)
+                            != temporal_input_exact
+                        ):
+                            failures.append(
+                                RuntimeError(
+                                    "original temporal inputs changed during cloning"
+                                )
                             )
-                        )
-                except BaseException as error:
-                    failures.append(error)
+                    except BaseException as error:
+                        failures.append(error)
             if failures:
                 original_validation_error = RuntimeError(
                     "original caller inputs changed during cloning"
@@ -438,12 +552,25 @@ class DualReadoutRuntime:
                 raise original_validation_error from failures[0]
 
         def assert_equivalent_clone(
-            expected_sha256: str,
-            expected_exact: tuple[object, ...],
+            expected_inputs: tuple[
+                Frame,
+                tuple[FrameObservation, ...],
+                DenseSemanticFrame | None,
+            ],
+            expected_sha256: str | None,
+            expected_exact: tuple[object, ...] | None,
             cloned_frame: Frame,
             cloned_observations: tuple[FrameObservation, ...],
             cloned_dense: DenseSemanticFrame | None,
         ) -> None:
+            if use_structural_witness:
+                if not _shared_inputs_structurally_equal(
+                    expected_inputs,
+                    (cloned_frame, cloned_observations, cloned_dense),
+                ):
+                    raise ValueError("shared input clone is not equivalent")
+                return
+            assert expected_sha256 is not None and expected_exact is not None
             try:
                 observed_sha256 = shared_input_sha256(
                     cloned_frame, cloned_observations, cloned_dense
@@ -469,8 +596,14 @@ class DualReadoutRuntime:
                 reference is not None
                 and temporal_observations is not None
                 and (
-                    temporal_input_sha256 != original_input_sha256
-                    or temporal_input_exact != original_input_exact
+                    not _shared_inputs_structurally_equal(
+                        original_inputs, temporal_inputs
+                    )
+                    if use_structural_witness
+                    else (
+                        temporal_input_sha256 != original_input_sha256
+                        or temporal_input_exact != original_input_exact
+                    )
                 )
             ):
                 raise ValueError(
@@ -480,6 +613,7 @@ class DualReadoutRuntime:
                 clone_shared_inputs(frame, observations, dense_semantics)
             )
             assert_equivalent_clone(
+                original_inputs,
                 original_input_sha256,
                 original_input_exact,
                 isolated_frame,
@@ -495,6 +629,7 @@ class DualReadoutRuntime:
                     frame, temporal_observations, dense_semantics
                 )
                 assert_equivalent_clone(
+                    temporal_inputs,
                     temporal_input_sha256,
                     temporal_input_exact,
                     temporal_frame,
@@ -526,16 +661,24 @@ class DualReadoutRuntime:
                         temporal_dense,
                     )
                 )
-                isolated_trial_exact = _shared_input_exact_signature(
-                    isolated_frame, isolated_observations, isolated_dense
+                isolated_trial_exact = (
+                    None
+                    if use_structural_witness
+                    else _shared_input_exact_signature(
+                        isolated_frame, isolated_observations, isolated_dense
+                    )
                 )
                 temporal_trial_exact = (
                     isolated_trial_exact
                     if temporal_frame is isolated_frame
-                    else _shared_input_exact_signature(
-                        temporal_frame,
-                        isolated_temporal_observations,
-                        temporal_dense,
+                    else (
+                        None
+                        if use_structural_witness
+                        else _shared_input_exact_signature(
+                            temporal_frame,
+                            isolated_temporal_observations,
+                            temporal_dense,
+                        )
                     )
                 )
                 try:
@@ -582,35 +725,37 @@ class DualReadoutRuntime:
                         input_snapshot.assert_unchanged()
                     except BaseException as error:
                         trial_input_failures.append(error)
-                    try:
-                        if _shared_input_exact_signature(
-                            isolated_frame, isolated_observations, isolated_dense
-                        ) != isolated_trial_exact:
-                            trial_input_failures.append(
-                                RuntimeError(
-                                    "cumulative branch mutated isolated shared inputs"
+                    if not use_structural_witness:
+                        try:
+                            if _shared_input_exact_signature(
+                                isolated_frame, isolated_observations, isolated_dense
+                            ) != isolated_trial_exact:
+                                trial_input_failures.append(
+                                    RuntimeError(
+                                        "cumulative branch mutated isolated shared inputs"
+                                    )
                                 )
-                            )
-                    except BaseException as error:
-                        trial_input_failures.append(error)
+                        except BaseException as error:
+                            trial_input_failures.append(error)
                     if temporal_input_snapshot is not input_snapshot:
                         try:
                             temporal_input_snapshot.assert_unchanged()
                         except BaseException as error:
                             trial_input_failures.append(error)
-                        try:
-                            if _shared_input_exact_signature(
-                                temporal_frame,
-                                isolated_temporal_observations,
-                                temporal_dense,
-                            ) != temporal_trial_exact:
-                                trial_input_failures.append(
-                                    RuntimeError(
-                                        "temporal branch mutated isolated shared inputs"
+                        if not use_structural_witness:
+                            try:
+                                if _shared_input_exact_signature(
+                                    temporal_frame,
+                                    isolated_temporal_observations,
+                                    temporal_dense,
+                                ) != temporal_trial_exact:
+                                    trial_input_failures.append(
+                                        RuntimeError(
+                                            "temporal branch mutated isolated shared inputs"
+                                        )
                                     )
-                                )
-                        except BaseException as error:
-                            trial_input_failures.append(error)
+                            except BaseException as error:
+                                trial_input_failures.append(error)
                     if trial_input_failures:
                         raise RuntimeError(
                             "dual readout branch mutated isolated shared inputs"

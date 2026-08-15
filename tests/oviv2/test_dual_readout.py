@@ -752,20 +752,18 @@ def test_process_frame_detects_clone_side_effect_on_caller_input(
 
 
 @pytest.mark.parametrize("separate_temporal_inputs", (False, True))
-def test_process_frame_hashes_each_caller_and_clone_input_set_once(
+def test_process_frame_uses_structural_witness_for_exact_builtin_inputs(
     monkeypatch: pytest.MonkeyPatch,
     separate_temporal_inputs: bool,
 ) -> None:
     import src.oviv2.dual_readout as module
 
-    original_hash = module.shared_input_sha256
-    calls: list[tuple[object, ...]] = []
+    def reject_recursive_scan(*args: object) -> object:
+        del args
+        raise AssertionError("exact production inputs used recursive content scan")
 
-    def counted_hash(*args: object) -> str:
-        calls.append(args)
-        return original_hash(*args)  # type: ignore[arg-type]
-
-    monkeypatch.setattr(module, "shared_input_sha256", counted_hash)
+    monkeypatch.setattr(module, "shared_input_sha256", reject_recursive_scan)
+    monkeypatch.setattr(module, "_shared_input_exact_signature", reject_recursive_scan)
     frame = _frame()
     observations = (_observation(frame),)
     temporal = TemporalCurrentRuntime(
@@ -784,11 +782,24 @@ def test_process_frame_hashes_each_caller_and_clone_input_set_once(
         ),
     )
 
-    assert len(calls) == (6 if separate_temporal_inputs else 3)
-    assert calls[0] == (frame, observations, None)
+
+def test_structural_witness_rejects_unvalidated_voxel_key_payload() -> None:
+    import src.oviv2.dual_readout as module
+
+    frame = _frame()
+    observation = replace(
+        _observation(frame),
+        voxel_keys=frozenset({object()}),  # type: ignore[arg-type]
+    )
+
+    assert not module._shared_inputs_support_structural_witness(
+        frame,
+        (observation,),
+        None,
+    )
 
 
-def test_process_frame_rechecks_every_caller_digest_when_snapshot_fails(
+def test_process_frame_rolls_back_without_recursive_digest_when_snapshot_fails(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     import src.oviv2.dual_readout as module
@@ -835,8 +846,7 @@ def test_process_frame_rechecks_every_caller_digest_when_snapshot_fails(
             temporal_observations=temporal_observations,
         )
 
-    assert sum(call[1] is observations for call in hash_calls) == 2
-    assert sum(call[1] is temporal_observations for call in hash_calls) == 2
+    assert hash_calls == []
     _assert_exact_identity_snapshot(cumulative, before_cumulative)
     _assert_exact_identity_snapshot(temporal, before_temporal)
 

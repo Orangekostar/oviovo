@@ -816,6 +816,7 @@ def _exact_execution(
     source_sha: str | None = None,
     source_path: Path | None = None,
     inputs: dict[str, str] | None = None,
+    target_payload: bytes | None = None,
 ) -> dict[str, object]:
     root.mkdir(parents=True, exist_ok=True)
     source_path = (
@@ -841,7 +842,10 @@ def _exact_execution(
         (target_path, {"target": "shared"}),
     ):
         if not path.exists():
-            path.write_text(json.dumps(payload, sort_keys=True) + "\n")
+            if path is target_path and target_payload is not None:
+                path.write_bytes(target_payload)
+            else:
+                path.write_text(json.dumps(payload, sort_keys=True) + "\n")
     config_path = (root.parent / f"{profile}.json").resolve()
     config_payload = {
         "scene": "apartment",
@@ -1364,6 +1368,55 @@ def test_exact_transaction_preflights_all_specs_before_creating_or_launching(
     assert not transaction.exists()
 
 
+def test_exact_transaction_rejects_oversized_target_before_launch(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "source.json"
+    target = tmp_path / "target.json"
+    source.write_text("{}\n")
+    target.write_bytes(b"{}\n")
+    os.truncate(target, gates.MAX_TARGET_MANIFEST_BYTES + 1)
+    specs: list[dict[str, object]] = []
+    for position, profile in enumerate(gates.EXACT_PROFILE_SEQUENCE):
+        config = tmp_path / f"config-{position}.json"
+        config.write_text(
+            json.dumps(
+                {
+                    "scene": "apartment",
+                    "occlusion_target_manifest": str(target.resolve()),
+                }
+            )
+            + "\n"
+        )
+        specs.append(
+            {
+                "profile": profile,
+                "config": str(config.resolve()),
+                "output_root": str((tmp_path / f"run-{position}").resolve()),
+                "source_manifest": str(source.resolve()),
+            }
+        )
+
+    popen_calls = 0
+
+    def popen(*args: object, **kwargs: object) -> object:
+        nonlocal popen_calls
+        popen_calls += 1
+        raise AssertionError((args, kwargs))
+
+    transaction = tmp_path / "transaction"
+    with pytest.raises(gates.GateVerificationError, match="target.*maximum"):
+        gates.execute_exact_profile_transaction(
+            specs,
+            repo=gates.REPO_ROOT,
+            python_executable="/env/bin/python",
+            transaction_dir=transaction,
+            popen_factory=popen,
+        )
+    assert popen_calls == 0
+    assert not transaction.exists()
+
+
 @pytest.mark.parametrize(
     "relationship",
     ["root_equals_transaction", "root_inside_transaction", "transaction_inside_root"],
@@ -1517,6 +1570,21 @@ def test_common_input_fingerprint_schema_and_values_are_exact(tmp_path: Path) ->
     assert common["ground_truth_sha256"] == hashlib.sha256(
         Path(config["occlusion_target_manifest"]).read_bytes()
     ).hexdigest()
+
+
+def test_completed_execution_accepts_target_above_generic_json_limit(
+    tmp_path: Path,
+) -> None:
+    target_payload = b'{"target":"shared"}' + b" " * gates.DEFAULT_MAX_INPUT_BYTES + b"\n"
+    execution = _exact_execution(
+        "a1",
+        tmp_path / "run-2",
+        102,
+        target_payload=target_payload,
+    )
+    assert execution["common_input_fingerprints"]["ground_truth_sha256"] == (
+        hashlib.sha256(target_payload).hexdigest()
+    )
 
 
 def test_exact_receipt_rejects_config_changed_after_run(tmp_path: Path) -> None:

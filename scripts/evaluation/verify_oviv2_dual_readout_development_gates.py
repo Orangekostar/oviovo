@@ -40,6 +40,7 @@ DEVELOPMENT_EXECUTION_CONTEXT = {
     "scene": "apartment",
 }
 DEFAULT_MAX_INPUT_BYTES = 16 * 1024 * 1024
+MAX_TARGET_MANIFEST_BYTES = 128 * 1024 * 1024
 PROCESS_REAP_TIMEOUT_SECONDS = 5.0
 LOCAL_PROCESS_TRUST_MODEL = {
     "pid_semantics": "trusted_local_orchestrator_observation",
@@ -470,19 +471,26 @@ def _reopen_completed_execution(
     if "frozen_run_identity" in manifest:
         raise GateVerificationError("development execution unexpectedly contains frozen identity")
 
-    def config_input(name: str) -> dict[str, object]:
+    def config_input(
+        name: str,
+        *,
+        maximum: int = DEFAULT_MAX_INPUT_BYTES,
+    ) -> dict[str, object]:
         raw = config.get(name)
         if not isinstance(raw, str) or not raw:
             raise GateVerificationError(f"completed execution {name} binding is invalid")
         path = Path(raw)
         if not path.is_absolute():
             path = REPO_ROOT / path
-        record = _absolute_file_record(path.absolute())
+        record = _absolute_file_record(path.absolute(), maximum=maximum)
         return record
 
     input_record = config_input("input_manifest")
     schedule_record = config_input("schedule_manifest")
-    target_record = config_input("occlusion_target_manifest")
+    target_record = config_input(
+        "occlusion_target_manifest",
+        maximum=MAX_TARGET_MANIFEST_BYTES,
+    )
     if config.get("occlusion_target_manifest_sha256") != target_record["sha256"]:
         raise GateVerificationError("completed execution target manifest hash is invalid")
     source_bindings = manifest.get("source_bindings")
@@ -624,14 +632,18 @@ def _reopen_completed_execution(
     }
 
 
-def _absolute_file_record(path: Path) -> dict[str, object]:
+def _absolute_file_record(
+    path: Path,
+    *,
+    maximum: int = DEFAULT_MAX_INPUT_BYTES,
+) -> dict[str, object]:
     try:
         canonical = path.resolve(strict=True)
     except OSError as exc:
         raise GateVerificationError(f"observed file is missing: {path}") from exc
     if str(canonical) != str(path):
         raise GateVerificationError(f"observed file path is not canonical: {path}")
-    data = _regular_file_bytes(canonical.parent, canonical.name, DEFAULT_MAX_INPUT_BYTES)
+    data = _regular_file_bytes(canonical.parent, canonical.name, maximum)
     return {
         "path": str(canonical),
         "sha256": _sha256(data),
@@ -1027,6 +1039,7 @@ def _preflight_exact_profile_specs(
     expected_fields = {"profile", "config", "output_root", "source_manifest"}
     prepared: list[_ExactProfileSpec] = []
     roots: list[Path] = []
+    validated_targets: set[Path] = set()
     for profile, spec in zip(EXACT_PROFILE_SEQUENCE, specs, strict=True):
         if not isinstance(spec, dict) or set(spec) != expected_fields:
             raise GateVerificationError("exact execution spec fields are invalid")
@@ -1052,6 +1065,23 @@ def _preflight_exact_profile_specs(
             raise GateVerificationError(
                 "exact development transaction requires Apartment config"
             )
+        target_value = config_value.get("occlusion_target_manifest")
+        if isinstance(target_value, str) and target_value:
+            target = Path(target_value)
+            if not target.is_absolute():
+                target = repo / target
+            target = target.absolute()
+            if target not in validated_targets:
+                try:
+                    _absolute_file_record(
+                        target,
+                        maximum=MAX_TARGET_MANIFEST_BYTES,
+                    )
+                except GateVerificationError as exc:
+                    raise GateVerificationError(
+                        f"exact execution target manifest is invalid: {exc}"
+                    ) from exc
+                validated_targets.add(target)
         if str(root.resolve(strict=False)) != str(root):
             raise GateVerificationError("exact execution output root is not canonical")
         if root.exists() or root.is_symlink():
