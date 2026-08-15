@@ -1812,6 +1812,73 @@ def test_table_only_captures_official_common_checkpoints_without_occlusion_expor
     assert [item["frame_index"] for item in exported["checkpoints"]] == official_frames
 
 
+def test_temporal_metrics_only_preserves_full_causal_checkpoints_without_cumulative_audit(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config = _materialize_overlap_config(module, tmp_path)
+    output = tmp_path / "temporal-metrics-only"
+    dependencies, holder = _dependencies(module)
+
+    def reject_cumulative_audit(*_: object, **__: object) -> object:
+        raise AssertionError("temporal metrics mode serialized a cumulative audit")
+
+    monkeypatch.setattr(
+        module, "_cumulative_neutral_from_runtime", reject_cumulative_audit
+    )
+
+    manifest = module.run(
+        config,
+        output,
+        temporal_metrics_only=True,
+        dependencies=dependencies,
+    )
+
+    assert manifest["capture_mode"] == {
+        "mode": "temporal_metrics_only",
+        "occlusion_evaluation_available": True,
+        "publication_eligible": False,
+        "runtime_mode": "full_causal_without_cumulative_audit",
+    }
+    assert holder["runtime"].calls == [0, 1, 2, 3, 4]
+    assert holder["runtime"].fast_calls == []
+    assert holder["runtime"].advance_calls == []
+    assert not list(output.glob("checkpoints/*/cumulative_audit"))
+    assert all(
+        checkpoint["cumulative_audit"] is None
+        for checkpoint in manifest["checkpoints"]
+    )
+    index_record = manifest["occlusion_checkpoint_index"]
+    index = json.loads((output / index_record["path"]).read_text())
+    assert [item["frame_index"] for item in index["checkpoints"]] == [2, 4]
+    assert manifest["scheduled_frame_indices"] == [2, 3, 4]
+
+
+def test_temporal_metrics_only_rejects_reference_and_partial_profiles(
+    tmp_path: Path,
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    for profile in (ExecutionProfile.A0, ExecutionProfile.A1, ExecutionProfile.A2):
+        profile_root = tmp_path / profile.profile_id
+        profile_root.mkdir()
+        config = _materialize_config(module, profile_root)
+        payload = json.loads(config.read_text())
+        payload["temporal_readout"]["execution_profile"] = profile.profile_id
+        payload["temporal_readout"]["components"] = profile.components
+        payload["algorithm_hash"] = module.algorithm_hash(payload)
+        _write_json(config, payload)
+        with pytest.raises(ValueError, match="requires profile a3 or a4"):
+            module.run(
+                config,
+                tmp_path / f"output-{profile.profile_id}",
+                temporal_metrics_only=True,
+                dependencies=_dependencies(module)[0],
+            )
+
+
 def test_checkpoint_relative_timestamp_must_match_dataset_origin(
     tmp_path: Path,
 ) -> None:
@@ -3897,6 +3964,7 @@ def test_cli_requires_config_output_and_pairs_optional_formal_arguments() -> Non
     assert args.freeze_manifest is None and args.run_slot is None
     assert args.allow_unfrozen_office is False
     assert args.table_only is False
+    assert args.temporal_metrics_only is False
     opted_in = module.parse_args(
         [
             "--config",
@@ -3917,6 +3985,27 @@ def test_cli_requires_config_output_and_pairs_optional_formal_arguments() -> Non
         ]
     )
     assert table_only.table_only is True
+    temporal_metrics_only = module.parse_args(
+        [
+            "--config",
+            "config.json",
+            "--output",
+            "output",
+            "--temporal-metrics-only",
+        ]
+    )
+    assert temporal_metrics_only.temporal_metrics_only is True
+    with pytest.raises(SystemExit):
+        module.parse_args(
+            [
+                "--config",
+                "config.json",
+                "--output",
+                "output",
+                "--table-only",
+                "--temporal-metrics-only",
+            ]
+        )
     with pytest.raises(SystemExit):
         module.parse_args(
             [

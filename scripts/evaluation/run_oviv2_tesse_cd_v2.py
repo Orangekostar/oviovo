@@ -3179,10 +3179,13 @@ def run(
     run_slot: str | None = None,
     allow_unfrozen_office: bool = False,
     table_only: bool = False,
+    temporal_metrics_only: bool = False,
     dependencies: RunnerDependencies | None = None,
 ) -> dict[str, Any]:
     if (freeze_manifest is None) != (run_slot is None):
         raise ValueError("freeze_manifest and run_slot must be provided together")
+    if table_only and temporal_metrics_only:
+        raise ValueError("table-only and temporal-metrics-only are mutually exclusive")
     source_config = Path(config_path).absolute()
     _require_regular_file(source_config, "runner config")
     source_config_bytes = source_config.read_bytes()
@@ -3190,6 +3193,13 @@ def run(
     scene, frame_count, schedule_path, evaluation_frames, temporal_config = (
         _validate_config(config)
     )
+    if temporal_metrics_only and temporal_config.execution_profile.profile_id not in {
+        "a3",
+        "a4",
+    }:
+        raise ValueError("temporal metrics mode requires profile a3 or a4")
+    if temporal_metrics_only and scene != "apartment":
+        raise ValueError("temporal metrics mode is restricted to Apartment development")
     if allow_unfrozen_office and (scene != "office" or freeze_manifest is not None):
         raise ValueError("unfrozen Office opt-in is only valid for an unfrozen Office run")
     if scene == "office" and freeze_manifest is None and not allow_unfrozen_office:
@@ -3568,7 +3578,7 @@ def run(
             cumulative_neutral = None
             cumulative_audit: dict[str, Any] | None = None
             cumulative_audit_witness: _CumulativeAuditWitness | None = None
-            skip_cumulative_audit = (
+            skip_cumulative_audit = temporal_metrics_only or (
                 table_only
                 and temporal_config.execution_profile.profile_id in {"a3", "a4"}
             )
@@ -4031,7 +4041,14 @@ def run(
                 else {}
             )
         )
-        if table_only:
+        if temporal_metrics_only:
+            formal_fields["capture_mode"] = {
+                "mode": "temporal_metrics_only",
+                "occlusion_evaluation_available": True,
+                "publication_eligible": False,
+                "runtime_mode": "full_causal_without_cumulative_audit",
+            }
+        elif table_only:
             formal_fields["capture_mode"] = {
                 "mode": "official_common_only",
                 "occlusion_evaluation_available": False,
@@ -4362,7 +4379,9 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--freeze-manifest", type=Path)
     parser.add_argument("--allow-unfrozen-office", action="store_true")
-    parser.add_argument("--table-only", action="store_true")
+    capture_mode = parser.add_mutually_exclusive_group()
+    capture_mode.add_argument("--table-only", action="store_true")
+    capture_mode.add_argument("--temporal-metrics-only", action="store_true")
     parser.add_argument(
         "--run-slot",
         choices=(
@@ -4391,6 +4410,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         run_slot=args.run_slot,
         allow_unfrozen_office=args.allow_unfrozen_office,
         table_only=args.table_only,
+        temporal_metrics_only=args.temporal_metrics_only,
     )
     print(
         json.dumps(
