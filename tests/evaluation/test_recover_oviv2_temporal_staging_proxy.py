@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
 import sys
+import tempfile
 from typing import Any
 
 import numpy as np
@@ -555,4 +557,42 @@ def test_cli_prints_nonformal_source_index_identity(tmp_path: Path) -> None:
         "source_index": str((output / "source_index.json").resolve()),
         "status": NONFORMAL_STATUS,
     }
+    assert (output / "source_index.json").is_file()
+
+
+def test_cli_runs_when_deployed_at_shallow_tmp_path(tmp_path: Path) -> None:
+    source = _build_preserved_staging(tmp_path / "preserved")
+    output = tmp_path / "proxy"
+    repository = Path(__file__).resolve().parents[2]
+    script_source = (
+        repository / "scripts/evaluation/recover_oviv2_temporal_staging_proxy.py"
+    )
+    descriptor, deployed_name = tempfile.mkstemp(
+        prefix="recover-oviv2-temporal-",
+        suffix=".py",
+        dir="/tmp",
+    )
+    os.close(descriptor)
+    deployed = Path(deployed_name)
+    deployed.write_bytes(script_source.read_bytes())
+    try:
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(deployed),
+                "--source-root",
+                str(source),
+                "--output-root",
+                str(output),
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+            env={**os.environ, "PYTHONPATH": str(repository)},
+        )
+    finally:
+        deployed.unlink()
+
+    assert completed.returncode == 0, completed.stderr
+    assert json.loads(completed.stdout)["status"] == NONFORMAL_STATUS
     assert (output / "source_index.json").is_file()

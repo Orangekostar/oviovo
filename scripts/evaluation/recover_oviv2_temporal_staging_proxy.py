@@ -16,8 +16,15 @@ import tempfile
 from typing import Any, Mapping, Sequence
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-if str(REPO_ROOT) not in sys.path:
+REPO_ROOT = next(
+    (
+        candidate
+        for candidate in Path(__file__).resolve().parents
+        if (candidate / "src/evaluation/json_contracts.py").is_file()
+    ),
+    None,
+)
+if REPO_ROOT is not None and str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.evaluation.json_contracts import loads_strict
