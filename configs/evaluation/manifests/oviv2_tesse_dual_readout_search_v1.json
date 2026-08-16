@@ -136,7 +136,7 @@
         "dynamic_state": {"minimum_consecutive_motion_frames": 2, "displacement_floor_m": 0.1, "minimum_motion_confidence": 0.7, "static_off_streak_frames": 10},
         "motion": {"minimum_translation_confidence": 0.6, "maximum_translation_residual_m": 0.25, "require_explicit_rejection": true},
         "geometry_epoch": {"maximum_epochs_per_identity": 4, "maximum_retained_epochs": 1000},
-        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 128}
+        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 512}
       }
     },
     {
@@ -154,7 +154,7 @@
         "dynamic_state": {"minimum_consecutive_motion_frames": 2, "displacement_floor_m": 0.1, "minimum_motion_confidence": 0.7, "static_off_streak_frames": 10},
         "motion": {"minimum_translation_confidence": 0.6, "maximum_translation_residual_m": 0.25, "require_explicit_rejection": true},
         "geometry_epoch": {"maximum_epochs_per_identity": 4, "maximum_retained_epochs": 1000},
-        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 128}
+        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 512}
       }
     },
     {
@@ -172,7 +172,7 @@
         "dynamic_state": {"minimum_consecutive_motion_frames": 2, "displacement_floor_m": 0.1, "minimum_motion_confidence": 0.7, "static_off_streak_frames": 10},
         "motion": {"minimum_translation_confidence": 0.6, "maximum_translation_residual_m": 0.25, "require_explicit_rejection": true},
         "geometry_epoch": {"maximum_epochs_per_identity": 4, "maximum_retained_epochs": 1000},
-        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 128}
+        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 512}
       }
     },
     {
@@ -190,7 +190,7 @@
         "dynamic_state": {"minimum_consecutive_motion_frames": 2, "displacement_floor_m": 0.1, "minimum_motion_confidence": 0.7, "static_off_streak_frames": 10},
         "motion": {"minimum_translation_confidence": 0.6, "maximum_translation_residual_m": 0.25, "require_explicit_rejection": true},
         "geometry_epoch": {"maximum_epochs_per_identity": 4, "maximum_retained_epochs": 1000},
-        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 128}
+        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 512}
       }
     },
     {
@@ -208,7 +208,7 @@
         "dynamic_state": {"minimum_consecutive_motion_frames": 2, "displacement_floor_m": 0.1, "minimum_motion_confidence": 0.7, "static_off_streak_frames": 10},
         "motion": {"minimum_translation_confidence": 0.6, "maximum_translation_residual_m": 0.25, "require_explicit_rejection": true},
         "geometry_epoch": {"maximum_epochs_per_identity": 4, "maximum_retained_epochs": 1000},
-        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 128}
+        "background_ledger": {"maximum_journal_blocks": 50000, "commit_support_frames": 2, "commit_distinct_view_bins": 2, "minimum_commit_frame_gap": 1, "maximum_records_per_block": 512}
       }
     }
   ]
