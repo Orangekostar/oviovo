@@ -368,6 +368,83 @@ def _fsync_tree(root: Path) -> None:
             os.close(descriptor)
 
 
+def _directory_identity(path: Path) -> tuple[int, int]:
+    status = os.stat(path, follow_symlinks=False)
+    if not stat.S_ISDIR(status.st_mode):
+        raise RuntimeError(f"publication path is not a directory: {path}")
+    return status.st_dev, status.st_ino
+
+
+def _optional_directory_identity(path: Path) -> tuple[int, int] | None:
+    try:
+        return _directory_identity(path)
+    except FileNotFoundError:
+        return None
+
+
+def _remove_owned_staging(staging: Path, identity: tuple[int, int]) -> None:
+    current = _optional_directory_identity(staging)
+    if current is None:
+        return
+    if current != identity:
+        raise RuntimeError("temporal recovery proxy staging ownership changed")
+    shutil.rmtree(staging)
+
+
+def _fsync_directory(path: Path) -> None:
+    descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def _publish_no_clobber(
+    *,
+    staging: Path,
+    staging_identity: tuple[int, int],
+    output: Path,
+) -> None:
+    try:
+        os.mkdir(output)
+    except FileExistsError:
+        raise
+    reservation_identity = _directory_identity(output)
+    if any(output.iterdir()):
+        raise RuntimeError("temporal recovery proxy publication uncertain")
+    try:
+        if _directory_identity(output) != reservation_identity:
+            raise RuntimeError("temporal recovery proxy publication uncertain")
+        os.rename(staging, output)
+    except BaseException as error:
+        staging_after = _optional_directory_identity(staging)
+        output_after = _optional_directory_identity(output)
+        if staging_after is None:
+            raise RuntimeError(
+                "temporal recovery proxy publication uncertain"
+            ) from error
+        if staging_after != staging_identity or output_after != reservation_identity:
+            raise RuntimeError(
+                "temporal recovery proxy publication uncertain"
+            ) from error
+        try:
+            os.rmdir(output)
+        except OSError as cleanup_error:
+            raise RuntimeError(
+                "temporal recovery proxy publication uncertain"
+            ) from cleanup_error
+        raise
+    if (
+        _optional_directory_identity(staging) is not None
+        or _optional_directory_identity(output) != staging_identity
+    ):
+        raise RuntimeError("temporal recovery proxy publication uncertain")
+    try:
+        _fsync_directory(output.parent)
+    except OSError as error:
+        raise RuntimeError("temporal recovery proxy publication uncertain") from error
+
+
 def recover_temporal_staging_proxy(
     *,
     source_root: Path,
@@ -489,6 +566,7 @@ def recover_temporal_staging_proxy(
     staging = Path(
         tempfile.mkdtemp(prefix=f".{output_root.name}.staging-", dir=output_root.parent)
     )
+    staging_identity = _directory_identity(staging)
     try:
         for witness, relative in source_items:
             _copy_witness(witness, relative=relative, staging=staging)
@@ -552,17 +630,13 @@ def recover_temporal_staging_proxy(
         for witness, _ in source_items:
             witness.revalidate()
         _fsync_tree(staging)
-        os.rename(staging, output_root)
-        parent_fd = os.open(
-            output_root.parent, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+        _publish_no_clobber(
+            staging=staging,
+            staging_identity=staging_identity,
+            output=output_root,
         )
-        try:
-            os.fsync(parent_fd)
-        finally:
-            os.close(parent_fd)
     except BaseException:
-        if staging.exists():
-            shutil.rmtree(staging)
+        _remove_owned_staging(staging, staging_identity)
         raise
     return output_root / "source_index.json"
 

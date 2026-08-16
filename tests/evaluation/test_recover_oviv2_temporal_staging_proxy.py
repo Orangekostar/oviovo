@@ -4,11 +4,14 @@ import hashlib
 import json
 from pathlib import Path
 import shutil
+import subprocess
+import sys
 from typing import Any
 
 import numpy as np
 import pytest
 
+from scripts.evaluation import recover_oviv2_temporal_staging_proxy as recovery_module
 from scripts.evaluation.export_tesse_temporal_artifact import (
     export_temporal_artifact,
 )
@@ -433,3 +436,123 @@ def test_rejects_symlinked_neutral_current_subtree(tmp_path: Path) -> None:
             source_root=source,
             output_root=tmp_path / "proxy",
         )
+
+
+def test_preserves_preexisting_output(tmp_path: Path) -> None:
+    source = _build_preserved_staging(tmp_path / "preserved")
+    output = tmp_path / "proxy"
+    output.mkdir()
+    marker = output / "marker.txt"
+    marker.write_text("owned\n", encoding="utf-8")
+
+    with pytest.raises(FileExistsError):
+        recover_temporal_staging_proxy(source_root=source, output_root=output)
+
+    assert marker.read_text(encoding="utf-8") == "owned\n"
+    assert not list(tmp_path.glob(".proxy.staging-*"))
+
+
+def test_concurrent_empty_destination_is_not_replaced(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = _build_preserved_staging(tmp_path / "preserved")
+    output = tmp_path / "proxy"
+    real_fsync_tree = recovery_module._fsync_tree
+
+    def create_racing_destination(staging: Path) -> None:
+        real_fsync_tree(staging)
+        output.mkdir()
+
+    monkeypatch.setattr(recovery_module, "_fsync_tree", create_racing_destination)
+
+    with pytest.raises(FileExistsError):
+        recover_temporal_staging_proxy(source_root=source, output_root=output)
+
+    assert output.is_dir()
+    assert not any(output.iterdir())
+    assert not list(tmp_path.glob(".proxy.staging-*"))
+
+
+def test_post_rename_error_is_reported_as_publication_uncertain(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = _build_preserved_staging(tmp_path / "preserved")
+    output = tmp_path / "proxy"
+    real_rename = recovery_module.os.rename
+
+    def rename_then_fail(source_path: Path, destination_path: Path) -> None:
+        real_rename(source_path, destination_path)
+        raise OSError("injected post-rename failure")
+
+    monkeypatch.setattr(recovery_module.os, "rename", rename_then_fail)
+
+    with pytest.raises(
+        RuntimeError,
+        match="temporal recovery proxy publication uncertain",
+    ):
+        recover_temporal_staging_proxy(source_root=source, output_root=output)
+
+    assert (output / "source_index.json").is_file()
+    assert not list(tmp_path.glob(".proxy.staging-*"))
+
+
+def test_source_mutation_before_publication_removes_staging(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = _build_preserved_staging(tmp_path / "preserved")
+    output = tmp_path / "proxy"
+    trajectory = source / "trajectories.jsonl"
+    real_revalidate = recovery_module._FileWitness.revalidate
+    mutated = False
+
+    def mutate_once(witness: recovery_module._FileWitness) -> None:
+        nonlocal mutated
+        if not mutated:
+            trajectory.write_text("mutated\n", encoding="utf-8")
+            mutated = True
+        real_revalidate(witness)
+
+    monkeypatch.setattr(
+        recovery_module._FileWitness,
+        "revalidate",
+        mutate_once,
+    )
+
+    with pytest.raises(ValueError, match="source changed before publication"):
+        recover_temporal_staging_proxy(source_root=source, output_root=output)
+
+    assert not output.exists()
+    assert not list(tmp_path.glob(".proxy.staging-*"))
+
+
+def test_cli_prints_nonformal_source_index_identity(tmp_path: Path) -> None:
+    source = _build_preserved_staging(tmp_path / "preserved")
+    output = tmp_path / "proxy"
+    script = (
+        Path(__file__).resolve().parents[2]
+        / "scripts/evaluation/recover_oviv2_temporal_staging_proxy.py"
+    )
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            "--source-root",
+            str(source),
+            "--output-root",
+            str(output),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert json.loads(completed.stdout) == {
+        "source_index": str((output / "source_index.json").resolve()),
+        "status": NONFORMAL_STATUS,
+    }
+    assert (output / "source_index.json").is_file()
