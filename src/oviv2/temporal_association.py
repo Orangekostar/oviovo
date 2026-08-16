@@ -643,7 +643,12 @@ def associate_temporal_observations(
                     target,
                     validated_config,
                     evidence,
-                    gate_distance_m=validated_config.maximum_centroid_distance_m,
+                    gate_distance_m=(
+                        reid_config.maximum_reid_distance_m
+                        if reid_config is not None
+                        and pair in high_confidence_pairs
+                        else validated_config.maximum_centroid_distance_m
+                    ),
                 )
             if candidate is not None:
                 edges[pair] = candidate

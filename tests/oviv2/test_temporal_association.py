@@ -208,6 +208,71 @@ def test_a2_a3_active_gate_uses_current_not_predicted_centroid() -> None:
     ).assignments == ((1, 1),)
 
 
+def test_a4_high_confidence_active_identity_uses_bounded_reid_distance() -> None:
+    obs = observation(
+        1,
+        centroid=(0.0, 0.0, 0.0),
+        image_feature=np.array([1.0, 0.0]),
+    )
+    moved_active = target(
+        2,
+        centroid=(3.0, 0.0, 0.0),
+        prototype=np.array([1.0, 0.0]),
+    )
+    association = config(
+        visual_weight=1.0,
+        semantic_weight=0.0,
+        size_weight=0.0,
+        motion_weight=0.0,
+        geometry_weight=0.0,
+        minimum_score=0.8,
+        maximum_centroid_distance_m=1.0,
+    )
+
+    assert associate_temporal_observations(
+        (obs,), (moved_active,), association, dormant_reid=None
+    ).assignments == ()
+
+    result = associate_temporal_observations(
+        (obs,),
+        (moved_active,),
+        association,
+        dormant_reid=reid_config(maximum_reid_distance_m=4.0),
+    )
+
+    assert result.assignments == ((1, 2),)
+    assert result.reid_opportunity_count == 0
+    assert result.reid_trigger_count == 0
+    assert result.assignment_diagnostics[0].high_confidence_identity_match is True
+
+
+def test_a4_active_wide_gate_requires_high_confidence_identity() -> None:
+    obs = observation(
+        1,
+        centroid=(0.0, 0.0, 0.0),
+        image_feature=np.array([1.0, 0.0]),
+    )
+    weak_active = target(
+        2,
+        centroid=(3.0, 0.0, 0.0),
+        prototype=np.array([0.7, np.sqrt(1.0 - 0.7**2)]),
+    )
+
+    result = associate_temporal_observations(
+        (obs,),
+        (weak_active,),
+        config(maximum_centroid_distance_m=1.0),
+        dormant_reid=reid_config(
+            minimum_reid_similarity=0.8,
+            maximum_reid_distance_m=4.0,
+        ),
+    )
+
+    assert result.assignments == ()
+    assert result.unmatched_observation_ids == (1,)
+    assert result.unmatched_entity_ids == (2,)
+
+
 def test_assignment_diagnostic_is_frozen_sorted_and_fails_closed() -> None:
     result = associate_temporal_observations(
         (observation(1, image_feature=np.array([1.0, 0.0])),),
