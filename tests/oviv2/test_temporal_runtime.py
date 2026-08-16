@@ -4078,6 +4078,45 @@ def test_a4_reidentifies_bank_only_dormant_identity_with_new_epoch() -> None:
     assert result.reid_trigger_count == 1
     assert runtime.state.geometry.current(old_id).epoch_id == 1
     assert runtime.state.identities.get(old_id + 1) is not None
+    assert len(result.export.samples) == 1
+    assert result.export.samples[0].dynamic_state.value == "static"
+    assert result.export.samples[0].motion_confidence == 0.0
+
+
+def test_a4_bank_only_reidentification_displacement_is_dynamic() -> None:
+    from src.oviv2.temporal_export import DynamicState
+
+    runtime = _runtime(_config(maximum_entities=1))
+    old_id = _confirm(runtime)
+    runtime.process_frame(_frame(2, depth=2.0), ())
+    runtime.process_frame(_frame(3, depth=2.0), ())
+    for frame_id in (4, 5):
+        frame = _frame(frame_id, depth=1.8)
+        runtime.process_frame(
+            frame,
+            (_observation(
+                frame,
+                40 + frame_id,
+                centroid_z=1.8,
+                semantic_id=2,
+                image_feature=np.array([0.0, 1.0]),
+            ),),
+        )
+
+    runtime.process_frame(_frame(6, depth=2.4), ())
+    runtime.process_frame(_frame(7, depth=2.4), ())
+    for frame_id in (8, 9):
+        frame = _frame(frame_id)
+        result = runtime.process_frame(
+            frame,
+            (_observation(frame, 80 + frame_id, centroid_z=1.4),),
+        )
+
+    assert result.reid_trigger_count == 1
+    assert len(result.export.samples) == 1
+    assert result.export.samples[0].entity_id == old_id
+    assert result.export.samples[0].dynamic_state is DynamicState.DYNAMIC
+    assert result.export.samples[0].motion_confidence >= 0.75
 
 
 def test_dormant_identity_expiry_boundary_is_explicit_and_counted() -> None:

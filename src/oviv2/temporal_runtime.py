@@ -2318,7 +2318,59 @@ class TemporalCurrentRuntime:
                     feature_model_id=feature_model_id,
                 )
                 evidence_by_entity[entity_id] = present
-                motion_by_entity[entity_id] = (0.0, 0.0)
+                diagnostic = diagnostic_by_pair[(observation_id, entity_id)]
+                if (
+                    not diagnostic.high_confidence_identity_match
+                    or diagnostic.appearance_similarity is None
+                ):
+                    raise RuntimeError(
+                        "bank-only re-identification lacks qualified identity evidence"
+                    )
+                displacement = float(
+                    np.linalg.norm(
+                        np.asarray(observation.centroid_xyz, dtype=np.float64)
+                        - np.asarray(record.last_centroid_xyz, dtype=np.float64)
+                    )
+                )
+                identity_confidence = float(
+                    np.clip(diagnostic.appearance_similarity, 0.0, 1.0)
+                )
+                previous_export = old_export.get(entity_id)
+                previous_dynamic = (
+                    DynamicEvidenceState.static()
+                    if previous_export is None
+                    else previous_export.dynamic_evidence
+                )
+                assert self.config.dynamic_state is not None
+                qualifies_as_reappearance_motion = (
+                    displacement
+                    >= self.config.dynamic_state.displacement_floor_m
+                    and identity_confidence
+                    >= self.config.dynamic_state.minimum_motion_confidence
+                )
+                if qualifies_as_reappearance_motion:
+                    # Re-ID already supplies two identity-qualified temporal
+                    # endpoints, so it does not require consecutive motion frames.
+                    dynamic = DynamicEvidenceState(
+                        DynamicState.DYNAMIC,
+                        self.config.dynamic_state.minimum_consecutive_motion_frames,
+                        0,
+                    )
+                else:
+                    dynamic = advance_dynamic_state(
+                        previous_dynamic,
+                        accepted_motion=False,
+                        displacement_m=displacement,
+                        confidence=identity_confidence,
+                        config=self.config.dynamic_state,
+                    )
+                dynamic_by_entity[entity_id] = dynamic
+                motion_by_entity[entity_id] = (
+                    displacement,
+                    identity_confidence
+                    if qualifies_as_reappearance_motion
+                    else 0.0,
+                )
                 continue
             motion_estimator = (
                 estimate_object_motion
