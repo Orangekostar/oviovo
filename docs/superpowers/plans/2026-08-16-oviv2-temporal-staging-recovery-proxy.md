@@ -21,7 +21,7 @@
 Create `_build_preserved_staging(root)` with one `OVIV2` Apartment checkpoint at
 frame 0/timestamp 100. Write `inputs/schedule.json`, the three JSONL streams,
 `checkpoints/00000000-100/checkpoint_status.json`, and a real
-`neutral_current/{snapshot.npz,entities.json}` via `write_map_snapshot()`. Write
+`neutral_current/{snapshots/*.npz,entities/*.jsonl}` via `write_map_snapshot()`. Write
 `capture_status.json` using exact relative SHA-256 records. The test API is:
 
 ```python
@@ -102,7 +102,8 @@ fresh witnesses.
 
 Read each declared checkpoint-status record, require exact frame/timestamp and
 `consumed_through_frame_exclusive == frame + 1`, and locate sibling
-`neutral_current/snapshot.npz` and `entities.json`. Copy every verified source to
+`neutral_current/snapshots/*.npz` and `entities/*.jsonl`, requiring one of each.
+Copy every verified source to
 the same relative path under a sibling temporary directory. Write a base source
 index with `method="OVIV2"`, fresh destination-relative records, then write the
 nonformal receipt. Revalidate all source witnesses, fsync the staged tree, reserve

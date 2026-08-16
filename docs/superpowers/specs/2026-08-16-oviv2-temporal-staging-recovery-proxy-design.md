@@ -49,8 +49,8 @@ The tool builds a sibling staging directory and atomically publishes:
   lifecycle_transitions.jsonl
   checkpoints/<official-frame>-<timestamp>/
     checkpoint_status.json
-    neutral_current/snapshot.npz
-    neutral_current/entities.json
+    neutral_current/snapshots/<timestamp>_current.npz
+    neutral_current/entities/<timestamp>_current.jsonl
   source_index.json
   recovery_receipt.json
 ```
