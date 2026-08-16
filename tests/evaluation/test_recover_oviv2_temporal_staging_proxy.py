@@ -3,9 +3,11 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import shutil
 from typing import Any
 
 import numpy as np
+import pytest
 
 from scripts.evaluation.export_tesse_temporal_artifact import (
     export_temporal_artifact,
@@ -41,6 +43,12 @@ def _tree_state(root: Path) -> dict[str, str]:
         for path in sorted(root.rglob("*"))
         if path.is_file()
     }
+
+
+def _read_json(path: Path) -> dict[str, Any]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    assert isinstance(payload, dict)
+    return payload
 
 
 def _build_preserved_staging(root: Path) -> Path:
@@ -216,3 +224,212 @@ def test_recovers_exporter_readable_proxy_without_mutating_source(
     )
     assert temporal_manifest.name == "temporal_manifest.json"
     assert temporal_manifest.is_file()
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        ("captured_frames", "capture does not exactly cover schedule"),
+        ("stream_digest", "trajectories source record mismatch"),
+    ],
+)
+def test_rejects_capture_and_stream_mismatches(
+    tmp_path: Path,
+    mutation: str,
+    message: str,
+) -> None:
+    source = _build_preserved_staging(tmp_path / "preserved")
+    capture_path = source / "capture_status.json"
+    capture = _read_json(capture_path)
+    if mutation == "captured_frames":
+        capture["captured_frame_indices"] = []
+    else:
+        capture["trajectories"]["sha256"] = "0" * 64
+    _write_json(capture_path, capture)
+
+    with pytest.raises(ValueError, match=message):
+        recover_temporal_staging_proxy(
+            source_root=source,
+            output_root=tmp_path / "proxy",
+        )
+    assert not (tmp_path / "proxy").exists()
+
+
+def test_rejects_extra_capture_status_field(tmp_path: Path) -> None:
+    source = _build_preserved_staging(tmp_path / "preserved")
+    capture_path = source / "capture_status.json"
+    capture = _read_json(capture_path)
+    capture["unexpected"] = True
+    _write_json(capture_path, capture)
+
+    with pytest.raises(ValueError, match="capture status fields"):
+        recover_temporal_staging_proxy(
+            source_root=source,
+            output_root=tmp_path / "proxy",
+        )
+
+
+def test_rejects_extra_schedule_field_with_fresh_capture_binding(
+    tmp_path: Path,
+) -> None:
+    source = _build_preserved_staging(tmp_path / "preserved")
+    schedule_path = source / "inputs/schedule.json"
+    schedule = _read_json(schedule_path)
+    schedule["unexpected"] = True
+    _write_json(schedule_path, schedule)
+    capture_path = source / "capture_status.json"
+    capture = _read_json(capture_path)
+    capture["schedule"] = _record(schedule_path, root=source)
+    _write_json(capture_path, capture)
+
+    with pytest.raises(ValueError, match="schedule fields"):
+        recover_temporal_staging_proxy(
+            source_root=source,
+            output_root=tmp_path / "proxy",
+        )
+
+
+def _checkpoint_status_path(source: Path) -> Path:
+    capture = _read_json(source / "capture_status.json")
+    return source / capture["checkpoint_statuses"][0]["path"]
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("checkpoint_frame", 1),
+        ("timestamp_ns", 101),
+        ("consumed_through_frame_exclusive", 2),
+    ],
+)
+def test_rejects_checkpoint_identity_mismatch(
+    tmp_path: Path,
+    field: str,
+    value: int,
+) -> None:
+    source = _build_preserved_staging(tmp_path / "preserved")
+    status_path = _checkpoint_status_path(source)
+    status = _read_json(status_path)
+    status[field] = value
+    _write_json(status_path, status)
+    capture_path = source / "capture_status.json"
+    capture = _read_json(capture_path)
+    capture["checkpoint_statuses"][0] = _record(status_path, root=source)
+    _write_json(capture_path, capture)
+
+    with pytest.raises(ValueError, match="checkpoint"):
+        recover_temporal_staging_proxy(
+            source_root=source,
+            output_root=tmp_path / "proxy",
+        )
+
+
+def test_rejects_extra_checkpoint_status_field(tmp_path: Path) -> None:
+    source = _build_preserved_staging(tmp_path / "preserved")
+    status_path = _checkpoint_status_path(source)
+    status = _read_json(status_path)
+    status["unexpected"] = True
+    _write_json(status_path, status)
+    capture_path = source / "capture_status.json"
+    capture = _read_json(capture_path)
+    capture["checkpoint_statuses"][0] = _record(status_path, root=source)
+    _write_json(capture_path, capture)
+
+    with pytest.raises(ValueError, match="checkpoint status fields"):
+        recover_temporal_staging_proxy(
+            source_root=source,
+            output_root=tmp_path / "proxy",
+        )
+
+
+def test_rejects_undeclared_duplicate_official_checkpoint(tmp_path: Path) -> None:
+    source = _build_preserved_staging(tmp_path / "preserved")
+    original = _checkpoint_status_path(source).parent
+    duplicate = source / "checkpoints/duplicate-official"
+    shutil.copytree(original, duplicate)
+
+    with pytest.raises(ValueError, match="official checkpoint identity is not unique"):
+        recover_temporal_staging_proxy(
+            source_root=source,
+            output_root=tmp_path / "proxy",
+        )
+
+
+def test_rejects_missing_neutral_snapshot(tmp_path: Path) -> None:
+    source = _build_preserved_staging(tmp_path / "preserved")
+    snapshot = next(source.glob("checkpoints/*/neutral_current/snapshots/*.npz"))
+    snapshot.unlink()
+
+    with pytest.raises(
+        ValueError,
+        match="official checkpoint must contain one neutral snapshot",
+    ):
+        recover_temporal_staging_proxy(
+            source_root=source,
+            output_root=tmp_path / "proxy",
+        )
+
+
+def test_rejects_checkpoint_status_symlink(tmp_path: Path) -> None:
+    source = _build_preserved_staging(tmp_path / "preserved")
+    status_path = _checkpoint_status_path(source)
+    target = status_path.with_name("checkpoint_status_real.json")
+    status_path.rename(target)
+    status_path.symlink_to(target.name)
+    capture_path = source / "capture_status.json"
+    capture = _read_json(capture_path)
+    capture["checkpoint_statuses"][0] = {
+        "path": status_path.relative_to(source).as_posix(),
+        "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
+        "byte_count": target.stat().st_size,
+    }
+    _write_json(capture_path, capture)
+
+    with pytest.raises(ValueError, match="regular non-symlink"):
+        recover_temporal_staging_proxy(
+            source_root=source,
+            output_root=tmp_path / "proxy",
+        )
+
+
+def test_rejects_noncanonical_source_record_path(tmp_path: Path) -> None:
+    source = _build_preserved_staging(tmp_path / "preserved")
+    capture_path = source / "capture_status.json"
+    capture = _read_json(capture_path)
+    capture["trajectories"]["path"] = "./trajectories.jsonl"
+    _write_json(capture_path, capture)
+
+    with pytest.raises(ValueError, match="canonical and relative"):
+        recover_temporal_staging_proxy(
+            source_root=source,
+            output_root=tmp_path / "proxy",
+        )
+
+
+def test_rejects_source_file_bound_to_multiple_roles(tmp_path: Path) -> None:
+    source = _build_preserved_staging(tmp_path / "preserved")
+    capture_path = source / "capture_status.json"
+    capture = _read_json(capture_path)
+    capture["lifecycle_transitions"] = dict(capture["trajectories"])
+    _write_json(capture_path, capture)
+
+    with pytest.raises(ValueError, match="source file roles must be distinct"):
+        recover_temporal_staging_proxy(
+            source_root=source,
+            output_root=tmp_path / "proxy",
+        )
+
+
+def test_rejects_symlinked_neutral_current_subtree(tmp_path: Path) -> None:
+    source = _build_preserved_staging(tmp_path / "preserved")
+    checkpoint_root = _checkpoint_status_path(source).parent
+    neutral = checkpoint_root / "neutral_current"
+    target = checkpoint_root / "neutral_current_real"
+    neutral.rename(target)
+    neutral.symlink_to(target.name, target_is_directory=True)
+
+    with pytest.raises(ValueError, match="neutral checkpoint tree must not contain symlinks"):
+        recover_temporal_staging_proxy(
+            source_root=source,
+            output_root=tmp_path / "proxy",
+        )

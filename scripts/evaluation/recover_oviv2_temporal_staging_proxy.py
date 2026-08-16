@@ -25,6 +25,69 @@ from src.evaluation.json_contracts import loads_strict
 
 NONFORMAL_STATUS = "NONFORMAL_RECOVERY_PROXY_NOT_SUBMISSION_EVIDENCE"
 _SOURCE_RECORD_FIELDS = frozenset({"path", "sha256", "byte_count"})
+_SCHEDULE_FIELDS = frozenset(
+    {
+        "schema_version",
+        "manifest_id",
+        "dataset",
+        "method_predictions_used",
+        "parameters",
+        "scenes",
+    }
+)
+_SCHEDULE_FIELDS_WITH_SOURCE = _SCHEDULE_FIELDS | {"source_manifest"}
+_SCHEDULE_PARAMETER_FIELDS = frozenset(
+    {
+        "frame_indexing",
+        "official_stride_frames",
+        "common_event_step_frames",
+        "common_event_horizon_frames",
+        "common_checkpoints_per_event",
+        "event_frame_rule",
+    }
+)
+_SCHEDULE_SCENE_FIELDS = frozenset({"frame_count", "entries"})
+_SCHEDULE_SCENE_FIELDS_WITH_SOURCES = _SCHEDULE_SCENE_FIELDS | {
+    "events",
+    "first_depth_timestamp_ns",
+    "last_depth_timestamp_ns",
+    "sources",
+}
+_SCHEDULE_ENTRY_FIELDS = frozenset({"frame_index", "timestamp_ns"})
+_SCHEDULE_ENTRY_FIELDS_FULL = _SCHEDULE_ENTRY_FIELDS | {
+    "relative_timestamp_ns",
+    "event_ids",
+    "roles",
+}
+_CAPTURE_STATUS_FIELDS = frozenset(
+    {
+        "schema_version",
+        "status",
+        "scene",
+        "mode",
+        "scheduled_frame_indices",
+        "captured_frame_indices",
+        "schedule",
+        "trajectories",
+        "frame_coverage",
+        "lifecycle_transitions",
+        "checkpoint_statuses",
+    }
+)
+_CHECKPOINT_STATUS_FIELDS = frozenset(
+    {
+        "schema_version",
+        "status",
+        "checkpoint_frame",
+        "timestamp_ns",
+        "consumed_through_frame",
+        "consumed_through_frame_exclusive",
+    }
+)
+_CHECKPOINT_STATUS_FIELDS_WITH_EVENTS = _CHECKPOINT_STATUS_FIELDS | {
+    "event_ids",
+    "roles",
+}
 
 
 def _sha256(data: bytes) -> str:
@@ -115,7 +178,12 @@ def _relative_path(value: object) -> Path:
     if not isinstance(value, str) or not value:
         raise ValueError("source record path must be a nonempty string")
     path = Path(value)
-    if path.is_absolute() or any(part in {"", ".", ".."} for part in path.parts):
+    if (
+        path.is_absolute()
+        or path.as_posix() != value
+        or "\\" in value
+        or any(part in {"", ".", ".."} for part in path.parts)
+    ):
         raise ValueError("source record path must be canonical and relative")
     return path
 
@@ -160,6 +228,129 @@ def _copy_witness(witness: _FileWitness, *, relative: Path, staging: Path) -> No
         raise ValueError(f"staged copy mismatch: {relative.as_posix()}")
 
 
+def _schedule_entries(
+    schedule: Mapping[str, Any], *, scene: str
+) -> list[dict[str, int]]:
+    if frozenset(schedule) not in {_SCHEDULE_FIELDS, _SCHEDULE_FIELDS_WITH_SOURCE}:
+        raise ValueError("schedule fields are invalid")
+    parameters = schedule.get("parameters")
+    if not isinstance(parameters, Mapping) or frozenset(parameters) not in {
+        frozenset({"frame_indexing"}),
+        _SCHEDULE_PARAMETER_FIELDS,
+    }:
+        raise ValueError("schedule parameter fields are invalid")
+    scenes = schedule.get("scenes")
+    scene_schedule = scenes.get(scene) if isinstance(scenes, Mapping) else None
+    if not isinstance(scene_schedule, Mapping) or frozenset(scene_schedule) not in {
+        _SCHEDULE_SCENE_FIELDS,
+        _SCHEDULE_SCENE_FIELDS_WITH_SOURCES,
+    }:
+        raise ValueError("schedule scene fields are invalid")
+    frame_count = scene_schedule.get("frame_count")
+    raw_entries = scene_schedule.get("entries")
+    if type(frame_count) is not int or frame_count <= 0 or not isinstance(
+        raw_entries, list
+    ):
+        raise ValueError("schedule scene entries are invalid")
+    entries: list[dict[str, int]] = []
+    previous_frame = -1
+    previous_timestamp = -1
+    for raw_entry in raw_entries:
+        if not isinstance(raw_entry, Mapping) or frozenset(raw_entry) not in {
+            _SCHEDULE_ENTRY_FIELDS,
+            _SCHEDULE_ENTRY_FIELDS_FULL,
+        }:
+            raise ValueError("schedule entry fields are invalid")
+        frame_index = raw_entry.get("frame_index")
+        timestamp_ns = raw_entry.get("timestamp_ns")
+        if (
+            type(frame_index) is not int
+            or type(timestamp_ns) is not int
+            or frame_index <= previous_frame
+            or timestamp_ns <= previous_timestamp
+            or frame_index < 0
+            or frame_index >= frame_count
+            or timestamp_ns <= 0
+        ):
+            raise ValueError("schedule frames and timestamps are invalid")
+        entries.append({"frame_index": frame_index, "timestamp_ns": timestamp_ns})
+        previous_frame = frame_index
+        previous_timestamp = timestamp_ns
+    return entries
+
+
+def _checkpoint_identity(status: Mapping[str, Any]) -> tuple[int, int]:
+    if frozenset(status) not in {
+        _CHECKPOINT_STATUS_FIELDS,
+        _CHECKPOINT_STATUS_FIELDS_WITH_EVENTS,
+    }:
+        raise ValueError("checkpoint status fields are invalid")
+    frame_index = status.get("checkpoint_frame")
+    timestamp_ns = status.get("timestamp_ns")
+    consumed = status.get("consumed_through_frame")
+    consumed_exclusive = status.get("consumed_through_frame_exclusive")
+    if (
+        status.get("schema_version") != 1
+        or status.get("status") != "PASS"
+        or type(frame_index) is not int
+        or type(timestamp_ns) is not int
+        or type(consumed) is not int
+        or type(consumed_exclusive) is not int
+        or frame_index < 0
+        or timestamp_ns <= 0
+        or consumed != frame_index
+        or consumed_exclusive != frame_index + 1
+    ):
+        raise ValueError("checkpoint status identity mismatch")
+    return frame_index, timestamp_ns
+
+
+def _require_distinct_sources(
+    sources: Sequence[tuple[_FileWitness, Path]],
+) -> None:
+    identities = [(witness.device, witness.inode) for witness, _ in sources]
+    paths = [witness.path for witness, _ in sources]
+    if len(identities) != len(set(identities)) or len(paths) != len(set(paths)):
+        raise ValueError("source file roles must be distinct")
+
+
+def _official_checkpoint_statuses(
+    *,
+    source_root: Path,
+    entries: Sequence[Mapping[str, int]],
+) -> dict[tuple[int, int], tuple[_FileWitness, Path, dict[str, Any]]]:
+    checkpoints_root = source_root / "checkpoints"
+    if checkpoints_root.is_symlink() or not checkpoints_root.is_dir():
+        raise ValueError("checkpoints root must be a regular directory")
+    official_identities = {
+        (int(entry["frame_index"]), int(entry["timestamp_ns"])) for entry in entries
+    }
+    matches: dict[
+        tuple[int, int], list[tuple[_FileWitness, Path, dict[str, Any]]]
+    ] = {identity: [] for identity in official_identities}
+    for checkpoint_root in sorted(checkpoints_root.iterdir()):
+        if checkpoint_root.is_symlink():
+            raise ValueError("checkpoint directory must not be a symlink")
+        if not checkpoint_root.is_dir():
+            continue
+        status_path = checkpoint_root / "checkpoint_status.json"
+        if not status_path.exists() and not status_path.is_symlink():
+            continue
+        witness = _FileWitness.capture(status_path)
+        status = _read_json(witness, label="checkpoint status")
+        identity = _checkpoint_identity(status)
+        if identity in official_identities:
+            matches[identity].append(
+                (witness, witness.path.relative_to(source_root), status)
+            )
+    resolved: dict[tuple[int, int], tuple[_FileWitness, Path, dict[str, Any]]] = {}
+    for identity, candidates in matches.items():
+        if len(candidates) != 1:
+            raise ValueError("official checkpoint identity is not unique")
+        resolved[identity] = candidates[0]
+    return resolved
+
+
 def _fsync_tree(root: Path) -> None:
     directories = [root]
     for path in root.rglob("*"):
@@ -194,6 +385,8 @@ def recover_temporal_staging_proxy(
     schedule = _read_json(schedule_witness, label="schedule")
     capture_witness = _FileWitness.capture(source_root / "capture_status.json")
     capture = _read_json(capture_witness, label="capture status")
+    if frozenset(capture) != _CAPTURE_STATUS_FIELDS:
+        raise ValueError("capture status fields are invalid")
     scene = capture.get("scene")
     scenes = schedule.get("scenes")
     if (
@@ -206,12 +399,7 @@ def recover_temporal_staging_proxy(
         or capture.get("mode") != "causal_checkpoints"
     ):
         raise ValueError("capture and schedule identity mismatch")
-    scene_schedule = scenes[scene]
-    if not isinstance(scene_schedule, Mapping) or not isinstance(
-        scene_schedule.get("entries"), list
-    ):
-        raise ValueError("schedule scene entries are invalid")
-    entries = scene_schedule["entries"]
+    entries = _schedule_entries(schedule, scene=scene)
     expected_frames = [entry.get("frame_index") for entry in entries]
     if (
         capture.get("scheduled_frame_indices") != expected_frames
@@ -241,24 +429,36 @@ def recover_temporal_staging_proxy(
     raw_statuses = capture.get("checkpoint_statuses")
     if not isinstance(raw_statuses, list) or len(raw_statuses) != len(entries):
         raise ValueError("capture checkpoint status count mismatch")
+    official_statuses = _official_checkpoint_statuses(
+        source_root=source_root,
+        entries=entries,
+    )
     checkpoints: list[dict[str, Any]] = []
     for entry, raw_status in zip(entries, raw_statuses, strict=True):
-        status_witness, status_relative = _resolve_record(
+        declared_witness, declared_relative = _resolve_record(
             raw_status, root=source_root, label="checkpoint status"
         )
-        status = _read_json(status_witness, label="checkpoint status")
         frame_index = entry.get("frame_index")
         timestamp_ns = entry.get("timestamp_ns")
+        status_witness, status_relative, status = official_statuses[
+            (frame_index, timestamp_ns)
+        ]
+        if declared_witness.path != status_witness.path or declared_relative != status_relative:
+            raise ValueError("capture checkpoint status does not bind official checkpoint")
+        if _checkpoint_identity(status) != (frame_index, timestamp_ns):
+            raise ValueError("checkpoint status identity mismatch")
         if (
-            status.get("checkpoint_frame") != frame_index
-            or status.get("timestamp_ns") != timestamp_ns
-            or status.get("consumed_through_frame") != frame_index
+            status.get("consumed_through_frame") != frame_index
             or status.get("consumed_through_frame_exclusive") != frame_index + 1
         ):
             raise ValueError("checkpoint status identity mismatch")
         neutral_root = status_witness.path.parent / "neutral_current"
-        snapshot_paths = sorted((neutral_root / "snapshots").glob("*.npz"))
-        entities_paths = sorted((neutral_root / "entities").glob("*.jsonl"))
+        snapshot_root = neutral_root / "snapshots"
+        entities_root = neutral_root / "entities"
+        if any(path.is_symlink() for path in (neutral_root, snapshot_root, entities_root)):
+            raise ValueError("neutral checkpoint tree must not contain symlinks")
+        snapshot_paths = sorted(snapshot_root.glob("*.npz"))
+        entities_paths = sorted(entities_root.glob("*.jsonl"))
         if len(snapshot_paths) != 1 or len(entities_paths) != 1:
             raise ValueError("official checkpoint must contain one neutral snapshot")
         snapshot_witness = _FileWitness.capture(snapshot_paths[0])
@@ -283,6 +483,8 @@ def recover_temporal_staging_proxy(
                 "entities": _record(entities_witness, root=source_root),
             }
         )
+
+    _require_distinct_sources(source_items)
 
     staging = Path(
         tempfile.mkdtemp(prefix=f".{output_root.name}.staging-", dir=output_root.parent)
