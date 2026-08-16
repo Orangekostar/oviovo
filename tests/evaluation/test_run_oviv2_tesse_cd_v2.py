@@ -273,6 +273,26 @@ def test_runtime_mechanism_accumulator_reuses_persistent_seen_sets() -> None:
     assert all(id(seen[key]) == identities[key] for key in seen)
 
 
+def test_runtime_mechanism_accumulator_reads_dual_temporal_result() -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    name = "proposal_opportunity_count"
+    accumulated = {key: [] for key in module.V2_RUNTIME_DIAGNOSTIC_KEYS}
+    seen = {key: set() for key in module.V2_RUNTIME_DIAGNOSTIC_KEYS}
+    dual_result = SimpleNamespace(
+        temporal=_frame_mechanism_result(module, name, "proposal:17:4:1024")
+    )
+
+    module._accumulate_runtime_mechanism_records(
+        accumulated,
+        dual_result,
+        seen_by_name=seen,
+    )
+
+    assert accumulated[name] == ["proposal:17:4:1024"]
+    assert seen[name] == {"proposal:17:4:1024"}
+
+
 def test_runtime_mechanism_accumulator_rejects_cross_frame_duplicate() -> None:
     import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
 

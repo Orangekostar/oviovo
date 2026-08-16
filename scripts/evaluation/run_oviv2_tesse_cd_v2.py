@@ -2845,6 +2845,8 @@ def _accumulate_runtime_mechanism_records(
     ):
         raise ValueError("runtime mechanism accumulator inventory is invalid")
     diagnostics = getattr(frame_result, "diagnostics", None)
+    if diagnostics is None:
+        diagnostics = getattr(getattr(frame_result, "temporal", None), "diagnostics", None)
     raw = getattr(diagnostics, "mechanism_records", None)
     if raw is None:
         return
