@@ -205,6 +205,41 @@ def test_runtime_diagnostics_rejects_distinct_epoch_and_motion_event_ids(
         )
 
 
+def test_runtime_diagnostics_accepts_dynamic_epoch_opportunity_without_motion_rejection() -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    diagnostics = SimpleNamespace(
+        processed_frame_count=2,
+        motion_rejection_count=1,
+        epoch_reset_opportunity_count=2,
+        icp_opportunity_count=1,
+        icp_reject_count=1,
+    )
+    runtime = SimpleNamespace(
+        temporal=SimpleNamespace(state=SimpleNamespace(diagnostics=diagnostics))
+    )
+    records = {name: [] for name in module.V2_RUNTIME_DIAGNOSTIC_KEYS}
+    records["motion_rejection_count"] = ["motion:0:1:1"]
+    records["epoch_reset_opportunity_count"] = [
+        "motion:0:1:1",
+        "dynamic:1:1:1",
+    ]
+    records["icp_opportunity_count"] = ["motion:0:1:1"]
+    records["icp_reject_count"] = ["motion:0:1:1"]
+
+    payload = module._runtime_diagnostics_payload(
+        runtime,
+        config={"temporal_readout": _temporal_readout()},
+        processed_frame_count=2,
+        mechanism_records=records,
+    )
+
+    assert payload["counters"]["epoch_reset_opportunity_count"] == 2
+    assert payload["mechanism_records"]["motion_rejection_count"] == [
+        "motion:0:1:1"
+    ]
+
+
 def test_runtime_diagnostics_rejects_boolean_schema_version() -> None:
     import scripts.evaluation.run_oviv2_tesse_cd_v2 as producer
     import scripts.evaluation.run_oviv2_tesse_dual_readout_search as consumer

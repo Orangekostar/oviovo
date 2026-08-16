@@ -210,13 +210,22 @@ def validate_runtime_diagnostics(
     impossible = names - allowed
     if any(counters[name] != 0 or records[name] != [] for name in impossible):
         raise ValueError(f"{label} profile-impossible counters/records must be zero")
-    if profile in {ExecutionProfile.A2, ExecutionProfile.A3, ExecutionProfile.A4} and (
-        records["epoch_reset_opportunity_count"]
-        != records["motion_rejection_count"]
-    ):
-        raise ValueError(
-            f"{label} epoch reset and motion rejection records must be identical"
-        )
+    if profile in {ExecutionProfile.A2, ExecutionProfile.A3, ExecutionProfile.A4}:
+        epoch_records = records["epoch_reset_opportunity_count"]
+        motion_epoch_records = [
+            value for value in epoch_records if value.startswith("motion:")
+        ]
+        if (
+            any(
+                not value.startswith(("motion:", "dynamic:"))
+                for value in epoch_records
+            )
+            or motion_epoch_records != records["motion_rejection_count"]
+        ):
+            raise ValueError(
+                f"{label} epoch reset motion records and motion rejection "
+                "records must be identical"
+            )
 
     subset_pairs = (
         ("proposal_trigger_count", "proposal_opportunity_count"),
