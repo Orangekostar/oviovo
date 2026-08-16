@@ -208,7 +208,7 @@ def test_a2_a3_active_gate_uses_current_not_predicted_centroid() -> None:
     ).assignments == ((1, 1),)
 
 
-def test_a4_high_confidence_active_identity_uses_bounded_reid_distance() -> None:
+def test_a4_high_confidence_active_identity_cannot_use_dormant_reid_distance() -> None:
     obs = observation(
         1,
         centroid=(0.0, 0.0, 0.0),
@@ -240,13 +240,15 @@ def test_a4_high_confidence_active_identity_uses_bounded_reid_distance() -> None
         dormant_reid=reid_config(maximum_reid_distance_m=4.0),
     )
 
-    assert result.assignments == ((1, 2),)
+    assert result.assignments == ()
+    assert result.unmatched_observation_ids == (1,)
+    assert result.unmatched_entity_ids == (2,)
     assert result.reid_opportunity_count == 0
     assert result.reid_trigger_count == 0
-    assert result.assignment_diagnostics[0].high_confidence_identity_match is True
+    assert result.assignment_diagnostics == ()
 
 
-def test_a4_active_wide_gate_requires_high_confidence_identity() -> None:
+def test_a4_active_local_gate_rejects_weak_identity_outside_radius() -> None:
     obs = observation(
         1,
         centroid=(0.0, 0.0, 0.0),
