@@ -204,7 +204,7 @@
         "association": {"visual_weight": 0.35, "semantic_weight": 0.25, "size_weight": 0.1, "motion_weight": 0.1, "geometry_weight": 0.2, "minimum_score": 0.55, "maximum_centroid_distance_m": 1.5, "semantic_conflict_probability": 0.9, "conflict_override_visual": 0.95, "conflict_override_geometry": 0.85},
         "geometry": {"voxel_size_m": 0.05, "depth_max_m": 10.0, "maximum_entities": 500, "maximum_object_voxels": 20000, "maximum_visibility_points_per_entity": 10000, "background_block_count": 100000, "background_mask_dilation_px": 2, "minimum_icp_points": 20, "minimum_icp_fitness": 0.5, "maximum_icp_rmse_m": 0.2, "maximum_motion_m": 2.0},
         "proposal": {"minimum_residual_area_px": 32, "maximum_recovered_proposals": 16, "search_region_expansion_m": 0.25, "minimum_depth_residual_m": 0.1},
-        "identity": {"maximum_identities": 1000, "maximum_dormant_frames": 600, "minimum_reid_similarity": 0.8, "maximum_reid_distance_m": 3.0},
+        "identity": {"maximum_identities": 1000, "maximum_dormant_frames": 600, "minimum_reid_similarity": 0.75, "maximum_reid_distance_m": 3.0},
         "dynamic_state": {"minimum_consecutive_motion_frames": 2, "displacement_floor_m": 0.1, "minimum_motion_confidence": 0.7, "static_off_streak_frames": 10},
         "motion": {"minimum_translation_confidence": 0.6, "maximum_translation_residual_m": 0.25, "require_explicit_rejection": true},
         "geometry_epoch": {"maximum_epochs_per_identity": 4, "maximum_retained_epochs": 1000},

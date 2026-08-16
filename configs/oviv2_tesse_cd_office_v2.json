@@ -4339,7 +4339,7 @@
   "occlusion_target_manifest": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/occlusion_v1_targets/20260722-stage3-fb97-a/manifest.json",
   "occlusion_target_manifest_sha256": "0ce990a32af971be52f4b2a1d1bf8e8862cf18bb9d22362091411b4210b35361",
   "evaluation_checkpoint_frames_sha256": "03dd2f35becf5bd5fcc4a9fdceb2e459d28e1eb2729eb1622090337dba02d9fa",
-  "algorithm_hash": "66a5ae45ebe49bde10b3a84a7beaffe163e250bc1fa4c55d52e83e5d45976c5a",
+  "algorithm_hash": "1935e744f36c37a7648f1baf9474fa5d654e73aacc89c95f59b55c28a423c632",
   "protocol_id": "oviv2-tessecd-v2",
   "temporal_frontend_cache_dir": "/home/ww/oviovo_frontend_cache/tesse_cd_native_v1/office/gsa_detections_crove_tesse_office_temporal_merged_v1",
   "temporal_frontend_manifest": "/home/ww/oviovo_frontend_cache/tesse_cd_native_v1/office/gsa_detections_crove_tesse_office_temporal_merged_v1/frontend_manifest.json",
@@ -4422,7 +4422,7 @@
     "identity": {
       "maximum_identities": 1000,
       "maximum_dormant_frames": 600,
-      "minimum_reid_similarity": 0.8,
+      "minimum_reid_similarity": 0.75,
       "maximum_reid_distance_m": 3.0
     },
     "dynamic_state": {
