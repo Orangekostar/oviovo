@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import hashlib
 import json
 import os
@@ -2061,6 +2061,7 @@ def test_dataset_and_cache_factories_receive_only_exact_allowlist_views(
         ("dense_sample_stride", 0),
         ("frame_count", 1_000_000_000),
         ("temporal_merge_same_semantic_iou", 2.0),
+        ("temporal_merge_primary_duplicate_iou", 0.0),
         ("temporal_depth_semantic_minimum_fraction", -0.1),
     ],
 )
@@ -4027,7 +4028,7 @@ def test_checked_in_v2_configs_share_algorithm_and_preserve_v1_bindings() -> Non
         v1 = json.loads(Path(f"configs/oviv2_tesse_cd_{scene}_v1.json").read_text())
         v2 = json.loads(Path(f"configs/oviv2_tesse_cd_{scene}_v2.json").read_text())
         assert v2["protocol_id"] == "oviv2-tessecd-v2"
-        assert len(v2) == 104
+        assert len(v2) == 105
         assert set(v2) == module._V2_CONFIG_KEYS
         assert v2["schema_version"] == 2
         assert v2["method_id"] == "OVIV2"
@@ -4083,6 +4084,7 @@ def test_checked_in_v2_configs_bind_temporal_frontend_and_proposal_algorithm() -
         "temporal_proposal_min_valid_points": 10,
         "temporal_merge_same_semantic_iou": 0.5,
         "temporal_merge_supplement_containment": 0.8,
+        "temporal_merge_primary_duplicate_iou": 0.9,
     }
     for config in configs:
         assert config["temporal_frontend_manifest"] == str(
@@ -4337,6 +4339,10 @@ def test_temporal_cache_grants_identity_authority_only_to_primary_proposals(
     unmatched_mask = np.zeros((4, 4), dtype=bool)
     unmatched_mask[3, 3] = True
     primary = observation(1, primary_mask, 1)
+    duplicate = replace(
+        observation(4, primary_mask, 2),
+        confidence=0.8,
+    )
     matched = observation(2, matched_mask, 1)
     unmatched = observation(3, unmatched_mask, 2)
     monkeypatch.setattr(
@@ -4355,7 +4361,9 @@ def test_temporal_cache_grants_identity_authority_only_to_primary_proposals(
     )
     caches = module._TemporalProductionCaches(
         base=base,
-        temporal_frontend=SimpleNamespace(observe=lambda *args: (primary,)),
+        temporal_frontend=SimpleNamespace(
+            observe=lambda *args: (duplicate, primary)
+        ),
         temporal_cache_dir=Path("unused"),
         temporal_manifest_path=Path("unused/manifest.json"),
         temporal_hashes={},

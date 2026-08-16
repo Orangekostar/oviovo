@@ -203,6 +203,7 @@ _FLOAT_CONFIG_FIELDS = frozenset(
         "temporal_depth_semantic_minimum_fraction",
         "temporal_depth_semantic_minimum_probability",
         "temporal_merge_same_semantic_iou",
+        "temporal_merge_primary_duplicate_iou",
         "temporal_merge_supplement_containment",
         "track_max_centroid_distance_m",
         "track_min_voxel_overlap",
@@ -324,6 +325,7 @@ _CACHE_CONFIG_KEYS = frozenset(
         "temporal_proposal_pixel_stride",
         "temporal_proposal_min_valid_points",
         "temporal_merge_same_semantic_iou",
+        "temporal_merge_primary_duplicate_iou",
         "temporal_merge_supplement_containment",
     }
 )
@@ -1590,6 +1592,9 @@ def _validate_config(
         supplement_containment_threshold=config[
             "temporal_merge_supplement_containment"
         ],
+        primary_duplicate_iou_threshold=config[
+            "temporal_merge_primary_duplicate_iou"
+        ],
     )
     configured_hash = config.get("algorithm_hash")
     if not _is_sha256(configured_hash) or configured_hash != algorithm_hash(config):
@@ -2076,11 +2081,16 @@ class _TemporalProductionCaches:
         from src.oviv2.temporal_observation_merge import (
             merge_primary_authoritative_observations,
             regularize_temporal_object_extents,
+            suppress_near_duplicate_primary_observations,
         )
 
         if dense is None:
             raise ValueError("temporal proposal generation requires dense semantics")
         primary = self.temporal_frontend.observe(frame, frame_index)
+        primary = suppress_near_duplicate_primary_observations(
+            primary,
+            iou_threshold=self.merge_config.primary_duplicate_iou_threshold,
+        )
         class_names = tuple(self.base.class_names[1 : 1 + dense.class_count])
         dense_observations = generate_temporal_dense_observations(
             frame, dense, class_names, self.dense_config
@@ -2265,6 +2275,9 @@ def _production_v2_cache_loader_factory(
     merge_config = TemporalObservationMergeConfig(
         same_semantic_iou_threshold=float(config["temporal_merge_same_semantic_iou"]),
         supplement_containment_threshold=float(config["temporal_merge_supplement_containment"]),
+        primary_duplicate_iou_threshold=float(
+            config["temporal_merge_primary_duplicate_iou"]
+        ),
     )
     manifest_sha256 = _sha256_bytes(manifest_bytes)
     bindings = dict(base.bindings)

@@ -12,6 +12,7 @@ from src.oviv2.temporal_observation_merge import (
     TemporalObservationMergeConfig,
     merge_temporal_object_observations,
     regularize_temporal_object_extents,
+    suppress_near_duplicate_primary_observations,
 )
 from src.oviv2.tracking import LocalTracker, LocalTrackerConfig
 
@@ -184,6 +185,10 @@ def test_regularizer_rejects_invalid_voxel_size(value: object) -> None:
         ("supplement_containment_threshold", float("inf"), ValueError),
         ("supplement_containment_threshold", -0.01, ValueError),
         ("supplement_containment_threshold", 1.01, ValueError),
+        ("primary_duplicate_iou_threshold", True, TypeError),
+        ("primary_duplicate_iou_threshold", 0.0, ValueError),
+        ("primary_duplicate_iou_threshold", float("inf"), ValueError),
+        ("primary_duplicate_iou_threshold", 1.01, ValueError),
     ),
 )
 def test_config_strictly_validates_unit_interval(
@@ -192,6 +197,7 @@ def test_config_strictly_validates_unit_interval(
     values: dict[str, object] = {
         "same_semantic_iou_threshold": 0.5,
         "supplement_containment_threshold": 0.8,
+        "primary_duplicate_iou_threshold": 0.9,
     }
     values[field] = value
 
@@ -199,18 +205,72 @@ def test_config_strictly_validates_unit_interval(
         TemporalObservationMergeConfig(**values)  # type: ignore[arg-type]
 
 
-def test_config_accepts_closed_interval_boundaries() -> None:
-    low = TemporalObservationMergeConfig(0, 0)
-    high = TemporalObservationMergeConfig(1, 1)
+def test_config_accepts_supported_interval_boundaries() -> None:
+    low = TemporalObservationMergeConfig(0, 0, 0.1)
+    high = TemporalObservationMergeConfig(1, 1, 1)
 
-    assert (low.same_semantic_iou_threshold, low.supplement_containment_threshold) == (
+    assert (
+        low.same_semantic_iou_threshold,
+        low.supplement_containment_threshold,
+        low.primary_duplicate_iou_threshold,
+    ) == (
         0.0,
         0.0,
+        0.1,
     )
-    assert (high.same_semantic_iou_threshold, high.supplement_containment_threshold) == (
+    assert (
+        high.same_semantic_iou_threshold,
+        high.supplement_containment_threshold,
+        high.primary_duplicate_iou_threshold,
+    ) == (
         1.0,
         1.0,
+        1.0,
     )
+
+
+def test_primary_duplicate_suppression_keeps_highest_confidence_across_semantics() -> None:
+    overlap = _mask((1, 1), (1, 2), (2, 1), (2, 2))
+    couch = replace(
+        _observation(1, overlap, semantic_id=2),
+        label="couch",
+        confidence=0.8,
+    )
+    chair = replace(
+        _observation(2, overlap, semantic_id=3),
+        label="chair",
+        confidence=0.9,
+    )
+    unique = _observation(3, _mask((5, 7)), semantic_id=4)
+
+    result = suppress_near_duplicate_primary_observations(
+        (couch, chair, unique),
+        iou_threshold=0.9,
+    )
+
+    assert result == (chair, unique)
+
+
+def test_primary_duplicate_suppression_is_stable_and_preserves_nonobjects() -> None:
+    overlap = _mask((1, 1), (1, 2), (2, 1), (2, 2))
+    lower_id = _observation(1, overlap, semantic_id=2)
+    higher_id = _observation(2, overlap, semantic_id=3)
+    structure = replace(
+        _observation(3, overlap, semantic_id=2),
+        kind=ObservationKind.STRUCTURE,
+    )
+
+    forward = suppress_near_duplicate_primary_observations(
+        (higher_id, structure, lower_id),
+        iou_threshold=1.0,
+    )
+    reverse = suppress_near_duplicate_primary_observations(
+        (lower_id, structure, higher_id),
+        iou_threshold=1.0,
+    )
+
+    assert forward == (structure, lower_id)
+    assert reverse == (lower_id, structure)
 
 
 def test_primary_has_priority_and_does_not_suppress_itself() -> None:

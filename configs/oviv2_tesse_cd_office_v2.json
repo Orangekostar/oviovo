@@ -4339,7 +4339,7 @@
   "occlusion_target_manifest": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/occlusion_v1_targets/20260722-stage3-fb97-a/manifest.json",
   "occlusion_target_manifest_sha256": "0ce990a32af971be52f4b2a1d1bf8e8862cf18bb9d22362091411b4210b35361",
   "evaluation_checkpoint_frames_sha256": "03dd2f35becf5bd5fcc4a9fdceb2e459d28e1eb2729eb1622090337dba02d9fa",
-  "algorithm_hash": "7a9371164f906646965aa51509dc2a6a57b3d2eefdbd050f79e1842366b5af63",
+  "algorithm_hash": "4013318e834a5aa1be7cb1508a8617c6502611714d151e24681aa17147bdb559",
   "protocol_id": "oviv2-tessecd-v2",
   "temporal_frontend_cache_dir": "/home/ww/oviovo_frontend_cache/tesse_cd_native_v1/office/gsa_detections_crove_tesse_office_temporal_merged_v1",
   "temporal_frontend_manifest": "/home/ww/oviovo_frontend_cache/tesse_cd_native_v1/office/gsa_detections_crove_tesse_office_temporal_merged_v1/frontend_manifest.json",
@@ -4359,6 +4359,7 @@
   "temporal_proposal_pixel_stride": 1,
   "temporal_proposal_min_valid_points": 10,
   "temporal_merge_same_semantic_iou": 0.5,
+  "temporal_merge_primary_duplicate_iou": 0.9,
   "temporal_merge_supplement_containment": 0.8,
   "temporal_readout": {
     "confirm_hits": 1,

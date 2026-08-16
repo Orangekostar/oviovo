@@ -20,10 +20,18 @@ def _unit_interval(value: object, name: str) -> float:
     return result
 
 
+def _positive_unit_interval(value: object, name: str) -> float:
+    result = _unit_interval(value, name)
+    if result == 0.0:
+        raise ValueError(f"{name} must be positive")
+    return result
+
+
 @dataclass(frozen=True)
 class TemporalObservationMergeConfig:
     same_semantic_iou_threshold: float = 0.5
     supplement_containment_threshold: float = 0.8
+    primary_duplicate_iou_threshold: float = 0.9
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -42,9 +50,85 @@ class TemporalObservationMergeConfig:
                 "supplement_containment_threshold",
             ),
         )
+        object.__setattr__(
+            self,
+            "primary_duplicate_iou_threshold",
+            _positive_unit_interval(
+                self.primary_duplicate_iou_threshold,
+                "primary_duplicate_iou_threshold",
+            ),
+        )
 
 
 _DEFAULT_MERGE_CONFIG = TemporalObservationMergeConfig()
+
+
+def suppress_near_duplicate_primary_observations(
+    observations: tuple[FrameObservation, ...],
+    *,
+    iou_threshold: float,
+) -> tuple[FrameObservation, ...]:
+    """Keep one identity hypothesis for each near-identical object mask."""
+    groups = _validated_groups(observations, ())
+    threshold = _positive_unit_interval(iou_threshold, "iou_threshold")
+    if not groups or len(observations) < 2:
+        return observations
+
+    object_indices = tuple(
+        index
+        for index, observation in enumerate(observations)
+        if observation.kind is ObservationKind.OBJECT
+    )
+    if len(object_indices) < 2:
+        return observations
+    parents = {index: index for index in object_indices}
+
+    def find(index: int) -> int:
+        while parents[index] != index:
+            parents[index] = parents[parents[index]]
+            index = parents[index]
+        return index
+
+    def union(left: int, right: int) -> None:
+        left_root = find(left)
+        right_root = find(right)
+        if left_root != right_root:
+            parents[max(left_root, right_root)] = min(left_root, right_root)
+
+    areas = {
+        index: int(np.count_nonzero(observations[index].mask))
+        for index in object_indices
+    }
+    for position, left in enumerate(object_indices):
+        for right in object_indices[position + 1 :]:
+            intersection = int(
+                np.count_nonzero(
+                    observations[left].mask & observations[right].mask
+                )
+            )
+            union_area = areas[left] + areas[right] - intersection
+            iou = intersection / union_area if union_area else 0.0
+            if iou >= threshold:
+                union(left, right)
+
+    components: dict[int, list[int]] = {}
+    for index in object_indices:
+        components.setdefault(find(index), []).append(index)
+    retained = {
+        min(
+            indices,
+            key=lambda index: (
+                -observations[index].confidence,
+                observations[index].observation_id,
+            ),
+        )
+        for indices in components.values()
+    }
+    return tuple(
+        observation
+        for index, observation in enumerate(observations)
+        if observation.kind is not ObservationKind.OBJECT or index in retained
+    )
 
 
 def regularize_temporal_object_extents(
