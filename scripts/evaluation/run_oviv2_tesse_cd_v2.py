@@ -3195,12 +3195,20 @@ def run(
     allow_unfrozen_office: bool = False,
     table_only: bool = False,
     temporal_metrics_only: bool = False,
+    causal_table_metrics_only: bool = False,
     dependencies: RunnerDependencies | None = None,
 ) -> dict[str, Any]:
     if (freeze_manifest is None) != (run_slot is None):
         raise ValueError("freeze_manifest and run_slot must be provided together")
-    if table_only and temporal_metrics_only:
-        raise ValueError("table-only and temporal-metrics-only are mutually exclusive")
+    if sum(
+        bool(value)
+        for value in (
+            table_only,
+            temporal_metrics_only,
+            causal_table_metrics_only,
+        )
+    ) > 1:
+        raise ValueError("capture modes are mutually exclusive")
     source_config = Path(config_path).absolute()
     _require_regular_file(source_config, "runner config")
     source_config_bytes = source_config.read_bytes()
@@ -3208,12 +3216,13 @@ def run(
     scene, frame_count, schedule_path, evaluation_frames, temporal_config = (
         _validate_config(config)
     )
-    if temporal_metrics_only and temporal_config.execution_profile.profile_id not in {
-        "a3",
-        "a4",
-    }:
+    development_metrics_only = temporal_metrics_only or causal_table_metrics_only
+    if (
+        development_metrics_only
+        and temporal_config.execution_profile.profile_id not in {"a3", "a4"}
+    ):
         raise ValueError("temporal metrics mode requires profile a3 or a4")
-    if temporal_metrics_only and scene != "apartment":
+    if development_metrics_only and scene != "apartment":
         raise ValueError("temporal metrics mode is restricted to Apartment development")
     if allow_unfrozen_office and (scene != "office" or freeze_manifest is not None):
         raise ValueError("unfrozen Office opt-in is only valid for an unfrozen Office run")
@@ -3253,7 +3262,9 @@ def run(
         or plan_hash != plan["evaluation_checkpoint_frames_sha256"]
     ):
         raise ValueError("evaluation checkpoint frame binding mismatch")
-    capture_evaluation_frames = () if table_only else evaluation_frames
+    capture_evaluation_frames = (
+        () if table_only or causal_table_metrics_only else evaluation_frames
+    )
 
     dependencies = _production_dependencies() if dependencies is None else dependencies
     current_environment = _validate_environment(
@@ -3593,7 +3604,7 @@ def run(
             cumulative_neutral = None
             cumulative_audit: dict[str, Any] | None = None
             cumulative_audit_witness: _CumulativeAuditWitness | None = None
-            skip_cumulative_audit = temporal_metrics_only or (
+            skip_cumulative_audit = development_metrics_only or (
                 table_only
                 and temporal_config.execution_profile.profile_id in {"a3", "a4"}
             )
@@ -4063,6 +4074,13 @@ def run(
                 "publication_eligible": False,
                 "runtime_mode": "full_causal_without_cumulative_audit",
             }
+        elif causal_table_metrics_only:
+            formal_fields["capture_mode"] = {
+                "mode": "causal_table_metrics_only",
+                "occlusion_evaluation_available": False,
+                "publication_eligible": False,
+                "runtime_mode": "full_causal_without_cumulative_or_occlusion",
+            }
         elif table_only:
             formal_fields["capture_mode"] = {
                 "mode": "official_common_only",
@@ -4397,6 +4415,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     capture_mode = parser.add_mutually_exclusive_group()
     capture_mode.add_argument("--table-only", action="store_true")
     capture_mode.add_argument("--temporal-metrics-only", action="store_true")
+    capture_mode.add_argument("--causal-table-metrics-only", action="store_true")
     parser.add_argument(
         "--run-slot",
         choices=(
@@ -4426,6 +4445,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         allow_unfrozen_office=args.allow_unfrozen_office,
         table_only=args.table_only,
         temporal_metrics_only=args.temporal_metrics_only,
+        causal_table_metrics_only=args.causal_table_metrics_only,
     )
     print(
         json.dumps(

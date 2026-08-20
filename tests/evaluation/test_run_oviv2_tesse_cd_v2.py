@@ -1911,8 +1911,67 @@ def test_temporal_metrics_only_preserves_full_causal_checkpoints_without_cumulat
     assert manifest["scheduled_frame_indices"] == [2, 3, 4]
 
 
-def test_temporal_metrics_only_rejects_reference_and_partial_profiles(
+def test_causal_table_metrics_only_preserves_full_frames_without_occlusion_or_audit(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
+
+    config = _materialize_overlap_config(module, tmp_path)
+    output = tmp_path / "causal-table-metrics-only"
+    dependencies, holder = _dependencies(module)
+
+    def reject_skipped_artifact(*_: object, **__: object) -> object:
+        raise AssertionError("causal table metrics mode serialized a skipped artifact")
+
+    monkeypatch.setattr(
+        module, "_cumulative_neutral_from_runtime", reject_skipped_artifact
+    )
+    monkeypatch.setattr(
+        module.TemporalCompactCheckpoint,
+        "from_snapshot",
+        reject_skipped_artifact,
+    )
+
+    manifest = module.run(
+        config,
+        output,
+        causal_table_metrics_only=True,
+        dependencies=dependencies,
+    )
+
+    assert manifest["capture_mode"] == {
+        "mode": "causal_table_metrics_only",
+        "occlusion_evaluation_available": False,
+        "publication_eligible": False,
+        "runtime_mode": "full_causal_without_cumulative_or_occlusion",
+    }
+    assert holder["runtime"].calls == [0, 1, 2, 3, 4]
+    assert holder["runtime"].fast_calls == []
+    assert holder["runtime"].advance_calls == []
+    assert holder["runtime"].checkpoint_calls[:2] == [2, 3]
+    assert manifest["scheduled_frame_indices"] == [2, 3]
+    assert not list(output.glob("checkpoints/*/cumulative_audit"))
+    assert all(
+        checkpoint["cumulative_audit"] is None
+        for checkpoint in manifest["checkpoints"]
+    )
+    assert all(
+        set(checkpoint["artifacts"]) == {"temporal_current"}
+        for checkpoint in manifest["checkpoints"]
+    )
+    index_record = manifest["occlusion_checkpoint_index"]
+    index = json.loads((output / index_record["path"]).read_text())
+    assert index["checkpoints"] == []
+
+
+@pytest.mark.parametrize(
+    "capture_mode",
+    ("temporal_metrics_only", "causal_table_metrics_only"),
+)
+def test_development_metrics_only_rejects_reference_and_partial_profiles(
+    tmp_path: Path,
+    capture_mode: str,
 ) -> None:
     import scripts.evaluation.run_oviv2_tesse_cd_v2 as module
 
@@ -1928,8 +1987,8 @@ def test_temporal_metrics_only_rejects_reference_and_partial_profiles(
         with pytest.raises(ValueError, match="requires profile a3 or a4"):
             module.run(
                 config,
-                tmp_path / f"output-{profile.profile_id}",
-                temporal_metrics_only=True,
+                tmp_path / f"output-{capture_mode}-{profile.profile_id}",
+                **{capture_mode: True},
                 dependencies=_dependencies(module)[0],
             )
 
@@ -4021,6 +4080,7 @@ def test_cli_requires_config_output_and_pairs_optional_formal_arguments() -> Non
     assert args.allow_unfrozen_office is False
     assert args.table_only is False
     assert args.temporal_metrics_only is False
+    assert args.causal_table_metrics_only is False
     opted_in = module.parse_args(
         [
             "--config",
@@ -4051,6 +4111,16 @@ def test_cli_requires_config_output_and_pairs_optional_formal_arguments() -> Non
         ]
     )
     assert temporal_metrics_only.temporal_metrics_only is True
+    causal_table_metrics_only = module.parse_args(
+        [
+            "--config",
+            "config.json",
+            "--output",
+            "output",
+            "--causal-table-metrics-only",
+        ]
+    )
+    assert causal_table_metrics_only.causal_table_metrics_only is True
     with pytest.raises(SystemExit):
         module.parse_args(
             [
@@ -4060,6 +4130,17 @@ def test_cli_requires_config_output_and_pairs_optional_formal_arguments() -> Non
                 "output",
                 "--table-only",
                 "--temporal-metrics-only",
+            ]
+        )
+    with pytest.raises(SystemExit):
+        module.parse_args(
+            [
+                "--config",
+                "config.json",
+                "--output",
+                "output",
+                "--temporal-metrics-only",
+                "--causal-table-metrics-only",
             ]
         )
     with pytest.raises(SystemExit):
