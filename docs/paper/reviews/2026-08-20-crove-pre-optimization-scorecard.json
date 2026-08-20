@@ -1,0 +1,96 @@
+{
+  "paper_type": "model_method",
+  "dimensions": {
+    "significance": {
+      "status": "assessed",
+      "score": 4.5,
+      "evidence": [
+        "docs/superpowers/specs/2026-07-21-oviv2-benchmark-centered-paper-story-design.md:13-18",
+        "docs/paper/literature-search-20260820-crove-causal-current-state/papers.md:5-27"
+      ],
+      "concern": "Current-state open-vocabulary mapping is important, but its task formulation is already established by several recent systems."
+    },
+    "novelty": {
+      "status": "assessed",
+      "score": 2.0,
+      "evidence": [
+        "docs/paper/literature-search-20260820-crove-causal-current-state/papers.md:5-27",
+        "docs/paper/literature-search-20260820-crove-causal-current-state/papers.md:65-97",
+        "docs/superpowers/specs/2026-08-17-crove-dual-center-dynamic-readout-design.md:23-35"
+      ],
+      "concern": "The broad problem claim is covered by DynaMem, Where Did I Leave My Glasses?, DualMap, and related work; dual-center readout alone is an engineering correction rather than a central contribution."
+    },
+    "soundness": {
+      "status": "assessed",
+      "score": 3.5,
+      "evidence": [
+        "docs/superpowers/specs/2026-08-17-crove-dual-center-dynamic-readout-design.md:23-35",
+        "docs/superpowers/specs/2026-08-17-crove-dual-center-dynamic-readout-design.md:54-128"
+      ],
+      "concern": "The state separation and causal guards are coherent, but the proposed dual-center mechanism is not yet integrated into a unified evidence-routing formulation or validated end to end."
+    },
+    "evidence": {
+      "status": "missing_in_paper",
+      "score": 2.0,
+      "evidence": [
+        "docs/paper/benchmark_tables_baselines.md:39-59",
+        "docs/paper/benchmark_tables_baselines.md:63-76",
+        "docs/superpowers/specs/2026-08-17-crove-dual-center-dynamic-readout-design.md:23-35"
+      ],
+      "concern": "Formal T2 and T3 cells remain unresolved; current diagnostics show object F1 improvement but approximately 0.01 dynamic F1 and therefore do not support the central dynamic claim."
+    },
+    "clarity": {
+      "status": "assessed",
+      "score": 3.5,
+      "evidence": [
+        "docs/superpowers/specs/2026-07-21-oviv2-benchmark-centered-paper-story-design.md:8-48",
+        "docs/paper/literature-search-20260820-crove-causal-current-state/papers.md:99-125"
+      ],
+      "concern": "The evaluation story is traceable, but the paper currently lacks one concise mechanism-level contribution that unifies its lifecycle, ownership, association, and readout components."
+    },
+    "related_work": {
+      "status": "missing_in_paper",
+      "score": 2.5,
+      "evidence": [
+        "docs/paper/literature-search-20260820-crove-causal-current-state/papers.md:29-62",
+        "docs/paper/literature-search-20260820-crove-causal-current-state/papers.md:142-155"
+      ],
+      "concern": "The newly identified closest works are not yet integrated into the paper positioning, so the claimed distinction is not reviewer-visible."
+    },
+    "reproducibility": {
+      "status": "assessed",
+      "score": 4.5,
+      "evidence": [
+        "scripts/evaluation/verify_oviv2_dual_readout_development_gates.py",
+        "tests/oviv2/test_t1_noninterference.py",
+        "docs/paper/benchmark_tables_baselines.md"
+      ],
+      "concern": "The repository has unusually strong provenance and non-interference gates, but final paper configurations and completed result bindings are still missing."
+    }
+  },
+  "gates": [
+    {
+      "id": "CORE_NOVELTY_UNESTABLISHED",
+      "reason": "The current headline contribution overlaps directly with recent online current-state and dynamic open-vocabulary mapping methods, while the proposed evidence-routing distinction is not yet formalized or demonstrated.",
+      "evidence": [
+        "docs/paper/literature-search-20260820-crove-causal-current-state/papers.md:5-27",
+        "docs/paper/literature-search-20260820-crove-causal-current-state/papers.md:99-125"
+      ],
+      "resolution_condition": "Formalize state-compatible evidence routing as the central mechanism, contrast it against the closest alternatives, and provide mechanism-specific ablations."
+    },
+    {
+      "id": "DECISIVE_EVIDENCE_MISSING",
+      "reason": "The formal dynamic and ablation tables are not populated, and the best available development diagnostic still has approximately 0.01 dynamic F1.",
+      "evidence": [
+        "docs/paper/benchmark_tables_baselines.md:39-76",
+        "docs/superpowers/specs/2026-08-17-crove-dual-center-dynamic-readout-design.md:23-35"
+      ],
+      "resolution_condition": "Complete held-out T2 evaluation and the causal mechanism ablations with competitive dynamic/change results and no T1 regression."
+    }
+  ],
+  "confidence": {
+    "material": 1,
+    "verification": 2,
+    "domain_match": 0
+  }
+}
