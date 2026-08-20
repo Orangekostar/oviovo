@@ -6,7 +6,7 @@
 
 **Architecture:** Add one pure routing module that owns the closed evidence-to-state matrix and active motion combination. Keep `TemporalCurrentRuntime` as the transition owner, integrating the router only at active motion, appearance-prototype update, and temporal-center readout. Reuse the existing export tracker for the last observed center, so checkpoint and artifact schemas remain unchanged.
 
-**Tech Stack:** Python 3.12, NumPy, frozen dataclasses/enums, pytest, existing CROVE temporal runtime and TESSE-CD v2 verification gates.
+**Tech Stack:** Python, NumPy, frozen dataclasses/enums, pytest, existing CROVE temporal runtime and TESSE-CD v2 verification gates.
 
 ---
 
@@ -123,9 +123,10 @@ def test_active_motion_routes_only_admissible_sources(
     result = route_active_motion_evidence(
         geometry_accepted=geometry,
         geometry_confidence=0.8 if geometry else 0.0,
+        geometry_displacement_m=0.2,
         identity_qualified=identity,
         appearance_similarity=similarity,
-        displacement_m=0.2,
+        identity_displacement_m=0.2,
         config=dynamic_config(),
     )
     assert result.source is source
@@ -140,17 +141,19 @@ def test_active_motion_retains_displacement_and_confidence_thresholds() -> None:
     low_displacement = route_active_motion_evidence(
         geometry_accepted=False,
         geometry_confidence=0.0,
+        geometry_displacement_m=0.0,
         identity_qualified=True,
         appearance_similarity=0.9,
-        displacement_m=0.149,
+        identity_displacement_m=0.149,
         config=dynamic_config(),
     )
     low_confidence = route_active_motion_evidence(
         geometry_accepted=False,
         geometry_confidence=0.0,
+        geometry_displacement_m=0.0,
         identity_qualified=True,
         appearance_similarity=0.69,
-        displacement_m=0.2,
+        identity_displacement_m=0.2,
         config=dynamic_config(),
     )
     assert low_displacement.accepted is True
@@ -164,19 +167,21 @@ def test_active_motion_retains_displacement_and_confidence_thresholds() -> None:
     [
         {"geometry_accepted": 1},
         {"geometry_confidence": float("nan")},
+        {"geometry_displacement_m": -0.01},
         {"identity_qualified": 1},
         {"appearance_similarity": float("inf")},
         {"appearance_similarity": 1.01},
-        {"displacement_m": -0.01},
+        {"identity_displacement_m": -0.01},
     ],
 )
 def test_active_motion_rejects_malformed_inputs(changes: dict[str, object]) -> None:
     values: dict[str, object] = {
         "geometry_accepted": True,
         "geometry_confidence": 0.8,
+        "geometry_displacement_m": 0.2,
         "identity_qualified": True,
         "appearance_similarity": 0.9,
-        "displacement_m": 0.2,
+        "identity_displacement_m": 0.2,
         "config": dynamic_config(),
     }
     values.update(changes)
@@ -322,8 +327,10 @@ Implement strict helpers that reject booleans as numbers, require finite
 confidence/displacement, constrain confidence to `[0, 1]`, constrain appearance
 similarity to `[-1, 1]`, and clip a qualified negative cosine similarity to
 zero. `route_active_motion_evidence` must select `COMBINED` whenever both
-sources are admissible, use the maximum confidence, and compute
-`qualifies_as_motion` only from the existing dynamic config thresholds.
+sources are admissible. It must evaluate geometry and identity `(displacement,
+confidence)` pairs independently, select a qualifying token before any
+non-qualifying token, and never cross-pair one token's displacement with the
+other token's confidence.
 
 - [ ] **Step 6: Run the focused tests and verify GREEN**
 
@@ -388,20 +395,17 @@ passes only geometric confidence to `advance_dynamic_state`.
 In `temporal_runtime.py`:
 
 1. import `route_active_motion_evidence`;
-2. create `current_center_by_entity: dict[int, tuple[float, float, float]]` next
-   to `motion_by_entity`;
-3. record every successfully backprojected assigned/new observation's finite
-   `observation.centroid_xyz` in that map;
-4. for active assignments, choose the previous endpoint from
+2. compute geometric displacement from the accepted object-pose estimate;
+3. for active assignments, choose the previous identity endpoint from
    `old_export[entity_id].last_centroid_xyz`, falling back to `_centroid(old)`;
-5. compute displacement between current and previous observed endpoints;
-6. call the router with geometric acceptance, geometric confidence, assignment
-   identity qualification, appearance similarity, displacement, and the
-   existing dynamic config;
-7. pass `routed.accepted`, `routed.displacement_m`, and `routed.confidence` to
+4. compute identity displacement between current and previous observed
+   endpoints;
+5. call the router with each source's own displacement and confidence plus the
+   assignment identity qualification and existing dynamic config;
+6. pass `routed.accepted`, `routed.displacement_m`, and `routed.confidence` to
    `advance_dynamic_state`;
-8. use `routed.qualifies_as_motion` for the existing epoch-transition branch;
-9. record routed displacement/confidence in `motion_by_entity`.
+7. use `routed.qualifies_as_motion` for the existing epoch-transition branch;
+8. record routed displacement/confidence in `motion_by_entity`.
 
 Do not relax association, motion-distance, or epoch-reset gates. Keep the
 rejected low-confidence branch unchanged.
@@ -465,11 +469,16 @@ calls `_prototype_update` unconditionally.
 
 - [ ] **Step 4: Gate only the persistent appearance update**
 
-Import `admits_identity_prototype_update`. In the active assignment branch:
+Import `admits_identity_prototype_update`. In the active assignment branch,
+retain atomic replacement for an explicit feature-model mismatch and gate
+same-model prototype fusion:
 
 ```python
-if admits_identity_prototype_update(
-    identity_qualified=diagnostic.high_confidence_identity_match,
+if not diagnostic.feature_model_match or admits_identity_prototype_update(
+    identity_qualified=(
+        profile is not ExecutionProfile.A4
+        or diagnostic.high_confidence_identity_match
+    ),
     appearance_similarity=diagnostic.appearance_similarity,
 ):
     prototype, feature_model_id = _prototype_update(

@@ -85,29 +85,37 @@ an observation timestamp used for deterministic replay. In particular:
 
 ## Routed Active Motion
 
-For an active accepted assignment, define the current observation displacement
+For an active accepted assignment, keep each displacement bound to the evidence
+that produced it:
 
 ```text
-d_i^t = ||c_obs_i^t - c_obs_i^(t-1)||_2.
+d_g^t = ||p_geom_i^t - p_geom_i^(t-1)||_2,
+d_a^t = ||c_obs_i^t - c_obs_i^(t-1)||_2.
 ```
 
-The previous observation center is the A4 export tracker's last center. It is
-therefore independent of the fused submap centroid. Let
+The previous appearance endpoint is the A4 export tracker's last observed
+center. It is therefore independent of the fused submap centroid. Let
 
 ```text
 q_g = geometric motion confidence,
 q_a = clipped appearance similarity,
 G = motion decision is not rejected and q_g > 0,
 Q = existing high-confidence identity match and q_a is finite,
-q = max(q_g if G else 0, q_a if Q else 0).
+M_g = G and d_g >= delta_motion and q_g >= tau_motion,
+M_a = Q and d_a >= delta_motion and q_a >= tau_motion.
 ```
 
-The routed observation advances dynamic hysteresis when `G or Q` is true. It
-qualifies as motion only when
+The routed observation qualifies as motion only when
 
 ```text
-d_i^t >= delta_motion and q >= tau_motion.
+M_g or M_a.
 ```
+
+If both tokens are admissible, the router selects a threshold-qualified token
+before any non-qualified token and uses that token's own `(d, q)` pair. If no
+token qualifies, it selects only among tokens whose own displacement reaches
+the floor. It never combines `d_g` with `q_a` or `d_a` with `q_g`. This prevents
+a strong appearance match from validating an incompatible weak geometric jump.
 
 The existing consecutive-frame and static-off hysteresis remain unchanged.
 Geometry-only behavior is unchanged. Identity evidence does not relax the
@@ -129,7 +137,10 @@ but it cannot contaminate the persistent instance prototype.
 
 New identities initialize their prototype from their first observation.
 Dormant bank-only re-identification is already required to carry qualified
-identity evidence and retains its current prototype update behavior.
+identity evidence and retains its current prototype update behavior. An
+explicit feature-model mismatch keeps the existing compatibility behavior: it
+atomically replaces the representation and provenance without blending
+incomparable embeddings. It is not treated as motion evidence.
 
 ## Dual-Center Readout
 
