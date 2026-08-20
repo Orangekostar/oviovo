@@ -19,6 +19,8 @@
 - online dynamic spatial memory open-vocabulary object search;
 - static and dynamic readout non-interference semantic map;
 - 3RScan moved-object association and evolving-scene reconstruction.
+- real-time open-vocabulary spatio-temporal SLAM instance occlusion;
+- SuperMap existence confidence visibility change detection.
 
 ## Sources Checked
 
@@ -28,7 +30,7 @@
 - official project pages for venue and artifact status;
 - DBLP only for publication metadata confirmation.
 
-Twenty-three candidates were screened. Fifteen were retained in the scored
+Twenty-four candidates were screened. Sixteen were retained in the scored
 table. Secondary screened works were LOST-3DSG, FindAnything, HOV-SG,
 Fusion++, MaskFusion, Co-Fusion, ReFusion, and RIO/3RScan. They remain useful
 background or protocol references but are not the closest mechanism set.
@@ -53,12 +55,18 @@ background or protocol references but are not the closest mechanism set.
   against Khronos, DynaMem, Where Did I Leave My Glasses?, POCD, and OASIS-Map.
 - Existing CROVE Apartment proxy values are development diagnostics, not paper
   results.
+- SuperMap was verified from the official RSS 2026 paper and program page. Its
+  repository snapshot on 2026-08-20 exposes setup/documentation but not the
+  promised benchmark implementation, so it is a mandatory mechanism-level
+  comparison but not yet a reproducible TESSE-CD baseline.
 
 ## Handoff Notes
 
 ### For idea optimization
 
 - Retire “online open-vocabulary current-state mapping” as the novelty claim.
+- Treat SuperMap's capability bundle and visibility-conditioned log-odds update
+  as covered prior art; do not claim their combination as new.
 - Center the method on state/evidence compatibility and causal provenance.
 - Treat role-separated association, visible absence, reversible ownership, and
   dual-center readout as consequences of one inference rule.
@@ -68,7 +76,8 @@ background or protocol references but are not the closest mechanism set.
 ### For experiments
 
 - Add direct naive alternatives: single-frame ray deletion, one shared identity
-  gate, one fused centroid, and no reversible ownership.
+  gate, one fused centroid, no reversible ownership, and an untyped
+  SuperMap-style visibility/log-odds update.
 - Add adversarial stress tests for full occlusion, partial view, same-class
   lookalikes, non-rigid motion, and reappearance at a displaced pose.
 - Preserve Apartment-only development and one-shot Office transfer.
@@ -83,8 +92,8 @@ background or protocol references but are not the closest mechanism set.
 
 ### For review
 
-- Current decisive risks are core novelty overlap and missing formal T2/ablation
-  evidence.
+- Current decisive risks are direct SuperMap mechanism overlap and missing
+  formal T2/ablation evidence for the narrower state-compatibility claim.
 - A reviewer should require direct comparisons or faithful simple baselines for
   DynaMem-style deletion and Where-My-Glasses-style stationarity.
 
