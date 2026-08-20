@@ -365,6 +365,80 @@ def _write_temporal_fixture(root: Path) -> Path:
     return manifest_path
 
 
+def test_runtime_presence_is_limited_to_snapshot_semantic_coverage(
+    tmp_path: Path,
+) -> None:
+    temporal = _write_temporal_fixture(tmp_path / "temporal")
+    manifest = json.loads(temporal.read_text(encoding="utf-8"))
+    trajectory_path = temporal.parent / manifest["trajectories"]["path"]
+    rows = [
+        json.loads(line)
+        for line in trajectory_path.read_text(encoding="utf-8").splitlines()
+    ]
+    rows.append(
+        {
+            "frame_index": 2,
+            "timestamp_ns": 300,
+            "entity_id": "r-reappear",
+            "centroid_xyz": [4.0, 0.0, 1.0],
+            "observation_count": 99,
+            "dynamic_state": "dynamic",
+            "motion_confidence": 0.9,
+            "geometry_epoch": 0,
+            "readout_valid": True,
+        }
+    )
+    rows.sort(key=lambda row: (row["frame_index"], row["entity_id"]))
+    trajectory_path.write_text(
+        "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+    manifest["trajectories"] = _record(
+        trajectory_path, relative_to=temporal.parent
+    )
+
+    coverage_path = temporal.parent / manifest["frame_coverage"]["path"]
+    coverage = [
+        json.loads(line)
+        for line in coverage_path.read_text(encoding="utf-8").splitlines()
+    ]
+    coverage[2]["record_count"] += 1
+    coverage_path.write_text(
+        "".join(json.dumps(row, sort_keys=True) + "\n" for row in coverage),
+        encoding="utf-8",
+    )
+    coverage_record = _record(coverage_path, relative_to=temporal.parent)
+    manifest["frame_coverage"] = coverage_record
+    manifest["sources"]["frame_coverage"] = coverage_record
+    manifest["temporal_audit_counts"]["dynamic_sample_count"] += 1
+    temporal.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+    labels = tmp_path / "labels.yaml"
+    labels.write_text(
+        "label_names: [{label: 0, name: Unknown}, {label: 5, name: Chair}, "
+        "{label: 7, name: Table}]\n",
+        encoding="utf-8",
+    )
+
+    bridge_path = prepare_temporal_bridge(temporal, labels, tmp_path / "bridge")
+    bridge = json.loads(bridge_path.read_text(encoding="utf-8"))
+    assignment = next(
+        item
+        for item in bridge["symbol_assignments"]
+        if item["entity_id"] == "r-reappear"
+    )
+
+    assert assignment["presence_intervals"] == [
+        {"start_ns": 100, "end_ns_exclusive": 200},
+        {"start_ns": 500, "end_ns_exclusive": None},
+    ]
+    assert [
+        item["timestamp_ns"] for item in assignment["semantic_observations"]
+    ] == [100, 500]
+
+
 def test_prepares_stable_symbols_intervals_and_causal_native_tracks(
     tmp_path: Path,
 ) -> None:

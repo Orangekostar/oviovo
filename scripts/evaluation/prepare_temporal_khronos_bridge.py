@@ -303,6 +303,29 @@ def _presence_runs(
     return runs
 
 
+def _intersect_presence_runs(
+    left: Sequence[Mapping[str, Any]],
+    right: Sequence[Mapping[str, Any]],
+) -> list[dict[str, int | None]]:
+    intersections: list[dict[str, int | None]] = []
+    for left_interval in left:
+        left_start = int(left_interval["start_ns"])
+        left_end = left_interval["end_ns_exclusive"]
+        for right_interval in right:
+            right_start = int(right_interval["start_ns"])
+            right_end = right_interval["end_ns_exclusive"]
+            start = max(left_start, right_start)
+            finite_ends = [
+                int(end) for end in (left_end, right_end) if end is not None
+            ]
+            end = min(finite_ends) if finite_ends else None
+            if end is None or start < end:
+                intersections.append(
+                    {"start_ns": start, "end_ns_exclusive": end}
+                )
+    return intersections
+
+
 def _checkpoint_endpoints(
     intervals: Sequence[Mapping[str, Any]], query: int
 ) -> tuple[list[int], list[int]]:
@@ -1427,7 +1450,12 @@ def prepare_temporal_bridge(
     assignment_by_id: dict[str, dict[str, Any]] = {}
     for node_index, entity_id in enumerate(ordered_ids):
         state = states[entity_id]
-        intervals = explicit_intervals[entity_id]
+        intervals = _intersect_presence_runs(
+            _presence_runs(state["positions"], checkpoints),
+            explicit_intervals[entity_id],
+        )
+        if not intervals:
+            raise ValueError("entity has no snapshot-backed presence interval")
         starts = [int(interval["start_ns"]) for interval in intervals]
         ends = [
             (
