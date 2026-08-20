@@ -1911,7 +1911,7 @@ def test_temporal_metrics_only_preserves_full_causal_checkpoints_without_cumulat
     assert manifest["scheduled_frame_indices"] == [2, 3, 4]
 
 
-def test_causal_table_metrics_only_preserves_full_frames_without_occlusion_or_audit(
+def test_causal_table_metrics_only_processes_every_frame_temporally_without_cumulative(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1944,10 +1944,10 @@ def test_causal_table_metrics_only_preserves_full_frames_without_occlusion_or_au
         "mode": "causal_table_metrics_only",
         "occlusion_evaluation_available": False,
         "publication_eligible": False,
-        "runtime_mode": "full_causal_without_cumulative_or_occlusion",
+        "runtime_mode": "full_causal_temporal_only_without_cumulative_or_occlusion",
     }
     assert holder["runtime"].calls == [0, 1, 2, 3, 4]
-    assert holder["runtime"].fast_calls == []
+    assert holder["runtime"].fast_calls == [0, 1, 2, 3, 4]
     assert holder["runtime"].advance_calls == []
     assert holder["runtime"].checkpoint_calls[:2] == [2, 3]
     assert manifest["scheduled_frame_indices"] == [2, 3]

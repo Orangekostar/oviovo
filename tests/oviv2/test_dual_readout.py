@@ -1040,6 +1040,38 @@ def test_temporal_only_frame_matches_temporal_branch_and_leaves_cumulative_untou
     assert cumulative_state_sha256(accelerated.cumulative) == before_cumulative
 
 
+def test_temporal_only_frames_match_temporal_branch_across_consecutive_checkpoints() -> None:
+    from src.oviv2.dual_readout import DualReadoutRuntime
+    from src.oviv2.t1_exactness import (
+        cumulative_state_sha256,
+        temporal_state_sha256,
+    )
+
+    standard = DualReadoutRuntime(_cumulative(), _temporal())
+    accelerated = DualReadoutRuntime(_cumulative(), _temporal())
+    before_cumulative = cumulative_state_sha256(accelerated.cumulative)
+
+    for frame_id in range(3):
+        frame = _frame(frame_id)
+        observations = (
+            replace(
+                _observation(frame),
+                observation_id=frame_id + 1,
+            ),
+        )
+        expected = standard.process_frame(
+            frame, (), temporal_observations=observations
+        ).temporal
+        observed = accelerated.process_temporal_only_frame(frame, observations)
+
+        assert observed == expected
+        assert temporal_state_sha256(
+            accelerated.temporal
+        ) == temporal_state_sha256(standard.temporal)
+        assert accelerated.current_checkpoint() == standard.current_checkpoint()
+        assert cumulative_state_sha256(accelerated.cumulative) == before_cumulative
+
+
 def test_temporal_only_rejects_clone_with_modified_depth_content_and_rolls_back(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

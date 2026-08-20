@@ -3451,6 +3451,7 @@ def run(
             table_only
             and temporal_config.execution_profile.profile_id in {"a3", "a4"}
         )
+        temporal_only_processing = temporal_table_only or causal_table_metrics_only
         for frame_index in range(frame_count):
             frame = dataset[frame_index]
             if int(frame.frame_id) != frame_index:
@@ -3480,7 +3481,7 @@ def run(
                     frame,
                     dense_semantics,
                 )
-            if temporal_table_only and table_keyframe:
+            if temporal_only_processing and table_keyframe:
                 temporal_only_api = getattr(
                     runtime, "process_temporal_only_frame", None
                 )
@@ -3495,13 +3496,13 @@ def run(
                 frame_result = temporal_only_api(
                     frame, temporal_observations, dense_semantics
                 )
-            elif not temporal_table_only and temporal_observations is None:
+            elif not temporal_only_processing and temporal_observations is None:
                 frame_result = runtime.process_frame(
                     frame,
                     observations=observations,
                     dense_semantics=dense_semantics,
                 )
-            elif not temporal_table_only:
+            elif not temporal_only_processing:
                 frame_result = runtime.process_frame(
                     frame,
                     observations=observations,
@@ -4079,7 +4080,9 @@ def run(
                 "mode": "causal_table_metrics_only",
                 "occlusion_evaluation_available": False,
                 "publication_eligible": False,
-                "runtime_mode": "full_causal_without_cumulative_or_occlusion",
+                "runtime_mode": (
+                    "full_causal_temporal_only_without_cumulative_or_occlusion"
+                ),
             }
         elif table_only:
             formal_fields["capture_mode"] = {
