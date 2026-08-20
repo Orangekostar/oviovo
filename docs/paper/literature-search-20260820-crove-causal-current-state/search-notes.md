@@ -120,13 +120,13 @@ unimplemented publication-level mechanism.
 | Rejected motion cannot contaminate retained geometry | `temporal_runtime.py` starts a new epoch after qualified rejected motion and otherwise avoids integration; temporal epoch tests enforce purity | Temporal export still reads the fused entity centroid, so the geometry-safe state is a biased current-position estimator |
 | Object/background ownership is reversible | `temporal_background_ledger.py` stages, commits, and reclaims provenance-bound ownership records | Ownership evidence and lifecycle evidence are audited separately rather than under a common witness schema |
 | Cumulative static mapping is protected | T1 protected-source and non-interference gates bind the frozen cumulative path | This is a strong guardrail but not a dynamic novelty claim |
-| Current pose and cumulative centroid are separate readouts | The dual-center design has a complete causal specification | It is not implemented: `temporal_runtime.py` still uses `_centroid(entity)` for observed `TemporalExportSample` values |
+| Current pose and cumulative centroid are separate readouts | `temporal_evidence_router.py` selects the current observation center for A4, while A2/A3 and cumulative state keep the fused center; focused runtime tests cover both paths | The final Apartment result and fused-center ablation are still pending, so implementation evidence alone does not establish benchmark benefit |
 | Identity-qualified active displacement complements weak geometry | Qualified association diagnostics and dormant re-ID dynamic promotion already exist | The active branch still advances dynamic state only from geometric motion confidence |
 
-The highest-leverage behavior change is therefore the already diagnosed
-dual-center plus identity-qualified active-motion rule. The publication-level
-optimization is to make that rule, visible absence, role-separated identity,
-epoch purity, and reversible ownership instances of one explicit admissibility
-model. A bounded multi-hypothesis identity buffer should be added only if the
-same-class false-re-ID stress test remains a dominant error after this minimal
-mechanism is measured.
+The highest-leverage behavior change, dual-center plus identity-qualified
+active motion, is now implemented together with identity-prototype isolation
+under an explicit admissibility matrix. The publication-level claim still
+depends on the running Apartment evaluation and matched fused-center,
+geometry-only, and untyped-routing ablations. A bounded multi-hypothesis
+identity buffer should be added only if the same-class false-re-ID stress test
+remains a dominant error after this minimal mechanism is measured.

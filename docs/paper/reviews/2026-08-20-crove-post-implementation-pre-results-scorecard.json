@@ -1,0 +1,98 @@
+{
+  "paper_type": "model_method",
+  "dimensions": {
+    "significance": {
+      "status": "assessed",
+      "score": 4.5,
+      "evidence": [
+        "docs/superpowers/specs/2026-07-21-oviv2-benchmark-centered-paper-story-design.md",
+        "docs/paper/literature-search-20260820-crove-causal-current-state/papers.md"
+      ],
+      "concern": "Current-state open-vocabulary mapping matters for embodied agents, but the task itself is established prior art."
+    },
+    "novelty": {
+      "status": "assessed",
+      "score": 3.0,
+      "evidence": [
+        "docs/superpowers/specs/2026-08-20-crove-state-compatible-causal-evidence-routing-design.md",
+        "src/oviv2/temporal_evidence_router.py",
+        "docs/paper/literature-search-20260820-crove-causal-current-state/papers.md"
+      ],
+      "concern": "The typed state/evidence admissibility contract is a concrete distinction, but SuperMap substantially overlaps the visibility, tracking, and online-update mechanism bundle, and no matched ablation yet establishes the contract's unique consequence."
+    },
+    "soundness": {
+      "status": "assessed",
+      "score": 4.5,
+      "evidence": [
+        "docs/superpowers/specs/2026-08-20-crove-state-compatible-causal-evidence-routing-design.md",
+        "src/oviv2/temporal_evidence_router.py",
+        "tests/oviv2/test_temporal_evidence_router.py",
+        "tests/oviv2/test_temporal_runtime.py"
+      ],
+      "concern": "The state factorization, closed admissibility matrix, and fail-closed implementation are coherent; end-to-end failure boundaries remain to be measured."
+    },
+    "evidence": {
+      "status": "missing_in_paper",
+      "score": 2.0,
+      "evidence": [
+        "docs/paper/benchmark_tables_baselines.md",
+        "docs/superpowers/specs/2026-08-20-crove-state-compatible-causal-evidence-routing-design.md",
+        "outputs: Apartment optimized evaluation still running; Office remains held out"
+      ],
+      "concern": "The central T2 result and mechanism ablations are not final; A6 provides only an object/change baseline and has no finite official dynamic F1."
+    },
+    "clarity": {
+      "status": "assessed",
+      "score": 4.0,
+      "evidence": [
+        "docs/superpowers/specs/2026-08-20-crove-state-compatible-causal-evidence-routing-design.md",
+        "docs/paper/literature-search-20260820-crove-causal-current-state/papers.md"
+      ],
+      "concern": "The mechanism now has one state tuple and matrix, but no complete manuscript or updated pipeline figure is available."
+    },
+    "related_work": {
+      "status": "missing_in_paper",
+      "score": 3.5,
+      "evidence": [
+        "docs/paper/literature-search-20260820-crove-causal-current-state/papers.md",
+        "docs/paper/literature-search-20260820-crove-causal-current-state/papers.csv"
+      ],
+      "concern": "The closest-work analysis now includes SuperMap and direct mechanism threats, but it is not integrated into a complete manuscript."
+    },
+    "reproducibility": {
+      "status": "assessed",
+      "score": 5.0,
+      "evidence": [
+        "scripts/evaluation/verify_oviv2_dual_readout_development_gates.py",
+        "tests/oviv2/test_t1_noninterference.py",
+        "docs/superpowers/specs/2026-08-20-crove-state-compatible-causal-evidence-routing-design.md"
+      ],
+      "concern": "Source, causality, and non-interference controls are strong; final frozen result bindings are necessarily pending."
+    }
+  },
+  "gates": [
+    {
+      "id": "CORE_NOVELTY_UNESTABLISHED",
+      "reason": "The state/evidence contract is implemented, but its distinct empirical consequence over SuperMap-style untyped visibility updates and simpler alternatives has not been demonstrated.",
+      "evidence": [
+        "docs/paper/literature-search-20260820-crove-causal-current-state/papers.md",
+        "docs/paper/benchmark_tables_baselines.md"
+      ],
+      "resolution_condition": "Add a precise SuperMap mechanism contrast and matched untyped-routing, geometry-only, and fused-center ablations showing the predicted cross-state contamination failures."
+    },
+    {
+      "id": "DECISIVE_EVIDENCE_MISSING",
+      "reason": "The optimized Apartment run and the formal T2/T3 package are incomplete, while Office remains intentionally held out.",
+      "evidence": [
+        "docs/paper/benchmark_tables_baselines.md",
+        "docs/superpowers/specs/2026-08-20-crove-state-compatible-causal-evidence-routing-design.md"
+      ],
+      "resolution_condition": "Complete source-bound Apartment evaluation, pass the preregistered promotion gates, freeze the method, run Office once, and populate the direct mechanism ablations."
+    }
+  ],
+  "confidence": {
+    "material": 1,
+    "verification": 2,
+    "domain_match": 0
+  }
+}
