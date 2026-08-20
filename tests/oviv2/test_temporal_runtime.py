@@ -768,6 +768,65 @@ def test_cross_model_geometry_match_atomically_replaces_prototype_provenance() -
     np.testing.assert_allclose(entity.image_prototype, [1.0, 0.0])
 
 
+def test_same_model_weak_identity_match_does_not_contaminate_prototype() -> None:
+    runtime = _runtime()
+    entity_id = _confirm(runtime)
+    before_entity = np.array(runtime.state.entities[0].image_prototype, copy=True)
+    before_bank = np.array(
+        runtime.state.identities.get(entity_id).appearance_prototype,
+        copy=True,
+    )
+    frame = _frame(2)
+
+    result = runtime.process_frame(
+        frame,
+        (
+            _observation(
+                frame,
+                feature_model_id="test",
+                image_feature=np.array([0.0, 1.0]),
+            ),
+        ),
+    )
+
+    diagnostic = runtime.state.diagnostics.assignment_diagnostics[0]
+    assert result.active_entity_ids == (entity_id,)
+    assert diagnostic.feature_model_match is True
+    assert diagnostic.high_confidence_identity_match is False
+    np.testing.assert_array_equal(
+        runtime.state.entities[0].image_prototype,
+        before_entity,
+    )
+    np.testing.assert_array_equal(
+        runtime.state.identities.get(entity_id).appearance_prototype,
+        before_bank,
+    )
+
+
+def test_same_model_qualified_identity_match_updates_prototype() -> None:
+    runtime = _runtime()
+    entity_id = _confirm(runtime)
+    feature = np.array([0.9, np.sqrt(0.19)], dtype=np.float64)
+    frame = _frame(2)
+
+    result = runtime.process_frame(
+        frame,
+        (_observation(frame, image_feature=feature),),
+    )
+
+    diagnostic = runtime.state.diagnostics.assignment_diagnostics[0]
+    assert result.active_entity_ids == (entity_id,)
+    assert diagnostic.high_confidence_identity_match is True
+    np.testing.assert_allclose(
+        runtime.state.entities[0].image_prototype,
+        feature,
+    )
+    np.testing.assert_allclose(
+        runtime.state.identities.get(entity_id).appearance_prototype,
+        feature,
+    )
+
+
 def test_dormant_object_reappears_with_same_id() -> None:
     runtime = _runtime()
     entity_id = _confirm(runtime)

@@ -45,7 +45,10 @@ from src.oviv2.temporal_geometry import (
     integrate_object_submap,
 )
 from src.oviv2.temporal_epoch import GeometryEpoch, start_new_epoch
-from src.oviv2.temporal_evidence_router import route_active_motion_evidence
+from src.oviv2.temporal_evidence_router import (
+    admits_identity_prototype_update,
+    route_active_motion_evidence,
+)
 from src.oviv2.temporal_export import (
     DynamicEvidenceState,
     DynamicState,
@@ -2539,9 +2542,25 @@ class TemporalCurrentRuntime:
                 (old_value + new_value) / 2.0
                 for old_value, new_value in zip(old.extent_xyz, observed_extent)
             )
-            prototype, feature_model_id = _prototype_update(
-                old.image_prototype, old.feature_model_id, observation
-            )
+            if (
+                not diagnostic.feature_model_match
+                or admits_identity_prototype_update(
+                    identity_qualified=(
+                        self.config.execution_profile
+                        is not ExecutionProfile.A4
+                        or diagnostic.high_confidence_identity_match
+                    ),
+                    appearance_similarity=diagnostic.appearance_similarity,
+                )
+            ):
+                prototype, feature_model_id = _prototype_update(
+                    old.image_prototype,
+                    old.feature_model_id,
+                    observation,
+                )
+            else:
+                prototype = old.image_prototype
+                feature_model_id = old.feature_model_id
             next_entities[entity_id] = TemporalEntityState(
                 lifecycle=lifecycle,
                 semantic_probabilities=_semantic_update(old.semantic_probabilities, observation),
