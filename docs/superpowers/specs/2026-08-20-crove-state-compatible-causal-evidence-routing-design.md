@@ -239,9 +239,11 @@ displaced reappearance.
 
 The method advances to the held-out run only if:
 
-- dynamic or change F1 improves over the current A6 branch;
-- object F1 and current mIoU do not regress beyond the preregistered tolerance;
-- ghost rate and identity-switch precision do not materially regress;
+- dynamic F1 or change F1 improves over the current A6 branch by at least
+  `0.01` absolute;
+- object F1 and current mIoU each regress by no more than `0.01` absolute;
+- ghost rate increases by no more than `0.02` absolute, and identity-switch
+  precision does not regress;
 - T1 exactness, causal provenance, package, and source-binding gates pass.
 
 Diagnostic values without checked-in source bindings remain development-only.

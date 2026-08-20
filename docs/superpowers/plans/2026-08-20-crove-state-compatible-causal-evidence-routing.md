@@ -663,8 +663,10 @@ plan, literature, and review files are changed.
 **Files:**
 
 - Do not update paper result tables in this task.
-- Outputs: `outputs/tesse_cd/crove-evidence-routing/apartment_run1/`
-- Outputs: `outputs/tesse_cd/crove-evidence-routing/apartment_run2/`
+- Development outputs:
+  `outputs/tesse_cd/crove-evidence-routing/apartment_temporal_run{1,2}/`
+- Formal outputs (only after promotion and freeze):
+  `outputs/tesse_cd/crove-evidence-routing/apartment_formal_run{1,2}/`
 
 - [ ] **Step 1: Record the exact implementation identity**
 
@@ -677,39 +679,45 @@ sha256sum configs/oviv2_tesse_cd_apartment_v2.json
 Expected: the worktree is clean before a formal launch; save the printed commit
 and config digest with the run receipts.
 
-- [ ] **Step 2: Run the Apartment causal sequence twice**
+- [ ] **Step 2: Run the Apartment development sequence twice**
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 python scripts/evaluation/run_oviv2_tesse_cd_v2.py \
   --config configs/oviv2_tesse_cd_apartment_v2.json \
-  --output outputs/tesse_cd/crove-evidence-routing/apartment_run1 \
-  --run-slot apartment_run1
+  --temporal-metrics-only \
+  --output outputs/tesse_cd/crove-evidence-routing/apartment_temporal_run1
 
 CUDA_VISIBLE_DEVICES=1 python scripts/evaluation/run_oviv2_tesse_cd_v2.py \
   --config configs/oviv2_tesse_cd_apartment_v2.json \
-  --output outputs/tesse_cd/crove-evidence-routing/apartment_run2 \
-  --run-slot apartment_run2
+  --temporal-metrics-only \
+  --output outputs/tesse_cd/crove-evidence-routing/apartment_temporal_run2
 ```
 
-Expected: both runs finish with source-bound manifests and identical algorithm
+Expected: both development runs finish with full causal temporal checkpoints,
+no cumulative audit, `publication_eligible=false`, and identical algorithm
 identity. The commands may run concurrently only after frontend caches are
 complete and each uses an independent output root.
 
 - [ ] **Step 3: Apply the preregistered promotion decision**
 
-Compare the two runs with the checked A6 Apartment artifact using official
+Compare the two development runs with the checked A6 Apartment artifact using official
 Obj./Dyn./Chg. F1, common-v2 current mIoU, ghost rate, background F@5cm,
 recovery latency, identity fragmentation, and epoch-reset diagnostics. Promote
-only if the exact gates in the approved design pass. Do not substitute visual
-quality, a diagnostic proxy, or one favorable checkpoint for the formal result.
+only if dynamic F1 or change F1 gains at least `0.01`, object F1 and current
+mIoU each lose no more than `0.01`, ghost rate increases by no more than `0.02`,
+identity-switch precision does not regress, and the remaining exact gates in
+the approved design pass. Do not substitute visual quality, a diagnostic proxy,
+or one favorable checkpoint for the formal result.
 
 - [ ] **Step 4: Stop before Office unless Apartment passes**
 
 Do not run Office, modify T2/T3/T4 tables, or enable superiority language until
-the Apartment result is source-bound, repeat-consistent, and frozen. After a
-passing Apartment decision, write a separate freeze/held-out execution plan
-using the actual implementation commit and artifact hashes; no placeholder hash
-is permitted in that plan.
+the Apartment development result passes and the promoted configuration is
+frozen and rerun in formal mode with `--freeze-manifest` and independent
+`--run-slot` values. After both Apartment formal runs are source-bound and
+repeat-consistent, write a separate held-out execution plan using the actual
+implementation commit and artifact hashes; no placeholder hash is permitted in
+that plan.
 
 ## Final Review Checklist
 
