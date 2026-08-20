@@ -615,6 +615,7 @@ def test_official_eval_exposes_no_constructible_validation_token() -> None:
 def test_run_passes_status_path_to_revalidating_metric_writer(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    monkeypatch.chdir(tmp_path)
     workspace = tmp_path / "workspace"
     base = workspace / "src/khronos/khronos_eval/config/pipeline/apartment.yaml"
     base.parent.mkdir(parents=True)
@@ -657,6 +658,15 @@ def test_run_passes_status_path_to_revalidating_metric_writer(
 
     def completed(command: list[str], **_: object) -> object:
         time_path = Path(command[command.index("-o") + 1])
+        evaluator = command.index(
+            str(
+                workspace
+                / "install/khronos_eval/lib/khronos_eval/evaluate_pipeline.sh"
+            )
+        )
+        assert time_path.is_absolute()
+        assert Path(command[evaluator + 1]).is_absolute()
+        assert Path(command[evaluator + 2]).is_absolute()
         time_path.write_text("time\n", encoding="utf-8")
         return type(
             "Completed",
@@ -680,7 +690,7 @@ def test_run_passes_status_path_to_revalidating_metric_writer(
         [
             "--workspace", str(workspace),
             "--manifest", str(tmp_path / "manifest.json"),
-            "--run-root", str(run_root),
+            "--run-root", "run",
             "--scene", "apartment",
         ]
     )
@@ -688,6 +698,7 @@ def test_run_passes_status_path_to_revalidating_metric_writer(
     run(args)
 
     assert captured["run_status_path"] == run_root / "run_status.json"
+    assert captured["results_dir"] == run_root / "map/results"
 
 
 def test_partial_metric_record_uses_online_display_mode_and_hashed_sources(

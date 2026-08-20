@@ -471,14 +471,15 @@ def write_repeated_metrics(
 
 
 def run(args: argparse.Namespace) -> Path:
-    evaluation_dir = args.run_root / "evaluation"
+    run_root = Path(os.path.abspath(args.run_root))
+    evaluation_dir = run_root / "evaluation"
     if os.path.lexists(evaluation_dir):
         raise FileExistsError(
             f"evaluation output already exists: {evaluation_dir}"
         )
     if args.method != "OVIV2" or args.mode != "causal_checkpoints":
         raise ValueError("official evaluation requires OVIV2 causal identity")
-    status_path = args.run_root / "run_status.json"
+    status_path = run_root / "run_status.json"
     validate_khronos_run_status(
         status_path,
         scene=args.scene,
@@ -504,7 +505,7 @@ def run(args: argparse.Namespace) -> Path:
 
     inner = build_evaluation_command(
         workspace=args.workspace,
-        map_dir=args.run_root / "map",
+        map_dir=run_root / "map",
         config=config_path,
     )
     process_time_path = evaluation_dir / "evaluate.time.log"
@@ -561,7 +562,7 @@ def run(args: argparse.Namespace) -> Path:
 
     metrics_path = evaluation_dir / "official_metrics.json"
     repeat_path = evaluation_dir / "official_metrics.repeat.json"
-    results_dir = args.run_root / "map/results"
+    results_dir = run_root / "map/results"
     metric_summary = write_repeated_metrics(
         results_dir=results_dir,
         scene=args.scene,
