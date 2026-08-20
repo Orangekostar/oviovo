@@ -1266,6 +1266,134 @@ def test_a4_consecutive_active_identity_motion_recovers_dynamic_without_geometry
     assert second.export.samples[0].motion_confidence >= 0.7
 
 
+def test_a4_temporal_readout_uses_current_center_without_moving_retained_geometry(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_geometry import MotionDecision, ObjectMotionEstimate
+
+    runtime = _runtime(_config(ExecutionProfile.A4))
+    entity_id = _confirm(runtime)
+    before_entity = runtime.state.entities[0]
+    before_submap = copy.deepcopy(before_entity.submap)
+    before_map_center = module._centroid(before_entity)
+
+    def weak_geometry(*args, **kwargs):
+        pose = np.array(kwargs["previous_object_to_world"], copy=True)
+        pose[2, 3] = 1.4
+        return ObjectMotionEstimate(
+            pose,
+            MotionDecision.ICP_ACCEPTED,
+            0.2,
+            0.01,
+        )
+
+    monkeypatch.setattr(module, "estimate_object_motion", weak_geometry)
+    frame = _frame(2, depth=1.4)
+    observation = _observation(frame, centroid_z=1.4)
+
+    result = runtime.process_frame(frame, (observation,))
+
+    assert result.active_entity_ids == (entity_id,)
+    assert result.export.samples[0].centroid_xyz == pytest.approx(
+        observation.centroid_xyz
+    )
+    assert runtime.state.export_tracker.entries[0].last_centroid_xyz == pytest.approx(
+        observation.centroid_xyz
+    )
+    assert runtime.state.entities[0].submap == before_submap
+    assert module._centroid(runtime.state.entities[0]) == pytest.approx(
+        before_map_center
+    )
+    assert runtime.state.identities.get(entity_id).last_centroid_xyz == pytest.approx(
+        before_map_center
+    )
+
+
+@pytest.mark.parametrize("profile", (ExecutionProfile.A2, ExecutionProfile.A3))
+def test_legacy_temporal_profiles_keep_cumulative_readout_center(
+    monkeypatch: pytest.MonkeyPatch,
+    profile: ExecutionProfile,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_geometry import MotionDecision, ObjectMotionEstimate
+
+    runtime = _runtime(_config(profile))
+    entity_id = _confirm(runtime)
+    before_map_center = module._centroid(runtime.state.entities[0])
+
+    def translated(*args, **kwargs):
+        pose = np.array(kwargs["previous_object_to_world"], copy=True)
+        pose[2, 3] = 1.4
+        return ObjectMotionEstimate(
+            pose,
+            MotionDecision.TRANSLATION_ACCEPTED,
+            0.0,
+            0.01,
+        )
+
+    monkeypatch.setattr(module, "estimate_object_translation", translated)
+    frame = _frame(2, depth=1.4)
+    observation = _observation(frame, centroid_z=1.4)
+
+    result = runtime.process_frame(frame, (observation,))
+
+    assert result.active_entity_ids == (entity_id,)
+    assert result.export.samples[0].centroid_xyz == pytest.approx(
+        before_map_center
+    )
+    assert runtime.state.export_tracker.entries[0].last_centroid_xyz == pytest.approx(
+        before_map_center
+    )
+    assert result.export.samples[0].centroid_xyz != pytest.approx(
+        observation.centroid_xyz
+    )
+
+
+def test_a4_causal_evidence_routing_is_prefix_deterministic(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_geometry import MotionDecision, ObjectMotionEstimate
+
+    left = _runtime(_config(ExecutionProfile.A4))
+    right = _runtime(_config(ExecutionProfile.A4))
+    assert _confirm(left) == _confirm(right)
+
+    monkeypatch.setattr(
+        module,
+        "estimate_object_motion",
+        lambda *args, **kwargs: ObjectMotionEstimate(
+            kwargs["previous_object_to_world"],
+            MotionDecision.REJECTED,
+            0.0,
+            0.1,
+        ),
+    )
+
+    for frame_id, depth in ((2, 1.2), (3, 1.4)):
+        left_frame = _frame(frame_id, depth=depth)
+        right_frame = _frame(frame_id, depth=depth)
+        left_result = left.process_frame(
+            left_frame,
+            (_observation(left_frame, centroid_z=depth),),
+        )
+        right_result = right.process_frame(
+            right_frame,
+            (_observation(right_frame, centroid_z=depth),),
+        )
+        assert left_result.export == right_result.export
+        assert left.state.canonical_dump() == right.state.canonical_dump()
+
+    frozen_prefix = right.state.canonical_dump()
+    frozen_export = copy.deepcopy(right_result.export)
+    extra = _frame(4, depth=1.6)
+    left.process_frame(extra, (_observation(extra, centroid_z=1.6),))
+
+    assert right.state.canonical_dump() == frozen_prefix
+    assert right_result.export == frozen_export
+
+
 def test_geometry_epoch_changes_only_after_consecutive_confirmed_motion(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -4216,6 +4344,74 @@ def test_a4_bank_only_reidentification_displacement_is_dynamic() -> None:
     assert result.export.samples[0].entity_id == old_id
     assert result.export.samples[0].dynamic_state is DynamicState.DYNAMIC
     assert result.export.samples[0].motion_confidence >= 0.75
+
+
+def test_a4_bank_only_reid_uses_last_current_endpoint_not_fused_identity_center(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_export import DynamicState
+    from src.oviv2.temporal_geometry import MotionDecision, ObjectMotionEstimate
+
+    runtime = _runtime(_config(maximum_entities=1))
+    old_id = _confirm(runtime)
+
+    def weak_geometry(*args, **kwargs):
+        pose = np.array(kwargs["previous_object_to_world"], copy=True)
+        pose[2, 3] = 1.4
+        return ObjectMotionEstimate(
+            pose,
+            MotionDecision.ICP_ACCEPTED,
+            0.2,
+            0.01,
+        )
+
+    monkeypatch.setattr(module, "estimate_object_motion", weak_geometry)
+    moved = _frame(2, depth=1.4)
+    runtime.process_frame(moved, (_observation(moved, centroid_z=1.4),))
+    assert runtime.state.export_tracker.get(old_id).last_centroid_xyz == pytest.approx(
+        (0.0, 0.0, 1.4)
+    )
+    assert runtime.state.identities.get(old_id).last_centroid_xyz == pytest.approx(
+        (0.0, 0.0, 1.0)
+    )
+
+    runtime.process_frame(_frame(3, depth=2.0), ())
+    runtime.process_frame(_frame(4, depth=2.0), ())
+    for frame_id in (5, 6):
+        frame = _frame(frame_id, depth=1.8)
+        runtime.process_frame(
+            frame,
+            (
+                _observation(
+                    frame,
+                    40 + frame_id,
+                    centroid_z=1.8,
+                    semantic_id=2,
+                    image_feature=np.array([0.0, 1.0]),
+                ),
+            ),
+        )
+
+    with pytest.raises(KeyError):
+        runtime.state.geometry.current(old_id)
+    assert runtime.state.export_tracker.get(old_id).last_centroid_xyz == pytest.approx(
+        (0.0, 0.0, 1.4)
+    )
+
+    runtime.process_frame(_frame(7, depth=2.4), ())
+    runtime.process_frame(_frame(8, depth=2.4), ())
+    for frame_id in (9, 10):
+        frame = _frame(frame_id, depth=1.45)
+        result = runtime.process_frame(
+            frame,
+            (_observation(frame, 80 + frame_id, centroid_z=1.45),),
+        )
+
+    assert result.reid_trigger_count == 1
+    assert result.export.samples[0].entity_id == old_id
+    assert result.export.samples[0].dynamic_state is DynamicState.STATIC
+    assert result.export.samples[0].motion_confidence == 0.0
 
 
 def test_dormant_identity_expiry_boundary_is_explicit_and_counted() -> None:

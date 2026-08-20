@@ -48,6 +48,7 @@ from src.oviv2.temporal_epoch import GeometryEpoch, start_new_epoch
 from src.oviv2.temporal_evidence_router import (
     admits_identity_prototype_update,
     route_active_motion_evidence,
+    select_temporal_readout_center,
 )
 from src.oviv2.temporal_export import (
     DynamicEvidenceState,
@@ -2191,6 +2192,7 @@ class TemporalCurrentRuntime:
         reactivated: list[int] = []
         forced_new_observation_ids: list[int] = []
         motion_by_entity: dict[int, tuple[float, float]] = {}
+        current_center_by_entity: dict[int, tuple[float, float, float]] = {}
         evidence_by_entity: dict[int, TemporalEvidence] = {}
         released_pixels_by_entity: dict[int, np.ndarray] = {}
         motion_events: list[tuple[int, int, MotionDecision]] = []
@@ -2270,6 +2272,10 @@ class TemporalCurrentRuntime:
                 if old is not None:
                     next_entities[entity_id] = replace(old, lifecycle=lifecycle)
                 continue
+            current_center = tuple(
+                float(value) for value in observation.centroid_xyz
+            )
+            current_center_by_entity[entity_id] = current_center
             if old is None:
                 record = trial_identities.get(entity_id)
                 if record is None:
@@ -2330,16 +2336,23 @@ class TemporalCurrentRuntime:
                     raise RuntimeError(
                         "bank-only re-identification lacks qualified identity evidence"
                     )
+                previous_export = old_export.get(entity_id)
+                previous_center = (
+                    previous_export.last_centroid_xyz
+                    if self.config.execution_profile is ExecutionProfile.A4
+                    and previous_export is not None
+                    and previous_export.last_centroid_xyz is not None
+                    else record.last_centroid_xyz
+                )
                 displacement = float(
                     np.linalg.norm(
                         np.asarray(observation.centroid_xyz, dtype=np.float64)
-                        - np.asarray(record.last_centroid_xyz, dtype=np.float64)
+                        - np.asarray(previous_center, dtype=np.float64)
                     )
                 )
                 identity_confidence = float(
                     np.clip(diagnostic.appearance_similarity, 0.0, 1.0)
                 )
-                previous_export = old_export.get(entity_id)
                 previous_dynamic = (
                     DynamicEvidenceState.static()
                     if previous_export is None
@@ -2400,9 +2413,6 @@ class TemporalCurrentRuntime:
                     np.asarray(motion.object_to_world[:3, 3], dtype=np.float64)
                     - np.asarray(old.object_to_world[:3, 3], dtype=np.float64)
                 )
-            )
-            current_center = tuple(
-                float(value) for value in observation.centroid_xyz
             )
             previous_export = old_export.get(entity_id)
             previous_dynamic = (
@@ -2670,6 +2680,9 @@ class TemporalCurrentRuntime:
                 if not reclaim_dormant_wrapper(protected_ids=assigned_entity_ids):
                     continue
             entity_id = next_entity_id
+            current_center_by_entity[entity_id] = tuple(
+                float(value) for value in observation.centroid_xyz
+            )
             pose = np.eye(4, dtype=np.float64)
             pose[:3, 3] = observation.centroid_xyz
             submap = integrate_object_submap(
@@ -2949,7 +2962,20 @@ class TemporalCurrentRuntime:
                             confidence=confidence,
                             config=self.config.dynamic_state,
                         )
-            centroid = _centroid(entity)
+            cumulative_center = _centroid(entity)
+            current_center = current_center_by_entity.get(entity_id)
+            if observed:
+                if current_center is None:
+                    raise RuntimeError(
+                        "observed entity lacks a current observation center"
+                    )
+                centroid = select_temporal_readout_center(
+                    execution_profile=self.config.execution_profile,
+                    cumulative_center=cumulative_center,
+                    current_observation_center=current_center,
+                )
+            else:
+                centroid = cumulative_center
             export_entries.append(
                 TemporalExportTrackerEntry(
                     entity_id, count, dynamic,
@@ -3009,7 +3035,13 @@ class TemporalCurrentRuntime:
                         DynamicEvidenceState.static()
                         if previous is None else previous.dynamic_evidence
                     ),
-                    last_centroid_xyz=record.last_centroid_xyz,
+                    last_centroid_xyz=(
+                        previous.last_centroid_xyz
+                        if self.config.execution_profile is ExecutionProfile.A4
+                        and previous is not None
+                        and previous.last_centroid_xyz is not None
+                        else record.last_centroid_xyz
+                    ),
                     readout_valid=False,
                     geometry_epoch=epoch_id,
                 )
