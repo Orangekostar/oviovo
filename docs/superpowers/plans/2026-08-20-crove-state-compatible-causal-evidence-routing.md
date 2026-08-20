@@ -26,7 +26,7 @@
 - Create: `tests/oviv2/test_temporal_evidence_router.py`
 - Create: `src/oviv2/temporal_evidence_router.py`
 
-- [ ] **Step 1: Write the failing admissibility-matrix tests**
+- [x] **Step 1: Write the failing admissibility-matrix tests**
 
 Create the test module with the exact closed matrix:
 
@@ -90,7 +90,7 @@ def test_admissibility_rejects_non_evidence_values() -> None:
         admissible_components("occluded")  # type: ignore[arg-type]
 ```
 
-- [ ] **Step 2: Write failing routed-motion tests**
+- [x] **Step 2: Write failing routed-motion tests**
 
 Append tests that cover all source combinations and thresholds:
 
@@ -189,7 +189,7 @@ def test_active_motion_rejects_malformed_inputs(changes: dict[str, object]) -> N
         route_active_motion_evidence(**values)  # type: ignore[arg-type]
 ```
 
-- [ ] **Step 3: Write failing identity and readout tests**
+- [x] **Step 3: Write failing identity and readout tests**
 
 ```python
 def test_identity_prototype_requires_qualified_finite_appearance() -> None:
@@ -223,7 +223,7 @@ def test_a4_selects_current_observation_center() -> None:
     ) == (4.0, 5.0, 6.0)
 ```
 
-- [ ] **Step 4: Run the tests and verify RED**
+- [x] **Step 4: Run the tests and verify RED**
 
 Run:
 
@@ -233,7 +233,7 @@ python -m pytest -q tests/oviv2/test_temporal_evidence_router.py
 
 Expected: collection fails because `src.oviv2.temporal_evidence_router` does not exist.
 
-- [ ] **Step 5: Implement the pure router**
+- [x] **Step 5: Implement the pure router**
 
 Create `src/oviv2/temporal_evidence_router.py` with exact enums and a frozen
 result type:
@@ -332,7 +332,7 @@ confidence)` pairs independently, select a qualifying token before any
 non-qualifying token, and never cross-pair one token's displacement with the
 other token's confidence.
 
-- [ ] **Step 6: Run the focused tests and verify GREEN**
+- [x] **Step 6: Run the focused tests and verify GREEN**
 
 Run:
 
@@ -342,7 +342,7 @@ python -m pytest -q tests/oviv2/test_temporal_evidence_router.py
 
 Expected: all tests pass.
 
-- [ ] **Step 7: Commit the pure contract**
+- [x] **Step 7: Commit the pure contract**
 
 ```bash
 git add src/oviv2/temporal_evidence_router.py tests/oviv2/test_temporal_evidence_router.py
@@ -356,7 +356,7 @@ git commit -m "feat: add causal temporal evidence router"
 - Modify: `tests/oviv2/test_temporal_runtime.py`
 - Modify: `src/oviv2/temporal_runtime.py`
 
-- [ ] **Step 1: Add a failing identity-only active-motion regression**
+- [x] **Step 1: Add a failing identity-only active-motion regression**
 
 Add a test that confirms an entity, forces geometry rejection, supplies the
 same qualified appearance feature at two displaced observations, and asserts:
@@ -371,7 +371,7 @@ The fake estimator must return `MotionDecision.REJECTED` with the supplied
 `previous_object_to_world`; the observations must use centers `1.2` and `1.4`
 meters so each accepted identity displacement exceeds the configured floor.
 
-- [ ] **Step 2: Add failing negative controls**
+- [x] **Step 2: Add failing negative controls**
 
 Use the existing association wrapper pattern from
 `test_rejected_low_confidence_match_creates_new_identity` to set
@@ -380,7 +380,7 @@ identity motion evidence and the rejected assignment follows the existing
 forced-new-identity behavior. Add a one-displaced-frame test asserting the
 existing consecutive-motion requirement keeps the sample static.
 
-- [ ] **Step 3: Run focused tests and verify RED**
+- [x] **Step 3: Run focused tests and verify RED**
 
 ```bash
 python -m pytest -q tests/oviv2/test_temporal_runtime.py \
@@ -390,7 +390,7 @@ python -m pytest -q tests/oviv2/test_temporal_runtime.py \
 Expected: the identity-only positive test fails because the current runtime
 passes only geometric confidence to `advance_dynamic_state`.
 
-- [ ] **Step 4: Integrate the routed motion result**
+- [x] **Step 4: Integrate the routed motion result**
 
 In `temporal_runtime.py`:
 
@@ -410,14 +410,14 @@ In `temporal_runtime.py`:
 Do not relax association, motion-distance, or epoch-reset gates. Keep the
 rejected low-confidence branch unchanged.
 
-- [ ] **Step 5: Prefer the last observed endpoint for dormant re-ID**
+- [x] **Step 5: Prefer the last observed endpoint for dormant re-ID**
 
 In the bank-only re-identification branch, compute displacement against
 `previous_export.last_centroid_xyz` when available, otherwise retain
 `record.last_centroid_xyz`. Keep immediate dormant reappearance qualification
 and thresholds unchanged.
 
-- [ ] **Step 6: Run runtime and router tests**
+- [x] **Step 6: Run runtime and router tests**
 
 ```bash
 python -m pytest -q \
@@ -428,7 +428,7 @@ python -m pytest -q \
 Expected: both files pass, including existing rejected-motion, dormant re-ID,
 and epoch-transition tests.
 
-- [ ] **Step 7: Commit routed active motion**
+- [x] **Step 7: Commit routed active motion**
 
 ```bash
 git add src/oviv2/temporal_runtime.py tests/oviv2/test_temporal_runtime.py
@@ -442,7 +442,7 @@ git commit -m "feat: route qualified identity motion evidence"
 - Modify: `tests/oviv2/test_temporal_runtime.py`
 - Modify: `src/oviv2/temporal_runtime.py`
 
-- [ ] **Step 1: Add a failing weak-identity prototype test**
+- [x] **Step 1: Add a failing weak-identity prototype test**
 
 Confirm an entity with prototype `[1, 0]`. Wrap the accepted association result
 so the assignment remains accepted but its diagnostic has
@@ -450,14 +450,14 @@ so the assignment remains accepted but its diagnostic has
 `[0, 1]`, then assert both the entity prototype and identity-bank prototype are
 exactly unchanged.
 
-- [ ] **Step 2: Add a qualified-identity positive control**
+- [x] **Step 2: Add a qualified-identity positive control**
 
 Process a qualified accepted observation with a non-identical finite feature
 whose similarity passes the existing gate. Assert the prototype changes and
 remains normalized. This proves the fix is selective rather than freezing all
 identity adaptation.
 
-- [ ] **Step 3: Run focused tests and verify RED**
+- [x] **Step 3: Run focused tests and verify RED**
 
 ```bash
 python -m pytest -q tests/oviv2/test_temporal_runtime.py \
@@ -467,7 +467,7 @@ python -m pytest -q tests/oviv2/test_temporal_runtime.py \
 Expected: the weak-identity test fails because the active branch currently
 calls `_prototype_update` unconditionally.
 
-- [ ] **Step 4: Gate only the persistent appearance update**
+- [x] **Step 4: Gate only the persistent appearance update**
 
 Import `admits_identity_prototype_update`. In the active assignment branch,
 retain atomic replacement for an explicit feature-model mismatch and gate
@@ -493,7 +493,7 @@ Keep semantic-probability, lifecycle, pose, extent, geometry, and new-identity
 updates unchanged. Bank-only dormant re-ID already requires qualified identity
 evidence and retains its existing update.
 
-- [ ] **Step 5: Run focused and full runtime tests**
+- [x] **Step 5: Run focused and full runtime tests**
 
 ```bash
 python -m pytest -q tests/oviv2/test_temporal_evidence_router.py
@@ -502,7 +502,7 @@ python -m pytest -q tests/oviv2/test_temporal_runtime.py
 
 Expected: all pass.
 
-- [ ] **Step 6: Commit prototype isolation**
+- [x] **Step 6: Commit prototype isolation**
 
 ```bash
 git add src/oviv2/temporal_runtime.py tests/oviv2/test_temporal_runtime.py
@@ -516,7 +516,7 @@ git commit -m "fix: isolate temporal identity prototypes"
 - Modify: `tests/oviv2/test_temporal_runtime.py`
 - Modify: `src/oviv2/temporal_runtime.py`
 
-- [ ] **Step 1: Add a failing A4 dual-center test**
+- [x] **Step 1: Add a failing A4 dual-center test**
 
 Construct an A4 frame where retained submap geometry stays at the previous
 center while the current observation center changes. Capture before/after
@@ -535,12 +535,12 @@ assert runtime.state.entities[0].submap == previous_submap
 Also assert `_centroid(runtime.state.entities[0])` differs from the exported
 center, proving the test actually exercises dual centers.
 
-- [ ] **Step 2: Add A2/A3 legacy-center controls**
+- [x] **Step 2: Add A2/A3 legacy-center controls**
 
 Parameterize A2 and A3 with the same geometry setup and assert their export
 sample center remains `_centroid(entity)`. This locks the change to A4.
 
-- [ ] **Step 3: Run the tests and verify RED**
+- [x] **Step 3: Run the tests and verify RED**
 
 ```bash
 python -m pytest -q tests/oviv2/test_temporal_runtime.py \
@@ -550,7 +550,7 @@ python -m pytest -q tests/oviv2/test_temporal_runtime.py \
 Expected: the A4 test fails because the current export loop always calls
 `_centroid(entity)`.
 
-- [ ] **Step 4: Select the temporal readout center**
+- [x] **Step 4: Select the temporal readout center**
 
 Import `select_temporal_readout_center`. In the export loop:
 
@@ -574,14 +574,14 @@ sample. Keep the earlier identity-bank loop on its existing `_centroid(entity)`
 value. Do not alter entity transforms, submaps, geometry epochs, snapshots, or
 background ownership.
 
-- [ ] **Step 5: Add deterministic prefix-replay coverage**
+- [x] **Step 5: Add deterministic prefix-replay coverage**
 
 Run an identical frame prefix through two fresh A4 runtimes and assert equality
 of export batches, tracker canonical dumps, entity submaps, geometry states,
 and diagnostics. Then append one extra frame to only one runtime and confirm the
 prefix artifacts remain unchanged.
 
-- [ ] **Step 6: Run all temporal behavior suites**
+- [x] **Step 6: Run all temporal behavior suites**
 
 ```bash
 python -m pytest -q \
@@ -595,7 +595,7 @@ python -m pytest -q \
 
 Expected: all pass.
 
-- [ ] **Step 7: Commit dual-center readout**
+- [x] **Step 7: Commit dual-center readout**
 
 ```bash
 git add src/oviv2/temporal_runtime.py tests/oviv2/test_temporal_runtime.py
@@ -610,7 +610,7 @@ git commit -m "feat: export causal current observation centers"
 - Modify the implementation only if a focused regression identifies a real
   violation; do not update trusted manifests to hide a source mismatch.
 
-- [ ] **Step 1: Verify the protected source manifest**
+- [x] **Step 1: Verify the protected source manifest**
 
 ```bash
 python scripts/evaluation/verify_oviv2_dual_readout_development_gates.py \
@@ -620,7 +620,7 @@ python scripts/evaluation/verify_oviv2_dual_readout_development_gates.py \
 
 Expected: exit 0 and no protected-source mismatch.
 
-- [ ] **Step 2: Verify exact cumulative behavior**
+- [x] **Step 2: Verify exact cumulative behavior**
 
 ```bash
 python -m pytest -q \
@@ -631,7 +631,7 @@ python -m pytest -q \
 
 Expected: all tests pass; `test_t1_noninterference.py` remains 8/8.
 
-- [ ] **Step 3: Verify v2 runner, provenance, and package contracts**
+- [x] **Step 3: Verify v2 runner, provenance, and package contracts**
 
 ```bash
 python -m pytest -q \
@@ -645,7 +645,7 @@ python -m pytest -q \
 Expected: all locally asset-independent tests pass; tests requiring declared
 external TESSE assets may skip only through their existing path-presence guard.
 
-- [ ] **Step 4: Verify syntax and diff hygiene**
+- [x] **Step 4: Verify syntax and diff hygiene**
 
 ```bash
 python -m py_compile \
@@ -668,7 +668,7 @@ plan, literature, and review files are changed.
 - Formal outputs (only after promotion and freeze):
   `outputs/tesse_cd/crove-evidence-routing/apartment_formal_run{1,2}/`
 
-- [ ] **Step 1: Record the exact implementation identity**
+- [x] **Step 1: Record the exact implementation identity**
 
 ```bash
 git rev-parse HEAD
@@ -721,15 +721,15 @@ that plan.
 
 ## Final Review Checklist
 
-- [ ] The evidence matrix has one exact test per evidence type.
-- [ ] Runtime calls the router only in A4-sensitive temporal paths.
-- [ ] A2/A3 exports and motion behavior are unchanged.
-- [ ] Identity-bank and cumulative centers remain fused-map centers.
-- [ ] A4 observed export/tracker centers are current observation centers.
-- [ ] Unqualified appearance cannot modify the persistent prototype.
-- [ ] Geometry or identity evidence alone can support active hysteresis, but
+- [x] The evidence matrix has one exact test per evidence type.
+- [x] Runtime calls the router only in A4-sensitive temporal paths.
+- [x] A2/A3 exports and motion behavior are unchanged.
+- [x] Identity-bank and cumulative centers remain fused-map centers.
+- [x] A4 observed export/tracker centers are current observation centers.
+- [x] Unqualified appearance cannot modify the persistent prototype.
+- [x] Geometry or identity evidence alone can support active hysteresis, but
       thresholds and consecutive-frame requirements remain authoritative.
-- [ ] Occlusion neutrality, visible-absence ownership release, epoch purity,
+- [x] Occlusion neutrality, visible-absence ownership release, epoch purity,
       dormant re-ID, and rejected low-confidence behavior remain covered.
-- [ ] No T1 protected source, schema, or trusted manifest is changed.
-- [ ] Paper tables remain untouched until verified formal artifacts exist.
+- [x] No T1 protected source, schema, or trusted manifest is changed.
+- [x] Paper tables remain untouched until verified formal artifacts exist.
