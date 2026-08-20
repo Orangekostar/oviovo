@@ -199,30 +199,15 @@ def _candidate_sources(
         "proposal_trigger_count": ["proposal:0"],
         "reid_opportunity_count": ["reid:0"],
         "reid_trigger_count": ["reid:0"],
-        "motion_rejection_count": [
-            "motion:0"
-            if candidate_id == "diag_a4_translation_only_no_icp"
-            or base_profile in {"a2", "a3"}
-            else "icp:0"
-        ],
+        "motion_rejection_count": ["motion:0"],
         "ledger_rejection_count": [],
         "identity_expiry_count": ["identity:0"],
         "geometry_reclaim_count": ["geometry:0"],
-        "epoch_reset_opportunity_count": [
-            "motion:0"
-            if candidate_id == "diag_a4_translation_only_no_icp"
-            or base_profile in {"a2", "a3"}
-            else "icp:0"
-        ],
-        "epoch_reset_trigger_count": [
-            "motion:0"
-            if candidate_id == "diag_a4_translation_only_no_icp"
-            or base_profile in {"a2", "a3"}
-            else "icp:0"
-        ],
-        "icp_opportunity_count": ["icp:0"],
+        "epoch_reset_opportunity_count": ["motion:0"],
+        "epoch_reset_trigger_count": ["motion:0"],
+        "icp_opportunity_count": ["motion:0"],
         "icp_accept_count": [],
-        "icp_reject_count": ["icp:0"],
+        "icp_reject_count": ["motion:0"],
         "ledger_stage_count": ["ledger:0"],
         "ledger_commit_count": ["ledger:0"],
         "ledger_reclaim_count": ["ledger:0"],
