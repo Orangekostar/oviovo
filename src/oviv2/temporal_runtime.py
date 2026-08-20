@@ -45,6 +45,7 @@ from src.oviv2.temporal_geometry import (
     integrate_object_submap,
 )
 from src.oviv2.temporal_epoch import GeometryEpoch, start_new_epoch
+from src.oviv2.temporal_evidence_router import route_active_motion_evidence
 from src.oviv2.temporal_export import (
     DynamicEvidenceState,
     DynamicState,
@@ -2391,11 +2392,14 @@ class TemporalCurrentRuntime:
             motion_confidence = _motion_confidence(
                 motion, self.config, old.submap, points
             )
-            displacement = float(
+            geometry_displacement = float(
                 np.linalg.norm(
                     np.asarray(motion.object_to_world[:3, 3], dtype=np.float64)
                     - np.asarray(old.object_to_world[:3, 3], dtype=np.float64)
                 )
+            )
+            current_center = tuple(
+                float(value) for value in observation.centroid_xyz
             )
             previous_export = old_export.get(entity_id)
             previous_dynamic = (
@@ -2403,25 +2407,44 @@ class TemporalCurrentRuntime:
                 if previous_export is None
                 else previous_export.dynamic_evidence
             )
-            accepted_motion = (
+            geometry_accepted = (
                 motion.decision is not MotionDecision.REJECTED
                 and motion_confidence > 0.0
             )
             assert self.config.dynamic_state is not None
+            previous_center = (
+                previous_export.last_centroid_xyz
+                if previous_export is not None
+                and previous_export.last_centroid_xyz is not None
+                else _centroid(old)
+            )
+            identity_displacement = float(
+                np.linalg.norm(
+                    np.asarray(current_center, dtype=np.float64)
+                    - np.asarray(previous_center, dtype=np.float64)
+                )
+            )
+            routed_motion = route_active_motion_evidence(
+                geometry_accepted=geometry_accepted,
+                geometry_confidence=motion_confidence,
+                geometry_displacement_m=geometry_displacement,
+                identity_qualified=(
+                    self.config.execution_profile is ExecutionProfile.A4
+                    and diagnostic.high_confidence_identity_match
+                ),
+                appearance_similarity=diagnostic.appearance_similarity,
+                identity_displacement_m=identity_displacement,
+                config=self.config.dynamic_state,
+            )
             dynamic = advance_dynamic_state(
                 previous_dynamic,
-                accepted_motion=accepted_motion,
-                displacement_m=displacement,
-                confidence=motion_confidence,
+                accepted_motion=routed_motion.accepted,
+                displacement_m=routed_motion.displacement_m,
+                confidence=routed_motion.confidence,
                 config=self.config.dynamic_state,
             )
             dynamic_by_entity[entity_id] = dynamic
-            qualifies_as_motion = (
-                accepted_motion
-                and displacement >= self.config.dynamic_state.displacement_floor_m
-                and motion_confidence
-                >= self.config.dynamic_state.minimum_motion_confidence
-            )
+            qualifies_as_motion = routed_motion.qualifies_as_motion
             if motion.decision is MotionDecision.REJECTED:
                 epoch_reset_opportunity_records.append(
                     f"motion:{frame.frame_id}:{observation_id}:{entity_id}"
@@ -2480,7 +2503,10 @@ class TemporalCurrentRuntime:
                     epoch_reset_opportunity_records.append(
                         f"dynamic:{frame.frame_id}:{observation_id}:{entity_id}"
                     )
-            elif displacement < self.config.dynamic_state.displacement_floor_m:
+            elif (
+                routed_motion.displacement_m
+                < self.config.dynamic_state.displacement_floor_m
+            ):
                 epoch = epoch.integrate_stationary(
                     points, frame.frame_id, self.config.geometry
                 )
@@ -2490,7 +2516,10 @@ class TemporalCurrentRuntime:
                 # new epoch nor for contaminating the retained static geometry.
                 pass
             submap = epoch.submap
-            motion_by_entity[entity_id] = (displacement, motion_confidence)
+            motion_by_entity[entity_id] = (
+                routed_motion.displacement_m,
+                routed_motion.confidence,
+            )
             present = TemporalEvidence(
                 TemporalEvidenceKind.PRESENT,
                 float(observation.confidence),

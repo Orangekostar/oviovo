@@ -83,9 +83,10 @@ def test_active_motion_routes_only_admissible_sources(
     result = route_active_motion_evidence(
         geometry_accepted=geometry,
         geometry_confidence=0.8 if geometry else 0.0,
+        geometry_displacement_m=0.2,
         identity_qualified=identity,
         appearance_similarity=similarity,
-        displacement_m=0.2,
+        identity_displacement_m=0.2,
         config=_dynamic_config(),
     )
 
@@ -101,17 +102,19 @@ def test_active_motion_retains_displacement_and_confidence_thresholds() -> None:
     low_displacement = route_active_motion_evidence(
         geometry_accepted=False,
         geometry_confidence=0.0,
+        geometry_displacement_m=0.0,
         identity_qualified=True,
         appearance_similarity=0.9,
-        displacement_m=0.149,
+        identity_displacement_m=0.149,
         config=_dynamic_config(),
     )
     low_confidence = route_active_motion_evidence(
         geometry_accepted=False,
         geometry_confidence=0.0,
+        geometry_displacement_m=0.0,
         identity_qualified=True,
         appearance_similarity=0.69,
-        displacement_m=0.2,
+        identity_displacement_m=0.2,
         config=_dynamic_config(),
     )
 
@@ -125,9 +128,10 @@ def test_missing_identity_similarity_fails_closed() -> None:
     result = route_active_motion_evidence(
         geometry_accepted=False,
         geometry_confidence=0.0,
+        geometry_displacement_m=0.0,
         identity_qualified=True,
         appearance_similarity=None,
-        displacement_m=0.2,
+        identity_displacement_m=0.2,
         config=_dynamic_config(),
     )
 
@@ -143,12 +147,14 @@ def test_missing_identity_similarity_fails_closed() -> None:
         {"geometry_accepted": 1},
         {"geometry_confidence": float("nan")},
         {"geometry_confidence": 1.01},
+        {"geometry_displacement_m": -0.01},
+        {"geometry_displacement_m": float("inf")},
         {"identity_qualified": 1},
         {"appearance_similarity": True},
         {"appearance_similarity": float("inf")},
         {"appearance_similarity": 1.01},
-        {"displacement_m": -0.01},
-        {"displacement_m": float("inf")},
+        {"identity_displacement_m": -0.01},
+        {"identity_displacement_m": float("inf")},
         {"config": object()},
     ],
 )
@@ -158,15 +164,34 @@ def test_active_motion_rejects_malformed_inputs(
     values: dict[str, object] = {
         "geometry_accepted": True,
         "geometry_confidence": 0.8,
+        "geometry_displacement_m": 0.2,
         "identity_qualified": True,
         "appearance_similarity": 0.9,
-        "displacement_m": 0.2,
+        "identity_displacement_m": 0.2,
         "config": _dynamic_config(),
     }
     values.update(changes)
 
     with pytest.raises((TypeError, ValueError)):
         route_active_motion_evidence(**values)  # type: ignore[arg-type]
+
+
+def test_combined_route_does_not_cross_pair_incompatible_evidence() -> None:
+    result = route_active_motion_evidence(
+        geometry_accepted=True,
+        geometry_confidence=0.2,
+        geometry_displacement_m=0.5,
+        identity_qualified=True,
+        appearance_similarity=1.0,
+        identity_displacement_m=0.0,
+        config=_dynamic_config(),
+    )
+
+    assert result.source is MotionEvidenceSource.COMBINED
+    assert result.accepted is True
+    assert result.displacement_m == pytest.approx(0.5)
+    assert result.confidence == pytest.approx(0.2)
+    assert result.qualifies_as_motion is False
 
 
 def test_identity_prototype_requires_qualified_finite_appearance() -> None:

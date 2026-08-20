@@ -1167,6 +1167,46 @@ def test_low_confidence_large_motion_does_not_contaminate_geometry(
     assert result.export.samples[0].dynamic_state.value == "static"
 
 
+def test_a4_consecutive_active_identity_motion_recovers_dynamic_without_geometry_confidence(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_export import DynamicState
+    from src.oviv2.temporal_geometry import MotionDecision, ObjectMotionEstimate
+
+    runtime = _runtime(_config(ExecutionProfile.A4))
+    entity_id = _confirm(runtime)
+
+    monkeypatch.setattr(
+        module,
+        "estimate_object_motion",
+        lambda *args, **kwargs: ObjectMotionEstimate(
+            kwargs["previous_object_to_world"],
+            MotionDecision.REJECTED,
+            0.0,
+            0.1,
+        ),
+    )
+
+    first_frame = _frame(2, depth=1.2)
+    first = runtime.process_frame(
+        first_frame,
+        (_observation(first_frame, centroid_z=1.2),),
+    )
+    second_frame = _frame(3, depth=1.4)
+    second = runtime.process_frame(
+        second_frame,
+        (_observation(second_frame, centroid_z=1.4),),
+    )
+
+    assert first.active_entity_ids == (entity_id,)
+    assert first.export.samples[0].dynamic_state is DynamicState.STATIC
+    assert second.active_entity_ids == (entity_id,)
+    assert second.export.samples[0].entity_id == entity_id
+    assert second.export.samples[0].dynamic_state is DynamicState.DYNAMIC
+    assert second.export.samples[0].motion_confidence >= 0.7
+
+
 def test_geometry_epoch_changes_only_after_consecutive_confirmed_motion(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

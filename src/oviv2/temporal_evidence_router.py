@@ -195,9 +195,10 @@ def route_active_motion_evidence(
     *,
     geometry_accepted: bool,
     geometry_confidence: float,
+    geometry_displacement_m: float,
     identity_qualified: bool,
     appearance_similarity: float | None,
-    displacement_m: float,
+    identity_displacement_m: float,
     config: TemporalDynamicConfig,
 ) -> RoutedMotionEvidence:
     geometry_is_accepted = _exact_bool(
@@ -208,14 +209,23 @@ def route_active_motion_evidence(
         geometry_confidence,
         "geometry_confidence",
     )
+    geometry_displacement = _finite(
+        geometry_displacement_m,
+        "geometry_displacement_m",
+    )
+    if geometry_displacement < 0.0:
+        raise ValueError("geometry_displacement_m must be nonnegative")
     identity_is_qualified = _exact_bool(
         identity_qualified,
         "identity_qualified",
     )
     similarity = _appearance_similarity(appearance_similarity)
-    displacement = _finite(displacement_m, "displacement_m")
-    if displacement < 0.0:
-        raise ValueError("displacement_m must be nonnegative")
+    identity_displacement = _finite(
+        identity_displacement_m,
+        "identity_displacement_m",
+    )
+    if identity_displacement < 0.0:
+        raise ValueError("identity_displacement_m must be nonnegative")
     normalized_config = _dynamic_config(config)
 
     geometry_admitted = (
@@ -237,15 +247,47 @@ def route_active_motion_evidence(
     else:
         source = MotionEvidenceSource.NONE
     accepted = source is not MotionEvidenceSource.NONE
-    confidence = max(
-        normalized_geometry_confidence if geometry_admitted else 0.0,
-        identity_confidence,
-    )
-    qualifies = (
-        accepted
-        and displacement >= normalized_config.displacement_floor_m
-        and confidence >= normalized_config.minimum_motion_confidence
-    )
+    candidates: list[tuple[MotionEvidenceSource, float, float]] = []
+    if geometry_admitted:
+        candidates.append(
+            (
+                MotionEvidenceSource.GEOMETRY,
+                geometry_displacement,
+                normalized_geometry_confidence,
+            )
+        )
+    if identity_admitted:
+        candidates.append(
+            (
+                MotionEvidenceSource.IDENTITY,
+                identity_displacement,
+                identity_confidence,
+            )
+        )
+    qualifying = [
+        candidate
+        for candidate in candidates
+        if candidate[1] >= normalized_config.displacement_floor_m
+        and candidate[2] >= normalized_config.minimum_motion_confidence
+    ]
+    moving = [
+        candidate
+        for candidate in candidates
+        if candidate[1] >= normalized_config.displacement_floor_m
+    ]
+    selectable = qualifying or moving
+    if selectable:
+        _, displacement, confidence = max(
+            selectable,
+            key=lambda candidate: (
+                candidate[2],
+                candidate[0] is MotionEvidenceSource.GEOMETRY,
+            ),
+        )
+    else:
+        displacement = 0.0
+        confidence = 0.0
+    qualifies = bool(qualifying)
     return RoutedMotionEvidence(
         source=source,
         accepted=accepted,
