@@ -91,3 +91,91 @@ isolation is the remaining fragmentation source.
 No result was invented or estimated in this report. Every numeric cell above
 comes from the source-bound A6 or routed Apartment artifacts. No main paper
 table was changed.
+
+## Component-Qualified Follow-up
+
+The geometry/identity qualification correction was evaluated at commit
+`8301984bcf82966ed6d6eb7b3320d869cd7604d3`. A fixed diagnostic ablation that
+restores weak-match prototype adaptation was evaluated at commit
+`21e74e388ed10018819156e152781fe3a48c5edf`. Both captures processed all 1,745
+Apartment frames and produced 43 finite official states. The repeated official
+metric files are byte-identical for both runs.
+
+Both variants use algorithm hash
+`1935e744f36c37a7648f1baf9474fa5d654e73aacc89c95f59b55c28a423c632`.
+The main capture input SHA-256 is
+`a67114700d4fb00c40036a0586d541626c007abb83f298f32c4c18a060967f74`.
+The ablation capture input SHA-256 is
+`51f4f55960b42750b9b4be3e7be060afef9e858e6659602cac5866da877662c6`;
+it differs because node101 used the checked relocated asset paths. Its
+algorithm configuration remains identical to the canonical Apartment config.
+
+### Measured Metrics
+
+| Metric | A6 | Component-qualified | Delta | No-prototype-isolation | Delta |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Official Obj. F1 | 0.372762 | 0.350702 | -0.022060 | 0.320662 | -0.052101 |
+| Official Dyn. F1 | unavailable | 0.070726 | finite | 0.115604 | finite |
+| Official Chg. F1 | 0.060853 | 0.070489 | +0.009635 | 0.094201 | +0.033348 |
+| Official background F1@0.2 | 0.665124 | 0.663640 | -0.001484 | 0.667956 | +0.002832 |
+| Common-v2 current mIoU | 0.142897 | 0.117990 | -0.024907 | 0.095379 | -0.047518 |
+| Common-v2 ghost rate | 0.646883 | 0.627961 | -0.018922 | 0.571717 | -0.075166 |
+| Common-v2 background F@5cm | 0.096979 | 0.081008 | -0.015971 | 0.075476 | -0.021503 |
+| Recovery latency (frames) | 450 | 450 | 0 | 450 | 0 |
+
+### Gate Decision
+
+**BOTH REJECTED; RETAIN A6.** The component-qualified variant misses the
+required change gain by 0.000365, regresses Obj. F1 by 0.022060, and regresses
+current mIoU by 0.024907. The prototype ablation passes the change and ghost
+gates but regresses Obj. F1 by 0.052101 and current mIoU by 0.047518. Dyn. F1
+is finite for both variants, but no finite A6 Dyn. F1 exists for a preregistered
+delta comparison. Neither variant is eligible for an Office run.
+
+Fragmentation diagnostics also prevent promotion:
+
+| Diagnostic | A6 | Component-qualified | No-prototype-isolation |
+| --- | ---: | ---: | ---: |
+| Bridge symbol assignments | 231 | 259 | 249 |
+| Latest dynamic assignments | 47 | 84 | 94 |
+| Latest static assignments | 184 | 175 | 155 |
+| Epoch-reset triggers | 189 | 148 | 147 |
+| Proposal triggers | 514 | 916 | 1114 |
+| Re-ID opportunities | 4067 | 3369 | 5512 |
+| Re-ID triggers | 205 | 230 | 167 |
+| Motion rejections | 38 | 132 | 210 |
+
+The correction substantially reduces epoch resets and avoids the routed
+candidate's 376-symbol failure, but it does not restore A6 object identity or
+static semantic quality. Restoring weak-match prototype updates increases the
+dynamic/change scores and lowers ghosting, while further damaging Obj. F1 and
+current mIoU. This isolates prototype adaptation as a precision/recall tradeoff,
+not a valid replacement for A6.
+
+### Component-Qualified Artifact Bindings
+
+| Artifact | SHA-256 |
+| --- | --- |
+| Capture status | `b9b6978c3531752cb3edda05af004cbbb30f7a6c3ee67ff1d1e67fd8024d0a1c` |
+| Run manifest | `241ff61ca6e6e041eb94c6749c0ded5fdae35b667e1ffc4478c7062bc0e21a4c` |
+| Temporal manifest | `c17fc21b5aeb976e37a596ba1881af71871fbb9b0cb6803bf60d9f5bd89f2120` |
+| Common-v2 summary | `4c16f437615a6ecbf5a6eb684968c5fb9b14f546ceffde4103a11723001555c7` |
+| Bridge manifest | `95a096e5a31235dc67ef02b58c794a37dc5bdbfcfbaf38913c62f0d3ed074ecf` |
+| Khronos run status | `5880e27b139469eaba9e8b494d1bf2a1c9fba885690305d158799586bc942e65` |
+| Official metrics and repeat | `26b66416f5346dfefd10cbc7af3c8f5811e24110e4639a5d035bcfdf4bf910cb` |
+| Evaluation status | `a284cba00ce3021b913a5ced09bdd2700e8c2f827cb4548534397b862167481c` |
+
+### Prototype-Ablation Artifact Bindings
+
+| Artifact | SHA-256 |
+| --- | --- |
+| Capture status | `5d23e443a27c146cdf0d010b0e1c00c5efade3fda4e045ac782a904c5370ce53` |
+| Run manifest | `35da1f312960fd06fc05aa2d572c71dc41391ce8e762ab684e809ac6879ece4f` |
+| Temporal manifest | `ffe172b0bbfc07bda3c1713968e8fbf1523f842263ec50f3f01495320883a843` |
+| Common-v2 summary | `fa0952dd6bf9a2f84357292e47d5b3e704cf06211f155f457c95d5ddca38331d` |
+| Bridge manifest | `2ffe541a09e73054d74340f07ace61f54a0d646026116455eebf880a18796ee3` |
+| Khronos run status | `905bd43fc31d4a62f840bf8a3da3c18cc3a1cbaa908f18f5725d5b76454b11f4` |
+| Official metrics and repeat | `21c48ceb4875e9a26f7b992160790d123503cd4964b0f644847875ead34d0feb` |
+| Evaluation status | `d1369c1ab5348153d4a0239c8ecddb57039f473edafbc3450d49998ba3ae660d` |
+
+No main-paper or supplementary table was changed by this follow-up.
