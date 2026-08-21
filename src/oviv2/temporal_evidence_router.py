@@ -88,6 +88,8 @@ class RoutedMotionEvidence:
     accepted: bool
     displacement_m: float
     confidence: float
+    geometry_qualifies_as_motion: bool
+    identity_qualifies_as_motion: bool
     qualifies_as_motion: bool
 
     def __post_init__(self) -> None:
@@ -99,12 +101,33 @@ class RoutedMotionEvidence:
         if displacement < 0.0:
             raise ValueError("displacement_m must be nonnegative")
         confidence = _probability(self.confidence, "confidence")
+        if type(self.geometry_qualifies_as_motion) is not bool:
+            raise TypeError("geometry_qualifies_as_motion must be an exact bool")
+        if type(self.identity_qualifies_as_motion) is not bool:
+            raise TypeError("identity_qualifies_as_motion must be an exact bool")
         if type(self.qualifies_as_motion) is not bool:
             raise TypeError("qualifies_as_motion must be an exact bool")
         if self.accepted is (self.source is MotionEvidenceSource.NONE):
             raise ValueError("accepted must agree with the evidence source")
         if self.qualifies_as_motion and not self.accepted:
             raise ValueError("qualifying motion must be accepted")
+        if self.qualifies_as_motion is not (
+            self.geometry_qualifies_as_motion
+            or self.identity_qualifies_as_motion
+        ):
+            raise ValueError(
+                "aggregate qualification must match source qualifications"
+            )
+        if self.geometry_qualifies_as_motion and self.source not in {
+            MotionEvidenceSource.GEOMETRY,
+            MotionEvidenceSource.COMBINED,
+        }:
+            raise ValueError("geometry qualification requires admitted geometry")
+        if self.identity_qualifies_as_motion and self.source not in {
+            MotionEvidenceSource.IDENTITY,
+            MotionEvidenceSource.COMBINED,
+        }:
+            raise ValueError("identity qualification requires admitted identity")
         object.__setattr__(self, "displacement_m", displacement)
         object.__setattr__(self, "confidence", confidence)
 
@@ -264,11 +287,28 @@ def route_active_motion_evidence(
                 identity_confidence,
             )
         )
+    geometry_qualifies = bool(
+        geometry_admitted
+        and geometry_displacement >= normalized_config.displacement_floor_m
+        and normalized_geometry_confidence
+        >= normalized_config.minimum_motion_confidence
+    )
+    identity_qualifies = bool(
+        identity_admitted
+        and identity_displacement >= normalized_config.displacement_floor_m
+        and identity_confidence >= normalized_config.minimum_motion_confidence
+    )
     qualifying = [
         candidate
         for candidate in candidates
-        if candidate[1] >= normalized_config.displacement_floor_m
-        and candidate[2] >= normalized_config.minimum_motion_confidence
+        if (
+            candidate[0] is MotionEvidenceSource.GEOMETRY
+            and geometry_qualifies
+        )
+        or (
+            candidate[0] is MotionEvidenceSource.IDENTITY
+            and identity_qualifies
+        )
     ]
     moving = [
         candidate
@@ -293,6 +333,8 @@ def route_active_motion_evidence(
         accepted=accepted,
         displacement_m=displacement,
         confidence=confidence,
+        geometry_qualifies_as_motion=geometry_qualifies,
+        identity_qualifies_as_motion=identity_qualifies,
         qualifies_as_motion=qualifies,
     )
 

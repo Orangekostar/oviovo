@@ -1235,6 +1235,7 @@ def test_a4_consecutive_active_identity_motion_recovers_dynamic_without_geometry
 
     runtime = _runtime(_config(ExecutionProfile.A4))
     entity_id = _confirm(runtime)
+    before = runtime.state.geometry.current(entity_id)
 
     monkeypatch.setattr(
         module,
@@ -1264,6 +1265,42 @@ def test_a4_consecutive_active_identity_motion_recovers_dynamic_without_geometry
     assert second.export.samples[0].entity_id == entity_id
     assert second.export.samples[0].dynamic_state is DynamicState.DYNAMIC
     assert second.export.samples[0].motion_confidence >= 0.7
+    assert runtime.state.geometry.current(entity_id) == before
+    assert first.diagnostics.epoch_reset_trigger_count == 0
+    assert second.diagnostics.epoch_reset_trigger_count == 0
+
+
+def test_a4_identity_motion_does_not_reset_stationary_geometry(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.oviv2.temporal_runtime as module
+    from src.oviv2.temporal_geometry import MotionDecision, ObjectMotionEstimate
+
+    runtime = _runtime(_config(ExecutionProfile.A4))
+    entity_id = _confirm(runtime)
+    before = runtime.state.geometry.current(entity_id)
+
+    def weak_stationary_geometry(*args, **kwargs):
+        pose = np.array(kwargs["previous_object_to_world"], copy=True)
+        pose[0, 3] += 0.05
+        return ObjectMotionEstimate(
+            pose,
+            MotionDecision.ICP_ACCEPTED,
+            0.2,
+            0.01,
+        )
+
+    monkeypatch.setattr(module, "estimate_object_motion", weak_stationary_geometry)
+    frame = _frame(2, depth=1.2)
+    result = runtime.process_frame(
+        frame,
+        (_observation(frame, centroid_z=1.2),),
+    )
+    after = runtime.state.geometry.current(entity_id)
+
+    assert after.epoch_id == before.epoch_id
+    assert float(after.submap.weights.sum()) > float(before.submap.weights.sum())
+    assert result.diagnostics.epoch_reset_trigger_count == 0
 
 
 def test_a4_temporal_readout_uses_current_center_without_moving_retained_geometry(

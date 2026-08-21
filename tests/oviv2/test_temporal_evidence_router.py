@@ -65,12 +65,20 @@ def test_admissibility_rejects_non_evidence_values() -> None:
 
 
 @pytest.mark.parametrize(
-    ("geometry", "identity", "similarity", "source", "confidence"),
+    (
+        "geometry",
+        "identity",
+        "similarity",
+        "source",
+        "confidence",
+        "geometry_qualifies",
+        "identity_qualifies",
+    ),
     [
-        (False, False, None, MotionEvidenceSource.NONE, 0.0),
-        (True, False, None, MotionEvidenceSource.GEOMETRY, 0.8),
-        (False, True, 0.9, MotionEvidenceSource.IDENTITY, 0.9),
-        (True, True, 0.9, MotionEvidenceSource.COMBINED, 0.9),
+        (False, False, None, MotionEvidenceSource.NONE, 0.0, False, False),
+        (True, False, None, MotionEvidenceSource.GEOMETRY, 0.8, True, False),
+        (False, True, 0.9, MotionEvidenceSource.IDENTITY, 0.9, False, True),
+        (True, True, 0.9, MotionEvidenceSource.COMBINED, 0.9, True, True),
     ],
 )
 def test_active_motion_routes_only_admissible_sources(
@@ -79,6 +87,8 @@ def test_active_motion_routes_only_admissible_sources(
     similarity: float | None,
     source: MotionEvidenceSource,
     confidence: float,
+    geometry_qualifies: bool,
+    identity_qualifies: bool,
 ) -> None:
     result = route_active_motion_evidence(
         geometry_accepted=geometry,
@@ -93,9 +103,28 @@ def test_active_motion_routes_only_admissible_sources(
     assert result.source is source
     assert result.confidence == pytest.approx(confidence)
     assert result.accepted is (source is not MotionEvidenceSource.NONE)
+    assert result.geometry_qualifies_as_motion is geometry_qualifies
+    assert result.identity_qualifies_as_motion is identity_qualifies
     assert result.qualifies_as_motion is (
-        source is not MotionEvidenceSource.NONE
+        geometry_qualifies or identity_qualifies
     )
+
+
+def test_identity_qualification_does_not_qualify_geometry() -> None:
+    result = route_active_motion_evidence(
+        geometry_accepted=True,
+        geometry_confidence=0.2,
+        geometry_displacement_m=0.05,
+        identity_qualified=True,
+        appearance_similarity=0.9,
+        identity_displacement_m=0.2,
+        config=_dynamic_config(),
+    )
+
+    assert result.source is MotionEvidenceSource.COMBINED
+    assert result.geometry_qualifies_as_motion is False
+    assert result.identity_qualifies_as_motion is True
+    assert result.qualifies_as_motion is True
 
 
 def test_active_motion_retains_displacement_and_confidence_thresholds() -> None:

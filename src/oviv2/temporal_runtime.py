@@ -2457,7 +2457,9 @@ class TemporalCurrentRuntime:
                 config=self.config.dynamic_state,
             )
             dynamic_by_entity[entity_id] = dynamic
-            qualifies_as_motion = routed_motion.qualifies_as_motion
+            geometry_qualifies_as_motion = (
+                routed_motion.geometry_qualifies_as_motion
+            )
             if motion.decision is MotionDecision.REJECTED:
                 epoch_reset_opportunity_records.append(
                     f"motion:{frame.frame_id}:{observation_id}:{entity_id}"
@@ -2475,20 +2477,24 @@ class TemporalCurrentRuntime:
                     lifecycle_by_id[entity_id] = lifecycle
                     next_entities[entity_id] = replace(old, lifecycle=lifecycle)
                     continue
-                epoch = start_new_epoch(
-                    epoch,
-                    motion,
-                    points,
-                    observation.centroid_xyz,
-                    frame.frame_id,
-                    self.config.geometry,
-                )
-                epoch_reset_triggers += 1
-                epoch_reset_trigger_records.append(
-                    f"motion:{frame.frame_id}:{observation_id}:{entity_id}"
-                )
-                geometry_transaction.append(epoch)
-            elif qualifies_as_motion:
+                if (
+                    self.config.execution_profile is not ExecutionProfile.A4
+                    or old.lifecycle.lifecycle is not TemporalLifecycle.ACTIVE
+                ):
+                    epoch = start_new_epoch(
+                        epoch,
+                        motion,
+                        points,
+                        observation.centroid_xyz,
+                        frame.frame_id,
+                        self.config.geometry,
+                    )
+                    epoch_reset_triggers += 1
+                    epoch_reset_trigger_records.append(
+                        f"motion:{frame.frame_id}:{observation_id}:{entity_id}"
+                    )
+                    geometry_transaction.append(epoch)
+            elif geometry_qualifies_as_motion:
                 if previous_dynamic.dynamic_state is DynamicState.DYNAMIC:
                     epoch = epoch.integrate(
                         motion, points, frame.frame_id, self.config.geometry
@@ -2517,7 +2523,7 @@ class TemporalCurrentRuntime:
                         f"dynamic:{frame.frame_id}:{observation_id}:{entity_id}"
                     )
             elif (
-                routed_motion.displacement_m
+                geometry_displacement
                 < self.config.dynamic_state.displacement_floor_m
             ):
                 epoch = epoch.integrate_stationary(
