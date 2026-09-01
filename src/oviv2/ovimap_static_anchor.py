@@ -476,7 +476,8 @@ def _merged_background(
 def compose_anchor_checkpoint(
     *,
     anchor: MapSnapshot,
-    temporal: TemporalCurrentSnapshot,
+    temporal: TemporalCurrentSnapshot | MapSnapshot,
+    frame_index: int | None = None,
     exports: tuple[TemporalExportBatch, ...],
     state: AnchorOverlayState,
     config: StaticAnchorConfig,
@@ -487,18 +488,38 @@ def compose_anchor_checkpoint(
 
     if not isinstance(anchor, MapSnapshot):
         raise TypeError("anchor must be a MapSnapshot")
-    if not isinstance(temporal, TemporalCurrentSnapshot):
-        raise TypeError("temporal must be a TemporalCurrentSnapshot")
     if not isinstance(state, AnchorOverlayState):
         raise TypeError("state must be an AnchorOverlayState")
     if not isinstance(config, StaticAnchorConfig):
         raise TypeError("config must be a StaticAnchorConfig")
     manifest_hash = _sha256(anchor_manifest_sha256, "anchor_manifest_sha256")
     names = _class_names(class_names)
-    frame_index = temporal.metadata.frame_id
-    if frame_index <= state.last_frame_index:
+    wrappers: dict[int, TemporalSnapshotEntity]
+    if isinstance(temporal, TemporalCurrentSnapshot):
+        observed_frame_index = temporal.metadata.frame_id
+        if frame_index is not None and (
+            _integer(frame_index, "frame_index", minimum=0) != observed_frame_index
+        ):
+            raise ValueError("explicit frame_index does not match temporal checkpoint")
+        temporal_scene_id = temporal.metadata.scene_id
+        temporal_neutral = build_temporal_map_snapshot(temporal, names)
+        wrappers = {
+            item.lifecycle.entity_id: item for item in temporal.entities
+        }
+    elif isinstance(temporal, MapSnapshot):
+        if frame_index is None:
+            raise ValueError("frame_index is required for persisted temporal maps")
+        observed_frame_index = _integer(frame_index, "frame_index", minimum=0)
+        if temporal.scope != "current":
+            raise ValueError("persisted temporal map must have current scope")
+        temporal_scene_id = temporal.scene_id
+        temporal_neutral = temporal
+        wrappers = {}
+    else:
+        raise TypeError("temporal must be a TemporalCurrentSnapshot or MapSnapshot")
+    if observed_frame_index <= state.last_frame_index:
         raise ValueError("checkpoint frame must increase strictly")
-    if temporal.metadata.scene_id != anchor.scene_id:
+    if temporal_scene_id != anchor.scene_id:
         raise ValueError("anchor and temporal checkpoint scenes must match")
     if (
         not isinstance(exports, tuple)
@@ -510,8 +531,8 @@ def compose_anchor_checkpoint(
     if (
         export_frames != tuple(sorted(set(export_frames)))
         or export_frames[0] <= state.last_frame_index
-        or export_frames[-1] != frame_index
-        or any(item > frame_index for item in export_frames)
+        or export_frames[-1] != observed_frame_index
+        or any(item > observed_frame_index for item in export_frames)
     ):
         raise ValueError("exports do not cover the next checkpoint interval")
 
@@ -568,14 +589,12 @@ def compose_anchor_checkpoint(
         ):
             moved.discard(anchor_id)
 
-    temporal_neutral = build_temporal_map_snapshot(temporal, names)
     active_predictions = {
         int(entity.metadata["temporal_entity_id"]): entity
         for entity in temporal_neutral.entities
     }
-    wrappers = {
-        item.lifecycle.entity_id: item for item in temporal.entities
-    }
+    if len(active_predictions) != len(temporal_neutral.entities):
+        raise ValueError("temporal checkpoint entity IDs must be unique")
     predictions: list[EntityPrediction] = []
     unchanged_ids: list[str] = []
     moved_ids: list[str] = []
@@ -655,7 +674,7 @@ def compose_anchor_checkpoint(
     composed = MapSnapshot(
         method="CROVE + OVI-MAP static anchor (composed)",
         scene_id=anchor.scene_id,
-        timestamp=temporal.metadata.timestamp,
+        timestamp=temporal_neutral.timestamp,
         entities=predictions,
         background_xyz=_merged_background(
             anchor.background_xyz,
@@ -667,14 +686,14 @@ def compose_anchor_checkpoint(
     )
     next_state = AnchorOverlayState(
         cutoff_frame=state.cutoff_frame,
-        last_frame_index=frame_index,
+        last_frame_index=observed_frame_index,
         bindings=state.bindings,
         initial_geometry_epochs=state.initial_geometry_epochs,
         moved_anchor_ids=frozenset(moved),
         removed_anchor_ids=frozenset(removed),
     )
     diagnostics = CheckpointOverlayDiagnostics(
-        frame_index=frame_index,
+        frame_index=observed_frame_index,
         unchanged_anchor_ids=tuple(sorted(unchanged_ids)),
         moved_anchor_ids=tuple(sorted(moved_ids)),
         removed_anchor_ids=tuple(sorted(removed_ids)),

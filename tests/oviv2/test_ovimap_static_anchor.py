@@ -381,6 +381,58 @@ def test_static_active_identity_emits_anchor_without_temporal_duplicate() -> Non
     assert diagnostics.unchanged_anchor_ids == ("ovimap:1",)
 
 
+def test_persisted_temporal_map_snapshot_composes_with_explicit_frame() -> None:
+    anchor, state = _single_anchor_and_state()
+    temporal = MapSnapshot(
+        method="OVIV2-temporal",
+        scene_id="apartment",
+        timestamp=263.0,
+        entities=[
+            EntityPrediction(
+                entity_id="temporal:7",
+                points_xyz=np.asarray(((0.0, 0.0, 0.0),), dtype=np.float32),
+                semantic_embedding=np.asarray((1.0, 0.0), dtype=np.float32),
+                semantic_label="Chair",
+                semantic_score=1.0,
+                lifecycle_state="active",
+                first_seen=0.0,
+                last_seen=263.0,
+                metadata={
+                    "temporal_entity_id": 7,
+                    "semantic_id": 1,
+                    "geometry_epoch": 0,
+                    "readout_valid": True,
+                },
+            )
+        ],
+        background_xyz=None,
+        scope="current",
+    )
+
+    composed, next_state, diagnostics = compose_anchor_checkpoint(
+        anchor=anchor,
+        temporal=temporal,
+        frame_index=263,
+        exports=(
+            _export_batch(
+                frame_index=263,
+                entity_id=7,
+                x=0.0,
+                dynamic_state=DynamicState.STATIC,
+                geometry_epoch=0,
+            ),
+        ),
+        state=state,
+        config=_config(),
+        anchor_manifest_sha256="b" * 64,
+        class_names=("unknown", "Chair", "Table"),
+    )
+
+    assert [item.entity_id for item in composed.entities] == ["ovimap:1"]
+    assert next_state.last_frame_index == 263
+    assert diagnostics.unchanged_anchor_ids == ("ovimap:1",)
+
+
 def test_confirmed_motion_replaces_anchor_with_current_temporal_geometry() -> None:
     anchor, state = _single_anchor_and_state()
     temporal = _temporal_snapshot(
