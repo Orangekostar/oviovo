@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "method_id": "crove_ovimap_static_anchor_v1",
+  "dataset": "TESSE-CD",
+  "scene": "apartment",
+  "source_role": "causal_pre_intervention_initialization",
+  "first_source_frame": 0,
+  "last_source_frame": 262,
+  "source_stride": 1,
+  "ovimap_commit": "58a804e2d7c82ba05a489eb071aba3367301fed8",
+  "minimum_spatial_iou": 0.01,
+  "maximum_centroid_distance_m": 0.75,
+  "minimum_semantic_cosine": 0.65,
+  "moved_displacement_m": 0.20,
+  "background_voxel_size_m": 0.05
+}
