@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 
 from scripts.evaluation.run_crove_ovimap_static_anchor import compose_run
+from scripts.evaluation.export_tesse_temporal_artifact import export_temporal_artifact
 from src.evaluation.contracts import EntityPrediction, MapSnapshot
 from src.evaluation.exporters.oviovo import write_map_snapshot
 
@@ -69,10 +70,11 @@ def _prediction(entity_id: str, x: float, *, temporal_id: int | None = None) -> 
     )
 
 
-def _write_anchor_package(tmp_path: Path) -> Path:
+def _write_anchor_package(tmp_path: Path, *, anchor_x: float = 0.0) -> Path:
     root = tmp_path / "anchor"
     config = tmp_path / "anchor_config.json"
     vocabulary = tmp_path / "vocabulary.json"
+    schedule = tmp_path / "schedule.json"
     _write_json(
         config,
         {
@@ -87,12 +89,31 @@ def _write_anchor_package(tmp_path: Path) -> Path:
         vocabulary,
         {"dataset": "TESSE-CD", "scene": "apartment", "classes": ["Chair"]},
     )
+    _write_json(
+        schedule,
+        {
+            "schema_version": 2,
+            "manifest_id": "tesse_cd_causal_schedule_v2",
+            "dataset": "TESSE-CD",
+            "method_predictions_used": False,
+            "parameters": {"frame_indexing": "zero_based"},
+            "scenes": {
+                "apartment": {
+                    "frame_count": 4,
+                    "entries": [
+                        {"frame_index": frame, "timestamp_ns": _timestamp_ns(frame)}
+                        for frame in (2, 3)
+                    ],
+                }
+            },
+        },
+    )
     written = write_map_snapshot(
         MapSnapshot(
             method="OVI-MAP causal static anchor",
             scene_id="apartment",
             timestamp=1.0,
-            entities=[_prediction("ovimap:1", 0.0)],
+            entities=[_prediction("ovimap:1", anchor_x)],
             background_xyz=np.asarray(((4.0, 0.0, 0.0),), dtype=np.float32),
             scope="current",
         ),
@@ -117,6 +138,7 @@ def _write_anchor_package(tmp_path: Path) -> Path:
             "sources": {
                 "config": _record(config),
                 "vocabulary": _record(vocabulary),
+                "schedule": _record(schedule),
             },
             "outputs": {
                 "snapshot": _record(written["snapshot"], root=root),
@@ -233,6 +255,8 @@ def test_composed_run_publishes_hash_bound_checkpoints(tmp_path: Path) -> None:
     assert manifest["method"] == "CROVE + OVI-MAP static anchor (composed)"
     assert manifest["integration"] == "composed"
     assert manifest["execution_mode"] == "online_after_causal_initialization"
+    assert manifest["processed_frame_count"] == 4
+    assert manifest["official_state_count"] == 2
     assert [item["frame_index"] for item in manifest["checkpoints"]] == [2, 3]
     assert manifest["checkpoints"][0]["diagnostics"]["unchanged_anchor_ids"] == ["ovimap:1"]
     assert manifest["checkpoints"][1]["diagnostics"]["moved_anchor_ids"] == ["ovimap:1"]
@@ -242,6 +266,15 @@ def test_composed_run_publishes_hash_bound_checkpoints(tmp_path: Path) -> None:
         for role in ("snapshot", "entities", "diagnostics_file"):
             path = result.parent / checkpoint[role]["path"]
             assert _record(path, root=result.parent) == checkpoint[role]
+
+    source_index = result.parent / manifest["source_index"]["path"]
+    exported = export_temporal_artifact(source_index, tmp_path / "exported")
+    temporal = json.loads(exported.read_text(encoding="utf-8"))
+    assert temporal["method"] == "OVIV2"
+    assert [item["frame_index"] for item in temporal["checkpoints"]] == [2, 3]
+    assert {item["entity_id"] for item in temporal["entity_lifecycles"]} == {
+        "ovimap:1"
+    }
 
 
 def test_composed_run_never_overwrites_existing_output(tmp_path: Path) -> None:
@@ -260,6 +293,27 @@ def test_composed_run_never_overwrites_existing_output(tmp_path: Path) -> None:
         )
 
     assert marker.read_text(encoding="utf-8") == "keep"
+
+
+def test_unbound_anchor_has_explicit_causal_presence_for_official_export(
+    tmp_path: Path,
+) -> None:
+    result = compose_run(
+        source_run_manifest=_write_source_run(tmp_path),
+        anchor_manifest=_write_anchor_package(tmp_path, anchor_x=5.0),
+        output_root=tmp_path / "composed",
+    )
+    manifest = json.loads(result.read_text(encoding="utf-8"))
+    exported = export_temporal_artifact(
+        result.parent / manifest["source_index"]["path"],
+        tmp_path / "exported",
+    )
+    temporal = json.loads(exported.read_text(encoding="utf-8"))
+
+    assert {item["entity_id"] for item in temporal["entity_lifecycles"]} == {
+        "ovimap:1",
+        "temporal:7",
+    }
 
 
 def test_composed_run_rejects_checkpoint_ahead_of_temporal_export(tmp_path: Path) -> None:

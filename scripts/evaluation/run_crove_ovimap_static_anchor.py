@@ -314,6 +314,20 @@ def _atomic_json(path: Path, value: object) -> None:
         temporary.unlink(missing_ok=True)
 
 
+def _atomic_jsonl(path: Path, values: Sequence[Mapping[str, object]]) -> None:
+    data = b"".join(_canonical_json(value) for value in values)
+    descriptor, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(data)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
 def _revalidate(witnesses: Sequence[tuple[Path, Mapping[str, object]]]) -> None:
     for path, record in witnesses:
         observed = _input_record(path)
@@ -385,12 +399,19 @@ def compose_run(
         label="anchor vocabulary",
         absolute=True,
     )
+    schedule_path, schedule_record = _bound_path(
+        root=anchor_root,
+        record=sources.get("schedule"),
+        label="causal schedule",
+        absolute=True,
+    )
     witnesses.extend(
         (
             (anchor_snapshot_path, anchor_snapshot_record),
             (anchor_entities_path, anchor_entities_record),
             (config_path, config_record),
             (vocabulary_path, vocabulary_record),
+            (schedule_path, schedule_record),
         )
     )
     anchor = read_map_snapshot(anchor_snapshot_path, anchor_entities_path)
@@ -470,7 +491,57 @@ def compose_run(
     output_root.parent.mkdir(parents=True, exist_ok=True)
     staging = Path(tempfile.mkdtemp(prefix=f".{output_root.name}.", dir=output_root.parent))
     checkpoint_results: list[dict[str, Any]] = []
+    source_checkpoint_records: list[dict[str, Any]] = []
     try:
+        bound_anchor_ids = {anchor_id for anchor_id, _ in state.bindings}
+        unbound_anchors = tuple(
+            entity
+            for entity in sorted(anchor.entities, key=lambda item: item.entity_id)
+            if entity.entity_id not in bound_anchor_ids
+        )
+        trajectory_rows: list[dict[str, object]] = []
+        lifecycle_rows: list[dict[str, object]] = []
+        coverage_rows: list[dict[str, object]] = []
+        for batch in batches:
+            rows = [sample.to_json_record() for sample in batch.samples]
+            for entity in unbound_anchors:
+                rows.append(
+                    {
+                        "frame_index": batch.frame_index,
+                        "timestamp_ns": batch.timestamp_ns,
+                        "entity_id": f"anchor:{entity.entity_id}",
+                        "centroid_xyz": np.asarray(
+                            entity.points_xyz, dtype=np.float64
+                        ).mean(axis=0).tolist(),
+                        "observation_count": batch.frame_index + 1,
+                        "dynamic_state": "static",
+                        "motion_confidence": 0.0,
+                        "geometry_epoch": 0,
+                        "readout_valid": True,
+                    }
+                )
+            rows.sort(key=lambda item: str(item["entity_id"]))
+            events = [event.to_json_record() for event in batch.events]
+            trajectory_rows.extend(rows)
+            lifecycle_rows.extend(events)
+            coverage_rows.append(
+                {
+                    "frame_index": batch.frame_index,
+                    "timestamp_ns": batch.timestamp_ns,
+                    "record_count": len(rows),
+                    "event_count": len(events),
+                }
+            )
+        trajectories_path = staging / "trajectories.jsonl"
+        lifecycle_path = staging / "lifecycle_transitions.jsonl"
+        coverage_path = staging / "temporal_frame_coverage.jsonl"
+        _atomic_jsonl(trajectories_path, trajectory_rows)
+        _atomic_jsonl(lifecycle_path, lifecycle_rows)
+        _atomic_jsonl(coverage_path, coverage_rows)
+        trajectories_record = _relative_record(trajectories_path, root=staging)
+        lifecycle_record = _relative_record(lifecycle_path, root=staging)
+        coverage_record = _relative_record(coverage_path, root=staging)
+
         previous_frame = cutoff
         for source_checkpoint in checkpoint_values:
             if not isinstance(source_checkpoint, Mapping):
@@ -522,6 +593,25 @@ def compose_run(
             diagnostic_payload = asdict(diagnostics)
             diagnostics_path = checkpoint_root / "diagnostics.json"
             _atomic_json(diagnostics_path, diagnostic_payload)
+            status_path = checkpoint_root / "checkpoint_status.json"
+            _atomic_json(
+                status_path,
+                {
+                    "schema_version": 1,
+                    "status": "PASS",
+                    "checkpoint_frame": frame,
+                    "timestamp_ns": timestamp_ns,
+                    "consumed_through_frame": frame,
+                    "consumed_through_frame_exclusive": frame + 1,
+                },
+            )
+            snapshot_output_record = _relative_record(
+                written["snapshot"], root=staging
+            )
+            entities_output_record = _relative_record(
+                written["entities"], root=staging
+            )
+            status_record = _relative_record(status_path, root=staging)
             checkpoint_results.append(
                 {
                     "frame_index": frame,
@@ -529,15 +619,66 @@ def compose_run(
                     "consumed_through_frame": frame,
                     "source_snapshot": dict(source_checkpoint["neutral_snapshot"]),
                     "source_entities": dict(source_checkpoint["neutral_entities"]),
-                    "snapshot": _relative_record(written["snapshot"], root=staging),
-                    "entities": _relative_record(written["entities"], root=staging),
+                    "snapshot": snapshot_output_record,
+                    "entities": entities_output_record,
                     "diagnostics": diagnostic_payload,
                     "diagnostics_file": _relative_record(diagnostics_path, root=staging),
+                }
+            )
+            source_checkpoint_records.append(
+                {
+                    "frame_index": frame,
+                    "timestamp_ns": timestamp_ns,
+                    "consumed_through_frame": frame,
+                    "consumed_through_frame_exclusive": frame + 1,
+                    "checkpoint_status": status_record,
+                    "snapshot": snapshot_output_record,
+                    "entities": entities_output_record,
                 }
             )
             previous_frame = frame
 
         _revalidate(witnesses)
+        capture_path = staging / "capture_status.json"
+        _atomic_json(
+            capture_path,
+            {
+                "schema_version": 1,
+                "status": "PASS",
+                "scene": scene,
+                "mode": "causal_checkpoints",
+                "scheduled_frame_indices": frames,
+                "captured_frame_indices": frames,
+                "schedule": schedule_record,
+                "trajectories": trajectories_record,
+                "frame_coverage": coverage_record,
+                "lifecycle_transitions": lifecycle_record,
+                "checkpoint_statuses": [
+                    item["checkpoint_status"] for item in source_checkpoint_records
+                ],
+            },
+        )
+        capture_record = _relative_record(capture_path, root=staging)
+        source_index_path = staging / "source_index.json"
+        _atomic_json(
+            source_index_path,
+            {
+                "schema_version": 1,
+                "dataset": "TESSE-CD",
+                "mode": "causal_checkpoint_exports",
+                "method": "OVIV2",
+                "scene": scene,
+                "schedule": schedule_record,
+                "capture_status": capture_record,
+                "trajectories": trajectories_record,
+                "frame_coverage": coverage_record,
+                "lifecycle_transitions": lifecycle_record,
+                "checkpoints": source_checkpoint_records,
+            },
+        )
+        source_index_output_record = _relative_record(
+            source_index_path, root=staging
+        )
         manifest = {
             "schema_version": 1,
             "manifest_id": "crove_ovimap_static_anchor_composition_v1",
@@ -548,6 +689,8 @@ def compose_run(
             "integration": "composed",
             "execution_mode": "online_after_causal_initialization",
             "causal_anchor_cutoff_frame": cutoff,
+            "processed_frame_count": len(batches),
+            "official_state_count": len(checkpoint_results),
             "inputs": {
                 "source_run_manifest": witnesses[0][1],
                 "anchor_manifest": witnesses[1][1],
@@ -555,6 +698,7 @@ def compose_run(
                 "anchor_entities": anchor_entities_record,
                 "anchor_config": config_record,
                 "anchor_vocabulary": vocabulary_record,
+                "causal_schedule": schedule_record,
                 "source_index": source_index_record,
                 **{
                     f"source_{key}": temporal_input_records[key]
@@ -565,6 +709,7 @@ def compose_run(
                 {"anchor_entity_id": anchor_id, "temporal_entity_id": temporal_id}
                 for anchor_id, temporal_id in state.bindings
             ],
+            "source_index": source_index_output_record,
             "checkpoints": checkpoint_results,
         }
         manifest_path = staging / "run_manifest.json"

@@ -459,7 +459,8 @@ def test_confirmed_motion_replaces_anchor_with_current_temporal_geometry() -> No
         ),
     )
 
-    assert [item.entity_id for item in composed.entities] == ["temporal:7"]
+    assert [item.entity_id for item in composed.entities] == ["ovimap:1"]
+    assert composed.entities[0].metadata["temporal_entity_id"] == 7
     assert composed.entities[0].metadata["overlay_state"] == "moved"
     assert next_state.moved_anchor_ids == frozenset({"ovimap:1"})
     assert diagnostics.moved_anchor_ids == ("ovimap:1",)
@@ -595,7 +596,7 @@ def test_moved_state_persists_after_dynamic_state_returns_static() -> None:
         ),
     )
 
-    assert [item.entity_id for item in composed.entities] == ["temporal:7"]
+    assert [item.entity_id for item in composed.entities] == ["ovimap:1"]
     assert persisted.moved_anchor_ids == frozenset({"ovimap:1"})
 
 

@@ -398,12 +398,13 @@ def _copy_prediction(
     entity: EntityPrediction,
     *,
     metadata: dict[str, object],
+    entity_id: str | None = None,
     lifecycle_state: str | None = None,
 ) -> EntityPrediction:
     merged = dict(entity.metadata)
     merged.update(metadata)
     return EntityPrediction(
-        entity_id=entity.entity_id,
+        entity_id=entity.entity_id if entity_id is None else entity_id,
         points_xyz=entity.points_xyz,
         semantic_embedding=entity.semantic_embedding,
         semantic_label=entity.semantic_label,
@@ -615,6 +616,7 @@ def compose_anchor_checkpoint(
                 predictions.append(
                     _copy_prediction(
                         prediction,
+                        entity_id=anchor_id,
                         metadata={
                             "authority": "crove_temporal",
                             "anchor_entity_id": anchor_id,
@@ -641,16 +643,20 @@ def compose_anchor_checkpoint(
                 occluded_ids.append(anchor_id)
         if overlay_state == "unchanged":
             unchanged_ids.append(anchor_id)
+        anchor_metadata: dict[str, object] = {
+            "authority": "ovimap_anchor",
+            "anchor_entity_id": anchor_id,
+            "anchor_manifest_sha256": manifest_hash,
+            "overlay_state": overlay_state,
+        }
+        if temporal_id is None:
+            anchor_metadata["owner_entity_id"] = f"anchor:{anchor_id}"
+        else:
+            anchor_metadata["temporal_entity_id"] = temporal_id
         predictions.append(
             _copy_prediction(
                 anchor_entity,
-                metadata={
-                    "authority": "ovimap_anchor",
-                    "anchor_entity_id": anchor_id,
-                    "temporal_entity_id": temporal_id,
-                    "anchor_manifest_sha256": manifest_hash,
-                    "overlay_state": overlay_state,
-                },
+                metadata=anchor_metadata,
             )
         )
 
@@ -672,7 +678,7 @@ def compose_anchor_checkpoint(
         )
     predictions.sort(key=lambda item: item.entity_id)
     composed = MapSnapshot(
-        method="CROVE + OVI-MAP static anchor (composed)",
+        method="OVIV2",
         scene_id=anchor.scene_id,
         timestamp=temporal_neutral.timestamp,
         entities=predictions,
