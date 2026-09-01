@@ -3,17 +3,23 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import pickle
 
+import numpy as np
 import pytest
 
 from scripts.evaluation.build_tesse_ovimap_static_anchor import (
+    AnchorPackagePaths,
     PINNED_OVIMAP_COMMIT,
     TesseNativeEnvironment,
+    build_anchor_package,
     build_tesse_native_commands,
     load_causal_prefix_contract,
+    main,
     preflight_tesse_native,
     run_tesse_native_mapping,
 )
+from src.evaluation.exporters.oviovo import read_map_snapshot
 
 
 def _write_json(path: Path, payload: object) -> Path:
@@ -488,3 +494,277 @@ def test_native_execution_does_not_publish_after_stage_failure(
             native=native,
         )
     assert not (commands.attempt_root / "native_mapping_manifest.json").exists()
+
+
+def _write_anchor_native_fixture(root: Path) -> dict[str, Path]:
+    attempt = root / "native-attempt"
+    mesh = attempt / "mapping" / "cropformer_inst" / "instance_mesh_3.ply"
+    mesh.parent.mkdir(parents=True)
+    mesh.write_text(
+        "\n".join(
+            (
+                "ply",
+                "format ascii 1.0",
+                "element vertex 5",
+                "property float x",
+                "property float y",
+                "property float z",
+                "property uchar red",
+                "property uchar green",
+                "property uchar blue",
+                "end_header",
+                "0.0 0.0 0.0 10 20 30",
+                "0.1 0.0 0.0 10 20 30",
+                "2.0 0.0 0.0 40 50 60",
+                "2.1 0.0 0.0 40 50 60",
+                "4.0 0.0 0.0 200 200 200",
+            )
+        )
+        + "\n",
+        encoding="ascii",
+    )
+    semantic_features = (
+        attempt
+        / "mapping"
+        / "cropformer_inst"
+        / "inst_sem_siglip-l-16-384_3_incre_combine.pkl"
+    )
+    with semantic_features.open("wb") as handle:
+        pickle.dump(
+            {
+                1: {
+                    "feat": np.asarray([[1.0, 0.0]], dtype=np.float32),
+                    "vis_area": [1.0],
+                    "frame_id": [0, 1, 2],
+                }
+            },
+            handle,
+            protocol=5,
+        )
+    color_log = _touch(
+        attempt / "logs" / "mapping.log",
+        (
+            "Instance: 1 Color: (10,20,30)\n"
+            "Instance: 2 Color: (40,50,60)\n"
+        ).encode("ascii"),
+    )
+    native_manifest = _write_json(
+        attempt / "native_mapping_manifest.json",
+        {
+            "schema_version": 1,
+            "status": "PASS",
+            "state": "MAPPING_PASS",
+            "scene": "apartment",
+            "frame_ids": [0, 1, 2],
+            "preflight": {"ovimap_commit": PINNED_OVIMAP_COMMIT},
+            "artifacts": {
+                "instance_mesh": {
+                    "path": str(mesh.absolute()),
+                    "sha256": _sha256(mesh),
+                    "byte_count": mesh.stat().st_size,
+                },
+                "semantic_features": {
+                    "path": str(semantic_features.absolute()),
+                    "sha256": _sha256(semantic_features),
+                    "byte_count": semantic_features.stat().st_size,
+                },
+                "instance_color_log": {
+                    "path": str(color_log.absolute()),
+                    "sha256": _sha256(color_log),
+                    "byte_count": color_log.stat().st_size,
+                },
+            },
+        },
+    )
+    vocabulary = _write_json(
+        root / "vocabulary.json",
+        {
+            "dataset": "TESSE-CD",
+            "scene": "apartment",
+            "schema_version": 1,
+            "classes": ["Chair", "Table"],
+        },
+    )
+    siglip_model = root / "siglip"
+    siglip_model.mkdir()
+    _touch(siglip_model / "config.json", b"{}\n")
+    native_payload = json.loads(native_manifest.read_text(encoding="utf-8"))
+    native_payload["preflight"]["sources"] = {
+        "siglip_model": {"path": str(siglip_model.absolute())}
+    }
+    _write_json(native_manifest, native_payload)
+    return {
+        "native_manifest": native_manifest,
+        "mesh": mesh,
+        "semantic_features": semantic_features,
+        "color_log": color_log,
+        "vocabulary": vocabulary,
+        "siglip_model": siglip_model,
+    }
+
+
+def _anchor_causal_sources(root: Path) -> dict[str, dict[str, object]]:
+    paths = {
+        "config": _touch(root / "causal-sources" / "config.json", b"{}\n"),
+        "schedule": _touch(root / "causal-sources" / "schedule.json", b"{}\n"),
+        "rgbd_export_manifest": _touch(
+            root / "causal-sources" / "export_manifest.json", b"{}\n"
+        ),
+    }
+    return {
+        role: {
+            "path": str(path.absolute()),
+            "sha256": _sha256(path),
+            "byte_count": path.stat().st_size,
+        }
+        for role, path in paths.items()
+    }
+
+
+def test_build_anchor_binds_mesh_instances_and_hashes_outputs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.build_tesse_ovimap_static_anchor as module
+
+    inputs = _write_anchor_native_fixture(tmp_path)
+
+    def encode(values: tuple[str, ...], model: Path, device: str) -> np.ndarray:
+        assert model == inputs["siglip_model"]
+        assert device == "cpu"
+        if values == ("Chair", "Table"):
+            return np.asarray(((1.0, 0.0), (0.0, 1.0)), dtype=np.float32)
+        assert values == ("object", "things", "stuff", "texture")
+        return np.asarray(
+            ((0.7, 0.7), (0.8, 0.6), (0.6, 0.8), (0.5, 0.5)),
+            dtype=np.float32,
+        )
+
+    monkeypatch.setattr(module, "_encode_text_features", encode)
+
+    result = build_anchor_package(
+        scene="apartment",
+        cutoff_frame=2,
+        native_manifest=inputs["native_manifest"],
+        instance_mesh=inputs["mesh"],
+        semantic_features=inputs["semantic_features"],
+        instance_color_log=inputs["color_log"],
+        vocabulary_json=inputs["vocabulary"],
+        siglip_model=inputs["siglip_model"],
+        device="cpu",
+        output_root=tmp_path / "anchor",
+        causal_sources=_anchor_causal_sources(tmp_path),
+    )
+
+    assert isinstance(result, AnchorPackagePaths)
+    manifest = json.loads(result.manifest.read_text(encoding="utf-8"))
+    snapshot = read_map_snapshot(result.snapshot, result.entities)
+    assert [entity.entity_id for entity in snapshot.entities] == [
+        "ovimap:1",
+        "ovimap:2",
+    ]
+    assert snapshot.entities[0].semantic_label == "Chair"
+    assert snapshot.entities[0].metadata["authority"] == "ovimap_anchor"
+    assert snapshot.entities[1].semantic_embedding is None
+    assert snapshot.entities[1].semantic_label is None
+    assert np.array_equal(
+        snapshot.background_xyz,
+        np.asarray(((4.0, 0.0, 0.0),), dtype=np.float32),
+    )
+    assert manifest["status"] == "PASS"
+    assert manifest["causality"] == {
+        "first_source_frame": 0,
+        "last_source_frame": 2,
+        "maximum_source_frame": 2,
+        "strictly_pre_intervention": True,
+    }
+    assert manifest["outputs"]["snapshot"]["sha256"] == _sha256(result.snapshot)
+    assert manifest["outputs"]["entities"]["sha256"] == _sha256(result.entities)
+
+    inputs["semantic_features"].unlink()
+    loaded_without_pickle = read_map_snapshot(result.snapshot, result.entities)
+    assert [entity.entity_id for entity in loaded_without_pickle.entities] == [
+        "ovimap:1",
+        "ovimap:2",
+    ]
+
+
+def test_build_anchor_rejects_native_artifact_hash_mismatch(tmp_path: Path) -> None:
+    inputs = _write_anchor_native_fixture(tmp_path)
+    inputs["mesh"].write_bytes(inputs["mesh"].read_bytes() + b"\n")
+
+    with pytest.raises(ValueError, match="native artifact binding mismatch"):
+        build_anchor_package(
+            scene="apartment",
+            cutoff_frame=2,
+            native_manifest=inputs["native_manifest"],
+            instance_mesh=inputs["mesh"],
+            semantic_features=inputs["semantic_features"],
+            instance_color_log=inputs["color_log"],
+            vocabulary_json=inputs["vocabulary"],
+            siglip_model=inputs["siglip_model"],
+            device="cpu",
+            output_root=tmp_path / "anchor",
+            causal_sources=_anchor_causal_sources(tmp_path),
+        )
+
+
+def test_cli_validates_prefix_and_builds_anchor(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.evaluation.build_tesse_ovimap_static_anchor as module
+
+    inputs = _write_anchor_native_fixture(tmp_path)
+    schedule = _write_schedule(tmp_path / "causal", interventions=(3,))
+    rgbd_root = _write_rgbd(tmp_path / "causal", frame_count=3)
+    config = _write_json(
+        tmp_path / "config.json",
+        {
+            "schema_version": 1,
+            "method_id": "crove_ovimap_static_anchor_v1",
+            "dataset": "TESSE-CD",
+            "scene": "apartment",
+            "source_role": "causal_pre_intervention_initialization",
+            "first_source_frame": 0,
+            "last_source_frame": 2,
+            "source_stride": 1,
+            "ovimap_commit": PINNED_OVIMAP_COMMIT,
+            "vocabulary_json": str(inputs["vocabulary"]),
+            "minimum_spatial_iou": 0.01,
+            "maximum_centroid_distance_m": 0.75,
+            "minimum_semantic_cosine": 0.65,
+            "moved_displacement_m": 0.2,
+            "background_voxel_size_m": 0.05,
+        },
+    )
+
+    def encode(values: tuple[str, ...], model: Path, device: str) -> np.ndarray:
+        del model, device
+        if values == ("Chair", "Table"):
+            return np.asarray(((1.0, 0.0), (0.0, 1.0)), dtype=np.float32)
+        return np.asarray(
+            ((0.7, 0.7), (0.8, 0.6), (0.6, 0.8), (0.5, 0.5)),
+            dtype=np.float32,
+        )
+
+    monkeypatch.setattr(module, "_encode_text_features", encode)
+    output = tmp_path / "anchor-cli"
+
+    return_code = main(
+        [
+            "--config",
+            str(config),
+            "--schedule",
+            str(schedule),
+            "--rgbd-root",
+            str(rgbd_root),
+            "--native-manifest",
+            str(inputs["native_manifest"]),
+            "--output-root",
+            str(output),
+            "--device",
+            "cpu",
+        ]
+    )
+
+    assert return_code == 0
+    assert json.loads((output / "anchor_manifest.json").read_text())["status"] == "PASS"

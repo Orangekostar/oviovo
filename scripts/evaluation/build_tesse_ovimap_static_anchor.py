@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 from collections.abc import Mapping
 from dataclasses import dataclass
 import hashlib
@@ -10,10 +11,14 @@ import json
 from numbers import Integral
 import os
 from pathlib import Path
+import pickle
+import shutil
 import stat
 import subprocess
 import tempfile
-from typing import Any
+from typing import Any, Sequence
+
+import numpy as np
 
 
 PINNED_OVIMAP_COMMIT = "58a804e2d7c82ba05a489eb071aba3367301fed8"
@@ -91,6 +96,18 @@ class TesseNativeCommands:
                 raise ValueError(f"{name} must be a non-empty argv tuple")
         if not isinstance(self.attempt_root, Path):
             raise TypeError("attempt_root must be a Path")
+
+
+@dataclass(frozen=True)
+class AnchorPackagePaths:
+    manifest: Path
+    snapshot: Path
+    entities: Path
+
+    def __post_init__(self) -> None:
+        for name in ("manifest", "snapshot", "entities"):
+            if not isinstance(getattr(self, name), Path):
+                raise TypeError(f"{name} must be a Path")
 
 
 @dataclass(frozen=True)
@@ -659,6 +676,13 @@ def _json_object(data: bytes, *, label: str) -> dict[str, Any]:
     return value
 
 
+def _json_hash(value: Mapping[str, Any]) -> str:
+    data = json.dumps(
+        value, sort_keys=True, separators=(",", ":"), allow_nan=False
+    ).encode("utf-8")
+    return hashlib.sha256(data).hexdigest()
+
+
 def _integer(value: object, *, label: str, minimum: int) -> int:
     if isinstance(value, bool) or not isinstance(value, Integral):
         raise ValueError(f"{label} must be an integer")
@@ -757,13 +781,505 @@ def load_causal_prefix_contract(
     )
 
 
+def _declared_artifact(
+    native_payload: Mapping[str, Any], role: str, path: Path
+) -> dict[str, Any]:
+    artifacts = native_payload.get("artifacts")
+    if not isinstance(artifacts, Mapping):
+        raise ValueError("native manifest artifacts must be an object")
+    declared = artifacts.get(role)
+    if not isinstance(declared, Mapping):
+        raise ValueError(f"native manifest is missing artifact: {role}")
+    observed = _file_record(path, label=f"native {role}")
+    if dict(declared) != observed:
+        raise ValueError(f"native artifact binding mismatch: {role}")
+    return observed
+
+
+def _vocabulary(path: Path, *, scene: str) -> tuple[tuple[str, ...], dict[str, Any]]:
+    data = _regular_file_bytes(path, label="TESSE vocabulary")
+    payload = _json_object(data, label="TESSE vocabulary")
+    classes = payload.get("classes")
+    if (
+        payload.get("dataset") != "TESSE-CD"
+        or payload.get("scene") != scene
+        or not isinstance(classes, list)
+        or not classes
+        or any(not isinstance(item, str) or not item.strip() for item in classes)
+    ):
+        raise ValueError("TESSE vocabulary does not match scene or class schema")
+    normalized = tuple(item.strip() for item in classes)
+    if len(set(normalized)) != len(normalized):
+        raise ValueError("TESSE vocabulary classes must be unique")
+    return normalized, {
+        "path": str(path.absolute()),
+        "sha256": hashlib.sha256(data).hexdigest(),
+        "byte_count": len(data),
+    }
+
+
+def _encode_text_features(
+    values: tuple[str, ...], model: Path, device: str
+) -> np.ndarray:
+    import torch
+    from transformers import AutoModel, AutoTokenizer
+
+    if not values:
+        raise ValueError("text feature inputs must not be empty")
+    loaded_model = AutoModel.from_pretrained(
+        str(model), local_files_only=True
+    ).eval().to(device)
+    tokenizer = AutoTokenizer.from_pretrained(str(model), local_files_only=True)
+    tokens = tokenizer(
+        list(values),
+        padding="max_length",
+        max_length=64,
+        return_tensors="pt",
+    ).to(device)
+    with torch.no_grad():
+        encoded = loaded_model.get_text_features(**tokens).float().cpu().numpy()
+    return np.asarray(encoded, dtype=np.float32)
+
+
+def _classify_anchor_entities(
+    snapshot: Any,
+    *,
+    classes: tuple[str, ...],
+    siglip_model: Path,
+    device: str,
+) -> None:
+    from src.evaluation.baselines.ovimap import relative_similarity_labels
+
+    eligible = [
+        index
+        for index, entity in enumerate(snapshot.entities)
+        if entity.semantic_embedding is not None
+        and int(entity.metadata.get("observation_count", 0)) >= 2
+    ]
+    if not eligible:
+        return
+    entity_features = np.vstack(
+        [snapshot.entities[index].semantic_embedding for index in eligible]
+    )
+    text_features = _encode_text_features(classes, siglip_model, device)
+    canonical_values = ("object", "things", "stuff", "texture")
+    canonical_features = _encode_text_features(
+        canonical_values, siglip_model, device
+    )
+    labels, scores = relative_similarity_labels(
+        entity_features,
+        text_features,
+        canonical_features,
+        classes,
+    )
+    for index, label, score in zip(eligible, labels, scores, strict=True):
+        entity = snapshot.entities[index]
+        entity.semantic_label = label
+        entity.semantic_score = score
+        entity.metadata["semantic_match_score"] = score
+
+
+def _relative_output_record(path: Path, *, root: Path) -> dict[str, Any]:
+    record = _file_record(path, label="anchor output")
+    record["path"] = path.relative_to(root).as_posix()
+    return record
+
+
+def _validated_causal_sources(
+    value: Mapping[str, Mapping[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    expected_roles = {"config", "schedule", "rgbd_export_manifest"}
+    if not isinstance(value, Mapping) or set(value) != expected_roles:
+        raise ValueError("causal_sources must bind config, schedule, and RGB-D export")
+    normalized: dict[str, dict[str, Any]] = {}
+    for role in sorted(expected_roles):
+        record = value[role]
+        if not isinstance(record, Mapping) or set(record) != {
+            "path",
+            "sha256",
+            "byte_count",
+        }:
+            raise ValueError(f"causal source record is invalid: {role}")
+        path = record.get("path")
+        sha256 = record.get("sha256")
+        byte_count = record.get("byte_count")
+        if (
+            not isinstance(path, str)
+            or not Path(path).is_absolute()
+            or not isinstance(sha256, str)
+            or len(sha256) != 64
+            or any(character not in "0123456789abcdef" for character in sha256)
+            or isinstance(byte_count, bool)
+            or not isinstance(byte_count, Integral)
+            or int(byte_count) < 0
+        ):
+            raise ValueError(f"causal source record is invalid: {role}")
+        observed = _file_record(Path(path), label=f"causal source {role}")
+        if dict(record) != observed:
+            raise ValueError(f"causal source binding mismatch: {role}")
+        normalized[role] = observed
+    return normalized
+
+
+def build_anchor_package(
+    *,
+    scene: str,
+    cutoff_frame: int,
+    native_manifest: Path,
+    instance_mesh: Path,
+    semantic_features: Path,
+    instance_color_log: Path,
+    vocabulary_json: Path,
+    siglip_model: Path,
+    device: str,
+    output_root: Path,
+    causal_sources: Mapping[str, Mapping[str, Any]],
+) -> AnchorPackagePaths:
+    """Convert verified native OVI-MAP outputs to a pickle-free anchor package."""
+
+    from src.evaluation.baselines.adapters import adapt_ovimap
+    from src.evaluation.baselines.contracts import RuntimeBreakdown
+    from src.evaluation.baselines.ovimap import (
+        bind_mesh_instances,
+        load_instance_mesh,
+        parse_instance_color_log,
+    )
+    from src.evaluation.exporters.oviovo import write_map_snapshot
+
+    if not isinstance(scene, str) or not scene.strip() or scene != scene.strip():
+        raise ValueError("scene must be normalized and non-empty")
+    cutoff = _integer(cutoff_frame, label="cutoff_frame", minimum=0)
+    if not isinstance(device, str) or not device.strip():
+        raise ValueError("device must be non-empty")
+    native_manifest = Path(native_manifest)
+    instance_mesh = Path(instance_mesh)
+    semantic_features = Path(semantic_features)
+    instance_color_log = Path(instance_color_log)
+    vocabulary_json = Path(vocabulary_json)
+    siglip_model = Path(siglip_model)
+    output_root = Path(output_root)
+    if output_root.exists():
+        raise ValueError(f"anchor output root already exists: {output_root}")
+    causal_records = _validated_causal_sources(causal_sources)
+
+    native_bytes = _regular_file_bytes(
+        native_manifest, label="native mapping manifest"
+    )
+    native_payload = _json_object(native_bytes, label="native mapping manifest")
+    if (
+        native_payload.get("status") != "PASS"
+        or native_payload.get("state") != "MAPPING_PASS"
+        or native_payload.get("scene") != scene
+        or native_payload.get("frame_ids") != list(range(cutoff + 1))
+    ):
+        raise ValueError("native manifest is not a complete causal mapping PASS")
+    preflight = native_payload.get("preflight")
+    if (
+        not isinstance(preflight, Mapping)
+        or preflight.get("ovimap_commit") != PINNED_OVIMAP_COMMIT
+    ):
+        raise ValueError("native manifest does not bind the pinned OVI-MAP commit")
+    source_records = {
+        "instance_mesh": _declared_artifact(
+            native_payload, "instance_mesh", instance_mesh
+        ),
+        "semantic_features": _declared_artifact(
+            native_payload, "semantic_features", semantic_features
+        ),
+        "instance_color_log": _declared_artifact(
+            native_payload, "instance_color_log", instance_color_log
+        ),
+    }
+    native_record = {
+        "path": str(native_manifest.absolute()),
+        "sha256": hashlib.sha256(native_bytes).hexdigest(),
+        "byte_count": len(native_bytes),
+    }
+    classes, vocabulary_record = _vocabulary(vocabulary_json, scene=scene)
+    siglip_record = _directory_record(siglip_model, label="SigLIP model")
+    anchor_id = _json_hash(
+        {
+            "schema_version": 1,
+            "scene": scene,
+            "cutoff_frame": cutoff,
+            "ovimap_commit": PINNED_OVIMAP_COMMIT,
+            "native_manifest": native_record,
+            "vocabulary": vocabulary_record,
+            "siglip_model": siglip_record,
+            "causal_sources": causal_records,
+        }
+    )
+
+    semantic_bytes = _regular_file_bytes(
+        semantic_features, label="OVI-MAP semantic features"
+    )
+    try:
+        semantic_instances = pickle.loads(semantic_bytes)
+    except Exception as error:
+        raise ValueError("OVI-MAP semantic features are not a readable pickle") from error
+    if not isinstance(semantic_instances, Mapping):
+        raise ValueError("OVI-MAP semantic features must contain a mapping")
+    colors_by_instance = parse_instance_color_log(instance_color_log)
+    points_by_color, background_xyz = load_instance_mesh(
+        instance_mesh, colors_by_instance.values()
+    )
+    instances = bind_mesh_instances(
+        semantic_instances, colors_by_instance, points_by_color
+    )
+    if not instances:
+        raise ValueError("OVI-MAP anchor contains no mesh-backed instances")
+    artifact = adapt_ovimap(
+        instances,
+        points_by_color=points_by_color,
+        scene_id=scene,
+        timestamp=float(cutoff),
+        upstream_commit=PINNED_OVIMAP_COMMIT,
+        runtime=RuntimeBreakdown(frame_count=cutoff + 1),
+        background_xyz=background_xyz,
+        semantic_label_source=(
+            "method_output.feat SigLIP-L/16-384 canonical-relative zero-shot"
+        ),
+        protocol_notes=(
+            "anchor consumes only the complete pre-intervention RGB-D prefix",
+            "runtime consumes repository-owned NPZ and JSONL without pickle",
+        ),
+    )
+    snapshot = artifact.snapshot
+    snapshot.method = "OVI-MAP causal static anchor"
+    for entity in snapshot.entities:
+        entity.metadata.update(
+            {
+                "anchor_id": anchor_id,
+                "anchor_instance_id": int(entity.entity_id.split(":", 1)[1]),
+                "authority": "ovimap_anchor",
+                "native_manifest_sha256": native_record["sha256"],
+            }
+        )
+    _classify_anchor_entities(
+        snapshot,
+        classes=classes,
+        siglip_model=siglip_model,
+        device=device.strip(),
+    )
+
+    output_root.parent.mkdir(parents=True, exist_ok=True)
+    staging = Path(
+        tempfile.mkdtemp(prefix=f".{output_root.name}.", dir=output_root.parent)
+    )
+    try:
+        written = write_map_snapshot(snapshot, staging)
+        output_records = {
+            name: _relative_output_record(path, root=staging)
+            for name, path in written.items()
+        }
+        manifest_payload = {
+            "schema_version": 1,
+            "manifest_id": "crove_ovimap_static_anchor_v1",
+            "status": "PASS",
+            "method": "OVI-MAP causal static anchor",
+            "scene": scene,
+            "anchor_id": anchor_id,
+            "causality": {
+                "first_source_frame": 0,
+                "last_source_frame": cutoff,
+                "maximum_source_frame": cutoff,
+                "strictly_pre_intervention": True,
+            },
+            "sources": {
+                **causal_records,
+                "native_manifest": native_record,
+                **source_records,
+                "vocabulary": vocabulary_record,
+                "siglip_model": siglip_record,
+            },
+            "outputs": output_records,
+        }
+        manifest_path = staging / "anchor_manifest.json"
+        _atomic_json(manifest_path, manifest_payload)
+
+        if _file_record(
+            native_manifest, label="native mapping manifest"
+        ) != native_record:
+            raise RuntimeError("native manifest changed during anchor conversion")
+        for role, path in (
+            ("instance_mesh", instance_mesh),
+            ("semantic_features", semantic_features),
+            ("instance_color_log", instance_color_log),
+        ):
+            if _file_record(path, label=f"native {role}") != source_records[role]:
+                raise RuntimeError(f"native {role} changed during anchor conversion")
+        if _file_record(vocabulary_json, label="TESSE vocabulary") != vocabulary_record:
+            raise RuntimeError("TESSE vocabulary changed during anchor conversion")
+        if _directory_record(siglip_model, label="SigLIP model") != siglip_record:
+            raise RuntimeError("SigLIP model changed during anchor conversion")
+        if _validated_causal_sources(causal_records) != causal_records:
+            raise RuntimeError("causal sources changed during anchor conversion")
+        os.replace(staging, output_root)
+    except BaseException:
+        shutil.rmtree(staging, ignore_errors=True)
+        raise
+
+    return AnchorPackagePaths(
+        manifest=output_root / "anchor_manifest.json",
+        snapshot=output_root / output_records["snapshot"]["path"],
+        entities=output_root / output_records["entities"]["path"],
+    )
+
+
+_ANCHOR_CONFIG_FIELDS = {
+    "schema_version",
+    "method_id",
+    "dataset",
+    "scene",
+    "source_role",
+    "first_source_frame",
+    "last_source_frame",
+    "source_stride",
+    "ovimap_commit",
+    "vocabulary_json",
+    "minimum_spatial_iou",
+    "maximum_centroid_distance_m",
+    "minimum_semantic_cosine",
+    "moved_displacement_m",
+    "background_voxel_size_m",
+}
+
+
+def _anchor_config(path: Path) -> dict[str, Any]:
+    payload = _json_object(
+        _regular_file_bytes(path, label="anchor config"), label="anchor config"
+    )
+    if set(payload) != _ANCHOR_CONFIG_FIELDS:
+        raise ValueError("anchor config fields are not exact")
+    if (
+        payload.get("schema_version") != 1
+        or payload.get("method_id") != "crove_ovimap_static_anchor_v1"
+        or payload.get("dataset") != "TESSE-CD"
+        or payload.get("source_role") != "causal_pre_intervention_initialization"
+        or payload.get("first_source_frame") != 0
+        or payload.get("source_stride") != 1
+        or payload.get("ovimap_commit") != PINNED_OVIMAP_COMMIT
+        or not isinstance(payload.get("scene"), str)
+        or not str(payload["scene"]).strip()
+        or not isinstance(payload.get("vocabulary_json"), str)
+        or not str(payload["vocabulary_json"]).strip()
+    ):
+        raise ValueError("anchor config identity is invalid")
+    _integer(
+        payload.get("last_source_frame"),
+        label="last_source_frame",
+        minimum=0,
+    )
+    for name in (
+        "minimum_spatial_iou",
+        "maximum_centroid_distance_m",
+        "minimum_semantic_cosine",
+        "moved_displacement_m",
+        "background_voxel_size_m",
+    ):
+        value = payload.get(name)
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError(f"anchor config {name} must be numeric")
+        normalized = float(value)
+        if not np.isfinite(normalized) or normalized <= 0.0:
+            raise ValueError(f"anchor config {name} must be finite and positive")
+    if not 0.0 < float(payload["minimum_semantic_cosine"]) <= 1.0:
+        raise ValueError("minimum_semantic_cosine must be in (0, 1]")
+    return payload
+
+
+def _manifest_input_path(payload: Mapping[str, Any], role: str) -> Path:
+    artifacts = payload.get("artifacts")
+    record = artifacts.get(role) if isinstance(artifacts, Mapping) else None
+    path = record.get("path") if isinstance(record, Mapping) else None
+    if not isinstance(path, str) or not Path(path).is_absolute():
+        raise ValueError(f"native manifest artifact path is invalid: {role}")
+    return Path(path)
+
+
+def _manifest_siglip_path(payload: Mapping[str, Any]) -> Path:
+    preflight = payload.get("preflight")
+    sources = preflight.get("sources") if isinstance(preflight, Mapping) else None
+    record = sources.get("siglip_model") if isinstance(sources, Mapping) else None
+    path = record.get("path") if isinstance(record, Mapping) else None
+    if not isinstance(path, str) or not Path(path).is_absolute():
+        raise ValueError("native manifest SigLIP model path is invalid")
+    return Path(path)
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--config", type=Path, required=True)
+    parser.add_argument("--schedule", type=Path, required=True)
+    parser.add_argument("--rgbd-root", type=Path, required=True)
+    parser.add_argument("--native-manifest", type=Path, required=True)
+    parser.add_argument("--output-root", type=Path, required=True)
+    parser.add_argument("--device", default="cuda")
+    args = parser.parse_args(argv)
+
+    config = _anchor_config(args.config)
+    scene = str(config["scene"])
+    cutoff = int(config["last_source_frame"])
+    contract = load_causal_prefix_contract(
+        scene=scene,
+        schedule_path=args.schedule,
+        rgbd_root=args.rgbd_root,
+        configured_cutoff=cutoff,
+    )
+    causal_sources = {
+        "config": _file_record(args.config, label="anchor config"),
+        "schedule": _file_record(args.schedule, label="causal schedule"),
+        "rgbd_export_manifest": _file_record(
+            args.rgbd_root / scene / "export_manifest.json",
+            label="RGB-D export manifest",
+        ),
+    }
+    if (
+        causal_sources["schedule"]["sha256"] != contract.schedule_sha256
+        or causal_sources["rgbd_export_manifest"]["sha256"]
+        != contract.rgbd_export_manifest_sha256
+    ):
+        raise RuntimeError("causal sources changed after prefix validation")
+
+    native_bytes = _regular_file_bytes(
+        args.native_manifest, label="native mapping manifest"
+    )
+    native_payload = _json_object(native_bytes, label="native mapping manifest")
+    vocabulary = Path(str(config["vocabulary_json"]))
+    if not vocabulary.is_absolute():
+        vocabulary = REPO_ROOT / vocabulary
+    build_anchor_package(
+        scene=scene,
+        cutoff_frame=cutoff,
+        native_manifest=args.native_manifest,
+        instance_mesh=_manifest_input_path(native_payload, "instance_mesh"),
+        semantic_features=_manifest_input_path(native_payload, "semantic_features"),
+        instance_color_log=_manifest_input_path(
+            native_payload, "instance_color_log"
+        ),
+        vocabulary_json=vocabulary,
+        siglip_model=_manifest_siglip_path(native_payload),
+        device=args.device,
+        output_root=args.output_root,
+        causal_sources=causal_sources,
+    )
+    return 0
+
+
 __all__ = [
     "PINNED_OVIMAP_COMMIT",
+    "AnchorPackagePaths",
     "CausalPrefixContract",
     "TesseNativeCommands",
     "TesseNativeEnvironment",
+    "build_anchor_package",
     "build_tesse_native_commands",
     "load_causal_prefix_contract",
+    "main",
     "preflight_tesse_native",
     "run_tesse_native_mapping",
 ]
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
