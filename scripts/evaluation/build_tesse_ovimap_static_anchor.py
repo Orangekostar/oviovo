@@ -15,6 +15,7 @@ import pickle
 import shutil
 import stat
 import subprocess
+import sys
 import tempfile
 from typing import Any, Sequence
 
@@ -23,6 +24,8 @@ import numpy as np
 
 PINNED_OVIMAP_COMMIT = "58a804e2d7c82ba05a489eb071aba3367301fed8"
 REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 
 @dataclass(frozen=True)

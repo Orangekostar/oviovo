@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 import pickle
+import subprocess
+import sys
 
 import numpy as np
 import pytest
@@ -22,6 +25,9 @@ from scripts.evaluation.build_tesse_ovimap_static_anchor import (
 from src.evaluation.exporters.oviovo import read_map_snapshot
 
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
 def _write_json(path: Path, payload: object) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -33,6 +39,36 @@ def _write_json(path: Path, payload: object) -> Path:
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+@pytest.mark.parametrize(
+    "relative_script",
+    (
+        "scripts/evaluation/build_tesse_ovimap_static_anchor.py",
+        "scripts/evaluation/run_crove_ovimap_static_anchor.py",
+        "scripts/evaluation/evaluate_crove_ovimap_static_anchor.py",
+    ),
+)
+def test_static_anchor_clis_bootstrap_repo_imports_from_other_working_directory(
+    tmp_path: Path, relative_script: str
+) -> None:
+    script = REPO_ROOT / relative_script
+    code = (
+        "import runpy,sys; "
+        f"ns=runpy.run_path({str(script)!r}, run_name='static_anchor_cli_test'); "
+        "assert str(ns['REPO_ROOT']) in sys.path"
+    )
+    environment = dict(os.environ)
+    environment.pop("PYTHONPATH", None)
+    completed = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=tmp_path,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
 
 
 def _write_schedule(

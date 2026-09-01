@@ -11,10 +11,15 @@ import os
 from pathlib import Path
 import shutil
 import stat
+import sys
 import tempfile
 from typing import Any, Mapping, Sequence
 
 import numpy as np
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from src.evaluation.exporters.oviovo import read_map_snapshot, write_map_snapshot
 from src.oviv2.ovimap_static_anchor import (
