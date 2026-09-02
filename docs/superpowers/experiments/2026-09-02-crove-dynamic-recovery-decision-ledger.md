@@ -18,6 +18,7 @@
 | P2 Dyn mechanism attribution | `CODE_EVIDENCE` + bounded diagnostics | Official Dyn has 19,556 missed and 22,431 hallucinated counts, but the evaluator does not expose runtime entity correspondence | **NO-GO** for P3 threshold/weight tuning | `812928e`, `87bfcd3` | Re-ID/ICP mechanism counts cannot be relabeled as official Dyn failures |
 | P4A dense moved-anchor shadow | `MEASURED_EVIDENCE` + tests | Five target objects recover 1,937,312 dense points from 3,502 compact points; all state fields match and maximum rigid residual is `8.81e-7 m`; `ovimap:2` has zero 5 cm compact agreement | **GO** for a separately named Apartment evaluation candidate; **NO-GO** for formal promotion before metrics | `903a934`, `a6a835e`, `336d1f8` | The density discontinuity is removed, but one large translated template has a measured geometry mismatch that must be evaluated rather than assumed beneficial |
 | P4A official Apartment gate | `MEASURED_EVIDENCE` | Obj F1 0.353859, Chg F1 0.086534, Current mIoU 0.148174, Ghost 0.443852; Obj F1 delta -0.018903 against the registered floor | **REJECTED_RETAIN_A6**; use compact geometry for P5 | `34a35ab` + bound external artifacts | Dense translation improves three metrics but fails the preregistered Object F1 floor |
+| P5 causal unbound-anchor visibility | `CODE_EVIDENCE` + `MEASURED_EVIDENCE` | Ten unbound anchors become dormant from causal depth evidence; Obj F1 0.367952, Chg F1 0.088088, Current mIoU 0.149563, Ghost 0.441677; Obj F1 delta -0.004810 | **REJECTED_RETAIN_A6**; Office remains blocked | `a040319`, `21dde04`, `2a8f610`, `fd19df6` + bound external artifacts | The stale-anchor mechanism is validated, but the single preregistered candidate misses the Object F1 floor |
 
 ## Artifact Binding
 
@@ -40,10 +41,19 @@
   `2a7f251973d63444ccf833ad956eb25c112a62fd4eb7d1ff8699327ea8dac657`.
 - P4A gate decision SHA-256:
   `59e961e8852f5687efd6719ba6d2fb1a0613eb4baf02c28be7bf6c4d02766c47`.
+- P5 composition manifest SHA-256:
+  `3cfa389183a930ac5fb10aa34093cf63e64e1c8206f1f4e9ccffef1490369fc3`.
+- P5 visibility diagnostics SHA-256:
+  `7ee9a287a3484147bf8daeb02105a2829046bb357dee4aec1fcfb66ac090ddf3`.
+- P5 official metrics SHA-256:
+  `901fe7587f2b224819d3ed4838a4bfe225ed3c361e51914e4acd18093bda7a21`.
+- P5 gate decision SHA-256:
+  `b3b4db3ea564e5c4aec821c37d3362cae0fbee677bea0238df226c29123d6f12`.
 
 ## Active Gate
 
-P4A is rejected. One P5 visibility-grounded unbound-anchor suppression pilot
-on the compact geometry backbone is authorized. P3 association changes, P4B
-new-object dense readout, and P6 ReScene integration remain blocked. Office
-remains blocked until the Apartment configuration is selected and frozen.
+P4A and P5 are rejected by the preregistered Object F1 floor, and A6 remains
+the formal official-metric candidate. P3 association changes, P4B new-object
+dense readout, and P6 ReScene integration remain blocked by the attribution
+evidence. No new configuration is frozen, so Office remains held out and was
+not run.

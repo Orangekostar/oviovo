@@ -14,12 +14,12 @@ existing hash-bound composition runner and temporal artifact chain.
 - Create: `tests/oviv2/test_anchor_visibility.py`
 - Create: `configs/evaluation/crove_ovimap_unbound_visibility_v1.json`
 
-- [ ] Write RED tests for deterministic voxel sampling, strict absence and
+- [x] Write RED tests for deterministic voxel sampling, strict absence and
   presence evidence, three-baseline/six-observation dormancy, neutral
   occlusion handling, presence reset, and two-frame reactivation.
-- [ ] Implement the exact frozen policy and validation.
-- [ ] Run the new module tests and lint checks.
-- [ ] Commit the pure policy separately.
+- [x] Implement the exact frozen policy and validation.
+- [x] Run the new module tests and lint checks.
+- [x] Commit the pure policy separately.
 
 ### Task 2: Default-preserving composition suppression
 
@@ -27,11 +27,11 @@ existing hash-bound composition runner and temporal artifact chain.
 - Modify: `src/oviv2/ovimap_static_anchor.py`
 - Modify: `tests/oviv2/test_ovimap_static_anchor.py`
 
-- [ ] Write RED tests proving only declared unbound anchors are omitted and
+- [x] Write RED tests proving only declared unbound anchors are omitted and
   bound/unknown IDs fail closed.
-- [ ] Add an empty-by-default suppressed-ID input to checkpoint composition.
-- [ ] Verify the existing default behavior and protected T1 tests.
-- [ ] Commit the core integration separately.
+- [x] Add an empty-by-default suppressed-ID input to checkpoint composition.
+- [x] Verify the existing default behavior and protected T1 tests.
+- [x] Commit the core integration separately.
 
 ### Task 3: Runner, provenance, and export integration
 
@@ -39,25 +39,24 @@ existing hash-bound composition runner and temporal artifact chain.
 - Modify: `scripts/evaluation/run_crove_ovimap_static_anchor.py`
 - Modify: `tests/evaluation/test_run_crove_ovimap_static_anchor.py`
 
-- [ ] Write RED tests for role/policy pairing, causal frame processing,
+- [x] Write RED tests for role/policy pairing, causal frame processing,
   trajectory validity, lifecycle transitions, checkpoint suppression,
   diagnostics binding, and no-output-on-failure behavior.
-- [ ] Add the `causal_visibility_candidate` role and optional policy input.
-- [ ] Load the anchor-bound RGB-D dataset, compute the chronological visibility
+- [x] Add the `causal_visibility_candidate` role and optional policy input.
+- [x] Load the anchor-bound RGB-D dataset, compute the chronological visibility
   timeline, and publish hash-bound runtime diagnostics.
-- [ ] Export the result through the existing temporal artifact API and verify
+- [x] Export the result through the existing temporal artifact API and verify
   bridge consistency.
-- [ ] Commit the runner integration separately.
+- [x] Commit the runner integration separately.
 
 ### Task 4: Apartment decision and frozen transfer
 
-- [ ] Compose the single Apartment visibility candidate using the better of
+- [x] Compose the single Apartment visibility candidate using the better of
   the compact and P4A moved-geometry modes according to official P4A metrics.
-- [ ] Run temporal export, Khronos bridge import, official evaluation, and the
+- [x] Run temporal export, Khronos bridge import, official evaluation, and the
   common-v2 gate.
-- [ ] Record the Apartment decision and freeze the exact code/config/input
-  identity if all promotion gates pass.
-- [ ] Run Office once from the frozen configuration without inspecting Office
-  during selection.
+- [x] Record the Apartment rejection; no configuration is frozen because the
+  Object F1 promotion gate failed.
+- [x] Keep Office held out because no Apartment candidate passed every gate.
 - [ ] Update the result ledger/report, run final verification, push the branch,
   and verify the remote SHA.
