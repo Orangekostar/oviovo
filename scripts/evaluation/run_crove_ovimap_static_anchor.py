@@ -351,6 +351,40 @@ class _VisibilityTimeline:
     diagnostics: dict[str, object]
 
 
+def _official_visibility_schedule(schedule_manifest: Path) -> Path:
+    from src.datasets.tesse_cd import TesseCdRgbdDataset
+
+    cache = _json_object(
+        _regular_bytes(
+            TesseCdRgbdDataset.CACHE_MANIFEST_PATH,
+            label="RGB-D cache input manifest",
+        ),
+        label="RGB-D cache input manifest",
+    )
+    binding = cache.get("schedule_manifest")
+    if not isinstance(binding, Mapping):
+        raise ValueError("official schedule binding is invalid")
+    raw_path = binding.get("path")
+    expected_sha256 = binding.get("sha256")
+    if (
+        not isinstance(raw_path, str)
+        or not raw_path
+        or not isinstance(expected_sha256, str)
+        or len(expected_sha256) != 64
+        or any(character not in "0123456789abcdef" for character in expected_sha256)
+    ):
+        raise ValueError("official schedule binding is invalid")
+    canonical = Path(raw_path)
+    if not canonical.is_absolute():
+        canonical = TesseCdRgbdDataset.REPOSITORY_ROOT / canonical
+    canonical = Path(os.path.abspath(os.fspath(canonical)))
+    canonical_bytes = _regular_bytes(canonical, label="official causal schedule")
+    alias_bytes = _regular_bytes(schedule_manifest, label="anchor causal schedule")
+    if _sha256(canonical_bytes) != expected_sha256 or alias_bytes != canonical_bytes:
+        raise ValueError("official schedule binding does not match anchor schedule")
+    return canonical
+
+
 def _production_visibility_dataset(
     root: Path,
     scene: str,
@@ -363,7 +397,7 @@ def _production_visibility_dataset(
         root,
         scene,
         export_manifest,
-        schedule_manifest,
+        _official_visibility_schedule(schedule_manifest),
     )
 
 

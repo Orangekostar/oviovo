@@ -8,7 +8,10 @@ import numpy as np
 import pytest
 
 from scripts.evaluation.export_tesse_temporal_artifact import export_temporal_artifact
-from scripts.evaluation.run_crove_ovimap_static_anchor import compose_run
+from scripts.evaluation.run_crove_ovimap_static_anchor import (
+    _official_visibility_schedule,
+    compose_run,
+)
 from src.core.data_structures import CameraIntrinsics, Frame
 from src.evaluation.contracts import EntityPrediction, MapSnapshot
 from src.evaluation.exporters.oviovo import read_map_snapshot, write_map_snapshot
@@ -46,6 +49,23 @@ def _record(path: Path, *, root: Path | None = None) -> dict[str, object]:
         "sha256": hashlib.sha256(data).hexdigest(),
         "byte_count": len(data),
     }
+
+
+def test_official_visibility_schedule_accepts_only_identical_worktree_alias(
+    tmp_path: Path,
+) -> None:
+    canonical = (
+        Path(__file__).resolve().parents[2]
+        / "configs/evaluation/manifests/tesse_cd_causal_schedule_v2.json"
+    )
+    alias = tmp_path / "schedule.json"
+    alias.write_bytes(canonical.read_bytes())
+
+    assert _official_visibility_schedule(alias) == canonical.resolve()
+
+    alias.write_bytes(alias.read_bytes() + b"\n")
+    with pytest.raises(ValueError, match="official schedule binding"):
+        _official_visibility_schedule(alias)
 
 
 def _prediction(
