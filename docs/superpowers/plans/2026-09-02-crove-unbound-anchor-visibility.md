@@ -58,5 +58,5 @@ existing hash-bound composition runner and temporal artifact chain.
 - [x] Record the Apartment rejection; no configuration is frozen because the
   Object F1 promotion gate failed.
 - [x] Keep Office held out because no Apartment candidate passed every gate.
-- [ ] Update the result ledger/report, run final verification, push the branch,
+- [x] Update the result ledger/report, run final verification, push the branch,
   and verify the remote SHA.
