@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
+from collections.abc import Sequence
+from dataclasses import dataclass
 from numbers import Integral, Real
-from typing import Sequence
 
 import numpy as np
 from scipy.optimize import linear_sum_assignment
@@ -14,6 +14,7 @@ from src.evaluation.contracts import EntityPrediction, MapSnapshot
 from src.oviv2.temporal_export import (
     DynamicState,
     TemporalExportBatch,
+    TemporalExportSample,
 )
 from src.oviv2.temporal_lifecycle import (
     TemporalEvidenceKind,
@@ -25,8 +26,10 @@ from src.oviv2.temporal_snapshot import (
     build_temporal_map_snapshot,
 )
 
-
 _SEMANTIC_UPDATE_MINIMUM_ANCHOR_COVERAGE = 0.5
+_MOVED_GEOMETRY_MODES = frozenset(
+    {"temporal_compact", "anchor_centroid_translation"}
+)
 
 
 def _integer(value: object, name: str, *, minimum: int) -> int:
@@ -433,6 +436,12 @@ def _class_names(values: Sequence[str]) -> tuple[str, ...]:
     return names
 
 
+def _moved_geometry_mode(value: object) -> str:
+    if not isinstance(value, str) or value not in _MOVED_GEOMETRY_MODES:
+        raise ValueError("moved_geometry_mode is invalid")
+    return value
+
+
 def _copy_prediction(
     entity: EntityPrediction,
     *,
@@ -440,13 +449,14 @@ def _copy_prediction(
     entity_id: str | None = None,
     lifecycle_state: str | None = None,
     semantic_source: EntityPrediction | None = None,
+    points_xyz: np.ndarray | None = None,
 ) -> EntityPrediction:
     merged = dict(entity.metadata)
     merged.update(metadata)
     semantic = entity if semantic_source is None else semantic_source
     return EntityPrediction(
         entity_id=entity.entity_id if entity_id is None else entity_id,
-        points_xyz=entity.points_xyz,
+        points_xyz=entity.points_xyz if points_xyz is None else points_xyz,
         semantic_embedding=semantic.semantic_embedding,
         semantic_label=semantic.semantic_label,
         semantic_score=semantic.semantic_score,
@@ -456,6 +466,51 @@ def _copy_prediction(
         first_seen=entity.first_seen,
         last_seen=entity.last_seen,
         metadata=merged,
+    )
+
+
+def _dense_moved_prediction(
+    *,
+    anchor: EntityPrediction,
+    temporal: EntityPrediction,
+    sample: TemporalExportSample | None,
+    anchor_manifest_sha256: str,
+) -> EntityPrediction:
+    anchor_points = np.asarray(anchor.points_xyz, dtype=np.float64)
+    anchor_centroid = anchor_points.mean(axis=0)
+    if sample is None:
+        current_centroid = np.asarray(temporal.points_xyz, dtype=np.float64).mean(
+            axis=0
+        )
+        transform_source = "temporal_geometry_centroid_translation"
+    else:
+        current_centroid = np.asarray(sample.centroid_xyz, dtype=np.float64)
+        transform_source = "current_export_centroid_translation"
+    translation = current_centroid - anchor_centroid
+    dense_points = np.asarray(anchor_points + translation, dtype=np.float32)
+    if not (
+        np.isfinite(anchor_centroid).all()
+        and np.isfinite(current_centroid).all()
+        and np.isfinite(dense_points).all()
+    ):
+        raise ValueError("dense moved-anchor translation must remain finite")
+    return _copy_prediction(
+        temporal,
+        entity_id=anchor.entity_id,
+        points_xyz=dense_points,
+        metadata={
+            "authority": "crove_temporal",
+            "anchor_entity_id": anchor.entity_id,
+            "anchor_manifest_sha256": anchor_manifest_sha256,
+            "overlay_state": "moved",
+            "geometry_authority": "ovimap_anchor_template",
+            "geometry_source": "causal_ovimap_anchor",
+            "state_authority": "crove_temporal",
+            "template_anchor_id": anchor.entity_id,
+            "transform_source": transform_source,
+            "readout_resolution_m": None,
+            "readout_resolution_source": "native_ovimap_mesh_not_declared",
+        },
     )
 
 
@@ -525,6 +580,7 @@ def compose_anchor_checkpoint(
     config: StaticAnchorConfig,
     anchor_manifest_sha256: str,
     class_names: Sequence[str],
+    moved_geometry_mode: str = "temporal_compact",
 ) -> tuple[MapSnapshot, AnchorOverlayState, CheckpointOverlayDiagnostics]:
     """Compose one causal current readout without mutating either authority."""
 
@@ -536,6 +592,7 @@ def compose_anchor_checkpoint(
         raise TypeError("config must be a StaticAnchorConfig")
     manifest_hash = _sha256(anchor_manifest_sha256, "anchor_manifest_sha256")
     names = _class_names(class_names)
+    geometry_mode = _moved_geometry_mode(moved_geometry_mode)
     wrappers: dict[int, TemporalSnapshotEntity]
     if isinstance(temporal, TemporalCurrentSnapshot):
         observed_frame_index = temporal.metadata.frame_id
@@ -654,32 +711,47 @@ def compose_anchor_checkpoint(
             if prediction is None and wrapper is not None:
                 prediction = _prediction_from_wrapper(wrapper, names)
             if prediction is not None:
-                predictions.append(
-                    _copy_prediction(
-                        prediction,
-                        entity_id=anchor_id,
-                        metadata={
-                            "authority": "crove_temporal",
-                            "anchor_entity_id": anchor_id,
-                            "anchor_manifest_sha256": manifest_hash,
-                            "overlay_state": "moved",
-                        },
+                if geometry_mode == "anchor_centroid_translation":
+                    predictions.append(
+                        _dense_moved_prediction(
+                            anchor=anchor_entity,
+                            temporal=prediction,
+                            sample=latest_samples.get(temporal_id),
+                            anchor_manifest_sha256=manifest_hash,
+                        )
                     )
-                )
+                else:
+                    predictions.append(
+                        _copy_prediction(
+                            prediction,
+                            entity_id=anchor_id,
+                            metadata={
+                                "authority": "crove_temporal",
+                                "anchor_entity_id": anchor_id,
+                                "anchor_manifest_sha256": manifest_hash,
+                                "overlay_state": "moved",
+                            },
+                        )
+                    )
                 moved_ids.append(anchor_id)
                 continue
         overlay_state = "unchanged"
         if temporal_id is not None:
             wrapper = wrappers.get(temporal_id)
             event = latest_events.get(temporal_id)
-            if wrapper is not None and wrapper.lifecycle.lifecycle is TemporalLifecycle.DORMANT:
-                overlay_state = "occluded"
-                occluded_ids.append(anchor_id)
-            elif event is not None and event.evidence in {
-                TemporalEvidenceKind.OCCLUDED,
-                TemporalEvidenceKind.OUT_OF_VIEW,
-                TemporalEvidenceKind.DEPTH_UNKNOWN,
-            }:
+            currently_occluded = (
+                wrapper is not None
+                and wrapper.lifecycle.lifecycle is TemporalLifecycle.DORMANT
+            ) or (
+                event is not None
+                and event.evidence
+                in {
+                    TemporalEvidenceKind.OCCLUDED,
+                    TemporalEvidenceKind.OUT_OF_VIEW,
+                    TemporalEvidenceKind.DEPTH_UNKNOWN,
+                }
+            )
+            if currently_occluded:
                 overlay_state = "occluded"
                 occluded_ids.append(anchor_id)
         if overlay_state == "unchanged":

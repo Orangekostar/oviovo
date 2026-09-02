@@ -7,6 +7,12 @@ import pytest
 
 import src.oviv2.ovimap_static_anchor as anchor_module
 from src.evaluation.contracts import EntityPrediction, MapSnapshot
+from src.oviv2.ovimap_static_anchor import (
+    PrefixIdentitySample,
+    StaticAnchorConfig,
+    bind_anchor_identities,
+    compose_anchor_checkpoint,
+)
 from src.oviv2.temporal_background import TemporalBackgroundVolume
 from src.oviv2.temporal_config import TemporalGeometryConfig
 from src.oviv2.temporal_export import (
@@ -27,12 +33,6 @@ from src.oviv2.temporal_snapshot import (
     TemporalSnapshotMetadata,
 )
 from src.oviv2.temporal_state import TemporalEntityState
-from src.oviv2.ovimap_static_anchor import (
-    PrefixIdentitySample,
-    StaticAnchorConfig,
-    bind_anchor_identities,
-    compose_anchor_checkpoint,
-)
 
 
 def _entity(
@@ -365,6 +365,7 @@ def _compose(
     state,
     temporal: TemporalCurrentSnapshot,
     exports: tuple[TemporalExportBatch, ...],
+    moved_geometry_mode: str = "temporal_compact",
 ):
     return compose_anchor_checkpoint(
         anchor=anchor,
@@ -374,6 +375,7 @@ def _compose(
         config=_config(),
         anchor_manifest_sha256="b" * 64,
         class_names=("unknown", "Chair", "Table"),
+        moved_geometry_mode=moved_geometry_mode,
     )
 
 
@@ -578,6 +580,184 @@ def test_confirmed_motion_replaces_anchor_with_current_temporal_geometry() -> No
     assert composed.entities[0].metadata["overlay_state"] == "moved"
     assert next_state.moved_anchor_ids == frozenset({"ovimap:1"})
     assert diagnostics.moved_anchor_ids == ("ovimap:1",)
+
+
+def test_dense_moved_geometry_translates_anchor_to_current_export_centroid() -> None:
+    anchor, state = _single_anchor_and_state()
+    anchor.entities[0].points_xyz = np.asarray(
+        (
+            (-0.20, -0.10, 0.0),
+            (-0.10, 0.10, 0.0),
+            (0.00, 0.00, 0.0),
+            (0.10, -0.10, 0.0),
+            (0.20, 0.10, 0.0),
+        ),
+        dtype=np.float32,
+    )
+    temporal = _temporal_snapshot(
+        frame_index=263,
+        entities=(
+            _temporal_entity(
+                7, TemporalLifecycle.ACTIVE, x=1.0, frame_index=263, geometry_epoch=1
+            ),
+        ),
+    )
+    exports = (
+        _export_batch(
+            frame_index=263,
+            entity_id=7,
+            x=1.25,
+            dynamic_state=DynamicState.DYNAMIC,
+            geometry_epoch=1,
+        ),
+    )
+
+    composed, next_state, diagnostics = _compose(
+        anchor=anchor,
+        state=state,
+        temporal=temporal,
+        exports=exports,
+        moved_geometry_mode="anchor_centroid_translation",
+    )
+
+    entity = composed.entities[0]
+    delta = np.asarray(exports[0].samples[0].centroid_xyz) - np.asarray(
+        anchor.entities[0].points_xyz, dtype=np.float64
+    ).mean(axis=0)
+    np.testing.assert_allclose(
+        entity.points_xyz,
+        np.asarray(anchor.entities[0].points_xyz, dtype=np.float64) + delta,
+        rtol=0.0,
+        atol=1e-7,
+    )
+    assert entity.semantic_label == "Chair"
+    assert entity.lifecycle_state == "active"
+    assert entity.metadata["authority"] == "crove_temporal"
+    assert entity.metadata["geometry_authority"] == "ovimap_anchor_template"
+    assert entity.metadata["geometry_source"] == "causal_ovimap_anchor"
+    assert entity.metadata["state_authority"] == "crove_temporal"
+    assert entity.metadata["template_anchor_id"] == "ovimap:1"
+    assert (
+        entity.metadata["transform_source"]
+        == "current_export_centroid_translation"
+    )
+    assert entity.metadata["readout_resolution_m"] is None
+    assert (
+        entity.metadata["readout_resolution_source"]
+        == "native_ovimap_mesh_not_declared"
+    )
+    assert next_state.moved_anchor_ids == frozenset({"ovimap:1"})
+    assert diagnostics.moved_anchor_ids == ("ovimap:1",)
+
+
+def test_dense_moved_geometry_uses_temporal_geometry_centroid_without_sample() -> None:
+    anchor, state = _single_anchor_and_state()
+    state = replace(state, moved_anchor_ids=frozenset({"ovimap:1"}))
+    temporal = _temporal_snapshot(
+        frame_index=263,
+        entities=(
+            _temporal_entity(
+                7, TemporalLifecycle.ACTIVE, x=1.0, frame_index=263, geometry_epoch=1
+            ),
+        ),
+    )
+
+    composed, _, _ = _compose(
+        anchor=anchor,
+        state=state,
+        temporal=temporal,
+        exports=(TemporalExportBatch(263, 263_000_000_000, (), ()),),
+        moved_geometry_mode="anchor_centroid_translation",
+    )
+
+    entity = composed.entities[0]
+    np.testing.assert_allclose(
+        np.asarray(entity.points_xyz, dtype=np.float64).mean(axis=0),
+        (1.0, 0.0, 0.0),
+        rtol=0.0,
+        atol=1e-7,
+    )
+    assert (
+        entity.metadata["transform_source"]
+        == "temporal_geometry_centroid_translation"
+    )
+
+
+def test_default_and_explicit_compact_moved_geometry_are_identical() -> None:
+    anchor, state = _single_anchor_and_state()
+    temporal = _temporal_snapshot(
+        frame_index=263,
+        entities=(
+            _temporal_entity(
+                7, TemporalLifecycle.ACTIVE, x=1.0, frame_index=263, geometry_epoch=1
+            ),
+        ),
+    )
+    exports = (
+        _export_batch(
+            frame_index=263,
+            entity_id=7,
+            x=1.0,
+            dynamic_state=DynamicState.DYNAMIC,
+            geometry_epoch=1,
+        ),
+    )
+
+    default, default_state, default_diagnostics = compose_anchor_checkpoint(
+        anchor=anchor,
+        temporal=temporal,
+        exports=exports,
+        state=state,
+        config=_config(),
+        anchor_manifest_sha256="b" * 64,
+        class_names=("unknown", "Chair", "Table"),
+    )
+    explicit, explicit_state, explicit_diagnostics = _compose(
+        anchor=anchor,
+        state=state,
+        temporal=temporal,
+        exports=exports,
+        moved_geometry_mode="temporal_compact",
+    )
+
+    assert explicit_state == default_state
+    assert explicit_diagnostics == default_diagnostics
+    assert len(explicit.entities) == len(default.entities) == 1
+    np.testing.assert_array_equal(
+        explicit.entities[0].points_xyz, default.entities[0].points_xyz
+    )
+    assert explicit.entities[0].metadata == default.entities[0].metadata
+    assert explicit.entities[0].semantic_label == default.entities[0].semantic_label
+    assert explicit.entities[0].lifecycle_state == default.entities[0].lifecycle_state
+
+
+def test_moved_geometry_mode_rejects_unknown_value() -> None:
+    anchor, state = _single_anchor_and_state()
+    temporal = _temporal_snapshot(
+        frame_index=263,
+        entities=(
+            _temporal_entity(
+                7, TemporalLifecycle.ACTIVE, x=1.0, frame_index=263, geometry_epoch=1
+            ),
+        ),
+    )
+
+    with pytest.raises(ValueError, match="moved_geometry_mode"):
+        _compose(
+            anchor=anchor,
+            state=state,
+            temporal=temporal,
+            exports=(
+                _export_batch(
+                    frame_index=263,
+                    entity_id=7,
+                    x=1.0,
+                    dynamic_state=DynamicState.DYNAMIC,
+                    geometry_epoch=1,
+                ),
+            ),
+            moved_geometry_mode="unknown",
+        )
 
 
 def test_visible_absence_removes_anchor_but_occlusion_keeps_it() -> None:
