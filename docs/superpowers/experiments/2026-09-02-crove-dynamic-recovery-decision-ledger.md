@@ -16,6 +16,7 @@
 | P1 visualization contract | `CODE_EVIDENCE` + tests | `rgb`, `instance`, `semantic`, and `dynamic` are explicit recoloring-only modes; output geometry and IDs remain invariant | **GO** | `d724822ef3b77f924381985d22862eb0b3ead535` | Visualization is separated from formal MapSnapshot/evaluator state |
 | P2 Ghost authority attribution | `MEASURED_EVIDENCE` | 2,152,474/2,152,474 official ghost matches are partitioned; unbound anchors contribute 74.002752%; bound dynamic-false and epoch-not-advanced states contribute another 24.639% | **GO** for P4A and one P5 visibility pilot | `812928e`, `87bfcd3` | Ghost and dense-to-sparse branches have exact or direct measured support |
 | P2 Dyn mechanism attribution | `CODE_EVIDENCE` + bounded diagnostics | Official Dyn has 19,556 missed and 22,431 hallucinated counts, but the evaluator does not expose runtime entity correspondence | **NO-GO** for P3 threshold/weight tuning | `812928e`, `87bfcd3` | Re-ID/ICP mechanism counts cannot be relabeled as official Dyn failures |
+| P4A dense moved-anchor shadow | `MEASURED_EVIDENCE` + tests | Five target objects recover 1,937,312 dense points from 3,502 compact points; all state fields match and maximum rigid residual is `8.81e-7 m`; `ovimap:2` has zero 5 cm compact agreement | **GO** for a separately named Apartment evaluation candidate; **NO-GO** for formal promotion before metrics | `903a934`, `a6a835e`, `336d1f8` | The density discontinuity is removed, but one large translated template has a measured geometry mismatch that must be evaluated rather than assumed beneficial |
 
 ## Artifact Binding
 
@@ -28,10 +29,17 @@
 - P2 source runtime diagnostics SHA-256:
   `4e3eef84499bc5ad991d553fc514a071b0000b9cb62ce812e34de0165c9efdc5`.
 - Repeated runs were byte-identical.
+- P4A compact-control manifest SHA-256:
+  `10bb0edcd2d89175b606e25ba465b931795ab7b68347914357695b27d22e5e82`.
+- P4A dense-shadow manifest SHA-256:
+  `71d03749ca162711fdada6af7ed33dccd452fa6ef51d7e51a7a9dc6d7dd397a5`.
+- P4A final audit JSON SHA-256:
+  `6bae5c9aae684af4e6e0ddd0885d312832f7c8df3244d08176933c63e74acb3f`.
 
 ## Active Gate
 
-P4A dense moved-anchor shadow readout and one P5 visibility-grounded unbound
-anchor suppression pilot are authorized. P3 association changes, P4B new-object
-dense readout, and P6 ReScene integration remain blocked. Office remains blocked
-until the Apartment configuration is selected and frozen.
+One separately named P4A Apartment evaluation candidate and one P5
+visibility-grounded unbound-anchor suppression pilot are authorized. P3
+association changes, P4B new-object dense readout, and P6 ReScene integration
+remain blocked. Office remains blocked until the Apartment configuration is
+selected and frozen.
