@@ -4,16 +4,17 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import asdict
 import hashlib
 import json
 import os
-from pathlib import Path
 import shutil
 import stat
 import sys
 import tempfile
-from typing import Any, Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from dataclasses import asdict
+from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -37,8 +38,23 @@ from src.oviv2.temporal_export import (
 )
 from src.oviv2.temporal_lifecycle import TemporalEvidenceKind, TemporalLifecycle
 
-
 _RECORD_KEYS = {"path", "sha256", "byte_count"}
+_MOVED_GEOMETRY_MODES = (
+    "anchor_centroid_translation",
+    "temporal_compact",
+)
+_READOUT_ROLES = (
+    "evaluation_candidate",
+    "formal_baseline",
+    "visualization_shadow",
+)
+_ALLOWED_READOUT_CONTRACTS = frozenset(
+    {
+        ("temporal_compact", "formal_baseline"),
+        ("anchor_centroid_translation", "visualization_shadow"),
+        ("anchor_centroid_translation", "evaluation_candidate"),
+    }
+)
 
 
 def _canonical_json(value: object) -> bytes:
@@ -108,6 +124,16 @@ def _json_object(data: bytes, *, label: str) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError(f"{label} must contain a JSON object")
     return value
+
+
+def _readout_contract(mode: object, role: object) -> dict[str, str]:
+    if (
+        not isinstance(mode, str)
+        or not isinstance(role, str)
+        or (mode, role) not in _ALLOWED_READOUT_CONTRACTS
+    ):
+        raise ValueError("moved geometry mode and readout role are incompatible")
+    return {"moved_geometry_mode": mode, "readout_role": role}
 
 
 def _bound_path(
@@ -341,10 +367,16 @@ def _revalidate(witnesses: Sequence[tuple[Path, Mapping[str, object]]]) -> None:
 
 
 def compose_run(
-    *, source_run_manifest: Path, anchor_manifest: Path, output_root: Path
+    *,
+    source_run_manifest: Path,
+    anchor_manifest: Path,
+    output_root: Path,
+    moved_geometry_mode: str = "temporal_compact",
+    readout_role: str = "formal_baseline",
 ) -> Path:
     """Publish a source-bound sequential composition without mutating inputs."""
 
+    readout_contract = _readout_contract(moved_geometry_mode, readout_role)
     source_run_manifest = Path(os.path.abspath(os.fspath(source_run_manifest)))
     anchor_manifest = Path(os.path.abspath(os.fspath(anchor_manifest)))
     output_root = Path(os.path.abspath(os.fspath(output_root)))
@@ -592,6 +624,7 @@ def compose_run(
                 config=config,
                 anchor_manifest_sha256=_sha256(anchor_bytes),
                 class_names=class_names,
+                moved_geometry_mode=moved_geometry_mode,
             )
             checkpoint_root = staging / "checkpoints" / f"{frame:08d}-{timestamp_ns}"
             written = write_map_snapshot(composed, checkpoint_root / "current")
@@ -696,6 +729,7 @@ def compose_run(
             "causal_anchor_cutoff_frame": cutoff,
             "processed_frame_count": len(batches),
             "official_state_count": len(checkpoint_results),
+            "readout_contract": readout_contract,
             "inputs": {
                 "source_run_manifest": witnesses[0][1],
                 "anchor_manifest": witnesses[1][1],
@@ -737,11 +771,23 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--source-run-manifest", type=Path, required=True)
     parser.add_argument("--anchor-manifest", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
+    parser.add_argument(
+        "--moved-geometry-mode",
+        choices=_MOVED_GEOMETRY_MODES,
+        default="temporal_compact",
+    )
+    parser.add_argument(
+        "--readout-role",
+        choices=_READOUT_ROLES,
+        default="formal_baseline",
+    )
     args = parser.parse_args(argv)
     compose_run(
         source_run_manifest=args.source_run_manifest,
         anchor_manifest=args.anchor_manifest,
         output_root=args.output_root,
+        moved_geometry_mode=args.moved_geometry_mode,
+        readout_role=args.readout_role,
     )
     return 0
 

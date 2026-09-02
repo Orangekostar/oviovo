@@ -7,11 +7,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from scripts.evaluation.run_crove_ovimap_static_anchor import compose_run
 from scripts.evaluation.export_tesse_temporal_artifact import export_temporal_artifact
+from scripts.evaluation.run_crove_ovimap_static_anchor import compose_run
 from src.evaluation.contracts import EntityPrediction, MapSnapshot
-from src.evaluation.exporters.oviovo import write_map_snapshot
-
+from src.evaluation.exporters.oviovo import read_map_snapshot, write_map_snapshot
 
 _TIMESTAMP_ORIGIN_NS = 4_000_000_000
 
@@ -48,7 +47,13 @@ def _record(path: Path, *, root: Path | None = None) -> dict[str, object]:
     }
 
 
-def _prediction(entity_id: str, x: float, *, temporal_id: int | None = None) -> EntityPrediction:
+def _prediction(
+    entity_id: str,
+    x: float,
+    *,
+    temporal_id: int | None = None,
+    dense: bool = False,
+) -> EntityPrediction:
     metadata: dict[str, object] = {"authority": "ovimap_anchor"}
     if temporal_id is not None:
         metadata = {
@@ -59,7 +64,17 @@ def _prediction(entity_id: str, x: float, *, temporal_id: int | None = None) -> 
         }
     return EntityPrediction(
         entity_id=entity_id,
-        points_xyz=np.asarray(((x - 0.05, 0.0, 0.0), (x + 0.05, 0.0, 0.0)), dtype=np.float32),
+        points_xyz=np.asarray(
+            tuple(
+                (x + offset, 0.0, 0.0)
+                for offset in (
+                    (-0.2, -0.1, 0.0, 0.1, 0.2)
+                    if dense
+                    else (-0.05, 0.05)
+                )
+            ),
+            dtype=np.float32,
+        ),
         semantic_embedding=np.asarray((1.0, 0.0), dtype=np.float32),
         semantic_label="Chair",
         semantic_score=1.0,
@@ -70,7 +85,9 @@ def _prediction(entity_id: str, x: float, *, temporal_id: int | None = None) -> 
     )
 
 
-def _write_anchor_package(tmp_path: Path, *, anchor_x: float = 0.0) -> Path:
+def _write_anchor_package(
+    tmp_path: Path, *, anchor_x: float = 0.0, dense: bool = False
+) -> Path:
     root = tmp_path / "anchor"
     config = tmp_path / "anchor_config.json"
     vocabulary = tmp_path / "vocabulary.json"
@@ -113,7 +130,7 @@ def _write_anchor_package(tmp_path: Path, *, anchor_x: float = 0.0) -> Path:
             method="OVI-MAP causal static anchor",
             scene_id="apartment",
             timestamp=1.0,
-            entities=[_prediction("ovimap:1", anchor_x)],
+            entities=[_prediction("ovimap:1", anchor_x, dense=dense)],
             background_xyz=np.asarray(((4.0, 0.0, 0.0),), dtype=np.float32),
             scope="current",
         ),
@@ -255,6 +272,10 @@ def test_composed_run_publishes_hash_bound_checkpoints(tmp_path: Path) -> None:
     assert manifest["method"] == "CROVE + OVI-MAP static anchor (composed)"
     assert manifest["integration"] == "composed"
     assert manifest["execution_mode"] == "online_after_causal_initialization"
+    assert manifest["readout_contract"] == {
+        "moved_geometry_mode": "temporal_compact",
+        "readout_role": "formal_baseline",
+    }
     assert manifest["processed_frame_count"] == 4
     assert manifest["official_state_count"] == 2
     assert [item["frame_index"] for item in manifest["checkpoints"]] == [2, 3]
@@ -275,6 +296,70 @@ def test_composed_run_publishes_hash_bound_checkpoints(tmp_path: Path) -> None:
     assert {item["entity_id"] for item in temporal["entity_lifecycles"]} == {
         "ovimap:1"
     }
+
+
+def test_composed_run_publishes_dense_moved_visualization_shadow(
+    tmp_path: Path,
+) -> None:
+    anchor_manifest = _write_anchor_package(tmp_path, dense=True)
+    result = compose_run(
+        source_run_manifest=_write_source_run(tmp_path),
+        anchor_manifest=anchor_manifest,
+        output_root=tmp_path / "dense-shadow",
+        moved_geometry_mode="anchor_centroid_translation",
+        readout_role="visualization_shadow",
+    )
+
+    manifest = json.loads(result.read_text(encoding="utf-8"))
+    assert manifest["readout_contract"] == {
+        "moved_geometry_mode": "anchor_centroid_translation",
+        "readout_role": "visualization_shadow",
+    }
+    checkpoint = manifest["checkpoints"][-1]
+    dense = read_map_snapshot(
+        result.parent / checkpoint["snapshot"]["path"],
+        result.parent / checkpoint["entities"]["path"],
+    )
+    entity = dense.entities[0]
+    np.testing.assert_allclose(
+        entity.points_xyz[:, 0],
+        (0.8, 0.9, 1.0, 1.1, 1.2),
+        rtol=0.0,
+        atol=1e-6,
+    )
+    assert entity.semantic_label == "Chair"
+    assert entity.lifecycle_state == "active"
+    assert entity.metadata["geometry_authority"] == "ovimap_anchor_template"
+    assert entity.metadata["state_authority"] == "crove_temporal"
+
+
+@pytest.mark.parametrize(
+    ("moved_geometry_mode", "readout_role"),
+    (
+        ("temporal_compact", "visualization_shadow"),
+        ("temporal_compact", "evaluation_candidate"),
+        ("anchor_centroid_translation", "formal_baseline"),
+        ("unknown", "formal_baseline"),
+        ("temporal_compact", "unknown"),
+    ),
+)
+def test_composed_run_rejects_incompatible_readout_contract_before_output(
+    tmp_path: Path,
+    moved_geometry_mode: str,
+    readout_role: str,
+) -> None:
+    output = tmp_path / f"rejected-{moved_geometry_mode}-{readout_role}"
+
+    with pytest.raises(ValueError, match="incompatible"):
+        compose_run(
+            source_run_manifest=tmp_path / "not-read.json",
+            anchor_manifest=tmp_path / "not-read-anchor.json",
+            output_root=output,
+            moved_geometry_mode=moved_geometry_mode,
+            readout_role=readout_role,
+        )
+
+    assert not output.exists()
 
 
 def test_composed_run_never_overwrites_existing_output(tmp_path: Path) -> None:
