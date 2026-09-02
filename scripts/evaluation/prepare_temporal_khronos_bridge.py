@@ -326,6 +326,29 @@ def _intersect_presence_runs(
     return intersections
 
 
+def _merge_presence_runs(
+    intervals: Sequence[Mapping[str, Any]],
+) -> list[dict[str, int | None]]:
+    merged: list[dict[str, int | None]] = []
+    for interval in sorted(intervals, key=lambda item: int(item["start_ns"])):
+        start = int(interval["start_ns"])
+        raw_end = interval["end_ns_exclusive"]
+        end = None if raw_end is None else int(raw_end)
+        if not merged:
+            merged.append({"start_ns": start, "end_ns_exclusive": end})
+            continue
+        previous = merged[-1]
+        previous_end = previous["end_ns_exclusive"]
+        if previous_end is None or start <= int(previous_end):
+            if previous_end is None or end is None:
+                previous["end_ns_exclusive"] = None
+            else:
+                previous["end_ns_exclusive"] = max(int(previous_end), end)
+            continue
+        merged.append({"start_ns": start, "end_ns_exclusive": end})
+    return merged
+
+
 def _checkpoint_endpoints(
     intervals: Sequence[Mapping[str, Any]], query: int
 ) -> tuple[list[int], list[int]]:
@@ -540,7 +563,12 @@ def _explicit_presence_runs(
             intervals[entity_id].append(
                 {"start_ns": start, "end_ns_exclusive": None}
             )
-        if not intervals[entity_id]:
+        snapshot_positions = states[entity_id].get(
+            "snapshot_authoritative_positions", ()
+        )
+        if not intervals[entity_id] and len(snapshot_positions) != len(
+            states[entity_id].get("positions", ())
+        ):
             raise ValueError(f"entity has no explicit presence interval: {entity_id}")
     return intervals
 
@@ -1358,6 +1386,24 @@ def prepare_temporal_bridge(
         source_paths.extend((snapshot_source, entities_source))
         for entity in snapshot.entities:
             entity_id = str(entity.entity_id)
+            metadata = entity.metadata
+            snapshot_authoritative_presence = (
+                metadata.get("authority") == "ovimap_anchor"
+            )
+            if snapshot_authoritative_presence:
+                manifest_hash = metadata.get("anchor_manifest_sha256")
+                if (
+                    metadata.get("anchor_entity_id") != entity_id
+                    or metadata.get("overlay_state") not in {"unchanged", "occluded"}
+                    or not isinstance(manifest_hash, str)
+                    or re.fullmatch(r"[0-9a-f]{64}", manifest_hash) is None
+                ):
+                    raise ValueError("static anchor metadata is invalid")
+                if "temporal_entity_id" not in metadata:
+                    if metadata.get("owner_entity_id") != f"anchor:{entity_id}":
+                        raise ValueError("static anchor owner binding is invalid")
+                elif not str(metadata["temporal_entity_id"]).strip():
+                    raise ValueError("static anchor temporal binding is invalid")
             state = states.get(entity_id)
             if state is None:
                 states[entity_id] = {
@@ -1366,23 +1412,26 @@ def prepare_temporal_bridge(
                     "semantic_label_names": [entity.semantic_label],
                     "entity_type": str(entity.metadata.get("entity_type", "object")),
                     "source_entity_id": str(
-                        entity.metadata.get(
+                        metadata.get(
                             "temporal_entity_id",
-                            entity.metadata.get("owner_entity_id", entity_id),
+                            metadata.get("owner_entity_id", entity_id),
                         )
+                    ),
+                    "snapshot_authoritative_positions": (
+                        [position] if snapshot_authoritative_presence else []
                     ),
                 }
             else:
-                if state["entity_type"] != str(
-                    entity.metadata.get("entity_type", "object")
-                ):
+                if state["entity_type"] != str(metadata.get("entity_type", "object")):
                     raise ValueError("stable entity type conflict")
                 state["positions"].append(position)
                 state["semantic_label_names"].append(entity.semantic_label)
+                if snapshot_authoritative_presence:
+                    state["snapshot_authoritative_positions"].append(position)
                 source_entity_id = str(
-                    entity.metadata.get(
+                    metadata.get(
                         "temporal_entity_id",
-                        entity.metadata.get("owner_entity_id", entity_id),
+                        metadata.get("owner_entity_id", entity_id),
                     )
                 )
                 if state["source_entity_id"] != source_entity_id:
@@ -1450,9 +1499,29 @@ def prepare_temporal_bridge(
     assignment_by_id: dict[str, dict[str, Any]] = {}
     for node_index, entity_id in enumerate(ordered_ids):
         state = states[entity_id]
-        intervals = _intersect_presence_runs(
-            _presence_runs(state["positions"], checkpoints),
-            explicit_intervals[entity_id],
+        anchor_positions = state["snapshot_authoritative_positions"]
+        anchor_position_set = set(anchor_positions)
+        temporal_positions = [
+            position
+            for position in state["positions"]
+            if position not in anchor_position_set
+        ]
+        intervals = _merge_presence_runs(
+            [
+                *(
+                    _presence_runs(anchor_positions, checkpoints)
+                    if anchor_positions
+                    else []
+                ),
+                *(
+                    _intersect_presence_runs(
+                        _presence_runs(temporal_positions, checkpoints),
+                        explicit_intervals[entity_id],
+                    )
+                    if temporal_positions
+                    else []
+                ),
+            ]
         )
         if not intervals:
             raise ValueError("entity has no snapshot-backed presence interval")
@@ -1580,7 +1649,15 @@ def prepare_temporal_bridge(
                 if int(sample["timestamp_ns"]) <= query
                 and int(sample["frame_index"]) <= frame
             ]
-            state_at_query = prefix[-1]["dynamic_state"] if prefix else None
+            snapshot_authoritative = (
+                position
+                in states[entity.entity_id]["snapshot_authoritative_positions"]
+            )
+            state_at_query = (
+                "static"
+                if snapshot_authoritative
+                else (prefix[-1]["dynamic_state"] if prefix else None)
+            )
             eligible = state_at_query == "dynamic"
             if not eligible:
                 prefix = []

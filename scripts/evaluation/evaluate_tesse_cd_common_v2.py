@@ -757,17 +757,22 @@ def evaluate_common_v2(
     index = _load_json(temporal_index, "causal temporal index")
     scene = str(index.get("scene", ""))
     method = str(index.get("method", "")).strip()
+    index_mode = index.get("mode")
     if not (
         index.get("schema_version") == 1
         and index.get("dataset") == "TESSE-CD"
-        and index.get("mode") == "causal_checkpoints"
+        and index_mode in {"causal_checkpoints", "causal_checkpoint_exports"}
         and scene in {"apartment", "office"}
         and method
     ):
         raise ValueError("causal temporal index identity mismatch")
     if method not in CAUSAL_SNAPSHOT_METHOD_LABELS:
         raise ValueError(f"unsupported causal temporal method: {method}")
-    sources = _mapping(index.get("sources"), "causal index sources")
+    sources = (
+        _mapping(index.get("sources"), "causal index sources")
+        if index_mode == "causal_checkpoints"
+        else {"schedule": index.get("schedule")}
+    )
     schedule_path, schedule_record = _declared_file(
         sources.get("schedule"),
         label="schedule",
@@ -1050,7 +1055,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
     temporal = _load_json(args.temporal_index, "temporal index")
-    if temporal.get("mode") == "causal_checkpoints":
+    if temporal.get("mode") in {
+        "causal_checkpoints",
+        "causal_checkpoint_exports",
+    }:
         if args.aliases is None or args.label_space is None:
             parser.error("causal checkpoints require --aliases and --label-space")
         evaluate_common_v2(

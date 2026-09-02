@@ -26,6 +26,9 @@ from src.oviv2.temporal_snapshot import (
 )
 
 
+_SEMANTIC_UPDATE_MINIMUM_ANCHOR_COVERAGE = 0.5
+
+
 def _integer(value: object, name: str, *, minimum: int) -> int:
     if isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral):
         raise TypeError(f"{name} must be an integer")
@@ -206,8 +209,25 @@ def _spatial_iou(
 ) -> float:
     left_keys = _voxel_keys(left, voxel_size_m)
     right_keys = _voxel_keys(right, voxel_size_m)
+    return _spatial_iou_from_keys(left_keys, right_keys)
+
+
+def _spatial_iou_from_keys(
+    left_keys: set[tuple[int, int, int]],
+    right_keys: set[tuple[int, int, int]],
+) -> float:
     union = left_keys | right_keys
     return 0.0 if not union else len(left_keys & right_keys) / len(union)
+
+
+def _spatial_anchor_coverage(
+    anchor_points: np.ndarray,
+    temporal_points: np.ndarray,
+    voxel_size_m: float,
+) -> float:
+    anchor_keys = _voxel_keys(anchor_points, voxel_size_m)
+    temporal_keys = _voxel_keys(temporal_points, voxel_size_m)
+    return len(anchor_keys & temporal_keys) / len(anchor_keys)
 
 
 def _cosine(left: np.ndarray | None, right: np.ndarray | None) -> float | None:
@@ -227,14 +247,15 @@ def _pair_score(
     anchor: EntityPrediction,
     sample: PrefixIdentitySample,
     config: StaticAnchorConfig,
+    *,
+    anchor_centroid: np.ndarray,
+    anchor_voxel_keys: set[tuple[int, int, int]],
+    sample_voxel_keys: set[tuple[int, int, int]],
 ) -> float | None:
-    anchor_centroid = np.asarray(anchor.points_xyz, dtype=np.float64).mean(axis=0)
     distance = float(
         np.linalg.norm(anchor_centroid - np.asarray(sample.centroid_xyz))
     )
-    iou = _spatial_iou(
-        anchor.points_xyz, sample.points_xyz, config.background_voxel_size_m
-    )
+    iou = _spatial_iou_from_keys(anchor_voxel_keys, sample_voxel_keys)
     if (
         iou < config.minimum_spatial_iou
         and distance > config.maximum_centroid_distance_m
@@ -301,9 +322,27 @@ def bind_anchor_identities(
     sentinel = 1_000_000.0
     costs = np.full((len(anchors), len(ordered_samples)), sentinel, dtype=np.float64)
     valid = np.zeros_like(costs, dtype=np.bool_)
+    anchor_features = tuple(
+        (
+            np.asarray(entity.points_xyz, dtype=np.float64).mean(axis=0),
+            _voxel_keys(entity.points_xyz, config.background_voxel_size_m),
+        )
+        for entity in anchors
+    )
+    sample_voxel_keys = tuple(
+        _voxel_keys(sample.points_xyz, config.background_voxel_size_m)
+        for sample in ordered_samples
+    )
     for row, anchor_entity in enumerate(anchors):
         for column, sample in enumerate(ordered_samples):
-            score = _pair_score(anchor_entity, sample, config)
+            score = _pair_score(
+                anchor_entity,
+                sample,
+                config,
+                anchor_centroid=anchor_features[row][0],
+                anchor_voxel_keys=anchor_features[row][1],
+                sample_voxel_keys=sample_voxel_keys[column],
+            )
             if score is None:
                 continue
             valid[row, column] = True
@@ -400,15 +439,17 @@ def _copy_prediction(
     metadata: dict[str, object],
     entity_id: str | None = None,
     lifecycle_state: str | None = None,
+    semantic_source: EntityPrediction | None = None,
 ) -> EntityPrediction:
     merged = dict(entity.metadata)
     merged.update(metadata)
+    semantic = entity if semantic_source is None else semantic_source
     return EntityPrediction(
         entity_id=entity.entity_id if entity_id is None else entity_id,
         points_xyz=entity.points_xyz,
-        semantic_embedding=entity.semantic_embedding,
-        semantic_label=entity.semantic_label,
-        semantic_score=entity.semantic_score,
+        semantic_embedding=semantic.semantic_embedding,
+        semantic_label=semantic.semantic_label,
+        semantic_score=semantic.semantic_score,
         lifecycle_state=(
             entity.lifecycle_state if lifecycle_state is None else lifecycle_state
         ),
@@ -653,16 +694,50 @@ def compose_anchor_checkpoint(
             anchor_metadata["owner_entity_id"] = f"anchor:{anchor_id}"
         else:
             anchor_metadata["temporal_entity_id"] = temporal_id
+        semantic_source = (
+            None if temporal_id is None else active_predictions.get(temporal_id)
+        )
+        if (
+            semantic_source is not None
+            and semantic_source.semantic_label is not None
+            and semantic_source.semantic_label != anchor_entity.semantic_label
+        ):
+            anchor_coverage = _spatial_anchor_coverage(
+                anchor_entity.points_xyz,
+                semantic_source.points_xyz,
+                config.background_voxel_size_m,
+            )
+            anchor_metadata["semantic_anchor_coverage"] = anchor_coverage
+            if anchor_coverage >= _SEMANTIC_UPDATE_MINIMUM_ANCHOR_COVERAGE:
+                anchor_metadata["semantic_authority"] = "crove_temporal"
+                anchor_metadata["semantic_temporal_entity_id"] = temporal_id
+            else:
+                semantic_source = None
+                anchor_metadata["semantic_authority"] = "ovimap_anchor"
+                anchor_metadata["semantic_update_rejection"] = (
+                    "insufficient_current_anchor_coverage"
+                )
+        else:
+            semantic_source = None
+            anchor_metadata["semantic_authority"] = "ovimap_anchor"
         predictions.append(
             _copy_prediction(
                 anchor_entity,
                 metadata=anchor_metadata,
+                semantic_source=semantic_source,
             )
         )
 
     bound_temporal_ids = set(anchor_by_temporal)
     new_temporal_ids = tuple(
-        sorted(set(active_predictions) - bound_temporal_ids)
+        sorted(
+            temporal_id
+            for temporal_id, prediction in active_predictions.items()
+            if temporal_id not in bound_temporal_ids
+            and float(prediction.first_seen) > state.cutoff_frame
+            and temporal_id in latest_samples
+            and latest_samples[temporal_id].readout_valid
+        )
     )
     for temporal_id in new_temporal_ids:
         predictions.append(

@@ -5,6 +5,7 @@ from dataclasses import replace
 import numpy as np
 import pytest
 
+import src.oviv2.ovimap_static_anchor as anchor_module
 from src.evaluation.contracts import EntityPrediction, MapSnapshot
 from src.oviv2.temporal_background import TemporalBackgroundVolume
 from src.oviv2.temporal_config import TemporalGeometryConfig
@@ -150,6 +151,32 @@ def test_binding_is_invariant_to_anchor_and_sample_order() -> None:
     assert observed.initial_geometry_epochs == expected.initial_geometry_epochs
 
 
+def test_binding_voxelizes_each_anchor_and_prefix_sample_once(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = 0
+    original = anchor_module._voxel_keys
+
+    def counted(points: np.ndarray, voxel_size_m: float):
+        nonlocal calls
+        calls += 1
+        return original(points, voxel_size_m)
+
+    monkeypatch.setattr(anchor_module, "_voxel_keys", counted)
+
+    bind_anchor_identities(
+        _anchor(),
+        (
+            _sample(7, 0.0, "Chair", (1.0, 0.0)),
+            _sample(8, 2.0, "Table", (0.0, 1.0)),
+        ),
+        _config(),
+        cutoff_frame=262,
+    )
+
+    assert calls == 4
+
+
 def test_binding_rejects_future_sample() -> None:
     with pytest.raises(ValueError, match="after causal cutoff"):
         bind_anchor_identities(
@@ -223,6 +250,7 @@ def _temporal_entity(
     x: float,
     frame_index: int,
     geometry_epoch: int,
+    first_seen_frame_id: int = 0,
 ) -> TemporalSnapshotEntity:
     pose = np.eye(4, dtype=np.float64)
     pose[0, 3] = x
@@ -254,7 +282,7 @@ def _temporal_entity(
         extent_xyz=(0.2, 0.2, 0.2),
         object_to_world=pose,
         submap=submap,
-        first_seen_frame_id=0,
+        first_seen_frame_id=first_seen_frame_id,
         last_seen_frame_id=frame_index,
     )
     return TemporalSnapshotEntity(entity, geometry_epoch, True)
@@ -379,6 +407,92 @@ def test_static_active_identity_emits_anchor_without_temporal_duplicate() -> Non
     assert composed.entities[0].metadata["overlay_state"] == "unchanged"
     assert next_state.last_frame_index == 263
     assert diagnostics.unchanged_anchor_ids == ("ovimap:1",)
+
+
+def test_static_bound_identity_keeps_anchor_geometry_and_uses_current_semantics() -> None:
+    anchor, state = _single_anchor_and_state()
+    anchor.entities[0].points_xyz = np.asarray(
+        ((-0.05, 0.0, 0.0), (0.05, 0.0, 0.0)), dtype=np.float32
+    )
+    anchor.entities[0].semantic_label = "Table"
+    anchor.entities[0].semantic_embedding = np.asarray((0.0, 1.0), dtype=np.float32)
+    anchor.entities[0].semantic_score = 0.2
+    anchor_points = anchor.entities[0].points_xyz.copy()
+    temporal = _temporal_snapshot(
+        frame_index=263,
+        entities=(
+            _temporal_entity(
+                7, TemporalLifecycle.ACTIVE, x=0.0, frame_index=263, geometry_epoch=0
+            ),
+        ),
+    )
+
+    composed, _, _ = _compose(
+        anchor=anchor,
+        state=state,
+        temporal=temporal,
+        exports=(
+            _export_batch(
+                frame_index=263,
+                entity_id=7,
+                x=0.0,
+                dynamic_state=DynamicState.STATIC,
+                geometry_epoch=0,
+            ),
+        ),
+    )
+
+    entity = composed.entities[0]
+    np.testing.assert_array_equal(entity.points_xyz, anchor_points)
+    assert entity.entity_id == "ovimap:1"
+    assert entity.semantic_label == "Chair"
+    np.testing.assert_array_equal(
+        entity.semantic_embedding, np.asarray((1.0, 0.0), dtype=np.float32)
+    )
+    assert entity.semantic_score == 1.0
+    assert entity.metadata["semantic_authority"] == "crove_temporal"
+    assert entity.metadata["semantic_temporal_entity_id"] == 7
+
+
+def test_static_bound_identity_rejects_semantics_without_anchor_geometry_support() -> None:
+    anchor, state = _single_anchor_and_state()
+    anchor.entities[0].semantic_label = "Table"
+    anchor.entities[0].semantic_embedding = np.asarray((0.0, 1.0), dtype=np.float32)
+    anchor.entities[0].semantic_score = 0.2
+    temporal = _temporal_snapshot(
+        frame_index=263,
+        entities=(
+            _temporal_entity(
+                7, TemporalLifecycle.ACTIVE, x=0.0, frame_index=263, geometry_epoch=0
+            ),
+        ),
+    )
+
+    composed, _, _ = _compose(
+        anchor=anchor,
+        state=state,
+        temporal=temporal,
+        exports=(
+            _export_batch(
+                frame_index=263,
+                entity_id=7,
+                x=0.0,
+                dynamic_state=DynamicState.STATIC,
+                geometry_epoch=0,
+            ),
+        ),
+    )
+
+    entity = composed.entities[0]
+    assert entity.semantic_label == "Table"
+    np.testing.assert_array_equal(
+        entity.semantic_embedding, np.asarray((0.0, 1.0), dtype=np.float32)
+    )
+    assert entity.semantic_score == 0.2
+    assert entity.metadata["semantic_authority"] == "ovimap_anchor"
+    assert entity.metadata["semantic_update_rejection"] == (
+        "insufficient_current_anchor_coverage"
+    )
 
 
 def test_persisted_temporal_map_snapshot_composes_with_explicit_frame() -> None:
@@ -523,7 +637,12 @@ def test_unbound_post_cutoff_identity_is_emitted_as_new() -> None:
         frame_index=263,
         entities=(
             _temporal_entity(
-                9, TemporalLifecycle.ACTIVE, x=3.0, frame_index=263, geometry_epoch=0
+                9,
+                TemporalLifecycle.ACTIVE,
+                x=3.0,
+                frame_index=263,
+                geometry_epoch=0,
+                first_seen_frame_id=263,
             ),
         ),
     )
@@ -547,6 +666,41 @@ def test_unbound_post_cutoff_identity_is_emitted_as_new() -> None:
         "temporal:9",
     ]
     assert diagnostics.new_temporal_ids == (9,)
+
+
+def test_unbound_pre_cutoff_identity_is_suppressed_as_anchor_duplicate() -> None:
+    anchor, state = _single_anchor_and_state()
+    temporal = _temporal_snapshot(
+        frame_index=263,
+        entities=(
+            _temporal_entity(
+                9,
+                TemporalLifecycle.ACTIVE,
+                x=3.0,
+                frame_index=263,
+                geometry_epoch=0,
+                first_seen_frame_id=10,
+            ),
+        ),
+    )
+
+    composed, _, diagnostics = _compose(
+        anchor=anchor,
+        state=state,
+        temporal=temporal,
+        exports=(
+            _export_batch(
+                frame_index=263,
+                entity_id=9,
+                x=3.0,
+                dynamic_state=DynamicState.STATIC,
+                geometry_epoch=0,
+            ),
+        ),
+    )
+
+    assert [item.entity_id for item in composed.entities] == ["ovimap:1"]
+    assert diagnostics.new_temporal_ids == ()
 
 
 def test_moved_state_persists_after_dynamic_state_returns_static() -> None:

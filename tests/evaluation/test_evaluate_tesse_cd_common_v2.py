@@ -475,6 +475,30 @@ def test_causal_temporal_evaluator_loads_each_checkpoint_snapshot(
     } <= set(payload["sources"])
 
 
+def test_causal_export_index_uses_its_bound_schedule_and_checkpoints(
+    tmp_path: Path,
+) -> None:
+    temporal, targets, aliases, label_space = _causal_fixture(tmp_path / "source")
+    index = json.loads(temporal.read_text(encoding="utf-8"))
+    index["mode"] = "causal_checkpoint_exports"
+    index["schedule"] = index.pop("sources")["schedule"]
+    _write_json(temporal, index)
+
+    result = evaluate_common_v2(
+        temporal,
+        targets,
+        aliases,
+        label_space,
+        tmp_path / "output",
+    )
+    payload = json.loads(result.read_text(encoding="utf-8"))
+
+    assert payload["status"] == "PASS"
+    assert payload["method"] == "DualMap"
+    assert payload["mode"] == "causal_checkpoints"
+    assert payload["metrics"]["current_miou"] == pytest.approx(0.9)
+
+
 def test_load_targets_accepts_checked_schedule_bytes_at_distinct_paths(
     tmp_path: Path,
 ) -> None:

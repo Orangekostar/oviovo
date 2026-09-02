@@ -311,8 +311,7 @@ def test_unbound_anchor_has_explicit_causal_presence_for_official_export(
     temporal = json.loads(exported.read_text(encoding="utf-8"))
 
     assert {item["entity_id"] for item in temporal["entity_lifecycles"]} == {
-        "ovimap:1",
-        "temporal:7",
+        "ovimap:1"
     }
 
 

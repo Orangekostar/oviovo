@@ -128,6 +128,47 @@ def _entity(entity_id: str, x: float, *, label: str = "Chair") -> EntityPredicti
     )
 
 
+def _unbound_static_anchor(entity_id: str, x: float) -> EntityPrediction:
+    return EntityPrediction(
+        entity_id=entity_id,
+        points_xyz=np.asarray([[x, 0.0, 1.0], [x + 0.1, 0.0, 1.0]], dtype=np.float32),
+        semantic_embedding=None,
+        semantic_label="Chair",
+        semantic_score=0.9,
+        lifecycle_state="active",
+        first_seen=0.0,
+        last_seen=x,
+        metadata={
+            "entity_type": "object",
+            "authority": "ovimap_anchor",
+            "anchor_entity_id": entity_id,
+            "anchor_manifest_sha256": "a" * 64,
+            "overlay_state": "unchanged",
+            "owner_entity_id": f"anchor:{entity_id}",
+        },
+    )
+
+
+def _bound_static_anchor(
+    entity_id: str, temporal_entity_id: str, x: float
+) -> EntityPrediction:
+    prediction = _unbound_static_anchor(entity_id, x)
+    metadata = dict(prediction.metadata)
+    metadata.pop("owner_entity_id")
+    metadata["temporal_entity_id"] = temporal_entity_id
+    return EntityPrediction(
+        entity_id=prediction.entity_id,
+        points_xyz=prediction.points_xyz,
+        semantic_embedding=prediction.semantic_embedding,
+        semantic_label=prediction.semantic_label,
+        semantic_score=prediction.semantic_score,
+        lifecycle_state=prediction.lifecycle_state,
+        first_seen=prediction.first_seen,
+        last_seen=prediction.last_seen,
+        metadata=metadata,
+    )
+
+
 def _official_is_present(obj: dict[str, Any], query: int) -> bool:
     appeared = max(
         timestamp for timestamp in obj["first_observed_ns"] if timestamp <= query
@@ -143,7 +184,12 @@ def _official_is_present(obj: dict[str, Any], query: int) -> bool:
     return appeared > disappeared
 
 
-def _write_temporal_fixture(root: Path) -> Path:
+def _write_temporal_fixture(
+    root: Path,
+    *,
+    include_unbound_static_anchor: bool = False,
+    include_bound_retained_anchor: bool = False,
+) -> Path:
     root.mkdir()
     schedule = root / "schedule.json"
     schedule.write_bytes(_FIXTURE_SCHEDULE_BYTES)
@@ -166,6 +212,17 @@ def _write_temporal_fixture(root: Path) -> Path:
             ],
         ),
     ]
+    if include_unbound_static_anchor:
+        for _, entities in checkpoints:
+            entities.append(_unbound_static_anchor("ovimap:anchor", 10.0))
+    if include_bound_retained_anchor:
+        for _, entities in checkpoints:
+            entities[:] = [
+                entity for entity in entities if entity.entity_id != "z-first"
+            ]
+        checkpoints[-1][1].append(
+            _bound_static_anchor("ovimap:retained", "z-first", 11.0)
+        )
     checkpoint_records = []
     for frame, (timestamp, entities) in enumerate(checkpoints):
         checkpoint_root = root / "checkpoints" / f"{frame:08d}"
@@ -363,6 +420,80 @@ def _write_temporal_fixture(root: Path) -> Path:
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     return manifest_path
+
+
+def test_unbound_static_anchor_uses_snapshot_presence_without_temporal_track(
+    tmp_path: Path,
+) -> None:
+    temporal = _write_temporal_fixture(
+        tmp_path / "temporal", include_unbound_static_anchor=True
+    )
+    labels = tmp_path / "labels.yaml"
+    labels.write_text(
+        "label_names: [{label: 0, name: Unknown}, {label: 5, name: Chair}]\n",
+        encoding="utf-8",
+    )
+
+    manifest_path = prepare_temporal_bridge(
+        temporal, labels, tmp_path / "bridge"
+    )
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assignment = next(
+        item
+        for item in manifest["symbol_assignments"]
+        if item["entity_id"] == "ovimap:anchor"
+    )
+
+    assert assignment["source_entity_id"] == "anchor:ovimap:anchor"
+    assert assignment["presence_intervals"] == [
+        {"start_ns": 100, "end_ns_exclusive": None}
+    ]
+    assert assignment["native_trajectory_sample_count"] == 0
+    assert assignment["latest_dynamic_state"] is None
+    assert assignment["dynamic_track_eligible"] is False
+    for checkpoint in manifest["checkpoints"]:
+        obj = next(
+            item
+            for item in checkpoint["objects"]
+            if item["entity_id"] == "ovimap:anchor"
+        )
+        assert obj["trajectory_sample_count"] == 0
+        assert obj["dynamic_track_eligible"] is False
+
+
+def test_bound_static_anchor_retained_after_track_ends_uses_snapshot_presence(
+    tmp_path: Path,
+) -> None:
+    temporal = _write_temporal_fixture(
+        tmp_path / "temporal", include_bound_retained_anchor=True
+    )
+    labels = tmp_path / "labels.yaml"
+    labels.write_text(
+        "label_names: [{label: 0, name: Unknown}, {label: 5, name: Chair}]\n",
+        encoding="utf-8",
+    )
+
+    manifest_path = prepare_temporal_bridge(
+        temporal, labels, tmp_path / "bridge"
+    )
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assignment = next(
+        item
+        for item in manifest["symbol_assignments"]
+        if item["entity_id"] == "ovimap:retained"
+    )
+    obj = next(
+        item
+        for item in manifest["checkpoints"][-1]["objects"]
+        if item["entity_id"] == "ovimap:retained"
+    )
+
+    assert assignment["source_entity_id"] == "z-first"
+    assert assignment["presence_intervals"] == [
+        {"start_ns": 500, "end_ns_exclusive": None}
+    ]
+    assert obj["trajectory_sample_count"] == 0
+    assert obj["dynamic_track_eligible"] is False
 
 
 def test_runtime_presence_is_limited_to_snapshot_semantic_coverage(
