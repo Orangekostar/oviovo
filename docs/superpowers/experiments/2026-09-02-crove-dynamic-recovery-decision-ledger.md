@@ -13,6 +13,9 @@
 | Phase | Evidence | Result | Decision | Commit | Reason |
 | --- | --- | --- | --- | --- | --- |
 | P0 provenance and map quality | `CODE_EVIDENCE` + `MEASURED_EVIDENCE` | Native PLY producer and runtime binary are hash-bound; 63 palette instances match 63 anchors; five moved objects fall from 1,937,312 to 3,502 points; 11 new objects total 8,734 points | **GO** for P1/P2 | `1f7b675d3602c195ba807475e37f677df6158980` | Provenance is exact and the dense-to-sparse authority transition is quantified without benchmark modification |
+| P1 visualization contract | `CODE_EVIDENCE` + tests | `rgb`, `instance`, `semantic`, and `dynamic` are explicit recoloring-only modes; output geometry and IDs remain invariant | **GO** | `d724822ef3b77f924381985d22862eb0b3ead535` | Visualization is separated from formal MapSnapshot/evaluator state |
+| P2 Ghost authority attribution | `MEASURED_EVIDENCE` | 2,152,474/2,152,474 official ghost matches are partitioned; unbound anchors contribute 74.002752%; bound dynamic-false and epoch-not-advanced states contribute another 24.639% | **GO** for P4A and one P5 visibility pilot | `812928e`, `87bfcd3` | Ghost and dense-to-sparse branches have exact or direct measured support |
+| P2 Dyn mechanism attribution | `CODE_EVIDENCE` + bounded diagnostics | Official Dyn has 19,556 missed and 22,431 hallucinated counts, but the evaluator does not expose runtime entity correspondence | **NO-GO** for P3 threshold/weight tuning | `812928e`, `87bfcd3` | Re-ID/ICP mechanism counts cannot be relabeled as official Dyn failures |
 
 ## Artifact Binding
 
@@ -20,12 +23,15 @@
   `aabacf1f232cf394579e3822ff96fbe7351892af7b7105637b86f99c86c7a45c`.
 - P0 Markdown SHA-256:
   `49d2ab77a1ee4313ed6e9c38d226ed49718753082473606d9728dcefd157cc74`.
+- P2 attribution JSON SHA-256:
+  `2e3d47cbdb2bc627a886e843d843f95d6a7bdd806db93d66a9c6a8da1382b7bc`.
+- P2 source runtime diagnostics SHA-256:
+  `4e3eef84499bc5ad991d553fc514a071b0000b9cb62ce812e34de0165c9efdc5`.
 - Repeated runs were byte-identical.
 
 ## Active Gate
 
-P1 visualization-contract work and P2 causal failure attribution are
-authorized. P3 association changes, P4 dense readout, P5 ghost handling, and P6
-ReScene integration remain blocked until P2 produces ranked, source-bound
-failure contributors. Office remains blocked until Apartment configuration
-selection is complete and frozen.
+P4A dense moved-anchor shadow readout and one P5 visibility-grounded unbound
+anchor suppression pilot are authorized. P3 association changes, P4B new-object
+dense readout, and P6 ReScene integration remain blocked. Office remains blocked
+until the Apartment configuration is selected and frozen.
