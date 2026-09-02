@@ -193,4 +193,3 @@ python scripts/evaluation/audit_crove_map_quality.py \
 - [ ] Confirm `git status --short` contains no generated assets.
 - [ ] If P0 is GO, write a separate P1/P2 plan based on its measured report.
   P3-P6 remain blocked until P2 identifies a dominant failure contributor.
-

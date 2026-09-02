@@ -69,4 +69,3 @@ official-metric candidate.
 - Official evaluation: PASS with 43 states; repeated summaries are
   byte-identical.
 - Common-v2 gate: `REJECTED_RETAIN_A6` on `object_f1_floor`.
-

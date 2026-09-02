@@ -160,4 +160,3 @@ Each phase is a small commit with focused tests, artifact hashes, measured
 results where applicable, and a Decision Ledger entry. A NO-GO blocks dependent
 phases. Failed candidates remain labeled and cannot update paper tables.
 Rollback is the phase commit boundary; the frozen base branch is never edited.
-
