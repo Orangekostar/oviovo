@@ -12,7 +12,7 @@ import stat
 import sys
 import tempfile
 from collections.abc import Mapping, Sequence
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +23,15 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.evaluation.exporters.oviovo import read_map_snapshot, write_map_snapshot
+from src.oviv2.anchor_visibility import (
+    AnchorVisibilityConfig,
+    AnchorVisibilityEvidenceKind,
+    AnchorVisibilityState,
+    advance_anchor_visibility,
+    anchor_visibility_config_from_json,
+    classify_anchor_visibility,
+    sample_anchor_voxels,
+)
 from src.oviv2.ovimap_static_anchor import (
     PrefixIdentitySample,
     StaticAnchorConfig,
@@ -44,6 +53,7 @@ _MOVED_GEOMETRY_MODES = (
     "temporal_compact",
 )
 _READOUT_ROLES = (
+    "causal_visibility_candidate",
     "evaluation_candidate",
     "formal_baseline",
     "visualization_shadow",
@@ -53,6 +63,8 @@ _ALLOWED_READOUT_CONTRACTS = frozenset(
         ("temporal_compact", "formal_baseline"),
         ("anchor_centroid_translation", "visualization_shadow"),
         ("anchor_centroid_translation", "evaluation_candidate"),
+        ("anchor_centroid_translation", "causal_visibility_candidate"),
+        ("temporal_compact", "causal_visibility_candidate"),
     }
 )
 
@@ -126,14 +138,28 @@ def _json_object(data: bytes, *, label: str) -> dict[str, Any]:
     return value
 
 
-def _readout_contract(mode: object, role: object) -> dict[str, str]:
+def _readout_contract(
+    mode: object,
+    role: object,
+    *,
+    visibility_enabled: bool = False,
+) -> dict[str, str]:
+    if type(visibility_enabled) is not bool:
+        raise TypeError("visibility_enabled must be bool")
+    if (role == "causal_visibility_candidate") is not visibility_enabled:
+        raise ValueError(
+            "causal visibility candidate role and visibility policy must be paired"
+        )
     if (
         not isinstance(mode, str)
         or not isinstance(role, str)
         or (mode, role) not in _ALLOWED_READOUT_CONTRACTS
     ):
         raise ValueError("moved geometry mode and readout role are incompatible")
-    return {"moved_geometry_mode": mode, "readout_role": role}
+    result = {"moved_geometry_mode": mode, "readout_role": role}
+    if visibility_enabled:
+        result["unbound_anchor_mode"] = "causal_visibility"
+    return result
 
 
 def _bound_path(
@@ -318,6 +344,163 @@ def _temporal_batches(
     return result, source_records
 
 
+@dataclass(frozen=True)
+class _VisibilityTimeline:
+    suppressed_by_frame: dict[int, frozenset[str]]
+    events_by_frame: dict[int, tuple[dict[str, object], ...]]
+    diagnostics: dict[str, object]
+
+
+def _production_visibility_dataset(
+    root: Path,
+    scene: str,
+    export_manifest: Path,
+    schedule_manifest: Path,
+) -> Any:
+    from src.datasets.tesse_cd import TesseCdRgbdDataset
+
+    return TesseCdRgbdDataset(
+        root,
+        scene,
+        export_manifest,
+        schedule_manifest,
+    )
+
+
+def _visibility_timeline(
+    *,
+    anchor_entities: Sequence[Any],
+    batches: tuple[TemporalExportBatch, ...],
+    cutoff_frame: int,
+    config: AnchorVisibilityConfig,
+    dataset: Any,
+    policy_record: Mapping[str, object],
+    rgbd_export_record: Mapping[str, object],
+    rgbd_combined_output_sha256: str,
+    rgbd_file_hash_count: int,
+) -> _VisibilityTimeline:
+    if len(dataset) != len(batches):
+        raise ValueError("visibility dataset frame count does not match source run")
+    for batch in batches:
+        timestamp_ns = dataset.timestamp_ns(batch.frame_index)
+        if (
+            isinstance(timestamp_ns, (bool, np.bool_))
+            or not isinstance(timestamp_ns, (int, np.integer))
+            or int(timestamp_ns) != batch.timestamp_ns
+        ):
+            raise ValueError("visibility dataset timestamps do not match source run")
+
+    ordered_entities = tuple(sorted(anchor_entities, key=lambda item: item.entity_id))
+    sampled = {
+        entity.entity_id: sample_anchor_voxels(entity.points_xyz, config)
+        for entity in ordered_entities
+    }
+    initial_timestamp = batches[cutoff_frame].timestamp_ns / 1_000_000_000
+    states = {
+        entity.entity_id: AnchorVisibilityState(
+            entity_id=entity.entity_id,
+            active=True,
+            last_frame_id=cutoff_frame,
+            last_timestamp=initial_timestamp,
+            absence_observation_count=0,
+            absence_viewpoints_xyz=(),
+            present_streak=0,
+        )
+        for entity in ordered_entities
+    }
+    counts = {
+        entity.entity_id: {kind.value: 0 for kind in AnchorVisibilityEvidenceKind}
+        for entity in ordered_entities
+    }
+    suppressed_by_frame: dict[int, frozenset[str]] = {}
+    events_by_frame: dict[int, tuple[dict[str, object], ...]] = {}
+    transition_records: list[dict[str, object]] = []
+    for batch in batches[cutoff_frame + 1 :]:
+        frame = dataset[batch.frame_index]
+        if (
+            frame.frame_id != batch.frame_index
+            or frame.source_frame_id != batch.frame_index
+            or frame.timestamp != batch.timestamp_ns / 1_000_000_000
+        ):
+            raise ValueError("visibility frame identity does not match source run")
+        frame_events: list[dict[str, object]] = []
+        for entity in ordered_entities:
+            entity_id = entity.entity_id
+            evidence = classify_anchor_visibility(sampled[entity_id], frame, config)
+            counts[entity_id][evidence.kind.value] += 1
+            before = states[entity_id]
+            after = advance_anchor_visibility(before, evidence, config)
+            states[entity_id] = after
+            if before.active is after.active:
+                continue
+            event = {
+                "frame_index": batch.frame_index,
+                "timestamp_ns": batch.timestamp_ns,
+                "entity_id": f"anchor:{entity_id}",
+                "before": "active" if before.active else "dormant",
+                "after": "active" if after.active else "dormant",
+                "evidence": evidence.kind.value,
+                "geometry_epoch": 0,
+                "readout_valid": after.active,
+            }
+            frame_events.append(event)
+            transition_records.append(
+                {
+                    "frame_index": batch.frame_index,
+                    "timestamp_ns": batch.timestamp_ns,
+                    "entity_id": f"anchor:{entity_id}",
+                    "before": event["before"],
+                    "after": event["after"],
+                    "evidence": event["evidence"],
+                    "readout_valid": event["readout_valid"],
+                }
+            )
+        suppressed_by_frame[batch.frame_index] = frozenset(
+            entity_id for entity_id, state in states.items() if not state.active
+        )
+        if frame_events:
+            events_by_frame[batch.frame_index] = tuple(
+                sorted(frame_events, key=lambda item: str(item["entity_id"]))
+            )
+
+    diagnostics = {
+        "schema_version": 1,
+        "manifest_id": "crove_ovimap_unbound_visibility_diagnostics_v1",
+        "causality": {
+            "anchor_cutoff_frame": cutoff_frame,
+            "first_visibility_frame": cutoff_frame + 1,
+            "last_visibility_frame": len(batches) - 1,
+            "current_and_past_rgbd_only": True,
+        },
+        "policy": dict(policy_record),
+        "rgbd_export_manifest": dict(rgbd_export_record),
+        "rgbd_combined_output_sha256": rgbd_combined_output_sha256,
+        "rgbd_file_hash_count": rgbd_file_hash_count,
+        "transition_count": len(transition_records),
+        "transitions": transition_records,
+        "entities": [
+            {
+                "entity_id": entity.entity_id,
+                "sampled_voxel_count": len(sampled[entity.entity_id]),
+                "evidence_counts": counts[entity.entity_id],
+                "final_active": states[entity.entity_id].active,
+                "absence_observation_count": states[
+                    entity.entity_id
+                ].absence_observation_count,
+                "distinct_absence_viewpoint_count": len(
+                    states[entity.entity_id].absence_viewpoints_xyz
+                ),
+            }
+            for entity in ordered_entities
+        ],
+    }
+    return _VisibilityTimeline(
+        suppressed_by_frame=suppressed_by_frame,
+        events_by_frame=events_by_frame,
+        diagnostics=diagnostics,
+    )
+
+
 def _anchor_config(payload: Mapping[str, Any]) -> StaticAnchorConfig:
     try:
         return StaticAnchorConfig(
@@ -373,10 +556,21 @@ def compose_run(
     output_root: Path,
     moved_geometry_mode: str = "temporal_compact",
     readout_role: str = "formal_baseline",
+    visibility_policy: Path | None = None,
+    dataset_factory: Any | None = None,
 ) -> Path:
     """Publish a source-bound sequential composition without mutating inputs."""
 
-    readout_contract = _readout_contract(moved_geometry_mode, readout_role)
+    visibility_enabled = visibility_policy is not None
+    readout_contract = _readout_contract(
+        moved_geometry_mode,
+        readout_role,
+        visibility_enabled=visibility_enabled,
+    )
+    if dataset_factory is not None and not visibility_enabled:
+        raise ValueError("visibility dataset factory requires a visibility policy")
+    if dataset_factory is not None and not callable(dataset_factory):
+        raise TypeError("dataset_factory must be callable")
     source_run_manifest = Path(os.path.abspath(os.fspath(source_run_manifest)))
     anchor_manifest = Path(os.path.abspath(os.fspath(anchor_manifest)))
     output_root = Path(os.path.abspath(os.fspath(output_root)))
@@ -511,6 +705,73 @@ def compose_run(
         for sample in sorted(latest_prefix.values(), key=lambda item: item.entity_id)
     )
     state = bind_anchor_identities(anchor, prefix_samples, config, cutoff_frame=cutoff)
+    bound_anchor_ids = {anchor_id for anchor_id, _ in state.bindings}
+    unbound_anchors = tuple(
+        entity
+        for entity in sorted(anchor.entities, key=lambda item: item.entity_id)
+        if entity.entity_id not in bound_anchor_ids
+    )
+
+    visibility_timeline: _VisibilityTimeline | None = None
+    visibility_policy_record: dict[str, object] | None = None
+    rgbd_export_record: dict[str, object] | None = None
+    if visibility_policy is not None:
+        policy_path = Path(os.path.abspath(os.fspath(visibility_policy)))
+        policy_bytes = _regular_bytes(policy_path, label="visibility policy")
+        policy_payload = _json_object(policy_bytes, label="visibility policy")
+        visibility_config = anchor_visibility_config_from_json(policy_payload)
+        visibility_policy_record = _input_record(policy_path, policy_bytes)
+        rgbd_export_path, rgbd_export_record = _bound_path(
+            root=anchor_root,
+            record=sources.get("rgbd_export_manifest"),
+            label="anchor RGB-D export manifest",
+            absolute=True,
+        )
+        rgbd_payload = _json_object(
+            _regular_bytes(rgbd_export_path, label="anchor RGB-D export manifest"),
+            label="anchor RGB-D export manifest",
+        )
+        combined_output = rgbd_payload.get("combined_output_sha256")
+        file_hash_count = rgbd_payload.get("file_hash_count")
+        if (
+            rgbd_payload.get("dataset") != "TESSE-CD"
+            or rgbd_payload.get("scene") != scene
+            or not isinstance(combined_output, str)
+            or len(combined_output) != 64
+            or any(character not in "0123456789abcdef" for character in combined_output)
+            or isinstance(file_hash_count, bool)
+            or not isinstance(file_hash_count, int)
+            or file_hash_count <= 0
+        ):
+            raise ValueError("anchor RGB-D export manifest identity is invalid")
+        witnesses.extend(
+            (
+                (policy_path, visibility_policy_record),
+                (rgbd_export_path, rgbd_export_record),
+            )
+        )
+        factory = (
+            _production_visibility_dataset
+            if dataset_factory is None
+            else dataset_factory
+        )
+        dataset = factory(
+            rgbd_export_path.parent,
+            scene,
+            rgbd_export_path,
+            schedule_path,
+        )
+        visibility_timeline = _visibility_timeline(
+            anchor_entities=unbound_anchors,
+            batches=batches,
+            cutoff_frame=cutoff,
+            config=visibility_config,
+            dataset=dataset,
+            policy_record=visibility_policy_record,
+            rgbd_export_record=rgbd_export_record,
+            rgbd_combined_output_sha256=combined_output,
+            rgbd_file_hash_count=file_hash_count,
+        )
 
     checkpoint_values = source.get("checkpoints")
     captured = source.get("captured_frame_indices")
@@ -530,17 +791,18 @@ def compose_run(
     checkpoint_results: list[dict[str, Any]] = []
     source_checkpoint_records: list[dict[str, Any]] = []
     try:
-        bound_anchor_ids = {anchor_id for anchor_id, _ in state.bindings}
-        unbound_anchors = tuple(
-            entity
-            for entity in sorted(anchor.entities, key=lambda item: item.entity_id)
-            if entity.entity_id not in bound_anchor_ids
-        )
         trajectory_rows: list[dict[str, object]] = []
         lifecycle_rows: list[dict[str, object]] = []
         coverage_rows: list[dict[str, object]] = []
         for batch in batches:
             rows = [sample.to_json_record() for sample in batch.samples]
+            suppressed = (
+                visibility_timeline.suppressed_by_frame.get(
+                    batch.frame_index, frozenset()
+                )
+                if visibility_timeline is not None
+                else frozenset()
+            )
             for entity in unbound_anchors:
                 rows.append(
                     {
@@ -554,11 +816,16 @@ def compose_run(
                         "dynamic_state": "static",
                         "motion_confidence": 0.0,
                         "geometry_epoch": 0,
-                        "readout_valid": True,
+                        "readout_valid": entity.entity_id not in suppressed,
                     }
                 )
             rows.sort(key=lambda item: str(item["entity_id"]))
             events = [event.to_json_record() for event in batch.events]
+            if visibility_timeline is not None:
+                events.extend(
+                    visibility_timeline.events_by_frame.get(batch.frame_index, ())
+                )
+                events.sort(key=lambda item: str(item["entity_id"]))
             trajectory_rows.extend(rows)
             lifecycle_rows.extend(events)
             coverage_rows.append(
@@ -578,6 +845,14 @@ def compose_run(
         trajectories_record = _relative_record(trajectories_path, root=staging)
         lifecycle_record = _relative_record(lifecycle_path, root=staging)
         coverage_record = _relative_record(coverage_path, root=staging)
+        runtime_diagnostics_record: dict[str, object] | None = None
+        if visibility_timeline is not None:
+            runtime_diagnostics_path = staging / "runtime_diagnostics.json"
+            _atomic_json(runtime_diagnostics_path, visibility_timeline.diagnostics)
+            runtime_diagnostics_record = _relative_record(
+                runtime_diagnostics_path,
+                root=staging,
+            )
 
         previous_frame = cutoff
         for source_checkpoint in checkpoint_values:
@@ -625,10 +900,19 @@ def compose_run(
                 anchor_manifest_sha256=_sha256(anchor_bytes),
                 class_names=class_names,
                 moved_geometry_mode=moved_geometry_mode,
+                suppressed_unbound_anchor_ids=(
+                    visibility_timeline.suppressed_by_frame.get(frame, frozenset())
+                    if visibility_timeline is not None
+                    else frozenset()
+                ),
             )
             checkpoint_root = staging / "checkpoints" / f"{frame:08d}-{timestamp_ns}"
             written = write_map_snapshot(composed, checkpoint_root / "current")
             diagnostic_payload = asdict(diagnostics)
+            if visibility_timeline is not None:
+                diagnostic_payload["visibility_suppressed_anchor_ids"] = sorted(
+                    visibility_timeline.suppressed_by_frame.get(frame, frozenset())
+                )
             diagnostics_path = checkpoint_root / "diagnostics.json"
             _atomic_json(diagnostics_path, diagnostic_payload)
             status_path = checkpoint_root / "checkpoint_status.json"
@@ -711,6 +995,11 @@ def compose_run(
                 "trajectories": trajectories_record,
                 "frame_coverage": coverage_record,
                 "lifecycle_transitions": lifecycle_record,
+                **(
+                    {"runtime_diagnostics": runtime_diagnostics_record}
+                    if runtime_diagnostics_record is not None
+                    else {}
+                ),
                 "checkpoints": source_checkpoint_records,
             },
         )
@@ -739,6 +1028,15 @@ def compose_run(
                 "anchor_vocabulary": vocabulary_record,
                 "causal_schedule": schedule_record,
                 "source_index": source_index_record,
+                **(
+                    {
+                        "visibility_policy": visibility_policy_record,
+                        "visibility_rgbd_export_manifest": rgbd_export_record,
+                    }
+                    if visibility_policy_record is not None
+                    and rgbd_export_record is not None
+                    else {}
+                ),
                 **{
                     f"source_{key}": temporal_input_records[key]
                     for key in ("trajectories", "lifecycle", "coverage")
@@ -781,6 +1079,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         choices=_READOUT_ROLES,
         default="formal_baseline",
     )
+    parser.add_argument("--visibility-policy", type=Path)
     args = parser.parse_args(argv)
     compose_run(
         source_run_manifest=args.source_run_manifest,
@@ -788,6 +1087,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         output_root=args.output_root,
         moved_geometry_mode=args.moved_geometry_mode,
         readout_role=args.readout_role,
+        visibility_policy=args.visibility_policy,
     )
     return 0
 

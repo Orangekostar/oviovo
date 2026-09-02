@@ -9,6 +9,7 @@ import pytest
 
 from scripts.evaluation.export_tesse_temporal_artifact import export_temporal_artifact
 from scripts.evaluation.run_crove_ovimap_static_anchor import compose_run
+from src.core.data_structures import CameraIntrinsics, Frame
 from src.evaluation.contracts import EntityPrediction, MapSnapshot
 from src.evaluation.exporters.oviovo import read_map_snapshot, write_map_snapshot
 
@@ -53,6 +54,7 @@ def _prediction(
     *,
     temporal_id: int | None = None,
     dense: bool = False,
+    z: float = 0.0,
 ) -> EntityPrediction:
     metadata: dict[str, object] = {"authority": "ovimap_anchor"}
     if temporal_id is not None:
@@ -66,7 +68,7 @@ def _prediction(
         entity_id=entity_id,
         points_xyz=np.asarray(
             tuple(
-                (x + offset, 0.0, 0.0)
+                (x + offset, 0.0, z)
                 for offset in (
                     (-0.2, -0.1, 0.0, 0.1, 0.2)
                     if dense
@@ -86,7 +88,12 @@ def _prediction(
 
 
 def _write_anchor_package(
-    tmp_path: Path, *, anchor_x: float = 0.0, dense: bool = False
+    tmp_path: Path,
+    *,
+    anchor_x: float = 0.0,
+    anchor_z: float = 0.0,
+    dense: bool = False,
+    visibility_export: bool = False,
 ) -> Path:
     root = tmp_path / "anchor"
     config = tmp_path / "anchor_config.json"
@@ -125,12 +132,31 @@ def _write_anchor_package(
             },
         },
     )
+    sources = {
+        "config": _record(config),
+        "vocabulary": _record(vocabulary),
+        "schedule": _record(schedule),
+    }
+    if visibility_export:
+        export_manifest = tmp_path / "rgbd" / "export_manifest.json"
+        _write_json(
+            export_manifest,
+            {
+                "dataset": "TESSE-CD",
+                "scene": "apartment",
+                "combined_output_sha256": "c" * 64,
+                "file_hash_count": 1,
+            },
+        )
+        sources["rgbd_export_manifest"] = _record(export_manifest)
     written = write_map_snapshot(
         MapSnapshot(
             method="OVI-MAP causal static anchor",
             scene_id="apartment",
             timestamp=1.0,
-            entities=[_prediction("ovimap:1", anchor_x, dense=dense)],
+            entities=[
+                _prediction("ovimap:1", anchor_x, dense=dense, z=anchor_z)
+            ],
             background_xyz=np.asarray(((4.0, 0.0, 0.0),), dtype=np.float32),
             scope="current",
         ),
@@ -152,11 +178,7 @@ def _write_anchor_package(
                 "maximum_source_frame": 1,
                 "strictly_pre_intervention": True,
             },
-            "sources": {
-                "config": _record(config),
-                "vocabulary": _record(vocabulary),
-                "schedule": _record(schedule),
-            },
+            "sources": sources,
             "outputs": {
                 "snapshot": _record(written["snapshot"], root=root),
                 "entities": _record(written["entities"], root=root),
@@ -164,6 +186,51 @@ def _write_anchor_package(
         },
     )
     return manifest
+
+
+class _VisibilityDataset:
+    def __len__(self) -> int:
+        return 4
+
+    def timestamp_ns(self, index: int) -> int:
+        return _timestamp_ns(index)
+
+    def __getitem__(self, index: int) -> Frame:
+        pose = np.eye(4, dtype=np.float64)
+        pose[0, 3] = 0.3 * max(0, index - 2)
+        return Frame(
+            frame_id=index,
+            source_frame_id=index,
+            rgb=np.zeros((5, 5, 3), dtype=np.uint8),
+            depth=np.full((5, 5), 2.0, dtype=np.float32),
+            pose=pose,
+            intrinsics=CameraIntrinsics(3.0, 3.0, 2.0, 2.0, 5, 5),
+            timestamp=_timestamp_ns(index) / 1_000_000_000,
+        )
+
+
+def _write_visibility_policy(tmp_path: Path) -> Path:
+    path = tmp_path / "visibility_policy.json"
+    _write_json(
+        path,
+        {
+            "schema_version": 1,
+            "policy_id": "crove_ovimap_unbound_visibility_v1",
+            "voxel_sampling": "sorted_even_spacing",
+            "voxel_size_m": 1.0,
+            "depth_tolerance_m": 0.1,
+            "depth_max_m": 10.0,
+            "maximum_voxels_per_anchor": 1000,
+            "minimum_tested_voxels": 1,
+            "minimum_absent_fraction": 0.8,
+            "minimum_present_fraction": 0.8,
+            "minimum_absent_observations": 2,
+            "minimum_distinct_viewpoints": 2,
+            "minimum_viewpoint_baseline_m": 0.25,
+            "minimum_present_streak": 2,
+        },
+    )
+    return path
 
 
 def _sample(frame: int, x: float) -> dict[str, object]:
@@ -331,6 +398,122 @@ def test_composed_run_publishes_dense_moved_visualization_shadow(
     assert entity.lifecycle_state == "active"
     assert entity.metadata["geometry_authority"] == "ovimap_anchor_template"
     assert entity.metadata["state_authority"] == "crove_temporal"
+
+
+def test_composed_run_publishes_causal_unbound_visibility_candidate(
+    tmp_path: Path,
+) -> None:
+    result = compose_run(
+        source_run_manifest=_write_source_run(tmp_path),
+        anchor_manifest=_write_anchor_package(
+            tmp_path,
+            anchor_z=1.5,
+            visibility_export=True,
+        ),
+        output_root=tmp_path / "visibility-candidate",
+        readout_role="causal_visibility_candidate",
+        visibility_policy=_write_visibility_policy(tmp_path),
+        dataset_factory=lambda *_: _VisibilityDataset(),
+    )
+
+    manifest = json.loads(result.read_text(encoding="utf-8"))
+    assert manifest["readout_contract"] == {
+        "moved_geometry_mode": "temporal_compact",
+        "readout_role": "causal_visibility_candidate",
+        "unbound_anchor_mode": "causal_visibility",
+    }
+    source_index_path = result.parent / manifest["source_index"]["path"]
+    source_index = json.loads(source_index_path.read_text(encoding="utf-8"))
+    assert source_index["runtime_diagnostics"]["path"] == "runtime_diagnostics.json"
+    diagnostics_path = result.parent / source_index["runtime_diagnostics"]["path"]
+    diagnostics = json.loads(diagnostics_path.read_text(encoding="utf-8"))
+    assert diagnostics["policy"]["sha256"] == manifest["inputs"][
+        "visibility_policy"
+    ]["sha256"]
+    assert diagnostics["transition_count"] == 1
+    assert diagnostics["transitions"] == [
+        {
+            "after": "dormant",
+            "before": "active",
+            "entity_id": "anchor:ovimap:1",
+            "evidence": "visible_absent",
+            "frame_index": 3,
+            "readout_valid": False,
+            "timestamp_ns": _timestamp_ns(3),
+        }
+    ]
+    trajectories = [
+        json.loads(line)
+        for line in (result.parent / "trajectories.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+        if line
+    ]
+    anchor_rows = [
+        row for row in trajectories if row["entity_id"] == "anchor:ovimap:1"
+    ]
+    assert [row["readout_valid"] for row in anchor_rows] == [True, True, True, False]
+    lifecycle = [
+        json.loads(line)
+        for line in (result.parent / "lifecycle_transitions.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+        if line
+    ]
+    assert lifecycle[-1] == {
+        "after": "dormant",
+        "before": "active",
+        "entity_id": "anchor:ovimap:1",
+        "evidence": "visible_absent",
+        "frame_index": 3,
+        "geometry_epoch": 0,
+        "readout_valid": False,
+        "timestamp_ns": _timestamp_ns(3),
+    }
+    final = manifest["checkpoints"][-1]
+    snapshot = read_map_snapshot(
+        result.parent / final["snapshot"]["path"],
+        result.parent / final["entities"]["path"],
+    )
+    assert snapshot.entities == []
+    assert final["diagnostics"]["visibility_suppressed_anchor_ids"] == [
+        "ovimap:1"
+    ]
+
+    exported = export_temporal_artifact(source_index_path, tmp_path / "exported")
+    temporal = json.loads(exported.read_text(encoding="utf-8"))
+    assert temporal["sources"]["runtime_diagnostics"]["path"] == (
+        "sidecars/runtime_diagnostics.json"
+    )
+
+
+@pytest.mark.parametrize(
+    ("readout_role", "with_policy"),
+    (
+        ("causal_visibility_candidate", False),
+        ("formal_baseline", True),
+        ("evaluation_candidate", True),
+    ),
+)
+def test_composed_run_rejects_visibility_role_policy_mismatch_before_output(
+    tmp_path: Path,
+    readout_role: str,
+    with_policy: bool,
+) -> None:
+    output = tmp_path / f"rejected-visibility-{readout_role}"
+
+    with pytest.raises(ValueError, match="visibility"):
+        compose_run(
+            source_run_manifest=tmp_path / "not-read.json",
+            anchor_manifest=tmp_path / "not-read-anchor.json",
+            output_root=output,
+            readout_role=readout_role,
+            visibility_policy=(
+                tmp_path / "not-read-policy.json" if with_policy else None
+            ),
+        )
+
+    assert not output.exists()
 
 
 @pytest.mark.parametrize(
