@@ -366,6 +366,7 @@ def _compose(
     temporal: TemporalCurrentSnapshot,
     exports: tuple[TemporalExportBatch, ...],
     moved_geometry_mode: str = "temporal_compact",
+    suppressed_unbound_anchor_ids: frozenset[str] = frozenset(),
 ):
     return compose_anchor_checkpoint(
         anchor=anchor,
@@ -376,6 +377,7 @@ def _compose(
         anchor_manifest_sha256="b" * 64,
         class_names=("unknown", "Chair", "Table"),
         moved_geometry_mode=moved_geometry_mode,
+        suppressed_unbound_anchor_ids=suppressed_unbound_anchor_ids,
     )
 
 
@@ -881,6 +883,83 @@ def test_unbound_pre_cutoff_identity_is_suppressed_as_anchor_duplicate() -> None
 
     assert [item.entity_id for item in composed.entities] == ["ovimap:1"]
     assert diagnostics.new_temporal_ids == ()
+
+
+def test_explicit_visibility_suppression_omits_only_unbound_anchor() -> None:
+    anchor = _anchor()
+    state = bind_anchor_identities(
+        anchor,
+        (_sample(7, 0.0, "Chair", (1.0, 0.0)),),
+        _config(),
+        cutoff_frame=262,
+    )
+    temporal = _temporal_snapshot(
+        frame_index=263,
+        entities=(
+            _temporal_entity(
+                7, TemporalLifecycle.ACTIVE, x=0.0, frame_index=263, geometry_epoch=0
+            ),
+        ),
+    )
+
+    composed, next_state, diagnostics = _compose(
+        anchor=anchor,
+        state=state,
+        temporal=temporal,
+        exports=(
+            _export_batch(
+                frame_index=263,
+                entity_id=7,
+                x=0.0,
+                dynamic_state=DynamicState.STATIC,
+                geometry_epoch=0,
+            ),
+        ),
+        suppressed_unbound_anchor_ids=frozenset({"ovimap:2"}),
+    )
+
+    assert [item.entity_id for item in composed.entities] == ["ovimap:1"]
+    assert diagnostics.unchanged_anchor_ids == ("ovimap:1",)
+    assert next_state.bindings == state.bindings
+    assert next_state.removed_anchor_ids == state.removed_anchor_ids
+
+
+@pytest.mark.parametrize("anchor_id", ("ovimap:1", "ovimap:missing"))
+def test_visibility_suppression_rejects_bound_or_unknown_anchor(
+    anchor_id: str,
+) -> None:
+    anchor = _anchor()
+    state = bind_anchor_identities(
+        anchor,
+        (_sample(7, 0.0, "Chair", (1.0, 0.0)),),
+        _config(),
+        cutoff_frame=262,
+    )
+    temporal = _temporal_snapshot(
+        frame_index=263,
+        entities=(
+            _temporal_entity(
+                7, TemporalLifecycle.ACTIVE, x=0.0, frame_index=263, geometry_epoch=0
+            ),
+        ),
+    )
+
+    with pytest.raises(ValueError, match="unbound anchor"):
+        _compose(
+            anchor=anchor,
+            state=state,
+            temporal=temporal,
+            exports=(
+                _export_batch(
+                    frame_index=263,
+                    entity_id=7,
+                    x=0.0,
+                    dynamic_state=DynamicState.STATIC,
+                    geometry_epoch=0,
+                ),
+            ),
+            suppressed_unbound_anchor_ids=frozenset({anchor_id}),
+        )
 
 
 def test_moved_state_persists_after_dynamic_state_returns_static() -> None:

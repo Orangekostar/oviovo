@@ -581,6 +581,7 @@ def compose_anchor_checkpoint(
     anchor_manifest_sha256: str,
     class_names: Sequence[str],
     moved_geometry_mode: str = "temporal_compact",
+    suppressed_unbound_anchor_ids: frozenset[str] = frozenset(),
 ) -> tuple[MapSnapshot, AnchorOverlayState, CheckpointOverlayDiagnostics]:
     """Compose one causal current readout without mutating either authority."""
 
@@ -643,6 +644,14 @@ def compose_anchor_checkpoint(
     anchor_entities = {
         entity.entity_id: entity for entity in anchor.entities
     }
+    if not isinstance(suppressed_unbound_anchor_ids, frozenset) or any(
+        not isinstance(item, str) or not item
+        for item in suppressed_unbound_anchor_ids
+    ):
+        raise TypeError("suppressed_unbound_anchor_ids must be a frozenset of strings")
+    allowed_suppressed = set(anchor_entities) - set(bindings)
+    if not suppressed_unbound_anchor_ids.issubset(allowed_suppressed):
+        raise ValueError("visibility suppression may contain only unbound anchor IDs")
     moved = set(state.moved_anchor_ids)
     removed = set(state.removed_anchor_ids)
     latest_samples = {}
@@ -702,6 +711,8 @@ def compose_anchor_checkpoint(
     for anchor_id in sorted(anchor_entities):
         anchor_entity = anchor_entities[anchor_id]
         temporal_id = bindings.get(anchor_id)
+        if anchor_id in suppressed_unbound_anchor_ids:
+            continue
         if anchor_id in removed:
             removed_ids.append(anchor_id)
             continue
