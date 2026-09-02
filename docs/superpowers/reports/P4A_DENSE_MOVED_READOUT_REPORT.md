@@ -7,7 +7,8 @@
 - Development scene: Apartment only; Office outputs were not accessed.
 - Candidate: OVI-MAP dense anchor geometry translated to CROVE's latest causal
   current centroid.
-- Role: visualization shadow only. No official metric improvement is claimed.
+- Role: visualization shadow followed by a separately named Apartment
+  evaluation candidate.
 
 ## Bound Runs
 
@@ -49,14 +50,25 @@ sizes are recorded in the six source-bound JSON audits under
 
 ## Decision
 
-**PASS for a separately named Apartment evaluation candidate; not promoted to
-the formal readout.** The shadow removes the measured dense-to-sparse point
-collapse without changing CROVE state or the compact control. However,
-`ovimap:2` has zero 5 cm agreement with compact current geometry and spans a
-large anchor template, so centroid translation alone may move an incorrectly
-bound or non-rigid template. The official evaluator must determine whether the
-dense candidate improves the registered metrics. P4B remains blocked, and no
-Office run is authorized before final Apartment configuration freeze.
+| Metric | Dense candidate | Registered baseline | Delta |
+| --- | ---: | ---: | ---: |
+| Object F1 | 0.353859 | 0.372762 | -0.018903 |
+| Change F1 | 0.086534 | 0.060853 | +0.025681 |
+| Current mIoU | 0.148174 | 0.142897 | +0.005277 |
+| Ghost | 0.443852 | 0.646883 | -0.203031 |
+
+**REJECTED_RETAIN_A6.** The candidate improves Change F1, Current mIoU, and
+Ghost, but fails the preregistered Object F1 floor. This confirms that dense
+centroid translation can recover appearance while also moving an incorrect or
+non-rigid template, as predicted by the zero-coverage `ovimap:2` audit. P4B
+remains blocked. P5 therefore uses the compact moved-geometry backbone.
+
+The candidate manifest SHA-256 is
+`15e08bdc048251bf04a22ab6a306af517155345550eb99aad597d529301b04b4`;
+the official metrics SHA-256 is
+`2a7f251973d63444ccf833ad956eb25c112a62fd4eb7d1ff8699327ea8dac657`;
+the final gate decision SHA-256 is
+`59e961e8852f5687efd6719ba6d2fb1a0613eb4baf02c28be7bf6c4d02766c47`.
 
 ## Verification
 
@@ -64,3 +76,6 @@ Office run is authorized before final Apartment configuration freeze.
 - Core/runner/audit tests: 45 passed.
 - Temporal association/identity/runtime tests: 261 passed.
 - T1 exactness/non-interference tests: 48 passed.
+- Official evaluation: PASS with 43 states; repeated metric summaries are
+  byte-identical.
+- Common-v2 gate: `REJECTED_RETAIN_A6` on `object_f1_floor`.
