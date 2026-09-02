@@ -12,6 +12,7 @@ from src.evaluation.crove_runtime_attribution import (
     publish_runtime_attribution,
 )
 from src.oviv2.observations import FrameObservation, ObservationKind
+from src.oviv2.t1_exactness import commit_runtime_state, isolated_temporal_runtime
 from src.oviv2.temporal_config import (
     ExecutionProfile,
     TemporalAssociationConfig,
@@ -190,6 +191,34 @@ def test_proxy_restores_runtime_symbols_when_wrapped_call_fails() -> None:
     assert runtime_module.estimate_object_translation is originals["translation"]
     assert runtime_module.route_active_motion_evidence is originals["route"]
     assert runtime_module.advance_dynamic_state is originals["dynamic"]
+
+
+def test_proxy_observes_temporal_trial_after_frozen_namespace_validation() -> None:
+    class IsolatingRuntime:
+        def __init__(self) -> None:
+            self.temporal = _runtime()
+
+        def process_temporal_only_frame(
+            self,
+            frame: Frame,
+            observations: tuple[FrameObservation, ...],
+            dense_semantics: object = None,
+        ) -> object:
+            trial = isolated_temporal_runtime(self.temporal)
+            result = trial.process_frame(frame, observations, dense_semantics)
+            commit_runtime_state(self.temporal, trial)
+            return result
+
+    frame = _frame(0, 1.0)
+    observation = _observation(frame, 1)
+    runtime = IsolatingRuntime()
+    capture = RuntimeAttributionCapture()
+    proxy = CroveRuntimeAttributionProxy(runtime, capture)
+
+    result = proxy.process_temporal_only_frame(frame, (observation,))
+
+    assert result.frame_id == 0
+    assert capture.records[0]["association"]["new_identity_births"] == [1]
 
 
 def test_publish_runtime_attribution_is_deterministic_and_hash_bound(

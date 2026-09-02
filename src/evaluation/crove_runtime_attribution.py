@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import shutil
+import sys
 import tempfile
 import threading
 from collections.abc import Callable, Mapping, Sequence
@@ -88,7 +89,7 @@ class _FrameCapture:
             for entry in getattr(export_tracker, "entries", ())
         }
 
-    def capture_candidate(self, left: object, right: object, candidate: object) -> None:
+    def capture_candidate(self, candidate: object) -> None:
         if candidate is None:
             return
         if not isinstance(candidate, CandidateScore):
@@ -106,6 +107,171 @@ class _FrameCapture:
             "geometry_score": candidate.bounds_iou,
             "appearance_score": candidate.visual_cosine,
         }
+
+    def profile_return(self, execution_frame: object, value: object) -> None:
+        code = execution_frame.f_code
+        local = execution_frame.f_locals
+        if code is _association_module.associate_temporal_observations.__code__:
+            if not isinstance(value, TemporalAssociationResult):
+                return
+            observations = local["observations"]
+            targets = local["targets"]
+            self.observations = {
+                int(item.observation_id): item for item in observations
+            }
+            self.targets = {int(item.entity_id): item for item in targets}
+            for candidate in local.get("edges", {}).values():
+                self.capture_candidate(candidate)
+            self.association = value
+            return
+        if code is _runtime_module.TemporalCurrentRuntime.process_frame.__code__:
+            association = local.get("association")
+            if isinstance(association, TemporalAssociationResult):
+                self.association = association
+            return
+        if code is _runtime_module.backproject_observation.__code__:
+            if isinstance(value, np.ndarray):
+                observation = local["observation"]
+                self.point_observation_ids[id(value)] = int(observation.observation_id)
+            return
+        if code in {
+            _runtime_module.estimate_object_motion.__code__,
+            _runtime_module.estimate_object_translation.__code__,
+        }:
+            if isinstance(value, ObjectMotionEstimate):
+                self._capture_motion_estimate(
+                    value,
+                    local,
+                    estimator=(
+                        "gated_icp"
+                        if code is _runtime_module.estimate_object_motion.__code__
+                        else "bounded_translation"
+                    ),
+                )
+            return
+        if code is _runtime_module.route_active_motion_evidence.__code__:
+            if value is not None:
+                self._capture_routed_motion(value, local)
+            return
+        if code is _runtime_module.advance_dynamic_state.__code__ and isinstance(
+            value, DynamicEvidenceState
+        ):
+            self._capture_dynamic_transition(value, local)
+
+    def _capture_motion_estimate(
+        self,
+        result: ObjectMotionEstimate,
+        local: Mapping[str, Any],
+        *,
+        estimator: str,
+    ) -> None:
+        points = local["points_world"]
+        observation_id = self.point_observation_ids.get(id(points))
+        assignments = (
+            {} if self.association is None else dict(self.association.assignments)
+        )
+        entity_id = assignments.get(observation_id)
+        if observation_id is None or entity_id is None:
+            raise RuntimeError("motion estimator call cannot be bound to an assignment")
+        previous_translation = np.asarray(local["previous_pose"], dtype=np.float64)[
+            :3, 3
+        ]
+        displacement = float(
+            np.linalg.norm(
+                np.asarray(result.object_to_world, dtype=np.float64)[:3, 3]
+                - previous_translation
+            )
+        )
+        self.motion.append(
+            {
+                "path": "active_continuation",
+                "observation_id": observation_id,
+                "entity_id": entity_id,
+                "estimator": estimator,
+                "motion_decision": result.decision.value,
+                "fitness": result.fitness,
+                "rmse_m": result.rmse_m,
+                "geometry_displacement_m": displacement,
+            }
+        )
+
+    def _capture_routed_motion(self, result: object, local: Mapping[str, Any]) -> None:
+        pending = next(
+            (row for row in reversed(self.motion) if "routed_source" not in row),
+            None,
+        )
+        if pending is None:
+            raise RuntimeError("motion router call has no estimator record")
+        config = local["normalized_config"]
+        geometry_admitted = bool(local["geometry_admitted"])
+        identity_admitted = bool(local["identity_admitted"])
+        identity_confidence = float(local["identity_confidence"])
+        pending.update(
+            {
+                "geometry_evidence_admitted": geometry_admitted,
+                "geometry_confidence": float(local["normalized_geometry_confidence"]),
+                "geometry_displacement_threshold_passed": (
+                    float(local["geometry_displacement"]) >= config.displacement_floor_m
+                ),
+                "geometry_confidence_threshold_passed": (
+                    float(local["normalized_geometry_confidence"])
+                    >= config.minimum_motion_confidence
+                ),
+                "identity_evidence_admitted": identity_admitted,
+                "identity_displacement_m": float(local["identity_displacement"]),
+                "identity_confidence": identity_confidence,
+                "identity_displacement_threshold_passed": (
+                    float(local["identity_displacement"]) >= config.displacement_floor_m
+                ),
+                "identity_confidence_threshold_passed": (
+                    identity_confidence >= config.minimum_motion_confidence
+                ),
+                "routed_source": result.source.value,
+                "routed_accepted": result.accepted,
+                "routed_displacement_m": result.displacement_m,
+                "routed_confidence": result.confidence,
+                "routed_qualifies_as_motion": result.qualifies_as_motion,
+                "geometry_qualifies_as_motion": result.geometry_qualifies_as_motion,
+                "identity_qualifies_as_motion": result.identity_qualifies_as_motion,
+                "displacement_floor_m": config.displacement_floor_m,
+                "minimum_motion_confidence": config.minimum_motion_confidence,
+                "minimum_consecutive_motion_frames": (
+                    config.minimum_consecutive_motion_frames
+                ),
+            }
+        )
+
+    def _capture_dynamic_transition(
+        self, result: DynamicEvidenceState, local: Mapping[str, Any]
+    ) -> None:
+        state = local["state"]
+        pending = next(
+            (
+                row
+                for row in reversed(self.motion)
+                if "routed_source" in row and "dynamic_state_after" not in row
+            ),
+            None,
+        )
+        record = {
+            "dynamic_state_before": state.dynamic_state.value,
+            "motion_streak_before": state.motion_streak,
+            "static_streak_before": state.static_streak,
+            "dynamic_state_after": result.dynamic_state.value,
+            "motion_streak_after": result.motion_streak,
+            "static_streak_after": result.static_streak,
+        }
+        if pending is None:
+            self.unpaired_dynamic.append(
+                {
+                    **record,
+                    "accepted_motion": local["accepted"],
+                    "displacement_m": local["displacement"],
+                    "confidence": local["normalized_confidence"],
+                }
+            )
+        else:
+            pending.update(record)
 
     def association_record(self, births: Sequence[int]) -> dict[str, Any]:
         result = self.association
@@ -351,7 +517,7 @@ class RuntimeAttributionCapture:
         self._active = True
         try:
             frame_capture = _FrameCapture(frame_index, runtime)
-            with _patched_runtime(frame_capture):
+            with _profiled_runtime(frame_capture):
                 result = call()
             self.records.append(frame_capture.finalize(result))
             return result
@@ -361,212 +527,20 @@ class RuntimeAttributionCapture:
 
 
 @contextmanager
-def _patched_runtime(frame: _FrameCapture):
-    originals = {
-        "runtime_association": _runtime_module.associate_temporal_observations,
-        "solve_assignment": _association_module.solve_assignment,
-        "backproject": _runtime_module.backproject_observation,
-        "motion": _runtime_module.estimate_object_motion,
-        "translation": _runtime_module.estimate_object_translation,
-        "route": _runtime_module.route_active_motion_evidence,
-        "advance_dynamic": _runtime_module.advance_dynamic_state,
-    }
+def _profiled_runtime(frame: _FrameCapture):
+    previous = sys.getprofile()
 
-    def solve_assignment(left, right, config, *, candidate_scorer=None):
-        scorer = candidate_scorer
-        if scorer is not None:
-            original_scorer = scorer
+    def profile(execution_frame, event, value):
+        if previous is not None:
+            previous(execution_frame, event, value)
+        if event == "return":
+            frame.profile_return(execution_frame, value)
 
-            def capturing_scorer(left_item, right_item, scorer_config):
-                candidate = original_scorer(left_item, right_item, scorer_config)
-                frame.capture_candidate(left_item, right_item, candidate)
-                return candidate
-
-            scorer = capturing_scorer
-        return originals["solve_assignment"](
-            left, right, config, candidate_scorer=scorer
-        )
-
-    def association(observations, targets, config, *, dormant_reid=None):
-        frame.observations = {item.observation_id: item for item in observations}
-        frame.targets = {item.entity_id: item for item in targets}
-        result = originals["runtime_association"](
-            observations, targets, config, dormant_reid=dormant_reid
-        )
-        if not isinstance(result, TemporalAssociationResult):
-            raise TypeError("instrumented association returned an invalid result")
-        frame.association = result
-        return result
-
-    def backproject(*args, **kwargs):
-        points = originals["backproject"](*args, **kwargs)
-        observation = args[1]
-        frame.point_observation_ids[id(points)] = int(observation.observation_id)
-        return points
-
-    def motion_wrapper(name: str):
-        def wrapped(*args, **kwargs):
-            result = originals[name](*args, **kwargs)
-            if not isinstance(result, ObjectMotionEstimate):
-                raise TypeError(
-                    "instrumented motion estimator returned an invalid result"
-                )
-            points = args[1]
-            observation_id = frame.point_observation_ids.get(id(points))
-            assignments = (
-                {} if frame.association is None else dict(frame.association.assignments)
-            )
-            entity_id = assignments.get(observation_id)
-            if observation_id is None or entity_id is None:
-                raise RuntimeError(
-                    "motion estimator call cannot be bound to an assignment"
-                )
-            previous_pose = kwargs.get("previous_object_to_world")
-            if previous_pose is None:
-                previous_translation = np.asarray(
-                    args[0].reference_centroid_xyz, dtype=np.float64
-                )
-            else:
-                previous_translation = np.asarray(previous_pose, dtype=np.float64)[
-                    :3, 3
-                ]
-            displacement = float(
-                np.linalg.norm(
-                    np.asarray(result.object_to_world, dtype=np.float64)[:3, 3]
-                    - previous_translation
-                )
-            )
-            frame.motion.append(
-                {
-                    "path": "active_continuation",
-                    "observation_id": observation_id,
-                    "entity_id": entity_id,
-                    "estimator": (
-                        "gated_icp" if name == "motion" else "bounded_translation"
-                    ),
-                    "motion_decision": result.decision.value,
-                    "fitness": result.fitness,
-                    "rmse_m": result.rmse_m,
-                    "geometry_displacement_m": displacement,
-                }
-            )
-            return result
-
-        return wrapped
-
-    def route(*args, **kwargs):
-        result = originals["route"](*args, **kwargs)
-        pending = next(
-            (row for row in reversed(frame.motion) if "routed_source" not in row),
-            None,
-        )
-        if pending is None:
-            raise RuntimeError("motion router call has no estimator record")
-        config = kwargs["config"]
-        geometry_admitted = bool(
-            kwargs["geometry_accepted"] and kwargs["geometry_confidence"] > 0.0
-        )
-        identity_admitted = bool(
-            kwargs["identity_qualified"] and kwargs["appearance_similarity"] is not None
-        )
-        identity_confidence = (
-            float(np.clip(kwargs["appearance_similarity"], 0.0, 1.0))
-            if identity_admitted
-            else 0.0
-        )
-        pending.update(
-            {
-                "geometry_evidence_admitted": geometry_admitted,
-                "geometry_confidence": kwargs["geometry_confidence"],
-                "geometry_displacement_threshold_passed": (
-                    kwargs["geometry_displacement_m"] >= config.displacement_floor_m
-                ),
-                "geometry_confidence_threshold_passed": (
-                    kwargs["geometry_confidence"] >= config.minimum_motion_confidence
-                ),
-                "identity_evidence_admitted": identity_admitted,
-                "identity_displacement_m": kwargs["identity_displacement_m"],
-                "identity_confidence": identity_confidence,
-                "identity_displacement_threshold_passed": (
-                    kwargs["identity_displacement_m"] >= config.displacement_floor_m
-                ),
-                "identity_confidence_threshold_passed": (
-                    identity_confidence >= config.minimum_motion_confidence
-                ),
-                "routed_source": result.source.value,
-                "routed_accepted": result.accepted,
-                "routed_displacement_m": result.displacement_m,
-                "routed_confidence": result.confidence,
-                "routed_qualifies_as_motion": result.qualifies_as_motion,
-                "geometry_qualifies_as_motion": result.geometry_qualifies_as_motion,
-                "identity_qualifies_as_motion": result.identity_qualifies_as_motion,
-                "displacement_floor_m": config.displacement_floor_m,
-                "minimum_motion_confidence": config.minimum_motion_confidence,
-                "minimum_consecutive_motion_frames": (
-                    config.minimum_consecutive_motion_frames
-                ),
-            }
-        )
-        return result
-
-    def advance_dynamic(state, *, accepted_motion, displacement_m, confidence, config):
-        result = originals["advance_dynamic"](
-            state,
-            accepted_motion=accepted_motion,
-            displacement_m=displacement_m,
-            confidence=confidence,
-            config=config,
-        )
-        if not isinstance(result, DynamicEvidenceState):
-            raise TypeError("instrumented dynamic state returned an invalid result")
-        pending = next(
-            (
-                row
-                for row in reversed(frame.motion)
-                if "routed_source" in row and "dynamic_state_after" not in row
-            ),
-            None,
-        )
-        record = {
-            "dynamic_state_before": state.dynamic_state.value,
-            "motion_streak_before": state.motion_streak,
-            "static_streak_before": state.static_streak,
-            "dynamic_state_after": result.dynamic_state.value,
-            "motion_streak_after": result.motion_streak,
-            "static_streak_after": result.static_streak,
-        }
-        if pending is None:
-            frame.unpaired_dynamic.append(
-                {
-                    **record,
-                    "accepted_motion": accepted_motion,
-                    "displacement_m": displacement_m,
-                    "confidence": confidence,
-                }
-            )
-        else:
-            pending.update(record)
-        return result
-
-    _association_module.solve_assignment = solve_assignment
-    _runtime_module.associate_temporal_observations = association
-    _runtime_module.backproject_observation = backproject
-    _runtime_module.estimate_object_motion = motion_wrapper("motion")
-    _runtime_module.estimate_object_translation = motion_wrapper("translation")
-    _runtime_module.route_active_motion_evidence = route
-    _runtime_module.advance_dynamic_state = advance_dynamic
+    sys.setprofile(profile)
     try:
         yield
     finally:
-        _runtime_module.advance_dynamic_state = originals["advance_dynamic"]
-        _runtime_module.route_active_motion_evidence = originals["route"]
-        _runtime_module.estimate_object_translation = originals["translation"]
-        _runtime_module.estimate_object_motion = originals["motion"]
-        _runtime_module.backproject_observation = originals["backproject"]
-        _runtime_module.associate_temporal_observations = originals[
-            "runtime_association"
-        ]
-        _association_module.solve_assignment = originals["solve_assignment"]
+        sys.setprofile(previous)
 
 
 class CroveRuntimeAttributionProxy:
