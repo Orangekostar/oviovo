@@ -522,6 +522,53 @@ def test_localized_static_anchor_uses_snapshot_presence(
     assert assignment["dynamic_track_eligible"] is False
 
 
+@pytest.mark.parametrize(
+    ("field", "value"),
+    (
+        ("active_point_count", 1),
+        ("ownership_policy_id", "unknown-policy"),
+    ),
+)
+def test_rejects_invalid_localized_static_anchor_metadata(
+    tmp_path: Path,
+    field: str,
+    value: object,
+) -> None:
+    temporal = _write_temporal_fixture(
+        tmp_path / "temporal", include_localized_static_anchor=True
+    )
+    manifest = json.loads(temporal.read_text(encoding="utf-8"))
+    entities_record = manifest["checkpoints"][0]["entities"]
+    entities_path = temporal.parent / entities_record["path"]
+    rows = [
+        json.loads(line)
+        for line in entities_path.read_text(encoding="utf-8").splitlines()
+    ]
+    localized = next(
+        row for row in rows if row["entity_id"] == "ovimap:localized"
+    )
+    localized["metadata"][field] = value
+    entities_path.write_text(
+        "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+    manifest["checkpoints"][0]["entities"] = _record(
+        entities_path, relative_to=temporal.parent
+    )
+    temporal.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    labels = tmp_path / "labels.yaml"
+    labels.write_text(
+        "label_names: [{label: 0, name: Unknown}, {label: 5, name: Chair}]\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="static anchor metadata"):
+        prepare_temporal_bridge(temporal, labels, tmp_path / "bridge")
+
+
 def test_bound_static_anchor_retained_after_track_ends_uses_snapshot_presence(
     tmp_path: Path,
 ) -> None:

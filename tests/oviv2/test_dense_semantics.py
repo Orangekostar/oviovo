@@ -1012,38 +1012,46 @@ def test_load_dense_frame_uses_public_numpy_header_api(
 ) -> None:
     path = tmp_path / "frame.npz"
     write_dense_frame(path, _frame())
-    original_reader = dense_semantics.npy_format._read_array_header
+    original_private_reader = getattr(
+        dense_semantics.npy_format, "_read_array_header", None
+    )
+    original_reader_v1 = dense_semantics.npy_format.read_array_header_1_0
+    original_reader_v2 = dense_semantics.npy_format.read_array_header_2_0
     original_payload_reader = dense_semantics.npy_format.read_array
 
     def forbidden_private_reader(*_args: object, **_kwargs: object) -> object:
         raise AssertionError("production code must not call private NumPy header APIs")
 
     def public_reader_v1(stream: object, max_header_size: int) -> object:
-        return original_reader(stream, (1, 0), max_header_size=max_header_size)
+        return original_reader_v1(stream, max_header_size=max_header_size)
 
     def public_reader_v2(stream: object, max_header_size: int) -> object:
-        return original_reader(stream, (2, 0), max_header_size=max_header_size)
+        return original_reader_v2(stream, max_header_size=max_header_size)
 
     def public_payload_reader(*args: object, **kwargs: object) -> object:
+        if original_private_reader is None:
+            return original_payload_reader(*args, **kwargs)
         monkeypatch.setattr(
             dense_semantics.npy_format,
             "_read_array_header",
-            original_reader,
+            original_private_reader,
         )
         try:
             return original_payload_reader(*args, **kwargs)
         finally:
-            monkeypatch.setattr(
-                dense_semantics.npy_format,
-                "_read_array_header",
-                forbidden_private_reader,
-            )
+            if original_private_reader is not None:
+                monkeypatch.setattr(
+                    dense_semantics.npy_format,
+                    "_read_array_header",
+                    forbidden_private_reader,
+                )
 
-    monkeypatch.setattr(
-        dense_semantics.npy_format,
-        "_read_array_header",
-        forbidden_private_reader,
-    )
+    if original_private_reader is not None:
+        monkeypatch.setattr(
+            dense_semantics.npy_format,
+            "_read_array_header",
+            forbidden_private_reader,
+        )
     monkeypatch.setattr(
         dense_semantics.npy_format,
         "read_array_header_1_0",

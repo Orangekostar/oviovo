@@ -1602,7 +1602,7 @@ def test_build_worker_constructs_naradio_and_text_embeddings_without_gradients(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    import open_clip
+    open_clip = pytest.importorskip("open_clip")
     import radseg_dense_worker as worker_module
 
     language_root, language_hash = _make_language_model_root(tmp_path)
