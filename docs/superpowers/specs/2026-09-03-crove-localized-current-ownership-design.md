@@ -1,7 +1,7 @@
 # CROVE P6 Localized Current Ownership Design
 
-Date: 2026-09-03  
-Base: `dd3247f2d9e81e31a7508b8b692480dbb8855246`  
+Date: 2026-09-03
+Base: `dd3247f2d9e81e31a7508b8b692480dbb8855246`
 Branch: `research/crove-localized-current-ownership`
 
 ## Problem
@@ -288,4 +288,3 @@ hashes, and identity before one Office run.
   aggregate Dyn counts alone.
 - Estimated or fabricated official counterfactual metrics: unavailable values
   remain explicitly unavailable until the official evaluator runs.
-

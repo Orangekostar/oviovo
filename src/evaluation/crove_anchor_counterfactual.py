@@ -399,4 +399,3 @@ __all__ = [
     "build_counterfactual_metric_rows",
     "derive_counterfactual_variants",
 ]
-

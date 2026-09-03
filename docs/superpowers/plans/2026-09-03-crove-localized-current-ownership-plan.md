@@ -349,4 +349,3 @@ composition/bridge/evaluation scripts, canonical JSON and SHA256 bindings.
 5. Commit the ledger and handoff.
 6. Verify clean status and recent commits, push the branch, and require exact
    local/remote SHA equality before `UPLOAD_STATUS=VERIFIED`.
-
