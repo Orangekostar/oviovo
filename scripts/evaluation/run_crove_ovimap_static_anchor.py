@@ -25,12 +25,20 @@ if str(REPO_ROOT) not in sys.path:
 from src.evaluation.exporters.oviovo import read_map_snapshot, write_map_snapshot
 from src.evaluation.crove_anchor_counterfactual import CounterfactualVariant
 from src.oviv2.anchor_visibility import (
+    LOCALIZED_POLICY_ID,
+    AnchorCurrentOwnership,
     AnchorVisibilityConfig,
     AnchorVisibilityEvidenceKind,
     AnchorVisibilityState,
+    AnchorVoxelVisibilityEvidenceKind,
+    advance_anchor_current_ownership,
     advance_anchor_visibility,
     anchor_visibility_config_from_json,
+    classify_anchor_voxel_visibility,
     classify_anchor_visibility,
+    initialize_anchor_current_ownership,
+    localized_anchor_visibility_config_from_json,
+    pack_anchor_current_mask,
     sample_anchor_voxels,
 )
 from src.oviv2.ovimap_static_anchor import (
@@ -58,6 +66,7 @@ _READOUT_ROLES = (
     "counterfactual_diagnostic",
     "evaluation_candidate",
     "formal_baseline",
+    "localized_visibility_candidate",
     "visualization_shadow",
 )
 _ALLOWED_READOUT_CONTRACTS = frozenset(
@@ -68,6 +77,7 @@ _ALLOWED_READOUT_CONTRACTS = frozenset(
         ("anchor_centroid_translation", "causal_visibility_candidate"),
         ("temporal_compact", "causal_visibility_candidate"),
         ("temporal_compact", "counterfactual_diagnostic"),
+        ("temporal_compact", "localized_visibility_candidate"),
     }
 )
 
@@ -162,6 +172,7 @@ def _readout_contract(
     visibility_role = role in {
         "causal_visibility_candidate",
         "counterfactual_diagnostic",
+        "localized_visibility_candidate",
     }
     if visibility_role is not visibility_enabled:
         raise ValueError(
@@ -174,7 +185,14 @@ def _readout_contract(
     ):
         raise ValueError("moved geometry mode and readout role are incompatible")
     result = {"moved_geometry_mode": mode, "readout_role": role}
-    if role == "counterfactual_diagnostic":
+    if role == "localized_visibility_candidate":
+        result.update(
+            {
+                "unbound_anchor_mode": "localized_current_ownership",
+                "state_granularity": "per_voxel",
+            }
+        )
+    elif role == "counterfactual_diagnostic":
         result.update(
             {
                 "unbound_anchor_mode": "causal_visibility_filtered",
@@ -374,6 +392,212 @@ class _VisibilityTimeline:
     suppressed_by_frame: dict[int, frozenset[str]]
     events_by_frame: dict[int, tuple[dict[str, object], ...]]
     diagnostics: dict[str, object]
+
+
+@dataclass(frozen=True)
+class _LocalizedVisibilityTimeline:
+    ownership_by_checkpoint: dict[int, tuple[AnchorCurrentOwnership, ...]]
+    trajectory_stats_by_frame: dict[int, dict[str, dict[str, object]]]
+    events_by_frame: dict[int, tuple[dict[str, object], ...]]
+    diagnostics: dict[str, object]
+
+
+def _ownership_point_indices(
+    entity: Any, ownership: AnchorCurrentOwnership
+) -> np.ndarray:
+    index_by_key = {
+        tuple(int(value) for value in key): index
+        for index, key in enumerate(ownership.voxel_keys)
+    }
+    point_keys = np.floor(
+        np.asarray(entity.points_xyz, dtype=np.float64) / ownership.voxel_size_m
+    ).astype(np.int64)
+    try:
+        return np.asarray(
+            [
+                index_by_key[tuple(int(value) for value in key)]
+                for key in point_keys
+            ],
+            dtype=np.int32,
+        )
+    except KeyError as error:
+        raise ValueError("localized ownership does not cover anchor points") from error
+
+
+def _localized_trajectory_stats(
+    entity: Any,
+    ownership: AnchorCurrentOwnership,
+    point_indices: np.ndarray,
+) -> dict[str, object]:
+    point_mask = ownership.current_mask[point_indices]
+    active_point_count = int(np.count_nonzero(point_mask))
+    points = np.asarray(entity.points_xyz, dtype=np.float64)
+    centroid_points = points[point_mask] if active_point_count else points
+    return {
+        "centroid_xyz": centroid_points.mean(axis=0).tolist(),
+        "readout_valid": active_point_count > 0,
+        "overlay_state": ownership.whole_anchor_status,
+        "active_voxel_count": ownership.current_voxel_count,
+        "suppressed_voxel_count": ownership.suppressed_voxel_count,
+        "active_point_count": active_point_count,
+        "suppressed_point_count": len(point_indices) - active_point_count,
+    }
+
+
+def _localized_visibility_timeline(
+    *,
+    anchor_entities: Sequence[Any],
+    batches: Sequence[TemporalExportBatch],
+    cutoff_frame: int,
+    checkpoint_frames: Sequence[int],
+    config: AnchorVisibilityConfig,
+    dataset: Any,
+    policy_record: Mapping[str, object],
+    rgbd_export_record: Mapping[str, object],
+    rgbd_combined_output_sha256: str,
+    rgbd_file_hash_count: int,
+) -> _LocalizedVisibilityTimeline:
+    if len(dataset) != len(batches):
+        raise ValueError("visibility dataset frame count does not match source run")
+    for index, batch in enumerate(batches):
+        if dataset.timestamp_ns(index) != batch.timestamp_ns:
+            raise ValueError("visibility dataset timestamps do not match source run")
+    checkpoints = tuple(checkpoint_frames)
+    if (
+        checkpoints != tuple(sorted(set(checkpoints)))
+        or any(frame <= cutoff_frame or frame >= len(batches) for frame in checkpoints)
+    ):
+        raise ValueError("localized ownership checkpoint frames are invalid")
+    ordered_entities = tuple(sorted(anchor_entities, key=lambda item: item.entity_id))
+    initial_timestamp = batches[cutoff_frame].timestamp_ns / 1_000_000_000
+    states = {
+        entity.entity_id: initialize_anchor_current_ownership(
+            entity.entity_id,
+            entity.points_xyz,
+            config,
+            frame_id=cutoff_frame,
+            timestamp=initial_timestamp,
+        )
+        for entity in ordered_entities
+    }
+    point_indices = {
+        entity.entity_id: _ownership_point_indices(entity, states[entity.entity_id])
+        for entity in ordered_entities
+    }
+    trajectory_stats_by_frame: dict[int, dict[str, dict[str, object]]] = {}
+    ownership_by_checkpoint: dict[int, tuple[AnchorCurrentOwnership, ...]] = {}
+    events_by_frame: dict[int, tuple[dict[str, object], ...]] = {}
+    transition_records: list[dict[str, object]] = []
+    evidence_counts = {
+        kind.name.lower(): 0 for kind in AnchorVoxelVisibilityEvidenceKind
+    }
+    for batch in batches:
+        frame_events: list[dict[str, object]] = []
+        if batch.frame_index > cutoff_frame:
+            frame = dataset[batch.frame_index]
+            if (
+                frame.frame_id != batch.frame_index
+                or frame.source_frame_id != batch.frame_index
+                or frame.timestamp != batch.timestamp_ns / 1_000_000_000
+            ):
+                raise ValueError("visibility frame identity does not match source run")
+            for entity in ordered_entities:
+                before = states[entity.entity_id]
+                evidence = classify_anchor_voxel_visibility(before, frame, config)
+                for kind in AnchorVoxelVisibilityEvidenceKind:
+                    evidence_counts[kind.name.lower()] += int(
+                        np.count_nonzero(evidence.status_codes == kind.value)
+                    )
+                after = advance_anchor_current_ownership(before, evidence, config)
+                states[entity.entity_id] = after
+                before_valid = before.current_voxel_count > 0
+                after_valid = after.current_voxel_count > 0
+                if before_valid is not after_valid:
+                    event = {
+                        "frame_index": batch.frame_index,
+                        "timestamp_ns": batch.timestamp_ns,
+                        "entity_id": f"anchor:{entity.entity_id}",
+                        "before": "active" if before_valid else "dormant",
+                        "after": "active" if after_valid else "dormant",
+                        "evidence": (
+                            "present" if after_valid else "visible_absent"
+                        ),
+                        "geometry_epoch": 0,
+                        "readout_valid": after_valid,
+                    }
+                    frame_events.append(event)
+                    transition_records.append(
+                        {
+                            key: value
+                            for key, value in event.items()
+                            if key != "geometry_epoch"
+                        }
+                    )
+        trajectory_stats_by_frame[batch.frame_index] = {
+            entity.entity_id: _localized_trajectory_stats(
+                entity,
+                states[entity.entity_id],
+                point_indices[entity.entity_id],
+            )
+            for entity in ordered_entities
+        }
+        if frame_events:
+            events_by_frame[batch.frame_index] = tuple(
+                sorted(frame_events, key=lambda item: str(item["entity_id"]))
+            )
+        if batch.frame_index in checkpoints:
+            ownership_by_checkpoint[batch.frame_index] = tuple(
+                states[entity.entity_id] for entity in ordered_entities
+            )
+    if set(ownership_by_checkpoint) != set(checkpoints):
+        raise ValueError("localized ownership checkpoints are incomplete")
+    final_states = tuple(states[entity.entity_id] for entity in ordered_entities)
+    diagnostics = {
+        "schema_version": 1,
+        "manifest_id": "crove_ovimap_localized_ownership_diagnostics_v1",
+        "causality": {
+            "anchor_cutoff_frame": cutoff_frame,
+            "first_visibility_frame": cutoff_frame + 1,
+            "last_visibility_frame": len(batches) - 1,
+            "current_and_past_rgbd_only": True,
+            "checkpoint_only_state_copies": True,
+        },
+        "policy": dict(policy_record),
+        "policy_id": LOCALIZED_POLICY_ID,
+        "state_granularity": "per_voxel",
+        "voxel_size_m": config.voxel_size_m,
+        "rgbd_export_manifest": dict(rgbd_export_record),
+        "rgbd_combined_output_sha256": rgbd_combined_output_sha256,
+        "rgbd_file_hash_count": rgbd_file_hash_count,
+        "anchor_count": len(final_states),
+        "full_voxel_count": sum(len(item.voxel_keys) for item in final_states),
+        "evidence_sample_voxel_count": sum(
+            len(item.evidence_sample_indices) for item in final_states
+        ),
+        "state_byte_count": sum(item.state_byte_count for item in final_states),
+        "l2_status": "NOT_RUN_NOT_NEEDED",
+        "evidence_counts": evidence_counts,
+        "transition_count": len(transition_records),
+        "transitions": transition_records,
+        "entities": [
+            {
+                "entity_id": item.entity_id,
+                "overlay_state": item.whole_anchor_status,
+                "voxel_count": len(item.voxel_keys),
+                "evidence_sample_voxel_count": len(item.evidence_sample_indices),
+                "active_voxel_count": item.current_voxel_count,
+                "suppressed_voxel_count": item.suppressed_voxel_count,
+                "state_byte_count": item.state_byte_count,
+            }
+            for item in final_states
+        ],
+    }
+    return _LocalizedVisibilityTimeline(
+        ownership_by_checkpoint=ownership_by_checkpoint,
+        trajectory_stats_by_frame=trajectory_stats_by_frame,
+        events_by_frame=events_by_frame,
+        diagnostics=diagnostics,
+    )
 
 
 def _official_visibility_schedule(schedule_manifest: Path) -> Path:
@@ -829,6 +1053,75 @@ def _atomic_jsonl(path: Path, values: Sequence[Mapping[str, object]]) -> None:
         temporary.unlink(missing_ok=True)
 
 
+def _atomic_binary(path: Path, data: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{path.name}.", dir=path.parent
+    )
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(data)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _publish_localized_mask_sidecar(
+    *,
+    ownerships: Sequence[AnchorCurrentOwnership],
+    anchor_entities: Mapping[str, Any],
+    staging: Path,
+    frame_index: int,
+    timestamp_ns: int,
+) -> dict[str, object]:
+    chunks: list[bytes] = []
+    rows: list[dict[str, object]] = []
+    offset = 0
+    for ownership in ownerships:
+        entity = anchor_entities.get(ownership.entity_id)
+        if entity is None:
+            raise ValueError("localized ownership sidecar anchor is missing")
+        point_indices = _ownership_point_indices(entity, ownership)
+        active_points = int(
+            np.count_nonzero(ownership.current_mask[point_indices])
+        )
+        chunk = pack_anchor_current_mask(ownership)
+        chunks.append(chunk)
+        rows.append(
+            {
+                "anchor_entity_id": ownership.entity_id,
+                "voxel_count": len(ownership.voxel_keys),
+                "active_voxel_count": ownership.current_voxel_count,
+                "suppressed_voxel_count": ownership.suppressed_voxel_count,
+                "active_point_count": active_points,
+                "suppressed_point_count": len(point_indices) - active_points,
+                "overlay_state": ownership.whole_anchor_status,
+                "mask_byte_offset": offset,
+                "mask_byte_count": len(chunk),
+                "mask_sha256": _sha256(chunk),
+            }
+        )
+        offset += len(chunk)
+    path = (
+        staging
+        / "ownership_masks"
+        / f"{frame_index:08d}-{timestamp_ns}.bitpack"
+    )
+    _atomic_binary(path, b"".join(chunks))
+    return {
+        "frame_index": frame_index,
+        "timestamp_ns": timestamp_ns,
+        "policy_id": LOCALIZED_POLICY_ID,
+        "state_granularity": "per_voxel",
+        "bit_order": "little",
+        "mask_sidecar": _relative_record(path, root=staging),
+        "anchors": rows,
+    }
+
+
 def _revalidate(witnesses: Sequence[tuple[Path, Mapping[str, object]]]) -> None:
     for path, record in witnesses:
         observed = _input_record(path)
@@ -1003,8 +1296,24 @@ def compose_run(
         for entity in sorted(anchor.entities, key=lambda item: item.entity_id)
         if entity.entity_id not in bound_anchor_ids
     )
+    checkpoint_values = source.get("checkpoints")
+    captured = source.get("captured_frame_indices")
+    if not isinstance(checkpoint_values, list) or not checkpoint_values:
+        raise ValueError("source run contains no checkpoints")
+    frames = [
+        item.get("frame_index") if isinstance(item, Mapping) else None
+        for item in checkpoint_values
+    ]
+    if (
+        any(type(frame) is not int for frame in frames)
+        or frames != sorted(set(frames))
+        or captured != frames
+        or frames[0] <= cutoff
+    ):
+        raise ValueError("source checkpoint order or cutoff is invalid")
 
     visibility_timeline: _VisibilityTimeline | None = None
+    localized_timeline: _LocalizedVisibilityTimeline | None = None
     visibility_policy_record: dict[str, object] | None = None
     rgbd_export_record: dict[str, object] | None = None
     visibility_cache_record: dict[str, object] | None = None
@@ -1012,7 +1321,11 @@ def compose_run(
         policy_path = Path(os.path.abspath(os.fspath(visibility_policy)))
         policy_bytes = _regular_bytes(policy_path, label="visibility policy")
         policy_payload = _json_object(policy_bytes, label="visibility policy")
-        visibility_config = anchor_visibility_config_from_json(policy_payload)
+        visibility_config = (
+            localized_anchor_visibility_config_from_json(policy_payload)
+            if readout_role == "localized_visibility_candidate"
+            else anchor_visibility_config_from_json(policy_payload)
+        )
         visibility_policy_record = _input_record(policy_path, policy_bytes)
         rgbd_export_path, rgbd_export_record = _bound_path(
             root=anchor_root,
@@ -1077,36 +1390,38 @@ def compose_run(
                 rgbd_export_path,
                 schedule_path,
             )
-            visibility_timeline = _visibility_timeline(
-                anchor_entities=unbound_anchors,
-                batches=batches,
-                cutoff_frame=cutoff,
-                config=visibility_config,
-                dataset=dataset,
-                policy_record=visibility_policy_record,
-                rgbd_export_record=rgbd_export_record,
-                rgbd_combined_output_sha256=combined_output,
-                rgbd_file_hash_count=file_hash_count,
-                counterfactual_variant=counterfactual_variant,
-            )
-
-    checkpoint_values = source.get("checkpoints")
-    captured = source.get("captured_frame_indices")
-    if not isinstance(checkpoint_values, list) or not checkpoint_values:
-        raise ValueError("source run contains no checkpoints")
-    frames = [item.get("frame_index") if isinstance(item, Mapping) else None for item in checkpoint_values]
-    if (
-        any(type(frame) is not int for frame in frames)
-        or frames != sorted(set(frames))
-        or captured != frames
-        or frames[0] <= cutoff
-    ):
-        raise ValueError("source checkpoint order or cutoff is invalid")
+            if readout_role == "localized_visibility_candidate":
+                localized_timeline = _localized_visibility_timeline(
+                    anchor_entities=unbound_anchors,
+                    batches=batches,
+                    cutoff_frame=cutoff,
+                    checkpoint_frames=frames,
+                    config=visibility_config,
+                    dataset=dataset,
+                    policy_record=visibility_policy_record,
+                    rgbd_export_record=rgbd_export_record,
+                    rgbd_combined_output_sha256=combined_output,
+                    rgbd_file_hash_count=file_hash_count,
+                )
+            else:
+                visibility_timeline = _visibility_timeline(
+                    anchor_entities=unbound_anchors,
+                    batches=batches,
+                    cutoff_frame=cutoff,
+                    config=visibility_config,
+                    dataset=dataset,
+                    policy_record=visibility_policy_record,
+                    rgbd_export_record=rgbd_export_record,
+                    rgbd_combined_output_sha256=combined_output,
+                    rgbd_file_hash_count=file_hash_count,
+                    counterfactual_variant=counterfactual_variant,
+                )
 
     output_root.parent.mkdir(parents=True, exist_ok=True)
     staging = Path(tempfile.mkdtemp(prefix=f".{output_root.name}.", dir=output_root.parent))
     checkpoint_results: list[dict[str, Any]] = []
     source_checkpoint_records: list[dict[str, Any]] = []
+    ownership_mask_sidecars: list[dict[str, object]] = []
     try:
         trajectory_rows: list[dict[str, object]] = []
         lifecycle_rows: list[dict[str, object]] = []
@@ -1121,19 +1436,48 @@ def compose_run(
                 else frozenset()
             )
             for entity in unbound_anchors:
+                localized_stats = (
+                    None
+                    if localized_timeline is None
+                    else localized_timeline.trajectory_stats_by_frame[
+                        batch.frame_index
+                    ][entity.entity_id]
+                )
                 rows.append(
                     {
                         "frame_index": batch.frame_index,
                         "timestamp_ns": batch.timestamp_ns,
                         "entity_id": f"anchor:{entity.entity_id}",
-                        "centroid_xyz": np.asarray(
-                            entity.points_xyz, dtype=np.float64
-                        ).mean(axis=0).tolist(),
+                        "centroid_xyz": (
+                            np.asarray(entity.points_xyz, dtype=np.float64)
+                            .mean(axis=0)
+                            .tolist()
+                            if localized_stats is None
+                            else localized_stats["centroid_xyz"]
+                        ),
                         "observation_count": batch.frame_index + 1,
                         "dynamic_state": "static",
                         "motion_confidence": 0.0,
                         "geometry_epoch": 0,
-                        "readout_valid": entity.entity_id not in suppressed,
+                        "readout_valid": (
+                            entity.entity_id not in suppressed
+                            if localized_stats is None
+                            else localized_stats["readout_valid"]
+                        ),
+                        **(
+                            {}
+                            if localized_stats is None
+                            else {
+                                key: localized_stats[key]
+                                for key in (
+                                    "overlay_state",
+                                    "active_voxel_count",
+                                    "suppressed_voxel_count",
+                                    "active_point_count",
+                                    "suppressed_point_count",
+                                )
+                            }
+                        ),
                     }
                 )
             rows.sort(key=lambda item: str(item["entity_id"]))
@@ -1141,6 +1485,11 @@ def compose_run(
             if visibility_timeline is not None:
                 events.extend(
                     visibility_timeline.events_by_frame.get(batch.frame_index, ())
+                )
+                events.sort(key=lambda item: str(item["entity_id"]))
+            if localized_timeline is not None:
+                events.extend(
+                    localized_timeline.events_by_frame.get(batch.frame_index, ())
                 )
                 events.sort(key=lambda item: str(item["entity_id"]))
             trajectory_rows.extend(rows)
@@ -1163,9 +1512,18 @@ def compose_run(
         lifecycle_record = _relative_record(lifecycle_path, root=staging)
         coverage_record = _relative_record(coverage_path, root=staging)
         runtime_diagnostics_record: dict[str, object] | None = None
-        if visibility_timeline is not None:
+        runtime_diagnostics = (
+            visibility_timeline.diagnostics
+            if visibility_timeline is not None
+            else (
+                localized_timeline.diagnostics
+                if localized_timeline is not None
+                else None
+            )
+        )
+        if runtime_diagnostics is not None:
             runtime_diagnostics_path = staging / "runtime_diagnostics.json"
-            _atomic_json(runtime_diagnostics_path, visibility_timeline.diagnostics)
+            _atomic_json(runtime_diagnostics_path, runtime_diagnostics)
             runtime_diagnostics_record = _relative_record(
                 runtime_diagnostics_path,
                 root=staging,
@@ -1222,6 +1580,11 @@ def compose_run(
                     if visibility_timeline is not None
                     else frozenset()
                 ),
+                localized_unbound_ownership=(
+                    localized_timeline.ownership_by_checkpoint[frame]
+                    if localized_timeline is not None
+                    else None
+                ),
             )
             checkpoint_root = staging / "checkpoints" / f"{frame:08d}-{timestamp_ns}"
             written = write_map_snapshot(composed, checkpoint_root / "current")
@@ -1230,6 +1593,18 @@ def compose_run(
                 diagnostic_payload["visibility_suppressed_anchor_ids"] = sorted(
                     visibility_timeline.suppressed_by_frame.get(frame, frozenset())
                 )
+            if localized_timeline is not None:
+                sidecar = _publish_localized_mask_sidecar(
+                    ownerships=localized_timeline.ownership_by_checkpoint[frame],
+                    anchor_entities={
+                        entity.entity_id: entity for entity in unbound_anchors
+                    },
+                    staging=staging,
+                    frame_index=frame,
+                    timestamp_ns=timestamp_ns,
+                )
+                ownership_mask_sidecars.append(sidecar)
+                diagnostic_payload["localized_ownership"] = sidecar
             diagnostics_path = checkpoint_root / "diagnostics.json"
             _atomic_json(diagnostics_path, diagnostic_payload)
             status_path = checkpoint_root / "checkpoint_status.json"
@@ -1336,6 +1711,26 @@ def compose_run(
             "processed_frame_count": len(batches),
             "official_state_count": len(checkpoint_results),
             "readout_contract": readout_contract,
+            **(
+                {
+                    "localized_ownership": {
+                        key: localized_timeline.diagnostics[key]
+                        for key in (
+                            "policy_id",
+                            "state_granularity",
+                            "voxel_size_m",
+                            "anchor_count",
+                            "full_voxel_count",
+                            "evidence_sample_voxel_count",
+                            "state_byte_count",
+                            "l2_status",
+                        )
+                    },
+                    "ownership_mask_sidecars": ownership_mask_sidecars,
+                }
+                if localized_timeline is not None
+                else {}
+            ),
             **(
                 {"counterfactual_variant": counterfactual_variant.to_json_record()}
                 if counterfactual_variant is not None

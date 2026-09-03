@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "policy_id": "crove_ovimap_localized_visibility_l1_v1",
+  "state_granularity": "per_voxel",
+  "voxel_sampling": "sorted_even_spacing",
+  "voxel_size_m": 0.05,
+  "depth_tolerance_m": 0.1,
+  "depth_max_m": 10.0,
+  "maximum_voxels_per_anchor": 1000,
+  "minimum_tested_voxels": 10,
+  "minimum_absent_fraction": 0.8,
+  "minimum_present_fraction": 0.8,
+  "minimum_absent_observations": 6,
+  "minimum_distinct_viewpoints": 3,
+  "minimum_viewpoint_baseline_m": 0.25,
+  "minimum_present_streak": 2
+}

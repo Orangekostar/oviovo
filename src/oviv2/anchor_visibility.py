@@ -220,6 +220,32 @@ def anchor_visibility_config_from_json(
     )
 
 
+def localized_anchor_visibility_config_from_json(
+    payload: Mapping[str, object],
+) -> AnchorVisibilityConfig:
+    if not isinstance(payload, Mapping):
+        raise TypeError("localized visibility policy must be a mapping")
+    config_fields = {item.name for item in fields(AnchorVisibilityConfig)}
+    expected = config_fields | {
+        "schema_version",
+        "policy_id",
+        "state_granularity",
+        "voxel_sampling",
+    }
+    if set(payload) != expected:
+        raise ValueError("localized visibility policy fields are invalid")
+    if (
+        payload.get("schema_version") != 1
+        or payload.get("policy_id") != LOCALIZED_POLICY_ID
+        or payload.get("state_granularity") != "per_voxel"
+        or payload.get("voxel_sampling") != VOXEL_SAMPLING_MODE
+    ):
+        raise ValueError("localized visibility policy identity is invalid")
+    return AnchorVisibilityConfig(
+        **{name: payload[name] for name in config_fields}  # type: ignore[arg-type]
+    )
+
+
 def sample_anchor_voxels(
     points_xyz: object,
     config: AnchorVisibilityConfig,
@@ -848,6 +874,7 @@ __all__ = [
     "classify_anchor_voxel_visibility",
     "classify_anchor_visibility",
     "initialize_anchor_current_ownership",
+    "localized_anchor_visibility_config_from_json",
     "pack_anchor_current_mask",
     "sample_anchor_voxels",
 ]

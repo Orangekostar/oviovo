@@ -18,6 +18,7 @@ from src.oviv2.anchor_visibility import (
     classify_anchor_voxel_visibility,
     classify_anchor_visibility,
     initialize_anchor_current_ownership,
+    localized_anchor_visibility_config_from_json,
     pack_anchor_current_mask,
     sample_anchor_voxels,
 )
@@ -500,3 +501,32 @@ def test_localized_status_is_dormant_only_when_every_voxel_is_suppressed() -> No
     assert state.whole_anchor_status == "dormant"
     assert state.current_voxel_count == 0
     assert state.suppressed_voxel_count == 3
+
+
+def test_localized_policy_parser_requires_explicit_per_voxel_identity() -> None:
+    payload = {
+        "schema_version": 1,
+        "policy_id": LOCALIZED_POLICY_ID,
+        "state_granularity": "per_voxel",
+        "voxel_sampling": "sorted_even_spacing",
+        "voxel_size_m": 0.05,
+        "depth_tolerance_m": 0.1,
+        "depth_max_m": 10.0,
+        "maximum_voxels_per_anchor": 1_000,
+        "minimum_tested_voxels": 10,
+        "minimum_absent_fraction": 0.8,
+        "minimum_present_fraction": 0.8,
+        "minimum_absent_observations": 6,
+        "minimum_distinct_viewpoints": 3,
+        "minimum_viewpoint_baseline_m": 0.25,
+        "minimum_present_streak": 2,
+    }
+
+    assert localized_anchor_visibility_config_from_json(payload) == _config(
+        voxel_size_m=0.05,
+        maximum_voxels_per_anchor=1_000,
+        minimum_tested_voxels=10,
+    )
+    payload["state_granularity"] = "whole_anchor"
+    with pytest.raises(ValueError, match="localized visibility policy identity"):
+        localized_anchor_visibility_config_from_json(payload)

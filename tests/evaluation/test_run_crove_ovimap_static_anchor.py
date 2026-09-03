@@ -230,6 +230,33 @@ class _VisibilityDataset:
         )
 
 
+class _LocalizedVisibilityDataset:
+    def __init__(self, *, alter_future: bool = False) -> None:
+        self.alter_future = alter_future
+
+    def __len__(self) -> int:
+        return 4
+
+    def timestamp_ns(self, index: int) -> int:
+        return _timestamp_ns(index)
+
+    def __getitem__(self, index: int) -> Frame:
+        depth = np.full((5, 5), 2.0, dtype=np.float32)
+        depth[2, 3] = 1.475
+        if self.alter_future and index == 3:
+            depth[2, 2] = 1.475
+            depth[2, 3] = 2.0
+        return Frame(
+            frame_id=index,
+            source_frame_id=index,
+            rgb=np.zeros((5, 5, 3), dtype=np.uint8),
+            depth=depth,
+            pose=np.eye(4, dtype=np.float64),
+            intrinsics=CameraIntrinsics(30.0, 30.0, 2.0, 2.0, 5, 5),
+            timestamp=_timestamp_ns(index) / 1_000_000_000,
+        )
+
+
 def _write_visibility_policy(tmp_path: Path) -> Path:
     path = tmp_path / "visibility_policy.json"
     _write_json(
@@ -247,6 +274,31 @@ def _write_visibility_policy(tmp_path: Path) -> Path:
             "minimum_present_fraction": 0.8,
             "minimum_absent_observations": 2,
             "minimum_distinct_viewpoints": 2,
+            "minimum_viewpoint_baseline_m": 0.25,
+            "minimum_present_streak": 2,
+        },
+    )
+    return path
+
+
+def _write_localized_visibility_policy(tmp_path: Path) -> Path:
+    path = tmp_path / "localized_visibility_policy.json"
+    _write_json(
+        path,
+        {
+            "schema_version": 1,
+            "policy_id": "crove_ovimap_localized_visibility_l1_v1",
+            "state_granularity": "per_voxel",
+            "voxel_sampling": "sorted_even_spacing",
+            "voxel_size_m": 0.05,
+            "depth_tolerance_m": 0.1,
+            "depth_max_m": 10.0,
+            "maximum_voxels_per_anchor": 1000,
+            "minimum_tested_voxels": 1,
+            "minimum_absent_fraction": 0.8,
+            "minimum_present_fraction": 0.8,
+            "minimum_absent_observations": 1,
+            "minimum_distinct_viewpoints": 1,
             "minimum_viewpoint_baseline_m": 0.25,
             "minimum_present_streak": 2,
         },
@@ -506,6 +558,151 @@ def test_composed_run_publishes_causal_unbound_visibility_candidate(
     assert temporal["sources"]["runtime_diagnostics"]["path"] == (
         "sidecars/runtime_diagnostics.json"
     )
+
+
+def test_localized_visibility_candidate_publishes_partial_masks_and_points(
+    tmp_path: Path,
+) -> None:
+    result = compose_run(
+        source_run_manifest=_write_source_run(tmp_path),
+        anchor_manifest=_write_anchor_package(
+            tmp_path,
+            anchor_x=0.025,
+            anchor_z=1.5,
+            visibility_export=True,
+        ),
+        output_root=tmp_path / "localized-candidate",
+        readout_role="localized_visibility_candidate",
+        visibility_policy=_write_localized_visibility_policy(tmp_path),
+        dataset_factory=lambda *_: _LocalizedVisibilityDataset(),
+    )
+
+    manifest = json.loads(result.read_text(encoding="utf-8"))
+    assert manifest["readout_contract"] == {
+        "moved_geometry_mode": "temporal_compact",
+        "readout_role": "localized_visibility_candidate",
+        "state_granularity": "per_voxel",
+        "unbound_anchor_mode": "localized_current_ownership",
+    }
+    ownership = manifest["localized_ownership"]
+    assert ownership["policy_id"] == "crove_ovimap_localized_visibility_l1_v1"
+    assert ownership["voxel_size_m"] == 0.05
+    assert ownership["anchor_count"] == 1
+    assert ownership["full_voxel_count"] == 2
+    assert ownership["evidence_sample_voxel_count"] == 2
+    assert ownership["state_byte_count"] > 0
+    assert ownership["state_byte_count"] < 8 * 1024 * 1024
+    assert ownership["l2_status"] == "NOT_RUN_NOT_NEEDED"
+    assert len(manifest["ownership_mask_sidecars"]) == 2
+
+    for checkpoint, sidecar in zip(
+        manifest["checkpoints"], manifest["ownership_mask_sidecars"], strict=True
+    ):
+        assert checkpoint["frame_index"] == sidecar["frame_index"]
+        mask_path = result.parent / sidecar["mask_sidecar"]["path"]
+        assert _record(mask_path, root=result.parent) == sidecar["mask_sidecar"]
+        assert mask_path.read_bytes() == bytes((0b00000010,))
+        localized = checkpoint["diagnostics"]["localized_ownership"]
+        assert localized["mask_sidecar"] == sidecar["mask_sidecar"]
+        assert localized["anchors"] == [
+            {
+                "active_point_count": 1,
+                "active_voxel_count": 1,
+                "anchor_entity_id": "ovimap:1",
+                "mask_byte_count": 1,
+                "mask_byte_offset": 0,
+                "mask_sha256": hashlib.sha256(bytes((2,))).hexdigest(),
+                "overlay_state": "partially_suppressed",
+                "suppressed_point_count": 1,
+                "suppressed_voxel_count": 1,
+                "voxel_count": 2,
+            }
+        ]
+        snapshot = read_map_snapshot(
+            result.parent / checkpoint["snapshot"]["path"],
+            result.parent / checkpoint["entities"]["path"],
+        )
+        assert len(snapshot.entities) == 1
+        np.testing.assert_allclose(
+            snapshot.entities[0].points_xyz,
+            np.asarray(((0.075, 0.0, 1.5),), dtype=np.float32),
+            rtol=0.0,
+            atol=1e-6,
+        )
+        assert snapshot.entities[0].metadata["overlay_state"] == (
+            "partially_suppressed"
+        )
+    trajectories = [
+        json.loads(line)
+        for line in (result.parent / "trajectories.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    frame_two = next(
+        row
+        for row in trajectories
+        if row["frame_index"] == 2 and row["entity_id"] == "anchor:ovimap:1"
+    )
+    assert frame_two["active_voxel_count"] == 1
+    assert frame_two["suppressed_voxel_count"] == 1
+    assert frame_two["active_point_count"] == 1
+    assert frame_two["suppressed_point_count"] == 1
+    assert frame_two["overlay_state"] == "partially_suppressed"
+    assert frame_two["readout_valid"] is True
+
+
+def test_localized_visibility_replay_is_deterministic_and_future_independent(
+    tmp_path: Path,
+) -> None:
+    source = _write_source_run(tmp_path)
+    anchor = _write_anchor_package(
+        tmp_path,
+        anchor_x=0.025,
+        anchor_z=1.5,
+        visibility_export=True,
+    )
+    policy = _write_localized_visibility_policy(tmp_path)
+
+    outputs = []
+    for name, alter_future in (
+        ("first", False),
+        ("repeat", False),
+        ("future-altered", True),
+    ):
+        outputs.append(
+            compose_run(
+                source_run_manifest=source,
+                anchor_manifest=anchor,
+                output_root=tmp_path / name,
+                readout_role="localized_visibility_candidate",
+                visibility_policy=policy,
+                dataset_factory=lambda *_, changed=alter_future: (
+                    _LocalizedVisibilityDataset(alter_future=changed)
+                ),
+            )
+        )
+    first = json.loads(outputs[0].read_text(encoding="utf-8"))
+    repeat = json.loads(outputs[1].read_text(encoding="utf-8"))
+    future = json.loads(outputs[2].read_text(encoding="utf-8"))
+    assert outputs[0].read_bytes() == outputs[1].read_bytes()
+    for name in (
+        "trajectories.jsonl",
+        "lifecycle_transitions.jsonl",
+        "runtime_diagnostics.json",
+    ):
+        assert (outputs[0].parent / name).read_bytes() == (
+            outputs[1].parent / name
+        ).read_bytes()
+    first_checkpoint = first["checkpoints"][0]
+    future_checkpoint = future["checkpoints"][0]
+    assert first_checkpoint["snapshot"] == future_checkpoint["snapshot"]
+    assert first_checkpoint["entities"] == future_checkpoint["entities"]
+    assert first["ownership_mask_sidecars"][0]["mask_sidecar"] == (
+        future["ownership_mask_sidecars"][0]["mask_sidecar"]
+    )
+    assert first["checkpoints"][-1]["snapshot"] != future["checkpoints"][-1][
+        "snapshot"
+    ]
 
 
 def test_counterfactual_diagnostic_filters_the_same_causal_visibility_timeline(
