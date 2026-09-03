@@ -1,0 +1,448 @@
+diff --git a/khronos_eval/include/khronos_eval/dynamic_object_evaluator.h b/khronos_eval/include/khronos_eval/dynamic_object_evaluator.h
+index d09f466..7740704 100644
+--- a/khronos_eval/include/khronos_eval/dynamic_object_evaluator.h
++++ b/khronos_eval/include/khronos_eval/dynamic_object_evaluator.h
+@@ -47,0 +48,2 @@ class DynamicObjectEvaluator {
++    // Association centroid distances [m], indexed by <timestamp, from>.
++    std::map<uint64_t, std::unordered_map<NodeId, float>> association_distances;
+@@ -64,0 +67,3 @@ class DynamicObjectEvaluator {
++  void writeExactAttribution(const std::string& name,
++                             const uint64_t query_time,
++                             const DetectionMetrics& detections);
+@@ -80,0 +86,2 @@ class DynamicObjectEvaluator {
++  std::ofstream attribution_file_;
++  size_t metric_row_ordinal_ = 0;
+diff --git a/khronos_eval/include/khronos_eval/exact_attribution.h b/khronos_eval/include/khronos_eval/exact_attribution.h
+new file mode 100644
+index 0000000..f3bc793
+--- /dev/null
++++ b/khronos_eval/include/khronos_eval/exact_attribution.h
+@@ -0,0 +1,142 @@
++#pragma once
++
++#include <algorithm>
++#include <cstdlib>
++#include <filesystem>
++#include <fstream>
++#include <iomanip>
++#include <optional>
++#include <sstream>
++#include <string>
++#include <tuple>
++#include <utility>
++#include <vector>
++
++#include <khronos/common/common_types.h>
++
++namespace khronos::exact_attribution {
++
++struct Event {
++  std::string metric_type;
++  std::string map_name;
++  size_t metric_row_ordinal;
++  uint64_t query_time_ns;
++  uint64_t trajectory_timestamp_ns;
++  std::optional<NodeId> pred_node_id;
++  std::optional<NodeId> gt_node_id;
++  std::optional<double> distance_m;
++  std::string status;
++};
++
++inline bool openFromEnvironment(const std::string& filename, std::ofstream& stream) {
++  const char* output_dir = std::getenv("KHRONOS_EXACT_ATTRIBUTION_DIR");
++  if (!output_dir || std::string(output_dir).empty()) {
++    return true;
++  }
++  std::error_code error;
++  std::filesystem::create_directories(output_dir, error);
++  if (error) {
++    return false;
++  }
++  stream.open(std::filesystem::path(output_dir) / filename, std::ios::out | std::ios::trunc);
++  return stream.is_open();
++}
++
++inline void writeQuoted(std::ostream& stream, const std::string& value) {
++  stream << '"';
++  for (const unsigned char character : value) {
++    switch (character) {
++      case '"':
++        stream << "\\\"";
++        break;
++      case '\\':
++        stream << "\\\\";
++        break;
++      case '\b':
++        stream << "\\b";
++        break;
++      case '\f':
++        stream << "\\f";
++        break;
++      case '\n':
++        stream << "\\n";
++        break;
++      case '\r':
++        stream << "\\r";
++        break;
++      case '\t':
++        stream << "\\t";
++        break;
++      default:
++        if (character < 0x20) {
++          stream << "\\u00" << std::hex << std::setw(2) << std::setfill('0')
++                 << static_cast<int>(character) << std::dec << std::setfill(' ');
++        } else {
++          stream << character;
++        }
++    }
++  }
++  stream << '"';
++}
++
++inline std::string nodeName(const NodeId id) {
++  std::stringstream stream;
++  stream << NodeSymbol(id);
++  return stream.str();
++}
++
++inline void sortEvents(std::vector<Event>& events) {
++  std::sort(events.begin(), events.end(), [](const Event& lhs, const Event& rhs) {
++    return std::tie(lhs.metric_type,
++                    lhs.status,
++                    lhs.trajectory_timestamp_ns,
++                    lhs.pred_node_id,
++                    lhs.gt_node_id) <
++           std::tie(rhs.metric_type,
++                    rhs.status,
++                    rhs.trajectory_timestamp_ns,
++                    rhs.pred_node_id,
++                    rhs.gt_node_id);
++  });
++}
++
++inline void writeEvent(std::ostream& stream, const Event& event) {
++  stream << "{\"schema_version\":1,\"metric_type\":";
++  writeQuoted(stream, event.metric_type);
++  stream << ",\"map_name\":";
++  writeQuoted(stream, event.map_name);
++  stream << ",\"metric_row_ordinal\":" << event.metric_row_ordinal
++         << ",\"query_time_ns\":" << event.query_time_ns
++         << ",\"trajectory_timestamp_ns\":" << event.trajectory_timestamp_ns
++         << ",\"pred_node_id\":";
++  if (event.pred_node_id) {
++    writeQuoted(stream, nodeName(*event.pred_node_id));
++  } else {
++    stream << "null";
++  }
++  stream << ",\"gt_node_id\":";
++  if (event.gt_node_id) {
++    writeQuoted(stream, nodeName(*event.gt_node_id));
++  } else {
++    stream << "null";
++  }
++  stream << ",\"distance_m\":";
++  if (event.distance_m) {
++    stream << std::setprecision(17) << *event.distance_m;
++  } else {
++    stream << "null";
++  }
++  stream << ",\"status\":";
++  writeQuoted(stream, event.status);
++  stream << "}\n";
++}
++
++inline void writeEvents(std::ostream& stream, std::vector<Event> events) {
++  sortEvents(events);
++  for (const auto& event : events) {
++    writeEvent(stream, event);
++  }
++  stream.flush();
++}
++
++}  // namespace khronos::exact_attribution
+diff --git a/khronos_eval/include/khronos_eval/object_evaluator.h b/khronos_eval/include/khronos_eval/object_evaluator.h
+index 958ec22..aa3aa6b 100644
+--- a/khronos_eval/include/khronos_eval/object_evaluator.h
++++ b/khronos_eval/include/khronos_eval/object_evaluator.h
+@@ -82,0 +83,2 @@ class ObjectEvaluator {
++    // Association distance [m] where the configured method yields one.
++    std::unordered_map<NodeId, float> association_distances;
+@@ -138,0 +141,4 @@ class ObjectEvaluator {
++  void writeExactAttribution(const std::string& name,
++                             const uint64_t query_time,
++                             const ChangeMetrics& changes,
++                             const DetectionMetrics& detections);
+@@ -176,0 +183,2 @@ class ObjectEvaluator {
++  std::ofstream attribution_file_;
++  size_t metric_row_ordinal_ = 0;
+diff --git a/khronos_eval/src/dynamic_object_evaluator.cpp b/khronos_eval/src/dynamic_object_evaluator.cpp
+index 1b87002..7f70f57 100644
+--- a/khronos_eval/src/dynamic_object_evaluator.cpp
++++ b/khronos_eval/src/dynamic_object_evaluator.cpp
+@@ -3,0 +4 @@
++#include <cmath>
+@@ -5,0 +7,2 @@
++#include "khronos_eval/exact_attribution.h"
++
+@@ -26,0 +30,5 @@ void DynamicObjectEvaluator::setOutputFile(const std::string& file_name) {
++  if (!exact_attribution::openFromEnvironment("dynamic_associations.jsonl",
++                                               attribution_file_)) {
++    LOG(ERROR) << "Could not open exact dynamic attribution sidecar.";
++    return;
++  }
+@@ -69,0 +78 @@ bool DynamicObjectEvaluator::evaluate(const std::string& name, const uint64_t qu
++  writeExactAttribution(name, query_time, detections);
+@@ -190,0 +200 @@ DynamicObjectEvaluator::RawMetrics DynamicObjectEvaluator::computeAssociationsCe
++      result.association_distances[timestamp][id] = std::sqrt(distance_squared);
+@@ -198,0 +209,69 @@ DynamicObjectEvaluator::RawMetrics DynamicObjectEvaluator::computeAssociationsCe
++void DynamicObjectEvaluator::writeExactAttribution(const std::string& name,
++                                                   const uint64_t query_time,
++                                                   const DetectionMetrics& detections) {
++  const size_t row_ordinal = metric_row_ordinal_++;
++  if (!attribution_file_.is_open()) {
++    return;
++  }
++
++  using exact_attribution::Event;
++  std::vector<Event> events;
++  int detected = 0;
++  int hallucinated = 0;
++  int missed = 0;
++
++  for (const auto& [timestamp, associations] : dsg_to_gt_.associations) {
++    std::unordered_set<NodeId> visited;
++    for (const auto& [pred_id, gt_id] : associations) {
++      if (config.compensate_missegmentation && visited.count(gt_id)) {
++        continue;
++      }
++      visited.emplace(gt_id);
++      const double distance = dsg_to_gt_.association_distances.at(timestamp).at(pred_id);
++      events.push_back(Event{"dynamic_object",
++                             name,
++                             row_ordinal,
++                             query_time,
++                             timestamp,
++                             pred_id,
++                             gt_id,
++                             distance,
++                             "TP"});
++      detected++;
++    }
++  }
++  for (const auto& [timestamp, ids] : dsg_to_gt_.failed) {
++    for (const auto& pred_id : ids) {
++      events.push_back(Event{"dynamic_object",
++                             name,
++                             row_ordinal,
++                             query_time,
++                             timestamp,
++                             pred_id,
++                             std::nullopt,
++                             std::nullopt,
++                             "FP"});
++      hallucinated++;
++    }
++  }
++  for (const auto& [timestamp, ids] : gt_to_dsg_.failed) {
++    for (const auto& gt_id : ids) {
++      events.push_back(Event{"dynamic_object",
++                             name,
++                             row_ordinal,
++                             query_time,
++                             timestamp,
++                             std::nullopt,
++                             gt_id,
++                             std::nullopt,
++                             "FN"});
++      missed++;
++    }
++  }
++
++  CHECK_EQ(detected, detections.num_detected);
++  CHECK_EQ(hallucinated, detections.num_hallucinated);
++  CHECK_EQ(missed, detections.num_missed);
++  exact_attribution::writeEvents(attribution_file_, std::move(events));
++}
++
+diff --git a/khronos_eval/src/object_evaluator.cpp b/khronos_eval/src/object_evaluator.cpp
+index 6122b94..e9fe101 100644
+--- a/khronos_eval/src/object_evaluator.cpp
++++ b/khronos_eval/src/object_evaluator.cpp
+@@ -5,0 +6,2 @@
++#include "khronos_eval/exact_attribution.h"
++
+@@ -68,0 +71,5 @@ void ObjectEvaluator::setOutputFile(const std::string& file_name, const std::str
++  if (!exact_attribution::openFromEnvironment("object_associations.jsonl",
++                                               attribution_file_)) {
++    LOG(ERROR) << "Could not open exact object attribution sidecar.";
++    is_setup_ = false;
++  }
+@@ -98,0 +106 @@ bool ObjectEvaluator::evaluate(const std::string& name, const uint64_t query_tim
++  writeExactAttribution(name, query_time, changes, detections);
+@@ -180,0 +189 @@ ObjectEvaluator::RawMetrics ObjectEvaluator::computeAssociationsSurface(const Ds
++    std::unordered_map<NodeId, float> minimum_distances_squared;
+@@ -191,0 +201,5 @@ ObjectEvaluator::RawMetrics ObjectEvaluator::computeAssociationsSurface(const Ds
++      auto [distance_it, inserted] =
++          minimum_distances_squared.emplace(ids[index], distance_squared);
++      if (!inserted) {
++        distance_it->second = std::min(distance_it->second, distance_squared);
++      }
+@@ -203,0 +218 @@ ObjectEvaluator::RawMetrics ObjectEvaluator::computeAssociationsSurface(const Ds
++    result.association_distances[id] = std::sqrt(minimum_distances_squared.at(it->first));
+@@ -241,0 +257 @@ ObjectEvaluator::RawMetrics ObjectEvaluator::computeAssociationsCentroid(const D
++    result.association_distances[id] = std::sqrt(distance_squared);
+@@ -248,0 +265,154 @@ ObjectEvaluator::RawMetrics ObjectEvaluator::computeAssociationsCentroid(const D
++void ObjectEvaluator::writeExactAttribution(const std::string& name,
++                                            const uint64_t query_time,
++                                            const ChangeMetrics& changes,
++                                            const DetectionMetrics& detections) {
++  const size_t row_ordinal = metric_row_ordinal_++;
++  if (!attribution_file_.is_open()) {
++    return;
++  }
++
++  using exact_attribution::Event;
++  std::vector<Event> events;
++  const auto distance_for = [](const RawMetrics& metrics,
++                               const NodeId from) -> std::optional<double> {
++    const auto it = metrics.association_distances.find(from);
++    return it == metrics.association_distances.end()
++               ? std::nullopt
++               : std::optional<double>(it->second);
++  };
++  const auto add_event = [&](const std::string& metric_type,
++                             const std::string& status,
++                             const std::optional<NodeId> pred_id,
++                             const std::optional<NodeId> gt_id,
++                             const std::optional<double> distance) {
++    events.push_back(Event{metric_type,
++                           name,
++                           row_ordinal,
++                           query_time,
++                           query_time,
++                           pred_id,
++                           gt_id,
++                           distance,
++                           status});
++  };
++
++  std::unordered_set<NodeId> visited;
++  for (const auto& [pred_id, gt_id] : dsg_to_gt_.associations) {
++    if (config.compensate_missegmentation && visited.count(gt_id)) {
++      continue;
++    }
++    visited.emplace(gt_id);
++    const auto& pred = eval_dsg_.objects.at(pred_id);
++    const auto& gt = gt_dsg_.objects.at(gt_id);
++    if (isPresent(pred, query_time)) {
++      add_event("object",
++                isPresent(gt, query_time) ? "TP" : "FP",
++                pred_id,
++                gt_id,
++                distance_for(dsg_to_gt_, pred_id));
++    }
++  }
++  for (const auto& pred_id : dsg_to_gt_.failed) {
++    if (isPresent(eval_dsg_.objects.at(pred_id), query_time)) {
++      add_event("object", "FP", pred_id, std::nullopt, std::nullopt);
++    }
++  }
++
++  visited.clear();
++  for (const auto& [gt_id, pred_id] : gt_to_dsg_.associations) {
++    if (config.compensate_missegmentation && visited.count(pred_id)) {
++      continue;
++    }
++    visited.emplace(pred_id);
++    const auto& gt = gt_dsg_.objects.at(gt_id);
++    const auto& pred = eval_dsg_.objects.at(pred_id);
++    if (isPresent(gt, query_time) && !isPresent(pred, query_time)) {
++      add_event("object", "FN", pred_id, gt_id, distance_for(gt_to_dsg_, gt_id));
++    }
++  }
++  for (const auto& gt_id : gt_to_dsg_.failed) {
++    if (isPresent(gt_dsg_.objects.at(gt_id), query_time)) {
++      add_event("object", "FN", std::nullopt, gt_id, std::nullopt);
++    }
++  }
++
++  visited.clear();
++  for (const auto& [pred_id, gt_id] : dsg_to_gt_.associations) {
++    if (config.compensate_missegmentation && visited.count(gt_id)) {
++      continue;
++    }
++    visited.emplace(gt_id);
++    const auto& pred = eval_dsg_.objects.at(pred_id);
++    const auto& gt = gt_dsg_.objects.at(gt_id);
++    const auto distance = distance_for(dsg_to_gt_, pred_id);
++    if (hasAppeared(pred, query_time)) {
++      add_event("change_appeared",
++                hasAppeared(gt, query_time) ? "TP" : "FP",
++                pred_id,
++                gt_id,
++                distance);
++    }
++    if (hasDisappeared(pred, query_time)) {
++      add_event("change_disappeared",
++                hasDisappeared(gt, query_time) ? "TP" : "FP",
++                pred_id,
++                gt_id,
++                distance);
++    }
++  }
++  for (const auto& pred_id : dsg_to_gt_.failed) {
++    const auto& pred = eval_dsg_.objects.at(pred_id);
++    if (hasAppeared(pred, query_time)) {
++      add_event("change_appeared", "FP", pred_id, std::nullopt, std::nullopt);
++    }
++    if (hasDisappeared(pred, query_time)) {
++      add_event("change_disappeared", "FP", pred_id, std::nullopt, std::nullopt);
++    }
++  }
++
++  visited.clear();
++  for (const auto& [gt_id, pred_id] : gt_to_dsg_.associations) {
++    if (config.compensate_missegmentation && visited.count(pred_id)) {
++      continue;
++    }
++    visited.emplace(pred_id);
++    const auto& gt = gt_dsg_.objects.at(gt_id);
++    const auto& pred = eval_dsg_.objects.at(pred_id);
++    const auto distance = distance_for(gt_to_dsg_, gt_id);
++    if (hasAppeared(gt, query_time) && !hasAppeared(pred, query_time)) {
++      add_event("change_appeared", "FN", pred_id, gt_id, distance);
++    }
++    if (hasDisappeared(gt, query_time) && !hasDisappeared(pred, query_time)) {
++      add_event("change_disappeared", "FN", pred_id, gt_id, distance);
++    }
++  }
++  for (const auto& gt_id : gt_to_dsg_.failed) {
++    const auto& gt = gt_dsg_.objects.at(gt_id);
++    if (hasAppeared(gt, query_time)) {
++      add_event("change_appeared", "FN", std::nullopt, gt_id, std::nullopt);
++    }
++    if (hasDisappeared(gt, query_time)) {
++      add_event("change_disappeared", "FN", std::nullopt, gt_id, std::nullopt);
++    }
++  }
++
++  const auto count = [&](const std::string& metric_type, const std::string& status) {
++    return std::count_if(events.begin(), events.end(), [&](const Event& event) {
++      return event.metric_type == metric_type && event.status == status;
++    });
++  };
++  CHECK_EQ(count("object", "TP"), detections.num_detected);
++  CHECK_EQ(count("object", "FP"), detections.num_hallucinated);
++  CHECK_EQ(count("object", "FN"), detections.num_missed);
++  CHECK_EQ(count("change_appeared", "TP"), changes.appeared_tp);
++  CHECK_EQ(count("change_appeared", "FP"),
++           changes.appeared_fp + changes.appeared_hallucinated_p);
++  CHECK_EQ(count("change_appeared", "FN"), changes.appeared_fn + changes.appeared_missed_p);
++  CHECK_EQ(count("change_disappeared", "TP"), changes.disappeared_tp);
++  CHECK_EQ(count("change_disappeared", "FP"),
++           changes.disappeared_fp + changes.disappeared_hallucinated_p);
++  CHECK_EQ(count("change_disappeared", "FN"),
++           changes.disappeared_fn + changes.disappeared_missed_p);
++  exact_attribution::writeEvents(attribution_file_, std::move(events));
++}
++

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -86,6 +87,30 @@ def test_source_and_artifact_bindings_are_content_addressed() -> None:
     artifact = payload["artifact_evaluator_identity"]
     for sha256 in artifact["bound_evidence"].values():
         assert re.fullmatch(r"[0-9a-f]{64}", sha256)
+
+
+def test_exact_attribution_is_source_bound_and_noninterfering() -> None:
+    payload = _load_manifest()
+    attribution = payload["exact_attribution"]
+
+    assert attribution["status"] == "REAL_REPLAY_PASS"
+    assert attribution["source_commit"] == LATEST_PUBLIC
+    patch = attribution["patch_binding"]
+    assert patch["path"] == "external_patches/khronos_eval_exact_attribution.patch"
+    assert re.fullmatch(r"[0-9a-f]{64}", patch["sha256"])
+    assert patch["byte_count"] > 0
+    patch_path = ROOT / patch["path"]
+    assert patch_path.stat().st_size == patch["byte_count"]
+    assert hashlib.sha256(patch_path.read_bytes()).hexdigest() == patch["sha256"]
+    replay = attribution["real_replay"]
+    assert replay["official_outputs_byte_identical"] is True
+    assert replay["evaluated_state_count"] == 43
+    assert replay["sidecars"]["object"]["event_count"] > 0
+    assert replay["sidecars"]["dynamic"]["event_count"] > 0
+    assert all(
+        re.fullmatch(r"[0-9a-f]{64}", output["sha256"])
+        for output in replay["official_outputs"].values()
+    )
 
 
 def test_report_states_protocol_identity_boundary_and_all_reference_metrics() -> None:

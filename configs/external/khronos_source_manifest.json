@@ -92,6 +92,67 @@
       "evaluation_status_sha256": "9634980a6c3f6cc40935486ee14bcb2c2e7748b8f83013f6fddfb437913b2f9f"
     }
   },
+  "exact_attribution": {
+    "status": "REAL_REPLAY_PASS",
+    "protocol_id": "KHRONOS_POST_RELEASE_EXACT_ATTRIBUTION_V1",
+    "source_commit": "63faadde6ed92220e78fb2f6ca86dcc54bb5cf9e",
+    "patch_binding": {
+      "path": "external_patches/khronos_eval_exact_attribution.patch",
+      "sha256": "4d5bd9033b92758e0062e873f9ed19b45a4c7516cb8945930d30c85a660b38c7",
+      "byte_count": 17569
+    },
+    "runtime_build_bindings": {
+      "exp_pipeline_sha256": "b4b5ab5d9787448999f0d6af31035faab1a2eaa1faead9e4ff35aafb31f99954",
+      "exp_pipeline_byte_count": 207296,
+      "libkhronos_eval_sha256": "887c626888e4652868be50c054dab201d6ec22af3434719d7342417eda4e851d",
+      "libkhronos_eval_byte_count": 1731376
+    },
+    "real_replay": {
+      "artifact_family": "CROVE_P5_TESSE_APARTMENT",
+      "scene": "Apartment",
+      "evaluated_state_count": 43,
+      "input_map": {
+        "sha256": "2e3609cb3caa84adc8779e1b358463eafe63b05deeb8a25a4a6daef6730c69ec",
+        "byte_count": 12434728742
+      },
+      "receipt_sha256": "cfd3869722003c8e2757d8f4add88770d878c15dbd5ea102038a664b30da1457",
+      "receipt_byte_count": 1957,
+      "official_outputs_byte_identical": true,
+      "official_outputs": {
+        "background_mesh.csv": {
+          "sha256": "2d9d08a84d9070911477a12687433645c90c4567e37801298d5c11a37be7d97b",
+          "byte_count": 13223
+        },
+        "dynamic_objects.csv": {
+          "sha256": "61ffb22a2d95f702517abaa4621f0eadd512e50c1cc7c9a7952058c457ac19ff",
+          "byte_count": 32763
+        },
+        "static_objects.csv": {
+          "sha256": "490be778730d259220f1c4e7b3b7709d8bc0b32cb769cf07d813d4c283299be7",
+          "byte_count": 74286
+        }
+      },
+      "sidecars": {
+        "object": {
+          "sha256": "1b7939562e97472cc2ca9398d0c49b0ca44ac163642ab3137bc341e1e9368f6d",
+          "byte_count": 27863620,
+          "event_count": 118859
+        },
+        "dynamic": {
+          "sha256": "3f1849c24390bfc43b633019378fbfcd81fec572485a236563e4ae137943ecef",
+          "byte_count": 262053340,
+          "event_count": 1135450
+        }
+      },
+      "metric_mass": {
+        "object": {"TP": 15694, "FP": 28297, "FN": 21648},
+        "dynamic_object": {"TP": 4046, "FP": 626016, "FN": 505388},
+        "change_appeared": {"TP": 264, "FP": 43727, "FN": 1290},
+        "change_disappeared": {"TP": 0, "FP": 0, "FN": 7939}
+      }
+    },
+    "scope_boundary": "This is a post-release evaluator diagnostic on the frozen P5 map, not an RSS Table I reproduction or a ranking result."
+  },
   "available_local_evidence": {
     "inventory_scope": "local:oviovo_benchmark_assets/tesse_cd",
     "apartment_ground_truth_present": true,

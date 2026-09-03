@@ -186,7 +186,52 @@ future explicitly approximate diagnostic once inputs are bound. Rules out
 attributing CROVE-versus-paper score differences to the mapping method alone or
 changing official arithmetic to close the gap.
 
-**Commit:** `PENDING_THIS_COMMIT`
+**Commit:** `02214ac`
 
 **Artifacts:** `configs/external/khronos_source_manifest.json` and
 `docs/superpowers/reports/2026-09-03-khronos-protocol-reproduction.md`.
+
+## B4 — Non-Interfering Khronos Exact Attribution
+
+**Question:** Can evaluator-native object identities explain the TESSE metric
+mass without changing any official Khronos output?
+
+**Evidence before:** `CODE_EVIDENCE` from Khronos commit
+`63faadde6ed92220e78fb2f6ca86dcc54bb5cf9e` and `MEASURED_EVIDENCE` from the
+frozen P5 Apartment map. B3 remains blocked and is not reinterpreted.
+
+**Frozen source:** The exact public commit above, reviewed patch SHA-256
+`4d5bd9033b92758e0062e873f9ed19b45a4c7516cb8945930d30c85a660b38c7`,
+and P5 input-map SHA-256
+`2e3609cb3caa84adc8779e1b358463eafe63b05deeb8a25a4a6daef6730c69ec`.
+
+**Frozen protocol:** Replay all 43 P5 Apartment states twice with the same map
+and evaluator configuration. The patched replay may emit JSONL sidecars only;
+all three official CSV files must remain byte-identical, and sidecar TP/FP/FN
+mass must equal every corresponding official CSV row.
+
+**Command:** Build the clean public source with the reviewed patch; run
+unpatched and patched `exp_pipeline`; then run
+`audit_khronos_exact_attribution.py` with the source, patch, input map, both
+result directories, and both sidecars bound by SHA-256.
+
+**Result:** `MEASURED_EVIDENCE`, status `REAL_REPLAY_PASS`. All three official
+CSV pairs are byte-identical. The exact sidecars contain 118,859 static/change
+events and 1,135,450 dynamic events. Every per-row Object, Dynamic, Appeared,
+and Disappeared TP/FP/FN total matches the official output.
+
+**Deviation from paper:** This is an adapted post-release P5 diagnostic, not an
+RSS Table I reproduction and not an eligible ranking result.
+
+**Decision:** Use the exact sidecars for B5 current-diagonal and failure-source
+diagnostics. Preserve the B3 paper-protocol block.
+
+**What this rules in/out:** Rules in object-level attribution of P5 failures.
+Rules out the sidecar patch and local aggregation as causes of any official
+metric change.
+
+**Commit:** `PENDING_THIS_COMMIT`
+
+**Artifacts:** `external_patches/khronos_eval_exact_attribution.patch`,
+`src/evaluation/khronos_attribution.py`, the audit CLI, and the B4 section of
+`configs/external/khronos_source_manifest.json`.
