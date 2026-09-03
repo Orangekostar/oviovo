@@ -271,6 +271,7 @@ def compose_counterfactual_variant(
     anchor_manifest: str | Path,
     visibility_policy: str | Path,
     output: str | Path,
+    visibility_diagnostics_cache: str | Path | None = None,
 ) -> Path:
     """Recompose one diagnostic variant from the existing causal source run."""
 
@@ -283,6 +284,11 @@ def compose_counterfactual_variant(
         readout_role="counterfactual_diagnostic",
         visibility_policy=Path(visibility_policy),
         counterfactual_variant=variant,
+        visibility_diagnostics_cache=(
+            None
+            if visibility_diagnostics_cache is None
+            else Path(visibility_diagnostics_cache)
+        ),
     )
 
 
@@ -616,6 +622,7 @@ def _parser() -> argparse.ArgumentParser:
     compose.add_argument("--source-run-manifest", type=Path, required=True)
     compose.add_argument("--anchor-manifest", type=Path, required=True)
     compose.add_argument("--visibility-policy", type=Path, required=True)
+    compose.add_argument("--visibility-diagnostics-cache", type=Path)
     compose.add_argument("--output", type=Path, required=True)
 
     collect = subparsers.add_parser("collect", help="collect measured variant metrics")
@@ -642,6 +649,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             anchor_manifest=args.anchor_manifest,
             visibility_policy=args.visibility_policy,
             output=args.output,
+            visibility_diagnostics_cache=args.visibility_diagnostics_cache,
         )
     else:
         output = collect_counterfactual_results(

@@ -379,6 +379,19 @@ def test_counterfactual_cli_help_lists_three_stage_workflow() -> None:
     assert "plan" in result.stdout
     assert "compose" in result.stdout
     assert "collect" in result.stdout
+    compose_help = subprocess.run(
+        [
+            sys.executable,
+            "scripts/evaluation/run_crove_anchor_counterfactuals.py",
+            "compose",
+            "--help",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert compose_help.returncode == 0
+    assert "--visibility-diagnostics-cache" in compose_help.stdout
 
 
 def test_counterfactual_collection_publishes_bound_csv_artifacts(

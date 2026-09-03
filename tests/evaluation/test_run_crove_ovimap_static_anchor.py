@@ -584,6 +584,38 @@ def test_counterfactual_diagnostic_filters_the_same_causal_visibility_timeline(
         "frame_index": 3,
     }
 
+    cached_manifest_path = compose_run(
+        source_run_manifest=source,
+        anchor_manifest=anchor,
+        output_root=tmp_path / "cached-only-anchor",
+        readout_role="counterfactual_diagnostic",
+        visibility_policy=policy,
+        dataset_factory=lambda *_: (_ for _ in ()).throw(
+            AssertionError("validated counterfactual cache must avoid RGB-D replay")
+        ),
+        counterfactual_variant=variants[1],
+        visibility_diagnostics_cache=manifests[0].parent / "runtime_diagnostics.json",
+    )
+    cached = json.loads(cached_manifest_path.read_text(encoding="utf-8"))
+    assert cached["inputs"]["counterfactual_visibility_cache"]["sha256"] == (
+        hashlib.sha256(
+            (manifests[0].parent / "runtime_diagnostics.json").read_bytes()
+        ).hexdigest()
+    )
+    for replayed_checkpoint, cached_checkpoint in zip(
+        only_anchor["checkpoints"], cached["checkpoints"], strict=True
+    ):
+        assert replayed_checkpoint["snapshot"] == cached_checkpoint["snapshot"]
+        assert replayed_checkpoint["entities"] == cached_checkpoint["entities"]
+    for name in (
+        "trajectories.jsonl",
+        "lifecycle_transitions.jsonl",
+        "runtime_diagnostics.json",
+    ):
+        assert (manifests[1].parent / name).read_bytes() == (
+            cached_manifest_path.parent / name
+        ).read_bytes()
+
 
 def test_counterfactual_variant_is_rejected_by_production_readout_role(
     tmp_path: Path,
@@ -600,6 +632,22 @@ def test_counterfactual_variant_is_rejected_by_production_readout_role(
             counterfactual_variant=CounterfactualVariant(
                 "CF0", "no_suppression", ()
             ),
+        )
+
+    assert not output.exists()
+
+
+def test_counterfactual_visibility_cache_requires_diagnostic_role(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "rejected-cache"
+
+    with pytest.raises(ValueError, match="cache"):
+        compose_run(
+            source_run_manifest=tmp_path / "not-read.json",
+            anchor_manifest=tmp_path / "not-read-anchor.json",
+            output_root=output,
+            visibility_diagnostics_cache=tmp_path / "not-read-cache.json",
         )
 
     assert not output.exists()

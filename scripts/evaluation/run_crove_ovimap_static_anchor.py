@@ -616,6 +616,178 @@ def _visibility_timeline(
     )
 
 
+def _visibility_timeline_from_diagnostics_cache(
+    *,
+    cache: Mapping[str, object],
+    anchor_entities: Sequence[Any],
+    batches: Sequence[TemporalExportBatch],
+    cutoff_frame: int,
+    policy_record: Mapping[str, object],
+    rgbd_export_record: Mapping[str, object],
+    rgbd_combined_output_sha256: str,
+    rgbd_file_hash_count: int,
+    counterfactual_variant: CounterfactualVariant,
+) -> _VisibilityTimeline:
+    expected_causality = {
+        "anchor_cutoff_frame": cutoff_frame,
+        "first_visibility_frame": cutoff_frame + 1,
+        "last_visibility_frame": len(batches) - 1,
+        "current_and_past_rgbd_only": True,
+    }
+    expected_cache_variant = CounterfactualVariant(
+        "CF0", "no_suppression", ()
+    ).to_json_record()
+    references = cache.get("p5_reference_transitions")
+    entities = cache.get("entities")
+    if (
+        cache.get("schema_version") != 1
+        or cache.get("manifest_id")
+        != "crove_ovimap_unbound_visibility_diagnostics_v1"
+        or cache.get("causality") != expected_causality
+        or cache.get("policy") != dict(policy_record)
+        or cache.get("rgbd_export_manifest") != dict(rgbd_export_record)
+        or cache.get("rgbd_combined_output_sha256")
+        != rgbd_combined_output_sha256
+        or cache.get("rgbd_file_hash_count") != rgbd_file_hash_count
+        or cache.get("counterfactual_variant") != expected_cache_variant
+        or cache.get("transition_count") != 0
+        or cache.get("transitions") != []
+        or not isinstance(references, list)
+        or cache.get("p5_reference_transition_count") != len(references)
+        or not isinstance(entities, list)
+    ):
+        raise ValueError("counterfactual visibility cache identity is invalid")
+    entity_ids = tuple(
+        entity.entity_id for entity in sorted(anchor_entities, key=lambda item: item.entity_id)
+    )
+    rows_by_id: dict[str, Mapping[str, object]] = {}
+    for row in entities:
+        if not isinstance(row, Mapping):
+            raise ValueError("counterfactual visibility cache entity is invalid")
+        entity_id = row.get("entity_id")
+        evidence = row.get("evidence_counts")
+        if (
+            not isinstance(entity_id, str)
+            or entity_id in rows_by_id
+            or type(row.get("sampled_voxel_count")) is not int
+            or row["sampled_voxel_count"] < 0
+            or not isinstance(evidence, Mapping)
+            or set(evidence)
+            != {kind.value for kind in AnchorVisibilityEvidenceKind}
+            or any(type(value) is not int or value < 0 for value in evidence.values())
+            or type(row.get("final_active")) is not bool
+        ):
+            raise ValueError("counterfactual visibility cache entity is invalid")
+        rows_by_id[entity_id] = row
+    if tuple(sorted(rows_by_id)) != entity_ids:
+        raise ValueError("counterfactual visibility cache anchors do not match")
+
+    batches_by_frame = {batch.frame_index: batch for batch in batches}
+    transition_by_id: dict[str, Mapping[str, object]] = {}
+    base_records: list[dict[str, object]] = []
+    for reference in references:
+        if not isinstance(reference, Mapping):
+            raise ValueError("counterfactual visibility cache transition is invalid")
+        entity_name = reference.get("entity_id")
+        frame_index = reference.get("frame_index")
+        batch = batches_by_frame.get(frame_index) if type(frame_index) is int else None
+        if (
+            not isinstance(entity_name, str)
+            or not entity_name.startswith("anchor:")
+            or entity_name[len("anchor:") :] not in rows_by_id
+            or entity_name in transition_by_id
+            or batch is None
+            or frame_index <= cutoff_frame
+            or reference.get("timestamp_ns") != batch.timestamp_ns
+            or reference.get("before") != "active"
+            or reference.get("after") != "dormant"
+            or reference.get("evidence") != "visible_absent"
+            or reference.get("readout_valid") is not False
+            or type(reference.get("absence_observation_count")) is not int
+            or reference["absence_observation_count"] <= 0
+            or type(reference.get("distinct_absence_viewpoint_count")) is not int
+            or reference["distinct_absence_viewpoint_count"] <= 0
+        ):
+            raise ValueError("counterfactual visibility cache transition is invalid")
+        entity_id = entity_name[len("anchor:") :]
+        row = rows_by_id[entity_id]
+        expected_support = {
+            "frame_index": frame_index,
+            "absence_observation_count": reference["absence_observation_count"],
+            "distinct_absence_viewpoint_count": reference[
+                "distinct_absence_viewpoint_count"
+            ],
+        }
+        first_absence = row.get("first_absence_frame")
+        if (
+            row.get("final_active") is not False
+            or row.get("transition") != expected_support
+            or type(first_absence) is not int
+            or not cutoff_frame < first_absence <= frame_index
+        ):
+            raise ValueError("counterfactual visibility cache support is invalid")
+        transition_by_id[entity_id] = reference
+        base_records.append(
+            {
+                "frame_index": frame_index,
+                "timestamp_ns": reference["timestamp_ns"],
+                "entity_id": entity_name,
+                "before": "active",
+                "after": "dormant",
+                "evidence": "visible_absent",
+                "readout_valid": False,
+            }
+        )
+    for entity_id, row in rows_by_id.items():
+        if entity_id not in transition_by_id and (
+            row.get("final_active") is not True or row.get("transition") is not None
+        ):
+            raise ValueError("counterfactual visibility cache final state is invalid")
+    selected = frozenset(counterfactual_variant.selected_anchor_ids)
+    if not selected.issubset(transition_by_id):
+        raise ValueError(
+            "counterfactual selection must contain only transitioned unbound anchors"
+        )
+    selected_records = [
+        record
+        for record in base_records
+        if str(record["entity_id"])[len("anchor:") :] in selected
+    ]
+    events_by_frame: dict[int, tuple[dict[str, object], ...]] = {}
+    for record in selected_records:
+        frame_index = int(record["frame_index"])
+        event = {**record, "geometry_epoch": 0}
+        events_by_frame.setdefault(frame_index, ())
+        events_by_frame[frame_index] = (*events_by_frame[frame_index], event)
+    events_by_frame = {
+        frame: tuple(sorted(rows, key=lambda row: str(row["entity_id"])))
+        for frame, rows in events_by_frame.items()
+    }
+    transition_frames = {
+        entity_id: int(transition_by_id[entity_id]["frame_index"])
+        for entity_id in selected
+    }
+    suppressed_by_frame = {
+        batch.frame_index: frozenset(
+            entity_id
+            for entity_id, transition_frame in transition_frames.items()
+            if transition_frame <= batch.frame_index
+        )
+        for batch in batches[cutoff_frame + 1 :]
+    }
+    diagnostics = {
+        **dict(cache),
+        "counterfactual_variant": counterfactual_variant.to_json_record(),
+        "transition_count": len(selected_records),
+        "transitions": selected_records,
+    }
+    return _VisibilityTimeline(
+        suppressed_by_frame=suppressed_by_frame,
+        events_by_frame=events_by_frame,
+        diagnostics=diagnostics,
+    )
+
+
 def _anchor_config(payload: Mapping[str, Any]) -> StaticAnchorConfig:
     try:
         return StaticAnchorConfig(
@@ -674,6 +846,7 @@ def compose_run(
     visibility_policy: Path | None = None,
     dataset_factory: Any | None = None,
     counterfactual_variant: CounterfactualVariant | None = None,
+    visibility_diagnostics_cache: Path | None = None,
 ) -> Path:
     """Publish a source-bound sequential composition without mutating inputs."""
 
@@ -684,6 +857,8 @@ def compose_run(
         visibility_enabled=visibility_enabled,
         counterfactual_variant=counterfactual_variant,
     )
+    if visibility_diagnostics_cache is not None and counterfactual_variant is None:
+        raise ValueError("counterfactual visibility cache requires diagnostic role")
     if dataset_factory is not None and not visibility_enabled:
         raise ValueError("visibility dataset factory requires a visibility policy")
     if dataset_factory is not None and not callable(dataset_factory):
@@ -832,6 +1007,7 @@ def compose_run(
     visibility_timeline: _VisibilityTimeline | None = None
     visibility_policy_record: dict[str, object] | None = None
     rgbd_export_record: dict[str, object] | None = None
+    visibility_cache_record: dict[str, object] | None = None
     if visibility_policy is not None:
         policy_path = Path(os.path.abspath(os.fspath(visibility_policy)))
         policy_bytes = _regular_bytes(policy_path, label="visibility policy")
@@ -867,29 +1043,52 @@ def compose_run(
                 (rgbd_export_path, rgbd_export_record),
             )
         )
-        factory = (
-            _production_visibility_dataset
-            if dataset_factory is None
-            else dataset_factory
-        )
-        dataset = factory(
-            rgbd_export_path.parent,
-            scene,
-            rgbd_export_path,
-            schedule_path,
-        )
-        visibility_timeline = _visibility_timeline(
-            anchor_entities=unbound_anchors,
-            batches=batches,
-            cutoff_frame=cutoff,
-            config=visibility_config,
-            dataset=dataset,
-            policy_record=visibility_policy_record,
-            rgbd_export_record=rgbd_export_record,
-            rgbd_combined_output_sha256=combined_output,
-            rgbd_file_hash_count=file_hash_count,
-            counterfactual_variant=counterfactual_variant,
-        )
+        if visibility_diagnostics_cache is not None:
+            cache_path = Path(
+                os.path.abspath(os.fspath(visibility_diagnostics_cache))
+            )
+            cache_bytes = _regular_bytes(
+                cache_path, label="counterfactual visibility cache"
+            )
+            visibility_cache_record = _input_record(cache_path, cache_bytes)
+            witnesses.append((cache_path, visibility_cache_record))
+            visibility_timeline = _visibility_timeline_from_diagnostics_cache(
+                cache=_json_object(
+                    cache_bytes, label="counterfactual visibility cache"
+                ),
+                anchor_entities=unbound_anchors,
+                batches=batches,
+                cutoff_frame=cutoff,
+                policy_record=visibility_policy_record,
+                rgbd_export_record=rgbd_export_record,
+                rgbd_combined_output_sha256=combined_output,
+                rgbd_file_hash_count=file_hash_count,
+                counterfactual_variant=counterfactual_variant,
+            )
+        else:
+            factory = (
+                _production_visibility_dataset
+                if dataset_factory is None
+                else dataset_factory
+            )
+            dataset = factory(
+                rgbd_export_path.parent,
+                scene,
+                rgbd_export_path,
+                schedule_path,
+            )
+            visibility_timeline = _visibility_timeline(
+                anchor_entities=unbound_anchors,
+                batches=batches,
+                cutoff_frame=cutoff,
+                config=visibility_config,
+                dataset=dataset,
+                policy_record=visibility_policy_record,
+                rgbd_export_record=rgbd_export_record,
+                rgbd_combined_output_sha256=combined_output,
+                rgbd_file_hash_count=file_hash_count,
+                counterfactual_variant=counterfactual_variant,
+            )
 
     checkpoint_values = source.get("checkpoints")
     captured = source.get("captured_frame_indices")
@@ -1158,6 +1357,11 @@ def compose_run(
                     }
                     if visibility_policy_record is not None
                     and rgbd_export_record is not None
+                    else {}
+                ),
+                **(
+                    {"counterfactual_visibility_cache": visibility_cache_record}
+                    if visibility_cache_record is not None
                     else {}
                 ),
                 **{
