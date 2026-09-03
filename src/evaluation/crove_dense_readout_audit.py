@@ -6,9 +6,13 @@ import math
 from numbers import Real
 
 import numpy as np
-from scipy.spatial import cKDTree
 
 from src.evaluation.contracts import EntityPrediction, MapSnapshot
+from src.oviv2.dense_moved_readout import (
+    DenseMovedReadoutGateConfig,
+    decide_dense_geometry_agreement,
+    measure_dense_geometry_agreement,
+)
 
 _DENSE_METADATA = {
     "geometry_authority": "ovimap_anchor_template",
@@ -118,9 +122,13 @@ def _audit_entity(
     residual_max = float(residuals.max(initial=0.0))
     if residual_max > _TRANSLATION_TOLERANCE_M:
         raise ValueError("dense geometry is not a constant translation")
-    distances, _ = cKDTree(compact_points).query(dense_points, k=1, workers=1)
-    distances = np.asarray(distances, dtype=np.float64)
-    numerical_tolerance = max(np.finfo(np.float32).eps, threshold * 1e-7)
+    gate_config = DenseMovedReadoutGateConfig(distance_threshold_m=threshold)
+    agreement = measure_dense_geometry_agreement(
+        compact_points,
+        dense_points,
+        gate_config,
+    )
+    decision = decide_dense_geometry_agreement(agreement, gate_config)
     return {
         "anchor_entity_id": anchor.entity_id,
         "anchor_point_count": len(anchor_points),
@@ -128,11 +136,22 @@ def _audit_entity(
         "dense_point_count": len(dense_points),
         "translation_xyz": translation.tolist(),
         "rigid_translation_residual_max_m": residual_max,
-        "dense_to_compact_nn_median_m": float(np.median(distances)),
-        "dense_to_compact_nn_p90_m": float(np.quantile(distances, 0.9)),
-        "dense_to_compact_coverage_at_threshold": float(
-            np.mean(distances <= threshold + numerical_tolerance)
+        "dense_to_compact_nn_median_m": agreement.template_to_compact_median_m,
+        "dense_to_compact_nn_p90_m": agreement.template_to_compact_p90_m,
+        "dense_to_compact_coverage_at_threshold": (
+            agreement.template_to_compact_coverage
         ),
+        "compact_to_dense_nn_median_m": agreement.compact_to_template_median_m,
+        "compact_to_dense_nn_p90_m": agreement.compact_to_template_p90_m,
+        "compact_to_dense_coverage_at_threshold": (
+            agreement.compact_to_template_coverage
+        ),
+        "dense_compact_centroid_residual_m": agreement.centroid_residual_m,
+        "compact_extent_xyz": list(agreement.compact_extent_xyz),
+        "dense_extent_xyz": list(agreement.template_extent_xyz),
+        "extent_residual_xyz": list(agreement.extent_residual_xyz),
+        "extent_ratio_xyz": list(agreement.extent_ratio_xyz),
+        "geometry_gate": decision.to_json_record(),
         "anchor_bbox_min_xyz": anchor_points.min(axis=0).tolist(),
         "anchor_bbox_max_xyz": anchor_points.max(axis=0).tolist(),
         "dense_bbox_min_xyz": dense_points.min(axis=0).tolist(),

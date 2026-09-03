@@ -107,6 +107,13 @@ def test_audit_dense_moved_entities_measures_translation_and_coverage() -> None:
     assert entity["dense_to_compact_nn_median_m"] == pytest.approx(0.10)
     assert entity["dense_to_compact_nn_p90_m"] == pytest.approx(0.15)
     assert entity["dense_to_compact_coverage_at_threshold"] == 0.5
+    assert entity["compact_to_dense_nn_median_m"] == pytest.approx(0.05)
+    assert entity["compact_to_dense_nn_p90_m"] == pytest.approx(0.05, abs=1e-6)
+    assert entity["compact_to_dense_coverage_at_threshold"] == 1.0
+    assert entity["geometry_gate"]["accepted"] is False
+    assert "template_to_compact_coverage" in entity["geometry_gate"][
+        "rejection_reasons"
+    ]
     assert entity["anchor_bbox_min_xyz"] == pytest.approx([-0.2, 0.0, 0.0])
     assert entity["anchor_bbox_max_xyz"] == pytest.approx([0.2, 0.0, 0.0])
     assert entity["dense_bbox_min_xyz"] == pytest.approx([0.8, 0.0, 0.0])
