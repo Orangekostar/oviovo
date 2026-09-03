@@ -322,8 +322,52 @@ until its RGB-D, mesh, instance, and semantic assets are source-bound.
 diagnostic. Rules out benchmark replacement or method conclusions from metadata
 alone.
 
-**Commit:** `PENDING_THIS_COMMIT`
+**Commit:** `bd89b1e`
 
 **Artifacts:** `configs/evaluation/manifests/3rscan_causal_pilot_v1.json`, the
 3RScan adapter/evaluator, and
 `docs/superpowers/reports/2026-09-03-3rscan-pilot.md`.
+
+## B7 — Panoptic Mapping Flat Pilot
+
+**Question:** Does the controlled Flat protocol directly expose CROVE's signed
+visibility and current-ownership mechanism under separated oracle/non-oracle
+inputs?
+
+**Evidence before:** `LITERATURE_EVIDENCE` and the immutable suitability score
+from B1. No Flat method output was available or used to design the adapter.
+
+**Frozen source:** `ethz-asl/panoptic_mapping` commit
+`3926396d92f6e3255748ced61f5519c9b102570f`, download-script SHA-256
+`7c274aac0b8ca36c8cdb9964feea79f7f3792a38c2d25be35385dbba5b46385c`,
+and DOI `10.3929/ethz-c-000788335`.
+
+**Frozen protocol:** Process `run1` fully before `run2`; bind every consumed
+member; keep GT-panoptic oracle, predicted-panoptic, and CROVE open-vocabulary
+conditions separate; reject future-frame predictions; report current object,
+change, stale geometry, 5 cm geometry, free-space, and recovery metrics.
+
+**Command:** Query the official ASL catalog and DOI, probe the legacy archive,
+scan only approved local roots, and run the two Flat adapter/evaluator test
+modules.
+
+**Result:** `CODE_EVIDENCE`: the strict adapter and causal metric contract pass
+synthetic protocol tests. `BLOCKED_DATASET_ACCESS`: the current DOI endpoint
+denied this provider, the legacy archive timed out, and no local Flat runtime
+assets exist. No real method metric was emitted.
+
+**Deviation from paper:** The custom current-state fields are diagnostics beside
+the official surface evaluation; no synthetic fixture number is a paper result.
+
+**Decision:** Preserve Flat as a controlled future mechanism pilot, but do not
+use it to promote a benchmark or diagnose CROVE from this blocked run.
+
+**What this rules in/out:** Rules in a source-bound causal adapter and metric
+contract. Rules out any claim about A6/P5/P6-C Flat sensitivity or Flat-based
+TESSE replacement.
+
+**Commit:** `PENDING_THIS_COMMIT`
+
+**Artifacts:** `src/evaluation/datasets/panoptic_flat.py`,
+`src/evaluation/panoptic_flat_current.py`, the evaluation CLI, and
+`docs/superpowers/reports/2026-09-03-panoptic-flat-pilot.md`.
