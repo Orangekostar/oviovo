@@ -228,6 +228,13 @@ _GENERIC_TRAJECTORY_FIELDS = frozenset(
         "readout_valid",
     }
 )
+_LOCALIZED_OWNERSHIP_TRAJECTORY_FIELDS = _GENERIC_TRAJECTORY_FIELDS | {
+    "overlay_state",
+    "active_voxel_count",
+    "suppressed_voxel_count",
+    "active_point_count",
+    "suppressed_point_count",
+}
 _FRAME_COVERAGE_FIELDS = frozenset(
     {"frame_index", "timestamp_ns", "record_count", "event_count"}
 )
@@ -825,7 +832,10 @@ def _normalize_trajectories(
         if not isinstance(raw, Mapping):
             raise ValueError(f"{label} must be an object")
         fields = frozenset(raw)
-        if fields != _GENERIC_TRAJECTORY_FIELDS:
+        if fields not in {
+            _GENERIC_TRAJECTORY_FIELDS,
+            _LOCALIZED_OWNERSHIP_TRAJECTORY_FIELDS,
+        }:
             raise ValueError(f"{label} fields are invalid")
         timestamp_field = "timestamp_ns"
         _reject_absolute_path_strings(raw, label=label)
@@ -923,6 +933,41 @@ def _normalize_trajectories(
                     raise ValueError("trajectory geometry epoch is invalid")
                 if type(readout_valid) is not bool:
                     raise ValueError("trajectory readout validity is invalid")
+                if fields == _LOCALIZED_OWNERSHIP_TRAJECTORY_FIELDS:
+                    ownership_counts = tuple(
+                        raw_entity[name]
+                        for name in (
+                            "active_voxel_count",
+                            "suppressed_voxel_count",
+                            "active_point_count",
+                            "suppressed_point_count",
+                        )
+                    )
+                    if any(type(value) is not int or value < 0 for value in ownership_counts):
+                        raise ValueError("localized ownership counts are invalid")
+                    active_voxels, suppressed_voxels, active_points, suppressed_points = (
+                        ownership_counts
+                    )
+                    overlay_state = raw_entity.get("overlay_state")
+                    valid_overlay = (
+                        overlay_state == "unchanged"
+                        and suppressed_voxels == suppressed_points == 0
+                        and active_voxels > 0
+                        and active_points > 0
+                        and readout_valid
+                    ) or (
+                        overlay_state == "dormant"
+                        and active_voxels == active_points == 0
+                        and suppressed_voxels > 0
+                        and suppressed_points > 0
+                        and not readout_valid
+                    ) or (
+                        overlay_state == "partially_suppressed"
+                        and min(ownership_counts) > 0
+                        and readout_valid
+                    )
+                    if not valid_overlay:
+                        raise ValueError("localized ownership state is invalid")
                 normalized["observation_count"] = count
                 normalized["dynamic_state"] = dynamic_state
                 normalized["motion_confidence"] = float(confidence)

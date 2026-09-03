@@ -968,6 +968,59 @@ def test_rejects_unknown_trajectory_path_field(tmp_path: Path) -> None:
         export_temporal_artifact(index_path, tmp_path / "output")
 
 
+def test_accepts_localized_ownership_trajectory_audit_fields(tmp_path: Path) -> None:
+    index_path, payload = _build_fixture(tmp_path / "source")
+    trajectory_path = Path(payload["trajectories"]["path"])
+    rows = [
+        json.loads(line)
+        for line in trajectory_path.read_text(encoding="utf-8").splitlines()
+    ]
+    for row in rows:
+        row.update(
+            {
+                "overlay_state": "partially_suppressed",
+                "active_voxel_count": 2,
+                "suppressed_voxel_count": 1,
+                "active_point_count": 3,
+                "suppressed_point_count": 1,
+            }
+        )
+    _rewrite_trajectories(
+        index_path,
+        payload,
+        "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows),
+    )
+
+    manifest_path = export_temporal_artifact(index_path, tmp_path / "output")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    exported_path = manifest_path.parent / manifest["trajectories"]["path"]
+    exported = json.loads(exported_path.read_text(encoding="utf-8").splitlines()[0])
+    assert frozenset(exported) == exporter_module._GENERIC_TRAJECTORY_FIELDS
+
+
+def test_rejects_invalid_localized_ownership_trajectory_counts(
+    tmp_path: Path,
+) -> None:
+    index_path, payload = _build_fixture(tmp_path / "source")
+    trajectory_path = Path(payload["trajectories"]["path"])
+    rows = trajectory_path.read_text(encoding="utf-8").splitlines()
+    row = json.loads(rows[0])
+    row.update(
+        {
+            "overlay_state": "partially_suppressed",
+            "active_voxel_count": 2,
+            "suppressed_voxel_count": 1,
+            "active_point_count": -1,
+            "suppressed_point_count": 1,
+        }
+    )
+    rows[0] = json.dumps(row, sort_keys=True)
+    _rewrite_trajectories(index_path, payload, "\n".join(rows) + "\n")
+
+    with pytest.raises(ValueError, match="localized ownership counts"):
+        export_temporal_artifact(index_path, tmp_path / "output")
+
+
 def test_rejects_nonfinite_trajectory_json(tmp_path: Path) -> None:
     index_path, payload = _build_fixture(tmp_path / "source")
     trajectory_path = Path(payload["trajectories"]["path"])
