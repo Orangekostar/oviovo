@@ -14,6 +14,7 @@ from scripts.evaluation.run_crove_ovimap_static_anchor import (
 )
 from src.core.data_structures import CameraIntrinsics, Frame
 from src.evaluation.contracts import EntityPrediction, MapSnapshot
+from src.evaluation.crove_anchor_counterfactual import CounterfactualVariant
 from src.evaluation.exporters.oviovo import read_map_snapshot, write_map_snapshot
 
 _TIMESTAMP_ORIGIN_NS = 4_000_000_000
@@ -505,6 +506,128 @@ def test_composed_run_publishes_causal_unbound_visibility_candidate(
     assert temporal["sources"]["runtime_diagnostics"]["path"] == (
         "sidecars/runtime_diagnostics.json"
     )
+
+
+def test_counterfactual_diagnostic_filters_the_same_causal_visibility_timeline(
+    tmp_path: Path,
+) -> None:
+    source = _write_source_run(tmp_path)
+    anchor = _write_anchor_package(
+        tmp_path,
+        anchor_z=1.5,
+        visibility_export=True,
+    )
+    policy = _write_visibility_policy(tmp_path)
+    variants = (
+        CounterfactualVariant("CF0", "no_suppression", ()),
+        CounterfactualVariant("CF3_00", "only_one", ("ovimap:1",), "ovimap:1"),
+    )
+
+    manifests = []
+    for variant in variants:
+        manifests.append(
+            compose_run(
+                source_run_manifest=source,
+                anchor_manifest=anchor,
+                output_root=tmp_path / variant.variant_id,
+                readout_role="counterfactual_diagnostic",
+                visibility_policy=policy,
+                dataset_factory=lambda *_: _VisibilityDataset(),
+                counterfactual_variant=variant,
+            )
+        )
+
+    no_suppression = json.loads(manifests[0].read_text(encoding="utf-8"))
+    only_anchor = json.loads(manifests[1].read_text(encoding="utf-8"))
+    assert no_suppression["readout_contract"] == {
+        "diagnostic_only": True,
+        "moved_geometry_mode": "temporal_compact",
+        "promotion_eligible": False,
+        "readout_role": "counterfactual_diagnostic",
+        "unbound_anchor_mode": "causal_visibility_filtered",
+    }
+    assert no_suppression["counterfactual_variant"] == variants[0].to_json_record()
+    assert only_anchor["counterfactual_variant"] == variants[1].to_json_record()
+
+    def final_entities(manifest: dict[str, object]) -> list[str]:
+        checkpoint = manifest["checkpoints"][-1]
+        snapshot = read_map_snapshot(
+            manifests[0].parent.parent
+            / manifest["counterfactual_variant"]["variant_id"]
+            / checkpoint["snapshot"]["path"],
+            manifests[0].parent.parent
+            / manifest["counterfactual_variant"]["variant_id"]
+            / checkpoint["entities"]["path"],
+        )
+        return [entity.entity_id for entity in snapshot.entities]
+
+    assert final_entities(no_suppression) == ["ovimap:1"]
+    assert final_entities(only_anchor) == []
+    no_diagnostics = json.loads(
+        (manifests[0].parent / "runtime_diagnostics.json").read_text(encoding="utf-8")
+    )
+    only_diagnostics = json.loads(
+        (manifests[1].parent / "runtime_diagnostics.json").read_text(encoding="utf-8")
+    )
+    assert no_diagnostics["transition_count"] == 0
+    assert only_diagnostics["transition_count"] == 1
+    assert no_diagnostics["p5_reference_transition_count"] == 1
+    assert only_diagnostics["p5_reference_transition_count"] == 1
+    reference = only_diagnostics["p5_reference_transitions"][0]
+    assert reference["absence_observation_count"] == 2
+    assert reference["distinct_absence_viewpoint_count"] == 2
+    entity = only_diagnostics["entities"][0]
+    assert entity["first_absence_frame"] == 2
+    assert entity["transition"] == {
+        "absence_observation_count": 2,
+        "distinct_absence_viewpoint_count": 2,
+        "frame_index": 3,
+    }
+
+
+def test_counterfactual_variant_is_rejected_by_production_readout_role(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "rejected"
+
+    with pytest.raises(ValueError, match="counterfactual"):
+        compose_run(
+            source_run_manifest=tmp_path / "not-read.json",
+            anchor_manifest=tmp_path / "not-read-anchor.json",
+            output_root=output,
+            readout_role="causal_visibility_candidate",
+            visibility_policy=tmp_path / "not-read-policy.json",
+            counterfactual_variant=CounterfactualVariant(
+                "CF0", "no_suppression", ()
+            ),
+        )
+
+    assert not output.exists()
+
+
+def test_counterfactual_variant_rejects_nontransitioned_anchor_without_output(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "unknown-counterfactual"
+
+    with pytest.raises(ValueError, match="transitioned unbound"):
+        compose_run(
+            source_run_manifest=_write_source_run(tmp_path),
+            anchor_manifest=_write_anchor_package(
+                tmp_path,
+                anchor_z=1.5,
+                visibility_export=True,
+            ),
+            output_root=output,
+            readout_role="counterfactual_diagnostic",
+            visibility_policy=_write_visibility_policy(tmp_path),
+            dataset_factory=lambda *_: _VisibilityDataset(),
+            counterfactual_variant=CounterfactualVariant(
+                "CF3_00", "only_one", ("ovimap:missing",), "ovimap:missing"
+            ),
+        )
+
+    assert not output.exists()
 
 
 @pytest.mark.parametrize(

@@ -1,6 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
 
 import numpy as np
 import pytest
@@ -11,6 +16,12 @@ from src.evaluation.crove_anchor_counterfactual import (
     build_anchor_counterfactual_features,
     build_counterfactual_metric_rows,
     derive_counterfactual_variants,
+)
+from scripts.evaluation.run_crove_anchor_counterfactuals import (
+    create_counterfactual_plan,
+    load_counterfactual_plan_variant,
+    load_variant_gate_metrics,
+    publish_counterfactual_collection,
 )
 
 
@@ -287,3 +298,223 @@ def test_metric_rows_reject_invalid_available_metric(bad: object) -> None:
     with pytest.raises((TypeError, ValueError), match="object_f1"):
         build_counterfactual_metric_rows(variants, metrics)
 
+
+def _write_json(path: Path, value: object) -> None:
+    path.write_text(
+        json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _file_record(path: Path) -> dict[str, object]:
+    content = path.read_bytes()
+    return {
+        "path": str(path.resolve()),
+        "sha256": hashlib.sha256(content).hexdigest(),
+        "byte_count": len(content),
+    }
+
+
+def test_counterfactual_plan_is_canonical_hash_bound_and_reloadable(
+    tmp_path: Path,
+) -> None:
+    diagnostics = tmp_path / "runtime_diagnostics.json"
+    attribution = tmp_path / "attribution.json"
+    _write_json(
+        diagnostics,
+        {
+            "manifest_id": "crove_ovimap_unbound_visibility_diagnostics_v1",
+            "transition_count": 10,
+            "transitions": _transitions(),
+        },
+    )
+    _write_json(attribution, _attribution())
+
+    plan = create_counterfactual_plan(
+        p5_runtime_diagnostics=diagnostics,
+        p2_attribution=attribution,
+        output=tmp_path / "counterfactual_plan.json",
+    )
+
+    payload = json.loads(plan.read_text(encoding="utf-8"))
+    assert payload["manifest_id"] == "crove_anchor_counterfactual_plan_v1"
+    assert payload["status"] == "PASS"
+    assert payload["diagnostic_only"] is True
+    assert len(payload["variants"]) == 24
+    for name, path in (
+        ("p5_runtime_diagnostics", diagnostics),
+        ("p2_attribution", attribution),
+    ):
+        assert payload["sources"][name] == {
+            "path": str(path.resolve()),
+            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "byte_count": path.stat().st_size,
+        }
+    assert load_counterfactual_plan_variant(plan, "CF0") == (
+        derive_counterfactual_variants(_transitions(), _attribution())[0]
+    )
+    with pytest.raises(ValueError, match="variant"):
+        load_counterfactual_plan_variant(plan, "unknown")
+    with pytest.raises(FileExistsError):
+        create_counterfactual_plan(
+            p5_runtime_diagnostics=diagnostics,
+            p2_attribution=attribution,
+            output=plan,
+        )
+
+
+def test_counterfactual_cli_help_lists_three_stage_workflow() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/evaluation/run_crove_anchor_counterfactuals.py",
+            "--help",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0
+    assert "plan" in result.stdout
+    assert "compose" in result.stdout
+    assert "collect" in result.stdout
+
+
+def test_counterfactual_collection_publishes_bound_csv_artifacts(
+    tmp_path: Path,
+) -> None:
+    diagnostics = tmp_path / "runtime_diagnostics.json"
+    attribution = tmp_path / "attribution.json"
+    _write_json(
+        diagnostics,
+        {
+            "manifest_id": "crove_ovimap_unbound_visibility_diagnostics_v1",
+            "transition_count": 10,
+            "transitions": _transitions(),
+        },
+    )
+    _write_json(attribution, _attribution())
+    plan = create_counterfactual_plan(
+        p5_runtime_diagnostics=diagnostics,
+        p2_attribution=attribution,
+        output=tmp_path / "counterfactual_plan.json",
+    )
+    variants = derive_counterfactual_variants(_transitions(), _attribution())
+    metrics = {
+        variant.variant_id: _metrics(index / 1_000)
+        for index, variant in enumerate(variants)
+    }
+    receipts = {}
+    for variant in variants:
+        receipt = tmp_path / "receipts" / f"{variant.variant_id}.json"
+        receipt.parent.mkdir(exist_ok=True)
+        _write_json(receipt, {"variant_id": variant.variant_id, "status": "PASS"})
+        receipts[variant.variant_id] = receipt
+    features = build_anchor_counterfactual_features(
+        _anchor(), _diagnostics(), ("ovimap:00", "ovimap:01"), voxel_size_m=0.05
+    )
+
+    manifest_path = publish_counterfactual_collection(
+        plan=plan,
+        metrics_by_variant=metrics,
+        features=features,
+        metric_receipts=receipts,
+        output=tmp_path / "collected",
+    )
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert manifest["manifest_id"] == "crove_anchor_counterfactual_v1"
+    assert manifest["status"] == "COMPLETE"
+    assert manifest["variant_count"] == 24
+    assert manifest["feature_count"] == 2
+    assert set(manifest["outputs"]) == {
+        "counterfactual_metrics",
+        "counterfactual_anchor_features",
+    }
+    for record in manifest["outputs"].values():
+        path = manifest_path.parent / record["path"]
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == record["sha256"]
+        assert path.stat().st_size == record["byte_count"]
+    assert set(manifest["metric_receipts"]) == {
+        variant.variant_id for variant in variants
+    }
+    metrics_csv = (manifest_path.parent / "counterfactual_metrics.csv").read_text(
+        encoding="utf-8"
+    )
+    features_csv = (
+        manifest_path.parent / "counterfactual_anchor_features.csv"
+    ).read_text(encoding="utf-8")
+    assert "delta_object_f1_vs_cf0" in metrics_csv.splitlines()[0]
+    assert len(metrics_csv.splitlines()) == 25
+    assert "suppression_latency_frames" in features_csv.splitlines()[0]
+    assert len(features_csv.splitlines()) == 3
+    with pytest.raises(ValueError, match="metric receipts"):
+        publish_counterfactual_collection(
+            plan=plan,
+            metrics_by_variant=metrics,
+            features=features,
+            metric_receipts={"CF0": receipts["CF0"]},
+            output=tmp_path / "rejected-collection",
+        )
+    assert not (tmp_path / "rejected-collection").exists()
+
+
+def test_variant_gate_metrics_require_bound_matching_composition(tmp_path: Path) -> None:
+    variant = derive_counterfactual_variants(_transitions(), _attribution())[0]
+    composition = tmp_path / "composition" / "run_manifest.json"
+    composition.parent.mkdir()
+    _write_json(
+        composition,
+        {
+            "schema_version": 1,
+            "manifest_id": "crove_ovimap_static_anchor_composition_v1",
+            "status": "PASS",
+            "dataset": "TESSE-CD",
+            "scene": "apartment",
+            "readout_contract": {
+                "diagnostic_only": True,
+                "moved_geometry_mode": "temporal_compact",
+                "promotion_eligible": False,
+                "readout_role": "counterfactual_diagnostic",
+                "unbound_anchor_mode": "causal_visibility_filtered",
+            },
+            "counterfactual_variant": variant.to_json_record(),
+        },
+    )
+    gate = tmp_path / "gate" / "gate_decision.json"
+    gate.parent.mkdir()
+    _write_json(
+        gate,
+        {
+            "schema_version": 1,
+            "manifest_id": "crove_ovimap_static_anchor_apartment_gate_v1",
+            "dataset": "TESSE-CD",
+            "scene": "apartment",
+            "decision": {
+                "metrics": {
+                    "object_f1": 0.4,
+                    "dynamic_f1": 0.1,
+                    "change_f1": 0.2,
+                    "current_miou": 0.3,
+                    "ghost_rate": 0.5,
+                    "processed_frames": 1745,
+                    "official_state_count": 43,
+                }
+            },
+            "sources": {"composition_manifest": _file_record(composition)},
+        },
+    )
+
+    assert load_variant_gate_metrics(
+        gate=gate, composition=composition, variant=variant
+    ) == {
+        "object_f1": 0.4,
+        "dynamic_f1": 0.1,
+        "change_f1": 0.2,
+        "current_miou": 0.3,
+        "ghost_rate": 0.5,
+    }
+    composition.write_text("{}\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="composition binding"):
+        load_variant_gate_metrics(gate=gate, composition=composition, variant=variant)

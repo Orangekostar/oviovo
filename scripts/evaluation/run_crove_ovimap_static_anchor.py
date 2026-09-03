@@ -23,6 +23,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.evaluation.exporters.oviovo import read_map_snapshot, write_map_snapshot
+from src.evaluation.crove_anchor_counterfactual import CounterfactualVariant
 from src.oviv2.anchor_visibility import (
     AnchorVisibilityConfig,
     AnchorVisibilityEvidenceKind,
@@ -54,6 +55,7 @@ _MOVED_GEOMETRY_MODES = (
 )
 _READOUT_ROLES = (
     "causal_visibility_candidate",
+    "counterfactual_diagnostic",
     "evaluation_candidate",
     "formal_baseline",
     "visualization_shadow",
@@ -65,6 +67,7 @@ _ALLOWED_READOUT_CONTRACTS = frozenset(
         ("anchor_centroid_translation", "evaluation_candidate"),
         ("anchor_centroid_translation", "causal_visibility_candidate"),
         ("temporal_compact", "causal_visibility_candidate"),
+        ("temporal_compact", "counterfactual_diagnostic"),
     }
 )
 
@@ -143,10 +146,24 @@ def _readout_contract(
     role: object,
     *,
     visibility_enabled: bool = False,
-) -> dict[str, str]:
+    counterfactual_variant: CounterfactualVariant | None = None,
+) -> dict[str, object]:
     if type(visibility_enabled) is not bool:
         raise TypeError("visibility_enabled must be bool")
-    if (role == "causal_visibility_candidate") is not visibility_enabled:
+    if counterfactual_variant is not None and not isinstance(
+        counterfactual_variant, CounterfactualVariant
+    ):
+        raise TypeError("counterfactual_variant must be CounterfactualVariant")
+    diagnostic = counterfactual_variant is not None
+    if (role == "counterfactual_diagnostic") is not diagnostic:
+        raise ValueError(
+            "counterfactual diagnostic role and variant must be paired"
+        )
+    visibility_role = role in {
+        "causal_visibility_candidate",
+        "counterfactual_diagnostic",
+    }
+    if visibility_role is not visibility_enabled:
         raise ValueError(
             "causal visibility candidate role and visibility policy must be paired"
         )
@@ -157,7 +174,15 @@ def _readout_contract(
     ):
         raise ValueError("moved geometry mode and readout role are incompatible")
     result = {"moved_geometry_mode": mode, "readout_role": role}
-    if visibility_enabled:
+    if role == "counterfactual_diagnostic":
+        result.update(
+            {
+                "unbound_anchor_mode": "causal_visibility_filtered",
+                "diagnostic_only": True,
+                "promotion_eligible": False,
+            }
+        )
+    elif visibility_enabled:
         result["unbound_anchor_mode"] = "causal_visibility"
     return result
 
@@ -412,6 +437,7 @@ def _visibility_timeline(
     rgbd_export_record: Mapping[str, object],
     rgbd_combined_output_sha256: str,
     rgbd_file_hash_count: int,
+    counterfactual_variant: CounterfactualVariant | None = None,
 ) -> _VisibilityTimeline:
     if len(dataset) != len(batches):
         raise ValueError("visibility dataset frame count does not match source run")
@@ -449,6 +475,16 @@ def _visibility_timeline(
     suppressed_by_frame: dict[int, frozenset[str]] = {}
     events_by_frame: dict[int, tuple[dict[str, object], ...]] = {}
     transition_records: list[dict[str, object]] = []
+    reference_transition_records: list[dict[str, object]] = []
+    first_absence_frames: dict[str, int | None] = {
+        entity.entity_id: None for entity in ordered_entities
+    }
+    transition_support: dict[str, dict[str, int]] = {}
+    selected = (
+        None
+        if counterfactual_variant is None
+        else frozenset(counterfactual_variant.selected_anchor_ids)
+    )
     for batch in batches[cutoff_frame + 1 :]:
         frame = dataset[batch.frame_index]
         if (
@@ -462,6 +498,11 @@ def _visibility_timeline(
             entity_id = entity.entity_id
             evidence = classify_anchor_visibility(sampled[entity_id], frame, config)
             counts[entity_id][evidence.kind.value] += 1
+            if (
+                evidence.kind is AnchorVisibilityEvidenceKind.VISIBLE_ABSENT
+                and first_absence_frames[entity_id] is None
+            ):
+                first_absence_frames[entity_id] = batch.frame_index
             before = states[entity_id]
             after = advance_anchor_visibility(before, evidence, config)
             states[entity_id] = after
@@ -477,26 +518,71 @@ def _visibility_timeline(
                 "geometry_epoch": 0,
                 "readout_valid": after.active,
             }
-            frame_events.append(event)
-            transition_records.append(
-                {
+            record = {
+                "frame_index": batch.frame_index,
+                "timestamp_ns": batch.timestamp_ns,
+                "entity_id": f"anchor:{entity_id}",
+                "before": event["before"],
+                "after": event["after"],
+                "evidence": event["evidence"],
+                "readout_valid": event["readout_valid"],
+            }
+            if before.active and not after.active:
+                support = {
                     "frame_index": batch.frame_index,
-                    "timestamp_ns": batch.timestamp_ns,
-                    "entity_id": f"anchor:{entity_id}",
-                    "before": event["before"],
-                    "after": event["after"],
-                    "evidence": event["evidence"],
-                    "readout_valid": event["readout_valid"],
+                    "absence_observation_count": after.absence_observation_count,
+                    "distinct_absence_viewpoint_count": len(
+                        after.absence_viewpoints_xyz
+                    ),
                 }
-            )
+                transition_support.setdefault(entity_id, support)
+                reference_transition_records.append({**record, **support})
+            if selected is None or entity_id in selected:
+                frame_events.append(event)
+                transition_records.append(record)
         suppressed_by_frame[batch.frame_index] = frozenset(
-            entity_id for entity_id, state in states.items() if not state.active
+            entity_id
+            for entity_id, state in states.items()
+            if not state.active and (selected is None or entity_id in selected)
         )
         if frame_events:
             events_by_frame[batch.frame_index] = tuple(
                 sorted(frame_events, key=lambda item: str(item["entity_id"]))
             )
 
+    if selected is not None:
+        transitioned = {
+            record["entity_id"][len("anchor:") :]
+            for record in reference_transition_records
+        }
+        if not selected.issubset(transitioned):
+            raise ValueError(
+                "counterfactual selection must contain only transitioned unbound anchors"
+            )
+
+    entity_diagnostics = [
+        {
+            "entity_id": entity.entity_id,
+            "sampled_voxel_count": len(sampled[entity.entity_id]),
+            "evidence_counts": counts[entity.entity_id],
+            "final_active": states[entity.entity_id].active,
+            "absence_observation_count": states[
+                entity.entity_id
+            ].absence_observation_count,
+            "distinct_absence_viewpoint_count": len(
+                states[entity.entity_id].absence_viewpoints_xyz
+            ),
+            **(
+                {
+                    "first_absence_frame": first_absence_frames[entity.entity_id],
+                    "transition": transition_support.get(entity.entity_id),
+                }
+                if counterfactual_variant is not None
+                else {}
+            ),
+        }
+        for entity in ordered_entities
+    ]
     diagnostics = {
         "schema_version": 1,
         "manifest_id": "crove_ovimap_unbound_visibility_diagnostics_v1",
@@ -512,21 +598,16 @@ def _visibility_timeline(
         "rgbd_file_hash_count": rgbd_file_hash_count,
         "transition_count": len(transition_records),
         "transitions": transition_records,
-        "entities": [
+        "entities": entity_diagnostics,
+        **(
             {
-                "entity_id": entity.entity_id,
-                "sampled_voxel_count": len(sampled[entity.entity_id]),
-                "evidence_counts": counts[entity.entity_id],
-                "final_active": states[entity.entity_id].active,
-                "absence_observation_count": states[
-                    entity.entity_id
-                ].absence_observation_count,
-                "distinct_absence_viewpoint_count": len(
-                    states[entity.entity_id].absence_viewpoints_xyz
-                ),
+                "counterfactual_variant": counterfactual_variant.to_json_record(),
+                "p5_reference_transition_count": len(reference_transition_records),
+                "p5_reference_transitions": reference_transition_records,
             }
-            for entity in ordered_entities
-        ],
+            if counterfactual_variant is not None
+            else {}
+        ),
     }
     return _VisibilityTimeline(
         suppressed_by_frame=suppressed_by_frame,
@@ -592,6 +673,7 @@ def compose_run(
     readout_role: str = "formal_baseline",
     visibility_policy: Path | None = None,
     dataset_factory: Any | None = None,
+    counterfactual_variant: CounterfactualVariant | None = None,
 ) -> Path:
     """Publish a source-bound sequential composition without mutating inputs."""
 
@@ -600,6 +682,7 @@ def compose_run(
         moved_geometry_mode,
         readout_role,
         visibility_enabled=visibility_enabled,
+        counterfactual_variant=counterfactual_variant,
     )
     if dataset_factory is not None and not visibility_enabled:
         raise ValueError("visibility dataset factory requires a visibility policy")
@@ -805,6 +888,7 @@ def compose_run(
             rgbd_export_record=rgbd_export_record,
             rgbd_combined_output_sha256=combined_output,
             rgbd_file_hash_count=file_hash_count,
+            counterfactual_variant=counterfactual_variant,
         )
 
     checkpoint_values = source.get("checkpoints")
@@ -1053,6 +1137,11 @@ def compose_run(
             "processed_frame_count": len(batches),
             "official_state_count": len(checkpoint_results),
             "readout_contract": readout_contract,
+            **(
+                {"counterfactual_variant": counterfactual_variant.to_json_record()}
+                if counterfactual_variant is not None
+                else {}
+            ),
             "inputs": {
                 "source_run_manifest": witnesses[0][1],
                 "anchor_manifest": witnesses[1][1],
