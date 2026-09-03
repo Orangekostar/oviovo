@@ -230,8 +230,55 @@ diagnostics. Preserve the B3 paper-protocol block.
 Rules out the sidecar patch and local aggregation as causes of any official
 metric change.
 
-**Commit:** `PENDING_THIS_COMMIT`
+**Commit:** `deaf8ae`
 
 **Artifacts:** `external_patches/khronos_eval_exact_attribution.patch`,
 `src/evaluation/khronos_attribution.py`, the audit CLI, and the B4 section of
 `configs/external/khronos_source_manifest.json`.
+
+## B5 — TESSE Current Diagonal and Input Fairness
+
+**Question:** Do frozen CROVE variants rank differently on a verified current
+slice, and can matched GT-semantics conditions separate frontend from mapper
+limitations?
+
+**Evidence before:** `CODE_EVIDENCE` from B2/B4 row and attribution contracts;
+`MEASURED_EVIDENCE` from frozen A6, c553 static-anchor, P5, and P6-C outputs.
+No new mapper training or tuning was performed.
+
+**Frozen source:** Each method's static/dynamic CSV and map timestamp hashes,
+plus B4 exact sidecars for P5. K0/K1/C0/C1 meanings and the 50% strict-majority
+closure rule were frozen before these results.
+
+**Frozen protocol:** `TESSE_CURRENT_DIAGONAL` requires verified
+`belief_time == robot_time`, causal trajectory timestamps, exact duplicate
+agreement, and Khronos-compatible NaN/F1 aggregation. Oracle inputs are always
+non-ranking and fail closed without source-database and frame alignment proof.
+
+**Command:** Run `evaluate_tesse_current_slice.py` for all four frozen methods,
+with B4 sidecars for P5; run the semantic-oracle builder; then run
+`audit_tesse_input_fairness.py` on K0/K1/C0/C1 status manifests.
+
+**Result:** `MEASURED_EVIDENCE`: every artifact has 946 raw rows but only 43
+unique current-diagonal states. Current and available post-release official
+values and ranks are identical, with zero reversals across six finite pairwise
+comparisons. Material mismatch is false on this diagonal-only evidence.
+Fairness is `INCONCLUSIVE_MISSING_CONDITION` because K0 and C1 are unavailable;
+no missing value was converted to zero.
+
+**Deviation from paper:** This does not reproduce a historical RSS 4D grid.
+The current diagonal and common-v2 metrics are explicitly diagnostic.
+
+**Decision:** Do not claim a favorable TESSE task-mismatch reversal or a
+frontend/backend diagnosis. Preserve the actual finding that the available
+evaluator artifacts cannot test retrospective task alignment.
+
+**What this rules in/out:** Rules in B6/B7 independent causal pilots. Rules out
+using the current public loop's duplicate rows as historical evidence and
+rules out direct C0-versus-paper comparisons under unmatched semantics.
+
+**Commit:** `PENDING_THIS_COMMIT`
+
+**Artifacts:** `docs/superpowers/reports/2026-09-03-tesse-input-fairness.md`,
+`docs/superpowers/reports/2026-09-03-tesse-current-vs-full4d.md`, and the B5
+evaluation modules and CLIs.
