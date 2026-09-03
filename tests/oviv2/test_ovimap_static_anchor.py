@@ -7,6 +7,11 @@ import pytest
 
 import src.oviv2.ovimap_static_anchor as anchor_module
 from src.evaluation.contracts import EntityPrediction, MapSnapshot
+from src.oviv2.anchor_visibility import (
+    AnchorCurrentOwnership,
+    AnchorVisibilityConfig,
+    initialize_anchor_current_ownership,
+)
 from src.oviv2.ovimap_static_anchor import (
     PrefixIdentitySample,
     StaticAnchorConfig,
@@ -367,6 +372,7 @@ def _compose(
     exports: tuple[TemporalExportBatch, ...],
     moved_geometry_mode: str = "temporal_compact",
     suppressed_unbound_anchor_ids: frozenset[str] = frozenset(),
+    localized_unbound_ownership: tuple[AnchorCurrentOwnership, ...] | None = None,
 ):
     return compose_anchor_checkpoint(
         anchor=anchor,
@@ -378,6 +384,7 @@ def _compose(
         class_names=("unknown", "Chair", "Table"),
         moved_geometry_mode=moved_geometry_mode,
         suppressed_unbound_anchor_ids=suppressed_unbound_anchor_ids,
+        localized_unbound_ownership=localized_unbound_ownership,
     )
 
 
@@ -1067,3 +1074,176 @@ def test_reactivation_restores_bound_anchor_after_visible_absence() -> None:
 
     assert [item.entity_id for item in composed.entities] == ["ovimap:1"]
     assert restored.removed_anchor_ids == frozenset()
+
+
+def _localized_visibility_config() -> AnchorVisibilityConfig:
+    return AnchorVisibilityConfig(
+        voxel_size_m=0.05,
+        depth_tolerance_m=0.1,
+        depth_max_m=10.0,
+        maximum_voxels_per_anchor=1_000,
+        minimum_tested_voxels=1,
+        minimum_absent_fraction=0.8,
+        minimum_present_fraction=0.8,
+        minimum_absent_observations=6,
+        minimum_distinct_viewpoints=3,
+        minimum_viewpoint_baseline_m=0.25,
+        minimum_present_streak=2,
+    )
+
+
+def _unbound_anchor_fixture():
+    anchor = _anchor()
+    anchor.entities = anchor.entities[:1]
+    state = bind_anchor_identities(anchor, (), _config(), cutoff_frame=262)
+    temporal = _temporal_snapshot(frame_index=263, entities=())
+    exports = (
+        _export_batch(
+            frame_index=263,
+            entity_id=99,
+            x=4.0,
+            dynamic_state=DynamicState.STATIC,
+            geometry_epoch=0,
+        ),
+    )
+    ownership = initialize_anchor_current_ownership(
+        "ovimap:1",
+        anchor.entities[0].points_xyz,
+        _localized_visibility_config(),
+        frame_id=263,
+        timestamp=263.0,
+    )
+    return anchor, state, temporal, exports, ownership
+
+
+def test_localized_ownership_filters_points_without_downsampling_or_relabeling() -> None:
+    anchor, state, temporal, exports, ownership = _unbound_anchor_fixture()
+    current = ownership.current_mask.copy()
+    zero_voxel = np.flatnonzero(np.all(ownership.voxel_keys == (0, 0, 0), axis=1))
+    assert zero_voxel.tolist() == [1]
+    current[zero_voxel[0]] = False
+    ownership = replace(ownership, current_mask=current)
+
+    composed, _, _ = _compose(
+        anchor=anchor,
+        state=state,
+        temporal=temporal,
+        exports=exports,
+        localized_unbound_ownership=(ownership,),
+    )
+
+    assert [item.entity_id for item in composed.entities] == ["ovimap:1"]
+    entity = composed.entities[0]
+    assert np.array_equal(
+        entity.points_xyz,
+        np.asarray(
+            ((-0.1, -0.1, -0.1), (0.1, 0.1, 0.1)), dtype=np.float32
+        ),
+    )
+    assert entity.semantic_label == anchor.entities[0].semantic_label
+    assert np.array_equal(
+        entity.semantic_embedding, anchor.entities[0].semantic_embedding
+    )
+    assert entity.semantic_score == anchor.entities[0].semantic_score
+    assert entity.metadata == {
+        "authority": "ovimap_anchor",
+        "anchor_entity_id": "ovimap:1",
+        "anchor_manifest_sha256": "b" * 64,
+        "owner_entity_id": "anchor:ovimap:1",
+        "semantic_authority": "ovimap_anchor",
+        "state_authority": "crove_anchor_visibility",
+        "overlay_state": "partially_suppressed",
+        "ownership_policy_id": ownership.policy_id,
+        "ownership_voxel_size_m": 0.05,
+        "active_voxel_count": 2,
+        "suppressed_voxel_count": 1,
+        "active_point_count": 2,
+        "suppressed_point_count": 1,
+    }
+    assert all("mask" not in key for key in entity.metadata)
+
+
+def test_localized_ownership_reports_unchanged_and_omits_dormant_anchor() -> None:
+    anchor, state, temporal, exports, ownership = _unbound_anchor_fixture()
+    unchanged, _, _ = _compose(
+        anchor=anchor,
+        state=state,
+        temporal=temporal,
+        exports=exports,
+        localized_unbound_ownership=(ownership,),
+    )
+    assert np.array_equal(
+        unchanged.entities[0].points_xyz, anchor.entities[0].points_xyz
+    )
+    assert unchanged.entities[0].metadata["overlay_state"] == "unchanged"
+    assert unchanged.entities[0].metadata["active_point_count"] == 3
+    dormant = replace(
+        ownership,
+        current_mask=np.zeros(len(ownership.current_mask), dtype=np.bool_),
+    )
+    suppressed, _, _ = _compose(
+        anchor=anchor,
+        state=state,
+        temporal=temporal,
+        exports=exports,
+        localized_unbound_ownership=(dormant,),
+    )
+    assert suppressed.entities == []
+
+
+def test_localized_ownership_rejects_bound_unknown_and_legacy_mix() -> None:
+    anchor, state, temporal, exports, ownership = _unbound_anchor_fixture()
+    with pytest.raises(ValueError, match="cover every unbound anchor"):
+        _compose(
+            anchor=anchor,
+            state=state,
+            temporal=temporal,
+            exports=exports,
+            localized_unbound_ownership=(),
+        )
+    with pytest.raises(ValueError, match="mutually exclusive"):
+        _compose(
+            anchor=anchor,
+            state=state,
+            temporal=temporal,
+            exports=exports,
+            suppressed_unbound_anchor_ids=frozenset({"ovimap:1"}),
+            localized_unbound_ownership=(ownership,),
+        )
+
+    bound_anchor, bound_state = _single_anchor_and_state()
+    bound_temporal = _temporal_snapshot(
+        frame_index=263,
+        entities=(
+            _temporal_entity(
+                7,
+                TemporalLifecycle.ACTIVE,
+                x=0.0,
+                frame_index=263,
+                geometry_epoch=0,
+            ),
+        ),
+    )
+    bound_ownership = initialize_anchor_current_ownership(
+        "ovimap:1",
+        bound_anchor.entities[0].points_xyz,
+        _localized_visibility_config(),
+        frame_id=263,
+        timestamp=263.0,
+    )
+    with pytest.raises(ValueError, match="unbound anchor"):
+        _compose(
+            anchor=bound_anchor,
+            state=bound_state,
+            temporal=bound_temporal,
+            exports=(
+                _export_batch(
+                    frame_index=263,
+                    entity_id=7,
+                    x=0.0,
+                    dynamic_state=DynamicState.STATIC,
+                    geometry_epoch=0,
+                ),
+            ),
+            localized_unbound_ownership=(bound_ownership,),
+        )

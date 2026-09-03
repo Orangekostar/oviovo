@@ -11,6 +11,7 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 
 from src.evaluation.contracts import EntityPrediction, MapSnapshot
+from src.oviv2.anchor_visibility import AnchorCurrentOwnership
 from src.oviv2.temporal_export import (
     DynamicState,
     TemporalExportBatch,
@@ -582,6 +583,7 @@ def compose_anchor_checkpoint(
     class_names: Sequence[str],
     moved_geometry_mode: str = "temporal_compact",
     suppressed_unbound_anchor_ids: frozenset[str] = frozenset(),
+    localized_unbound_ownership: tuple[AnchorCurrentOwnership, ...] | None = None,
 ) -> tuple[MapSnapshot, AnchorOverlayState, CheckpointOverlayDiagnostics]:
     """Compose one causal current readout without mutating either authority."""
 
@@ -652,6 +654,46 @@ def compose_anchor_checkpoint(
     allowed_suppressed = set(anchor_entities) - set(bindings)
     if not suppressed_unbound_anchor_ids.issubset(allowed_suppressed):
         raise ValueError("visibility suppression may contain only unbound anchor IDs")
+    ownership_by_id: dict[str, AnchorCurrentOwnership] | None = None
+    if localized_unbound_ownership is not None:
+        if suppressed_unbound_anchor_ids:
+            raise ValueError(
+                "legacy suppression and localized ownership are mutually exclusive"
+            )
+        if not isinstance(localized_unbound_ownership, tuple) or any(
+            not isinstance(item, AnchorCurrentOwnership)
+            for item in localized_unbound_ownership
+        ):
+            raise TypeError(
+                "localized_unbound_ownership must be a tuple of AnchorCurrentOwnership"
+            )
+        ownership_ids = tuple(item.entity_id for item in localized_unbound_ownership)
+        if ownership_ids != tuple(sorted(set(ownership_ids))):
+            raise ValueError("localized ownership IDs must be sorted and unique")
+        if not set(ownership_ids).issubset(allowed_suppressed):
+            raise ValueError("localized ownership may contain only unbound anchor IDs")
+        if set(ownership_ids) != allowed_suppressed:
+            raise ValueError("localized ownership must cover every unbound anchor")
+        ownership_by_id = {
+            item.entity_id: item for item in localized_unbound_ownership
+        }
+        for entity_id, ownership in ownership_by_id.items():
+            anchor_entity = anchor_entities[entity_id]
+            if ownership.last_frame_id != observed_frame_index:
+                raise ValueError("localized ownership must match the checkpoint frame")
+            if ownership.voxel_size_m != config.background_voxel_size_m:
+                raise ValueError("localized ownership voxel size is incompatible")
+            anchor_keys = np.unique(
+                np.floor(
+                    np.asarray(anchor_entity.points_xyz, dtype=np.float64)
+                    / ownership.voxel_size_m
+                ).astype(np.int64),
+                axis=0,
+            )
+            if not np.array_equal(
+                anchor_keys, ownership.voxel_keys.astype(np.int64)
+            ):
+                raise ValueError("localized ownership does not match anchor geometry")
     moved = set(state.moved_anchor_ids)
     removed = set(state.removed_anchor_ids)
     latest_samples = {}
@@ -713,6 +755,36 @@ def compose_anchor_checkpoint(
         temporal_id = bindings.get(anchor_id)
         if anchor_id in suppressed_unbound_anchor_ids:
             continue
+        localized = (
+            None if ownership_by_id is None else ownership_by_id.get(anchor_id)
+        )
+        localized_points: np.ndarray | None = None
+        localized_point_mask: np.ndarray | None = None
+        if localized is not None:
+            current_by_key = {
+                tuple(int(value) for value in key): bool(current)
+                for key, current in zip(
+                    localized.voxel_keys,
+                    localized.current_mask,
+                    strict=True,
+                )
+            }
+            point_keys = np.floor(
+                np.asarray(anchor_entity.points_xyz, dtype=np.float64)
+                / localized.voxel_size_m
+            ).astype(np.int64)
+            localized_point_mask = np.asarray(
+                [
+                    current_by_key[tuple(int(value) for value in key)]
+                    for key in point_keys
+                ],
+                dtype=np.bool_,
+            )
+            if not np.any(localized_point_mask):
+                continue
+            localized_points = np.asarray(
+                anchor_entity.points_xyz[localized_point_mask], dtype=np.float32
+            )
         if anchor_id in removed:
             removed_ids.append(anchor_id)
             continue
@@ -746,7 +818,9 @@ def compose_anchor_checkpoint(
                     )
                 moved_ids.append(anchor_id)
                 continue
-        overlay_state = "unchanged"
+        overlay_state = (
+            "unchanged" if localized is None else localized.whole_anchor_status
+        )
         if temporal_id is not None:
             wrapper = wrappers.get(temporal_id)
             event = latest_events.get(temporal_id)
@@ -803,11 +877,27 @@ def compose_anchor_checkpoint(
         else:
             semantic_source = None
             anchor_metadata["semantic_authority"] = "ovimap_anchor"
+        if localized is not None and localized_point_mask is not None:
+            active_points = int(np.count_nonzero(localized_point_mask))
+            anchor_metadata.update(
+                {
+                    "state_authority": "crove_anchor_visibility",
+                    "overlay_state": localized.whole_anchor_status,
+                    "ownership_policy_id": localized.policy_id,
+                    "ownership_voxel_size_m": localized.voxel_size_m,
+                    "active_voxel_count": localized.current_voxel_count,
+                    "suppressed_voxel_count": localized.suppressed_voxel_count,
+                    "active_point_count": active_points,
+                    "suppressed_point_count": len(localized_point_mask)
+                    - active_points,
+                }
+            )
         predictions.append(
             _copy_prediction(
                 anchor_entity,
                 metadata=anchor_metadata,
                 semantic_source=semantic_source,
+                points_xyz=localized_points,
             )
         )
 
