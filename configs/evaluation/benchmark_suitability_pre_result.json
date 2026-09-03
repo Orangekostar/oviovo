@@ -1,0 +1,296 @@
+{
+  "schema_version": 1,
+  "status": "FROZEN_PRE_RESULT",
+  "frozen_at": "2026-09-03T17:27:13Z",
+  "master_prompt_sha256": "c878fe1d09e603a9bc8171afb048dd86a1fb8dbe371bcb6513a589d30a2d1c7c",
+  "score_scale": {
+    "0": "absent or protocol-incompatible",
+    "1": "partial, adapted, or uncertain",
+    "2": "direct and protocol-compatible"
+  },
+  "decision_policy": "Scores are frozen before CROVE 3RScan or Panoptic Flat pilot results are viewed. Totals describe evidence suitability, not expected method performance, and cannot alone promote or remove a headline benchmark.",
+  "dimensions": [
+    "matches_current_state_claim",
+    "online_causal_compatibility",
+    "open_vocab_input_fairness",
+    "short_term_dynamics_coverage",
+    "long_term_change_coverage",
+    "exact_cross_time_identity_gt",
+    "change_type_gt",
+    "geometry_current_surface_gt",
+    "evaluator_error_provenance",
+    "official_code_reproducibility",
+    "baseline_ecosystem",
+    "real_world_relevance"
+  ],
+  "benchmarks": {
+    "tesse_official": {
+      "display_name": "TESSE-CD official full-history protocol",
+      "protocol_id": "tesse_cd_khronos_full_history",
+      "total": 16,
+      "scores": {
+        "matches_current_state_claim": {
+          "score": 1,
+          "rationale": "The protocol contains the current diagonal but integrates historical belief queries beyond CROVE's bounded current-state claim.",
+          "source_ids": ["LIT-KHRONOS-2024"]
+        },
+        "online_causal_compatibility": {
+          "score": 2,
+          "rationale": "Khronos constructs its estimate causally as robot time advances.",
+          "source_ids": ["LIT-KHRONOS-2024"]
+        },
+        "open_vocab_input_fairness": {
+          "score": 0,
+          "rationale": "The paper's headline TESSE component study uses simulator GT semantics, unlike CROVE's native open-vocabulary frontend.",
+          "source_ids": ["LIT-KHRONOS-2024"]
+        },
+        "short_term_dynamics_coverage": {
+          "score": 2,
+          "rationale": "TESSE-CD explicitly includes visible moving objects and dynamic-object evaluation.",
+          "source_ids": ["LIT-KHRONOS-2024"]
+        },
+        "long_term_change_coverage": {
+          "score": 2,
+          "rationale": "Out-of-view appearance, disappearance, and persistence are first-class benchmark events.",
+          "source_ids": ["LIT-KHRONOS-2024"]
+        },
+        "exact_cross_time_identity_gt": {
+          "score": 2,
+          "rationale": "The simulator-backed time-indexed scene graph provides persistent object identity across robot and query times.",
+          "source_ids": ["LIT-KHRONOS-2024"]
+        },
+        "change_type_gt": {
+          "score": 2,
+          "rationale": "Dynamic, appeared, disappeared, and persistent states are represented in benchmark ground truth.",
+          "source_ids": ["LIT-KHRONOS-2024"]
+        },
+        "geometry_current_surface_gt": {
+          "score": 2,
+          "rationale": "TESSE exposes time-indexed object and background geometry for surface evaluation.",
+          "source_ids": ["LIT-KHRONOS-2024"]
+        },
+        "evaluator_error_provenance": {
+          "score": 0,
+          "rationale": "Current official CSV outputs expose aggregate mass without the exact TP, FP, and FN node associations needed for causal attribution.",
+          "source_ids": ["LIT-KHRONOS-2024", "SRC-KHRONOS"]
+        },
+        "official_code_reproducibility": {
+          "score": 1,
+          "rationale": "Official code and data exist, but the RSS release lacks the later evaluator package and the current artifact identity is unproven.",
+          "source_ids": ["SRC-KHRONOS"]
+        },
+        "baseline_ecosystem": {
+          "score": 2,
+          "rationale": "The benchmark has system-component, pose, and open-set conditions plus published dynamic mapping comparisons.",
+          "source_ids": ["LIT-KHRONOS-2024"]
+        },
+        "real_world_relevance": {
+          "score": 0,
+          "rationale": "TESSE-CD is a controlled simulator benchmark rather than a captured real environment.",
+          "source_ids": ["LIT-KHRONOS-2024"]
+        }
+      }
+    },
+    "tesse_current_diagonal": {
+      "display_name": "TESSE-CD current-diagonal diagnostic",
+      "protocol_id": "tesse_cd_belief_time_equals_robot_time",
+      "total": 18,
+      "scores": {
+        "matches_current_state_claim": {
+          "score": 2,
+          "rationale": "Restricting belief time to robot time directly asks whether the map is correct now.",
+          "source_ids": ["LIT-KHRONOS-2024"]
+        },
+        "online_causal_compatibility": {
+          "score": 2,
+          "rationale": "Each diagonal query uses only the map available at that robot time.",
+          "source_ids": ["LIT-KHRONOS-2024"]
+        },
+        "open_vocab_input_fairness": {
+          "score": 1,
+          "rationale": "Matched raw inputs can be enforced locally, but the diagnostic is not an official published matched-frontend condition.",
+          "source_ids": ["LIT-KHRONOS-2024", "SRC-KHRONOS"]
+        },
+        "short_term_dynamics_coverage": {
+          "score": 2,
+          "rationale": "The same continuous TESSE trajectory retains visible moving-object events.",
+          "source_ids": ["LIT-KHRONOS-2024"]
+        },
+        "long_term_change_coverage": {
+          "score": 2,
+          "rationale": "The current diagonal still observes the latest state after out-of-view changes.",
+          "source_ids": ["LIT-KHRONOS-2024"]
+        },
+        "exact_cross_time_identity_gt": {
+          "score": 2,
+          "rationale": "It uses the same time-indexed simulator object identities as the full-history protocol.",
+          "source_ids": ["LIT-KHRONOS-2024"]
+        },
+        "change_type_gt": {
+          "score": 2,
+          "rationale": "Appeared, disappeared, persistent, and dynamic labels remain available on the diagonal.",
+          "source_ids": ["LIT-KHRONOS-2024"]
+        },
+        "geometry_current_surface_gt": {
+          "score": 2,
+          "rationale": "The diagonal compares against geometry at the matching current time.",
+          "source_ids": ["LIT-KHRONOS-2024"]
+        },
+        "evaluator_error_provenance": {
+          "score": 1,
+          "rationale": "The current slice reduces temporal ambiguity, but exact association sidecars still require a non-interfering evaluator patch.",
+          "source_ids": ["LIT-KHRONOS-2024", "SRC-KHRONOS"]
+        },
+        "official_code_reproducibility": {
+          "score": 1,
+          "rationale": "The slice is derivable from public evaluator concepts, but it is a clearly labeled CROVE diagnostic rather than an RSS Table I reproduction.",
+          "source_ids": ["SRC-KHRONOS"]
+        },
+        "baseline_ecosystem": {
+          "score": 1,
+          "rationale": "Existing systems can be rescored from matched outputs, but published diagonal numbers are not broadly available.",
+          "source_ids": ["LIT-KHRONOS-2024"]
+        },
+        "real_world_relevance": {
+          "score": 0,
+          "rationale": "The diagnostic remains simulator-only.",
+          "source_ids": ["LIT-KHRONOS-2024"]
+        }
+      }
+    },
+    "3rscan": {
+      "display_name": "3RScan long-term identity and change protocol",
+      "protocol_id": "3rscan_strict_prefix_temporal_instances",
+      "total": 19,
+      "scores": {
+        "matches_current_state_claim": {
+          "score": 1,
+          "rationale": "Per-visit state and change are relevant, but the standard task compares completed sparse scans rather than a continuously maintained current map.",
+          "source_ids": ["LIT-RIO-2019", "LIT-RESCENE4D-2026"]
+        },
+        "online_causal_compatibility": {
+          "score": 1,
+          "rationale": "CROVE can process visits in strict prefix order, although canonical 3RScan and ReScene4D evaluation is offline.",
+          "source_ids": ["LIT-RIO-2019", "LIT-RESCENE4D-2026"]
+        },
+        "open_vocab_input_fairness": {
+          "score": 1,
+          "rationale": "Raw RGB-D permits matched open-vocabulary inputs, while established baselines often consume reconstructed geometry or fixed annotations.",
+          "source_ids": ["LIT-RIO-2019", "LIT-OBJECTS-CAN-MOVE-2022"]
+        },
+        "short_term_dynamics_coverage": {
+          "score": 0,
+          "rationale": "Repeated scans provide sparse sessions and do not label continuously moving objects within a traversal.",
+          "source_ids": ["LIT-RIO-2019"]
+        },
+        "long_term_change_coverage": {
+          "score": 2,
+          "rationale": "Natural revisits explicitly capture moved, removed, and changed indoor objects.",
+          "source_ids": ["LIT-RIO-2019", "LIT-OBJECTS-CAN-MOVE-2022"]
+        },
+        "exact_cross_time_identity_gt": {
+          "score": 2,
+          "rationale": "Persistent instance IDs, scan references, and ambiguity groups bind objects across visits.",
+          "source_ids": ["LIT-RIO-2019"]
+        },
+        "change_type_gt": {
+          "score": 2,
+          "rationale": "Rigid, non-rigid, removed, and comparison-derived added states are available for object-level diagnosis.",
+          "source_ids": ["LIT-RIO-2019", "LIT-OBJECTS-CAN-MOVE-2022"]
+        },
+        "geometry_current_surface_gt": {
+          "score": 2,
+          "rationale": "Each visit has an aligned reconstructed mesh and semantic-instance geometry.",
+          "source_ids": ["LIT-RIO-2019"]
+        },
+        "evaluator_error_provenance": {
+          "score": 2,
+          "rationale": "Errors can be traced to exact visit, object identity, correspondence, and changed geometry.",
+          "source_ids": ["LIT-RIO-2019", "LIT-RESCENE4D-2026"]
+        },
+        "official_code_reproducibility": {
+          "score": 2,
+          "rationale": "Official metadata, readers, splits, temporal metric code, and local validation assets are source-bound.",
+          "source_ids": ["SRC-3RSCAN", "SRC-STMETRICS"]
+        },
+        "baseline_ecosystem": {
+          "score": 2,
+          "rationale": "RIO, geometric change detection, ReScene4D, and emerging OASIS-Map cover complementary identity and change tasks.",
+          "source_ids": ["LIT-RIO-2019", "LIT-OBJECTS-CAN-MOVE-2022", "LIT-RESCENE4D-2026", "LIT-OASIS-MAP-2026"]
+        },
+        "real_world_relevance": {
+          "score": 2,
+          "rationale": "The benchmark consists of naturally changing real indoor environments captured over repeated visits.",
+          "source_ids": ["LIT-RIO-2019"]
+        }
+      }
+    },
+    "panoptic_flat": {
+      "display_name": "Panoptic Mapping Flat controlled two-run protocol",
+      "protocol_id": "panoptic_flat_current_surface_change",
+      "total": 16,
+      "scores": {
+        "matches_current_state_claim": {
+          "score": 2,
+          "rationale": "The protocol directly tests whether stale surfaces are removed and the latest two-run map remains complete.",
+          "source_ids": ["LIT-PANOPTIC-MULTITSDFS-2022", "LIT-GAME-2026"]
+        },
+        "online_causal_compatibility": {
+          "score": 2,
+          "rationale": "The mapper processes RGB-D sequentially and loads run 1 before causally updating with run 2.",
+          "source_ids": ["LIT-PANOPTIC-MULTITSDFS-2022"]
+        },
+        "open_vocab_input_fairness": {
+          "score": 1,
+          "rationale": "Raw RGB-D permits a matched CROVE frontend, but the canonical strongest Flat condition uses GT panoptic masks.",
+          "source_ids": ["LIT-PANOPTIC-MULTITSDFS-2022"]
+        },
+        "short_term_dynamics_coverage": {
+          "score": 0,
+          "rationale": "Flat emphasizes between-run changes rather than continuously moving objects.",
+          "source_ids": ["LIT-PANOPTIC-MULTITSDFS-2022"]
+        },
+        "long_term_change_coverage": {
+          "score": 2,
+          "rationale": "The two-run scene contains controlled moved, added, and removed objects.",
+          "source_ids": ["LIT-PANOPTIC-MULTITSDFS-2022"]
+        },
+        "exact_cross_time_identity_gt": {
+          "score": 1,
+          "rationale": "Panoptic labels identify controlled changed objects, but the published protocol is surface-centric and does not standardize an identity metric.",
+          "source_ids": ["LIT-PANOPTIC-MULTITSDFS-2022"]
+        },
+        "change_type_gt": {
+          "score": 2,
+          "rationale": "New, removed, and modified object states are controlled by the simulator.",
+          "source_ids": ["LIT-PANOPTIC-MULTITSDFS-2022"]
+        },
+        "geometry_current_surface_gt": {
+          "score": 2,
+          "rationale": "Complete simulated geometry supports current-surface distance and coverage evaluation.",
+          "source_ids": ["LIT-PANOPTIC-MULTITSDFS-2022", "LIT-GAME-2026"]
+        },
+        "evaluator_error_provenance": {
+          "score": 2,
+          "rationale": "Distance and coverage failures can be localized to exact surfaces and object submaps in a controlled scene.",
+          "source_ids": ["LIT-PANOPTIC-MULTITSDFS-2022"]
+        },
+        "official_code_reproducibility": {
+          "score": 1,
+          "rationale": "Official mapping code exists, but its ROS 1 stack is dated and the original Flat access path has moved.",
+          "source_ids": ["SRC-PANOPTIC-MAPPING", "SRC-GAME"]
+        },
+        "baseline_ecosystem": {
+          "score": 1,
+          "rationale": "Panoptic Multi-TSDFs and GaME are relevant, but the matched open-vocabulary baseline set is small.",
+          "source_ids": ["LIT-PANOPTIC-MULTITSDFS-2022", "LIT-GAME-2026"]
+        },
+        "real_world_relevance": {
+          "score": 0,
+          "rationale": "Flat is a controlled synthetic apartment.",
+          "source_ids": ["LIT-PANOPTIC-MULTITSDFS-2022"]
+        }
+      }
+    }
+  }
+}

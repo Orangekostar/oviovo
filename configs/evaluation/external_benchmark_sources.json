@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "status": "FROZEN",
+  "retrieval_date": "2026-09-03",
+  "source_policy": "Official repository HEADs and primary paper pages only; no third-party trees are vendored.",
+  "sources": {
+    "SRC-3RSCAN": {
+      "repo": "WaldJohannaU/3RScan",
+      "commit": "12f040d3dc849e394ed366acd7b54e63acb49205",
+      "license": "MIT",
+      "role": "3RScan metadata, splits, format documentation, and reader examples",
+      "paper": "https://openaccess.thecvf.com/content_ICCV_2019/html/Wald_RIO_3D_Object_Instance_Re-Localization_in_Changing_Indoor_Environments_ICCV_2019_paper.html",
+      "retrieval_date": "2026-09-03"
+    },
+    "SRC-DAAAM": {
+      "repo": "MIT-SPARK/DAAAM",
+      "commit": "ebd6e3b89763849eb7bce7f75e8d08550ea7344a",
+      "license": "BSD-3-Clause",
+      "role": "Real-time open-vocabulary 4D scene-graph reference implementation",
+      "paper": "https://openaccess.thecvf.com/content/CVPR2026/html/Gorlo_Describe_Anything_Anywhere_At_Any_Moment_CVPR_2026_paper.html",
+      "retrieval_date": "2026-09-03"
+    },
+    "SRC-DOVSG": {
+      "repo": "BJHYZJ/DovSG",
+      "commit": "b355987a1ca586f7756f025820fddc24166d75af",
+      "license": "UNDECLARED_TOP_LEVEL",
+      "role": "Dynamic open-vocabulary scene-graph system and long-term manipulation baseline",
+      "paper": "https://arxiv.org/abs/2410.11989",
+      "retrieval_date": "2026-09-03",
+      "license_note": "No top-level LICENSE file exists at the frozen commit; the nested ACE license does not license the complete repository."
+    },
+    "SRC-DYNAMICTHOR": {
+      "repo": "wcx21/DynamicTHOR",
+      "commit": "bed7e573e579edbc1552c9389dd9fdaa7f4d3c2b",
+      "license": "MIT",
+      "role": "Dynamic embodied-navigation simulator and dataset loader",
+      "paper": "https://www.nature.com/articles/s41597-026-07201-7",
+      "retrieval_date": "2026-09-03"
+    },
+    "SRC-GAME": {
+      "repo": "VladimirYugay/GaME",
+      "commit": "1c971d65d29952789fa4a2ebb342580d41acbbff",
+      "license": "MIT_TOP_LEVEL_WITH_NONCOMMERCIAL_BUNDLED_COMPONENTS",
+      "role": "Evolving-scene Gaussian mapping and current Flat dataset access path",
+      "paper": "https://openaccess.thecvf.com/content/CVPR2026/html/Yugay_Gaussian_Mapping_for_Evolving_Scenes_CVPR_2026_paper.html",
+      "retrieval_date": "2026-09-03",
+      "license_note": "The top-level code is MIT; bundled Gaussian-splatting components are separately limited to non-commercial research and evaluation."
+    },
+    "SRC-KHRONOS": {
+      "repo": "MIT-SPARK/Khronos",
+      "commit": "63faadde6ed92220e78fb2f6ca86dcc54bb5cf9e",
+      "license": "BSD-3-Clause",
+      "role": "TESSE-CD source, Khronos system, public post-release evaluator, and aggregation reference",
+      "paper": "https://www.roboticsproceedings.org/rss20/p081.html",
+      "retrieval_date": "2026-09-03",
+      "evaluator_identities": {
+        "rss_2024_release": {
+          "commit": "742227a88de8b2ac23ac54d719b321c3af88dc75",
+          "commit_date": "2024-07-10T19:43:33Z",
+          "message": "release (#2)",
+          "khronos_eval_file_count": 0
+        },
+        "historical_full_triangular_public_evaluator": {
+          "commit": "366062a32ab69bf20ad2062708f3a145351cc287",
+          "commit_date": "2024-07-24T19:30:49Z",
+          "message": "squash eval code",
+          "status": "POST_RELEASE_PUBLIC"
+        },
+        "current_public_evaluator_introduced": {
+          "commit": "5bf72d97857e746c875c34a3ff44d7abf86bb86b",
+          "commit_date": "2025-04-09T19:10:32Z",
+          "message": "Develop (#171)",
+          "status": "POST_RELEASE_PUBLIC"
+        },
+        "latest_public": {
+          "commit": "63faadde6ed92220e78fb2f6ca86dcc54bb5cf9e",
+          "commit_date": "2025-11-10T19:13:37Z",
+          "message": "turn on first seen timestamps for jackal (#194)"
+        },
+        "current_tesse_artifact": {
+          "status": "UNPROVEN_ARTIFACT_EVALUATOR_IDENTITY",
+          "strongest_recoverable_description": "Official Khronos base 63faadde plus a local temporal importer and uncommitted evaluator/build changes.",
+          "reason": "The P5 build manifest binds the temporal importer source and binary, but the evaluation status does not bind evaluate_pipeline.sh, its executable closure, the Khronos commit, or the dirty patch set.",
+          "bound_evidence": {
+            "build_manifest_sha256": "2239b5393f9433b82fd403626d138a9552d63fac9d64853181d112bd8961aac8",
+            "temporal_importer_source_sha256": "aa8130d929ed76d9c0193ac56f8e8ccb7b13cdcb1b9173172cb3036a402ee8f9",
+            "temporal_importer_binary_sha256": "d1e3622f1d2bfbac4abd307c549a0ef328805901f86d49b0505b93ff24711002",
+            "evaluation_status_sha256": "9634980a6c3f6cc40935486ee14bcb2c2e7748b8f83013f6fddfb437913b2f9f"
+          }
+        }
+      }
+    },
+    "SRC-OBJECTS-CAN-MOVE": {
+      "repo": "katadam/ObjectsCanMove",
+      "commit": "41cf524652d1c08c9d1e595a01c193ebb71f36a7",
+      "license": "UNDECLARED_TOP_LEVEL",
+      "role": "3RScan object-level geometric change-detection baseline and GT conversion scripts",
+      "paper": "https://www.ecva.net/papers/eccv_2022/papers_ECCV/html/6194_ECCV_2022_paper.php",
+      "retrieval_date": "2026-09-03",
+      "license_note": "No top-level LICENSE file exists at the frozen commit."
+    },
+    "SRC-PANOPTIC-MAPPING": {
+      "repo": "ethz-asl/panoptic_mapping",
+      "commit": "3926396d92f6e3255748ced61f5519c9b102570f",
+      "license": "BSD-3-Clause",
+      "role": "Panoptic Multi-TSDF implementation, Flat protocol, and long-term mapping baseline",
+      "paper": "https://arxiv.org/abs/2109.10165",
+      "retrieval_date": "2026-09-03"
+    },
+    "SRC-RESCENE4D": {
+      "repo": "GradientSpaces/rescene4d",
+      "commit": "fb2fe42eb8f1e926567c48eea9acb874e608ee10",
+      "license": "MIT",
+      "role": "Temporally sparse 4D semantic instance segmentation on 3RScan",
+      "paper": "https://arxiv.org/abs/2601.11508",
+      "retrieval_date": "2026-09-03"
+    },
+    "SRC-STMETRICS": {
+      "repo": "GradientSpaces/stmetrics",
+      "commit": "640e34c2dd15c8e1a5061f4e66aa4fb6a5da9a5f",
+      "license": "MIT",
+      "role": "Temporal AP, temporal recall, stage AP, and temporal-similarity evaluator",
+      "paper": "https://arxiv.org/abs/2601.11508",
+      "retrieval_date": "2026-09-03"
+    },
+    "SRC-SUPERMAP": {
+      "repo": "superxslam/SuperMap",
+      "commit": "ec95b1d50a458645b2669836e2c431f1e957bbc6",
+      "license": "UNDECLARED_TOP_LEVEL",
+      "role": "Closest open-vocabulary spatio-temporal mapping system",
+      "paper": "https://www.roboticsproceedings.org/rss22/p052.html",
+      "retrieval_date": "2026-09-03",
+      "release_note": "At the frozen commit the repository contains project documentation but states that code will be released after RSS."
+    }
+  },
+  "local_evidence": {
+    "master_prompt": {
+      "path": "local:crove/docs/CROVE_BENCHMARK_ALIGNMENT_CODEX_PROMPT.md",
+      "sha256": "c878fe1d09e603a9bc8171afb048dd86a1fb8dbe371bcb6513a589d30a2d1c7c"
+    },
+    "rscan_metadata": {
+      "path": "local:dataset/3RScan/3RScan.json",
+      "sha256": "674a00f50f76b198b9de44efd86c390fea3da37ba8f12cf8ccd00045e265fa64",
+      "byte_count": 3155995
+    },
+    "rscan_validation_scans": {
+      "path": "local:dataset/3RScan/val_scans.txt",
+      "sha256": "002229133d4dbc311a01994b8ea31ecac0b662511864493efed9b4febcb0a4e8",
+      "byte_count": 5808
+    }
+  }
+}
