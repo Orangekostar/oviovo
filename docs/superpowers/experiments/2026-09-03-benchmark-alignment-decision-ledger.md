@@ -411,7 +411,7 @@ protocol identities. Keep 3RScan and Flat as blocked future evidence routes.
 Pareto table. Rules out benchmark replacement, an exclusive frontend/backend
 root cause, a favorable task-mismatch claim, and a global method-weakness claim.
 
-**Commit:** `PENDING_THIS_COMMIT`
+**Commit:** `3e2184e`
 
 **Artifacts:**
 `docs/superpowers/reports/2026-09-03-benchmark-decision.md` and the immutable B1
@@ -455,7 +455,7 @@ push, and withhold upload completion until the branch SHAs are identical.
 **What this rules in/out:** Rules in a reproducible terminal release gate.
 Rules out completion based only on focused tests or an unverified push.
 
-**Commit:** `PENDING_THIS_COMMIT`
+**Commit:** `3e2184e`
 
 **Artifacts:**
 `docs/superpowers/reports/2026-09-03-benchmark-alignment-handoff.md` and
