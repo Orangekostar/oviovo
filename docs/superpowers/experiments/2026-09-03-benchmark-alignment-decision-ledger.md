@@ -136,10 +136,57 @@ available artifact lacks off-diagonal historical states.
 metric-task mismatch as live causes. Rules out changing local F1 arithmetic to
 improve the score.
 
-**Commit:** `PENDING_THIS_COMMIT`
+**Commit:** `20c9dc6`
 
 **Artifacts:**
 `docs/superpowers/reports/2026-09-03-khronos-metric-parity.md`; A6 audit JSON
 SHA-256 `4ecc68bc54f0fff56becacb4d0900fc8cbe19bc2656cd1f213ddce0282b8a6d1`;
 P5 audit JSON SHA-256
 `f9d4e9e578ea69ee50df85576f0a9a5e6f533fd5ad57844688846e0257bca8e4`.
+
+## B3 — Khronos Paper-Protocol Identity Gate
+
+**Question:** Can the RSS 2024 Table I Apartment, GT-pose,
+simulator-GT-semantics condition be reproduced with source-bound public inputs?
+
+**Evidence before:** `LITERATURE_EVIDENCE` from the RSS paper and release
+README; `CODE_EVIDENCE` from exact release/latest Git trees and the B0 artifact
+identity audit. B2 aggregation parity is not treated as paper-protocol parity.
+
+**Frozen source:** RSS release
+`742227a88de8b2ac23ac54d719b321c3af88dc75`, latest official public source
+`63faadde6ed92220e78fb2f6ca86dcc54bb5cf9e`, and the content hashes in
+`configs/external/khronos_source_manifest.json`.
+
+**Frozen protocol:** Apartment, GT pose, simulator GT semantics, 8 cm, 5 m;
+reference F1 values Background `0.912`, Object `0.753`, Dynamic `0.841`, Change
+`0.646`; absolute tolerance `0.02`, frozen before any run.
+
+**Command:** Count `khronos_eval/` files in both exact Git trees, hash the
+release/latest source files, inventory only bounded TESSE assets, and run the
+source-manifest contract tests. Do not execute an unbound post-release
+approximation as though it were Table I.
+
+**Result:** `BLOCKED`: the RSS release has zero evaluator files; the public
+evaluator/configuration is post-release; the local inventory lacks a
+content-addressed original paper rosbag; and A6/P5 do not bind the evaluator
+closure or dirty patch set. Reproduction status is `BLOCKED_PAPER_ASSET` and no
+observed paper-like metrics were created.
+
+**Deviation from paper:** None was run. Existing B2 A6/P5 aggregation parity is
+kept separate from RSS Table I protocol identity.
+
+**Decision:** Do not label current CROVE or post-release evaluator outputs
+`PAPER_PROTOCOL_EXACT`, and do not use the Table I values as a local
+same-protocol baseline until the source, data, config, and evaluator identities
+are content-addressed.
+
+**What this rules in/out:** Rules in the public post-release evaluator as a
+future explicitly approximate diagnostic once inputs are bound. Rules out
+attributing CROVE-versus-paper score differences to the mapping method alone or
+changing official arithmetic to close the gap.
+
+**Commit:** `PENDING_THIS_COMMIT`
+
+**Artifacts:** `configs/external/khronos_source_manifest.json` and
+`docs/superpowers/reports/2026-09-03-khronos-protocol-reproduction.md`.

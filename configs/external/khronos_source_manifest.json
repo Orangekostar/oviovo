@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "status": "BLOCKED_PAPER_ASSET",
+  "retrieval_date": "2026-09-03",
+  "repository": "MIT-SPARK/Khronos",
+  "paper_protocol": {
+    "protocol_id": "KHRONOS_RSS2024_TABLE_I_APARTMENT_GT",
+    "primary_source": "https://www.roboticsproceedings.org/rss20/p081.html",
+    "table": "Table I",
+    "scene": "Apartment",
+    "pose": "GROUND_TRUTH",
+    "semantics": "SIMULATOR_GROUND_TRUTH",
+    "voxel_resolution_m": 0.08,
+    "sensing_range_m": 5.0,
+    "reference_metrics": {
+      "background_f1": 0.912,
+      "object_f1": 0.753,
+      "dynamic_f1": 0.841,
+      "change_f1": 0.646
+    },
+    "absolute_f1_tolerance": 0.02,
+    "tolerance_frozen_before_reproduction": true,
+    "reference_values_are_reproduction_targets_only": true
+  },
+  "rss_release": {
+    "repository_url": "https://github.com/MIT-SPARK/Khronos",
+    "commit": "742227a88de8b2ac23ac54d719b321c3af88dc75",
+    "commit_date": "2024-07-10T19:43:33Z",
+    "message": "release (#2)",
+    "khronos_eval_file_count": 0,
+    "evaluator_identity": "NOT_PRESENT_IN_RELEASE",
+    "dataset_release_url": "https://drive.google.com/drive/folders/1Miv2uPBYzg_FyqMX5vAWI4MDZ70sPLW-",
+    "file_bindings": [
+      {
+        "path": "README.md",
+        "sha256": "d283f522e1510308b4d7bb596038d8916cc52e6ae5a5ac745b16e7700a3a185d",
+        "byte_count": 6729
+      },
+      {
+        "path": "khronos_ros/config/datasets/uHumans2.yaml",
+        "sha256": "c883099d16919ee455e9e7c5798f25724ffda3a3c7de7572d16134a5f119cc45",
+        "byte_count": 433
+      },
+      {
+        "path": "khronos_ros/config/mapper/uHumans2.yaml",
+        "sha256": "fd025f83db2050851442a520efd8fae38d2473c2fcaff2d36c121eba94603b30",
+        "byte_count": 10907
+      }
+    ]
+  },
+  "latest_public": {
+    "repository_url": "https://github.com/MIT-SPARK/Khronos",
+    "commit": "63faadde6ed92220e78fb2f6ca86dcc54bb5cf9e",
+    "commit_date": "2025-11-10T19:13:37Z",
+    "message": "turn on first seen timestamps for jackal (#194)",
+    "khronos_eval_file_count": 76,
+    "evaluator_identity": "POST_RELEASE_PUBLIC_EVALUATOR",
+    "first_public_evaluator_commit": "5bf72d97857e746c875c34a3ff44d7abf86bb86b",
+    "historical_aggregation_commit": "366062a32ab69bf20ad2062708f3a145351cc287",
+    "file_bindings": [
+      {
+        "path": "khronos_eval/plotting/utils.py",
+        "sha256": "a7c1bed4b97f8d9e27361296d00cf741ed67d18ae4d3f8e21e259fc4213d0763",
+        "byte_count": 27282
+      },
+      {
+        "path": "khronos_eval/scripts/evaluate_pipeline.sh",
+        "sha256": "a89b15dfb9be414215ce2748fb174588ca729619d92df55f5dc7a3cc6d7fc2a5",
+        "byte_count": 1814
+      },
+      {
+        "path": "khronos_eval/config/pipeline/apartment.yaml",
+        "sha256": "82a3a087eed1e5e93f6ca0c303a00059e91989620e2e304f4a19d7dee0f59726",
+        "byte_count": 3230
+      },
+      {
+        "path": "khronos_eval/config/pipeline/office.yaml",
+        "sha256": "176dec3bb64e8d3a27be852bf2a384c2b4f1065554ab9701f7747599dcc6c0c3",
+        "byte_count": 3308
+      }
+    ]
+  },
+  "artifact_evaluator_identity": {
+    "artifact_family": "CROVE_A6_P5_TESSE",
+    "status": "UNPROVEN_ARTIFACT_EVALUATOR_IDENTITY",
+    "strongest_recoverable_description": "Official Khronos base 63faadde plus a local temporal importer and uncommitted evaluator/build changes.",
+    "reason": "The recovered build manifest binds the temporal importer source and binary, but the evaluation record does not bind the evaluator script, executable closure, Khronos commit, or dirty patch set.",
+    "bound_evidence": {
+      "build_manifest_sha256": "2239b5393f9433b82fd403626d138a9552d63fac9d64853181d112bd8961aac8",
+      "temporal_importer_source_sha256": "aa8130d929ed76d9c0193ac56f8e8ccb7b13cdcb1b9173172cb3036a402ee8f9",
+      "temporal_importer_binary_sha256": "d1e3622f1d2bfbac4abd307c549a0ef328805901f86d49b0505b93ff24711002",
+      "evaluation_status_sha256": "9634980a6c3f6cc40935486ee14bcb2c2e7748b8f83013f6fddfb437913b2f9f"
+    }
+  },
+  "available_local_evidence": {
+    "inventory_scope": "local:oviovo_benchmark_assets/tesse_cd",
+    "apartment_ground_truth_present": true,
+    "derived_rgbd_export_present": true,
+    "original_paper_rosbag_detected": false,
+    "ground_truth_bindings": {
+      "gt_background_sha256": "a08902664767068a312bc685d77b8ab7b87f4d3476b1a12e7d055afc87442e30",
+      "gt_changes_sha256": "fe15533332a6f2f672598a255e3099bdf28370ff69524a48de8e3ee22d09a4a7",
+      "gt_dsg_sha256": "ba89680aff50ab5825197060cafab0a84c950b7f2b1f88ecc0b2ada6aabda63c",
+      "gt_dsg_with_mesh_sha256": "ed6fd750748f2681602800f477505888e3a1ba7f1b7ba9eec7706886e05e2201"
+    },
+    "derived_rgbd_export_manifest_sha256": "ee35d1843540fc88ae20b5dae5ad34caf192d50f0cab7c5564c47c454d4d5b81"
+  },
+  "reproduction": {
+    "status": "BLOCKED_PAPER_ASSET",
+    "executed": false,
+    "comparison_result": "NOT_RUN",
+    "blocking_evidence": [
+      "The RSS release contains mapper configuration but no khronos_eval implementation or Table I evaluation command.",
+      "The public evaluator and Apartment evaluation configuration are post-release and cannot establish identity with the unpublished Table I evaluator.",
+      "The local inventory contains adapted RGB-D and ground-truth exports but no source-bound original paper rosbag.",
+      "The existing A6/P5 artifacts do not bind the evaluator executable closure or dirty source patch set."
+    ],
+    "required_to_unblock": [
+      "A content-addressed copy of the original Apartment paper dataset or an author-published equivalent binding.",
+      "The exact Table I evaluator source/binary and evaluation configuration, or author evidence that binds the post-release evaluator to the paper implementation.",
+      "A clean end-to-end GT-pose, simulator-GT-semantics, 8 cm, 5 m run with all four metrics within the frozen tolerance."
+    ],
+    "decision": "Do not label any current CROVE or post-release evaluator result PAPER_PROTOCOL_EXACT and do not use the Table I values as a local same-protocol baseline."
+  }
+}
