@@ -41,6 +41,11 @@ from src.oviv2.anchor_visibility import (
     pack_anchor_current_mask,
     sample_anchor_voxels,
 )
+from src.oviv2.dense_moved_readout import (
+    DENSE_GEOMETRY_GATE_ID,
+    DenseMovedReadoutGateConfig,
+    dense_moved_readout_gate_config_from_json,
+)
 from src.oviv2.ovimap_static_anchor import (
     PrefixIdentitySample,
     StaticAnchorConfig,
@@ -59,6 +64,7 @@ from src.oviv2.temporal_lifecycle import TemporalEvidenceKind, TemporalLifecycle
 _RECORD_KEYS = {"path", "sha256", "byte_count"}
 _MOVED_GEOMETRY_MODES = (
     "anchor_centroid_translation",
+    "geometry_gated_anchor_translation",
     "temporal_compact",
 )
 _READOUT_ROLES = (
@@ -66,6 +72,7 @@ _READOUT_ROLES = (
     "counterfactual_diagnostic",
     "evaluation_candidate",
     "formal_baseline",
+    "hybrid_dense_candidate",
     "localized_visibility_candidate",
     "visualization_shadow",
 )
@@ -74,6 +81,7 @@ _ALLOWED_READOUT_CONTRACTS = frozenset(
         ("temporal_compact", "formal_baseline"),
         ("anchor_centroid_translation", "visualization_shadow"),
         ("anchor_centroid_translation", "evaluation_candidate"),
+        ("geometry_gated_anchor_translation", "hybrid_dense_candidate"),
         ("anchor_centroid_translation", "causal_visibility_candidate"),
         ("temporal_compact", "causal_visibility_candidate"),
         ("temporal_compact", "counterfactual_diagnostic"),
@@ -156,10 +164,13 @@ def _readout_contract(
     role: object,
     *,
     visibility_enabled: bool = False,
+    dense_geometry_gate_enabled: bool = False,
     counterfactual_variant: CounterfactualVariant | None = None,
 ) -> dict[str, object]:
     if type(visibility_enabled) is not bool:
         raise TypeError("visibility_enabled must be bool")
+    if type(dense_geometry_gate_enabled) is not bool:
+        raise TypeError("dense_geometry_gate_enabled must be bool")
     if counterfactual_variant is not None and not isinstance(
         counterfactual_variant, CounterfactualVariant
     ):
@@ -178,6 +189,11 @@ def _readout_contract(
         raise ValueError(
             "causal visibility candidate role and visibility policy must be paired"
         )
+    dense_gate_role = role == "hybrid_dense_candidate"
+    if dense_gate_role is not dense_geometry_gate_enabled:
+        raise ValueError(
+            "dense geometry candidate role and gate config must be paired"
+        )
     if (
         not isinstance(mode, str)
         or not isinstance(role, str)
@@ -185,7 +201,9 @@ def _readout_contract(
     ):
         raise ValueError("moved geometry mode and readout role are incompatible")
     result = {"moved_geometry_mode": mode, "readout_role": role}
-    if role == "localized_visibility_candidate":
+    if role == "hybrid_dense_candidate":
+        result["dense_geometry_gate_id"] = DENSE_GEOMETRY_GATE_ID
+    elif role == "localized_visibility_candidate":
         result.update(
             {
                 "unbound_anchor_mode": "localized_current_ownership",
@@ -1140,14 +1158,17 @@ def compose_run(
     dataset_factory: Any | None = None,
     counterfactual_variant: CounterfactualVariant | None = None,
     visibility_diagnostics_cache: Path | None = None,
+    dense_geometry_gate: Path | None = None,
 ) -> Path:
     """Publish a source-bound sequential composition without mutating inputs."""
 
     visibility_enabled = visibility_policy is not None
+    dense_geometry_gate_enabled = dense_geometry_gate is not None
     readout_contract = _readout_contract(
         moved_geometry_mode,
         readout_role,
         visibility_enabled=visibility_enabled,
+        dense_geometry_gate_enabled=dense_geometry_gate_enabled,
         counterfactual_variant=counterfactual_variant,
     )
     if visibility_diagnostics_cache is not None and counterfactual_variant is None:
@@ -1192,6 +1213,27 @@ def compose_run(
         (source_run_manifest, _input_record(source_run_manifest, source_bytes)),
         (anchor_manifest, _input_record(anchor_manifest, anchor_bytes)),
     ]
+    dense_geometry_gate_config: DenseMovedReadoutGateConfig | None = None
+    dense_geometry_gate_record: dict[str, object] | None = None
+    if dense_geometry_gate is not None:
+        dense_geometry_gate_path = Path(
+            os.path.abspath(os.fspath(dense_geometry_gate))
+        )
+        dense_geometry_gate_bytes = _regular_bytes(
+            dense_geometry_gate_path,
+            label="dense geometry gate",
+        )
+        dense_geometry_gate_config = dense_moved_readout_gate_config_from_json(
+            _json_object(
+                dense_geometry_gate_bytes,
+                label="dense geometry gate",
+            )
+        )
+        dense_geometry_gate_record = _input_record(
+            dense_geometry_gate_path,
+            dense_geometry_gate_bytes,
+        )
+        witnesses.append((dense_geometry_gate_path, dense_geometry_gate_record))
 
     outputs = anchor_payload.get("outputs")
     sources = anchor_payload.get("sources")
@@ -1422,6 +1464,7 @@ def compose_run(
     checkpoint_results: list[dict[str, Any]] = []
     source_checkpoint_records: list[dict[str, Any]] = []
     ownership_mask_sidecars: list[dict[str, object]] = []
+    dense_geometry_decisions: list[dict[str, object]] = []
     try:
         trajectory_rows: list[dict[str, object]] = []
         lifecycle_rows: list[dict[str, object]] = []
@@ -1585,10 +1628,18 @@ def compose_run(
                     if localized_timeline is not None
                     else None
                 ),
+                dense_geometry_gate=dense_geometry_gate_config,
             )
             checkpoint_root = staging / "checkpoints" / f"{frame:08d}-{timestamp_ns}"
             written = write_map_snapshot(composed, checkpoint_root / "current")
             diagnostic_payload = asdict(diagnostics)
+            checkpoint_dense_decisions = diagnostic_payload.get(
+                "dense_geometry_decisions"
+            )
+            if checkpoint_dense_decisions:
+                dense_geometry_decisions.extend(checkpoint_dense_decisions)
+            else:
+                diagnostic_payload.pop("dense_geometry_decisions", None)
             if visibility_timeline is not None:
                 diagnostic_payload["visibility_suppressed_anchor_ids"] = sorted(
                     visibility_timeline.suppressed_by_frame.get(frame, frozenset())
@@ -1713,6 +1764,24 @@ def compose_run(
             "readout_contract": readout_contract,
             **(
                 {
+                    "dense_geometry_gate": {
+                        "gate_id": DENSE_GEOMETRY_GATE_ID,
+                        "evaluated_count": len(dense_geometry_decisions),
+                        "accepted_count": sum(
+                            bool(item["accepted"])
+                            for item in dense_geometry_decisions
+                        ),
+                        "fallback_count": sum(
+                            not bool(item["accepted"])
+                            for item in dense_geometry_decisions
+                        ),
+                    }
+                }
+                if dense_geometry_gate_config is not None
+                else {}
+            ),
+            **(
+                {
                     "localized_ownership": {
                         key: localized_timeline.diagnostics[key]
                         for key in (
@@ -1759,6 +1828,11 @@ def compose_run(
                     if visibility_cache_record is not None
                     else {}
                 ),
+                **(
+                    {"dense_geometry_gate": dense_geometry_gate_record}
+                    if dense_geometry_gate_record is not None
+                    else {}
+                ),
                 **{
                     f"source_{key}": temporal_input_records[key]
                     for key in ("trajectories", "lifecycle", "coverage")
@@ -1802,6 +1876,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         default="formal_baseline",
     )
     parser.add_argument("--visibility-policy", type=Path)
+    parser.add_argument("--dense-geometry-gate", type=Path)
     args = parser.parse_args(argv)
     compose_run(
         source_run_manifest=args.source_run_manifest,
@@ -1810,6 +1885,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         moved_geometry_mode=args.moved_geometry_mode,
         readout_role=args.readout_role,
         visibility_policy=args.visibility_policy,
+        dense_geometry_gate=args.dense_geometry_gate,
     )
     return 0
 

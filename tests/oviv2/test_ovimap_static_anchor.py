@@ -12,6 +12,7 @@ from src.oviv2.anchor_visibility import (
     AnchorVisibilityConfig,
     initialize_anchor_current_ownership,
 )
+from src.oviv2.dense_moved_readout import DenseMovedReadoutGateConfig
 from src.oviv2.ovimap_static_anchor import (
     PrefixIdentitySample,
     StaticAnchorConfig,
@@ -373,6 +374,7 @@ def _compose(
     moved_geometry_mode: str = "temporal_compact",
     suppressed_unbound_anchor_ids: frozenset[str] = frozenset(),
     localized_unbound_ownership: tuple[AnchorCurrentOwnership, ...] | None = None,
+    dense_geometry_gate: DenseMovedReadoutGateConfig | None = None,
 ):
     return compose_anchor_checkpoint(
         anchor=anchor,
@@ -385,6 +387,7 @@ def _compose(
         moved_geometry_mode=moved_geometry_mode,
         suppressed_unbound_anchor_ids=suppressed_unbound_anchor_ids,
         localized_unbound_ownership=localized_unbound_ownership,
+        dense_geometry_gate=dense_geometry_gate,
     )
 
 
@@ -690,6 +693,140 @@ def test_dense_moved_geometry_uses_temporal_geometry_centroid_without_sample() -
         entity.metadata["transform_source"]
         == "temporal_geometry_centroid_translation"
     )
+
+
+def test_hybrid_dense_geometry_accepts_template_only_when_agreement_passes() -> None:
+    anchor, state = _single_anchor_and_state()
+    anchor.entities[0].points_xyz = np.asarray(
+        ((-0.05, 0.0, 0.0), (0.05, 0.0, 0.0)), dtype=np.float32
+    )
+    temporal = _temporal_snapshot(
+        frame_index=263,
+        entities=(
+            _temporal_entity(
+                7, TemporalLifecycle.ACTIVE, x=1.0, frame_index=263, geometry_epoch=1
+            ),
+        ),
+    )
+
+    composed, _, diagnostics = _compose(
+        anchor=anchor,
+        state=state,
+        temporal=temporal,
+        exports=(
+            _export_batch(
+                frame_index=263,
+                entity_id=7,
+                x=1.0,
+                dynamic_state=DynamicState.DYNAMIC,
+                geometry_epoch=1,
+            ),
+        ),
+        moved_geometry_mode="geometry_gated_anchor_translation",
+        dense_geometry_gate=DenseMovedReadoutGateConfig(),
+    )
+
+    entity = composed.entities[0]
+    assert entity.metadata["geometry_authority"] == "ovimap_anchor_template"
+    assert entity.metadata["geometry_gate_accepted"] is True
+    assert entity.metadata["geometry_gate_rejection_reasons"] == []
+    assert len(diagnostics.dense_geometry_decisions) == 1
+    assert diagnostics.dense_geometry_decisions[0].accepted is True
+
+
+def test_hybrid_dense_geometry_failure_is_exact_compact_fallback() -> None:
+    anchor, state = _single_anchor_and_state()
+    anchor.entities[0].points_xyz = np.asarray(
+        ((-0.50, 0.0, 0.0), (0.50, 0.0, 0.0)), dtype=np.float32
+    )
+    temporal = _temporal_snapshot(
+        frame_index=263,
+        entities=(
+            _temporal_entity(
+                7, TemporalLifecycle.ACTIVE, x=1.0, frame_index=263, geometry_epoch=1
+            ),
+        ),
+    )
+    exports = (
+        _export_batch(
+            frame_index=263,
+            entity_id=7,
+            x=1.0,
+            dynamic_state=DynamicState.DYNAMIC,
+            geometry_epoch=1,
+        ),
+    )
+
+    compact, compact_state, _ = _compose(
+        anchor=anchor,
+        state=state,
+        temporal=temporal,
+        exports=exports,
+    )
+    hybrid, hybrid_state, diagnostics = _compose(
+        anchor=anchor,
+        state=state,
+        temporal=temporal,
+        exports=exports,
+        moved_geometry_mode="geometry_gated_anchor_translation",
+        dense_geometry_gate=DenseMovedReadoutGateConfig(),
+    )
+
+    assert hybrid_state == compact_state
+    np.testing.assert_array_equal(
+        hybrid.entities[0].points_xyz,
+        compact.entities[0].points_xyz,
+    )
+    audit_keys = {
+        "geometry_gate_id",
+        "geometry_gate_accepted",
+        "geometry_gate_rejection_reasons",
+    }
+    assert {
+        key: value
+        for key, value in hybrid.entities[0].metadata.items()
+        if key not in audit_keys
+    } == compact.entities[0].metadata
+    assert hybrid.entities[0].metadata["geometry_gate_accepted"] is False
+    assert diagnostics.dense_geometry_decisions[0].accepted is False
+
+
+def test_dense_geometry_gate_must_be_paired_with_hybrid_mode() -> None:
+    anchor, state = _single_anchor_and_state()
+    temporal = _temporal_snapshot(
+        frame_index=263,
+        entities=(
+            _temporal_entity(
+                7, TemporalLifecycle.ACTIVE, x=1.0, frame_index=263, geometry_epoch=1
+            ),
+        ),
+    )
+    exports = (
+        _export_batch(
+            frame_index=263,
+            entity_id=7,
+            x=1.0,
+            dynamic_state=DynamicState.DYNAMIC,
+            geometry_epoch=1,
+        ),
+    )
+
+    with pytest.raises(ValueError, match="dense geometry gate"):
+        _compose(
+            anchor=anchor,
+            state=state,
+            temporal=temporal,
+            exports=exports,
+            dense_geometry_gate=DenseMovedReadoutGateConfig(),
+        )
+    with pytest.raises(ValueError, match="dense geometry gate"):
+        _compose(
+            anchor=anchor,
+            state=state,
+            temporal=temporal,
+            exports=exports,
+            moved_geometry_mode="geometry_gated_anchor_translation",
+        )
 
 
 def test_default_and_explicit_compact_moved_geometry_are_identical() -> None:

@@ -306,6 +306,27 @@ def _write_localized_visibility_policy(tmp_path: Path) -> Path:
     return path
 
 
+def _write_dense_geometry_gate(tmp_path: Path) -> Path:
+    path = tmp_path / "dense_geometry_gate.json"
+    _write_json(
+        path,
+        {
+            "schema_version": 1,
+            "gate_id": "crove_dense_moved_geometry_gate_v1",
+            "distance_threshold_m": 0.05,
+            "minimum_directional_coverage": 0.90,
+            "maximum_directional_median_m": 0.05,
+            "maximum_directional_p90_m": 0.10,
+            "maximum_centroid_residual_m": 0.05,
+            "maximum_extent_residual_m": 0.10,
+            "minimum_extent_ratio": 0.5,
+            "maximum_extent_ratio": 2.0,
+            "minimum_extent_for_ratio_m": 0.05,
+        },
+    )
+    return path
+
+
 def _sample(frame: int, x: float) -> dict[str, object]:
     return {
         "frame_index": frame,
@@ -471,6 +492,86 @@ def test_composed_run_publishes_dense_moved_visualization_shadow(
     assert entity.lifecycle_state == "active"
     assert entity.metadata["geometry_authority"] == "ovimap_anchor_template"
     assert entity.metadata["state_authority"] == "crove_temporal"
+
+
+def test_composed_run_publishes_geometry_gated_compact_fallback(
+    tmp_path: Path,
+) -> None:
+    gate_path = _write_dense_geometry_gate(tmp_path)
+    result = compose_run(
+        source_run_manifest=_write_source_run(tmp_path),
+        anchor_manifest=_write_anchor_package(tmp_path, dense=True),
+        output_root=tmp_path / "hybrid",
+        moved_geometry_mode="geometry_gated_anchor_translation",
+        readout_role="hybrid_dense_candidate",
+        dense_geometry_gate=gate_path,
+    )
+
+    manifest = json.loads(result.read_text(encoding="utf-8"))
+    assert manifest["readout_contract"] == {
+        "dense_geometry_gate_id": "crove_dense_moved_geometry_gate_v1",
+        "moved_geometry_mode": "geometry_gated_anchor_translation",
+        "readout_role": "hybrid_dense_candidate",
+    }
+    assert manifest["inputs"]["dense_geometry_gate"] == _record(gate_path)
+    assert manifest["dense_geometry_gate"] == {
+        "accepted_count": 0,
+        "evaluated_count": 1,
+        "fallback_count": 1,
+        "gate_id": "crove_dense_moved_geometry_gate_v1",
+    }
+    assert "dense_geometry_decisions" not in manifest["checkpoints"][0][
+        "diagnostics"
+    ]
+    decision = manifest["checkpoints"][-1]["diagnostics"][
+        "dense_geometry_decisions"
+    ][0]
+    assert decision["anchor_entity_id"] == "ovimap:1"
+    assert decision["accepted"] is False
+    assert decision["rejection_reasons"]
+    checkpoint = manifest["checkpoints"][-1]
+    snapshot = read_map_snapshot(
+        result.parent / checkpoint["snapshot"]["path"],
+        result.parent / checkpoint["entities"]["path"],
+    )
+    np.testing.assert_allclose(
+        snapshot.entities[0].points_xyz,
+        np.asarray(((0.95, 0.0, 0.0), (1.05, 0.0, 0.0)), dtype=np.float32),
+        rtol=0.0,
+        atol=1e-6,
+    )
+    assert snapshot.entities[0].metadata["geometry_gate_accepted"] is False
+
+
+@pytest.mark.parametrize(
+    ("mode", "role", "with_gate"),
+    (
+        ("geometry_gated_anchor_translation", "hybrid_dense_candidate", False),
+        ("temporal_compact", "formal_baseline", True),
+        ("geometry_gated_anchor_translation", "formal_baseline", True),
+    ),
+)
+def test_dense_geometry_gate_requires_exact_runner_contract(
+    tmp_path: Path,
+    mode: str,
+    role: str,
+    with_gate: bool,
+) -> None:
+    output = tmp_path / f"rejected-gate-{mode}-{role}-{with_gate}"
+
+    with pytest.raises(ValueError, match="dense geometry"):
+        compose_run(
+            source_run_manifest=tmp_path / "not-read.json",
+            anchor_manifest=tmp_path / "not-read-anchor.json",
+            output_root=output,
+            moved_geometry_mode=mode,
+            readout_role=role,
+            dense_geometry_gate=(
+                tmp_path / "not-read-gate.json" if with_gate else None
+            ),
+        )
+
+    assert not output.exists()
 
 
 def test_composed_run_publishes_causal_unbound_visibility_candidate(

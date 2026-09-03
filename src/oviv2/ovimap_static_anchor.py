@@ -12,6 +12,13 @@ from scipy.optimize import linear_sum_assignment
 
 from src.evaluation.contracts import EntityPrediction, MapSnapshot
 from src.oviv2.anchor_visibility import AnchorCurrentOwnership
+from src.oviv2.dense_moved_readout import (
+    DENSE_GEOMETRY_GATE_ID,
+    DenseMovedGeometryAgreement,
+    DenseMovedReadoutGateConfig,
+    decide_dense_geometry_agreement,
+    measure_dense_geometry_agreement,
+)
 from src.oviv2.temporal_export import (
     DynamicState,
     TemporalExportBatch,
@@ -29,7 +36,11 @@ from src.oviv2.temporal_snapshot import (
 
 _SEMANTIC_UPDATE_MINIMUM_ANCHOR_COVERAGE = 0.5
 _MOVED_GEOMETRY_MODES = frozenset(
-    {"temporal_compact", "anchor_centroid_translation"}
+    {
+        "temporal_compact",
+        "anchor_centroid_translation",
+        "geometry_gated_anchor_translation",
+    }
 )
 
 
@@ -384,6 +395,27 @@ def bind_anchor_identities(
 
 
 @dataclass(frozen=True)
+class MovedGeometryReadoutDiagnostic:
+    anchor_entity_id: str
+    accepted: bool
+    rejection_reasons: tuple[str, ...]
+    measurement: DenseMovedGeometryAgreement
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.anchor_entity_id, str) or not self.anchor_entity_id:
+            raise ValueError("anchor_entity_id must be nonempty")
+        if not isinstance(self.accepted, bool):
+            raise TypeError("accepted must be bool")
+        if (
+            not isinstance(self.rejection_reasons, tuple)
+            or self.accepted is bool(self.rejection_reasons)
+        ):
+            raise ValueError("dense geometry decision is inconsistent")
+        if not isinstance(self.measurement, DenseMovedGeometryAgreement):
+            raise TypeError("measurement must be DenseMovedGeometryAgreement")
+
+
+@dataclass(frozen=True)
 class CheckpointOverlayDiagnostics:
     frame_index: int
     unchanged_anchor_ids: tuple[str, ...]
@@ -391,6 +423,7 @@ class CheckpointOverlayDiagnostics:
     removed_anchor_ids: tuple[str, ...]
     new_temporal_ids: tuple[int, ...]
     occluded_anchor_ids: tuple[str, ...]
+    dense_geometry_decisions: tuple[MovedGeometryReadoutDiagnostic, ...] = ()
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -416,6 +449,17 @@ class CheckpointOverlayDiagnostics:
             )
         ):
             raise ValueError("new_temporal_ids must be a sorted unique tuple")
+        decision_ids = tuple(
+            item.anchor_entity_id for item in self.dense_geometry_decisions
+        )
+        if (
+            any(
+                not isinstance(item, MovedGeometryReadoutDiagnostic)
+                for item in self.dense_geometry_decisions
+            )
+            or decision_ids != tuple(sorted(set(decision_ids)))
+        ):
+            raise ValueError("dense geometry decisions must be sorted and unique")
 
 
 def _sha256(value: object, name: str) -> str:
@@ -584,6 +628,7 @@ def compose_anchor_checkpoint(
     moved_geometry_mode: str = "temporal_compact",
     suppressed_unbound_anchor_ids: frozenset[str] = frozenset(),
     localized_unbound_ownership: tuple[AnchorCurrentOwnership, ...] | None = None,
+    dense_geometry_gate: DenseMovedReadoutGateConfig | None = None,
 ) -> tuple[MapSnapshot, AnchorOverlayState, CheckpointOverlayDiagnostics]:
     """Compose one causal current readout without mutating either authority."""
 
@@ -596,6 +641,15 @@ def compose_anchor_checkpoint(
     manifest_hash = _sha256(anchor_manifest_sha256, "anchor_manifest_sha256")
     names = _class_names(class_names)
     geometry_mode = _moved_geometry_mode(moved_geometry_mode)
+    uses_dense_gate = geometry_mode == "geometry_gated_anchor_translation"
+    if uses_dense_gate is not (dense_geometry_gate is not None):
+        raise ValueError(
+            "dense geometry gate must be paired with geometry-gated mode"
+        )
+    if dense_geometry_gate is not None and not isinstance(
+        dense_geometry_gate, DenseMovedReadoutGateConfig
+    ):
+        raise TypeError("dense geometry gate has invalid type")
     wrappers: dict[int, TemporalSnapshotEntity]
     if isinstance(temporal, TemporalCurrentSnapshot):
         observed_frame_index = temporal.metadata.frame_id
@@ -750,6 +804,7 @@ def compose_anchor_checkpoint(
     moved_ids: list[str] = []
     removed_ids: list[str] = []
     occluded_ids: list[str] = []
+    dense_geometry_decisions: list[MovedGeometryReadoutDiagnostic] = []
     for anchor_id in sorted(anchor_entities):
         anchor_entity = anchor_entities[anchor_id]
         temporal_id = bindings.get(anchor_id)
@@ -794,6 +849,16 @@ def compose_anchor_checkpoint(
             if prediction is None and wrapper is not None:
                 prediction = _prediction_from_wrapper(wrapper, names)
             if prediction is not None:
+                compact_prediction = _copy_prediction(
+                    prediction,
+                    entity_id=anchor_id,
+                    metadata={
+                        "authority": "crove_temporal",
+                        "anchor_entity_id": anchor_id,
+                        "anchor_manifest_sha256": manifest_hash,
+                        "overlay_state": "moved",
+                    },
+                )
                 if geometry_mode == "anchor_centroid_translation":
                     predictions.append(
                         _dense_moved_prediction(
@@ -803,19 +868,46 @@ def compose_anchor_checkpoint(
                             anchor_manifest_sha256=manifest_hash,
                         )
                     )
-                else:
+                elif geometry_mode == "geometry_gated_anchor_translation":
+                    assert dense_geometry_gate is not None
+                    dense_prediction = _dense_moved_prediction(
+                        anchor=anchor_entity,
+                        temporal=prediction,
+                        sample=latest_samples.get(temporal_id),
+                        anchor_manifest_sha256=manifest_hash,
+                    )
+                    measurement = measure_dense_geometry_agreement(
+                        compact_prediction.points_xyz,
+                        dense_prediction.points_xyz,
+                        dense_geometry_gate,
+                    )
+                    decision = decide_dense_geometry_agreement(
+                        measurement,
+                        dense_geometry_gate,
+                    )
+                    selected = dense_prediction if decision.accepted else compact_prediction
                     predictions.append(
                         _copy_prediction(
-                            prediction,
-                            entity_id=anchor_id,
+                            selected,
                             metadata={
-                                "authority": "crove_temporal",
-                                "anchor_entity_id": anchor_id,
-                                "anchor_manifest_sha256": manifest_hash,
-                                "overlay_state": "moved",
+                                "geometry_gate_id": DENSE_GEOMETRY_GATE_ID,
+                                "geometry_gate_accepted": decision.accepted,
+                                "geometry_gate_rejection_reasons": list(
+                                    decision.rejection_reasons
+                                ),
                             },
                         )
                     )
+                    dense_geometry_decisions.append(
+                        MovedGeometryReadoutDiagnostic(
+                            anchor_entity_id=anchor_id,
+                            accepted=decision.accepted,
+                            rejection_reasons=decision.rejection_reasons,
+                            measurement=measurement,
+                        )
+                    )
+                else:
+                    predictions.append(compact_prediction)
                 moved_ids.append(anchor_id)
                 continue
         overlay_state = (
@@ -953,6 +1045,12 @@ def compose_anchor_checkpoint(
         removed_anchor_ids=tuple(sorted(removed_ids)),
         new_temporal_ids=new_temporal_ids,
         occluded_anchor_ids=tuple(sorted(occluded_ids)),
+        dense_geometry_decisions=tuple(
+            sorted(
+                dense_geometry_decisions,
+                key=lambda item: item.anchor_entity_id,
+            )
+        ),
     )
     return composed, next_state, diagnostics
 
@@ -960,6 +1058,7 @@ def compose_anchor_checkpoint(
 __all__ = [
     "AnchorOverlayState",
     "CheckpointOverlayDiagnostics",
+    "MovedGeometryReadoutDiagnostic",
     "PrefixIdentitySample",
     "StaticAnchorConfig",
     "bind_anchor_identities",

@@ -6,9 +6,11 @@ import numpy as np
 import pytest
 
 from src.oviv2.dense_moved_readout import (
+    DENSE_GEOMETRY_GATE_ID,
     DenseMovedGeometryAgreement,
     DenseMovedReadoutGateConfig,
     decide_dense_geometry_agreement,
+    dense_moved_readout_gate_config_from_json,
     measure_dense_geometry_agreement,
 )
 
@@ -134,3 +136,17 @@ def test_gate_config_rejects_non_preregistered_relations() -> None:
             minimum_extent_ratio=2.0,
             maximum_extent_ratio=1.0,
         )
+
+
+def test_geometry_gate_policy_parser_requires_frozen_identity() -> None:
+    config = DenseMovedReadoutGateConfig()
+    payload: dict[str, object] = {
+        "schema_version": 1,
+        "gate_id": DENSE_GEOMETRY_GATE_ID,
+        **config.to_json_record(),
+    }
+
+    assert dense_moved_readout_gate_config_from_json(payload) == config
+    payload["gate_id"] = "other"
+    with pytest.raises(ValueError, match="identity"):
+        dense_moved_readout_gate_config_from_json(payload)

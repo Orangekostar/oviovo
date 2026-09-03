@@ -10,6 +10,8 @@ from typing import Mapping
 import numpy as np
 from scipy.spatial import cKDTree
 
+DENSE_GEOMETRY_GATE_ID = "crove_dense_moved_geometry_gate_v1"
+
 
 def _finite_number(value: object, *, label: str) -> float:
     if isinstance(value, (bool, np.bool_)) or not isinstance(value, Real):
@@ -83,6 +85,24 @@ class DenseMovedReadoutGateConfig:
         if set(payload) != expected:
             raise ValueError("geometry gate config fields are invalid")
         return cls(**{name: payload[name] for name in expected})  # type: ignore[arg-type]
+
+
+def dense_moved_readout_gate_config_from_json(
+    payload: Mapping[str, object],
+) -> DenseMovedReadoutGateConfig:
+    if not isinstance(payload, Mapping):
+        raise TypeError("geometry gate policy must be a mapping")
+    config_fields = set(DenseMovedReadoutGateConfig.__dataclass_fields__)
+    if set(payload) != config_fields | {"schema_version", "gate_id"}:
+        raise ValueError("geometry gate policy fields are invalid")
+    if (
+        payload.get("schema_version") != 1
+        or payload.get("gate_id") != DENSE_GEOMETRY_GATE_ID
+    ):
+        raise ValueError("geometry gate policy identity is invalid")
+    return DenseMovedReadoutGateConfig.from_json_record(
+        {name: payload[name] for name in config_fields}
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -286,9 +306,11 @@ def decide_dense_geometry_agreement(
 
 
 __all__ = [
+    "DENSE_GEOMETRY_GATE_ID",
     "DenseMovedGeometryAgreement",
     "DenseMovedReadoutDecision",
     "DenseMovedReadoutGateConfig",
     "decide_dense_geometry_agreement",
+    "dense_moved_readout_gate_config_from_json",
     "measure_dense_geometry_agreement",
 ]
