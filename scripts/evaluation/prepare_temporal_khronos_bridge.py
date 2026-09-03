@@ -68,6 +68,7 @@ _LIFECYCLE_FIELDS = frozenset(
         "readout_valid",
     }
 )
+_LOCALIZED_OWNERSHIP_POLICY_ID = "crove_ovimap_localized_visibility_l1_v1"
 
 
 @dataclass(frozen=True)
@@ -256,6 +257,45 @@ def _strict_centroid_xyz(value: object, *, label: str) -> list[float]:
             raise ValueError(f"{label} centroid is invalid")
         centroid.append(normalized)
     return centroid
+
+
+def _valid_localized_anchor_metadata(
+    metadata: Mapping[str, Any], *, point_count: int
+) -> bool:
+    count_names = (
+        "active_voxel_count",
+        "suppressed_voxel_count",
+        "active_point_count",
+        "suppressed_point_count",
+    )
+    counts = tuple(metadata.get(name) for name in count_names)
+    if any(type(value) is not int or value < 0 for value in counts):
+        return False
+    active_voxels, suppressed_voxels, active_points, suppressed_points = counts
+    voxel_size = metadata.get("ownership_voxel_size_m")
+    if (
+        metadata.get("ownership_policy_id") != _LOCALIZED_OWNERSHIP_POLICY_ID
+        or metadata.get("state_authority") != "crove_anchor_visibility"
+        or isinstance(voxel_size, bool)
+        or not isinstance(voxel_size, (int, float))
+        or not math.isfinite(float(voxel_size))
+        or float(voxel_size) <= 0.0
+        or active_points != point_count
+        or active_voxels > active_points
+        or suppressed_voxels > suppressed_points
+    ):
+        return False
+    if metadata.get("overlay_state") == "unchanged":
+        return (
+            active_voxels > 0
+            and active_points > 0
+            and suppressed_voxels == 0
+            and suppressed_points == 0
+        )
+    return (
+        metadata.get("overlay_state") == "partially_suppressed"
+        and min(counts) > 0
+    )
 
 
 def _typed_json_equal(left: object, right: object) -> bool:
@@ -1392,9 +1432,20 @@ def prepare_temporal_bridge(
             )
             if snapshot_authoritative_presence:
                 manifest_hash = metadata.get("anchor_manifest_sha256")
+                localized = (
+                    metadata.get("ownership_policy_id") is not None
+                    or metadata.get("overlay_state") == "partially_suppressed"
+                )
+                overlay_valid = (
+                    _valid_localized_anchor_metadata(
+                        metadata, point_count=len(entity.points_xyz)
+                    )
+                    if localized
+                    else metadata.get("overlay_state") in {"unchanged", "occluded"}
+                )
                 if (
                     metadata.get("anchor_entity_id") != entity_id
-                    or metadata.get("overlay_state") not in {"unchanged", "occluded"}
+                    or not overlay_valid
                     or not isinstance(manifest_hash, str)
                     or re.fullmatch(r"[0-9a-f]{64}", manifest_hash) is None
                 ):

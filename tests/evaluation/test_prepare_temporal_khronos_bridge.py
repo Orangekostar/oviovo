@@ -149,6 +149,34 @@ def _unbound_static_anchor(entity_id: str, x: float) -> EntityPrediction:
     )
 
 
+def _localized_static_anchor(entity_id: str, x: float) -> EntityPrediction:
+    prediction = _unbound_static_anchor(entity_id, x)
+    metadata = dict(prediction.metadata)
+    metadata.update(
+        {
+            "active_point_count": 2,
+            "active_voxel_count": 2,
+            "overlay_state": "partially_suppressed",
+            "ownership_policy_id": "crove_ovimap_localized_visibility_l1_v1",
+            "ownership_voxel_size_m": 0.05,
+            "state_authority": "crove_anchor_visibility",
+            "suppressed_point_count": 1,
+            "suppressed_voxel_count": 1,
+        }
+    )
+    return EntityPrediction(
+        entity_id=prediction.entity_id,
+        points_xyz=prediction.points_xyz,
+        semantic_embedding=prediction.semantic_embedding,
+        semantic_label=prediction.semantic_label,
+        semantic_score=prediction.semantic_score,
+        lifecycle_state=prediction.lifecycle_state,
+        first_seen=prediction.first_seen,
+        last_seen=prediction.last_seen,
+        metadata=metadata,
+    )
+
+
 def _bound_static_anchor(
     entity_id: str, temporal_entity_id: str, x: float
 ) -> EntityPrediction:
@@ -189,6 +217,7 @@ def _write_temporal_fixture(
     *,
     include_unbound_static_anchor: bool = False,
     include_bound_retained_anchor: bool = False,
+    include_localized_static_anchor: bool = False,
 ) -> Path:
     root.mkdir()
     schedule = root / "schedule.json"
@@ -215,6 +244,9 @@ def _write_temporal_fixture(
     if include_unbound_static_anchor:
         for _, entities in checkpoints:
             entities.append(_unbound_static_anchor("ovimap:anchor", 10.0))
+    if include_localized_static_anchor:
+        for _, entities in checkpoints:
+            entities.append(_localized_static_anchor("ovimap:localized", 10.0))
     if include_bound_retained_anchor:
         for _, entities in checkpoints:
             entities[:] = [
@@ -459,6 +491,35 @@ def test_unbound_static_anchor_uses_snapshot_presence_without_temporal_track(
         )
         assert obj["trajectory_sample_count"] == 0
         assert obj["dynamic_track_eligible"] is False
+
+
+def test_localized_static_anchor_uses_snapshot_presence(
+    tmp_path: Path,
+) -> None:
+    temporal = _write_temporal_fixture(
+        tmp_path / "temporal", include_localized_static_anchor=True
+    )
+    labels = tmp_path / "labels.yaml"
+    labels.write_text(
+        "label_names: [{label: 0, name: Unknown}, {label: 5, name: Chair}]\n",
+        encoding="utf-8",
+    )
+
+    manifest_path = prepare_temporal_bridge(
+        temporal, labels, tmp_path / "bridge"
+    )
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assignment = next(
+        item
+        for item in manifest["symbol_assignments"]
+        if item["entity_id"] == "ovimap:localized"
+    )
+
+    assert assignment["source_entity_id"] == "anchor:ovimap:localized"
+    assert assignment["presence_intervals"] == [
+        {"start_ns": 100, "end_ns_exclusive": None}
+    ]
+    assert assignment["dynamic_track_eligible"] is False
 
 
 def test_bound_static_anchor_retained_after_track_ends_uses_snapshot_presence(
