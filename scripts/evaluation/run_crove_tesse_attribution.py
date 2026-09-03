@@ -26,14 +26,19 @@ from src.evaluation.json_contracts import loads_strict
 def _checkpoint_frame_indices(
     payload: Mapping[str, object],
 ) -> frozenset[int]:
-    values = payload.get("evaluation_checkpoint_frames")
-    if not isinstance(values, list) or not values:
-        raise ValueError("evaluation checkpoint frames must be a nonempty list")
-    if any(type(value) is not int or value < 0 for value in values):
-        raise ValueError("evaluation checkpoint frames must be nonnegative integers")
-    if values != sorted(set(values)):
-        raise ValueError("evaluation checkpoint frames must increase strictly")
-    return frozenset(values)
+    scene = payload.get("scene")
+    frame_count = payload.get("frame_count")
+    if not isinstance(scene, str) or type(frame_count) is not int:
+        raise ValueError("attribution config scene or frame count is invalid")
+    schedule = _runner._resolve_path(payload.get("schedule_manifest", ""))
+    _runner._require_regular_file(schedule, "causal schedule")
+    checkpoints = _runner._load_causal_checkpoints_bytes(
+        schedule.read_bytes(),
+        schedule,
+        scene=scene,
+        frame_count=frame_count,
+    )
+    return frozenset(item.frame_index for item in checkpoints)
 
 
 def build_attribution_dependencies(

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
+from pathlib import Path
 
 from scripts.evaluation.run_crove_tesse_attribution import (
     _checkpoint_frame_indices,
@@ -37,18 +39,21 @@ def test_dependency_wrapper_changes_only_runtime_factory() -> None:
     assert result._capture is capture
 
 
-def test_checkpoint_frame_indices_are_strict_and_frozen() -> None:
-    assert _checkpoint_frame_indices(
-        {"evaluation_checkpoint_frames": [263, 313, 363]}
-    ) == frozenset({263, 313, 363})
+def test_checkpoint_frame_indices_come_from_the_causal_schedule() -> None:
+    config = json.loads(
+        Path("configs/oviv2_tesse_cd_apartment_v2.json").read_text(
+            encoding="utf-8"
+        )
+    )
 
-    for value in (None, [], [313, 263], [263, 263], [True]):
-        try:
-            _checkpoint_frame_indices({"evaluation_checkpoint_frames": value})
-        except (TypeError, ValueError):
-            pass
-        else:
-            raise AssertionError(f"accepted invalid checkpoint frames: {value!r}")
+    frames = _checkpoint_frame_indices(config)
+
+    assert len(config["evaluation_checkpoint_frames"]) == 1652
+    assert len(frames) == 43
+    assert min(frames) == 263
+    assert max(frames) == 1472
+    assert 450 in frames
+    assert 0 not in frames
 
 
 def test_cli_help() -> None:
