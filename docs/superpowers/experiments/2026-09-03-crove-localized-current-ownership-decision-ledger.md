@@ -189,21 +189,46 @@ would violate the preregistered causal-ablation protocol.
 
 ## P6-E Official Dyn Provenance
 
-**Hypothesis:** Pending.
+**Hypothesis:** Existing official visualization and bridge artifacts may bind
+official Dynamic-F1 error mass to exact CROVE runtime mechanisms strongly
+enough to select proposal, association, motion, or identity work.
 
-**Evidence before:** Pending.
+**Evidence before:** Official Apartment Dynamic F1 is
+`0.06922505723328032`, but the existing evaluator reports only aggregate
+detected, missed, and hallucinated trajectory mass.
 
-**Implementation:** Pending.
+**Implementation:** Added a strict, hash-bound JSON/CSV sidecar over the
+official dynamic table, official visualization tables, bridge node identities,
+composition entities, and source trajectories. The sidecar conserves official
+mass and marks a join exact only when the official output itself identifies the
+prediction; it never estimates or modifies official metrics.
 
-**Artifacts:** Pending.
+**Artifacts:** Report
+`docs/superpowers/reports/P6E_DYN_PROVENANCE_REPORT.md`; published root
+`/home/ww/oviovo_baseline_runs/20260903_crove_localized_current_ownership/p6e/p5_actual`;
+JSON SHA-256
+`78784d10bd7a247fa164fdb2aeb8ca3067196fa41b4ef6fc978ff3cb7517a8cd`;
+CSV SHA-256
+`40dcbb5d8b5d1357b4915daf2acd86ed361f120e751897670df80538d75cee84`.
 
-**Measured result:** Pending.
+**Measured result:** Across 43 official query events, exact mass is 0,
+ambiguous mass is 42,175 (100%), and unavailable mass is 0. The conserved mass
+is 188 detected, 19,556 missed, and 22,431 hallucinated. The 2,877
+checkpoint-local candidate predictions cannot be assigned to individual
+official error units. A pre-existing instrumentation run was excluded because
+294/336 emitted checkpoint files differed from A6 formal output and it was
+incomplete at 42/43 checkpoints when audited.
 
-**Decision:** Pending.
+**Decision:** `NO_GO / ATTRIBUTION_AMBIGUOUS`; ReScene remains
+`NO_GO / NOT_NEEDED`.
 
-**Reason:** Pending.
+**Reason:** Zero official Dynamic mass has exact prediction provenance, so no
+dominant proposal, association, motion, geometry, or identity mechanism is
+proven. Runtime instrumentation cannot reconstruct an identity omitted by the
+official evaluator without an unsupported heuristic join.
 
-**Commit:** Pending.
+**Commit:** Sidecar `f2245bf`; report recorded by the ledger commit containing
+this entry.
 
 ## Office
 
