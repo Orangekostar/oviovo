@@ -4,6 +4,7 @@ import subprocess
 import sys
 
 from scripts.evaluation.run_crove_tesse_attribution import (
+    _checkpoint_frame_indices,
     build_attribution_dependencies,
 )
 from scripts.evaluation.run_oviv2_tesse_cd_v2 import RunnerDependencies
@@ -34,6 +35,20 @@ def test_dependency_wrapper_changes_only_runtime_factory() -> None:
     assert isinstance(result, CroveRuntimeAttributionProxy)
     assert result._runtime is runtime
     assert result._capture is capture
+
+
+def test_checkpoint_frame_indices_are_strict_and_frozen() -> None:
+    assert _checkpoint_frame_indices(
+        {"evaluation_checkpoint_frames": [263, 313, 363]}
+    ) == frozenset({263, 313, 363})
+
+    for value in (None, [], [313, 263], [263, 263], [True]):
+        try:
+            _checkpoint_frame_indices({"evaluation_checkpoint_frames": value})
+        except (TypeError, ValueError):
+            pass
+        else:
+            raise AssertionError(f"accepted invalid checkpoint frames: {value!r}")
 
 
 def test_cli_help() -> None:

@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +21,19 @@ from src.evaluation.crove_runtime_attribution import (
     publish_runtime_attribution,
 )
 from src.evaluation.json_contracts import loads_strict
+
+
+def _checkpoint_frame_indices(
+    payload: Mapping[str, object],
+) -> frozenset[int]:
+    values = payload.get("evaluation_checkpoint_frames")
+    if not isinstance(values, list) or not values:
+        raise ValueError("evaluation checkpoint frames must be a nonempty list")
+    if any(type(value) is not int or value < 0 for value in values):
+        raise ValueError("evaluation checkpoint frames must be nonnegative integers")
+    if values != sorted(set(values)):
+        raise ValueError("evaluation checkpoint frames must increase strictly")
+    return frozenset(values)
 
 
 def build_attribution_dependencies(
@@ -70,7 +84,9 @@ def run_attribution(
     ):
         raise ValueError("attribution output must be separate from the formal run")
 
-    capture = RuntimeAttributionCapture()
+    capture = RuntimeAttributionCapture(
+        capture_frame_indices=_checkpoint_frame_indices(payload)
+    )
     dependencies = build_attribution_dependencies(
         _runner._production_dependencies(), capture
     )

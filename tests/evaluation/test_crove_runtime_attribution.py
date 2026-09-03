@@ -160,6 +160,32 @@ def test_proxy_records_complete_association_and_motion_without_state_change() ->
     assert motion["motion_streak_after"] >= 0
 
 
+def test_proxy_profiles_only_selected_frames_without_changing_runtime() -> None:
+    direct = _runtime()
+    observed = _runtime()
+    capture = RuntimeAttributionCapture(capture_frame_indices=frozenset({1}))
+    proxy = CroveRuntimeAttributionProxy(observed, capture)
+
+    for frame_id, depth in ((0, 1.0), (1, 1.2)):
+        frame = _frame(frame_id, depth)
+        observation = _observation(frame, 10 + frame_id)
+        direct_result = direct.process_frame(frame, (observation,))
+        proxy_result = proxy.process_frame(frame, (observation,))
+        assert proxy_result == direct_result
+        assert observed.state.canonical_dump() == direct.state.canonical_dump()
+
+    assert [row["frame_index"] for row in capture.records] == [1]
+
+
+@pytest.mark.parametrize(
+    "frame_indices",
+    [set(), frozenset(), frozenset({-1}), frozenset({True})],
+)
+def test_capture_rejects_invalid_selected_frames(frame_indices: object) -> None:
+    with pytest.raises((TypeError, ValueError)):
+        RuntimeAttributionCapture(capture_frame_indices=frame_indices)
+
+
 def test_proxy_restores_runtime_symbols_when_wrapped_call_fails() -> None:
     import src.oviv2.temporal_association as association_module
     import src.oviv2.temporal_runtime as runtime_module

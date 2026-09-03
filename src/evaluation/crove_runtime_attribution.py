@@ -498,9 +498,26 @@ class _FrameCapture:
 class RuntimeAttributionCapture:
     """Own deterministic frame records produced by one sequential runtime."""
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        *,
+        capture_frame_indices: frozenset[int] | None = None,
+    ) -> None:
+        if capture_frame_indices is not None:
+            if not isinstance(capture_frame_indices, frozenset):
+                raise TypeError("capture_frame_indices must be a frozenset")
+            if not capture_frame_indices:
+                raise ValueError("capture_frame_indices must be nonempty")
+            if any(
+                type(frame_index) is not int or frame_index < 0
+                for frame_index in capture_frame_indices
+            ):
+                raise ValueError(
+                    "capture_frame_indices require nonnegative integer frame IDs"
+                )
         self.records: list[dict[str, Any]] = []
         self._active = False
+        self.capture_frame_indices = capture_frame_indices
 
     def observe(self, runtime: object, frame: object, call: Callable[[], Any]) -> Any:
         frame_index = getattr(frame, "frame_id", None)
@@ -510,6 +527,11 @@ class RuntimeAttributionCapture:
             )
         if self._active:
             raise RuntimeError("runtime attribution capture cannot be nested")
+        if (
+            self.capture_frame_indices is not None
+            and frame_index not in self.capture_frame_indices
+        ):
+            return call()
         if self.records and frame_index <= self.records[-1]["frame_index"]:
             raise ValueError("instrumented frame IDs must increase strictly")
         if not _PATCH_LOCK.acquire(blocking=False):
