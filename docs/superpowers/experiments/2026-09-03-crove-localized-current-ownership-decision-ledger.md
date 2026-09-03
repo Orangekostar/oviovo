@@ -232,4 +232,29 @@ this entry.
 
 ## Office
 
-**Status:** `NOT_RUN_HELD_OUT` pending a complete Apartment all-gates PASS.
+**Status:** `NOT_RUN_HELD_OUT`. No Apartment P6 candidate passed every frozen
+hard gate, so Office remained untouched.
+
+## Final P6 Decision
+
+**Evidence before:** P6-A, P6-C, P6-D, and P6-E are complete and independently
+reported; the combined candidate and Office are governed by preregistered
+promotion gates.
+
+**Measured result:** P6-A produces no promotable rule; P6-C fails four hard
+gates; P6-D accepts 0/104 dense candidates and fails three hard gates; official
+Dyn provenance is 0% exact and 100% ambiguous.
+
+**Decision:** `REJECTED_RETAIN_A6`. Combined P6-C + P6-D is
+`NOT_RUN_STANDALONE_GATE`; Office is `NOT_RUN_HELD_OUT`; ReScene is
+`NO_GO / NOT_NEEDED`.
+
+**Reason:** No candidate meets the full Apartment gate, and no exact official
+Dyn evidence identifies a dominant mechanism for another scoped change.
+
+**Artifacts:** Final handoff
+`docs/superpowers/reports/2026-09-03-crove-localized-current-ownership-handoff.md`
+and the four phase reports referenced above.
+
+**Commit:** Frozen code/evidence revision `bf64009`; final handoff is the last
+commit on `research/crove-localized-current-ownership`.
