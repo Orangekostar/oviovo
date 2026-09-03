@@ -48,7 +48,7 @@ method ranking.
 work. Rules out assuming that latest official source, RSS release source, and
 the locally used evaluator are identical.
 
-**Commit:** `PENDING_THIS_COMMIT`
+**Commit:** `9d827cf8e1f765831dea20731ec6f4459f97e7e8`
 
 **Artifacts:** `configs/evaluation/external_benchmark_sources.json` and
 `docs/superpowers/reports/2026-09-03-dynamic-mapping-literature-benchmark-audit.md`.
@@ -92,8 +92,54 @@ identity, parity, attribution, adapter validity, and pilot reproducibility.
 pilots. Rules out benchmark shopping, GT oracle rows as final method results,
 and promoting 3RScan or Flat because of favorable later scores.
 
-**Commit:** `PENDING_THIS_COMMIT`
+**Commit:** `9d827cf8e1f765831dea20731ec6f4459f97e7e8`
 
 **Artifacts:** `configs/evaluation/benchmark_suitability_pre_result.json`
 (SHA-256 `f4de8e629dacc3a8e13a1123636179fe3c20ec0a145bbcdf1aff87c64a607694`),
 the source registry, and the literature audit report.
+
+## B2 — Source-Bound Khronos Aggregation Parity
+
+**Question:** Does the local TESSE summarizer change upstream row identity,
+duplicate collapse, time slices, or final Object/Dynamic/Change/Background F1?
+
+**Evidence before:** `CODE_EVIDENCE` from the frozen latest Khronos plotting
+source; `MEASURED_EVIDENCE` from immutable A6 and P5 official CSVs. No new method
+run or parameter search was performed.
+
+**Frozen source:** Khronos commit
+`63faadde6ed92220e78fb2f6ca86dcc54bb5cf9e`, `utils.py` SHA-256
+`a7c1bed4b97f8d9e27361296d00cf741ed67d18ae4d3f8e21e259fc4213d0763`,
+and the per-file artifact hashes in the B2 report.
+
+**Frozen protocol:** Compare exact normalized row keys, duplicate behavior, all
+four upstream slice modes, and final finite metrics with `rtol=0` and
+`atol=1e-12`; preserve a metric as N/A when both paths have no finite state.
+
+**Command:** Run `audit_khronos_metric_parity.py` twice with the source-bound A6
+and P5 result directories, the frozen Khronos checkout/commit, and separate
+atomic JSON outputs.
+
+**Result:** `MEASURED_EVIDENCE`: both audits return `PARITY`. A6 maximum absolute
+delta is `1.3877787807814457e-17`; P5 maximum absolute delta is the same. A6
+Dynamic F1 remains N/A on both paths. Each object CSV has 946 raw rows but only
+43 unique diagonal `(Name, Query)` states.
+
+**Deviation from paper:** This is a post-release aggregation parity audit, not
+an RSS 2024 Table I reproduction. No official CSV or historical metric changed.
+
+**Decision:** Rule out local summarizer arithmetic and duplicate handling as the
+cause of A6/P5 scores. Keep the paper-protocol identity gate open because the
+available artifact lacks off-diagonal historical states.
+
+**What this rules in/out:** Rules in evaluator/protocol identity and
+metric-task mismatch as live causes. Rules out changing local F1 arithmetic to
+improve the score.
+
+**Commit:** `PENDING_THIS_COMMIT`
+
+**Artifacts:**
+`docs/superpowers/reports/2026-09-03-khronos-metric-parity.md`; A6 audit JSON
+SHA-256 `4ecc68bc54f0fff56becacb4d0900fc8cbe19bc2656cd1f213ddce0282b8a6d1`;
+P5 audit JSON SHA-256
+`f9d4e9e578ea69ee50df85576f0a9a5e6f533fd5ad57844688846e0257bca8e4`.
