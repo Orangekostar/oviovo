@@ -366,8 +366,97 @@ use it to promote a benchmark or diagnose CROVE from this blocked run.
 contract. Rules out any claim about A6/P5/P6-C Flat sensitivity or Flat-based
 TESSE replacement.
 
-**Commit:** `PENDING_THIS_COMMIT`
+**Commit:** `4443e7f`
 
 **Artifacts:** `src/evaluation/datasets/panoptic_flat.py`,
 `src/evaluation/panoptic_flat_current.py`, the evaluation CLI, and
 `docs/superpowers/reports/2026-09-03-panoptic-flat-pilot.md`.
+
+## B8 — Benchmark Decision and Pareto Freeze
+
+**Question:** Which allowed benchmark decision follows from the complete frozen
+evidence without benchmark shopping or converting unavailable cells to zeros?
+
+**Evidence before:** All B0-B7 reports, the pre-result suitability scorecard,
+the unchanged historical A6/P5/P6 gates, and the source-bound B4/B5 receipts.
+
+**Frozen source:** Scorecard SHA-256
+`f4de8e629dacc3a8e13a1123636179fe3c20ec0a145bbcdf1aff87c64a607694`
+and the report/source hashes recorded in the final decision report and prior
+ledger entries.
+
+**Frozen protocol:** Apply only the master prompt's decision tree; do not alter
+B1 scores; preserve every blocked condition; separate paper identity,
+post-release aggregation, current diagnostics, and oracle inputs; expose the
+five Pareto axes without a weighted score.
+
+**Command:** Re-read and hash every required report/manifest, compare the
+measured A6/c553/P5/P6-C values, apply the preregistered decision tree, and run
+`test_benchmark_alignment_reports.py`.
+
+**Result:** `MEASURED_EVIDENCE` rules out a local aggregation error and shows a
+method-side Object-versus-current-state tradeoff. `BLOCKED` evidence prevents
+RSS identity, frontend/backend separation, and alternative-pilot performance
+claims. No observed current/full rank reversal or reproducible replacement
+suite exists.
+
+**Deviation from paper:** The resulting recommendation changes presentation,
+not any metric, historical gate, benchmark output, or method artifact.
+
+**Decision:** `KEEP_TESSE_HEADLINE_WITH_SPLIT_PROTOCOL`. Retain continuous
+dynamic coverage while splitting unmatched inputs and diagnostic/official
+protocol identities. Keep 3RScan and Flat as blocked future evidence routes.
+
+**What this rules in/out:** Rules in a split TESSE headline and transparent
+Pareto table. Rules out benchmark replacement, an exclusive frontend/backend
+root cause, a favorable task-mismatch claim, and a global method-weakness claim.
+
+**Commit:** `PENDING_THIS_COMMIT`
+
+**Artifacts:**
+`docs/superpowers/reports/2026-09-03-benchmark-decision.md` and the immutable B1
+scorecard.
+
+## B9 — Final Handoff and Release Gate
+
+**Question:** Does the branch provide all 15 required answers, preserve T1 and
+historical evidence, pass repository verification, and match the uploaded
+remote SHA?
+
+**Evidence before:** The B8 frozen decision, complete B0-B8 ledger, required
+report set, source manifests, patches, adapters, and focused tests.
+
+**Frozen source:** Base
+`668aefc49034ef97d090b811b1c3f291ecafbd66`, branch
+`research/crove-benchmark-alignment-audit`, and every small committed artifact;
+large artifacts are bound by path, SHA-256, byte count, command, source, and
+config identity in the handoff.
+
+**Frozen protocol:** Answer questions 1-15 explicitly; run the six historical
+evaluation suites, T1 protected-source verifier, diff check, compileall, and
+full pytest; commit all files; push; require exact local/remote SHA equality.
+
+**Command:** Execute the Task 8 verification block from
+`2026-09-03-crove-benchmark-alignment-plan.md`, then push and compare
+`git rev-parse HEAD` with `git ls-remote --heads origin`.
+
+**Result:** `MEASURED_EVIDENCE`: historical regression suites pass 168 tests;
+the B0-B9 focused suite passes 55; the T1 verifier, Ruff, diff check, and
+compileall pass; the full repository passes 5,803 tests with 10 explicit
+missing-asset skips and five non-failing NumPy deprecation warnings. Upload
+status remains unclaimed until the final local/remote SHA comparison.
+
+**Deviation from paper:** None. This stage packages evidence and does not alter
+methods, data, metrics, or numerical results.
+
+**Decision:** The local release gate passes. Commit the complete evidence,
+push, and withhold upload completion until the branch SHAs are identical.
+
+**What this rules in/out:** Rules in a reproducible terminal release gate.
+Rules out completion based only on focused tests or an unverified push.
+
+**Commit:** `PENDING_THIS_COMMIT`
+
+**Artifacts:**
+`docs/superpowers/reports/2026-09-03-benchmark-alignment-handoff.md` and
+`tests/evaluation/test_benchmark_alignment_reports.py`.
