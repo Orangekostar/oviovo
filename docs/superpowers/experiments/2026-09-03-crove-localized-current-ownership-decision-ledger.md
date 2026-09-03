@@ -56,21 +56,35 @@ avoids measured block-level evidence conflicts.
 
 ## P6-B Localized Reversible Ownership
 
-**Hypothesis:** Pending.
+**Hypothesis:** A 5 cm signed per-voxel state can remove only unsupported anchor
+regions and restore them after two later PRESENT observations while preserving
+the immutable OVI-MAP anchor.
 
-**Evidence before:** Pending.
+**Evidence before:** P5's whole-anchor policy improves Ghost but loses Object
+F1, and P6-0 measured only 1.513045% direct 5 cm PRESENT/ABSENT conflicts with a
+2.38 MB raw-state estimate.
 
-**Implementation:** Pending.
+**Implementation:** Added typed immutable ownership/evidence state,
+copy-on-advance causal updates, native point-order filtering, deterministic
+bit-packed masks, partial/dormant metadata, and the
+`localized_visibility_candidate` composition contract. P5 behavior remains
+unchanged when localized ownership is absent.
 
-**Artifacts:** Pending.
+**Artifacts:** Frozen policy
+`configs/evaluation/crove_ovimap_localized_visibility_l1_v1.json`; runtime masks
+are separate hash-bound sidecars rather than embedded map payloads.
 
-**Measured result:** Pending.
+**Measured result:** The Apartment L1 composition covers 1,745 frames and 43
+states, tracks 41,797 full voxels across 36 anchors, and uses 2,487,978 bytes of
+implemented state, below the 8 MB L2 trigger.
 
-**Decision:** Pending.
+**Decision:** GO to standalone P6-C evaluation; L2 remains
+`NOT_RUN_NOT_NEEDED`.
 
-**Reason:** Pending.
+**Reason:** The implementation meets the fixed 5 cm, reversibility, memory,
+causality, and compatibility contracts without modifying source mapping.
 
-**Commit:** Pending.
+**Commit:** `52cab77`, `ab006ba`, `212ef74`, `d041022`.
 
 ## P6-C Apartment Localized Candidate
 
@@ -92,21 +106,34 @@ avoids measured block-level evidence conflicts.
 
 ## P6-D Geometry-Gated Dense Readout
 
-**Hypothesis:** Pending.
+**Hypothesis:** A fixed bidirectional geometry-agreement gate can recover dense
+moved geometry only where compact temporal and translated anchor templates
+agree, while falling back exactly elsewhere.
 
-**Evidence before:** Pending.
+**Evidence before:** P4A improved Change/current/Ghost but failed Object F1;
+its moved objects included zero-coverage and meter-scale template failures.
 
-**Implementation:** Pending.
+**Implementation:** Added typed bidirectional 5 cm coverage, NN median/p90,
+centroid, extent residual/ratio measurements and a hybrid readout whose rejected
+path preserves the exact compact snapshot plus additive audit metadata.
 
-**Artifacts:** Pending.
+**Artifacts:** Report `docs/superpowers/reports/P6D_HYBRID_DENSE_READOUT_REPORT.md`;
+run root
+`/home/ww/oviovo_baseline_runs/20260903_crove_localized_current_ownership/p6d/apartment_hybrid`;
+composition SHA-256 `1a3098140282257f247f835307f6b3727a3055c67ee84a297d65899f2609a9c7`.
 
-**Measured result:** Pending.
+**Measured result:** 0/104 dense decisions accepted and 104/104 exact compact
+fallbacks. Object F1 `0.34847202749654466`, Dynamic F1
+`0.06922505723328032`, Change F1 `0.08845787063178367`, current mIoU
+`0.1495595491165195`, Ghost `0.4437595432978686`; 1,745 frames and 43 states.
 
-**Decision:** Pending.
+**Decision:** `NO_GO / REJECTED_RETAIN_A6`; combined candidate
+`NOT_RUN_STANDALONE_GATE`.
 
-**Reason:** Pending.
+**Reason:** Every dense proposal failed the preregistered gate, and exact
+fallback fails Object, current, and Ghost hard gates.
 
-**Commit:** Pending.
+**Commit:** Implementation `aafde6b`, `1641f2e`; report commit pending.
 
 ## P6-E Official Dyn Provenance
 
@@ -129,4 +156,3 @@ avoids measured block-level evidence conflicts.
 ## Office
 
 **Status:** `NOT_RUN_HELD_OUT` pending a complete Apartment all-gates PASS.
-
