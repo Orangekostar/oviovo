@@ -88,21 +88,35 @@ causality, and compatibility contracts without modifying source mapping.
 
 ## P6-C Apartment Localized Candidate
 
-**Hypothesis:** Pending.
+**Hypothesis:** Replacing whole-anchor suppression with 5 cm localized
+ownership will preserve valid object geometry, cross the A6 Object F1 floor,
+and retain P5's dynamic/current/Ghost gains.
 
-**Evidence before:** Pending.
+**Evidence before:** P5 misses the Object floor by `0.0048099973`; P6-0 shows
+low direct 5 cm evidence conflict and P6-B fits within the memory bound.
 
-**Implementation:** Pending.
+**Implementation:** Reused the frozen source run and P5 thresholds, recomposed
+L1 only, exported the temporal artifact, imported the unchanged Khronos bridge,
+and ran official plus two byte-identical common-v2 evaluations.
 
-**Artifacts:** Pending.
+**Artifacts:** Report `docs/superpowers/reports/P6C_LOCALIZED_VISIBILITY_REPORT.md`;
+run root
+`/home/ww/oviovo_baseline_runs/20260903_crove_localized_current_ownership/p6c/apartment_l1`;
+composition SHA-256 `259f181e2e562cc6546e8ca08727049c48e71bde84f3bb05ba11bfa525e73bad`.
 
-**Measured result:** Pending.
+**Measured result:** Object F1 `0.367307250721078`, Dynamic F1
+`0.06922505723328032`, Change F1 `0.08724574941966247`, current mIoU
+`0.14944876084641232`, Ghost `0.44168885642814226`; 1,745 frames, 43 states,
+2,487,978 state bytes, and 43 mask sidecars.
 
-**Decision:** Pending.
+**Decision:** `NO_GO / REJECTED_RETAIN_A6`; Office not authorized.
 
-**Reason:** Pending.
+**Reason:** Only Dynamic meets the P6 hard gate. Object, Change, current, and
+Ghost all fail their frozen thresholds, so neither L2 tuning nor Office is
+allowed.
 
-**Commit:** Pending.
+**Commit:** Implementation through `d041022`; evaluation report recorded by
+the ledger commit containing this entry.
 
 ## P6-D Geometry-Gated Dense Readout
 
@@ -133,7 +147,30 @@ fallbacks. Object F1 `0.34847202749654466`, Dynamic F1
 **Reason:** Every dense proposal failed the preregistered gate, and exact
 fallback fails Object, current, and Ghost hard gates.
 
-**Commit:** Implementation `aafde6b`, `1641f2e`; report commit pending.
+**Commit:** Implementation `aafde6b`, `1641f2e`; report `1761104`.
+
+## P6 Combined Candidate
+
+**Hypothesis:** Localized ownership and geometry-gated dense readout may be
+complementary only if each mechanism independently passes all hard gates.
+
+**Evidence before:** P6-C and P6-D both have complete standalone Apartment
+measurements.
+
+**Implementation:** None; the preregistered standalone gate was applied before
+composition.
+
+**Artifacts:** P6-C and P6-D reports and gate receipts.
+
+**Measured result:** P6-C fails four hard gates. P6-D accepts 0/104 dense
+decisions and fails three hard gates.
+
+**Decision:** `NOT_RUN_STANDALONE_GATE`.
+
+**Reason:** Both standalone mechanisms are `NO_GO`; running their combination
+would violate the preregistered causal-ablation protocol.
+
+**Commit:** Decision recorded with final ledger.
 
 ## P6-E Official Dyn Provenance
 

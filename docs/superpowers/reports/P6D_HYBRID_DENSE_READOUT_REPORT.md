@@ -2,6 +2,8 @@
 
 ## Scope
 
+- `CODE_EVIDENCE`: the rejected path emits exact temporal-compact geometry and
+  adds only three audit metadata fields.
 - Scene: Apartment only; Office remained held out.
 - Candidate: translated dense OVI-MAP geometry for moved bound objects, accepted
   only by the preregistered bidirectional 5 cm agreement gate.
@@ -11,8 +13,8 @@
 
 ## Geometry Result
 
-The gate evaluated 104 moved-object checkpoint records and accepted none. All
-104 records therefore used the exact temporal-compact fallback. The dominant
+`MEASURED_EVIDENCE`: the gate evaluated 104 moved-object checkpoint records and
+accepted none. All 104 records therefore used the exact temporal-compact fallback. The dominant
 rejection was compact-to-template coverage (104/104); template-to-compact
 coverage failed for 99/104 and the y-axis extent residual failed for 99/104.
 
@@ -53,10 +55,14 @@ additive audit fields `geometry_gate_id`, `geometry_gate_accepted`, and
 | Ghost | 0.443760 | <= 0.441677 | FAIL |
 | Frames / states | 1,745 / 43 | 1,745 / 43 | PASS |
 
-Decision: `NO_GO / REJECTED_RETAIN_A6`. No dense geometry passed the fixed
-agreement gate, and the exact compact fallback fails the Object, Current, and
+`MEASURED_EVIDENCE`: `NO_GO / REJECTED_RETAIN_A6`. No dense geometry passed the
+fixed agreement gate, and the exact compact fallback fails the Object, Current, and
 Ghost promotion thresholds. The combined P6-C + P6-D candidate is therefore
 `NOT_RUN_STANDALONE_GATE` regardless of the P6-C result.
+
+`HYPOTHESIS`: a future dense method would need deformation-aware template
+support rather than centroid translation, but P6 provides no evidence to relax
+the registered gate.
 
 ## Bound Artifacts
 
