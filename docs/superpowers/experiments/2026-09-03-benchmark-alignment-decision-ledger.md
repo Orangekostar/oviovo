@@ -277,8 +277,53 @@ evaluator artifacts cannot test retrospective task alignment.
 using the current public loop's duplicate rows as historical evidence and
 rules out direct C0-versus-paper comparisons under unmatched semantics.
 
-**Commit:** `PENDING_THIS_COMMIT`
+**Commit:** `26392c7`
 
 **Artifacts:** `docs/superpowers/reports/2026-09-03-tesse-input-fairness.md`,
 `docs/superpowers/reports/2026-09-03-tesse-current-vs-full4d.md`, and the B5
 evaluation modules and CLIs.
+
+## B6 — Causal 3RScan Pilot
+
+**Question:** Can 3RScan provide reproducible real-world cross-session identity
+evidence under a strict causal-prefix protocol?
+
+**Evidence before:** `LITERATURE_EVIDENCE` from B1 and `CODE_EVIDENCE` from the
+official metadata and validation list. No CROVE 3RScan result was available or
+used for selection.
+
+**Frozen source:** `3RScan.json` SHA-256
+`674a00f50f76b198b9de44efd86c390fea3da37ba8f12cf8ccd00045e265fa64`
+and validation list SHA-256
+`002229133d4dbc311a01994b8ea31ecac0b662511864493efed9b4febcb0a4e8`.
+
+**Frozen protocol:** Validation-only environments, every visit in the frozen
+split, at least two visits and one registered change, UUID sort, first 10.
+Predictions use session prefixes; GT transforms and IDs are evaluator-only;
+community and custom exact-ID metrics remain separate.
+
+**Command:** Run `evaluate_3rscan_temporal.py freeze` on the two bound sources,
+inventory every required member for the selected visits, and run the synthetic
+adapter/exact-ID tests.
+
+**Result:** `CODE_EVIDENCE`: 478 environments contain 194 with exactly two
+visits, and 284/124/56/25 with at least 3/4/5/6 visits. Forty-seven environments
+are eligible; the frozen first 10 contain 44 visits. Protocol tests pass.
+`BLOCKED_DATASET_ACCESS`: none of the selected runtime asset sets is available,
+so no real method metric is emitted.
+
+**Deviation from paper:** This adapter adds causal exact-ID diagnostics beside
+community metrics; it does not relabel them as official 3RScan scores.
+
+**Decision:** Retain the frozen pilot selection and block result interpretation
+until its RGB-D, mesh, instance, and semantic assets are source-bound.
+
+**What this rules in/out:** Rules in 3RScan as a future long-term identity
+diagnostic. Rules out benchmark replacement or method conclusions from metadata
+alone.
+
+**Commit:** `PENDING_THIS_COMMIT`
+
+**Artifacts:** `configs/evaluation/manifests/3rscan_causal_pilot_v1.json`, the
+3RScan adapter/evaluator, and
+`docs/superpowers/reports/2026-09-03-3rscan-pilot.md`.
