@@ -1,7 +1,7 @@
 # CROVE P6 Localized Current Ownership Decision Ledger
 
-Date: 2026-09-03  
-Base: `dd3247f2d9e81e31a7508b8b692480dbb8855246`  
+Date: 2026-09-03
+Base: `dd3247f2d9e81e31a7508b8b692480dbb8855246`
 Branch: `research/crove-localized-current-ownership`
 
 ## P6-0 Preregistration
@@ -34,25 +34,40 @@ determinism.
 **Reason:** 5 cm matches the evaluation/state scale, has acceptable memory, and
 avoids measured block-level evidence conflicts.
 
-**Commit:** Design `7006a46`; plan/ledger commit pending.
+**Commit:** Design `7006a46`; plan and ledger `14fee8c`.
 
 ## P6-A Counterfactual Attribution
 
-**Hypothesis:** Pending.
+**Hypothesis:** The ten P5 suppressions contain separable Ghost-benefit and
+Object-damage factors that can be identified by causal counterfactual replay.
 
-**Evidence before:** Pending.
+**Evidence before:** P5 gains `0.0194799752` Object F1 and reduces Ghost by
+`0.0020820903` versus no suppression, but remains below the A6 Object floor.
 
-**Implementation:** Pending.
+**Implementation:** Reused the frozen P5 source and recomposed CF0, CF1, ten
+leave-one-out, ten only-one, and two P2 feature-group variants. All variants
+are explicitly diagnostic-only and cannot define a runtime ID rule.
 
-**Artifacts:** Pending.
+**Artifacts:** Report `docs/superpowers/reports/P6A_COUNTERFACTUAL_REPORT.md`;
+collection root
+`/home/ww/oviovo_baseline_runs/20260903_crove_localized_current_ownership/p6a/collection`;
+manifest SHA-256
+`41585bcfa8b3a48c8df0c88faf8307701b045c185dd658cae64b5c52d8a7f9f0`.
 
-**Measured result:** Pending.
+**Measured result:** All 24 variants completed 1,745 frames and 43 states.
+Dynamic F1 is invariant at `0.06922505723328032`; Object F1 ranges
+`0.3484720275`-`0.3679520027`, and 0/24 variants pass every hard gate. The P2
+dominant five recover the full Ghost benefit but no Object gain; the
+complementary five recover the full Object gain but no Ghost benefit.
 
-**Decision:** Pending.
+**Decision:** `NO_GO / DIAGNOSTIC_ONLY`.
 
-**Reason:** Pending.
+**Reason:** The trade-off separates into two transition groups, but no measured
+variant crosses the A6 Object floor and the one-scene ID evidence cannot become
+a general method rule.
 
-**Commit:** Pending.
+**Commit:** Counterfactual implementation `f7c3b02`, execution `5a34fa3`;
+report recorded by the ledger commit containing this entry.
 
 ## P6-B Localized Reversible Ownership
 
