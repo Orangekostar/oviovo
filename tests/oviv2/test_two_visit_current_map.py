@@ -15,12 +15,13 @@ from src.oviv2.two_visit_current_map import (
     write_two_visit_current_map,
 )
 
-
 SHA_A = "a" * 64
 SHA_V = "f" * 64
 
 
-def _entity(entity_id: str, points: list[list[float]], label: str = "chair") -> EntityPrediction:
+def _entity(
+    entity_id: str, points: list[list[float]], label: str = "chair"
+) -> EntityPrediction:
     return EntityPrediction(
         entity_id=entity_id,
         points_xyz=np.asarray(points, dtype=np.float32),
@@ -61,12 +62,27 @@ def _visit(
     )
 
 
-def _visibility(status: str, point: tuple[float, float, float] = (0.01, 0.0, 0.0)) -> SignedVisibilityGrid:
+def _visibility(
+    status: str, point: tuple[float, float, float] = (0.01, 0.0, 0.0)
+) -> SignedVisibilityGrid:
     key = np.floor(np.asarray(point) / 0.05).astype(np.int64)
     return SignedVisibilityGrid(
         voxel_size_m=0.05,
         voxel_keys=key[None, :],
         statuses=(status,),
+        source_sha256=SHA_V,
+    )
+
+
+def _visibility_many(
+    points: list[list[float]], statuses: tuple[str, ...]
+) -> SignedVisibilityGrid:
+    keys = np.floor(np.asarray(points) / 0.05).astype(np.int64)
+    order = np.lexsort((keys[:, 2], keys[:, 1], keys[:, 0]))
+    return SignedVisibilityGrid(
+        voxel_size_m=0.05,
+        voxel_keys=keys[order],
+        statuses=tuple(statuses[index] for index in order),
         source_sha256=SHA_V,
     )
 
@@ -124,10 +140,89 @@ def test_missing_t1_query_without_visible_free_never_deletes_t0() -> None:
         CompositionConfig(),
     )
 
-    fallback = next(entity for entity in result.snapshot.entities if entity.entity_id.startswith("t0-fallback:"))
+    fallback = next(
+        entity
+        for entity in result.snapshot.entities
+        if entity.entity_id.startswith("t0-fallback:")
+    )
     assert np.array_equal(fallback.points_xyz, t0.snapshot.entities[0].points_xyz)
     assert any(
-        item.decision.decision == "retain_t0_unobserved"
+        item.decision.decision == "retain_t0_unobserved" for item in result.provenance
+    )
+
+
+def test_object_visible_free_majority_suppresses_occluded_entity_residue() -> None:
+    points = [[0.01 + 0.10 * index, 0.0, 0.0] for index in range(5)]
+    t0 = _visit(0, [_entity("t0:couch", points, "Couch")])
+    t1 = _visit(1, [_entity("t1:lamp", [[2.0, 0.0, 0.0]], "Lamp")])
+    visibility = _visibility_many(
+        points,
+        ("visible_free", "visible_free", "visible_free", "visible_free", "occluded"),
+    )
+
+    result = compose_current_map(
+        t0,
+        t1,
+        (),
+        visibility,
+        CompositionConfig(
+            object_semantic_labels=frozenset({"Couch"}),
+            minimum_entity_visible_free_fraction=0.8,
+            minimum_entity_visible_free_voxels=3,
+        ),
+    )
+
+    assert [entity.entity_id for entity in result.snapshot.entities] == ["t1:lamp"]
+    residue = next(
+        item
+        for item in result.provenance
+        if item.decision.source_entity_id == "t0:couch"
+        and item.decision.visibility_status == "occluded"
+    )
+    assert residue.decision.decision == "suppress_t0_entity_visible_free"
+    assert residue.decision.visibility_score == pytest.approx(1.0)
+    assert residue.output_point_count == 0
+
+
+@pytest.mark.parametrize(
+    ("label", "statuses"),
+    [
+        ("Floor", ("visible_free",) * 4 + ("occluded",)),
+        ("Couch", ("visible_free",) * 2 + ("occluded",) * 3),
+        (
+            "Couch",
+            ("visible_free",) * 4 + ("occupied",) * 2 + ("occluded",),
+        ),
+    ],
+)
+def test_entity_lift_preserves_nonobjects_and_insufficient_evidence(
+    label: str,
+    statuses: tuple[str, ...],
+) -> None:
+    points = [[0.01 + 0.10 * index, 0.0, 0.0] for index in range(len(statuses))]
+    t0 = _visit(0, [_entity("t0:entity", points, label)])
+    t1 = _visit(1, [_entity("t1:lamp", [[2.0, 0.0, 0.0]], "Lamp")])
+
+    result = compose_current_map(
+        t0,
+        t1,
+        (),
+        _visibility_many(points, statuses),
+        CompositionConfig(
+            object_semantic_labels=frozenset({"Couch"}),
+            minimum_entity_visible_free_fraction=0.8,
+            minimum_entity_visible_free_voxels=3,
+        ),
+    )
+
+    fallback = next(
+        entity
+        for entity in result.snapshot.entities
+        if entity.entity_id.startswith("t0-fallback:")
+    )
+    assert len(fallback.points_xyz) >= 1
+    assert all(
+        item.decision.decision != "suppress_t0_entity_visible_free"
         for item in result.provenance
     )
 
@@ -216,7 +311,9 @@ def test_multiple_retained_status_groups_reuse_one_fallback_entity() -> None:
     )
 
     fallbacks = [
-        entity for entity in result.snapshot.entities if entity.entity_id.startswith("t0-fallback:")
+        entity
+        for entity in result.snapshot.entities
+        if entity.entity_id.startswith("t0-fallback:")
     ]
     assert len(fallbacks) == 1
     assert np.allclose(
@@ -239,7 +336,10 @@ def test_every_output_group_traces_only_to_ovi_source_points() -> None:
 
     emitted = [item for item in result.provenance if item.output_point_count > 0]
     assert {item.decision.geometry_source for item in emitted} == {"ovi_t0", "ovi_t1"}
-    assert all(item.decision.semantic_source in {"ovi_t0", "ovi_t1", "fused_ovi"} for item in emitted)
+    assert all(
+        item.decision.semantic_source in {"ovi_t0", "ovi_t1", "fused_ovi"}
+        for item in emitted
+    )
 
 
 def test_current_map_export_is_atomic_and_source_bound(tmp_path: Path) -> None:

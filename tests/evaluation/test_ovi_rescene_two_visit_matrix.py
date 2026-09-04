@@ -108,8 +108,7 @@ def test_checked_in_matrix_freezes_exact_b0_b6_contract() -> None:
         False,
     ]
     assert all(
-        set(row["final_geometry_sources"]) <= {"ovi_t0", "ovi_t1"}
-        for row in rows
+        set(row["final_geometry_sources"]) <= {"ovi_t0", "ovi_t1"} for row in rows
     )
     assert all("command" in row["artifacts"] for row in rows)
     assert all("metric_receipt" in row["artifacts"] for row in rows)
@@ -138,6 +137,18 @@ def test_checked_in_matrix_freezes_exact_b0_b6_contract() -> None:
         "minimum_distinct_viewpoints": 3,
         "minimum_viewpoint_baseline_m": 0.25,
     }
+    assert matrix["method_config"]["composer"] == {
+        "composition_voxel_size_m": 0.05,
+        "authority_rule": (
+            "t1_occupied_then_visible_free_then_entity_visible_free_"
+            "then_t0_occluded_or_unobserved"
+        ),
+        "removal_authority": "t1_signed_visible_free_only",
+        "semantic_authority": "ovi",
+        "entity_scope": "complete_scene_object_vocabulary_only",
+        "minimum_entity_visible_free_fraction": 0.8,
+        "minimum_entity_visible_free_voxels": 3,
+    }
     assert matrix["preregistration_amendment"]["status"] == (
         "FROZEN_BEFORE_FIRST_METHOD_SCORE"
     )
@@ -152,8 +163,21 @@ def test_checked_in_matrix_freezes_exact_b0_b6_contract() -> None:
         "baseline_results_inspected": ["B0", "B1", "B2"],
         "method_results_inspected": False,
     }
+    assert matrix["composition_amendment"] == {
+        "status": ("FROZEN_AFTER_B3_B4_FAILURE_DIAGNOSIS_BEFORE_CORRECTED_RERUN"),
+        "parent_commit": "185a26ad75b1d0bce71cf983ebb0310842d59c58",
+        "reason": "lift_strong_voxel_visible_free_evidence_to_ovi_object_entity",
+        "method_results_inspected": ["B3", "B4"],
+        "observed_ghost": {
+            "B2": 0.0,
+            "B3": 0.9961844725,
+            "B4": 0.9961844725,
+        },
+        "threshold_source": "reuse_frozen_signed_visibility_thresholds",
+    }
     assert {
         "deterministic_executor",
+        "composition_contracts",
         "native_ovi_runner",
         "snapshot_metrics",
         "visibility_execution",
@@ -163,7 +187,9 @@ def test_checked_in_matrix_freezes_exact_b0_b6_contract() -> None:
     } <= set(matrix["source_bindings"])
 
 
-def test_matrix_rejects_changed_visibility_or_geometry_authority(tmp_path: Path) -> None:
+def test_matrix_rejects_changed_visibility_or_geometry_authority(
+    tmp_path: Path,
+) -> None:
     matrix = json.loads(MATRIX_PATH.read_text(encoding="utf-8"))
     matrix["rows"][3]["signed_visibility"] = False
     path = tmp_path / "matrix.json"
@@ -198,6 +224,12 @@ def test_matrix_rejects_changed_method_threshold_or_amendment(tmp_path: Path) ->
     matrix["diagnostic_amendment"]["method_results_inspected"] = True
     path.write_text(json.dumps(matrix), encoding="utf-8")
     with pytest.raises(MatrixError, match="diagnostic amendment"):
+        load_and_validate_matrix(path, verify_source_bindings=False)
+
+    matrix = json.loads(MATRIX_PATH.read_text(encoding="utf-8"))
+    matrix["composition_amendment"]["threshold_source"] = "searched_on_B3"
+    path.write_text(json.dumps(matrix), encoding="utf-8")
+    with pytest.raises(MatrixError, match="composition amendment"):
         load_and_validate_matrix(path, verify_source_bindings=False)
 
 

@@ -91,6 +91,7 @@ class PreparedTwoVisitExecution:
     visibility: SignedVisibilityGrid
     evaluation: TwoVisitEvaluationContext
     crosswalk: TesseSemanticCrosswalk
+    object_semantic_labels: frozenset[str]
     t0_entity_observed_masks: Mapping[str, np.ndarray]
     t0_background_observed_mask: np.ndarray
     ovi_t0_artifact_bytes: int
@@ -106,6 +107,15 @@ class PreparedTwoVisitExecution:
             raise TypeError("evaluation must be TwoVisitEvaluationContext")
         if not isinstance(self.crosswalk, TesseSemanticCrosswalk):
             raise TypeError("crosswalk must be TesseSemanticCrosswalk")
+        if (
+            not isinstance(self.object_semantic_labels, frozenset)
+            or not self.object_semantic_labels
+            or any(
+                not isinstance(label, str) or not label.strip()
+                for label in self.object_semantic_labels
+            )
+        ):
+            raise ValueError("object_semantic_labels must be a non-empty frozenset")
         if self.evaluation.frame_id != int(self.t1.snapshot.timestamp):
             raise ValueError("evaluation frame must equal the t1 snapshot timestamp")
         if self.crosswalk.scene != self.t1.snapshot.scene_id:
@@ -144,7 +154,9 @@ class PreparedTwoVisitExecution:
             or not self.evaluation_bindings
             or set(self.input_bindings) & set(self.evaluation_bindings)
         ):
-            raise ValueError("method and evaluation bindings must be non-empty and disjoint")
+            raise ValueError(
+                "method and evaluation bindings must be non-empty and disjoint"
+            )
         object.__setattr__(self, "t0_entity_observed_masks", MappingProxyType(masks))
         object.__setattr__(self, "t0_background_observed_mask", background)
         object.__setattr__(
@@ -193,14 +205,15 @@ class SemanticVocabulary:
 
 def _canonical_json(value: object) -> bytes:
     return (
-        json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
-        + "\n"
+        json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n"
     ).encode("utf-8")
 
 
 def _write_atomic(path: Path, value: object) -> None:
     data = _canonical_json(value)
-    descriptor, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{path.name}.", dir=path.parent
+    )
     temporary = Path(temporary_name)
     try:
         with os.fdopen(descriptor, "wb") as handle:
@@ -286,9 +299,8 @@ def load_two_visit_ovi_inputs(
     declared_protocol_path, declared_protocol = _bound_path(
         ovi_manifest.get("protocol"), label="protocol"
     )
-    if (
-        declared_protocol_path != protocol_path
-        or declared_protocol != _absolute_record(protocol_path)
+    if declared_protocol_path != protocol_path or declared_protocol != _absolute_record(
+        protocol_path
     ):
         raise ValueError("two-visit OVI protocol binding mismatch")
     scene_record = protocol.get("scenes", {}).get(scene)
@@ -434,7 +446,11 @@ def _siglip_semantic_labeler(
 
     if not device:
         raise ValueError("semantic device must be non-empty")
-    model = AutoModel.from_pretrained(str(model_path), local_files_only=True).eval().to(device)
+    model = (
+        AutoModel.from_pretrained(str(model_path), local_files_only=True)
+        .eval()
+        .to(device)
+    )
     tokenizer = AutoTokenizer.from_pretrained(str(model_path), local_files_only=True)
     prompts = (*classes, *canonical_prompts)
     tokens = tokenizer(
@@ -549,13 +565,14 @@ def _split_t0_observation_masks(
     frames: tuple[Any, ...],
     config: SignedVisibilityConfig,
 ) -> tuple[dict[str, np.ndarray], np.ndarray]:
-    chunks = [np.asarray(entity.points_xyz, dtype=np.float32) for entity in t0.snapshot.entities]
+    chunks = [
+        np.asarray(entity.points_xyz, dtype=np.float32)
+        for entity in t0.snapshot.entities
+    ]
     if t0.snapshot.background_xyz is not None:
         chunks.append(np.asarray(t0.snapshot.background_xyz, dtype=np.float32))
     all_points = (
-        np.concatenate(chunks, axis=0)
-        if chunks
-        else np.empty((0, 3), dtype=np.float32)
+        np.concatenate(chunks, axis=0) if chunks else np.empty((0, 3), dtype=np.float32)
     )
     observed = derive_observed_point_mask(all_points, frames, config)
     offset = 0
@@ -611,7 +628,9 @@ def _evaluation_context(
     )
     event_ids = selected["evaluator_only"]["event_ids"]
     if not isinstance(event_ids, list) or len(event_ids) != 1:
-        raise ValueError("two-visit final checkpoint must bind exactly one change event")
+        raise ValueError(
+            "two-visit final checkpoint must bind exactly one change event"
+        )
     event_id = event_ids[0]
     event = next(item for item in events if item["event_id"] == event_id)
     checkpoint_frames = event["common_checkpoint_frame_indices"]
@@ -739,9 +758,7 @@ def prepare_two_visit_execution(
     visibility_source_sha256 = hashlib.sha256(
         _canonical_json(
             {
-                "t1_source_input_sha256": loaded["visits"]["t1"][
-                    "source_input_sha256"
-                ],
+                "t1_source_input_sha256": loaded["visits"]["t1"]["source_input_sha256"],
                 "signed_visibility": asdict(visibility_config),
             }
         )
@@ -803,6 +820,7 @@ def prepare_two_visit_execution(
         visibility=visibility,
         evaluation=evaluation,
         crosswalk=crosswalk,
+        object_semantic_labels=vocabulary.object_classes,
         t0_entity_observed_masks=t0_entity_masks,
         t0_background_observed_mask=t0_background_mask,
         ovi_t0_artifact_bytes=_artifact_bytes(
@@ -853,10 +871,14 @@ def _retained_t0(
             points.append(np.asarray(entity.points_xyz, dtype=np.float32))
             masks.append(prepared.t0_entity_observed_masks[entity.entity_id])
         if prepared.t0.snapshot.background_xyz is not None:
-            points.append(np.asarray(prepared.t0.snapshot.background_xyz, dtype=np.float32))
+            points.append(
+                np.asarray(prepared.t0.snapshot.background_xyz, dtype=np.float32)
+            )
             masks.append(prepared.t0_background_observed_mask)
     else:
-        entities = {entity.entity_id: entity for entity in prepared.t0.snapshot.entities}
+        entities = {
+            entity.entity_id: entity for entity in prepared.t0.snapshot.entities
+        }
         for group in current.provenance:
             if group.decision.source_visit != 0 or group.output_point_count == 0:
                 continue
@@ -878,9 +900,7 @@ def _retained_t0(
         np.concatenate(points, axis=0)
         if points
         else np.empty((0, 3), dtype=np.float32),
-        np.concatenate(masks)
-        if masks
-        else np.empty((0,), dtype=np.bool_),
+        np.concatenate(masks) if masks else np.empty((0,), dtype=np.bool_),
     )
 
 
@@ -933,8 +953,7 @@ def _write_snapshot_artifact(
             ),
             "geometry_sources": list(row["final_geometry_sources"]),
             "input_bindings": {
-                role: dict(record)
-                for role, record in prepared.input_bindings.items()
+                role: dict(record) for role, record in prepared.input_bindings.items()
             },
             "artifacts": artifact_records,
         },
@@ -979,9 +998,7 @@ def _metric_payload(
     groups["current_state"].update(
         {name: measured[name] for name in ("ghost", "current_miou")}
     )
-    groups["geometry"].update(
-        {name: measured[name] for name in groups["geometry"]}
-    )
+    groups["geometry"].update({name: measured[name] for name in groups["geometry"]})
     groups["systems"].update(
         {
             "ovi_t0_point_count": _visit_point_count(prepared.t0),
@@ -1035,7 +1052,10 @@ def _metric_payload(
         if value is None
     }
     if set(unavailable) != {
-        name for values in groups.values() for name, value in values.items() if value is None
+        name
+        for values in groups.values()
+        for name, value in values.items()
+        if value is None
     }:
         raise ValueError("metric N/A reasons are incomplete")
     if output_artifact != variant_root / "current-map-manifest.json":
@@ -1051,8 +1071,7 @@ def _metric_payload(
             role: dict(record) for role, record in prepared.input_bindings.items()
         },
         "evaluation_only_bindings": {
-            role: dict(record)
-            for role, record in prepared.evaluation_bindings.items()
+            role: dict(record) for role, record in prepared.evaluation_bindings.items()
         },
     }
 
@@ -1106,16 +1125,22 @@ def execute_prepared_variant(
         snapshot = build_static_baseline_snapshot(variant_id, prepared.t0, prepared.t1)
     else:
         started = time.perf_counter()
+        composer = matrix["method_config"]["composer"]
         current, _relations = build_visibility_baseline(
             prepared.t0,
             prepared.t1,
             prepared.visibility,
             use_geometric_pairing=variant_id == "B4",
             geometric_config=_geometric_config(matrix),
+            object_semantic_labels=prepared.object_semantic_labels,
+            minimum_entity_visible_free_fraction=float(
+                composer["minimum_entity_visible_free_fraction"]
+            ),
+            minimum_entity_visible_free_voxels=int(
+                composer["minimum_entity_visible_free_voxels"]
+            ),
         )
-        adapter_runtime_s = (
-            time.perf_counter() - started if variant_id == "B4" else 0.0
-        )
+        adapter_runtime_s = time.perf_counter() - started if variant_id == "B4" else 0.0
         snapshot = current.snapshot
     retained, retained_mask = _retained_t0(
         prepared,

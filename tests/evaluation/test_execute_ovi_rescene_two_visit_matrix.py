@@ -58,8 +58,7 @@ def test_semantic_config_binds_vocabulary_and_prompt_rule() -> None:
 
     settings = _semantic_config(
         matrix,
-        REPO_ROOT
-        / "configs/evaluation/vocabularies/tesse_cd_apartment_ovi_full.json",
+        REPO_ROOT / "configs/evaluation/vocabularies/tesse_cd_apartment_ovi_full.json",
         scene="apartment",
     )
 
@@ -104,7 +103,20 @@ def test_checked_vocabularies_cover_complete_native_label_spaces() -> None:
                 "Wall",
                 "Humans",
             ),
-            frozenset({"Fridge", "Books", "Chair", "Vase", "Couch", "Drawer", "Objects", "Table", "Bin", "Humans"}),
+            frozenset(
+                {
+                    "Fridge",
+                    "Books",
+                    "Chair",
+                    "Vase",
+                    "Couch",
+                    "Drawer",
+                    "Objects",
+                    "Table",
+                    "Bin",
+                    "Humans",
+                }
+            ),
         ),
         "office": (
             tuple(range(1, 19)),
@@ -128,7 +140,17 @@ def test_checked_vocabularies_cover_complete_native_label_spaces() -> None:
                 "Humans",
                 "Railing",
             ),
-            frozenset({"Small office objects", "Large static wall furniture", "Large office objects", "Bathroom", "Bedroom", "Chairs", "Signs"}),
+            frozenset(
+                {
+                    "Small office objects",
+                    "Large static wall furniture",
+                    "Large office objects",
+                    "Bathroom",
+                    "Bedroom",
+                    "Chairs",
+                    "Signs",
+                }
+            ),
         ),
     }
     for scene, (semantic_ids, classes, object_classes) in expected.items():
@@ -144,10 +166,12 @@ def test_checked_vocabularies_cover_complete_native_label_spaces() -> None:
 
 
 def test_resolves_scene_specific_semantic_defaults_without_cross_scene_reuse() -> None:
-    apartment_vocabulary, apartment_labels = matrix_executor._resolve_scene_semantic_paths(
-        "apartment",
-        vocabulary_path=None,
-        label_space_path=None,
+    apartment_vocabulary, apartment_labels = (
+        matrix_executor._resolve_scene_semantic_paths(
+            "apartment",
+            vocabulary_path=None,
+            label_space_path=None,
+        )
     )
     office_vocabulary, office_labels = matrix_executor._resolve_scene_semantic_paths(
         "office",
@@ -248,17 +272,14 @@ def _prepared() -> PreparedTwoVisitExecution:
             frame_id=12,
             intervention_frame_id=8,
             current_semantic_voxels=np.asarray([[0, 0, 20, 1]], dtype=np.int64),
-            changed_region_voxels=np.asarray(
-                [[0, 0, 20], [20, 0, 20]], dtype=np.int64
-            ),
+            changed_region_voxels=np.asarray([[0, 0, 20], [20, 0, 20]], dtype=np.int64),
             confirmed_free_voxels=np.asarray([[100, 0, 20]], dtype=np.int64),
             revealed_background_voxels=np.asarray([[20, 0, 20]], dtype=np.int64),
             current_target_t1_unobserved_mask=np.asarray([False], dtype=np.bool_),
         ),
         crosswalk=crosswalk,
-        t0_entity_observed_masks={
-            "ovimap:1": np.asarray([False], dtype=np.bool_)
-        },
+        object_semantic_labels=frozenset({"Chair"}),
+        t0_entity_observed_masks={"ovimap:1": np.asarray([False], dtype=np.bool_)},
         t0_background_observed_mask=np.asarray([True], dtype=np.bool_),
         ovi_t0_artifact_bytes=100,
         ovi_t1_artifact_bytes=120,
@@ -267,7 +288,9 @@ def _prepared() -> PreparedTwoVisitExecution:
     )
 
 
-def test_executes_b2_with_real_metric_receipt_and_bound_snapshot(tmp_path: Path) -> None:
+def test_executes_b2_with_real_metric_receipt_and_bound_snapshot(
+    tmp_path: Path,
+) -> None:
     matrix = load_and_validate_matrix(MATRIX_PATH)
     row = matrix["rows"][2]
     run_id = "fixture-apartment-B2"
@@ -343,12 +366,40 @@ def test_b3_retained_t0_provenance_is_used_for_stale_precision(tmp_path: Path) -
 
     metrics = json.loads(artifacts.metric_receipt.read_text(encoding="utf-8"))
     assert (
-        metrics["metric_groups"]["geometry"]
-        ["t1_observed_region_stale_precision"]
+        metrics["metric_groups"]["geometry"]["t1_observed_region_stale_precision"]
         == 1.0
     )
     output = json.loads(artifacts.output_artifact.read_text(encoding="utf-8"))
     assert output["artifacts"]["provenance_manifest"]["sha256"]
+
+
+def test_b3_passes_frozen_entity_suppression_policy(
+    tmp_path: Path, monkeypatch
+) -> None:
+    matrix = load_and_validate_matrix(MATRIX_PATH)
+    prepared = _prepared()
+    observed: dict[str, object] = {}
+    original = matrix_executor.build_visibility_baseline
+
+    def capture(*args, **kwargs):
+        observed.update(kwargs)
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(matrix_executor, "build_visibility_baseline", capture)
+    variant_root = tmp_path / "B3"
+    variant_root.mkdir()
+    execute_prepared_variant(
+        prepared,
+        matrix,
+        matrix["rows"][3],
+        "fixture-apartment-B3-policy",
+        variant_root,
+        command_line=("execute-two-visit", "--variant", "B3"),
+    )
+
+    assert observed["object_semantic_labels"] == frozenset({"Chair"})
+    assert observed["minimum_entity_visible_free_fraction"] == 0.8
+    assert observed["minimum_entity_visible_free_voxels"] == 3
 
 
 def test_loads_and_revalidates_two_visit_ovi_input_manifest(tmp_path: Path) -> None:

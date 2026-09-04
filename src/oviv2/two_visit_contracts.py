@@ -16,7 +16,6 @@ import numpy as np
 
 from src.evaluation.contracts import MapSnapshot
 
-
 RelationState = Literal[
     "persistent_static",
     "persistent_moved",
@@ -32,6 +31,7 @@ CompositionAction = Literal[
     "retain_t0_occluded",
     "suppress_t0_visible_free",
     "suppress_t0_occupied_by_t1",
+    "suppress_t0_entity_visible_free",
     "uncertain",
 ]
 VisibilityState = Literal["occupied", "visible_free", "occluded", "unobserved"]
@@ -63,6 +63,7 @@ _COMPOSITION_ACTIONS = {
     "retain_t0_occluded",
     "suppress_t0_visible_free",
     "suppress_t0_occupied_by_t1",
+    "suppress_t0_entity_visible_free",
     "uncertain",
 }
 _VISIBILITY_STATES = {"occupied", "visible_free", "occluded", "unobserved"}
@@ -126,13 +127,14 @@ def _readonly_array(
     return array
 
 
-def _readonly_integer_array(value: object, name: str, *, dtype: np.dtype[Any] | type) -> np.ndarray:
+def _readonly_integer_array(
+    value: object, name: str, *, dtype: np.dtype[Any] | type
+) -> np.ndarray:
     raw = np.asarray(value)
     if raw.ndim != 1:
         raise ValueError(f"{name} must have 1 dimension")
     if raw.size and (
-        not np.issubdtype(raw.dtype, np.integer)
-        or np.issubdtype(raw.dtype, np.bool_)
+        not np.issubdtype(raw.dtype, np.integer) or np.issubdtype(raw.dtype, np.bool_)
     ):
         raise ValueError(f"{name} must contain integers")
     result = np.array(raw, dtype=dtype, copy=True)
@@ -238,9 +240,7 @@ class VisitMap:
         coordinate_frame_id = _nonempty_string(
             self.coordinate_frame_id, "coordinate_frame_id"
         )
-        manifest_sha256 = _sha256(
-            self.source_manifest_sha256, "source_manifest_sha256"
-        )
+        manifest_sha256 = _sha256(self.source_manifest_sha256, "source_manifest_sha256")
         voxel_size = _finite_float(
             self.map_voxel_size_m, "map_voxel_size_m", minimum=np.nextafter(0.0, 1.0)
         )
@@ -254,7 +254,9 @@ class VisitMap:
         object.__setattr__(self, "map_voxel_size_m", voxel_size)
         object.__setattr__(self, "observed_frame_start", start)
         object.__setattr__(self, "observed_frame_end", end)
-        object.__setattr__(self, "snapshot_sha256", snapshot_content_sha256(self.snapshot))
+        object.__setattr__(
+            self, "snapshot_sha256", snapshot_content_sha256(self.snapshot)
+        )
 
     def assert_unchanged(self) -> None:
         if snapshot_content_sha256(self.snapshot) != self.snapshot_sha256:
@@ -349,9 +351,7 @@ class NeuralSampleMap:
         )
         if coordinates.shape[1:] != (4,):
             raise ValueError("coordinates_xyzt shape must be (N, 4)")
-        features = _readonly_array(
-            self.features, "features", dtype=np.float32, ndim=2
-        )
+        features = _readonly_array(self.features, "features", dtype=np.float32, ndim=2)
         if features.shape[0] != coordinates.shape[0] or features.shape[1] < 1:
             raise ValueError("features shape must be (N, F) with F >= 1")
         visits = _readonly_integer_array(self.visit_ids, "visit_ids", dtype=np.int8)
@@ -385,7 +385,9 @@ class NeuralSampleMap:
         if offsets.shape != (coordinates.shape[0] + 1,):
             raise ValueError("source_to_token_offsets shape must be (N + 1,)")
         if offsets[0] != 0 or offsets[-1] != contributor_count:
-            raise ValueError("CSR offsets must start at zero and end at contributor count")
+            raise ValueError(
+                "CSR offsets must start at zero and end at contributor count"
+            )
         if np.any(np.diff(offsets) <= 0):
             raise ValueError("every token must have a non-empty contributor span")
         if not np.array_equal(
@@ -408,12 +410,11 @@ class NeuralSampleMap:
         coordinate_frame_id = _nonempty_string(
             self.coordinate_frame_id, "coordinate_frame_id"
         )
-        manifest_sha256 = _sha256(
-            self.source_manifest_sha256, "source_manifest_sha256"
-        )
-        if not isinstance(self.source_visit_map_sha256, tuple) or len(
-            self.source_visit_map_sha256
-        ) != 2:
+        manifest_sha256 = _sha256(self.source_manifest_sha256, "source_manifest_sha256")
+        if (
+            not isinstance(self.source_visit_map_sha256, tuple)
+            or len(self.source_visit_map_sha256) != 2
+        ):
             raise ValueError("source_visit_map_sha256 must contain t0 and t1 hashes")
         visit_hashes = (
             _sha256(self.source_visit_map_sha256[0], "t0 map SHA-256"),
@@ -422,13 +423,17 @@ class NeuralSampleMap:
         semantics = tuple(self.entity_semantics)
         if any(not isinstance(item, OviEntitySemanticEvidence) for item in semantics):
             raise ValueError("entity_semantics must contain OviEntitySemanticEvidence")
-        semantics = tuple(sorted(semantics, key=lambda item: (item.visit_id, item.entity_id)))
+        semantics = tuple(
+            sorted(semantics, key=lambda item: (item.visit_id, item.entity_id))
+        )
         semantic_keys = tuple((item.visit_id, item.entity_id) for item in semantics)
         if len(semantic_keys) != len(set(semantic_keys)):
             raise ValueError("entity_semantics must be unique by visit and entity")
         token_keys = set(zip(visits.tolist(), self.token_entity_ids, strict=True))
         if semantics and set(semantic_keys) != token_keys:
-            raise ValueError("entity_semantics must cover every token entity exactly once")
+            raise ValueError(
+                "entity_semantics must cover every token entity exactly once"
+            )
 
         object.__setattr__(self, "coordinates_xyzt", coordinates)
         object.__setattr__(self, "features", features)
@@ -517,9 +522,7 @@ class TemporalQueryEvidence:
         if self.status not in _EVIDENCE_STATUSES:
             raise ValueError(f"unsupported temporal evidence status: {self.status}")
         backend_name = _nonempty_string(self.backend_name, "backend_name")
-        backend_hash = _sha256(
-            self.backend_config_sha256, "backend_config_sha256"
-        )
+        backend_hash = _sha256(self.backend_config_sha256, "backend_config_sha256")
         pair_hash = _sha256(self.pair_sha256, "pair_sha256")
         query_ids = tuple(
             _nonempty_string(item, "temporal_query_ids item")
@@ -573,7 +576,9 @@ class TemporalQueryEvidence:
             if masks.shape[0] != expected_q or token_scores.shape != masks.shape:
                 raise ValueError("query mask and token score shapes must be (Q, N)")
             if masks.shape[1] < 1 or query_scores.shape != (expected_q,):
-                raise ValueError("query_scores shape must be (Q,) and N must be positive")
+                raise ValueError(
+                    "query_scores shape must be (Q,) and N must be positive"
+                )
             if np.any(token_scores < 0.0) or np.any(token_scores > 1.0):
                 raise ValueError("token_scores must be in [0, 1]")
             if np.any(query_scores < 0.0) or np.any(query_scores > 1.0):
@@ -648,9 +653,7 @@ class TemporalQueryEvidence:
         return _digest(self._hash_payload(include_performance=False))
 
     def content_sha256(self) -> str:
-        return _digest(
-            self._hash_payload(include_performance=True)
-        )
+        return _digest(self._hash_payload(include_performance=True))
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, TemporalQueryEvidence) and (
@@ -683,7 +686,10 @@ class PairRelation:
         if self.state not in _RELATION_STATES:
             raise ValueError(f"unsupported relation state: {self.state}")
         cardinality = (len(t0_ids), len(t1_ids))
-        if self.state in {"persistent_static", "persistent_moved"} and cardinality != (1, 1):
+        if self.state in {"persistent_static", "persistent_moved"} and cardinality != (
+            1,
+            1,
+        ):
             raise ValueError("persistent relation must have 1-to-1 cardinality")
         if self.state == "appeared" and cardinality != (0, 1):
             raise ValueError("appeared relation must have 0-to-1 cardinality")
@@ -712,7 +718,9 @@ class PairRelation:
         object.__setattr__(self, "t0_entity_ids", t0_ids)
         object.__setattr__(self, "t1_entity_ids", t1_ids)
         object.__setattr__(self, "query_confidence", confidence)
-        object.__setattr__(self, "evidence", MappingProxyType(dict(sorted(evidence.items()))))
+        object.__setattr__(
+            self, "evidence", MappingProxyType(dict(sorted(evidence.items())))
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -772,9 +780,12 @@ class CurrentCompositionDecision:
             ),
         }
         if self.decision in required:
-            expected_visit, expected_visibility, expected_geometry, allowed_semantics = required[
-                self.decision
-            ]
+            (
+                expected_visit,
+                expected_visibility,
+                expected_geometry,
+                allowed_semantics,
+            ) = required[self.decision]
             if (
                 source_visit != expected_visit
                 or self.visibility_status != expected_visibility
@@ -800,6 +811,17 @@ class CurrentCompositionDecision:
                 or self.state_source != "t1_visibility"
             ):
                 raise ValueError("t0 replacement requires t1 occupied authority")
+        elif self.decision == "suppress_t0_entity_visible_free":
+            if (
+                source_visit != 0
+                or self.visibility_status not in {"occluded", "unobserved"}
+                or self.geometry_source is not None
+                or self.semantic_source is not None
+                or self.state_source != "t1_visibility"
+            ):
+                raise ValueError(
+                    "entity-level t0 suppression requires t1 visible-free authority"
+                )
         elif self.geometry_source is not None:
             expected_geometry = "ovi_t0" if source_visit == 0 else "ovi_t1"
             if self.geometry_source != expected_geometry:

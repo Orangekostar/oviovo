@@ -50,6 +50,7 @@ _SOURCE_ROLES = {
     "deterministic_executor",
     "geometric_reasoner",
     "composer",
+    "composition_contracts",
     "native_ovi_runner",
     "metric_implementation",
     "snapshot_metrics",
@@ -75,6 +76,7 @@ _TOP_LEVEL_KEYS = {
     "status",
     "dataset",
     "diagnostic_amendment",
+    "composition_amendment",
     "protocol",
     "freeze_parent_commit",
     "source_bindings",
@@ -205,8 +207,7 @@ class VariantExecutionArtifacts:
 
 def _canonical_json(value: object) -> bytes:
     return (
-        json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
-        + "\n"
+        json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n"
     ).encode("utf-8")
 
 
@@ -231,11 +232,12 @@ def _regular_bytes(path: Path, *, label: str) -> bytes:
         raise MatrixError(f"{label} must be a regular file")
     data = absolute.read_bytes()
     after = absolute.stat(follow_symlinks=False)
-    if (
-        (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns)
-        != (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns)
-        or len(data) != after.st_size
-    ):
+    if (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns) != (
+        after.st_dev,
+        after.st_ino,
+        after.st_size,
+        after.st_mtime_ns,
+    ) or len(data) != after.st_size:
         raise MatrixError(f"{label} changed while reading")
     return data
 
@@ -331,8 +333,7 @@ def _validate_method_config(value: object) -> None:
             "classifier": "siglip_l_16_384_canonical_relative",
             "vocabulary_paths": {
                 "apartment": (
-                    "configs/evaluation/vocabularies/"
-                    "tesse_cd_apartment_ovi_full.json"
+                    "configs/evaluation/vocabularies/tesse_cd_apartment_ovi_full.json"
                 ),
                 "office": (
                     "configs/evaluation/vocabularies/tesse_cd_office_ovi_full.json"
@@ -374,9 +375,15 @@ def _validate_method_config(value: object) -> None:
         },
         "composer": {
             "composition_voxel_size_m": 0.05,
-            "authority_rule": "t1_occupied_then_visible_free_then_t0_occluded_or_unobserved",
+            "authority_rule": (
+                "t1_occupied_then_visible_free_then_entity_visible_free_"
+                "then_t0_occluded_or_unobserved"
+            ),
             "removal_authority": "t1_signed_visible_free_only",
             "semantic_authority": "ovi",
+            "entity_scope": "complete_scene_object_vocabulary_only",
+            "minimum_entity_visible_free_fraction": 0.8,
+            "minimum_entity_visible_free_voxels": 3,
         },
         "evaluator_voxel_size_m": 0.05,
     }
@@ -481,6 +488,19 @@ def load_and_validate_matrix(
         "method_results_inspected": False,
     }:
         raise MatrixError("diagnostic amendment is invalid")
+    if payload.get("composition_amendment") != {
+        "status": "FROZEN_AFTER_B3_B4_FAILURE_DIAGNOSIS_BEFORE_CORRECTED_RERUN",
+        "parent_commit": "185a26ad75b1d0bce71cf983ebb0310842d59c58",
+        "reason": "lift_strong_voxel_visible_free_evidence_to_ovi_object_entity",
+        "method_results_inspected": ["B3", "B4"],
+        "observed_ghost": {
+            "B2": 0.0,
+            "B3": 0.9961844725,
+            "B4": 0.9961844725,
+        },
+        "threshold_source": "reuse_frozen_signed_visibility_thresholds",
+    }:
+        raise MatrixError("composition amendment is invalid")
 
     protocol_path, _protocol_record = _bound_record(
         payload.get("protocol"),
@@ -490,11 +510,9 @@ def load_and_validate_matrix(
     protocol_payload = _json_object(
         _regular_bytes(protocol_path, label="protocol"), label="protocol"
     )
-    if (
-        protocol_payload.get("protocol_id") != PROTOCOL_ID
-        or protocol_content_sha256(protocol_payload)
-        != payload.get("execution_contract", {}).get("protocol_content_sha256")
-    ):
+    if protocol_payload.get("protocol_id") != PROTOCOL_ID or protocol_content_sha256(
+        protocol_payload
+    ) != payload.get("execution_contract", {}).get("protocol_content_sha256"):
         raise MatrixError("matrix protocol content binding is invalid")
 
     sources = payload.get("source_bindings")
@@ -610,7 +628,9 @@ def _validate_metric_receipt(
 
 def _write_atomic(path: Path, payload: object) -> None:
     content = _canonical_json(payload)
-    descriptor, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{path.name}.", dir=path.parent
+    )
     temporary = Path(temporary_name)
     try:
         with os.fdopen(descriptor, "wb") as stream:
@@ -640,9 +660,7 @@ def execute_required_matrix(
     scene: str,
     output_root: Path,
     source_commit: str,
-    executor: Callable[
-        [Mapping[str, Any], str, Path], VariantExecutionArtifacts
-    ],
+    executor: Callable[[Mapping[str, Any], str, Path], VariantExecutionArtifacts],
 ) -> Path:
     """Run all required baselines atomically and emit learned-backend blockers."""
 
@@ -728,7 +746,9 @@ def execute_required_matrix(
             }
             records["command"] = _record(command_path, root=staging)
             artifact_witnesses.extend(
-                (paths[name], record) for name, record in records.items() if name in paths
+                (paths[name], record)
+                for name, record in records.items()
+                if name in paths
             )
             artifact_witnesses.append((command_path, records["command"]))
             _validate_metric_receipt(

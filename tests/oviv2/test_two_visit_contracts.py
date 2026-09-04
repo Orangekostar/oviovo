@@ -14,7 +14,6 @@ from src.oviv2.two_visit_contracts import (
     validate_visit_pair,
 )
 
-
 SHA_A = "a" * 64
 SHA_B = "b" * 64
 SHA_C = "c" * 64
@@ -329,6 +328,36 @@ def test_t0_geometry_replaced_by_t1_occupied_has_explicit_provenance() -> None:
     )
 
     assert decision.decision == "suppress_t0_occupied_by_t1"
+
+
+def test_entity_level_visible_free_suppression_preserves_point_status() -> None:
+    decision = CurrentCompositionDecision(
+        source_entity_id="ovi:t0:couch",
+        source_visit=0,
+        decision="suppress_t0_entity_visible_free",
+        visibility_status="occluded",
+        visibility_score=0.9,
+        relation_id=None,
+        geometry_source=None,
+        identity_source="unmatched",
+        state_source="t1_visibility",
+        semantic_source=None,
+    )
+
+    assert decision.visibility_status == "occluded"
+    with pytest.raises(ValueError, match="entity-level"):
+        CurrentCompositionDecision(
+            source_entity_id="ovi:t0:couch",
+            source_visit=0,
+            decision="suppress_t0_entity_visible_free",
+            visibility_status="occluded",
+            visibility_score=0.9,
+            relation_id=None,
+            geometry_source="ovi_t0",
+            identity_source="unmatched",
+            state_source="fallback",
+            semantic_source="ovi_t0",
+        )
 
 
 def _pair_kwargs() -> dict[str, object]:

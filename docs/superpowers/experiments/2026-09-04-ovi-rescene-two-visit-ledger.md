@@ -46,7 +46,7 @@ results.
 | P7 B0-B6 evaluator | PASS | Frozen Pareto metric contract and atomic B0-B4 / blocked B5-B6 orchestrator; no result claimed |
 | P8 learned ReScene | BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT | Source-bound fail-closed runner/config verified; no public checkpoint and no learned result |
 | P9 failure attribution | PASS | Exhaustive one-row-per-failure provenance, fixed Ghost precedence, mass conservation, and atomic sidecars |
-| P10 Apartment matrix | NOT_STARTED | No result claimed |
+| P10 Apartment matrix | IN_PROGRESS | B0--B4 diagnostic run complete; corrected B3/B4 rerun pending |
 | P11 Office confirmation | `OFFICE_NOT_RUN_HELD_OUT` | Held until method/config/gates are frozen |
 | 3RScan validation | NOT_STARTED | No result claimed |
 
@@ -102,3 +102,27 @@ the background metric domain. Unmatched labels remain object predictions, so
 the amendment cannot lower Ghost by relabeling uncertain segments as unknown.
 The shared T1/T4 vocabularies are byte-identical to their pre-amendment versions.
 B3/B4 method results were not inspected before this amendment was frozen.
+
+## Composition Failure Diagnostic Amendment
+
+The first full-label Apartment run was published at
+`/home/ww/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/apartment-b0-b6-full-label-185a26a`.
+Its bound summary SHA-256 is
+`5afa60050c4dde38a00eefd452100a39d9eb528f3a6f9ccf8490c3cb179a15d6`.
+It measured `Ghost(B2)=0`, but `Ghost(B3)=Ghost(B4)=0.9961844725`.
+
+Exact provenance showed that signed visibility had already removed over 90% of
+each offending old Couch entity. All remaining Ghost came from 12,010 of
+12,056 changed-region points in two thin `occluded`/`unobserved` residues. The
+pointwise composer therefore preserved fragments of an entity even when
+repeated t1 evidence had already established that the entity was absent.
+
+Before a corrected rerun, the composer is amended to lift signed visibility to
+the OVI entity boundary only for labels in the complete frozen object
+vocabulary. It suppresses remaining occluded/unobserved fragments when at least
+three unique entity voxels are visible-free and the visible-free fraction among
+informative (`visible_free` plus `occupied`) voxels is at least 0.8. These values
+reuse the frozen signed-visibility thresholds rather than a result search.
+Recognized non-object surfaces and unmatched labels are ineligible. Every
+suppressed group retains its original point visibility state and records the
+entity-level free fraction in provenance.

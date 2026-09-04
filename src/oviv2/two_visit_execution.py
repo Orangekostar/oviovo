@@ -85,7 +85,10 @@ class SignedVisibilityConfig:
 
 
 def _visit_voxel_keys(visit: VisitMap, voxel_size_m: float) -> np.ndarray:
-    chunks = [np.asarray(entity.points_xyz, dtype=np.float64) for entity in visit.snapshot.entities]
+    chunks = [
+        np.asarray(entity.points_xyz, dtype=np.float64)
+        for entity in visit.snapshot.entities
+    ]
     if visit.snapshot.background_xyz is not None:
         chunks.append(np.asarray(visit.snapshot.background_xyz, dtype=np.float64))
     nonempty = [chunk for chunk in chunks if len(chunk)]
@@ -332,7 +335,9 @@ def build_static_baseline_snapshot(
                 )
             )
         if visit.snapshot.background_xyz is not None:
-            backgrounds.append(np.asarray(visit.snapshot.background_xyz, dtype=np.float32))
+            backgrounds.append(
+                np.asarray(visit.snapshot.background_xyz, dtype=np.float32)
+            )
     background = np.concatenate(backgrounds, axis=0) if backgrounds else None
     snapshot = MapSnapshot(
         method={
@@ -444,6 +449,9 @@ def build_visibility_baseline(
     *,
     use_geometric_pairing: bool,
     geometric_config: GeometricReasonerConfig,
+    object_semantic_labels: frozenset[str] = frozenset(),
+    minimum_entity_visible_free_fraction: float = 0.8,
+    minimum_entity_visible_free_voxels: int = 3,
 ) -> tuple[TwoVisitCurrentMap, tuple[PairRelation, ...]]:
     """Build B3 or B4 with identical signed visibility authority."""
 
@@ -475,6 +483,9 @@ def build_visibility_baseline(
         CompositionConfig(
             composition_voxel_size_m=visibility.voxel_size_m,
             method_name=method,
+            object_semantic_labels=object_semantic_labels,
+            minimum_entity_visible_free_fraction=minimum_entity_visible_free_fraction,
+            minimum_entity_visible_free_voxels=minimum_entity_visible_free_voxels,
         ),
     )
     return current, relations

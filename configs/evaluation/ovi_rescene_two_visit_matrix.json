@@ -1,4 +1,19 @@
 {
+  "composition_amendment": {
+    "method_results_inspected": [
+      "B3",
+      "B4"
+    ],
+    "observed_ghost": {
+      "B2": 0.0,
+      "B3": 0.9961844725,
+      "B4": 0.9961844725
+    },
+    "parent_commit": "185a26ad75b1d0bce71cf983ebb0310842d59c58",
+    "reason": "lift_strong_voxel_visible_free_evidence_to_ovi_object_entity",
+    "status": "FROZEN_AFTER_B3_B4_FAILURE_DIAGNOSIS_BEFORE_CORRECTED_RERUN",
+    "threshold_source": "reuse_frozen_signed_visibility_thresholds"
+  },
   "dataset": "TESSE-CD",
   "diagnostic_amendment": {
     "baseline_results_inspected": [
@@ -35,8 +50,11 @@
       "neural_voxel_size_m": 0.02
     },
     "composer": {
-      "authority_rule": "t1_occupied_then_visible_free_then_t0_occluded_or_unobserved",
+      "authority_rule": "t1_occupied_then_visible_free_then_entity_visible_free_then_t0_occluded_or_unobserved",
       "composition_voxel_size_m": 0.05,
+      "entity_scope": "complete_scene_object_vocabulary_only",
+      "minimum_entity_visible_free_fraction": 0.8,
+      "minimum_entity_visible_free_voxels": 3,
       "removal_authority": "t1_signed_visible_free_only",
       "semantic_authority": "ovi"
     },
@@ -340,14 +358,19 @@
       "sha256": "e3cec5e2c9c6e1088d648b631a455a641313adeaa0d6a76c957ba5e8a94e3caf"
     },
     "deterministic_executor": {
-      "byte_count": 48523,
+      "byte_count": 49435,
       "path": "scripts/evaluation/execute_ovi_rescene_two_visit_matrix.py",
-      "sha256": "993e4824e699264b60fb64a2494f170a8cbece8d3836850c1f80895b40df3c16"
+      "sha256": "68fc1e34d0daf76401c20234fd67b84ea476df0e82c75600aa91188f990bf5c3"
     },
     "composer": {
-      "byte_count": 28545,
+      "byte_count": 31821,
       "path": "src/oviv2/two_visit_current_map.py",
-      "sha256": "2a66be3b6730697f43763a2cf375457b8286379a91799c5004ea0ea4f239b110"
+      "sha256": "aec6320845175ee219f02363474438e6ab12d9241a4dac8d06cbf944189191fa"
+    },
+    "composition_contracts": {
+      "byte_count": 34549,
+      "path": "src/oviv2/two_visit_contracts.py",
+      "sha256": "5f81f8882a0b36decf35adf2ed5d394d25d2ef9a76aa0c0ff4373cfd85285928"
     },
     "external_sources": {
       "byte_count": 7435,
@@ -360,9 +383,9 @@
       "sha256": "ec7d3d984ab303cd96f4b901a7eb455a900adb558f54f8947acaceb7d88d4131"
     },
     "matrix_runner": {
-      "byte_count": 29156,
+      "byte_count": 30058,
       "path": "scripts/evaluation/run_ovi_rescene_two_visit_matrix.py",
-      "sha256": "7bc476bede8a6809871b0c7e02a844586d0a28bb4fbb83a9c1920bed9963cea9"
+      "sha256": "15406089d7b425fc24ef1a5fa9809f494dff607f498533510b759986021a003c"
     },
     "metric_implementation": {
       "byte_count": 13183,
@@ -395,9 +418,9 @@
       "sha256": "ad991c368b64f1599beb81490028795407e66fe175be78dd4da94f6a0ca3979a"
     },
     "visibility_execution": {
-      "byte_count": 18670,
+      "byte_count": 19113,
       "path": "src/oviv2/two_visit_execution.py",
-      "sha256": "5b1c36b76ea61307100af1a765eeaafc94115794eb7e2a80a3a1b897215f4f7b"
+      "sha256": "956be641d6e9f2c206e31694762e7b45e3a1e6f6e364606235aca6e85c3e591a"
     },
     "visit_loader": {
       "byte_count": 15626,

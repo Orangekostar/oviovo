@@ -25,7 +25,6 @@ from src.oviv2.two_visit_contracts import (
     validate_visit_pair,
 )
 
-
 _SHA256 = re.compile(r"[0-9a-f]{64}")
 _VISIBILITY_STATES = ("occupied", "visible_free", "occluded", "unobserved")
 
@@ -87,7 +86,9 @@ class SignedVisibilityGrid:
         object.__setattr__(self, "voxel_size_m", voxel_size)
         object.__setattr__(self, "voxel_keys", keys)
         object.__setattr__(self, "statuses", statuses)
-        object.__setattr__(self, "source_sha256", _sha256(self.source_sha256, "source_sha256"))
+        object.__setattr__(
+            self, "source_sha256", _sha256(self.source_sha256, "source_sha256")
+        )
 
     @classmethod
     def empty(cls, voxel_size_m: float, source_sha256: str) -> SignedVisibilityGrid:
@@ -99,9 +100,7 @@ class SignedVisibilityGrid:
         )
 
     @classmethod
-    def from_payload(
-        cls, payload: object, source_sha256: str
-    ) -> SignedVisibilityGrid:
+    def from_payload(cls, payload: object, source_sha256: str) -> SignedVisibilityGrid:
         if not isinstance(payload, dict) or set(payload) != {
             "schema_version",
             "status",
@@ -129,7 +128,9 @@ class SignedVisibilityGrid:
         records.sort(key=lambda item: item[0])
         return cls(
             voxel_size_m=payload["voxel_size_m"],
-            voxel_keys=np.asarray([item[0] for item in records], dtype=np.int64).reshape(-1, 3),
+            voxel_keys=np.asarray(
+                [item[0] for item in records], dtype=np.int64
+            ).reshape(-1, 3),
             statuses=tuple(item[1] for item in records),
             source_sha256=source_sha256,
         )
@@ -145,6 +146,9 @@ class SignedVisibilityGrid:
 class CompositionConfig:
     composition_voxel_size_m: float = 0.05
     method_name: str = "OVI-MAP + two-visit current composer"
+    object_semantic_labels: frozenset[str] = frozenset()
+    minimum_entity_visible_free_fraction: float = 0.8
+    minimum_entity_visible_free_voxels: int = 3
 
     def __post_init__(self) -> None:
         if isinstance(self.composition_voxel_size_m, bool) or not isinstance(
@@ -156,8 +160,32 @@ class CompositionConfig:
             raise ValueError("composition_voxel_size_m must be finite and positive")
         if not isinstance(self.method_name, str) or not self.method_name.strip():
             raise ValueError("method_name must be non-empty")
+        if not isinstance(self.object_semantic_labels, frozenset) or any(
+            not isinstance(label, str) or not label.strip()
+            for label in self.object_semantic_labels
+        ):
+            raise ValueError("object_semantic_labels must be a frozenset of labels")
+        fraction = self.minimum_entity_visible_free_fraction
+        if (
+            isinstance(fraction, bool)
+            or not isinstance(fraction, (int, float))
+            or not math.isfinite(float(fraction))
+            or not 0.0 <= float(fraction) <= 1.0
+        ):
+            raise ValueError("minimum_entity_visible_free_fraction must be in [0, 1]")
+        minimum_voxels = self.minimum_entity_visible_free_voxels
+        if type(minimum_voxels) is not int or minimum_voxels < 1:
+            raise ValueError("minimum_entity_visible_free_voxels must be positive")
         object.__setattr__(self, "composition_voxel_size_m", voxel)
         object.__setattr__(self, "method_name", self.method_name.strip())
+        object.__setattr__(
+            self,
+            "object_semantic_labels",
+            frozenset(label.strip() for label in self.object_semantic_labels),
+        )
+        object.__setattr__(
+            self, "minimum_entity_visible_free_fraction", float(fraction)
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -173,15 +201,13 @@ class CompositionPointGroup:
         if not isinstance(self.decision, CurrentCompositionDecision):
             raise TypeError("decision must be CurrentCompositionDecision")
         raw = np.asarray(self.source_point_indices)
-        if (
-            raw.ndim != 1
-            or not len(raw)
-            or not np.issubdtype(raw.dtype, np.integer)
-        ):
+        if raw.ndim != 1 or not len(raw) or not np.issubdtype(raw.dtype, np.integer):
             raise ValueError("source_point_indices must be a non-empty integer vector")
         indices = np.array(raw, dtype=np.int64, copy=True)
         if np.any(indices < 0) or np.any(indices[1:] <= indices[:-1]):
-            raise ValueError("source_point_indices must be sorted, unique, and non-negative")
+            raise ValueError(
+                "source_point_indices must be sorted, unique, and non-negative"
+            )
         indices.setflags(write=False)
         count = int(self.output_point_count)
         emitted = self.decision.geometry_source is not None
@@ -219,7 +245,10 @@ class TwoVisitCurrentMap:
     relation_ids: tuple[str, ...]
 
     def __post_init__(self) -> None:
-        if not isinstance(self.snapshot, MapSnapshot) or self.snapshot.scope != "current":
+        if (
+            not isinstance(self.snapshot, MapSnapshot)
+            or self.snapshot.scope != "current"
+        ):
             raise ValueError("current map snapshot must have current scope")
         if not self.provenance or any(
             not isinstance(item, CompositionPointGroup) for item in self.provenance
@@ -326,6 +355,7 @@ def _decision(
     action: str,
     visibility: str,
     relation: PairRelation | None,
+    visibility_score: float | None = None,
 ) -> CurrentCompositionDecision:
     retained = action in {"emit_t1", "retain_t0_occluded", "retain_t0_unobserved"}
     semantic = ("ovi_t1" if source_visit == 1 else "ovi_t0") if retained else None
@@ -335,7 +365,9 @@ def _decision(
         source_visit=source_visit,
         decision=action,
         visibility_status=visibility,
-        visibility_score=0.0 if visibility == "unobserved" else 1.0,
+        visibility_score=(0.0 if visibility == "unobserved" else 1.0)
+        if visibility_score is None
+        else visibility_score,
         relation_id=None if relation is None else str(relation.temporal_query_id),
         geometry_source=geometry,
         identity_source="unmatched" if relation is None else relation.identity_source,
@@ -359,7 +391,9 @@ def _status_groups(
     grouped: dict[str, list[int]] = {item: [] for item in _VISIBILITY_STATES}
     for index, key_array in enumerate(keys):
         key = tuple(int(item) for item in key_array)
-        status = "occupied" if key in occupied_keys else visibility.get(key, "unobserved")
+        status = (
+            "occupied" if key in occupied_keys else visibility.get(key, "unobserved")
+        )
         grouped[status].append(index)
     return tuple(
         (status, np.asarray(grouped[status], dtype=np.int64))
@@ -375,6 +409,28 @@ def _action(status: str) -> str:
         "occluded": "retain_t0_occluded",
         "unobserved": "retain_t0_unobserved",
     }[status]
+
+
+def _entity_visible_free_evidence(
+    points: np.ndarray,
+    *,
+    voxel_size_m: float,
+    occupied_keys: set[tuple[int, int, int]],
+    visibility: dict[tuple[int, int, int], str],
+) -> tuple[int, float]:
+    informative: set[tuple[int, int, int]] = set()
+    visible_free: set[tuple[int, int, int]] = set()
+    for key_array in _voxel_keys(points, voxel_size_m):
+        key = tuple(int(item) for item in key_array)
+        status = (
+            "occupied" if key in occupied_keys else visibility.get(key, "unobserved")
+        )
+        if status in {"visible_free", "occupied"}:
+            informative.add(key)
+        if status == "visible_free":
+            visible_free.add(key)
+    fraction = len(visible_free) / len(informative) if informative else 0.0
+    return len(visible_free), fraction
 
 
 def _fallback_output_id(entity_id: str, occupied: set[str]) -> str:
@@ -404,10 +460,16 @@ def compose_current_map(
         raise TypeError("relations must be a tuple")
     t0_entities = {item.entity_id: item for item in t0.snapshot.entities}
     t1_entities = {item.entity_id: item for item in t1.snapshot.entities}
-    if any(not len(item.points_xyz) for item in (*t0.snapshot.entities, *t1.snapshot.entities)):
+    if any(
+        not len(item.points_xyz)
+        for item in (*t0.snapshot.entities, *t1.snapshot.entities)
+    ):
         raise ValueError("OVI entities must contain at least one surface point")
     by_t0, by_t1 = _relation_indexes(relations, set(t0_entities), set(t1_entities))
-    before = (snapshot_content_sha256(t0.snapshot), snapshot_content_sha256(t1.snapshot))
+    before = (
+        snapshot_content_sha256(t0.snapshot),
+        snapshot_content_sha256(t1.snapshot),
+    )
 
     t1_point_sets = [item.points_xyz for item in t1.snapshot.entities]
     if t1.snapshot.background_xyz is not None:
@@ -472,13 +534,27 @@ def compose_current_map(
         entity = t0_entities[entity_id]
         points = np.asarray(entity.points_xyz, dtype=np.float32)
         relation = by_t0.get(entity_id)
-        for status, indices in _status_groups(
+        groups = _status_groups(
             points,
             voxel_size_m=config.composition_voxel_size_m,
             occupied_keys=occupied_keys,
             visibility=visibility,
-        ):
+        )
+        visible_free_voxels, visible_free_fraction = _entity_visible_free_evidence(
+            points,
+            voxel_size_m=config.composition_voxel_size_m,
+            occupied_keys=occupied_keys,
+            visibility=visibility,
+        )
+        suppress_residue = (
+            entity.semantic_label in config.object_semantic_labels
+            and visible_free_voxels >= config.minimum_entity_visible_free_voxels
+            and visible_free_fraction >= config.minimum_entity_visible_free_fraction
+        )
+        for status, indices in groups:
             action = _action(status)
+            if suppress_residue and status in {"occluded", "unobserved"}:
+                action = "suppress_t0_entity_visible_free"
             output_id: str | None = None
             output_start: int | None = None
             output_count = 0
@@ -506,6 +582,11 @@ def compose_current_map(
                         action=action,
                         visibility=status,
                         relation=relation,
+                        visibility_score=(
+                            visible_free_fraction
+                            if action == "suppress_t0_entity_visible_free"
+                            else None
+                        ),
                     ),
                     source_point_indices=indices,
                     source_snapshot_sha256=t0.snapshot_sha256,
@@ -567,7 +648,9 @@ def compose_current_map(
                     if output_id in t1_entities
                     else "ovi_t0_fallback"
                 ),
-                "semantic_authority": "ovi_t1" if output_id in t1_entities else "ovi_t0",
+                "semantic_authority": "ovi_t1"
+                if output_id in t1_entities
+                else "ovi_t0",
                 "two_visit_output_entity_id": output_id,
             }
         )
@@ -694,8 +777,7 @@ def write_two_visit_current_map(
         _write_bytes(
             manifest_path,
             (
-                json.dumps(manifest, sort_keys=True, indent=2, allow_nan=False)
-                + "\n"
+                json.dumps(manifest, sort_keys=True, indent=2, allow_nan=False) + "\n"
             ).encode("utf-8"),
         )
         directory_fd = os.open(staging, os.O_RDONLY | os.O_DIRECTORY)
