@@ -39,6 +39,7 @@ from scripts.evaluation.freeze_tesse_two_visit_protocol import (
     protocol_content_sha256,
 )
 from scripts.evaluation.run_ovi_rescene_two_visit_matrix import (
+    MatrixError,
     VariantExecutionArtifacts,
     execute_required_matrix,
     load_and_validate_matrix,
@@ -165,6 +166,28 @@ class PreparedTwoVisitExecution:
                     for role, record in self.evaluation_bindings.items()
                 }
             ),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class SemanticVocabulary:
+    """Complete native scene label space with an explicit object subset."""
+
+    scene: str
+    classes: tuple[str, ...]
+    class_semantic_ids: tuple[int, ...]
+    object_semantic_ids: frozenset[int]
+
+    @property
+    def object_classes(self) -> frozenset[str]:
+        return frozenset(
+            label
+            for label, semantic_id in zip(
+                self.classes,
+                self.class_semantic_ids,
+                strict=True,
+            )
+            if semantic_id in self.object_semantic_ids
         )
 
 
@@ -362,21 +385,39 @@ def _protocol_bound_path(
     return absolute, observed
 
 
-def _load_vocabulary(path: Path, *, scene: str) -> tuple[str, ...]:
+def _load_vocabulary(path: Path, *, scene: str) -> SemanticVocabulary:
     payload = _load_json(path, label="OVI semantic vocabulary")
     classes = payload.get("classes")
+    class_semantic_ids = payload.get("class_semantic_ids")
+    object_semantic_ids = payload.get("object_semantic_ids")
     if (
-        payload.get("dataset") != "TESSE-CD"
+        payload.get("schema_version") != 2
+        or payload.get("dataset") != "TESSE-CD"
         or payload.get("scene") != scene
         or not isinstance(classes, list)
         or not classes
         or any(not isinstance(value, str) or not value.strip() for value in classes)
+        or not isinstance(class_semantic_ids, list)
+        or len(class_semantic_ids) != len(classes)
+        or any(type(value) is not int for value in class_semantic_ids)
+        or class_semantic_ids != list(range(1, len(classes) + 1))
+        or not isinstance(object_semantic_ids, list)
+        or not object_semantic_ids
+        or any(type(value) is not int for value in object_semantic_ids)
+        or len(object_semantic_ids) != len(set(object_semantic_ids))
+        or not set(object_semantic_ids) <= set(class_semantic_ids)
+        or payload.get("unknown_semantic_id") != 0
     ):
         raise ValueError("OVI semantic vocabulary identity is invalid")
     normalized = tuple(value.strip() for value in classes)
     if len(normalized) != len(set(normalized)):
         raise ValueError("OVI semantic vocabulary classes must be unique")
-    return normalized
+    return SemanticVocabulary(
+        scene=scene,
+        classes=normalized,
+        class_semantic_ids=tuple(class_semantic_ids),
+        object_semantic_ids=frozenset(object_semantic_ids),
+    )
 
 
 def _siglip_semantic_labeler(
@@ -417,14 +458,20 @@ def _siglip_semantic_labeler(
 
 
 def _semantic_config(
-    matrix: Mapping[str, Any], vocabulary_path: Path
+    matrix: Mapping[str, Any], vocabulary_path: Path, *, scene: str
 ) -> tuple[tuple[str, ...], int, int]:
     raw = matrix.get("method_config", {}).get("ovi_semantics")
     if not isinstance(raw, Mapping):
         raise TypeError("matrix lacks frozen OVI semantic settings")
-    declared_path = raw.get("vocabulary_path")
-    if not isinstance(declared_path, str):
+    declared_paths = raw.get("vocabulary_paths")
+    if (
+        scene not in {"apartment", "office"}
+        or not isinstance(declared_paths, Mapping)
+        or set(declared_paths) != {"apartment", "office"}
+        or not isinstance(declared_paths.get(scene), str)
+    ):
         raise TypeError("OVI semantic vocabulary path is invalid")
+    declared_path = declared_paths[scene]
     expected_path = Path(os.path.abspath(os.fspath(REPO_ROOT / declared_path)))
     observed_path = Path(os.path.abspath(os.fspath(vocabulary_path)))
     if observed_path != expected_path:
@@ -443,6 +490,26 @@ def _semantic_config(
     ):
         raise ValueError("OVI semantic settings are invalid")
     return tuple(prompts), maximum_text_length, minimum_observation_count
+
+
+def _resolve_scene_semantic_paths(
+    scene: str,
+    *,
+    vocabulary_path: Path | None,
+    label_space_path: Path | None,
+) -> tuple[Path, Path]:
+    if scene not in {"apartment", "office"}:
+        raise ValueError("scene must be apartment or office")
+    vocabulary = vocabulary_path or (
+        REPO_ROOT
+        / "configs/evaluation/vocabularies"
+        / f"tesse_cd_{scene}_ovi_full.json"
+    )
+    label_space = label_space_path or Path(
+        "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/"
+        f"common_v2_label_spaces/tesse_cd_{scene}_label_space.yaml"
+    )
+    return vocabulary, label_space
 
 
 def _visibility_config(matrix: Mapping[str, Any]) -> SignedVisibilityConfig:
@@ -621,9 +688,9 @@ def prepare_two_visit_execution(
         source_bindings.get("common_v2_targets"),
         label="common-v2 target arrays",
     )
-    classes = _load_vocabulary(vocabulary_path, scene=scene)
+    vocabulary = _load_vocabulary(vocabulary_path, scene=scene)
     canonical_prompts, maximum_text_length, minimum_observation_count = (
-        _semantic_config(matrix, vocabulary_path)
+        _semantic_config(matrix, vocabulary_path, scene=scene)
     )
     directory_record = _directory_record(siglip_model, label="SigLIP model")
     for visit_name in ("t0", "t1"):
@@ -638,7 +705,7 @@ def prepare_two_visit_execution(
         ):
             raise ValueError("semantic model differs from native OVI source binding")
     semantic_labeler = _siglip_semantic_labeler(
-        classes=classes,
+        classes=vocabulary.classes,
         model_path=siglip_model,
         device=semantic_device,
         canonical_prompts=canonical_prompts,
@@ -1121,6 +1188,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     parser.add_argument("--two-visit-ovi-manifest", type=Path, required=True)
     parser.add_argument(
+        "--scene",
+        choices=("apartment", "office"),
+        default="apartment",
+    )
+    parser.add_argument(
         "--rgbd-root",
         type=Path,
         default=Path("/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1"),
@@ -1128,8 +1200,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--vocabulary",
         type=Path,
-        default=REPO_ROOT
-        / "configs/evaluation/vocabularies/tesse_cd_apartment.json",
+        default=None,
     )
     parser.add_argument(
         "--siglip-model",
@@ -1149,25 +1220,30 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--label-space",
         type=Path,
-        default=Path(
-            "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/"
-            "common_v2_label_spaces/tesse_cd_apartment_label_space.yaml"
-        ),
+        default=None,
     )
     parser.add_argument("--output-root", type=Path, required=True)
     args = parser.parse_args(argv)
+    vocabulary_path, label_space_path = _resolve_scene_semantic_paths(
+        args.scene,
+        vocabulary_path=args.vocabulary,
+        label_space_path=args.label_space,
+    )
     matrix = load_and_validate_matrix(args.matrix)
+    if args.scene != "apartment":
+        raise MatrixError(str(matrix["office_policy"]["status"]))
     prepared = prepare_two_visit_execution(
         matrix=matrix,
         matrix_path=args.matrix,
         protocol_path=args.protocol,
         two_visit_ovi_manifest=args.two_visit_ovi_manifest,
         rgbd_root=args.rgbd_root,
-        vocabulary_path=args.vocabulary,
+        vocabulary_path=vocabulary_path,
         siglip_model=args.siglip_model,
         semantic_device=args.semantic_device,
         aliases_path=args.aliases,
-        label_space_path=args.label_space,
+        label_space_path=label_space_path,
+        scene=args.scene,
     )
     source_commit = subprocess.run(
         ["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD"],
@@ -1201,7 +1277,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     summary = execute_required_matrix(
         matrix_path=args.matrix,
-        scene="apartment",
+        scene=args.scene,
         output_root=args.output_root,
         source_commit=source_commit,
         executor=execute,

@@ -1,5 +1,16 @@
 {
   "dataset": "TESSE-CD",
+  "diagnostic_amendment": {
+    "baseline_results_inspected": [
+      "B0",
+      "B1",
+      "B2"
+    ],
+    "method_results_inspected": false,
+    "parent_commit": "3fb383a5f4e64b2465aa8459d9da57d643ba7eaf",
+    "reason": "complete_ovi_native_label_space_and_partition_known_nonobjects_from_object_metrics",
+    "status": "FROZEN_AFTER_BASELINE_DIAGNOSIS_BEFORE_TEMPORAL_METHOD_SCORE"
+  },
   "execution_contract": {
     "blocked_variants": [
       "B5",
@@ -55,7 +66,10 @@
       "classifier": "siglip_l_16_384_canonical_relative",
       "maximum_text_length": 64,
       "minimum_observation_count": 2,
-      "vocabulary_path": "configs/evaluation/vocabularies/tesse_cd_apartment.json"
+      "vocabulary_paths": {
+        "apartment": "configs/evaluation/vocabularies/tesse_cd_apartment_ovi_full.json",
+        "office": "configs/evaluation/vocabularies/tesse_cd_office_ovi_full.json"
+      }
     },
     "rescene": {
       "backend": "concerto",
@@ -326,9 +340,9 @@
       "sha256": "e3cec5e2c9c6e1088d648b631a455a641313adeaa0d6a76c957ba5e8a94e3caf"
     },
     "deterministic_executor": {
-      "byte_count": 45879,
+      "byte_count": 48523,
       "path": "scripts/evaluation/execute_ovi_rescene_two_visit_matrix.py",
-      "sha256": "02a0337ac79f9e644be138922540351c63735924d6c8a9b500a29e89fa33ca54"
+      "sha256": "993e4824e699264b60fb64a2494f170a8cbece8d3836850c1f80895b40df3c16"
     },
     "composer": {
       "byte_count": 28545,
@@ -346,9 +360,9 @@
       "sha256": "ec7d3d984ab303cd96f4b901a7eb455a900adb558f54f8947acaceb7d88d4131"
     },
     "matrix_runner": {
-      "byte_count": 28329,
+      "byte_count": 29156,
       "path": "scripts/evaluation/run_ovi_rescene_two_visit_matrix.py",
-      "sha256": "34788f400ad5097b7ff5a4f6639c4e7884059710eef78b93419679afbfbb2c74"
+      "sha256": "7bc476bede8a6809871b0c7e02a844586d0a28bb4fbb83a9c1920bed9963cea9"
     },
     "metric_implementation": {
       "byte_count": 13183,
@@ -360,15 +374,25 @@
       "path": "scripts/evaluation/run_ovi_two_visit.py",
       "sha256": "ce157e61555fc2a6280e98e02b6b2fcc826a6dae693c910be3a0e598e68d3c47"
     },
-    "semantic_vocabulary": {
-      "byte_count": 697,
-      "path": "configs/evaluation/vocabularies/tesse_cd_apartment.json",
-      "sha256": "dea3a2e0508c887c6c701ee5250374e2a06c63eefbf2e185110462b81f4ccbcf"
+    "semantic_crosswalk": {
+      "byte_count": 5286,
+      "path": "src/evaluation/baselines/tesse_semantics.py",
+      "sha256": "5b15b70d31e96ed7c31fba1859a9b3f809983cccd70a78979d00f8a520d47ed5"
+    },
+    "semantic_vocabulary_apartment": {
+      "byte_count": 1013,
+      "path": "configs/evaluation/vocabularies/tesse_cd_apartment_ovi_full.json",
+      "sha256": "19aa37c1e9370ded43f94a099dd6b2e9e47ce577f94bb874808aa6e5e9b2b269"
+    },
+    "semantic_vocabulary_office": {
+      "byte_count": 1023,
+      "path": "configs/evaluation/vocabularies/tesse_cd_office_ovi_full.json",
+      "sha256": "39ef2c139dfeca19c205847627c677a620bef931e4587942daeb94020eee60f4"
     },
     "snapshot_metrics": {
-      "byte_count": 8079,
+      "byte_count": 8411,
       "path": "src/evaluation/two_visit_snapshot_metrics.py",
-      "sha256": "931de51aeaed26db8037004728368c3be3b7186a9ad788b8d7b90ff4dd81c661"
+      "sha256": "ad991c368b64f1599beb81490028795407e66fe175be78dd4da94f6a0ca3979a"
     },
     "visibility_execution": {
       "byte_count": 18670,

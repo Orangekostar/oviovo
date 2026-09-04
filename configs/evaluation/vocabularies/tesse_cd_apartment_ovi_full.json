@@ -1,0 +1,70 @@
+{
+  "alias_map": {
+    "path": "configs/evaluation/semantic_aliases/tesse_cd_common_v2.yaml",
+    "sha256": "217b3bcd730a6485159e23e56ee9e97ac3c1c56007a016cdc8a20e9fc07abdbc"
+  },
+  "class_semantic_ids": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
+  ],
+  "classes": [
+    "Fridge",
+    "Books",
+    "Floor",
+    "Ceiling",
+    "Chair",
+    "Vase",
+    "Couch",
+    "Trees",
+    "Drawer",
+    "Objects",
+    "Lamp",
+    "Painting",
+    "Plants",
+    "Bed",
+    "Stairs",
+    "Table",
+    "Screens",
+    "Bin",
+    "Wall",
+    "Humans"
+  ],
+  "dataset": "TESSE-CD",
+  "label_space": {
+    "filename": "tesse_cd_apartment_label_space.yaml",
+    "sha256": "f7bacfb3c7bafc674bd3a34540e3f9b5d98b0ae11389f91768c70ecc65a79f0f"
+  },
+  "object_semantic_ids": [
+    1,
+    2,
+    5,
+    6,
+    7,
+    9,
+    10,
+    16,
+    18,
+    20
+  ],
+  "scene": "apartment",
+  "schema_version": 2,
+  "unknown_semantic_id": 0
+}

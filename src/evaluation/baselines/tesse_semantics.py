@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import hashlib
-from pathlib import Path
 import re
-from typing import Any, Mapping
+from collections.abc import Mapping
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -96,7 +97,15 @@ def load_tesse_semantic_crosswalk(
     if not object_ids or not object_ids <= set(names_by_id):
         raise ValueError("native label space has an invalid object vocabulary")
 
-    resolved: dict[str, SemanticLookup] = {}
+    resolved = {
+        normalized: SemanticLookup(
+            semantic_id=semantic_id,
+            native_name=names_by_id[semantic_id],
+            matched=True,
+        )
+        for normalized, semantic_id in ids_by_name.items()
+        if semantic_id != unknown_id
+    }
     aliases = _mapping(scene_config.get("aliases"), "scene aliases")
     for target_name, raw_aliases in aliases.items():
         target_id = ids_by_name.get(normalize_semantic_name(target_name))
@@ -115,7 +124,8 @@ def load_tesse_semantic_crosswalk(
             normalized = normalize_semantic_name(raw_alias)
             if not normalized:
                 raise ValueError("semantic aliases must be non-empty")
-            if normalized in resolved:
+            existing = resolved.get(normalized)
+            if existing is not None and existing.semantic_id != target_id:
                 raise ValueError(f"duplicate normalized alias: {raw_alias}")
             resolved[normalized] = lookup
 

@@ -80,6 +80,80 @@ def test_evaluates_common_v2_and_completeness_without_hidden_scalar() -> None:
     assert metrics["t1_observed_region_stale_precision"] == pytest.approx(1.0)
 
 
+def test_known_nonobject_entity_is_background_not_ghost() -> None:
+    snapshot = _snapshot()
+    snapshot.entities.append(
+        EntityPrediction(
+            entity_id="ovimap:2",
+            points_xyz=np.asarray([[0.275, 0.025, 1.025]], dtype=np.float32),
+            semantic_embedding=None,
+            semantic_label="Floor",
+            semantic_score=0.9,
+            lifecycle_state="current",
+            first_seen=1217.0,
+            last_seen=1472.0,
+        )
+    )
+    snapshot.background_xyz = None
+    crosswalk = _crosswalk()
+    crosswalk.aliases["floor"] = SemanticLookup(
+        semantic_id=3,
+        native_name="Floor",
+        matched=True,
+    )
+    context = TwoVisitEvaluationContext(
+        event_id="apartment_event_04",
+        frame_id=1472,
+        intervention_frame_id=1022,
+        current_semantic_voxels=np.asarray([[0, 0, 20, 1]], dtype=np.int64),
+        changed_region_voxels=np.asarray([[0, 0, 20], [5, 0, 20]], dtype=np.int64),
+        confirmed_free_voxels=np.asarray([[5, 0, 20]], dtype=np.int64),
+        revealed_background_voxels=np.asarray([[5, 0, 20]], dtype=np.int64),
+        current_target_t1_unobserved_mask=np.asarray([False], dtype=np.bool_),
+    )
+
+    metrics = evaluate_two_visit_snapshot(
+        snapshot,
+        context,
+        crosswalk,
+        retained_t0_xyz=np.empty((0, 3), dtype=np.float32),
+        retained_t0_t1_observed_mask=np.empty((0,), dtype=np.bool_),
+    )
+
+    assert metrics["ghost"] == pytest.approx(0.0)
+    assert metrics["background_f1_at_5cm"] == pytest.approx(1.0)
+    assert metrics["surface_f1_at_5cm"] == pytest.approx(1.0)
+
+
+def test_unmatched_entity_remains_conservative_object_for_ghost() -> None:
+    snapshot = _snapshot()
+    snapshot.entities[0].points_xyz = np.asarray(
+        [[0.275, 0.025, 1.025]], dtype=np.float32
+    )
+    snapshot.entities[0].semantic_label = "unmatched open vocabulary label"
+    snapshot.background_xyz = None
+    context = TwoVisitEvaluationContext(
+        event_id="apartment_event_04",
+        frame_id=1472,
+        intervention_frame_id=1022,
+        current_semantic_voxels=np.asarray([[5, 0, 20, 1]], dtype=np.int64),
+        changed_region_voxels=np.asarray([[5, 0, 20]], dtype=np.int64),
+        confirmed_free_voxels=np.asarray([[5, 0, 20]], dtype=np.int64),
+        revealed_background_voxels=np.empty((0, 3), dtype=np.int64),
+        current_target_t1_unobserved_mask=np.asarray([False], dtype=np.bool_),
+    )
+
+    metrics = evaluate_two_visit_snapshot(
+        snapshot,
+        context,
+        _crosswalk(),
+        retained_t0_xyz=np.empty((0, 3), dtype=np.float32),
+        retained_t0_t1_observed_mask=np.empty((0,), dtype=np.bool_),
+    )
+
+    assert metrics["ghost"] == pytest.approx(1.0)
+
+
 def test_rejects_nonmatching_scene_or_final_frame() -> None:
     context = TwoVisitEvaluationContext(
         event_id="apartment_event_04",

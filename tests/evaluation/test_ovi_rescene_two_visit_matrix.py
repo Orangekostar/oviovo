@@ -119,9 +119,12 @@ def test_checked_in_matrix_freezes_exact_b0_b6_contract() -> None:
     assert matrix["office_policy"]["status"] == "OFFICE_NOT_RUN_HELD_OUT"
     assert matrix["method_config"]["ovi_semantics"] == {
         "classifier": "siglip_l_16_384_canonical_relative",
-        "vocabulary_path": (
-            "configs/evaluation/vocabularies/tesse_cd_apartment.json"
-        ),
+        "vocabulary_paths": {
+            "apartment": (
+                "configs/evaluation/vocabularies/tesse_cd_apartment_ovi_full.json"
+            ),
+            "office": "configs/evaluation/vocabularies/tesse_cd_office_ovi_full.json",
+        },
         "canonical_prompts": ["object", "things", "stuff", "texture"],
         "maximum_text_length": 64,
         "minimum_observation_count": 2,
@@ -139,12 +142,24 @@ def test_checked_in_matrix_freezes_exact_b0_b6_contract() -> None:
         "FROZEN_BEFORE_FIRST_METHOD_SCORE"
     )
     assert matrix["preregistration_amendment"]["method_results_inspected"] is False
+    assert matrix["diagnostic_amendment"] == {
+        "status": "FROZEN_AFTER_BASELINE_DIAGNOSIS_BEFORE_TEMPORAL_METHOD_SCORE",
+        "parent_commit": "3fb383a5f4e64b2465aa8459d9da57d643ba7eaf",
+        "reason": (
+            "complete_ovi_native_label_space_and_partition_known_nonobjects_"
+            "from_object_metrics"
+        ),
+        "baseline_results_inspected": ["B0", "B1", "B2"],
+        "method_results_inspected": False,
+    }
     assert {
         "deterministic_executor",
         "native_ovi_runner",
         "snapshot_metrics",
         "visibility_execution",
         "visit_loader",
+        "semantic_vocabulary_apartment",
+        "semantic_vocabulary_office",
     } <= set(matrix["source_bindings"])
 
 
@@ -177,6 +192,12 @@ def test_matrix_rejects_changed_method_threshold_or_amendment(tmp_path: Path) ->
     matrix["preregistration_amendment"]["method_results_inspected"] = True
     path.write_text(json.dumps(matrix), encoding="utf-8")
     with pytest.raises(MatrixError, match="preregistration amendment"):
+        load_and_validate_matrix(path, verify_source_bindings=False)
+
+    matrix = json.loads(MATRIX_PATH.read_text(encoding="utf-8"))
+    matrix["diagnostic_amendment"]["method_results_inspected"] = True
+    path.write_text(json.dumps(matrix), encoding="utf-8")
+    with pytest.raises(MatrixError, match="diagnostic amendment"):
         load_and_validate_matrix(path, verify_source_bindings=False)
 
 

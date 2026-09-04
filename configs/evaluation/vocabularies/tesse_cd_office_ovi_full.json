@@ -1,0 +1,63 @@
+{
+  "alias_map": {
+    "path": "configs/evaluation/semantic_aliases/tesse_cd_common_v2.yaml",
+    "sha256": "217b3bcd730a6485159e23e56ee9e97ac3c1c56007a016cdc8a20e9fc07abdbc"
+  },
+  "class_semantic_ids": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+  ],
+  "classes": [
+    "Ventilation/Piping",
+    "Small office objects",
+    "Large static wall furniture",
+    "Large office objects",
+    "Floor",
+    "Celing",
+    "Jail cell",
+    "Bathroom",
+    "Bedroom",
+    "Shelving",
+    "Chairs",
+    "Walls",
+    "Doors",
+    "Elevator",
+    "Signs",
+    "Lighting",
+    "Humans",
+    "Railing"
+  ],
+  "dataset": "TESSE-CD",
+  "label_space": {
+    "filename": "tesse_cd_office_label_space.yaml",
+    "sha256": "91a7b359ee678dd67871653959a50c477ba7f371473b9c2bf1b4f41f63691765"
+  },
+  "object_semantic_ids": [
+    2,
+    3,
+    4,
+    8,
+    9,
+    11,
+    15
+  ],
+  "scene": "office",
+  "schema_version": 2,
+  "unknown_semantic_id": 0
+}

@@ -55,7 +55,9 @@ _SOURCE_ROLES = {
     "snapshot_metrics",
     "common_v2_evaluator",
     "matrix_runner",
-    "semantic_vocabulary",
+    "semantic_crosswalk",
+    "semantic_vocabulary_apartment",
+    "semantic_vocabulary_office",
     "visibility_execution",
     "visit_loader",
 }
@@ -72,6 +74,7 @@ _TOP_LEVEL_KEYS = {
     "matrix_id",
     "status",
     "dataset",
+    "diagnostic_amendment",
     "protocol",
     "freeze_parent_commit",
     "source_bindings",
@@ -326,9 +329,15 @@ def _validate_method_config(value: object) -> None:
         "ovi_mapping_voxel_size_m": 0.01,
         "ovi_semantics": {
             "classifier": "siglip_l_16_384_canonical_relative",
-            "vocabulary_path": (
-                "configs/evaluation/vocabularies/tesse_cd_apartment.json"
-            ),
+            "vocabulary_paths": {
+                "apartment": (
+                    "configs/evaluation/vocabularies/"
+                    "tesse_cd_apartment_ovi_full.json"
+                ),
+                "office": (
+                    "configs/evaluation/vocabularies/tesse_cd_office_ovi_full.json"
+                ),
+            },
             "canonical_prompts": ["object", "things", "stuff", "texture"],
             "maximum_text_length": 64,
             "minimum_observation_count": 2,
@@ -461,6 +470,17 @@ def load_and_validate_matrix(
         "method_results_inspected": False,
     }:
         raise MatrixError("preregistration amendment is invalid")
+    if payload.get("diagnostic_amendment") != {
+        "status": "FROZEN_AFTER_BASELINE_DIAGNOSIS_BEFORE_TEMPORAL_METHOD_SCORE",
+        "parent_commit": "3fb383a5f4e64b2465aa8459d9da57d643ba7eaf",
+        "reason": (
+            "complete_ovi_native_label_space_and_partition_known_nonobjects_"
+            "from_object_metrics"
+        ),
+        "baseline_results_inspected": ["B0", "B1", "B2"],
+        "method_results_inspected": False,
+    }:
+        raise MatrixError("diagnostic amendment is invalid")
 
     protocol_path, _protocol_record = _bound_record(
         payload.get("protocol"),

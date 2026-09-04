@@ -11,7 +11,6 @@ from src.evaluation.baselines.tesse_semantics import (
     normalize_semantic_name,
 )
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ALIASES = REPO_ROOT / "configs/evaluation/semantic_aliases/tesse_cd_common_v2.yaml"
 LABEL_ROOT = Path(
@@ -39,12 +38,13 @@ def _write_label_space(path: Path) -> None:
     path.write_text(
         yaml.safe_dump(
             {
-                "total_semantic_labels": 3,
+                "total_semantic_labels": 4,
                 "object_labels": [1, 2],
                 "label_names": [
                     {"label": 0, "name": "Unknown"},
                     {"label": 1, "name": "Chair"},
                     {"label": 2, "name": "Table"},
+                    {"label": 3, "name": "Floor"},
                 ],
             },
             sort_keys=False,
@@ -93,6 +93,23 @@ def test_crosswalk_maps_names_and_unmatched_values_to_unknown(tmp_path: Path) ->
     assert crosswalk.lookup("sofa").semantic_id == 0
     assert crosswalk.lookup("sofa").matched is False
     assert crosswalk.valid_semantic_ids == frozenset({1, 2})
+
+
+def test_crosswalk_recognizes_canonical_nonobject_label_without_object_alias(
+    tmp_path: Path,
+) -> None:
+    label_space = tmp_path / "labels.yaml"
+    aliases = tmp_path / "aliases.yaml"
+    _write_label_space(label_space)
+    _write_aliases(aliases, label_space, {"Chair": ["chair"]})
+
+    crosswalk = load_tesse_semantic_crosswalk(aliases, "apartment", label_space)
+
+    floor = crosswalk.lookup(" floor ")
+    assert floor.semantic_id == 3
+    assert floor.native_name == "Floor"
+    assert floor.matched is True
+    assert floor.semantic_id not in crosswalk.valid_semantic_ids
 
 
 def test_crosswalk_rejects_direct_numeric_id_comparison(tmp_path: Path) -> None:

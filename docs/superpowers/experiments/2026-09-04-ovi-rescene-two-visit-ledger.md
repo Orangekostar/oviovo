@@ -83,3 +83,22 @@ the continuous trajectory had moved to a different room, yielding zero
 trajectory overlap in Apartment and zero common observable volume in Office.
 The frozen source-only selector uses a declared 3 m indoor trajectory coverage
 radius together with common view-frustum volume; it never reads method scores.
+
+## Baseline Diagnostic Amendment
+
+The first Apartment execution inspected B0--B2 only and stopped before B3/B4
+because `Ghost(B2)=0.8415982875490546` exceeded the frozen practical ceiling.
+Of 5,606 predicted points in the changed region, 4,718 matched confirmed free
+space. Two broad OVI segments accounted for all of those predictions; under the
+original object-only vocabulary both were forced to `Table`, while the pinned
+SigLIP canonical-relative classifier identified both as `Floor` when evaluated
+against the complete native Apartment label space.
+
+This establishes a protocol-domain mismatch rather than a temporal-composition
+failure: OVI produces class-agnostic panoptic segments, but the initial word list
+omitted every stuff class. The amended matrix therefore uses dedicated
+two-visit full-label vocabularies and routes recognized non-object segments to
+the background metric domain. Unmatched labels remain object predictions, so
+the amendment cannot lower Ghost by relabeling uncertain segments as unknown.
+The shared T1/T4 vocabularies are byte-identical to their pre-amendment versions.
+B3/B4 method results were not inspected before this amendment was frozen.

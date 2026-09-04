@@ -7,15 +7,18 @@ from pathlib import Path
 
 import numpy as np
 
+import scripts.evaluation.execute_ovi_rescene_two_visit_matrix as matrix_executor
 from scripts.evaluation.execute_ovi_rescene_two_visit_matrix import (
     PreparedTwoVisitExecution,
     _enforce_b2_floor,
+    _load_vocabulary,
     _semantic_config,
     execute_prepared_variant,
     load_two_visit_ovi_inputs,
 )
 from scripts.evaluation.freeze_tesse_two_visit_protocol import protocol_content_sha256
 from scripts.evaluation.run_ovi_rescene_two_visit_matrix import (
+    MatrixError,
     execute_required_matrix,
     load_and_validate_matrix,
 )
@@ -55,12 +58,125 @@ def test_semantic_config_binds_vocabulary_and_prompt_rule() -> None:
 
     settings = _semantic_config(
         matrix,
-        REPO_ROOT / "configs/evaluation/vocabularies/tesse_cd_apartment.json",
+        REPO_ROOT
+        / "configs/evaluation/vocabularies/tesse_cd_apartment_ovi_full.json",
+        scene="apartment",
     )
 
     assert settings == (("object", "things", "stuff", "texture"), 64, 2)
     with np.testing.assert_raises_regex(ValueError, "vocabulary path"):
-        _semantic_config(matrix, REPO_ROOT / "different-vocabulary.json")
+        _semantic_config(
+            matrix,
+            REPO_ROOT / "different-vocabulary.json",
+            scene="apartment",
+        )
+
+    _semantic_config(
+        matrix,
+        REPO_ROOT / "configs/evaluation/vocabularies/tesse_cd_office_ovi_full.json",
+        scene="office",
+    )
+
+
+def test_checked_vocabularies_cover_complete_native_label_spaces() -> None:
+    expected = {
+        "apartment": (
+            tuple(range(1, 21)),
+            (
+                "Fridge",
+                "Books",
+                "Floor",
+                "Ceiling",
+                "Chair",
+                "Vase",
+                "Couch",
+                "Trees",
+                "Drawer",
+                "Objects",
+                "Lamp",
+                "Painting",
+                "Plants",
+                "Bed",
+                "Stairs",
+                "Table",
+                "Screens",
+                "Bin",
+                "Wall",
+                "Humans",
+            ),
+            frozenset({"Fridge", "Books", "Chair", "Vase", "Couch", "Drawer", "Objects", "Table", "Bin", "Humans"}),
+        ),
+        "office": (
+            tuple(range(1, 19)),
+            (
+                "Ventilation/Piping",
+                "Small office objects",
+                "Large static wall furniture",
+                "Large office objects",
+                "Floor",
+                "Celing",
+                "Jail cell",
+                "Bathroom",
+                "Bedroom",
+                "Shelving",
+                "Chairs",
+                "Walls",
+                "Doors",
+                "Elevator",
+                "Signs",
+                "Lighting",
+                "Humans",
+                "Railing",
+            ),
+            frozenset({"Small office objects", "Large static wall furniture", "Large office objects", "Bathroom", "Bedroom", "Chairs", "Signs"}),
+        ),
+    }
+    for scene, (semantic_ids, classes, object_classes) in expected.items():
+        vocabulary = _load_vocabulary(
+            REPO_ROOT
+            / f"configs/evaluation/vocabularies/tesse_cd_{scene}_ovi_full.json",
+            scene=scene,
+        )
+
+        assert vocabulary.class_semantic_ids == semantic_ids
+        assert vocabulary.classes == classes
+        assert vocabulary.object_classes == object_classes
+
+
+def test_resolves_scene_specific_semantic_defaults_without_cross_scene_reuse() -> None:
+    apartment_vocabulary, apartment_labels = matrix_executor._resolve_scene_semantic_paths(
+        "apartment",
+        vocabulary_path=None,
+        label_space_path=None,
+    )
+    office_vocabulary, office_labels = matrix_executor._resolve_scene_semantic_paths(
+        "office",
+        vocabulary_path=None,
+        label_space_path=None,
+    )
+
+    assert apartment_vocabulary.name == "tesse_cd_apartment_ovi_full.json"
+    assert apartment_labels.name == "tesse_cd_apartment_label_space.yaml"
+    assert office_vocabulary.name == "tesse_cd_office_ovi_full.json"
+    assert office_labels.name == "tesse_cd_office_label_space.yaml"
+    assert apartment_vocabulary != office_vocabulary
+    assert apartment_labels != office_labels
+
+
+def test_cli_rejects_held_out_office_before_reading_method_inputs(
+    tmp_path: Path,
+) -> None:
+    with np.testing.assert_raises_regex(MatrixError, "OFFICE_NOT_RUN_HELD_OUT"):
+        matrix_executor.main(
+            [
+                "--scene",
+                "office",
+                "--two-visit-ovi-manifest",
+                str(tmp_path / "must-not-be-read.json"),
+                "--output-root",
+                str(tmp_path / "must-not-be-created"),
+            ]
+        )
 
 
 def test_b2_floor_gate_stops_temporal_variants_above_practical_ghost() -> None:

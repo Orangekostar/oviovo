@@ -96,9 +96,10 @@ class TwoVisitEvaluationContext:
 def _snapshot_points_and_semantics(
     snapshot: MapSnapshot,
     crosswalk: TesseSemanticCrosswalk,
-) -> tuple[np.ndarray, np.ndarray, list[np.ndarray]]:
+) -> tuple[np.ndarray, np.ndarray, list[np.ndarray], list[np.ndarray]]:
     chunks: list[np.ndarray] = []
     semantic_chunks: list[np.ndarray] = []
+    background_chunks: list[np.ndarray] = []
     for entity in snapshot.entities:
         points = np.asarray(entity.points_xyz, dtype=np.float32)
         lookup = (
@@ -106,6 +107,9 @@ def _snapshot_points_and_semantics(
             if entity.semantic_label is not None
             else crosswalk.unknown
         )
+        if lookup.matched and lookup.semantic_id not in crosswalk.valid_semantic_ids:
+            background_chunks.append(points)
+            continue
         chunks.append(points)
         semantic_chunks.append(
             np.full(len(points), lookup.semantic_id, dtype=np.int64)
@@ -120,7 +124,7 @@ def _snapshot_points_and_semantics(
         if semantic_chunks
         else np.empty((0,), dtype=np.int64)
     )
-    return points, semantic_ids, chunks
+    return points, semantic_ids, chunks, background_chunks
 
 
 def evaluate_two_visit_snapshot(
@@ -144,10 +148,12 @@ def evaluate_two_visit_snapshot(
     if snapshot.timestamp != float(context.frame_id):
         raise ValueError("snapshot does not represent the frozen final frame")
 
-    object_points, semantic_ids, object_chunks = _snapshot_points_and_semantics(
-        snapshot,
-        crosswalk,
-    )
+    (
+        object_points,
+        semantic_ids,
+        object_chunks,
+        semantic_background_chunks,
+    ) = _snapshot_points_and_semantics(snapshot, crosswalk)
     gt_ids, predicted_ids = _prediction_semantics(
         object_points,
         semantic_ids,
@@ -157,11 +163,11 @@ def evaluate_two_visit_snapshot(
         object_chunks,
         context.changed_region_voxels,
     )
-    background_chunks = (
-        [np.asarray(snapshot.background_xyz, dtype=np.float32)]
-        if snapshot.background_xyz is not None
-        else []
-    )
+    background_chunks = list(semantic_background_chunks)
+    if snapshot.background_xyz is not None:
+        background_chunks.append(
+            np.asarray(snapshot.background_xyz, dtype=np.float32)
+        )
     predicted_background = _crop_points_to_voxels(
         background_chunks,
         context.changed_region_voxels,
