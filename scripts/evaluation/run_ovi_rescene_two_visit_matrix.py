@@ -555,7 +555,7 @@ def _validate_metric_receipt(
     method_bindings = payload.get("method_input_bindings")
     evaluation_bindings = payload.get("evaluation_only_bindings")
     expected_groups = metric_contract["groups"]
-    if not isinstance(groups, Mapping) or tuple(groups) != _METRIC_GROUPS:
+    if not isinstance(groups, Mapping) or set(groups) != set(_METRIC_GROUPS):
         raise MatrixError(f"{variant_id} metric groups are invalid")
     if not isinstance(unavailable, Mapping):
         raise MatrixError(f"{variant_id} unavailable reasons are invalid")

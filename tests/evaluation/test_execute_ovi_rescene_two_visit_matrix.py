@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 import numpy as np
@@ -15,6 +16,7 @@ from scripts.evaluation.execute_ovi_rescene_two_visit_matrix import (
 )
 from scripts.evaluation.freeze_tesse_two_visit_protocol import protocol_content_sha256
 from scripts.evaluation.run_ovi_rescene_two_visit_matrix import (
+    execute_required_matrix,
     load_and_validate_matrix,
 )
 from src.evaluation.baselines.tesse_semantics import (
@@ -37,6 +39,15 @@ def _record(path: Path) -> dict[str, object]:
         "sha256": hashlib.sha256(data).hexdigest(),
         "byte_count": len(data),
     }
+
+
+def _head() -> str:
+    return subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
 
 
 def test_semantic_config_binds_vocabulary_and_prompt_rule() -> None:
@@ -172,6 +183,31 @@ def test_executes_b2_with_real_metric_receipt_and_bound_snapshot(tmp_path: Path)
     assert metrics["unavailable"]["object_f1"]
     assert set(metrics["method_input_bindings"]) == {"two_visit_ovi_manifest"}
     assert set(metrics["evaluation_only_bindings"]) == {"target_manifest"}
+
+
+def test_orchestrator_accepts_canonical_actual_metric_receipts(tmp_path: Path) -> None:
+    matrix = load_and_validate_matrix(MATRIX_PATH)
+    prepared = _prepared()
+
+    def execute(row, run_id: str, variant_root: Path):
+        return execute_prepared_variant(
+            prepared,
+            matrix,
+            row,
+            run_id,
+            variant_root,
+            command_line=("fixture", row["id"]),
+        )
+
+    summary = execute_required_matrix(
+        matrix_path=MATRIX_PATH,
+        scene="apartment",
+        output_root=tmp_path / "matrix",
+        source_commit=_head(),
+        executor=execute,
+    )
+
+    assert summary.is_file()
 
 
 def test_b3_retained_t0_provenance_is_used_for_stale_precision(tmp_path: Path) -> None:
