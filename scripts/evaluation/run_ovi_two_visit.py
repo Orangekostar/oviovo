@@ -397,8 +397,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     build_root = Path("/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native")
     native = TesseNativeEnvironment(
         build_root=build_root,
-        frontend_python=Path("/home/ww/miniconda3/envs/ovimap-cropformer/bin/python"),
-        mapping_python=Path("/home/ww/miniconda3/envs/ovimap-map/bin/python"),
+        frontend_python=Path(
+            "/home/ww/miniconda3/envs/ovimap-cropformer/bin/python"
+        ).resolve(strict=True),
+        mapping_python=Path(
+            "/home/ww/miniconda3/envs/ovimap-map/bin/python"
+        ).resolve(strict=True),
         entity_root=build_root / "Entity",
         ovimap_root=build_root / "OVI-MAP",
         cropformer_weights=build_root / "Entity/checkpoints/CropFormer_hornet_3x_03823a.pth",
