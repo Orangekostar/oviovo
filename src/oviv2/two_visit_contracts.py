@@ -509,6 +509,7 @@ class TemporalQueryEvidence:
     ranking_eligible: bool
     runtime_s: float
     peak_memory_bytes: int
+    diagnostics: Mapping[str, str] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if self.status not in _EVIDENCE_STATUSES:
@@ -533,6 +534,14 @@ class TemporalQueryEvidence:
             if self.checkpoint_sha256 is None
             else _sha256(self.checkpoint_sha256, "checkpoint_sha256")
         )
+        if not isinstance(self.diagnostics, Mapping):
+            raise ValueError("diagnostics must be a mapping")
+        diagnostics = {
+            _nonempty_string(key, "diagnostics key"): _nonempty_string(
+                value, f"diagnostics.{key}"
+            )
+            for key, value in self.diagnostics.items()
+        }
 
         arrays = (self.query_masks, self.token_scores, self.query_scores)
         if self.status != "PASS":
@@ -578,6 +587,9 @@ class TemporalQueryEvidence:
         object.__setattr__(self, "checkpoint_sha256", checkpoint)
         object.__setattr__(self, "runtime_s", runtime)
         object.__setattr__(self, "peak_memory_bytes", peak_memory)
+        object.__setattr__(
+            self, "diagnostics", MappingProxyType(dict(sorted(diagnostics.items())))
+        )
 
     @classmethod
     def blocked(
@@ -587,6 +599,7 @@ class TemporalQueryEvidence:
         backend_name: str,
         backend_config_sha256: str,
         pair_sha256: str,
+        diagnostics: Mapping[str, str] | None = None,
     ) -> TemporalQueryEvidence:
         if status == "PASS":
             raise ValueError("blocked evidence status cannot be PASS")
@@ -603,29 +616,43 @@ class TemporalQueryEvidence:
             ranking_eligible=False,
             runtime_s=0.0,
             peak_memory_bytes=0,
+            diagnostics=dict(diagnostics or {}),
         )
+
+    def _hash_payload(self, *, include_performance: bool) -> dict[str, object]:
+        payload: dict[str, object] = {
+            "status": self.status,
+            "backend_name": self.backend_name,
+            "backend_config_sha256": self.backend_config_sha256,
+            "pair_sha256": self.pair_sha256,
+            "temporal_query_ids": self.temporal_query_ids,
+            "query_masks": self.query_masks,
+            "token_scores": self.token_scores,
+            "query_scores": self.query_scores,
+            "checkpoint_sha256": self.checkpoint_sha256,
+            "ranking_eligible": self.ranking_eligible,
+            "diagnostics": self.diagnostics,
+        }
+        if include_performance:
+            payload.update(
+                {
+                    "runtime_s": self.runtime_s,
+                    "peak_memory_bytes": self.peak_memory_bytes,
+                }
+            )
+        return payload
+
+    def prediction_sha256(self) -> str:
+        return _digest(self._hash_payload(include_performance=False))
 
     def content_sha256(self) -> str:
         return _digest(
-            {
-                "status": self.status,
-                "backend_name": self.backend_name,
-                "backend_config_sha256": self.backend_config_sha256,
-                "pair_sha256": self.pair_sha256,
-                "temporal_query_ids": self.temporal_query_ids,
-                "query_masks": self.query_masks,
-                "token_scores": self.token_scores,
-                "query_scores": self.query_scores,
-                "checkpoint_sha256": self.checkpoint_sha256,
-                "ranking_eligible": self.ranking_eligible,
-                "runtime_s": self.runtime_s,
-                "peak_memory_bytes": self.peak_memory_bytes,
-            }
+            self._hash_payload(include_performance=True)
         )
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, TemporalQueryEvidence) and (
-            self.content_sha256() == other.content_sha256()
+            self.prediction_sha256() == other.prediction_sha256()
         )
 
 

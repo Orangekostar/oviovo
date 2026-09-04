@@ -37,9 +37,9 @@ results.
 | Phase | Status | Evidence |
 | --- | --- | --- |
 | P0 source and voxel audit | PASS | Exact Git/file/license bindings and four-role contract |
-| P1 immutable contracts | NOT_STARTED | No result claimed |
-| P2 OVI-to-ReScene adapter | NOT_STARTED | No result claimed |
-| P3 deterministic reasoner | NOT_STARTED | No result claimed |
+| P1 immutable contracts | PASS | Read-only arrays, exact visit coordinates, and conserving CSR provenance |
+| P2 OVI-to-ReScene adapter | PASS | Deterministic XYZ-only grouping at 1/2/4 cm neural resolutions |
+| P3 deterministic reasoner | PASS | Geometry/OVI-semantics entity graph plus fail-closed learned boundary |
 | P4 query projection | NOT_STARTED | No result claimed |
 | P5 current-state composer | NOT_STARTED | No result claimed |
 | P6 TESSE two-visit protocol | NOT_STARTED | No result claimed |
@@ -54,3 +54,9 @@ The primary comparison will report the Pareto vector rather than a hidden
 weighted score: Ghost, background F-score at 5 cm, current mIoU, object F1,
 dynamic F1, change F1, runtime, and memory. B5/B6 remain ineligible while the
 checkpoint gate is blocked.
+
+Ruling: OVI labels and embeddings are carried as immutable entity side
+evidence, not concatenated into the ReScene feature tensor. This preserves the
+required geometric-semantic baseline without introducing an untrained feature
+distribution into Concerto. If wrong, the adapter contract and learned backend
+input schema will require a backward-compatible revision.
