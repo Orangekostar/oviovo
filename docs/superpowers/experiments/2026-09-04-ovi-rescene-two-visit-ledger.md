@@ -44,7 +44,7 @@ results.
 | P5 current-state composer | PASS | t1-first dense OVI composition with point-group provenance |
 | P6 TESSE two-visit protocol | PASS | 32 source-only candidates; Apartment/Office windows frozen before method scores |
 | P7 B0-B6 evaluator | PASS | Frozen Pareto metric contract and atomic B0-B4 / blocked B5-B6 orchestrator; no result claimed |
-| P8 learned ReScene | BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT | No public checkpoint in pinned source |
+| P8 learned ReScene | BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT | Source-bound fail-closed runner/config verified; no public checkpoint and no learned result |
 | P9 failure attribution | NOT_STARTED | No result claimed |
 | P10 Apartment matrix | NOT_STARTED | No result claimed |
 | P11 Office confirmation | `OFFICE_NOT_RUN_HELD_OUT` | Held until method/config/gates are frozen |
@@ -54,6 +54,15 @@ The primary comparison will report the Pareto vector rather than a hidden
 weighted score: Ghost, background F-score at 5 cm, current mIoU, object F1,
 dynamic F1, change F1, runtime, and memory. B5/B6 remain ineligible while the
 checkpoint gate is blocked.
+
+The blocked ReScene execution contract is frozen in
+`configs/evaluation/rescene_two_visit_backend.json` and enforced by
+`scripts/evaluation/run_rescene_pair_backend.py`. Against the pinned clean
+checkout it publishes only `BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT`, with
+`ranking_eligible=false` and no prediction arrays. The subprocess path is
+covered hermetically, but it is not claimed as a scientific ReScene result;
+the optional integration commit remains gated on a valid source-bound
+checkpoint and environment.
 
 Ruling: OVI labels and embeddings are carried as immutable entity side
 evidence, not concatenated into the ReScene feature tensor. This preserves the

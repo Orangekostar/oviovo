@@ -1,0 +1,38 @@
+{
+  "adapter_contract": {
+    "feature_schema": "rgb",
+    "neural_voxel_size_m": 0.02
+  },
+  "backend_id": "RESCENE_CONCERTO_TWO_VISIT_V1",
+  "checkpoint": {
+    "path": "/home/ww/oviovo_references/evaluation/rescene4d/checkpoints/rescene4d.ckpt",
+    "selected_backbone": "Concerto",
+    "selection_policy": "official_or_source_bound_training_only",
+    "sha256": null,
+    "status": "BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT"
+  },
+  "environment": {
+    "python": null,
+    "status": "NOT_PROVISIONED_WITHOUT_VALID_CHECKPOINT"
+  },
+  "executor": {
+    "command": null,
+    "timeout_s": 3600.0
+  },
+  "random_initialization": {
+    "allowed_for_plumbing": true,
+    "ranking_eligible": false
+  },
+  "ranking_eligible": false,
+  "schema_version": 1,
+  "source": {
+    "checkout": "/home/ww/oviovo_references/evaluation/rescene4d",
+    "commit": "fb2fe42eb8f1e926567c48eea9acb874e608ee10",
+    "manifest": {
+      "byte_count": 7435,
+      "path": "configs/external/ovi_rescene_sources.json",
+      "sha256": "0afe78b623134eda15c34978f28d5d1885f19d07e101e4c264c60b83821dfb85"
+    }
+  },
+  "status": "BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT"
+}
