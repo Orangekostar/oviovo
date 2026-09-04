@@ -40,7 +40,7 @@ results.
 | P1 immutable contracts | PASS | Read-only arrays, exact visit coordinates, and conserving CSR provenance |
 | P2 OVI-to-ReScene adapter | PASS | Deterministic XYZ-only grouping at 1/2/4 cm neural resolutions |
 | P3 deterministic reasoner | PASS | Geometry/OVI-semantics entity graph plus fail-closed learned boundary |
-| P4 query projection | NOT_STARTED | No result claimed |
+| P4 query projection | PASS | CSR-expanded token/soft/source-point evidence and explicit relation topology |
 | P5 current-state composer | NOT_STARTED | No result claimed |
 | P6 TESSE two-visit protocol | NOT_STARTED | No result claimed |
 | P7 B0-B6 evaluator | NOT_STARTED | No result claimed |
