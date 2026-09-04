@@ -1,0 +1,103 @@
+{
+  "artifact_id": "OVI_RESCENE_B7_APARTMENT_RESULT_V1",
+  "command": [
+    "python",
+    "scripts/evaluation/run_ovi_rescene_b7.py",
+    "--config",
+    "configs/evaluation/ovi_rescene_b7_g_v1.json",
+    "--scene",
+    "apartment",
+    "--output",
+    "/home/ww/oviovo_baseline_runs/20260904_ovi_rescene_b7/apartment-be02e08"
+  ],
+  "conditional_decisions": {
+    "learned_b7": "STOPPED_BY_B7_G_NO_GO",
+    "office": "HELD_OUT_ZERO_ATTEMPTS",
+    "rescene_identity": "BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT",
+    "three_rscan": "BLOCKED_27_OF_44"
+  },
+  "dense_recovery_sha256": "80c8e158c8e68491ccb0a1c6f52d96b54caf20c6ee71e1601465369e9920ae9b",
+  "diagnostics": {
+    "candidate_point_count": 1508899,
+    "final_map_point_count": 15622601,
+    "introduced_confirmed_free_match_count": 0,
+    "newly_covered_gt_surface_count": 0,
+    "recovered_historical_point_count": 1792,
+    "registration_accepted_count": 5,
+    "registration_attempt_count": 18,
+    "registration_rejected_count": 13,
+    "rejected_occupied_point_count": 283818,
+    "rejected_visible_free_point_count": 326,
+    "removed_unwarped_b3_point_count": 1792,
+    "revealed_background_conflict_count": 0
+  },
+  "evaluated_config": {
+    "byte_count": 11671,
+    "git_object": "be02e08ec5517cb6c7126a042410da56a2258692:configs/evaluation/ovi_rescene_b7_g_v1.json",
+    "sha256": "09a62abf5d85bf9cc5f404e6127368aaaf7c39e40400f5a063cd20e4fed0fbec"
+  },
+  "evaluated_source_commit": "be02e08ec5517cb6c7126a042410da56a2258692",
+  "gate": {
+    "decision": "STOP_B7_MAPPING_EXTENSION",
+    "predicates": {
+      "accepted_registrations": true,
+      "background_f1_at_5cm": true,
+      "ghost": true,
+      "recovered_points": true,
+      "surface_f1_at_5cm": false,
+      "surface_precision_at_5cm": true,
+      "t1_observed_region_stale_precision": true,
+      "t1_unobserved_region_recall": false
+    }
+  },
+  "method_input_sha256": "a3ac781087bcd03c4c9375b7296a59b0053d246d6147abc75a33ae8d5a8ba6aa",
+  "metrics": {
+    "background_f1_at_5cm": 0.36636000976960026,
+    "current_miou": 0.1358861592620667,
+    "ghost": 0.0,
+    "surface_f1_at_5cm": 0.4313354117431786,
+    "surface_precision_at_5cm": 0.7344127781521915,
+    "surface_recall_at_5cm": 0.30533132262929125,
+    "t1_observed_region_stale_precision": 0.9309634045791844,
+    "t1_unobserved_region_recall": 0.07564646854496333,
+    "total_current_surface_coverage": 0.30533132262929125
+  },
+  "output_artifacts": {
+    "attribution_manifest": {
+      "byte_count": 532,
+      "path": "/home/ww/oviovo_baseline_runs/20260904_ovi_rescene_b7/apartment-be02e08/attribution/manifest.json",
+      "sha256": "4295ac4a76d09ba8466a6281ebdf0616e6471b94c5fad4d27bd7a3ee3642ac4f"
+    },
+    "method_manifest": {
+      "byte_count": 3962,
+      "path": "/home/ww/oviovo_baseline_runs/20260904_ovi_rescene_b7/apartment-be02e08/method/manifest.json",
+      "sha256": "dfe31dde4415d71c03d6f0f8b3ff6eda0a734fb256dd398004a8f71637c676e0"
+    },
+    "metric_receipt": {
+      "byte_count": 4894,
+      "path": "/home/ww/oviovo_baseline_runs/20260904_ovi_rescene_b7/apartment-be02e08/metrics.json",
+      "sha256": "e0cedacdabf50a7f1cbc8b757a453a0d5b5f1f2dd6b65109b1019761a95cdd7a"
+    },
+    "run_manifest": {
+      "byte_count": 3046,
+      "path": "/home/ww/oviovo_baseline_runs/20260904_ovi_rescene_b7/apartment-be02e08/manifest.json",
+      "sha256": "7a731691f01b8c548ac144e57097ca4afa376c8c182f871cb3413fd370ff8c0a"
+    }
+  },
+  "post_evaluation_compatibility_config": {
+    "byte_count": 11864,
+    "path": "configs/evaluation/ovi_rescene_b7_g_v1.json",
+    "sha256": "3db609b78c44609c84033242389ead08badc698b067ff4cafa0f4800a984f3a2",
+    "status": "NOT_USED_TO_GENERATE_METRICS"
+  },
+  "run_capture": {
+    "elapsed_seconds": 907.7,
+    "exit_code": 0,
+    "maximum_resident_memory_bytes": 4253835264,
+    "peak_gpu_memory_bytes": 0,
+    "stderr_capture": "GNU time -v fields transcribed into this receipt",
+    "stdout": "/home/ww/oviovo_baseline_runs/20260904_ovi_rescene_b7/apartment-be02e08/manifest.json"
+  },
+  "schema_version": 1,
+  "status": "PASS"
+}

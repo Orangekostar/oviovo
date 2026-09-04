@@ -48,6 +48,7 @@ from src.oviv2.query_instance_projection import (
     ProjectionConfig,
     project_queries_to_instances,
 )
+from src.oviv2.two_visit_b7_visibility import derive_signed_visibility_for_points
 from src.oviv2.two_visit_contracts import (
     CurrentCompositionDecision,
     PairRelation,
@@ -69,7 +70,6 @@ from src.oviv2.two_visit_execution import (
     SignedVisibilityConfig,
     build_geometric_pair_sample,
     derive_observed_point_mask,
-    derive_signed_visibility_for_points,
 )
 from src.oviv2.two_visit_registration import (
     RegistrationConfig,
@@ -110,6 +110,7 @@ _METHOD_FROZEN_INPUT_RECORDS = _FROZEN_INPUT_RECORDS - {
 _SOURCE_BINDING_ROLES = {
     "attribution",
     "attribution_cli",
+    "b7_visibility",
     "runner",
     "registration",
     "dense_recovery",

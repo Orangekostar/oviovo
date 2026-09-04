@@ -5,6 +5,7 @@ import numpy as np
 from src.core.data_structures import CameraIntrinsics, Frame
 from src.evaluation.contracts import EntityPrediction, MapSnapshot
 from src.oviv2.geometric_pair_reasoner import GeometricReasonerConfig
+from src.oviv2.two_visit_b7_visibility import derive_signed_visibility_for_points
 from src.oviv2.two_visit_contracts import VisitMap
 from src.oviv2.two_visit_execution import (
     SignedVisibilityConfig,
@@ -13,7 +14,6 @@ from src.oviv2.two_visit_execution import (
     build_visibility_baseline,
     derive_observed_point_mask,
     derive_signed_visibility,
-    derive_signed_visibility_for_points,
 )
 
 SOURCE_SHA256 = "a" * 64
@@ -150,6 +150,19 @@ def test_transformed_points_receive_signed_visibility_at_new_voxels() -> None:
 
     assert result.as_mapping()[(10, 0, 20)] == "visible_free"
     assert np.array_equal(points, before)
+
+
+def test_transformed_point_visibility_preserves_float64_voxel_boundary() -> None:
+    points = np.asarray([[np.nextafter(0.05, 0.0), 0.025, 1.025]], dtype=np.float64)
+
+    result = derive_signed_visibility_for_points(
+        points,
+        (_frame(0, depth_m=2.0),),
+        SignedVisibilityConfig(),
+        source_sha256="c" * 64,
+    )
+
+    assert tuple(result.voxel_keys[0]) == (0, 0, 20)
 
 
 def test_point_visibility_accepts_an_empty_candidate_set() -> None:

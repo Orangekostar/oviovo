@@ -358,6 +358,7 @@ def test_checked_in_config_freezes_method_and_gate_before_score(tmp_path: Path) 
         "configs/evaluation/manifests/oviv2_tesse_cd_cache.json"
     )
     assert {
+        "b7_visibility",
         "current_metrics",
         "dataset_loader",
         "evaluation_contracts",
