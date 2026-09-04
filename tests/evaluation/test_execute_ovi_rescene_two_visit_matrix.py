@@ -8,6 +8,7 @@ import numpy as np
 
 from scripts.evaluation.execute_ovi_rescene_two_visit_matrix import (
     PreparedTwoVisitExecution,
+    _enforce_b2_floor,
     _semantic_config,
     execute_prepared_variant,
     load_two_visit_ovi_inputs,
@@ -49,6 +50,17 @@ def test_semantic_config_binds_vocabulary_and_prompt_rule() -> None:
     assert settings == (("object", "things", "stuff", "texture"), 64, 2)
     with np.testing.assert_raises_regex(ValueError, "vocabulary path"):
         _semantic_config(matrix, REPO_ROOT / "different-vocabulary.json")
+
+
+def test_b2_floor_gate_stops_temporal_variants_above_practical_ghost() -> None:
+    matrix = load_and_validate_matrix(MATRIX_PATH, verify_source_bindings=False)
+    metrics = {"metric_groups": {"current_state": {"ghost": 0.2}}}
+
+    _enforce_b2_floor(metrics, matrix)
+
+    metrics["metric_groups"]["current_state"]["ghost"] = 0.200001
+    with np.testing.assert_raises_regex(ValueError, "B2 Ghost floor"):
+        _enforce_b2_floor(metrics, matrix)
 
 
 def _visit(visit_id: int, point: list[float]) -> VisitMap:

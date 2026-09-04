@@ -990,6 +990,30 @@ def _metric_payload(
     }
 
 
+def _enforce_b2_floor(
+    metric_payload: Mapping[str, Any], matrix: Mapping[str, Any]
+) -> None:
+    try:
+        ghost = metric_payload["metric_groups"]["current_state"]["ghost"]
+        maximum = matrix["success_gates"]["practical_ghost_max"]
+    except (KeyError, TypeError) as error:
+        raise ValueError("B2 Ghost floor receipt is incomplete") from error
+    if (
+        isinstance(ghost, bool)
+        or not isinstance(ghost, (int, float))
+        or not np.isfinite(float(ghost))
+        or isinstance(maximum, bool)
+        or not isinstance(maximum, (int, float))
+        or not np.isfinite(float(maximum))
+    ):
+        raise ValueError("B2 Ghost floor receipt is invalid")
+    if float(ghost) > float(maximum):
+        raise ValueError(
+            f"B2 Ghost floor {float(ghost):.6f} exceeds frozen practical "
+            f"maximum {float(maximum):.6f}; diagnose OVI t1/evaluator alignment"
+        )
+
+
 def execute_prepared_variant(
     prepared: PreparedTwoVisitExecution,
     matrix: Mapping[str, Any],
@@ -1160,7 +1184,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     def execute(
         row: Mapping[str, Any], run_id: str, variant_root: Path
     ) -> VariantExecutionArtifacts:
-        return execute_prepared_variant(
+        artifacts = execute_prepared_variant(
             prepared,
             matrix,
             row,
@@ -1168,6 +1192,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             variant_root,
             command_line=tuple(invocation),
         )
+        if row["id"] == "B2":
+            _enforce_b2_floor(
+                _load_json(artifacts.metric_receipt, label="B2 metric receipt"),
+                matrix,
+            )
+        return artifacts
 
     summary = execute_required_matrix(
         matrix_path=args.matrix,
