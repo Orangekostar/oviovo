@@ -17,6 +17,7 @@ import numpy as np
 
 from src.oviv2.two_visit_contracts import (
     NeuralSampleMap,
+    OviEntitySemanticEvidence,
     VisitMap,
     snapshot_content_sha256,
     validate_visit_pair,
@@ -49,6 +50,7 @@ _MANIFEST_KEYS = frozenset(
         "source_manifest_sha256",
         "source_visit_map_sha256",
         "source_entity_id_table",
+        "entity_semantics",
     }
 )
 
@@ -242,6 +244,18 @@ def adapt_visit_pair(
         coordinate_frame_id=t0.coordinate_frame_id,
         source_manifest_sha256=t0.source_manifest_sha256,
         source_visit_map_sha256=(t0.snapshot_sha256, t1.snapshot_sha256),
+        entity_semantics=tuple(
+            OviEntitySemanticEvidence(
+                visit_id=visit.visit_id,
+                entity_id=entity.entity_id,
+                semantic_label=entity.semantic_label,
+                semantic_score=entity.semantic_score,
+                semantic_embedding=entity.semantic_embedding,
+            )
+            for visit in (t0, t1)
+            for entity in sorted(visit.snapshot.entities, key=lambda item: item.entity_id)
+            if len(entity.points_xyz)
+        ),
     )
     after = (
         snapshot_content_sha256(t0.snapshot),
@@ -325,6 +339,20 @@ def write_neural_sample_artifact(
             "source_manifest_sha256": pair.source_manifest_sha256,
             "source_visit_map_sha256": list(pair.source_visit_map_sha256),
             "source_entity_id_table": list(entity_table),
+            "entity_semantics": [
+                {
+                    "visit_id": item.visit_id,
+                    "entity_id": item.entity_id,
+                    "semantic_label": item.semantic_label,
+                    "semantic_score": item.semantic_score,
+                    "semantic_embedding": (
+                        None
+                        if item.semantic_embedding is None
+                        else item.semantic_embedding.tolist()
+                    ),
+                }
+                for item in pair.entity_semantics
+            ],
         }
         _write_and_fsync(staging / "manifest.json", _json_bytes(manifest))
         directory_fd = os.open(staging, os.O_RDONLY | os.O_DIRECTORY)
@@ -429,6 +457,22 @@ def load_neural_sample_artifact(output_root: str | Path) -> NeuralSampleMap:
     ):
         raise AdapterError("source entity indices are invalid")
     source_entity_ids = tuple(entity_table[int(index)] for index in entity_indices)
+    raw_semantics = manifest.get("entity_semantics")
+    if not isinstance(raw_semantics, list):
+        raise AdapterError("entity semantics are invalid")
+    try:
+        semantics = tuple(
+            OviEntitySemanticEvidence(
+                visit_id=item["visit_id"],
+                entity_id=item["entity_id"],
+                semantic_label=item["semantic_label"],
+                semantic_score=item["semantic_score"],
+                semantic_embedding=item["semantic_embedding"],
+            )
+            for item in raw_semantics
+        )
+    except (KeyError, TypeError, ValueError) as error:
+        raise AdapterError("entity semantics are invalid") from error
     pair = NeuralSampleMap(
         **arrays,
         source_entity_ids=source_entity_ids,
@@ -437,6 +481,7 @@ def load_neural_sample_artifact(output_root: str | Path) -> NeuralSampleMap:
         coordinate_frame_id=manifest["coordinate_frame_id"],
         source_manifest_sha256=manifest["source_manifest_sha256"],
         source_visit_map_sha256=tuple(manifest["source_visit_map_sha256"]),
+        entity_semantics=semantics,
     )
     if pair.content_sha256() != manifest.get("pair_sha256"):
         raise AdapterError("pair content SHA-256 mismatch")

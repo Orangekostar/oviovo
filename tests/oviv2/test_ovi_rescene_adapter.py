@@ -133,6 +133,17 @@ def test_adapter_does_not_mutate_ovi_maps() -> None:
     assert before == after == (t0.snapshot_sha256, t1.snapshot_sha256)
 
 
+def test_adapter_keeps_ovi_semantics_outside_neural_features() -> None:
+    pair = adapt_visit_pair(_visit(0), _visit(1), AdapterConfig(0.02, "rgb"))
+
+    assert pair.features.shape[1] == 3
+    assert [(item.visit_id, item.entity_id, item.semantic_label) for item in pair.entity_semantics] == [
+        (0, "ovi:t0:chair", "chair"),
+        (0, "ovi:t0:table", "chair"),
+        (1, "ovi:t1:chair", "chair"),
+    ]
+
+
 def test_adapter_rejects_missing_source_rgb() -> None:
     t0, t1 = _visit(0), _visit(1)
     del t0.snapshot.entities[0].metadata["point_rgb"]

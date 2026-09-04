@@ -259,6 +259,44 @@ class VisitMap:
             raise ValueError("visit snapshot changed after contract construction")
 
 
+@dataclass(frozen=True, slots=True)
+class OviEntitySemanticEvidence:
+    """OVI-owned semantics kept outside the ReScene neural feature tensor."""
+
+    visit_id: int
+    entity_id: str
+    semantic_label: str | None
+    semantic_score: float
+    semantic_embedding: np.ndarray | None
+
+    def __post_init__(self) -> None:
+        visit_id = _integer(self.visit_id, "semantic visit_id")
+        if visit_id not in {0, 1}:
+            raise ValueError("semantic visit_id must be exactly 0 or 1")
+        entity_id = _nonempty_string(self.entity_id, "semantic entity_id")
+        label = (
+            None
+            if self.semantic_label is None
+            else _nonempty_string(self.semantic_label, "semantic_label")
+        )
+        score = _finite_float(self.semantic_score, "semantic_score")
+        embedding = None
+        if self.semantic_embedding is not None:
+            embedding = _readonly_array(
+                self.semantic_embedding,
+                "semantic_embedding",
+                dtype=np.float32,
+                ndim=1,
+            )
+            if not len(embedding):
+                raise ValueError("semantic_embedding cannot be empty")
+        object.__setattr__(self, "visit_id", visit_id)
+        object.__setattr__(self, "entity_id", entity_id)
+        object.__setattr__(self, "semantic_label", label)
+        object.__setattr__(self, "semantic_score", score)
+        object.__setattr__(self, "semantic_embedding", embedding)
+
+
 def validate_visit_pair(t0: VisitMap, t1: VisitMap) -> None:
     """Validate the shared frame and independence boundary for two visits."""
 
@@ -298,6 +336,7 @@ class NeuralSampleMap:
     coordinate_frame_id: str
     source_manifest_sha256: str
     source_visit_map_sha256: tuple[str, str]
+    entity_semantics: tuple[OviEntitySemanticEvidence, ...] = ()
 
     def __post_init__(self) -> None:
         coordinates = _readonly_array(
@@ -378,6 +417,16 @@ class NeuralSampleMap:
             _sha256(self.source_visit_map_sha256[0], "t0 map SHA-256"),
             _sha256(self.source_visit_map_sha256[1], "t1 map SHA-256"),
         )
+        semantics = tuple(self.entity_semantics)
+        if any(not isinstance(item, OviEntitySemanticEvidence) for item in semantics):
+            raise ValueError("entity_semantics must contain OviEntitySemanticEvidence")
+        semantics = tuple(sorted(semantics, key=lambda item: (item.visit_id, item.entity_id)))
+        semantic_keys = tuple((item.visit_id, item.entity_id) for item in semantics)
+        if len(semantic_keys) != len(set(semantic_keys)):
+            raise ValueError("entity_semantics must be unique by visit and entity")
+        token_keys = set(zip(visits.tolist(), self.token_entity_ids, strict=True))
+        if semantics and set(semantic_keys) != token_keys:
+            raise ValueError("entity_semantics must cover every token entity exactly once")
 
         object.__setattr__(self, "coordinates_xyzt", coordinates)
         object.__setattr__(self, "features", features)
@@ -391,6 +440,7 @@ class NeuralSampleMap:
         object.__setattr__(self, "coordinate_frame_id", coordinate_frame_id)
         object.__setattr__(self, "source_manifest_sha256", manifest_sha256)
         object.__setattr__(self, "source_visit_map_sha256", visit_hashes)
+        object.__setattr__(self, "entity_semantics", semantics)
 
     @property
     def source_point_count(self) -> int:
@@ -414,6 +464,16 @@ class NeuralSampleMap:
         )
 
     def content_sha256(self) -> str:
+        semantics = [
+            {
+                "visit_id": item.visit_id,
+                "entity_id": item.entity_id,
+                "semantic_label": item.semantic_label,
+                "semantic_score": item.semantic_score,
+                "semantic_embedding": item.semantic_embedding,
+            }
+            for item in self.entity_semantics
+        ]
         return _digest(
             {
                 "coordinates_xyzt": self.coordinates_xyzt,
@@ -428,6 +488,7 @@ class NeuralSampleMap:
                 "coordinate_frame_id": self.coordinate_frame_id,
                 "source_manifest_sha256": self.source_manifest_sha256,
                 "source_visit_map_sha256": self.source_visit_map_sha256,
+                "entity_semantics": semantics,
             }
         )
 

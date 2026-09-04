@@ -7,6 +7,7 @@ from src.evaluation.contracts import EntityPrediction, MapSnapshot
 from src.oviv2.two_visit_contracts import (
     CurrentCompositionDecision,
     NeuralSampleMap,
+    OviEntitySemanticEvidence,
     PairRelation,
     TemporalQueryEvidence,
     VisitMap,
@@ -171,6 +172,22 @@ def test_neural_sample_map_rejects_dropped_or_duplicate_source_points() -> None:
     values["source_point_indices"] = np.array([0, 0, 2], dtype=np.int64)
     with pytest.raises(ValueError, match="permutation"):
         NeuralSampleMap(**values)
+
+
+def test_ovi_semantic_evidence_is_read_only_and_separate_from_token_features() -> None:
+    embedding = np.array([0.25, 0.75], dtype=np.float32)
+    semantic = OviEntitySemanticEvidence(
+        visit_id=0,
+        entity_id="ovi:t0:chair",
+        semantic_label="chair",
+        semantic_score=0.9,
+        semantic_embedding=embedding,
+    )
+    embedding[:] = 0.0
+
+    assert semantic.semantic_embedding is not None
+    assert np.allclose(semantic.semantic_embedding, [0.25, 0.75])
+    assert not semantic.semantic_embedding.flags.writeable
 
 
 def test_temporal_evidence_copies_arrays_and_has_value_equality() -> None:
