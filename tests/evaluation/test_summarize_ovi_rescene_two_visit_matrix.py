@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -18,6 +19,7 @@ from scripts.evaluation.summarize_ovi_rescene_two_visit_matrix import (
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MATRIX_PATH = REPO_ROOT / "configs/evaluation/ovi_rescene_two_visit_matrix.json"
+SCRIPT_PATH = REPO_ROOT / "scripts/evaluation/summarize_ovi_rescene_two_visit_matrix.py"
 
 
 def _head() -> str:
@@ -113,6 +115,31 @@ def test_summarizes_bound_metrics_and_preregistered_gates(tmp_path: Path) -> Non
         "BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT",
         "BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT",
     ]
+
+
+def test_cli_runs_directly_from_repository_root(tmp_path: Path) -> None:
+    matrix_summary = _execute_fixture(tmp_path)
+    output = tmp_path / "apartment-cli-summary.json"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT_PATH),
+            "--matrix",
+            str(MATRIX_PATH),
+            "--matrix-summary",
+            str(matrix_summary),
+            "--output",
+            str(output),
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert output.is_file()
 
 
 def test_rejects_metric_changed_after_matrix_publication(tmp_path: Path) -> None:

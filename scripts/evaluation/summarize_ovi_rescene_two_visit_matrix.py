@@ -7,10 +7,15 @@ import argparse
 import hashlib
 import json
 import os
+import sys
 import tempfile
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.evaluation.run_ovi_rescene_two_visit_matrix import (
     BLOCKED_STATUS,

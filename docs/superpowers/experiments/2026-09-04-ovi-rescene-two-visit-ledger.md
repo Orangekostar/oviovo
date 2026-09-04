@@ -46,9 +46,9 @@ results.
 | P7 B0-B6 evaluator | PASS | Frozen Pareto metric contract and atomic B0-B4 / blocked B5-B6 orchestrator; no result claimed |
 | P8 learned ReScene | BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT | Source-bound fail-closed runner/config verified; no public checkpoint and no learned result |
 | P9 failure attribution | PASS | Exhaustive one-row-per-failure provenance, fixed Ghost precedence, mass conservation, and atomic sidecars |
-| P10 Apartment matrix | IN_PROGRESS | B0--B4 diagnostic run complete; corrected B3/B4 rerun pending |
-| P11 Office confirmation | `OFFICE_NOT_RUN_HELD_OUT` | Held until method/config/gates are frozen |
-| 3RScan validation | NOT_STARTED | No result claimed |
+| P10 Apartment matrix | PASS | B0--B4 published from source commit `96ba693`; all executable gates pass |
+| P11 Office confirmation | `OFFICE_NOT_RUN_HELD_OUT` | Frozen inputs unavailable; zero attempts and no Office-guided selection |
+| 3RScan validation | `BLOCKED_DATASET_ACCESS` | 27/44 selected visits complete; 17 still lack `sequence.zip` |
 
 The primary comparison will report the Pareto vector rather than a hidden
 weighted score: Ghost, background F-score at 5 cm, current mIoU, object F1,
@@ -126,3 +126,19 @@ reuse the frozen signed-visibility thresholds rather than a result search.
 Recognized non-object surfaces and unmatched labels are ineligible. Every
 suppressed group retains its original point visibility state and records the
 entity-level free fraction in provenance.
+
+## Apartment Decision
+
+The corrected matrix is source-bound to commit
+`96ba693b2996aa19b3e695beeb874f835c4375a9`. B2, B3, and B4 all measure Ghost
+0. B3/B4 improve unobserved-region recall over B2 by 0.056735 and pass the
+frozen 0.05 gate. They also improve current mIoU from 0.120858 to 0.135886 and
+surface F@5cm from 0.420144 to 0.431335. B4 is numerically identical to B3 but
+adds 143.514 seconds of geometric-pairing runtime, so B3 is the selected
+deterministic candidate.
+
+The ReScene result remains `RESCENE_BLOCKED_EXTERNAL_ASSET`; B5/B6 are explicit
+blocked rows rather than zero scores. Office stays `OFFICE_NOT_RUN_HELD_OUT`
+because its bound RGB-D export and ground truth are absent. The refreshed
+3RScan inventory remains `BLOCKED_DATASET_ACCESS` with 17 of 44 selected visits
+missing `sequence.zip`.

@@ -129,3 +129,11 @@ def test_frozen_real_manifest_locks_visit_counts_and_selection() -> None:
     assert manifest["source_bindings"]["metadata"]["sha256"] == (
         "674a00f50f76b198b9de44efd86c390fea3da37ba8f12cf8ccd00045e265fa64"
     )
+    selected_visit_count = sum(
+        len(environment["session_ids"]) for environment in selected
+    )
+    missing = manifest["runtime_assets"]["missing"]
+    assert selected_visit_count == 44
+    assert len(missing) == 17
+    assert all(record["members"] == ["sequence.zip"] for record in missing)
+    assert selected_visit_count - len(missing) == 27
