@@ -45,7 +45,7 @@ results.
 | P6 TESSE two-visit protocol | PASS | 32 source-only candidates; Apartment/Office windows frozen before method scores |
 | P7 B0-B6 evaluator | PASS | Frozen Pareto metric contract and atomic B0-B4 / blocked B5-B6 orchestrator; no result claimed |
 | P8 learned ReScene | BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT | Source-bound fail-closed runner/config verified; no public checkpoint and no learned result |
-| P9 failure attribution | NOT_STARTED | No result claimed |
+| P9 failure attribution | PASS | Exhaustive one-row-per-failure provenance, fixed Ghost precedence, mass conservation, and atomic sidecars |
 | P10 Apartment matrix | NOT_STARTED | No result claimed |
 | P11 Office confirmation | `OFFICE_NOT_RUN_HELD_OUT` | Held until method/config/gates are frozen |
 | 3RScan validation | NOT_STARTED | No result claimed |
