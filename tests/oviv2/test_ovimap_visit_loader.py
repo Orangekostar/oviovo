@@ -8,7 +8,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from src.oviv2.ovimap_visit_loader import load_ovimap_visit
+from src.oviv2.ovimap_visit_loader import (
+    SemanticLabelInput,
+    load_ovimap_visit,
+    make_relative_semantic_labeler,
+)
 
 _SOURCE_MANIFEST_SHA256 = "a" * 64
 _OVIMAP_COMMIT = "58a804e2d7c82ba05a489eb071aba3367301fed8"
@@ -223,3 +227,23 @@ def test_rejects_semantic_labels_for_unknown_or_ineligible_entities(
             observed_frame_end=22,
             semantic_labeler=labeler,
         )
+
+
+def test_relative_semantic_labeler_uses_frozen_minimum_observation_count() -> None:
+    labeler = make_relative_semantic_labeler(
+        classes=("chair", "table"),
+        text_features=np.asarray([[1.0, 0.0], [0.0, 1.0]], dtype=np.float32),
+        canonical_features=np.asarray([[-1.0, -1.0]], dtype=np.float32),
+        minimum_observation_count=2,
+    )
+
+    labels = labeler(
+        (
+            SemanticLabelInput("ovimap:1", np.asarray([1.0, 0.0]), 2),
+            SemanticLabelInput("ovimap:2", np.asarray([0.0, 1.0]), 1),
+        )
+    )
+
+    assert set(labels) == {"ovimap:1"}
+    assert labels["ovimap:1"][0] == "chair"
+    assert 0.0 <= labels["ovimap:1"][1] <= 1.0

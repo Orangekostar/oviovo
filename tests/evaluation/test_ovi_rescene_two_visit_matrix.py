@@ -51,6 +51,8 @@ def _successful_artifacts(
                 "run_id": run_id,
                 "metric_groups": groups,
                 "unavailable": {},
+                "method_input_bindings": {"fixture": {"sha256": "a" * 64}},
+                "evaluation_only_bindings": {"target": {"sha256": "b" * 64}},
             }
         ),
         encoding="utf-8",
@@ -115,6 +117,35 @@ def test_checked_in_matrix_freezes_exact_b0_b6_contract() -> None:
     assert all(row["availability"] == BLOCKED_STATUS for row in rows[5:])
     assert matrix["metric_contract"]["distance_threshold_m"] == 0.05
     assert matrix["office_policy"]["status"] == "OFFICE_NOT_RUN_HELD_OUT"
+    assert matrix["method_config"]["ovi_semantics"] == {
+        "classifier": "siglip_l_16_384_canonical_relative",
+        "vocabulary_path": (
+            "configs/evaluation/vocabularies/tesse_cd_apartment.json"
+        ),
+        "canonical_prompts": ["object", "things", "stuff", "texture"],
+        "maximum_text_length": 64,
+        "minimum_observation_count": 2,
+    }
+    assert matrix["method_config"]["signed_visibility"] == {
+        "voxel_size_m": 0.05,
+        "depth_tolerance_m": 0.1,
+        "depth_max_m": 10.0,
+        "minimum_absent_fraction": 0.8,
+        "minimum_absent_observations": 6,
+        "minimum_distinct_viewpoints": 3,
+        "minimum_viewpoint_baseline_m": 0.25,
+    }
+    assert matrix["preregistration_amendment"]["status"] == (
+        "FROZEN_BEFORE_FIRST_METHOD_SCORE"
+    )
+    assert matrix["preregistration_amendment"]["method_results_inspected"] is False
+    assert {
+        "deterministic_executor",
+        "native_ovi_runner",
+        "snapshot_metrics",
+        "visibility_execution",
+        "visit_loader",
+    } <= set(matrix["source_bindings"])
 
 
 def test_matrix_rejects_changed_visibility_or_geometry_authority(tmp_path: Path) -> None:
@@ -130,6 +161,22 @@ def test_matrix_rejects_changed_visibility_or_geometry_authority(tmp_path: Path)
     matrix["rows"][5]["final_geometry_sources"] = ["rescene_tokens"]
     path.write_text(json.dumps(matrix), encoding="utf-8")
     with pytest.raises(MatrixError, match="B5 contract"):
+        load_and_validate_matrix(path, verify_source_bindings=False)
+
+
+def test_matrix_rejects_changed_method_threshold_or_amendment(tmp_path: Path) -> None:
+    matrix = json.loads(MATRIX_PATH.read_text(encoding="utf-8"))
+    matrix["method_config"]["signed_visibility"]["minimum_absent_observations"] = 5
+    path = tmp_path / "matrix.json"
+    path.write_text(json.dumps(matrix), encoding="utf-8")
+
+    with pytest.raises(MatrixError, match="method configuration"):
+        load_and_validate_matrix(path, verify_source_bindings=False)
+
+    matrix = json.loads(MATRIX_PATH.read_text(encoding="utf-8"))
+    matrix["preregistration_amendment"]["method_results_inspected"] = True
+    path.write_text(json.dumps(matrix), encoding="utf-8")
+    with pytest.raises(MatrixError, match="preregistration amendment"):
         load_and_validate_matrix(path, verify_source_bindings=False)
 
 
@@ -217,6 +264,8 @@ def test_orchestrator_rejects_unexplained_na_without_publishing(tmp_path: Path) 
                     "run_id": run_id,
                     "metric_groups": groups,
                     "unavailable": {},
+                    "method_input_bindings": {"fixture": {"sha256": "a" * 64}},
+                    "evaluation_only_bindings": {"target": {"sha256": "b" * 64}},
                 }
             ),
             encoding="utf-8",
@@ -266,6 +315,8 @@ def test_orchestrator_rejects_artifacts_at_unfrozen_paths(tmp_path: Path) -> Non
                     "run_id": run_id,
                     "metric_groups": groups,
                     "unavailable": {},
+                    "method_input_bindings": {"fixture": {"sha256": "a" * 64}},
+                    "evaluation_only_bindings": {"target": {"sha256": "b" * 64}},
                 }
             ),
             encoding="utf-8",

@@ -45,11 +45,32 @@
       }
     },
     "ovi_mapping_voxel_size_m": 0.01,
+    "ovi_semantics": {
+      "canonical_prompts": [
+        "object",
+        "things",
+        "stuff",
+        "texture"
+      ],
+      "classifier": "siglip_l_16_384_canonical_relative",
+      "maximum_text_length": 64,
+      "minimum_observation_count": 2,
+      "vocabulary_path": "configs/evaluation/vocabularies/tesse_cd_apartment.json"
+    },
     "rescene": {
       "backend": "concerto",
       "checkpoint_status": "BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT",
       "neural_voxel_size_m": 0.02,
       "random_initialization_ranking_eligible": false
+    },
+    "signed_visibility": {
+      "depth_max_m": 10.0,
+      "depth_tolerance_m": 0.1,
+      "minimum_absent_fraction": 0.8,
+      "minimum_absent_observations": 6,
+      "minimum_distinct_viewpoints": 3,
+      "minimum_viewpoint_baseline_m": 0.25,
+      "voxel_size_m": 0.05
     }
   },
   "metric_contract": {
@@ -119,6 +140,12 @@
       "success_gates"
     ],
     "status": "OFFICE_NOT_RUN_HELD_OUT"
+  },
+  "preregistration_amendment": {
+    "method_results_inspected": false,
+    "parent_commit": "1c94cee0ce16deb79c184d19de6f30936bbe9de6",
+    "reason": "complete_exact_execution_and_method_bindings",
+    "status": "FROZEN_BEFORE_FIRST_METHOD_SCORE"
   },
   "protocol": {
     "byte_count": 61049,
@@ -298,6 +325,11 @@
       "path": "scripts/evaluation/evaluate_tesse_cd_common_v2.py",
       "sha256": "e3cec5e2c9c6e1088d648b631a455a641313adeaa0d6a76c957ba5e8a94e3caf"
     },
+    "deterministic_executor": {
+      "byte_count": 44744,
+      "path": "scripts/evaluation/execute_ovi_rescene_two_visit_matrix.py",
+      "sha256": "7f7247a61044fdccc7665838dc3d82ad6f847fef76167bfc3bd9a87923ca8ebb"
+    },
     "composer": {
       "byte_count": 28545,
       "path": "src/oviv2/two_visit_current_map.py",
@@ -314,14 +346,39 @@
       "sha256": "ec7d3d984ab303cd96f4b901a7eb455a900adb558f54f8947acaceb7d88d4131"
     },
     "matrix_runner": {
-      "byte_count": 26539,
+      "byte_count": 28326,
       "path": "scripts/evaluation/run_ovi_rescene_two_visit_matrix.py",
-      "sha256": "d17c4cc888b17cc34366a0988a0efd582316382d28bfd184c5b54ac4d11e3556"
+      "sha256": "3228c1c275cfebd4af5ff2429471ef545c819eba3dbf30ce4ac995ec5d9b8ed5"
     },
     "metric_implementation": {
       "byte_count": 13183,
       "path": "src/evaluation/two_visit_current_metrics.py",
       "sha256": "c0fb4f89035d72be8b9b2bbf452ca59795252e60353cdde231dac772d25ad506"
+    },
+    "native_ovi_runner": {
+      "byte_count": 16583,
+      "path": "scripts/evaluation/run_ovi_two_visit.py",
+      "sha256": "ce157e61555fc2a6280e98e02b6b2fcc826a6dae693c910be3a0e598e68d3c47"
+    },
+    "semantic_vocabulary": {
+      "byte_count": 697,
+      "path": "configs/evaluation/vocabularies/tesse_cd_apartment.json",
+      "sha256": "dea3a2e0508c887c6c701ee5250374e2a06c63eefbf2e185110462b81f4ccbcf"
+    },
+    "snapshot_metrics": {
+      "byte_count": 8079,
+      "path": "src/evaluation/two_visit_snapshot_metrics.py",
+      "sha256": "931de51aeaed26db8037004728368c3be3b7186a9ad788b8d7b90ff4dd81c661"
+    },
+    "visibility_execution": {
+      "byte_count": 18670,
+      "path": "src/oviv2/two_visit_execution.py",
+      "sha256": "5b1c36b76ea61307100af1a765eeaafc94115794eb7e2a80a3a1b897215f4f7b"
+    },
+    "visit_loader": {
+      "byte_count": 15626,
+      "path": "src/oviv2/ovimap_visit_loader.py",
+      "sha256": "8a1aa261783f9e0b9768417ea0f13bb796a9e7635723ff814f768cae60d3488b"
     }
   },
   "status": "FROZEN_BEFORE_EXECUTION",

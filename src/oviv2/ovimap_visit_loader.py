@@ -23,6 +23,7 @@ from src.evaluation.baselines.ovimap import (
     bind_mesh_instances,
     load_instance_mesh,
     parse_instance_color_log,
+    relative_similarity_labels,
 )
 from src.oviv2.two_visit_contracts import VisitMap
 
@@ -46,6 +47,55 @@ class SemanticLabelInput:
 SemanticLabeler = Callable[
     [tuple[SemanticLabelInput, ...]], Mapping[str, tuple[str, float]]
 ]
+
+
+def make_relative_semantic_labeler(
+    *,
+    classes: Sequence[str],
+    text_features: np.ndarray,
+    canonical_features: np.ndarray,
+    minimum_observation_count: int = 2,
+) -> SemanticLabeler:
+    """Freeze OVI's canonical-relative rule into a reusable pure labeler."""
+
+    names = tuple(str(value).strip() for value in classes)
+    if not names or any(not value for value in names) or len(names) != len(set(names)):
+        raise ValueError("semantic classes must be non-empty and unique")
+    if type(minimum_observation_count) is not int or minimum_observation_count < 1:
+        raise ValueError("minimum_observation_count must be a positive integer")
+    texts = np.array(text_features, dtype=np.float32, copy=True)
+    canonical = np.array(canonical_features, dtype=np.float32, copy=True)
+    if texts.ndim != 2 or texts.shape[0] != len(names):
+        raise ValueError("text features must have one row per semantic class")
+    if canonical.ndim != 2 or not len(canonical) or canonical.shape[1:] != texts.shape[1:]:
+        raise ValueError("canonical features must match the text feature dimension")
+    if not np.all(np.isfinite(texts)) or not np.all(np.isfinite(canonical)):
+        raise ValueError("semantic text features must be finite")
+    texts.setflags(write=False)
+    canonical.setflags(write=False)
+
+    def label(evidence: tuple[SemanticLabelInput, ...]) -> Mapping[str, tuple[str, float]]:
+        eligible = tuple(
+            item
+            for item in evidence
+            if item.observation_count >= minimum_observation_count
+        )
+        if not eligible:
+            return {}
+        labels, scores = relative_similarity_labels(
+            np.vstack([item.semantic_embedding for item in eligible]),
+            texts,
+            canonical,
+            names,
+        )
+        return {
+            item.entity_id: (semantic_label, score)
+            for item, semantic_label, score in zip(
+                eligible, labels, scores, strict=True
+            )
+        }
+
+    return label
 
 
 def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -353,4 +403,9 @@ def load_ovimap_visit(
     )
 
 
-__all__ = ["SemanticLabelInput", "SemanticLabeler", "load_ovimap_visit"]
+__all__ = [
+    "SemanticLabelInput",
+    "SemanticLabeler",
+    "load_ovimap_visit",
+    "make_relative_semantic_labeler",
+]

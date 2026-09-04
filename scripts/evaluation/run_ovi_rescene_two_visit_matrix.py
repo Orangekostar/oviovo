@@ -47,11 +47,17 @@ _METRIC_GROUPS = (
 _SOURCE_ROLES = {
     "external_sources",
     "adapter",
+    "deterministic_executor",
     "geometric_reasoner",
     "composer",
+    "native_ovi_runner",
     "metric_implementation",
+    "snapshot_metrics",
     "common_v2_evaluator",
     "matrix_runner",
+    "semantic_vocabulary",
+    "visibility_execution",
+    "visit_loader",
 }
 _ROW_ARTIFACT_KEYS = {
     "command",
@@ -73,6 +79,7 @@ _TOP_LEVEL_KEYS = {
     "metric_contract",
     "success_gates",
     "office_policy",
+    "preregistration_amendment",
     "execution_contract",
     "rows",
 }
@@ -317,6 +324,24 @@ def _validate_metric_contract(value: object) -> dict[str, Any]:
 def _validate_method_config(value: object) -> None:
     expected = {
         "ovi_mapping_voxel_size_m": 0.01,
+        "ovi_semantics": {
+            "classifier": "siglip_l_16_384_canonical_relative",
+            "vocabulary_path": (
+                "configs/evaluation/vocabularies/tesse_cd_apartment.json"
+            ),
+            "canonical_prompts": ["object", "things", "stuff", "texture"],
+            "maximum_text_length": 64,
+            "minimum_observation_count": 2,
+        },
+        "signed_visibility": {
+            "voxel_size_m": 0.05,
+            "depth_tolerance_m": 0.1,
+            "depth_max_m": 10.0,
+            "minimum_absent_fraction": 0.8,
+            "minimum_absent_observations": 6,
+            "minimum_distinct_viewpoints": 3,
+            "minimum_viewpoint_baseline_m": 0.25,
+        },
         "adapter": {"neural_voxel_size_m": 0.02, "feature_schema": "rgb"},
         "geometric_reasoner": {
             "comparison_voxel_size_m": 0.05,
@@ -429,6 +454,13 @@ def load_and_validate_matrix(
     parent = payload.get("freeze_parent_commit")
     if not isinstance(parent, str) or _GIT_SHA.fullmatch(parent) is None:
         raise MatrixError("freeze parent commit is invalid")
+    if payload.get("preregistration_amendment") != {
+        "status": "FROZEN_BEFORE_FIRST_METHOD_SCORE",
+        "parent_commit": "1c94cee0ce16deb79c184d19de6f30936bbe9de6",
+        "reason": "complete_exact_execution_and_method_bindings",
+        "method_results_inspected": False,
+    }:
+        raise MatrixError("preregistration amendment is invalid")
 
     protocol_path, _protocol_record = _bound_record(
         payload.get("protocol"),
@@ -509,6 +541,8 @@ def _validate_metric_receipt(
         "run_id",
         "metric_groups",
         "unavailable",
+        "method_input_bindings",
+        "evaluation_only_bindings",
     } or (
         payload.get("schema_version") != 1
         or payload.get("status") != "PASS"
@@ -518,11 +552,21 @@ def _validate_metric_receipt(
         raise MatrixError(f"{variant_id} metric receipt identity is invalid")
     groups = payload.get("metric_groups")
     unavailable = payload.get("unavailable")
+    method_bindings = payload.get("method_input_bindings")
+    evaluation_bindings = payload.get("evaluation_only_bindings")
     expected_groups = metric_contract["groups"]
     if not isinstance(groups, Mapping) or tuple(groups) != _METRIC_GROUPS:
         raise MatrixError(f"{variant_id} metric groups are invalid")
     if not isinstance(unavailable, Mapping):
         raise MatrixError(f"{variant_id} unavailable reasons are invalid")
+    if (
+        not isinstance(method_bindings, Mapping)
+        or not method_bindings
+        or not isinstance(evaluation_bindings, Mapping)
+        or not evaluation_bindings
+        or set(method_bindings) & set(evaluation_bindings)
+    ):
+        raise MatrixError(f"{variant_id} method/evaluation bindings are not isolated")
     null_names: set[str] = set()
     for group_name, metric_names in expected_groups.items():
         values = groups.get(group_name)
