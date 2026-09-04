@@ -1,0 +1,214 @@
+{
+  "adapter_contract": {
+    "final_geometry_sources": [
+      "ovi_t0",
+      "ovi_t1"
+    ],
+    "reverse_index": "csr_all_contributing_ovi_samples",
+    "spatial_quantization_axes": [
+      "x",
+      "y",
+      "z"
+    ],
+    "temporal_coordinate": "exact_visit_index_0_or_1"
+  },
+  "checkpoint": {
+    "evidence": {
+      "contains": "Coming soon.",
+      "path": "README.md"
+    },
+    "selected_backbone": "Concerto",
+    "source_id": "rescene",
+    "status": "BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT"
+  },
+  "representations": {
+    "crove_legacy_temporal": {
+      "contents": "one weighted representative point per occupied object-local cell",
+      "evidence": {
+        "contains": "\"voxel_size_m\": 0.05",
+        "path": "configs/evaluation/manifests/oviv2_tesse_dual_readout_search_v1.json"
+      },
+      "final_map_authoritative": false,
+      "input_only": false,
+      "lifetime": "persistent compact temporal object state",
+      "owner": "CROVE legacy temporal geometry",
+      "persistent": true,
+      "purpose": "historical baseline and diagnostics only",
+      "resolution_m": 0.05,
+      "source_id": "current"
+    },
+    "evaluator": {
+      "contents": "common-v2 comparison cells",
+      "evidence": {
+        "contains": "\"voxel_size_m\": 0.05",
+        "path": "configs/evaluation/manifests/tesse_cd_common_v2.json"
+      },
+      "final_map_authoritative": false,
+      "input_only": true,
+      "lifetime": "per evaluation",
+      "owner": "TESSE-CD common-v2 evaluator",
+      "persistent": false,
+      "purpose": "frozen metric domain",
+      "resolution_m": 0.05,
+      "source_id": "current"
+    },
+    "ovi_mapping": {
+      "contents": "TSDF geometry, weights, surface state, and persistent label/instance state",
+      "evidence": {
+        "contains": "voxel size of **0.01** meter",
+        "path": "README.md"
+      },
+      "final_map_authoritative": true,
+      "input_only": false,
+      "lifetime": "persistent within one visit",
+      "owner": "OVI-MAP mapper",
+      "persistent": true,
+      "purpose": "dense reconstruction and instance-map authority",
+      "resolution_m": 0.01,
+      "source_id": "ovimap"
+    },
+    "rescene_neural": {
+      "contents": "spatially sampled coordinates and learned features with an exact visit coordinate",
+      "evidence": {
+        "contains": "voxel_size: 0.02",
+        "path": "conf/data/indoor.yaml"
+      },
+      "final_map_authoritative": false,
+      "input_only": true,
+      "lifetime": "per preprocessed pair and neural forward",
+      "owner": "ReScene sparse neural backbone",
+      "persistent": false,
+      "purpose": "neural tokenization and cross-visit reasoning",
+      "resolution_m": 0.02,
+      "source_id": "rescene"
+    }
+  },
+  "retrieval_date_utc": "2026-09-04",
+  "schema_version": 1,
+  "sources": {
+    "current": {
+      "commit": "1e849acdcba46ab92f8704a77695ce7caefa1516",
+      "license": "PROJECT",
+      "license_path": null,
+      "remote_name": "origin",
+      "repository_url": "git@github.com:Orangekostar/oviovo.git",
+      "required_files": [
+        {
+          "byte_count": 17279,
+          "path": "configs/evaluation/manifests/oviv2_tesse_dual_readout_search_v1.json",
+          "sha256": "885e0fcc4ef64ec6f97e97edc3cd54243e0614b63baaff4ad0132644dd006968"
+        },
+        {
+          "byte_count": 3509,
+          "path": "configs/evaluation/manifests/tesse_cd_common_v2.json",
+          "sha256": "1e5a5f76705aaf5875b253c416805fdcc09c8b333bd2e53ec751ff0683a205d8"
+        },
+        {
+          "byte_count": 44714,
+          "path": "scripts/evaluation/evaluate_tesse_cd_common_v2.py",
+          "sha256": "e3cec5e2c9c6e1088d648b631a455a641313adeaa0d6a76c957ba5e8a94e3caf"
+        },
+        {
+          "byte_count": 29084,
+          "path": "src/oviv2/temporal_geometry.py",
+          "sha256": "220381d673d90120df6c1ba31dcab956f6ad4f1af75029697613d8d3a2473149"
+        }
+      ]
+    },
+    "ovimap": {
+      "commit": "f8f7bcd0ca8228f6b8b4064f2e29dcee3a502424",
+      "license": "MIT",
+      "license_path": "LICENSE.txt",
+      "remote_name": "origin",
+      "repository_url": "git@github.com:OVI-MAP/OVI-MAP.git",
+      "required_files": [
+        {
+          "byte_count": 1064,
+          "path": "LICENSE.txt",
+          "sha256": "64528bf28e0437759f4d284a88ec5d06fee8f5dd17946baa929a0087647e7aa0"
+        },
+        {
+          "byte_count": 14414,
+          "path": "README.md",
+          "sha256": "f30559ef89e76477ca794b785403f813e8c983032b7bd1bce53c188caf704e00"
+        },
+        {
+          "byte_count": 1311,
+          "path": "mapping_ros_ws/src/consistent_panoptic_mapping/global_segment_map/include/global_segment_map/label_voxel.h",
+          "sha256": "53f396b4872cb4b0417d7d2ed6fc0cfce13cbc8c2fa0393c888f79a78c97fdef"
+        },
+        {
+          "byte_count": 3872,
+          "path": "mapping_ros_ws/src/consistent_panoptic_mapping/global_segment_map/include/global_segment_map/label_tsdf_map.h",
+          "sha256": "a1d97d3f4c2efcc0b78c6e5454accc2290e163a99c53854c19fa673460de7609"
+        },
+        {
+          "byte_count": 22983,
+          "path": "scripts/panoptic_mapping_.py",
+          "sha256": "9cc5e1176265ad90e285251519cc11e157101353a820a13b6b1dce7bbff35290"
+        }
+      ]
+    },
+    "rescene": {
+      "commit": "fb2fe42eb8f1e926567c48eea9acb874e608ee10",
+      "license": "MIT",
+      "license_path": "LICENSE",
+      "remote_name": "origin",
+      "repository_url": "https://github.com/GradientSpaces/rescene4d.git",
+      "required_files": [
+        {
+          "byte_count": 1057,
+          "path": "LICENSE",
+          "sha256": "75054b6a08e1008c86b6045ab99add2c8fa571987880951a9929f11ee56a7d64"
+        },
+        {
+          "byte_count": 6760,
+          "path": "README.md",
+          "sha256": "4550760cce90bc372175cc9638148c6cf6d581058b24c590bf0c88c27a31d070"
+        },
+        {
+          "byte_count": 247,
+          "path": "conf/backbone/concerto.yaml",
+          "sha256": "5b116a9e21fbb7d4a0c19c9e090dfc01f1e48c176c72e4121c8a9ed57d971101"
+        },
+        {
+          "byte_count": 773,
+          "path": "conf/data/indoor.yaml",
+          "sha256": "a43cbaf3616e845d218f2182349dce2bd4960bb5f77f6997ad64398fa8e68c23"
+        },
+        {
+          "byte_count": 950,
+          "path": "conf/model/rescene.yaml",
+          "sha256": "93ecef561f9b7555b08fa85a985b5b957a3148ae48ae868492cd4894c78f72fd"
+        },
+        {
+          "byte_count": 21268,
+          "path": "datasets/minkowski_utils.py",
+          "sha256": "4a46be3cef80ce0690487b0ba43b91e6cd4486120a47705a634934be7f721939"
+        },
+        {
+          "byte_count": 18539,
+          "path": "datasets/pointcept_utils.py",
+          "sha256": "962686891547c0719670774d35917562c7f4b7c90aaad1b7002ccda676112a83"
+        },
+        {
+          "byte_count": 18645,
+          "path": "datasets/semseg.py",
+          "sha256": "ca3316b12acfb22766b145885b0b4d84423fc9d754d267333b7d2052cf1f9322"
+        },
+        {
+          "byte_count": 27394,
+          "path": "models/pointcept.py",
+          "sha256": "96f130d780d57ecf0c88e51c016b4feef768ad3805e47c2b633893f17fd4581a"
+        },
+        {
+          "byte_count": 24416,
+          "path": "models/rescene.py",
+          "sha256": "fa3e26b9c90ef2e50acfd473cea2c9fc7e1a0b424acfcfef0fa99bf161f69a58"
+        }
+      ]
+    }
+  },
+  "status": "EXTERNAL_SOURCE_PASS",
+  "voxel_contract_status": "VOXEL_CONTRACT_PASS"
+}

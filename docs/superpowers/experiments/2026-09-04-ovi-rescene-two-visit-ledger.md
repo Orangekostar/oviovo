@@ -1,0 +1,56 @@
+# OVI-MAP x ReScene4D Two-Visit Experiment Ledger
+
+Date: 2026-09-04
+
+## Frozen Identities
+
+| Item | Identity/status |
+| --- | --- |
+| Base branch | `research/crove-benchmark-alignment-audit` |
+| Base commit | `1e849acdcba46ab92f8704a77695ce7caefa1516` |
+| Working branch | `research/ovi-rescene-two-visit` |
+| Master prompt SHA-256 | `27b7a8c247d2fcb65ba851c92818a2dcb16c6b2943b426355859bbaf29ea993f` |
+| OVI-MAP | `f8f7bcd0ca8228f6b8b4064f2e29dcee3a502424`, MIT |
+| ReScene4D | `fb2fe42eb8f1e926567c48eea9acb874e608ee10`, MIT |
+| Source audit | `EXTERNAL_SOURCE_PASS` |
+| Voxel contract | `VOXEL_CONTRACT_PASS` |
+| ReScene checkpoint | `BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT` |
+
+Baseline repository tests at the frozen base: `5803 passed, 10 skipped` in
+897.39 seconds. The five warnings are NumPy deprecation warnings in dense
+semantic mutation tests.
+
+## Historical Evidence
+
+These results belong to the continuous CROVE path and are not two-visit
+results.
+
+| Variant | Object F1 | Dynamic F1 | Change F1 | Current mIoU | Ghost |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| A6 | 0.372762 | N/A | 0.060853 | 0.142897 | 0.646883 |
+| c553 static-anchor | 0.348472 | 0.069225 | 0.088458 | 0.149560 | 0.443760 |
+| P5 | 0.367952 | 0.069225 | 0.088088 | 0.149563 | 0.441677 |
+| P6-C | 0.367307 | 0.069225 | 0.087246 | 0.149449 | 0.441689 |
+
+## Execution State
+
+| Phase | Status | Evidence |
+| --- | --- | --- |
+| P0 source and voxel audit | PASS | Exact Git/file/license bindings and four-role contract |
+| P1 immutable contracts | NOT_STARTED | No result claimed |
+| P2 OVI-to-ReScene adapter | NOT_STARTED | No result claimed |
+| P3 deterministic reasoner | NOT_STARTED | No result claimed |
+| P4 query projection | NOT_STARTED | No result claimed |
+| P5 current-state composer | NOT_STARTED | No result claimed |
+| P6 TESSE two-visit protocol | NOT_STARTED | No result claimed |
+| P7 B0-B6 evaluator | NOT_STARTED | No result claimed |
+| P8 learned ReScene | BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT | No public checkpoint in pinned source |
+| P9 failure attribution | NOT_STARTED | No result claimed |
+| P10 Apartment matrix | NOT_STARTED | No result claimed |
+| P11 Office confirmation | `OFFICE_NOT_RUN_HELD_OUT` | Held until method/config/gates are frozen |
+| 3RScan validation | NOT_STARTED | No result claimed |
+
+The primary comparison will report the Pareto vector rather than a hidden
+weighted score: Ghost, background F-score at 5 cm, current mIoU, object F1,
+dynamic F1, change F1, runtime, and memory. B5/B6 remain ineligible while the
+checkpoint gate is blocked.
