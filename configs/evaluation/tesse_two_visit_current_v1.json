@@ -1,0 +1,1509 @@
+{
+  "dataset": "TESSE-CD",
+  "ground_truth_policy": "evaluator_only_protocol_definition_never_runtime_method_input",
+  "method_predictions_used": false,
+  "protocol_id": "TESSE_TWO_VISIT_CURRENT_V1",
+  "scenes": {
+    "apartment": {
+      "candidates": [
+        {
+          "candidate_id": "apartment-t0-000007-000262-t1-000308-000563",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.12890625,
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 4279,
+            "common_observable_volume_fraction": 0.34738811339761116,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.2428137415283945,
+            "trajectory_overlap_fraction": 0.40234375
+          },
+          "eligible": true,
+          "evaluator_only": {
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 4279,
+            "event_ids": [
+              "apartment_event_01"
+            ],
+            "old_location_visibility_fraction": 0.2428137415283945
+          },
+          "ineligibility_reasons": [],
+          "visits": {
+            "t0": {
+              "end_frame": 262,
+              "frame_count": 256,
+              "input_sha256": "218ec885883118180b4601d0e455b322a63412038a4056cbbdbc821f492fe655",
+              "source_frame_ids_sha256": "92d71b934a2d5134f7ddbe0e06641c1d3e4c4b1f4ab2ac697d990441c3f5a69e",
+              "start_frame": 7,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 563,
+              "frame_count": 256,
+              "input_sha256": "1c2954e96faa1b1054c55871bddaf4392ab64919a019abc22b028bb38dbddb29",
+              "source_frame_ids_sha256": "3e07dda920d92934f616aeb799bd7766c4b1835955cf7f428e2e014612490f75",
+              "start_frame": 308,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "apartment-t0-000007-000262-t1-000358-000613",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.28515625,
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 4279,
+            "common_observable_volume_fraction": 0.3721398762411858,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.2428137415283945,
+            "trajectory_overlap_fraction": 0.34375
+          },
+          "eligible": true,
+          "evaluator_only": {
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 4279,
+            "event_ids": [
+              "apartment_event_01"
+            ],
+            "old_location_visibility_fraction": 0.2428137415283945
+          },
+          "ineligibility_reasons": [],
+          "visits": {
+            "t0": {
+              "end_frame": 262,
+              "frame_count": 256,
+              "input_sha256": "218ec885883118180b4601d0e455b322a63412038a4056cbbdbc821f492fe655",
+              "source_frame_ids_sha256": "92d71b934a2d5134f7ddbe0e06641c1d3e4c4b1f4ab2ac697d990441c3f5a69e",
+              "start_frame": 7,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 613,
+              "frame_count": 256,
+              "input_sha256": "be01b1fd31a8fcf31c85d266c68c8a2426642e31bf4459ec10d3a2498b9c8ec1",
+              "source_frame_ids_sha256": "730fdece92ffc0c7542c7cac92529737878ed7d7d6cb2b698ec42f6a1cd6ce84",
+              "start_frame": 358,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "apartment-t0-000007-000262-t1-000408-000663",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.28515625,
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 4279,
+            "common_observable_volume_fraction": 0.3291121024607857,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.9518579107268054,
+            "trajectory_overlap_fraction": 0.2109375
+          },
+          "eligible": true,
+          "evaluator_only": {
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 4279,
+            "event_ids": [
+              "apartment_event_01"
+            ],
+            "old_location_visibility_fraction": 0.9518579107268054
+          },
+          "ineligibility_reasons": [],
+          "visits": {
+            "t0": {
+              "end_frame": 262,
+              "frame_count": 256,
+              "input_sha256": "218ec885883118180b4601d0e455b322a63412038a4056cbbdbc821f492fe655",
+              "source_frame_ids_sha256": "92d71b934a2d5134f7ddbe0e06641c1d3e4c4b1f4ab2ac697d990441c3f5a69e",
+              "start_frame": 7,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 663,
+              "frame_count": 256,
+              "input_sha256": "4ae6114608424a9cb280bbb81cf065f6ba34bcb67d53c18959c8fba037fbb630",
+              "source_frame_ids_sha256": "49d7552a54a43c8aee5bcd261180472c6edc776cb2fa30458c7c84573baa5df4",
+              "start_frame": 408,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "apartment-t0-000007-000262-t1-000458-000713",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.3046875,
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 4279,
+            "common_observable_volume_fraction": 0.44625125917398184,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.9553634026641739,
+            "trajectory_overlap_fraction": 0.015625
+          },
+          "eligible": false,
+          "evaluator_only": {
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 4279,
+            "event_ids": [
+              "apartment_event_01"
+            ],
+            "old_location_visibility_fraction": 0.9553634026641739
+          },
+          "ineligibility_reasons": [
+            "trajectory_overlap_fraction"
+          ],
+          "visits": {
+            "t0": {
+              "end_frame": 262,
+              "frame_count": 256,
+              "input_sha256": "218ec885883118180b4601d0e455b322a63412038a4056cbbdbc821f492fe655",
+              "source_frame_ids_sha256": "92d71b934a2d5134f7ddbe0e06641c1d3e4c4b1f4ab2ac697d990441c3f5a69e",
+              "start_frame": 7,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 713,
+              "frame_count": 256,
+              "input_sha256": "6b5de3b77be00a3c0adc4678163c58e324aa6c47405b6ed54a434182814f955c",
+              "source_frame_ids_sha256": "cf4fa664b61afda2aff9e5153aa21168bb7f53af4e14d66122fa05bbf0404714",
+              "start_frame": 458,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "apartment-t0-000455-000710-t1-000756-001011",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.73046875,
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 2420,
+            "common_observable_volume_fraction": 0.48408534452605806,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.8177685950413223,
+            "trajectory_overlap_fraction": 0.6015625
+          },
+          "eligible": true,
+          "evaluator_only": {
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 2420,
+            "event_ids": [
+              "apartment_event_02"
+            ],
+            "old_location_visibility_fraction": 0.8177685950413223
+          },
+          "ineligibility_reasons": [],
+          "visits": {
+            "t0": {
+              "end_frame": 710,
+              "frame_count": 256,
+              "input_sha256": "5009652bcb45c12f2c651c995ce0204928f0f75f84eb8d98e9d5de9c6b9edbc8",
+              "source_frame_ids_sha256": "4a961a7d3c92836348b15fa89eda2478a53cb4c5da3fb1e74b89aa78ef5dcdcd",
+              "start_frame": 455,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 1011,
+              "frame_count": 256,
+              "input_sha256": "5cc60cb68247a91dca00d458a1d2a1bcb9364d291693205d9201278307c87076",
+              "source_frame_ids_sha256": "1a7348e17e1a60bed42a1ba450575b99895e24911423fb4358af44072238d3aa",
+              "start_frame": 756,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "apartment-t0-000455-000710-t1-000806-001061",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.5390625,
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 2420,
+            "common_observable_volume_fraction": 0.529003578011493,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.8194214876033058,
+            "trajectory_overlap_fraction": 1.0
+          },
+          "eligible": true,
+          "evaluator_only": {
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 2420,
+            "event_ids": [
+              "apartment_event_02"
+            ],
+            "old_location_visibility_fraction": 0.8194214876033058
+          },
+          "ineligibility_reasons": [],
+          "visits": {
+            "t0": {
+              "end_frame": 710,
+              "frame_count": 256,
+              "input_sha256": "5009652bcb45c12f2c651c995ce0204928f0f75f84eb8d98e9d5de9c6b9edbc8",
+              "source_frame_ids_sha256": "4a961a7d3c92836348b15fa89eda2478a53cb4c5da3fb1e74b89aa78ef5dcdcd",
+              "start_frame": 455,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 1061,
+              "frame_count": 256,
+              "input_sha256": "dc3404cdb055546c0d3b42e7f2368c1a04615acf5e489f6f3206df79da78b355",
+              "source_frame_ids_sha256": "d43f81aa825036a61f6d1eb20cf2d4737e68adf07dc6823fc4abf0a408e9a935",
+              "start_frame": 806,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "apartment-t0-000455-000710-t1-000856-001111",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.453125,
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 2420,
+            "common_observable_volume_fraction": 0.5847338176298384,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.8198347107438017,
+            "trajectory_overlap_fraction": 0.95703125
+          },
+          "eligible": true,
+          "evaluator_only": {
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 2420,
+            "event_ids": [
+              "apartment_event_02"
+            ],
+            "old_location_visibility_fraction": 0.8198347107438017
+          },
+          "ineligibility_reasons": [],
+          "visits": {
+            "t0": {
+              "end_frame": 710,
+              "frame_count": 256,
+              "input_sha256": "5009652bcb45c12f2c651c995ce0204928f0f75f84eb8d98e9d5de9c6b9edbc8",
+              "source_frame_ids_sha256": "4a961a7d3c92836348b15fa89eda2478a53cb4c5da3fb1e74b89aa78ef5dcdcd",
+              "start_frame": 455,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 1111,
+              "frame_count": 256,
+              "input_sha256": "852a09c64e7472dc2284f384a58d7983d8d1ad177e8530b1056e9f7796b9bae2",
+              "source_frame_ids_sha256": "4faa0433540b3097fe9ac26eaeeb3694ff351b01154a065e4d64d4443a08f7e9",
+              "start_frame": 856,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "apartment-t0-000455-000710-t1-000906-001161",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.41015625,
+            "changed_object_count": 4,
+            "changed_object_mass_voxels": 2670,
+            "common_observable_volume_fraction": 0.6145505800715603,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.8176029962546817,
+            "trajectory_overlap_fraction": 0.95703125
+          },
+          "eligible": true,
+          "evaluator_only": {
+            "changed_object_count": 4,
+            "changed_object_mass_voxels": 2670,
+            "event_ids": [
+              "apartment_event_02",
+              "apartment_event_03"
+            ],
+            "old_location_visibility_fraction": 0.8176029962546817
+          },
+          "ineligibility_reasons": [],
+          "visits": {
+            "t0": {
+              "end_frame": 710,
+              "frame_count": 256,
+              "input_sha256": "5009652bcb45c12f2c651c995ce0204928f0f75f84eb8d98e9d5de9c6b9edbc8",
+              "source_frame_ids_sha256": "4a961a7d3c92836348b15fa89eda2478a53cb4c5da3fb1e74b89aa78ef5dcdcd",
+              "start_frame": 455,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 1161,
+              "frame_count": 256,
+              "input_sha256": "47575a7bb60ab29007f93fe730246b115da3cb45b53a2181eda0bb35e901d794",
+              "source_frame_ids_sha256": "f0ef768be947f979db62afe815762556086c8cd78fb4dd23f09b8faaf566b41d",
+              "start_frame": 906,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "apartment-t0-000602-000857-t1-000903-001158",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.04296875,
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 250,
+            "common_observable_volume_fraction": 0.41769624360414326,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.796,
+            "trajectory_overlap_fraction": 0.95703125
+          },
+          "eligible": false,
+          "evaluator_only": {
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 250,
+            "event_ids": [
+              "apartment_event_03"
+            ],
+            "old_location_visibility_fraction": 0.796
+          },
+          "ineligibility_reasons": [
+            "camera_viewpoint_histogram_intersection"
+          ],
+          "visits": {
+            "t0": {
+              "end_frame": 857,
+              "frame_count": 256,
+              "input_sha256": "75bab895d8a855640fe953bef472ca22765ccb16631a664115b174b2fa7aacd3",
+              "source_frame_ids_sha256": "227cf8ce78759d036df81f73c05ac51a69f9311855d5ecec8f3d2d580d7bc2fb",
+              "start_frame": 602,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 1158,
+              "frame_count": 256,
+              "input_sha256": "a28683847d8bac460d5508f4486285292b3e4159744bb54a0587f577f295709d",
+              "source_frame_ids_sha256": "3411fa8fe7cfd095abcbf686b62ffbb35948409687f251eb541b4dc2f900ec1f",
+              "start_frame": 903,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "apartment-t0-000602-000857-t1-000953-001208",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.0,
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 250,
+            "common_observable_volume_fraction": 0.4370398103082491,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.796,
+            "trajectory_overlap_fraction": 1.0
+          },
+          "eligible": false,
+          "evaluator_only": {
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 250,
+            "event_ids": [
+              "apartment_event_03"
+            ],
+            "old_location_visibility_fraction": 0.796
+          },
+          "ineligibility_reasons": [
+            "camera_viewpoint_histogram_intersection"
+          ],
+          "visits": {
+            "t0": {
+              "end_frame": 857,
+              "frame_count": 256,
+              "input_sha256": "75bab895d8a855640fe953bef472ca22765ccb16631a664115b174b2fa7aacd3",
+              "source_frame_ids_sha256": "227cf8ce78759d036df81f73c05ac51a69f9311855d5ecec8f3d2d580d7bc2fb",
+              "start_frame": 602,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 1208,
+              "frame_count": 256,
+              "input_sha256": "cdc733aa8fa91b4b59c5cdb9e62020bffe701dd7f4987ab1565354c1f65c4c15",
+              "source_frame_ids_sha256": "2fa6208c0e61bc7e32bcd35b01c30a0fed470f34408cfa5ad2cfae9d8ad237ef",
+              "start_frame": 953,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "apartment-t0-000602-000857-t1-001003-001258",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.16015625,
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 250,
+            "common_observable_volume_fraction": 0.4794708598527393,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.796,
+            "trajectory_overlap_fraction": 1.0
+          },
+          "eligible": true,
+          "evaluator_only": {
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 250,
+            "event_ids": [
+              "apartment_event_03"
+            ],
+            "old_location_visibility_fraction": 0.796
+          },
+          "ineligibility_reasons": [],
+          "visits": {
+            "t0": {
+              "end_frame": 857,
+              "frame_count": 256,
+              "input_sha256": "75bab895d8a855640fe953bef472ca22765ccb16631a664115b174b2fa7aacd3",
+              "source_frame_ids_sha256": "227cf8ce78759d036df81f73c05ac51a69f9311855d5ecec8f3d2d580d7bc2fb",
+              "start_frame": 602,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 1258,
+              "frame_count": 256,
+              "input_sha256": "a82498e21c2bfcd592bc4eb3a30f46f9cc48aca21272e2da6eb6c09c5bce940d",
+              "source_frame_ids_sha256": "0ef751897a1b6950b0febce60ff759341b68a315031316b29e313b40d6d07a9c",
+              "start_frame": 1003,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "apartment-t0-000602-000857-t1-001053-001308",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.35546875,
+            "changed_object_count": 3,
+            "changed_object_mass_voxels": 18772,
+            "common_observable_volume_fraction": 0.6287283164857107,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.9855636053696996,
+            "trajectory_overlap_fraction": 1.0
+          },
+          "eligible": true,
+          "evaluator_only": {
+            "changed_object_count": 3,
+            "changed_object_mass_voxels": 18772,
+            "event_ids": [
+              "apartment_event_03",
+              "apartment_event_04"
+            ],
+            "old_location_visibility_fraction": 0.9855636053696996
+          },
+          "ineligibility_reasons": [],
+          "visits": {
+            "t0": {
+              "end_frame": 857,
+              "frame_count": 256,
+              "input_sha256": "75bab895d8a855640fe953bef472ca22765ccb16631a664115b174b2fa7aacd3",
+              "source_frame_ids_sha256": "227cf8ce78759d036df81f73c05ac51a69f9311855d5ecec8f3d2d580d7bc2fb",
+              "start_frame": 602,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 1308,
+              "frame_count": 256,
+              "input_sha256": "12c9d3e63195079e8d6aa3ee2fbfd9019f31dd2f14d3847ff8041ed743b8b663",
+              "source_frame_ids_sha256": "729e4f2d9b94051b392c7d4958fd999cb87c655ef6f7fb4eef0979d4f5520b12",
+              "start_frame": 1053,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "apartment-t0-000766-001021-t1-001067-001322",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.5,
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 18522,
+            "common_observable_volume_fraction": 0.6056629834254144,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.9926033905625742,
+            "trajectory_overlap_fraction": 0.74609375
+          },
+          "eligible": true,
+          "evaluator_only": {
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 18522,
+            "event_ids": [
+              "apartment_event_04"
+            ],
+            "old_location_visibility_fraction": 0.9926033905625742
+          },
+          "ineligibility_reasons": [],
+          "visits": {
+            "t0": {
+              "end_frame": 1021,
+              "frame_count": 256,
+              "input_sha256": "4f86896e751ec112aa16505a37b67645813a69681369e8e49f73c0bb2aea4698",
+              "source_frame_ids_sha256": "f8b84ff71bec59def7bfdbd733761a5e3343a814d64b395e1e4687df2bff22be",
+              "start_frame": 766,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 1322,
+              "frame_count": 256,
+              "input_sha256": "86ce5447a6962f5e3815ffe3f5f13514a362a32d09f391b2dd61886282f47b9d",
+              "source_frame_ids_sha256": "a4a3173b24b59bc704120e80e1b0dd623b40818389b9a715b65cae358f99ade0",
+              "start_frame": 1067,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "apartment-t0-000766-001021-t1-001117-001372",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.4140625,
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 18522,
+            "common_observable_volume_fraction": 0.680133517495396,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.9926033905625742,
+            "trajectory_overlap_fraction": 0.86328125
+          },
+          "eligible": true,
+          "evaluator_only": {
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 18522,
+            "event_ids": [
+              "apartment_event_04"
+            ],
+            "old_location_visibility_fraction": 0.9926033905625742
+          },
+          "ineligibility_reasons": [],
+          "visits": {
+            "t0": {
+              "end_frame": 1021,
+              "frame_count": 256,
+              "input_sha256": "4f86896e751ec112aa16505a37b67645813a69681369e8e49f73c0bb2aea4698",
+              "source_frame_ids_sha256": "f8b84ff71bec59def7bfdbd733761a5e3343a814d64b395e1e4687df2bff22be",
+              "start_frame": 766,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 1372,
+              "frame_count": 256,
+              "input_sha256": "0117af4e4a9478ed49f5c2716c98b0418bcad7425708a29d8018c59396f5be51",
+              "source_frame_ids_sha256": "138ecef9ebcae0e69d1a0f08d405dc8717f13d08cdb41b914fc1147d88ac1243",
+              "start_frame": 1117,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "apartment-t0-000766-001021-t1-001167-001422",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.52734375,
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 18522,
+            "common_observable_volume_fraction": 0.6866942909760589,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.9952488932080769,
+            "trajectory_overlap_fraction": 0.86328125
+          },
+          "eligible": true,
+          "evaluator_only": {
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 18522,
+            "event_ids": [
+              "apartment_event_04"
+            ],
+            "old_location_visibility_fraction": 0.9952488932080769
+          },
+          "ineligibility_reasons": [],
+          "visits": {
+            "t0": {
+              "end_frame": 1021,
+              "frame_count": 256,
+              "input_sha256": "4f86896e751ec112aa16505a37b67645813a69681369e8e49f73c0bb2aea4698",
+              "source_frame_ids_sha256": "f8b84ff71bec59def7bfdbd733761a5e3343a814d64b395e1e4687df2bff22be",
+              "start_frame": 766,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 1422,
+              "frame_count": 256,
+              "input_sha256": "661246fc59bccc60c0d58f4b5b7a7ae8a61d58ec0e5bd3fbfa923f19f5c9432f",
+              "source_frame_ids_sha256": "314c72b61324516d04c7b512fa0d90ee0e395e6982185b02a21272479da6f635",
+              "start_frame": 1167,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "apartment-t0-000766-001021-t1-001217-001472",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.63671875,
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 18522,
+            "common_observable_volume_fraction": 0.6751841620626151,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.9953028830579851,
+            "trajectory_overlap_fraction": 0.92578125
+          },
+          "eligible": true,
+          "evaluator_only": {
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 18522,
+            "event_ids": [
+              "apartment_event_04"
+            ],
+            "old_location_visibility_fraction": 0.9953028830579851
+          },
+          "ineligibility_reasons": [],
+          "visits": {
+            "t0": {
+              "end_frame": 1021,
+              "frame_count": 256,
+              "input_sha256": "4f86896e751ec112aa16505a37b67645813a69681369e8e49f73c0bb2aea4698",
+              "source_frame_ids_sha256": "f8b84ff71bec59def7bfdbd733761a5e3343a814d64b395e1e4687df2bff22be",
+              "start_frame": 766,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 1472,
+              "frame_count": 256,
+              "input_sha256": "e86ba4ddea76bfa33a75a09c960e50eb1a3c2d5b7781b7de1e6df4b0e9bd7d9d",
+              "source_frame_ids_sha256": "9207b24b01453cff7f529587f357529388fa7241d38823cb15e26839b76534bd",
+              "start_frame": 1217,
+              "visit_id": "t1"
+            }
+          }
+        }
+      ],
+      "execution_status": "APARTMENT_DEVELOPMENT_READY",
+      "method_input_manifest": {
+        "candidate_id": "apartment-t0-000766-001021-t1-001217-001472",
+        "dataset": "TESSE-CD",
+        "protocol_id": "TESSE_TWO_VISIT_CURRENT_V1",
+        "runtime_ground_truth_inputs": [],
+        "scene": "apartment",
+        "schema_version": 1,
+        "source_bindings": {
+          "camera": {
+            "byte_count": 164,
+            "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/cam_params.json",
+            "sha256": "73fe7357e25e4708bc6554bb2a0fc925de00e8368d06a18f9eb3eadd9cb808eb"
+          },
+          "rgbd_export_manifest": {
+            "byte_count": 813,
+            "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/apartment/export_manifest.json",
+            "sha256": "ee35d1843540fc88ae20b5dae5ad34caf192d50f0cab7c5564c47c454d4d5b81"
+          },
+          "timestamps": {
+            "byte_count": 50950,
+            "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/apartment/timestamps.csv",
+            "sha256": "bc369c8c5b4bca30b87c5617bc8c17076c90e5efc00167490cf5c9361af5e83d"
+          },
+          "trajectory": {
+            "byte_count": 296596,
+            "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/apartment/traj.txt",
+            "sha256": "5553fdfc32e0289965d19f4735316445fc07c2eee0ffe57b3f637a3e6e53bc45"
+          }
+        },
+        "visits": {
+          "t0": {
+            "end_frame": 1021,
+            "frame_count": 256,
+            "input_sha256": "4f86896e751ec112aa16505a37b67645813a69681369e8e49f73c0bb2aea4698",
+            "source_frame_ids_sha256": "f8b84ff71bec59def7bfdbd733761a5e3343a814d64b395e1e4687df2bff22be",
+            "start_frame": 766,
+            "visit_id": "t0"
+          },
+          "t1": {
+            "end_frame": 1472,
+            "frame_count": 256,
+            "input_sha256": "e86ba4ddea76bfa33a75a09c960e50eb1a3c2d5b7781b7de1e6df4b0e9bd7d9d",
+            "source_frame_ids_sha256": "9207b24b01453cff7f529587f357529388fa7241d38823cb15e26839b76534bd",
+            "start_frame": 1217,
+            "visit_id": "t1"
+          }
+        }
+      },
+      "role": "development",
+      "selected_candidate_id": "apartment-t0-000766-001021-t1-001217-001472"
+    },
+    "office": {
+      "candidates": [
+        {
+          "candidate_id": "office-t0-001745-002000-t1-002046-002301",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.21484375,
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 12059,
+            "common_observable_volume_fraction": 0.06416078848197894,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.0,
+            "trajectory_overlap_fraction": 0.05078125
+          },
+          "eligible": false,
+          "evaluator_only": {
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 12059,
+            "event_ids": [
+              "office_event_01"
+            ],
+            "old_location_visibility_fraction": 0.0
+          },
+          "ineligibility_reasons": [
+            "old_location_visibility_fraction"
+          ],
+          "visits": {
+            "t0": {
+              "end_frame": 2000,
+              "frame_count": 256,
+              "input_sha256": "b5aebd6a3de25c792ca02141b6a7ec55090e65555ce9b1bb0c26d0d59c28b4f6",
+              "source_frame_ids_sha256": "6ad503d6b669eca1e89b598d259e277f2225af6a319e6d1142ed479982ed08f1",
+              "start_frame": 1745,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 2301,
+              "frame_count": 256,
+              "input_sha256": "0789f2d0c5fec6d626aca76b89eaa0b280e902ecaaec74a70eb6042ac7897dc5",
+              "source_frame_ids_sha256": "9180f6b565130a5bfccf914eda1b14fb2c2c0dd52aafbc5edb2d65fb6ffa2fda",
+              "start_frame": 2046,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "office-t0-001745-002000-t1-002096-002351",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.02734375,
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 12059,
+            "common_observable_volume_fraction": 0.0627113730795246,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.0,
+            "trajectory_overlap_fraction": 0.0
+          },
+          "eligible": false,
+          "evaluator_only": {
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 12059,
+            "event_ids": [
+              "office_event_01"
+            ],
+            "old_location_visibility_fraction": 0.0
+          },
+          "ineligibility_reasons": [
+            "trajectory_overlap_fraction",
+            "camera_viewpoint_histogram_intersection",
+            "old_location_visibility_fraction"
+          ],
+          "visits": {
+            "t0": {
+              "end_frame": 2000,
+              "frame_count": 256,
+              "input_sha256": "b5aebd6a3de25c792ca02141b6a7ec55090e65555ce9b1bb0c26d0d59c28b4f6",
+              "source_frame_ids_sha256": "6ad503d6b669eca1e89b598d259e277f2225af6a319e6d1142ed479982ed08f1",
+              "start_frame": 1745,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 2351,
+              "frame_count": 256,
+              "input_sha256": "c992fa606a9a2ba0526c3026183e6823bd4aecc98715584bc60d8a58c565cc17",
+              "source_frame_ids_sha256": "5eadfb58417b6dded59585fbff826f29d746fb3433b1b77189ca8c1a3b0b6355",
+              "start_frame": 2096,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "office-t0-001745-002000-t1-002146-002401",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.0,
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 12059,
+            "common_observable_volume_fraction": 0.13808097400715044,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.0,
+            "trajectory_overlap_fraction": 0.0
+          },
+          "eligible": false,
+          "evaluator_only": {
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 12059,
+            "event_ids": [
+              "office_event_01"
+            ],
+            "old_location_visibility_fraction": 0.0
+          },
+          "ineligibility_reasons": [
+            "trajectory_overlap_fraction",
+            "camera_viewpoint_histogram_intersection",
+            "old_location_visibility_fraction"
+          ],
+          "visits": {
+            "t0": {
+              "end_frame": 2000,
+              "frame_count": 256,
+              "input_sha256": "b5aebd6a3de25c792ca02141b6a7ec55090e65555ce9b1bb0c26d0d59c28b4f6",
+              "source_frame_ids_sha256": "6ad503d6b669eca1e89b598d259e277f2225af6a319e6d1142ed479982ed08f1",
+              "start_frame": 1745,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 2401,
+              "frame_count": 256,
+              "input_sha256": "91f353c31ceedbef9465bc850e4644ea85d9faca755bf72a441549d968420c84",
+              "source_frame_ids_sha256": "cfbce74bbfb373c0e2f84e1eaa595fe800e34a084fd85c2d869ec1e7413e16a6",
+              "start_frame": 2146,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "office-t0-001745-002000-t1-002196-002451",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.0,
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 12059,
+            "common_observable_volume_fraction": 0.19460817470286984,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.0,
+            "trajectory_overlap_fraction": 0.0
+          },
+          "eligible": false,
+          "evaluator_only": {
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 12059,
+            "event_ids": [
+              "office_event_01"
+            ],
+            "old_location_visibility_fraction": 0.0
+          },
+          "ineligibility_reasons": [
+            "trajectory_overlap_fraction",
+            "camera_viewpoint_histogram_intersection",
+            "old_location_visibility_fraction"
+          ],
+          "visits": {
+            "t0": {
+              "end_frame": 2000,
+              "frame_count": 256,
+              "input_sha256": "b5aebd6a3de25c792ca02141b6a7ec55090e65555ce9b1bb0c26d0d59c28b4f6",
+              "source_frame_ids_sha256": "6ad503d6b669eca1e89b598d259e277f2225af6a319e6d1142ed479982ed08f1",
+              "start_frame": 1745,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 2451,
+              "frame_count": 256,
+              "input_sha256": "2a8d337046198418f91a8576975bba2f09686b44779d2160b3c49adde65b2d54",
+              "source_frame_ids_sha256": "5a27a3b281e4cd774db88fe05ec1f8e59089d488d19fa8ccdcc80973782c05fa",
+              "start_frame": 2196,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "office-t0-002145-002400-t1-002446-002701",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.31640625,
+            "changed_object_count": 3,
+            "changed_object_mass_voxels": 4792,
+            "common_observable_volume_fraction": 0.18356139719121353,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.8128130217028381,
+            "trajectory_overlap_fraction": 0.0859375
+          },
+          "eligible": true,
+          "evaluator_only": {
+            "changed_object_count": 3,
+            "changed_object_mass_voxels": 4792,
+            "event_ids": [
+              "office_event_02"
+            ],
+            "old_location_visibility_fraction": 0.8128130217028381
+          },
+          "ineligibility_reasons": [],
+          "visits": {
+            "t0": {
+              "end_frame": 2400,
+              "frame_count": 256,
+              "input_sha256": "4d54c40675b5b99d5d72e35ed883b13c0dc1c20bb34d704cc7dd066cccc8cef8",
+              "source_frame_ids_sha256": "6a95fe062ac84cbd6b752af61341943f48071cb854ba73abba78b5199beb54fe",
+              "start_frame": 2145,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 2701,
+              "frame_count": 256,
+              "input_sha256": "e3ab4bb15ea8faf85da4cd657bfce2d743085f18a466c020d28ed844108cd06d",
+              "source_frame_ids_sha256": "977ed5bd3e26cd3b4f580ee7ea04189c4b5bada732194b571a46d788da312c8d",
+              "start_frame": 2446,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "office-t0-002145-002400-t1-002496-002751",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.18359375,
+            "changed_object_count": 3,
+            "changed_object_mass_voxels": 4792,
+            "common_observable_volume_fraction": 0.14015183826665528,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.8128130217028381,
+            "trajectory_overlap_fraction": 0.03515625
+          },
+          "eligible": false,
+          "evaluator_only": {
+            "changed_object_count": 3,
+            "changed_object_mass_voxels": 4792,
+            "event_ids": [
+              "office_event_02"
+            ],
+            "old_location_visibility_fraction": 0.8128130217028381
+          },
+          "ineligibility_reasons": [
+            "trajectory_overlap_fraction"
+          ],
+          "visits": {
+            "t0": {
+              "end_frame": 2400,
+              "frame_count": 256,
+              "input_sha256": "4d54c40675b5b99d5d72e35ed883b13c0dc1c20bb34d704cc7dd066cccc8cef8",
+              "source_frame_ids_sha256": "6a95fe062ac84cbd6b752af61341943f48071cb854ba73abba78b5199beb54fe",
+              "start_frame": 2145,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 2751,
+              "frame_count": 256,
+              "input_sha256": "9fbefefbe2e988868c016e2bbb7a01f1b3c8d003cd158a4eddcc57ff782c70a7",
+              "source_frame_ids_sha256": "c9090e48b938a45a164218fdbf9926c4d851afb779a8d0427095c211aac1a606",
+              "start_frame": 2496,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "office-t0-002145-002400-t1-002546-002801",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.2265625,
+            "changed_object_count": 3,
+            "changed_object_mass_voxels": 4792,
+            "common_observable_volume_fraction": 0.08586472255974079,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.8136477462437396,
+            "trajectory_overlap_fraction": 0.0
+          },
+          "eligible": false,
+          "evaluator_only": {
+            "changed_object_count": 3,
+            "changed_object_mass_voxels": 4792,
+            "event_ids": [
+              "office_event_02"
+            ],
+            "old_location_visibility_fraction": 0.8136477462437396
+          },
+          "ineligibility_reasons": [
+            "trajectory_overlap_fraction"
+          ],
+          "visits": {
+            "t0": {
+              "end_frame": 2400,
+              "frame_count": 256,
+              "input_sha256": "4d54c40675b5b99d5d72e35ed883b13c0dc1c20bb34d704cc7dd066cccc8cef8",
+              "source_frame_ids_sha256": "6a95fe062ac84cbd6b752af61341943f48071cb854ba73abba78b5199beb54fe",
+              "start_frame": 2145,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 2801,
+              "frame_count": 256,
+              "input_sha256": "f1567b618826b4e36e437425f74c2c61750d5471b5d306da38a314383fa546f9",
+              "source_frame_ids_sha256": "fdfcca9d26c8412b363a21cc0fe75919601797a2bbad1c12ae8c1ad90016c2af",
+              "start_frame": 2546,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "office-t0-002145-002400-t1-002596-002851",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.25390625,
+            "changed_object_count": 3,
+            "changed_object_mass_voxels": 4792,
+            "common_observable_volume_fraction": 0.005751316322397732,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.8171953255425709,
+            "trajectory_overlap_fraction": 0.0
+          },
+          "eligible": false,
+          "evaluator_only": {
+            "changed_object_count": 3,
+            "changed_object_mass_voxels": 4792,
+            "event_ids": [
+              "office_event_02"
+            ],
+            "old_location_visibility_fraction": 0.8171953255425709
+          },
+          "ineligibility_reasons": [
+            "trajectory_overlap_fraction",
+            "common_observable_volume_fraction"
+          ],
+          "visits": {
+            "t0": {
+              "end_frame": 2400,
+              "frame_count": 256,
+              "input_sha256": "4d54c40675b5b99d5d72e35ed883b13c0dc1c20bb34d704cc7dd066cccc8cef8",
+              "source_frame_ids_sha256": "6a95fe062ac84cbd6b752af61341943f48071cb854ba73abba78b5199beb54fe",
+              "start_frame": 2145,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 2851,
+              "frame_count": 256,
+              "input_sha256": "111de22400a6d7d3d5f17b008c68c1ea17797ba48b0390483c62351b8a90dd48",
+              "source_frame_ids_sha256": "01ab9a114c805824ce93b90d9cf7bf152b3a917a367aba3e667a8ab322afcdff",
+              "start_frame": 2596,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "office-t0-002345-002600-t1-002646-002901",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.26171875,
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 3532,
+            "common_observable_volume_fraction": 0.04345598032182023,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.0,
+            "trajectory_overlap_fraction": 0.04296875
+          },
+          "eligible": false,
+          "evaluator_only": {
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 3532,
+            "event_ids": [
+              "office_event_03"
+            ],
+            "old_location_visibility_fraction": 0.0
+          },
+          "ineligibility_reasons": [
+            "trajectory_overlap_fraction",
+            "common_observable_volume_fraction",
+            "old_location_visibility_fraction"
+          ],
+          "visits": {
+            "t0": {
+              "end_frame": 2600,
+              "frame_count": 256,
+              "input_sha256": "e28a685eb56af75e07852eb123b8f30a5fcdfacc76e8ae480a0061a8177e8d06",
+              "source_frame_ids_sha256": "e82b0337f2adb921e06f8533641532bd7e2f7012dd48e0e82e28b5490eaa452e",
+              "start_frame": 2345,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 2901,
+              "frame_count": 256,
+              "input_sha256": "070470b6290c55129d101ff5ef7ee9348500d44aa8a2b08fb5c07b44e2b7bc0f",
+              "source_frame_ids_sha256": "9ab97416791fb1f4164d1602d0df80c07c0f88d23846741f291e460cb78541f3",
+              "start_frame": 2646,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "office-t0-002345-002600-t1-002696-002951",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.26171875,
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 3532,
+            "common_observable_volume_fraction": 0.00635441221686994,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.0,
+            "trajectory_overlap_fraction": 0.0
+          },
+          "eligible": false,
+          "evaluator_only": {
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 3532,
+            "event_ids": [
+              "office_event_03"
+            ],
+            "old_location_visibility_fraction": 0.0
+          },
+          "ineligibility_reasons": [
+            "trajectory_overlap_fraction",
+            "common_observable_volume_fraction",
+            "old_location_visibility_fraction"
+          ],
+          "visits": {
+            "t0": {
+              "end_frame": 2600,
+              "frame_count": 256,
+              "input_sha256": "e28a685eb56af75e07852eb123b8f30a5fcdfacc76e8ae480a0061a8177e8d06",
+              "source_frame_ids_sha256": "e82b0337f2adb921e06f8533641532bd7e2f7012dd48e0e82e28b5490eaa452e",
+              "start_frame": 2345,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 2951,
+              "frame_count": 256,
+              "input_sha256": "28d5d4a58ef40ea7e0a6407258e1622a61df3673836ab7e567ef41cf9e47cf74",
+              "source_frame_ids_sha256": "6b519a52c89e506bb830fe99ed091be316070d5a5618d2d62d235aef7792b981",
+              "start_frame": 2696,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "office-t0-002345-002600-t1-002746-003001",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.42578125,
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 3532,
+            "common_observable_volume_fraction": 0.0012298862355232141,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.0,
+            "trajectory_overlap_fraction": 0.0
+          },
+          "eligible": false,
+          "evaluator_only": {
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 3532,
+            "event_ids": [
+              "office_event_03"
+            ],
+            "old_location_visibility_fraction": 0.0
+          },
+          "ineligibility_reasons": [
+            "trajectory_overlap_fraction",
+            "common_observable_volume_fraction",
+            "old_location_visibility_fraction"
+          ],
+          "visits": {
+            "t0": {
+              "end_frame": 2600,
+              "frame_count": 256,
+              "input_sha256": "e28a685eb56af75e07852eb123b8f30a5fcdfacc76e8ae480a0061a8177e8d06",
+              "source_frame_ids_sha256": "e82b0337f2adb921e06f8533641532bd7e2f7012dd48e0e82e28b5490eaa452e",
+              "start_frame": 2345,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 3001,
+              "frame_count": 256,
+              "input_sha256": "b2011dfc8c6cb688d2022778ac22fb6305dbf4343086df58439598c4a0d38bae",
+              "source_frame_ids_sha256": "eb734dacf489b6c676fa1bf291a70e27ff0341cbb2267e381ffa31e735045928",
+              "start_frame": 2746,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "office-t0-002345-002600-t1-002796-003051",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.40234375,
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 3532,
+            "common_observable_volume_fraction": 0.0,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.0,
+            "trajectory_overlap_fraction": 0.0
+          },
+          "eligible": false,
+          "evaluator_only": {
+            "changed_object_count": 1,
+            "changed_object_mass_voxels": 3532,
+            "event_ids": [
+              "office_event_03"
+            ],
+            "old_location_visibility_fraction": 0.0
+          },
+          "ineligibility_reasons": [
+            "trajectory_overlap_fraction",
+            "common_observable_volume_fraction",
+            "old_location_visibility_fraction"
+          ],
+          "visits": {
+            "t0": {
+              "end_frame": 2600,
+              "frame_count": 256,
+              "input_sha256": "e28a685eb56af75e07852eb123b8f30a5fcdfacc76e8ae480a0061a8177e8d06",
+              "source_frame_ids_sha256": "e82b0337f2adb921e06f8533641532bd7e2f7012dd48e0e82e28b5490eaa452e",
+              "start_frame": 2345,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 3051,
+              "frame_count": 256,
+              "input_sha256": "0611b2ebcc58b4482673bddd8fa03bd86b6141d6c8c587df00f3fbc9fdac6ce2",
+              "source_frame_ids_sha256": "8488a60e2c9179b75caf557768b748df760b8f30afcba72ef7f0c67a8808bee5",
+              "start_frame": 2796,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "office-t0-003345-003600-t1-003646-003901",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.2578125,
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 8033,
+            "common_observable_volume_fraction": 0.05947894478125512,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.6605253330013694,
+            "trajectory_overlap_fraction": 0.05078125
+          },
+          "eligible": true,
+          "evaluator_only": {
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 8033,
+            "event_ids": [
+              "office_event_04"
+            ],
+            "old_location_visibility_fraction": 0.6605253330013694
+          },
+          "ineligibility_reasons": [],
+          "visits": {
+            "t0": {
+              "end_frame": 3600,
+              "frame_count": 256,
+              "input_sha256": "c9ff7b5d94045c40c21b579cdf7f450bc8d04780949182aabf49122cb05309a9",
+              "source_frame_ids_sha256": "cb274a5f79af8de5b56a6bc7bdd4ad31cbd9199cb270aad2accd0abe2f7217d9",
+              "start_frame": 3345,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 3901,
+              "frame_count": 256,
+              "input_sha256": "40567366b767ffb018c3abc7e32bde1bf9b428fffa7a35b20a7c4d77ae110e55",
+              "source_frame_ids_sha256": "0a0049a9e817314f33c2550b0f6fd3170e81fc4572d5d4fb4869f007b16f71d4",
+              "start_frame": 3646,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "office-t0-003345-003600-t1-003696-003951",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.4453125,
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 8033,
+            "common_observable_volume_fraction": 0.013360221830098312,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.6622681439063861,
+            "trajectory_overlap_fraction": 0.0
+          },
+          "eligible": false,
+          "evaluator_only": {
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 8033,
+            "event_ids": [
+              "office_event_04"
+            ],
+            "old_location_visibility_fraction": 0.6622681439063861
+          },
+          "ineligibility_reasons": [
+            "trajectory_overlap_fraction",
+            "common_observable_volume_fraction"
+          ],
+          "visits": {
+            "t0": {
+              "end_frame": 3600,
+              "frame_count": 256,
+              "input_sha256": "c9ff7b5d94045c40c21b579cdf7f450bc8d04780949182aabf49122cb05309a9",
+              "source_frame_ids_sha256": "cb274a5f79af8de5b56a6bc7bdd4ad31cbd9199cb270aad2accd0abe2f7217d9",
+              "start_frame": 3345,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 3951,
+              "frame_count": 256,
+              "input_sha256": "15684b440462a7a7e17966b59b720f802f60aadcb3a553b2ed2e0c6d6612ae06",
+              "source_frame_ids_sha256": "ec41e60a36644fe4ae41f733b06261658ee7a3caa751a062f83352685c1a63da",
+              "start_frame": 3696,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "office-t0-003345-003600-t1-003746-004001",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.54296875,
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 8033,
+            "common_observable_volume_fraction": 0.0007997156566554114,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.6805676584090626,
+            "trajectory_overlap_fraction": 0.0
+          },
+          "eligible": false,
+          "evaluator_only": {
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 8033,
+            "event_ids": [
+              "office_event_04"
+            ],
+            "old_location_visibility_fraction": 0.6805676584090626
+          },
+          "ineligibility_reasons": [
+            "trajectory_overlap_fraction",
+            "common_observable_volume_fraction"
+          ],
+          "visits": {
+            "t0": {
+              "end_frame": 3600,
+              "frame_count": 256,
+              "input_sha256": "c9ff7b5d94045c40c21b579cdf7f450bc8d04780949182aabf49122cb05309a9",
+              "source_frame_ids_sha256": "cb274a5f79af8de5b56a6bc7bdd4ad31cbd9199cb270aad2accd0abe2f7217d9",
+              "start_frame": 3345,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 4001,
+              "frame_count": 256,
+              "input_sha256": "1dab9ae0f52fa85bb13c66e0d598e84f3aa4416b037416298f695928187ff36b",
+              "source_frame_ids_sha256": "64c66ba1a2854ad3db1ae7454d998b51478c82e2e29c2fd4acd4f8dce636e1e7",
+              "start_frame": 3746,
+              "visit_id": "t1"
+            }
+          }
+        },
+        {
+          "candidate_id": "office-t0-003345-003600-t1-003796-004051",
+          "diagnostics": {
+            "camera_viewpoint_histogram_intersection": 0.59765625,
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 8033,
+            "common_observable_volume_fraction": 0.0,
+            "no_temporal_overlap": true,
+            "old_location_visibility_fraction": 0.6895306859205776,
+            "trajectory_overlap_fraction": 0.0
+          },
+          "eligible": false,
+          "evaluator_only": {
+            "changed_object_count": 2,
+            "changed_object_mass_voxels": 8033,
+            "event_ids": [
+              "office_event_04"
+            ],
+            "old_location_visibility_fraction": 0.6895306859205776
+          },
+          "ineligibility_reasons": [
+            "trajectory_overlap_fraction",
+            "common_observable_volume_fraction"
+          ],
+          "visits": {
+            "t0": {
+              "end_frame": 3600,
+              "frame_count": 256,
+              "input_sha256": "c9ff7b5d94045c40c21b579cdf7f450bc8d04780949182aabf49122cb05309a9",
+              "source_frame_ids_sha256": "cb274a5f79af8de5b56a6bc7bdd4ad31cbd9199cb270aad2accd0abe2f7217d9",
+              "start_frame": 3345,
+              "visit_id": "t0"
+            },
+            "t1": {
+              "end_frame": 4051,
+              "frame_count": 256,
+              "input_sha256": "3f2d1d1c882926301180f4e062880c2a19e23017766ecf120492b115daf34b3a",
+              "source_frame_ids_sha256": "fcdd8c13a9c1d3216bb445f541a55c50768f86bbb4b07f41ad0b1ce58289c290",
+              "start_frame": 3796,
+              "visit_id": "t1"
+            }
+          }
+        }
+      ],
+      "execution_status": "OFFICE_NOT_RUN_HELD_OUT",
+      "method_input_manifest": {
+        "candidate_id": "office-t0-002145-002400-t1-002446-002701",
+        "dataset": "TESSE-CD",
+        "protocol_id": "TESSE_TWO_VISIT_CURRENT_V1",
+        "runtime_ground_truth_inputs": [],
+        "scene": "office",
+        "schema_version": 1,
+        "source_bindings": {
+          "camera": {
+            "byte_count": 164,
+            "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/cam_params.json",
+            "sha256": "73fe7357e25e4708bc6554bb2a0fc925de00e8368d06a18f9eb3eadd9cb808eb"
+          },
+          "rgbd_export_manifest": {
+            "byte_count": 809,
+            "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/office/export_manifest.json",
+            "sha256": "16068d00033c8f8407d143d9e50f2008a5f4feb22c134abd0059fc551637f1f6"
+          },
+          "timestamps": {
+            "byte_count": 133873,
+            "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/office/timestamps.csv",
+            "sha256": "a73591a0703d94c6228de1e34f0d93e9ec2892ec72f88ebc35c5e5a945514491"
+          },
+          "trajectory": {
+            "byte_count": 858114,
+            "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/office/traj.txt",
+            "sha256": "06a31ee46540b4e67f42e373592c746bad097b1024ffdc94196642787d0d968e"
+          }
+        },
+        "visits": {
+          "t0": {
+            "end_frame": 2400,
+            "frame_count": 256,
+            "input_sha256": "4d54c40675b5b99d5d72e35ed883b13c0dc1c20bb34d704cc7dd066cccc8cef8",
+            "source_frame_ids_sha256": "6a95fe062ac84cbd6b752af61341943f48071cb854ba73abba78b5199beb54fe",
+            "start_frame": 2145,
+            "visit_id": "t0"
+          },
+          "t1": {
+            "end_frame": 2701,
+            "frame_count": 256,
+            "input_sha256": "e3ab4bb15ea8faf85da4cd657bfce2d743085f18a466c020d28ed844108cd06d",
+            "source_frame_ids_sha256": "977ed5bd3e26cd3b4f580ee7ea04189c4b5bada732194b571a46d788da312c8d",
+            "start_frame": 2446,
+            "visit_id": "t1"
+          }
+        }
+      },
+      "role": "held_out",
+      "selected_candidate_id": "office-t0-002145-002400-t1-002446-002701"
+    }
+  },
+  "schema_version": 1,
+  "selection_inputs": [
+    "source_metadata",
+    "causal_schedule"
+  ],
+  "selection_policy": {
+    "diagnostic_frame_stride": 16,
+    "diagnostic_pixel_stride": 48,
+    "diagnostic_ray_samples": 16,
+    "maximum_depth_m": 10.0,
+    "minimum_camera_viewpoint_histogram_intersection": 0.05,
+    "minimum_changed_object_count": 1,
+    "minimum_changed_object_mass_voxels": 1,
+    "minimum_common_observable_volume_fraction": 0.05,
+    "minimum_old_location_visibility_fraction": 0.05,
+    "minimum_trajectory_overlap_fraction": 0.05,
+    "observable_voxel_size_m": 0.25,
+    "selection_key": [
+      "old_location_visibility_fraction",
+      "common_observable_volume_fraction",
+      "trajectory_overlap_fraction",
+      "camera_viewpoint_histogram_intersection",
+      "earliest_t1_end_frame"
+    ],
+    "trajectory_match_radius_m": 3.0,
+    "viewpoint_azimuth_bins": 16,
+    "viewpoint_elevation_bins": 4,
+    "window_frame_count": 256
+  },
+  "source_bindings": {
+    "causal_schedule": {
+      "byte_count": 28302,
+      "path": "configs/evaluation/manifests/tesse_cd_causal_schedule_v2.json",
+      "sha256": "fb97bacee377f9fd67ee9dae8064dc6f33ac32d129ee633629fec4164d5003e0"
+    },
+    "common_v2_target_manifest": {
+      "byte_count": 35287,
+      "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/common_v2_targets/20260722-stage3-fb97-scope-a/manifest.json",
+      "sha256": "eeb84891ce884c927956c137d7fadf25697f1c967194e00b21a9293df1b63cd0"
+    },
+    "common_v2_targets": {
+      "byte_count": 15226260,
+      "path": "/home/ww/oviovo_benchmark_assets/tesse_cd/derived/common_v2_targets/20260722-stage3-fb97-scope-a/targets.npz",
+      "sha256": "82226c5e9ab6fedc07a415b501eb0cfb5afa96988e2e5fd61bef550bf7060d12"
+    },
+    "dataset_manifest": {
+      "byte_count": 8875,
+      "path": "configs/evaluation/manifests/tesse_cd.json",
+      "sha256": "be63826267109a67fe4109c1419eb02dbad99a9e3856d44ac8f848e32e00b907"
+    },
+    "rgbd_lock": {
+      "byte_count": 1435,
+      "path": "configs/evaluation/manifests/tesse_cd_rgbd_v1.json",
+      "sha256": "1840ca76f3a31836dcef7a07b00ed810c3e166e999e04081cbd6308613792fd2"
+    }
+  },
+  "status": "FROZEN_BEFORE_METHOD_SCORES"
+}

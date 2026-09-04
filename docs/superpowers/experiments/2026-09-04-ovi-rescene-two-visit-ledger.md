@@ -42,7 +42,7 @@ results.
 | P3 deterministic reasoner | PASS | Geometry/OVI-semantics entity graph plus fail-closed learned boundary |
 | P4 query projection | PASS | CSR-expanded token/soft/source-point evidence and explicit relation topology |
 | P5 current-state composer | PASS | t1-first dense OVI composition with point-group provenance |
-| P6 TESSE two-visit protocol | NOT_STARTED | No result claimed |
+| P6 TESSE two-visit protocol | PASS | 32 source-only candidates; Apartment/Office windows frozen before method scores |
 | P7 B0-B6 evaluator | NOT_STARTED | No result claimed |
 | P8 learned ReScene | BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT | No public checkpoint in pinned source |
 | P9 failure attribution | NOT_STARTED | No result claimed |
@@ -67,3 +67,10 @@ geometry, while the recommended literal list named only visible-free
 suppression. Without this action, replaced source points would have no exact
 provenance. If wrong, downstream readers must fold this action into `emit_t1`
 without changing the composed geometry.
+
+Ruling: TESSE two-visit candidates are event-local 256-frame windows. A single
+first-change-to-last-change pair was rejected before method execution because
+the continuous trajectory had moved to a different room, yielding zero
+trajectory overlap in Apartment and zero common observable volume in Office.
+The frozen source-only selector uses a declared 3 m indoor trajectory coverage
+radius together with common view-frustum volume; it never reads method scores.
