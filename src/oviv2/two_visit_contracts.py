@@ -31,6 +31,7 @@ CompositionAction = Literal[
     "retain_t0_unobserved",
     "retain_t0_occluded",
     "suppress_t0_visible_free",
+    "suppress_t0_occupied_by_t1",
     "uncertain",
 ]
 VisibilityState = Literal["occupied", "visible_free", "occluded", "unobserved"]
@@ -61,6 +62,7 @@ _COMPOSITION_ACTIONS = {
     "retain_t0_unobserved",
     "retain_t0_occluded",
     "suppress_t0_visible_free",
+    "suppress_t0_occupied_by_t1",
     "uncertain",
 }
 _VISIBILITY_STATES = {"occupied", "visible_free", "occluded", "unobserved"}
@@ -789,6 +791,15 @@ class CurrentCompositionDecision:
                 or self.state_source != "t1_visibility"
             ):
                 raise ValueError("t0 suppression requires t1 visible-free authority")
+        elif self.decision == "suppress_t0_occupied_by_t1":
+            if (
+                source_visit != 0
+                or self.visibility_status != "occupied"
+                or self.geometry_source is not None
+                or self.semantic_source is not None
+                or self.state_source != "t1_visibility"
+            ):
+                raise ValueError("t0 replacement requires t1 occupied authority")
         elif self.geometry_source is not None:
             expected_geometry = "ovi_t0" if source_visit == 0 else "ovi_t1"
             if self.geometry_source != expected_geometry:

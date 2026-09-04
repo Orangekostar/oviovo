@@ -314,6 +314,23 @@ def test_composition_decision_enforces_visibility_and_ovi_authority() -> None:
         )
 
 
+def test_t0_geometry_replaced_by_t1_occupied_has_explicit_provenance() -> None:
+    decision = CurrentCompositionDecision(
+        source_entity_id="ovi:t0:chair",
+        source_visit=0,
+        decision="suppress_t0_occupied_by_t1",
+        visibility_status="occupied",
+        visibility_score=1.0,
+        relation_id="q0",
+        geometry_source=None,
+        identity_source="geometric_baseline",
+        state_source="t1_visibility",
+        semantic_source=None,
+    )
+
+    assert decision.decision == "suppress_t0_occupied_by_t1"
+
+
 def _pair_kwargs() -> dict[str, object]:
     pair = _pair()
     return {

@@ -41,7 +41,7 @@ results.
 | P2 OVI-to-ReScene adapter | PASS | Deterministic XYZ-only grouping at 1/2/4 cm neural resolutions |
 | P3 deterministic reasoner | PASS | Geometry/OVI-semantics entity graph plus fail-closed learned boundary |
 | P4 query projection | PASS | CSR-expanded token/soft/source-point evidence and explicit relation topology |
-| P5 current-state composer | NOT_STARTED | No result claimed |
+| P5 current-state composer | PASS | t1-first dense OVI composition with point-group provenance |
 | P6 TESSE two-visit protocol | NOT_STARTED | No result claimed |
 | P7 B0-B6 evaluator | NOT_STARTED | No result claimed |
 | P8 learned ReScene | BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT | No public checkpoint in pinned source |
@@ -60,3 +60,10 @@ evidence, not concatenated into the ReScene feature tensor. This preserves the
 required geometric-semantic baseline without introducing an untrained feature
 distribution into Concerto. If wrong, the adapter contract and learned backend
 input schema will require a backward-compatible revision.
+
+Ruling: `suppress_t0_occupied_by_t1` is added to the composition decision
+vocabulary because the specified t1-first equation replaces same-cell t0
+geometry, while the recommended literal list named only visible-free
+suppression. Without this action, replaced source points would have no exact
+provenance. If wrong, downstream readers must fold this action into `emit_t1`
+without changing the composed geometry.
