@@ -11,6 +11,7 @@ from src.oviv2.two_visit_execution import (
     build_geometric_pair_sample,
     build_static_baseline_snapshot,
     build_visibility_baseline,
+    derive_observed_point_mask,
     derive_signed_visibility,
 )
 
@@ -132,6 +133,25 @@ def test_occluded_and_unobserved_states_remain_non_deleting() -> None:
 
     assert occluded.as_mapping()[(0, 0, 20)] == "occluded"
     assert unobserved.as_mapping()[(0, 0, 20)] == "unobserved"
+
+
+def test_evaluator_observed_mask_counts_present_or_free_rays_only() -> None:
+    points = np.asarray(
+        [
+            [0.025, 0.025, 1.025],
+            [0.025, 0.025, 2.025],
+            [5.025, 0.025, 1.025],
+        ],
+        dtype=np.float32,
+    )
+
+    observed = derive_observed_point_mask(
+        points,
+        (_frame(0, depth_m=1.025),),
+        SignedVisibilityConfig(),
+    )
+
+    assert observed.tolist() == [True, False, False]
 
 
 def test_geometric_sample_needs_no_palette_or_camera_rgb() -> None:

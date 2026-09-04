@@ -99,6 +99,17 @@ def _visit_voxel_keys(visit: VisitMap, voxel_size_m: float) -> np.ndarray:
     return np.unique(scaled.astype(np.int64), axis=0)
 
 
+def _point_voxel_keys(points_xyz: np.ndarray, voxel_size_m: float) -> np.ndarray:
+    points = np.asarray(points_xyz, dtype=np.float64)
+    if points.ndim != 2 or points.shape[1:] != (3,) or not np.all(np.isfinite(points)):
+        raise ValueError("points_xyz must have shape (N, 3) with finite values")
+    scaled = np.floor(points / voxel_size_m)
+    limit = np.iinfo(np.int64).max
+    if np.any(np.abs(scaled) > limit):
+        raise ValueError("points_xyz exceed visibility voxel range")
+    return scaled.astype(np.int64)
+
+
 def _clean_frame(frame: Frame, depth_max_m: float) -> Frame:
     if not isinstance(frame, Frame):
         raise TypeError("frames must contain Frame values")
@@ -218,6 +229,52 @@ def derive_signed_visibility(
         statuses=tuple(str(value) for value in statuses),
         source_sha256=source_sha256,
     )
+
+
+def derive_observed_point_mask(
+    points_xyz: np.ndarray,
+    frames: tuple[Frame, ...],
+    config: SignedVisibilityConfig,
+) -> np.ndarray:
+    """Return evaluator-only t1 observation coverage for arbitrary points."""
+
+    if not isinstance(frames, tuple) or not frames:
+        raise ValueError("frames must be a non-empty tuple")
+    if not isinstance(config, SignedVisibilityConfig):
+        raise TypeError("config must be SignedVisibilityConfig")
+    frame_ids = [frame.frame_id for frame in frames if isinstance(frame, Frame)]
+    if len(frame_ids) != len(frames) or any(
+        current <= previous for previous, current in pairwise(frame_ids)
+    ):
+        raise ValueError("visibility frame IDs must be strictly increasing")
+    keys = _point_voxel_keys(points_xyz, config.voxel_size_m)
+    if not len(keys):
+        result = np.empty((0,), dtype=np.bool_)
+        result.setflags(write=False)
+        return result
+    unique, inverse = np.unique(keys, axis=0, return_inverse=True)
+    key_tuples = tuple(tuple(int(item) for item in key) for key in unique)
+    key_indices = {key: index for index, key in enumerate(key_tuples)}
+    observed = np.zeros(len(unique), dtype=np.bool_)
+    projector = VoxelVisibilityProjector(
+        VisibilityConfig(
+            voxel_size_m=config.voxel_size_m,
+            depth_tolerance_m=config.depth_tolerance_m,
+        )
+    )
+    for raw_frame in frames:
+        groups = projector.classify_many(
+            key_tuples,
+            _clean_frame(raw_frame, config.depth_max_m),
+        )
+        for status in (VisibilityStatus.PRESENT, VisibilityStatus.ABSENT):
+            for key in groups[status]:
+                observed[key_indices[key]] = True
+        if np.all(observed):
+            break
+    result = np.asarray(observed[inverse], dtype=np.bool_)
+    result.setflags(write=False)
+    return result
 
 
 def _copy_entity(
@@ -428,5 +485,6 @@ __all__ = [
     "build_geometric_pair_sample",
     "build_static_baseline_snapshot",
     "build_visibility_baseline",
+    "derive_observed_point_mask",
     "derive_signed_visibility",
 ]
