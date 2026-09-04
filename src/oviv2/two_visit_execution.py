@@ -131,17 +131,10 @@ def _clean_frame(frame: Frame, depth_max_m: float) -> Frame:
     )
 
 
-def derive_signed_visibility(
-    t0: VisitMap,
+def _validated_visibility_frames(
     frames: tuple[Frame, ...],
     config: SignedVisibilityConfig,
-    *,
-    source_sha256: str,
-) -> SignedVisibilityGrid:
-    """Aggregate t1 depth evidence without using evaluator visibility targets."""
-
-    if not isinstance(t0, VisitMap) or t0.visit_id != 0:
-        raise ValueError("t0 must be visit zero")
+) -> tuple[Frame, ...]:
     if not isinstance(frames, tuple) or not frames:
         raise ValueError("frames must be a non-empty tuple")
     if not isinstance(config, SignedVisibilityConfig):
@@ -151,8 +144,16 @@ def derive_signed_visibility(
         current <= previous for previous, current in pairwise(frame_ids)
     ):
         raise ValueError("visibility frame IDs must be strictly increasing")
-    t0.assert_unchanged()
-    keys = _visit_voxel_keys(t0, config.voxel_size_m)
+    return frames
+
+
+def _aggregate_signed_visibility(
+    keys: np.ndarray,
+    frames: tuple[Frame, ...],
+    config: SignedVisibilityConfig,
+    *,
+    source_sha256: str,
+) -> SignedVisibilityGrid:
     key_tuples = tuple(tuple(int(item) for item in key) for key in keys)
     key_indices = {key: index for index, key in enumerate(key_tuples)}
     present = np.zeros(len(keys), dtype=np.uint32)
@@ -225,11 +226,56 @@ def derive_signed_visibility(
     statuses[occluded > 0] = "occluded"
     statuses[is_free] = "visible_free"
     statuses[present > 0] = "occupied"
-    t0.assert_unchanged()
     return SignedVisibilityGrid(
         voxel_size_m=config.voxel_size_m,
         voxel_keys=keys,
         statuses=tuple(str(value) for value in statuses),
+        source_sha256=source_sha256,
+    )
+
+
+def derive_signed_visibility(
+    t0: VisitMap,
+    frames: tuple[Frame, ...],
+    config: SignedVisibilityConfig,
+    *,
+    source_sha256: str,
+) -> SignedVisibilityGrid:
+    """Aggregate t1 depth evidence without using evaluator visibility targets."""
+
+    if not isinstance(t0, VisitMap) or t0.visit_id != 0:
+        raise ValueError("t0 must be visit zero")
+    _validated_visibility_frames(frames, config)
+    t0.assert_unchanged()
+    keys = _visit_voxel_keys(t0, config.voxel_size_m)
+    result = _aggregate_signed_visibility(
+        keys,
+        frames,
+        config,
+        source_sha256=source_sha256,
+    )
+    t0.assert_unchanged()
+    return result
+
+
+def derive_signed_visibility_for_points(
+    points_xyz: np.ndarray,
+    frames: tuple[Frame, ...],
+    config: SignedVisibilityConfig,
+    *,
+    source_sha256: str,
+) -> SignedVisibilityGrid:
+    """Classify arbitrary method-visible points with the frozen t1 evidence."""
+
+    _validated_visibility_frames(frames, config)
+    keys = np.unique(
+        _point_voxel_keys(points_xyz, config.voxel_size_m),
+        axis=0,
+    )
+    return _aggregate_signed_visibility(
+        keys,
+        frames,
+        config,
         source_sha256=source_sha256,
     )
 
@@ -498,4 +544,5 @@ __all__ = [
     "build_visibility_baseline",
     "derive_observed_point_mask",
     "derive_signed_visibility",
+    "derive_signed_visibility_for_points",
 ]

@@ -1,0 +1,46 @@
+{
+  "artifact_id": "OVI_RESCENE_B7_APARTMENT_IT1_V1",
+  "b3_current_map_sha256": "8c6ade3152511394422d3cc695f373b5935c852ab0648f255b0b5743286f6aba",
+  "base_commit": "9db59cb3200e0bc7f48f904c4e9fa628c71c9586",
+  "config": {
+    "byte_count": 11671,
+    "path": "configs/evaluation/ovi_rescene_b7_g_v1.json",
+    "sha256": "09a62abf5d85bf9cc5f404e6127368aaaf7c39e40400f5a063cd20e4fed0fbec"
+  },
+  "dense_recovery_sha256": "0e3be4252444fe62a8dd43f69eca4eacb77fccafc4e24dd33e884f56dbbba46b",
+  "deterministic_repeat": true,
+  "method_input_sha256": "a3ac781087bcd03c4c9375b7296a59b0053d246d6147abc75a33ae8d5a8ba6aa",
+  "outcome": "NONPRODUCTIVE_SELECTED_RELATION",
+  "recovered_point_count": 0,
+  "registration": {
+    "accepted": false,
+    "rejection_reasons": [
+      "extent_ratio_out_of_range",
+      "insufficient_directional_overlap",
+      "insufficient_inliers",
+      "median_residual_too_large",
+      "p90_residual_too_large"
+    ],
+    "sha256": "32bce0b747cfbd5348ebdde4e64cfc6e882fc2f773d79d57df85c4795b661302"
+  },
+  "relation_count": 120,
+  "registration_eligible_relation_count": 13,
+  "removed_baseline_point_count": 0,
+  "schema_version": 1,
+  "selected_relation": {
+    "relation_id": "geom:000004",
+    "state": "persistent_moved",
+    "t0_entity_ids": [
+      "ovimap:108"
+    ],
+    "t1_entity_ids": [
+      "ovimap:6"
+    ]
+  },
+  "source_visit_map_sha256": [
+    "cdd46a4a2b6ff82252dba22ae7b15bf3cc35ef46123a98649ba8c48f59cf33af",
+    "aca00e36aa6925e8a24f0f365123cc7922742df2c682a5a3da0d96a22cde88b1"
+  ],
+  "status": "PASS",
+  "visible_free_recovered_point_count": 0
+}

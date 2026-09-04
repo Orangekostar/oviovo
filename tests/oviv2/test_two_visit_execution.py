@@ -13,6 +13,7 @@ from src.oviv2.two_visit_execution import (
     build_visibility_baseline,
     derive_observed_point_mask,
     derive_signed_visibility,
+    derive_signed_visibility_for_points,
 )
 
 SOURCE_SHA256 = "a" * 64
@@ -83,8 +84,7 @@ def _frame(
 def test_signed_visibility_requires_repeated_distinct_visible_free_evidence() -> None:
     t0 = _visit(0, [[0.025, 0.025, 1.025]])
     frames = tuple(
-        _frame(index, depth_m=2.0, camera_x=(index % 3) * 0.30)
-        for index in range(6)
+        _frame(index, depth_m=2.0, camera_x=(index % 3) * 0.30) for index in range(6)
     )
 
     result = derive_signed_visibility(
@@ -100,8 +100,7 @@ def test_signed_visibility_requires_repeated_distinct_visible_free_evidence() ->
 def test_present_evidence_prevents_visible_free_suppression() -> None:
     t0 = _visit(0, [[0.025, 0.025, 1.025]])
     frames = [
-        _frame(index, depth_m=2.0, camera_x=(index % 3) * 0.30)
-        for index in range(6)
+        _frame(index, depth_m=2.0, camera_x=(index % 3) * 0.30) for index in range(6)
     ]
     frames.append(_frame(6, depth_m=1.025))
 
@@ -133,6 +132,67 @@ def test_occluded_and_unobserved_states_remain_non_deleting() -> None:
 
     assert occluded.as_mapping()[(0, 0, 20)] == "occluded"
     assert unobserved.as_mapping()[(0, 0, 20)] == "unobserved"
+
+
+def test_transformed_points_receive_signed_visibility_at_new_voxels() -> None:
+    points = np.asarray([[0.525, 0.025, 1.025]], dtype=np.float32)
+    before = points.copy()
+    frames = tuple(
+        _frame(index, depth_m=2.0, camera_x=(index % 3) * 0.30) for index in range(6)
+    )
+
+    result = derive_signed_visibility_for_points(
+        points,
+        frames,
+        SignedVisibilityConfig(),
+        source_sha256="c" * 64,
+    )
+
+    assert result.as_mapping()[(10, 0, 20)] == "visible_free"
+    assert np.array_equal(points, before)
+
+
+def test_point_visibility_accepts_an_empty_candidate_set() -> None:
+    result = derive_signed_visibility_for_points(
+        np.empty((0, 3), dtype=np.float32),
+        (_frame(0, depth_m=1.0),),
+        SignedVisibilityConfig(),
+        source_sha256="c" * 64,
+    )
+
+    assert result.voxel_keys.shape == (0, 3)
+    assert result.statuses == ()
+
+
+def test_point_visibility_is_equivalent_to_the_legacy_visit_entry_point() -> None:
+    t0 = _visit(0, [[0.025, 0.025, 1.025], [0.025, 0.025, 2.025]])
+    frames = tuple(
+        _frame(index, depth_m=1.025, camera_x=(index % 3) * 0.30) for index in range(6)
+    )
+    all_points = np.concatenate(
+        (
+            t0.snapshot.entities[0].points_xyz,
+            t0.snapshot.background_xyz,
+        ),
+        axis=0,
+    )
+
+    legacy = derive_signed_visibility(
+        t0,
+        frames,
+        SignedVisibilityConfig(),
+        source_sha256="d" * 64,
+    )
+    arbitrary = derive_signed_visibility_for_points(
+        all_points,
+        frames,
+        SignedVisibilityConfig(),
+        source_sha256="d" * 64,
+    )
+
+    assert np.array_equal(arbitrary.voxel_keys, legacy.voxel_keys)
+    assert arbitrary.statuses == legacy.statuses
+    assert arbitrary.source_sha256 == legacy.source_sha256
 
 
 def test_evaluator_observed_mask_counts_present_or_free_rays_only() -> None:
