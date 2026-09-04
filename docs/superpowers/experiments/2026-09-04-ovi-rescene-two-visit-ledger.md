@@ -43,7 +43,7 @@ results.
 | P4 query projection | PASS | CSR-expanded token/soft/source-point evidence and explicit relation topology |
 | P5 current-state composer | PASS | t1-first dense OVI composition with point-group provenance |
 | P6 TESSE two-visit protocol | PASS | 32 source-only candidates; Apartment/Office windows frozen before method scores |
-| P7 B0-B6 evaluator | NOT_STARTED | No result claimed |
+| P7 B0-B6 evaluator | PASS | Frozen Pareto metric contract and atomic B0-B4 / blocked B5-B6 orchestrator; no result claimed |
 | P8 learned ReScene | BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT | No public checkpoint in pinned source |
 | P9 failure attribution | NOT_STARTED | No result claimed |
 | P10 Apartment matrix | NOT_STARTED | No result claimed |

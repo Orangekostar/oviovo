@@ -1,0 +1,340 @@
+{
+  "dataset": "TESSE-CD",
+  "execution_contract": {
+    "blocked_variants": [
+      "B5",
+      "B6"
+    ],
+    "protocol_content_sha256": "2f638911509f098287e2fee2f8902d95495f5aa4cb88392181076c42c8c652de",
+    "publish_policy": "atomic_only_after_all_required_pass",
+    "required_variants": [
+      "B0",
+      "B1",
+      "B2",
+      "B3",
+      "B4"
+    ],
+    "source_commit_policy": "record_exact_runtime_head"
+  },
+  "freeze_parent_commit": "5ca7c4bdd9abad540d42dbc291133fa9e03877eb",
+  "matrix_id": "OVI_RESCENE_TWO_VISIT_B0_B6_V1",
+  "method_config": {
+    "adapter": {
+      "feature_schema": "rgb",
+      "neural_voxel_size_m": 0.02
+    },
+    "composer": {
+      "authority_rule": "t1_occupied_then_visible_free_then_t0_occluded_or_unobserved",
+      "composition_voxel_size_m": 0.05,
+      "removal_authority": "t1_signed_visible_free_only",
+      "semantic_authority": "ovi"
+    },
+    "evaluator_voxel_size_m": 0.05,
+    "geometric_reasoner": {
+      "comparison_voxel_size_m": 0.05,
+      "maximum_centroid_distance_m": 2.0,
+      "minimum_pair_score": 0.5,
+      "require_known_label_compatibility": true,
+      "weights": {
+        "centroid": 0.25,
+        "extent": 0.1,
+        "semantic": 0.2,
+        "size": 0.15,
+        "symmetric_coverage": 0.1,
+        "voxel_iou": 0.2
+      }
+    },
+    "ovi_mapping_voxel_size_m": 0.01,
+    "rescene": {
+      "backend": "concerto",
+      "checkpoint_status": "BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT",
+      "neural_voxel_size_m": 0.02,
+      "random_initialization_ranking_eligible": false
+    }
+  },
+  "metric_contract": {
+    "aggregation": "pareto_vector_no_hidden_scalar",
+    "distance_threshold_m": 0.05,
+    "groups": {
+      "current_state": [
+        "ghost",
+        "object_f1",
+        "change_f1",
+        "current_miou",
+        "dynamic_surface_f1"
+      ],
+      "geometry": [
+        "background_f1_at_5cm",
+        "surface_precision_at_5cm",
+        "surface_recall_at_5cm",
+        "surface_f1_at_5cm",
+        "total_current_surface_coverage",
+        "t1_unobserved_region_recall",
+        "t1_observed_region_stale_precision"
+      ],
+      "identity": [
+        "persistent_identity_precision",
+        "persistent_identity_recall",
+        "moved_association_accuracy",
+        "appeared_precision",
+        "appeared_recall",
+        "removed_precision",
+        "removed_recall",
+        "split_accuracy",
+        "merge_accuracy"
+      ],
+      "semantics": [
+        "persistent_semantic_stability",
+        "semantic_error_rate"
+      ],
+      "systems": [
+        "ovi_t0_point_count",
+        "ovi_t1_point_count",
+        "ovi_t0_entity_count",
+        "ovi_t1_entity_count",
+        "rescene_t0_token_count",
+        "rescene_t1_token_count",
+        "adapter_runtime_s",
+        "rescene_runtime_s",
+        "peak_gpu_memory_bytes",
+        "final_map_point_count"
+      ],
+      "artifacts": [
+        "ovi_t0_artifact_bytes",
+        "ovi_t1_artifact_bytes",
+        "adapter_artifact_bytes",
+        "final_map_artifact_bytes"
+      ]
+    },
+    "na_policy": "null_with_reason_never_zero_fill"
+  },
+  "office_policy": {
+    "attempt_count": 0,
+    "release_required_bindings": [
+      "adapter_config",
+      "temporal_reasoner",
+      "composer_policy",
+      "baseline_matrix",
+      "metric_contract",
+      "success_gates"
+    ],
+    "status": "OFFICE_NOT_RUN_HELD_OUT"
+  },
+  "protocol": {
+    "byte_count": 61049,
+    "path": "configs/evaluation/tesse_two_visit_current_v1.json",
+    "sha256": "720952cd75e214de36e318051d6aae18bd762109ba0d3a8ccb73a14f7398e650"
+  },
+  "rows": [
+    {
+      "artifacts": {
+        "command": "B0/command.json",
+        "metric_receipt": "B0/metrics.json",
+        "output_artifact": "B0/current-map-manifest.json",
+        "status_receipt": "B0/run-receipt.json",
+        "stderr_log": "B0/stderr.log",
+        "stdout_log": "B0/stdout.log"
+      },
+      "availability": "REQUIRED",
+      "blocked_reason": null,
+      "final_geometry_sources": [
+        "ovi_t0"
+      ],
+      "id": "B0",
+      "name": "OVI_T0_ONLY",
+      "pair_reasoner": "none",
+      "purpose": "old_map_ghost",
+      "signed_visibility": false,
+      "uses_ovi_t0": true,
+      "uses_ovi_t1": false
+    },
+    {
+      "artifacts": {
+        "command": "B1/command.json",
+        "metric_receipt": "B1/metrics.json",
+        "output_artifact": "B1/current-map-manifest.json",
+        "status_receipt": "B1/run-receipt.json",
+        "stderr_log": "B1/stderr.log",
+        "stdout_log": "B1/stdout.log"
+      },
+      "availability": "REQUIRED",
+      "blocked_reason": null,
+      "final_geometry_sources": [
+        "ovi_t0",
+        "ovi_t1"
+      ],
+      "id": "B1",
+      "name": "OVI_UNION",
+      "pair_reasoner": "none",
+      "purpose": "completeness_and_ghost_upper_case",
+      "signed_visibility": false,
+      "uses_ovi_t0": true,
+      "uses_ovi_t1": true
+    },
+    {
+      "artifacts": {
+        "command": "B2/command.json",
+        "metric_receipt": "B2/metrics.json",
+        "output_artifact": "B2/current-map-manifest.json",
+        "status_receipt": "B2/run-receipt.json",
+        "stderr_log": "B2/stderr.log",
+        "stdout_log": "B2/stdout.log"
+      },
+      "availability": "REQUIRED",
+      "blocked_reason": null,
+      "final_geometry_sources": [
+        "ovi_t1"
+      ],
+      "id": "B2",
+      "name": "OVI_T1_ONLY",
+      "pair_reasoner": "none",
+      "purpose": "low_ghost_floor_and_completeness_lower_bound",
+      "signed_visibility": false,
+      "uses_ovi_t0": false,
+      "uses_ovi_t1": true
+    },
+    {
+      "artifacts": {
+        "command": "B3/command.json",
+        "metric_receipt": "B3/metrics.json",
+        "output_artifact": "B3/current-map-manifest.json",
+        "status_receipt": "B3/run-receipt.json",
+        "stderr_log": "B3/stderr.log",
+        "stdout_log": "B3/stdout.log"
+      },
+      "availability": "REQUIRED",
+      "blocked_reason": null,
+      "final_geometry_sources": [
+        "ovi_t0",
+        "ovi_t1"
+      ],
+      "id": "B3",
+      "name": "OVI_VISIBILITY_COMPOSE",
+      "pair_reasoner": "none",
+      "purpose": "signed_visibility_contribution",
+      "signed_visibility": true,
+      "uses_ovi_t0": true,
+      "uses_ovi_t1": true
+    },
+    {
+      "artifacts": {
+        "command": "B4/command.json",
+        "metric_receipt": "B4/metrics.json",
+        "output_artifact": "B4/current-map-manifest.json",
+        "status_receipt": "B4/run-receipt.json",
+        "stderr_log": "B4/stderr.log",
+        "stdout_log": "B4/stdout.log"
+      },
+      "availability": "REQUIRED",
+      "blocked_reason": null,
+      "final_geometry_sources": [
+        "ovi_t0",
+        "ovi_t1"
+      ],
+      "id": "B4",
+      "name": "OVI_GEOMETRIC_PAIRING_VISIBILITY",
+      "pair_reasoner": "geometric_semantic",
+      "purpose": "nonlearned_identity_baseline",
+      "signed_visibility": true,
+      "uses_ovi_t0": true,
+      "uses_ovi_t1": true
+    },
+    {
+      "artifacts": {
+        "command": "B5/command.json",
+        "metric_receipt": "B5/metrics.json",
+        "output_artifact": "B5/current-map-manifest.json",
+        "status_receipt": "B5/blocked-receipt.json",
+        "stderr_log": "B5/stderr.log",
+        "stdout_log": "B5/stdout.log"
+      },
+      "availability": "BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT",
+      "blocked_reason": "BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT",
+      "final_geometry_sources": [
+        "ovi_t0",
+        "ovi_t1"
+      ],
+      "id": "B5",
+      "name": "OVI_RESCENE_VISIBILITY",
+      "pair_reasoner": "rescene_concerto",
+      "purpose": "proposed_full_system",
+      "signed_visibility": true,
+      "uses_ovi_t0": true,
+      "uses_ovi_t1": true
+    },
+    {
+      "artifacts": {
+        "command": "B6/command.json",
+        "metric_receipt": "B6/metrics.json",
+        "output_artifact": "B6/current-map-manifest.json",
+        "status_receipt": "B6/blocked-receipt.json",
+        "stderr_log": "B6/stderr.log",
+        "stdout_log": "B6/stdout.log"
+      },
+      "availability": "BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT",
+      "blocked_reason": "BLOCKED_EXTERNAL_PRETRAINED_CHECKPOINT",
+      "final_geometry_sources": [
+        "ovi_t0",
+        "ovi_t1"
+      ],
+      "id": "B6",
+      "name": "OVI_RESCENE_NO_VISIBILITY",
+      "pair_reasoner": "rescene_concerto",
+      "purpose": "signed_visibility_necessity",
+      "signed_visibility": false,
+      "uses_ovi_t0": true,
+      "uses_ovi_t1": true
+    }
+  ],
+  "schema_version": 1,
+  "source_bindings": {
+    "adapter": {
+      "byte_count": 18739,
+      "path": "src/oviv2/ovi_rescene_adapter.py",
+      "sha256": "e35bf76eee965df545f5cabf9cc464e9e174a6da8326a0080b612bbfac1ab2c5"
+    },
+    "common_v2_evaluator": {
+      "byte_count": 44714,
+      "path": "scripts/evaluation/evaluate_tesse_cd_common_v2.py",
+      "sha256": "e3cec5e2c9c6e1088d648b631a455a641313adeaa0d6a76c957ba5e8a94e3caf"
+    },
+    "composer": {
+      "byte_count": 28545,
+      "path": "src/oviv2/two_visit_current_map.py",
+      "sha256": "2a66be3b6730697f43763a2cf375457b8286379a91799c5004ea0ea4f239b110"
+    },
+    "external_sources": {
+      "byte_count": 7435,
+      "path": "configs/external/ovi_rescene_sources.json",
+      "sha256": "0afe78b623134eda15c34978f28d5d1885f19d07e101e4c264c60b83821dfb85"
+    },
+    "geometric_reasoner": {
+      "byte_count": 10756,
+      "path": "src/oviv2/geometric_pair_reasoner.py",
+      "sha256": "ec7d3d984ab303cd96f4b901a7eb455a900adb558f54f8947acaceb7d88d4131"
+    },
+    "matrix_runner": {
+      "byte_count": 26539,
+      "path": "scripts/evaluation/run_ovi_rescene_two_visit_matrix.py",
+      "sha256": "d17c4cc888b17cc34366a0988a0efd582316382d28bfd184c5b54ac4d11e3556"
+    },
+    "metric_implementation": {
+      "byte_count": 13183,
+      "path": "src/evaluation/two_visit_current_metrics.py",
+      "sha256": "c0fb4f89035d72be8b9b2bbf452ca59795252e60353cdde231dac772d25ad506"
+    }
+  },
+  "status": "FROZEN_BEFORE_EXECUTION",
+  "success_gates": {
+    "change_f1_reference": 0.088458,
+    "ghost_delta_over_b2_max": 0.02,
+    "maximum_change_f1_drop": 0.005,
+    "minimum_object_f1": 0.367952,
+    "minimum_rescene_gain_over_b4": 0.02,
+    "minimum_unobserved_recall_gain_over_b2": 0.05,
+    "practical_ghost_max": 0.2,
+    "preferred_object_f1": 0.372762,
+    "selection": "all_applicable_gates_no_weighted_average",
+    "strong_ghost_max": 0.1
+  }
+}
