@@ -50,6 +50,10 @@ ReScene is fixed at upstream commit
 `fb2fe42eb8f1e926567c48eea9acb874e608ee10`; its native sampler source
 `datasets/pointcept_utils.py` has SHA-256
 `962686891547c0719670774d35917562c7f4b7c90aaad1b7002ccda676112a83`.
+The installed Sonata checkout is fixed at
+`18c09ff8d713494f78a8213792262b910977a65d`; its actual GridSample source
+`sonata/transform.py` has SHA-256
+`cf799a0c2d4d835ee722ef6300b5c1ffc401b12a129bed783c081a6cce23c615`.
 
 ## Data domains and immutable sidecars
 
@@ -191,7 +195,8 @@ The external model input contains M rows with:
 
 ```text
 features = [shared-centered source XYZ, camera RGB / 255, unit PLY normal]
-coordinates = [sequence_batch=0, native grid x/y/z, visit t]
+coord_bxyzt = [true sequence batch=0, centered floating x/y/z, visit t]
+grid_coord = [native visit-local integer grid x/y/z]
 Pointcept sparse batch = visit 0 or 1 during the backbone
 true sequence batch = 0 for both visits
 point2segment = arange(M) as one global identity mapping
