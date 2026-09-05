@@ -1678,12 +1678,15 @@ def measure_calibration_residuals(
             )
         ):
             raise C2PreparationError("calibration indices are not a valid visit subset")
-        if np.any(prepared.candidates.candidate_counts[indices] < 1):
-            raise C2PreparationError("calibration sample lacks a valid first candidate")
-        source_indices = prepared.candidates.source_point_indices[indices, 0]
+        valid_positions = np.flatnonzero(
+            prepared.candidates.candidate_counts[indices] >= 1
+        ).astype(np.int64)
+        source_indices = prepared.candidates.source_point_indices[
+            indices[valid_positions], 0
+        ]
         if not np.array_equal(
             prepared.surface.source_visit_ids[source_indices],
-            np.full(len(indices), visit_id, dtype=np.int8),
+            np.full(len(source_indices), visit_id, dtype=np.int8),
         ):
             raise C2PreparationError("calibration candidate crosses visit boundary")
         points = prepared.surface.points_xyz[source_indices]
@@ -1699,14 +1702,18 @@ def measure_calibration_residuals(
                 frame.rgb,
                 frame.depth,
                 depth_tolerance_m=ceiling,
-                candidate_visit_ids=np.full(len(indices), visit_id, dtype=np.int8),
+                candidate_visit_ids=np.full(
+                    len(valid_positions), visit_id, dtype=np.int8
+                ),
                 frame_visit_id=visit_id,
                 rgb_source="camera_rgb",
             )
             positions = supported.candidate_indices
             if len(positions):
-                best[positions] = np.minimum(
-                    best[positions], supported.depth_residual_m.astype(np.float64)
+                output_positions = valid_positions[positions]
+                best[output_positions] = np.minimum(
+                    best[output_positions],
+                    supported.depth_residual_m.astype(np.float64),
                 )
         del decoded_frames
         best[~np.isfinite(best)] = np.nan

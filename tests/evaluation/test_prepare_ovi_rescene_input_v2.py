@@ -878,6 +878,64 @@ def test_calibration_measures_minimum_same_visit_residual_for_first_candidate(
     assert residuals[1].tolist() == pytest.approx([0.001, 0.001], abs=1e-6)
 
 
+def test_calibration_records_missing_valid_normal_candidate_as_nan(tmp_path: Path) -> None:
+    geometry, surface, sampling, candidates = _static_contract()
+    candidate_rows = candidates.source_point_indices.copy()
+    candidate_counts = candidates.candidate_counts.copy()
+    candidate_rows[2] = -1
+    candidate_counts[2] = 0
+    candidates = ModelCandidateMap(
+        source_point_indices=candidate_rows,
+        candidate_counts=candidate_counts,
+        maximum_candidates=candidates.maximum_candidates,
+    )
+    parent = tmp_path / "parent"
+    parent.write_bytes(b"source\n")
+    artifact = tmp_path / "static"
+    write_static_input_artifact(
+        geometry=geometry,
+        surface=surface,
+        sampling=sampling,
+        candidates=candidates,
+        input_bindings={"parent": _file_binding(parent)},
+        output_root=artifact,
+    )
+    prepared = load_static_input_artifact(artifact)
+    t0 = load_materialized_visit(
+        manifest_path=_write_materialized_visit(
+            tmp_path / "frames", visit_id=0, global_start=766,
+            rgb=(10, 20, 30), depth_mm=2000,
+        ),
+        expected_visit_id=0,
+        expected_global_start=766,
+        expected_global_end=766,
+        expected_source_input_sha256="5" * 64,
+    )
+    t1 = load_materialized_visit(
+        manifest_path=_write_materialized_visit(
+            tmp_path / "frames", visit_id=1, global_start=1217,
+            rgb=(40, 50, 60), depth_mm=2000,
+        ),
+        expected_visit_id=1,
+        expected_global_start=1217,
+        expected_global_end=1217,
+        expected_source_input_sha256="6" * 64,
+    )
+
+    residuals = measure_calibration_residuals(
+        prepared,
+        {0: t0, 1: t1},
+        calibration_indices={
+            0: np.asarray([0], dtype=np.int64),
+            1: np.asarray([1, 2], dtype=np.int64),
+        },
+    )
+
+    assert residuals[0].tolist() == pytest.approx([0.0])
+    assert residuals[1][0] == pytest.approx(0.0)
+    assert np.isnan(residuals[1][1])
+
+
 def test_depth_calibration_artifact_is_parent_bound_and_no_clobber(
     tmp_path: Path,
 ) -> None:
