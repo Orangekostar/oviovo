@@ -1,0 +1,103 @@
+{
+  "artifact_id": "PERSIST4D_RESCENE4D_C_T2_REPRO_V1",
+  "canonical_checkpoint": {
+    "byte_count": 754917862,
+    "path": "/home/ww/paper5/checkpoints/rescene4d_concerto_t2_repro.ckpt",
+    "regular_file": true,
+    "sha256": "85ed1aba60320cd19798536b71b91dbc156b7ea60f838832bc0bbbdba131546e",
+    "symlink": false
+  },
+  "classification": "SOURCE_BOUND_RESCENE_REPRODUCTION",
+  "concerto_initialization": {
+    "byte_count": 433987358,
+    "path": "/home/ww/.cache/persist4d/concerto/concerto_base.pth",
+    "required_for_runtime": true,
+    "revision": "c31f993a56129f2ba9c5d06a35957e3f05bff710",
+    "sha256": "845ec7dec97a5fabff8fadb5d9858ac6734347b612d1a4b574213419c139de07"
+  },
+  "official_author_checkpoint": false,
+  "persist4d_evidence_commit": "1380c4b9f37bec7933126ccc9bd70067de166f6f",
+  "persist4d_repository": "git@github.com:Orangekostar/Persist4D.git",
+  "reproduction_metrics": {
+    "overall_mAP": 36.314,
+    "paper_target_t_mAP": 34.8,
+    "t_REC": 40.849,
+    "t_mAP": 27.939,
+    "validation_sequence_count": 154
+  },
+  "schema_version": 1,
+  "source_audit": {
+    "persist4d": {
+      "checkout_path": "/home/ww/paper5/.worktrees/persist4d-p4-p5",
+      "commit": "1380c4b9f37bec7933126ccc9bd70067de166f6f",
+      "required_files": [
+        {
+          "byte_count": 9790,
+          "path": "artifacts/P2_G2_REPRODUCTION_REPORT.md",
+          "sha256": "d891fb7fd53306d8ab65db81b9bb85f08664a9689de850ac7836143b238816bc"
+        },
+        {
+          "byte_count": 20622,
+          "path": "artifacts/P2/official_vs_repro_config_diff.json",
+          "sha256": "d5f6c450f221331150c85694e0b80503a0f29a4da9aa1db1db8879bba8e657d7"
+        },
+        {
+          "byte_count": 2449,
+          "path": "conf/config_p2_rescene4d_concerto_t2.yaml",
+          "sha256": "3077e89b9bca60049e1551654d5b3df78178d5647d84f0037bcb7ab91807c443"
+        },
+        {
+          "byte_count": 96939,
+          "path": "scripts/evaluate_persist4d.py",
+          "sha256": "908cb6e581f70d03a7fd6796edf218ee106a4bcf91cb9788bd220288b91e23f5"
+        },
+        {
+          "byte_count": 12413,
+          "path": "tests/test_rescene_query_features.py",
+          "sha256": "e3428b956043be75ccd5191cc2091c2032d1abbbe79ce18a2a62074049582533"
+        }
+      ]
+    },
+    "pristine_upstream_rescene4d": {
+      "checkout_path": "/home/ww/oviovo_references/evaluation/rescene4d",
+      "commit": "fb2fe42eb8f1e926567c48eea9acb874e608ee10",
+      "required_files": [
+        {
+          "byte_count": 3376,
+          "path": "models/__init__.py",
+          "sha256": "caf092ab566fc46260a6ba06ce12693ef610fab88c76c9a2607c16d4d93d5a12"
+        },
+        {
+          "byte_count": 24416,
+          "path": "models/rescene.py",
+          "sha256": "fa3e26b9c90ef2e50acfd473cea2c9fc7e1a0b424acfcfef0fa99bf161f69a58"
+        },
+        {
+          "byte_count": 27394,
+          "path": "models/pointcept.py",
+          "sha256": "96f130d780d57ecf0c88e51c016b4feef768ad3805e47c2b633893f17fd4581a"
+        },
+        {
+          "byte_count": 950,
+          "path": "conf/model/rescene.yaml",
+          "sha256": "93ecef561f9b7555b08fa85a985b5b957a3148ae48ae868492cd4894c78f72fd"
+        },
+        {
+          "byte_count": 247,
+          "path": "conf/backbone/concerto.yaml",
+          "sha256": "5b116a9e21fbb7d4a0c19c9e090dfc01f1e48c176c72e4121c8a9ed57d971101"
+        }
+      ]
+    }
+  },
+  "status": "PASS",
+  "training_config": {
+    "byte_count": 2449,
+    "path": "/home/ww/paper5/.worktrees/persist4d-p4-p5/conf/config_p2_rescene4d_concerto_t2.yaml",
+    "sha256": "3077e89b9bca60049e1551654d5b3df78178d5647d84f0037bcb7ab91807c443"
+  },
+  "training_source": {
+    "official_upstream_base_commit": "fb2fe42eb8f1e926567c48eea9acb874e608ee10",
+    "persist4d_runtime_commit": "1380c4b9f37bec7933126ccc9bd70067de166f6f"
+  }
+}

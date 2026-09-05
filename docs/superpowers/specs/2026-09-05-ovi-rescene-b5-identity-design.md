@@ -41,20 +41,22 @@ schema is `rgb_normals`. The checkpoint's Pointcept stem receives nine channels:
 
 ```text
 shared-centered XYZ (3)
-+ native-normalized camera RGB (3)
++ source camera RGB in [0,1] (3)
 + unit source geometry normal (3)
 ```
 
-For adapter RGB `c` already in `[0,1]`, the source-verified color operation is:
+The C2 native witness corrected the pre-audit color assumption before any B5
+inference. The dataset builds a normalized color feature in `sample[1]`, but
+the pinned Pointcept collator intentionally overwrites that feature and uses
+the raw camera color from `sample[4]`. For adapter RGB `c` already in `[0,1]`,
+the source-verified model color operation is therefore:
 
 ```text
-u = astype_uint8(c)
-normalized = (u / 255 - rio_mean) / rio_std
+model_rgb = c
 ```
 
-where `rio_mean` and `rio_std` are the exact values bound in the audit. No
-ImageNet constants, palette colors, zero normals, or double normalization are
-allowed.
+No ImageNet/RIO normalization, palette colors, zero normals, or double
+normalization are allowed on the Pointcept model path.
 
 All pair coordinates are centered together by
 `[(xmin+xmax)/2, (ymin+ymax)/2, zmin]`. Each visit then receives its own
@@ -72,10 +74,13 @@ is allowed once only after C2 passes, and its arrays remain under
 `/home/ww/oviovo_baseline_runs/20260905_ovi_rescene_b5_identity/`.
 
 The instance PLY RGB is an instance palette and is forbidden as a neural
-feature. The current frozen VisitMap export has no source camera RGB. This task
-does not introduce an unregistered RGB-D-to-mesh coloring algorithm or call an
-entity-wide color average a point-level camera observation. Absence of an exact
-source-bound camera-RGB tensor is `COLOR_NORMALIZATION_MISMATCH` and blocks B5.
+feature. Although the native PLY header carries geometry normals, the frozen
+VisitMap snapshot carries neither per-point source camera RGB nor per-point
+source geometry normals. This task does not introduce an unregistered
+RGB-D-to-mesh coloring algorithm, reconstruct a new point-normal alignment, or
+call an entity-wide color average a point-level camera observation. Absence of
+an exact source-bound camera-RGB tensor is `COLOR_NORMALIZATION_MISMATCH` and
+blocks B5; absent snapshot normal provenance is independently reported.
 
 ## Token Conservation
 
