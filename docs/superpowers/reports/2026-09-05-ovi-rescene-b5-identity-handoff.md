@@ -3,7 +3,7 @@
 Date: 2026-09-05
 Branch: `research/ovi-rescene-persist4d-b5-identity`
 Base SHA: `2136865993033e35c44dac12444363a4788e8452`
-Current result commit: pending final result-package commit
+Result-package commit: `8e72f6df433941335f18f6bb447c9fcff36a3c13`
 Verdict: `RESCENE_B5_BLOCKED`
 
 ## Required Answers
@@ -43,7 +43,7 @@ Verdict: `RESCENE_B5_BLOCKED`
 33. **3RScan X/44?** 27/44 complete; 17 lack only `sequence.zip`; final ranking not run.
 34. **Focused tests?** 55 passed, 0 failed in the canonical Python 3.13 environment. The unbound host `pytest` launcher first failed during collection because its Python 3.12 Torch installation was incomplete; no test body failed there.
 35. **Full suite?** 6,009 passed, 10 skipped, 0 failed, 5 NumPy deprecation warnings in 815.93 seconds; one authorized run.
-36. **Final branch/local/remote SHA?** Branch as above; local and remote SHA pending final commit/push verification.
+36. **Final branch/local/remote SHA?** The result-bearing local and remote SHA is `8e72f6df433941335f18f6bb447c9fcff36a3c13` on the branch above. The handoff-only closure commit necessarily advances the branch after this file is written; its exact local/remote equality is recorded in the external upload receipt and final delivery because a Git commit cannot embed its own SHA.
 37. **Single highest-value next action?** Build a versioned, source-bound RGB-D-to-OVI-token camera-RGB and normal-alignment bridge plus an adapter-to-model reverse map that preserves every adapter token, then rerun C2.
 
 ## Artifact Ledger
@@ -66,8 +66,12 @@ Focused tests: `55 passed, 0 failed` using `/home/ww/miniconda3/bin/python`.
 Full suite: `6009 passed, 10 skipped, 0 failed` using
 `/home/ww/miniconda3/bin/python -m pytest -q`.
 
-Final local SHA: pending.
+Result-package local SHA: `8e72f6df433941335f18f6bb447c9fcff36a3c13`.
 
-Remote SHA: pending.
+Result-package remote SHA: `8e72f6df433941335f18f6bb447c9fcff36a3c13`.
 
-`UPLOAD_STATUS=PENDING`
+`UPLOAD_STATUS=VERIFIED`
+
+The exact post-handoff branch-head equality is recorded at
+`/home/ww/oviovo_baseline_runs/20260905_ovi_rescene_b5_identity/upload_receipt.json`
+after the final push.

@@ -115,4 +115,4 @@ Status: skipped by the frozen Task 2 C2 gate; B4 was not reconstructed.
 - [x] **Step 4: Run focused verification.** Run all changed test modules, relevant adapter/backend/projection tests, compile changed Python paths, and `git diff --check`.
 - [x] **Step 5: Perform primary-agent review.** Inspect the full diff, source boundaries, schemas, failure ordering, result-to-claim consistency, Office/3RScan leakage, and Git scope.
 - [x] **Step 6: Run the full suite once.** On failure, diagnose with targeted tests and permit at most one second full-suite attempt.
-- [ ] **Step 7: Commit and push.** Commit logical groups, push `research/ovi-rescene-persist4d-b5-identity`, and require `git rev-parse HEAD` to equal `git ls-remote origin refs/heads/research/ovi-rescene-persist4d-b5-identity` before reporting `UPLOAD_STATUS=VERIFIED`.
+- [x] **Step 7: Commit and push.** Commit logical groups, push `research/ovi-rescene-persist4d-b5-identity`, and require `git rev-parse HEAD` to equal `git ls-remote origin refs/heads/research/ovi-rescene-persist4d-b5-identity` before reporting `UPLOAD_STATUS=VERIFIED`.
