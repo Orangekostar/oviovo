@@ -152,13 +152,14 @@ u = fx * x/z + cx
 v = fy * y/z + cy
 ```
 
-Projection uses camera z, nearest integer pixel with half-away-from-zero
-rounding, depth in metres (`uint16 millimetres / 1000`), and the aligned RGB
-pixel. A support is valid only when z is positive, the pixel is in bounds,
-depth is finite and positive, the absolute depth residual is within the frozen
-tolerance, and the valid 3x3 depth neighbourhood range is no greater than
-twice that tolerance. Missing neighbours do not contribute; fewer than five
-valid neighbourhood depths rejects the support. Supports never cross visits.
+Projection uses camera z, NumPy nearest-integer `rint` pixel selection as in the
+existing visibility implementation, depth in metres (`uint16 millimetres /
+1000`), and the aligned RGB pixel. A support is valid only when z is positive,
+the pixel is in bounds, depth is finite and positive, the absolute depth
+residual is within the frozen tolerance, and the valid 3x3 depth neighbourhood
+range is no greater than twice that tolerance. Missing neighbours do not
+contribute; fewer than five valid neighbourhood depths rejects the support.
+Supports never cross visits.
 
 Before B5, exactly 2048 evenly spaced native M indices per visit (or all M if
 fewer) are used for an input-only calibration. For the first valid-normal
