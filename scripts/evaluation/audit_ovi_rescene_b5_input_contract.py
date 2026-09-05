@@ -172,9 +172,29 @@ def _feature_reasons(
     return reasons
 
 
-def _visit_token_audit(
+def _aggregate_world_voxels(points: np.ndarray, voxel_size_m: float) -> np.ndarray:
+    quantized = np.floor(points.astype(np.float64) / voxel_size_m)
+    if not np.all(np.isfinite(quantized)) or np.any(
+        np.abs(quantized) > np.iinfo(np.int64).max
+    ):
+        raise InputContractError("adapter quantized coordinates overflow")
+    _, inverse = np.unique(
+        quantized.astype(np.int64),
+        axis=0,
+        return_inverse=True,
+    )
+    counts = np.bincount(inverse).astype(np.float64)
+    return np.column_stack(
+        [
+            np.bincount(inverse, weights=points[:, axis], minlength=len(counts))
+            / counts
+            for axis in range(3)
+        ]
+    )
+
+
+def _prepare_visit_tokens(
     visit: Mapping[str, object],
-    shared_center: np.ndarray,
     voxel_size_m: float,
 ) -> tuple[dict[str, object], list[str]]:
     visit_id = visit.get("visit_id")
@@ -197,7 +217,7 @@ def _visit_token_audit(
         raise InputContractError(f"t{visit_id} entity partition is invalid")
 
     feature_reasons: list[str] = []
-    entity_voxels: list[np.ndarray] = []
+    entity_tokens: list[np.ndarray] = []
     for entity_index, raw_metadata in enumerate(metadata):
         if not isinstance(raw_metadata, Mapping):
             raise InputContractError(f"t{visit_id} entity metadata is invalid")
@@ -205,39 +225,71 @@ def _visit_token_audit(
         feature_reasons.extend(_feature_reasons(raw_metadata, end - start))
         if end == start:
             continue
-        quantized = np.floor(
-            (points[start:end].astype(np.float64) - shared_center) / voxel_size_m
-        )
-        if not np.all(np.isfinite(quantized)) or np.any(
-            np.abs(quantized) > np.iinfo(np.int64).max
-        ):
-            raise InputContractError(f"t{visit_id} quantized coordinates overflow")
-        entity_voxels.append(np.unique(quantized.astype(np.int64), axis=0))
+        entity_tokens.append(_aggregate_world_voxels(points[start:end], voxel_size_m))
 
-    if not entity_voxels:
+    if not entity_tokens:
         raise InputContractError(f"t{visit_id} has no non-empty entity geometry")
-    stacked = np.concatenate(entity_voxels, axis=0)
-    _, multiplicity = np.unique(stacked, axis=0, return_counts=True)
-    adapter_count = len(stacked)
-    model_count = len(multiplicity)
+    return (
+        {
+            "entity_count": len(metadata),
+            "entity_tokens": entity_tokens,
+            "point_count": len(points),
+            "visit_id": visit_id,
+        },
+        feature_reasons,
+    )
+
+
+def _visit_token_audit(
+    prepared: Mapping[str, object],
+    shared_center: np.ndarray,
+    voxel_size_m: float,
+) -> dict[str, object]:
+    entity_tokens = prepared["entity_tokens"]
+    assert isinstance(entity_tokens, list)
+    model_entity_voxels = [
+        np.floor((tokens - shared_center) / voxel_size_m).astype(np.int64)
+        for tokens in entity_tokens
+    ]
+    stacked_model = np.concatenate(model_entity_voxels, axis=0)
+    _, model_multiplicity = np.unique(
+        stacked_model,
+        axis=0,
+        return_counts=True,
+    )
+    entity_unique_model = [
+        np.unique(voxels, axis=0) for voxels in model_entity_voxels
+    ]
+    stacked_entity_unique = np.concatenate(entity_unique_model, axis=0)
+    _, entity_multiplicity = np.unique(
+        stacked_entity_unique,
+        axis=0,
+        return_counts=True,
+    )
+    adapter_count = len(stacked_model)
+    model_count = len(model_multiplicity)
+    within_entity_merge_count = adapter_count - len(stacked_entity_unique)
+    cross_entity_merge_count = len(stacked_entity_unique) - model_count
     merge_count = adapter_count - model_count
-    collision_count = int(np.count_nonzero(multiplicity > 1))
+    collision_count = int(np.count_nonzero(entity_multiplicity > 1))
     result = {
         "adapter_token_count": adapter_count,
+        "cross_entity_token_merge_count": cross_entity_merge_count,
         "cross_entity_collision_voxel_count": collision_count,
-        "entity_count": len(metadata),
-        "maximum_entities_per_spatial_voxel": int(np.max(multiplicity)),
+        "entity_count": prepared["entity_count"],
+        "maximum_entities_per_spatial_voxel": int(np.max(entity_multiplicity)),
         "model_input_token_count": model_count,
         "permutation_count": adapter_count if merge_count == 0 else None,
         "permutation_possible": merge_count == 0,
-        "point_count": len(points),
+        "point_count": prepared["point_count"],
         "token_drop_count": 0,
         "token_duplication_count": 0,
         "token_merge_count": merge_count,
         "token_merge_fraction": float(merge_count / adapter_count),
-        "visit_id": visit_id,
+        "visit_id": prepared["visit_id"],
+        "within_entity_token_merge_count": within_entity_merge_count,
     }
-    return result, feature_reasons
+    return result
 
 
 def audit_input_contract(
@@ -277,12 +329,18 @@ def audit_input_contract(
     ):
         raise InputContractError("input must contain ordered t0/t1 visits")
 
-    point_arrays = [
-        _array(visit.get("points_xyz"), label="visit points", columns=3)
-        for visit in visits
+    feature_reasons: list[str] = []
+    prepared_visits = []
+    for visit in visits:
+        prepared, reasons = _prepare_visit_tokens(visit, voxel)
+        prepared_visits.append(prepared)
+        feature_reasons.extend(reasons)
+    adapter_points = [
+        np.concatenate(prepared["entity_tokens"], axis=0)
+        for prepared in prepared_visits
     ]
-    all_min = np.minimum(point_arrays[0].min(axis=0), point_arrays[1].min(axis=0))
-    all_max = np.maximum(point_arrays[0].max(axis=0), point_arrays[1].max(axis=0))
+    all_min = np.minimum(adapter_points[0].min(axis=0), adapter_points[1].min(axis=0))
+    all_max = np.maximum(adapter_points[0].max(axis=0), adapter_points[1].max(axis=0))
     shared_center = np.asarray(
         [
             (all_min[0] + all_max[0]) / 2.0,
@@ -292,13 +350,11 @@ def audit_input_contract(
         dtype=np.float64,
     )
 
-    feature_reasons: list[str] = []
     visit_results: dict[str, object] = {}
     token_blocked = False
-    for visit in visits:
-        result, reasons = _visit_token_audit(visit, shared_center, voxel)
+    for prepared in prepared_visits:
+        result = _visit_token_audit(prepared, shared_center, voxel)
         visit_results[f"t{result['visit_id']}"] = result
-        feature_reasons.extend(reasons)
         token_blocked = token_blocked or result["token_merge_count"] != 0
     ordered_feature_reasons = list(dict.fromkeys(feature_reasons))
     if ordered_feature_reasons:

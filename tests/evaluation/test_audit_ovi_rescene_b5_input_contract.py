@@ -155,6 +155,7 @@ def test_missing_camera_rgb_and_normals_fail_closed() -> None:
 def test_cross_entity_spatial_voxel_merge_blocks_permutation_claim() -> None:
     visits = _valid_visits()
     visits[0]["points_xyz"][1] = [0.002, 0.001, 0.001]
+    visits[1]["points_xyz"][0] = [0.050, 0.001, 0.001]
 
     result = audit_input_contract(_native_witness(), visits, 0.02)
 
@@ -165,6 +166,29 @@ def test_cross_entity_spatial_voxel_merge_blocks_permutation_claim() -> None:
     assert t0["token_merge_count"] == 1
     assert t0["permutation_possible"] is False
     assert result["status"] == "BLOCKED_RESCENE_TOKEN_CONSERVATION"
+
+
+def test_token_audit_aggregates_world_voxel_before_model_centering() -> None:
+    visits = _valid_visits()
+    visits[0]["points_xyz"] = np.asarray(
+        [[0.001, 0.001, 0.001], [0.019, 0.001, 0.001]], dtype=np.float32
+    )
+    visits[0]["entity_offsets"] = np.asarray([0, 2], dtype=np.int64)
+    visits[0]["entity_metadata"] = [
+        {
+            "point_rgb_source": "camera_rgb",
+            "point_rgb": [[255, 0, 0], [127, 0, 0]],
+            "point_normals_source": "source_geometry",
+            "point_normals": [[0.0, 0.0, 1.0], [0.0, 0.0, 1.0]],
+        }
+    ]
+    visits[1]["points_xyz"] = np.asarray([[0.021, 0.001, 0.001]], dtype=np.float32)
+
+    result = audit_input_contract(_native_witness(), visits, 0.02)
+
+    assert result["visits"]["t0"]["point_count"] == 2
+    assert result["visits"]["t0"]["adapter_token_count"] == 1
+    assert result["visits"]["t0"]["model_input_token_count"] == 1
 
 
 def test_temporal_values_must_be_exactly_zero_and_one() -> None:
