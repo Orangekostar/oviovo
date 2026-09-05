@@ -1,0 +1,38 @@
+{
+  "artifact_id": "OVI_RESCENE_C2_REPAIR_B5_REUSE_LEDGER_V2",
+  "evaluated_code_sha": "85248e62b4a0e780ed72ea339abb911806a564ef",
+  "execution_counts": {
+    "apartment_b5_gpu_forward": 0,
+    "b4_relation_reconstruction": 0,
+    "formal_c2_build": 1,
+    "office": 0
+  },
+  "prior_b4_search": {
+    "complete_trusted_relation_artifact_found": false,
+    "prior_summary": {
+      "byte_count": 2817,
+      "path": "configs/evaluation/results/ovi_rescene_b5_identity/b4_relation_summary.json",
+      "sha256": "03d2525ce70cd0c797786b5fa190cd003c16d6152db3e8edfe26d89f203a69d0",
+      "usability": "SUMMARY_ONLY_PAIR_RELATIONS_NOT_SERIALIZED"
+    },
+    "searched_external_roots": [
+      "/home/ww/oviovo_baseline_runs/20260904_ovi_rescene_two_visit",
+      "/home/ww/oviovo_baseline_runs/20260905_ovi_rescene_b5_identity"
+    ]
+  },
+  "reused_inputs": {
+    "depth_calibration_manifest": {
+      "byte_count": 1809,
+      "path": "/home/ww/oviovo_baseline_runs/20260905_ovi_rescene_c2_repair_b5_v2/calibration/manifest.json",
+      "sha256": "152646563a4ec2519671767f7f6b23460d8516d6029270d4f5e1310c7c4e3d4e"
+    },
+    "static_input_manifest": {
+      "byte_count": 4466020,
+      "path": "/home/ww/oviovo_baseline_runs/20260905_ovi_rescene_c2_repair_b5_v2/prepared-static/manifest.json",
+      "sha256": "dbb7d3528ce0b8dc038a05c7a0aea8b436a79762f5faeffc7c3d233a542a385b"
+    }
+  },
+  "scene": "apartment",
+  "schema_version": 2,
+  "status": "PASS"
+}

@@ -1,0 +1,49 @@
+{
+  "artifact_id": "OVI_RESCENE_C2_REPAIR_B5_DECISION_V2",
+  "b4_reconstruction_attempt_count": 0,
+  "b5_relation_comparison_attempt_count": 0,
+  "base_commit": "f3cb93a9c49df3891279b67330e58401c20cc540",
+  "blocking_reasons": [
+    "MODEL_ATTRIBUTE_COVERAGE_BELOW_ONE",
+    "6357_MODEL_ROWS_WITHOUT_VALID_NORMAL_CANDIDATES",
+    "30381_MODEL_ROWS_WITHOUT_DEPTH_CONSISTENT_SAME_VISIT_RGBD"
+  ],
+  "branch": "research/ovi-rescene-c2-repair-b5",
+  "date": "2026-09-05",
+  "evaluated_code_sha": "85248e62b4a0e780ed72ea339abb911806a564ef",
+  "formal_config": {
+    "byte_count": 3775,
+    "path": "configs/evaluation/ovi_rescene_c2_repair_b5_v2.json",
+    "sha256": "f17bd4356258c8c6795ee3746b65cbcce4d97bee2ba27e25d716806c47c1f281"
+  },
+  "gates": {
+    "C0_checkpoint_structure": "PASS_REUSED_SOURCE_BOUND_AUDIT",
+    "C1_model_topology": "PASS_STRICT_796_KEYS",
+    "C2_input_attribute_coverage": "FAIL_PARTIAL_INPUT_SCOPE",
+    "C3_apartment_b5_forward": "NOT_RUN_C2_BLOCKED",
+    "C4_relation_comparison": "NOT_RUN_C2_BLOCKED"
+  },
+  "gpu_attempt_count": 0,
+  "gt_identity_evidence_available": false,
+  "input_complete": false,
+  "method_quality_conclusion": null,
+  "model_attribute_coverage_fraction": 0.9570028639009209,
+  "office_attempt_count": 0,
+  "paper_superiority_established": false,
+  "projection_complete": false,
+  "schema_version": 2,
+  "scientific_answer": "NOT_ESTABLISHED_BECAUSE_THE_FROZEN_C2_INPUT_REMAINED_PARTIAL",
+  "unsupported_model_count": 36738,
+  "verdict": "C2_REPAIR_BLOCKED",
+  "verification": {
+    "focused": {
+      "failed": 0,
+      "passed": 96,
+      "status": "PASS"
+    },
+    "full_suite": {
+      "status": "FULL_SUITE_NOT_RUN_IMPACT_SCOPED"
+    },
+    "new_process_input_audit": "PASS_RECEIPT_REPRODUCED"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "artifact_id": "OVI_RESCENE_B5_BACKEND_RECEIPT_V2",
+  "backend_config": {
+    "byte_count": 1608,
+    "path": "configs/evaluation/rescene_two_visit_backend_persist4d_repro.json",
+    "sha256": "53ea2e4d62be6a7174212d1f0a296e6b44eb049c57cdbb17da94863dee70fbb4"
+  },
+  "backend_output": null,
+  "blocking_gate": "C2_INPUT_ATTRIBUTE_COVERAGE",
+  "checkpoint_sha256": "85ed1aba60320cd19798536b71b91dbc156b7ea60f838832bc0bbbdba131546e",
+  "gpu_attempt_count": 0,
+  "gpu_preflight_snapshot": [
+    {
+      "free_mib": 45220,
+      "index": 0,
+      "name": "NVIDIA A40",
+      "used_mib": 271,
+      "uuid": "GPU-03bdcf8a-2211-c497-06f1-6fa2e0b4ce40"
+    },
+    {
+      "free_mib": 800,
+      "index": 1,
+      "name": "NVIDIA A40",
+      "used_mib": 44691,
+      "uuid": "GPU-7432ef4c-50a1-f860-4edd-bcda281170fb"
+    },
+    {
+      "free_mib": 34530,
+      "index": 2,
+      "name": "NVIDIA A40",
+      "used_mib": 10961,
+      "uuid": "GPU-41ba4cb6-edfe-ed30-c047-a19d9f23d0a8"
+    }
+  ],
+  "metrics": null,
+  "ranking_eligible": false,
+  "runtime_s": null,
+  "scene": "apartment",
+  "schema_version": 2,
+  "status": "NOT_RUN_C2_BLOCKED"
+}

@@ -1,0 +1,42 @@
+{
+  "artifact_id": "OVI_RESCENE_C2_ATTRIBUTE_COVERAGE_V2",
+  "by_visit": {
+    "t0": {
+      "candidate_present_without_depth_consistent_same_visit_rgbd": 20646,
+      "model_attribute_coverage_fraction": 0.9460924839685041,
+      "model_count": 446153,
+      "supported_model_count": 422102,
+      "unsupported_model_count": 24051,
+      "zero_valid_normal_candidate_count": 3405
+    },
+    "t1": {
+      "candidate_present_without_depth_consistent_same_visit_rgbd": 9735,
+      "model_attribute_coverage_fraction": 0.9689254327954618,
+      "model_count": 408276,
+      "supported_model_count": 395589,
+      "unsupported_model_count": 12687,
+      "zero_valid_normal_candidate_count": 2952
+    }
+  },
+  "depth_tolerance_m": 0.05,
+  "model_attribute_coverage_fraction": 0.9570028639009209,
+  "model_count": 854429,
+  "requirements": {
+    "model_normal_fraction": 1.0,
+    "model_rgb_fraction": 1.0,
+    "status": "FAIL"
+  },
+  "scene": "apartment",
+  "schema_version": 2,
+  "source_normal_fraction": 0.9999892901046257,
+  "source_normal_invalid_count": 288,
+  "source_normal_valid_count": 26890731,
+  "source_point_count": 26891019,
+  "status": "PARTIAL_INPUT_SCOPE",
+  "supported_model_count": 817691,
+  "unsupported_model_count": 36738,
+  "unsupported_reason_counts": {
+    "candidate_present_without_depth_consistent_same_visit_rgbd": 30381,
+    "zero_valid_normal_candidate": 6357
+  }
+}

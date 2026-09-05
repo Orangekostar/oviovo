@@ -1,0 +1,46 @@
+{
+  "artifact_id": "OVI_RESCENE_NATIVE_SAMPLING_MAP_SUMMARY_V2",
+  "candidate_width": 8,
+  "content_sha256": {
+    "candidates": "da15688e95c513ca9493ac3b739f8536a71d72ed643252c2a5839669ba4c76e0",
+    "geometry": "abb29360100d78872121c4cbc21607f4706d4a2fe536d7d95ccc35d114d4ebf7",
+    "sampling": "00b8f91d9c12c730124439a1e148ba6e9dc3612bd2e2197cd0d2d00e98840e8b",
+    "surface": "c4dde70ab101566506cf38ba476663dd190a04f7e33d4ef7b1e8e6ee64526313"
+  },
+  "global": {
+    "adapter_count": 1043028,
+    "cross_entity_model_token_count": 4925,
+    "cross_entity_model_token_fraction": 0.005764083382001313,
+    "model_count": 854429,
+    "model_merge_count": 188599,
+    "model_merge_fraction_of_adapter": 0.18081873161602566,
+    "source_point_count": 26891019
+  },
+  "sampler": {
+    "mode": "train",
+    "seed": 45,
+    "source_sha256": "cf799a0c2d4d835ee722ef6300b5c1ffc401b12a129bed783c081a6cce23c615",
+    "voxel_size_m": 0.02
+  },
+  "scene": "apartment",
+  "schema_version": 2,
+  "status": "PASS",
+  "visits": {
+    "t0": {
+      "adapter_count": 552612,
+      "cross_entity_model_token_count": 2857,
+      "entity_count": 89,
+      "model_count": 446153,
+      "model_merge_count": 106459,
+      "source_point_count": 14563575
+    },
+    "t1": {
+      "adapter_count": 490416,
+      "cross_entity_model_token_count": 2068,
+      "entity_count": 62,
+      "model_count": 408276,
+      "model_merge_count": 82140,
+      "source_point_count": 12327444
+    }
+  }
+}

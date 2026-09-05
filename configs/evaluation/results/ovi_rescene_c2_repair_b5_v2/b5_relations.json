@@ -1,0 +1,19 @@
+{
+  "artifact_id": "OVI_RESCENE_B5_RELATIONS_V2",
+  "backend_status": null,
+  "blocking_gate": "C2_INPUT_ATTRIBUTE_COVERAGE",
+  "projection_complete": false,
+  "projection_config": {
+    "minimum_entity_token_coverage": 0.25,
+    "minimum_source_point_coverage": 0.25,
+    "static_centroid_tolerance_m": 0.1
+  },
+  "relation_summary": null,
+  "relations": null,
+  "scene": "apartment",
+  "schema_version": 2,
+  "status": "NOT_RUN_C2_BLOCKED",
+  "unavailable": {
+    "relations": "No temporal query evidence was produced because C2 coverage was below one"
+  }
+}

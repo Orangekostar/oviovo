@@ -1,0 +1,32 @@
+{
+  "adapter_count": 1043028,
+  "adapter_pair_manifest": null,
+  "artifact_id": "OVI_RESCENE_C2_INPUT_CONTRACT_COMPACT_V2",
+  "attribute_coverage": {
+    "model_normal_fraction": 0.9570028639009209,
+    "model_rgb_fraction": 0.9570028639009209,
+    "source_normal_fraction": 0.9999892901046257
+  },
+  "depth_tolerance_m": 0.05,
+  "external_receipt": {
+    "byte_count": 1182,
+    "path": "/home/ww/oviovo_baseline_runs/20260905_ovi_rescene_c2_repair_b5_v2/built-input/input_contract_v2.json",
+    "sha256": "024dc4cc91974ec67475c4a5dafe1bd7c328ca1ca0b3836079755db9b9777854"
+  },
+  "model_count": 854429,
+  "model_input_manifest": null,
+  "recovered_support": {
+    "byte_count": 13915025,
+    "path": "/home/ww/oviovo_baseline_runs/20260905_ovi_rescene_c2_repair_b5_v2/built-input/recovered_support.npz",
+    "sha256": "e37edef31de82348cab890942db040198067b027484f2ae5689de12730ef5a2c"
+  },
+  "schema_version": 2,
+  "source_point_count": 26891019,
+  "status": "PARTIAL_INPUT_SCOPE",
+  "unsupported_model_count": 36738,
+  "verification": {
+    "audit_process": "NEW_PROCESS",
+    "audit_status": "PASS_RECEIPT_REPRODUCED",
+    "external_receipt_sha256": "024dc4cc91974ec67475c4a5dafe1bd7c328ca1ca0b3836079755db9b9777854"
+  }
+}
