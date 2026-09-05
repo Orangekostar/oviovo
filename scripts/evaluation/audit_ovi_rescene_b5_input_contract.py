@@ -172,24 +172,33 @@ def _feature_reasons(
     return reasons
 
 
-def _aggregate_world_voxels(points: np.ndarray, voxel_size_m: float) -> np.ndarray:
+def _aggregate_world_voxels(
+    points: np.ndarray, voxel_size_m: float
+) -> tuple[np.ndarray, np.ndarray]:
     quantized = np.floor(points.astype(np.float64) / voxel_size_m)
     if not np.all(np.isfinite(quantized)) or np.any(
         np.abs(quantized) > np.iinfo(np.int64).max
     ):
         raise InputContractError("adapter quantized coordinates overflow")
-    _, inverse = np.unique(
+    world_voxels, inverse = np.unique(
         quantized.astype(np.int64),
         axis=0,
         return_inverse=True,
     )
     counts = np.bincount(inverse).astype(np.float64)
-    return np.column_stack(
-        [
-            np.bincount(inverse, weights=points[:, axis], minlength=len(counts))
-            / counts
-            for axis in range(3)
-        ]
+    return (
+        world_voxels,
+        np.column_stack(
+            [
+                np.bincount(
+                    inverse,
+                    weights=points[:, axis],
+                    minlength=len(counts),
+                )
+                / counts
+                for axis in range(3)
+            ]
+        ),
     )
 
 
@@ -217,6 +226,7 @@ def _prepare_visit_tokens(
         raise InputContractError(f"t{visit_id} entity partition is invalid")
 
     feature_reasons: list[str] = []
+    entity_world_voxels: list[np.ndarray] = []
     entity_tokens: list[np.ndarray] = []
     for entity_index, raw_metadata in enumerate(metadata):
         if not isinstance(raw_metadata, Mapping):
@@ -225,7 +235,11 @@ def _prepare_visit_tokens(
         feature_reasons.extend(_feature_reasons(raw_metadata, end - start))
         if end == start:
             continue
-        entity_tokens.append(_aggregate_world_voxels(points[start:end], voxel_size_m))
+        world_voxels, tokens = _aggregate_world_voxels(
+            points[start:end], voxel_size_m
+        )
+        entity_world_voxels.append(world_voxels)
+        entity_tokens.append(tokens)
 
     if not entity_tokens:
         raise InputContractError(f"t{visit_id} has no non-empty entity geometry")
@@ -233,6 +247,7 @@ def _prepare_visit_tokens(
         {
             "entity_count": len(metadata),
             "entity_tokens": entity_tokens,
+            "entity_world_voxels": entity_world_voxels,
             "point_count": len(points),
             "visit_id": visit_id,
         },
@@ -246,7 +261,15 @@ def _visit_token_audit(
     voxel_size_m: float,
 ) -> dict[str, object]:
     entity_tokens = prepared["entity_tokens"]
+    entity_world_voxels = prepared["entity_world_voxels"]
     assert isinstance(entity_tokens, list)
+    assert isinstance(entity_world_voxels, list)
+    stacked_world_entity = np.concatenate(entity_world_voxels, axis=0)
+    _, adapter_entity_multiplicity = np.unique(
+        stacked_world_entity,
+        axis=0,
+        return_counts=True,
+    )
     model_entity_voxels = [
         np.floor((tokens - shared_center) / voxel_size_m).astype(np.int64)
         for tokens in entity_tokens
@@ -273,10 +296,19 @@ def _visit_token_audit(
     merge_count = adapter_count - model_count
     collision_count = int(np.count_nonzero(entity_multiplicity > 1))
     result = {
+        "adapter_cross_entity_collision_voxel_count": int(
+            np.count_nonzero(adapter_entity_multiplicity > 1)
+        ),
+        "adapter_maximum_entities_per_spatial_voxel": int(
+            np.max(adapter_entity_multiplicity)
+        ),
         "adapter_token_count": adapter_count,
         "cross_entity_token_merge_count": cross_entity_merge_count,
-        "cross_entity_collision_voxel_count": collision_count,
+        "cross_entity_collision_voxel_count": int(
+            np.count_nonzero(adapter_entity_multiplicity > 1)
+        ),
         "entity_count": prepared["entity_count"],
+        "executor_cross_entity_collision_voxel_count": collision_count,
         "maximum_entities_per_spatial_voxel": int(np.max(entity_multiplicity)),
         "model_input_token_count": model_count,
         "permutation_count": adapter_count if merge_count == 0 else None,
