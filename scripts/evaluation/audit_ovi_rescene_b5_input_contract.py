@@ -429,6 +429,23 @@ def _git_commit(checkout: Path) -> str:
         raise InputContractError("producer Git commit is unavailable") from error
 
 
+def _load_bound_module(path: Path, module_name: str) -> Any:
+    if module_name in sys.modules:
+        raise InputContractError("bound module name is already loaded")
+    module_spec = importlib.util.spec_from_file_location(module_name, path)
+    if module_spec is None or module_spec.loader is None:
+        raise InputContractError("bound source module cannot be loaded")
+    module = importlib.util.module_from_spec(module_spec)
+    sys.modules[module_name] = module
+    try:
+        module_spec.loader.exec_module(module)
+    except Exception:
+        sys.modules.pop(module_name, None)
+        raise
+    sys.modules.pop(module_name, None)
+    return module
+
+
 def materialize_native_witness(
     *,
     checkpoint_config_path: Path,
@@ -457,17 +474,11 @@ def materialize_native_witness(
 
     checkout = Path(str(persist4d["checkout_path"]))
     module_path = checkout / "scripts" / "evaluate_persist4d.py"
-    module_spec = importlib.util.spec_from_file_location(
-        "_bound_persist4d_evaluate", module_path
-    )
-    if module_spec is None or module_spec.loader is None:
-        raise InputContractError("Persist4D evaluation source cannot be loaded")
-    module = importlib.util.module_from_spec(module_spec)
     previous_cwd = Path.cwd()
     sys.path.insert(0, str(checkout))
     try:
         os.chdir(checkout)
-        module_spec.loader.exec_module(module)
+        module = _load_bound_module(module_path, "_bound_persist4d_evaluate")
         config, _ = module._compose_runtime_config()
         import hydra
         from omegaconf import OmegaConf

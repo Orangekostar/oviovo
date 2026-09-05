@@ -7,6 +7,7 @@ import pytest
 
 from scripts.evaluation.audit_ovi_rescene_b5_input_contract import (
     InputContractError,
+    _load_bound_module,
     audit_input_contract,
     summarize_native_preprocessed_sample,
 )
@@ -186,3 +187,20 @@ def test_audit_does_not_mutate_input_arrays_or_metadata() -> None:
             observed["entity_offsets"], expected["entity_offsets"]
         )
         assert observed["entity_metadata"] == expected["entity_metadata"]
+
+
+def test_bound_module_loader_supports_dataclasses_without_module_leak(
+    tmp_path,
+) -> None:
+    source = tmp_path / "bound_source.py"
+    source.write_text(
+        "from dataclasses import dataclass\n"
+        "@dataclass\n"
+        "class Record:\n"
+        "    value: int\n",
+        encoding="utf-8",
+    )
+
+    module = _load_bound_module(source, "_test_bound_source")
+
+    assert module.Record(3).value == 3
