@@ -99,6 +99,7 @@ from pathlib import Path
 import numpy as np
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--input-sidecar', type=Path)
 parser.add_argument('--pair-arrays', type=Path, required=True)
 parser.add_argument('--output-arrays', type=Path, required=True)
 parser.add_argument('--output-manifest', type=Path, required=True)
@@ -109,6 +110,8 @@ parser.add_argument('--checkpoint-sha256', required=True)
 parser.add_argument('--feature-schema', required=True)
 parser.add_argument('--neural-voxel-size-m', required=True)
 args = parser.parse_args()
+if args.input_sidecar is not None:
+    assert args.input_sidecar.is_dir()
 with np.load(args.pair_arrays, allow_pickle=False) as source:
     assert source['features'].shape == (2, 3)
 args.output_arrays.parent.mkdir(parents=True, exist_ok=True)
@@ -286,6 +289,8 @@ def test_pass_run_atomically_publishes_hash_bound_restored_arrays(tmp_path: Path
     write_neural_sample_artifact(_pair(), pair_root)
     checkpoint = tmp_path / "rescene.ckpt"
     checkpoint.write_bytes(b"author-checkpoint")
+    input_sidecar = tmp_path / "input-sidecar"
+    input_sidecar.mkdir()
     checkpoint_sha256 = hashlib.sha256(checkpoint.read_bytes()).hexdigest()
     config = _write_backend_config(
         tmp_path,
@@ -293,7 +298,12 @@ def test_pass_run_atomically_publishes_hash_bound_restored_arrays(tmp_path: Path
         source_manifest=source_manifest,
         checkpoint=checkpoint,
         checkpoint_sha256=checkpoint_sha256,
-        command=[sys.executable, str(_fake_executor(tmp_path))],
+        command=[
+            sys.executable,
+            str(_fake_executor(tmp_path)),
+            "--input-sidecar",
+            str(input_sidecar),
+        ],
     )
 
     output = run_rescene_pair_backend(config, pair_root, tmp_path / "output")
