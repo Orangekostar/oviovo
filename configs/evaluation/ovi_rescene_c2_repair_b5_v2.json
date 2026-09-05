@@ -1,0 +1,98 @@
+{
+  "artifacts": {
+    "backend_config": {
+      "byte_count": 1608,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-c2-repair-b5/configs/evaluation/rescene_two_visit_backend_persist4d_repro.json",
+      "sha256": "53ea2e4d62be6a7174212d1f0a296e6b44eb049c57cdbb17da94863dee70fbb4"
+    },
+    "calibration_manifest": {
+      "byte_count": 1809,
+      "path": "/home/ww/oviovo_baseline_runs/20260905_ovi_rescene_c2_repair_b5_v2/calibration/manifest.json",
+      "sha256": "152646563a4ec2519671767f7f6b23460d8516d6029270d4f5e1310c7c4e3d4e"
+    },
+    "static_input_manifest": {
+      "byte_count": 4466020,
+      "path": "/home/ww/oviovo_baseline_runs/20260905_ovi_rescene_c2_repair_b5_v2/prepared-static/manifest.json",
+      "sha256": "dbb7d3528ce0b8dc038a05c7a0aea8b436a79762f5faeffc7c3d233a542a385b"
+    }
+  },
+  "attempt_budget": {
+    "apartment_b5_complete_forward_maximum": 1,
+    "correctness_bug_or_oom_retry_maximum": 1,
+    "current_apartment_b5_attempt_count": 0,
+    "office_attempt_count": 0
+  },
+  "claim_boundary": {
+    "ground_truth_identity_used": false,
+    "paper_superiority_established": false,
+    "result_bearing_output_used_for_input_selection": false
+  },
+  "config_id": "OVI_RESCENE_C2_REPAIR_B5_CONFIG_V2",
+  "frame_mapping": {
+    "t0": {
+      "global_frame_end": 1021,
+      "global_frame_start": 766,
+      "local_frame_end": 255,
+      "local_frame_start": 0,
+      "visit_id": 0
+    },
+    "t1": {
+      "global_frame_end": 1472,
+      "global_frame_start": 1217,
+      "local_frame_end": 255,
+      "local_frame_start": 0,
+      "visit_id": 1
+    }
+  },
+  "model_assets": {
+    "checkpoint": {
+      "byte_count": 754917862,
+      "path": "/home/ww/paper5/checkpoints/rescene4d_concerto_t2_repro.ckpt",
+      "sha256": "85ed1aba60320cd19798536b71b91dbc156b7ea60f838832bc0bbbdba131546e"
+    },
+    "concerto": {
+      "byte_count": 433987358,
+      "path": "/home/ww/.cache/persist4d/concerto/concerto_base.pth",
+      "sha256": "845ec7dec97a5fabff8fadb5d9858ac6734347b612d1a4b574213419c139de07"
+    },
+    "model_python": "/home/ww/miniconda3/envs/persist4d/bin/python",
+    "rescene_checkout": "/home/ww/oviovo_references/evaluation/rescene4d",
+    "rescene_commit": "fb2fe42eb8f1e926567c48eea9acb874e608ee10",
+    "sampler_source": {
+      "byte_count": 45906,
+      "path": "/home/ww/paper5/third_party/sonata/sonata/transform.py",
+      "sha256": "cf799a0c2d4d835ee722ef6300b5c1ffc401b12a129bed783c081a6cce23c615"
+    },
+    "source_manifest": {
+      "byte_count": 7435,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-c2-repair-b5/configs/external/ovi_rescene_sources.json",
+      "sha256": "0afe78b623134eda15c34978f28d5d1885f19d07e101e4c264c60b83821dfb85"
+    }
+  },
+  "policies": {
+    "calibration_sample_count_per_visit": 2048,
+    "candidate_width": 8,
+    "depth_residual_ceiling_m": 0.08,
+    "depth_tolerance_m": 0.05,
+    "maximum_depth_tolerance_m": 0.05,
+    "minimum_calibration_inliers_per_visit": 512,
+    "minimum_depth_tolerance_m": 0.01,
+    "native_sampler_mode": "train",
+    "native_sampler_seed": 45,
+    "neural_voxel_size_m": 0.02,
+    "same_visit_rgbd_only": true
+  },
+  "run_root": "/home/ww/oviovo_baseline_runs/20260905_ovi_rescene_c2_repair_b5_v2",
+  "scene": "apartment",
+  "schema_version": 2,
+  "source": {
+    "base_commit": "f3cb93a9c49df3891279b67330e58401c20cc540",
+    "implementation_parent_commit": "a6d2d252c2bd4154c8cebee32aa7b267607c0d77",
+    "source_config": {
+      "byte_count": 11864,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-c2-repair-b5/configs/evaluation/ovi_rescene_b7_g_v1.json",
+      "sha256": "3db609b78c44609c84033242389ead08badc698b067ff4cafa0f4800a984f3a2"
+    }
+  },
+  "status": "FROZEN_BEFORE_RESULT_BEARING_B5"
+}

@@ -1,0 +1,47 @@
+{
+  "adapter_contract": {
+    "feature_schema": "rgb_normals",
+    "neural_voxel_size_m": 0.02
+  },
+  "backend_id": "RESCENE_CONCERTO_TWO_VISIT_V1",
+  "checkpoint": {
+    "path": "/home/ww/paper5/checkpoints/rescene4d_concerto_t2_repro.ckpt",
+    "selected_backbone": "Concerto",
+    "selection_policy": "official_or_source_bound_training_only",
+    "sha256": "85ed1aba60320cd19798536b71b91dbc156b7ea60f838832bc0bbbdba131546e",
+    "status": "PASS"
+  },
+  "environment": {
+    "python": "/home/ww/miniconda3/envs/persist4d/bin/python",
+    "status": "PINNED_PERSIST4D_PYTHON"
+  },
+  "executor": {
+    "command": [
+      "/usr/bin/env",
+      "CUDA_VISIBLE_DEVICES=0",
+      "RESCENE_DEVICE=cuda:0",
+      "CONCERTO_CHECKPOINT=/home/ww/.cache/persist4d/concerto/concerto_base.pth",
+      "/home/ww/miniconda3/envs/persist4d/bin/python",
+      "/home/ww/.config/superpowers/worktrees/ovi-rescene-c2-repair-b5/scripts/evaluation/rescene_pair_executor.py",
+      "--input-sidecar",
+      "/home/ww/oviovo_baseline_runs/20260905_ovi_rescene_c2_repair_b5_v2/built-input"
+    ],
+    "timeout_s": 7200.0
+  },
+  "random_initialization": {
+    "allowed_for_plumbing": false,
+    "ranking_eligible": false
+  },
+  "ranking_eligible": true,
+  "schema_version": 1,
+  "source": {
+    "checkout": "/home/ww/oviovo_references/evaluation/rescene4d",
+    "commit": "fb2fe42eb8f1e926567c48eea9acb874e608ee10",
+    "manifest": {
+      "byte_count": 7435,
+      "path": "configs/external/ovi_rescene_sources.json",
+      "sha256": "0afe78b623134eda15c34978f28d5d1885f19d07e101e4c264c60b83821dfb85"
+    }
+  },
+  "status": "PASS"
+}

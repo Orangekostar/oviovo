@@ -12,6 +12,7 @@ import math
 import os
 import shutil
 import stat
+import subprocess
 import sys
 import tempfile
 from collections.abc import Callable, Mapping, Sequence
@@ -61,6 +62,10 @@ from src.oviv2.two_visit_contracts import (
     VisitMap,
     validate_visit_pair,
 )
+
+_FORMAL_CONFIG_STATUS = "FROZEN_BEFORE_RESULT_BEARING_B5"
+_FORMAL_CONFIG_ID = "OVI_RESCENE_C2_REPAIR_B5_CONFIG_V2"
+_FORMAL_BASE_COMMIT = "f3cb93a9c49df3891279b67330e58401c20cc540"
 
 _STATIC_ARRAYS = {
     "coordinates_xyzt": ("geometry", "coordinates_xyzt"),
@@ -237,6 +242,18 @@ class LoadedDepthCalibration:
     manifest: dict[str, Any]
 
 
+@dataclass(frozen=True, slots=True)
+class FrozenBuildInputs:
+    config_path: Path
+    run_root: Path
+    static_input_root: Path
+    calibration_root: Path
+    output_root: Path
+    backend_config_path: Path
+    prepared: StaticPreparedInput
+    calibration: LoadedDepthCalibration
+
+
 def _regular_file_sha256(path: Path, *, label: str) -> str:
     absolute = Path(os.path.abspath(os.fspath(path)))
     try:
@@ -271,6 +288,38 @@ def _absolute_file_record(path: Path, *, label: str) -> dict[str, object]:
         "sha256": digest,
         "byte_count": absolute.stat(follow_symlinks=False).st_size,
     }
+
+
+def _validated_file_record(record: object, *, label: str) -> dict[str, object]:
+    if not isinstance(record, Mapping) or set(record) != {
+        "path",
+        "sha256",
+        "byte_count",
+    }:
+        raise C2PreparationError(f"{label} binding schema is invalid")
+    raw_path = record.get("path")
+    if not isinstance(raw_path, str) or not Path(raw_path).is_absolute():
+        raise C2PreparationError(f"{label} binding path is invalid")
+    observed = _absolute_file_record(Path(raw_path), label=label)
+    if dict(record) != observed:
+        raise C2PreparationError(f"{label} binding mismatch")
+    return observed
+
+
+def _git_output(checkout: Path, *arguments: str) -> str:
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(checkout), *arguments],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError) as error:
+        raise C2PreparationError(
+            f"cannot verify Git checkout {checkout}: {' '.join(arguments)}"
+        ) from error
+    return result.stdout.strip()
 
 
 def _read_bound_bytes(
@@ -2039,6 +2088,274 @@ def load_depth_calibration_artifact(
     )
 
 
+def validate_frozen_build_policy(
+    policy: object, calibration_manifest: Mapping[str, object]
+) -> None:
+    """Require the formal build policy to reproduce the input-only calibration."""
+
+    counts = calibration_manifest.get("sample_count_per_visit")
+    if not isinstance(counts, Mapping) or set(counts) != {"t0", "t1"}:
+        raise C2PreparationError("calibration sample counts are invalid")
+    expected = {
+        "calibration_sample_count_per_visit": 2048,
+        "candidate_width": 8,
+        "depth_residual_ceiling_m": calibration_manifest.get("residual_ceiling_m"),
+        "depth_tolerance_m": calibration_manifest.get("selected_tolerance_m"),
+        "maximum_depth_tolerance_m": calibration_manifest.get(
+            "maximum_tolerance_m"
+        ),
+        "minimum_calibration_inliers_per_visit": calibration_manifest.get(
+            "minimum_inlier_count"
+        ),
+        "minimum_depth_tolerance_m": calibration_manifest.get(
+            "minimum_tolerance_m"
+        ),
+        "native_sampler_mode": "train",
+        "native_sampler_seed": 45,
+        "neural_voxel_size_m": 0.02,
+        "same_visit_rgbd_only": True,
+    }
+    if counts != {"t0": 2048, "t1": 2048} or not isinstance(policy, Mapping):
+        raise C2PreparationError("frozen build policy mismatch")
+    try:
+        matches = _json_bytes(dict(policy)) == _json_bytes(expected)
+    except (TypeError, ValueError):
+        matches = False
+    if not matches:
+        raise C2PreparationError("frozen build policy mismatch")
+
+
+def validate_formal_build_config(config_path: str | Path) -> FrozenBuildInputs:
+    """Validate every frozen identity before a result-bearing C2 build."""
+
+    path = Path(os.path.abspath(os.fspath(config_path)))
+    expected_path = REPO_ROOT / "configs/evaluation/ovi_rescene_c2_repair_b5_v2.json"
+    if path != expected_path:
+        raise C2PreparationError("formal C2-V2 build config path is invalid")
+    config = _load_json_object(path, label="formal C2-V2 build config")
+    if set(config) != {
+        "schema_version",
+        "config_id",
+        "status",
+        "scene",
+        "run_root",
+        "frame_mapping",
+        "policies",
+        "attempt_budget",
+        "claim_boundary",
+        "source",
+        "artifacts",
+        "model_assets",
+    } or (
+        config.get("schema_version") != 2
+        or config.get("config_id") != _FORMAL_CONFIG_ID
+        or config.get("status") != _FORMAL_CONFIG_STATUS
+        or config.get("scene") != "apartment"
+    ):
+        raise C2PreparationError("formal C2-V2 build config identity is invalid")
+
+    raw_run_root = config.get("run_root")
+    if not isinstance(raw_run_root, str) or not Path(raw_run_root).is_absolute():
+        raise C2PreparationError("formal run root must be absolute")
+    run_root = Path(os.path.abspath(raw_run_root))
+    if run_root.exists() and (run_root.is_symlink() or not run_root.is_dir()):
+        raise C2PreparationError("formal run root is not a regular directory")
+
+    expected_mapping = {
+        "t0": {
+            "global_frame_end": 1021,
+            "global_frame_start": 766,
+            "local_frame_end": 255,
+            "local_frame_start": 0,
+            "visit_id": 0,
+        },
+        "t1": {
+            "global_frame_end": 1472,
+            "global_frame_start": 1217,
+            "local_frame_end": 255,
+            "local_frame_start": 0,
+            "visit_id": 1,
+        },
+    }
+    expected_attempts = {
+        "apartment_b5_complete_forward_maximum": 1,
+        "correctness_bug_or_oom_retry_maximum": 1,
+        "current_apartment_b5_attempt_count": 0,
+        "office_attempt_count": 0,
+    }
+    expected_claims = {
+        "ground_truth_identity_used": False,
+        "paper_superiority_established": False,
+        "result_bearing_output_used_for_input_selection": False,
+    }
+    if (
+        config.get("frame_mapping") != expected_mapping
+        or config.get("attempt_budget") != expected_attempts
+        or config.get("claim_boundary") != expected_claims
+    ):
+        raise C2PreparationError("formal frame, attempt, or claim boundary is invalid")
+
+    artifacts = config.get("artifacts")
+    if not isinstance(artifacts, Mapping) or set(artifacts) != {
+        "backend_config",
+        "calibration_manifest",
+        "static_input_manifest",
+    }:
+        raise C2PreparationError("formal artifact schema is invalid")
+    static_record = _validated_file_record(
+        artifacts["static_input_manifest"], label="formal static input manifest"
+    )
+    calibration_record = _validated_file_record(
+        artifacts["calibration_manifest"], label="formal calibration manifest"
+    )
+    backend_record = _validated_file_record(
+        artifacts["backend_config"], label="formal backend config"
+    )
+    static_manifest = Path(str(static_record["path"]))
+    calibration_manifest = Path(str(calibration_record["path"]))
+    backend_config = Path(str(backend_record["path"]))
+    static_root = static_manifest.parent
+    calibration_root = calibration_manifest.parent
+    if (
+        static_manifest != run_root / "prepared-static" / "manifest.json"
+        or calibration_manifest != run_root / "calibration" / "manifest.json"
+        or backend_config
+        != REPO_ROOT / "configs/evaluation/rescene_two_visit_backend_persist4d_repro.json"
+    ):
+        raise C2PreparationError("formal artifact path is outside the frozen layout")
+
+    source = config.get("source")
+    if not isinstance(source, Mapping) or set(source) != {
+        "base_commit",
+        "implementation_parent_commit",
+        "source_config",
+    } or source.get("base_commit") != _FORMAL_BASE_COMMIT:
+        raise C2PreparationError("formal source identity is invalid")
+    source_config_record = _validated_file_record(
+        source.get("source_config"), label="formal source config"
+    )
+    implementation_parent = source.get("implementation_parent_commit")
+    if not isinstance(implementation_parent, str) or len(implementation_parent) != 40:
+        raise C2PreparationError("implementation parent commit is invalid")
+    _git_output(REPO_ROOT, "rev-parse", f"{_FORMAL_BASE_COMMIT}^{{commit}}")
+    _git_output(REPO_ROOT, "merge-base", "--is-ancestor", implementation_parent, "HEAD")
+    evaluated_commit = _git_output(REPO_ROOT, "rev-parse", "HEAD")
+    if (
+        evaluated_commit == implementation_parent
+        or _git_output(REPO_ROOT, "rev-list", "--count", f"{implementation_parent}..HEAD")
+        != "1"
+        or _git_output(REPO_ROOT, "ls-files", "--error-unmatch", str(path.relative_to(REPO_ROOT)))
+        != str(path.relative_to(REPO_ROOT))
+        or _git_output(REPO_ROOT, "status", "--porcelain=v1", "--untracked-files=all")
+    ):
+        raise C2PreparationError("formal evaluated code is not one clean committed revision")
+
+    assets = config.get("model_assets")
+    if not isinstance(assets, Mapping) or set(assets) != {
+        "checkpoint",
+        "concerto",
+        "model_python",
+        "rescene_checkout",
+        "rescene_commit",
+        "sampler_source",
+        "source_manifest",
+    }:
+        raise C2PreparationError("formal model asset schema is invalid")
+    checkpoint_record = _validated_file_record(
+        assets["checkpoint"], label="formal ReScene checkpoint"
+    )
+    concerto_record = _validated_file_record(
+        assets["concerto"], label="formal Concerto checkpoint"
+    )
+    sampler_record = _validated_file_record(
+        assets["sampler_source"], label="formal native sampler source"
+    )
+    source_manifest_record = _validated_file_record(
+        assets["source_manifest"], label="formal source manifest"
+    )
+    model_python = assets.get("model_python")
+    rescene_checkout = assets.get("rescene_checkout")
+    rescene_commit = assets.get("rescene_commit")
+    if (
+        not isinstance(model_python, str)
+        or not Path(model_python).is_absolute()
+        or not Path(model_python).is_file()
+        or not os.access(model_python, os.X_OK)
+        or not isinstance(rescene_checkout, str)
+        or not Path(rescene_checkout).is_absolute()
+        or not Path(rescene_checkout).is_dir()
+        or not isinstance(rescene_commit, str)
+        or len(rescene_commit) != 40
+    ):
+        raise C2PreparationError("formal executable or ReScene checkout is invalid")
+    checkout = Path(rescene_checkout)
+    if (
+        _git_output(checkout, "rev-parse", "HEAD") != rescene_commit
+        or _git_output(checkout, "status", "--porcelain=v1", "--untracked-files=no")
+    ):
+        raise C2PreparationError("formal ReScene checkout identity is invalid")
+
+    prepared = load_static_input_artifact(static_root)
+    calibration = load_depth_calibration_artifact(
+        calibration_root,
+        static_input_root=static_root,
+        prepared=prepared,
+    )
+    validate_frozen_build_policy(config.get("policies"), calibration.manifest)
+    policies = config["policies"]
+    if (
+        prepared.input_bindings.get("source_config") != source_config_record
+        or prepared.geometry.neural_voxel_size_m != policies["neural_voxel_size_m"]
+        or prepared.sampling.voxel_size_m != policies["neural_voxel_size_m"]
+        or prepared.sampling.sampler_mode != policies["native_sampler_mode"]
+        or prepared.sampling.sampler_seed != policies["native_sampler_seed"]
+        or prepared.sampling.sampler_source_sha256 != sampler_record["sha256"]
+        or prepared.candidates.maximum_candidates != policies["candidate_width"]
+    ):
+        raise C2PreparationError("formal policy differs from prepared static input")
+
+    try:
+        from scripts.evaluation.run_rescene_pair_backend import _load_spec
+
+        backend_spec = _load_spec(backend_config)
+    except (OSError, ValueError) as error:
+        raise C2PreparationError("formal backend config is invalid") from error
+    expected_command = (
+        "/usr/bin/env",
+        "CUDA_VISIBLE_DEVICES=0",
+        "RESCENE_DEVICE=cuda:0",
+        f"CONCERTO_CHECKPOINT={concerto_record['path']}",
+        model_python,
+        str(REPO_ROOT / "scripts/evaluation/rescene_pair_executor.py"),
+        "--input-sidecar",
+        str(run_root / "built-input"),
+    )
+    if (
+        backend_spec.status != "PASS"
+        or backend_spec.ranking_eligible is not True
+        or backend_spec.checkout != checkout
+        or backend_spec.source_commit != rescene_commit
+        or backend_spec.source_manifest != Path(source_manifest_record["path"])
+        or backend_spec.feature_schema != "rgb_normals"
+        or backend_spec.neural_voxel_size_m != policies["neural_voxel_size_m"]
+        or backend_spec.checkpoint != Path(checkpoint_record["path"])
+        or backend_spec.checkpoint_sha256 != checkpoint_record["sha256"]
+        or backend_spec.executor_command != expected_command
+    ):
+        raise C2PreparationError("formal backend config differs from frozen assets")
+
+    return FrozenBuildInputs(
+        config_path=path,
+        run_root=run_root,
+        static_input_root=static_root,
+        calibration_root=calibration_root,
+        output_root=run_root / "built-input",
+        backend_config_path=backend_config,
+        prepared=prepared,
+        calibration=calibration,
+    )
+
+
 def load_bound_visit_windows(
     prepared: StaticPreparedInput,
 ) -> dict[int, MaterializedVisitFrames]:
@@ -2146,15 +2463,30 @@ def build_recovered_input(
         static_input_root=static_input_root,
         prepared=prepared,
     )
+    return _build_recovered_input_from_loaded(
+        static_input_root=Path(os.path.abspath(os.fspath(static_input_root))),
+        calibration_root=Path(os.path.abspath(os.fspath(calibration_root))),
+        output_root=Path(os.path.abspath(os.fspath(output_root))),
+        prepared=prepared,
+        calibration=calibration,
+    )
+
+
+def _build_recovered_input_from_loaded(
+    *,
+    static_input_root: Path,
+    calibration_root: Path,
+    output_root: Path,
+    prepared: StaticPreparedInput,
+    calibration: LoadedDepthCalibration,
+) -> dict[str, Any]:
     windows = load_bound_visit_windows(prepared)
     recovery = recover_model_support(
         prepared,
         windows,
         depth_tolerance_m=calibration.decision.selected_tolerance_m,
     )
-    calibration_manifest_path = (
-        Path(os.path.abspath(os.fspath(calibration_root))) / "manifest.json"
-    )
+    calibration_manifest_path = calibration_root / "manifest.json"
     publish_recovered_input(
         static_input_root=static_input_root,
         calibration_manifest_path=calibration_manifest_path,
@@ -2167,6 +2499,21 @@ def build_recovered_input(
         output_root=output_root,
         static_input_root=static_input_root,
         calibration_manifest_path=calibration_manifest_path,
+    )
+
+
+def build_recovered_input_from_formal_config(
+    config_path: str | Path,
+) -> dict[str, Any]:
+    """Build once from the fully bound, pre-result-bearing formal config."""
+
+    frozen = validate_formal_build_config(config_path)
+    return _build_recovered_input_from_loaded(
+        static_input_root=frozen.static_input_root,
+        calibration_root=frozen.calibration_root,
+        output_root=frozen.output_root,
+        prepared=frozen.prepared,
+        calibration=frozen.calibration,
     )
 
 
@@ -2443,9 +2790,10 @@ def _argument_parser() -> argparse.ArgumentParser:
     build = subparsers.add_parser(
         "build", help="recover and publish one source-bound C2-V2 model input"
     )
-    build.add_argument("--static-input", type=Path, required=True)
-    build.add_argument("--calibration", type=Path, required=True)
-    build.add_argument("--output", type=Path, required=True)
+    build.add_argument("--config", type=Path)
+    build.add_argument("--static-input", type=Path)
+    build.add_argument("--calibration", type=Path)
+    build.add_argument("--output", type=Path)
     audit = subparsers.add_parser(
         "audit", help="verify a published C2-V2 input without source RGB-D decoding"
     )
@@ -2460,7 +2808,8 @@ def main(
     *,
     grid_sample_factory: Callable[..., object] | None = None,
 ) -> int:
-    args = _argument_parser().parse_args(argv)
+    parser = _argument_parser()
+    args = parser.parse_args(argv)
     if args.command == "native-self-test":
         payload = _native_self_test(
             sampler_source_path=args.sampler_source,
@@ -2487,11 +2836,21 @@ def main(
         sys.stdout.write(_json_bytes(payload).decode("utf-8"))
         return 0
     if args.command == "build":
-        payload = build_recovered_input(
-            static_input_root=args.static_input,
-            calibration_root=args.calibration,
-            output_root=args.output,
-        )
+        direct = (args.static_input, args.calibration, args.output)
+        if args.config is not None:
+            if any(value is not None for value in direct):
+                parser.error("build --config cannot be combined with direct paths")
+            payload = build_recovered_input_from_formal_config(args.config)
+        else:
+            if any(value is None for value in direct):
+                parser.error(
+                    "build requires --config or all of --static-input, --calibration, --output"
+                )
+            payload = build_recovered_input(
+                static_input_root=args.static_input,
+                calibration_root=args.calibration,
+                output_root=args.output,
+            )
         sys.stdout.write(_json_bytes(payload).decode("utf-8"))
         return 0
     if args.command == "audit":
@@ -2509,6 +2868,7 @@ __all__ = [
     "C2PreparationError",
     "DepthCalibrationArtifactPaths",
     "DepthToleranceDecision",
+    "FrozenBuildInputs",
     "FrozenStaticSources",
     "LoadedDepthCalibration",
     "MaterializedVisitFrames",
@@ -2517,6 +2877,7 @@ __all__ = [
     "StaticPreparedInput",
     "audit_recovered_input",
     "build_recovered_input",
+    "build_recovered_input_from_formal_config",
     "calibrate_static_input",
     "capture_native_sampling",
     "load_bound_surface_groups",
@@ -2533,6 +2894,8 @@ __all__ = [
     "resolve_frozen_static_sources",
     "select_calibration_indices",
     "select_depth_tolerance",
+    "validate_formal_build_config",
+    "validate_frozen_build_policy",
     "write_depth_calibration_artifact",
     "write_static_input_artifact",
 ]

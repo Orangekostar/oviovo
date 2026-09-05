@@ -27,6 +27,7 @@ from scripts.evaluation.prepare_ovi_rescene_input_v2 import (
     resolve_frozen_static_sources,
     select_calibration_indices,
     select_depth_tolerance,
+    validate_frozen_build_policy,
     write_depth_calibration_artifact,
     write_static_input_artifact,
 )
@@ -1035,6 +1036,36 @@ def test_depth_calibration_artifact_is_parent_bound_and_no_clobber(
             static_input_root=static_root,
             prepared=load_static_input_artifact(static_root),
         )
+
+
+def test_frozen_build_policy_rejects_manual_tolerance_override() -> None:
+    policy = {
+        "calibration_sample_count_per_visit": 2048,
+        "candidate_width": 8,
+        "depth_residual_ceiling_m": 0.08,
+        "depth_tolerance_m": 0.04,
+        "maximum_depth_tolerance_m": 0.05,
+        "minimum_calibration_inliers_per_visit": 512,
+        "minimum_depth_tolerance_m": 0.01,
+        "native_sampler_mode": "train",
+        "native_sampler_seed": 45,
+        "neural_voxel_size_m": 0.02,
+        "same_visit_rgbd_only": True,
+    }
+    calibration_manifest = {
+        "sample_count_per_visit": {"t0": 2048, "t1": 2048},
+        "minimum_inlier_count": 512,
+        "residual_ceiling_m": 0.08,
+        "minimum_tolerance_m": 0.01,
+        "maximum_tolerance_m": 0.05,
+        "selected_tolerance_m": 0.05,
+    }
+
+    with pytest.raises(C2PreparationError, match="frozen build policy mismatch"):
+        validate_frozen_build_policy(policy, calibration_manifest)
+
+    policy["depth_tolerance_m"] = 0.05
+    validate_frozen_build_policy(policy, calibration_manifest)
 
 
 def test_complete_recovery_publishes_model_input_and_compatible_adapter_pair(
