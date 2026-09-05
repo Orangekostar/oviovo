@@ -1,0 +1,146 @@
+{
+  "artifact_id": "OVI_RESCENE_B5_INPUT_CONTRACT_V1",
+  "blocking_reasons": [
+    "COLOR_NORMALIZATION_MISMATCH",
+    "MISSING_SOURCE_GEOMETRY_NORMALS",
+    "BLOCKED_RESCENE_TOKEN_CONSERVATION"
+  ],
+  "checkpoint_audit": {
+    "byte_count": 2961,
+    "path": "/home/ww/oviovo_baseline_runs/20260905_ovi_rescene_b5_identity/checkpoint-audit/checkpoint_audit_summary.json",
+    "sha256": "9721e343415860d1d1aea67f62beee1f33faec3441b063b2f521ecd485449bea"
+  },
+  "feature_schema": "rgb_normals",
+  "gpu_authorized": false,
+  "native_mesh_evidence": {
+    "t0": {
+      "instance_color_log": {
+        "byte_count": 345606,
+        "path": "/home/ww/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/native-runs/apartment/t0/2f638911509f-apartment-t0/logs/mapping.log",
+        "sha256": "0adacd7738afa0695beb7c28c33c1628440d4f3e3c232ed44fcfb197f9732b29"
+      },
+      "instance_palette_entry_count": 92,
+      "instance_ply": {
+        "byte_count": 1116647861,
+        "path": "/home/ww/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/native-runs/apartment/t0/2f638911509f-apartment-t0/mapping/cropformer_inst/instance_mesh_256.ply",
+        "sha256": "e7f35ab5676c110ca72d45a2251dd53850b7b324e473b3377eb4ed6870ab790d"
+      },
+      "native_manifest": {
+        "byte_count": 306206,
+        "path": "/home/ww/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/native-runs/apartment/t0/2f638911509f-apartment-t0/native_mapping_manifest.json",
+        "sha256": "e0141a2356ca719ae2bdad3061f2442671486d4f12e8abd05ebfecdb85602ea3"
+      },
+      "ply_rgb_semantics": "instance_palette",
+      "ply_vertex_normals_present": true,
+      "ply_vertex_properties": [
+        "x",
+        "y",
+        "z",
+        "normal_x",
+        "normal_y",
+        "normal_z",
+        "red",
+        "green",
+        "blue",
+        "alpha",
+        "vertex_indices"
+      ],
+      "snapshot_loader_preserves_ply_normals": false
+    },
+    "t1": {
+      "instance_color_log": {
+        "byte_count": 357092,
+        "path": "/home/ww/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/native-runs/apartment/t1/2f638911509f-apartment-t1/logs/mapping.log",
+        "sha256": "ca7d29f1c7bd79bebb9d6565463081d264003fd210c1f7ea97b18c45f9805dae"
+      },
+      "instance_palette_entry_count": 63,
+      "instance_ply": {
+        "byte_count": 939612072,
+        "path": "/home/ww/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/native-runs/apartment/t1/2f638911509f-apartment-t1/mapping/cropformer_inst/instance_mesh_256.ply",
+        "sha256": "878f73ce7d6e1d44f668b6e9ed47eee442c4cd6c206169c620d4e0c9b8e0a5ae"
+      },
+      "native_manifest": {
+        "byte_count": 306323,
+        "path": "/home/ww/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/native-runs/apartment/t1/2f638911509f-apartment-t1/native_mapping_manifest.json",
+        "sha256": "6cbfc318c25df085cb677a039ac1ca527b17cdba55b7d9fb70478a8871eddca2"
+      },
+      "ply_rgb_semantics": "instance_palette",
+      "ply_vertex_normals_present": true,
+      "ply_vertex_properties": [
+        "x",
+        "y",
+        "z",
+        "normal_x",
+        "normal_y",
+        "normal_z",
+        "red",
+        "green",
+        "blue",
+        "alpha",
+        "vertex_indices"
+      ],
+      "snapshot_loader_preserves_ply_normals": false
+    }
+  },
+  "native_witness": {
+    "byte_count": 2505,
+    "path": "/home/ww/oviovo_baseline_runs/20260905_ovi_rescene_b5_identity/native-input-witness/native_t2_input_witness.json",
+    "sha256": "60ae18c00a4b88eb8c67f3fc8afb44e773f5c1ebb373e127cf183a9b40dee448"
+  },
+  "native_witness_artifact_id": "PERSIST4D_NATIVE_T2_INPUT_WITNESS_V1",
+  "neural_voxel_size_m": 0.02,
+  "scene": "apartment",
+  "schema_version": 1,
+  "shared_center_xyz": [
+    -9.390950173139572,
+    -2.7622697500133873,
+    -0.07036522589623928
+  ],
+  "source_visit_map_sha256": [
+    "cdd46a4a2b6ff82252dba22ae7b15bf3cc35ef46123a98649ba8c48f59cf33af",
+    "aca00e36aa6925e8a24f0f365123cc7922742df2c682a5a3da0d96a22cde88b1"
+  ],
+  "status": "BLOCKED_INPUT_FEATURE_CONTRACT",
+  "visits": {
+    "t0": {
+      "adapter_cross_entity_collision_voxel_count": 4799,
+      "adapter_maximum_entities_per_spatial_voxel": 3,
+      "adapter_token_count": 552612,
+      "cross_entity_collision_voxel_count": 4799,
+      "cross_entity_token_merge_count": 2973,
+      "entity_count": 89,
+      "executor_cross_entity_collision_voxel_count": 2857,
+      "maximum_entities_per_spatial_voxel": 3,
+      "model_input_token_count": 446153,
+      "permutation_count": null,
+      "permutation_possible": false,
+      "point_count": 14563575,
+      "token_drop_count": 0,
+      "token_duplication_count": 0,
+      "token_merge_count": 106459,
+      "token_merge_fraction": 0.19264692044327666,
+      "visit_id": 0,
+      "within_entity_token_merge_count": 103486
+    },
+    "t1": {
+      "adapter_cross_entity_collision_voxel_count": 4220,
+      "adapter_maximum_entities_per_spatial_voxel": 3,
+      "adapter_token_count": 490416,
+      "cross_entity_collision_voxel_count": 4220,
+      "cross_entity_token_merge_count": 2069,
+      "entity_count": 62,
+      "executor_cross_entity_collision_voxel_count": 2068,
+      "maximum_entities_per_spatial_voxel": 3,
+      "model_input_token_count": 408276,
+      "permutation_count": null,
+      "permutation_possible": false,
+      "point_count": 12327444,
+      "token_drop_count": 0,
+      "token_duplication_count": 0,
+      "token_merge_count": 82140,
+      "token_merge_fraction": 0.16749045708133503,
+      "visit_id": 1,
+      "within_entity_token_merge_count": 80071
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "artifact_id": "OVI_RESCENE_B5_VS_B4_RELATION_DIFF_V1",
+  "schema_version": 1,
+  "scene": "apartment",
+  "status": "NOT_RUN_C2_BLOCKED",
+  "normalization_key": [
+    "state",
+    "sorted_t0_entity_ids",
+    "sorted_t1_entity_ids"
+  ],
+  "topology_delta": {
+    "exact_topology_intersection": null,
+    "b4_only": null,
+    "b5_only": null,
+    "b4_only_one_to_one": null,
+    "b5_only_one_to_one": null,
+    "b5_only_persistent_static": null,
+    "b5_only_persistent_moved": null,
+    "b5_only_registration_accepted": null
+  },
+  "unavailable": {
+    "exact_topology_intersection": "b5_not_run_c2_blocked",
+    "b4_only": "b5_not_run_c2_blocked",
+    "b5_only": "b5_not_run_c2_blocked",
+    "b4_only_one_to_one": "b5_not_run_c2_blocked",
+    "b5_only_one_to_one": "b5_not_run_c2_blocked",
+    "b5_only_persistent_static": "b5_not_run_c2_blocked",
+    "b5_only_persistent_moved": "b5_not_run_c2_blocked",
+    "b5_only_registration_accepted": "b5_not_run_c2_blocked"
+  }
+}

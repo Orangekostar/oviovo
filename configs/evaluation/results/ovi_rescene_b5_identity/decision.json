@@ -1,0 +1,75 @@
+{
+  "artifact_id": "OVI_RESCENE_PERSIST4D_B5_IDENTITY_DECISION_V1",
+  "schema_version": 1,
+  "date": "2026-09-05",
+  "base_commit": "2136865993033e35c44dac12444363a4788e8452",
+  "branch": "research/ovi-rescene-persist4d-b5-identity",
+  "verdict": "RESCENE_B5_BLOCKED",
+  "verdict_scope": "current_ovi_to_rescene_bridge_compatibility_only",
+  "gates": {
+    "C0_checkpoint_structure": "PASS",
+    "C1_model_topology": "PASS",
+    "C2_input_and_token_contract": "FAIL",
+    "C3_one_pair_backend": "NOT_RUN_C2_BLOCKED"
+  },
+  "blocking_reasons": [
+    "COLOR_NORMALIZATION_MISMATCH",
+    "MISSING_SOURCE_GEOMETRY_NORMALS",
+    "BLOCKED_RESCENE_TOKEN_CONSERVATION"
+  ],
+  "gpu_command_count": 0,
+  "b4_reconstruction_attempt_count": 0,
+  "b5_relation_comparison_attempt_count": 0,
+  "scientific_answer": "NOT_ESTABLISHED_BECAUSE_B5_INFERENCE_WAS_BLOCKED_BEFORE_GPU",
+  "method_quality_conclusion": null,
+  "claims_allowed": [
+    "the_source_bound_local_checkpoint_is_strictly_model_topology_compatible_with_the_pinned_upstream_runtime",
+    "the_current_frozen_ovi_artifacts_do_not_satisfy_the_source_verified_rescene_input_and_token_provenance_contract"
+  ],
+  "claims_not_allowed": [
+    "rescene_identity_accuracy_exceeds_b4",
+    "b5_improves_the_final_current_map",
+    "learned_b7_improves_b3",
+    "rescene_reduces_ghost",
+    "office_generalization_works",
+    "the_local_checkpoint_reaches_official_paper_parity",
+    "the_blocked_bridge_is_a_rescene_method_failure"
+  ],
+  "learned_b7": "NOT_RUN_BY_SCOPE",
+  "current_map_execution": "NOT_RUN_BY_SCOPE",
+  "office": {
+    "status": "HELD_OUT",
+    "attempt_count": 0
+  },
+  "three_rscan": {
+    "selected_visit_count": 44,
+    "complete_visit_count": 27,
+    "incomplete_visit_count": 17,
+    "final_ranking": "NOT_RUN"
+  },
+  "external_artifact_root": "/home/ww/oviovo_baseline_runs/20260905_ovi_rescene_b5_identity",
+  "external_artifact_manifest": {
+    "path": "/home/ww/oviovo_baseline_runs/20260905_ovi_rescene_b5_identity/apartment/pair/apartment_pair_receipt.json",
+    "byte_count": 7249,
+    "sha256": "2fc579636d02acfa1fa026e9bfd0fa6483770a14e13e19372046481b86a646d2",
+    "producer_git_commit": "bebe0b268b8ba9b125f8198ac0f1f6ef5ee00c28"
+  },
+  "verification": {
+    "focused": {
+      "command": "/home/ww/miniconda3/bin/python -m pytest -q tests/evaluation/test_audit_persist4d_rescene_checkpoint.py tests/evaluation/test_audit_ovi_rescene_b5_input_contract.py tests/evaluation/test_ovi_rescene_b5_identity_results.py tests/oviv2/test_ovi_rescene_adapter.py tests/oviv2/test_rescene_backend_contract.py tests/oviv2/test_rescene_backend_integration.py tests/oviv2/test_query_instance_projection.py tests/oviv2/test_geometric_pair_reasoner.py",
+      "passed": 55,
+      "failed": 0,
+      "status": "PASS"
+    },
+    "full_suite": {
+      "command": "/home/ww/miniconda3/bin/python -m pytest -q",
+      "passed": 6009,
+      "skipped": 10,
+      "failed": 0,
+      "warning_count": 5,
+      "elapsed_s": 815.93,
+      "status": "PASS"
+    }
+  },
+  "highest_value_next_action": "build_a_versioned_source_bound_rgbd_to_ovi_token_camera_rgb_and_normal_alignment_bridge_plus_an_adapter_to_model_reverse_map_that_preserves_every_token_then_rerun_c2"
+}

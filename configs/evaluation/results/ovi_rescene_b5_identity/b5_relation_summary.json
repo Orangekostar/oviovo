@@ -1,0 +1,65 @@
+{
+  "artifact_id": "OVI_RESCENE_B5_RELATION_SUMMARY_V1",
+  "schema_version": 1,
+  "scene": "apartment",
+  "variant_id": "B5",
+  "status": "NOT_RUN_C2_BLOCKED",
+  "checkpoint_sha256": "85ed1aba60320cd19798536b71b91dbc156b7ea60f838832bc0bbbdba131546e",
+  "input_contract": {
+    "path": "configs/evaluation/results/ovi_rescene_b5_identity/input_contract_summary.json",
+    "byte_count": 5578,
+    "sha256": "ee9b64abc8173707603d0c081947a6cb09da9fa48cec15db83575cb94abe1e0c",
+    "status": "BLOCKED_INPUT_FEATURE_CONTRACT"
+  },
+  "blocking_reasons": [
+    "COLOR_NORMALIZATION_MISMATCH",
+    "MISSING_SOURCE_GEOMETRY_NORMALS",
+    "BLOCKED_RESCENE_TOKEN_CONSERVATION"
+  ],
+  "gpu_attempt_count": 0,
+  "backend_status": null,
+  "preflight_token_inventory": {
+    "t0": {
+      "raw_point_count": 14563575,
+      "adapter_token_count": 552612,
+      "would_be_executor_input_token_count": 446153,
+      "token_merge_count": 106459,
+      "cross_entity_token_merge_count": 2973,
+      "token_drop_count": 0,
+      "token_duplication_count": 0
+    },
+    "t1": {
+      "raw_point_count": 12327444,
+      "adapter_token_count": 490416,
+      "would_be_executor_input_token_count": 408276,
+      "token_merge_count": 82140,
+      "cross_entity_token_merge_count": 2069,
+      "token_drop_count": 0,
+      "token_duplication_count": 0
+    }
+  },
+  "query_count": null,
+  "nonempty_query_count": null,
+  "runtime_s": null,
+  "peak_gpu_memory_bytes": null,
+  "relation_summary": {
+    "total": null,
+    "persistent_static": null,
+    "persistent_moved": null,
+    "appeared": null,
+    "removed_candidate": null,
+    "split": null,
+    "merge": null,
+    "uncertain": null,
+    "one_to_one_persistent_total": null
+  },
+  "unavailable": {
+    "backend_status": "c3_not_run_because_c2_input_and_token_contract_failed",
+    "query_count": "c3_not_run_because_c2_input_and_token_contract_failed",
+    "nonempty_query_count": "c3_not_run_because_c2_input_and_token_contract_failed",
+    "runtime_s": "no_gpu_or_backend_command_run",
+    "peak_gpu_memory_bytes": "no_gpu_or_backend_command_run",
+    "relations": "no_temporal_query_evidence_produced",
+    "registration": "no_b5_only_one_to_one_relations_produced"
+  }
+}

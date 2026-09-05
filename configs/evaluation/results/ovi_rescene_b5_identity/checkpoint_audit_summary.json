@@ -1,0 +1,88 @@
+{
+  "artifact_id": "PERSIST4D_RESCENE4D_C_T2_REPRO_V1",
+  "canonical_checkpoint": {
+    "byte_count": 754917862,
+    "path": "/home/ww/paper5/checkpoints/rescene4d_concerto_t2_repro.ckpt",
+    "regular_file": true,
+    "sha256": "85ed1aba60320cd19798536b71b91dbc156b7ea60f838832bc0bbbdba131546e",
+    "symlink": false
+  },
+  "checkpoint_structure": {
+    "byte_count": 754917862,
+    "epoch": 404,
+    "global_step": 26730,
+    "nonfinite_tensor_count": 0,
+    "prefix_counts": {
+      "criterion": 2,
+      "model": 796
+    },
+    "sha256": "85ed1aba60320cd19798536b71b91dbc156b7ea60f838832bc0bbbdba131546e",
+    "state_dict_key_count": 798,
+    "status": "CHECKPOINT_STRUCTURE_PASS",
+    "tensor_dtype_counts": {
+      "torch.float32": 798
+    },
+    "tensor_element_count": 135149676,
+    "top_level_keys": [
+      "callbacks",
+      "epoch",
+      "global_step",
+      "hparams_name",
+      "hparams_type",
+      "hyper_parameters",
+      "loops",
+      "lr_schedulers",
+      "optimizer_states",
+      "p2_optimizer_parameter_contract",
+      "p2_train_sampler_generator",
+      "pytorch-lightning_version",
+      "state_dict"
+    ]
+  },
+  "classification": "SOURCE_BOUND_RESCENE_REPRODUCTION",
+  "concerto_initialization": {
+    "byte_count": 433987358,
+    "required_for_model_construction": true,
+    "revision": "c31f993a56129f2ba9c5d06a35957e3f05bff710",
+    "sha256": "845ec7dec97a5fabff8fadb5d9858ac6734347b612d1a4b574213419c139de07"
+  },
+  "model_topology": {
+    "checkpoint_model_key_count": 796,
+    "ignored_or_dropped_model_keys": [],
+    "missing_keys": [],
+    "model_key_count": 796,
+    "shape_mismatches": [],
+    "status": "MODEL_TOPOLOGY_STRICT_COMPATIBLE",
+    "strict_load": true,
+    "unexpected_keys": []
+  },
+  "official_author_checkpoint": false,
+  "producer_command": [
+    "/home/ww/miniconda3/envs/persist4d/bin/python",
+    "/home/ww/.config/superpowers/worktrees/ovi-rescene-persist4d-b5-identity/scripts/evaluation/audit_persist4d_rescene_checkpoint.py",
+    "--config",
+    "configs/external/persist4d_rescene_checkpoint_v1.json",
+    "--output",
+    "configs/evaluation/results/ovi_rescene_b5_identity/checkpoint_audit_summary.json"
+  ],
+  "producer_git_commit": "ae992da04544d465470d7dd4e08f7c76adc8032a",
+  "provenance_config": {
+    "byte_count": 3826,
+    "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-persist4d-b5-identity/configs/external/persist4d_rescene_checkpoint_v1.json",
+    "sha256": "6ec400062daac628c23d919e0152bdf0dfa104b9882a18d938bc23eea4ebb32d"
+  },
+  "schema_version": 1,
+  "source_identity": {
+    "persist4d": {
+      "commit": "1380c4b9f37bec7933126ccc9bd70067de166f6f",
+      "required_file_count": 5,
+      "status": "SOURCE_IDENTITY_PASS"
+    },
+    "pristine_upstream_rescene4d": {
+      "commit": "fb2fe42eb8f1e926567c48eea9acb874e608ee10",
+      "required_file_count": 5,
+      "status": "SOURCE_IDENTITY_PASS"
+    }
+  },
+  "status": "C0_C1_PASS"
+}

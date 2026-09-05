@@ -1,0 +1,66 @@
+{
+  "artifact_id": "OVI_RESCENE_B5_B4_RELATION_SUMMARY_V1",
+  "schema_version": 1,
+  "scene": "apartment",
+  "variant_id": "B4",
+  "status": "PASS_FROZEN_OUTPUT",
+  "backend_status": "PASS",
+  "identity_source": "b4_geometric_baseline",
+  "reconstruction": {
+    "attempt_count": 0,
+    "status": "NOT_RUN_C2_BLOCKED",
+    "reason": "task_2_input_contract_failed_before_conditional_task_4"
+  },
+  "frozen_projection_config": {
+    "minimum_source_point_coverage": 0.25,
+    "minimum_entity_token_coverage": 0.25,
+    "static_centroid_tolerance_m": 0.1
+  },
+  "source_artifacts": {
+    "current_map_manifest": {
+      "path": "/home/ww/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/apartment-b0-b6-entity-lift-96ba693/B4/current-map/manifest.json",
+      "byte_count": 3540,
+      "sha256": "15bfec5c03052de47d49b21679b075caf17c066019fba9576e2c94e30f1d81fe"
+    },
+    "metrics": {
+      "path": "/home/ww/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/apartment-b0-b6-entity-lift-96ba693/B4/metrics.json",
+      "byte_count": 7559,
+      "sha256": "42b9056c2949ca829e4350295ce703bd4093b65254217375033b0540382ce763"
+    },
+    "frozen_config": {
+      "path": "configs/evaluation/ovi_rescene_b7_g_v1.json",
+      "byte_count": 11864,
+      "sha256": "3db609b78c44609c84033242389ead08badc698b067ff4cafa0f4800a984f3a2"
+    }
+  },
+  "token_counts": {
+    "t0": null,
+    "t1": null
+  },
+  "relation_summary": {
+    "total": 120,
+    "persistent_static": null,
+    "persistent_moved": null,
+    "appeared": null,
+    "removed_candidate": null,
+    "split": null,
+    "merge": null,
+    "uncertain": null,
+    "one_to_one_persistent_total": null
+  },
+  "runtime_s": 143.51442972477525,
+  "peak_gpu_memory_bytes": null,
+  "unavailable": {
+    "t0": "geometric_pair_tokens_not_serialized",
+    "t1": "geometric_pair_tokens_not_serialized",
+    "persistent_static": "frozen_manifest_serializes_relation_ids_only_and_task_4_rebuild_not_run_after_c2_failure",
+    "persistent_moved": "frozen_manifest_serializes_relation_ids_only_and_task_4_rebuild_not_run_after_c2_failure",
+    "appeared": "frozen_manifest_serializes_relation_ids_only_and_task_4_rebuild_not_run_after_c2_failure",
+    "removed_candidate": "frozen_manifest_serializes_relation_ids_only_and_task_4_rebuild_not_run_after_c2_failure",
+    "split": "frozen_manifest_serializes_relation_ids_only_and_task_4_rebuild_not_run_after_c2_failure",
+    "merge": "frozen_manifest_serializes_relation_ids_only_and_task_4_rebuild_not_run_after_c2_failure",
+    "uncertain": "frozen_manifest_serializes_relation_ids_only_and_task_4_rebuild_not_run_after_c2_failure",
+    "one_to_one_persistent_total": "pair_relations_not_serialized_and_task_4_rebuild_not_run_after_c2_failure",
+    "peak_gpu_memory_bytes": "postprocessing_peak_gpu_memory_not_instrumented"
+  }
+}

@@ -1,7 +1,7 @@
 # Persist4D ReScene Checkpoint Audit
 
 Date: 2026-09-05
-Status: `PHASE_A_PASS_C2_PENDING`
+Status: `C0_C1_PASS_C2_BLOCKED`
 Base commit: `2136865993033e35c44dac12444363a4788e8452`
 
 ## Checkpoint Identity
@@ -51,7 +51,8 @@ elements: 796 `model.*` entries and two `criterion.*` entries. The saved
 configuration resolves to Concerto, D=4, T=2, 100 non-parametric queries,
 2 cm input voxels, segment training enabled, temporal masking disabled, RGB
 enabled, raw coordinates enabled, and the Pointcept normal path enabled by the
-collator. A machine-readable rerun is part of the implementation plan.
+collator. The machine-readable result is
+`configs/evaluation/results/ovi_rescene_b5_identity/checkpoint_audit_summary.json`.
 
 ## C1 Strict Topology
 
@@ -70,47 +71,56 @@ load Concerto initialization weights after model construction and strict
 restore, although the construction-time initialization identity remains
 bound and verified.
 
-## Preliminary C2 Findings
+## C2 Input And Token Contract
 
-One real existing native T=2 witness,
-`scene0003_00-scene0003_03`, produces 37,987 Pointcept tokens from 54,541 raw
-points. The processed tensor has coordinates `[37987,5]`, grid coordinates
-`[37987,3]`, and features `[37987,9]`. The nine channels are centered XYZ,
-dataset-normalized RGB, and source normals. Temporal values are exactly 0 and
-1, the true OVI-equivalent sequence batch is zero, and the two Pointcept stage
-batches contain 19,134 and 18,853 tokens.
+One real native T=2 witness, `scene0003_00-scene0003_03`, produces 37,987
+Pointcept tokens from 54,541 raw points. Its processed coordinate, grid, and
+feature shapes are `[37987,5]`, `[37987,3]`, and `[37987,9]`. The model feature
+channels are shared-centered XYZ, raw source camera RGB in `[0,1]`, and unit
+source geometry normals. The dataset-normalized color tensor is constructed but
+discarded by the pinned Pointcept collator; no RIO/ImageNet normalization enters
+the actual model feature. Temporal values are exactly 0 and 1, the true sequence
+batch is zero, and Pointcept stage batches contain 19,134 and 18,853 tokens.
 
-The native 3RScan files store RGB in `[0,1]`, then the pinned dataset code casts
-it to `uint8` before Albumentations normalization. The bound mean is
-`[0.001681035080447036, 0.0015699645182459389, 0.0014388616751178026]` and the
-bound standard deviation is
-`[0.0010721057171332617, 0.0010743444191366812, 0.001081851490549608]`.
-This unusual path must be reproduced exactly; ImageNet normalization or a
-second division by 255 is not equivalent.
+The frozen Apartment OVI PLYs contain geometry normals, but their RGB columns
+are the instance palette proven by the color-to-instance logs. The frozen B0/B2
+snapshot/entity representation retains neither per-point source camera RGB nor
+per-point source geometry normals, and the existing loader discards the PLY
+normals. Palette RGB cannot substitute for camera RGB.
 
-The frozen Apartment OVI PLY has geometric normals, but its RGB columns are the
-global instance palette used by the color-to-instance log. The frozen B0/B2
-snapshot records do not carry source camera RGB or per-point normals, and
-`load_ovimap_visit()` does not add them. The current adapter correctly rejects
-palette RGB. A 2 cm geometry-only inventory yields 564,259 t0 entity tokens and
-501,089 t1 entity tokens. Pure spatial Pointcept voxelization would merge 5,659
-t0 tokens and 4,556 t1 tokens across entity boundaries (5,404 and 4,552
-collision voxels respectively). These are C2 blockers unless a separately
-versioned, source-verified feature and reverse-mapping contract is designed.
+The source-correct adapter-first 2 cm inventory uses one shared pair center.
+t0 contains 14,563,575 source points, 552,612 adapter tokens, and 446,153
+would-be native model tokens; native spatial resampling would merge 106,459
+tokens, including 2,973 cross-entity merges. t1 contains 12,327,444 source
+points, 490,416 adapter tokens, and 408,276 would-be model tokens; it would
+merge 82,140 tokens, including 2,069 cross-entity merges. Drop and duplication
+counts are zero, but this is not a permutation and therefore cannot restore the
+existing CSR entity provenance without a versioned reverse mapping.
+
+C2 is blocked by `COLOR_NORMALIZATION_MISMATCH`,
+`MISSING_SOURCE_GEOMETRY_NORMALS`, and
+`BLOCKED_RESCENE_TOKEN_CONSERVATION`. This is a bridge compatibility result,
+not a ReScene method-quality result. No GPU command was authorized or run.
 
 ## Current OVI Boundary
 
 The existing backend policy already allows
-`official_or_source_bound_training_only`; it must not be weakened. The repo has
-a fail-closed subprocess boundary and runner, but no real checkpoint-forward
-executor. The smallest executor would be
-`scripts/evaluation/rescene_pair_executor.py`, with preprocessing isolated in
-`src/oviv2/rescene_input_bridge.py` only if C2 passes. Executor work is not
-permitted while the camera-RGB and token-conservation gates are unresolved.
+`official_or_source_bound_training_only`; it was not weakened. The repo has a
+fail-closed subprocess boundary and runner, but no real checkpoint-forward
+executor. Because C2 failed, the conditional executor, B4 reconstruction, B5
+projection, relation comparison, current-map work, learned B7, and Office were
+not run.
 
 Compatibility gates are: C0 exact checkpoint structure, C1 strict model tensor
 consumption, C2 feature/color/normal/coordinate/temporal/batch/grid contract,
 token conservation or a versioned reverse map, and only then one C3 frozen
 Apartment GPU pair.
 
-Phase A used no GPU, did not run OVI, and did not run B7.
+Compact C0/C1 and C2 receipts are under
+`configs/evaluation/results/ovi_rescene_b5_identity/`. External evidence is
+rooted at
+`/home/ww/oviovo_baseline_runs/20260905_ovi_rescene_b5_identity/`; its Apartment
+pair receipt has 7,249 bytes and SHA-256
+`2fc579636d02acfa1fa026e9bfd0fa6483770a14e13e19372046481b86a646d2`.
+
+The audit used no GPU, did not rerun OVI, and did not run any current map or B7.
