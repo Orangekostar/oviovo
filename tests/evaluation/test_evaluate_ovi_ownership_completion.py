@@ -4,6 +4,7 @@ import numpy as np
 
 from scripts.evaluation.evaluate_ovi_ownership_completion import (
     assemble_ownership_completion_report,
+    write_instance_readout_csv,
 )
 from src.evaluation.rscan_method_views import build_method_pair_view
 from src.oviv2.two_visit_contracts import PairRelation
@@ -167,3 +168,23 @@ def test_report_rejects_b7_metric_drift_from_its_b3_reference() -> None:
         assert "B3 reference" in str(error)
     else:
         raise AssertionError("B7/B3 metric drift must fail closed")
+
+
+def test_writes_dense_instance_rows_as_lf_csv(tmp_path) -> None:
+    rows = (
+        {
+            "pair_id": "pair",
+            "variant_id": "U0",
+            "iou_threshold": 0.5,
+            "precision": None,
+            "geometry_unchanged": True,
+        },
+    )
+
+    output = write_instance_readout_csv(tmp_path / "instance_readout.csv", rows)
+
+    assert b"\r\n" not in output.read_bytes()
+    assert output.read_text(encoding="utf-8").splitlines() == [
+        "pair_id,variant_id,iou_threshold,precision,geometry_unchanged",
+        "pair,U0,0.5,,True",
+    ]

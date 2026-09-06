@@ -6,9 +6,16 @@ import hashlib
 import json
 import math
 from collections.abc import Sequence
+from typing import Literal
 
 import numpy as np
 
+from src.evaluation.ovi_pair_views import OviObjectPairView
+from src.evaluation.temporal_object_groups import (
+    GroupingConfig,
+    TemporalObjectGrouping,
+    build_temporal_object_groups,
+)
 from src.oviv2.two_visit_contracts import NeuralSampleMap, PairRelation
 
 
@@ -120,6 +127,25 @@ def build_ownership_readout(
     }
 
 
+def build_dense_ownership_readout(
+    pair: OviObjectPairView,
+    relations: Sequence[PairRelation],
+    *,
+    variant_id: Literal["A_ID", "U0", "U1", "U2", "U3"],
+    minimum_query_confidence: float = 0.3,
+) -> TemporalObjectGrouping:
+    """Build a dense OVI-backed readout while preserving current XYZ coordinates."""
+
+    return build_temporal_object_groups(
+        pair,
+        relations,
+        variant_id=variant_id,
+        config=GroupingConfig(
+            minimum_query_confidence=minimum_query_confidence,
+        ),
+    )
+
+
 def _voxels(value: object, *, voxel_size_m: float, label: str) -> set[tuple[int, int, int]]:
     array = np.asarray(value, dtype=np.float64)
     if array.ndim != 2 or array.shape[1:] != (3,) or not np.all(np.isfinite(array)):
@@ -187,6 +213,7 @@ def evaluate_completion_surface(
 
 __all__ = [
     "OwnershipCompletionError",
+    "build_dense_ownership_readout",
     "build_ownership_readout",
     "evaluate_completion_surface",
 ]

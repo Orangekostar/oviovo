@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import json
 import math
@@ -15,12 +16,20 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.evaluation.prepare_ovi_rescene_supported_v3 import audit_supported_input
 from src.evaluation.ovi_ownership_completion import build_ownership_readout
+from src.evaluation.ovi_pair_views import OviObjectPairView
+from src.evaluation.rscan_gt_instances import GroundTruthPair
+from src.evaluation.temporal_object_groups import (
+    TemporalObjectGrouping,
+    evaluate_current_instance_grouping,
+)
 from src.oviv2.ovi_rescene_adapter import load_neural_sample_artifact
 from src.oviv2.two_visit_contracts import NeuralSampleMap, PairRelation
 
@@ -45,6 +54,23 @@ _RELATION_KEYS = {
     "evidence",
     "identity_source",
 }
+_DENSE_VARIANTS = ("A_ID", "U0", "U1", "U2", "U3")
+_INSTANCE_METRIC_KEYS = (
+    "status",
+    "predicted_instance_count",
+    "ground_truth_instance_count",
+    "true_positive_count",
+    "false_positive_count",
+    "false_negative_count",
+    "precision",
+    "recall",
+    "f_score",
+    "fragment_gt_count",
+    "merge_prediction_count",
+    "merge_prediction_rate",
+    "duplicate_prediction_count",
+    "mean_matched_iou",
+)
 
 
 class OwnershipReportError(ValueError):
@@ -405,6 +431,131 @@ def assemble_ownership_completion_report(
     }
 
 
+def write_instance_readout_csv(
+    path: str | Path,
+    rows: tuple[Mapping[str, object], ...],
+) -> Path:
+    """Write dense instance rows as an atomically replaced LF CSV."""
+
+    if not isinstance(rows, tuple) or not rows:
+        raise OwnershipReportError("instance readout rows are empty")
+    fields = tuple(rows[0])
+    if not fields or any(tuple(row) != fields for row in rows):
+        raise OwnershipReportError("instance readout rows use inconsistent fields")
+    output = Path(path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{output.name}.", dir=output.parent
+    )
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8", newline="") as stream:
+            writer = csv.DictWriter(stream, fieldnames=fields, lineterminator="\n")
+            writer.writeheader()
+            writer.writerows(rows)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, output)
+    except BaseException:
+        temporary.unlink(missing_ok=True)
+        raise
+    return output
+
+
+def build_instance_readout_rows(
+    pair: OviObjectPairView,
+    groupings: Mapping[str, TemporalObjectGrouping],
+    ground_truth: GroundTruthPair,
+    *,
+    evaluated_commit: str,
+    config_sha256: str,
+    checkpoint_sha256: str,
+) -> tuple[dict[str, object], ...]:
+    """Flatten measured dense t1 instance quality for all declared variants."""
+
+    if not isinstance(pair, OviObjectPairView):
+        raise TypeError("pair must be an OviObjectPairView")
+    if not isinstance(ground_truth, GroundTruthPair):
+        raise TypeError("ground_truth must be a GroundTruthPair")
+    if tuple(groupings) != _DENSE_VARIANTS:
+        raise OwnershipReportError("instance readout variants or order are invalid")
+    for value, length, label in (
+        (evaluated_commit, 40, "evaluated commit"),
+        (config_sha256, 64, "config SHA-256"),
+        (checkpoint_sha256, 64, "checkpoint SHA-256"),
+    ):
+        if (
+            not isinstance(value, str)
+            or len(value) != length
+            or any(character not in "0123456789abcdef" for character in value)
+        ):
+            raise OwnershipReportError(f"{label} is invalid")
+    current = pair.visits[1]
+    owned = current.entity_owner_indices >= 0
+    owned_count = int(np.count_nonzero(owned))
+    supported_count = int(np.count_nonzero(owned & current.appearance_valid))
+    support_rate = None if owned_count == 0 else supported_count / owned_count
+    rows: list[dict[str, object]] = []
+    for variant_id in _DENSE_VARIANTS:
+        grouping = groupings[variant_id]
+        if (
+            not isinstance(grouping, TemporalObjectGrouping)
+            or grouping.variant_id != variant_id
+            or grouping.pair_content_sha256 != pair.content_sha256()
+        ):
+            raise OwnershipReportError("instance grouping identity is invalid")
+        metrics = evaluate_current_instance_grouping(grouping, ground_truth)
+        current_conflicts = {
+            value.entity_id
+            for value in grouping.rejected_conflicts
+            if value.visit_id == 1
+        }
+        objects = grouping.objects[1]
+        common = {
+            "pair_id": pair.pair_id,
+            "variant_id": variant_id,
+            "evaluated_commit": evaluated_commit,
+            "t0_source_candidate_count": len(grouping.candidate_ids[0]),
+            "t1_source_candidate_count": len(grouping.candidate_ids[1]),
+            "current_composite_object_count": len(objects),
+            "current_grouped_source_entity_count": sum(
+                len(value.member_entity_ids) for value in objects if value.is_grouped
+            ),
+            "current_query_supported_object_count": sum(
+                bool(value.query_ids) for value in objects
+            ),
+            "unconfirmed_atomic_object_count": sum(
+                not value.query_ids for value in objects
+            ),
+            "rejected_conflict_count": len(grouping.rejected_conflicts),
+            "current_rejected_entity_count": len(current_conflicts),
+            "current_owned_point_count": owned_count,
+            "appearance_supported_owned_point_count": supported_count,
+            "appearance_support_rate": support_rate,
+            "geometry_unchanged": (
+                grouping.source_xyz_multiset_sha256
+                == grouping.output_xyz_multiset_sha256
+            ),
+            "pair_content_sha256": grouping.pair_content_sha256,
+            "grouping_sha256": grouping.content_sha256(),
+            "source_xyz_multiset_sha256": grouping.source_xyz_multiset_sha256,
+            "output_xyz_multiset_sha256": grouping.output_xyz_multiset_sha256,
+            "config_sha256": config_sha256,
+            "checkpoint_sha256": checkpoint_sha256,
+        }
+        for threshold in ("0.50", "0.25"):
+            threshold_metrics = metrics[threshold]
+            rows.append(
+                common
+                | {"iou_threshold": float(threshold_metrics["iou_threshold"])}
+                | {
+                    key: threshold_metrics[key]
+                    for key in _INSTANCE_METRIC_KEYS
+                }
+            )
+    return tuple(rows)
+
+
 def evaluate_from_config(config_path: str | Path) -> tuple[Path, dict[str, object]]:
     """Validate every source binding and publish the configured result once."""
 
@@ -529,8 +680,10 @@ def main(argv: list[str] | None = None) -> int:
 __all__ = [
     "OwnershipReportError",
     "assemble_ownership_completion_report",
+    "build_instance_readout_rows",
     "evaluate_from_config",
     "main",
+    "write_instance_readout_csv",
 ]
 
 
