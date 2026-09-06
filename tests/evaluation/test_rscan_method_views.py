@@ -9,10 +9,20 @@ import pytest
 from src.evaluation.rscan_method_views import (
     RScanMethodViewError,
     build_execution_plans,
+    build_feature_geometric_sample,
     build_method_pair_view,
     build_method_pair_view_from_manifest,
     domain_coverage,
+    native_query_evidence,
+    pool_independent_segment_features,
+    project_queries_fast,
+    resolve_native_queries_one_to_one,
 )
+from src.oviv2.query_instance_projection import (
+    ProjectionConfig,
+    project_queries_to_instances,
+)
+from src.oviv2.two_visit_contracts import TemporalQueryEvidence
 
 
 def _processed(*, offset: float = 0.0) -> np.ndarray:
@@ -195,3 +205,111 @@ def test_domain_coverage_marks_missing_d2_instead_of_zero() -> None:
     ]
     assert rows[2].method_tensor_sha256 is None
     assert rows[2].metrics is None
+
+
+def _native_arrays() -> dict[str, np.ndarray]:
+    return {
+        "inverse_n": np.asarray([0, 0, 1, 2, 2, 3], dtype=np.int64),
+        "lowres_point2segment_m": np.asarray([0, 1, 2, 3], dtype=np.int64),
+        "lowres_visit_ids_m": np.asarray([0, 0, 1, 1], dtype=np.int8),
+        "full_visit_ids_n": np.asarray([0, 0, 0, 1, 1, 1], dtype=np.int8),
+        "full_original_segment_ids_n": np.asarray(
+            [4, 4, 8, 13, 13, 17], dtype=np.int64
+        ),
+        "backbone_features_mf": np.asarray(
+            [[2.0, 0.0], [0.0, 3.0], [4.0, 0.0], [0.0, 5.0]],
+            dtype=np.float32,
+        ),
+        "raw_masks_sq": np.asarray(
+            [[4.0, -4.0], [-4.0, 4.0], [3.0, -3.0], [-3.0, 3.0]],
+            dtype=np.float32,
+        ),
+        "raw_logits_qc": np.asarray(
+            [[3.0, 0.0, -2.0], [0.0, 3.0, -2.0]], dtype=np.float32
+        ),
+    }
+
+
+def test_f_features_pool_per_visit_without_cross_visit_access() -> None:
+    pair = _pair()
+    arrays = _native_arrays()
+
+    first = pool_independent_segment_features(pair, arrays)
+    changed = dict(arrays)
+    changed["backbone_features_mf"] = arrays["backbone_features_mf"].copy()
+    changed["backbone_features_mf"][2:] *= -1.0
+    second = pool_independent_segment_features(pair, changed)
+
+    np.testing.assert_array_equal(first[(0, "segment:000004")], [1.0, 0.0])
+    np.testing.assert_array_equal(first[(0, "segment:000008")], [0.0, 1.0])
+    np.testing.assert_array_equal(
+        first[(0, "segment:000004")], second[(0, "segment:000004")]
+    )
+    np.testing.assert_array_equal(
+        first[(0, "segment:000008")], second[(0, "segment:000008")]
+    )
+
+
+def test_feature_sample_adds_only_independent_embeddings() -> None:
+    pair = _pair()
+    sample = build_feature_geometric_sample(pair, _native_arrays(), voxel_size_m=0.02)
+
+    assert {item.semantic_label for item in sample.entity_semantics} == {None}
+    assert all(item.semantic_embedding.shape == (2,) for item in sample.entity_semantics)
+    assert sample.feature_schema == "geometric_only+independent_concerto_entity_mean"
+
+
+def test_fast_projection_matches_reference_projection_on_small_pair() -> None:
+    sample = _pair().geometric_sample(neural_voxel_size_m=0.02)
+    entity = list(sample.token_entity_ids)
+    query_masks = np.asarray(
+        [
+            [value == "segment:000004" for value in entity],
+            [value == "segment:000008" for value in entity],
+        ],
+        dtype=np.bool_,
+    )
+    evidence = TemporalQueryEvidence(
+        status="PASS",
+        backend_name="rescene:test",
+        backend_config_sha256="c" * 64,
+        pair_sha256=sample.content_sha256(),
+        temporal_query_ids=("q0", "q1"),
+        query_masks=query_masks,
+        token_scores=query_masks.astype(np.float32),
+        query_scores=np.asarray([0.9, 0.8], dtype=np.float32),
+        checkpoint_sha256="d" * 64,
+        ranking_eligible=True,
+        runtime_s=0.0,
+        peak_memory_bytes=0,
+    )
+
+    expected = project_queries_to_instances(sample, evidence, ProjectionConfig()).relations
+    observed = project_queries_fast(sample, evidence, ProjectionConfig())
+
+    assert observed == expected
+
+
+def test_native_queries_reuse_raw_masks_for_legacy_and_one_to_one_resolvers() -> None:
+    pair = _pair()
+    sample = pair.geometric_sample(neural_voxel_size_m=0.02)
+    arrays = _native_arrays()
+
+    evidence = native_query_evidence(
+        pair,
+        sample,
+        arrays,
+        checkpoint_sha256="d" * 64,
+    )
+    legacy = project_queries_fast(sample, evidence, ProjectionConfig())
+    supported = resolve_native_queries_one_to_one(pair, evidence, sample)
+
+    assert [(row.t0_entity_ids, row.t1_entity_ids) for row in legacy] == [
+        (("segment:000004",), ("segment:000004",)),
+        (("segment:000008",), ("segment:000008",)),
+    ]
+    assert [(row.t0_entity_ids, row.t1_entity_ids) for row in supported] == [
+        (("segment:000004",), ("segment:000004",)),
+        (("segment:000008",), ("segment:000008",)),
+    ]
+    assert all(row.identity_source == "rescene" for row in supported)

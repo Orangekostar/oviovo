@@ -11,12 +11,21 @@ import stat
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
 from typing import Literal
 
 import numpy as np
 
 from src.evaluation.contracts import EntityPrediction, MapSnapshot
-from src.oviv2.two_visit_contracts import NeuralSampleMap, VisitMap
+from src.oviv2.query_instance_projection import ProjectionConfig
+from src.oviv2.temporal_pair_reasoner import validate_query_evidence
+from src.oviv2.two_visit_contracts import (
+    NeuralSampleMap,
+    OviEntitySemanticEvidence,
+    PairRelation,
+    TemporalQueryEvidence,
+    VisitMap,
+)
 from src.oviv2.two_visit_execution import build_geometric_pair_sample
 
 DomainId = Literal[
@@ -508,6 +517,492 @@ def domain_coverage(
     return tuple(rows)
 
 
+def _native_full_domains(
+    pair: RScanMethodPairView, arrays: Mapping[str, object]
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    required = {
+        "inverse_n",
+        "lowres_point2segment_m",
+        "lowres_visit_ids_m",
+        "full_visit_ids_n",
+        "full_original_segment_ids_n",
+    }
+    if not isinstance(arrays, Mapping) or not required.issubset(arrays):
+        raise RScanMethodViewError("native arrays lack method-domain mappings")
+    inverse = np.asarray(arrays["inverse_n"])
+    low_segments = np.asarray(arrays["lowres_point2segment_m"])
+    low_visits = np.asarray(arrays["lowres_visit_ids_m"])
+    full_visits = np.asarray(arrays["full_visit_ids_n"])
+    full_segments = np.asarray(arrays["full_original_segment_ids_n"])
+    if any(
+        value.ndim != 1 or not np.issubdtype(value.dtype, np.integer)
+        for value in (inverse, low_segments, low_visits, full_visits, full_segments)
+    ):
+        raise RScanMethodViewError("native method-domain mappings must be integer vectors")
+    n = sum(visit.point_count for visit in pair.visits)
+    m = len(low_segments)
+    if (
+        len(inverse) != n
+        or len(full_visits) != n
+        or len(full_segments) != n
+        or len(low_visits) != m
+        or m == 0
+        or np.any(inverse < 0)
+        or np.any(inverse >= m)
+    ):
+        raise RScanMethodViewError("native method-domain mappings are misaligned")
+    expected_points, _rgb, _normals, expected_visits, expected_segments = (
+        _expected_pair_arrays(pair)
+    )
+    del expected_points
+    if not np.array_equal(full_visits.astype(np.int8), expected_visits) or not np.array_equal(
+        full_segments.astype(np.int64), expected_segments
+    ):
+        raise RScanMethodViewError("native full domain differs from the method view")
+    representative_visits = np.full(m, -1, dtype=np.int8)
+    for model_index in range(m):
+        contributors = full_visits[inverse == model_index]
+        if not len(contributors) or len(np.unique(contributors)) != 1:
+            raise RScanMethodViewError("native voxel mixes visits or lacks provenance")
+        representative_visits[model_index] = np.int8(contributors[0])
+    if not np.array_equal(low_visits.astype(np.int8), representative_visits):
+        raise RScanMethodViewError("native low-resolution visits differ from inverse provenance")
+    if np.any(low_segments < 0):
+        raise RScanMethodViewError("native point2segment contains a negative ID")
+    return (
+        inverse.astype(np.int64, copy=False),
+        low_segments.astype(np.int64, copy=False),
+        low_visits.astype(np.int8, copy=False),
+        full_visits.astype(np.int8, copy=False),
+        full_segments.astype(np.int64, copy=False),
+    )
+
+
+def _expected_pair_arrays(
+    pair: RScanMethodPairView,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    points = np.concatenate([visit.points_xyz for visit in pair.visits], axis=0)
+    rgb = np.concatenate([visit.rgb for visit in pair.visits], axis=0)
+    normals = np.concatenate([visit.normals_xyz for visit in pair.visits], axis=0)
+    visits = np.concatenate(
+        [
+            np.full(visit.point_count, visit.visit_id, dtype=np.int8)
+            for visit in pair.visits
+        ]
+    )
+    first_segments = pair.visits[0].segment_ids
+    second_segments = (
+        pair.visits[1].segment_ids + int(np.max(first_segments)) + 1
+    )
+    segments = np.concatenate((first_segments, second_segments)).astype(np.int64)
+    return points, rgb, normals, visits, segments
+
+
+def _candidate_global_segment(
+    pair: RScanMethodPairView, visit_id: int, local_segment: int
+) -> int:
+    if visit_id == 0:
+        return local_segment
+    return local_segment + int(np.max(pair.visits[0].segment_ids)) + 1
+
+
+def pool_independent_segment_features(
+    pair: RScanMethodPairView, arrays: Mapping[str, object]
+) -> Mapping[tuple[int, str], np.ndarray]:
+    """Mean-pool visit-local backbone features by GT-free mesh segment."""
+
+    if not isinstance(pair, RScanMethodPairView):
+        raise TypeError("pair must be an RScanMethodPairView")
+    inverse, _low_segments, _low_visits, full_visits, full_segments = (
+        _native_full_domains(pair, arrays)
+    )
+    features = np.asarray(arrays.get("backbone_features_mf"))
+    if (
+        features.ndim != 2
+        or features.shape[0] != int(np.max(inverse)) + 1
+        or not np.issubdtype(features.dtype, np.floating)
+        or not np.all(np.isfinite(features))
+    ):
+        raise RScanMethodViewError("native backbone feature domain is invalid")
+    expanded = features[inverse].astype(np.float64, copy=False)
+    result: dict[tuple[int, str], np.ndarray] = {}
+    for visit in pair.visits:
+        for local_segment, candidate_id in zip(
+            np.unique(visit.segment_ids), visit.candidate_ids, strict=True
+        ):
+            global_segment = _candidate_global_segment(
+                pair, visit.visit_id, int(local_segment)
+            )
+            selected = (full_visits == visit.visit_id) & (
+                full_segments == global_segment
+            )
+            if not np.any(selected):
+                raise RScanMethodViewError("native features omit a method candidate")
+            embedding = np.mean(expanded[selected], axis=0)
+            norm = float(np.linalg.norm(embedding))
+            if not math.isfinite(norm) or norm <= 0.0:
+                raise RScanMethodViewError("pooled candidate embedding has zero norm")
+            normalized = np.asarray(embedding / norm, dtype=np.float32)
+            normalized.setflags(write=False)
+            result[(visit.visit_id, candidate_id)] = normalized
+    return MappingProxyType(dict(sorted(result.items())))
+
+
+def build_feature_geometric_sample(
+    pair: RScanMethodPairView,
+    arrays: Mapping[str, object],
+    *,
+    voxel_size_m: float,
+) -> NeuralSampleMap:
+    """Attach independent Concerto entity means to the frozen geometric sample."""
+
+    base = pair.geometric_sample(neural_voxel_size_m=voxel_size_m)
+    embeddings = pool_independent_segment_features(pair, arrays)
+    semantics = tuple(
+        OviEntitySemanticEvidence(
+            visit_id=visit_id,
+            entity_id=entity_id,
+            semantic_label=None,
+            semantic_score=0.0,
+            semantic_embedding=embedding,
+        )
+        for (visit_id, entity_id), embedding in embeddings.items()
+    )
+    return NeuralSampleMap(
+        coordinates_xyzt=base.coordinates_xyzt,
+        features=base.features,
+        visit_ids=base.visit_ids,
+        source_visit_ids=base.source_visit_ids,
+        source_entity_ids=base.source_entity_ids,
+        source_point_indices=base.source_point_indices,
+        source_to_token_offsets=base.source_to_token_offsets,
+        neural_voxel_size_m=base.neural_voxel_size_m,
+        feature_schema="geometric_only+independent_concerto_entity_mean",
+        coordinate_frame_id=base.coordinate_frame_id,
+        source_manifest_sha256=base.source_manifest_sha256,
+        source_visit_map_sha256=base.source_visit_map_sha256,
+        entity_semantics=semantics,
+    )
+
+
+def _sigmoid(value: np.ndarray) -> np.ndarray:
+    clipped = np.clip(np.asarray(value, dtype=np.float64), -80.0, 80.0)
+    return 1.0 / (1.0 + np.exp(-clipped))
+
+
+def _softmax(value: np.ndarray) -> np.ndarray:
+    raw = np.asarray(value, dtype=np.float64)
+    shifted = raw - raw.max(axis=1, keepdims=True)
+    exp = np.exp(shifted)
+    return exp / exp.sum(axis=1, keepdims=True)
+
+
+def native_query_evidence(
+    pair: RScanMethodPairView,
+    sample: NeuralSampleMap,
+    arrays: Mapping[str, object],
+    *,
+    checkpoint_sha256: str,
+) -> TemporalQueryEvidence:
+    """Project one native raw query tensor onto the shared method candidates."""
+
+    inverse, low_segments, _low_visits, full_visits, full_segments = (
+        _native_full_domains(pair, arrays)
+    )
+    masks = np.asarray(arrays.get("raw_masks_sq"))
+    logits = np.asarray(arrays.get("raw_logits_qc"))
+    if (
+        masks.ndim != 2
+        or logits.ndim != 2
+        or masks.shape[1] != logits.shape[0]
+        or logits.shape[1] < 2
+        or not np.all(np.isfinite(masks))
+        or not np.all(np.isfinite(logits))
+        or np.any(low_segments >= masks.shape[0])
+    ):
+        raise RScanMethodViewError("native raw query arrays are invalid")
+    full_scores = _sigmoid(masks[low_segments[inverse]])
+    token_entities = sample.token_entity_ids
+    token_scores_all = np.zeros((masks.shape[1], len(token_entities)), dtype=np.float32)
+    for visit in pair.visits:
+        for local_segment, candidate_id in zip(
+            np.unique(visit.segment_ids), visit.candidate_ids, strict=True
+        ):
+            global_segment = _candidate_global_segment(
+                pair, visit.visit_id, int(local_segment)
+            )
+            selected_points = (full_visits == visit.visit_id) & (
+                full_segments == global_segment
+            )
+            candidate_scores = np.mean(full_scores[selected_points], axis=0)
+            selected_tokens = np.asarray(
+                [
+                    index
+                    for index, (token_visit, token_entity) in enumerate(
+                        zip(sample.visit_ids, token_entities, strict=True)
+                    )
+                    if int(token_visit) == visit.visit_id
+                    and token_entity == candidate_id
+                ],
+                dtype=np.int64,
+            )
+            if not len(selected_tokens):
+                raise RScanMethodViewError("geometric sample omits a method candidate")
+            token_scores_all[:, selected_tokens] = candidate_scores[:, None]
+    positive = token_scores_all > 0.5
+    retained = np.flatnonzero(np.any(positive, axis=1))
+    if not len(retained):
+        raise RScanMethodViewError("native raw queries select no method candidates")
+    probabilities = _softmax(logits)
+    foreground = probabilities[:, :-1].max(axis=1)
+    positive_counts = positive.sum(axis=1)
+    mean_positive = np.divide(
+        (token_scores_all * positive).sum(axis=1),
+        positive_counts,
+        out=np.zeros(masks.shape[1], dtype=np.float64),
+        where=positive_counts > 0,
+    )
+    query_scores = np.asarray(foreground * mean_positive, dtype=np.float32)
+    backend_hash = _canonical_sha256(
+        {
+            "backend": "rescene_native_raw_query",
+            "candidate_pooling": "full_point_mean_from_native_inverse",
+            "mask_threshold": 0.5,
+        }
+    )
+    evidence = TemporalQueryEvidence(
+        status="PASS",
+        backend_name="rescene:native_raw_query",
+        backend_config_sha256=backend_hash,
+        pair_sha256=sample.content_sha256(),
+        temporal_query_ids=tuple(f"query_{int(index):04d}" for index in retained),
+        query_masks=np.ascontiguousarray(positive[retained], dtype=np.bool_),
+        token_scores=np.ascontiguousarray(token_scores_all[retained], dtype=np.float32),
+        query_scores=np.ascontiguousarray(query_scores[retained], dtype=np.float32),
+        checkpoint_sha256=_sha256(checkpoint_sha256, "checkpoint SHA-256"),
+        ranking_eligible=True,
+        runtime_s=0.0,
+        peak_memory_bytes=0,
+        diagnostics={"raw_forward_reused": "true"},
+    )
+    validate_query_evidence(sample, evidence)
+    return evidence
+
+
+def _relation_state(
+    t0_ids: tuple[str, ...],
+    t1_ids: tuple[str, ...],
+    centroids: Mapping[tuple[int, str], np.ndarray],
+    config: ProjectionConfig,
+) -> tuple[str, float | None]:
+    cardinality = (len(t0_ids), len(t1_ids))
+    if cardinality == (1, 1):
+        distance = float(np.linalg.norm(centroids[(0, t0_ids[0])] - centroids[(1, t1_ids[0])]))
+        return (
+            "persistent_static"
+            if distance <= config.static_centroid_tolerance_m
+            else "persistent_moved",
+            distance,
+        )
+    if cardinality == (0, 1):
+        return "appeared", None
+    if cardinality == (1, 0):
+        return "removed_candidate", None
+    if cardinality[0] == 1 and cardinality[1] > 1:
+        return "split", None
+    if cardinality[0] > 1 and cardinality[1] == 1:
+        return "merge", None
+    return "uncertain", None
+
+
+def _entity_token_data(
+    sample: NeuralSampleMap,
+) -> tuple[
+    Mapping[tuple[int, str], np.ndarray],
+    Mapping[tuple[int, str], np.ndarray],
+]:
+    groups: dict[tuple[int, str], list[int]] = {}
+    for index, entity_id in enumerate(sample.token_entity_ids):
+        groups.setdefault((int(sample.visit_ids[index]), entity_id), []).append(index)
+    contributor_counts = np.diff(sample.source_to_token_offsets).astype(np.float64)
+    indices = {
+        key: np.asarray(value, dtype=np.int64) for key, value in sorted(groups.items())
+    }
+    centroids = {
+        key: np.average(
+            sample.coordinates_xyzt[value, :3],
+            axis=0,
+            weights=contributor_counts[value],
+        )
+        for key, value in indices.items()
+    }
+    return MappingProxyType(indices), MappingProxyType(centroids)
+
+
+def project_queries_fast(
+    sample: NeuralSampleMap,
+    evidence: TemporalQueryEvidence,
+    config: ProjectionConfig,
+) -> tuple[PairRelation, ...]:
+    """Project queries in one pass while preserving the reference relation contract."""
+
+    if not isinstance(config, ProjectionConfig):
+        raise TypeError("config must be a ProjectionConfig")
+    validate_query_evidence(sample, evidence)
+    assert evidence.query_masks is not None
+    assert evidence.token_scores is not None
+    assert evidence.query_scores is not None
+    groups, centroids = _entity_token_data(sample)
+    contributor_counts = np.diff(sample.source_to_token_offsets).astype(np.int64)
+    identity_source = (
+        "rescene"
+        if evidence.backend_name.startswith("rescene:")
+        else "geometric_baseline"
+        if evidence.backend_name == "geometric_semantic"
+        else "unmatched"
+    )
+    relations: list[PairRelation] = []
+    for query_index, query_id in enumerate(evidence.temporal_query_ids):
+        mask = evidence.query_masks[query_index]
+        records: list[tuple[int, str, float, float, float]] = []
+        for (visit_id, entity_id), indices in groups.items():
+            selected = indices[mask[indices]]
+            if not len(selected):
+                continue
+            token_coverage = len(selected) / len(indices)
+            entity_source_count = int(contributor_counts[indices].sum())
+            selected_source_count = int(contributor_counts[selected].sum())
+            source_coverage = selected_source_count / entity_source_count
+            soft_mass = float(evidence.token_scores[query_index, indices].sum())
+            records.append(
+                (visit_id, entity_id, token_coverage, source_coverage, soft_mass)
+            )
+        selected_records = [
+            record
+            for record in records
+            if record[2] >= config.minimum_entity_token_coverage
+            or record[3] >= config.minimum_source_point_coverage
+        ] or records
+        selected_records.sort(key=lambda value: (value[0], value[1]))
+        t0_ids = tuple(value[1] for value in selected_records if value[0] == 0)
+        t1_ids = tuple(value[1] for value in selected_records if value[0] == 1)
+        state, centroid_distance = _relation_state(t0_ids, t1_ids, centroids, config)
+        source_coverages = [value[3] for value in selected_records]
+        relation_evidence = {
+            "query_score": float(evidence.query_scores[query_index]),
+            "selected_entity_count": float(len(selected_records)),
+            "minimum_source_point_coverage": min(source_coverages, default=0.0),
+            "soft_mass": sum(value[4] for value in selected_records),
+        }
+        if centroid_distance is not None:
+            relation_evidence["centroid_distance_m"] = centroid_distance
+        relations.append(
+            PairRelation(
+                temporal_query_id=query_id,
+                t0_entity_ids=t0_ids,
+                t1_entity_ids=t1_ids,
+                state=state,
+                query_confidence=float(evidence.query_scores[query_index]),
+                evidence=relation_evidence,
+                identity_source=identity_source,
+            )
+        )
+    return tuple(relations)
+
+
+def resolve_native_queries_one_to_one(
+    pair: RScanMethodPairView,
+    evidence: TemporalQueryEvidence,
+    sample: NeuralSampleMap,
+    *,
+    minimum_candidate_score: float = 0.5,
+) -> tuple[PairRelation, ...]:
+    """Resolve raw ReScene queries through mutual dominant candidate support."""
+
+    if not 0.0 <= float(minimum_candidate_score) <= 1.0:
+        raise RScanMethodViewError("minimum candidate score must be in [0, 1]")
+    validate_query_evidence(sample, evidence)
+    assert evidence.query_masks is not None
+    assert evidence.token_scores is not None
+    assert evidence.query_scores is not None
+    groups, centroids = _entity_token_data(sample)
+    keys = tuple(groups)
+    scores = np.asarray(
+        [
+            [float(np.mean(evidence.token_scores[q, groups[key]])) for key in keys]
+            for q in range(len(evidence.temporal_query_ids))
+        ],
+        dtype=np.float64,
+    )
+    query_best: dict[tuple[int, int], int] = {}
+    for query_index in range(len(evidence.temporal_query_ids)):
+        for visit_id in (0, 1):
+            options = [index for index, key in enumerate(keys) if key[0] == visit_id]
+            query_best[(query_index, visit_id)] = max(
+                options, key=lambda index: (scores[query_index, index], -index)
+            )
+    entity_best = {
+        entity_index: max(
+            range(len(evidence.temporal_query_ids)),
+            key=lambda query_index: (scores[query_index, entity_index], -query_index),
+        )
+        for entity_index in range(len(keys))
+    }
+    used: set[int] = set()
+    relations: list[PairRelation] = []
+    for query_index, query_id in enumerate(evidence.temporal_query_ids):
+        first = query_best[(query_index, 0)]
+        second = query_best[(query_index, 1)]
+        if (
+            scores[query_index, first] < minimum_candidate_score
+            or scores[query_index, second] < minimum_candidate_score
+            or entity_best[first] != query_index
+            or entity_best[second] != query_index
+            or first in used
+            or second in used
+        ):
+            continue
+        used.update((first, second))
+        t0_id = keys[first][1]
+        t1_id = keys[second][1]
+        state, distance = _relation_state(
+            (t0_id,), (t1_id,), centroids, ProjectionConfig()
+        )
+        assert distance is not None
+        relations.append(
+            PairRelation(
+                temporal_query_id=query_id,
+                t0_entity_ids=(t0_id,),
+                t1_entity_ids=(t1_id,),
+                state=state,
+                query_confidence=float(evidence.query_scores[query_index]),
+                evidence={
+                    "query_score": float(evidence.query_scores[query_index]),
+                    "t0_candidate_score": float(scores[query_index, first]),
+                    "t1_candidate_score": float(scores[query_index, second]),
+                    "centroid_distance_m": distance,
+                },
+                identity_source="rescene",
+            )
+        )
+    for entity_index, (visit_id, entity_id) in enumerate(keys):
+        if entity_index in used:
+            continue
+        relations.append(
+            PairRelation(
+                temporal_query_id=f"unmatched:{visit_id}:{entity_id}",
+                t0_entity_ids=(entity_id,) if visit_id == 0 else (),
+                t1_entity_ids=(entity_id,) if visit_id == 1 else (),
+                state="removed_candidate" if visit_id == 0 else "appeared",
+                query_confidence=1.0,
+                evidence={"query_score": 1.0, "candidate_unmatched": 1.0},
+                identity_source="rescene",
+            )
+        )
+    relations.sort(key=lambda value: str(value.temporal_query_id))
+    return tuple(relations)
+
+
 __all__ = [
     "DomainCoverageRow",
     "MethodExecutionPlan",
@@ -515,7 +1010,12 @@ __all__ = [
     "RScanMethodPairView",
     "RScanMethodViewError",
     "build_execution_plans",
+    "build_feature_geometric_sample",
     "build_method_pair_view",
     "build_method_pair_view_from_manifest",
     "domain_coverage",
+    "native_query_evidence",
+    "pool_independent_segment_features",
+    "project_queries_fast",
+    "resolve_native_queries_one_to_one",
 ]
