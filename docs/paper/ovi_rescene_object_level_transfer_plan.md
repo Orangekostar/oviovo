@@ -64,15 +64,15 @@
 - Consumes: a manifest-bound `sequence.zip`, its `_info.txt`, frame color/depth/pose members, and one visit output directory.
 - Produces: ScanNet-style `color/<i>.jpg`, `depth/<i>.png`, `pose/<i>.txt`, `intrinsic/intrinsic_{color,depth}.txt`, plus `materialized_manifest.json` containing UUID, frame map, dimensions, depth shift, calibration matrices, and content bindings.
 
-- [ ] Write failing tests for parsing `_info.txt`, contiguous valid frame selection, 16-bit PGM depth preservation, 4x4 pose validation, and different RGB/depth intrinsics and dimensions.
-- [ ] Write a failing test requiring materialization to reject non-identity RGB-depth extrinsics until an explicit calibrated reprojection path is supplied; identity extrinsics use the native `K_depth @ inv(K_color)` warp already implemented by `ScannetLoader`.
-- [ ] Run `python -m pytest -q tests/evaluation/test_materialize_3rscan_ovi_visit.py` and confirm failures are caused by the missing materializer.
-- [ ] Implement streamed archive extraction and a canonical manifest; do not unpack unrelated mesh/GT assets into the mapper input.
-- [ ] Extend `run_ovimap_native.py` with an explicit `scannet_nyu` scene contract instead of weakening Replica validation; generated OVI commands must use `--dataset scannet_nyu` and real per-visit intrinsics.
-- [ ] Add preflight projection checks for depth scale, finite pose, image shape, and one real frame's camera/world round trip.
-- [ ] Materialize one selected pair, run both visits through OVI once, and store local-only paths, byte counts, SHA-256 values, runtime, and peak GPU memory.
-- [ ] Verify with `python -m pytest -q tests/evaluation/test_materialize_3rscan_ovi_visit.py tests/evaluation/test_run_ovimap_native.py`.
-- [ ] Commit Task 2 code/config and compact manifests; exclude raw RGB-D, checkpoints, and full meshes from Git.
+- [x] Write failing tests for parsing `_info.txt`, contiguous valid frame selection, 16-bit PGM depth preservation, 4x4 pose validation, and different RGB/depth intrinsics and dimensions.
+- [x] Write a failing test requiring materialization to reject non-identity RGB-depth extrinsics until an explicit calibrated reprojection path is supplied; identity extrinsics use the native `K_depth @ inv(K_color)` warp already implemented by `ScannetLoader`.
+- [x] Run `python -m pytest -q tests/evaluation/test_materialize_3rscan_ovi_visit.py` and confirm failures are caused by the missing materializer.
+- [x] Implement streamed archive extraction and a canonical manifest; do not unpack unrelated mesh/GT assets into the mapper input.
+- [x] Extend `run_ovimap_native.py` with an explicit `scannet_nyu` scene contract instead of weakening Replica validation; generated OVI commands must use `--dataset scannet_nyu` and real per-visit intrinsics.
+- [x] Add preflight projection checks for depth scale, finite pose, image shape, and one real frame's camera/world round trip.
+- [x] Materialize one selected pair, run both visits through OVI once, and store local-only paths, byte counts, SHA-256 values, runtime, and peak GPU memory.
+- [x] Verify with `python -m pytest -q tests/evaluation/test_materialize_3rscan_ovi_visit.py tests/evaluation/test_run_ovimap_native.py`.
+- [x] Commit Task 2 code/config and compact manifests; exclude raw RGB-D, checkpoints, and full meshes from Git.
 
 ### Task 3: D2 OVI pair loader and shared candidate contract
 

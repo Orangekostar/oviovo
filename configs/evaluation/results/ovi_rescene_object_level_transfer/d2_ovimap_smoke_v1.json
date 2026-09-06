@@ -1,0 +1,229 @@
+{
+  "schema_version": 1,
+  "artifact_id": "OVI_RESCENE_D2_OVIMAP_SMOKE_V1",
+  "status": "REAL_D2_PAIR_PASS",
+  "evaluated_commit": "5fc7ae09be0c0965490a1763db4e58ac1907f439",
+  "config": {
+    "path": "configs/evaluation/ovi_rescene_object_level_transfer_v1.json",
+    "sha256": "dc00286569a180ef3907074ab8cf73f40b490cbf1670b9642dcb3c47e739ab85",
+    "byte_count": 2758
+  },
+  "selection": {
+    "manifest": {
+      "path": "configs/evaluation/manifests/ovi_rescene_object_level_pairs_v1.json",
+      "sha256": "2054c818c5f02a1ffcf2d4bcb3d3743ef0f4865ff428055f00e2f215c69d4a37",
+      "byte_count": 79594
+    },
+    "pair_id": "scene0109_00-scene0109_01",
+    "role": "D2_DEV",
+    "reason": "first frozen D2_DEV pair by ascending total source frame count",
+    "selected_before_method_results": true,
+    "total_source_frame_count": 116,
+    "official_rigid_change_count": 3
+  },
+  "protocol": {
+    "dataset": "3RScan",
+    "dataset_adapter": "scannet_nyu",
+    "frame_step": 1,
+    "visit_mapping": "independent",
+    "rgb_depth_registration": "K_depth @ inv(K_color)",
+    "depth_units_per_meter": 1000.0,
+    "frontend_confidence_threshold": 0.5,
+    "ground_truth_used_by_mapping": false
+  },
+  "implementation_sources": {
+    "materializer": {
+      "path": "scripts/evaluation/materialize_3rscan_ovi_visit.py",
+      "sha256": "ff5f93ca0184379ea59ff65ac3a74b4ecac2354951e64934e47279e416fa4d96",
+      "byte_count": 20276
+    },
+    "native_runner": {
+      "path": "scripts/evaluation/run_ovimap_native.py",
+      "sha256": "38b40a61319189d3f64fc64147227fe20fe5e79e4476c18c3cc52c7b7f3a382d",
+      "byte_count": 35729
+    },
+    "native_audit": {
+      "path": "src/evaluation/baselines/ovimap_native.py",
+      "sha256": "8ded552107f4551855197d5eb8f7434bbec6b1dff5fa2fd7b814f67e83957fe6",
+      "byte_count": 5619
+    }
+  },
+  "external_runtime": {
+    "ovimap_commit": "58a804e2d7c82ba05a489eb071aba3367301fed8",
+    "source_manifest": {
+      "path": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/environment/source-hashes.json",
+      "sha256": "b149958d8dcbbfbffc75271ea5455adfa19d95e80c5f241e2415d1d15cdf5963",
+      "byte_count": 2123
+    },
+    "mapper": {
+      "path": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/OVI-MAP/scripts/panoptic_mapping_.py",
+      "sha256": "b7157708d21ebff123a15cc10be14b3b149ebb3b19fea8f2349b3c6eb8a4b410",
+      "byte_count": 28644
+    },
+    "consistent_gsm_extension": {
+      "path": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/OVI-MAP/mapping_ros_ws/devel/lib/consistent_gsm.cpython-311-x86_64-linux-gnu.so",
+      "sha256": "edd9be8e10e5ab88d8086bb1fc133c758dc667e3ba8dc09650aa59fc82a106ca",
+      "byte_count": 340904
+    },
+    "depth_segmentation_extension": {
+      "path": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/OVI-MAP/mapping_ros_ws/devel/lib/depth_segmentation_py.cpython-311-x86_64-linux-gnu.so",
+      "sha256": "c0a02238ef93694d7c72bed4dba6eda04972fffcff4045acb9840361ef714f8f",
+      "byte_count": 250456
+    },
+    "cropformer_weights": {
+      "path": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/Entity/checkpoints/CropFormer_hornet_3x_03823a.pth",
+      "sha256": "71915b7e9dc63fc662b32c59dff513530a06221c3b22f6de7ff4d6ef82df1128",
+      "byte_count": 888996425
+    },
+    "siglip_weights": {
+      "path": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/siglip-large-patch16-384/model.safetensors",
+      "sha256": "ab804d2c2c631159f65afa1de27787c5dba90cbfa189f26404de1944d50a18a2",
+      "byte_count": 2610010520
+    }
+  },
+  "visits": [
+    {
+      "visit_index": 0,
+      "scan_id": "20c993b7-698f-29c5-847d-c8cb8a685f5a",
+      "frame_count": 63,
+      "source_sequence": {
+        "path": "/home/ww/vv/dataset/3RScan/scans/20c993b7-698f-29c5-847d-c8cb8a685f5a/sequence.zip",
+        "sha256": "c7ac1f1ef8a39659b16703fc1c7840af98658a93048df17ac8f8eae971433ee7",
+        "byte_count": 11041001
+      },
+      "materialized": {
+        "manifest": {
+          "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/materialized-v1/20c993b7-698f-29c5-847d-c8cb8a685f5a/materialized_manifest.json",
+          "sha256": "87112341b05902beb9c6d6a9613cf9686f1529b71448793d351b4500d2474611",
+          "byte_count": 37778
+        },
+        "output_tree_sha256": "e8ffcf1b60e149ae2b415a6432f6f4dc008af32f949ad75b5a25f2d185af15a9",
+        "output_tree_byte_count": 7790113,
+        "output_tree_file_count": 191,
+        "color_shape": [540, 960, 3],
+        "depth_shape": [172, 224],
+        "camera_world_round_trip_error_raw_units": 3.410605131648481e-13,
+        "observed_file_creation_span_s": 0.690006
+      },
+      "native_mapping": {
+        "manifest": {
+          "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/ovi-native-v1/scenes/20c993b7-698f-29c5-847d-c8cb8a685f5a/attempt-20260906T161218.364141Z/native_mapping_manifest.json",
+          "sha256": "1a5eb316bcb6d14634344f5270358970054c3df2664c86434fc5a48b3ba329c1",
+          "byte_count": 24405
+        },
+        "artifacts": {
+          "instance_mesh": {
+            "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/ovi-native-v1/scenes/20c993b7-698f-29c5-847d-c8cb8a685f5a/attempt-20260906T161218.364141Z/mapping/cropformer_inst/instance_mesh_63.ply",
+            "sha256": "f8a230bfcc725f052a84402d3b3f7bf040158c4af3f1b66ebe22d5eaef347ba6",
+            "byte_count": 59835167
+          },
+          "semantic_features": {
+            "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/ovi-native-v1/scenes/20c993b7-698f-29c5-847d-c8cb8a685f5a/attempt-20260906T161218.364141Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_63_incre_combine.pkl",
+            "sha256": "fd71098d8c8f6b76a709611f6df0b72f19cabdb91637822864efdcc1c3bf9f19",
+            "byte_count": 461993
+          },
+          "instance_color_log": {
+            "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/ovi-native-v1/scenes/20c993b7-698f-29c5-847d-c8cb8a685f5a/attempt-20260906T161218.364141Z/native_audit/instance_colors_cpp.tsv",
+            "sha256": "fbbfc5e940f44e9e88ea407ccead3c6990b07794ac7962346c0ac997a5424022",
+            "byte_count": 421
+          }
+        },
+        "active_entity_count": 30,
+        "raycast_bbox_count": 301,
+        "full_frame_bbox_count": 0,
+        "stale_raycast_ids": [14, 36],
+        "camera_world_round_trip_error_m": 3.3306690738754696e-16,
+        "runtime_s": {
+          "frontend_tqdm": 95.0,
+          "geometry_log_span": 6.919,
+          "mapping_log_span": 109.412,
+          "stage_sum": 211.331
+        }
+      }
+    },
+    {
+      "visit_index": 1,
+      "scan_id": "20c993b3-698f-29c5-859c-dca8ddecf220",
+      "frame_count": 53,
+      "source_sequence": {
+        "path": "/home/ww/vv/dataset/3RScan/scans/20c993b3-698f-29c5-859c-dca8ddecf220/sequence.zip",
+        "sha256": "4ebf6bd6f07dd54f5afa991c19b9db68b99220412b2d31c2d55b143f0f41696b",
+        "byte_count": 9625273
+      },
+      "materialized": {
+        "manifest": {
+          "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/materialized-v1/20c993b3-698f-29c5-859c-dca8ddecf220/materialized_manifest.json",
+          "sha256": "440648c9e81178de3e1c1fd0bb9d3619f9effc47e95b4b1930346ee9b8ef5c89",
+          "byte_count": 32215
+        },
+        "output_tree_sha256": "d9edc12487a50426f5b92fd418a53b93b5c9f3a79a4d7b069976099c0c1aed98",
+        "output_tree_byte_count": 6890231,
+        "output_tree_file_count": 161,
+        "color_shape": [540, 960, 3],
+        "depth_shape": [172, 224],
+        "camera_world_round_trip_error_raw_units": 3.2155493553843715e-13,
+        "observed_file_creation_span_s": 0.511004
+      },
+      "native_mapping": {
+        "manifest": {
+          "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/ovi-native-v1/scenes/20c993b3-698f-29c5-859c-dca8ddecf220/attempt-20260906T161218.311986Z/native_mapping_manifest.json",
+          "sha256": "e92fd50ddcf57912ec98f319d93d94c7e2849d2972d59489ce1d7dd4bb5914e0",
+          "byte_count": 21974
+        },
+        "artifacts": {
+          "instance_mesh": {
+            "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/ovi-native-v1/scenes/20c993b3-698f-29c5-859c-dca8ddecf220/attempt-20260906T161218.311986Z/mapping/cropformer_inst/instance_mesh_53.ply",
+            "sha256": "433a653c7812325e85b6f560583e131b4874d911bb7ce4b115adef76d751bdad",
+            "byte_count": 58276135
+          },
+          "semantic_features": {
+            "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/ovi-native-v1/scenes/20c993b3-698f-29c5-859c-dca8ddecf220/attempt-20260906T161218.311986Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_53_incre_combine.pkl",
+            "sha256": "2c7b68c31464d011d5d4c43607441926a3da2f0105d95dafbb9992f4c402495a",
+            "byte_count": 317786
+          },
+          "instance_color_log": {
+            "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/ovi-native-v1/scenes/20c993b3-698f-29c5-859c-dca8ddecf220/attempt-20260906T161218.311986Z/native_audit/instance_colors_cpp.tsv",
+            "sha256": "ced9ff89a7ec530127f96de568fb1127c8e345f55260c35a42cc645c2712a195",
+            "byte_count": 302
+          }
+        },
+        "active_entity_count": 21,
+        "raycast_bbox_count": 254,
+        "full_frame_bbox_count": 1,
+        "stale_raycast_ids": [7, 11, 17, 19, 25, 29],
+        "camera_world_round_trip_error_m": 0.0,
+        "runtime_s": {
+          "frontend_tqdm": 80.0,
+          "geometry_log_span": 7.001,
+          "mapping_log_span": 90.84,
+          "stage_sum": 177.841
+        }
+      }
+    }
+  ],
+  "compute": {
+    "parallel_gpu_ids": [0, 1],
+    "frontend_peak_gpu_memory_mib_per_device": 22189,
+    "mapping_peak_gpu_memory_mib_per_device": 3069,
+    "gpu_memory_sampling": "nvidia-smi device sampler during each stage",
+    "frontend_forward_count_per_visit": 1,
+    "native_mapping_count_per_visit": 1,
+    "final_manifest_reused_existing_outputs": true
+  },
+  "recovery_ledger": [
+    {
+      "cause": "ScanNet frontend artifacts use numeric stems instead of Replica frame stems",
+      "action": "fixed dataset-specific validator and reused completed frontend",
+      "repeated_model_forward": false
+    },
+    {
+      "cause": "CropFormer masks are in color space while native raycasts are in depth space",
+      "action": "fixed calibrated depth-space audit and reused completed mapping",
+      "repeated_native_mapping": false
+    }
+  ],
+  "claim_boundary": {
+    "establishes": "two real 3RScan RGB-D visits independently materialize and reach audited native OVI mapping artifacts",
+    "does_not_establish": "D2 association, grouping, dense readout, recovery, or held-out metric gains"
+  }
+}
