@@ -9,6 +9,10 @@ import numpy as np
 import pytest
 from plyfile import PlyData
 
+from src.evaluation.ovi_pair_artifact_loader import (
+    OviPairArtifactLoadError,
+    restore_bound_ovi_pair_artifact,
+)
 from src.evaluation.ovi_pair_artifacts import export_ovi_object_pair_artifacts
 from src.evaluation.ovi_pair_views import (
     OviObjectEntityView,
@@ -255,6 +259,104 @@ def test_export_refuses_to_overwrite(tmp_path: Path, pair: OviObjectPairView) ->
         export_ovi_object_pair_artifacts(
             pair, output, preview_width=64, preview_height=48
         )
+
+
+def test_restores_exact_bound_camera_rgb_after_decoder_drift(
+    tmp_path: Path, pair: OviObjectPairView
+) -> None:
+    export = export_ovi_object_pair_artifacts(
+        pair, tmp_path / "artifacts", preview_width=64, preview_height=48
+    )
+    manifest_bytes = export.manifest.read_bytes()
+    manifest = json.loads(manifest_bytes)
+    receipt = {
+        "schema_version": 1,
+        "artifact_id": "OVI_RESCENE_D2_PAIR_VIEW_RECEIPT_V1",
+        "status": "REAL_D2_PAIR_VIEW_PASS",
+        "pair_id": pair.pair_id,
+        "domain_id": pair.domain_id,
+        "pair_content_sha256": pair.content_sha256(),
+        "coordinate_frame_id": pair.coordinate_frame_id,
+        "local_artifact_manifest": {
+            "path": str(export.manifest),
+            "sha256": hashlib.sha256(manifest_bytes).hexdigest(),
+            "byte_count": len(manifest_bytes),
+        },
+        "local_full_outputs": {
+            role: {
+                "path": str(export.output_dir / record["path"]),
+                "sha256": record["sha256"],
+                "byte_count": record["byte_count"],
+            }
+            for role, record in manifest["outputs"].items()
+            if role.endswith("_ply")
+        },
+    }
+    drifted_visits = tuple(
+        replace(
+            visit,
+            camera_rgb_uint8=np.where(
+                visit.appearance_valid[:, None],
+                np.minimum(visit.camera_rgb_uint8.astype(np.uint16) + 1, 255),
+                0,
+            ).astype(np.uint8),
+        )
+        for visit in pair.visits
+    )
+    drifted = replace(pair, visits=drifted_visits)
+
+    restored = restore_bound_ovi_pair_artifact(drifted, receipt)
+
+    assert restored.content_sha256() == pair.content_sha256()
+    for expected, actual in zip(pair.visits, restored.visits, strict=True):
+        np.testing.assert_array_equal(actual.camera_rgb_uint8, expected.camera_rgb_uint8)
+
+
+def test_bound_pair_restore_rejects_non_color_artifact_drift(
+    tmp_path: Path, pair: OviObjectPairView
+) -> None:
+    export = export_ovi_object_pair_artifacts(
+        pair, tmp_path / "artifacts", preview_width=64, preview_height=48
+    )
+    manifest_bytes = export.manifest.read_bytes()
+    manifest = json.loads(manifest_bytes)
+    receipt = {
+        "schema_version": 1,
+        "artifact_id": "OVI_RESCENE_D2_PAIR_VIEW_RECEIPT_V1",
+        "status": "REAL_D2_PAIR_VIEW_PASS",
+        "pair_id": pair.pair_id,
+        "domain_id": pair.domain_id,
+        "pair_content_sha256": pair.content_sha256(),
+        "coordinate_frame_id": pair.coordinate_frame_id,
+        "local_artifact_manifest": {
+            "path": str(export.manifest),
+            "sha256": hashlib.sha256(manifest_bytes).hexdigest(),
+            "byte_count": len(manifest_bytes),
+        },
+        "local_full_outputs": {
+            role: {
+                "path": str(export.output_dir / record["path"]),
+                "sha256": record["sha256"],
+                "byte_count": record["byte_count"],
+            }
+            for role, record in manifest["outputs"].items()
+            if role.endswith("_ply")
+        },
+    }
+    changed = replace(
+        pair,
+        visits=(
+            replace(
+                pair.visits[0],
+                points_xyz=pair.visits[0].points_xyz
+                + np.asarray([0.001, 0.0, 0.0], dtype=np.float32),
+            ),
+            pair.visits[1],
+        ),
+    )
+
+    with pytest.raises(OviPairArtifactLoadError, match="points_xyz"):
+        restore_bound_ovi_pair_artifact(changed, receipt)
 
 
 def test_exports_dense_current_grouping_without_changing_xyz(

@@ -37,6 +37,7 @@ from scripts.evaluation.run_ovi_rescene_object_level_transfer import (
     measure_native_candidate_representation,
     project_cached_relations_to_sensor_support,
 )
+from src.evaluation.ovi_pair_artifact_loader import restore_bound_ovi_pair_artifact
 from src.evaluation.ovi_pair_views import build_ovi_object_pair_view
 from src.evaluation.rscan_association_metrics import (
     evaluate_pair_relations,
@@ -700,11 +701,9 @@ def run_transfer_diagnosis(
     pair_receipt = _json_object(
         loaded["d2_pair_receipt"][1], label="D2 pair receipt"
     )
-    if (
-        pair_receipt.get("pair_id") != pair_id
-        or pair_receipt.get("pair_content_sha256") != d2_pair.content_sha256()
-    ):
+    if pair_receipt.get("pair_id") != pair_id:
         raise TransferDiagnosisError("D2 pair receipt identity mismatch")
+    d2_pair = restore_bound_ovi_pair_artifact(d2_pair, pair_receipt)
     d0_result = _json_object(loaded["d0_pair_result"][1], label="D0 pair result")
     d0_manifest = _json_object(
         loaded["d0_native_manifest"][1], label="D0 native manifest"
