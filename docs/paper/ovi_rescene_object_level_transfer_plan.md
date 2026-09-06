@@ -157,10 +157,10 @@
 - [x] Write failing decision tests covering D0/D1 degradation, D2-only degradation, raw-good/resolver-bad, and proposal-limited cases.
 - [x] Run `python -m pytest -q tests/evaluation/test_decide_ovi_rescene_adaptation.py` and confirm expected decision failures.
 - [x] Implement the diagnosis using measured thresholds declared in the config before viewing D2_EVAL results.
-- [ ] Run identical UUID pairs across available D0/D1/D2 layers, logging runtime, memory, support, raw query, proposal, and fixed-pool association metrics.
-- [ ] If and only if the gate selects domain adaptation, train one frozen-backbone decoder/mask-head candidate on environment-disjoint TRAIN_OVI_ADAPT data, select on development environments, and compare against the original checkpoint on unchanged D2_EVAL.
-- [ ] Verify with `python -m pytest -q tests/evaluation/test_decide_ovi_rescene_adaptation.py tests/evaluation/test_run_3rscan_t2_matrix.py`.
-- [ ] Commit Task 6 decision logic, config, experiment ledger, and measured results.
+- [x] Run identical UUID pairs across available D0/D1/D2 layers, logging runtime, memory, support, raw query, proposal, and fixed-pool association metrics.
+- [x] If and only if the gate selects domain adaptation, train one frozen-backbone decoder/mask-head candidate on environment-disjoint TRAIN_OVI_ADAPT data, select on development environments, and compare against the original checkpoint on unchanged D2_EVAL. The frozen gate selected `NO_ADAPTATION` because D1 and D2 proposal coverage were both 1/13, so no training was authorized.
+- [x] Verify with `python -m pytest -q tests/evaluation/test_decide_ovi_rescene_adaptation.py tests/evaluation/test_run_3rscan_t2_matrix.py`.
+- [x] Commit Task 6 decision logic, config, experiment ledger, and measured results.
 
 ### Task 7: C0/C1/C2/O1/O2 historical geometry and oracle diagnosis
 

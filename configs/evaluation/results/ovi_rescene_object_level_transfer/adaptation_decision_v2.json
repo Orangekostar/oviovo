@@ -1,0 +1,126 @@
+{
+  "action": "NO_ADAPTATION",
+  "artifact_id": "OVI_RESCENE_TRANSFER_ADAPTATION_DECISION_V2",
+  "config_sha256": "229982f717a62a4c2a83ce970f3e312ce28aa08ab0ca05187fa7e16e29f76476",
+  "d1_cpu_runtime_s": 4.059132006950676,
+  "evaluated_commit": "8bbe89f8f2ac1056a5ccd759e4648997ab3c3214",
+  "evidence": {
+    "domains": {
+      "D0_NATIVE_PROCESSED": {
+        "confident_query_fraction": 0.04,
+        "fixed_pool_association_f1": 0.0,
+        "proposal_representation_coverage": 0.38461538461538464,
+        "raw_nonempty_fraction": 0.89,
+        "sensor_support_fraction": 1.0,
+        "status": "MEASURED"
+      },
+      "D1_NATIVE_SENSOR_SUPPORT": {
+        "confident_query_fraction": 0.04,
+        "fixed_pool_association_f1": 0.0,
+        "proposal_representation_coverage": 0.07692307692307693,
+        "raw_nonempty_fraction": 0.87,
+        "sensor_support_fraction": 0.27034859650575477,
+        "status": "MEASURED"
+      },
+      "D2_OVI_RECONSTRUCTION": {
+        "confident_query_fraction": 0.03,
+        "fixed_pool_association_f1": 0.0,
+        "proposal_representation_coverage": 0.07692307692307693,
+        "raw_nonempty_fraction": 0.92,
+        "sensor_support_fraction": 0.7931034696995396,
+        "status": "MEASURED"
+      }
+    },
+    "pair_scope": "IDENTICAL_UUID_PAIRS",
+    "schema_version": 2
+  },
+  "evidence_status": "MEASURED_ONLY_NULL_PRESERVING",
+  "ordered_rules": [
+    "insufficient_comparable_evidence",
+    "d1_sensor_support_degradation",
+    "d2_proposal_limited",
+    "d2_raw_query_domain_gap",
+    "d2_resolver_bottleneck",
+    "no_actionable_transfer_gap"
+  ],
+  "pair_id": "scene0109_00-scene0109_01",
+  "schema_version": 2,
+  "selected_rule": "d1_sensor_support_degradation",
+  "source_bindings": {
+    "d0_native_manifest": {
+      "byte_count": 3155,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/3rscan/matrix-v1/scene0109_00-scene0109_01/manifest.json",
+      "sha256": "42a1673c3cfb20db5fe4f4c31d093dc9e1cf4a6d55d7bed15d05983d7322f188"
+    },
+    "d0_pair_result": {
+      "byte_count": 1596298,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/3rscan/matrix-v1/associations-v2/scene0109_00-scene0109_01.json",
+      "sha256": "6cd8d865b2fa81b167efee7cc980e8fed4c570a4cae39ad26aefe270a8581935"
+    },
+    "d2_association_metrics": {
+      "byte_count": 6252,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/shared_candidate_gfr.csv",
+      "sha256": "0aad3cbdaa8e436aba12d0109a5a912d336a1413967d0ddb3aa58a4d86cbc3c0"
+    },
+    "d2_forward_arrays": {
+      "byte_count": 28400149,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-transfer-v1/scene0109_00-scene0109_01/native_forwards.npz",
+      "sha256": "03f3f45760ab7cb1ef0a238c42479f9930dc7bbb9aae3482f5c1170d8b4db3da"
+    },
+    "d2_forward_metadata": {
+      "byte_count": 1568,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-transfer-v1/scene0109_00-scene0109_01/native_forwards.json",
+      "sha256": "0983147020a51764302c2ee067808146913116530a728c66c235a4ccc4f2547c"
+    },
+    "d2_instance_metrics": {
+      "byte_count": 6722,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/instance_readout.csv",
+      "sha256": "a7c17576bcadc0d1879b81d8426c6fd80fea98866b6c9ef567f5461115e5ece1"
+    },
+    "d2_mapping_receipt": {
+      "byte_count": 11032,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_ovimap_smoke_v1.json",
+      "sha256": "44fc7bcd010f4a678584af7398c433e484bb638219d12b28a47edc14089872a6"
+    },
+    "d2_pair_receipt": {
+      "byte_count": 7632,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_pair_view_v1.json",
+      "sha256": "857d851c9b0bb9317f7bc117ce7fe938149297901f130589f1e9684d9cffd5f6"
+    },
+    "diagnosis_config": {
+      "byte_count": 4113,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-real-evidence/configs/evaluation/ovi_rescene_transfer_diagnosis_v1.json",
+      "sha256": "229982f717a62a4c2a83ce970f3e312ce28aa08ab0ca05187fa7e16e29f76476"
+    },
+    "ground_truth_manifest": {
+      "byte_count": 2418,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/gt-v1/scene0109_00-scene0109_01/manifest.json",
+      "sha256": "422fee2e94e995abc92961d38ea249b01be46694ef1404e4c2502a979a3b8f9e"
+    },
+    "object_transfer_config": {
+      "byte_count": 4501,
+      "path": "configs/evaluation/ovi_rescene_object_level_transfer_v1.json",
+      "sha256": "cf8422dd21aa72b66fbdb2a8918b689efcb12cb20b488e8dd3ff56c08f7a41ef"
+    },
+    "per_pair_metrics": {
+      "byte_count": 6622,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/per_pair_metrics.csv",
+      "sha256": "5433ae8049a5e699e574d416dd32fa163b5af778e49df000af096e0a91c375b2"
+    },
+    "selection_manifest": {
+      "byte_count": 79594,
+      "path": "configs/evaluation/manifests/ovi_rescene_object_level_pairs_v1.json",
+      "sha256": "2054c818c5f02a1ffcf2d4bcb3d3743ef0f4865ff428055f00e2f215c69d4a37"
+    }
+  },
+  "status": "PASS",
+  "thresholds": {
+    "maximum_d1_association_drop": 0.1,
+    "maximum_d1_proposal_drop": 0.1,
+    "minimum_d2_confident_query_fraction": 0.1,
+    "minimum_d2_proposal_representation_coverage": 0.25,
+    "minimum_d2_raw_nonempty_fraction": 0.5,
+    "minimum_proposal_association_gap": 0.1,
+    "minimum_usable_association_f1": 0.05
+  }
+}
