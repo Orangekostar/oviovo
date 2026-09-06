@@ -1,0 +1,45 @@
+{
+  "artifact_id": "OVI_RESCENE_APARTMENT_SUPPORTED_INPUT_RESULT_V1",
+  "build_measurement": {
+    "elapsed_s": 165.05,
+    "maximum_rss_bytes": 4279980032
+  },
+  "coverage": {
+    "adapter_fraction": 0.9557883393350898,
+    "model_fraction": 0.9570028639009209,
+    "source_fraction": 0.9743068866226304
+  },
+  "entity_coverage": {
+    "entity_count": 151,
+    "unsupported_entity_count": 1,
+    "unsupported_entity_keys": [
+      [
+        0,
+        "ovimap:216"
+      ]
+    ]
+  },
+  "external_artifact_root": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/apartment/supported-input",
+  "full_domains": {
+    "adapter": 1043028,
+    "model": 854429,
+    "source": 26891019
+  },
+  "input_contract": {
+    "byte_count": 1402,
+    "path": "input_contract_v3.json",
+    "sha256": "fc964a24062552304c67c1ed66517f2cbb42a510a0203050a8b723dee509b224"
+  },
+  "schema_version": 1,
+  "status": "SUPPORTED_INFERENCE_PASS",
+  "supported_domains": {
+    "adapter": 996914,
+    "model": 817691,
+    "source": 26200105
+  },
+  "verification_measurement": {
+    "elapsed_s": 146.67,
+    "maximum_rss_bytes": 5182164992,
+    "status": "PASS"
+  }
+}
