@@ -1003,6 +1003,30 @@ def resolve_native_queries_one_to_one(
     return tuple(relations)
 
 
+def resolve_native_queries_fragment_union(
+    sample: NeuralSampleMap,
+    evidence: TemporalQueryEvidence,
+    config: ProjectionConfig,
+    *,
+    minimum_query_confidence: float,
+) -> tuple[PairRelation, ...]:
+    """Keep query-consistent fragment unions after a GT-free confidence gate."""
+
+    if (
+        isinstance(minimum_query_confidence, bool)
+        or not isinstance(minimum_query_confidence, (int, float))
+        or not math.isfinite(float(minimum_query_confidence))
+        or not 0.0 <= float(minimum_query_confidence) <= 1.0
+    ):
+        raise RScanMethodViewError("minimum query confidence must be in [0, 1]")
+    threshold = float(minimum_query_confidence)
+    return tuple(
+        relation
+        for relation in project_queries_fast(sample, evidence, config)
+        if relation.query_confidence >= threshold
+    )
+
+
 __all__ = [
     "DomainCoverageRow",
     "MethodExecutionPlan",
@@ -1017,5 +1041,6 @@ __all__ = [
     "native_query_evidence",
     "pool_independent_segment_features",
     "project_queries_fast",
+    "resolve_native_queries_fragment_union",
     "resolve_native_queries_one_to_one",
 ]

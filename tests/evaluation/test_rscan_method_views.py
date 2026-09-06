@@ -16,6 +16,7 @@ from src.evaluation.rscan_method_views import (
     native_query_evidence,
     pool_independent_segment_features,
     project_queries_fast,
+    resolve_native_queries_fragment_union,
     resolve_native_queries_one_to_one,
 )
 from src.oviv2.query_instance_projection import (
@@ -313,3 +314,46 @@ def test_native_queries_reuse_raw_masks_for_legacy_and_one_to_one_resolvers() ->
         (("segment:000008",), ("segment:000008",)),
     ]
     assert all(row.identity_source == "rescene" for row in supported)
+
+
+def test_fragment_union_resolver_keeps_query_fragments_and_gates_confidence() -> None:
+    sample = _pair().geometric_sample(neural_voxel_size_m=0.02)
+    token_count = len(sample.coordinates_xyzt)
+    evidence = TemporalQueryEvidence(
+        status="PASS",
+        backend_name="rescene:test",
+        backend_config_sha256="c" * 64,
+        pair_sha256=sample.content_sha256(),
+        temporal_query_ids=("high", "low"),
+        query_masks=np.ones((2, token_count), dtype=np.bool_),
+        token_scores=np.ones((2, token_count), dtype=np.float32),
+        query_scores=np.asarray([0.8, 0.2], dtype=np.float32),
+        checkpoint_sha256="d" * 64,
+        ranking_eligible=True,
+        runtime_s=0.0,
+        peak_memory_bytes=0,
+    )
+
+    relations = resolve_native_queries_fragment_union(
+        sample,
+        evidence,
+        ProjectionConfig(),
+        minimum_query_confidence=0.3,
+    )
+
+    assert [str(row.temporal_query_id) for row in relations] == ["high"]
+    assert relations[0].t0_entity_ids == (
+        "segment:000004",
+        "segment:000008",
+    )
+    assert relations[0].t1_entity_ids == (
+        "segment:000004",
+        "segment:000008",
+    )
+    with pytest.raises(RScanMethodViewError, match="query confidence"):
+        resolve_native_queries_fragment_union(
+            sample,
+            evidence,
+            ProjectionConfig(),
+            minimum_query_confidence=1.1,
+        )
