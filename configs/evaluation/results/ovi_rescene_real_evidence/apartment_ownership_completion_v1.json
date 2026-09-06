@@ -1,0 +1,244 @@
+{
+  "artifact_id": "OVI_RESCENE_OWNERSHIP_COMPLETION_V1",
+  "claim_boundary": "real Apartment ownership organization and prior measured B3/B7-G; instance AP/PQ and opportunity-surface completion are unavailable without instance identity GT; 3RScan D2 is unavailable",
+  "completion": [
+    {
+      "completion_surface": null,
+      "identity_source": "none",
+      "metrics": {
+        "background_f1_at_5cm": 0.36636000976960026,
+        "current_miou": 0.1358861592620667,
+        "ghost": 0.0,
+        "surface_f1_at_5cm": 0.4313354117431786,
+        "surface_precision_at_5cm": 0.7344127781521915,
+        "surface_recall_at_5cm": 0.30533132262929125,
+        "t1_observed_region_stale_precision": 0.9309634045791844,
+        "t1_unobserved_region_recall": 0.07564646854496333,
+        "total_current_surface_coverage": 0.30533132262929125
+      },
+      "oracle_only": false,
+      "registration_source": "none",
+      "status": "PASS_MEASURED_B3",
+      "unavailable_reason": "NO_INSTANCE_IDENTITY_GT_FOR_OPPORTUNITY_SURFACE",
+      "variant_id": "C0"
+    },
+    {
+      "attribution": {
+        "candidate_point_count": 1508899,
+        "introduced_confirmed_free_match_count": 0,
+        "newly_covered_gt_surface_count": 0,
+        "recovered_point_count": 1792,
+        "registration_rejected_count": 13,
+        "rejected_incompatible_point_count": 0,
+        "rejected_occupied_point_count": 283818,
+        "rejected_visible_free_point_count": 326,
+        "revealed_background_conflict_count": 0
+      },
+      "completion_surface": null,
+      "diagnostics": {
+        "final_map_point_count": 15622601,
+        "method_runtime_s": 174.1981266643852,
+        "peak_gpu_memory_bytes": 0,
+        "peak_resident_memory_bytes": 4253835264,
+        "recovered_historical_point_count": 1792,
+        "recovery_decision_point_counts": {
+          "recover_occluded": 1792,
+          "reject_occupied": 283818,
+          "reject_visible_free": 326
+        },
+        "registration_accepted_count": 5,
+        "registration_attempt_count": 18,
+        "registration_rejected_count": 13,
+        "registration_rejection_reason_counts": {
+          "centroid_residual_too_large": 3,
+          "extent_ratio_out_of_range": 5,
+          "ineligible_semantic_label": 5,
+          "insufficient_directional_overlap": 2,
+          "insufficient_inliers": 1,
+          "median_residual_too_large": 3,
+          "p90_residual_too_large": 6
+        },
+        "rejected_incompatible_point_count": 0,
+        "rejected_occupied_point_count": 283818,
+        "rejected_visible_free_point_count": 326,
+        "relation_count": 120,
+        "relation_state_counts": {
+          "appeared": 36,
+          "persistent_moved": 10,
+          "persistent_static": 8,
+          "removed_candidate": 64,
+          "uncertain": 2
+        },
+        "removed_unwarped_b3_point_count": 1792
+      },
+      "identity_source": "Apartment B4 geometric relations",
+      "metrics": {
+        "background_f1_at_5cm": 0.36636000976960026,
+        "current_miou": 0.1358861592620667,
+        "ghost": 0.0,
+        "surface_f1_at_5cm": 0.4313354117431786,
+        "surface_precision_at_5cm": 0.7344127781521915,
+        "surface_recall_at_5cm": 0.30533132262929125,
+        "t1_observed_region_stale_precision": 0.9309634045791844,
+        "t1_unobserved_region_recall": 0.07564646854496333,
+        "total_current_surface_coverage": 0.30533132262929125
+      },
+      "oracle_only": false,
+      "registration_source": "estimated_trimmed_icp",
+      "status": "PASS_MEASURED_PRIOR_B7_G",
+      "unavailable_reason": "NO_INSTANCE_IDENTITY_GT_FOR_OPPORTUNITY_SURFACE",
+      "variant_id": "C1"
+    },
+    {
+      "completion_surface": null,
+      "identity_source": "Apartment supported ReScene relations",
+      "metrics": null,
+      "oracle_only": false,
+      "registration_source": "estimated_trimmed_icp",
+      "status": "NOT_COMPUTED_MISSING_R_BOUND_RECOVERY_ARTIFACT",
+      "variant_id": "C2"
+    },
+    {
+      "completion_surface": null,
+      "identity_source": "ground_truth",
+      "metrics": null,
+      "oracle_only": true,
+      "registration_source": "estimated_trimmed_icp",
+      "status": "NOT_COMPUTED_MISSING_INSTANCE_IDENTITY_GT",
+      "variant_id": "O1"
+    },
+    {
+      "completion_surface": null,
+      "identity_source": "ground_truth",
+      "metrics": null,
+      "oracle_only": true,
+      "registration_source": "ground_truth",
+      "status": "NOT_COMPUTED_MISSING_INSTANCE_IDENTITY_AND_TRANSFORM_GT",
+      "variant_id": "O2"
+    }
+  ],
+  "ownership": [
+    {
+      "cross_visit_identity_group_count": 0,
+      "excluded_out_of_domain_relation_ids": [],
+      "geometry_mutation_count": 0,
+      "geometry_sha256": "863e13b499e31c5cbd3e0c3f704e0a03558b806593f66579aa133ab33fa5e496",
+      "ground_truth_status": "NOT_COMPUTED_NO_INSTANCE_IDENTITY_GT",
+      "identity_assignment_sha256": "b15bbabb1652cbc168a00bd9fa2f8ef486f415a7f58e7178cceb876cfb468212",
+      "identity_group_count": 150,
+      "instance_ap": null,
+      "many_sided_identity_group_count": 0,
+      "pair_sha256": "b75b7a6cb03083e7ab8f3a39d075b52c1162d13d433ac86668c615c6facae4fa",
+      "panoptic_quality": null,
+      "relation_count": 0,
+      "relation_domain_policy": "exclude_whole_relation_if_any_endpoint_has_no_token",
+      "relation_source": "none",
+      "schema_version": 1,
+      "source_entity_count": 150,
+      "source_relation_count": 0,
+      "status": "PASS",
+      "variant_id": "A0"
+    },
+    {
+      "cross_visit_identity_group_count": 20,
+      "excluded_out_of_domain_relation_ids": [
+        "geom:000029"
+      ],
+      "geometry_mutation_count": 0,
+      "geometry_sha256": "863e13b499e31c5cbd3e0c3f704e0a03558b806593f66579aa133ab33fa5e496",
+      "ground_truth_status": "NOT_COMPUTED_NO_INSTANCE_IDENTITY_GT",
+      "identity_assignment_sha256": "3e76e68e06626c72ee13cf3f322be00b8f6494b3e56aa47881b4ae92f757bd2f",
+      "identity_group_count": 119,
+      "instance_ap": null,
+      "many_sided_identity_group_count": 2,
+      "pair_sha256": "b75b7a6cb03083e7ab8f3a39d075b52c1162d13d433ac86668c615c6facae4fa",
+      "panoptic_quality": null,
+      "relation_count": 119,
+      "relation_domain_policy": "exclude_whole_relation_if_any_endpoint_has_no_token",
+      "relation_source": "Apartment B4 geometric relations",
+      "schema_version": 1,
+      "source_entity_count": 150,
+      "source_relation_count": 120,
+      "status": "PASS",
+      "variant_id": "A1"
+    },
+    {
+      "cross_visit_identity_group_count": 8,
+      "excluded_out_of_domain_relation_ids": [],
+      "geometry_mutation_count": 0,
+      "geometry_sha256": "863e13b499e31c5cbd3e0c3f704e0a03558b806593f66579aa133ab33fa5e496",
+      "ground_truth_status": "NOT_COMPUTED_NO_INSTANCE_IDENTITY_GT",
+      "identity_assignment_sha256": "b5eb5b9b78612b30cd33bc88195fbb83ef086b1ffcfdbef9ba6bdbdbc0804a32",
+      "identity_group_count": 142,
+      "instance_ap": null,
+      "many_sided_identity_group_count": 0,
+      "pair_sha256": "b75b7a6cb03083e7ab8f3a39d075b52c1162d13d433ac86668c615c6facae4fa",
+      "panoptic_quality": null,
+      "relation_count": 8,
+      "relation_domain_policy": "exclude_whole_relation_if_any_endpoint_has_no_token",
+      "relation_source": "Apartment supported ReScene relations",
+      "schema_version": 1,
+      "source_entity_count": 150,
+      "source_relation_count": 8,
+      "status": "PASS",
+      "variant_id": "A2"
+    }
+  ],
+  "pair_sha256": "b75b7a6cb03083e7ab8f3a39d075b52c1162d13d433ac86668c615c6facae4fa",
+  "scene": "apartment",
+  "schema_version": 1,
+  "shared_geometry_visibility": {
+    "geometry_mutation_count": 0,
+    "geometry_sha256": "863e13b499e31c5cbd3e0c3f704e0a03558b806593f66579aa133ab33fa5e496",
+    "status": "PASS",
+    "visibility_policy": "unchanged across A0/A1/A2"
+  },
+  "source_bindings": {
+    "apartment_report": {
+      "byte_count": 45244,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/apartment/report-v3/summary.json",
+      "sha256": "9f61d58db8aefb36321142d02d7b3f08e35a5c97becb4f47a3e2ba6194c9b983"
+    },
+    "b3_metrics": {
+      "byte_count": 7549,
+      "path": "/home/ww/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/apartment-b0-b6-entity-lift-96ba693/B3/metrics.json",
+      "sha256": "7f1807db61a2ef6641a9564959ff67bf15e8bcef107a320ffd1669be21d4fc31"
+    },
+    "b4_relations": {
+      "byte_count": 52570,
+      "path": "b4_relations.json",
+      "sha256": "43734c87843d5dadf595f9149925a0d76d0e1bc04a4759cfbeaa589e789989d8"
+    },
+    "b7_metrics": {
+      "byte_count": 4894,
+      "path": "/home/ww/oviovo_baseline_runs/20260904_ovi_rescene_b7/apartment-be02e08/metrics.json",
+      "sha256": "e0cedacdabf50a7f1cbc8b757a453a0d5b5f1f2dd6b65109b1019761a95cdd7a"
+    },
+    "config": {
+      "byte_count": 1419,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-real-evidence/configs/evaluation/ovi_rescene_ownership_completion_v1.json",
+      "sha256": "6b9f73a22edbed87fd8596179d8db8f40f22efcadf2d7e8cd262a4d40542b038"
+    },
+    "rescene_relations": {
+      "byte_count": 4790,
+      "path": "supported_relations.json",
+      "sha256": "afcd680660c086fd4a21a030ddf7b9b2175540bea8363ff39275cf37fcf61dec"
+    },
+    "rscan_matrix": {
+      "byte_count": 122496,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-real-evidence/configs/evaluation/results/ovi_rescene_real_evidence/3rscan_t2_matrix_v1.json",
+      "sha256": "2bb719c6d511387e07228cb0ba3f2faacbf334321f51408b0e7b01c99e1167b4"
+    },
+    "supported_input_contract": {
+      "byte_count": 1402,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/apartment/supported-input/input_contract_v3.json",
+      "sha256": "fc964a24062552304c67c1ed66517f2cbb42a510a0203050a8b723dee509b224"
+    }
+  },
+  "status": "PASS_WITH_UNAVAILABLE_ROWS",
+  "transfer_boundary": {
+    "D0_NATIVE_PROCESSED": "PASS",
+    "D1_NATIVE_SENSOR_SUPPORT": "MISSING_ASSET",
+    "D2_OVI_RECONSTRUCTION": "MISSING_ASSET"
+  }
+}
