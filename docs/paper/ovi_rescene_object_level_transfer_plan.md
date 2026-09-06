@@ -86,14 +86,14 @@
 - Consumes: two OVI native mapping manifests and their entity/surface/semantic artifacts plus the pair's shared 3RScan global alignment.
 - Produces: `OviObjectVisitView`, `OviObjectPairView`, `to_visit_maps()`, `geometric_sample()`, immutable entity-point indices, RGB, normals, OVI semantics, source-point/pixel provenance, and `D2_OVI_RECONSTRUCTION` content hashes.
 
-- [ ] Write failing tests requiring D2 construction to reject `processed_visits` and support masks, proving the old non-D0 branch cannot masquerade as D2.
-- [ ] Write failing synthetic loader tests for unique OVI entity ownership, dense-source conservation, per-visit independent snapshots, and exactly-once global alignment.
-- [ ] Run `python -m pytest -q tests/evaluation/test_ovi_pair_views.py tests/evaluation/test_rscan_method_views.py` and confirm the missing API failures.
-- [ ] Implement the loader by reusing `ovimap_visit_loader.py` and `ovi_surface_attributes.py`; retain unsupported dense points in D while limiting only adapter domain A.
-- [ ] Build the first real D2 pair and verify entity count, point count, support fraction, RGB/normal finiteness, coordinate bounds, and source artifact identity.
-- [ ] Export representative dense `rgb.ply` and `instance.ply` plus fixed-camera previews from unmodified measured geometry.
-- [ ] Verify with `python -m pytest -q tests/evaluation/test_ovi_pair_views.py tests/evaluation/test_rscan_method_views.py tests/oviv2/test_ovi_rescene_adapter.py`.
-- [ ] Commit Task 3 code, tests, compact manifest, and small previews.
+- [x] Write failing tests requiring D2 construction to reject `processed_visits` and support masks, proving the old non-D0 branch cannot masquerade as D2.
+- [x] Write failing synthetic loader tests for unique OVI entity ownership, dense-source conservation, per-visit independent snapshots, and exactly-once global alignment.
+- [x] Run `python -m pytest -q tests/evaluation/test_ovi_pair_views.py tests/evaluation/test_rscan_method_views.py` and confirm the missing API failures.
+- [x] Implement the loader by reusing `ovimap_visit_loader.py` and `ovi_surface_attributes.py`; retain unsupported dense points in D while limiting only adapter domain A.
+- [x] Build the first real D2 pair and verify entity count, point count, support fraction, RGB/normal finiteness, coordinate bounds, and source artifact identity.
+- [x] Export representative dense `rgb.ply` and `instance.ply` plus fixed-camera previews from unmodified measured geometry.
+- [x] Verify with `python -m pytest -q tests/evaluation/test_ovi_pair_views.py tests/evaluation/test_rscan_method_views.py tests/oviv2/test_ovi_rescene_adapter.py`.
+- [x] Commit Task 3 code, tests, compact manifest, and small previews.
 
 ### Task 4: Fixed-candidate G_obj, F_obj, and R_obj association
 

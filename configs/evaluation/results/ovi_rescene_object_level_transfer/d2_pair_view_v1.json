@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "artifact_id": "OVI_RESCENE_D2_PAIR_VIEW_RECEIPT_V1",
+  "status": "REAL_D2_PAIR_VIEW_PASS",
+  "source_commit_before_task3": "ca0b423",
+  "pair_id": "scene0109_00-scene0109_01",
+  "domain_id": "D2_OVI_RECONSTRUCTION",
+  "pair_content_sha256": "a44e7db3fc402018ac0ebecca0d3c92fa48dedf32e952ad85d2adaaea6017671",
+  "coordinate_frame_id": "3rscan_reference",
+  "source_pair_manifest": {
+    "path": "configs/evaluation/manifests/ovi_rescene_object_level_pairs_v1.json",
+    "sha256": "2054c818c5f02a1ffcf2d4bcb3d3743ef0f4865ff428055f00e2f215c69d4a37",
+    "byte_count": 79594
+  },
+  "parent_mapping_receipt": {
+    "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_ovimap_smoke_v1.json",
+    "sha256": "44fc7bcd010f4a678584af7398c433e484bb638219d12b28a47edc14089872a6",
+    "byte_count": 11032
+  },
+  "implementation_sources": {
+    "pair_loader": {
+      "path": "src/evaluation/ovi_pair_views.py",
+      "sha256": "7b0545bf83710c459bc1ff80acee11ea527ff1c0edeb62d78c8d0a10426f9f6a",
+      "byte_count": 60385
+    },
+    "artifact_exporter": {
+      "path": "src/evaluation/ovi_pair_artifacts.py",
+      "sha256": "66b323d93265935fc2483a9d0f5bf45e37c9c69a0093d709b43da2d2228e6b2a",
+      "byte_count": 13402
+    },
+    "native_artifact_loader": {
+      "path": "src/oviv2/ovimap_visit_loader.py",
+      "sha256": "4501df996a332c33fee45e75bb06fbd47f2863cb9435b71f0a80103ecaca61f1",
+      "byte_count": 16933
+    },
+    "ovimap_color_parser": {
+      "path": "src/evaluation/baselines/ovimap.py",
+      "sha256": "5b83c224ce6dfcdb0e7ac22151a84ecdf363ee555ab35cf1565487ab607fb97c",
+      "byte_count": 8727
+    },
+    "domain_guard": {
+      "path": "src/evaluation/rscan_method_views.py",
+      "sha256": "8c0b38f6397070a5d4a7734bd197479da27a75f51d61822f9117f7828643d7c8",
+      "byte_count": 42111
+    }
+  },
+  "protocol": {
+    "visit_mapping": "independent_native_ovimap",
+    "dense_domain": "all_native_ovi_ply_vertices",
+    "adapter_domain": "same_visit_rgbd_depth_consistent_entity_support",
+    "depth_tolerance_m": 0.05,
+    "minimum_valid_neighbours": 5,
+    "rgb_depth_registration": "K_depth @ inv(K_color)",
+    "depth_units_per_meter": 1000.0,
+    "global_alignment": "t0_identity_t1_rescan_row_vector_to_reference_once",
+    "ground_truth_used": false,
+    "unsupported_dense_points_retained": true,
+    "unsupported_dense_points_treated_as_negative": false
+  },
+  "visits": [
+    {
+      "visit_id": 0,
+      "scan_id": "20c993b7-698f-29c5-847d-c8cb8a685f5a",
+      "frame_count": 63,
+      "entity_count": 29,
+      "point_count": 820617,
+      "entity_point_count": 809388,
+      "background_point_count": 11229,
+      "normal_valid_count": 820617,
+      "appearance_support_count": 601336,
+      "appearance_support_fraction": 0.7327852091779722,
+      "bounds_xyz": {
+        "minimum": [-2.155709981918335, 0.09440550208091736, -1.3582199811935425],
+        "maximum": [1.593790054321289, 3.3157498836517334, 1.284999966621399]
+      },
+      "global_alignment_application": "identity_reference",
+      "native_manifest_sha256": "1a5eb316bcb6d14634344f5270358970054c3df2664c86434fc5a48b3ba329c1",
+      "materialized_manifest_sha256": "87112341b05902beb9c6d6a9613cf9686f1529b71448793d351b4500d2474611"
+    },
+    {
+      "visit_id": 1,
+      "scan_id": "20c993b3-698f-29c5-859c-dca8ddecf220",
+      "frame_count": 53,
+      "entity_count": 21,
+      "point_count": 788946,
+      "entity_point_count": 762458,
+      "background_point_count": 26488,
+      "normal_valid_count": 788946,
+      "appearance_support_count": 675214,
+      "appearance_support_fraction": 0.855843112202863,
+      "bounds_xyz": {
+        "minimum": [-1.476502537727356, 0.7280664443969727, -1.3809148073196411],
+        "maximum": [1.6026356220245361, 3.2958662509918213, 1.291975975036621]
+      },
+      "global_alignment_application": "rescan_to_reference_once",
+      "native_manifest_sha256": "e92fd50ddcf57912ec98f319d93d94c7e2849d2972d59489ce1d7dd4bb5914e0",
+      "materialized_manifest_sha256": "440648c9e81178de3e1c1fd0bb9d3619f9effc47e95b4b1930346ee9b8ef5c89"
+    }
+  ],
+  "geometry_audit": {
+    "total_point_count": 1609563,
+    "t0_exact_source_rows": true,
+    "t1_exact_source_rows_after_one_alignment": true,
+    "rgb_instance_xyz_equal": true,
+    "source_vertex_order_conserved": true,
+    "smoothing_or_hole_filling": false,
+    "ply_audit_status": "PASS"
+  },
+  "local_artifact_manifest": {
+    "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/d2-pair-view-v1/scene0109_00-scene0109_01/manifest.json",
+    "sha256": "3dcc4d27c3cf50f163acdfb350c0db49e4f91a2eb938a21e0f97ebcae288d87b",
+    "byte_count": 18011
+  },
+  "local_full_outputs": {
+    "t0_rgb_ply": {
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/d2-pair-view-v1/scene0109_00-scene0109_01/t0/rgb.ply",
+      "sha256": "c276fea57260108ee2894c3a97644453941af9d9f61c7b8313270a8c6d47a201",
+      "byte_count": 46775717
+    },
+    "t0_instance_ply": {
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/d2-pair-view-v1/scene0109_00-scene0109_01/t0/instance.ply",
+      "sha256": "c8fe2b801e3ef92571a6df3ab54db88c2cc8c6c5de625719f2623e3aa9ea55b8",
+      "byte_count": 46775717
+    },
+    "t1_rgb_ply": {
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/d2-pair-view-v1/scene0109_00-scene0109_01/t1/rgb.ply",
+      "sha256": "9280850e3d7ca0bfe1e88dc0f215d7d30e5f38ce50475ad0e33391ec92191446",
+      "byte_count": 44970470
+    },
+    "t1_instance_ply": {
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/d2-pair-view-v1/scene0109_00-scene0109_01/t1/instance.ply",
+      "sha256": "d322a6ebc12c501ba27f893de96b6a39c285090b1674e954bf828ee887767cc2",
+      "byte_count": 44970470
+    }
+  },
+  "tracked_previews": {
+    "t0_rgb": {
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_pair_view_v1/t0_rgb.png",
+      "sha256": "22dd6f8a91aa64e3adf37fc9aca849dbe00ec0f139e62471f8f462ba7ecdc08c",
+      "byte_count": 356348
+    },
+    "t0_instance": {
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_pair_view_v1/t0_instance.png",
+      "sha256": "617a8bd7d099f9e0b9cc02e1678d6fe1bc61c7b746c864358ceb862b3c930224",
+      "byte_count": 217693
+    },
+    "t1_rgb": {
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_pair_view_v1/t1_rgb.png",
+      "sha256": "8c2f88ffbc6ba3a44654d4be968f03cd5c6a39faa61f825fc5df1799e43c72ee",
+      "byte_count": 339052
+    },
+    "t1_instance": {
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_pair_view_v1/t1_instance.png",
+      "sha256": "3a87891e8726280017d7d3d461c382ffad334c6e760852fcc6dc2ffe2cab08c2",
+      "byte_count": 201095
+    }
+  },
+  "preview": {
+    "projection": "orthographic",
+    "shared_across_visits_and_modes": true,
+    "width": 960,
+    "height": 720,
+    "point_radius_px": 0,
+    "visualization_only": true
+  },
+  "claim_boundary": {
+    "establishes": "a real independently reconstructed 3RScan OVI pair with immutable dense entities, same-visit RGB-D support, exactly-once scene alignment, and geometry-preserving artifacts",
+    "does_not_establish": "G/F/R association quality, instance grouping gains, recovery gains, or held-out D2_EVAL performance"
+  }
+}

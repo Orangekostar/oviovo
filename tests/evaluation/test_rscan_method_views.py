@@ -115,6 +115,16 @@ def test_d1_rejects_missing_misaligned_or_empty_support(masks: object) -> None:
         _pair(domain_id="D1_NATIVE_SENSOR_SUPPORT", support_masks=masks)
 
 
+def test_processed_visit_builder_rejects_d2_even_with_support_masks() -> None:
+    masks = (
+        np.asarray([True, True, True]),
+        np.asarray([True, True, True]),
+    )
+
+    with pytest.raises(RScanMethodViewError, match="native OVI manifests"):
+        _pair(domain_id="D2_OVI_RECONSTRUCTION", support_masks=masks)
+
+
 def test_candidates_are_gt_free_mesh_segments_shared_by_all_methods() -> None:
     pair = _pair()
     plans = build_execution_plans(pair)

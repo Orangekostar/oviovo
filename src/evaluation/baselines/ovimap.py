@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping, Sequence
-from pathlib import Path
+import csv
 import re
+from collections.abc import Iterable, Mapping, Sequence
+from io import StringIO
+from pathlib import Path
 from typing import Any
 
 import numpy as np
-
 
 _INSTANCE_COLOR_RE = re.compile(
     r"Instance:\s*(?P<instance_id>\d+)\s+Color:\s*\((?P<red>\d+),(?P<green>\d+),(?P<blue>\d+)\)"
@@ -19,29 +20,55 @@ def parse_instance_color_log(path: str | Path) -> dict[int, tuple[int, int, int]
     """Read OVI-MAP's authoritative global instance-to-PLY-color log."""
     colors: dict[int, tuple[int, int, int]] = {}
     instances_by_color: dict[tuple[int, int, int], int] = {}
-    for line in Path(path).read_text(encoding="utf-8", errors="replace").splitlines():
-        match = _INSTANCE_COLOR_RE.search(line)
-        if match is not None:
-            instance_id = int(match.group("instance_id"))
-            color = tuple(
-                int(match.group(channel)) for channel in ("red", "green", "blue")
+    text = Path(path).read_text(encoding="utf-8", errors="replace")
+
+    def add(instance_id: int, color: tuple[int, int, int]) -> None:
+        if instance_id < 0 or any(channel < 0 or channel > 255 for channel in color):
+            raise ValueError("OVI-MAP instance IDs and RGB values must be non-negative uint8")
+        existing_color = colors.get(instance_id)
+        if existing_color is not None and existing_color != color:
+            raise ValueError(
+                f"OVI-MAP instance {instance_id} has conflicting colors: "
+                f"{existing_color} and {color}"
             )
-            existing_color = colors.get(instance_id)
-            if existing_color is not None and existing_color != color:
-                raise ValueError(
-                    f"OVI-MAP instance {instance_id} has conflicting colors: "
-                    f"{existing_color} and {color}"
+        existing_instance = instances_by_color.get(color)
+        if existing_instance is not None and existing_instance != instance_id:
+            raise ValueError(
+                f"OVI-MAP mesh color {color} is reused by instances "
+                f"{existing_instance} and {instance_id}"
+            )
+        colors[instance_id] = color
+        instances_by_color[color] = instance_id
+
+    if text.splitlines()[:1] == ["instance_id\tr\tg\tb"]:
+        reader = csv.DictReader(StringIO(text), delimiter="\t")
+        if reader.fieldnames != ["instance_id", "r", "g", "b"]:
+            raise ValueError("OVI-MAP instance color TSV header is invalid")
+        for row in reader:
+            if set(row) != {"instance_id", "r", "g", "b"} or any(
+                row[key] is None for key in row
+            ):
+                raise ValueError("OVI-MAP instance color TSV row is invalid")
+            try:
+                add(
+                    int(row["instance_id"]),
+                    (int(row["r"]), int(row["g"]), int(row["b"])),
                 )
-            existing_instance = instances_by_color.get(color)
-            if existing_instance is not None and existing_instance != instance_id:
-                raise ValueError(
-                    f"OVI-MAP mesh color {color} is reused by instances "
-                    f"{existing_instance} and {instance_id}"
+            except ValueError as error:
+                raise ValueError("OVI-MAP instance color TSV row is invalid") from error
+    else:
+        for line in text.splitlines():
+            match = _INSTANCE_COLOR_RE.search(line)
+            if match is not None:
+                add(
+                    int(match.group("instance_id")),
+                    tuple(
+                        int(match.group(channel))
+                        for channel in ("red", "green", "blue")
+                    ),
                 )
-            colors[instance_id] = color
-            instances_by_color[color] = instance_id
     if not colors:
-        raise ValueError(f"OVI-MAP instance color log contains no Instance: ... Color entries: {path}")
+        raise ValueError(f"OVI-MAP instance color log contains no color entries: {path}")
     return colors
 
 

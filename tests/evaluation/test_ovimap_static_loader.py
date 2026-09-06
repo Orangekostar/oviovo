@@ -57,6 +57,19 @@ def test_instance_color_log_remaps_mask_colors_to_mesh_colors(tmp_path) -> None:
     assert instances[7]["color"] == [214, 214, 214]
 
 
+def test_instance_color_log_accepts_native_audit_tsv(tmp_path) -> None:
+    log = tmp_path / "instance_colors_cpp.tsv"
+    log.write_text(
+        "instance_id\tr\tg\tb\n7\t10\t20\t30\n8\t40\t50\t60\n",
+        encoding="utf-8",
+    )
+
+    assert parse_instance_color_log(log) == {
+        7: (10, 20, 30),
+        8: (40, 50, 60),
+    }
+
+
 @pytest.mark.parametrize(
     "contents",
     [

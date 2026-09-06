@@ -322,6 +322,10 @@ def build_method_pair_view(
         raise RScanMethodViewError("scan_ids must contain exactly two values")
     if isinstance(processed_visits, (str, bytes)) or len(processed_visits) != 2:
         raise RScanMethodViewError("processed_visits must contain exactly two arrays")
+    if domain_id == "D2_OVI_RECONSTRUCTION":
+        raise RScanMethodViewError(
+            "D2 must be built from native OVI manifests, not processed visits or support masks"
+        )
     if domain_id == "D0_NATIVE_PROCESSED":
         if support_masks is not None:
             raise RScanMethodViewError("D0 cannot use a support mask")
