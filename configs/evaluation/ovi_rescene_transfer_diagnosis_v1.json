@@ -2,6 +2,12 @@
   "schema_version": 1,
   "config_id": "OVI_RESCENE_TRANSFER_DIAGNOSIS_V1",
   "status": "FROZEN_BEFORE_D2_EVAL",
+  "provenance_amendment": {
+    "status": "SOURCE_BINDING_REFRESH_BEFORE_RERUN",
+    "parent_config_sha256": "229982f717a62a4c2a83ce970f3e312ce28aa08ab0ca05187fa7e16e29f76476",
+    "reason": "bind_behavior_preserving_d2_loader_isolation",
+    "method_or_threshold_changed": false
+  },
   "pair_id": "scene0109_00-scene0109_01",
   "pair_role": "D2_DEV",
   "held_out_pair_ids": [
@@ -42,8 +48,8 @@
     },
     "d2_pair_receipt": {
       "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_pair_view_v1.json",
-      "sha256": "857d851c9b0bb9317f7bc117ce7fe938149297901f130589f1e9684d9cffd5f6",
-      "byte_count": 7632
+      "sha256": "db27af0ca02e360994ffac42b094cc31f06d12f416fae2d42378cda4c7fc1746",
+      "byte_count": 7825
     },
     "d0_pair_result": {
       "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/3rscan/matrix-v1/associations-v2/scene0109_00-scene0109_01.json",

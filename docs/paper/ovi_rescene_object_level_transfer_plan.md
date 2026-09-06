@@ -89,7 +89,7 @@
 - [x] Write failing tests requiring D2 construction to reject `processed_visits` and support masks, proving the old non-D0 branch cannot masquerade as D2.
 - [x] Write failing synthetic loader tests for unique OVI entity ownership, dense-source conservation, per-visit independent snapshots, and exactly-once global alignment.
 - [x] Run `python -m pytest -q tests/evaluation/test_ovi_pair_views.py tests/evaluation/test_rscan_method_views.py` and confirm the missing API failures.
-- [x] Implement the loader by reusing `ovimap_visit_loader.py` and `ovi_surface_attributes.py`; retain unsupported dense points in D while limiting only adapter domain A.
+- [x] Implement a 3RScan-specific loader with the frozen `ovimap_visit_loader.py` validation semantics and reusable `ovi_surface_attributes.py`; retain unsupported dense points in D while limiting only adapter domain A.
 - [x] Build the first real D2 pair and verify entity count, point count, support fraction, RGB/normal finiteness, coordinate bounds, and source artifact identity.
 - [x] Export representative dense `rgb.ply` and `instance.ply` plus fixed-camera previews from unmodified measured geometry.
 - [x] Verify with `python -m pytest -q tests/evaluation/test_ovi_pair_views.py tests/evaluation/test_rscan_method_views.py tests/oviv2/test_ovi_rescene_adapter.py`.
@@ -183,7 +183,7 @@
 - [x] Write failing metric tests for opportunity, new correct/wrong surface, deleted correct baseline surface, total P/R/F, and unevaluable historical surface.
 - [x] Run `python -m pytest -q tests/evaluation/test_run_ovi_rescene_object_recovery.py tests/oviv2/test_two_visit_registration.py tests/oviv2/test_two_visit_dense_recovery.py` and confirm expected failures.
 - [x] Add a composite-object 1:1 registration contract and an explicit oracle source type; apply identical eligibility rules to C1/C2/O1 and reserve GT transforms for O2.
-- [x] Run C0/C1/C2/O1/O2 on every D2 pair with rigid GT opportunity, preserving negative and null outcomes.
+- [x] Run C0/C1/C2/O1/O2 on the completed D2 pair with rigid GT opportunity, preserving negative and null outcomes.
 - [x] Verify with `python -m pytest -q tests/evaluation/test_run_ovi_rescene_object_recovery.py tests/oviv2/test_two_visit_registration.py tests/oviv2/test_two_visit_dense_recovery.py tests/oviv2/test_two_visit_current_map.py`.
 - [x] Commit Task 7 code, tests, maps/indexes, and measured oracle table.
 

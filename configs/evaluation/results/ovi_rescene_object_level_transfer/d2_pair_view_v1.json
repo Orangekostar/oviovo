@@ -3,6 +3,13 @@
   "artifact_id": "OVI_RESCENE_D2_PAIR_VIEW_RECEIPT_V1",
   "status": "REAL_D2_PAIR_VIEW_PASS",
   "source_commit_before_task3": "ca0b423",
+  "provenance_amendment": {
+    "status": "VERIFIED_AFTER_BEHAVIOR_PRESERVING_SOURCE_ISOLATION",
+    "parent_receipt_sha256": "857d851c9b0bb9317f7bc117ce7fe938149297901f130589f1e9684d9cffd5f6",
+    "verified_commit": "de7c841ccb81edb8ff0488e7eabe01257d0047ad",
+    "pair_content_sha256_unchanged": true,
+    "reason": "isolate_3rscan_artifact_loading_from_frozen_tesse_two_visit_source"
+  },
   "pair_id": "scene0109_00-scene0109_01",
   "domain_id": "D2_OVI_RECONSTRUCTION",
   "pair_content_sha256": "db8c3463022049d4b0bc8e4e2f7259045cc488640e663442dd94e9c556ca9fa0",
@@ -20,18 +27,13 @@
   "implementation_sources": {
     "pair_loader": {
       "path": "src/evaluation/ovi_pair_views.py",
-      "sha256": "bae0c61777585e75ee22c342acbda4c89a502ce1a2d3af880a64477afe086f1d",
-      "byte_count": 62504
+      "sha256": "61969387279cf3d31e1cff9d7780b7da404851ab013d73cae3064a43c8ee0f2e",
+      "byte_count": 66407
     },
     "artifact_exporter": {
       "path": "src/evaluation/ovi_pair_artifacts.py",
       "sha256": "a377ea3a649f3bb584ffaa4d44eb5768ae18c73cc5ae8586d70e93f7d414e806",
       "byte_count": 13750
-    },
-    "native_artifact_loader": {
-      "path": "src/oviv2/ovimap_visit_loader.py",
-      "sha256": "4501df996a332c33fee45e75bb06fbd47f2863cb9435b71f0a80103ecaca61f1",
-      "byte_count": 16933
     },
     "ovimap_color_parser": {
       "path": "src/evaluation/baselines/ovimap.py",

@@ -4,6 +4,12 @@
   "status": "PASS_WITH_NEGATIVE_PRIMARY_METRIC",
   "evaluated_commit": "cff637c12e92a97b060a404803cff39b1aa10d00",
   "exporter_commit": "c6a122006f5c2e8a1c58a43e0da243a10109e53d",
+  "provenance_amendment": {
+    "status": "PARENT_BINDING_REFRESH_PAIR_CONTENT_UNCHANGED",
+    "parent_receipt_sha256": "61b80bb0eac074d941ae516e96dbdd3de5b0c923c14781e28f6f855e4e02438a",
+    "pair_content_sha256_unchanged": true,
+    "reason": "bind_behavior_preserving_d2_loader_isolation"
+  },
   "pair_id": "scene0109_00-scene0109_01",
   "domain_id": "D2_OVI_RECONSTRUCTION",
   "pair_content_sha256": "db8c3463022049d4b0bc8e4e2f7259045cc488640e663442dd94e9c556ca9fa0",
@@ -98,8 +104,8 @@
     },
     "d2_pair_receipt": {
       "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_pair_view_v1.json",
-      "sha256": "857d851c9b0bb9317f7bc117ce7fe938149297901f130589f1e9684d9cffd5f6",
-      "byte_count": 7632
+      "sha256": "db27af0ca02e360994ffac42b094cc31f06d12f416fae2d42378cda4c7fc1746",
+      "byte_count": 7825
     },
     "cached_forward_metadata": {
       "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-transfer-v1/scene0109_00-scene0109_01/native_forwards.json",
