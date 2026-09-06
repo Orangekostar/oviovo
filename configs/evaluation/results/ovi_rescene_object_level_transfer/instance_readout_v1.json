@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "artifact_id": "OVI_RESCENE_INSTANCE_READOUT_V1",
+  "status": "PASS_WITH_NEGATIVE_PRIMARY_METRIC",
+  "evaluated_commit": "cff637c12e92a97b060a404803cff39b1aa10d00",
+  "exporter_commit": "c6a122006f5c2e8a1c58a43e0da243a10109e53d",
+  "pair_id": "scene0109_00-scene0109_01",
+  "domain_id": "D2_OVI_RECONSTRUCTION",
+  "pair_content_sha256": "db8c3463022049d4b0bc8e4e2f7259045cc488640e663442dd94e9c556ca9fa0",
+  "protocol": {
+    "dense_geometry": "native_ovimap_t1_surface",
+    "grouping_only_xyz_mutation": false,
+    "current_geometry_authority": "ovi_t1",
+    "historical_geometry_in_current_coordinates": false,
+    "minimum_query_confidence": 0.3,
+    "projection_minimum_entity_token_coverage": 0.25,
+    "projection_minimum_source_point_coverage": 0.25,
+    "instance_voxel_size_m": 0.05,
+    "matching_policy": "max_valid_count_then_iou",
+    "iou_thresholds": [0.5, 0.25],
+    "semantic_scope": "class_agnostic",
+    "uncovered_entities_retained": true
+  },
+  "query_projection": {
+    "raw_query_count": 92,
+    "query_count_at_or_above_0_3": 3,
+    "many_sided_t0_query_count": 61,
+    "many_sided_t1_query_count": 12,
+    "empty_t0_query_count": 18,
+    "empty_t1_query_count": 32
+  },
+  "current_domain": {
+    "source_candidate_count": 21,
+    "ground_truth_instance_count": 14,
+    "owned_point_count": 762458,
+    "appearance_supported_owned_point_count": 675214,
+    "appearance_support_rate": 0.885575336608705
+  },
+  "variants": {
+    "A_ID": {
+      "composite_object_count": 21,
+      "grouped_source_entity_count": 0,
+      "query_supported_object_count": 3,
+      "rejected_conflict_count": 0,
+      "iou_0_50": {"true_positive_count": 0, "precision": 0.0, "recall": 0.0, "f_score": 0.0},
+      "iou_0_25": {"true_positive_count": 3, "precision": 0.14285714285714285, "recall": 0.21428571428571427, "f_score": 0.17142857142857143}
+    },
+    "U0": {
+      "composite_object_count": 21,
+      "grouped_source_entity_count": 0,
+      "query_supported_object_count": 0,
+      "rejected_conflict_count": 0,
+      "iou_0_50": {"true_positive_count": 0, "precision": 0.0, "recall": 0.0, "f_score": 0.0},
+      "iou_0_25": {"true_positive_count": 3, "precision": 0.14285714285714285, "recall": 0.21428571428571427, "f_score": 0.17142857142857143}
+    },
+    "U1": {
+      "composite_object_count": 21,
+      "grouped_source_entity_count": 0,
+      "query_supported_object_count": 0,
+      "rejected_conflict_count": 272,
+      "current_rejected_entity_count": 5,
+      "iou_0_50": {"true_positive_count": 0, "precision": 0.0, "recall": 0.0, "f_score": 0.0},
+      "iou_0_25": {"true_positive_count": 3, "precision": 0.14285714285714285, "recall": 0.21428571428571427, "f_score": 0.17142857142857143}
+    },
+    "U2": {
+      "composite_object_count": 20,
+      "grouped_source_entity_count": 2,
+      "query_supported_object_count": 2,
+      "rejected_conflict_count": 0,
+      "iou_0_50": {"true_positive_count": 0, "precision": 0.0, "recall": 0.0, "f_score": 0.0},
+      "iou_0_25": {"true_positive_count": 3, "precision": 0.15, "recall": 0.21428571428571427, "f_score": 0.1764705882352941}
+    },
+    "U3": {
+      "composite_object_count": 20,
+      "grouped_source_entity_count": 2,
+      "query_supported_object_count": 2,
+      "unconfirmed_atomic_object_count": 18,
+      "rejected_conflict_count": 0,
+      "grouping_sha256": "ce9d0e364d00e41f3ece013e4c6f28f04e14903bd0be7012a85c94b8fb69215f",
+      "grouped_members_t1": ["ovimap:1", "ovimap:27"],
+      "grouped_member_point_counts_t1": [120521, 274],
+      "iou_0_50": {"true_positive_count": 0, "precision": 0.0, "recall": 0.0, "f_score": 0.0},
+      "iou_0_25": {"true_positive_count": 3, "precision": 0.15, "recall": 0.21428571428571427, "f_score": 0.1764705882352941}
+    }
+  },
+  "export_selection": {
+    "variant_id": "U3",
+    "policy": "highest primary F1, then sensitivity F1, then conflict-safe full variant",
+    "primary_tie": true,
+    "sensitivity_improvement_over_u0": 0.005042016806722672,
+    "evidence_strength": "WEAK_SENSITIVITY_ONLY"
+  },
+  "source_bindings": {
+    "config": {
+      "path": "configs/evaluation/ovi_rescene_object_level_transfer_v1.json",
+      "sha256": "cf8422dd21aa72b66fbdb2a8918b689efcb12cb20b488e8dd3ff56c08f7a41ef",
+      "byte_count": 4501
+    },
+    "d2_pair_receipt": {
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_pair_view_v1.json",
+      "sha256": "857d851c9b0bb9317f7bc117ce7fe938149297901f130589f1e9684d9cffd5f6",
+      "byte_count": 7632
+    },
+    "cached_forward_metadata": {
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-transfer-v1/scene0109_00-scene0109_01/native_forwards.json",
+      "sha256": "0983147020a51764302c2ee067808146913116530a728c66c235a4ccc4f2547c",
+      "byte_count": 1568
+    },
+    "cached_forward_arrays": {
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-transfer-v1/scene0109_00-scene0109_01/native_forwards.npz",
+      "sha256": "03f3f45760ab7cb1ef0a238c42479f9930dc7bbb9aae3482f5c1170d8b4db3da",
+      "byte_count": 28400149
+    },
+    "ground_truth": {
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/gt-v1/scene0109_00-scene0109_01/manifest.json",
+      "sha256": "422fee2e94e995abc92961d38ea249b01be46694ef1404e4c2502a979a3b8f9e",
+      "byte_count": 2418
+    },
+    "metrics": {
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/instance_readout.csv",
+      "sha256": "a7c17576bcadc0d1879b81d8426c6fd80fea98866b6c9ef567f5461115e5ece1",
+      "byte_count": 6722
+    }
+  },
+  "implementation_sources": {
+    "grouping": {"path": "src/evaluation/temporal_object_groups.py", "sha256": "4415a17805fe2fc6740beada9866da3329bfb3f60bb6d587686525b091b11078", "byte_count": 28227},
+    "ownership": {"path": "src/evaluation/ovi_ownership_completion.py", "sha256": "759df3e45959f220716115471134bf536187168dc453c48df746995388a8b8fc", "byte_count": 7965},
+    "evaluator": {"path": "scripts/evaluation/evaluate_ovi_ownership_completion.py", "sha256": "e4b32d3066ef48e37b3a6c2a3e8fc59023dbc587af0d8d0be289c0568dbe6188", "byte_count": 26158},
+    "exporter": {"path": "src/evaluation/temporal_grouping_artifacts.py", "sha256": "62a428b30bcc389dd1b6d3fedf4271e6c86e12b6a1c94b4ff57e9e75ff9e3570", "byte_count": 8647}
+  },
+  "local_full_artifact": {
+    "manifest": {
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-transfer-v1/scene0109_00-scene0109_01/instance-readout-v1-U3/manifest.json",
+      "sha256": "3b94d22805ca1ab521cae592dfa86b23ac96f6e08d03965ee754add9c031a6cd",
+      "byte_count": 8985
+    },
+    "current_instance_ply": {
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-transfer-v1/scene0109_00-scene0109_01/instance-readout-v1-U3/current_instance.ply",
+      "sha256": "a7a0b84992ee5851123f15b975087ac93db995ec4ec92804656ae19d4b8c77b8",
+      "byte_count": 51282122
+    }
+  },
+  "tracked_previews": {
+    "current_rgb": {
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/instance_readout_v1/current_rgb.png",
+      "sha256": "ac382e4ec49d7fee2b6d3cf23a045cbefc0e2a583e5d80378fec809f07506040",
+      "byte_count": 339059
+    },
+    "current_instance": {
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/instance_readout_v1/current_instance.png",
+      "sha256": "4c68b428ea086aa72923598dc716beb65975680b22d8dae66f880b14a41c3d72",
+      "byte_count": 197397
+    }
+  },
+  "claim_boundary": {
+    "establishes": "deterministic dense OVI ownership grouping, exact XYZ conservation, and measured class-agnostic current-instance results on one frozen D2_DEV pair",
+    "does_not_establish": "primary IoU 0.50 improvement, held-out D2_EVAL improvement, semantic improvement, or historical geometry recovery",
+    "observed_bottleneck": "native OVI candidate-to-GT overlap and sparse high-confidence ReScene query support"
+  }
+}

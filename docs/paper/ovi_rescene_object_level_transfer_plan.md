@@ -132,14 +132,14 @@
 - Consumes: immutable OVI surface/entities, accepted query supports, and variants `A_ID`, `U0`, `U1`, `U2`, `U3`.
 - Produces: `CompositeObject` records with visit, object ID, member entity IDs, query/support/confidence, exclusive ownership, rejected conflicts, and a dense `MapSnapshot` whose XYZ multiset is unchanged for grouping-only variants.
 
-- [ ] Write failing tests distinguishing within-object fragment merge from cross-object erroneous merge and prohibiting transitive closure beyond direct reliable query support.
-- [ ] Write failing tests that every source point has at most one owner, conflicts resolve deterministically by confidence/support, abstained/uncovered entities remain in the map, and grouping-only XYZ hashes remain identical.
-- [ ] Run `python -m pytest -q tests/evaluation/test_temporal_object_groups.py tests/evaluation/test_ovi_ownership_completion.py` and confirm the missing behavior.
-- [ ] Implement `A_ID` as identity-only and `U1/U2/U3` as explicit grouping variants; keep moved-object historical support out of current coordinates.
-- [ ] Evaluate current t1 class-agnostic instance P/R/F at IoU 0.50 and 0.25, fragments per GT, merged-GT rate, duplicate objects, support coverage, and rejected ownership.
-- [ ] Export the best evidence-supported dense instance map and corresponding RGB/instance previews without geometric beautification.
-- [ ] Verify with `python -m pytest -q tests/evaluation/test_temporal_object_groups.py tests/evaluation/test_ovi_ownership_completion.py tests/evaluation/test_evaluate_ovi_ownership_completion.py`.
-- [ ] Commit Task 5 code, tests, measured metrics, and compact visual artifacts.
+- [x] Write failing tests distinguishing within-object fragment merge from cross-object erroneous merge and prohibiting transitive closure beyond direct reliable query support.
+- [x] Write failing tests that every source point has at most one owner, conflicts resolve deterministically by confidence/support, abstained/uncovered entities remain in the map, and grouping-only XYZ hashes remain identical.
+- [x] Run `python -m pytest -q tests/evaluation/test_temporal_object_groups.py tests/evaluation/test_ovi_ownership_completion.py` and confirm the missing behavior.
+- [x] Implement `A_ID` as identity-only and `U1/U2/U3` as explicit grouping variants; keep moved-object historical support out of current coordinates.
+- [x] Evaluate current t1 class-agnostic instance P/R/F at IoU 0.50 and 0.25, fragments per GT, merged-GT rate, duplicate objects, support coverage, and rejected ownership.
+- [x] Export the best evidence-supported dense instance map and corresponding RGB/instance previews without geometric beautification.
+- [x] Verify with `python -m pytest -q tests/evaluation/test_temporal_object_groups.py tests/evaluation/test_ovi_ownership_completion.py tests/evaluation/test_evaluate_ovi_ownership_completion.py`.
+- [x] Commit Task 5 code, tests, measured metrics, and compact visual artifacts.
 
 ### Task 6: D0/D1/D2 controlled transfer diagnosis and adaptation gate
 
