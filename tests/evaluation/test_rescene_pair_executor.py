@@ -14,6 +14,7 @@ from scripts.evaluation.prepare_ovi_rescene_input_v2 import (
     publish_recovered_input,
     write_static_input_artifact,
 )
+from scripts.evaluation.prepare_ovi_rescene_supported_v3 import build_supported_input
 from scripts.evaluation.rescene_pair_executor import (
     ExecutorError,
     NativeForwardResult,
@@ -29,9 +30,11 @@ from src.oviv2.rescene_input_bridge import (
     RecoveredModelSupport,
     SurfaceAttributeBundle,
     build_model_input,
+    load_model_input_artifact,
     materialize_neural_sample_map,
 )
 from src.oviv2.two_visit_contracts import OviEntitySemanticEvidence
+from tests.evaluation.test_prepare_ovi_rescene_supported_v3 import _partial_v2
 
 
 def _sha256(path: Path) -> str:
@@ -154,6 +157,14 @@ def _pair_arrays(path: Path, pair: object) -> None:
             source_point_indices=pair.source_point_indices,
             source_to_token_offsets=pair.source_to_token_offsets,
         )
+
+
+def _supported_input_sidecar(tmp_path: Path) -> tuple[Path, object, object]:
+    input_v2, sidecar = _partial_v2(tmp_path)
+    build_supported_input(input_v2_root=input_v2, output_root=sidecar)
+    model_input = load_model_input_artifact(sidecar / "model_input")
+    pair = load_neural_sample_artifact(sidecar / "adapter_pair")
+    return sidecar, model_input, pair
 
 
 def _checkout(tmp_path: Path) -> Path:
@@ -346,5 +357,81 @@ def test_executor_publishes_existing_schema_and_bound_raw_output(
             neural_voxel_size_m=0.02,
             raw_output_root=raw_output,
             native_runner=runner,
+            source_validator=lambda _path: "f" * 40,
+        )
+
+
+def test_executor_accepts_audited_supported_v3_and_preserves_v2_compatibility(
+    tmp_path: Path,
+) -> None:
+    sidecar, model_input, pair = _supported_input_sidecar(tmp_path)
+    pair_arrays = tmp_path / "supported_pair.npz"
+    _pair_arrays(pair_arrays, pair)
+    checkpoint = tmp_path / "checkpoint.ckpt"
+    checkpoint.write_bytes(b"checkpoint")
+    calls: list[object] = []
+
+    def runner(observed: object, *_args: object) -> NativeForwardResult:
+        calls.append(observed)
+        return NativeForwardResult(
+            pred_masks_mq=np.asarray([[2.0, -1.0], [-1.0, 2.0]], dtype=np.float32),
+            pred_logits_qc=np.asarray(
+                [[2.0, 0.0, -1.0], [0.0, 2.0, -1.0]], dtype=np.float32
+            ),
+            runtime_s=0.5,
+            peak_memory_bytes=1024,
+            peak_reserved_memory_bytes=2048,
+            rss_peak_bytes=4096,
+            device_name="cpu-stub",
+            model_tensor_count=796,
+        )
+
+    run_rescene_pair_executor(
+        input_sidecar=sidecar,
+        pair_arrays=pair_arrays,
+        output_arrays=tmp_path / "supported_evidence.npz",
+        output_manifest=tmp_path / "supported_evidence.json",
+        checkpoint=checkpoint,
+        checkout=_checkout(tmp_path),
+        pair_sha256=pair.content_sha256(),
+        checkpoint_sha256=_sha256(checkpoint),
+        feature_schema="rgb_normals",
+        neural_voxel_size_m=0.02,
+        raw_output_root=tmp_path / "supported_raw",
+        native_runner=runner,
+        source_validator=lambda _path: "f" * 40,
+    )
+
+    assert len(calls) == 1
+    assert calls[0].content_sha256() == model_input.content_sha256()
+    with np.load(tmp_path / "supported_evidence.npz", allow_pickle=False) as arrays:
+        assert arrays["query_masks"].shape == (2, 3)
+
+
+def test_executor_rejects_supported_v3_mapping_tamper_before_forward(
+    tmp_path: Path,
+) -> None:
+    sidecar, _, pair = _supported_input_sidecar(tmp_path)
+    pair_arrays = tmp_path / "supported_pair.npz"
+    _pair_arrays(pair_arrays, pair)
+    checkpoint = tmp_path / "checkpoint.ckpt"
+    checkpoint.write_bytes(b"checkpoint")
+    mappings = sidecar / "mappings.npz"
+    mappings.write_bytes(mappings.read_bytes() + b"tampered")
+
+    with pytest.raises(ExecutorError, match="input sidecar audit failed"):
+        run_rescene_pair_executor(
+            input_sidecar=sidecar,
+            pair_arrays=pair_arrays,
+            output_arrays=tmp_path / "supported_evidence.npz",
+            output_manifest=tmp_path / "supported_evidence.json",
+            checkpoint=checkpoint,
+            checkout=_checkout(tmp_path),
+            pair_sha256=pair.content_sha256(),
+            checkpoint_sha256=_sha256(checkpoint),
+            feature_schema="rgb_normals",
+            neural_voxel_size_m=0.02,
+            raw_output_root=tmp_path / "supported_raw",
+            native_runner=lambda *_args: pytest.fail("forward must not run"),
             source_validator=lambda _path: "f" * 40,
         )

@@ -28,12 +28,14 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.evaluation.prepare_ovi_rescene_input_v2 import audit_recovered_input
+from scripts.evaluation.prepare_ovi_rescene_supported_v3 import audit_supported_input
 from src.oviv2.ovi_rescene_adapter import load_neural_sample_artifact
 from src.oviv2.rescene_input_bridge import (
     ReSceneModelInput,
     expand_model_predictions,
     load_model_input_artifact,
 )
+from src.oviv2.two_visit_contracts import NeuralSampleMap
 
 EXPECTED_SOURCE_COMMIT = "fb2fe42eb8f1e926567c48eea9acb874e608ee10"
 EXPECTED_CONCERTO_SHA256 = (
@@ -288,6 +290,42 @@ def _load_pair_arrays(path: Path) -> dict[str, np.ndarray]:
         raise ExecutorError("temporary pair arrays cannot be decoded") from error
 
 
+def _validate_loaded_sidecar(
+    *,
+    model_input: ReSceneModelInput,
+    pair: NeuralSampleMap,
+    pair_arrays_path: Path,
+    pair_sha256: str,
+    feature_schema: str,
+    neural_voxel_size_m: float,
+) -> ReSceneModelInput:
+    if pair.content_sha256() != pair_sha256:
+        raise ExecutorError("input sidecar pair SHA-256 mismatch")
+    if pair.feature_schema != feature_schema or feature_schema != "rgb_normals":
+        raise ExecutorError("input sidecar feature schema mismatch")
+    if not math.isclose(
+        pair.neural_voxel_size_m,
+        neural_voxel_size_m,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    ):
+        raise ExecutorError("input sidecar neural voxel size mismatch")
+    pair_arrays = _load_pair_arrays(pair_arrays_path)
+    expected = {
+        "coordinates_xyzt": pair.coordinates_xyzt,
+        "features": pair.features,
+        "visit_ids": pair.visit_ids,
+        "source_visit_ids": pair.source_visit_ids,
+        "source_point_indices": pair.source_point_indices,
+        "source_to_token_offsets": pair.source_to_token_offsets,
+    }
+    if any(
+        not np.array_equal(pair_arrays[name], value) for name, value in expected.items()
+    ):
+        raise ExecutorError("temporary pair arrays differ from the input sidecar")
+    return model_input
+
+
 def _load_bound_sidecar(
     input_sidecar: Path,
     pair_arrays_path: Path,
@@ -297,6 +335,21 @@ def _load_bound_sidecar(
     neural_voxel_size_m: float,
 ) -> ReSceneModelInput:
     root = Path(os.path.abspath(os.fspath(input_sidecar)))
+    if (root / "input_contract_v3.json").exists():
+        try:
+            audit_supported_input(root)
+            model_input = load_model_input_artifact(root / "model_input")
+            pair = load_neural_sample_artifact(root / "adapter_pair")
+        except (OSError, TypeError, ValueError) as error:
+            raise ExecutorError("input sidecar audit failed") from error
+        return _validate_loaded_sidecar(
+            model_input=model_input,
+            pair=pair,
+            pair_arrays_path=pair_arrays_path,
+            pair_sha256=pair_sha256,
+            feature_schema=feature_schema,
+            neural_voxel_size_m=neural_voxel_size_m,
+        )
     receipt_path = root / "input_contract_v2.json"
     try:
         receipt = json.loads(
@@ -325,31 +378,14 @@ def _load_bound_sidecar(
         pair = load_neural_sample_artifact(root / "adapter_pair")
     except (OSError, TypeError, ValueError) as error:
         raise ExecutorError("input sidecar audit failed") from error
-    if pair.content_sha256() != pair_sha256:
-        raise ExecutorError("input sidecar pair SHA-256 mismatch")
-    if pair.feature_schema != feature_schema or feature_schema != "rgb_normals":
-        raise ExecutorError("input sidecar feature schema mismatch")
-    if not math.isclose(
-        pair.neural_voxel_size_m,
-        neural_voxel_size_m,
-        rel_tol=0.0,
-        abs_tol=1e-12,
-    ):
-        raise ExecutorError("input sidecar neural voxel size mismatch")
-    pair_arrays = _load_pair_arrays(pair_arrays_path)
-    expected = {
-        "coordinates_xyzt": pair.coordinates_xyzt,
-        "features": pair.features,
-        "visit_ids": pair.visit_ids,
-        "source_visit_ids": pair.source_visit_ids,
-        "source_point_indices": pair.source_point_indices,
-        "source_to_token_offsets": pair.source_to_token_offsets,
-    }
-    if any(
-        not np.array_equal(pair_arrays[name], value) for name, value in expected.items()
-    ):
-        raise ExecutorError("temporary pair arrays differ from the input sidecar")
-    return model_input
+    return _validate_loaded_sidecar(
+        model_input=model_input,
+        pair=pair,
+        pair_arrays_path=pair_arrays_path,
+        pair_sha256=pair_sha256,
+        feature_schema=feature_schema,
+        neural_voxel_size_m=neural_voxel_size_m,
+    )
 
 
 def _native_forward(
