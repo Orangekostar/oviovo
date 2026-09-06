@@ -41,15 +41,15 @@
 - Consumes: cached DEV6 `TemporalQueryEvidence`, raw masks/logits, `GroundTruthPair`, and the two eligible environments excluded by the deterministic take-first-6 rule.
 - Produces: `build_fixed_endpoint_bindings(...)`, per-query attribution rows, per-environment/micro/macro fixed-threshold summaries, and a frozen pair manifest.
 
-- [ ] Write a failing example where maximum-total-IoU assignment yields fewer threshold-valid matches than cardinality-first assignment; require metric-v2 to maximize valid match count and then IoU.
-- [ ] Run `python -m pytest -q tests/evaluation/test_rscan_gt_instances.py tests/evaluation/test_rscan_association_metrics.py` and confirm the new assertion fails for the expected assignment definition.
-- [ ] Add a public evaluator-only matching mode while preserving the existing v1 result path and apply it uniformly to G/F/R.
-- [ ] Add failing tests showing that removing a competing low-confidence query does not alter precomputed candidate-to-GT endpoint bindings and that query outcomes classify as retained TP, endpoint failure, false re-ID, or duplicate competition.
-- [ ] Implement cached attribution and fixed-threshold transfer output without invoking the network for DEV6.
-- [ ] Freeze the two unselected eligible environments before inspecting method results; record checkpoint-validation overlap separately from resolver-held-out status.
-- [ ] Run the fixed 0.3 resolver on every usable transfer pair, reporting integer TP/FP/GT, micro P/R/F, environment macro P/R/F, and explicit asset limitations.
-- [ ] Verify with `python -m pytest -q tests/evaluation/test_tune_ovi_rescene_resolver.py tests/evaluation/test_rscan_association_metrics.py tests/evaluation/test_rscan_gt_instances.py`.
-- [ ] Commit the Task 1 code, manifest, and measured CSVs.
+- [x] Write a failing example where maximum-total-IoU assignment yields fewer threshold-valid matches than cardinality-first assignment; require metric-v2 to maximize valid match count and then IoU.
+- [x] Run `python -m pytest -q tests/evaluation/test_rscan_gt_instances.py tests/evaluation/test_rscan_association_metrics.py` and confirm the new assertion fails for the expected assignment definition.
+- [x] Add a public evaluator-only matching mode while preserving the existing v1 result path and apply it uniformly to G/F/R.
+- [x] Add failing tests showing that removing a competing low-confidence query does not alter precomputed candidate-to-GT endpoint bindings and that query outcomes classify as retained TP, endpoint failure, false re-ID, or duplicate competition.
+- [x] Implement cached attribution and fixed-threshold transfer output without invoking the network for DEV6.
+- [x] Freeze the two unselected eligible environments before inspecting method results; record checkpoint-validation overlap separately from resolver-held-out status.
+- [x] Run the fixed 0.3 resolver on every usable transfer pair, reporting integer TP/FP/GT, micro P/R/F, environment macro P/R/F, and explicit asset limitations.
+- [x] Verify with `python -m pytest -q tests/evaluation/test_tune_ovi_rescene_resolver.py tests/evaluation/test_rscan_association_metrics.py tests/evaluation/test_rscan_gt_instances.py`.
+- [x] Commit the Task 1 code, manifest, and measured CSVs.
 
 ### Task 2: Real 3RScan RGB-D visit materialization
 

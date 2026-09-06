@@ -134,6 +134,29 @@ def test_same_class_cross_identity_edges_are_false_reidentifications() -> None:
     assert primary["same_class_mismatch_count"] == 2
 
 
+def test_relation_outcome_rows_expose_endpoint_assignments_and_error_type() -> None:
+    from src.evaluation.rscan_association_metrics import relation_outcome_rows
+
+    rows = relation_outcome_rows(
+        _pair(),
+        (
+            _relation("q0", "segment:000004", "segment:000008"),
+            _relation("q1", "segment:000008", "segment:000004"),
+        ),
+        _ground_truth(),
+        iou_threshold=0.50,
+    )
+
+    assert [row["query_id"] for row in rows] == ["q0", "q1"]
+    assert [row["outcome"] for row in rows] == ["false_reid", "false_reid"]
+    assert rows[0]["t0_assigned_gt_id"] == 10
+    assert rows[0]["t1_assigned_gt_id"] == 20
+    assert rows[0]["t0_best_iou"] == pytest.approx(1.0)
+    assert rows[0]["t1_best_iou"] == pytest.approx(1.0)
+    assert rows[0]["same_class_mismatch"] is True
+    assert rows[0]["ambiguity_aware_correct"] is False
+
+
 def test_duplicate_geometry_keeps_one_true_positive_and_counts_the_rest() -> None:
     repeated = _relation("q1", "segment:000004", "segment:000004", 0.8)
     result = evaluate_pair_relations(
@@ -164,4 +187,3 @@ def test_conditional_recall_excludes_gt_without_method_input_support() -> None:
     assert primary["conditional_ground_truth_edges"] == 2
     assert primary["end_to_end_persistence_recall"] == pytest.approx(2 / 3)
     assert primary["conditional_association_recall"] == pytest.approx(1.0)
-

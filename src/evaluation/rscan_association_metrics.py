@@ -8,7 +8,9 @@ from collections.abc import Mapping, Sequence
 import numpy as np
 
 from src.evaluation.rscan_gt_instances import (
+    GroundTruthInstance,
     GroundTruthPair,
+    MatchingPolicy,
     PredictedInstance,
     ThresholdGeometryResult,
     evaluate_instance_geometry,
@@ -251,6 +253,7 @@ def evaluate_pair_relations(
     ground_truth: GroundTruthPair,
     *,
     minimum_observed_fraction: float = 0.05,
+    matching_policy: MatchingPolicy = "max_total_iou",
 ) -> dict[str, object]:
     """Bind predicted relation sides to GT before scoring cross-visit identity."""
 
@@ -279,7 +282,11 @@ def evaluate_pair_relations(
         pair, rows, voxel_size_m=ground_truth.voxel_size_m
     )
     geometry = tuple(
-        evaluate_instance_geometry(values, targets)
+        evaluate_instance_geometry(
+            values,
+            targets,
+            matching_policy=matching_policy,
+        )
         for values, targets in zip(predicted, ground_truth.visits, strict=True)
     )
     observed = _observed_gt_ids(
@@ -308,7 +315,11 @@ def evaluate_pair_relations(
     }
     return {
         "schema_version": 1,
-        "protocol_id": "RSCAN_T2_ASSOCIATION_V1",
+        "protocol_id": (
+            "RSCAN_T2_ASSOCIATION_V1"
+            if matching_policy == "max_total_iou"
+            else "RSCAN_T2_ASSOCIATION_V2_MAX_VALID_CARDINALITY"
+        ),
         "status": "PASS",
         "pair_id": pair.pair_id,
         "method_input_sha256": pair.method_tensor_sha256(),
@@ -333,7 +344,157 @@ def evaluate_pair_relations(
     }
 
 
+def _best_endpoint_rows(
+    predictions: tuple[PredictedInstance, ...],
+    ground_truth: tuple[GroundTruthInstance, ...],
+) -> tuple[dict[str, tuple[int | None, float | None]], dict[int, int]]:
+    best: dict[str, tuple[int | None, float | None]] = {}
+    counts: dict[int, int] = {}
+    for prediction in predictions:
+        candidates = []
+        for target in ground_truth:
+            intersection = len(prediction.voxels & target.voxels)
+            union = len(prediction.voxels | target.voxels)
+            candidates.append((intersection / union, target.instance_id))
+        if not candidates:
+            best[prediction.prediction_id] = (None, None)
+            continue
+        best_iou, best_id = max(candidates, key=lambda value: (value[0], -value[1]))
+        best[prediction.prediction_id] = (best_id, best_iou)
+        counts[best_id] = counts.get(best_id, 0) + 1
+    return best, counts
+
+
+def relation_outcome_rows(
+    pair: RScanMethodPairView,
+    relations: Sequence[PairRelation],
+    ground_truth: GroundTruthPair,
+    *,
+    iou_threshold: float = 0.50,
+    matching_policy: MatchingPolicy = "max_total_iou",
+) -> tuple[dict[str, object], ...]:
+    """Expose per-relation endpoint assignment and identity outcomes."""
+
+    if not isinstance(pair, RScanMethodPairView):
+        raise TypeError("pair must be an RScanMethodPairView")
+    if not isinstance(ground_truth, GroundTruthPair):
+        raise TypeError("ground_truth must be a GroundTruthPair")
+    if pair.pair_id != ground_truth.pair_id:
+        raise RScanAssociationMetricError("method pair and GT pair IDs differ")
+    if iou_threshold not in {0.25, 0.50}:
+        raise RScanAssociationMetricError(
+            "diagnostic IoU threshold must be 0.25 or 0.50"
+        )
+    rows = tuple(relations)
+    if any(not isinstance(value, PairRelation) for value in rows):
+        raise RScanAssociationMetricError("relations contain an invalid value")
+    query_ids = [str(value.temporal_query_id) for value in rows]
+    if len(query_ids) != len(set(query_ids)):
+        raise RScanAssociationMetricError("relation query IDs must be unique")
+
+    predicted = _prediction_sides(
+        pair,
+        rows,
+        voxel_size_m=ground_truth.voxel_size_m,
+    )
+    geometry = tuple(
+        evaluate_instance_geometry(
+            values,
+            targets,
+            matching_policy=matching_policy,
+        )
+        for values, targets in zip(predicted, ground_truth.visits, strict=True)
+    )
+    selected = tuple(
+        value.primary if iou_threshold == 0.50 else value.sensitivity
+        for value in geometry
+    )
+    matches = tuple(
+        {
+            match.prediction_id: (match.gt_instance_id, match.iou)
+            for match in result.matches
+        }
+        for result in selected
+    )
+    best_rows = tuple(
+        _best_endpoint_rows(values, targets)
+        for values, targets in zip(predicted, ground_truth.visits, strict=True)
+    )
+    persistent = _persistent_targets(ground_truth)
+    labels = tuple(
+        {
+            target.instance_id: target.semantic_label.casefold()
+            for target in targets
+        }
+        for targets in ground_truth.visits
+    )
+    aware_hits: set[int] = set()
+    result_rows: list[dict[str, object]] = []
+    for relation in sorted(
+        rows,
+        key=lambda value: (-value.query_confidence, str(value.temporal_query_id)),
+    ):
+        query_id = str(relation.temporal_query_id)
+        left = matches[0].get(query_id)
+        right = matches[1].get(query_id)
+        left_id = None if left is None else left[0]
+        right_id = None if right is None else right[0]
+        target = None if right_id is None else persistent.get(right_id)
+        strict_correct = bool(
+            target is not None and left_id is not None and left_id == target[0]
+        )
+        aware_correct = bool(
+            target is not None and left_id is not None and left_id in target[1]
+        )
+        same_class = bool(
+            left_id is not None
+            and right_id is not None
+            and labels[0][left_id] == labels[1][right_id]
+        )
+        if not relation.t0_entity_ids or not relation.t1_entity_ids:
+            outcome = "one_sided"
+        elif left is None or right is None:
+            outcome = "endpoint_unmatched"
+        elif not aware_correct:
+            outcome = "false_reid"
+        elif right_id in aware_hits:
+            outcome = "duplicate"
+        else:
+            outcome = "true_positive"
+            aware_hits.add(right_id)
+        left_best = best_rows[0][0].get(query_id, (None, None))
+        right_best = best_rows[1][0].get(query_id, (None, None))
+        result_rows.append(
+            {
+                "query_id": query_id,
+                "query_confidence": relation.query_confidence,
+                "t0_entity_ids": list(relation.t0_entity_ids),
+                "t1_entity_ids": list(relation.t1_entity_ids),
+                "t0_assigned_gt_id": left_id,
+                "t0_assigned_iou": None if left is None else left[1],
+                "t1_assigned_gt_id": right_id,
+                "t1_assigned_iou": None if right is None else right[1],
+                "t0_best_gt_id": left_best[0],
+                "t0_best_iou": left_best[1],
+                "t1_best_gt_id": right_best[0],
+                "t1_best_iou": right_best[1],
+                "t0_best_competitor_count": (
+                    0 if left_best[0] is None else best_rows[0][1][left_best[0]]
+                ),
+                "t1_best_competitor_count": (
+                    0 if right_best[0] is None else best_rows[1][1][right_best[0]]
+                ),
+                "strict_correct": strict_correct,
+                "ambiguity_aware_correct": aware_correct,
+                "same_class_mismatch": same_class and not aware_correct,
+                "outcome": outcome,
+            }
+        )
+    return tuple(sorted(result_rows, key=lambda value: str(value["query_id"])))
+
+
 __all__ = [
     "RScanAssociationMetricError",
     "evaluate_pair_relations",
+    "relation_outcome_rows",
 ]

@@ -1,0 +1,2160 @@
+{
+  "artifact_id": "RSCAN_T2_DEV_V1",
+  "checkpoint_provenance": {
+    "claim_boundary": "development_reproduction_not_unseen_generalization",
+    "training_environment_overlap": false,
+    "validation_selection_overlap": true
+  },
+  "eligible_pair_count": 8,
+  "excluded_environment_counts": {
+    "non_validation": 431,
+    "not_exact_t2": 30,
+    "raw_assets_incomplete": 9
+  },
+  "pairs": [
+    {
+      "common_method_inputs": {
+        "global_alignment": {
+          "application": "homogeneous_row_vector_right_multiply",
+          "direction": "rescan_row_vector_to_reference",
+          "matrix": [
+            -0.9042204022407532,
+            -0.4269641935825348,
+            -0.009333554655313492,
+            0,
+            0.42701399326324463,
+            -0.9042356014251709,
+            -0.004128556698560715,
+            0,
+            -0.006676986813545227,
+            -0.007718683686107397,
+            0.9999479055404663,
+            0,
+            -3.232057571411133,
+            2.9110395908355713,
+            0.017010068520903587,
+            1
+          ],
+          "storage": "row_major_flat_4x4"
+        }
+      },
+      "environment_id": "0cac7584-8d6f-2d13-8df8-c05e4307b418",
+      "evaluator_only": {
+        "ambiguity": [
+          [
+            {
+              "instance_source": 61,
+              "instance_target": 58,
+              "transform": [
+                0.7200117707252502,
+                -0.6938531398773193,
+                -0.012290049344301224,
+                0,
+                0.6920222640037537,
+                0.7192098498344421,
+                -0.0619862824678421,
+                0,
+                0.05184849351644516,
+                0.03612585738301277,
+                0.9980013370513916,
+                0,
+                -1.7685571908950806,
+                -0.043687861412763596,
+                0.09323718398809433,
+                1
+              ]
+            },
+            {
+              "instance_source": 58,
+              "instance_target": 61,
+              "transform": [
+                0.7289890050888062,
+                0.6740589737892151,
+                -0.11924558132886887,
+                0,
+                -0.6845062375068665,
+                0.7191259264945984,
+                -0.11962082982063293,
+                0,
+                0.005121082533150911,
+                0.1688266098499298,
+                0.9856325387954712,
+                0,
+                1.2614802122116089,
+                1.3683568239212036,
+                0.2912690341472626,
+                1
+              ]
+            }
+          ]
+        ],
+        "changes": {
+          "nonrigid": [
+            38,
+            37,
+            60,
+            62
+          ],
+          "removed": [
+            10
+          ],
+          "rigid": [
+            {
+              "instance_reference": 3,
+              "instance_rescan": 3,
+              "symmetry": 2,
+              "transform": [
+                -0.936000406742096,
+                0.35175880789756775,
+                0.012995276600122452,
+                0,
+                -0.3517723083496094,
+                -0.9360846877098083,
+                0.001309142797254026,
+                0,
+                0.012625180184841156,
+                -0.0033460177946835756,
+                0.9999147057533264,
+                0,
+                -1.7237215042114258,
+                3.641937255859375,
+                -0.0015020724385976791,
+                1
+              ]
+            },
+            {
+              "instance_reference": 61,
+              "instance_rescan": 61,
+              "symmetry": 0,
+              "transform": [
+                0.7162534594535828,
+                0.6609108448028564,
+                -0.22400318086147308,
+                0,
+                -0.6675702929496765,
+                0.5554115772247314,
+                -0.4958503544330597,
+                0,
+                -0.2032988965511322,
+                0.504692554473877,
+                0.8390200734138489,
+                0,
+                0.7191194295883179,
+                2.360781192779541,
+                0.8231319785118103,
+                1
+              ]
+            }
+          ]
+        },
+        "cross_time_identity_source": "official_3rscan_metadata",
+        "symmetry_source": "official_rigid_change_records"
+      },
+      "pair_id": "scene0029_00-scene0029_01",
+      "role": "development_selection",
+      "sequence": {
+        "change_gt_binding": {
+          "byte_count": 204434,
+          "path": "/home/ww/paper5/data/processed/rio/change_gt/validation/scene0029_00-scene0029_01.txt",
+          "sha256": "c6126070f1a91126531a926bdbeecadc1c2e65f15b293f0359a727c1553b126b"
+        },
+        "key": "scene0029_00-scene0029_01"
+      },
+      "sessions": [
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 344293,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/validation/scene0029_00.txt",
+              "sha256": "5d0c0c0cd2f61fcb2cba75cfbe0a22e2e3d28618a7dcc874d0402f498c7efaa4"
+            },
+            "points": {
+              "byte_count": 3029840,
+              "path": "/home/ww/paper5/data/processed/rio/validation/0029_00.npy",
+              "sha256": "e464454fee18546ab97b46d53f2de77a08a33c4d861bee3b5d7da7207df6a743"
+            }
+          },
+          "raw_assets": {
+            "labels.instances.annotated.v2.ply": {
+              "byte_count": 4641235,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac7584-8d6f-2d13-8df8-c05e4307b418/labels.instances.annotated.v2.ply",
+              "sha256": "d4a396f9ad7086ffd7bceedc0b7804c89a34c98d5db523684a848dc94806557e"
+            },
+            "mesh.refined.0.010000.segs.v2.json": {
+              "byte_count": 429295,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac7584-8d6f-2d13-8df8-c05e4307b418/mesh.refined.0.010000.segs.v2.json",
+              "sha256": "2f6310da3c2fc4bf15a7b31015c4292e6045daef46d20d643b570257f0b7f4eb"
+            },
+            "mesh.refined.v2.obj": {
+              "byte_count": 9297011,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac7584-8d6f-2d13-8df8-c05e4307b418/mesh.refined.v2.obj",
+              "sha256": "2be6ccd0493275b7d0397db3a21831699d1fa5c58727b1399c0b413f88765fdc"
+            },
+            "semseg.v2.json": {
+              "byte_count": 37112,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac7584-8d6f-2d13-8df8-c05e4307b418/semseg.v2.json",
+              "sha256": "379d102c810ed6d5486d3a988e4ae20e0c6f6eb40692f0d432b6d171b08a2509"
+            },
+            "sequence.zip": {
+              "byte_count": 35487334,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac7584-8d6f-2d13-8df8-c05e4307b418/sequence.zip",
+              "sha256": "47f585df382c961829847c3a7024f6a343d94ce66db8ea7be5ac0665d5321132"
+            }
+          },
+          "scan_id": "0cac7584-8d6f-2d13-8df8-c05e4307b418",
+          "scene": 29,
+          "sub_scene": 0,
+          "visit_index": 0
+        },
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 215077,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/validation/scene0029_01.txt",
+              "sha256": "588602702d9938bdfd5064e63b5e074c6beb5f6db8971b3822d53f8c7eee8ffa"
+            },
+            "points": {
+              "byte_count": 1876832,
+              "path": "/home/ww/paper5/data/processed/rio/validation/0029_01.npy",
+              "sha256": "a16ca293fd3406b6fb07f43d243e364cb783176d2b4456861304915c42fbd73a"
+            }
+          },
+          "raw_assets": {
+            "labels.instances.annotated.v2.ply": {
+              "byte_count": 2802421,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac7582-8d6f-2d13-8d4b-e4041cb166c4/labels.instances.annotated.v2.ply",
+              "sha256": "6da467a42050635d12b1783ea3f6babb9cd263de351c43d2bf1731f6e96f63f2"
+            },
+            "mesh.refined.0.010000.segs.v2.json": {
+              "byte_count": 261394,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac7582-8d6f-2d13-8d4b-e4041cb166c4/mesh.refined.0.010000.segs.v2.json",
+              "sha256": "315641cb7e83915bd0bba3f160c0904170da819b80d28fa49fd84ae314839139"
+            },
+            "mesh.refined.v2.obj": {
+              "byte_count": 5603353,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac7582-8d6f-2d13-8d4b-e4041cb166c4/mesh.refined.v2.obj",
+              "sha256": "c29db080cabcb2d292acf1a0cca3998a660405cb51c59f373fcb6c7aa0a3dcf3"
+            },
+            "semseg.v2.json": {
+              "byte_count": 26073,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac7582-8d6f-2d13-8d4b-e4041cb166c4/semseg.v2.json",
+              "sha256": "f789a518e2b254003f1ac2da3e05a4d219f106b3afa17e6ab31fc769790ef9da"
+            },
+            "sequence.zip": {
+              "byte_count": 14647278,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac7582-8d6f-2d13-8d4b-e4041cb166c4/sequence.zip",
+              "sha256": "8d1b6bf2364b277903748013da69f27cef6a2bbcbd996481e9a4254f82210e39"
+            }
+          },
+          "scan_id": "0cac7582-8d6f-2d13-8d4b-e4041cb166c4",
+          "scene": 29,
+          "sub_scene": 1,
+          "visit_index": 1
+        }
+      ],
+      "split": "validation"
+    },
+    {
+      "common_method_inputs": {
+        "global_alignment": {
+          "application": "homogeneous_row_vector_right_multiply",
+          "direction": "rescan_row_vector_to_reference",
+          "matrix": [
+            0.8098779320716858,
+            0.5865969061851501,
+            0.0013647442683577538,
+            0,
+            -0.586590588092804,
+            0.8098768591880798,
+            -0.003323260461911559,
+            0,
+            -0.0030546891503036022,
+            0.001890889136120677,
+            0.9999935626983643,
+            0,
+            -1.682421088218689,
+            -1.460727572441101,
+            -0.07588054239749908,
+            1
+          ],
+          "storage": "row_major_flat_4x4"
+        }
+      },
+      "environment_id": "0cac75dc-8d6f-2d13-8d08-9c497bd6acdc",
+      "evaluator_only": {
+        "ambiguity": [],
+        "changes": {
+          "nonrigid": [
+            4,
+            9
+          ],
+          "removed": [],
+          "rigid": [
+            {
+              "instance_reference": 47,
+              "instance_rescan": 47,
+              "symmetry": 0,
+              "transform": [
+                0.36875590682029724,
+                0.9287933707237244,
+                -0.03690303489565849,
+                0,
+                -0.9295151233673096,
+                0.3686540126800537,
+                -0.009776102378964424,
+                0,
+                0.004524474963545799,
+                0.03790692985057831,
+                0.9992708563804626,
+                0,
+                0.9938812255859375,
+                1.9830470085144043,
+                0.03417943790555,
+                1
+              ]
+            },
+            {
+              "instance_reference": 7,
+              "instance_rescan": 7,
+              "symmetry": 0,
+              "transform": [
+                0.8112757205963135,
+                -0.5846301317214966,
+                -0.0062593198381364346,
+                0,
+                0.5846529603004456,
+                0.8112792372703552,
+                0.00262435688637197,
+                0,
+                0.003543778555467725,
+                -0.005788607057183981,
+                0.9999768733978271,
+                0,
+                2.2066726684570312,
+                0.21861910820007324,
+                0.06633495539426804,
+                1
+              ]
+            }
+          ]
+        },
+        "cross_time_identity_source": "official_3rscan_metadata",
+        "symmetry_source": "official_rigid_change_records"
+      },
+      "pair_id": "scene0039_00-scene0039_01",
+      "role": "development_selection",
+      "sequence": {
+        "change_gt_binding": {
+          "byte_count": 236302,
+          "path": "/home/ww/paper5/data/processed/rio/change_gt/validation/scene0039_00-scene0039_01.txt",
+          "sha256": "3806d36a405f388cdfa9ac8bd231e6f26a3de51c604fee8589f7cfa8ea6deb75"
+        },
+        "key": "scene0039_00-scene0039_01"
+      },
+      "sessions": [
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 319195,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/validation/scene0039_00.txt",
+              "sha256": "227213bff1b7fd09fd116115ec2fd3086ced8101cd180d563871ea963eff8b4e"
+            },
+            "points": {
+              "byte_count": 2858432,
+              "path": "/home/ww/paper5/data/processed/rio/validation/0039_00.npy",
+              "sha256": "bfae0d441bc633db6ce283d0ec6e712addbf4db1d1478e17f842ec7771673f79"
+            }
+          },
+          "raw_assets": {
+            "labels.instances.annotated.v2.ply": {
+              "byte_count": 4443041,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac75dc-8d6f-2d13-8d08-9c497bd6acdc/labels.instances.annotated.v2.ply",
+              "sha256": "a26d48937591865cf2074dc84481f0d974d57e95cd674df6ee73d8fb3027e2c7"
+            },
+            "mesh.refined.0.010000.segs.v2.json": {
+              "byte_count": 408409,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac75dc-8d6f-2d13-8d08-9c497bd6acdc/mesh.refined.0.010000.segs.v2.json",
+              "sha256": "0d32fc406433a45c9f25bf035baab783fed3ec352fff8cd31f6444d3d8e764e1"
+            },
+            "mesh.refined.v2.obj": {
+              "byte_count": 8948204,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac75dc-8d6f-2d13-8d08-9c497bd6acdc/mesh.refined.v2.obj",
+              "sha256": "b44bc6e06bca070b33daedef5054e88ce58cb1dcbaadeac0a2b51c64e716b1f6"
+            },
+            "semseg.v2.json": {
+              "byte_count": 30903,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac75dc-8d6f-2d13-8d08-9c497bd6acdc/semseg.v2.json",
+              "sha256": "d73d8ae5d317ba389859c2665fe1cc5bc8fb0af33dbd6c0598d96b27a3941067"
+            },
+            "sequence.zip": {
+              "byte_count": 22232735,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac75dc-8d6f-2d13-8d08-9c497bd6acdc/sequence.zip",
+              "sha256": "1d0d3d2d7861bd81f5023a68dc3324ab44e9913d615b6014b3763cb430f264b3"
+            }
+          },
+          "scan_id": "0cac75dc-8d6f-2d13-8d08-9c497bd6acdc",
+          "scene": 39,
+          "sub_scene": 0,
+          "visit_index": 0
+        },
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 310558,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/validation/scene0039_01.txt",
+              "sha256": "ee241471ebbe5e7e593da06e568d1c1cdad992141cdbde8a3d9c32bc3a2ec2be"
+            },
+            "points": {
+              "byte_count": 2813072,
+              "path": "/home/ww/paper5/data/processed/rio/validation/0039_01.npy",
+              "sha256": "f5a9cc0e9ac6bb35d5051fe33786e2186f09e6e16f9a1526a3078dc53b41a475"
+            }
+          },
+          "raw_assets": {
+            "labels.instances.annotated.v2.ply": {
+              "byte_count": 4308767,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac75de-8d6f-2d13-8e1a-b574569c3885/labels.instances.annotated.v2.ply",
+              "sha256": "afa0bbba1a555e17ebb110a0881e31d633ec11166ce571b90b5a40011f42ae1a"
+            },
+            "mesh.refined.0.010000.segs.v2.json": {
+              "byte_count": 396955,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac75de-8d6f-2d13-8e1a-b574569c3885/mesh.refined.0.010000.segs.v2.json",
+              "sha256": "b7256b0a7b7cc53f060b52d77c0b241b38cb204aac4a7d1436e9b5759a923c1d"
+            },
+            "mesh.refined.v2.obj": {
+              "byte_count": 8681319,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac75de-8d6f-2d13-8e1a-b574569c3885/mesh.refined.v2.obj",
+              "sha256": "cd0d3263f117a607d4ad048753ad66641164eeacae3bef56158a6c69ac8d2f93"
+            },
+            "semseg.v2.json": {
+              "byte_count": 32018,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac75de-8d6f-2d13-8e1a-b574569c3885/semseg.v2.json",
+              "sha256": "a2b9d7504460882563897b2eaeb5d45bfa2f1133872b46e0b3cf1be4147e95f7"
+            },
+            "sequence.zip": {
+              "byte_count": 26305015,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac75de-8d6f-2d13-8e1a-b574569c3885/sequence.zip",
+              "sha256": "c02a97079b60cfc6a04d7f937c0dde7adb3b82cff50e9f4b8ddc0d77a9934b68"
+            }
+          },
+          "scan_id": "0cac75de-8d6f-2d13-8e1a-b574569c3885",
+          "scene": 39,
+          "sub_scene": 1,
+          "visit_index": 1
+        }
+      ],
+      "split": "validation"
+    },
+    {
+      "common_method_inputs": {
+        "global_alignment": {
+          "application": "homogeneous_row_vector_right_multiply",
+          "direction": "rescan_row_vector_to_reference",
+          "matrix": [
+            0.6507698893547058,
+            0.7589406967163086,
+            0.022533539682626724,
+            0,
+            -0.7583782076835632,
+            0.6511569023132324,
+            -0.029278777539730072,
+            0,
+            -0.03689372539520264,
+            0.0019647981971502304,
+            0.9993172883987427,
+            0,
+            2.4670498371124268,
+            -0.9846879839897156,
+            0.2156418263912201,
+            1
+          ],
+          "storage": "row_major_flat_4x4"
+        }
+      },
+      "environment_id": "0cac7676-8d6f-2d13-8f3a-d7bf7f03e721",
+      "evaluator_only": {
+        "ambiguity": [],
+        "changes": {
+          "nonrigid": [
+            3
+          ],
+          "removed": [
+            39,
+            37,
+            55,
+            38
+          ],
+          "rigid": [
+            {
+              "instance_reference": 6,
+              "instance_rescan": 6,
+              "symmetry": 0,
+              "transform": [
+                -0.3772658109664917,
+                -0.9216665029525757,
+                0.0905621349811554,
+                0,
+                0.9252467751502991,
+                -0.3709009289741516,
+                0.07969171553850174,
+                0,
+                -0.0398595929145813,
+                0.11385728418827057,
+                0.9926971793174744,
+                0,
+                -1.1226468086242676,
+                1.1885570287704468,
+                0.03408218175172806,
+                1
+              ]
+            },
+            {
+              "instance_reference": 56,
+              "instance_rescan": 56,
+              "symmetry": 0,
+              "transform": [
+                0.7078980803489685,
+                -0.7051202058792114,
+                0.04105796664953232,
+                0,
+                0.7059454917907715,
+                0.7044527530670166,
+                -0.07339763641357422,
+                0,
+                0.022830767557024956,
+                0.08094272762537003,
+                0.9964572191238403,
+                0,
+                -0.7712122797966003,
+                3.0026469230651855,
+                -0.1022246778011322,
+                1
+              ]
+            },
+            {
+              "instance_reference": 15,
+              "instance_rescan": 15,
+              "symmetry": 0,
+              "transform": [
+                0.365151971578598,
+                -0.9209473133087158,
+                0.1360875368118286,
+                0,
+                0.8161879181861877,
+                0.38701140880584717,
+                0.42902135848999023,
+                0,
+                -0.4477734863758087,
+                -0.0455850288271904,
+                0.89298415184021,
+                0,
+                -0.8319736123085022,
+                3.030271053314209,
+                -0.44375500082969666,
+                1
+              ]
+            },
+            {
+              "instance_reference": 22,
+              "instance_rescan": 22,
+              "symmetry": 0,
+              "transform": [
+                -0.06394711881875992,
+                -0.5576362013816833,
+                -0.8276186585426331,
+                0,
+                0.7403470277786255,
+                -0.5826054811477661,
+                0.3353462815284729,
+                0,
+                -0.6691763997077942,
+                -0.5912806391716003,
+                0.45010027289390564,
+                0,
+                -0.6059491634368896,
+                2.235940933227539,
+                0.09929180890321732,
+                1
+              ]
+            }
+          ]
+        },
+        "cross_time_identity_source": "official_3rscan_metadata",
+        "symmetry_source": "official_rigid_change_records"
+      },
+      "pair_id": "scene0059_00-scene0059_01",
+      "role": "development_selection",
+      "sequence": {
+        "change_gt_binding": {
+          "byte_count": 175046,
+          "path": "/home/ww/paper5/data/processed/rio/change_gt/validation/scene0059_00-scene0059_01.txt",
+          "sha256": "dd2ec2a7ea2dc43acbd5758aa059ac281b686205a7b9dc6e0e8166dfbffbf8c5"
+        },
+        "key": "scene0059_00-scene0059_01"
+      },
+      "sessions": [
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 280889,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/validation/scene0059_00.txt",
+              "sha256": "22dec863b654d7f03ae430e8ce37a3be9961dcae64913fb6cc64b51927012a43"
+            },
+            "points": {
+              "byte_count": 2508848,
+              "path": "/home/ww/paper5/data/processed/rio/validation/0059_00.npy",
+              "sha256": "1645ff39df6d3aaa1d249bd71bf2ef325f98af812974c5ccfc2d4e1e9cc12e7e"
+            }
+          },
+          "raw_assets": {
+            "labels.instances.annotated.v2.ply": {
+              "byte_count": 3856111,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac7676-8d6f-2d13-8f3a-d7bf7f03e721/labels.instances.annotated.v2.ply",
+              "sha256": "bf8eec318ea2e700eae78fd64eda86537ee22292a20e0872c01a17ba5bbc5dc4"
+            },
+            "mesh.refined.0.010000.segs.v2.json": {
+              "byte_count": 355934,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac7676-8d6f-2d13-8f3a-d7bf7f03e721/mesh.refined.0.010000.segs.v2.json",
+              "sha256": "8957d16bb76536fa305128f58c7149f69ef37c03378985a2995564b9adca60d4"
+            },
+            "mesh.refined.v2.obj": {
+              "byte_count": 7869806,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac7676-8d6f-2d13-8f3a-d7bf7f03e721/mesh.refined.v2.obj",
+              "sha256": "48f41fe83f584838027363868ce249c944e730a4a9c3390fa6e26298468f7063"
+            },
+            "semseg.v2.json": {
+              "byte_count": 30463,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac7676-8d6f-2d13-8f3a-d7bf7f03e721/semseg.v2.json",
+              "sha256": "51910b95324be1435d5d523a3b4bb7f347183d1765e9418ee8b5aa74205b6b63"
+            },
+            "sequence.zip": {
+              "byte_count": 38128219,
+              "path": "/home/ww/vv/dataset/3RScan/scans/0cac7676-8d6f-2d13-8f3a-d7bf7f03e721/sequence.zip",
+              "sha256": "8cb888a739b92c8121c99441a8f95f3e4335648b4514fe781a65672189f5c756"
+            }
+          },
+          "scan_id": "0cac7676-8d6f-2d13-8f3a-d7bf7f03e721",
+          "scene": 59,
+          "sub_scene": 0,
+          "visit_index": 0
+        },
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 188834,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/validation/scene0059_01.txt",
+              "sha256": "cd0851e6a4bead1179d2ecbe6317bf83759cab3324b572afb6762d0bab8dc7bd"
+            },
+            "points": {
+              "byte_count": 1692512,
+              "path": "/home/ww/paper5/data/processed/rio/validation/0059_01.npy",
+              "sha256": "33612e157e4abed40419493690baa9a696c8fd8dacda5cc3574100c6776cd34a"
+            }
+          },
+          "raw_assets": {
+            "labels.instances.annotated.v2.ply": {
+              "byte_count": 2638586,
+              "path": "/home/ww/vv/dataset/3RScan/scans/7272e17c-a01b-20f6-8b2f-e659331ae41a/labels.instances.annotated.v2.ply",
+              "sha256": "205a5c1187ab638fa24840c911cc436b01658765d9a102f53ff3099974be3c71"
+            },
+            "mesh.refined.0.010000.segs.v2.json": {
+              "byte_count": 236294,
+              "path": "/home/ww/vv/dataset/3RScan/scans/7272e17c-a01b-20f6-8b2f-e659331ae41a/mesh.refined.0.010000.segs.v2.json",
+              "sha256": "86f5681557ac0b45a1d4c2eb049fa2113ae03bc4a48c73648cd667b812a5a46b"
+            },
+            "mesh.refined.v2.obj": {
+              "byte_count": 5405191,
+              "path": "/home/ww/vv/dataset/3RScan/scans/7272e17c-a01b-20f6-8b2f-e659331ae41a/mesh.refined.v2.obj",
+              "sha256": "6737def50760e6394ea2cb8115723d1a2d64d96800c4e46aab3961ca2725bd51"
+            },
+            "semseg.v2.json": {
+              "byte_count": 17958,
+              "path": "/home/ww/vv/dataset/3RScan/scans/7272e17c-a01b-20f6-8b2f-e659331ae41a/semseg.v2.json",
+              "sha256": "d2ce8136bc3d7aa6f3464c90fc88406c52763d5c7f5e2c8a505ca9dbf92abd4d"
+            },
+            "sequence.zip": {
+              "byte_count": 25847766,
+              "path": "/home/ww/vv/dataset/3RScan/scans/7272e17c-a01b-20f6-8b2f-e659331ae41a/sequence.zip",
+              "sha256": "d7807530bcbc76b3ab9ccf1a1677a8f070ce77fb44060c07ef556538c4351917"
+            }
+          },
+          "scan_id": "7272e17c-a01b-20f6-8b2f-e659331ae41a",
+          "scene": 59,
+          "sub_scene": 1,
+          "visit_index": 1
+        }
+      ],
+      "split": "validation"
+    },
+    {
+      "common_method_inputs": {
+        "global_alignment": {
+          "application": "homogeneous_row_vector_right_multiply",
+          "direction": "rescan_row_vector_to_reference",
+          "matrix": [
+            0.14452709257602692,
+            -0.9895006418228149,
+            0.0005708263488486409,
+            0,
+            0.9894489049911499,
+            0.1445135623216629,
+            -0.0103300167247653,
+            0,
+            0.010139066725969315,
+            0.0020577702671289444,
+            0.9999465346336365,
+            0,
+            0.1667085886001587,
+            0.607301652431488,
+            0.05170752480626106,
+            1
+          ],
+          "storage": "row_major_flat_4x4"
+        }
+      },
+      "environment_id": "20c993b7-698f-29c5-847d-c8cb8a685f5a",
+      "evaluator_only": {
+        "ambiguity": [],
+        "changes": {
+          "nonrigid": [],
+          "removed": [],
+          "rigid": [
+            {
+              "instance_reference": 4,
+              "instance_rescan": 4,
+              "symmetry": 0,
+              "transform": [
+                0.41813161969184875,
+                0.9040772914886475,
+                0.08837578445672989,
+                0,
+                -0.907662570476532,
+                0.4196997880935669,
+                0.0009206494432874024,
+                0,
+                -0.03625895455479622,
+                -0.08060033619403839,
+                0.9960867762565613,
+                0,
+                0.24394124746322632,
+                -0.9131624698638916,
+                -0.10068272054195404,
+                1
+              ]
+            },
+            {
+              "instance_reference": 3,
+              "instance_rescan": 3,
+              "symmetry": 0,
+              "transform": [
+                0.029827114194631577,
+                0.9827091693878174,
+                0.18273741006851196,
+                0,
+                -0.6360633373260498,
+                0.15968748927116394,
+                -0.7549325227737427,
+                0,
+                -0.771060049533844,
+                -0.09371514618396759,
+                0.6298283338546753,
+                0,
+                -0.4153895974159241,
+                -0.5074352622032166,
+                0.6543850898742676,
+                1
+              ]
+            },
+            {
+              "instance_reference": 2,
+              "instance_rescan": 2,
+              "symmetry": 0,
+              "transform": [
+                0.4901996850967407,
+                0.8712171316146851,
+                -0.02618006058037281,
+                0,
+                -0.870029628276825,
+                0.4908980429172516,
+                0.04547552391886711,
+                0,
+                0.052470795810222626,
+                0.0004853390564676374,
+                0.998622477054596,
+                0,
+                0.18089130520820618,
+                -0.7971370220184326,
+                -0.1273263394832611,
+                1
+              ]
+            }
+          ]
+        },
+        "cross_time_identity_source": "official_3rscan_metadata",
+        "symmetry_source": "official_rigid_change_records"
+      },
+      "pair_id": "scene0109_00-scene0109_01",
+      "role": "development_selection",
+      "sequence": {
+        "change_gt_binding": {
+          "byte_count": 120770,
+          "path": "/home/ww/paper5/data/processed/rio/change_gt/validation/scene0109_00-scene0109_01.txt",
+          "sha256": "9aefb83864b431d4ec2c7bf591581fc800942ddd514c6e4a10e7cc84da255914"
+        },
+        "key": "scene0109_00-scene0109_01"
+      },
+      "sessions": [
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 176413,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/validation/scene0109_00.txt",
+              "sha256": "b441acd9ea24c958eb11de25e65fba5ff30467445683d98362a8ea4564994255"
+            },
+            "points": {
+              "byte_count": 1534592,
+              "path": "/home/ww/paper5/data/processed/rio/validation/0109_00.npy",
+              "sha256": "36a8d830268b8b05a6a51ad3192594cb50a9667d5816ed2392801d16a9849545"
+            }
+          },
+          "raw_assets": {
+            "labels.instances.annotated.v2.ply": {
+              "byte_count": 2271192,
+              "path": "/home/ww/vv/dataset/3RScan/scans/20c993b7-698f-29c5-847d-c8cb8a685f5a/labels.instances.annotated.v2.ply",
+              "sha256": "daa05d8bac2b8f4f6b5dce13aeff60c58c224b9e8d70c7eb4fec2493c66c5583"
+            },
+            "mesh.refined.0.010000.segs.v2.json": {
+              "byte_count": 212988,
+              "path": "/home/ww/vv/dataset/3RScan/scans/20c993b7-698f-29c5-847d-c8cb8a685f5a/mesh.refined.0.010000.segs.v2.json",
+              "sha256": "76a8553b0889f7a31f56ab6129b2f50d38d9621eed8f767a9e0385ba4bb4c0e3"
+            },
+            "mesh.refined.v2.obj": {
+              "byte_count": 4594587,
+              "path": "/home/ww/vv/dataset/3RScan/scans/20c993b7-698f-29c5-847d-c8cb8a685f5a/mesh.refined.v2.obj",
+              "sha256": "b1fb0d5ff886a8a72cd0efa0611d6b4df9d4c931b8665bc267a4e9d1072ae259"
+            },
+            "semseg.v2.json": {
+              "byte_count": 13848,
+              "path": "/home/ww/vv/dataset/3RScan/scans/20c993b7-698f-29c5-847d-c8cb8a685f5a/semseg.v2.json",
+              "sha256": "8f5291c80305d4fd4bc4f3ed96c59904966d04bea22c32f03a1699a8d13b3daf"
+            },
+            "sequence.zip": {
+              "byte_count": 11041001,
+              "path": "/home/ww/vv/dataset/3RScan/scans/20c993b7-698f-29c5-847d-c8cb8a685f5a/sequence.zip",
+              "sha256": "c7ac1f1ef8a39659b16703fc1c7840af98658a93048df17ac8f8eae971433ee7"
+            }
+          },
+          "scan_id": "20c993b7-698f-29c5-847d-c8cb8a685f5a",
+          "scene": 109,
+          "sub_scene": 0,
+          "visit_index": 0
+        },
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 160463,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/validation/scene0109_01.txt",
+              "sha256": "61f1aa98b437277e800092a74a928695a5fce04de8c413c0b35580316f1a7380"
+            },
+            "points": {
+              "byte_count": 1364144,
+              "path": "/home/ww/paper5/data/processed/rio/validation/0109_01.npy",
+              "sha256": "22cfab8ab25fee109a622b0ef327ab565fd458e0a1339d0a388429ca55c735a5"
+            }
+          },
+          "raw_assets": {
+            "labels.instances.annotated.v2.ply": {
+              "byte_count": 2040893,
+              "path": "/home/ww/vv/dataset/3RScan/scans/20c993b3-698f-29c5-859c-dca8ddecf220/labels.instances.annotated.v2.ply",
+              "sha256": "ec7cd98842b1fe25ff6aa8fc53fdaace3a18a0ba05be00d34389d0a780c90d89"
+            },
+            "mesh.refined.0.010000.segs.v2.json": {
+              "byte_count": 187993,
+              "path": "/home/ww/vv/dataset/3RScan/scans/20c993b3-698f-29c5-859c-dca8ddecf220/mesh.refined.0.010000.segs.v2.json",
+              "sha256": "6b95f82460f39ffcd2883ecc74f7667c040137c46b203f4a5ac0c69a43dba822"
+            },
+            "mesh.refined.v2.obj": {
+              "byte_count": 4091549,
+              "path": "/home/ww/vv/dataset/3RScan/scans/20c993b3-698f-29c5-859c-dca8ddecf220/mesh.refined.v2.obj",
+              "sha256": "8e31bb05b4d32e0185d881675f9976b42a349459fbf5d2495ef3d24b5e4d3674"
+            },
+            "semseg.v2.json": {
+              "byte_count": 12827,
+              "path": "/home/ww/vv/dataset/3RScan/scans/20c993b3-698f-29c5-859c-dca8ddecf220/semseg.v2.json",
+              "sha256": "68c883013b49ebc7db0660354ce4e178fe893e1a5cab9c58ba83f243a3c3584e"
+            },
+            "sequence.zip": {
+              "byte_count": 9625273,
+              "path": "/home/ww/vv/dataset/3RScan/scans/20c993b3-698f-29c5-859c-dca8ddecf220/sequence.zip",
+              "sha256": "4ebf6bd6f07dd54f5afa991c19b9db68b99220412b2d31c2d55b143f0f41696b"
+            }
+          },
+          "scan_id": "20c993b3-698f-29c5-859c-dca8ddecf220",
+          "scene": 109,
+          "sub_scene": 1,
+          "visit_index": 1
+        }
+      ],
+      "split": "validation"
+    },
+    {
+      "common_method_inputs": {
+        "global_alignment": {
+          "application": "homogeneous_row_vector_right_multiply",
+          "direction": "rescan_row_vector_to_reference",
+          "matrix": [
+            0.14214976131916046,
+            0.9898132085800171,
+            -0.00794126745313406,
+            0,
+            -0.9898185729980469,
+            0.14208261668682098,
+            -0.00846286490559578,
+            0,
+            -0.007248339708894491,
+            0.009063410572707653,
+            0.999932587146759,
+            0,
+            -0.21690113842487335,
+            -3.4888176918029785,
+            0.27495822310447693,
+            1
+          ],
+          "storage": "row_major_flat_4x4"
+        }
+      },
+      "environment_id": "5341b7e3-8a66-2cdd-8709-66a2159f0017",
+      "evaluator_only": {
+        "ambiguity": [],
+        "changes": {
+          "nonrigid": [
+            14
+          ],
+          "removed": [
+            2,
+            3,
+            4,
+            80,
+            18
+          ],
+          "rigid": [
+            {
+              "instance_reference": 26,
+              "instance_rescan": 26,
+              "symmetry": 1,
+              "transform": [
+                0.3250519633293152,
+                -0.9402349591255188,
+                -0.10148756206035614,
+                0,
+                0.9374333024024963,
+                0.3345063328742981,
+                -0.09656328707933426,
+                0,
+                0.12474039942026138,
+                -0.06374973058700562,
+                0.990139365196228,
+                0,
+                2.571871280670166,
+                1.8647346496582031,
+                -0.18015456199645996,
+                1
+              ]
+            },
+            {
+              "instance_reference": 80,
+              "instance_rescan": 80,
+              "symmetry": 0,
+              "transform": [
+                0.895624041557312,
+                -0.43301042914390564,
+                -0.1017821878194809,
+                0,
+                0.4365521967411041,
+                0.8995636701583862,
+                0.01440452691167593,
+                0,
+                0.08532225340604782,
+                -0.05733427405357361,
+                0.9947024583816528,
+                0,
+                2.8962395191192627,
+                -0.7756454944610596,
+                -0.33275899291038513,
+                1
+              ]
+            }
+          ]
+        },
+        "cross_time_identity_source": "official_3rscan_metadata",
+        "symmetry_source": "official_rigid_change_records"
+      },
+      "pair_id": "scene0209_00-scene0209_01",
+      "role": "development_selection",
+      "sequence": {
+        "change_gt_binding": {
+          "byte_count": 219500,
+          "path": "/home/ww/paper5/data/processed/rio/change_gt/validation/scene0209_00-scene0209_01.txt",
+          "sha256": "0e7c764987f00e20528c918c160f0f3df2bf26fd7a646287f3eb3f6db5033b80"
+        },
+        "key": "scene0209_00-scene0209_01"
+      },
+      "sessions": [
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 260585,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/validation/scene0209_00.txt",
+              "sha256": "0c332f52d461e05dcd9db84466cbe49f5145f89e65e948ee38484a8827f137b7"
+            },
+            "points": {
+              "byte_count": 2481920,
+              "path": "/home/ww/paper5/data/processed/rio/validation/0209_00.npy",
+              "sha256": "30cf96edd2a756a04d858f1a4c6e2f23dfe740fdc25db51bb03ea65ce2e9445d"
+            }
+          },
+          "raw_assets": {
+            "labels.instances.annotated.v2.ply": {
+              "byte_count": 3717304,
+              "path": "/home/ww/vv/dataset/3RScan/scans/5341b7e3-8a66-2cdd-8709-66a2159f0017/labels.instances.annotated.v2.ply",
+              "sha256": "86381ba3cdc7c905d195163097f8b78fada668ccac434a3a1b5616f8d9a5ec81"
+            },
+            "mesh.refined.0.010000.segs.v2.json": {
+              "byte_count": 350317,
+              "path": "/home/ww/vv/dataset/3RScan/scans/5341b7e3-8a66-2cdd-8709-66a2159f0017/mesh.refined.0.010000.segs.v2.json",
+              "sha256": "d3952c5e987f6286a225dcf16979a3d75ce1a7c8fa9c0bd3151fdaaf57d7680c"
+            },
+            "mesh.refined.v2.obj": {
+              "byte_count": 7614213,
+              "path": "/home/ww/vv/dataset/3RScan/scans/5341b7e3-8a66-2cdd-8709-66a2159f0017/mesh.refined.v2.obj",
+              "sha256": "607002c184b57dcb3600858aa0dc36c0f39abd4d26e9e9798d5e2ee8cc67209c"
+            },
+            "semseg.v2.json": {
+              "byte_count": 23672,
+              "path": "/home/ww/vv/dataset/3RScan/scans/5341b7e3-8a66-2cdd-8709-66a2159f0017/semseg.v2.json",
+              "sha256": "b33f3d0bd1ad784b6d89a6d446676708a6d355cfeea311a4d007389e7fa1db8f"
+            },
+            "sequence.zip": {
+              "byte_count": 47889798,
+              "path": "/home/ww/vv/dataset/3RScan/scans/5341b7e3-8a66-2cdd-8709-66a2159f0017/sequence.zip",
+              "sha256": "eea6e073f15ba18e8d911575ff654318628581ed1dee79001642d5b6568babbe"
+            }
+          },
+          "scan_id": "5341b7e3-8a66-2cdd-8709-66a2159f0017",
+          "scene": 209,
+          "sub_scene": 0,
+          "visit_index": 0
+        },
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 298108,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/validation/scene0209_01.txt",
+              "sha256": "5de3785fcc4f48935541e8854a3156e2c678a6be18552f9c4409f13b0041d196"
+            },
+            "points": {
+              "byte_count": 2786336,
+              "path": "/home/ww/paper5/data/processed/rio/validation/0209_01.npy",
+              "sha256": "bea4f47ac12995992c56a948220ce3d3f20d83d019b0186235cff215b4532795"
+            }
+          },
+          "raw_assets": {
+            "labels.instances.annotated.v2.ply": {
+              "byte_count": 4131779,
+              "path": "/home/ww/vv/dataset/3RScan/scans/4138585b-a238-2435-810b-9728fc989b2f/labels.instances.annotated.v2.ply",
+              "sha256": "75cc7b63934905303021a0af57f06bfc055553786c977d887361726e37a76f0f"
+            },
+            "mesh.refined.0.010000.segs.v2.json": {
+              "byte_count": 393850,
+              "path": "/home/ww/vv/dataset/3RScan/scans/4138585b-a238-2435-810b-9728fc989b2f/mesh.refined.0.010000.segs.v2.json",
+              "sha256": "f1a224c354e3bbe8775968f54b12d84c8e4873080c4406db2ac035e4a2fd0f9c"
+            },
+            "mesh.refined.v2.obj": {
+              "byte_count": 8455557,
+              "path": "/home/ww/vv/dataset/3RScan/scans/4138585b-a238-2435-810b-9728fc989b2f/mesh.refined.v2.obj",
+              "sha256": "021ca7817c30b136caae0538a4d4010b42231ff6dfdf53fd6f329e66a50d52ff"
+            },
+            "semseg.v2.json": {
+              "byte_count": 26405,
+              "path": "/home/ww/vv/dataset/3RScan/scans/4138585b-a238-2435-810b-9728fc989b2f/semseg.v2.json",
+              "sha256": "b2c0a4077aa79264776ca7b48cb811a9e1e1faeb8f694818185e7ce42e4abe42"
+            },
+            "sequence.zip": {
+              "byte_count": 71188280,
+              "path": "/home/ww/vv/dataset/3RScan/scans/4138585b-a238-2435-810b-9728fc989b2f/sequence.zip",
+              "sha256": "c2628da9e92f6d0b67c6d81dcd3f7659bd41f38d2b2b9f0dbdf344d829d56444"
+            }
+          },
+          "scan_id": "4138585b-a238-2435-810b-9728fc989b2f",
+          "scene": 209,
+          "sub_scene": 1,
+          "visit_index": 1
+        }
+      ],
+      "split": "validation"
+    },
+    {
+      "common_method_inputs": {
+        "global_alignment": {
+          "application": "homogeneous_row_vector_right_multiply",
+          "direction": "rescan_row_vector_to_reference",
+          "matrix": [
+            0.9956304430961609,
+            0.09328697621822357,
+            -0.004190223757177591,
+            0,
+            -0.09330997616052628,
+            0.9956209063529968,
+            -0.005677018314599991,
+            0,
+            0.003642282448709011,
+            0.006043202243745327,
+            0.9999750852584839,
+            0,
+            0.11340748518705368,
+            0.19140805304050446,
+            -0.17218872904777527,
+            1
+          ],
+          "storage": "row_major_flat_4x4"
+        }
+      },
+      "environment_id": "75c25975-9ca2-2844-9769-84677f46d4cf",
+      "evaluator_only": {
+        "ambiguity": [],
+        "changes": {
+          "nonrigid": [],
+          "removed": [
+            28,
+            24,
+            25,
+            29,
+            31
+          ],
+          "rigid": [
+            {
+              "instance_reference": 19,
+              "instance_rescan": 19,
+              "symmetry": 0,
+              "transform": [
+                -0.09427782148122787,
+                0.9949578642845154,
+                0.03421080484986305,
+                0,
+                -0.9955393075942993,
+                -0.0940965861082077,
+                -0.006873000878840685,
+                0,
+                -0.003619226859882474,
+                -0.03470617160201073,
+                0.9993909001350403,
+                0,
+                -0.6064716577529907,
+                2.4905855655670166,
+                0.18226772546768188,
+                1
+              ]
+            },
+            {
+              "instance_reference": 27,
+              "instance_rescan": 27,
+              "symmetry": 0,
+              "transform": [
+                0.7447458505630493,
+                0.6640855669975281,
+                -0.0659094825387001,
+                0,
+                -0.655975878238678,
+                0.7103204727172852,
+                -0.2552260160446167,
+                0,
+                -0.12267507612705231,
+                0.23331357538700104,
+                0.9646322727203369,
+                0,
+                1.7957637310028076,
+                1.7090901136398315,
+                0.8002504110336304,
+                1
+              ]
+            },
+            {
+              "instance_reference": 30,
+              "instance_rescan": 30,
+              "symmetry": 0,
+              "transform": [
+                0.5948473811149597,
+                -0.12746530771255493,
+                -0.793668270111084,
+                0,
+                -0.16933348774909973,
+                0.9453216195106506,
+                -0.27873530983924866,
+                0,
+                0.7858007550239563,
+                0.30019962787628174,
+                0.5407379269599915,
+                0,
+                0.7297059297561646,
+                0.6442598104476929,
+                0.2502274513244629,
+                1
+              ]
+            },
+            {
+              "instance_reference": 18,
+              "instance_rescan": 18,
+              "symmetry": 0,
+              "transform": [
+                0.8769842386245728,
+                0.48016202449798584,
+                0.018519029021263123,
+                0,
+                -0.48033279180526733,
+                0.8770657777786255,
+                0.005975586362183094,
+                0,
+                -0.013373158872127533,
+                -0.014135795645415783,
+                0.9998105764389038,
+                0,
+                0.6616604924201965,
+                0.42810022830963135,
+                0.1797318458557129,
+                1
+              ]
+            }
+          ]
+        },
+        "cross_time_identity_source": "official_3rscan_metadata",
+        "symmetry_source": "official_rigid_change_records"
+      },
+      "pair_id": "scene0279_00-scene0279_01",
+      "role": "development_selection",
+      "sequence": {
+        "change_gt_binding": {
+          "byte_count": 144494,
+          "path": "/home/ww/paper5/data/processed/rio/change_gt/validation/scene0279_00-scene0279_01.txt",
+          "sha256": "abcf0560351f443b84bc4580b876c6e826805277166e1a758bc08b47dc70af5b"
+        },
+        "key": "scene0279_00-scene0279_01"
+      },
+      "sessions": [
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 189948,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/validation/scene0279_00.txt",
+              "sha256": "e950804ebe7db7b03a615a55bd6a51466908a64111aa59d003cf307b45b03078"
+            },
+            "points": {
+              "byte_count": 1723376,
+              "path": "/home/ww/paper5/data/processed/rio/validation/0279_00.npy",
+              "sha256": "1a11c97be1dff7f2c71a589238726ef643ab23b95e7509a697a9bc59d167e0c9"
+            }
+          },
+          "raw_assets": {
+            "labels.instances.annotated.v2.ply": {
+              "byte_count": 2660529,
+              "path": "/home/ww/vv/dataset/3RScan/scans/75c25975-9ca2-2844-9769-84677f46d4cf/labels.instances.annotated.v2.ply",
+              "sha256": "55fd7a2f719015fa37a1b07d14c60f802d3945e85bc8f1c41bf0dae570e1ab60"
+            },
+            "mesh.refined.0.010000.segs.v2.json": {
+              "byte_count": 240010,
+              "path": "/home/ww/vv/dataset/3RScan/scans/75c25975-9ca2-2844-9769-84677f46d4cf/mesh.refined.0.010000.segs.v2.json",
+              "sha256": "6095bc8dc601bab6e37c9a6bc2af8b3e9233a8213a37a1f727e9ac111f77c7fc"
+            },
+            "mesh.refined.v2.obj": {
+              "byte_count": 5442737,
+              "path": "/home/ww/vv/dataset/3RScan/scans/75c25975-9ca2-2844-9769-84677f46d4cf/mesh.refined.v2.obj",
+              "sha256": "a45a0e802a4506487664df3dbf2006473f6704cc7ae0b2cf3d423e8e968befa1"
+            },
+            "semseg.v2.json": {
+              "byte_count": 24758,
+              "path": "/home/ww/vv/dataset/3RScan/scans/75c25975-9ca2-2844-9769-84677f46d4cf/semseg.v2.json",
+              "sha256": "1ed6efb3974c45e4a56800190d03b44b71bb8253ac10c204bd4387b1fedd095f"
+            },
+            "sequence.zip": {
+              "byte_count": 23371671,
+              "path": "/home/ww/vv/dataset/3RScan/scans/75c25975-9ca2-2844-9769-84677f46d4cf/sequence.zip",
+              "sha256": "ca895b1ddce9c22a6a0e92e715978334485997fe87031667986be46ce229cef6"
+            }
+          },
+          "scan_id": "75c25975-9ca2-2844-9769-84677f46d4cf",
+          "scene": 279,
+          "sub_scene": 0,
+          "visit_index": 0
+        },
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 189144,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/validation/scene0279_01.txt",
+              "sha256": "cfc944bc907f6bfdb70a8449489ca0d26efe757e9dbe35f71f334fbe65f21b98"
+            },
+            "points": {
+              "byte_count": 1744736,
+              "path": "/home/ww/paper5/data/processed/rio/validation/0279_01.npy",
+              "sha256": "96eeba0fb22921712a25a82f4581d46c31a1434f4f30d65c3f08c07cf2f91796"
+            }
+          },
+          "raw_assets": {
+            "labels.instances.annotated.v2.ply": {
+              "byte_count": 2679842,
+              "path": "/home/ww/vv/dataset/3RScan/scans/8eabc455-5af7-2f32-8606-a0bdbe6c537d/labels.instances.annotated.v2.ply",
+              "sha256": "c18562133589168ec9515f9a481a42546ba4f3d5ea85d1ffbaaf8440999bb572"
+            },
+            "mesh.refined.0.010000.segs.v2.json": {
+              "byte_count": 240687,
+              "path": "/home/ww/vv/dataset/3RScan/scans/8eabc455-5af7-2f32-8606-a0bdbe6c537d/mesh.refined.0.010000.segs.v2.json",
+              "sha256": "6065972518c4784b4b192d547886313a6bf8667dae68c342ea5d9be63f876225"
+            },
+            "mesh.refined.v2.obj": {
+              "byte_count": 5487301,
+              "path": "/home/ww/vv/dataset/3RScan/scans/8eabc455-5af7-2f32-8606-a0bdbe6c537d/mesh.refined.v2.obj",
+              "sha256": "c6b04aa91ae1069133b7fc981ed35a8473e5090b87a489c0d3565a2fed0c1330"
+            },
+            "semseg.v2.json": {
+              "byte_count": 19588,
+              "path": "/home/ww/vv/dataset/3RScan/scans/8eabc455-5af7-2f32-8606-a0bdbe6c537d/semseg.v2.json",
+              "sha256": "d6b8b0ef3e18a5fbb35dcc2d9dad9b28ad3560c16754232e53f2a97853fd677c"
+            },
+            "sequence.zip": {
+              "byte_count": 12326266,
+              "path": "/home/ww/vv/dataset/3RScan/scans/8eabc455-5af7-2f32-8606-a0bdbe6c537d/sequence.zip",
+              "sha256": "8c107d342f61093d929870040408bdfebe870095db2211a83959de9f6849acc6"
+            }
+          },
+          "scan_id": "8eabc455-5af7-2f32-8606-a0bdbe6c537d",
+          "scene": 279,
+          "sub_scene": 1,
+          "visit_index": 1
+        }
+      ],
+      "split": "validation"
+    },
+    {
+      "common_method_inputs": {
+        "global_alignment": {
+          "application": "homogeneous_row_vector_right_multiply",
+          "direction": "rescan_row_vector_to_reference",
+          "matrix": [
+            -0.7587737441062927,
+            0.6511035561561584,
+            -0.01807367242872715,
+            0,
+            -0.6504611968994141,
+            -0.7588940858840942,
+            -0.03130728006362915,
+            0,
+            -0.034100282937288284,
+            -0.01199891697615385,
+            0.9993464350700378,
+            0,
+            1.066906213760376,
+            2.6961333751678467,
+            -0.011573784984648228,
+            1
+          ],
+          "storage": "row_major_flat_4x4"
+        }
+      },
+      "environment_id": "b1f23308-d255-2761-94da-981d962c6bf8",
+      "evaluator_only": {
+        "ambiguity": [
+          [
+            {
+              "instance_source": 6,
+              "instance_target": 7,
+              "transform": [
+                -0.9943820834159851,
+                -0.10266538709402084,
+                0.025773366913199425,
+                0,
+                0.10308344662189484,
+                -0.9945527911186218,
+                0.01544962078332901,
+                0,
+                0.02404683269560337,
+                0.018019629642367363,
+                0.9995484948158264,
+                0,
+                0.2720530927181244,
+                4.3195905685424805,
+                -0.033023733645677567,
+                1
+              ]
+            },
+            {
+              "instance_source": 7,
+              "instance_target": 6,
+              "transform": [
+                -0.993594229221344,
+                0.1104956567287445,
+                0.023691849783062935,
+                0,
+                -0.1085042804479599,
+                -0.9913935661315918,
+                0.07325126230716705,
+                0,
+                0.03158188983798027,
+                0.07021135836839676,
+                0.997032105922699,
+                0,
+                0.7206543684005737,
+                4.311801910400391,
+                -0.143760085105896,
+                1
+              ]
+            }
+          ],
+          [
+            {
+              "instance_source": 3,
+              "instance_target": 4,
+              "transform": [
+                -0.014979125931859016,
+                -0.995698094367981,
+                0.09143757075071335,
+                0,
+                0.9977557063102722,
+                -0.020853223279118538,
+                -0.063628189265728,
+                0,
+                0.06526123732328415,
+                0.09027926623821259,
+                0.9937759041786194,
+                0,
+                -1.863620400428772,
+                0.1523955762386322,
+                0.18032316863536835,
+                1
+              ]
+            },
+            {
+              "instance_source": 4,
+              "instance_target": 3,
+              "transform": [
+                -0.0914727970957756,
+                0.9957965612411499,
+                0.004680738318711519,
+                0,
+                -0.9957396984100342,
+                -0.09152042865753174,
+                0.011244301684200764,
+                0,
+                0.011625420302152634,
+                -0.003632249077782035,
+                0.9999258518218994,
+                0,
+                -0.016431936994194984,
+                1.988905668258667,
+                0.00027240722556598485,
+                1
+              ]
+            }
+          ]
+        ],
+        "changes": {
+          "nonrigid": [],
+          "removed": [],
+          "rigid": [
+            {
+              "instance_reference": 2,
+              "instance_rescan": 2,
+              "symmetry": 2,
+              "transform": [
+                -0.7883265614509583,
+                -0.6152067184448242,
+                0.007860628888010979,
+                0,
+                0.6152510643005371,
+                -0.7881985306739807,
+                0.014459283091127872,
+                0,
+                -0.002699719276279211,
+                0.016234897077083588,
+                0.9998645186424255,
+                0,
+                -0.8959940671920776,
+                2.6344640254974365,
+                0.12231430411338806,
+                1
+              ]
+            },
+            {
+              "instance_reference": 3,
+              "instance_rescan": 3,
+              "symmetry": 0,
+              "transform": [
+                -0.6993608474731445,
+                -0.714115560054779,
+                -0.030551224946975708,
+                0,
+                0.7146327495574951,
+                -0.6994226574897766,
+                -0.010394992306828499,
+                0,
+                -0.013944992795586586,
+                -0.02910275012254715,
+                0.9994791150093079,
+                0,
+                -0.9192726016044617,
+                2.686340093612671,
+                0.10845600813627243,
+                1
+              ]
+            },
+            {
+              "instance_reference": 4,
+              "instance_rescan": 4,
+              "symmetry": 0,
+              "transform": [
+                -0.7409893274307251,
+                0.6662762761116028,
+                0.0837307944893837,
+                0,
+                -0.6704747080802917,
+                -0.7410093545913696,
+                -0.036994922906160355,
+                0,
+                0.037396471947431564,
+                -0.08355221897363663,
+                0.9958014488220215,
+                0,
+                0.13776224851608276,
+                3.811572551727295,
+                0.24644693732261658,
+                1
+              ]
+            },
+            {
+              "instance_reference": 5,
+              "instance_rescan": 5,
+              "symmetry": 2,
+              "transform": [
+                0.9456198215484619,
+                0.3232715129852295,
+                0.03603667393326759,
+                0,
+                -0.32425713539123535,
+                0.9456138610839844,
+                0.025915445759892464,
+                0,
+                -0.025699056684970856,
+                -0.03619130328297615,
+                0.9990143179893494,
+                0,
+                0.45776480436325073,
+                -1.3420369625091553,
+                0.05663279443979263,
+                1
+              ]
+            },
+            {
+              "instance_reference": 6,
+              "instance_rescan": 6,
+              "symmetry": 0,
+              "transform": [
+                -0.6994121670722961,
+                -0.7147160768508911,
+                0.0018710271688178182,
+                0,
+                0.714104950428009,
+                -0.6987009048461914,
+                0.043255191296339035,
+                0,
+                -0.029607893899083138,
+                0.0315893292427063,
+                0.9990622401237488,
+                0,
+                -1.0395829677581787,
+                2.6978771686553955,
+                0.01189076155424118,
+                1
+              ]
+            },
+            {
+              "instance_reference": 7,
+              "instance_rescan": 7,
+              "symmetry": 0,
+              "transform": [
+                -0.7096794843673706,
+                -0.7044016122817993,
+                0.013161913491785526,
+                0,
+                0.7032983303070068,
+                -0.7094224095344543,
+                -0.04573136940598488,
+                0,
+                0.041550613939762115,
+                -0.02319786697626114,
+                0.9988670349121094,
+                0,
+                -0.9225956797599792,
+                2.7427072525024414,
+                0.21168655157089233,
+                1
+              ]
+            }
+          ]
+        },
+        "cross_time_identity_source": "official_3rscan_metadata",
+        "symmetry_source": "official_rigid_change_records"
+      },
+      "pair_id": "scene0359_00-scene0359_01",
+      "role": "development_selection",
+      "sequence": {
+        "change_gt_binding": {
+          "byte_count": 101178,
+          "path": "/home/ww/paper5/data/processed/rio/change_gt/validation/scene0359_00-scene0359_01.txt",
+          "sha256": "91ef852ad99bb33698f3b76c5e8ed81bc2fd674e7fd4876cf82e911941af39e2"
+        },
+        "key": "scene0359_00-scene0359_01"
+      },
+      "sessions": [
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 134523,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/validation/scene0359_00.txt",
+              "sha256": "e1b7956f4f8cb1c39d6114579cff33662a05c33ac7ad77daf9273396a62ed4f1"
+            },
+            "points": {
+              "byte_count": 1272512,
+              "path": "/home/ww/paper5/data/processed/rio/validation/0359_00.npy",
+              "sha256": "97893fe179173166cf7563642dee18359793f83d30fb66f96183fc75b0bd5e77"
+            }
+          },
+          "raw_assets": {
+            "labels.instances.annotated.v2.ply": {
+              "byte_count": 1955411,
+              "path": "/home/ww/vv/dataset/3RScan/scans/b1f23308-d255-2761-94da-981d962c6bf8/labels.instances.annotated.v2.ply",
+              "sha256": "f0b3b77e4dc198c8c08f79e9cb9d5c7ce7b481ad620ee96085692ddf65f79a18"
+            },
+            "mesh.refined.0.010000.segs.v2.json": {
+              "byte_count": 175915,
+              "path": "/home/ww/vv/dataset/3RScan/scans/b1f23308-d255-2761-94da-981d962c6bf8/mesh.refined.0.010000.segs.v2.json",
+              "sha256": "5361c9d0db84b5db4a2d4f3056caf72f464b979633a2052f35591d12517405c6"
+            },
+            "mesh.refined.v2.obj": {
+              "byte_count": 4032659,
+              "path": "/home/ww/vv/dataset/3RScan/scans/b1f23308-d255-2761-94da-981d962c6bf8/mesh.refined.v2.obj",
+              "sha256": "18a88f67fba5ed3aed3bec06660ba781f21879796a71c763de5afc2736da1755"
+            },
+            "semseg.v2.json": {
+              "byte_count": 9321,
+              "path": "/home/ww/vv/dataset/3RScan/scans/b1f23308-d255-2761-94da-981d962c6bf8/semseg.v2.json",
+              "sha256": "f3538be5fd817d91aa17e0732f287ad39c086a0b42ed5f604158e1bc5bd659a6"
+            },
+            "sequence.zip": {
+              "byte_count": 25247473,
+              "path": "/home/ww/vv/dataset/3RScan/scans/b1f23308-d255-2761-94da-981d962c6bf8/sequence.zip",
+              "sha256": "e29f6becfb8ce48d71f091cda0c95e5e31932248b1eac0804f406a49b73c425b"
+            }
+          },
+          "scan_id": "b1f23308-d255-2761-94da-981d962c6bf8",
+          "scene": 359,
+          "sub_scene": 0,
+          "visit_index": 0
+        },
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 126711,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/validation/scene0359_01.txt",
+              "sha256": "f1234ef595445d05d28ab7a089daf8db33027c0ef2386e672f7431b62062d715"
+            },
+            "points": {
+              "byte_count": 1156016,
+              "path": "/home/ww/paper5/data/processed/rio/validation/0359_01.npy",
+              "sha256": "93279bcbda06a3c0827d186713f9a92b7bb23cd12dcefc2359a422ae1640a79c"
+            }
+          },
+          "raw_assets": {
+            "labels.instances.annotated.v2.ply": {
+              "byte_count": 1728252,
+              "path": "/home/ww/vv/dataset/3RScan/scans/77361fd4-d054-2a22-88c4-b5b404f904ca/labels.instances.annotated.v2.ply",
+              "sha256": "4e171809199f5930755245a927d970f76931a21caeca20bf88d3b58e9f5f625c"
+            },
+            "mesh.refined.0.010000.segs.v2.json": {
+              "byte_count": 158696,
+              "path": "/home/ww/vv/dataset/3RScan/scans/77361fd4-d054-2a22-88c4-b5b404f904ca/mesh.refined.0.010000.segs.v2.json",
+              "sha256": "d50dbe34aa1f90d9c55d3cb74dfa533994149c4bf134c87a307f554bbe6772db"
+            },
+            "mesh.refined.v2.obj": {
+              "byte_count": 3538560,
+              "path": "/home/ww/vv/dataset/3RScan/scans/77361fd4-d054-2a22-88c4-b5b404f904ca/mesh.refined.v2.obj",
+              "sha256": "d15f634385a0496f934f403cde846fe83721da98cab63dae8b9006f0d9e792fe"
+            },
+            "semseg.v2.json": {
+              "byte_count": 10756,
+              "path": "/home/ww/vv/dataset/3RScan/scans/77361fd4-d054-2a22-88c4-b5b404f904ca/semseg.v2.json",
+              "sha256": "594e037e2c7e0e63f9a9f15d63a290b5f762596b3eafb4bc9a7529981b314193"
+            },
+            "sequence.zip": {
+              "byte_count": 19153584,
+              "path": "/home/ww/vv/dataset/3RScan/scans/77361fd4-d054-2a22-88c4-b5b404f904ca/sequence.zip",
+              "sha256": "74007c2aca361f9e3e14955907c0290ae7efae96e404d4f4384d6bf7c0969d86"
+            }
+          },
+          "scan_id": "77361fd4-d054-2a22-88c4-b5b404f904ca",
+          "scene": 359,
+          "sub_scene": 1,
+          "visit_index": 1
+        }
+      ],
+      "split": "validation"
+    },
+    {
+      "common_method_inputs": {
+        "global_alignment": {
+          "application": "homogeneous_row_vector_right_multiply",
+          "direction": "rescan_row_vector_to_reference",
+          "matrix": [
+            0.8622100949287415,
+            -0.5065456032752991,
+            -0.002304562134668231,
+            0,
+            0.5065075159072876,
+            0.8621872067451477,
+            -0.009119881317019463,
+            0,
+            0.006606598850339651,
+            0.0066959741525352,
+            0.9999555945396423,
+            0,
+            -0.03552231565117836,
+            0.33139142394065857,
+            0.0462009571492672,
+            1
+          ],
+          "storage": "row_major_flat_4x4"
+        }
+      },
+      "environment_id": "e61b0e04-bada-2f31-82d6-72831a602ba7",
+      "evaluator_only": {
+        "ambiguity": [
+          [
+            {
+              "instance_source": 40,
+              "instance_target": 36,
+              "transform": [
+                0.281436026096344,
+                0.9595232009887695,
+                -0.010432291775941849,
+                0,
+                -0.959251880645752,
+                0.28103893995285034,
+                -0.029202749952673912,
+                0,
+                -0.025088835507631302,
+                0.01822590082883835,
+                0.9995189905166626,
+                0,
+                -0.4392043352127075,
+                1.9381238222122192,
+                -0.01259436272084713,
+                1
+              ]
+            },
+            {
+              "instance_source": 36,
+              "instance_target": 37,
+              "transform": [
+                0.06988579779863358,
+                0.996990442276001,
+                -0.03355719894170761,
+                0,
+                -0.9975241422653198,
+                0.07010863721370697,
+                0.005509320646524429,
+                0,
+                0.00784539058804512,
+                0.03308909386396408,
+                0.9994215965270996,
+                0,
+                -1.141681432723999,
+                1.6050224304199219,
+                -0.029329176992177963,
+                1
+              ]
+            },
+            {
+              "instance_source": 37,
+              "instance_target": 39,
+              "transform": [
+                -0.2045651078224182,
+                0.9783830642700195,
+                -0.030329223722219467,
+                0,
+                -0.9788529872894287,
+                -0.20447604358196259,
+                0.006042619235813618,
+                0,
+                -0.00028960363124497235,
+                0.030923957005143166,
+                0.9995216727256775,
+                0,
+                -2.2649283409118652,
+                2.2406725883483887,
+                -0.04545262083411217,
+                1
+              ]
+            },
+            {
+              "instance_source": 39,
+              "instance_target": 40,
+              "transform": [
+                -0.12978504598140717,
+                0.9915288686752319,
+                0.005147331859916449,
+                0,
+                -0.9914436936378479,
+                -0.12969723343849182,
+                -0.014768487773835659,
+                0,
+                -0.013975786045193672,
+                -0.007020018063485622,
+                0.9998777508735657,
+                0,
+                -1.4492814540863037,
+                2.6869864463806152,
+                0.030669303610920906,
+                1
+              ]
+            }
+          ]
+        ],
+        "changes": {
+          "nonrigid": [
+            2
+          ],
+          "removed": [
+            72,
+            34,
+            50
+          ],
+          "rigid": [
+            {
+              "instance_reference": 36,
+              "instance_rescan": 36,
+              "symmetry": 0,
+              "transform": [
+                0.7953161597251892,
+                0.6057785153388977,
+                -0.022468755021691322,
+                0,
+                -0.6058515310287476,
+                0.795566737651825,
+                0.004161880351603031,
+                0,
+                0.02039657160639763,
+                0.010302728042006493,
+                0.9997389316558838,
+                0,
+                -0.08052898943424225,
+                -0.18308913707733154,
+                -0.06633348762989044,
+                1
+              ]
+            },
+            {
+              "instance_reference": 40,
+              "instance_rescan": 40,
+              "symmetry": 0,
+              "transform": [
+                0.9860534071922302,
+                0.16636566817760468,
+                0.004598651546984911,
+                0,
+                -0.1662718951702118,
+                0.9859468340873718,
+                -0.01619981788098812,
+                0,
+                -0.00722911674529314,
+                0.015209253877401352,
+                0.9998582601547241,
+                0,
+                0.4113342761993408,
+                -0.8790653944015503,
+                -0.031803205609321594,
+                1
+              ]
+            },
+            {
+              "instance_reference": 37,
+              "instance_rescan": 37,
+              "symmetry": 0,
+              "transform": [
+                0.8925191760063171,
+                0.45026472210884094,
+                0.025911560282111168,
+                0,
+                -0.45067790150642395,
+                0.8925924301147461,
+                0.012965713627636433,
+                0,
+                -0.01729046180844307,
+                -0.023249918594956398,
+                0.9995802044868469,
+                0,
+                -0.19508157670497894,
+                -0.6222617626190186,
+                -0.01878349483013153,
+                1
+              ]
+            },
+            {
+              "instance_reference": 39,
+              "instance_rescan": 39,
+              "symmetry": 0,
+              "transform": [
+                0.5942687392234802,
+                0.8040745854377747,
+                0.017585858702659607,
+                0,
+                -0.8041356801986694,
+                0.594424307346344,
+                -0.005048090126365423,
+                0,
+                -0.01451250072568655,
+                -0.011141492985188961,
+                0.9998326897621155,
+                0,
+                0.058940768241882324,
+                0.7096832990646362,
+                0.016154993325471878,
+                1
+              ]
+            },
+            {
+              "instance_reference": 38,
+              "instance_rescan": 38,
+              "symmetry": 0,
+              "transform": [
+                0.43222081661224365,
+                0.9011363983154297,
+                -0.033741164952516556,
+                0,
+                -0.9016810655593872,
+                0.43135756254196167,
+                -0.030026057735085487,
+                0,
+                -0.012503048405051231,
+                0.04340164363384247,
+                0.9989794492721558,
+                0,
+                -1.5702570676803589,
+                0.31264612078666687,
+                -0.1233152449131012,
+                1
+              ]
+            },
+            {
+              "instance_reference": 32,
+              "instance_rescan": 32,
+              "symmetry": 2,
+              "transform": [
+                -0.8668927550315857,
+                -0.4984804391860962,
+                -0.0038128704763948917,
+                0,
+                0.4973249137401581,
+                -0.8653566241264343,
+                0.061852600425481796,
+                0,
+                -0.03413178399205208,
+                0.05172332003712654,
+                0.9980780482292175,
+                0,
+                -1.174785852432251,
+                4.388199329376221,
+                -0.1771765500307083,
+                1
+              ]
+            },
+            {
+              "instance_reference": 31,
+              "instance_rescan": 31,
+              "symmetry": 0,
+              "transform": [
+                0.7913988828659058,
+                0.604982316493988,
+                0.08766023814678192,
+                0,
+                -0.6105155944824219,
+                0.7894763946533203,
+                0.06322412192821503,
+                0,
+                -0.030956238508224487,
+                -0.10355345904827118,
+                0.9941419959068298,
+                0,
+                0.5225815176963806,
+                -0.08270478248596191,
+                -0.10017099231481552,
+                1
+              ]
+            }
+          ]
+        },
+        "cross_time_identity_source": "official_3rscan_metadata",
+        "symmetry_source": "official_rigid_change_records"
+      },
+      "pair_id": "scene0459_00-scene0459_01",
+      "role": "development_selection",
+      "sequence": {
+        "change_gt_binding": {
+          "byte_count": 548016,
+          "path": "/home/ww/paper5/data/processed/rio/change_gt/validation/scene0459_00-scene0459_01.txt",
+          "sha256": "12b1566189edc79436b58f5c7643e3828799e6ea2f31aec4288c6870a4f78576"
+        },
+        "key": "scene0459_00-scene0459_01"
+      },
+      "sessions": [
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 702494,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/validation/scene0459_00.txt",
+              "sha256": "2ccf38e6c98049c33cf53f725311feb6b0e276b2d4e3e40edaf93a065862ac37"
+            },
+            "points": {
+              "byte_count": 6589712,
+              "path": "/home/ww/paper5/data/processed/rio/validation/0459_00.npy",
+              "sha256": "f13c8a04b9071b6b23e64b739348c07343d336deb08d8509bb2bb5abe6e32a23"
+            }
+          },
+          "raw_assets": {
+            "labels.instances.annotated.v2.ply": {
+              "byte_count": 10354382,
+              "path": "/home/ww/vv/dataset/3RScan/scans/e61b0e04-bada-2f31-82d6-72831a602ba7/labels.instances.annotated.v2.ply",
+              "sha256": "afa2c9979c2de6cc842809f504a45ebbbc27fac8480a58bf3285b323da25bf6d"
+            },
+            "mesh.refined.0.010000.segs.v2.json": {
+              "byte_count": 984028,
+              "path": "/home/ww/vv/dataset/3RScan/scans/e61b0e04-bada-2f31-82d6-72831a602ba7/mesh.refined.0.010000.segs.v2.json",
+              "sha256": "854b6887b4356b366a120c3707ecad497bb4d25fec8c65a45ad26b92982f2f50"
+            },
+            "mesh.refined.v2.obj": {
+              "byte_count": 21388931,
+              "path": "/home/ww/vv/dataset/3RScan/scans/e61b0e04-bada-2f31-82d6-72831a602ba7/mesh.refined.v2.obj",
+              "sha256": "68cc7bb11deba882d5a4c0a7f832ac39a55c4c95197a1c37f655f50b626204bc"
+            },
+            "semseg.v2.json": {
+              "byte_count": 54828,
+              "path": "/home/ww/vv/dataset/3RScan/scans/e61b0e04-bada-2f31-82d6-72831a602ba7/semseg.v2.json",
+              "sha256": "18e7ab4b97493aad2958e5a9689e4c3ad9f13532e4a6ef325804f7a3dd61a4e9"
+            },
+            "sequence.zip": {
+              "byte_count": 108564638,
+              "path": "/home/ww/vv/dataset/3RScan/scans/e61b0e04-bada-2f31-82d6-72831a602ba7/sequence.zip",
+              "sha256": "973214fc0dcbf26c8fa52843f076d0de686772e7f0f901e2fd184f46c1a618fa"
+            }
+          },
+          "scan_id": "e61b0e04-bada-2f31-82d6-72831a602ba7",
+          "scene": 459,
+          "sub_scene": 0,
+          "visit_index": 0
+        },
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 721692,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/validation/scene0459_01.txt",
+              "sha256": "587227a647e1090ae8a83a908c041c68cb9f67ca77e13ff9985cbe7951001d79"
+            },
+            "points": {
+              "byte_count": 6562928,
+              "path": "/home/ww/paper5/data/processed/rio/validation/0459_01.npy",
+              "sha256": "ab14c2c6f91ea68189d8cbfecf5cc797da5e800bf08e62e88f4c5a79380ecfcf"
+            }
+          },
+          "raw_assets": {
+            "labels.instances.annotated.v2.ply": {
+              "byte_count": 10432839,
+              "path": "/home/ww/vv/dataset/3RScan/scans/e61b0e02-bada-2f31-82d0-80fc5c70bd6f/labels.instances.annotated.v2.ply",
+              "sha256": "55ebfe4695d7636dca36b8cd3a363139e345ec23821c15569016ff29d94b4170"
+            },
+            "mesh.refined.0.010000.segs.v2.json": {
+              "byte_count": 979326,
+              "path": "/home/ww/vv/dataset/3RScan/scans/e61b0e02-bada-2f31-82d0-80fc5c70bd6f/mesh.refined.0.010000.segs.v2.json",
+              "sha256": "6efb142f3fe1ccb0208fa52e12175b3a804e856f96cdc3c2ec94d09b7a9a10f8"
+            },
+            "mesh.refined.v2.obj": {
+              "byte_count": 21466731,
+              "path": "/home/ww/vv/dataset/3RScan/scans/e61b0e02-bada-2f31-82d0-80fc5c70bd6f/mesh.refined.v2.obj",
+              "sha256": "7074d7c6222e3cb510a80de81812624cc88fd1e68b9f9922d114b358c7ddfc98"
+            },
+            "semseg.v2.json": {
+              "byte_count": 58004,
+              "path": "/home/ww/vv/dataset/3RScan/scans/e61b0e02-bada-2f31-82d0-80fc5c70bd6f/semseg.v2.json",
+              "sha256": "efa429b4b77d1f2d568d6c68f29227328bac819cffe7a2ac676f1914f95921e7"
+            },
+            "sequence.zip": {
+              "byte_count": 106718403,
+              "path": "/home/ww/vv/dataset/3RScan/scans/e61b0e02-bada-2f31-82d0-80fc5c70bd6f/sequence.zip",
+              "sha256": "8ad45ba5016079cb42ffb658e794dffbe6b5fc45ca4b80f3398c2a0711fbc194"
+            }
+          },
+          "scan_id": "e61b0e02-bada-2f31-82d0-80fc5c70bd6f",
+          "scene": 459,
+          "sub_scene": 1,
+          "visit_index": 1
+        }
+      ],
+      "split": "validation"
+    }
+  ],
+  "role": "DEVELOPMENT_ONLY",
+  "schema_version": 1,
+  "selected_pair_count": 8,
+  "selection_rule": {
+    "complete_raw_and_processed_assets": true,
+    "declared_change_required": true,
+    "exact_visit_count": 2,
+    "result_independent": true,
+    "sort_key": "reference_scan_uuid",
+    "split": "validation",
+    "take_first": 8
+  },
+  "source_bindings": {
+    "checkpoint": {
+      "byte_count": 754917862,
+      "path": "/home/ww/paper5/checkpoints/rescene4d_concerto_t2_repro.ckpt",
+      "sha256": "85ed1aba60320cd19798536b71b91dbc156b7ea60f838832bc0bbbdba131546e"
+    },
+    "checkpoint_provenance": {
+      "byte_count": 9790,
+      "path": "/home/ww/paper5/artifacts/P2_G2_REPRODUCTION_REPORT.md",
+      "sha256": "d891fb7fd53306d8ab65db81b9bb85f08664a9689de850ac7836143b238816bc"
+    },
+    "metadata": {
+      "byte_count": 3155995,
+      "path": "/home/ww/vv/dataset/3RScan/3RScan.json",
+      "sha256": "674a00f50f76b198b9de44efd86c390fea3da37ba8f12cf8ccd00045e265fa64"
+    },
+    "sequence_database": {
+      "byte_count": 415937,
+      "path": "/home/ww/paper5/data/processed/rio/sequence_database_sliding_2.yaml",
+      "sha256": "974299916db02d2ee0233564eb7b36e314dada93e997584d9dfef21ad70d0416"
+    },
+    "train_database": {
+      "byte_count": 980194,
+      "path": "/home/ww/paper5/data/processed/rio/train_database.yaml",
+      "sha256": "9bb033e9e1e81c5f89e6e9f170392f95e930c9362ac83ac04c549a8b9a9c0ab0"
+    },
+    "validation_database": {
+      "byte_count": 132152,
+      "path": "/home/ww/paper5/data/processed/rio/validation_database.yaml",
+      "sha256": "cc69f9de660e6be5b6aee739ee2580b614f132ad8c3a42ce2e301b4d4dbb1906"
+    },
+    "validation_list": {
+      "byte_count": 5808,
+      "path": "/home/ww/vv/dataset/3RScan/val_scans.txt",
+      "sha256": "002229133d4dbc311a01994b8ea31ecac0b662511864493efed9b4febcb0a4e8"
+    }
+  },
+  "status": "PASS"
+}

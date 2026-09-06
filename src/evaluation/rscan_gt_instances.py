@@ -14,6 +14,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
+from typing import Literal
 
 import numpy as np
 from plyfile import PlyData
@@ -22,6 +23,7 @@ from scipy.optimize import linear_sum_assignment
 from src.evaluation.json_contracts import loads_strict
 
 Voxel = tuple[int, int, int]
+MatchingPolicy = Literal["max_total_iou", "max_valid_count_then_iou"]
 
 
 class RScanGroundTruthError(ValueError):
@@ -206,10 +208,21 @@ def _threshold_result(
     ious: np.ndarray,
     *,
     threshold: float,
+    matching_policy: MatchingPolicy = "max_total_iou",
 ) -> ThresholdGeometryResult:
+    if matching_policy not in {"max_total_iou", "max_valid_count_then_iou"}:
+        raise RScanGroundTruthError("instance matching policy is unsupported")
     accepted: list[InstanceMatch] = []
     if len(predictions) and len(ground_truth):
-        row_indices, column_indices = linear_sum_assignment(-ious)
+        if matching_policy == "max_total_iou":
+            scores = ious
+        else:
+            valid = ious >= threshold
+            cardinality_weight = min(ious.shape) + 1.0
+            scores = valid.astype(np.float64) * cardinality_weight + np.where(
+                valid, ious, 0.0
+            )
+        row_indices, column_indices = linear_sum_assignment(-scores)
         accepted = [
             InstanceMatch(
                 predictions[row].prediction_id,
@@ -260,6 +273,8 @@ def _threshold_result(
 def evaluate_instance_geometry(
     predictions: Sequence[PredictedInstance],
     ground_truth: Sequence[GroundTruthInstance],
+    *,
+    matching_policy: MatchingPolicy = "max_total_iou",
 ) -> InstanceGeometryResult:
     """Run deterministic maximum-IoU one-to-one assignment at 0.50 and 0.25."""
 
@@ -271,8 +286,20 @@ def evaluate_instance_geometry(
     if ious.shape != (len(predicted), len(targets)):
         ious = np.empty((len(predicted), len(targets)), dtype=np.float64)
     return InstanceGeometryResult(
-        primary=_threshold_result(predicted, targets, ious, threshold=0.50),
-        sensitivity=_threshold_result(predicted, targets, ious, threshold=0.25),
+        primary=_threshold_result(
+            predicted,
+            targets,
+            ious,
+            threshold=0.50,
+            matching_policy=matching_policy,
+        ),
+        sensitivity=_threshold_result(
+            predicted,
+            targets,
+            ious,
+            threshold=0.25,
+            matching_policy=matching_policy,
+        ),
     )
 
 
@@ -926,6 +953,7 @@ __all__ = [
     "IdentityRules",
     "InstanceGeometryResult",
     "InstanceMatch",
+    "MatchingPolicy",
     "PredictedInstance",
     "RScanGroundTruthError",
     "ThresholdGeometryResult",

@@ -12,6 +12,7 @@ from src.evaluation.rscan_gt_instances import (
     GroundTruthInstance,
     IdentityRules,
     PredictedInstance,
+    _threshold_result,
     apply_row_vector_transform,
     evaluate_instance_geometry,
     load_annotated_instances,
@@ -164,6 +165,33 @@ def test_hungarian_matching_reports_primary_and_sensitivity_thresholds() -> None
         ("p-chair", 1),
         ("p-table", 2),
     ]
+
+
+def test_cardinality_first_matching_maximizes_threshold_valid_edges() -> None:
+    predictions = (
+        PredictedInstance("p0", _voxels((0, 0, 0))),
+        PredictedInstance("p1", _voxels((1, 0, 0))),
+    )
+    ground_truth = (
+        GroundTruthInstance(1, "chair", _voxels((0, 0, 0))),
+        GroundTruthInstance(2, "table", _voxels((1, 0, 0))),
+    )
+    ious = np.asarray([[1.0, 0.50], [0.50, 0.49]], dtype=np.float64)
+
+    legacy = _threshold_result(predictions, ground_truth, ious, threshold=0.50)
+    cardinality_first = _threshold_result(
+        predictions,
+        ground_truth,
+        ious,
+        threshold=0.50,
+        matching_policy="max_valid_count_then_iou",
+    )
+
+    assert legacy.matched_count == 1
+    assert [
+        (match.prediction_id, match.gt_instance_id)
+        for match in cardinality_first.matches
+    ] == [("p0", 2), ("p1", 1)]
 
 
 def test_matching_reports_unmatched_duplicate_fragment_and_merge_errors() -> None:

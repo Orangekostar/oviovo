@@ -1,0 +1,97 @@
+{
+  "config_id": "OVI_RESCENE_3RSCAN_T2_MATRIX_V1",
+  "domains": {
+    "D0_NATIVE_PROCESSED": "PASS",
+    "D1_NATIVE_SENSOR_SUPPORT": "MISSING_ASSET",
+    "D2_OVI_RECONSTRUCTION": "MISSING_ASSET"
+  },
+  "methods": [
+    "G_full",
+    "G_supported",
+    "F",
+    "R_legacy",
+    "R_supported"
+  ],
+  "method_parameters": {
+    "association_metrics": {
+      "minimum_gt_observed_fraction": 0.05
+    },
+    "geometric_reasoner": {
+      "centroid_weight": 0.25,
+      "comparison_voxel_size_m": 0.05,
+      "extent_weight": 0.1,
+      "maximum_centroid_distance_m": 2.0,
+      "minimum_pair_score": 0.5,
+      "require_known_label_compatibility": true,
+      "semantic_weight": 0.2,
+      "size_weight": 0.15,
+      "symmetric_coverage_weight": 0.1,
+      "voxel_iou_weight": 0.2
+    },
+    "projection": {
+      "minimum_entity_token_coverage": 0.25,
+      "minimum_source_point_coverage": 0.25,
+      "static_centroid_tolerance_m": 0.1
+    },
+    "supported_resolver": {
+      "minimum_candidate_score": 0.5
+    }
+  },
+  "neural_voxel_size_m": 0.02,
+  "runtime": {
+    "change_label_database": {
+      "byte_count": 454,
+      "path": "/home/ww/paper5/data/processed/rio/change_label_database.yaml",
+      "sha256": "593e8c5d18883b9bd97a926e786b000425320b6d746f055d1aab5e54439814f1"
+    },
+    "checkpoint": {
+      "byte_count": 754917862,
+      "path": "/home/ww/paper5/checkpoints/rescene4d_concerto_t2_repro.ckpt",
+      "sha256": "85ed1aba60320cd19798536b71b91dbc156b7ea60f838832bc0bbbdba131546e"
+    },
+    "color_mean_std": {
+      "byte_count": 153,
+      "path": "/home/ww/paper5/data/processed/rio/color_mean_std.yaml",
+      "sha256": "c1a388cf2fbfd60703ec06bc81864e103895120c37a477cc6ad51f393dd7eb78"
+    },
+    "concerto_checkpoint": {
+      "byte_count": 433987358,
+      "path": "/home/ww/.cache/persist4d/concerto/concerto_base.pth",
+      "sha256": "845ec7dec97a5fabff8fadb5d9858ac6734347b612d1a4b574213419c139de07"
+    },
+    "dataset_spec": {
+      "byte_count": 427,
+      "path": "/home/ww/paper5/data/processed/rio/rio.yaml",
+      "sha256": "fd66f9339b1ea44a0b6ea282317313c4dd7290711b0d1e027de59a6ba59a68ba"
+    },
+    "gt_root": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/gt-v1",
+    "label_database": {
+      "byte_count": 2919,
+      "path": "/home/ww/paper5/data/processed/rio/label_database.yaml",
+      "sha256": "b03b15ecd0791a0ecd05912e9fe5617dd29a466d117cf5c2188f28638293a063"
+    },
+    "output_root": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/native-v1",
+    "processed_root": "/home/ww/paper5/data/processed/rio",
+    "python": "/home/ww/miniconda3/envs/persist4d/bin/python",
+    "rescene_checkout": "/home/ww/oviovo_references/evaluation/rescene4d",
+    "rescene_commit": "fb2fe42eb8f1e926567c48eea9acb874e608ee10",
+    "runtime_workdir": "/home/ww/paper5",
+    "sequence_database": {
+      "byte_count": 415937,
+      "path": "/home/ww/paper5/data/processed/rio/sequence_database_sliding_2.yaml",
+      "sha256": "974299916db02d2ee0233564eb7b36e314dada93e997584d9dfef21ad70d0416"
+    },
+    "validation_database": {
+      "byte_count": 132152,
+      "path": "/home/ww/paper5/data/processed/rio/validation_database.yaml",
+      "sha256": "cc69f9de660e6be5b6aee739ee2580b614f132ad8c3a42ce2e301b4d4dbb1906"
+    }
+  },
+  "schema_version": 1,
+  "seed": 45,
+  "selection_manifest": {
+    "byte_count": 79594,
+    "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-real-evidence/configs/evaluation/manifests/ovi_rescene_object_level_pairs_v1.json",
+    "sha256": "2054c818c5f02a1ffcf2d4bcb3d3743ef0f4865ff428055f00e2f215c69d4a37"
+  }
+}
