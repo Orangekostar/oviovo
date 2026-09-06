@@ -197,7 +197,8 @@ def test_gt_oracle_pairs_predicted_objects_without_substituting_gt_geometry() ->
 
     assert len(relations) == 1
     relation = relations[0]
-    assert relation.identity_source == "ground_truth_oracle"
+    assert relation.identity_source == "geometric_baseline"
+    assert relation.evidence["ground_truth_identity_oracle"] == 1.0
     assert relation.evidence["reference_instance_id"] == 1
     assert relation.t0_entity_ids == ("U0:atomic:t0:ovimap:1",)
     assert relation.t1_entity_ids == ("U0:atomic:t1:ovimap:1",)

@@ -36,12 +36,7 @@ CompositionAction = Literal[
 ]
 VisibilityState = Literal["occupied", "visible_free", "occluded", "unobserved"]
 GeometrySource = Literal["ovi_t0", "ovi_t1"]
-IdentitySource = Literal[
-    "rescene",
-    "geometric_baseline",
-    "ground_truth_oracle",
-    "unmatched",
-]
+IdentitySource = Literal["rescene", "geometric_baseline", "unmatched"]
 StateSource = Literal["t1_visibility", "pair_reasoner", "fallback"]
 SemanticSource = Literal["ovi_t0", "ovi_t1", "fused_ovi"]
 EvidenceStatus = Literal[
@@ -72,12 +67,7 @@ _COMPOSITION_ACTIONS = {
     "uncertain",
 }
 _VISIBILITY_STATES = {"occupied", "visible_free", "occluded", "unobserved"}
-_IDENTITY_SOURCES = {
-    "rescene",
-    "geometric_baseline",
-    "ground_truth_oracle",
-    "unmatched",
-}
+_IDENTITY_SOURCES = {"rescene", "geometric_baseline", "unmatched"}
 _STATE_SOURCES = {"t1_visibility", "pair_reasoner", "fallback"}
 _SEMANTIC_SOURCES = {"ovi_t0", "ovi_t1", "fused_ovi"}
 _EVIDENCE_STATUSES = {

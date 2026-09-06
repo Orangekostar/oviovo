@@ -462,8 +462,9 @@ def build_gt_oracle_relations(
                     "reference_instance_id": float(reference_id),
                     "t0_endpoint_iou": t0_match[1],
                     "t1_endpoint_iou": t1_match[1],
+                    "ground_truth_identity_oracle": 1.0,
                 },
-                identity_source="ground_truth_oracle",
+                identity_source="geometric_baseline",
             )
         )
     return tuple(relations)

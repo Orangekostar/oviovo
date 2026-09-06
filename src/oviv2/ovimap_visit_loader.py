@@ -49,29 +49,6 @@ SemanticLabeler = Callable[
 ]
 
 
-@dataclass(frozen=True, slots=True)
-class BoundOviArtifacts:
-    """Verified native manifest and the three OVI artifacts it binds."""
-
-    native_path: Path
-    native_bytes: bytes
-    native_payload: Mapping[str, Any]
-    artifacts: Mapping[str, tuple[Path, Mapping[str, object]]]
-    semantic_instances: Mapping[int, Mapping[str, Any]]
-    colors_by_instance: Mapping[int, tuple[int, int, int]]
-
-    @property
-    def native_manifest_sha256(self) -> str:
-        return hashlib.sha256(self.native_bytes).hexdigest()
-
-    def assert_unchanged(self) -> None:
-        if _read_regular(self.native_path, label="native mapping manifest") != self.native_bytes:
-            raise ValueError("native mapping manifest changed during conversion")
-        for role, (path, record) in self.artifacts.items():
-            if _file_record(path, label=f"native {role}") != dict(record):
-                raise ValueError(f"native artifact changed during conversion: {role}")
-
-
 def make_relative_semantic_labeler(
     *,
     classes: Sequence[str],
@@ -309,30 +286,6 @@ def _apply_semantic_labels(snapshot, labeler: SemanticLabeler | None) -> None:
         entity.metadata["semantic_match_score"] = float(score)
 
 
-def load_bound_ovimap_artifacts(native_manifest: Path) -> BoundOviArtifacts:
-    """Verify and decode the native OVI artifact boundary without dataset assumptions."""
-
-    native_path = Path(native_manifest)
-    native_bytes = _read_regular(native_path, label="native mapping manifest")
-    native = _json_object(native_bytes, label="native mapping manifest")
-    artifacts = _bound_artifacts(native)
-    semantic_bytes = _read_regular(
-        artifacts["semantic_features"][0], label="native semantic_features"
-    )
-    result = BoundOviArtifacts(
-        native_path=native_path,
-        native_bytes=native_bytes,
-        native_payload=native,
-        artifacts=artifacts,
-        semantic_instances=_semantic_instances(semantic_bytes),
-        colors_by_instance=parse_instance_color_log(
-            artifacts["instance_color_log"][0]
-        ),
-    )
-    result.assert_unchanged()
-    return result
-
-
 def load_ovimap_visit(
     *,
     native_manifest: Path,
@@ -357,12 +310,13 @@ def load_ovimap_visit(
     ):
         raise ValueError("observed frame interval is invalid")
     visit_name = f"t{visit_id}"
-    loaded = load_bound_ovimap_artifacts(native_manifest)
+    native_path = Path(native_manifest)
     materialized_path = Path(materialized_manifest)
+    native_bytes = _read_regular(native_path, label="native mapping manifest")
     materialized_bytes = _read_regular(
         materialized_path, label="materialized visit manifest"
     )
-    native = loaded.native_payload
+    native = _json_object(native_bytes, label="native mapping manifest")
     materialized = _json_object(
         materialized_bytes, label="materialized visit manifest"
     )
@@ -375,9 +329,14 @@ def load_ovimap_visit(
         end=observed_frame_end,
     )
     _validate_native(native, scene=scene, frame_count=frame_count)
-    artifacts = loaded.artifacts
-    semantic_instances = loaded.semantic_instances
-    colors_by_instance = loaded.colors_by_instance
+    artifacts = _bound_artifacts(native)
+    semantic_bytes = _read_regular(
+        artifacts["semantic_features"][0], label="native semantic_features"
+    )
+    semantic_instances = _semantic_instances(semantic_bytes)
+    colors_by_instance = parse_instance_color_log(
+        artifacts["instance_color_log"][0]
+    )
     points_by_color, background = load_instance_mesh(
         artifacts["instance_mesh"][0], colors_by_instance.values()
     )
@@ -418,17 +377,21 @@ def load_ovimap_visit(
                 "source_instance_id": source_instance_id,
                 "geometry_authority": f"ovi_{visit_name}",
                 "semantic_authority": f"ovi_{visit_name}",
-                "native_manifest_sha256": loaded.native_manifest_sha256,
+                "native_manifest_sha256": hashlib.sha256(native_bytes).hexdigest(),
             }
         )
     _apply_semantic_labels(snapshot, semantic_labeler)
 
+    if _read_regular(native_path, label="native mapping manifest") != native_bytes:
+        raise ValueError("native mapping manifest changed during conversion")
     if (
         _read_regular(materialized_path, label="materialized visit manifest")
         != materialized_bytes
     ):
         raise ValueError("materialized visit manifest changed during conversion")
-    loaded.assert_unchanged()
+    for role, (path, record) in artifacts.items():
+        if _file_record(path, label=f"native {role}") != record:
+            raise ValueError(f"native artifact changed during conversion: {role}")
     return VisitMap(
         visit_id=visit_id,
         snapshot=snapshot,
@@ -441,10 +404,8 @@ def load_ovimap_visit(
 
 
 __all__ = [
-    "BoundOviArtifacts",
     "SemanticLabelInput",
     "SemanticLabeler",
-    "load_bound_ovimap_artifacts",
     "load_ovimap_visit",
     "make_relative_semantic_labeler",
 ]

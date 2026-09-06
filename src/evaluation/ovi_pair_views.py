@@ -6,10 +6,12 @@ import hashlib
 import json
 import math
 import os
+import pickle
 import re
 import stat
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from numbers import Integral
 from pathlib import Path, PurePosixPath
 from types import MappingProxyType
 from typing import Any
@@ -21,17 +23,13 @@ from scripts.evaluation.build_tesse_ovimap_static_anchor import PINNED_OVIMAP_CO
 from src.core.data_structures import CameraIntrinsics
 from src.evaluation.baselines.adapters import adapt_ovimap
 from src.evaluation.baselines.contracts import RuntimeBreakdown
-from src.evaluation.baselines.ovimap import bind_mesh_instances
+from src.evaluation.baselines.ovimap import bind_mesh_instances, parse_instance_color_log
 from src.evaluation.contracts import EntityPrediction, MapSnapshot
 from src.oviv2.ovi_surface_attributes import (
     depth_millimeters_to_meters,
     group_surface_attributes_by_color,
     project_world_points,
     sample_depth_consistent_rgb,
-)
-from src.oviv2.ovimap_visit_loader import (
-    BoundOviArtifacts,
-    load_bound_ovimap_artifacts,
 )
 from src.oviv2.two_visit_contracts import NeuralSampleMap, VisitMap, validate_visit_pair
 from src.oviv2.two_visit_execution import build_geometric_pair_sample
@@ -181,6 +179,99 @@ def _json_object(data: bytes, *, label: str) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise OviPairViewError(f"{label} must contain a JSON object")
     return value
+
+
+@dataclass(frozen=True, slots=True)
+class _BoundOviArtifacts:
+    native_path: Path
+    native_bytes: bytes
+    native_payload: Mapping[str, Any]
+    artifacts: Mapping[str, tuple[Path, Mapping[str, object]]]
+    semantic_instances: Mapping[int, Mapping[str, Any]]
+    colors_by_instance: Mapping[int, tuple[int, int, int]]
+
+    @property
+    def native_manifest_sha256(self) -> str:
+        return hashlib.sha256(self.native_bytes).hexdigest()
+
+    def assert_unchanged(self) -> None:
+        if _read_regular(self.native_path, label="native mapping manifest") != self.native_bytes:
+            raise OviPairViewError("native mapping manifest changed during D2 construction")
+        for role, (path, record) in self.artifacts.items():
+            content = _read_regular(path, label=f"native {role}")
+            if _record(path, content) != dict(record):
+                raise OviPairViewError(
+                    f"native artifact changed during D2 construction: {role}"
+                )
+
+
+def _native_artifacts(
+    payload: Mapping[str, Any],
+) -> dict[str, tuple[Path, Mapping[str, object]]]:
+    raw = payload.get("artifacts")
+    if not isinstance(raw, Mapping) or set(raw) != set(_ARTIFACT_ROLES):
+        raise OviPairViewError("native OVI manifest artifacts are incomplete")
+    result: dict[str, tuple[Path, Mapping[str, object]]] = {}
+    for role in _ARTIFACT_ROLES:
+        declared = raw[role]
+        if not isinstance(declared, Mapping) or set(declared) != {
+            "path",
+            "sha256",
+            "byte_count",
+        }:
+            raise OviPairViewError(f"native OVI artifact binding is invalid: {role}")
+        raw_path = declared.get("path")
+        if not isinstance(raw_path, str) or not Path(raw_path).is_absolute():
+            raise OviPairViewError(f"native OVI artifact path must be absolute: {role}")
+        path = Path(raw_path)
+        content = _read_regular(path, label=f"native {role}")
+        observed = _record(path, content)
+        if dict(declared) != observed:
+            raise OviPairViewError(f"native OVI artifact binding mismatch: {role}")
+        result[role] = (path, observed)
+    return result
+
+
+def _native_semantic_instances(data: bytes) -> dict[int, Mapping[str, Any]]:
+    try:
+        raw = pickle.loads(data)
+    except Exception as error:
+        raise OviPairViewError("OVI semantic features are not a readable pickle") from error
+    if not isinstance(raw, Mapping):
+        raise OviPairViewError("OVI semantic features must contain a mapping")
+    result: dict[int, Mapping[str, Any]] = {}
+    for key, value in raw.items():
+        if isinstance(key, bool) or not isinstance(key, Integral):
+            raise OviPairViewError("OVI semantic feature keys must be integer instance IDs")
+        if not isinstance(value, Mapping):
+            raise OviPairViewError("OVI semantic feature records must be mappings")
+        instance_id = int(key)
+        if instance_id in result:
+            raise OviPairViewError("OVI semantic feature instance IDs must be unique")
+        result[instance_id] = value
+    return result
+
+
+def _load_bound_ovimap_artifacts(native_manifest: Path) -> _BoundOviArtifacts:
+    native_path = Path(native_manifest)
+    native_bytes = _read_regular(native_path, label="native mapping manifest")
+    native = _json_object(native_bytes, label="native mapping manifest")
+    artifacts = _native_artifacts(native)
+    semantic_bytes = _read_regular(
+        artifacts["semantic_features"][0], label="native semantic_features"
+    )
+    result = _BoundOviArtifacts(
+        native_path=native_path,
+        native_bytes=native_bytes,
+        native_payload=native,
+        artifacts=artifacts,
+        semantic_instances=_native_semantic_instances(semantic_bytes),
+        colors_by_instance=parse_instance_color_log(
+            artifacts["instance_color_log"][0]
+        ),
+    )
+    result.assert_unchanged()
+    return result
 
 
 def _record(path: Path, data: bytes) -> dict[str, object]:
@@ -1019,7 +1110,7 @@ def _validate_materialized_manifest(
 
 
 def _validate_native_identity(
-    loaded: BoundOviArtifacts,
+    loaded: _BoundOviArtifacts,
     materialized: _MaterializedVisit,
     *,
     scan_id: str,
@@ -1216,7 +1307,7 @@ def _build_visit(
         materialized_manifest, pair_id=pair_id, scan_id=scan_id, visit_id=visit_id
     )
     try:
-        loaded = load_bound_ovimap_artifacts(native_manifest)
+        loaded = _load_bound_ovimap_artifacts(native_manifest)
     except (OSError, TypeError, ValueError) as error:
         raise OviPairViewError(
             f"native OVI artifact binding failed: {error}"

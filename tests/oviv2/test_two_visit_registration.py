@@ -166,7 +166,7 @@ def test_oracle_source_composes_official_object_then_global_row_transforms() -> 
         state="persistent_moved",
         query_confidence=1.0,
         evidence={"reference_instance_id": 2},
-        identity_source="ground_truth_oracle",
+        identity_source="geometric_baseline",
     )
     oracle = OracleTransformSource(
         reference_instance_id=2,
@@ -198,7 +198,7 @@ def test_oracle_registration_rejects_empty_support_without_crashing() -> None:
         state="persistent_moved",
         query_confidence=1.0,
         evidence={"reference_instance_id": 2},
-        identity_source="ground_truth_oracle",
+        identity_source="geometric_baseline",
     )
     oracle = OracleTransformSource(
         reference_instance_id=2,
