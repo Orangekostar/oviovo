@@ -183,9 +183,9 @@
 - [x] Write failing metric tests for opportunity, new correct/wrong surface, deleted correct baseline surface, total P/R/F, and unevaluable historical surface.
 - [x] Run `python -m pytest -q tests/evaluation/test_run_ovi_rescene_object_recovery.py tests/oviv2/test_two_visit_registration.py tests/oviv2/test_two_visit_dense_recovery.py` and confirm expected failures.
 - [x] Add a composite-object 1:1 registration contract and an explicit oracle source type; apply identical eligibility rules to C1/C2/O1 and reserve GT transforms for O2.
-- [ ] Run C0/C1/C2/O1/O2 on every D2 pair with rigid GT opportunity, preserving negative and null outcomes.
-- [ ] Verify with `python -m pytest -q tests/evaluation/test_run_ovi_rescene_object_recovery.py tests/oviv2/test_two_visit_registration.py tests/oviv2/test_two_visit_dense_recovery.py tests/oviv2/test_two_visit_current_map.py`.
-- [ ] Commit Task 7 code, tests, maps/indexes, and measured oracle table.
+- [x] Run C0/C1/C2/O1/O2 on every D2 pair with rigid GT opportunity, preserving negative and null outcomes.
+- [x] Verify with `python -m pytest -q tests/evaluation/test_run_ovi_rescene_object_recovery.py tests/oviv2/test_two_visit_registration.py tests/oviv2/test_two_visit_dense_recovery.py tests/oviv2/test_two_visit_current_map.py`.
+- [x] Commit Task 7 code, tests, maps/indexes, and measured oracle table.
 
 ### Task 8: Evidence synthesis, verification, and remote delivery
 
