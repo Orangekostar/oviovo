@@ -1,0 +1,102 @@
+{
+  "action": "TUNE_RESOLVER",
+  "artifact_id": "OVI_RESCENE_ADAPTATION_DECISION_V1",
+  "evidence": {
+    "completion_opportunity": {
+      "opportunity_fraction": null,
+      "status": "MISSING_ASSET"
+    },
+    "d2": {
+      "d0_paired_f1": null,
+      "d2_paired_f1": null,
+      "status": "MISSING_ASSET"
+    },
+    "identity_geometry": {
+      "geometry_gain": null,
+      "identity_gain": null,
+      "status": "MISSING_ASSET"
+    },
+    "native_r": {
+      "status": "MEASURED",
+      "temporal_ap": 0.19310398399829865,
+      "temporal_recall": 0.3780843913555145
+    },
+    "raw_resolver": {
+      "legacy_paired_f1": 0.06464646464646463,
+      "raw_nonempty_fraction": 0.93,
+      "status": "MEASURED",
+      "supported_paired_f1": 0.0
+    },
+    "registration_oracle": {
+      "o1_f_score": null,
+      "o2_f_score": null,
+      "status": "MISSING_ASSET"
+    }
+  },
+  "evidence_status": "MEASURED_ONLY",
+  "ordered_rules": [
+    "native_r_weak",
+    "native_strong_d2_weak",
+    "raw_masks_strong_resolver_weak",
+    "estimated_registration_bottleneck",
+    "completion_opportunity_negligible",
+    "identity_gain_without_geometry_gain"
+  ],
+  "schema_version": 1,
+  "selected_rule": "raw_masks_strong_resolver_weak",
+  "source_bindings": {
+    "config": {
+      "byte_count": 856,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-real-evidence/configs/evaluation/ovi_rescene_adaptation_decision_v1.json",
+      "sha256": "cae0f0d3b19018d950e4ea24f1523011d3ee3eb28e17a42929a51533c8958cad"
+    },
+    "decision_source": {
+      "byte_count": 16682,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-real-evidence/scripts/evaluation/decide_ovi_rescene_adaptation.py",
+      "sha256": "8764ed810aa3531f1034c86406a179913fcd533b5d89e3d71ac2b72efed3c643"
+    },
+    "matrix_result": {
+      "byte_count": 122496,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-real-evidence/configs/evaluation/results/ovi_rescene_real_evidence/3rscan_t2_matrix_v1.json",
+      "sha256": "2bb719c6d511387e07228cb0ba3f2faacbf334321f51408b0e7b01c99e1167b4"
+    },
+    "ownership_completion_result": {
+      "byte_count": 10023,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-real-evidence/configs/evaluation/results/ovi_rescene_real_evidence/apartment_ownership_completion_v1.json",
+      "sha256": "c7f2ea84dc8b4337af47f1dc0aeaba904f97e139c9393598ae6fedd6305f1575"
+    },
+    "pair_results": {
+      "scene0029_00-scene0029_01": {
+        "byte_count": 2477354,
+        "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/3rscan/matrix-v1/associations-v2/scene0029_00-scene0029_01.json",
+        "sha256": "184403c5c2527b903786cecf8e6d1382e7f7076ef254428034ae34f5ee5c2e8f"
+      },
+      "scene0039_00-scene0039_01": {
+        "byte_count": 2371494,
+        "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/3rscan/matrix-v1/associations-v2/scene0039_00-scene0039_01.json",
+        "sha256": "87d7084c40207f25ccbda8a2edbfe6292573bf94e704d64912d645387278b449"
+      },
+      "scene0059_00-scene0059_01": {
+        "byte_count": 2485641,
+        "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/3rscan/matrix-v1/associations-v2/scene0059_00-scene0059_01.json",
+        "sha256": "6806401aa7d2e46ea87de49b3c1bd6531ef841089a2148cd2121b469ef29c9f1"
+      },
+      "scene0109_00-scene0109_01": {
+        "byte_count": 1596298,
+        "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/3rscan/matrix-v1/associations-v2/scene0109_00-scene0109_01.json",
+        "sha256": "6cd8d865b2fa81b167efee7cc980e8fed4c570a4cae39ad26aefe270a8581935"
+      },
+      "scene0209_00-scene0209_01": {
+        "byte_count": 2901784,
+        "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/3rscan/matrix-v1/associations-v2/scene0209_00-scene0209_01.json",
+        "sha256": "678781485bf2c9777fb92a3591b6f49e052b11da301d07872586c20798fba6a0"
+      },
+      "scene0279_00-scene0279_01": {
+        "byte_count": 1293183,
+        "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/3rscan/matrix-v1/associations-v2/scene0279_00-scene0279_01.json",
+        "sha256": "40e285f89559b7637b18385711714bdaacd6276f9493d5001feca6b06b431956"
+      }
+    }
+  },
+  "status": "PASS"
+}

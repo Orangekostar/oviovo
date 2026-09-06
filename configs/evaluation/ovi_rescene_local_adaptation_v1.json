@@ -1,0 +1,35 @@
+{
+  "candidate_thresholds": [
+    0.1,
+    0.2,
+    0.3,
+    0.4,
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9
+  ],
+  "config_id": "OVI_RESCENE_LOCAL_ADAPTATION_CONFIG_V1",
+  "decision_result": {
+    "byte_count": 4342,
+    "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-real-evidence/configs/evaluation/results/ovi_rescene_real_evidence/adaptation_decision_v1.json",
+    "sha256": "47bb9c889c96e6ee880148f5345f4141439a8086f45758cd55a6827429b8dc3e"
+  },
+  "matrix_result": {
+    "byte_count": 122496,
+    "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-real-evidence/configs/evaluation/results/ovi_rescene_real_evidence/3rscan_t2_matrix_v1.json",
+    "sha256": "2bb719c6d511387e07228cb0ba3f2faacbf334321f51408b0e7b01c99e1167b4"
+  },
+  "objective": {
+    "metric": "paired_f1",
+    "threshold": "iou_0_50",
+    "tie_breakers": [
+      "paired_precision",
+      "paired_recall",
+      "lower_confidence_threshold"
+    ]
+  },
+  "output": "/home/ww/.config/superpowers/worktrees/ovi-rescene-real-evidence/configs/evaluation/results/ovi_rescene_real_evidence/resolver_tuning_v1.json",
+  "schema_version": 1
+}
