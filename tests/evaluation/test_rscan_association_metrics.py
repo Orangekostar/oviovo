@@ -3,7 +3,17 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from src.evaluation.rscan_association_metrics import evaluate_pair_relations
+from src.evaluation.object_pair_association import ObjectPairPrediction
+from src.evaluation.ovi_pair_views import (
+    OviObjectEntityView,
+    OviObjectPairView,
+    OviObjectVisitView,
+)
+from src.evaluation.rscan_association_metrics import (
+    build_fixed_endpoint_bindings,
+    evaluate_fixed_object_predictions,
+    evaluate_pair_relations,
+)
 from src.evaluation.rscan_gt_instances import (
     GroundTruthInstance,
     GroundTruthPair,
@@ -187,3 +197,253 @@ def test_conditional_recall_excludes_gt_without_method_input_support() -> None:
     assert primary["conditional_ground_truth_edges"] == 2
     assert primary["end_to_end_persistence_recall"] == pytest.approx(2 / 3)
     assert primary["conditional_association_recall"] == pytest.approx(1.0)
+
+
+def _fixed_metric_visit(visit_id: int) -> OviObjectVisitView:
+    points = np.asarray(
+        [
+            [0.00, 0.0, 0.0],
+            [0.05, 0.0, 0.0],
+            [1.00, 0.0, 0.0],
+            [2.00, 0.0, 0.0],
+            [9.00, 0.0, 0.0],
+        ],
+        dtype=np.float32,
+    )
+    entities = tuple(
+        OviObjectEntityView(
+            visit_id=visit_id,
+            entity_id=f"ovimap:{index + 1}",
+            source_instance_id=index + 1,
+            point_indices=np.asarray([index], dtype=np.int64),
+            palette_rgb=(10 + index, 20 + index, 30 + index),
+            semantic_embedding=np.asarray([1.0, 0.0], dtype=np.float32),
+            semantic_label="object",
+            semantic_score=1.0,
+            observation_frame_ids=(0,),
+            observation_boxes_xyxy=((index, 0, index, 0),),
+        )
+        for index in range(5)
+    )
+    return OviObjectVisitView(
+        visit_id=visit_id,
+        scan_id=f"fixed-scan-{visit_id}",
+        frame_count=1,
+        points_xyz=points,
+        palette_rgb_uint8=np.asarray(
+            [[10 + i, 20 + i, 30 + i] for i in range(5)], dtype=np.uint8
+        ),
+        normals_xyz=np.tile(np.asarray([[0.0, 0.0, 1.0]], dtype=np.float32), (5, 1)),
+        normal_valid=np.ones(5, dtype=bool),
+        source_vertex_indices=np.arange(5, dtype=np.int64),
+        source_frame_ids_by_target=np.asarray([10], dtype=np.int64),
+        entity_owner_indices=np.arange(5, dtype=np.int64),
+        entities=entities,
+        camera_rgb_uint8=np.full((5, 3), 128, dtype=np.uint8),
+        appearance_valid=np.ones(5, dtype=bool),
+        appearance_frame_ids=np.zeros(5, dtype=np.int64),
+        appearance_source_frame_ids=np.full(5, 10, dtype=np.int64),
+        appearance_rows=np.zeros(5, dtype=np.int64),
+        appearance_columns=np.arange(5, dtype=np.int64),
+        appearance_camera_depth_m=np.ones(5, dtype=np.float32),
+        appearance_observed_depth_m=np.full(5, 1.01, dtype=np.float32),
+        appearance_depth_residual_m=np.full(5, 0.01, dtype=np.float32),
+        native_manifest_sha256=str(visit_id + 1) * 64,
+        materialized_manifest_sha256=str(visit_id + 3) * 64,
+        source_artifact_sha256={
+            "instance_color_log": "5" * 64,
+            "instance_mesh": "6" * 64,
+            "semantic_features": "7" * 64,
+        },
+        global_alignment_application=(
+            "identity_reference" if visit_id == 0 else "rescan_to_reference_once"
+        ),
+    )
+
+
+def _fixed_metric_pair() -> OviObjectPairView:
+    return OviObjectPairView(
+        pair_id="scene0099_00-scene0099_01",
+        visits=(_fixed_metric_visit(0), _fixed_metric_visit(1)),
+        source_manifest_sha256="a" * 64,
+        global_alignment=np.eye(4),
+    )
+
+
+def _fixed_metric_ground_truth(pair: OviObjectPairView) -> GroundTruthPair:
+    visits = []
+    for visit in pair.visits:
+        visits.append(
+            (
+                GroundTruthInstance(
+                    10,
+                    "chair",
+                    voxelize_points(visit.points_xyz[[0, 1]], voxel_size_m=0.05),
+                ),
+                GroundTruthInstance(
+                    20,
+                    "table",
+                    voxelize_points(visit.points_xyz[[2]], voxel_size_m=0.05),
+                ),
+                GroundTruthInstance(
+                    30,
+                    "cabinet",
+                    voxelize_points(visit.points_xyz[[3]], voxel_size_m=0.05),
+                ),
+                GroundTruthInstance(40, "lamp", frozenset({(400, 400, 400)})),
+            )
+        )
+    rules = IdentityRules.from_official_records(
+        changes={
+            "rigid": [
+                {
+                    "instance_reference": 20,
+                    "instance_rescan": 20,
+                    "symmetry": 0,
+                    "transform": np.eye(4).tolist(),
+                }
+            ],
+            "nonrigid": [],
+            "removed": [],
+        },
+        ambiguity=[],
+    )
+    return GroundTruthPair(
+        pair_id=pair.pair_id,
+        voxel_size_m=0.05,
+        visits=(visits[0], visits[1]),
+        identity_rules=rules,
+    )
+
+
+def _fixed_prediction(
+    pair: OviObjectPairView,
+    prediction_id: str,
+    t0: str,
+    t1: str,
+    score: float,
+) -> ObjectPairPrediction:
+    return ObjectPairPrediction(
+        prediction_id=prediction_id,
+        pair_id=pair.pair_id,
+        method_id="R_obj",
+        t0_entity_id=t0,
+        t1_entity_id=t1,
+        score=score,
+        state="persistent_static",
+    )
+
+
+def test_fixed_endpoint_bindings_preserve_duplicate_candidates_without_forcing_gt() -> (
+    None
+):
+    pair = _fixed_metric_pair()
+    ground_truth = _fixed_metric_ground_truth(pair)
+
+    bindings = build_fixed_endpoint_bindings(
+        pair, ground_truth, support_domain="supported"
+    )
+    primary = bindings.for_threshold(0.50)
+
+    assert [value.assigned_gt_instance_id for value in primary[0]] == [
+        10,
+        10,
+        20,
+        30,
+        None,
+    ]
+    assert primary[0][4].best_gt_instance_id == 10
+    assert primary[0][4].best_iou == 0.0
+    assert bindings.content_sha256() == bindings.content_sha256()
+
+
+def test_fixed_object_metrics_separate_endpoint_reid_duplicate_and_denominators() -> (
+    None
+):
+    pair = _fixed_metric_pair()
+    ground_truth = _fixed_metric_ground_truth(pair)
+    bindings = build_fixed_endpoint_bindings(
+        pair, ground_truth, support_domain="supported"
+    )
+    predictions = (
+        _fixed_prediction(pair, "p0", "ovimap:1", "ovimap:1", 0.95),
+        _fixed_prediction(pair, "p1", "ovimap:2", "ovimap:2", 0.90),
+        _fixed_prediction(pair, "p2", "ovimap:3", "ovimap:4", 0.85),
+        _fixed_prediction(pair, "p3", "ovimap:4", "ovimap:3", 0.80),
+        _fixed_prediction(pair, "p4", "ovimap:5", "ovimap:5", 0.75),
+    )
+
+    result = evaluate_fixed_object_predictions(
+        pair, predictions, ground_truth, bindings, iou_threshold=0.50
+    )
+
+    assert result["binding_sha256"] == bindings.content_sha256()
+    assert result["paired_prediction_count"] == 5
+    assert result["true_positive_count"] == 1
+    assert result["false_positive_count"] == 4
+    assert result["endpoint_failure_count"] == 1
+    assert result["false_reid_count"] == 2
+    assert result["duplicate_count"] == 1
+    assert result["persistent_gt_count"] == 4
+    assert result["representation_conditional_gt_count"] == 3
+    assert result["end_to_end_recall"] == pytest.approx(0.25)
+    assert result["representation_conditional_recall"] == pytest.approx(1 / 3)
+    assert result["support_conditional_recall"] == pytest.approx(1 / 3)
+    assert result["rigid_true_positive_count"] == 0
+    assert result["rigid_gt_count"] == 1
+    assert [row["outcome"] for row in result["outcomes"]] == [
+        "true_positive",
+        "duplicate",
+        "false_reid",
+        "false_reid",
+        "endpoint_failure",
+    ]
+
+
+def test_fixed_bindings_are_reused_when_prediction_subset_changes() -> None:
+    pair = _fixed_metric_pair()
+    ground_truth = _fixed_metric_ground_truth(pair)
+    bindings = build_fixed_endpoint_bindings(pair, ground_truth, support_domain="full")
+    digest = bindings.content_sha256()
+
+    complete = tuple(
+        _fixed_prediction(
+            pair,
+            f"p{index}",
+            f"ovimap:{index + 1}",
+            f"ovimap:{index + 1}",
+            0.9 - index * 0.05,
+        )
+        for index in range(5)
+    )
+    complete_result = evaluate_fixed_object_predictions(
+        pair, complete, ground_truth, bindings
+    )
+    changed = (
+        ObjectPairPrediction(
+            prediction_id="unmatched-t0",
+            pair_id=pair.pair_id,
+            method_id="R_obj",
+            t0_entity_id="ovimap:1",
+            t1_entity_id=None,
+            score=None,
+            state="unmatched_t0",
+        ),
+        ObjectPairPrediction(
+            prediction_id="unmatched-t1",
+            pair_id=pair.pair_id,
+            method_id="R_obj",
+            t0_entity_id=None,
+            t1_entity_id="ovimap:1",
+            score=None,
+            state="unmatched_t1",
+        ),
+        *complete[1:],
+    )
+    changed_result = evaluate_fixed_object_predictions(
+        pair, changed, ground_truth, bindings
+    )
+
+    assert bindings.content_sha256() == digest
+    assert complete_result["binding_sha256"] == digest
+    assert changed_result["binding_sha256"] == digest

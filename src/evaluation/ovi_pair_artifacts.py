@@ -35,6 +35,8 @@ _PLY_DTYPE = np.dtype(
         ("appearance_source_frame_id", "<i4"),
         ("appearance_row", "<i4"),
         ("appearance_column", "<i4"),
+        ("appearance_camera_depth_m", "<f4"),
+        ("appearance_observed_depth_m", "<f4"),
         ("appearance_depth_residual_m", "<f4"),
         ("source_vertex_index", "<u4"),
     ]
@@ -122,6 +124,8 @@ def _write_ply(path: Path, visit: OviObjectVisitView, colors: np.ndarray) -> Non
     )
     records["appearance_row"] = visit.appearance_rows.astype(np.int32)
     records["appearance_column"] = visit.appearance_columns.astype(np.int32)
+    records["appearance_camera_depth_m"] = visit.appearance_camera_depth_m
+    records["appearance_observed_depth_m"] = visit.appearance_observed_depth_m
     records["appearance_depth_residual_m"] = visit.appearance_depth_residual_m
     records["source_vertex_index"] = visit.source_vertex_indices.astype(np.uint32)
     PlyData(
@@ -292,6 +296,8 @@ def export_ovi_object_pair_artifacts(
                     "appearance_source_frame_id",
                     "appearance_row",
                     "appearance_column",
+                    "appearance_camera_depth_m",
+                    "appearance_observed_depth_m",
                     "appearance_depth_residual_m",
                 ],
             },

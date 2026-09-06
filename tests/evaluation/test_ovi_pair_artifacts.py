@@ -72,6 +72,12 @@ def _visit(visit_id: int) -> OviObjectVisitView:
         appearance_source_frame_ids=np.asarray([10, 10, -1], dtype=np.int64),
         appearance_rows=np.asarray([0, 1, -1], dtype=np.int64),
         appearance_columns=np.asarray([0, 1, -1], dtype=np.int64),
+        appearance_camera_depth_m=np.asarray(
+            [1.0, 1.0, np.nan], dtype=np.float32
+        ),
+        appearance_observed_depth_m=np.asarray(
+            [1.01, 1.02, np.nan], dtype=np.float32
+        ),
         appearance_depth_residual_m=np.asarray([0.01, 0.02, np.nan], dtype=np.float32),
         native_manifest_sha256=str(visit_id + 1) * 64,
         materialized_manifest_sha256=str(visit_id + 3) * 64,
@@ -108,6 +114,15 @@ def test_exports_dense_geometry_and_shared_fixed_camera(
     assert manifest["pair_content_sha256"] == pair.content_sha256()
     assert manifest["geometry"]["xyz_changed"] is False
     assert manifest["preview_camera"]["shared_across_visits_and_modes"] is True
+    assert manifest["rgb"]["pixel_provenance_properties"] == [
+        "appearance_frame_id",
+        "appearance_source_frame_id",
+        "appearance_row",
+        "appearance_column",
+        "appearance_camera_depth_m",
+        "appearance_observed_depth_m",
+        "appearance_depth_residual_m",
+    ]
     assert manifest["visits"][0]["entities"] == [
         {
             "entity_index": 1,
@@ -152,6 +167,14 @@ def test_exports_dense_geometry_and_shared_fixed_camera(
         np.testing.assert_array_equal(rgb["appearance_source_frame_id"], [10, 10, -1])
         np.testing.assert_array_equal(rgb["appearance_row"], [0, 1, -1])
         np.testing.assert_array_equal(rgb["appearance_column"], [0, 1, -1])
+        np.testing.assert_allclose(
+            rgb["appearance_camera_depth_m"][:2], [1.0, 1.0]
+        )
+        np.testing.assert_allclose(
+            rgb["appearance_observed_depth_m"][:2], [1.01, 1.02]
+        )
+        assert np.isnan(rgb["appearance_camera_depth_m"][2])
+        assert np.isnan(rgb["appearance_observed_depth_m"][2])
         np.testing.assert_array_equal(instance["entity_index"], [1, 1, 0])
         for name in ("rgb.png", "instance.png"):
             assert (result.output_dir / f"t{visit_id}/{name}").is_file()
@@ -171,6 +194,12 @@ def test_geometric_sample_uses_adapter_support_without_removing_dense_domain(
         appearance_source_frame_ids=np.asarray([10, -1, -1], dtype=np.int64),
         appearance_rows=np.asarray([0, -1, -1], dtype=np.int64),
         appearance_columns=np.asarray([0, -1, -1], dtype=np.int64),
+        appearance_camera_depth_m=np.asarray(
+            [1.0, np.nan, np.nan], dtype=np.float32
+        ),
+        appearance_observed_depth_m=np.asarray(
+            [1.01, np.nan, np.nan], dtype=np.float32
+        ),
         appearance_depth_residual_m=np.asarray(
             [0.01, np.nan, np.nan], dtype=np.float32
         ),

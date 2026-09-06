@@ -74,5 +74,44 @@
     "checkpoint_sha256": "85ed1aba60320cd19798536b71b91dbc156b7ea60f838832bc0bbbdba131546e",
     "source_commit": "fb2fe42eb8f1e926567c48eea9acb874e608ee10"
   },
+  "association": {
+    "protocol_id": "RSCAN_T2_FIXED_OBJECT_ASSOCIATION_V1",
+    "minimum_match_scores": {
+      "G_full": 0.5,
+      "G_supported": 0.5,
+      "F_obj": 0.5,
+      "R_obj": 0.5
+    },
+    "centroid_scale_m": 2.0,
+    "static_centroid_tolerance_m": 0.2,
+    "native_sampler_seed": 45,
+    "native_sampler_mode": "train",
+    "maximum_source_candidates_per_model_voxel": 8,
+    "independent_feature_pooling": "source_point_weighted_mean",
+    "independent_feature_extraction": "separate_visit_forward_before_temporal_overlay"
+  },
+  "execution": {
+    "device": "cuda:0",
+    "model_python": "/home/ww/miniconda3/envs/persist4d/bin/python",
+    "rescene_checkout": "/home/ww/oviovo_references/evaluation/rescene4d",
+    "concerto_checkpoint": {
+      "path": "/home/ww/.cache/persist4d/concerto/concerto_base.pth",
+      "sha256": "845ec7dec97a5fabff8fadb5d9858ac6734347b612d1a4b574213419c139de07",
+      "byte_count": 433987358
+    },
+    "rescene_checkpoint": {
+      "path": "/home/ww/paper5/checkpoints/rescene4d_concerto_t2_repro.ckpt",
+      "sha256": "85ed1aba60320cd19798536b71b91dbc156b7ea60f838832bc0bbbdba131546e",
+      "byte_count": 754917862
+    },
+    "native_sampler_source": {
+      "path": "/home/ww/paper5/third_party/sonata/sonata/transform.py",
+      "sha256": "cf799a0c2d4d835ee722ef6300b5c1ffc401b12a129bed783c081a6cce23c615",
+      "byte_count": 45906
+    },
+    "d2_mapping_receipt": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_ovimap_smoke_v1.json",
+    "d2_pair_view_receipt": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_pair_view_v1.json",
+    "ground_truth_root": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/gt-v1"
+  },
   "output_root": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer"
 }

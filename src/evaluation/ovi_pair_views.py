@@ -359,6 +359,8 @@ class OviObjectVisitView:
     appearance_source_frame_ids: np.ndarray
     appearance_rows: np.ndarray
     appearance_columns: np.ndarray
+    appearance_camera_depth_m: np.ndarray
+    appearance_observed_depth_m: np.ndarray
     appearance_depth_residual_m: np.ndarray
     native_manifest_sha256: str
     materialized_manifest_sha256: str
@@ -386,6 +388,12 @@ class OviObjectVisitView:
         )
         appearance_rows = _readonly(self.appearance_rows, np.int64, 1)
         appearance_columns = _readonly(self.appearance_columns, np.int64, 1)
+        camera_depth = _readonly(
+            self.appearance_camera_depth_m, np.float32, 1, finite=False
+        )
+        observed_depth = _readonly(
+            self.appearance_observed_depth_m, np.float32, 1, finite=False
+        )
         residual = _readonly(
             self.appearance_depth_residual_m, np.float32, 1, finite=False
         )
@@ -405,6 +413,8 @@ class OviObjectVisitView:
             appearance_source_frames,
             appearance_rows,
             appearance_columns,
+            camera_depth,
+            observed_depth,
             residual,
         )
         if any(item.shape != (count,) for item in vectors):
@@ -468,6 +478,23 @@ class OviObjectVisitView:
             )
         if np.any(~appearance & ~np.isnan(residual)):
             raise OviPairViewError("unsupported appearance residuals must be NaN")
+        if (
+            np.any(~np.isfinite(camera_depth[appearance]))
+            or np.any(~np.isfinite(observed_depth[appearance]))
+            or np.any(camera_depth[appearance] <= 0.0)
+            or np.any(observed_depth[appearance] <= 0.0)
+            or not np.allclose(
+                np.abs(camera_depth[appearance] - observed_depth[appearance]),
+                residual[appearance],
+                rtol=0.0,
+                atol=1e-6,
+            )
+        ):
+            raise OviPairViewError("supported appearance depths are inconsistent")
+        if np.any(~appearance & ~np.isnan(camera_depth)) or np.any(
+            ~appearance & ~np.isnan(observed_depth)
+        ):
+            raise OviPairViewError("unsupported appearance depths must be NaN")
         for values in (
             appearance_frames,
             appearance_source_frames,
@@ -520,6 +547,8 @@ class OviObjectVisitView:
         )
         object.__setattr__(self, "appearance_rows", appearance_rows)
         object.__setattr__(self, "appearance_columns", appearance_columns)
+        object.__setattr__(self, "appearance_camera_depth_m", camera_depth)
+        object.__setattr__(self, "appearance_observed_depth_m", observed_depth)
         object.__setattr__(self, "appearance_depth_residual_m", residual)
         object.__setattr__(self, "native_manifest_sha256", native_hash)
         object.__setattr__(self, "materialized_manifest_sha256", materialized_hash)
@@ -584,6 +613,12 @@ class OviObjectVisitView:
                 "appearance_source_frame_ids": self.appearance_source_frame_ids,
                 "appearance_rows": self.appearance_rows,
                 "appearance_columns": self.appearance_columns,
+                "appearance_camera_depth_m": np.nan_to_num(
+                    self.appearance_camera_depth_m, nan=-1.0
+                ),
+                "appearance_observed_depth_m": np.nan_to_num(
+                    self.appearance_observed_depth_m, nan=-1.0
+                ),
                 "appearance_depth_residual_m": np.nan_to_num(
                     self.appearance_depth_residual_m, nan=-1.0
                 ),
@@ -1231,6 +1266,8 @@ def _build_visit(
     appearance_source_frames = np.full(len(points), -1, dtype=np.int64)
     appearance_rows = np.full(len(points), -1, dtype=np.int64)
     appearance_columns = np.full(len(points), -1, dtype=np.int64)
+    appearance_camera_depth = np.full(len(points), np.nan, dtype=np.float32)
+    appearance_observed_depth = np.full(len(points), np.nan, dtype=np.float32)
     appearance_residual = np.full(len(points), np.nan, dtype=np.float32)
     best_residual = np.full(len(points), np.inf, dtype=np.float64)
     frame_cache: dict[int, tuple[np.ndarray, np.ndarray, np.ndarray]] = {}
@@ -1303,6 +1340,12 @@ def _build_visit(
             )
             appearance_rows[global_indices] = support.rows[support_positions]
             appearance_columns[global_indices] = support.columns[support_positions]
+            appearance_camera_depth[global_indices] = support.camera_depth_m[
+                support_positions
+            ]
+            appearance_observed_depth[global_indices] = support.observed_depth_m[
+                support_positions
+            ]
             appearance_residual[global_indices] = selected_residual
             camera_rgb[global_indices] = support.rgb_uint8[support_positions]
         entity_id = f"ovimap:{instance_id}"
@@ -1341,6 +1384,8 @@ def _build_visit(
         appearance_source_frame_ids=appearance_source_frames,
         appearance_rows=appearance_rows,
         appearance_columns=appearance_columns,
+        appearance_camera_depth_m=appearance_camera_depth,
+        appearance_observed_depth_m=appearance_observed_depth,
         appearance_depth_residual_m=appearance_residual,
         native_manifest_sha256=loaded.native_manifest_sha256,
         materialized_manifest_sha256=materialized.manifest_sha256,

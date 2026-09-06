@@ -265,6 +265,14 @@ def test_builds_dense_pair_with_unique_ownership_and_source_conservation(
         assert visit.source_vertex_indices.tolist() == [0, 1, 2, 3]
         assert visit.source_frame_ids_by_target.tolist() == [0]
         assert visit.appearance_source_frame_ids.tolist() == [0, 0, 0, -1]
+        np.testing.assert_allclose(
+            visit.appearance_camera_depth_m[:3], [1.0, 1.0, 1.0]
+        )
+        np.testing.assert_allclose(
+            visit.appearance_observed_depth_m[:3], [1.0, 1.0, 1.0]
+        )
+        assert np.isnan(visit.appearance_camera_depth_m[3])
+        assert np.isnan(visit.appearance_observed_depth_m[3])
         assert set(visit.source_artifact_sha256) == {
             "instance_mesh",
             "semantic_features",
