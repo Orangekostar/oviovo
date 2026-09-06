@@ -144,6 +144,7 @@ def test_resolver_effect_csv_is_stable_and_refuses_overwrite(tmp_path: Path) -> 
 
     write_resolver_effect_csv(output, rows)
 
+    assert b"\r\n" not in output.read_bytes()
     with output.open(newline="", encoding="utf-8") as stream:
         loaded = list(csv.DictReader(stream))
     assert loaded[0]["pair_id"] == "pair-a"
@@ -267,6 +268,7 @@ def test_fixed_threshold_transfer_csv_preserves_null_reason(tmp_path: Path) -> N
 
     write_fixed_threshold_transfer_csv(output, rows)
 
+    assert b"\r\n" not in output.read_bytes()
     with output.open(newline="", encoding="utf-8") as stream:
         loaded = list(csv.DictReader(stream))
     macro = next(

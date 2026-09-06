@@ -403,7 +403,9 @@ def write_fixed_threshold_transfer_csv(
             suffix=".tmp",
             delete=False,
         ) as stream:
-            writer = csv.DictWriter(stream, fieldnames=_FIXED_TRANSFER_FIELDS)
+            writer = csv.DictWriter(
+                stream, fieldnames=_FIXED_TRANSFER_FIELDS, lineterminator="\n"
+            )
             writer.writeheader()
             for row in values:
                 writer.writerow(
@@ -568,7 +570,9 @@ def write_resolver_effect_csv(
         with os.fdopen(
             descriptor, "w", encoding="utf-8", newline=""
         ) as stream:
-            writer = csv.DictWriter(stream, fieldnames=_EFFECT_FIELDS)
+            writer = csv.DictWriter(
+                stream, fieldnames=_EFFECT_FIELDS, lineterminator="\n"
+            )
             writer.writeheader()
             for row in values:
                 writer.writerow(
