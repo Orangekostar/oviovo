@@ -4,9 +4,9 @@
     "does_not_establish": "held-out D2_EVAL performance, continuous-motion mapping, or recovery quality outside explicitly observed GT and visibility domains",
     "establishes": "measured C0/C1/C2 recovery and O1/O2 oracle diagnosis on the frozen D2_DEV pair with transformed-point t1 visibility"
   },
-  "config_sha256": "2da19cf2271c1d2a159b1d509c104b9e951284842cc15243fdc8f4a164d29689",
+  "config_sha256": "6442aa687d0b5fa6adb3c945323250d5cc69fa2c8ea12a86398093374c6f0429",
   "domain_id": "D2_OVI_RECONSTRUCTION",
-  "evaluated_commit": "de7c841ccb81edb8ff0488e7eabe01257d0047ad",
+  "evaluated_commit": "048d2edabaceb8482b9cff65d381c7eb23ef623c",
   "implementation_sources": {
     "metrics": {
       "byte_count": 11857,
@@ -50,17 +50,17 @@
     "adaptation_decision": {
       "byte_count": 5548,
       "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/adaptation_decision_v2.json",
-      "sha256": "e7807a68f7cce22668eaeb901b29f63cc00d2e13bc53ecae07a43be835a1c9e8"
+      "sha256": "fb7f2203c678bf3b6906ef634652834cbfe0a2264dec73b3b2dd942b6770d23b"
     },
     "completion_csv": {
       "byte_count": 2879,
       "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/completion_oracles.csv",
-      "sha256": "989fb5b858ee54533be472133035a5fa749d7b839ef01d8c82dc67664631da9c"
+      "sha256": "3bb72e859e584718ae6178e6afb19a47aca0a218e370522ae73742e9d7f53acb"
     },
     "config": {
       "byte_count": 4942,
       "path": "configs/evaluation/ovi_rescene_object_recovery_v1.json",
-      "sha256": "2da19cf2271c1d2a159b1d509c104b9e951284842cc15243fdc8f4a164d29689"
+      "sha256": "6442aa687d0b5fa6adb3c945323250d5cc69fa2c8ea12a86398093374c6f0429"
     },
     "d2_forward_arrays": {
       "byte_count": 28400149,
@@ -78,9 +78,9 @@
       "sha256": "44fc7bcd010f4a678584af7398c433e484bb638219d12b28a47edc14089872a6"
     },
     "d2_pair_receipt": {
-      "byte_count": 7632,
+      "byte_count": 7825,
       "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_pair_view_v1.json",
-      "sha256": "857d851c9b0bb9317f7bc117ce7fe938149297901f130589f1e9684d9cffd5f6"
+      "sha256": "db27af0ca02e360994ffac42b094cc31f06d12f416fae2d42378cda4c7fc1746"
     },
     "ground_truth_manifest": {
       "byte_count": 2418,
@@ -106,18 +106,18 @@
       "baseline_surface_f_score": 0.4420202592618828,
       "baseline_surface_precision": 0.99967958987504,
       "baseline_surface_recall": 0.28373954165150966,
-      "config_sha256": "2da19cf2271c1d2a159b1d509c104b9e951284842cc15243fdc8f4a164d29689",
+      "config_sha256": "6442aa687d0b5fa6adb3c945323250d5cc69fa2c8ea12a86398093374c6f0429",
       "current_object_precision": 0.9996626180836707,
       "current_object_recall": 0.2694616224081484,
       "deleted_baseline_voxel_count": 0,
       "deleted_correct_baseline_voxel_count": 0,
-      "evaluated_commit": "de7c841ccb81edb8ff0488e7eabe01257d0047ad",
+      "evaluated_commit": "048d2edabaceb8482b9cff65d381c7eb23ef623c",
       "grouping_variant": "U0",
       "historical_unevaluable_voxel_count": 70,
       "local_manifest": {
         "byte_count": 1669,
         "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-recovery-v1/scene0109_00-scene0109_01/C0/manifest.json",
-        "sha256": "a000820b22b4c621df4ef602595d16fb2472724b8f7ef410b282e6c386d68484"
+        "sha256": "1187d7abdc2d0fee03ed18e9c4bf8620bebcb588374974f8c2982f257e50e218"
       },
       "mode": "method",
       "new_correct_surface_voxel_count": 0,
@@ -191,18 +191,18 @@
       "baseline_surface_f_score": 0.441957645725618,
       "baseline_surface_precision": 0.9990393852065321,
       "baseline_surface_recall": 0.28373954165150966,
-      "config_sha256": "2da19cf2271c1d2a159b1d509c104b9e951284842cc15243fdc8f4a164d29689",
+      "config_sha256": "6442aa687d0b5fa6adb3c945323250d5cc69fa2c8ea12a86398093374c6f0429",
       "current_object_precision": 0.998989558773998,
       "current_object_recall": 0.26973444889050563,
       "deleted_baseline_voxel_count": 51,
       "deleted_correct_baseline_voxel_count": 0,
-      "evaluated_commit": "de7c841ccb81edb8ff0488e7eabe01257d0047ad",
+      "evaluated_commit": "048d2edabaceb8482b9cff65d381c7eb23ef623c",
       "grouping_variant": "U3",
       "historical_unevaluable_voxel_count": 68,
       "local_manifest": {
         "byte_count": 2897,
         "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-recovery-v1/scene0109_00-scene0109_01/C1/manifest.json",
-        "sha256": "e979dc68069c8746b6b76dd1e37830573e8b7322fdaa84acf6777f48ced44984"
+        "sha256": "4f53a3ce5c1fd40da81e24df886bca8c710eee1ed161e93ef325c48de2096877"
       },
       "mode": "method",
       "new_correct_surface_voxel_count": 3,
@@ -285,18 +285,18 @@
       "baseline_surface_f_score": 0.4420202592618828,
       "baseline_surface_precision": 0.99967958987504,
       "baseline_surface_recall": 0.28373954165150966,
-      "config_sha256": "2da19cf2271c1d2a159b1d509c104b9e951284842cc15243fdc8f4a164d29689",
+      "config_sha256": "6442aa687d0b5fa6adb3c945323250d5cc69fa2c8ea12a86398093374c6f0429",
       "current_object_precision": 0.9996626180836707,
       "current_object_recall": 0.2694616224081484,
       "deleted_baseline_voxel_count": 0,
       "deleted_correct_baseline_voxel_count": 0,
-      "evaluated_commit": "de7c841ccb81edb8ff0488e7eabe01257d0047ad",
+      "evaluated_commit": "048d2edabaceb8482b9cff65d381c7eb23ef623c",
       "grouping_variant": "U3",
       "historical_unevaluable_voxel_count": 70,
       "local_manifest": {
         "byte_count": 1710,
         "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-recovery-v1/scene0109_00-scene0109_01/C2/manifest.json",
-        "sha256": "7e88c2358ccc97726c325f9de9ce4bd33f1bc85f82dbe0667be2c108f8a41696"
+        "sha256": "e7d70eb03356bdcd6cd5dbc063490048b5f0158fd59115c826f7aa6165b64644"
       },
       "mode": "method",
       "new_correct_surface_voxel_count": 0,
@@ -372,18 +372,18 @@
       "baseline_surface_f_score": 0.44198895027624313,
       "baseline_surface_precision": 0.9993593850096092,
       "baseline_surface_recall": 0.28373954165150966,
-      "config_sha256": "2da19cf2271c1d2a159b1d509c104b9e951284842cc15243fdc8f4a164d29689",
+      "config_sha256": "6442aa687d0b5fa6adb3c945323250d5cc69fa2c8ea12a86398093374c6f0429",
       "current_object_precision": 0.9993254637436763,
       "current_object_recall": 0.2694616224081484,
       "deleted_baseline_voxel_count": 5,
       "deleted_correct_baseline_voxel_count": 0,
-      "evaluated_commit": "de7c841ccb81edb8ff0488e7eabe01257d0047ad",
+      "evaluated_commit": "048d2edabaceb8482b9cff65d381c7eb23ef623c",
       "grouping_variant": "U3",
       "historical_unevaluable_voxel_count": 68,
       "local_manifest": {
         "byte_count": 1690,
         "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-recovery-v1/scene0109_00-scene0109_01/O1/manifest.json",
-        "sha256": "b0c8ae049b81ec3d57474b79219eafe5f5f5a4475d36b81b221eb5344ed4e8a9"
+        "sha256": "4d69574d168ba7f41af72823b7f2c1b769afe1fec0d2f08d583027981c051d37"
       },
       "mode": "oracle",
       "new_correct_surface_voxel_count": 0,
@@ -457,18 +457,18 @@
       "baseline_surface_f_score": 0.44198895027624313,
       "baseline_surface_precision": 0.9993593850096092,
       "baseline_surface_recall": 0.28373954165150966,
-      "config_sha256": "2da19cf2271c1d2a159b1d509c104b9e951284842cc15243fdc8f4a164d29689",
+      "config_sha256": "6442aa687d0b5fa6adb3c945323250d5cc69fa2c8ea12a86398093374c6f0429",
       "current_object_precision": 0.9993254637436763,
       "current_object_recall": 0.2694616224081484,
       "deleted_baseline_voxel_count": 5,
       "deleted_correct_baseline_voxel_count": 0,
-      "evaluated_commit": "de7c841ccb81edb8ff0488e7eabe01257d0047ad",
+      "evaluated_commit": "048d2edabaceb8482b9cff65d381c7eb23ef623c",
       "grouping_variant": "U3",
       "historical_unevaluable_voxel_count": 65,
       "local_manifest": {
         "byte_count": 1690,
         "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-recovery-v1/scene0109_00-scene0109_01/O2/manifest.json",
-        "sha256": "ef327b5f018e1329190a52ef37c1670a2ed60cca1fa20736755b587fbd1cf2a1"
+        "sha256": "021468d3f5366cd7b3b1ba40eea93463a61c143524edd8957a66db8735c9e439"
       },
       "mode": "oracle",
       "new_correct_surface_voxel_count": 0,
