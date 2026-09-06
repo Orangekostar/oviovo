@@ -204,5 +204,5 @@
 - [x] Validate every numeric table cell against machine-readable output and preserve null/status semantics.
 - [x] Run `git diff --check` and all changed-module/direct-dependency tests; run a broader affected-suite regression only for shared contract or serialization changes.
 - [x] Run syntax compilation for every changed Python file and inspect `git status --short` for untracked required artifacts or accidental large files.
-- [ ] Commit results, handoff, and compact index; push `research/ovi-rescene-object-level-transfer` without force.
-- [ ] Compare `git rev-parse HEAD` with `git ls-remote origin refs/heads/research/ovi-rescene-object-level-transfer` and record `UPLOAD_STATUS=VERIFIED` only when identical.
+- [x] Commit results, handoff, and compact index; push `research/ovi-rescene-object-level-transfer` without force.
+- [x] Compare `git rev-parse HEAD` with `git ls-remote origin refs/heads/research/ovi-rescene-object-level-transfer` and record `UPLOAD_STATUS=VERIFIED` only when identical.
