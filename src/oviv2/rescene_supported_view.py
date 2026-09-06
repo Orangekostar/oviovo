@@ -342,9 +342,9 @@ def build_supported_inference_view(
     source_entity_ids = tuple(
         geometry.entity_keys[int(index)][1] for index in contributor_entities
     )
-    supported_entity_indices = set(
+    supported_entity_indices = {
         int(index) for index in geometry.token_entity_indices[kept_adapters]
-    )
+    }
     pair = NeuralSampleMap(
         coordinates_xyzt=geometry.coordinates_xyzt[kept_adapters],
         features=model_input.features[:, 3:9][compact_adapter_to_model],

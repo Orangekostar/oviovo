@@ -347,7 +347,7 @@ def resolve_supported_queries(
                 eligible.setdefault((query_id, visit_id), []).append(record)
 
     top_by_query_visit = {
-        key: sorted(values, key=_edge_order)[0] for key, values in eligible.items()
+        key: min(values, key=_edge_order) for key, values in eligible.items()
     }
     candidates_by_entity: dict[EntityKey, list[tuple[str, ResolverEntityEvidence]]] = {}
     for (query_id, visit_id), values in eligible.items():
@@ -356,7 +356,7 @@ def resolve_supported_queries(
                 (visit_id, record.entity_id), []
             ).append((query_id, record))
     top_by_entity = {
-        key: sorted(values, key=lambda item: _query_order(item, query_scores))[0][0]
+        key: min(values, key=lambda item: _query_order(item, query_scores))[0]
         for key, values in candidates_by_entity.items()
     }
     mutual: dict[tuple[str, int], ResolverEntityEvidence] = {}
