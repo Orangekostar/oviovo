@@ -6,7 +6,7 @@
   },
   "config_sha256": "2da19cf2271c1d2a159b1d509c104b9e951284842cc15243fdc8f4a164d29689",
   "domain_id": "D2_OVI_RECONSTRUCTION",
-  "evaluated_commit": "8e924b7775b3a9416293f0ef7ba70290f39109e8",
+  "evaluated_commit": "de7c841ccb81edb8ff0488e7eabe01257d0047ad",
   "implementation_sources": {
     "metrics": {
       "byte_count": 11857,
@@ -24,9 +24,9 @@
       "sha256": "cc8af961bd5904f660a4f02e47ef58d14d070a3e7e5b5658fc2a964a23f16fc7"
     },
     "runner": {
-      "byte_count": 61195,
+      "byte_count": 61251,
       "path": "scripts/evaluation/run_ovi_rescene_object_recovery.py",
-      "sha256": "d09fe8fa0f81c5be7653a401449842f37e7b6dc340096a17537bc1074332815c"
+      "sha256": "82e4fc3c3fb3095cbd3a993c9ec5e59a9e3825a159ab34f4bbe665413dfc0fc3"
     }
   },
   "pair_content_sha256": "db8c3463022049d4b0bc8e4e2f7259045cc488640e663442dd94e9c556ca9fa0",
@@ -55,7 +55,7 @@
     "completion_csv": {
       "byte_count": 2879,
       "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/completion_oracles.csv",
-      "sha256": "6ae05723abc708840714007745245ec2e14c0ddd9478bc981d17d20154023a80"
+      "sha256": "989fb5b858ee54533be472133035a5fa749d7b839ef01d8c82dc67664631da9c"
     },
     "config": {
       "byte_count": 4942,
@@ -111,7 +111,7 @@
       "current_object_recall": 0.2694616224081484,
       "deleted_baseline_voxel_count": 0,
       "deleted_correct_baseline_voxel_count": 0,
-      "evaluated_commit": "8e924b7775b3a9416293f0ef7ba70290f39109e8",
+      "evaluated_commit": "de7c841ccb81edb8ff0488e7eabe01257d0047ad",
       "grouping_variant": "U0",
       "historical_unevaluable_voxel_count": 70,
       "local_manifest": {
@@ -196,7 +196,7 @@
       "current_object_recall": 0.26973444889050563,
       "deleted_baseline_voxel_count": 51,
       "deleted_correct_baseline_voxel_count": 0,
-      "evaluated_commit": "8e924b7775b3a9416293f0ef7ba70290f39109e8",
+      "evaluated_commit": "de7c841ccb81edb8ff0488e7eabe01257d0047ad",
       "grouping_variant": "U3",
       "historical_unevaluable_voxel_count": 68,
       "local_manifest": {
@@ -290,7 +290,7 @@
       "current_object_recall": 0.2694616224081484,
       "deleted_baseline_voxel_count": 0,
       "deleted_correct_baseline_voxel_count": 0,
-      "evaluated_commit": "8e924b7775b3a9416293f0ef7ba70290f39109e8",
+      "evaluated_commit": "de7c841ccb81edb8ff0488e7eabe01257d0047ad",
       "grouping_variant": "U3",
       "historical_unevaluable_voxel_count": 70,
       "local_manifest": {
@@ -377,13 +377,13 @@
       "current_object_recall": 0.2694616224081484,
       "deleted_baseline_voxel_count": 5,
       "deleted_correct_baseline_voxel_count": 0,
-      "evaluated_commit": "8e924b7775b3a9416293f0ef7ba70290f39109e8",
+      "evaluated_commit": "de7c841ccb81edb8ff0488e7eabe01257d0047ad",
       "grouping_variant": "U3",
       "historical_unevaluable_voxel_count": 68,
       "local_manifest": {
         "byte_count": 1690,
         "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-recovery-v1/scene0109_00-scene0109_01/O1/manifest.json",
-        "sha256": "c89063862802d512db418eee2820105b2c81a0da1a8f634a7aef19aeaa84bcf9"
+        "sha256": "b0c8ae049b81ec3d57474b79219eafe5f5f5a4475d36b81b221eb5344ed4e8a9"
       },
       "mode": "oracle",
       "new_correct_surface_voxel_count": 0,
@@ -462,13 +462,13 @@
       "current_object_recall": 0.2694616224081484,
       "deleted_baseline_voxel_count": 5,
       "deleted_correct_baseline_voxel_count": 0,
-      "evaluated_commit": "8e924b7775b3a9416293f0ef7ba70290f39109e8",
+      "evaluated_commit": "de7c841ccb81edb8ff0488e7eabe01257d0047ad",
       "grouping_variant": "U3",
       "historical_unevaluable_voxel_count": 65,
       "local_manifest": {
         "byte_count": 1690,
         "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-recovery-v1/scene0109_00-scene0109_01/O2/manifest.json",
-        "sha256": "445bb9d2126f7c99e8872c7e4ee14b5c91adee34f6c1ca7a8e71fe564dd870b6"
+        "sha256": "ef327b5f018e1329190a52ef37c1670a2ed60cca1fa20736755b587fbd1cf2a1"
       },
       "mode": "oracle",
       "new_correct_surface_voxel_count": 0,
