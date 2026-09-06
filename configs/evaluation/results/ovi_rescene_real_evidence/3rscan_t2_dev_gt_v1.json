@@ -1,0 +1,73 @@
+{
+  "artifact_id": "RSCAN_T2_DEV_GT_RESULT_V1",
+  "claim_boundary": "development_reproduction_not_unseen_generalization",
+  "eligible_pair_count": 8,
+  "external_artifact_root": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/3rscan/gt-v1",
+  "gt_summary": {
+    "byte_count": 3765,
+    "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/3rscan/gt-v1/summary.json",
+    "sha256": "3497d34127968bde3e45c483e0f3cd4d09930312da205d1e5251f44d1f61a4a3"
+  },
+  "implementation_commit": "a966382c39b249714ff85d297984b40e0de951aa",
+  "instance_counts": {
+    "visit_0": 204,
+    "visit_1": 166
+  },
+  "pair_count": 6,
+  "pairs": [
+    {
+      "ambiguity_group_count": 1,
+      "instance_counts": [43, 31],
+      "pair_id": "scene0029_00-scene0029_01",
+      "removed_count": 1,
+      "voxel_counts": [24476, 15858]
+    },
+    {
+      "ambiguity_group_count": 0,
+      "instance_counts": [39, 38],
+      "pair_id": "scene0039_00-scene0039_01",
+      "removed_count": 0,
+      "voxel_counts": [24514, 24147]
+    },
+    {
+      "ambiguity_group_count": 0,
+      "instance_counts": [43, 26],
+      "pair_id": "scene0059_00-scene0059_01",
+      "removed_count": 4,
+      "voxel_counts": [21377, 15157]
+    },
+    {
+      "ambiguity_group_count": 0,
+      "instance_counts": [14, 14],
+      "pair_id": "scene0109_00-scene0109_01",
+      "removed_count": 0,
+      "voxel_counts": [12606, 11433]
+    },
+    {
+      "ambiguity_group_count": 0,
+      "instance_counts": [27, 28],
+      "pair_id": "scene0209_00-scene0209_01",
+      "removed_count": 5,
+      "voxel_counts": [18620, 19798]
+    },
+    {
+      "ambiguity_group_count": 0,
+      "instance_counts": [38, 29],
+      "pair_id": "scene0279_00-scene0279_01",
+      "removed_count": 5,
+      "voxel_counts": [16000, 15974]
+    }
+  ],
+  "schema_version": 1,
+  "selection_manifest": {
+    "byte_count": 52716,
+    "path": "configs/evaluation/manifests/3rscan_t2_dev_v1.json",
+    "sha256": "f6224c10ea7891dac50baf1a814a44f3a3e54210daaf76fdc6a7df993af67b91"
+  },
+  "status": "PASS",
+  "voxel_counts": {
+    "visit_0": 117593,
+    "visit_1": 102367
+  },
+  "voxel_size_m": 0.05
+}
