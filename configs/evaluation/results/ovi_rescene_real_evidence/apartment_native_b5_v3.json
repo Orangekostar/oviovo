@@ -1,0 +1,79 @@
+{
+  "artifact_id": "OVI_RESCENE_APARTMENT_NATIVE_B5_RESULT_V1",
+  "claim_boundary": "report_only_without_apartment_gt_or_threshold_tuning",
+  "comparison": {
+    "b4": {
+      "raw_count": 120,
+      "state_counts": {
+        "appeared": 36,
+        "persistent_moved": 10,
+        "persistent_static": 8,
+        "removed_candidate": 64,
+        "uncertain": 2
+      },
+      "unique_count": 120
+    },
+    "legacy": {
+      "b4_intersection_count": 5,
+      "b4_only_count": 115,
+      "b5_only_count": 71,
+      "raw_count": 100,
+      "unique_count": 76
+    },
+    "supported": {
+      "b4_intersection_count": 4,
+      "b4_only_count": 116,
+      "b5_only_count": 4,
+      "raw_count": 8,
+      "state_counts": {
+        "persistent_moved": 4,
+        "persistent_static": 4
+      },
+      "unique_count": 8
+    }
+  },
+  "coverage": {
+    "adapter_fraction": 0.9557883393350898,
+    "conditional_query_coverage": 0.08,
+    "entity_fraction": 0.9933774834437086,
+    "model_fraction": 0.9570028639009209,
+    "source_fraction": 0.9743068866226304
+  },
+  "external_artifact_root": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/apartment/report-v3",
+  "implementation_commit": "5d129358491246c0ef63446395b92c3fb276ca10",
+  "input_bindings": {
+    "query_evidence_manifest": {
+      "byte_count": 2323,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/apartment/native-b5/query_evidence.json",
+      "sha256": "300235c33611aafb9788be3e87f92ae2b52d8c3123d86e6932ed4c97238223da"
+    },
+    "supported_input_contract": {
+      "byte_count": 1402,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/apartment/supported-input/input_contract_v3.json",
+      "sha256": "fc964a24062552304c67c1ed66517f2cbb42a510a0203050a8b723dee509b224"
+    }
+  },
+  "pair_sha256": "b75b7a6cb03083e7ab8f3a39d075b52c1162d13d433ac86668c615c6facae4fa",
+  "prediction_sha256": "eab73cfc359e09098d1aea616ed15c2537dced68d38a7a6f1e8fa4e5e5f8f9cd",
+  "report_summary": {
+    "byte_count": 45244,
+    "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/apartment/report-v3/summary.json",
+    "sha256": "9f61d58db8aefb36321142d02d7b3f08e35a5c97becb4f47a3e2ba6194c9b983"
+  },
+  "resolver_diagnostics": {
+    "conflict_query_count": 2,
+    "duplicate_topology_count": 0,
+    "fallback_query_count": 86,
+    "model_collision_count": 4779,
+    "one_sided_query_count": 4
+  },
+  "runtime": {
+    "native_forward_s": 3.8139291699044406,
+    "peak_gpu_memory_bytes": 10968595456,
+    "report_elapsed_s": 1096.49,
+    "report_maximum_rss_bytes": 6582095872
+  },
+  "schema_version": 1,
+  "status": "PASS",
+  "threshold_config_sha256": "ac35ff90f4e1aebad16a417fc25814393f56d1e6609221ac169681caf73b3dab"
+}
