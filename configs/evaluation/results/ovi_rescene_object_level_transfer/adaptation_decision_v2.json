@@ -1,9 +1,9 @@
 {
   "action": "NO_ADAPTATION",
   "artifact_id": "OVI_RESCENE_TRANSFER_ADAPTATION_DECISION_V2",
-  "config_sha256": "229982f717a62a4c2a83ce970f3e312ce28aa08ab0ca05187fa7e16e29f76476",
-  "d1_cpu_runtime_s": 4.059132006950676,
-  "evaluated_commit": "8bbe89f8f2ac1056a5ccd759e4648997ab3c3214",
+  "config_sha256": "67f0d6e276fda76f0b63e8547446d3679eef41ccbb2230e393aeb6795fc4189b",
+  "d1_cpu_runtime_s": 6.282477683853358,
+  "evaluated_commit": "d295568fea0d5a2abee2775a577964fae12589bf",
   "evidence": {
     "domains": {
       "D0_NATIVE_PROCESSED": {
@@ -83,14 +83,14 @@
       "sha256": "44fc7bcd010f4a678584af7398c433e484bb638219d12b28a47edc14089872a6"
     },
     "d2_pair_receipt": {
-      "byte_count": 7632,
+      "byte_count": 7825,
       "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_pair_view_v1.json",
-      "sha256": "857d851c9b0bb9317f7bc117ce7fe938149297901f130589f1e9684d9cffd5f6"
+      "sha256": "db27af0ca02e360994ffac42b094cc31f06d12f416fae2d42378cda4c7fc1746"
     },
     "diagnosis_config": {
       "byte_count": 4113,
       "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-real-evidence/configs/evaluation/ovi_rescene_transfer_diagnosis_v1.json",
-      "sha256": "229982f717a62a4c2a83ce970f3e312ce28aa08ab0ca05187fa7e16e29f76476"
+      "sha256": "67f0d6e276fda76f0b63e8547446d3679eef41ccbb2230e393aeb6795fc4189b"
     },
     "ground_truth_manifest": {
       "byte_count": 2418,
@@ -105,7 +105,7 @@
     "per_pair_metrics": {
       "byte_count": 6622,
       "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/per_pair_metrics.csv",
-      "sha256": "5433ae8049a5e699e574d416dd32fa163b5af778e49df000af096e0a91c375b2"
+      "sha256": "1abc51730ff6f2ea2ad01bdb495efd77acf2b9bb529f313f1eff9d55a3c436e8"
     },
     "selection_manifest": {
       "byte_count": 79594,
