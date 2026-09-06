@@ -4,6 +4,7 @@ import pytest
 
 from scripts.evaluation.decide_ovi_rescene_adaptation import (
     AdaptationDecisionError,
+    build_transfer_evidence_from_rows,
     decide_adaptation,
     decide_transfer_adaptation,
 )
@@ -187,6 +188,25 @@ def test_transfer_gate_adapts_decoder_for_d2_only_raw_query_degradation() -> Non
     assert decision["selected_rule"] == "d2_raw_query_domain_gap"
 
 
+def test_transfer_gate_does_not_call_shared_raw_weakness_a_d2_domain_gap() -> None:
+    evidence = _transfer_evidence()
+    for domain_id in (
+        "D0_NATIVE_PROCESSED",
+        "D1_NATIVE_SENSOR_SUPPORT",
+        "D2_OVI_RECONSTRUCTION",
+    ):
+        evidence["domains"][domain_id].update(
+            raw_nonempty_fraction=0.20,
+            confident_query_fraction=0.05,
+            fixed_pool_association_f1=0.65,
+        )
+
+    decision = decide_transfer_adaptation(evidence, _transfer_thresholds())
+
+    assert decision["action"] == "NO_ADAPTATION"
+    assert decision["selected_rule"] == "no_actionable_transfer_gap"
+
+
 def test_transfer_gate_repairs_resolver_when_raw_and_proposals_are_usable() -> None:
     evidence = _transfer_evidence()
     evidence["domains"]["D2_OVI_RECONSTRUCTION"].update(
@@ -215,3 +235,61 @@ def test_transfer_gate_repairs_proposals_before_considering_decoder_adaptation()
 
     assert decision["action"] == "UPSTREAM_PROPOSAL_GROUPING_REPAIR"
     assert decision["selected_rule"] == "d2_proposal_limited"
+
+
+def test_transfer_evidence_is_derived_from_same_uuid_resolver_rows() -> None:
+    rows = tuple(
+        {
+            "pair_id": "pair-a",
+            "domain_id": domain_id,
+            "status": "MEASURED",
+            "method_id": method_id,
+            "sensor_support_fraction": support,
+            "raw_nonempty_fraction": raw,
+            "confident_query_fraction": confident,
+            "proposal_representation_coverage": proposal,
+            "association_f1": association,
+        }
+        for domain_id, method_id, support, raw, confident, proposal, association in (
+            ("D0_NATIVE_PROCESSED", "R_legacy", 1.0, 0.9, 0.7, 0.8, 0.6),
+            ("D1_NATIVE_SENSOR_SUPPORT", "R_legacy", 0.7, 0.8, 0.6, 0.7, 0.5),
+            ("D2_OVI_RECONSTRUCTION", "R_obj", 0.6, 0.7, 0.5, 0.4, 0.3),
+        )
+    )
+
+    evidence = build_transfer_evidence_from_rows(rows)
+
+    assert evidence == {
+        "schema_version": 2,
+        "pair_scope": "IDENTICAL_UUID_PAIRS",
+        "domains": {
+            "D0_NATIVE_PROCESSED": {
+                "status": "MEASURED",
+                "sensor_support_fraction": 1.0,
+                "raw_nonempty_fraction": 0.9,
+                "confident_query_fraction": 0.7,
+                "proposal_representation_coverage": 0.8,
+                "fixed_pool_association_f1": 0.6,
+            },
+            "D1_NATIVE_SENSOR_SUPPORT": {
+                "status": "MEASURED",
+                "sensor_support_fraction": 0.7,
+                "raw_nonempty_fraction": 0.8,
+                "confident_query_fraction": 0.6,
+                "proposal_representation_coverage": 0.7,
+                "fixed_pool_association_f1": 0.5,
+            },
+            "D2_OVI_RECONSTRUCTION": {
+                "status": "MEASURED",
+                "sensor_support_fraction": 0.6,
+                "raw_nonempty_fraction": 0.7,
+                "confident_query_fraction": 0.5,
+                "proposal_representation_coverage": 0.4,
+                "fixed_pool_association_f1": 0.3,
+            },
+        },
+    }
+
+    mixed = tuple({**row, "pair_id": "pair-b"} if index == 2 else row for index, row in enumerate(rows))
+    with pytest.raises(AdaptationDecisionError, match="same UUID"):
+        build_transfer_evidence_from_rows(mixed)

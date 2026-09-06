@@ -245,6 +245,102 @@ def _validated_transfer_thresholds(
     }
 
 
+def build_transfer_evidence_from_rows(
+    rows: tuple[Mapping[str, object], ...],
+) -> dict[str, object]:
+    """Select the preregistered resolver rows from one identical-UUID matrix."""
+
+    if not isinstance(rows, tuple) or not rows:
+        raise AdaptationDecisionError("transfer metric rows must be a non-empty tuple")
+    required = {
+        "pair_id",
+        "domain_id",
+        "status",
+        "method_id",
+        "sensor_support_fraction",
+        "raw_nonempty_fraction",
+        "confident_query_fraction",
+        "proposal_representation_coverage",
+        "association_f1",
+    }
+    if any(not isinstance(row, Mapping) or not required.issubset(row) for row in rows):
+        raise AdaptationDecisionError("transfer metric row schema is invalid")
+    pair_ids = {row.get("pair_id") for row in rows}
+    if len(pair_ids) != 1 or any(
+        not isinstance(pair_id, str) or not pair_id for pair_id in pair_ids
+    ):
+        raise AdaptationDecisionError("transfer metric rows must use the same UUID pair")
+    resolver_methods = {
+        "D0_NATIVE_PROCESSED": "R_legacy",
+        "D1_NATIVE_SENSOR_SUPPORT": "R_legacy",
+        "D2_OVI_RECONSTRUCTION": "R_obj",
+    }
+    shared_fields = (
+        "status",
+        "sensor_support_fraction",
+        "raw_nonempty_fraction",
+        "confident_query_fraction",
+        "proposal_representation_coverage",
+    )
+    domains: dict[str, dict[str, object]] = {}
+    for domain_id in _TRANSFER_DOMAINS:
+        domain_rows = tuple(row for row in rows if row.get("domain_id") == domain_id)
+        if not domain_rows:
+            raise AdaptationDecisionError(f"{domain_id} transfer metric row is missing")
+        reference = domain_rows[0]
+        if any(
+            any(row.get(field) != reference.get(field) for field in shared_fields)
+            for row in domain_rows[1:]
+        ):
+            raise AdaptationDecisionError(
+                f"{domain_id} shared transfer metrics are inconsistent"
+            )
+        selected = tuple(
+            row
+            for row in domain_rows
+            if row.get("method_id") == resolver_methods[domain_id]
+        )
+        if len(selected) != 1:
+            raise AdaptationDecisionError(
+                f"{domain_id} resolver metric row is missing or duplicated"
+            )
+        row = selected[0]
+        if row.get("status") != "MEASURED":
+            domains[domain_id] = {
+                "status": "MISSING_ASSET",
+                **{field: None for field in _TRANSFER_METRICS},
+            }
+            continue
+        domains[domain_id] = {
+            "status": "MEASURED",
+            "sensor_support_fraction": _metric(
+                row.get("sensor_support_fraction"),
+                label=f"{domain_id}.sensor_support_fraction",
+            ),
+            "raw_nonempty_fraction": _metric(
+                row.get("raw_nonempty_fraction"),
+                label=f"{domain_id}.raw_nonempty_fraction",
+            ),
+            "confident_query_fraction": _metric(
+                row.get("confident_query_fraction"),
+                label=f"{domain_id}.confident_query_fraction",
+            ),
+            "proposal_representation_coverage": _metric(
+                row.get("proposal_representation_coverage"),
+                label=f"{domain_id}.proposal_representation_coverage",
+            ),
+            "fixed_pool_association_f1": _metric(
+                row.get("association_f1"),
+                label=f"{domain_id}.association_f1",
+            ),
+        }
+    return {
+        "schema_version": 2,
+        "pair_scope": "IDENTICAL_UUID_PAIRS",
+        "domains": domains,
+    }
+
+
 def decide_transfer_adaptation(
     evidence: Mapping[str, object], thresholds: Mapping[str, object]
 ) -> dict[str, object]:
@@ -257,6 +353,16 @@ def decide_transfer_adaptation(
     d0 = measured["D0_NATIVE_PROCESSED"]
     d1 = measured["D1_NATIVE_SENSOR_SUPPORT"]
     d2 = measured["D2_OVI_RECONSTRUCTION"]
+    reference_domains = [d0]
+    if d1["status"] == "MEASURED":
+        reference_domains.append(d1)
+    reference_raw_usable = all(
+        domain["raw_nonempty_fraction"]
+        >= frozen["minimum_d2_raw_nonempty_fraction"]
+        and domain["confident_query_fraction"]
+        >= frozen["minimum_d2_confident_query_fraction"]
+        for domain in reference_domains
+    )
 
     if d0["status"] != "MEASURED" or d2["status"] != "MEASURED":
         action = "NO_ADAPTATION"
@@ -282,10 +388,13 @@ def decide_transfer_adaptation(
         action = "UPSTREAM_PROPOSAL_GROUPING_REPAIR"
         rule = "d2_proposal_limited"
     elif (
-        d2["raw_nonempty_fraction"]
-        < frozen["minimum_d2_raw_nonempty_fraction"]
-        or d2["confident_query_fraction"]
-        < frozen["minimum_d2_confident_query_fraction"]
+        reference_raw_usable
+        and (
+            d2["raw_nonempty_fraction"]
+            < frozen["minimum_d2_raw_nonempty_fraction"]
+            or d2["confident_query_fraction"]
+            < frozen["minimum_d2_confident_query_fraction"]
+        )
     ):
         action = "ADAPT_DECODER_MASK_HEAD"
         rule = "d2_raw_query_domain_gap"
@@ -549,6 +658,7 @@ def main(argv: list[str] | None = None) -> int:
 __all__ = [
     "AdaptationDecisionError",
     "build_measured_evidence",
+    "build_transfer_evidence_from_rows",
     "decide_adaptation",
     "decide_from_config",
     "decide_transfer_adaptation",
