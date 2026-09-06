@@ -178,11 +178,11 @@
 - Consumes: one-to-one composite objects, G/R/GT-assisted relations, estimated or GT object transforms, t1 visibility queried at transformed candidate positions, and evaluator-only GT surfaces.
 - Produces: C0/C1/C2/O1/O2 maps and a funnel from paired objects through rigid eligibility, registration, opportunity, compatibility, visibility, and new GT coverage.
 
-- [ ] Write failing synthetic SE(3) tests for official row-vector to internal column-vector conversion and normal rotation without translation.
-- [ ] Write failing tests showing transformed occupied/free points are rejected, unknown/occluded points remain candidates, and a moved object's old pose is not appended to current geometry.
-- [ ] Write failing metric tests for opportunity, new correct/wrong surface, deleted correct baseline surface, total P/R/F, and unevaluable historical surface.
-- [ ] Run `python -m pytest -q tests/evaluation/test_run_ovi_rescene_object_recovery.py tests/oviv2/test_two_visit_registration.py tests/oviv2/test_two_visit_dense_recovery.py` and confirm expected failures.
-- [ ] Add a composite-object 1:1 registration contract and an explicit oracle source type; apply identical eligibility rules to C1/C2/O1 and reserve GT transforms for O2.
+- [x] Write failing synthetic SE(3) tests for official row-vector to internal column-vector conversion and normal rotation without translation.
+- [x] Write failing tests showing transformed occupied/free points are rejected, unknown/occluded points remain candidates, and a moved object's old pose is not appended to current geometry.
+- [x] Write failing metric tests for opportunity, new correct/wrong surface, deleted correct baseline surface, total P/R/F, and unevaluable historical surface.
+- [x] Run `python -m pytest -q tests/evaluation/test_run_ovi_rescene_object_recovery.py tests/oviv2/test_two_visit_registration.py tests/oviv2/test_two_visit_dense_recovery.py` and confirm expected failures.
+- [x] Add a composite-object 1:1 registration contract and an explicit oracle source type; apply identical eligibility rules to C1/C2/O1 and reserve GT transforms for O2.
 - [ ] Run C0/C1/C2/O1/O2 on every D2 pair with rigid GT opportunity, preserving negative and null outcomes.
 - [ ] Verify with `python -m pytest -q tests/evaluation/test_run_ovi_rescene_object_recovery.py tests/oviv2/test_two_visit_registration.py tests/oviv2/test_two_visit_dense_recovery.py tests/oviv2/test_two_visit_current_map.py`.
 - [ ] Commit Task 7 code, tests, maps/indexes, and measured oracle table.

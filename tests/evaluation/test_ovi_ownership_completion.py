@@ -8,6 +8,7 @@ from src.evaluation.ovi_ownership_completion import (
     build_dense_ownership_readout,
     build_ownership_readout,
     evaluate_completion_surface,
+    evaluate_completion_surface_v2,
 )
 from src.evaluation.ovi_pair_views import (
     OviObjectEntityView,
@@ -186,3 +187,66 @@ def test_completion_surface_uses_only_actual_historical_and_target_shapes() -> N
     assert result["precision"] == pytest.approx(0.5)
     assert result["recall"] == pytest.approx(1.0)
     assert result["f_score"] == pytest.approx(2 / 3)
+
+
+def test_completion_surface_v2_preserves_positive_negative_and_unknown_domains() -> None:
+    baseline = np.asarray(
+        [[0.01, 0.0, 0.0], [0.06, 0.0, 0.0], [0.11, 0.0, 0.0]],
+        dtype=np.float32,
+    )
+    recovered = np.asarray(
+        [[0.01, 0.0, 0.0], [0.16, 0.0, 0.0], [0.21, 0.0, 0.0], [0.26, 0.0, 0.0]],
+        dtype=np.float32,
+    )
+    target = np.asarray(
+        [[0.01, 0.0, 0.0], [0.06, 0.0, 0.0], [0.16, 0.0, 0.0], [0.31, 0.0, 0.0]],
+        dtype=np.float32,
+    )
+    candidates = np.asarray(
+        [[0.16, 0.0, 0.0], [0.36, 0.0, 0.0]], dtype=np.float32
+    )
+    known_negative = np.asarray(
+        [[0.11, 0.0, 0.0], [0.21, 0.0, 0.0], [0.41, 0.0, 0.0]],
+        dtype=np.float32,
+    )
+
+    result = evaluate_completion_surface_v2(
+        baseline_xyz=baseline,
+        recovered_xyz=recovered,
+        target_xyz=target,
+        historical_candidate_xyz=candidates,
+        known_negative_xyz=known_negative,
+        voxel_size_m=0.05,
+    )
+
+    assert result["opportunity_voxel_count"] == 1
+    assert result["historical_unevaluable_voxel_count"] == 1
+    assert result["new_correct_surface_voxel_count"] == 1
+    assert result["new_wrong_surface_voxel_count"] == 1
+    assert result["new_unevaluable_surface_voxel_count"] == 1
+    assert result["deleted_baseline_voxel_count"] == 2
+    assert result["deleted_correct_baseline_voxel_count"] == 1
+    assert result["baseline_total"]["true_positive_voxel_count"] == 2
+    assert result["baseline_total"]["false_positive_voxel_count"] == 1
+    assert result["baseline_total"]["precision"] == pytest.approx(2 / 3)
+    assert result["baseline_total"]["recall"] == pytest.approx(0.5)
+    assert result["recovered_total"]["true_positive_voxel_count"] == 2
+    assert result["recovered_total"]["false_positive_voxel_count"] == 1
+    assert result["recovered_total"]["recall"] == pytest.approx(0.5)
+
+
+def test_completion_opportunity_uses_explicit_t1_only_baseline() -> None:
+    candidate = np.asarray([[0.11, 0.0, 0.0]], dtype=np.float32)
+
+    result = evaluate_completion_surface_v2(
+        baseline_xyz=candidate,
+        recovered_xyz=candidate,
+        target_xyz=candidate,
+        historical_candidate_xyz=candidate,
+        opportunity_baseline_xyz=np.empty((0, 3), dtype=np.float32),
+        known_negative_xyz=np.empty((0, 3), dtype=np.float32),
+        voxel_size_m=0.05,
+    )
+
+    assert result["opportunity_voxel_count"] == 1
+    assert result["recovered_opportunity_voxel_count"] == 0

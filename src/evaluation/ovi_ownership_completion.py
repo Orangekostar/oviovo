@@ -211,9 +211,111 @@ def evaluate_completion_surface(
     }
 
 
+def _total_surface_metrics(
+    prediction: set[tuple[int, int, int]],
+    target: set[tuple[int, int, int]],
+    known_negative: set[tuple[int, int, int]],
+) -> dict[str, object]:
+    true_positive = len(prediction & target)
+    false_positive = len(prediction & known_negative)
+    false_negative = len(target - prediction)
+    precision = _ratio(true_positive, true_positive + false_positive)
+    recall = _ratio(true_positive, true_positive + false_negative)
+    f_score = (
+        None
+        if precision is None or recall is None
+        else 0.0
+        if precision + recall == 0.0
+        else 2.0 * precision * recall / (precision + recall)
+    )
+    return {
+        "true_positive_voxel_count": true_positive,
+        "false_positive_voxel_count": false_positive,
+        "false_negative_voxel_count": false_negative,
+        "unevaluable_prediction_voxel_count": len(
+            prediction - target - known_negative
+        ),
+        "precision": precision,
+        "recall": recall,
+        "f_score": f_score,
+    }
+
+
+def evaluate_completion_surface_v2(
+    *,
+    baseline_xyz: object,
+    recovered_xyz: object,
+    target_xyz: object,
+    historical_candidate_xyz: object,
+    opportunity_baseline_xyz: object | None = None,
+    known_negative_xyz: object,
+    voxel_size_m: float = 0.05,
+) -> dict[str, object]:
+    """Evaluate completion with explicit positive, negative, and unknown domains."""
+
+    if (
+        isinstance(voxel_size_m, bool)
+        or not isinstance(voxel_size_m, (int, float))
+        or not math.isfinite(float(voxel_size_m))
+        or float(voxel_size_m) <= 0.0
+    ):
+        raise OwnershipCompletionError("voxel size must be finite and positive")
+    voxel_size = float(voxel_size_m)
+    baseline = _voxels(baseline_xyz, voxel_size_m=voxel_size, label="baseline")
+    recovered = _voxels(recovered_xyz, voxel_size_m=voxel_size, label="recovered")
+    target = _voxels(target_xyz, voxel_size_m=voxel_size, label="target")
+    candidates = _voxels(
+        historical_candidate_xyz,
+        voxel_size_m=voxel_size,
+        label="historical candidates",
+    )
+    opportunity_baseline = (
+        baseline
+        if opportunity_baseline_xyz is None
+        else _voxels(
+            opportunity_baseline_xyz,
+            voxel_size_m=voxel_size,
+            label="opportunity baseline",
+        )
+    )
+    known_negative = _voxels(
+        known_negative_xyz,
+        voxel_size_m=voxel_size,
+        label="known negative surface",
+    )
+    if target & known_negative:
+        raise OwnershipCompletionError("positive and known-negative domains overlap")
+    opportunity = (candidates & target) - opportunity_baseline
+    new_surface = recovered - baseline
+    deleted_baseline = baseline - recovered
+    return {
+        "schema_version": 2,
+        "status": "PASS_NULL_PRESERVING",
+        "voxel_size_m": voxel_size,
+        "target_voxel_count": len(target),
+        "known_negative_voxel_count": len(known_negative),
+        "opportunity_voxel_count": len(opportunity),
+        "recovered_opportunity_voxel_count": len(new_surface & opportunity),
+        "historical_unevaluable_voxel_count": len(
+            candidates - target - known_negative
+        ),
+        "new_surface_voxel_count": len(new_surface),
+        "new_correct_surface_voxel_count": len(new_surface & target),
+        "new_wrong_surface_voxel_count": len(new_surface & known_negative),
+        "new_unevaluable_surface_voxel_count": len(
+            new_surface - target - known_negative
+        ),
+        "deleted_baseline_voxel_count": len(deleted_baseline),
+        "deleted_correct_baseline_voxel_count": len(deleted_baseline & target),
+        "baseline_total": _total_surface_metrics(baseline, target, known_negative),
+        "recovered_total": _total_surface_metrics(recovered, target, known_negative),
+    }
+
+
 __all__ = [
     "OwnershipCompletionError",
     "build_dense_ownership_readout",
     "build_ownership_readout",
     "evaluate_completion_surface",
+    "evaluate_completion_surface_v2",
 ]

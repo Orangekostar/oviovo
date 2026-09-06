@@ -36,7 +36,7 @@ def _entity(
     entity_id: str,
     points: list[list[float]],
     *,
-    label: str = "Chair",
+    label: str | None = "Chair",
     score: float = 0.9,
 ) -> EntityPrediction:
     return EntityPrediction(
@@ -108,6 +108,7 @@ def _registration(
     *,
     transform: np.ndarray | None,
     accepted: bool = True,
+    semantic_label: str | None = "Chair",
 ) -> RegistrationEvidence:
     return RegistrationEvidence(
         method_id=REGISTRATION_METHOD_ID,
@@ -117,7 +118,7 @@ def _registration(
         identity_source=relation.identity_source,
         t0_entity_ids=relation.t0_entity_ids,
         t1_entity_ids=relation.t1_entity_ids,
-        semantic_label="Chair",
+        semantic_label=semantic_label,
         source_points_sha256=point_cloud_sha256(source),
         target_points_sha256=point_cloud_sha256(target),
         source_point_count=len(source),
@@ -294,6 +295,36 @@ def test_occluded_and_unobserved_points_replace_unwarped_b3_history() -> None:
         )
     assert sum(group.output_point_count for group in result.provenance) == 2
     assert np.array_equal(historical_output_points(result, baseline), candidates)
+
+
+def test_unlabeled_composite_registration_recovers_nonobserved_history() -> None:
+    t0, t1, relation, candidates, _ = _moved_fixture()
+    source = t0.snapshot.entities[0].points_xyz
+    target = t1.snapshot.entities[0].points_xyz
+    t0 = _visit(0, [_entity("t0:chair", source.tolist(), label=None)])
+    t1 = _visit(1, [_entity("t1:chair", target.tolist(), label=None)])
+    registration = _registration(
+        relation,
+        source,
+        target,
+        transform=_transform_x(1.0),
+        semantic_label=None,
+    )
+    baseline = _baseline(t0, t1)
+
+    result = recover_dense_history(
+        baseline,
+        t0,
+        t1,
+        (relation,),
+        (registration,),
+        _visibility(candidates, ("occluded", "unobserved")),
+        DenseRecoveryConfig(),
+    )
+
+    assert registration.accepted
+    assert registration.semantic_label is None
+    assert result.recovered_point_count == 2
 
 
 def test_incompatible_candidate_preserves_b3_fallback() -> None:

@@ -441,13 +441,18 @@ def _validate_registration_binding(
         raise ValueError("registration point binding mismatch")
     source_label = source.semantic_label
     target_label = target.semantic_label
+    labels_match = (
+        source_label is not None
+        and target_label is not None
+        and source_label.casefold() == target_label.casefold()
+    )
     if (
-        source_label is None
-        or target_label is None
-        or source_label.casefold() != target_label.casefold()
-        or evidence.semantic_label is None
-        or evidence.semantic_label.casefold() != target_label.casefold()
-    ):
+        labels_match
+        and (
+            evidence.semantic_label is None
+            or evidence.semantic_label.casefold() != target_label.casefold()
+        )
+    ) or (not labels_match and evidence.semantic_label is not None):
         raise ValueError("registration semantic binding mismatch")
 
 

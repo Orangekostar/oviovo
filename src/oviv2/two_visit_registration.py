@@ -16,6 +16,10 @@ from scipy.spatial import cKDTree
 from src.oviv2.two_visit_contracts import PairRelation
 
 REGISTRATION_METHOD_ID = "ovi_two_visit_trimmed_icp_v1"
+ORACLE_REGISTRATION_METHOD_ID = "ovi_two_visit_3rscan_transform_oracle_v1"
+_REGISTRATION_METHOD_IDS = frozenset(
+    {REGISTRATION_METHOD_ID, ORACLE_REGISTRATION_METHOD_ID}
+)
 _SHA256 = re.compile(r"[0-9a-f]{64}")
 _ELIGIBLE_STATES = frozenset({"persistent_static", "persistent_moved"})
 _DEFAULT_RECOVERABLE_LABELS = frozenset(
@@ -119,6 +123,35 @@ def apply_rigid_transform(points_xyz: object, transform: object) -> np.ndarray:
     points = _points(points_xyz, name="points_xyz")
     matrix = validate_rigid_transform(transform)
     result = points @ matrix[:3, :3].T + matrix[:3, 3]
+    result.setflags(write=False)
+    return result
+
+
+def official_row_vector_to_internal_transform(value: object) -> np.ndarray:
+    """Convert one official row-vector SE(3) matrix to the internal convention."""
+
+    raw = np.asarray(value)
+    if raw.dtype.kind == "b":
+        raise TypeError("official row-vector transform must be numeric")
+    try:
+        matrix = np.array(raw, dtype=np.float64, copy=True, order="C")
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise TypeError(
+            "official row-vector transform must be convertible to float64"
+        ) from exc
+    if matrix.shape == (16,):
+        matrix = matrix.reshape(4, 4)
+    if matrix.shape != (4, 4) or not np.all(np.isfinite(matrix)):
+        raise ValueError("official row-vector transform must be a finite 4x4 matrix")
+    return validate_rigid_transform(matrix.T)
+
+
+def apply_rigid_transform_normals(normals_xyz: object, transform: object) -> np.ndarray:
+    """Rotate normals with an internal SE(3) transform, ignoring translation."""
+
+    normals = _points(normals_xyz, name="normals_xyz")
+    matrix = validate_rigid_transform(transform)
+    result = normals @ matrix[:3, :3].T
     result.setflags(write=False)
     return result
 
@@ -231,6 +264,61 @@ class RegistrationConfig:
 
 
 @dataclass(frozen=True, slots=True)
+class OracleTransformSource:
+    """Evaluator-only official 3RScan object-motion source."""
+
+    reference_instance_id: int
+    official_object_reference_to_rescan_row: np.ndarray
+    official_rescan_to_reference_row: np.ndarray
+    source_type: str = "official_3rscan_rigid_object_row_v1"
+
+    def __post_init__(self) -> None:
+        if type(self.reference_instance_id) is not int or self.reference_instance_id <= 0:
+            raise ValueError("reference_instance_id must be a positive integer")
+        if self.source_type != "official_3rscan_rigid_object_row_v1":
+            raise ValueError("oracle transform source type is invalid")
+        object_row = official_row_vector_to_internal_transform(
+            self.official_object_reference_to_rescan_row
+        ).T.copy()
+        global_row = official_row_vector_to_internal_transform(
+            self.official_rescan_to_reference_row
+        ).T.copy()
+        object_row.setflags(write=False)
+        global_row.setflags(write=False)
+        object.__setattr__(
+            self, "official_object_reference_to_rescan_row", object_row
+        )
+        object.__setattr__(self, "official_rescan_to_reference_row", global_row)
+
+    @property
+    def transform_world_from_t0(self) -> np.ndarray:
+        combined_row = (
+            self.official_object_reference_to_rescan_row
+            @ self.official_rescan_to_reference_row
+        )
+        return official_row_vector_to_internal_transform(combined_row)
+
+    def content_sha256(self) -> str:
+        return hashlib.sha256(
+            json.dumps(
+                {
+                    "reference_instance_id": self.reference_instance_id,
+                    "source_type": self.source_type,
+                    "official_object_reference_to_rescan_row": (
+                        self.official_object_reference_to_rescan_row.tolist()
+                    ),
+                    "official_rescan_to_reference_row": (
+                        self.official_rescan_to_reference_row.tolist()
+                    ),
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+                allow_nan=False,
+            ).encode("utf-8")
+        ).hexdigest()
+
+
+@dataclass(frozen=True, slots=True)
 class RegistrationEvidence:
     method_id: str
     config_sha256: str
@@ -269,7 +357,7 @@ class RegistrationEvidence:
             if not isinstance(value, str) or not value.strip():
                 raise ValueError(f"{name} must be non-empty")
             object.__setattr__(self, name, value.strip())
-        if self.method_id != REGISTRATION_METHOD_ID:
+        if self.method_id not in _REGISTRATION_METHOD_IDS:
             raise ValueError("registration method identity is invalid")
         if (
             not isinstance(self.config_sha256, str)
@@ -674,10 +762,11 @@ def _evidence(
     semantic_label: str | None,
     candidate: _Candidate | None,
     reasons: tuple[str, ...],
+    method_id: str = REGISTRATION_METHOD_ID,
 ) -> RegistrationEvidence:
     accepted = not reasons and candidate is not None
     return RegistrationEvidence(
-        method_id=REGISTRATION_METHOD_ID,
+        method_id=method_id,
         config_sha256=config.content_sha256(),
         relation_id=str(relation.temporal_query_id),
         relation_state=relation.state,
@@ -778,7 +867,7 @@ def _quality_reasons(
     return tuple(sorted(reasons))
 
 
-def register_pair_relation(
+def _register_pair_relation(
     relation: PairRelation,
     source_points_xyz: object,
     target_points_xyz: object,
@@ -786,9 +875,8 @@ def register_pair_relation(
     source_semantic_label: str | None,
     target_semantic_label: str | None,
     config: RegistrationConfig,
+    require_semantic_eligibility: bool,
 ) -> RegistrationEvidence:
-    """Estimate one relation transform and return auditable fail-closed evidence."""
-
     if not isinstance(relation, PairRelation):
         raise TypeError("relation must be a PairRelation")
     if not isinstance(config, RegistrationConfig):
@@ -806,13 +894,21 @@ def register_pair_relation(
         len(relation.t0_entity_ids) != 1 or len(relation.t1_entity_ids) != 1
     ):
         early_reasons.add("ineligible_relation_state")
-    if not source_label or not target_label:
-        early_reasons.add("missing_semantic_label")
-    elif source_label.casefold() != target_label.casefold():
-        early_reasons.add("semantic_label_mismatch")
-    allowed = {label.casefold() for label in config.recoverable_semantic_labels}
-    if source_label and source_label.casefold() not in allowed:
-        early_reasons.add("ineligible_semantic_label")
+    if require_semantic_eligibility:
+        if not source_label or not target_label:
+            early_reasons.add("missing_semantic_label")
+        elif source_label.casefold() != target_label.casefold():
+            early_reasons.add("semantic_label_mismatch")
+        allowed = {label.casefold() for label in config.recoverable_semantic_labels}
+        if source_label and source_label.casefold() not in allowed:
+            early_reasons.add("ineligible_semantic_label")
+    semantic_label = (
+        target_label
+        if source_label
+        and target_label
+        and source_label.casefold() == target_label.casefold()
+        else None
+    )
     source_sample = _voxel_sample(source, config) if len(source) else source
     target_sample = _voxel_sample(target, config) if len(target) else target
     if (
@@ -828,7 +924,9 @@ def register_pair_relation(
             target=target,
             source_sample_count=len(source_sample),
             target_sample_count=len(target_sample),
-            semantic_label=target_label or source_label,
+            semantic_label=(target_label or source_label)
+            if require_semantic_eligibility
+            else semantic_label,
             candidate=None,
             reasons=tuple(sorted(early_reasons)),
         )
@@ -850,7 +948,7 @@ def register_pair_relation(
             target=target,
             source_sample_count=len(source_sample),
             target_sample_count=len(target_sample),
-            semantic_label=target_label,
+            semantic_label=semantic_label,
             candidate=None,
             reasons=("degenerate_geometry",),
         )
@@ -907,18 +1005,166 @@ def register_pair_relation(
         target=target,
         source_sample_count=len(source_sample),
         target_sample_count=len(target_sample),
-        semantic_label=target_label,
+        semantic_label=semantic_label,
         candidate=best,
         reasons=reasons,
     )
 
 
+def register_pair_relation(
+    relation: PairRelation,
+    source_points_xyz: object,
+    target_points_xyz: object,
+    *,
+    source_semantic_label: str | None,
+    target_semantic_label: str | None,
+    config: RegistrationConfig,
+) -> RegistrationEvidence:
+    """Estimate one atomic relation with the legacy semantic eligibility gate."""
+
+    return _register_pair_relation(
+        relation,
+        source_points_xyz,
+        target_points_xyz,
+        source_semantic_label=source_semantic_label,
+        target_semantic_label=target_semantic_label,
+        config=config,
+        require_semantic_eligibility=True,
+    )
+
+
+def register_composite_relation(
+    relation: PairRelation,
+    source_points_xyz: object,
+    target_points_xyz: object,
+    *,
+    source_semantic_label: str | None,
+    target_semantic_label: str | None,
+    config: RegistrationConfig,
+) -> RegistrationEvidence:
+    """Estimate one 1:1 composite transform with semantics recorded, not gated."""
+
+    return _register_pair_relation(
+        relation,
+        source_points_xyz,
+        target_points_xyz,
+        source_semantic_label=source_semantic_label,
+        target_semantic_label=target_semantic_label,
+        config=config,
+        require_semantic_eligibility=False,
+    )
+
+
+def register_oracle_pair_relation(
+    relation: PairRelation,
+    source_points_xyz: object,
+    target_points_xyz: object,
+    *,
+    transform_source: OracleTransformSource,
+    source_semantic_label: str | None,
+    target_semantic_label: str | None,
+    config: RegistrationConfig,
+) -> RegistrationEvidence:
+    """Build evaluator-only evidence from a bound official 3RScan transform."""
+
+    if not isinstance(relation, PairRelation):
+        raise TypeError("relation must be a PairRelation")
+    if not isinstance(transform_source, OracleTransformSource):
+        raise TypeError("transform_source must be OracleTransformSource")
+    if not isinstance(config, RegistrationConfig):
+        raise TypeError("config must be a RegistrationConfig")
+    if relation.evidence.get("reference_instance_id") != (
+        transform_source.reference_instance_id
+    ):
+        raise ValueError("oracle transform and relation identity differ")
+    source = _points(source_points_xyz, name="source_points_xyz")
+    target = _points(target_points_xyz, name="target_points_xyz")
+    source_sample = _voxel_sample(source, config) if len(source) else source
+    target_sample = _voxel_sample(target, config) if len(target) else target
+    reasons: set[str] = set()
+    if relation.state not in _ELIGIBLE_STATES or (
+        len(relation.t0_entity_ids) != 1 or len(relation.t1_entity_ids) != 1
+    ):
+        reasons.add("ineligible_relation_state")
+    if (
+        len(source_sample) < config.minimum_sample_points
+        or len(target_sample) < config.minimum_sample_points
+    ):
+        reasons.add("low_support")
+    source_label = (
+        None if source_semantic_label is None else str(source_semantic_label).strip()
+    )
+    target_label = (
+        None if target_semantic_label is None else str(target_semantic_label).strip()
+    )
+    semantic_label = (
+        target_label
+        if source_label
+        and target_label
+        and source_label.casefold() == target_label.casefold()
+        else None
+    )
+    if reasons:
+        return _evidence(
+            relation=relation,
+            config=config,
+            source=source,
+            target=target,
+            source_sample_count=len(source_sample),
+            target_sample_count=len(target_sample),
+            semantic_label=semantic_label,
+            candidate=None,
+            reasons=tuple(sorted(reasons)),
+            method_id=ORACLE_REGISTRATION_METHOD_ID,
+        )
+    source_axes, source_scales, source_valid = _principal_axes(source_sample)
+    target_axes, target_scales, target_valid = _principal_axes(target_sample)
+    del source_axes, target_axes
+    if (
+        not source_valid
+        or not target_valid
+        or source_scales[1] / source_scales[0] < config.minimum_second_singular_ratio
+        or target_scales[1] / target_scales[0] < config.minimum_second_singular_ratio
+    ):
+        reasons.add("degenerate_geometry")
+    candidate = None
+    if not reasons:
+        candidate = _measure_candidate(
+            source_sample,
+            target_sample,
+            transform_source.transform_world_from_t0,
+            transform_source.source_type,
+            0,
+            source_scales,
+            target_scales,
+            config,
+        )
+    return _evidence(
+        relation=relation,
+        config=config,
+        source=source,
+        target=target,
+        source_sample_count=len(source_sample),
+        target_sample_count=len(target_sample),
+        semantic_label=semantic_label,
+        candidate=candidate,
+        reasons=tuple(sorted(reasons)),
+        method_id=ORACLE_REGISTRATION_METHOD_ID,
+    )
+
+
 __all__ = [
+    "ORACLE_REGISTRATION_METHOD_ID",
     "REGISTRATION_METHOD_ID",
+    "OracleTransformSource",
     "RegistrationConfig",
     "RegistrationEvidence",
     "apply_rigid_transform",
+    "apply_rigid_transform_normals",
+    "official_row_vector_to_internal_transform",
     "point_cloud_sha256",
+    "register_composite_relation",
+    "register_oracle_pair_relation",
     "register_pair_relation",
     "validate_rigid_transform",
 ]

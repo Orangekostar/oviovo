@@ -7,8 +7,14 @@ import pytest
 
 from src.oviv2.two_visit_contracts import PairRelation
 from src.oviv2.two_visit_registration import (
+    ORACLE_REGISTRATION_METHOD_ID,
+    OracleTransformSource,
     RegistrationConfig,
     apply_rigid_transform,
+    apply_rigid_transform_normals,
+    official_row_vector_to_internal_transform,
+    register_composite_relation,
+    register_oracle_pair_relation,
     register_pair_relation,
     validate_rigid_transform,
 )
@@ -105,6 +111,113 @@ def test_known_rotation_and_translation_are_recovered_deterministically() -> Non
     assert not first.transform_world_from_t0.flags.writeable
     assert np.array_equal(source, source_before)
     assert np.array_equal(target, target_before)
+
+
+def test_official_row_transform_converts_once_and_normals_ignore_translation() -> None:
+    internal = _transform()
+    official_row = internal.T
+    points = np.asarray([[0.2, -0.1, 0.3], [0.4, 0.5, -0.2]])
+    normals = np.asarray([[1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
+
+    converted = official_row_vector_to_internal_transform(official_row)
+    moved = apply_rigid_transform(points, converted)
+    moved_normals = apply_rigid_transform_normals(normals, converted)
+
+    homogeneous = np.column_stack((points, np.ones(len(points))))
+    np.testing.assert_allclose(moved, (homogeneous @ official_row)[:, :3])
+    np.testing.assert_allclose(moved_normals, normals @ official_row[:3, :3])
+    np.testing.assert_allclose(np.linalg.norm(moved_normals, axis=1), 1.0)
+    translated_again = internal.copy()
+    translated_again[:3, 3] += 100.0
+    np.testing.assert_allclose(
+        apply_rigid_transform_normals(normals, translated_again), moved_normals
+    )
+
+
+def test_composite_registration_accepts_unlabeled_one_to_one_objects() -> None:
+    source = _anisotropic_cloud()
+    target = apply_rigid_transform(source, _transform())
+
+    evidence = register_composite_relation(
+        _relation(),
+        source,
+        target,
+        source_semantic_label=None,
+        target_semantic_label=None,
+        config=RegistrationConfig(),
+    )
+
+    assert evidence.accepted
+    assert evidence.semantic_label is None
+    np.testing.assert_allclose(evidence.transform_world_from_t0, _transform(), atol=2e-3)
+
+
+def test_oracle_source_composes_official_object_then_global_row_transforms() -> None:
+    source = _anisotropic_cloud()
+    object_from_reference = _transform()
+    rescan_to_reference = np.eye(4, dtype=np.float64)
+    rescan_to_reference[:3, 3] = [-0.1, 0.3, 0.2]
+    expected = rescan_to_reference @ object_from_reference
+    target = apply_rigid_transform(source, expected)
+    relation = PairRelation(
+        temporal_query_id="oracle:2",
+        t0_entity_ids=("t0:object",),
+        t1_entity_ids=("t1:object",),
+        state="persistent_moved",
+        query_confidence=1.0,
+        evidence={"reference_instance_id": 2},
+        identity_source="ground_truth_oracle",
+    )
+    oracle = OracleTransformSource(
+        reference_instance_id=2,
+        official_object_reference_to_rescan_row=object_from_reference.T,
+        official_rescan_to_reference_row=rescan_to_reference.T,
+    )
+
+    evidence = register_oracle_pair_relation(
+        relation,
+        source,
+        target,
+        transform_source=oracle,
+        source_semantic_label=None,
+        target_semantic_label=None,
+        config=RegistrationConfig(),
+    )
+
+    assert evidence.accepted
+    assert evidence.method_id == ORACLE_REGISTRATION_METHOD_ID
+    assert evidence.selected_initialization == oracle.source_type
+    np.testing.assert_allclose(evidence.transform_world_from_t0, expected)
+
+
+def test_oracle_registration_rejects_empty_support_without_crashing() -> None:
+    relation = PairRelation(
+        temporal_query_id="oracle:2",
+        t0_entity_ids=("t0:object",),
+        t1_entity_ids=("t1:object",),
+        state="persistent_moved",
+        query_confidence=1.0,
+        evidence={"reference_instance_id": 2},
+        identity_source="ground_truth_oracle",
+    )
+    oracle = OracleTransformSource(
+        reference_instance_id=2,
+        official_object_reference_to_rescan_row=np.eye(4),
+        official_rescan_to_reference_row=np.eye(4),
+    )
+
+    evidence = register_oracle_pair_relation(
+        relation,
+        np.empty((0, 3), dtype=np.float32),
+        np.empty((0, 3), dtype=np.float32),
+        transform_source=oracle,
+        source_semantic_label=None,
+        target_semantic_label=None,
+        config=RegistrationConfig(),
+    )
+
+    assert not evidence.accepted
+    assert "low_support" in evidence.rejection_reasons
 
 
 def test_static_relation_uses_identity_or_fails_closed() -> None:

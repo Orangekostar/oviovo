@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "config_id": "OVI_RESCENE_OBJECT_RECOVERY_V1",
+  "status": "FROZEN_BEFORE_COMPLETION_RESULTS",
+  "pair_id": "scene0109_00-scene0109_01",
+  "pair_role": "D2_DEV",
+  "protocol": {
+    "geometric_method_id": "G_full",
+    "minimum_query_confidence": 0.3,
+    "minimum_entity_token_coverage": 0.25,
+    "minimum_source_point_coverage": 0.25,
+    "oracle_endpoint_iou_threshold": 0.25,
+    "evaluation_voxel_size_m": 0.05,
+    "global_alignment_use": "shared_for_all_variants",
+    "estimated_registration_use": "C1_C2_O1",
+    "gt_identity_use": "O1_O2_ONLY",
+    "gt_object_transform_use": "O2_ONLY",
+    "candidate_visibility": "recomputed_at_transformed_locations",
+    "unknown_surface_policy": "unevaluable_not_empty"
+  },
+  "registration": {
+    "registration_voxel_size_m": 0.02,
+    "maximum_sample_points": 20000,
+    "maximum_iterations": 40,
+    "trimmed_correspondence_fraction": 0.8,
+    "maximum_correspondence_distance_m": 0.15,
+    "inlier_distance_m": 0.05,
+    "minimum_sample_points": 64,
+    "minimum_inlier_count": 64,
+    "minimum_directional_overlap": 0.35,
+    "maximum_directional_median_m": 0.08,
+    "maximum_directional_p90_m": 0.2,
+    "minimum_second_singular_ratio": 0.02,
+    "maximum_centroid_residual_m": 0.1,
+    "minimum_principal_extent_ratio": 0.4,
+    "maximum_principal_extent_ratio": 2.5,
+    "maximum_static_centroid_displacement_m": 0.15,
+    "maximum_moved_centroid_displacement_m": 2.0,
+    "convergence_tolerance": 1e-05,
+    "recoverable_semantic_labels": [
+      "Bed",
+      "Bin",
+      "Books",
+      "Chair",
+      "Couch",
+      "Drawer",
+      "Fridge",
+      "Lamp",
+      "Painting",
+      "Screens",
+      "Table",
+      "Vase"
+    ]
+  },
+  "visibility": {
+    "voxel_size_m": 0.05,
+    "depth_tolerance_m": 0.1,
+    "depth_max_m": 10.0,
+    "minimum_absent_fraction": 0.8,
+    "minimum_absent_observations": 6,
+    "minimum_distinct_viewpoints": 3,
+    "minimum_viewpoint_baseline_m": 0.25
+  },
+  "composition": {
+    "composition_voxel_size_m": 0.05,
+    "method_name": "OVI-MAP + object-level two-visit current composer",
+    "object_semantic_labels": [],
+    "minimum_entity_visible_free_fraction": 0.8,
+    "minimum_entity_visible_free_voxels": 3
+  },
+  "recovery": {
+    "composition_voxel_size_m": 0.05,
+    "maximum_target_surface_distance_m": 0.2,
+    "target_bbox_margin_m": 0.1,
+    "method_name": "OVI_RESCENE_OBJECT_LEVEL_RECOVERY_V1"
+  },
+  "source_bindings": {
+    "adaptation_decision": {
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/adaptation_decision_v2.json",
+      "sha256": "e7807a68f7cce22668eaeb901b29f63cc00d2e13bc53ecae07a43be835a1c9e8",
+      "byte_count": 5548
+    },
+    "object_transfer_config": {
+      "path": "configs/evaluation/ovi_rescene_object_level_transfer_v1.json",
+      "sha256": "cf8422dd21aa72b66fbdb2a8918b689efcb12cb20b488e8dd3ff56c08f7a41ef",
+      "byte_count": 4501
+    },
+    "selection_manifest": {
+      "path": "configs/evaluation/manifests/ovi_rescene_object_level_pairs_v1.json",
+      "sha256": "2054c818c5f02a1ffcf2d4bcb3d3743ef0f4865ff428055f00e2f215c69d4a37",
+      "byte_count": 79594
+    },
+    "d2_mapping_receipt": {
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_ovimap_smoke_v1.json",
+      "sha256": "44fc7bcd010f4a678584af7398c433e484bb638219d12b28a47edc14089872a6",
+      "byte_count": 11032
+    },
+    "d2_pair_receipt": {
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_pair_view_v1.json",
+      "sha256": "857d851c9b0bb9317f7bc117ce7fe938149297901f130589f1e9684d9cffd5f6",
+      "byte_count": 7632
+    },
+    "d2_forward_metadata": {
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-transfer-v1/scene0109_00-scene0109_01/native_forwards.json",
+      "sha256": "0983147020a51764302c2ee067808146913116530a728c66c235a4ccc4f2547c",
+      "byte_count": 1568
+    },
+    "d2_forward_arrays": {
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-transfer-v1/scene0109_00-scene0109_01/native_forwards.npz",
+      "sha256": "03f3f45760ab7cb1ef0a238c42479f9930dc7bbb9aae3482f5c1170d8b4db3da",
+      "byte_count": 28400149
+    },
+    "ground_truth_manifest": {
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/gt-v1/scene0109_00-scene0109_01/manifest.json",
+      "sha256": "422fee2e94e995abc92961d38ea249b01be46694ef1404e4c2502a979a3b8f9e",
+      "byte_count": 2418
+    }
+  },
+  "outputs": {
+    "completion_csv": "configs/evaluation/results/ovi_rescene_object_level_transfer/completion_oracles.csv",
+    "receipt": "configs/evaluation/results/ovi_rescene_object_level_transfer/completion_oracles_v1.json",
+    "local_root": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-recovery-v1/scene0109_00-scene0109_01"
+  }
+}
