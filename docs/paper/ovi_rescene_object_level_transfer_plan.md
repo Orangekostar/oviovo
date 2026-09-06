@@ -109,14 +109,14 @@
 - Consumes: one `OviObjectPairView`, independent per-visit Concerto features, joint ReScene `TemporalQueryEvidence`, and frozen endpoint bindings.
 - Produces: one-to-one `ObjectPairPrediction` rows for `G_obj`, `F_obj`, and `R_obj`, with score, unmatched state, support, query purity, conflicts, and strict/ambiguity-aware metrics.
 
-- [ ] Write failing tests that all methods receive identical candidate IDs and that method output cannot mutate the pair view.
-- [ ] Write failing tests for dummy/unmatched assignment, one-to-one capacity, large displacement eligibility, independent F feature provenance, and the exact R score `max_q(c_q * a_qi_t0 * a_qj_t1)`.
-- [ ] Run `python -m pytest -q tests/evaluation/test_object_pair_association.py` and confirm failures reflect missing association behavior.
-- [ ] Implement a shared assignment solver; G uses geometry/OVI semantics, F uses independently pooled visit features, and R uses joint query support without changing candidates.
-- [ ] Implement fixed-endpoint metrics: end-to-end and representation-conditional recall, strict-ID and ambiguity-aware scores, endpoint failure, false re-ID, duplicates, and rigid integer TP/GT.
-- [ ] Run G_full/G_supported, F_obj, and R_obj on every completed D2 pair using cached OVI maps and one reusable ReScene forward per pair.
-- [ ] Verify with `python -m pytest -q tests/evaluation/test_object_pair_association.py tests/evaluation/test_rscan_association_metrics.py`.
-- [ ] Commit Task 4 code, tests, and measured shared-candidate table.
+- [x] Write failing tests that all methods receive identical candidate IDs and that method output cannot mutate the pair view.
+- [x] Write failing tests for dummy/unmatched assignment, one-to-one capacity, large displacement eligibility, independent F feature provenance, and the exact R score `max_q(c_q * a_qi_t0 * a_qj_t1)`.
+- [x] Run `python -m pytest -q tests/evaluation/test_object_pair_association.py` and confirm failures reflect missing association behavior.
+- [x] Implement a shared assignment solver; G uses geometry/OVI semantics, F uses independently pooled visit features, and R uses joint query support without changing candidates.
+- [x] Implement fixed-endpoint metrics: end-to-end and representation-conditional recall, strict-ID and ambiguity-aware scores, endpoint failure, false re-ID, duplicates, and rigid integer TP/GT.
+- [x] Run G_full/G_supported, F_obj, and R_obj on every completed D2 pair using cached OVI maps and one reusable ReScene forward per pair.
+- [x] Verify with `python -m pytest -q tests/evaluation/test_object_pair_association.py tests/evaluation/test_rscan_association_metrics.py`.
+- [x] Commit Task 4 code, tests, and measured shared-candidate table.
 
 ### Task 5: Composite object grouping and dense current instance readout
 
