@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import subprocess
 import sys
@@ -86,29 +87,27 @@ class SceneCommands:
     frontend: tuple[str, ...]
     mapping: tuple[str, ...]
     attempt_root: Path
+    dataset: str = "replica"
+    scene_data: Path | None = None
 
     @property
     def commands(self) -> tuple[tuple[str, ...], ...]:
         return (self.geometry, self.frontend, self.mapping)
 
 
-def default_config(run_root: Path) -> NativeConfig:
+def default_config(run_root: Path, *, data_root: Path | None = None) -> NativeConfig:
     build_root = Path("/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native")
     return NativeConfig(
         build_root=build_root,
         run_root=run_root,
-        data_root=Path("/home/ww/vv/dataset/Replica"),
+        data_root=Path("/home/ww/vv/dataset/Replica") if data_root is None else data_root,
         frontend_python=Path("/home/ww/miniconda3/envs/ovimap-cropformer/bin/python"),
         mapping_python=Path("/home/ww/miniconda3/envs/ovimap-map/bin/python"),
         entity_root=build_root / "Entity",
         ovimap_root=build_root / "OVI-MAP",
-        cropformer_weights=Path(
-            "/home/ww/oviovo_benchmark_assets/weights/"
-            "CropFormer_hornet_3x_03823a.pth"
-        ),
-        siglip_model=Path(
-            "/home/ww/oviovo_benchmark_assets/weights/siglip-large-patch16-384"
-        ),
+        cropformer_weights=build_root
+        / "Entity/checkpoints/CropFormer_hornet_3x_03823a.pth",
+        siglip_model=build_root / "siglip-large-patch16-384",
     )
 
 
@@ -130,6 +129,15 @@ def _artifact(path: Path) -> dict[str, Any]:
         "path": str(path.resolve()),
         "sha256": _sha256(path),
         "size_bytes": stat.st_size,
+    }
+
+
+def _content_binding(path: Path) -> dict[str, Any]:
+    stat = path.stat()
+    return {
+        "path": str(path.resolve()),
+        "sha256": _sha256(path),
+        "byte_count": stat.st_size,
     }
 
 
@@ -169,13 +177,20 @@ def build_scene_commands(
     config: NativeConfig,
     *,
     scene: str,
+    dataset: str = "replica",
     start: int = 0,
     end: int = 2000,
     step: int = 10,
     attempt_root: Path | None = None,
 ) -> SceneCommands:
-    if scene not in REPLICA8_SCENES:
+    if dataset not in {"replica", "scannet_nyu"}:
+        raise ValueError(f"unsupported OVI-MAP dataset: {dataset}")
+    if dataset == "replica" and scene not in REPLICA8_SCENES:
         raise ValueError(f"unknown Replica scene: {scene}")
+    if dataset == "scannet_nyu" and (
+        not scene or Path(scene).name != scene or scene in {".", ".."}
+    ):
+        raise ValueError("ScanNet-style scene must be one safe path component")
     frame_ids = _frame_ids(start, end, step)
     root = attempt_root or config.run_root / "plan" / scene
     frontend_output = root / "frontend"
@@ -183,17 +198,24 @@ def build_scene_commands(
     mapping_output = root / "mapping"
     intermediate_output = root / "intermediate_segments"
     audit_output = root / "native_audit"
-    images = [
-        str(config.data_root / scene / "results" / f"frame{frame_id:06d}.jpg")
-        for frame_id in frame_ids
-    ]
+    scene_root = config.data_root / scene
+    images = (
+        [
+            str(scene_root / "results" / f"frame{frame_id:06d}.jpg")
+            for frame_id in frame_ids
+        ]
+        if dataset == "replica"
+        else [str(scene_root / "color" / f"{frame_id}.jpg") for frame_id in frame_ids]
+    )
 
     geometry = (
         str(config.mapping_python),
         str(Path(__file__).resolve()),
         "--internal-geometry",
         "--scene-data",
-        str(config.data_root / scene),
+        str(scene_root),
+        "--dataset",
+        dataset,
         "--geometry-output",
         str(geometry_output),
         "--frame-ids",
@@ -222,7 +244,7 @@ def build_scene_commands(
         str(config.mapping_python),
         str(config.ovimap_root / "scripts/panoptic_mapping_.py"),
         "--dataset",
-        "replica",
+        dataset,
         "--task",
         "Nyu40",
         "--scene_num",
@@ -262,7 +284,7 @@ def build_scene_commands(
         "--log",
         "ubuntu24-native",
     )
-    return SceneCommands(frame_ids, geometry, frontend, mapping, root)
+    return SceneCommands(frame_ids, geometry, frontend, mapping, root, dataset, scene_root)
 
 
 def _require_file(path: Path, label: str) -> None:
@@ -275,8 +297,161 @@ def _require_dir(path: Path, label: str) -> None:
         raise GateFailure(f"{label} missing: {path}")
 
 
-def preflight(config: NativeConfig, commands: SceneCommands, *, scene: str) -> dict[str, Any]:
+def _scannet_scene_preflight(
+    config: NativeConfig, commands: SceneCommands, *, scene: str
+) -> dict[str, Any]:
+    scene_root = config.data_root / scene
+    intrinsic_color_path = scene_root / "intrinsic/intrinsic_color.txt"
+    intrinsic_depth_path = scene_root / "intrinsic/intrinsic_depth.txt"
+    materialized_manifest_path = scene_root / "materialized_manifest.json"
     for path, label in (
+        (intrinsic_color_path, "ScanNet-style color intrinsic"),
+        (intrinsic_depth_path, "ScanNet-style depth intrinsic"),
+        (materialized_manifest_path, "3RScan materialized manifest"),
+    ):
+        _require_file(path, label)
+    try:
+        color_intrinsic = np.loadtxt(intrinsic_color_path)
+        depth_intrinsic = np.loadtxt(intrinsic_depth_path)
+        materialized = json.loads(materialized_manifest_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, json.JSONDecodeError) as error:
+        raise GateFailure("ScanNet-style camera metadata is invalid") from error
+    if (
+        color_intrinsic.shape != (4, 4)
+        or depth_intrinsic.shape != (4, 4)
+        or not np.isfinite(color_intrinsic).all()
+        or not np.isfinite(depth_intrinsic).all()
+        or abs(float(np.linalg.det(color_intrinsic[:3, :3]))) < 1e-12
+        or abs(float(np.linalg.det(depth_intrinsic[:3, :3]))) < 1e-12
+    ):
+        raise GateFailure("ScanNet-style intrinsics must be finite invertible 4x4 matrices")
+    if (
+        not isinstance(materialized, dict)
+        or materialized.get("schema_version") != 1
+        or materialized.get("artifact_id") != "RSCAN_OVI_VISIT_V1"
+        or materialized.get("status") != "MATERIALIZED_INPUT_PASS"
+        or materialized.get("scan_id") != scene
+        or materialized.get("dataset_adapter") != "scannet_nyu"
+        or materialized.get("depth_shift") != 1000.0
+        or materialized.get("frame_count") != len(materialized.get("frame_map", ()))
+    ):
+        raise GateFailure("3RScan materialized manifest identity is invalid")
+    frame_map = materialized["frame_map"]
+    if (
+        not isinstance(frame_map, list)
+        or any(
+            not isinstance(record, dict)
+            or set(record) != {"source_frame_id", "target_frame_id"}
+            or record.get("target_frame_id") != target_frame_id
+            or isinstance(record.get("source_frame_id"), bool)
+            or not isinstance(record.get("source_frame_id"), int)
+            or int(record["source_frame_id"]) < 0
+            for target_frame_id, record in enumerate(frame_map)
+        )
+        or any(frame_id >= len(frame_map) for frame_id in commands.frame_ids)
+    ):
+        raise GateFailure("3RScan materialized frame map is invalid")
+    dimensions = materialized.get("dimensions")
+    if not isinstance(dimensions, dict) or set(dimensions) != {"color", "depth"}:
+        raise GateFailure("3RScan materialized dimensions are invalid")
+    for role in ("color", "depth"):
+        record = dimensions.get(role)
+        if (
+            not isinstance(record, dict)
+            or set(record) != {"width", "height"}
+            or any(
+                isinstance(record.get(axis), bool)
+                or not isinstance(record.get(axis), int)
+                or int(record[axis]) <= 0
+                for axis in ("width", "height")
+            )
+        ):
+            raise GateFailure("3RScan materialized dimensions are invalid")
+    expected_dimensions = dimensions
+
+    expected_color_shape: tuple[int, ...] | None = None
+    expected_depth_shape: tuple[int, ...] | None = None
+    first_depth: np.ndarray | None = None
+    first_pose: np.ndarray | None = None
+    for frame_id in commands.frame_ids:
+        color_path = scene_root / "color" / f"{frame_id}.jpg"
+        depth_path = scene_root / "depth" / f"{frame_id}.png"
+        pose_path = scene_root / "pose" / f"{frame_id}.txt"
+        for path, label in (
+            (color_path, f"{scene} RGB frame {frame_id}"),
+            (depth_path, f"{scene} depth frame {frame_id}"),
+            (pose_path, f"{scene} pose frame {frame_id}"),
+        ):
+            _require_file(path, label)
+        color = cv2.imread(str(color_path), cv2.IMREAD_COLOR)
+        depth = cv2.imread(str(depth_path), cv2.IMREAD_UNCHANGED)
+        try:
+            pose = np.loadtxt(pose_path)
+        except (OSError, ValueError) as error:
+            raise GateFailure(f"{scene} pose frame {frame_id} is invalid") from error
+        if color is None or depth is None:
+            raise GateFailure(f"{scene} frame {frame_id} is unreadable")
+        if depth.dtype != np.uint16 or depth.ndim != 2:
+            raise GateFailure(f"{scene} depth frame {frame_id} must be uint16")
+        if (
+            pose.shape != (4, 4)
+            or not np.isfinite(pose).all()
+            or not np.allclose(pose[3], (0.0, 0.0, 0.0, 1.0), atol=1e-6)
+            or abs(float(np.linalg.det(pose[:3, :3]))) < 1e-6
+        ):
+            raise GateFailure(f"{scene} pose frame {frame_id} must be finite 4x4")
+        color_shape = tuple(int(value) for value in color.shape)
+        depth_shape = tuple(int(value) for value in depth.shape)
+        if color_shape != (
+            expected_dimensions["color"]["height"],
+            expected_dimensions["color"]["width"],
+            3,
+        ) or depth_shape != (
+            expected_dimensions["depth"]["height"],
+            expected_dimensions["depth"]["width"],
+        ):
+            raise GateFailure(f"{scene} frame {frame_id} dimensions differ from manifest")
+        expected_color_shape = expected_color_shape or color_shape
+        expected_depth_shape = expected_depth_shape or depth_shape
+        if color_shape != expected_color_shape or depth_shape != expected_depth_shape:
+            raise GateFailure(f"{scene} frame dimensions changed within the visit")
+        if first_depth is None:
+            first_depth = depth
+            first_pose = pose
+
+    assert first_depth is not None and first_pose is not None
+    positive = np.argwhere(first_depth > 0)
+    if not len(positive):
+        raise GateFailure(f"{scene} first depth frame has no positive sample")
+    v, u = (int(value) for value in positive[0])
+    z = float(first_depth[v, u]) / 1000.0
+    fx, fy = float(depth_intrinsic[0, 0]), float(depth_intrinsic[1, 1])
+    cx, cy = float(depth_intrinsic[0, 2]), float(depth_intrinsic[1, 2])
+    camera_point = np.asarray(
+        ((u - cx) * z / fx, (v - cy) * z / fy, z, 1.0), dtype=np.float64
+    )
+    try:
+        recovered = np.linalg.inv(first_pose) @ (first_pose @ camera_point)
+    except np.linalg.LinAlgError as error:
+        raise GateFailure(f"{scene} first pose is singular") from error
+    round_trip_error = float(np.linalg.norm(recovered[:3] - camera_point[:3]))
+    if not math.isfinite(round_trip_error) or round_trip_error > 1e-6:
+        raise GateFailure(f"{scene} camera/world round trip failed")
+    return {
+        "dataset": "scannet_nyu",
+        "depth_shift": 1000.0,
+        "color_shape": list(expected_color_shape or ()),
+        "depth_shape": list(expected_depth_shape or ()),
+        "camera_world_round_trip_error_m": round_trip_error,
+        "source_frame_ids": [
+            int(frame_map[frame_id]["source_frame_id"]) for frame_id in commands.frame_ids
+        ],
+        "materialized_manifest": _artifact(materialized_manifest_path),
+    }
+
+
+def preflight(config: NativeConfig, commands: SceneCommands, *, scene: str) -> dict[str, Any]:
+    common_files = (
         (config.frontend_python, "frontend python"),
         (config.mapping_python, "mapping python"),
         (config.cropformer_config, "CropFormer config"),
@@ -291,21 +466,31 @@ def preflight(config: NativeConfig, commands: SceneCommands, *, scene: str) -> d
             / "devel/lib/depth_segmentation_py.cpython-311-x86_64-linux-gnu.so",
             "depth_segmentation_py extension",
         ),
+    )
+    replica_files = (
         (config.data_root / scene / "traj.txt", f"{scene} trajectory"),
         (config.data_root / "cam_params.json", "Replica camera parameters"),
+    )
+    for path, label in common_files + (
+        replica_files if commands.dataset == "replica" else ()
     ):
         _require_file(path, label)
     _require_dir(config.siglip_model, "local SigLIP model")
-    for frame_id in commands.frame_ids:
-        _require_file(
-            config.data_root / scene / "results" / f"frame{frame_id:06d}.jpg",
-            f"{scene} RGB frame {frame_id}",
-        )
-        _require_file(
-            config.data_root / scene / "results" / f"depth{frame_id:06d}.png",
-            f"{scene} depth frame {frame_id}",
-        )
-    return {
+    dataset_record: dict[str, Any]
+    if commands.dataset == "replica":
+        for frame_id in commands.frame_ids:
+            _require_file(
+                config.data_root / scene / "results" / f"frame{frame_id:06d}.jpg",
+                f"{scene} RGB frame {frame_id}",
+            )
+            _require_file(
+                config.data_root / scene / "results" / f"depth{frame_id:06d}.png",
+                f"{scene} depth frame {frame_id}",
+            )
+        dataset_record = {"dataset": "replica"}
+    else:
+        dataset_record = _scannet_scene_preflight(config, commands, scene=scene)
+    result = {
         "status": "PASS",
         "timestamp": _utc_now(),
         "scene": scene,
@@ -319,6 +504,8 @@ def preflight(config: NativeConfig, commands: SceneCommands, *, scene: str) -> d
             ),
         },
     }
+    result.update(dataset_record)
+    return result
 
 
 def _frontend_env(config: NativeConfig) -> dict[str, str]:
@@ -346,6 +533,16 @@ def _mapping_env(config: NativeConfig) -> dict[str, str]:
     env["TRANSFORMERS_OFFLINE"] = "1"
     env["HF_HUB_OFFLINE"] = "1"
     return env
+
+
+def _frontend_mask_name(dataset: str, frame_id: int) -> str:
+    stem = f"frame{frame_id:06d}" if dataset == "replica" else str(frame_id)
+    return f"{stem}.png"
+
+
+def _frontend_diagnostic_name(dataset: str, frame_id: int) -> str:
+    stem = f"frame{frame_id:06d}" if dataset == "replica" else str(frame_id)
+    return f"{stem}.json"
 
 
 def _run_command(
@@ -389,9 +586,14 @@ def run_frontend(config: NativeConfig, commands: SceneCommands) -> dict[str, Any
     )
     output = commands.attempt_root / "frontend"
     for frame_id in commands.frame_ids:
-        _require_file(output / f"frame{frame_id:06d}.png", "CropFormer instance mask")
         _require_file(
-            output / "frame_diagnostics" / f"frame{frame_id:06d}.json",
+            output / _frontend_mask_name(commands.dataset, frame_id),
+            "CropFormer instance mask",
+        )
+        _require_file(
+            output
+            / "frame_diagnostics"
+            / _frontend_diagnostic_name(commands.dataset, frame_id),
             "CropFormer frame diagnostics",
         )
     record["status"] = "PASS"
@@ -430,8 +632,9 @@ def audit_scene(commands: SceneCommands) -> dict[str, Any]:
     total_full_frame = 0
     stale_raycast_ids: set[int] = set()
     observed_mapper_colors: dict[int, tuple[int, int, int]] = {}
+    raycast_shapes: list[list[int]] = []
     for frame_id in commands.frame_ids:
-        mask_path = frontend / f"frame{frame_id:06d}.png"
+        mask_path = frontend / _frontend_mask_name(commands.dataset, frame_id)
         raycast_path = native / f"frame{frame_id:06d}.raycast.npy"
         mapper_path = native / f"frame{frame_id:06d}.json"
         for path, label in (
@@ -445,6 +648,18 @@ def audit_scene(commands: SceneCommands) -> dict[str, Any]:
             raise GateFailure(f"native frame audit failed: unreadable mask {mask_path}")
         raycast = np.load(raycast_path, allow_pickle=False)
         mapper = json.loads(mapper_path.read_text(encoding="utf-8"))
+        if commands.dataset == "scannet_nyu":
+            if commands.scene_data is None:
+                raise GateFailure("native frame audit failed: scene data is unspecified")
+            depth = cv2.imread(
+                str(commands.scene_data / "depth" / f"{frame_id}.png"),
+                cv2.IMREAD_UNCHANGED,
+            )
+            if depth is None or depth.ndim != 2:
+                raise GateFailure("native frame audit failed: depth input is unreadable")
+            raycast_shape = (int(depth.shape[0]), int(depth.shape[1]))
+        else:
+            raycast_shape = (int(mask.shape[0]), int(mask.shape[1]))
         raycast_ids = {int(value) for value in np.unique(raycast) if value > 0}
         stale_raycast_ids.update(raycast_ids - set(colors))
         try:
@@ -452,6 +667,7 @@ def audit_scene(commands: SceneCommands) -> dict[str, Any]:
                 mask,
                 raycast,
                 color_pairs,
+                raycast_shape=raycast_shape,
             )
         except ValueError as error:
             raise GateFailure(f"native frame audit failed: {error}") from error
@@ -459,6 +675,8 @@ def audit_scene(commands: SceneCommands) -> dict[str, Any]:
             str(instance_id): box
             for instance_id, box in zip(sorted(raycast_ids), audit["boxes"], strict=True)
         }
+        if mapper.get("shape") != list(raycast_shape):
+            raise GateFailure("native frame audit failed: mapper shape serialization mismatch")
         if mapper.get("box_2d") != expected_boxes:
             raise GateFailure("native frame audit failed: mapper bbox serialization mismatch")
         for instance_id in raycast_ids:
@@ -477,6 +695,7 @@ def audit_scene(commands: SceneCommands) -> dict[str, Any]:
                 raise GateFailure("native frame audit failed: mapper RGB serialization mismatch")
         total_boxes += int(audit["raycast_instance_count"])
         total_full_frame += int(audit["full_frame_bbox_count"])
+        raycast_shapes.append(list(raycast_shape))
         frame_record = {
             "frame_id": frame_id,
             "audit": audit,
@@ -499,6 +718,7 @@ def audit_scene(commands: SceneCommands) -> dict[str, Any]:
         "raycast_bbox_count": total_boxes,
         "full_frame_bbox_count": total_full_frame,
         "full_frame_bbox_ratio": total_full_frame / total_boxes,
+        "raycast_shapes": raycast_shapes,
         "active_color_ids": sorted(colors),
         "stale_raycast_ids": sorted(stale_raycast_ids),
         "color_pairs": _artifact(colors_path),
@@ -513,10 +733,12 @@ def _mapping_artifacts(commands: SceneCommands) -> dict[str, Any]:
     expected = {
         "instance_mesh": root / f"instance_mesh_{count}.ply",
         "semantic_features": root / f"inst_sem_siglip-l-16-384_{count}_incre_combine.pkl",
+        "instance_color_log": commands.attempt_root
+        / "native_audit/instance_colors_cpp.tsv",
     }
     for name, path in expected.items():
         _require_file(path, f"mapping {name}")
-    return {name: _artifact(path) for name, path in expected.items()}
+    return {name: _content_binding(path) for name, path in expected.items()}
 
 
 def write_scene_manifest(
@@ -536,6 +758,7 @@ def write_scene_manifest(
         "state": state,
         "stage": stage,
         "scene": scene,
+        "dataset": commands.dataset,
         "frame_ids": commands.frame_ids,
         "created_at": _utc_now(),
         "preflight": preflight_record,
@@ -570,6 +793,7 @@ def run_scene(
     *,
     scene: str,
     stage: str,
+    dataset: str = "replica",
     start: int,
     end: int,
     step: int,
@@ -578,6 +802,7 @@ def run_scene(
     commands = build_scene_commands(
         config,
         scene=scene,
+        dataset=dataset,
         start=start,
         end=end,
         step=step,
@@ -631,32 +856,56 @@ def _run_internal_geometry(args: argparse.Namespace) -> int:
     sys.path.insert(0, str(args.ovimap_root / "scripts"))
     import depth_segmentation_py
 
-    camera = json.loads(
-        (args.scene_data.parent / "cam_params.json").read_text(encoding="utf-8")
-    )["camera"]
-    intrinsic = np.eye(3, dtype=np.float32)
-    intrinsic[0, 0] = camera["fx"]
-    intrinsic[1, 1] = camera["fy"]
-    intrinsic[0, 2] = camera["cx"]
-    intrinsic[1, 2] = camera["cy"]
+    if args.dataset == "replica":
+        camera = json.loads(
+            (args.scene_data.parent / "cam_params.json").read_text(encoding="utf-8")
+        )["camera"]
+        intrinsic = np.eye(3, dtype=np.float32)
+        intrinsic[0, 0] = camera["fx"]
+        intrinsic[1, 1] = camera["fy"]
+        intrinsic[0, 2] = camera["cx"]
+        intrinsic[1, 2] = camera["cy"]
+        depth_scale = float(camera["scale"])
+        depth_height, depth_width = int(camera["h"]), int(camera["w"])
+        color_to_depth = None
+    else:
+        color_intrinsic = np.loadtxt(
+            args.scene_data / "intrinsic/intrinsic_color.txt"
+        )[:3, :3]
+        intrinsic = np.loadtxt(
+            args.scene_data / "intrinsic/intrinsic_depth.txt"
+        )[:3, :3].astype(np.float32)
+        first_depth = cv2.imread(
+            str(args.scene_data / "depth" / f"{args.frame_ids[0]}.png"),
+            cv2.IMREAD_UNCHANGED,
+        )
+        if first_depth is None or first_depth.ndim != 2:
+            raise GateFailure("ScanNet-style geometry depth input is invalid")
+        depth_height, depth_width = first_depth.shape
+        depth_scale = 1000.0
+        color_to_depth = intrinsic @ np.linalg.inv(color_intrinsic)
     segmenter = depth_segmentation_py.DepthSegmentation_py(
-        int(camera["h"]), int(camera["w"]), cv2.CV_32FC1, intrinsic
+        depth_height, depth_width, cv2.CV_32FC1, intrinsic
     )
     args.geometry_output.mkdir(parents=True, exist_ok=True)
     for frame_id in args.frame_ids:
-        rgb = cv2.imread(
-            str(args.scene_data / "results" / f"frame{frame_id:06d}.jpg"),
-            cv2.IMREAD_COLOR,
-        )
-        depth = cv2.imread(
-            str(args.scene_data / "results" / f"depth{frame_id:06d}.png"),
-            cv2.IMREAD_UNCHANGED,
-        )
+        if args.dataset == "replica":
+            rgb_path = args.scene_data / "results" / f"frame{frame_id:06d}.jpg"
+            depth_path = args.scene_data / "results" / f"depth{frame_id:06d}.png"
+        else:
+            rgb_path = args.scene_data / "color" / f"{frame_id}.jpg"
+            depth_path = args.scene_data / "depth" / f"{frame_id}.png"
+        rgb = cv2.imread(str(rgb_path), cv2.IMREAD_COLOR)
+        depth = cv2.imread(str(depth_path), cv2.IMREAD_UNCHANGED)
         if rgb is None or depth is None:
             raise GateFailure(f"geometry input missing for frame {frame_id}")
+        if color_to_depth is not None:
+            rgb = cv2.warpPerspective(
+                rgb, color_to_depth, (depth_width, depth_height)
+            )
         rgb = cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB)
         segmenter.depthSegment(
-            depth.astype(np.float32) / float(camera["scale"]),
+            depth.astype(np.float32) / depth_scale,
             rgb.astype(np.float32),
         )
         masks = np.asarray(segmenter.get_segmentMasks(), dtype=bool)
@@ -674,7 +923,9 @@ def _run_internal_geometry(args: argparse.Namespace) -> int:
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--stage", choices=("mapping", "room"))
-    parser.add_argument("--scene", choices=REPLICA8_SCENES)
+    parser.add_argument("--scene")
+    parser.add_argument("--dataset", choices=("replica", "scannet_nyu"), default="replica")
+    parser.add_argument("--data-root", type=Path)
     parser.add_argument("--start", type=int, default=0)
     parser.add_argument("--end", type=int, default=2000)
     parser.add_argument("--step", type=int, default=10)
@@ -696,12 +947,13 @@ def main(argv: Iterable[str] | None = None) -> int:
         return _run_internal_geometry(args)
     if args.stage is None or args.scene is None or args.run_root is None:
         raise GateFailure("--stage, --scene, and --run-root are required")
-    config = default_config(args.run_root)
+    config = default_config(args.run_root, data_root=args.data_root)
     try:
         manifest = run_scene(
             config,
             scene=args.scene,
             stage=args.stage,
+            dataset=args.dataset,
             start=args.start,
             end=args.end,
             step=args.step,

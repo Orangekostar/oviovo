@@ -112,14 +112,17 @@ def audit_native_frame(
     mask: np.ndarray,
     raycast: np.ndarray,
     color_pairs: list[dict[str, Any]],
+    *,
+    raycast_shape: tuple[int, int] | None = None,
 ) -> dict[str, Any]:
     """Audit one frame at the CropFormer-to-mapper output boundary."""
     mask = np.asarray(mask)
     mask_summary = summarize_instance_id_mask(mask)
+    raycast_height, raycast_width = raycast_shape or mask.shape
     raycast_ids = normalize_raycast_ids(
         raycast,
-        height=mask.shape[0],
-        width=mask.shape[1],
+        height=raycast_height,
+        width=raycast_width,
     )
     for pair in color_pairs:
         try:
@@ -134,13 +137,14 @@ def audit_native_frame(
         for instance_id in np.unique(raycast_ids)
         if instance_id > 0
     ]
-    full_frame = [0, 0, mask.shape[1] - 1, mask.shape[0] - 1]
+    full_frame = [0, 0, raycast_width - 1, raycast_height - 1]
     full_frame_count = sum(box == full_frame for box in boxes)
     if boxes and full_frame_count == len(boxes):
         raise ValueError("all non-empty raycast boxes are full-frame")
     return {
         "status": "PASS",
         "mask": mask_summary,
+        "raycast_shape": [raycast_height, raycast_width],
         "raycast_instance_count": len(boxes),
         "full_frame_bbox_count": full_frame_count,
         "boxes": boxes,

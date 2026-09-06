@@ -135,6 +135,24 @@ def test_audit_native_frame_passes_sparse_raycast() -> None:
     assert result["boxes"] == [[1, 0, 2, 0]]
 
 
+def test_audit_native_frame_supports_calibrated_depth_space_raycast() -> None:
+    mask = np.zeros((4, 6), dtype=np.uint8)
+    mask[:2, :3] = 1
+    mask[2:, 3:] = 2
+    raycast = np.array([[0, 5, 5], [0, 0, 0]], dtype=np.uint32)
+
+    result = _native().audit_native_frame(
+        mask,
+        raycast,
+        [],
+        raycast_shape=(2, 3),
+    )
+
+    assert result["mask"]["shape"] == [4, 6]
+    assert result["raycast_shape"] == [2, 3]
+    assert result["boxes"] == [[1, 0, 2, 0]]
+
+
 def test_audit_native_frame_rejects_all_full_frame_boxes() -> None:
     mask = np.array([[1, 1], [1, 1]], dtype=np.uint8)
     raycast = np.array([[8, 8], [8, 8]], dtype=np.uint32)
