@@ -199,10 +199,10 @@
 - Consumes: every committed manifest, experiment ledger, CSV, compact preview, local-only artifact binding, and test receipt.
 - Produces: claim-bounded results, artifact index, reproducible commands, limitations, and verified remote SHA.
 
-- [ ] Reconcile each acceptance item in the spec against an authoritative artifact; label incomplete scientific branches without hiding completed engineering work.
-- [ ] Report resolver transfer, real D2 UUID/visits, shared-candidate G/F/R integer counts, grouping effects, D0/D1/D2 diagnosis, map changes, oracle bottleneck, compute reuse, and prohibited claims.
-- [ ] Validate every numeric table cell against machine-readable output and preserve null/status semantics.
-- [ ] Run `git diff --check` and all changed-module/direct-dependency tests; run a broader affected-suite regression only for shared contract or serialization changes.
-- [ ] Run syntax compilation for every changed Python file and inspect `git status --short` for untracked required artifacts or accidental large files.
+- [x] Reconcile each acceptance item in the spec against an authoritative artifact; label incomplete scientific branches without hiding completed engineering work.
+- [x] Report resolver transfer, real D2 UUID/visits, shared-candidate G/F/R integer counts, grouping effects, D0/D1/D2 diagnosis, map changes, oracle bottleneck, compute reuse, and prohibited claims.
+- [x] Validate every numeric table cell against machine-readable output and preserve null/status semantics.
+- [x] Run `git diff --check` and all changed-module/direct-dependency tests; run a broader affected-suite regression only for shared contract or serialization changes.
+- [x] Run syntax compilation for every changed Python file and inspect `git status --short` for untracked required artifacts or accidental large files.
 - [ ] Commit results, handoff, and compact index; push `research/ovi-rescene-object-level-transfer` without force.
 - [ ] Compare `git rev-parse HEAD` with `git ls-remote origin refs/heads/research/ovi-rescene-object-level-transfer` and record `UPLOAD_STATUS=VERIFIED` only when identical.

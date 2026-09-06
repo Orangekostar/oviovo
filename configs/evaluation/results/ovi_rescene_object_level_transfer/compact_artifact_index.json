@@ -1,0 +1,359 @@
+{
+  "artifact_id": "OVI_RESCENE_OBJECT_LEVEL_TRANSFER_COMPACT_INDEX_V1",
+  "baseline_commit": "48117bd6f502d7d289eafe81392ef55748bd6c4a",
+  "branch": "research/ovi-rescene-object-level-transfer",
+  "evaluated_commits": {
+    "d2_mapping": "5fc7ae09be0c0965490a1763db4e58ac1907f439",
+    "d2_shared_candidate_association": "eb8153f502a59060f15166c37a1eb15c54119d92",
+    "instance_readout": "cff637c12e92a97b060a404803cff39b1aa10d00",
+    "object_recovery": "048d2edabaceb8482b9cff65d381c7eb23ef623c",
+    "transfer_diagnosis": "d295568fea0d5a2abee2775a577964fae12589bf"
+  },
+  "large_artifact_policy": "LARGE_ARTIFACTS_LOCAL_ONLY",
+  "local_only_artifacts": [
+    {
+      "byte_count": 3155,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/3rscan/matrix-v1/scene0109_00-scene0109_01/manifest.json",
+      "role": "D0 native manifest",
+      "sha256": "42a1673c3cfb20db5fe4f4c31d093dc9e1cf4a6d55d7bed15d05983d7322f188"
+    },
+    {
+      "byte_count": 1596298,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/3rscan/matrix-v1/associations-v2/scene0109_00-scene0109_01.json",
+      "role": "D0 pair association result",
+      "sha256": "6cd8d865b2fa81b167efee7cc980e8fed4c570a4cae39ad26aefe270a8581935"
+    },
+    {
+      "byte_count": 37778,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/materialized-v1/20c993b7-698f-29c5-847d-c8cb8a685f5a/materialized_manifest.json",
+      "role": "D2 visit-0 materialization manifest",
+      "sha256": "87112341b05902beb9c6d6a9613cf9686f1529b71448793d351b4500d2474611"
+    },
+    {
+      "byte_count": 32215,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/materialized-v1/20c993b3-698f-29c5-859c-dca8ddecf220/materialized_manifest.json",
+      "role": "D2 visit-1 materialization manifest",
+      "sha256": "440648c9e81178de3e1c1fd0bb9d3619f9effc47e95b4b1930346ee9b8ef5c89"
+    },
+    {
+      "byte_count": 24405,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/ovi-native-v1/scenes/20c993b7-698f-29c5-847d-c8cb8a685f5a/attempt-20260906T161218.364141Z/native_mapping_manifest.json",
+      "role": "D2 visit-0 native OVI manifest",
+      "sha256": "1a5eb316bcb6d14634344f5270358970054c3df2664c86434fc5a48b3ba329c1"
+    },
+    {
+      "byte_count": 21974,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/ovi-native-v1/scenes/20c993b3-698f-29c5-859c-dca8ddecf220/attempt-20260906T161218.311986Z/native_mapping_manifest.json",
+      "role": "D2 visit-1 native OVI manifest",
+      "sha256": "e92fd50ddcf57912ec98f319d93d94c7e2849d2972d59489ce1d7dd4bb5914e0"
+    },
+    {
+      "byte_count": 59835167,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/ovi-native-v1/scenes/20c993b7-698f-29c5-847d-c8cb8a685f5a/attempt-20260906T161218.364141Z/mapping/cropformer_inst/instance_mesh_63.ply",
+      "role": "D2 visit-0 native OVI instance mesh",
+      "sha256": "f8a230bfcc725f052a84402d3b3f7bf040158c4af3f1b66ebe22d5eaef347ba6"
+    },
+    {
+      "byte_count": 461993,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/ovi-native-v1/scenes/20c993b7-698f-29c5-847d-c8cb8a685f5a/attempt-20260906T161218.364141Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_63_incre_combine.pkl",
+      "role": "D2 visit-0 native OVI semantic features",
+      "sha256": "fd71098d8c8f6b76a709611f6df0b72f19cabdb91637822864efdcc1c3bf9f19"
+    },
+    {
+      "byte_count": 421,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/ovi-native-v1/scenes/20c993b7-698f-29c5-847d-c8cb8a685f5a/attempt-20260906T161218.364141Z/native_audit/instance_colors_cpp.tsv",
+      "role": "D2 visit-0 instance color audit",
+      "sha256": "fbbfc5e940f44e9e88ea407ccead3c6990b07794ac7962346c0ac997a5424022"
+    },
+    {
+      "byte_count": 58276135,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/ovi-native-v1/scenes/20c993b3-698f-29c5-859c-dca8ddecf220/attempt-20260906T161218.311986Z/mapping/cropformer_inst/instance_mesh_53.ply",
+      "role": "D2 visit-1 native OVI instance mesh",
+      "sha256": "433a653c7812325e85b6f560583e131b4874d911bb7ce4b115adef76d751bdad"
+    },
+    {
+      "byte_count": 317786,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/ovi-native-v1/scenes/20c993b3-698f-29c5-859c-dca8ddecf220/attempt-20260906T161218.311986Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_53_incre_combine.pkl",
+      "role": "D2 visit-1 native OVI semantic features",
+      "sha256": "2c7b68c31464d011d5d4c43607441926a3da2f0105d95dafbb9992f4c402495a"
+    },
+    {
+      "byte_count": 302,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/ovi-native-v1/scenes/20c993b3-698f-29c5-859c-dca8ddecf220/attempt-20260906T161218.311986Z/native_audit/instance_colors_cpp.tsv",
+      "role": "D2 visit-1 instance color audit",
+      "sha256": "ced9ff89a7ec530127f96de568fb1127c8e345f55260c35a42cc645c2712a195"
+    },
+    {
+      "byte_count": 18083,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/d2-pair-view-v1/scene0109_00-scene0109_01-depth-provenance-v2/manifest.json",
+      "role": "D2 dense pair artifact manifest",
+      "sha256": "ed1f55d78167df2d93795e0f94bf5a00a21d3224445b7b81b785ea04de647715"
+    },
+    {
+      "byte_count": 53340737,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/d2-pair-view-v1/scene0109_00-scene0109_01-depth-provenance-v2/t0/rgb.ply",
+      "role": "D2 visit-0 RGB PLY",
+      "sha256": "abc4307bd903ad743829c13bdce1fe987fc9118e9a6a99c5df691b822d257ab7"
+    },
+    {
+      "byte_count": 53340737,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/d2-pair-view-v1/scene0109_00-scene0109_01-depth-provenance-v2/t0/instance.ply",
+      "role": "D2 visit-0 instance PLY",
+      "sha256": "a19d212930a05935d3698406719e7cdd8a9b4c11136c02a29dd70edd54fbae71"
+    },
+    {
+      "byte_count": 51282122,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/d2-pair-view-v1/scene0109_00-scene0109_01-depth-provenance-v2/t1/rgb.ply",
+      "role": "D2 visit-1 RGB PLY",
+      "sha256": "c2488de0faaa9253cc898fcd8c20178b9c6c815f02a7ffe7552a8abf57459464"
+    },
+    {
+      "byte_count": 51282122,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/d2-pair-view-v1/scene0109_00-scene0109_01-depth-provenance-v2/t1/instance.ply",
+      "role": "D2 visit-1 instance PLY",
+      "sha256": "8b30144bad4ced7bf37f74d3c7b13778766b1f321c597efc2e417633c643c65d"
+    },
+    {
+      "byte_count": 1568,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-transfer-v1/scene0109_00-scene0109_01/native_forwards.json",
+      "role": "cached ReScene forward metadata",
+      "sha256": "0983147020a51764302c2ee067808146913116530a728c66c235a4ccc4f2547c"
+    },
+    {
+      "byte_count": 28400149,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-transfer-v1/scene0109_00-scene0109_01/native_forwards.npz",
+      "role": "cached ReScene forward arrays",
+      "sha256": "03f3f45760ab7cb1ef0a238c42479f9930dc7bbb9aae3482f5c1170d8b4db3da"
+    },
+    {
+      "byte_count": 2418,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/gt-v1/scene0109_00-scene0109_01/manifest.json",
+      "role": "evaluator-only D2 GT manifest",
+      "sha256": "422fee2e94e995abc92961d38ea249b01be46694ef1404e4c2502a979a3b8f9e"
+    },
+    {
+      "byte_count": 8985,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-transfer-v1/scene0109_00-scene0109_01/instance-readout-v1-U3/manifest.json",
+      "role": "U3 dense instance map manifest",
+      "sha256": "3b94d22805ca1ab521cae592dfa86b23ac96f6e08d03965ee754add9c031a6cd"
+    },
+    {
+      "byte_count": 51282122,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-transfer-v1/scene0109_00-scene0109_01/instance-readout-v1-U3/current_instance.ply",
+      "role": "U3 dense instance PLY",
+      "sha256": "a7a0b84992ee5851123f15b975087ac93db995ec4ec92804656ae19d4b8c77b8"
+    },
+    {
+      "byte_count": 1669,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-recovery-v1/scene0109_00-scene0109_01/C0/manifest.json",
+      "role": "C0 dense recovery manifest",
+      "sha256": "1187d7abdc2d0fee03ed18e9c4bf8620bebcb588374974f8c2982f257e50e218"
+    },
+    {
+      "byte_count": 2897,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-recovery-v1/scene0109_00-scene0109_01/C1/manifest.json",
+      "role": "C1 dense recovery manifest",
+      "sha256": "4f53a3ce5c1fd40da81e24df886bca8c710eee1ed161e93ef325c48de2096877"
+    },
+    {
+      "byte_count": 1710,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-recovery-v1/scene0109_00-scene0109_01/C2/manifest.json",
+      "role": "C2 dense recovery manifest",
+      "sha256": "e7d70eb03356bdcd6cd5dbc063490048b5f0158fd59115c826f7aa6165b64644"
+    },
+    {
+      "byte_count": 1690,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-recovery-v1/scene0109_00-scene0109_01/O1/manifest.json",
+      "role": "O1 dense recovery manifest",
+      "sha256": "4d69574d168ba7f41af72823b7f2c1b769afe1fec0d2f08d583027981c051d37"
+    },
+    {
+      "byte_count": 1690,
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-recovery-v1/scene0109_00-scene0109_01/O2/manifest.json",
+      "role": "O2 dense recovery manifest",
+      "sha256": "021468d3f5366cd7b3b1ba40eea93463a61c143524edd8957a66db8735c9e439"
+    }
+  ],
+  "local_only_binding_status": "PASS_AT_INDEX_CREATION",
+  "schema_version": 1,
+  "status": "PASS_WITH_BOUNDED_NEGATIVE_RESULTS",
+  "tracked_artifacts": [
+    {
+      "byte_count": 79594,
+      "path": "configs/evaluation/manifests/ovi_rescene_object_level_pairs_v1.json",
+      "role": "frozen eight-pair development manifest",
+      "sha256": "2054c818c5f02a1ffcf2d4bcb3d3743ef0f4865ff428055f00e2f215c69d4a37"
+    },
+    {
+      "byte_count": 27416,
+      "path": "configs/evaluation/manifests/ovi_rescene_resolver_transfer_v1.json",
+      "role": "two-pair fixed-threshold transfer slice",
+      "sha256": "605307d314007cb0ca008867c5c0a30d82e54e27cda62f057b6ed9771b2e2db1"
+    },
+    {
+      "byte_count": 4501,
+      "path": "configs/evaluation/ovi_rescene_object_level_transfer_v1.json",
+      "role": "frozen object-level protocol",
+      "sha256": "cf8422dd21aa72b66fbdb2a8918b689efcb12cb20b488e8dd3ff56c08f7a41ef"
+    },
+    {
+      "byte_count": 3653,
+      "path": "configs/evaluation/ovi_rescene_object_level_transfer_matrix_v1.json",
+      "role": "frozen native transfer matrix protocol",
+      "sha256": "4dc16897136c0931ef2f295bf8ea0b44d47129568a4c33bd8338906c72baf53e"
+    },
+    {
+      "byte_count": 4113,
+      "path": "configs/evaluation/ovi_rescene_transfer_diagnosis_v1.json",
+      "role": "frozen D0-D1-D2 diagnosis protocol",
+      "sha256": "67f0d6e276fda76f0b63e8547446d3679eef41ccbb2230e393aeb6795fc4189b"
+    },
+    {
+      "byte_count": 4942,
+      "path": "configs/evaluation/ovi_rescene_object_recovery_v1.json",
+      "role": "frozen recovery and oracle protocol",
+      "sha256": "6442aa687d0b5fa6adb3c945323250d5cc69fa2c8ea12a86398093374c6f0429"
+    },
+    {
+      "byte_count": 213864,
+      "path": "configs/evaluation/results/ovi_rescene_real_evidence/resolver_tuning_v1.json",
+      "role": "DEV6 threshold-selection parent evidence",
+      "sha256": "53d0ef99ee234592e6c1a17c7e756943976b1a528a3ff9b2c485224158713c61"
+    },
+    {
+      "byte_count": 93689,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/resolver_effect_breakdown.csv",
+      "role": "per-query resolver attribution",
+      "sha256": "5a5266c277ed358725e06c9b20258968433c9bf2e16487a100f131cd2cdbffb9"
+    },
+    {
+      "byte_count": 1843,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/resolver_fixed_threshold_transfer.csv",
+      "role": "fixed-threshold transfer metrics",
+      "sha256": "6539daa1a4359f08be3c1d48dc7e0e85043f9cd0d5f0c4abd833376b99254386"
+    },
+    {
+      "byte_count": 11032,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_ovimap_smoke_v1.json",
+      "role": "real D2 mapping receipt",
+      "sha256": "44fc7bcd010f4a678584af7398c433e484bb638219d12b28a47edc14089872a6"
+    },
+    {
+      "byte_count": 7825,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_pair_view_v1.json",
+      "role": "D2 pair and dense geometry receipt",
+      "sha256": "db27af0ca02e360994ffac42b094cc31f06d12f416fae2d42378cda4c7fc1746"
+    },
+    {
+      "byte_count": 6252,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/shared_candidate_gfr.csv",
+      "role": "shared-candidate G-F-R metrics",
+      "sha256": "0aad3cbdaa8e436aba12d0109a5a912d336a1413967d0ddb3aa58a4d86cbc3c0"
+    },
+    {
+      "byte_count": 6722,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/instance_readout.csv",
+      "role": "dense instance readout metrics",
+      "sha256": "a7c17576bcadc0d1879b81d8426c6fd80fea98866b6c9ef567f5461115e5ece1"
+    },
+    {
+      "byte_count": 8384,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/instance_readout_v1.json",
+      "role": "dense instance readout receipt",
+      "sha256": "310b373a4b067623885de899b483a24cf3b44607f366f856cdcdc35d836f843f"
+    },
+    {
+      "byte_count": 6622,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/per_pair_metrics.csv",
+      "role": "D0-D1-D2 metrics",
+      "sha256": "1abc51730ff6f2ea2ad01bdb495efd77acf2b9bb529f313f1eff9d55a3c436e8"
+    },
+    {
+      "byte_count": 2080,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/experiments.csv",
+      "role": "experiment ledger",
+      "sha256": "fb336585b0e1b8dc8b92225b6b27b7401953b0ae4e9b382882df9dfdb11ea10a"
+    },
+    {
+      "byte_count": 5548,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/adaptation_decision_v2.json",
+      "role": "frozen adaptation decision",
+      "sha256": "fb7f2203c678bf3b6906ef634652834cbfe0a2264dec73b3b2dd942b6770d23b"
+    },
+    {
+      "byte_count": 2879,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/completion_oracles.csv",
+      "role": "C0-C2 and O1-O2 recovery metrics",
+      "sha256": "3bb72e859e584718ae6178e6afb19a47aca0a218e370522ae73742e9d7f53acb"
+    },
+    {
+      "byte_count": 22911,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/completion_oracles_v1.json",
+      "role": "recovery and oracle receipt",
+      "sha256": "289466e63399836b4abc0e87b33c1a0bfd8f9d00c028b830752191091c261d7a"
+    },
+    {
+      "byte_count": 217693,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_pair_view_v1/t0_instance.png",
+      "role": "tracked D2 visit-0 instance preview",
+      "sha256": "617a8bd7d099f9e0b9cc02e1678d6fe1bc61c7b746c864358ceb862b3c930224"
+    },
+    {
+      "byte_count": 356310,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_pair_view_v1/t0_rgb.png",
+      "role": "tracked D2 visit-0 RGB preview",
+      "sha256": "0a48b75de0064cca8363b7a442b68654048a3dede14fd8f72b89ffa48e6cab04"
+    },
+    {
+      "byte_count": 201095,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_pair_view_v1/t1_instance.png",
+      "role": "tracked D2 visit-1 instance preview",
+      "sha256": "3a87891e8726280017d7d3d461c382ffad334c6e760852fcc6dc2ffe2cab08c2"
+    },
+    {
+      "byte_count": 339059,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_pair_view_v1/t1_rgb.png",
+      "role": "tracked D2 visit-1 RGB preview",
+      "sha256": "ac382e4ec49d7fee2b6d3cf23a045cbefc0e2a583e5d80378fec809f07506040"
+    },
+    {
+      "byte_count": 197397,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/instance_readout_v1/current_instance.png",
+      "role": "tracked U3 current instance preview",
+      "sha256": "4c68b428ea086aa72923598dc716beb65975680b22d8dae66f880b14a41c3d72"
+    },
+    {
+      "byte_count": 339059,
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/instance_readout_v1/current_rgb.png",
+      "role": "tracked U3 current RGB preview",
+      "sha256": "ac382e4ec49d7fee2b6d3cf23a045cbefc0e2a583e5d80378fec809f07506040"
+    }
+  ],
+  "verification": {
+    "affected_suite": {
+      "status": "PASS",
+      "passed": 256,
+      "scope": "all branch-changed tests plus direct dependencies and the frozen two-visit matrix"
+    },
+    "artifact_bindings": {
+      "status": "PASS",
+      "tracked_artifact_count": 25,
+      "local_only_artifact_count": 27
+    },
+    "python_compilation": "PASS_ALL_BRANCH_CHANGED_PYTHON_FILES",
+    "git_diff_check": "PASS",
+    "full_repository_suite": {
+      "status": "NONZERO_UNRELATED_ENVIRONMENT_LIMITATIONS",
+      "passed": 6246,
+      "skipped": 10,
+      "failed": 2,
+      "failed_sources_changed_from_baseline": false,
+      "limitations": [
+        "NumPy 2.2 public header reader internally reaches the monkeypatched private reader",
+        "transformers is not installed in the persist4d environment"
+      ]
+    },
+    "ruff": "NOT_AVAILABLE_IN_PERSIST4D_ENVIRONMENT"
+  },
+  "upload_status_recording": "EXTERNAL_FINAL_REMOTE_SHA_CHECK"
+}
