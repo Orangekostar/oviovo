@@ -15,6 +15,11 @@ from src.evaluation.ovi_pair_views import (
     OviObjectPairView,
     OviObjectVisitView,
 )
+from src.evaluation.temporal_grouping_artifacts import (
+    export_temporal_grouping_artifacts,
+)
+from src.evaluation.temporal_object_groups import build_temporal_object_groups
+from src.oviv2.two_visit_contracts import PairRelation
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 
@@ -250,6 +255,46 @@ def test_export_refuses_to_overwrite(tmp_path: Path, pair: OviObjectPairView) ->
         export_ovi_object_pair_artifacts(
             pair, output, preview_width=64, preview_height=48
         )
+
+
+def test_exports_dense_current_grouping_without_changing_xyz(
+    tmp_path: Path, pair: OviObjectPairView
+) -> None:
+    relation = PairRelation(
+        temporal_query_id="q0",
+        t0_entity_ids=("ovimap:7",),
+        t1_entity_ids=("ovimap:7",),
+        state="persistent_moved",
+        query_confidence=0.9,
+        evidence={"query_score": 0.9},
+        identity_source="rescene",
+    )
+    grouping = build_temporal_object_groups(pair, (relation,), variant_id="U3")
+
+    result = export_temporal_grouping_artifacts(
+        pair,
+        grouping,
+        tmp_path / "grouping",
+        preview_width=64,
+        preview_height=48,
+    )
+
+    manifest = json.loads(result.manifest.read_text(encoding="utf-8"))
+    assert manifest["status"] == "DENSE_CURRENT_GROUPING_PASS"
+    assert manifest["variant_id"] == "U3"
+    assert manifest["grouping_sha256"] == grouping.content_sha256()
+    assert manifest["geometry"]["xyz_changed"] is False
+    assert set(manifest["outputs"]) == {
+        "current_instance_ply",
+        "current_instance_preview",
+        "current_rgb_preview",
+    }
+    vertices = PlyData.read(result.output_dir / "current_instance.ply")["vertex"].data
+    np.testing.assert_array_equal(
+        np.column_stack((vertices["x"], vertices["y"], vertices["z"])),
+        pair.visits[1].points_xyz,
+    )
+    np.testing.assert_array_equal(vertices["entity_index"], [1, 1, 0])
 
 
 def test_checked_in_real_d2_receipt_binds_sources_and_small_previews() -> None:
