@@ -154,9 +154,9 @@
 - Consumes: reused D0 predictions, sensor-defined D1 support, real D2 OVI candidates, and measured raw/proposal/fixed-pool metrics.
 - Produces: layer-separated domain diagnosis and one deterministic decision: no adaptation, decoder/mask-head adaptation, or upstream proposal/grouping repair.
 
-- [ ] Write failing decision tests covering D0/D1 degradation, D2-only degradation, raw-good/resolver-bad, and proposal-limited cases.
-- [ ] Run `python -m pytest -q tests/evaluation/test_decide_ovi_rescene_adaptation.py` and confirm expected decision failures.
-- [ ] Implement the diagnosis using measured thresholds declared in the config before viewing D2_EVAL results.
+- [x] Write failing decision tests covering D0/D1 degradation, D2-only degradation, raw-good/resolver-bad, and proposal-limited cases.
+- [x] Run `python -m pytest -q tests/evaluation/test_decide_ovi_rescene_adaptation.py` and confirm expected decision failures.
+- [x] Implement the diagnosis using measured thresholds declared in the config before viewing D2_EVAL results.
 - [ ] Run identical UUID pairs across available D0/D1/D2 layers, logging runtime, memory, support, raw query, proposal, and fixed-pool association metrics.
 - [ ] If and only if the gate selects domain adaptation, train one frozen-backbone decoder/mask-head candidate on environment-disjoint TRAIN_OVI_ADAPT data, select on development environments, and compare against the original checkpoint on unchanged D2_EVAL.
 - [ ] Verify with `python -m pytest -q tests/evaluation/test_decide_ovi_rescene_adaptation.py tests/evaluation/test_run_3rscan_t2_matrix.py`.

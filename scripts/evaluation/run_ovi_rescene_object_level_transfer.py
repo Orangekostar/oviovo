@@ -20,6 +20,7 @@ from pathlib import Path
 from types import MappingProxyType
 
 import numpy as np
+from scipy.spatial import cKDTree
 
 from scripts.evaluation.prepare_ovi_rescene_input_v2 import capture_native_sampling
 from scripts.evaluation.rescene_pair_executor import (
@@ -44,7 +45,16 @@ from src.evaluation.rscan_association_metrics import (
     build_fixed_endpoint_bindings,
     evaluate_fixed_object_predictions,
 )
-from src.evaluation.rscan_gt_instances import GroundTruthPair
+from src.evaluation.rscan_gt_instances import (
+    GroundTruthPair,
+    PredictedInstance,
+    evaluate_instance_geometry,
+    voxelize_points,
+)
+from src.evaluation.rscan_method_views import (
+    ProcessedVisitView,
+    RScanMethodPairView,
+)
 from src.oviv2.ovi_surface_attributes import SurfaceGroup
 from src.oviv2.rescene_input_bridge import (
     AdapterGeometry,
@@ -61,7 +71,11 @@ from src.oviv2.rescene_supported_view import (
     SupportedInferenceView,
     build_supported_inference_view,
 )
-from src.oviv2.two_visit_contracts import NeuralSampleMap, TemporalQueryEvidence
+from src.oviv2.two_visit_contracts import (
+    NeuralSampleMap,
+    PairRelation,
+    TemporalQueryEvidence,
+)
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 _METHOD_IDS = ("G_full", "G_supported", "F_obj", "R_obj")
@@ -184,6 +198,261 @@ class SharedCandidateEvaluation:
     endpoint_bindings: Mapping[str, FixedEndpointBindings]
     feature_bank: IndependentFeatureBank
     query_evidence: TemporalQueryEvidence
+
+
+def build_d1_sensor_support_view(
+    d0_pair: RScanMethodPairView,
+    d2_pair: OviObjectPairView,
+    *,
+    maximum_distance_m: float,
+) -> tuple[RScanMethodPairView, dict[str, object]]:
+    """Restrict native points using only proximity to the real D2 dense surface."""
+
+    if (
+        not isinstance(d0_pair, RScanMethodPairView)
+        or d0_pair.domain_id != "D0_NATIVE_PROCESSED"
+    ):
+        raise ObjectLevelTransferError("D1 parent must be a D0 native pair")
+    if not isinstance(d2_pair, OviObjectPairView):
+        raise TypeError("d2_pair must be an OviObjectPairView")
+    if d0_pair.pair_id != d2_pair.pair_id or tuple(
+        visit.scan_id for visit in d0_pair.visits
+    ) != tuple(visit.scan_id for visit in d2_pair.visits):
+        raise ObjectLevelTransferError("D0 and D2 must describe the same UUID pair")
+    if (
+        isinstance(maximum_distance_m, bool)
+        or not isinstance(maximum_distance_m, (int, float))
+        or not math.isfinite(float(maximum_distance_m))
+        or float(maximum_distance_m) <= 0.0
+    ):
+        raise ObjectLevelTransferError("D1 support distance must be finite and positive")
+    threshold = float(maximum_distance_m)
+    supported_visits: list[ProcessedVisitView] = []
+    point_counts: list[int] = []
+    support_counts: list[int] = []
+    for native, reconstructed in zip(d0_pair.visits, d2_pair.visits, strict=True):
+        distances, _nearest = cKDTree(reconstructed.points_xyz).query(
+            native.points_xyz,
+            k=1,
+            workers=1,
+        )
+        supported = np.asarray(distances <= threshold, dtype=np.bool_)
+        if not np.any(supported):
+            raise ObjectLevelTransferError(
+                f"D1 support removes every point from visit {native.visit_id}"
+            )
+        supported_visits.append(
+            ProcessedVisitView(
+                visit_id=native.visit_id,
+                scan_id=native.scan_id,
+                points_xyz=native.points_xyz[supported],
+                rgb=native.rgb[supported],
+                normals_xyz=native.normals_xyz[supported],
+                segment_ids=native.segment_ids[supported],
+                source_point_indices=native.source_point_indices[supported],
+            )
+        )
+        point_counts.append(native.point_count)
+        support_counts.append(int(np.count_nonzero(supported)))
+    pair = RScanMethodPairView(
+        pair_id=d0_pair.pair_id,
+        domain_id="D1_NATIVE_SENSOR_SUPPORT",
+        visits=(supported_visits[0], supported_visits[1]),
+        source_manifest_sha256=d0_pair.source_manifest_sha256,
+        parent_method_tensor_sha256=d0_pair.method_tensor_sha256(),
+        coordinate_frame_id=d0_pair.coordinate_frame_id,
+        global_alignment_application=d0_pair.global_alignment_application,
+    )
+    total_points = sum(point_counts)
+    total_supported = sum(support_counts)
+    return pair, {
+        "definition": "nearest_d2_dense_surface_within_distance",
+        "maximum_distance_m": threshold,
+        "visit_point_counts": point_counts,
+        "visit_support_counts": support_counts,
+        "visit_support_fractions": [
+            supported / total
+            for supported, total in zip(support_counts, point_counts, strict=True)
+        ],
+        "overall_support_fraction": total_supported / total_points,
+        "ground_truth_used": False,
+    }
+
+
+def _projected_relation_state(
+    pair: RScanMethodPairView,
+    t0_ids: tuple[str, ...],
+    t1_ids: tuple[str, ...],
+    *,
+    static_centroid_tolerance_m: float,
+) -> str:
+    cardinality = (len(t0_ids), len(t1_ids))
+    if cardinality == (1, 1):
+        centroids: list[np.ndarray] = []
+        for visit, entity_id in zip(pair.visits, (t0_ids[0], t1_ids[0]), strict=True):
+            segment_by_id = dict(zip(visit.candidate_ids, np.unique(visit.segment_ids), strict=True))
+            centroids.append(
+                np.mean(
+                    visit.points_xyz[visit.segment_ids == segment_by_id[entity_id]],
+                    axis=0,
+                )
+            )
+        distance = float(np.linalg.norm(centroids[0] - centroids[1]))
+        return (
+            "persistent_static"
+            if distance <= static_centroid_tolerance_m
+            else "persistent_moved"
+        )
+    if cardinality == (0, 1):
+        return "appeared"
+    if cardinality == (1, 0):
+        return "removed_candidate"
+    if cardinality[0] == 1 and cardinality[1] > 1:
+        return "split"
+    if cardinality[0] > 1 and cardinality[1] == 1:
+        return "merge"
+    return "uncertain"
+
+
+def project_cached_relations_to_sensor_support(
+    d1_pair: RScanMethodPairView,
+    records: tuple[Mapping[str, object], ...],
+    *,
+    static_centroid_tolerance_m: float,
+) -> tuple[PairRelation, ...]:
+    """Project cached D0 relations onto D1 without claiming a new forward."""
+
+    if (
+        not isinstance(d1_pair, RScanMethodPairView)
+        or d1_pair.domain_id != "D1_NATIVE_SENSOR_SUPPORT"
+    ):
+        raise ObjectLevelTransferError("cached projection requires a D1 pair")
+    if (
+        isinstance(static_centroid_tolerance_m, bool)
+        or not isinstance(static_centroid_tolerance_m, (int, float))
+        or not math.isfinite(float(static_centroid_tolerance_m))
+        or float(static_centroid_tolerance_m) <= 0.0
+    ):
+        raise ObjectLevelTransferError("static centroid tolerance is invalid")
+    if not isinstance(records, tuple):
+        raise ObjectLevelTransferError("cached relation records must be a tuple")
+    expected = {
+        "temporal_query_id",
+        "t0_entity_ids",
+        "t1_entity_ids",
+        "state",
+        "query_confidence",
+        "identity_source",
+        "evidence",
+    }
+    allowed = tuple(set(visit.candidate_ids) for visit in d1_pair.visits)
+    projected: list[PairRelation] = []
+    for record in records:
+        if not isinstance(record, Mapping) or set(record) != expected:
+            raise ObjectLevelTransferError("cached relation schema is invalid")
+        raw_sides = (record.get("t0_entity_ids"), record.get("t1_entity_ids"))
+        if any(
+            not isinstance(side, list)
+            or any(not isinstance(entity_id, str) for entity_id in side)
+            for side in raw_sides
+        ):
+            raise ObjectLevelTransferError("cached relation entity IDs are invalid")
+        sides = tuple(
+            tuple(entity_id for entity_id in side if entity_id in visit_allowed)
+            for side, visit_allowed in zip(raw_sides, allowed, strict=True)
+        )
+        if not sides[0] and not sides[1]:
+            continue
+        evidence = record.get("evidence")
+        if not isinstance(evidence, Mapping):
+            raise ObjectLevelTransferError("cached relation evidence is invalid")
+        projected.append(
+            PairRelation(
+                temporal_query_id=record.get("temporal_query_id"),
+                t0_entity_ids=sides[0],
+                t1_entity_ids=sides[1],
+                state=_projected_relation_state(
+                    d1_pair,
+                    sides[0],
+                    sides[1],
+                    static_centroid_tolerance_m=float(
+                        static_centroid_tolerance_m
+                    ),
+                ),
+                query_confidence=record.get("query_confidence"),
+                evidence={**evidence, "cached_d0_projection": 1.0},
+                identity_source=record.get("identity_source"),
+            )
+        )
+    return tuple(projected)
+
+
+def measure_native_candidate_representation(
+    pair: RScanMethodPairView,
+    ground_truth: GroundTruthPair,
+    *,
+    iou_threshold: float,
+) -> dict[str, object]:
+    """Measure whether the fixed native candidate pool represents each GT pair."""
+
+    if not isinstance(pair, RScanMethodPairView):
+        raise TypeError("pair must be an RScanMethodPairView")
+    if not isinstance(ground_truth, GroundTruthPair):
+        raise TypeError("ground_truth must be a GroundTruthPair")
+    if pair.pair_id != ground_truth.pair_id:
+        raise ObjectLevelTransferError("native pair and ground truth IDs differ")
+    if iou_threshold not in {0.5, 0.25}:
+        raise ObjectLevelTransferError("representation IoU threshold is unsupported")
+    matched_ids: list[set[int]] = []
+    for visit, targets in zip(pair.visits, ground_truth.visits, strict=True):
+        predictions = tuple(
+            PredictedInstance(
+                prediction_id=candidate_id,
+                voxels=voxelize_points(
+                    visit.points_xyz[visit.segment_ids == segment_id],
+                    voxel_size_m=ground_truth.voxel_size_m,
+                ),
+            )
+            for segment_id, candidate_id in zip(
+                np.unique(visit.segment_ids), visit.candidate_ids, strict=True
+            )
+        )
+        geometry = evaluate_instance_geometry(
+            predictions,
+            targets,
+            matching_policy="max_valid_count_then_iou",
+        )
+        threshold_result = (
+            geometry.primary if iou_threshold == 0.5 else geometry.sensitivity
+        )
+        matched_ids.append(
+            {match.gt_instance_id for match in threshold_result.matches}
+        )
+    left_gt_ids = {target.instance_id for target in ground_truth.visits[0]}
+    persistent: dict[int, frozenset[int]] = {}
+    for target in ground_truth.visits[1]:
+        reference_id = ground_truth.identity_rules.reference_id_for_rescan(
+            target.instance_id
+        )
+        allowed = frozenset(
+            instance_id
+            for instance_id in left_gt_ids
+            if ground_truth.identity_rules.is_ambiguous_equivalent(
+                instance_id, reference_id
+            )
+        )
+        if allowed:
+            persistent[target.instance_id] = allowed
+    represented = sum(
+        right_id in matched_ids[1] and bool(allowed & matched_ids[0])
+        for right_id, allowed in persistent.items()
+    )
+    total = len(persistent)
+    return {
+        "persistent_gt_count": total,
+        "represented_persistent_gt_count": represented,
+        "proposal_representation_coverage": None if total == 0 else represented / total,
+    }
 
 
 def _configured_path(value: object, *, label: str) -> Path:
@@ -1030,6 +1299,7 @@ __all__ = [
     "ObjectLevelTransferError",
     "ObjectTransferConfig",
     "SharedCandidateEvaluation",
+    "build_d1_sensor_support_view",
     "build_d2_inference_bundle",
     "build_shared_candidate_rows",
     "build_source_bound_model_support",
@@ -1037,7 +1307,9 @@ __all__ = [
     "evaluate_shared_candidate_methods",
     "execute_association_forwards",
     "load_object_transfer_config",
+    "measure_native_candidate_representation",
     "pool_independent_candidate_features",
+    "project_cached_relations_to_sensor_support",
     "run_native_association_forwards",
     "write_shared_candidate_csv",
 ]

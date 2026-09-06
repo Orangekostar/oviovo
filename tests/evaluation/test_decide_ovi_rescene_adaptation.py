@@ -5,6 +5,7 @@ import pytest
 from scripts.evaluation.decide_ovi_rescene_adaptation import (
     AdaptationDecisionError,
     decide_adaptation,
+    decide_transfer_adaptation,
 )
 
 
@@ -111,3 +112,106 @@ def test_missing_evidence_cannot_carry_a_numeric_value() -> None:
 
     with pytest.raises(AdaptationDecisionError, match="missing evidence"):
         decide_adaptation(evidence)
+
+
+def _transfer_evidence() -> dict[str, object]:
+    return {
+        "schema_version": 2,
+        "pair_scope": "IDENTICAL_UUID_PAIRS",
+        "domains": {
+            "D0_NATIVE_PROCESSED": {
+                "status": "MEASURED",
+                "sensor_support_fraction": 1.0,
+                "raw_nonempty_fraction": 0.90,
+                "confident_query_fraction": 0.70,
+                "proposal_representation_coverage": 0.80,
+                "fixed_pool_association_f1": 0.60,
+            },
+            "D1_NATIVE_SENSOR_SUPPORT": {
+                "status": "MEASURED",
+                "sensor_support_fraction": 0.75,
+                "raw_nonempty_fraction": 0.82,
+                "confident_query_fraction": 0.62,
+                "proposal_representation_coverage": 0.72,
+                "fixed_pool_association_f1": 0.55,
+            },
+            "D2_OVI_RECONSTRUCTION": {
+                "status": "MEASURED",
+                "sensor_support_fraction": 0.70,
+                "raw_nonempty_fraction": 0.80,
+                "confident_query_fraction": 0.50,
+                "proposal_representation_coverage": 0.70,
+                "fixed_pool_association_f1": 0.50,
+            },
+        },
+    }
+
+
+def _transfer_thresholds() -> dict[str, float]:
+    return {
+        "maximum_d1_association_drop": 0.10,
+        "maximum_d1_proposal_drop": 0.10,
+        "minimum_d2_raw_nonempty_fraction": 0.50,
+        "minimum_d2_confident_query_fraction": 0.10,
+        "minimum_d2_proposal_representation_coverage": 0.25,
+        "minimum_usable_association_f1": 0.05,
+        "minimum_proposal_association_gap": 0.10,
+    }
+
+
+def test_transfer_gate_does_not_train_when_d1_sensor_support_degrades() -> None:
+    evidence = _transfer_evidence()
+    evidence["domains"]["D1_NATIVE_SENSOR_SUPPORT"].update(
+        proposal_representation_coverage=0.20,
+        fixed_pool_association_f1=0.55,
+    )
+
+    decision = decide_transfer_adaptation(evidence, _transfer_thresholds())
+
+    assert decision["action"] == "NO_ADAPTATION"
+    assert decision["selected_rule"] == "d1_sensor_support_degradation"
+
+
+def test_transfer_gate_adapts_decoder_for_d2_only_raw_query_degradation() -> None:
+    evidence = _transfer_evidence()
+    evidence["domains"]["D2_OVI_RECONSTRUCTION"].update(
+        raw_nonempty_fraction=0.20,
+        confident_query_fraction=0.05,
+        proposal_representation_coverage=0.70,
+        fixed_pool_association_f1=0.40,
+    )
+
+    decision = decide_transfer_adaptation(evidence, _transfer_thresholds())
+
+    assert decision["action"] == "ADAPT_DECODER_MASK_HEAD"
+    assert decision["selected_rule"] == "d2_raw_query_domain_gap"
+
+
+def test_transfer_gate_repairs_resolver_when_raw_and_proposals_are_usable() -> None:
+    evidence = _transfer_evidence()
+    evidence["domains"]["D2_OVI_RECONSTRUCTION"].update(
+        raw_nonempty_fraction=0.85,
+        confident_query_fraction=0.45,
+        proposal_representation_coverage=0.70,
+        fixed_pool_association_f1=0.02,
+    )
+
+    decision = decide_transfer_adaptation(evidence, _transfer_thresholds())
+
+    assert decision["action"] == "UPSTREAM_PROPOSAL_GROUPING_REPAIR"
+    assert decision["selected_rule"] == "d2_resolver_bottleneck"
+
+
+def test_transfer_gate_repairs_proposals_before_considering_decoder_adaptation() -> None:
+    evidence = _transfer_evidence()
+    evidence["domains"]["D2_OVI_RECONSTRUCTION"].update(
+        raw_nonempty_fraction=0.20,
+        confident_query_fraction=0.05,
+        proposal_representation_coverage=0.05,
+        fixed_pool_association_f1=0.0,
+    )
+
+    decision = decide_transfer_adaptation(evidence, _transfer_thresholds())
+
+    assert decision["action"] == "UPSTREAM_PROPOSAL_GROUPING_REPAIR"
+    assert decision["selected_rule"] == "d2_proposal_limited"

@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "config_id": "OVI_RESCENE_TRANSFER_DIAGNOSIS_V1",
+  "status": "FROZEN_BEFORE_D2_EVAL",
+  "pair_id": "scene0109_00-scene0109_01",
+  "pair_role": "D2_DEV",
+  "held_out_pair_ids": [
+    "scene0359_00-scene0359_01",
+    "scene0459_00-scene0459_01"
+  ],
+  "metric_iou_threshold": 0.25,
+  "confidence_threshold": 0.3,
+  "d1_support": {
+    "definition": "nearest_d2_dense_surface_within_distance",
+    "maximum_distance_m": 0.05,
+    "ground_truth_used": false
+  },
+  "decision_thresholds": {
+    "maximum_d1_association_drop": 0.1,
+    "maximum_d1_proposal_drop": 0.1,
+    "minimum_d2_raw_nonempty_fraction": 0.5,
+    "minimum_d2_confident_query_fraction": 0.1,
+    "minimum_d2_proposal_representation_coverage": 0.25,
+    "minimum_usable_association_f1": 0.05,
+    "minimum_proposal_association_gap": 0.1
+  },
+  "source_bindings": {
+    "object_transfer_config": {
+      "path": "configs/evaluation/ovi_rescene_object_level_transfer_v1.json",
+      "sha256": "cf8422dd21aa72b66fbdb2a8918b689efcb12cb20b488e8dd3ff56c08f7a41ef",
+      "byte_count": 4501
+    },
+    "selection_manifest": {
+      "path": "configs/evaluation/manifests/ovi_rescene_object_level_pairs_v1.json",
+      "sha256": "2054c818c5f02a1ffcf2d4bcb3d3743ef0f4865ff428055f00e2f215c69d4a37",
+      "byte_count": 79594
+    },
+    "d2_mapping_receipt": {
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_ovimap_smoke_v1.json",
+      "sha256": "44fc7bcd010f4a678584af7398c433e484bb638219d12b28a47edc14089872a6",
+      "byte_count": 11032
+    },
+    "d2_pair_receipt": {
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_pair_view_v1.json",
+      "sha256": "857d851c9b0bb9317f7bc117ce7fe938149297901f130589f1e9684d9cffd5f6",
+      "byte_count": 7632
+    },
+    "d0_pair_result": {
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/3rscan/matrix-v1/associations-v2/scene0109_00-scene0109_01.json",
+      "sha256": "6cd8d865b2fa81b167efee7cc980e8fed4c570a4cae39ad26aefe270a8581935",
+      "byte_count": 1596298
+    },
+    "d0_native_manifest": {
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/3rscan/matrix-v1/scene0109_00-scene0109_01/manifest.json",
+      "sha256": "42a1673c3cfb20db5fe4f4c31d093dc9e1cf4a6d55d7bed15d05983d7322f188",
+      "byte_count": 3155
+    },
+    "d2_forward_metadata": {
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-transfer-v1/scene0109_00-scene0109_01/native_forwards.json",
+      "sha256": "0983147020a51764302c2ee067808146913116530a728c66c235a4ccc4f2547c",
+      "byte_count": 1568
+    },
+    "d2_forward_arrays": {
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-transfer-v1/scene0109_00-scene0109_01/native_forwards.npz",
+      "sha256": "03f3f45760ab7cb1ef0a238c42479f9930dc7bbb9aae3482f5c1170d8b4db3da",
+      "byte_count": 28400149
+    },
+    "d2_association_metrics": {
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/shared_candidate_gfr.csv",
+      "sha256": "0aad3cbdaa8e436aba12d0109a5a912d336a1413967d0ddb3aa58a4d86cbc3c0",
+      "byte_count": 6252
+    },
+    "d2_instance_metrics": {
+      "path": "configs/evaluation/results/ovi_rescene_object_level_transfer/instance_readout.csv",
+      "sha256": "a7c17576bcadc0d1879b81d8426c6fd80fea98866b6c9ef567f5461115e5ece1",
+      "byte_count": 6722
+    },
+    "ground_truth_manifest": {
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/gt-v1/scene0109_00-scene0109_01/manifest.json",
+      "sha256": "422fee2e94e995abc92961d38ea249b01be46694ef1404e4c2502a979a3b8f9e",
+      "byte_count": 2418
+    }
+  },
+  "outputs": {
+    "per_pair_metrics": "configs/evaluation/results/ovi_rescene_object_level_transfer/per_pair_metrics.csv",
+    "experiments": "configs/evaluation/results/ovi_rescene_object_level_transfer/experiments.csv",
+    "decision": "configs/evaluation/results/ovi_rescene_object_level_transfer/adaptation_decision_v2.json"
+  }
+}

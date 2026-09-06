@@ -8,6 +8,7 @@ import numpy as np
 
 from scripts.evaluation.rescene_pair_executor import NativeForwardResult
 from scripts.evaluation.run_ovi_rescene_object_level_transfer import (
+    build_d1_sensor_support_view,
     build_d2_inference_bundle,
     build_shared_candidate_rows,
     build_source_bound_model_support,
@@ -15,7 +16,9 @@ from scripts.evaluation.run_ovi_rescene_object_level_transfer import (
     evaluate_shared_candidate_methods,
     execute_association_forwards,
     load_object_transfer_config,
+    measure_native_candidate_representation,
     pool_independent_candidate_features,
+    project_cached_relations_to_sensor_support,
     write_shared_candidate_csv,
 )
 
@@ -30,6 +33,10 @@ from src.evaluation.rscan_gt_instances import (
     GroundTruthPair,
     IdentityRules,
     voxelize_points,
+)
+from src.evaluation.rscan_method_views import (
+    ProcessedVisitView,
+    RScanMethodPairView,
 )
 from src.oviv2.rescene_input_bridge import ModelCandidateMap
 
@@ -115,6 +122,36 @@ def _pair() -> OviObjectPairView:
         visits=(_visit(0), _visit(1)),
         source_manifest_sha256="a" * 64,
         global_alignment=np.eye(4),
+    )
+
+
+def _native_pair() -> RScanMethodPairView:
+    visits = tuple(
+        ProcessedVisitView(
+            visit_id=visit_id,
+            scan_id=f"scan-{visit_id}",
+            points_xyz=np.asarray(
+                [
+                    [2.0 * visit_id + 0.01, 0.0, 1.0],
+                    [2.0 * visit_id + 0.51, 0.0, 1.0],
+                    [4.0 + visit_id, 0.0, 1.0],
+                ],
+                dtype=np.float32,
+            ),
+            rgb=np.full((3, 3), 0.5, dtype=np.float32),
+            normals_xyz=np.tile(
+                np.asarray([[0.0, 0.0, 1.0]], dtype=np.float32), (3, 1)
+            ),
+            segment_ids=np.asarray([1, 2, 3], dtype=np.int64),
+            source_point_indices=np.asarray([10, 20, 30], dtype=np.int64),
+        )
+        for visit_id in (0, 1)
+    )
+    return RScanMethodPairView(
+        pair_id="scene0001_00-scene0001_01",
+        domain_id="D0_NATIVE_PROCESSED",
+        visits=visits,
+        source_manifest_sha256="a" * 64,
     )
 
 
@@ -417,6 +454,94 @@ def test_writes_measured_rows_as_lf_csv_with_blank_nulls(tmp_path: Path) -> None
             "true_positive_count": "0",
         }
     ]
+
+
+def test_builds_d1_sensor_support_from_geometry_without_ground_truth() -> None:
+    d0 = _native_pair()
+
+    d1, audit = build_d1_sensor_support_view(
+        d0,
+        _pair(),
+        maximum_distance_m=0.05,
+    )
+
+    assert d1.domain_id == "D1_NATIVE_SENSOR_SUPPORT"
+    assert d1.parent_method_tensor_sha256 == d0.method_tensor_sha256()
+    assert [visit.point_count for visit in d1.visits] == [2, 2]
+    assert [visit.source_point_indices.tolist() for visit in d1.visits] == [
+        [10, 20],
+        [10, 20],
+    ]
+    assert audit == {
+        "definition": "nearest_d2_dense_surface_within_distance",
+        "maximum_distance_m": 0.05,
+        "visit_point_counts": [3, 3],
+        "visit_support_counts": [2, 2],
+        "visit_support_fractions": [2 / 3, 2 / 3],
+        "overall_support_fraction": 2 / 3,
+        "ground_truth_used": False,
+    }
+
+
+def test_cached_d0_relations_are_rebased_to_d1_candidates() -> None:
+    d1, _audit = build_d1_sensor_support_view(
+        _native_pair(),
+        _pair(),
+        maximum_distance_m=0.05,
+    )
+    records = (
+        {
+            "temporal_query_id": "query_0001",
+            "t0_entity_ids": ["segment:000001", "segment:000003"],
+            "t1_entity_ids": ["segment:000001"],
+            "state": "merge",
+            "query_confidence": 0.8,
+            "identity_source": "rescene",
+            "evidence": {"query_score": 0.8},
+        },
+        {
+            "temporal_query_id": "query_0002",
+            "t0_entity_ids": ["segment:000003"],
+            "t1_entity_ids": ["segment:000003"],
+            "state": "persistent_static",
+            "query_confidence": 0.7,
+            "identity_source": "rescene",
+            "evidence": {"query_score": 0.7},
+        },
+    )
+
+    projected = project_cached_relations_to_sensor_support(
+        d1,
+        records,
+        static_centroid_tolerance_m=0.2,
+    )
+
+    assert len(projected) == 1
+    assert projected[0].temporal_query_id == "query_0001"
+    assert projected[0].t0_entity_ids == ("segment:000001",)
+    assert projected[0].t1_entity_ids == ("segment:000001",)
+    assert projected[0].state == "persistent_moved"
+    assert projected[0].evidence["cached_d0_projection"] == 1.0
+
+
+def test_native_proposal_coverage_is_measured_before_association() -> None:
+    d1, _audit = build_d1_sensor_support_view(
+        _native_pair(),
+        _pair(),
+        maximum_distance_m=0.05,
+    )
+
+    measured = measure_native_candidate_representation(
+        d1,
+        _ground_truth(_pair()),
+        iou_threshold=0.5,
+    )
+
+    assert measured == {
+        "persistent_gt_count": 2,
+        "represented_persistent_gt_count": 2,
+        "proposal_representation_coverage": 1.0,
+    }
 
 
 def test_checked_in_config_freezes_runtime_and_uniform_association_thresholds() -> (

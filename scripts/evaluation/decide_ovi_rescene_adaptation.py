@@ -40,6 +40,27 @@ _CONFIG_KEYS = {
     "output",
 }
 _RECORD_KEYS = {"path", "sha256", "byte_count"}
+_TRANSFER_DOMAINS = (
+    "D0_NATIVE_PROCESSED",
+    "D1_NATIVE_SENSOR_SUPPORT",
+    "D2_OVI_RECONSTRUCTION",
+)
+_TRANSFER_METRICS = (
+    "sensor_support_fraction",
+    "raw_nonempty_fraction",
+    "confident_query_fraction",
+    "proposal_representation_coverage",
+    "fixed_pool_association_f1",
+)
+_TRANSFER_THRESHOLD_KEYS = {
+    "maximum_d1_association_drop",
+    "maximum_d1_proposal_drop",
+    "minimum_d2_raw_nonempty_fraction",
+    "minimum_d2_confident_query_fraction",
+    "minimum_d2_proposal_representation_coverage",
+    "minimum_usable_association_f1",
+    "minimum_proposal_association_gap",
+}
 
 
 class AdaptationDecisionError(ValueError):
@@ -162,6 +183,146 @@ def decide_adaptation(evidence: Mapping[str, object]) -> dict[str, object]:
             "identity_gain_without_geometry_gain",
         ],
         "evidence": measured,
+    }
+
+
+def _validated_transfer_evidence(
+    value: Mapping[str, object],
+) -> dict[str, dict[str, object]]:
+    if set(value) != {"schema_version", "pair_scope", "domains"} or (
+        value.get("schema_version") != 2
+        or value.get("pair_scope") != "IDENTICAL_UUID_PAIRS"
+    ):
+        raise AdaptationDecisionError("transfer evidence schema is invalid")
+    raw_domains = value.get("domains")
+    if not isinstance(raw_domains, Mapping) or set(raw_domains) != set(
+        _TRANSFER_DOMAINS
+    ):
+        raise AdaptationDecisionError("transfer domain evidence is invalid")
+    normalized: dict[str, dict[str, object]] = {}
+    for domain_id in _TRANSFER_DOMAINS:
+        domain = raw_domains.get(domain_id)
+        if not isinstance(domain, Mapping) or set(domain) != {
+            "status",
+            *_TRANSFER_METRICS,
+        }:
+            raise AdaptationDecisionError(
+                f"{domain_id} transfer evidence schema is invalid"
+            )
+        status = domain.get("status")
+        if status not in _STATUS:
+            raise AdaptationDecisionError(
+                f"{domain_id} transfer evidence status is invalid"
+            )
+        if status == "MISSING_ASSET":
+            if any(domain.get(field) is not None for field in _TRANSFER_METRICS):
+                raise AdaptationDecisionError(
+                    f"{domain_id} missing evidence cannot carry a numeric value"
+                )
+            normalized[domain_id] = {
+                "status": status,
+                **{field: None for field in _TRANSFER_METRICS},
+            }
+            continue
+        normalized[domain_id] = {
+            "status": status,
+            **{
+                field: _metric(domain.get(field), label=f"{domain_id}.{field}")
+                for field in _TRANSFER_METRICS
+            },
+        }
+    return normalized
+
+
+def _validated_transfer_thresholds(
+    value: Mapping[str, object],
+) -> dict[str, float]:
+    if set(value) != _TRANSFER_THRESHOLD_KEYS:
+        raise AdaptationDecisionError("transfer threshold schema is invalid")
+    return {
+        key: _metric(value.get(key), label=f"thresholds.{key}")
+        for key in sorted(_TRANSFER_THRESHOLD_KEYS)
+    }
+
+
+def decide_transfer_adaptation(
+    evidence: Mapping[str, object], thresholds: Mapping[str, object]
+) -> dict[str, object]:
+    """Choose one transfer action without interpreting missing evidence as zero."""
+
+    if not isinstance(evidence, Mapping) or not isinstance(thresholds, Mapping):
+        raise AdaptationDecisionError("transfer evidence and thresholds must be mappings")
+    measured = _validated_transfer_evidence(evidence)
+    frozen = _validated_transfer_thresholds(thresholds)
+    d0 = measured["D0_NATIVE_PROCESSED"]
+    d1 = measured["D1_NATIVE_SENSOR_SUPPORT"]
+    d2 = measured["D2_OVI_RECONSTRUCTION"]
+
+    if d0["status"] != "MEASURED" or d2["status"] != "MEASURED":
+        action = "NO_ADAPTATION"
+        rule = "insufficient_comparable_evidence"
+    elif (
+        d1["status"] == "MEASURED"
+        and d1["sensor_support_fraction"] < d0["sensor_support_fraction"]
+        and (
+            d1["fixed_pool_association_f1"]
+            + frozen["maximum_d1_association_drop"]
+            < d0["fixed_pool_association_f1"]
+            or d1["proposal_representation_coverage"]
+            + frozen["maximum_d1_proposal_drop"]
+            < d0["proposal_representation_coverage"]
+        )
+    ):
+        action = "NO_ADAPTATION"
+        rule = "d1_sensor_support_degradation"
+    elif (
+        d2["proposal_representation_coverage"]
+        < frozen["minimum_d2_proposal_representation_coverage"]
+    ):
+        action = "UPSTREAM_PROPOSAL_GROUPING_REPAIR"
+        rule = "d2_proposal_limited"
+    elif (
+        d2["raw_nonempty_fraction"]
+        < frozen["minimum_d2_raw_nonempty_fraction"]
+        or d2["confident_query_fraction"]
+        < frozen["minimum_d2_confident_query_fraction"]
+    ):
+        action = "ADAPT_DECODER_MASK_HEAD"
+        rule = "d2_raw_query_domain_gap"
+    elif (
+        d2["fixed_pool_association_f1"]
+        < frozen["minimum_usable_association_f1"]
+        or d2["fixed_pool_association_f1"]
+        + frozen["minimum_proposal_association_gap"]
+        < d2["proposal_representation_coverage"]
+    ):
+        action = "UPSTREAM_PROPOSAL_GROUPING_REPAIR"
+        rule = "d2_resolver_bottleneck"
+    else:
+        action = "NO_ADAPTATION"
+        rule = "no_actionable_transfer_gap"
+
+    return {
+        "schema_version": 2,
+        "artifact_id": "OVI_RESCENE_TRANSFER_ADAPTATION_DECISION_V2",
+        "status": "PASS",
+        "evidence_status": "MEASURED_ONLY_NULL_PRESERVING",
+        "action": action,
+        "selected_rule": rule,
+        "ordered_rules": [
+            "insufficient_comparable_evidence",
+            "d1_sensor_support_degradation",
+            "d2_proposal_limited",
+            "d2_raw_query_domain_gap",
+            "d2_resolver_bottleneck",
+            "no_actionable_transfer_gap",
+        ],
+        "thresholds": frozen,
+        "evidence": {
+            "schema_version": 2,
+            "pair_scope": "IDENTICAL_UUID_PAIRS",
+            "domains": measured,
+        },
     }
 
 
@@ -390,6 +551,7 @@ __all__ = [
     "build_measured_evidence",
     "decide_adaptation",
     "decide_from_config",
+    "decide_transfer_adaptation",
     "main",
 ]
 
