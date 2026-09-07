@@ -320,11 +320,13 @@ def _parent_counts(
     if np.any(owners < 0):
         raise DenseInstanceRepairMetricError("candidate contains source background")
     return tuple(
-        (
-            visit.entities[entity_index].entity_id,
-            int(np.count_nonzero(owners == entity_index)),
+        sorted(
+            (
+                visit.entities[entity_index].entity_id,
+                int(np.count_nonzero(owners == entity_index)),
+            )
+            for entity_index in set(int(value) for value in owners)
         )
-        for entity_index in sorted(set(int(value) for value in owners))
     )
 
 

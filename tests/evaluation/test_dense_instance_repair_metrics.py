@@ -314,6 +314,40 @@ def test_p0_p1_p2_share_dense_geometry_while_p2_splits_and_merges(
     assert all(row["merge_prediction_count_at_050"] == 1 for row in p1_rows)
 
 
+def test_p1_parent_counts_use_canonical_entity_id_order(
+    pair: OviObjectPairView,
+) -> None:
+    visits = []
+    for visit in pair.visits:
+        entities = (
+            replace(
+                visit.entities[0], source_instance_id=2, entity_id="ovimap:2"
+            ),
+            replace(
+                visit.entities[1], source_instance_id=10, entity_id="ovimap:10"
+            ),
+        )
+        visits.append(replace(visit, entities=entities))
+    pair = replace(pair, visits=(visits[0], visits[1]))
+    relation = PairRelation(
+        temporal_query_id="group-all",
+        t0_entity_ids=("ovimap:2", "ovimap:10"),
+        t1_entity_ids=("ovimap:2", "ovimap:10"),
+        state="uncertain",
+        query_confidence=0.9,
+        evidence={"query_score": 0.9},
+        identity_source="rescene",
+    )
+    grouping = build_temporal_object_groups(pair, (relation,), variant_id="U3")
+
+    view = build_p1_method_view(pair, grouping)
+
+    assert view.candidates[0][0].parent_ovi_entity_point_counts == (
+        ("ovimap:10", 2),
+        ("ovimap:2", 2),
+    )
+
+
 def test_instance_rows_report_exact_counts_structure_and_owner_fractions(
     pair: OviObjectPairView,
 ) -> None:
