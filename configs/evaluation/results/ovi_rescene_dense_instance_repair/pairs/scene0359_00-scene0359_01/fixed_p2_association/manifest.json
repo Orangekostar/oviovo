@@ -1,0 +1,57 @@
+{
+  "artifact_id": "OVI_RESCENE_DENSE_FIXED_P2_ASSOCIATION_V1",
+  "config_sha256": "7103a982399f766173d8a322fbbd061f96254f52db2ba9551477f97d15809584",
+  "evaluated_commit": "5035222f0ef5b62679fc1dca02c34bfd4879d54d",
+  "fixed_p2": {
+    "binding_sha256": {
+      "full": "fbc18eefc9f54388c8b72bddd527fc193efba83ebdc8a8270e4149ebcaab42c0",
+      "supported": "c0d32a0352d4a699068a474e6275c3b2d47c16f503b38d41240932a5af0e5195"
+    },
+    "candidate_counts": [
+      14,
+      15
+    ],
+    "candidate_pool_dependency": "joint_rescene_query_derived_P2",
+    "matrix_sha256": {
+      "F_obj": "94eaac5b623f49d62866059bcb079668858793629c79f8ec639a37d1b9b4a42e",
+      "G_full": "0825c6c80f72b70ea3c52d062784f7322277a1ad8fbbfb2bc4b2c4a9001299e2",
+      "G_supported": "49dfb54dfda43606e150bd0ba5abce02adae21c8bac3c2ae6b6069891e334456",
+      "R_obj": "d81ff8f16af2afdc012ca910359fdb2c0c7f07643e0deacac2d93dd9e0274d27"
+    },
+    "method_view_sha256": "f2e807e25b298c86d6baf183b7b482d14e923b49b28de5e819d4e28107b92f94",
+    "prediction_counts": {
+      "F_obj": 22,
+      "G_full": 15,
+      "G_supported": 20,
+      "R_obj": 27
+    }
+  },
+  "pair_content_sha256": "016bd3d13fd9ba1e2157f6cd46fd7c4cef290209c6369dfceb4a57644643770f",
+  "pair_id": "scene0359_00-scene0359_01",
+  "protocol": {
+    "centroid_scale_m": 2.0,
+    "ground_truth_used_by_method": false,
+    "minimum_match_scores": {
+      "F_obj": 0.5,
+      "G_full": 0.5,
+      "G_supported": 0.5,
+      "R_obj": 0.5
+    },
+    "static_centroid_tolerance_m": 0.2,
+    "support_domains": {
+      "F_obj": "supported",
+      "G_full": "full",
+      "G_supported": "supported",
+      "R_obj": "supported"
+    }
+  },
+  "runtime_s": 13.352150000166148,
+  "sample_content_sha256": "ea693a2d1f58d73722888dcf20e130a9e51df862a09492ed8b38d640c0054d23",
+  "schema_version": 1,
+  "status": "PASS",
+  "table": {
+    "byte_count": 2774,
+    "path": "association_metrics.csv",
+    "sha256": "ca9cf640e6444e1efa0baecf2ab679c4bc83909c10c6dba97f66b35f0e465ede"
+  }
+}
