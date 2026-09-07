@@ -24,7 +24,6 @@ from scripts.evaluation.run_ovimap_native import (
     preflight,
 )
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FRONTEND_ENV = REPO_ROOT / "configs/environments/ovimap_cropformer.yaml"
 MAPPING_ENV = REPO_ROOT / "configs/environments/ovimap_map.yaml"

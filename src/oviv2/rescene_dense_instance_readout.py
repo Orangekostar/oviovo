@@ -13,7 +13,6 @@ from src.evaluation.ovi_pair_views import OviObjectPairView, OviObjectVisitView
 from src.oviv2.rescene_input_bridge import SurfaceAttributeBundle
 from src.oviv2.rescene_supported_view import SupportedInferenceView
 
-
 OWNER_QUERY = 1
 OWNER_OVI_RESIDUAL = 2
 OWNER_BACKGROUND = 3
@@ -427,13 +426,13 @@ def _semantic_summary(
                 visit.entities[int(index)].entity_id,
                 int(np.count_nonzero(owners == index)),
             )
-            for index in set(int(value) for value in owners)
+            for index in {int(value) for value in owners}
         )
     )
     count_by_entity = dict(counts)
     valid_entities = tuple(
         visit.entities[index]
-        for index in sorted(set(int(value) for value in owners))
+        for index in sorted({int(value) for value in owners})
         if visit.entities[index].semantic_embedding is not None
     )
     if valid_entities:
@@ -484,7 +483,7 @@ def _visit_readout(
     sources[winner_query >= 0] = OWNER_QUERY
     owners = np.full(visit.point_count, -1, dtype=np.int64)
     instances: list[DenseInstance] = []
-    for raw_query in sorted(set(int(value) for value in winner_query if value >= 0)):
+    for raw_query in sorted({int(value) for value in winner_query if value >= 0}):
         points = np.flatnonzero(winner_query == raw_query).astype(np.int64)
         parent_counts, embedding, labels, semantic_provenance = _semantic_summary(
             visit, points
@@ -676,15 +675,15 @@ def build_dense_instance_readout(
 
 
 __all__ = [
+    "OWNER_BACKGROUND",
+    "OWNER_OVI_RESIDUAL",
+    "OWNER_QUERY",
+    "OWNER_UNKNOWN",
     "DenseInstance",
     "DenseInstanceReadoutError",
     "DensePairReadout",
     "DenseQueryProposal",
     "DenseVisitReadout",
-    "OWNER_BACKGROUND",
-    "OWNER_OVI_RESIDUAL",
-    "OWNER_QUERY",
-    "OWNER_UNKNOWN",
     "build_dense_instance_readout",
     "build_dense_to_model_indices",
 ]

@@ -73,7 +73,7 @@ def _visit(
             )
         )
     supported = np.zeros(count, dtype=np.bool_)
-    supported[list(sorted(supported_points))] = True
+    supported[sorted(supported_points)] = True
     assert not np.any(supported & (owners < 0))
     return OviObjectVisitView(
         visit_id=visit_id,

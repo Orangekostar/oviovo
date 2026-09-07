@@ -11,12 +11,12 @@ from src.evaluation.dense_instance_repair_artifacts import (
     export_dense_method_artifacts,
 )
 from src.evaluation.dense_instance_repair_metrics import build_p2_method_view
-from tests.evaluation.test_dense_instance_repair_metrics import _p2_readout, _visit
 from src.evaluation.ovi_pair_views import OviObjectPairView
 from src.oviv2.rescene_dense_instance_readout import (
     OWNER_BACKGROUND,
     OWNER_UNKNOWN,
 )
+from tests.evaluation.test_dense_instance_repair_metrics import _p2_readout, _visit
 
 
 def _pair() -> OviObjectPairView:

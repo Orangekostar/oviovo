@@ -42,7 +42,6 @@ def _visit(
                 observation_boxes_xyxy=((0, 0, 1, 1),),
             )
         )
-    invalid = ~valid
     return OviObjectVisitView(
         visit_id=0,
         scan_id="scan-0",

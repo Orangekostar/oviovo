@@ -22,7 +22,6 @@ from src.evaluation.ovi_pair_artifacts import (
 )
 from src.evaluation.ovi_pair_views import OviObjectPairView, OviObjectVisitView
 from src.oviv2.rescene_dense_instance_readout import (
-    OWNER_BACKGROUND,
     OWNER_UNKNOWN,
 )
 
@@ -55,7 +54,7 @@ class DenseMethodArtifactExport:
 
 
 def _candidate_color(method_id: str, candidate_id: str) -> np.ndarray:
-    digest = hashlib.sha256(f"{method_id}\0{candidate_id}".encode("utf-8")).digest()
+    digest = hashlib.sha256(f"{method_id}\0{candidate_id}".encode()).digest()
     return np.asarray([48 + value % 160 for value in digest[:3]], dtype=np.uint8)
 
 

@@ -18,7 +18,6 @@ from scripts.evaluation.run_ovi_rescene_object_level_transfer import (
     AssociationForwardOutputs,
 )
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 

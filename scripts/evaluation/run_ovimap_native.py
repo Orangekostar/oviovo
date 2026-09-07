@@ -11,10 +11,11 @@ import os
 import subprocess
 import sys
 import tempfile
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 import cv2
 import numpy as np
@@ -27,7 +28,6 @@ from src.evaluation.baselines.ovimap_native import (
     audit_native_frame,
     validate_color_round_trip,
 )
-
 
 REPLICA8_SCENES = (
     "office0",

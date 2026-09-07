@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field
 from itertools import combinations
 from types import MappingProxyType
-from typing import Mapping
 
 import numpy as np
 
@@ -134,8 +134,7 @@ def _best_union(
                 voxels = frozenset().union(*(row[1] for row in selected))
                 member_ids = tuple(row[0] for row in selected)
                 rank = (_iou(voxels, target), tuple(reversed(member_ids)))
-                if rank > best:
-                    best = rank
+                best = max(best, rank)
         return best[0], True, tuple(reversed(best[1]))
 
     start = max(intersecting, key=lambda row: (_iou(row[1], target), row[0]))
