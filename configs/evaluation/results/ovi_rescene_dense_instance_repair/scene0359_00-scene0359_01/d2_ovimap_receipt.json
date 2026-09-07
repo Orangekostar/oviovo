@@ -1,0 +1,125 @@
+{
+  "artifact_id": "OVI_RESCENE_D2_OVIMAP_SMOKE_V1",
+  "compute": {
+    "frontend_forward_count_per_visit": 1,
+    "native_mapping_count_per_visit": 1,
+    "visit_mapping": "independent"
+  },
+  "pair_id": "scene0359_00-scene0359_01",
+  "schema_version": 1,
+  "selection": {
+    "manifest": {
+      "byte_count": 79594,
+      "path": "configs/evaluation/manifests/ovi_rescene_object_level_pairs_v1.json",
+      "sha256": "2054c818c5f02a1ffcf2d4bcb3d3743ef0f4865ff428055f00e2f215c69d4a37"
+    },
+    "pair_id": "scene0359_00-scene0359_01",
+    "role": "D2_EVAL",
+    "selected_before_method_results": true
+  },
+  "status": "REAL_D2_PAIR_PASS",
+  "visits": [
+    {
+      "frame_count": 125,
+      "materialized": {
+        "manifest": {
+          "byte_count": 72443,
+          "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/materialized-v1/b1f23308-d255-2761-94da-981d962c6bf8/materialized_manifest.json",
+          "sha256": "7683ca2e6f155301bb0231a17b056a1114bcab5ed877b22cfa0832be9332c98e"
+        },
+        "output_tree": {
+          "byte_count": 18043173,
+          "file_count": 377,
+          "sha256": "59d0c675380067c0ee1323e867f7d512c6b6ae3f0211f1f4438c43f4ec94e66d"
+        }
+      },
+      "native_mapping": {
+        "artifacts": {
+          "instance_color_log": {
+            "byte_count": 190,
+            "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/ovi-native-v1/scenes/b1f23308-d255-2761-94da-981d962c6bf8/attempt-20260907T063412.559328Z/native_audit/instance_colors_cpp.tsv",
+            "sha256": "3938e54125fe98053f768f77599c3ee03c69b5b11f6f18dde7ec91b98238fd28"
+          },
+          "instance_mesh": {
+            "byte_count": 105538393,
+            "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/ovi-native-v1/scenes/b1f23308-d255-2761-94da-981d962c6bf8/attempt-20260907T063412.559328Z/mapping/cropformer_inst/instance_mesh_125.ply",
+            "sha256": "d3289d4c59e43f26ea3b004a34e4cdaae6fa3ae6c425c4adc60aad065039def0"
+          },
+          "semantic_features": {
+            "byte_count": 219536,
+            "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/ovi-native-v1/scenes/b1f23308-d255-2761-94da-981d962c6bf8/attempt-20260907T063412.559328Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_125_incre_combine.pkl",
+            "sha256": "47534cbc4587afa4800bd8564a6aad5753f49b53e12ffa46e193542ebeb7498e"
+          }
+        },
+        "audit": {
+          "frame_count": 100,
+          "full_frame_bbox_count": 18,
+          "full_frame_bbox_ratio": 0.08737864077669903,
+          "mapper_skipped_frame_count": 25,
+          "raycast_bbox_count": 206,
+          "requested_frame_count": 125,
+          "stale_raycast_ids": []
+        },
+        "manifest": {
+          "byte_count": 38336,
+          "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/ovi-native-v1/scenes/b1f23308-d255-2761-94da-981d962c6bf8/attempt-20260907T063412.559328Z/native_mapping_manifest.json",
+          "sha256": "666d2c64a0deb504a484c49920a7f6a0f740b722c540fa597cd30355cbd29457"
+        }
+      },
+      "scan_id": "b1f23308-d255-2761-94da-981d962c6bf8",
+      "visit_index": 0
+    },
+    {
+      "frame_count": 106,
+      "materialized": {
+        "manifest": {
+          "byte_count": 61750,
+          "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/materialized-v1/77361fd4-d054-2a22-88c4-b5b404f904ca/materialized_manifest.json",
+          "sha256": "0e39db0043813e01f91cd2d398e55774a733e98e0d2fd77f991ae1a144d8c59b"
+        },
+        "output_tree": {
+          "byte_count": 13213420,
+          "file_count": 320,
+          "sha256": "701b8cc6dd45a8a6fc85577d343abe3f9ccca191d9c4fc4787ecc651c744f0cf"
+        }
+      },
+      "native_mapping": {
+        "artifacts": {
+          "instance_color_log": {
+            "byte_count": 178,
+            "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/ovi-native-v1/scenes/77361fd4-d054-2a22-88c4-b5b404f904ca/attempt-20260907T063412.409654Z/native_audit/instance_colors_cpp.tsv",
+            "sha256": "f9485ef72d5aa34a5bd8169bb3c5e06b7a7438588aa6976f3ef5ab1d36241804"
+          },
+          "instance_mesh": {
+            "byte_count": 75555284,
+            "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/ovi-native-v1/scenes/77361fd4-d054-2a22-88c4-b5b404f904ca/attempt-20260907T063412.409654Z/mapping/cropformer_inst/instance_mesh_106.ply",
+            "sha256": "0f5a016f730cf755ec2025c1acc28eada4d3ca9bdc9abc8232a5f7853b8ef08a"
+          },
+          "semantic_features": {
+            "byte_count": 193826,
+            "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/ovi-native-v1/scenes/77361fd4-d054-2a22-88c4-b5b404f904ca/attempt-20260907T063412.409654Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_106_incre_combine.pkl",
+            "sha256": "d1064a019d8a4788a0ec4a7eab87b3ca065fc775a4d27e4fe8faf526e49dbf1b"
+          }
+        },
+        "audit": {
+          "frame_count": 94,
+          "full_frame_bbox_count": 28,
+          "full_frame_bbox_ratio": 0.18421052631578946,
+          "mapper_skipped_frame_count": 12,
+          "raycast_bbox_count": 152,
+          "requested_frame_count": 106,
+          "stale_raycast_ids": [
+            14
+          ]
+        },
+        "manifest": {
+          "byte_count": 34113,
+          "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/ovi-native-v1/scenes/77361fd4-d054-2a22-88c4-b5b404f904ca/attempt-20260907T063412.409654Z/native_mapping_manifest.json",
+          "sha256": "3385544a0676ca22a9af3ba827f1c3d56de3442b1c326b9665845de1453db08a"
+        }
+      },
+      "scan_id": "77361fd4-d054-2a22-88c4-b5b404f904ca",
+      "visit_index": 1
+    }
+  ]
+}

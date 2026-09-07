@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "config_id": "OVI_RESCENE_DENSE_INSTANCE_REPAIR_V1",
+  "status": "FROZEN_BEFORE_DENSE_REPAIR_RESULTS",
+  "pair_id": "scene0359_00-scene0359_01",
+  "protocol": {
+    "input_geometry": "frozen_native_ovimap_dense_surface",
+    "minimum_query_score": 0.3,
+    "minimum_entity_token_coverage": 0.25,
+    "minimum_source_point_coverage": 0.25,
+    "expected_query_count": 100,
+    "point_chunk_size": 131072,
+    "exact_union_candidate_limit": 12,
+    "instance_voxel_size_m": 0.05,
+    "instance_iou_thresholds": [
+      0.5,
+      0.25
+    ],
+    "endpoint_support_domains": [
+      "full",
+      "supported"
+    ],
+    "sensor_visible_gt": "NOT_COMPUTED_NO_RAY_DERIVATION",
+    "geometry_mutation": false,
+    "ground_truth_used_by_method": false
+  },
+  "source_bindings": {
+    "object_transfer_config": {
+      "path": "configs/evaluation/ovi_rescene_object_level_transfer_scene0359_v1.json",
+      "sha256": "d7a95ebb9903636639d299a77bb308fa9dc384d3ffd1a8db5437d4499d9c90a5",
+      "byte_count": 3978
+    },
+    "selection_manifest": {
+      "path": "configs/evaluation/manifests/ovi_rescene_object_level_pairs_v1.json",
+      "sha256": "2054c818c5f02a1ffcf2d4bcb3d3743ef0f4865ff428055f00e2f215c69d4a37",
+      "byte_count": 79594
+    },
+    "d2_mapping_receipt": {
+      "path": "configs/evaluation/results/ovi_rescene_dense_instance_repair/scene0359_00-scene0359_01/d2_ovimap_receipt.json",
+      "sha256": "87379bad379b1e52275c10bc1092785ebfa80db2c8da3e0cd2ba759906f47ea8",
+      "byte_count": 5993
+    },
+    "d2_pair_receipt": {
+      "path": "configs/evaluation/results/ovi_rescene_dense_instance_repair/scene0359_00-scene0359_01/d2_pair_receipt.json",
+      "sha256": "236a5764a20e44887f652fbe1c2cfc87d36d04e9b4e1f9eeb7792773fb479d37",
+      "byte_count": 10722
+    },
+    "d2_forward_metadata": {
+      "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/object-transfer-v1/scene0359_00-scene0359_01/native_forwards.json",
+      "sha256": "628f26289f6da494ec9a2e5938385b99b6a9d52c39d3d8f2e75ae80b606a1333",
+      "byte_count": 1566
+    },
+    "d2_forward_arrays": {
+      "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/object-transfer-v1/scene0359_00-scene0359_01/native_forwards.npz",
+      "sha256": "207e3116be0825fe786642ce252f984d8c2f8069c68df8beeb7572b5e3baf9a9",
+      "byte_count": 26222828
+    },
+    "ground_truth_manifest": {
+      "path": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/gt-v1/scene0359_00-scene0359_01/manifest.json",
+      "sha256": "793466c774a426127cf76409218d09b587629dc2be0781b662502a9118195e83",
+      "byte_count": 2318
+    }
+  },
+  "outputs": {
+    "local_root": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/evaluation/scene0359_00-scene0359_01",
+    "tracked_root": "configs/evaluation/results/ovi_rescene_dense_instance_repair/pairs/scene0359_00-scene0359_01"
+  }
+}
