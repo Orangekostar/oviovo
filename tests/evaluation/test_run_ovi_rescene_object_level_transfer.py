@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import hashlib
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
@@ -233,6 +234,34 @@ def test_builds_source_bound_model_input_without_dropping_candidates(
         bundle.model_input.observed_depth_m, [1.01, 1.02, 1.01]
     )
     assert pair.content_sha256() == before
+
+
+def test_excludes_invalid_normals_only_from_neural_support(tmp_path: Path) -> None:
+    pair = _pair()
+    t0 = replace(pair.visits[0], normal_valid=np.asarray([False, True]))
+    pair = replace(pair, visits=(t0, pair.visits[1]))
+    before = pair.content_sha256()
+    source = tmp_path / "transform.py"
+    source.write_bytes(b"pinned sampler\n")
+
+    bundle = build_d2_inference_bundle(
+        pair,
+        sampler_source_path=source,
+        sampler_source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
+        grid_sample_factory=lambda **options: _IdentityGridSample(**options),
+    )
+
+    assert sum(visit.point_count for visit in pair.visits) == 4
+    assert bundle.sample.source_point_count == 2
+    kept = bundle.supported_view.new_to_old_source_point_indices
+    assert (0, 0) not in set(
+        zip(
+            bundle.surface.source_visit_ids[kept].tolist(),
+            bundle.surface.original_vertex_indices[kept].tolist(),
+            strict=True,
+        )
+    )
+    assert pair.content_sha256() == before == bundle.pair_content_sha256
 
 
 def test_empty_model_candidate_row_becomes_explicit_unsupported_support(

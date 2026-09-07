@@ -618,10 +618,6 @@ def _surface_groups(
             indices = entity.point_indices[visit.appearance_valid[entity.point_indices]]
             if not len(indices):
                 continue
-            if not np.all(visit.normal_valid[indices]):
-                raise ObjectLevelTransferError(
-                    f"supported OVI entity lacks valid normals: {entity.entity_id}"
-                )
             groups[(visit.visit_id, entity.entity_id)] = SurfaceGroup(
                 points_xyz=visit.points_xyz[indices],
                 normals_xyz=visit.normals_xyz[indices],
