@@ -139,7 +139,7 @@ def build_dense_instance_readout(
 - Freeze current development pair and both existing D2_EVAL pairs before P2 results from those pairs are inspected.
 - Each new visit is materialized and independently mapped once; all methods reuse that OVI artifact.
 
-- [ ] Record pair role, UUIDs, asset presence, selection reason, checkpoint-validation overlap, rigid/repeated/static strata, and frozen threshold/config before method execution.
+- [x] Record pair role, UUIDs, asset presence, selection reason, checkpoint-validation overlap, rigid/repeated/static strata, and frozen threshold/config before method execution.
 - [ ] Materialize and map `scene0359_00-scene0359_01` and `scene0459_00-scene0459_01`, using distinct GPUs when independent commands can run concurrently.
 - [ ] Build GT sidecars, OVI pair artifacts, supported bundles, and one cached ReScene forward per pair; correct reproducible implementation errors uniformly.
 - [ ] Record runtime, peak allocated/reserved memory, paths, sizes, hashes, and any real asset failure. Never replace a failed EVAL pair based on its score.

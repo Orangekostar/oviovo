@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "config_id": "OVI_RESCENE_OBJECT_LEVEL_TRANSFER_V1",
+  "status": "FROZEN_BEFORE_TRANSFER_AND_D2_RESULTS",
+  "baseline_commit": "ecf8fa65cb02950ae2c43260d6645e09140fe482",
+  "selection_manifest": {
+    "path": "configs/evaluation/manifests/ovi_rescene_object_level_pairs_v1.json",
+    "sha256": "2054c818c5f02a1ffcf2d4bcb3d3743ef0f4865ff428055f00e2f215c69d4a37",
+    "byte_count": 79594
+  },
+  "pair_roles": {
+    "D2_EVAL": [
+      "scene0359_00-scene0359_01"
+    ]
+  },
+  "split_policy": {
+    "unit": "environment_uuid",
+    "resolver_threshold_selection_overlap": false,
+    "checkpoint_validation_selection_overlap": true,
+    "checkpoint_training_environment_overlap": false,
+    "office_use": "HELD_OUT_UNTIL_ARCHITECTURE_AND_PARAMETERS_FROZEN"
+  },
+  "domains": {
+    "D0": "native_processed_3rscan",
+    "D1": "native_processed_sensor_support_only",
+    "D2": "independent_rgbd_to_ovimap_reconstruction"
+  },
+  "geometry": {
+    "ovi_mapping_voxel_size_m": 0.01,
+    "rescene_neural_voxel_size_m": 0.02,
+    "evaluation_voxel_size_m": 0.05,
+    "instance_iou_primary": 0.5,
+    "instance_iou_sensitivity": 0.25,
+    "global_alignment": "shared_3rscan_rescan_to_reference",
+    "gt_object_transform_use": "O2_ORACLE_ONLY"
+  },
+  "resolver": {
+    "fixed_minimum_query_confidence": 0.3,
+    "selection_source": "DEV6_NATIVE",
+    "transfer_role": "D2_EVAL",
+    "additional_threshold_search": false
+  },
+  "mapping": {
+    "dataset_adapter": "scannet_nyu",
+    "frame_step": 1,
+    "rgb_depth_registration": "calibrated_intrinsics_and_extrinsics",
+    "ovimap_checkout": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/OVI-MAP",
+    "frontend_python": "/home/ww/miniconda3/envs/ovimap-cropformer/bin/python",
+    "mapping_python": "/home/ww/miniconda3/envs/ovimap-map/bin/python"
+  },
+  "rescene": {
+    "checkpoint_path": "/home/ww/paper5/checkpoints/rescene4d_concerto_t2_repro.ckpt",
+    "checkpoint_sha256": "85ed1aba60320cd19798536b71b91dbc156b7ea60f838832bc0bbbdba131546e",
+    "source_commit": "fb2fe42eb8f1e926567c48eea9acb874e608ee10"
+  },
+  "association": {
+    "protocol_id": "RSCAN_T2_FIXED_OBJECT_ASSOCIATION_V1",
+    "minimum_match_scores": {
+      "G_full": 0.5,
+      "G_supported": 0.5,
+      "F_obj": 0.5,
+      "R_obj": 0.5
+    },
+    "centroid_scale_m": 2.0,
+    "static_centroid_tolerance_m": 0.2,
+    "native_sampler_seed": 45,
+    "native_sampler_mode": "train",
+    "maximum_source_candidates_per_model_voxel": 8,
+    "independent_feature_pooling": "source_point_weighted_mean",
+    "independent_feature_extraction": "separate_visit_forward_before_temporal_overlay"
+  },
+  "execution": {
+    "device": "cuda:0",
+    "model_python": "/home/ww/miniconda3/envs/persist4d/bin/python",
+    "rescene_checkout": "/home/ww/oviovo_references/evaluation/rescene4d",
+    "concerto_checkpoint": {
+      "path": "/home/ww/.cache/persist4d/concerto/concerto_base.pth",
+      "sha256": "845ec7dec97a5fabff8fadb5d9858ac6734347b612d1a4b574213419c139de07",
+      "byte_count": 433987358
+    },
+    "rescene_checkpoint": {
+      "path": "/home/ww/paper5/checkpoints/rescene4d_concerto_t2_repro.ckpt",
+      "sha256": "85ed1aba60320cd19798536b71b91dbc156b7ea60f838832bc0bbbdba131546e",
+      "byte_count": 754917862
+    },
+    "native_sampler_source": {
+      "path": "/home/ww/paper5/third_party/sonata/sonata/transform.py",
+      "sha256": "cf799a0c2d4d835ee722ef6300b5c1ffc401b12a129bed783c081a6cce23c615",
+      "byte_count": 45906
+    },
+    "d2_mapping_receipt": "configs/evaluation/results/ovi_rescene_dense_instance_repair/scene0359_00-scene0359_01/d2_ovimap_receipt.json",
+    "d2_pair_view_receipt": "configs/evaluation/results/ovi_rescene_dense_instance_repair/scene0359_00-scene0359_01/d2_pair_receipt.json",
+    "ground_truth_root": "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/gt-v1"
+  },
+  "output_root": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair"
+}
