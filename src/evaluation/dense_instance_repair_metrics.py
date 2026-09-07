@@ -10,7 +10,12 @@ from types import MappingProxyType
 from typing import Literal
 
 import numpy as np
+from scipy.optimize import linear_sum_assignment
 
+from src.evaluation.object_pair_association import (
+    ObjectPairPrediction,
+    ObjectPairScoreMatrix,
+)
 from src.evaluation.ovi_pair_views import OviObjectPairView
 from src.evaluation.rscan_association_metrics import CandidateEndpointBinding
 from src.evaluation.rscan_gt_instances import (
@@ -325,7 +330,7 @@ def _parent_counts(
                 visit.entities[entity_index].entity_id,
                 int(np.count_nonzero(owners == entity_index)),
             )
-            for entity_index in set(int(value) for value in owners)
+            for entity_index in {int(value) for value in owners}
         )
     )
 
@@ -987,6 +992,398 @@ def evaluate_dense_identity(
     return MappingProxyType(result)
 
 
+def _dense_candidate_pool(
+    view: DenseMethodView,
+) -> tuple[tuple[tuple[int, str], ...], tuple[tuple[int, str], ...]]:
+    return tuple(
+        tuple((visit_id, row.candidate_id) for row in visit)
+        for visit_id, visit in enumerate(view.candidates)
+    )  # type: ignore[return-value]
+
+
+def _shape_descriptor(points: np.ndarray) -> np.ndarray:
+    if not len(points):
+        return np.zeros(6, dtype=np.float64)
+    centered = np.asarray(points, dtype=np.float64) - np.mean(points, axis=0)
+    radii = np.linalg.norm(centered, axis=1)
+    covariance = centered.T @ centered / max(len(centered), 1)
+    return np.concatenate(
+        (np.quantile(radii, (0.25, 0.50, 0.75)), np.sqrt(np.maximum(np.linalg.eigvalsh(covariance), 0.0)))
+    )
+
+
+def build_dense_geometric_score_matrix(
+    pair: OviObjectPairView,
+    view: DenseMethodView,
+    *,
+    supported_only: bool,
+    centroid_scale_m: float,
+) -> ObjectPairScoreMatrix:
+    """Score the fixed dense candidate pool using geometry only."""
+
+    if pair.content_sha256() != view.pair_content_sha256:
+        raise DenseInstanceRepairMetricError("dense geometry binds a different pair")
+    if type(supported_only) is not bool:
+        raise DenseInstanceRepairMetricError("supported_only must be boolean")
+    if (
+        isinstance(centroid_scale_m, bool)
+        or not isinstance(centroid_scale_m, (int, float, np.number))
+        or not math.isfinite(float(centroid_scale_m))
+        or float(centroid_scale_m) <= 0.0
+    ):
+        raise DenseInstanceRepairMetricError("centroid scale must be finite and positive")
+    before = view.content_sha256()
+    points: list[tuple[np.ndarray, ...]] = []
+    for visit_id, candidates in enumerate(view.candidates):
+        visit_points = []
+        for candidate in candidates:
+            indices = candidate.point_indices
+            if supported_only:
+                indices = indices[view.neural_valid[visit_id][indices]]
+            visit_points.append(pair.visits[visit_id].points_xyz[indices])
+        points.append(tuple(visit_points))
+    centroids = tuple(
+        tuple(
+            np.mean(value, axis=0, dtype=np.float64) if len(value) else np.zeros(3)
+            for value in visit
+        )
+        for visit in points
+    )
+    shapes = tuple(tuple(_shape_descriptor(value) for value in visit) for visit in points)
+    scores = np.zeros((len(points[0]), len(points[1])), dtype=np.float64)
+    eligible = np.zeros(scores.shape, dtype=np.bool_)
+    scale = float(centroid_scale_m)
+    for left in range(scores.shape[0]):
+        for right in range(scores.shape[1]):
+            available = bool(len(points[0][left]) and len(points[1][right]))
+            centroid_distance = float(np.linalg.norm(centroids[0][left] - centroids[1][right]))
+            shape_distance = float(np.linalg.norm(shapes[0][left] - shapes[1][right]))
+            scores[left, right] = (
+                0.5 * math.exp(-min(centroid_distance / scale, 50.0))
+                + 0.5 * math.exp(-min(shape_distance, 50.0))
+                if available
+                else 0.0
+            )
+            eligible[left, right] = available
+    if view.content_sha256() != before:
+        raise DenseInstanceRepairMetricError("dense geometry scoring mutated the view")
+    return ObjectPairScoreMatrix(
+        method_id="G_supported" if supported_only else "G_full",
+        pair_content_sha256=view.pair_content_sha256,
+        candidate_ids=_dense_candidate_pool(view),
+        scores=scores,
+        eligible=eligible,
+    )
+
+
+def _candidate_feature_inputs(
+    view: DenseMethodView,
+    features: tuple[np.ndarray, np.ndarray],
+    valid: tuple[np.ndarray, np.ndarray],
+) -> tuple[tuple[np.ndarray, np.ndarray], tuple[np.ndarray, np.ndarray]]:
+    if not isinstance(features, tuple) or not isinstance(valid, tuple) or len(features) != 2 or len(valid) != 2:
+        raise DenseInstanceRepairMetricError("candidate features must contain two visits")
+    output_features = []
+    output_valid = []
+    width = None
+    for visit_id in (0, 1):
+        array = np.asarray(features[visit_id], dtype=np.float64)
+        mask = np.asarray(valid[visit_id])
+        expected = len(view.candidates[visit_id])
+        if (
+            array.ndim != 2
+            or array.shape[0] != expected
+            or array.shape[1] < 1
+            or not np.all(np.isfinite(array))
+            or mask.dtype != np.bool_
+            or mask.shape != (expected,)
+            or (width is not None and array.shape[1] != width)
+        ):
+            raise DenseInstanceRepairMetricError("candidate feature inputs are invalid")
+        norms = np.linalg.norm(array, axis=1)
+        if np.any(norms[mask] <= 0.0):
+            raise DenseInstanceRepairMetricError("valid candidate features must be nonzero")
+        normalized = np.zeros(array.shape, dtype=np.float64)
+        normalized[mask] = array[mask] / norms[mask, None]
+        output_features.append(normalized)
+        output_valid.append(np.array(mask, copy=True))
+        width = array.shape[1]
+    return (output_features[0], output_features[1]), (output_valid[0], output_valid[1])
+
+
+def build_dense_feature_score_matrix(
+    view: DenseMethodView,
+    features: tuple[np.ndarray, np.ndarray],
+    valid: tuple[np.ndarray, np.ndarray],
+) -> ObjectPairScoreMatrix:
+    """Cosine-score independently extracted features on the fixed dense pool."""
+
+    normalized, masks = _candidate_feature_inputs(view, features, valid)
+    eligible = masks[0][:, None] & masks[1][None, :]
+    scores = np.where(
+        eligible,
+        np.clip(normalized[0] @ normalized[1].T, 0.0, 1.0),
+        0.0,
+    )
+    return ObjectPairScoreMatrix(
+        method_id="F_obj",
+        pair_content_sha256=view.pair_content_sha256,
+        candidate_ids=_dense_candidate_pool(view),
+        scores=scores,
+        eligible=eligible,
+    )
+
+
+def build_dense_rescene_score_matrix(
+    view: DenseMethodView,
+    *,
+    query_scores: np.ndarray,
+    candidate_affinities: tuple[np.ndarray, np.ndarray],
+    candidate_valid: tuple[np.ndarray, np.ndarray],
+) -> ObjectPairScoreMatrix:
+    """Apply max-q c_q a_qi^0 a_qj^1 to the fixed dense pool."""
+
+    confidence = np.asarray(query_scores, dtype=np.float64)
+    if confidence.ndim != 1 or not len(confidence) or not np.all(np.isfinite(confidence)) or np.any((confidence < 0.0) | (confidence > 1.0)):
+        raise DenseInstanceRepairMetricError("query scores are invalid")
+    if not isinstance(candidate_affinities, tuple) or not isinstance(candidate_valid, tuple) or len(candidate_affinities) != 2 or len(candidate_valid) != 2:
+        raise DenseInstanceRepairMetricError("query candidate inputs must contain two visits")
+    affinities = []
+    valid = []
+    for visit_id in (0, 1):
+        array = np.asarray(candidate_affinities[visit_id], dtype=np.float64)
+        mask = np.asarray(candidate_valid[visit_id])
+        expected = (len(confidence), len(view.candidates[visit_id]))
+        if (
+            array.shape != expected
+            or not np.all(np.isfinite(array))
+            or np.any((array < 0.0) | (array > 1.0))
+            or mask.dtype != np.bool_
+            or mask.shape != (expected[1],)
+        ):
+            raise DenseInstanceRepairMetricError("query candidate affinities are invalid")
+        affinities.append(array)
+        valid.append(mask)
+    products = confidence[:, None, None] * affinities[0][:, :, None] * affinities[1][:, None, :]
+    scores = np.max(products, axis=0)
+    eligible = valid[0][:, None] & valid[1][None, :]
+    return ObjectPairScoreMatrix(
+        method_id="R_obj",
+        pair_content_sha256=view.pair_content_sha256,
+        candidate_ids=_dense_candidate_pool(view),
+        scores=np.where(eligible, scores, 0.0),
+        eligible=eligible,
+    )
+
+
+def solve_dense_pair_assignment(
+    pair: OviObjectPairView,
+    view: DenseMethodView,
+    matrix: ObjectPairScoreMatrix,
+    *,
+    minimum_match_score: float,
+    static_centroid_tolerance_m: float,
+) -> tuple[ObjectPairPrediction, ...]:
+    """Solve one cardinality-first 1:1 assignment on a fixed dense pool."""
+
+    if (
+        pair.content_sha256() != view.pair_content_sha256
+        or matrix.pair_content_sha256 != view.pair_content_sha256
+        or matrix.candidate_ids != _dense_candidate_pool(view)
+    ):
+        raise DenseInstanceRepairMetricError("dense association substitutes the candidate pool")
+    for value, label in (
+        (minimum_match_score, "minimum match score"),
+        (static_centroid_tolerance_m, "static centroid tolerance"),
+    ):
+        if isinstance(value, bool) or not isinstance(value, (int, float, np.number)) or not math.isfinite(float(value)) or float(value) <= 0.0:
+            raise DenseInstanceRepairMetricError(f"{label} must be finite and positive")
+    if float(minimum_match_score) > 1.0:
+        raise DenseInstanceRepairMetricError("minimum match score cannot exceed one")
+    first_count, second_count = matrix.scores.shape
+    size = first_count + second_count
+    utility = np.full((size, size), -1e9, dtype=np.float64)
+    allowed = matrix.eligible & (matrix.scores >= float(minimum_match_score))
+    utility[:first_count, :second_count][allowed] = min(first_count, second_count) + 1.0 + matrix.scores[allowed]
+    for index in range(first_count):
+        utility[index, second_count + index] = 0.0
+    for index in range(second_count):
+        utility[first_count + index, index] = 0.0
+    utility[first_count:, second_count:] = 0.0
+    rows, columns = linear_sum_assignment(-utility)
+    matches = sorted(
+        (int(row), int(column))
+        for row, column in zip(rows, columns, strict=True)
+        if row < first_count and column < second_count and allowed[row, column]
+    )
+    used_left = {left for left, _right in matches}
+    used_right = {right for _left, right in matches}
+    centroids = tuple(
+        tuple(np.mean(pair.visits[visit_id].points_xyz[row.point_indices], axis=0) for row in visit)
+        for visit_id, visit in enumerate(view.candidates)
+    )
+    output = []
+    for left, right in matches:
+        distance = float(np.linalg.norm(centroids[0][left] - centroids[1][right]))
+        output.append(
+            ObjectPairPrediction(
+                prediction_id=f"{matrix.method_id}:pair:{left:04d}:{right:04d}",
+                pair_id=view.pair_id,
+                method_id=matrix.method_id,
+                t0_entity_id=view.candidates[0][left].candidate_id,
+                t1_entity_id=view.candidates[1][right].candidate_id,
+                score=float(matrix.scores[left, right]),
+                state="persistent_static" if distance <= float(static_centroid_tolerance_m) else "persistent_moved",
+                evidence={"centroid_distance_m": distance, "score_matrix_sha256": matrix.content_sha256()},
+            )
+        )
+    for left in sorted(set(range(first_count)) - used_left):
+        output.append(
+            ObjectPairPrediction(
+                prediction_id=f"{matrix.method_id}:t0:{left:04d}",
+                pair_id=view.pair_id,
+                method_id=matrix.method_id,
+                t0_entity_id=view.candidates[0][left].candidate_id,
+                t1_entity_id=None,
+                score=None,
+                state="unmatched_t0",
+            )
+        )
+    for right in sorted(set(range(second_count)) - used_right):
+        output.append(
+            ObjectPairPrediction(
+                prediction_id=f"{matrix.method_id}:t1:{right:04d}",
+                pair_id=view.pair_id,
+                method_id=matrix.method_id,
+                t0_entity_id=None,
+                t1_entity_id=view.candidates[1][right].candidate_id,
+                score=None,
+                state="unmatched_t1",
+            )
+        )
+    return tuple(output)
+
+
+def evaluate_dense_association(
+    view: DenseMethodView,
+    ground_truth: GroundTruthPair,
+    bindings: DenseEndpointBindings,
+    predictions: tuple[ObjectPairPrediction, ...],
+    *,
+    iou_threshold: float,
+) -> MappingProxyType:
+    """Evaluate G/F/R identities against one fixed P2 endpoint binding."""
+
+    if iou_threshold not in {0.50, 0.25}:
+        raise DenseEndpointBindingError("identity IoU must be 0.50 or 0.25")
+    candidate_ids = tuple(tuple(row.candidate_id for row in visit) for visit in view.candidates)
+    if (
+        view.method_id != "P2"
+        or bindings.pair_id != view.pair_id
+        or bindings.pair_content_sha256 != view.pair_content_sha256
+        or bindings.method_id != "P2"
+        or bindings.method_view_sha256 != view.content_sha256()
+        or bindings.ground_truth_sha256 != _ground_truth_sha256(ground_truth)
+        or bindings.candidate_ids != candidate_ids
+    ):
+        raise DenseEndpointBindingError("fixed P2 binding identity mismatch")
+    rows = tuple(predictions)
+    if not rows or any(not isinstance(row, ObjectPairPrediction) or row.pair_id != view.pair_id for row in rows):
+        raise DenseEndpointBindingError("dense association predictions are invalid")
+    method_ids = {row.method_id for row in rows}
+    if len(method_ids) != 1:
+        raise DenseEndpointBindingError("dense association predictions mix methods")
+    observed = tuple(
+        [getattr(row, f"t{visit_id}_entity_id") for row in rows if getattr(row, f"t{visit_id}_entity_id") is not None]
+        for visit_id in (0, 1)
+    )
+    if any(len(values) != len(set(values)) or set(values) != set(candidate_ids[index]) for index, values in enumerate(observed)):
+        raise DenseEndpointBindingError("dense association does not conserve candidates")
+    selected = bindings.for_threshold(iou_threshold)
+    assigned = tuple({row.candidate_id: row.assigned_gt_instance_id for row in visit} for visit in selected)
+    represented = tuple({value for value in visit.values() if value is not None} for visit in assigned)
+    persistent = _persistent_targets(ground_truth)
+    conditional_targets = {
+        right_id
+        for right_id, (_reference_id, allowed) in persistent.items()
+        if right_id in represented[1] and bool(allowed & represented[0])
+    }
+    rigid_targets = {
+        right_id
+        for right_id, (reference_id, _allowed) in persistent.items()
+        if reference_id in ground_truth.identity_rules.rigid_transform_by_reference
+    }
+    labels = tuple(
+        {target.instance_id: target.semantic_label.casefold() for target in visit}
+        for visit in ground_truth.visits
+    )
+    hits: set[int] = set()
+    endpoint_failures = false_reids = same_class_mismatches = duplicates = 0
+    outcomes = []
+    paired = sorted((row for row in rows if row.is_matched), key=lambda row: (-float(row.score), row.prediction_id))
+    for prediction in paired:
+        assert prediction.t0_entity_id is not None and prediction.t1_entity_id is not None
+        left_gt = assigned[0][prediction.t0_entity_id]
+        right_gt = assigned[1][prediction.t1_entity_id]
+        target = None if right_gt is None else persistent.get(right_gt)
+        correct = bool(target is not None and left_gt is not None and left_gt in target[1])
+        if left_gt is None or right_gt is None:
+            outcome = "endpoint_failure"
+            endpoint_failures += 1
+        elif not correct:
+            outcome = "false_reid"
+            false_reids += 1
+            if labels[0][left_gt] == labels[1][right_gt]:
+                same_class_mismatches += 1
+        elif right_gt in hits:
+            outcome = "duplicate"
+            duplicates += 1
+        else:
+            outcome = "true_positive"
+            hits.add(right_gt)
+        outcomes.append(
+            {
+                "prediction_id": prediction.prediction_id,
+                "t0_candidate_id": prediction.t0_entity_id,
+                "t1_candidate_id": prediction.t1_entity_id,
+                "t0_gt_instance_id": left_gt,
+                "t1_gt_instance_id": right_gt,
+                "outcome": outcome,
+            }
+        )
+    conditional_recall = _ratio(len(hits & conditional_targets), len(conditional_targets))
+    return MappingProxyType(
+        {
+            "schema_version": 1,
+            "protocol_id": "RSCAN_DENSE_FIXED_P2_ASSOCIATION_V1",
+            "status": "PASS",
+            "pair": view.pair_id,
+            "method": next(iter(method_ids)),
+            "support_domain": bindings.support_domain,
+            "iou_threshold": iou_threshold,
+            "method_view_sha256": view.content_sha256(),
+            "binding_sha256": bindings.content_sha256(),
+            "paired_prediction_count": len(paired),
+            "ambiguous_identity_count": 0,
+            "true_positive_count": len(hits),
+            "false_positive_count": len(paired) - len(hits),
+            "endpoint_failure_count": endpoint_failures,
+            "false_reid_count": false_reids,
+            "same_class_mismatch_count": same_class_mismatches,
+            "duplicate_count": duplicates,
+            "precision": _ratio(len(hits), len(paired)),
+            "persistent_gt_count": len(persistent),
+            "end_to_end_recall": _ratio(len(hits), len(persistent)),
+            "conditional_gt_count": len(conditional_targets),
+            "conditional_recall": conditional_recall,
+            "conditional_status": "PASS" if conditional_recall is not None else "NOT_COMPUTED_NO_FIXED_ENDPOINT_SUPPORT",
+            "rigid_gt_count": len(rigid_targets),
+            "rigid_recall": _ratio(len(hits & rigid_targets), len(rigid_targets)),
+            "outcomes": tuple(outcomes),
+        }
+    )
+
+
 __all__ = [
     "DenseEndpointBindingError",
     "DenseEndpointBindings",
@@ -994,9 +1391,14 @@ __all__ = [
     "DenseMethodCandidate",
     "DenseMethodView",
     "build_dense_endpoint_bindings",
+    "build_dense_feature_score_matrix",
+    "build_dense_geometric_score_matrix",
+    "build_dense_rescene_score_matrix",
     "build_p0_method_view",
     "build_p1_method_view",
     "build_p2_method_view",
+    "evaluate_dense_association",
     "evaluate_dense_identity",
     "evaluate_dense_instance_method",
+    "solve_dense_pair_assignment",
 ]

@@ -8,11 +8,16 @@ import pytest
 from src.evaluation.dense_instance_repair_metrics import (
     DenseEndpointBindingError,
     build_dense_endpoint_bindings,
+    build_dense_feature_score_matrix,
+    build_dense_geometric_score_matrix,
+    build_dense_rescene_score_matrix,
     build_p0_method_view,
     build_p1_method_view,
     build_p2_method_view,
+    evaluate_dense_association,
     evaluate_dense_identity,
     evaluate_dense_instance_method,
+    solve_dense_pair_assignment,
 )
 from src.evaluation.ovi_pair_views import (
     OviObjectEntityView,
@@ -432,3 +437,97 @@ def test_identity_conditional_recall_is_null_without_two_endpoint_gt_support(
     assert result["conditional_gt_count"] == 0
     assert result["conditional_recall"] is None
     assert result["conditional_status"] == "NOT_COMPUTED_NO_FIXED_ENDPOINT_SUPPORT"
+
+
+def test_fixed_p2_geometric_association_conserves_candidate_pool(
+    pair: OviObjectPairView,
+) -> None:
+    view = build_p2_method_view(pair, _p2_readout(pair))
+
+    matrix = build_dense_geometric_score_matrix(
+        pair, view, supported_only=False, centroid_scale_m=2.0
+    )
+    predictions = solve_dense_pair_assignment(
+        pair,
+        view,
+        matrix,
+        minimum_match_score=0.5,
+        static_centroid_tolerance_m=0.2,
+    )
+
+    assert matrix.method_id == "G_full"
+    assert matrix.candidate_ids == tuple(
+        tuple((visit_id, row.candidate_id) for row in visit)
+        for visit_id, visit in enumerate(view.candidates)
+    )
+    assert {
+        row.t0_entity_id for row in predictions if row.t0_entity_id is not None
+    } == {row.candidate_id for row in view.candidates[0]}
+    assert {
+        row.t1_entity_id for row in predictions if row.t1_entity_id is not None
+    } == {row.candidate_id for row in view.candidates[1]}
+
+
+def test_fixed_p2_feature_and_query_scores_share_the_same_pool(
+    pair: OviObjectPairView,
+) -> None:
+    view = build_p2_method_view(pair, _p2_readout(pair))
+    features = (
+        np.asarray([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]], dtype=np.float32),
+        np.asarray([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]], dtype=np.float32),
+    )
+    valid = (np.ones(3, dtype=np.bool_), np.ones(3, dtype=np.bool_))
+    affinities = (
+        np.asarray([[0.9, 0.1, 0.2], [0.1, 0.9, 0.2]], dtype=np.float32),
+        np.asarray([[0.8, 0.1, 0.2], [0.1, 0.8, 0.2]], dtype=np.float32),
+    )
+
+    feature = build_dense_feature_score_matrix(view, features, valid)
+    rescene = build_dense_rescene_score_matrix(
+        view,
+        query_scores=np.asarray([0.9, 0.8], dtype=np.float32),
+        candidate_affinities=affinities,
+        candidate_valid=valid,
+    )
+
+    assert feature.method_id == "F_obj"
+    assert rescene.method_id == "R_obj"
+    assert feature.candidate_ids == rescene.candidate_ids
+    assert feature.pair_content_sha256 == rescene.pair_content_sha256
+    assert feature.scores[0, 0] == pytest.approx(1.0)
+    assert rescene.scores[0, 0] == pytest.approx(0.9 * 0.9 * 0.8)
+
+
+def test_fixed_p2_association_uses_p2_endpoint_binding(
+    pair: OviObjectPairView,
+) -> None:
+    ground_truth = _ground_truth(pair)
+    view = build_p2_method_view(pair, _p2_readout(pair))
+    bindings = build_dense_endpoint_bindings(
+        pair, view, ground_truth, support_domain="full"
+    )
+    matrix = build_dense_geometric_score_matrix(
+        pair, view, supported_only=False, centroid_scale_m=2.0
+    )
+    predictions = solve_dense_pair_assignment(
+        pair,
+        view,
+        matrix,
+        minimum_match_score=0.5,
+        static_centroid_tolerance_m=0.2,
+    )
+
+    result = evaluate_dense_association(
+        view,
+        ground_truth,
+        bindings,
+        predictions,
+        iou_threshold=0.50,
+    )
+
+    assert result["protocol_id"] == "RSCAN_DENSE_FIXED_P2_ASSOCIATION_V1"
+    assert result["method"] == "G_full"
+    assert result["method_view_sha256"] == view.content_sha256()
+    assert result["binding_sha256"] == bindings.content_sha256()
+    assert result["paired_prediction_count"] == 3
+    assert result["true_positive_count"] == 2
