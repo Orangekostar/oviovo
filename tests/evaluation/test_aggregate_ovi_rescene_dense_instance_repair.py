@@ -22,8 +22,9 @@ _TABLES = (
 def _source(root: Path, pair_id: str, value: int) -> None:
     root.mkdir(parents=True)
     for name in _TABLES:
+        pair_column = "pair_id" if name == "endpoint_diagnosis.csv" else "pair"
         (root / name).write_text(
-            f"pair,method,value\n{pair_id},P2,{value}\n", encoding="utf-8"
+            f"{pair_column},method,value\n{pair_id},P2,{value}\n", encoding="utf-8"
         )
     association = root / "fixed_p2_association"
     association.mkdir()

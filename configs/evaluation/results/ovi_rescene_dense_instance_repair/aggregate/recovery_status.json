@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "artifact_id": "OVI_RESCENE_DENSE_INSTANCE_REPAIR_RECOVERY_STATUS_V1",
+  "status": "NOT_RUN_INELIGIBLE",
+  "protocol": {
+    "primary_instance_iou_threshold": 0.5,
+    "eligibility_rule": "run recovery only when P2 adds a valid rigid endpoint pair or endpoint diagnosis establishes explicit recoverable surface",
+    "ground_truth_used_by_method": false
+  },
+  "measured_eligibility": {
+    "completed_pair_count": 3,
+    "system_p2_primary_true_positive_identity_count": 0,
+    "system_p2_primary_fixed_endpoint_gt_count": 0,
+    "fixed_p2_association_primary_true_positive_count": {
+      "G_full": 0,
+      "G_supported": 0,
+      "F_obj": 0,
+      "R_obj": 0
+    },
+    "primary_rigid_recall": 0.0,
+    "geometric_change_count": 0,
+    "sensor_visible_gt_status": "NOT_COMPUTED_NO_RAY_DERIVATION",
+    "explicit_recoverable_surface": "NOT_ESTABLISHED"
+  },
+  "variants": {
+    "C0": "NOT_RUN_INELIGIBLE",
+    "C_G": "NOT_RUN_INELIGIBLE",
+    "C_R": "NOT_RUN_INELIGIBLE",
+    "O_ID": "NOT_RUN_INELIGIBLE",
+    "O_POSE": "NOT_RUN_INELIGIBLE"
+  },
+  "historical_recovery_metrics": "NOT_COMPUTED",
+  "reasons": [
+    "no P2 candidate pool has a valid fixed endpoint pair at the primary IoU threshold",
+    "no fixed-P2 G/F/R association produces a primary-threshold true positive",
+    "the point-level method preserves geometry and no sensor-visible recoverable-surface opportunity was derived"
+  ],
+  "source_bindings": {
+    "aggregate_manifest": {
+      "path": "configs/evaluation/results/ovi_rescene_dense_instance_repair/aggregate/manifest.json",
+      "sha256": "2202fee218fb77aee66729dd304c2569c4e46d19fd369413395494214a028373",
+      "byte_count": 6563
+    },
+    "aggregate_instance_metrics": {
+      "path": "configs/evaluation/results/ovi_rescene_dense_instance_repair/aggregate/instance_metrics.csv",
+      "sha256": "8da35fdb6aa67a0ce361a116dca943fd1e30ecf1315f403a7e6571faac788f4f",
+      "byte_count": 5696
+    },
+    "aggregate_identity_metrics": {
+      "path": "configs/evaluation/results/ovi_rescene_dense_instance_repair/aggregate/identity_metrics.csv",
+      "sha256": "f9ad672f120baf29b14367999fb6c9a1e7c06c061475df828383e0de0bdd66dc",
+      "byte_count": 10528
+    },
+    "aggregate_association_metrics": {
+      "path": "configs/evaluation/results/ovi_rescene_dense_instance_repair/aggregate/association_metrics.csv",
+      "sha256": "c7aab3785fef5716ed0116265db6ad8bd2999746fe8da078551575f39ee7dc4b",
+      "byte_count": 7515
+    },
+    "followup_decision": {
+      "path": "configs/evaluation/results/ovi_rescene_dense_instance_repair/followup_decision.json",
+      "sha256": "571509ad0a6f83d05eed5df7cdd255fd1a10ca3e4937e849ed120760778aa3a1",
+      "byte_count": 2774
+    }
+  }
+}

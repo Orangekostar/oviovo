@@ -32,7 +32,9 @@ class DenseResultAggregationError(ValueError):
     """Raised when pair-scoped result tables cannot be aggregated exactly."""
 
 
-def _read_table(path: Path, *, pair_id: str) -> tuple[tuple[str, ...], list[dict[str, str]], bytes]:
+def _read_table(
+    path: Path, *, pair_id: str, pair_column: str
+) -> tuple[tuple[str, ...], list[dict[str, str]], bytes]:
     try:
         content = path.read_bytes()
         text = content.decode("utf-8")
@@ -40,10 +42,12 @@ def _read_table(path: Path, *, pair_id: str) -> tuple[tuple[str, ...], list[dict
         raise DenseResultAggregationError(f"result table is unavailable: {path}") from error
     reader = csv.DictReader(io.StringIO(text, newline=""))
     header = tuple(reader.fieldnames or ())
-    if not header or len(header) != len(set(header)) or "pair" not in header:
+    if not header or len(header) != len(set(header)) or pair_column not in header:
         raise DenseResultAggregationError(f"result table header is invalid: {path}")
     rows = list(reader)
-    if not rows or any(tuple(row) != header or row["pair"] != pair_id for row in rows):
+    if not rows or any(
+        tuple(row) != header or row[pair_column] != pair_id for row in rows
+    ):
         raise DenseResultAggregationError(f"result table pair identity is invalid: {path}")
     return header, rows, content
 
@@ -87,17 +91,22 @@ def aggregate_dense_results(
     if output.exists() or output.is_symlink():
         raise DenseResultAggregationError("aggregate output already exists")
     table_sources = {
-        **{name: name for name in _SYSTEM_TABLES},
-        "association_metrics.csv": _ASSOCIATION_SOURCE,
+        **{
+            name: (name, "pair_id" if name == "endpoint_diagnosis.csv" else "pair")
+            for name in _SYSTEM_TABLES
+        },
+        "association_metrics.csv": (_ASSOCIATION_SOURCE, "pair"),
     }
     aggregate_content: dict[str, bytes] = {}
     source_records: dict[str, dict[str, dict[str, object]]] = {}
-    for output_name, relative_name in table_sources.items():
+    for output_name, (relative_name, pair_column) in table_sources.items():
         expected_header = None
         combined: list[dict[str, str]] = []
         for pair_id, root in source_rows:
             path = root / relative_name
-            header, rows, content = _read_table(path, pair_id=pair_id)
+            header, rows, content = _read_table(
+                path, pair_id=pair_id, pair_column=pair_column
+            )
             if expected_header is None:
                 expected_header = header
             elif header != expected_header:

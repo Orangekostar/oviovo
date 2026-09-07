@@ -1,0 +1,120 @@
+{
+  "artifact_id": "OVI_RESCENE_DENSE_INSTANCE_REPAIR_AGGREGATE_V1",
+  "pair_ids": [
+    "scene0109_00-scene0109_01",
+    "scene0359_00-scene0359_01",
+    "scene0459_00-scene0459_01"
+  ],
+  "schema_version": 1,
+  "sources": {
+    "scene0109_00-scene0109_01": {
+      "association_metrics.csv": {
+        "byte_count": 2765,
+        "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-dense-instance-repair/configs/evaluation/results/ovi_rescene_dense_instance_repair/fixed_p2_association/association_metrics.csv",
+        "sha256": "3af0cd9c020ac804150ec965a4501662ee0a958bb15f285ff4bc99ebf8496869"
+      },
+      "endpoint_diagnosis.csv": {
+        "byte_count": 10129,
+        "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-dense-instance-repair/configs/evaluation/results/ovi_rescene_dense_instance_repair/endpoint_diagnosis.csv",
+        "sha256": "1a4f9d101a448f42e87f7d780b7cca04dc8f37667cc6bcc4307beeeba7222a57"
+      },
+      "identity_metrics.csv": {
+        "byte_count": 3710,
+        "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-dense-instance-repair/configs/evaluation/results/ovi_rescene_dense_instance_repair/identity_metrics.csv",
+        "sha256": "eb59b6ac49fc3d154c9b4d18e28d6babb68f9e87618c4175d85efacd025b65b4"
+      },
+      "instance_metrics.csv": {
+        "byte_count": 2414,
+        "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-dense-instance-repair/configs/evaluation/results/ovi_rescene_dense_instance_repair/instance_metrics.csv",
+        "sha256": "b708adece1afc45f64b4842a4a80183a97f57a8e5734b508a0b04199a4ae8eb1"
+      },
+      "runs.csv": {
+        "byte_count": 1097,
+        "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-dense-instance-repair/configs/evaluation/results/ovi_rescene_dense_instance_repair/runs.csv",
+        "sha256": "27205b8f52966019804e48cbd3c1f1116efdcfa7288c665f1aa7fe8a28167dc2"
+      }
+    },
+    "scene0359_00-scene0359_01": {
+      "association_metrics.csv": {
+        "byte_count": 2774,
+        "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-dense-instance-repair/configs/evaluation/results/ovi_rescene_dense_instance_repair/pairs/scene0359_00-scene0359_01/fixed_p2_association/association_metrics.csv",
+        "sha256": "ca9cf640e6444e1efa0baecf2ab679c4bc83909c10c6dba97f66b35f0e465ede"
+      },
+      "endpoint_diagnosis.csv": {
+        "byte_count": 6132,
+        "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-dense-instance-repair/configs/evaluation/results/ovi_rescene_dense_instance_repair/pairs/scene0359_00-scene0359_01/endpoint_diagnosis.csv",
+        "sha256": "aa40a7ad9ab55ec764f78bd2d5a356297a13795157f549e1e9155e60fdebac04"
+      },
+      "identity_metrics.csv": {
+        "byte_count": 3896,
+        "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-dense-instance-repair/configs/evaluation/results/ovi_rescene_dense_instance_repair/pairs/scene0359_00-scene0359_01/identity_metrics.csv",
+        "sha256": "bee6de0fc09bde6aa5c6ba074a0932d2a13ea23a2ed8cfd15cd8f8d1c12f0218"
+      },
+      "instance_metrics.csv": {
+        "byte_count": 2075,
+        "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-dense-instance-repair/configs/evaluation/results/ovi_rescene_dense_instance_repair/pairs/scene0359_00-scene0359_01/instance_metrics.csv",
+        "sha256": "5c663c42a75c84aa83488bb7c9794b6145bd58c1807ece31b38851a4efaf89dc"
+      },
+      "runs.csv": {
+        "byte_count": 1091,
+        "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-dense-instance-repair/configs/evaluation/results/ovi_rescene_dense_instance_repair/pairs/scene0359_00-scene0359_01/runs.csv",
+        "sha256": "862cc97e7e4095f7605d9600596d817faf212a4319ab7950f2754fa4f5e4dea0"
+      }
+    },
+    "scene0459_00-scene0459_01": {
+      "association_metrics.csv": {
+        "byte_count": 2808,
+        "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-dense-instance-repair/configs/evaluation/results/ovi_rescene_dense_instance_repair/pairs/scene0459_00-scene0459_01/fixed_p2_association/association_metrics.csv",
+        "sha256": "41d93e9c6c33a97af60d0491903cdcfefce4a4d8f481b94e5f374abfd58f8e8a"
+      },
+      "endpoint_diagnosis.csv": {
+        "byte_count": 44015,
+        "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-dense-instance-repair/configs/evaluation/results/ovi_rescene_dense_instance_repair/pairs/scene0459_00-scene0459_01/endpoint_diagnosis.csv",
+        "sha256": "82ca5b21d78bceb1b2d9a808a88d5752564f049cdf2c41b1cc09773b5d874dd7"
+      },
+      "identity_metrics.csv": {
+        "byte_count": 3754,
+        "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-dense-instance-repair/configs/evaluation/results/ovi_rescene_dense_instance_repair/pairs/scene0459_00-scene0459_01/identity_metrics.csv",
+        "sha256": "554c03915ecb8d571d194a3a7b23ca3fd836fd494bbfdbe6eb2cc4ee203a3064"
+      },
+      "instance_metrics.csv": {
+        "byte_count": 2491,
+        "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-dense-instance-repair/configs/evaluation/results/ovi_rescene_dense_instance_repair/pairs/scene0459_00-scene0459_01/instance_metrics.csv",
+        "sha256": "1270ef26628ab72770253680aa2bdc49c22694e5ac33fd1dfe75cfe883e942fc"
+      },
+      "runs.csv": {
+        "byte_count": 1095,
+        "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-dense-instance-repair/configs/evaluation/results/ovi_rescene_dense_instance_repair/pairs/scene0459_00-scene0459_01/runs.csv",
+        "sha256": "4cc4c1621ab69734de0256e9a31da333403377fee217d73fa236a43d329d446b"
+      }
+    }
+  },
+  "status": "PASS",
+  "tables": {
+    "association_metrics.csv": {
+      "byte_count": 7515,
+      "path": "association_metrics.csv",
+      "sha256": "c7aab3785fef5716ed0116265db6ad8bd2999746fe8da078551575f39ee7dc4b"
+    },
+    "endpoint_diagnosis.csv": {
+      "byte_count": 59314,
+      "path": "endpoint_diagnosis.csv",
+      "sha256": "c9f1139d9d701954fdb23e06ceaa5d5048676b0392283649b4906adf5332bb75"
+    },
+    "identity_metrics.csv": {
+      "byte_count": 10528,
+      "path": "identity_metrics.csv",
+      "sha256": "f9ad672f120baf29b14367999fb6c9a1e7c06c061475df828383e0de0bdd66dc"
+    },
+    "instance_metrics.csv": {
+      "byte_count": 5696,
+      "path": "instance_metrics.csv",
+      "sha256": "8da35fdb6aa67a0ce361a116dca943fd1e30ecf1315f403a7e6571faac788f4f"
+    },
+    "runs.csv": {
+      "byte_count": 2769,
+      "path": "runs.csv",
+      "sha256": "ad6486f7aebc02ee7d535bb2eee0fa0e3ade1edfc10a425d9d5ea4649381cd13"
+    }
+  }
+}
