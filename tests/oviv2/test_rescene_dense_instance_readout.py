@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
@@ -153,6 +154,17 @@ def _bundle(tmp_path: Path):
     )
 
 
+def _bundle_for_pair(tmp_path: Path, pair: OviObjectPairView):
+    source = tmp_path / "transform.py"
+    source.write_bytes(b"pinned sampler\n")
+    return build_d2_inference_bundle(
+        pair,
+        sampler_source_path=source,
+        sampler_source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
+        grid_sample_factory=lambda **options: _IdentityGridSample(**options),
+    )
+
+
 def _predictions(bundle) -> tuple[np.ndarray, np.ndarray]:
     assert len(bundle.model_input.model_visit_ids) == 4
     return (
@@ -178,6 +190,42 @@ def test_dense_to_model_mapping_restores_nonidentity_original_vertex_rows(
 
     assert mapping[0].tolist() == [2, 0, -1, 1, 0, -1]
     assert mapping[1].tolist() == [3, -1, 3, -1, -1]
+
+
+def test_residual_instances_preserve_missing_ovi_semantics(tmp_path: Path) -> None:
+    pair = _pair()
+    visits = []
+    for visit in pair.visits:
+        entities = list(visit.entities)
+        entities[1] = replace(
+            entities[1], semantic_embedding=None, semantic_label=None
+        )
+        visits.append(replace(visit, entities=tuple(entities)))
+    pair = replace(pair, visits=(visits[0], visits[1]))
+    bundle = _bundle_for_pair(tmp_path, pair)
+    masks, logits = _predictions(bundle)
+
+    readout = build_dense_instance_readout(
+        pair,
+        surface=bundle.surface,
+        supported_view=bundle.supported_view,
+        pred_masks_mq=np.full_like(masks, -1.0),
+        pred_logits_qc=logits,
+    )
+
+    missing = [
+        instance
+        for visit in readout.visits
+        for instance in visit.instances
+        if instance.parent_ovi_entity_point_counts[0][0] == "ovimap:2"
+    ]
+    assert len(missing) == 2
+    assert all(instance.semantic_embedding is None for instance in missing)
+    assert all(instance.semantic_labels == () for instance in missing)
+    assert all(
+        instance.semantic_provenance == "single_ovi_parent_embedding_unavailable"
+        for instance in missing
+    )
 
 
 def test_exclusive_readout_splits_and_merges_entities_without_losing_points(

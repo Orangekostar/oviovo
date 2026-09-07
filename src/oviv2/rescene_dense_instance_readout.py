@@ -93,7 +93,7 @@ class DenseInstance:
     raw_query_index: int | None
     temporal_identity_id: str | None
     parent_ovi_entity_point_counts: tuple[tuple[str, int], ...]
-    semantic_embedding: np.ndarray
+    semantic_embedding: np.ndarray | None
     semantic_labels: tuple[str, ...]
     semantic_provenance: str
     component_count: int
@@ -117,9 +117,13 @@ class DenseInstance:
             or sum(count for _name, count in parents) != len(points)
         ):
             raise DenseInstanceReadoutError("dense instance parent counts are invalid")
-        embedding = _readonly(self.semantic_embedding, np.float32, 1)
-        if not len(embedding) or not np.all(np.isfinite(embedding)):
-            raise DenseInstanceReadoutError("dense instance semantic embedding is invalid")
+        embedding = None
+        if self.semantic_embedding is not None:
+            embedding = _readonly(self.semantic_embedding, np.float32, 1)
+            if not len(embedding) or not np.all(np.isfinite(embedding)):
+                raise DenseInstanceReadoutError(
+                    "dense instance semantic embedding is invalid"
+                )
         if type(self.component_count) is not int or self.component_count < 1:
             raise DenseInstanceReadoutError("component count must be positive")
         if self.multi_object_conflict != (self.component_count > 1):
@@ -248,7 +252,11 @@ class DensePairReadout:
                                     "raw_query_index": row.raw_query_index,
                                     "temporal_identity_id": row.temporal_identity_id,
                                     "parents": row.parent_ovi_entity_point_counts,
-                                    "embedding": _array_record(row.semantic_embedding),
+                                    "embedding": (
+                                        None
+                                        if row.semantic_embedding is None
+                                        else _array_record(row.semantic_embedding)
+                                    ),
                                     "labels": row.semantic_labels,
                                     "semantic_provenance": row.semantic_provenance,
                                     "component_count": row.component_count,
@@ -404,7 +412,12 @@ def _exclusive_query_winners(
 
 def _semantic_summary(
     visit: OviObjectVisitView, point_indices: np.ndarray
-) -> tuple[tuple[tuple[str, int], ...], np.ndarray, tuple[str, ...]]:
+) -> tuple[
+    tuple[tuple[str, int], ...],
+    np.ndarray | None,
+    tuple[str, ...],
+    str,
+]:
     owners = visit.entity_owner_indices[point_indices]
     if np.any(owners < 0):
         raise DenseInstanceReadoutError("instance points must have OVI parents")
@@ -412,13 +425,42 @@ def _semantic_summary(
         (visit.entities[int(index)].entity_id, int(np.count_nonzero(owners == index)))
         for index in sorted(set(int(value) for value in owners))
     )
-    embeddings = np.stack(
-        [visit.entities[int(index)].semantic_embedding for index in sorted(set(owners.tolist()))]
+    count_by_entity = dict(counts)
+    valid_entities = tuple(
+        visit.entities[index]
+        for index in sorted(set(int(value) for value in owners))
+        if visit.entities[index].semantic_embedding is not None
     )
-    weights = np.asarray([count for _name, count in counts], dtype=np.float64)
-    embedding = np.average(embeddings, axis=0, weights=weights).astype(np.float32)
-    labels = tuple(sorted({visit.entities[int(index)].semantic_label for index in set(owners.tolist())}))
-    return counts, embedding, labels
+    if valid_entities:
+        widths = {len(entity.semantic_embedding) for entity in valid_entities}
+        if len(widths) != 1:
+            raise DenseInstanceReadoutError(
+                "parent OVI semantic embedding widths differ"
+            )
+        embeddings = np.stack(
+            [entity.semantic_embedding for entity in valid_entities]
+        )
+        weights = np.asarray(
+            [count_by_entity[entity.entity_id] for entity in valid_entities],
+            dtype=np.float64,
+        )
+        embedding = np.average(embeddings, axis=0, weights=weights).astype(
+            np.float32
+        )
+        provenance = "ovi_point_count_weighted_available_parent_embeddings"
+    else:
+        embedding = None
+        provenance = "ovi_parent_embeddings_unavailable"
+    labels = tuple(
+        sorted(
+            {
+                visit.entities[int(index)].semantic_label
+                for index in set(owners.tolist())
+                if visit.entities[int(index)].semantic_label is not None
+            }
+        )
+    )
+    return counts, embedding, labels, provenance
 
 
 def _visit_readout(
@@ -439,7 +481,9 @@ def _visit_readout(
     instances: list[DenseInstance] = []
     for raw_query in sorted(set(int(value) for value in winner_query if value >= 0)):
         points = np.flatnonzero(winner_query == raw_query).astype(np.int64)
-        parent_counts, embedding, labels = _semantic_summary(visit, points)
+        parent_counts, embedding, labels, semantic_provenance = _semantic_summary(
+            visit, points
+        )
         components = _component_count(visit.points_xyz[points])
         index = len(instances)
         owners[points] = index
@@ -455,7 +499,7 @@ def _visit_readout(
                 parent_ovi_entity_point_counts=parent_counts,
                 semantic_embedding=embedding,
                 semantic_labels=labels,
-                semantic_provenance="ovi_point_count_weighted_parent_embeddings",
+                semantic_provenance=semantic_provenance,
                 component_count=components,
                 multi_object_conflict=components > 1,
             )
@@ -479,8 +523,14 @@ def _visit_readout(
                 temporal_identity_id=None,
                 parent_ovi_entity_point_counts=((entity.entity_id, len(points)),),
                 semantic_embedding=entity.semantic_embedding,
-                semantic_labels=(entity.semantic_label,),
-                semantic_provenance="inherited_single_ovi_parent",
+                semantic_labels=(
+                    () if entity.semantic_label is None else (entity.semantic_label,)
+                ),
+                semantic_provenance=(
+                    "inherited_single_ovi_parent"
+                    if entity.semantic_embedding is not None
+                    else "single_ovi_parent_embedding_unavailable"
+                ),
                 component_count=1,
                 multi_object_conflict=False,
             )
