@@ -161,10 +161,10 @@ def build_dense_instance_readout(
 - [x] Freeze `followup_decision.json` from development endpoint rows using the Section 9 evidence table; record the chosen component, evidence rows, expected effect, and forbidden concurrent changes.
 - [x] If the decision is not `P2_FINAL`, write a RED regression reproducing the measured failure and implement only the selected repair; rerun the development pair against unchanged P0/P1.
 - [x] If partial observation is causal, construct camera/depth-defined D1 input and run an actual new D1 forward; otherwise preserve old D1 metadata as cached-projection only.
-- [ ] Freeze the final method/config, run all available frozen D2_EVAL pairs once, and report per-pair plus micro/macro P0/P1/P2 results without retuning.
-- [ ] Rebuild fixed endpoint bindings for every final candidate pool and evaluate system identity plus fixed-P2-candidate G/F/R with explicit dependency on the joint-query-derived pool.
-- [ ] Export P0/P1/P2 visits and t1 current readouts for every completed pair. Run C0/C_G/C_R/O_ID/O_POSE only when new rigid endpoints or explicit recoverable surface exist; otherwise record `NOT_RUN_INELIGIBLE` with measured reasons.
-- [ ] Run all changed-module and direct-dependency tests and commit the final method and compact results.
+- [x] Freeze the final method/config, run all available frozen D2_EVAL pairs once, and report per-pair plus micro/macro P0/P1/P2 results without retuning.
+- [x] Rebuild fixed endpoint bindings for every final candidate pool and evaluate system identity plus fixed-P2-candidate G/F/R with explicit dependency on the joint-query-derived pool.
+- [x] Export P0/P1/P2 visits and t1 current readouts for every completed pair. Run C0/C_G/C_R/O_ID/O_POSE only when new rigid endpoints or explicit recoverable surface exist; otherwise record `NOT_RUN_INELIGIBLE` with measured reasons.
+- [x] Run all changed-module and direct-dependency tests and commit the final method and compact results.
 
 ### Task 7: Evidence audit, handoff, and remote delivery
 
@@ -174,10 +174,10 @@ def build_dense_instance_readout(
 - Create: `configs/evaluation/results/ovi_rescene_dense_instance_repair/compact_artifact_index.json`
 - Modify: `docs/paper/ovi_rescene_dense_instance_repair_plan.md`
 
-- [ ] Validate every numeric table cell against machine-readable outputs and preserve null/status meanings.
-- [ ] Answer every item in Section 14.3, including actual pairs, split/merge and XYZ conservation, raw-to-dense loss, D1/adapter/recovery status, claims, compute, and local-only assets.
-- [ ] Include Tables A–E, representative success and failure previews, and an explicit supported/unsupported claim ledger.
-- [ ] Run `git diff --check`, compile every changed Python file, and run all changed-module/direct-dependency tests. Run broader regression only for shared interfaces.
-- [ ] Inspect the full branch diff, frozen baseline boundaries, accidental large files, and untracked required artifacts.
+- [x] Validate every numeric table cell against machine-readable outputs and preserve null/status meanings.
+- [x] Answer every item in Section 14.3, including actual pairs, split/merge and XYZ conservation, raw-to-dense loss, D1/adapter/recovery status, claims, compute, and local-only assets.
+- [x] Include Tables A–E, representative success and failure previews, and an explicit supported/unsupported claim ledger.
+- [x] Run `git diff --check`, compile every changed Python file, and run all changed-module/direct-dependency tests. Run broader regression only for shared interfaces.
+- [x] Inspect the full branch diff, frozen baseline boundaries, accidental large files, and untracked required artifacts.
 - [ ] Commit code, compact evidence, plan, results, and handoff; push without force.
 - [ ] Compare local and remote branch SHA and report `UPLOAD_STATUS=VERIFIED` only when identical.
