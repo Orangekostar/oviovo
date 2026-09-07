@@ -98,13 +98,13 @@ def build_dense_instance_readout(
 - Produce full-visit instance rows at IoU 0.50/0.25, endpoint bindings per candidate pool, split/merge/duplicate counts, query/residual/background/unknown fractions, source/final counts, and `geometric_change_count=0`.
 - Export both visits and t1 current readout as PLY plus fixed-camera RGB/instance PNG; PLY vertex order and XYZ equal the source visit exactly.
 
-- [ ] Write RED tests that P0/P1/P2 share source point counts and XYZ, while P2 candidate masks can cross or split OVI entity boundaries.
-- [ ] Write RED tests for TP/FP/FN/P/R/F1, raw/final counts, owner fractions, split/merge/duplicate fields, and null conditional recall when no GT identity has both endpoints.
-- [ ] Write a RED test that endpoint bindings are built before relation scoring and differ when the candidate pool changes.
-- [ ] Write RED artifact tests for exact vertex order, one-based PLY instance indices, deterministic colors, and explicit background/unknown encoding.
-- [ ] Implement metrics and exporters by reusing `evaluate_instance_geometry`, fixed endpoint semantics, and existing preview helpers.
-- [ ] Run `python -m pytest -q tests/evaluation/test_dense_instance_repair_metrics.py tests/evaluation/test_dense_instance_repair_artifacts.py tests/evaluation/test_temporal_object_groups.py tests/evaluation/test_rscan_association_metrics.py`.
-- [ ] Commit Task 3.
+- [x] Write RED tests that P0/P1/P2 share source point counts and XYZ, while P2 candidate masks can cross or split OVI entity boundaries.
+- [x] Write RED tests for TP/FP/FN/P/R/F1, raw/final counts, owner fractions, split/merge/duplicate fields, and null conditional recall when no GT identity has both endpoints.
+- [x] Write a RED test that endpoint bindings are built before relation scoring and differ when the candidate pool changes.
+- [x] Write RED artifact tests for exact vertex order, one-based PLY instance indices, deterministic colors, and explicit background/unknown encoding.
+- [x] Implement metrics and exporters by reusing `evaluate_instance_geometry`, fixed endpoint semantics, and existing preview helpers.
+- [x] Run `python -m pytest -q tests/evaluation/test_dense_instance_repair_metrics.py tests/evaluation/test_dense_instance_repair_artifacts.py tests/evaluation/test_temporal_object_groups.py tests/evaluation/test_rscan_association_metrics.py`.
+- [x] Commit Task 3.
 
 ### Task 4: Cached development-pair runner and measured P0/P1/P2 evidence
 
