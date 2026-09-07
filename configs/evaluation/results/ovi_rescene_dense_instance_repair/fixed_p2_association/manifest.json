@@ -1,0 +1,57 @@
+{
+  "artifact_id": "OVI_RESCENE_DENSE_FIXED_P2_ASSOCIATION_V1",
+  "config_sha256": "ae0cf8c3ea7e11f0130902d96870f8378c7961fe7ea9e0f036524ca7237e1946",
+  "evaluated_commit": "7ddcf0e79eddc83df05fbad0fccd2427c7382913",
+  "fixed_p2": {
+    "binding_sha256": {
+      "full": "d8ea625b2371365633e3e2624a0e2275e410b0cc6aa9df9bf88d703384abdc4e",
+      "supported": "fdb862a81cace81c405e39d85e4c563faf443bf3c936a9071bf43a65c03f00d2"
+    },
+    "candidate_counts": [
+      31,
+      22
+    ],
+    "candidate_pool_dependency": "joint_rescene_query_derived_P2",
+    "matrix_sha256": {
+      "F_obj": "569236e0668869f4705ab478810b6d8cb5c547ff2077ac7752c71ac9f17485d0",
+      "G_full": "145322669ec4a2a405c05f44777caff38d15dc6cebbab74b3952f40e63b666c5",
+      "G_supported": "feb4d97a262c807399a30233cd7f95675352a7ea39d7ac05c860dfcaf7a7fe20",
+      "R_obj": "89ff65ae87329dc91db272cfda6036c393fa1c0d4514dd8a5f400d42030f1910"
+    },
+    "method_view_sha256": "8e6491fc8dbdf9b6ac446cec71eda77edb78b06f7d3353db6c402fa37e06709e",
+    "prediction_counts": {
+      "F_obj": 36,
+      "G_full": 31,
+      "G_supported": 34,
+      "R_obj": 52
+    }
+  },
+  "pair_content_sha256": "db8c3463022049d4b0bc8e4e2f7259045cc488640e663442dd94e9c556ca9fa0",
+  "pair_id": "scene0109_00-scene0109_01",
+  "protocol": {
+    "centroid_scale_m": 2.0,
+    "ground_truth_used_by_method": false,
+    "minimum_match_scores": {
+      "F_obj": 0.5,
+      "G_full": 0.5,
+      "G_supported": 0.5,
+      "R_obj": 0.5
+    },
+    "static_centroid_tolerance_m": 0.2,
+    "support_domains": {
+      "F_obj": "supported",
+      "G_full": "full",
+      "G_supported": "supported",
+      "R_obj": "supported"
+    }
+  },
+  "runtime_s": 11.471875982359052,
+  "sample_content_sha256": "f5d456ab430f7d38e0190c0abb3ae429b716735ec0dc1ebb48811a75faab17e6",
+  "schema_version": 1,
+  "status": "PASS",
+  "table": {
+    "byte_count": 2765,
+    "path": "association_metrics.csv",
+    "sha256": "3af0cd9c020ac804150ec965a4501662ee0a958bb15f285ff4bc99ebf8496869"
+  }
+}
