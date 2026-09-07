@@ -179,5 +179,5 @@ def build_dense_instance_readout(
 - [x] Include Tables A–E, representative success and failure previews, and an explicit supported/unsupported claim ledger.
 - [x] Run `git diff --check`, compile every changed Python file, and run all changed-module/direct-dependency tests. Run broader regression only for shared interfaces.
 - [x] Inspect the full branch diff, frozen baseline boundaries, accidental large files, and untracked required artifacts.
-- [ ] Commit code, compact evidence, plan, results, and handoff; push without force.
-- [ ] Compare local and remote branch SHA and report `UPLOAD_STATUS=VERIFIED` only when identical.
+- [x] Commit code, compact evidence, plan, results, and handoff; push without force.
+- [x] Compare local and remote branch SHA and report `UPLOAD_STATUS=VERIFIED` only when identical.
