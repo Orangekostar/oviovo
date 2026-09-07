@@ -1,0 +1,57 @@
+{
+  "artifact_id": "OVI_RESCENE_DENSE_FIXED_P2_ASSOCIATION_V1",
+  "config_sha256": "6321ca4f8cc39676462b96465cf661eb4382cf64324faa84041be114e5e64980",
+  "evaluated_commit": "a617a171d2a80f2d232268d1d6fbd9ebf7be5f52",
+  "fixed_p2": {
+    "binding_sha256": {
+      "full": "eea0c3e76c5425ef6c99500a4509349faa60919f4144e1f2fa11470d3bec1490",
+      "supported": "a5fe49477773ef63cb247f03da500634eec133f9a2ed35ac7a92b0b522587832"
+    },
+    "candidate_counts": [
+      145,
+      138
+    ],
+    "candidate_pool_dependency": "joint_rescene_query_derived_P2",
+    "matrix_sha256": {
+      "F_obj": "5361ac4d077d9f22cbff1b39e8cece4b20d5d7c94f2cc69f6ff757fe97ef1d7c",
+      "G_full": "1e3b7be4da84cd155f66091c02ea1477768e3dfa15f5ef89868e69496536ad4f",
+      "G_supported": "38e2ebac160021e2cc9a9d43f305241ea783c2d325978cbda45e4a90431b76b0",
+      "R_obj": "502fd57f29ad3378467e8b9c1f53c26c7ded96101821be9796d2ec219dfe32a0"
+    },
+    "method_view_sha256": "2f0e804750ec55d5ef1a8f177423aca7f37097e3821edc186e961b581832c210",
+    "prediction_counts": {
+      "F_obj": 171,
+      "G_full": 146,
+      "G_supported": 172,
+      "R_obj": 273
+    }
+  },
+  "pair_content_sha256": "893a0760b47f68f4c1c7fd8113ad29fdc2922f9200ec7f25a633218ee8ae291c",
+  "pair_id": "scene0459_00-scene0459_01",
+  "protocol": {
+    "centroid_scale_m": 2.0,
+    "ground_truth_used_by_method": false,
+    "minimum_match_scores": {
+      "F_obj": 0.5,
+      "G_full": 0.5,
+      "G_supported": 0.5,
+      "R_obj": 0.5
+    },
+    "static_centroid_tolerance_m": 0.2,
+    "support_domains": {
+      "F_obj": "supported",
+      "G_full": "full",
+      "G_supported": "supported",
+      "R_obj": "supported"
+    }
+  },
+  "runtime_s": 93.96893780818209,
+  "sample_content_sha256": "2f88f8281da027c25d49bf419f6f0943ac69784b9f3e64539b18f725be069873",
+  "schema_version": 1,
+  "status": "PASS",
+  "table": {
+    "byte_count": 2808,
+    "path": "association_metrics.csv",
+    "sha256": "41d93e9c6c33a97af60d0491903cdcfefce4a4d8f481b94e5f374abfd58f8e8a"
+  }
+}
