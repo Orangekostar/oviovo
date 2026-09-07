@@ -810,7 +810,6 @@ def run_dense_instance_repair(
             "instance_metrics.csv",
             "identity_metrics.csv",
             "runs.csv",
-            "manifest.json",
         ):
             shutil.copyfile(local_root / name, tracked_staging / name)
         preview_dir = tracked_staging / "P2"

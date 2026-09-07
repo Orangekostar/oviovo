@@ -121,12 +121,12 @@ def build_dense_instance_readout(
 - Rebuild and bind the existing D2 pair, rebuild its supported bundle, load the existing `native_forwards.npz`, validate M/Q shapes and metadata, then run Tasks 1–3 without a new forward.
 - Publish outputs exclusively under `/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/scene0109_00-scene0109_01/` and compact CSV/JSON under the tracked results directory.
 
-- [ ] Write RED orchestration tests using real module objects and tiny temporary artifacts; require cache identity mismatch, M/Q mismatch, or pair mismatch to fail before output publication.
-- [ ] Write RED tests for stable CSV columns matching Tables A/B/C/E and for null/status serialization.
-- [ ] Implement config loading, bound pair/cache/GT restoration, P0/P1/P2 construction, endpoint diagnosis, metrics, artifacts, and measured runtime collection.
-- [ ] Run targeted tests, commit code/config, then run the real cached development pair at an explicit evaluated commit.
-- [ ] Inspect numeric output and fixed previews. Record whether P2 actually splits/merges, where raw-to-exclusive loss occurs, and which failure category dominates.
-- [ ] Commit compact measured development evidence and selected PNG; keep full PLY/NPZ local-only.
+- [x] Write RED orchestration tests using real module objects and tiny temporary artifacts; require cache identity mismatch, M/Q mismatch, or pair mismatch to fail before output publication.
+- [x] Write RED tests for stable CSV columns matching Tables A/B/C/E and for null/status serialization.
+- [x] Implement config loading, bound pair/cache/GT restoration, P0/P1/P2 construction, endpoint diagnosis, metrics, artifacts, and measured runtime collection.
+- [x] Run targeted tests, commit code/config, then run the real cached development pair at an explicit evaluated commit.
+- [x] Inspect numeric output and fixed previews. Record whether P2 actually splits/merges, where raw-to-exclusive loss occurs, and which failure category dominates.
+- [x] Commit compact measured development evidence and selected PNG; keep full PLY/NPZ local-only.
 
 ### Task 5: Frozen new-pair selection and independent OVI reconstruction
 
