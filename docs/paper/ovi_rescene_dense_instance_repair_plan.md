@@ -140,10 +140,10 @@ def build_dense_instance_readout(
 - Each new visit is materialized and independently mapped once; all methods reuse that OVI artifact.
 
 - [x] Record pair role, UUIDs, asset presence, selection reason, checkpoint-validation overlap, rigid/repeated/static strata, and frozen threshold/config before method execution.
-- [ ] Materialize and map `scene0359_00-scene0359_01` and `scene0459_00-scene0459_01`, using distinct GPUs when independent commands can run concurrently.
-- [ ] Build GT sidecars, OVI pair artifacts, supported bundles, and one cached ReScene forward per pair; correct reproducible implementation errors uniformly.
-- [ ] Record runtime, peak allocated/reserved memory, paths, sizes, hashes, and any real asset failure. Never replace a failed EVAL pair based on its score.
-- [ ] Commit the frozen selection and compact mapping/forward receipts; keep large artifacts local-only.
+- [x] Materialize and map `scene0359_00-scene0359_01` and `scene0459_00-scene0459_01`, using distinct GPUs when independent commands can run concurrently.
+- [x] Build GT sidecars, OVI pair artifacts, supported bundles, and one cached ReScene forward per pair; correct reproducible implementation errors uniformly.
+- [x] Record runtime, peak allocated/reserved memory, paths, sizes, hashes, and any real asset failure. Never replace a failed EVAL pair based on its score.
+- [x] Commit the frozen selection and compact mapping/forward receipts; keep large artifacts local-only.
 
 ### Task 6: Fixed multi-pair evaluation and one evidence-selected repair
 
@@ -158,9 +158,9 @@ def build_dense_instance_readout(
 - `P3_BOUNDARY` may only split a raw-query parent into fixed single-visit geometric components and marks their cross-visit identity uncertain; it cannot tune thresholds per scene.
 - Adaptation is permitted only if D0 and an actual re-forwarded D1 are materially better than D2 raw masks with comparable GT support; training environments remain disjoint from D2_EVAL.
 
-- [ ] Freeze `followup_decision.json` from development endpoint rows using the Section 9 evidence table; record the chosen component, evidence rows, expected effect, and forbidden concurrent changes.
-- [ ] If the decision is not `P2_FINAL`, write a RED regression reproducing the measured failure and implement only the selected repair; rerun the development pair against unchanged P0/P1.
-- [ ] If partial observation is causal, construct camera/depth-defined D1 input and run an actual new D1 forward; otherwise preserve old D1 metadata as cached-projection only.
+- [x] Freeze `followup_decision.json` from development endpoint rows using the Section 9 evidence table; record the chosen component, evidence rows, expected effect, and forbidden concurrent changes.
+- [x] If the decision is not `P2_FINAL`, write a RED regression reproducing the measured failure and implement only the selected repair; rerun the development pair against unchanged P0/P1.
+- [x] If partial observation is causal, construct camera/depth-defined D1 input and run an actual new D1 forward; otherwise preserve old D1 metadata as cached-projection only.
 - [ ] Freeze the final method/config, run all available frozen D2_EVAL pairs once, and report per-pair plus micro/macro P0/P1/P2 results without retuning.
 - [ ] Rebuild fixed endpoint bindings for every final candidate pool and evaluate system identity plus fixed-P2-candidate G/F/R with explicit dependency on the joint-query-derived pool.
 - [ ] Export P0/P1/P2 visits and t1 current readouts for every completed pair. Run C0/C_G/C_R/O_ID/O_POSE only when new rigid endpoints or explicit recoverable surface exist; otherwise record `NOT_RUN_INELIGIBLE` with measured reasons.
