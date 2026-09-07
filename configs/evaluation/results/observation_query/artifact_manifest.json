@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "artifact_id": "OVI_RESCENE_OBSERVATION_QUERY_ARTIFACT_MANIFEST_V1",
+  "status": "RESULTS_READY_MODEL_NOT_CREATED",
+  "artifacts": [
+    {
+      "role": "frozen_baseline_long_table",
+      "path": "configs/evaluation/results/observation_query/runs/20260907_scene0109_obs_base_frozen_v2/results.csv",
+      "byte_count": 4404,
+      "sha256": "9c1c1f3a5e0db8052bf368fdf24d24d6cc65efda0cdb6500082e9f57cae1750f",
+      "storage": "git",
+      "required_for_reported_result": true
+    },
+    {
+      "role": "frozen_baseline_predictions_and_dense_owners",
+      "path": "configs/evaluation/results/observation_query/runs/20260907_scene0109_obs_base_frozen_v2/predictions.npz",
+      "byte_count": 14154684,
+      "sha256": "8ffa4587fc34b72d103f28baa2e1f6960654d452cf27948606dab9e7f2121cb6",
+      "storage": "git",
+      "required_for_reported_result": true
+    },
+    {
+      "role": "method_status_tables",
+      "path": "configs/evaluation/results/observation_query/runs",
+      "file_count": 15,
+      "storage": "git",
+      "required_for_reported_result": true
+    },
+    {
+      "role": "fixed_observation_overlays",
+      "path": "configs/evaluation/results/observation_query/sample_overlays",
+      "file_count": 3,
+      "sha256": [
+        "59dd42037e0a7b540e7882b711e11f9eb85d827402ca3e0102f4faffe3b48d7e",
+        "b7fbf3a95c4dc30251268f1e76c0f24d3a07f6603745464b75c2b7285cf9563c",
+        "4b1d38eb3311022e94383e388dd9a43196a43842aa2069e8181489f729cf20f0"
+      ],
+      "storage": "git",
+      "required_for_reported_result": false
+    },
+    {
+      "role": "observation_bank_arrays",
+      "path": "/home/ww/oviovo_baseline_runs/observation_query/20260907_scene0109_dev_v1/observation_bank/bank/arrays.npz",
+      "byte_count": 2144931,
+      "sha256": "6df51da1258dba2828dcbbeb1df183245346fe9e4ba3920678b63d19bd33d373",
+      "storage": "local_only",
+      "uploaded": false,
+      "required_for_reported_result": false,
+      "regenerable_by": "scripts/evaluation/prepare_ovi_observations.py"
+    },
+    {
+      "role": "region_pixel_sidecar",
+      "path": "/home/ww/oviovo_baseline_runs/observation_query/20260907_scene0109_dev_v1/observation_bank/region_pixels.npz",
+      "byte_count": 4187745,
+      "sha256": "9b94b6e683b5c163fd2167828a0040f0db53b1185659fb2098934f3ab14fab98",
+      "storage": "local_only",
+      "uploaded": false,
+      "required_for_reported_result": false
+    },
+    {
+      "role": "frozen_backbone_cache",
+      "path": "/home/ww/oviovo_baseline_runs/observation_query/20260907_scene0109_dev_v1/frozen_backbone_cache/features.npz",
+      "byte_count": 40186911,
+      "sha256": "d8eeb8a24c0d9c0805432a099d4e0e0354ed01c5cca153f5a1da30d4ddbf489a",
+      "storage": "local_only",
+      "uploaded": false,
+      "required_for_reported_result": false
+    },
+    {
+      "role": "camera_visible_diagnostic_arrays",
+      "path": "/home/ww/oviovo_baseline_runs/observation_query/20260907_scene0109_dev_v1/d1_camera_visible/arrays.npz",
+      "byte_count": 5311063,
+      "sha256": "3cd208b25f72e2a5f6d0a13f124b7378fe8997c99196d710d13fc84831d366f9",
+      "storage": "local_only",
+      "uploaded": false,
+      "required_for_reported_result": false
+    },
+    {
+      "role": "trained_model_state",
+      "path": null,
+      "byte_count": 0,
+      "sha256": null,
+      "storage": "not_created",
+      "uploaded": false,
+      "required_for_reported_result": false,
+      "reason": "Official TRAIN sequence.zip assets are absent; optimizer updates are zero."
+    },
+    {
+      "role": "training_curve",
+      "path": null,
+      "byte_count": 0,
+      "sha256": null,
+      "storage": "not_created",
+      "uploaded": false,
+      "required_for_reported_result": false,
+      "reason": "Training did not start because the source-bound asset gate failed."
+    }
+  ]
+}

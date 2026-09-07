@@ -1,0 +1,40 @@
+{
+  "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_RUN_STATUS_V1",
+  "checkpoint_created": false,
+  "method": "OBS_FULL",
+  "missing_train_sequence_zip_count": 2,
+  "missing_train_sequence_zips": [
+    "/home/ww/vv/dataset/3RScan/scans/02b33dfb-be2b-2d54-92d2-cd012b2b3c40/sequence.zip",
+    "/home/ww/vv/dataset/3RScan/scans/fcf66d9e-622d-291c-84c2-bb23dfe31327/sequence.zip"
+  ],
+  "missing_training_artifacts": {
+    "model_bundle_manifest": "/home/ww/oviovo_baseline_runs/observation_query/20260907_scene0001_train_v1/model_bundle/manifest.json",
+    "observation_bank_manifest": "/home/ww/oviovo_baseline_runs/observation_query/20260907_scene0001_train_v1/observation_bank/bank/manifest.json",
+    "training_target_manifest": "/home/ww/oviovo_baseline_runs/observation_query/20260907_scene0001_train_v1/training_targets/manifest.json"
+  },
+  "pair_id": "scene0001_00-scene0001_01",
+  "required_action": "Materialize the declared official TRAIN RGB-D assets only after explicit 3RScan Terms-of-Use confirmation, then build the TRAIN observation artifacts.",
+  "role": "TRAIN",
+  "run_id": "20260907_scene0001_t06_asset_gate_v2",
+  "schema_version": 1,
+  "source_bindings": {
+    "config": {
+      "byte_count": 4574,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-observation-query/configs/observation_query/pilot_v1.json",
+      "sha256": "b5ff6ed04c8b922fcd34498deaadd2d199ec9e737a954c443ebda03c8c10f405"
+    },
+    "runtime": {
+      "byte_count": 2755,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-observation-query/configs/observation_query/runtime.local.json",
+      "sha256": "f356c8581d983e1bc2b6010482506d7cdcdfc1e23e2facbb442b1ed3703a9dd5"
+    },
+    "split": {
+      "byte_count": 3581,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-observation-query/configs/observation_query/splits_v1.json",
+      "sha256": "0fa8a837aba10c597741ff065be81a73c7ac56be03fec226c7ee60a3533beb85"
+    }
+  },
+  "stage": "smoke",
+  "status": "TRAINING_ASSET_GATED",
+  "validation_substitution_allowed": false
+}

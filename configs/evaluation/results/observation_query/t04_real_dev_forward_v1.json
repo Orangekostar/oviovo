@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "artifact_id": "OVI_RESCENE_OBSERVATION_QUERY_T04_REAL_FORWARD_V1",
+  "status": "REAL_DEV_FORWARD_PASS",
+  "pair_id": "scene0109_00-scene0109_01",
+  "role": "ENGINEERING_DEV",
+  "source_bindings": {
+    "observation_model": {
+      "path": "src/oviv2/observation_query/model.py",
+      "sha256": "331a4d195a213b57c1c73645495acc501079155eb01eaeb3725a4cb2a90f81e9",
+      "byte_count": 29862
+    },
+    "native_rescene": {
+      "path": "/home/ww/oviovo_references/evaluation/rescene4d",
+      "commit": "fb2fe42eb8f1e926567c48eea9acb874e608ee10"
+    },
+    "native_checkpoint": {
+      "path": "/home/ww/paper5/checkpoints/rescene4d_concerto_t2_repro.ckpt",
+      "sha256": "85ed1aba60320cd19798536b71b91dbc156b7ea60f838832bc0bbbdba131546e",
+      "byte_count": 754917862
+    },
+    "observation_bank_content_sha256": "9816cf9ed795fb392195632be882315c910986912331e90c009c4cbfcc717a79",
+    "model_input_sha256": "986a2081a818e2548270b858d8354723ee1e113b5fe376b5605e5e9cd3537317"
+  },
+  "resolved_model": {
+    "hidden_dim": 128,
+    "num_queries": 100,
+    "num_heads": 8,
+    "num_decoders": 3,
+    "hierarchy_levels": 4,
+    "logical_observation_layers": 12,
+    "class_output_count_including_no_object": 19,
+    "backbone_frozen": true,
+    "backbone_eval_in_train_mode": true
+  },
+  "parameter_counts": {
+    "all": 136141805,
+    "backbone_frozen": 133331520,
+    "native_non_backbone_trainable": 1817875,
+    "observation_branch_trainable": 992410,
+    "total_trainable": 2810285
+  },
+  "native_fallback": {
+    "same_rng_state": true,
+    "maximum_absolute_mask_logit_difference": 0.0,
+    "maximum_absolute_class_logit_difference": 0.0
+  },
+  "full_observation_forward": {
+    "model_count": 40076,
+    "query_count": 100,
+    "class_output_count": 19,
+    "region_count": 490,
+    "region_output_count_including_dustbin": 101,
+    "edge_count": 51825,
+    "supported_model_count": 30131,
+    "region_aux_output_count": 12,
+    "all_outputs_finite": true,
+    "cached_decoder_runtime_s": 0.16818518890067935,
+    "runtime_excludes_frozen_backbone": true,
+    "peak_gpu_bytes": 1643544576,
+    "device": "NVIDIA A40 cuda:0"
+  },
+  "initial_gates": {
+    "alpha": 0.001,
+    "beta": 0.0,
+    "fuse": 0.001,
+    "bounded_by_tanh": true,
+    "correction_clip": 5.0
+  },
+  "claim_boundary": "This current-source rerun verifies the real decoder intervention and exact disabled fallback. The runtime is a cached-decoder diagnostic, not end-to-end latency or a trained performance result."
+}

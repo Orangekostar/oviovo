@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "artifact_id": "OVI_RESCENE_OBSERVATION_QUERY_T07_T09_STATUS_V1",
+  "status": "PILOT_INCONCLUSIVE_TRAIN_ASSET_GATED",
+  "evidence_base_commit": "4354df9df093628eaa7b3470319944914db85711",
+  "pair_id": "scene0109_00-scene0109_01",
+  "environment_uuid": "20c993b7-698f-29c5-847d-c8cb8a685f5a",
+  "split_role": "DEV",
+  "previously_inspected": true,
+  "methods": {
+    "OBS_BASE_FROZEN": {
+      "status": "PASS",
+      "training_updates": 0,
+      "run_id": "20260907_scene0109_obs_base_frozen_v2",
+      "results": "runs/20260907_scene0109_obs_base_frozen_v2/results.csv",
+      "summary": "runs/20260907_scene0109_obs_base_frozen_v2/summary.json",
+      "predictions": "runs/20260907_scene0109_obs_base_frozen_v2/predictions.npz"
+    },
+    "OBS_BASE_TUNED": {"status": "NOT_RUN_MISSING_TRAIN_ASSETS", "run_id": "20260907_scene0109_obs_base_tuned_asset_gate_v2"},
+    "OBS_LATE": {"status": "NOT_RUN_MISSING_TRAIN_ASSETS", "run_id": "20260907_scene0109_obs_late_asset_gate_v2"},
+    "OBS_FUSE": {"status": "NOT_RUN_MISSING_TRAIN_ASSETS", "run_id": "20260907_scene0109_obs_fuse_asset_gate_v2"},
+    "OBS_ATTN": {"status": "NOT_RUN_MISSING_TRAIN_ASSETS", "run_id": "20260907_scene0109_obs_attn_asset_gate_v2"},
+    "OBS_FULL": {"status": "NOT_RUN_MISSING_TRAIN_ASSETS", "run_id": "20260907_scene0109_obs_full_asset_gate_v2"},
+    "OBS_PER_VISIT": {"status": "NOT_RUN_MISSING_TRAIN_ASSETS", "run_id": "20260907_scene0109_obs_per_visit_asset_gate_v2"}
+  },
+  "frozen_baseline": {
+    "visit_0": {
+      "full_gt_f1_50": 0.08888888888888889,
+      "common_m_f1_50": 0.10526315789473684,
+      "camera_visible_f1_50": 0.27272727272727276,
+      "raw_best_iou_mean": 0.17782805221967032,
+      "raw_ar50": 0.07142857142857142,
+      "raw_ar25": 0.35714285714285715
+    },
+    "visit_1": {
+      "full_gt_f1_50": 0.12500000000000003,
+      "common_m_f1_50": 0.13793103448275862,
+      "camera_visible_f1_50": 0.4,
+      "raw_best_iou_mean": 0.1349398255427923,
+      "raw_ar50": 0.1,
+      "raw_ar25": 0.3
+    },
+    "full_domain_identity_recall": 0.0,
+    "inference_seconds": 5.235793781001121,
+    "peak_memory_bytes": 1100249088,
+    "historical_raw_prediction_replay": "NOT_EXACT_CURRENT_RERUN"
+  },
+  "current_map": {
+    "status": "INSTANCE_CONSTRUCTION_PASS_MAP_EFFECT_NOT_EVALUABLE",
+    "source_d_row_count": [820617, 788946],
+    "candidate_relation_count": 0,
+    "candidate_relation_policy": "shared queries remain uncertain until endpoint association validates them",
+    "reason": "The DEV output contains no candidate relation after conflict filtering and has zero end-to-end identity recall, so no cross-visit link or Ghost improvement is claimed."
+  },
+  "claim_boundary": "Only the frozen baseline was evaluated. Observation-query variants require an official TRAIN RGB-D pair and a trained checkpoint; their missing metrics are unavailable, not zero."
+}

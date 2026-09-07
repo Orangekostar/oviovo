@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "artifact_id": "OVI_RESCENE_OBSERVATION_QUERY_T06_TRAINING_CLOSURE_V1",
+  "status": "IMPLEMENTED_TRAIN_ASSET_GATED",
+  "source_bindings": {
+    "training_state": {
+      "path": "src/oviv2/observation_query/training.py",
+      "sha256": "ab738c99d731d27a704b6e7a681627107e5a907c6a4fb288d53191e5d60cfec8",
+      "byte_count": 25307
+    },
+    "training_runner": {
+      "path": "scripts/training/train_ovi_observation_query.py",
+      "sha256": "00975774bfc10b53766d6575996781d00f8afc9602b0637cbe762ad87da6f413",
+      "byte_count": 44261
+    },
+    "asset_gate_status": {
+      "path": "/home/ww/oviovo_baseline_runs/observation_query/training_runs/20260907_scene0001_t06_asset_gate_v2/status.json",
+      "sha256": "d1c596cc7e4f344e2cc2b6b08153a7089ba19ec9f6d6dce1f22f0d81f7734fd0",
+      "byte_count": 2066
+    }
+  },
+  "implemented_contracts": [
+    "strict_base_checkpoint_load",
+    "frozen_backbone_parameter_exclusion",
+    "hash_bound_frozen_backbone_cache",
+    "fresh_autograd_safe_cache_materialization",
+    "separate_native_and_observation_optimizer_groups",
+    "finite_gradient_accumulation_and_clipping",
+    "compact_all_trainable_state_checkpoint",
+    "checkpoint_reload_output_exactness",
+    "resume_identity_and_optimizer_state_binding",
+    "train_role_asset_gate_without_dev_substitution"
+  ],
+  "real_dev_cache_replay": {
+    "status": "REAL_DEV_BACKBONE_CACHE_REPLAY_PASS",
+    "path": "/home/ww/oviovo_baseline_runs/observation_query/20260907_scene0109_dev_v1/frozen_backbone_cache",
+    "content_sha256": "8deeaf2bcf3d0dcbe4d22b542492aad918bdd6f5fc0f5be55b66fe4e614f485a",
+    "manifest_sha256": "1320b0ab53d923a4e304464e2e2a195e5103919f7028ff189ecb19e764257e2e",
+    "arrays_sha256": "d8eeb8a24c0d9c0805432a099d4e0e0354ed01c5cca153f5a1da30d4ddbf489a",
+    "arrays_byte_count": 40186911,
+    "auxiliary_level_count": 5,
+    "backbone_runtime_s": 0.6110936258919537,
+    "maximum_absolute_mask_difference": 0.0,
+    "maximum_absolute_class_difference": 0.0,
+    "maximum_absolute_region_difference": 0.0
+  },
+  "real_train_status": {
+    "pair_id": "scene0001_00-scene0001_01",
+    "missing_sequence_zip_count": 2,
+    "optimizer_updates": 0,
+    "checkpoint_created": false,
+    "model_asset": "NOT_CREATED",
+    "validation_substitution_allowed": false
+  },
+  "verification": {
+    "focused_test_count": 22,
+    "focused_tests_passed": 22,
+    "ruff": "PASS",
+    "py_compile": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "claim_boundary": "Cache/checkpoint/training code is implemented and the cache replays real DEV features exactly, but REAL_TRAIN_SMOKE_PASS is not claimed because official TRAIN RGB-D is absent."
+}

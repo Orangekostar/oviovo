@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_PREFLIGHT_V1",
+  "status": "TRAIN_OBSERVATION_ASSET_GATED",
+  "pair_id": "scene0001_00-scene0001_01",
+  "role": "TRAIN",
+  "environment_uuid": "02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+  "source_bindings": {
+    "official_metadata": {
+      "path": "/home/ww/vv/dataset/3RScan/3RScan.json",
+      "sha256": "674a00f50f76b198b9de44efd86c390fea3da37ba8f12cf8ccd00045e265fa64",
+      "byte_count": 3155995
+    },
+    "label_database": {
+      "path": "/home/ww/paper5/data/processed/rio/label_database.yaml",
+      "sha256": "b03b15ecd0791a0ecd05912e9fe5617dd29a466d117cf5c2188f28638293a063",
+      "byte_count": 2919
+    },
+    "visit_0_native_labels": {
+      "path": "/home/ww/paper5/data/processed/rio/train/0001_00.npy",
+      "sha256": "fc9f7c95c9e9e4e912e4b93ae19569b4f37586dc08154552c9ac4d512e8bffa6",
+      "byte_count": 1200608
+    },
+    "visit_1_native_labels": {
+      "path": "/home/ww/paper5/data/processed/rio/train/0001_01.npy",
+      "sha256": "ae9096abbf39cee6e6330f866bf5c98d65a0aead9daa5072c0ac6fffb94730d5",
+      "byte_count": 724256
+    }
+  },
+  "native_label_stats": [
+    {
+      "visit_id": 0,
+      "point_count": 25010,
+      "positive_instance_count": 28,
+      "known_foreground_point_count": 10890,
+      "unknown_class_instance_point_count": 4257,
+      "trusted_background_point_count": 9417,
+      "untrusted_or_ignored_point_count": 446,
+      "semantic_histogram": {
+        "0": 446,
+        "1": 8182,
+        "2": 1235,
+        "3": 4516,
+        "8": 790,
+        "19": 625,
+        "22": 1670,
+        "27": 975,
+        "28": 926,
+        "33": 595,
+        "34": 1068,
+        "36": 2995,
+        "40": 987
+      }
+    },
+    {
+      "visit_id": 1,
+      "point_count": 15086,
+      "positive_instance_count": 24,
+      "known_foreground_point_count": 8623,
+      "unknown_class_instance_point_count": 1641,
+      "trusted_background_point_count": 4634,
+      "untrusted_or_ignored_point_count": 188,
+      "semantic_histogram": {
+        "0": 188,
+        "1": 3849,
+        "2": 785,
+        "3": 2479,
+        "8": 27,
+        "19": 19,
+        "22": 674,
+        "27": 252,
+        "28": 3237,
+        "33": 836,
+        "34": 932,
+        "36": 1112,
+        "40": 696
+      }
+    }
+  ],
+  "identity_stats": {
+    "explicit_cross_visit_identity_count": 24,
+    "ambiguity_count": 0,
+    "removed_reference_count": 0,
+    "equal_numeric_ids_expanded_only_from_official_pair_metadata": true
+  },
+  "class_mapping": {
+    "raw_semantic_to_model_target": {
+      "3": 0,
+      "4": 1,
+      "5": 2,
+      "6": 3,
+      "7": 4,
+      "8": 5,
+      "9": 6,
+      "10": 7,
+      "11": 8,
+      "12": 9,
+      "14": 10,
+      "16": 11,
+      "24": 12,
+      "28": 13,
+      "33": 14,
+      "34": 15,
+      "36": 16,
+      "39": 17
+    },
+    "trusted_background_raw_semantic_ids": [1, 2],
+    "unknown_class_target": -100
+  },
+  "completed_contracts": [
+    "environment_level_split_enforcement",
+    "native_column_validation",
+    "processed_labels_already_in_shared_reference_frame",
+    "official_raw_transform_metadata_validation",
+    "explicit_cross_visit_identity_mapping",
+    "ambiguity_safe_identity_keys",
+    "neighbour_consensus_label_valid",
+    "unknown_is_not_negative",
+    "criterion_only_targets",
+    "soft_region_instance_mass",
+    "source_bound_atomic_cache"
+  ],
+  "blocked_outputs": [
+    "real_train_observation_bank",
+    "real_observation_training_sample",
+    "training_target_stats_csv",
+    "mixed_region_real_example"
+  ],
+  "blocker": {
+    "reason": "Official sequence.zip is absent for both TRAIN visits",
+    "required_action": "Explicit user confirmation of the official 3RScan Terms of Use before invoking the existing downloader",
+    "validation_substitution_allowed": false
+  }
+}

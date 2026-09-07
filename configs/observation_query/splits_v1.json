@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "artifact_id": "OVI_RESCENE_OBSERVATION_QUERY_SPLITS_V1",
+  "selection_policy": {
+    "unit": "3rscan_environment_reference_uuid",
+    "frame_or_pair_random_split": false,
+    "selected_before_observation_query_results": true,
+    "maximum_initial_train_pairs": 1,
+    "maximum_initial_dev_pairs": 1
+  },
+  "identity_sources": {
+    "metadata": {
+      "path": "/home/ww/vv/dataset/3RScan/3RScan.json",
+      "sha256": "674a00f50f76b198b9de44efd86c390fea3da37ba8f12cf8ccd00045e265fa64",
+      "byte_count": 3155995
+    },
+    "native_sequence_database": {
+      "path": "/home/ww/paper5/data/processed/rio/sequence_database_sliding_2.yaml",
+      "sha256": "974299916db02d2ee0233564eb7b36e314dada93e997584d9dfef21ad70d0416",
+      "byte_count": 415937
+    }
+  },
+  "environments": [
+    {
+      "role": "TRAIN",
+      "official_split": "train",
+      "environment_uuid": "02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+      "pair_id": "scene0001_00-scene0001_01",
+      "previously_inspected": false,
+      "initial_checkpoint_training_overlap": true,
+      "runtime_status": "MISSING_TRAIN_RGBD_SEQUENCE",
+      "sessions": [
+        {
+          "visit_id": 0,
+          "scene_alias": "scene0001_00",
+          "scan_uuid": "02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+          "processed_points": {
+            "path": "/home/ww/paper5/data/processed/rio/train/0001_00.npy",
+            "sha256": "fc9f7c95c9e9e4e912e4b93ae19569b4f37586dc08154552c9ac4d512e8bffa6",
+            "byte_count": 1200608
+          },
+          "sequence_zip": {
+            "path": "/home/ww/vv/dataset/3RScan/scans/02b33dfb-be2b-2d54-92d2-cd012b2b3c40/sequence.zip",
+            "status": "MISSING"
+          }
+        },
+        {
+          "visit_id": 1,
+          "scene_alias": "scene0001_01",
+          "scan_uuid": "fcf66d9e-622d-291c-84c2-bb23dfe31327",
+          "processed_points": {
+            "path": "/home/ww/paper5/data/processed/rio/train/0001_01.npy",
+            "sha256": "ae9096abbf39cee6e6330f866bf5c98d65a0aead9daa5072c0ac6fffb94730d5",
+            "byte_count": 724256
+          },
+          "sequence_zip": {
+            "path": "/home/ww/vv/dataset/3RScan/scans/fcf66d9e-622d-291c-84c2-bb23dfe31327/sequence.zip",
+            "status": "MISSING"
+          }
+        }
+      ]
+    },
+    {
+      "role": "DEV",
+      "official_split": "validation",
+      "environment_uuid": "20c993b7-698f-29c5-847d-c8cb8a685f5a",
+      "pair_id": "scene0109_00-scene0109_01",
+      "previously_inspected": true,
+      "initial_checkpoint_validation_overlap": true,
+      "runtime_status": "READY",
+      "sessions": [
+        {
+          "visit_id": 0,
+          "scene_alias": "scene0109_00",
+          "scan_uuid": "20c993b7-698f-29c5-847d-c8cb8a685f5a",
+          "processed_points": {
+            "path": "/home/ww/paper5/data/processed/rio/validation/0109_00.npy",
+            "sha256": "36a8d830268b8b05a6a51ad3192594cb50a9667d5816ed2392801d16a9849545",
+            "byte_count": 1534592
+          },
+          "source_frame_count": 63
+        },
+        {
+          "visit_id": 1,
+          "scene_alias": "scene0109_01",
+          "scan_uuid": "20c993b3-698f-29c5-859c-dca8ddecf220",
+          "processed_points": {
+            "path": "/home/ww/paper5/data/processed/rio/validation/0109_01.npy",
+            "sha256": "22cfab8ab25fee109a622b0ef327ab565fd458e0a1339d0a388429ca55c735a5",
+            "byte_count": 1364144
+          },
+          "source_frame_count": 53
+        }
+      ]
+    }
+  ],
+  "confirmation_status": "NO_UNTOUCHED_CONFIRMATION_SELECTED_YET"
+}

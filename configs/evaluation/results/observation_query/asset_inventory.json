@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "artifact_id": "OVI_RESCENE_OBSERVATION_QUERY_ASSET_INVENTORY_V1",
+  "captured_at_utc": "2026-09-07T14:21:53Z",
+  "host": "node107",
+  "branch": "research/ovi-rescene-observation-query",
+  "code_commit": "4354df9df093628eaa7b3470319944914db85711",
+  "status": "PASS_WITH_TRAIN_RGBD_MISSING",
+  "compute": {
+    "available_gpus": [
+      {"index": 0, "name": "NVIDIA A40", "memory_total_mib": 46068, "memory_free_mib": 45490},
+      {"index": 1, "name": "NVIDIA A40", "memory_total_mib": 46068, "memory_free_mib": 45490},
+      {"index": 2, "name": "NVIDIA A40", "memory_total_mib": 46068, "memory_free_mib": 45490}
+    ],
+    "maximum_concurrent_gpus": 2
+  },
+  "environments": [
+    {"role": "model", "python": "/home/ww/miniconda3/envs/persist4d/bin/python", "torch": "2.6.0+cu126", "sonata": "PASS", "concerto": "PASS", "minkowski": "NOT_INSTALLED_NOT_REQUIRED"},
+    {"role": "mapping_and_siglip", "python": "/home/ww/miniconda3/envs/ovimap-map/bin/python", "torch": "2.1.1", "transformers": "4.49.0", "opencv": "4.11.0"},
+    {"role": "cropformer", "python": "/home/ww/miniconda3/envs/ovimap-cropformer/bin/python", "torch": "2.1.1", "detectron2": "0.6", "opencv": "4.11.0"}
+  ],
+  "assets": [
+    {
+      "logical_name": "rescene_checkout",
+      "role": "model_source",
+      "path": "/home/ww/oviovo_references/evaluation/rescene4d",
+      "commit": "fb2fe42eb8f1e926567c48eea9acb874e608ee10",
+      "present": true,
+      "status": "CLEAN"
+    },
+    {
+      "logical_name": "ovimap_patched_checkout",
+      "role": "frontend_geometry_mapping_source",
+      "path": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/OVI-MAP",
+      "commit": "58a804e2d7c82ba05a489eb071aba3367301fed8",
+      "present": true,
+      "status": "LOCALLY_PATCHED",
+      "source_manifest": {
+        "path": "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/environment/source-hashes.json",
+        "sha256": "b149958d8dcbbfbffc75271ea5455adfa19d95e80c5f241e2415d1d15cdf5963",
+        "byte_count": 2123
+      },
+      "content_bindings": {
+        "scripts/panoptic_mapping_.py": "b7157708d21ebff123a15cc10be14b3b149ebb3b19fea8f2349b3c6eb8a4b410",
+        "scripts/vl_models.py": "b0925c0c78fd46be779fb9fbcde171fcaef58bd89a7f7d99b8fc1b24a1836ba2",
+        "scripts/utils/text_embedding.py": "f8668b3b0a8329ee242151cfd8582dded86e5b8cffdff9b5e4364e698a5aac37"
+      }
+    },
+    {
+      "logical_name": "rescene_t2_checkpoint",
+      "role": "base_model",
+      "path": "/home/ww/paper5/checkpoints/rescene4d_concerto_t2_repro.ckpt",
+      "sha256": "85ed1aba60320cd19798536b71b91dbc156b7ea60f838832bc0bbbdba131546e",
+      "byte_count": 754917862,
+      "present": true
+    },
+    {
+      "logical_name": "concerto_initialization",
+      "role": "frozen_backbone",
+      "path": "/home/ww/.cache/persist4d/concerto/concerto_base.pth",
+      "sha256": "845ec7dec97a5fabff8fadb5d9858ac6734347b612d1a4b574213419c139de07",
+      "byte_count": 433987358,
+      "present": true
+    },
+    {
+      "logical_name": "native_processed_train_pair",
+      "role": "train_only_high_resolution_labels",
+      "source_manifest": "configs/observation_query/splits_v1.json",
+      "pair_id": "scene0001_00-scene0001_01",
+      "present": true,
+      "status": "READY"
+    },
+    {
+      "logical_name": "raw_train_rgbd_pair",
+      "role": "train_observations",
+      "source_manifest": "/home/ww/vv/dataset/3RScan/3RScan.json",
+      "pair_id": "scene0001_00-scene0001_01",
+      "present": false,
+      "status": "MISSING_SEQUENCE_ZIP",
+      "preparation_action": "Use the existing official 3RScan downloader only after the dataset terms have been confirmed by the user; do not substitute validation RGB-D."
+    },
+    {
+      "logical_name": "dev_observation_pair",
+      "role": "engineering_dev_observations",
+      "source_manifest": "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_ovimap_smoke_v1.json",
+      "pair_id": "scene0109_00-scene0109_01",
+      "present": true,
+      "status": "READY",
+      "frontend_mask_counts": [63, 53],
+      "previously_inspected": true
+    },
+    {
+      "logical_name": "legacy_dense_surfaces",
+      "role": "regression_and_dense_evaluation",
+      "source_manifests": [
+        "configs/evaluation/results/ovi_rescene_object_level_transfer/d2_pair_view_v1.json",
+        "configs/evaluation/results/ovi_rescene_dense_instance_repair/scene0359_00-scene0359_01/d2_pair_receipt.json",
+        "configs/evaluation/results/ovi_rescene_dense_instance_repair/scene0459_00-scene0459_01/d2_pair_receipt.json"
+      ],
+      "pair_ids": ["scene0109_00-scene0109_01", "scene0359_00-scene0359_01", "scene0459_00-scene0459_01"],
+      "present": true,
+      "status": "READY"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "artifact_id": "OVI_RESCENE_OBSERVATION_QUERY_T05_REAL_DEV_LOSS_V1",
+  "status": "REAL_DEV_LOSS_PASS",
+  "pair_id": "scene0109_00-scene0109_01",
+  "role": "DEV_CRITERION_VALIDATION_ONLY",
+  "source_bindings": {
+    "losses": {
+      "path": "src/oviv2/observation_query/losses.py",
+      "sha256": "d965550a8d89f3d00c19d47e5b380d85a53444404def1f99e03d8c9893f832c4",
+      "byte_count": 25348
+    },
+    "training_targets": {
+      "path": "src/training/ovi_observation_data.py",
+      "sha256": "3eb1fce79230e3204f1d8ba7561edef829465690b71496b806e30d7de47e9a17",
+      "byte_count": 48434
+    },
+    "observation_model": {
+      "path": "src/oviv2/observation_query/model.py",
+      "sha256": "331a4d195a213b57c1c73645495acc501079155eb01eaeb3725a4cb2a90f81e9",
+      "byte_count": 29862
+    },
+    "criterion_target_manifest": {
+      "path": "/home/ww/oviovo_baseline_runs/observation_query/20260907_scene0109_dev_v1/dev_criterion_targets/manifest.json",
+      "sha256": "3621224807cfb027773459c33c98faee4fcfbeb9ee72fb894f1390abe7ea5673",
+      "byte_count": 3125,
+      "content_sha256": "82aff3fa4a07c93f7f2a571e7435a5e1c0617f040534019486555f64fb1005cf"
+    }
+  },
+  "target_statistics": {
+    "model_count": 40076,
+    "target_count": 9,
+    "label_valid_count": 11479,
+    "label_valid_fraction": 0.2864307761192322,
+    "per_visit_label_valid_count": [5801, 5678],
+    "region_count": 490,
+    "region_valid_count": 152
+  },
+  "criterion_statistics": {
+    "matched_target_count": 9,
+    "unmatched_target_count": 0,
+    "supervised_region_count": 152,
+    "excluded_unmatched_region_mass": 0.0,
+    "aux_assignment_count": 12,
+    "loss_ce": 0.3330524265766144,
+    "loss_mask": 0.2123374044895172,
+    "loss_dice": 0.45084020495414734,
+    "loss_region": 4.648355960845947,
+    "loss_consistency": 5.621682643890381,
+    "total_update_0": 37.781776428222656,
+    "total_update_200": 38.34394454956055,
+    "all_components_finite": true,
+    "weights_applied_once": true
+  },
+  "runtime": {
+    "cached_full_forward_s": 0.16818518890067935,
+    "runtime_excludes_frozen_backbone": true,
+    "peak_gpu_bytes": 1643544576,
+    "device": "NVIDIA A40 cuda:0"
+  },
+  "claim_boundary": "This current-source rerun validates criterion behavior on DEV without backward, optimizer update, checkpoint selection, or a trained-performance claim."
+}

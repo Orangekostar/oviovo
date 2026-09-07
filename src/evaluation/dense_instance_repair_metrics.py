@@ -35,7 +35,7 @@ from src.oviv2.rescene_dense_instance_readout import (
     DensePairReadout,
 )
 
-MethodId = Literal["P0", "P1", "P2"]
+MethodId = str
 SupportDomain = Literal["full", "supported"]
 
 
@@ -186,8 +186,12 @@ class DenseMethodView:
     def __post_init__(self) -> None:
         if not isinstance(self.pair_id, str) or not self.pair_id:
             raise DenseInstanceRepairMetricError("pair ID must be non-empty")
-        if self.method_id not in {"P0", "P1", "P2"}:
-            raise DenseInstanceRepairMetricError("method ID must be P0, P1, or P2")
+        if self.method_id not in {"P0", "P1", "P2"} and not self.method_id.startswith(
+            "OBS_"
+        ):
+            raise DenseInstanceRepairMetricError(
+                "method ID must use the historical P* or observation OBS_* namespace"
+            )
         if any(
             not isinstance(value, str) or len(value) != 64
             for value in (

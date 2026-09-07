@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "artifact_id": "OVI_RESCENE_OBSERVATION_QUERY_T01_T02_DEV_V1",
+  "status": "PASS",
+  "evidence_base_commit": "4354df9df093628eaa7b3470319944914db85711",
+  "pair_id": "scene0109_00-scene0109_01",
+  "model_input": {
+    "model_count": 40076,
+    "content_sha256": "986a2081a818e2548270b858d8354723ee1e113b5fe376b5605e5e9cd3537317",
+    "local_manifest": {
+      "path": "/home/ww/oviovo_baseline_runs/observation_query/20260907_scene0109_dev_v1/model_bundle/manifest.json",
+      "sha256": "e75a91ed961af4c28e9963a5d41cc96790e931433547065c8e7c2078bd04a1ff"
+    }
+  },
+  "observation_bank": {
+    "selected_frames_per_visit": 16,
+    "region_count": 490,
+    "parent_region_count": 286,
+    "fragment_region_count": 204,
+    "feature_shape": [490, 1024],
+    "metadata_shape": [490, 15],
+    "edge_count": 51825,
+    "model_points_with_support": 30131,
+    "model_points_without_support": 9945,
+    "single_view_model_points": 14969,
+    "multi_view_model_points": 15162,
+    "maximum_distinct_support_frames_per_model_point": 6,
+    "content_sha256": "9816cf9ed795fb392195632be882315c910986912331e90c009c4cbfcc717a79",
+    "depth_relation_counts": {
+      "supported": 54503,
+      "occluded": 12350,
+      "visible_free": 2246,
+      "unknown": 572117
+    },
+    "local_manifest": {
+      "path": "/home/ww/oviovo_baseline_runs/observation_query/20260907_scene0109_dev_v1/observation_bank/manifest.json",
+      "sha256": "cb5812bb7dfd06e43ad79ecacd371c6dab86711d6ee0497450db65b7fdf1ce9e"
+    },
+    "bank_manifest_sha256": "1d7ceaf7c4238278c0d12619bfc1fa770c7b261389849dac0dff37c7755659bf",
+    "diagnostics_sha256": "e1e17b64428ac16bafd58d35ce807ddbed72bb33c5f272e818c20b43c9a60a7d",
+    "region_pixels_sha256": "9b94b6e683b5c163fd2167828a0040f0db53b1185659fb2098934f3ab14fab98",
+    "overlay_sha256": [
+      "59dd42037e0a7b540e7882b711e11f9eb85d827402ca3e0102f4faffe3b48d7e",
+      "b7fbf3a95c4dc30251268f1e76c0f24d3a07f6603745464b75c2b7285cf9563c",
+      "4b1d38eb3311022e94383e388dd9a43196a43842aa2069e8181489f729cf20f0"
+    ]
+  },
+  "d1_camera_visible": {
+    "status": "REAL_D1_CAMERA_VISIBLE_FORWARD_PASS",
+    "forward_reused": false,
+    "ground_truth_used_for_input_selection": false,
+    "ground_truth_columns_present_in_forward": false,
+    "visible_native_points": 18861,
+    "model_points": 13702,
+    "segments": 828,
+    "queries": 100,
+    "classes_with_no_object": 19,
+    "backbone_feature_width": 96,
+    "visit_support": [
+      {
+        "visit_id": 0,
+        "native_points": 31968,
+        "visible_points": 8952,
+        "visible_fraction": 0.28003003003003,
+        "multi_view_points": 2993
+      },
+      {
+        "visit_id": 1,
+        "native_points": 28417,
+        "visible_points": 9909,
+        "visible_fraction": 0.3486997219973959,
+        "multi_view_points": 3264
+      }
+    ],
+    "runtime": {
+      "forward_s": 1.0506281163543463,
+      "peak_gpu_bytes": 833024512,
+      "device": "NVIDIA A40 (cuda:0)"
+    },
+    "local_manifest": {
+      "path": "/home/ww/oviovo_baseline_runs/observation_query/20260907_scene0109_dev_v1/d1_camera_visible/manifest.json",
+      "sha256": "bbdb443c4fb89071187def704412909f172da68027ea7ff33a200590cdaf0c01"
+    }
+  },
+  "claim_boundary": "T01-T02 establish a source-bound real observation bank and one uncached base-model camera-visible diagnostic; they are not trained observation-query performance results."
+}

@@ -1,0 +1,48 @@
+{
+  "artifact_id": "OVI_RESCENE_OBSERVATION_QUERY_EVALUATION_V1",
+  "artifacts": {
+    "predictions": null,
+    "results": {
+      "byte_count": 3628,
+      "path": "results.csv",
+      "sha256": "9966d2215f5d147d590d6b3670ca95cb2204891fefe0e73025957f4a0bacd7bd"
+    }
+  },
+  "method_id": "OBS_BASE_TUNED",
+  "reason": "trained checkpoint is unavailable because declared TRAIN RGB-D sequence.zip assets are absent; DEV was not substituted for TRAIN",
+  "run_id": "20260907_scene0109_obs_base_tuned_asset_gate_v2",
+  "schema_version": 1,
+  "source_bindings": {
+    "config": {
+      "byte_count": 4574,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-observation-query/configs/observation_query/pilot_v1.json",
+      "sha256": "b5ff6ed04c8b922fcd34498deaadd2d199ec9e737a954c443ebda03c8c10f405"
+    },
+    "dense_adapter": {
+      "byte_count": 16645,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-observation-query/src/oviv2/observation_query/dense_adapter.py",
+      "sha256": "0d7897794e2c019735fcd9fd436f4a8b4e20f763e4c6405887ec4fdbdca844b2"
+    },
+    "dense_metrics": {
+      "byte_count": 55901,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-observation-query/src/evaluation/dense_instance_repair_metrics.py",
+      "sha256": "e2aa68037c8431ca25ae17b6242e3212a6421d388a9d9f52d6451508e54d8fd6"
+    },
+    "evaluation_runner": {
+      "byte_count": 41997,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-observation-query/scripts/evaluation/run_ovi_observation_query.py",
+      "sha256": "04bad5e23caedbb5e1488c6dbdd8a28317aa2dd70109ad07ded7aa3529e1583d"
+    },
+    "runtime": {
+      "byte_count": 2755,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-observation-query/configs/observation_query/runtime.local.json",
+      "sha256": "f356c8581d983e1bc2b6010482506d7cdcdfc1e23e2facbb442b1ed3703a9dd5"
+    },
+    "split": {
+      "byte_count": 3581,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-observation-query/configs/observation_query/splits_v1.json",
+      "sha256": "0fa8a837aba10c597741ff065be81a73c7ac56be03fec226c7ee60a3533beb85"
+    }
+  },
+  "status": "NOT_RUN_MISSING_TRAIN_ASSETS"
+}
