@@ -75,15 +75,15 @@ def build_dense_instance_readout(
 
 - `DenseVisitReadout` stores dense-row-aligned `owner_instance_indices`, `owner_source_codes`, `neural_valid`, and compact instance records containing raw query, temporal hypothesis, parent OVI point counts, semantic provenance, and conflict state.
 
-- [ ] Write a RED D-to-A-to-M-to-D toy test with different visit row counts, unsupported dense rows, many source contributors to one model row, and nonidentity original vertex indices.
-- [ ] Write RED tests where one OVI entity is split by two queries and one query merges two OVI entities while preserving every source point exactly once.
-- [ ] Write RED overlap/tie tests requiring maximum `query_score * sigmoid(logit)`, then lower raw query index; verify query-owned points are removed from residual owners.
-- [ ] Write RED tests that unsupported owned points remain residual, unsupported unowned points remain explicit background/unknown, and cross-visit rows never mix.
-- [ ] Write a RED million-row-shaped chunking test that forbids allocating a dense `N x Q` result and confirms input arrays and XYZ are not mutated.
-- [ ] Run `python -m pytest -q tests/oviv2/test_rescene_dense_instance_readout.py` and verify the missing module is the failure.
-- [ ] Implement the immutable reverse map, query score semantics matching `postprocess_native_predictions()`, chunked winner selection, residual fallback, parent provenance, and content hash.
-- [ ] Run `python -m pytest -q tests/oviv2/test_rescene_dense_instance_readout.py tests/oviv2/test_rescene_supported_view.py tests/evaluation/test_run_ovi_rescene_object_level_transfer.py`.
-- [ ] Commit Task 2.
+- [x] Write a RED D-to-A-to-M-to-D toy test with different visit row counts, unsupported dense rows, many source contributors to one model row, and nonidentity original vertex indices.
+- [x] Write RED tests where one OVI entity is split by two queries and one query merges two OVI entities while preserving every source point exactly once.
+- [x] Write RED overlap/tie tests requiring maximum `query_score * sigmoid(logit)`, then lower raw query index; verify query-owned points are removed from residual owners.
+- [x] Write RED tests that unsupported owned points remain residual, unsupported unowned points remain explicit background/unknown, and cross-visit rows never mix.
+- [x] Write a RED million-row-shaped chunking test that forbids allocating a dense `N x Q` result and confirms input arrays and XYZ are not mutated.
+- [x] Run `python -m pytest -q tests/oviv2/test_rescene_dense_instance_readout.py` and verify the missing module is the failure.
+- [x] Implement the immutable reverse map, query score semantics matching `postprocess_native_predictions()`, chunked winner selection, residual fallback, parent provenance, and content hash.
+- [x] Run `python -m pytest -q tests/oviv2/test_rescene_dense_instance_readout.py tests/oviv2/test_rescene_supported_view.py tests/evaluation/test_run_ovi_rescene_object_level_transfer.py`.
+- [x] Commit Task 2.
 
 ### Task 3: P0/P1/P2 evaluation, identity hypotheses, and dense artifacts
 
