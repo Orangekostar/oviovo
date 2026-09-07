@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import importlib
 import io
 import json
 import os
@@ -370,6 +371,26 @@ def _independent_model_counts(bundle: D2InferenceBundle) -> tuple[int, int]:
     return int(np.count_nonzero(visits == 0)), int(np.count_nonzero(visits == 1))
 
 
+def _source_bound_grid_sample_factory(source_path: Path) -> object:
+    package_root = source_path.parent.parent
+    sys.path.insert(0, str(package_root))
+    try:
+        module = importlib.import_module("sonata.transform")
+    except ImportError as error:
+        raise DenseInstanceRepairRunError(
+            "bound native sampler package cannot be imported"
+        ) from error
+    finally:
+        sys.path.pop(0)
+    resolved = Path(str(module.__file__)).resolve()
+    if resolved != source_path.resolve():
+        raise DenseInstanceRepairRunError("imported native sampler source mismatch")
+    factory = getattr(module, "GridSample", None)
+    if factory is None:
+        raise DenseInstanceRepairRunError("bound native sampler lacks GridSample")
+    return factory
+
+
 def _build_method_views(
     pair: OviObjectPairView,
     bundle: D2InferenceBundle,
@@ -650,6 +671,9 @@ def run_dense_instance_repair(
         sampler_source_sha256=object_config.native_sampler_source.sha256,
         sampler_seed=object_config.sampler_seed,
         maximum_candidates=object_config.maximum_candidates,
+        grid_sample_factory=_source_bound_grid_sample_factory(
+            object_config.native_sampler_source.path
+        ),
     )
     bundle_runtime = time.perf_counter() - bundle_start
     cached = cached_forward_outputs(
