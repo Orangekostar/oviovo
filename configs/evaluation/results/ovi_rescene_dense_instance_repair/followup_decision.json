@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "artifact_id": "OVI_RESCENE_DENSE_INSTANCE_FOLLOWUP_DECISION_V1",
+  "status": "FROZEN_BEFORE_D2_EVAL_DENSE_METRICS",
+  "decision": "P2_FINAL",
+  "decision_frozen_at_commit": "ce44e9fbeb206984c130ff3e0bbe252548063999",
+  "development_pair": "scene0109_00-scene0109_01",
+  "evidence": {
+    "endpoint_diagnosis": {
+      "path": "configs/evaluation/results/ovi_rescene_dense_instance_repair/endpoint_diagnosis.csv",
+      "sha256": "1a4f9d101a448f42e87f7d780b7cca04dc8f37667cc6bcc4307beeeba7222a57",
+      "byte_count": 10129,
+      "t0_object_count": 14,
+      "t1_object_count": 14,
+      "t0_mean_split_oracle_iou": 0.27590686642779216,
+      "t1_mean_split_oracle_iou": 0.22654860761317733,
+      "t0_mean_best_raw_mask_iou": 0.06188360897515756,
+      "t1_mean_best_raw_mask_iou": 0.03828869227308819,
+      "t0_mean_final_p2_iou": 0.11661807622775315,
+      "t1_mean_final_p2_iou": 0.11612941181625894,
+      "sensor_visibility_status": "NOT_COMPUTED"
+    },
+    "instance_metrics": {
+      "path": "configs/evaluation/results/ovi_rescene_dense_instance_repair/instance_metrics.csv",
+      "sha256": "b708adece1afc45f64b4842a4a80183a97f57a8e5734b508a0b04199a4ae8eb1",
+      "byte_count": 2414,
+      "all_methods_f1_at_050": 0.0,
+      "t1_f1_at_025": {
+        "P0": 0.17142857142857143,
+        "P1": 0.1764705882352941,
+        "P2": 0.1111111111111111
+      },
+      "p2_t1_split_parent_count": 4,
+      "p2_t1_merged_candidate_count": 2,
+      "p2_t1_query_owned_fraction": 0.20474024838201854
+    }
+  },
+  "eligibility": {
+    "P3_BOUNDARY": {
+      "eligible": false,
+      "reason": "raw masks are substantially below the fixed-surface split oracle, so the measured loss precedes exclusive boundary cleanup"
+    },
+    "RECONSTRUCTION_REPAIR": {
+      "eligible": false,
+      "reason": "no camera-depth sensor-visible GT derivation identifies a concrete registration or fusion defect"
+    },
+    "DECODER_MASK_ADAPTATION": {
+      "eligible": false,
+      "reason": "the required comparable D0 and actual re-forwarded D1 advantage over D2 has not been established"
+    }
+  },
+  "final_method": {
+    "minimum_query_score": 0.3,
+    "point_support": "raw_mask_logit_gt_0",
+    "winner_score": "query_score_times_sigmoid_mask_logit",
+    "tie_break": "lower_raw_query_index",
+    "geometry_mutation": false,
+    "ground_truth_used_by_method": false
+  },
+  "expected_effect": "measure whether direct point-level split/merge transfers without claiming a development-pair gain",
+  "forbidden_concurrent_changes": [
+    "per_scene_threshold_tuning",
+    "boundary_postprocessing",
+    "reconstruction_changes",
+    "decoder_or_backbone_training",
+    "evaluation_definition_changes"
+  ],
+  "d2_eval_metrics_opened_before_decision": false
+}
