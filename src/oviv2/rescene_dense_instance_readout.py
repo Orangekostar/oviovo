@@ -422,8 +422,13 @@ def _semantic_summary(
     if np.any(owners < 0):
         raise DenseInstanceReadoutError("instance points must have OVI parents")
     counts = tuple(
-        (visit.entities[int(index)].entity_id, int(np.count_nonzero(owners == index)))
-        for index in sorted(set(int(value) for value in owners))
+        sorted(
+            (
+                visit.entities[int(index)].entity_id,
+                int(np.count_nonzero(owners == index)),
+            )
+            for index in set(int(value) for value in owners)
+        )
     )
     count_by_entity = dict(counts)
     valid_entities = tuple(

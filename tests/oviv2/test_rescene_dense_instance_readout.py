@@ -228,6 +228,45 @@ def test_residual_instances_preserve_missing_ovi_semantics(tmp_path: Path) -> No
     )
 
 
+def test_query_parent_counts_are_sorted_by_entity_id(tmp_path: Path) -> None:
+    pair = _pair()
+    visits = []
+    for visit in pair.visits:
+        entities = (
+            replace(
+                visit.entities[0], entity_id="ovimap:2", source_instance_id=2
+            ),
+            replace(
+                visit.entities[1], entity_id="ovimap:10", source_instance_id=10
+            ),
+        )
+        visits.append(replace(visit, entities=entities))
+    pair = replace(pair, visits=(visits[0], visits[1]))
+    bundle = _bundle_for_pair(tmp_path, pair)
+    masks, logits = _predictions(bundle)
+    masks[:, 0] = 2.0
+    masks[:, 1] = -2.0
+
+    readout = build_dense_instance_readout(
+        pair,
+        surface=bundle.surface,
+        supported_view=bundle.supported_view,
+        pred_masks_mq=masks,
+        pred_logits_qc=logits,
+        minimum_query_score=0.0,
+    )
+
+    query = next(
+        instance
+        for instance in readout.visits[0].instances
+        if instance.owner_source == "query"
+    )
+    assert tuple(name for name, _count in query.parent_ovi_entity_point_counts) == (
+        "ovimap:10",
+        "ovimap:2",
+    )
+
+
 def test_exclusive_readout_splits_and_merges_entities_without_losing_points(
     tmp_path: Path,
 ) -> None:
