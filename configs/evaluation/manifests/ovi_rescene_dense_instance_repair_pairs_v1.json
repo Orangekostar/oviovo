@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "manifest_id": "OVI_RESCENE_DENSE_INSTANCE_REPAIR_PAIRS_V1",
+  "status": "FROZEN_BEFORE_D2_EVAL_DENSE_REPAIR_EXECUTION",
+  "frozen_commit": "978310278d278865c3099cc5e5a2a342e86d2c90",
+  "source_pair_manifest": {
+    "path": "configs/evaluation/manifests/ovi_rescene_object_level_pairs_v1.json",
+    "sha256": "2054c818c5f02a1ffcf2d4bcb3d3743ef0f4865ff428055f00e2f215c69d4a37",
+    "byte_count": 79594
+  },
+  "frozen_configs": {
+    "object_transfer": {
+      "path": "configs/evaluation/ovi_rescene_object_level_transfer_v1.json",
+      "sha256": "cf8422dd21aa72b66fbdb2a8918b689efcb12cb20b488e8dd3ff56c08f7a41ef",
+      "byte_count": 4501
+    },
+    "dense_instance_repair": {
+      "path": "configs/evaluation/ovi_rescene_dense_instance_repair_v1.json",
+      "sha256": "ae0cf8c3ea7e11f0130902d96870f8378c7961fe7ea9e0f036524ca7237e1946",
+      "byte_count": 2842
+    }
+  },
+  "selection_policy": {
+    "source_role": "D2_EVAL",
+    "environment_isolation": true,
+    "checkpoint_validation_overlap": true,
+    "selected_before_dense_method_execution": true,
+    "failed_pair_replacement_allowed": false,
+    "office_use": "HELD_OUT",
+    "reason": "inherit both D2_EVAL environments frozen by OVI_RESCENE_OBJECT_LEVEL_TRANSFER_V1"
+  },
+  "method_protocol": {
+    "methods": ["P0", "P1", "P2"],
+    "minimum_query_score": 0.3,
+    "minimum_entity_token_coverage": 0.25,
+    "minimum_source_point_coverage": 0.25,
+    "instance_voxel_size_m": 0.05,
+    "instance_iou_thresholds": [0.5, 0.25],
+    "geometry_mutation": false,
+    "per_scene_retuning": false
+  },
+  "pairs": [
+    {
+      "pair_id": "scene0359_00-scene0359_01",
+      "role": "D2_EVAL",
+      "split": "validation",
+      "environment_id": "b1f23308-d255-2761-94da-981d962c6bf8",
+      "sessions": [
+        {
+          "visit_index": 0,
+          "scan_id": "b1f23308-d255-2761-94da-981d962c6bf8",
+          "source_frame_count": 125,
+          "sequence_zip": {
+            "path": "/home/ww/vv/dataset/3RScan/scans/b1f23308-d255-2761-94da-981d962c6bf8/sequence.zip",
+            "sha256": "e29f6becfb8ce48d71f091cda0c95e5e31932248b1eac0804f406a49b73c425b",
+            "byte_count": 25247473
+          }
+        },
+        {
+          "visit_index": 1,
+          "scan_id": "77361fd4-d054-2a22-88c4-b5b404f904ca",
+          "source_frame_count": 106,
+          "sequence_zip": {
+            "path": "/home/ww/vv/dataset/3RScan/scans/77361fd4-d054-2a22-88c4-b5b404f904ca/sequence.zip",
+            "sha256": "74007c2aca361f9e3e14955907c0290ae7efae96e404d4f4384d6bf7c0969d86",
+            "byte_count": 19153584
+          }
+        }
+      ],
+      "strata": {
+        "rigid_change_count": 6,
+        "nonrigid_change_count": 0,
+        "removed_change_count": 0,
+        "ambiguity_group_count": 2,
+        "repeated_instance_stratum": "PRESENT_OFFICIAL_AMBIGUITY",
+        "static_control_stratum": "PRESENT_UNCHANGED_UNLISTED_INSTANCES"
+      },
+      "asset_status": "ALL_REQUIRED_SOURCE_ASSETS_PRESENT",
+      "selection_reason": "inherited D2_EVAL environment with rigid changes and ambiguity groups"
+    },
+    {
+      "pair_id": "scene0459_00-scene0459_01",
+      "role": "D2_EVAL",
+      "split": "validation",
+      "environment_id": "e61b0e04-bada-2f31-82d6-72831a602ba7",
+      "sessions": [
+        {
+          "visit_index": 0,
+          "scan_id": "e61b0e04-bada-2f31-82d6-72831a602ba7",
+          "source_frame_count": 592,
+          "sequence_zip": {
+            "path": "/home/ww/vv/dataset/3RScan/scans/e61b0e04-bada-2f31-82d6-72831a602ba7/sequence.zip",
+            "sha256": "973214fc0dcbf26c8fa52843f076d0de686772e7f0f901e2fd184f46c1a618fa",
+            "byte_count": 108564638
+          }
+        },
+        {
+          "visit_index": 1,
+          "scan_id": "e61b0e02-bada-2f31-82d0-80fc5c70bd6f",
+          "source_frame_count": 582,
+          "sequence_zip": {
+            "path": "/home/ww/vv/dataset/3RScan/scans/e61b0e02-bada-2f31-82d0-80fc5c70bd6f/sequence.zip",
+            "sha256": "8ad45ba5016079cb42ffb658e794dffbe6b5fc45ca4b80f3398c2a0711fbc194",
+            "byte_count": 106718403
+          }
+        }
+      ],
+      "strata": {
+        "rigid_change_count": 7,
+        "nonrigid_change_count": 1,
+        "removed_change_count": 3,
+        "ambiguity_group_count": 1,
+        "repeated_instance_stratum": "PRESENT_OFFICIAL_AMBIGUITY",
+        "static_control_stratum": "PRESENT_UNCHANGED_UNLISTED_INSTANCES"
+      },
+      "asset_status": "ALL_REQUIRED_SOURCE_ASSETS_PRESENT",
+      "selection_reason": "inherited D2_EVAL environment with rigid, nonrigid, removed, and ambiguous instances"
+    }
+  ]
+}
