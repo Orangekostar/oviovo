@@ -1,0 +1,157 @@
+{
+  "artifact_id": "OVI_RESCENE_D2_OVIMAP_SMOKE_V1",
+  "compute": {
+    "frontend_forward_count_per_visit": 1,
+    "native_mapping_count_per_visit": 1,
+    "visit_mapping": "independent"
+  },
+  "pair_id": "scene0459_00-scene0459_01",
+  "schema_version": 1,
+  "selection": {
+    "manifest": {
+      "byte_count": 79594,
+      "path": "configs/evaluation/manifests/ovi_rescene_object_level_pairs_v1.json",
+      "sha256": "2054c818c5f02a1ffcf2d4bcb3d3743ef0f4865ff428055f00e2f215c69d4a37"
+    },
+    "pair_id": "scene0459_00-scene0459_01",
+    "role": "D2_EVAL",
+    "selected_before_method_results": true
+  },
+  "status": "REAL_D2_PAIR_PASS",
+  "visits": [
+    {
+      "frame_count": 592,
+      "materialized": {
+        "manifest": {
+          "byte_count": 334690,
+          "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/materialized-v1/e61b0e04-bada-2f31-82d6-72831a602ba7/materialized_manifest.json",
+          "sha256": "74277b2dec44dc75ddb1ea5a623be905322f6c3050bf73992487b32ef400b826"
+        },
+        "output_tree": {
+          "byte_count": 76738274,
+          "file_count": 1778,
+          "sha256": "0710e6a5b22a8d193615d28ef67d8651e5f09518a5d10c80904cd3fd0228ccae"
+        }
+      },
+      "native_mapping": {
+        "artifacts": {
+          "instance_color_log": {
+            "byte_count": 1781,
+            "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/ovi-native-v1/scenes/e61b0e04-bada-2f31-82d6-72831a602ba7/attempt-20260907T063412.547092Z/native_audit/instance_colors_cpp.tsv",
+            "sha256": "024af2f3e353cba0f1c40b86425280f7775a64ba7e9db049cae22089d741f5f7"
+          },
+          "instance_mesh": {
+            "byte_count": 477439498,
+            "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/ovi-native-v1/scenes/e61b0e04-bada-2f31-82d6-72831a602ba7/attempt-20260907T063412.547092Z/mapping/cropformer_inst/instance_mesh_592.ply",
+            "sha256": "cfcefa0ffe80c018328bf572c9f9fc91e3ba6b1392dc301cae0689b74215a2f0"
+          },
+          "semantic_features": {
+            "byte_count": 2331770,
+            "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/ovi-native-v1/scenes/e61b0e04-bada-2f31-82d6-72831a602ba7/attempt-20260907T063412.547092Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_592_incre_combine.pkl",
+            "sha256": "7d098843333dbf89afe954249dedb1c64a31a3e32eccbab1fbdb4c9506be8fad"
+          }
+        },
+        "audit": {
+          "frame_count": 529,
+          "full_frame_bbox_count": 42,
+          "full_frame_bbox_ratio": 0.011191047162270184,
+          "mapper_skipped_frame_count": 63,
+          "raycast_bbox_count": 3753,
+          "requested_frame_count": 592,
+          "stale_raycast_ids": [
+            14,
+            15,
+            17,
+            30,
+            34,
+            58,
+            70,
+            75,
+            81,
+            91,
+            96,
+            118,
+            125,
+            126,
+            148,
+            151
+          ]
+        },
+        "manifest": {
+          "byte_count": 152458,
+          "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/ovi-native-v1/scenes/e61b0e04-bada-2f31-82d6-72831a602ba7/attempt-20260907T063412.547092Z/native_mapping_manifest.json",
+          "sha256": "1e497ebe17d970582be8c34c907b090e6cccbd340eb36f2d715303d123a8313f"
+        }
+      },
+      "scan_id": "e61b0e04-bada-2f31-82d6-72831a602ba7",
+      "visit_index": 0
+    },
+    {
+      "frame_count": 582,
+      "materialized": {
+        "manifest": {
+          "byte_count": 329062,
+          "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/materialized-v1/e61b0e02-bada-2f31-82d0-80fc5c70bd6f/materialized_manifest.json",
+          "sha256": "0b3de9d0b8d5b0df9b7e4aacf00d7cf06126c308923578ca5ff890b6f96df236"
+        },
+        "output_tree": {
+          "byte_count": 75605028,
+          "file_count": 1748,
+          "sha256": "cdb0b5b1e98cc6e24c7715e225fefe0935040379b2e3a92f46ee3e1808ae9ec3"
+        }
+      },
+      "native_mapping": {
+        "artifacts": {
+          "instance_color_log": {
+            "byte_count": 1686,
+            "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/ovi-native-v1/scenes/e61b0e02-bada-2f31-82d0-80fc5c70bd6f/attempt-20260907T064135.491258Z/native_audit/instance_colors_cpp.tsv",
+            "sha256": "d2a76bbf6b687fec5e34caadc2e75e27b0905a2dcaa04289506bad3e705ea006"
+          },
+          "instance_mesh": {
+            "byte_count": 414778981,
+            "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/ovi-native-v1/scenes/e61b0e02-bada-2f31-82d0-80fc5c70bd6f/attempt-20260907T064135.491258Z/mapping/cropformer_inst/instance_mesh_582.ply",
+            "sha256": "0b38968162d37b109cb3fc5b121925e5fba783f8bc5b073753538727f8c91a78"
+          },
+          "semantic_features": {
+            "byte_count": 2587628,
+            "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/ovi-native-v1/scenes/e61b0e02-bada-2f31-82d0-80fc5c70bd6f/attempt-20260907T064135.491258Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_582_incre_combine.pkl",
+            "sha256": "80e796719b820b327dd89d0c334d4827685d28129146c57eab057e1c61845470"
+          }
+        },
+        "audit": {
+          "frame_count": 524,
+          "full_frame_bbox_count": 30,
+          "full_frame_bbox_ratio": 0.007932310946589107,
+          "mapper_skipped_frame_count": 58,
+          "raycast_bbox_count": 3782,
+          "requested_frame_count": 582,
+          "stale_raycast_ids": [
+            3,
+            17,
+            24,
+            54,
+            64,
+            67,
+            69,
+            71,
+            91,
+            105,
+            110,
+            126,
+            139,
+            144,
+            147,
+            149
+          ]
+        },
+        "manifest": {
+          "byte_count": 150107,
+          "path": "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/ovi-native-v1/scenes/e61b0e02-bada-2f31-82d0-80fc5c70bd6f/attempt-20260907T064135.491258Z/native_mapping_manifest.json",
+          "sha256": "12f5caf9df8d755135b257670cc95e5ff306188135a8db873c6948f08b935260"
+        }
+      },
+      "scan_id": "e61b0e02-bada-2f31-82d0-80fc5c70bd6f",
+      "visit_index": 1
+    }
+  ]
+}
