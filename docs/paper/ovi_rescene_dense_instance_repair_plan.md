@@ -36,13 +36,13 @@
 - Consumes: `OviObjectVisitView`, one visit's `GroundTruthInstance` tuple, raw dense query proposals, confident query IDs, and final P2 `PredictedInstance` values.
 - Produces: `EndpointDiagnosisRow`, `RawDenseProposal`, `diagnose_visit_endpoints(...)`, and `endpoint_diagnosis_rows(...)` without mutating method inputs.
 
-- [ ] Write RED tests proving `D intersect GT` never adds GT-only voxels; exact union search covers all subsets for at most 12 intersecting candidates; larger greedy search is labeled non-exact and is never below best-single IoU.
-- [ ] Write RED tests for full/owned/supported coverage, best/second atomic precision-recall-IoU, raw/all versus confidence-0.3 proposals, and final-P2 IoU.
-- [ ] Write RED tests that missing sensor-visible GT is serialized as null with `NOT_COMPUTED`, and provisional failure evidence may remain `mixed` instead of forcing a single cause.
-- [ ] Run `python -m pytest -q tests/evaluation/test_ovi_endpoint_diagnosis.py` and verify failure is caused by the missing module.
-- [ ] Implement voxel-set operations and bounded union search; keep GT objects and selected D voxels immutable.
-- [ ] Run `python -m pytest -q tests/evaluation/test_ovi_endpoint_diagnosis.py tests/evaluation/test_rscan_gt_instances.py`.
-- [ ] Commit Task 1.
+- [x] Write RED tests proving `D intersect GT` never adds GT-only voxels; exact union search covers all subsets for at most 12 intersecting candidates; larger greedy search is labeled non-exact and is never below best-single IoU.
+- [x] Write RED tests for full/owned/supported coverage, best/second atomic precision-recall-IoU, raw/all versus confidence-0.3 proposals, and final-P2 IoU.
+- [x] Write RED tests that missing sensor-visible GT is serialized as null with `NOT_COMPUTED`, and provisional failure evidence may remain `mixed` instead of forcing a single cause.
+- [x] Run `python -m pytest -q tests/evaluation/test_ovi_endpoint_diagnosis.py` and verify failure is caused by the missing module.
+- [x] Implement voxel-set operations and bounded union search; keep GT objects and selected D voxels immutable.
+- [x] Run `python -m pytest -q tests/evaluation/test_ovi_endpoint_diagnosis.py tests/evaluation/test_rscan_gt_instances.py`.
+- [x] Commit Task 1.
 
 ### Task 2: Dense D-to-M projection and exclusive P2 ownership
 
