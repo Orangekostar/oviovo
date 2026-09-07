@@ -1,7 +1,7 @@
 # Observation Query Progress
 
-- Current task: T10 final verification, commit, push, and remote SHA check.
-- Completed: T00-T09 implementation and bounded real evidence.
+- Current task: T00-T10 delivery complete; final local/remote SHA equality is reported externally to avoid a self-referential commit.
+- Completed: T00-T10 implementation, bounded real evidence, verification, commit, and push.
 - Branch/base: `research/ovi-rescene-observation-query`, based on `4354df9df093628eaa7b3470319944914db85711`.
 - Real DEV pair: `scene0109_00-scene0109_01`; it was previously inspected and is not an untouched confirmation set.
 - Real TRAIN pair: `scene0001_00-scene0001_01`; both official `sequence.zip` files are absent. No Terms-of-Use acceptance was inferred, DEV was not substituted, optimizer updates are 0, and `MODEL_ASSET=NOT_CREATED`.
@@ -22,4 +22,4 @@ T09 converts OBS dense outputs into two geometry-conserving `VisitMap` values pl
 
 Machine-readable status: `configs/evaluation/results/observation_query/experiment_status.json`.
 Artifact inventory: `configs/evaluation/results/observation_query/artifact_manifest.json`.
-Next: run the focused verification set, stage only task files, commit, push, and require local/remote branch SHA equality.
+Next scientific dependency: legally materialize the declared official TRAIN pair, then run the fixed smoke and trained comparison protocol without substituting DEV data.
