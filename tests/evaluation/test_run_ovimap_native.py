@@ -630,3 +630,114 @@ def test_scannet_audit_uses_depth_space_raycast_shape(tmp_path: Path) -> None:
 
     assert summary["status"] == "PASS"
     assert summary["raycast_shapes"] == [[2, 3]]
+
+
+def test_scene_audit_records_mapper_skipped_frames(tmp_path: Path) -> None:
+    frontend = tmp_path / "frontend"
+    native = tmp_path / "native_audit"
+    scene_data = tmp_path / "scene"
+    frontend.mkdir()
+    native.mkdir()
+    (scene_data / "depth").mkdir(parents=True)
+    for frame_id in (0, 1):
+        assert cv2.imwrite(
+            str(frontend / f"{frame_id}.png"), np.ones((4, 6), dtype=np.uint8)
+        )
+        assert cv2.imwrite(
+            str(scene_data / "depth" / f"{frame_id}.png"),
+            np.full((2, 3), 1000, dtype=np.uint16),
+        )
+    raycast = np.array([[0, 1, 1], [0, 0, 0]], dtype=np.uint16)
+    np.save(native / "frame000001.raycast.npy", raycast, allow_pickle=False)
+    (native / "color_pairs.json").write_text(
+        json.dumps(
+            [{"instance_id": 1, "mapper_rgb": [10, 20, 30], "logged_rgb": [10, 20, 30]}]
+        ),
+        encoding="utf-8",
+    )
+    (native / "frame000001.json").write_text(
+        json.dumps(
+            {
+                "frame_id": 1,
+                "shape": [2, 3],
+                "box_2d": {"1": [1, 0, 2, 0]},
+                "mapper_rgb": {"1": [10, 20, 30]},
+            }
+        ),
+        encoding="utf-8",
+    )
+    commands = SceneCommands(
+        frame_ids=[0, 1],
+        geometry=("geometry",),
+        frontend=("frontend",),
+        mapping=("mapping",),
+        attempt_root=tmp_path,
+        dataset="scannet_nyu",
+        scene_data=scene_data,
+    )
+
+    summary = audit_scene(commands)
+
+    assert summary["frame_count"] == 1
+    assert summary["requested_frame_count"] == 2
+    assert summary["mapper_skipped_frame_ids"] == [0]
+    assert summary["mapper_skipped_frame_count"] == 1
+
+
+def test_scene_audit_allows_full_frame_box_when_scene_has_partial_box(
+    tmp_path: Path,
+) -> None:
+    frontend = tmp_path / "frontend"
+    native = tmp_path / "native_audit"
+    scene_data = tmp_path / "scene"
+    frontend.mkdir()
+    native.mkdir()
+    (scene_data / "depth").mkdir(parents=True)
+    (native / "color_pairs.json").write_text(
+        json.dumps(
+            [{"instance_id": 1, "mapper_rgb": [10, 20, 30], "logged_rgb": [10, 20, 30]}]
+        ),
+        encoding="utf-8",
+    )
+    raycasts = (
+        np.ones((2, 3), dtype=np.uint16),
+        np.array([[0, 1, 1], [0, 0, 0]], dtype=np.uint16),
+    )
+    boxes = ({"1": [0, 0, 2, 1]}, {"1": [1, 0, 2, 0]})
+    for frame_id, (raycast, box) in enumerate(zip(raycasts, boxes, strict=True)):
+        assert cv2.imwrite(
+            str(frontend / f"{frame_id}.png"), np.ones((4, 6), dtype=np.uint8)
+        )
+        assert cv2.imwrite(
+            str(scene_data / "depth" / f"{frame_id}.png"),
+            np.full((2, 3), 1000, dtype=np.uint16),
+        )
+        np.save(
+            native / f"frame{frame_id:06d}.raycast.npy", raycast, allow_pickle=False
+        )
+        (native / f"frame{frame_id:06d}.json").write_text(
+            json.dumps(
+                {
+                    "frame_id": frame_id,
+                    "shape": [2, 3],
+                    "box_2d": box,
+                    "mapper_rgb": {"1": [10, 20, 30]},
+                }
+            ),
+            encoding="utf-8",
+        )
+    commands = SceneCommands(
+        frame_ids=[0, 1],
+        geometry=("geometry",),
+        frontend=("frontend",),
+        mapping=("mapping",),
+        attempt_root=tmp_path,
+        dataset="scannet_nyu",
+        scene_data=scene_data,
+    )
+
+    summary = audit_scene(commands)
+
+    assert summary["raycast_bbox_count"] == 2
+    assert summary["full_frame_bbox_count"] == 1
+    assert summary["full_frame_bbox_ratio"] == pytest.approx(0.5)

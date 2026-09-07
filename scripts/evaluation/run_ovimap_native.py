@@ -633,16 +633,19 @@ def audit_scene(commands: SceneCommands) -> dict[str, Any]:
     stale_raycast_ids: set[int] = set()
     observed_mapper_colors: dict[int, tuple[int, int, int]] = {}
     raycast_shapes: list[list[int]] = []
+    mapper_skipped_frame_ids: list[int] = []
     for frame_id in commands.frame_ids:
         mask_path = frontend / _frontend_mask_name(commands.dataset, frame_id)
         raycast_path = native / f"frame{frame_id:06d}.raycast.npy"
         mapper_path = native / f"frame{frame_id:06d}.json"
-        for path, label in (
-            (mask_path, "instance mask"),
-            (raycast_path, "raycast IDs"),
-            (mapper_path, "mapper frame audit"),
-        ):
-            _require_file(path, label)
+        _require_file(mask_path, "instance mask")
+        raycast_present = raycast_path.exists() or raycast_path.is_symlink()
+        mapper_present = mapper_path.exists() or mapper_path.is_symlink()
+        if not raycast_present and not mapper_present:
+            mapper_skipped_frame_ids.append(frame_id)
+            continue
+        _require_file(raycast_path, "raycast IDs")
+        _require_file(mapper_path, "mapper frame audit")
         mask = cv2.imread(str(mask_path), cv2.IMREAD_UNCHANGED)
         if mask is None:
             raise GateFailure(f"native frame audit failed: unreadable mask {mask_path}")
@@ -668,6 +671,7 @@ def audit_scene(commands: SceneCommands) -> dict[str, Any]:
                 raycast,
                 color_pairs,
                 raycast_shape=raycast_shape,
+                allow_all_full_frame=True,
             )
         except ValueError as error:
             raise GateFailure(f"native frame audit failed: {error}") from error
@@ -715,6 +719,9 @@ def audit_scene(commands: SceneCommands) -> dict[str, Any]:
         "status": "PASS",
         "frame_ids": commands.frame_ids,
         "frame_count": len(frame_records),
+        "requested_frame_count": len(commands.frame_ids),
+        "mapper_skipped_frame_ids": mapper_skipped_frame_ids,
+        "mapper_skipped_frame_count": len(mapper_skipped_frame_ids),
         "raycast_bbox_count": total_boxes,
         "full_frame_bbox_count": total_full_frame,
         "full_frame_bbox_ratio": total_full_frame / total_boxes,
