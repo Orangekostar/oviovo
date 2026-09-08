@@ -16,6 +16,7 @@ from scripts.evaluation.run_ovi_observation_query import (
     _geometry_metrics,
     _publish,
     _raw_metrics,
+    _resolve_inference_intervention,
     _runtime_pair,
     _split_pair,
     _validate_checkpoint_evaluation_contract,
@@ -23,6 +24,31 @@ from scripts.evaluation.run_ovi_observation_query import (
     unavailable_result_rows,
 )
 from src.evaluation.rscan_gt_instances import GroundTruthInstance
+
+
+def test_full_checkpoint_inference_interventions_preserve_loaded_model_identity() -> None:
+    assert _resolve_inference_intervention("OBS_FULL", "full", None) == (
+        "I_FULL",
+        "full",
+    )
+    assert _resolve_inference_intervention("OBS_FULL", "full", "I_FULL") == (
+        "I_FULL",
+        "full",
+    )
+    assert _resolve_inference_intervention("OBS_FULL", "full", "I_BETA0") == (
+        "I_BETA0",
+        "no_feedback",
+    )
+    assert _resolve_inference_intervention(
+        "OBS_FULL", "full", "I_ALPHA0_BETA0"
+    ) == ("I_ALPHA0_BETA0", "base_tuned")
+
+
+def test_inference_intervention_rejects_non_full_or_unknown_modes() -> None:
+    with pytest.raises(ValueError, match="OBS_FULL"):
+        _resolve_inference_intervention("OBS_FUSE", "fuse", "I_BETA0")
+    with pytest.raises(ValueError, match="unsupported"):
+        _resolve_inference_intervention("OBS_FULL", "full", "I_UNKNOWN")
 
 
 def test_unavailable_rows_keep_exact_long_schema_and_do_not_fabricate_zeroes() -> None:

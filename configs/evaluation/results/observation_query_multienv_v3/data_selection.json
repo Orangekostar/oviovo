@@ -1,0 +1,683 @@
+{
+  "schema_version": 1,
+  "artifact_id": "OVI_RESCENE_OBSERVATION_QUERY_MULTIENV_V3_DATA_SELECTION",
+  "status": "SELECTION_FROZEN_BEFORE_V3_MODEL_RESULTS",
+  "evidence_base_commit": "b39d0182c6e31b22f2110bf5895aa23b223026e1",
+  "selected_at_utc": "2026-09-08T00:00:00Z",
+  "source_bindings": {
+    "metadata": {
+      "path": "/home/ww/vv/dataset/3RScan/3RScan.json",
+      "sha256": "674a00f50f76b198b9de44efd86c390fea3da37ba8f12cf8ccd00045e265fa64",
+      "byte_count": 3155995
+    },
+    "native_sequence_database": {
+      "path": "/home/ww/paper5/data/processed/rio/sequence_database_sliding_2.yaml",
+      "sha256": "974299916db02d2ee0233564eb7b36e314dada93e997584d9dfef21ad70d0416",
+      "byte_count": 415937
+    },
+    "asset_inventory": ".superpowers/sdd/CODEX_OBSERVATION_QUERY_MULTIENV_V3_ALL_IN_ONE/task-1-asset-inventory.csv"
+  },
+  "selection_policy": {
+    "unit": "3rscan_environment_reference_uuid",
+    "grouped": true,
+    "selected_before_v3_results": true,
+    "maximum_processed_npy_bytes_per_new_train_session": 3670016,
+    "ranking": "change_total_desc_then_pair_id",
+    "model_metrics_used_for_selection": false,
+    "rationale": [
+      "retain scene0001",
+      "new TRAIN candidates require both processed npy and max session size <=3670016",
+      "ranked by change_total desc then pair_id",
+      "top five selected",
+      "DEV fixed exposed set from spec",
+      "CONFIRM are highest-change ready validation pairs with empty existing_artifact_paths, never used for V3 selection"
+    ],
+    "selected_new_train_pair_ids": [
+      "scene0147_00-scene0147_01",
+      "scene0063_00-scene0063_02",
+      "scene0078_00-scene0078_01",
+      "scene0156_00-scene0156_01",
+      "scene0201_00-scene0201_01"
+    ]
+  },
+  "selected_pair_counts": {
+    "TRAIN": 6,
+    "DEV": 3,
+    "CONFIRM": 2
+  },
+  "selected": [
+    {
+      "selection_rank": 0,
+      "role": "TRAIN",
+      "official_split": "train",
+      "environment_uuid": "02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+      "pair_id": "scene0001_00-scene0001_01",
+      "scan_uuids": [
+        "02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+        "fcf66d9e-622d-291c-84c2-bb23dfe31327"
+      ],
+      "change_counts": {
+        "rigid": 3,
+        "nonrigid": 0,
+        "removed": 0,
+        "added": 0
+      },
+      "change_total": 3,
+      "source_readiness_status": "READY",
+      "source_readiness": {
+        "processed_npy_both_endpoints": true,
+        "sequence_zip_both_endpoints": true,
+        "derived_artifacts": "READY",
+        "processed_npy": [
+          {
+            "path": "/home/ww/paper5/data/processed/rio/train/0001_00.npy",
+            "sha256": "fc9f7c95c9e9e4e912e4b93ae19569b4f37586dc08154552c9ac4d512e8bffa6",
+            "byte_count": 1200608
+          },
+          {
+            "path": "/home/ww/paper5/data/processed/rio/train/0001_01.npy",
+            "sha256": "ae9096abbf39cee6e6330f866bf5c98d65a0aead9daa5072c0ac6fffb94730d5",
+            "byte_count": 724256
+          }
+        ],
+        "sequence_zips": [
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/02b33dfb-be2b-2d54-92d2-cd012b2b3c40/sequence.zip",
+            "status": "READY",
+            "sha256": "b41fd9878c81a6c8d38a02569b693241e026f028a79ae6defc9eacb38fd84cd8",
+            "byte_count": 23324158
+          },
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/fcf66d9e-622d-291c-84c2-bb23dfe31327/sequence.zip",
+            "status": "READY",
+            "sha256": "fbde0c797266fd697c7ba2c7421e26ce483256947d6776ea8208519fd3a5375d",
+            "byte_count": 19826323
+          }
+        ]
+      },
+      "existing_artifact_paths": [
+        "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/materialized-v1/02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+        "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/materialized-v1/fcf66d9e-622d-291c-84c2-bb23dfe31327",
+        "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/native-forwards-v1/scene0001_00-scene0001_01",
+        "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/ovi-native-v1/scenes/02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+        "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/ovi-native-v1/scenes/fcf66d9e-622d-291c-84c2-bb23dfe31327",
+        "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/pair-view-v1/scene0001_00-scene0001_01"
+      ],
+      "exposure": "PREVIOUSLY_INSPECTED",
+      "model_metrics_used_for_selection": false
+    },
+    {
+      "selection_rank": 1,
+      "role": "TRAIN",
+      "official_split": "train",
+      "environment_uuid": "41385851-a238-2435-8056-b7d662a97c93",
+      "pair_id": "scene0147_00-scene0147_01",
+      "scan_uuids": [
+        "41385851-a238-2435-8056-b7d662a97c93",
+        "5341b7c7-8a66-2cdd-86f4-c9dadf37c419"
+      ],
+      "change_counts": {
+        "rigid": 4,
+        "nonrigid": 2,
+        "removed": 9,
+        "added": 0
+      },
+      "change_total": 15,
+      "source_readiness_status": "SOURCE_READY_DERIVED_PENDING",
+      "source_readiness": {
+        "processed_npy_both_endpoints": true,
+        "sequence_zip_both_endpoints": true,
+        "derived_artifacts": "PENDING",
+        "processed_npy": [
+          {
+            "path": "/home/ww/paper5/data/processed/rio/train/0147_00.npy",
+            "sha256": "5012b4d6349cd33cfa08a4f2908dbb50f359edf60628284dba9eb89c8752435d",
+            "byte_count": 3253184
+          },
+          {
+            "path": "/home/ww/paper5/data/processed/rio/train/0147_01.npy",
+            "sha256": "748cd5ae46f577acef54356ba701234a1e63f959b2a590aeefe754e68e0aafcf",
+            "byte_count": 2889440
+          }
+        ],
+        "sequence_zips": [
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/41385851-a238-2435-8056-b7d662a97c93/sequence.zip",
+            "status": "READY",
+            "sha256": "d2c88cbbbe32e8b35699da53703c9b5e545481443534caf2ef26aa894fee4755",
+            "byte_count": 126846910
+          },
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/5341b7c7-8a66-2cdd-86f4-c9dadf37c419/sequence.zip",
+            "status": "READY",
+            "sha256": "1b3e6aa72c86088c03bee331f511d9a1df53cd8ad2bb1c5ff4abf604abdc2101",
+            "byte_count": 39073631
+          }
+        ]
+      },
+      "existing_artifact_paths": [],
+      "exposure": "NEW_TRAIN_SELECTED",
+      "model_metrics_used_for_selection": false
+    },
+    {
+      "selection_rank": 2,
+      "role": "TRAIN",
+      "official_split": "train",
+      "environment_uuid": "0cac7680-8d6f-2d13-8e05-f6da6172d239",
+      "pair_id": "scene0063_00-scene0063_02",
+      "scan_uuids": [
+        "0cac7680-8d6f-2d13-8e05-f6da6172d239",
+        "6a360549-fa53-2915-97ad-3853a1cb460c"
+      ],
+      "change_counts": {
+        "rigid": 3,
+        "nonrigid": 0,
+        "removed": 9,
+        "added": 0
+      },
+      "change_total": 12,
+      "source_readiness_status": "SOURCE_READY_DERIVED_PENDING",
+      "source_readiness": {
+        "processed_npy_both_endpoints": true,
+        "sequence_zip_both_endpoints": true,
+        "derived_artifacts": "PENDING",
+        "processed_npy": [
+          {
+            "path": "/home/ww/paper5/data/processed/rio/train/0063_00.npy",
+            "sha256": "a7ac5d02d70aa156fbd9a4fee9e68311680924c6cd335131aacfeebcb4ef78d2",
+            "byte_count": 1329488
+          },
+          {
+            "path": "/home/ww/paper5/data/processed/rio/train/0063_02.npy",
+            "sha256": "4c00a7cc9841307eb9ffe0d6d9f680a8d84b0cc88b47e21c2d087d509e649070",
+            "byte_count": 1051664
+          }
+        ],
+        "sequence_zips": [
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/0cac7680-8d6f-2d13-8e05-f6da6172d239/sequence.zip",
+            "status": "READY",
+            "sha256": "5c67488bb4ff14e6c7fe4e2d014af616333a2014ea9e8f9bb35ea199612816e6",
+            "byte_count": 23821008
+          },
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/6a360549-fa53-2915-97ad-3853a1cb460c/sequence.zip",
+            "status": "READY",
+            "sha256": "abf0a9467d4a9127bf711b332a34c071592cb1a3998c856fedb719a82e8d2a41",
+            "byte_count": 10234126
+          }
+        ]
+      },
+      "existing_artifact_paths": [],
+      "exposure": "NEW_TRAIN_SELECTED",
+      "model_metrics_used_for_selection": false
+    },
+    {
+      "selection_rank": 3,
+      "role": "TRAIN",
+      "official_split": "train",
+      "environment_uuid": "13124cc2-cec3-27a6-86ad-946fe3a73493",
+      "pair_id": "scene0078_00-scene0078_01",
+      "scan_uuids": [
+        "13124cc2-cec3-27a6-86ad-946fe3a73493",
+        "7272e182-a01b-20f6-89b8-3bdec0091c89"
+      ],
+      "change_counts": {
+        "rigid": 1,
+        "nonrigid": 3,
+        "removed": 8,
+        "added": 0
+      },
+      "change_total": 12,
+      "source_readiness_status": "SOURCE_READY_DERIVED_PENDING",
+      "source_readiness": {
+        "processed_npy_both_endpoints": true,
+        "sequence_zip_both_endpoints": true,
+        "derived_artifacts": "PENDING",
+        "processed_npy": [
+          {
+            "path": "/home/ww/paper5/data/processed/rio/train/0078_00.npy",
+            "sha256": "5eb18c3f716d5ef7f446ef1deea01d22a61784a5952e96db372a6e55794cff13",
+            "byte_count": 1986656
+          },
+          {
+            "path": "/home/ww/paper5/data/processed/rio/train/0078_01.npy",
+            "sha256": "5f33c6ba7c3c078e27a01733d2bfd1d75a933dd2c6d0981e0cb140f77bd2ab45",
+            "byte_count": 1621952
+          }
+        ],
+        "sequence_zips": [
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/13124cc2-cec3-27a6-86ad-946fe3a73493/sequence.zip",
+            "status": "READY",
+            "sha256": "0560d1815e2f01ef64a8f6328cfdded8943a2421e889428691a3036f40718708",
+            "byte_count": 57695330
+          },
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/7272e182-a01b-20f6-89b8-3bdec0091c89/sequence.zip",
+            "status": "READY",
+            "sha256": "febaf07914a8dcbe6211248c26a50404cd92efa922ab1b8eb43386d9b224374c",
+            "byte_count": 27997449
+          }
+        ]
+      },
+      "existing_artifact_paths": [],
+      "exposure": "NEW_TRAIN_SELECTED",
+      "model_metrics_used_for_selection": false
+    },
+    {
+      "selection_rank": 4,
+      "role": "TRAIN",
+      "official_split": "train",
+      "environment_uuid": "422885e0-192d-25fc-844a-62e395291839",
+      "pair_id": "scene0156_00-scene0156_01",
+      "scan_uuids": [
+        "422885e0-192d-25fc-844a-62e395291839",
+        "422885e2-192d-25fc-86cd-076ee5f2b412"
+      ],
+      "change_counts": {
+        "rigid": 3,
+        "nonrigid": 6,
+        "removed": 2,
+        "added": 0
+      },
+      "change_total": 11,
+      "source_readiness_status": "SOURCE_READY_DERIVED_PENDING",
+      "source_readiness": {
+        "processed_npy_both_endpoints": true,
+        "sequence_zip_both_endpoints": true,
+        "derived_artifacts": "PENDING",
+        "processed_npy": [
+          {
+            "path": "/home/ww/paper5/data/processed/rio/train/0156_00.npy",
+            "sha256": "31cea90e7beeb93f8fcebe50e9367037b56faf115321fc30bc48044a1a486ead",
+            "byte_count": 3385808
+          },
+          {
+            "path": "/home/ww/paper5/data/processed/rio/train/0156_01.npy",
+            "sha256": "5b3f0674775abfe4dbb94a67919e7964481e4279e48e10cd38fd5c70be917fae",
+            "byte_count": 3385712
+          }
+        ],
+        "sequence_zips": [
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/422885e0-192d-25fc-844a-62e395291839/sequence.zip",
+            "status": "READY",
+            "sha256": "65dea1f840cf8609b6d568525ec08039051907bd246a6d4d6043975c1eec90ea",
+            "byte_count": 105894584
+          },
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/422885e2-192d-25fc-86cd-076ee5f2b412/sequence.zip",
+            "status": "READY",
+            "sha256": "cca49e9074f986ab41fe9aac099dfa574ee60781ad12e5026f716fd45b05bea7",
+            "byte_count": 120462854
+          }
+        ]
+      },
+      "existing_artifact_paths": [],
+      "exposure": "NEW_TRAIN_SELECTED",
+      "model_metrics_used_for_selection": false
+    },
+    {
+      "selection_rank": 5,
+      "role": "TRAIN",
+      "official_split": "train",
+      "environment_uuid": "5341b7bf-8a66-2cdd-8794-026113b7c312",
+      "pair_id": "scene0201_00-scene0201_01",
+      "scan_uuids": [
+        "5341b7bf-8a66-2cdd-8794-026113b7c312",
+        "4138584f-a238-2435-8242-4c9b86032127"
+      ],
+      "change_counts": {
+        "rigid": 4,
+        "nonrigid": 1,
+        "removed": 6,
+        "added": 0
+      },
+      "change_total": 11,
+      "source_readiness_status": "SOURCE_READY_DERIVED_PENDING",
+      "source_readiness": {
+        "processed_npy_both_endpoints": true,
+        "sequence_zip_both_endpoints": true,
+        "derived_artifacts": "PENDING",
+        "processed_npy": [
+          {
+            "path": "/home/ww/paper5/data/processed/rio/train/0201_00.npy",
+            "sha256": "9ce3356f05336c4912f971e775474bd0a25421c323d3ccbb027046b61670fb82",
+            "byte_count": 2634176
+          },
+          {
+            "path": "/home/ww/paper5/data/processed/rio/train/0201_01.npy",
+            "sha256": "6332fc8d178d61dbdab3f7b4154c039d1ced222892fdc11a31622ce9c7999b84",
+            "byte_count": 2791376
+          }
+        ],
+        "sequence_zips": [
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/5341b7bf-8a66-2cdd-8794-026113b7c312/sequence.zip",
+            "status": "READY",
+            "sha256": "1a2e3fe717ce5a909fdc39bab6c3ff6f2f4ee357c8ff98d6c1b2600d8951c19d",
+            "byte_count": 34888592
+          },
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/4138584f-a238-2435-8242-4c9b86032127/sequence.zip",
+            "status": "READY",
+            "sha256": "8efe8696e3ba72871eef4e8c9be6751bf215462e734190ac4ac3e7c8590bc057",
+            "byte_count": 70170020
+          }
+        ]
+      },
+      "existing_artifact_paths": [],
+      "exposure": "NEW_TRAIN_SELECTED",
+      "model_metrics_used_for_selection": false
+    },
+    {
+      "selection_rank": null,
+      "role": "DEV",
+      "official_split": "validation",
+      "environment_uuid": "20c993b7-698f-29c5-847d-c8cb8a685f5a",
+      "pair_id": "scene0109_00-scene0109_01",
+      "scan_uuids": [
+        "20c993b7-698f-29c5-847d-c8cb8a685f5a",
+        "20c993b3-698f-29c5-859c-dca8ddecf220"
+      ],
+      "change_counts": {
+        "rigid": 3,
+        "nonrigid": 0,
+        "removed": 0,
+        "added": 0
+      },
+      "change_total": 3,
+      "source_readiness_status": "READY",
+      "source_readiness": {
+        "processed_npy_both_endpoints": true,
+        "sequence_zip_both_endpoints": true,
+        "derived_artifacts": "READY",
+        "processed_npy": [
+          {
+            "path": "/home/ww/paper5/data/processed/rio/validation/0109_00.npy",
+            "sha256": "36a8d830268b8b05a6a51ad3192594cb50a9667d5816ed2392801d16a9849545",
+            "byte_count": 1534592
+          },
+          {
+            "path": "/home/ww/paper5/data/processed/rio/validation/0109_01.npy",
+            "sha256": "22cfab8ab25fee109a622b0ef327ab565fd458e0a1339d0a388429ca55c735a5",
+            "byte_count": 1364144
+          }
+        ],
+        "sequence_zips": [
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/20c993b7-698f-29c5-847d-c8cb8a685f5a/sequence.zip",
+            "status": "READY",
+            "sha256": "c7ac1f1ef8a39659b16703fc1c7840af98658a93048df17ac8f8eae971433ee7",
+            "byte_count": 11041001
+          },
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/20c993b3-698f-29c5-859c-dca8ddecf220/sequence.zip",
+            "status": "READY",
+            "sha256": "4ebf6bd6f07dd54f5afa991c19b9db68b99220412b2d31c2d55b143f0f41696b",
+            "byte_count": 9625273
+          }
+        ]
+      },
+      "existing_artifact_paths": [
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/d2-pair-view-v1/scene0109_00-scene0109_01",
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/d2-pair-view-v1/scene0109_00-scene0109_01-depth-provenance",
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/d2-pair-view-v1/scene0109_00-scene0109_01-depth-provenance-v2",
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/d2-pair-view-v1/scene0109_00-scene0109_01-without-entity-map",
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/d2-pair-view-v1/scene0109_00-scene0109_01-without-source-frame-provenance",
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/gt-v1/scene0109_00-scene0109_01",
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/materialized-v1/20c993b3-698f-29c5-859c-dca8ddecf220",
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/materialized-v1/20c993b7-698f-29c5-847d-c8cb8a685f5a",
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-recovery-v1/scene0109_00-scene0109_01",
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-recovery-v1/scene0109_00-scene0109_01-pre-contract-isolation-3f6e8d4",
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-recovery-v1/scene0109_00-scene0109_01-pre-d2-provenance-483bf3a",
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/object-transfer-v1/scene0109_00-scene0109_01",
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/ovi-native-v1/scenes/20c993b3-698f-29c5-859c-dca8ddecf220",
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/ovi-native-v1/scenes/20c993b7-698f-29c5-847d-c8cb8a685f5a",
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/3rscan/gt-v1/scene0109_00-scene0109_01",
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/3rscan/matrix-v1/associations-v2/scene0109_00-scene0109_01.json",
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/3rscan/matrix-v1/associations/scene0109_00-scene0109_01.json",
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/3rscan/matrix-v1/logs/methods-v2/scene0109_00-scene0109_01.log",
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/3rscan/matrix-v1/logs/methods/scene0109_00-scene0109_01.log",
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/3rscan/matrix-v1/logs/scene0109_00-scene0109_01.log"
+      ],
+      "exposure": "PREVIOUSLY_INSPECTED",
+      "model_metrics_used_for_selection": false
+    },
+    {
+      "selection_rank": null,
+      "role": "DEV",
+      "official_split": "validation",
+      "environment_uuid": "b1f23308-d255-2761-94da-981d962c6bf8",
+      "pair_id": "scene0359_00-scene0359_01",
+      "scan_uuids": [
+        "b1f23308-d255-2761-94da-981d962c6bf8",
+        "77361fd4-d054-2a22-88c4-b5b404f904ca"
+      ],
+      "change_counts": {
+        "rigid": 6,
+        "nonrigid": 0,
+        "removed": 0,
+        "added": 0
+      },
+      "change_total": 6,
+      "source_readiness_status": "READY",
+      "source_readiness": {
+        "processed_npy_both_endpoints": true,
+        "sequence_zip_both_endpoints": true,
+        "derived_artifacts": "READY",
+        "processed_npy": [
+          {
+            "path": "/home/ww/paper5/data/processed/rio/validation/0359_00.npy",
+            "sha256": "97893fe179173166cf7563642dee18359793f83d30fb66f96183fc75b0bd5e77",
+            "byte_count": 1272512
+          },
+          {
+            "path": "/home/ww/paper5/data/processed/rio/validation/0359_01.npy",
+            "sha256": "93279bcbda06a3c0827d186713f9a92b7bb23cd12dcefc2359a422ae1640a79c",
+            "byte_count": 1156016
+          }
+        ],
+        "sequence_zips": [
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/b1f23308-d255-2761-94da-981d962c6bf8/sequence.zip",
+            "status": "READY",
+            "sha256": "e29f6becfb8ce48d71f091cda0c95e5e31932248b1eac0804f406a49b73c425b",
+            "byte_count": 25247473
+          },
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/77361fd4-d054-2a22-88c4-b5b404f904ca/sequence.zip",
+            "status": "READY",
+            "sha256": "74007c2aca361f9e3e14955907c0290ae7efae96e404d4f4384d6bf7c0969d86",
+            "byte_count": 19153584
+          }
+        ]
+      },
+      "existing_artifact_paths": [
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/gt-v1/scene0359_00-scene0359_01",
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/native-v1/scene0359_00-scene0359_01",
+        "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/d2-pair-view-v1/scene0359_00-scene0359_01",
+        "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/materialized-v1/77361fd4-d054-2a22-88c4-b5b404f904ca",
+        "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/materialized-v1/b1f23308-d255-2761-94da-981d962c6bf8",
+        "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/object-transfer-v1/scene0359_00-scene0359_01",
+        "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/ovi-native-v1/scenes/77361fd4-d054-2a22-88c4-b5b404f904ca",
+        "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/ovi-native-v1/scenes/b1f23308-d255-2761-94da-981d962c6bf8",
+        "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/evaluation/scene0359_00-scene0359_01"
+      ],
+      "exposure": "PREVIOUSLY_INSPECTED",
+      "model_metrics_used_for_selection": false
+    },
+    {
+      "selection_rank": null,
+      "role": "DEV",
+      "official_split": "validation",
+      "environment_uuid": "e61b0e04-bada-2f31-82d6-72831a602ba7",
+      "pair_id": "scene0459_00-scene0459_01",
+      "scan_uuids": [
+        "e61b0e04-bada-2f31-82d6-72831a602ba7",
+        "e61b0e02-bada-2f31-82d0-80fc5c70bd6f"
+      ],
+      "change_counts": {
+        "rigid": 7,
+        "nonrigid": 1,
+        "removed": 3,
+        "added": 0
+      },
+      "change_total": 11,
+      "source_readiness_status": "READY",
+      "source_readiness": {
+        "processed_npy_both_endpoints": true,
+        "sequence_zip_both_endpoints": true,
+        "derived_artifacts": "READY",
+        "processed_npy": [
+          {
+            "path": "/home/ww/paper5/data/processed/rio/validation/0459_00.npy",
+            "sha256": "f13c8a04b9071b6b23e64b739348c07343d336deb08d8509bb2bb5abe6e32a23",
+            "byte_count": 6589712
+          },
+          {
+            "path": "/home/ww/paper5/data/processed/rio/validation/0459_01.npy",
+            "sha256": "ab14c2c6f91ea68189d8cbfecf5cc797da5e800bf08e62e88f4c5a79380ecfcf",
+            "byte_count": 6562928
+          }
+        ],
+        "sequence_zips": [
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/e61b0e04-bada-2f31-82d6-72831a602ba7/sequence.zip",
+            "status": "READY",
+            "sha256": "973214fc0dcbf26c8fa52843f076d0de686772e7f0f901e2fd184f46c1a618fa",
+            "byte_count": 108564638
+          },
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/e61b0e02-bada-2f31-82d0-80fc5c70bd6f/sequence.zip",
+            "status": "READY",
+            "sha256": "8ad45ba5016079cb42ffb658e794dffbe6b5fc45ca4b80f3398c2a0711fbc194",
+            "byte_count": 106718403
+          }
+        ]
+      },
+      "existing_artifact_paths": [
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/gt-v1/scene0459_00-scene0459_01",
+        "/home/ww/oviovo_baseline_runs/20260906_ovi_rescene_object_level_transfer/3rscan/native-v1/scene0459_00-scene0459_01",
+        "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/d2-pair-view-v1/scene0459_00-scene0459_01",
+        "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/materialized-v1/e61b0e02-bada-2f31-82d0-80fc5c70bd6f",
+        "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/materialized-v1/e61b0e04-bada-2f31-82d6-72831a602ba7",
+        "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/object-transfer-v1/scene0459_00-scene0459_01",
+        "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/ovi-native-v1/scenes/e61b0e02-bada-2f31-82d0-80fc5c70bd6f",
+        "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/3rscan/ovi-native-v1/scenes/e61b0e04-bada-2f31-82d6-72831a602ba7",
+        "/home/ww/oviovo_baseline_runs/20260907_ovi_rescene_dense_instance_repair/evaluation/scene0459_00-scene0459_01"
+      ],
+      "exposure": "PREVIOUSLY_INSPECTED",
+      "model_metrics_used_for_selection": false
+    },
+    {
+      "selection_rank": null,
+      "role": "CONFIRM",
+      "official_split": "validation",
+      "environment_uuid": "ddc73797-765b-241a-9e2c-097c5989baf6",
+      "pair_id": "scene0449_00-scene0449_05",
+      "scan_uuids": [
+        "ddc73797-765b-241a-9e2c-097c5989baf6",
+        "c7895f07-339c-2d13-8176-7418b6e8d7ce"
+      ],
+      "change_counts": {
+        "rigid": 11,
+        "nonrigid": 0,
+        "removed": 6,
+        "added": 0
+      },
+      "change_total": 17,
+      "source_readiness_status": "SOURCE_READY_DERIVED_PENDING",
+      "source_readiness": {
+        "processed_npy_both_endpoints": true,
+        "sequence_zip_both_endpoints": true,
+        "derived_artifacts": "PENDING",
+        "processed_npy": [
+          {
+            "path": "/home/ww/paper5/data/processed/rio/validation/0449_00.npy",
+            "sha256": "707bd0a1e9e1410f6dfeb64185a2b5d5c4511e46ec07b17385967fa4ae465c78",
+            "byte_count": 4330880
+          },
+          {
+            "path": "/home/ww/paper5/data/processed/rio/validation/0449_05.npy",
+            "sha256": "3e92bf62dc7696ece1e983b32edd3e3e2b30e9113cda017219da438cad9719a9",
+            "byte_count": 5009120
+          }
+        ],
+        "sequence_zips": [
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/ddc73797-765b-241a-9e2c-097c5989baf6/sequence.zip",
+            "status": "READY",
+            "sha256": "59a04f88acecf6ac9a669e52fa0261f5c66a3a69d6ba25926fcd2013677969ba",
+            "byte_count": 62553246
+          },
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/c7895f07-339c-2d13-8176-7418b6e8d7ce/sequence.zip",
+            "status": "READY",
+            "sha256": "2d57246e4418826e144a03b1f6e265af49091c0a81cf78d68637b967e1815e3d",
+            "byte_count": 53690104
+          }
+        ]
+      },
+      "existing_artifact_paths": [],
+      "exposure": "PREDECLARED_UNEXPOSED_V3",
+      "model_metrics_used_for_selection": false
+    },
+    {
+      "selection_rank": null,
+      "role": "CONFIRM",
+      "official_split": "validation",
+      "environment_uuid": "0988ea72-eb32-2e61-8344-99e2283c2728",
+      "pair_id": "scene0009_00-scene0009_02",
+      "scan_uuids": [
+        "0988ea72-eb32-2e61-8344-99e2283c2728",
+        "9766cbf5-6321-2e2f-8131-78c4e204635d"
+      ],
+      "change_counts": {
+        "rigid": 13,
+        "nonrigid": 1,
+        "removed": 1,
+        "added": 0
+      },
+      "change_total": 15,
+      "source_readiness_status": "SOURCE_READY_DERIVED_PENDING",
+      "source_readiness": {
+        "processed_npy_both_endpoints": true,
+        "sequence_zip_both_endpoints": true,
+        "derived_artifacts": "PENDING",
+        "processed_npy": [
+          {
+            "path": "/home/ww/paper5/data/processed/rio/validation/0009_00.npy",
+            "sha256": "f5996011ef2cc6f0a24d36782220023b2414258d7c93e8f9895e125fc568b488",
+            "byte_count": 2958224
+          },
+          {
+            "path": "/home/ww/paper5/data/processed/rio/validation/0009_02.npy",
+            "sha256": "8e281724fb10409a1bf2f1bcd91df699ce2d21e204414b7fb5031ae6ff73f3ad",
+            "byte_count": 2862848
+          }
+        ],
+        "sequence_zips": [
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/0988ea72-eb32-2e61-8344-99e2283c2728/sequence.zip",
+            "status": "READY",
+            "sha256": "2dbf78999f8c9c225d3a2e07ffedefd151709fa057679f65ed86d7134baaa278",
+            "byte_count": 90212931
+          },
+          {
+            "path": "/home/ww/vv/dataset/3RScan/scans/9766cbf5-6321-2e2f-8131-78c4e204635d/sequence.zip",
+            "status": "READY",
+            "sha256": "46f925c921cab6e5f0b8a330e98fe9daf12168bc9e38fc235edfdb6c481822cc",
+            "byte_count": 207875015
+          }
+        ]
+      },
+      "existing_artifact_paths": [],
+      "exposure": "PREDECLARED_UNEXPOSED_V3",
+      "model_metrics_used_for_selection": false
+    }
+  ],
+  "model_metrics_used_for_selection": false,
+  "confirmation_status": "PREDECLARED_UNEXPOSED_V3"
+}

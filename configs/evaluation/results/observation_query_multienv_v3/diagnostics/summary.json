@@ -1,0 +1,158 @@
+{
+  "artifact_id": "OVI_OBSERVATION_QUERY_V3_READOUT_DIAGNOSIS_V1",
+  "artifacts": {
+    "object_trajectories": {
+      "byte_count": 205536,
+      "path": "object_trajectories.csv",
+      "sha256": "6391cda495cf3bd6f65284692a97cf2716e1286e270cb1d8e0878f743fa47887"
+    },
+    "readout_stages": {
+      "byte_count": 47386,
+      "path": "readout_stages.csv",
+      "sha256": "f2cbfc06194b704f17268cb2ed433e024d862c32a8bdc77f6d4b9564ce27454f"
+    }
+  },
+  "evaluation_domains": [
+    "FULL_GT_V2",
+    "COMMON_INPUT_SUPPORT_V2"
+  ],
+  "inputs": [
+    {
+      "predictions": {
+        "byte_count": 14154684,
+        "path": "/home/ww/oviovo_baseline_runs/observation_query/evaluation_runs/20260908_scene0109_obs_base_frozen_v2_domains/predictions.npz",
+        "sha256": "8ffa4587fc34b72d103f28baa2e1f6960654d452cf27948606dab9e7f2121cb6"
+      },
+      "run_id": "20260908_scene0109_obs_base_frozen_v2_domains",
+      "summary": {
+        "byte_count": 5683,
+        "path": "/home/ww/oviovo_baseline_runs/observation_query/evaluation_runs/20260908_scene0109_obs_base_frozen_v2_domains/summary.json",
+        "sha256": "727f569fc60f6f237cecb8187d0ea9a4c4f0e966e049a5ea53b7eb050f4d0259"
+      }
+    },
+    {
+      "predictions": {
+        "byte_count": 14379435,
+        "path": "/home/ww/oviovo_baseline_runs/observation_query/evaluation_runs/20260908_scene0109_obs_base_tuned_train200_dev_v2/predictions.npz",
+        "sha256": "dd202a8593d637748e787de181253df6656708f36f1b4a31d2b864eed9eafe7c"
+      },
+      "run_id": "20260908_scene0109_obs_base_tuned_train200_dev_v2",
+      "summary": {
+        "byte_count": 6473,
+        "path": "/home/ww/oviovo_baseline_runs/observation_query/evaluation_runs/20260908_scene0109_obs_base_tuned_train200_dev_v2/summary.json",
+        "sha256": "8da6cd970e9d015891c4b36b587fadc5b8e20f61a6cd2ad12ca72550d691d8ed"
+      }
+    },
+    {
+      "predictions": {
+        "byte_count": 14329773,
+        "path": "/home/ww/oviovo_baseline_runs/observation_query/evaluation_runs/20260908_scene0109_obs_base_tuned_train500_dev_v2/predictions.npz",
+        "sha256": "5668bf15ff75fb92bc31e0e8eea8aad62346edd8f33df43c39c9a85287d2fbdb"
+      },
+      "run_id": "20260908_scene0109_obs_base_tuned_train500_dev_v2",
+      "summary": {
+        "byte_count": 6473,
+        "path": "/home/ww/oviovo_baseline_runs/observation_query/evaluation_runs/20260908_scene0109_obs_base_tuned_train500_dev_v2/summary.json",
+        "sha256": "bbe8f741310a7afcd8625723980bdd69a15fb83048db039a98653bfef9aef251"
+      }
+    },
+    {
+      "predictions": {
+        "byte_count": 14360960,
+        "path": "/home/ww/oviovo_baseline_runs/observation_query/evaluation_runs/20260908_scene0109_obs_base_tuned_train1000_dev_v2/predictions.npz",
+        "sha256": "ac837fa0d16831bf923cba48cedc1d6ad5aa540ef9c2bb4e9254a83f2b2a8e3b"
+      },
+      "run_id": "20260908_scene0109_obs_base_tuned_train1000_dev_v2",
+      "summary": {
+        "byte_count": 6423,
+        "path": "/home/ww/oviovo_baseline_runs/observation_query/evaluation_runs/20260908_scene0109_obs_base_tuned_train1000_dev_v2/summary.json",
+        "sha256": "512bf2a14ad021e36aa1b50dcda2a02000901f8a542e537872b87cc8f6c8e7ef"
+      }
+    },
+    {
+      "predictions": {
+        "byte_count": 14371459,
+        "path": "/home/ww/oviovo_baseline_runs/observation_query/evaluation_runs/20260908_scene0109_obs_fuse_train200_dev_v2/predictions.npz",
+        "sha256": "281ff8939dc0b8ee519f180d54e88d2deaf41c0eb7828932e93aa188f2fd8c18"
+      },
+      "run_id": "20260908_scene0109_obs_fuse_train200_dev_v2",
+      "summary": {
+        "byte_count": 6449,
+        "path": "/home/ww/oviovo_baseline_runs/observation_query/evaluation_runs/20260908_scene0109_obs_fuse_train200_dev_v2/summary.json",
+        "sha256": "a37c5354486f3cdeb1a54e78dd2f7073411635c862b929dccb7662d8ae73c4a2"
+      }
+    },
+    {
+      "predictions": {
+        "byte_count": 14300386,
+        "path": "/home/ww/oviovo_baseline_runs/observation_query/evaluation_runs/20260908_scene0109_obs_fuse_train500_dev_v2/predictions.npz",
+        "sha256": "b600b1a11fc4e88fe1d3f71aba8e4e7d38ca7bd05c23706203c8ae5127ca55c5"
+      },
+      "run_id": "20260908_scene0109_obs_fuse_train500_dev_v2",
+      "summary": {
+        "byte_count": 6449,
+        "path": "/home/ww/oviovo_baseline_runs/observation_query/evaluation_runs/20260908_scene0109_obs_fuse_train500_dev_v2/summary.json",
+        "sha256": "39950f2a19396dd8272019079d05adc5a13dbfb807ee07b8add9637027676a9c"
+      }
+    },
+    {
+      "predictions": {
+        "byte_count": 14241191,
+        "path": "/home/ww/oviovo_baseline_runs/observation_query/evaluation_runs/20260908_scene0109_obs_fuse_train1000_dev_v2/predictions.npz",
+        "sha256": "62a2a869eca6cf9583a0e4b1b221576079cc27adf8b0649b7d57db15d1406e9f"
+      },
+      "run_id": "20260908_scene0109_obs_fuse_train1000_dev_v2",
+      "summary": {
+        "byte_count": 6399,
+        "path": "/home/ww/oviovo_baseline_runs/observation_query/evaluation_runs/20260908_scene0109_obs_fuse_train1000_dev_v2/summary.json",
+        "sha256": "2b1599d9d8993f8dd7545c81c28c896bb87cd09dc89a0e091f3a39eeb091e9a3"
+      }
+    },
+    {
+      "predictions": {
+        "byte_count": 14411546,
+        "path": "/home/ww/oviovo_baseline_runs/observation_query/evaluation_runs/20260908_scene0109_obs_full_smoke200_dev_v2/predictions.npz",
+        "sha256": "9300d6ebde160e19ebed7241d0cf980f7d2a7570741ef82ce6eeafc0baa9d3c4"
+      },
+      "run_id": "20260908_scene0109_obs_full_smoke200_dev_v2",
+      "summary": {
+        "byte_count": 6396,
+        "path": "/home/ww/oviovo_baseline_runs/observation_query/evaluation_runs/20260908_scene0109_obs_full_smoke200_dev_v2/summary.json",
+        "sha256": "8712d7fdc7fdc80cd9295758b7c3030ea398165ddcde0b2b17b99cdb4c4097b3"
+      }
+    },
+    {
+      "predictions": {
+        "byte_count": 14332743,
+        "path": "/home/ww/oviovo_baseline_runs/observation_query/evaluation_runs/20260908_scene0109_obs_full_train500_dev_v2/predictions.npz",
+        "sha256": "e9bff182101117a8d2730e61f949e26114aff6d2d4852423d8994640270a7707"
+      },
+      "run_id": "20260908_scene0109_obs_full_train500_dev_v2",
+      "summary": {
+        "byte_count": 6450,
+        "path": "/home/ww/oviovo_baseline_runs/observation_query/evaluation_runs/20260908_scene0109_obs_full_train500_dev_v2/summary.json",
+        "sha256": "845b7090ced627c00b41d6dba8538efccde7d3d0b9a7087fc7151bda21032c4b"
+      }
+    },
+    {
+      "predictions": {
+        "byte_count": 14324699,
+        "path": "/home/ww/oviovo_baseline_runs/observation_query/evaluation_runs/20260908_scene0109_obs_full_train1000_dev_v2/predictions.npz",
+        "sha256": "e3a4d4ebc005874c6631237a8e5f9114ec49c001ae508757448ff333d2c4f137"
+      },
+      "run_id": "20260908_scene0109_obs_full_train1000_dev_v2",
+      "summary": {
+        "byte_count": 6400,
+        "path": "/home/ww/oviovo_baseline_runs/observation_query/evaluation_runs/20260908_scene0109_obs_full_train1000_dev_v2/summary.json",
+        "sha256": "01f4a0a886d1a197ae5a416387ee065ce5399d6c7df857d5b7f57cbc47310e54"
+      }
+    }
+  ],
+  "minimum_query_score": 0.3,
+  "object_row_count": 560,
+  "pair_id": "scene0109_00-scene0109_01",
+  "run_count": 10,
+  "schema_version": 1,
+  "stage_row_count": 160,
+  "status": "PASS"
+}

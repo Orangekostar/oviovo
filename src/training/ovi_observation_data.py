@@ -132,6 +132,9 @@ class PairIdentityRules:
     ambiguous_instance_ids_by_visit: tuple[frozenset[int], frozenset[int]]
     removed_reference_ids: frozenset[int]
     source_sha256: str
+    unrepresented_official_identities: tuple[
+        tuple[str, int, int, bool, bool], ...
+    ] = ()
 
     def __post_init__(self) -> None:
         if not isinstance(self.rescan_to_reference, Mapping):
@@ -156,10 +159,50 @@ class PairIdentityRules:
             _positive_ids(ambiguity[1], "visit-1 ambiguity IDs"),
         )
         removed = _positive_ids(self.removed_reference_ids, "removed reference IDs")
+        unrepresented: list[tuple[str, int, int, bool, bool]] = []
+        for record in self.unrepresented_official_identities:
+            if not isinstance(record, tuple) or len(record) != 5:
+                raise ObservationTrainingDataError(
+                    "unrepresented official identity record is invalid"
+                )
+            kind, reference_id, rescan_id, reference_present, rescan_present = record
+            if (
+                kind not in {"rigid", "nonrigid"}
+                or isinstance(reference_id, bool)
+                or not isinstance(reference_id, Integral)
+                or int(reference_id) <= 0
+                or isinstance(rescan_id, bool)
+                or not isinstance(rescan_id, Integral)
+                or int(rescan_id) <= 0
+                or type(reference_present) is not bool
+                or type(rescan_present) is not bool
+                or (reference_present and rescan_present)
+            ):
+                raise ObservationTrainingDataError(
+                    "unrepresented official identity record is invalid"
+                )
+            unrepresented.append(
+                (
+                    kind,
+                    int(reference_id),
+                    int(rescan_id),
+                    reference_present,
+                    rescan_present,
+                )
+            )
+        if len(unrepresented) != len(set(unrepresented)):
+            raise ObservationTrainingDataError(
+                "unrepresented official identities must be unique"
+            )
         object.__setattr__(self, "rescan_to_reference", dict(sorted(mapping.items())))
         object.__setattr__(self, "ambiguous_instance_ids_by_visit", normalized_ambiguity)
         object.__setattr__(self, "removed_reference_ids", removed)
         object.__setattr__(self, "source_sha256", _sha256(self.source_sha256, "identity source"))
+        object.__setattr__(
+            self,
+            "unrepresented_official_identities",
+            tuple(sorted(unrepresented)),
+        )
 
     def temporal_key(self, visit_id: int, instance_id: int) -> str:
         if visit_id not in (0, 1) or instance_id <= 0:
@@ -378,10 +421,22 @@ def load_official_pair_training_metadata(
     reference_ids = _positive_ids(reference_instance_ids, "reference instance IDs")
     rescan_ids = _positive_ids(rescan_instance_ids, "rescan instance IDs")
     mapping: dict[int, int] = {}
+    unrepresented: list[tuple[str, int, int, bool, bool]] = []
 
-    def bind(rescan_id: int, reference_id: int) -> None:
-        if rescan_id not in rescan_ids or reference_id not in reference_ids:
-            raise ObservationTrainingDataError("official identity is absent from native labels")
+    def bind(rescan_id: int, reference_id: int, change_kind: str) -> None:
+        reference_present = reference_id in reference_ids
+        rescan_present = rescan_id in rescan_ids
+        if not reference_present or not rescan_present:
+            unrepresented.append(
+                (
+                    change_kind,
+                    reference_id,
+                    rescan_id,
+                    reference_present,
+                    rescan_present,
+                )
+            )
+            return
         previous = mapping.setdefault(rescan_id, reference_id)
         if previous != reference_id:
             raise ObservationTrainingDataError("official identity mappings conflict")
@@ -408,9 +463,9 @@ def load_official_pair_training_metadata(
                 rescan_id = reference_id
             else:
                 raise ObservationTrainingDataError("official rigid change is invalid")
-            bind(rescan_id, reference_id)
+            bind(rescan_id, reference_id, change_kind)
     for shared_id in sorted(reference_ids.intersection(rescan_ids)):
-        bind(shared_id, shared_id)
+        bind(shared_id, shared_id, "unchanged")
     removed_records = rescan.get("removed", [])
     if not isinstance(removed_records, list):
         raise ObservationTrainingDataError("official removed changes are invalid")
@@ -450,6 +505,7 @@ def load_official_pair_training_metadata(
         ),
         removed_reference_ids=frozenset(removed),
         source_sha256=_file_sha256(source),
+        unrepresented_official_identities=tuple(unrepresented),
     )
     return OfficialPairTrainingMetadata(
         reference_scan_uuid=reference_scan_uuid,
@@ -788,6 +844,22 @@ def build_observation_training_sample(
             sorted(identity_rules.ambiguous_instance_ids_by_visit[1]),
         ],
         "removed_reference_ids": sorted(identity_rules.removed_reference_ids),
+        "unrepresented_official_identities": [
+            {
+                "change_kind": change_kind,
+                "reference_instance_id": reference_id,
+                "rescan_instance_id": rescan_id,
+                "reference_present": reference_present,
+                "rescan_present": rescan_present,
+            }
+            for (
+                change_kind,
+                reference_id,
+                rescan_id,
+                reference_present,
+                rescan_present,
+            ) in identity_rules.unrepresented_official_identities
+        ],
     }
     provided_manifest = {} if target_source_manifest is None else dict(target_source_manifest)
     _, normalized_manifest = _canonical_json(provided_manifest, "target_source_manifest")
@@ -879,9 +951,14 @@ def load_split_pair(
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
         raise ObservationTrainingDataError("split manifest cannot be decoded") from error
     environments = payload.get("environments") if isinstance(payload, Mapping) else None
+    accepted_identities = {
+        (1, "OVI_RESCENE_OBSERVATION_QUERY_SPLITS_V1"),
+        (2, "OVI_RESCENE_OBSERVATION_QUERY_SPLITS_TRAINING_V2"),
+        (3, "OVI_RESCENE_OBSERVATION_QUERY_SPLITS_MULTIENV_V3"),
+    }
     if (
-        payload.get("schema_version") != 1
-        or payload.get("artifact_id") != "OVI_RESCENE_OBSERVATION_QUERY_SPLITS_V1"
+        (payload.get("schema_version"), payload.get("artifact_id"))
+        not in accepted_identities
         or not isinstance(environments, list)
     ):
         raise ObservationTrainingDataError("split manifest identity is invalid")

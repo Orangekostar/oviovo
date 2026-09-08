@@ -124,6 +124,7 @@ def _mapping_receipt(
     selection_manifest: Path,
     native_manifests: Sequence[Path],
     materialized_manifests: Sequence[Path],
+    repository_root: Path = REPO_ROOT,
 ) -> dict[str, object]:
     sessions = pair_record.get("sessions")
     if not isinstance(sessions, list) or len(sessions) != 2:
@@ -212,7 +213,7 @@ def _mapping_receipt(
         "selection": {
             "manifest": _file_record(
                 selection_manifest,
-                recorded_path=str(selection_manifest.relative_to(REPO_ROOT)),
+                recorded_path=str(selection_manifest.relative_to(repository_root)),
             ),
             "pair_id": pair_id,
             "role": "D2_EVAL",

@@ -14,6 +14,7 @@ from scripts.training.train_ovi_observation_query import (
     _same_resume_contract,
     _target_update_count,
     _validated_resume_state_path,
+    _write_outer_failure_status,
     build_optimizer,
     main,
     perform_accumulated_update,
@@ -247,6 +248,31 @@ def test_resume_contract_rejects_training_dataset_or_model_change() -> None:
     assert not _same_resume_contract(current, ObservationCheckpointMetadata(**values))
 
 
+def test_resume_contract_rejects_multienv_sampler_source_change() -> None:
+    current = _resume_metadata(stage="pilot", updates=0)
+    values = current.as_dict()
+    resolved = dict(values["resolved_config"])
+    bindings = dict(resolved["source_bindings"])
+    bindings["multienv_training"] = {"sha256": "6" * 64, "byte_count": 1}
+    resolved["source_bindings"] = bindings
+    values["resolved_config"] = resolved
+    previous = ObservationCheckpointMetadata(**values)
+
+    changed_values = previous.as_dict()
+    changed_resolved = dict(changed_values["resolved_config"])
+    changed_bindings = dict(changed_resolved["source_bindings"])
+    changed_bindings["multienv_training"] = {
+        "sha256": "7" * 64,
+        "byte_count": 1,
+    }
+    changed_resolved["source_bindings"] = changed_bindings
+    changed_values["resolved_config"] = changed_resolved
+
+    assert not _same_resume_contract(
+        previous, ObservationCheckpointMetadata(**changed_values)
+    )
+
+
 def test_restore_training_random_state_restores_python_numpy_and_torch() -> None:
     import random
 
@@ -293,6 +319,86 @@ def test_periodic_snapshot_binds_resume_training_state(tmp_path) -> None:
     state.write_bytes(b"tampered")
     with pytest.raises(ObservationTrainingRunError, match="binding mismatch"):
         _validated_resume_state_path(tmp_path)
+
+
+def test_multienv_final_summary_binds_resume_training_state(tmp_path) -> None:
+    import hashlib
+
+    state = tmp_path / "training_state.pt"
+    state.write_bytes(b"optimizer-and-multienv-rng")
+    record = {
+        "path": "training_state.pt",
+        "sha256": hashlib.sha256(state.read_bytes()).hexdigest(),
+        "byte_count": state.stat().st_size,
+    }
+    (tmp_path / "summary.json").write_text(
+        json.dumps(
+            {
+                "schema_version": 3,
+                "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_RUN_V3",
+                "training_state": record,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert _validated_resume_state_path(tmp_path) == state
+
+
+def test_outer_failure_status_preserves_existing_multienv_diagnostics(tmp_path) -> None:
+    status_path = tmp_path / "status.json"
+    detailed = {
+        "schema_version": 3,
+        "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_RUN_STATUS_V3",
+        "status": "FAILED",
+        "run_id": "run",
+        "method": "OBS_FULL",
+        "stage": "pilot",
+        "pair_ids": ["pair-a", "pair-b"],
+        "optimizer_updates": 17,
+        "error_type": "RuntimeError",
+        "error": "inner failure",
+    }
+    status_path.write_text(json.dumps(detailed), encoding="utf-8")
+
+    _write_outer_failure_status(
+        output_root=tmp_path,
+        run_id="run",
+        method="OBS_FULL",
+        stage="pilot",
+        pair_ids=("pair-a", "pair-b"),
+        environment_ids=("env-a", "env-b"),
+        error=RuntimeError("outer failure"),
+    )
+
+    assert json.loads(status_path.read_text(encoding="utf-8")) == detailed
+
+
+def test_outer_failure_status_uses_multienv_schema_when_no_inner_status(tmp_path) -> None:
+    _write_outer_failure_status(
+        output_root=tmp_path,
+        run_id="run",
+        method="OBS_FULL",
+        stage="pilot",
+        pair_ids=("pair-a", "pair-b"),
+        environment_ids=("env-a", "env-b"),
+        error=RuntimeError("training failure"),
+    )
+
+    status = json.loads((tmp_path / "status.json").read_text(encoding="utf-8"))
+    assert status == {
+        "schema_version": 3,
+        "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_RUN_STATUS_V3",
+        "status": "FAILED",
+        "run_id": "run",
+        "method": "OBS_FULL",
+        "stage": "pilot",
+        "pair_id": None,
+        "pair_ids": ["pair-a", "pair-b"],
+        "environment_ids": ["env-a", "env-b"],
+        "error_type": "RuntimeError",
+        "error": "training failure",
+    }
 
 
 def test_missing_train_assets_publish_asset_gated_status_without_checkpoint(

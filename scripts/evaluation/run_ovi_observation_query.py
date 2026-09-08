@@ -86,6 +86,11 @@ EVALUATION_DOMAINS = (
     "RAW_FULL_GT_V2",
     "RAW_COMMON_INPUT_SUPPORT_V2",
 )
+INFERENCE_INTERVENTIONS = (
+    "I_FULL",
+    "I_BETA0",
+    "I_ALPHA0_BETA0",
+)
 
 
 class ObservationEvaluationError(ValueError):
@@ -97,6 +102,26 @@ class _ForwardArrays:
     pred_masks_mq: np.ndarray
     pred_logits_qc: np.ndarray
     peak_memory_bytes: int
+
+
+def _resolve_inference_intervention(
+    method: str,
+    trained_observation_mode: str,
+    intervention: str | None,
+) -> tuple[str, str]:
+    if intervention is None:
+        return ("I_FULL" if method == "OBS_FULL" else "NONE", trained_observation_mode)
+    if intervention not in INFERENCE_INTERVENTIONS:
+        raise ObservationEvaluationError("inference intervention is unsupported")
+    if method != "OBS_FULL" or trained_observation_mode != "full":
+        raise ObservationEvaluationError(
+            "inference interventions require an OBS_FULL checkpoint"
+        )
+    return intervention, {
+        "I_FULL": "full",
+        "I_BETA0": "no_feedback",
+        "I_ALPHA0_BETA0": "base_tuned",
+    }[intervention]
 
 
 def _blank_row() -> dict[str, object]:
@@ -860,6 +885,8 @@ def _trained_predictions(
     config: Mapping[str, object],
     method: str,
     checkpoint_path: Path,
+    inference_intervention: str | None = None,
+    inference_seed: int | None = None,
 ) -> tuple[
     _ForwardArrays,
     float,
@@ -928,8 +955,18 @@ def _trained_predictions(
         checkpoint_root=checkpoint_root,
         expected_metadata=metadata,
     )
+    intervention_id, applied_observation_mode = _resolve_inference_intervention(
+        method, contract.observation_mode, inference_intervention
+    )
     point, point2segment = _build_point(model_input, device)
     model.eval()
+    if inference_intervention is not None:
+        if type(inference_seed) is not int:
+            raise ObservationEvaluationError(
+                "diagnostic inference intervention requires an integer seed"
+            )
+        torch.manual_seed(inference_seed)
+        torch.cuda.manual_seed_all(inference_seed)
     torch.cuda.empty_cache()
     torch.cuda.reset_peak_memory_stats(device)
     started = time.perf_counter()
@@ -939,8 +976,12 @@ def _trained_predictions(
             point2segment=point2segment,
             raw_coordinates=point.raw_coordinates,
             is_eval=True,
-            observations=(observations if contract.uses_region_supervision else None),
-            observation_mode=contract.observation_mode,
+            observations=(
+                None
+                if applied_observation_mode == "base_tuned"
+                else observations if contract.uses_region_supervision else None
+            ),
+            observation_mode=applied_observation_mode,
         )
     torch.cuda.synchronize(device)
     inference_seconds = time.perf_counter() - started
@@ -979,6 +1020,29 @@ def _trained_predictions(
                 None,
             )
             or "OVI_OBSERVATION_QUERY_V1_LEGACY",
+            "inference_intervention": {
+                "intervention_id": intervention_id,
+                "trained_observation_mode": contract.observation_mode,
+                "applied_observation_mode": applied_observation_mode,
+                "inference_seed": (
+                    inference_seed if inference_intervention is not None else None
+                ),
+                "alpha_by_layer": [
+                    float(value)
+                    for value in torch.tanh(model.obs_branch.obs_raw_alpha)
+                    .detach()
+                    .cpu()
+                    .tolist()
+                ],
+                "beta_by_layer": [
+                    float(value)
+                    for value in torch.tanh(model.obs_branch.obs_raw_beta)
+                    .detach()
+                    .cpu()
+                    .tolist()
+                ],
+                "observation_stats": dict(output.get("observation_stats", {})),
+            },
         },
     )
 
@@ -1036,6 +1100,7 @@ def run_evaluation(
     run_id: str,
     pair_id: str | None = None,
     metric_protocol: str = "OVI_OBSERVATION_QUERY_INSTANCE_V2",
+    inference_intervention: str | None = None,
 ) -> int:
     config_source, config = _load_json(config_path, "pilot config")
     runtime_source, runtime = _load_json(runtime_path, "runtime config")
@@ -1162,6 +1227,8 @@ def run_evaluation(
             config=config,
             method=method,
             checkpoint_path=checkpoint_path,
+            inference_intervention=inference_intervention,
+            inference_seed=seed,
         )
     layers = build_observation_dense_layers(
         pair,
@@ -1304,6 +1371,9 @@ def _parser() -> argparse.ArgumentParser:
         "--role", required=True, choices=("DEV", "CONFIRM", "LEGACY_REGRESSION")
     )
     parser.add_argument("--run-id", required=True)
+    parser.add_argument(
+        "--inference-intervention", choices=INFERENCE_INTERVENTIONS
+    )
     return parser
 
 
@@ -1318,6 +1388,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         run_id=args.run_id,
         pair_id=args.pair_id,
         metric_protocol=args.metric_protocol,
+        inference_intervention=args.inference_intervention,
     )
 
 

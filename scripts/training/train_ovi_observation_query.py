@@ -22,6 +22,15 @@ import numpy as np
 import torch
 from torch import nn
 
+from src.training.ovi_observation_multienv import (
+    EnvironmentBalancedPairSampler,
+    TrainingPairEntry,
+    TrainingPairIdentity,
+    aggregate_pair_binding_sha256,
+    build_training_dataset_manifest,
+    collect_training_pair_entries,
+)
+
 
 class ObservationTrainingRunError(ValueError):
     """Raised when a training request violates its fixed experiment contract."""
@@ -32,6 +41,18 @@ class TrainingMethodContract:
     observation_mode: str
     uses_region_supervision: bool
     uses_consistency: bool
+
+
+@dataclass(frozen=True, slots=True)
+class _LoadedTrainingPair:
+    entry: TrainingPairEntry
+    model_input: object
+    observations: object
+    sample: object
+    cache: object
+    cache_root: Path
+    cache_generated: bool
+    point2segment: list[torch.Tensor]
 
 
 _TRAINING_METHOD_CONTRACTS = {
@@ -320,6 +341,47 @@ def perform_accumulated_update(
     }
 
 
+def perform_environment_balanced_update(
+    *,
+    model: nn.Module,
+    criterion: nn.Module,
+    optimizer: torch.optim.Optimizer,
+    sampler: EnvironmentBalancedPairSampler,
+    pair_payloads: Mapping[str, object],
+    loss_for_pair: Callable[[object, int], tuple[torch.Tensor, object]],
+    optimizer_update: int,
+    gradient_accumulation: int,
+    gradient_clip_norm: float,
+) -> tuple[dict[str, float | bool], tuple[str, ...], tuple[object, ...]]:
+    """Run one update while binding every micro-step to one sampled pair."""
+
+    if type(optimizer_update) is not int or optimizer_update < 0:
+        raise ObservationTrainingRunError("optimizer_update must be nonnegative")
+    pair_ids: list[str] = []
+    results: list[object] = []
+
+    def loss_factory(_micro_step: int) -> torch.Tensor:
+        pair_id = sampler.next_pair_id()
+        if pair_id not in pair_payloads:
+            raise ObservationTrainingRunError(
+                f"sampled TRAIN pair payload is unavailable: {pair_id}"
+            )
+        loss, result = loss_for_pair(pair_payloads[pair_id], optimizer_update)
+        pair_ids.append(pair_id)
+        results.append(result)
+        return loss
+
+    stats = perform_accumulated_update(
+        model=model,
+        criterion=criterion,
+        optimizer=optimizer,
+        loss_factory=loss_factory,
+        gradient_accumulation=gradient_accumulation,
+        gradient_clip_norm=gradient_clip_norm,
+    )
+    return stats, tuple(pair_ids), tuple(results)
+
+
 def _build_native_model(
     *, runtime: Mapping[str, object], device: torch.device
 ) -> tuple[nn.Module, Path, Path, str]:
@@ -581,7 +643,7 @@ def _same_resume_contract(current: object, previous: object) -> bool:
                 for key in ("sha256", "byte_count")
                 if key in record
             }
-            for name in ("model", "losses", "training_state")
+            for name in ("model", "losses", "training_state", "multienv_training")
             if isinstance((record := bindings.get(name)), Mapping)
         }
         dataset = values.get("training_dataset_manifest")
@@ -674,7 +736,13 @@ def _validated_resume_state_path(resume_root: Path) -> Path:
     snapshot_path = resume_root / "snapshot.json"
     if summary_path.is_file() and not summary_path.is_symlink():
         _, evidence = _load_json(summary_path, "resume summary")
-        if evidence.get("artifact_id") != "OVI_RESCENE_OBSERVATION_TRAINING_RUN_V1":
+        if (
+            evidence.get("schema_version"),
+            evidence.get("artifact_id"),
+        ) not in {
+            (1, "OVI_RESCENE_OBSERVATION_TRAINING_RUN_V1"),
+            (3, "OVI_RESCENE_OBSERVATION_TRAINING_RUN_V3"),
+        }:
             raise ObservationTrainingRunError("resume summary identity mismatch")
     elif snapshot_path.is_file() and not snapshot_path.is_symlink():
         _, evidence = _load_json(snapshot_path, "periodic snapshot")
@@ -702,7 +770,7 @@ def _execute_training(
     runtime: Mapping[str, object],
     split_path: Path,
     split: Mapping[str, object],
-    pair_runtime: Mapping[str, object],
+    entries: Sequence[TrainingPairEntry],
     method: str,
     run_id: str,
     stage: str,
@@ -721,9 +789,8 @@ def _execute_training(
         sys.executable, expected_python
     ):
         raise ObservationTrainingRunError("training must use the frozen model Python")
-    artifact_root = _regular_directory(
-        str(pair_runtime["artifact_root"]), "TRAIN artifact root"
-    )
+    if not entries:
+        raise ObservationTrainingRunError("TRAIN pair collection is empty")
     training = config.get("training")
     loss_config = config.get("loss")
     model_config = config.get("model")
@@ -748,6 +815,7 @@ def _execute_training(
         training.get("gradient_clip_norm"), "gradient_clip_norm"
     )
     seed = _positive_integer(training.get("seed"), "seed")
+    data_seed = _positive_integer(training.get("data_seed", seed), "data_seed")
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -778,22 +846,49 @@ def _execute_training(
     )
     from src.training.ovi_observation_data import load_observation_training_sample
 
-    model_input, _points, _center, _bundle = load_model_observation_bundle(
-        artifact_root / "model_bundle"
-    )
-    observations = load_observation_bank(artifact_root / "observation_bank" / "bank")
-    sample = load_observation_training_sample(
-        artifact_root / "training_targets",
-        model_input=model_input,
-        observations=observations,
+    prepared: list[tuple[TrainingPairEntry, object, object, object]] = []
+    for entry in entries:
+        artifact_root = _regular_directory(
+            entry.artifact_root, f"TRAIN artifact root for {entry.pair_id}"
+        )
+        model_input, _points, _center, _bundle = load_model_observation_bundle(
+            artifact_root / "model_bundle"
+        )
+        observations = load_observation_bank(
+            artifact_root / "observation_bank" / "bank"
+        )
+        sample = load_observation_training_sample(
+            artifact_root / "training_targets",
+            model_input=model_input,
+            observations=observations,
+        )
+        if observations.pair_id != entry.pair_id:
+            raise ObservationTrainingRunError(
+                f"TRAIN artifact pair identity mismatch: {entry.pair_id}"
+            )
+        prepared.append((entry, model_input, observations, sample))
+    feature_schema = {
+        (
+            int(value[2].region_features.shape[1]),
+            int(value[2].region_metadata.shape[1]),
+            int(value[1].features.shape[1]),
+        )
+        for value in prepared
+    }
+    if len(feature_schema) != 1:
+        raise ObservationTrainingRunError(
+            "TRAIN pairs use incompatible observation or model feature schemas"
+        )
+    observation_feature_dim, observation_metadata_dim, model_input_feature_dim = next(
+        iter(feature_schema)
     )
     native, base_checkpoint, _concerto, rescene_commit = _build_native_model(
         runtime=runtime, device=device
     )
     model = ObservationReScene(
         native,
-        observation_feature_dim=int(observations.region_features.shape[1]),
-        metadata_dim=int(observations.region_metadata.shape[1]),
+        observation_feature_dim=observation_feature_dim,
+        metadata_dim=observation_metadata_dim,
         alpha_initial=float(model_config.get("alpha_initial", 0.001)),
         beta_initial=float(model_config.get("beta_initial", 0.0)),
         fuse_initial=float(model_config.get("fuse_initial", 0.001)),
@@ -815,34 +910,67 @@ def _execute_training(
         ),
         weight_decay=_positive_number(training.get("weight_decay"), "weight_decay"),
     )
-    identity = BackboneCacheIdentity(
-        pair_id=observations.pair_id,
-        base_checkpoint_sha256=_file_record(base_checkpoint)["sha256"],
-        model_input_sha256=model_input.content_sha256(),
-        serialization_id=str(
-            model_config.get(
-                "backbone_serialization", "mixed_standard_temporal_overlay"
-            )
-        ),
-        visit_order=tuple(
-            int(value) for value in sorted(set(model_input.model_visit_ids.tolist()))
-        ),
-    )
-    cache_root = artifact_root / "frozen_backbone_cache"
-    if cache_root.exists():
-        cache = load_backbone_cache(cache_root, expected_identity=identity)
-        cache_generated = False
-    else:
-        point, point2segment = _build_point(model_input, device)
-        with torch.no_grad():
-            pcd, auxiliary, coordinates = model.native.backbone(point)
-        cache = capture_backbone_cache(
-            FrozenReSceneFeatures(pcd, auxiliary, coordinates), identity
+    base_checkpoint_sha256 = str(_file_record(base_checkpoint)["sha256"])
+    loaded_pairs: list[_LoadedTrainingPair] = []
+    pair_identities: list[TrainingPairIdentity] = []
+    for entry, model_input, observations, sample in prepared:
+        identity = BackboneCacheIdentity(
+            pair_id=entry.pair_id,
+            base_checkpoint_sha256=base_checkpoint_sha256,
+            model_input_sha256=model_input.content_sha256(),
+            serialization_id=str(
+                model_config.get(
+                    "backbone_serialization", "mixed_standard_temporal_overlay"
+                )
+            ),
+            visit_order=tuple(
+                int(value)
+                for value in sorted(set(model_input.model_visit_ids.tolist()))
+            ),
         )
-        save_backbone_cache(cache, cache_root)
-        cache_generated = True
-    _point, point2segment = _build_point(model_input, device)
-    del _point
+        cache_root = entry.artifact_root / "frozen_backbone_cache"
+        if cache_root.exists():
+            cache = load_backbone_cache(cache_root, expected_identity=identity)
+            cache_generated = False
+            point, point2segment = _build_point(model_input, device)
+        else:
+            point, point2segment = _build_point(model_input, device)
+            with torch.no_grad():
+                pcd, auxiliary, coordinates = model.native.backbone(point)
+            cache = capture_backbone_cache(
+                FrozenReSceneFeatures(pcd, auxiliary, coordinates), identity
+            )
+            save_backbone_cache(cache, cache_root)
+            cache_generated = True
+        del point
+        loaded_pairs.append(
+            _LoadedTrainingPair(
+                entry=entry,
+                model_input=model_input,
+                observations=observations,
+                sample=sample,
+                cache=cache,
+                cache_root=cache_root,
+                cache_generated=cache_generated,
+                point2segment=point2segment,
+            )
+        )
+        pair_identities.append(
+            TrainingPairIdentity(
+                environment_id=entry.environment_id,
+                pair_id=entry.pair_id,
+                model_input_sha256=model_input.content_sha256(),
+                observation_sha256=observations.content_sha256(),
+                training_target_sha256=sample.content_sha256(),
+                backbone_cache_sha256=cache.content_sha256,
+            )
+        )
+    pair_payloads = {value.entry.pair_id: value for value in loaded_pairs}
+    dataset_manifest = build_training_dataset_manifest(
+        pair_identities,
+        data_seed=data_seed,
+        gradient_accumulation=accumulation,
+    )
     source_commit = subprocess.run(
         ["git", "rev-parse", "HEAD"],
         cwd=Path(__file__).resolve().parents[2],
@@ -867,6 +995,10 @@ def _execute_training(
         / "oviv2"
         / "observation_query"
         / "training.py",
+        "multienv_training": Path(__file__).resolve().parents[2]
+        / "src"
+        / "training"
+        / "ovi_observation_multienv.py",
         "config": config_path,
         "runtime": runtime_path,
         "split": split_path,
@@ -879,38 +1011,31 @@ def _execute_training(
     )
     initial_metadata = ObservationCheckpointMetadata(
         model_variant=method,
-        base_checkpoint_sha256=identity.base_checkpoint_sha256,
+        base_checkpoint_sha256=base_checkpoint_sha256,
         source_commit=source_commit,
         resolved_config=resolved,
         split_id=str(split.get("artifact_id", "splits_v1")),
-        observation_sha256=observations.content_sha256(),
-        backbone_cache_sha256=cache.content_sha256,
+        observation_sha256=aggregate_pair_binding_sha256(
+            pair_identities, "observation_sha256"
+        ),
+        backbone_cache_sha256=aggregate_pair_binding_sha256(
+            pair_identities, "backbone_cache_sha256"
+        ),
         seed=seed,
         optimizer_updates=0,
-        training_dataset_manifest={
-            "schema_version": 2,
-            "artifact_id": "OVI_OBSERVATION_TRAINING_DATASET_V2",
-            "environment_ids": [
-                str(_select_train_pair(split, observations.pair_id)["environment_uuid"])
-            ],
-            "pairs": [
-                {
-                    "pair_id": observations.pair_id,
-                    "model_input_sha256": model_input.content_sha256(),
-                    "observation_sha256": observations.content_sha256(),
-                    "training_target_sha256": sample.content_sha256(),
-                    "backbone_cache_sha256": cache.content_sha256,
-                }
-            ],
-        },
+        training_dataset_manifest=dataset_manifest,
         model_architecture_version="OVI_OBSERVATION_QUERY_V1",
         input_feature_schema={
-            "observation_feature_dim": int(observations.region_features.shape[1]),
-            "observation_metadata_dim": int(observations.region_metadata.shape[1]),
-            "model_input_feature_dim": int(model_input.features.shape[1]),
+            "observation_feature_dim": observation_feature_dim,
+            "observation_metadata_dim": observation_metadata_dim,
+            "model_input_feature_dim": model_input_feature_dim,
         },
     )
     start_update = 0
+    sampler = EnvironmentBalancedPairSampler(
+        pair_ids=tuple(value.entry.pair_id for value in loaded_pairs),
+        seed=data_seed,
+    )
     if resume is not None:
         resume_root = _regular_directory(resume, "resume run")
         previous_metadata = _metadata_from_manifest(
@@ -930,12 +1055,12 @@ def _execute_training(
             raise ObservationTrainingRunError("resume optimizer state is invalid")
         optimizer.load_state_dict(state["optimizer"])
         start_update = previous_metadata.optimizer_updates
-        sampler_state = _restore_training_random_state(state, device)
+        sampler.load_state_dict(_restore_training_random_state(state, device))
     else:
-        sampler_state = {
-            "pair_order": [observations.pair_id],
-            "next_pair_index": 0,
-        }
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
     target_updates = (
         configured_target
         if target_total_updates is None
@@ -957,13 +1082,17 @@ def _execute_training(
     _write_json_atomic(
         status_path,
         {
-            "schema_version": 2,
-            "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_RUN_STATUS_V2",
+            "schema_version": 3,
+            "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_RUN_STATUS_V3",
             "status": "RUNNING",
             "run_id": run_id,
             "method": method,
             "stage": stage,
-            "pair_id": observations.pair_id,
+            "pair_id": (
+                loaded_pairs[0].entry.pair_id if len(loaded_pairs) == 1 else None
+            ),
+            "pair_ids": [value.entry.pair_id for value in loaded_pairs],
+            "environment_ids": [value.entry.environment_id for value in loaded_pairs],
             "start_optimizer_updates": start_update,
             "target_total_updates": target_updates,
             "resume": resume,
@@ -992,10 +1121,8 @@ def _execute_training(
                 "numpy_random_state": np.random.get_state(),
                 "torch_random_state": torch.get_rng_state(),
                 "cuda_random_state": torch.cuda.get_rng_state(device),
-                "sampler_state": {
-                    **sampler_state,
-                    "completed_updates": total_updates,
-                },
+                "sampler_state": sampler.state_dict(),
+                "completed_optimizer_updates": total_updates,
             },
             training_state,
         )
@@ -1029,46 +1156,70 @@ def _execute_training(
     started = time.perf_counter()
     for local_update in range(update_count):
         update = start_update + local_update
-        latest: list[object] = []
 
-        def loss_factory(
-            _micro_step: int,
-            current_update: int = update,
-            sink: list[object] = latest,
-        ) -> torch.Tensor:
+        def loss_for_pair(payload: object, current_update: int):
+            if not isinstance(payload, _LoadedTrainingPair):
+                raise ObservationTrainingRunError("TRAIN pair payload is invalid")
             frozen = materialize_backbone_cache(
-                cache, model.native.backbone, device=device
+                payload.cache, model.native.backbone, device=device
             )
             outputs = model.forward_from_backbone(
                 frozen,
-                point2segment=point2segment,
+                point2segment=payload.point2segment,
                 is_eval=False,
-                observations=observations if contract.uses_region_supervision else None,
+                observations=(
+                    payload.observations if contract.uses_region_supervision else None
+                ),
                 observation_mode=contract.observation_mode,
             )
-            result = criterion(outputs, sample, optimizer_update=current_update)
-            sink[:] = [result]
-            return result.total
+            result = criterion(outputs, payload.sample, optimizer_update=current_update)
+            return result.total, result
 
-        update_stats = perform_accumulated_update(
+        update_stats, micro_pair_ids, micro_results = perform_environment_balanced_update(
             model=model,
             criterion=criterion,
             optimizer=optimizer,
-            loss_factory=loss_factory,
+            sampler=sampler,
+            pair_payloads=pair_payloads,
+            loss_for_pair=loss_for_pair,
+            optimizer_update=update,
             gradient_accumulation=accumulation,
             gradient_clip_norm=clip_norm,
         )
-        result = latest[0]
+        results = list(micro_results)
+
+        def mean_component(name: str) -> float:
+            return sum(
+                float(result.components[name].detach().cpu()) for result in results
+            ) / len(results)
+
+        sampler_state = sampler.state_dict()
+        exposed = [pair_payloads[pair_id] for pair_id in micro_pair_ids]
         curve.append(
             row := {
                 "optimizer_update": update + 1,
-                "total": float(result.total.detach().cpu()),
-                "loss_ce": float(result.components["loss_ce"].detach().cpu()),
-                "loss_mask": float(result.components["loss_mask"].detach().cpu()),
-                "loss_dice": float(result.components["loss_dice"].detach().cpu()),
-                "loss_region": float(result.components["loss_region"].detach().cpu()),
-                "loss_consistency": float(
-                    result.components["loss_consistency"].detach().cpu()
+                "total": sum(
+                    float(result.total.detach().cpu()) for result in results
+                )
+                / len(results),
+                "loss_ce": mean_component("loss_ce"),
+                "loss_mask": mean_component("loss_mask"),
+                "loss_dice": mean_component("loss_dice"),
+                "loss_region": mean_component("loss_region"),
+                "loss_consistency": mean_component("loss_consistency"),
+                "micro_step_pair_ids": "|".join(micro_pair_ids),
+                "pair_exposure_counts": json.dumps(
+                    sampler_state["exposure_counts"], sort_keys=True
+                ),
+                "effective_instance_targets": sum(
+                    len(value.sample.temporal_identity_keys) for value in exposed
+                ),
+                "effective_valid_model_rows": sum(
+                    int(value.sample.label_valid.sum().item()) for value in exposed
+                ),
+                "effective_valid_regions": sum(
+                    int(value.sample.region_label_valid.sum().item())
+                    for value in exposed
                 ),
                 **update_stats,
             }
@@ -1111,21 +1262,47 @@ def _execute_training(
 
         model.eval()
         criterion.eval()
-        with torch.no_grad():
-            saved_output = model.forward_from_backbone(
-                materialize_backbone_cache(cache, model.native.backbone, device=device),
-                point2segment=point2segment,
-                is_eval=True,
-                observations=observations if contract.uses_region_supervision else None,
-                observation_mode=contract.observation_mode,
-            )
+
+        def capture_replay_outputs(
+            current_model: nn.Module,
+        ) -> dict[str, dict[str, torch.Tensor]]:
+            captured: dict[str, dict[str, torch.Tensor]] = {}
+            with torch.no_grad():
+                for payload in loaded_pairs:
+                    output = current_model.forward_from_backbone(
+                        materialize_backbone_cache(
+                            payload.cache,
+                            current_model.native.backbone,
+                            device=device,
+                        ),
+                        point2segment=payload.point2segment,
+                        is_eval=True,
+                        observations=(
+                            payload.observations
+                            if contract.uses_region_supervision
+                            else None
+                        ),
+                        observation_mode=contract.observation_mode,
+                    )
+                    tensors = {
+                        "pred_masks": output["pred_masks"][0].detach().cpu(),
+                        "pred_logits": output["pred_logits"].detach().cpu(),
+                    }
+                    if contract.uses_region_supervision:
+                        tensors["pred_region_logits"] = (
+                            output["pred_region_logits"].detach().cpu()
+                        )
+                    captured[payload.entry.pair_id] = tensors
+            return captured
+
+        saved_outputs = capture_replay_outputs(model)
         reloaded_native, _base, _concerto, _commit = _build_native_model(
             runtime=runtime, device=device
         )
         reloaded_model = ObservationReScene(
             reloaded_native,
-            observation_feature_dim=int(observations.region_features.shape[1]),
-            metadata_dim=int(observations.region_metadata.shape[1]),
+            observation_feature_dim=observation_feature_dim,
+            metadata_dim=observation_metadata_dim,
             alpha_initial=float(model_config.get("alpha_initial", 0.001)),
             beta_initial=float(model_config.get("beta_initial", 0.0)),
             fuse_initial=float(model_config.get("fuse_initial", 0.001)),
@@ -1144,53 +1321,18 @@ def _execute_training(
             expected_metadata=final_metadata,
         )
         reloaded_model.eval()
-        with torch.no_grad():
-            reloaded_output = reloaded_model.forward_from_backbone(
-                materialize_backbone_cache(
-                    cache, reloaded_model.native.backbone, device=device
-                ),
-                point2segment=point2segment,
-                is_eval=True,
-                observations=observations if contract.uses_region_supervision else None,
-                observation_mode=contract.observation_mode,
-            )
-        replay_differences = {
-            "pred_masks": float(
-                (saved_output["pred_masks"][0] - reloaded_output["pred_masks"][0])
-                .abs()
-                .max()
-                .detach()
-                .cpu()
-            ),
-            "pred_logits": float(
-                (saved_output["pred_logits"] - reloaded_output["pred_logits"])
-                .abs()
-                .max()
-                .detach()
-                .cpu()
-            ),
-        }
-        replay_pairs = [
-            (saved_output["pred_masks"][0], reloaded_output["pred_masks"][0]),
-            (saved_output["pred_logits"], reloaded_output["pred_logits"]),
-        ]
-        if contract.uses_region_supervision:
-            replay_differences["pred_region_logits"] = float(
-                (
-                    saved_output["pred_region_logits"]
-                    - reloaded_output["pred_region_logits"]
+        reloaded_outputs = capture_replay_outputs(reloaded_model)
+        replay_differences: dict[str, dict[str, float]] = {}
+        replay_pairs: list[tuple[torch.Tensor, torch.Tensor]] = []
+        for pair_id, saved_output in saved_outputs.items():
+            reloaded_output = reloaded_outputs[pair_id]
+            replay_differences[pair_id] = {}
+            for name, left in saved_output.items():
+                right = reloaded_output[name]
+                replay_differences[pair_id][name] = float(
+                    (left - right).abs().max().cpu()
                 )
-                .abs()
-                .max()
-                .detach()
-                .cpu()
-            )
-            replay_pairs.append(
-                (
-                    saved_output["pred_region_logits"],
-                    reloaded_output["pred_region_logits"],
-                )
-            )
+                replay_pairs.append((left, right))
         replay_rtol = 1e-5
         replay_atol = 1e-6
         if not all(
@@ -1199,27 +1341,37 @@ def _execute_training(
         ):
             raise ObservationTrainingRunError("checkpoint reload changed model outputs")
         summary = {
-            "schema_version": 1,
-            "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_RUN_V1",
+            "schema_version": 3,
+            "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_RUN_V3",
             "status": "REAL_TRAIN_SMOKE_PASS" if stage == "smoke" else "TRAIN_RUN_PASS",
             "run_id": run_id,
-            "pair_id": observations.pair_id,
+            "pair_id": (
+                loaded_pairs[0].entry.pair_id if len(loaded_pairs) == 1 else None
+            ),
+            "pair_ids": [value.entry.pair_id for value in loaded_pairs],
+            "environment_ids": [value.entry.environment_id for value in loaded_pairs],
             "role": "TRAIN",
             "method": method,
             "stage": stage,
             "optimizer_updates": target_updates,
             "new_optimizer_updates": update_count,
             "gradient_accumulation": accumulation,
+            "data_seed": data_seed,
+            "sampler_state": sampler.state_dict(),
             "first_total_loss": curve[0]["total"],
             "final_total_loss": curve[-1]["total"],
             "first_mask_loss": curve[0]["loss_mask"],
             "final_mask_loss": curve[-1]["loss_mask"],
             "optimizer_parameter_names": optimizer_names,
-            "backbone_cache": {
-                "path": str(cache_root),
-                "content_sha256": cache.content_sha256,
-                "generated_by_this_run": cache_generated,
-            },
+            "backbone_caches": [
+                {
+                    "pair_id": value.entry.pair_id,
+                    "path": str(value.cache_root),
+                    "content_sha256": value.cache.content_sha256,
+                    "generated_by_this_run": value.cache_generated,
+                }
+                for value in loaded_pairs
+            ],
             "checkpoint": {
                 "manifest": _artifact_record(
                     checkpoint_paths.manifest, "checkpoint/manifest.json"
@@ -1246,13 +1398,19 @@ def _execute_training(
         _write_json_atomic(
             status_path,
             {
-                "schema_version": 2,
-                "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_RUN_STATUS_V2",
+                "schema_version": 3,
+                "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_RUN_STATUS_V3",
                 "status": "PASS",
                 "run_id": run_id,
                 "method": method,
                 "stage": stage,
-                "pair_id": observations.pair_id,
+                "pair_id": (
+                    loaded_pairs[0].entry.pair_id if len(loaded_pairs) == 1 else None
+                ),
+                "pair_ids": [value.entry.pair_id for value in loaded_pairs],
+                "environment_ids": [
+                    value.entry.environment_id for value in loaded_pairs
+                ],
                 "optimizer_updates": target_updates,
             },
         )
@@ -1260,12 +1418,13 @@ def _execute_training(
         _write_json_atomic(
             status_path,
             {
-                "schema_version": 2,
-                "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_RUN_STATUS_V2",
+                "schema_version": 3,
+                "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_RUN_STATUS_V3",
                 "status": "FAILED",
                 "run_id": run_id,
                 "method": method,
                 "stage": stage,
+                "pair_ids": [value.entry.pair_id for value in loaded_pairs],
                 "optimizer_updates": target_updates,
                 "error_type": type(error).__name__,
                 "error": str(error),
@@ -1320,35 +1479,40 @@ def _asset_gate(
     config_path: Path,
     runtime_path: Path,
     split_path: Path,
-    pair: Mapping[str, object],
-    pair_runtime: Mapping[str, object],
+    entries: Sequence[TrainingPairEntry],
     run_id: str,
     method: str,
     stage: str,
     output_root: Path,
 ) -> int | None:
-    artifact_root_value = pair_runtime.get("artifact_root")
-    if not isinstance(artifact_root_value, str) or not artifact_root_value:
-        raise ObservationTrainingRunError("TRAIN artifact_root is missing")
-    artifact_root = Path(artifact_root_value).absolute()
-    required = {
-        "model_bundle_manifest": artifact_root / "model_bundle" / "manifest.json",
-        "observation_bank_manifest": artifact_root
-        / "observation_bank"
-        / "bank"
-        / "manifest.json",
-        "training_target_manifest": artifact_root
-        / "training_targets"
-        / "manifest.json",
-    }
-    missing_artifacts = {
-        name: str(path)
-        for name, path in required.items()
-        if path.is_symlink() or not path.is_file()
-    }
-    missing_zips = _missing_sequence_zips(pair)
-    if not missing_artifacts and not missing_zips:
+    if not entries:
+        raise ObservationTrainingRunError("TRAIN pair collection is empty")
+    missing_artifacts: dict[str, str] = {}
+    missing_zips: list[str] = []
+    for entry in entries:
+        required = {
+            "model_bundle_manifest": entry.artifact_root
+            / "model_bundle"
+            / "manifest.json",
+            "observation_bank_manifest": entry.artifact_root
+            / "observation_bank"
+            / "bank"
+            / "manifest.json",
+            "training_target_manifest": entry.artifact_root
+            / "training_targets"
+            / "manifest.json",
+        }
+        missing_artifacts.update(
+            {
+                f"{entry.pair_id}:{name}": str(path)
+                for name, path in required.items()
+                if path.is_symlink() or not path.is_file()
+            }
+        )
+        missing_zips.extend(_missing_sequence_zips(entry.split_record))
+    if not missing_artifacts:
         return None
+    pair_ids = [entry.pair_id for entry in entries]
     status = {
         "schema_version": 1,
         "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_RUN_STATUS_V1",
@@ -1356,7 +1520,9 @@ def _asset_gate(
         "run_id": run_id,
         "method": method,
         "stage": stage,
-        "pair_id": pair.get("pair_id"),
+        "pair_id": pair_ids[0] if len(pair_ids) == 1 else None,
+        "pair_ids": pair_ids,
+        "environment_ids": [entry.environment_id for entry in entries],
         "role": "TRAIN",
         "missing_train_sequence_zip_count": len(missing_zips),
         "missing_train_sequence_zips": missing_zips,
@@ -1369,8 +1535,9 @@ def _asset_gate(
             "split": _file_record(split_path),
         },
         "required_action": (
-            "Materialize the declared official TRAIN RGB-D assets only after explicit "
-            "3RScan Terms-of-Use confirmation, then build the TRAIN observation artifacts."
+            "Build the declared TRAIN model bundle, ObservationBank, and training "
+            "targets. Historical source archives are diagnostic once those derived "
+            "dependencies are complete."
         ),
     }
     _write_atomic_directory(output_root, "status.json", status)
@@ -1391,8 +1558,87 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--resume")
     parser.add_argument("--target-total-updates", type=int)
-    parser.add_argument("--train-pair-id")
+    pair_group = parser.add_mutually_exclusive_group()
+    pair_group.add_argument("--train-pair-id")
+    pair_group.add_argument("--train-pair-ids", nargs="+")
     return parser
+
+
+def _requested_train_pair_ids(
+    args: argparse.Namespace, runtime: Mapping[str, object]
+) -> tuple[str, ...]:
+    if args.train_pair_ids is not None:
+        values = tuple(args.train_pair_ids)
+    elif args.train_pair_id is not None:
+        values = (args.train_pair_id,)
+    else:
+        runtime_pairs = runtime.get("pairs")
+        values = (
+            tuple(
+                str(value["pair_id"])
+                for key, value in runtime_pairs.items()
+                if isinstance(key, str)
+                and isinstance(value, Mapping)
+                and value.get("role", key.upper()) == "TRAIN"
+                and isinstance(value.get("pair_id"), str)
+            )
+            if isinstance(runtime_pairs, Mapping)
+            else ()
+        )
+        if len(values) != 1:
+            raise ObservationTrainingRunError(
+                "TRAIN pair selection is ambiguous; pass --train-pair-ids"
+            )
+    if not values or len(values) != len(set(values)):
+        raise ObservationTrainingRunError("TRAIN pair IDs must be non-empty and unique")
+    return values
+
+
+def _write_outer_failure_status(
+    *,
+    output_root: Path,
+    run_id: str,
+    method: str,
+    stage: str,
+    pair_ids: Sequence[str],
+    environment_ids: Sequence[str],
+    error: BaseException,
+) -> None:
+    """Publish a V3 failure unless the training loop already wrote richer evidence."""
+
+    status_path = output_root / "status.json"
+    expected_pair_ids = list(pair_ids)
+    try:
+        _, existing = _load_json(status_path, "training failure status")
+    except ObservationTrainingRunError:
+        existing = {}
+    if (
+        existing.get("schema_version") == 3
+        and existing.get("artifact_id")
+        == "OVI_RESCENE_OBSERVATION_TRAINING_RUN_STATUS_V3"
+        and existing.get("status") == "FAILED"
+        and existing.get("run_id") == run_id
+        and existing.get("method") == method
+        and existing.get("stage") == stage
+        and existing.get("pair_ids") == expected_pair_ids
+    ):
+        return
+    _write_json_atomic(
+        status_path,
+        {
+            "schema_version": 3,
+            "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_RUN_STATUS_V3",
+            "status": "FAILED",
+            "run_id": run_id,
+            "method": method,
+            "stage": stage,
+            "pair_id": expected_pair_ids[0] if len(expected_pair_ids) == 1 else None,
+            "pair_ids": expected_pair_ids,
+            "environment_ids": list(environment_ids),
+            "error_type": type(error).__name__,
+            "error": str(error),
+        },
+    )
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -1411,28 +1657,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not isinstance(split_value, str) or not split_value:
         raise ObservationTrainingRunError("split_manifest is missing")
     split_path, split = _load_json(split_value, "split manifest")
-    runtime_pairs = runtime.get("pairs")
-    pair_runtime = None
-    if isinstance(runtime_pairs, Mapping):
-        matches = [
-            value
-            for key, value in runtime_pairs.items()
-            if isinstance(key, str)
-            and isinstance(value, Mapping)
-            and value.get("role", key.upper()) == "TRAIN"
-            and (
-                args.train_pair_id is None
-                or value.get("pair_id") == args.train_pair_id
-            )
-        ]
-        if len(matches) == 1:
-            pair_runtime = matches[0]
-    if not isinstance(pair_runtime, Mapping) or not isinstance(
-        pair_runtime.get("pair_id"), str
-    ):
-        raise ObservationTrainingRunError("runtime TRAIN pair is invalid")
-    pair_id = str(pair_runtime["pair_id"])
-    pair = _select_train_pair(split, pair_id)
+    requested_pair_ids = _requested_train_pair_ids(args, runtime)
+    entries = collect_training_pair_entries(
+        split=split,
+        runtime=runtime,
+        requested_pair_ids=requested_pair_ids,
+    )
     cache_root = runtime.get("cache_root")
     if not isinstance(cache_root, str) or not cache_root:
         raise ObservationTrainingRunError("runtime cache_root is invalid")
@@ -1441,8 +1671,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         config_path=config_path,
         runtime_path=runtime_path,
         split_path=split_path,
-        pair=pair,
-        pair_runtime=pair_runtime,
+        entries=entries,
         run_id=args.run_id,
         method=args.method,
         stage=args.stage,
@@ -1458,7 +1687,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             runtime=runtime,
             split_path=split_path,
             split=split,
-            pair_runtime=pair_runtime,
+            entries=entries,
             method=args.method,
             run_id=args.run_id,
             stage=args.stage,
@@ -1468,18 +1697,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     except BaseException as error:
         if output_root.is_dir():
-            _write_json_atomic(
-                output_root / "status.json",
-                {
-                    "schema_version": 2,
-                    "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_RUN_STATUS_V2",
-                    "status": "FAILED",
-                    "run_id": args.run_id,
-                    "method": args.method,
-                    "stage": args.stage,
-                    "error_type": type(error).__name__,
-                    "error": str(error),
-                },
+            _write_outer_failure_status(
+                output_root=output_root,
+                run_id=args.run_id,
+                method=args.method,
+                stage=args.stage,
+                pair_ids=tuple(entry.pair_id for entry in entries),
+                environment_ids=tuple(entry.environment_id for entry in entries),
+                error=error,
             )
         raise
 

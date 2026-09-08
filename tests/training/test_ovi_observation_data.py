@@ -147,6 +147,9 @@ def _sample():
             ambiguous_instance_ids_by_visit=(frozenset({20}), frozenset({88})),
             removed_reference_ids=frozenset(),
             source_sha256="3" * 64,
+            unrepresented_official_identities=(
+                ("nonrigid", 48, 48, False, True),
+            ),
         ),
         raw_semantic_to_model_class={3: 0, 8: 5},
         config=LabelTransferConfig(
@@ -192,6 +195,15 @@ def test_pair_sample_keeps_visits_unknowns_and_ambiguity_separate() -> None:
         "visit:0:instance:20": 20,
         "visit:1:instance:88": 88,
     }
+    assert sample.ambiguity_metadata["unrepresented_official_identities"] == [
+        {
+            "change_kind": "nonrigid",
+            "reference_instance_id": 48,
+            "rescan_instance_id": 48,
+            "reference_present": False,
+            "rescan_present": True,
+        }
+    ]
 
 
 def test_region_targets_are_soft_and_use_only_trusted_m_support() -> None:
@@ -332,6 +344,43 @@ def test_environment_split_loader_rejects_cross_role_leakage(tmp_path) -> None:
         load_split_pair(path, pair_id="pair-a", required_role="TRAIN")
 
 
+@pytest.mark.parametrize(
+    ("schema_version", "artifact_id"),
+    [
+        (2, "OVI_RESCENE_OBSERVATION_QUERY_SPLITS_TRAINING_V2"),
+        (3, "OVI_RESCENE_OBSERVATION_QUERY_SPLITS_MULTIENV_V3"),
+    ],
+)
+def test_environment_split_loader_accepts_published_v2_and_multienv_v3(
+    tmp_path, schema_version: int, artifact_id: str
+) -> None:
+    path = tmp_path / "splits.json"
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": schema_version,
+                "artifact_id": artifact_id,
+                "environments": [
+                    {
+                        "role": "TRAIN",
+                        "environment_uuid": "env-a",
+                        "pair_id": "pair-a",
+                        "sessions": [
+                            {"scan_uuid": "scan-a"},
+                            {"scan_uuid": "scan-b"},
+                        ],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    selected = load_split_pair(path, pair_id="pair-a", required_role="TRAIN")
+
+    assert selected["environment_uuid"] == "env-a"
+
+
 def test_pair_and_model_identity_must_match() -> None:
     model_input = _model_input()
     bank = _observation_bank(model_input)
@@ -417,6 +466,44 @@ def test_official_pair_metadata_expands_verified_unchanged_ids(tmp_path) -> None
     np.testing.assert_array_equal(metadata.rescan_to_reference_row, transform)
     assert metadata.identity_rules.temporal_key(1, 5) == "reference:5"
     assert metadata.identity_rules.temporal_key(1, 20) == "visit:1:instance:20"
+
+
+def test_official_pair_metadata_excludes_unrepresented_change_identity(tmp_path) -> None:
+    metadata_path = tmp_path / "3RScan.json"
+    metadata_path.write_text(
+        json.dumps(
+            [
+                {
+                    "reference": "reference",
+                    "ambiguity": [],
+                    "scans": [
+                        {
+                            "reference": "rescan",
+                            "transform": np.eye(4).reshape(-1).tolist(),
+                            "rigid": [],
+                            "nonrigid": [48],
+                            "removed": [],
+                        }
+                    ],
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    metadata = load_official_pair_training_metadata(
+        metadata_path,
+        reference_scan_uuid="reference",
+        rescan_uuid="rescan",
+        reference_instance_ids={5},
+        rescan_instance_ids={5, 48},
+    )
+
+    assert metadata.identity_rules.rescan_to_reference == {5: 5}
+    assert metadata.identity_rules.temporal_key(1, 48) == "visit:1:instance:48"
+    assert metadata.identity_rules.unrepresented_official_identities == (
+        ("nonrigid", 48, 48, False, True),
+    )
 
 
 def test_native_processed_loader_preserves_preprocessor_reference_coordinates(tmp_path) -> None:

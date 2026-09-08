@@ -1,0 +1,673 @@
+{
+  "artifact_id": "OVI_RESCENE_OBSERVATION_QUERY_TRAIN_SELECTION_MULTIENV_V3",
+  "pairs": [
+    {
+      "common_method_inputs": {
+        "global_alignment": {
+          "application": "homogeneous_row_vector_right_multiply",
+          "direction": "rescan_row_vector_to_reference",
+          "matrix": [
+            0.7964462041854858,
+            0.6046697497367859,
+            -0.006928033661097288,
+            0.0,
+            -0.6046991944313049,
+            0.796447217464447,
+            -0.0032921808306127787,
+            0.0,
+            0.003527130465954542,
+            0.006811420898884535,
+            0.9999706149101257,
+            0.0,
+            0.09012863039970398,
+            -0.09965667128562927,
+            0.009488997049629688,
+            1.0
+          ],
+          "storage": "row_major_flat_4x4"
+        }
+      },
+      "environment_id": "02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+      "evaluator_only": {
+        "ambiguity": [],
+        "changes": {
+          "nonrigid_reference_ids": [],
+          "removed_reference_ids": [],
+          "rigid_reference_ids": [
+            12,
+            27,
+            30
+          ]
+        },
+        "cross_time_identity_source": "official_3rscan_metadata"
+      },
+      "pair_id": "scene0001_00-scene0001_01",
+      "role": "training_selection",
+      "sequence": {
+        "change_gt_binding": {
+          "byte_count": 80192,
+          "path": "/home/ww/paper5/data/processed/rio/change_gt/train/scene0001_00-scene0001_01.txt",
+          "sha256": "32fb01dc647a28adf19752767267a8d37a0ec8445b217b369265ae0637b8ab71"
+        },
+        "key": "scene0001_00-scene0001_01"
+      },
+      "sessions": [
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 133999,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/train/scene0001_00.txt",
+              "sha256": "50ce63d488361b878908f8652f5ea2ccad7c96908cc26800e2d376cd8341f230"
+            },
+            "points": {
+              "byte_count": 1200608,
+              "path": "/home/ww/paper5/data/processed/rio/train/0001_00.npy",
+              "sha256": "fc9f7c95c9e9e4e912e4b93ae19569b4f37586dc08154552c9ac4d512e8bffa6"
+            }
+          },
+          "scan_id": "02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+          "scene": 1,
+          "sub_scene": 0,
+          "visit_index": 0
+        },
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 82812,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/train/scene0001_01.txt",
+              "sha256": "626b0c109979cac13a2ef5b550e23ad65d0bef05825e7a389104bb3ead50c28b"
+            },
+            "points": {
+              "byte_count": 724256,
+              "path": "/home/ww/paper5/data/processed/rio/train/0001_01.npy",
+              "sha256": "ae9096abbf39cee6e6330f866bf5c98d65a0aead9daa5072c0ac6fffb94730d5"
+            }
+          },
+          "scan_id": "fcf66d9e-622d-291c-84c2-bb23dfe31327",
+          "scene": 1,
+          "sub_scene": 1,
+          "visit_index": 1
+        }
+      ],
+      "split": "train"
+    },
+    {
+      "common_method_inputs": {
+        "global_alignment": {
+          "application": "homogeneous_row_vector_right_multiply",
+          "direction": "rescan_row_vector_to_reference",
+          "matrix": [
+            -0.16264092922210693,
+            -0.986354410648346,
+            0.025556053966283798,
+            0.0,
+            0.9865973591804504,
+            -0.16291773319244385,
+            -0.00913633406162262,
+            0.0,
+            0.013175196945667267,
+            0.023727595806121826,
+            0.9996316432952881,
+            0.0,
+            0.7506583333015442,
+            0.30953964591026306,
+            -0.2598978579044342,
+            1.0
+          ],
+          "storage": "row_major_flat_4x4"
+        }
+      },
+      "environment_id": "41385851-a238-2435-8056-b7d662a97c93",
+      "evaluator_only": {
+        "ambiguity": [
+          [
+            {
+              "instance_source": 4,
+              "instance_target": 5,
+              "transform": [
+                0.42044731974601746,
+                0.9071585536003113,
+                -0.016954880207777023,
+                0,
+                -0.9072924852371216,
+                0.42022526264190674,
+                -0.015201525762677193,
+                0,
+                -0.006665323860943317,
+                0.021774474531412125,
+                0.9997406601905823,
+                0,
+                1.9749115705490112,
+                0.857722282409668,
+                -0.06999299675226212,
+                1
+              ]
+            },
+            {
+              "instance_source": 5,
+              "instance_target": 4,
+              "transform": [
+                0.3800237774848938,
+                -0.9248464703559875,
+                -0.015519571490585804,
+                0,
+                0.9249714016914368,
+                0.38002467155456543,
+                0.0030068152118474245,
+                0,
+                0.003116977633908391,
+                -0.015497823245823383,
+                0.9998750686645508,
+                0,
+                -1.5778024196624756,
+                1.4918525218963623,
+                0.09131768345832825,
+                1
+              ]
+            }
+          ]
+        ],
+        "changes": {
+          "nonrigid_reference_ids": [
+            12,
+            22
+          ],
+          "removed_reference_ids": [
+            2,
+            4,
+            5,
+            6,
+            13,
+            23,
+            26,
+            36,
+            41
+          ],
+          "rigid_reference_ids": [
+            7,
+            9,
+            10,
+            24
+          ]
+        },
+        "cross_time_identity_source": "official_3rscan_metadata"
+      },
+      "pair_id": "scene0147_00-scene0147_01",
+      "role": "training_selection",
+      "sequence": {
+        "change_gt_binding": {
+          "byte_count": 255932,
+          "path": "/home/ww/paper5/data/processed/rio/change_gt/train/scene0147_00-scene0147_01.txt",
+          "sha256": "54c5ff3d549b5325639bc31737f28b8d6e76ef577145820a15de1a4944deaba4"
+        },
+        "key": "scene0147_00-scene0147_01"
+      },
+      "sessions": [
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 350757,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/train/scene0147_00.txt",
+              "sha256": "5ae3091b98dff7a285e9b220c76e89e4725ff48df2b80eb36f89798237d3c268"
+            },
+            "points": {
+              "byte_count": 3253184,
+              "path": "/home/ww/paper5/data/processed/rio/train/0147_00.npy",
+              "sha256": "5012b4d6349cd33cfa08a4f2908dbb50f359edf60628284dba9eb89c8752435d"
+            }
+          },
+          "scan_id": "41385851-a238-2435-8056-b7d662a97c93",
+          "scene": 147,
+          "sub_scene": 0,
+          "visit_index": 0
+        },
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 316908,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/train/scene0147_01.txt",
+              "sha256": "5c00e403b672b7123aa4122b8c85cf3d927ebf1dae641741ac837fff07c0ae75"
+            },
+            "points": {
+              "byte_count": 2889440,
+              "path": "/home/ww/paper5/data/processed/rio/train/0147_01.npy",
+              "sha256": "748cd5ae46f577acef54356ba701234a1e63f959b2a590aeefe754e68e0aafcf"
+            }
+          },
+          "scan_id": "5341b7c7-8a66-2cdd-86f4-c9dadf37c419",
+          "scene": 147,
+          "sub_scene": 1,
+          "visit_index": 1
+        }
+      ],
+      "split": "train"
+    },
+    {
+      "common_method_inputs": {
+        "global_alignment": {
+          "application": "homogeneous_row_vector_right_multiply",
+          "direction": "rescan_row_vector_to_reference",
+          "matrix": [
+            0.20940731465816498,
+            -0.9777424335479736,
+            0.012970655225217342,
+            0.0,
+            0.9778170585632324,
+            0.20945054292678833,
+            0.0020537045784294605,
+            0.0,
+            -0.004724705126136541,
+            0.01225286815315485,
+            0.9999138116836548,
+            0.0,
+            -0.24818822741508484,
+            0.5493471622467041,
+            0.041482165455818176,
+            1.0
+          ],
+          "storage": "row_major_flat_4x4"
+        }
+      },
+      "environment_id": "0cac7680-8d6f-2d13-8e05-f6da6172d239",
+      "evaluator_only": {
+        "ambiguity": [],
+        "changes": {
+          "nonrigid_reference_ids": [],
+          "removed_reference_ids": [
+            13,
+            20,
+            21,
+            22,
+            28,
+            29,
+            30,
+            33,
+            40
+          ],
+          "rigid_reference_ids": [
+            10,
+            11,
+            14
+          ]
+        },
+        "cross_time_identity_source": "official_3rscan_metadata"
+      },
+      "pair_id": "scene0063_00-scene0063_02",
+      "role": "training_selection",
+      "sequence": {
+        "change_gt_binding": {
+          "byte_count": 99204,
+          "path": "/home/ww/paper5/data/processed/rio/change_gt/train/scene0063_00-scene0063_02.txt",
+          "sha256": "263dc7b477fb428c9e6f27fe9a0d7cbd704b44bb1a8c28e5911451c69b8ea590"
+        },
+        "key": "scene0063_00-scene0063_02"
+      },
+      "sessions": [
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 152191,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/train/scene0063_00.txt",
+              "sha256": "2418a9087e5db23ce4ea139248b996c09a2ad80b138a37854a7971b84e486d91"
+            },
+            "points": {
+              "byte_count": 1329488,
+              "path": "/home/ww/paper5/data/processed/rio/train/0063_00.npy",
+              "sha256": "a7ac5d02d70aa156fbd9a4fee9e68311680924c6cd335131aacfeebcb4ef78d2"
+            }
+          },
+          "scan_id": "0cac7680-8d6f-2d13-8e05-f6da6172d239",
+          "scene": 63,
+          "sub_scene": 0,
+          "visit_index": 0
+        },
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 118858,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/train/scene0063_02.txt",
+              "sha256": "de15986803ac231583c04e62b1e6c1d054be35614d9e8c04b564b2189bfb5743"
+            },
+            "points": {
+              "byte_count": 1051664,
+              "path": "/home/ww/paper5/data/processed/rio/train/0063_02.npy",
+              "sha256": "4c00a7cc9841307eb9ffe0d6d9f680a8d84b0cc88b47e21c2d087d509e649070"
+            }
+          },
+          "scan_id": "6a360549-fa53-2915-97ad-3853a1cb460c",
+          "scene": 63,
+          "sub_scene": 2,
+          "visit_index": 1
+        }
+      ],
+      "split": "train"
+    },
+    {
+      "common_method_inputs": {
+        "global_alignment": {
+          "application": "homogeneous_row_vector_right_multiply",
+          "direction": "rescan_row_vector_to_reference",
+          "matrix": [
+            -0.28290456533432007,
+            -0.9591479301452637,
+            -0.00048552826046943665,
+            0.0,
+            0.959043025970459,
+            -0.28286609053611755,
+            -0.014940564520657063,
+            0.0,
+            0.014192871749401093,
+            -0.004692396614700556,
+            0.9998882412910461,
+            0.0,
+            -1.0729457139968872,
+            3.2892849445343018,
+            0.12790226936340332,
+            1.0
+          ],
+          "storage": "row_major_flat_4x4"
+        }
+      },
+      "environment_id": "13124cc2-cec3-27a6-86ad-946fe3a73493",
+      "evaluator_only": {
+        "ambiguity": [],
+        "changes": {
+          "nonrigid_reference_ids": [
+            11,
+            22,
+            48
+          ],
+          "removed_reference_ids": [
+            16,
+            20,
+            21,
+            30,
+            32,
+            33,
+            40,
+            41
+          ],
+          "rigid_reference_ids": [
+            19
+          ]
+        },
+        "cross_time_identity_source": "official_3rscan_metadata"
+      },
+      "pair_id": "scene0078_00-scene0078_01",
+      "role": "training_selection",
+      "sequence": {
+        "change_gt_binding": {
+          "byte_count": 150348,
+          "path": "/home/ww/paper5/data/processed/rio/change_gt/train/scene0078_00-scene0078_01.txt",
+          "sha256": "778f7d60a89eff153551870e60e66b3d44f5ca31188edd7cee0fa21c1312a8e1"
+        },
+        "key": "scene0078_00-scene0078_01"
+      },
+      "sessions": [
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 216339,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/train/scene0078_00.txt",
+              "sha256": "c4f6298091859d7669a59b18703f0ff36253ca19dc39946a3f58265ed45c6f0b"
+            },
+            "points": {
+              "byte_count": 1986656,
+              "path": "/home/ww/paper5/data/processed/rio/train/0078_00.npy",
+              "sha256": "5eb18c3f716d5ef7f446ef1deea01d22a61784a5952e96db372a6e55794cff13"
+            }
+          },
+          "scan_id": "13124cc2-cec3-27a6-86ad-946fe3a73493",
+          "scene": 78,
+          "sub_scene": 0,
+          "visit_index": 0
+        },
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 174792,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/train/scene0078_01.txt",
+              "sha256": "4a3541b7e53ba3f073c1de0df90b52f71c980604ec697c39b840d88c4f19159d"
+            },
+            "points": {
+              "byte_count": 1621952,
+              "path": "/home/ww/paper5/data/processed/rio/train/0078_01.npy",
+              "sha256": "5f33c6ba7c3c078e27a01733d2bfd1d75a933dd2c6d0981e0cb140f77bd2ab45"
+            }
+          },
+          "scan_id": "7272e182-a01b-20f6-89b8-3bdec0091c89",
+          "scene": 78,
+          "sub_scene": 1,
+          "visit_index": 1
+        }
+      ],
+      "split": "train"
+    },
+    {
+      "common_method_inputs": {
+        "global_alignment": {
+          "application": "homogeneous_row_vector_right_multiply",
+          "direction": "rescan_row_vector_to_reference",
+          "matrix": [
+            0.9650427103042603,
+            -0.26205840706825256,
+            -0.004232989624142647,
+            0.0,
+            0.26204439997673035,
+            0.9650492072105408,
+            -0.0035861143842339516,
+            0.0,
+            0.005024814046919346,
+            0.002351522445678711,
+            0.999984622001648,
+            0.0,
+            -0.08061782270669937,
+            0.14093352854251862,
+            0.041461654007434845,
+            1.0
+          ],
+          "storage": "row_major_flat_4x4"
+        }
+      },
+      "environment_id": "422885e0-192d-25fc-844a-62e395291839",
+      "evaluator_only": {
+        "ambiguity": [],
+        "changes": {
+          "nonrigid_reference_ids": [
+            5,
+            16,
+            29,
+            30,
+            34,
+            48
+          ],
+          "removed_reference_ids": [
+            28,
+            37
+          ],
+          "rigid_reference_ids": [
+            13,
+            19,
+            31
+          ]
+        },
+        "cross_time_identity_source": "official_3rscan_metadata"
+      },
+      "pair_id": "scene0156_00-scene0156_01",
+      "role": "training_selection",
+      "sequence": {
+        "change_gt_binding": {
+          "byte_count": 282136,
+          "path": "/home/ww/paper5/data/processed/rio/change_gt/train/scene0156_00-scene0156_01.txt",
+          "sha256": "f1f9be9bd2cb7b24fd578f9dbe303884e66d6894f2f9a0c573c1714bd399e55a"
+        },
+        "key": "scene0156_00-scene0156_01"
+      },
+      "sessions": [
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 385713,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/train/scene0156_00.txt",
+              "sha256": "d140c363c749c7bf0d55561613cf7ad06a188166714fa772c33fc2f4245a0a8b"
+            },
+            "points": {
+              "byte_count": 3385808,
+              "path": "/home/ww/paper5/data/processed/rio/train/0156_00.npy",
+              "sha256": "31cea90e7beeb93f8fcebe50e9367037b56faf115321fc30bc48044a1a486ead"
+            }
+          },
+          "scan_id": "422885e0-192d-25fc-844a-62e395291839",
+          "scene": 156,
+          "sub_scene": 0,
+          "visit_index": 0
+        },
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 387684,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/train/scene0156_01.txt",
+              "sha256": "af990f0d8ceb03cc97e692eaa1536a62b7e9898a2265bda3fa80cb7c864247f9"
+            },
+            "points": {
+              "byte_count": 3385712,
+              "path": "/home/ww/paper5/data/processed/rio/train/0156_01.npy",
+              "sha256": "5b3f0674775abfe4dbb94a67919e7964481e4279e48e10cd38fd5c70be917fae"
+            }
+          },
+          "scan_id": "422885e2-192d-25fc-86cd-076ee5f2b412",
+          "scene": 156,
+          "sub_scene": 1,
+          "visit_index": 1
+        }
+      ],
+      "split": "train"
+    },
+    {
+      "common_method_inputs": {
+        "global_alignment": {
+          "application": "homogeneous_row_vector_right_multiply",
+          "direction": "rescan_row_vector_to_reference",
+          "matrix": [
+            0.2225886434316635,
+            0.9749124050140381,
+            0.00025404850021004677,
+            0.0,
+            -0.9749050736427307,
+            0.22258593142032623,
+            0.003948971629142761,
+            0.0,
+            0.003793353447690606,
+            -0.0011266693472862244,
+            0.9999921321868896,
+            0.0,
+            0.01691156066954136,
+            -0.9199929237365723,
+            0.14784683287143707,
+            1.0
+          ],
+          "storage": "row_major_flat_4x4"
+        }
+      },
+      "environment_id": "5341b7bf-8a66-2cdd-8794-026113b7c312",
+      "evaluator_only": {
+        "ambiguity": [],
+        "changes": {
+          "nonrigid_reference_ids": [
+            6
+          ],
+          "removed_reference_ids": [
+            13,
+            24,
+            25,
+            26,
+            34,
+            45
+          ],
+          "rigid_reference_ids": [
+            2,
+            3,
+            14,
+            250
+          ]
+        },
+        "cross_time_identity_source": "official_3rscan_metadata"
+      },
+      "pair_id": "scene0201_00-scene0201_01",
+      "role": "training_selection",
+      "sequence": {
+        "change_gt_binding": {
+          "byte_count": 226054,
+          "path": "/home/ww/paper5/data/processed/rio/change_gt/train/scene0201_00-scene0201_01.txt",
+          "sha256": "85b5f09f5018b104a37a921210ee47d3fd39d319543ab283e756403b617b0157"
+        },
+        "key": "scene0201_00-scene0201_01"
+      },
+      "sessions": [
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 294406,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/train/scene0201_00.txt",
+              "sha256": "6aa2e0e5f4dda5f198700ae2b4b5bcef5bbfefc2e4dd7180205d12f0c65b96fc"
+            },
+            "points": {
+              "byte_count": 2634176,
+              "path": "/home/ww/paper5/data/processed/rio/train/0201_00.npy",
+              "sha256": "9ce3356f05336c4912f971e775474bd0a25421c323d3ccbb027046b61670fb82"
+            }
+          },
+          "scan_id": "5341b7bf-8a66-2cdd-8794-026113b7c312",
+          "scene": 201,
+          "sub_scene": 0,
+          "visit_index": 0
+        },
+        {
+          "processed_assets": {
+            "instance_gt": {
+              "byte_count": 303816,
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/train/scene0201_01.txt",
+              "sha256": "8f38993c7bfc25a99d6daa085567098ed586242eb7dbc551ea95102c7888162c"
+            },
+            "points": {
+              "byte_count": 2791376,
+              "path": "/home/ww/paper5/data/processed/rio/train/0201_01.npy",
+              "sha256": "6332fc8d178d61dbdab3f7b4154c039d1ced222892fdc11a31622ce9c7999b84"
+            }
+          },
+          "scan_id": "4138584f-a238-2435-8242-4c9b86032127",
+          "scene": 201,
+          "sub_scene": 1,
+          "visit_index": 1
+        }
+      ],
+      "split": "train"
+    }
+  ],
+  "role": "TRAIN",
+  "schema_version": 3,
+  "selected_pair_count": 6,
+  "source_bindings": {
+    "metadata": {
+      "byte_count": 3155995,
+      "path": "/home/ww/vv/dataset/3RScan/3RScan.json",
+      "sha256": "674a00f50f76b198b9de44efd86c390fea3da37ba8f12cf8ccd00045e265fa64"
+    },
+    "processed_database": {
+      "byte_count": 980194,
+      "path": "/home/ww/paper5/data/processed/rio/train_database.yaml",
+      "sha256": "9bb033e9e1e81c5f89e6e9f170392f95e930c9362ac83ac04c549a8b9a9c0ab0"
+    },
+    "sequence_database": {
+      "byte_count": 415937,
+      "path": "/home/ww/paper5/data/processed/rio/sequence_database_sliding_2.yaml",
+      "sha256": "974299916db02d2ee0233564eb7b36e314dada93e997584d9dfef21ad70d0416"
+    },
+    "split_manifest": {
+      "byte_count": 23112,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-observation-query-multienv-v3/configs/observation_query/splits_multienv_v3.json",
+      "sha256": "99253375a892705c4915752ca2112185628b8b1f5e5858eeba7a56a648faf31b"
+    }
+  },
+  "status": "PASS"
+}
