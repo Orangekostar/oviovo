@@ -1,0 +1,1576 @@
+{
+  "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINABLE_STATE_V1",
+  "content_sha256": "3c6f4b4a66e00baaa7075986807d0ba518e766bf7841baf9e1e63a75e31b36b1",
+  "metadata": {
+    "backbone_cache_sha256": "2ec76ca0ee8ed8e3682052ef59cb930d8299a853769f882752f82032d2c39cd1",
+    "base_checkpoint_sha256": "85ed1aba60320cd19798536b71b91dbc156b7ea60f838832bc0bbbdba131546e",
+    "input_feature_schema": {
+      "model_input_feature_dim": 9,
+      "observation_feature_dim": 1024,
+      "observation_metadata_dim": 15
+    },
+    "model_architecture_version": "OVI_OBSERVATION_QUERY_V1",
+    "model_variant": "OBS_FULL",
+    "observation_sha256": "51d962665a2928327a9bd1530ffb39001f4727dcc1b9e72c57c738ac0dd96f66",
+    "optimizer_updates": 1000,
+    "resolved_config": {
+      "loss": {
+        "auxiliary_assignment": "rematch_each_layer_and_share_with_same_layer_region_loss",
+        "changes_enabled": false,
+        "consistency_ramp_updates": 200,
+        "consistency_weight_end": 0.1,
+        "consistency_weight_start": 0.0,
+        "contrastive_enabled": false,
+        "masked_hungarian_uses_label_valid": true,
+        "native_class_cost_and_weight": 2.0,
+        "native_dice_cost_and_weight": 2.0,
+        "native_mask_cost_and_weight": 5.0,
+        "native_weight": 1.0,
+        "no_object_coefficient": 0.2,
+        "region_soft_ce_weight": 0.2,
+        "unmatched_gt_region_mass": "exclude_and_report"
+      },
+      "method": "OBS_FULL",
+      "method_config": {
+        "consistency_loss": true,
+        "mask_feedback": true,
+        "observation_attention": true,
+        "trained": true
+      },
+      "model": {
+        "alpha_bound": 1.0,
+        "alpha_initial": 0.001,
+        "backbone": "Concerto",
+        "backbone_frozen": true,
+        "backbone_serialization": "mixed_standard_temporal_overlay",
+        "beta_bound": 1.0,
+        "beta_initial": 0.0,
+        "hidden_dim": 128,
+        "num_decoders": 3,
+        "num_heads": 8,
+        "num_queries": 100,
+        "observation_intervention": "after_3d_cross_attention_before_self_attention_and_ffn",
+        "shared_decoder": true,
+        "temporal_window": 2,
+        "train_on_segments": true
+      },
+      "source_bindings": {
+        "config": {
+          "byte_count": 5381,
+          "path": "/mnt/shared/pluto/ovi-v3/runtime-v1/oviovo-6f7c403/configs/observation_query/pilot_multienv_v3.json",
+          "sha256": "ebba88a136b218ba6937061fbe84d633f286d02451fe417e14371f159497b475"
+        },
+        "losses": {
+          "byte_count": 25348,
+          "path": "/mnt/shared/pluto/ovi-v3/runtime-v1/oviovo-6f7c403/src/oviv2/observation_query/losses.py",
+          "sha256": "d965550a8d89f3d00c19d47e5b380d85a53444404def1f99e03d8c9893f832c4"
+        },
+        "model": {
+          "byte_count": 29862,
+          "path": "/mnt/shared/pluto/ovi-v3/runtime-v1/oviovo-6f7c403/src/oviv2/observation_query/model.py",
+          "sha256": "331a4d195a213b57c1c73645495acc501079155eb01eaeb3725a4cb2a90f81e9"
+        },
+        "multienv_training": {
+          "byte_count": 10643,
+          "path": "/mnt/shared/pluto/ovi-v3/runtime-v1/oviovo-6f7c403/src/training/ovi_observation_multienv.py",
+          "sha256": "cea5126415f8c3bf028291c4394f7b5c1cbd4234db2f9cc20b13b044165f54e9"
+        },
+        "runner": {
+          "byte_count": 64702,
+          "path": "/mnt/shared/pluto/ovi-v3/runtime-v1/oviovo-6f7c403/scripts/training/train_ovi_observation_query.py",
+          "sha256": "93dc59533dc4f72a145a0e3e65f76cf3bbe7ce13a02228641ffee6422934c0c9"
+        },
+        "runtime": {
+          "byte_count": 1855,
+          "path": "/mnt/shared/pluto/ovi-v3/runtime-v1/runtime.multienv_v3.json",
+          "sha256": "b72c7b1bffae74a6e9d9ac001d8af7bbc23c910300e0af5bdbaed4710cdc6ac7"
+        },
+        "split": {
+          "byte_count": 23112,
+          "path": "/mnt/shared/pluto/ovi-v3/runtime-v1/oviovo-6f7c403/configs/observation_query/splits_multienv_v3.json",
+          "sha256": "99253375a892705c4915752ca2112185628b8b1f5e5858eeba7a56a648faf31b"
+        },
+        "training_state": {
+          "byte_count": 26685,
+          "path": "/mnt/shared/pluto/ovi-v3/runtime-v1/oviovo-6f7c403/src/oviv2/observation_query/training.py",
+          "sha256": "17f3712e45cf387e4226e44fd95e3d6ff0e72efcd61b69e61e65af8f4753ebd7"
+        }
+      },
+      "stage": "pilot",
+      "training": {
+        "batch_size_pairs": 1,
+        "cumulative_max_optimizer_updates": 12000,
+        "data_seed": 45,
+        "environment_balanced_sampling": true,
+        "gradient_accumulation": 2,
+        "gradient_clip_norm": 1.0,
+        "initial_methods": [
+          "OBS_BASE_TUNED",
+          "OBS_FUSE",
+          "OBS_FULL"
+        ],
+        "native_learning_rate": 1e-05,
+        "observation_learning_rate": 0.0001,
+        "optimizer": "AdamW",
+        "pilot_updates_per_method": 1000,
+        "seed": 45,
+        "smoke_updates": 200,
+        "train_environment_count": 6,
+        "weight_decay": 0.0001
+      }
+    },
+    "seed": 45,
+    "source_commit": "6f7c40346d62f2daac5458c2b3ef957867736173",
+    "split_id": "OVI_RESCENE_OBSERVATION_QUERY_SPLITS_MULTIENV_V3",
+    "training_dataset_manifest": {
+      "artifact_id": "OVI_OBSERVATION_TRAINING_DATASET_MULTIENV_V3",
+      "environment_ids": [
+        "02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+        "41385851-a238-2435-8056-b7d662a97c93",
+        "0cac7680-8d6f-2d13-8e05-f6da6172d239",
+        "13124cc2-cec3-27a6-86ad-946fe3a73493",
+        "422885e0-192d-25fc-844a-62e395291839",
+        "5341b7bf-8a66-2cdd-8794-026113b7c312"
+      ],
+      "pairs": [
+        {
+          "backbone_cache_sha256": "87a01bb7fa613c72e07b002ec95f1a73ab3689769f0b2a8a7cbb41118d2c2499",
+          "environment_id": "02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+          "model_input_sha256": "77cf1d708215b75e487b51145987b5872f47e39f2ac33b6f1241fb09d0881869",
+          "observation_sha256": "fd73ddacb491bd6281e10ff3a486652afc4f9590a6bbb1e08796c4b95e0660bf",
+          "pair_id": "scene0001_00-scene0001_01",
+          "training_target_sha256": "9395c7fc07eba04c6cc5c81f1e78347083cc7293c4f7a2d74203d19e46089ad9"
+        },
+        {
+          "backbone_cache_sha256": "789693c5bb0e96d1a9ac86e0aef726c5f176ce3225214080382a208797afc75a",
+          "environment_id": "41385851-a238-2435-8056-b7d662a97c93",
+          "model_input_sha256": "d3dd3af70876ac256926e7f63bbdb2a0c38171faa90ab3ea58c76784408086c8",
+          "observation_sha256": "06dade269a52bf2af10c8b3d06a9b2618bc9b4ddf67897b34defccd2b4e2c1de",
+          "pair_id": "scene0147_00-scene0147_01",
+          "training_target_sha256": "d38f4144763270319e1042ebe392bc42be3aa7c403a86dbc695eaacb2cf23702"
+        },
+        {
+          "backbone_cache_sha256": "1f523313858b5e304bf4e871b75938628073407a836e8e8ceea82166c48b4a2b",
+          "environment_id": "0cac7680-8d6f-2d13-8e05-f6da6172d239",
+          "model_input_sha256": "5e0b2141dfde5e930da5d1659a3b1d492d7b5d2722b329ce9d4edee4043f3322",
+          "observation_sha256": "6ebf45b2c2ac95c24e4b6865e1506c40b160ab642c987d062e8c04d94fcfa478",
+          "pair_id": "scene0063_00-scene0063_02",
+          "training_target_sha256": "f73603bb844ce44cb82559f7a657c13c7787a17b364d4ceb0aac3fb9ca1858d9"
+        },
+        {
+          "backbone_cache_sha256": "3839e60dc29d5b0e6ad58202f00572ae72272fca4fe0ab0730a5509ed885e347",
+          "environment_id": "13124cc2-cec3-27a6-86ad-946fe3a73493",
+          "model_input_sha256": "6b4792f4fec85aafc1079854c4843b0da8135f424dfbd9c0e59c44100f3c7a74",
+          "observation_sha256": "4f11abf9cb3e48d40865f32b4a59008c841d380291b7b0a29bdf5df9a7864dba",
+          "pair_id": "scene0078_00-scene0078_01",
+          "training_target_sha256": "748e2045fc1f325d34baeb8e3c16aa2a9e0320addc07bc13f67062dd0f837870"
+        },
+        {
+          "backbone_cache_sha256": "1a3a57d411ac25004467aff71dab817d46879ef010019b631eedb7abdf5c3a15",
+          "environment_id": "422885e0-192d-25fc-844a-62e395291839",
+          "model_input_sha256": "843f9e58fd594a5cfe278017cc2b9b443bea29591e4156d41bf295f3e6ed4b90",
+          "observation_sha256": "5a30fb1e33966077f05c21c62f5e9a5b246c70120dcf6d08702b7dea6c222c96",
+          "pair_id": "scene0156_00-scene0156_01",
+          "training_target_sha256": "6e9bbbfdfd9b70072031059e4201728d09bf7f43b818d942f1323a2dbee95c66"
+        },
+        {
+          "backbone_cache_sha256": "ebcd7ea9336e0f16b44c926ca09d193eac45f1a00c2a138d0d41ce6640197732",
+          "environment_id": "5341b7bf-8a66-2cdd-8794-026113b7c312",
+          "model_input_sha256": "e50e6df4ab9a5d0712737704a5d7382b5fca3e972f41ae847fae172af36f683f",
+          "observation_sha256": "a4615230a5c205b9992ba3122fb40d8f56b14cb9cd66a35242207b6a46efabdd",
+          "pair_id": "scene0201_00-scene0201_01",
+          "training_target_sha256": "7486c8e01d73872157a777e6c8193f160e5f08f1714d50095af231d0a4de10c7"
+        }
+      ],
+      "sampling": {
+        "data_seed": 45,
+        "gradient_accumulation": 2,
+        "policy": "environment_balanced_epoch_shuffle"
+      },
+      "schema_version": 3
+    }
+  },
+  "schema_version": 1,
+  "status": "PASS",
+  "tensor_records": {
+    "criterion.parameter.obs_surface_null_head.bias": {
+      "dtype": "torch.float32",
+      "sha256": "cff1d1db0db367a7f210285ba28cb0e688d137c52d5c0ea8601155abb839b36a",
+      "shape": [
+        1
+      ]
+    },
+    "criterion.parameter.obs_surface_null_head.weight": {
+      "dtype": "torch.float32",
+      "sha256": "3c1e5935614c32c51c229c2039e705088e80f646372a0cbf566b6bac59241487",
+      "shape": [
+        1,
+        100
+      ]
+    },
+    "model.buffer.native.pos_enc.gauss_B": {
+      "dtype": "torch.float32",
+      "sha256": "e410bff7d8fd75801f0d38cc737dec182ace93303ae78a7c34637d18f05dc8a9",
+      "shape": [
+        4,
+        64
+      ]
+    },
+    "model.parameter.native.class_embed_head.bias": {
+      "dtype": "torch.float32",
+      "sha256": "f6076d2fd51705ccaafb86c063ca48798e833eaad50ad228ccd5638d878a4401",
+      "shape": [
+        19
+      ]
+    },
+    "model.parameter.native.class_embed_head.weight": {
+      "dtype": "torch.float32",
+      "sha256": "7e57138ca55c5b42770da9ba66ef5dca8d4f8bb744cadd343c00af245a86f088",
+      "shape": [
+        19,
+        128
+      ]
+    },
+    "model.parameter.native.cross_attention.0.0.multihead_attn.in_proj_bias": {
+      "dtype": "torch.float32",
+      "sha256": "61362f6adf3021185011adf420926486fce9b9c573e9efeb9fc0b33c001837a4",
+      "shape": [
+        384
+      ]
+    },
+    "model.parameter.native.cross_attention.0.0.multihead_attn.in_proj_weight": {
+      "dtype": "torch.float32",
+      "sha256": "51c157e0ceb0f486f3d590d18f2704ad0ecde7b349203854b8ef2ea021b84bcb",
+      "shape": [
+        384,
+        128
+      ]
+    },
+    "model.parameter.native.cross_attention.0.0.multihead_attn.out_proj.bias": {
+      "dtype": "torch.float32",
+      "sha256": "8f133f44debdab2e1f9c753088b424a8de76086ffcae069485ff9ad371102747",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.cross_attention.0.0.multihead_attn.out_proj.weight": {
+      "dtype": "torch.float32",
+      "sha256": "7e92825fcb1d1be6b806d78c6f97b64c71e2dcbca0373d258545b9ec72c14d96",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.native.cross_attention.0.0.norm.bias": {
+      "dtype": "torch.float32",
+      "sha256": "06eaded2b92727d0da1c18d36667da883dd9b097ce697f396f08ae0913d4738b",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.cross_attention.0.0.norm.weight": {
+      "dtype": "torch.float32",
+      "sha256": "449384c16b1049853a9b08c850befb06adcf896f984214535873809cd62116d2",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.cross_attention.0.1.multihead_attn.in_proj_bias": {
+      "dtype": "torch.float32",
+      "sha256": "0a0011ec5e03bc11e49bbf9e4f28172bc2074c3d1f1527084483f61fbd3812bf",
+      "shape": [
+        384
+      ]
+    },
+    "model.parameter.native.cross_attention.0.1.multihead_attn.in_proj_weight": {
+      "dtype": "torch.float32",
+      "sha256": "5de61dcd034bb09cc1b953f7e1451dc9cecf2b290d58fa0b75f0edb18969da22",
+      "shape": [
+        384,
+        128
+      ]
+    },
+    "model.parameter.native.cross_attention.0.1.multihead_attn.out_proj.bias": {
+      "dtype": "torch.float32",
+      "sha256": "803bb6bb0b3d3855fdb1430497ac847d6247e459e0ff642c4aa56fc7d24a82c7",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.cross_attention.0.1.multihead_attn.out_proj.weight": {
+      "dtype": "torch.float32",
+      "sha256": "252db58c74479aed87bf3f1a213bd6315597aef84154f7f283a9310063119579",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.native.cross_attention.0.1.norm.bias": {
+      "dtype": "torch.float32",
+      "sha256": "d6bfbe4abb5b4641cc524a9470deff8b3592841c5cada68f742759d9d7c8ddb3",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.cross_attention.0.1.norm.weight": {
+      "dtype": "torch.float32",
+      "sha256": "dac6baf97e53a8f3338e024c2d7befa6db7194ff61c3bc6023ed3da66fb51381",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.cross_attention.0.2.multihead_attn.in_proj_bias": {
+      "dtype": "torch.float32",
+      "sha256": "77a72aa194ea7a1913259a2182f72ee848802e2c9d42cc42d89bb8ae0e02132c",
+      "shape": [
+        384
+      ]
+    },
+    "model.parameter.native.cross_attention.0.2.multihead_attn.in_proj_weight": {
+      "dtype": "torch.float32",
+      "sha256": "82b2910491ad0f8c8822d5c64c33e1ea39a80668f23b6653d8cf49bbf1e7871d",
+      "shape": [
+        384,
+        128
+      ]
+    },
+    "model.parameter.native.cross_attention.0.2.multihead_attn.out_proj.bias": {
+      "dtype": "torch.float32",
+      "sha256": "f605ee74d7bab6fe89daeef0d2414e7028ebc5096ec592e95569ae431c8c6bce",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.cross_attention.0.2.multihead_attn.out_proj.weight": {
+      "dtype": "torch.float32",
+      "sha256": "6e8ddeb317b93f6cda529ab3049351c32c48ba68811e8eeba7bbb833c6a61476",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.native.cross_attention.0.2.norm.bias": {
+      "dtype": "torch.float32",
+      "sha256": "0f52c1eb122498e0187cdceaf133301dce931b911d78c6074ba94be72c275f28",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.cross_attention.0.2.norm.weight": {
+      "dtype": "torch.float32",
+      "sha256": "1552630367ea4937148c08142e8a120aa36c711df0c116788a8927ff01a6eddc",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.cross_attention.0.3.multihead_attn.in_proj_bias": {
+      "dtype": "torch.float32",
+      "sha256": "bda76a7e000edee9e4b9d1e4e2ca11dcc5c15681c096cd0a0bbf317e9459a8ab",
+      "shape": [
+        384
+      ]
+    },
+    "model.parameter.native.cross_attention.0.3.multihead_attn.in_proj_weight": {
+      "dtype": "torch.float32",
+      "sha256": "0f3793b6820cadef4de27c3221e0666f55d40a1a6dbf98fee573688b56a99bc5",
+      "shape": [
+        384,
+        128
+      ]
+    },
+    "model.parameter.native.cross_attention.0.3.multihead_attn.out_proj.bias": {
+      "dtype": "torch.float32",
+      "sha256": "a67897b9b75b3bb7f152b9de614e4738480376495539bbad045a6399e96e2b0f",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.cross_attention.0.3.multihead_attn.out_proj.weight": {
+      "dtype": "torch.float32",
+      "sha256": "e0b469ab4e288a504033f9e9cfe713de71090321cedd4ca5608f9476d9874c95",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.native.cross_attention.0.3.norm.bias": {
+      "dtype": "torch.float32",
+      "sha256": "31fb681532ddba7e68c6f4c0bb72e9cd395e8437156ae485b7781fa940601fa3",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.cross_attention.0.3.norm.weight": {
+      "dtype": "torch.float32",
+      "sha256": "5408b27a155eadd52450f0ba3d55524bb9a6de088f95477b3db66a610de788f4",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.decoder_norm.bias": {
+      "dtype": "torch.float32",
+      "sha256": "1773759f155033c0d26c7fffab512c9e09ad53236f2c3fa0b421e968a1607803",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.decoder_norm.weight": {
+      "dtype": "torch.float32",
+      "sha256": "f72b90820648f4418d1bc581ddc2a142cd3d4f716e6909c9b48cef9dab572dbd",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.0.linear1.bias": {
+      "dtype": "torch.float32",
+      "sha256": "88cacb503bb7a2d39249e82a1f3a2db4df4fa8581f68dde65d478707666b9b87",
+      "shape": [
+        1024
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.0.linear1.weight": {
+      "dtype": "torch.float32",
+      "sha256": "0293efd1a3511f87df2ffc90df6f44c4f86a9089bae460ca57810e1318a64a87",
+      "shape": [
+        1024,
+        128
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.0.linear2.bias": {
+      "dtype": "torch.float32",
+      "sha256": "1c71252612e9ce6b2c071dc0d9aa6a8dbc70fc18c0b934dfbd44e32d0e853016",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.0.linear2.weight": {
+      "dtype": "torch.float32",
+      "sha256": "c96016e14c685089fab329a9cec4e11c830e5737171d2f2b8821bc4017a25482",
+      "shape": [
+        128,
+        1024
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.0.norm.bias": {
+      "dtype": "torch.float32",
+      "sha256": "672d379417a34bbee7d58a068a18f6d1a86fd5b3815c4fe20a44c4903daa4fb3",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.0.norm.weight": {
+      "dtype": "torch.float32",
+      "sha256": "78c27ec40401531bedebc47d15fc50e6280abd0330ce1e5c5589bc711208091c",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.1.linear1.bias": {
+      "dtype": "torch.float32",
+      "sha256": "5c373465a9f3d61bd3068310a2c530ef5a90917b58ee7faa75d24421f43c55bb",
+      "shape": [
+        1024
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.1.linear1.weight": {
+      "dtype": "torch.float32",
+      "sha256": "4ef5faffcc843139375341bd6df8a3ae5024a111946a1edc80b2126761bd3ae8",
+      "shape": [
+        1024,
+        128
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.1.linear2.bias": {
+      "dtype": "torch.float32",
+      "sha256": "6c2d29d4852dd64c5eea31c329fa1c49a320dc3d30a11f9543ef5d52a8fb7b95",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.1.linear2.weight": {
+      "dtype": "torch.float32",
+      "sha256": "0ea384098d82330b1e23386d4a6d4ef1280e351a6af535b80d8c5aa45c5db827",
+      "shape": [
+        128,
+        1024
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.1.norm.bias": {
+      "dtype": "torch.float32",
+      "sha256": "81ad3f6df7e956348758481bf6105b1df48d7dd940ca1c4497fe34017041025f",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.1.norm.weight": {
+      "dtype": "torch.float32",
+      "sha256": "2c7f2555c672d14344b9037d3ccbcfb6f8fb3b2a5572dbf91efa9f256cd26ee2",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.2.linear1.bias": {
+      "dtype": "torch.float32",
+      "sha256": "a159e99c6a83335571288284f032ba29f840c1f82b3476b4ce61302d13a7795b",
+      "shape": [
+        1024
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.2.linear1.weight": {
+      "dtype": "torch.float32",
+      "sha256": "099a0490e610ecdf8e1920460c75e2caba84a6b9e2f73314b772644141f12ae7",
+      "shape": [
+        1024,
+        128
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.2.linear2.bias": {
+      "dtype": "torch.float32",
+      "sha256": "af949510abaeddc394fd998b07829c050c3abc58ce17d0cf5961c094b8ed95fa",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.2.linear2.weight": {
+      "dtype": "torch.float32",
+      "sha256": "112bddf245c44dfc8f5906e9de7033678b3ce566c876114af35ed71130e28acd",
+      "shape": [
+        128,
+        1024
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.2.norm.bias": {
+      "dtype": "torch.float32",
+      "sha256": "a919b12fba3c05b23917f1a6c579df6ecaf741a1c67191774abd356a950d5703",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.2.norm.weight": {
+      "dtype": "torch.float32",
+      "sha256": "4904b5db959ac8e420ef55609921020265f59190744cd2911db5414067d4decc",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.3.linear1.bias": {
+      "dtype": "torch.float32",
+      "sha256": "faacc4bdd9b8a473bd05f2b2df7e8e876418676b3f4543deaaa188f19ed76295",
+      "shape": [
+        1024
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.3.linear1.weight": {
+      "dtype": "torch.float32",
+      "sha256": "208097b3067e57cdd9b6a99ebc9e030a0c15dd84f388d6d3bb6d64acd6417985",
+      "shape": [
+        1024,
+        128
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.3.linear2.bias": {
+      "dtype": "torch.float32",
+      "sha256": "da01b72020a698c3fded601fcfc11741ce430bd557c2591421debe4b8090edfa",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.3.linear2.weight": {
+      "dtype": "torch.float32",
+      "sha256": "409818c1f24fbe1d1d5883108fb6f159f9783e53088e9cf0cfed36178cacaa7a",
+      "shape": [
+        128,
+        1024
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.3.norm.bias": {
+      "dtype": "torch.float32",
+      "sha256": "730e7bec3b5b6311e076e5a9aa363aee5bca868cf140bb6f37b50a3cd269fd23",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.ffn_attention.0.3.norm.weight": {
+      "dtype": "torch.float32",
+      "sha256": "5a7341edd79875fdd456b8800209b33701c29b03c04012497ef1cd72f70992bc",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.lin_squeeze.0.0.bias": {
+      "dtype": "torch.float32",
+      "sha256": "7311c6856800e244e3110d22eadc9e9e03953b36d2d02a30ed4be86ecd36eca5",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.lin_squeeze.0.0.weight": {
+      "dtype": "torch.float32",
+      "sha256": "d5c0a6a8e99b23824e107b4f24456393d8a2495512e1b40b99ccdfa0e90634d7",
+      "shape": [
+        128,
+        512
+      ]
+    },
+    "model.parameter.native.lin_squeeze.0.1.bias": {
+      "dtype": "torch.float32",
+      "sha256": "9002946eb847ab194de71c74a379fd7de958e2b24d97fd0a0e4f3783cba9ad62",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.lin_squeeze.0.1.weight": {
+      "dtype": "torch.float32",
+      "sha256": "f99ffafa6f4f455386ec898def183410807569e946073e632d7c19b22568cb3e",
+      "shape": [
+        128,
+        384
+      ]
+    },
+    "model.parameter.native.lin_squeeze.0.2.bias": {
+      "dtype": "torch.float32",
+      "sha256": "5586c7fccca7536e9547d90e09e41baa3055fa10d952a66027cf8bfa8bfb736b",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.lin_squeeze.0.2.weight": {
+      "dtype": "torch.float32",
+      "sha256": "4c5462e0b1a162cbab984689e44c0ea8f88c11572a9871d37319755489294f78",
+      "shape": [
+        128,
+        192
+      ]
+    },
+    "model.parameter.native.lin_squeeze.0.3.bias": {
+      "dtype": "torch.float32",
+      "sha256": "2e2ee5655cc948dc9379155e87df5ffa8731c78d1d6620a254a83c53b584d97a",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.lin_squeeze.0.3.weight": {
+      "dtype": "torch.float32",
+      "sha256": "b4ed1715a27c87e5dd9b1f168e8671eebd40287406597b70825d7c280cdb43f0",
+      "shape": [
+        128,
+        96
+      ]
+    },
+    "model.parameter.native.mask_embed_head.0.bias": {
+      "dtype": "torch.float32",
+      "sha256": "e33be9ea2e1a7e2b4c25cb067031ad000af091c7d1db0d9eb26bec058ef29bf3",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.mask_embed_head.0.weight": {
+      "dtype": "torch.float32",
+      "sha256": "3ff1c7f62600255f46a319d31438475e057b449d25f92c09203f94b2538c2cd6",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.native.mask_embed_head.2.bias": {
+      "dtype": "torch.float32",
+      "sha256": "39b7b5b0189b0a201e32b25e6161eb345f3b93f461c8ca56527e6fc119285af5",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.mask_embed_head.2.weight": {
+      "dtype": "torch.float32",
+      "sha256": "632f38558c6be1e7ea515c7cab7d125001d232d089a56a5764c9949b8c7ae6f6",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.native.mask_features_head.bias": {
+      "dtype": "torch.float32",
+      "sha256": "a2e97a81d32d04185be6b74f20c52f8b83223c4931ccfd2c2b56155e460f1589",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.mask_features_head.weight": {
+      "dtype": "torch.float32",
+      "sha256": "5dae215809391b61b20aedf36008c266105ab87b0eac4d9486c761b076996de7",
+      "shape": [
+        128,
+        96
+      ]
+    },
+    "model.parameter.native.query_projection.layers.0.bias": {
+      "dtype": "torch.float32",
+      "sha256": "0292a997731cf6d5c7706ec9debb43c65da5b6467c83586a84dbfac689f8b56d",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.query_projection.layers.0.weight": {
+      "dtype": "torch.float32",
+      "sha256": "45d6a00ffcf8c466e7d450607c6b9bc7a2417f0a48912eac019328fca37cb598",
+      "shape": [
+        128,
+        128,
+        1
+      ]
+    },
+    "model.parameter.native.query_projection.layers.2.bias": {
+      "dtype": "torch.float32",
+      "sha256": "9c17ad8b3ce2c95ef85b47fe7120f8119a3db2f54d9833bb6d29a8d6ab2cad13",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.query_projection.layers.2.weight": {
+      "dtype": "torch.float32",
+      "sha256": "abce207911d044e1de9f47eee77d075e85e298dfe74ff5e2548a5c7b526575f2",
+      "shape": [
+        128,
+        128,
+        1
+      ]
+    },
+    "model.parameter.native.self_attention.0.0.norm.bias": {
+      "dtype": "torch.float32",
+      "sha256": "cb44fd8349190e1d249cca90a1ba09072b548ca9f14be822b600074a71b36b96",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.self_attention.0.0.norm.weight": {
+      "dtype": "torch.float32",
+      "sha256": "de32f093d522bcbb8b2b08b0a85d60a33a630df96d2a7931e2be254a4627883f",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.self_attention.0.0.self_attn.in_proj_bias": {
+      "dtype": "torch.float32",
+      "sha256": "012ed1e9f3f2da175763073a4e287bb64133b4bdb335e11ffed67834595d4645",
+      "shape": [
+        384
+      ]
+    },
+    "model.parameter.native.self_attention.0.0.self_attn.in_proj_weight": {
+      "dtype": "torch.float32",
+      "sha256": "6dad5d0a0e59c7fe6c0f08ea6a6645dc027d619f550c5525f78a90b5144cd8e7",
+      "shape": [
+        384,
+        128
+      ]
+    },
+    "model.parameter.native.self_attention.0.0.self_attn.out_proj.bias": {
+      "dtype": "torch.float32",
+      "sha256": "10403f362e25be25985bcc652b575d462bae730adc415658e6b47e3965bb6656",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.self_attention.0.0.self_attn.out_proj.weight": {
+      "dtype": "torch.float32",
+      "sha256": "a4889f913fb76fc3017a400a3f9f3164637b0548f8939876869f4afbddbc78d3",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.native.self_attention.0.1.norm.bias": {
+      "dtype": "torch.float32",
+      "sha256": "246018a427889996cd0c88022e31fa2ed34a121403e270da9d630108e9e05985",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.self_attention.0.1.norm.weight": {
+      "dtype": "torch.float32",
+      "sha256": "8cd9a7fc560a22e424a7dc225f6e24e346c2fc1e0447ecc5cddc907282c3fc1c",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.self_attention.0.1.self_attn.in_proj_bias": {
+      "dtype": "torch.float32",
+      "sha256": "0810ab58d30eac77ebf44028e7c47fbc71f1e61d0b4e6f6d27313a9440d91602",
+      "shape": [
+        384
+      ]
+    },
+    "model.parameter.native.self_attention.0.1.self_attn.in_proj_weight": {
+      "dtype": "torch.float32",
+      "sha256": "0c50590017d7c9b0317888deec7b82168d97339755f8231a733757d025a11654",
+      "shape": [
+        384,
+        128
+      ]
+    },
+    "model.parameter.native.self_attention.0.1.self_attn.out_proj.bias": {
+      "dtype": "torch.float32",
+      "sha256": "df303022b51b458a9691e584b3d0d79efd7791042f205e76e6e45f26bd1f62bf",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.self_attention.0.1.self_attn.out_proj.weight": {
+      "dtype": "torch.float32",
+      "sha256": "308588ce3c91e303dfa737a59db0fd43efc4143e75a6f34d5fc5a91c0fd5f06e",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.native.self_attention.0.2.norm.bias": {
+      "dtype": "torch.float32",
+      "sha256": "6c13d887b3ccf48d3c8e48bbafe985f13b72062c73dd8f3ef5924f2de54084ae",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.self_attention.0.2.norm.weight": {
+      "dtype": "torch.float32",
+      "sha256": "e8573f976e3f5d3d8bba33a1b6fba739ad9f7a91aae37e88701b9fea843a8f20",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.self_attention.0.2.self_attn.in_proj_bias": {
+      "dtype": "torch.float32",
+      "sha256": "22cef819079baead13ee680cb2428c05f82d10b3f9d2728d680bd852698c6e0f",
+      "shape": [
+        384
+      ]
+    },
+    "model.parameter.native.self_attention.0.2.self_attn.in_proj_weight": {
+      "dtype": "torch.float32",
+      "sha256": "b50fcecd14730c161e4d8cdb2b54f4cfb3c1db052bfd8e020adf47e92e148f8c",
+      "shape": [
+        384,
+        128
+      ]
+    },
+    "model.parameter.native.self_attention.0.2.self_attn.out_proj.bias": {
+      "dtype": "torch.float32",
+      "sha256": "f53c06b195e8a4a8dbabdfa76be07f15645557f1f99e100a50d0828ccccd9a26",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.self_attention.0.2.self_attn.out_proj.weight": {
+      "dtype": "torch.float32",
+      "sha256": "0c0aee272a959f4294502095ea39c19a35452fea556ce8ff4fe52ae07c46d054",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.native.self_attention.0.3.norm.bias": {
+      "dtype": "torch.float32",
+      "sha256": "986338154ae55a15f0fce24f1009267f60bb2919c5dfbfd3a7e5398844a6d758",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.self_attention.0.3.norm.weight": {
+      "dtype": "torch.float32",
+      "sha256": "275bc89d14ae9a334d6e5cc0c216ea7156ce0b5d8c756e30ae1708d0a168a458",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.self_attention.0.3.self_attn.in_proj_bias": {
+      "dtype": "torch.float32",
+      "sha256": "b3643e5c78d23701b5c9be417fe1d5f6c526261eb350c2df43a81f82d74e47b6",
+      "shape": [
+        384
+      ]
+    },
+    "model.parameter.native.self_attention.0.3.self_attn.in_proj_weight": {
+      "dtype": "torch.float32",
+      "sha256": "455f2a8f4197aff39b7c65aa1696bee99304de8944e1186bc3307dc100a1ace0",
+      "shape": [
+        384,
+        128
+      ]
+    },
+    "model.parameter.native.self_attention.0.3.self_attn.out_proj.bias": {
+      "dtype": "torch.float32",
+      "sha256": "7ec3fb355891c454a8bfdabf76efcf1eaee87b79a2be2a256d8fbd209bd8d409",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.native.self_attention.0.3.self_attn.out_proj.weight": {
+      "dtype": "torch.float32",
+      "sha256": "2a19d81b0c72877d2edabf62c69edd6b19b5ffd5b533596276534d995c8e8884",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_attention_token_norm.bias": {
+      "dtype": "torch.float32",
+      "sha256": "dc2182305931a30941eaad00d1d2c877d5684bfff1d03c6401b49d7fa643cb9f",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_attention_token_norm.weight": {
+      "dtype": "torch.float32",
+      "sha256": "45be802712e79914c0c090aa5e2b850a537c9066fdf4bcf3b0af0290b6d71c86",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.0.in_proj_bias": {
+      "dtype": "torch.float32",
+      "sha256": "d533d940c938f09730c29bfc6a551bf229af832395319daf6e16d69f9234ad8f",
+      "shape": [
+        384
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.0.in_proj_weight": {
+      "dtype": "torch.float32",
+      "sha256": "bb7d1c87a1428d661e0d9351bf4f6b1eb465035912275363983b206123eae5c7",
+      "shape": [
+        384,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.0.out_proj.bias": {
+      "dtype": "torch.float32",
+      "sha256": "9c08fff8b897b19f5e70f1fdd84bd1f31500d667028c991c34e3c713889e3112",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.0.out_proj.weight": {
+      "dtype": "torch.float32",
+      "sha256": "c13384fefbf27837fdd479906c18c5ddada31aadcc187cdaca4ba04847e4f822",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.1.in_proj_bias": {
+      "dtype": "torch.float32",
+      "sha256": "95385708a36eed584739b1e86cbb2de9761f54bdb16fef1c7185e7d091416ff5",
+      "shape": [
+        384
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.1.in_proj_weight": {
+      "dtype": "torch.float32",
+      "sha256": "a15c16b877cafddc91e28b556bddcf5ddb161827934b0ce6de9a233fcc24d91e",
+      "shape": [
+        384,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.1.out_proj.bias": {
+      "dtype": "torch.float32",
+      "sha256": "b57043d98b87930fefbfc33478e051f759ef93e1bba86081d2a7a46207394ac8",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.1.out_proj.weight": {
+      "dtype": "torch.float32",
+      "sha256": "494eea7cff89030f4ee586f3cee155a8b1349dc880f7786f0862c1ccc5af889a",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.10.in_proj_bias": {
+      "dtype": "torch.float32",
+      "sha256": "5c570196f4985cf651f81e362694945b3d67ff768bcc5f41b8c5850f0ad2c7ac",
+      "shape": [
+        384
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.10.in_proj_weight": {
+      "dtype": "torch.float32",
+      "sha256": "ae5822ad98bdf649f83784a08ac0bfb0e90e67b07c88e7821fc1a7ac1116da2a",
+      "shape": [
+        384,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.10.out_proj.bias": {
+      "dtype": "torch.float32",
+      "sha256": "b88dd2eaf30d9f9d68e2695e707c045596af26b361c9c6869167fd09cde4521c",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.10.out_proj.weight": {
+      "dtype": "torch.float32",
+      "sha256": "b02fb0ff3828d4623a50e0372987b7a37c9f6f14c406feaa83b497913af5393c",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.11.in_proj_bias": {
+      "dtype": "torch.float32",
+      "sha256": "0e8db7ebf299cc4dd68a692ab8fddc8d52a2488df6fe1429ee2d0831d05a993a",
+      "shape": [
+        384
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.11.in_proj_weight": {
+      "dtype": "torch.float32",
+      "sha256": "e5b29242c7410860aea858b211d15a4eff92f4acec1bf988c91a6ca34acffe46",
+      "shape": [
+        384,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.11.out_proj.bias": {
+      "dtype": "torch.float32",
+      "sha256": "6ee02010ffadd8eeb64d820bc2c1d16eb554bc747bce28e939efc3abfafe1419",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.11.out_proj.weight": {
+      "dtype": "torch.float32",
+      "sha256": "66994af9d2c4c6008b42ce7729bc3d6a99d6e3fd8ab92b6a9ca7998a87452264",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.2.in_proj_bias": {
+      "dtype": "torch.float32",
+      "sha256": "308c1c99a3dd6224eacb1b2f6db94eabfee6f6b21960ef05bd713b95fa4308ac",
+      "shape": [
+        384
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.2.in_proj_weight": {
+      "dtype": "torch.float32",
+      "sha256": "c5c205a74d5e33eb2e887d16316bbae97ceb355839272a1cdd0c263f8cc09724",
+      "shape": [
+        384,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.2.out_proj.bias": {
+      "dtype": "torch.float32",
+      "sha256": "1e524ee18213efdae5ec8d3a3e512d79f9a5047e5a561bfe01696bd098ccd911",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.2.out_proj.weight": {
+      "dtype": "torch.float32",
+      "sha256": "74e9c85c7fcb577898063e2f99587cfb583bfb8941c81d57a3d207678899f964",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.3.in_proj_bias": {
+      "dtype": "torch.float32",
+      "sha256": "25c6462cc5e1ae0a5461dfd2f92cc7eff00315f26debcfa43921dd4405cacf76",
+      "shape": [
+        384
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.3.in_proj_weight": {
+      "dtype": "torch.float32",
+      "sha256": "43d4857aabe1ba443a91645f71f2163d8c70e5f19f8d38afb939d0f40bcddd39",
+      "shape": [
+        384,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.3.out_proj.bias": {
+      "dtype": "torch.float32",
+      "sha256": "0a5a8c62f52a3f7dc92092bc51035969defb4f6b9ed0458249b7c097fb3f42e5",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.3.out_proj.weight": {
+      "dtype": "torch.float32",
+      "sha256": "62e11f91ef4fc127d11d216a0526670f04bca9ebe724afca797b08c99e1b6e3c",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.4.in_proj_bias": {
+      "dtype": "torch.float32",
+      "sha256": "107e31d171d8355a56b22809d6e4a5631caae443eff564d49be146857ac884e4",
+      "shape": [
+        384
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.4.in_proj_weight": {
+      "dtype": "torch.float32",
+      "sha256": "84f18543f1f91fb617a47cebb11b4b67362849bf88f0b4afab0ee04ef3ccc10e",
+      "shape": [
+        384,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.4.out_proj.bias": {
+      "dtype": "torch.float32",
+      "sha256": "cec340865ab4c61b2ef8283792b10d9ea39905930a19a69d88d5fa0c4fb57ca6",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.4.out_proj.weight": {
+      "dtype": "torch.float32",
+      "sha256": "331b3aa64d101d6596ba856a7a115a685df9770f757b4948ea1c0f1114af9a1f",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.5.in_proj_bias": {
+      "dtype": "torch.float32",
+      "sha256": "f771fd26214d372e909ae2e0764c5eea6768d90c162774645e151a3a09a31dee",
+      "shape": [
+        384
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.5.in_proj_weight": {
+      "dtype": "torch.float32",
+      "sha256": "2843d9d245a7addb2abff53b4b12880dc816728cd294e2977da51cec8576dc91",
+      "shape": [
+        384,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.5.out_proj.bias": {
+      "dtype": "torch.float32",
+      "sha256": "4f011d435841599d496b0a6909ffea24e3b21f2b0ea8461457a1beb9ffc8547d",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.5.out_proj.weight": {
+      "dtype": "torch.float32",
+      "sha256": "3bef541a36992418567c0b6cbf8bf5fc9dc605d869675295eba077c2711af23a",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.6.in_proj_bias": {
+      "dtype": "torch.float32",
+      "sha256": "4d93d2fd44dd806855505f323958bf1350f4cad07c2775baa27d863a4f8d5a50",
+      "shape": [
+        384
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.6.in_proj_weight": {
+      "dtype": "torch.float32",
+      "sha256": "998846580e763823ef4e27f9963779c63e401959a5fc3a8d647262eb48fd3fe3",
+      "shape": [
+        384,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.6.out_proj.bias": {
+      "dtype": "torch.float32",
+      "sha256": "676e641c5c41f4305233a2dcee0b9670ae11b0760dc5814dfd2fcac25f4a91fd",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.6.out_proj.weight": {
+      "dtype": "torch.float32",
+      "sha256": "d7123d3ed5195421958f8b3ec35aba9f03a80d644d5f16f9082389d41e3dd063",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.7.in_proj_bias": {
+      "dtype": "torch.float32",
+      "sha256": "e17e223fdc86c23c5e26eec77dd4ccc94bcb9be311c1570ef84901fdada4d62e",
+      "shape": [
+        384
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.7.in_proj_weight": {
+      "dtype": "torch.float32",
+      "sha256": "c6df69c983649ca03c17c352f13b1e7e75538b6ebedbd53942ab9c5baacdc23e",
+      "shape": [
+        384,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.7.out_proj.bias": {
+      "dtype": "torch.float32",
+      "sha256": "3cc564612fa0a04d41c9c63ac37cb990ab3a48d5f8eaee462394fd39e809f8a9",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.7.out_proj.weight": {
+      "dtype": "torch.float32",
+      "sha256": "5eba1b3ebb24f51d7886bbe3cf0d3f8f9927b879928061f59b1cfd3559f50ff9",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.8.in_proj_bias": {
+      "dtype": "torch.float32",
+      "sha256": "958f6e9d78b66003b8e96e5a2d17b292f23ca50a306618e77a244de74de31960",
+      "shape": [
+        384
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.8.in_proj_weight": {
+      "dtype": "torch.float32",
+      "sha256": "261fc937adf44e03598faefe1d76cdd0eef9fb97eacd29f2115a04d9db98b75e",
+      "shape": [
+        384,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.8.out_proj.bias": {
+      "dtype": "torch.float32",
+      "sha256": "17435a43893f08565e37a629b45e2567786580b4889158f0d81203dc9c6ef439",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.8.out_proj.weight": {
+      "dtype": "torch.float32",
+      "sha256": "352b9d0652b403f9167503361c5aceeb8edc85314d6ddb1d96ee420d42d365a3",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.9.in_proj_bias": {
+      "dtype": "torch.float32",
+      "sha256": "7dde9581de26f1fc7a8e539ebc90f547e86ae77f15f237122a3c1cb2a75d4530",
+      "shape": [
+        384
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.9.in_proj_weight": {
+      "dtype": "torch.float32",
+      "sha256": "626cede0a11e366c640bdbcd4aacb0b0307c891c373e9e6410d0651700a7af26",
+      "shape": [
+        384,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.9.out_proj.bias": {
+      "dtype": "torch.float32",
+      "sha256": "5cc91e69eca50ce45bdcc907a5a4701405ba8c36b0914880ec5e096d519ecebb",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_cross_attention.9.out_proj.weight": {
+      "dtype": "torch.float32",
+      "sha256": "0f9b01f95cfb4a74b0fd2b0a3e45cb9195ab6a50722ec6fad944e4c4a95e0a30",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_dustbin_head.bias": {
+      "dtype": "torch.float32",
+      "sha256": "53ac000dc5a17eb4f2f6abacca7d40fde40cb25a172be57eb9197435316d0d70",
+      "shape": [
+        1
+      ]
+    },
+    "model.parameter.obs_branch.obs_dustbin_head.weight": {
+      "dtype": "torch.float32",
+      "sha256": "fdbdc1b777defaa80666d48502c67ed2d9855f6844c4cb46067296dbb67c3afb",
+      "shape": [
+        1,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_feature_projection.bias": {
+      "dtype": "torch.float32",
+      "sha256": "c3d6486e794febf1950b3f6eabbc7b84de523aff8dc5b0a5f1c4891c3883d274",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_feature_projection.weight": {
+      "dtype": "torch.float32",
+      "sha256": "1baafd420769b660a3691d4670232a7ae5dd30a353c30962989029488f68f231",
+      "shape": [
+        128,
+        1024
+      ]
+    },
+    "model.parameter.obs_branch.obs_metadata_projection.0.bias": {
+      "dtype": "torch.float32",
+      "sha256": "b67089f8911f43feedadd38272a899805437ae1c2dd902b6698689ca0fd2c747",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_metadata_projection.0.weight": {
+      "dtype": "torch.float32",
+      "sha256": "bf9ccb00513f853223ad9ea6630be9a068f777c38a420f50b2638daae4c20b84",
+      "shape": [
+        128,
+        15
+      ]
+    },
+    "model.parameter.obs_branch.obs_metadata_projection.2.bias": {
+      "dtype": "torch.float32",
+      "sha256": "18c1c079794275733a89111da34460ca12ace12b9341e0f263f526c1a141acdd",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_metadata_projection.2.weight": {
+      "dtype": "torch.float32",
+      "sha256": "a725b91886c13e4c1fe01e93770a4c4d54f0f8c0ff50870252e67dd73cf953f7",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_query_norm.bias": {
+      "dtype": "torch.float32",
+      "sha256": "d313f73f30b7ec71be0200d36e006dc7d7067d828d28ae2fb7e24bbf4d494301",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_query_norm.weight": {
+      "dtype": "torch.float32",
+      "sha256": "660e25711897c50c80af87f389b8c36928ebe9d41f406ba63ecdd14ab3eff4f6",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_query_projection.weight": {
+      "dtype": "torch.float32",
+      "sha256": "b92db0c5e28f044e5d1e861310e880e93a50af975a8205eb961ab88d86842da5",
+      "shape": [
+        128,
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_raw_alpha": {
+      "dtype": "torch.float32",
+      "sha256": "b8103d423386aecd9ec6edf0f6113be30488a2dd73d2c9722ce3d52d942f6483",
+      "shape": [
+        12
+      ]
+    },
+    "model.parameter.obs_branch.obs_raw_beta": {
+      "dtype": "torch.float32",
+      "sha256": "d470bc0c194d61396908d65d7ee8b0c5f6fa8ed2adb0e95fe5dd8a30e37ad335",
+      "shape": [
+        12
+      ]
+    },
+    "model.parameter.obs_branch.obs_region_norm.bias": {
+      "dtype": "torch.float32",
+      "sha256": "02421d60d43ba188255020441a1f8975a72ccdf66be8d7c80ce7e638ec1c6d6f",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_region_norm.weight": {
+      "dtype": "torch.float32",
+      "sha256": "6502fc1ba18c34a9c73cbec268d8be157fcfdda89ae3e7f42b087e03cc4c0e40",
+      "shape": [
+        128
+      ]
+    },
+    "model.parameter.obs_branch.obs_region_projection.weight": {
+      "dtype": "torch.float32",
+      "sha256": "4ca36495a84eeff745c14db2e5e7e6a5a8ef9e58941bac8d86f40dfc8c81c0c9",
+      "shape": [
+        128,
+        128
+      ]
+    }
+  },
+  "trainable_keys": [
+    "criterion.parameter.obs_surface_null_head.bias",
+    "criterion.parameter.obs_surface_null_head.weight",
+    "model.buffer.native.pos_enc.gauss_B",
+    "model.parameter.native.class_embed_head.bias",
+    "model.parameter.native.class_embed_head.weight",
+    "model.parameter.native.cross_attention.0.0.multihead_attn.in_proj_bias",
+    "model.parameter.native.cross_attention.0.0.multihead_attn.in_proj_weight",
+    "model.parameter.native.cross_attention.0.0.multihead_attn.out_proj.bias",
+    "model.parameter.native.cross_attention.0.0.multihead_attn.out_proj.weight",
+    "model.parameter.native.cross_attention.0.0.norm.bias",
+    "model.parameter.native.cross_attention.0.0.norm.weight",
+    "model.parameter.native.cross_attention.0.1.multihead_attn.in_proj_bias",
+    "model.parameter.native.cross_attention.0.1.multihead_attn.in_proj_weight",
+    "model.parameter.native.cross_attention.0.1.multihead_attn.out_proj.bias",
+    "model.parameter.native.cross_attention.0.1.multihead_attn.out_proj.weight",
+    "model.parameter.native.cross_attention.0.1.norm.bias",
+    "model.parameter.native.cross_attention.0.1.norm.weight",
+    "model.parameter.native.cross_attention.0.2.multihead_attn.in_proj_bias",
+    "model.parameter.native.cross_attention.0.2.multihead_attn.in_proj_weight",
+    "model.parameter.native.cross_attention.0.2.multihead_attn.out_proj.bias",
+    "model.parameter.native.cross_attention.0.2.multihead_attn.out_proj.weight",
+    "model.parameter.native.cross_attention.0.2.norm.bias",
+    "model.parameter.native.cross_attention.0.2.norm.weight",
+    "model.parameter.native.cross_attention.0.3.multihead_attn.in_proj_bias",
+    "model.parameter.native.cross_attention.0.3.multihead_attn.in_proj_weight",
+    "model.parameter.native.cross_attention.0.3.multihead_attn.out_proj.bias",
+    "model.parameter.native.cross_attention.0.3.multihead_attn.out_proj.weight",
+    "model.parameter.native.cross_attention.0.3.norm.bias",
+    "model.parameter.native.cross_attention.0.3.norm.weight",
+    "model.parameter.native.decoder_norm.bias",
+    "model.parameter.native.decoder_norm.weight",
+    "model.parameter.native.ffn_attention.0.0.linear1.bias",
+    "model.parameter.native.ffn_attention.0.0.linear1.weight",
+    "model.parameter.native.ffn_attention.0.0.linear2.bias",
+    "model.parameter.native.ffn_attention.0.0.linear2.weight",
+    "model.parameter.native.ffn_attention.0.0.norm.bias",
+    "model.parameter.native.ffn_attention.0.0.norm.weight",
+    "model.parameter.native.ffn_attention.0.1.linear1.bias",
+    "model.parameter.native.ffn_attention.0.1.linear1.weight",
+    "model.parameter.native.ffn_attention.0.1.linear2.bias",
+    "model.parameter.native.ffn_attention.0.1.linear2.weight",
+    "model.parameter.native.ffn_attention.0.1.norm.bias",
+    "model.parameter.native.ffn_attention.0.1.norm.weight",
+    "model.parameter.native.ffn_attention.0.2.linear1.bias",
+    "model.parameter.native.ffn_attention.0.2.linear1.weight",
+    "model.parameter.native.ffn_attention.0.2.linear2.bias",
+    "model.parameter.native.ffn_attention.0.2.linear2.weight",
+    "model.parameter.native.ffn_attention.0.2.norm.bias",
+    "model.parameter.native.ffn_attention.0.2.norm.weight",
+    "model.parameter.native.ffn_attention.0.3.linear1.bias",
+    "model.parameter.native.ffn_attention.0.3.linear1.weight",
+    "model.parameter.native.ffn_attention.0.3.linear2.bias",
+    "model.parameter.native.ffn_attention.0.3.linear2.weight",
+    "model.parameter.native.ffn_attention.0.3.norm.bias",
+    "model.parameter.native.ffn_attention.0.3.norm.weight",
+    "model.parameter.native.lin_squeeze.0.0.bias",
+    "model.parameter.native.lin_squeeze.0.0.weight",
+    "model.parameter.native.lin_squeeze.0.1.bias",
+    "model.parameter.native.lin_squeeze.0.1.weight",
+    "model.parameter.native.lin_squeeze.0.2.bias",
+    "model.parameter.native.lin_squeeze.0.2.weight",
+    "model.parameter.native.lin_squeeze.0.3.bias",
+    "model.parameter.native.lin_squeeze.0.3.weight",
+    "model.parameter.native.mask_embed_head.0.bias",
+    "model.parameter.native.mask_embed_head.0.weight",
+    "model.parameter.native.mask_embed_head.2.bias",
+    "model.parameter.native.mask_embed_head.2.weight",
+    "model.parameter.native.mask_features_head.bias",
+    "model.parameter.native.mask_features_head.weight",
+    "model.parameter.native.query_projection.layers.0.bias",
+    "model.parameter.native.query_projection.layers.0.weight",
+    "model.parameter.native.query_projection.layers.2.bias",
+    "model.parameter.native.query_projection.layers.2.weight",
+    "model.parameter.native.self_attention.0.0.norm.bias",
+    "model.parameter.native.self_attention.0.0.norm.weight",
+    "model.parameter.native.self_attention.0.0.self_attn.in_proj_bias",
+    "model.parameter.native.self_attention.0.0.self_attn.in_proj_weight",
+    "model.parameter.native.self_attention.0.0.self_attn.out_proj.bias",
+    "model.parameter.native.self_attention.0.0.self_attn.out_proj.weight",
+    "model.parameter.native.self_attention.0.1.norm.bias",
+    "model.parameter.native.self_attention.0.1.norm.weight",
+    "model.parameter.native.self_attention.0.1.self_attn.in_proj_bias",
+    "model.parameter.native.self_attention.0.1.self_attn.in_proj_weight",
+    "model.parameter.native.self_attention.0.1.self_attn.out_proj.bias",
+    "model.parameter.native.self_attention.0.1.self_attn.out_proj.weight",
+    "model.parameter.native.self_attention.0.2.norm.bias",
+    "model.parameter.native.self_attention.0.2.norm.weight",
+    "model.parameter.native.self_attention.0.2.self_attn.in_proj_bias",
+    "model.parameter.native.self_attention.0.2.self_attn.in_proj_weight",
+    "model.parameter.native.self_attention.0.2.self_attn.out_proj.bias",
+    "model.parameter.native.self_attention.0.2.self_attn.out_proj.weight",
+    "model.parameter.native.self_attention.0.3.norm.bias",
+    "model.parameter.native.self_attention.0.3.norm.weight",
+    "model.parameter.native.self_attention.0.3.self_attn.in_proj_bias",
+    "model.parameter.native.self_attention.0.3.self_attn.in_proj_weight",
+    "model.parameter.native.self_attention.0.3.self_attn.out_proj.bias",
+    "model.parameter.native.self_attention.0.3.self_attn.out_proj.weight",
+    "model.parameter.obs_branch.obs_attention_token_norm.bias",
+    "model.parameter.obs_branch.obs_attention_token_norm.weight",
+    "model.parameter.obs_branch.obs_cross_attention.0.in_proj_bias",
+    "model.parameter.obs_branch.obs_cross_attention.0.in_proj_weight",
+    "model.parameter.obs_branch.obs_cross_attention.0.out_proj.bias",
+    "model.parameter.obs_branch.obs_cross_attention.0.out_proj.weight",
+    "model.parameter.obs_branch.obs_cross_attention.1.in_proj_bias",
+    "model.parameter.obs_branch.obs_cross_attention.1.in_proj_weight",
+    "model.parameter.obs_branch.obs_cross_attention.1.out_proj.bias",
+    "model.parameter.obs_branch.obs_cross_attention.1.out_proj.weight",
+    "model.parameter.obs_branch.obs_cross_attention.10.in_proj_bias",
+    "model.parameter.obs_branch.obs_cross_attention.10.in_proj_weight",
+    "model.parameter.obs_branch.obs_cross_attention.10.out_proj.bias",
+    "model.parameter.obs_branch.obs_cross_attention.10.out_proj.weight",
+    "model.parameter.obs_branch.obs_cross_attention.11.in_proj_bias",
+    "model.parameter.obs_branch.obs_cross_attention.11.in_proj_weight",
+    "model.parameter.obs_branch.obs_cross_attention.11.out_proj.bias",
+    "model.parameter.obs_branch.obs_cross_attention.11.out_proj.weight",
+    "model.parameter.obs_branch.obs_cross_attention.2.in_proj_bias",
+    "model.parameter.obs_branch.obs_cross_attention.2.in_proj_weight",
+    "model.parameter.obs_branch.obs_cross_attention.2.out_proj.bias",
+    "model.parameter.obs_branch.obs_cross_attention.2.out_proj.weight",
+    "model.parameter.obs_branch.obs_cross_attention.3.in_proj_bias",
+    "model.parameter.obs_branch.obs_cross_attention.3.in_proj_weight",
+    "model.parameter.obs_branch.obs_cross_attention.3.out_proj.bias",
+    "model.parameter.obs_branch.obs_cross_attention.3.out_proj.weight",
+    "model.parameter.obs_branch.obs_cross_attention.4.in_proj_bias",
+    "model.parameter.obs_branch.obs_cross_attention.4.in_proj_weight",
+    "model.parameter.obs_branch.obs_cross_attention.4.out_proj.bias",
+    "model.parameter.obs_branch.obs_cross_attention.4.out_proj.weight",
+    "model.parameter.obs_branch.obs_cross_attention.5.in_proj_bias",
+    "model.parameter.obs_branch.obs_cross_attention.5.in_proj_weight",
+    "model.parameter.obs_branch.obs_cross_attention.5.out_proj.bias",
+    "model.parameter.obs_branch.obs_cross_attention.5.out_proj.weight",
+    "model.parameter.obs_branch.obs_cross_attention.6.in_proj_bias",
+    "model.parameter.obs_branch.obs_cross_attention.6.in_proj_weight",
+    "model.parameter.obs_branch.obs_cross_attention.6.out_proj.bias",
+    "model.parameter.obs_branch.obs_cross_attention.6.out_proj.weight",
+    "model.parameter.obs_branch.obs_cross_attention.7.in_proj_bias",
+    "model.parameter.obs_branch.obs_cross_attention.7.in_proj_weight",
+    "model.parameter.obs_branch.obs_cross_attention.7.out_proj.bias",
+    "model.parameter.obs_branch.obs_cross_attention.7.out_proj.weight",
+    "model.parameter.obs_branch.obs_cross_attention.8.in_proj_bias",
+    "model.parameter.obs_branch.obs_cross_attention.8.in_proj_weight",
+    "model.parameter.obs_branch.obs_cross_attention.8.out_proj.bias",
+    "model.parameter.obs_branch.obs_cross_attention.8.out_proj.weight",
+    "model.parameter.obs_branch.obs_cross_attention.9.in_proj_bias",
+    "model.parameter.obs_branch.obs_cross_attention.9.in_proj_weight",
+    "model.parameter.obs_branch.obs_cross_attention.9.out_proj.bias",
+    "model.parameter.obs_branch.obs_cross_attention.9.out_proj.weight",
+    "model.parameter.obs_branch.obs_dustbin_head.bias",
+    "model.parameter.obs_branch.obs_dustbin_head.weight",
+    "model.parameter.obs_branch.obs_feature_projection.bias",
+    "model.parameter.obs_branch.obs_feature_projection.weight",
+    "model.parameter.obs_branch.obs_metadata_projection.0.bias",
+    "model.parameter.obs_branch.obs_metadata_projection.0.weight",
+    "model.parameter.obs_branch.obs_metadata_projection.2.bias",
+    "model.parameter.obs_branch.obs_metadata_projection.2.weight",
+    "model.parameter.obs_branch.obs_query_norm.bias",
+    "model.parameter.obs_branch.obs_query_norm.weight",
+    "model.parameter.obs_branch.obs_query_projection.weight",
+    "model.parameter.obs_branch.obs_raw_alpha",
+    "model.parameter.obs_branch.obs_raw_beta",
+    "model.parameter.obs_branch.obs_region_norm.bias",
+    "model.parameter.obs_branch.obs_region_norm.weight",
+    "model.parameter.obs_branch.obs_region_projection.weight"
+  ],
+  "weights": {
+    "byte_count": 11197412,
+    "path": "trainable.safetensors",
+    "sha256": "fcbcec2310fbc452afcc0e2c6d4dd5de0cdc8103041ee5ce4193399c29d6e36d"
+  }
+}
