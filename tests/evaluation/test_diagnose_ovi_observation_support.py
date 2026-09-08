@@ -7,6 +7,7 @@ import numpy as np
 from scripts.evaluation.diagnose_ovi_observation_support import (
     build_camera_visible_support_mask,
     filter_native_sample_by_visibility,
+    resolve_diagnostic_pair_runtime,
     strip_native_ground_truth,
 )
 from scripts.evaluation.prepare_ovi_observations import RealFrameAssets
@@ -32,6 +33,28 @@ def _frame(visit_id: int) -> RealFrameAssets:
         paths={"rgb": Path("unused")},
         raw_regions=(),
     )
+
+
+def test_diagnostic_resolves_one_explicit_pair_from_multiple_dev_pairs() -> None:
+    selected = resolve_diagnostic_pair_runtime(
+        {
+            "pairs": {
+                "dev_a": {
+                    "pair_id": "scene0001_00-scene0001_01",
+                    "role": "DEV",
+                    "status": "READY",
+                },
+                "dev_b": {
+                    "pair_id": "scene0002_00-scene0002_01",
+                    "role": "DEV",
+                    "status": "READY",
+                },
+            }
+        },
+        "scene0002_00-scene0002_01",
+    )
+
+    assert selected["pair_id"] == "scene0002_00-scene0002_01"
 
 
 def test_camera_visible_support_uses_supported_depth_not_occlusion() -> None:

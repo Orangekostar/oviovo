@@ -27,6 +27,7 @@ from scripts.evaluation.prepare_ovi_observations import (
     RealFrameAssets,
     find_pair_record,
     load_real_pair_frames,
+    resolve_runtime_pair,
 )
 from src.core.data_structures import CameraIntrinsics
 from src.oviv2.observation_query.observations import (
@@ -46,6 +47,14 @@ class CameraVisibleSupport:
     support_mask: np.ndarray
     support_frame_counts: np.ndarray
     relation_counts: dict[str, int]
+
+
+def resolve_diagnostic_pair_runtime(
+    runtime_config: Mapping[str, object], pair_id: str
+) -> Mapping[str, object]:
+    """Resolve the explicit DEV pair used by the camera-visible diagnostic."""
+
+    return resolve_runtime_pair(runtime_config, pair_id=pair_id, role="DEV")
 
 
 def build_camera_visible_support_mask(
@@ -310,6 +319,7 @@ def run_camera_visible_diagnostic(
         dev = pairs.get("dev") if isinstance(pairs, Mapping) else None
         selected_pair_id = str(dev.get("pair_id", "")) if isinstance(dev, Mapping) else ""
     pair_record = find_pair_record(selection, selected_pair_id)
+    pair_runtime = resolve_diagnostic_pair_runtime(runtime_local, selected_pair_id)
     selection_sha256 = hashlib.sha256(selection_path.read_bytes()).hexdigest()
     d0_pair = build_method_pair_view_from_manifest(
         pair_record=pair_record,
@@ -317,7 +327,7 @@ def run_camera_visible_diagnostic(
         domain_id="D0_NATIVE_PROCESSED",
     )
     frames, _materialized, _native = load_real_pair_frames(
-        runtime_config=runtime_local,
+        pair_runtime=pair_runtime,
         observation_config=observation_config,
         pair_id=selected_pair_id,
         pair_record=pair_record,
@@ -726,6 +736,7 @@ __all__ = [
     "CameraVisibleSupport",
     "build_camera_visible_support_mask",
     "filter_native_sample_by_visibility",
+    "resolve_diagnostic_pair_runtime",
     "run_camera_visible_diagnostic",
     "strip_native_ground_truth",
 ]
