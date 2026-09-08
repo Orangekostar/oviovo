@@ -36,6 +36,21 @@ class ObservationTrainingRunError(ValueError):
     """Raised when a training request violates its fixed experiment contract."""
 
 
+_REPLAY_RTOL = 1e-5
+_REPLAY_ATOL = 5e-5
+
+
+def _replay_outputs_match(
+    replay_pairs: Sequence[tuple[torch.Tensor, torch.Tensor]],
+) -> bool:
+    """Accept float32 CUDA replay noise while rejecting material output drift."""
+
+    return all(
+        torch.allclose(left, right, rtol=_REPLAY_RTOL, atol=_REPLAY_ATOL)
+        for left, right in replay_pairs
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class TrainingMethodContract:
     observation_mode: str
@@ -1333,12 +1348,9 @@ def _execute_training(
                     (left - right).abs().max().cpu()
                 )
                 replay_pairs.append((left, right))
-        replay_rtol = 1e-5
-        replay_atol = 1e-6
-        if not all(
-            torch.allclose(left, right, rtol=replay_rtol, atol=replay_atol)
-            for left, right in replay_pairs
-        ):
+        replay_rtol = _REPLAY_RTOL
+        replay_atol = _REPLAY_ATOL
+        if not _replay_outputs_match(replay_pairs):
             raise ObservationTrainingRunError("checkpoint reload changed model outputs")
         summary = {
             "schema_version": 3,

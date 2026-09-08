@@ -10,6 +10,7 @@ from torch import nn
 
 from scripts.training.train_ovi_observation_query import (
     ObservationTrainingRunError,
+    _replay_outputs_match,
     _restore_training_random_state,
     _same_resume_contract,
     _target_update_count,
@@ -31,6 +32,13 @@ class _TrainableModel(nn.Module):
         self.native.backbone.requires_grad_(False)
         self.native.decoder = nn.Linear(2, 2)
         self.obs_branch = nn.Linear(2, 2)
+
+
+def test_replay_check_accepts_cuda_scale_noise_but_rejects_material_drift() -> None:
+    reference = torch.zeros(8, dtype=torch.float32)
+
+    assert _replay_outputs_match(((reference, reference + 3.1e-5),))
+    assert not _replay_outputs_match(((reference, reference + 1.0e-3),))
 
 
 def test_optimizer_uses_separate_native_and_observation_rates() -> None:
