@@ -50,11 +50,11 @@ class CameraVisibleSupport:
 
 
 def resolve_diagnostic_pair_runtime(
-    runtime_config: Mapping[str, object], pair_id: str
+    runtime_config: Mapping[str, object], pair_id: str, *, role: str = "DEV"
 ) -> Mapping[str, object]:
-    """Resolve the explicit DEV pair used by the camera-visible diagnostic."""
+    """Resolve the explicit role-bound pair used by the camera-visible diagnostic."""
 
-    return resolve_runtime_pair(runtime_config, pair_id=pair_id, role="DEV")
+    return resolve_runtime_pair(runtime_config, pair_id=pair_id, role=role)
 
 
 def build_camera_visible_support_mask(
@@ -266,6 +266,7 @@ def run_camera_visible_diagnostic(
     observation_artifact_root: str | Path,
     output_root: str | Path,
     pair_id: str | None = None,
+    role: str = "DEV",
 ) -> dict[str, object]:
     """Execute one uncached native ReScene forward on real camera-visible points."""
 
@@ -319,7 +320,9 @@ def run_camera_visible_diagnostic(
         dev = pairs.get("dev") if isinstance(pairs, Mapping) else None
         selected_pair_id = str(dev.get("pair_id", "")) if isinstance(dev, Mapping) else ""
     pair_record = find_pair_record(selection, selected_pair_id)
-    pair_runtime = resolve_diagnostic_pair_runtime(runtime_local, selected_pair_id)
+    pair_runtime = resolve_diagnostic_pair_runtime(
+        runtime_local, selected_pair_id, role=role
+    )
     selection_sha256 = hashlib.sha256(selection_path.read_bytes()).hexdigest()
     d0_pair = build_method_pair_view_from_manifest(
         pair_record=pair_record,
@@ -702,6 +705,9 @@ def _parse_args(arguments: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--observation-artifact", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--pair-id")
+    parser.add_argument(
+        "--role", type=str.upper, choices=("TRAIN", "DEV", "CONFIRM"), default="DEV"
+    )
     return parser.parse_args(arguments)
 
 
@@ -716,6 +722,7 @@ def main(arguments: list[str] | None = None) -> int:
         observation_artifact_root=args.observation_artifact,
         output_root=args.output_root,
         pair_id=args.pair_id,
+        role=args.role,
     )
     print(
         json.dumps(

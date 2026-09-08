@@ -1,0 +1,182 @@
+{
+  "artifact_id": "OVI_OBSERVATION_QUERY_V3_QUALITATIVE_V1",
+  "case_manifest": {
+    "byte_count": 1354,
+    "path": "qualitative_cases.json",
+    "sha256": "a7fe6286fc82973430fd8bfdba2e8b639071ab92a4b318adc4330d95d3d2ffe8"
+  },
+  "cases": [
+    {
+      "case_id": "confirm_scene0009_visit1",
+      "figure": {
+        "byte_count": 93896,
+        "path": "confirm_scene0009_visit1.png",
+        "sha256": "86eb31576db42d46249549f8b6b9bea09305f0d9cc293c7c9a58972f06962775"
+      },
+      "pair_id": "scene0009_00-scene0009_02",
+      "render": {
+        "ground_truth_ambiguous_label": -2,
+        "ground_truth_ambiguous_point_count": 150225,
+        "ground_truth_used_for_prediction": false,
+        "label_text_height_px": 14,
+        "panel_size_px": 320,
+        "panels": [
+          "RGB support",
+          "GT",
+          "Frozen",
+          "BASE",
+          "FULL"
+        ],
+        "point_count": 3083979,
+        "prediction_color_semantics": "PANEL_LOCAL_INSTANCE_ID",
+        "projection": "XY_TOPDOWN_MAX_Z",
+        "visible_pixel_count": 32330
+      },
+      "runtime": {
+        "byte_count": 991,
+        "path": "runtime.eval-scene0009.local.json",
+        "sha256": "08712bea59a22f4b103aa0e9770a7580b411cfceebe92b3f6f4d51dbf0f91c53"
+      },
+      "selection": "Stable pair-ID order; positive CONFIRM case retained without object-level cherry-picking.",
+      "source_runs": [
+        {
+          "checkpoint_id": "85ed1aba60320cd19798536b71b91dbc156b7ea60f838832bc0bbbdba131546e",
+          "method_id": "OBS_BASE_FROZEN",
+          "predictions": {
+            "byte_count": 40421438,
+            "path": "20260908_v3_confirm_scene0009_base_frozen_u0000/predictions.npz",
+            "sha256": "497af8967dbbbe6092eff0f94b5e7f075dcbe08d71230e160369126e780dd17a"
+          },
+          "run_id": "20260908_v3_confirm_scene0009_base_frozen_u0000",
+          "summary": {
+            "byte_count": 5750,
+            "path": "20260908_v3_confirm_scene0009_base_frozen_u0000/summary.json",
+            "sha256": "c301d18e4744ea01845c730e4e84abfd2bda563895f46ea1cb6484f95d2013d5"
+          },
+          "training_updates": 0
+        },
+        {
+          "checkpoint_id": "e15357abaebffe7cb911753e1adee85f595416cb6660d2fcf95b5c75d8492bcd",
+          "method_id": "OBS_BASE_TUNED",
+          "predictions": {
+            "byte_count": 40773358,
+            "path": "20260908_v3_confirm_scene0009_obs_base_tuned_u0200/predictions.npz",
+            "sha256": "7f6f984b488c24d8239573c569f9a419bc43ef624acfe88bdbbdc52b1e252b7f"
+          },
+          "run_id": "20260908_v3_confirm_scene0009_obs_base_tuned_u0200",
+          "summary": {
+            "byte_count": 10789,
+            "path": "20260908_v3_confirm_scene0009_obs_base_tuned_u0200/summary.json",
+            "sha256": "8411894596891744310238e79b2b8b015e0e84450be68839b7e1e4f6509ff9f8"
+          },
+          "training_updates": 200
+        },
+        {
+          "checkpoint_id": "fcbcec2310fbc452afcc0e2c6d4dd5de0cdc8103041ee5ce4193399c29d6e36d",
+          "method_id": "OBS_FULL",
+          "predictions": {
+            "byte_count": 40924603,
+            "path": "20260908_v3_confirm_scene0009_obs_full_u1000/predictions.npz",
+            "sha256": "8faee662912084d12edf9bbc8021ff2120465b7e64d552221f7210e7119bd5b8"
+          },
+          "run_id": "20260908_v3_confirm_scene0009_obs_full_u1000",
+          "summary": {
+            "byte_count": 10894,
+            "path": "20260908_v3_confirm_scene0009_obs_full_u1000/summary.json",
+            "sha256": "e12fe94ae0e8c8bbe23155b8164a017f967fd04278e85d852ab916e57dbe230d"
+          },
+          "training_updates": 1000
+        }
+      ],
+      "visit_id": 1
+    },
+    {
+      "case_id": "confirm_scene0449_visit1",
+      "figure": {
+        "byte_count": 130092,
+        "path": "confirm_scene0449_visit1.png",
+        "sha256": "5d43e65295f5e2f455c926176455b2dd0514bcc4b98d973447c664e7ea359f88"
+      },
+      "pair_id": "scene0449_00-scene0449_05",
+      "render": {
+        "ground_truth_ambiguous_label": -2,
+        "ground_truth_ambiguous_point_count": 146231,
+        "ground_truth_used_for_prediction": false,
+        "label_text_height_px": 14,
+        "panel_size_px": 320,
+        "panels": [
+          "RGB support",
+          "GT",
+          "Frozen",
+          "BASE",
+          "FULL"
+        ],
+        "point_count": 4557786,
+        "prediction_color_semantics": "PANEL_LOCAL_INSTANCE_ID",
+        "projection": "XY_TOPDOWN_MAX_Z",
+        "visible_pixel_count": 31237
+      },
+      "runtime": {
+        "byte_count": 991,
+        "path": "runtime.eval-scene0449.local.json",
+        "sha256": "fe8d44d6dca4b40868f668ec8231f84965bb658ba471cc6e1a927abbefa2c93c"
+      },
+      "selection": "Stable pair-ID order; zero-TP CONFIRM failure case retained.",
+      "source_runs": [
+        {
+          "checkpoint_id": "85ed1aba60320cd19798536b71b91dbc156b7ea60f838832bc0bbbdba131546e",
+          "method_id": "OBS_BASE_FROZEN",
+          "predictions": {
+            "byte_count": 62752813,
+            "path": "20260908_v3_confirm_scene0449_base_frozen_u0000/predictions.npz",
+            "sha256": "07103cdbcea43c9328972b6e03896f40dbb927b5385bd07a7dd86f14c7ff4dd6"
+          },
+          "run_id": "20260908_v3_confirm_scene0449_base_frozen_u0000",
+          "summary": {
+            "byte_count": 5750,
+            "path": "20260908_v3_confirm_scene0449_base_frozen_u0000/summary.json",
+            "sha256": "80c8577bddb100ff155eb692eff583e851628d43346b5154351227b55981296b"
+          },
+          "training_updates": 0
+        },
+        {
+          "checkpoint_id": "e15357abaebffe7cb911753e1adee85f595416cb6660d2fcf95b5c75d8492bcd",
+          "method_id": "OBS_BASE_TUNED",
+          "predictions": {
+            "byte_count": 63501983,
+            "path": "20260908_v3_confirm_scene0449_obs_base_tuned_u0200/predictions.npz",
+            "sha256": "4185ee648fbaef80e632bff8e94d9cc629a9ab1569321d9b51e784a9b23d9dc0"
+          },
+          "run_id": "20260908_v3_confirm_scene0449_obs_base_tuned_u0200",
+          "summary": {
+            "byte_count": 10789,
+            "path": "20260908_v3_confirm_scene0449_obs_base_tuned_u0200/summary.json",
+            "sha256": "81b63e07e15c8eb65bb80ec537dee97eb4f3b531f1df3b6f527f868df1c8dc79"
+          },
+          "training_updates": 200
+        },
+        {
+          "checkpoint_id": "fcbcec2310fbc452afcc0e2c6d4dd5de0cdc8103041ee5ce4193399c29d6e36d",
+          "method_id": "OBS_FULL",
+          "predictions": {
+            "byte_count": 63176719,
+            "path": "20260908_v3_confirm_scene0449_obs_full_u1000/predictions.npz",
+            "sha256": "364e838725cae45d6284eaddb4de1fe08604636fb89234f83137264a271209e6"
+          },
+          "run_id": "20260908_v3_confirm_scene0449_obs_full_u1000",
+          "summary": {
+            "byte_count": 10894,
+            "path": "20260908_v3_confirm_scene0449_obs_full_u1000/summary.json",
+            "sha256": "ad5bd0b8f246f8af2560e5dade9210bde918f22f56bbcdf84868a06ffea072a9"
+          },
+          "training_updates": 1000
+        }
+      ],
+      "visit_id": 1
+    }
+  ],
+  "claim_boundary": "Qualitative fixed-view inspection only; GT did not alter saved predictions.",
+  "color_palette": "OKABE_ITO_PANEL_LOCAL",
+  "schema_version": 1,
+  "status": "PASS"
+}

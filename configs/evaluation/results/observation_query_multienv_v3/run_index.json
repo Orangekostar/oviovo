@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "artifact_id": "OVI_OBSERVATION_QUERY_MULTIENV_V3_RUN_INDEX",
+  "status": "MULTIENV_TRAIN_DEV_CONFIRM_COMPLETE",
+  "scientific_status": "SCIENTIFIC_SIGNAL_POSITIVE_COMMON_SUPPORT_LIMITED",
+  "branch": "research/ovi-rescene-observation-query-multienv-v3",
+  "source_provenance": {
+    "evidence_base_commit": "b39d0182c6e31b22f2110bf5895aa23b223026e1",
+    "evaluated_git_head": "241daa6",
+    "evaluated_tree_state": "HEAD_PLUS_EXACT_SOURCE_CONFIG_AND_RUNTIME_BINDINGS",
+    "delivery_commit": "RECORDED_BY_POST_PUSH_LOCAL_REMOTE_SHA_CHECK"
+  },
+  "data": {
+    "train_environment_count": 6,
+    "train_pair_count": 6,
+    "train_official_split": "train",
+    "dev_environment_count": 3,
+    "dev_exposure": "PREVIOUSLY_INSPECTED",
+    "confirm_environment_count": 2,
+    "confirm_exposure": "PREDECLARED_UNEXPOSED_V3",
+    "split_manifest": "../../../observation_query/splits_multienv_v3.json"
+  },
+  "protocol": {
+    "seed": 45,
+    "optimizer_updates_per_method": 1000,
+    "gradient_accumulation": 2,
+    "micro_steps_per_method": 2000,
+    "balanced_environment_exposure": true,
+    "metric_protocol_id": "OVI_OBSERVATION_QUERY_INSTANCE_V2",
+    "primary_metric": "environment_macro_t1_COMMON_INPUT_SUPPORT_V2_instance_f1_at_iou_0.50",
+    "checkpoint_grid": [0, 200, 500, 1000]
+  },
+  "training_runs": [
+    {
+      "method_id": "OBS_BASE_TUNED",
+      "run_id": "20260908_multienv_v3_base_tuned_me_1000",
+      "status": "TRAIN_RUN_PASS",
+      "optimizer_updates": 1000,
+      "published_model_root": "models/OBS_BASE_TUNED"
+    },
+    {
+      "method_id": "OBS_FUSE",
+      "run_id": "20260908_multienv_v3_fuse_me_1000_replayfix",
+      "status": "TRAIN_RUN_PASS",
+      "optimizer_updates": 1000,
+      "published_model_root": "models/OBS_FUSE"
+    },
+    {
+      "method_id": "OBS_FULL",
+      "run_id": "20260908_multienv_v3_full_me_1000",
+      "status": "TRAIN_RUN_PASS",
+      "optimizer_updates": 1000,
+      "published_model_root": "models/OBS_FULL"
+    }
+  ],
+  "selected_checkpoints": [
+    {
+      "method_id": "OBS_BASE_TUNED",
+      "optimizer_updates": 200,
+      "checkpoint_id": "e15357abaebffe7cb911753e1adee85f595416cb6660d2fcf95b5c75d8492bcd",
+      "model_root": "models/OBS_BASE_TUNED/best_u0200"
+    },
+    {
+      "method_id": "OBS_FUSE",
+      "optimizer_updates": 1000,
+      "checkpoint_id": "eaebaf2a46fc335764f287386745a36813742a1749a710039e407d8a2fb1a587",
+      "model_root": "models/OBS_FUSE/best_terminal_u1000"
+    },
+    {
+      "method_id": "OBS_FULL",
+      "optimizer_updates": 1000,
+      "checkpoint_id": "fcbcec2310fbc452afcc0e2c6d4dd5de0cdc8103041ee5ce4193399c29d6e36d",
+      "model_root": "models/OBS_FULL/best_terminal_u1000"
+    }
+  ],
+  "confirmation_run_ids": [
+    "20260908_v3_confirm_scene0449_base_frozen_u0000",
+    "20260908_v3_confirm_scene0449_obs_base_tuned_u0200",
+    "20260908_v3_confirm_scene0449_obs_fuse_u1000",
+    "20260908_v3_confirm_scene0449_obs_full_u1000",
+    "20260908_v3_confirm_scene0009_base_frozen_u0000",
+    "20260908_v3_confirm_scene0009_obs_base_tuned_u0200",
+    "20260908_v3_confirm_scene0009_obs_fuse_u1000",
+    "20260908_v3_confirm_scene0009_obs_full_u1000"
+  ],
+  "artifacts": {
+    "data_selection": "data_selection.json",
+    "training_runs": "training_runs.csv",
+    "learning_curves": "learning_curves",
+    "readout_diagnosis": "diagnostics/readout_stages.csv",
+    "object_trajectories": "diagnostics/object_trajectories.csv",
+    "interventions": "intervention_results.csv",
+    "dev_per_environment": "per_environment_metrics.csv",
+    "dev_macro_micro": "macro_micro_comparison.csv",
+    "dev_checkpoint_selection": "checkpoint_selection.csv",
+    "confirm_per_environment": "confirmation_metrics.csv",
+    "confirm_macro_micro": "confirmation_macro_micro_comparison.csv",
+    "qualitative_figures": "figures/manifest.json",
+    "scientific_decision": "scientific_decision.json"
+  }
+}

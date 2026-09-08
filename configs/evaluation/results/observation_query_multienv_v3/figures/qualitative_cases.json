@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "case_id": "confirm_scene0009_visit1",
+      "pair_id": "scene0009_00-scene0009_02",
+      "visit_id": 1,
+      "runtime": "runtime.eval-scene0009.local.json",
+      "selection": "Stable pair-ID order; positive CONFIRM case retained without object-level cherry-picking.",
+      "runs": [
+        {
+          "label": "Frozen",
+          "run_id": "20260908_v3_confirm_scene0009_base_frozen_u0000"
+        },
+        {
+          "label": "BASE",
+          "run_id": "20260908_v3_confirm_scene0009_obs_base_tuned_u0200"
+        },
+        {
+          "label": "FULL",
+          "run_id": "20260908_v3_confirm_scene0009_obs_full_u1000"
+        }
+      ]
+    },
+    {
+      "case_id": "confirm_scene0449_visit1",
+      "pair_id": "scene0449_00-scene0449_05",
+      "visit_id": 1,
+      "runtime": "runtime.eval-scene0449.local.json",
+      "selection": "Stable pair-ID order; zero-TP CONFIRM failure case retained.",
+      "runs": [
+        {
+          "label": "Frozen",
+          "run_id": "20260908_v3_confirm_scene0449_base_frozen_u0000"
+        },
+        {
+          "label": "BASE",
+          "run_id": "20260908_v3_confirm_scene0449_obs_base_tuned_u0200"
+        },
+        {
+          "label": "FULL",
+          "run_id": "20260908_v3_confirm_scene0449_obs_full_u1000"
+        }
+      ]
+    }
+  ]
+}

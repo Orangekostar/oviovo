@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "artifact_id": "OVI_OBSERVATION_QUERY_MULTIENV_V3_SCIENTIFIC_DECISION",
+  "status": "SCIENTIFIC_SIGNAL_POSITIVE_COMMON_SUPPORT_LIMITED",
+  "primary_metric": "environment_macro_t1_COMMON_INPUT_SUPPORT_V2_instance_f1_at_iou_0.50",
+  "dev": {
+    "environment_count": 3,
+    "obs_full_u1000": 0.07642563198118753,
+    "obs_base_tuned_u0200": 0.06655314318149567,
+    "obs_fuse_u1000": 0.0646041856232939,
+    "frozen": 0.06668094524166489,
+    "obs_full_absolute_gain_over_strongest_trained_simple": 0.009872488799691853,
+    "obs_full_relative_gain_over_strongest_trained_simple": 0.14833993298812054,
+    "obs_full_absolute_gain_over_frozen": 0.00974468673952264,
+    "obs_full_relative_gain_over_frozen": 0.1461390012424985,
+    "obs_full_micro_counts": {"tp": 9, "fp": 130, "fn": 59},
+    "strongest_trained_simple_micro_counts": {"tp": 7, "fp": 133, "fn": 61}
+  },
+  "confirmation": {
+    "environment_count": 2,
+    "selection_exposure": "PREDECLARED_UNEXPOSED_V3",
+    "obs_full_u1000": 0.06956521739130435,
+    "obs_base_tuned_u0200": 0.06607879065506184,
+    "obs_fuse_u1000": 0.049586776859504134,
+    "frozen": 0.06140350877192982,
+    "obs_full_absolute_gain_over_strongest_trained_simple": 0.003486426736242512,
+    "obs_full_relative_gain_over_strongest_trained_simple": 0.05276166076407218,
+    "obs_full_absolute_gain_over_frozen": 0.008161708619374528,
+    "obs_full_relative_gain_over_frozen": 0.13291925465838517,
+    "obs_full_micro_counts": {"tp": 8, "fp": 160, "fn": 82},
+    "strongest_trained_simple_micro_counts": {"tp": 8, "fp": 168, "fn": 82},
+    "per_environment_consistency": "MIXED_FULL_WINS_SCENE0009_BASE_WINS_SCENE0449"
+  },
+  "diagnosis": {
+    "raw_to_final": "Raw proposal quality is not the sole bottleneck; thresholding, exclusive ownership, and residual assignment materially change the final operating point.",
+    "feedback_intervention": "Disabling feedback on the same single-environment FULL checkpoints did not improve final F1; this is an inference intervention, not a trained ablation.",
+    "trained_additional_ablation": "NOT_RUN_NO_TRIGGERED_BRANCH_WITH_STRONGER_EVIDENCE_THAN_MAIN_COMPARISON"
+  },
+  "limitations": {
+    "full_gt_f1_50": 0.0,
+    "identity_recall": 0.0,
+    "seed_count": 1,
+    "confirmation_environment_count": 2,
+    "multi_environment_causal_isolation": "PARTIAL_SINGLE_ENVIRONMENT_CHECKPOINTS_NOT_EVALUATED_ON_IDENTICAL_THREE_ENVIRONMENT_DEV_SET"
+  },
+  "claim_allowed": "With a frozen ReScene/Concerto backbone, observation attention plus feedback improved final instance discrimination on shared OVI input support over ordinary fine-tuning and simple fusion on three DEV environments and retained a smaller aggregate gain on two predeclared CONFIRM environments.",
+  "claim_not_supported": "Full-scene recovery, persistent identity recovery, SOTA, open-vocabulary generalization, low Ghost, or statistically stable multi-seed superiority.",
+  "highest_value_next_action": "Repeat OBS_BASE_TUNED and OBS_FULL with the same six environments and seed 46, then evaluate both on the unchanged DEV and CONFIRM sets."
+}

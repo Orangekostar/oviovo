@@ -57,6 +57,24 @@ def test_diagnostic_resolves_one_explicit_pair_from_multiple_dev_pairs() -> None
     assert selected["pair_id"] == "scene0002_00-scene0002_01"
 
 
+def test_diagnostic_resolves_explicit_confirm_pair() -> None:
+    selected = resolve_diagnostic_pair_runtime(
+        {
+            "pairs": {
+                "confirm": {
+                    "pair_id": "scene0449_00-scene0449_05",
+                    "role": "CONFIRM",
+                    "status": "READY",
+                }
+            }
+        },
+        "scene0449_00-scene0449_05",
+        role="CONFIRM",
+    )
+
+    assert selected["role"] == "CONFIRM"
+
+
 def test_camera_visible_support_uses_supported_depth_not_occlusion() -> None:
     result = build_camera_visible_support_mask(
         points_reference_xyz=np.asarray(
