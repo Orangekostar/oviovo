@@ -109,11 +109,16 @@ class ObservationPreparationArtifactPaths:
 
 
 def _file_record(path: Path, recorded_path: str) -> dict[str, object]:
-    content = path.read_bytes()
+    digest = hashlib.sha256()
+    byte_count = 0
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+            byte_count += len(chunk)
     return {
         "path": recorded_path,
-        "sha256": hashlib.sha256(content).hexdigest(),
-        "byte_count": len(content),
+        "sha256": digest.hexdigest(),
+        "byte_count": byte_count,
     }
 
 
@@ -1151,6 +1156,36 @@ def _nested_mapping(
     return result
 
 
+def resolve_runtime_pair(
+    runtime_config: Mapping[str, object],
+    *,
+    pair_id: str | None,
+    role: str,
+) -> Mapping[str, object]:
+    """Resolve one ready runtime pair by its explicit experimental role."""
+
+    if not isinstance(role, str) or role.upper() not in {"TRAIN", "DEV", "CONFIRM"}:
+        raise ObservationPreparationError("runtime pair role is invalid")
+    normalized_role = role.upper()
+    runtime_pairs = _nested_mapping(runtime_config, "pairs", "runtime pairs")
+    matches: list[Mapping[str, object]] = []
+    for key, candidate in runtime_pairs.items():
+        if not isinstance(key, str) or not isinstance(candidate, Mapping):
+            raise ObservationPreparationError("runtime pair entry is invalid")
+        candidate_role = candidate.get("role", key.upper())
+        if (
+            candidate_role == normalized_role
+            and (pair_id is None or candidate.get("pair_id") == pair_id)
+        ):
+            matches.append(candidate)
+    if len(matches) != 1 or matches[0].get("status") != "READY":
+        raise ObservationPreparationError("runtime role and pair are not uniquely ready")
+    selected_id = matches[0].get("pair_id")
+    if not isinstance(selected_id, str) or not selected_id:
+        raise ObservationPreparationError("runtime pair identity is invalid")
+    return matches[0]
+
+
 def _validate_bound_file(record: object, expected_path: Path, label: str) -> None:
     if not isinstance(record, Mapping):
         raise ObservationPreparationError(f"{label} binding is invalid")
@@ -1161,7 +1196,7 @@ def _validate_bound_file(record: object, expected_path: Path, label: str) -> Non
 
 def load_real_pair_frames(
     *,
-    runtime_config: Mapping[str, object],
+    pair_runtime: Mapping[str, object],
     observation_config: Mapping[str, object],
     pair_id: str,
     pair_record: Mapping[str, object],
@@ -1178,13 +1213,11 @@ def load_real_pair_frames(
         or mapping_receipt_pair_id(mapping_receipt) != pair_id
     ):
         raise ObservationPreparationError("D2 mapping receipt identity mismatch")
-    runtime_pairs = _nested_mapping(runtime_config, "pairs", "runtime pairs")
-    dev = _nested_mapping(runtime_pairs, "dev", "runtime DEV pair")
-    if dev.get("pair_id") != pair_id or dev.get("status") != "READY":
-        raise ObservationPreparationError("runtime DEV pair is not ready")
-    scan_ids = dev.get("scan_ids")
-    materialized_roots = dev.get("materialized_roots")
-    attempt_roots = dev.get("native_attempt_roots")
+    if pair_runtime.get("pair_id") != pair_id or pair_runtime.get("status") != "READY":
+        raise ObservationPreparationError("runtime pair is not ready")
+    scan_ids = pair_runtime.get("scan_ids")
+    materialized_roots = pair_runtime.get("materialized_roots")
+    attempt_roots = pair_runtime.get("native_attempt_roots")
     receipt_visits = mapping_receipt.get("visits")
     if any(
         not isinstance(value, list) or len(value) != 2
@@ -1282,10 +1315,10 @@ def load_ovimap_siglip_encoder(
     ovimap = Path(str(checkouts.get("ovimap", ""))).absolute()
     model_root = Path(str(assets.get("siglip_model", ""))).absolute()
     source = ovimap / "scripts" / "vl_models.py"
-    weights = model_root / "model.safetensors"
-    external = _nested_mapping(mapping_receipt, "external_runtime", "D2 runtime")
-    weight_binding = external.get("siglip_weights")
-    _validate_bound_file(weight_binding, weights, "SigLIP weights")
+    weight_binding = resolve_siglip_weight_binding(
+        runtime_config=runtime_config,
+        mapping_receipt=mapping_receipt,
+    )
     if source.is_symlink() or not source.is_file():
         raise ObservationPreparationError("OVI VLModel source is unavailable")
     for processor_name in ("config.json", "preprocessor_config.json"):
@@ -1301,6 +1334,8 @@ def load_ovimap_siglip_encoder(
         raise ObservationPreparationError("OVI VLModel source cannot be imported")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
+    if device.startswith("cuda"):
+        module.torch.cuda.set_device(device)
     model = module.VLModel(
         "siglip-l-16-384",
         image_shape,
@@ -1333,6 +1368,26 @@ def load_ovimap_siglip_encoder(
     return encode, manifest
 
 
+def resolve_siglip_weight_binding(
+    *,
+    runtime_config: Mapping[str, object],
+    mapping_receipt: Mapping[str, object],
+) -> dict[str, object]:
+    """Bind the encoder weights, validating legacy D2 evidence when present."""
+
+    assets = _nested_mapping(runtime_config, "assets", "runtime assets")
+    model_root = Path(str(assets.get("siglip_model", ""))).absolute()
+    weights = model_root / "model.safetensors"
+    actual = _file_record(weights, str(weights))
+    external = mapping_receipt.get("external_runtime")
+    if external is None:
+        return actual
+    if not isinstance(external, Mapping):
+        raise ObservationPreparationError("D2 runtime is invalid")
+    _validate_bound_file(external.get("siglip_weights"), weights, "SigLIP weights")
+    return actual
+
+
 def prepare_real_observation_artifact(
     *,
     runtime_config_path: str | Path,
@@ -1343,8 +1398,9 @@ def prepare_real_observation_artifact(
     output_root: str | Path,
     pair_id: str | None,
     device: str,
+    role: str = "DEV",
 ) -> ObservationPreparationArtifactPaths:
-    """Prepare and publish one real DEV ObservationBank from frozen raw caches."""
+    """Prepare and publish one real role-bound ObservationBank from raw caches."""
 
     runtime_path = Path(runtime_config_path).absolute()
     pilot_path = Path(pilot_config_path).absolute()
@@ -1356,20 +1412,14 @@ def prepare_real_observation_artifact(
     mapping = _load_json_object(mapping_path, "D2 mapping receipt")
     observation = _nested_mapping(pilot, "observation_bank", "observation config")
     correspondence = _nested_mapping(pilot, "correspondence", "correspondence config")
-    selected_pair_id = pair_id
-    if selected_pair_id is None:
-        runtime_pairs = _nested_mapping(runtime, "pairs", "runtime pairs")
-        selected_pair_id = str(
-            _nested_mapping(runtime_pairs, "dev", "runtime DEV pair").get(
-                "pair_id", ""
-            )
-        )
+    pair_runtime = resolve_runtime_pair(runtime, pair_id=pair_id, role=role)
+    selected_pair_id = str(pair_runtime["pair_id"])
     pair_record = find_pair_record(selection, selected_pair_id)
     model_input, points, _center, model_manifest = load_model_observation_bundle(
         model_bundle_root
     )
     frames, materialized_manifests, native_manifests = load_real_pair_frames(
-        runtime_config=runtime,
+        pair_runtime=pair_runtime,
         observation_config=observation,
         pair_id=selected_pair_id,
         pair_record=pair_record,
@@ -1729,6 +1779,8 @@ __all__ = [
     "prepare_real_observation_artifact",
     "project_frame_region_support",
     "publish_prepared_observation_bank",
+    "resolve_runtime_pair",
+    "resolve_siglip_weight_binding",
     "save_model_observation_bundle",
     "select_region_budget",
     "write_region_pixel_sidecar",
@@ -1776,6 +1828,9 @@ def _parse_args(arguments: list[str] | None = None) -> argparse.Namespace:
     prepare.add_argument("--model-bundle", type=Path, required=True)
     prepare.add_argument("--output-root", type=Path, required=True)
     prepare.add_argument("--pair-id")
+    prepare.add_argument(
+        "--role", type=str.upper, choices=("TRAIN", "DEV", "CONFIRM"), default="DEV"
+    )
     prepare.add_argument("--device", default="cuda:0")
     return parser.parse_args(arguments)
 
@@ -1813,6 +1868,7 @@ def main(arguments: list[str] | None = None) -> int:
             output_root=args.output_root,
             pair_id=args.pair_id,
             device=args.device,
+            role=args.role,
         )
         manifest = _load_json_object(paths.manifest, "preparation manifest")
         diagnostics = _load_json_object(paths.diagnostics, "support diagnostics")

@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "artifact_id": "OVI_RESCENE_OBSERVATION_QUERY_RUNTIME_EXAMPLE_V1",
+  "python": {
+    "model": "/path/to/python/model",
+    "frontend": "/path/to/python/frontend",
+    "mapping": "/path/to/python/mapping"
+  },
+  "checkouts": {
+    "rescene": "/path/to/checkouts/rescene4d",
+    "ovimap": "/path/to/checkouts/OVI-MAP",
+    "entity": "/path/to/checkouts/Entity"
+  },
+  "assets": {
+    "raw_3rscan_root": "/path/to/assets/3RScan",
+    "processed_rio_root": "/path/to/assets/processed/rio",
+    "rescene_checkpoint": "/path/to/assets/checkpoints/rescene4d_concerto_t2_repro.ckpt",
+    "concerto_checkpoint": "/path/to/assets/checkpoints/concerto_base.pth",
+    "siglip_model": "/path/to/assets/models/siglip-large-patch16-384",
+    "official_3rscan_downloader": "/path/to/assets/3rscan.py",
+    "legacy_run_root": "/path/to/runs/legacy"
+  },
+  "cache_root": "/path/to/runs/observation_query",
+  "gpu_policy": {
+    "maximum_concurrent_gpus": 3,
+    "preferred_devices": [0, 1, 2]
+  },
+  "pairs": {
+    "train": {
+      "pair_id": "scene0001_00-scene0001_01",
+      "role": "TRAIN",
+      "scan_ids": [
+        "02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+        "fcf66d9e-622d-291c-84c2-bb23dfe31327"
+      ],
+      "materialized_roots": [
+        "/path/to/runs/observation_query_training_v2/3rscan/materialized-v1/02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+        "/path/to/runs/observation_query_training_v2/3rscan/materialized-v1/fcf66d9e-622d-291c-84c2-bb23dfe31327"
+      ],
+      "native_attempt_roots": [
+        "/path/to/runs/observation_query_training_v2/3rscan/ovi-native-v1/scenes/02b33dfb-be2b-2d54-92d2-cd012b2b3c40/attempt-YYYYMMDDTHHMMSS.ssssssZ",
+        "/path/to/runs/observation_query_training_v2/3rscan/ovi-native-v1/scenes/fcf66d9e-622d-291c-84c2-bb23dfe31327/attempt-YYYYMMDDTHHMMSS.ssssssZ"
+      ],
+      "selection_manifest": "/path/to/configs/evaluation/manifests/observation_query_train_pair_v2.json",
+      "mapping_receipt": "/path/to/configs/evaluation/results/observation_query_training_v2/train_pair/mapping_receipt.json",
+      "object_transfer_config": "/path/to/configs/evaluation/ovi_rescene_observation_query_train_v2.json",
+      "status": "READY",
+      "artifact_root": "/path/to/runs/observation_query/scene0001_train_v2"
+    },
+    "dev": {
+      "pair_id": "scene0109_00-scene0109_01",
+      "role": "DEV",
+      "scan_ids": [
+        "20c993b7-698f-29c5-847d-c8cb8a685f5a",
+        "20c993b3-698f-29c5-859c-dca8ddecf220"
+      ],
+      "materialized_roots": [
+        "/path/to/runs/ovi_rescene_object_level_transfer/3rscan/materialized-v1/20c993b7-698f-29c5-847d-c8cb8a685f5a",
+        "/path/to/runs/ovi_rescene_object_level_transfer/3rscan/materialized-v1/20c993b3-698f-29c5-859c-dca8ddecf220"
+      ],
+      "native_attempt_roots": [
+        "/path/to/runs/ovi_rescene_object_level_transfer/3rscan/ovi-native-v1/scenes/20c993b7-698f-29c5-847d-c8cb8a685f5a/attempt-YYYYMMDDTHHMMSS.ssssssZ",
+        "/path/to/runs/ovi_rescene_object_level_transfer/3rscan/ovi-native-v1/scenes/20c993b3-698f-29c5-859c-dca8ddecf220/attempt-YYYYMMDDTHHMMSS.ssssssZ"
+      ],
+      "artifact_root": "/path/to/runs/observation_query/scene0109_dev_v1",
+      "status": "READY"
+    }
+  }
+}

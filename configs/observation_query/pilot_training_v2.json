@@ -1,0 +1,118 @@
+{
+  "schema_version": 2,
+  "experiment_id": "ovi_rescene_observation_query_training_v2",
+  "evidence_base_commit": "9879915092f8b0f90d89d64b86c74f36aedc7a17",
+  "split_manifest": "configs/observation_query/splits_training_v2.json",
+  "runtime_config": "configs/observation_query/runtime.local.json",
+  "model": {
+    "backbone": "Concerto",
+    "backbone_frozen": true,
+    "temporal_window": 2,
+    "hidden_dim": 128,
+    "num_queries": 100,
+    "num_heads": 8,
+    "num_decoders": 3,
+    "shared_decoder": true,
+    "train_on_segments": true,
+    "backbone_serialization": "mixed_standard_temporal_overlay",
+    "observation_intervention": "after_3d_cross_attention_before_self_attention_and_ffn",
+    "alpha_initial": 0.001,
+    "alpha_bound": 1.0,
+    "beta_initial": 0.0,
+    "beta_bound": 1.0
+  },
+  "observation_bank": {
+    "source": "raw_cropformer_region_plus_depth_fragments",
+    "max_frames_per_visit": 16,
+    "max_regions_and_fragments_per_visit": 256,
+    "max_regions_and_fragments_per_pair": 512,
+    "max_fragments_per_parent": 3,
+    "max_distinct_support_frames_per_model_point": 8,
+    "minimum_valid_depth_pixels": 16,
+    "minimum_valid_depth_neighbours": 5,
+    "bbox_convention": "xyxy_half_open",
+    "label_resize": "nearest",
+    "six_crop_encoder": "OVI_MAP_VLModel_SigLIP",
+    "mean_embedding_l2_normalize": true,
+    "fragment_votes_only_when_present": true
+  },
+  "correspondence": {
+    "model_domain": "existing_native_M",
+    "positive_depth_tolerance_m": 0.03,
+    "relations": ["supported", "occluded", "visible_free", "unknown"],
+    "same_visit_edges_only": true,
+    "unknown_is_negative": false
+  },
+  "training_targets": {
+    "processed_coordinate_frame": "shared_reference_from_rescene_preprocessor",
+    "native_processed_columns": {
+      "xyz": [0, 1, 2],
+      "segment": 9,
+      "semantic": 10,
+      "instance": 11
+    },
+    "maximum_distance_m": 0.04,
+    "minimum_neighbors": 3,
+    "minimum_consensus_fraction": 0.75,
+    "maximum_neighbors": 8,
+    "minimum_region_valid_fraction": 0.5,
+    "trusted_background_raw_semantic_ids": [1, 2],
+    "ignored_raw_semantic_ids": [0, 255],
+    "label_database": "/home/ww/paper5/data/processed/rio/label_database.yaml",
+    "expected_validation_label_count": 20,
+    "label_offset": 2,
+    "unknown_class_target": -100,
+    "equal_numeric_instance_ids_require_explicit_official_expansion": true
+  },
+  "loss": {
+    "native_weight": 1.0,
+    "native_class_cost_and_weight": 2.0,
+    "native_mask_cost_and_weight": 5.0,
+    "native_dice_cost_and_weight": 2.0,
+    "no_object_coefficient": 0.2,
+    "region_soft_ce_weight": 0.2,
+    "consistency_weight_start": 0.0,
+    "consistency_weight_end": 0.1,
+    "consistency_ramp_updates": 200,
+    "masked_hungarian_uses_label_valid": true,
+    "auxiliary_assignment": "rematch_each_layer_and_share_with_same_layer_region_loss",
+    "unmatched_gt_region_mass": "exclude_and_report",
+    "contrastive_enabled": false,
+    "changes_enabled": false
+  },
+  "training": {
+    "seed": 45,
+    "batch_size_pairs": 1,
+    "optimizer": "AdamW",
+    "native_learning_rate": 0.00001,
+    "observation_learning_rate": 0.0001,
+    "weight_decay": 0.0001,
+    "gradient_clip_norm": 1.0,
+    "gradient_accumulation": 2,
+    "smoke_updates": 200,
+    "pilot_updates_per_method": 1000,
+    "cumulative_max_optimizer_updates": 12000,
+    "initial_methods": ["OBS_BASE_TUNED", "OBS_FUSE", "OBS_FULL"]
+  },
+  "methods": {
+    "OBS_BASE_FROZEN": {"trained": false, "observation_input": false},
+    "OBS_BASE_TUNED": {"trained": true, "observation_input": false},
+    "OBS_LATE": {"trained": true, "late_region_fusion": true},
+    "OBS_FUSE": {"trained": true, "single_model_feature_fusion": true},
+    "OBS_ATTN": {"trained": true, "observation_attention": true, "mask_feedback": false, "consistency_loss": false},
+    "OBS_FULL": {"trained": true, "observation_attention": true, "mask_feedback": true, "consistency_loss": true},
+    "OBS_PER_VISIT": {"trained": true, "independent_visit_forward": true, "fixed_post_matching": true}
+  },
+  "selection": {
+    "primary_dev_metric": "COMMON_INPUT_SUPPORT_V2_instance_f1_at_0.50",
+    "mechanism_diagnostics": ["RAW_FULL_GT_V2_best_iou", "RAW_FULL_GT_V2_ar_at_0.50", "RAW_COMMON_INPUT_SUPPORT_V2_best_iou", "RAW_COMMON_INPUT_SUPPORT_V2_ar_at_0.50"],
+    "must_monitor": ["FULL_GT_V2", "COMMON_INPUT_SUPPORT_V2", "CAMERA_VISIBLE_INTERSECT_D_V1", "false_positives", "false_negatives", "merge_count", "both_visit_endpoints"],
+    "positive_result_required": false
+  },
+  "dense_readout": {
+    "query_score_threshold": 0.3,
+    "mask_logit_threshold": 0.0,
+    "conflict_score": "query_score_times_sigmoid_mask_logit",
+    "preserve_all_dense_D_rows": true
+  }
+}

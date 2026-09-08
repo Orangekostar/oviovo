@@ -1,0 +1,118 @@
+{
+  "schema_version": 2,
+  "artifact_id": "OVI_RESCENE_OBSERVATION_QUERY_TRAIN_PAIR_V2",
+  "status": "PASS",
+  "role": "TRAIN",
+  "selection_rule": {
+    "official_split": "train",
+    "exact_visit_count": 2,
+    "asset_priority_then_pair_id": true,
+    "selected_before_model_results": true
+  },
+  "source_bindings": {
+    "metadata": {
+      "path": "/home/ww/vv/dataset/3RScan/3RScan.json",
+      "sha256": "674a00f50f76b198b9de44efd86c390fea3da37ba8f12cf8ccd00045e265fa64",
+      "byte_count": 3155995
+    },
+    "split_manifest": {
+      "path": "configs/observation_query/splits_v1.json",
+      "sha256": "0fa8a837aba10c597741ff065be81a73c7ac56be03fec226c7ee60a3533beb85",
+      "byte_count": 3581
+    },
+    "sequence_database": {
+      "path": "/home/ww/paper5/data/processed/rio/sequence_database_sliding_2.yaml",
+      "sha256": "974299916db02d2ee0233564eb7b36e314dada93e997584d9dfef21ad70d0416",
+      "byte_count": 415937
+    }
+  },
+  "selected_pair_count": 1,
+  "pairs": [
+    {
+      "pair_id": "scene0001_00-scene0001_01",
+      "environment_id": "02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+      "split": "train",
+      "role": "training_selection",
+      "sessions": [
+        {
+          "visit_index": 0,
+          "scan_id": "02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+          "scene": 1,
+          "sub_scene": 0,
+          "processed_assets": {
+            "points": {
+              "path": "/home/ww/paper5/data/processed/rio/train/0001_00.npy",
+              "sha256": "fc9f7c95c9e9e4e912e4b93ae19569b4f37586dc08154552c9ac4d512e8bffa6",
+              "byte_count": 1200608
+            },
+            "instance_gt": {
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/train/scene0001_00.txt",
+              "sha256": "50ce63d488361b878908f8652f5ea2ccad7c96908cc26800e2d376cd8341f230",
+              "byte_count": 133999
+            }
+          }
+        },
+        {
+          "visit_index": 1,
+          "scan_id": "fcf66d9e-622d-291c-84c2-bb23dfe31327",
+          "scene": 1,
+          "sub_scene": 1,
+          "processed_assets": {
+            "points": {
+              "path": "/home/ww/paper5/data/processed/rio/train/0001_01.npy",
+              "sha256": "ae9096abbf39cee6e6330f866bf5c98d65a0aead9daa5072c0ac6fffb94730d5",
+              "byte_count": 724256
+            },
+            "instance_gt": {
+              "path": "/home/ww/paper5/data/processed/rio/instance_gt/train/scene0001_01.txt",
+              "sha256": "626b0c109979cac13a2ef5b550e23ad65d0bef05825e7a389104bb3ead50c28b",
+              "byte_count": 82812
+            }
+          }
+        }
+      ],
+      "common_method_inputs": {
+        "global_alignment": {
+          "direction": "rescan_row_vector_to_reference",
+          "storage": "row_major_flat_4x4",
+          "application": "homogeneous_row_vector_right_multiply",
+          "matrix": [
+            0.7964462041854858,
+            0.6046697497367859,
+            -0.006928033661097288,
+            0,
+            -0.6046991944313049,
+            0.796447217464447,
+            -0.0032921808306127787,
+            0,
+            0.0035271304659545422,
+            0.006811420898884535,
+            0.9999706149101257,
+            0,
+            0.09012863039970398,
+            -0.09965667128562927,
+            0.009488997049629688,
+            1
+          ]
+        }
+      },
+      "sequence": {
+        "key": "scene0001_00-scene0001_01",
+        "change_gt_binding": {
+          "path": "/home/ww/paper5/data/processed/rio/change_gt/train/scene0001_00-scene0001_01.txt",
+          "sha256": "32fb01dc647a28adf19752767267a8d37a0ec8445b217b369265ae0637b8ab71",
+          "byte_count": 80192
+        }
+      },
+      "evaluator_only": {
+        "changes": {
+          "rigid_reference_ids": [12, 27, 30],
+          "nonrigid_reference_ids": [],
+          "removed_reference_ids": []
+        },
+        "ambiguity": [],
+        "cross_time_identity_source": "official_3rscan_metadata"
+      }
+    }
+  ]
+}

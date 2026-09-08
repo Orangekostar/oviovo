@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "artifact_id": "OVI_RESCENE_OBSERVATION_QUERY_TRAIN_SELECTION_V2",
+  "status": "READY_FOR_REAL_TRAINING",
+  "selection_policy": {
+    "asset_priority": [
+      "existing derived assets",
+      "complete extracted RGB-D assets",
+      "sequence.zip availability",
+      "pair_id ascending"
+    ],
+    "model_results": "UNKNOWN",
+    "fixed_selection_when_model_results_unknown": true
+  },
+  "aggregate_counts": {
+    "official_train_t2_pairs": 1178,
+    "processed_both_endpoints": 1178,
+    "rgbd_both_endpoints_complete": 1
+  },
+  "selected": {
+    "environment_uuid": "02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+    "pair_id": "scene0001_00-scene0001_01",
+    "official_split": "train",
+    "scan_uuids": [
+      "02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+      "fcf66d9e-622d-291c-84c2-bb23dfe31327"
+    ],
+    "processed_paths": [
+      "/home/ww/paper5/data/processed/rio/train/0001_00.npy",
+      "/home/ww/paper5/data/processed/rio/train/0001_01.npy"
+    ],
+    "sequence_paths": [
+      "/home/ww/vv/dataset/3RScan/scans/02b33dfb-be2b-2d54-92d2-cd012b2b3c40/sequence.zip",
+      "/home/ww/vv/dataset/3RScan/scans/fcf66d9e-622d-291c-84c2-bb23dfe31327/sequence.zip"
+    ],
+    "materialized_roots": [
+      "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/materialized-v1/02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+      "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/materialized-v1/fcf66d9e-622d-291c-84c2-bb23dfe31327"
+    ],
+    "native_scene_roots": [
+      "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/ovi-native-v1/scenes/02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+      "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/ovi-native-v1/scenes/fcf66d9e-622d-291c-84c2-bb23dfe31327"
+    ],
+    "observation_artifact_root": "/home/ww/oviovo_baseline_runs/observation_query/20260908_scene0001_train_v2",
+    "mapping_receipt": "/home/ww/.config/superpowers/worktrees/ovi-rescene-observation-query/configs/evaluation/results/observation_query_training_v2/train_pair/mapping_receipt.json",
+    "pair_receipt": "/home/ww/.config/superpowers/worktrees/ovi-rescene-observation-query/configs/evaluation/results/observation_query_training_v2/train_pair/pair_receipt.json",
+    "training_artifact_diagnostics": {
+      "model_count": 61359,
+      "observation_region_count": 385,
+      "edge_count": 42329,
+      "model_points_with_support": 33965,
+      "observation_bank_sha256": "fd73ddacb491bd6281e10ff3a486652afc4f9590a6bbb1e08796c4b95e0660bf",
+      "training_target_sha256": "9395c7fc07eba04c6cc5c81f1e78347083cc7293c4f7a2d74203d19e46089ad9"
+    }
+  },
+  "selection_basis": "The selected pair has been downloaded, materialized, mapped, and completed through ObservationBank and training targets; proceed to real training.",
+  "next_action": "Run real training on the completed ObservationBank and training targets."
+}

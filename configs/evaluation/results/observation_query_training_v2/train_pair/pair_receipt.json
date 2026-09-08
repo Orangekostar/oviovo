@@ -1,0 +1,959 @@
+{
+  "artifact_id": "OVI_RESCENE_D2_PAIR_VIEW_RECEIPT_V1",
+  "coordinate_frame_id": "3rscan_reference",
+  "domain_id": "D2_OVI_RECONSTRUCTION",
+  "geometry_audit": {
+    "point_count_changed": false,
+    "point_order_changed": false,
+    "smoothing_or_hole_filling": false,
+    "source": "native OVI-MAP dense instance PLY",
+    "xyz_changed": false
+  },
+  "local_artifact_manifest": {
+    "byte_count": 24352,
+    "path": "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/pair-view-v1/scene0001_00-scene0001_01/manifest.json",
+    "sha256": "2871701c3763b0503980be168b7bdbe75fa2330408ad3ea97be56b8f2773e9ab"
+  },
+  "local_full_outputs": {
+    "t0_instance_ply": {
+      "byte_count": 105427773,
+      "path": "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/pair-view-v1/scene0001_00-scene0001_01/t0/instance.ply",
+      "sha256": "e88c647b589c58dc8d953abd6c2e188ba50edcd43196033d385e12eb81e9e5bd"
+    },
+    "t0_rgb_ply": {
+      "byte_count": 105427773,
+      "path": "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/pair-view-v1/scene0001_00-scene0001_01/t0/rgb.ply",
+      "sha256": "f35ab0825540d0108dc457cb34fc47292f31f88c6bcd0a633bdf5fc0e2414180"
+    },
+    "t1_instance_ply": {
+      "byte_count": 44570222,
+      "path": "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/pair-view-v1/scene0001_00-scene0001_01/t1/instance.ply",
+      "sha256": "7bd49d1a51d5c3169ec0c7234bb4596ea667a3194ccefbc5a9c58cf2849b05f0"
+    },
+    "t1_rgb_ply": {
+      "byte_count": 44570222,
+      "path": "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/pair-view-v1/scene0001_00-scene0001_01/t1/rgb.ply",
+      "sha256": "f3663c4413e047c66a09ff9ffd2a50c5db23d8f9ee61695d8ce1ff7073363f85"
+    }
+  },
+  "pair_content_sha256": "17603663d81478173a940ab88c94fb366ba2f936ae32dbaf016ee1670771e42e",
+  "pair_id": "scene0001_00-scene0001_01",
+  "parent_mapping_receipt": {
+    "byte_count": 6070,
+    "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-observation-query/configs/evaluation/results/observation_query_training_v2/train_pair/mapping_receipt.json",
+    "sha256": "2ff764a7ce9ee9748e8f490b7878fdf17b22acbb1e9f7eeb20382f4c70aa530d"
+  },
+  "schema_version": 1,
+  "source_pair_manifest": {
+    "byte_count": 3980,
+    "path": "configs/evaluation/manifests/observation_query_train_pair_v2.json",
+    "sha256": "22ac096a0351900692a33a7875874ce6b7b78a1fbc4637457135b88c4d6bd6eb"
+  },
+  "status": "REAL_D2_PAIR_VIEW_PASS",
+  "visits": [
+    {
+      "appearance_support_count": 1355961,
+      "appearance_support_fraction": 0.8360035660646775,
+      "background_point_count": 0,
+      "bounds_xyz": {
+        "maximum": [
+          1.2564200162887573,
+          1.2755099534988403,
+          0.9549999833106995
+        ],
+        "minimum": [
+          -1.7807799577713013,
+          -1.6749999523162842,
+          -1.4368699789047241
+        ]
+      },
+      "entities": [
+        {
+          "entity_id": "ovimap:1",
+          "entity_index": 1,
+          "palette_rgb": [
+            103,
+            105,
+            198
+          ],
+          "point_count": 342464,
+          "source_instance_id": 1
+        },
+        {
+          "entity_id": "ovimap:2",
+          "entity_index": 2,
+          "palette_rgb": [
+            115,
+            255,
+            81
+          ],
+          "point_count": 8579,
+          "source_instance_id": 2
+        },
+        {
+          "entity_id": "ovimap:4",
+          "entity_index": 3,
+          "palette_rgb": [
+            74,
+            41,
+            236
+          ],
+          "point_count": 131,
+          "source_instance_id": 4
+        },
+        {
+          "entity_id": "ovimap:5",
+          "entity_index": 4,
+          "palette_rgb": [
+            205,
+            171,
+            186
+          ],
+          "point_count": 163606,
+          "source_instance_id": 5
+        },
+        {
+          "entity_id": "ovimap:6",
+          "entity_index": 5,
+          "palette_rgb": [
+            242,
+            227,
+            251
+          ],
+          "point_count": 105,
+          "source_instance_id": 6
+        },
+        {
+          "entity_id": "ovimap:7",
+          "entity_index": 6,
+          "palette_rgb": [
+            70,
+            194,
+            124
+          ],
+          "point_count": 2662,
+          "source_instance_id": 7
+        },
+        {
+          "entity_id": "ovimap:8",
+          "entity_index": 7,
+          "palette_rgb": [
+            84,
+            27,
+            248
+          ],
+          "point_count": 11607,
+          "source_instance_id": 8
+        },
+        {
+          "entity_id": "ovimap:10",
+          "entity_index": 8,
+          "palette_rgb": [
+            118,
+            46,
+            90
+          ],
+          "point_count": 6298,
+          "source_instance_id": 10
+        },
+        {
+          "entity_id": "ovimap:11",
+          "entity_index": 9,
+          "palette_rgb": [
+            99,
+            159,
+            51
+          ],
+          "point_count": 111486,
+          "source_instance_id": 11
+        },
+        {
+          "entity_id": "ovimap:12",
+          "entity_index": 10,
+          "palette_rgb": [
+            201,
+            102,
+            154
+          ],
+          "point_count": 2987,
+          "source_instance_id": 12
+        },
+        {
+          "entity_id": "ovimap:13",
+          "entity_index": 11,
+          "palette_rgb": [
+            50,
+            183,
+            13
+          ],
+          "point_count": 1749,
+          "source_instance_id": 13
+        },
+        {
+          "entity_id": "ovimap:14",
+          "entity_index": 12,
+          "palette_rgb": [
+            49,
+            163,
+            88
+          ],
+          "point_count": 13191,
+          "source_instance_id": 14
+        },
+        {
+          "entity_id": "ovimap:15",
+          "entity_index": 13,
+          "palette_rgb": [
+            90,
+            93,
+            37
+          ],
+          "point_count": 131874,
+          "source_instance_id": 15
+        },
+        {
+          "entity_id": "ovimap:16",
+          "entity_index": 14,
+          "palette_rgb": [
+            233,
+            212,
+            94
+          ],
+          "point_count": 1408,
+          "source_instance_id": 16
+        },
+        {
+          "entity_id": "ovimap:18",
+          "entity_index": 15,
+          "palette_rgb": [
+            198,
+            180,
+            155
+          ],
+          "point_count": 5180,
+          "source_instance_id": 18
+        },
+        {
+          "entity_id": "ovimap:19",
+          "entity_index": 16,
+          "palette_rgb": [
+            84,
+            14,
+            17
+          ],
+          "point_count": 9357,
+          "source_instance_id": 19
+        },
+        {
+          "entity_id": "ovimap:20",
+          "entity_index": 17,
+          "palette_rgb": [
+            130,
+            65,
+            116
+          ],
+          "point_count": 7901,
+          "source_instance_id": 20
+        },
+        {
+          "entity_id": "ovimap:21",
+          "entity_index": 18,
+          "palette_rgb": [
+            33,
+            220,
+            61
+          ],
+          "point_count": 89,
+          "source_instance_id": 21
+        },
+        {
+          "entity_id": "ovimap:22",
+          "entity_index": 19,
+          "palette_rgb": [
+            135,
+            233,
+            112
+          ],
+          "point_count": 121,
+          "source_instance_id": 22
+        },
+        {
+          "entity_id": "ovimap:23",
+          "entity_index": 20,
+          "palette_rgb": [
+            62,
+            65,
+            161
+          ],
+          "point_count": 254,
+          "source_instance_id": 23
+        },
+        {
+          "entity_id": "ovimap:24",
+          "entity_index": 21,
+          "palette_rgb": [
+            225,
+            103,
+            252
+          ],
+          "point_count": 658,
+          "source_instance_id": 24
+        },
+        {
+          "entity_id": "ovimap:25",
+          "entity_index": 22,
+          "palette_rgb": [
+            62,
+            126,
+            1
+          ],
+          "point_count": 12,
+          "source_instance_id": 25
+        },
+        {
+          "entity_id": "ovimap:26",
+          "entity_index": 23,
+          "palette_rgb": [
+            151,
+            220,
+            234
+          ],
+          "point_count": 1446,
+          "source_instance_id": 26
+        },
+        {
+          "entity_id": "ovimap:27",
+          "entity_index": 24,
+          "palette_rgb": [
+            107,
+            143,
+            150
+          ],
+          "point_count": 3676,
+          "source_instance_id": 27
+        },
+        {
+          "entity_id": "ovimap:28",
+          "entity_index": 25,
+          "palette_rgb": [
+            56,
+            42,
+            92
+          ],
+          "point_count": 1,
+          "source_instance_id": 28
+        },
+        {
+          "entity_id": "ovimap:29",
+          "entity_index": 26,
+          "palette_rgb": [
+            236,
+            59,
+            176
+          ],
+          "point_count": 395817,
+          "source_instance_id": 29
+        },
+        {
+          "entity_id": "ovimap:32",
+          "entity_index": 27,
+          "palette_rgb": [
+            251,
+            175,
+            50
+          ],
+          "point_count": 1221,
+          "source_instance_id": 32
+        },
+        {
+          "entity_id": "ovimap:33",
+          "entity_index": 28,
+          "palette_rgb": [
+            60,
+            236,
+            84
+          ],
+          "point_count": 8863,
+          "source_instance_id": 33
+        },
+        {
+          "entity_id": "ovimap:34",
+          "entity_index": 29,
+          "palette_rgb": [
+            24,
+            92,
+            219
+          ],
+          "point_count": 34305,
+          "source_instance_id": 34
+        },
+        {
+          "entity_id": "ovimap:35",
+          "entity_index": 30,
+          "palette_rgb": [
+            2,
+            254,
+            26
+          ],
+          "point_count": 2525,
+          "source_instance_id": 35
+        },
+        {
+          "entity_id": "ovimap:36",
+          "entity_index": 31,
+          "palette_rgb": [
+            67,
+            250,
+            251
+          ],
+          "point_count": 1425,
+          "source_instance_id": 36
+        },
+        {
+          "entity_id": "ovimap:37",
+          "entity_index": 32,
+          "palette_rgb": [
+            170,
+            251,
+            58
+          ],
+          "point_count": 3457,
+          "source_instance_id": 37
+        },
+        {
+          "entity_id": "ovimap:38",
+          "entity_index": 33,
+          "palette_rgb": [
+            41,
+            230,
+            209
+          ],
+          "point_count": 685,
+          "source_instance_id": 38
+        },
+        {
+          "entity_id": "ovimap:39",
+          "entity_index": 34,
+          "palette_rgb": [
+            5,
+            124,
+            60
+          ],
+          "point_count": 1500,
+          "source_instance_id": 39
+        },
+        {
+          "entity_id": "ovimap:41",
+          "entity_index": 35,
+          "palette_rgb": [
+            190,
+            137,
+            97
+          ],
+          "point_count": 66,
+          "source_instance_id": 41
+        },
+        {
+          "entity_id": "ovimap:42",
+          "entity_index": 36,
+          "palette_rgb": [
+            249,
+            187,
+            92
+          ],
+          "point_count": 1611,
+          "source_instance_id": 42
+        },
+        {
+          "entity_id": "ovimap:43",
+          "entity_index": 37,
+          "palette_rgb": [
+            168,
+            15,
+            153
+          ],
+          "point_count": 85676,
+          "source_instance_id": 43
+        },
+        {
+          "entity_id": "ovimap:44",
+          "entity_index": 38,
+          "palette_rgb": [
+            149,
+            235,
+            177
+          ],
+          "point_count": 4103,
+          "source_instance_id": 44
+        },
+        {
+          "entity_id": "ovimap:45",
+          "entity_index": 39,
+          "palette_rgb": [
+            241,
+            5,
+            179
+          ],
+          "point_count": 128,
+          "source_instance_id": 45
+        },
+        {
+          "entity_id": "ovimap:46",
+          "entity_index": 40,
+          "palette_rgb": [
+            239,
+            0,
+            247
+          ],
+          "point_count": 196489,
+          "source_instance_id": 46
+        },
+        {
+          "entity_id": "ovimap:49",
+          "entity_index": 41,
+          "palette_rgb": [
+            203,
+            72,
+            208
+          ],
+          "point_count": 4635,
+          "source_instance_id": 49
+        },
+        {
+          "entity_id": "ovimap:50",
+          "entity_index": 42,
+          "palette_rgb": [
+            71,
+            189,
+            100
+          ],
+          "point_count": 1418,
+          "source_instance_id": 50
+        },
+        {
+          "entity_id": "ovimap:51",
+          "entity_index": 43,
+          "palette_rgb": [
+            31,
+            30,
+            35
+          ],
+          "point_count": 37962,
+          "source_instance_id": 51
+        },
+        {
+          "entity_id": "ovimap:53",
+          "entity_index": 44,
+          "palette_rgb": [
+            100,
+            20,
+            197
+          ],
+          "point_count": 6958,
+          "source_instance_id": 53
+        },
+        {
+          "entity_id": "ovimap:55",
+          "entity_index": 45,
+          "palette_rgb": [
+            115,
+            197,
+            90
+          ],
+          "point_count": 3541,
+          "source_instance_id": 55
+        },
+        {
+          "entity_id": "ovimap:56",
+          "entity_index": 46,
+          "palette_rgb": [
+            94,
+            121,
+            75
+          ],
+          "point_count": 483,
+          "source_instance_id": 56
+        },
+        {
+          "entity_id": "ovimap:57",
+          "entity_index": 47,
+          "palette_rgb": [
+            99,
+            112,
+            59
+          ],
+          "point_count": 2246,
+          "source_instance_id": 57
+        }
+      ],
+      "entity_count": 47,
+      "entity_point_count": 1621956,
+      "frame_count": 143,
+      "global_alignment_application": "identity_reference",
+      "materialized_manifest_sha256": "53754dd33c90eb3c01fb9d05c69ed35de5cee8588f24e519c30504196eebb3f8",
+      "native_manifest_sha256": "99c377b8f5f240de75f140f4eb72bb5f59a509e13da4719593ede9d1e2528114",
+      "normal_valid_count": 1621932,
+      "point_count": 1621956,
+      "scan_id": "02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+      "source_artifact_sha256": {
+        "instance_color_log": "dde3372826585367b0547edd4135fadb27bd06a4c66516b5d3c5b1cc16f5bc81",
+        "instance_mesh": "fcc677138e5ad30524608cc9ce9ae0c284a1befc2a02b76ec4902994f71dfdae",
+        "semantic_features": "1f3e469d79a3f7aa3c14803350fbf8cbde8615fc2c5066b79c1826cc5be6523c"
+      },
+      "visit_id": 0
+    },
+    {
+      "appearance_support_count": 527000,
+      "appearance_support_fraction": 0.7685733703181923,
+      "background_point_count": 11,
+      "bounds_xyz": {
+        "maximum": [
+          1.2528387308120728,
+          1.1441839933395386,
+          0.9307370185852051
+        ],
+        "minimum": [
+          -1.2048691511154175,
+          -1.3031178712844849,
+          -1.4628173112869263
+        ]
+      },
+      "entities": [
+        {
+          "entity_id": "ovimap:1",
+          "entity_index": 1,
+          "palette_rgb": [
+            103,
+            105,
+            198
+          ],
+          "point_count": 172388,
+          "source_instance_id": 1
+        },
+        {
+          "entity_id": "ovimap:2",
+          "entity_index": 2,
+          "palette_rgb": [
+            115,
+            255,
+            81
+          ],
+          "point_count": 19635,
+          "source_instance_id": 2
+        },
+        {
+          "entity_id": "ovimap:3",
+          "entity_index": 3,
+          "palette_rgb": [
+            74,
+            41,
+            236
+          ],
+          "point_count": 3093,
+          "source_instance_id": 3
+        },
+        {
+          "entity_id": "ovimap:4",
+          "entity_index": 4,
+          "palette_rgb": [
+            205,
+            171,
+            186
+          ],
+          "point_count": 2067,
+          "source_instance_id": 4
+        },
+        {
+          "entity_id": "ovimap:5",
+          "entity_index": 5,
+          "palette_rgb": [
+            242,
+            227,
+            251
+          ],
+          "point_count": 964,
+          "source_instance_id": 5
+        },
+        {
+          "entity_id": "ovimap:6",
+          "entity_index": 6,
+          "palette_rgb": [
+            70,
+            194,
+            124
+          ],
+          "point_count": 1905,
+          "source_instance_id": 6
+        },
+        {
+          "entity_id": "ovimap:8",
+          "entity_index": 7,
+          "palette_rgb": [
+            84,
+            27,
+            248
+          ],
+          "point_count": 2310,
+          "source_instance_id": 8
+        },
+        {
+          "entity_id": "ovimap:9",
+          "entity_index": 8,
+          "palette_rgb": [
+            232,
+            141,
+            231
+          ],
+          "point_count": 23864,
+          "source_instance_id": 9
+        },
+        {
+          "entity_id": "ovimap:10",
+          "entity_index": 9,
+          "palette_rgb": [
+            118,
+            46,
+            90
+          ],
+          "point_count": 48,
+          "source_instance_id": 10
+        },
+        {
+          "entity_id": "ovimap:11",
+          "entity_index": 10,
+          "palette_rgb": [
+            99,
+            159,
+            51
+          ],
+          "point_count": 101,
+          "source_instance_id": 11
+        },
+        {
+          "entity_id": "ovimap:12",
+          "entity_index": 11,
+          "palette_rgb": [
+            201,
+            102,
+            154
+          ],
+          "point_count": 107970,
+          "source_instance_id": 12
+        },
+        {
+          "entity_id": "ovimap:13",
+          "entity_index": 12,
+          "palette_rgb": [
+            50,
+            183,
+            13
+          ],
+          "point_count": 1548,
+          "source_instance_id": 13
+        },
+        {
+          "entity_id": "ovimap:15",
+          "entity_index": 13,
+          "palette_rgb": [
+            90,
+            93,
+            37
+          ],
+          "point_count": 106784,
+          "source_instance_id": 15
+        },
+        {
+          "entity_id": "ovimap:16",
+          "entity_index": 14,
+          "palette_rgb": [
+            5,
+            88,
+            23
+          ],
+          "point_count": 77597,
+          "source_instance_id": 16
+        },
+        {
+          "entity_id": "ovimap:17",
+          "entity_index": 15,
+          "palette_rgb": [
+            233,
+            212,
+            94
+          ],
+          "point_count": 14642,
+          "source_instance_id": 17
+        },
+        {
+          "entity_id": "ovimap:18",
+          "entity_index": 16,
+          "palette_rgb": [
+            171,
+            205,
+            178
+          ],
+          "point_count": 1932,
+          "source_instance_id": 18
+        },
+        {
+          "entity_id": "ovimap:19",
+          "entity_index": 17,
+          "palette_rgb": [
+            198,
+            180,
+            155
+          ],
+          "point_count": 76897,
+          "source_instance_id": 19
+        },
+        {
+          "entity_id": "ovimap:20",
+          "entity_index": 18,
+          "palette_rgb": [
+            84,
+            14,
+            17
+          ],
+          "point_count": 10915,
+          "source_instance_id": 20
+        },
+        {
+          "entity_id": "ovimap:21",
+          "entity_index": 19,
+          "palette_rgb": [
+            130,
+            65,
+            116
+          ],
+          "point_count": 2164,
+          "source_instance_id": 21
+        },
+        {
+          "entity_id": "ovimap:22",
+          "entity_index": 20,
+          "palette_rgb": [
+            33,
+            220,
+            61
+          ],
+          "point_count": 5082,
+          "source_instance_id": 22
+        },
+        {
+          "entity_id": "ovimap:24",
+          "entity_index": 21,
+          "palette_rgb": [
+            62,
+            65,
+            161
+          ],
+          "point_count": 355,
+          "source_instance_id": 24
+        },
+        {
+          "entity_id": "ovimap:25",
+          "entity_index": 22,
+          "palette_rgb": [
+            225,
+            103,
+            252
+          ],
+          "point_count": 969,
+          "source_instance_id": 25
+        },
+        {
+          "entity_id": "ovimap:28",
+          "entity_index": 23,
+          "palette_rgb": [
+            151,
+            220,
+            234
+          ],
+          "point_count": 5489,
+          "source_instance_id": 28
+        },
+        {
+          "entity_id": "ovimap:29",
+          "entity_index": 24,
+          "palette_rgb": [
+            107,
+            143,
+            150
+          ],
+          "point_count": 3285,
+          "source_instance_id": 29
+        },
+        {
+          "entity_id": "ovimap:31",
+          "entity_index": 25,
+          "palette_rgb": [
+            236,
+            59,
+            176
+          ],
+          "point_count": 672,
+          "source_instance_id": 31
+        },
+        {
+          "entity_id": "ovimap:33",
+          "entity_index": 26,
+          "palette_rgb": [
+            60,
+            236,
+            84
+          ],
+          "point_count": 14437,
+          "source_instance_id": 33
+        },
+        {
+          "entity_id": "ovimap:34",
+          "entity_index": 27,
+          "palette_rgb": [
+            24,
+            92,
+            219
+          ],
+          "point_count": 24517,
+          "source_instance_id": 34
+        },
+        {
+          "entity_id": "ovimap:35",
+          "entity_index": 28,
+          "palette_rgb": [
+            2,
+            254,
+            26
+          ],
+          "point_count": 185,
+          "source_instance_id": 35
+        },
+        {
+          "entity_id": "ovimap:36",
+          "entity_index": 29,
+          "palette_rgb": [
+            67,
+            250,
+            251
+          ],
+          "point_count": 3860,
+          "source_instance_id": 36
+        }
+      ],
+      "entity_count": 29,
+      "entity_point_count": 685675,
+      "frame_count": 114,
+      "global_alignment_application": "rescan_to_reference_once",
+      "materialized_manifest_sha256": "c743bf032378b82743119d67c21d274065bbab431e39bd9bc71bba8f4e6c1e03",
+      "native_manifest_sha256": "8cd24bd658ab9acac36be4f610fd490c93ed714ee69e4ea6ac05f101681f1b93",
+      "normal_valid_count": 685686,
+      "point_count": 685686,
+      "scan_id": "fcf66d9e-622d-291c-84c2-bb23dfe31327",
+      "source_artifact_sha256": {
+        "instance_color_log": "23f3ccd23daf86ed2c3ce0636762956b6585a149b1ed248944500caa2504ee3e",
+        "instance_mesh": "2ceff8d8040daacb3035e65c7bea8c7e57ebed860432594e0870de7d2386832d",
+        "semantic_features": "4d26c63fdb9326d2531820e0cc9a89ac1352a13135dd7825d335dce32919f40e"
+      },
+      "visit_id": 1
+    }
+  ]
+}

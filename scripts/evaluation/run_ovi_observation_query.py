@@ -53,6 +53,11 @@ LONG_TABLE_FIELDS = (
     "precision25",
     "recall25",
     "f1_25",
+    "full_gt_target_count",
+    "domain_target_count",
+    "zero_support_gt_count",
+    "mean_gt_support_fraction",
+    "gt_support_fractions_json",
     "fragment_count",
     "merge_count",
     "duplicate_count",
@@ -75,10 +80,11 @@ LONG_TABLE_FIELDS = (
     "unavailable_reason",
 )
 EVALUATION_DOMAINS = (
-    "FULL_GT_LEGACY",
-    "COMMON_M_SUPPORTED",
-    "CAMERA_VISIBLE_DIAGNOSTIC",
-    "RAW_QUERY_DIAGNOSTIC",
+    "FULL_GT_V2",
+    "COMMON_INPUT_SUPPORT_V2",
+    "CAMERA_VISIBLE_INTERSECT_D_V1",
+    "RAW_FULL_GT_V2",
+    "RAW_COMMON_INPUT_SUPPORT_V2",
 )
 
 
@@ -108,6 +114,7 @@ def unavailable_result_rows(
     checkpoint_id: str | None,
     seed: int,
     reason: str,
+    status: str = "NOT_RUN_MISSING_TRAIN_ASSETS",
 ) -> tuple[dict[str, object], ...]:
     rows = []
     for visit_id in (0, 1):
@@ -130,7 +137,7 @@ def unavailable_result_rows(
                     "evaluation_domain": domain,
                     "checkpoint_id": checkpoint_id,
                     "seed": seed,
-                    "status": "NOT_RUN_MISSING_TRAIN_ASSETS",
+                    "status": status,
                     "unavailable_reason": reason,
                 }
             )
@@ -167,28 +174,45 @@ def _artifact_record(path: Path) -> dict[str, object]:
     return record
 
 
-def _split_pair(split: Mapping[str, object], role: str) -> Mapping[str, object]:
+def _split_pair(
+    split: Mapping[str, object], role: str, pair_id: str | None = None
+) -> Mapping[str, object]:
     environments = split.get("environments")
     matches = (
         [
             row
             for row in environments
-            if isinstance(row, Mapping) and row.get("role") == role
+            if isinstance(row, Mapping)
+            and row.get("role") == role
+            and (pair_id is None or row.get("pair_id") == pair_id)
         ]
         if isinstance(environments, list)
         else []
     )
     if len(matches) != 1:
-        raise ObservationEvaluationError(f"split must contain exactly one {role} pair")
+        raise ObservationEvaluationError(f"{role} pair is absent or ambiguous in split")
     return matches[0]
 
 
-def _runtime_pair(runtime: Mapping[str, object], role: str) -> Mapping[str, object]:
+def _runtime_pair(
+    runtime: Mapping[str, object], role: str, pair_id: str | None = None
+) -> Mapping[str, object]:
     pairs = runtime.get("pairs")
-    value = pairs.get(role.casefold()) if isinstance(pairs, Mapping) else None
-    if not isinstance(value, Mapping):
-        raise ObservationEvaluationError(f"runtime lacks its {role} pair")
-    return value
+    matches = (
+        [
+            value
+            for key, value in pairs.items()
+            if isinstance(key, str)
+            and isinstance(value, Mapping)
+            and value.get("role", key.upper()) == role
+            and (pair_id is None or value.get("pair_id") == pair_id)
+        ]
+        if isinstance(pairs, Mapping)
+        else []
+    )
+    if len(matches) != 1:
+        raise ObservationEvaluationError(f"{role} pair is absent or ambiguous in runtime")
+    return matches[0]
 
 
 def _csv_bytes(rows: Sequence[Mapping[str, object]]) -> bytes:
@@ -373,7 +397,9 @@ def _camera_visible_masks(
     return result[0], result[1]
 
 
-def _geometry_metrics(pair, view, ground_truth, domain_masks):
+def _geometry_metrics(
+    pair, view, ground_truth, domain_masks, *, target_domain: str
+):
     from src.evaluation.rscan_gt_instances import (
         GroundTruthInstance,
         PredictedInstance,
@@ -381,6 +407,8 @@ def _geometry_metrics(pair, view, ground_truth, domain_masks):
         voxelize_points,
     )
 
+    if target_domain not in {"full", "support"}:
+        raise ObservationEvaluationError("geometry target domain is invalid")
     rows = []
     for visit_id in (0, 1):
         visit = pair.visits[visit_id]
@@ -389,10 +417,23 @@ def _geometry_metrics(pair, view, ground_truth, domain_masks):
             visit.points_xyz[np.flatnonzero(domain)],
             voxel_size_m=ground_truth.voxel_size_m,
         )
-        targets = tuple(
-            GroundTruthInstance(target.instance_id, target.semantic_label, voxels)
-            for target in ground_truth.visits[visit_id]
-            if (voxels := target.voxels & domain_voxels)
+        source_targets = ground_truth.visits[visit_id]
+        support = tuple(target.voxels & domain_voxels for target in source_targets)
+        support_fractions = tuple(
+            {
+                "instance_id": target.instance_id,
+                "fraction": len(voxels) / len(target.voxels),
+            }
+            for target, voxels in zip(source_targets, support, strict=True)
+        )
+        targets = (
+            tuple(source_targets)
+            if target_domain == "full"
+            else tuple(
+                GroundTruthInstance(target.instance_id, target.semantic_label, voxels)
+                for target, voxels in zip(source_targets, support, strict=True)
+                if voxels
+            )
         )
         predictions = []
         for candidate in view.candidates[visit_id]:
@@ -417,20 +458,26 @@ def _geometry_metrics(pair, view, ground_truth, domain_masks):
             target_count: int = len(targets),
         ):
             tp = threshold.matched_count
-            precision = None if not prediction_count else tp / prediction_count
-            recall = None if not target_count else tp / target_count
-            f1 = (
-                None
-                if precision is None or recall is None or precision + recall == 0
-                else 2 * precision * recall / (precision + recall)
-            )
+            fp = prediction_count - tp
+            fn = target_count - tp
+            precision = None if prediction_count == 0 else tp / prediction_count
+            recall = None if target_count == 0 else tp / target_count
+            denominator = 2 * tp + fp + fn
+            null_reasons = []
+            if precision is None:
+                null_reasons.append("precision:no_predictions")
+            if recall is None:
+                null_reasons.append("recall:no_ground_truth")
+            if denominator == 0:
+                null_reasons.append("f1:predictions_and_ground_truth_empty")
             return {
                 "tp": tp,
-                "fp": prediction_count - tp,
-                "fn": target_count - tp,
+                "fp": fp,
+                "fn": fn,
                 "precision": precision,
                 "recall": recall,
-                "f1": f1,
+                "f1": None if denominator == 0 else 2 * tp / denominator,
+                "null_reasons": tuple(null_reasons),
             }
 
         rows.append(
@@ -441,14 +488,33 @@ def _geometry_metrics(pair, view, ground_truth, domain_masks):
                 "fragment_count": result.primary.fragment_gt_count,
                 "merge_count": result.primary.merge_prediction_count,
                 "duplicate_count": result.primary.duplicate_prediction_count,
+                "coverage": {
+                    "full_gt_target_count": len(source_targets),
+                    "domain_target_count": len(targets),
+                    "zero_support_gt_count": sum(
+                        not voxels for voxels in support
+                    ),
+                    "mean_gt_support_fraction": (
+                        None
+                        if not support_fractions
+                        else float(
+                            np.mean(
+                                [value["fraction"] for value in support_fractions]
+                            )
+                        )
+                    ),
+                    "gt_support_fractions": support_fractions,
+                },
             }
         )
     return rows[0], rows[1]
 
 
-def _raw_metrics(pair, readout, ground_truth, domain_masks):
+def _raw_metrics(pair, readout, ground_truth, domain_masks, *, target_domain: str):
     from src.evaluation.rscan_gt_instances import voxelize_points
 
+    if target_domain not in {"full", "support"}:
+        raise ObservationEvaluationError("raw target domain is invalid")
     rows = []
     for visit_id in (0, 1):
         visit = pair.visits[visit_id]
@@ -457,10 +523,20 @@ def _raw_metrics(pair, readout, ground_truth, domain_masks):
             visit.points_xyz[np.flatnonzero(domain)],
             voxel_size_m=ground_truth.voxel_size_m,
         )
-        targets = [
-            target.voxels & domain_voxels for target in ground_truth.visits[visit_id]
-        ]
-        targets = [value for value in targets if value]
+        source_targets = ground_truth.visits[visit_id]
+        support = tuple(target.voxels & domain_voxels for target in source_targets)
+        support_fractions = tuple(
+            {
+                "instance_id": target.instance_id,
+                "fraction": len(voxels) / len(target.voxels),
+            }
+            for target, voxels in zip(source_targets, support, strict=True)
+        )
+        targets = (
+            [target.voxels for target in source_targets]
+            if target_domain == "full"
+            else [voxels for voxels in support if voxels]
+        )
         proposals = []
         for proposal in readout.raw_proposals[visit_id]:
             points = proposal.point_indices[domain[proposal.point_indices]]
@@ -489,6 +565,23 @@ def _raw_metrics(pair, readout, ground_truth, domain_masks):
                 "raw_ar25": None
                 if not best
                 else sum(value >= 0.25 for value in best) / len(best),
+                "coverage": {
+                    "full_gt_target_count": len(source_targets),
+                    "domain_target_count": len(targets),
+                    "zero_support_gt_count": sum(
+                        not voxels for voxels in support
+                    ),
+                    "mean_gt_support_fraction": (
+                        None
+                        if not support_fractions
+                        else float(
+                            np.mean(
+                                [value["fraction"] for value in support_fractions]
+                            )
+                        )
+                    ),
+                    "gt_support_fractions": support_fractions,
+                },
             }
         )
     return rows[0], rows[1]
@@ -526,22 +619,49 @@ def _actual_rows(
     )
     common_masks = tuple(visit.neural_valid for visit in layers.readout.visits)
     geometry = {
-        "FULL_GT_LEGACY": _geometry_metrics(
-            pair, layers.method_view, ground_truth, full_masks
+        "FULL_GT_V2": _geometry_metrics(
+            pair,
+            layers.method_view,
+            ground_truth,
+            full_masks,
+            target_domain="full",
         ),
-        "COMMON_M_SUPPORTED": _geometry_metrics(
-            pair, layers.method_view, ground_truth, common_masks
+        "COMMON_INPUT_SUPPORT_V2": _geometry_metrics(
+            pair,
+            layers.method_view,
+            ground_truth,
+            common_masks,
+            target_domain="support",
         ),
-        "CAMERA_VISIBLE_DIAGNOSTIC": _geometry_metrics(
-            pair, layers.method_view, ground_truth, camera_masks
+        "CAMERA_VISIBLE_INTERSECT_D_V1": _geometry_metrics(
+            pair,
+            layers.method_view,
+            ground_truth,
+            camera_masks,
+            target_domain="support",
         ),
     }
-    raw = _raw_metrics(pair, layers.readout, ground_truth, full_masks)
+    raw = {
+        "RAW_FULL_GT_V2": _raw_metrics(
+            pair,
+            layers.readout,
+            ground_truth,
+            full_masks,
+            target_domain="full",
+        ),
+        "RAW_COMMON_INPUT_SUPPORT_V2": _raw_metrics(
+            pair,
+            layers.readout,
+            ground_truth,
+            common_masks,
+            target_domain="support",
+        ),
+    }
     identities = {
-        "FULL_GT_LEGACY": _identity_metrics(
+        "FULL_GT_V2": _identity_metrics(
             pair, layers.method_view, ground_truth, "full"
         ),
-        "COMMON_M_SUPPORTED": _identity_metrics(
+        "COMMON_INPUT_SUPPORT_V2": _identity_metrics(
             pair, layers.method_view, ground_truth, "supported"
         ),
     }
@@ -587,8 +707,14 @@ def _actual_rows(
                     "status": "PASS",
                 }
             )
-            if domain == "RAW_QUERY_DIAGNOSTIC":
-                row.update(raw[visit_id])
+            if domain.startswith("RAW_"):
+                result = raw[domain][visit_id]
+                row.update(
+                    {
+                        name: result[name]
+                        for name in ("raw_best_iou_mean", "raw_ar50", "raw_ar25")
+                    }
+                )
                 row["unavailable_reason"] = (
                     "final_and_identity_fields_not_applicable_to_raw_queries"
                 )
@@ -616,10 +742,21 @@ def _actual_rows(
                         "duplicate_count": result["duplicate_count"],
                     }
                 )
+                null_reasons = (
+                    *primary["null_reasons"],
+                    *sensitivity["null_reasons"],
+                )
+                if null_reasons:
+                    row["unavailable_reason"] = ";".join(null_reasons)
                 identity = identities.get(domain)
                 if identity is None:
-                    row["unavailable_reason"] = (
+                    reason = (
                         "temporal_identity_not_defined_for_camera_visible_diagnostic"
+                    )
+                    row["unavailable_reason"] = ";".join(
+                        value
+                        for value in (row["unavailable_reason"], reason)
+                        if value
                     )
                 else:
                     row.update(
@@ -632,6 +769,22 @@ def _actual_rows(
                             "moved_identity_recall": identity["rigid_recall"],
                         }
                     )
+            coverage = result["coverage"]
+            row.update(
+                {
+                    "full_gt_target_count": coverage["full_gt_target_count"],
+                    "domain_target_count": coverage["domain_target_count"],
+                    "zero_support_gt_count": coverage["zero_support_gt_count"],
+                    "mean_gt_support_fraction": coverage[
+                        "mean_gt_support_fraction"
+                    ],
+                    "gt_support_fractions_json": json.dumps(
+                        coverage["gt_support_fractions"],
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    ),
+                }
+            )
             rows.append(row)
     return tuple(rows)
 
@@ -665,55 +818,38 @@ def _validate_checkpoint_evaluation_contract(
     metadata: object,
     config: Mapping[str, object],
     method: str,
-    config_path: Path,
-    split_path: Path,
-    split_id: str,
-    observation_sha256: str,
+    observation_feature_dim: int,
+    observation_metadata_dim: int,
+    model_input_feature_dim: int,
 ) -> None:
     resolved = getattr(metadata, "resolved_config", None)
-    expected = {
-        "method": method,
-        "model": config.get("model"),
-        "loss": config.get("loss"),
-        "training": config.get("training"),
-        "method_config": config.get("methods", {}).get(method),
-    }
-    if not isinstance(resolved, Mapping) or any(
-        resolved.get(name) != value for name, value in expected.items()
-    ):
-        raise ObservationEvaluationError(
-            "checkpoint resolved training config differs from evaluation"
-        )
-    training = config.get("training")
+    methods = config.get("methods")
     if (
-        getattr(metadata, "model_variant", None) != method
-        or getattr(metadata, "split_id", None) != split_id
-        or getattr(metadata, "observation_sha256", None) != observation_sha256
-        or not isinstance(training, Mapping)
-        or getattr(metadata, "seed", None) != training.get("seed")
+        not isinstance(resolved, Mapping)
+        or not isinstance(methods, Mapping)
+        or getattr(metadata, "model_variant", None) != method
+        or resolved.get("method") != method
+        or resolved.get("model") != config.get("model")
+        or resolved.get("method_config") != methods.get(method)
     ):
         raise ObservationEvaluationError(
-            "checkpoint data identity differs from evaluation"
+            "checkpoint model architecture differs from evaluation"
         )
-    bindings = resolved.get("source_bindings")
-    sources = {
-        "config": config_path,
-        "split": split_path,
-        "model": REPO_ROOT / "src/oviv2/observation_query/model.py",
-        "losses": REPO_ROOT / "src/oviv2/observation_query/losses.py",
-        "training_state": REPO_ROOT / "src/oviv2/observation_query/training.py",
+    architecture_version = getattr(metadata, "model_architecture_version", None)
+    if architecture_version not in (None, "OVI_OBSERVATION_QUERY_V1"):
+        raise ObservationEvaluationError(
+            "checkpoint model architecture version differs from evaluation"
+        )
+    expected_schema = {
+        "observation_feature_dim": observation_feature_dim,
+        "observation_metadata_dim": observation_metadata_dim,
+        "model_input_feature_dim": model_input_feature_dim,
     }
-    if not isinstance(bindings, Mapping):
-        raise ObservationEvaluationError("checkpoint source bindings are unavailable")
-    for name, path in sources.items():
-        record = bindings.get(name)
-        actual = _file_record(path)
-        if not isinstance(record, Mapping) or any(
-            record.get(field) != actual[field] for field in ("sha256", "byte_count")
-        ):
-            raise ObservationEvaluationError(
-                f"checkpoint {name} source binding differs from evaluation"
-            )
+    feature_schema = getattr(metadata, "input_feature_schema", None)
+    if feature_schema is not None and feature_schema != expected_schema:
+        raise ObservationEvaluationError(
+            "checkpoint input feature schema differs from evaluation"
+        )
 
 
 def _trained_predictions(
@@ -722,12 +858,16 @@ def _trained_predictions(
     observations: object,
     runtime: Mapping[str, object],
     config: Mapping[str, object],
-    config_path: Path,
-    split_path: Path,
-    split_id: str,
     method: str,
     checkpoint_path: Path,
-) -> tuple[_ForwardArrays, float, int, str, dict[str, object]]:
+) -> tuple[
+    _ForwardArrays,
+    float,
+    int,
+    str,
+    dict[str, object],
+    dict[str, object],
+]:
     import torch
 
     from scripts.training.train_ovi_observation_query import (
@@ -750,13 +890,12 @@ def _trained_predictions(
         metadata=metadata,
         config=config,
         method=method,
-        config_path=config_path,
-        split_path=split_path,
-        split_id=split_id,
-        observation_sha256=observations.content_sha256(),
+        observation_feature_dim=int(observations.region_features.shape[1]),
+        observation_metadata_dim=int(observations.region_metadata.shape[1]),
+        model_input_feature_dim=int(model_input.features.shape[1]),
     )
     model_config = config.get("model")
-    loss_config = config.get("loss")
+    loss_config = metadata.resolved_config.get("loss")
     if not isinstance(model_config, Mapping) or not isinstance(loss_config, Mapping):
         raise ObservationEvaluationError("model and loss configs must be mappings")
     device = torch.device(os.environ.get("RESCENE_DEVICE", "cuda:0"))
@@ -814,6 +953,12 @@ def _trained_predictions(
         peak_memory_bytes=int(torch.cuda.max_memory_allocated(device)),
     )
     checkpoint_id = str(_file_record(weights_path)["sha256"])
+    training_dataset = getattr(metadata, "training_dataset_manifest", None)
+    environment_ids = (
+        training_dataset.get("environment_ids", [])
+        if isinstance(training_dataset, Mapping)
+        else []
+    )
     return (
         forward,
         inference_seconds,
@@ -822,6 +967,18 @@ def _trained_predictions(
         {
             "checkpoint_manifest": _file_record(manifest_path),
             "checkpoint_weights": _file_record(weights_path),
+        },
+        {
+            "checkpoint_id": checkpoint_id,
+            "training_environment_ids": list(environment_ids),
+            "training_dataset_manifest": training_dataset,
+            "training_updates": metadata.optimizer_updates,
+            "model_architecture_version": getattr(
+                metadata,
+                "model_architecture_version",
+                None,
+            )
+            or "OVI_OBSERVATION_QUERY_V1_LEGACY",
         },
     )
 
@@ -877,14 +1034,18 @@ def run_evaluation(
     checkpoint: str | None,
     role: str,
     run_id: str,
+    pair_id: str | None = None,
+    metric_protocol: str = "OVI_OBSERVATION_QUERY_INSTANCE_V2",
 ) -> int:
     config_source, config = _load_json(config_path, "pilot config")
     runtime_source, runtime = _load_json(runtime_path, "runtime config")
     if method not in config.get("methods", {}):
         raise ObservationEvaluationError("method is not declared in pilot config")
     split_source, split = _load_json(str(config["split_manifest"]), "split manifest")
-    pair_record = _split_pair(split, role)
-    runtime_pair = _runtime_pair(runtime, role)
+    if metric_protocol != "OVI_OBSERVATION_QUERY_INSTANCE_V2":
+        raise ObservationEvaluationError("metric protocol is unsupported")
+    pair_record = _split_pair(split, role, pair_id)
+    runtime_pair = _runtime_pair(runtime, role, pair_id)
     if runtime_pair.get("pair_id") != pair_record.get("pair_id"):
         raise ObservationEvaluationError("runtime and split pair differ")
     cache_root = Path(str(runtime["cache_root"])).absolute()
@@ -897,10 +1058,12 @@ def run_evaluation(
     trained = bool(config["methods"][method].get("trained"))
     checkpoint_path = None if checkpoint is None else Path(checkpoint).absolute()
     if trained and (checkpoint_path is None or not checkpoint_path.is_dir()):
-        reason = (
-            "trained checkpoint is unavailable because declared TRAIN RGB-D sequence.zip "
-            "assets are absent; DEV was not substituted for TRAIN"
-        )
+        if checkpoint_path is None:
+            unavailable_status = "NOT_RUN_CHECKPOINT_NOT_PROVIDED"
+            reason = "trained checkpoint was not provided"
+        else:
+            unavailable_status = "NOT_RUN_CHECKPOINT_PATH_INVALID"
+            reason = f"trained checkpoint path is unavailable: {checkpoint_path}"
         rows = unavailable_result_rows(
             run_id=run_id,
             method_id=method,
@@ -911,6 +1074,7 @@ def run_evaluation(
             checkpoint_id=None,
             seed=seed,
             reason=reason,
+            status=unavailable_status,
         )
         _publish(
             output,
@@ -919,9 +1083,13 @@ def run_evaluation(
             summary={
                 "schema_version": 1,
                 "artifact_id": "OVI_RESCENE_OBSERVATION_QUERY_EVALUATION_V1",
-                "status": "NOT_RUN_MISSING_TRAIN_ASSETS",
+                "status": unavailable_status,
                 "run_id": run_id,
                 "method_id": method,
+                "eval_environment_id": str(pair_record["environment_uuid"]),
+                "eval_pair_id": str(pair_record["pair_id"]),
+                "role": role,
+                "metric_protocol_id": metric_protocol,
                 "reason": reason,
                 "source_bindings": {
                     "config": _file_record(config_source),
@@ -971,6 +1139,13 @@ def run_evaluation(
                 "sha256"
             ]
         )
+        checkpoint_provenance = {
+            "checkpoint_id": checkpoint_id,
+            "training_environment_ids": [],
+            "training_dataset_manifest": None,
+            "training_updates": 0,
+            "model_architecture_version": "RESCENE_BASE_FROZEN",
+        }
     else:
         assert checkpoint_path is not None
         (
@@ -979,14 +1154,12 @@ def run_evaluation(
             training_updates,
             checkpoint_id,
             checkpoint_bindings,
+            checkpoint_provenance,
         ) = _trained_predictions(
             model_input=model_input,
             observations=observations,
             runtime=runtime,
             config=config,
-            config_path=config_source,
-            split_path=split_source,
-            split_id=str(split.get("artifact_id", "splits_v1")),
             method=method,
             checkpoint_path=checkpoint_path,
         )
@@ -1044,7 +1217,7 @@ def run_evaluation(
     identity_recall = next(
         row["identity_recall"]
         for row in rows
-        if row["visit_id"] == 0 and row["evaluation_domain"] == "FULL_GT_LEGACY"
+        if row["visit_id"] == 0 and row["evaluation_domain"] == "FULL_GT_V2"
     )
     current_map_status = (
         "INSTANCE_CONSTRUCTION_PASS_MAP_EFFECT_NOT_EVALUABLE"
@@ -1062,6 +1235,18 @@ def run_evaluation(
             "run_id": run_id,
             "method_id": method,
             "pair_id": pair.pair_id,
+            **checkpoint_provenance,
+            "eval_environment_id": str(pair_record["environment_uuid"]),
+            "eval_pair_id": pair.pair_id,
+            "eval_observation_id": observations.content_sha256(),
+            "eval_model_input_id": model_input.content_sha256(),
+            "role": role,
+            "exposure_status": (
+                "PREVIOUSLY_INSPECTED"
+                if bool(pair_record["previously_inspected"])
+                else "HELD_OUT"
+            ),
+            "metric_protocol_id": metric_protocol,
             "model_input_sha256": model_input.content_sha256(),
             "model_bundle_manifest": model_manifest,
             "dense_layers_sha256": layers.content_sha256(),
@@ -1111,6 +1296,10 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--runtime", required=True)
     parser.add_argument("--method", required=True)
     parser.add_argument("--checkpoint")
+    parser.add_argument("--pair-id")
+    parser.add_argument(
+        "--metric-protocol", default="OVI_OBSERVATION_QUERY_INSTANCE_V2"
+    )
     parser.add_argument(
         "--role", required=True, choices=("DEV", "CONFIRM", "LEGACY_REGRESSION")
     )
@@ -1127,6 +1316,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         checkpoint=args.checkpoint,
         role=args.role,
         run_id=args.run_id,
+        pair_id=args.pair_id,
+        metric_protocol=args.metric_protocol,
     )
 
 

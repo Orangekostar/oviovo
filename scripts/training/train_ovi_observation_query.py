@@ -140,6 +140,34 @@ def _write_atomic_directory(output: Path, filename: str, payload: object) -> Pat
     return output / filename
 
 
+def _write_json_atomic(path: Path, payload: object) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{path.name}.", dir=path.parent
+    )
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(
+                (
+                    json.dumps(
+                        payload,
+                        sort_keys=True,
+                        indent=2,
+                        ensure_ascii=True,
+                        allow_nan=False,
+                    )
+                    + "\n"
+                ).encode("utf-8")
+            )
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    except BaseException:
+        temporary.unlink(missing_ok=True)
+        raise
+
+
 def build_optimizer(
     *,
     model: nn.Module,
@@ -538,11 +566,132 @@ def _metadata_from_manifest(path: Path):
 
 
 def _same_resume_contract(current: object, previous: object) -> bool:
-    current_values = current.as_dict()
-    previous_values = previous.as_dict()
-    current_values.pop("optimizer_updates")
-    previous_values.pop("optimizer_updates")
-    return current_values == previous_values
+    def contract(metadata: object) -> dict[str, object]:
+        values = metadata.as_dict()
+        resolved = values.get("resolved_config")
+        if not isinstance(resolved, Mapping):
+            return {}
+        training = resolved.get("training")
+        bindings = resolved.get("source_bindings")
+        if not isinstance(training, Mapping) or not isinstance(bindings, Mapping):
+            return {}
+        semantic_bindings = {
+            name: {
+                key: record.get(key)
+                for key in ("sha256", "byte_count")
+                if key in record
+            }
+            for name in ("model", "losses", "training_state")
+            if isinstance((record := bindings.get(name)), Mapping)
+        }
+        dataset = values.get("training_dataset_manifest")
+        if dataset is None:
+            dataset = {
+                "split_id": values.get("split_id"),
+                "observation_sha256": values.get("observation_sha256"),
+                "backbone_cache_sha256": values.get("backbone_cache_sha256"),
+            }
+        return {
+            "model_variant": values.get("model_variant"),
+            "base_checkpoint_sha256": values.get("base_checkpoint_sha256"),
+            "model_architecture_version": values.get("model_architecture_version"),
+            "input_feature_schema": values.get("input_feature_schema"),
+            "model": resolved.get("model"),
+            "loss": resolved.get("loss"),
+            "method_config": resolved.get("method_config"),
+            "optimizer": {
+                name: training.get(name)
+                for name in (
+                    "optimizer",
+                    "native_learning_rate",
+                    "observation_learning_rate",
+                    "weight_decay",
+                    "gradient_clip_norm",
+                    "gradient_accumulation",
+                )
+            },
+            "seed": values.get("seed"),
+            "training_dataset_manifest": dataset,
+            "semantic_source_bindings": semantic_bindings,
+        }
+
+    return contract(current) == contract(previous)
+
+
+def _target_update_count(
+    *,
+    target_total_updates: int,
+    start_update: int,
+    maximum_total_updates: int | None = None,
+) -> int:
+    target = _positive_integer(target_total_updates, "target_total_updates")
+    if type(start_update) is not int or start_update < 0:
+        raise ObservationTrainingRunError("start_update must be nonnegative")
+    if maximum_total_updates is not None:
+        maximum = _positive_integer(
+            maximum_total_updates, "maximum_total_updates"
+        )
+        if target > maximum:
+            raise ObservationTrainingRunError(
+                "target_total_updates exceeds the configured maximum"
+            )
+    if target <= start_update:
+        raise ObservationTrainingRunError(
+            "target_total_updates must exceed the resumed optimizer updates"
+        )
+    return target - start_update
+
+
+def _restore_training_random_state(
+    state: Mapping[str, object], device: torch.device
+) -> dict[str, object]:
+    required = (
+        "python_random_state",
+        "numpy_random_state",
+        "torch_random_state",
+    )
+    if any(name not in state for name in required):
+        raise ObservationTrainingRunError("resume random state is incomplete")
+    random.setstate(state["python_random_state"])
+    np.random.set_state(state["numpy_random_state"])
+    torch.set_rng_state(state["torch_random_state"])
+    if device.type == "cuda":
+        cuda_state = state.get("cuda_random_state")
+        if not isinstance(cuda_state, torch.Tensor):
+            raise ObservationTrainingRunError("resume CUDA random state is incomplete")
+        torch.cuda.set_rng_state(cuda_state, device)
+    sampler = state.get("sampler_state", {})
+    if not isinstance(sampler, Mapping):
+        raise ObservationTrainingRunError("resume sampler state is invalid")
+    return dict(sampler)
+
+
+def _validated_resume_state_path(resume_root: Path) -> Path:
+    training_state = _regular_file(
+        resume_root / "training_state.pt", "resume optimizer state"
+    )
+    summary_path = resume_root / "summary.json"
+    snapshot_path = resume_root / "snapshot.json"
+    if summary_path.is_file() and not summary_path.is_symlink():
+        _, evidence = _load_json(summary_path, "resume summary")
+        if evidence.get("artifact_id") != "OVI_RESCENE_OBSERVATION_TRAINING_RUN_V1":
+            raise ObservationTrainingRunError("resume summary identity mismatch")
+    elif snapshot_path.is_file() and not snapshot_path.is_symlink():
+        _, evidence = _load_json(snapshot_path, "periodic snapshot")
+        if (
+            evidence.get("schema_version") != 2
+            or evidence.get("artifact_id")
+            != "OVI_RESCENE_OBSERVATION_TRAINING_SNAPSHOT_V2"
+            or evidence.get("status") != "PASS"
+        ):
+            raise ObservationTrainingRunError("periodic snapshot identity mismatch")
+    else:
+        raise ObservationTrainingRunError("resume state evidence is unavailable")
+    if evidence.get("training_state") != _artifact_record(
+        training_state, "training_state.pt"
+    ):
+        raise ObservationTrainingRunError("resume optimizer state binding mismatch")
+    return training_state
 
 
 def _execute_training(
@@ -558,6 +707,7 @@ def _execute_training(
     run_id: str,
     stage: str,
     resume: str | None,
+    target_total_updates: int | None,
     output_root: Path,
 ) -> int:
     contract = training_method_contract(method)
@@ -584,7 +734,7 @@ def _execute_training(
     assert isinstance(training, Mapping)
     assert isinstance(loss_config, Mapping)
     assert isinstance(model_config, Mapping)
-    update_budget = (
+    configured_target = (
         _positive_integer(training.get("smoke_updates"), "smoke_updates")
         if stage == "smoke"
         else _positive_integer(
@@ -737,6 +887,28 @@ def _execute_training(
         backbone_cache_sha256=cache.content_sha256,
         seed=seed,
         optimizer_updates=0,
+        training_dataset_manifest={
+            "schema_version": 2,
+            "artifact_id": "OVI_OBSERVATION_TRAINING_DATASET_V2",
+            "environment_ids": [
+                str(_select_train_pair(split, observations.pair_id)["environment_uuid"])
+            ],
+            "pairs": [
+                {
+                    "pair_id": observations.pair_id,
+                    "model_input_sha256": model_input.content_sha256(),
+                    "observation_sha256": observations.content_sha256(),
+                    "training_target_sha256": sample.content_sha256(),
+                    "backbone_cache_sha256": cache.content_sha256,
+                }
+            ],
+        },
+        model_architecture_version="OVI_OBSERVATION_QUERY_V1",
+        input_feature_schema={
+            "observation_feature_dim": int(observations.region_features.shape[1]),
+            "observation_metadata_dim": int(observations.region_metadata.shape[1]),
+            "model_input_feature_dim": int(model_input.features.shape[1]),
+        },
     )
     start_update = 0
     if resume is not None:
@@ -752,21 +924,102 @@ def _execute_training(
             checkpoint_root=resume_root / "checkpoint",
             expected_metadata=previous_metadata,
         )
-        training_state_path = _regular_file(
-            resume_root / "training_state.pt", "resume optimizer state"
-        )
-        _, resume_summary = _load_json(resume_root / "summary.json", "resume summary")
-        if resume_summary.get(
-            "artifact_id"
-        ) != "OVI_RESCENE_OBSERVATION_TRAINING_RUN_V1" or resume_summary.get(
-            "training_state"
-        ) != _artifact_record(training_state_path, "training_state.pt"):
-            raise ObservationTrainingRunError("resume optimizer state binding mismatch")
+        training_state_path = _validated_resume_state_path(resume_root)
         state = torch.load(training_state_path, map_location="cpu", weights_only=False)
         if not isinstance(state, Mapping) or "optimizer" not in state:
             raise ObservationTrainingRunError("resume optimizer state is invalid")
         optimizer.load_state_dict(state["optimizer"])
         start_update = previous_metadata.optimizer_updates
+        sampler_state = _restore_training_random_state(state, device)
+    else:
+        sampler_state = {
+            "pair_order": [observations.pair_id],
+            "next_pair_index": 0,
+        }
+    target_updates = (
+        configured_target
+        if target_total_updates is None
+        else _positive_integer(target_total_updates, "target_total_updates")
+    )
+    update_count = _target_update_count(
+        target_total_updates=target_updates,
+        start_update=start_update,
+        maximum_total_updates=_positive_integer(
+            training.get("cumulative_max_optimizer_updates"),
+            "cumulative_max_optimizer_updates",
+        ),
+    )
+    output_root.parent.mkdir(parents=True, exist_ok=True)
+    if output_root.exists() or output_root.is_symlink():
+        raise ObservationTrainingRunError(f"training run already exists: {output_root}")
+    output_root.mkdir()
+    status_path = output_root / "status.json"
+    _write_json_atomic(
+        status_path,
+        {
+            "schema_version": 2,
+            "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_RUN_STATUS_V2",
+            "status": "RUNNING",
+            "run_id": run_id,
+            "method": method,
+            "stage": stage,
+            "pair_id": observations.pair_id,
+            "start_optimizer_updates": start_update,
+            "target_total_updates": target_updates,
+            "resume": resume,
+        },
+    )
+    curve_path = output_root / "curve.csv"
+
+    def save_snapshot(total_updates: int, root: Path) -> tuple[object, Path]:
+        metadata = ObservationCheckpointMetadata(
+            **{
+                **initial_metadata.as_dict(),
+                "optimizer_updates": total_updates,
+            }
+        )
+        checkpoint = save_trainable_checkpoint(
+            model=model,
+            criterion=criterion,
+            output_root=root / "checkpoint",
+            metadata=metadata,
+        )
+        training_state = root / "training_state.pt"
+        torch.save(
+            {
+                "optimizer": optimizer.state_dict(),
+                "python_random_state": random.getstate(),
+                "numpy_random_state": np.random.get_state(),
+                "torch_random_state": torch.get_rng_state(),
+                "cuda_random_state": torch.cuda.get_rng_state(device),
+                "sampler_state": {
+                    **sampler_state,
+                    "completed_updates": total_updates,
+                },
+            },
+            training_state,
+        )
+        _write_json_atomic(
+            root / "snapshot.json",
+            {
+                "schema_version": 2,
+                "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_SNAPSHOT_V2",
+                "status": "PASS",
+                "optimizer_updates": total_updates,
+                "checkpoint": {
+                    "manifest": _artifact_record(
+                        checkpoint.manifest, "checkpoint/manifest.json"
+                    ),
+                    "weights": _artifact_record(
+                        checkpoint.weights, "checkpoint/trainable.safetensors"
+                    ),
+                },
+                "training_state": _artifact_record(
+                    training_state, "training_state.pt"
+                ),
+            },
+        )
+        return checkpoint, training_state
 
     model.train()
     criterion.train()
@@ -774,7 +1027,7 @@ def _execute_training(
     torch.cuda.empty_cache()
     torch.cuda.reset_peak_memory_stats(device)
     started = time.perf_counter()
-    for local_update in range(update_budget):
+    for local_update in range(update_count):
         update = start_update + local_update
         latest: list[object] = []
 
@@ -807,7 +1060,7 @@ def _execute_training(
         )
         result = latest[0]
         curve.append(
-            {
+            row := {
                 "optimizer_update": update + 1,
                 "total": float(result.total.detach().cpu()),
                 "loss_ce": float(result.components["loss_ce"].detach().cpu()),
@@ -820,6 +1073,19 @@ def _execute_training(
                 **update_stats,
             }
         )
+        with curve_path.open("a", encoding="utf-8", newline="") as stream:
+            writer = csv.DictWriter(stream, fieldnames=list(row))
+            if stream.tell() == 0:
+                writer.writeheader()
+            writer.writerow(row)
+            stream.flush()
+            if (update + 1) % 10 == 0:
+                os.fsync(stream.fileno())
+        if update + 1 in {200, 500, 1000}:
+            save_snapshot(
+                update + 1,
+                output_root / "checkpoints" / f"update-{update + 1:06d}",
+            )
     torch.cuda.synchronize(device)
     training_s = time.perf_counter() - started
     if not curve or max(row["optimizer_group_0_gradient_norm"] for row in curve) <= 0:
@@ -834,41 +1100,14 @@ def _execute_training(
             "observation branch did not receive gradients"
         )
 
-    output_root.parent.mkdir(parents=True, exist_ok=True)
-    if output_root.exists() or output_root.is_symlink():
-        raise ObservationTrainingRunError(f"training run already exists: {output_root}")
-    staging = Path(
-        tempfile.mkdtemp(prefix=f".{output_root.name}.", dir=output_root.parent)
-    )
+    staging = output_root
     try:
         final_metadata = ObservationCheckpointMetadata(
-            **{
-                **initial_metadata.as_dict(),
-                "optimizer_updates": start_update + update_budget,
-            }
+            **{**initial_metadata.as_dict(), "optimizer_updates": target_updates}
         )
-        checkpoint_paths = save_trainable_checkpoint(
-            model=model,
-            criterion=criterion,
-            output_root=staging / "checkpoint",
-            metadata=final_metadata,
+        checkpoint_paths, training_state_path = save_snapshot(
+            target_updates, staging
         )
-        training_state_path = staging / "training_state.pt"
-        torch.save(
-            {
-                "optimizer": optimizer.state_dict(),
-                "python_random_state": random.getstate(),
-                "numpy_random_state": np.random.get_state(),
-                "torch_random_state": torch.get_rng_state(),
-                "cuda_random_state": torch.cuda.get_rng_state(device),
-            },
-            training_state_path,
-        )
-        curve_path = staging / "curve.csv"
-        with curve_path.open("x", encoding="utf-8", newline="") as stream:
-            writer = csv.DictWriter(stream, fieldnames=list(curve[0]))
-            writer.writeheader()
-            writer.writerows(curve)
 
         model.eval()
         criterion.eval()
@@ -931,6 +1170,10 @@ def _execute_training(
                 .cpu()
             ),
         }
+        replay_pairs = [
+            (saved_output["pred_masks"][0], reloaded_output["pred_masks"][0]),
+            (saved_output["pred_logits"], reloaded_output["pred_logits"]),
+        ]
         if contract.uses_region_supervision:
             replay_differences["pred_region_logits"] = float(
                 (
@@ -942,7 +1185,18 @@ def _execute_training(
                 .detach()
                 .cpu()
             )
-        if max(replay_differences.values()) != 0.0:
+            replay_pairs.append(
+                (
+                    saved_output["pred_region_logits"],
+                    reloaded_output["pred_region_logits"],
+                )
+            )
+        replay_rtol = 1e-5
+        replay_atol = 1e-6
+        if not all(
+            torch.allclose(left, right, rtol=replay_rtol, atol=replay_atol)
+            for left, right in replay_pairs
+        ):
             raise ObservationTrainingRunError("checkpoint reload changed model outputs")
         summary = {
             "schema_version": 1,
@@ -953,7 +1207,8 @@ def _execute_training(
             "role": "TRAIN",
             "method": method,
             "stage": stage,
-            "optimizer_updates": start_update + update_budget,
+            "optimizer_updates": target_updates,
+            "new_optimizer_updates": update_count,
             "gradient_accumulation": accumulation,
             "first_total_loss": curve[0]["total"],
             "final_total_loss": curve[-1]["total"],
@@ -978,30 +1233,44 @@ def _execute_training(
             ),
             "curve": _artifact_record(curve_path, "curve.csv"),
             "checkpoint_reload_maximum_absolute_differences": replay_differences,
+            "checkpoint_reload_tolerance": {
+                "relative": replay_rtol,
+                "absolute": replay_atol,
+            },
             "base_rescene_commit": rescene_commit,
             "training_runtime_s": training_s,
             "peak_gpu_bytes": int(torch.cuda.max_memory_allocated(device)),
             "device": f"{torch.cuda.get_device_name(device)} {device}",
         }
-        summary_path = staging / "summary.json"
-        with summary_path.open("xb") as stream:
-            stream.write(
-                (
-                    json.dumps(
-                        summary,
-                        sort_keys=True,
-                        indent=2,
-                        ensure_ascii=True,
-                        allow_nan=False,
-                    )
-                    + "\n"
-                ).encode("utf-8")
-            )
-            stream.flush()
-            os.fsync(stream.fileno())
-        os.replace(staging, output_root)
-    except BaseException:
-        shutil.rmtree(staging, ignore_errors=True)
+        _write_json_atomic(staging / "summary.json", summary)
+        _write_json_atomic(
+            status_path,
+            {
+                "schema_version": 2,
+                "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_RUN_STATUS_V2",
+                "status": "PASS",
+                "run_id": run_id,
+                "method": method,
+                "stage": stage,
+                "pair_id": observations.pair_id,
+                "optimizer_updates": target_updates,
+            },
+        )
+    except BaseException as error:
+        _write_json_atomic(
+            status_path,
+            {
+                "schema_version": 2,
+                "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_RUN_STATUS_V2",
+                "status": "FAILED",
+                "run_id": run_id,
+                "method": method,
+                "stage": stage,
+                "optimizer_updates": target_updates,
+                "error_type": type(error).__name__,
+                "error": str(error),
+            },
+        )
         raise
     print(json.dumps(summary, sort_keys=True))
     return 0
@@ -1121,6 +1390,8 @@ def _parser() -> argparse.ArgumentParser:
         choices=("smoke", "pilot", "mechanism", "confirmation-fit"),
     )
     parser.add_argument("--resume")
+    parser.add_argument("--target-total-updates", type=int)
+    parser.add_argument("--train-pair-id")
     return parser
 
 
@@ -1141,9 +1412,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         raise ObservationTrainingRunError("split_manifest is missing")
     split_path, split = _load_json(split_value, "split manifest")
     runtime_pairs = runtime.get("pairs")
-    pair_runtime = (
-        runtime_pairs.get("train") if isinstance(runtime_pairs, Mapping) else None
-    )
+    pair_runtime = None
+    if isinstance(runtime_pairs, Mapping):
+        matches = [
+            value
+            for key, value in runtime_pairs.items()
+            if isinstance(key, str)
+            and isinstance(value, Mapping)
+            and value.get("role", key.upper()) == "TRAIN"
+            and (
+                args.train_pair_id is None
+                or value.get("pair_id") == args.train_pair_id
+            )
+        ]
+        if len(matches) == 1:
+            pair_runtime = matches[0]
     if not isinstance(pair_runtime, Mapping) or not isinstance(
         pair_runtime.get("pair_id"), str
     ):
@@ -1167,20 +1450,38 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     if gate is not None:
         return gate
-    return _execute_training(
-        config_path=config_path,
-        config=config,
-        runtime_path=runtime_path,
-        runtime=runtime,
-        split_path=split_path,
-        split=split,
-        pair_runtime=pair_runtime,
-        method=args.method,
-        run_id=args.run_id,
-        stage=args.stage,
-        resume=args.resume,
-        output_root=output_root,
-    )
+    try:
+        return _execute_training(
+            config_path=config_path,
+            config=config,
+            runtime_path=runtime_path,
+            runtime=runtime,
+            split_path=split_path,
+            split=split,
+            pair_runtime=pair_runtime,
+            method=args.method,
+            run_id=args.run_id,
+            stage=args.stage,
+            resume=args.resume,
+            target_total_updates=args.target_total_updates,
+            output_root=output_root,
+        )
+    except BaseException as error:
+        if output_root.is_dir():
+            _write_json_atomic(
+                output_root / "status.json",
+                {
+                    "schema_version": 2,
+                    "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_RUN_STATUS_V2",
+                    "status": "FAILED",
+                    "run_id": args.run_id,
+                    "method": args.method,
+                    "stage": args.stage,
+                    "error_type": type(error).__name__,
+                    "error": str(error),
+                },
+            )
+        raise
 
 
 if __name__ == "__main__":

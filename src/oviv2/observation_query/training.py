@@ -431,6 +431,9 @@ class ObservationCheckpointMetadata:
     backbone_cache_sha256: str
     seed: int
     optimizer_updates: int
+    training_dataset_manifest: Mapping[str, object] | None = None
+    model_architecture_version: str | None = None
+    input_feature_schema: Mapping[str, object] | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -465,9 +468,25 @@ class ObservationCheckpointMetadata:
             raise ObservationTrainingStateError(
                 "optimizer_updates must be a nonnegative integer"
             )
+        for field_name in ("training_dataset_manifest", "input_feature_schema"):
+            value = getattr(self, field_name)
+            if value is None:
+                continue
+            _encoded, canonical = _canonical(value, field_name)
+            if not isinstance(canonical, dict):
+                raise ObservationTrainingStateError(f"{field_name} must be an object")
+            object.__setattr__(self, field_name, canonical)
+        if self.model_architecture_version is not None:
+            object.__setattr__(
+                self,
+                "model_architecture_version",
+                _nonempty(
+                    self.model_architecture_version, "model_architecture_version"
+                ),
+            )
 
     def as_dict(self) -> dict[str, object]:
-        return {
+        result = {
             "model_variant": self.model_variant,
             "base_checkpoint_sha256": self.base_checkpoint_sha256,
             "source_commit": self.source_commit,
@@ -478,6 +497,15 @@ class ObservationCheckpointMetadata:
             "seed": self.seed,
             "optimizer_updates": self.optimizer_updates,
         }
+        if self.training_dataset_manifest is not None:
+            result["training_dataset_manifest"] = dict(
+                self.training_dataset_manifest
+            )
+        if self.model_architecture_version is not None:
+            result["model_architecture_version"] = self.model_architecture_version
+        if self.input_feature_schema is not None:
+            result["input_feature_schema"] = dict(self.input_feature_schema)
+        return result
 
 
 @dataclass(frozen=True, slots=True)

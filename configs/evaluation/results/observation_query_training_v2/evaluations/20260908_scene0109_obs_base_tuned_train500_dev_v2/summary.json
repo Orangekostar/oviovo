@@ -1,0 +1,140 @@
+{
+  "artifact_id": "OVI_RESCENE_OBSERVATION_QUERY_EVALUATION_V1",
+  "artifacts": {
+    "predictions": {
+      "byte_count": 14329773,
+      "path": "predictions.npz",
+      "sha256": "5668bf15ff75fb92bc31e0e8eea8aad62346edd8f33df43c39c9a85287d2fbdb"
+    },
+    "results": {
+      "byte_count": 12821,
+      "path": "results.csv",
+      "sha256": "28f6abbc30c46b2054592ec1d4efd6677718c823cf7ec506d3a42ba60be5a8f8"
+    }
+  },
+  "checkpoint_id": "c1bfa4da63f1d49debd84e8e3f496769fc6715c546658e6c5da57d29c79f240f",
+  "claim_boundary": "Trained observation-query output on the declared evaluation role.",
+  "current_map_adapter": {
+    "candidate_relation_count": 0,
+    "candidate_relation_state": "uncertain",
+    "composer_inputs_sha256": "59fc5e6654cce8d8abf20e913838462b6e1a853be17eef532f6bd38d1fd692d8",
+    "full_domain_identity_recall": 0.0,
+    "reason": "The real DEV readout has zero end-to-end identity recall at IoU 0.50; candidate-only shared queries were not promoted to confirmed persistent identities or used to claim a map effect.",
+    "source_d_row_count": [
+      820617,
+      788946
+    ],
+    "status": "INSTANCE_CONSTRUCTION_PASS_MAP_EFFECT_NOT_EVALUABLE",
+    "unknown_source_d_row_count": [
+      0,
+      0
+    ],
+    "visit_map_sha256": [
+      "2fd7f8da002c50c4b57bd96774cb4a7c188e7cb49eab55e2a208fb834c1f2881",
+      "b44b15e6b71183a682c6017a69d908b6e090c78d3b6ab7ce8eea1c16f45afaa8"
+    ]
+  },
+  "dense_layers_sha256": "ed70f79a59b41fbeb6d765a980fa539009637b69ceadc817c1f41b7f6ebd5dac",
+  "eval_environment_id": "20c993b7-698f-29c5-847d-c8cb8a685f5a",
+  "eval_model_input_id": "986a2081a818e2548270b858d8354723ee1e113b5fe376b5605e5e9cd3537317",
+  "eval_observation_id": "9816cf9ed795fb392195632be882315c910986912331e90c009c4cbfcc717a79",
+  "eval_pair_id": "scene0109_00-scene0109_01",
+  "exposure_status": "PREVIOUSLY_INSPECTED",
+  "historical_raw_prediction_comparison": {
+    "status": "NOT_APPLICABLE_TRAINED_METHOD"
+  },
+  "method_id": "OBS_BASE_TUNED",
+  "metric_protocol_id": "OVI_OBSERVATION_QUERY_INSTANCE_V2",
+  "model_architecture_version": "OVI_OBSERVATION_QUERY_V1",
+  "model_bundle_manifest": {
+    "artifact_id": "OVI_RESCENE_OBSERVATION_MODEL_BUNDLE_V1",
+    "geometry_arrays": {
+      "byte_count": 394167,
+      "path": "model_geometry.npz",
+      "sha256": "194274775caadf03398a32242e0a0d63734447ce392867b92c819dfd96400fc8"
+    },
+    "model_count": 40076,
+    "model_input_manifest": {
+      "byte_count": 849,
+      "path": "model_input/manifest.json",
+      "sha256": "2df3b48659d0204727004c4b3fb74bbe092486ed7665d88bada8ff76da6d2b76"
+    },
+    "model_input_sha256": "986a2081a818e2548270b858d8354723ee1e113b5fe376b5605e5e9cd3537317",
+    "pair_content_sha256": "db8c3463022049d4b0bc8e4e2f7259045cc488640e663442dd94e9c556ca9fa0",
+    "schema_version": 1,
+    "status": "PASS"
+  },
+  "model_input_sha256": "986a2081a818e2548270b858d8354723ee1e113b5fe376b5605e5e9cd3537317",
+  "pair_id": "scene0109_00-scene0109_01",
+  "role": "DEV",
+  "run_id": "20260908_scene0109_obs_base_tuned_train500_dev_v2",
+  "schema_version": 1,
+  "source_bindings": {
+    "checkpoint_manifest": {
+      "byte_count": 33905,
+      "path": "/home/ww/oviovo_baseline_runs/observation_query/training_runs/20260908_scene0001_obs_base_tuned_pilot1000_v2/checkpoints/update-000500/checkpoint/manifest.json",
+      "sha256": "2ff757182a0f82572bbf717b41e242487bc3ea745c0efea6b519fcbb6a2d28c1"
+    },
+    "checkpoint_weights": {
+      "byte_count": 7284252,
+      "path": "/home/ww/oviovo_baseline_runs/observation_query/training_runs/20260908_scene0001_obs_base_tuned_pilot1000_v2/checkpoints/update-000500/checkpoint/trainable.safetensors",
+      "sha256": "c1bfa4da63f1d49debd84e8e3f496769fc6715c546658e6c5da57d29c79f240f"
+    },
+    "config": {
+      "byte_count": 4726,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-observation-query/configs/observation_query/pilot_training_v2.json",
+      "sha256": "25a91a0482c93bc32ba32f3b5858e40679458e67a3eb7fe49084201caf2ec536"
+    },
+    "dense_adapter": {
+      "byte_count": 16645,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-observation-query/src/oviv2/observation_query/dense_adapter.py",
+      "sha256": "0d7897794e2c019735fcd9fd436f4a8b4e20f763e4c6405887ec4fdbdca844b2"
+    },
+    "dense_metrics": {
+      "byte_count": 55901,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-observation-query/src/evaluation/dense_instance_repair_metrics.py",
+      "sha256": "e2aa68037c8431ca25ae17b6242e3212a6421d388a9d9f52d6451508e54d8fd6"
+    },
+    "evaluation_runner": {
+      "byte_count": 49285,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-observation-query/scripts/evaluation/run_ovi_observation_query.py",
+      "sha256": "ee1e66db58aaf0c13daeb9cca62721b2dc6f72bf4fee7e12404cbb708b3f38ee"
+    },
+    "legacy_dense_config": {
+      "byte_count": 2842,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-observation-query/configs/evaluation/ovi_rescene_dense_instance_repair_v1.json",
+      "sha256": "ae0cf8c3ea7e11f0130902d96870f8378c7961fe7ea9e0f036524ca7237e1946"
+    },
+    "runtime": {
+      "byte_count": 4008,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-observation-query/configs/observation_query/runtime.local.json",
+      "sha256": "30f124f0d71f2eb13956feb0762554192ec6baf5af7cfdf3d0b116f6f88c1b5e"
+    },
+    "split": {
+      "byte_count": 4923,
+      "path": "/home/ww/.config/superpowers/worktrees/ovi-rescene-observation-query/configs/observation_query/splits_training_v2.json",
+      "sha256": "bec01522867682c3bdfdae94e5101dd5d9b87424c7bfb045d0f3df237599121e"
+    }
+  },
+  "status": "PASS",
+  "training_dataset_manifest": {
+    "artifact_id": "OVI_OBSERVATION_TRAINING_DATASET_V2",
+    "environment_ids": [
+      "02b33dfb-be2b-2d54-92d2-cd012b2b3c40"
+    ],
+    "pairs": [
+      {
+        "backbone_cache_sha256": "87a01bb7fa613c72e07b002ec95f1a73ab3689769f0b2a8a7cbb41118d2c2499",
+        "model_input_sha256": "77cf1d708215b75e487b51145987b5872f47e39f2ac33b6f1241fb09d0881869",
+        "observation_sha256": "fd73ddacb491bd6281e10ff3a486652afc4f9590a6bbb1e08796c4b95e0660bf",
+        "pair_id": "scene0001_00-scene0001_01",
+        "training_target_sha256": "9395c7fc07eba04c6cc5c81f1e78347083cc7293c4f7a2d74203d19e46089ad9"
+      }
+    ],
+    "schema_version": 2
+  },
+  "training_environment_ids": [
+    "02b33dfb-be2b-2d54-92d2-cd012b2b3c40"
+  ],
+  "training_updates": 500
+}

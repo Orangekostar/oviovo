@@ -1,0 +1,149 @@
+{
+  "schema_version": 2,
+  "artifact_id": "OVI_RESCENE_OBSERVATION_QUERY_TRAINING_RUN_INDEX_V2",
+  "status": "THREE_WAY_PILOT_COMPLETE",
+  "scientific_status": "SCIENTIFIC_SIGNAL_NEGATIVE",
+  "branch": "research/ovi-rescene-observation-query-train-v2",
+  "source_provenance": {
+    "evidence_base_commit": "9879915092f8b0f90d89d64b86c74f36aedc7a17",
+    "evaluated_git_head": "9879915092f8b0f90d89d64b86c74f36aedc7a17",
+    "evaluated_tree_state": "BASE_COMMIT_PLUS_EXACT_SOURCE_BINDINGS",
+    "exact_bindings": "Each training checkpoint manifest and evaluation summary records the evaluated source and config hashes.",
+    "delivery_commit": "RECORDED_BY_POST_PUSH_LOCAL_REMOTE_SHA_CHECK"
+  },
+  "data": {
+    "train_environment_id": "02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+    "train_pair_id": "scene0001_00-scene0001_01",
+    "train_official_split": "train",
+    "train_environment_count": 1,
+    "dev_environment_id": "20c993b7-698f-29c5-847d-c8cb8a685f5a",
+    "dev_pair_id": "scene0109_00-scene0109_01",
+    "dev_official_split": "validation",
+    "dev_exposure": "PREVIOUSLY_INSPECTED",
+    "confirmation_status": "NOT_RUN_NO_UNTOUCHED_CONFIRMATION_SELECTED"
+  },
+  "protocol": {
+    "metric_protocol_id": "OVI_OBSERVATION_QUERY_INSTANCE_V2",
+    "primary_selection_metric": "t1 COMMON_INPUT_SUPPORT_V2 instance F1 at IoU 0.50",
+    "domains": [
+      "FULL_GT_V2",
+      "COMMON_INPUT_SUPPORT_V2",
+      "CAMERA_VISIBLE_INTERSECT_D_V1",
+      "RAW_FULL_GT_V2",
+      "RAW_COMMON_INPUT_SUPPORT_V2"
+    ],
+    "fixed_updates": [0, 200, 500, 1000],
+    "seed": 45
+  },
+  "configuration_lineage": {
+    "actual_training_config_sha256": "b5ff6ed04c8b922fcd34498deaadd2d199ec9e737a954c443ebda03c8c10f405",
+    "actual_training_config_path_pattern": "models/<method>/training_config.json",
+    "portable_v2_config": "../../../observation_query/pilot_training_v2.json",
+    "portable_v2_difference": "Experiment identity, split path, and V2 evaluation-domain naming only; model, loss, optimizer, seed, and budget are unchanged."
+  },
+  "training_runs": [
+    {
+      "run_id": "20260908_scene0001_obs_full_smoke200_verified_v2",
+      "method_id": "OBS_FULL",
+      "stage": "smoke",
+      "optimizer_updates": 200,
+      "status": "REAL_TRAIN_SMOKE_PASS"
+    },
+    {
+      "run_id": "20260908_scene0001_obs_base_tuned_pilot1000_v2",
+      "method_id": "OBS_BASE_TUNED",
+      "optimizer_updates": 1000,
+      "status": "TRAIN_RUN_PASS",
+      "published_model_root": "models/obs_base_tuned"
+    },
+    {
+      "run_id": "20260908_scene0001_obs_fuse_pilot1000_v2",
+      "method_id": "OBS_FUSE",
+      "optimizer_updates": 1000,
+      "status": "TRAIN_RUN_PASS",
+      "published_model_root": "models/obs_fuse"
+    },
+    {
+      "run_id": "20260908_scene0001_obs_full_pilot1000_v3",
+      "method_id": "OBS_FULL",
+      "optimizer_updates": 1000,
+      "new_optimizer_updates": 800,
+      "resumed_from_updates": 200,
+      "status": "TRAIN_RUN_PASS",
+      "published_model_root": "models/obs_full"
+    }
+  ],
+  "diagnostic_trials": [
+    {
+      "run_id": "20260908_scene0001_obs_full_smoke200_v2",
+      "status": "FAILED_POST_TRAIN_RELOAD_GATE",
+      "optimizer_updates_completed": 200,
+      "reason": "The initial exact-equality reload gate rejected normal floating-point replay drift.",
+      "measured_maximum_absolute_difference": 0.000003814697265625,
+      "disposition": "RETAINED_AS_DIAGNOSTIC_EXCLUDED_FROM_FORMAL_RESULTS"
+    }
+  ],
+  "evaluation_runs": [
+    "20260908_scene0109_obs_base_frozen_v2_domains",
+    "20260908_scene0109_obs_base_tuned_train200_dev_v2",
+    "20260908_scene0109_obs_base_tuned_train500_dev_v2",
+    "20260908_scene0109_obs_base_tuned_train1000_dev_v2",
+    "20260908_scene0109_obs_fuse_train200_dev_v2",
+    "20260908_scene0109_obs_fuse_train500_dev_v2",
+    "20260908_scene0109_obs_fuse_train1000_dev_v2",
+    "20260908_scene0109_obs_full_smoke200_dev_v2",
+    "20260908_scene0109_obs_full_train500_dev_v2",
+    "20260908_scene0109_obs_full_train1000_dev_v2"
+  ],
+  "selected_checkpoints": [
+    {
+      "method_id": "OBS_BASE_TUNED",
+      "optimizer_updates": 200,
+      "checkpoint_id": "c44b63f74fa1e4a536e732732268d14c3e75accdf20c389ab563e08aac77c4ea",
+      "common_f1_50_t1": 0.14285714285714285,
+      "path": "models/obs_base_tuned/best_dev_checkpoint"
+    },
+    {
+      "method_id": "OBS_FUSE",
+      "optimizer_updates": 200,
+      "checkpoint_id": "1864f3492177da98e2aefc98d93b98bab53a7d45faed2149b2409760dbe83018",
+      "common_f1_50_t1": 0.13793103448275862,
+      "path": "models/obs_fuse/best_dev_checkpoint"
+    },
+    {
+      "method_id": "OBS_FULL",
+      "optimizer_updates": 500,
+      "checkpoint_id": "8fc07c8cb08549db0d8a599356bdeb277abc1c3cf6c4a7b7e335fba0a5c6f687",
+      "common_f1_50_t1": 0.13793103448275862,
+      "path": "models/obs_full/best_dev_checkpoint"
+    }
+  ],
+  "terminal_checkpoints": [
+    {
+      "method_id": "OBS_BASE_TUNED",
+      "optimizer_updates": 1000,
+      "checkpoint_id": "0fff7463bb29f369b904fde61a9134b397a68c51a5b936931f4f96fc399c3802",
+      "path": "models/obs_base_tuned/checkpoint"
+    },
+    {
+      "method_id": "OBS_FUSE",
+      "optimizer_updates": 1000,
+      "checkpoint_id": "dc184092068ff587c56deaec1792dbe6a5bc0fa3bc439ae2e511a05eec66079f",
+      "path": "models/obs_fuse/checkpoint"
+    },
+    {
+      "method_id": "OBS_FULL",
+      "optimizer_updates": 1000,
+      "checkpoint_id": "1705df1db2626688cf57465569dd53fe02df27549b7a25db4d935d05068b99e0",
+      "path": "models/obs_full/checkpoint"
+    }
+  ],
+  "artifacts": {
+    "training_runs": "training_runs.csv",
+    "checkpoint_selection": "checkpoint_selection_v2.csv",
+    "terminal_method_comparison": "method_comparison_v2.csv",
+    "evaluations": "evaluations",
+    "visualization_manifest": "visualization_manifest.json"
+  },
+  "claim_boundary": "This is a one-TRAIN-environment to one exposed-DEV-environment pilot with one seed. OBS_FULL did not outperform ordinary fine-tuning or simple fusion on the primary metric, Full-GT F1 remained zero, and identity TP remained zero. No SOTA or generalization claim is supported."
+}

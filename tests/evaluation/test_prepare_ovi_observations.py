@@ -18,6 +18,8 @@ from scripts.evaluation.prepare_ovi_observations import (
     pair_alignment_row,
     project_frame_region_support,
     publish_prepared_observation_bank,
+    resolve_runtime_pair,
+    resolve_siglip_weight_binding,
     save_model_observation_bundle,
     select_region_budget,
     write_region_pixel_sidecar,
@@ -232,6 +234,54 @@ def test_d2_mapping_receipt_reads_pair_identity_from_selection() -> None:
     }
 
     assert mapping_receipt_pair_id(receipt) == "pair-a"
+
+
+def test_runtime_pair_resolution_uses_explicit_role_and_pair_identity() -> None:
+    runtime = {
+        "pairs": {
+            "train": {
+                "pair_id": "pair-train",
+                "role": "TRAIN",
+                "status": "READY",
+                "scan_ids": ["scan-a", "scan-b"],
+            },
+            "dev": {
+                "pair_id": "pair-dev",
+                "role": "DEV",
+                "status": "READY",
+                "scan_ids": ["scan-c", "scan-d"],
+            },
+        }
+    }
+
+    selected = resolve_runtime_pair(
+        runtime,
+        pair_id="pair-train",
+        role="TRAIN",
+    )
+
+    assert selected["scan_ids"] == ["scan-a", "scan-b"]
+    with pytest.raises(ValueError, match="role and pair"):
+        resolve_runtime_pair(runtime, pair_id="pair-dev", role="TRAIN")
+
+
+def test_siglip_weight_binding_is_owned_by_observation_preparation(tmp_path) -> None:
+    model_root = tmp_path / "siglip"
+    model_root.mkdir()
+    weights = model_root / "model.safetensors"
+    weights.write_bytes(b"real-siglip-weights")
+    runtime = {"assets": {"siglip_model": str(model_root)}}
+
+    binding = resolve_siglip_weight_binding(
+        runtime_config=runtime,
+        mapping_receipt={},
+    )
+
+    assert binding["path"] == str(weights)
+    assert binding["byte_count"] == len(b"real-siglip-weights")
+    assert binding["sha256"] == (
+        "9b3fed4bf437a85aae4d5f16cab2eba12535b836f642c8c420d8ee5d96804ab8"
+    )
 
 
 def test_pair_alignment_parser_requires_official_row_vector_convention() -> None:

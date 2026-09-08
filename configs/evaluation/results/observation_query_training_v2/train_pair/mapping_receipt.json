@@ -1,0 +1,133 @@
+{
+  "artifact_id": "OVI_RESCENE_D2_OVIMAP_SMOKE_V1",
+  "compute": {
+    "frontend_forward_count_per_visit": 1,
+    "native_mapping_count_per_visit": 1,
+    "visit_mapping": "independent"
+  },
+  "pair_id": "scene0001_00-scene0001_01",
+  "schema_version": 1,
+  "selection": {
+    "manifest": {
+      "byte_count": 3980,
+      "path": "configs/evaluation/manifests/observation_query_train_pair_v2.json",
+      "sha256": "22ac096a0351900692a33a7875874ce6b7b78a1fbc4637457135b88c4d6bd6eb"
+    },
+    "pair_id": "scene0001_00-scene0001_01",
+    "role": "D2_EVAL",
+    "selected_before_method_results": true
+  },
+  "status": "REAL_D2_PAIR_PASS",
+  "visits": [
+    {
+      "frame_count": 143,
+      "materialized": {
+        "manifest": {
+          "byte_count": 82458,
+          "path": "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/materialized-v1/02b33dfb-be2b-2d54-92d2-cd012b2b3c40/materialized_manifest.json",
+          "sha256": "53754dd33c90eb3c01fb9d05c69ed35de5cee8588f24e519c30504196eebb3f8"
+        },
+        "output_tree": {
+          "byte_count": 15419729,
+          "file_count": 431,
+          "sha256": "a9c3dfe610ef901f20dc30fb8fe80d24a605d42e029c2c6d57a3d50f88b3a638"
+        }
+      },
+      "native_mapping": {
+        "artifacts": {
+          "instance_color_log": {
+            "byte_count": 679,
+            "path": "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/ovi-native-v1/scenes/02b33dfb-be2b-2d54-92d2-cd012b2b3c40/attempt-20260908T051342.556162Z/native_audit/instance_colors_cpp.tsv",
+            "sha256": "dde3372826585367b0547edd4135fadb27bd06a4c66516b5d3c5b1cc16f5bc81"
+          },
+          "instance_mesh": {
+            "byte_count": 120179596,
+            "path": "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/ovi-native-v1/scenes/02b33dfb-be2b-2d54-92d2-cd012b2b3c40/attempt-20260908T051342.556162Z/mapping/cropformer_inst/instance_mesh_143.ply",
+            "sha256": "fcc677138e5ad30524608cc9ce9ae0c284a1befc2a02b76ec4902994f71dfdae"
+          },
+          "semantic_features": {
+            "byte_count": 783219,
+            "path": "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/ovi-native-v1/scenes/02b33dfb-be2b-2d54-92d2-cd012b2b3c40/attempt-20260908T051342.556162Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_143_incre_combine.pkl",
+            "sha256": "1f3e469d79a3f7aa3c14803350fbf8cbde8615fc2c5066b79c1826cc5be6523c"
+          }
+        },
+        "audit": {
+          "frame_count": 143,
+          "full_frame_bbox_count": 26,
+          "full_frame_bbox_ratio": 0.04482758620689655,
+          "mapper_skipped_frame_count": 0,
+          "raycast_bbox_count": 580,
+          "requested_frame_count": 143,
+          "stale_raycast_ids": [
+            3,
+            9,
+            17,
+            40,
+            52
+          ]
+        },
+        "manifest": {
+          "byte_count": 43828,
+          "path": "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/ovi-native-v1/scenes/02b33dfb-be2b-2d54-92d2-cd012b2b3c40/attempt-20260908T051342.556162Z/native_mapping_manifest.json",
+          "sha256": "99c377b8f5f240de75f140f4eb72bb5f59a509e13da4719593ede9d1e2528114"
+        }
+      },
+      "scan_id": "02b33dfb-be2b-2d54-92d2-cd012b2b3c40",
+      "visit_index": 0
+    },
+    {
+      "frame_count": 114,
+      "materialized": {
+        "manifest": {
+          "byte_count": 66221,
+          "path": "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/materialized-v1/fcf66d9e-622d-291c-84c2-bb23dfe31327/materialized_manifest.json",
+          "sha256": "c743bf032378b82743119d67c21d274065bbab431e39bd9bc71bba8f4e6c1e03"
+        },
+        "output_tree": {
+          "byte_count": 13610906,
+          "file_count": 344,
+          "sha256": "c2adc8eb7038a0a3f0c741c380d41592dc80b5d9e87e7f873eab8942f21fdcc2"
+        }
+      },
+      "native_mapping": {
+        "artifacts": {
+          "instance_color_log": {
+            "byte_count": 435,
+            "path": "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/ovi-native-v1/scenes/fcf66d9e-622d-291c-84c2-bb23dfe31327/attempt-20260908T051342.671881Z/native_audit/instance_colors_cpp.tsv",
+            "sha256": "23f3ccd23daf86ed2c3ce0636762956b6585a149b1ed248944500caa2504ee3e"
+          },
+          "instance_mesh": {
+            "byte_count": 50670730,
+            "path": "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/ovi-native-v1/scenes/fcf66d9e-622d-291c-84c2-bb23dfe31327/attempt-20260908T051342.671881Z/mapping/cropformer_inst/instance_mesh_114.ply",
+            "sha256": "2ceff8d8040daacb3035e65c7bea8c7e57ebed860432594e0870de7d2386832d"
+          },
+          "semantic_features": {
+            "byte_count": 505773,
+            "path": "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/ovi-native-v1/scenes/fcf66d9e-622d-291c-84c2-bb23dfe31327/attempt-20260908T051342.671881Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_114_incre_combine.pkl",
+            "sha256": "4d26c63fdb9326d2531820e0cc9a89ac1352a13135dd7825d335dce32919f40e"
+          }
+        },
+        "audit": {
+          "frame_count": 113,
+          "full_frame_bbox_count": 13,
+          "full_frame_bbox_ratio": 0.026584867075664622,
+          "mapper_skipped_frame_count": 1,
+          "raycast_bbox_count": 489,
+          "requested_frame_count": 114,
+          "stale_raycast_ids": [
+            14,
+            27,
+            32
+          ]
+        },
+        "manifest": {
+          "byte_count": 36642,
+          "path": "/home/ww/oviovo_baseline_runs/20260908_observation_query_training_v2/3rscan/ovi-native-v1/scenes/fcf66d9e-622d-291c-84c2-bb23dfe31327/attempt-20260908T051342.671881Z/native_mapping_manifest.json",
+          "sha256": "8cd24bd658ab9acac36be4f610fd490c93ed714ee69e4ea6ac05f101681f1b93"
+        }
+      },
+      "scan_id": "fcf66d9e-622d-291c-84c2-bb23dfe31327",
+      "visit_index": 1
+    }
+  ]
+}

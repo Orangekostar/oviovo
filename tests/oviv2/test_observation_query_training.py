@@ -128,6 +128,30 @@ def _checkpoint_metadata() -> ObservationCheckpointMetadata:
     )
 
 
+def test_v2_checkpoint_metadata_records_training_dataset_and_feature_schema() -> None:
+    legacy = _checkpoint_metadata()
+    assert "training_dataset_manifest" not in legacy.as_dict()
+    metadata = ObservationCheckpointMetadata(
+        **legacy.as_dict(),
+        training_dataset_manifest={
+            "artifact_id": "OVI_OBSERVATION_TRAINING_DATASET_V2",
+            "environment_ids": ["environment-a"],
+            "pairs": [{"pair_id": "pair-a", "observation_sha256": "e" * 64}],
+        },
+        model_architecture_version="OVI_OBSERVATION_QUERY_V1",
+        input_feature_schema={
+            "observation_feature_dim": 1024,
+            "observation_metadata_dim": 11,
+            "model_input_feature_dim": 9,
+        },
+    )
+
+    restored = ObservationCheckpointMetadata(**metadata.as_dict())
+
+    assert restored == metadata
+    assert restored.training_dataset_manifest["environment_ids"] == ["environment-a"]
+
+
 def test_trainable_checkpoint_restores_all_updated_state_but_not_frozen_backbone(tmp_path) -> None:
     torch.manual_seed(4)
     model = _TinyModel()

@@ -3,16 +3,23 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import numpy as np
 import pytest
 import torch
 from torch import nn
 
 from scripts.training.train_ovi_observation_query import (
+    ObservationTrainingRunError,
+    _restore_training_random_state,
+    _same_resume_contract,
+    _target_update_count,
+    _validated_resume_state_path,
     build_optimizer,
     main,
     perform_accumulated_update,
     training_method_contract,
 )
+from src.oviv2.observation_query.training import ObservationCheckpointMetadata
 
 
 class _TrainableModel(nn.Module):
@@ -158,6 +165,134 @@ def test_accumulated_update_changes_both_groups_and_leaves_backbone_without_grad
     assert all(
         parameter.grad is None for parameter in model.native.backbone.parameters()
     )
+
+
+def _resume_metadata(*, stage: str, updates: int) -> ObservationCheckpointMetadata:
+    return ObservationCheckpointMetadata(
+        model_variant="OBS_FULL",
+        base_checkpoint_sha256="a" * 64,
+        source_commit="b" * 40,
+        resolved_config={
+            "method": "OBS_FULL",
+            "stage": stage,
+            "model": {"hidden_dim": 128},
+            "loss": {"native_weight": 1.0},
+            "training": {
+                "optimizer": "AdamW",
+                "native_learning_rate": 1e-5,
+                "observation_learning_rate": 1e-4,
+                "weight_decay": 1e-4,
+                "gradient_clip_norm": 1.0,
+                "gradient_accumulation": 2,
+                "smoke_updates": 200,
+                "pilot_updates_per_method": 1000,
+            },
+            "method_config": {"trained": True},
+            "source_bindings": {
+                "runner": {"sha256": "1" * 64},
+                "config": {"sha256": "2" * 64},
+                "model": {"sha256": "3" * 64},
+                "losses": {"sha256": "4" * 64},
+                "training_state": {"sha256": "5" * 64},
+            },
+        },
+        split_id="splits-v2",
+        observation_sha256="c" * 64,
+        backbone_cache_sha256="d" * 64,
+        seed=45,
+        optimizer_updates=updates,
+        training_dataset_manifest={
+            "artifact_id": "OVI_OBSERVATION_TRAINING_DATASET_V2",
+            "pairs": [{"pair_id": "train-pair", "observation_sha256": "c" * 64}],
+        },
+        model_architecture_version="OVI_OBSERVATION_QUERY_V1",
+        input_feature_schema={
+            "observation_feature_dim": 1024,
+            "observation_metadata_dim": 11,
+            "model_input_feature_dim": 9,
+        },
+    )
+
+
+def test_resume_contract_ignores_stage_budget_and_report_bindings() -> None:
+    smoke = _resume_metadata(stage="smoke", updates=200)
+    pilot_values = _resume_metadata(stage="pilot", updates=1000).as_dict()
+    resolved = dict(pilot_values["resolved_config"])
+    bindings = dict(resolved["source_bindings"])
+    bindings["runner"] = {"sha256": "6" * 64}
+    bindings["config"] = {"sha256": "7" * 64}
+    resolved["source_bindings"] = bindings
+    pilot_values["resolved_config"] = resolved
+    pilot = ObservationCheckpointMetadata(**pilot_values)
+
+    assert _same_resume_contract(smoke, pilot)
+    assert _target_update_count(target_total_updates=1000, start_update=200) == 800
+    with pytest.raises(ObservationTrainingRunError, match="must exceed"):
+        _target_update_count(target_total_updates=200, start_update=200)
+    with pytest.raises(ObservationTrainingRunError, match="configured maximum"):
+        _target_update_count(
+            target_total_updates=12001,
+            start_update=200,
+            maximum_total_updates=12000,
+        )
+
+
+def test_resume_contract_rejects_training_dataset_or_model_change() -> None:
+    current = _resume_metadata(stage="pilot", updates=0)
+    values = current.as_dict()
+    values["training_dataset_manifest"] = {
+        "artifact_id": "OVI_OBSERVATION_TRAINING_DATASET_V2",
+        "pairs": [{"pair_id": "other-pair", "observation_sha256": "e" * 64}],
+    }
+    assert not _same_resume_contract(current, ObservationCheckpointMetadata(**values))
+
+
+def test_restore_training_random_state_restores_python_numpy_and_torch() -> None:
+    import random
+
+    random.seed(9)
+    np.random.seed(9)
+    torch.manual_seed(9)
+    state = {
+        "python_random_state": random.getstate(),
+        "numpy_random_state": np.random.get_state(),
+        "torch_random_state": torch.get_rng_state(),
+        "sampler_state": {"pair_order": ["train-pair"], "next_pair_index": 0},
+    }
+    expected = (random.random(), float(np.random.rand()), float(torch.rand(())))
+    sampler = _restore_training_random_state(state, torch.device("cpu"))
+
+    assert sampler == state["sampler_state"]
+    assert (random.random(), float(np.random.rand()), float(torch.rand(()))) == expected
+
+
+def test_periodic_snapshot_binds_resume_training_state(tmp_path) -> None:
+    import hashlib
+
+    state = tmp_path / "training_state.pt"
+    state.write_bytes(b"optimizer-and-rng")
+    record = {
+        "path": "training_state.pt",
+        "sha256": hashlib.sha256(state.read_bytes()).hexdigest(),
+        "byte_count": state.stat().st_size,
+    }
+    (tmp_path / "snapshot.json").write_text(
+        json.dumps(
+            {
+                "schema_version": 2,
+                "artifact_id": "OVI_RESCENE_OBSERVATION_TRAINING_SNAPSHOT_V2",
+                "status": "PASS",
+                "optimizer_updates": 200,
+                "training_state": record,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert _validated_resume_state_path(tmp_path) == state
+    state.write_bytes(b"tampered")
+    with pytest.raises(ObservationTrainingRunError, match="binding mismatch"):
+        _validated_resume_state_path(tmp_path)
 
 
 def test_missing_train_assets_publish_asset_gated_status_without_checkpoint(

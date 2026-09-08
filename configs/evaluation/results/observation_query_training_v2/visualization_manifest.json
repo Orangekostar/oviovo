@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "artifact_id": "OVI_RESCENE_OBSERVATION_QUERY_VISUALIZATION_V2",
+  "status": "PASS",
+  "pair_id": "scene0109_00-scene0109_01",
+  "role": "DEV",
+  "protocol": "OVI_OBSERVATION_QUERY_INSTANCE_V2",
+  "view": {
+    "type": "fixed_pca_projection",
+    "point_center": [0.4675289988517761, 2.234999895095825, -0.5845974087715149],
+    "projection_basis": [
+      [0.7096471687432319, 0.6410581364398963],
+      [0.28071412487365616, -0.6377924807450216],
+      [0.6462201451449283, -0.426925306358523]
+    ],
+    "same_projection_for_all_methods_and_visits": true
+  },
+  "inputs": [
+    {
+      "run_id": "20260908_scene0109_obs_base_frozen_v2_domains",
+      "method_id": "OBS_BASE_FROZEN",
+      "checkpoint_id": "85ed1aba60320cd19798536b71b91dbc156b7ea60f838832bc0bbbdba131546e",
+      "predictions_sha256": "8ffa4587fc34b72d103f28baa2e1f6960654d452cf27948606dab9e7f2121cb6",
+      "predictions_byte_count": 14154684
+    },
+    {
+      "run_id": "20260908_scene0109_obs_base_tuned_train1000_dev_v2",
+      "method_id": "OBS_BASE_TUNED",
+      "checkpoint_id": "0fff7463bb29f369b904fde61a9134b397a68c51a5b936931f4f96fc399c3802",
+      "predictions_sha256": "ac837fa0d16831bf923cba48cedc1d6ad5aa540ef9c2bb4e9254a83f2b2a8e3b",
+      "predictions_byte_count": 14360960
+    },
+    {
+      "run_id": "20260908_scene0109_obs_fuse_train1000_dev_v2",
+      "method_id": "OBS_FUSE",
+      "checkpoint_id": "dc184092068ff587c56deaec1792dbe6a5bc0fa3bc439ae2e511a05eec66079f",
+      "predictions_sha256": "62a2a869eca6cf9583a0e4b1b221576079cc27adf8b0649b7d57db15d1406e9f",
+      "predictions_byte_count": 14241191
+    },
+    {
+      "run_id": "20260908_scene0109_obs_full_train1000_dev_v2",
+      "method_id": "OBS_FULL",
+      "checkpoint_id": "1705df1db2626688cf57465569dd53fe02df27549b7a25db4d935d05068b99e0",
+      "predictions_sha256": "e3a4d4ebc005874c6631237a8e5f9114ec49c001ae508757448ff333d2c4f137",
+      "predictions_byte_count": 14324699
+    }
+  ],
+  "outputs": [
+    {
+      "path": "visualizations/t0_terminal_fixed_view.png",
+      "sha256": "fed3987145f63b22421d1035f13120b123e39470846352327ed1e1abdcd5d240",
+      "byte_count": 417590,
+      "interpretation": "Contains a small terminal BASE_TUNED Common F1 improvement over frozen at t0 while FULL is effectively tied."
+    },
+    {
+      "path": "visualizations/t1_terminal_fixed_view.png",
+      "sha256": "8335c9e69c93dc7d832e322040b7ea33f7c0d754b17e5276eb6d32ed10cad4fe",
+      "byte_count": 923288,
+      "interpretation": "Failure case: all trained terminal checkpoints are below the frozen Common F1 at t1."
+    }
+  ],
+  "claim_boundary": "Colors denote predicted dense instance ownership under a deterministic fixed projection. The images are qualitative evidence only; metric claims come from the checked CSV files."
+}
