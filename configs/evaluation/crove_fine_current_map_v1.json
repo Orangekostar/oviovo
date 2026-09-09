@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "protocol_id": "crove_fine_current_map_v1_replica_room0_dev",
+  "semantic_transfer": {
+    "maximum_correspondence_distance_m": 0.05,
+    "distance_sigma_m": 0.025,
+    "minimum_local_support": 2.0,
+    "entity_weight_scale": 0.75,
+    "minimum_entity_confidence": 0.2,
+    "neighbor_count": 8,
+    "point_batch_size": 250000
+  },
+  "cases": {
+    "replica_room0_static": {
+      "scene": "room0",
+      "fine_surface": "$HOME/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst_combine/instance_mesh_200.ply",
+      "instance_color_log": "$HOME/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/log/gms_py.a515dce8f984.root.log.INFO.20260615-061652.577816",
+      "ovimap_semantic_mapping": "$HOME/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/cropformer_inst/eval/pred_inst_sem_mapping.txt",
+      "crove_reference_surface": "$HOME/oviovo_baseline_runs/20260902_crove_dense_recovery/p1/room0_semantic/visualization.ply",
+      "benchmark_manifest": "configs/evaluation/manifests/replica8.json",
+      "semantic_palette": "configs/evaluation/replica41_semantic_palette.json",
+      "min_instance_vertices": 100,
+      "ovimap_source_vocabulary": [
+        "wall", "ceiling", "floor", "chair", "blinds", "sofa", "table",
+        "rug", "window", "lamp", "door", "pillow", "bench", "tv-screen",
+        "cabinet", "pillar", "blanket", "tv-stand", "cushion", "bin",
+        "vent", "bed", "stool", "picture", "indoor-plant", "desk",
+        "comforter", "nightstand", "shelf", "vase", "plant-stand",
+        "basket", "plate", "monitor", "pipe", "panel", "desk-organizer",
+        "wall-plug", "book", "box", "clock", "sculpture", "tissue-paper",
+        "camera", "tablet", "pot", "bottle", "candle", "bowl", "cloth",
+        "switch"
+      ],
+      "rgb_projection": {
+        "dataset_root": "$HOME/vv/dataset/Replica/room0",
+        "frame_start": 0,
+        "frame_stop_exclusive": 2000,
+        "source_stride": 10,
+        "projection_subsample": 4,
+        "depth_tolerance_m": 0.05,
+        "depth_max_m": 10.0,
+        "minimum_viewpoint_baseline_m": 0.25,
+        "maximum_distinct_viewpoints": 3,
+        "minimum_rgb_neighbours": 5,
+        "edge_range_factor": 2.0,
+        "point_batch_size": 250000
+      }
+    },
+    "apartment_two_visit_dev": {
+      "protocol_id": "CROVE_FINE_CURRENT_MAP_V1_TESSE_APARTMENT_DEV",
+      "scene": "apartment",
+      "t0_native_manifest": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/native-runs/apartment/t0/2f638911509f-apartment-t0/native_mapping_manifest.json",
+      "t1_native_manifest": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/native-runs/apartment/t1/2f638911509f-apartment-t1/native_mapping_manifest.json",
+      "b0_entities": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/apartment-b0-b6-entity-lift-96ba693/B0/current-map/entities/1472.000000_current.jsonl",
+      "b2_entities": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/apartment-b0-b6-entity-lift-96ba693/B2/current-map/entities/1472.000000_current.jsonl",
+      "b3_provenance": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/apartment-b0-b6-entity-lift-96ba693/B3/current-map/provenance.jsonl",
+      "b3_metrics": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/apartment-b0-b6-entity-lift-96ba693/B3/metrics.json",
+      "two_visit_protocol": "configs/evaluation/tesse_two_visit_current_v1.json",
+      "causal_schedule": "configs/evaluation/manifests/tesse_cd_causal_schedule_v2.json",
+      "common_v2_target_manifest": "$HOME/oviovo_benchmark_assets/tesse_cd/derived/common_v2_targets/20260722-stage3-fb97-scope-a/manifest.json",
+      "semantic_aliases": "configs/evaluation/semantic_aliases/tesse_cd_common_v2.yaml",
+      "semantic_label_space": "$HOME/oviovo_benchmark_assets/tesse_cd/derived/common_v2_label_spaces/tesse_cd_apartment_label_space.yaml",
+      "rgbd_root": "$HOME/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1",
+      "rgbd_export_manifest": "$HOME/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/apartment/export_manifest.json",
+      "native_surface_cache_root": "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/cache",
+      "visit_frame_ranges": {
+        "t0": [766, 1021],
+        "t1": [1217, 1472]
+      },
+      "t1_owner_id_offset": 1000000,
+      "baseline_reproduction_tolerance": 1e-12,
+      "evaluation_visibility": {
+        "voxel_size_m": 0.05,
+        "depth_tolerance_m": 0.1,
+        "depth_max_m": 10.0,
+        "minimum_absent_fraction": 0.8,
+        "minimum_absent_observations": 6,
+        "minimum_distinct_viewpoints": 3,
+        "minimum_viewpoint_baseline_m": 0.25
+      },
+      "fine_projection": {
+        "frame_stride": 8,
+        "depth_tolerance_m": 0.05,
+        "depth_max_m": 10.0,
+        "minimum_viewpoint_baseline_m": 0.25,
+        "maximum_distinct_viewpoints": 6,
+        "minimum_rgb_neighbours": 5,
+        "rgb_edge_range_factor": 2.0,
+        "point_batch_size": 250000
+      },
+      "validity_trials": [
+        {
+          "trial_id": "F1_A2_V2",
+          "minimum_absent_observations": 2,
+          "minimum_distinct_viewpoints": 2
+        },
+        {
+          "trial_id": "F2_A3_V2",
+          "minimum_absent_observations": 3,
+          "minimum_distinct_viewpoints": 2
+        },
+        {
+          "trial_id": "F3_A4_V3",
+          "minimum_absent_observations": 4,
+          "minimum_distinct_viewpoints": 3
+        },
+        {
+          "trial_id": "F4_A6_V3",
+          "minimum_absent_observations": 6,
+          "minimum_distinct_viewpoints": 3
+        }
+      ],
+      "selection_gates": {
+        "maximum_ghost": 0.02,
+        "minimum_background_f1_at_5cm": 0.35636000976960025,
+        "minimum_surface_precision_at_5cm": 0.7244127781521915,
+        "minimum_observed_stale_precision": 0.9259634045791844
+      },
+      "rgb_projection": {
+        "frame_stride": 8,
+        "depth_tolerance_m": 0.05,
+        "depth_max_m": 10.0,
+        "minimum_viewpoint_baseline_m": 0.25,
+        "maximum_distinct_viewpoints": 3,
+        "minimum_rgb_neighbours": 5,
+        "rgb_edge_range_factor": 2.0,
+        "point_batch_size": 250000
+      },
+      "semantic_palette": {
+        "0": [160, 160, 160],
+        "1": [228, 26, 28],
+        "2": [55, 126, 184],
+        "3": [77, 175, 74],
+        "4": [152, 78, 163],
+        "5": [255, 127, 0],
+        "6": [255, 255, 51],
+        "7": [166, 86, 40],
+        "8": [247, 129, 191],
+        "9": [102, 194, 165],
+        "10": [252, 141, 98],
+        "11": [141, 160, 203],
+        "12": [231, 138, 195],
+        "13": [166, 216, 84],
+        "14": [255, 217, 47],
+        "15": [229, 196, 148],
+        "16": [179, 179, 179],
+        "17": [27, 158, 119],
+        "18": [217, 95, 14],
+        "19": [117, 112, 179],
+        "20": [231, 41, 138]
+      }
+    }
+  }
+}
