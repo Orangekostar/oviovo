@@ -1,0 +1,144 @@
+{
+  "dynamic_dev": {
+    "case": "apartment_two_visit_dev",
+    "development_selection_inputs": {
+      "b3_metrics": {
+        "byte_count": 7549,
+        "path": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/apartment-b0-b6-entity-lift-96ba693/B3/metrics.json",
+        "sha256": "7f1807db61a2ef6641a9564959ff67bf15e8bcef107a320ffd1669be21d4fc31"
+      }
+    },
+    "evaluation_only_inputs": {
+      "causal_schedule": {
+        "byte_count": 28302,
+        "path": "configs/evaluation/manifests/tesse_cd_causal_schedule_v2.json",
+        "sha256": "fb97bacee377f9fd67ee9dae8064dc6f33ac32d129ee633629fec4164d5003e0"
+      },
+      "common_v2_target_manifest": {
+        "byte_count": 35287,
+        "path": "$HOME/oviovo_benchmark_assets/tesse_cd/derived/common_v2_targets/20260722-stage3-fb97-scope-a/manifest.json",
+        "sha256": "eeb84891ce884c927956c137d7fadf25697f1c967194e00b21a9293df1b63cd0"
+      },
+      "common_v2_targets": {
+        "byte_count": 15226260,
+        "path": "$HOME/oviovo_benchmark_assets/tesse_cd/derived/common_v2_targets/20260722-stage3-fb97-scope-a/targets.npz",
+        "sha256": "82226c5e9ab6fedc07a415b501eb0cfb5afa96988e2e5fd61bef550bf7060d12"
+      },
+      "two_visit_protocol": {
+        "byte_count": 61049,
+        "path": "configs/evaluation/tesse_two_visit_current_v1.json",
+        "sha256": "720952cd75e214de36e318051d6aae18bd762109ba0d3a8ccb73a14f7398e650"
+      }
+    },
+    "ground_truth_used_for_prediction": false,
+    "prediction_inputs": {
+      "b0_entities": {
+        "byte_count": 54760,
+        "path": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/apartment-b0-b6-entity-lift-96ba693/B0/current-map/entities/1472.000000_current.jsonl",
+        "sha256": "e491884f556cdf8cf45a9a8f4a794d1379916baf200a2275520fbf6d97c368c5"
+      },
+      "b2_entities": {
+        "byte_count": 38767,
+        "path": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/apartment-b0-b6-entity-lift-96ba693/B2/current-map/entities/1472.000000_current.jsonl",
+        "sha256": "61e21fff02825fa4f74d9b168d509452fdda8a705b72d610ca8abdf5fbd7b27b"
+      },
+      "b3_provenance": {
+        "byte_count": 191406015,
+        "path": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/apartment-b0-b6-entity-lift-96ba693/B3/current-map/provenance.jsonl",
+        "sha256": "dbd11c593eb94b19e2e60f19572ac70b49e6b396a003fa194d8ae1e26e2dfe35"
+      },
+      "rgbd_export_manifest": {
+        "byte_count": 813,
+        "path": "$HOME/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/apartment/export_manifest.json",
+        "sha256": "ee35d1843540fc88ae20b5dae5ad34caf192d50f0cab7c5564c47c454d4d5b81"
+      },
+      "semantic_aliases": {
+        "byte_count": 1108,
+        "path": "configs/evaluation/semantic_aliases/tesse_cd_common_v2.yaml",
+        "sha256": "217b3bcd730a6485159e23e56ee9e97ac3c1c56007a016cdc8a20e9fc07abdbc"
+      },
+      "semantic_label_space": {
+        "byte_count": 741,
+        "path": "$HOME/oviovo_benchmark_assets/tesse_cd/derived/common_v2_label_spaces/tesse_cd_apartment_label_space.yaml",
+        "sha256": "f7bacfb3c7bafc674bd3a34540e3f9b5d98b0ae11389f91768c70ecc65a79f0f"
+      },
+      "t0_instance_color_log": {
+        "byte_count": 345606,
+        "path": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/native-runs/apartment/t0/2f638911509f-apartment-t0/logs/mapping.log",
+        "sha256": "0adacd7738afa0695beb7c28c33c1628440d4f3e3c232ed44fcfb197f9732b29"
+      },
+      "t0_instance_mesh": {
+        "byte_count": 1116647861,
+        "path": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/native-runs/apartment/t0/2f638911509f-apartment-t0/mapping/cropformer_inst/instance_mesh_256.ply",
+        "sha256": "e7f35ab5676c110ca72d45a2251dd53850b7b324e473b3377eb4ed6870ab790d"
+      },
+      "t0_native_manifest": {
+        "byte_count": 306206,
+        "path": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/native-runs/apartment/t0/2f638911509f-apartment-t0/native_mapping_manifest.json",
+        "sha256": "e0141a2356ca719ae2bdad3061f2442671486d4f12e8abd05ebfecdb85602ea3"
+      },
+      "t1_instance_color_log": {
+        "byte_count": 357092,
+        "path": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/native-runs/apartment/t1/2f638911509f-apartment-t1/logs/mapping.log",
+        "sha256": "ca7d29f1c7bd79bebb9d6565463081d264003fd210c1f7ea97b18c45f9805dae"
+      },
+      "t1_instance_mesh": {
+        "byte_count": 939612072,
+        "path": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/native-runs/apartment/t1/2f638911509f-apartment-t1/mapping/cropformer_inst/instance_mesh_256.ply",
+        "sha256": "878f73ce7d6e1d44f668b6e9ed47eee442c4cd6c206169c620d4e0c9b8e0a5ae"
+      },
+      "t1_native_manifest": {
+        "byte_count": 306323,
+        "path": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/native-runs/apartment/t1/2f638911509f-apartment-t1/native_mapping_manifest.json",
+        "sha256": "6cbfc318c25df085cb677a039ac1ca527b17cdba55b7d9fb70478a8871eddca2"
+      }
+    },
+    "scene": "apartment",
+    "schema_version": 1,
+    "split_role": "DEV_EXPOSED",
+    "status": "PASS"
+  },
+  "schema_version": 1,
+  "static_dev": {
+    "case": "replica_room0_static",
+    "ground_truth_role": "evaluator_only",
+    "scene": "room0",
+    "schema_version": 1,
+    "selection_status": "USER_PLY_NOT_IDENTIFIED/EVIDENCE_BOUND_REPRESENTATIVE",
+    "sources": {
+      "benchmark_manifest": {
+        "byte_count": 7016,
+        "path": "configs/evaluation/manifests/replica8.json",
+        "sha256": "8547aa8b7dbf7ef7a97f4b516f6557a1d163107404fbfc7ccbd56747c5dc95a4"
+      },
+      "crove_reference_surface": {
+        "byte_count": 3695563,
+        "path": "$HOME/oviovo_baseline_runs/20260902_crove_dense_recovery/p1/room0_semantic/visualization.ply",
+        "sha256": "9d9705086984c9d216d35a04f6a498ae6e8d7fa4c3b6acd320f892ae6cc70b75"
+      },
+      "fine_surface": {
+        "byte_count": 698368528,
+        "path": "$HOME/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst_combine/instance_mesh_200.ply",
+        "sha256": "58617e29c0720edc0086490a6c43dd6b47bf84d493c8b6adb2c7045d42fb6382"
+      },
+      "instance_color_log": {
+        "byte_count": 127751,
+        "path": "$HOME/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/log/gms_py.a515dce8f984.root.log.INFO.20260615-061652.577816",
+        "sha256": "ea6038cbf48acffc9e94fab5e2a61a3a1c8de5995622da18abae1cf199c295c3"
+      },
+      "ovimap_semantic_mapping": {
+        "byte_count": 1960,
+        "path": "$HOME/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/eval_ovimap_room0_200f_s10/room0/cropformer_inst/eval/pred_inst_sem_mapping.txt",
+        "sha256": "932c8faced62a556ce0fe2a13d8041eefc0e4e87055a1c3e9a74e2f523264baf"
+      },
+      "semantic_palette": {
+        "byte_count": 3528,
+        "path": "configs/evaluation/replica41_semantic_palette.json",
+        "sha256": "ffabd5b40254811dbb6a77de80fbba511c0ed767000742c16652de37f85a1b7d"
+      }
+    },
+    "split_role": "development_and_replica8_compatibility",
+    "status": "PASS"
+  },
+  "status": "EXPERIMENT_COMPLETE_STATIC_GAIN_DYNAMIC_NO_GAIN"
+}

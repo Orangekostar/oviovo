@@ -77,6 +77,8 @@ def _portable_payload(value: object, *, key: str | None = None) -> object:
 def _merge_csv(
     output: Path,
     inputs: Iterable[tuple[str, Path]],
+    *,
+    prefix_summary_pointers: bool = False,
 ) -> None:
     fieldnames = ["evaluation"]
     rows: list[dict[str, str]] = []
@@ -89,9 +91,24 @@ def _merge_csv(
                 if field not in fieldnames:
                     fieldnames.append(field)
             for row in reader:
-                rows.append({"evaluation": evaluation, **row})
+                merged = {"evaluation": evaluation, **row}
+                if prefix_summary_pointers and merged.get("status") == "N/A":
+                    token = merged.get("token")
+                    if not isinstance(token, str) or not token:
+                        raise ValueError("N/A lineage requires a table token")
+                    merged["source_json"] = "table_values.json"
+                    merged["json_pointer"] = f"/{token}/value"
+                elif (
+                    prefix_summary_pointers
+                    and merged.get("source_json") == "metrics_summary.json"
+                ):
+                    pointer = merged.get("json_pointer")
+                    if not isinstance(pointer, str) or not pointer.startswith("/"):
+                        raise ValueError("metrics summary lineage requires a JSON Pointer")
+                    merged["json_pointer"] = f"/{evaluation}{pointer}"
+                rows.append(merged)
     with output.open("w", encoding="utf-8", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=fieldnames)
+        writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -200,6 +217,7 @@ def package_results(
             _merge_csv(
                 staging / name,
                 tuple((key, run / name) for key, run in pairs.items()),
+                prefix_summary_pointers=name == "table_lineage.csv",
             )
 
         figures = staging / "figures"

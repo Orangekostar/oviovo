@@ -1,0 +1,41 @@
+{
+  "camera": {
+    "azimuth_degrees": -55.0,
+    "elevation_degrees": 22.0,
+    "projection": "orthographic"
+  },
+  "geometry_shared_across_views": true,
+  "output": {
+    "byte_count": 1123681,
+    "path": "figures/static_dev_four_views.png",
+    "sha256": "01035729195f9c4098b3a3e4804fa9fc41ea09ead543d75575526bb3a1b0c649"
+  },
+  "sampled_vertex_count": 800000,
+  "sampling_rule": "equal_index_spacing_over_canonical_vertex_order",
+  "scene": "Replica-room0",
+  "schema_version": 1,
+  "source_vertex_count": 9282303,
+  "sources": {
+    "instance": {
+      "byte_count": 652856035,
+      "path": "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/replica_room0_static_full_v1/current_map/current_instance.ply",
+      "sha256": "9d966e3784bb4a91643853a5cd5cbc1aa333c9c6678795ee405a9f436606bc28"
+    },
+    "rgb": {
+      "byte_count": 652856035,
+      "path": "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/replica_room0_static_full_v1/current_map/current_rgb.ply",
+      "sha256": "aad39fd1a50678f60d8ec984a06987aba8d863c4d94e4acc37c4d17c404388ff"
+    },
+    "semantic": {
+      "byte_count": 652856035,
+      "path": "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/replica_room0_static_full_v1/current_map/current_semantic.ply",
+      "sha256": "cc7313bcc7847f5a0c3b83ec61c9069b9948a47f68e2b6a884cded675f2a8c74"
+    },
+    "state": {
+      "byte_count": 652856035,
+      "path": "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/replica_room0_static_full_v1/current_map/current_state.ply",
+      "sha256": "6587582a30d7eab1c6feee384121cb7fb4c6fd0f93825c9846cb6e006f928380"
+    }
+  },
+  "status": "PASS"
+}

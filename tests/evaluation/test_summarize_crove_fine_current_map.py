@@ -58,6 +58,30 @@ def test_merge_csv_keeps_union_of_trial_columns(tmp_path: Path) -> None:
         {"evaluation": "static", "trial_id": "S0", "miou": "0.4", "ghost": ""},
         {"evaluation": "dynamic", "trial_id": "B3", "miou": "", "ghost": "0.0"},
     ]
+    assert b"\r\n" not in output.read_bytes()
+
+
+def test_merge_csv_prefixes_lineage_pointer_for_nested_summary(tmp_path: Path) -> None:
+    source = tmp_path / "lineage.csv"
+    source.write_text(
+        "token,status,source_json,json_pointer\n"
+        "MIOU,RECOMPUTED,metrics_summary.json,/trials/S2/miou\n"
+        "OBJECT_F1,N/A,metrics_summary.json,/trials/S2/object_f1\n",
+        encoding="utf-8",
+    )
+    output = tmp_path / "merged.csv"
+
+    _merge_csv(
+        output,
+        (("static_dev", source),),
+        prefix_summary_pointers=True,
+    )
+
+    with output.open(encoding="utf-8", newline="") as stream:
+        rows = list(csv.DictReader(stream))
+    assert rows[0]["json_pointer"] == "/static_dev/trials/S2/miou"
+    assert rows[1]["source_json"] == "table_values.json"
+    assert rows[1]["json_pointer"] == "/OBJECT_F1/value"
 
 
 def test_cost_control_payload_requires_real_source_selection_receipt(

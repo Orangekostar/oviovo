@@ -629,7 +629,7 @@ def _legacy_b3_evidence(
 
 def _write_csv(path: Path, fieldnames: list[str], rows: list[dict[str, object]]) -> None:
     with path.open("w", encoding="utf-8", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=fieldnames)
+        writer = csv.DictWriter(stream, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
@@ -1592,8 +1592,16 @@ def run_apartment_two_visit(config: dict[str, Any], output: Path) -> None:
                     "status": record["status"],
                     "protocol_id": record["protocol_id"],
                     "surface_id": record["surface_id"],
-                    "source_json": "metrics_summary.json",
-                    "json_pointer": f"/trials/{selected}/{token.removeprefix('CROVE_FINE_APARTMENT_TWO_VISIT_DEV_').lower()}",
+                    "source_json": (
+                        "table_values.json"
+                        if record["status"] == "N/A"
+                        else "metrics_summary.json"
+                    ),
+                    "json_pointer": (
+                        f"/{token}/value"
+                        if record["status"] == "N/A"
+                        else f"/trials/{selected}/{token.removeprefix('CROVE_FINE_APARTMENT_TWO_VISIT_DEV_').lower()}"
+                    ),
                 }
                 for token, record in table_values.items()
             ],

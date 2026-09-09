@@ -1,0 +1,65 @@
+{
+  "dynamic_dev": {
+    "fine_projection": {
+      "depth_max_m": 10.0,
+      "depth_tolerance_m": 0.05,
+      "frame_stride": 8,
+      "maximum_distinct_viewpoints": 6,
+      "minimum_rgb_neighbours": 5,
+      "minimum_viewpoint_baseline_m": 0.25,
+      "point_batch_size": 250000,
+      "rgb_edge_range_factor": 2.0
+    },
+    "rgb_projection": {
+      "depth_max_m": 10.0,
+      "depth_tolerance_m": 0.05,
+      "frame_stride": 8,
+      "maximum_distinct_viewpoints": 3,
+      "minimum_rgb_neighbours": 5,
+      "minimum_viewpoint_baseline_m": 0.25,
+      "point_batch_size": 250000,
+      "rgb_edge_range_factor": 2.0
+    },
+    "selection_gates": {
+      "maximum_ghost": 0.02,
+      "minimum_background_f1_at_5cm": 0.35636000976960025,
+      "minimum_observed_stale_precision": 0.9259634045791844,
+      "minimum_surface_precision_at_5cm": 0.7244127781521915
+    },
+    "status": "DEV_SELECTED",
+    "trial_id": "B3_LEGACY",
+    "validity": {
+      "legacy_b3": true
+    }
+  },
+  "schema_version": 1,
+  "static_dev": {
+    "rgb_projection": {
+      "dataset_root": "$HOME/vv/dataset/Replica/room0",
+      "depth_max_m": 10.0,
+      "depth_tolerance_m": 0.05,
+      "edge_range_factor": 2.0,
+      "frame_start": 0,
+      "frame_stop_exclusive": 2000,
+      "maximum_distinct_viewpoints": 3,
+      "minimum_rgb_neighbours": 5,
+      "minimum_viewpoint_baseline_m": 0.25,
+      "point_batch_size": 250000,
+      "projection_subsample": 4,
+      "source_stride": 10
+    },
+    "selection_rule": "max_miou_then_f_miou_then_simpler_strategy",
+    "semantic_transfer": {
+      "distance_sigma_m": 0.025,
+      "entity_weight_scale": 0.75,
+      "maximum_correspondence_distance_m": 0.05,
+      "minimum_entity_confidence": 0.2,
+      "minimum_local_support": 2.0,
+      "neighbor_count": 8,
+      "point_batch_size": 250000
+    },
+    "status": "DEV_SELECTED",
+    "strategy": "s2_reliable_surface_owner_fallback"
+  },
+  "status": "EXPERIMENT_COMPLETE_STATIC_GAIN_DYNAMIC_NO_GAIN"
+}

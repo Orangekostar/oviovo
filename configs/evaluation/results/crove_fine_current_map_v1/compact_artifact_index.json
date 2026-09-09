@@ -1,0 +1,92 @@
+{
+  "artifacts": [
+    {
+      "byte_count": 1995,
+      "path": "cost_control_2cm.json",
+      "sha256": "4e338ac6b605117b10cf39ab92b4fcec6c0b19df8588f4c2d93013ee154a1982"
+    },
+    {
+      "byte_count": 858,
+      "path": "effective_geometry_config.json",
+      "sha256": "3b721fa3b5f6d774737274d46fb369c1e36dc864a7aea805e7bbff98213f7db4"
+    },
+    {
+      "byte_count": 4486,
+      "path": "export_diagnostics.json",
+      "sha256": "7207d9be0a8070c7b11e59b1bd78386f7924eee5b4151468cf019739d964219e"
+    },
+    {
+      "byte_count": 1686,
+      "path": "figures/dynamic_dev_four_views.json",
+      "sha256": "490a95f68f172ef7a1b12b7ddd73ff8ff66322d44c827e0613fbd7ccb01586cf"
+    },
+    {
+      "byte_count": 726859,
+      "path": "figures/dynamic_dev_four_views.png",
+      "sha256": "c80867bc1eea487e7ca81e24a37d102bc52acc9c8f568d11fb90c87a8277f4dc"
+    },
+    {
+      "byte_count": 1685,
+      "path": "figures/legacy_static_display_control.json",
+      "sha256": "55663c00a4d17411ba0709aa608c0319278c0bcd209f91f067404b9e04233566"
+    },
+    {
+      "byte_count": 469879,
+      "path": "figures/legacy_static_display_control.png",
+      "sha256": "f4aa170038e9e447af7270850d3949d8f6a3594e82732761780d822d3eb97e7e"
+    },
+    {
+      "byte_count": 1680,
+      "path": "figures/static_dev_four_views.json",
+      "sha256": "6cbd858da529e4f5e309736051550473a409fd7390e41a24c7f34df9298a9f24"
+    },
+    {
+      "byte_count": 1123681,
+      "path": "figures/static_dev_four_views.png",
+      "sha256": "01035729195f9c4098b3a3e4804fa9fc41ea09ead543d75575526bb3a1b0c649"
+    },
+    {
+      "byte_count": 7241,
+      "path": "input_selection.json",
+      "sha256": "2bafad6a0329982a29af70c688f9b2323f23fd00459158e4aa84b6dbf04232a2"
+    },
+    {
+      "byte_count": 2082,
+      "path": "metrics_per_scene.csv",
+      "sha256": "e8ede43d8a1328eba0170dc9cf891af0387353dfd646cb4dc954c058154cb867"
+    },
+    {
+      "byte_count": 69145,
+      "path": "metrics_summary.json",
+      "sha256": "8dbfb038d84b66992af4d86ed1f02f8638894f5501469acea9a20bfed271a7bf"
+    },
+    {
+      "byte_count": 1984,
+      "path": "selected_config.json",
+      "sha256": "942519c5f6e5f54d2829c910f912314837eeb2b909e389a48ff7ae920f8b299d"
+    },
+    {
+      "byte_count": 5101,
+      "path": "table_lineage.csv",
+      "sha256": "c047a9317dd307fcc072107f15e5dfa9fe581126425d1aeb7af94f7cb28fba32"
+    },
+    {
+      "byte_count": 4540,
+      "path": "table_values.json",
+      "sha256": "2eaf805335a8431aa16898fbf1d7db26af509879c3a4d78e71686bc85f48c86d"
+    },
+    {
+      "byte_count": 2563,
+      "path": "trial_log.csv",
+      "sha256": "4bec0c863922ad207f52eb1b88b3f4b001cb74987e4343ce2ca26a333542af00"
+    }
+  ],
+  "large_artifact_roots": {
+    "dynamic_dev": "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/apartment_two_visit_full_v1",
+    "static_dev": "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/replica_room0_static_full_v1"
+  },
+  "large_map_policy": "LOCAL_ONLY_POLICY",
+  "model_upload_status": "NOT_APPLICABLE_NO_NEW_TRAINING",
+  "schema_version": 1,
+  "status": "PASS"
+}

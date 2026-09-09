@@ -1,0 +1,58 @@
+{
+  "condition": "SOURCE_SURFACE_VOXEL_SELECTION_NOT_RECONSTRUCTION",
+  "delta_2cm_minus_1cm": {
+    "ap25": 0.0005450030034331865,
+    "ap50": -0.02416636376226594,
+    "f5": -0.0010271314091577777,
+    "f_miou": -0.001004586646347061,
+    "macc": -0.002311766504266788,
+    "miou": -0.0029016485834481576
+  },
+  "ground_truth_role": "evaluator_only",
+  "ground_truth_used_for_selection": false,
+  "metrics": {
+    "ap25": 0.5631857700619368,
+    "ap50": 0.44654427518545103,
+    "f5": 0.934259030262496,
+    "f_miou": 0.6725687013951237,
+    "macc": 0.5087877532231108,
+    "miou": 0.44498704063823535
+  },
+  "protocol_id": "crove_fine_current_map_v1_replica_room0_2cm_source_selection",
+  "reference_1cm_metrics": {
+    "ap25": 0.5626407670585036,
+    "ap50": 0.470710638947717,
+    "f5": 0.9352861616716538,
+    "f_miou": 0.6735732880414708,
+    "macc": 0.5110995197273775,
+    "miou": 0.4478886892216835
+  },
+  "scene": "room0",
+  "schema_version": 1,
+  "selected_evaluation_array_bytes": 11868128,
+  "selected_rows_sha256": "f48657ef695da07bec7edfeedfff93622772b36eaaff7b15ea1e62732c587b7e",
+  "selected_vertex_count": 370879,
+  "selected_vertex_ratio": 0.03995549380363903,
+  "selection_index_rule": "floor_world_coordinate_first_source_row",
+  "selection_origin_xyz_m": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "selection_voxel_size_m": 0.02,
+  "source_binding": {
+    "byte_count": 118648708,
+    "path": "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/replica_room0_static_full_v1/current_map/current_surface.npz",
+    "sha256": "0e23391c1334c056ce15be71f96bbd070ae6d4df3fe1d2c66d839f9624641bd9"
+  },
+  "source_current_vertex_count": 9282303,
+  "source_surface_id": "crove-fine-room0-s2_reliable_surface_owner_fallback",
+  "source_surface_voxel_size_m": 0.01,
+  "split_role": "development_and_replica8_compatibility",
+  "status": "PASS",
+  "timing_seconds": {
+    "evaluation": 8.104365824721754,
+    "selection": 11.118319135159254,
+    "total": 27.129878325853497
+  }
+}

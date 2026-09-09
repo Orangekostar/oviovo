@@ -1,0 +1,41 @@
+{
+  "camera": {
+    "azimuth_degrees": -55.0,
+    "elevation_degrees": 22.0,
+    "projection": "orthographic"
+  },
+  "geometry_shared_across_views": true,
+  "output": {
+    "byte_count": 726859,
+    "path": "figures/dynamic_dev_four_views.png",
+    "sha256": "c80867bc1eea487e7ca81e24a37d102bc52acc9c8f568d11fb90c87a8277f4dc"
+  },
+  "sampled_vertex_count": 800000,
+  "sampling_rule": "equal_index_spacing_over_canonical_vertex_order",
+  "scene": "TESSE-CD-Apartment",
+  "schema_version": 1,
+  "source_vertex_count": 15622601,
+  "sources": {
+    "instance": {
+      "byte_count": 1098664155,
+      "path": "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/apartment_two_visit_full_v1/current_map/current_instance.ply",
+      "sha256": "f21b21ed32c921b2ab09c35fc94d14ebd0ea2f0206130fe7a2e2772d53533573"
+    },
+    "rgb": {
+      "byte_count": 1098664155,
+      "path": "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/apartment_two_visit_full_v1/current_map/current_rgb.ply",
+      "sha256": "83b579e117b558c8a33fa6b7bb89a1378259928bd6c157f6065d4313d0afa492"
+    },
+    "semantic": {
+      "byte_count": 1098664155,
+      "path": "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/apartment_two_visit_full_v1/current_map/current_semantic.ply",
+      "sha256": "3909c3b5f062991c77e853ddf9914d8f156d0e70ec492326001ffcffea5482ea"
+    },
+    "state": {
+      "byte_count": 1098664155,
+      "path": "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/apartment_two_visit_full_v1/current_map/current_state.ply",
+      "sha256": "dca702dfa4d672b73ca576cd6fbb7199948140ff57d3b05ba66fd8c5a36d60d4"
+    }
+  },
+  "status": "PASS"
+}

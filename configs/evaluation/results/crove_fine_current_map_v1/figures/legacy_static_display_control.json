@@ -1,0 +1,46 @@
+{
+  "camera": {
+    "azimuth_degrees": -55.0,
+    "elevation_degrees": 22.0,
+    "projection": "orthographic"
+  },
+  "display_only": true,
+  "geometry_shared_across_views": true,
+  "output": {
+    "byte_count": 469879,
+    "path": "figures/legacy_static_display_control.png",
+    "sha256": "f4aa170038e9e447af7270850d3949d8f6a3594e82732761780d822d3eb97e7e"
+  },
+  "sampled_vertex_count": 65350,
+  "sampling_rule": "equal_index_spacing_over_legacy_vertex_order",
+  "scene": "Replica room0 legacy 5 cm representative",
+  "schema_version": 1,
+  "source_vertex_count": 65350,
+  "sources": {
+    "instance": {
+      "byte_count": 3695563,
+      "path": "$HOME/oviovo_baseline_runs/20260902_crove_dense_recovery/p1/room0_instance/visualization.ply",
+      "sha256": "0f1a125299ee8f279b906218024c311fd3e87203c547a2c79d58438dffbc08d4",
+      "unique_entity_id_count": 82,
+      "unique_semantic_id_count": 31,
+      "unique_standard_rgb_count": 80
+    },
+    "rgb": {
+      "byte_count": 3695563,
+      "path": "$HOME/oviovo_baseline_runs/20260902_crove_dense_recovery/p1/room0_rgb/visualization.ply",
+      "sha256": "276d36b4ff4e559d4dba863b6fd9fffce676095bf9cccb6f16e1c22c71da2c62",
+      "unique_entity_id_count": 82,
+      "unique_semantic_id_count": 31,
+      "unique_standard_rgb_count": 40457
+    },
+    "semantic": {
+      "byte_count": 3695563,
+      "path": "$HOME/oviovo_baseline_runs/20260902_crove_dense_recovery/p1/room0_semantic/visualization.ply",
+      "sha256": "9d9705086984c9d216d35a04f6a498ae6e8d7fa4c3b6acd320f892ae6cc70b75",
+      "unique_entity_id_count": 82,
+      "unique_semantic_id_count": 31,
+      "unique_standard_rgb_count": 31
+    }
+  },
+  "status": "PASS"
+}
