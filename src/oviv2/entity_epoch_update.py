@@ -83,13 +83,20 @@ class RelationSupport:
     visible_support_score: float | None = None
     appearance_cosine: float | None = None
     appearance_feature_space: str | None = None
+    appearance_projection_version: str | None = None
     semantic_compatibility: float | None = None
     original_location_iou: float | None = None
     t0_mask_coverage: float | None = None
     t1_mask_coverage: float | None = None
     t0_mask_purity: float | None = None
     t1_mask_purity: float | None = None
+    t0_competing_score: float | None = None
+    t1_competing_score: float | None = None
+    query_confidence: float | None = None
     competition_margin: float | None = None
+    memory_retrieval_mode: str | None = None
+    memory_identity_lifecycle: str | None = None
+    observation_provenance: str | None = None
     spatial_support_patch_count: int | None = None
     residual_improvement_m: float | None = None
     motion_rejection_reasons: tuple[str, ...] = ()
@@ -164,7 +171,15 @@ class RelationSupport:
             ):
                 raise ValueError(f"{name} must be ordered unique nonnegative integers")
             object.__setattr__(self, name, values)
-        for name in ("t0_entity_id", "t1_entity_id", "appearance_feature_space"):
+        for name in (
+            "t0_entity_id",
+            "t1_entity_id",
+            "appearance_feature_space",
+            "appearance_projection_version",
+            "memory_retrieval_mode",
+            "memory_identity_lifecycle",
+            "observation_provenance",
+        ):
             value = getattr(self, name)
             if value is not None and (not isinstance(value, str) or not value.strip()):
                 raise ValueError(f"{name} must be non-empty when present")
@@ -182,6 +197,9 @@ class RelationSupport:
             "t1_mask_coverage",
             "t0_mask_purity",
             "t1_mask_purity",
+            "t0_competing_score",
+            "t1_competing_score",
+            "query_confidence",
         ):
             value = getattr(self, name)
             if value is not None:

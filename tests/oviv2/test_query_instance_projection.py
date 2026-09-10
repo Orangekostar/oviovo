@@ -6,6 +6,7 @@ import pytest
 from src.oviv2.query_instance_projection import (
     ProjectionConfig,
     project_queries_to_instances,
+    project_queries_to_relation_support,
     project_query_evidence,
 )
 from src.oviv2.two_visit_contracts import (
@@ -13,7 +14,6 @@ from src.oviv2.two_visit_contracts import (
     OviEntitySemanticEvidence,
     TemporalQueryEvidence,
 )
-
 
 SHA_A = "a" * 64
 SHA_B = "b" * 64
@@ -82,6 +82,8 @@ def _evidence(
     pair: NeuralSampleMap,
     masks: list[list[bool]],
     scores: list[list[float]] | None = None,
+    *,
+    backend_name: str = "geometric_semantic",
 ) -> TemporalQueryEvidence:
     mask_array = np.asarray(masks, dtype=bool)
     score_array = (
@@ -91,7 +93,7 @@ def _evidence(
     )
     return TemporalQueryEvidence(
         status="PASS",
-        backend_name="geometric_semantic",
+        backend_name=backend_name,
         backend_config_sha256=SHA_A,
         pair_sha256=pair.content_sha256(),
         temporal_query_ids=tuple(f"q{index}" for index in range(len(masks))),
@@ -212,3 +214,119 @@ def test_projection_rejects_blocked_evidence() -> None:
 
     with pytest.raises(ValueError, match="PASS"):
         project_queries_to_instances(pair, evidence, ProjectionConfig())
+
+
+def test_strict_rescene_projection_records_fixed_ovi_support() -> None:
+    pair = _pair(
+        (
+            "ovimap:1",
+            "ovimap:1",
+            "ovimap:2",
+            "ovimap:10",
+            "ovimap:10",
+            "ovimap:11",
+        ),
+        (0, 0, 0, 1, 1, 1),
+        (0.0, 0.02, 1.0, 0.1, 0.12, 1.1),
+        contributor_counts=(2, 1, 1, 1, 2, 1),
+    )
+    evidence = _evidence(
+        pair,
+        [[True, True, False, True, True, False]],
+        [[0.9, 0.8, 0.1, 0.85, 0.75, 0.1]],
+        backend_name="rescene:concerto",
+    )
+
+    result = project_queries_to_relation_support(
+        pair,
+        evidence,
+        minimum_source_coverage=0.25,
+        minimum_competition_margin=0.08,
+    )
+
+    assert len(result) == 1
+    relation = result[0]
+    assert relation.relation_source == "frozen-rescene"
+    assert relation.accepted
+    assert not relation.assignment_is_null
+    assert relation.t0_owner_entity_id == 1
+    assert relation.t1_owner_entity_id == 10
+    assert np.array_equal(relation.t0_source_vertex_indices, [0, 1, 2])
+    assert np.array_equal(relation.t1_source_vertex_indices, [0, 1, 2])
+    assert relation.t0_mask_coverage == 1.0
+    assert relation.t1_mask_coverage == 1.0
+    assert relation.t0_mask_purity == 0.5
+    assert relation.t1_mask_purity == 0.5
+    assert relation.t0_competing_score == 0.0
+    assert relation.t1_competing_score == 0.0
+    assert relation.competition_margin == 1.0
+    assert relation.query_confidence == pytest.approx(0.8)
+
+
+def test_strict_rescene_projection_requires_source_coverage_not_token_fallback() -> None:
+    pair = _pair(
+        ("ovimap:1", "ovimap:1", "ovimap:10", "ovimap:10"),
+        (0, 0, 1, 1),
+        (0.0, 0.02, 0.1, 0.12),
+        contributor_counts=(1, 9, 1, 9),
+    )
+    evidence = _evidence(
+        pair,
+        [[True, False, True, False]],
+        backend_name="rescene:concerto",
+    )
+
+    (relation,) = project_queries_to_relation_support(
+        pair,
+        evidence,
+        minimum_source_coverage=0.25,
+        minimum_competition_margin=0.08,
+    )
+
+    assert not relation.accepted
+    assert relation.assignment_is_null
+    assert relation.t0_mask_coverage == pytest.approx(0.1)
+    assert relation.t1_mask_coverage == pytest.approx(0.1)
+    assert relation.rejection_reasons == (
+        "insufficient_t0_coverage",
+        "insufficient_t1_coverage",
+    )
+
+
+def test_strict_rescene_projection_returns_null_for_competing_entities() -> None:
+    pair = _pair(
+        ("ovimap:1", "ovimap:2", "ovimap:10", "ovimap:11"),
+        (0, 0, 1, 1),
+        (0.0, 0.1, 0.0, 0.1),
+    )
+    evidence = _evidence(
+        pair,
+        [[True, True, True, True]],
+        backend_name="rescene:concerto",
+    )
+
+    (relation,) = project_queries_to_relation_support(
+        pair,
+        evidence,
+        minimum_source_coverage=0.25,
+        minimum_competition_margin=0.08,
+    )
+
+    assert not relation.accepted
+    assert relation.assignment_is_null
+    assert relation.t0_competing_score == 1.0
+    assert relation.t1_competing_score == 1.0
+    assert relation.competition_margin == 0.0
+    assert relation.rejection_reasons == ("ambiguous_query_competition",)
+
+
+def test_strict_rescene_projection_rejects_non_rescene_evidence() -> None:
+    pair = _pair(("ovimap:1", "ovimap:10"), (0, 1), (0.0, 0.1))
+
+    with pytest.raises(ValueError, match="ReScene"):
+        project_queries_to_relation_support(
+            pair,
+            _evidence(pair, [[True, True]]),
+            minimum_source_coverage=0.25,
+            minimum_competition_margin=0.08,
+        )

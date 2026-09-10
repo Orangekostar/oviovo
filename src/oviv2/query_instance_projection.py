@@ -4,18 +4,18 @@ from __future__ import annotations
 
 import math
 from collections.abc import Iterator, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from types import MappingProxyType
 
 import numpy as np
 
+from src.oviv2.entity_epoch_update import RelationInferenceState, RelationSupport
 from src.oviv2.temporal_pair_reasoner import validate_query_evidence
 from src.oviv2.two_visit_contracts import (
     NeuralSampleMap,
     PairRelation,
     TemporalQueryEvidence,
 )
-
 
 EntityKey = tuple[int, str]
 MatrixKey = tuple[str, str, int]
@@ -255,3 +255,210 @@ def project_queries_to_instances(
             )
         )
     return ProjectionResult(tuple(relations), matrix)
+
+
+def _strict_owner_id(entity_id: str) -> int:
+    prefix, separator, suffix = entity_id.partition(":")
+    if prefix != "ovimap" or separator != ":":
+        raise ValueError("strict ReScene projection requires ovimap:<positive-int> IDs")
+    try:
+        owner_id = int(suffix)
+    except ValueError as error:
+        raise ValueError(
+            "strict ReScene projection requires ovimap:<positive-int> IDs"
+        ) from error
+    if owner_id <= 0:
+        raise ValueError("strict ReScene projection requires positive OVI owner IDs")
+    return owner_id
+
+
+def _source_local_rows(pair: NeuralSampleMap) -> np.ndarray:
+    rows = np.empty(pair.source_point_count, dtype=np.int64)
+    for visit_id in (0, 1):
+        positions = np.flatnonzero(pair.source_visit_ids == visit_id)
+        source_indices = pair.source_point_indices[positions]
+        rows[positions] = np.searchsorted(np.sort(source_indices), source_indices)
+    return rows
+
+
+def _strict_query_source_rows(
+    pair: NeuralSampleMap,
+    query_mask: np.ndarray,
+    *,
+    visit_id: int,
+    entity_id: str,
+    local_rows: np.ndarray,
+    entity_token_indices: Mapping[EntityKey, np.ndarray],
+) -> np.ndarray:
+    candidate_tokens = entity_token_indices[(visit_id, entity_id)]
+    token_indices = candidate_tokens[query_mask[candidate_tokens]]
+    positions = np.concatenate(
+        tuple(
+            np.arange(
+                pair.source_to_token_offsets[index],
+                pair.source_to_token_offsets[index + 1],
+                dtype=np.int64,
+            )
+            for index in token_indices
+        )
+    )
+    return np.sort(local_rows[positions])
+
+
+def _strict_query_rank(
+    records: tuple[QueryEntityEvidence, ...],
+) -> tuple[QueryEntityEvidence, float, float]:
+    ordered = sorted(
+        records,
+        key=lambda item: (
+            -item.source_point_coverage,
+            -item.entity_token_coverage,
+            -item.soft_mass,
+            item.entity_id,
+        ),
+    )
+    best = ordered[0]
+    competing_score = ordered[1].source_point_coverage if len(ordered) > 1 else 0.0
+    return best, competing_score, best.source_point_coverage - competing_score
+
+
+def _strict_one_to_one(
+    relations: tuple[RelationSupport, ...],
+) -> tuple[RelationSupport, ...]:
+    resolved = list(relations)
+    used_t0: set[int] = set()
+    used_t1: set[int] = set()
+    for index, relation in sorted(
+        enumerate(relations),
+        key=lambda item: (
+            -item[1].confidence,
+            -(item[1].competition_margin or 0.0),
+            item[1].relation_id,
+        ),
+    ):
+        if not relation.accepted:
+            continue
+        if (
+            relation.t0_owner_entity_id in used_t0
+            or relation.t1_owner_entity_id in used_t1
+        ):
+            resolved[index] = replace(
+                relation,
+                accepted=False,
+                assignment_is_null=True,
+                rejection_reasons=("one_to_one_conflict",),
+            )
+            continue
+        used_t0.add(relation.t0_owner_entity_id)
+        used_t1.add(relation.t1_owner_entity_id)
+    return tuple(resolved)
+
+
+def project_queries_to_relation_support(
+    pair: NeuralSampleMap,
+    evidence: TemporalQueryEvidence,
+    *,
+    minimum_source_coverage: float = 0.25,
+    minimum_competition_margin: float = 0.08,
+    minimum_query_confidence: float = 0.0,
+) -> tuple[RelationSupport, ...]:
+    """Project frozen ReScene queries onto exact fixed-OVI source rows."""
+
+    if not isinstance(pair, NeuralSampleMap):
+        raise TypeError("pair must be NeuralSampleMap")
+    if not isinstance(evidence, TemporalQueryEvidence):
+        raise TypeError("evidence must be TemporalQueryEvidence")
+    if not evidence.backend_name.startswith("rescene:"):
+        raise ValueError("strict query projection requires ReScene evidence")
+    for value, name in (
+        (minimum_source_coverage, "minimum_source_coverage"),
+        (minimum_competition_margin, "minimum_competition_margin"),
+        (minimum_query_confidence, "minimum_query_confidence"),
+    ):
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise TypeError(f"{name} must be numeric")
+        if not math.isfinite(float(value)) or not 0.0 <= float(value) <= 1.0:
+            raise ValueError(f"{name} must be finite and in [0, 1]")
+    matrix = _project(pair, evidence)
+    assert evidence.query_masks is not None
+    assert evidence.query_scores is not None
+    local_rows = _source_local_rows(pair)
+    entity_token_indices = _entity_token_indices(pair)
+    pair_identity = pair.content_sha256()[:12]
+    output: list[RelationSupport] = []
+    for query_index, query_id in enumerate(evidence.temporal_query_ids):
+        intersected = tuple(
+            record
+            for (record_query_id, _entity_id, _visit_id), record in matrix.items()
+            if record_query_id == query_id and record.token_intersection_count > 0
+        )
+        t0_records = tuple(record for record in intersected if record.visit_id == 0)
+        t1_records = tuple(record for record in intersected if record.visit_id == 1)
+        if not t0_records or not t1_records:
+            continue
+        t0_record, t0_competing, t0_margin = _strict_query_rank(t0_records)
+        t1_record, t1_competing, t1_margin = _strict_query_rank(t1_records)
+        competition_margin = min(t0_margin, t1_margin)
+        query_confidence = float(evidence.query_scores[query_index])
+        reasons: set[str] = set()
+        if t0_record.source_point_coverage < minimum_source_coverage:
+            reasons.add("insufficient_t0_coverage")
+        if t1_record.source_point_coverage < minimum_source_coverage:
+            reasons.add("insufficient_t1_coverage")
+        if competition_margin < minimum_competition_margin:
+            reasons.add("ambiguous_query_competition")
+        if query_confidence < minimum_query_confidence:
+            reasons.add("below_query_score")
+        accepted = not reasons
+        t0_owner = _strict_owner_id(t0_record.entity_id)
+        t1_owner = _strict_owner_id(t1_record.entity_id)
+        output.append(
+            RelationSupport(
+                relation_id=(
+                    f"frozen-rescene:{pair_identity}:{query_id}:{t0_owner}:{t1_owner}"
+                ),
+                relation_source="frozen-rescene",
+                stable_entity_id=f"stable:frozen-rescene:{pair_identity}:{query_id}",
+                t0_owner_entity_id=t0_owner,
+                t1_owner_entity_id=t1_owner,
+                t0_source_surface_id=f"ovi-map:{pair.source_visit_map_sha256[0]}",
+                t1_source_surface_id=f"ovi-map:{pair.source_visit_map_sha256[1]}",
+                t0_source_vertex_indices=_strict_query_source_rows(
+                    pair,
+                    evidence.query_masks[query_index],
+                    visit_id=0,
+                    entity_id=t0_record.entity_id,
+                    local_rows=local_rows,
+                    entity_token_indices=entity_token_indices,
+                ),
+                t1_source_vertex_indices=_strict_query_source_rows(
+                    pair,
+                    evidence.query_masks[query_index],
+                    visit_id=1,
+                    entity_id=t1_record.entity_id,
+                    local_rows=local_rows,
+                    entity_token_indices=entity_token_indices,
+                ),
+                confidence=min(
+                    query_confidence,
+                    t0_record.source_point_coverage,
+                    t1_record.source_point_coverage,
+                ),
+                inference_state=RelationInferenceState.UNRESOLVED,
+                accepted=accepted,
+                t0_entity_id=t0_record.entity_id,
+                t1_entity_id=t1_record.entity_id,
+                assignment_is_null=not accepted,
+                assignment_margin=competition_margin,
+                t0_mask_coverage=t0_record.source_point_coverage,
+                t1_mask_coverage=t1_record.source_point_coverage,
+                t0_mask_purity=t0_record.query_mask_fraction,
+                t1_mask_purity=t1_record.query_mask_fraction,
+                t0_competing_score=t0_competing,
+                t1_competing_score=t1_competing,
+                query_confidence=query_confidence,
+                competition_margin=competition_margin,
+                rejection_reasons=tuple(sorted(reasons)),
+            )
+        )
+    return _strict_one_to_one(tuple(output))

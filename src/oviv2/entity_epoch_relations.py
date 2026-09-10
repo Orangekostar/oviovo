@@ -15,8 +15,7 @@ from scipy.spatial import cKDTree
 from src.oviv2.entity_epoch_update import RelationInferenceState, RelationSupport
 from src.oviv2.query_instance_projection import (
     ProjectionConfig,
-    QueryEntityEvidence,
-    project_query_evidence,
+    project_queries_to_relation_support,
 )
 from src.oviv2.two_visit_contracts import (
     NeuralSampleMap,
@@ -974,50 +973,6 @@ def _enforce_one_to_one(
     return tuple(resolved)
 
 
-def _coverage(record: QueryEntityEvidence) -> float:
-    return max(record.entity_token_coverage, record.source_point_coverage)
-
-
-def _query_source_rows(
-    pair: NeuralSampleMap,
-    query_mask: np.ndarray,
-    *,
-    visit_id: int,
-    entity_id: str,
-    local_rows: np.ndarray,
-) -> np.ndarray:
-    selected_tokens = [
-        index
-        for index, token_entity_id in enumerate(pair.token_entity_ids)
-        if query_mask[index]
-        and int(pair.visit_ids[index]) == visit_id
-        and token_entity_id == entity_id
-    ]
-    contributor_positions = np.concatenate(
-        [
-            np.arange(
-                pair.source_to_token_offsets[index],
-                pair.source_to_token_offsets[index + 1],
-                dtype=np.int64,
-            )
-            for index in selected_tokens
-        ]
-    )
-    return np.sort(local_rows[contributor_positions])
-
-
-def _query_rank(
-    records: tuple[QueryEntityEvidence, ...],
-) -> tuple[QueryEntityEvidence, float]:
-    ordered = sorted(
-        records,
-        key=lambda item: (-_coverage(item), -item.soft_mass, item.entity_id),
-    )
-    best = ordered[0]
-    runner_up = _coverage(ordered[1]) if len(ordered) > 1 else 0.0
-    return best, _coverage(best) - runner_up
-
-
 def relation_support_from_queries(
     pair: NeuralSampleMap,
     evidence: TemporalQueryEvidence,
@@ -1027,116 +982,19 @@ def relation_support_from_queries(
     minimum_query_score: float,
     minimum_competition_margin: float,
 ) -> tuple[RelationSupport, ...]:
-    """Project query relations without the legacy below-threshold fallback."""
+    """Compatibility wrapper for the strict fixed-OVI ReScene projection."""
 
-    if not isinstance(pair, NeuralSampleMap):
-        raise TypeError("pair must be NeuralSampleMap")
-    if not isinstance(evidence, TemporalQueryEvidence):
-        raise TypeError("evidence must be TemporalQueryEvidence")
     if not isinstance(projection_config, ProjectionConfig):
         raise TypeError("projection_config must be ProjectionConfig")
-    if not isinstance(relation_source, str) or not relation_source.strip():
-        raise ValueError("relation_source must be non-empty")
-    for value, name in (
-        (minimum_query_score, "minimum_query_score"),
-        (minimum_competition_margin, "minimum_competition_margin"),
-    ):
-        if not math.isfinite(float(value)) or not 0.0 <= float(value) <= 1.0:
-            raise ValueError(f"{name} must be finite and in [0, 1]")
-    matrix = project_query_evidence(pair, evidence)
-    assert evidence.query_masks is not None
-    assert evidence.query_scores is not None
-    local_rows = _source_local_rows(pair)
-    pair_identity = pair.content_sha256()[:12]
-    output: list[RelationSupport] = []
-    for query_index, query_id in enumerate(evidence.temporal_query_ids):
-        intersected = tuple(
-            record
-            for (record_query_id, _entity_id, _visit_id), record in matrix.items()
-            if record_query_id == query_id and record.token_intersection_count > 0
-        )
-        t0_records = tuple(record for record in intersected if record.visit_id == 0)
-        t1_records = tuple(record for record in intersected if record.visit_id == 1)
-        if not t0_records or not t1_records:
-            continue
-        t0_record, t0_margin = _query_rank(t0_records)
-        t1_record, t1_margin = _query_rank(t1_records)
-        t0_qualified = (
-            t0_record.entity_token_coverage
-            >= projection_config.minimum_entity_token_coverage
-            or t0_record.source_point_coverage
-            >= projection_config.minimum_source_point_coverage
-        )
-        t1_qualified = (
-            t1_record.entity_token_coverage
-            >= projection_config.minimum_entity_token_coverage
-            or t1_record.source_point_coverage
-            >= projection_config.minimum_source_point_coverage
-        )
-        reasons: set[str] = set()
-        if not t0_qualified:
-            reasons.add("insufficient_t0_coverage")
-        if not t1_qualified:
-            reasons.add("insufficient_t1_coverage")
-        competition_margin = min(t0_margin, t1_margin)
-        if competition_margin < minimum_competition_margin:
-            reasons.add("ambiguous_query_competition")
-        query_score = float(evidence.query_scores[query_index])
-        if query_score < minimum_query_score:
-            reasons.add("below_query_score")
-        accepted = not reasons
-        t0_rows = _query_source_rows(
-            pair,
-            evidence.query_masks[query_index],
-            visit_id=0,
-            entity_id=t0_record.entity_id,
-            local_rows=local_rows,
-        )
-        t1_rows = _query_source_rows(
-            pair,
-            evidence.query_masks[query_index],
-            visit_id=1,
-            entity_id=t1_record.entity_id,
-            local_rows=local_rows,
-        )
-        t0_owner = _owner_id(t0_record.entity_id)
-        t1_owner = _owner_id(t1_record.entity_id)
-        output.append(
-            RelationSupport(
-                relation_id=(
-                    f"{relation_source}:{pair_identity}:{query_id}:"
-                    f"{t0_owner}:{t1_owner}"
-                ),
-                relation_source=relation_source,
-                stable_entity_id=(
-                    f"stable:{relation_source}:{pair_identity}:{query_id}"
-                ),
-                t0_owner_entity_id=t0_owner,
-                t1_owner_entity_id=t1_owner,
-                t0_source_surface_id=f"ovi-map:{pair.source_visit_map_sha256[0]}",
-                t1_source_surface_id=f"ovi-map:{pair.source_visit_map_sha256[1]}",
-                t0_source_vertex_indices=t0_rows,
-                t1_source_vertex_indices=t1_rows,
-                confidence=min(
-                    query_score,
-                    _coverage(t0_record),
-                    _coverage(t1_record),
-                ),
-                inference_state=RelationInferenceState.UNRESOLVED,
-                accepted=accepted,
-                t0_entity_id=t0_record.entity_id,
-                t1_entity_id=t1_record.entity_id,
-                assignment_is_null=not accepted,
-                assignment_margin=competition_margin,
-                t0_mask_coverage=_coverage(t0_record),
-                t1_mask_coverage=_coverage(t1_record),
-                t0_mask_purity=t0_record.query_mask_fraction,
-                t1_mask_purity=t1_record.query_mask_fraction,
-                competition_margin=competition_margin,
-                rejection_reasons=tuple(sorted(reasons)),
-            )
-        )
-    return _enforce_one_to_one(tuple(output))
+    if relation_source != "frozen-rescene":
+        raise ValueError("strict query projection relation_source must be frozen-rescene")
+    return project_queries_to_relation_support(
+        pair,
+        evidence,
+        minimum_source_coverage=projection_config.minimum_source_point_coverage,
+        minimum_competition_margin=minimum_competition_margin,
+        minimum_query_confidence=minimum_query_score,
+    )
 
 
 __all__ = [
