@@ -220,7 +220,7 @@ def test_entity_epoch_action_metrics_report_rows_voxels_and_denominators() -> No
     assert metrics.free_conflict_source_rows == 2
     assert metrics.free_conflict_unique_voxels == 2
     assert metrics.deleted_supported_rate.numerator == 1
-    assert metrics.deleted_supported_rate.denominator == 3
+    assert metrics.deleted_supported_rate.denominator == 2
     assert metrics.bad_recovery_rate.numerator == 1
     assert metrics.bad_recovery_rate.denominator == 2
     assert metrics.free_conflict_rate.numerator == 2

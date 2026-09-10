@@ -412,7 +412,10 @@ def evaluate_entity_epoch_actions(
         sidecar.action_reasons == SurfaceActionReason.LOCAL_POSITIVE_CORRECTION.value
     )
     deleted_supported = (
-        t0_mask & ~surface.current_valid & evaluation_support.current_gt_supported_mask
+        t0_mask
+        & sidecar.current_valid_before
+        & ~surface.current_valid
+        & evaluation_support.current_gt_supported_mask
     )
     bad_recovery = (
         recovered & surface.current_valid & evaluation_support.confirmed_free_mask
@@ -424,7 +427,11 @@ def evaluate_entity_epoch_actions(
         & ~evaluation_support.t1_surface_covered_mask
     )
     free_conflict = surface.current_valid & evaluation_support.confirmed_free_mask
-    supported_t0 = t0_mask & evaluation_support.current_gt_supported_mask
+    supported_t0 = (
+        t0_mask
+        & sidecar.current_valid_before
+        & evaluation_support.current_gt_supported_mask
+    )
     new_coverage_opportunity = (
         t0_mask
         & evaluation_support.current_gt_supported_mask

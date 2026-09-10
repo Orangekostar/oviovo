@@ -1,0 +1,136 @@
+{
+  "schema_version": 2,
+  "protocol_id": "CROVE_ENTITY_EPOCH_DYNAMICS_V2",
+  "run_root": "$HOME/oviovo_baseline_runs/20260910_crove_entity_epoch_v2",
+  "compact_output_root": "configs/evaluation/results/crove_entity_epoch_v2",
+  "selection_gates": {
+    "maximum_ghost": 0.02,
+    "minimum_surface_precision_at_5cm": 0.7244127781521915,
+    "maximum_deleted_supported_rate": 0.02
+  },
+  "state_update": {
+    "minimum_absent_observations": 2,
+    "minimum_distinct_absent_viewpoints": 2,
+    "minimum_positive_observations": 2,
+    "evidence_is_new_measurement": true
+  },
+  "state_evidence": {
+    "frame_stride": 8,
+    "point_batch_size": 250000,
+    "depth_tolerance_m": 0.05,
+    "depth_max_m": 10.0,
+    "minimum_viewpoint_baseline_m": 0.25,
+    "maximum_distinct_viewpoints": 6,
+    "minimum_rgb_neighbours": 5,
+    "rgb_edge_range_factor": 2.0
+  },
+  "evaluation_visibility": {
+    "voxel_size_m": 0.05,
+    "depth_tolerance_m": 0.1,
+    "depth_max_m": 10.0,
+    "minimum_absent_fraction": 0.8,
+    "minimum_absent_observations": 6,
+    "minimum_distinct_viewpoints": 3,
+    "minimum_viewpoint_baseline_m": 0.25
+  },
+  "g1": {
+    "maximum_registration_candidates_per_entity": 1,
+    "registration_config": {
+      "maximum_sample_points": 1000,
+      "maximum_iterations": 15
+    }
+  },
+  "rescene_projection": {
+    "minimum_source_coverage": 0.25,
+    "minimum_competition_margin": 0.08,
+    "minimum_query_confidence": 0.0
+  },
+  "memory": {
+    "minimum_cosine": 0.8,
+    "minimum_margin": 0.05,
+    "feature_space_id": "rescene-query-response-v1",
+    "projection_version": "source-ovi-owner-v1"
+  },
+  "hypotheses": [
+    {"config_id": "H0_T1", "variant_id": "D0_T1"},
+    {"config_id": "H1_B3", "variant_id": "D1_B3"},
+    {"config_id": "H2_INHERIT", "variant_id": "D2_INHERIT"},
+    {"config_id": "H3_GEOM", "variant_id": "D3_GEOM"},
+    {"config_id": "H4_RESCENE_ID", "variant_id": "D4_RESCENE_ID_ONLY"},
+    {"config_id": "H5_RESCENE_EPOCH", "variant_id": "D5_RESCENE_EPOCH"},
+    {"config_id": "H6_MEMORY_LAST", "variant_id": "D6_MEMORY_EPOCH", "memory_mode": "last_prototype"},
+    {"config_id": "H7_MEMORY_BANK", "variant_id": "D6_MEMORY_EPOCH", "memory_mode": "multiview_bank"}
+  ],
+  "splits": {
+    "dev": {
+      "maximum_additional_pairs": 0,
+      "pairs": [
+        {
+          "pair_id": "apartment-t0-000766-001021-t1-001217-001472",
+          "scene": "apartment",
+          "fixed": true,
+          "event_type": "object_relocation",
+          "visibility_coverage": 0.9926033905625742,
+          "visit_frame_ranges": {"t0": [766, 1021], "t1": [1217, 1472]},
+          "t1_owner_offset": 1000000,
+          "current_map_root": "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/apartment_two_visit_full_v1/current_map",
+          "b0_entities": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/apartment-b0-b6-entity-lift-96ba693/B0/current-map/entities/1472.000000_current.jsonl",
+          "b2_entities": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/apartment-b0-b6-entity-lift-96ba693/B2/current-map/entities/1472.000000_current.jsonl",
+          "b3_provenance": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/apartment-b0-b6-entity-lift-96ba693/B3/current-map/provenance.jsonl",
+          "two_visit_protocol": "configs/evaluation/tesse_two_visit_current_v1.json",
+          "causal_schedule": "configs/evaluation/manifests/tesse_cd_causal_schedule_v2.json",
+          "common_v2_target_manifest": "$HOME/oviovo_benchmark_assets/tesse_cd/derived/common_v2_targets/20260722-stage3-fb97-scope-a/manifest.json",
+          "semantic_aliases": "configs/evaluation/semantic_aliases/tesse_cd_common_v2.yaml",
+          "semantic_label_space": "$HOME/oviovo_benchmark_assets/tesse_cd/derived/common_v2_label_spaces/tesse_cd_apartment_label_space.yaml",
+          "rgbd_root": "$HOME/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1",
+          "rgbd_export_manifest": "$HOME/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/apartment/export_manifest.json",
+          "adapter_pair_root": "$HOME/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/apartment/supported-input/adapter_pair",
+          "query_evidence_manifest": "$HOME/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/apartment/native-b5/query_evidence.json",
+          "checkpoint": "$HOME/paper5/checkpoints/rescene4d_concerto_t2_repro.ckpt",
+          "required_inputs": {
+            "current_surface_manifest": "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/apartment_two_visit_full_v1/current_map/current_surface_manifest.json",
+            "current_surface_arrays": "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/apartment_two_visit_full_v1/current_map/current_surface.npz",
+            "b0_entities": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/apartment-b0-b6-entity-lift-96ba693/B0/current-map/entities/1472.000000_current.jsonl",
+            "b2_entities": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/apartment-b0-b6-entity-lift-96ba693/B2/current-map/entities/1472.000000_current.jsonl",
+            "b3_provenance": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/apartment-b0-b6-entity-lift-96ba693/B3/current-map/provenance.jsonl",
+            "two_visit_protocol": "configs/evaluation/tesse_two_visit_current_v1.json",
+            "causal_schedule": "configs/evaluation/manifests/tesse_cd_causal_schedule_v2.json",
+            "common_v2_target_manifest": "$HOME/oviovo_benchmark_assets/tesse_cd/derived/common_v2_targets/20260722-stage3-fb97-scope-a/manifest.json",
+            "semantic_aliases": "configs/evaluation/semantic_aliases/tesse_cd_common_v2.yaml",
+            "semantic_label_space": "$HOME/oviovo_benchmark_assets/tesse_cd/derived/common_v2_label_spaces/tesse_cd_apartment_label_space.yaml",
+            "rgbd_export_manifest": "$HOME/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/apartment/export_manifest.json",
+            "adapter_pair_manifest": "$HOME/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/apartment/supported-input/adapter_pair/manifest.json",
+            "query_evidence_manifest": "$HOME/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/apartment/native-b5/query_evidence.json",
+            "checkpoint": "$HOME/paper5/checkpoints/rescene4d_concerto_t2_repro.ckpt"
+          }
+        }
+      ]
+    },
+    "confirm": {
+      "pairs": [
+        {
+          "pair_id": "office-t0-002145-002400-t1-002446-002701",
+          "scene": "office",
+          "fixed": true,
+          "event_type": "object_relocation",
+          "visibility_coverage": 0.8128130217028381,
+          "required_inputs": {
+            "two_visit_protocol": "configs/evaluation/tesse_two_visit_current_v1.json",
+            "causal_schedule": "configs/evaluation/manifests/tesse_cd_causal_schedule_v2.json",
+            "raw_database": "$HOME/oviovo_benchmark_assets/tesse_cd/inputs/ros2/tesse_cd_office/tesse_cd_office_ros2.db3",
+            "ground_truth_changes": "$HOME/oviovo_benchmark_assets/tesse_cd/ground_truth/office/gt_changes.csv",
+            "rgbd_export_manifest": "$HOME/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/office/export_manifest.json"
+          },
+          "raw_inputs": [
+            "$HOME/oviovo_benchmark_assets/tesse_cd/inputs/ros2/tesse_cd_office/tesse_cd_office_ros2.db3",
+            "$HOME/oviovo_benchmark_assets/tesse_cd/ground_truth/office/gt_changes.csv"
+          ],
+          "native_inputs": [
+            "$HOME/oviovo_baseline_runs/20260910_crove_entity_epoch_v2/confirm/native/office/t0/native_mapping_manifest.json",
+            "$HOME/oviovo_baseline_runs/20260910_crove_entity_epoch_v2/confirm/native/office/t1/native_mapping_manifest.json"
+          ]
+        }
+      ]
+    }
+  }
+}
