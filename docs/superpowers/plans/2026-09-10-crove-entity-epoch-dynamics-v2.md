@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.12, NumPy, SciPy `cKDTree`/assignment, pytest, existing OVI-MAP/TESSE/ReScene adapters, JSON/CSV/NPZ artifacts.
 
-**Spec:** `/home/ww/crove/docs/CODEX_CROVE_ENTITY_EPOCH_DYNAMICS_V2_ALL_IN_ONE.md`
+**Spec:** `$HOME/crove/docs/CODEX_CROVE_ENTITY_EPOCH_DYNAMICS_V2_ALL_IN_ONE.md`
 
 ## Global Constraints
 

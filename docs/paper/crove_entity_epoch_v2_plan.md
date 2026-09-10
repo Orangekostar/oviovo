@@ -92,3 +92,12 @@ When D2 only prevents V1-style state regression but does not beat B3, report `ST
 ## Deliverables
 
 Compact results live under `configs/evaluation/results/crove_entity_epoch_v2/`; full PLY/NPZ caches remain under `$HOME/oviovo_baseline_runs/20260910_crove_entity_epoch_v2/`. The result package contains selection, per-pair metrics, aggregate metrics, action attribution, relation diagnostics, state transitions, frozen selected configuration, Office result/attempt, real figures, model provenance, and a compact artifact index.
+
+## Execution Status
+
+- Code closure: complete for D0-D6, shared state updates, G1, source-bound ReScene, deterministic memory, attribution, I/O, and the prepare/run/summarize CLI.
+- DEV: complete on the frozen Apartment pair for eight hypothesis rows. The selected row is `H1_B3 / D1_B3`.
+- Learned evidence: one exact pair-bound ReScene forward was reused; no model training was performed.
+- Multiview memory: the executable bank path was tested, but the real input provides only one final OVI observation, so `H7_MEMORY_BANK` is not evidence for a real multiview gain.
+- CONFIRM: attempted without retuning and recorded as `RAW_MISSING` because the frozen Office database, change labels, and RGB-D export manifest are absent.
+- Scientific outcome: `STATE_CORRECTNESS_REPAIRED_NO_MAP_GAIN`.
