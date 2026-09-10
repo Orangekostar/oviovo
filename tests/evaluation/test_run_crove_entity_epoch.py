@@ -9,6 +9,7 @@ import pytest
 from scripts.evaluation.run_crove_entity_epoch import (
     ORDERED_VARIANTS,
     REPO_ROOT,
+    _confirmation_hypotheses,
     _portableize_paths,
     _read_metric_rows,
     adapt_relations_to_backbone,
@@ -210,10 +211,24 @@ def test_confirmation_run_records_missing_assets_without_executing_variants(
         "run_root": str(run_root),
         "compact_output_root": str(tmp_path / "compact"),
         "splits": {"confirm": {"pairs": [{"pair_id": "office-pair"}]}},
-        "hypotheses": [],
+        "hypotheses": [
+            {"config_id": "H0_T1", "variant_id": "D0_T1"},
+            {"config_id": "H1_B3", "variant_id": "D1_B3"},
+            {"config_id": "H3_GEOM", "variant_id": "D3_GEOM"},
+        ],
     }
 
-    records = run(config, split="confirm", variants=None)
+    records = run(
+        config,
+        split="confirm",
+        variants=None,
+        frozen_selection={
+            "schema_version": 1,
+            "status": "DEV_SELECTED",
+            "config_id": "H1_B3",
+            "variant_id": "D1_B3",
+        },
+    )
 
     assert records == []
     run_index = json.loads(
@@ -228,6 +243,42 @@ def test_confirmation_run_records_missing_assets_without_executing_variants(
             "missing_paths": ["/missing/office.db3"],
         }
     ]
+
+
+def test_confirmation_hypotheses_bind_fixed_controls_and_exact_dev_winner() -> None:
+    config = {
+        "hypotheses": [
+            {"config_id": "H0_T1", "variant_id": "D0_T1"},
+            {"config_id": "H1_B3", "variant_id": "D1_B3"},
+            {"config_id": "H3_GEOM", "variant_id": "D3_GEOM"},
+            {"config_id": "H5_RESCENE", "variant_id": "D5_RESCENE_EPOCH"},
+            {
+                "config_id": "H7_MEMORY_BANK",
+                "variant_id": "D6_MEMORY_EPOCH",
+                "memory_mode": "multiview_bank",
+            },
+        ]
+    }
+    selection = {
+        "schema_version": 1,
+        "status": "DEV_SELECTED",
+        "config_id": "H7_MEMORY_BANK",
+        "variant_id": "D6_MEMORY_EPOCH",
+    }
+
+    hypotheses = _confirmation_hypotheses(config, selection)
+
+    assert [row["config_id"] for row in hypotheses] == [
+        "H0_T1",
+        "H1_B3",
+        "H3_GEOM",
+        "H7_MEMORY_BANK",
+    ]
+    with pytest.raises(ValueError, match="does not match a configured hypothesis"):
+        _confirmation_hypotheses(
+            config,
+            {**selection, "variant_id": "D5_RESCENE_EPOCH"},
+        )
 
 
 def test_metric_reader_excludes_archived_runs_and_normalizes_legacy_d0_receipt(

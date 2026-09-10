@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -67,6 +68,23 @@ def test_render_publication_figure_writes_vector_preview_and_source_data(
     assert source["recovered_source_row_count"] == 1
     assert source["correct_recovery"] == {"denominator": 2, "numerator": 1}
     assert source["source_bindings"] == {"aggregate_metrics": "aggregate_metrics.json"}
+
+    first_hashes = {
+        path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in outputs
+    }
+    rerendered = render_publication_figure(
+        rows=rows,
+        xyz=xyz,
+        baseline_current_valid=baseline,
+        updated_current_valid=updated,
+        output_root=tmp_path,
+        source_bindings={"aggregate_metrics": "aggregate_metrics.json"},
+        correct_recovery_numerator=1,
+        correct_recovery_denominator=2,
+    )
+    assert first_hashes == {
+        path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in rerendered
+    }
 
     index = write_compact_artifact_index(tmp_path)
     assert index["artifact_count"] == 4

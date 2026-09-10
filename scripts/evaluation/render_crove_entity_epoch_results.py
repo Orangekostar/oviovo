@@ -145,6 +145,7 @@ def render_publication_figure(
             "xtick.labelsize": 7,
             "ytick.labelsize": 7,
             "svg.fonttype": "none",
+            "svg.hashsalt": "crove-entity-epoch-dynamics-v2",
             "pdf.fonttype": 42,
         }
     )
@@ -291,9 +292,24 @@ def render_publication_figure(
     _write_json(source_path, source_payload)
     outputs = [source_path]
     for suffix, options in (
-        (".png", {"dpi": 300}),
-        (".pdf", {}),
-        (".svg", {}),
+        (
+            ".png",
+            {"dpi": 300, "metadata": {"Software": "CROVE figure renderer"}},
+        ),
+        (
+            ".pdf",
+            {
+                "metadata": {
+                    "Creator": "CROVE figure renderer",
+                    "CreationDate": None,
+                    "ModDate": None,
+                }
+            },
+        ),
+        (
+            ".svg",
+            {"metadata": {"Creator": "CROVE figure renderer", "Date": None}},
+        ),
     ):
         path = stem.with_suffix(suffix)
         figure.savefig(path, bbox_inches="tight", facecolor="white", **options)

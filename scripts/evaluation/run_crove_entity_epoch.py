@@ -1043,13 +1043,53 @@ def execute_real_variant(
     return metrics
 
 
+def _confirmation_hypotheses(
+    config: Mapping[str, object], selection: Mapping[str, object]
+) -> list[Mapping[str, object]]:
+    if (
+        selection.get("schema_version") != 1
+        or selection.get("status") != "DEV_SELECTED"
+        or not isinstance(selection.get("config_id"), str)
+        or not isinstance(selection.get("variant_id"), str)
+    ):
+        raise ValueError("confirmation selection is not a frozen DEV selection")
+    hypotheses = config.get("hypotheses")
+    if not isinstance(hypotheses, list):
+        raise TypeError("configured hypotheses must be a list")
+    by_config: dict[str, Mapping[str, object]] = {}
+    for raw in hypotheses:
+        if not isinstance(raw, Mapping) or not isinstance(raw.get("config_id"), str):
+            raise TypeError("configured hypothesis is invalid")
+        config_id = str(raw["config_id"])
+        if config_id in by_config:
+            raise ValueError("configured hypothesis IDs must be unique")
+        by_config[config_id] = raw
+    winner = by_config.get(str(selection["config_id"]))
+    if winner is None or winner.get("variant_id") != selection["variant_id"]:
+        raise ValueError("frozen DEV selection does not match a configured hypothesis")
+    required_ids = ["H0_T1", "H1_B3", "H3_GEOM"]
+    missing = [config_id for config_id in required_ids if config_id not in by_config]
+    if missing:
+        raise ValueError(f"confirmation controls are missing: {missing}")
+    if str(selection["config_id"]) not in required_ids:
+        required_ids.append(str(selection["config_id"]))
+    return [by_config[config_id] for config_id in required_ids]
+
+
 def run(
-    config: Mapping[str, object], *, split: str, variants: Sequence[str] | None
+    config: Mapping[str, object],
+    *,
+    split: str,
+    variants: Sequence[str] | None,
+    frozen_selection: Mapping[str, object] | None = None,
 ) -> list[dict[str, object]]:
     run_root, _ = _configured_roots(config)
     split_root = run_root / split
     selection = _load_json(split_root / "input_selection.json")
     if split == "confirm":
+        if frozen_selection is None:
+            raise ValueError("confirmation execution requires a frozen DEV selection")
+        confirmation_hypotheses = _confirmation_hypotheses(config, frozen_selection)
         attempts = selection.get("pairs")
         if not isinstance(attempts, list) or not attempts:
             raise ValueError("confirmation input selection has no asset attempts")
@@ -1068,10 +1108,16 @@ def run(
     selected_ids = tuple(str(value) for value in selection["selected_pair_ids"])
     raw_pairs = config["splits"][split]["pairs"]
     pair_by_id = {str(pair["pair_id"]): pair for pair in raw_pairs}
-    requested = set(ORDERED_VARIANTS[:-1] if variants is None else variants)
-    hypotheses = [
-        row for row in config["hypotheses"] if str(row["variant_id"]) in requested
-    ]
+    if split == "confirm":
+        hypotheses = confirmation_hypotheses
+        expected_variants = {str(row["variant_id"]) for row in hypotheses}
+        if variants is not None and set(variants) != expected_variants:
+            raise ValueError("confirmation variants must match the frozen controls")
+    else:
+        requested = set(ORDERED_VARIANTS[:-1] if variants is None else variants)
+        hypotheses = [
+            row for row in config["hypotheses"] if str(row["variant_id"]) in requested
+        ]
     if not hypotheses:
         raise ValueError("no hypothesis matches the requested variants")
     records = []
@@ -1513,13 +1559,21 @@ def _read_metric_rows(
     return rows
 
 
-def summarize(config: Mapping[str, object], *, split: str) -> dict[str, object]:
+def summarize(
+    config: Mapping[str, object],
+    *,
+    split: str,
+    frozen_selection: Mapping[str, object] | None = None,
+) -> dict[str, object]:
     run_root, compact_root = _configured_roots(config)
     selection = _load_json(run_root / split / "input_selection.json")
     pair_ids = tuple(str(value) for value in selection["selected_pair_ids"])
     rows = _read_metric_rows(run_root / split / "pairs", pair_ids)
     compact_root.mkdir(parents=True, exist_ok=True)
     if split == "confirm":
+        if frozen_selection is None:
+            raise ValueError("confirmation summary requires a frozen DEV selection")
+        _confirmation_hypotheses(config, frozen_selection)
         confirmation = {
             "schema_version": 1,
             "status": (
@@ -1531,6 +1585,7 @@ def summarize(config: Mapping[str, object], *, split: str) -> dict[str, object]:
             "rows": rows,
             "asset_attempts": selection["pairs"],
             "office_threshold_retuning_allowed": False,
+            "frozen_development_selection": dict(frozen_selection),
             "attempted_command": (
                 "python scripts/evaluation/run_crove_entity_epoch.py --config "
                 "configs/evaluation/crove_entity_epoch_v2.json --phase run "
@@ -1611,12 +1666,24 @@ def main(argv: Sequence[str] | None = None) -> int:
     config = _load_json(args.config)
     if config.get("schema_version") != 2:
         raise ValueError("entity-episode config schema_version must be 2")
+    frozen_selection = _load_json(args.selection) if args.split == "confirm" else None
     if args.phase == "prepare":
+        if frozen_selection is not None:
+            _confirmation_hypotheses(config, frozen_selection)
         prepare(config, split=args.split)
     elif args.phase == "summarize":
-        summarize(config, split=args.split)
+        summarize(
+            config,
+            split=args.split,
+            frozen_selection=frozen_selection,
+        )
     else:
-        run(config, split=args.split, variants=args.variants)
+        run(
+            config,
+            split=args.split,
+            variants=args.variants,
+            frozen_selection=frozen_selection,
+        )
     return 0
 
 
