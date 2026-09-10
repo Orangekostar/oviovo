@@ -31,6 +31,8 @@ class FineSurfaceEvidence:
     occluded_observations: np.ndarray
     distinct_absent_viewpoints: np.ndarray
     last_supported_frames: np.ndarray
+    last_absent_frames: np.ndarray | None = None
+    last_occluded_frames: np.ndarray | None = None
 
     def __post_init__(self) -> None:
         dtypes = {
@@ -40,15 +42,27 @@ class FineSurfaceEvidence:
             "distinct_absent_viewpoints": np.uint8,
             "last_supported_frames": np.int32,
         }
-        for field in fields(self):
+        for field in fields(self)[:5]:
             object.__setattr__(
                 self, field.name, _immutable(getattr(self, field.name), dtypes[field.name])
             )
         count = len(self.present_observations)
+        for name in ("last_absent_frames", "last_occluded_frames"):
+            raw = getattr(self, name)
+            value = (
+                np.full(count, -1, dtype=np.int32)
+                if raw is None
+                else _immutable(raw, np.int32)
+            )
+            object.__setattr__(self, name, _immutable(value, np.int32))
         if any(getattr(self, field.name).shape != (count,) for field in fields(self)):
             raise ValueError("fine-surface evidence arrays must have equal one-dimensional shape")
         if np.any(self.last_supported_frames < -1):
             raise ValueError("last_supported_frames cannot be below -1")
+        if np.any(self.last_absent_frames < -1) or np.any(
+            self.last_occluded_frames < -1
+        ):
+            raise ValueError("evidence frame IDs cannot be below -1")
         if np.any(self.distinct_absent_viewpoints > self.visible_absent_observations):
             raise ValueError("distinct absent viewpoints cannot exceed absent observations")
 
@@ -191,6 +205,8 @@ def observe_fine_surface(
     occluded = np.zeros(count, dtype=np.uint16)
     viewpoint_count = np.zeros(count, dtype=np.uint8)
     last_supported = np.full(count, -1, dtype=np.int32)
+    last_absent = np.full(count, -1, dtype=np.int32)
+    last_occluded = np.full(count, -1, dtype=np.int32)
     observed_rgb = np.zeros((count, 3), dtype=np.uint8)
     best_residual = np.full(count, np.inf, dtype=np.float32)
 
@@ -206,6 +222,8 @@ def observe_fine_surface(
             (size, config.maximum_distinct_viewpoints, 3), dtype=np.float64
         )
         batch_last_supported = np.full(size, -1, dtype=np.int32)
+        batch_last_absent = np.full(size, -1, dtype=np.int32)
+        batch_last_occluded = np.full(size, -1, dtype=np.int32)
         batch_rgb = np.zeros((size, 3), dtype=np.uint8)
         batch_best_residual = np.full(size, np.inf, dtype=np.float32)
 
@@ -238,6 +256,8 @@ def observe_fine_surface(
                 _increment(batch_absent, absent_indices)
                 _increment(batch_occluded, occluded_indices)
                 batch_last_supported[present_indices] = frame.frame_id
+                batch_last_absent[absent_indices] = frame.frame_id
+                batch_last_occluded[occluded_indices] = frame.frame_id
 
                 if len(absent_indices):
                     camera = np.asarray(frame.pose, dtype=np.float64)[:3, 3]
@@ -287,6 +307,8 @@ def observe_fine_surface(
         occluded[start:stop] = batch_occluded.astype(np.uint16)
         viewpoint_count[start:stop] = batch_viewpoint_count
         last_supported[start:stop] = batch_last_supported
+        last_absent[start:stop] = batch_last_absent
+        last_occluded[start:stop] = batch_last_occluded
         observed_rgb[start:stop] = batch_rgb
         best_residual[start:stop] = batch_best_residual
 
@@ -296,6 +318,8 @@ def observe_fine_surface(
         occluded_observations=occluded,
         distinct_absent_viewpoints=viewpoint_count,
         last_supported_frames=last_supported,
+        last_absent_frames=last_absent,
+        last_occluded_frames=last_occluded,
     )
     return FineSurfaceObservation(
         evidence=evidence,

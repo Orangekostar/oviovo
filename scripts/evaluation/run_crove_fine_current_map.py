@@ -516,6 +516,8 @@ def _observe_rows(
             occluded_observations=evidence.occluded_observations[inverse],
             distinct_absent_viewpoints=evidence.distinct_absent_viewpoints[inverse],
             last_supported_frames=evidence.last_supported_frames[inverse],
+            last_absent_frames=evidence.last_absent_frames[inverse],
+            last_occluded_frames=evidence.last_occluded_frames[inverse],
         ),
         observed_rgb_uint8=unique_observation.observed_rgb_uint8[inverse],
         rgb_valid=unique_observation.rgb_valid[inverse],

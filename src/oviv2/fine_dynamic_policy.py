@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 from enum import IntEnum
 from pathlib import Path
@@ -11,6 +11,7 @@ from types import MappingProxyType
 
 import numpy as np
 
+from src.oviv2.current_surface import CurrentEvidenceState
 from src.oviv2.fine_surface_validity import (
     FineSurfaceEvidence,
     FineSurfaceObservation,
@@ -22,6 +23,14 @@ class CoarseSurfaceState(IntEnum):
     RETAINED_UNOBSERVED = 2
     REPLACED_OCCUPIED = 3
     VISIBLE_FREE_CANDIDATE = 4
+
+
+class SurfaceRetirementReason(IntEnum):
+    NONE = 0
+    DIRECT_FREE = 1
+    COARSE_NEIGHBORHOOD = 2
+    ENTITY_LIFT = 3
+    REPLACED = 4
 
 
 _DECISION_STATES = {
@@ -73,6 +82,38 @@ class FineSurfacePolicy:
         object.__setattr__(self, "counts", MappingProxyType(counts))
 
 
+@dataclass(frozen=True, slots=True)
+class PriorSurfaceState:
+    current_valid: np.ndarray
+    retirement_reason_codes: np.ndarray
+    evidence_state_codes: np.ndarray
+
+    def __post_init__(self) -> None:
+        current = np.array(self.current_valid, dtype=np.bool_, copy=True, order="C")
+        reasons = np.array(
+            self.retirement_reason_codes, dtype=np.uint8, copy=True, order="C"
+        )
+        states = np.array(
+            self.evidence_state_codes, dtype=np.uint8, copy=True, order="C"
+        )
+        if reasons.shape != current.shape or states.shape != current.shape or current.ndim != 1:
+            raise ValueError("prior surface arrays must have equal one-dimensional shape")
+        allowed_reasons = {int(value) for value in SurfaceRetirementReason}
+        allowed_states = {int(value) for value in CurrentEvidenceState}
+        if not {int(value) for value in np.unique(reasons)} <= allowed_reasons:
+            raise ValueError("prior surface contains an unknown retirement reason")
+        if not {int(value) for value in np.unique(states)} <= allowed_states:
+            raise ValueError("prior surface contains an unknown evidence state")
+        if np.any(current != (reasons == int(SurfaceRetirementReason.NONE))):
+            raise ValueError("prior validity and retirement reasons disagree")
+        current.setflags(write=False)
+        reasons.setflags(write=False)
+        states.setflags(write=False)
+        object.__setattr__(self, "current_valid", current)
+        object.__setattr__(self, "retirement_reason_codes", reasons)
+        object.__setattr__(self, "evidence_state_codes", states)
+
+
 def _source_owner_id(value: object) -> int:
     if value == "__background__":
         return 0
@@ -104,12 +145,10 @@ def _state(decision: Mapping[str, object]) -> CoarseSurfaceState:
         ) from error
 
 
-def load_b3_surface_policy(
+def _provenance_assignments(
     provenance_path: str | Path,
     source_owner_ids: np.ndarray,
-) -> FineSurfacePolicy:
-    """Map entity-local B3 source indices back to native t0 PLY row order."""
-
+) -> Iterator[tuple[np.ndarray, Mapping[str, object]]]:
     owners = np.asarray(source_owner_ids)
     if owners.ndim != 1 or owners.dtype.kind not in "iu" or np.any(owners < 0):
         raise ValueError("source_owner_ids must be a nonnegative integer vector")
@@ -120,17 +159,13 @@ def load_b3_surface_policy(
         raise FileNotFoundError(path)
 
     order = np.argsort(owners, kind="stable")
-    sorted_owners = owners[order]
     unique, starts, owner_counts = np.unique(
-        sorted_owners, return_index=True, return_counts=True
+        owners[order], return_index=True, return_counts=True
     )
     owner_spans = {
         int(owner_id): (int(start), int(count))
-        for owner_id, start, count in zip(
-            unique, starts, owner_counts, strict=True
-        )
+        for owner_id, start, count in zip(unique, starts, owner_counts, strict=True)
     }
-    states = np.zeros(len(owners), dtype=np.uint8)
     with path.open("r", encoding="utf-8") as stream:
         for line_number, line in enumerate(stream, start=1):
             try:
@@ -151,18 +186,14 @@ def load_b3_surface_policy(
                 raise ValueError(f"invalid B3 source visit at line {line_number}")
             owner_id = _source_owner_id(decision.get("source_entity_id"))
             if owner_id not in owner_spans:
-                raise ValueError(
-                    f"B3 provenance references absent owner {owner_id}"
-                )
+                raise ValueError(f"B3 provenance references absent owner {owner_id}")
             raw_indices = np.asarray(payload.get("source_point_indices"))
             if (
                 raw_indices.ndim != 1
                 or not len(raw_indices)
                 or raw_indices.dtype.kind not in "iu"
             ):
-                raise ValueError(
-                    f"B3 source indices are invalid at line {line_number}"
-                )
+                raise ValueError(f"B3 source indices are invalid at line {line_number}")
             local = raw_indices.astype(np.int64, copy=False)
             start, count = owner_spans[owner_id]
             if (
@@ -173,10 +204,23 @@ def load_b3_surface_policy(
                 raise ValueError(
                     f"B3 source indices are out of range or unordered at line {line_number}"
                 )
-            global_rows = order[start + local]
-            if np.any(states[global_rows] != 0):
-                raise ValueError("a t0 native row is assigned more than once")
-            states[global_rows] = int(_state(decision))
+            yield order[start + local], decision
+
+
+def load_b3_surface_policy(
+    provenance_path: str | Path,
+    source_owner_ids: np.ndarray,
+) -> FineSurfacePolicy:
+    """Map entity-local B3 source indices back to native t0 PLY row order."""
+
+    owners = np.asarray(source_owner_ids)
+    states = np.zeros(len(owners), dtype=np.uint8)
+    for global_rows, decision in _provenance_assignments(
+        provenance_path, source_owner_ids
+    ):
+        if np.any(states[global_rows] != 0):
+            raise ValueError("a t0 native row is assigned more than once")
+        states[global_rows] = int(_state(decision))
     if np.any(states == 0):
         raise ValueError("B3 provenance must cover every t0 native row")
     counts = {
@@ -194,6 +238,48 @@ def load_b3_surface_policy(
         ),
     }
     return FineSurfacePolicy(states=states, counts=counts)
+
+
+def load_b3_prior_surface_state(
+    provenance_path: str | Path,
+    source_owner_ids: np.ndarray,
+) -> PriorSurfaceState:
+    """Recover B3 validity and retirement reasons in native t0 row order."""
+
+    owners = np.asarray(source_owner_ids)
+    reasons = np.full(len(owners), 255, dtype=np.uint8)
+    states = np.zeros(len(owners), dtype=np.uint8)
+    for global_rows, decision in _provenance_assignments(
+        provenance_path, source_owner_ids
+    ):
+        if np.any(reasons[global_rows] != 255):
+            raise ValueError("a t0 native row is assigned more than once")
+        coarse_state = _state(decision)
+        action = str(decision.get("decision"))
+        if coarse_state == CoarseSurfaceState.RETAINED_OCCLUDED:
+            reason = SurfaceRetirementReason.NONE
+            evidence_state = CurrentEvidenceState.HISTORICAL_OCCLUDED
+        elif coarse_state == CoarseSurfaceState.RETAINED_UNOBSERVED:
+            reason = SurfaceRetirementReason.NONE
+            evidence_state = CurrentEvidenceState.HISTORICAL_UNOBSERVED
+        elif coarse_state == CoarseSurfaceState.REPLACED_OCCUPIED:
+            reason = SurfaceRetirementReason.REPLACED
+            evidence_state = CurrentEvidenceState.REPLACED_BY_CURRENT
+        elif action == "suppress_t0_entity_visible_free":
+            reason = SurfaceRetirementReason.ENTITY_LIFT
+            evidence_state = CurrentEvidenceState.REVOKED_VISIBLE_FREE
+        else:
+            reason = SurfaceRetirementReason.DIRECT_FREE
+            evidence_state = CurrentEvidenceState.REVOKED_VISIBLE_FREE
+        reasons[global_rows] = int(reason)
+        states[global_rows] = int(evidence_state)
+    if np.any(reasons == 255):
+        raise ValueError("B3 provenance must cover every t0 native row")
+    return PriorSurfaceState(
+        current_valid=reasons == int(SurfaceRetirementReason.NONE),
+        retirement_reason_codes=reasons,
+        evidence_state_codes=states,
+    )
 
 
 def assemble_fine_surface_evidence(
@@ -237,18 +323,27 @@ def assemble_fine_surface_evidence(
     supported = np.array(last, dtype=np.int32, copy=True)
     candidate_supported = candidate_evidence.last_supported_frames
     supported[rows] = np.maximum(supported[rows], candidate_supported)
+    last_absent = np.full(count, -1, dtype=np.int32)
+    last_occluded = np.full(count, -1, dtype=np.int32)
+    last_absent[rows] = candidate_evidence.last_absent_frames
+    last_occluded[rows] = candidate_evidence.last_occluded_frames
     return FineSurfaceEvidence(
         present_observations=present,
         visible_absent_observations=absent,
         occluded_observations=occluded,
         distinct_absent_viewpoints=distinct,
         last_supported_frames=supported,
+        last_absent_frames=last_absent,
+        last_occluded_frames=last_occluded,
     )
 
 
 __all__ = [
     "CoarseSurfaceState",
     "FineSurfacePolicy",
+    "PriorSurfaceState",
+    "SurfaceRetirementReason",
     "assemble_fine_surface_evidence",
+    "load_b3_prior_surface_state",
     "load_b3_surface_policy",
 ]

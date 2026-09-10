@@ -6,6 +6,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from src.oviv2 import fine_dynamic_policy
+from src.oviv2.current_surface import CurrentEvidenceState
 from src.oviv2.fine_dynamic_policy import (
     CoarseSurfaceState,
     assemble_fine_surface_evidence,
@@ -101,6 +103,63 @@ def test_b3_policy_maps_entity_local_indices_back_to_native_rows(tmp_path: Path)
     }
 
 
+def test_b3_prior_preserves_direct_free_entity_lift_and_replaced_reasons(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "provenance.jsonl"
+    _write_records(
+        path,
+        [
+            _record(
+                owner="ovimap:1",
+                source_indices=[0],
+                decision="suppress_t0_visible_free",
+                visibility="visible_free",
+            ),
+            _record(
+                owner="ovimap:1",
+                source_indices=[1],
+                decision="suppress_t0_entity_visible_free",
+                visibility="occluded",
+            ),
+            _record(
+                owner="ovimap:2",
+                source_indices=[0],
+                decision="suppress_t0_occupied_by_t1",
+                visibility="occupied",
+            ),
+            _record(
+                owner="__background__",
+                source_indices=[0],
+                decision="retain_t0_unobserved",
+                visibility="unobserved",
+            ),
+        ],
+    )
+
+    prior = fine_dynamic_policy.load_b3_prior_surface_state(
+        path,
+        np.asarray([1, 2, 1, 0], dtype=np.int64),
+    )
+
+    assert prior.current_valid.tolist() == [False, False, False, True]
+    assert prior.retirement_reason_codes.tolist() == [
+        fine_dynamic_policy.SurfaceRetirementReason.DIRECT_FREE,
+        fine_dynamic_policy.SurfaceRetirementReason.REPLACED,
+        fine_dynamic_policy.SurfaceRetirementReason.ENTITY_LIFT,
+        fine_dynamic_policy.SurfaceRetirementReason.NONE,
+    ]
+    assert prior.evidence_state_codes.tolist() == [
+        CurrentEvidenceState.REVOKED_VISIBLE_FREE,
+        CurrentEvidenceState.REPLACED_BY_CURRENT,
+        CurrentEvidenceState.REVOKED_VISIBLE_FREE,
+        CurrentEvidenceState.HISTORICAL_UNOBSERVED,
+    ]
+    assert not prior.current_valid.flags.writeable
+    assert not prior.retirement_reason_codes.flags.writeable
+    assert not prior.evidence_state_codes.flags.writeable
+
+
 def test_b3_policy_rejects_incomplete_or_duplicate_native_row_coverage(
     tmp_path: Path,
 ) -> None:
@@ -150,6 +209,8 @@ def test_fine_evidence_preserves_b3_states_and_refines_only_free_candidates() ->
             occluded_observations=np.asarray([0, 2], dtype=np.uint16),
             distinct_absent_viewpoints=np.asarray([2, 0], dtype=np.uint8),
             last_supported_frames=np.asarray([-1, 1400], dtype=np.int32),
+            last_absent_frames=np.asarray([1390, -1], dtype=np.int32),
+            last_occluded_frames=np.asarray([-1, 1395], dtype=np.int32),
         ),
         observed_rgb_uint8=np.zeros((2, 3), dtype=np.uint8),
         rgb_valid=np.asarray([False, True]),
@@ -170,3 +231,5 @@ def test_fine_evidence_preserves_b3_states_and_refines_only_free_candidates() ->
     assert evidence.occluded_observations.tolist() == [1, 0, 0, 0, 2]
     assert evidence.distinct_absent_viewpoints.tolist() == [0, 0, 0, 2, 0]
     assert evidence.last_supported_frames.tolist() == [900, 901, 902, 903, 1400]
+    assert evidence.last_absent_frames.tolist() == [-1, -1, -1, 1390, -1]
+    assert evidence.last_occluded_frames.tolist() == [-1, -1, -1, -1, 1395]

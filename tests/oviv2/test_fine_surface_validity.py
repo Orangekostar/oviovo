@@ -153,6 +153,8 @@ def test_fine_projection_accumulates_signed_evidence_and_camera_rgb() -> None:
     assert evidence.occluded_observations.tolist() == [0, 0, 2, 0]
     assert evidence.distinct_absent_viewpoints.tolist() == [0, 2, 0, 0]
     assert evidence.last_supported_frames.tolist() == [9, -1, -1, -1]
+    assert evidence.last_absent_frames.tolist() == [-1, 9, -1, -1]
+    assert evidence.last_occluded_frames.tolist() == [-1, -1, 9, -1]
     assert observation.rgb_valid.tolist() == [True, False, False, False]
     assert observation.observed_rgb_uint8.tolist() == [
         [11, 22, 33],
@@ -162,6 +164,21 @@ def test_fine_projection_accumulates_signed_evidence_and_camera_rgb() -> None:
     ]
     assert np.allclose(observation.best_rgb_depth_residual_m[0], 0.0)
     assert np.isinf(observation.best_rgb_depth_residual_m[1:]).all()
+
+
+def test_omitted_evidence_timestamps_default_to_immutable_unknown() -> None:
+    evidence = FineSurfaceEvidence(
+        present_observations=np.asarray([1, 0], dtype=np.uint16),
+        visible_absent_observations=np.asarray([0, 1], dtype=np.uint16),
+        occluded_observations=np.asarray([0, 0], dtype=np.uint16),
+        distinct_absent_viewpoints=np.asarray([0, 1], dtype=np.uint8),
+        last_supported_frames=np.asarray([7, -1], dtype=np.int32),
+    )
+
+    assert evidence.last_absent_frames.tolist() == [-1, -1]
+    assert evidence.last_occluded_frames.tolist() == [-1, -1]
+    assert not evidence.last_absent_frames.flags.writeable
+    assert not evidence.last_occluded_frames.flags.writeable
 
 
 def test_fine_projection_requires_geometrically_distinct_absent_views() -> None:

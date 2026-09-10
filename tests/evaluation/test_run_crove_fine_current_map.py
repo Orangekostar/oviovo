@@ -8,12 +8,15 @@ import numpy as np
 from scripts.evaluation.run_crove_fine_current_map import (
     _configured_path,
     _entity_records,
+    _observe_rows,
     _static_table_metric,
     _visit_owner_attributes,
     load_ovimap_semantic_mapping,
     select_dynamic_trial,
     select_static_semantic_strategy,
 )
+from src.core.data_structures import CameraIntrinsics, Frame
+from src.oviv2.fine_surface_validity import FineEvidenceProjectionConfig
 from src.oviv2.surface_semantics import SurfaceSemanticStrategy
 
 
@@ -142,3 +145,46 @@ def test_configured_path_expands_portable_home_reference(
 def test_static_table_metric_preserves_compound_metric_name() -> None:
     assert _static_table_metric("CROVE_FINE_ROOM0_DEV_F_MIOU") == "f_miou"
     assert _static_table_metric("CROVE_FINE_ROOM0_DEV_AP50") == "ap50"
+
+
+def test_observe_rows_preserves_signed_evidence_timestamps() -> None:
+    points = np.asarray(
+        [[0.0, 0.0, 1.0], [1.0, 0.0, 1.0], [-1.0, 0.0, 2.0]],
+        dtype=np.float32,
+    )
+    frames = []
+    for frame_id in (7, 9):
+        depth = np.zeros((5, 5), dtype=np.float32)
+        depth[2, 2] = 1.0
+        depth[2, 4] = 2.0
+        depth[2, 1] = 1.0
+        frames.append(
+            Frame(
+                frame_id=frame_id,
+                source_frame_id=frame_id,
+                rgb=np.zeros((5, 5, 3), dtype=np.uint8),
+                depth=depth,
+                pose=np.eye(4, dtype=np.float64),
+                intrinsics=CameraIntrinsics(
+                    fx=2.0,
+                    fy=2.0,
+                    cx=2.0,
+                    cy=2.0,
+                    width=5,
+                    height=5,
+                ),
+                timestamp=float(frame_id),
+            )
+        )
+
+    observation, _ = _observe_rows(
+        points,
+        np.arange(3, dtype=np.int64),
+        tuple(frames),
+        FineEvidenceProjectionConfig(minimum_rgb_neighbours=1),
+        point_batch_size=2,
+    )
+
+    assert observation.evidence.last_supported_frames.tolist() == [9, -1, -1]
+    assert observation.evidence.last_absent_frames.tolist() == [-1, 9, -1]
+    assert observation.evidence.last_occluded_frames.tolist() == [-1, -1, 9]
