@@ -72,6 +72,28 @@ class RelationSupport:
     transform_world_from_t0: np.ndarray | None = None
     t0_evidence_frame_ids: tuple[int, ...] = ()
     t1_evidence_frame_ids: tuple[int, ...] = ()
+    t0_entity_id: str | None = None
+    t1_entity_id: str | None = None
+    assignment_is_null: bool = False
+    assignment_margin: float | None = None
+    centered_shape_score: float | None = None
+    size_score: float | None = None
+    extent_score: float | None = None
+    registration_score: float | None = None
+    visible_support_score: float | None = None
+    appearance_cosine: float | None = None
+    appearance_feature_space: str | None = None
+    semantic_compatibility: float | None = None
+    original_location_iou: float | None = None
+    t0_mask_coverage: float | None = None
+    t1_mask_coverage: float | None = None
+    t0_mask_purity: float | None = None
+    t1_mask_purity: float | None = None
+    competition_margin: float | None = None
+    spatial_support_patch_count: int | None = None
+    residual_improvement_m: float | None = None
+    motion_rejection_reasons: tuple[str, ...] = ()
+    rejection_reasons: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         for name in (
@@ -109,6 +131,10 @@ class RelationSupport:
             raise TypeError("accepted must be boolean")
         if type(self.motion_verified) is not bool:
             raise TypeError("motion_verified must be boolean")
+        if type(self.assignment_is_null) is not bool:
+            raise TypeError("assignment_is_null must be boolean")
+        if self.accepted and self.assignment_is_null:
+            raise ValueError("accepted relation cannot be a null assignment")
         if self.accepted and (
             not len(self.t0_source_vertex_indices)
             or not len(self.t1_source_vertex_indices)
@@ -118,6 +144,12 @@ class RelationSupport:
         if transform is not None:
             transform = validate_rigid_transform(transform)
             object.__setattr__(self, "transform_world_from_t0", transform)
+        if (
+            self.accepted
+            and self.inference_state is RelationInferenceState.STATIC
+            and transform is None
+        ):
+            raise ValueError("accepted static relation requires a rigid transform")
         if self.motion_verified and (
             not self.accepted
             or self.inference_state is not RelationInferenceState.MOVED
@@ -132,6 +164,63 @@ class RelationSupport:
             ):
                 raise ValueError(f"{name} must be ordered unique nonnegative integers")
             object.__setattr__(self, name, values)
+        for name in ("t0_entity_id", "t1_entity_id", "appearance_feature_space"):
+            value = getattr(self, name)
+            if value is not None and (not isinstance(value, str) or not value.strip()):
+                raise ValueError(f"{name} must be non-empty when present")
+            if value is not None:
+                object.__setattr__(self, name, value.strip())
+        for name in (
+            "centered_shape_score",
+            "size_score",
+            "extent_score",
+            "registration_score",
+            "visible_support_score",
+            "semantic_compatibility",
+            "original_location_iou",
+            "t0_mask_coverage",
+            "t1_mask_coverage",
+            "t0_mask_purity",
+            "t1_mask_purity",
+        ):
+            value = getattr(self, name)
+            if value is not None:
+                number = float(value)
+                if not np.isfinite(number) or not 0.0 <= number <= 1.0:
+                    raise ValueError(f"{name} must be finite and in [0, 1]")
+                object.__setattr__(self, name, number)
+        if self.appearance_cosine is not None:
+            cosine = float(self.appearance_cosine)
+            if not np.isfinite(cosine) or not -1.0 <= cosine <= 1.0:
+                raise ValueError("appearance_cosine must be finite and in [-1, 1]")
+            object.__setattr__(self, "appearance_cosine", cosine)
+        for name in (
+            "assignment_margin",
+            "competition_margin",
+            "residual_improvement_m",
+        ):
+            value = getattr(self, name)
+            if value is not None:
+                number = float(value)
+                if not np.isfinite(number):
+                    raise ValueError(f"{name} must be finite when present")
+                object.__setattr__(self, name, number)
+        if self.spatial_support_patch_count is not None and (
+            type(self.spatial_support_patch_count) is not int
+            or self.spatial_support_patch_count < 0
+        ):
+            raise ValueError("spatial_support_patch_count must be nonnegative")
+        for name in ("motion_rejection_reasons", "rejection_reasons"):
+            reasons = tuple(getattr(self, name))
+            if any(
+                not isinstance(reason, str) or not reason.strip() for reason in reasons
+            ):
+                raise ValueError(f"{name} must contain non-empty strings")
+            if tuple(sorted(set(reasons))) != reasons:
+                raise ValueError(f"{name} must be ordered and unique")
+            object.__setattr__(self, name, reasons)
+        if self.accepted and self.rejection_reasons:
+            raise ValueError("accepted relation cannot contain rejection reasons")
 
 
 @dataclass(frozen=True, slots=True)

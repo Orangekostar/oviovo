@@ -182,7 +182,7 @@ def test_identity_reactivation_does_not_revive_retired_location() -> None:
         t0_source_vertex_indices=np.asarray([10], dtype=np.int64),
         t1_source_vertex_indices=np.asarray([40, 41], dtype=np.int64),
         confidence=0.94,
-        inference_state=entity_epoch_update.RelationInferenceState.STATIC,
+        inference_state=entity_epoch_update.RelationInferenceState.UNRESOLVED,
         accepted=True,
     )
     prior = _prior(
@@ -450,6 +450,26 @@ def test_motion_transform_must_be_proper_se3() -> None:
         )
 
 
+def test_accepted_static_relation_requires_verified_rigid_transform() -> None:
+    entity_epoch_update = importlib.import_module("src.oviv2.entity_epoch_update")
+
+    with pytest.raises(ValueError, match="accepted static relation requires"):
+        entity_epoch_update.RelationSupport(
+            relation_id="geometry:unverified-static",
+            relation_source="geometry",
+            stable_entity_id="stable:table-3",
+            t0_owner_entity_id=3,
+            t1_owner_entity_id=8,
+            t0_source_surface_id="ovi-t0",
+            t1_source_surface_id="ovi-t1",
+            t0_source_vertex_indices=np.asarray([4], dtype=np.int64),
+            t1_source_vertex_indices=np.asarray([14], dtype=np.int64),
+            confidence=0.91,
+            inference_state=entity_epoch_update.RelationInferenceState.STATIC,
+            accepted=True,
+        )
+
+
 def test_duplicate_accepted_relation_id_is_rejected() -> None:
     entity_epoch_update = importlib.import_module("src.oviv2.entity_epoch_update")
     first = entity_epoch_update.RelationSupport(
@@ -465,6 +485,7 @@ def test_duplicate_accepted_relation_id_is_rejected() -> None:
         confidence=0.9,
         inference_state=entity_epoch_update.RelationInferenceState.STATIC,
         accepted=True,
+        transform_world_from_t0=np.eye(4, dtype=np.float64),
     )
     second = replace(
         first,
