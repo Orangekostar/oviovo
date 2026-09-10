@@ -1,0 +1,90 @@
+{
+  "claim_boundary": "state_recovery_without_current_miou_gain",
+  "correct_recovery": {
+    "denominator": 40960,
+    "numerator": 1207
+  },
+  "crop_center_xyz_m": [
+    -15.65,
+    -3.75,
+    1.6500000000000001
+  ],
+  "crop_half_extent_m": 0.45,
+  "displayed_recovered_source_row_count": 244,
+  "prediction_uses_ground_truth": false,
+  "recovered_source_row_count": 2939,
+  "rows": [
+    {
+      "config_id": "H0_T1",
+      "mean_current_miou": 0.12085796389600113,
+      "mean_ghost": 0.0,
+      "mean_surface_precision_at_5cm": 0.7842926280498332,
+      "mean_surface_recall_at_5cm": 0.28692450989088975,
+      "variant_id": "D0_T1"
+    },
+    {
+      "config_id": "H1_B3",
+      "mean_current_miou": 0.1358861592620667,
+      "mean_ghost": 0.0,
+      "mean_surface_precision_at_5cm": 0.7344127781521915,
+      "mean_surface_recall_at_5cm": 0.30533132262929125,
+      "variant_id": "D1_B3"
+    },
+    {
+      "config_id": "H2_INHERIT",
+      "mean_current_miou": 0.13573447945613093,
+      "mean_ghost": 0.0,
+      "mean_surface_precision_at_5cm": 0.7347263252298517,
+      "mean_surface_recall_at_5cm": 0.30967799166149207,
+      "variant_id": "D2_INHERIT"
+    },
+    {
+      "config_id": "H3_GEOM",
+      "mean_current_miou": 0.13573447945613093,
+      "mean_ghost": 0.0,
+      "mean_surface_precision_at_5cm": 0.7347263252298517,
+      "mean_surface_recall_at_5cm": 0.30967799166149207,
+      "variant_id": "D3_GEOM"
+    },
+    {
+      "config_id": "H4_RESCENE_ID",
+      "mean_current_miou": 0.1358861592620667,
+      "mean_ghost": 0.0,
+      "mean_surface_precision_at_5cm": 0.7344127781521915,
+      "mean_surface_recall_at_5cm": 0.30533132262929125,
+      "variant_id": "D4_RESCENE_ID_ONLY"
+    },
+    {
+      "config_id": "H5_RESCENE_EPOCH",
+      "mean_current_miou": 0.13573447945613093,
+      "mean_ghost": 0.0,
+      "mean_surface_precision_at_5cm": 0.7347263252298517,
+      "mean_surface_recall_at_5cm": 0.30967799166149207,
+      "variant_id": "D5_RESCENE_EPOCH"
+    },
+    {
+      "config_id": "H6_MEMORY_LAST",
+      "mean_current_miou": 0.13573447945613093,
+      "mean_ghost": 0.0,
+      "mean_surface_precision_at_5cm": 0.7347263252298517,
+      "mean_surface_recall_at_5cm": 0.30967799166149207,
+      "variant_id": "D6_MEMORY_EPOCH"
+    },
+    {
+      "config_id": "H7_MEMORY_BANK",
+      "mean_current_miou": 0.13573447945613093,
+      "mean_ghost": 0.0,
+      "mean_surface_precision_at_5cm": 0.7347263252298517,
+      "mean_surface_recall_at_5cm": 0.30967799166149207,
+      "variant_id": "D6_MEMORY_EPOCH"
+    }
+  ],
+  "schema_version": 1,
+  "source_bindings": {
+    "aggregate_metrics": "../aggregate_metrics.json",
+    "current_surface_sha256": "7d3ad160bdee68fb9054826c1e949b153983d2f744cb412c63f6a4bfde927367",
+    "entity_epoch_state_sha256": "2ff6c5104737f4859d7c53abdd4acd9b9e0c41c120269146c1a7ff20a005e011",
+    "metrics_per_pair": "../metrics_per_pair.csv"
+  },
+  "status": "PASS"
+}

@@ -1,0 +1,42 @@
+{
+  "pairs": [
+    {
+      "asset_status": "RAW_MISSING",
+      "event_type": "object_relocation",
+      "fixed": true,
+      "input_bindings": {
+        "causal_schedule": {
+          "byte_count": 28302,
+          "path": "configs/evaluation/manifests/tesse_cd_causal_schedule_v2.json",
+          "sha256": "fb97bacee377f9fd67ee9dae8064dc6f33ac32d129ee633629fec4164d5003e0"
+        },
+        "two_visit_protocol": {
+          "byte_count": 61049,
+          "path": "configs/evaluation/tesse_two_visit_current_v1.json",
+          "sha256": "720952cd75e214de36e318051d6aae18bd762109ba0d3a8ccb73a14f7398e650"
+        }
+      },
+      "missing_paths": [
+        "$HOME/oviovo_benchmark_assets/tesse_cd/ground_truth/office/gt_changes.csv",
+        "$HOME/oviovo_benchmark_assets/tesse_cd/inputs/ros2/tesse_cd_office/tesse_cd_office_ros2.db3",
+        "$HOME/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/office/export_manifest.json"
+      ],
+      "pair_id": "office-t0-002145-002400-t1-002446-002701",
+      "scene": "office",
+      "visibility_coverage": 0.8128130217028381
+    }
+  ],
+  "protocol_id": "CROVE_ENTITY_EPOCH_DYNAMICS_V2",
+  "schema_version": 1,
+  "score_driven_replacement_allowed": false,
+  "selected_pair_ids": [
+    "office-t0-002145-002400-t1-002446-002701"
+  ],
+  "selection_basis": [
+    "asset_status",
+    "event_type",
+    "visibility_coverage"
+  ],
+  "split": "confirm",
+  "status": "PASS"
+}

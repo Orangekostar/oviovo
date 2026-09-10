@@ -1,0 +1,98 @@
+{
+  "pairs": [
+    {
+      "asset_status": "READY",
+      "event_type": "object_relocation",
+      "fixed": true,
+      "input_bindings": {
+        "adapter_pair_manifest": {
+          "byte_count": 4176629,
+          "path": "$HOME/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/apartment/supported-input/adapter_pair/manifest.json",
+          "sha256": "c484ea7aadbd63336608aa0e4a145bf13020c04c56d0b7c9d068382d09e272f5"
+        },
+        "b0_entities": {
+          "byte_count": 54760,
+          "path": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/apartment-b0-b6-entity-lift-96ba693/B0/current-map/entities/1472.000000_current.jsonl",
+          "sha256": "e491884f556cdf8cf45a9a8f4a794d1379916baf200a2275520fbf6d97c368c5"
+        },
+        "b2_entities": {
+          "byte_count": 38767,
+          "path": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/apartment-b0-b6-entity-lift-96ba693/B2/current-map/entities/1472.000000_current.jsonl",
+          "sha256": "61e21fff02825fa4f74d9b168d509452fdda8a705b72d610ca8abdf5fbd7b27b"
+        },
+        "b3_provenance": {
+          "byte_count": 191406015,
+          "path": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/apartment-b0-b6-entity-lift-96ba693/B3/current-map/provenance.jsonl",
+          "sha256": "dbd11c593eb94b19e2e60f19572ac70b49e6b396a003fa194d8ae1e26e2dfe35"
+        },
+        "causal_schedule": {
+          "byte_count": 28302,
+          "path": "configs/evaluation/manifests/tesse_cd_causal_schedule_v2.json",
+          "sha256": "fb97bacee377f9fd67ee9dae8064dc6f33ac32d129ee633629fec4164d5003e0"
+        },
+        "checkpoint": {
+          "byte_count": 754917862,
+          "path": "$HOME/paper5/checkpoints/rescene4d_concerto_t2_repro.ckpt",
+          "sha256": "85ed1aba60320cd19798536b71b91dbc156b7ea60f838832bc0bbbdba131546e"
+        },
+        "common_v2_target_manifest": {
+          "byte_count": 35287,
+          "path": "$HOME/oviovo_benchmark_assets/tesse_cd/derived/common_v2_targets/20260722-stage3-fb97-scope-a/manifest.json",
+          "sha256": "eeb84891ce884c927956c137d7fadf25697f1c967194e00b21a9293df1b63cd0"
+        },
+        "current_surface_arrays": {
+          "byte_count": 271722745,
+          "path": "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/apartment_two_visit_full_v1/current_map/current_surface.npz",
+          "sha256": "7d3ad160bdee68fb9054826c1e949b153983d2f744cb412c63f6a4bfde927367"
+        },
+        "current_surface_manifest": {
+          "byte_count": 2403,
+          "path": "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/apartment_two_visit_full_v1/current_map/current_surface_manifest.json",
+          "sha256": "70750b71d8aa2791d93d88239daa252deda3088c8cd971eb89d061f7386da08c"
+        },
+        "query_evidence_manifest": {
+          "byte_count": 2323,
+          "path": "$HOME/oviovo_baseline_runs/20260906_ovi_rescene_real_evidence/apartment/native-b5/query_evidence.json",
+          "sha256": "300235c33611aafb9788be3e87f92ae2b52d8c3123d86e6932ed4c97238223da"
+        },
+        "rgbd_export_manifest": {
+          "byte_count": 813,
+          "path": "$HOME/oviovo_benchmark_assets/tesse_cd/derived/rgbd_v1/apartment/export_manifest.json",
+          "sha256": "ee35d1843540fc88ae20b5dae5ad34caf192d50f0cab7c5564c47c454d4d5b81"
+        },
+        "semantic_aliases": {
+          "byte_count": 1108,
+          "path": "configs/evaluation/semantic_aliases/tesse_cd_common_v2.yaml",
+          "sha256": "217b3bcd730a6485159e23e56ee9e97ac3c1c56007a016cdc8a20e9fc07abdbc"
+        },
+        "semantic_label_space": {
+          "byte_count": 741,
+          "path": "$HOME/oviovo_benchmark_assets/tesse_cd/derived/common_v2_label_spaces/tesse_cd_apartment_label_space.yaml",
+          "sha256": "f7bacfb3c7bafc674bd3a34540e3f9b5d98b0ae11389f91768c70ecc65a79f0f"
+        },
+        "two_visit_protocol": {
+          "byte_count": 61049,
+          "path": "configs/evaluation/tesse_two_visit_current_v1.json",
+          "sha256": "720952cd75e214de36e318051d6aae18bd762109ba0d3a8ccb73a14f7398e650"
+        }
+      },
+      "missing_paths": [],
+      "pair_id": "apartment-t0-000766-001021-t1-001217-001472",
+      "scene": "apartment",
+      "visibility_coverage": 0.9926033905625742
+    }
+  ],
+  "protocol_id": "CROVE_ENTITY_EPOCH_DYNAMICS_V2",
+  "schema_version": 1,
+  "score_driven_replacement_allowed": false,
+  "selected_pair_ids": [
+    "apartment-t0-000766-001021-t1-001217-001472"
+  ],
+  "selection_basis": [
+    "asset_status",
+    "event_type",
+    "visibility_coverage"
+  ],
+  "split": "dev",
+  "status": "PASS"
+}
