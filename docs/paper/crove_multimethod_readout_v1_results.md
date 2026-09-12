@@ -280,7 +280,7 @@ python scripts/evaluation/audit_crove_apartment_readout_geometry.py
 | --- | --- | --- |
 | M1 | Partial room0 and Apartment native/single/top-k/diverse/quality B3/H2 pairs | structural patch evidence, dynamic state adaptation, confirmation |
 | M2 | room0 S2/M1 and Apartment QUALITY patch/geometry/boundary pairs complete | dynamic local S2 control and confirmation |
-| M3 | room0 and Apartment full pairwise/consensus-owner pairs and Apartment matched resem evaluated | room0 resem and confirmation |
+| M3 | room0 and Apartment full pairwise/consensus-owner pairs and matched resem evaluated | confirmation |
 | M4 | Official trained room0 and Apartment B3/H2 mean/learned pairs completed | static confirmation and limited combinations |
 
 M4 uses the official trained checkpoint, not random weights or a local untrained
@@ -438,10 +438,28 @@ Both states still have 8,705 all-current confirmed-free conflict rows in 90
 physical 5 cm voxels, independently of the altered semantic roles.
 
 The corresponding room0 matched controls and consensus re-estimation are
-running from the complete 200-frame bank. They share the same six-crop helpers,
-hashed native text/weights and input policy; all four full predictions precede
-GT evaluation. Replica poses are consumed exactly as stored, matching the
+complete from the 200-frame bank. They share the same six-crop helpers,
+hashed native text/weights and input policy; all four full predictions preceded
+GT evaluation. Replica poses were consumed exactly as stored, matching the
 existing bank, with no additional transformation.
+
+| Matched room0 readout | mIoU | f-mIoU | CA-AP50 |
+| --- | ---: | ---: | ---: |
+| B_SEM_OVI_REENCODE | 0.275436 | 0.501544 | 0.470711 |
+| MV_REENCODE_DIVERSE | 0.190125 | 0.304773 | 0.470711 |
+| MV_REENCODE_QUALITY | 0.204523 | 0.260958 | 0.470711 |
+| INST_CONSENSUS_RESEM | 0.213911 | 0.314852 | 0.192182 |
+
+Re-estimation adds 0.009389 mIoU over its matched original-owner quality head,
+but all four methods trail old native 0.340208 and S2 0.447889. Consensus CA-AP50
+is exactly its owner-only value and remains below native. F@5cm is exactly
+0.9352861616716538 for every method. All 9,282,303 source rows, prescribed owner
+partitions and missing-feature native labels/confidence were independently
+verified after prediction. Feature coverage is 0.999901 for original-owner
+controls and 0.995875 for consensus. The run encoded 843 six-crop batches
+(5,058 images), with 145.01 s encoding and 63.92 s projection; the same runtime
+exclusions as Apartment apply. Sparse projected-region crops and reselection
+are therefore not demonstrated replacements for the original native features.
 
 ```bash
 python scripts/evaluation/run_crove_reencode_apartment.py
