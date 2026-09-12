@@ -1,0 +1,51 @@
+{
+  "status": "PASS",
+  "scope": "three_real_masks_numerical_reference_not_full_map",
+  "source_commit": "c0516d8a548d90055c3dca7f2a9b4281a4da842f",
+  "scene": "room0",
+  "frame": 0,
+  "mask_source": "cached_OVI_geometric_segments",
+  "region_ids": [
+    1,
+    2,
+    3
+  ],
+  "input_shape": [
+    1,
+    3,
+    512,
+    896
+  ],
+  "F_raw_shape": [
+    1,
+    1536,
+    16,
+    28
+  ],
+  "F_head_shape": [
+    1,
+    768,
+    16,
+    28
+  ],
+  "maximum_absolute_errors": {
+    "F_raw": 0.0,
+    "F_head": 0.0,
+    "head_activations": 0.0,
+    "embedding": 0.0,
+    "logits": 0.0,
+    "chunked_logits": 0.00039768218994140625
+  },
+  "mean_top1_names": [
+    "lamp",
+    "wall",
+    "stool"
+  ],
+  "learned_top1_names": [
+    "wall",
+    "wall",
+    "stool"
+  ],
+  "peak_gpu_bytes": 1758827520,
+  "classification_excludes_void_and_decoder": true
+}

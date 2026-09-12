@@ -1,0 +1,21 @@
+{
+  "experiment_id": "crove_multimethod_readout_v1",
+  "task_revision": "V1_REVISED_V2",
+  "selection_config": "configs/evaluation/crove_multimethod_readout_v1.json",
+  "static_dev": [{"scene": "room0", "authorized_frames": {"start": 0, "stop_exclusive": 2000, "stride": 10}, "rgb_depth_trajectory_gt": "PRESENT", "native_surface": "PRESENT", "native_feature_owner_count": 77, "native_observation_count": 592, "native_unique_frames": 185, "unauthorized_feature_frames": 0}],
+  "static_confirmation": [{"scene": "room1", "authorized_frames": {"start": 0, "stop_exclusive": 2000, "stride": 10}, "rgb_depth_trajectory_gt": "PRESENT", "native_and_S2_derivatives": "PENDING_BUILD", "selection_basis": "raw availability and existing Replica protocol before any new scores", "prior_use": "previous Replica8 compatibility; unused for this round parameter selection"}],
+  "static_confirmation_reserve": "room2; only objective asset failure permits replacement before viewing confirmation scores",
+  "dynamic_dev": {
+    "scene": "apartment", "states": ["B3", "H2"],
+    "t0": {"source_frame_interval": [766, 1021], "native_frame_interval": [0, 255], "native_to_source_offset": 766, "feature_owners": 99, "feature_observations": 651},
+    "t1": {"source_frame_interval": [1217, 1472], "native_frame_interval": [0, 255], "native_to_source_offset": 1217, "feature_owners": 75, "feature_observations": 511},
+    "frame_mapping_authority": "$HOME/oviovo_baseline_runs/20260904_ovi_rescene_two_visit/materialized-inputs/apartment/{visit}/apartment/export_manifest.json",
+    "frontend_masks": "CropFormer PNG outputs present under native-runs; per-frame content/completeness binding pending",
+    "state_source_key_match": "PASS_B3_H2",
+    "restored_H2_source_rows": 2939
+  },
+  "dynamic_confirmation": {"scene": "office", "status": "NOT_RUN_RAW_MISSING", "missing": ["ROS2 db3", "gt_changes.csv", "RGBD export manifest"]},
+  "DEV_SCREENING_STATUS": "PARTIAL",
+  "STATIC_CONFIRMATION_STATUS": "PARTIAL",
+  "DYNAMIC_CONFIRMATION_STATUS": "NOT_RUN_RAW_MISSING"
+}

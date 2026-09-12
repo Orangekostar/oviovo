@@ -1,6 +1,6 @@
 {
   "experiment_id": "crove_multimethod_readout_v1",
-  "official_mask_adapter_status": "DOWNLOADED_CORE_KEYS_PRESENT_NOT_YET_INFERRED",
+  "official_mask_adapter_status": "STRICT_CORE_LOAD_AND_REAL_MASK_REFERENCE_PASS",
   "source_repository": "https://github.com/hustvl/MaskAdapter",
   "source_commit": "c0516d8a548d90055c3dca7f2a9b4281a4da842f",
   "checkpoint_source": "https://huggingface.co/owl10/Mask-Adapter/resolve/main/fcclip_convnext_large_maskadapter.pth",
@@ -13,6 +13,8 @@
   "backbone_parameter_keys": 543,
   "strict_backbone_load": "PASS_ALL_KEYS_MATCHED_open_clip_2.24.0",
   "adapter_parameter_keys": 43,
+  "strict_adapter_load": "PASS_ALL_KEYS_MATCHED",
+  "reference_check": "adapter_reference_check.json",
   "f_raw_channels": 1536,
   "f_head_channels": 768,
   "adapter_output_maps": 16,

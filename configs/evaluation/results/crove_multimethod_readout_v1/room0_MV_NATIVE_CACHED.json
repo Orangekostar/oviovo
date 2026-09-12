@@ -1,0 +1,763 @@
+{
+  "case": "room0",
+  "split": "dev",
+  "method": "MV_NATIVE_CACHED",
+  "implementation": "native retained last 8 views, visibility-weighted raw six-crop means, fixed 41-class text",
+  "status": "FULL_MAP_EVALUATED",
+  "geometry_fixed": true,
+  "owner_changed": false,
+  "metrics": {
+    "miou": 0.3774728720273273,
+    "macc": 0.43406519224107715,
+    "f_miou": 0.5984091425372893,
+    "ap25": 0.5626407670585036,
+    "ap50": 0.470710638947717,
+    "f5": 0.9352861616716538,
+    "semantic": {
+      "miou": 0.3774728720273273,
+      "macc": 0.43406519224107715,
+      "f_miou": 0.5984091425372893,
+      "matched_vertex_ratio": 0.8776407827422186,
+      "evaluated_vertex_count": 946263,
+      "per_class": {
+        "1": {
+          "iou": 0.7486321580024318,
+          "accuracy": 0.8834669023080018,
+          "support": 228596
+        },
+        "2": {
+          "iou": 0.4333001933504523,
+          "accuracy": 0.6774488861763809,
+          "support": 104864
+        },
+        "3": {
+          "iou": 0.8753905213629398,
+          "accuracy": 0.9594329153586413,
+          "support": 168511
+        },
+        "4": {
+          "iou": 0.9443077611272646,
+          "accuracy": 0.9941134918766188,
+          "support": 12741
+        },
+        "5": {
+          "iou": 0.30464059015268485,
+          "accuracy": 0.39301720798981904,
+          "support": 18073
+        },
+        "6": {
+          "iou": 0.8938284672605922,
+          "accuracy": 0.9999890352079472,
+          "support": 91201
+        },
+        "7": {
+          "iou": 0.0,
+          "accuracy": 0.0,
+          "support": 19008
+        },
+        "8": {
+          "iou": 0.5250263991552271,
+          "accuracy": 0.5462835796297314,
+          "support": 36406
+        },
+        "9": {
+          "iou": 0.4954997631454287,
+          "accuracy": 0.5108419613205705,
+          "support": 30714
+        },
+        "10": {
+          "iou": 0.5367438279031714,
+          "accuracy": 0.5523474643423137,
+          "support": 80768
+        },
+        "11": {
+          "iou": 0.008441428189355442,
+          "accuracy": 0.008451175633838173,
+          "support": 59755
+        },
+        "13": {
+          "iou": 0.0,
+          "accuracy": 0.0,
+          "support": 3942
+        },
+        "14": {
+          "iou": 0.8500103156591706,
+          "accuracy": 0.9523809523809523,
+          "support": 4326
+        },
+        "15": {
+          "iou": 0.5068078668683812,
+          "accuracy": 0.5649241146711635,
+          "support": 1779
+        },
+        "18": {
+          "iou": 0.2626122556788167,
+          "accuracy": 0.2638492669010814,
+          "support": 15073
+        },
+        "19": {
+          "iou": 0.2353832746011898,
+          "accuracy": 0.24915770896839404,
+          "support": 24932
+        },
+        "20": {
+          "iou": 0.0,
+          "accuracy": 0.0,
+          "support": 13911
+        },
+        "21": {
+          "iou": 0.0,
+          "accuracy": 0.0,
+          "support": 1512
+        },
+        "22": {
+          "iou": 0.0,
+          "accuracy": 0.0,
+          "support": 287
+        },
+        "25": {
+          "iou": 0.6227842780074266,
+          "accuracy": 0.6394964028776978,
+          "support": 13900
+        },
+        "26": {
+          "iou": 0.0,
+          "accuracy": 0.0,
+          "support": 1392
+        },
+        "27": {
+          "iou": 0.44073455759599334,
+          "accuracy": 0.9361702127659575,
+          "support": 846
+        },
+        "28": {
+          "iou": 0.0,
+          "accuracy": 0.0,
+          "support": 9772
+        },
+        "29": {
+          "iou": 0.2724814063556457,
+          "accuracy": 0.31,
+          "support": 1300
+        },
+        "30": {
+          "iou": 0.0,
+          "accuracy": 0.0,
+          "support": 1080
+        },
+        "31": {
+          "iou": 0.7516778523489933,
+          "accuracy": 0.7887323943661971,
+          "support": 142
+        },
+        "32": {
+          "iou": 0.8609375,
+          "accuracy": 0.9237217099748533,
+          "support": 1193
+        },
+        "33": {
+          "iou": 0.0,
+          "accuracy": 0.0,
+          "support": 239
+        }
+      }
+    },
+    "instance": {
+      "class_agnostic": {
+        "ap25": 0.5626407670585036,
+        "ap50": 0.470710638947717,
+        "recall25": 0.6617647058823529,
+        "recall50": 0.6029411764705882,
+        "predicted_instance_count": 68,
+        "ground_truth_instance_count": 68,
+        "prediction_entity_ids": [
+          1,
+          26,
+          2,
+          63,
+          6,
+          82,
+          40,
+          76,
+          3,
+          11,
+          12,
+          61,
+          79,
+          65,
+          41,
+          5,
+          36,
+          7,
+          48,
+          4,
+          105,
+          73,
+          9,
+          29,
+          81,
+          147,
+          10,
+          85,
+          46,
+          66,
+          58,
+          109,
+          57,
+          25,
+          13,
+          86,
+          84,
+          83,
+          18,
+          16,
+          64,
+          80,
+          69,
+          28,
+          78,
+          15,
+          21,
+          8,
+          38,
+          20,
+          70,
+          108,
+          30,
+          47,
+          24,
+          23,
+          19,
+          87,
+          103,
+          111,
+          33,
+          71,
+          60,
+          88,
+          32,
+          22,
+          34,
+          90
+        ],
+        "prediction_confidences": [
+          1.0,
+          0.7613672600401418,
+          0.6096255932171597,
+          0.3825336234548217,
+          0.11385548948622236,
+          0.10636172647296055,
+          0.09609180094164431,
+          0.07596931214946259,
+          0.07589897019376864,
+          0.06537581362195419,
+          0.06254806700305753,
+          0.05367560165819437,
+          0.050280429930033205,
+          0.04989589390557296,
+          0.029445142653486148,
+          0.027742867325692634,
+          0.023935022790793646,
+          0.022617283487460373,
+          0.02176380109170715,
+          0.020816529421695335,
+          0.019531616364352574,
+          0.018907917690532912,
+          0.01863592879518298,
+          0.018579655230627826,
+          0.017402599838682448,
+          0.016966479713379976,
+          0.015109452083059782,
+          0.014340380034139295,
+          0.010509088180675658,
+          0.008422276828421902,
+          0.007676652098066065,
+          0.007648515315788486,
+          0.007634446924649697,
+          0.007601620678659189,
+          0.007245221436476525,
+          0.006851306484590422,
+          0.006021271407401849,
+          0.005843071786310518,
+          0.00556170396353473,
+          0.005313162386749452,
+          0.004966142071992647,
+          0.004605053366097053,
+          0.004497195700699668,
+          0.004136106994804074,
+          0.002912156965729399,
+          0.002743336272063927,
+          0.0027292678809251376,
+          0.002691752171221699,
+          0.0026636153889441202,
+          0.002607341824388963,
+          0.0025745155783984544,
+          0.0018429592391814072,
+          0.0018007540657650391,
+          0.001449044287295305,
+          0.0013740128678884282,
+          0.0013552550130367092,
+          0.0012942919847686218,
+          0.0012192605653617453,
+          0.0008159666860497834,
+          0.0007878299037722046,
+          0.0006987300932265386,
+          0.0006752827746618897,
+          0.000600251355255013,
+          0.000600251355255013,
+          0.0005627356455515747,
+          0.0005299093995610662,
+          0.0005064620809964172,
+          0.0005017726172834875
+        ]
+      },
+      "semantic_class_constrained": {
+        "ap25": 0.36722056878306875,
+        "ap50": 0.35055390211640214,
+        "predicted_instance_count": 41,
+        "ground_truth_instance_count": 68,
+        "per_class": {
+          "4": {
+            "ap25": 1.0,
+            "ap50": 1.0,
+            "recall25": 1.0,
+            "recall50": 1.0,
+            "ground_truth_count": 1,
+            "prediction_count": 1,
+            "prediction_entity_ids": [
+              12
+            ],
+            "prediction_confidences": [
+              1.0
+            ]
+          },
+          "5": {
+            "ap25": 0.05555555555555555,
+            "ap50": 0.05555555555555555,
+            "recall25": 0.1111111111111111,
+            "recall50": 0.1111111111111111,
+            "ground_truth_count": 9,
+            "prediction_count": 4,
+            "prediction_entity_ids": [
+              41,
+              5,
+              36,
+              15
+            ],
+            "prediction_confidences": [
+              1.0,
+              0.9421882465360726,
+              0.8128682911291607,
+              0.09316770186335403
+            ]
+          },
+          "6": {
+            "ap25": 0.0625,
+            "ap50": 0.0625,
+            "recall25": 0.125,
+            "recall50": 0.125,
+            "ground_truth_count": 8,
+            "prediction_count": 2,
+            "prediction_entity_ids": [
+              63,
+              40
+            ],
+            "prediction_confidences": [
+              1.0,
+              0.25119831316734703
+            ]
+          },
+          "7": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "recall25": 0.0,
+            "recall50": 0.0,
+            "ground_truth_count": 1,
+            "prediction_count": 0,
+            "prediction_entity_ids": [],
+            "prediction_confidences": []
+          },
+          "8": {
+            "ap25": 1.0,
+            "ap50": 1.0,
+            "recall25": 1.0,
+            "recall50": 1.0,
+            "ground_truth_count": 2,
+            "prediction_count": 2,
+            "prediction_entity_ids": [
+              79,
+              65
+            ],
+            "prediction_confidences": [
+              1.0,
+              0.9923521731020332
+            ]
+          },
+          "9": {
+            "ap25": 0.6,
+            "ap50": 0.2,
+            "recall25": 0.6,
+            "recall50": 0.2,
+            "ground_truth_count": 5,
+            "prediction_count": 3,
+            "prediction_entity_ids": [
+              61,
+              9,
+              83
+            ],
+            "prediction_confidences": [
+              1.0,
+              0.34719552682159704,
+              0.10885899004018872
+            ]
+          },
+          "10": {
+            "ap25": 1.0,
+            "ap50": 1.0,
+            "recall25": 1.0,
+            "recall50": 1.0,
+            "ground_truth_count": 2,
+            "prediction_count": 2,
+            "prediction_entity_ids": [
+              6,
+              82
+            ],
+            "prediction_confidences": [
+              1.0,
+              0.9341818032044154
+            ]
+          },
+          "11": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "recall25": 0.0,
+            "recall50": 0.0,
+            "ground_truth_count": 1,
+            "prediction_count": 1,
+            "prediction_entity_ids": [
+              8
+            ],
+            "prediction_confidences": [
+              1.0
+            ]
+          },
+          "13": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "recall25": 0.0,
+            "recall50": 0.0,
+            "ground_truth_count": 1,
+            "prediction_count": 0,
+            "prediction_entity_ids": [],
+            "prediction_confidences": []
+          },
+          "14": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "recall25": 0.0,
+            "recall50": 0.0,
+            "ground_truth_count": 1,
+            "prediction_count": 0,
+            "prediction_entity_ids": [],
+            "prediction_confidences": []
+          },
+          "15": {
+            "ap25": 0.42857142857142855,
+            "ap50": 0.42857142857142855,
+            "recall25": 0.42857142857142855,
+            "recall50": 0.42857142857142855,
+            "ground_truth_count": 7,
+            "prediction_count": 3,
+            "prediction_entity_ids": [
+              20,
+              108,
+              87
+            ],
+            "prediction_confidences": [
+              1.0,
+              0.7068345323741008,
+              0.4676258992805755
+            ]
+          },
+          "18": {
+            "ap25": 0.3333333333333333,
+            "ap50": 0.3333333333333333,
+            "recall25": 0.3333333333333333,
+            "recall50": 0.3333333333333333,
+            "ground_truth_count": 9,
+            "prediction_count": 3,
+            "prediction_entity_ids": [
+              57,
+              86,
+              69
+            ],
+            "prediction_confidences": [
+              1.0,
+              0.8974201474201474,
+              0.5890663390663391
+            ]
+          },
+          "19": {
+            "ap25": 0.3333333333333333,
+            "ap50": 0.3333333333333333,
+            "recall25": 0.3333333333333333,
+            "recall50": 0.3333333333333333,
+            "ground_truth_count": 6,
+            "prediction_count": 3,
+            "prediction_entity_ids": [
+              10,
+              85,
+              16
+            ],
+            "prediction_confidences": [
+              1.0,
+              0.9490999379267536,
+              0.3516449410304159
+            ]
+          },
+          "20": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "recall25": 0.0,
+            "recall50": 0.0,
+            "ground_truth_count": 1,
+            "prediction_count": 0,
+            "prediction_entity_ids": [],
+            "prediction_confidences": []
+          },
+          "21": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "recall25": 0.0,
+            "recall50": 0.0,
+            "ground_truth_count": 1,
+            "prediction_count": 0,
+            "prediction_entity_ids": [],
+            "prediction_confidences": []
+          },
+          "22": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "recall25": 0.0,
+            "recall50": 0.0,
+            "ground_truth_count": 1,
+            "prediction_count": 0,
+            "prediction_entity_ids": [],
+            "prediction_confidences": []
+          },
+          "25": {
+            "ap25": 1.0,
+            "ap50": 1.0,
+            "recall25": 1.0,
+            "recall50": 1.0,
+            "ground_truth_count": 2,
+            "prediction_count": 2,
+            "prediction_entity_ids": [
+              7,
+              4
+            ],
+            "prediction_confidences": [
+              1.0,
+              0.9203815052871657
+            ]
+          },
+          "26": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "recall25": 0.0,
+            "recall50": 0.0,
+            "ground_truth_count": 1,
+            "prediction_count": 2,
+            "prediction_entity_ids": [
+              66,
+              64
+            ],
+            "prediction_confidences": [
+              1.0,
+              0.5896436525612472
+            ]
+          },
+          "27": {
+            "ap25": 1.0,
+            "ap50": 1.0,
+            "recall25": 1.0,
+            "recall50": 1.0,
+            "ground_truth_count": 1,
+            "prediction_count": 3,
+            "prediction_entity_ids": [
+              18,
+              70,
+              90
+            ],
+            "prediction_confidences": [
+              1.0,
+              0.4629005059021922,
+              0.09021922428330523
+            ]
+          },
+          "28": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "recall25": 0.0,
+            "recall50": 0.0,
+            "ground_truth_count": 2,
+            "prediction_count": 0,
+            "prediction_entity_ids": [],
+            "prediction_confidences": []
+          },
+          "29": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "recall25": 0.0,
+            "recall50": 0.0,
+            "ground_truth_count": 2,
+            "prediction_count": 0,
+            "prediction_entity_ids": [],
+            "prediction_confidences": []
+          },
+          "30": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "recall25": 0.0,
+            "recall50": 0.0,
+            "ground_truth_count": 1,
+            "prediction_count": 0,
+            "prediction_entity_ids": [],
+            "prediction_confidences": []
+          },
+          "31": {
+            "ap25": 1.0,
+            "ap50": 1.0,
+            "recall25": 1.0,
+            "recall50": 1.0,
+            "ground_truth_count": 1,
+            "prediction_count": 1,
+            "prediction_entity_ids": [
+              22
+            ],
+            "prediction_confidences": [
+              1.0
+            ]
+          },
+          "32": {
+            "ap25": 1.0,
+            "ap50": 1.0,
+            "recall25": 1.0,
+            "recall50": 1.0,
+            "ground_truth_count": 2,
+            "prediction_count": 2,
+            "prediction_entity_ids": [
+              78,
+              38
+            ],
+            "prediction_confidences": [
+              1.0,
+              0.9146537842190016
+            ]
+          }
+        }
+      }
+    },
+    "geometry": {
+      "precision": 1.0,
+      "recall": 0.8784390021079276,
+      "f5": 0.9352861616716538
+    },
+    "projection": {
+      "matched_vertex_count": 838463,
+      "ground_truth_vertex_count": 954492
+    },
+    "protocol": {
+      "distance_threshold_m": 0.05,
+      "projection_comparator": "strict_less_than",
+      "min_instance_vertices": 100,
+      "valid_semantic_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41
+      ],
+      "instance_semantic_ids": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41
+      ],
+      "headline_instance_protocol": "class_agnostic",
+      "semantic_instance_protocol": "diagnostic_only"
+    }
+  },
+  "evaluation_seconds": 16.61009671445936,
+  "semantic_constrained_AP": "diagnostic with frozen native entity-info; not reselected by new label"
+}

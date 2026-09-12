@@ -1,0 +1,12 @@
+{
+  "methods": {
+    "B_SEM_OVI_NATIVE": "saved native class crosswalk, no new encoding",
+    "MV_NATIVE_CACHED": "native retained last 8 views, visibility-weighted raw six-crop means, fixed 41-class text",
+    "MV_SINGLE": "highest visibility one view; normalized six-crop mean",
+    "MV_TOPK_MEAN": "highest visibility four views; normalized six-crop means, uniform aggregation"
+  },
+  "candidate_pool": "native retained observations only",
+  "text": "bare complete Replica41 class names as official TextEmbedder",
+  "scope": "partial_M1_DEV_batch",
+  "new_image_forwards": 0
+}

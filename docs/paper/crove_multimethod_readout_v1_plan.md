@@ -93,3 +93,44 @@ provides OpenCLIP 2.24.0, timm 0.9.16 and fvcore; existing CUDA torch is availab
 Strict loading of all backbone entries into OpenCLIP succeeded without missing or
 unexpected keys. Adapter module load and real-mask reference comparison remain.
 See `model_manifest.json`; downloading weights is not recorded as a completed M4 trial.
+
+## M4 external-mask inference checkpoint
+
+The wrapper strictly loads the 543 encoder keys and 43 Adapter keys. It uses the
+official RGB mean/std, longest-side 896 resizing and normalized padding to 32.
+`F_raw` is 1536 channels and `F_head` is 768; learned activations pool `F_raw`,
+then each map passes through the region projection before averaging. The ordinary
+mask mean uses that same `F_raw` and region projection. Empty masks are skipped,
+with explicit returned mask indices. Neither decoder labels nor void/ensemble
+scores enter the interface. Text uses one fixed prompt per class for both rows.
+
+Three real cached OVI geometric masks from authorized room0 frame 0 passed a
+reference comparison against expressions loaded from the pinned official code.
+These masks are a numerical-validation input, not independent instance evidence
+for M3 and not a full-map M4 trial. Source-extracted head forward, both visual
+projections and per-map pooling agree exactly for the same batch. Splitting mask
+batches gives maximum logit error 0.0003977 and passes rtol=1e-4, atol=1e-5.
+Peak allocated GPU memory was 1,758,827,520 bytes. Full result is in
+`adapter_reference_check.json`.
+
+Executed command (from this worktree):
+
+```bash
+$HOME/oviovo_baseline_builds/maskadapter/venv/bin/python \
+  scripts/evaluation/verify_mask_adapter_reference.py \
+  --source "$HOME/oviovo_references/modules/MaskAdapter" \
+  --checkpoint "$HOME/oviovo_baseline_builds/maskadapter/fcclip_convnext_large_maskadapter.pth" \
+  --rgb "$HOME/vv/dataset/Replica/room0/results/frame000000.jpg" \
+  --regions "$HOME/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/geo_seg_temp/room0/00000_mask.png" \
+  --output configs/evaluation/results/crove_multimethod_readout_v1/adapter_reference_check.json
+```
+
+The output command refuses to overwrite an existing receipt. Official classes
+retain attribution and Apache-2.0 license under `docs/licenses/`.
+
+Next: prepare the shared full-surface observation bank and run complete M1/M4
+readouts. The room0 native pickle contains 77 owner entries with actual `feat`,
+`frame_id`, `pose`, `vis_area`, and `box_2d`; the first owner contains 10 independent
+cached observations. This permits native-feature reuse but does not recover
+individual crop-scale features from their six-crop average. Room1 derived OVI/S2
+inputs are still to be generated. All three completion fields above remain unchanged.
