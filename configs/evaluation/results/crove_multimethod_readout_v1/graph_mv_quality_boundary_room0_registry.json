@@ -1,0 +1,23 @@
+{
+  "case": "room0",
+  "patch_size_m": 0.02,
+  "patches": "welded compatible source-triangle connected components within cells",
+  "unary": "M1_REAL_POSTERIOR_PHYSICAL_MEAN_NEG_LOG",
+  "physical_weights": "inverse count of same XYZ/normal-bin/visit duplicates",
+  "normal_cosine_min": 0.95,
+  "distance_weight_sigma_m": 0.03,
+  "normalization": "symmetric_degree",
+  "lambda": 0.2,
+  "iterations": 5,
+  "damping": 0.5,
+  "variants": [
+    "MV_QUALITY_GRAPH_BOUNDARY"
+  ],
+  "scope": "same frozen patches and unary, repeated independent mask/depth boundary attenuation",
+  "reliability": "unit for observed owner; quality already used in M1 aggregation; missing rows preserve M1 fallback",
+  "shared_patch_mapping": "dev/room0/graph_s2/patch_mapping.npz",
+  "boundary_evidence": "independent_mask_bank_room0_registry.json",
+  "minimum_joint_frames": 2,
+  "boundary_factor": "1 - 0.8 * disagreeing_views / jointly_observed_views; unobserved unchanged",
+  "rgb_factor": "exp(-mean_channel_squared_difference / 0.25**2); mean real RGB from at least two valid source observations; otherwise factor 1"
+}

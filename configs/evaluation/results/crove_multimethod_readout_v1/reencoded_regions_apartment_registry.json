@@ -1,0 +1,27 @@
+{
+  "GT_read_before_all_predictions": false,
+  "aggregation": "native visibility-weighted raw six-crop means; diverse normalized-view uniform mean; quality/resem normalized-view quality mean",
+  "area_adaptation": "new owners have no native visible-area field; use touched independent-mask union area for BOTH original and consensus owner controls",
+  "candidate_views": "all authorized own-visit frames with at least 16 distinct independent-mask-interior representative pixels",
+  "case": "apartment-t0-000766-001021-t1-001217-001472",
+  "crops": "native three box expansions 0/.1/.2, each original RGB and black-background mask; normalize every crop before within-view mean",
+  "cross_visit_union": false,
+  "encoder": "same native SigLIP large patch16 384 and shared complete public 20-class text",
+  "k": 4,
+  "mask": "own-state current source projection, measured depth within 0.05 m, no dilation",
+  "methods": [
+    "B_SEM_OVI_REENCODE",
+    "MV_REENCODE_DIVERSE",
+    "MV_REENCODE_QUALITY",
+    "INST_CONSENSUS_RESEM"
+  ],
+  "minimum_feature_views": 2,
+  "missing": "KEEP_SOURCE label, confidence and role; no invented unknown",
+  "preprocessing": "SiglipImageProcessor slow PIL resize, explicit channels_last RGB axis; shared by every control",
+  "quality": "depth-consistent / projectable unique pixels * sqrt(min(1,support/union area of touched independent mask IDs)) * image-truncation factor .5 or 1",
+  "selection": "native control top four visible views; other methods same angular farthest-first rule with maximum visibility seed",
+  "states": [
+    "B3",
+    "H2"
+  ]
+}

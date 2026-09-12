@@ -15,6 +15,8 @@ Apartment diverse/quality and posterior graph controls use `43f8aae`;
 the extracted evaluator AST is identical to the previously evaluated kernel.
 Apartment independent-mask binding and restored-row attribution use `ba94d66`.
 Apartment boundary controls and expanded geometry diagnostics use `541d853`.
+Matched six-crop re-encoding uses `aa6c0e7` (crop-input helper extraction and
+additional owner validation preserve the running encoding computation).
 This is an intermediate result, not the final four-family screening report.
 
 ## room0 complete-surface initial batch
@@ -100,6 +102,8 @@ is 0.470711 and geometry F5 is 0.935286 throughout.
 | S2_GRAPH_GEOM | 0.443963 | 0.668539 |
 | MV_QUALITY_PATCH_ONLY | 0.396774 | 0.409143 |
 | MV_QUALITY_GRAPH_GEOM | 0.399117 | 0.409253 |
+| S2_GRAPH_BOUNDARY | 0.443967 | 0.668553 |
+| MV_QUALITY_GRAPH_BOUNDARY | 0.397928 | 0.409244 |
 
 The adapter pair shares official trained ConvNeXt-L features, class text,
 projected source-support masks, and selected views. Learned pooling improves
@@ -120,7 +124,7 @@ Patch construction took 22.30 s. S2 pseudo-unaries are confidence-weighted costs
 not recovered class posteriors. Five damped mean-field iterations use lambda 0.2.
 Patch-only loses 0.003999 mIoU versus pointwise S2; graph propagation adds only
 0.000074 over patch-only. This is a negative result versus S2, not a demonstrated
-graph improvement. Boundary graph controls remain pending.
+graph improvement.
 
 M1-posterior controls reuse exactly the same patch mapping and geometry graph.
 Actual full-class owner posteriors are averaged by physical mass before negative-log
@@ -133,6 +137,35 @@ baseline class among cost minimizers; full-map recomputation verified zero
 prediction changes for both saved variants. This is a current room0 M1 leader
 control, not the final cross-protocol family selection.
 
+The complete 200-frame independent mask bank now supports both boundary controls.
+They share 1,226,948 jointly observed edges, 10,315 mask-disagreement edges and
+1,235,005 RGB-supported edges, without changing nodes or topology. S2 boundary
+adds only 0.0000032 mIoU over the geometry graph and still trails pointwise S2;
+QUALITY boundary loses 0.0011895 versus its geometry graph. Both retain native
+CA-AP50 and geometry F5. These results do not establish a boundary benefit.
+
+### room0 full-input instance controls
+
+All 200 authorized frames are used, with 5,719 input masks and 323 filtered
+undersegmented/small mask nodes. Both methods preserve all 9,282,303 source rows,
+point semantics and confidence; mIoU remains 0.340208 and geometry F5 0.935286.
+
+| Owner rule | CA-AP25 | CA-AP50 | Recall50 | Evaluated instances |
+| --- | ---: | ---: | ---: | ---: |
+| Native OVI | 0.562641 | 0.470711 | 0.602941 | 68 |
+| Pairwise | 0.154719 | 0.085962 | 0.205882 | 66 |
+| Consensus | 0.416275 | 0.192182 | 0.411765 | 88 |
+
+GT contains 68 instances. All rows use the same existing size-ranked protocol
+and minimum-size filter. Consensus beats pairwise but is substantially worse
+than native OVI; it is not an instance improvement. Pairwise/consensus change
+9,077,644/9,070,892 rows, create 35/64 IDs and split 43/72 parents. Both touch
+85 merge parents. They retain 204,632/211,384 parent-residual rows, with
+204,652/211,404 unsupported or ambiguous source rows falling back. These residuals
+are retained rather than deleted. Shared graph construction takes 25.86 s;
+clustering/inference/write takes 41.87/44.21 s. Semantic-constrained AP remains
+a separate diagnostic, not the headline instance result.
+
 Reproduction commands:
 
 ```bash
@@ -141,6 +174,9 @@ python scripts/evaluation/run_crove_room0_semantic_controls.py
 python scripts/evaluation/run_crove_graph_room0.py
 python scripts/evaluation/run_crove_multiview_quality_room0.py
 python scripts/evaluation/run_crove_graph_room0.py --unary mv_quality
+python scripts/evaluation/run_crove_graph_room0.py --boundary
+python scripts/evaluation/run_crove_graph_room0.py --unary mv_quality --boundary
+python scripts/evaluation/run_crove_consensus_room0.py
 ```
 
 ## Other progress and remaining obligations
@@ -243,8 +279,8 @@ python scripts/evaluation/audit_crove_apartment_readout_geometry.py
 | Family | Real current status | Still required |
 | --- | --- | --- |
 | M1 | Partial room0 and Apartment native/single/top-k/diverse/quality B3/H2 pairs | structural patch evidence, dynamic state adaptation, confirmation |
-| M2 | room0 S2/M1 and Apartment QUALITY patch/geometry/boundary pairs | dynamic local S2 control, room0 full-input boundary evaluation and confirmation |
-| M3 | room0 13-frame diagnostic; Apartment full pairwise/consensus-owner pairs evaluated | room0 full-input scores, resem and confirmation |
+| M2 | room0 S2/M1 and Apartment QUALITY patch/geometry/boundary pairs complete | dynamic local S2 control and confirmation |
+| M3 | room0 and Apartment full pairwise/consensus-owner pairs evaluated | resem and confirmation |
 | M4 | Official trained room0 and Apartment B3/H2 mean/learned pairs completed | static confirmation and limited combinations |
 
 M4 uses the official trained checkpoint, not random weights or a local untrained
@@ -347,6 +383,29 @@ python scripts/evaluation/build_crove_apartment_mask_bank.py
 python scripts/evaluation/run_crove_consensus_apartment.py
 ```
 
+Matched region re-encoding is running for original and consensus owners in both
+states. It adds an OVI-style four-most-visible six-crop re-encoding control,
+original-owner diverse/quality controls and `INST_CONSENSUS_RESEM` with the same
+quality head. Each method uses at most four views per region; no cross-visit
+union is introduced. Candidate visibility comes from all authorized independent
+mask-interior observations, not the older retained eight-view cache. New regions
+lack native visible-area metadata, so both original and consensus controls use
+the same union area of touched independent mask IDs in the quality denominator.
+Thus gains must be compared with the matched re-encoded original-owner control,
+not attributed solely to owner changes versus the old cache.
+
+All controls share the same hashed SigLIP weights/text, slow PIL preprocessing,
+six RGB/masked crops and explicit RGB channel-last interpretation. An unscored
+initial attempt was archived after thin crops exposed channel-axis ambiguity;
+none of its features feeds reported predictions. A real six-crop encoder smoke
+and a thin-red-crop regression test verify the correction. Re-encoding results
+are not yet claimed; local structural-background patches and CURRENT_AWARE are
+still separate outstanding obligations.
+
+```bash
+python scripts/evaluation/run_crove_reencode_apartment.py
+```
+
 room1 remains the frozen static confirmation scene, with raw inputs present but
 derived OVI/S2 inputs pending. The native room1 GPU frontend failed with verified
 CUDA OOM under earlier GPU occupancy. After GPU 1 recovered roughly 38 GB free,
@@ -355,10 +414,12 @@ was then deliberately stopped, preserving 105 complete room1 frames and 101
 complete room0 frames. `6748a74` adds hash/shape/instance-ID/config/weight-validated
 GPU continuation of only missing frames, separate GPU execution logs and a
 combined per-frame device receipt. No complete CPU artifact is replaced.
-Room1 and room0 GPU completion run sequentially, followed by room1 native mapping;
-these are running jobs, not yet completed full-scene receipts. Runtime device
+Both room1/room0 frontends are now complete: 105/101 retained CPU frames and
+95/99 GPU-completed frames respectively. All 400 artifacts per scene and retained
+CPU hashes were checked. Room1 native geometry/mapping preparation is running;
+static confirmation has not been scored. Runtime device
 metadata is migrated explicitly; model, input grid and inference thresholds
-are unchanged. The room0 observation bank currently contains 95 validated frames,
+are unchanged. The room0 observation bank now contains all 200 validated frames,
 while the previously reported diagnostic still uses only its original 13 frames.
 Office original assets remain missing.
 
