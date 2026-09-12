@@ -34,6 +34,7 @@ Ghost 的零值必须结合分子/分母读取。
 - `apartment_H2_recovered_semantic_attribution.json`：2,939 源行/666 物理样本的恢复归因。
 - `*_registry.json`：实际角色、unary、图参数、投票裁决及输入预算。
 - `model_manifest.json`：官方来源、代码版本、checkpoint SHA256、严格加载证据。
+- `compact_artifact_index.json`：186 份已跟踪紧凑制品的大小与 SHA256；索引不包含自身。
 
 完整讨论与局限见同目录的结果报告；计划文件保留输入和实现约束。
 各任务使用独立协议，不把动态 mIoU 与 Replica 静态 mIoU 混合排名。
@@ -70,5 +71,5 @@ MAP 为 LOCAL_ONLY_POLICY：最终 H2 四份 PLY 共约 2.08 GB，每份包含
 800,000 行的固定视角预览仅用于展示，不能代替全图数值。
 
 仍需完成：最终总表字段与家族讨论收尾、成功/失败区域展示核对、
-完整 artifact index、evaluated_code_sha/delivery_sha 区分，以及按任务书
+evaluated_code_sha/delivery_sha 区分，以及按任务书
 逐项验收和远端结果可读性核验。最终完成状态以该验收为准。
