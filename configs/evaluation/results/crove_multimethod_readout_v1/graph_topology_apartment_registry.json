@@ -1,0 +1,14 @@
+{
+  "GT_read": false,
+  "case": "apartment-t0-000766-001021-t1-001217-001472",
+  "current_filter": "all source rows from each frozen state; keep only faces with all three vertices current; retain isolated current rows",
+  "edges": "actual welded source triangle adjacency; Gaussian distance sigma 0.03 m",
+  "normals": "same fixed 0.95 cosine compatibility as room0",
+  "patch_size_m": 0.02,
+  "shared_representation": "all unary and boundary controls in a state share this exact patch inverse",
+  "states": [
+    "B3",
+    "H2"
+  ],
+  "visit_boundary": "never weld or propagate across visits; this source has one geometry epoch/surface per visit and is checked explicitly"
+}

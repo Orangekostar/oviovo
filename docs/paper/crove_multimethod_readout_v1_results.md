@@ -11,6 +11,8 @@ Independent-mask pipeline diagnostics use `943a96c` (subsequent pre-commit
 changes were formatting and additional residual-count reporting only).
 Apartment cached-view and adapter pairs use `d4e3d67`; the shared bridge extraction
 preserves the executed cached-view computation and is exercised by the adapter pair.
+Apartment diverse/quality and posterior graph controls use `43f8aae`;
+the extracted evaluator AST is identical to the previously evaluated kernel.
 This is an intermediate result, not the final four-family screening report.
 
 ## room0 complete-surface initial batch
@@ -57,8 +59,17 @@ Coverage is 99.85233%/99.85201%; two zero-quality owners fall back. New image
 forwards remain zero. Shared selection/projection take 9.22/14.87 s; prediction/write
 takes 5.50/5.61 s. Higher mIoU comes with substantially lower f-mIoU, not an
 across-metric improvement. Static CURRENT_AWARE is an exact QUALITY prediction
-alias, not evidence for dynamic adaptation. Per-crop normalized features and
-structural-background patch observations still require separate work.
+alias, not evidence for dynamic adaptation. Structural-background patch
+observations still require separate work. The original room0 and native-build
+`VLModel.encode_image_with_bbox` both normalize each of six crop features before
+averaging; M1 subsequently normalizes that per-view mean. The prior statement
+that per-crop normalization required re-encoding was incorrect. Individual crop
+scale ablations are unavailable from these means, but the prescribed normalized
+six-crop hierarchy is already present (also documented in task evidence E15).
+The audited source SHA256 values are `607ed3d0ddf8eb39b8989e606d0d7797d8966bc902952fff819ccb020a5169a9`
+(room0 checkout) and `b0925c0c78fd46be779fb9fbcde171fcaef58bd89a7f7d99b8fc1b24a1836ba2`
+(native build). Native source manifest commit `58a804e2d7c82ba05a489eb071aba3367301fed8`
+also contains this operation. These are source audits, not reconstructed raw crops.
 
 S0 and S2 have now been rerun on this same complete surface (see below).
 No winner has been frozen and no new deployment recommendation is made.
@@ -149,6 +160,14 @@ common-v2 vocabulary, not classes selected from GT. No image encoder is rerun.
 | H2 | MV_NATIVE_CACHED | 0.135734 | 0.734726 | 0.435710 | PASS |
 | H2 | MV_SINGLE | 0.133032 | 0.670218 | 0.427587 | FAIL |
 | H2 | MV_TOPK_MEAN | 0.139394 | 0.343541 | 0.327174 | FAIL |
+| B3 | MV_DIVERSE_MEAN | 0.135886 | 0.734413 | 0.431335 | PASS |
+| B3 | MV_QUALITY | 0.137077 | 0.736586 | 0.434848 | PASS |
+| H2 | MV_DIVERSE_MEAN | 0.135734 | 0.734726 | 0.435710 | PASS |
+| H2 | MV_QUALITY | 0.137684 | 0.736894 | 0.439203 | PASS |
+| B3 | MV_QUALITY_PATCH_ONLY | 0.137077 | 0.736694 | 0.434867 | PASS |
+| B3 | MV_QUALITY_GRAPH_GEOM | 0.137093 | 0.736702 | 0.434868 | PASS |
+| H2 | MV_QUALITY_PATCH_ONLY | 0.137684 | 0.737002 | 0.439222 | PASS |
+| H2 | MV_QUALITY_GRAPH_GEOM | 0.137699 | 0.737010 | 0.439224 | PASS |
 | B3 | ADAPTER_CLIP_MEAN | 0.115477 | 0.203297 | 0.244898 | FAIL |
 | B3 | ADAPTER_CLIP_LEARNED | 0.135273 | 0.198584 | 0.241745 | FAIL |
 | H2 | ADAPTER_CLIP_MEAN | 0.115927 | 0.203402 | 0.245449 | FAIL |
@@ -166,10 +185,19 @@ The bank contains 125 feature owners, with 853/125/482 selected observations for
 native/single/top-k respectively. Coverage is 99.45831% in B3 and 99.45841% in H2;
 missing observations preserve the exact old label and role. Prediction/write
 cost is recorded per output, excluding shared model, geometry and GT work.
-Diverse/quality/current-aware dynamic variants remain pending.
+DIVERSE and QUALITY have now completed both states, with identical selected
+views and own-state valid-row quality projection. DIVERSE reproduces all nine
+native metrics. QUALITY improves current mIoU and surface F1 in both states and
+passes the original gates, with Ghost 0 and unchanged background F1. It changes
+8,250 roles in each state; geometry remains frozen. Coverage is
+99.42440%/99.42379%; 482 candidate owner-views span 301 frames, with zero new image
+forwards. Shared selection/projection take 32.40/67.81 s, excluding loading,
+writes and evaluation. Dynamic cross-visit CURRENT_AWARE is still pending;
+QUALITY is an eligible candidate, not a frozen final-family winner.
 
 ```bash
 python scripts/evaluation/run_crove_multiview_apartment.py
+python scripts/evaluation/run_crove_multiview_quality_apartment.py
 ```
 
 The paired trained adapter has completed both states through the same bridge. Native
@@ -187,7 +215,7 @@ have Ghost 1.0 and fail the original Ghost and surface-precision gates. Backgrou
 F1 is 0.445280. Neither static head gains nor dynamic mean-pool gains imply an
 eligible final-current readout. B3/H2 source sets and owners remain fixed.
 An independent role-free geometry audit measures 6,895 confirmed-free conflicts
-among 7,783 changed-region source rows in each state. All ten readouts have exact
+among 7,783 changed-region source rows in each state. All eighteen readouts have exact
 source/owner equality and zero all-geometry conflict-count delta. Thus the change
 in official Ghost is role-conditioned; no geometry is added by these readouts.
 See `apartment_readout_geometry_audit.json` for counts and role distributions.
@@ -199,8 +227,8 @@ python scripts/evaluation/audit_crove_apartment_readout_geometry.py
 
 | Family | Real current status | Still required |
 | --- | --- | --- |
-| M1 | Partial room0 and Apartment native/single/top-k B3/H2 pair | per-crop/structural patch evidence, dynamic diverse/quality/state adaptation, confirmation |
-| M2 | Partial room0 S2 and M1 posterior patch-only/geometry graph; boundary path implemented | full-input boundary evaluation, B3/H2 and confirmation |
+| M1 | Partial room0 and Apartment native/single/top-k/diverse/quality B3/H2 pairs | structural patch evidence, dynamic state adaptation, confirmation |
+| M2 | room0 S2/M1 and Apartment QUALITY patch-only/geometry graph pairs | dynamic local S2 control, full-input boundary evaluation and confirmation |
 | M3 | Real 13-frame end-to-end diagnostic without GT; full-source predictions and lineage verified | full 200-frame pairwise/consensus scoring, resem, B3/H2 and confirmation |
 | M4 | Official trained room0 and Apartment B3/H2 mean/learned pairs completed | static confirmation and limited combinations |
 
@@ -210,7 +238,26 @@ Code retains official attribution and Apache-2.0 license.
 
 B3/H2 legacy-to-pointwise equality is verified separately in `bridge_B3.json` and
 `bridge_H2.json` (mIoU 0.135886/0.135734). The M1 dynamic pair above is now evaluated;
-M4 also has complete dynamic paired scores; M2/M3 dynamic results remain pending.
+M4 also has complete dynamic paired scores; M3 dynamic results remain pending.
+Apartment M2 topology preserves all 15,622,601/15,625,540 current source rows,
+including isolated rows, and excludes faces containing invalid vertices. B3/H2
+have 2,225,953/2,226,715 patch nodes and 2,712,720/2,712,879 undirected edges;
+source backprojection is 100%. Different visits cannot weld or exchange graph
+messages. Topology construction reads no GT and took 60.48/62.29 s.
+Both state graph pairs are now evaluated. Patch-only changes 17,984 labels versus
+pointwise QUALITY in each state but leaves current mIoU unchanged. Geometry
+propagation changes another 5,685 labels and adds only 0.0000152/0.0000155 mIoU.
+All four rows pass the original gates. This is a very small DEV increment,
+not broad evidence of graph benefit; real boundary controls remain required.
+Pointwise confidence is inherited, not relabeled as calibrated graph confidence.
+The old Apartment source semantic cache is owner fallback, not independent local
+S2 evidence, and is not presented as such a control.
+
+```bash
+python scripts/evaluation/build_crove_apartment_graphs.py
+python scripts/evaluation/run_crove_graph_apartment.py
+```
+
 room1 remains the frozen static confirmation scene, with raw inputs present but
 derived OVI/S2 inputs pending. The native room1 GPU frontend failed with verified
 CUDA OOM under existing GPU occupancy. Full-resolution CPU frontend preparation

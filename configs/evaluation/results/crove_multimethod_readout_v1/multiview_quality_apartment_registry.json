@@ -1,0 +1,31 @@
+{
+  "current_aware_status": "separate cross-visit current-evidence policy still pending",
+  "depth_tolerance_m": 0.05,
+  "features": "same retained native six-crop means and shared SigLIP text as initial Apartment batch",
+  "frame_windows": {
+    "t0": [
+      766,
+      1021
+    ],
+    "t1": [
+      1217,
+      1472
+    ]
+  },
+  "methods": [
+    "MV_DIVERSE_MEAN",
+    "MV_QUALITY"
+  ],
+  "minimum_unique_pixels": 16,
+  "missing_quality": "KEEP_SOURCE, no uniform pseudo-evidence",
+  "new_image_encoder_forwards": 0,
+  "quality": "same room0 depth-consistent / projectable unique pixels * sqrt(min(1, support / native visible area)) * truncation factor; only own-state valid source rows",
+  "scene": "apartment",
+  "selection": "same room0 angular farthest-first, visible-area seed; original source-owner physical centroid; identical selected views in B3/H2",
+  "states": [
+    "B3",
+    "H2"
+  ],
+  "top_k": 4,
+  "truncation_factor": "0.5 when original crop bbox touches image boundary, otherwise 1"
+}

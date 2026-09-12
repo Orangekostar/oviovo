@@ -1,0 +1,22 @@
+{
+  "GT_read_before_all_predictions_saved": false,
+  "confidence": "inherited pointwise confidence, not a new calibrated graph posterior",
+  "damping": 0.5,
+  "iterations": 5,
+  "lambda": 0.2,
+  "missing": "retain exact pointwise semantic, confidence and role",
+  "normalization": "symmetric_degree",
+  "point_readout": "native_diverse_quality/MV_QUALITY",
+  "reliability": "unit for observed owner; quality already applied in M1",
+  "scope": "eligible DEV candidate control, not final family selection",
+  "states": [
+    "B3",
+    "H2"
+  ],
+  "topology": "graph_topology_apartment_registry.json",
+  "unary": "M1_REAL_POSTERIOR_PHYSICAL_MEAN_NEG_LOG",
+  "variants": [
+    "MV_QUALITY_PATCH_ONLY",
+    "MV_QUALITY_GRAPH_GEOM"
+  ]
+}
