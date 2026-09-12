@@ -67,6 +67,15 @@ def main():
         "graph_mv_quality_boundary": ["MV_QUALITY_GRAPH_BOUNDARY"],
         "consensus": ["INST_PAIRWISE", "INST_CONSENSUS_OWNER"],
         "current_aware": ["MV_CURRENT_AWARE"],
+        "graph_s2_dense_replay": [
+            "S2_DENSE_REPLAY_PATCH_ONLY",
+            "S2_DENSE_REPLAY_GRAPH_GEOM",
+        ],
+        "graph_s2_dense_replay_boundary": ["S2_DENSE_REPLAY_GRAPH_BOUNDARY"],
+        "graph_adapter_learned": [
+            "ADAPTER_LEARNED_PATCH_ONLY",
+            "ADAPTER_LEARNED_GRAPH_GEOM",
+        ],
         "local_semantic_controls": [
             "B_SEM_CROVE_S0_DENSE_REPLAY",
             "B_SEM_CROVE_S2_DENSE_REPLAY",

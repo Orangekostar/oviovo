@@ -35,7 +35,9 @@ from src.oviv2.surface_readout_graph import (
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--unary", choices=("s2", "mv_quality"), default="s2")
+    parser.add_argument(
+        "--unary", choices=("s2", "mv_quality", "adapter"), default="s2"
+    )
     parser.add_argument("--boundary", action="store_true")
     args = parser.parse_args()
     config = json.loads(
@@ -49,11 +51,20 @@ def main():
     class_ids = np.arange(1, len(classes) + 1)
     room = path(config["run_root"]) / "dev/room0"
     shared_graph = room / "graph_s2"
-    root = shared_graph if args.unary == "s2" else room / "graph_mv_quality"
+    root = (
+        room
+        / {
+            "s2": "graph_s2",
+            "mv_quality": "graph_mv_quality",
+            "adapter": "graph_adapter_learned",
+        }[args.unary]
+    )
     point_graph_root = root
     if args.boundary:
         root = root.with_name(root.name + "_boundary")
-    prefix = "S2" if args.unary == "s2" else "MV_QUALITY"
+    prefix = {"s2": "S2", "mv_quality": "MV_QUALITY", "adapter": "ADAPTER_LEARNED"}[
+        args.unary
+    ]
     root.mkdir(parents=True, exist_ok=True)
     settings = {
         "case": "room0",
@@ -80,6 +91,15 @@ def main():
             shared_patch_mapping="dev/room0/graph_s2/patch_mapping.npz",
         )
         registry = registry.with_name("graph_mv_quality_room0_registry.json")
+    if args.unary == "adapter":
+        settings.update(
+            unary="M4_REAL_POSTERIOR_PHYSICAL_MEAN_NEG_LOG",
+            variants=[f"{prefix}_PATCH_ONLY", f"{prefix}_GRAPH_GEOM"],
+            scope="limited frozen M4+M2 combination; no new head training or graph tuning",
+            reliability="unit for observed owner; missing rows preserve adapter point fallback",
+            shared_patch_mapping="dev/room0/graph_s2/patch_mapping.npz",
+        )
+        registry = registry.with_name("graph_adapter_learned_room0_registry.json")
     if args.boundary:
         settings.update(
             variants=[f"{prefix}_GRAPH_BOUNDARY"],
@@ -121,10 +141,13 @@ def main():
         normals, triangles = d["normals_xyz"], d["triangles"]
         if not d["current_valid"].all():
             raise ValueError("static current set differs")
-    prediction = room / (
-        "semantic_controls/B_SEM_CROVE_S2.npz"
-        if args.unary == "s2"
-        else "native_diverse_quality/MV_QUALITY.npz"
+    prediction = (
+        room
+        / {
+            "s2": "semantic_controls/B_SEM_CROVE_S2.npz",
+            "mv_quality": "native_diverse_quality/MV_QUALITY.npz",
+            "adapter": "adapter_projected_top4/ADAPTER_CLIP_LEARNED.npz",
+        }[args.unary]
     )
     with np.load(prediction) as d:
         if not np.array_equal(d["source_indices"], source) or not np.array_equal(
@@ -132,11 +155,13 @@ def main():
         ):
             raise ValueError("point prediction source mismatch")
         ids, conf = d["semantic_ids"], d["semantic_confidence"]
-        if args.unary == "mv_quality":
+        if args.unary != "s2":
             feature_owners, posterior = d["feature_owners"], d["owner_posterior"]
-            original_supported = d["feature_covered"]
+            original_supported = d[
+                "feature_coverage" if args.unary == "adapter" else "feature_covered"
+            ]
             if not np.array_equal(d["class_ids"], class_ids):
-                raise ValueError("M1 class vocabulary differs")
+                raise ValueError("posterior class vocabulary differs")
     cache = shared_graph / "patch_mapping.npz"
     graph_path = shared_graph / "geometry_edges.npz"
     if cache.exists() and graph_path.exists():

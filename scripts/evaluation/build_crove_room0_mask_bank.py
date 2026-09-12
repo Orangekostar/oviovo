@@ -29,6 +29,7 @@ def file_hash(filename):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--available-only", action="store_true")
+    parser.add_argument("--scene", choices=["room0", "room1"], default="room0")
     args = parser.parse_args()
     config = json.loads(
         (ROOT / "configs/evaluation/crove_multimethod_readout_v1.json").read_text()
@@ -36,13 +37,17 @@ def main():
     case = json.loads(path(config["source_config"]).read_text())["cases"][
         "replica_room0_static"
     ]
-    room = path(config["run_root"]) / "dev/room0"
+    room = path(config["run_root"]) / (
+        "dev/room0" if args.scene == "room0" else "confirm/room1"
+    )
     output = room / "independent_mask_bank"
     output.mkdir(exist_ok=True)
-    frontend = room / "cropformer_cpu/frontend"
+    frontend = room / (
+        "cropformer_cpu/frontend" if args.scene == "room0" else "native_cpu/frontend"
+    )
     patch_file = room / "graph_s2/patch_mapping.npz"
     settings = {
-        "case": "room0",
+        "case": args.scene,
         "frames": list(range(0, 2000, 10)),
         "patch_sha256": file_hash(patch_file),
         "representative": "actual source point nearest fixed patch center; ties by source row order",
@@ -57,9 +62,13 @@ def main():
         },
         "scope": "fixed local-patch representative adaptation; not full original MaskClustering reproduction",
     }
+    if args.scene == "room1":
+        settings["projection"] = (
+            "same saved Replica poses as native mapper, positive measured depth within 0.05 m"
+        )
     registry = (
         path(config["compact_output_root"])
-        / "independent_mask_bank_room0_registry.json"
+        / f"independent_mask_bank_{args.scene}_registry.json"
     )
     if registry.exists():
         previous = json.loads(registry.read_text())
@@ -81,11 +90,14 @@ def main():
     else:
         with np.load(patch_file) as data:
             patch, centers = data["source_patch"], data["centers"]
-        with np.load(
+        geometry_file = (
             path(
                 "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/replica_room0_static_full_v1/current_map/current_surface.npz"
             )
-        ) as data:
+            if args.scene == "room0"
+            else room / "inputs/current_surface.npz"
+        )
+        with np.load(geometry_file) as data:
             xyz = data["vertices_xyz"]
             if not data["current_valid"].all() or np.any(data["source_visit_ids"] != 0):
                 raise ValueError("static source state differs")
@@ -100,7 +112,9 @@ def main():
         points = xyz[rows]
         atomic_npz(representatives, xyz=points, source_rows=rows)
         del xyz, patch, distance, nearest, candidates, centers
-    dataset = ReplicaRoom0Dataset(path(case["rgb_projection"]["dataset_root"]))
+    dataset = ReplicaRoom0Dataset(
+        path(case["rgb_projection"]["dataset_root"]).with_name(args.scene)
+    )
     all_nodes = np.arange(len(points))
     completed, missing = [], []
     for frame_id in settings["frames"]:
@@ -146,7 +160,7 @@ def main():
         completed.append(frame_id)
         print(f"frame {frame_id}: {len(nodes)} interior patch observations", flush=True)
     status = {
-        "case": "room0",
+        "case": args.scene,
         "status": "COMPLETE" if not missing else "PARTIAL",
         "frame_count": len(completed),
         "authorized_frame_count": 200,
@@ -157,7 +171,8 @@ def main():
         "registry": registry.name,
     }
     _atomic_json(
-        path(config["compact_output_root"]) / "independent_mask_bank_room0_status.json",
+        path(config["compact_output_root"])
+        / f"independent_mask_bank_{args.scene}_status.json",
         status,
     )
     print(status["status"], len(completed), "/ 200", flush=True)

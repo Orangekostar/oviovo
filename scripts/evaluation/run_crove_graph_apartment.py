@@ -90,7 +90,9 @@ def load_boundary_observations(config, pair, state):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--boundary", action="store_true")
-    parser.add_argument("--unary", choices=["mv_quality", "s2"], default="mv_quality")
+    parser.add_argument(
+        "--unary", choices=["mv_quality", "s2", "adapter"], default="mv_quality"
+    )
     args = parser.parse_args()
     config = json.loads(
         (ROOT / "configs/evaluation/crove_multimethod_readout_v1.json").read_text()
@@ -173,6 +175,30 @@ def main():
         registry = registry.with_name(
             f"graph_s2_dense_replay{'_boundary' if args.boundary else ''}_apartment_registry.json"
         )
+    if args.unary == "adapter":
+        prefix = "ADAPTER_LEARNED"
+        point_directory, point_method = "adapter_projected_top4", "ADAPTER_CLIP_LEARNED"
+        point_graph_output = room / "graph_adapter_learned"
+        output = room / (
+            "graph_adapter_learned_boundary"
+            if args.boundary
+            else "graph_adapter_learned"
+        )
+        output.mkdir(exist_ok=True)
+        variants = [
+            (name.replace("MV_QUALITY", prefix), strength)
+            for name, strength in variants
+        ]
+        settings.update(
+            variants=[name for name, _ in variants],
+            unary="M4_REAL_POSTERIOR_PHYSICAL_MEAN_NEG_LOG",
+            point_readout=f"{point_directory}/{point_method}",
+            reliability="unit for observed owner; trained head class posterior already computed",
+            scope="limited frozen M4 + M2 combination; no new head training or graph tuning",
+        )
+        registry = registry.with_name(
+            f"graph_adapter_learned{'_boundary' if args.boundary else ''}_apartment_registry.json"
+        )
     if registry.exists():
         if json.loads(registry.read_text()) != settings:
             raise ValueError("frozen graph settings differ")
@@ -207,9 +233,7 @@ def main():
             )
         else:
             with np.load(
-                room
-                / "native_diverse_quality"
-                / f"{state}_MV_QUALITY_owner_features.npz"
+                room / point_directory / f"{state}_{point_method}_owner_features.npz"
             ) as data:
                 if not np.array_equal(classes, data["class_ids"]):
                     raise ValueError("posterior vocabulary differs")

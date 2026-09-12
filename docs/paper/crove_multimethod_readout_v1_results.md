@@ -98,6 +98,8 @@ is 0.470711 and geometry F5 is 0.935286 throughout.
 | B_SEM_CROVE_S2 | 0.447889 | 0.673573 |
 | ADAPTER_CLIP_MEAN | 0.364617 | 0.638058 |
 | ADAPTER_CLIP_LEARNED | 0.396887 | 0.644932 |
+| ADAPTER_LEARNED_PATCH_ONLY | 0.398003 | 0.645817 |
+| ADAPTER_LEARNED_GRAPH_GEOM | 0.398174 | 0.645988 |
 | S2_PATCH_ONLY | 0.443890 | 0.668636 |
 | S2_GRAPH_GEOM | 0.443963 | 0.668539 |
 | MV_QUALITY_PATCH_ONLY | 0.396774 | 0.409143 |
@@ -116,6 +118,13 @@ Shared measured projection time is 7.06 s and frame processing time is 19.61 s,
 excluding model loading, cache compression/writes and GT evaluation. Peak allocated
 GPU memory is 1,738,725,376 bytes. The initial forward counter of 133 was corrected
 to 130 from nonempty feature caches; predictions and scores were unchanged.
+
+The limited M4+M2 combination reuses these trained-head posteriors and the same
+fixed graph. Patch pooling adds 0.001116 mIoU over pointwise learned pooling;
+geometry propagation adds another 0.000171. It remains below S2. Patch-only and
+geometry inference take 0.38/12.58 s, excluding shared topology construction,
+prediction serialization and evaluation. All unsupported point labels and all
+source rows, owners and point confidences are preserved exactly.
 
 M2 welds compatible repeated vertices and uses actual triangle topology, not global
 kNN. The fixed 2 cm patches contain 629,549 nodes and 1,291,958 undirected edges,
@@ -279,9 +288,9 @@ python scripts/evaluation/audit_crove_apartment_readout_geometry.py
 | Family | Real current status | Still required |
 | --- | --- | --- |
 | M1 | room0 and Apartment native/single/top-k/diverse/quality plus Apartment current-aware B3/H2 pairs | structural patch evidence and confirmation |
-| M2 | room0 S2/M1 and Apartment QUALITY graph pairs complete; actual dynamic S0/S2 point controls evaluated | dynamic S2 graph pairs and confirmation |
+| M2 | room0 S2/M1 and Apartment QUALITY/S2 graph controls complete | confirmation |
 | M3 | room0 and Apartment full pairwise/consensus-owner pairs and matched resem evaluated | confirmation |
-| M4 | Official trained room0 and Apartment B3/H2 mean/learned pairs completed | static confirmation and limited combinations |
+| M4 | Official trained room0 and Apartment B3/H2 mean/learned pairs completed; same-graph combinations added | static confirmation |
 
 M4 uses the official trained checkpoint, not random weights or a local untrained
 replacement. Its three-mask numerical test is explicitly not a whole-map result.
@@ -334,10 +343,26 @@ All four full predictions were saved before scoring.
 The semantic scores exceed native, but Ghost is 0.839508/0.959827 for S0/S2
 and surface precision is only 0.0753/0.1124 in B3. These results do not qualify
 as final current maps and do not improve frozen geometry. Dynamic S2 graph
-controls are now running; its scalar is an explicit pseudo-unary input, not
-a VLM distribution, and must not be multiplied by local reliability again.
-The expanded audit verifies all 38 full-state source/owner invariants and all
-76 recovered-row tables across 19 methods. S0/S2 correctly label 630/677
+controls are complete; its scalar is an explicit pseudo-unary input, not
+a VLM distribution, and is not multiplied by local reliability again.
+
+| Dynamic graph control | B3 mIoU | H2 mIoU | B3/H2 original gates |
+| --- | ---: | ---: | --- |
+| S2_DENSE_REPLAY_PATCH_ONLY | 0.174610 | 0.175753 | FAIL / FAIL |
+| S2_DENSE_REPLAY_GRAPH_GEOM | 0.174688 | 0.175482 | FAIL / FAIL |
+| S2_DENSE_REPLAY_GRAPH_BOUNDARY | 0.174768 | 0.175771 | FAIL / FAIL |
+| ADAPTER_LEARNED_PATCH_ONLY | 0.135167 | 0.136777 | FAIL / FAIL |
+| ADAPTER_LEARNED_GRAPH_GEOM | 0.135151 | 0.136786 | FAIL / FAIL |
+
+All rows reuse the frozen same-visit geometry topology, lambda 0.2, five
+iterations and damping 0.5. S2 geometry propagation helps B3 but hurts H2
+relative to patch-only; boundary attenuation gives a small increment in both.
+The M4 combination consumes the existing trained-head full-class posterior,
+without another training run or parameter search. Its Ghost remains 1.0 in
+both states; graph optimization does not repair its final-current gate failure.
+Inherited point confidence is not a calibrated graph posterior.
+The expanded audit verifies all 48 full-state source/owner invariants and all
+96 recovered-row tables across 24 methods. S0/S2 correctly label 630/677
 GT-supported restored source rows (154/167 physical samples), respectively.
 The existing all-current geometry conflict counts remain unchanged.
 
@@ -523,8 +548,8 @@ is exercised but provides no measured gain here. The original 31.77/38.50 s
 prediction/write runtimes are retained; zero new image forwards are required.
 Sparse full-class patch posteriors are saved, and a cache reconstruction checks
 all frozen prediction arrays exactly before retaining the original files.
-The geometry audit now covers 38 full-state predictions; recovered-row
-attribution covers 19 methods/76 conserved tables. CURRENT_AWARE correctly labels
+The geometry audit now covers 48 full-state predictions; recovered-row
+attribution covers 24 methods/96 conserved tables. CURRENT_AWARE correctly labels
 45 restored GT-supported rows (13 physical samples), the same as its matched
 QUALITY baseline; its restored semantic changes are 1,027 rows/293 samples.
 
@@ -537,8 +562,9 @@ Room0 has 27,802 regions over 5,983,832 structural rows; Apartment B3/H2 have
 33.23/70.71/69.92 s respectively. Many disconnected components are small;
 later observation selection must use actual unique visible-pixel support,
 with missing regions retaining fallback rather than being discarded.
-Actual local encoding is running: room0 selects 1,138 regions/4,505 six-crop
-batches and B3 selects 2,599 regions/10,174 batches; H2 follows the same frozen
+Actual local encoding has completed for room0: 1,138 regions/4,505 six-crop
+batches, with 1,632.14 s of encoder forwards. B3 is running with
+2,599 regions/10,174 batches; H2 follows the same frozen
 selection. Each requires at least two same-visit observations with at least
 16 unique independent-mask-interior pixels, then at most four diverse views.
 `MV_LOCAL_BG_QUALITY` and `MV_BG_OWNER_QUALITY` full-map readers are implemented
@@ -558,12 +584,20 @@ python scripts/evaluation/run_crove_local_background_readouts.py
 ```
 
 room1 remains the frozen static confirmation scene. Its native OVI inputs are
-now generated; local S0/S2 derivation is running and confirmation readouts remain
-pending. Its existing 200-frame frontend and dense caches are available. The
+now generated; native and local S0/S2 full-row inputs are ready and confirmation
+scoring remains pending. Its existing 200-frame frontend and dense caches are available. The
 old room0 stage-3 CROVE configuration is replayed with only scene/asset paths
 changed, using `--skip-evaluation`. All 200 raw/subsampled pose matrices match
 exactly. This produces a real CROVE local reference before any confirmation
 score, rather than treating missing derived S0/S2 files as an asset failure.
+The three input readouts preserve all 6,421,401 native source rows and owners.
+Native labels use at least two authorized observations, the official last-eight
+visibility-weighted feature aggregation and canonical-relative confidence.
+The local reference contains 44,572 vertices. Unscored shared topology has
+575,784 nodes and 958,273 edges, built in 25.81 s; all 200 independent-mask
+observation frames are now complete. These are input preparations, not four
+completed family confirmations. DEV selection must still be frozen before GT
+is opened for confirmation.
 The native room1 GPU frontend failed with verified
 CUDA OOM under earlier GPU occupancy. After GPU 1 recovered roughly 38 GB free,
 a complete-resolution authorized-frame probe passed in 3.81 s. CPU preparation

@@ -1,0 +1,22 @@
+{
+  "GT_read_before_all_predictions_saved": false,
+  "confidence": "inherited pointwise confidence, not a new calibrated graph posterior",
+  "damping": 0.5,
+  "iterations": 5,
+  "lambda": 0.2,
+  "missing": "retain exact pointwise semantic, confidence and role",
+  "normalization": "symmetric_degree",
+  "point_readout": "adapter_projected_top4/ADAPTER_CLIP_LEARNED",
+  "reliability": "unit for observed owner; trained head class posterior already computed",
+  "scope": "limited frozen M4 + M2 combination; no new head training or graph tuning",
+  "states": [
+    "B3",
+    "H2"
+  ],
+  "topology": "graph_topology_apartment_registry.json",
+  "unary": "M4_REAL_POSTERIOR_PHYSICAL_MEAN_NEG_LOG",
+  "variants": [
+    "ADAPTER_LEARNED_PATCH_ONLY",
+    "ADAPTER_LEARNED_GRAPH_GEOM"
+  ]
+}
