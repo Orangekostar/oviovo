@@ -1,0 +1,22 @@
+{
+  "GT_read_before_all_predictions_saved": false,
+  "confidence": "inherited pointwise confidence, not a new calibrated graph posterior",
+  "damping": 0.5,
+  "iterations": 5,
+  "lambda": 0.2,
+  "missing": "retain exact pointwise semantic, confidence and role",
+  "normalization": "symmetric_degree",
+  "point_readout": "local_semantic_controls/B_SEM_CROVE_S2_DENSE_REPLAY",
+  "reliability": "bounded point confidence only; no second local support factor; known native fallback remains valid",
+  "scope": "eligible DEV candidate control, not final family selection",
+  "states": [
+    "B3",
+    "H2"
+  ],
+  "topology": "graph_topology_apartment_registry.json",
+  "unary": "S2_PSEUDO_UNARY_V1",
+  "variants": [
+    "S2_DENSE_REPLAY_PATCH_ONLY",
+    "S2_DENSE_REPLAY_GRAPH_GEOM"
+  ]
+}

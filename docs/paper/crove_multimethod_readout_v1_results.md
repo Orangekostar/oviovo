@@ -334,7 +334,7 @@ All four full predictions were saved before scoring.
 The semantic scores exceed native, but Ghost is 0.839508/0.959827 for S0/S2
 and surface precision is only 0.0753/0.1124 in B3. These results do not qualify
 as final current maps and do not improve frozen geometry. Dynamic S2 graph
-controls remain required; its scalar is an explicit pseudo-unary input, not
+controls are now running; its scalar is an explicit pseudo-unary input, not
 a VLM distribution, and must not be multiplied by local reliability again.
 The expanded audit verifies all 38 full-state source/owner invariants and all
 76 recovered-row tables across 19 methods. S0/S2 correctly label 630/677
@@ -344,6 +344,8 @@ The existing all-current geometry conflict counts remain unchanged.
 ```bash
 python scripts/evaluation/replay_crove_apartment_local_semantics.py
 python scripts/evaluation/run_crove_apartment_local_controls.py
+python scripts/evaluation/run_crove_graph_apartment.py --unary s2
+python scripts/evaluation/run_crove_graph_apartment.py --unary s2 --boundary
 ```
 
 ```bash

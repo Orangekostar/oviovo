@@ -21,7 +21,11 @@ from scripts.evaluation.run_ovimap_native import _atomic_json
 from src.evaluation.baselines.tesse_semantics import load_tesse_semantic_crosswalk
 from src.oviv2.surface_mask_evidence import boundary_graph
 from src.oviv2.surface_readout import resolve_semantic_update
-from src.oviv2.surface_readout_graph import graph_labels, posterior_unary
+from src.oviv2.surface_readout_graph import (
+    graph_labels,
+    posterior_unary,
+    s2_pseudo_unary,
+)
 
 
 def load_boundary_observations(config, pair, state):
@@ -86,6 +90,7 @@ def load_boundary_observations(config, pair, state):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--boundary", action="store_true")
+    parser.add_argument("--unary", choices=["mv_quality", "s2"], default="mv_quality")
     args = parser.parse_args()
     config = json.loads(
         (ROOT / "configs/evaluation/crove_multimethod_readout_v1.json").read_text()
@@ -140,6 +145,34 @@ def main():
         registry = registry.with_name(
             "graph_mv_quality_boundary_apartment_registry.json"
         )
+    prefix = "MV_QUALITY"
+    point_directory, point_method = "native_diverse_quality", "MV_QUALITY"
+    if args.unary == "s2":
+        prefix = "S2_DENSE_REPLAY"
+        point_directory, point_method = (
+            "local_semantic_controls",
+            "B_SEM_CROVE_S2_DENSE_REPLAY",
+        )
+        point_graph_output = room / "graph_s2_dense_replay"
+        output = room / (
+            "graph_s2_dense_replay_boundary"
+            if args.boundary
+            else "graph_s2_dense_replay"
+        )
+        output.mkdir(exist_ok=True)
+        variants = [
+            (name.replace("MV_QUALITY", prefix), strength)
+            for name, strength in variants
+        ]
+        settings.update(
+            variants=[name for name, _ in variants],
+            unary="S2_PSEUDO_UNARY_V1",
+            point_readout=f"{point_directory}/{point_method}",
+            reliability="bounded point confidence only; no second local support factor; known native fallback remains valid",
+        )
+        registry = registry.with_name(
+            f"graph_s2_dense_replay{'_boundary' if args.boundary else ''}_apartment_registry.json"
+        )
     if registry.exists():
         if json.loads(registry.read_text()) != settings:
             raise ValueError("frozen graph settings differ")
@@ -152,9 +185,7 @@ def main():
         adjacency = sparse.load_npz(
             room / "graph_topology" / state / "geometry_edges.npz"
         )
-        with np.load(
-            room / "native_diverse_quality" / f"{state}_MV_QUALITY.npz"
-        ) as data:
+        with np.load(room / point_directory / f"{state}_{point_method}.npz") as data:
             if not np.array_equal(source, data["source_indices"]) or not np.array_equal(
                 owners, data["owner_ids"]
             ):
@@ -166,14 +197,29 @@ def main():
             ):
                 raise ValueError("topology differs from original bridge")
             old_ids, old_roles = data["semantic_ids"], data["eval_role"]
-        with np.load(
-            room / "native_diverse_quality" / f"{state}_MV_QUALITY_owner_features.npz"
-        ) as data:
-            if not np.array_equal(classes, data["class_ids"]):
-                raise ValueError("posterior vocabulary differs")
-            unary, valid, tie = posterior_unary(
-                patch, owners, physical, data["feature_owners"], data["owner_posterior"]
+        if args.unary == "s2":
+            unary, valid, tie = s2_pseudo_unary(
+                patch,
+                baseline["semantic_ids"],
+                baseline["semantic_confidence"],
+                physical,
+                classes,
             )
+        else:
+            with np.load(
+                room
+                / "native_diverse_quality"
+                / f"{state}_MV_QUALITY_owner_features.npz"
+            ) as data:
+                if not np.array_equal(classes, data["class_ids"]):
+                    raise ValueError("posterior vocabulary differs")
+                unary, valid, tie = posterior_unary(
+                    patch,
+                    owners,
+                    physical,
+                    data["feature_owners"],
+                    data["owner_posterior"],
+                )
         patch_labels = None
         boundary_stats = {}
         if args.boundary:
@@ -192,7 +238,7 @@ def main():
             )
             del observations, colors, color_valid
             with np.load(
-                point_graph_output / f"{state}_MV_QUALITY_PATCH_ONLY.npz"
+                point_graph_output / f"{state}_{prefix}_PATCH_ONLY.npz"
             ) as data:
                 if not np.array_equal(data["source_indices"], source):
                     raise ValueError("patch-only control source identity differs")
@@ -208,7 +254,12 @@ def main():
             started = time.monotonic()
             labels = graph_labels(unary, adjacency, valid, tie, strength=strength)
             labels = labels[patch]
-            covered = baseline["feature_covered"] & (labels >= 0)
+            point_supported = (
+                np.isin(baseline["semantic_ids"], classes)
+                if args.unary == "s2"
+                else baseline["feature_covered"]
+            )
+            covered = point_supported & (labels >= 0)
             proposed = baseline["semantic_ids"].copy()
             proposed[covered] = classes[labels[covered]]
             ids, roles = resolve_semantic_update(
