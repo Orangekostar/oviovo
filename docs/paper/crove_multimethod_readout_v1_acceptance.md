@@ -1,7 +1,9 @@
-# Revised V2 acceptance ledger — in progress
+# Revised V2 acceptance ledger — completed evidence review with limitations
 
-This ledger distinguishes verified experiment evidence from remaining delivery
-work. It does not declare the complete objective achieved.
+This ledger records the completed backend screening and static confirmation
+evidence review. It does not claim perfect protocol adherence, complete launch
+provenance, or external dynamic confirmation. Final remote delivery is bound
+separately from the experimental code provenance.
 
 | Requirement | Inspected evidence | Current finding |
 |---|---|---|
@@ -15,18 +17,20 @@ work. It does not declare the complete objective achieved.
 | M3 consensus and resem | Owner-only and same-partition resem rows, independent-mask registries | Both tasks preserved; dynamic AP remains N/A |
 | M4 trained weights and matched pooling | Model manifest, paired DEV/room1 scores | Official trained checkpoint used; zero new training updates |
 | §10.2 selection | `selected_configs.json`, immutable source snapshot and SHA binding | Frozen before room1; metric and eligible winners distinguished |
-| §10.3 final table fields | Inspected 83-row JSON; provenance and coverage tests | Model/source, checkpoint, observed case domain and per-method confirmation states integrated; unrecorded cost/seed fields remain explicit nulls |
+| §10.3 final table fields | Inspected 85-row JSON; provenance and coverage tests | Model/source, checkpoint, observed case domain and per-method confirmation states integrated; unrecorded cost/seed fields remain explicit nulls |
 | §10.4 geometry and local display | Full four-view export audit; recovery source CSV and figure | All final H2 rows/connectivity verified; successes and failures displayed without outcome-selected ROI |
 | §15.1 documents | Plan, results, family discussion and handoff files | Present; stale early status statements corrected; tables embedded/linked rather than duplicated |
 | §15.2 upload boundaries | Model/map manifests and artifact index | External weights referenced; full PLY local-only; compact results and figures pushed |
 | §15.3 code/delivery versions | `code_provenance.json`, Git history comparisons | Exact launch HEAD absent from old score records; narrower file-level evidence and limitation recorded |
-| §15.3 final remote verification | Earlier remote/local checks passed | Must repeat after final changes; not yet final delivery proof |
+| §15.3 remote payload verification | `f1f1c129aa8941877588bd3eb3e4b79984f6b2b8` local/remote match; GitHub API readback of result and handoff | Both decoded file hashes match local bytes; subsequent receipt-only tip checked separately in final handoff response |
 
-Before completion, inspect the remaining detailed task
-clauses and named artifacts against actual sources, refresh the index, and
-verify the final remote branch and readable result/handoff contents. Do not
-promote this partial ledger into a whole-task PASS merely because its existing
-checks are green.
+All task sections were checked against the linked code and evidence. The
+199-entry compact index verifies the current tracked artifacts, excluding itself.
+Seven focused summary tests pass, including rejection of modified frozen scores
+and separation of late supplements. This supplements the 25 core tests below;
+no full-repository test sweep was used. Original selection and all room1 files
+remain unchanged. Delivery verification is recorded separately; these checks
+do not erase the two substantive limitations below.
 
 Audit correction: the strongest new dynamic M1 top-k combination had point,
 patch-only and geometry-graph results at freeze, but lacked the boundary variant

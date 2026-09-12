@@ -2,7 +2,10 @@
 
 交付分支：`research/crove-multimethod-readout-v1`，仓库 `Orangekostar/oviovo`。
 任务依据：`CODEX_CROVE_MULTIMETHOD_READOUT_V1_REVISED_V2_ALL_IN_ONE.md`。
-本交接仍在收尾；不以实验完成代替全部交付要求完成。
+后端筛选与静态确认已完成；协议偏差和代码来源限制保留在验收记录中。
+
+`DEV_SCREENING_STATUS=COMPLETE`；`STATIC_CONFIRMATION_STATUS=COMPLETE`；
+`DYNAMIC_CONFIRMATION_STATUS=NOT_RUN_RAW_MISSING`。
 
 已完成 85 项 DEV 全图评分（room0 27 项、Apartment B3/H2 各 29 项），
 以及未参与选型的 room1 四类配置与直接对照共 11 项确认评分。
@@ -72,9 +75,12 @@ python scripts/evaluation/audit_crove_selected_map_exports.py
 `$HOME/oviovo_baseline_runs/20260912_crove_multimethod_readout_v1/`。
 输入不变时复用缓存；不要删除旧实验来重新获取成功状态。
 
-## 上传边界与剩余工作
+## 上传边界与限制
 
 CODE、紧凑 RESULTS、确认结果和代表地图预览已推送。
+代码/结果交付提交为 `f1f1c129aa8941877588bd3eb3e4b79984f6b2b8`：
+本地与远端一致，GitHub API 回读总表和该提交交接文件的字节哈希一致。
+其后的收尾提交仅更新交付记录与文档，不替代实验启动版本。
 MODEL 为 REUSED_EXTERNAL：本轮新增训练更新为 0，官方约 1.67 GB 权重
 未再分发，来源与一次校验记录已提供。
 MAP 为 LOCAL_ONLY_POLICY：最终 H2 四份 PLY 共约 2.08 GB，每份包含
@@ -85,6 +91,9 @@ MAP 为 LOCAL_ONLY_POLICY：最终 H2 四份 PLY 共约 2.08 GB，每份包含
 506 行剩余错误、1,732 行无邻近 GT 支持，未按表现筛选 ROI。
 源 CSV、预测哈希、SVG/PDF/PNG 及字体/碰撞 QA 一并交付。
 
-仍需完成最终总表字段审查、任务书逐项验收与最终远端交付核验。
+总表字段审查、任务书逐项核对和制品索引检查已完成，证据及范围见
+`crove_multimethod_readout_v1_acceptance.md`。
 启动时 Git SHA 未记录的限制见代码来源记录；不能用交付 SHA 代替。
-最终完成状态以逐项验收为准。
+TOPK 边界对照晚于确认补跑的协议偏差不影响已保存的选型或确认数值，
+但不能称为完全按预定时序完成。新预算优先验证 M3 的场景依赖和 M2
+几何图；不保留全部组合，也不据本轮结果启动 M4 新训练。

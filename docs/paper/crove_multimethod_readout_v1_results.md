@@ -825,8 +825,8 @@ large geometry/prediction sidecars remain local. Official pretrained weights are
 referenced at their original HF source and are not redistributed. No new model
 has been trained. Limited combinations, recovery attribution, frozen selection,
 room1 confirmation and the presented visualizations are complete. The handoff
-document is available; final table-field and task-wide delivery audits remain
-in progress. The launch-time code-version recording limitation is explicit in
+document is available; final table-field and task-clause checks are recorded
+in the acceptance ledger. The launch-time code-version recording limitation is explicit in
 `code_provenance.json` and is not repaired by relabeling a later delivery commit.
 
 ## Late required control: TOPK boundary graph

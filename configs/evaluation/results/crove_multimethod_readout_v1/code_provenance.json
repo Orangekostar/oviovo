@@ -3,8 +3,17 @@
   "evaluated_code_sha_status": "NOT_RECORDED_AT_PROCESS_LAUNCH",
   "limitation": "Existing score records do not bind the complete dirty worktree or Git HEAD at launch. A later commit is not substituted for that missing observation.",
   "reproduction_reference_sha": "0b045a9d20ccbd094bb762c7f3f2b118b9abb3d1",
-  "delivery_sha": null,
-  "delivery_sha_location": "Final remote branch verification and delivery receipt; kept separate from experiment execution provenance",
+  "delivery_sha": "f1f1c129aa8941877588bd3eb3e4b79984f6b2b8",
+  "delivery_sha_location": "Verified code/results payload commit; subsequent receipt/documentation-only commit is not experimental code provenance",
+  "delivery_verification": {
+    "branch": "research/crove-multimethod-readout-v1",
+    "remote": "https://github.com/Orangekostar/oviovo",
+    "local_equals_remote": true,
+    "readback": "GitHub contents API at exact delivery SHA; decoded bytes match local SHA256",
+    "all_method_results_sha256": "cae4092a7ecbfef60b5138088b8a7e6a910f2fff21f0cf4e5a3d9cea3add755a",
+    "handoff_at_payload_commit_sha256": "9fedf5c79fd0a2eb76a5373049f21deba2122efc5ca22b89bb3c152d43fef8cc",
+    "scope": "85 DEV rows and 11 unchanged room1 scores delivered; historical launch HEAD remains unrecorded"
+  },
   "verified_comparison": {
     "from_commit": "d995ae0",
     "to_commit": "0b045a9d20ccbd094bb762c7f3f2b118b9abb3d1",
