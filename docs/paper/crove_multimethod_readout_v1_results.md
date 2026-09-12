@@ -9,6 +9,8 @@ The diverse/quality batch and real-posterior graph controls use `cbb6543`;
 the tie-rule fix was verified by exact full-map prediction recomputation.
 Independent-mask pipeline diagnostics use `943a96c` (subsequent pre-commit
 changes were formatting and additional residual-count reporting only).
+Apartment cached-view and adapter pairs use `d4e3d67`; the shared bridge extraction
+preserves the executed cached-view computation and is exercised by the adapter pair.
 This is an intermediate result, not the final four-family screening report.
 
 ## room0 complete-surface initial batch
@@ -130,19 +132,85 @@ python scripts/evaluation/run_crove_graph_room0.py --unary mv_quality
 
 ## Other progress and remaining obligations
 
+### Apartment cached-view B3/H2 DEV pair
+
+Every method uses the exact saved B3 (15,622,601 rows) and H2 (15,625,540 rows)
+current sets, unchanged owner IDs and the verified legacy evaluator row ordering.
+Native features are hash-bound to the lifted entity manifests and color IDs.
+Local frame IDs map to original 766–1021/1217–1472 windows, and t1 owners retain
+the existing +1,000,000 offset. Text covers the complete public 20 known-class
+common-v2 vocabulary, not classes selected from GT. No image encoder is rerun.
+
+| State | Method | current mIoU | Surface precision | Surface F1 | Original gates |
+| --- | --- | ---: | ---: | ---: | --- |
+| B3 | MV_NATIVE_CACHED | 0.135886 | 0.734413 | 0.431335 | PASS |
+| B3 | MV_SINGLE | 0.132403 | 0.669867 | 0.423467 | FAIL |
+| B3 | MV_TOPK_MEAN | 0.139546 | 0.343176 | 0.324609 | FAIL |
+| H2 | MV_NATIVE_CACHED | 0.135734 | 0.734726 | 0.435710 | PASS |
+| H2 | MV_SINGLE | 0.133032 | 0.670218 | 0.427587 | FAIL |
+| H2 | MV_TOPK_MEAN | 0.139394 | 0.343541 | 0.327174 | FAIL |
+| B3 | ADAPTER_CLIP_MEAN | 0.115477 | 0.203297 | 0.244898 | FAIL |
+| B3 | ADAPTER_CLIP_LEARNED | 0.135273 | 0.198584 | 0.241745 | FAIL |
+| H2 | ADAPTER_CLIP_MEAN | 0.115927 | 0.203402 | 0.245449 | FAIL |
+| H2 | ADAPTER_CLIP_LEARNED | 0.136847 | 0.201748 | 0.245421 | FAIL |
+
+For the six M1 rows, Ghost remains 0 and background F1 remains 0.366360. Native cached
+aggregation reproduces the original point semantics and roles exactly (zero
+changed rows) and all nine legacy metrics in both states. SINGLE changes 179,999
+roles; TOPK changes 1,217,362 roles in each state. Their surface metric losses
+are role-conditioned evaluation changes, not deleted or moved geometry. TOPK's
+mIoU gain does not pass the original minimum surface-precision gate of 0.724413.
+No final-current winner is selected from these failed candidates.
+
+The bank contains 125 feature owners, with 853/125/482 selected observations for
+native/single/top-k respectively. Coverage is 99.45831% in B3 and 99.45841% in H2;
+missing observations preserve the exact old label and role. Prediction/write
+cost is recorded per output, excluding shared model, geometry and GT work.
+Diverse/quality/current-aware dynamic variants remain pending.
+
+```bash
+python scripts/evaluation/run_crove_multiview_apartment.py
+```
+
+The paired trained adapter has completed both states through the same bridge. Native
+cached poses match the original global TESSE exported trajectories within 5e-7;
+no per-visit first-pose normalization is applied. Each state's projected masks
+use only its own frozen valid source rows. Both states and pooling heads share
+the dense image forward. It used 237 actual forwards for 291 selected frames,
+with 262/264 valid independent owner observations from 79/80 owners in B3/H2.
+Coverage is 90.19937%/90.20308%. Shared projection/frame processing takes
+31.91/55.27 s, excluding loading, cache writes and GT evaluation. Peak allocated
+GPU memory is 1,792,770,560 bytes. Mean and learned controls share all inputs.
+
+Learned pooling improves mIoU over mean pooling in both states, but all four rows
+have Ghost 1.0 and fail the original Ghost and surface-precision gates. Background
+F1 is 0.445280. Neither static head gains nor dynamic mean-pool gains imply an
+eligible final-current readout. B3/H2 source sets and owners remain fixed.
+An independent role-free geometry audit measures 6,895 confirmed-free conflicts
+among 7,783 changed-region source rows in each state. All ten readouts have exact
+source/owner equality and zero all-geometry conflict-count delta. Thus the change
+in official Ghost is role-conditioned; no geometry is added by these readouts.
+See `apartment_readout_geometry_audit.json` for counts and role distributions.
+
+```bash
+/home/ww/oviovo_baseline_builds/maskadapter/venv/bin/python scripts/evaluation/run_crove_adapter_apartment.py
+python scripts/evaluation/audit_crove_apartment_readout_geometry.py
+```
+
 | Family | Real current status | Still required |
 | --- | --- | --- |
-| M1 | Partial room0 native/top-k/diverse/quality; static current-aware alias | per-crop/structural patch evidence, B3/H2 state adaptation, confirmation |
+| M1 | Partial room0 and Apartment native/single/top-k B3/H2 pair | per-crop/structural patch evidence, dynamic diverse/quality/state adaptation, confirmation |
 | M2 | Partial room0 S2 and M1 posterior patch-only/geometry graph; boundary path implemented | full-input boundary evaluation, B3/H2 and confirmation |
 | M3 | Real 13-frame end-to-end diagnostic without GT; full-source predictions and lineage verified | full 200-frame pairwise/consensus scoring, resem, B3/H2 and confirmation |
-| M4 | Official trained core and room0 full-map mean/learned pair completed | B3/H2 and confirmation |
+| M4 | Official trained room0 and Apartment B3/H2 mean/learned pairs completed | static confirmation and limited combinations |
 
 M4 uses the official trained checkpoint, not random weights or a local untrained
 replacement. Its three-mask numerical test is explicitly not a whole-map result.
 Code retains official attribution and Apache-2.0 license.
 
 B3/H2 legacy-to-pointwise equality is verified separately in `bridge_B3.json` and
-`bridge_H2.json` (mIoU 0.135886/0.135734). No M1–M4 dynamic result exists yet.
+`bridge_H2.json` (mIoU 0.135886/0.135734). The M1 dynamic pair above is now evaluated;
+M4 also has complete dynamic paired scores; M2/M3 dynamic results remain pending.
 room1 remains the frozen static confirmation scene, with raw inputs present but
 derived OVI/S2 inputs pending. The native room1 GPU frontend failed with verified
 CUDA OOM under existing GPU occupancy. Full-resolution CPU frontend preparation

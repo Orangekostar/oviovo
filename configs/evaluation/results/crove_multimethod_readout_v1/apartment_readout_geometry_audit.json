@@ -1,0 +1,121 @@
+{
+  "case": "apartment-t0-000766-001021-t1-001217-001472",
+  "counter_reuse": "one measured geometry count per state; exact source-row equality proves identical counts for readouts",
+  "scope": "all current source geometry cropped to existing changed-region voxels, strict 0.05 m confirmed-free match; independent of semantic roles",
+  "states": {
+    "B3": {
+      "all_geometry_changed_region_rows": 7783,
+      "all_geometry_confirmed_free_conflict_rows": 6895,
+      "readouts": {
+        "ADAPTER_CLIP_LEARNED": {
+          "all_geometry_conflict_count_delta": 0,
+          "eval_role_counts": {
+            "0": 11876067,
+            "1": 3684036,
+            "2": 62498
+          },
+          "owners_exact_match": true,
+          "source_indices_exact_match": true
+        },
+        "ADAPTER_CLIP_MEAN": {
+          "all_geometry_conflict_count_delta": 0,
+          "eval_role_counts": {
+            "0": 11944508,
+            "1": 3615595,
+            "2": 62498
+          },
+          "owners_exact_match": true,
+          "source_indices_exact_match": true
+        },
+        "MV_NATIVE_CACHED": {
+          "all_geometry_conflict_count_delta": 0,
+          "eval_role_counts": {
+            "0": 14622519,
+            "1": 937584,
+            "2": 62498
+          },
+          "owners_exact_match": true,
+          "source_indices_exact_match": true
+        },
+        "MV_SINGLE": {
+          "all_geometry_conflict_count_delta": 0,
+          "eval_role_counts": {
+            "0": 14506924,
+            "1": 1053179,
+            "2": 62498
+          },
+          "owners_exact_match": true,
+          "source_indices_exact_match": true
+        },
+        "MV_TOPK_MEAN": {
+          "all_geometry_conflict_count_delta": 0,
+          "eval_role_counts": {
+            "0": 13462341,
+            "1": 2097762,
+            "2": 62498
+          },
+          "owners_exact_match": true,
+          "source_indices_exact_match": true
+        }
+      },
+      "source_rows": 15622601
+    },
+    "H2": {
+      "all_geometry_changed_region_rows": 7783,
+      "all_geometry_confirmed_free_conflict_rows": 6895,
+      "readouts": {
+        "ADAPTER_CLIP_LEARNED": {
+          "all_geometry_conflict_count_delta": 0,
+          "eval_role_counts": {
+            "0": 11931782,
+            "1": 3631260,
+            "2": 62498
+          },
+          "owners_exact_match": true,
+          "source_indices_exact_match": true
+        },
+        "ADAPTER_CLIP_MEAN": {
+          "all_geometry_conflict_count_delta": 0,
+          "eval_role_counts": {
+            "0": 11945180,
+            "1": 3617862,
+            "2": 62498
+          },
+          "owners_exact_match": true,
+          "source_indices_exact_match": true
+        },
+        "MV_NATIVE_CACHED": {
+          "all_geometry_conflict_count_delta": 0,
+          "eval_role_counts": {
+            "0": 14624242,
+            "1": 938800,
+            "2": 62498
+          },
+          "owners_exact_match": true,
+          "source_indices_exact_match": true
+        },
+        "MV_SINGLE": {
+          "all_geometry_conflict_count_delta": 0,
+          "eval_role_counts": {
+            "0": 14508647,
+            "1": 1054395,
+            "2": 62498
+          },
+          "owners_exact_match": true,
+          "source_indices_exact_match": true
+        },
+        "MV_TOPK_MEAN": {
+          "all_geometry_conflict_count_delta": 0,
+          "eval_role_counts": {
+            "0": 13464064,
+            "1": 2098978,
+            "2": 62498
+          },
+          "owners_exact_match": true,
+          "source_indices_exact_match": true
+        }
+      },
+      "source_rows": 15625540
+    }
+  }
+}

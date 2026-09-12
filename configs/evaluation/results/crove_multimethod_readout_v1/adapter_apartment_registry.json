@@ -1,0 +1,77 @@
+{
+  "candidate_pool": "native retained source-visit observations, same indices in B3/H2",
+  "checkpoint_sha256": "5686dc21e3461918d385d5cee02b103320e8ca30714485cb8f1694f0d590b55e",
+  "class_ids": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
+  ],
+  "class_names": [
+    "Fridge",
+    "Books",
+    "Floor",
+    "Ceiling",
+    "Chair",
+    "Vase",
+    "Couch",
+    "Trees",
+    "Drawer",
+    "Objects",
+    "Lamp",
+    "Painting",
+    "Plants",
+    "Bed",
+    "Stairs",
+    "Table",
+    "Screens",
+    "Bin",
+    "Wall",
+    "Humans"
+  ],
+  "coordinates": "original global camera poses; no per-visit first-pose normalization",
+  "fallback": "KEEP_SOURCE native semantics/roles without valid mask features",
+  "frame_windows": {
+    "t0": [
+      766,
+      1021
+    ],
+    "t1": [
+      1217,
+      1472
+    ]
+  },
+  "mask": "project only exact current-valid source owner rows for each saved state; depth tolerance 0.05 m, no dilation",
+  "methods": [
+    "ADAPTER_CLIP_MEAN",
+    "ADAPTER_CLIP_LEARNED"
+  ],
+  "minimum_unique_pixels": 16,
+  "pair_id": "apartment-t0-000766-001021-t1-001217-001472",
+  "paired_features": "one dense image forward per frame shared by both states and both pooling heads",
+  "scene": "apartment",
+  "scope": "source-visit top-four DEV pair; no new training or cross-visit identity unions",
+  "states": [
+    "B3",
+    "H2"
+  ],
+  "text": "one shared photo-of-class template for full common-v2 vocabulary",
+  "top_k": 4,
+  "view_aggregation": "normalize each embedding, uniform independent-view mean, normalize"
+}

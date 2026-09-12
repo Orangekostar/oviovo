@@ -1,0 +1,80 @@
+{
+  "candidate_pool": "same native retained per-visit six-crop mean cache",
+  "class_ids": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
+  ],
+  "class_names": [
+    "Fridge",
+    "Books",
+    "Floor",
+    "Ceiling",
+    "Chair",
+    "Vase",
+    "Couch",
+    "Trees",
+    "Drawer",
+    "Objects",
+    "Lamp",
+    "Painting",
+    "Plants",
+    "Bed",
+    "Stairs",
+    "Table",
+    "Screens",
+    "Bin",
+    "Wall",
+    "Humans"
+  ],
+  "frame_windows": {
+    "t0": [
+      766,
+      1021
+    ],
+    "t1": [
+      1217,
+      1472
+    ]
+  },
+  "local_to_original_offsets": [
+    766,
+    1217
+  ],
+  "methods": [
+    "MV_NATIVE_CACHED",
+    "MV_SINGLE",
+    "MV_TOPK_MEAN"
+  ],
+  "missing_observation": "KEEP_SOURCE semantic and role; never explicit unknown rejection",
+  "native": "last eight cached views; native visible-area weighted raw features then normalize",
+  "new_image_forwards": 0,
+  "pair_id": "apartment-t0-000766-001021-t1-001217-001472",
+  "scene": "apartment",
+  "single_topk": "one/four highest-visible-area views; normalize each cached six-crop mean then uniform mean",
+  "source_state": "exact saved B3/H2 current-valid masks; no geometry or owner edits",
+  "state_policy": "same source-local cached view rule in both states; current-aware fusion remains pending",
+  "states": [
+    "B3",
+    "H2"
+  ],
+  "t1_owner_offset": 1000000,
+  "text": "bare complete public common-v2 vocabulary; shared SigLIP text encoder and scale"
+}
