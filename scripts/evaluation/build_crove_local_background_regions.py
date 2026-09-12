@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 import time
@@ -20,6 +21,9 @@ from src.oviv2.surface_readout_graph import current_surface_topology, surface_pa
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--case", choices=("all_dev", "room1"), default="all_dev")
+    args = parser.parse_args()
     config = json.loads(
         (ROOT / "configs/evaluation/crove_multimethod_readout_v1.json").read_text()
     )
@@ -40,6 +44,9 @@ def main():
         "GT_read": False,
     }
     registry = compact / "local_background_regions_registry.json"
+    if args.case == "room1":
+        settings["cases"] = ["room1"]
+        registry = compact / "local_background_regions_room1_registry.json"
     if registry.exists() and json.loads(registry.read_text()) != settings:
         raise ValueError("frozen local background policy changed")
     _atomic_json(registry, settings)
@@ -82,8 +89,25 @@ def main():
         )
         for s in ("B3", "H2")
     ]
+    if args.case == "room1":
+        cases = [
+            (
+                "room1",
+                run / "confirm/room1/native_cached_batch/B_SEM_OVI_NATIVE.npz",
+                run / "confirm/room1/inputs/current_surface.npz",
+                replica_ids,
+            )
+        ]
     for name, baseline, geometry, classes in cases:
-        root = run / "dev/local_background_regions" / name
+        root = (
+            run
+            / (
+                "confirm/local_background_regions"
+                if name == "room1"
+                else "dev/local_background_regions"
+            )
+            / name
+        )
         root.mkdir(parents=True, exist_ok=True)
         binding = {
             "native_prediction": file_hash(baseline),

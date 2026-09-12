@@ -163,10 +163,39 @@ def main():
                         str(role): int(np.count_nonzero(roles == role))
                         for role in (0, 1, 2)
                     }
+                    object_changed = _crop_points_to_voxels(
+                        [xyz[canonical[roles != 0]]], changed
+                    )
+                    ghost_numerator = int(_match_count(object_changed, free, 0.05))
+                    ghost_denominator = len(object_changed)
+                    ghost_rate = (
+                        ghost_numerator / ghost_denominator
+                        if ghost_denominator
+                        else 0.0
+                    )
+                    scored = json.loads(
+                        (
+                            path(config["compact_output_root"])
+                            / f"apartment_{state}_{name}.json"
+                        ).read_text()
+                    )
+                    if not np.isclose(
+                        ghost_rate, scored["metrics"]["ghost"], rtol=0, atol=1e-12
+                    ):
+                        raise ValueError(
+                            "role-conditioned Ghost counts disagree with scored readout"
+                        )
                 record["readouts"][name] = {
                     "source_indices_exact_match": True,
                     "owners_exact_match": owners_equal,
                     "all_geometry_conflict_count_delta": 0,
+                    "role_conditioned_ghost": {
+                        "numerator": ghost_numerator,
+                        "denominator": ghost_denominator,
+                        "rate": ghost_rate,
+                        "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match",
+                        "matches_scored_rate": True,
+                    },
                     "eval_role_counts": role_counts,
                     "object_to_background_rows": int(
                         np.count_nonzero((old_roles != 0) & (roles == 0))

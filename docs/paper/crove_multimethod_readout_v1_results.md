@@ -365,6 +365,13 @@ The expanded audit verifies all 48 full-state source/owner invariants and all
 96 recovered-row tables across 24 methods. S0/S2 correctly label 630/677
 GT-supported restored source rows (154/167 physical samples), respectively.
 The existing all-current geometry conflict counts remain unchanged.
+An additional exact-count audit now recovers the role-conditioned Ghost
+numerator and denominator for all 48 dynamic predictions and checks their
+ratio against each saved score within 1e-12. Native and MV_QUALITY both have
+0/0 in B3/H2: their changed-region object set is empty, and the established
+evaluator convention returns zero. ADAPTER_LEARNED_GRAPH_GEOM has 2,177/2,177
+in both states. A zero Ghost score therefore must not be read as absence of
+all-current free-space geometry conflicts.
 
 ```bash
 python scripts/evaluation/replay_crove_apartment_local_semantics.py
@@ -563,8 +570,8 @@ Room0 has 27,802 regions over 5,983,832 structural rows; Apartment B3/H2 have
 later observation selection must use actual unique visible-pixel support,
 with missing regions retaining fallback rather than being discarded.
 Actual local encoding has completed for room0: 1,138 regions/4,505 six-crop
-batches, with 1,632.14 s of encoder forwards. B3 is running with
-2,599 regions/10,174 batches; H2 follows the same frozen
+batches, with 1,632.14 s of encoder forwards. B3 has also completed
+2,599 regions/10,174 batches in 2,651.51 s of encoder forwards; H2 is running with the same frozen
 selection. Each requires at least two same-visit observations with at least
 16 unique independent-mask-interior pixels, then at most four diverse views.
 `MV_LOCAL_BG_QUALITY` and `MV_BG_OWNER_QUALITY` full-map readers are implemented
@@ -663,6 +670,27 @@ python scripts/evaluation/run_crove_consensus_room0.py
 ```
 
 DEV_SCREENING_STATUS=PARTIAL
+
+The reproducible all-method collector now covers 73 scored DEV predictions
+(25 room0, 24 B3 and 24 H2), retaining failures and baseline rows. It verifies
+every source-index array against the same-state native input, rejects owner
+changes outside M3, and measures unknown source rows directly from each full
+prediction. `all_method_results.json` contains raw-result hashes, same-state
+native/S2/direct-control deltas and available static per-class changes;
+dynamic Ghost numerators/denominators are copied from the verified count audit.
+`all_method_results.csv` and `family_results.md` provide flat and readable views.
+Unrecorded costs and dynamic instance AP remain null/N/A. This is an intermediate
+evidence table, not a frozen winner list; six local-background scores remain pending.
+
+Unscored room1 structural regions are now prepared with the same 0.5 m,
+source-connectivity, owner/visit and normal constraints: 54,352 regions cover
+4,328,059 structural source rows (1,001,773 physical samples), built in 21.45 s.
+Actual local feature encoding is running. This prepares a possible DEV-selected
+M1 input and does not choose a method using confirmation evidence.
+
+```bash
+python scripts/evaluation/summarize_crove_multimethod_readouts.py
+```
 
 STATIC_CONFIRMATION_STATUS=PARTIAL
 

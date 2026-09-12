@@ -51,6 +51,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 106017,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 2177,
+            "matches_scored_rate": true,
+            "numerator": 2177,
+            "rate": 1.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "ADAPTER_CLIP_MEAN": {
@@ -64,6 +71,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 106611,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 2177,
+            "matches_scored_rate": true,
+            "numerator": 2177,
+            "rate": 1.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "ADAPTER_LEARNED_GRAPH_GEOM": {
@@ -77,6 +91,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 106591,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 2177,
+            "matches_scored_rate": true,
+            "numerator": 2177,
+            "rate": 1.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "ADAPTER_LEARNED_PATCH_ONLY": {
@@ -90,6 +111,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 106565,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 2177,
+            "matches_scored_rate": true,
+            "numerator": 2177,
+            "rate": 1.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "B_SEM_CROVE_S0_DENSE_REPLAY": {
@@ -103,6 +131,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 0,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 5533,
+            "matches_scored_rate": true,
+            "numerator": 4645,
+            "rate": 0.8395084041207301,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "B_SEM_CROVE_S2_DENSE_REPLAY": {
@@ -116,6 +151,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 0,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 3709,
+            "matches_scored_rate": true,
+            "numerator": 3560,
+            "rate": 0.9598274467511458,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "B_SEM_OVI_REENCODE": {
@@ -129,6 +171,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 536397,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 1158,
+            "matches_scored_rate": true,
+            "numerator": 582,
+            "rate": 0.5025906735751295,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "INST_CONSENSUS_OWNER": {
@@ -142,6 +191,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 0,
           "owners_exact_match": false,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "INST_CONSENSUS_RESEM": {
@@ -155,6 +211,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 599214,
           "owners_exact_match": false,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "INST_PAIRWISE": {
@@ -168,6 +231,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 0,
           "owners_exact_match": false,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_CURRENT_AWARE": {
@@ -181,6 +251,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 546796,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 1158,
+            "matches_scored_rate": true,
+            "numerator": 582,
+            "rate": 0.5025906735751295,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_DIVERSE_MEAN": {
@@ -194,6 +271,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 0,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_NATIVE_CACHED": {
@@ -207,6 +291,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 0,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_QUALITY": {
@@ -220,6 +311,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 0,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_QUALITY_GRAPH_BOUNDARY": {
@@ -233,6 +331,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 1064,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_QUALITY_GRAPH_GEOM": {
@@ -246,6 +351,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 1064,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_QUALITY_PATCH_ONLY": {
@@ -259,6 +371,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 1058,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_REENCODE_DIVERSE": {
@@ -272,6 +391,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 560823,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 1158,
+            "matches_scored_rate": true,
+            "numerator": 582,
+            "rate": 0.5025906735751295,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_REENCODE_QUALITY": {
@@ -285,6 +411,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 546796,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 1158,
+            "matches_scored_rate": true,
+            "numerator": 582,
+            "rate": 0.5025906735751295,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_SINGLE": {
@@ -298,6 +431,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 32202,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_TOPK_MEAN": {
@@ -311,6 +451,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 28592,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "S2_DENSE_REPLAY_GRAPH_BOUNDARY": {
@@ -324,6 +471,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 1291,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 3609,
+            "matches_scored_rate": true,
+            "numerator": 3399,
+            "rate": 0.941812136325852,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "S2_DENSE_REPLAY_GRAPH_GEOM": {
@@ -337,6 +491,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 1291,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 3609,
+            "matches_scored_rate": true,
+            "numerator": 3399,
+            "rate": 0.941812136325852,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "S2_DENSE_REPLAY_PATCH_ONLY": {
@@ -350,6 +511,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 1257,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 3597,
+            "matches_scored_rate": true,
+            "numerator": 3387,
+            "rate": 0.9416180150125104,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         }
       },
@@ -402,6 +570,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 106017,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 2177,
+            "matches_scored_rate": true,
+            "numerator": 2177,
+            "rate": 1.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "ADAPTER_CLIP_MEAN": {
@@ -415,6 +590,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 106974,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 2177,
+            "matches_scored_rate": true,
+            "numerator": 2177,
+            "rate": 1.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "ADAPTER_LEARNED_GRAPH_GEOM": {
@@ -428,6 +610,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 106591,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 2177,
+            "matches_scored_rate": true,
+            "numerator": 2177,
+            "rate": 1.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "ADAPTER_LEARNED_PATCH_ONLY": {
@@ -441,6 +630,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 106565,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 2177,
+            "matches_scored_rate": true,
+            "numerator": 2177,
+            "rate": 1.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "B_SEM_CROVE_S0_DENSE_REPLAY": {
@@ -454,6 +650,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 0,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 5533,
+            "matches_scored_rate": true,
+            "numerator": 4645,
+            "rate": 0.8395084041207301,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "B_SEM_CROVE_S2_DENSE_REPLAY": {
@@ -467,6 +670,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 0,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 3709,
+            "matches_scored_rate": true,
+            "numerator": 3560,
+            "rate": 0.9598274467511458,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "B_SEM_OVI_REENCODE": {
@@ -480,6 +690,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 535852,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 1158,
+            "matches_scored_rate": true,
+            "numerator": 582,
+            "rate": 0.5025906735751295,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "INST_CONSENSUS_OWNER": {
@@ -493,6 +710,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 0,
           "owners_exact_match": false,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "INST_CONSENSUS_RESEM": {
@@ -506,6 +730,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 599766,
           "owners_exact_match": false,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "INST_PAIRWISE": {
@@ -519,6 +750,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 0,
           "owners_exact_match": false,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_CURRENT_AWARE": {
@@ -532,6 +770,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 546594,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 1158,
+            "matches_scored_rate": true,
+            "numerator": 582,
+            "rate": 0.5025906735751295,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_DIVERSE_MEAN": {
@@ -545,6 +790,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 0,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_NATIVE_CACHED": {
@@ -558,6 +810,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 0,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_QUALITY": {
@@ -571,6 +830,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 0,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_QUALITY_GRAPH_BOUNDARY": {
@@ -584,6 +850,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 1064,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_QUALITY_GRAPH_GEOM": {
@@ -597,6 +870,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 1064,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_QUALITY_PATCH_ONLY": {
@@ -610,6 +890,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 1058,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_REENCODE_DIVERSE": {
@@ -623,6 +910,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 560621,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 1158,
+            "matches_scored_rate": true,
+            "numerator": 582,
+            "rate": 0.5025906735751295,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_REENCODE_QUALITY": {
@@ -636,6 +930,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 546594,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 1158,
+            "matches_scored_rate": true,
+            "numerator": 582,
+            "rate": 0.5025906735751295,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_SINGLE": {
@@ -649,6 +950,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 32202,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "MV_TOPK_MEAN": {
@@ -662,6 +970,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 28592,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "S2_DENSE_REPLAY_GRAPH_BOUNDARY": {
@@ -675,6 +990,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 1291,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 3609,
+            "matches_scored_rate": true,
+            "numerator": 3399,
+            "rate": 0.941812136325852,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "S2_DENSE_REPLAY_GRAPH_GEOM": {
@@ -688,6 +1010,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 1291,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 3609,
+            "matches_scored_rate": true,
+            "numerator": 3399,
+            "rate": 0.941812136325852,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         },
         "S2_DENSE_REPLAY_PATCH_ONLY": {
@@ -701,6 +1030,13 @@
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 1257,
           "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 3597,
+            "matches_scored_rate": true,
+            "numerator": 3387,
+            "rate": 0.9416180150125104,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
           "source_indices_exact_match": true
         }
       },

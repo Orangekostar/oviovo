@@ -36,7 +36,9 @@ from src.oviv2.surface_view_bank import project_source_support
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--case", required=True, choices=["room0", "apartment_B3", "apartment_H2"]
+        "--case",
+        required=True,
+        choices=["room0", "room1", "apartment_B3", "apartment_H2"],
     )
     args = parser.parse_args()
     config = json.loads(
@@ -46,24 +48,41 @@ def main():
     pair = json.loads(path(config["state_config"]).read_text())["splits"]["dev"][
         "pairs"
     ][0]
-    root = run / "dev/local_background_regions" / args.case
+    root = (
+        run
+        / (
+            "confirm/local_background_regions"
+            if args.case == "room1"
+            else "dev/local_background_regions"
+        )
+        / args.case
+    )
     output = root / "observations"
     output.mkdir(exist_ok=True)
-    static = args.case == "room0"
+    static = args.case in ("room0", "room1")
     if static:
         case = json.loads(path(config["source_config"]).read_text())["cases"][
             "replica_room0_static"
         ]
-        room = run / "dev/room0"
+        room = run / ("dev/room0" if args.case == "room0" else "confirm/room1")
         bank = room / "independent_mask_bank"
-        dataset = ReplicaRoom0Dataset(path(case["rgb_projection"]["dataset_root"]))
+        dataset = ReplicaRoom0Dataset(
+            path(case["rgb_projection"]["dataset_root"]).with_name(args.case)
+        )
         frames = list(range(0, 2000, 10))
         geometry = path(
             "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/replica_room0_static_full_v1/current_map/current_surface.npz"
         )
+        if args.case == "room1":
+            geometry = room / "inputs/current_surface.npz"
 
         def mask_path(frame):
-            return room / "cropformer_cpu/frontend" / f"frame{frame:06d}.png"
+            frontend = (
+                "cropformer_cpu/frontend"
+                if args.case == "room0"
+                else "native_cpu/frontend"
+            )
+            return room / frontend / f"frame{frame:06d}.png"
 
         def camera(frame):
             return dataset._records[frame].pose[:3, 3]

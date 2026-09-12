@@ -1,0 +1,18 @@
+{
+  "GT_read": false,
+  "cases": [
+    "room1"
+  ],
+  "connectivity": "actual source triangles inside each .5m cell; same owner, same visit and compatible normals (cosine >=.95); disconnected components stay separate",
+  "explicit_background": "include owner 0 as a separate original source group",
+  "patch_size_m": 0.5,
+  "purpose": "local crop regions only; no owner mutation and no removal of any full-map row",
+  "selection": "original native labels and original current rows only; never new trial labels or GT",
+  "structural_class_names": [
+    "wall",
+    "floor",
+    "ceiling",
+    "stairs"
+  ],
+  "uncovered": "retain native/S2 semantic fallback in later readout"
+}
