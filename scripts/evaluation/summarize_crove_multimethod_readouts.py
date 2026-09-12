@@ -289,7 +289,7 @@ def export_tables(compact, report):
     missing = report["missing_local_background_results"]
     flat_columns = [
         key
-        for key in rows[0]
+        for key in sorted(rows[0])
         if key
         not in ("runtime_stages", "per_class_delta_vs_native", "per_class_delta_vs_S2")
     ]
