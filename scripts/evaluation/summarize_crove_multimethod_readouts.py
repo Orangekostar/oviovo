@@ -118,11 +118,56 @@ def selection_annotations(case, method, selection):
     return result
 
 
+def case_coverage(method, rows, confirmation_methods, confirmation_scores):
+    actual = {
+        r["case"] + (f'/{r["state_variant"]}' if r["state_variant"] else "")
+        for r in rows if r["exact_implementation"] == method
+    }
+    expected = set(actual)
+    if any(c.startswith("apartment/") for c in actual):
+        expected.update(("apartment/B3", "apartment/H2"))
+    selected = method in confirmation_methods
+    if selected:
+        expected.add("room1")
+    if confirmation_scores.get(method) == "FULL_MAP_EVALUATED":
+        actual.add("room1")
+    return {
+        "cases_run": sorted(actual),
+        "cases_missing": sorted(expected - actual),
+        "case_coverage_scope": "observed DEV method domain, paired B3/H2, and frozen room1 selection; differently named protocol variants are separate",
+        "static_confirmation_status": "COMPLETE" if selected and "room1" in actual else "PARTIAL" if selected else "NOT_SELECTED",
+        "dynamic_confirmation_status": "NOT_RUN_RAW_MISSING",
+    }
+
+
+def method_provenance(method, model):
+    checkpoint = checkpoint_hash = None
+    if method.startswith("ADAPTER_"):
+        source = "Official Mask-Adapter ConvNeXt-L/CLIP checkpoint; paired mean/learned pooling; CROVE source projection and optional graph adaptation"
+        checkpoint, checkpoint_hash = model["checkpoint_source"], model["checkpoint_sha256"]
+    elif method in ("INST_PAIRWISE", "INST_CONSENSUS_OWNER"):
+        source = "Independent CropFormer masks; CROVE cross-view owner arbitration; unchanged native semantics"
+    elif method == "INST_CONSENSUS_RESEM":
+        source = "Same independent-mask consensus partition; matched SigLIP six-crop semantic re-encoding"
+        checkpoint = "siglip-large-patch16-384 (existing local OVI model)"
+    elif "DENSE_REPLAY" in method:
+        source = "Saved same-visit CROVE legacy dense semantic replay; fixed common-v2 bridge; optional S2 pseudo-unary graph"
+    elif method.startswith("B_SEM_CROVE_") or method.startswith("S2_"):
+        source = "Saved CROVE local semantic S0/S2 readout; optional S2 pseudo-unary patch/graph; unchanged native geometry"
+    else:
+        source = "OVI SigLIP native/cached or matched re-encoded six-crop semantics; CROVE view/local-region aggregation and optional graph"
+        checkpoint = "siglip-large-patch16-384 (existing local OVI model)"
+    return {"model_and_source": source, "checkpoint": checkpoint,
+            "checkpoint_sha256": checkpoint_hash,
+            "checkpoint_hash_scope": "official M4 hash from model_manifest; other per-row checkpoint hashes not recorded here"}
+
+
 def main():
     config = json.loads(
         (ROOT / "configs/evaluation/crove_multimethod_readout_v1.json").read_text()
     )
     compact, run = path(config["compact_output_root"]), path(config["run_root"])
+    model = json.loads((compact / "model_manifest.json").read_text())
     selected_file = compact / "selected_configs.json"
     selection = json.loads(selected_file.read_text()) if selected_file.exists() else None
     if selection and selection["status"] != "DEV_SELECTION_FROZEN":
@@ -224,6 +269,7 @@ def main():
             row = {
                 "family": family,
                 "exact_implementation": method,
+                **method_provenance(method, model),
                 "case": case,
                 "state_variant": state,
                 "split": "dev",
@@ -309,6 +355,18 @@ def main():
         for method in ("MV_BG_OWNER_QUALITY", "MV_LOCAL_BG_QUALITY")
         if not (compact / f"{case}_{method}.json").exists()
     ]
+    confirmation_methods = selection["static_confirmation"]["methods"] if selection else []
+    confirmation_scores = {}
+    for method in confirmation_methods:
+        target = compact / f"room1_{method}.json"
+        if target.exists():
+            confirmed = json.loads(target.read_text())
+            if confirmed.get("selection_sha256") != _sha256(selected_file):
+                raise ValueError(f"confirmation score uses a different selection: {target}")
+            confirmation_scores[method] = confirmed["status"]
+    for row in rows:
+        row.update(case_coverage(row["exact_implementation"], rows, confirmation_methods, confirmation_scores))
+        row["dev_screening_status"] = "COMPLETE" if selection and not missing else "PARTIAL"
     report = {
         "status": "INTERMEDIATE_ALL_SCORED_DEV_READOUTS",
         "selection_frozen": selection is not None,

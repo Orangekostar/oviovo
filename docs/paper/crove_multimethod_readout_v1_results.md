@@ -241,8 +241,8 @@ passes the original gates, with Ghost 0 and unchanged background F1. It changes
 8,250 roles in each state; geometry remains frozen. Coverage is
 99.42440%/99.42379%; 482 candidate owner-views span 301 frames, with zero new image
 forwards. Shared selection/projection take 32.40/67.81 s, excluding loading,
-writes and evaluation. Dynamic cross-visit CURRENT_AWARE is still pending;
-QUALITY is an eligible candidate, not a frozen final-family winner.
+writes and evaluation. Dynamic cross-visit CURRENT_AWARE is evaluated separately
+below; final-family choices are recorded in the frozen selection file.
 
 ```bash
 python scripts/evaluation/run_crove_multiview_apartment.py
@@ -436,7 +436,7 @@ Empty, occluded and boundary observations supply no vote. No new segmentation
 inference or GT input was used. The per-visit pairwise/consensus owner-only
 runner has completed with unchanged initial room0 parameters. Dynamic AP is
 N/A because this common-v2 protocol has no corresponding instance GT. Static
-parameter selection is still pending.
+parameter selection and its unchanged room1 confirmation are complete.
 
 | State | Owner rule | Changed source rows | New IDs | Split parents | Merge parents | Residual source rows |
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
@@ -477,8 +477,8 @@ initial attempt was archived after thin crops exposed channel-axis ambiguity;
 none of its features feeds reported predictions. A real six-crop encoder smoke
 and a thin-red-crop regression test verify the correction. Re-encoding results
 are now evaluated for all eight Apartment predictions, saved before any GT
-evaluation. Local structural-background patch observations remain outstanding;
-the current-aware adaptation below is now evaluated separately.
+evaluation. Local structural-background observations and all six corresponding
+DEV readouts are complete; the current-aware adaptation is evaluated separately.
 
 | Matched Apartment readout | B3 mIoU | H2 mIoU | B3/H2 original gates |
 | --- | ---: | ---: | --- |
@@ -620,8 +620,8 @@ python scripts/evaluation/run_crove_local_background_readouts.py
 ```
 
 room1 remains the frozen static confirmation scene. Its native OVI inputs are
-now generated; native and local S0/S2 full-row inputs are ready and confirmation
-scoring remains pending. Its existing 200-frame frontend and dense caches are available. The
+now generated; native and local S0/S2 full-row inputs supported the completed
+11-method confirmation. Its 200-frame frontend and dense caches are available. The
 old room0 stage-3 CROVE configuration is replayed with only scene/asset paths
 changed, using `--skip-evaluation`. All 200 raw/subsampled pose matrices match
 exactly. This produces a real CROVE local reference before any confirmation
@@ -709,7 +709,7 @@ python scripts/evaluation/run_crove_graph_room0.py --unary mv_quality --boundary
 python scripts/evaluation/run_crove_consensus_room0.py
 ```
 
-DEV_SCREENING_STATUS=PARTIAL
+DEV_SCREENING_STATUS=COMPLETE
 
 The reproducible all-method collector now covers 83 scored DEV predictions
 (27 room0, 28 B3 and 28 H2), retaining failures and baseline rows. It verifies
@@ -820,8 +820,11 @@ the four local PLY files contain every current row (about 2.08 GB total,
 documents RGB validity, state counts and visibility limitations. No holes were
 filled and no GT geometry was substituted.
 
-Code and compact intermediate results are intended for the named research branch;
+Code and compact scored results have been pushed to the named research branch;
 large geometry/prediction sidecars remain local. Official pretrained weights are
 referenced at their original HF source and are not redistributed. No new model
-has been trained. Limited combinations, recovery attribution, selection,
-confirmation, visualizations and final GitHub handoff remain outstanding.
+has been trained. Limited combinations, recovery attribution, frozen selection,
+room1 confirmation and the presented visualizations are complete. The handoff
+document is available; final table-field and task-wide delivery audits remain
+in progress. The launch-time code-version recording limitation is explicit in
+`code_provenance.json` and is not repaired by relabeling a later delivery commit.

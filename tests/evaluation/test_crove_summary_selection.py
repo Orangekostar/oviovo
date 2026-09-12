@@ -1,4 +1,38 @@
 from scripts.evaluation.summarize_crove_multimethod_readouts import selection_annotations
+from scripts.evaluation.summarize_crove_multimethod_readouts import case_coverage
+from scripts.evaluation.summarize_crove_multimethod_readouts import method_provenance
+
+
+def test_adapter_pooling_control_and_learned_head_share_checkpoint_source():
+    model = {"checkpoint_source": "official", "checkpoint_sha256": "hash"}
+    a = method_provenance("ADAPTER_CLIP_MEAN", model)
+    b = method_provenance("ADAPTER_LEARNED_GRAPH_GEOM", model)
+    assert a["checkpoint"] == b["checkpoint"] == "official"
+    assert a["checkpoint_sha256"] == b["checkpoint_sha256"] == "hash"
+
+
+def test_owner_consensus_and_resem_have_distinct_semantic_sources():
+    owner = method_provenance("INST_CONSENSUS_OWNER", {})
+    resem = method_provenance("INST_CONSENSUS_RESEM", {})
+    assert "unchanged native semantics" in owner["model_and_source"]
+    assert "SigLIP" in resem["model_and_source"]
+
+
+def test_unselected_confirmation_is_not_reported_as_missing():
+    rows = [{"exact_implementation": "M", "case": "apartment", "state_variant": "B3"}]
+    result = case_coverage("M", rows, [], {})
+    assert result["cases_run"] == ["apartment/B3"]
+    assert result["cases_missing"] == ["apartment/H2"]
+    assert result["static_confirmation_status"] == "NOT_SELECTED"
+
+
+def test_selected_confirmation_requires_actual_matching_score():
+    rows = [{"exact_implementation": "M", "case": "room0", "state_variant": None}]
+    assert case_coverage("M", rows, ["M"], {})["cases_missing"] == ["room1"]
+    result = case_coverage("M", rows, ["M"], {"M": "FULL_MAP_EVALUATED"})
+    assert result["cases_run"] == ["room0", "room1"]
+    assert result["cases_missing"] == []
+    assert result["static_confirmation_status"] == "COMPLETE"
 
 
 def test_unfrozen_summary_does_not_invent_a_winner():
