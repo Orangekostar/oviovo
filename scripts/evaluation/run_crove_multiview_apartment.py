@@ -301,7 +301,9 @@ def apply_and_evaluate_owner_features(
     evaluate_saved_readouts(config, state_config, pair, crosswalk, output, methods)
 
 
-def evaluate_saved_readouts(config, state_config, pair, crosswalk, output, methods):
+def evaluate_saved_readouts(
+    config, state_config, pair, crosswalk, output, methods, *, allow_owner_changes=False
+):
     """Evaluate already-saved complete point readouts through the frozen bridge."""
     run = path(config["run_root"])
     compact = path(config["compact_output_root"])
@@ -353,8 +355,11 @@ def evaluate_saved_readouts(config, state_config, pair, crosswalk, output, metho
                 continue
             with np.load(output / f"{state}_{method}.npz") as data:
                 canonical, order = data["source_indices"], data["legacy_eval_order"]
-                if not np.array_equal(canonical, expected_rows) or not np.array_equal(
-                    data["owner_ids"], original_owners[canonical]
+                if not np.array_equal(canonical, expected_rows) or (
+                    not allow_owner_changes
+                    and not np.array_equal(
+                        data["owner_ids"], original_owners[canonical]
+                    )
                 ):
                     raise ValueError("readout changed state geometry/owner")
                 inverse = np.searchsorted(canonical, order)
@@ -399,7 +404,11 @@ def evaluate_saved_readouts(config, state_config, pair, crosswalk, output, metho
                 metrics=measured,
                 passes_original_per_case_gates=passed,
                 evaluation_seconds=time.monotonic() - started,
-                interpretation="Role-dependent object/background metrics may change from supported semantics; frozen source geometry and owner do not change.",
+                interpretation=(
+                    "Owner-only readout: source geometry, point semantics and roles stay frozen; owner IDs may change."
+                    if allow_owner_changes
+                    else "Role-dependent object/background metrics may change from supported semantics; frozen source geometry and owner do not change."
+                ),
             )
             _atomic_json(target, record)
             print(state, method, measured, "gates", passed, flush=True)
