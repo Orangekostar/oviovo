@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import pickle
@@ -26,6 +27,7 @@ from scripts.evaluation.run_crove_fine_current_map import (
     load_ovimap_semantic_mapping,
     load_replica_ground_truth,
 )
+from scripts.evaluation.run_ovimap_native import _atomic_json, _sha256
 from src.datasets.replica import ReplicaRoom0Dataset
 from src.oviv2.mask_adapter_readout import MaskAdapterReadout
 from src.oviv2.surface_view_bank import project_source_support
@@ -44,6 +46,12 @@ def atomic_npz(target, **values):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--scene", choices=("room0", "room1"), default="room0")
+    parser.add_argument("--features-only", action="store_true")
+    args = parser.parse_args()
+    if args.scene == "room1" and not args.features_only:
+        raise RuntimeError("room1 currently permits unscored feature preparation only")
     config = json.loads(
         (ROOT / "configs/evaluation/crove_multimethod_readout_v1.json").read_text()
     )
@@ -53,15 +61,16 @@ def main():
     manifest = json.loads(path(case["benchmark_manifest"]).read_text())
     classes = manifest["vocabulary"]["classes"]
     run_root = path(config["run_root"])
-    output = run_root / "dev/room0/adapter_projected_top4"
+    room = run_root / ("dev/room0" if args.scene == "room0" else "confirm/room1")
+    output = room / "adapter_projected_top4"
     output.mkdir(parents=True, exist_ok=True)
     bank_root = output / "view_bank"
     bank_root.mkdir(exist_ok=True)
     compact = path(config["compact_output_root"])
-    registry = compact / "adapter_room0_registry.json"
+    registry = compact / f"adapter_{args.scene}_registry.json"
     settings = {
-        "case": "room0",
-        "split": "dev",
+        "case": args.scene,
+        "split": "dev" if args.scene == "room0" else "confirm",
         "top_k": 4,
         "candidate_pool": "native retained same-visit observations",
         "mask": "positive-depth source-row projection; no dilation; no GT",
@@ -73,33 +82,48 @@ def main():
         "methods": ["ADAPTER_CLIP_MEAN", "ADAPTER_CLIP_LEARNED"],
         "checkpoint_sha256": "5686dc21e3461918d385d5cee02b103320e8ca30714485cb8f1694f0d590b55e",
     }
+    surface = path(
+        "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/replica_room0_static_full_v1/current_map/current_surface.npz"
+    )
+    native_path = (
+        path(case["fine_surface"]).parent
+        / "inst_sem_siglip-l-16-384_200_incre_combine.pkl"
+    )
+    if args.scene == "room1":
+        native_manifest_file = room / "native_cpu/native_mapping_manifest.json"
+        native_manifest = json.loads(native_manifest_file.read_text())
+        if native_manifest["state"] != "MAPPING_PASS" or native_manifest[
+            "frame_ids"
+        ] != list(range(0, 2000, 10)):
+            raise ValueError("complete authorized room1 native inputs required")
+        feature_artifact = native_manifest["artifacts"]["semantic_features"]
+        native_path = Path(feature_artifact["path"])
+        if _sha256(native_path) != feature_artifact["sha256"]:
+            raise ValueError("room1 native feature artifact changed")
+        surface = room / "inputs/current_surface.npz"
+        settings.update(
+            native_manifest_sha256=_sha256(native_manifest_file),
+            source_sha256=_sha256(surface),
+            input_scope="unscored feature bank; no confirmation selection or evaluation",
+        )
     if registry.exists():
         if json.loads(registry.read_text()) != settings:
             raise ValueError("existing projection/adapter configuration differs")
     else:
         with registry.open("x") as f:
             json.dump(settings, f, indent=2)
-    surface = path(
-        "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/replica_room0_static_full_v1/current_map/current_surface.npz"
-    )
     with np.load(surface) as data:
         xyz, owners = data["vertices_xyz"], data["owner_entity_ids"]
         source = data["source_vertex_indices"]
         if not data["current_valid"].all() or np.any(data["source_visit_ids"] != 0):
             raise ValueError("static source state changed")
-    with np.load(
-        run_root / "dev/room0/native_cached_batch/B_SEM_OVI_NATIVE.npz"
-    ) as base:
+    with np.load(room / "native_cached_batch/B_SEM_OVI_NATIVE.npz") as base:
         if not np.array_equal(base["source_indices"], source) or not np.array_equal(
             base["owner_ids"], owners
         ):
             raise ValueError("native source/owner mapping differs from static export")
         base_ids, base_conf = base["semantic_ids"], base["semantic_confidence"]
     groups = _owner_row_groups(owners)
-    native_path = (
-        path(case["fine_surface"]).parent
-        / "inst_sem_siglip-l-16-384_200_incre_combine.pkl"
-    )
     with native_path.open("rb") as f:
         native = pickle.load(f)
     jobs = defaultdict(list)
@@ -112,7 +136,9 @@ def main():
             if frame_id < 0 or frame_id >= 2000 or frame_id % 10:
                 raise ValueError("frame outside authorized input")
             jobs[frame_id].append((owner, np.asarray(entry["pose"][i])))
-    dataset = ReplicaRoom0Dataset(path(case["rgb_projection"]["dataset_root"]))
+    dataset = ReplicaRoom0Dataset(
+        path(case["rgb_projection"]["dataset_root"]).with_name(args.scene)
+    )
     model = MaskAdapterReadout(
         path(
             "$HOME/oviovo_baseline_builds/maskadapter/fcclip_convnext_large_maskadapter.pth"
@@ -190,6 +216,36 @@ def main():
     text_np = text.cpu().numpy()
     del model
     torch.cuda.empty_cache()
+    if args.features_only:
+        atomic_npz(
+            output / "text_features.npz",
+            text=text_np,
+            logit_scale=scale,
+            class_ids=np.arange(1, len(classes) + 1),
+        )
+        record = {
+            "scene": args.scene,
+            "status": "PAIRED_REAL_FEATURES_READY_UNSCORED",
+            "GT_read": False,
+            "confirmation_scored": False,
+            "frames": sorted(jobs),
+            "source_rows": len(source),
+            "feature_observations": 0,
+            "encoder_forwards": 0,
+            "projection_seconds": 0.0,
+            "total_seconds": 0.0,
+            "peak_gpu_bytes": peak,
+            "training_updates": 0,
+        }
+        for frame_id in sorted(jobs):
+            with np.load(bank_root / f"{frame_id:06d}.npz") as data:
+                record["feature_observations"] += len(data["feature_owner_ids"])
+                record["encoder_forwards"] += int(len(data["owner_ids"]) > 0)
+                for key in ("projection_seconds", "total_seconds"):
+                    record[key] += float(data[key])
+        _atomic_json(compact / f"{args.scene}_adapter_feature_preparation.json", record)
+        print(record, flush=True)
+        return
     # Pool independent views at owner level; zero-support owners retain fallback.
     feature = {"mean": defaultdict(list), "learned": defaultdict(list)}
     references = defaultdict(list)

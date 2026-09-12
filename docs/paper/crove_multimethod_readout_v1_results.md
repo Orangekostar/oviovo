@@ -598,6 +598,24 @@ The local reference contains 44,572 vertices. Unscored shared topology has
 observation frames are now complete. These are input preparations, not four
 completed family confirmations. DEV selection must still be frozen before GT
 is opened for confirmation.
+Room1 M1 and M4 feature preparation is also complete, still without confirmation
+predictions or scores. M1 reuses 47 native feature owners, selects 184 diverse
+observations and measures 166 positive geometric-quality weights. Selection and
+projection took 9.10/10.49 s, with zero additional encoder forwards. M4 uses the
+same trained checkpoint and top-four source-projection policy as room0: 104
+candidate frames, 99 actual dense encoder forwards and 145 valid paired feature
+observations. Shared projection/frame processing took 6.17/16.16 s; peak allocated
+GPU memory was 1,740,599,808 bytes. The mean and learned feature banks preserve
+the same masks and source support. All 104 cache files passed frame/visit,
+source-owner, sparse-offset, embedding-shape and normalization checks. Both
+preparation entry points reject room1 execution without `--features-only`;
+neither creates a selected-method prediction before configuration freeze.
+
+```bash
+python scripts/evaluation/run_crove_multiview_quality_room0.py --scene room1 --features-only
+/home/ww/oviovo_baseline_builds/maskadapter/venv/bin/python scripts/evaluation/run_crove_adapter_room0.py --scene room1 --features-only
+```
+
 The native room1 GPU frontend failed with verified
 CUDA OOM under earlier GPU occupancy. After GPU 1 recovered roughly 38 GB free,
 a complete-resolution authorized-frame probe passed in 3.81 s. CPU preparation

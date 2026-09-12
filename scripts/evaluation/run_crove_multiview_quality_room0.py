@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import pickle
 import sys
@@ -24,6 +25,7 @@ from scripts.evaluation.run_crove_fine_current_map import (
     load_ovimap_semantic_mapping,
     load_replica_ground_truth,
 )
+from scripts.evaluation.run_ovimap_native import _atomic_json, _sha256
 from src.datasets.replica import ReplicaRoom0Dataset
 from src.oviv2.ovi_surface_attributes import project_world_points
 from src.oviv2.surface_multiview_semantics import aggregate_views, diverse_views
@@ -31,6 +33,12 @@ from src.oviv2.surface_view_bank import project_source_support
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--scene", choices=("room0", "room1"), default="room0")
+    parser.add_argument("--features-only", action="store_true")
+    args = parser.parse_args()
+    if args.scene == "room1" and not args.features_only:
+        raise RuntimeError("room1 currently permits unscored feature preparation only")
     config = json.loads(
         (ROOT / "configs/evaluation/crove_multimethod_readout_v1.json").read_text()
     )
@@ -39,13 +47,15 @@ def main():
     ]
     manifest = json.loads(path(case["benchmark_manifest"]).read_text())
     classes = manifest["vocabulary"]["classes"]
-    run = path(config["run_root"]) / "dev/room0"
+    run = path(config["run_root"]) / (
+        "dev/room0" if args.scene == "room0" else "confirm/room1"
+    )
     output = run / "native_diverse_quality"
     output.mkdir(parents=True, exist_ok=True)
     compact = path(config["compact_output_root"])
     methods = ["MV_DIVERSE_MEAN", "MV_QUALITY"]
     settings = {
-        "case": "room0",
+        "case": args.scene,
         "top_k": 4,
         "candidate_pool": "identical retained native six-crop view feature bank as MV_TOPK_MEAN",
         "selection": "highest native visible area seed; angular farthest-first around physical owner centroid; ties by area then cached order",
@@ -61,18 +71,38 @@ def main():
         "static_current_aware": "identical to MV_QUALITY; one visit, no temporal policy branch; reuse exact prediction",
         "scope": "partial M1; per-crop features, dynamic and structural patch evidence remain separate obligations",
     }
-    registry = compact / "multiview_quality_room0_registry.json"
+    surface = path(
+        "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/replica_room0_static_full_v1/current_map/current_surface.npz"
+    )
+    native_file = (
+        path(case["fine_surface"]).parent
+        / "inst_sem_siglip-l-16-384_200_incre_combine.pkl"
+    )
+    if args.scene == "room1":
+        native_manifest_file = run / "native_cpu/native_mapping_manifest.json"
+        native_manifest = json.loads(native_manifest_file.read_text())
+        if native_manifest["state"] != "MAPPING_PASS" or native_manifest[
+            "frame_ids"
+        ] != list(range(0, 2000, 10)):
+            raise ValueError("complete authorized room1 native inputs required")
+        artifact = native_manifest["artifacts"]["semantic_features"]
+        native_file = Path(artifact["path"])
+        if _sha256(native_file) != artifact["sha256"]:
+            raise ValueError("room1 native feature artifact changed")
+        surface = run / "inputs/current_surface.npz"
+        settings.update(
+            native_manifest_sha256=_sha256(native_manifest_file),
+            source_sha256=_sha256(surface),
+            scope="unscored room1 geometric quality inputs; no confirmation prediction or selection",
+        )
+    registry = compact / f"multiview_quality_{args.scene}_registry.json"
     if registry.exists():
         if json.loads(registry.read_text()) != settings:
             raise ValueError("frozen view policy changed")
     else:
         with registry.open("x") as f:
             json.dump(settings, f, indent=2)
-    with np.load(
-        path(
-            "$HOME/oviovo_baseline_runs/20260909_crove_fine_current_map_v1/dev/replica_room0_static_full_v1/current_map/current_surface.npz"
-        )
-    ) as d:
+    with np.load(surface) as d:
         xyz, owners, source = (
             d["vertices_xyz"],
             d["owner_entity_ids"],
@@ -88,10 +118,7 @@ def main():
         base_ids, base_conf = d["semantic_ids"], d["semantic_confidence"]
     with np.load(run / "native_cached_batch/text_features.npz") as d:
         text, scale = d["text"], float(d["logit_scale"])
-    with (
-        path(case["fine_surface"]).parent
-        / "inst_sem_siglip-l-16-384_200_incre_combine.pkl"
-    ).open("rb") as f:
+    with native_file.open("rb") as f:
         bank = pickle.load(f)
     groups = _owner_row_groups(owners)
     selected, jobs = {}, defaultdict(list)
@@ -116,7 +143,9 @@ def main():
     if quality_cache.exists():
         quality_record = json.loads(quality_cache.read_text())
     else:
-        dataset = ReplicaRoom0Dataset(path(case["rgb_projection"]["dataset_root"]))
+        dataset = ReplicaRoom0Dataset(
+            path(case["rgb_projection"]["dataset_root"]).with_name(args.scene)
+        )
         evidence = {}
         start = time.monotonic()
         for frame_id, entries in sorted(jobs.items()):
@@ -166,6 +195,27 @@ def main():
         with quality_cache.open("x") as f:
             json.dump(quality_record, f, indent=2)
     evidence = quality_record["evidence"]
+    if args.features_only:
+        record = {
+            "scene": args.scene,
+            "status": "GEOMETRIC_QUALITY_INPUTS_READY_UNSCORED",
+            "GT_read": False,
+            "confirmation_scored": False,
+            "source_rows": len(source),
+            "selected_owners": len(selected),
+            "selected_observations": len(evidence),
+            "positive_quality_observations": sum(
+                e["weight"] > 0 for e in evidence.values()
+            ),
+            "selection_seconds": selection_seconds,
+            "projection_seconds": quality_record["projection_seconds"],
+            "new_encoder_forwards": 0,
+        }
+        _atomic_json(
+            compact / f"{args.scene}_multiview_quality_preparation.json", record
+        )
+        print(record, flush=True)
+        return
     for method in methods:
         target = output / f"{method}.npz"
         if target.exists():

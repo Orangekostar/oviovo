@@ -1,0 +1,22 @@
+{
+  "case": "room1",
+  "top_k": 4,
+  "candidate_pool": "identical retained native six-crop view feature bank as MV_TOPK_MEAN",
+  "selection": "highest native visible area seed; angular farthest-first around physical owner centroid; ties by area then cached order",
+  "quality": "depth_consistent_unique_pixels / projectable_unique_pixels * sqrt(min(1, consistent_unique_pixels / native_visible_area)) * truncation_factor",
+  "truncation_factor": "0.5 if cached crop bounding box touches image boundary; otherwise 1",
+  "depth_tolerance_m": 0.05,
+  "minimum_unique_pixels": 16,
+  "no_positive_quality": "native semantic fallback, never uniform pseudo-evidence",
+  "features": "normalize cached six-crop mean per view, aggregate, normalize",
+  "text": "shared original SigLIP bare complete Replica41 class text cache",
+  "new_encoder_forwards": 0,
+  "methods": [
+    "MV_DIVERSE_MEAN",
+    "MV_QUALITY"
+  ],
+  "static_current_aware": "identical to MV_QUALITY; one visit, no temporal policy branch; reuse exact prediction",
+  "scope": "unscored room1 geometric quality inputs; no confirmation prediction or selection",
+  "native_manifest_sha256": "6d649cc32b5332e5c7bc0735782561a4eb975c7d150844c10547372193678e17",
+  "source_sha256": "5fb3dd336dbe76d58102cc36e3f4fb3708353e215dd5d8a207033eaea7d811e5"
+}
