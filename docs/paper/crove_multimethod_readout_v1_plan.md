@@ -35,7 +35,9 @@ primary agent. Only explicit deterministic mechanical leaves may be delegated.
 
 - Clean starting worktree matched the required SHA; this round has its own worktree.
 - Both saved `H1_B3/D1_B3` and `H2_INHERIT/D2_INHERIT` NPZ files exist under the
-  20260910 entity-epoch run. Their arrays and baseline equivalence still need checking.
+  20260910 entity-epoch run. Reading `current_valid_after` gives 26,958,216 rows
+  each, 15,622,601 valid B3 rows and 15,625,540 valid H2 rows: exactly 2,939 restored
+  and zero removed. Source-key identity and metric equivalence still need checking.
 - Three A40 GPUs were visible, each reporting 45,490 MiB free at preparation time.
 - The old named baseline-eval conda environment has no Python executable. Base Python
   imports NumPy, SciPy and pytest; relevant runtime dependencies must be checked.
@@ -44,6 +46,9 @@ primary agent. Only explicit deterministic mechanical leaves may be delegated.
   Its README links `https://huggingface.co/owl10/Mask-Adapter` and the FC-CLIP
   adapter Google Drive object `13_sr30_Q0Geubijik0BpVC_JgyFAmyQU`.
   This does not establish weight availability or trained inference.
+  Initial HF API request timed out at 30 seconds and official Drive HEAD request
+  timed out at 25 seconds (curl exit 28). Network routing/cache alternatives remain
+  to inspect; these two observations do not establish a permanent M4 blocker.
 - Base Python passed all four existing `test_two_visit_snapshot_metrics.py` tests.
   The new configuration parses as JSON and `git diff --check` passes.
 - Office raw ROS2 database, `gt_changes.csv`, and RGB-D export manifest were each
