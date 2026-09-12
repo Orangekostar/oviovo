@@ -7,6 +7,8 @@ The paired adapter, semantic controls and initial graph batch use `1efef91`
 the explicitly documented forward-count reporting correction).
 The diverse/quality batch and real-posterior graph controls use `cbb6543`;
 the tie-rule fix was verified by exact full-map prediction recomputation.
+Independent-mask pipeline diagnostics use `943a96c` (subsequent pre-commit
+changes were formatting and additional residual-count reporting only).
 This is an intermediate result, not the final four-family screening report.
 
 ## room0 complete-surface initial batch
@@ -131,8 +133,8 @@ python scripts/evaluation/run_crove_graph_room0.py --unary mv_quality
 | Family | Real current status | Still required |
 | --- | --- | --- |
 | M1 | Partial room0 native/top-k/diverse/quality; static current-aware alias | per-crop/structural patch evidence, B3/H2 state adaptation, confirmation |
-| M2 | Partial room0 S2 and M1 posterior patch-only/geometry graph | boundary control, B3/H2 and confirmation |
-| M3 | Not run | true 2D mask correspondence, shared arbitration, pairwise/consensus/resem whole-map comparisons |
+| M2 | Partial room0 S2 and M1 posterior patch-only/geometry graph; boundary path implemented | full-input boundary evaluation, B3/H2 and confirmation |
+| M3 | Real 13-frame end-to-end diagnostic without GT; full-source predictions and lineage verified | full 200-frame pairwise/consensus scoring, resem, B3/H2 and confirmation |
 | M4 | Official trained core and room0 full-map mean/learned pair completed | B3/H2 and confirmation |
 
 M4 uses the official trained checkpoint, not random weights or a local untrained
@@ -147,6 +149,35 @@ CUDA OOM under existing GPU occupancy. Full-resolution CPU frontend preparation
 is running for room1 mapping and room0 independent M3 masks; real first-frame
 outputs are verified. These are running jobs, not completed asset receipts.
 Office original assets remain missing.
+
+The independent mask pipeline has been exercised on frames 0:130:10, not the
+complete 200-frame protocol. It binds actual source points nearest the frozen
+patch centers to depth-consistent CropFormer interiors; one-pixel region/image
+boundaries supply no vote. The boundary path requires at least two joint views
+before mask-disagreement attenuation, and uses real RGB means only when supported
+by at least two observations. Geometry graph nodes/edges and symmetry are preserved.
+
+The M3 adaptation retains mask visibility/containment, undersegmented-observer
+removal and iterative consensus from the pinned MaskClustering mechanism. Unlike
+the original implementation it uses fixed patches, frame-local boundary exclusion,
+three fixed iterations and per-frame union support. Pairwise and consensus share
+the input filter, source readout, 2-view/0.60-score/0.15-margin gates and residual
+rules. New IDs require a supported split or merge; simple one-parent renaming is
+suppressed. The diagnostic produced 29/32 new IDs, without deleting residuals;
+source indices, semantics and confidence were verified exactly unchanged across
+all 9,282,303 rows. No GT was opened, no AP was measured and no improvement is
+claimed. Exact diagnostic counts are in `room0_mask_pipeline_diagnostic.json`.
+Both formal boundary and M3 entry points reject incomplete frame sets.
+
+```bash
+python scripts/evaluation/build_crove_room0_mask_bank.py --available-only
+python scripts/evaluation/run_crove_consensus_room0.py --diagnostic-available
+# After all 200 input frames are ready:
+python scripts/evaluation/build_crove_room0_mask_bank.py
+python scripts/evaluation/run_crove_graph_room0.py --boundary
+python scripts/evaluation/run_crove_graph_room0.py --unary mv_quality --boundary
+python scripts/evaluation/run_crove_consensus_room0.py
+```
 
 DEV_SCREENING_STATUS=PARTIAL
 

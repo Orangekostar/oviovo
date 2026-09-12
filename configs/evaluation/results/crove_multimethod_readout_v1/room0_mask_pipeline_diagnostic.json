@@ -1,0 +1,37 @@
+{
+  "case": "room0",
+  "status": "DIAGNOSTIC_PARTIAL_INPUT_NO_BENCHMARK_SCORE",
+  "frames": [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120],
+  "authorized_full_protocol_frames": 200,
+  "GT_read": false,
+  "source_rows": 9282303,
+  "patch_count": 629549,
+  "mask_nodes": 330,
+  "filtered_mask_nodes": 9,
+  "exact_source_indices_semantics_confidence_unchanged": true,
+  "graph_node_edge_set_and_symmetry_preserved": true,
+  "boundary_diagnostic": {
+    "jointly_observed_edge_count": 398392,
+    "boundary_edge_count": 618,
+    "boundary_node_fraction": 0.0014248295208156951,
+    "rgb_supported_edge_count": 400379
+  },
+  "pairwise_diagnostic": {
+    "changed_source_rows": 3082161,
+    "new_ID_count": 29,
+    "merge_candidate_count": 28,
+    "split_parent_count": 29,
+    "unsupported_or_ambiguous_source_rows": 6178664,
+    "clusters": 32
+  },
+  "consensus_diagnostic": {
+    "changed_source_rows": 3079910,
+    "new_ID_count": 32,
+    "merge_candidate_count": 30,
+    "split_parent_count": 31,
+    "unsupported_or_ambiguous_source_rows": 6180915,
+    "clusters": 37
+  },
+  "artifact_directory": "dev/room0/consensus_diagnostic_0013",
+  "interpretation": "Implementation and lineage diagnostic only; no quality improvement or family completion claimed. Full 200-frame input remains mandatory for screening."
+}
