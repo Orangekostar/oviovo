@@ -1,6 +1,20 @@
 import numpy as np
 
 
+def test_owner_posterior_lookup_keeps_visit_offsets_and_missing_rows():
+    from src.oviv2.surface_multiview_semantics import owner_posteriors_to_rows
+
+    ids, confidence, covered = owner_posteriors_to_rows(
+        np.array([1, 1000001, 0, 2]),
+        np.array([1000001, 1]),
+        np.array([[0.1, 0.9], [0.8, 0.2]]),
+        np.array([3, 5]),
+    )
+    assert ids.tolist() == [3, 5, 0, 0]
+    np.testing.assert_allclose(confidence, [0.8, 0.9, 0, 0])
+    assert covered.tolist() == [True, True, False, False]
+
+
 def test_diverse_selection_avoids_redundant_camera_direction():
     from src.oviv2.surface_multiview_semantics import diverse_views
 
