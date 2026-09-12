@@ -728,6 +728,17 @@ python scripts/evaluation/summarize_crove_multimethod_readouts.py
 
 STATIC_CONFIRMATION_STATUS=PARTIAL
 
+Dynamic per-class evidence is being reconstructed by
+`scripts/evaluation/audit_crove_dynamic_per_class.py` using the unchanged common-v2
+projection, original legacy point order and role mask. Each saved entry must
+reproduce its original headline mIoU within absolute 1e-12 before it is accepted.
+The audit records GT support, intersection and union for GT-present valid classes;
+absent classes are not invented. The collector checks result and prediction hashes
+before exposing per-class deltas. This diagnostic does not alter predictions,
+selection policy or confirmation inputs. The local-background owner control and
+local-region head are also registered in both Apartment geometry/recovery audits;
+their full audits remain pending completion of the six DEV readouts.
+
 DYNAMIC_CONFIRMATION_STATUS=NOT_RUN_RAW_MISSING
 
 Code and compact intermediate results are intended for the named research branch;

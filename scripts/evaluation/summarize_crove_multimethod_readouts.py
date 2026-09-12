@@ -108,6 +108,12 @@ def main():
     geometry_audit = json.loads(
         (compact / "apartment_readout_geometry_audit.json").read_text()
     )
+    per_class_file = compact / "apartment_per_class_audit.json"
+    dynamic_classes = (
+        json.loads(per_class_file.read_text())["readouts"]
+        if per_class_file.exists()
+        else {}
+    )
     rows = []
     for case, state in (("room0", None), ("apartment", "B3"), ("apartment", "H2")):
         prefix = case if state is None else f"{case}_{state}"
@@ -120,6 +126,17 @@ def main():
             if method not in METHODS or method in records:
                 raise ValueError(f"unknown or duplicate scored method: {filename}")
             records[method] = (filename, data)
+        if state:
+            for method, (filename, data) in records.items():
+                evidence = dynamic_classes.get(f"{state}_{method}")
+                if evidence is not None:
+                    if evidence["result_sha256"] != _sha256(filename):
+                        raise ValueError(f"stale per-class score evidence: {filename}")
+                    if evidence["headline_reconstruction"] != "PASS" or not np.isclose(
+                        evidence["miou"], data["metrics"]["current_miou"], atol=1e-12, rtol=0
+                    ):
+                        raise ValueError(f"invalid per-class reconstruction: {filename}")
+                    data["metrics"]["semantic"] = {"per_class": evidence["per_class"]}
         native_name = "B_SEM_OVI_NATIVE" if state is None else "MV_NATIVE_CACHED"
         s2_name = "B_SEM_CROVE_S2" if state is None else "B_SEM_CROVE_S2_DENSE_REPLAY"
         metric_key = "miou" if state is None else "current_miou"
@@ -148,6 +165,9 @@ def main():
                 / directory
                 / f"{'' if state is None else state + '_'}{prediction_method}.npz"
             )
+            evidence = dynamic_classes.get(f"{state}_{method}") if state else None
+            if evidence is not None and evidence["prediction_sha256"] != _sha256(prediction):
+                raise ValueError(f"stale per-class prediction evidence: {prediction}")
             with np.load(prediction) as values:
                 if not np.array_equal(values["source_indices"], source):
                     raise ValueError(f"source geometry changed: {prediction}")
