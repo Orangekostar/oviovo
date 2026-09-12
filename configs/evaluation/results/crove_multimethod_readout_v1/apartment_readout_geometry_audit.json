@@ -1,99 +1,198 @@
 {
   "case": "apartment-t0-000766-001021-t1-001217-001472",
   "counter_reuse": "one measured geometry count per state; exact source-row equality proves identical counts for readouts",
+  "full_current_scope": "additional uncropped all-current strict 0.05 m free-conflict counts and floor(XYZ/0.05) physical voxels; fixed original source strata 0 explicit background, 1 stuff, 2 thing, 3 unknown entity",
   "scope": "all current source geometry cropped to existing changed-region voxels, strict 0.05 m confirmed-free match; independent of semantic roles",
   "states": {
     "B3": {
       "all_geometry_changed_region_rows": 7783,
       "all_geometry_confirmed_free_conflict_rows": 6895,
+      "full_current_geometry": {
+        "confirmed_free_conflict_rows": 8705,
+        "conflicting_5cm_voxels": 90,
+        "fixed_legacy_sources": {
+          "0": {
+            "confirmed_free_conflict_rows": 0,
+            "conflicting_5cm_voxels": 0,
+            "source_rows": 22128,
+            "unique_5cm_voxels": 196
+          },
+          "1": {
+            "confirmed_free_conflict_rows": 8705,
+            "conflicting_5cm_voxels": 90,
+            "source_rows": 14600391,
+            "unique_5cm_voxels": 99561
+          },
+          "2": {
+            "confirmed_free_conflict_rows": 0,
+            "conflicting_5cm_voxels": 0,
+            "source_rows": 937584,
+            "unique_5cm_voxels": 7443
+          },
+          "3": {
+            "confirmed_free_conflict_rows": 0,
+            "conflicting_5cm_voxels": 0,
+            "source_rows": 62498,
+            "unique_5cm_voxels": 626
+          }
+        },
+        "source_rows": 15622601,
+        "unique_5cm_voxels": 107422
+      },
       "readouts": {
         "ADAPTER_CLIP_LEARNED": {
           "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 2852469,
           "eval_role_counts": {
             "0": 11876067,
             "1": 3684036,
             "2": 62498
           },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 106017,
           "owners_exact_match": true,
           "source_indices_exact_match": true
         },
         "ADAPTER_CLIP_MEAN": {
           "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 2784622,
           "eval_role_counts": {
             "0": 11944508,
             "1": 3615595,
             "2": 62498
           },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 106611,
           "owners_exact_match": true,
           "source_indices_exact_match": true
         },
-        "MV_DIVERSE_MEAN": {
+        "INST_CONSENSUS_OWNER": {
           "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 0,
           "eval_role_counts": {
             "0": 14622519,
             "1": 937584,
             "2": 62498
           },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 0,
+          "owners_exact_match": false,
+          "source_indices_exact_match": true
+        },
+        "INST_PAIRWISE": {
+          "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 0,
+          "eval_role_counts": {
+            "0": 14622519,
+            "1": 937584,
+            "2": 62498
+          },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 0,
+          "owners_exact_match": false,
+          "source_indices_exact_match": true
+        },
+        "MV_DIVERSE_MEAN": {
+          "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 0,
+          "eval_role_counts": {
+            "0": 14622519,
+            "1": 937584,
+            "2": 62498
+          },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 0,
           "owners_exact_match": true,
           "source_indices_exact_match": true
         },
         "MV_NATIVE_CACHED": {
           "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 0,
           "eval_role_counts": {
             "0": 14622519,
             "1": 937584,
             "2": 62498
           },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 0,
           "owners_exact_match": true,
           "source_indices_exact_match": true
         },
         "MV_QUALITY": {
           "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 8250,
           "eval_role_counts": {
             "0": 14614269,
             "1": 945834,
             "2": 62498
           },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 0,
           "owners_exact_match": true,
           "source_indices_exact_match": true
         },
-        "MV_QUALITY_GRAPH_GEOM": {
+        "MV_QUALITY_GRAPH_BOUNDARY": {
           "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 8616,
           "eval_role_counts": {
             "0": 14614967,
             "1": 945136,
             "2": 62498
           },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 1064,
+          "owners_exact_match": true,
+          "source_indices_exact_match": true
+        },
+        "MV_QUALITY_GRAPH_GEOM": {
+          "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 8616,
+          "eval_role_counts": {
+            "0": 14614967,
+            "1": 945136,
+            "2": 62498
+          },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 1064,
           "owners_exact_match": true,
           "source_indices_exact_match": true
         },
         "MV_QUALITY_PATCH_ONLY": {
           "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 8621,
           "eval_role_counts": {
             "0": 14614956,
             "1": 945147,
             "2": 62498
           },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 1058,
           "owners_exact_match": true,
           "source_indices_exact_match": true
         },
         "MV_SINGLE": {
           "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 147797,
           "eval_role_counts": {
             "0": 14506924,
             "1": 1053179,
             "2": 62498
           },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 32202,
           "owners_exact_match": true,
           "source_indices_exact_match": true
         },
         "MV_TOPK_MEAN": {
           "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 1188770,
           "eval_role_counts": {
             "0": 13462341,
             "1": 2097762,
             "2": 62498
           },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 28592,
           "owners_exact_match": true,
           "source_indices_exact_match": true
         }
@@ -103,94 +202,192 @@
     "H2": {
       "all_geometry_changed_region_rows": 7783,
       "all_geometry_confirmed_free_conflict_rows": 6895,
+      "full_current_geometry": {
+        "confirmed_free_conflict_rows": 8705,
+        "conflicting_5cm_voxels": 90,
+        "fixed_legacy_sources": {
+          "0": {
+            "confirmed_free_conflict_rows": 0,
+            "conflicting_5cm_voxels": 0,
+            "source_rows": 22128,
+            "unique_5cm_voxels": 196
+          },
+          "1": {
+            "confirmed_free_conflict_rows": 8705,
+            "conflicting_5cm_voxels": 90,
+            "source_rows": 14602114,
+            "unique_5cm_voxels": 99617
+          },
+          "2": {
+            "confirmed_free_conflict_rows": 0,
+            "conflicting_5cm_voxels": 0,
+            "source_rows": 938800,
+            "unique_5cm_voxels": 7499
+          },
+          "3": {
+            "confirmed_free_conflict_rows": 0,
+            "conflicting_5cm_voxels": 0,
+            "source_rows": 62498,
+            "unique_5cm_voxels": 626
+          }
+        },
+        "source_rows": 15625540,
+        "unique_5cm_voxels": 107534
+      },
       "readouts": {
         "ADAPTER_CLIP_LEARNED": {
           "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 2798477,
           "eval_role_counts": {
             "0": 11931782,
             "1": 3631260,
             "2": 62498
           },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 106017,
           "owners_exact_match": true,
           "source_indices_exact_match": true
         },
         "ADAPTER_CLIP_MEAN": {
           "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 2786036,
           "eval_role_counts": {
             "0": 11945180,
             "1": 3617862,
             "2": 62498
           },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 106974,
           "owners_exact_match": true,
           "source_indices_exact_match": true
         },
-        "MV_DIVERSE_MEAN": {
+        "INST_CONSENSUS_OWNER": {
           "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 0,
           "eval_role_counts": {
             "0": 14624242,
             "1": 938800,
             "2": 62498
           },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 0,
+          "owners_exact_match": false,
+          "source_indices_exact_match": true
+        },
+        "INST_PAIRWISE": {
+          "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 0,
+          "eval_role_counts": {
+            "0": 14624242,
+            "1": 938800,
+            "2": 62498
+          },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 0,
+          "owners_exact_match": false,
+          "source_indices_exact_match": true
+        },
+        "MV_DIVERSE_MEAN": {
+          "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 0,
+          "eval_role_counts": {
+            "0": 14624242,
+            "1": 938800,
+            "2": 62498
+          },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 0,
           "owners_exact_match": true,
           "source_indices_exact_match": true
         },
         "MV_NATIVE_CACHED": {
           "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 0,
           "eval_role_counts": {
             "0": 14624242,
             "1": 938800,
             "2": 62498
           },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 0,
           "owners_exact_match": true,
           "source_indices_exact_match": true
         },
         "MV_QUALITY": {
           "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 8250,
           "eval_role_counts": {
             "0": 14615992,
             "1": 947050,
             "2": 62498
           },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 0,
           "owners_exact_match": true,
           "source_indices_exact_match": true
         },
-        "MV_QUALITY_GRAPH_GEOM": {
+        "MV_QUALITY_GRAPH_BOUNDARY": {
           "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 8616,
           "eval_role_counts": {
             "0": 14616690,
             "1": 946352,
             "2": 62498
           },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 1064,
+          "owners_exact_match": true,
+          "source_indices_exact_match": true
+        },
+        "MV_QUALITY_GRAPH_GEOM": {
+          "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 8616,
+          "eval_role_counts": {
+            "0": 14616690,
+            "1": 946352,
+            "2": 62498
+          },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 1064,
           "owners_exact_match": true,
           "source_indices_exact_match": true
         },
         "MV_QUALITY_PATCH_ONLY": {
           "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 8621,
           "eval_role_counts": {
             "0": 14616679,
             "1": 946363,
             "2": 62498
           },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 1058,
           "owners_exact_match": true,
           "source_indices_exact_match": true
         },
         "MV_SINGLE": {
           "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 147797,
           "eval_role_counts": {
             "0": 14508647,
             "1": 1054395,
             "2": 62498
           },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 32202,
           "owners_exact_match": true,
           "source_indices_exact_match": true
         },
         "MV_TOPK_MEAN": {
           "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 1188770,
           "eval_role_counts": {
             "0": 13464064,
             "1": 2098978,
             "2": 62498
           },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 28592,
           "owners_exact_match": true,
           "source_indices_exact_match": true
         }

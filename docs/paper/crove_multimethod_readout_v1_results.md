@@ -14,6 +14,7 @@ preserves the executed cached-view computation and is exercised by the adapter p
 Apartment diverse/quality and posterior graph controls use `43f8aae`;
 the extracted evaluator AST is identical to the previously evaluated kernel.
 Apartment independent-mask binding and restored-row attribution use `ba94d66`.
+Apartment boundary controls and expanded geometry diagnostics use `541d853`.
 This is an intermediate result, not the final four-family screening report.
 
 ## room0 complete-surface initial batch
@@ -169,6 +170,8 @@ common-v2 vocabulary, not classes selected from GT. No image encoder is rerun.
 | B3 | MV_QUALITY_GRAPH_GEOM | 0.137093 | 0.736702 | 0.434868 | PASS |
 | H2 | MV_QUALITY_PATCH_ONLY | 0.137684 | 0.737002 | 0.439222 | PASS |
 | H2 | MV_QUALITY_GRAPH_GEOM | 0.137699 | 0.737010 | 0.439224 | PASS |
+| B3 | MV_QUALITY_GRAPH_BOUNDARY | 0.137093 | 0.736702 | 0.434868 | PASS |
+| H2 | MV_QUALITY_GRAPH_BOUNDARY | 0.137699 | 0.737010 | 0.439224 | PASS |
 | B3 | ADAPTER_CLIP_MEAN | 0.115477 | 0.203297 | 0.244898 | FAIL |
 | B3 | ADAPTER_CLIP_LEARNED | 0.135273 | 0.198584 | 0.241745 | FAIL |
 | H2 | ADAPTER_CLIP_MEAN | 0.115927 | 0.203402 | 0.245449 | FAIL |
@@ -216,10 +219,21 @@ have Ghost 1.0 and fail the original Ghost and surface-precision gates. Backgrou
 F1 is 0.445280. Neither static head gains nor dynamic mean-pool gains imply an
 eligible final-current readout. B3/H2 source sets and owners remain fixed.
 An independent role-free geometry audit measures 6,895 confirmed-free conflicts
-among 7,783 changed-region source rows in each state. All eighteen readouts have exact
-source/owner equality and zero all-geometry conflict-count delta. Thus the change
+among 7,783 changed-region source rows in each state. All twenty-four readouts
+have exact source equality and zero geometry conflict-count delta; the twenty
+semantic-only readouts also preserve owners, while the four M3 owner-only
+readouts preserve semantics and roles. Thus the change
 in official Ghost is role-conditioned; no geometry is added by these readouts.
 See `apartment_readout_geometry_audit.json` for counts and role distributions.
+The expanded uncropped audit finds 8,705 confirmed-free conflicting source rows
+in 90 physical 5 cm voxels in each state. Denominators are the full
+15,622,601/15,625,540 current rows, spanning 107,422/107,534 physical 5 cm voxels.
+All 8,705 conflicts lie in the fixed original ENTITY_STUFF stratum; fixed original
+thing, unknown-entity and explicit-background strata have zero. These counts
+explain why native object-conditioned Ghost 0 is not a geometry-cleanliness
+guarantee. The original changed-region and new uncropped counts have different
+domains and are retained separately. Original support strata, object/background
+role rewrites and known-to-unknown counts are included for every readout.
 
 ```bash
 /home/ww/oviovo_baseline_builds/maskadapter/venv/bin/python scripts/evaluation/run_crove_adapter_apartment.py
@@ -229,8 +243,8 @@ python scripts/evaluation/audit_crove_apartment_readout_geometry.py
 | Family | Real current status | Still required |
 | --- | --- | --- |
 | M1 | Partial room0 and Apartment native/single/top-k/diverse/quality B3/H2 pairs | structural patch evidence, dynamic state adaptation, confirmation |
-| M2 | room0 S2/M1 and Apartment QUALITY patch-only/geometry graph pairs | dynamic local S2 control, full-input boundary evaluation and confirmation |
-| M3 | room0 13-frame diagnostic; Apartment complete 512-frame/state independent banks, owner-only run started | full pairwise/consensus scores, resem and confirmation |
+| M2 | room0 S2/M1 and Apartment QUALITY patch/geometry/boundary pairs | dynamic local S2 control, room0 full-input boundary evaluation and confirmation |
+| M3 | room0 13-frame diagnostic; Apartment full pairwise/consensus-owner pairs evaluated | room0 full-input scores, resem and confirmation |
 | M4 | Official trained room0 and Apartment B3/H2 mean/learned pairs completed | static confirmation and limited combinations |
 
 M4 uses the official trained checkpoint, not random weights or a local untrained
@@ -239,7 +253,7 @@ Code retains official attribution and Apache-2.0 license.
 
 B3/H2 legacy-to-pointwise equality is verified separately in `bridge_B3.json` and
 `bridge_H2.json` (mIoU 0.135886/0.135734). The M1 dynamic pair above is now evaluated;
-M4 also has complete dynamic paired scores; M3 dynamic results remain pending.
+M4 and M3 owner-only also have complete dynamic paired scores; M3 resem remains pending.
 Apartment M2 topology preserves all 15,622,601/15,625,540 current source rows,
 including isolated rows, and excludes faces containing invalid vertices. B3/H2
 have 2,225,953/2,226,715 patch nodes and 2,712,720/2,712,879 undirected edges;
@@ -249,7 +263,14 @@ Both state graph pairs are now evaluated. Patch-only changes 17,984 labels versu
 pointwise QUALITY in each state but leaves current mIoU unchanged. Geometry
 propagation changes another 5,685 labels and adds only 0.0000152/0.0000155 mIoU.
 All four rows pass the original gates. This is a very small DEV increment,
-not broad evidence of graph benefit; real boundary controls remain required.
+not broad evidence of graph benefit.
+The boundary pair now uses all 512 independent same-visit mask columns and real
+RGB means. At least two joint views support 2,335,496/2,335,612 edges; mask
+disagreement attenuates 2,847 edges in each state (about 0.193% of nodes touch
+such edges). RGB is supported on 2,350,992/2,351,112 edges. Nodes and edges remain
+identical to the geometry control. Boundary preparation took 70.52/72.06 s;
+prediction/write took 35.90/37.97 s. All nine reported metrics are exactly equal
+to the pure geometry graph in each state: no additional boundary gain is found.
 Pointwise confidence is inherited, not relabeled as calibrated graph confidence.
 The old Apartment source semantic cache is owner fallback, not independent local
 S2 evidence, and is not presented as such a control.
@@ -257,9 +278,10 @@ S2 evidence, and is not presented as such a control.
 ```bash
 python scripts/evaluation/build_crove_apartment_graphs.py
 python scripts/evaluation/run_crove_graph_apartment.py
+python scripts/evaluation/run_crove_graph_apartment.py --boundary
 ```
 
-### H2 restored-source attribution (completed nine readouts)
+### H2 restored-source attribution (completed twelve readouts)
 
 The exact H2-minus-B3 set contains 2,939 source rows, representing 666 exact-XYZ
 physical samples. No B3 row is removed. A post-prediction nearest-current-GT
@@ -271,9 +293,9 @@ or evidence of correctness.
 
 | H2 readout | Changed restored labels | Correct GT-supported rows | Correct physical samples |
 | --- | ---: | ---: | ---: |
-| Native / diverse / top-k | 0 | 589 | 145 |
+| Native / diverse / top-k / pairwise / consensus-owner | 0 | 589 | 145 |
 | Single | 112 | 701 | 172 |
-| Quality / quality patch / quality graph | 223 | 701 | 172 |
+| Quality / quality patch / geometry graph / boundary graph | 223 | 701 | 172 |
 | Adapter mean | 1,812 | 554 | 139 |
 | Adapter learned | 538 | 414 | 97 |
 
@@ -299,9 +321,26 @@ into original CropFormer PNG interiors, using measured depth within 5 cm.
 Only same-visit nodes are observed; different visits never form a static union.
 Empty, occluded and boundary observations supply no vote. No new segmentation
 inference or GT input was used. The per-visit pairwise/consensus owner-only
-runner is now executing with unchanged initial room0 parameters; results are
-not yet claimed. Dynamic AP is N/A because this common-v2 protocol has no
-corresponding instance GT. Static parameter selection is still pending.
+runner has completed with unchanged initial room0 parameters. Dynamic AP is
+N/A because this common-v2 protocol has no corresponding instance GT. Static
+parameter selection is still pending.
+
+| State | Owner rule | Changed source rows | New IDs | Split parents | Merge parents | Residual source rows |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| B3 | Pairwise | 13,693,405 | 55 | 24 | 99 | 1,861,502 |
+| B3 | Consensus | 13,786,297 | 91 | 53 | 99 | 940,356 |
+| H2 | Pairwise | 13,695,123 | 59 | 26 | 101 | 1,862,008 |
+| H2 | Consensus | 13,788,013 | 95 | 55 | 101 | 940,864 |
+
+All four readouts preserve every source row, original semantic label, confidence
+and evaluation role. All nine common-v2 metrics are exactly equal to their
+state's native baseline, and the original gates pass. This is an invariant
+check, not evidence of instance improvement without instance GT. Positive-owner
+counts change from 122/125 original instances to 161/168 (pairwise) and 197/204
+(consensus). Unobserved/ambiguous source-row fallback counts are
+1,879,752/1,880,275 and 1,353,233/1,353,758 respectively. Residuals keep parent
+IDs; they are not removed to improve scores. Lineage and per-visit construction,
+clustering and arbitration times are saved beside the full predictions.
 
 ```bash
 python scripts/evaluation/build_crove_apartment_mask_bank.py
