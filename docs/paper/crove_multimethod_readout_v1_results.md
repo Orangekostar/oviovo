@@ -625,6 +625,17 @@ the same masks and source support. All 104 cache files passed frame/visit,
 source-owner, sparse-offset, embedding-shape and normalization checks. Both
 preparation entry points reject room1 execution without `--features-only`;
 neither creates a selected-method prediction before configuration freeze.
+`run_crove_room1_confirmation.py` now provides the frozen-selection execution
+entry point for the prepared cached-view, trained-adapter, graph and owner-only
+heads. It requires all four family selections, their new representatives and
+direct controls, verifies the saved DEV evidence/registries, and rejects an
+unsupported selected recipe before producing predictions. Every selected
+prediction must preserve its source/owner contract before the first GT load.
+After scoring it checks fixed-owner CA-AP, fixed-geometry F5 and owner-only
+semantic invariants, then emits a completion receipt. Tests exercise missing
+families, omitted new representatives, changed policy and broken invariants;
+the actual current missing-selection guard was also checked. No room1
+confirmation predictions or scores have been produced by this entry point yet.
 
 ```bash
 python scripts/evaluation/run_crove_multiview_quality_room0.py --scene room1 --features-only
@@ -689,6 +700,11 @@ dynamic Ghost numerators/denominators are copied from the verified count audit.
 `all_method_results.csv` and `family_results.md` provide flat and readable views.
 Unrecorded costs and dynamic instance AP remain null/N/A. This is an intermediate
 evidence table, not a frozen winner list; six local-background scores remain pending.
+`figures/room0_semantic_delta` now provides a reproducible SVG/PDF/PNG view of
+all 25 scored room0 methods relative to S2, with source CSV, evidence contract
+and rendered QA. Its single-scene differences have no invented uncertainty.
+All current deltas are nonpositive; this remains an intermediate DEV figure,
+to be regenerated when pending local-background scores become available.
 The task selector is implemented with maximum-relative 1e-6 ties, declared
 secondary metrics, equal baseline participation and separate metric/eligible
 winners. Incomparable added-cost stages are skipped, not interpreted as zero.

@@ -31,7 +31,9 @@ from src.oviv2.surface_mask_consensus import (
 )
 
 
-def load_mask_observations(room, frames, *, with_rgb=False):
+def load_mask_observations(
+    room, frames, *, with_rgb=False, frontend_subdir="cropformer_cpu/frontend"
+):
     with np.load(room / "independent_mask_bank/representatives.npz") as data:
         count = len(data["source_rows"])
     labels = np.zeros((count, len(frames)), np.uint16)
@@ -51,7 +53,7 @@ def load_mask_observations(room, frames, *, with_rgb=False):
                 )
             if int(data["frame_id"]) != frame or int(data["visit_id"]) != 0:
                 raise ValueError("independent observation frame binding differs")
-            mask_file = room / "cropformer_cpu/frontend" / f"frame{frame:06d}.png"
+            mask_file = room / frontend_subdir / f"frame{frame:06d}.png"
             if file_hash(mask_file) != str(data["mask_sha256"]):
                 raise ValueError("original independent mask artifact changed")
             labels[nodes, column] = mask_ids
