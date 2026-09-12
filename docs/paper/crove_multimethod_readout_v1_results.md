@@ -2,6 +2,9 @@
 
 Task revision: V1_REVISED_V2. Evaluated implementation: `aed101c` (execution before
 commit; subsequent changes were formatting and equivalent loop unpacking only).
+The paired adapter, semantic controls and initial graph batch use `1efef91`
+(executed before commit; subsequent changes were formatting/import ordering and
+the explicitly documented forward-count reporting correction).
 This is an intermediate result, not the final four-family screening report.
 
 ## room0 complete-surface initial batch
@@ -33,8 +36,7 @@ sidecar-write time was approximately 6.2–6.4 seconds per new row, excluding sh
 geometry/model loading and text encoding. Exact view lists and timings remain in
 the local run directory. No end-to-end speedup is claimed.
 
-Previously recorded S0≈0.3997 and S2≈0.4479 are still higher than these initial
-new rows; those historical controls have not yet been rerun in this batch.
+S0 and S2 have now been rerun on this same complete surface (see below).
 No winner has been frozen and no new deployment recommendation is made.
 
 Executed command:
@@ -46,14 +48,57 @@ python scripts/evaluation/run_crove_multiview_room0.py
 Outputs: `configs/evaluation/results/crove_multimethod_readout_v1/room0_*.json`.
 Full prediction sidecars: `$HOME/oviovo_baseline_runs/20260912_crove_multimethod_readout_v1/dev/room0/native_cached_batch/`.
 
+## Paired trained adapter and S2 graph DEV results
+
+All six rows below preserve the same 9,282,303 source rows and owners. CA-AP50
+is 0.470711 and geometry F5 is 0.935286 throughout.
+
+| Method | mIoU | f-mIoU |
+| --- | ---: | ---: |
+| B_SEM_CROVE_S0 | 0.399675 | 0.683362 |
+| B_SEM_CROVE_S2 | 0.447889 | 0.673573 |
+| ADAPTER_CLIP_MEAN | 0.364617 | 0.638058 |
+| ADAPTER_CLIP_LEARNED | 0.396887 | 0.644932 |
+| S2_PATCH_ONLY | 0.443890 | 0.668636 |
+| S2_GRAPH_GEOM | 0.443963 | 0.668539 |
+
+The adapter pair shares official trained ConvNeXt-L features, class text,
+projected source-support masks, and selected views. Learned pooling improves
+mIoU by 0.032270 over mean pooling but remains below S2. Depth-consistent source
+projection uses a 5 cm tolerance without dilation; these owner-derived masks are
+not independent M3 mask evidence. The bank contains 133 selected frames and 251
+owner candidates; 130 actual image forwards yield 204 valid feature observations.
+Both variants fall back identically on unsupported rows; coverage is 99.76885%.
+Shared measured projection time is 7.06 s and frame processing time is 19.61 s,
+excluding model loading, cache compression/writes and GT evaluation. Peak allocated
+GPU memory is 1,738,725,376 bytes. The initial forward counter of 133 was corrected
+to 130 from nonempty feature caches; predictions and scores were unchanged.
+
+M2 welds compatible repeated vertices and uses actual triangle topology, not global
+kNN. The fixed 2 cm patches contain 629,549 nodes and 1,291,958 undirected edges,
+with 100% source-row backprojection and 1,988,010 welded physical samples.
+Patch construction took 22.30 s. S2 pseudo-unaries are confidence-weighted costs,
+not recovered class posteriors. Five damped mean-field iterations use lambda 0.2.
+Patch-only loses 0.003999 mIoU versus pointwise S2; graph propagation adds only
+0.000074 over patch-only. This is a negative result versus S2, not a demonstrated
+graph improvement. Boundary and M1-posterior graph controls remain pending.
+
+Reproduction commands:
+
+```bash
+/home/ww/oviovo_baseline_builds/maskadapter/venv/bin/python scripts/evaluation/run_crove_adapter_room0.py
+python scripts/evaluation/run_crove_room0_semantic_controls.py
+python scripts/evaluation/run_crove_graph_room0.py
+```
+
 ## Other progress and remaining obligations
 
 | Family | Real current status | Still required |
 | --- | --- | --- |
 | M1 | Partial room0 whole-map comparison above | diverse/quality/current-aware, same-condition controls, B3/H2, confirmation |
-| M2 | Not run | S2 pseudo-unary and real M1 posterior, shared patch-only/geometry/boundary graph controls |
+| M2 | Partial room0 S2 patch-only/geometry graph | boundary control, M1 posterior, B3/H2 and confirmation |
 | M3 | Not run | true 2D mask correspondence, shared arbitration, pairwise/consensus/resem whole-map comparisons |
-| M4 | Official trained core loaded; three real-mask reference comparison passed | full-map paired mean/learned inference on DEV and confirmation |
+| M4 | Official trained core and room0 full-map mean/learned pair completed | B3/H2 and confirmation |
 
 M4 uses the official trained checkpoint, not random weights or a local untrained
 replacement. Its three-mask numerical test is explicitly not a whole-map result.

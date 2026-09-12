@@ -1,0 +1,17 @@
+{
+  "case": "room0",
+  "split": "dev",
+  "top_k": 4,
+  "candidate_pool": "native retained same-visit observations",
+  "mask": "positive-depth source-row projection; no dilation; no GT",
+  "depth_tolerance_m": 0.05,
+  "minimum_unique_pixels": 16,
+  "aggregation": "normalize each view embedding then uniform mean and normalize",
+  "fallback": "B_SEM_OVI_NATIVE",
+  "crop_count": 0,
+  "methods": [
+    "ADAPTER_CLIP_MEAN",
+    "ADAPTER_CLIP_LEARNED"
+  ],
+  "checkpoint_sha256": "5686dc21e3461918d385d5cee02b103320e8ca30714485cb8f1694f0d590b55e"
+}
