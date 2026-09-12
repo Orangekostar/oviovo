@@ -5,6 +5,42 @@ from __future__ import annotations
 import numpy as np
 
 
+def native_crop_inputs(processor, crops):
+    """Preserve RGB HWC interpretation even when crop height is 1 or 3 pixels."""
+    from PIL import Image
+
+    return processor.image_processor(
+        images=[Image.fromarray(crop) for crop in crops],
+        input_data_format="channels_last",
+        return_tensors="pt",
+    )
+
+
+def native_six_crops(rgb, mask):
+    """OVI three 0/.1/.2 box expansions, paired RGB and black-background crops."""
+    rgb, mask = np.asarray(rgb), np.asarray(mask, bool)
+    if rgb.ndim != 3 or rgb.shape[2] != 3 or mask.shape != rgb.shape[:2]:
+        raise ValueError("aligned RGB image and region mask required")
+    y, x = np.nonzero(mask)
+    if not len(x):
+        return []
+    x1, y1, x2, y2 = int(x.min()), int(y.min()), int(x.max()) + 1, int(y.max()) + 1
+    black = rgb.copy()
+    black[~mask] = 0
+    h, w = mask.shape
+    crops = []
+    for layer in range(3):
+        xp, yp = int(0.1 * layer * (x2 - x1)), int(0.1 * layer * (y2 - y1))
+        left, top = max(0, x1 - xp), max(0, y1 - yp)
+        right, bottom = min(w - 1, x2 + xp), min(h - 1, y2 + yp)
+        if right <= left or bottom <= top:
+            return []
+        crops.extend(
+            [rgb[top:bottom, left:right].copy(), black[top:bottom, left:right].copy()]
+        )
+    return crops
+
+
 def owner_posteriors_to_rows(owner_ids, feature_owners, posterior, class_ids):
     """Exact owner lookup, preserving visit offsets and unsupported source rows."""
     owners, keys = np.asarray(owner_ids), np.asarray(feature_owners)

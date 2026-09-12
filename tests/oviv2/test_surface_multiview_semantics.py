@@ -1,6 +1,39 @@
 import numpy as np
 
 
+def test_thin_rgb_crop_preprocessing_does_not_infer_height_as_channels():
+    from types import SimpleNamespace
+
+    from transformers import SiglipImageProcessor
+
+    from src.oviv2.surface_multiview_semantics import native_crop_inputs
+
+    rgb = np.zeros((3, 30, 3), np.uint8)
+    rgb[:, :, 0] = 255
+    processor = SimpleNamespace(
+        image_processor=SiglipImageProcessor(size={"height": 8, "width": 8})
+    )
+    inputs = native_crop_inputs(processor, [rgb])
+    np.testing.assert_allclose(
+        inputs["pixel_values"].mean((0, 2, 3)).numpy(), [1, -1, -1]
+    )
+
+
+def test_native_six_crops_keep_rgb_and_masked_pairs_at_three_scales():
+    from src.oviv2.surface_multiview_semantics import native_six_crops
+
+    rgb = np.full((20, 20, 3), 127, np.uint8)
+    mask = np.zeros((20, 20), bool)
+    mask[5:15, 5:15] = True
+    crops = native_six_crops(rgb, mask)
+    assert [c.shape[:2] for c in crops] == [(10, 10)] * 2 + [(12, 12)] * 2 + [
+        (14, 14)
+    ] * 2
+    assert crops[2][0, 0].tolist() == [127, 127, 127]
+    assert crops[3][0, 0].tolist() == [0, 0, 0]
+    assert native_six_crops(rgb, np.zeros_like(mask)) == []
+
+
 def test_owner_posterior_lookup_keeps_visit_offsets_and_missing_rows():
     from src.oviv2.surface_multiview_semantics import owner_posteriors_to_rows
 

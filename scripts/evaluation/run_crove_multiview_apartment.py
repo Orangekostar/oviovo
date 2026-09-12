@@ -405,7 +405,7 @@ def evaluate_saved_readouts(
                 passes_original_per_case_gates=passed,
                 evaluation_seconds=time.monotonic() - started,
                 interpretation=(
-                    "Owner-only readout: source geometry, point semantics and roles stay frozen; owner IDs may change."
+                    "Source geometry stays frozen; owner IDs and supported semantic roles may change according to the declared readout."
                     if allow_owner_changes
                     else "Role-dependent object/background metrics may change from supported semantics; frozen source geometry and owner do not change."
                 ),
