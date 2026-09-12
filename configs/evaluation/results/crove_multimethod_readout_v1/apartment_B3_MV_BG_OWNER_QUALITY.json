@@ -1,0 +1,28 @@
+{
+  "case": "apartment-t0-000766-001021-t1-001217-001472",
+  "changed_semantic_rows": 1339299,
+  "evaluation_seconds": 7.021289335563779,
+  "fallback": "original native",
+  "geometry_and_owner_fixed": true,
+  "interpretation": "Role-dependent object/background metrics may change from supported semantics; frozen source geometry and owner do not change.",
+  "local_supported_rows_without_owner_features": 7595,
+  "local_supported_source_rows": 8769713,
+  "method": "MV_BG_OWNER_QUALITY",
+  "metrics": {
+    "background_f1_at_5cm": 0.4044943820224719,
+    "current_miou": 0.13566956840220099,
+    "ghost": 0.5025906735751295,
+    "surface_f1_at_5cm": 0.4116969772949854,
+    "surface_precision_at_5cm": 0.6160587998415852,
+    "surface_recall_at_5cm": 0.3091457464738756,
+    "t1_observed_region_stale_precision": 0.996751594732719,
+    "t1_unobserved_region_recall": 0.0771902740254728,
+    "total_current_surface_coverage": 0.3091457464738756
+  },
+  "passes_original_per_case_gates": false,
+  "source_rows": 15622601,
+  "split": "dev",
+  "state": "B3",
+  "status": "FULL_MAP_EVALUATED",
+  "updated_source_rows": 8762118
+}

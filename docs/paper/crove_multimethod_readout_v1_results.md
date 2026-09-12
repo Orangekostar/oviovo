@@ -584,12 +584,30 @@ batches, with 1,632.14 s of encoder forwards. B3 has also completed
 These times count encoder forwards only, not end-to-end runtime.
 Each requires at least two same-visit observations with at least
 16 unique independent-mask-interior pixels, then at most four diverse views.
-`MV_LOCAL_BG_QUALITY` and `MV_BG_OWNER_QUALITY` full-map readers are implemented
-but not yet evaluated: both keep native outside the local support scope, and
+`MV_LOCAL_BG_QUALITY` and `MV_BG_OWNER_QUALITY` have completed all six full-map
+evaluations: both keep native outside the local support scope, and
 the owner control uses the existing matched re-encoded owner head within it.
 Rows with a local feature but no owner feature are counted separately, so
 additional coverage is not attributed solely to locality. Region construction
 alone is not counted as completion of the structural-background requirement.
+
+| Case | Owner-control mIoU | Local-head mIoU | Local minus owner | Original-gate eligibility |
+|---|---:|---:|---:|---|
+| room0 | 0.281873 | 0.301948 | +0.020076 | Static semantic selection has no added gate |
+| Apartment B3 | 0.135670 | 0.135886 | +0.000217 | Both fail |
+| Apartment H2 | 0.135518 | 0.135734 | +0.000217 | Both fail |
+
+On room0 both preserve native CA-AP50=0.470711 and F5=0.935286; the local head
+remains below original native mIoU=0.340208 and cached QUALITY mIoU=0.400847.
+On B3/H2 the local head exactly matches original native current mIoU but lowers
+Surface precision to 0.655669/0.656034, below the frozen 0.724413 threshold.
+Its Ghost remains zero; the owner control has Ghost=0.502591 and also fails
+Surface precision. Thus locality improves its matched control but does not
+provide a stronger eligible current readout. Both dynamic local heads cover
+8,769,713 source rows, including 7,595 rows without an owner-head feature;
+the room0 heads cover identical 5,694,670 rows with no such coverage mismatch.
+Expanded geometry, recovery and per-class audits are running before collection
+and selection freeze.
 
 ```bash
 python scripts/evaluation/run_crove_current_aware_apartment.py
