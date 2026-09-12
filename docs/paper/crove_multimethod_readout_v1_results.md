@@ -723,10 +723,11 @@ Unrecorded costs and dynamic instance AP remain null/N/A. This is an intermediat
 evidence table covering 83 full-map readouts. All six local-background scores
 are included and the DEV choices are frozen in `selected_configs.json`.
 `figures/room0_semantic_delta` now provides a reproducible SVG/PDF/PNG view of
-all 25 scored room0 methods relative to S2, with source CSV, evidence contract
+all 27 scored room0 methods relative to S2, with source CSV, evidence contract
 and rendered QA. Its single-scene differences have no invented uncertainty.
 All current deltas are nonpositive; this remains an intermediate DEV figure,
-to be regenerated with the two now-completed local-background scores.
+now including the two completed local-background scores. The rerendered figure
+passes glyph-size and collision audits (minimum 7 pt; zero collisions).
 The task selector is implemented with maximum-relative 1e-6 ties, declared
 secondary metrics, equal baseline participation and separate metric/eligible
 winners. Incomparable added-cost stages are skipped, not interpreted as zero.

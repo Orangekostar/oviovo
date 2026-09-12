@@ -2,7 +2,7 @@
 
 Question: does any evaluated full-map semantic readout improve on the fixed S2 reference in room0?
 
-Evidence: every scored room0 DEV row in the collected results, including baselines, controls, negative results and explicitly labelled M3 owner variants. Dynamic B3/H2 rows are outside this static question; no room0 method is removed for appearance or performance. The current matrix is incomplete until local-background scores arrive, so the plot is a DEV progress figure and must be regenerated then.
+Evidence: every scored room0 DEV row in the collected results, including baselines, controls, negative results and explicitly labelled M3 owner variants. Dynamic B3/H2 rows are outside this static question; no room0 method is removed for appearance or performance. All 27 room0 rows, including both local-background heads, are included. This DEV figure does not establish cross-scene confirmation.
 
 Archetype: single-panel quantitative comparison. Horizontal paired differences against the same room0 S2 score expose absolute gains/losses without mixing tasks or datasets. Family and exact method IDs remain visible; gray denotes baseline rows and blue denotes new readouts, not significance.
 
