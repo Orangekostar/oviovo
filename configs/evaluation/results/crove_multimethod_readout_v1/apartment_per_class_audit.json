@@ -1,0 +1,2349 @@
+{
+  "binding": {
+    "context_sha256": "a74221648262d1daef179d59c67b15bd750362982a5c8dee801d6dd6bb1a7132",
+    "geometry_sha256": "7d3ad160bdee68fb9054826c1e949b153983d2f744cb412c63f6a4bfde927367"
+  },
+  "protocol": "exact legacy_eval_order; eval_role != 0; original common-v2 strict 0.05m nearest projection; GT-present valid classes only",
+  "readouts": {
+    "B3_ADAPTER_CLIP_LEARNED": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13527251722821146,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1416,
+          "iou": 0.3752981712165386,
+          "support": 3699,
+          "union": 3773
+        },
+        "2": {
+          "intersection": 69,
+          "iou": 0.014906027219701879,
+          "support": 2582,
+          "union": 4629
+        },
+        "5": {
+          "intersection": 1290,
+          "iou": 0.4214309049330284,
+          "support": 3058,
+          "union": 3061
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 12158,
+          "union": 12158
+        }
+      },
+      "prediction_sha256": "b2b0ab99916060876fa28da456dec2809d9665410592ea399e805d64a8ee1022",
+      "result_sha256": "a0476e0d121a6b628aebfc6340786766111d120c469bc3f0b3dc902773af366f",
+      "target_count": 22546
+    },
+    "B3_ADAPTER_CLIP_MEAN": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.11547697050215215,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 241
+        },
+        "16": {
+          "intersection": 1481,
+          "iou": 0.34465906446357925,
+          "support": 3699,
+          "union": 4297
+        },
+        "2": {
+          "intersection": 64,
+          "iou": 0.01399825021872266,
+          "support": 2582,
+          "union": 4572
+        },
+        "5": {
+          "intersection": 1023,
+          "iou": 0.33420450833061094,
+          "support": 3058,
+          "union": 3061
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 12158,
+          "union": 12158
+        }
+      },
+      "prediction_sha256": "4c25c71b74c6c1c2ce4ce5dd929df451269e80c2d0a99e83372a1b32c685f52d",
+      "result_sha256": "65ac3788ed823bc3ea36eeaff3e8a6309c0e5caf2708b142ede5cdc544627d30",
+      "target_count": 22546
+    },
+    "B3_ADAPTER_LEARNED_GRAPH_GEOM": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13515081223212314,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1416,
+          "iou": 0.375,
+          "support": 3699,
+          "union": 3776
+        },
+        "2": {
+          "intersection": 67,
+          "iou": 0.01447396845971052,
+          "support": 2582,
+          "union": 4629
+        },
+        "5": {
+          "intersection": 1290,
+          "iou": 0.4214309049330284,
+          "support": 3058,
+          "union": 3061
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 12158,
+          "union": 12158
+        }
+      },
+      "prediction_sha256": "cdd65217bbcfe7583b39de9b36ede887e18438aa952ad2dac1eb3c164ddc8859",
+      "result_sha256": "76acb868a10389b2c51585fd12d7c081d200f6f3ffea37c96de7dcdd75557bd1",
+      "target_count": 22546
+    },
+    "B3_ADAPTER_LEARNED_PATCH_ONLY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13516736852351388,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1416,
+          "iou": 0.37509933774834436,
+          "support": 3699,
+          "union": 3775
+        },
+        "2": {
+          "intersection": 67,
+          "iou": 0.01447396845971052,
+          "support": 2582,
+          "union": 4629
+        },
+        "5": {
+          "intersection": 1290,
+          "iou": 0.4214309049330284,
+          "support": 3058,
+          "union": 3061
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 12158,
+          "union": 12158
+        }
+      },
+      "prediction_sha256": "11e9315bba2457e0757eb428e5ab24dbc40112d652ab3d119e244484b841807e",
+      "result_sha256": "07d4686c4fd3e6d6fe3dffe9a4ddf412273e048b674b2e1abb74c444c75bea79",
+      "target_count": 22546
+    },
+    "B3_B_SEM_CROVE_S0_DENSE_REPLAY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.17264117963890546,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 254
+        },
+        "16": {
+          "intersection": 1472,
+          "iou": 0.3909694555112882,
+          "support": 3699,
+          "union": 3765
+        },
+        "2": {
+          "intersection": 240,
+          "iou": 0.06754855052068674,
+          "support": 2582,
+          "union": 3553
+        },
+        "5": {
+          "intersection": 1393,
+          "iou": 0.44733461785484907,
+          "support": 3058,
+          "union": 3114
+        },
+        "6": {
+          "intersection": 2,
+          "iou": 0.0023121387283236996,
+          "support": 853,
+          "union": 865
+        },
+        "9": {
+          "intersection": 1553,
+          "iou": 0.12768231521828496,
+          "support": 12158,
+          "union": 12163
+        }
+      },
+      "prediction_sha256": "779e638f77ad8f42cf4a46d5e838587469bd37a6fe4d65f4506542dd2be1bc77",
+      "result_sha256": "47ffd8b51d7b9203046cf78b6a8b901fa3c76ab9a700c51e03058a58a661f083",
+      "target_count": 22546
+    },
+    "B3_B_SEM_CROVE_S2_DENSE_REPLAY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.17414348561150497,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 229
+        },
+        "16": {
+          "intersection": 1547,
+          "iou": 0.39932885906040266,
+          "support": 3699,
+          "union": 3874
+        },
+        "2": {
+          "intersection": 196,
+          "iou": 0.058056872037914695,
+          "support": 2582,
+          "union": 3376
+        },
+        "5": {
+          "intersection": 1394,
+          "iou": 0.4527443975316661,
+          "support": 3058,
+          "union": 3079
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 860
+        },
+        "9": {
+          "intersection": 1639,
+          "iou": 0.13473078503904645,
+          "support": 12158,
+          "union": 12165
+        }
+      },
+      "prediction_sha256": "ba4aafe885b43711ea1ee634b27a9819327bcdd4f4d625f9b7bb1ddf48f5726b",
+      "result_sha256": "28e0b5914cf331458866ada4eb971a2ff2d76dc29167d7cecaaaf07eef2584c7",
+      "target_count": 22546
+    },
+    "B3_B_SEM_OVI_REENCODE": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.12603774018600866,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1493,
+          "iou": 0.3919663953793647,
+          "support": 3699,
+          "union": 3809
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1115,
+          "iou": 0.36426004573668735,
+          "support": 3058,
+          "union": 3061
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 12158,
+          "union": 12158
+        }
+      },
+      "prediction_sha256": "339aa733b94b6b11a9ac2573c53b45f995e5bdc9fb279f5043838db340a2acb8",
+      "result_sha256": "9d058d55ad0e486254b1421c99093ac76823d75a92fa1e5ef3e5ee8c9bcd14da",
+      "target_count": 22546
+    },
+    "B3_INST_CONSENSUS_OWNER": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.1358861592620667,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1495,
+          "iou": 0.25691699604743085,
+          "support": 3699,
+          "union": 5819
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1259,
+          "iou": 0.40903183885640026,
+          "support": 3058,
+          "union": 3078
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "03c0a2c7183e95f3ad688f03ba801b48ad233da0ed392e15654bac85b034e1a1",
+      "result_sha256": "8ac058fa3d9103e7acf06244c60d3bdbaf2208fcfeedd7d5eeed0116b919f009",
+      "target_count": 22546
+    },
+    "B3_INST_CONSENSUS_RESEM": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.12588813145934152,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1257,
+          "iou": 0.3299212598425197,
+          "support": 3699,
+          "union": 3810
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1246,
+          "iou": 0.4063926940639269,
+          "support": 3058,
+          "union": 3066
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 232,
+          "iou": 0.01901483484960249,
+          "support": 12158,
+          "union": 12201
+        }
+      },
+      "prediction_sha256": "aabf81593ca48ba308a1496583351075d44b3b142fcf0de0594eb0a34cf30fbd",
+      "result_sha256": "f02a6000a0202ddc5f01c3b78e10f5c65d09ac8c02a262cc7fda5caef9f249a8",
+      "target_count": 22546
+    },
+    "B3_INST_PAIRWISE": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.1358861592620667,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1495,
+          "iou": 0.25691699604743085,
+          "support": 3699,
+          "union": 5819
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1259,
+          "iou": 0.40903183885640026,
+          "support": 3058,
+          "union": 3078
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "4a10f4203c798894e365bbbc6ca05d330c43c3e67aae8de4b221ae832a9c065f",
+      "result_sha256": "fa5c8894dbfac5f1c83625330bf507585bb7fedc11c1b2d82735526a90b5cc08",
+      "target_count": 22546
+    },
+    "B3_MV_CURRENT_AWARE": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.10512177404627392,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1152,
+          "iou": 0.3075280298985585,
+          "support": 3699,
+          "union": 3746
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 989,
+          "iou": 0.323202614379085,
+          "support": 3058,
+          "union": 3060
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 12158,
+          "union": 12158
+        }
+      },
+      "prediction_sha256": "e34c3e9146d1df7e6da5aa9eb790745b4aa4c2a00780c28e15a2de5fc3263df5",
+      "result_sha256": "8fd276b54bd1f03ef783cee51d0a1c59c80213398a6b877bb26e4a8b9dae1c35",
+      "target_count": 22546
+    },
+    "B3_MV_DIVERSE_MEAN": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.1358861592620667,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1495,
+          "iou": 0.25691699604743085,
+          "support": 3699,
+          "union": 5819
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1259,
+          "iou": 0.40903183885640026,
+          "support": 3058,
+          "union": 3078
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "2dc0620d2a7a3fb04d21b9c4988ec8aff271a6eff70540844b1a686b2f744da8",
+      "result_sha256": "d16ef0ddff8f1bd5abc20be1673fb4e7600d8048e1898a1faa1d0a2d06e34153",
+      "target_count": 22546
+    },
+    "B3_MV_NATIVE_CACHED": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.1358861592620667,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1495,
+          "iou": 0.25691699604743085,
+          "support": 3699,
+          "union": 5819
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1259,
+          "iou": 0.40903183885640026,
+          "support": 3058,
+          "union": 3078
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "b10a54ba07474e7a9b237772bf8bca7149e8bf1304e22ddb39d89081a9eee078",
+      "result_sha256": "d1eb4916d14332c905d96b8ed7f5b9830c8be676e86e53c30a7418bf3d203d59",
+      "target_count": 22546
+    },
+    "B3_MV_QUALITY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13707740899132814,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1495,
+          "iou": 0.25691699604743085,
+          "support": 3699,
+          "union": 5819
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1281,
+          "iou": 0.4161793372319688,
+          "support": 3058,
+          "union": 3078
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "7de275372e1c3ac11e4f5a20f1d44006d8cb9ed759145341ac83c8b549dd307e",
+      "result_sha256": "632d6bcd81f3542fcb5f5184732270d2aa161336c48905a0c639c5078316b336",
+      "target_count": 22546
+    },
+    "B3_MV_QUALITY_GRAPH_BOUNDARY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13709259417290712,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1495,
+          "iou": 0.25687285223367695,
+          "support": 3699,
+          "union": 5820
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1281,
+          "iou": 0.4163145921351966,
+          "support": 3058,
+          "union": 3077
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "2218e2ed94a4ba1ceae67e4c7ea6540130cf4b2a6c70155d0b13a65dbb2db441",
+      "result_sha256": "b0c53a91fdff5fd5b4514539570db58857f0588848d6b4104136e8eb69216159",
+      "target_count": 22546
+    },
+    "B3_MV_QUALITY_GRAPH_GEOM": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13709259417290712,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1495,
+          "iou": 0.25687285223367695,
+          "support": 3699,
+          "union": 5820
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1281,
+          "iou": 0.4163145921351966,
+          "support": 3058,
+          "union": 3077
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "4276230fc000d95eb65faa186fa7fc2e988e43b251b80f44bc33fc96c52cccae",
+      "result_sha256": "0b7b16a6c31b86513b0d635c83223268d62ce941f31422784a89e1dac6a820e5",
+      "target_count": 22546
+    },
+    "B3_MV_QUALITY_PATCH_ONLY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13707740899132814,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1495,
+          "iou": 0.25691699604743085,
+          "support": 3699,
+          "union": 5819
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1281,
+          "iou": 0.4161793372319688,
+          "support": 3058,
+          "union": 3078
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "ca35c87225905cb3eb0c2da85c7943bc67314615ba54db00157c8bde8af7b594",
+      "result_sha256": "aef2f58bf78acb41c2580f50832dcecbdc4f72bcab52e530956a204aa5777e5b",
+      "target_count": 22546
+    },
+    "B3_MV_REENCODE_DIVERSE": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.09853136010291878,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1152,
+          "iou": 0.3075280298985585,
+          "support": 3699,
+          "union": 3746
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 868,
+          "iou": 0.28366013071895424,
+          "support": 3058,
+          "union": 3060
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 12158,
+          "union": 12158
+        }
+      },
+      "prediction_sha256": "81ea1f823cb26287d96aa683aa32aafbc54a456a3921769aa29ce762853cb80f",
+      "result_sha256": "bb4a6dd16ddebd9ed6e7e78168e9bf36e938157b5d36d25c2a0ee90b2996cf18",
+      "target_count": 22546
+    },
+    "B3_MV_REENCODE_QUALITY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.10512177404627392,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1152,
+          "iou": 0.3075280298985585,
+          "support": 3699,
+          "union": 3746
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 989,
+          "iou": 0.323202614379085,
+          "support": 3058,
+          "union": 3060
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 12158,
+          "union": 12158
+        }
+      },
+      "prediction_sha256": "89e581053292ae007931f88a51a0bbda6dc185c208c846d4106c2fb004536f60",
+      "result_sha256": "fbf7c1fdad5a7c64c95503bbe33b799908e608a4b96cc5a5f9265950982e2e93",
+      "target_count": 22546
+    },
+    "B3_MV_SINGLE": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13240270354642783,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1499,
+          "iou": 0.2469522240527183,
+          "support": 3699,
+          "union": 6070
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1275,
+          "iou": 0.4150390625,
+          "support": 3058,
+          "union": 3072
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1623,
+          "iou": 0.13242493472584857,
+          "support": 12158,
+          "union": 12256
+        }
+      },
+      "prediction_sha256": "378fe715c334207a97f0043426c4f36c318ec2094b06ee526365f19535c3fda3",
+      "result_sha256": "d0f2a10dc45b4e43e65638289cf88a3e827bbd938f06a57ec8db1b6bdde4d8cf",
+      "target_count": 22546
+    },
+    "B3_MV_TOPK_GRAPH_GEOM": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13953842603926322,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1495,
+          "iou": 0.25687285223367695,
+          "support": 3699,
+          "union": 5820
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1324,
+          "iou": 0.4309895833333333,
+          "support": 3058,
+          "union": 3072
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "a95a6f4287b3fdf7eec1dfd3e0bc9757d3a8627929221ec2836c509ccc982443",
+      "result_sha256": "032ebcdadd25b0c7f411c527c94fa8cb9f459aae7e550467977cf3eb17638bb8",
+      "target_count": 22546
+    },
+    "B3_MV_TOPK_MEAN": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13954578334155554,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1495,
+          "iou": 0.25691699604743085,
+          "support": 3699,
+          "union": 5819
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1324,
+          "iou": 0.4309895833333333,
+          "support": 3058,
+          "union": 3072
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "6397d22c6530eb18460321514ef890ff8bad5e90d1dd6269b88ddc3764f2e882",
+      "result_sha256": "935925d6fe691340788c204093138ff8319b657450ddffd636b01236d92cd184",
+      "target_count": 22546
+    },
+    "B3_MV_TOPK_PATCH_ONLY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13956181633467912,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1495,
+          "iou": 0.25687285223367695,
+          "support": 3699,
+          "union": 5820
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1324,
+          "iou": 0.4311299251058287,
+          "support": 3058,
+          "union": 3071
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "783692c047e599c3bd92c0cd498a1a0711354584b093b5ea0ad165da7b3d9195",
+      "result_sha256": "148e1297f5e64d8438ae7426b68c46fb1ae429d96f7a0a15be943d9618d3b26c",
+      "target_count": 22546
+    },
+    "B3_S2_DENSE_REPLAY_GRAPH_BOUNDARY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.17476812271597472,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 242
+        },
+        "16": {
+          "intersection": 1546,
+          "iou": 0.4043944546167931,
+          "support": 3699,
+          "union": 3823
+        },
+        "2": {
+          "intersection": 218,
+          "iou": 0.06318840579710144,
+          "support": 2582,
+          "union": 3450
+        },
+        "5": {
+          "intersection": 1392,
+          "iou": 0.4523886902827429,
+          "support": 3058,
+          "union": 3077
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 859
+        },
+        "9": {
+          "intersection": 1565,
+          "iou": 0.12863718559921092,
+          "support": 12158,
+          "union": 12166
+        }
+      },
+      "prediction_sha256": "108c103627e508125cc49a75a08236f87fc39bd082773d4cd040e65a32718c2d",
+      "result_sha256": "1c6fe4bdabdae82fcd1ab842607314438c5c5777888c2b9342c097492f28ecbd",
+      "target_count": 22546
+    },
+    "B3_S2_DENSE_REPLAY_GRAPH_GEOM": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.17468797839083328,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 242
+        },
+        "16": {
+          "intersection": 1545,
+          "iou": 0.4041328799372221,
+          "support": 3699,
+          "union": 3823
+        },
+        "2": {
+          "intersection": 218,
+          "iou": 0.06313350709527947,
+          "support": 2582,
+          "union": 3453
+        },
+        "5": {
+          "intersection": 1392,
+          "iou": 0.4523886902827429,
+          "support": 3058,
+          "union": 3077
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 859
+        },
+        "9": {
+          "intersection": 1563,
+          "iou": 0.12847279302975506,
+          "support": 12158,
+          "union": 12166
+        }
+      },
+      "prediction_sha256": "54a3e98f98a38734499fd99af771a9610927c1f24f6395c1a6f420dcf3f6596e",
+      "result_sha256": "42e92511b4dd7fc5c98a81508fc6e2f3f35b476b32750f9b2e3fb4a40c2b4934",
+      "target_count": 22546
+    },
+    "B3_S2_DENSE_REPLAY_PATCH_ONLY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.1746100721582513,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 243
+        },
+        "16": {
+          "intersection": 1547,
+          "iou": 0.40444444444444444,
+          "support": 3699,
+          "union": 3825
+        },
+        "2": {
+          "intersection": 216,
+          "iou": 0.06259055346276442,
+          "support": 2582,
+          "union": 3451
+        },
+        "5": {
+          "intersection": 1392,
+          "iou": 0.4523886902827429,
+          "support": 3058,
+          "union": 3077
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 859
+        },
+        "9": {
+          "intersection": 1560,
+          "iou": 0.1282367447595561,
+          "support": 12158,
+          "union": 12165
+        }
+      },
+      "prediction_sha256": "0dd0f64bd880ad10c1d15b5587ed56fcfe1fdb9bce2e790848e60b7c0a00e921",
+      "result_sha256": "07d38224ca568f4405addc6f086afd80b13222a853947ac5b64312fede31613f",
+      "target_count": 22546
+    },
+    "H2_ADAPTER_CLIP_LEARNED": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.1368471334620386,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1453,
+          "iou": 0.3851046912271402,
+          "support": 3699,
+          "union": 3773
+        },
+        "2": {
+          "intersection": 69,
+          "iou": 0.01487389523604225,
+          "support": 2582,
+          "union": 4639
+        },
+        "5": {
+          "intersection": 1289,
+          "iou": 0.4211042143090493,
+          "support": 3058,
+          "union": 3061
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 12158,
+          "union": 12158
+        }
+      },
+      "prediction_sha256": "d6a73faac41947c6b6c4be6725585b56408a69fb4c0800b8e0f1f4a3ac28751d",
+      "result_sha256": "7c608029cc994a4822321c6c91d7f83e0ac1f57e881b152deab9049332ee513c",
+      "target_count": 22546
+    },
+    "H2_ADAPTER_CLIP_MEAN": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.1159267498206209,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 241
+        },
+        "16": {
+          "intersection": 1494,
+          "iou": 0.34768443099837093,
+          "support": 3699,
+          "union": 4297
+        },
+        "2": {
+          "intersection": 64,
+          "iou": 0.01399825021872266,
+          "support": 2582,
+          "union": 4572
+        },
+        "5": {
+          "intersection": 1022,
+          "iou": 0.33387781770663183,
+          "support": 3058,
+          "union": 3061
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 12158,
+          "union": 12158
+        }
+      },
+      "prediction_sha256": "76b92bc41bed2759fc7f422dfcaf6010ced0d0b0e1b453ab2549f54a2fcf86bf",
+      "result_sha256": "6889b778156fe9df4a6c9b5c4dd50062dee829b066b33da092743dd9f21ef6eb",
+      "target_count": 22546
+    },
+    "H2_ADAPTER_LEARNED_GRAPH_GEOM": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13678594317809664,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1454,
+          "iou": 0.3851655629139073,
+          "support": 3699,
+          "union": 3775
+        },
+        "2": {
+          "intersection": 67,
+          "iou": 0.014445881845623114,
+          "support": 2582,
+          "union": 4638
+        },
+        "5": {
+          "intersection": 1289,
+          "iou": 0.4211042143090493,
+          "support": 3058,
+          "union": 3061
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 12158,
+          "union": 12158
+        }
+      },
+      "prediction_sha256": "c41e0579656f5d2f212c23594fc694ec75d8251ed9361bdaf5a800c5e203aead",
+      "result_sha256": "fed5725a4246c7cd6fda2f2ac485f5a66db95d891d65db8dd2d0fb9724f524c9",
+      "target_count": 22546
+    },
+    "H2_ADAPTER_LEARNED_PATCH_ONLY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13677720134961235,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1453,
+          "iou": 0.38490066225165565,
+          "support": 3699,
+          "union": 3775
+        },
+        "2": {
+          "intersection": 68,
+          "iou": 0.014658331536969174,
+          "support": 2582,
+          "union": 4639
+        },
+        "5": {
+          "intersection": 1289,
+          "iou": 0.4211042143090493,
+          "support": 3058,
+          "union": 3061
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 12158,
+          "union": 12158
+        }
+      },
+      "prediction_sha256": "0896b0dcb975f51a776215f537a08f110d9321ac1ebd944f0882386aadc77746",
+      "result_sha256": "5803aa0496233543145c4397a1022fd17db146baf7bc877aeb48ef2b3daa360f",
+      "target_count": 22546
+    },
+    "H2_B_SEM_CROVE_S0_DENSE_REPLAY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.17368339376778066,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 254
+        },
+        "16": {
+          "intersection": 1484,
+          "iou": 0.3941567065073041,
+          "support": 3699,
+          "union": 3765
+        },
+        "2": {
+          "intersection": 240,
+          "iou": 0.06722689075630252,
+          "support": 2582,
+          "union": 3570
+        },
+        "5": {
+          "intersection": 1404,
+          "iou": 0.4507223113964687,
+          "support": 3058,
+          "union": 3115
+        },
+        "6": {
+          "intersection": 2,
+          "iou": 0.0023121387283236996,
+          "support": 853,
+          "union": 865
+        },
+        "9": {
+          "intersection": 1553,
+          "iou": 0.12768231521828496,
+          "support": 12158,
+          "union": 12163
+        }
+      },
+      "prediction_sha256": "4ce577194f74a0ae186fe2f8861cecc72c68a0e2a7756921ecb09a4b610584a4",
+      "result_sha256": "59d2038bb35dd3178dbba72e92afcd186350e619b92edd35235fcb50eb6a9199",
+      "target_count": 22546
+    },
+    "H2_B_SEM_CROVE_S2_DENSE_REPLAY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.17511250811548787,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 229
+        },
+        "16": {
+          "intersection": 1560,
+          "iou": 0.4024767801857585,
+          "support": 3699,
+          "union": 3876
+        },
+        "2": {
+          "intersection": 196,
+          "iou": 0.05780005897965202,
+          "support": 2582,
+          "union": 3391
+        },
+        "5": {
+          "intersection": 1403,
+          "iou": 0.4556674244884703,
+          "support": 3058,
+          "union": 3079
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 860
+        },
+        "9": {
+          "intersection": 1639,
+          "iou": 0.13473078503904645,
+          "support": 12158,
+          "union": 12165
+        }
+      },
+      "prediction_sha256": "3d8fdb3ccafab17c608166c7e9c7805d92bfda4f5cc220452b7dd7f0e3afd2c2",
+      "result_sha256": "e016dce8137d3b211a0acb8da586ee715bb155c0b6aff40294c57fb7d8a5e48d",
+      "target_count": 22546
+    },
+    "H2_B_SEM_OVI_REENCODE": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.12697405604149367,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1492,
+          "iou": 0.3917038592806511,
+          "support": 3699,
+          "union": 3809
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1133,
+          "iou": 0.370140476968311,
+          "support": 3058,
+          "union": 3061
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 12158,
+          "union": 12158
+        }
+      },
+      "prediction_sha256": "402109e4b521859bd9261d36efa016ee11b87b27273cabac4889406c5bf5e21e",
+      "result_sha256": "45827f0d1c5602c923f62e0744839026ce064756d1ade0a33843a0b5783d20c5",
+      "target_count": 22546
+    },
+    "H2_INST_CONSENSUS_OWNER": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13573447945613093,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1508,
+          "iou": 0.25633180350161483,
+          "support": 3699,
+          "union": 5883
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1258,
+          "iou": 0.40870695256660167,
+          "support": 3058,
+          "union": 3078
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "76ef6287f59aac62287f5c6af963747d28cef759dd3a7161b16e6a9af8865ed4",
+      "result_sha256": "5647f374bd9fbf409bec842c2ebc40590d06347cc3b6389d9804c0940b0b7f08",
+      "target_count": 22546
+    },
+    "H2_INST_CONSENSUS_RESEM": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.12582700060211746,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1259,
+          "iou": 0.33053294828038854,
+          "support": 3699,
+          "union": 3809
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1243,
+          "iou": 0.40541422048271364,
+          "support": 3058,
+          "union": 3066
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 232,
+          "iou": 0.01901483484960249,
+          "support": 12158,
+          "union": 12201
+        }
+      },
+      "prediction_sha256": "6df8cc741e25f1365a9e62f6382f9835e39445862e76af10b47e8284988008d7",
+      "result_sha256": "8b0e5e48daacf1aa2dac27a15802e71d2ecef2721bb82c37d5002fc05f3cd788",
+      "target_count": 22546
+    },
+    "H2_INST_PAIRWISE": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13573447945613093,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1508,
+          "iou": 0.25633180350161483,
+          "support": 3699,
+          "union": 5883
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1258,
+          "iou": 0.40870695256660167,
+          "support": 3058,
+          "union": 3078
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "81b91e1613ed3629dc6ab082963ec704221c253adee9fb694a94e45c177dff27",
+      "result_sha256": "e2673b5a03cb5d4098dead2f5e05ee349eb38a1f6e8217c804bb8053bfb59aa0",
+      "target_count": 22546
+    },
+    "H2_MV_CURRENT_AWARE": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.10610216620313666,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1152,
+          "iou": 0.3075280298985585,
+          "support": 3699,
+          "union": 3746
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1007,
+          "iou": 0.32908496732026143,
+          "support": 3058,
+          "union": 3060
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 12158,
+          "union": 12158
+        }
+      },
+      "prediction_sha256": "b7c1f6b3644ec6bac5e56a72e725f273584dad1e2646a88b53cd905143ab3de8",
+      "result_sha256": "cba0d54059416e5a66ef75d83c1b1be92ac2a10c0495eb2c814f15034472b243",
+      "target_count": 22546
+    },
+    "H2_MV_DIVERSE_MEAN": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13573447945613093,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1508,
+          "iou": 0.25633180350161483,
+          "support": 3699,
+          "union": 5883
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1258,
+          "iou": 0.40870695256660167,
+          "support": 3058,
+          "union": 3078
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "adc1cd42c94d4c032f560516905b3ea047098de0998302552039c0c06336d425",
+      "result_sha256": "aeef08034c4535de6ee71ff2e5737edcf6499554cd1b171705bc5e4e5ec61ad1",
+      "target_count": 22546
+    },
+    "H2_MV_NATIVE_CACHED": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13573447945613093,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1508,
+          "iou": 0.25633180350161483,
+          "support": 3699,
+          "union": 5883
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1258,
+          "iou": 0.40870695256660167,
+          "support": 3058,
+          "union": 3078
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "25c9a152f4e62711047c16d1a2c45e6ae58d6204c50eb188d1bbacf9b155fae3",
+      "result_sha256": "7d9f3104196237eaa1f9ca1adb2ffe1dc5d60958eeed2d285f6f2319bd9500f4",
+      "target_count": 22546
+    },
+    "H2_MV_QUALITY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13768379719492238,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1508,
+          "iou": 0.25633180350161483,
+          "support": 3699,
+          "union": 5883
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1294,
+          "iou": 0.4204028589993502,
+          "support": 3058,
+          "union": 3078
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "31f1dc0603496b31071d0630304e025e1e8a1691dc8a02ab5c52086cb8edd75c",
+      "result_sha256": "042c4a2688ca4b1a1d5ca6b1a93c5d55e8f491fa8cdeb433e8bdde2adb0b5bdc",
+      "target_count": 22546
+    },
+    "H2_MV_QUALITY_GRAPH_BOUNDARY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13769930774573405,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1508,
+          "iou": 0.256288239292998,
+          "support": 3699,
+          "union": 5884
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1294,
+          "iou": 0.4205394865128372,
+          "support": 3058,
+          "union": 3077
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "cd61e33095f4dd48c9c337f67cfbb48375c7626c060bacd363f3cff1db543f80",
+      "result_sha256": "fafafba168a1bc93b9a74658c40795cc23ad185705c579df359fcd508cda75be",
+      "target_count": 22546
+    },
+    "H2_MV_QUALITY_GRAPH_GEOM": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13769930774573405,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1508,
+          "iou": 0.256288239292998,
+          "support": 3699,
+          "union": 5884
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1294,
+          "iou": 0.4205394865128372,
+          "support": 3058,
+          "union": 3077
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "b382b66b1c7cc75dd34d5b26aa9d2ff4ee926d04cc062153d5cb3a2a9ee07866",
+      "result_sha256": "835ada3e0e43ea4ff7fbb38c99ced7b85dc7f73a26080cba28e3dc6dccb0c5dd",
+      "target_count": 22546
+    },
+    "H2_MV_QUALITY_PATCH_ONLY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13768379719492238,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1508,
+          "iou": 0.25633180350161483,
+          "support": 3699,
+          "union": 5883
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1294,
+          "iou": 0.4204028589993502,
+          "support": 3058,
+          "union": 3078
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "1c13a3e648161b5eee52bd87757c78db9b1590db52f76b8b69028a6cd30f3f04",
+      "result_sha256": "f43a8841aa8b086dfcef5456404dac91f008f69583ae6f555f661f859d8d65c9",
+      "target_count": 22546
+    },
+    "H2_MV_REENCODE_DIVERSE": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.09956621849071835,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1152,
+          "iou": 0.3075280298985585,
+          "support": 3699,
+          "union": 3746
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 887,
+          "iou": 0.28986928104575166,
+          "support": 3058,
+          "union": 3060
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 12158,
+          "union": 12158
+        }
+      },
+      "prediction_sha256": "fb8e110e4ce3fe9270515f38d58305bcf09a860f91da460df6e063ceb28f7fc3",
+      "result_sha256": "c73c4d3151371a923fe81a15094aed839c98dafac4bff10ff350ad4e2b1c5fad",
+      "target_count": 22546
+    },
+    "H2_MV_REENCODE_QUALITY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.10610216620313666,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1152,
+          "iou": 0.3075280298985585,
+          "support": 3699,
+          "union": 3746
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1007,
+          "iou": 0.32908496732026143,
+          "support": 3058,
+          "union": 3060
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 12158,
+          "union": 12158
+        }
+      },
+      "prediction_sha256": "a5acac6517705b85c973c3e154aa3d9ddebded9f659f2e4241af87398ef961cf",
+      "result_sha256": "3a56981d06560be02bbb9761eab8e48351611e2c91735688a7df6a0297c472a8",
+      "target_count": 22546
+    },
+    "H2_MV_SINGLE": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13303178571011362,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1512,
+          "iou": 0.24649494620149984,
+          "support": 3699,
+          "union": 6134
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1288,
+          "iou": 0.4192708333333333,
+          "support": 3058,
+          "union": 3072
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1623,
+          "iou": 0.13242493472584857,
+          "support": 12158,
+          "union": 12256
+        }
+      },
+      "prediction_sha256": "653d4163c1fe641f032cc20800b209a4b627c9f6589d8f0418fd61b6043e3d29",
+      "result_sha256": "592c1bc337a807f876637c151aca6de6fa21d620d97714cf522fad3ee81c51b9",
+      "target_count": 22546
+    },
+    "H2_MV_TOPK_GRAPH_GEOM": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13945455991661573,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1509,
+          "iou": 0.2564146134239592,
+          "support": 3699,
+          "union": 5885
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1323,
+          "iou": 0.4309446254071661,
+          "support": 3058,
+          "union": 3070
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "211c9cc40f0c2c311f32236fa2644d331f921f4c47fdebca89caf29c7810686f",
+      "result_sha256": "a02a1bf5e2c144ee7a3879db3a2763a01489cdba44aee5e01a37772af2d3fca4",
+      "target_count": 22546
+    },
+    "H2_MV_TOPK_MEAN": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.139393997778364,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1508,
+          "iou": 0.25633180350161483,
+          "support": 3699,
+          "union": 5883
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1323,
+          "iou": 0.4306640625,
+          "support": 3058,
+          "union": 3072
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "e4fd2f5b216c29ad557f5ad3cdcfab03260469326e080708d3fe98d01b80da1d",
+      "result_sha256": "fa11d9371f672eb0a2aa09f3f5d94ff93474cec9e9f32a4c386595a723ba0e61",
+      "target_count": 22546
+    },
+    "H2_MV_TOPK_PATCH_ONLY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13946182296367624,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1509,
+          "iou": 0.2564581917063222,
+          "support": 3699,
+          "union": 5884
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1323,
+          "iou": 0.4309446254071661,
+          "support": 3058,
+          "union": 3070
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "928b39044f12d32b225ce20a0a0afb3989c182c5d36f310c2c0c9283ac2dd95b",
+      "result_sha256": "78cdaf9ab9010913264c5466e51026ce89981620db1ab65a94df93abb682e5da",
+      "target_count": 22546
+    },
+    "H2_S2_DENSE_REPLAY_GRAPH_BOUNDARY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.17577065527733304,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 240
+        },
+        "16": {
+          "intersection": 1558,
+          "iou": 0.4076399790685505,
+          "support": 3699,
+          "union": 3822
+        },
+        "2": {
+          "intersection": 219,
+          "iou": 0.06309420916162489,
+          "support": 2582,
+          "union": 3471
+        },
+        "5": {
+          "intersection": 1401,
+          "iou": 0.455313617159571,
+          "support": 3058,
+          "union": 3077
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 859
+        },
+        "9": {
+          "intersection": 1564,
+          "iou": 0.12857612627425188,
+          "support": 12158,
+          "union": 12164
+        }
+      },
+      "prediction_sha256": "2f28740a2601a58dca6a5c858edf398f124e8c72bb034713f77b57f69d6e9ade",
+      "result_sha256": "d6f230d2c54c02d92c849090057febed220041b582dfc9c982b23196c72c0f40",
+      "target_count": 22546
+    },
+    "H2_S2_DENSE_REPLAY_GRAPH_GEOM": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.17548170488373716,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 242
+        },
+        "16": {
+          "intersection": 1559,
+          "iou": 0.40726227795193315,
+          "support": 3699,
+          "union": 3828
+        },
+        "2": {
+          "intersection": 215,
+          "iou": 0.061995386389850055,
+          "support": 2582,
+          "union": 3468
+        },
+        "5": {
+          "intersection": 1401,
+          "iou": 0.455313617159571,
+          "support": 3058,
+          "union": 3077
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 859
+        },
+        "9": {
+          "intersection": 1561,
+          "iou": 0.12831894780106864,
+          "support": 12158,
+          "union": 12165
+        }
+      },
+      "prediction_sha256": "a3a8683f83866a607e4c93b829418c0881dd3bccd5a2b07fcc911c067f03be4b",
+      "result_sha256": "c10c9e26eecb6fa039daf72afc38b98d30e251da7ceded2b225eeceb9e414958",
+      "target_count": 22546
+    },
+    "H2_S2_DENSE_REPLAY_PATCH_ONLY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.17575271208910825,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 241
+        },
+        "16": {
+          "intersection": 1560,
+          "iou": 0.40752351097178685,
+          "support": 3699,
+          "union": 3828
+        },
+        "2": {
+          "intersection": 219,
+          "iou": 0.06318522792844777,
+          "support": 2582,
+          "union": 3466
+        },
+        "5": {
+          "intersection": 1401,
+          "iou": 0.455313617159571,
+          "support": 3058,
+          "union": 3077
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 859
+        },
+        "9": {
+          "intersection": 1563,
+          "iou": 0.1284939164748438,
+          "support": 12158,
+          "union": 12164
+        }
+      },
+      "prediction_sha256": "f1080c03392823b0fb6feb8d1742419e38e7160f63ce805d09e1bf07d56755fb",
+      "result_sha256": "14010273ef4c8ae2e06a6d978e51d3be4b2ee4b715e4c347860b482b8302e759",
+      "target_count": 22546
+    }
+  }
+}

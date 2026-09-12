@@ -9730,8 +9730,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.024030687843864085,
+          "iou": 0.3752981712165386
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": -0.04315084481821282,
+          "iou": 0.014906027219701879
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.03131349259863769,
+          "iou": 0.4214309049330284
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.13473078503904645,
+          "iou": 0.0
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": 0.11838117516910773,
+          "iou": 0.3752981712165386
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.014906027219701879,
+          "iou": 0.014906027219701879
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": 0.012399066076628162,
+          "iou": 0.4214309049330284
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.1493681206685691,
+          "iou": 0.0
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/adapter_projected_top4/B3_ADAPTER_CLIP_LEARNED.npz",
       "result_file": "apartment_B3_ADAPTER_CLIP_LEARNED.json",
@@ -9781,8 +9855,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.05466979459682342,
+          "iou": 0.34465906446357925
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": -0.04405862181919203,
+          "iou": 0.01399825021872266
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.11853988920105518,
+          "iou": 0.33420450833061094
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.13473078503904645,
+          "iou": 0.0
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": 0.0877420684161484,
+          "iou": 0.34465906446357925
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.01399825021872266,
+          "iou": 0.01399825021872266
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": -0.07482733052578933,
+          "iou": 0.33420450833061094
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.1493681206685691,
+          "iou": 0.0
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/adapter_projected_top4/B3_ADAPTER_CLIP_MEAN.npz",
       "result_file": "apartment_B3_ADAPTER_CLIP_MEAN.json",
@@ -9832,8 +9980,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.024328859060402663,
+          "iou": 0.375
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": -0.04358290357820417,
+          "iou": 0.01447396845971052
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.03131349259863769,
+          "iou": 0.4214309049330284
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.13473078503904645,
+          "iou": 0.0
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": 0.11808300395256915,
+          "iou": 0.375
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.01447396845971052,
+          "iou": 0.01447396845971052
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": 0.012399066076628162,
+          "iou": 0.4214309049330284
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.1493681206685691,
+          "iou": 0.0
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/graph_adapter_learned/B3_ADAPTER_LEARNED_GRAPH_GEOM.npz",
       "result_file": "apartment_B3_ADAPTER_LEARNED_GRAPH_GEOM.json",
@@ -9883,8 +10105,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.0242295213120583,
+          "iou": 0.37509933774834436
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": -0.04358290357820417,
+          "iou": 0.01447396845971052
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.03131349259863769,
+          "iou": 0.4214309049330284
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.13473078503904645,
+          "iou": 0.0
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": 0.11818234170091352,
+          "iou": 0.37509933774834436
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.01447396845971052,
+          "iou": 0.01447396845971052
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": 0.012399066076628162,
+          "iou": 0.4214309049330284
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.1493681206685691,
+          "iou": 0.0
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/graph_adapter_learned/B3_ADAPTER_LEARNED_PATCH_ONLY.npz",
       "result_file": "apartment_B3_ADAPTER_LEARNED_PATCH_ONLY.json",
@@ -9934,8 +10230,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.008359403549114464,
+          "iou": 0.3909694555112882
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": 0.009491678482772048,
+          "iou": 0.06754855052068674
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.00540977967681705,
+          "iou": 0.44733461785484907
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0023121387283236996,
+          "iou": 0.0023121387283236996
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.007048469820761488,
+          "iou": 0.12768231521828496
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": 0.13405245946385735,
+          "iou": 0.3909694555112882
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.06754855052068674,
+          "iou": 0.06754855052068674
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": 0.038302778998448805,
+          "iou": 0.44733461785484907
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0023121387283236996,
+          "iou": 0.0023121387283236996
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.021685805450284146,
+          "iou": 0.12768231521828496
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/local_semantic_controls/B3_B_SEM_CROVE_S0_DENSE_REPLAY.npz",
       "result_file": "apartment_B3_B_SEM_CROVE_S0_DENSE_REPLAY.json",
@@ -9984,8 +10354,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": 0.0,
+          "iou": 0.39932885906040266
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": 0.0,
+          "iou": 0.058056872037914695
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": 0.0,
+          "iou": 0.4527443975316661
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.0,
+          "iou": 0.13473078503904645
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": 0.14241186301297182,
+          "iou": 0.39932885906040266
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.058056872037914695,
+          "iou": 0.058056872037914695
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": 0.043712558675265856,
+          "iou": 0.4527443975316661
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.014637335629522658,
+          "iou": 0.13473078503904645
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/local_semantic_controls/B3_B_SEM_CROVE_S2_DENSE_REPLAY.npz",
       "result_file": "apartment_B3_B_SEM_CROVE_S2_DENSE_REPLAY.json",
@@ -10034,8 +10478,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.0073624636810379895,
+          "iou": 0.3919663953793647
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": -0.058056872037914695,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.08848435179497877,
+          "iou": 0.36426004573668735
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.13473078503904645,
+          "iou": 0.0
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": 0.13504939933193383,
+          "iou": 0.3919663953793647
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": -0.04477179311971291,
+          "iou": 0.36426004573668735
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.1493681206685691,
+          "iou": 0.0
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/reencoded_regions/B3_B_SEM_OVI_REENCODE.npz",
       "result_file": "apartment_B3_B_SEM_OVI_REENCODE.json",
@@ -10084,8 +10602,82 @@
       "owner_changed": true,
       "passes_original_per_case_gates": true,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.14241186301297182,
+          "iou": 0.25691699604743085
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": -0.058056872037914695,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.043712558675265856,
+          "iou": 0.40903183885640026
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": 0.0,
+          "iou": 0.25691699604743085
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": 0.0,
+          "iou": 0.40903183885640026
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/consensus/B3_INST_CONSENSUS_OWNER.npz",
       "result_file": "apartment_B3_INST_CONSENSUS_OWNER.json",
@@ -10136,8 +10728,82 @@
       "owner_changed": true,
       "passes_original_per_case_gates": true,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.06940759921788298,
+          "iou": 0.3299212598425197
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": -0.058056872037914695,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.0463517034677392,
+          "iou": 0.4063926940639269
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.11571595018944396,
+          "iou": 0.01901483484960249
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": 0.07300426379508884,
+          "iou": 0.3299212598425197
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": -0.002639144792473347,
+          "iou": 0.4063926940639269
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.13035328581896663,
+          "iou": 0.01901483484960249
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/reencoded_regions/B3_INST_CONSENSUS_RESEM.npz",
       "result_file": "apartment_B3_INST_CONSENSUS_RESEM.json",
@@ -10186,8 +10852,82 @@
       "owner_changed": true,
       "passes_original_per_case_gates": true,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.14241186301297182,
+          "iou": 0.25691699604743085
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": -0.058056872037914695,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.043712558675265856,
+          "iou": 0.40903183885640026
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": 0.0,
+          "iou": 0.25691699604743085
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": 0.0,
+          "iou": 0.40903183885640026
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/consensus/B3_INST_PAIRWISE.npz",
       "result_file": "apartment_B3_INST_PAIRWISE.json",
@@ -10238,8 +10978,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.09180082916184418,
+          "iou": 0.3075280298985585
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": -0.058056872037914695,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.12954178315258114,
+          "iou": 0.323202614379085
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.13473078503904645,
+          "iou": 0.0
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": 0.05061103385112764,
+          "iou": 0.3075280298985585
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": -0.08582922447731528,
+          "iou": 0.323202614379085
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.1493681206685691,
+          "iou": 0.0
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/current_aware/B3_MV_CURRENT_AWARE.npz",
       "result_file": "apartment_B3_MV_CURRENT_AWARE.json",
@@ -10289,8 +11103,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": true,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.14241186301297182,
+          "iou": 0.25691699604743085
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": -0.058056872037914695,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.043712558675265856,
+          "iou": 0.40903183885640026
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": 0.0,
+          "iou": 0.25691699604743085
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": 0.0,
+          "iou": 0.40903183885640026
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/native_diverse_quality/B3_MV_DIVERSE_MEAN.npz",
       "result_file": "apartment_B3_MV_DIVERSE_MEAN.json",
@@ -10340,8 +11228,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": true,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.14241186301297182,
+          "iou": 0.25691699604743085
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": -0.058056872037914695,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.043712558675265856,
+          "iou": 0.40903183885640026
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": 0.0,
+          "iou": 0.25691699604743085
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": 0.0,
+          "iou": 0.40903183885640026
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/native_cached_batch/B3_MV_NATIVE_CACHED.npz",
       "result_file": "apartment_B3_MV_NATIVE_CACHED.json",
@@ -10391,8 +11353,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": true,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.14241186301297182,
+          "iou": 0.25691699604743085
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": -0.058056872037914695,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.036565060299697305,
+          "iou": 0.4161793372319688
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": 0.0,
+          "iou": 0.25691699604743085
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": 0.007147498375568551,
+          "iou": 0.4161793372319688
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/native_diverse_quality/B3_MV_QUALITY.npz",
       "result_file": "apartment_B3_MV_QUALITY.json",
@@ -10442,8 +11478,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": true,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.1424560068267257,
+          "iou": 0.25687285223367695
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": -0.058056872037914695,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.036429805396469506,
+          "iou": 0.4163145921351966
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": -4.414381375389409e-05,
+          "iou": 0.25687285223367695
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": 0.00728275327879635,
+          "iou": 0.4163145921351966
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/graph_mv_quality_boundary/B3_MV_QUALITY_GRAPH_BOUNDARY.npz",
       "result_file": "apartment_B3_MV_QUALITY_GRAPH_BOUNDARY.json",
@@ -10494,8 +11604,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": true,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.1424560068267257,
+          "iou": 0.25687285223367695
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": -0.058056872037914695,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.036429805396469506,
+          "iou": 0.4163145921351966
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": -4.414381375389409e-05,
+          "iou": 0.25687285223367695
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": 0.00728275327879635,
+          "iou": 0.4163145921351966
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/graph_mv_quality/B3_MV_QUALITY_GRAPH_GEOM.npz",
       "result_file": "apartment_B3_MV_QUALITY_GRAPH_GEOM.json",
@@ -10545,8 +11729,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": true,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.14241186301297182,
+          "iou": 0.25691699604743085
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": -0.058056872037914695,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.036565060299697305,
+          "iou": 0.4161793372319688
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": 0.0,
+          "iou": 0.25691699604743085
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": 0.007147498375568551,
+          "iou": 0.4161793372319688
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/graph_mv_quality/B3_MV_QUALITY_PATCH_ONLY.npz",
       "result_file": "apartment_B3_MV_QUALITY_PATCH_ONLY.json",
@@ -10596,8 +11854,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.09180082916184418,
+          "iou": 0.3075280298985585
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": -0.058056872037914695,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.16908426681271188,
+          "iou": 0.28366013071895424
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.13473078503904645,
+          "iou": 0.0
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": 0.05061103385112764,
+          "iou": 0.3075280298985585
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": -0.12537170813744603,
+          "iou": 0.28366013071895424
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.1493681206685691,
+          "iou": 0.0
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/reencoded_regions/B3_MV_REENCODE_DIVERSE.npz",
       "result_file": "apartment_B3_MV_REENCODE_DIVERSE.json",
@@ -10646,8 +11978,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.09180082916184418,
+          "iou": 0.3075280298985585
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": -0.058056872037914695,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.12954178315258114,
+          "iou": 0.323202614379085
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.13473078503904645,
+          "iou": 0.0
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": 0.05061103385112764,
+          "iou": 0.3075280298985585
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": -0.08582922447731528,
+          "iou": 0.323202614379085
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.1493681206685691,
+          "iou": 0.0
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/reencoded_regions/B3_MV_REENCODE_QUALITY.npz",
       "result_file": "apartment_B3_MV_REENCODE_QUALITY.json",
@@ -10696,8 +12102,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.15237663500768436,
+          "iou": 0.2469522240527183
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": -0.058056872037914695,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.03770533503166612,
+          "iou": 0.4150390625
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.0023058503131978825,
+          "iou": 0.13242493472584857
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": -0.009964771994712546,
+          "iou": 0.2469522240527183
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": 0.006007223643599735,
+          "iou": 0.4150390625
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.01694318594272054,
+          "iou": 0.13242493472584857
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/native_cached_batch/B3_MV_SINGLE.npz",
       "result_file": "apartment_B3_MV_SINGLE.json",
@@ -10747,8 +12227,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.1424560068267257,
+          "iou": 0.25687285223367695
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": -0.058056872037914695,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.021754814198332806,
+          "iou": 0.4309895833333333
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": -4.414381375389409e-05,
+          "iou": 0.25687285223367695
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": 0.02195774447693305,
+          "iou": 0.4309895833333333
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/graph_mv_topk/B3_MV_TOPK_GRAPH_GEOM.npz",
       "result_file": "apartment_B3_MV_TOPK_GRAPH_GEOM.json",
@@ -10798,8 +12352,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.14241186301297182,
+          "iou": 0.25691699604743085
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": -0.058056872037914695,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.021754814198332806,
+          "iou": 0.4309895833333333
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": 0.0,
+          "iou": 0.25691699604743085
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": 0.02195774447693305,
+          "iou": 0.4309895833333333
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/native_cached_batch/B3_MV_TOPK_MEAN.npz",
       "result_file": "apartment_B3_MV_TOPK_MEAN.json",
@@ -10849,8 +12477,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": -0.1424560068267257,
+          "iou": 0.25687285223367695
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": -0.058056872037914695,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.021614472425837417,
+          "iou": 0.4311299251058287
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": -4.414381375389409e-05,
+          "iou": 0.25687285223367695
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": 0.02209808624942844,
+          "iou": 0.4311299251058287
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/graph_mv_topk/B3_MV_TOPK_PATCH_ONLY.npz",
       "result_file": "apartment_B3_MV_TOPK_PATCH_ONLY.json",
@@ -10900,8 +12602,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": 0.005065595556390412,
+          "iou": 0.4043944546167931
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": 0.005131533759186749,
+          "iou": 0.06318840579710144
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.00035570724892319827,
+          "iou": 0.4523886902827429
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.006093599439835534,
+          "iou": 0.12863718559921092
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": 0.14747745856936223,
+          "iou": 0.4043944546167931
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.06318840579710144,
+          "iou": 0.06318840579710144
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": 0.04335685142634266,
+          "iou": 0.4523886902827429
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.020730935069358192,
+          "iou": 0.12863718559921092
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/graph_s2_dense_replay_boundary/B3_S2_DENSE_REPLAY_GRAPH_BOUNDARY.npz",
       "result_file": "apartment_B3_S2_DENSE_REPLAY_GRAPH_BOUNDARY.json",
@@ -10952,8 +12728,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": 0.004804020876819415,
+          "iou": 0.4041328799372221
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": 0.005076635057364776,
+          "iou": 0.06313350709527947
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.00035570724892319827,
+          "iou": 0.4523886902827429
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.006257992009291391,
+          "iou": 0.12847279302975506
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": 0.14721588388979123,
+          "iou": 0.4041328799372221
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.06313350709527947,
+          "iou": 0.06313350709527947
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": 0.04335685142634266,
+          "iou": 0.4523886902827429
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.02089532763881405,
+          "iou": 0.12847279302975506
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/graph_s2_dense_replay/B3_S2_DENSE_REPLAY_GRAPH_GEOM.npz",
       "result_file": "apartment_B3_S2_DENSE_REPLAY_GRAPH_GEOM.json",
@@ -11003,8 +12853,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.39932885906040266,
+          "delta": 0.005115585384041776,
+          "iou": 0.40444444444444444
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.058056872037914695,
+          "delta": 0.004533681424849723,
+          "iou": 0.06259055346276442
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4527443975316661,
+          "delta": -0.00035570724892319827,
+          "iou": 0.4523886902827429
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.006494040279490354,
+          "iou": 0.1282367447595561
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25691699604743085,
+          "delta": 0.1475274483970136,
+          "iou": 0.40444444444444444
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.06259055346276442,
+          "iou": 0.06259055346276442
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40903183885640026,
+          "delta": 0.04335685142634266,
+          "iou": 0.4523886902827429
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.02113137590901301,
+          "iou": 0.1282367447595561
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/graph_s2_dense_replay/B3_S2_DENSE_REPLAY_PATCH_ONLY.npz",
       "result_file": "apartment_B3_S2_DENSE_REPLAY_PATCH_ONLY.json",
@@ -11054,8 +12978,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.017372088958618304,
+          "iou": 0.3851046912271402
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": -0.042926163743609774,
+          "iou": 0.01487389523604225
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.03456321017942099,
+          "iou": 0.4211042143090493
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.13473078503904645,
+          "iou": 0.0
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.12877288772552536,
+          "iou": 0.3851046912271402
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.01487389523604225,
+          "iou": 0.01487389523604225
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": 0.012397261742447652,
+          "iou": 0.4211042143090493
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.1493681206685691,
+          "iou": 0.0
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/adapter_projected_top4/H2_ADAPTER_CLIP_LEARNED.npz",
       "result_file": "apartment_H2_ADAPTER_CLIP_LEARNED.json",
@@ -11105,8 +13103,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.05479234918738757,
+          "iou": 0.34768443099837093
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": -0.04380180876092936,
+          "iou": 0.01399825021872266
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.12178960678183848,
+          "iou": 0.33387781770663183
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.13473078503904645,
+          "iou": 0.0
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.0913526274967561,
+          "iou": 0.34768443099837093
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.01399825021872266,
+          "iou": 0.01399825021872266
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": -0.07482913485996984,
+          "iou": 0.33387781770663183
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.1493681206685691,
+          "iou": 0.0
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/adapter_projected_top4/H2_ADAPTER_CLIP_MEAN.npz",
       "result_file": "apartment_H2_ADAPTER_CLIP_MEAN.json",
@@ -11156,8 +13228,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.017311217271851198,
+          "iou": 0.3851655629139073
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": -0.04335417713402891,
+          "iou": 0.014445881845623114
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.03456321017942099,
+          "iou": 0.4211042143090493
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.13473078503904645,
+          "iou": 0.0
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.12883375941229247,
+          "iou": 0.3851655629139073
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.014445881845623114,
+          "iou": 0.014445881845623114
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": 0.012397261742447652,
+          "iou": 0.4211042143090493
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.1493681206685691,
+          "iou": 0.0
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/graph_adapter_learned/H2_ADAPTER_LEARNED_GRAPH_GEOM.npz",
       "result_file": "apartment_H2_ADAPTER_LEARNED_GRAPH_GEOM.json",
@@ -11207,8 +13353,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.017576117934102853,
+          "iou": 0.38490066225165565
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": -0.043141727442682846,
+          "iou": 0.014658331536969174
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.03456321017942099,
+          "iou": 0.4211042143090493
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.13473078503904645,
+          "iou": 0.0
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.12856885875004082,
+          "iou": 0.38490066225165565
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.014658331536969174,
+          "iou": 0.014658331536969174
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": 0.012397261742447652,
+          "iou": 0.4211042143090493
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.1493681206685691,
+          "iou": 0.0
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/graph_adapter_learned/H2_ADAPTER_LEARNED_PATCH_ONLY.npz",
       "result_file": "apartment_H2_ADAPTER_LEARNED_PATCH_ONLY.json",
@@ -11258,8 +13478,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.008320073678454387,
+          "iou": 0.3941567065073041
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": 0.009426831776650497,
+          "iou": 0.06722689075630252
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.0049451130920016295,
+          "iou": 0.4507223113964687
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0023121387283236996,
+          "iou": 0.0023121387283236996
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.007048469820761488,
+          "iou": 0.12768231521828496
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.13782490300568928,
+          "iou": 0.3941567065073041
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.06722689075630252,
+          "iou": 0.06722689075630252
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": 0.04201535882986701,
+          "iou": 0.4507223113964687
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0023121387283236996,
+          "iou": 0.0023121387283236996
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.021685805450284146,
+          "iou": 0.12768231521828496
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/local_semantic_controls/H2_B_SEM_CROVE_S0_DENSE_REPLAY.npz",
       "result_file": "apartment_H2_B_SEM_CROVE_S0_DENSE_REPLAY.json",
@@ -11308,8 +13602,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": 0.0,
+          "iou": 0.4024767801857585
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": 0.0,
+          "iou": 0.05780005897965202
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": 0.0,
+          "iou": 0.4556674244884703
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.0,
+          "iou": 0.13473078503904645
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.14614497668414367,
+          "iou": 0.4024767801857585
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.05780005897965202,
+          "iou": 0.05780005897965202
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": 0.04696047192186864,
+          "iou": 0.4556674244884703
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.014637335629522658,
+          "iou": 0.13473078503904645
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/local_semantic_controls/H2_B_SEM_CROVE_S2_DENSE_REPLAY.npz",
       "result_file": "apartment_H2_B_SEM_CROVE_S2_DENSE_REPLAY.json",
@@ -11358,8 +13726,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.010772920905107397,
+          "iou": 0.3917038592806511
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": -0.05780005897965202,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.08552694752015932,
+          "iou": 0.370140476968311
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.13473078503904645,
+          "iou": 0.0
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.13537205577903627,
+          "iou": 0.3917038592806511
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": -0.038566475598290684,
+          "iou": 0.370140476968311
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.1493681206685691,
+          "iou": 0.0
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/reencoded_regions/H2_B_SEM_OVI_REENCODE.npz",
       "result_file": "apartment_H2_B_SEM_OVI_REENCODE.json",
@@ -11408,8 +13850,82 @@
       "owner_changed": true,
       "passes_original_per_case_gates": true,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.14614497668414367,
+          "iou": 0.25633180350161483
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": -0.05780005897965202,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.04696047192186864,
+          "iou": 0.40870695256660167
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.0,
+          "iou": 0.25633180350161483
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": 0.0,
+          "iou": 0.40870695256660167
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/consensus/H2_INST_CONSENSUS_OWNER.npz",
       "result_file": "apartment_H2_INST_CONSENSUS_OWNER.json",
@@ -11460,8 +13976,82 @@
       "owner_changed": true,
       "passes_original_per_case_gates": true,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.07194383190536996,
+          "iou": 0.33053294828038854
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": -0.05780005897965202,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.05025320400575667,
+          "iou": 0.40541422048271364
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.11571595018944396,
+          "iou": 0.01901483484960249
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.07420114477877371,
+          "iou": 0.33053294828038854
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": -0.003292732083888028,
+          "iou": 0.40541422048271364
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.13035328581896663,
+          "iou": 0.01901483484960249
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/reencoded_regions/H2_INST_CONSENSUS_RESEM.npz",
       "result_file": "apartment_H2_INST_CONSENSUS_RESEM.json",
@@ -11510,8 +14100,82 @@
       "owner_changed": true,
       "passes_original_per_case_gates": true,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.14614497668414367,
+          "iou": 0.25633180350161483
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": -0.05780005897965202,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.04696047192186864,
+          "iou": 0.40870695256660167
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.0,
+          "iou": 0.25633180350161483
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": 0.0,
+          "iou": 0.40870695256660167
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/consensus/H2_INST_PAIRWISE.npz",
       "result_file": "apartment_H2_INST_PAIRWISE.json",
@@ -11562,8 +14226,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.09494875028720001,
+          "iou": 0.3075280298985585
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": -0.05780005897965202,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.12658245716820887,
+          "iou": 0.32908496732026143
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.13473078503904645,
+          "iou": 0.0
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.051196226396943656,
+          "iou": 0.3075280298985585
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": -0.07962198524634023,
+          "iou": 0.32908496732026143
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.1493681206685691,
+          "iou": 0.0
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/current_aware/H2_MV_CURRENT_AWARE.npz",
       "result_file": "apartment_H2_MV_CURRENT_AWARE.json",
@@ -11613,8 +14351,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": true,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.14614497668414367,
+          "iou": 0.25633180350161483
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": -0.05780005897965202,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.04696047192186864,
+          "iou": 0.40870695256660167
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.0,
+          "iou": 0.25633180350161483
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": 0.0,
+          "iou": 0.40870695256660167
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/native_diverse_quality/H2_MV_DIVERSE_MEAN.npz",
       "result_file": "apartment_H2_MV_DIVERSE_MEAN.json",
@@ -11664,8 +14476,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": true,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.14614497668414367,
+          "iou": 0.25633180350161483
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": -0.05780005897965202,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.04696047192186864,
+          "iou": 0.40870695256660167
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.0,
+          "iou": 0.25633180350161483
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": 0.0,
+          "iou": 0.40870695256660167
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/native_cached_batch/H2_MV_NATIVE_CACHED.npz",
       "result_file": "apartment_H2_MV_NATIVE_CACHED.json",
@@ -11715,8 +14601,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": true,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.14614497668414367,
+          "iou": 0.25633180350161483
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": -0.05780005897965202,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.0352645654891201,
+          "iou": 0.4204028589993502
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.0,
+          "iou": 0.25633180350161483
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": 0.011695906432748537,
+          "iou": 0.4204028589993502
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/native_diverse_quality/H2_MV_QUALITY.npz",
       "result_file": "apartment_H2_MV_QUALITY.json",
@@ -11766,8 +14726,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": true,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.1461885408927605,
+          "iou": 0.256288239292998
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": -0.05780005897965202,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.03512793797563313,
+          "iou": 0.4205394865128372
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": -4.356420861684196e-05,
+          "iou": 0.256288239292998
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": 0.011832533946235513,
+          "iou": 0.4205394865128372
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/graph_mv_quality_boundary/H2_MV_QUALITY_GRAPH_BOUNDARY.npz",
       "result_file": "apartment_H2_MV_QUALITY_GRAPH_BOUNDARY.json",
@@ -11818,8 +14852,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": true,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.1461885408927605,
+          "iou": 0.256288239292998
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": -0.05780005897965202,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.03512793797563313,
+          "iou": 0.4205394865128372
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": -4.356420861684196e-05,
+          "iou": 0.256288239292998
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": 0.011832533946235513,
+          "iou": 0.4205394865128372
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/graph_mv_quality/H2_MV_QUALITY_GRAPH_GEOM.npz",
       "result_file": "apartment_H2_MV_QUALITY_GRAPH_GEOM.json",
@@ -11869,8 +14977,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": true,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.14614497668414367,
+          "iou": 0.25633180350161483
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": -0.05780005897965202,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.0352645654891201,
+          "iou": 0.4204028589993502
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.0,
+          "iou": 0.25633180350161483
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": 0.011695906432748537,
+          "iou": 0.4204028589993502
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/graph_mv_quality/H2_MV_QUALITY_PATCH_ONLY.npz",
       "result_file": "apartment_H2_MV_QUALITY_PATCH_ONLY.json",
@@ -11920,8 +15102,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.09494875028720001,
+          "iou": 0.3075280298985585
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": -0.05780005897965202,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.16579814344271865,
+          "iou": 0.28986928104575166
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.13473078503904645,
+          "iou": 0.0
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.051196226396943656,
+          "iou": 0.3075280298985585
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": -0.11883767152085001,
+          "iou": 0.28986928104575166
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.1493681206685691,
+          "iou": 0.0
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/reencoded_regions/H2_MV_REENCODE_DIVERSE.npz",
       "result_file": "apartment_H2_MV_REENCODE_DIVERSE.json",
@@ -11970,8 +15226,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.09494875028720001,
+          "iou": 0.3075280298985585
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": -0.05780005897965202,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.12658245716820887,
+          "iou": 0.32908496732026143
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.13473078503904645,
+          "iou": 0.0
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.051196226396943656,
+          "iou": 0.3075280298985585
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": -0.07962198524634023,
+          "iou": 0.32908496732026143
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.1493681206685691,
+          "iou": 0.0
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/reencoded_regions/H2_MV_REENCODE_QUALITY.npz",
       "result_file": "apartment_H2_MV_REENCODE_QUALITY.json",
@@ -12020,8 +15350,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.15598183398425866,
+          "iou": 0.24649494620149984
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": -0.05780005897965202,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.03639659115513699,
+          "iou": 0.4192708333333333
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.0023058503131978825,
+          "iou": 0.13242493472584857
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": -0.009836857300114993,
+          "iou": 0.24649494620149984
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": 0.010563880766731648,
+          "iou": 0.4192708333333333
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.01694318594272054,
+          "iou": 0.13242493472584857
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/native_cached_batch/H2_MV_SINGLE.npz",
       "result_file": "apartment_H2_MV_SINGLE.json",
@@ -12071,8 +15475,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.14606216676179928,
+          "iou": 0.2564146134239592
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": -0.05780005897965202,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.024722799081304203,
+          "iou": 0.4309446254071661
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 8.280992234438456e-05,
+          "iou": 0.2564146134239592
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": 0.022237672840564437,
+          "iou": 0.4309446254071661
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/graph_mv_topk/H2_MV_TOPK_GRAPH_GEOM.npz",
       "result_file": "apartment_H2_MV_TOPK_GRAPH_GEOM.json",
@@ -12122,8 +15600,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.14614497668414367,
+          "iou": 0.25633180350161483
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": -0.05780005897965202,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.025003361988470307,
+          "iou": 0.4306640625
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.0,
+          "iou": 0.25633180350161483
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": 0.021957109933398333,
+          "iou": 0.4306640625
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/native_cached_batch/H2_MV_TOPK_MEAN.npz",
       "result_file": "apartment_H2_MV_TOPK_MEAN.json",
@@ -12173,8 +15725,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": -0.14601858847943627,
+          "iou": 0.2564581917063222
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": -0.05780005897965202,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.024722799081304203,
+          "iou": 0.4309446254071661
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": 0.014637335629522658,
+          "iou": 0.1493681206685691
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.00012638820470739498,
+          "iou": 0.2564581917063222
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": 0.022237672840564437,
+          "iou": 0.4309446254071661
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": 0.0,
+          "iou": 0.1493681206685691
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/graph_mv_topk/H2_MV_TOPK_PATCH_ONLY.npz",
       "result_file": "apartment_H2_MV_TOPK_PATCH_ONLY.json",
@@ -12224,8 +15850,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": 0.005163198882791986,
+          "iou": 0.4076399790685505
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": 0.005294150181972872,
+          "iou": 0.06309420916162489
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.00035380732889928046,
+          "iou": 0.455313617159571
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.006154658764794568,
+          "iou": 0.12857612627425188
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.15130817556693565,
+          "iou": 0.4076399790685505
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.06309420916162489,
+          "iou": 0.06309420916162489
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": 0.04660666459296936,
+          "iou": 0.455313617159571
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.020791994394317226,
+          "iou": 0.12857612627425188
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/graph_s2_dense_replay_boundary/H2_S2_DENSE_REPLAY_GRAPH_BOUNDARY.npz",
       "result_file": "apartment_H2_S2_DENSE_REPLAY_GRAPH_BOUNDARY.json",
@@ -12276,8 +15976,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": 0.004785497766174651,
+          "iou": 0.40726227795193315
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": 0.004195327410198034,
+          "iou": 0.061995386389850055
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.00035380732889928046,
+          "iou": 0.455313617159571
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.006411837237977808,
+          "iou": 0.12831894780106864
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.15093047445031832,
+          "iou": 0.40726227795193315
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.061995386389850055,
+          "iou": 0.061995386389850055
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": 0.04660666459296936,
+          "iou": 0.455313617159571
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.021049172867500465,
+          "iou": 0.12831894780106864
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/graph_s2_dense_replay/H2_S2_DENSE_REPLAY_GRAPH_GEOM.npz",
       "result_file": "apartment_H2_S2_DENSE_REPLAY_GRAPH_GEOM.json",
@@ -12327,8 +16101,82 @@
       "owner_changed": false,
       "passes_original_per_case_gates": false,
       "peak_memory_bytes": null,
-      "per_class_delta_vs_S2": null,
-      "per_class_delta_vs_native": null,
+      "per_class_delta_vs_S2": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.4024767801857585,
+          "delta": 0.005046730786028353,
+          "iou": 0.40752351097178685
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.05780005897965202,
+          "delta": 0.005385168948795753,
+          "iou": 0.06318522792844777
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.4556674244884703,
+          "delta": -0.00035380732889928046,
+          "iou": 0.455313617159571
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.13473078503904645,
+          "delta": -0.006236868564202663,
+          "iou": 0.1284939164748438
+        }
+      },
+      "per_class_delta_vs_native": {
+        "1": {
+          "GT_support": 196,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "16": {
+          "GT_support": 3699,
+          "baseline_iou": 0.25633180350161483,
+          "delta": 0.15119170747017202,
+          "iou": 0.40752351097178685
+        },
+        "2": {
+          "GT_support": 2582,
+          "baseline_iou": 0.0,
+          "delta": 0.06318522792844777,
+          "iou": 0.06318522792844777
+        },
+        "5": {
+          "GT_support": 3058,
+          "baseline_iou": 0.40870695256660167,
+          "delta": 0.04660666459296936,
+          "iou": 0.455313617159571
+        },
+        "6": {
+          "GT_support": 853,
+          "baseline_iou": 0.0,
+          "delta": 0.0,
+          "iou": 0.0
+        },
+        "9": {
+          "GT_support": 12158,
+          "baseline_iou": 0.1493681206685691,
+          "delta": -0.02087420419372532,
+          "iou": 0.1284939164748438
+        }
+      },
       "predicted_instance_count": null,
       "prediction": "dev/apartment/graph_s2_dense_replay/H2_S2_DENSE_REPLAY_PATCH_ONLY.npz",
       "result_file": "apartment_H2_S2_DENSE_REPLAY_PATCH_ONLY.json",
