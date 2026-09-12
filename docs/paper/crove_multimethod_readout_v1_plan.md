@@ -61,3 +61,35 @@ STATIC_CONFIRMATION_STATUS=PARTIAL
 DYNAMIC_CONFIRMATION_STATUS=NOT_RUN_RAW_MISSING
 
 No new family metric or completion claim is made at this preparation checkpoint.
+
+## T01 bridge evidence (2026-09-12)
+
+Implementation commit: `88188f2` (the execution preceded commit; only automatic
+formatting changed after execution started, with no metric or prediction changes).
+
+`python scripts/evaluation/verify_crove_readout_bridge.py` completed both saved
+states. Predictions were serialized before target loading and reloaded for scoring.
+The common metric kernel is shared by old snapshots and new pointwise inputs.
+The sidecar preserves canonical indices plus the legacy evaluation permutation,
+so nearest-neighbour ties retain the original entity/source ordering.
+
+| State | Current rows | Uncovered legacy rows | mIoU | Ghost | BG F5 | Surface F5 | Maximum metric difference |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| B3 | 15,622,601 | 0 | 0.1358861593 | 0 | 0.3663600098 | 0.4313354117 | 0 |
+| H2 | 15,625,540 | 0 | 0.1357344795 | 0 | 0.3663600098 | 0.4357097517 | 0 |
+
+Both states preserve all 62,498 unknown-entity rows in the object evaluation branch.
+The small test independently verifies supported role rewrites, owner independence,
+and a changed predicted label changing actual mIoU. Twenty focused tests pass,
+including the existing entity-epoch runner regression; Ruff and compilation pass.
+These are baseline bridge results, not M1–M4 improvement trials.
+
+## M4 asset resolution
+
+Official HF access succeeded through the existing local proxy. The 1,669,238,739-byte
+FC-CLIP + Mask-Adapter checkpoint matches its official LFS SHA-256; it contains all
+543 backbone-prefixed and 43 adapter-prefixed tensor entries. A dedicated venv now
+provides OpenCLIP 2.24.0, timm 0.9.16 and fvcore; existing CUDA torch is available.
+Strict loading of all backbone entries into OpenCLIP succeeded without missing or
+unexpected keys. Adapter module load and real-mask reference comparison remain.
+See `model_manifest.json`; downloading weights is not recorded as a completed M4 trial.

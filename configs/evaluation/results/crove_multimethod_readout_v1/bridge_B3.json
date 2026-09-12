@@ -1,0 +1,47 @@
+{
+  "bridge_version": "CROVE_POINTWISE_READOUT_V1_REVISED_V2",
+  "state": "B3",
+  "status": "PASS",
+  "legacy": {
+    "current_miou": 0.1358861592620667,
+    "ghost": 0.0,
+    "background_f1_at_5cm": 0.36636000976960026,
+    "surface_precision_at_5cm": 0.7344127781521915,
+    "surface_recall_at_5cm": 0.30533132262929125,
+    "surface_f1_at_5cm": 0.4313354117431786,
+    "total_current_surface_coverage": 0.30533132262929125,
+    "t1_unobserved_region_recall": 0.07564646854496333,
+    "t1_observed_region_stale_precision": 0.996751594732719
+  },
+  "pointwise": {
+    "current_miou": 0.1358861592620667,
+    "ghost": 0.0,
+    "background_f1_at_5cm": 0.36636000976960026,
+    "surface_precision_at_5cm": 0.7344127781521915,
+    "surface_recall_at_5cm": 0.30533132262929125,
+    "surface_f1_at_5cm": 0.4313354117431786,
+    "total_current_surface_coverage": 0.30533132262929125,
+    "t1_unobserved_region_recall": 0.07564646854496333,
+    "t1_observed_region_stale_precision": 0.996751594732719
+  },
+  "delta": {
+    "current_miou": 0.0,
+    "ghost": 0.0,
+    "background_f1_at_5cm": 0.0,
+    "surface_precision_at_5cm": 0.0,
+    "surface_recall_at_5cm": 0.0,
+    "surface_f1_at_5cm": 0.0,
+    "total_current_surface_coverage": 0.0,
+    "t1_unobserved_region_recall": 0.0,
+    "t1_observed_region_stale_precision": 0.0
+  },
+  "current_rows": 15622601,
+  "legacy_covered_rows": 15622601,
+  "legacy_uncovered_rows": 0,
+  "role_counts": {
+    "0": 14622519,
+    "1": 937584,
+    "2": 62498
+  },
+  "elapsed_seconds": 13.623821627348661
+}
