@@ -787,6 +787,21 @@ their full audits are included in the completed 56-readout audit matrix.
 
 DYNAMIC_CONFIRMATION_STATUS=NOT_RUN_RAW_MISSING
 
+The local success/failure diagnostic includes every one of the 2,939 restored
+H2-minus-B3 source rows. Relative to native, the selected readout improves 112
+GT-supported rows, retains 589 correct rows, leaves 506 incorrect rows and has
+no regressions under this diagnostic; 1,732 rows lack nearby GT support.
+The population is selected by the frozen state difference, not by outcome.
+These are source-row counts with duplicate coordinates, not independent samples.
+
+![All restored source-row outcomes](../../configs/evaluation/results/crove_multimethod_readout_v1/figures/recovery_examples.png)
+
+The plotted X–Z coordinates are unchanged source geometry. The strict 0.05 m
+source-to-GT correspondence is a local diagnostic, distinct from headline
+GT-to-prediction mIoU. All source rows, labels and outcome categories are available
+in `figures/recovery_examples.source.csv`; prediction/audit bindings and rendered
+QA accompany the SVG/PDF/PNG. Failed and unmatched rows remain visible.
+
 The frozen final Apartment H2 readout now has four complete local PLY views
 (RGB/instance/semantic/state): 15,625,540 rows and 5,198,109 triangles per view.
 All XYZ, canonical source rows, owner IDs, semantic IDs and triangle connectivity

@@ -1,0 +1,18 @@
+{
+  "GT_rule": "source-to-GT nearest current semantic voxel center strictly within 0.05m; diagnostic, not official GT-to-prediction mIoU",
+  "GT_used_for_prediction_or_selection": false,
+  "audit_sha256": "5e57e827d7f930c6a613959956edf5b98d00363b2d504af08cbb209cee101939",
+  "categories": {
+    "GT_unmatched": 1732,
+    "improved": 112,
+    "remaining_error": 506,
+    "retained_correct": 589
+  },
+  "choice": "MV_QUALITY_GRAPH_BOUNDARY@H2",
+  "native_sha256": "25c9a152f4e62711047c16d1a2c45e6ae58d6204c50eb188d1bbacf9b155fae3",
+  "prediction_sha256": "cd61e33095f4dd48c9c337f67cfbb48375c7626c060bacd363f3cff1db543f80",
+  "selection_rule": "all H2 minus B3 source rows; no outcome-dependent ROI selection",
+  "source_csv_sha256": "925e8451e71745559b1e1ebc68ba7fc5a6c3a9d5d2fa23e3913565397639977b",
+  "source_rows": 2939,
+  "status": "ALL_RESTORED_ROWS_EXPORTED"
+}
