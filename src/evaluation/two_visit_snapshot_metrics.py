@@ -18,6 +18,7 @@ from src.evaluation.two_visit_current_metrics import (
     RegionEvaluationInput,
     evaluate_regions,
 )
+from src.oviv2.surface_readout import EvalRole, validate_semantic_roles
 
 
 def _integer_voxels(value: object, *, columns: int, name: str) -> np.ndarray:
@@ -111,13 +112,9 @@ def _snapshot_points_and_semantics(
             background_chunks.append(points)
             continue
         chunks.append(points)
-        semantic_chunks.append(
-            np.full(len(points), lookup.semantic_id, dtype=np.int64)
-        )
+        semantic_chunks.append(np.full(len(points), lookup.semantic_id, dtype=np.int64))
     points = (
-        np.concatenate(chunks, axis=0)
-        if chunks
-        else np.empty((0, 3), dtype=np.float32)
+        np.concatenate(chunks, axis=0) if chunks else np.empty((0, 3), dtype=np.float32)
     )
     semantic_ids = (
         np.concatenate(semantic_chunks)
@@ -154,6 +151,82 @@ def evaluate_two_visit_snapshot(
         object_chunks,
         semantic_background_chunks,
     ) = _snapshot_points_and_semantics(snapshot, crosswalk)
+    background_chunks = list(semantic_background_chunks)
+    if snapshot.background_xyz is not None:
+        background_chunks.append(np.asarray(snapshot.background_xyz, dtype=np.float32))
+    return _evaluate_point_chunks(
+        object_points,
+        semantic_ids,
+        object_chunks,
+        background_chunks,
+        context,
+        crosswalk,
+        retained_t0_xyz=retained_t0_xyz,
+        retained_t0_t1_observed_mask=retained_t0_t1_observed_mask,
+    )
+
+
+def evaluate_two_visit_points(
+    *,
+    points_xyz: np.ndarray,
+    semantic_ids: np.ndarray,
+    eval_role: np.ndarray,
+    owner_ids: np.ndarray,
+    scene_id: str,
+    timestamp: float,
+    context: TwoVisitEvaluationContext,
+    crosswalk: TesseSemanticCrosswalk,
+    retained_t0_xyz: np.ndarray,
+    retained_t0_t1_observed_mask: np.ndarray,
+) -> dict[str, float]:
+    """Score actual full-current readout arrays in their supplied stable order.
+
+    The caller freezes the state and evaluator scope before this entry point.
+    Owner is independently validated but never changes object/background roles.
+    """
+    if not isinstance(context, TwoVisitEvaluationContext):
+        raise TypeError("context must be TwoVisitEvaluationContext")
+    if not isinstance(crosswalk, TesseSemanticCrosswalk):
+        raise TypeError("crosswalk must be TesseSemanticCrosswalk")
+    if scene_id != crosswalk.scene or timestamp != float(context.frame_id):
+        raise ValueError("pointwise prediction must match the frozen scene/frame")
+    points = np.asarray(points_xyz, dtype=np.float32)
+    ids = np.asarray(semantic_ids)
+    roles = np.asarray(eval_role)
+    owners = np.asarray(owner_ids)
+    if points.ndim != 2 or points.shape[1] != 3 or not np.isfinite(points).all():
+        raise ValueError("points_xyz must be finite (N, 3)")
+    if ids.shape != (len(points),):
+        raise ValueError("semantic_ids must have one value per point")
+    if owners.shape != ids.shape or not np.issubdtype(owners.dtype, np.integer):
+        raise ValueError("owner_ids must have one independent integer per point")
+    validate_semantic_roles(ids, roles, crosswalk)
+    object_mask = roles != EvalRole.BACKGROUND
+    object_points = points[object_mask]
+    return _evaluate_point_chunks(
+        object_points,
+        ids[object_mask],
+        [object_points],
+        [points[~object_mask]],
+        context,
+        crosswalk,
+        retained_t0_xyz=retained_t0_xyz,
+        retained_t0_t1_observed_mask=retained_t0_t1_observed_mask,
+    )
+
+
+def _evaluate_point_chunks(
+    object_points: np.ndarray,
+    semantic_ids: np.ndarray,
+    object_chunks: list[np.ndarray],
+    background_chunks: list[np.ndarray],
+    context: TwoVisitEvaluationContext,
+    crosswalk: TesseSemanticCrosswalk,
+    *,
+    retained_t0_xyz: np.ndarray,
+    retained_t0_t1_observed_mask: np.ndarray,
+) -> dict[str, float]:
+    """Unchanged common-v2 metric kernel shared by snapshot and readout inputs."""
     gt_ids, predicted_ids = _prediction_semantics(
         object_points,
         semantic_ids,
@@ -163,11 +236,6 @@ def evaluate_two_visit_snapshot(
         object_chunks,
         context.changed_region_voxels,
     )
-    background_chunks = list(semantic_background_chunks)
-    if snapshot.background_xyz is not None:
-        background_chunks.append(
-            np.asarray(snapshot.background_xyz, dtype=np.float32)
-        )
     predicted_background = _crop_points_to_voxels(
         background_chunks,
         context.changed_region_voxels,
@@ -195,9 +263,7 @@ def evaluate_two_visit_snapshot(
             ground_truth_current_xyz=_voxel_centers(
                 context.current_semantic_voxels[:, :3]
             ),
-            ground_truth_t1_unobserved_mask=(
-                context.current_target_t1_unobserved_mask
-            ),
+            ground_truth_t1_unobserved_mask=(context.current_target_t1_unobserved_mask),
             retained_t0_xyz=retained,
             retained_t0_t1_observed_mask=retained_mask,
             confirmed_free_xyz=_voxel_centers(context.confirmed_free_voxels),
@@ -223,5 +289,6 @@ def evaluate_two_visit_snapshot(
 
 __all__ = [
     "TwoVisitEvaluationContext",
+    "evaluate_two_visit_points",
     "evaluate_two_visit_snapshot",
 ]
