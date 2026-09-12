@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 import time
@@ -24,12 +25,16 @@ from scripts.evaluation.run_crove_fine_current_map import (
 )
 from src.oviv2.surface_readout_graph import (
     graph_labels,
+    posterior_unary,
     s2_pseudo_unary,
     surface_patches,
 )
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--unary", choices=("s2", "mv_quality"), default="s2")
+    args = parser.parse_args()
     config = json.loads(
         (ROOT / "configs/evaluation/crove_multimethod_readout_v1.json").read_text()
     )
@@ -39,7 +44,10 @@ def main():
     manifest = json.loads(path(case["benchmark_manifest"]).read_text())
     classes = manifest["vocabulary"]["classes"]
     class_ids = np.arange(1, len(classes) + 1)
-    root = path(config["run_root"]) / "dev/room0/graph_s2"
+    room = path(config["run_root"]) / "dev/room0"
+    shared_graph = room / "graph_s2"
+    root = shared_graph if args.unary == "s2" else room / "graph_mv_quality"
+    prefix = "S2" if args.unary == "s2" else "MV_QUALITY"
     root.mkdir(parents=True, exist_ok=True)
     settings = {
         "case": "room0",
@@ -57,6 +65,15 @@ def main():
         "scope": "initial_geometry_comparison; real boundary and M1 unary still required",
     }
     registry = path(config["compact_output_root"]) / "graph_room0_registry.json"
+    if args.unary == "mv_quality":
+        settings.update(
+            unary="M1_REAL_POSTERIOR_PHYSICAL_MEAN_NEG_LOG",
+            variants=[f"{prefix}_PATCH_ONLY", f"{prefix}_GRAPH_GEOM"],
+            scope="current room0 DEV M1 leader, not final cross-protocol selection; boundary still required",
+            reliability="unit for observed owner; quality already used in M1 aggregation; missing rows preserve M1 fallback",
+            shared_patch_mapping="dev/room0/graph_s2/patch_mapping.npz",
+        )
+        registry = registry.with_name("graph_mv_quality_room0_registry.json")
     if registry.exists():
         if json.loads(registry.read_text()) != settings:
             raise ValueError("frozen graph settings differ")
@@ -76,16 +93,24 @@ def main():
         normals, triangles = d["normals_xyz"], d["triangles"]
         if not d["current_valid"].all():
             raise ValueError("static current set differs")
-    with np.load(
-        path(config["run_root"]) / "dev/room0/semantic_controls/B_SEM_CROVE_S2.npz"
-    ) as d:
+    prediction = room / (
+        "semantic_controls/B_SEM_CROVE_S2.npz"
+        if args.unary == "s2"
+        else "native_diverse_quality/MV_QUALITY.npz"
+    )
+    with np.load(prediction) as d:
         if not np.array_equal(d["source_indices"], source) or not np.array_equal(
             d["owner_ids"], owners
         ):
-            raise ValueError("S2 source mismatch")
+            raise ValueError("point prediction source mismatch")
         ids, conf = d["semantic_ids"], d["semantic_confidence"]
-    cache = root / "patch_mapping.npz"
-    graph_path = root / "geometry_edges.npz"
+        if args.unary == "mv_quality":
+            feature_owners, posterior = d["feature_owners"], d["owner_posterior"]
+            original_supported = d["feature_covered"]
+            if not np.array_equal(d["class_ids"], class_ids):
+                raise ValueError("M1 class vocabulary differs")
+    cache = shared_graph / "patch_mapping.npz"
+    graph_path = shared_graph / "geometry_edges.npz"
     if cache.exists() and graph_path.exists():
         with np.load(cache) as d:
             patch = {k: d[k] for k in d.files}
@@ -99,9 +124,19 @@ def main():
         atomic_npz(cache, **patch)
         sparse.save_npz(graph_path, adjacency)
     del normals, triangles
-    unary, valid, tie = s2_pseudo_unary(
-        patch["source_patch"], ids, conf, patch["physical_weight"], class_ids
-    )
+    if args.unary == "s2":
+        unary, valid, tie = s2_pseudo_unary(
+            patch["source_patch"], ids, conf, patch["physical_weight"], class_ids
+        )
+        original_supported = np.isin(ids, class_ids) & (conf > 0)
+    else:
+        unary, valid, tie = posterior_unary(
+            patch["source_patch"],
+            owners,
+            patch["physical_weight"],
+            feature_owners,
+            posterior,
+        )
     stats = {
         "nodes": len(unary),
         "undirected_edges": adjacency.nnz // 2,
@@ -112,13 +147,15 @@ def main():
         "construction_seconds": float(patch["construction_seconds"]),
     }
     print(stats, flush=True)
-    original_supported = np.isin(ids, class_ids) & (conf > 0)
     patch_labels = None
-    for name, strength in [("S2_PATCH_ONLY", 0.0), ("S2_GRAPH_GEOM", 0.2)]:
+    for name, strength in [
+        (f"{prefix}_PATCH_ONLY", 0.0),
+        (f"{prefix}_GRAPH_GEOM", 0.2),
+    ]:
         target = root / f"{name}.npz"
         if target.exists():
             with np.load(target) as d:
-                if name == "S2_PATCH_ONLY":
+                if name == f"{prefix}_PATCH_ONLY":
                     patch_labels = d["semantic_ids"]
             continue
         start = time.monotonic()
@@ -127,7 +164,7 @@ def main():
         changed = original_supported & (source_labels >= 0)
         result = ids.copy()
         result[changed] = class_ids[source_labels[changed]]
-        if name == "S2_PATCH_ONLY":
+        if name == f"{prefix}_PATCH_ONLY":
             patch_labels = result
         atomic_npz(
             target,
@@ -202,7 +239,7 @@ def main():
             "graph": stats,
             "changes": changes,
             "inference_seconds": inference_seconds,
-            "semantic_confidence": "inherited S2 scalar; not posterior calibrated confidence",
+            "semantic_confidence": "inherited point baseline scalar; not graph posterior calibrated confidence",
         }
         with target.open("x") as f:
             json.dump(record, f, indent=2, allow_nan=False)

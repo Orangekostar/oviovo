@@ -2,6 +2,34 @@ import numpy as np
 from scipy import sparse
 
 
+def test_real_posterior_unary_uses_physical_mass_and_excludes_missing_owners():
+    from src.oviv2.surface_readout_graph import posterior_unary
+
+    unary, valid, tie = posterior_unary(
+        np.array([0, 0, 0, 1]),
+        np.array([10, 10, 20, 30]),
+        np.array([0.5, 0.5, 1.0, 1.0]),
+        np.array([10, 20]),
+        np.array([[0.8, 0.2], [0.2, 0.8]]),
+    )
+    np.testing.assert_allclose(unary[0], [-np.log(0.5), -np.log(0.5)])
+    assert valid.tolist() == [True, False]
+    assert tie[0] == 0
+
+
+def test_posterior_tie_keeps_largest_physical_baseline_class():
+    from src.oviv2.surface_readout_graph import posterior_unary
+
+    _, _, tie = posterior_unary(
+        np.array([0, 0]),
+        np.array([10, 20]),
+        np.array([1.0, 2.0]),
+        np.array([10, 20]),
+        np.array([[0.7, 0.3], [0.4, 0.6]]),
+    )
+    assert tie.tolist() == [1]
+
+
 def test_patches_weld_triangle_soup_but_do_not_join_disconnected_surfaces():
     from src.oviv2.surface_readout_graph import surface_patches
 

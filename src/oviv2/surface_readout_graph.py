@@ -132,6 +132,45 @@ def s2_pseudo_unary(patch_ids, semantic_ids, confidence, physical_weights, class
     return unary.astype(np.float32), (denom > 0) & (gsum > 0), tie
 
 
+def posterior_unary(patch_ids, owner_ids, physical_weights, feature_owners, posterior):
+    """Physical-mass mean of real class posteriors; unit reliability when observed.
+
+    No class evidence is invented for missing owners. View reliability has already
+    determined M1 feature aggregation; it is not multiplied into costs again.
+    """
+    patch_ids, owners = np.asarray(patch_ids), np.asarray(owner_ids)
+    weights = np.asarray(physical_weights, dtype=np.float64)
+    keys = np.asarray(feature_owners)
+    p = np.asarray(posterior, dtype=np.float64)
+    if patch_ids.shape != owners.shape or weights.shape != owners.shape:
+        raise ValueError("aligned source rows required")
+    if p.ndim != 2 or p.shape[0] != len(keys) or not p.shape[1]:
+        raise ValueError("one full class distribution per feature owner required")
+    if len(np.unique(keys)) != len(keys) or np.any(patch_ids < 0):
+        raise ValueError("unique owners and nonnegative patch IDs required")
+    if not np.isfinite(p).all() or np.any(p < 0) or not np.allclose(p.sum(1), 1):
+        raise ValueError("actual normalized posteriors required")
+    if not np.isfinite(weights).all() or np.any(weights < 0):
+        raise ValueError("finite nonnegative physical mass required")
+    n = int(patch_ids.max()) + 1 if len(patch_ids) else 0
+    order = np.argsort(keys)
+    columns = np.searchsorted(keys[order], owners)
+    supported = np.isin(owners, keys) & (weights > 0)
+    counts = sparse.csr_matrix(
+        (weights[supported], (patch_ids[supported], columns[supported])),
+        shape=(n, len(keys)),
+    )
+    mass = np.asarray(counts.sum(1)).ravel()
+    mean = (counts @ p[order]) / np.maximum(mass[:, None], 1e-12)
+    unary = -np.log(np.maximum(mean, 1e-6))
+    unary[mass == 0] = 0
+    baseline = np.eye(p.shape[1])[np.argmax(p[order], axis=1)]
+    baseline_mass = counts @ baseline
+    minimizers = np.isclose(unary, unary.min(axis=1, keepdims=True), rtol=0, atol=1e-7)
+    tie = np.argmax(np.where(minimizers, baseline_mass, -1.0), axis=1)
+    return unary.astype(np.float32), mass > 0, tie
+
+
 def graph_labels(
     unary, adjacency, valid, baseline_tie, *, strength=0.2, iterations=5, damping=0.5
 ):
