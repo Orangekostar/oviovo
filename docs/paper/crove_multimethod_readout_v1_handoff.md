@@ -34,13 +34,17 @@ Ghost 的零值必须结合分子/分母读取。
 - `apartment_H2_recovered_semantic_attribution.json`：2,939 源行/666 物理样本的恢复归因。
 - `*_registry.json`：实际角色、unary、图参数、投票裁决及输入预算。
 - `model_manifest.json`：官方来源、代码版本、checkpoint SHA256、严格加载证据。
-- `compact_artifact_index.json`：186 份已跟踪紧凑制品的大小与 SHA256；索引不包含自身。
+- `compact_artifact_index.json`：187 份已跟踪紧凑制品的大小与 SHA256；索引不包含自身。
 
 完整讨论与局限见同目录的结果报告；计划文件保留输入和实现约束。
 各任务使用独立协议，不把动态 mIoU 与 Replica 静态 mIoU 混合排名。
 表中 `feature_coverage_source` 区分原评分记录与完整预测掩码的源行比例；
 该比例不是唯一物理体素比例，也不等于 RGB 有效覆盖率。
 crop 数、独立视图数和 seed 未记录时保留 null，不从总前向数猜测。
+`code_provenance.json` 单独记录代码版本限制：启动时的完整 Git SHA 未写入
+原评分记录，因此不以当前交付提交替代。已验证列出的两个末期 runner
+和两个公共评分器自 `d995ae0` 后没有改动，并记录其实际文件 SHA256；
+该检查不能扩大解释为所有历史 trial 的完整依赖版本证明。
 
 ## 已执行的主要命令
 

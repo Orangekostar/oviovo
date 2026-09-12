@@ -1,0 +1,34 @@
+{
+  "evaluated_code_sha": null,
+  "evaluated_code_sha_status": "NOT_RECORDED_AT_PROCESS_LAUNCH",
+  "limitation": "Existing score records do not bind the complete dirty worktree or Git HEAD at launch. A later commit is not substituted for that missing observation.",
+  "reproduction_reference_sha": "0b045a9d20ccbd094bb762c7f3f2b118b9abb3d1",
+  "delivery_sha": null,
+  "delivery_sha_location": "Final remote branch verification and delivery receipt; kept separate from experiment execution provenance",
+  "verified_comparison": {
+    "from_commit": "d995ae0",
+    "to_commit": "0b045a9d20ccbd094bb762c7f3f2b118b9abb3d1",
+    "result": "NO_DIFF_IN_LISTED_FILES",
+    "scope": "Only the four listed files; not proof that every dependency or every historical trial used the same code"
+  },
+  "files": [
+    {
+      "path": "scripts/evaluation/run_crove_room1_confirmation.py",
+      "sha256": "19a033e4fce416d39757ea23b7cdc4b5359eaaab96155ee8e15547e1cf0462ea",
+      "last_changed_commit": "ae5ad856a09e393d6269086f805ad47e6d0ebbdb"
+    },
+    {
+      "path": "scripts/evaluation/run_crove_local_background_readouts.py",
+      "sha256": "93e992bb1c913c60b02650602a6d0e5455dac4adfb558d01a42eee0215610730",
+      "last_changed_commit": "52ee5575fc8c9a1e8aa4e4ee6e003d02a8a143d6"
+    },
+    {
+      "path": "src/evaluation/oviv2_replica.py",
+      "sha256": "da2e79dfb65fe4bb205cbb5be5af298619d02fa10ee9322e21b494d2a8baaab0"
+    },
+    {
+      "path": "src/evaluation/two_visit_snapshot_metrics.py",
+      "sha256": "74d92b606227d9dcd7f3b4a791d4c8a9865efe154516c4f82c3485c56c8de6ad"
+    }
+  ]
+}
