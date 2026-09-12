@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from scripts.evaluation.run_crove_adapter_room0 import atomic_npz, path
+from scripts.evaluation.run_crove_consensus_room0 import load_mask_observations
 from scripts.evaluation.run_crove_fine_current_map import (
     NON_INSTANCE_CLASSES,
     EntityEvaluationInfo,
@@ -23,6 +24,7 @@ from scripts.evaluation.run_crove_fine_current_map import (
     load_ovimap_semantic_mapping,
     load_replica_ground_truth,
 )
+from src.oviv2.surface_mask_evidence import boundary_graph
 from src.oviv2.surface_readout_graph import (
     graph_labels,
     posterior_unary,
@@ -34,6 +36,7 @@ from src.oviv2.surface_readout_graph import (
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--unary", choices=("s2", "mv_quality"), default="s2")
+    parser.add_argument("--boundary", action="store_true")
     args = parser.parse_args()
     config = json.loads(
         (ROOT / "configs/evaluation/crove_multimethod_readout_v1.json").read_text()
@@ -47,6 +50,9 @@ def main():
     room = path(config["run_root"]) / "dev/room0"
     shared_graph = room / "graph_s2"
     root = shared_graph if args.unary == "s2" else room / "graph_mv_quality"
+    point_graph_root = root
+    if args.boundary:
+        root = root.with_name(root.name + "_boundary")
     prefix = "S2" if args.unary == "s2" else "MV_QUALITY"
     root.mkdir(parents=True, exist_ok=True)
     settings = {
@@ -74,6 +80,28 @@ def main():
             shared_patch_mapping="dev/room0/graph_s2/patch_mapping.npz",
         )
         registry = registry.with_name("graph_mv_quality_room0_registry.json")
+    if args.boundary:
+        settings.update(
+            variants=[f"{prefix}_GRAPH_BOUNDARY"],
+            scope="same frozen patches and unary, repeated independent mask/depth boundary attenuation",
+            boundary_evidence="independent_mask_bank_room0_registry.json",
+            minimum_joint_frames=2,
+            boundary_factor="1 - 0.8 * disagreeing_views / jointly_observed_views; unobserved unchanged",
+            rgb_factor="exp(-mean_channel_squared_difference / 0.25**2); mean real RGB from at least two valid source observations; otherwise factor 1",
+        )
+        registry = registry.with_name(
+            f"graph_{args.unary}_boundary_room0_registry.json"
+        )
+        status = json.loads(
+            (
+                path(config["compact_output_root"])
+                / "independent_mask_bank_room0_status.json"
+            ).read_text()
+        )
+        if status["completed_frames"] != list(range(0, 2000, 10)):
+            raise RuntimeError(
+                "boundary graph requires the complete 200-frame independent mask bank"
+            )
     if registry.exists():
         if json.loads(registry.read_text()) != settings:
             raise ValueError("frozen graph settings differ")
@@ -146,12 +174,25 @@ def main():
         "backprojection_coverage": 1.0,
         "construction_seconds": float(patch["construction_seconds"]),
     }
-    print(stats, flush=True)
     patch_labels = None
-    for name, strength in [
+    runs = [
         (f"{prefix}_PATCH_ONLY", 0.0),
         (f"{prefix}_GRAPH_GEOM", 0.2),
-    ]:
+    ]
+    if args.boundary:
+        observations, colors, color_valid = load_mask_observations(
+            room, list(range(0, 2000, 10)), with_rgb=True
+        )
+        adjacency, boundary_stats = boundary_graph(
+            adjacency, observations, rgb=colors, rgb_valid=color_valid
+        )
+        stats.update(boundary_stats)
+        del observations
+        with np.load(point_graph_root / f"{prefix}_PATCH_ONLY.npz") as data:
+            patch_labels = data["semantic_ids"]
+        runs = [(f"{prefix}_GRAPH_BOUNDARY", 0.2)]
+    print(stats, flush=True)
+    for name, strength in runs:
         target = root / f"{name}.npz"
         if target.exists():
             with np.load(target) as d:
