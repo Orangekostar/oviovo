@@ -45,6 +45,8 @@ def main():
         "native_diverse_quality": ["MV_DIVERSE_MEAN", "MV_QUALITY"],
         "adapter_projected_top4": ["ADAPTER_CLIP_MEAN", "ADAPTER_CLIP_LEARNED"],
         "graph_mv_quality": ["MV_QUALITY_PATCH_ONLY", "MV_QUALITY_GRAPH_GEOM"],
+        "graph_mv_quality_boundary": ["MV_QUALITY_GRAPH_BOUNDARY"],
+        "consensus": ["INST_PAIRWISE", "INST_CONSENSUS_OWNER"],
     }
     # Diagnostic GT is opened only after both states' complete predictions exist.
     for directory, names in methods.items():
