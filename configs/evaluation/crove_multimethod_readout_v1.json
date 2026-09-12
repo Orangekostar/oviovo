@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "experiment_id": "crove_multimethod_readout_v1",
+  "task_revision": "V1_REVISED_V2",
+  "evidence_base": "dba12eeac62fbdaae9c345011b0e5fa570518e07",
+  "run_root": "$HOME/oviovo_baseline_runs/20260912_crove_multimethod_readout_v1",
+  "compact_output_root": "configs/evaluation/results/crove_multimethod_readout_v1",
+  "source_config": "configs/evaluation/crove_fine_current_map_v1.json",
+  "state_config": "configs/evaluation/crove_entity_epoch_v2.json",
+  "selection_policy": {
+    "id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
+    "frozen_before_new_trials": true,
+    "selection_key": ["family", "dataset_protocol", "task"],
+    "aggregation": "macro_mean_on_identical_dev_case_set",
+    "dynamic_selection_state": "B3",
+    "paired_transfer_state": "H2",
+    "instance_selection_source": "STATIC_INSTANCE",
+    "metric_absolute_tolerance": 0.000001,
+    "geometry_source_rows_must_match": true,
+    "semantic_families_owner_must_match": true,
+    "within_state_all_geometry_conflict_count_delta": 0,
+    "static_semantic_f_miou_gate": null,
+    "tasks": {
+      "STATIC_SEMANTIC": {"maximize": "miou", "ties": ["f_miou_desc", "comparable_added_runtime_asc", "config_id_asc"]},
+      "STATIC_INSTANCE": {"maximize": "ca_ap50", "ties": ["ca_ap25_desc", "ar50_desc_if_available", "comparable_added_runtime_asc", "config_id_asc"]},
+      "DYNAMIC_SEMANTIC": {"maximize": "current_miou", "ties": ["surface_f1_at_5cm_desc", "comparable_added_runtime_asc", "config_id_asc"]},
+      "FINAL_CURRENT_READOUT": {"maximize": "current_miou", "per_case_gates_required": true, "ties": ["surface_f1_at_5cm_desc", "comparable_added_runtime_asc", "config_id_asc"]}
+    },
+    "apartment_gates": {
+      "maximum_ghost": 0.02,
+      "minimum_background_f1_at_5cm": 0.35636000976960025,
+      "minimum_surface_precision_at_5cm": 0.7244127781521915,
+      "minimum_observed_stale_precision": 0.9259634045791844
+    },
+    "retain_all_trials": true,
+    "baseline_participates_in_selection": true,
+    "no_eligible_new_candidate": "retain_selected_B3_if_eligible_else_NO_ELIGIBLE_CONFIGURATION",
+    "confirmation_retuning_allowed": false
+  },
+  "input_selection": {
+    "static_dev": ["room0"],
+    "static_confirm": ["room1"],
+    "static_confirm_asset_failure_reserve": ["room2"],
+    "confirmation_selection_basis": "raw_RGBD_trajectory_and_GT_available; no_new_trial_scores_viewed",
+    "prior_use": "Replica8 compatibility/heldout in previous work; only unused_for_this_round_selection is claimed",
+    "static_frames": {"start": 0, "stop_exclusive": 2000, "stride": 10},
+    "dynamic_dev": "apartment-t0-000766-001021-t1-001217-001472",
+    "dynamic_states": ["B3", "H2"],
+    "dynamic_confirm": "office-t0-002145-002400-t1-002446-002701",
+    "static_confirm_derived_inputs_status": "PENDING_BIND_OR_BUILD"
+  },
+  "initial_method_parameters": {
+    "multiview": {"top_k": 4, "limited_second_round_top_k": 8, "crop_scales": 3, "crop_backgrounds": ["rgb", "black_mask"]},
+    "graph": {"patch_size_m": 0.02, "lambda": 0.2, "iterations": 5, "s2_unary": "S2_PSEUDO_UNARY_V1", "normalization": "symmetric_degree", "shared_patch_mapping_across_controls": true},
+    "consensus": {"minimum_independent_support_views": 2, "minimum_score": 0.6, "minimum_margin": 0.15, "ambiguous_owner": "KEEP_SOURCE", "residual_owner": "KEEP_SOURCE", "frame_vote": "maximum_per_candidate"},
+    "adapter": {"preferred_implementation": "official_MaskAdapter_FC_CLIP_ConvNeXt_L", "head_features": "F_head", "pool_features": "F_raw", "region_projection_before_map_mean": true, "same_checkpoint_mean_pool_control": true}
+  }
+}
