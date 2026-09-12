@@ -738,7 +738,7 @@ representative. The frozen static new representatives are `MV_QUALITY`,
 `S2_GRAPH_BOUNDARY`, `INST_CONSENSUS_OWNER` and `ADAPTER_CLIP_LEARNED`.
 S2 wins the static semantic tasks and native OVI wins the static instance task.
 The eligible final dynamic choice is `MV_QUALITY_GRAPH_BOUNDARY@H2`.
-The room1 confirmation runner is executing the frozen 11-method matrix,
+The room1 confirmation runner completed the frozen 11-method matrix,
 including shared baselines and direct controls; no confirmation score was
 used in selection. The immutable DEV evidence is `selection_source_results.json`.
 The top-k cached M1 head is the current best new B3 semantic row; its patch-only
@@ -758,7 +758,16 @@ the confirmation matrix uses the frozen cached QUALITY representative instead.
 python scripts/evaluation/summarize_crove_multimethod_readouts.py
 ```
 
-STATIC_CONFIRMATION_STATUS=PARTIAL
+STATIC_CONFIRMATION_STATUS=COMPLETE
+
+All 11 frozen room1 methods and direct controls completed full-map evaluation;
+the source and metric invariant checks passed. The complete confirmation table
+and family findings are in
+`configs/evaluation/results/crove_multimethod_readout_v1/room1_confirmation_results.md`.
+The selected boundary graph improves S2 mIoU by 0.001815 and consensus improves
+native CA-AP50 by 0.018072. QUALITY and the learned adapter do not beat their
+respective strong baselines on this held-out scene. No confirmation-driven
+retuning or representative replacement was performed.
 
 Dynamic per-class evidence for all 56 currently scored B3/H2 readouts was reconstructed by
 `scripts/evaluation/audit_crove_dynamic_per_class.py` using the unchanged common-v2

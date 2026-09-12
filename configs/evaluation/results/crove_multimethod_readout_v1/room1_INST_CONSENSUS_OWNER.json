@@ -1,0 +1,1498 @@
+{
+  "GT_read": true,
+  "case": "room1",
+  "changed_owner_rows": 6272086,
+  "cluster_history": [
+    {
+      "clusters": 52,
+      "undirected_edges": 117408
+    },
+    {
+      "clusters": 52,
+      "undirected_edges": 0
+    }
+  ],
+  "geometry_fixed": true,
+  "inference_and_write_seconds": 48.62052759900689,
+  "instance_ranking": "same class-agnostic size-based protocol and two-view gate as DEV",
+  "lineage": [
+    {
+      "assigned_source_rows": 7690,
+      "candidate": 0,
+      "new_owner": 76,
+      "parent_residual_source_rows": {
+        "1": 26667,
+        "14": 3060,
+        "4": 933,
+        "8": 422
+      },
+      "parents": [
+        1,
+        4,
+        8,
+        14
+      ]
+    },
+    {
+      "assigned_source_rows": 902157,
+      "candidate": 1,
+      "new_owner": 77,
+      "parent_residual_source_rows": {
+        "1": 26667,
+        "12": 8671,
+        "13": 2488,
+        "2": 11162,
+        "41": 10862,
+        "5": 10908,
+        "59": 517,
+        "6": 1245,
+        "61": 6,
+        "66": 464,
+        "68": 81,
+        "7": 343
+      },
+      "parents": [
+        1,
+        2,
+        5,
+        6,
+        7,
+        12,
+        13,
+        41,
+        59,
+        61,
+        66,
+        68
+      ]
+    },
+    {
+      "assigned_source_rows": 52740,
+      "candidate": 2,
+      "new_owner": 78,
+      "parent_residual_source_rows": {
+        "1": 26667,
+        "4": 933
+      },
+      "parents": [
+        1,
+        4
+      ]
+    },
+    {
+      "assigned_source_rows": 581,
+      "candidate": 3,
+      "new_owner": 79,
+      "parent_residual_source_rows": {
+        "1": 26667,
+        "10": 95
+      },
+      "parents": [
+        1,
+        10
+      ]
+    },
+    {
+      "assigned_source_rows": 2435,
+      "candidate": 4,
+      "new_owner": 80,
+      "parent_residual_source_rows": {
+        "15": 115,
+        "8": 422,
+        "9": 130
+      },
+      "parents": [
+        8,
+        9,
+        15
+      ]
+    },
+    {
+      "assigned_source_rows": 3,
+      "candidate": 5,
+      "new_owner": 81,
+      "parent_residual_source_rows": {
+        "1": 26667
+      },
+      "parents": [
+        1
+      ]
+    },
+    {
+      "assigned_source_rows": 3225908,
+      "candidate": 6,
+      "new_owner": 82,
+      "parent_residual_source_rows": {
+        "1": 26667,
+        "12": 8671,
+        "13": 2488,
+        "14": 3060,
+        "2": 11162,
+        "20": 11292,
+        "21": 1310,
+        "3": 7288,
+        "32": 205,
+        "33": 57,
+        "34": 40,
+        "37": 33,
+        "38": 104,
+        "39": 1679,
+        "4": 933,
+        "41": 10862,
+        "49": 509,
+        "51": 6120,
+        "56": 1169,
+        "60": 1370,
+        "62": 218,
+        "63": 5810,
+        "8": 422,
+        "9": 130
+      },
+      "parents": [
+        1,
+        2,
+        3,
+        4,
+        8,
+        9,
+        12,
+        13,
+        14,
+        20,
+        21,
+        32,
+        33,
+        34,
+        37,
+        38,
+        39,
+        41,
+        49,
+        51,
+        56,
+        60,
+        62,
+        63
+      ]
+    },
+    {
+      "assigned_source_rows": 11202,
+      "candidate": 7,
+      "new_owner": 83,
+      "parent_residual_source_rows": {
+        "2": 11162,
+        "5": 10908,
+        "7": 343
+      },
+      "parents": [
+        2,
+        5,
+        7
+      ]
+    },
+    {
+      "assigned_source_rows": 16775,
+      "candidate": 8,
+      "new_owner": 84,
+      "parent_residual_source_rows": {
+        "2": 11162,
+        "5": 10908
+      },
+      "parents": [
+        2,
+        5
+      ]
+    },
+    {
+      "assigned_source_rows": 42580,
+      "candidate": 9,
+      "new_owner": 85,
+      "parent_residual_source_rows": {
+        "2": 11162,
+        "41": 10862,
+        "6": 1245
+      },
+      "parents": [
+        2,
+        6,
+        41
+      ]
+    },
+    {
+      "assigned_source_rows": 82846,
+      "candidate": 10,
+      "new_owner": 86,
+      "parent_residual_source_rows": {
+        "1": 26667,
+        "14": 3060,
+        "20": 11292
+      },
+      "parents": [
+        1,
+        14,
+        20
+      ]
+    },
+    {
+      "assigned_source_rows": 1787,
+      "candidate": 11,
+      "new_owner": 87,
+      "parent_residual_source_rows": {
+        "14": 3060,
+        "15": 115,
+        "8": 422
+      },
+      "parents": [
+        8,
+        14,
+        15
+      ]
+    },
+    {
+      "assigned_source_rows": 8620,
+      "candidate": 12,
+      "new_owner": 88,
+      "parent_residual_source_rows": {
+        "1": 26667,
+        "14": 3060,
+        "16": 13
+      },
+      "parents": [
+        1,
+        14,
+        16
+      ]
+    },
+    {
+      "assigned_source_rows": 196597,
+      "candidate": 13,
+      "new_owner": 89,
+      "parent_residual_source_rows": {
+        "1": 26667,
+        "12": 8671,
+        "20": 11292,
+        "25": 2,
+        "3": 7288
+      },
+      "parents": [
+        1,
+        3,
+        12,
+        20,
+        25
+      ]
+    },
+    {
+      "assigned_source_rows": 61859,
+      "candidate": 14,
+      "new_owner": 90,
+      "parent_residual_source_rows": {
+        "1": 26667,
+        "12": 8671,
+        "27": 91,
+        "3": 7288
+      },
+      "parents": [
+        1,
+        3,
+        12,
+        27
+      ]
+    },
+    {
+      "assigned_source_rows": 851,
+      "candidate": 15,
+      "new_owner": 91,
+      "parent_residual_source_rows": {
+        "15": 115,
+        "8": 422
+      },
+      "parents": [
+        8,
+        15
+      ]
+    },
+    {
+      "assigned_source_rows": 1630,
+      "candidate": 16,
+      "new_owner": 92,
+      "parent_residual_source_rows": {
+        "15": 115,
+        "8": 422,
+        "9": 130
+      },
+      "parents": [
+        8,
+        9,
+        15
+      ]
+    },
+    {
+      "assigned_source_rows": 20452,
+      "candidate": 17,
+      "new_owner": 93,
+      "parent_residual_source_rows": {
+        "19": 220,
+        "21": 1310
+      },
+      "parents": [
+        19,
+        21
+      ]
+    },
+    {
+      "assigned_source_rows": 24,
+      "candidate": 18,
+      "new_owner": 94,
+      "parent_residual_source_rows": {
+        "14": 3060
+      },
+      "parents": [
+        14
+      ]
+    },
+    {
+      "assigned_source_rows": 531297,
+      "candidate": 19,
+      "new_owner": 95,
+      "parent_residual_source_rows": {
+        "1": 26667,
+        "12": 8671,
+        "14": 3060,
+        "19": 220,
+        "20": 11292,
+        "21": 1310,
+        "26": 3856,
+        "64": 3219
+      },
+      "parents": [
+        1,
+        12,
+        14,
+        19,
+        20,
+        21,
+        26,
+        64
+      ]
+    },
+    {
+      "assigned_source_rows": 19818,
+      "candidate": 20,
+      "new_owner": 96,
+      "parent_residual_source_rows": {
+        "1": 26667,
+        "19": 220,
+        "20": 11292,
+        "21": 1310
+      },
+      "parents": [
+        1,
+        19,
+        20,
+        21
+      ]
+    },
+    {
+      "assigned_source_rows": 366,
+      "candidate": 21,
+      "new_owner": 97,
+      "parent_residual_source_rows": {
+        "1": 26667,
+        "12": 8671,
+        "20": 11292
+      },
+      "parents": [
+        1,
+        12,
+        20
+      ]
+    },
+    {
+      "assigned_source_rows": 145137,
+      "candidate": 22,
+      "new_owner": 98,
+      "parent_residual_source_rows": {
+        "20": 11292,
+        "26": 3856,
+        "36": 7707,
+        "63": 5810,
+        "64": 3219
+      },
+      "parents": [
+        20,
+        26,
+        36,
+        63,
+        64
+      ]
+    },
+    {
+      "assigned_source_rows": 61241,
+      "candidate": 23,
+      "new_owner": 99,
+      "parent_residual_source_rows": {
+        "1": 26667,
+        "20": 11292,
+        "28": 5,
+        "63": 5810,
+        "64": 3219
+      },
+      "parents": [
+        1,
+        20,
+        28,
+        63,
+        64
+      ]
+    },
+    {
+      "assigned_source_rows": 760,
+      "candidate": 25,
+      "new_owner": 100,
+      "parent_residual_source_rows": {
+        "1": 26667,
+        "33": 57
+      },
+      "parents": [
+        1,
+        33
+      ]
+    },
+    {
+      "assigned_source_rows": 99517,
+      "candidate": 26,
+      "new_owner": 101,
+      "parent_residual_source_rows": {
+        "31": 5503,
+        "36": 7707
+      },
+      "parents": [
+        31,
+        36
+      ]
+    },
+    {
+      "assigned_source_rows": 791,
+      "candidate": 27,
+      "new_owner": 102,
+      "parent_residual_source_rows": {
+        "1": 26667,
+        "34": 40
+      },
+      "parents": [
+        1,
+        34
+      ]
+    },
+    {
+      "assigned_source_rows": 282067,
+      "candidate": 28,
+      "new_owner": 103,
+      "parent_residual_source_rows": {
+        "20": 11292,
+        "31": 5503,
+        "36": 7707,
+        "44": 2221,
+        "45": 1430,
+        "46": 1795,
+        "47": 660,
+        "50": 1980,
+        "51": 6120,
+        "52": 2018,
+        "58": 1665,
+        "63": 5810,
+        "64": 3219,
+        "73": 0,
+        "75": 1182
+      },
+      "parents": [
+        20,
+        31,
+        36,
+        44,
+        45,
+        46,
+        47,
+        50,
+        51,
+        52,
+        58,
+        63,
+        64,
+        73,
+        75
+      ]
+    },
+    {
+      "assigned_source_rows": 700,
+      "candidate": 29,
+      "new_owner": 104,
+      "parent_residual_source_rows": {
+        "1": 26667,
+        "37": 33
+      },
+      "parents": [
+        1,
+        37
+      ]
+    },
+    {
+      "assigned_source_rows": 660,
+      "candidate": 30,
+      "new_owner": 105,
+      "parent_residual_source_rows": {
+        "1": 26667,
+        "38": 104
+      },
+      "parents": [
+        1,
+        38
+      ]
+    },
+    {
+      "assigned_source_rows": 121546,
+      "candidate": 31,
+      "new_owner": 106,
+      "parent_residual_source_rows": {
+        "1": 26667,
+        "39": 1679
+      },
+      "parents": [
+        1,
+        39
+      ]
+    },
+    {
+      "assigned_source_rows": 19730,
+      "candidate": 32,
+      "new_owner": 107,
+      "parent_residual_source_rows": {
+        "31": 5503,
+        "44": 2221,
+        "45": 1430,
+        "51": 6120,
+        "73": 0,
+        "75": 1182
+      },
+      "parents": [
+        31,
+        44,
+        45,
+        51,
+        73,
+        75
+      ]
+    },
+    {
+      "assigned_source_rows": 22015,
+      "candidate": 33,
+      "new_owner": 108,
+      "parent_residual_source_rows": {
+        "36": 7707,
+        "44": 2221,
+        "45": 1430,
+        "51": 6120,
+        "58": 1665
+      },
+      "parents": [
+        36,
+        44,
+        45,
+        51,
+        58
+      ]
+    },
+    {
+      "assigned_source_rows": 33353,
+      "candidate": 34,
+      "new_owner": 109,
+      "parent_residual_source_rows": {
+        "31": 5503,
+        "36": 7707,
+        "46": 1795,
+        "51": 6120,
+        "58": 1665
+      },
+      "parents": [
+        31,
+        36,
+        46,
+        51,
+        58
+      ]
+    },
+    {
+      "assigned_source_rows": 26120,
+      "candidate": 35,
+      "new_owner": 110,
+      "parent_residual_source_rows": {
+        "1": 26667,
+        "49": 509,
+        "60": 1370
+      },
+      "parents": [
+        1,
+        49,
+        60
+      ]
+    },
+    {
+      "assigned_source_rows": 17950,
+      "candidate": 36,
+      "new_owner": 111,
+      "parent_residual_source_rows": {
+        "44": 2221,
+        "45": 1430,
+        "46": 1795,
+        "50": 1980,
+        "58": 1665,
+        "75": 1182
+      },
+      "parents": [
+        44,
+        45,
+        46,
+        50,
+        58,
+        75
+      ]
+    },
+    {
+      "assigned_source_rows": 14401,
+      "candidate": 37,
+      "new_owner": 112,
+      "parent_residual_source_rows": {
+        "45": 1430,
+        "50": 1980,
+        "51": 6120,
+        "52": 2018,
+        "75": 1182
+      },
+      "parents": [
+        45,
+        50,
+        51,
+        52,
+        75
+      ]
+    },
+    {
+      "assigned_source_rows": 27,
+      "candidate": 38,
+      "new_owner": 113,
+      "parent_residual_source_rows": {
+        "1": 26667
+      },
+      "parents": [
+        1
+      ]
+    },
+    {
+      "assigned_source_rows": 17888,
+      "candidate": 39,
+      "new_owner": 114,
+      "parent_residual_source_rows": {
+        "31": 5503,
+        "46": 1795,
+        "51": 6120,
+        "52": 2018,
+        "58": 1665
+      },
+      "parents": [
+        31,
+        46,
+        51,
+        52,
+        58
+      ]
+    },
+    {
+      "assigned_source_rows": 29239,
+      "candidate": 40,
+      "new_owner": 115,
+      "parent_residual_source_rows": {
+        "60": 1370
+      },
+      "parents": [
+        60
+      ]
+    },
+    {
+      "assigned_source_rows": 35817,
+      "candidate": 41,
+      "new_owner": 116,
+      "parent_residual_source_rows": {
+        "31": 5503,
+        "36": 7707,
+        "44": 2221,
+        "45": 1430,
+        "46": 1795,
+        "50": 1980,
+        "51": 6120,
+        "52": 2018,
+        "58": 1665
+      },
+      "parents": [
+        31,
+        36,
+        44,
+        45,
+        46,
+        50,
+        51,
+        52,
+        58
+      ]
+    },
+    {
+      "assigned_source_rows": 55334,
+      "candidate": 42,
+      "new_owner": 117,
+      "parent_residual_source_rows": {
+        "1": 26667,
+        "56": 1169,
+        "63": 5810
+      },
+      "parents": [
+        1,
+        56,
+        63
+      ]
+    },
+    {
+      "assigned_source_rows": 45334,
+      "candidate": 43,
+      "new_owner": 118,
+      "parent_residual_source_rows": {
+        "41": 10862,
+        "59": 517
+      },
+      "parents": [
+        41,
+        59
+      ]
+    },
+    {
+      "assigned_source_rows": 2427,
+      "candidate": 44,
+      "new_owner": 119,
+      "parent_residual_source_rows": {
+        "1": 26667,
+        "62": 218
+      },
+      "parents": [
+        1,
+        62
+      ]
+    },
+    {
+      "assigned_source_rows": 289,
+      "candidate": 45,
+      "new_owner": 120,
+      "parent_residual_source_rows": {
+        "41": 10862,
+        "61": 6
+      },
+      "parents": [
+        41,
+        61
+      ]
+    },
+    {
+      "assigned_source_rows": 44854,
+      "candidate": 46,
+      "new_owner": 121,
+      "parent_residual_source_rows": {
+        "41": 10862,
+        "66": 464
+      },
+      "parents": [
+        41,
+        66
+      ]
+    },
+    {
+      "assigned_source_rows": 6671,
+      "candidate": 47,
+      "new_owner": 122,
+      "parent_residual_source_rows": {
+        "41": 10862,
+        "68": 81
+      },
+      "parents": [
+        41,
+        68
+      ]
+    }
+  ],
+  "method": "INST_CONSENSUS_OWNER",
+  "metrics": {
+    "ap25": 0.5053229845163948,
+    "ap50": 0.22722268415865976,
+    "f5": 0.9307395484011499,
+    "f_miou": 0.7040253519855755,
+    "geometry": {
+      "f5": 0.9307395484011499,
+      "precision": 1.0,
+      "recall": 0.8704516724708449
+    },
+    "instance": {
+      "class_agnostic": {
+        "ap25": 0.5053229845163948,
+        "ap50": 0.22722268415865976,
+        "ground_truth_instance_count": 36,
+        "predicted_instance_count": 68,
+        "prediction_confidences": [
+          1.0,
+          0.3539438890422412,
+          0.2129064003936488,
+          0.09755209645996103,
+          0.06023146870211906,
+          0.05380667202733139,
+          0.03832075177321988,
+          0.032260000240029764,
+          0.03145190003560441,
+          0.022626805723909765,
+          0.021254635574811276,
+          0.02103460829142814,
+          0.018638311150582672,
+          0.017298144969976278,
+          0.017022110741731974,
+          0.016390032364013138,
+          0.015625937616264417,
+          0.011829466853889883,
+          0.010993363177033953,
+          0.010665322499989999,
+          0.010625317539374882,
+          0.010069248586824767,
+          0.009605191043689417,
+          0.00784097228056279,
+          0.007264900847705116,
+          0.007084878524937092,
+          0.00676083834395465,
+          0.00676083834395465,
+          0.006728834375462557,
+          0.006480803619648837,
+          0.0063647892338649995,
+          0.005880729210422092,
+          0.005444675139717325,
+          0.005044625533566162,
+          0.004984618092643488,
+          0.004796594777752441,
+          0.004700582872276162,
+          0.004508559061323604,
+          0.004444551124339418,
+          0.004216522848833256,
+          0.004156515407910581,
+          0.003976493085142557,
+          0.0033364137153006975,
+          0.0030843824634254648,
+          0.0029723685737031392,
+          0.002844352699734767,
+          0.0027203373218279065,
+          0.0024523040857066278,
+          0.0023482911881073255,
+          0.0022722817629386043,
+          0.0020802579519860463,
+          0.0020562549756169765,
+          0.0020482539834939533,
+          0.0019202381095255812,
+          0.0019162376134640696,
+          0.001320163700298837,
+          0.0012921602278682556,
+          0.0011241393932847673,
+          0.001064131952362093,
+          0.0009601190547627906,
+          0.0009201140941476743,
+          0.0008241021886713953,
+          0.0007560937556256975,
+          0.000708087802887558,
+          0.0006640823462109301,
+          0.0005040625037504651,
+          0.0004160515903972093,
+          0.000408050598274186
+        ],
+        "prediction_entity_ids": [
+          82,
+          77,
+          95,
+          103,
+          89,
+          98,
+          106,
+          101,
+          86,
+          1,
+          117,
+          99,
+          90,
+          118,
+          121,
+          78,
+          85,
+          116,
+          110,
+          20,
+          115,
+          36,
+          109,
+          41,
+          93,
+          96,
+          51,
+          108,
+          111,
+          114,
+          84,
+          107,
+          112,
+          2,
+          63,
+          88,
+          31,
+          76,
+          5,
+          14,
+          83,
+          64,
+          60,
+          12,
+          45,
+          3,
+          26,
+          122,
+          56,
+          44,
+          49,
+          52,
+          21,
+          75,
+          50,
+          46,
+          58,
+          13,
+          80,
+          6,
+          8,
+          119,
+          92,
+          87,
+          39,
+          19,
+          4,
+          9
+        ],
+        "recall25": 0.7777777777777778,
+        "recall50": 0.5
+      },
+      "semantic_class_constrained": {
+        "ap25": 0.353125,
+        "ap50": 0.19036989795918363,
+        "ground_truth_instance_count": 36,
+        "per_class": {
+          "11": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "ground_truth_count": 1,
+            "prediction_confidences": [],
+            "prediction_count": 0,
+            "prediction_entity_ids": [],
+            "recall25": 0.0,
+            "recall50": 0.0
+          },
+          "12": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "ground_truth_count": 1,
+            "prediction_confidences": [
+              1.0
+            ],
+            "prediction_count": 1,
+            "prediction_entity_ids": [
+              51
+            ],
+            "recall25": 0.0,
+            "recall50": 0.0
+          },
+          "13": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "ground_truth_count": 1,
+            "prediction_confidences": [],
+            "prediction_count": 0,
+            "prediction_entity_ids": [],
+            "recall25": 0.0,
+            "recall50": 0.0
+          },
+          "14": {
+            "ap25": 0.4,
+            "ap50": 0.16666666666666666,
+            "ground_truth_count": 2,
+            "prediction_confidences": [
+              1.0,
+              0.5515685872462579,
+              0.330695099446381,
+              0.10321919212630716,
+              0.07447201148246874,
+              0.07262661472216526,
+              0.048185359852368256,
+              0.040762763994258766,
+              0.027885995489030143,
+              0.020996514250563873,
+              0.005167110928849703
+            ],
+            "prediction_count": 11,
+            "prediction_entity_ids": [
+              103,
+              98,
+              101,
+              36,
+              93,
+              96,
+              31,
+              64,
+              26,
+              21,
+              19
+            ],
+            "recall25": 1.0,
+            "recall50": 0.5
+          },
+          "15": {
+            "ap25": 0.6666666666666666,
+            "ap50": 0.6666666666666666,
+            "ground_truth_count": 3,
+            "prediction_confidences": [
+              1.0,
+              0.9365079365079365
+            ],
+            "prediction_count": 2,
+            "prediction_entity_ids": [
+              92,
+              87
+            ],
+            "recall25": 0.6666666666666666,
+            "recall50": 0.6666666666666666
+          },
+          "19": {
+            "ap25": 0.3333333333333333,
+            "ap50": 0.16666666666666666,
+            "ground_truth_count": 6,
+            "prediction_confidences": [
+              1.0,
+              0.5172219085262564,
+              0.11048371917937136,
+              0.09787314135140222,
+              0.05006587615283267,
+              0.019198193111236588
+            ],
+            "prediction_count": 6,
+            "prediction_entity_ids": [
+              117,
+              110,
+              56,
+              49,
+              80,
+              9
+            ],
+            "recall25": 0.3333333333333333,
+            "recall50": 0.16666666666666666
+          },
+          "20": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "ground_truth_count": 1,
+            "prediction_confidences": [],
+            "prediction_count": 0,
+            "prediction_entity_ids": [],
+            "recall25": 0.0,
+            "recall50": 0.0
+          },
+          "21": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "ground_truth_count": 1,
+            "prediction_confidences": [],
+            "prediction_count": 0,
+            "prediction_entity_ids": [],
+            "recall25": 0.0,
+            "recall50": 0.0
+          },
+          "23": {
+            "ap25": 1.0,
+            "ap50": 0.7959183673469387,
+            "ground_truth_count": 7,
+            "prediction_confidences": [
+              1.0,
+              0.8119715928305715,
+              0.5715251944538383,
+              0.5688197497463645,
+              0.5478525532634427,
+              0.4971254649983091,
+              0.4602637808589787,
+              0.25126817720662836,
+              0.19208657423063916,
+              0.17382482245519107,
+              0.16232668244842746,
+              0.16198850185999325,
+              0.11159959418329388,
+              0.10923233006425431,
+              0.06966520121745012
+            ],
+            "prediction_count": 15,
+            "prediction_entity_ids": [
+              116,
+              109,
+              108,
+              111,
+              114,
+              107,
+              112,
+              45,
+              44,
+              52,
+              75,
+              50,
+              46,
+              58,
+              119
+            ],
+            "recall25": 1.0,
+            "recall50": 0.8571428571428571
+          },
+          "26": {
+            "ap25": 1.0,
+            "ap50": 0.0,
+            "ground_truth_count": 1,
+            "prediction_confidences": [
+              1.0,
+              0.20408163265306123
+            ],
+            "prediction_count": 2,
+            "prediction_entity_ids": [
+              76,
+              8
+            ],
+            "recall25": 1.0,
+            "recall50": 0.0
+          },
+          "29": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "ground_truth_count": 1,
+            "prediction_confidences": [],
+            "prediction_count": 0,
+            "prediction_entity_ids": [],
+            "recall25": 0.0,
+            "recall50": 0.0
+          },
+          "32": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "ground_truth_count": 2,
+            "prediction_confidences": [],
+            "prediction_count": 0,
+            "prediction_entity_ids": [],
+            "recall25": 0.0,
+            "recall50": 0.0
+          },
+          "4": {
+            "ap25": 1.0,
+            "ap50": 1.0,
+            "ground_truth_count": 1,
+            "prediction_confidences": [
+              1.0,
+              0.05120882040382572
+            ],
+            "prediction_count": 2,
+            "prediction_entity_ids": [
+              89,
+              12
+            ],
+            "recall25": 1.0,
+            "recall50": 1.0
+          },
+          "5": {
+            "ap25": 0.25,
+            "ap50": 0.25,
+            "ground_truth_count": 4,
+            "prediction_confidences": [
+              1.0,
+              0.8793732560635329,
+              0.15260785576303929,
+              0.0223223867782786
+            ],
+            "prediction_count": 4,
+            "prediction_entity_ids": [
+              90,
+              78,
+              3,
+              4
+            ],
+            "recall25": 0.25,
+            "recall50": 0.25
+          },
+          "6": {
+            "ap25": 0.0,
+            "ap50": 0.0,
+            "ground_truth_count": 3,
+            "prediction_confidences": [
+              1.0
+            ],
+            "prediction_count": 1,
+            "prediction_entity_ids": [
+              13
+            ],
+            "recall25": 0.0,
+            "recall50": 0.0
+          },
+          "7": {
+            "ap25": 1.0,
+            "ap50": 0.0,
+            "ground_truth_count": 1,
+            "prediction_confidences": [
+              1.0,
+              0.6687865683032307,
+              0.33782752480284917,
+              0.1584838463495294,
+              0.15250572373441873,
+              0.13406257949631137,
+              0.10607987789366573
+            ],
+            "prediction_count": 7,
+            "prediction_entity_ids": [
+              86,
+              99,
+              115,
+              63,
+              88,
+              14,
+              60
+            ],
+            "recall25": 1.0,
+            "recall50": 0.0
+          }
+        },
+        "predicted_instance_count": 51
+      }
+    },
+    "macc": 0.454834970057994,
+    "miou": 0.3992502036268305,
+    "projection": {
+      "ground_truth_vertex_count": 645512,
+      "matched_vertex_count": 561887
+    },
+    "protocol": {
+      "distance_threshold_m": 0.05,
+      "headline_instance_protocol": "class_agnostic",
+      "instance_semantic_ids": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41
+      ],
+      "min_instance_vertices": 100,
+      "projection_comparator": "strict_less_than",
+      "semantic_instance_protocol": "diagnostic_only",
+      "valid_semantic_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41
+      ]
+    },
+    "semantic": {
+      "evaluated_vertex_count": 602945,
+      "f_miou": 0.7040253519855755,
+      "macc": 0.454834970057994,
+      "matched_vertex_ratio": 0.8839645407126686,
+      "miou": 0.3992502036268305,
+      "per_class": {
+        "1": {
+          "accuracy": 0.9478003987368482,
+          "iou": 0.8906829070387609,
+          "support": 206151
+        },
+        "11": {
+          "accuracy": 0.0,
+          "iou": 0.0,
+          "support": 32442
+        },
+        "12": {
+          "accuracy": 0.35833108186344514,
+          "iou": 0.3461079630181927,
+          "support": 25909
+        },
+        "13": {
+          "accuracy": 0.0,
+          "iou": 0.0,
+          "support": 1566
+        },
+        "14": {
+          "accuracy": 0.7685002813731008,
+          "iou": 0.3039957704936279,
+          "support": 14216
+        },
+        "15": {
+          "accuracy": 0.5632183908045977,
+          "iou": 0.5521126760563381,
+          "support": 696
+        },
+        "19": {
+          "accuracy": 0.2955858487504057,
+          "iou": 0.2947535359420008,
+          "support": 30810
+        },
+        "2": {
+          "accuracy": 0.8589077033150488,
+          "iou": 0.8283650749838991,
+          "support": 62895
+        },
+        "20": {
+          "accuracy": 0.0,
+          "iou": 0.0,
+          "support": 9476
+        },
+        "21": {
+          "accuracy": 0.0,
+          "iou": 0.0,
+          "support": 3289
+        },
+        "23": {
+          "accuracy": 0.8258438389589264,
+          "iou": 0.7991932310114128,
+          "support": 19672
+        },
+        "26": {
+          "accuracy": 0.7253588516746412,
+          "iou": 0.619281045751634,
+          "support": 1045
+        },
+        "29": {
+          "accuracy": 0.0,
+          "iou": 0.0,
+          "support": 750
+        },
+        "3": {
+          "accuracy": 0.9241062951599525,
+          "iou": 0.7715356117749149,
+          "support": 100061
+        },
+        "31": {
+          "accuracy": 0.0,
+          "iou": 0.0,
+          "support": 32
+        },
+        "32": {
+          "accuracy": 0.0,
+          "iou": 0.0,
+          "support": 3424
+        },
+        "33": {
+          "accuracy": 0.20202020202020202,
+          "iou": 0.18691588785046728,
+          "support": 198
+        },
+        "4": {
+          "accuracy": 0.986711185308848,
+          "iou": 0.875459177627681,
+          "support": 14975
+        },
+        "5": {
+          "accuracy": 0.5758316505473483,
+          "iou": 0.4735186156266387,
+          "support": 9409
+        },
+        "6": {
+          "accuracy": 0.9977844790448643,
+          "iou": 0.9524732698860299,
+          "support": 48747
+        },
+        "7": {
+          "accuracy": 0.5215341636596438,
+          "iou": 0.4898595091018422,
+          "support": 17182
+        }
+      }
+    }
+  },
+  "new_ID_count": 47,
+  "owner_changed": true,
+  "runtime_scope": "this method execution; cached point-head and observation construction shared in sorted method order, not a standalone cross-method cost",
+  "selection_sha256": "70c256c1367683cb450a305e41b897cfaa8eef9307a51f28b266fef2761b60ad",
+  "source_rows": 6421401,
+  "split": "confirm",
+  "status": "FULL_MAP_EVALUATED"
+}
