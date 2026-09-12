@@ -8,6 +8,47 @@ from scipy.sparse.csgraph import connected_components
 from scipy.special import softmax
 
 
+def current_surface_topology(xyz, normals, triangles, visit_ids, current_indices):
+    """Restrict triangle topology to a frozen state without deleting valid rows."""
+    xyz, normals = np.asarray(xyz), np.asarray(normals)
+    triangles, visits = np.asarray(triangles), np.asarray(visit_ids)
+    current = np.asarray(current_indices)
+    if (
+        xyz.ndim != 2
+        or xyz.shape[1:] != (3,)
+        or normals.shape != xyz.shape
+        or visits.shape != (len(xyz),)
+    ):
+        raise ValueError("aligned source geometry, normals and visits required")
+    if (
+        current.ndim != 1
+        or current.dtype.kind not in "iu"
+        or np.any(current >= len(xyz))
+        or np.any(current < 0)
+        or np.any(current[1:] <= current[:-1])
+    ):
+        raise ValueError("sorted unique current source rows required")
+    if (
+        triangles.ndim != 2
+        or triangles.shape[1:] != (3,)
+        or triangles.dtype.kind not in "iu"
+        or np.any(triangles < 0)
+        or np.any(triangles >= len(xyz))
+    ):
+        raise ValueError("valid source triangle indices required")
+    inverse = np.full(len(xyz), -1, np.int64)
+    inverse[current] = np.arange(len(current))
+    faces = inverse[triangles]
+    faces = faces[np.all(faces >= 0, axis=1)]
+    return {
+        "xyz": xyz[current],
+        "normals": normals[current],
+        "triangles": faces,
+        "visit_ids": visits[current],
+        "source_indices": current.copy(),
+    }
+
+
 def surface_patches(xyz, normals, triangles, *, visit_ids=None, patch_size=0.02):
     """Weld compatible duplicate rows, then componentize actual in-cell topology.
 

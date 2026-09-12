@@ -51,7 +51,8 @@ def aggregate_views(features, weights):
     """Normalize each cached six-crop mean before weighting independent views.
 
     None denotes no observed feature; callers must preserve their stated fallback.
-    The cache has already averaged crops, so this does not recover per-crop norms.
+    Native OVI producers normalize each of six crops before caching their mean.
+    This supplies the subsequent per-view normalization, not crop-scale ablations.
     """
     features = np.asarray(features, dtype=np.float64)
     weights = np.asarray(weights, dtype=np.float64)

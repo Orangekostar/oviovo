@@ -2,6 +2,39 @@ import numpy as np
 from scipy import sparse
 
 
+def test_current_topology_drops_partial_faces_but_keeps_every_valid_source_row():
+    from src.oviv2.surface_readout_graph import current_surface_topology
+
+    xyz = np.arange(18).reshape(6, 3).astype(np.float32)
+    faces = np.array([[0, 1, 2], [2, 3, 4], [3, 4, 5]])
+    result = current_surface_topology(
+        xyz,
+        np.ones_like(xyz),
+        faces,
+        np.array([0, 0, 0, 1, 1, 1]),
+        np.array([0, 2, 3, 4, 5]),
+    )
+    np.testing.assert_array_equal(result["source_indices"], [0, 2, 3, 4, 5])
+    np.testing.assert_array_equal(result["xyz"], xyz[[0, 2, 3, 4, 5]])
+    np.testing.assert_array_equal(result["triangles"], [[1, 2, 3], [2, 3, 4]])
+    assert len(result["xyz"]) == 5  # Isolated valid row 0 is not discarded.
+
+
+def test_identical_surface_coordinates_from_different_visits_are_not_welded():
+    from src.oviv2.surface_readout_graph import surface_patches
+
+    xyz = np.tile([[0.001, 0.001, 0], [0.01, 0.001, 0], [0.001, 0.01, 0]], (2, 1))
+    result = surface_patches(
+        xyz,
+        np.tile([0.0, 0.0, 1.0], (6, 1)),
+        np.arange(6).reshape(2, 3),
+        visit_ids=np.array([0, 0, 0, 1, 1, 1]),
+    )
+    a, b = result["source_patch"][0], result["source_patch"][3]
+    assert a != b
+    assert result["adjacency"][a, b] == 0
+
+
 def test_real_posterior_unary_uses_physical_mass_and_excludes_missing_owners():
     from src.oviv2.surface_readout_graph import posterior_unary
 

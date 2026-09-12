@@ -229,7 +229,6 @@ def apply_and_evaluate_owner_features(
 ):
     """Shared full-state bridge for complete owner posteriors from each family."""
     run = path(config["run_root"])
-    compact = path(config["compact_output_root"])
     class_ids = np.array(
         sorted({v.semantic_id for v in crosswalk.aliases.values() if v.matched}),
         np.int32,
@@ -299,6 +298,13 @@ def apply_and_evaluate_owner_features(
                 },
             )
             print(state, method, "full prediction saved", len(source), flush=True)
+    evaluate_saved_readouts(config, state_config, pair, crosswalk, output, methods)
+
+
+def evaluate_saved_readouts(config, state_config, pair, crosswalk, output, methods):
+    """Evaluate already-saved complete point readouts through the frozen bridge."""
+    run = path(config["run_root"])
+    compact = path(config["compact_output_root"])
     with np.load(path(pair["current_map_root"]) / "current_surface.npz") as data:
         xyz, original_owners, visits, vertex_indices = (
             data["vertices_xyz"],

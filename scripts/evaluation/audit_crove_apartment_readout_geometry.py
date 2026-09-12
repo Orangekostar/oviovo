@@ -31,6 +31,8 @@ def main():
     methods = {
         "native_cached_batch": ["MV_NATIVE_CACHED", "MV_SINGLE", "MV_TOPK_MEAN"],
         "adapter_projected_top4": ["ADAPTER_CLIP_MEAN", "ADAPTER_CLIP_LEARNED"],
+        "native_diverse_quality": ["MV_DIVERSE_MEAN", "MV_QUALITY"],
+        "graph_mv_quality": ["MV_QUALITY_PATCH_ONLY", "MV_QUALITY_GRAPH_GEOM"],
     }
     # Refuse an audit before every complete current-state prediction exists.
     for state in ("B3", "H2"):
