@@ -46,7 +46,7 @@ def main():
         "frames": list(range(0, 2000, 10)),
         "patch_sha256": file_hash(patch_file),
         "representative": "actual source point nearest fixed patch center; ties by source row order",
-        "source": "official CropFormer full-resolution pretrained inference, CPU device; independent of owner projection",
+        "source": "official CropFormer full-resolution pretrained inference; independent of owner projection; per-frame CPU/GPU execution in frontend receipt",
         "projection": "same first-frame-normalized pose and positive measured depth within 0.05 m",
         "boundary": "one-pixel 8-neighbor erosion, image boundary excluded",
         "unknown_or_occluded": "no usable observer; never a negative vote",
@@ -62,7 +62,15 @@ def main():
         / "independent_mask_bank_room0_registry.json"
     )
     if registry.exists():
-        if json.loads(registry.read_text()) != settings:
+        previous = json.loads(registry.read_text())
+        cpu_settings = dict(settings)
+        cpu_settings["source"] = (
+            "official CropFormer full-resolution pretrained inference, CPU device; independent of owner projection"
+        )
+        if previous == cpu_settings:
+            # Execution metadata migration only; no mask/model/geometry parameter changes.
+            _atomic_json(registry, settings)
+        elif previous != settings:
             raise ValueError("frozen independent mask configuration differs")
     else:
         _atomic_json(registry, settings)
