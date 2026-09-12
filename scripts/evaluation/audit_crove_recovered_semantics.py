@@ -122,6 +122,11 @@ def main():
                 "GT_confusion": histogram(
                     [gt, predicted], weights, ["ground_truth", "predicted"]
                 ),
+                "GT_conditioned_transitions": histogram(
+                    [gt, original, predicted],
+                    weights,
+                    ["ground_truth", "original", "predicted"],
+                ),
                 "changed_semantics": counts(original != predicted),
                 "GT_supported_correct": counts(supported & (gt == predicted)),
                 "GT_supported_incorrect": counts(supported & (gt != predicted)),

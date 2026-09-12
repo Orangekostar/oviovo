@@ -13,6 +13,7 @@ Apartment cached-view and adapter pairs use `d4e3d67`; the shared bridge extract
 preserves the executed cached-view computation and is exercised by the adapter pair.
 Apartment diverse/quality and posterior graph controls use `43f8aae`;
 the extracted evaluator AST is identical to the previously evaluated kernel.
+Apartment independent-mask binding and restored-row attribution use `ba94d66`.
 This is an intermediate result, not the final four-family screening report.
 
 ## room0 complete-surface initial batch
@@ -229,7 +230,7 @@ python scripts/evaluation/audit_crove_apartment_readout_geometry.py
 | --- | --- | --- |
 | M1 | Partial room0 and Apartment native/single/top-k/diverse/quality B3/H2 pairs | structural patch evidence, dynamic state adaptation, confirmation |
 | M2 | room0 S2/M1 and Apartment QUALITY patch-only/geometry graph pairs | dynamic local S2 control, full-input boundary evaluation and confirmation |
-| M3 | Real 13-frame end-to-end diagnostic without GT; full-source predictions and lineage verified | full 200-frame pairwise/consensus scoring, resem, B3/H2 and confirmation |
+| M3 | room0 13-frame diagnostic; Apartment complete 512-frame/state independent banks, owner-only run started | full pairwise/consensus scores, resem and confirmation |
 | M4 | Official trained room0 and Apartment B3/H2 mean/learned pairs completed | static confirmation and limited combinations |
 
 M4 uses the official trained checkpoint, not random weights or a local untrained
@@ -256,6 +257,55 @@ S2 evidence, and is not presented as such a control.
 ```bash
 python scripts/evaluation/build_crove_apartment_graphs.py
 python scripts/evaluation/run_crove_graph_apartment.py
+```
+
+### H2 restored-source attribution (completed nine readouts)
+
+The exact H2-minus-B3 set contains 2,939 source rows, representing 666 exact-XYZ
+physical samples. No B3 row is removed. A post-prediction nearest-current-GT
+diagnostic finds support strictly within 5 cm for 1,207 rows / 322 physical
+samples; none of the restored rows is within 5 cm of confirmed-free centers.
+This source-to-GT lookup is explanatory and differs from the official
+GT-to-prediction mIoU lookup. Unmatched restored rows are not counted as errors
+or evidence of correctness.
+
+| H2 readout | Changed restored labels | Correct GT-supported rows | Correct physical samples |
+| --- | ---: | ---: | ---: |
+| Native / diverse / top-k | 0 | 589 | 145 |
+| Single | 112 | 701 | 172 |
+| Quality / quality patch / quality graph | 223 | 701 | 172 |
+| Adapter mean | 1,812 | 554 | 139 |
+| Adapter learned | 538 | 414 | 97 |
+
+QUALITY changes 112 couch rows to chair and 111 ceiling rows to lamp. The
+additional supported correct rows come from the first transition; the second
+has no current-GT support under this diagnostic. This does not imply that the
+whole map improved by the same amount. The artifact
+`apartment_H2_recovered_semantic_attribution.json` includes all original-to-new
+labels, role transitions and GT confusion counts. Physical transition mass
+weights duplicate rows by inverse multiplicity; each table sums to exactly
+2,939 rows and, within floating-point tolerance, 666 physical samples.
+
+```bash
+python scripts/evaluation/audit_crove_recovered_semantics.py
+```
+
+### Apartment independent-mask preparation
+
+Both B3/H2 banks contain all 512 authorized frame observations (256 per visit),
+bound by original native-mask hashes and each state's frozen patch hash.
+They project actual current-source representatives through global TESSE poses
+into original CropFormer PNG interiors, using measured depth within 5 cm.
+Only same-visit nodes are observed; different visits never form a static union.
+Empty, occluded and boundary observations supply no vote. No new segmentation
+inference or GT input was used. The per-visit pairwise/consensus owner-only
+runner is now executing with unchanged initial room0 parameters; results are
+not yet claimed. Dynamic AP is N/A because this common-v2 protocol has no
+corresponding instance GT. Static parameter selection is still pending.
+
+```bash
+python scripts/evaluation/build_crove_apartment_mask_bank.py
+python scripts/evaluation/run_crove_consensus_apartment.py
 ```
 
 room1 remains the frozen static confirmation scene, with raw inputs present but
