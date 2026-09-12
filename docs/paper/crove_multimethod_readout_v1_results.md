@@ -579,8 +579,10 @@ later observation selection must use actual unique visible-pixel support,
 with missing regions retaining fallback rather than being discarded.
 Actual local encoding has completed for room0: 1,138 regions/4,505 six-crop
 batches, with 1,632.14 s of encoder forwards. B3 has also completed
-2,599 regions/10,174 batches in 2,651.51 s of encoder forwards; H2 is running with the same frozen
-selection. Each requires at least two same-visit observations with at least
+2,599 regions/10,174 batches in 2,651.51 s of encoder forwards. H2 completed
+2,599 regions/10,174 batches in 3,516.86 s with the same frozen selection.
+These times count encoder forwards only, not end-to-end runtime.
+Each requires at least two same-visit observations with at least
 16 unique independent-mask-interior pixels, then at most four diverse views.
 `MV_LOCAL_BG_QUALITY` and `MV_BG_OWNER_QUALITY` full-map readers are implemented
 but not yet evaluated: both keep native outside the local support scope, and
@@ -719,8 +721,10 @@ from the eligible QUALITY combination already reported.
 Unscored room1 structural regions are now prepared with the same 0.5 m,
 source-connectivity, owner/visit and normal constraints: 54,352 regions cover
 4,328,059 structural source rows (1,001,773 physical samples), built in 21.45 s.
-Actual local feature encoding is running. This prepares a possible DEV-selected
-M1 input and does not choose a method using confirmation evidence.
+Actual local feature encoding is complete: 2,119 region posteriors from 8,389
+six-crop batches, with 3,133.96 s of encoder forwards. No GT was read.
+This prepares a possible DEV-selected M1 input and does not choose a method
+using confirmation evidence; room1 predictions and scoring remain pending freeze.
 
 ```bash
 python scripts/evaluation/summarize_crove_multimethod_readouts.py
