@@ -349,9 +349,17 @@ python scripts/evaluation/run_crove_consensus_apartment.py
 
 room1 remains the frozen static confirmation scene, with raw inputs present but
 derived OVI/S2 inputs pending. The native room1 GPU frontend failed with verified
-CUDA OOM under existing GPU occupancy. Full-resolution CPU frontend preparation
-is running for room1 mapping and room0 independent M3 masks; real first-frame
-outputs are verified. These are running jobs, not completed asset receipts.
+CUDA OOM under earlier GPU occupancy. After GPU 1 recovered roughly 38 GB free,
+a complete-resolution authorized-frame probe passed in 3.81 s. CPU preparation
+was then deliberately stopped, preserving 105 complete room1 frames and 101
+complete room0 frames. `6748a74` adds hash/shape/instance-ID/config/weight-validated
+GPU continuation of only missing frames, separate GPU execution logs and a
+combined per-frame device receipt. No complete CPU artifact is replaced.
+Room1 and room0 GPU completion run sequentially, followed by room1 native mapping;
+these are running jobs, not yet completed full-scene receipts. Runtime device
+metadata is migrated explicitly; model, input grid and inference thresholds
+are unchanged. The room0 observation bank currently contains 95 validated frames,
+while the previously reported diagnostic still uses only its original 13 frames.
 Office original assets remain missing.
 
 The independent mask pipeline has been exercised on frames 0:130:10, not the
