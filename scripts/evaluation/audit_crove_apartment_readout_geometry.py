@@ -66,6 +66,12 @@ def main():
         "graph_mv_quality": ["MV_QUALITY_PATCH_ONLY", "MV_QUALITY_GRAPH_GEOM"],
         "graph_mv_quality_boundary": ["MV_QUALITY_GRAPH_BOUNDARY"],
         "consensus": ["INST_PAIRWISE", "INST_CONSENSUS_OWNER"],
+        "reencoded_regions": [
+            "B_SEM_OVI_REENCODE",
+            "MV_REENCODE_DIVERSE",
+            "MV_REENCODE_QUALITY",
+            "INST_CONSENSUS_RESEM",
+        ],
     }
     # Refuse an audit before every complete current-state prediction exists.
     for state in ("B3", "H2"):
@@ -113,13 +119,25 @@ def main():
                 with np.load(room / directory / f"{state}_{name}.npz") as data:
                     owners_equal = np.array_equal(data["owner_ids"], owners)
                     if not np.array_equal(data["source_indices"], canonical) or (
-                        directory != "consensus" and not owners_equal
+                        directory != "consensus"
+                        and name != "INST_CONSENSUS_RESEM"
+                        and not owners_equal
                     ):
                         raise ValueError(
                             "readout changed frozen source geometry or owner"
                         )
                     roles = data["eval_role"]
                     ids = data["semantic_ids"]
+                    if name == "INST_CONSENSUS_RESEM":
+                        with np.load(
+                            room / "consensus" / f"{state}_INST_CONSENSUS_OWNER.npz"
+                        ) as owner_data:
+                            if not np.array_equal(
+                                data["owner_ids"], owner_data["owner_ids"]
+                            ):
+                                raise ValueError(
+                                    "semantic re-estimation changed consensus owners"
+                                )
                     if directory == "consensus" and (
                         not np.array_equal(ids, old_ids)
                         or not np.array_equal(roles, old_roles)

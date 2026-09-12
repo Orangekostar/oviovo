@@ -1,0 +1,30 @@
+{
+  "case": "apartment-t0-000766-001021-t1-001217-001472",
+  "changed_role_rows": 901688,
+  "changed_semantic_rows": 4086881,
+  "confidence": "new normalized full-class posterior; missing features keep old confidence",
+  "evaluation_seconds": 5.115851942449808,
+  "feature_coverage": 0.9983286393859767,
+  "feature_owner_count": 99,
+  "geometry_fixed": true,
+  "interpretation": "Source geometry stays frozen; owner IDs and supported semantic roles may change according to the declared readout.",
+  "method": "B_SEM_OVI_REENCODE",
+  "metrics": {
+    "background_f1_at_5cm": 0.4044943820224719,
+    "current_miou": 0.12603774018600866,
+    "ghost": 0.5025906735751295,
+    "surface_f1_at_5cm": 0.19962841190167066,
+    "surface_precision_at_5cm": 0.44828901112735936,
+    "surface_recall_at_5cm": 0.1284041515124634,
+    "t1_observed_region_stale_precision": 0.996751594732719,
+    "t1_unobserved_region_recall": 0.05384021613276727,
+    "total_current_surface_coverage": 0.1284041515124634
+  },
+  "owner_fixed": true,
+  "owner_partition": "native",
+  "passes_original_per_case_gates": false,
+  "source_rows": 15622601,
+  "split": "dev",
+  "state": "B3",
+  "status": "FULL_MAP_EVALUATED"
+}

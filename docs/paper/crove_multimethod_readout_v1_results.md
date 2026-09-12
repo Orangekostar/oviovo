@@ -280,7 +280,7 @@ python scripts/evaluation/audit_crove_apartment_readout_geometry.py
 | --- | --- | --- |
 | M1 | Partial room0 and Apartment native/single/top-k/diverse/quality B3/H2 pairs | structural patch evidence, dynamic state adaptation, confirmation |
 | M2 | room0 S2/M1 and Apartment QUALITY patch/geometry/boundary pairs complete | dynamic local S2 control and confirmation |
-| M3 | room0 and Apartment full pairwise/consensus-owner pairs evaluated | resem and confirmation |
+| M3 | room0 and Apartment full pairwise/consensus-owner pairs and Apartment matched resem evaluated | room0 resem and confirmation |
 | M4 | Official trained room0 and Apartment B3/H2 mean/learned pairs completed | static confirmation and limited combinations |
 
 M4 uses the official trained checkpoint, not random weights or a local untrained
@@ -289,7 +289,7 @@ Code retains official attribution and Apache-2.0 license.
 
 B3/H2 legacy-to-pointwise equality is verified separately in `bridge_B3.json` and
 `bridge_H2.json` (mIoU 0.135886/0.135734). The M1 dynamic pair above is now evaluated;
-M4 and M3 owner-only also have complete dynamic paired scores; M3 resem remains pending.
+M4, M3 owner-only and matched M3 resem also have complete dynamic paired scores.
 Apartment M2 topology preserves all 15,622,601/15,625,540 current source rows,
 including isolated rows, and excludes faces containing invalid vertices. B3/H2
 have 2,225,953/2,226,715 patch nodes and 2,712,720/2,712,879 undirected edges;
@@ -383,8 +383,8 @@ python scripts/evaluation/build_crove_apartment_mask_bank.py
 python scripts/evaluation/run_crove_consensus_apartment.py
 ```
 
-Matched region re-encoding is running for original and consensus owners in both
-states. It adds an OVI-style four-most-visible six-crop re-encoding control,
+Matched region re-encoding is complete for original and consensus owners in both
+Apartment states. It adds an OVI-style four-most-visible six-crop re-encoding control,
 original-owner diverse/quality controls and `INST_CONSENSUS_RESEM` with the same
 quality head. Each method uses at most four views per region; no cross-visit
 union is introduced. Candidate visibility comes from all authorized independent
@@ -399,11 +399,53 @@ six RGB/masked crops and explicit RGB channel-last interpretation. An unscored
 initial attempt was archived after thin crops exposed channel-axis ambiguity;
 none of its features feeds reported predictions. A real six-crop encoder smoke
 and a thin-red-crop regression test verify the correction. Re-encoding results
-are not yet claimed; local structural-background patches and CURRENT_AWARE are
-still separate outstanding obligations.
+are now evaluated for all eight Apartment predictions, saved before any GT
+evaluation. Local structural-background patches and CURRENT_AWARE remain
+separate outstanding obligations.
+
+| Matched Apartment readout | B3 mIoU | H2 mIoU | B3/H2 original gates |
+| --- | ---: | ---: | --- |
+| B_SEM_OVI_REENCODE | 0.126038 | 0.126974 | FAIL / FAIL |
+| MV_REENCODE_DIVERSE | 0.098531 | 0.099566 | FAIL / FAIL |
+| MV_REENCODE_QUALITY | 0.105122 | 0.106102 | FAIL / FAIL |
+| INST_CONSENSUS_RESEM | 0.125888 | 0.125827 | PASS / PASS |
+
+Consensus re-estimation improves over its matched original-owner quality head
+by 0.020766/0.019725 mIoU, but remains below native 0.135886/0.135734.
+It therefore does not establish an improvement over the native map. Its
+role-conditioned surface F1 is 0.246905/0.249130, also below native
+0.431335/0.435710, despite passing the existing precision/Ghost gates.
+The other three re-encoded controls have Ghost 0.502591 and fail the gates.
+These are retained negative results; role changes do not constitute geometry
+repair. All controls keep over 99.8% feature coverage, while consensus covers
+over 99.6%; missing rows retain native semantics/confidence/roles.
+This successful execution used 2,345 six-crop batches (14,070 images),
+459.48 s encoding and 183.47 s projection. These components exclude loading,
+selection, I/O, evaluation and the archived failed attempt, so they are not an
+end-to-end runtime comparison.
+
+The restored-row attribution now includes 16 H2 methods, with all 64 transition
+and confusion tables conserving 2,939 source rows and 666 exact-XYZ physical
+samples. The previous 12 methods are unchanged. The new native-reencoded,
+diverse, quality and consensus-resem heads correctly label 379, 45, 45 and 176
+GT-supported restored rows respectively (91, 13, 13 and 58 physical samples).
+These all trail the prior QUALITY result of 701 rows/172 physical samples.
+This source-to-GT diagnostic is not the official map mIoU protocol.
+The expanded geometry audit verifies all 32 full-state predictions against
+their exact frozen source rows. The three original-owner re-encoding controls
+retain owners exactly; resem retains its saved consensus partition exactly.
+Both states still have 8,705 all-current confirmed-free conflict rows in 90
+physical 5 cm voxels, independently of the altered semantic roles.
+
+The corresponding room0 matched controls and consensus re-estimation are
+running from the complete 200-frame bank. They share the same six-crop helpers,
+hashed native text/weights and input policy; all four full predictions precede
+GT evaluation. Replica poses are consumed exactly as stored, matching the
+existing bank, with no additional transformation.
 
 ```bash
 python scripts/evaluation/run_crove_reencode_apartment.py
+python scripts/evaluation/run_crove_reencode_room0.py
 ```
 
 room1 remains the frozen static confirmation scene, with raw inputs present but
@@ -416,15 +458,15 @@ GPU continuation of only missing frames, separate GPU execution logs and a
 combined per-frame device receipt. No complete CPU artifact is replaced.
 Both room1/room0 frontends are now complete: 105/101 retained CPU frames and
 95/99 GPU-completed frames respectively. All 400 artifacts per scene and retained
-CPU hashes were checked. Room1 native geometry/mapping preparation is running;
+CPU hashes were checked. Room1 native geometry is complete and mapping is running;
 static confirmation has not been scored. Runtime device
 metadata is migrated explicitly; model, input grid and inference thresholds
 are unchanged. The room0 observation bank now contains all 200 validated frames,
 while the previously reported diagnostic still uses only its original 13 frames.
 Office original assets remain missing.
 
-The independent mask pipeline has been exercised on frames 0:130:10, not the
-complete 200-frame protocol. It binds actual source points nearest the frozen
+The earlier independent-mask diagnostic used frames 0:130:10; the formal results
+above now use the complete 200-frame protocol. It binds actual source points nearest the frozen
 patch centers to depth-consistent CropFormer interiors; one-pixel region/image
 boundaries supply no vote. The boundary path requires at least two joint views
 before mask-disagreement attenuation, and uses real RGB means only when supported

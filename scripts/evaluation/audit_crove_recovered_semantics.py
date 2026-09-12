@@ -47,6 +47,12 @@ def main():
         "graph_mv_quality": ["MV_QUALITY_PATCH_ONLY", "MV_QUALITY_GRAPH_GEOM"],
         "graph_mv_quality_boundary": ["MV_QUALITY_GRAPH_BOUNDARY"],
         "consensus": ["INST_PAIRWISE", "INST_CONSENSUS_OWNER"],
+        "reencoded_regions": [
+            "B_SEM_OVI_REENCODE",
+            "MV_REENCODE_DIVERSE",
+            "MV_REENCODE_QUALITY",
+            "INST_CONSENSUS_RESEM",
+        ],
     }
     # Diagnostic GT is opened only after both states' complete predictions exist.
     for directory, names in methods.items():
