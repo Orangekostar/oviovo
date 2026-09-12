@@ -336,7 +336,7 @@ def export_tables(compact, report):
         "",
         "## 四类结果解释",
         "",
-        "- M1：原缓存、匹配重编码和局部背景分别保留直接对照；局部背景矩阵未齐前不冻结家族赢家。",
+        "- M1：原缓存、匹配重编码和局部背景分别保留直接对照；局部背景完整矩阵是冻结选择的必要输入。",
         "- M2：patch-only、纯几何图与边界图分开报告；相对直接对照的增量用于区分池化与传播收益，不能解释为几何新增。",
         "- M3：owner-only 的主任务是静态 CA-AP50；语义重估另列，动态无实例 GT，不能据动态 mIoU 反选聚类参数。",
         "- M4：普通池化与官方训练后 Adapter 使用相同编码器和投影输入；图组合单列。checkpoint 已训练不等于本轮发生训练更新。",
@@ -364,7 +364,8 @@ def export_tables(compact, report):
         )
     lines += [
         "",
-        f"局部背景待评分行数：{len(missing)}。最终逐家族采用结论、计算收益与下一轮优先级在完整 DEV 矩阵后更新。",
+        f"局部背景待评分行数：{len(missing)}。",
+        "逐家族收益、计算代价边界和下一轮优先级见 [家族讨论](../../../../docs/paper/crove_multimethod_readout_v1_family_results.md)。",
         "",
     ]
     target = compact / "family_results.md"
