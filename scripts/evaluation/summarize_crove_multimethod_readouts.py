@@ -17,6 +17,8 @@ from scripts.evaluation.run_ovimap_native import _atomic_json, _sha256
 
 # Explicit method contracts also keep diagnostics and input-status JSON out.
 METHODS = {
+    "MV_TOPK_PATCH_ONLY": ("M1+M2", "graph_mv_topk", "MV_TOPK_MEAN"),
+    "MV_TOPK_GRAPH_GEOM": ("M1+M2", "graph_mv_topk", "MV_TOPK_PATCH_ONLY"),
     "B_SEM_OVI_NATIVE": ("BASELINE", "native_cached_batch", None),
     "MV_NATIVE_CACHED": ("BASELINE", "native_cached_batch", None),
     "B_SEM_CROVE_S0": ("BASELINE", "semantic_controls", None),
@@ -274,7 +276,9 @@ def export_tables(compact, report):
     target = compact / "all_method_results.csv"
     temporary = target.with_suffix(".partial")
     with temporary.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=flat_columns, extrasaction="ignore")
+        writer = csv.DictWriter(
+            handle, fieldnames=flat_columns, extrasaction="ignore", lineterminator="\n"
+        )
         writer.writeheader()
         writer.writerows(rows)
     temporary.replace(target)

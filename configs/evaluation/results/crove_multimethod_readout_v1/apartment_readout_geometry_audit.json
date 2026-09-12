@@ -440,6 +440,26 @@
           },
           "source_indices_exact_match": true
         },
+        "MV_TOPK_GRAPH_GEOM": {
+          "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 1187092,
+          "eval_role_counts": {
+            "0": 13464852,
+            "1": 2095251,
+            "2": 62498
+          },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 29425,
+          "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
+          "source_indices_exact_match": true
+        },
         "MV_TOPK_MEAN": {
           "all_geometry_conflict_count_delta": 0,
           "background_to_object_rows": 1188770,
@@ -450,6 +470,26 @@
           },
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 28592,
+          "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
+          "source_indices_exact_match": true
+        },
+        "MV_TOPK_PATCH_ONLY": {
+          "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 1187043,
+          "eval_role_counts": {
+            "0": 13464860,
+            "1": 2095243,
+            "2": 62498
+          },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 29384,
           "owners_exact_match": true,
           "role_conditioned_ghost": {
             "denominator": 0,
@@ -959,6 +999,26 @@
           },
           "source_indices_exact_match": true
         },
+        "MV_TOPK_GRAPH_GEOM": {
+          "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 1187092,
+          "eval_role_counts": {
+            "0": 13466575,
+            "1": 2096467,
+            "2": 62498
+          },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 29425,
+          "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
+          "source_indices_exact_match": true
+        },
         "MV_TOPK_MEAN": {
           "all_geometry_conflict_count_delta": 0,
           "background_to_object_rows": 1188770,
@@ -969,6 +1029,26 @@
           },
           "known_to_unknown_rows": 0,
           "object_to_background_rows": 28592,
+          "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
+          "source_indices_exact_match": true
+        },
+        "MV_TOPK_PATCH_ONLY": {
+          "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 1187043,
+          "eval_role_counts": {
+            "0": 13466583,
+            "1": 2096459,
+            "2": 62498
+          },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 29384,
           "owners_exact_match": true,
           "role_conditioned_ghost": {
             "denominator": 0,

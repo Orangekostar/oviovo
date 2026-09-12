@@ -91,7 +91,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--boundary", action="store_true")
     parser.add_argument(
-        "--unary", choices=["mv_quality", "s2", "adapter"], default="mv_quality"
+        "--unary", choices=["mv_quality", "s2", "adapter", "topk"], default="mv_quality"
     )
     args = parser.parse_args()
     config = json.loads(
@@ -199,6 +199,25 @@ def main():
         registry = registry.with_name(
             f"graph_adapter_learned{'_boundary' if args.boundary else ''}_apartment_registry.json"
         )
+    if args.unary == "topk":
+        prefix = "MV_TOPK"
+        point_directory, point_method = "native_cached_batch", "MV_TOPK_MEAN"
+        point_graph_output = room / "graph_mv_topk"
+        output = room / ("graph_mv_topk_boundary" if args.boundary else "graph_mv_topk")
+        output.mkdir(exist_ok=True)
+        variants = [
+            (name.replace("MV_QUALITY", prefix), strength)
+            for name, strength in variants
+        ]
+        settings.update(
+            variants=[name for name, _ in variants],
+            point_readout=f"{point_directory}/{point_method}",
+            reliability="unit for observed owner; top-four normalized cached-view mean already aggregated",
+            scope="limited M1 metric-leading new head + same M2 graph; no new hyperparameters",
+        )
+        registry = registry.with_name(
+            f"graph_mv_topk{'_boundary' if args.boundary else ''}_apartment_registry.json"
+        )
     if registry.exists():
         if json.loads(registry.read_text()) != settings:
             raise ValueError("frozen graph settings differ")
@@ -232,9 +251,12 @@ def main():
                 classes,
             )
         else:
-            with np.load(
-                room / point_directory / f"{state}_{point_method}_owner_features.npz"
-            ) as data:
+            feature_name = (
+                f"{point_method}_owner_features.npz"
+                if args.unary == "topk"
+                else f"{state}_{point_method}_owner_features.npz"
+            )
+            with np.load(room / point_directory / feature_name) as data:
                 if not np.array_equal(classes, data["class_ids"]):
                     raise ValueError("posterior vocabulary differs")
                 unary, valid, tie = posterior_unary(

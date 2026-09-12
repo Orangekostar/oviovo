@@ -353,6 +353,8 @@ a VLM distribution, and is not multiplied by local reliability again.
 | S2_DENSE_REPLAY_GRAPH_BOUNDARY | 0.174768 | 0.175771 | FAIL / FAIL |
 | ADAPTER_LEARNED_PATCH_ONLY | 0.135167 | 0.136777 | FAIL / FAIL |
 | ADAPTER_LEARNED_GRAPH_GEOM | 0.135151 | 0.136786 | FAIL / FAIL |
+| MV_TOPK_PATCH_ONLY | 0.139562 | 0.139462 | FAIL / FAIL |
+| MV_TOPK_GRAPH_GEOM | 0.139538 | 0.139455 | FAIL / FAIL |
 
 All rows reuse the frozen same-visit geometry topology, lambda 0.2, five
 iterations and damping 0.5. S2 geometry propagation helps B3 but hurts H2
@@ -361,12 +363,18 @@ The M4 combination consumes the existing trained-head full-class posterior,
 without another training run or parameter search. Its Ghost remains 1.0 in
 both states; graph optimization does not repair its final-current gate failure.
 Inherited point confidence is not a calibrated graph posterior.
-The expanded audit verifies all 48 full-state source/owner invariants and all
-96 recovered-row tables across 24 methods. S0/S2 correctly label 630/677
+The top-k M1 combination is now evaluated as the strongest new B3 semantic
+head among the already completed owner-view methods. Geometry propagation
+changes 962 patch-only labels in each state and lowers mIoU by
+0.0000234/0.0000073. Surface precision remains about 0.3434/0.3438, so all four
+top-k combination rows fail the unchanged final-current gate. No extra encoder
+forwards or graph parameter search are introduced.
+The expanded audit verifies all 52 full-state source/owner invariants and all
+104 recovered-row tables across 26 methods. S0/S2 correctly label 630/677
 GT-supported restored source rows (154/167 physical samples), respectively.
 The existing all-current geometry conflict counts remain unchanged.
 An additional exact-count audit now recovers the role-conditioned Ghost
-numerator and denominator for all 48 dynamic predictions and checks their
+numerator and denominator for all 52 dynamic predictions and checks their
 ratio against each saved score within 1e-12. Native and MV_QUALITY both have
 0/0 in B3/H2: their changed-region object set is empty, and the established
 evaluator convention returns zero. ADAPTER_LEARNED_GRAPH_GEOM has 2,177/2,177
@@ -555,8 +563,8 @@ is exercised but provides no measured gain here. The original 31.77/38.50 s
 prediction/write runtimes are retained; zero new image forwards are required.
 Sparse full-class patch posteriors are saved, and a cache reconstruction checks
 all frozen prediction arrays exactly before retaining the original files.
-The geometry audit now covers 48 full-state predictions; recovered-row
-attribution covers 24 methods/96 conserved tables. CURRENT_AWARE correctly labels
+The geometry audit now covers 52 full-state predictions; recovered-row
+attribution covers 26 methods/104 conserved tables. CURRENT_AWARE correctly labels
 45 restored GT-supported rows (13 physical samples), the same as its matched
 QUALITY baseline; its restored semantic changes are 1,027 rows/293 samples.
 
@@ -671,8 +679,8 @@ python scripts/evaluation/run_crove_consensus_room0.py
 
 DEV_SCREENING_STATUS=PARTIAL
 
-The reproducible all-method collector now covers 73 scored DEV predictions
-(25 room0, 24 B3 and 24 H2), retaining failures and baseline rows. It verifies
+The reproducible all-method collector now covers 77 scored DEV predictions
+(25 room0, 26 B3 and 26 H2), retaining failures and baseline rows. It verifies
 every source-index array against the same-state native input, rejects owner
 changes outside M3, and measures unknown source rows directly from each full
 prediction. `all_method_results.json` contains raw-result hashes, same-state
@@ -681,6 +689,16 @@ dynamic Ghost numerators/denominators are copied from the verified count audit.
 `all_method_results.csv` and `family_results.md` provide flat and readable views.
 Unrecorded costs and dynamic instance AP remain null/N/A. This is an intermediate
 evidence table, not a frozen winner list; six local-background scores remain pending.
+The task selector is implemented with maximum-relative 1e-6 ties, declared
+secondary metrics, equal baseline participation and separate metric/eligible
+winners. Incomparable added-cost stages are skipped, not interpreted as zero.
+M3 owner-only transfers its static instance choice to dynamic states; it does
+not use unavailable dynamic instance GT. The selector rejects incomplete local
+background matrices and missing same-graph combinations for the best new M1
+representative. No `selected_configs.json` has been generated yet.
+The top-k cached M1 head is the current best new B3 semantic row; its patch-only
+and same-parameter geometry-graph combination is evaluated in B3/H2, separately
+from the eligible QUALITY combination already reported.
 
 Unscored room1 structural regions are now prepared with the same 0.5 m,
 source-connectivity, owner/visit and normal constraints: 54,352 regions cover

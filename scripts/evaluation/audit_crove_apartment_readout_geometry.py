@@ -65,6 +65,7 @@ def main():
         "native_diverse_quality": ["MV_DIVERSE_MEAN", "MV_QUALITY"],
         "graph_mv_quality": ["MV_QUALITY_PATCH_ONLY", "MV_QUALITY_GRAPH_GEOM"],
         "graph_mv_quality_boundary": ["MV_QUALITY_GRAPH_BOUNDARY"],
+        "graph_mv_topk": ["MV_TOPK_PATCH_ONLY", "MV_TOPK_GRAPH_GEOM"],
         "consensus": ["INST_PAIRWISE", "INST_CONSENSUS_OWNER"],
         "current_aware": ["MV_CURRENT_AWARE"],
         "graph_s2_dense_replay": [

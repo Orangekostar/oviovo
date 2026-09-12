@@ -4329,7 +4329,355 @@
         }
       ]
     },
+    "MV_TOPK_GRAPH_GEOM": {
+      "GT_conditioned_transitions": [
+        {
+          "ground_truth": -1,
+          "original": 4,
+          "physical_sample_mass": 320.0000000000008,
+          "predicted": 4,
+          "source_rows": 1621
+        },
+        {
+          "ground_truth": -1,
+          "original": 11,
+          "physical_sample_mass": 19.999999999999986,
+          "predicted": 11,
+          "source_rows": 101
+        },
+        {
+          "ground_truth": -1,
+          "original": 16,
+          "physical_sample_mass": 3.0,
+          "predicted": 16,
+          "source_rows": 9
+        },
+        {
+          "ground_truth": -1,
+          "original": 17,
+          "physical_sample_mass": 1.0,
+          "predicted": 17,
+          "source_rows": 1
+        },
+        {
+          "ground_truth": 5,
+          "original": 5,
+          "physical_sample_mass": 19.000000000000004,
+          "predicted": 5,
+          "source_rows": 80
+        },
+        {
+          "ground_truth": 5,
+          "original": 7,
+          "physical_sample_mass": 55.000000000000064,
+          "predicted": 7,
+          "source_rows": 255
+        },
+        {
+          "ground_truth": 9,
+          "original": 16,
+          "physical_sample_mass": 121.99999999999937,
+          "predicted": 16,
+          "source_rows": 363
+        },
+        {
+          "ground_truth": 16,
+          "original": 16,
+          "physical_sample_mass": 126.00000000000003,
+          "predicted": 16,
+          "source_rows": 509
+        }
+      ],
+      "GT_confusion": [
+        {
+          "ground_truth": -1,
+          "physical_sample_mass": 320.0000000000008,
+          "predicted": 4,
+          "source_rows": 1621
+        },
+        {
+          "ground_truth": -1,
+          "physical_sample_mass": 19.999999999999986,
+          "predicted": 11,
+          "source_rows": 101
+        },
+        {
+          "ground_truth": -1,
+          "physical_sample_mass": 3.0,
+          "predicted": 16,
+          "source_rows": 9
+        },
+        {
+          "ground_truth": -1,
+          "physical_sample_mass": 1.0,
+          "predicted": 17,
+          "source_rows": 1
+        },
+        {
+          "ground_truth": 5,
+          "physical_sample_mass": 19.000000000000004,
+          "predicted": 5,
+          "source_rows": 80
+        },
+        {
+          "ground_truth": 5,
+          "physical_sample_mass": 55.000000000000064,
+          "predicted": 7,
+          "source_rows": 255
+        },
+        {
+          "ground_truth": 9,
+          "physical_sample_mass": 121.99999999999937,
+          "predicted": 16,
+          "source_rows": 363
+        },
+        {
+          "ground_truth": 16,
+          "physical_sample_mass": 126.00000000000003,
+          "predicted": 16,
+          "source_rows": 509
+        }
+      ],
+      "GT_supported_correct": {
+        "source_rows": 589,
+        "unique_physical_samples": 145
+      },
+      "GT_supported_incorrect": {
+        "source_rows": 618,
+        "unique_physical_samples": 177
+      },
+      "changed_semantics": {
+        "source_rows": 0,
+        "unique_physical_samples": 0
+      },
+      "role_transitions": [
+        {
+          "original": 0,
+          "physical_sample_mass": 341.00000000000256,
+          "predicted": 0,
+          "source_rows": 1723
+        },
+        {
+          "original": 1,
+          "physical_sample_mass": 324.9999999999996,
+          "predicted": 1,
+          "source_rows": 1216
+        }
+      ],
+      "semantic_transitions": [
+        {
+          "original": 4,
+          "physical_sample_mass": 320.0000000000008,
+          "predicted": 4,
+          "source_rows": 1621
+        },
+        {
+          "original": 5,
+          "physical_sample_mass": 19.000000000000004,
+          "predicted": 5,
+          "source_rows": 80
+        },
+        {
+          "original": 7,
+          "physical_sample_mass": 55.000000000000064,
+          "predicted": 7,
+          "source_rows": 255
+        },
+        {
+          "original": 11,
+          "physical_sample_mass": 19.999999999999986,
+          "predicted": 11,
+          "source_rows": 101
+        },
+        {
+          "original": 16,
+          "physical_sample_mass": 251.00000000000063,
+          "predicted": 16,
+          "source_rows": 881
+        },
+        {
+          "original": 17,
+          "physical_sample_mass": 1.0,
+          "predicted": 17,
+          "source_rows": 1
+        }
+      ]
+    },
     "MV_TOPK_MEAN": {
+      "GT_conditioned_transitions": [
+        {
+          "ground_truth": -1,
+          "original": 4,
+          "physical_sample_mass": 320.0000000000008,
+          "predicted": 4,
+          "source_rows": 1621
+        },
+        {
+          "ground_truth": -1,
+          "original": 11,
+          "physical_sample_mass": 19.999999999999986,
+          "predicted": 11,
+          "source_rows": 101
+        },
+        {
+          "ground_truth": -1,
+          "original": 16,
+          "physical_sample_mass": 3.0,
+          "predicted": 16,
+          "source_rows": 9
+        },
+        {
+          "ground_truth": -1,
+          "original": 17,
+          "physical_sample_mass": 1.0,
+          "predicted": 17,
+          "source_rows": 1
+        },
+        {
+          "ground_truth": 5,
+          "original": 5,
+          "physical_sample_mass": 19.000000000000004,
+          "predicted": 5,
+          "source_rows": 80
+        },
+        {
+          "ground_truth": 5,
+          "original": 7,
+          "physical_sample_mass": 55.000000000000064,
+          "predicted": 7,
+          "source_rows": 255
+        },
+        {
+          "ground_truth": 9,
+          "original": 16,
+          "physical_sample_mass": 121.99999999999937,
+          "predicted": 16,
+          "source_rows": 363
+        },
+        {
+          "ground_truth": 16,
+          "original": 16,
+          "physical_sample_mass": 126.00000000000003,
+          "predicted": 16,
+          "source_rows": 509
+        }
+      ],
+      "GT_confusion": [
+        {
+          "ground_truth": -1,
+          "physical_sample_mass": 320.0000000000008,
+          "predicted": 4,
+          "source_rows": 1621
+        },
+        {
+          "ground_truth": -1,
+          "physical_sample_mass": 19.999999999999986,
+          "predicted": 11,
+          "source_rows": 101
+        },
+        {
+          "ground_truth": -1,
+          "physical_sample_mass": 3.0,
+          "predicted": 16,
+          "source_rows": 9
+        },
+        {
+          "ground_truth": -1,
+          "physical_sample_mass": 1.0,
+          "predicted": 17,
+          "source_rows": 1
+        },
+        {
+          "ground_truth": 5,
+          "physical_sample_mass": 19.000000000000004,
+          "predicted": 5,
+          "source_rows": 80
+        },
+        {
+          "ground_truth": 5,
+          "physical_sample_mass": 55.000000000000064,
+          "predicted": 7,
+          "source_rows": 255
+        },
+        {
+          "ground_truth": 9,
+          "physical_sample_mass": 121.99999999999937,
+          "predicted": 16,
+          "source_rows": 363
+        },
+        {
+          "ground_truth": 16,
+          "physical_sample_mass": 126.00000000000003,
+          "predicted": 16,
+          "source_rows": 509
+        }
+      ],
+      "GT_supported_correct": {
+        "source_rows": 589,
+        "unique_physical_samples": 145
+      },
+      "GT_supported_incorrect": {
+        "source_rows": 618,
+        "unique_physical_samples": 177
+      },
+      "changed_semantics": {
+        "source_rows": 0,
+        "unique_physical_samples": 0
+      },
+      "role_transitions": [
+        {
+          "original": 0,
+          "physical_sample_mass": 341.00000000000256,
+          "predicted": 0,
+          "source_rows": 1723
+        },
+        {
+          "original": 1,
+          "physical_sample_mass": 324.9999999999996,
+          "predicted": 1,
+          "source_rows": 1216
+        }
+      ],
+      "semantic_transitions": [
+        {
+          "original": 4,
+          "physical_sample_mass": 320.0000000000008,
+          "predicted": 4,
+          "source_rows": 1621
+        },
+        {
+          "original": 5,
+          "physical_sample_mass": 19.000000000000004,
+          "predicted": 5,
+          "source_rows": 80
+        },
+        {
+          "original": 7,
+          "physical_sample_mass": 55.000000000000064,
+          "predicted": 7,
+          "source_rows": 255
+        },
+        {
+          "original": 11,
+          "physical_sample_mass": 19.999999999999986,
+          "predicted": 11,
+          "source_rows": 101
+        },
+        {
+          "original": 16,
+          "physical_sample_mass": 251.00000000000063,
+          "predicted": 16,
+          "source_rows": 881
+        },
+        {
+          "original": 17,
+          "physical_sample_mass": 1.0,
+          "predicted": 17,
+          "source_rows": 1
+        }
+      ]
+    },
+    "MV_TOPK_PATCH_ONLY": {
       "GT_conditioned_transitions": [
         {
           "ground_truth": -1,
