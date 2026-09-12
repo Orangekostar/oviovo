@@ -19,9 +19,7 @@
       "all_current_conflicting_5cm_voxels": null,
       "all_current_free_conflict_count": null,
       "all_current_free_conflict_denominator": null,
-      "best_new_candidate_for": [
-        "M4/STATIC_SEMANTIC"
-      ],
+      "best_new_candidate_for": [],
       "case": "room0",
       "changed_owner_rows": 0,
       "delta_vs_S2": -0.0510020229335294,
@@ -390,10 +388,8 @@
         }
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M4/STATIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -786,10 +782,8 @@
         }
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M4/STATIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -1179,7 +1173,7 @@
         "inference_seconds": 12.576499835588038
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
+      "selection_status": "NOT_FROZEN",
       "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
@@ -1570,7 +1564,7 @@
         "inference_seconds": 0.3819808941334486
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
+      "selection_status": "NOT_FROZEN",
       "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
@@ -1959,12 +1953,8 @@
       "result_sha256": "2c67e35edd3fbfb72ba238569463b0a2bd8a450c90f7b1e1c5e1af905d845405",
       "runtime_stages": {},
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/STATIC_SEMANTIC",
-        "M2/STATIC_SEMANTIC",
-        "M4/STATIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -2001,11 +1991,7 @@
       "family": "BASELINE",
       "feature_coverage": null,
       "geometry_fixed": true,
-      "metric_winner_for": [
-        "M1/STATIC_SEMANTIC",
-        "M2/STATIC_SEMANTIC",
-        "M4/STATIC_SEMANTIC"
-      ],
+      "metric_winner_for": [],
       "new_encoder_forwards": null,
       "owner_changed": false,
       "passes_original_per_case_gates": null,
@@ -2356,12 +2342,8 @@
       "result_sha256": "ce7c19c8b81bf1aca0a4f4a46d57db79ef43d223146485e15fb37c100ef8113a",
       "runtime_stages": {},
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/STATIC_SEMANTIC",
-        "M2/STATIC_SEMANTIC",
-        "M4/STATIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -2398,9 +2380,7 @@
       "family": "BASELINE",
       "feature_coverage": null,
       "geometry_fixed": true,
-      "metric_winner_for": [
-        "M3/STATIC_INSTANCE"
-      ],
+      "metric_winner_for": [],
       "new_encoder_forwards": null,
       "owner_changed": false,
       "passes_original_per_case_gates": null,
@@ -2753,13 +2733,8 @@
         "evaluation_seconds": 16.17658838070929
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/STATIC_SEMANTIC",
-        "M2/STATIC_SEMANTIC",
-        "M4/STATIC_SEMANTIC",
-        "M3/STATIC_INSTANCE"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -3147,10 +3122,8 @@
       "result_sha256": "b3e1472bb7249274af1e42a829fe8f2e85ec9f4eda3bbf4f262a3f1e7125d7e3",
       "runtime_stages": {},
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/STATIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -3174,9 +3147,7 @@
       "all_current_conflicting_5cm_voxels": null,
       "all_current_free_conflict_count": null,
       "all_current_free_conflict_denominator": null,
-      "best_new_candidate_for": [
-        "M3/STATIC_INSTANCE"
-      ],
+      "best_new_candidate_for": [],
       "case": "room0",
       "changed_owner_rows": 9070892,
       "delta_vs_S2": -0.10768069972507432,
@@ -3189,9 +3160,7 @@
       "family": "M3",
       "feature_coverage": null,
       "geometry_fixed": true,
-      "metric_winner_for": [
-        "M3_RESEM/STATIC_SEMANTIC"
-      ],
+      "metric_winner_for": [],
       "new_encoder_forwards": null,
       "owner_changed": true,
       "passes_original_per_case_gates": null,
@@ -3544,11 +3513,8 @@
         "inference_and_write_seconds": 44.20654067117721
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M3_RESEM/STATIC_SEMANTIC",
-        "M3/STATIC_INSTANCE"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -3572,9 +3538,7 @@
       "all_current_conflicting_5cm_voxels": null,
       "all_current_free_conflict_count": null,
       "all_current_free_conflict_denominator": null,
-      "best_new_candidate_for": [
-        "M3_RESEM/STATIC_SEMANTIC"
-      ],
+      "best_new_candidate_for": [],
       "case": "room0",
       "changed_owner_rows": 9070892,
       "delta_vs_S2": -0.2339773863982749,
@@ -3938,10 +3902,8 @@
       "result_sha256": "eadd54cebaec4cba98d60bbc39eabec6317130b648aa4aa55afe4c997662e1c9",
       "runtime_stages": {},
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M3_RESEM/STATIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -4331,10 +4293,8 @@
         "inference_and_write_seconds": 41.87469531688839
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M3/STATIC_INSTANCE"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -4722,10 +4682,8 @@
       "result_sha256": "b3891e07ec4d4c0f0084b835f7ac764c13c0a233d387ecf7091ff4ff264acb06",
       "runtime_stages": {},
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/STATIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -5113,7 +5071,7 @@
       "result_sha256": "b42988fc4c372dec5ca440d649bbb61794dd659aed71ac54a4b9f6fc4246866c",
       "runtime_stages": {},
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
+      "selection_status": "NOT_FROZEN",
       "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
@@ -5502,10 +5460,8 @@
       "result_sha256": "21ab8eb3c0eef63cdff9269415490b0a73381464a7fdcb0bf739fc14374cc9dd",
       "runtime_stages": {},
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/STATIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -5893,10 +5849,8 @@
       "result_sha256": "818ee5b3c57e8b631a9291a35866f79697791cc8df2228990f21a0306a2f822d",
       "runtime_stages": {},
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/STATIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -6286,7 +6240,7 @@
         "evaluation_seconds": 16.61009671445936
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
+      "selection_status": "NOT_FROZEN",
       "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
@@ -6311,9 +6265,7 @@
       "all_current_conflicting_5cm_voxels": null,
       "all_current_free_conflict_count": null,
       "all_current_free_conflict_denominator": null,
-      "best_new_candidate_for": [
-        "M1/STATIC_SEMANTIC"
-      ],
+      "best_new_candidate_for": [],
       "case": "room0",
       "changed_owner_rows": 0,
       "delta_vs_S2": -0.04704211807120762,
@@ -6677,11 +6629,8 @@
       "result_sha256": "554e1fcb531b657973711818acbff765008f760684992e53226c94bf70bc2662",
       "runtime_stages": {},
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/STATIC_SEMANTIC",
-        "M2/STATIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -7071,10 +7020,8 @@
         "inference_seconds": 14.099390435963869
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/STATIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -7464,10 +7411,8 @@
         "inference_seconds": 4.800846569240093
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/STATIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -7857,10 +7802,8 @@
         "inference_seconds": 0.38390745408833027
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/STATIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -8248,10 +8191,8 @@
       "result_sha256": "4e277076a2aeb1adb17cda2bf1b6b451f525c451b7a5a9d5a60ca694e5f8bfc9",
       "runtime_stages": {},
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/STATIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -8639,10 +8580,8 @@
       "result_sha256": "e2bae9f980bffebeaf7f2b47e5229fe4886117b950bf265a021180bc9d5146ad",
       "runtime_stages": {},
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/STATIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -9032,10 +8971,8 @@
         "evaluation_seconds": 15.804333527572453
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/STATIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -9425,10 +9362,8 @@
         "evaluation_seconds": 15.89742589648813
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/STATIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -9452,9 +9387,7 @@
       "all_current_conflicting_5cm_voxels": null,
       "all_current_free_conflict_count": null,
       "all_current_free_conflict_denominator": null,
-      "best_new_candidate_for": [
-        "M2/STATIC_SEMANTIC"
-      ],
+      "best_new_candidate_for": [],
       "case": "room0",
       "changed_owner_rows": 0,
       "delta_vs_S2": -0.003921970992233403,
@@ -9820,10 +9753,8 @@
         "inference_seconds": 5.720930791459978
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/STATIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -10213,10 +10144,8 @@
         "inference_seconds": 2.888445016928017
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/STATIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -10606,10 +10535,8 @@
         "inference_seconds": 0.25889091938734055
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/STATIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 9282303,
       "split": "dev",
       "state_variant": null,
@@ -10633,9 +10560,7 @@
       "all_current_conflicting_5cm_voxels": 90,
       "all_current_free_conflict_count": 8705,
       "all_current_free_conflict_denominator": 15622601,
-      "best_new_candidate_for": [
-        "M4/DYNAMIC_SEMANTIC"
-      ],
+      "best_new_candidate_for": [],
       "case": "apartment",
       "changed_owner_rows": 0,
       "delta_vs_S2": -0.038870968383293486,
@@ -10738,10 +10663,8 @@
         "prediction_and_write_seconds": 24.5019588759169
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M4/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -10868,10 +10791,8 @@
         "prediction_and_write_seconds": 23.7588115837425
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M4/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -10998,7 +10919,7 @@
         "prediction_and_write_seconds": 25.149250339716673
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
+      "selection_status": "NOT_FROZEN",
       "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
@@ -11126,7 +11047,7 @@
         "prediction_and_write_seconds": 19.299972130917013
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
+      "selection_status": "NOT_FROZEN",
       "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
@@ -11253,12 +11174,8 @@
         "evaluation_seconds": 19.371950138360262
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC",
-        "M2/DYNAMIC_SEMANTIC",
-        "M4/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -11295,10 +11212,7 @@
       "family": "BASELINE",
       "feature_coverage": null,
       "geometry_fixed": true,
-      "metric_winner_for": [
-        "M1/DYNAMIC_SEMANTIC",
-        "M4/DYNAMIC_SEMANTIC"
-      ],
+      "metric_winner_for": [],
       "new_encoder_forwards": null,
       "owner_changed": false,
       "passes_original_per_case_gates": false,
@@ -11387,12 +11301,8 @@
         "evaluation_seconds": 14.152391123585403
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC",
-        "M2/DYNAMIC_SEMANTIC",
-        "M4/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -11518,10 +11428,8 @@
         "evaluation_seconds": 5.115851942449808
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -11558,9 +11466,7 @@
       "family": "M3",
       "feature_coverage": null,
       "geometry_fixed": true,
-      "metric_winner_for": [
-        "M3_RESEM/DYNAMIC_SEMANTIC"
-      ],
+      "metric_winner_for": [],
       "new_encoder_forwards": null,
       "owner_changed": true,
       "passes_original_per_case_gates": true,
@@ -11651,10 +11557,8 @@
         "timing_scope": "cumulative shared state load, both candidates and writes; not isolated method cost"
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M3_RESEM/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -11678,9 +11582,7 @@
       "all_current_conflicting_5cm_voxels": 90,
       "all_current_free_conflict_count": 8705,
       "all_current_free_conflict_denominator": 15622601,
-      "best_new_candidate_for": [
-        "M3_RESEM/DYNAMIC_SEMANTIC"
-      ],
+      "best_new_candidate_for": [],
       "case": "apartment",
       "changed_owner_rows": 13786297,
       "delta_vs_S2": -0.04825535415216345,
@@ -11782,10 +11684,8 @@
         "evaluation_seconds": 3.1752583580091596
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M3_RESEM/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -11913,7 +11813,7 @@
         "timing_scope": "cumulative shared state load, both candidates and writes; not isolated method cost"
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
+      "selection_status": "NOT_FROZEN",
       "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
@@ -12040,10 +11940,8 @@
         "evaluation_seconds": 7.021289335563779
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -12170,10 +12068,8 @@
         "prediction_and_write_seconds": 31.77004558686167
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -12300,10 +12196,8 @@
         "prediction_and_write_seconds": 23.708622390404344
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -12429,10 +12323,8 @@
         "evaluation_seconds": 5.293735985644162
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -12559,12 +12451,8 @@
         "prediction_and_write_seconds": 26.763840870931745
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC",
-        "M2/DYNAMIC_SEMANTIC",
-        "M4/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -12691,11 +12579,8 @@
         "prediction_and_write_seconds": 25.202611830085516
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC",
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -12823,10 +12708,8 @@
         "prediction_and_write_seconds": 35.901530337519944
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -12953,10 +12836,8 @@
         "prediction_and_write_seconds": 31.020538695156574
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -13083,10 +12964,8 @@
         "prediction_and_write_seconds": 22.009218961931765
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -13212,10 +13091,8 @@
         "evaluation_seconds": 4.434497673995793
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -13341,10 +13218,8 @@
         "evaluation_seconds": 4.943104054778814
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -13471,10 +13346,8 @@
         "prediction_and_write_seconds": 21.040558616630733
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -13601,10 +13474,8 @@
         "prediction_and_write_seconds": 60.3079774454236
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -13628,9 +13499,7 @@
       "all_current_conflicting_5cm_voxels": 90,
       "all_current_free_conflict_count": 8705,
       "all_current_free_conflict_denominator": 15622601,
-      "best_new_candidate_for": [
-        "M1/DYNAMIC_SEMANTIC"
-      ],
+      "best_new_candidate_for": [],
       "case": "apartment",
       "changed_owner_rows": 0,
       "delta_vs_S2": -0.03459770226994943,
@@ -13733,10 +13602,8 @@
         "prediction_and_write_seconds": 22.12084319256246
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -13863,10 +13730,8 @@
         "prediction_and_write_seconds": 26.289736087433994
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -13890,9 +13755,7 @@
       "all_current_conflicting_5cm_voxels": 90,
       "all_current_free_conflict_count": 8705,
       "all_current_free_conflict_denominator": 15622601,
-      "best_new_candidate_for": [
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "best_new_candidate_for": [],
       "case": "apartment",
       "changed_owner_rows": 0,
       "delta_vs_S2": 0.0006246371044697496,
@@ -13905,9 +13768,7 @@
       "family": "M2",
       "feature_coverage": 0.9986566257436902,
       "geometry_fixed": true,
-      "metric_winner_for": [
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "metric_winner_for": [],
       "new_encoder_forwards": null,
       "owner_changed": false,
       "passes_original_per_case_gates": false,
@@ -13998,10 +13859,8 @@
         "prediction_and_write_seconds": 27.781037270091474
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -14128,10 +13987,8 @@
         "prediction_and_write_seconds": 27.139764117076993
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -14258,10 +14115,8 @@
         "prediction_and_write_seconds": 23.293474414385855
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15622601,
       "split": "dev",
       "state_variant": "B3",
@@ -14285,9 +14140,7 @@
       "all_current_conflicting_5cm_voxels": 90,
       "all_current_free_conflict_count": 8705,
       "all_current_free_conflict_denominator": 15625540,
-      "best_new_candidate_for": [
-        "M4/DYNAMIC_SEMANTIC"
-      ],
+      "best_new_candidate_for": [],
       "case": "apartment",
       "changed_owner_rows": 0,
       "delta_vs_S2": -0.03826537465344926,
@@ -14390,10 +14243,8 @@
         "prediction_and_write_seconds": 25.176784307695925
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M4/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -14520,10 +14371,8 @@
         "prediction_and_write_seconds": 23.002688413485885
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M4/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -14650,7 +14499,7 @@
         "prediction_and_write_seconds": 24.497144285589457
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
+      "selection_status": "NOT_FROZEN",
       "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
@@ -14778,7 +14627,7 @@
         "prediction_and_write_seconds": 19.94431929010898
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
+      "selection_status": "NOT_FROZEN",
       "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
@@ -14905,12 +14754,8 @@
         "evaluation_seconds": 18.84343942720443
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC",
-        "M2/DYNAMIC_SEMANTIC",
-        "M4/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -14947,10 +14792,7 @@
       "family": "BASELINE",
       "feature_coverage": null,
       "geometry_fixed": true,
-      "metric_winner_for": [
-        "M1/DYNAMIC_SEMANTIC",
-        "M4/DYNAMIC_SEMANTIC"
-      ],
+      "metric_winner_for": [],
       "new_encoder_forwards": null,
       "owner_changed": false,
       "passes_original_per_case_gates": false,
@@ -15039,12 +14881,8 @@
         "evaluation_seconds": 13.476545865647495
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC",
-        "M2/DYNAMIC_SEMANTIC",
-        "M4/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -15170,10 +15008,8 @@
         "evaluation_seconds": 4.5482539320364594
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -15210,9 +15046,7 @@
       "family": "M3",
       "feature_coverage": null,
       "geometry_fixed": true,
-      "metric_winner_for": [
-        "M3_RESEM/DYNAMIC_SEMANTIC"
-      ],
+      "metric_winner_for": [],
       "new_encoder_forwards": null,
       "owner_changed": true,
       "passes_original_per_case_gates": true,
@@ -15303,10 +15137,8 @@
         "timing_scope": "cumulative shared state load, both candidates and writes; not isolated method cost"
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M3_RESEM/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -15330,9 +15162,7 @@
       "all_current_conflicting_5cm_voxels": 90,
       "all_current_free_conflict_count": 8705,
       "all_current_free_conflict_denominator": 15625540,
-      "best_new_candidate_for": [
-        "M3_RESEM/DYNAMIC_SEMANTIC"
-      ],
+      "best_new_candidate_for": [],
       "case": "apartment",
       "changed_owner_rows": 13788013,
       "delta_vs_S2": -0.04928550751337041,
@@ -15434,10 +15264,8 @@
         "evaluation_seconds": 3.414545618928969
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M3_RESEM/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -15565,7 +15393,7 @@
         "timing_scope": "cumulative shared state load, both candidates and writes; not isolated method cost"
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
+      "selection_status": "NOT_FROZEN",
       "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
@@ -15692,10 +15520,8 @@
         "evaluation_seconds": 4.836519198492169
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -15822,10 +15648,8 @@
         "prediction_and_write_seconds": 38.504580839537084
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -15952,10 +15776,8 @@
         "prediction_and_write_seconds": 21.54847401380539
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -16081,10 +15903,8 @@
         "evaluation_seconds": 4.085363397374749
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -16211,12 +16031,8 @@
         "prediction_and_write_seconds": 37.102592684328556
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC",
-        "M2/DYNAMIC_SEMANTIC",
-        "M4/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -16343,11 +16159,8 @@
         "prediction_and_write_seconds": 31.55528643541038
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC",
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -16475,10 +16288,8 @@
         "prediction_and_write_seconds": 37.974536726251245
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -16605,10 +16416,8 @@
         "prediction_and_write_seconds": 30.00900214444846
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -16735,10 +16544,8 @@
         "prediction_and_write_seconds": 23.369815264828503
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -16864,10 +16671,8 @@
         "evaluation_seconds": 3.9090024158358574
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -16993,10 +16798,8 @@
         "evaluation_seconds": 4.795480042695999
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -17123,10 +16926,8 @@
         "prediction_and_write_seconds": 38.472683150321245
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -17253,10 +17054,8 @@
         "prediction_and_write_seconds": 33.04587705433369
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -17280,9 +17079,7 @@
       "all_current_conflicting_5cm_voxels": 90,
       "all_current_free_conflict_count": 8705,
       "all_current_free_conflict_denominator": 15625540,
-      "best_new_candidate_for": [
-        "M1/DYNAMIC_SEMANTIC"
-      ],
+      "best_new_candidate_for": [],
       "case": "apartment",
       "changed_owner_rows": 0,
       "delta_vs_S2": -0.035718510337123865,
@@ -17385,10 +17182,8 @@
         "prediction_and_write_seconds": 54.07543545681983
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M1/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -17515,10 +17310,8 @@
         "prediction_and_write_seconds": 21.731929904781282
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -17542,9 +17335,7 @@
       "all_current_conflicting_5cm_voxels": 90,
       "all_current_free_conflict_count": 8705,
       "all_current_free_conflict_denominator": 15625540,
-      "best_new_candidate_for": [
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "best_new_candidate_for": [],
       "case": "apartment",
       "changed_owner_rows": 0,
       "delta_vs_S2": 0.000658147161845174,
@@ -17557,9 +17348,7 @@
       "family": "M2",
       "feature_coverage": 0.9986568784182819,
       "geometry_fixed": true,
-      "metric_winner_for": [
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "metric_winner_for": [],
       "new_encoder_forwards": null,
       "owner_changed": false,
       "passes_original_per_case_gates": false,
@@ -17650,10 +17439,8 @@
         "prediction_and_write_seconds": 28.622388165444136
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -17780,10 +17567,8 @@
         "prediction_and_write_seconds": 27.04297909513116
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -17910,10 +17695,8 @@
         "prediction_and_write_seconds": 21.67505384236574
       },
       "selection_policy_id": "CROVE_MULTIMETHOD_SELECTION_V1_REVISED_V2",
-      "selection_status": "DEV_SELECTION_FROZEN",
-      "selection_tasks": [
-        "M2/DYNAMIC_SEMANTIC"
-      ],
+      "selection_status": "NOT_FROZEN",
+      "selection_tasks": [],
       "source_rows": 15625540,
       "split": "dev",
       "state_variant": "H2",
@@ -17923,7 +17706,7 @@
       "unknown_rows": 20987
     }
   ],
-  "selection_frozen": true,
+  "selection_frozen": false,
   "status": "INTERMEDIATE_ALL_SCORED_DEV_READOUTS",
   "unknown_definition": "source semantic ID equals zero; source-row fraction, not voxel-weighted"
 }

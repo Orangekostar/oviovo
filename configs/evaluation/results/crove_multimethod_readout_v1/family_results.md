@@ -1,6 +1,6 @@
 # CROVE 四类方法结果（DEV 中间汇总）
 
-本表收录全部已评分全图结果，不执行选型。确认评分与最终配置冻结尚未完成。
+本表收录全部已评分 DEV 全图结果；配置已按 DEV 冻结，确认状态见独立确认报告。
 source 行与 owner 逐文件核对；unknown 为源行中标签 0 的比例。
 动态 AP 无对应 GT，保持 N/A；代价仅保留原结果明确记录的阶段，不填估计值。
 完整逐类增量、原始结果哈希及耗时字段见 [JSON](all_method_results.json)，平面字段见 [CSV](all_method_results.csv)。
@@ -27,8 +27,10 @@ source 行与 owner 逐文件核对；unknown 为源行中标签 0 的比例。
 | M3 | room0 | INST_CONSENSUS_OWNER | 0.340208 | 0.000000 | 0.000000 | 0.034028 | 0.192182 | N/A |
 | M3+M1 | room0 | INST_CONSENSUS_RESEM | 0.213911 | -0.126297 | -0.126297 | 0.000652 | 0.192182 | N/A |
 | M3 | room0 | INST_PAIRWISE | 0.340208 | 0.000000 | N/A | 0.034028 | 0.085962 | N/A |
+| M1 | room0 | MV_BG_OWNER_QUALITY | 0.281873 | -0.058335 | -0.058335 | 0.034028 | 0.470711 | N/A |
 | M1 | room0 | MV_CURRENT_AWARE | 0.400847 | 0.060639 | 0.000000 | 0.001480 | 0.470711 | N/A |
 | M1 | room0 | MV_DIVERSE_MEAN | 0.394472 | 0.054264 | 0.040570 | 0.001477 | 0.470711 | N/A |
+| M1 | room0 | MV_LOCAL_BG_QUALITY | 0.301948 | -0.038260 | 0.020076 | 0.034028 | 0.470711 | N/A |
 | BASELINE | room0 | MV_NATIVE_CACHED | 0.377473 | 0.037265 | N/A | 0.001477 | 0.470711 | N/A |
 | M1 | room0 | MV_QUALITY | 0.400847 | 0.060639 | 0.006375 | 0.001480 | 0.470711 | N/A |
 | M1+M2 | room0 | MV_QUALITY_GRAPH_BOUNDARY | 0.397928 | 0.057720 | -0.001190 | 0.001480 | 0.470711 | N/A |
@@ -51,8 +53,10 @@ source 行与 owner 逐文件核对；unknown 为源行中标签 0 的比例。
 | M3 | apartment/B3 | INST_CONSENSUS_OWNER | 0.135886 | 0.000000 | 0.000000 | 0.005417 | N/A | PASS |
 | M3+M1 | apartment/B3 | INST_CONSENSUS_RESEM | 0.125888 | -0.009998 | -0.009998 | 0.001696 | N/A | PASS |
 | M3 | apartment/B3 | INST_PAIRWISE | 0.135886 | 0.000000 | N/A | 0.005417 | N/A | PASS |
+| M1 | apartment/B3 | MV_BG_OWNER_QUALITY | 0.135670 | -0.000217 | -0.000217 | 0.005417 | N/A | FAIL |
 | M1 | apartment/B3 | MV_CURRENT_AWARE | 0.105122 | -0.030764 | 0.000000 | 0.001639 | N/A | FAIL |
 | M1 | apartment/B3 | MV_DIVERSE_MEAN | 0.135886 | 0.000000 | -0.003660 | 0.005417 | N/A | PASS |
+| M1 | apartment/B3 | MV_LOCAL_BG_QUALITY | 0.135886 | 0.000000 | 0.000217 | 0.004931 | N/A | FAIL |
 | BASELINE | apartment/B3 | MV_NATIVE_CACHED | 0.135886 | 0.000000 | N/A | 0.005417 | N/A | PASS |
 | M1 | apartment/B3 | MV_QUALITY | 0.137077 | 0.001191 | 0.001191 | 0.005417 | N/A | PASS |
 | M1+M2 | apartment/B3 | MV_QUALITY_GRAPH_BOUNDARY | 0.137093 | 0.001206 | 0.000000 | 0.005417 | N/A | PASS |
@@ -77,8 +81,10 @@ source 行与 owner 逐文件核对；unknown 为源行中标签 0 的比例。
 | M3 | apartment/H2 | INST_CONSENSUS_OWNER | 0.135734 | 0.000000 | 0.000000 | 0.005416 | N/A | PASS |
 | M3+M1 | apartment/H2 | INST_CONSENSUS_RESEM | 0.125827 | -0.009907 | -0.009907 | 0.001696 | N/A | PASS |
 | M3 | apartment/H2 | INST_PAIRWISE | 0.135734 | 0.000000 | N/A | 0.005416 | N/A | PASS |
+| M1 | apartment/H2 | MV_BG_OWNER_QUALITY | 0.135518 | -0.000217 | -0.000217 | 0.005416 | N/A | FAIL |
 | M1 | apartment/H2 | MV_CURRENT_AWARE | 0.106102 | -0.029632 | 0.000000 | 0.001639 | N/A | FAIL |
 | M1 | apartment/H2 | MV_DIVERSE_MEAN | 0.135734 | 0.000000 | -0.003660 | 0.005416 | N/A | PASS |
+| M1 | apartment/H2 | MV_LOCAL_BG_QUALITY | 0.135734 | 0.000000 | 0.000217 | 0.004930 | N/A | FAIL |
 | BASELINE | apartment/H2 | MV_NATIVE_CACHED | 0.135734 | 0.000000 | N/A | 0.005416 | N/A | PASS |
 | M1 | apartment/H2 | MV_QUALITY | 0.137684 | 0.001949 | 0.001949 | 0.005416 | N/A | PASS |
 | M1+M2 | apartment/H2 | MV_QUALITY_GRAPH_BOUNDARY | 0.137699 | 0.001965 | 0.000000 | 0.005416 | N/A | PASS |
@@ -94,4 +100,4 @@ source 行与 owner 逐文件核对；unknown 为源行中标签 0 的比例。
 | M2 | apartment/H2 | S2_DENSE_REPLAY_GRAPH_GEOM | 0.175482 | 0.039747 | -0.000271 | 0.001343 | N/A | FAIL |
 | M2 | apartment/H2 | S2_DENSE_REPLAY_PATCH_ONLY | 0.175753 | 0.040018 | 0.000640 | 0.001343 | N/A | FAIL |
 
-局部背景待评分行数：6。最终逐家族采用结论、计算收益与下一轮优先级在完整 DEV 矩阵后更新。
+局部背景待评分行数：0。最终逐家族采用结论、计算收益与下一轮优先级在完整 DEV 矩阵后更新。

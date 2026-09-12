@@ -240,6 +240,26 @@
           },
           "source_indices_exact_match": true
         },
+        "MV_BG_OWNER_QUALITY": {
+          "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 201826,
+          "eval_role_counts": {
+            "0": 14420693,
+            "1": 1139410,
+            "2": 62498
+          },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 0,
+          "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 1158,
+            "matches_scored_rate": true,
+            "numerator": 582,
+            "rate": 0.5025906735751295,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
+          "source_indices_exact_match": true
+        },
         "MV_CURRENT_AWARE": {
           "all_geometry_conflict_count_delta": 0,
           "background_to_object_rows": 226963,
@@ -266,6 +286,26 @@
           "eval_role_counts": {
             "0": 14622519,
             "1": 937584,
+            "2": 62498
+          },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 0,
+          "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
+          "source_indices_exact_match": true
+        },
+        "MV_LOCAL_BG_QUALITY": {
+          "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 120825,
+          "eval_role_counts": {
+            "0": 14501694,
+            "1": 1058409,
             "2": 62498
           },
           "known_to_unknown_rows": 0,
@@ -799,6 +839,26 @@
           },
           "source_indices_exact_match": true
         },
+        "MV_BG_OWNER_QUALITY": {
+          "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 201826,
+          "eval_role_counts": {
+            "0": 14422416,
+            "1": 1140626,
+            "2": 62498
+          },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 0,
+          "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 1158,
+            "matches_scored_rate": true,
+            "numerator": 582,
+            "rate": 0.5025906735751295,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
+          "source_indices_exact_match": true
+        },
         "MV_CURRENT_AWARE": {
           "all_geometry_conflict_count_delta": 0,
           "background_to_object_rows": 226963,
@@ -825,6 +885,26 @@
           "eval_role_counts": {
             "0": 14624242,
             "1": 938800,
+            "2": 62498
+          },
+          "known_to_unknown_rows": 0,
+          "object_to_background_rows": 0,
+          "owners_exact_match": true,
+          "role_conditioned_ghost": {
+            "denominator": 0,
+            "matches_scored_rate": true,
+            "numerator": 0,
+            "rate": 0.0,
+            "scope": "roles != BACKGROUND, existing changed-region crop, strict 0.05 m confirmed-free match"
+          },
+          "source_indices_exact_match": true
+        },
+        "MV_LOCAL_BG_QUALITY": {
+          "all_geometry_conflict_count_delta": 0,
+          "background_to_object_rows": 120825,
+          "eval_role_counts": {
+            "0": 14503417,
+            "1": 1059625,
             "2": 62498
           },
           "known_to_unknown_rows": 0,

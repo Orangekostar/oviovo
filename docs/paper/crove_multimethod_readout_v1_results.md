@@ -563,8 +563,8 @@ is exercised but provides no measured gain here. The original 31.77/38.50 s
 prediction/write runtimes are retained; zero new image forwards are required.
 Sparse full-class patch posteriors are saved, and a cache reconstruction checks
 all frozen prediction arrays exactly before retaining the original files.
-The geometry audit now covers 52 full-state predictions; recovered-row
-attribution covers 26 methods/104 conserved tables. CURRENT_AWARE correctly labels
+The geometry audit now covers 56 full-state predictions; recovered-row
+attribution covers 28 methods/112 conserved tables. CURRENT_AWARE correctly labels
 45 restored GT-supported rows (13 physical samples), the same as its matched
 QUALITY baseline; its restored semantic changes are 1,027 rows/293 samples.
 
@@ -606,8 +606,9 @@ Surface precision. Thus locality improves its matched control but does not
 provide a stronger eligible current readout. Both dynamic local heads cover
 8,769,713 source rows, including 7,595 rows without an owner-head feature;
 the room0 heads cover identical 5,694,670 rows with no such coverage mismatch.
-Expanded geometry, recovery and per-class audits are running before collection
-and selection freeze.
+Expanded geometry, recovery and per-class audits have completed for all 56
+dynamic readouts. Local owner-control Ghost is 582/1,158 in each state; the
+local-head zero is 0/0, not evidence that previously conflicting geometry moved.
 
 ```bash
 python scripts/evaluation/run_crove_current_aware_apartment.py
@@ -710,8 +711,8 @@ python scripts/evaluation/run_crove_consensus_room0.py
 
 DEV_SCREENING_STATUS=PARTIAL
 
-The reproducible all-method collector now covers 77 scored DEV predictions
-(25 room0, 26 B3 and 26 H2), retaining failures and baseline rows. It verifies
+The reproducible all-method collector now covers 83 scored DEV predictions
+(27 room0, 28 B3 and 28 H2), retaining failures and baseline rows. It verifies
 every source-index array against the same-state native input, rejects owner
 changes outside M3, and measures unknown source rows directly from each full
 prediction. `all_method_results.json` contains raw-result hashes, same-state
@@ -719,19 +720,26 @@ native/S2/direct-control deltas and available static per-class changes;
 dynamic Ghost numerators/denominators are copied from the verified count audit.
 `all_method_results.csv` and `family_results.md` provide flat and readable views.
 Unrecorded costs and dynamic instance AP remain null/N/A. This is an intermediate
-evidence table, not a frozen winner list; six local-background scores remain pending.
+evidence table covering 83 full-map readouts. All six local-background scores
+are included and the DEV choices are frozen in `selected_configs.json`.
 `figures/room0_semantic_delta` now provides a reproducible SVG/PDF/PNG view of
 all 25 scored room0 methods relative to S2, with source CSV, evidence contract
 and rendered QA. Its single-scene differences have no invented uncertainty.
 All current deltas are nonpositive; this remains an intermediate DEV figure,
-to be regenerated when pending local-background scores become available.
+to be regenerated with the two now-completed local-background scores.
 The task selector is implemented with maximum-relative 1e-6 ties, declared
 secondary metrics, equal baseline participation and separate metric/eligible
 winners. Incomparable added-cost stages are skipped, not interpreted as zero.
 M3 owner-only transfers its static instance choice to dynamic states; it does
 not use unavailable dynamic instance GT. The selector rejects incomplete local
 background matrices and missing same-graph combinations for the best new M1
-representative. No `selected_configs.json` has been generated yet.
+representative. The frozen static new representatives are `MV_QUALITY`,
+`S2_GRAPH_BOUNDARY`, `INST_CONSENSUS_OWNER` and `ADAPTER_CLIP_LEARNED`.
+S2 wins the static semantic tasks and native OVI wins the static instance task.
+The eligible final dynamic choice is `MV_QUALITY_GRAPH_BOUNDARY@H2`.
+The room1 confirmation runner is executing the frozen 11-method matrix,
+including shared baselines and direct controls; no confirmation score was
+used in selection. The immutable DEV evidence is `selection_source_results.json`.
 The top-k cached M1 head is the current best new B3 semantic row; its patch-only
 and same-parameter geometry-graph combination is evaluated in B3/H2, separately
 from the eligible QUALITY combination already reported.
@@ -742,7 +750,8 @@ source-connectivity, owner/visit and normal constraints: 54,352 regions cover
 Actual local feature encoding is complete: 2,119 region posteriors from 8,389
 six-crop batches, with 3,133.96 s of encoder forwards. No GT was read.
 This prepares a possible DEV-selected M1 input and does not choose a method
-using confirmation evidence; room1 predictions and scoring remain pending freeze.
+using confirmation evidence. These local features were not selected for room1;
+the confirmation matrix uses the frozen cached QUALITY representative instead.
 
 ```bash
 python scripts/evaluation/summarize_crove_multimethod_readouts.py
@@ -750,21 +759,21 @@ python scripts/evaluation/summarize_crove_multimethod_readouts.py
 
 STATIC_CONFIRMATION_STATUS=PARTIAL
 
-Dynamic per-class evidence for all 52 currently scored B3/H2 readouts was reconstructed by
+Dynamic per-class evidence for all 56 currently scored B3/H2 readouts was reconstructed by
 `scripts/evaluation/audit_crove_dynamic_per_class.py` using the unchanged common-v2
 projection, original legacy point order and role mask. Each saved entry must
 reproduce its original headline mIoU within absolute 1e-12 before it is accepted.
 The audit records GT support, intersection and union for GT-present valid classes;
 absent classes are not invented. The collector checks result and prediction hashes
-before exposing per-class deltas. All 52 headline reconstruction checks passed,
-and the 77-row collector now includes both dynamic per-class reference deltas.
+before exposing per-class deltas. All 56 headline reconstruction checks passed,
+and the 83-row collector now includes both dynamic per-class reference deltas.
 For the cached `MV_QUALITY` head, the entire mIoU gain over native comes from
 Chair: IoU increases by 0.0071474984 on B3 and 0.0116959064 on H2, with 3,058
 GT target voxels. The other five GT-present valid classes have unchanged IoU.
 This diagnostic does not alter predictions,
 selection policy or confirmation inputs. The local-background owner control and
 local-region head are also registered in both Apartment geometry/recovery audits;
-their full audits remain pending completion of the six DEV readouts.
+their full audits are included in the completed 56-readout audit matrix.
 
 DYNAMIC_CONFIRMATION_STATUS=NOT_RUN_RAW_MISSING
 

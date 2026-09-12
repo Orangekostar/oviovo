@@ -455,6 +455,51 @@
       "result_sha256": "fa5c8894dbfac5f1c83625330bf507585bb7fedc11c1b2d82735526a90b5cc08",
       "target_count": 22546
     },
+    "B3_MV_BG_OWNER_QUALITY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13566956840220099,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1495,
+          "iou": 0.25691699604743085,
+          "support": 3699,
+          "union": 5819
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1255,
+          "iou": 0.407732293697206,
+          "support": 3058,
+          "union": 3078
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "8234a99e2379598b7e0b6475f0953edd2e8c1e99a02a5e9f10b066ff3d5a2df0",
+      "result_sha256": "1114e1494866aae443f04a18a54196f63f8531c1b14c27be98fa40c5926cf670",
+      "target_count": 22546
+    },
     "B3_MV_CURRENT_AWARE": {
       "headline_reconstruction": "PASS",
       "miou": 0.10512177404627392,
@@ -543,6 +588,51 @@
       },
       "prediction_sha256": "2dc0620d2a7a3fb04d21b9c4988ec8aff271a6eff70540844b1a686b2f744da8",
       "result_sha256": "d16ef0ddff8f1bd5abc20be1673fb4e7600d8048e1898a1faa1d0a2d06e34153",
+      "target_count": 22546
+    },
+    "B3_MV_LOCAL_BG_QUALITY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.1358861592620667,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1495,
+          "iou": 0.25691699604743085,
+          "support": 3699,
+          "union": 5819
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1259,
+          "iou": 0.40903183885640026,
+          "support": 3058,
+          "union": 3078
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "3c061c99ee739de943898495cc2dc6cad0b12d9250eab60ced672fae12fb6ade",
+      "result_sha256": "c664cdafa9184e60afc57684547c8cb0cb83ac2af2aad1303731f9570c55cf98",
       "target_count": 22546
     },
     "B3_MV_NATIVE_CACHED": {
@@ -1625,6 +1715,51 @@
       "result_sha256": "e2673b5a03cb5d4098dead2f5e05ee349eb38a1f6e8217c804bb8053bfb59aa0",
       "target_count": 22546
     },
+    "H2_MV_BG_OWNER_QUALITY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13551788859626523,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1508,
+          "iou": 0.25633180350161483,
+          "support": 3699,
+          "union": 5883
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1254,
+          "iou": 0.4074074074074074,
+          "support": 3058,
+          "union": 3078
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "acf6389085e953ce5decbc27335bcde3e9d0f81b47864dbc308588aea9f31a36",
+      "result_sha256": "364693976b691e560c4e72b79321c8afc1f6945d97e37b779a9389cbc33723fe",
+      "target_count": 22546
+    },
     "H2_MV_CURRENT_AWARE": {
       "headline_reconstruction": "PASS",
       "miou": 0.10610216620313666,
@@ -1713,6 +1848,51 @@
       },
       "prediction_sha256": "adc1cd42c94d4c032f560516905b3ea047098de0998302552039c0c06336d425",
       "result_sha256": "aeef08034c4535de6ee71ff2e5737edcf6499554cd1b171705bc5e4e5ec61ad1",
+      "target_count": 22546
+    },
+    "H2_MV_LOCAL_BG_QUALITY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13573447945613093,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1508,
+          "iou": 0.25633180350161483,
+          "support": 3699,
+          "union": 5883
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1258,
+          "iou": 0.40870695256660167,
+          "support": 3058,
+          "union": 3078
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "78fb080c94ed8fea90f21a3982b58aa4fad1367fe2424b39f3df20953f90dc6a",
+      "result_sha256": "8ba7dda18f8a4ac2b4a8c9708b862922f7835067b0ae469abd097029e95d2294",
       "target_count": 22546
     },
     "H2_MV_NATIVE_CACHED": {

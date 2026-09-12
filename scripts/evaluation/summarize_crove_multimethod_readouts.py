@@ -100,11 +100,33 @@ def per_class_delta(metrics, baseline):
     }
 
 
+def selection_annotations(case, method, selection):
+    result = {
+        "selection_status": "DEV_SELECTION_FROZEN" if selection else "NOT_FROZEN",
+        "selection_tasks": [],
+        "metric_winner_for": [],
+        "best_new_candidate_for": [],
+    }
+    for entry in selection["task_selections"] if selection else []:
+        if case not in entry["dev_cases"] or method not in entry["candidate_methods"]:
+            continue
+        task = f'{entry["family"]}/{entry["task"]}'
+        result["selection_tasks"].append(task)
+        for key in ("metric_winner", "best_new_candidate"):
+            if entry[key]["exact_implementation"] == method:
+                result[f"{key}_for"].append(task)
+    return result
+
+
 def main():
     config = json.loads(
         (ROOT / "configs/evaluation/crove_multimethod_readout_v1.json").read_text()
     )
     compact, run = path(config["compact_output_root"]), path(config["run_root"])
+    selected_file = compact / "selected_configs.json"
+    selection = json.loads(selected_file.read_text()) if selected_file.exists() else None
+    if selection and selection["status"] != "DEV_SELECTION_FROZEN":
+        raise ValueError("selection file is not a frozen DEV selection")
     geometry_audit = json.loads(
         (compact / "apartment_readout_geometry_audit.json").read_text()
     )
@@ -260,7 +282,7 @@ def main():
                     "passes_original_per_case_gates"
                 ),
                 "selection_policy_id": config["selection_policy"]["id"],
-                "selection_status": "NOT_FROZEN",
+                **selection_annotations(case, method, selection),
             }
             rows.append(row)
         print(prefix, len(records), "scored readouts collected", flush=True)
@@ -272,7 +294,7 @@ def main():
     ]
     report = {
         "status": "INTERMEDIATE_ALL_SCORED_DEV_READOUTS",
-        "selection_frozen": False,
+        "selection_frozen": selection is not None,
         "GT_opened_by_collector": False,
         "unknown_definition": "source semantic ID equals zero; source-row fraction, not voxel-weighted",
         "missing_value_rule": "null means not recorded or not applicable; no inferred zero runtime or dynamic instance AP",
@@ -305,7 +327,9 @@ def export_tables(compact, report):
     lines = [
         "# CROVE 四类方法结果（DEV 中间汇总）",
         "",
-        "本表收录全部已评分全图结果，不执行选型。确认评分与最终配置冻结尚未完成。",
+        "本表收录全部已评分 DEV 全图结果；配置已按 DEV 冻结，确认状态见独立确认报告。"
+        if report["selection_frozen"]
+        else "本表收录全部已评分全图结果，不执行选型。确认评分与最终配置冻结尚未完成。",
         "source 行与 owner 逐文件核对；unknown 为源行中标签 0 的比例。",
         "动态 AP 无对应 GT，保持 N/A；代价仅保留原结果明确记录的阶段，不填估计值。",
         "完整逐类增量、原始结果哈希及耗时字段见 [JSON](all_method_results.json)，平面字段见 [CSV](all_method_results.csv)。",
