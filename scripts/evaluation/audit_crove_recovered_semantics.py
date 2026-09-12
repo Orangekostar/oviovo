@@ -48,6 +48,10 @@ def main():
         "graph_mv_quality_boundary": ["MV_QUALITY_GRAPH_BOUNDARY"],
         "consensus": ["INST_PAIRWISE", "INST_CONSENSUS_OWNER"],
         "current_aware": ["MV_CURRENT_AWARE"],
+        "local_semantic_controls": [
+            "B_SEM_CROVE_S0_DENSE_REPLAY",
+            "B_SEM_CROVE_S2_DENSE_REPLAY",
+        ],
         "reencoded_regions": [
             "B_SEM_OVI_REENCODE",
             "MV_REENCODE_DIVERSE",

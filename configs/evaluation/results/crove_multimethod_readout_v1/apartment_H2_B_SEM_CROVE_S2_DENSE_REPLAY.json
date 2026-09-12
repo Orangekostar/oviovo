@@ -1,0 +1,32 @@
+{
+  "adaptation": "per-visit local evidence voxel reference plus native missing fallback; legacy 10-class cache remapped to public common-v2 IDs",
+  "case": "apartment-t0-000766-001021-t1-001217-001472",
+  "changed_role_rows": 5898728,
+  "changed_semantic_rows": 6182901,
+  "evaluation_seconds": 13.476545865647495,
+  "geometry_and_owner_fixed": true,
+  "interpretation": "Role-dependent object/background metrics may change from supported semantics; frozen source geometry and owner do not change.",
+  "method": "B_SEM_CROVE_S2_DENSE_REPLAY",
+  "metrics": {
+    "background_f1_at_5cm": 0.5248425472358292,
+    "current_miou": 0.17511250811548787,
+    "ghost": 0.9598274467511458,
+    "surface_f1_at_5cm": 0.1672912925267699,
+    "surface_precision_at_5cm": 0.1125943681125063,
+    "surface_recall_at_5cm": 0.32533487093054203,
+    "t1_observed_region_stale_precision": 0.9967657781594202,
+    "t1_unobserved_region_recall": 0.09031262060980316,
+    "total_current_surface_coverage": 0.32533487093054203
+  },
+  "passes_original_per_case_gates": false,
+  "prediction_and_write_seconds_shared_pair": 65.6056880587712,
+  "source_rows": 15625540,
+  "split": "dev",
+  "state": "H2",
+  "status": "FULL_MAP_EVALUATED",
+  "transfer_source_counts": {
+    "0": 20987,
+    "1": 6459929,
+    "2": 9144624
+  }
+}

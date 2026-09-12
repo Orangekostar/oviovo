@@ -1,0 +1,16 @@
+{
+  "GT_before_all_six_predictions": false,
+  "cases": [
+    "room0",
+    "apartment_B3",
+    "apartment_H2"
+  ],
+  "coverage": "local regions with no original-owner feature retain native in owner control; counted separately, not attributed solely to locality",
+  "fallback": "original native semantics/confidence/roles everywhere not supported by the declared head",
+  "local": "real local-region full-class posterior on all source rows of its frozen region; no owner changes",
+  "methods": [
+    "MV_BG_OWNER_QUALITY",
+    "MV_LOCAL_BG_QUALITY"
+  ],
+  "owner_control": "same rows with a usable local region observation, but read the matched re-encoded original-owner quality head"
+}

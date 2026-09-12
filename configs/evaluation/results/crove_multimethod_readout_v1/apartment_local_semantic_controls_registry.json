@@ -1,0 +1,29 @@
+{
+  "GT_before_all_predictions": false,
+  "S2_unary": "top-1 confidence scalar only, no invented posterior and no second local reliability factor",
+  "cross_visit_reference_query": false,
+  "implementation": "existing transfer_surface_semantics S0/S2 with unchanged thresholds",
+  "methods": [
+    "B_SEM_CROVE_S0_DENSE_REPLAY",
+    "B_SEM_CROVE_S2_DENSE_REPLAY"
+  ],
+  "missing": "native KEEP_SOURCE for zero-output/no-evidence transfer, never a new unknown rejection",
+  "reference_sha256": [
+    "e1bb011c8a7d763cd47b0428ab45fb3550cd2f959fa7ea8b2e2610e5df1e6e08",
+    "6c2cc58fbd4b405a7af07438c55c5b369629f0f48a0b707c4b574217add52301"
+  ],
+  "source": "replayed legacy 10-class RADSeg observations at 5cm evidence voxel centers; not the old room0 reference mesh",
+  "states": [
+    "B3",
+    "H2"
+  ],
+  "transfer_parameters": {
+    "distance_sigma_m": 0.025,
+    "entity_weight_scale": 0.75,
+    "maximum_correspondence_distance_m": 0.05,
+    "minimum_entity_confidence": 0.2,
+    "minimum_local_support": 2.0,
+    "neighbor_count": 8,
+    "point_batch_size": 250000
+  }
+}

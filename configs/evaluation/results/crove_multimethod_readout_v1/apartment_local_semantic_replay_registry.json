@@ -1,0 +1,44 @@
+{
+  "GT_read": false,
+  "case": "apartment",
+  "cross_visit_evidence_union": false,
+  "dense_manifest_sha256": "0d4605663fb8fcf8399b2c02248241016892bb17ae73eac065da548a579c2fa2",
+  "frame_windows": {
+    "t0": [
+      766,
+      1021
+    ],
+    "t1": [
+      1217,
+      1472
+    ]
+  },
+  "implementation": "existing DenseSemanticIntegrator and SparseEvidenceStore; one fresh store per authorized visit",
+  "legacy_class_to_common_v2": [
+    0,
+    1,
+    2,
+    5,
+    6,
+    7,
+    9,
+    10,
+    16,
+    18,
+    20
+  ],
+  "legacy_run_config_sha256": "3cd8b7927f94e30c4a46a8c9991e46e1d7ba324c06b9535682e4c7163e86c3b2",
+  "projection_parameters": {
+    "entropy_power": 16.0,
+    "integration_radius_m": 6.0,
+    "minimum_probability": 0.01,
+    "minimum_quality": 0.01,
+    "view_angle_power": 0.0,
+    "voxel_size_m": 0.05
+  },
+  "reference": "occupied semantic evidence voxel centers, not a reconstructed TSDF surface; exact old 10-class cache is explicitly a legacy baseline",
+  "reference_support": "maximum accumulated candidate support divided by sum of retained top-k supports; uncalibrated scalar, no reconstructed full posterior",
+  "semantic_top_k": 4,
+  "source_geometry_changes": false,
+  "vocabulary_sha256": "dea3a2e0508c887c6c701ee5250374e2a06c63eefbf2e185110462b81f4ccbcf"
+}

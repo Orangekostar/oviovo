@@ -279,7 +279,7 @@ python scripts/evaluation/audit_crove_apartment_readout_geometry.py
 | Family | Real current status | Still required |
 | --- | --- | --- |
 | M1 | room0 and Apartment native/single/top-k/diverse/quality plus Apartment current-aware B3/H2 pairs | structural patch evidence and confirmation |
-| M2 | room0 S2/M1 and Apartment QUALITY patch/geometry/boundary pairs complete | dynamic local S2 control and confirmation |
+| M2 | room0 S2/M1 and Apartment QUALITY graph pairs complete; actual dynamic S0/S2 point controls evaluated | dynamic S2 graph pairs and confirmation |
 | M3 | room0 and Apartment full pairwise/consensus-owner pairs and matched resem evaluated | confirmation |
 | M4 | Official trained room0 and Apartment B3/H2 mean/learned pairs completed | static confirmation and limited combinations |
 
@@ -310,6 +310,41 @@ to the pure geometry graph in each state: no additional boundary gain is found.
 Pointwise confidence is inherited, not relabeled as calibrated graph confidence.
 The old Apartment source semantic cache is owner fallback, not independent local
 S2 evidence, and is not presented as such a control.
+
+Actual local controls have now been added as `B_SEM_CROVE_S0_DENSE_REPLAY`
+and `B_SEM_CROVE_S2_DENSE_REPLAY`. All 512 authorized legacy RADSeg cache files
+were checked against their dense manifest, then replayed with the existing
+CROVE `DenseSemanticIntegrator` and `SparseEvidenceStore`, separately for each
+visit. The old 10-class object vocabulary is explicitly mapped to common-v2;
+this is a legacy baseline, not a new complete-20-class VLM. The frozen original
+5 cm / 6 m / entropy-power-16 settings produce 87,444/77,556 semantic evidence
+voxel centers in 78.12/77.55 s. These centers are a declared local-reference
+adaptation, not the old room0 reference mesh or a replacement current geometry.
+Reference scalar support is the largest accumulated support divided by the sum
+of retained top-k supports, without claiming calibration or a recovered full
+posterior. S0/S2 use the unchanged bounded-transfer parameters and query only
+the source visit; zero-output transfer keeps native labels/confidence/roles.
+All four full predictions were saved before scoring.
+
+| Actual local control | B3 mIoU | H2 mIoU | B3/H2 original gates |
+| --- | ---: | ---: | --- |
+| S0_DENSE_REPLAY | 0.172641 | 0.173683 | FAIL / FAIL |
+| S2_DENSE_REPLAY | 0.174143 | 0.175113 | FAIL / FAIL |
+
+The semantic scores exceed native, but Ghost is 0.839508/0.959827 for S0/S2
+and surface precision is only 0.0753/0.1124 in B3. These results do not qualify
+as final current maps and do not improve frozen geometry. Dynamic S2 graph
+controls remain required; its scalar is an explicit pseudo-unary input, not
+a VLM distribution, and must not be multiplied by local reliability again.
+The expanded audit verifies all 38 full-state source/owner invariants and all
+76 recovered-row tables across 19 methods. S0/S2 correctly label 630/677
+GT-supported restored source rows (154/167 physical samples), respectively.
+The existing all-current geometry conflict counts remain unchanged.
+
+```bash
+python scripts/evaluation/replay_crove_apartment_local_semantics.py
+python scripts/evaluation/run_crove_apartment_local_controls.py
+```
 
 ```bash
 python scripts/evaluation/build_crove_apartment_graphs.py
@@ -486,8 +521,8 @@ is exercised but provides no measured gain here. The original 31.77/38.50 s
 prediction/write runtimes are retained; zero new image forwards are required.
 Sparse full-class patch posteriors are saved, and a cache reconstruction checks
 all frozen prediction arrays exactly before retaining the original files.
-The geometry audit now covers 34 full-state predictions; recovered-row
-attribution covers 17 methods/68 conserved tables. CURRENT_AWARE correctly labels
+The geometry audit now covers 38 full-state predictions; recovered-row
+attribution covers 19 methods/76 conserved tables. CURRENT_AWARE correctly labels
 45 restored GT-supported rows (13 physical samples), the same as its matched
 QUALITY baseline; its restored semantic changes are 1,027 rows/293 samples.
 
@@ -500,16 +535,33 @@ Room0 has 27,802 regions over 5,983,832 structural rows; Apartment B3/H2 have
 33.23/70.71/69.92 s respectively. Many disconnected components are small;
 later observation selection must use actual unique visible-pixel support,
 with missing regions retaining fallback rather than being discarded.
-Actual local observations/encoding remain pending; region construction alone
-is not counted as completion of the structural-background requirement.
+Actual local encoding is running: room0 selects 1,138 regions/4,505 six-crop
+batches and B3 selects 2,599 regions/10,174 batches; H2 follows the same frozen
+selection. Each requires at least two same-visit observations with at least
+16 unique independent-mask-interior pixels, then at most four diverse views.
+`MV_LOCAL_BG_QUALITY` and `MV_BG_OWNER_QUALITY` full-map readers are implemented
+but not yet evaluated: both keep native outside the local support scope, and
+the owner control uses the existing matched re-encoded owner head within it.
+Rows with a local feature but no owner feature are counted separately, so
+additional coverage is not attributed solely to locality. Region construction
+alone is not counted as completion of the structural-background requirement.
 
 ```bash
 python scripts/evaluation/run_crove_current_aware_apartment.py
 python scripts/evaluation/build_crove_local_background_regions.py
+python scripts/evaluation/encode_crove_local_background.py --case room0
+python scripts/evaluation/encode_crove_local_background.py --case apartment_B3
+python scripts/evaluation/encode_crove_local_background.py --case apartment_H2
+python scripts/evaluation/run_crove_local_background_readouts.py
 ```
 
 room1 remains the frozen static confirmation scene. Its native OVI inputs are
-now generated; local S0/S2 inputs and confirmation readouts remain pending.
+now generated; local S0/S2 derivation is running and confirmation readouts remain
+pending. Its existing 200-frame frontend and dense caches are available. The
+old room0 stage-3 CROVE configuration is replayed with only scene/asset paths
+changed, using `--skip-evaluation`. All 200 raw/subsampled pose matrices match
+exactly. This produces a real CROVE local reference before any confirmation
+score, rather than treating missing derived S0/S2 files as an asset failure.
 The native room1 GPU frontend failed with verified
 CUDA OOM under earlier GPU occupancy. After GPU 1 recovered roughly 38 GB free,
 a complete-resolution authorized-frame probe passed in 3.81 s. CPU preparation
