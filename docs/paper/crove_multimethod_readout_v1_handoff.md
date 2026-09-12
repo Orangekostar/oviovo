@@ -4,9 +4,12 @@
 任务依据：`CODEX_CROVE_MULTIMETHOD_READOUT_V1_REVISED_V2_ALL_IN_ONE.md`。
 本交接仍在收尾；不以实验完成代替全部交付要求完成。
 
-已完成 83 项 DEV 全图评分（room0 27 项、Apartment B3/H2 各 28 项），
+已完成 85 项 DEV 全图评分（room0 27 项、Apartment B3/H2 各 29 项），
 以及未参与选型的 room1 四类配置与直接对照共 11 项确认评分。
 配置在确认前冻结；不根据 room1 得分替换代表或继续调参。
+冻结选择使用原有 83 项证据；验收时发现缺少的 TOPK 边界图 B3/H2
+两项在确认后补跑，明确标为 POST_FREEZE_SUPPLEMENT，不追溯纳入选择。
+两项分别为 0.139538／0.139455，与几何图同分，均未通过地图质量门槛。
 静态跨场景确认为 COMPLETE；Office 外部动态确认因原始资产缺失为
 NOT_RUN_RAW_MISSING，不能声称动态跨环境泛化。
 
@@ -30,11 +33,11 @@ Ghost 的零值必须结合分子/分母读取。
 - `all_method_results.json/.csv`、`family_results.md`：全部 DEV 行及直接增量。
 - `selected_configs.json`、`selection_source_results.json`：冻结选择与不可变 DEV 证据。
 - `room1_confirmation_results.md`、逐方法 JSON、确认 status/invariants：完整静态确认。
-- `apartment_readout_geometry_audit.json`、`apartment_per_class_audit.json`：56 项动态几何与逐类检查。
+- `apartment_readout_geometry_audit.json`、`apartment_per_class_audit.json`：58 项动态几何与逐类检查。
 - `apartment_H2_recovered_semantic_attribution.json`：2,939 源行/666 物理样本的恢复归因。
 - `*_registry.json`：实际角色、unary、图参数、投票裁决及输入预算。
 - `model_manifest.json`：官方来源、代码版本、checkpoint SHA256、严格加载证据。
-- `compact_artifact_index.json`：196 份已跟踪紧凑制品的大小与 SHA256；索引不包含自身。
+- `compact_artifact_index.json`：已跟踪紧凑制品的大小与 SHA256；索引不包含自身，以索引内实际条目数为准。
 
 完整讨论与局限见同目录的结果报告；计划文件保留输入和实现约束。
 各任务使用独立协议，不把动态 mIoU 与 Replica 静态 mIoU 混合排名。
@@ -52,6 +55,7 @@ crop 数、独立视图数和 seed 未记录时保留 null，不从总前向数�
 
 ```bash
 python scripts/evaluation/run_crove_local_background_readouts.py
+python scripts/evaluation/run_crove_graph_apartment.py --unary topk --boundary
 python scripts/evaluation/audit_crove_apartment_readout_geometry.py
 python scripts/evaluation/audit_crove_recovered_semantics.py
 python scripts/evaluation/audit_crove_dynamic_per_class.py

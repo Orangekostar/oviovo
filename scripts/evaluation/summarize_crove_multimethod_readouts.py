@@ -17,6 +17,7 @@ from scripts.evaluation.run_ovimap_native import _atomic_json, _sha256
 
 # Explicit method contracts also keep diagnostics and input-status JSON out.
 METHODS = {
+    "MV_TOPK_GRAPH_BOUNDARY": ("M1+M2", "graph_mv_topk_boundary", "MV_TOPK_GRAPH_GEOM"),
     "MV_TOPK_PATCH_ONLY": ("M1+M2", "graph_mv_topk", "MV_TOPK_MEAN"),
     "MV_TOPK_GRAPH_GEOM": ("M1+M2", "graph_mv_topk", "MV_TOPK_PATCH_ONLY"),
     "B_SEM_OVI_NATIVE": ("BASELINE", "native_cached_batch", None),
@@ -162,6 +163,16 @@ def method_provenance(method, model):
             "checkpoint_hash_scope": "official M4 hash from model_manifest; other per-row checkpoint hashes not recorded here"}
 
 
+def selection_evidence_role(filename, digest, frozen):
+    if frozen is None:
+        return "PRE_FREEZE_DEV"
+    if filename not in frozen:
+        return "POST_FREEZE_SUPPLEMENT"
+    if frozen[filename] != digest:
+        raise ValueError(f"frozen score changed: {filename}")
+    return "FROZEN_DEV_EVIDENCE"
+
+
 def main():
     config = json.loads(
         (ROOT / "configs/evaluation/crove_multimethod_readout_v1.json").read_text()
@@ -172,6 +183,12 @@ def main():
     selection = json.loads(selected_file.read_text()) if selected_file.exists() else None
     if selection and selection["status"] != "DEV_SELECTION_FROZEN":
         raise ValueError("selection file is not a frozen DEV selection")
+    frozen = None
+    if selection:
+        snapshot = compact / selection["source_summary_file"]
+        if _sha256(snapshot) != selection["source_summary_sha256"]:
+            raise ValueError("frozen selection evidence snapshot changed")
+        frozen = {r["result_file"]: r["result_sha256"] for r in json.loads(snapshot.read_text())["rows"]}
     geometry_audit = json.loads(
         (compact / "apartment_readout_geometry_audit.json").read_text()
     )
@@ -276,6 +293,7 @@ def main():
                 "actual_status": data["status"],
                 "result_file": filename.name,
                 "result_sha256": _sha256(filename),
+                "selection_evidence_role": selection_evidence_role(filename.name, _sha256(filename), frozen),
                 "prediction": str(prediction.relative_to(run)),
                 "source_rows": len(source),
                 "geometry_fixed": True,

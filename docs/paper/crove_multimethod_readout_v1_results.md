@@ -828,3 +828,26 @@ room1 confirmation and the presented visualizations are complete. The handoff
 document is available; final table-field and task-wide delivery audits remain
 in progress. The launch-time code-version recording limitation is explicit in
 `code_provenance.json` and is not repaired by relabeling a later delivery commit.
+
+## Late required control: TOPK boundary graph
+
+Final §6.4 acceptance found that the strongest new dynamic M1 variant had
+point, patch-only and geometry-only controls but no boundary graph. The existing
+runner was executed with `--unary topk --boundary` and the same fixed graph
+parameters, after room1 confirmation. This is a protocol timing deviation:
+these two rows are `POST_FREEZE_SUPPLEMENT`, not evidence available for the
+original selection. The original 83-row selection snapshot and all room1 scores
+remain unchanged; no configuration was retuned or retrospectively replaced.
+
+| State | TOPK geometry mIoU | TOPK boundary mIoU | Boundary Surface precision | Eligibility |
+|---|---|---|---|---|
+| B3 | 0.139538426 | 0.139538426 | 0.343391191 | FAIL |
+| H2 | 0.139454560 | 0.139454560 | 0.343756846 | FAIL |
+
+All nine headline metrics match geometry-only in each state. Boundary evidence
+affects 2,847 edges and approximately 0.193% of nodes, providing no additional
+measured benefit in this control. The live DEV table now has 85 scored rows
+(27 room0, 29 B3, 29 H2), with 58 dynamic geometry/per-class checks and 29-method
+recovery attribution. Earlier 83/56/28 counts above describe the pre-supplement
+stages. Frozen evidence membership is now an explicit field in JSON and CSV;
+the collector rejects changes to any original frozen score file.

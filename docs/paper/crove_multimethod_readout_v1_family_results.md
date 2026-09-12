@@ -1,6 +1,6 @@
 # CROVE 四类方法结论
 
-本轮包括 room0/Apartment B3/H2 的 83 项 DEV 全图结果及 room1 的 11 项
+本轮包括 room0/Apartment B3/H2 的 85 项 DEV 全图结果及 room1 的 11 项
 冻结确认。静态和动态协议分开；所有负结果保留。逐行完整表见
 [DEV 结果](../../configs/evaluation/results/crove_multimethod_readout_v1/family_results.md)，
 确认数字见 [room1](../../configs/evaluation/results/crove_multimethod_readout_v1/room1_confirmation_results.md)。

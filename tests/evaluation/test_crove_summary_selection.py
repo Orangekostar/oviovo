@@ -1,6 +1,16 @@
 from scripts.evaluation.summarize_crove_multimethod_readouts import selection_annotations
 from scripts.evaluation.summarize_crove_multimethod_readouts import case_coverage
 from scripts.evaluation.summarize_crove_multimethod_readouts import method_provenance
+from scripts.evaluation.summarize_crove_multimethod_readouts import selection_evidence_role
+import pytest
+
+
+def test_late_score_cannot_be_mistaken_for_frozen_evidence():
+    frozen = {"old.json": "hash"}
+    assert selection_evidence_role("old.json", "hash", frozen) == "FROZEN_DEV_EVIDENCE"
+    assert selection_evidence_role("new.json", "new", frozen) == "POST_FREEZE_SUPPLEMENT"
+    with pytest.raises(ValueError, match="frozen"):
+        selection_evidence_role("old.json", "changed", frozen)
 
 
 def test_adapter_pooling_control_and_learned_head_share_checkpoint_source():

@@ -65,6 +65,7 @@ source 行与 owner 逐文件核对；unknown 为源行中标签 0 的比例。
 | M1 | apartment/B3 | MV_REENCODE_DIVERSE | 0.098531 | -0.037355 | -0.027506 | 0.001639 | N/A | FAIL |
 | M1 | apartment/B3 | MV_REENCODE_QUALITY | 0.105122 | -0.030764 | 0.006590 | 0.001639 | N/A | FAIL |
 | M1 | apartment/B3 | MV_SINGLE | 0.132403 | -0.003483 | -0.003483 | 0.005417 | N/A | FAIL |
+| M1+M2 | apartment/B3 | MV_TOPK_GRAPH_BOUNDARY | 0.139538 | 0.003652 | 0.000000 | 0.005417 | N/A | FAIL |
 | M1+M2 | apartment/B3 | MV_TOPK_GRAPH_GEOM | 0.139538 | 0.003652 | -0.000023 | 0.005417 | N/A | FAIL |
 | M1 | apartment/B3 | MV_TOPK_MEAN | 0.139546 | 0.003660 | 0.003660 | 0.005417 | N/A | FAIL |
 | M1+M2 | apartment/B3 | MV_TOPK_PATCH_ONLY | 0.139562 | 0.003676 | 0.000016 | 0.005417 | N/A | FAIL |
@@ -93,6 +94,7 @@ source 行与 owner 逐文件核对；unknown 为源行中标签 0 的比例。
 | M1 | apartment/H2 | MV_REENCODE_DIVERSE | 0.099566 | -0.036168 | -0.027408 | 0.001639 | N/A | FAIL |
 | M1 | apartment/H2 | MV_REENCODE_QUALITY | 0.106102 | -0.029632 | 0.006536 | 0.001639 | N/A | FAIL |
 | M1 | apartment/H2 | MV_SINGLE | 0.133032 | -0.002703 | -0.002703 | 0.005416 | N/A | FAIL |
+| M1+M2 | apartment/H2 | MV_TOPK_GRAPH_BOUNDARY | 0.139455 | 0.003720 | 0.000000 | 0.005416 | N/A | FAIL |
 | M1+M2 | apartment/H2 | MV_TOPK_GRAPH_GEOM | 0.139455 | 0.003720 | -0.000007 | 0.005416 | N/A | FAIL |
 | M1 | apartment/H2 | MV_TOPK_MEAN | 0.139394 | 0.003660 | 0.003660 | 0.005416 | N/A | FAIL |
 | M1+M2 | apartment/H2 | MV_TOPK_PATCH_ONLY | 0.139462 | 0.003727 | 0.000068 | 0.005416 | N/A | FAIL |

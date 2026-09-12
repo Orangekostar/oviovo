@@ -1,5 +1,5 @@
 {
-  "artifact_count": 196,
+  "artifact_count": 199,
   "artifacts": [
     {
       "byte_count": 585,
@@ -27,14 +27,14 @@
       "sha256": "4b0a394b5eb3824036e0821ee22aa8f32313fd66694a54a92b8b5809eb9f3619"
     },
     {
-      "byte_count": 102879,
+      "byte_count": 107078,
       "path": "all_method_results.csv",
-      "sha256": "323ca1bac153f887605afc46e102473ff6ccd631e8d2853eb1bd0d39e4331b8b"
+      "sha256": "856a78145d61a1c14e4a5dd1486e6209c56e00ee36b742b71660d2bd31959189"
     },
     {
-      "byte_count": 621482,
+      "byte_count": 636552,
       "path": "all_method_results.json",
-      "sha256": "6490f0ae980923a9d855e887139ff235743104ba50b91d2f140733a4c98cf7a4"
+      "sha256": "cae4092a7ecbfef60b5138088b8a7e6a910f2fff21f0cf4e5a3d9cea3add755a"
     },
     {
       "byte_count": 1073,
@@ -145,6 +145,11 @@
       "byte_count": 1066,
       "path": "apartment_B3_MV_SINGLE.json",
       "sha256": "d0f2a10dc45b4e43e65638289cf88a3e827bbd938f06a57ec8db1b6bdde4d8cf"
+    },
+    {
+      "byte_count": 1475,
+      "path": "apartment_B3_MV_TOPK_GRAPH_BOUNDARY.json",
+      "sha256": "27e357e1f655b1d405fd0d0dd3fa00ca7de0bbda92b6d0a718e3f582e7e30df1"
     },
     {
       "byte_count": 1228,
@@ -307,6 +312,11 @@
       "sha256": "592c1bc337a807f876637c151aca6de6fa21d620d97714cf522fad3ee81c51b9"
     },
     {
+      "byte_count": 1476,
+      "path": "apartment_H2_MV_TOPK_GRAPH_BOUNDARY.json",
+      "sha256": "e71108494fe0060c2d733a1105f78dbc8eabd4500c42a982aced3918f3985233"
+    },
+    {
       "byte_count": 1228,
       "path": "apartment_H2_MV_TOPK_GRAPH_GEOM.json",
       "sha256": "a02a1bf5e2c144ee7a3879db3a2763a01489cdba44aee5e01a37772af2d3fca4"
@@ -357,9 +367,9 @@
       "sha256": "c0588da7b9d0ba77e23eb70a782c9d6ff1e6ac03ab7006dd754adf94bfb06964"
     },
     {
-      "byte_count": 154725,
+      "byte_count": 159164,
       "path": "apartment_H2_recovered_semantic_attribution.json",
-      "sha256": "5e57e827d7f930c6a613959956edf5b98d00363b2d504af08cbb209cee101939"
+      "sha256": "8cc316365fba8a6dbf489d31b534da2203a029fe92ddcd98e9e6956be3159a9b"
     },
     {
       "byte_count": 1077,
@@ -372,14 +382,14 @@
       "sha256": "507808baa2bdbad35bb6d5366c2788e1ee717fa596b3cec8719168188cc5176d"
     },
     {
-      "byte_count": 66511,
+      "byte_count": 68876,
       "path": "apartment_per_class_audit.json",
-      "sha256": "c00b7d2f92a54469f0e8ebea25af07b1d8119ccc68cf70bc5370d34d458a35f7"
+      "sha256": "547956bf5b99ea05161306bad3164bb9ac1e5e6d9f617f3ec46513d3006841ee"
     },
     {
-      "byte_count": 43224,
+      "byte_count": 44658,
       "path": "apartment_readout_geometry_audit.json",
-      "sha256": "b5b404ce28dd2dadcf80e0a128d5e5a50635d73d083405442b831fe1352abfcb"
+      "sha256": "a23614a9cce6fbb4f299677e6b5adf5316de731ea441ba440c5c4c419a1cc6b7"
     },
     {
       "byte_count": 279,
@@ -422,9 +432,9 @@
       "sha256": "854e92b3f0f0fb6f1cd51bc1a1143d5257772aeb2a45a54168dcaacc6aa42004"
     },
     {
-      "byte_count": 9880,
+      "byte_count": 10094,
       "path": "family_results.md",
-      "sha256": "af2ebf83ff7d697af614598e6b2baa783d2482b46cd37803e901531a6e495b95"
+      "sha256": "f3ea894df0cb754313b68bf3f915dc8868e9ebe18e271ca04fd7cd80d6714075"
     },
     {
       "byte_count": 1794,
@@ -459,12 +469,12 @@
     {
       "byte_count": 865,
       "path": "figures/recovery_examples.manifest.json",
-      "sha256": "5a89dd6198695a8242c6f701647942345cd5a7f7308b7fb4639b615e76c6ffed"
+      "sha256": "19c0d5f9c65de1759fce367c773ee8f8006b5a2a25b27bc0c67a5834b334660a"
     },
     {
       "byte_count": 32320,
       "path": "figures/recovery_examples.pdf",
-      "sha256": "54064601f2f4502161099b8c213f8f74a4b3b2a1b7e5a42845c1628a0efae99e"
+      "sha256": "79df3883e36f3e9242d9a61294ac5038c4b1924dd1e4952b4b5706e5a5bedd59"
     },
     {
       "byte_count": 144487,
@@ -484,7 +494,7 @@
     {
       "byte_count": 381527,
       "path": "figures/recovery_examples.svg",
-      "sha256": "65fedc3a59f493d44e6f4951e027c2991eb6c10a5e7bdfff602402f87fb71789"
+      "sha256": "33ae13a4f1a9795bcec7a1f99d27f9d4274d956c2655dc18ab9096ac0f7dd93c"
     },
     {
       "byte_count": 181,
@@ -504,12 +514,12 @@
     {
       "byte_count": 535,
       "path": "figures/room0_semantic_delta.manifest.json",
-      "sha256": "57b26eb439b2dcd9330be4fd54a604a6c12150be586561f844f33c6c71e4940b"
+      "sha256": "ca5bb2a15e56de61bf21b02829f2e7007913eb8d2594c892a3276a7d92e10aae"
     },
     {
       "byte_count": 20870,
       "path": "figures/room0_semantic_delta.pdf",
-      "sha256": "37102f1a09690681b3c73383d5db48d4f0223958e60380af728b5a830b9a4774"
+      "sha256": "e439107dc13f1e900bff8e43d7356301311b84fe850ac0f8aa372914f27d32c4"
     },
     {
       "byte_count": 267610,
@@ -529,7 +539,7 @@
     {
       "byte_count": 19816,
       "path": "figures/room0_semantic_delta.svg",
-      "sha256": "d83afac7e65613c096f9bd10862a9c900e74a518b26d5f1599aff14881a29fca"
+      "sha256": "8135e69a2c4ed28a87199d9d9f704c4a67a67698c8375256fd0983b2e7a09670"
     },
     {
       "byte_count": 782,
@@ -565,6 +575,11 @@
       "byte_count": 767,
       "path": "graph_mv_topk_apartment_registry.json",
       "sha256": "d45f3ebc95e1c30bf88d1e82d1c581c6eaa65b0f50351323f5e87ff0a3b6a067"
+    },
+    {
+      "byte_count": 1072,
+      "path": "graph_mv_topk_boundary_apartment_registry.json",
+      "sha256": "11c4718409ab8ff579fbf68433aa88d81d0046b31b0a506b51ffa8293f4ccd14"
     },
     {
       "byte_count": 545,

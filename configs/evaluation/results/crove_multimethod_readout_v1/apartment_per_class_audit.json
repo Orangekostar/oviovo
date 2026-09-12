@@ -995,6 +995,51 @@
       "result_sha256": "d0f2a10dc45b4e43e65638289cf88a3e827bbd938f06a57ec8db1b6bdde4d8cf",
       "target_count": 22546
     },
+    "B3_MV_TOPK_GRAPH_BOUNDARY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13953842603926322,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1495,
+          "iou": 0.25687285223367695,
+          "support": 3699,
+          "union": 5820
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1324,
+          "iou": 0.4309895833333333,
+          "support": 3058,
+          "union": 3072
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "a95a6f4287b3fdf7eec1dfd3e0bc9757d3a8627929221ec2836c509ccc982443",
+      "result_sha256": "27e357e1f655b1d405fd0d0dd3fa00ca7de0bbda92b6d0a718e3f582e7e30df1",
+      "target_count": 22546
+    },
     "B3_MV_TOPK_GRAPH_GEOM": {
       "headline_reconstruction": "PASS",
       "miou": 0.13953842603926322,
@@ -2253,6 +2298,51 @@
       },
       "prediction_sha256": "653d4163c1fe641f032cc20800b209a4b627c9f6589d8f0418fd61b6043e3d29",
       "result_sha256": "592c1bc337a807f876637c151aca6de6fa21d620d97714cf522fad3ee81c51b9",
+      "target_count": 22546
+    },
+    "H2_MV_TOPK_GRAPH_BOUNDARY": {
+      "headline_reconstruction": "PASS",
+      "miou": 0.13945455991661573,
+      "per_class": {
+        "1": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 196,
+          "union": 196
+        },
+        "16": {
+          "intersection": 1509,
+          "iou": 0.2564146134239592,
+          "support": 3699,
+          "union": 5885
+        },
+        "2": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 2582,
+          "union": 2582
+        },
+        "5": {
+          "intersection": 1323,
+          "iou": 0.4309446254071661,
+          "support": 3058,
+          "union": 3070
+        },
+        "6": {
+          "intersection": 0,
+          "iou": 0.0,
+          "support": 853,
+          "union": 853
+        },
+        "9": {
+          "intersection": 1832,
+          "iou": 0.1493681206685691,
+          "support": 12158,
+          "union": 12265
+        }
+      },
+      "prediction_sha256": "211c9cc40f0c2c311f32236fa2644d331f921f4c47fdebca89caf29c7810686f",
+      "result_sha256": "e71108494fe0060c2d733a1105f78dbc8eabd4500c42a982aced3918f3985233",
       "target_count": 22546
     },
     "H2_MV_TOPK_GRAPH_GEOM": {
