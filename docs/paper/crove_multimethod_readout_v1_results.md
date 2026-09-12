@@ -787,6 +787,24 @@ their full audits are included in the completed 56-readout audit matrix.
 
 DYNAMIC_CONFIRMATION_STATUS=NOT_RUN_RAW_MISSING
 
+The frozen final Apartment H2 readout now has four complete local PLY views
+(RGB/instance/semantic/state): 15,625,540 rows and 5,198,109 triangles per view.
+All XYZ, canonical source rows, owner IDs, semantic IDs and triangle connectivity
+were checked against the frozen inputs without sampling. RGB is the original
+observed color field, with invalid observations explicitly gray. State colors
+distinguish current-visit, retained-history and restored-history membership;
+they do not replace the semantic evaluation roles.
+
+![Frozen Apartment H2 four-view overview](../../configs/evaluation/results/crove_multimethod_readout_v1/figures/apartment_final_four_views.png)
+
+This fixed-camera overview samples 800,000 evenly spaced rows for display only;
+the four local PLY files contain every current row (about 2.08 GB total,
+`LOCAL_ONLY_POLICY`). Exact paths, hashes, colors and source mapping are in
+`selected_apartment_map_exports.json`; full-row verification is in
+`selected_apartment_map_export_audit.json`. The figure's companion Markdown
+documents RGB validity, state counts and visibility limitations. No holes were
+filled and no GT geometry was substituted.
+
 Code and compact intermediate results are intended for the named research branch;
 large geometry/prediction sidecars remain local. Official pretrained weights are
 referenced at their original HF source and are not redistributed. No new model

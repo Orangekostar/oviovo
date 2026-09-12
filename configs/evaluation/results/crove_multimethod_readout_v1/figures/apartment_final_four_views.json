@@ -1,0 +1,41 @@
+{
+  "camera": {
+    "azimuth_degrees": -55.0,
+    "elevation_degrees": 22.0,
+    "projection": "orthographic"
+  },
+  "geometry_shared_across_views": true,
+  "output": {
+    "byte_count": 731481,
+    "path": "configs/evaluation/results/crove_multimethod_readout_v1/figures/apartment_final_four_views.png",
+    "sha256": "9347a5a47f4d2a54120ee73fdc6b7df4877ee234caf4cc2d73fbabfba3e4a211"
+  },
+  "sampled_vertex_count": 800000,
+  "sampling_rule": "equal_index_spacing_over_canonical_vertex_order",
+  "scene": "Apartment H2 | frozen QUALITY boundary readout",
+  "schema_version": 1,
+  "source_vertex_count": 15625540,
+  "sources": {
+    "instance": {
+      "byte_count": 520716454,
+      "path": "/home/ww/oviovo_baseline_runs/20260912_crove_multimethod_readout_v1/visualizations/MV_QUALITY_GRAPH_BOUNDARY_H2/current_instance.ply",
+      "sha256": "6e46dce1b04f1d9097dd021402fd4b02004b9f56400aa8b761a2c5f2bcedd7f7"
+    },
+    "rgb": {
+      "byte_count": 520716454,
+      "path": "/home/ww/oviovo_baseline_runs/20260912_crove_multimethod_readout_v1/visualizations/MV_QUALITY_GRAPH_BOUNDARY_H2/current_rgb.ply",
+      "sha256": "982b58da13aeeb86b1d01424acd438cbfc131a06098a701fb972f676f4714993"
+    },
+    "semantic": {
+      "byte_count": 520716454,
+      "path": "/home/ww/oviovo_baseline_runs/20260912_crove_multimethod_readout_v1/visualizations/MV_QUALITY_GRAPH_BOUNDARY_H2/current_semantic.ply",
+      "sha256": "d06e5c1caf85c254ca084814c2951ea160a325a755a58aa04ed15db6fb6b0058"
+    },
+    "state": {
+      "byte_count": 520716454,
+      "path": "/home/ww/oviovo_baseline_runs/20260912_crove_multimethod_readout_v1/visualizations/MV_QUALITY_GRAPH_BOUNDARY_H2/current_state.ply",
+      "sha256": "574f1e0d87b69e0a80eb9b8a3fa85b381b6724cea695b5e56ecaded108cd3b20"
+    }
+  },
+  "status": "PASS"
+}
