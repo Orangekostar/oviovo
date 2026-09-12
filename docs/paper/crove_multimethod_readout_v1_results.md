@@ -5,6 +5,8 @@ commit; subsequent changes were formatting and equivalent loop unpacking only).
 The paired adapter, semantic controls and initial graph batch use `1efef91`
 (executed before commit; subsequent changes were formatting/import ordering and
 the explicitly documented forward-count reporting correction).
+The diverse/quality batch and real-posterior graph controls use `cbb6543`;
+the tie-rule fix was verified by exact full-map prediction recomputation.
 This is an intermediate result, not the final four-family screening report.
 
 ## room0 complete-surface initial batch
@@ -18,6 +20,9 @@ GT/crosswalk and strict 5 cm projection. Predictions were saved before opening G
 | MV_NATIVE_CACHED | 0.377473 | 0.598409 | 0.562641 | 0.470711 | 0.935286 |
 | MV_SINGLE | 0.328337 | 0.561435 | 0.562641 | 0.470711 | 0.935286 |
 | MV_TOPK_MEAN | 0.353902 | 0.605187 | 0.562641 | 0.470711 | 0.935286 |
+| MV_DIVERSE_MEAN | 0.394472 | 0.407740 | 0.562641 | 0.470711 | 0.935286 |
+| MV_QUALITY | 0.400847 | 0.408872 | 0.562641 | 0.470711 | 0.935286 |
+| MV_CURRENT_AWARE (static QUALITY alias) | 0.400847 | 0.408872 | 0.562641 | 0.470711 | 0.935286 |
 
 `B_SEM_OVI_NATIVE` uses the saved native semantic crosswalk. `MV_NATIVE_CACHED`
 uses the official retained last-eight visibility-weighted six-crop features,
@@ -36,6 +41,21 @@ sidecar-write time was approximately 6.2–6.4 seconds per new row, excluding sh
 geometry/model loading and text encoding. Exact view lists and timings remain in
 the local run directory. No end-to-end speedup is claimed.
 
+DIVERSE and QUALITY reuse that same native six-crop cache and k=4 budget.
+DIVERSE starts with the highest visible-area view and selects angularly diverse
+camera directions around each owner's physical centroid. QUALITY uses exactly
+those inputs, weighted by depth-consistent unique-pixel fraction, square-root
+projected/native mask support and a 0.5 image-boundary truncation factor. The full
+formula is frozen in `multiview_quality_room0_registry.json`; no GT is used.
+There are 64 actual surface owners and 251 candidate observations (older initial
+batch counts also included absent owners; their predictions were unaffected).
+Coverage is 99.85233%/99.85201%; two zero-quality owners fall back. New image
+forwards remain zero. Shared selection/projection take 9.22/14.87 s; prediction/write
+takes 5.50/5.61 s. Higher mIoU comes with substantially lower f-mIoU, not an
+across-metric improvement. Static CURRENT_AWARE is an exact QUALITY prediction
+alias, not evidence for dynamic adaptation. Per-crop normalized features and
+structural-background patch observations still require separate work.
+
 S0 and S2 have now been rerun on this same complete surface (see below).
 No winner has been frozen and no new deployment recommendation is made.
 
@@ -50,7 +70,7 @@ Full prediction sidecars: `$HOME/oviovo_baseline_runs/20260912_crove_multimethod
 
 ## Paired trained adapter and S2 graph DEV results
 
-All six rows below preserve the same 9,282,303 source rows and owners. CA-AP50
+All rows below preserve the same 9,282,303 source rows and owners. CA-AP50
 is 0.470711 and geometry F5 is 0.935286 throughout.
 
 | Method | mIoU | f-mIoU |
@@ -61,6 +81,8 @@ is 0.470711 and geometry F5 is 0.935286 throughout.
 | ADAPTER_CLIP_LEARNED | 0.396887 | 0.644932 |
 | S2_PATCH_ONLY | 0.443890 | 0.668636 |
 | S2_GRAPH_GEOM | 0.443963 | 0.668539 |
+| MV_QUALITY_PATCH_ONLY | 0.396774 | 0.409143 |
+| MV_QUALITY_GRAPH_GEOM | 0.399117 | 0.409253 |
 
 The adapter pair shares official trained ConvNeXt-L features, class text,
 projected source-support masks, and selected views. Learned pooling improves
@@ -81,7 +103,18 @@ Patch construction took 22.30 s. S2 pseudo-unaries are confidence-weighted costs
 not recovered class posteriors. Five damped mean-field iterations use lambda 0.2.
 Patch-only loses 0.003999 mIoU versus pointwise S2; graph propagation adds only
 0.000074 over patch-only. This is a negative result versus S2, not a demonstrated
-graph improvement. Boundary and M1-posterior graph controls remain pending.
+graph improvement. Boundary graph controls remain pending.
+
+M1-posterior controls reuse exactly the same patch mapping and geometry graph.
+Actual full-class owner posteriors are averaged by physical mass before negative-log
+costs; unsupported source rows keep M1 fallback. Reliability is not multiplied
+again after M1 view weighting. Patch-only changes 43,178 source labels; graph
+propagation changes a further 1,707 versus patch-only (43,268 versus pointwise M1).
+Graph propagation recovers some patch loss but remains below pointwise QUALITY.
+The posterior tie rule was strengthened to preserve the physically dominant
+baseline class among cost minimizers; full-map recomputation verified zero
+prediction changes for both saved variants. This is a current room0 M1 leader
+control, not the final cross-protocol family selection.
 
 Reproduction commands:
 
@@ -89,14 +122,16 @@ Reproduction commands:
 /home/ww/oviovo_baseline_builds/maskadapter/venv/bin/python scripts/evaluation/run_crove_adapter_room0.py
 python scripts/evaluation/run_crove_room0_semantic_controls.py
 python scripts/evaluation/run_crove_graph_room0.py
+python scripts/evaluation/run_crove_multiview_quality_room0.py
+python scripts/evaluation/run_crove_graph_room0.py --unary mv_quality
 ```
 
 ## Other progress and remaining obligations
 
 | Family | Real current status | Still required |
 | --- | --- | --- |
-| M1 | Partial room0 whole-map comparison above | diverse/quality/current-aware, same-condition controls, B3/H2, confirmation |
-| M2 | Partial room0 S2 patch-only/geometry graph | boundary control, M1 posterior, B3/H2 and confirmation |
+| M1 | Partial room0 native/top-k/diverse/quality; static current-aware alias | per-crop/structural patch evidence, B3/H2 state adaptation, confirmation |
+| M2 | Partial room0 S2 and M1 posterior patch-only/geometry graph | boundary control, B3/H2 and confirmation |
 | M3 | Not run | true 2D mask correspondence, shared arbitration, pairwise/consensus/resem whole-map comparisons |
 | M4 | Official trained core and room0 full-map mean/learned pair completed | B3/H2 and confirmation |
 
@@ -107,7 +142,11 @@ Code retains official attribution and Apache-2.0 license.
 B3/H2 legacy-to-pointwise equality is verified separately in `bridge_B3.json` and
 `bridge_H2.json` (mIoU 0.135886/0.135734). No M1–M4 dynamic result exists yet.
 room1 remains the frozen static confirmation scene, with raw inputs present but
-derived OVI/S2 inputs pending. Office original assets remain missing.
+derived OVI/S2 inputs pending. The native room1 GPU frontend failed with verified
+CUDA OOM under existing GPU occupancy. Full-resolution CPU frontend preparation
+is running for room1 mapping and room0 independent M3 masks; real first-frame
+outputs are verified. These are running jobs, not completed asset receipts.
+Office original assets remain missing.
 
 DEV_SCREENING_STATUS=PARTIAL
 

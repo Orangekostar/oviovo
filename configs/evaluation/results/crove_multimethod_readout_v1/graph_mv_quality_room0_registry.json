@@ -1,0 +1,20 @@
+{
+  "case": "room0",
+  "patch_size_m": 0.02,
+  "patches": "welded compatible source-triangle connected components within cells",
+  "unary": "M1_REAL_POSTERIOR_PHYSICAL_MEAN_NEG_LOG",
+  "physical_weights": "inverse count of same XYZ/normal-bin/visit duplicates",
+  "normal_cosine_min": 0.95,
+  "distance_weight_sigma_m": 0.03,
+  "normalization": "symmetric_degree",
+  "lambda": 0.2,
+  "iterations": 5,
+  "damping": 0.5,
+  "variants": [
+    "MV_QUALITY_PATCH_ONLY",
+    "MV_QUALITY_GRAPH_GEOM"
+  ],
+  "scope": "current room0 DEV M1 leader, not final cross-protocol selection; boundary still required",
+  "reliability": "unit for observed owner; quality already used in M1 aggregation; missing rows preserve M1 fallback",
+  "shared_patch_mapping": "dev/room0/graph_s2/patch_mapping.npz"
+}

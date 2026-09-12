@@ -134,3 +134,26 @@ readouts. The room0 native pickle contains 77 owner entries with actual `feat`,
 cached observations. This permits native-feature reuse but does not recover
 individual crop-scale features from their six-crop average. Room1 derived OVI/S2
 inputs are still to be generated. All three completion fields above remain unchanged.
+
+### Subsequent full-map execution
+
+Room0 trained adapter mean/learned, S0/S2, S2 patch/geometry graph, cached
+diverse/quality M1 and M1-posterior patch/geometry graph are now evaluated.
+See the results document for exact metrics, costs, negative results and limits.
+No family winner is frozen across protocols. Static CURRENT_AWARE reuses QUALITY
+because the source contains one visit; dynamic state behavior is still pending.
+
+Native room1 GPU preparation failed with CUDA OOM while other processes occupied
+the devices. The same official full-resolution frontend is now executing on CPU
+for room1 and room0; first-frame outputs were verified. Commands in progress:
+
+```bash
+OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 CUDA_VISIBLE_DEVICES=1 python scripts/evaluation/prepare_crove_native_inputs.py --scene room1 --frontend-device cpu --map --output /home/ww/oviovo_baseline_runs/20260912_crove_multimethod_readout_v1/confirm/room1/native_cpu
+OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 python scripts/evaluation/prepare_crove_native_inputs.py --scene room0 --frontend-device cpu --output /home/ww/oviovo_baseline_runs/20260912_crove_multimethod_readout_v1/dev/room0/cropformer_cpu
+```
+
+Do not launch duplicates while these handles remain live. Room0 output supplies
+independent segmentation evidence for M3/M2 boundaries; owner-projection masks
+are not substituted for independent segmentation. The remaining work includes
+boundary graphs, M3 whole-map readouts, paired dynamic experiments, structural
+background/per-crop evidence, confirmation, selection and final handoff.
