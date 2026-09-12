@@ -200,6 +200,14 @@ def main():
                 if len(ids) != len(source) or np.any(ids < 0):
                     raise ValueError(f"invalid source semantic readout: {prediction}")
                 unknown = int(np.count_nonzero(ids == 0))
+                coverage = data.get("feature_coverage")
+                coverage_source = "scored_result" if coverage is not None else None
+                if "feature_covered" in values:
+                    covered = values["feature_covered"]
+                    if covered.shape != ids.shape or covered.dtype != np.bool_:
+                        raise ValueError(f"invalid feature coverage mask: {prediction}")
+                    coverage = float(covered.mean())
+                    coverage_source = "prediction_feature_covered_source_row_fraction"
             metrics = data["metrics"]
             score = metrics[metric_key]
             if not np.isfinite(score):
@@ -267,7 +275,16 @@ def main():
                 else None,
                 "per_class_delta_vs_native": per_class_delta(metrics, native_metrics),
                 "per_class_delta_vs_S2": per_class_delta(metrics, s2_metrics),
-                "feature_coverage": data.get("feature_coverage"),
+                "feature_coverage": coverage,
+                "feature_coverage_source": coverage_source,
+                "crop_count": data.get("crop_count"),
+                "unique_views": data.get("unique_views"),
+                "seed": data.get("seed"),
+                "limitation": (
+                    "Single Apartment window; semantic-conditioned role metrics; dynamic instance GT unavailable; external dynamic confirmation missing"
+                    if state
+                    else "Single DEV scene; frozen room1 results reported separately"
+                ),
                 "runtime_stages": {
                     k: v
                     for k, v in data.items()
