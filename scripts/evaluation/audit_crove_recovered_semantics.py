@@ -47,6 +47,7 @@ def main():
         "graph_mv_quality": ["MV_QUALITY_PATCH_ONLY", "MV_QUALITY_GRAPH_GEOM"],
         "graph_mv_quality_boundary": ["MV_QUALITY_GRAPH_BOUNDARY"],
         "consensus": ["INST_PAIRWISE", "INST_CONSENSUS_OWNER"],
+        "current_aware": ["MV_CURRENT_AWARE"],
         "reencoded_regions": [
             "B_SEM_OVI_REENCODE",
             "MV_REENCODE_DIVERSE",

@@ -278,7 +278,7 @@ python scripts/evaluation/audit_crove_apartment_readout_geometry.py
 
 | Family | Real current status | Still required |
 | --- | --- | --- |
-| M1 | Partial room0 and Apartment native/single/top-k/diverse/quality B3/H2 pairs | structural patch evidence, dynamic state adaptation, confirmation |
+| M1 | room0 and Apartment native/single/top-k/diverse/quality plus Apartment current-aware B3/H2 pairs | structural patch evidence and confirmation |
 | M2 | room0 S2/M1 and Apartment QUALITY patch/geometry/boundary pairs complete | dynamic local S2 control and confirmation |
 | M3 | room0 and Apartment full pairwise/consensus-owner pairs and matched resem evaluated | confirmation |
 | M4 | Official trained room0 and Apartment B3/H2 mean/learned pairs completed | static confirmation and limited combinations |
@@ -400,8 +400,8 @@ initial attempt was archived after thin crops exposed channel-axis ambiguity;
 none of its features feeds reported predictions. A real six-crop encoder smoke
 and a thin-red-crop regression test verify the correction. Re-encoding results
 are now evaluated for all eight Apartment predictions, saved before any GT
-evaluation. Local structural-background patches and CURRENT_AWARE remain
-separate outstanding obligations.
+evaluation. Local structural-background patch observations remain outstanding;
+the current-aware adaptation below is now evaluated separately.
 
 | Matched Apartment readout | B3 mIoU | H2 mIoU | B3/H2 original gates |
 | --- | ---: | ---: | --- |
@@ -466,8 +466,51 @@ python scripts/evaluation/run_crove_reencode_apartment.py
 python scripts/evaluation/run_crove_reencode_room0.py
 ```
 
-room1 remains the frozen static confirmation scene, with raw inputs present but
-derived OVI/S2 inputs pending. The native room1 GPU frontend failed with verified
+CURRENT_AWARE now transfers actual current-visit semantic observations to
+depth-supported historical local patches, with no cross-visit geometry welding
+or owner changes. It reuses the matching original-owner diverse six-crop bank
+and quality values. Each historical 2 cm patch representative must fall inside
+current measured depth (within 0.05 m), a current encoded source-region mask and
+an eroded independent CropFormer interior. Overlapping encoded regions supply
+no vote. At least two positive-quality distinct frames are required, with at
+most four angular-diverse current views in the semantic average. Unsupported
+historical patches and all current-visit rows keep the matched QUALITY readout
+exactly. This is explicitly representative-supported patch backprojection,
+not a depth certificate for every duplicated source row.
+
+B3/H2 obtain 127/190 supported historical patches, covering 708/1,142 source
+rows and changing 678/679 semantic labels; no roles change. All nine full-map
+metrics remain exactly equal to MV_REENCODE_QUALITY, including mIoU
+0.105122/0.106102 and failed original gates. Thus the current-priority mechanism
+is exercised but provides no measured gain here. The original 31.77/38.50 s
+prediction/write runtimes are retained; zero new image forwards are required.
+Sparse full-class patch posteriors are saved, and a cache reconstruction checks
+all frozen prediction arrays exactly before retaining the original files.
+The geometry audit now covers 34 full-state predictions; recovered-row
+attribution covers 17 methods/68 conserved tables. CURRENT_AWARE correctly labels
+45 restored GT-supported rows (13 physical samples), the same as its matched
+QUALITY baseline; its restored semantic changes are 1,027 rows/293 samples.
+
+Connected structural-background crop regions are now built for room0 and
+Apartment B3/H2 from original wall/floor/ceiling/stairs labels plus explicit
+background. Regions are connected source surfaces within a fixed 0.5 m cell,
+with original owner, visit and normal-compatibility boundaries preserved.
+Room0 has 27,802 regions over 5,983,832 structural rows; Apartment B3/H2 have
+652,562/652,798 regions over 12,892,198/12,893,819 rows. Construction took
+33.23/70.71/69.92 s respectively. Many disconnected components are small;
+later observation selection must use actual unique visible-pixel support,
+with missing regions retaining fallback rather than being discarded.
+Actual local observations/encoding remain pending; region construction alone
+is not counted as completion of the structural-background requirement.
+
+```bash
+python scripts/evaluation/run_crove_current_aware_apartment.py
+python scripts/evaluation/build_crove_local_background_regions.py
+```
+
+room1 remains the frozen static confirmation scene. Its native OVI inputs are
+now generated; local S0/S2 inputs and confirmation readouts remain pending.
+The native room1 GPU frontend failed with verified
 CUDA OOM under earlier GPU occupancy. After GPU 1 recovered roughly 38 GB free,
 a complete-resolution authorized-frame probe passed in 3.81 s. CPU preparation
 was then deliberately stopped, preserving 105 complete room1 frames and 101
@@ -476,8 +519,9 @@ GPU continuation of only missing frames, separate GPU execution logs and a
 combined per-frame device receipt. No complete CPU artifact is replaced.
 Both room1/room0 frontends are now complete: 105/101 retained CPU frames and
 95/99 GPU-completed frames respectively. All 400 artifacts per scene and retained
-CPU hashes were checked. Room1 native geometry is complete and mapping is running;
-static confirmation has not been scored. Runtime device
+CPU hashes were checked. Room1 native geometry and mapping are complete;
+the saved native manifest reports MAPPING_PASS with hashed mesh, instance-color
+log and semantic features. Static confirmation has not been scored. Runtime device
 metadata is migrated explicitly; model, input grid and inference thresholds
 are unchanged. The room0 observation bank now contains all 200 validated frames,
 while the previously reported diagnostic still uses only its original 13 frames.

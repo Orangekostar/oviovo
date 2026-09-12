@@ -1,0 +1,16 @@
+{
+  "case": "room1",
+  "split": "confirm",
+  "status": "MAPPING_PASS",
+  "frame_count": 200,
+  "frame_range": {"start": 0, "stop_exclusive": 2000, "stride": 10},
+  "native_manifest": "$HOME/oviovo_baseline_runs/20260912_crove_multimethod_readout_v1/confirm/room1/native_cpu/native_mapping_manifest.json",
+  "native_manifest_sha256": "6d649cc32b5332e5c7bc0735782561a4eb975c7d150844c10547372193678e17",
+  "reverified_artifact_sha256": {
+    "instance_color_log": "8be14da81aaa05e0b397b87678ecba711684b32e1898bcb67b3e6ddebd147385",
+    "instance_mesh": "859551d71884639b9e9cc67a69a0c2ed3794fd812e2cce8cc404937d41915d21",
+    "semantic_features": "eb7ac8abc4ee0c929b25a3308b485140e82f51133e34005a41fe8714e423dc1f"
+  },
+  "confirmation_scores_opened": false,
+  "remaining": "native readout binding, local S0/S2 derivation, DEV selection freeze and all four families' actual confirmation"
+}

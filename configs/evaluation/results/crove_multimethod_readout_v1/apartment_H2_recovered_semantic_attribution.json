@@ -1358,6 +1358,237 @@
         }
       ]
     },
+    "MV_CURRENT_AWARE": {
+      "GT_conditioned_transitions": [
+        {
+          "ground_truth": -1,
+          "original": 4,
+          "physical_sample_mass": 283.99999999999784,
+          "predicted": 4,
+          "source_rows": 1510
+        },
+        {
+          "ground_truth": -1,
+          "original": 4,
+          "physical_sample_mass": 35.999999999999986,
+          "predicted": 15,
+          "source_rows": 111
+        },
+        {
+          "ground_truth": -1,
+          "original": 11,
+          "physical_sample_mass": 19.999999999999986,
+          "predicted": 11,
+          "source_rows": 101
+        },
+        {
+          "ground_truth": -1,
+          "original": 16,
+          "physical_sample_mass": 3.0,
+          "predicted": 17,
+          "source_rows": 9
+        },
+        {
+          "ground_truth": -1,
+          "original": 17,
+          "physical_sample_mass": 1.0,
+          "predicted": 17,
+          "source_rows": 1
+        },
+        {
+          "ground_truth": 5,
+          "original": 5,
+          "physical_sample_mass": 12.999999999999998,
+          "predicted": 5,
+          "source_rows": 45
+        },
+        {
+          "ground_truth": 5,
+          "original": 5,
+          "physical_sample_mass": 6.000000000000003,
+          "predicted": 19,
+          "source_rows": 35
+        },
+        {
+          "ground_truth": 5,
+          "original": 7,
+          "physical_sample_mass": 55.000000000000064,
+          "predicted": 7,
+          "source_rows": 255
+        },
+        {
+          "ground_truth": 9,
+          "original": 16,
+          "physical_sample_mass": 121.99999999999937,
+          "predicted": 17,
+          "source_rows": 363
+        },
+        {
+          "ground_truth": 16,
+          "original": 16,
+          "physical_sample_mass": 47.99999999999995,
+          "predicted": 7,
+          "source_rows": 175
+        },
+        {
+          "ground_truth": 16,
+          "original": 16,
+          "physical_sample_mass": 78.00000000000003,
+          "predicted": 17,
+          "source_rows": 334
+        }
+      ],
+      "GT_confusion": [
+        {
+          "ground_truth": -1,
+          "physical_sample_mass": 283.99999999999784,
+          "predicted": 4,
+          "source_rows": 1510
+        },
+        {
+          "ground_truth": -1,
+          "physical_sample_mass": 19.999999999999986,
+          "predicted": 11,
+          "source_rows": 101
+        },
+        {
+          "ground_truth": -1,
+          "physical_sample_mass": 35.999999999999986,
+          "predicted": 15,
+          "source_rows": 111
+        },
+        {
+          "ground_truth": -1,
+          "physical_sample_mass": 4.000000000000001,
+          "predicted": 17,
+          "source_rows": 10
+        },
+        {
+          "ground_truth": 5,
+          "physical_sample_mass": 12.999999999999998,
+          "predicted": 5,
+          "source_rows": 45
+        },
+        {
+          "ground_truth": 5,
+          "physical_sample_mass": 55.000000000000064,
+          "predicted": 7,
+          "source_rows": 255
+        },
+        {
+          "ground_truth": 5,
+          "physical_sample_mass": 6.000000000000003,
+          "predicted": 19,
+          "source_rows": 35
+        },
+        {
+          "ground_truth": 9,
+          "physical_sample_mass": 121.99999999999937,
+          "predicted": 17,
+          "source_rows": 363
+        },
+        {
+          "ground_truth": 16,
+          "physical_sample_mass": 47.99999999999995,
+          "predicted": 7,
+          "source_rows": 175
+        },
+        {
+          "ground_truth": 16,
+          "physical_sample_mass": 78.00000000000003,
+          "predicted": 17,
+          "source_rows": 334
+        }
+      ],
+      "GT_supported_correct": {
+        "source_rows": 45,
+        "unique_physical_samples": 13
+      },
+      "GT_supported_incorrect": {
+        "source_rows": 1162,
+        "unique_physical_samples": 309
+      },
+      "changed_semantics": {
+        "source_rows": 1027,
+        "unique_physical_samples": 293
+      },
+      "role_transitions": [
+        {
+          "original": 0,
+          "physical_sample_mass": 341.00000000000256,
+          "predicted": 0,
+          "source_rows": 1723
+        },
+        {
+          "original": 1,
+          "physical_sample_mass": 209.00000000000088,
+          "predicted": 0,
+          "source_rows": 741
+        },
+        {
+          "original": 1,
+          "physical_sample_mass": 116.0000000000004,
+          "predicted": 1,
+          "source_rows": 475
+        }
+      ],
+      "semantic_transitions": [
+        {
+          "original": 4,
+          "physical_sample_mass": 283.99999999999784,
+          "predicted": 4,
+          "source_rows": 1510
+        },
+        {
+          "original": 4,
+          "physical_sample_mass": 35.999999999999986,
+          "predicted": 15,
+          "source_rows": 111
+        },
+        {
+          "original": 5,
+          "physical_sample_mass": 12.999999999999998,
+          "predicted": 5,
+          "source_rows": 45
+        },
+        {
+          "original": 5,
+          "physical_sample_mass": 6.000000000000003,
+          "predicted": 19,
+          "source_rows": 35
+        },
+        {
+          "original": 7,
+          "physical_sample_mass": 55.000000000000064,
+          "predicted": 7,
+          "source_rows": 255
+        },
+        {
+          "original": 11,
+          "physical_sample_mass": 19.999999999999986,
+          "predicted": 11,
+          "source_rows": 101
+        },
+        {
+          "original": 16,
+          "physical_sample_mass": 47.99999999999995,
+          "predicted": 7,
+          "source_rows": 175
+        },
+        {
+          "original": 16,
+          "physical_sample_mass": 203.00000000000117,
+          "predicted": 17,
+          "source_rows": 706
+        },
+        {
+          "original": 17,
+          "physical_sample_mass": 1.0,
+          "predicted": 17,
+          "source_rows": 1
+        }
+      ]
+    },
     "MV_DIVERSE_MEAN": {
       "GT_conditioned_transitions": [
         {
