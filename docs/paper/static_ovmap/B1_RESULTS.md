@@ -28,8 +28,18 @@ with 58 mesh-backed centroids and no missing RGB-D frames; 61 cached owners meet
 
 Released class-agnostic values on the native semantic-filtered geometry are mIoU .3922,
 mP50 .7170 and mR50 .4130. They are constant across these readout conditions and are not
-integrated AP. B1 full-native-owner canonical AP is still pending. Geometry/query/version
+integrated AP. Geometry/query/version
 differences must not be attributed to the selector or merged into a single B0 baseline.
+
+The separate full-native-owner canonical diagnostic gives AP25 .565843, AP50 .370303 and
+AP75 .118519, using the same native-area confidence, min-100 region and full-void-domain
+definition as R4. There are 84 valid GT instances and 54 projected predicted regions above
+the minimum size. This is below historical B0's .618664 / .500867 / .185445; it measures
+rebuilt geometry drift, not a semantic-selection effect. Paper AP provenance remains
+unverified. The geometry adapter exactly reproduces all 9,282,303 historical owner labels,
+and four partition/projected-metric tests pass, including IDs beyond uint16 and unknown
+geometry. `canonical_geometry.json` records actual arguments, source/input/output hashes
+and cost; full owners are saved separately without semantic eligibility filtering.
 
 The unchanged released evaluator initially failed because it uses relative imports while
 the adapter loaded it as a single file. `released_loader.py` now loads each evaluator root

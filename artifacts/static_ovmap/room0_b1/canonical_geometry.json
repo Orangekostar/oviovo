@@ -1,0 +1,72 @@
+{
+  "status": "COMPLETE_CANONICAL_GEOMETRY_DIAGNOSTIC",
+  "scene": "room0",
+  "canonical_class_agnostic": {
+    "ground_truth_instance_count": 84,
+    "predicted_instance_count": 54,
+    "definition": "full_projected_domain_IoU_including_void; greedy_1to1_IoU_ge_t; precision_envelope_AP",
+    "min_region": 100,
+    "zero_GT_policy": "undefined_null",
+    "ap25": 0.5658433980369136,
+    "recall25": 0.5833333333333334,
+    "ap50": 0.37030304211155274,
+    "recall50": 0.4642857142857143,
+    "ap75": 0.11851933755958526,
+    "recall75": 0.25
+  },
+  "paper_AP": null,
+  "paper_AP_reason": "canonical diagnostic does not verify paper AP implementation",
+  "confidence": "native_vertex_count_divided_by_largest_native_object_no_GT",
+  "geometry_scope": "full_native_owners_including_unknown_semantics; no min_two_query_filter",
+  "strict_projection": "distance_squared < 0.05**2",
+  "native_vertices": 9158364,
+  "target_vertices": 954492,
+  "mesh_backed_owners": 71,
+  "cache_only_color_ids": [
+    15,
+    17,
+    43,
+    61,
+    72,
+    73,
+    81,
+    90,
+    95,
+    96,
+    126,
+    209
+  ],
+  "unmatched_vertices": 124345,
+  "seconds_including_export": 36.883394421078265,
+  "command": [
+    "scripts/evaluation/evaluate_static_native_geometry.py",
+    "--native-mesh",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/native_replica8/scenes/room0/attempt-20260913T110048.600595Z/mapping/cropformer_inst/instance_mesh_200.ply",
+    "--native-cache",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/native_replica8/scenes/room0/attempt-20260913T110048.600595Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+    "--color-log",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/native_replica8/scenes/room0/attempt-20260913T110048.600595Z/native_audit/instance_colors_cpp.tsv",
+    "--gt-instance-map",
+    "/mnt/shared/ww/ovimap-static-20260913/room0_b1_evaluation/layout/room0/gt_instance_mesh.ply",
+    "--scene",
+    "room0",
+    "--output",
+    "/mnt/shared/ww/ovimap-static-20260913/room0_b1_geometry"
+  ],
+  "input_sha256": {
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/native_replica8/scenes/room0/attempt-20260913T110048.600595Z/mapping/cropformer_inst/instance_mesh_200.ply": "d6fc8896800f8fadb4cb38be5e871c4bdeeec8a01659c47f106afcfd8ca8cb4a",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/native_replica8/scenes/room0/attempt-20260913T110048.600595Z/mapping/cropformer_inst/inst_sem_siglip-l-16-384_200_incre_combine.pkl": "f59f142b116e6fcf0a24f4f16cda41ca28f166b7e44c94fe7818d6e9a47d7059",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/native_replica8/scenes/room0/attempt-20260913T110048.600595Z/native_audit/instance_colors_cpp.tsv": "4782e5d87217eafe185af0771619a348220236e7bb6ff873fa6a110e177ec881",
+    "/mnt/shared/ww/ovimap-static-20260913/room0_b1_evaluation/layout/room0/gt_instance_mesh.ply": "da094a09c9a60551b94695bf6b8ef7ea841ea96c2fe78f3997ce45bff173a2d1"
+  },
+  "source_sha256": {
+    "/home/ww/crove/ovimap-static/scripts/evaluation/evaluate_static_native_geometry.py": "5555f4b94a00ad20c3d2bccf55b7228fb4908dafa7e10f4ee4f1f9cd02ef387b",
+    "/home/ww/crove/ovimap-static/src/static_ovmap/native_partition.py": "2762a40d8ae9596f1f755bc13a0a31ea8c48f27a8701c486107862c9c0049812",
+    "/home/ww/crove/ovimap-static/src/evaluation/static_projected_instances.py": "5ea29e8a1370dfbc822719101fd07e616499a016e18ece08bae82364c32eba0b"
+  },
+  "output_sha256": {
+    "native_owners.npy": "c21b705ba632c042eccd4696131e5a534587d86866305eca7fef2f2ab51e60f7",
+    "projected_owners.npy": "d2f3764abe07d58100a556fbd3eff5e02778a758786da8f4f85f318fb6690212",
+    "confidence.json": "3a7dc6ff968fdffc0d6ce28ec0c508d2fe62aed1a43d59525edc5ae030fda062"
+  }
+}

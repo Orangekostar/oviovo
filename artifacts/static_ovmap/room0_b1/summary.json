@@ -2045,8 +2045,20 @@
     "mP@0.25": 0.8868,
     "mR@0.25": 0.5109
   },
-  "canonical_class_agnostic_AP": null,
-  "canonical_AP_reason": "full-native-owner diagnostic not yet evaluated for B1; released precision/recall is not AP",
+  "canonical_class_agnostic_AP": {
+    "ground_truth_instance_count": 84,
+    "predicted_instance_count": 54,
+    "definition": "full_projected_domain_IoU_including_void; greedy_1to1_IoU_ge_t; precision_envelope_AP",
+    "min_region": 100,
+    "zero_GT_policy": "undefined_null",
+    "ap25": 0.5658433980369136,
+    "recall25": 0.5833333333333334,
+    "ap50": 0.37030304211155274,
+    "recall50": 0.4642857142857143,
+    "ap75": 0.11851933755958526,
+    "recall75": 0.25
+  },
+  "canonical_AP_reason": "full-native-owner diagnostic evaluated separately; paper AP provenance unverified",
   "source_drift": {
     "historical_native_vertices": 9282303,
     "rebuilt_native_vertices": 9158364,
@@ -2083,5 +2095,6 @@
     "scope": "fresh mask/geometry/query computation with local weights; shared-host concurrent scene jobs; not a controlled speed comparison or complete evaluator-inclusive E2E FPS",
     "postprocess_seconds": 53.11132253613323,
     "enrichment_seconds": 14.262004347518086
-  }
+  },
+  "geometry_diagnostic_scope": "full_native_owners_including_unknown_semantics; no min_two_query_filter"
 }
