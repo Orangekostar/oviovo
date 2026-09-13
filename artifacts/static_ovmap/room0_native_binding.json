@@ -1,0 +1,23 @@
+{
+  "native_cache_sha256": "edf0194f01bf854a4555f213173240c93cdd6b14ed0d21b15b70ef102aceb89d",
+  "source_config_sha256": "7031814ed7da49dfe439a34df6d377ccc993676fc4373848fc112f1fb2eebdfc",
+  "feature_space_id": "sha256:ddccacc31f8d93ff815fd3d895e2af8eba55d724f0e91e99b307a67f013893c4",
+  "feature_dim": 1024,
+  "feature_space_identity": {
+    "model": "google/siglip-large-patch16-384",
+    "model_sha256": "ab804d2c2c631159f65afa1de27787c5dba90cbfa189f26404de1944d50a18a2",
+    "layer": "get_image_features",
+    "feature_dim": 1024,
+    "image_encoder_source_sha256": "607ed3d0ddf8eb39b8989e606d0d7797d8966bc902952fff819ccb020a5169a9",
+    "crop": "native_six_crops_expand_0_0.1_0.2_black_and_rgb_exclusive_slice",
+    "crop_fusion": "mean_of_l2_normalized_crop_features",
+    "preprocessor_sha256": "f59da2f87c3cd079bd4f8f3037e81b277c60c498e279a8020331f67a5a3157e8"
+  },
+  "evidence_scope": "reconstructed_from_local_original_model_and_encoder_plus_bit_exact_baseline_parity",
+  "historical_download_revision": null,
+  "historical_revision_reason": "original_cache_has_no_model_revision_metadata",
+  "source_encoder": "/home/ww/vv/paper2/OVI-MAP/scripts/vl_models.py",
+  "native_mapper_log": "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/logs/mapping_room0_200f_s10.log",
+  "log_encoder_name": "siglip-l-16-384",
+  "baseline_parity_evidence": "room0_area_only_smoke/paired_summary.json"
+}

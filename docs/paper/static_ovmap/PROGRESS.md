@@ -1,5 +1,9 @@
 # 0913_1 static OVI-MAP development checkpoint
 
+Historical checkpoint at cf4cdf3. See [S1_RESULTS.md](S1_RESULTS.md) and
+artifacts/static_ovmap/room0_enriched for the subsequent measured coverage result,
+released instance AP, full projection parity and updated remaining work.
+
 This is a partial development checkpoint, not final completion of the prompt.
 Worktree: /home/ww/crove/ovimap-static. Branch: research/ovimap-static-benchmark-v1.
 Base: d5c0688bc662f8e65455cb9c62909de87c941b43, verified against GitHub.

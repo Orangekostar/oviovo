@@ -99,10 +99,12 @@
       "reuse_this_round": true
     }
   },
-  "frame_asset_validation": "pending_all_200_rgb_depth_mask_pose_checks",
+  "frame_asset_validation": "PASS_ROOM0_200_RGB_DEPTH_MASK_FILES; see frame_input_inventory.json",
   "unknown": [
     "historical_model_download_revision",
     "original_native_runtime_source_diff",
     "other_scene_cache_identity"
-  ]
+  ],
+  "room0_projection_validation": "PASS_EXACT_954492_VERTICES",
+  "full_query_feature_inventory": "full_query_feature_inventory.json; 764 files, 172 owner/area bindings pending"
 }

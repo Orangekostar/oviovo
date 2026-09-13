@@ -9,8 +9,9 @@ import time
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from src.static_ovmap.cache_io import load_native_cache, sha256_file
+from src.static_ovmap.cache_io import load_native_cache, sha256_file, validate_native_binding
 from src.static_ovmap.readout import classify
+from src.static_ovmap.enrichment import apply_enrichment
 
 
 CONDITIONS = {'B0': ('last8', 'vis_area'), 'RANDOM8': ('random8', 'vis_area'),
@@ -23,19 +24,26 @@ CONDITIONS = {'B0': ('last8', 'vis_area'), 'RANDOM8': ('random8', 'vis_area'),
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--native-cache', type=Path, required=True)
+    parser.add_argument('--native-binding', type=Path, required=True)
     parser.add_argument('--text-cache', type=Path, required=True)
     parser.add_argument('--scene', required=True)
     parser.add_argument('--source-config', type=Path, required=True)
     parser.add_argument('--history-scope', required=True)
+    parser.add_argument('--enrichment', type=Path)
     parser.add_argument('--conditions', nargs='+', choices=list(CONDITIONS), default=list(CONDITIONS))
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     text = np.load(args.text_cache, allow_pickle=False)
     space = str(text['feature_space_id'])
+    binding = json.loads(args.native_binding.read_text())
     bank, metadata = load_native_cache(args.native_cache, scene_id=args.scene,
         feature_space_id=space, source_config_hash=sha256_file(args.source_config),
         history_scope=args.history_scope)
+    validate_native_binding(binding, metadata['source_sha256'], sha256_file(args.source_config),
+                            space, int(text['text'].shape[1]))
+    if any(obs.feature_dim != binding['feature_dim'] for observations in bank.values() for obs in observations):
+        raise ValueError('native record feature dimension contradicts binding')
     args.output.mkdir(parents=True, exist_ok=True)
     metadata.update({'text_cache_sha256': sha256_file(args.text_cache),
                      'text_metadata': json.loads(args.text_cache.with_suffix('.json').read_text()),
@@ -44,6 +52,16 @@ def main():
                      'quality_mode': 'area_only_no_quality_measurements',
                      'direction_mode': 'missing_no_object_relative_geometry',
                      'additional_image_queries': 0, 'command': sys.argv})
+    metadata['native_binding_path'] = str(args.native_binding.resolve())
+    metadata['native_binding_sha256'] = sha256_file(args.native_binding)
+    if args.enrichment:
+        enrichment = json.loads(args.enrichment.read_text())
+        bank = apply_enrichment(bank, enrichment, metadata['source_sha256'])
+        metadata.update({'enrichment_path': str(args.enrichment.resolve()),
+                         'enrichment_sha256': sha256_file(args.enrichment),
+                         'quality_mode': enrichment['quality_mode'],
+                         'direction_mode': enrichment['direction_mode'],
+                         'enrichment_preparation_seconds': enrichment['total_preparation_seconds']})
     (args.output / 'input_binding.json').write_text(json.dumps(metadata, indent=2)+'\n')
     for condition in args.conditions:
         strategy, weighting = CONDITIONS[condition]

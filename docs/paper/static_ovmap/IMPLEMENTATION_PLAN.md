@@ -22,12 +22,14 @@ mechanical leaves may use mechanical_worker. User authorized autonomous configur
   mask/quality/support stays null. Selection is separate from fusion. Fixed seed 0, K=8.
   Readout consumes one feature space and matching text bank, returns label/score/margin and
   selected indices. last8 retains native order and area normalization sum+1e-6, min queries=2.
-- [ ] Test native-order weighted fusion against direct original formula; reject equal-dimension
+- [x] Test native-order weighted fusion against direct original formula; reject equal-dimension
   different spaces; random determinism; quality and directional coverage; min-two behavior.
-- [ ] Add run_static_ovmap_readout.py. Save B0, random8, S1a/S1b/S1c and all_views separately.
+- [x] Add run_static_ovmap_readout.py. Save B0, random8, S1a/S1b/S1c and all_views separately.
   S1a changes selection only; S1b weights only; S1c both. No extra encoder inference.
-- [ ] Reproduce original labels using matching text embeddings, evaluate paired native geometry
+- [x] Reproduce original labels using matching text embeddings, evaluate paired native geometry
   and save metrics, changed observations, semantic margins, raw outputs and measured readout costs.
+- [ ] Recover discarded query ownership/area: all 764 temp feature files exist and the 592
+  retained files match exactly, but 172 have no saved owner/area. No extra encoder inference.
 - [ ] Commit and push first real stage; verify remote SHA. Do not call full task complete.
 
 ## Remaining staged deliverables (must not disappear after S1)

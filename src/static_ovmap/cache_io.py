@@ -17,6 +17,17 @@ def sha256_file(path):
     return digest.hexdigest()
 
 
+def validate_native_binding(binding, cache_sha256, config_sha256, text_space, feature_dim):
+    if binding.get('native_cache_sha256') != cache_sha256:
+        raise ValueError('native binding cache hash mismatch')
+    if binding.get('source_config_sha256') != config_sha256:
+        raise ValueError('native binding source config hash mismatch')
+    if binding.get('feature_space_id') != text_space:
+        raise ValueError('native and text feature space mismatch')
+    if binding.get('feature_dim') != feature_dim:
+        raise ValueError('native feature dimension mismatch')
+
+
 def load_native_cache(path, *, scene_id, feature_space_id, source_config_hash,
                       history_scope):
     if history_scope not in ('full_query_history', 'retained_native_top10',

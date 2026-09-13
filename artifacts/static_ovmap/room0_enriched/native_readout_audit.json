@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "eligible_instances": 71,
+  "label_mismatches": [],
+  "max_absolute_fused_feature_error": 4.821165211499334e-08,
+  "feature_arithmetic": "original_torch_float32_vs_numpy_float64_area_accumulation",
+  "feature_tolerance": 1e-06,
+  "class_output_tolerance": 0,
+  "source_sha256": "31836e1076460360a395049b8743f398766a9a8029e7113739893adf356fbbc4",
+  "command": [
+    "scripts/evaluation/audit_static_ovmap_native_readout.py",
+    "--native-cache",
+    "/home/ww/vv/paper2/OVI-MAP/output/benchmark_20260615_ovimap/mapping_room0_200f_s10/cropformer_inst_combine/inst_sem_siglip-l-16-384_200_incre_combine.pkl",
+    "--text-cache",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/text/replica51_native.npz",
+    "--original-readout-source",
+    "/home/ww/vv/paper2/OVI-MAP/scripts/utils/mesh_postprocess_utils.py",
+    "--source-config",
+    "/home/ww/vv/paper2/OVI-MAP/scripts/panoptic_mapping_.py",
+    "--output",
+    "/home/ww/oviovo_baseline_runs/20260913_static_ovmap/room0/native_readout_audit.json"
+  ]
+}
