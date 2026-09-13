@@ -1,4 +1,13 @@
-## Latest checkpoint: R4 Room0
+## Current checkpoint: complete-query Replica8 evaluation
+
+R0–R6 development experiments and the frozen C1 are now recorded in their stage reports.
+All eight selected native runs completed with full-query capture; remaining scene evaluations
+and the pooled Replica8 table are in progress. See `REPLICA8_EXECUTION.md` and
+`REQUIREMENTS_AUDIT.md` for current scope and A–I evidence. ScanNet inputs and the supplied
+reference test file remain locally blocked. The sections below are historical checkpoints,
+not current outstanding-work lists. No final completion claim is made.
+
+## Historical checkpoint: R4 Room0
 
 See [R4_RESULTS.md](R4_RESULTS.md): real G1 merge and G2 multiview surface split, restored native geometry, separately named canonical AP, and original released metrics are evaluated. G1 is negative; G2 has mixed results and remains off. R5/R6, full-scene tables and final A–I audit are still outstanding. Historical statuses below are superseded by the stage result reports.
 

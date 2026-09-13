@@ -1,0 +1,81 @@
+{
+  "selection_policy": "first successful complete-query capture in declared roots; never select by GT score",
+  "scene_count": 8,
+  "scenes": {
+    "office2": {
+      "owner_count": 64,
+      "full_query_count": 552,
+      "retained_query_count": 442,
+      "capture_seconds": 0.046547108329832554,
+      "full_cache_sha256": "57e37cdaa8effe0e4bbde8f6cb0f96b908523fe9b12bf9cb45b32e7d6b28978f",
+      "native_cache_sha256": "c39af3f03d76f39e8092a166ee53fcd55036ed44e218aaf20ad4c3bfb9b365c8",
+      "attempt_root": "/mnt/shared/ww/ovimap-static-20260913/native_replica8/scenes/office2/attempt-20260913T113835.928673Z"
+    },
+    "office3": {
+      "owner_count": 64,
+      "full_query_count": 644,
+      "retained_query_count": 488,
+      "capture_seconds": 0.09408793319016695,
+      "full_cache_sha256": "73e0586cad0c20ac1ac20ebecfc348a4bcb1259c4c42e9a5cdacd257eca96958",
+      "native_cache_sha256": "0268db97848530b9c3e38b007854687645102330cb48ecaa8a902c5fe158359a",
+      "attempt_root": "/mnt/shared/ww/ovimap-static-20260913/native_replica8/scenes/office3/attempt-20260913T114058.354085Z"
+    },
+    "office4": {
+      "owner_count": 49,
+      "full_query_count": 501,
+      "retained_query_count": 389,
+      "capture_seconds": 0.0445393119007349,
+      "full_cache_sha256": "c50c1eb9ab52ba3b9a4fc01c5ed6aded2d0b4c8c4db011469b60096ad9646100",
+      "native_cache_sha256": "c85c0685f097976118a01654116f62cc100bf2a8019fa1c94fd8f67502053fd3",
+      "attempt_root": "/mnt/shared/ww/ovimap-static-20260913/native_replica8/scenes/office4/attempt-20260913T114059.514733Z"
+    },
+    "room1": {
+      "owner_count": 52,
+      "full_query_count": 469,
+      "retained_query_count": 393,
+      "capture_seconds": 0.04704324621707201,
+      "full_cache_sha256": "cd2eeb79366a861604a0f2f80303b9e3b117729dc831072c495a53c01cd50766",
+      "native_cache_sha256": "bcb4d7ac93bb1e3ca5a98814e18010d05f3afe84b95597d0dfb6dd75baccbcc9",
+      "attempt_root": "/mnt/shared/ww/ovimap-static-20260913/native_replica8/scenes/room1/attempt-20260913T114547.817596Z"
+    },
+    "room2": {
+      "owner_count": 57,
+      "full_query_count": 518,
+      "retained_query_count": 422,
+      "capture_seconds": 0.05469869077205658,
+      "full_cache_sha256": "7d8c7b82da7efa9e10a15f5a29fdfce6ec46328e836f53853038097a143d5fe9",
+      "native_cache_sha256": "d7a679cb0572c539f2428cba67bada55d30139ebacb3093595622b83f1aa8e33",
+      "attempt_root": "/mnt/shared/ww/ovimap-static-20260913/native_replica8/scenes/room2/attempt-20260913T114740.169540Z"
+    },
+    "room0": {
+      "owner_count": 70,
+      "full_query_count": 592,
+      "retained_query_count": 481,
+      "capture_seconds": 0.05121752433478832,
+      "full_cache_sha256": "2ad1585002c4cc57530f7b9900aa3dd14c1e263072c20a5af1ca49ffe3fab9e7",
+      "native_cache_sha256": "f5765a35ddfe7ed53fc9b965aeb7ba40e528d52c0bd6d1a2dbab321421478e73",
+      "attempt_root": "/mnt/shared/ww/ovimap-static-20260913/native_full_history/scenes/room0/attempt-20260913T122337.294409Z"
+    },
+    "office0": {
+      "owner_count": 68,
+      "full_query_count": 565,
+      "retained_query_count": 456,
+      "capture_seconds": 0.07615870889276266,
+      "full_cache_sha256": "c0f0d0ce8a781c7b4349344c3b9fca3c15e9a4d92bc58c47800fc0303930dbbd",
+      "native_cache_sha256": "bd5d2ee1bfc6faa0582d5089fa3cfc239ae5dfceb0cb3becf05871d99cdaf506",
+      "attempt_root": "/mnt/shared/ww/ovimap-static-20260913/native_full_history/scenes/office0/attempt-20260913T122403.685429Z"
+    },
+    "office1": {
+      "owner_count": 51,
+      "full_query_count": 414,
+      "retained_query_count": 351,
+      "capture_seconds": 0.04370623640716076,
+      "full_cache_sha256": "b36e2998931792d766bb00fdb9f682c5a907d8654a46a9efc6807b71ac9d73fd",
+      "native_cache_sha256": "b0fbe46cd6534f7fd4ee0c6b324348fe7c59013d0dbcf06332300e81d3837598",
+      "attempt_root": "/mnt/shared/ww/ovimap-static-20260913/native_full_history/scenes/office1/attempt-20260913T122430.559542Z"
+    }
+  },
+  "full_query_count": 4255,
+  "retained_query_count": 3422,
+  "cost_boundary": "capture callback adds zero image queries; three scenes reran mapping with reused frontend/geometry; not free historical recovery"
+}
