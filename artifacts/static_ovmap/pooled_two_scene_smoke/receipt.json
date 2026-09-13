@@ -1,0 +1,18 @@
+{
+  "scope": "two-scene real helper integration check; main CLI still requires all eight complete scene results",
+  "source_and_input_sha256": {
+    "scripts/evaluation/aggregate_static_replica_readouts.py": "0cc3dd22dea072c77e37c7db3341934191ac3e4d04014561c0cd0f4e47dd7ed4",
+    "src/static_ovmap/pooled_metrics.py": "8030a71c12a4072fac744a9804afa220cecab96db3b7813ac80fe17cce8b6677",
+    "scripts/evaluation/evaluate_static_ovmap_readout.py": "62e25d5514ed38713e3dcfc7e86d21a03cd2f6db925c780bd1c4033819d8dabe",
+    "/home/ww/oviovo_baseline_builds/ovimap-ubuntu24-native/OVI-MAP/scripts/eval_utils.py": "fd90b3987d3e06879784d56bd7f92a25cd4cce17bf3bc9befe15b0d7913ca948",
+    "/mnt/shared/ww/ovimap-static-20260913/room0_b1_instance_evaluation/gt_sem_inst_id.npy": "6f12f27625f8395367cf06f6a395016d97b0fd9fb6fbfcbcd04fb8845def1888",
+    "/mnt/shared/ww/ovimap-static-20260913/room0_b1_instance_evaluation/B0/pred_inst_sem_mapping.txt": "3f533fec318030c0d2b40446d8e069307b0e2b7e9b88ddede93ce393a9baf8c0",
+    "/mnt/shared/ww/ovimap-static-20260913/room0_b1_instance_evaluation/S1a/pred_inst_sem_mapping.txt": "208b11074d2986ce7ea0dfd7c3938422c1719c07fd28409fba1f802a98d442dc",
+    "/mnt/shared/ww/ovimap-static-20260913/room0_b1_instance_evaluation/C1/pred_inst_sem_mapping.txt": "208b11074d2986ce7ea0dfd7c3938422c1719c07fd28409fba1f802a98d442dc",
+    "/mnt/shared/ww/ovimap-static-20260913/evaluated_replica8/office0/instances/gt_sem_inst_id.npy": "b260917be3ad91aa4e74dbf44d6970a2cdad9b1758cf6922d4ced9993565720a",
+    "/mnt/shared/ww/ovimap-static-20260913/evaluated_replica8/office0/instances/B0/pred_inst_sem_mapping.txt": "c309ac932bce3fa511e867aa018101c86a6815f8486cd31cafb2f0522c7856b7",
+    "/mnt/shared/ww/ovimap-static-20260913/evaluated_replica8/office0/instances/S1a/pred_inst_sem_mapping.txt": "c309ac932bce3fa511e867aa018101c86a6815f8486cd31cafb2f0522c7856b7",
+    "/mnt/shared/ww/ovimap-static-20260913/evaluated_replica8/office0/instances/C1/pred_inst_sem_mapping.txt": "c309ac932bce3fa511e867aa018101c86a6815f8486cd31cafb2f0522c7856b7"
+  },
+  "validation": "pooled vertex metrics exactly match the existing concatenated-label evaluator; unchanged released evaluator computes pooled AP; 2 unit tests pass"
+}

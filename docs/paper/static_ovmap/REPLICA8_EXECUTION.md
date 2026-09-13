@@ -64,3 +64,20 @@ the additional seven-scene view separately. Room0 was used for development; the 
 other scenes must not be described as a new independent test set. Canonical geometry AP
 remains distinct from released mP/mR and unverified paper AP. Final aggregation and
 requirement-by-requirement completion audit are still pending.
+
+The aggregation entrypoint is now `scripts/evaluation/aggregate_static_replica_readouts.py`.
+Its CLI requires exactly eight completed, hash-bound scene pipelines and checks common
+native/text identities plus fixed selector/fusion rules. It writes Replica8 pooled metrics,
+the separately named seven-scene diagnostic, per-scene rows, selection changes, source
+checksums and costs that distinguish reused stages. Missing metrics are not filled with
+zero. Canonical geometry is explicitly a scene-macro diagnostic, separate from pooled
+released semantic-instance AP and unverified paper AP.
+
+Two existing initial rebuilt results (Room0 and office0) provide a real integration check:
+B1 pooled mIoU .250526, pooled semantic AP .113052, versus scene-macro AP .122293.
+S1a/C1 pooled mIoU .252248 and AP .114642, versus scene-macro AP .123386.
+Pooled vertex values exactly match the existing evaluator applied to concatenated labels;
+AP uses the unchanged released evaluator over both manifests. Two dedicated tests verify
+unequal-scene weighting, GT-void exclusion and undefined empty-GT metrics. Evidence is in
+`artifacts/static_ovmap/pooled_two_scene_smoke`. This is an integration check, not the final
+Replica8 result or a replacement for the declared complete-history scene selection.
